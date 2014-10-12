@@ -1,5 +1,5 @@
 ========================
-The UF:math:`_6` anion
+The :math:`UF_6` anion
 ========================
 
 The problem
@@ -148,5 +148,4 @@ and now the SCF converges in 38 iterations. Curiously, convergence is extremely 
 to the choice of the level shift. Even changing it by 0.005 breaks convergence !
 
 
-
-
+.. include:: UF6_anion2.rst

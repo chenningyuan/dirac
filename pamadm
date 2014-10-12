@@ -69,13 +69,9 @@ def main():
         dirac_modules[str(option)[2:]].include()
 
     list_of_tests = []
-    list_of_benchmarks = []
 
     def add_test(name, labels=''):
-        if 'benchmark' in labels:
-            list_of_benchmarks.append([name, labels])
-        else:
-            list_of_tests.append([name, labels])
+        list_of_tests.append([name, labels])
 
     # list of vital directories and files
     # these are always packaged
@@ -100,6 +96,7 @@ def main():
     vital_directories.append('src/main')
     vital_directories.append('src/matrix_operations')
     vital_directories.append('src/moltra')
+    vital_directories.append('src/pcm')
     vital_directories.append('src/pdpack')
     vital_directories.append('src/prp')
     vital_directories.append('src/reladc')
@@ -175,6 +172,7 @@ def main():
     add_test('mp2_energy', 'short;mp2')
     add_test('mp2_properties', 'long;mp2')
     add_test('mp2_srdft_energies', 'short;mp2;srdft')
+    add_test('mp2_natural_orbitals', 'short;mp2')
     add_test('open-shells', 'short')
     add_test('projection_analysis', 'short;projection')
     add_test('pvc_scf', 'short;pvc;scf')
@@ -210,13 +208,17 @@ def main():
     add_test('cosci_energy', 'short;ci')
     add_test('esr', 'short;gascip;ci')
     add_test('krci_energy_q_corrections', 'medium;krci;ci')
-# miro: here we go with benchmark tests
+    # benchmarks, not run as part of standard test set
     add_test('benchmark_cc', 'benchmark;cc')
     add_test('benchmark_cc_linear', 'benchmark;cc')
     add_test('benchmark_gaunt', 'benchmark;gaunt')
     add_test('benchmark_mcscf_energy', 'benchmark;mcscf')
     add_test('benchmark_moltra_4or6', 'benchmark;moltra')
-#    add_test('benchmark_kallay_mrcc_interface', 'benchmark')
+
+    # tutorials connected tests, not run as part of standard test set
+    add_test('tutorial_W', 'tutorial;W;open-shell;scf')
+    add_test('tutorial_MnO6', 'tutorial;MnO6;scf')
+    add_test('tutorial_Ir_16plus', 'tutorial;cc')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
@@ -224,7 +226,6 @@ def main():
     # then list directories that are to be skipped as whole
 
     files_never_compiled = []
-    files_never_compiled.append('src/gp/unit_testing.F90')
     files_never_compiled.append('src/utils/cube2pov.c')
     files_never_compiled.append('src/relccsd/ccdriv_nomemget.F')
     files_never_compiled.append('src/relccsd/ccints_nomemget.F')
@@ -316,19 +317,19 @@ def main():
     dirac_modules[this_module] = dirac_module('openrsp', 'OpenRSP')
     dirac_modules[this_module].add_cppflag('MOD_OPENRSP')
     dirac_modules[this_module].add_directory('src/openrsp')
-    dirac_modules[this_module].add_test('legacy_openrsp_cars')
-    dirac_modules[this_module].add_test('legacy_openrsp_cme')
-    dirac_modules[this_module].add_test('legacy_openrsp_delta')
-    dirac_modules[this_module].add_test('legacy_openrsp_efgb')
-    dirac_modules[this_module].add_test('legacy_openrsp_efgb_dft')
-    dirac_modules[this_module].add_test('legacy_openrsp_electric')
-    dirac_modules[this_module].add_test('legacy_openrsp_jones')
-    dirac_modules[this_module].add_test('legacy_openrsp_magnetizability')
-    dirac_modules[this_module].add_test('legacy_openrsp_molecular_gradient')
-    dirac_modules[this_module].add_test('legacy_openrsp_pv')
-    dirac_modules[this_module].add_test('legacy_openrsp_quadrupole')
-    dirac_modules[this_module].add_test('legacy_openrsp_roa')
-    dirac_modules[this_module].add_test('legacy_openrsp_pnc_gradient')
+    dirac_modules[this_module].add_test('legacy_openrsp_cars', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_cme', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_delta', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_efgb', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_efgb_dft', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_electric', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_jones', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_magnetizability', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_molecular_gradient', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_pv', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_quadrupole', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_roa', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_pnc_gradient', 'openrsp')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'oof'
@@ -388,6 +389,12 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
     dirac_modules[this_module].take_out_of_release()
 
+    this_module = 'pcm'
+    dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model using PCMSolver')
+    dirac_modules[this_module].add_test('pcm_energy', 'short;scf;pcm')
+    dirac_modules[this_module].add_test('pcm_response', 'short;polarizabilities;pcm')
+    dirac_modules[this_module].take_out_of_release()
+
     this_module = 'unreleased'
     dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
     dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
@@ -398,15 +405,6 @@ def main():
     dirac_modules[this_module].add_test('fscc_intensities')
     dirac_modules[this_module].add_test('dft_overlap_diagnostic')
     dirac_modules[this_module].add_test('dft_minnesota')
-    dirac_modules[this_module].take_out_of_release()
-
-    this_module = 'pcm'
-    dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model through PCMSolver')
-    dirac_modules[this_module].add_cppflag('PCM_MODULE')
-    dirac_modules[this_module].add_directory('src/pcm')
-    dirac_modules[this_module].add_test('pcm_energy')
-    dirac_modules[this_module].add_test('pcm_response')
-    dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'qcorr'
@@ -596,24 +594,53 @@ def main():
     f = open(os.path.join(options.builddir, 'pamadm-generated', 'Tests.cmake'), 'w')
     f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
 
-    # first list long tests
+    # long tests
     for test in list_of_tests:
         if 'long' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
-    # then tests that are neither short nor long
+    # tests that are neither short nor long
     for test in list_of_tests:
-        if (not 'long' in test[1]) and (not 'short' in test[1]):
+        if not 'long' in test[1] and \
+           not 'short' in test[1] and \
+           not 'benchmark' in test[1] and \
+           not 'tutorial' in test[1] and \
+           not 'openrsp' in test[1] and \
+           not 'pcm' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
-    # finally short tests at the end
+    # short tests
     for test in list_of_tests:
-        if 'short' in test[1]:
+        if 'short' in test[1] and \
+            not 'pcm' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
 
-    if list_of_benchmarks != []:
-        f.write('if(ENABLE_BENCHMARKS)\n')
-        for benchmark in list_of_benchmarks:
-            f.write('    dirac_test(%s "%s")\n' % (benchmark[0], benchmark[1]))
-        f.write('endif()\n')
+    # openrsp tests
+    f.write('if(ENABLE_OPENRSP_TESTS)\n')
+    for test in list_of_tests:
+        if 'openrsp' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
+    # benchmark tests
+    f.write('if(ENABLE_BENCHMARKS)\n')
+    for test in list_of_tests:
+        if 'benchmark' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
+    # tutorial tests
+    f.write('if(ENABLE_TUTORIALS)\n')
+    for test in list_of_tests:
+        if 'tutorial' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+    
+    # pcm tests
+    f.write('if(ENABLE_PCMSOLVER)\n')
+    for test in list_of_tests:
+        if 'pcm' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
     f.close()
 
     # write pamadm flags to file

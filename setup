@@ -70,6 +70,11 @@ def parse_input():
             action='store_true',
             default=False,
             help='show cmake command and exit [default: %(default)s]')
+    group.add_argument('--cmake',
+            action='store',
+            default='cmake',
+            help='set the cmake command [default: cmake; e.g. --cmake cmake28]',
+            metavar='STRING')
     
     group = parser.add_argument_group('parallelization')
     group.add_argument('--mpi',
@@ -144,6 +149,10 @@ def parse_input():
             default=None,
             help='set the cmake generator [default: %(default)s]',
             metavar='STRING')
+    group.add_argument('--run-unit-tests',
+            action='store_true',
+            default=False,
+            help='Run unit tests [default: %(default)s]')
     
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
@@ -161,12 +170,29 @@ def parse_input():
             default=None,
             help='extra C++ flags [default: %(default)s]',
             metavar='STRING')
+            
+    group = parser.add_argument_group('pass custom flags to the compiler')
+    group.add_argument('--custom-fc-flags',
+            action='store',
+            default=None,
+            help='custom Fortran flags [default: %(default)s]',
+            metavar='STRING')
+    group.add_argument('--custom-cc-flags',
+            action='store',
+            default=None,
+            help='custom C flags [default: %(default)s]',
+            metavar='STRING')
+    group.add_argument('--custom-cxx-flags',
+            action='store',
+            default=None,
+            help='custom C++ flags [default: %(default)s]',
+            metavar='STRING')
     
     return parser.parse_args()
 
 
-def check_cmake_exists():
-    p = subprocess.Popen('cmake --version',
+def check_cmake_exists(cmake_command):
+    p = subprocess.Popen('%s --version' % cmake_command,
             shell=True,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
@@ -174,10 +200,10 @@ def check_cmake_exists():
         print('   This code is built using CMake')
         print('')
         print('   CMake is not found')
-        print('   get CMake at http://www.cmake.org/')
-        print('   on many clusters CMake is installed')
-        print('   but you have to load it first:')
-        print('   $ module load cmake')
+        print('   1) on some clusters CMake is installed')
+        print('      but you have to load it first:')
+        print('      $ module load cmake')
+        print('   2) if not, get CMake at http://www.cmake.org/')
         sys.exit()
 
 def translate_cmake(s):
@@ -199,10 +225,10 @@ def gen_cmake_command(args):
         command += ' CXX=%s' % args.cxx
 
     if sys.platform != "win32":
-        command += ' cmake'
+        command += ' %s' % args.cmake
     else:
         # fix for windows
-        command = ' cmake ' + command
+        command = ' %s ' % args.cmake + command
 
     command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
     command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
@@ -264,6 +290,13 @@ def gen_cmake_command(args):
         command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
     if args.extra_cxx_flags:
         command += ' -DEXTRA_CXX_FLAGS="%s"' % args.extra_cxx_flags
+        
+    if args.custom_fc_flags:
+        command += ' -DCUSTOM_Fortran_FLAGS="%s"' % args.custom_fc_flags
+    if args.custom_cc_flags:
+        command += ' -DCUSTOM_C_FLAGS="%s"' % args.custom_cc_flags
+    if args.custom_cxx_flags:
+        command += ' -DCUSTOM_CXX_FLAGS="%s"' % args.custom_cxx_flags
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
@@ -282,6 +315,9 @@ def gen_cmake_command(args):
 
     if args.generator:
         command += ' -G "%s"' % args.generator
+
+    if args.run_unit_tests:
+        command += ' -DRUN_UNIT_TESTS=TRUE'
 
     command += ' %s' % root_directory
 
@@ -337,7 +373,7 @@ def run_cmake(command, build_path):
 
 def main(argv):
     args = parse_input()
-    check_cmake_exists()
+    check_cmake_exists(args.cmake)
     build_path = args.builddir
     if not args.show:
         setup_build_path(build_path)

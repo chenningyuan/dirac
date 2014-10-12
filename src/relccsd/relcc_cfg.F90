@@ -45,6 +45,7 @@ module relcc_cfg
   logical, public :: relcc_do_sort                 = .true.
   logical, public :: relcc_do_energy               = .true.
   logical, public :: relcc_do_gradient             = .false.
+  logical, public :: relcc_do_hessian              = .false. ! this currently only relates to the old Hartree-Fock MO response code 
   logical, public :: relcc_do_fspc                 = .false.
   logical, public :: relcc_carith                  = .false.
   integer, public :: relcc_print                   = 0
@@ -55,19 +56,19 @@ module relcc_cfg
 ! Information relevant for the integral sorting and setup stage
   logical, public :: relcc_breit                    = .false.
   logical, public :: relcc_add_finite_field         = .false.
-  logical, public :: relcc_use_orbital_energies     = .true.
+  logical, public :: relcc_use_orbital_energies     = .false.
   logical, public :: relcc_no_recompute             = .false.
   logical, public :: relcc_low_memory               = .false.
   integer, public :: relcc_memory_in_mw             = 0
-  character(10), public :: relcc_fs_interface
+  character(10), public :: relcc_integral_interface = 'DIRAC6    '
   character( 8), public :: relcc_ff_property_names
 
 ! Information relevant for the energy calculation
-  logical, public :: relcc_do_mp2                  = .true. ! stefan: very dangerous to set it to true IMHO
-  logical, public :: relcc_do_singles              = .false.
-  logical, public :: relcc_do_doubles              = .false.
-  logical, public :: relcc_do_ccsd                 = .true. ! stefan: very dangerous to set it to true IMHO
-  logical, public :: relcc_do_ccsd_t               = .true. ! stefan: very dangerous to set it to true IMHO
+  logical, public :: relcc_do_mp2                  = .true. 
+  logical, public :: relcc_no_singles              = .false.
+  logical, public :: relcc_no_doubles              = .false.
+  logical, public :: relcc_do_ccsd                 = .true. 
+  logical, public :: relcc_do_ccsd_t               = .true. 
   integer, public :: relcc_ccener_max_dimension_diis      = 8
   integer, public :: relcc_ccener_max_iterations          = 30
   integer, public :: relcc_ccener_desired_convergence     = 12
@@ -78,7 +79,7 @@ module relcc_cfg
   logical, public :: relcc_do_ccsdgradient         = .false.
   logical, public :: relcc_do_ccsdtgradient        = .false.
   logical, public :: relcc_do_naturalorbitals      = .false.
-  logical, public :: relcc_do_zipgrid              = .false.
+  logical, public :: relcc_do_unrelaxed            = .false.
   integer, public :: relcc_ne_oper                 = 1
   integer, public :: relcc_fopr_max_dimension_diis = 8
   integer, public :: relcc_fopr_max_iterations     = 30
@@ -108,7 +109,6 @@ module relcc_cfg
 ! Intermediate Hamiltonian  
   integer, public, dimension(1:16) :: relcc_ih_nacthi = 0
   integer, public, dimension(1:16) :: relcc_ih_nactpi = 0
-  logical, public :: relcc_ih_do_zipgrid              = .false.
   integer, public :: relcc_ih_scheme                  = 2
   integer, public :: relcc_ih_nih                     = 1
   real(8), public :: relcc_ih_shift_h11               = 0.0d+00
@@ -145,6 +145,7 @@ contains
   call interface_mpi_bcast_l0(relcc_do_sort            ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_energy          ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_gradient        ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_hessian         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_fspc            ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_carith             ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_print              ,1,0,global_communicator)
@@ -158,13 +159,13 @@ contains
   call interface_mpi_bcast_l0(relcc_no_recompute        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_low_memory          ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_memory_in_mw        ,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_fs_interface,       10,0,global_communicator)
+  call interface_mpi_bcast(relcc_integral_interface, 10,0,global_communicator)
   call interface_mpi_bcast(relcc_ff_property_names,   8,0,global_communicator)
 
 ! Information relevant for the energy calculation
   call interface_mpi_bcast_l0(relcc_do_mp2                    ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_singles                ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_doubles                ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_no_singles                ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_no_doubles                ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_ccsd                   ,1,0,global_communicator) 
   call interface_mpi_bcast_l0(relcc_do_ccsd_t                 ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ccener_max_dimension_diis ,1,0,global_communicator)
@@ -177,7 +178,7 @@ contains
   call interface_mpi_bcast_l0(relcc_do_ccsdgradient         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_ccsdtgradient        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_naturalorbitals      ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_zipgrid              ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_unrelaxed            ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ne_oper                 ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_fopr_max_dimension_diis ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_fopr_max_iterations     ,1,0,global_communicator)
@@ -207,7 +208,6 @@ contains
 ! Intermediate Hamiltonian  
   call interface_mpi_bcast(relcc_ih_nacthi,size(relcc_ih_nacthi),0,global_communicator)
   call interface_mpi_bcast(relcc_ih_nactpi,size(relcc_ih_nactpi),0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_ih_do_zipgrid              ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ih_scheme                  ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ih_nih                     ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_ih_shift_h11               ,1,0,global_communicator)

@@ -9,34 +9,36 @@ export PATH=/home/miro/bin/python/Python-2.7.1:$PATH
 # own cmake
 export PATH=/usr/local/bin:$PATH
 # ifort, ompi compilers
-export PATH=/home/miro/bin/openmpi_ilp64/bin:/opt/intel/idbe/10.1.015/bin:/opt/intel/fce/10.1.015/bin:$PATH
-export LD_LIBRARY_PATH=/home/miro/bin//openmpi_ilp64/lib:/opt/intel/mkl/10.0.3.020/lib/em64t:/opt/intel/fce/10.1.015/lib:$LD_LIBRARY_PATH
+export PATH=/opt/intel/idbe/10.1.015/bin:/opt/intel/fce/10.1.015/bin:$PATH
+export LD_LIBRARY_PATH=/opt/intel/mkl/10.0.3.020/lib/em64t:/opt/intel/fce/10.1.015/lib:$LD_LIBRARY_PATH
 
 echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 
 # the directory where your DIRAC sits
 DIRAC=/home/miro/qch_software/dirac_git/dirac-git-repo
-BUILD=build_ompi_ifort_ilp64
+BUILD=build_ifort_mkl_i8
 # go to the local DIRAC directory
 cd $DIRAC
 
+git pull origin master
+
 export DIRTIMEOUT="12m"
 
+export MKL_NUM_THREADS=2
+export MKL_DYNAMIC="FALSE"
+
 # configure step
-export MATH_ROOT=/opt/intel/mkl/10.0.3.020
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
 #
-export DIRAC_NUM_MPI_PROCS=2
-./setup --fc=/home/miro/bin/openmpi_ilp64/bin/mpif90  --cc=/home/miro/bin/openmpi_ilp64/bin/mpicc --cxx=/home/miro/bin/openmpi_ilp64/bin/mpiCC --mpi -D BUILDNAME="opteron_mpi_ifort_gcc.ilp64" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
+export MATH_ROOT=/opt/intel/mkl/10.0.3.020
+#./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON  $BUILD
+./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD
 #
 cd $BUILD
-make ExperimentalUpdate
-make ExperimentalConfigure
-make ExperimentalBuild
-make ExperimentalTest
-make ExperimentalSubmit
+ctest -D Experimental
+#ctest -D Experimental -L short
 
 exit 0

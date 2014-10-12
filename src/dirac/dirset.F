@@ -650,6 +650,7 @@ C
       LUFCK2    = 11
       LUFOCK    = 12
       LUDIIS    = 13
+      LUFCKT    = 14
       LU2HER    = 20
       LUDENS    = 21
       LUEVEC    = 22
@@ -1413,8 +1414,8 @@ C/* Deck lsqma1 */
       SUBROUTINE LSQMA1(ICLAB)
 C***********************************************************************
 C
-C     Make list of type (L or S) that maps each basis function
-C     to a nuclei.
+C     Make array ICLAB(I) which maps each basis function (L or S) to
+C     a specific nucleus.
 C
 C     Written by Jesper K. Pedersen sep. 2001
 C     
@@ -1423,45 +1424,33 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
-#include "frame.h"
+#include "maxorb.h"
 C
 #include "dcblab.h"
-#include "symmet.h"
-#include "aosotr.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
-#include "ccom.h"
       DIMENSION ICLAB(*)
+      integer, allocatable :: IDEGN(:,:)
 #include "dcbibt.h"
-C
-C     Get array ICLAB which maps AO basis functions (large and small)
-C     onto atomic centers.
-C
+      allocate(IDEGN(NUCIND,NBSYM))
+      DO ICENT = 1,NUCIND
+        IDEG = 0
+        DO ISYM = 1,NBSYM
+          IF (NUCNUM(ICENT,ISYM) .NE. 0) THEN
+            IDEG = IDEG + 1
+            IDEGN(ICENT,IDEG) = NUCNUM(ICENT,ISYM)
+          ENDIF
+        ENDDO
+      ENDDO
       DO 100 I = 1, NTBAS(0)
-         ITEMP = IATTR(IPLAB(I,1),1)
-         ICENT = JGET(ITEMP)
-         IDEG  = KGET(ITEMP)
-         IF (IDEG .EQ. 1) THEN
-            ICLAB(I) = NUCNUM(ICENT,1)
-         ELSE
-            JDEG = 0
-            DO J = 0, MAXREP
-               IF (NUCNUM(ICENT,J+1) .NE. 0) THEN
-                  JDEG = JDEG + 1
-                  IF (JDEG .EQ. IDEG) THEN
-                     ICLAB(I) = NUCNUM(ICENT,J+1)
-                     GO TO 100
-                  END IF
-               END IF
-            END DO
-         END IF
+        ITEMP = IATTR(IPLAB(I,1),1)
+        ICENT = JGET(ITEMP)
+        IDEG  = KGET(ITEMP)
+        ICLAB(I) = IDEGN(ICENT,IDEG)
   100 CONTINUE
+      deallocate(IDEGN)
 C
       RETURN
 C      

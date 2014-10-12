@@ -215,16 +215,16 @@ C
       CALL TSTAMP(' ',LUPRI)
 C
       WRITE(LUPRI,'(/)')
-      IF (MCTYPE .GE. JMCMIN .OR. IOPT_ISTATE .GT. 1) THEN
+      IF (MCTYPE .GE. JMCMIN .OR. IOPT_STATE .GT. 1) THEN
 C
 C        Write out KR-MCSCF energy
 C
          if(E_lvcorr_mc.ne.0.0d0)then
-           WRITE(LUPRI,9200) IOPT_ISTATE,IOPT_SYMMETRY,
+           WRITE(LUPRI,9200) IOPT_STATE,IOPT_SYMMETRY,
      &          EMCSCF,POTNUC,E_lvcorr_mc,
      &          EMCSCF-POTNUC-E_lvcorr_mc
          else 
-           WRITE(LUPRI,9201) IOPT_ISTATE,IOPT_SYMMETRY,
+           WRITE(LUPRI,9201) IOPT_STATE,IOPT_SYMMETRY,
      &          EMCSCF,POTNUC,EMCSCF-POTNUC
          end if
          WRITE(LUPRI,9220) GRDNRM

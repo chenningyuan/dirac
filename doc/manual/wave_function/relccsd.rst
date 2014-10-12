@@ -6,10 +6,9 @@
 RELCCSD
 =======
 
-The old namelist style input used up to DIRAC10 has been replaced by an input
-that is more consistent with the rest of the input. In DIRAC11 it is
-possible to use both styles of inputs but we have the intention to phase
-out the namelist input in upcoming releases.
+The old namelist style input used up to DIRAC10 is now no longer supported.
+The input below follows the regular DIRAC style conventions.
+
 
 \*\*RELCC
 =========
@@ -22,18 +21,25 @@ settings.
 
 Activate the Fock space module. This option should be used for
 multireference calculations. See further :ref:`CCFSPC`.
+Because the first sector of Fock space gives the same result as a 
+regular CCSD calculation, the latter calculation is switched off. If you
+do wish to perform also a regular CC calculation (e.g. to get the CCSD(T) energy)
+you need to activate this explicitly via .ENERGY (see below).
 
 .ENERGY
 -------
 
 Activate the energy calculation. This is the preferred option for
-calculations on closed shell or simple open shell systems.
+calculations on closed shell or simple open shell systems and need not
+be specified explictly in such cases. For Fock space calculations the
+keyword switches on a separate single reference calculation done prior
+to the FS calculation.
 
 *Default:*
 
 ::
 
-    No energy calculation.
+    Perform energy calculation..
 
 .GRADIENT
 ---------
@@ -125,6 +131,17 @@ Print level.
     .PRINT
      0
 
+.TIMING
+------
+
+Print detailed timing information.
+
+*Default:*
+
+::
+
+    Only limited timing information is printed.
+
 .DEBUG
 ------
 
@@ -141,10 +158,12 @@ Print debug information.
 
 Covers options related to energy.
 
-.DOMP2
-~~~~~~
+.NOCCSDT
+~~~~~~~~
 
-Calculate the MP2 energy.
+Deacivate the  calculation of perturbative triple corrections. This is potentially
+useful when running into memory problems for very big calculations and will also
+save some CPU time.
 
 .MAXIT
 ~~~~~~
@@ -178,6 +197,16 @@ purposes, this gives no computational speed-up).
 
 Calculate first-order properties (expectation values) for the MP2 wave
 function.
+
+.NATORB
+~~~~~~~
+
+Calculate natural orbitals (currently only for MP2 density matrix)
+
+.UNRELAXED
+~~~~~~~~~~
+
+Use unrelaxed density matrix (computationally cheaper but less accurate)
 
 \*CCFSPC
 --------
@@ -391,3 +420,24 @@ Compensation power, used in expression (1). Arguments: integer.
 In the case of the limit: AIH=1.0 and NIH -> "infinity" ( NIH>100, in practice)
 we have so called "full compensation" method, corresponding to the
 extrapolation of the effective Hamiltonian from the intermediate one.
+
+\*CCSORT
+--------
+
+Specialist options related to the sorting of two-electron integrals
+and the calculation of the reference Fock matrix.
+
+.NORECMP
+~~~~~~~~
+Do not recompute the Fock matrix, but assume a diagonal matrix with the orbital energies 
+taken from the SCF program on the dioagonal. This is usually not recommended as the latter
+correspond to a restricted open shell expression and RELCCSD uses an unrestricted formalism.
+For closed shell systems the two expressions are identical and this option merely suppresses
+a build-in check on the accuracy of transformed integrals.
+
+.USEOE
+~~~~~~
+Ignore recomputed Fock matrix and use orbital energies supplied by the SCF program. This option is
+sometimes useful for degenerate open shell cases in which case the perturbation theory for the unrestricted formalism
+is not invariant for rotations among degenerate orbitals. It should only change the outcome
+of the [T], (T) and -T energy corrections.

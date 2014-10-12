@@ -3988,7 +3988,7 @@ C***********************************************************************
         use fde_mod
         use fde_dirac_matrices_integration
         use num_grid_gen
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
         use pcm_linear_response, only: pcm_oit_asc
         use pcmmod_cfg
 #endif
@@ -4017,9 +4017,7 @@ C
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
       type(fde_import) :: itmp
-#if defined (PCM_MODULE)
       real(8), allocatable ::mep_oit_asc(:, :, :)
-#endif
 
 C
 C
@@ -4156,8 +4154,8 @@ C
      &        WORK(KFREE),LFREE,IPRSOL)
       END IF
 
-#ifdef PCM_MODULE
 ! Insert safeguards against symmetry and X2C?
+#ifdef HAS_PCMSOLVER
         if (dirac_cfg_pcm) then
            if (pcmmod_skipoit) then
               write(lupri,'(a)') '* Skipping formation of '//
@@ -4179,7 +4177,7 @@ C
               deallocate(mep_oit_asc)
            endif
         endif 
-#endif      
+#endif
  
 C
 C

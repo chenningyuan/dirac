@@ -732,7 +732,7 @@ C
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
                            IF (IOS.NE.0) THEN
-                             CALL QUIT('Error in reading sjjd393jdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                            ENDIF
                            IF (IPRINT.GE.6) THEN
                              WRITE(LUPRI,*) 
@@ -919,20 +919,20 @@ C
                   READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                              J - 1 + MAXEXP)
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('error in reading skdsjdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                   ENDIF
                ELSE
                   READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = J, 
      &                                    J - 1 + MOD(INTEXP,MAXEXP))
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('error in reading s233jdj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                   ENDIF
                END IF
             ELSE
                READ (LUBAS,*,IOSTAT=IOS) 
      &         (ALPHA(K,NBLOCK), K = J, J + MAXEXP - 1)
                IF (IOS.NE.0) THEN
-                  CALL QUIT('error in reading 2s2adjj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
                ENDIF
             END IF
             J = J + MAXEXP
@@ -941,7 +941,7 @@ C
             READ (LUBAS,*,IOSTAT=IOS) 
      &       (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
             IF (IOS.NE.0) THEN
-              CALL QUIT('error in reading assjj')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
             ENDIF
          END DO
       ELSE
@@ -1078,11 +1078,19 @@ C*********************************************************
 #include "gnrinf.h"
 #endif
 C
+C     Linux:
 C     The environment variable is a : separated string, e.g.:
 C     /programs/Dirac/basis:/programs/Dalton/basis:.
 C
+C     Windows:
+C     The environment variable is a ; separated string, e.g.:
+C     C:\programs\Dirac\basis;C:\programs\Dalton\basis;.
+C
 C     We loop over these directories in search for the basis set and
 c     element given.
+C
+C     Check if we work on Linux or on Windows (Windows paths also contain : so it is better to search for ;)
+      Windows = INDEX ( BASDIR, ';' )
 C
 C     Depending on the machine, the string has trailing blanks
 C     (ASCII char=32) or null elements (ASCII=0).
@@ -1097,20 +1105,25 @@ C       If string is empty add current directory
       ELSE
         ISTOP=ISTOP-1
       ENDIF
-C     
+C
  10   CONTINUE
 C     
-C     Find next colon in BASDIR
+C     Find next colon (: or ;) in BASDIR
 C     
-      ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
+      IF ( Windows .EQ. 0 ) THEN
+          ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
+      ELSE
+          ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ';' )
+      END IF
 C     
-C     In there are no colons, we are the last directory in BASDIR
+C     In there are no colons (: or ;), we are the last directory in BASDIR
 C     
       IF ( ICOLON .EQ. ISTART - 1 ) ICOLON = ISTOP + 1
       IEND = ICOLON - 1
       STRING = BASDIR(ISTART:IEND)//' '
 C
 C     Add trailing slash if not present.
+C     Fortran probably does not care if \ or / (or mix) is used on Windows (/ is OK)
 C
       IEND = INDEX ( STRING(1:), ' ') - 1
 !     stefan: make check with idb indicates a possible access penalty if
@@ -1576,7 +1589,7 @@ C If STRING is a blank line, then BLANK will return as .TRUE.
          ELSE
             READ (STRING, '(BN,3I5)',IOSTAT=IOS) INTEXP, INTORB, INTISG
             IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading ... ssjdjncncbhd')
+      CALL QUIT('ERROR in basis readin; check your mol file formatting')
             ENDIF
             IF (IPRINT.GE.10) THEN
              write(lupri,'(/,2X,A)') 'Output from FINPOS...reading'

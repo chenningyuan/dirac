@@ -1361,6 +1361,7 @@ C
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 C
 C     KNFBAS = NFBAS(IFRP,0)
 C     NBAST  = NTBAS(0)
@@ -1370,12 +1371,10 @@ C
 C
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTSOAO',-1)
-C
-C     Loop over all irreps in molecule
-C
+C.....Loop over all irreps in molecule
       CALL DZERO(AAO,NTBAS(0)*NVEC)
       DO 100 IREPA = 0, MAXREP
-        DO IC = 1,2
+        DO IC = 1,MC
         NORBA = NCOS(IREPA+1,IC)
         IF(JBTOF(IREPA,IC).EQ.IFRP) THEN
           DO 200 I = 1,NORBA
@@ -1387,15 +1386,82 @@ C
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
-C
-C           Loop over symmetry dependent centers
-C
+C...........Loop over symmetry dependent centers
             DO 300 ISYMA = 0, MAXOPR
             IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
               INDA = INDA + KHKTA
               FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
               CALL DAXPY(NVEC,FAC,ASO(IS,1),NFBAS(IFRP,0),
      &                            AAO(INDA,1),NTBAS(0))
+            ENDIF
+  300       CONTINUE
+  200     CONTINUE
+        ENDIF
+        ENDDO
+  100 CONTINUE
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('INPUT: Vectors in SO basis',-1)
+         CALL OUTPUT(ASO,1,NFBAS(IFRP,0),1,NVEC,
+     &               NFBAS(IFRP,0),NVEC,-1,LUPRI)
+         CALL HEADER('INPUT: Vectors in AO basis',-1)
+         CALL OUTPUT(AAO,1,NTBAS(0),1,NVEC,NTBAS(0),NVEC,-1,LUPRI)
+      END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck wtsoao */
+      SUBROUTINE WTSOAO_mod(ASO,AAO,IFRP,KNFBAS,NBAST,NVEC,IROW,IPRINT)
+C***********************************************************************
+C
+C     Vector transform: SO-basis to AO-basis (in sorted basis !)
+C     Based on WTSOAO, but with row ordering
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+C
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+C
+C     KNFBAS = NFBAS(IFRP,0)
+C     NBAST  = NTBAS(0)
+C
+      DIMENSION ASO(KNFBAS,NVEC), AAO(NBAST,NVEC),IROW(NBAST)
+      DIMENSION IR(2)
+C
+#include "ibtfun.h"
+      IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTSOAO_mod',-1)
+C.....Loop over all irreps in molecule
+      CALL DZERO(AAO,NTBAS(0)*NVEC)
+      DO 100 IREPA = 0, MAXREP
+        DO IC = 1,MC
+        NORBA = NCOS(IREPA+1,IC)
+        IF(JBTOF(IREPA,IC).EQ.IFRP) THEN
+          DO 200 I = 1,NORBA
+            IU     = ICOS(IREPA+1,IC) + I
+            IS     = IBBAS(IREPA,IC) - IBAS(IFRP) + I
+            IA     = IBTAND(IBTSHR(IPIND(IU),16),65535)
+            NA     = IBTAND(IBTSHR(IPIND(IU), 8),  255)
+            NHKTA  = NHKT(IA)
+            KHKTA  = KHKT(IA)
+            MULA   = ISTBAO(IA)
+            INDA   = KSTRT(IA) + NA - KHKTA
+C...........Loop over symmetry dependent centers
+            DO 300 ISYMA = 0, MAXOPR
+            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+              INDA = INDA + KHKTA
+              IA   = IROW(INDA)
+              FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+              CALL DAXPY(NVEC,FAC,ASO(IS,1),NFBAS(IFRP,0),
+     &                            AAO(IA,1),NTBAS(0))
             ENDIF
   300       CONTINUE
   200     CONTINUE
@@ -4284,3 +4350,89 @@ C     Free the memory
       DEALLOCATE (CMO)
 
       END
+C***********************************************************************
+C/* Deck Geigsolv */
+      SUBROUTINE GEIGSOLV(AMAT,SMAT,EIG,N,NEFF,LRM,LCM,NZ,IPQ,
+     &                    IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Solve general Hermitian eigenvalue problem: Ac = eSc
+C     INPUT:
+C        AMAT - Hermitian A
+C        SMAT - Hermitian metric S
+C     OUTPUT:  
+C        AMAT - scramble
+C        SMAT - eigenvectors
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(STOL=1.0D-6,D0=0.0D0,D1=1.0D0)
+      DIMENSION AMAT(LRM,LCM,NZ),SMAT(LRM,LCM,NZ),EIG(N),IPQ(*),WORK(*)
+C
+      KFRSAV=KFREE
+C.....Get canonical orthogonalization matrix
+      CALL MEMGET('REAL',KVMAT,N*N*NZ,WORK,KFREE,LFREE)
+      CALL QLOWDIN(WORK(KVMAT),N,N,SMAT,LRM,LCM,EIG,N,NEFF,NZ,STOL,
+     &             WORK,KFREE,LFREE)
+C.....Transform AMAT to orthonormal basis; store result in SMAT
+      CALL QTRANS('AOMO','S',D0,N,N,NEFF,NEFF,
+     &            AMAT,LRM,LCM,NZ,IPQ,SMAT,LRM,LCM,NZ,IPQ,
+     &            WORK(KVMAT),N,N,NZ,IPQ,WORK(KVMAT),N,N,NZ,IPQ,
+     &            WORK(KFREE),LFREE,IPRINT)
+C.....Diagonalize AMAT(SMAT) in orthonormal basis; vectors stored in AMAT
+      CALL QDIAG(NZ,NEFF,SMAT,LRM,LCM,EIG,1,AMAT,LRM,LCM,
+     &           WORK(KFREE),LFREE,IERR)
+      WRITE(LUPRI,*) 'GEIGSOLV: Eigenvalues...'
+      DO I = 1,NEFF
+        WRITE(6,*) I,EIG(I)
+      ENDDO
+C.....Backtransform eigenvectors -> store in SMAT
+      CALL QGEMM(N,NEFF,NEFF,D1,
+     &           'N','N',IPQ,WORK(KVMAT),N,N,NZ,
+     &           'N','N',IPQ,AMAT,LRM,LCM,NZ,
+     &                D0,IPQ,SMAT,LRM,LCM,NZ)
+      WRITE(LUPRI,*) 'GEIGSOLV: Eigenvectors....'
+      CALL PRQMAT(SMAT,N,NEFF,LRM,LCM,NZ,IPQ,LUPRI)
+      CALL MEMREL('GEIGSOLV',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Qlowdin */
+      SUBROUTINE QLOWDIN(VMAT,LRV,LCV,SMAT,LRS,LCS,EIG,N,NV,NZ,STOL,
+     &                   WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Routine for the generation of Lowdin canonical orthogonalization
+C     Written by Trond Saue June 10 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0,DM1=-1.0D0)
+      DIMENSION VMAT(LRV,LCV,NZ),SMAT(LRS,LCS,NZ),EIG(N),WORK(*)
+      NSDIM=LRS*LCS*NZ
+C.....Scale overlap matrix to get eigenvalues in the correct order
+C     QDIAG gives ascending and we want descending....
+      CALL DSCAL(NSDIM,DM1,SMAT,1)
+      CALL QDIAG(NZ,N,SMAT,LRS,LCS,EIG,1,VMAT,LRV,LCV,
+     &           WORK(KFREE),LFREE,IERR)
+      WRITE(LUPRI,*) 'QLOWDIN: Eigenvalues...'
+      DO I = 1,N
+        WRITE(6,*) I,EIG(I)
+      ENDDO
+      NV = 0
+      DO I = 1,N
+        TMP = DABS(EIG(I))
+        IF(TMP.LE.STOL) GOTO 10
+        NV  = NV + 1
+        FAC = D1/SQRT(TMP)
+        DO IZ = 1,NZ
+          CALL DSCAL(N,FAC,VMAT(1,I,IZ),1)
+        ENDDO
+      ENDDO
+ 10   CONTINUE
+C
+      RETURN
+      END
+

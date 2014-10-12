@@ -23,18 +23,17 @@ option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"        
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
-option(ENABLE_PCMMOD          "Enable Polarizable Continuum Model through PCMSolver"      OFF)
+option(ENABLE_PCMSOLVER       "Enable Polarizable Continuum Model through PCMSolver"      ON)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
 option(ENABLE_MEM_TEST        "Enable compilation of the standalone test_allocator.x"     ON)
 option(ENABLE_LAPACK_QDIAG    "Enable LAPACK diagonalization of real matrices"            OFF)
-option(ENABLE_UNIT_TESTS      "Enable unit tests"                                         OFF)
 option(ENABLE_XCFUN           "Enable XCFun library"                                      ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects"    ON)
-option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
-option(ENABLE_BENCHMARKS "Enable benchmarks within the test suite" OFF)
+option(ENABLE_CRAY_WRAPPERS   "Enable cray wrappers for BLAS/LAPACK and MPI"              OFF)
+option(ENABLE_BENCHMARKS      "Enable benchmarks within the test suite"                   OFF)
+option(ENABLE_TUTORIALS       "Enable tutorials within the test suite"                    OFF)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
@@ -88,7 +87,6 @@ include(ConfigMath)
 
 include(ConfigMPI)
 include(ConfigSafeGuards)
-include(ConfigTesting)
 include(GenericMacros)
 include(BinaryInfo) # has to come after ConfigVersion
 
@@ -118,7 +116,6 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     ${PROJECT_BINARY_DIR}/modules
     ${PROJECT_BINARY_DIR}/src/xcfun/fortran
-    ${PROJECT_BINARY_DIR}/unit-tests
     ${PROJECT_BINARY_DIR}
     )
 
@@ -143,31 +140,65 @@ else()
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-if(ENABLE_PCMMOD)
-    set(ExternalProjectCMakeArgs
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-	#-DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
-        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-	#-DCBLAS_ROOT=${CBLAS_ROOT}
-        -DEIGEN3_ROOT=${EIGEN3_ROOT}
-	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-        -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-    )
-    
-    add_external(pcmsolver)
-
-    set(EXTERNAL_LIBS
-        stdc++
-	pcm
-        getkw
-        ${EXTERNAL_LIBS}
-        )
+if(ENABLE_PCMSOLVER)
+    include(SetPythonHintVariables)
+    set_python_hint_variables(pyLibsFound pyLibs pyInclude pyInclude2) 
+    find_package(ZLIB)
+    if(NOT pyLibsFound AND NOT ZLIB_FOUND)
+        set(ENABLE_PCMSOLVER OFF)
+        message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
+        message(STATUS " PCMSolver dependencies NOT satisfied:")
+	if(NOT pyLibsFound)
+            message(STATUS "  - install Python development libraries")
+        endif()
+        if(NOT ZLIB_FOUND)
+            message(STATUS "  - install Zlib development libraries")
+        endif()
+    else()
+        add_definitions(-DHAS_PCMSOLVER)                                                  
+        message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
+        set(PCMSOLVER_TESTS ON)
+        set(ExternalProjectCMakeArgs
+            # PCMSolver does not know profile
+            if(CMAKE_BUILD_TYPE MATCHES "profile")
+                set(CMAKE_BUILD_TYPE "release")
+            endif
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+            -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+            -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
+            -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+            -DEIGEN3_ROOT=${EIGEN3_ROOT}
+            -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+            -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
+            -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
+            -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
+            -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
+	    -DPYTHON_LIBRARY=${pyLibs} # location of the .so version of libpython
+	    -DPYTHON_INCLUDE_DIR=${pyInclude}   # location of Python.h
+            -DPYTHON_INCLUDE_DIR2=${pyInclude2} # location of pyconfig.h
+	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
+         )
+        
+        if(PCMSOLVER_TESTS)
+		set(testing_command "make test")
+		add_external(pcmsolver ${testing_command})
+        else()
+		add_external(pcmsolver)
+        endif()	
+                                                                                          
+        set(EXTERNAL_LIBS
+            stdc++
+            pcm
+            getkw
+            ${ZLIB_LIBRARIES}
+            ${PYTHON_LIBRARIES}
+            ${EXTERNAL_LIBS})
+    endif()
+else()
+    message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
@@ -215,13 +246,6 @@ if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-if(ENABLE_UNIT_TESTS)
-    set(FREE_FORTRAN_SOURCES
-        ${FREE_FORTRAN_SOURCES}
-        src/gp/unit_testing.F90
-        )
-endif()
-
 # add binary_info.F90
 set(GENERATED_FILES
     ${GENERATED_FILES}
@@ -266,7 +290,7 @@ if(ENABLE_UTILITIES)
     compile_standalone(vibcal.x                  utils/vibcal.F90                  "${LIST_OF_EXECUTABLES}")
     compile_standalone(polfit.x                  utils/polfit.F90                  "${LIST_OF_EXECUTABLES}")
     compile_standalone(mx2fit.x                  utils/mx2fit.F90                  "${LIST_OF_EXECUTABLES}")
-    compile_standalone(qjaco.x                   utils/qjaco.F90                   "${LIST_OF_EXECUTABLES}")
+    compile_standalone(diag.x                    utils/diag.F90                    "${LIST_OF_EXECUTABLES}")
     if(ENABLE_RELCCSD_STANDALONE)
         compile_standalone(relccsd.x src/relccsd/ccmain.F "${LIST_OF_EXECUTABLES}")
     endif()
@@ -299,7 +323,7 @@ foreach(
         dirac
         ${EXTERNAL_LIBS}
         )
-    if(ENABLE_PCMMOD)
+    if(ENABLE_PCMSOLVER)
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
     if(ENABLE_STATIC_LINKING)
@@ -330,23 +354,7 @@ if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
 endif()
 
-# build unit tests
-if(ENABLE_UNIT_TESTS)
-    # set unit test libs
-    set(UNIT_TEST_LIBS
-        dirac
-        ${EXTERNAL_LIBS}
-        )
-    include(ConfigUnitTesting)
-endif()
-
-# create unit tests (set header for unit testing)
-if(ENABLE_UNIT_TESTS)
-    execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR} --enable)
-else()
-    execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/testing/unit-test-header.py --variable=CREATE_UNIT_TESTS --build=${PROJECT_BINARY_DIR})
-endif()
-
+include(ConfigTesting)
 include(ConfigPackaging)
 
 # give information about system, compiler flags, and size of static allocations

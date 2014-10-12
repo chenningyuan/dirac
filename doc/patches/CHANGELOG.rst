@@ -1,5 +1,14 @@
 
 
+13.3 (2014-06-02)
+-----------------
+
+- Fix for more than nine buffer files in integral trnasformation
+  (problem reported on dirac-users mailing list).
+- Bugfix for correlated spinfree X2C calculations with low symmetry molecules (NZ > 1).
+- Adapted testing framework to older versions of python.
+
+
 13.2 (2014-04-14)
 -----------------
 

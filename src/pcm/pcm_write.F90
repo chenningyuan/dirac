@@ -3,15 +3,18 @@ module pcm_write
    implicit none
       
    character(11), parameter, public :: pcm_file_name = 'PCM_mep_asc'
-   integer,      parameter, public :: pcm_file_unit = 800 
-   logical                , public :: pcm_file_exists = .false.
-   logical                , public :: pcm_file_open = .false.
+   integer,       parameter, public :: pcm_file_unit = 800 
+   logical                 , public :: pcm_file_exists = .false.
+   logical                 , public :: pcm_file_open = .false.
 
    public report_after_pcm_input
    public pcm_write_file
    public pcm_write_file_separate
+   public host_writer
 
    private
+
+   integer                          :: global_print_unit = -1
   
    contains
    
@@ -20,54 +23,47 @@ module pcm_write
 !
 ! A subroutine to print the relevant settings of both DIRAC and PCMSolver.
 !
-      integer, optional :: print_unit
-      integer           :: print_here
+      integer, optional, intent(in) :: print_unit
 
       if (present(print_unit)) then
-        print_here = print_unit
-        write(print_here, *) ' ===== Polarizable Continuum Model calculation set-up ====='
-        write(print_here, *) '* Polarizable Continuum Model using PCMSolver external module:'
-        write(print_here, *) '  . Converged potentials and charges at tesserae representative points written on file.'
+        global_print_unit = print_unit
+        write(global_print_unit, *) ' ===== Polarizable Continuum Model calculation set-up ====='
+        write(global_print_unit, *) '* Polarizable Continuum Model using PCMSolver external module:'
+        write(global_print_unit, *) '  . Converged potentials and charges at tesserae representative points written on file.'
       
         if (pcmmod_skipss) then
-           write(print_here, *) '  . Skip the SS block of the electrostatic potential matrix.', &
+           write(global_print_unit, *) '  . Skip the SS block of the electrostatic potential matrix.', &
             ' Use a Simple Coulombic Correction.'
         else
-           write(print_here, *) '  . Calculate the SS block of the electrostatic potential matrix.'
+           write(global_print_unit, *) '  . Calculate the SS block of the electrostatic potential matrix.'
         end if
       
         if (pcmmod_separate) then
-          write(print_here, *) '  . Separate potentials and apparent charges in nuclear and electronic.'
+          write(global_print_unit, *) '  . Separate potentials and apparent charges in nuclear and electronic.'
         else
-          write(print_here, *) '  . Use total potentials and apparent charges.'
+          write(global_print_unit, *) '  . Use total potentials and apparent charges.'
         end if
       
         if (pcmmod_dospf) then
-          write(print_here, *) '  . Perform elimination of spin-orbit dependent terms in the PCM operator.'
+          write(global_print_unit, *) '  . Perform elimination of spin-orbit dependent terms in the PCM operator.'
         end if
 
         if (pcmmod_skipoit) then
-          write(print_here, *) '  . Skip formation of One-Index Transformed ASC in a Linear Response calculation.'
+          write(global_print_unit, *) '  . Skip formation of One-Index Transformed ASC in a Linear Response calculation.'
         else
-          write(print_here, *) '  . Form One-Index Transformed ASC in a Linear Response calculation.'
+          write(global_print_unit, *) '  . Form One-Index Transformed ASC in a Linear Response calculation.'
         end if
       
         if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-          write(print_here, *) '  . Print potentials at tesserae representative points.'
+          write(global_print_unit, *) '  . Print potentials at tesserae representative points.'
         else if (pcmmod_print > 10) then
-          write(print_here, *) '  . Print potentials and charges at tesserae representative points.'
+          write(global_print_unit, *) '  . Print potentials and charges at tesserae representative points.'
         else
-          write(print_here, *) '  . Do not print potentials and charges.'
+          write(global_print_unit, *) '  . Do not print potentials and charges.'
         end if
 ! Should print info for the cavity and the solver here.
-      
-        write(print_here, *) '* References: '
-        write(print_here, *) '  - J. Tomasi, B. Mennucci and R. Cammi:'
-        write(print_here, *) '   "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999' 
-        write(print_here, *) '  - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem'
-        write(print_here, *) '    L. Frediani et al. '
+        call print_citation
       else
-        print_here = 0
         write(*, *) ' ===== Polarizable Continuum Model calculation set-up ====='
         write(*, *) '* Polarizable Continuum Model using PCMSolver external module:'
         write(*, *) '  . Converged potentials and charges at tesserae representative points written on file.'
@@ -103,12 +99,7 @@ module pcm_write
           write(*, *) '  . Do not print potentials and charges.'
         end if
 ! Should print info for the cavity and the solver here.
-      
-        write(*, *) '* References: '
-        write(*, *) '  - J. Tomasi, B. Mennucci and R. Cammi:'
-        write(*, *) '   "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999' 
-        write(*, *) '  - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem'
-        write(*, *) '    L. Frediani et al. '
+        call print_citation 
       end if
 
    end subroutine
@@ -116,7 +107,7 @@ module pcm_write
    subroutine pcm_write_file(nr_points, potentials, charges)
 
 ! Passed variables
-      integer, intent(in) :: nr_points
+      integer(4), intent(in) :: nr_points
       real(8), intent(in) :: potentials(nr_points)
       real(8), intent(in) :: charges(nr_points)
 ! Local variables
@@ -156,7 +147,7 @@ module pcm_write
    subroutine pcm_write_file_separate(nr_points, nuc_pot, nuc_chg, ele_pot, ele_chg)
 
 ! Passed variables
-      integer, intent(in) :: nr_points
+      integer(4), intent(in) :: nr_points
       real(8), intent(in) :: nuc_pot(nr_points), ele_pot(nr_points)
       real(8), intent(in) :: nuc_chg(nr_points), ele_chg(nr_points)
  
@@ -197,5 +188,20 @@ module pcm_write
       write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_nuc_chg + tot_ele_chg
     
    end subroutine 
+
+   subroutine host_writer(message, message_length) bind(c, name='host_writer')
+       
+      use, intrinsic :: iso_c_binding
+      
+      integer(c_size_t), intent(in) :: message_length
+      character(kind=c_char)        :: message(message_length)
+
+      if (global_print_unit .eq. -1) then
+        write(*, '(1000A)') message
+      else
+        write(global_print_unit, '(1000A)') message
+      end if
+
+   end subroutine host_writer
 
 end module

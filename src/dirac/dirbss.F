@@ -8595,7 +8595,8 @@ C
       CHARACTER*(*) LABINT(*)
       character*8 xa,ya,za
       DIMENSION xa(4),ya(4),za(5)
-      CHARACTER*18 AFN
+      CHARACTER*20 AFN
+      CHARACTER*3 file_tag
 #include "amfi_if.h"
 c     logical dirbss_verbose
 
@@ -8981,17 +8982,28 @@ C     ... file name for AMFI integrals of center
 !      mi/aug2013: oups,right ! fix is below
        nuc_indx=icenter - icenter_tmp + 1
        write(LUPRI,'(3x,a,i2)') 'unique nuclei index:',nuc_indx
-!mi: if necessary, check CHRNOS(nuc_indx) for large values of nuc_indx...
+       if(nuc_indx < 10)then
+         file_tag=CHRNOS(nuc_indx)
+       else if(nuc_indx < 100)then
+         file_tag=CHRNOS(nuc_indx/10)//CHRNOS(MOD(nuc_indx,10))
+       else if(nuc_indx < 1000)then
+         file_tag=CHRNOS(nuc_indx/100)//
+     &            CHRNOS(MOD(nuc_indx,100)/10)//
+     &            CHRNOS(MOD( MOD(nuc_indx,100), 10))
+       else
+        CALL QUIT('AMFIIN: nucl.indx > 1000! This is not supported!')
+       end if
+
        IF (ICHARGE.LT.10) THEN
-        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)//'.'//CHRNOS(nuc_indx)
+        AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE)//'.'//file_tag
        ELSE IF (ICHARGE.LT.100) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/10)//CHRNOS(MOD(ICHARGE,10))
-     &                     //'.'//CHRNOS(nuc_indx)
+     &                     //'.'//file_tag
        ELSE IF (ICHARGE.LT.1000) THEN
         AFN='AOPROPER_MNF.'//CHRNOS(ICHARGE/100)//
      &                       CHRNOS(MOD(ICHARGE,100)/10)//
      &                       CHRNOS(MOD( MOD(ICHARGE,100), 10) )
-     &                      //'.'//CHRNOS(nuc_indx)
+     &                      //'.'//file_tag
        ELSE
         CALL QUIT('AMFIIN: nucl.charge > 1000! This is not supported!')
        ENDIF

@@ -183,7 +183,9 @@ contains
      read(81) dmat
      close(81,status="delete")
 
-     !> read the F1 Fock matrix in AO basis from file
+     !> read from DFFCKT (full Fock matrix): ok if FOC not for AOC!
+
+     !> read the F1+F2 Fock matrix in AO basis from file
      open(81,file='4cf1f2AO',status='old',form='unformatted',       &
           access='sequential',action='read',position='rewind')
      read(81) fmat
@@ -674,7 +676,7 @@ contains
        print *, 'read_normalized_2e_soc: col dimension does not fit',ncol_tmp,ncol
        call quit( 'read_normalized_2e_soc: col dimension does not fit' )
      end if
-     if(nz_tmp   /= 4   )then
+     if(nz_tmp   /= nz   )then
        print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp
        call quit( 'read_normalized_2e_soc: nz  dimension does not fit' )
      end if
