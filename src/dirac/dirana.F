@@ -1330,7 +1330,7 @@ C       reference orbitals are followed by molecular ones
 C
       NCDIM = 0
       DO IFRP = 1,NFSYM
-        NCDIM    = NCDIM + NFBAS(IFRP,0)*NVECS(IFRP,0)*NZ
+        NCDIM = NCDIM + NFBAS(IFRP,0)*NVECS(IFRP,0)*NZ
       ENDDO
       CALL MEMGET('REAL',KCSEL,NCDIM,WORK,KFREE,LFREE)
 C
@@ -3695,6 +3695,7 @@ C***********************************************************************
       PARAMETER(D0=0.0D0)
 C
 #include "nuclei.h"
+#include "dcbgen.h"
 #include "dcbprj.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -3710,6 +3711,7 @@ C
       KFRSAV=KFREE
       POLT = D0
       IF(PATOMS) THEN
+C.....Analysis in molecular symmetry in terms of individual atoms
         KBUF   = KFREE
         NMOL   = NVECS(1,2)
         NREF   = NVECS(1,1)
@@ -3758,12 +3760,15 @@ C.......ntot   = nmol + nref
         deallocate(JMOL)
         deallocate(JREF)
       ELSE
+C.....Analysis in terms of symmetry-adapted fragments
         CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
         CALL GTOVLT(WORK(KSMAT),SSMTRC,0)
         ISOFF = KSMAT
         ICOFF = 1
         IVOFF = 1
         IBOFF = 1
+        NBDIM = 0
+        NCDIM = 0
         DO IFRP = 1,NFSYM
           KBUF   = KFREE
           NMOL   = NVECS(IFRP,2)
@@ -3771,6 +3776,8 @@ C.......ntot   = nmol + nref
 C.........ntot   = nmol + nref
           NTOT   = NVECS(IFRP,0)
           NBAS   = NFBAS(IFRP,0)
+          NBDIM  = NBDIM + NTOT*NMOL*NZ
+          NCDIM  = NCDIM + NBAS*NTOT*NZ
           allocate(NFRAGV(NREFS))
           allocate(OCC(NMOL))
           allocate(JMOL(3,NMOL))
@@ -3816,24 +3823,23 @@ C.........ntot   = nmol + nref
           ENDDO
           WRITE(LUPRI,'(3X,A,F10.4)') 'Polarization: ',POLT
         ENDIF
+C
+C       Dump reference and projection coefficients to file
+C       ==================================================
+C
+        CALL OPNFIL(LUCOEF,'DFPRJC','UNKNOWN','ANAPR1')
+        WRITE(LUCOEF) NREFS
+        DO IFRP = 1,NFSYM
+C         Dimensions....NREF..........NMOL.........
+          WRITE(LUCOEF) NVECS(IFRP,1),NVECS(IFRP,2),
+     &                 (NSTR(IFRP,0,I),I=1,NREFS)
+        ENDDO
+C.......Reference + polarization coefficients
+        CALL WRITT(LUCOEF,NCDIM,CSEL)
+C.......Projection coefficients
+        CALL WRITT(LUCOEF,NBDIM,BVEC)
+        CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
-C
-C     Dump reference and projection coefficients to file
-C     ==================================================
-C
-C      CALL OPNFIL(LUCOEF,'DFPRJC','UNKNOWN','PRJANA')
-C      WRITE(LUCOEF) NREFS
-C      DO IFRP = 1,NFSYM
-C       Dimensions....NREF..........NMOL.........
-C        WRITE(LUCOEF) NVECS(IFRP,1),NVECS(IFRP,2),
-C     &                (NSTR(IFRP,0,I),I=1,NREFS)
-C      ENDDO
-C.....Reference + polarization coefficients
-C      CALL WRITT(LUCOEF,NCDIM,WORK(KQ(1,1)))
-C.....Projection coefficients
-C      CALL WRITT(LUCOEF,NBDIM,WORK(KBV(1)))
-C      CLOSE(LUCOEF,STATUS='KEEP')
-
 C
       CALL QEXIT('ANAPR1')
       RETURN
