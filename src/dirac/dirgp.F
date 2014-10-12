@@ -2106,9 +2106,8 @@ C***********************************************************************
 #include "priunit.h"
       DIMENSION CMO1(NBAS,NMO1,NZ),CMO2(NBAS,NMO2,NZ),IBUF(*)
 C
-      DO I = 1,NBAS
-        WRITE(6,*) I,IBUF(I)
-      ENDDO     
+CTROND
+      WRITE(6,*) 'TEST..acmou2 ',NZ
       DO IZ = 1,NZ
         DO J = 1,NMO2
           DO I = 1,NBAS
@@ -3614,13 +3613,13 @@ C
 C     Written by T. Saue Mar 3 2008
 C
 C***********************************************************************
-      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -3639,6 +3638,8 @@ C
       integer, allocatable :: INUC(:)
       integer, allocatable :: IBUF(:)
 C
+      IPRINT = IPRGEN
+C
 C     First check if file DFACMO is there
 C
       INQUIRE(FILE='DFACMO',EXIST=TOBE)
@@ -3648,13 +3649,13 @@ C
           CALL QUIT('ACMOIN: Unformatted file DFACMO not found !')
       ENDIF
 C     Allocate arrays
-      call alloc(CMO1,  N2BBASX*4, id="CMO1 in ACMOIN")
-      call alloc(CMO2,  N2BBASX*4, id="CMO2 in ACMOIN")
-      call alloc(EIG1,  NORBT,     id="EIG1 in ACMOIN")
-      call alloc(EIG2,  NORBT,     id="EIG1 in ACMOIN")
-      call alloc(IBEIG1,NORBT,     id="IBEIG1 in ACMOIN")
-      call alloc(IBEIG2,NORBT,     id="IBEIG2 in ACMOIN")
-      call alloc(IBUF,  NTBAS(0)*2,id="IBUF in ACMOIN")
+      allocate(CMO1(N2BBASX*4))
+      allocate(CMO2(N2BBASX*4))
+      allocate(EIG1(NORBT))
+      allocate(EIG2(NORBT))
+      allocate(IBEIG1(NORBT))
+      allocate(IBEIG2(NORBT))
+      allocate(IBUF(NTBAS(0)*2))
 C
 C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
@@ -3668,9 +3669,6 @@ C
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 
-!miro: assign IPRINT from dcbgen.h
-      IPRINT = IPRGEN
-
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
      &    '* ACMOIN : Coefficients read from DFACMO'
@@ -3680,7 +3678,7 @@ C
 C
 C     Find correct ordering of nuclei
 C
-      call alloc(INUC,NTBAS(0),id="INUC in ACMOIN")
+      allocate(INUC(NTBAS(0)))
       CALL LSQMA1(INUC)
       I1 = 0
       I2 = 0
@@ -3695,12 +3693,12 @@ C
         ENDDO
         I1 = I1 + NTBAS(IC)
       ENDDO
-      call dealloc(INUC)
+      deallocate(INUC)
 C
 C     Get correct row ordering (NBAS) --> stored in CMO1     
 C     ==================================================
 C
-      CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF)
+      CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF,4)
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
      &    '* ACMOIN : row-ordered coefficients'
@@ -3757,13 +3755,13 @@ C     now I simply set IBEIG1 to zero.
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     De-allocate arrays
-      call dealloc(CMO1,  id="CMO1 in ACMOIN")
-      call dealloc(CMO2,  id="CMO2 in ACMOIN")
-      call dealloc(EIG1,  id="EIG1 in ACMOIN")
-      call dealloc(EIG2,  id="EIG1 in ACMOIN")
-      call dealloc(IBEIG1,id="IBEIG1 in ACMOIN")
-      call dealloc(IBEIG2,id="IBEIG2 in ACMOIN")
-      call dealloc(IBUF,  id="IBUF in ACMOIN")
+      deallocate(CMO1)
+      deallocate(CMO2)
+      deallocate(EIG1)
+      deallocate(EIG2)
+      deallocate(IBEIG1)
+      deallocate(IBEIG2)
+      deallocate(IBUF)
 C
       RETURN
       END
