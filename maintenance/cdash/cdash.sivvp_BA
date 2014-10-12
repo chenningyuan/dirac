@@ -2,6 +2,8 @@
 
 echo "Working host is: "; hostname -f
 
+source ~/.bashrc
+
 #source  /opt/intel/bin/compilervars.sh  intel64
 #echo "Intel Fortran/C/C++ commercial compilers with MKL library activated."
  #  source /shared/home/ilias/intel_suite/bin/compilervars.sh intel64
