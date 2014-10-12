@@ -34,10 +34,10 @@ test.run(['CH4.inp'], ['CH4.mol'], f, args='--copy="AF*"')
 
 # cleanup
 os.unlink('DFACMO')
-#os.unlink('DFCAT')
-os.unlink('DFHAT1')
-os.unlink('DFHAT2')
-os.unlink('DFHAT3')
-os.unlink('DFHAT4')
+os.unlink('AFCXXX')
+os.unlink('AFH1XX')
+os.unlink('AFH2XX')
+os.unlink('AFH3XX')
+os.unlink('AFH4XX')
 
 sys.exit(test.return_code)
