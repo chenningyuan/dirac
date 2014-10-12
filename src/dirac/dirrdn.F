@@ -215,6 +215,7 @@ C
 !     *PCM
 !     *PCMSOL      
 !     *AooSOC
+!     *QCORR
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
 
@@ -1042,7 +1043,9 @@ C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
 !     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
+#ifdef MOD_AOOSOC
       if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
+#endif
       ATOMST=.FALSE.
       ATHUCK = .FALSE.
       HUCPAR = 1.5D0
@@ -2507,7 +2510,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 18, NTABLE = 23)
+      PARAMETER (NDIR = 19, NTABLE = 23)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2524,7 +2527,7 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '*SCF   ','*KRCI  '/
+     &             '*SCF   ','*KRCI  ','*QCORR '/
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
@@ -2881,7 +2884,8 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), 
+     &                I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2980,6 +2984,12 @@ C
 !*KRCI
    18 continue
       CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
+      go to 200
+!*QCORR
+   19 continue
+      ! this is a cheat so that *QCORR section is parsed
+      ! by new input reader
+      call move_to_next_star(word, lucmd)
       go to 200
 
     1 CONTINUE

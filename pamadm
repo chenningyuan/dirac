@@ -207,7 +207,7 @@ def main():
     add_test('response_nonrel', 'short;response')
     add_test('cosci_energy', 'short;ci')
     add_test('esr', 'short;gascip;ci')
-
+    add_test('krci_energy_q_corrections', 'medium;krci;ci')
     # benchmarks, not run as part of standard test set
     add_test('benchmark_cc', 'benchmark;cc')
     add_test('benchmark_cc_linear', 'benchmark;cc')
@@ -406,6 +406,11 @@ def main():
     dirac_modules[this_module].add_test('dft_overlap_diagnostic')
     dirac_modules[this_module].add_test('dft_minnesota')
     dirac_modules[this_module].take_out_of_release()
+
+    this_module = 'qcorr'
+    dirac_modules[this_module] = dirac_module('qcorr', 'Davidson-type +Q corrections for (MR)CISD')
+    dirac_modules[this_module].add_cppflag('MOD_QCORR')
+    dirac_modules[this_module].add_directory('src/qcorr')
 
     # define input options
 

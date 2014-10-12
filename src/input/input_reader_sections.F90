@@ -66,6 +66,9 @@
         case ('**LANCZ')
            call read_input_lanczos(word, kw_section)
 
+        case ('*QCORR ')
+           call read_input_qcorr(word, kw_section)
+
         case ('**DIAG ')  ! Miro's standalone program
            call read_input_diagonalization_tests(word, kw_section)
 
@@ -1495,6 +1498,172 @@
 #else
       call quit('Atomic oo-order spin-orbit correction not included in this version')
 #endif
+
+   end subroutine
+
+   subroutine read_input_qcorr(word, kw_section)
+
+      use input_reader
+      use qcorr_cfg
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      character(len=400)               :: input_line
+      integer                          :: i, j, la, lb
+      integer                          :: ios, islash, ibar
+!     --------------------------------------------------------------------------
+
+#include "dgroup.h"
+
+      luci_cfg_qcorr = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, print_qcorr)
+      end if
+
+      if (kw_matches(word, '.CVORB ')) then
+         call kw_read(word, cvorb_qcorr, 2)
+      end if
+
+      if (kw_matches(word, '.REFFIL')) then
+
+        allocate(nash_qcorr(nfsym))
+
+        open(1234,file='refvec.luci',status='old',form='unformatted',    &
+        access='sequential',action="read",position='rewind')
+
+        read(1234) nref_qcorr, reference_energy_qcorr,nash_qcorr(1:nfsym)
+!       read # reference configurations
+        allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+        allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
+        do i = 1, nref_qcorr
+          read(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),  &
+                           ref_wavefunction_coeff_qcorr(i)
+          print *, ref_wavefunction_qcorr(i,1)(1:la)
+          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+          print *, ref_wavefunction_coeff_qcorr(i)
+
+        end do
+
+        close(1234,status="keep")
+        deallocate(ref_wavefunction_qcorr)
+        deallocate(ref_wavefunction_coeff_qcorr)
+        deallocate(nash_qcorr)
+
+      end if
+
+      if (kw_matches(word, '.REFDAT')) then
+         set_nash_q_qcorr = .false.
+         allocate(nash_qcorr(nfsym))
+         read(get_file_unit(), *) nash_qcorr(1:nfsym)
+!        read # reference configurations
+         call kw_read(word, nref_qcorr)
+         call kw_read(word, reference_energy_qcorr)
+         allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+         allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
+!        read reference configurations + coefficients
+
+!        process the reference configuration / coefficient
+         do i = 1, nref_qcorr
+
+           read(get_file_unit(),'(a)') input_line
+           call upcase(input_line)
+
+!          print *, 'ref input line is',input_line
+ 
+           islash = index(input_line,'/')
+           ibar   = index(input_line,'|')
+           if(islash <= 1)then
+             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                   i,'/',nref_qcorr,'- the defining input line does not contain a "/":',                         &
+                   '- the bad line : ',input_line
+             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                            ' Check the input.'
+             call quit('Input error for .REFDAT under *QCORR')
+           end if
+           if(ibar <= 1)then
+             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                   i,'/',nref_qcorr,'- the defining input line does not contain a "|":',                         &
+                   '- the bad line : ',input_line
+             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                            ' Check the input.'
+             call quit('Input error for .REFDAT under *QCORR')
+           end if
+
+!          alpha string
+           read(input_line(1:ibar-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,1)
+ 
+           if(ios /= 0)then
+             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                   i,'/',nref_qcorr,'- the defining input line does not contain an alpha string',                &
+                   '- the bad line : ',input_line
+             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                            ' Check the input.'
+             call quit('Input error for .REFDAT under *QCORR')
+           end if
+
+!          beta string
+           read(input_line(ibar+1:islash-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,2)
+ 
+           if(ios /= 0)then
+             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                   i,'/',nref_qcorr,'- the defining input line does not contain a beta string',                  &
+                   '- the bad line : ',input_line
+             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                            ' Check the input.'
+             call quit('Input error for .REFDAT under *QCORR')
+           end if
+
+!          coefficient of reference configuration
+           read(input_line(islash+1:),*,iostat=ios) ref_wavefunction_coeff_qcorr(i)
+
+           if(ios /= 0)then
+             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                   i,'/',nref_qcorr,'- the defining input line does not contain a coefficient',                  &
+                   '- the bad line : ',input_line
+             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                            ' Check the input.'
+             call quit('Input error for .REFDAT under *QCORR')
+           end if
+
+         end do
+ 
+         open(1234,file='refvec.luci',status='replace',form='unformatted',    &
+         access='sequential',action="readwrite",position='rewind')
+
+         write(1234) nref_qcorr, reference_energy_qcorr, nash_qcorr(1:nfsym)
+!        write # reference configurations
+         do i = 1, nref_qcorr
+
+           la = len(trim(ref_wavefunction_qcorr(i,1)))
+           lb = len(trim(ref_wavefunction_qcorr(i,2)))
+
+           write(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),               &
+                       ref_wavefunction_coeff_qcorr(i)
+
+!#define DEBUG_QCORR
+#ifdef DEBUG_QCORR
+           print *, ref_wavefunction_qcorr(i,1)(1:la)
+           print *, ref_wavefunction_qcorr(i,2)(1:lb)
+           print *, ref_wavefunction_coeff_qcorr(i)
+#endif
+
+         end do
+
+         close(1234,status="keep")
+         deallocate(ref_wavefunction_qcorr)
+         deallocate(ref_wavefunction_coeff_qcorr)
+         deallocate(nash_qcorr)
+
+      end if
+
+      call check_whether_kw_found(word, kw_section)
 
    end subroutine
 

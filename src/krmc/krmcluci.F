@@ -270,6 +270,7 @@ C***********************************************************************
 *
 C***********************************************************************
 *
+      use mc_energies
       use symmetry_setup_krci
       use os_utils
       use interface_to_mpi
@@ -309,6 +310,7 @@ CTF  global reference values for Z_BLKFO needed in MV7 !!
 #include "infpar.h"
 #include "parluci.h"
       integer global_scratch_disk
+      real(8) :: eref = 0.0d0
 !     integer(8) :: kbla_blubb
 C
 C*******************************************
@@ -577,7 +579,8 @@ C         ... reorder always at this point: RUN_SHMEM_T = .FALSE.
           IF( CIRUN .eq. 'IJKLRO' ) RUN_SHMEM_T = .FALSE.
 C
 ************************************************************
-          IF (CIRUN.ne.'ANALYZ') THEN
+          IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ' .and. 
+     &        CIRUN /= 'REFVEC')THEN
 CSK         IDUMMY ==> IT_TTPL
             call picasso(IPRTRA,MCSCF,
      &                   NL2D,IBU2D,ISM2D,F1,F2,DUMMY1,DUMMY2,
@@ -701,14 +704,17 @@ C               do CI in space JCMBPSC
 C
                 ISPC = JCMBSPC
                 ISM  = IREFSM
+                eref = emc_ref ! initialize...
 C
 C###############################################################
                 CALL GASCI_REL(F1,F2,
-     &                         IREFSM,JCMBSPC,IPRDIA,
+     &                         ISM,ISPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN,
      &                         WORK(KPROCLIST),WORK(KGROUPLIST))
 C###############################################################
 C
+                if(cirun == 'CIINII' .or. cirun == 'KR-CI ') 
+     &          eci_init = emc_ref ! transfer new value to the MCSCF world outside
 C               last space where vectors were stored
                 ISTOSPC = JCMBSPC
               END IF
@@ -1759,6 +1765,119 @@ C
       CALL LUCI_CLOSEDOWN()
 C
       END
+
+      SUBROUTINE LUCI_QCORR(CREF,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Calculate Davidson-type energy correction
+C
+C     Written by S. Knecht                 - Jan 12, 2014
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "krmcluci_inf.h"
+C
+#include "../luciarel/clunit.inc"
+C
+      CHARACTER*6 CIRUN
+C
+      DIMENSION WORK(*)
+C
+      KFRSAV = KFREE
+C
+      MZ = MIN(NZ,2)
+C
+      CIRUN = 'QCORR '
+C
+C     Introduce LUCIAREL action
+      CALL LUCI_TASK(CIRUN)
+C
+C     Transfer data to LUCIAREL common blocks.
+      CALL TRKRLUCI(CIRUN,0)
+C
+C     Setup routines for running LUCIAREL
+      CALL LUCI_SETUP()
+C
+      IF ( NCIROOT.EQ.1 .AND. MOPT_MXMACRO .gt. 0) THEN
+        IO_ANAL_IN = 1
+        IF (IO_ANAL_IN.EQ.1) THEN
+          REWIND LUC
+          CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
+     &                          DUMMY,1,
+     &                    DUMMY,1,DUMMY,1,
+     &                    2,MZ,
+     &                    LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+        END IF
+      ELSE IF (NCIROOT.GT.1) THEN
+        CONTINUE
+      END IF
+C
+C     Call LUCIAREL for analysis of CI vectors.
+      CALL KRMC_LUCI(DUMMY,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
+C
+      END
+
+      SUBROUTINE LUCI_refvec(CREF,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     save reference vector in format for QCORR module
+C
+C     Written by S. Knecht                 - Jan 13, 2014
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "krmcluci_inf.h"
+C
+#include "../luciarel/clunit.inc"
+C
+      CHARACTER*6 CIRUN
+C
+      DIMENSION WORK(*)
+C
+      KFRSAV = KFREE
+C
+      MZ = MIN(NZ,2)
+C
+      CIRUN = 'REFVEC'
+C
+C     Transfer data to LUCIAREL common blocks.
+      CALL TRKRLUCI(CIRUN,0)
+C
+C     Setup routines for running LUCIAREL
+      CALL LUCI_SETUP()
+C
+      IF(NCIROOT > 1) 
+     &call quit('refvec writing only for MCSCF wave function')
+      REWIND LUC
+      CALL KR_LUCI_IO(1,0,0,CREF,NZCONF*MZ,
+     &                DUMMY,1,
+     &                DUMMY,1,DUMMY,1,
+     &                2,MZ,
+     &                LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+C
+C     Call LUCIAREL for writing the reference vector in QCORR format
+      CALL KRMC_LUCI(DUMMY,DUMMY,WORK(KFREE),LFREE,DUMMY,CIRUN)
+C
+C     close files ...
+C
+      CALL LUCI_CLOSEDOWN()
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_RSTRMC(WORK,LWORK)      
 C***********************************************************************
@@ -2255,7 +2374,8 @@ C       Call LUCIAREL for calculating density matrix elements.
      &                  LFREE,DUMMY,CIRUN)
         CALL MEMREL('LUCIAREL_NODE',WORK,1,KFRSAV,KFREE,LFREE)
 C
-      ELSE IF( CIRUN .eq. 'ANALYZ' ) THEN 
+      ELSE IF(CIRUN == 'ANALYZ' .or. CIRUN == 'QCORR ' .or. 
+     &        CIRUN == 'REFVEC') THEN 
 C
 C       Call LUCIAREL for analyzing the wavefunction.
         CALL KRMC_LUCI2(DUMMY,DUMMY,WORK,LWORK,DUMMY,CIRUN)

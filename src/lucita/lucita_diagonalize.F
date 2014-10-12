@@ -4217,6 +4217,15 @@ C
  1601   CONTINUE
       END IF
       end if
+      ! for +Q correction
+      open(file="energies.CI",unit=10,status="unknown",
+     &     form="unformatted",access="sequential")
+!     TODO: check proper reference energies for states other than the ground state and MCSCF reference wave functions!!!
+      write(10) nroot,eig(1,1)+eigshf
+      print *, "bla : full eig(1,1)",eig(1,1)+eigshf
+      write(10) ((eig(iter,i)+eigshf),i=1,nroot)
+      close(10,status="keep")
+
 *
       CALL FLSHFO(6)
 *

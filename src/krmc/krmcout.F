@@ -61,6 +61,7 @@ C     Written by J. Thyssen - Nov 30 1998
 C     Last revision :
 C
 C***********************************************************************
+      use mc_energies
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -318,26 +319,32 @@ C     *** Output of CI vectors ***
 C     ****************************
 C
 C
-      IF ( NZCONF .GT. 0 .AND. IPROPT .GE. 1) THEN
-         CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
-         CALL REAKRMC(LUKRMC,'CREF    ',WORK(KCREF),NZCONFQ)
+      IF ( NZCONF .GT. 0) THEN
+        CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
+        CALL REAKRMC(LUKRMC,'CREF    ',WORK(KCREF),NZCONFQ)
+        IF (IPROPT .GE. 1) THEN
 C
-         WRITE(LUPRI,9500)
-         IF (IPROPT .GT. 2) CALL RPRVEC(NZCONF,WORK(KCREF),
-     &      1,NZ,IPQTOQ(1,0),THRPCI,200,LUPRI)
+          WRITE(LUPRI,9500)
+          IF (IPROPT .GT. 2) CALL RPRVEC(NZCONF,WORK(KCREF),
+     &       1,NZ,IPQTOQ(1,0),THRPCI,200,LUPRI)
 C
 C           Analyze CI vectors
 C
-         IF (OPT_CIPROGRAM .EQ. 'GASCIP') THEN
-            CALL GASCIP_ANACI(WORK(KCREF),NZCONF,WORK(KZCONF),
-     &                        THRPCI,WORK(KFREE),LFREE)
-         ELSE IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
-            CALL LUCI_ANAL(WORK(KCREF),WORK,KFREE,LFREE)
-         END IF
+           IF (OPT_CIPROGRAM .EQ. 'GASCIP') THEN
+              CALL GASCIP_ANACI(WORK(KCREF),NZCONF,WORK(KZCONF),
+     &                          THRPCI,WORK(KFREE),LFREE)
+           ELSE IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
+              CALL LUCI_ANAL(WORK(KCREF),WORK,KFREE,LFREE)
+           END IF
 C
-         CALL MEMREL('KRMCOU1.CI',WORK,1,KFRSAV,KFREE,LFREE)
- 9500    FORMAT(//' (KRMCOUT) Final CI vector'/1X,25('-')/)
-      END IF
+ 9500      FORMAT(//' (KRMCOUT) Final CI vector'/1X,25('-')/)
+        END IF
+        if(OPT_CIPROGRAM == 'LUCIAREL')then
+          emc_ref = emcscf
+          call luci_refvec(WORK(KCREF),WORK,KFREE,LFREE)
+        end if
+        CALL MEMREL('KRMCOU1.CI',WORK,1,KFRSAV,KFREE,LFREE)
+      end if
 C
 C
       CALL QEXIT('KRMCOU1')
