@@ -74,19 +74,19 @@ ctest -j2 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit
 
 ###############################################
-#  serial DIRAC buildup, GNU dynamic          #
+#  serial DIRAC buildup, GNU+MKL dynamic      #
 ###############################################
-BUILD_GNU=build_gnu_mkl_i8
+BUILD_GNU_MKL=build_gnu_mkl_i8
 cd $DIRAC
-echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_GNU"
+echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_GNU_MKL"
 #
-if [[ -d "$BUILD_INTEL_STATIC" ]]; then
-  echo "deleting previous build directory $BUILD_GNU"
-  /bin/rm -rf $BUILD_GNU
+if [[ -d "$BUILD_GNU_MKL" ]]; then
+  echo "deleting previous build directory $BUILD_GNU_MKL"
+  /bin/rm -rf $BUILD_GNU_MKL
 fi
-./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="topaz-TAU_gnu_mkl_i8" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU
-cd $BUILD_GNU
+./pamadm -a --builddir=$BUILD_GNU_MKL
+./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="topaz-TAU_gnu_mkl_i8" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU_MKL
+cd $BUILD_GNU_MKL
 python binary_info.py
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
@@ -94,6 +94,27 @@ ctest -D ExperimentalBuild
 ctest -j2 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit
 
+
+###############################################
+#  serial DIRAC buildup, GNU dynamic          #
+###############################################
+BUILD_GNU=build_gnu_i8
+cd $DIRAC
+echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_GNU"
+#
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU"
+  /bin/rm -rf $BUILD_GNU
+fi
+./pamadm -a --builddir=$BUILD_GNU
+./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --blas=builtin --lapack=builtin -D BUILDNAME="topaz-TAU_gnu_ownmath_i8" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU
+cd $BUILD_GNU
+python binary_info.py
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp
