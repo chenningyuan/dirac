@@ -75,7 +75,11 @@ def html_visit_displaymath(self, node):
     if self.builder.config.mathjax_generate_latex:
         latex = generate_latex_file(self, node)
         if latex:
-            self.body.append('<div><a href="%s">Download as Latex</a></div>\n' % latex)
+            title = self.builder.config.mathjax_latex_title
+            style = ''
+            if self.builder.config.mathjax_latex_style:
+                style = ' style="%s"' % self.builder.config.mathjax_latex_style
+            self.body.append('<div%s><a href="%s">%s</a></div>\n' % (style, latex, title))
     self.body.append('</div>\n')
     raise nodes.SkipNode
 
@@ -95,4 +99,6 @@ def setup(app):
     app.add_config_value('mathjax_inline', [r'\(', r'\)'], 'html')
     app.add_config_value('mathjax_display', [r'\[', r'\]'], 'html')
     app.add_config_value('mathjax_generate_latex', True, 'html')
+    app.add_config_value('mathjax_latex_title', 'Download as Latex', 'html')
+    app.add_config_value('mathjax_latex_style', 'text-align:right;font-size:14px;', 'html')
     app.connect('builder-inited', builder_inited)

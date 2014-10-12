@@ -214,3 +214,8 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+# mathjax config
+mathjax_generate_latex = True
+mathjax_latex_style = 'font-size:14px;text-align:right;'
+mathjax_latex_title = 'Save as Latex'
