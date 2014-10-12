@@ -812,9 +812,9 @@ C
 *         ^ End if print of CI vector
         END IF
         IF (NPROP.GT.0) CALL ONE_EL_PROP
-        call q_correction(WORK(KVEC1),NBLOCK,WORK(KLCIBT),
-     &                    WORK(KLCBLTP),LUC,LUSC1,
-     &                    ICISTR,1,WORK,.false.)
+!       call q_correction(WORK(KVEC1),NBLOCK,WORK(KLCIBT),
+!    &                    WORK(KLCBLTP),LUC,LUSC1,
+!    &                    ICISTR,1,WORK,.false.)
       END DO
       END IF
 *    /\ end over master

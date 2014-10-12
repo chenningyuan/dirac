@@ -30,11 +30,11 @@ test.run(['C.inp'], ['C.mol'], args='--get=DFACMO')
 shutil.copy('DFACMO', 'AFCXXX')
 
 #test.run(['CH4.inp'], ['CH4.xyz'], f, args='--copy="AFCXXX AFH1XX AFH2XX AFH3XX AFH4XX"')
-test.run(['CH4.inp'], ['CH4.xyz'], f, args='--copy="AF*"')
+test.run(['CH4.inp'], ['CH4.mol'], f, args='--copy="AF*"')
 
 # cleanup
 os.unlink('DFACMO')
-os.unlink('DFCAT')
+#os.unlink('DFCAT')
 os.unlink('DFHAT1')
 os.unlink('DFHAT2')
 os.unlink('DFHAT3')
