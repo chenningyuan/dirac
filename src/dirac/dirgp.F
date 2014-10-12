@@ -3635,7 +3635,6 @@ C
       real(8), allocatable :: EIG2(:)
       integer, allocatable :: IBEIG1(:)
       integer, allocatable :: IBEIG2(:)
-      integer, allocatable :: INUC(:)
       integer, allocatable :: IBUF(:)
 C
       IPRINT = IPRGEN
@@ -3675,25 +3674,9 @@ C
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
-C
 C     Find correct ordering of nuclei
+      CALL NUCORD(IBUF)
 C
-      allocate(INUC(NTBAS(0)))
-      CALL LSQMA1(INUC)
-      I1 = 0
-      I2 = 0
-      DO IC = 1,2
-        DO ICENT = 1,NUCDEP
-          DO IB = 1,NTBAS(IC)
-          IF(INUC(I1+IB).EQ.ICENT) THEN
-            I2 = I2 + 1
-            IBUF(I1+IB) = I2
-          ENDIF
-          ENDDO
-        ENDDO
-        I1 = I1 + NTBAS(IC)
-      ENDDO
-      deallocate(INUC)
 C
 C     Get correct row ordering (NBAS) --> stored in CMO1     
 C     ==================================================
@@ -4655,38 +4638,17 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "nuclei.h"
       DIMENSION CAO(*),CSO(*),NVEC(2)
       real(8), allocatable :: CBUF(:)
-      integer, allocatable :: INUC(:)
       integer, allocatable :: IBUF(:)
       allocate(IBUF(NTBAS(0)))
       IF(IOPT.EQ.1) THEN
-C
-C       Find correct ordering of nuclei
-C       ===============================
-        allocate(INUC(NTBAS(0)))
-        CALL LSQMA1(INUC)
-        ICOFF = 0
-        I2    = 0
-        DO IC = 1,MC
-          DO ICENT = 1,NUCDEP
-            DO IB = 1,NTBAS(IC)
-            IF(INUC(ICOFF+IB).EQ.ICENT) THEN
-              I2 = I2 + 1
-              IBUF(I2) = ICOFF+IB
-            ENDIF
-            ENDDO
-          ENDDO
-          ICOFF = ICOFF + NTBAS(IC)
-        ENDDO
-        deallocate(INUC)
+        CALL NUCORD(IBUF)
       ELSE
         DO I = 1,NTBAS(0)
           IBUF(I) = I
@@ -4721,3 +4683,40 @@ C     NBSYM.EQ.1, implies C1 !!! Check how to handle that...
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Nucord */
+      SUBROUTINE NUCORD(IBUF)
+C***********************************************************************
+C
+C     Find correct ordering of nuclei.
+C     Written by Trond Saue
+C
+C***********************************************************************C
+#include "implicit.h"
+#include "mxcent.h"
+      DIMENSION IBUF(*)
+      integer, allocatable :: INUC(:)
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "nuclei.h"
+C
+      allocate(INUC(NTBAS(0)))
+      CALL LSQMA1(INUC)
+      I1 = 0
+      I2 = 0
+      DO IC = 1,MC
+        DO ICENT = 1,NUCDEP
+          DO IB = 1,NTBAS(IC)
+          IF(INUC(I1+IB).EQ.ICENT) THEN
+            I2 = I2 + 1
+            IBUF(I1+IB) = I2
+          ENDIF
+          ENDDO
+        ENDDO
+        I1 = I1 + NTBAS(IC)
+      ENDDO
+      deallocate(INUC)
+C
+      RETURN
+      END
+
