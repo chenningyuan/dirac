@@ -47,7 +47,7 @@ echo -e "\n\n Running DIRAC cdash buildups at "$timestamp ; echo -e "\n\n"
 DIRAC=/shared/home/ilias/Work/software/dirac/trunk
 
 #export LC_ALL=C
-export MKL_NUM_THREADS=${NPROCS_PBS}
+export MKL_NUM_THREADS=1
 export MKL_DYNAMIC="FALSE"
 export OMP_NUM_THREADS=1
 #
