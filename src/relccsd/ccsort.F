@@ -1244,7 +1244,14 @@ C
 C
       IJKL = 1
       DO KLREP = 1, NREP
+<<<<<<< HEAD
        DO 10 LREP = 1, NREP
+=======
+!       write(*,*)'offset and NPAIR',OFF(KLREP),NPAIR(KLREP)
+       DO 10 LREP = 1, NREP
+!           write(*,*)'dimensions',LREP,IFIE(LREP),JFIE(LREP),KFIE(LREP),
+!     &       LFIE(LREP)
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
          KREP = MULTB(LREP,KLREP+NREP,2)
         DO L = 1, LFIE(LREP)
          DO K = 1, KFIE(KREP)
@@ -1264,11 +1271,19 @@ C
            ILKJ0 = OFF(KJREP) 
      &          + (OFF1(KREP,JREP)+K-1)*NPAIR(ILREP)
            ILKJ0 = ILKJ0 + OFF2(IREP,LREP) + (L-1)*IFIE(IREP)
+<<<<<<< HEAD
 
            JLKI0 = OFF(JLREP) 
      &          + (OFF1(KREP,IREP)+K-1)*NPAIR(JLREP)
            JLKI0 = JLKI0 + OFF2(JREP,LREP) + (L-1)*JFIE(JREP)
 
+=======
+
+           JLKI0 = OFF(JLREP) 
+     &          + (OFF1(KREP,IREP)+K-1)*NPAIR(JLREP)
+           JLKI0 = JLKI0 + OFF2(JREP,LREP) + (L-1)*JFIE(JREP)
+
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 !           write(*,*)'OFF1=',KREP,JREP,OFF1(KREP,JREP)
           
            DO J = 1, JFIE(JREP)

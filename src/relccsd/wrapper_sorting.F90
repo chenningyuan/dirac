@@ -37,6 +37,7 @@
     type presorting
        real*8, allocatable :: presorted(:) 
     endtype
+<<<<<<< HEAD
    external SRT1SS4
    external SRT1L1
    external SRT1C1
@@ -81,6 +82,43 @@
 !!   end subroutine SRT20D
 
 !!  end interface  
+=======
+
+
+   abstract interface
+   
+     subroutine SRT1SS4
+     end subroutine SRT1SS4
+
+     subroutine SRT1L1
+     end subroutine SRT1L1
+
+!     subroutine SRT1C1
+!     end subroutine SRT1C1
+
+     subroutine SRT16
+     end subroutine SRT16
+
+     subroutine SRT1R1
+     end subroutine SRT1R1
+
+     subroutine SRT1TT4
+     end subroutine SRT1TT4
+
+     subroutine SRT36 
+     end subroutine SRT36 
+
+     subroutine SRT22
+     end subroutine SRT22
+
+     subroutine SRT26
+     end subroutine SRT26
+
+     subroutine SRT20D
+     end subroutine SRT20D
+
+    end interface  
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 
     CONTAINS
     
@@ -103,7 +141,11 @@
    
 
 !   call integral_fetching_incore(V) 
+<<<<<<< HEAD
   ! call v_for_blas (vorder, worder, torder, vtrans, v_final)
+=======
+   call v_for_blas (vorder, worder, torder, vtrans, v_final)
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 
    end subroutine
 
@@ -234,10 +276,17 @@
 
   end subroutine
 
+<<<<<<< HEAD
   subroutine v_for_blas (array_left, torder, worder, vtrans, v_sorted, row, column)
 
 !--------------calling variables---------------
     character (*), dimension(4), intent(in),target :: array_left
+=======
+  subroutine v_for_blas (array_left, worder, torder, vtrans, v_sorted)
+
+!--------------calling variables---------------
+    character (2), dimension(4), intent(in),target :: array_left
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
     character (*), dimension(:), intent(in) :: worder, torder
 !    real*8, dimension(:), intent(in) :: v_presorted
     character (*), intent(out)              :: vtrans
@@ -267,15 +316,26 @@
     type(sorting_list) :: srt(0:5)
        srt(1)%unrestricted =>  SRT1SS4   
        srt(2)%unrestricted =>  SRT1L1    
+<<<<<<< HEAD
        srt(3)%unrestricted =>  SRT1C1    
+=======
+!       srt(3)%unrestricted =>  SRT1C1    
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
        srt(4)%unrestricted =>  SRT16     
        srt(5)%unrestricted =>  SRT1R1
        srt(1)%restricted_braket   =>  SRT1TT4
 !      srt(1)%restricted(2) =  SRT1LS1
+<<<<<<< HEAD
        srt(1)%restricted_bra => SRT36
        srt(1)%restricted_ket => SRT22
        srt(2)%restricted_ket => SRT26
        srt(3)%restricted_ket => SRT20D
+=======
+       srt(2)%restricted_bra   =>  SRT36
+       srt(3)%restricted_ket   =>  SRT22
+       srt(4)%restricted_ket   =>  SRT26
+       srt(5)%restricted_ket   =>  SRT20D
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 !------------------------------
 !      allocate(v_sorted(size(v_presorted))) 
 
@@ -415,6 +475,7 @@
 !      l = 3
 !    do i = 1, 4       ! loop over vorder 
 !      do j = 1, 2     ! loop over worder 
+<<<<<<< HEAD
 
 !           if (array_exchange(i).eq.worder(j)) then
 !              reorder_v(k) = i
@@ -434,6 +495,27 @@
 
 !   t_transpose = (torder(1)/=array_exchange(reorder_v(3)))
 
+=======
+
+!           if (array_exchange(i).eq.worder(j)) then
+!              reorder_v(k) = i
+!              k = k+1
+!              exit
+!              elseif (array_exchange(i).eq.torder(j)) then !this is not completely general. I have to change it.
+!              reorder_v(l) = i
+!              l = l+1
+!           endif
+!      
+!      enddo
+!    enddo
+
+
+     call align_array(array_exchange, worder, torder, reorder_v)
+
+
+!   t_transpose = (torder(1)/=array_exchange(reorder_v(3)))
+
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 !   if (dim_t == 2) then
 !     if (t_transpose) then
 !      temp = reorder_v(3)
@@ -445,7 +527,10 @@
     a%num   = num(reorder_v)
     a%trans = num(reorder_v,.true.)    
 
+<<<<<<< HEAD
      write(*,*)'reorder v', (reorder_v(i),i=1,4)
+=======
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 
     call match_array (arraytype,a%num, a%trans, no_match, save_index,vtrans)
 
@@ -465,6 +550,10 @@
 
      call integral_fetching_incore(V) 
 
+<<<<<<< HEAD
+=======
+    write(*,*)'going for hunting2'
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
      if (save_index > 0) then
 
      if (arraytype == 'unrestricted') then
@@ -480,6 +569,7 @@
 
      if (arraytype == 'restricted_bra') then
      
+<<<<<<< HEAD
   
      write(*,*)'reorder v', (reorder_v(i),i=1,4)
  
@@ -500,6 +590,21 @@
  
      deallocate(V%presorted)
  
+=======
+    write(*,*)'going for hunting..',(reorder_v(i),i=1,4),v_exchange 
+
+   
+     call input_index(array_exchange,v_exchange,reorder_v,c,d)
+
+  write(*,*)'value of some indices',c(d%bra)%pair_combInd(1)
+!     call srt(save_index)%restricted_bra(nrep, multb, ltr, lfa, a(b%I)%orbital_type, a(b%J)%orbital_type,&
+!        &   c(d%k)%orbital_type, c(d%L)%orbital_type,c(d%bra)%pair_combInd,c(d%braKet)%full_array,c(d%ket)%pair,&
+!        &   c(d%bra)%pair,V%presorted,v_sorted)  
+    
+      write(*,*)'successfully called the subroutine'
+ 
+     deallocate(V%presorted) 
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
      endif
 
      if (arraytype == 'restricted_ket') then
@@ -626,8 +731,12 @@
          allocate(G%presorted(NV2))
 !       end select
 
+<<<<<<< HEAD
 
        call SRT1C1 (NREP,NVO,NOOT,VVOOO,G%presorted) 
+=======
+       call SRT1C1 (NREP,MVO,MOO,VVOOO,G%presorted) 
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 
        deallocate(VVOOO) 
 
@@ -690,6 +799,7 @@
   allocate (bit_reordered(size(array_original)))
   allocate (bit_original(size(array_original)))
 
+<<<<<<< HEAD
   if (v_exchange) then
   bit_reordered = bitString (array_exchange, reorder_v)
   bit_original  = bitString (array_exchange, (/1,2,3,4/)) 
@@ -698,6 +808,20 @@
   bit_original  = bitString (array_original, (/1,2,3,4/)) 
   endif
 
+=======
+  write(*,*)'exchange',v_exchange
+  write(*,*)'reorder',(array_exchange(i),i=1,4)
+
+  if (v_exchange) then
+  bit_reordered = bitString (array_exchange, reorder_v)
+  else
+  bit_reordered  = bitString (array_original, reorder_v)
+  endif
+  bit_original  = bitString (array_original, (/1,2,3,4/)) 
+
+
+  write(*,*)'bit reordered', bit_reordered(4)
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 
 ! be careful. this is not general. I have to think of different algorithm for (2,2)->(1,3) or (3,1) case.
 

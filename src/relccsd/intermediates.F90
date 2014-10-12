@@ -75,6 +75,7 @@
 !F_bar_mi = F_bar_mi + V(mn, ei) * T1(e,n) --> V(mi,en) * T1(en) 
 !---------------------------------------------------------------
 
+<<<<<<< HEAD
 !     allocate(vooo(nv2))
 !     allocate(vooo_sorted(nv2))
 !     
@@ -96,13 +97,91 @@
 
 
   !  CALL XGEMV (vtrans,MOO,MVO,-A1,v_sort,MOO,T1,1,A1,HO,1)
+=======
+      allocate(vooo(nv2))
+      allocate(vooo_sorted(nv2))
+      
+      vooo = 0.0d0
+      vooo_sorted=0.0d0
+      CALL GETVOOO (vooo)
+      CALL DELINT ('VOOO','DKDD',vooo,0,0,0)
+
+      CALL SRT1C1 (NREP,NVO,NOOT,vooo,vooo_sorted)
+
+<<<<<<< HEAD
+
+!      do x =1, NV2
+!       if (BUF2(x) > 1.0D-9) then
+!       write(58,*)BUF2(x)
+!       endif 
+!     enddo
+
+
+!     do irp = 1, nrep
+!      write(*,*)irp,'mvo=',mvo(irp),'nvo=',nvo(irp)
+!      write(*,*)irp,'moo=',moo(irp),'noo=',noot(irp)
+!      write(*,*)'value of NV2',NV2, 'value of VOOO dimension',mvo(irp)*moo(irp)
+!     enddo
+
+      CALL SRT36 (NREP,MULTB,LTR,LFA,NO,NO,NV,NO,MOO,JVOOO,JJVO,JJOO,&
+    &            vooo_sorted,BUF3)
+
+
+!     IJKL=0
+!     DO KLRP = 1, NREP
+!     DO 10 LRP = 1, NREP
+!     KRP = MULTB(LRP,KLRP+NREP,2)
+!     DO L = 1, NO(LRP)
+!        DO K = 1, NV(KRP)
+!           DO 20 JRP = 1, NREP
+!           IRP = MULTB(JRP,KLRP+NREP,2)
+!           DO J = 1, NO(JRP)
+!              IMIN = 1
+!              IF (IRP.EQ.JRP) IMIN = J + 1
+!              DO I = IMIN, NO(IRP)
+!                 IJKL = IJKL + 1
+!                 if (abs(BUF3(IJKL)) > 1.0D-2) then
+!                 write(11,*)REPNA(IRP),I,REPNA(JRP),J,REPNA(KRP),K,REPNA(LRP),L,BUF3(IJKL)
+!                 endif
+
+!                 if (abs(BUF2(IJKL)) > 1.0D-2) then
+!                 write(12,*)REPNA(IRP),I,REPNA(JRP),J,REPNA(KRP),K,REPNA(LRP),L,vooo_sorted(IJKL)
+!                 endif 
+!              ENDDO
+!           ENDDO
+!20         CONTINUE
+!        ENDDO
+!     ENDDO
+!10   CONTINUE
+!     ENDDO
+
+
+!      do x = 1, NV2
+!       if (BUF3(x) > 1.0D-9) then
+!       write(*,*)'new',BUF3(x),'old',vooo_sorted(x),'oldest',vooo(x)
+!       endif 
+!     enddo
+
+=======
+      CALL SRT36 (NREP,MULTB,LTR,LFA,NO,NO,NV,NO,MOO,JVOOO,JJVO,JJOO,&
+    &            vooo_sorted,BUF3)
+
+>>>>>>> f42c5a8eeca83a5f4727e3b385b6a03df58837b6
+     deallocate(vooo_sorted)
+
+    CALL XGEMV ('N',MOO,MVO,-A1,BUF3,MOO,T1,1,A1,HO,1)
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 
 !--------part of old code-----------
 !      CALL SRT26 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO, &
 !     &            vooo,BUF2)
 
 
+<<<<<<< HEAD
 !     deallocate(vooo)
+=======
+     deallocate(vooo)
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 !     CALL SRT1C1 (NREP,MVO,MOO,BUF2,BUF3)
 
 !     CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1)
@@ -114,7 +193,11 @@
       call contraction_222 (FVO, NFVO, T1, ndimt1, HO, 'C', 'N', 'N', &
            &        NO, NO, NV, A1, A1)
   
+<<<<<<< HEAD
 !      call sort_22_unrestricted((/"o1","o3","o2","p1"/),(/"p1","o3"/),(/"o1","o2"/),vtrans)
+=======
+      call sort_22_unrestricted((/"o1","o3","o2","p1"/),(/"p1","o3"/),(/"o1","o2"/),vtrans)
+>>>>>>> 6da04c9f1b49f5425a4f6bb72c613c5e184d5ad0
 
 
 
