@@ -141,9 +141,10 @@ else()
 endif()
 
 if(ENABLE_PCMSOLVER)
-    find_package(PythonLibs)
+    include(SetPythonHintVariables)
+    set_python_hint_variables(pyLibsFound pyLibs pyInclude pyInclude2) 
     find_package(ZLIB)
-    if(NOT PYTHONLIBS_FOUND AND NOT ZLIB_FOUND)                              
+    if(NOT pyLibsFound AND NOT ZLIB_FOUND)
         set(ENABLE_PCMSOLVER OFF)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
@@ -156,8 +157,12 @@ if(ENABLE_PCMSOLVER)
     else()
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-	set(PCMSOLVER_TESTS ON)
+        set(PCMSOLVER_TESTS ON)
         set(ExternalProjectCMakeArgs
+            # PCMSolver does not know profile
+            if(CMAKE_BUILD_TYPE MATCHES "profile")
+                set(CMAKE_BUILD_TYPE "release")
+            endif
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
@@ -171,9 +176,9 @@ if(ENABLE_PCMSOLVER)
             -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-            -DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
-            -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
-            -DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
+	    -DPYTHON_LIBRARY=${pyLibs} # location of the .so version of libpython
+	    -DPYTHON_INCLUDE_DIR=${pyInclude}   # location of Python.h
+            -DPYTHON_INCLUDE_DIR2=${pyInclude2} # location of pyconfig.h
 	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
          )
         
