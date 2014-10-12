@@ -118,6 +118,25 @@ ctest -j2 -D ExperimentalBuild
 ctest -j2 -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit
 
+#####################################################
+#        serial DIRAC buildup with GNU+ownmath
+#####################################################
+BUILD_GNU=build_gnu_ownmath_i8
+echo -e "\n\n Running serial DIRAC buildup in $BUILD_GNU"
+cd $DIRAC
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU"
+  /bin/rm -rf $BUILD_GNU
+fi
+./pamadm -a --builddir=$BUILD_GNU
+./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-BA_GNU_ownmath_i8" --blas=builtin --lapack=builtin  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+cd $BUILD_GNU
+python binary_info.py
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -j2 -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy 
+ctest -D ExperimentalSubmit
 
 #####################################################
 #        serial DIRAC buildup with PGI+mkl
