@@ -50,6 +50,7 @@ else()
         set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
         set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
 
+
         if(DEFINED MKL_FLAG)
             set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
         endif()
@@ -77,6 +78,11 @@ else()
                 "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
                 )
         endif()
+
+# append extra fortran flags for specific routinesi
+        file(GLOB targetFiles src/relccsd/*.F90)
+        set_source_files_properties(${targetFiles} PROPERTIES
+                                      COMPILE_FLAGS "-gen-interfaces -warn interfaces")
     elseif(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
         set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
         set(CMAKE_Fortran_FLAGS_DEBUG   "-g")

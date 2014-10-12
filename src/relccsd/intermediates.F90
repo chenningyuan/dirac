@@ -11,8 +11,6 @@
      private
 
 
-
-
      contains
 
 
@@ -23,12 +21,13 @@
      real(8), intent(in) :: T1(*),T2(*)
      real(8), intent(out):: HO(*)
      real(8), intent(in) :: BUF1(*),BUF2(*),BUF3(*)
+     real(8)  :: v_sort(100000)
      real(8) :: ddot
-     integer :: II, I, ND, IRP, N, X
-     real(8), allocatable :: tau(:) 
+     integer :: II, I, ND, IRP, N, X, IMIN
+     real(8), allocatable :: tau(:), vooo(:),vooo_sorted(:) 
      character            :: vtrans
 !     character(*),dimension(*):: v_array, t_array, w_array      
- 
+     integer              :: IJKL,J,K,L,JRP,KRP,LRP,KLRP  
 !---------------Common Blocks--------------------------------------
 #include "param.inc"
 #include "symm.inc"
@@ -76,53 +75,37 @@
 !F_bar_mi = F_bar_mi + V(mn, ei) * T1(e,n) --> V(mi,en) * T1(en) 
 !---------------------------------------------------------------
 
+!     allocate(vooo(nv2))
+!     allocate(vooo_sorted(nv2))
+!     
+!     vooo = 0.0d0
+!     vooo_sorted=0.0d0
+!     CALL GETVOOO (vooo)
+!     CALL DELINT ('VOOO','DKDD',vooo,0,0,0)
 
-      CALL GETVOOO (BUF1)
-      CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
+!     CALL SRT1C1 (NREP,NVO,NOOT,vooo,vooo_sorted)
+
+!     CALL SRT36 (NREP,MULTB,LTR,LFA,NO,NO,NV,NO,MOO,JVOOO,JJVO,JJOO,&
+!   &            vooo_sorted,BUF3)
+
+!    deallocate(vooo_sorted)
+
+   call contraction_422 ((/"o1","o3","o2","p1"/), (/"p1","o3"/), (/"o1","o2"/), T1, HO, -1.0d0, 1.0d0, NREP)
+
+  !  call v_for_blas((/"o1","o3","o2","p1"/),(/"o1","o2"/),(/"p1","o3"/), vtrans, v_sort)
 
 
-
-      CALL SRT1C1 (NREP,MVO,MOO,BUF1,BUF2)
-
-
-!      do x =1, NV2
-!       if (BUF2(x) > 1.0D-9) then
-!       write(58,*)BUF2(x)
-!       endif 
-!     enddo
-
-
-!     do irp = 1, nrep
-!      write(*,*)irp,'mvo=',mvo(irp),'nvo=',nvo(irp)
-!      write(*,*)irp,'moo=',moo(irp),'noo=',noot(irp)
-!      write(*,*)'value of NV2',NV2, 'value of VOOO dimension',mvo(irp)*moo(irp)
-!     enddo
-
-      CALL SRT36 (NREP,MULTB,LTR,LFA,NO,NO,NV,NO,MVO,JVOOO,JJVO,JJOO,&
-     &            BUF2,BUF3)
-
-!      do x =1, NV2
-!       if (BUF3(x) > 1.0D-9) then
-!       write(59,*)BUF3(x)
-!       endif 
-!     enddo
-
-    CALL XGEMV ('N',MOO,MVO,-A1,BUF3,MOO,T1,1,A1,HO,1)
-
+  !  CALL XGEMV (vtrans,MOO,MVO,-A1,v_sort,MOO,T1,1,A1,HO,1)
 
 !--------part of old code-----------
-!     CALL SRT26 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO, &
-!    &            BUF1,BUF2)
+!      CALL SRT26 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO, &
+!     &            vooo,BUF2)
+
+
+!     deallocate(vooo)
 !     CALL SRT1C1 (NREP,MVO,MOO,BUF2,BUF3)
 
-!      do x =1, NV2
-!       if (BUF3(x) > 1.0D-9) then
-!       write(56,*)BUF3(x)
-!       endif 
-!     enddo
-
-
-!    CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1)
+!     CALL XGEMV ('C',MVO(1),MOO(1),-A1,BUF2,MVO(1),T1,1,A1,HO,1)
 !     CALL XGEMV ('N',MOO,MVO,-A1,BUF3,MOO,T1,1,A1,HO,1)
 !-----------------------------------------------------------------
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
@@ -131,7 +114,7 @@
       call contraction_222 (FVO, NFVO, T1, ndimt1, HO, 'C', 'N', 'N', &
            &        NO, NO, NV, A1, A1)
   
-      call sort_22_unrestricted((/"h1","h3","h2","p1"/),(/"p1","h3"/),(/"h1","h2"/),vtrans)
+!      call sort_22_unrestricted((/"o1","o3","o2","p1"/),(/"p1","o3"/),(/"o1","o2"/),vtrans)
 
 
 
