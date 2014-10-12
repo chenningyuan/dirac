@@ -941,6 +941,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbatom.h"
+#include "dcbhoc.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -954,7 +955,7 @@ C
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
      &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.FOMOUT',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
+     &            '.AD HOC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
       DATA SET/.FALSE./
@@ -1043,6 +1044,8 @@ C     ... whereas Fractional Occupation is default for DFT
 !     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
       if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
       ATOMST=.FALSE.
+      ATHUCK = .FALSE.
+      HUCPAR = 1.5D0
       WRITE_FMO_MATRIX=.FALSE.
 C
 C 3.  Initialize /DCIDHF/
@@ -1705,6 +1708,21 @@ C    PBS+MI/Aug2014
 !symmetry into own formatted file (MI/Aug2014)
                WRITE_FMO_MATRIX=.TRUE.
                GOTO 100
+ 56            CONTINUE
+C&&& AD HOC: extended Huckel based on atomic fragments
+               ATHUCK = .TRUE.
+               BNCRON = .FALSE.
+               DHF_INTTYP='Atom. Huckel'
+               IF(NONTYP.GT.MAXHOC) THEN
+                 WRITE(LUPRI,'(A,I5)')
+     &           '* Number of atomic types specified  :',NONTYP,
+     &           '* Current maximum no. of types      :',MAXHOC
+                 CALL QUIT('*AD HOC input: Too many atom types !')
+               ENDIF
+               DO ITYP = 1,NONTYP
+                 READ(LUCMD,'(A6)')  HOCFIL(ITYP)
+                 READ(LUCMD,'(A72)') VECHOC(ITYP)
+               ENDDO
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -4070,7 +4088,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.MAYER ','.POLNRM','.XXXXXX','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.ATOMS ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4094,6 +4112,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       PROTHR   = 1.0D-3
       LWGPOP = .FALSE.
       OWNBAS = .FALSE.
+      PATOMS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
       MAYER  = .FALSE.
@@ -4115,7 +4134,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -4182,6 +4201,27 @@ C&&& POLNRM: Normalize polarization contribution
                   POLNRM = .TRUE.
                GO TO 100
  11            CONTINUE
+C&&& ATOMS : Do projection analysis using atomic fragments
+                  PATOMS = .TRUE.
+                  NREFS=NUCDEP
+                  IF((NREFS+1).GT.MAXREF) THEN
+                    WRITE(LUPRI,'(A,I5)')
+     &         '* Number of atomic types specified  :',NREFS,
+     &         '* Current maximum no. of fragments  :',MAXREF
+                    CALL QUIT('*PROJECT input: Too many fragments !')
+                  ENDIF
+                  INDEP=1
+                  ININD=1
+                  DO ITYP = 1,NONTYP
+                    READ(LUCMD,'(A6)') REFFIL(INDEP)
+                    NPROJNUC(INDEP)=1
+                    READ(LUCMD,'(A72)') VECREF(1,INDEP)
+                    DO J = 0,NONT(ITYP)-1
+                      INDEP = INDEP + NUCDEG(ININD+J)
+                    ENDDO
+                    ININD = ININD + NONT(ITYP)
+                  ENDDO
+                  REFFIL(INDEP) = 'Polari'
                GO TO 100
  12            CONTINUE
                GO TO 100
@@ -4267,6 +4307,19 @@ C
      &        '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
             ENDIF
           ENDDO
+        ENDDO
+      ELSEIF(PATOMS) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Projection analysis based on atomic fragments, ',
+     &   '  calculated in their individual bases'
+        INDEP=1
+        ININD=1
+        DO ITYP = 1,NONTYP
+          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(INDEP),VECREF(1,INDEP)
+          DO J = 0,NONT(ITYP)-1
+            INDEP = INDEP + NUCDEG(ININD+J)
+          ENDDO
+          ININD = ININD + NONT(ITYP)
         ENDDO
       ELSE
         DO J = 1,NREFS
