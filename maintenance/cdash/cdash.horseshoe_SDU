@@ -31,6 +31,8 @@ DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
 export DIRTIMEOUT="12m"
 
 cd $DIRAC
+git submodule update
+git submodule
 #
 BUILD_INTEL=build_intelmkl_i8
 if [[ -d "$BUILD_INTEL" ]]; then
