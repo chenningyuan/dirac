@@ -24,7 +24,8 @@ export DIRTIMEOUT="11m"
 
 # go to the local DIRAC directory
 cd $DIRAC
-git pull
+git submodule update
+git submodule status
 
 #BUILD_GNU=build_ompi_gfortran_gcc_ownmath_ilp64
 #if [[ -d "$BUILD_GNU" ]]; then
@@ -51,6 +52,7 @@ unset DIRAC_NUM_MPI_PROCS
 ./pamadm -a --builddir=$BUILD_INTEL
 ./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_mkl_i8_CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
 cd $BUILD_INTEL
+make ExperimentalUpdate
 make Experimental
 
 #
@@ -65,9 +67,11 @@ else
 fi
 git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
+git submodule update
+git submodule status
 ./pamadm  -a  --hsfsdyn  --hscc  --auto  # make buildup into the default "build" directory
 export MATH_ROOT=/opt/intel/mkl
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_MKL_ilp64_master" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_MKL_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF
 cd build
 python binary_info.py
 make Nightly

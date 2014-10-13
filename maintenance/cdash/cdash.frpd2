@@ -8,6 +8,9 @@ export DIRTIMEOUT="14m"
 # go to the local DIRAC directory
 cd $DIRAC
 
+git submodule update
+git submodule status
+
 BUILD_GNU=build_gnu_i8
 if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
@@ -72,6 +75,8 @@ else
 fi
 git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
+git submodule update
+git submodule status
 BUILD_INTEL=build_ifort_icc_g++_mkl_i8
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step

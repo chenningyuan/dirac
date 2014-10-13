@@ -17,10 +17,15 @@ echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 # the directory where your DIRAC sits
 DIRAC=/home/miro/qch_software/dirac_git/dirac-git-repo
 BUILD=build_ifort_mkl_i8
+
+
 # go to the local DIRAC directory
 cd $DIRAC
 
-git pull origin master
+#git pull origin master
+git submodule update
+git submodule status
+
 
 export DIRTIMEOUT="12m"
 
@@ -38,6 +43,7 @@ export MATH_ROOT=/opt/intel/mkl/10.0.3.020
 ./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD
 #
 cd $BUILD
+ctest -D ExperimentalUpdate
 ctest -D Experimental
 #ctest -D Experimental -L short
 

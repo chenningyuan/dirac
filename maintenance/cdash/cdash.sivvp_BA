@@ -61,6 +61,10 @@ export MATH_ROOT=/opt/intel/mkl
 ###############################################
 BUILD_SERIAL=build_intelmkl_i8
 cd $DIRAC
+
+git submodule update
+git submodule status
+
 echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
 #
 if [[ -d "$BUILD_SERIAL" ]]; then
