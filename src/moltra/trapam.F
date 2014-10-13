@@ -452,7 +452,8 @@ C
       CALL FLSHFO(LUPRI)
 C
       IF (.NOT.NO2IND)
-     &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+     &   CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
+     &               KQC,KE,KIBE)
 C
       CALL FLSHFO(LUPRI)
 C
@@ -3997,7 +3998,7 @@ C
 C
         CALL MRCONE(WORK(KBUF),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
      &              WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-     &              NSPC,NSTR,NSTRT,IPRRES,
+     &              NSPC,NSTR,NSTRT,IPRRES,TOTERG,
      &              WORK,KFREE,LFREE)
 C
 C       Release the slaves if we run in parallel.
