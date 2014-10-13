@@ -268,8 +268,8 @@ def main():
     dirac_modules[this_module] = dirac_module('aoosoc', 'atomic oo-order spin-orbit correction module')
     dirac_modules[this_module].add_cppflag('MOD_AOOSOC')
     dirac_modules[this_module].add_directory('src/aoosoc')
-    dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy', 'long')
-    dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy', 'long')
+    dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy', 'medium')
+    dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy', 'medium')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'eri'
