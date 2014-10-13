@@ -70,6 +70,10 @@ export DIRTIMEOUT="10m"
 
 # go to the local DIRAC directory
 cd $DIRAC
+
+git submodule update
+git submodule status
+
 BUILD_INTEL=build_intelmkl_i8
 if [[ -d "$BUILD_INTEL" ]]; then
   echo "deleting previous build directory $BUILD_INTEL."
