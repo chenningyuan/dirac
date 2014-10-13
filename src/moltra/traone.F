@@ -22,7 +22,8 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
-      SUBROUTINE TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+      SUBROUTINE TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
+     &                  KQ,KQC,KE,KIBE)
 C***********************************************************************
 C
 C     Driver routine for 2-index transformations
@@ -41,6 +42,7 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
       LOGICAL TOBE,TRASAM
+      real*8, intent(in) :: toterg
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
      &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4)
       Real(8), Allocatable :: FMO(:),ORBE(:)
@@ -75,7 +77,7 @@ C
       IF (KIBE(2,1).EQ.0) I_KIBE21=1
       CALL MRCONE(FMO,ORBE,WORK(KE(1,1)),WORK(KE(2,1)),
      &  IBORB,WORK(KIBE(1,1)),WORK(I_KIBE21),
-     &  NSPC,NSTR,NSTRT,IPRTRA,WORK,KFREE,LFREE)
+     &  NSPC,NSTR,NSTRT,IPRTRA,TOTERG,WORK,KFREE,LFREE)
 C
 C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
@@ -380,7 +382,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcone */
       SUBROUTINE MRCONE(FMO,ORBE,ORBE1,ORBE2,IBORB,IBORB1,IBORB2,
-     &                  NSPC,NSTR,NSTRT,IPRINT,WORK,KFREE,LFREE)
+     &                  NSPC,NSTR,NSTRT,IPRINT,TOTERG,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Write core Fock-matrix and other information in MRCONEE format 
@@ -409,6 +411,7 @@ C
       DIMENSION ORBE(*),IBORB(*),WORK(*)
       DIMENSION ORBE1(*),ORBE2(*),IBORB1(*),IBORB2(*)
       DIMENSION NSPC(2,0:2),NSTR(2,0:2,2),NSTRT(2)
+      REAL*8, intent(in) :: TOTERG
     
       Real(8), Allocatable :: FMOM(:,:,:),ORBMO(:,:)
       Integer, Allocatable :: IRPMO(:,:),IRPAMO(:,:),IOCCUP(:,:)
@@ -448,7 +451,7 @@ C     fermion ircops into single arrays
 C
       CALL MRCON1(FMO,ORBE,IBORB,FMOM,NSTR,NSTRT,IRPMO,
      &            IRPAMO,IOCCUP,ORBMO,IBSPI,
-     &            NSPC,IPRINT,WORK,KFREE,LFREE)
+     &            NSPC,IPRINT,TOTERG,WORK,KFREE,LFREE)
 C
       DeAllocate (FMOM)
       DeAllocate (ORBMO)
@@ -463,7 +466,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mrcon1 */
       SUBROUTINE MRCON1(FMO,ORBE,IBORB,FMOM,NSTR,NSTRT,IRPMO,IRPAMO,
-     &                  IOCCUP,ORBMO,IBSPI,NSPC,IPRINT,WORK,KFREE,LFREE)
+     &                  IOCCUP,ORBMO,IBSPI,NSPC,IPRINT,TOTERG,
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Luuk Visscher, Mar 18 1997
@@ -499,6 +503,7 @@ C
       DIMENSION NSTR(2),IPHS(4),NAEL(8),NSPC(2,0:2)
       DIMENSION MULTB(64,64), MJ_TO_REP(-2*NORDER:2*NORDER,2)
       DATA IPHS/ 1,-1,-1, 1/
+      REAL*8, intent(in) :: TOTERG
 
       CALL QENTER('MRCON1')
 
@@ -661,11 +666,12 @@ C     electron correlation codes might need.
 C
       OPEN (LUMLF1,FILE='MRCONEE',FORM='UNFORMATTED')
 C     Total number of spinors, breit active in DHF ?,
-C     DHF energy, inversion symmetry (yes : 2; no : 1),
+C     core energy (inactive energy + nuclear repulsion), inversion symmetry (yes : 2; no : 1),
 C     group type (1 real, 2 complex, 4 quat.),spinfree formalism,
 C     total number of orbitals (so including frozen or deleted orbitals)
+!     total SCF energy
       WRITE (LUMLF1) 2*NSTRT,BREIT,DHFERG,NFSYM,NZ,SPINFR,
-     &               NORBT
+     &               NORBT,TOTERG
 C     NSYMRP        - Number of fermion irreps in parent group
 C     REPN          - names of these irreps (gerade, ungerade)
 C     NAEL          - number of spinors active in the transformation
