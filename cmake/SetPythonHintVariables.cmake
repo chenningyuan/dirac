@@ -7,9 +7,9 @@
 # the libraries matching that of the interpreter.
 # Copied from https://bitbucket.org/fenics-project/dolfin
 function(set_python_hint_variables pyLibsFound pyLibs pyInclude pyInclude2) 
-	find_package(PythonInterp REQUIRED)
+	find_package(PythonInterp 2.6 REQUIRED)
 	if (PYTHONINTERP_FOUND)
-		# Get Python include path from Python interpretter
+		# Get Python include path from Python interpreter
   		execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
                   "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"
                   OUTPUT_VARIABLE _PYTHON_INCLUDE_PATH

@@ -176,9 +176,7 @@ if(ENABLE_PCMSOLVER)
             -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	    -DPYTHON_LIBRARY=${pyLibs} # location of the .so version of libpython
-	    -DPYTHON_INCLUDE_DIR=${pyInclude}   # location of Python.h
-            -DPYTHON_INCLUDE_DIR2=${pyInclude2} # location of pyconfig.h
+	    -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
 	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
          )
         
