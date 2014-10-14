@@ -1,0 +1,87 @@
+#!/bin/bash
+
+#
+#
+# Interactive  buildup script for cluster at SDU, Odense, Denmark
+#
+#
+
+# My own Intel Fortran/C/C++ and MKL stuff
+source /people/disk2/ilias/intel/bin/compilervars.sh intel64
+export MATH_ROOT=/people/disk2/ilias/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+
+#machine installed Intel suite
+#source /opt/intel/bin/compilervars.sh intel64
+#export MATH_ROOT=/opt/intel/mkl
+
+# cmake stuff
+export PATH=/people/disk2/ilias/bin/cmake_install/bin:$PATH
+# my most recent python 2.7.1 #
+export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo "running dirac cdash buildup at "$timestamp
+
+which ifort
+which icc
+which icpc
+
+DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
+#
+export DIRTIMEOUT="12m"
+
+cd $DIRAC
+git submodule update
+git submodule
+#
+BUILD_INTEL=build_intelmkl_i8
+if [[ -d "$BUILD_INTEL" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL"
+  /bin/rm -rf $BUILD_INTEL
+fi
+#./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
+./pamadm -a --builddir=$BUILD_INTEL
+./setup --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_SDU.intel_mkl_i8" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL
+cd $BUILD_INTEL
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
+
+cd $DIRAC
+BUILD_INTEL_STATIC=build_intelmkl_i8_static
+if [[ -d "$BUILD_INTEL_STATIC" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL_STATIC"
+  /bin/rm -rf $BUILD_INTEL_STATIC
+fi
+#./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
+./pamadm -a --builddir=$BUILD_INTEL_STATIC
+./setup --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_SDU.intel_mkl_i8_static" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL_STATIC
+cd $BUILD_INTEL_STATIC
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
+
+
+cd $DIRAC
+BUILD_GNU=build_gnu_i8
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU"
+  /bin/rm -rf $BUILD_GNU
+fi
+#./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
+./pamadm -a --builddir=$BUILD_GNU
+./setup  --fc=gfortran  --cc=gcc  --cxx=g++  -D BUILDNAME="fe8_SDU.gnu_i8_ownmath"  --int64  --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+cd $BUILD_GNU
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo "buildup finished at "$timestamp
+exit 0

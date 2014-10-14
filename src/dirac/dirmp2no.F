@@ -921,7 +921,8 @@ C     ----------------------------------------------------------
       IF( SKIP_ITRAFO ) GOTO 20
 
       IF (.NOT.NO2IND)
-     &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+     &   CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
+     &               KQ,KQC,KE,KIBE)
 C
       CALL FLSHFO(LUPRI)
 C

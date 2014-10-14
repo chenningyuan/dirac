@@ -7,7 +7,7 @@
 # own python 2.7.1
 export PATH=/home/miro/bin/python/Python-2.7.1:$PATH
 # own cmake
-export PATH=/usr/local/bin:$PATH
+export PATH=/usr/local/bin:/home/miro/bin/python/Python-2.7.1:$PATH
 # ifort, ompi compilers
 export PATH=/opt/intel/idbe/10.1.015/bin:/opt/intel/fce/10.1.015/bin:$PATH
 export LD_LIBRARY_PATH=/opt/intel/mkl/10.0.3.020/lib/em64t:/opt/intel/fce/10.1.015/lib:$LD_LIBRARY_PATH
@@ -17,10 +17,15 @@ echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 # the directory where your DIRAC sits
 DIRAC=/home/miro/qch_software/dirac_git/dirac-git-repo
 BUILD=build_ifort_mkl_i8
+
+
 # go to the local DIRAC directory
 cd $DIRAC
 
-git pull origin master
+#git pull origin master
+git submodule update
+git submodule status
+
 
 export DIRTIMEOUT="12m"
 
@@ -34,10 +39,12 @@ if [[ -d "$BUILD" ]]; then
 fi
 #
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
-./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8.short" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON  $BUILD
+#./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON  $BUILD
+./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD
 #
 cd $BUILD
-#ctest -D Experimental
-ctest -D Experimental -L short
+ctest -D ExperimentalUpdate
+ctest -D Experimental
+#ctest -D Experimental -L short
 
 exit 0

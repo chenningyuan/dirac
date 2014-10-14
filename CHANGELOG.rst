@@ -7,6 +7,7 @@
 - Bugfix for dipole moment calculations with the KRCI property module.
   The core-electronic part was not added to the electronic contribution 
   of the total dipole moment.
+- Bugfix for X2Cmmf calculation (thanks to Kirk Peterson for pointing it out)
 
 
 13.3 (2014-06-02)

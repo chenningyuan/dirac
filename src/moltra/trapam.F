@@ -452,7 +452,8 @@ C
       CALL FLSHFO(LUPRI)
 C
       IF (.NOT.NO2IND)
-     &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+     &   CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
+     &               KQC,KE,KIBE)
 C
       CALL FLSHFO(LUPRI)
 C
@@ -2836,11 +2837,11 @@ C
 C       The whole vector set is selected
 C
         IF(NBSYM.EQ.1) THEN
-          CALL CFSORT(CAO,Q(ISEL),NSEL,IFRP,NFBAS(IFRP,0))
+          CALL QEXPAND(CAO,Q(ISEL),NSEL,IFRP,NFBAS(IFRP,0))
         ELSE
           NCBF = NFBAS(IFRP,0)*NSEL*4
           CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
-          CALL CFSORT(WORK(KCBF),Q(ISEL),NSEL,IFRP,NFBAS(IFRP,0))
+          CALL QEXPAND(WORK(KCBF),Q(ISEL),NSEL,IFRP,NFBAS(IFRP,0))
           CALL WTSOAO(WORK(KCBF),CAO,IFRP,NFBAS(IFRP,0),
      &                NTBAS(0),NSEL*4,IPRINT)
           CALL MEMREL('GETCAO.AO',WORK,KCBF,KCBF,KFREE,LFREE)
@@ -2861,7 +2862,7 @@ C
             IOFF = IOFF + NDVEC
             JOFF = JOFF + NDSEL
           ENDDO
-          CALL CFSORT(CAO,WORK(KCBF),NSEL,IFRP,NFBAS(IFRP,0))
+          CALL QEXPAND(CAO,WORK(KCBF),NSEL,IFRP,NFBAS(IFRP,0))
         ELSE
           IOFF = ISEL
           JOFF = 1
@@ -2871,7 +2872,7 @@ C
             JOFF = JOFF + NDSEL
           ENDDO
 C.........expand coefficients to quaternion format
-          CALL CFSORT(WORK(KCBF),CAO,NSEL,IFRP,NFBAS(IFRP,0))
+          CALL QEXPAND(WORK(KCBF),CAO,NSEL,IFRP,NFBAS(IFRP,0))
 C.........transform to AO-basis
           CALL WTSOAO(WORK(KCBF),CAO,IFRP,NFBAS(IFRP,0),NTBAS(0),
      &                NSEL*4,IPRINT)
@@ -3997,7 +3998,7 @@ C
 C
         CALL MRCONE(WORK(KBUF),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
      &              WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-     &              NSPC,NSTR,NSTRT,IPRRES,
+     &              NSPC,NSTR,NSTRT,IPRRES,TOTERG,
      &              WORK,KFREE,LFREE)
 C
 C       Release the slaves if we run in parallel.

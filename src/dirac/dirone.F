@@ -2195,6 +2195,9 @@ C*****************************************************************************
 #endif
 !
 #include "implicit.h"
+#ifndef MOD_AOOSOC
+      logical :: aoomod = .false.
+#endif
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -7204,6 +7207,35 @@ C
         CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Get_Overlap_AO */
+      SUBROUTINE GET_OVERLAP_AO(SMAT,SSMTRC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Get overlap matrix in AO-basis
+C     Written by Trond Saue June 4 2012
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+      DIMENSION SMAT(*),WORK(*)
+      KFRSAV=KFREE
+C.....Get overlap matrix in SO-basis (no symmetry packing)
+      CALL MEMGET('REAL',KSBUF,N2BBASX,WORK,KFREE,LFREE)
+      CALL GTOVLX(WORK(KSBUF),SSMTRC)
+C.....Transform to AO-basis and release memory
+      CALL MTSOAO(WORK(KSBUF),SMAT,NTBAS(0),0,IPRINT)
+      CALL MEMREL('GET_OVERLAP_AO',WORK,1,KFRSAV,KFREE,LFREE)
+C.....Print section
+      IF(IPRINT.GE.5) THEN
+        WRITE(6,*) 'GET_OVERLAP_AO: Overlap matrix in AO-basis'
+        CALL OUTPUT(SMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),
+     &                   1,LUPRI)
+      ENDIF
+C      
       RETURN
       END
       subroutine set_intflg(new_intflg)

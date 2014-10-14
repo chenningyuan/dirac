@@ -735,6 +735,14 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
         END DO
         WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
+
+        ! for +Q correction
+        open(file="energies.CI",unit=10,status="unknown",
+     &       form="unformatted",access="sequential")
+!       TODO: check proper reference energies for states other than the ground state and MCSCF reference wave functions!!!
+        write(10) nroot,eig(1,1)+eigshf
+        write(10) ((eig(i,iter)+eigshf),i=1,nroot)
+        close(10,status="keep")
       END IF
 *
       call qexit('MICDV4')
@@ -1495,6 +1503,14 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
         END DO
         WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLABEL
         CALL KRCI_PRPFILE(LU_INFO,FILELAB,FINEIG,NROOT,0)
+
+        ! for +Q correction
+        open(file="energies.CI",unit=10,status="unknown",
+     &       form="unformatted",access="sequential")
+!       TODO: check proper reference energies for states other than the ground state and MCSCF reference wave functions!!!
+        write(10) nroot,eig(1,1)+eigshf
+        write(10) ((eig(i,iter)+eigshf),i=1,nroot)
+        close(10,status="keep")
       END IF
 C
  9999 CALL QEXIT('CMICDV_PAR')

@@ -772,6 +772,8 @@ C
           if (IPRNCIV.ge.1)
      &    CALL GASANA(WORK(KVEC1),NBLOCK,WORK(KLCIBT),WORK(KLCBLTP),
      &                LUC,ICISTR)
+           
+
         ELSE
           IF(IDENSI.GE.1.OR.NROOT.GT.1) THEN
              CALL REWINE(LUSC1,-1)
@@ -810,6 +812,9 @@ C
 *         ^ End if print of CI vector
         END IF
         IF (NPROP.GT.0) CALL ONE_EL_PROP
+!       call q_correction(WORK(KVEC1),NBLOCK,WORK(KLCIBT),
+!    &                    WORK(KLCBLTP),LUC,LUSC1,
+!    &                    ICISTR,1,WORK,.false.)
       END DO
       END IF
 *    /\ end over master

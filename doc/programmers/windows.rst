@@ -26,14 +26,14 @@ Dependencies
 
 In addition to the necessities listed in the section for users, DIRAC developpers have to install :
 
-4. The Git version control system (http://git-scm.com). Install it without modifying Windows environmental variables ! See explanation below.
+5. The Git version control system (http://git-scm.com). When ask you can choose options "Use Git from Git Bash only" or "Use Git from the Windows Command Prompt" (recommended). If you choose the first option then you have to manually add to %PATH% *"...\\Git\\cmd"* (depends on your installation). It is not possible to sucessfully run CMake with optional Unix tools in %PATH% (see explanation below).
 
-5. The Sphinx documentation generator and related packages, see below.
+6. The Sphinx documentation generator and related packages, see below.
 
 **Important:**
 ~~~~~~~~~~~~~~
 The CMake suite can not be used when an another shell command (sh.exe) from other package is found in the Windows %PATH% enviromental variable.
-Please avoid having both *"...\\Git\\bin"* and *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
+Please avoid adding both *"...\\Git\\bin"* and *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
 in your %PATH% as these are causing conflict with CMake programs!
 
 
@@ -43,7 +43,11 @@ Documentation tools
 To be able to generate the html documentation, the user has to download the *Sphinx* (http://sphinx.pocoo.org/)
 package for Windows. Sphinx can be installed with the help of Python *setuptools* suite (http://pypi.python.org/pypi/setuptools) as ::
 
-  easy_install -U sphinx.
+  easy_install -U sphinx
+
+Alternatively, better python installer is *pip* (https://pip.pypa.io/en/latest/index.html), and use it as ::
+
+  pip install sphinx
 
 We assume that the 32-bit version of Python is installed also on 64-bit machines as not all necessary packages are 
 at disposal in 64-bit versions.
@@ -51,13 +55,15 @@ Check that the *%Path%* Windows environmental variable points to both Python and
 and has the the form of *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
 
 You also need the additional package *matplotlib* (http://matplotlib.sourceforge.net/).
-You can get easily using *setuptools* as ::
+You can get it easily using *setuptools* or *pip* as ::
 
   easy_install -U matplotlib
+  pip install matplotlib
 
-You might need also the *python-dateutil* and *pyparsing* packages, which you obtain with the mentioned *easy_install* script.
+(You might need also the *python-dateutil* and *pyparsing* packages, which you obtain with the mentioned *easy_install* or *pip* scripts.)
 
-To get the documentation compiled one requires likewise the *numpy* (http://numpy.scipy.org) package, which provides own (self-)installation file (and thus can not be installed with the *easy_install* tool).
+To get the documentation compiled one requires likewise the *numpy* (http://numpy.scipy.org) package, 
+which provides own (self-)installation file.
 
 
 Git & PuTTy
@@ -158,7 +164,10 @@ Perform the complete CDash buildup in one step: ::
 
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
 
-Make the CDash buildup in separate steps:  ::
+or ::
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -D Experimental
+
+You can perform the CDash buildup in separate steps:  ::
 
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalUpdate
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make ExperimentalConfigure

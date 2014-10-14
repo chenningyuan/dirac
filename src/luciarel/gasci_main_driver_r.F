@@ -28,22 +28,19 @@
       SUBROUTINE GASCI_REL(F1,F2,ISM,ISPC,IPRNT,EREF,
      &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
 *
+!     external modules
       use memory_allocator
+      use interface_to_mpi
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
 * Jeppe Olsen, Winter of 1995
 *              Winter of 1998 : Modified for relativistic calculations
 *
-* Stefan Knecht, Jan 2010: FIXME: introduce use of alloc routines if 
-*                                 they can handle int*8 allocations 
-*                                 within the ilp32 model.
-*                                 For now, we are using the generic 
-*                                 allocate/deallocate routines
-*
+!     internal modules
       use mospinor_info
       use symmetry_setup_krci
-      use interface_to_mpi
+
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -53,6 +50,7 @@
 #include "ipoist8.inc"
 *
       character*6 CIRUN
+      real(8), intent(inout) :: eref
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -190,9 +188,6 @@ C         quaternion real
           IRC = 1
         end if
       END IF
-      if (NZ.eq.1) then
-        write(LUWRT,*) ' Quaternion real relativistic CI '
-      end if
 C     control variable for general file structure
       LBLK = -1
 C
@@ -319,7 +314,8 @@ C
 C       read in all (active) blocked integrals (T blocks)
 C       ==> integrals required for diagonal H on T_BUFF_D
 C
-        IF (CIRUN .ne. 'ANALYZ' ) THEN
+        IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ' .and. 
+     &      CIRUN /= 'REFVEC') THEN
 C           FIXME: 11-02-08 SK: definition of IBU2D?
           call picasso(iprtra,.TRUE.,
      &                 NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
@@ -359,7 +355,8 @@ C
          DIAGONAL_ALLOC = .TRUE. 
 C
 CSK      CALL DZERO8(T_BUFF,MY_T_LEN)
-         IF (CIRUN .ne. 'ANALYZ' ) THEN
+         IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ' .and. 
+     &      CIRUN /= 'REFVEC') THEN
            call picasso(iprtra, .TRUE. ,
      &                  NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
      &                  T_BUFF_D,IT_TTPL,ibosym,CIRUN,.FALSE.)
@@ -834,6 +831,40 @@ C
       NPTESTVAR = 00
 
  888  CONTINUE 
+#if defined (VAR_MPI2)
+C     let the slaves wait... it is only a short way to go so why not?
+      call interface_mpi_BARRIER(global_communicator)
+#endif
+
+      else if (CIRUN.eq.'QCORR ') then
+*+++++++++++++++++++++++++++++++++++++++++++++++++++
+C
+C     only MASTER computes the +Q correction ...
+C
+        if(myproc == master)then
+          call rewine(LUC,-1)
+          call q_correction(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                      WORK(KPCBLTP),LUC,LUSC37,
+     &                      ICISTR,IRC,WORK,.true.)
+        end if
+
+#if defined (VAR_MPI2)
+C     let the slaves wait... it is only a short way to go so why not?
+      call interface_mpi_BARRIER(global_communicator)
+#endif
+C
+      else if (CIRUN.eq.'REFVEC') then
+*+++++++++++++++++++++++++++++++++++++++++++++++++++
+C
+C     only MASTER writes the reference vector data to file
+C
+        if(myproc == master)then
+          call rewine(LUC,-1)
+          call put_refvec_for_qcorr(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                              WORK(KPCBLTP),LUC,LUSC37,
+     &                              ICISTR,IRC,WORK,.true.,ndet,eref)
+        end if
+
 #if defined (VAR_MPI2)
 C     let the slaves wait... it is only a short way to go so why not?
       call interface_mpi_BARRIER(global_communicator)
@@ -1360,7 +1391,9 @@ C     (*_MS2 arrays are in CSTATE )
      &                 IBAT_MS2,IDUMMY,.FALSE.,0,0,IDUMMY)
 C
 #endif
-      write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
+      if(CIRUN /= 'REFVEC') 
+     &write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
+
 C     release memory
       IDUM = 0
       call memmar(KDUM,  IDUM,  'FLUSM ',IDUM,'GASCI ')

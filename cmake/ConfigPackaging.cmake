@@ -50,7 +50,7 @@ install(
     WORLD_READ
     )
 
-if(ENABLE_PCMMOD)
+if(ENABLE_PCMSOLVER)
    install( # Install PCMSolver input parsing script
        FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/pcmsolver
        DESTINATION bin
@@ -92,8 +92,8 @@ set(CPACK_PACKAGE_VENDOR "R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher, a
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doc/installation/general.rst")
 set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set(CPACK_PACKAGE_FILE_NAME        "DIRAC-${DIRAC_VERSION}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-${DIRAC_VERSION}-Source")
+set(CPACK_PACKAGE_FILE_NAME        "DIRAC")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-Source")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY
     "DIRAC ${DIRAC_VERSION}"
     )

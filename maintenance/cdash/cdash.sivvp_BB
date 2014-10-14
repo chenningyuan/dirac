@@ -1,23 +1,9 @@
 #!/bin/bash
 
-#PBS -S /bin/bash
-#PBS -N DIRACbuild
-### Declare myprogram non-rerunable
-#PBS -r n
-#PBS -l nodes=1:ppn=12
-#PBS -l walltime=16:00:00
-#PBS -l mem=8g
-#PBS -j oe
-#PBS -q batch
-
 echo "Working host is: "; hostname -f
 
-source $HOME/intel/bin/compilervars.sh intel64
+source /mnt/apps/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
-
-###   My own OpenMPI Intel   ###
-export PATH=/home/milias/bin/openmpi-1.6.5-intel/bin:$PATH
-export LD_LIBRARY_PATH=/home/milias/bin/openmpi-1.6.5-intel/lib:$LD_LIBRARY_PATH
 
 # my cmake stuff
 export PATH=/home/milias/bin/cmake/bin:$PATH
@@ -29,57 +15,52 @@ echo "My PATH=$PATH"
 echo "Running on host `hostname`"
 echo "Time is `date`"
 echo "Directory is `pwd`"
-echo "This jobs runs on the following processors:"
-echo `cat $PBS_NODEFILE`
 # Define number of processors
-NPROCS_PBS=`wc -l < $PBS_NODEFILE`
 NPROCS=`cat /proc/cpuinfo | grep processor | wc -l`
 echo "This node has $NPROCS CPUs."
-echo "PBS_SERVER=$PBS_SERVER"
-echo "PBS_NODEFILE=$PBS_NODEFILE"
-echo "PBS_O_QUEUE=$PBS_O_QUEUE"
-echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
-
-#NPROCS=4 # hard set number of procs for computations
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n Running DIRAC cdash buildups at "$timestamp ; echo -e "\n\n"
 
 DIRAC=/home/milias/Work/qch/software/dirac/trunk
-#
 
-export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
-
-cd $DIRAC
-
+export MATH_ROOT=/mnt/apps/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 export LC_ALL=C
-
-#
-#  serial DIRAC buildup, Intel MKL
-#
-BUILD_SERIAL=buildup_Intel_MKL_ILP64_serial
-cd $DIRAC
-echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
-#
-export MKL_NUM_THREADS=${NPROCS_PBS}
+#export MKL_NUM_THREADS=${NPROCS}
+export MKL_NUM_THREADS=1
 export MKL_DYNAMIC="FALSE"
 export OMP_NUM_THREADS=1
 #
 export DIRTIMEOUT="12m"
+
+
+###############################################
+#      serial DIRAC buildup, Intel MKL        #
+###############################################
+BUILD_SERIAL=build_intelmkl_i8
+cd $DIRAC
+git submodule update
+git submodule status
+echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
 #
 if [[ -d "$BUILD_SERIAL" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL"
   /bin/rm -rf $BUILD_SERIAL
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
+./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-UMB_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
-make Experimental 
-#
-#  serial,static DIRAC buildup
-#
-BUILD_SERIAL_STATIC=buildup_Intel_MKL_ILP64_serial_static
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -j2 -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy 
+ctest -D ExperimentalSubmit
+
+##############################################################################
+#          serial,static DIRAC buildup with Intel+MKL
+##############################################################################
+BUILD_SERIAL_STATIC=build_intelmkl_i8_static
 echo -e "\n\n Running serial, static DIRAC buildup in $BUILD_SERIAL_STATIC"
 cd $DIRAC
 if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
@@ -87,56 +68,79 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_STATIC
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_UMB_Intel_mkl_ilp64_serial_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
+./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
-make ExperimentalConfigure
-sed -i "s/-lcilkrts//g" CMakeFiles/dirac.x.dir/link.txt
-`cat CMakeFiles/dirac.x.dir/link.txt` 
-make ExperimentalTest
-make ExperimentalSubmit
- 
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy 
+#ctest -D ExperimentalTest -R cosci_energy dft
+ctest -D ExperimentalSubmit
 
-BUILD=buildup_Intel_OpenMPI_MKL_ILP64
-if [[ -d "$BUILD" ]]; then
-  echo "deleting previous build directory $BUILD"
-  /bin/rm -rf $BUILD
-fi
-echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD "
-./pamadm -a --builddir=$BUILD
-export DIRAC_NUM_MPI_PROCS=$NPROCS_PBS
-unset MKL_NUM_THREADS
-./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
-cd $BUILD
-python binary_info.py
-make Experimental
-
-#
-# OpenMPI parallel, static
-#
-BUILD_STATIC=buildup_Intel_OpenMPI_MKL_ILP64_static
-echo -e "\n\n Running OpenMPI parallel, static DIRAC buildup in $BUILD_STATIC"
-unset MKL_NUM_THREADS
-unset MKL_DYNAMIC
-unset OMP_NUM_THREADS
+#####################################################
+#        serial DIRAC buildup with GNU+mkl
+#####################################################
+BUILD_GNU=build_gnu_mkl_i8
+echo -e "\n\n Running serial DIRAC buildup in $BUILD_GNU"
 cd $DIRAC
-if [[ -d "$BUILD_STATIC" ]]; then
-  echo "deleting previous build directory $BUILD_STATIC"
-  /bin/rm -rf $BUILD_STATIC
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU"
+  /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_STATIC
-export DIRAC_NUM_MPI_PROCS=$NPROCS_PBS
-unset MKL_NUM_THREADS
-./setup --int64 --fc=mpif90 --cc=mpicc --cxx=mpiCC --mpi --static -D BUILDNAME="grid_UMB_ompi_Intel_mkl_ilp64_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_STATIC
-cd $BUILD_STATIC
+./pamadm -a --builddir=$BUILD_GNU
+./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+cd $BUILD_GNU
 python binary_info.py
-make ExperimentalConfigure
-sed -i "s/-lcilkrts//g" CMakeFiles/dirac.x.dir/link.txt
-`cat CMakeFiles/dirac.x.dir/link.txt` 
-make ExperimentalTest
-make ExperimentalSubmit
- 
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -j2 -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy 
+ctest -D ExperimentalSubmit
 
+#####################################################
+#        serial DIRAC buildup with GNU
+#####################################################
+BUILD_GNU=build_gnu_i8
+echo -e "\n\n Running serial DIRAC buildup in $BUILD_GNU"
+cd $DIRAC
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU"
+  /bin/rm -rf $BUILD_GNU
+fi
+./pamadm -a --builddir=$BUILD_GNU
+./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_ownmath_i8" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+cd $BUILD_GNU
+python binary_info.py
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -j2 -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R cosci_energy 
+ctest -D ExperimentalSubmit
+
+
+#####################################################
+#        serial DIRAC buildup with PGI+mkl
+#####################################################
+BUILD_PGI=build_pgi_mkl_i8
+echo -e "\n\n Running serial DIRAC buildup in $BUILD_PGI"
+cd $DIRAC
+if [[ -d "$BUILD_PGI" ]]; then
+  echo "deleting previous build directory $BUILD_PGI"
+  /bin/rm -rf $BUILD_PGI
+fi
+./pamadm -a --builddir=$BUILD_PGI
+./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+cd $BUILD_PGI
+python binary_info.py
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -j2 -D ExperimentalBuild
+#ctest -D ExperimentalTest -R cosci_energy dft
+ctest -j2 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit
+
+ 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp
 exit 0

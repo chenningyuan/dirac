@@ -43,10 +43,10 @@ C***********************************************************************
       use num_grid_cfg
       use interface_functional_read
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif
+#endif      
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -213,7 +213,9 @@ C
 !     *OPENRSP
 !     *X2C
 !     *PCM
+!     *PCMSOL      
 !     *AooSOC
+!     *QCORR
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
 
@@ -252,7 +254,7 @@ C
       end if
 #endif
 ! RDR Polarizable Continuum Model calculation
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
          call report_after_pcm_input(lupri)
       end if
@@ -940,10 +942,11 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbatom.h"
+#include "dcbhoc.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
-     &            '.FCKCNV','.NODSCF','.XXXXXX','.FIXDIF','.NODAMP',      ! 10
+     &            '.FCKCNV','.NODSCF','.NOSWIT','.FIXDIF','.NODAMP',      ! 10
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
@@ -953,7 +956,7 @@ C
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
      &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.FOMOUT',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
+     &            '.AD HOC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
       DATA SET/.FALSE./
@@ -1010,6 +1013,7 @@ C     initial molecular orbitals:
       DOCCNV    = .TRUE.
       DODAMP    = .TRUE.
       DODIIS    = .TRUE.
+      NOSWIT    = .FALSE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
       DOMOFREEZE = .FALSE.
@@ -1039,8 +1043,12 @@ C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
 !     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
+#ifdef MOD_AOOSOC
       if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
+#endif
       ATOMST=.FALSE.
+      ATHUCK = .FALSE.
+      HUCPAR = 1.5D0
       WRITE_FMO_MATRIX=.FALSE.
 C
 C 3.  Initialize /DCIDHF/
@@ -1222,6 +1230,8 @@ C&&&& NODSCF: Do not employ differential matrices in SCF-iterations
                   DODSCF = .FALSE.
                GO TO 100
     8          CONTINUE
+C&&&& NOSWIT: PBS+MI Never turn DIIS off
+                  NOSWIT=.TRUE.
                GO TO 100
     9          CONTINUE
 C&&&& FIXDIF: Use fixed value of DIFDEN
@@ -1701,6 +1711,21 @@ C    PBS+MI/Aug2014
 !symmetry into own formatted file (MI/Aug2014)
                WRITE_FMO_MATRIX=.TRUE.
                GOTO 100
+ 56            CONTINUE
+C&&& AD HOC: extended Huckel based on atomic fragments
+               ATHUCK = .TRUE.
+               BNCRON = .FALSE.
+               DHF_INTTYP='Atom. Huckel'
+               IF(NONTYP.GT.MAXHOC) THEN
+                 WRITE(LUPRI,'(A,I5)')
+     &           '* Number of atomic types specified  :',NONTYP,
+     &           '* Current maximum no. of types      :',MAXHOC
+                 CALL QUIT('*AD HOC input: Too many atom types !')
+               ENDIF
+               DO ITYP = 1,NONTYP
+                 READ(LUCMD,'(A6)')  HOCFIL(ITYP)
+                 READ(LUCMD,'(A72)') VECHOC(ITYP)
+               ENDDO
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -2154,6 +2179,9 @@ C
      &      DIISTH
          WRITE(LUPRI,'(3X,A,I5)') '- Maximum size of B-matrix:',
      &      MXDIIS
+         IF (NOSWIT) THEN
+           WRITE(LUPRI,'(A)') ' * DIIS is never switched off'
+         ENDIF
          IF(DODAMP) THEN
            WRITE(LUPRI,'(A/A,F5.3)')
      &     ' * Damping of Fock matrix when DIIS is not activated. ',
@@ -2191,6 +2219,12 @@ C
      &   '   - Maximum number of macro iterations:',MXMACRO,
      &   '   - Maximum number of micro iterations:',MXMICRO
       END IF
+#ifdef HAS_PCMSOLVER
+      if (.not. noqcdhf .and. dirac_cfg_pcm) then
+         call quit('Quadratic convergent Hartree-Fock not'//
+     &   'available with PCM')
+      endif              
+#endif
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC)
@@ -2476,7 +2510,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 18, NTABLE = 23)
+      PARAMETER (NDIR = 19, NTABLE = 23)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2493,7 +2527,7 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '*SCF   ','*KRCI  '/
+     &             '*SCF   ','*KRCI  ','*QCORR '/
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
@@ -2850,7 +2884,8 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), 
+     &                I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2949,6 +2984,12 @@ C
 !*KRCI
    18 continue
       CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
+      go to 200
+!*QCORR
+   19 continue
+      ! this is a cheat so that *QCORR section is parsed
+      ! by new input reader
+      call move_to_next_star(word, lucmd)
       go to 200
 
     1 CONTINUE
@@ -4057,7 +4098,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.MAYER ','.POLNRM','.XXXXXX','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.ATOMS ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4081,6 +4122,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       PROTHR   = 1.0D-3
       LWGPOP = .FALSE.
       OWNBAS = .FALSE.
+      PATOMS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
       MAYER  = .FALSE.
@@ -4102,7 +4144,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -4169,6 +4211,27 @@ C&&& POLNRM: Normalize polarization contribution
                   POLNRM = .TRUE.
                GO TO 100
  11            CONTINUE
+C&&& ATOMS : Do projection analysis using atomic fragments
+                  PATOMS = .TRUE.
+                  NREFS=NUCDEP
+                  IF((NREFS+1).GT.MAXREF) THEN
+                    WRITE(LUPRI,'(A,I5)')
+     &         '* Number of atomic types specified  :',NREFS,
+     &         '* Current maximum no. of fragments  :',MAXREF
+                    CALL QUIT('*PROJECT input: Too many fragments !')
+                  ENDIF
+                  INDEP=1
+                  ININD=1
+                  DO ITYP = 1,NONTYP
+                    READ(LUCMD,'(A6)') REFFIL(INDEP)
+                    NPROJNUC(INDEP)=1
+                    READ(LUCMD,'(A72)') VECREF(1,INDEP)
+                    DO J = 0,NONT(ITYP)-1
+                      INDEP = INDEP + NUCDEG(ININD+J)
+                    ENDDO
+                    ININD = ININD + NONT(ITYP)
+                  ENDDO
+                  REFFIL(INDEP) = 'Polari'
                GO TO 100
  12            CONTINUE
                GO TO 100
@@ -4254,6 +4317,19 @@ C
      &        '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
             ENDIF
           ENDDO
+        ENDDO
+      ELSEIF(PATOMS) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Projection analysis based on atomic fragments, ',
+     &   '  calculated in their individual bases'
+        INDEP=1
+        ININD=1
+        DO ITYP = 1,NONTYP
+          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(INDEP),VECREF(1,INDEP)
+          DO J = 0,NONT(ITYP)-1
+            INDEP = INDEP + NUCDEG(ININD+J)
+          ENDDO
+          ININD = ININD + NONT(ITYP)
         ENDDO
       ELSE
         DO J = 1,NREFS
@@ -4599,7 +4675,7 @@ C***********************************************************************
       use xc_derv
       use interface_functional_read
       use x2cmod_cfg
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
 #endif
 #ifdef MOD_AOOSOC
@@ -4609,7 +4685,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 10)
+      PARAMETER (NTABLE = 68,NDIR = 11)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4641,7 +4717,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC'/
+     &             '*PCM   ','*aooSOC','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -5317,7 +5393,11 @@ CMI&& Activate 4c-2c MO transformation
           GOTO 100
 ! .PCM
   157     CONTINUE
+#ifdef HAS_PCMSOLVER
           dirac_cfg_pcm = .true.
+#else
+          call quit('HAMINP: PCMSolver not compiled, no PCM available!')
+#endif
           GOTO 100
 ! .HFXATT
   158     CONTINUE
@@ -6320,7 +6400,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -6390,6 +6470,12 @@ CMI  ... reading input routine for AMFI+RELSCF
         go to 200
    10 continue
       ! this is a cheat so that *aooSOC section is parsed
+      ! by new input reader
+        call move_to_next_star(word, lucmd)
+        go to 200
+!       *PCMSOL
+   11 continue
+      ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
