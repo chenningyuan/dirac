@@ -142,7 +142,7 @@ endif()
 
 if(ENABLE_PCMSOLVER)
     include(SetPythonHintVariables)
-    set_python_hint_variables(pyLibsFound pyLibs pyInclude pyInclude2) 
+    find_python_libs(pyLibsFound pyLibs) 
     find_package(ZLIB)
     if(NOT pyLibsFound AND NOT ZLIB_FOUND)
         set(ENABLE_PCMSOLVER OFF)
