@@ -3366,7 +3366,7 @@ C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT)
 
       integer function max_nsymdist_dbg(nspgrp,ispgrp,ngas,nsmst)
 !
-! Obtain largest number of symmetrydistributions of 
+! Obtain largest number of symmetry distributions of 
 ! any given supergroup.
 !
 ! Timo and Jeppe, Odense, August 2003 
