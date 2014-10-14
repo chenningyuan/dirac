@@ -39,15 +39,21 @@ Dependencies
     a) unpack downloaded archive
     b) rename it to *"zlib"*
     c) move it to *"C:\Program Files"* (32-bit Windows) or *"C:\Program Files (x86)"* (64-bit Windows)
-    d) in top directory run in command line: ::
+    d) in top directory (in *"zlib"*) run in command line: ::
+    
     dlltool -D zlib1.dll -d lib/zlib.def -l lib/libzdll.a 
+    
 
 5. Download Boost (http://www.boost.org/) in archive file of your choice from http://sourceforge.net/projects/boost/files/boost/. Then follow this instructions:
     a) unpack downloaded archive
     b) in top directory run this command: ::
+    
     bootstrap.bat mingw
+    
     c) in the same directory run: ::
+    
     b2 install toolset=gcc
+    
     d) in *"C:\Boost"* you will find *"include"* and *"lib"* directories
 
 Installation and running
