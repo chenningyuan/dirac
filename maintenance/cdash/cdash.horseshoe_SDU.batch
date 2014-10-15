@@ -3,7 +3,7 @@
 #PBS -S /bin/bash
 #PBS -N DIRACbuildup
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=1:00:00
+#PBS -l walltime=2:00:00
 #PBS -j oe
 ##PBS -q workq
 
@@ -35,14 +35,14 @@ cd $DIRAC
 #
 # reset back to the launching directory and rerun setup command with new parameters
 #
-BUILD_INTEL=build_intelmkl_i8
+BUILD_INTEL=build_intelmkl_i8_batch
 if [[ -d "$BUILD_INTEL" ]]; then
   echo "deleting previous build directory $BUILD_INTEL"
   /bin/rm -rf $BUILD_INTEL
 fi
 #./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
 ./pamadm -a --builddir=$BUILD_INTEL
-./setup --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_Odense.intel_mkl_i8" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL
+./setup --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_Odense.intel_mkl_i8-batch" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL
 cd $BUILD_INTEL
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
