@@ -3,9 +3,9 @@
 #PBS -S /bin/bash
 #PBS -N DIRACbuildup
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=2:00:00
+#PBS -l walltime=12:00:00
 #PBS -j oe
-##PBS -q workq
+#PBS -q workq
 
 # My own Intel Fortran/C/C++ and MKL stuff
 source /people/disk2/ilias/intel/bin/compilervars.sh intel64
@@ -47,7 +47,8 @@ cd $BUILD_INTEL
 ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy
+#ctest -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalTest 
 ctest -D ExperimentalSubmit
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
