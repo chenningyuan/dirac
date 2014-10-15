@@ -2766,6 +2766,7 @@ contains
    integer :: IWORKDUM,IDUM
    real*8, parameter :: D0=0.0D0
 
+   call get_machine_parameters
    ABSTOL=mp_sfmin; JOBZ='V'; RANGE = 'A'; UPLO = 'U'
    DDUM = D0; IDUM = 0; WORKDUM = D0; IWORKDUM = 0
 
