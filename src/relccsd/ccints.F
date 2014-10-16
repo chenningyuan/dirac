@@ -161,10 +161,7 @@ C
 C
 C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
-      IF (IMSTAT(1).GT.1.AND..NOT.FOCKSP) THEN
-         WRITE (IW,1010)
-         GOTO 150
-      ENDIF
+      IF (IMSTAT(1).GT.1) GOTO 150
 C
 C     RE-ENTRY POINT IN CASE THE GAUNT INTERACTION HAS TO BE ADDED
 C
@@ -276,21 +273,32 @@ C
       CALL WAIO_SAVE(ITAPT+2)
       CALL WAIO_SAVE(ITAPT+3)
       CALL WAIO_SAVE(ITAPT+4)
+
+      IF (IMSTAT(1).GT.1) THEN
+         WRITE (IW,1010)
+         write (*,*) 'warning: no consistency check in place'
+         write (*,*) '         in fock-space calculations or normal cc'
+         write (*,*) '         runs if the number of active spinors'
+         write (*,*) '         or, in fock-space calculations, the'
+         write (*,*) '         size of the mode spaces has changed'
+         write (*,*) '         restart will give erroneous results'
+      ELSE
+         CALL DAYTIME (DATEX,TIMEX)
+         WRITE(IW,*)
+         WRITE(IW,*) 'Sorting of first 4 classes done at '//datex//timex
+      ENDIF
+      CALL FLSHFO (IW)
+C
       IMSTAT(1) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
-      CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,*)
-      WRITE(IW,*) 'Sorting of first 4 classes done at '//datex//timex
-      CALL FLSHFO (IW)
+C
+C Now get the VOVV integrals
 C
       CALL WAIO_OPEN(ITAPT+5)
 C
 C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
-      IF (IMSTAT(2).GT.1.AND..NOT.FOCKSP) THEN
-         WRITE (IW,1011)
-         GOTO 550
-      ENDIF
+      IF (IMSTAT(7).GT.1) GOTO 450
 C
 C     Determine # of passes necessary for treating VOVV integrals
 C     on a specific node
@@ -406,14 +414,36 @@ C ----------------------
       CALL FLSHFO (IW)
       ENDDO
 C ----------------------
-      CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,*) 
-      WRITE(IW,*) 'VOVV sorting done at '//datex//timex
+C
+C     This is a restart point : save the files and update status.
+C
+  450 CONTINUE
+      CALL WAIO_SAVE(ITAPT+5)
+
+      IF (IMSTAT(7).GT.1 ) THEN
+         WRITE (IW,1011)
+         write (*,*) 'warning: no consistency check in place'
+         write (*,*) '         in fock-space calculations or normal cc'
+         write (*,*) '         runs if the number of active spinors'
+         write (*,*) '         or, in fock-space calculations, the'
+         write (*,*) '         size of the mode spaces has changed'
+         write (*,*) '         restart will give erroneous results'
+      ELSE
+         CALL DAYTIME (DATEX,TIMEX)
+         WRITE(IW,*)
+         WRITE(IW,*) 'VOVV sorting done at '//datex//timex
+      ENDIF
       CALL FLSHFO (IW)
+
+      IMSTAT(7) = 3
+      IF(EQNS.NE.'RELADC') CALL CCDUMP
+
 C
 C     GET THE VVVV INTEGRALS
 C
       CALL WAIO_OPEN(ITAPT+6)
+C
+      IF (IMSTAT(2).GT.1) GOTO 550 
 C
       NPASS = (NV6PAR-1) / NVT + 1
       NSEC6 = 1
@@ -553,8 +583,11 @@ C
 C     This is a restart point : save the files and update status.
 C
   550 CONTINUE
-      CALL WAIO_SAVE(ITAPT+5)
       CALL WAIO_SAVE(ITAPT+6)
+      IF (IMSTAT(2).GT.1) THEN
+         WRITE(IW,1014)
+      ENDIF
+
       IMSTAT(2) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
 C
@@ -619,6 +652,7 @@ C
  1011 FORMAT (/' Skipping integral sorting step 2')
  1012 FORMAT (/' Skipping Fock-matrix build')
  1013 FORMAT (//' SCF energy :',T40,F25.15) 
+ 1014 FORMAT (/' Skipping integral sorting step 3')
       RETURN
 10000 CALL QUIT('ERROR READING HEADER MDCINT')
 10001 CALL QUIT('ERROR READING HEADER MDBINT')
@@ -770,6 +804,7 @@ C
       OPEN (MDPROP,FILE='MDPROP',FORM='UNFORMATTED')
       INOP = 0
     1 READ (MDPROP,ERR=10,END=11) ACHAR
+       print *,'ACHAR=',ACHAR
       IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.NAMEA) GOTO 1
       IF (IPRNT.GE.1) WRITE (IW,1000) NAMEA,ACHAR(9:16),ACHAR(17:24)
       READ (MDPROP) PROP

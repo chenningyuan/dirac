@@ -2,7 +2,7 @@ C
 C
 C     Register the status of the independent parts of the code
 C
-C     Status given by integer : 
+C     Status given by integer :
 C     0 - Never asked for
 C     1 - On menu but not yet called
 C     2 - Running
@@ -16,7 +16,14 @@ C      3 - Construction of Fock matrix
 C      4 - MP2  energy and T1 + T2 amplitude calculation
 C      5 - CCSD energy and T1 + T2 amplitude calculation
 C      6 - CCSD(T) energy calculation
-C      7 - 30 reserved for future use
+C      7 - Integral sort of VOVV
+C      8 - fock-space sector 00 and T1 + T2 amplitudes
+C      9 - fock-space sector 01 and T1 + T2 amplitudes
+C     10 - fock-space sector 10 and T1 + T2 amplitudes
+C     11 - fock-space sector 11 and T1 + T2 amplitudes
+C     12 - fock-space sector 02 and T1 + T2 amplitudes
+C     13 - fock-space sector 20 and T1 + T2 amplitudes
+C     14 - 30 reserved for future use
 C
       PARAMETER (NSTATS=30)
       COMMON/STATUS/IMSTAT(NSTATS)
