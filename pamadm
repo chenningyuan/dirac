@@ -643,6 +643,12 @@ def main():
 
     f.close()
 
+    # create list of tests, this is needed for "make release"
+    f = open(os.path.join(options.builddir, 'pamadm-generated', 'list_of_tests'), 'w')
+    for test in list_of_tests:
+        f.write(test[0] + '\n')
+    f.close()
+
     # write pamadm flags to file
     f = open(os.path.join(options.builddir, 'pamadm-generated', 'pamadm-flags'), 'w')
     f.write(string.join(sys.argv[1:]))

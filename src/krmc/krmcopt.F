@@ -3582,10 +3582,11 @@ C
             CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
             THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
-            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,OPT_THR_CVEC,
+            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_STATE,ICONV_TOT,
+     &                         OPT_THR_CVEC,IOPT_STATE,ICONV_TOT,
      &                         THRPCI,IPROPT,WORK(KFREE),LFREE)
+
 C
             ECI = WORK(KECI)
          ELSE
