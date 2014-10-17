@@ -12,10 +12,6 @@ option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                          
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
-# radovan: these options are not available in DIRAC
-# option(ENABLE_OPENMP          "Enable OpenMP parallelization"                             OFF)
-# option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
-# option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
