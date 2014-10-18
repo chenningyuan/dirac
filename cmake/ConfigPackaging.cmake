@@ -52,7 +52,7 @@ install(
 
 if(ENABLE_PCMSOLVER)
    install( # Install PCMSolver input parsing script
-       FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/pcmsolver
+       FILES ${PROJECT_BINARY_DIR}/external/bin/pcmsolver.py
        DESTINATION bin
        PERMISSIONS
        OWNER_READ OWNER_WRITE OWNER_EXECUTE
