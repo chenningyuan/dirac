@@ -11,10 +11,12 @@ export LD_LIBRARY_PATH=/opt/intel/mkl/10.0.3.020/lib/em64t:/opt/intel/fce/10.1.0
 
 echo "Welcome to the DIRAC CDash buildup on opteron.tau.ac.il"
 
+echo "set PATH=$PATH"
+which python;  
+python -V
+
 # the directory where your DIRAC sits
 DIRAC=/home/miro/qch_software/dirac_git/dirac-git-repo
-BUILD=build_ifort_mkl_i8
-
 
 # go to the local DIRAC directory
 cd $DIRAC
@@ -23,12 +25,12 @@ cd $DIRAC
 git submodule update
 git submodule status
 
-
 export DIRTIMEOUT="12m"
 
 export MKL_NUM_THREADS=2
 export MKL_DYNAMIC="FALSE"
 
+BUILD=build_ifort_mkl_i8
 # configure step
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
