@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export MATH_ROOT=/opt/intel/mkl
+
 BRANCH='master'
 PAMADM_FLAGS='--adm'
 NUM_CORES=1
