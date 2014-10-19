@@ -484,9 +484,9 @@ class Filter:
         if not is_integer:
             if f.tolerance_is_set:
                 if f.tolerance_is_relative:
-                    s += ' (rel tolerance: set %6.2e vs %6.2e )' % (f.tolerance, abs(1-number/reference))
+                    s += ' (rel diff: %6.2e)' % abs(1.0 - number/reference)
                 else:
-                    s += ' (abs tolerance: set %6.2e vs %6.2e)' % ( f.tolerance, (number-reference) )
+                    s += ' (abs diff: %6.2e)' % abs(number - reference)
 
         return s + '\n'
 
