@@ -13,7 +13,10 @@
 echo "Working host is: "; hostname -f
 
 source /mnt/apps/intel/bin/compilervars.sh intel64
-echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated, PROD_DIR=$PROD_DIR."
+
+source /mnt/apps/pgi/environment.sh
+echo "Portlang Group compilers activated ! PGI=$PGI"
 
 # my cmake stuff
 export PATH=/home/milias/bin/cmake/bin:$PATH
