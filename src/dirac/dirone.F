@@ -2764,8 +2764,8 @@ C
       CLOSE(LUTMAT,STATUS='KEEP')
 !
       if(x2c.and.x2cmod_mmf)then
-#ifdef MOD_AOOSOC
         if(aoomod)then
+#ifdef MOD_AOOSOC
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
 
 !           release memory
@@ -2827,11 +2827,11 @@ C
             deallocate(pctm_aoosoc)
             deallocate(dmat_aoosoc)
           end if ! check for atomic run
-        end if ! aoomod
 #else
-        call quit('generation of  atomic oo-order 2e-SOC not active'//
+        call quit('generation of atomic oo-order 2e-SOC not active'//
      &            ' in this version')
 #endif
+        end if ! aoomod
         if(x2c_2c_mmf_mos)then
 
 !         release memory
