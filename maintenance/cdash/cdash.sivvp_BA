@@ -10,6 +10,7 @@ source ~/.bashrc
  #  echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 
 # http://hpc.ui.savba.sk/index.php?page=softvery
+source /etc/profile.d/modules.sh
 module load intel
 module load pgi
 

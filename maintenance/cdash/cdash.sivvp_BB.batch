@@ -13,7 +13,10 @@
 echo "Working host is: "; hostname -f
 
 source /mnt/apps/intel/bin/compilervars.sh intel64
-echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated, PROD_DIR=$PROD_DIR."
+
+source /mnt/apps/pgi/environment.sh
+echo "Portlang Group compilers activated ! PGI=$PGI"
 
 # my cmake stuff
 export PATH=/home/milias/bin/cmake/bin:$PATH
@@ -65,7 +68,7 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-UMB_Intel_mkl_i8-batch"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
-ctest -D ExperimentalUpdate
+#ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
 #ctest -D ExperimentalTest -R cosci_energy dft
@@ -86,7 +89,7 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static-batch"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
-ctest -D ExperimentalUpdate
+#ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
 ctest -D ExperimentalTest -R cosci_energy 
@@ -107,7 +110,7 @@ fi
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8-batch"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
-ctest -D ExperimentalUpdate
+#ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
 ctest -D ExperimentalTest -R cosci_energy 
@@ -127,13 +130,12 @@ fi
 ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8-batch"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
 cd $BUILD_PGI
 python binary_info.py
-ctest -D ExperimentalUpdate
+#ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
 #ctest -D ExperimentalTest -R cosci_energy dft
 ctest -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit
-
  
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp

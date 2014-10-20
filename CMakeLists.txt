@@ -12,10 +12,6 @@ option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                          
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
-# radovan: these options are not available in DIRAC
-# option(ENABLE_OPENMP          "Enable OpenMP parallelization"                             OFF)
-# option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
-# option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
@@ -23,12 +19,7 @@ option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"        
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-   option(ENABLE_PCMSOLVER       "Enable Polarizable Continuum Model through PCMSolver"      OFF)
-   message("-- PCSMSOLVER disabled for Darwin until Remigio fixes it ... ")
-else()
-   option(ENABLE_PCMSOLVER       "Enable Polarizable Continuum Model through PCMSolver"      ON)
-endif()
+option(ENABLE_PCMSOLVER       "Enable Polarizable Continuum Model through PCMSolver"      ON)
 option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
@@ -146,16 +137,11 @@ else()
 endif()
 
 if(ENABLE_PCMSOLVER)
-    include(SetPythonHintVariables)
-    find_python_libs(pyLibsFound pyLibs) 
     find_package(ZLIB)
-    if(NOT pyLibsFound AND NOT ZLIB_FOUND)
+    if(NOT ZLIB_FOUND)
         set(ENABLE_PCMSOLVER OFF)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
-	if(NOT pyLibsFound)
-            message(STATUS "  - install Python development libraries")
-        endif()
         if(NOT ZLIB_FOUND)
             message(STATUS "  - install Zlib development libraries")
         endif()
@@ -181,7 +167,7 @@ if(ENABLE_PCMSOLVER)
             -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	    -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+	    -DENABLE_PYTHON_EMBEDDING=OFF
 	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
          )
         
@@ -197,7 +183,6 @@ if(ENABLE_PCMSOLVER)
             pcm
             getkw
             ${ZLIB_LIBRARIES}
-            ${PYTHON_LIBRARIES}
             ${EXTERNAL_LIBS})
     endif()
 else()

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+source /opt/intel/bin/compilervars.sh intel64
+source /opt/intel/vtune_amplifier_xe_2013/amplxe-vars.sh intel64
+
 BRANCH='master'
 PAMADM_FLAGS='--adm'
 NUM_CORES=1

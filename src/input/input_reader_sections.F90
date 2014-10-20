@@ -1965,9 +1965,10 @@
    end subroutine
 
 
- ! reading subroutine for the standalone testing program of diagonalization
- ! routines (miro ilias)
+! reading subroutine for the standalone testing program of diagonalization
+! routines (miro ilias)
      subroutine read_input_diagonalization_tests(word, kw_section)
+#ifdef MOD_UNRELEASED
       use input_reader
       use diagmod
       implicit none
@@ -1977,12 +1978,7 @@
 !     ---------------------------------------------------------------------------
       call reset_available_kw_list()
 
-   !  if (kw_matches(word, '.RADINT')) then
-   !     call kw_read(word, num_grid_cfg_radint)
-   !  end if
-
      if (kw_matches(word, '.TITLE ')) then
-       ! read(get_file_unit(),'(a)') title_text
          call kw_read(word, title_text)
      end if
 
@@ -1998,6 +1994,7 @@
         do_dsyevr = .true.
      end if
 
+     ! Ulf's simple routine
      if (kw_matches(word, '.ULF   ')) then
         do_dsyevr_ulf = .true.
      end if
@@ -2023,5 +2020,7 @@
      end if
 
      call check_whether_kw_found(word, kw_section)
-
+#else
+     call quit('read_input_diagonalization_tests not in release version')
+#endif  /* MOD_UNRELEASED */
    end subroutine

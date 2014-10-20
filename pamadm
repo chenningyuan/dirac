@@ -393,7 +393,6 @@ def main():
     dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model using PCMSolver')
     dirac_modules[this_module].add_test('pcm_energy', 'short;scf;pcm')
     dirac_modules[this_module].add_test('pcm_response', 'short;polarizabilities;pcm')
-    dirac_modules[this_module].take_out_of_release()
 
     this_module = 'unreleased'
     dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
