@@ -323,6 +323,10 @@ foreach(
             # this bug is: signal 11 (SIGSEGV):Segmentation fault, function __restore_rt (0x1613DA0),from file sigaction.c
             target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
         endif()
+        if (BLAS_TYPE MATCHES MKL AND CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+            # miro: GNU+MKL-static needs extra lib
+            target_link_libraries(${EXECUTABLE} -ldl)
+        endif()
     endif()
 
 endforeach()
