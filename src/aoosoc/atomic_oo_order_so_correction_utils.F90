@@ -31,7 +31,9 @@
 module atomic_oo_order_so_correction_utils
 
   use picture_change_operations
+#ifdef MOD_INTEREST
   use module_interest_interface
+#endif
   use x2c_utils, only: print_x2cmat
 
 
