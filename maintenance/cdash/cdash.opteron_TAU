@@ -39,11 +39,28 @@ fi
 #
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
 #./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON  $BUILD
-./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD
+./setup --fc=ifort -D BUILDNAME="ifort_gnu_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD
 #
 cd $BUILD
 ctest -D ExperimentalUpdate
 ctest -D Experimental
 #ctest -D Experimental -L short
+
+
+BUILD=build_ifort_mkl_i8_static
+# configure step
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+#
+export MATH_ROOT=/opt/intel/mkl/10.0.3.020
+#./setup --fc=ifort -D BUILDNAME="ifort_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON  $BUILD
+./setup --fc=ifort -D BUILDNAME="ifort_gnu_mkl_i8_static" --static -D ENABLE_OLD_LINKER=ON --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD
+#
+cd $BUILD
+ctest -D ExperimentalUpdate
+#ctest -D Experimental
+ctest -D Experimental -L short
 
 exit 0
