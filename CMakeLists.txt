@@ -123,11 +123,12 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-# workaround for strange problem with cilkrts lib
-# intel does not ship the static version of it
-# and of some reason it gets detected and included in this variable
-# this then breaks static linking
-list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES "cilkrts")
+# Workaround for strange problem with cilkrts lib
+# Intel does not ship the static version of it
+# and of some reason it gets detected and included in these variables
+# this then breaks the static linking buildup with Intel compilers
+list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES   "cilkrts")
+list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "cilkrts")
 
 if(ENABLE_XCFUN)
     add_subdirectory(src/xcfun)
