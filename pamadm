@@ -358,7 +358,6 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_HSFS')
     dirac_modules[this_module].add_dependency('oof')
     dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
-    dirac_modules[this_module].add_test('fscc_highsectors')
     dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
@@ -368,7 +367,6 @@ def main():
     dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
     dirac_modules[this_module].add_cppflag('MOD_HSFS')
     dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
-    dirac_modules[this_module].add_test('fscc_highsectors')
     dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
