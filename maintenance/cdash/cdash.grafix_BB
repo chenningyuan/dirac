@@ -3,7 +3,6 @@
 # FYI:  crontab inscription:
 #30 00 * * 1,2,3,4,5,6,7 timestamp=`date +\%F_\%k-\%M-\%S`; DIRAC=/home/milias/work/qch/dirac_git/trunk; $DIRAC/maintenance/cdash/cdash.grafix_GPU_BanskaBystrica.linux.ompi_gfortran_gcc_ownmath_ilp64 > $DIRAC/maintenance/cdash_buildup_log_$timestamp
 
-
 # enviroment variables ...
 export PATH=/home/milias/bin/openmpi_ilp64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/cuda/bin
 export LD_LIBRARY_PATH=/home/milias/bin/openmpi_ilp64/lib:/usr/local/cuda/cudaprof/bin:/usr/local/cuda/lib64:/usr/local/lib
@@ -21,6 +20,9 @@ DIRAC=/home/milias/work/qch/dirac_git/trunk
 OMPI=/home/milias/bin/openmpi_ilp64/bin
 
 export DIRTIMEOUT="11m"
+
+# utilize MKL threading
+export MKL_NUM_THREADS=2
 
 # go to the local DIRAC directory
 cd $DIRAC
@@ -53,7 +55,23 @@ unset DIRAC_NUM_MPI_PROCS
 ./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_mkl_i8_CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
 cd $BUILD_INTEL
 ctest -D ExperimentalUpdate
-ctest -D Experimental  --track BundsCheck
+ctest -D Experimental  --track BoundsCheck
+
+
+cd $DIRAC
+BUILD_INTEL_STATIC=build_ifort_mkl_int64_static
+if [[ -d "$BUILD_INTEL_STATIC" ]]; then
+   echo "Deleting previous build ddirectory $BUILD_INTEL_STATIC."
+  /bin/rm -rf $BUILD_INTEL_STATIC
+fi
+./pamadm -a  --builddir=$BUILD_INTEL_STATIC
+export MATH_ROOT=/opt/intel/mkl
+unset DIRAC_NUM_MPI_PROCS
+./pamadm -a --builddir=$BUILD_INTEL_STATIC
+./setup --fc=ifort --cc=icc --cxx=icpc --int64 --static -D BUILDNAME="grafix_BB.Intel_mkl_i8_static" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL_STATIC
+cd $BUILD_INTEL_STATIC
+ctest -D ExperimentalUpdate
+ctest -D Experimental  --track Grid
 
 #
 # now do the nightly build
