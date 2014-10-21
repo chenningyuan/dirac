@@ -123,11 +123,12 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-# workaround for strange problem with cilkrts lib
-# intel does not ship the static version of it
-# and of some reason it gets detected and included in this variable
-# this then breaks static linking
-list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES "cilkrts")
+# Workaround for strange problem with cilkrts lib
+# Intel does not ship the static version of it
+# and of some reason it gets detected and included in these variables
+# this then breaks the static linking buildup with Intel compilers
+list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES   "cilkrts")
+list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "cilkrts")
 
 if(ENABLE_XCFUN)
     add_subdirectory(src/xcfun)
@@ -322,6 +323,10 @@ foreach(
             # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
             # this bug is: signal 11 (SIGSEGV):Segmentation fault, function __restore_rt (0x1613DA0),from file sigaction.c
             target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+        endif()
+        if (BLAS_TYPE MATCHES MKL AND CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+            # miro: GNU+MKL-static needs extra lib
+            target_link_libraries(${EXECUTABLE} -ldl)
         endif()
     endif()
 
