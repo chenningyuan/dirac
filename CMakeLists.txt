@@ -12,10 +12,6 @@ option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                          
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
-# radovan: these options are not available in DIRAC
-# option(ENABLE_OPENMP          "Enable OpenMP parallelization"                             OFF)
-# option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
-# option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
@@ -127,11 +123,12 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-# workaround for strange problem with cilkrts lib
-# intel does not ship the static version of it
-# and of some reason it gets detected and included in this variable
-# this then breaks static linking
-list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES "cilkrts")
+# Workaround for strange problem with cilkrts lib
+# Intel does not ship the static version of it
+# and of some reason it gets detected and included in these variables
+# this then breaks the static linking buildup with Intel compilers
+list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES   "cilkrts")
+list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "cilkrts")
 
 if(ENABLE_XCFUN)
     add_subdirectory(src/xcfun)
@@ -141,16 +138,11 @@ else()
 endif()
 
 if(ENABLE_PCMSOLVER)
-    include(SetPythonHintVariables)
-    set_python_hint_variables(pyLibsFound pyLibs pyInclude pyInclude2) 
     find_package(ZLIB)
-    if(NOT pyLibsFound AND NOT ZLIB_FOUND)
+    if(NOT ZLIB_FOUND)
         set(ENABLE_PCMSOLVER OFF)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
-	if(NOT pyLibsFound)
-            message(STATUS "  - install Python development libraries")
-        endif()
         if(NOT ZLIB_FOUND)
             message(STATUS "  - install Zlib development libraries")
         endif()
@@ -176,7 +168,8 @@ if(ENABLE_PCMSOLVER)
             -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	    -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+	    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+	    -DENABLE_PYTHON_EMBEDDING=OFF
 	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
          )
         
@@ -192,7 +185,6 @@ if(ENABLE_PCMSOLVER)
             pcm
             getkw
             ${ZLIB_LIBRARIES}
-            ${PYTHON_LIBRARIES}
             ${EXTERNAL_LIBS})
     endif()
 else()
@@ -331,6 +323,10 @@ foreach(
             # http://gcc.gnu.org/bugzilla/show_bug.cgi?id=30471#c7
             # this bug is: signal 11 (SIGSEGV):Segmentation fault, function __restore_rt (0x1613DA0),from file sigaction.c
             target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+        endif()
+        if (BLAS_TYPE MATCHES MKL AND CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+            # miro: GNU+MKL-static needs extra lib
+            target_link_libraries(${EXECUTABLE} -ldl)
         endif()
     endif()
 

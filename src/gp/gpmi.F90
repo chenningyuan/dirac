@@ -2519,7 +2519,7 @@ implicit none
 
       RETURN
       END
-#endif /* MOD_UNRELEASED */
+!#endif /* MOD_UNRELEASED */
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& 
 module diagmod
@@ -2766,6 +2766,7 @@ contains
    integer :: IWORKDUM,IDUM
    real*8, parameter :: D0=0.0D0
 
+   call get_machine_parameters
    ABSTOL=mp_sfmin; JOBZ='V'; RANGE = 'A'; UPLO = 'U'
    DDUM = D0; IDUM = 0; WORKDUM = D0; IWORKDUM = 0
 
@@ -3003,6 +3004,8 @@ integer :: istat,i,j
 END subroutine
 
 end module diagmod
+
+#endif /* MOD_UNRELEASED */
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 Subroutine alloc_stat_check(alloc_label,istat)
