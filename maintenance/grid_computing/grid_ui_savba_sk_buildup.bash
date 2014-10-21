@@ -53,7 +53,7 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
  ldd $DIRAC/$BUILD_OMPI_INTEL/dirac.x
@@ -76,7 +76,7 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
@@ -102,7 +102,7 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU/dirac.x
@@ -128,7 +128,7 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU1/dirac.x

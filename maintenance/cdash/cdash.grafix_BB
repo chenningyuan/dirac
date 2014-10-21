@@ -52,8 +52,8 @@ unset DIRAC_NUM_MPI_PROCS
 ./pamadm -a --builddir=$BUILD_INTEL
 ./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_mkl_i8_CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
 cd $BUILD_INTEL
-make ExperimentalUpdate
-make Experimental
+ctest -D ExperimentalUpdate
+ctest -D Experimental  --track BundsCheck
 
 #
 # now do the nightly build

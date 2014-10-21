@@ -62,6 +62,6 @@ cd $BUILD_STATIC
 cd $BUILD_STATIC
 ctest -D ExperimentalUpdate
 #ctest -D Experimental
-ctest -D Experimental -L short
+ctest -D Experimental -L short --track Grid
 
 exit 0

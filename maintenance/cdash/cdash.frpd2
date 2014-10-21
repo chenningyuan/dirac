@@ -24,7 +24,7 @@ ctest  -D ExperimentalUpdate
 ctest  -D ExperimentalConfigure
 ctest -j3 -D ExperimentalBuild
 ctest -j3 -D ExperimentalTest
-ctest  -D ExperimentalSubmit
+ctest  -D ExperimentalSubmit  --track BundsCheck
 
 cd $DIRAC
 BUILD_GNU1=build_gnu_i4
