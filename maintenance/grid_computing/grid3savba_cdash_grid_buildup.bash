@@ -35,6 +35,8 @@ export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_intel_static/lib:$LD_LIBR
 # my cmake stuff
 export PATH=/home/ilias/bin/cmake_static:$PATH
 echo "My own CMake is in PATH."
+#my git in PATH
+export PATH=/home/ilias/bin/git/git-1.7.11.7:$PATH
 # my most recent python 2.7.1 #
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
@@ -150,13 +152,13 @@ cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc               $DIRAC/$BU
 /bin/rm -r test/*/compare
 
 echo -e "\n\n packing fat DIRAC suite for grid computations..."
-tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup VERSION  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
+tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam  setup VERSION  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
 echo -e "\n packing done, we have tar-ball dirac_grid_suite.tgz file ready for grid-computing : "
 ls -lt dirac_grid_suite.tgz
 
 #another packing - only main stuff - test, runtest, pam, dirac.x execes, and static mpirun stuff
 echo -e "\n\n packing slim DIRAC suite for grid computations..."
-tar czf dirac_grid_suite_slim.tgz  pam  runtest VERSION test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION_cmake $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION_cmake $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION_cmake  maintenance/grid_computing/diracrc_grid 
+tar czf dirac_grid_suite_slim.tgz  pam  VERSION test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION_cmake $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION_cmake $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION_cmake  maintenance/grid_computing/diracrc_grid 
 echo -e "\n packing done, we have tar-ball dirac_grid_suite_slim.tgz file ready to be stored for grid-computing : "
 ls -lt dirac_grid_suite_slim.tgz
 echo -e "\n Done. Tarball with static execs ready."
