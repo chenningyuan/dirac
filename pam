@@ -1701,7 +1701,7 @@ Options are also read from ~/.diracrc"""
         print nice informative header after all Dirac run variables are properly setup
         """
         if self.parallel_run:
-            dirac_run = 'parallel ( launcher:'+self.mpirun+')'
+            dirac_run = 'parallel (launcher: ' + self.mpirun + ')'
         else:
             dirac_run = 'serial'
         if self.verbose:
