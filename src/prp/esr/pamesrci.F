@@ -158,7 +158,7 @@ C
 C
       CALL QENTER('ESR_RESOLVE')
 
-      IF (N_CIESR .EQ. 2) THEN
+      IF (NZCONF .EQ. 2) THEN
          IF (N_CIROOTS .gt. 2) THEN
             N_CIROOTS = 2
          END IF
