@@ -61,3 +61,10 @@ dependencies are met. In case they are not, compilation of PCMSolver will be dis
 CMake will print out which dependencies were not satisfied.
 Passing the option ``-DENABLE_PCMSOLVER=OFF`` to the ``setup`` script will disable compilation
 of the module and skip detection of additional dependencies.
+
+As a final step, you will need to export the ``PCMSOLVER_PARSE`` environment variable.
+This variable points to the location of the module own input parsing script::
+ 
+  $ export PCMSOLVER_PARSE=$DIRAC_EXE_DIR/external/bin
+
+where ``DIRAC_EXE_DIR`` points to the directory where the DIRAC executable was built.
