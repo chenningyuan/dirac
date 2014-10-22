@@ -36,7 +36,7 @@
      &           IBLOCK,INIDEG,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
      &           NCLS,
      &           IRC,IDCOMH,IHAM12,
-     &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST
+     &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST,eci_start
 #if defined (VAR_MPI2)
      &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
      &           RCCTOS,IT_TTPL,IT_TTOL
@@ -55,7 +55,7 @@
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION INIDET(100)
       DIMENSION IPNTR(*), ISCR1(*)
-      DIMENSION SCR1(*), SCR2(*)
+      DIMENSION SCR1(*), SCR2(*), eci_start(*)
       DIMENSION IBLOCKL(*), NPARBLOCK(*)
       DIMENSION IPROCLIST(*),IGROUPLIST(*)
 #include "infpar.h"
@@ -75,11 +75,6 @@
 *
 *
       DIMENSION EROOTS(NROOTS)
-      real*8, allocatable :: eci_start(:)
-*
-      IF( IPRT.GT. 1 )  WRITE(LUWRT,'(/A)')
-     &'          *** information from ci diagonalization  ***'
-      WRITE(LUWRT,*) ' '
 *
       NTEST=0
 *
@@ -95,12 +90,6 @@
 * In order to treat degeneracies, the lowest 4 * NROOT elements are
 *.obtained
 
-          !> hardwired for testing!!!
-!         istart_nroot = 8
-
-
-          allocate(eci_start(istart_nroot))
-          eci_start = 0
 
           NFINDM = MIN(NDIM,istart_nroot+3*nroots)
 #if defined (VAR_MPI2)
@@ -183,27 +172,20 @@ c           ISCR1(1) = 16
          WRITE (LUWRT,'(I10,F20.6)') iscr1(I),
      &                                eci_start(i)
       END DO
-
-      deallocate(eci_start)
-*
 *
 *                 ========================
 * 2 :                  Diagonalization
 *                 ========================
 *
-      CALL QENTER('CIEIG5')
 * Inverse iteration modified Davidson with 2 vectors in core
-      IF(IPRT .GE. 2 ) THEN
-         WRITE(LUWRT,*)
-         WRITE(LUWRT,'(A,I3)')
-     &   '  Number of roots to be converged..  ',NROOTS
-         WRITE(LUWRT,*)
-         WRITE(LUWRT,'(A,I3)')
-     &   '  Largest allowed number of vectors..',MAXVEC
-         WRITE(LUWRT,*)
-         WRITE(LUWRT,'(A,I3)')
-     &   '  Allowed number of CI iterations  ..',MXCIIT
-      END IF
+
+      CALL QENTER('CIEIG5')
+      WRITE(LUWRT,'(/A,I5)')
+     &'  Number of roots to be converged ........',NROOTS
+      WRITE(LUWRT,'(/A,I5)')
+     &'  Maximum subspace dimension .............',MAXVEC
+      WRITE(LUWRT,'(/A,I5/)')
+     &'  Maximum number of CI microiterations ...',MXCIIT
 *
       MRNRM = 1
       IFAC = 1
@@ -292,20 +274,6 @@ CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
 *
 #endif
 *
-*     Construct and diagonalize complete Hamiltonian 
-      IF( IDCOMH .eq. 1 )THEN
-#if defined(VAR_MPI2)
-        IF(NMPROC .ge. 1 ) THEN
-          WRITE(LUWRT,*)  ' I am sorry, but this route does not work'
-          WRITE(LUWRT,*)  ' at the moment'
-          CALL Abend2('STOP for IDCOMH == 1 ')
-        END IF
-#endif
-#if defined CODE_NOT_WORKING
-        CALL COMHAM(VEC1,VEC2,NDIM,T_CC)
-#endif
-      END IF
-*
       IF (IRC.EQ.1) THEN
 C
 C       REAL DAVIDSON solver
@@ -324,7 +292,8 @@ C       REAL DAVIDSON solver
      &                  WORK(KLVIBT),RCCTOS,
      &                  WORK(KSCRRED),IGROUPLIST,IPROCLIST,
      &                  IT_TTPL,IT_TTOL,
-     &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL))
+     &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL),
+     &                  eci_start)
 *
 #else
 *
@@ -335,7 +304,8 @@ C       REAL DAVIDSON solver
      &                  WORK(KWORK),IPRT,NPRDIM,
      &                  H0DUM,IPNTR,NP1,NP2,NQ,H0SCRDUM,
      &                  LBLK,EIGSHF,THRES_E,
-     &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL))
+     &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL),
+     &                  eci_start)
 *
 #endif
         IROOTHOMING = 0
@@ -377,6 +347,7 @@ C
 *     ^ End if switch real/complex numbers
       CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
 *
+
       CALL QEXIT('CIEIG5')
       END
 
@@ -1396,7 +1367,9 @@ C?        WRITE(6,*) ' Vector copied : ', IVEC
       CALL GETTIM(CPUITR2,WALLITR2)
       CPUTID = SECTID(CPUITR2-CPUITR1)
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(LUWRT,9300) CPUTID,WALLTID
+      WRITE(LUWRT,'(/A,I4,5A)')
+     &         ' (CMICDV) CPU (Wall) time for iteration ',
+     &         ITER,': ',CPUTID,'(',WALLTID,')'
 *
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
@@ -2429,7 +2402,7 @@ C      END IF
      &                  LU3,LU4,LU5,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRT,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                  E_CONV,AMATC,RWORK,EVL)
+     &                  E_CONV,AMATC,RWORK,EVL,eciold)
 *
 * Davidson algorithm , requires two blocks in core
 * Multi root version
@@ -2478,7 +2451,7 @@ C      END IF
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION H0(*),IPNTR(1)
        DIMENSION H0SCR(*),T_CC(*), T_BUFF(*)
-       DIMENSION AMATC(MAXVEC,*), RWORK(*), EVL(*)
+       DIMENSION AMATC(MAXVEC,*), RWORK(*), EVL(*), eciold(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -2493,10 +2466,6 @@ C      END IF
 *
        call qenter('MICDV4')
 *
-       WRITE(LUWRT,*) '             ::::::::::::::::::::::::   '
-       WRITE(LUWRT,*) '               Entering MICDV4 (rel)    '
-       WRITE(LUWRT,*) '             ::::::::::::::::::::::::   '
-*
        IOLSTM = 1
        IF(IPRT.GT.1.AND.IOLSTM.NE.0)
      & WRITE(LUWRT,*) ' Inverse iteration modified Davidson '
@@ -2510,12 +2479,12 @@ C      END IF
          STOP 20
        END IF
 *
-!      IPRT = 5000 ! debug
+       IPRT =  20  ! debug
 !      IPRT = 0000
 
        KAPROJ = 1
-       KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST = 1.0D-8
+       KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+       TEST   = 1.0D-6
        CONVER = .FALSE.
 *
 * ===================
@@ -2528,9 +2497,10 @@ C      END IF
          CALL REWINE(LU3,-1)
          CALL REWINE(LU4,-1)
          CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
-CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
          call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
+         WRITE(LUWRT,*) '  sigma vec ...',ivec
+         CALL WRTVCD(VEC1,LU4,1,LBLK)
          CALL REWINE(LU4,-1)
          CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
 *. Projected matrix
@@ -2548,13 +2518,8 @@ CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
        END IF
 *. Diagonalize initial projected matrix
        CALL DCOPY(NINVEC*(NINVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
-!      CALL EIGEN(WORK(KAPROJ),AVEC,NINVEC,0,1)
        CALL EIGEN_NEW(WORK(KAPROJ),NINVEC,EIG(1,1),AVEC,AMATC,
      &                RWORK,EVL)
-
-!      DO 20 IROOT = 1, NROOT
-!        EIG(1,IROOT) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2 )
-!  20  CONTINUE
 
        IF(IPRT .GE. 3 ) THEN
          WRITE(LUWRT,'(A,I4)') ' Eigenvalues of initial iteration '
@@ -2574,8 +2539,8 @@ CTF      CALL ENLMD(VEC1,VEC2,LU3,LU4)
 *
  1000 CONTINUE
         CALL GETTIM(CPUITR1,WALLITR1)
-        write(LUWRT,'(/A,I6/A)') ' Info from iteration',ITER,
-     &                             '___________________________'
+        WRITE(LUWRT,'(//A,I4)')
+     &        ' (MICDV4_ENLMD_REL) CI microiteration no.',ITER
         ITER = ITER + 1
 *
 * ===============================
@@ -2618,9 +2583,11 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
          RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,1,LBLK) )
          RNRM(ITER-1,IROOT) = RNORM
 *
-         WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
-     &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
-         CALL FLSHFO(LUWRT)
+!        WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
+!    &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
+!        CALL FLSHFO(LUWRT)
+
+         
 *
          IF(RNORM.LT. TEST .OR. 
      &      (ITER.GT.2.AND.
@@ -2652,7 +2619,7 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
 C               H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
 C    &                  H0,SHIFT,WORK,XH0PSX,
 C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
-           IF ( IPRT  .GE. 600) THEN
+           IF ( IPRT  .GE. 10) THEN
              WRITE(LUWRT,*) '  (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU3,1,LBLK)
            END IF
@@ -2678,7 +2645,7 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
                  CALL COPVCD(LU5,LU4,VEC1,1,LBLK)
                END IF
    66        CONTINUE
-             IF ( IPRT  .GE. 10 ) THEN
+             IF ( IPRT  .GE. 20 ) THEN
                WRITE(LUWRT,*) '  (current  X ) '
                CALL WRTVCD(VEC1,LU5,1,LBLK)
              END IF
@@ -2710,7 +2677,7 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
                 CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU4,LU5,1,LBLK)
                 CALL COPVCD(LU5,LU3,VEC1,1,LBLK)
 *
-                IF(IPRT.GE.600) THEN
+                IF(IPRT.GE.20) THEN
                   WRITE(LUWRT,*) ' Modified trial vector '
                   CALL WRTVCD(VEC1,LU3,1,LBLK)
                 END IF
@@ -2733,7 +2700,7 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
      &                   LU4,0,LBLK)
              CALL COPVCD(LU4,LU3,VEC1,1,LBLK)
    82      CONTINUE
-           IF ( IPRT  .GE. 600 ) THEN
+           IF ( IPRT  .GE. 20 ) THEN
              WRITE(LUWRT,*) '   Orthogonalized (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU3,1,LBLK)
            END IF
@@ -2742,7 +2709,7 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
            FACTOR = 1.0D0/SQRT(SCALE)
            CALL REWINE(LU3,LBLK)
            CALL SCLVCD(LU3,LU1,FACTOR,VEC1,0,LBLK)
-           IF(IPRT.GE.600) THEN
+           IF(IPRT.GE.20) THEN
              CALL SCLVCD(LU3,LU4,FACTOR,VEC1,1,LBLK)
              WRITE(LUWRT,*) '   normalized     (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU4,1,LBLK)
@@ -2750,6 +2717,30 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
 *
          END IF
   100 CONTINUE
+
+      IF (IPRT .GE. 10) THEN
+          WRITE(LUWRT,'(/A,F20.8)')
+     &      '                    Core energy        =',EIGSHF
+          WRITE(LUWRT,'(A,4F20.8,/,(37X,4F20.8))')
+     &      '                    Active energy      =',
+     &                        EIG(1:NROOT,ITER-1)
+       END IF
+       WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &      '                    Total energy       =',
+     &                        (EIG(I,ITER-1)+EIGSHF,i=1,NROOT)
+       WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &      '                    Lowering of energy =',
+     &      (eciold(i)-EIG(I,ITER-1),I=1,nroot)
+
+       do i = 1, nroot
+         eciold(i) = EIG(i,ITER-1)
+       end do
+
+       WRITE(LUWRT,'(/A,1P,D8.2,A/,(I11,D20.5))')
+     &   '                    Norm of CI residuals'//
+     &   ' (thr = ',test,')',
+     &   (i,RNRM(ITER-1,i),i=1,NROOT)
+
       IF( CONVER ) GOTO  901
       IF( ITER.GT. MAXIT) THEN
          ITER = MAXIT
@@ -2778,7 +2769,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
   150 CONTINUE
 *. Diagonalize projected matrix
       NVEC = NVEC + IADD
-      write(LUWRT,*) 'Dimension of projected matrix:',NVEC
+!     write(LUWRT,*) 'Dimension of projected matrix:',NVEC
       CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
 !     CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
       CALL EIGEN_NEW(WORK(KAPROJ),NVEC,EIG(1,ITER),AVEC,AMATC,
@@ -2862,7 +2853,10 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       CALL GETTIM(CPUITR2,WALLITR2)
       CPUTID = SECTID(CPUITR2-CPUITR1)
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(LUWRT,9300) CPUTID,WALLTID
+      WRITE(LUWRT,'(/A,5A)')
+     &        '                    CPU (Wall) time for microiteration',
+     &       '  ',CPUTID,'(',WALLTID,')'
+
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
  
@@ -2870,17 +2864,36 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
 *
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
-         IF(IPRT .GE. 2 )
-     &   WRITE(LUWRT,1170) MAXIT
- 1170    FORMAT(/'  Convergence was not obtained in ',I3,' iterations')
+         WRITE(LUWRT,'(//A,I4,A)') ' (MICDV4_ENLMD_REL) '//
+     &           'WARNING: maximum number of micro iterations,',
+     &           MAXIT, ', is reached, CI aborted.'
       ELSE
 *        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
-         IF (IPRT .GE. 2 )
-     &   WRITE(LUWRT,1180) ITER
- 1180    FORMAT(/,'  Convergence was obtained in ',I3,' iterations')
-        END IF
+         WRITE(LUWRT,'(//A)')
+     &        ' (MICDV4_ENLMD_REL) Micro iterations converged.'
+      END IF
 *
+      do iroot = 1, nroot
+        fineig(iroot) = eig(iroot,iter)+eigshf
+      end do
+      WRITE(LUWRT,'(/A,F20.8)')
+     &   '                    Core energy        = ',eigshf
+      WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &   '                    Active energies    = ',EIG(1:NROOT,ITER)
+      WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &   '                    Final CI energies  = ',
+     &     fineig(1:nroot)
+
+      do iroot = 1, nroot
+        IF (RTCNV(IROOT)) THEN
+          WRITE(LUWRT,'(/A,i4,a)')
+     &    '                    root ',iroot,' ...... converged!'
+        else
+          WRITE(LUWRT,'(/A,i4,a)')
+     &    '                    root ',iroot,' did not converge!'
+        end if
+      end do
       IF ( IPRT .GT. 0 ) THEN
         CALL REWINE(LU1,LBLK)
         DO 1600 IROOT = 1, NROOT
@@ -2891,18 +2904,13 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
      &    '============================================'
           WRITE(LUWRT,*)
           FINEIG(IROOT) = EIG(IROOT,ITER)
-          IF (RTCNV(IROOT)) THEN
-             WRITE(6,1190) IROOT,FINEIG(IROOT)+EIGSHF
-          ELSE
-             WRITE(6,1191) IROOT,FINEIG(IROOT)+EIGSHF
-          END IF
- 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
- 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
+
           IF(IPRT.GE.400) THEN
             WRITE(LUWRT,1200)
  1200       FORMAT(' The final approximation to eigenvector ')
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
+
           WRITE(LUWRT,1300)
  1300     FORMAT(/,'  Summary of iterations ',/,1H
      +          ,' ----------------------')
@@ -2913,23 +2921,9 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
  1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(I,IROOT)
  1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
-      ELSE
+
         CALL REWINE(LU1,LBLK)
-        write(LUWRT,*)
-        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(LUWRT,*)
-        DO IROOT = 1, NROOT
-          FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
-          IF (RTCNV(IROOT)) THEN
-             WRITE(6,1190) IROOT,FINEIG(IROOT)
-          ELSE
-             WRITE(6,1191) IROOT,FINEIG(IROOT)
-          END IF
-        END DO
-        write(LUWRT,*)
-        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(LUWRT,*)
-      END IF
+      endif
 *
 *
       IF(IPRT .EQ. 1 ) THEN
