@@ -2500,7 +2500,7 @@ C      END IF
          STOP 20
        END IF
 *
-!      IPRT =  20  ! debug
+!      IPRT =  10  ! debug
 !      IPRT = 0000
 
        KAPROJ = 1
@@ -2595,7 +2595,7 @@ C
            CALL REWINE(LU4,-1)
            CALL VECSMD(VEC1,VEC2,1.0D0,FACTOR,LU3,LU1,LU4,0,LBLK)
    60    CONTINUE
-         IF ( IPRT  .GE. 10 ) THEN
+         IF ( IPRT  .GE. 20 ) THEN
            WRITE(LUWRT,*) '  ( HX - EX ) '
            CALL WRTVCD(VEC1,LU4,1,LBLK)
          END IF
@@ -2634,7 +2634,7 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
 C               H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
 C    &                  H0,SHIFT,WORK,XH0PSX,
 C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
-           IF ( IPRT  .GE. 10) THEN
+           IF ( IPRT  .GE. 20) THEN
              WRITE(LUWRT,*) '  (D-E)-1 *( HX - EX ) '
              CALL WRTVCD(VEC1,LU3,1,LBLK)
            END IF

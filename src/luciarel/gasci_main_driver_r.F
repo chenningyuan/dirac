@@ -215,7 +215,7 @@ C
       END IF
 
       !> for debugging 
-!     istart_nroot = 8
+!     istart_nroot = 3
 
 C
 #if defined (VAR_MPI2)
