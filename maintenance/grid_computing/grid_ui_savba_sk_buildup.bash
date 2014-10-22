@@ -45,6 +45,7 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
    echo "removing previous build directory $BUILD_OMPI_INTEL"
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
+# deactivate interest module !
 ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
 ./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC --static -D BUILDNAME="grid_savba_ompi_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
@@ -52,14 +53,14 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
  ldd $DIRAC/$BUILD_OMPI_INTEL/dirac.x
  python binary_info.py > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 1 - Intel-OpenMPI,MKL,static - finished at $timestamp \n"
+echo -e "\n build 1 - Intel-OpenMPI,MKL,i8,static - finished at $timestamp \n"
 
 cd $DIRAC
 BUILD_SERIAL_INTEL=build_intelmkl_i8_static
@@ -75,17 +76,19 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
  python binary_info.py  > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
+echo -e "\n build 2 - Intel,MKL,i8,serial,static - finished at $timestamp \n"
 
 
-## GNU
+#####################
+##  GNU+MKL STATIC ##
+#####################
 cd $DIRAC
 BUILD_SERIAL_GNU=build_gnumkl_i8_static
 if [[ -d "$BUILD_SERIAL_GNU" ]]; then
@@ -99,14 +102,40 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU/dirac.x
  python binary_info.py  > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 3 - GNU,MKL,serial,static - finished at $timestamp \n"
+echo -e "\n build 3 - GNU,MKL,i8,serial,static - finished at $timestamp \n"
+
+
+#########################
+##  GNU+OWNMATH STATIC ##
+#########################
+cd $DIRAC
+BUILD_SERIAL_GNU1=build_gnu_ownmath_i8_static
+if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
+   echo "removing previous build directory $BUILD_SERIAL_GNU1"
+  /bin/rm -rf $BUILD_SERIAL_GNU1
+fi
+./pamadm -a --builddir=$BUILD_SERIAL_GNU1
+./setup --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=bultin --blas=builtin -D BUILDNAME="grid_savba_serial_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU1
+ cd $BUILD_SERIAL_GNU1
+ ctest -D ExperimentalUpdate
+ ctest -D ExperimentalConfigure
+ ctest -D ExperimentalBuild
+ ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalSubmit  --track Grid
+
+ ls -lt $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
+ ldd $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
+ python binary_info.py  > VERSION_cmake  2>&1  # get version
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build 4 - GNU,ownmath,i8,serial,static - finished at $timestamp \n"
 
 #################################################
 ### continue with the packing for grid servers ##
@@ -130,12 +159,13 @@ cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIR
 packed_dirac=DIRAC_grid_suite.tgz
 echo -e "\n\n packing (slim) DIRAC suite for grid computations..."
 tar czf $packed_dirac  pam  VERSION test  basis  basis_dalton  basis_ecp \
-$BUILD_OMPI_INTEL/dirac.x $BUILD_OMPI_INTEL/VERSION_cmake $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \ 
+$BUILD_OMPI_INTEL/dirac.x $BUILD_OMPI_INTEL/VERSION_cmake $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
 $BUILD_SERIAL_INTEL/dirac.x $BUILD_SERIAL_INTEL/VERSION_cmake \
-$BUILD_SERIAL_GNUL/dirac.x $BUILD_SERIAL_GNU/VERSION_cmake \
+$BUILD_SERIAL_GNU/dirac.x $BUILD_SERIAL_GNU/VERSION_cmake \
+$BUILD_SERIAL_GNU1/dirac.x $BUILD_SERIAL_GNU1/VERSION_cmake \
 maintenance/grid_computing/diracrc_grid 
 
-echo -e "\n packing done, we have tar-ball  file ready to be placed on SE for grid-computing : "
+echo -e "\n packing done, we have tar-ball file ready to be placed on SE for grid-computing : "
 ls -lt $packed_dirac
 echo -e "\n Done. Tarball with static execs ready."
 

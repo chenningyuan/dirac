@@ -79,7 +79,7 @@ ctest -D ExperimentalConfigure
 ctest -D ExperimentalBuild
 ctest -j2 -D ExperimentalTest -R cosci_energy 
 #ctest -D ExperimentalTest -R cosci_energy dft
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalSubmit  --track Grid
 
 #####################################################
 #        serial DIRAC buildup with GNU+mkl
@@ -119,7 +119,7 @@ ctest -D ExperimentalUpdate
 ctest -D ExperimentalConfigure
 ctest -j2 -D ExperimentalBuild
 ctest -j2 -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalSubmit  --track Grid
 
 #####################################################
 #        serial DIRAC buildup with GNU
@@ -183,7 +183,7 @@ ctest -D ExperimentalConfigure
 ctest -j2 -D ExperimentalBuild
 #ctest -D ExperimentalTest -R cosci_energy dft
 ctest -j2 -D ExperimentalTest -R cosci_energy
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalSubmit  --track Grid
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp

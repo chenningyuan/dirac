@@ -14,11 +14,13 @@
 !
 !************************************************************************ 
 
+#ifdef MOD_UNRELEASED
 module time
   implicit none
   character*10 start_date, end_date ! format of date: "dd_mmm_yy "
   character*8  start_time, end_time ! format of time: "hh:mm:ss"
 end module time
+#endif /* MOD_UNRELEASED */
 
 Program Test_DIRAC_Diagonalization_Routines
 #ifdef MOD_UNRELEASED
