@@ -328,7 +328,8 @@ C
      &                  WORK(KLVIBT),RCCTOS,WORK(KSCRRED),
      &                  WORK(KSCRRED2),IGROUPLIST,IPROCLIST,
      &                  IT_TTPL,IT_TTOL,WORK(KAMATC),WORK(KCWORK),
-     &                  WORK(KRWORK),WORK(KEIGVL),WORK(KIWORK))
+     &                  WORK(KRWORK),WORK(KEIGVL),
+     &                  eci_start,WORK(KIWORK))
 *
 #else
 *
@@ -340,7 +341,8 @@ C
      &              WORK(KAPROJI),WORK(KAPROJ),WORK(KAVEC),WORK(KWORK),
      &              IPRT,NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
      &              IHAM12,THRES_E,WORK(KAMATC),
-     &              WORK(KCWORK),WORK(KRWORK),WORK(KEIGVL),WORK(KIWORK))
+     &              WORK(KCWORK),WORK(KRWORK),WORK(KEIGVL),
+     &              eci_start,WORK(KIWORK))
 *
 #endif
       END IF
@@ -765,7 +767,7 @@ CTF     end do
      &                  APROJI,APROJR,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,NP1,NP2,NQ,LBLK,EIGSHF,
      &                  IHAM12,
-     &                  CONVLIM,AMATC,CWORK,RWORK,EVL,IWORK)
+     &                  CONVLIM,AMATC,CWORK,RWORK,EVL,eciold,IWORK)
 *
 * Multi root Davidson routine for complex Hermitian
 * matrices, requires two blocks in core
@@ -825,7 +827,7 @@ CTF     end do
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)
       DIMENSION IPNTR(1)
       COMPLEX*16 AMATC(MAXVEC,*), CWORK(*)
-      DIMENSION RWORK(*),EVL(*)
+      DIMENSION RWORK(*),EVL(*), eciold(*)
       INTEGER   IWORK(*)
 C
 C     min. DIMENSION of matrices and arrys required for complex
@@ -851,25 +853,15 @@ C
       NTEST = 0000
       IPRT = MAX(NTEST,IPRT)
 *
-       WRITE(LUWRT,*) '                  :::::::::::::::::::'
-       WRITE(LUWRT,*) '                    Entering CMICDV  '
-       WRITE(LUWRT,*) '                  :::::::::::::::::::'
-*
-*
-      if (NTEST.ge.1) then
-        write(LUWRT,*)
-        write(LUWRT,*) '----------------------------------------------'
-        write(LUWRT,*) ' I´ll take you to a place '
-        write(LUWRT,*) ' Where we shall find our'
-        write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
-        write(LUWRT,*)
-        write(LUWRT,*) '               Sepultura '
-        write(LUWRT,*) '----------------------------------------------'
-        write(LUWRT,*)
-      end if
-*
       write(LUWRT,*)
-      write(LUWRT,*) ' Nuclear repulsion + core energy: ',EIGSHF
+      write(LUWRT,*) ' ----------------------------------------------'
+      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) ' Where we shall find our'
+      write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
+      write(LUWRT,*)
+      write(LUWRT,*) '               Sepultura '
+      write(LUWRT,*) ' ----------------------------------------------'
+      write(LUWRT,*)
 *
        IF( MAXVEC .LT. 2 * NROOT ) THEN
          WRITE(LUWRT,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
@@ -881,12 +873,12 @@ C
 *  Complex diagonalizer, therefore
        IRC = 2
 *
+!      !> (re-)set convergence threshold
+       if(abs(convlim < 1.0d-07)) convlim = 1.0d-07
+
        CONVER = .FALSE.
 *
-       IF(MAXIT.EQ.0) THEN
-         WRITE(LUWRT,*) ' MAXIT = 0, so just a fast visit '
-         RETURN
-       END IF
+       IF(MAXIT <= 0) RETURN
 *
        if (IPRT.ge.1) then
          IF( MYPROC .eq. MASTER ) THEN
@@ -990,9 +982,8 @@ C
 *
  1000 CONTINUE
        CALL GETTIM(CPUITR1,WALLITR1)
-       write(LUWRT,*)
-       WRITE(LUWRT,*) ' Info from iteration .... ', ITER
-       WRITE(LUWRT,*) ' _________________________'
+        WRITE(LUWRT,'(//A,I4)')
+     &        ' (CMICDV)               CI microiteration no.',ITER
 *
 * ===============================
 *.1 New directions to be included
@@ -1066,8 +1057,7 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
             RTCNV(IROOT) = .FALSE.
             CONVER = .FALSE.
          END IF
-         WRITE(LUWRT,'(A19,5X,I5,3X,1E18.13,3X,1F19.10)')
-     &     ' Iter RNORM EIGAPR ', ITER,RNORM,EIGAPR+EIGSHF
+
 * I suppose this is only a check for the necessity of defining
 * a new search direction. Using intermediate ITERIM instead ...
 CTF      ITER = ITER + 1
@@ -1151,6 +1141,28 @@ C               SKPVCD(LU,NVEC,SEGMNT,IREW,LBLK)
            CALL COPVCDC(LU5,LU1,VEC1,0,IRC,LBLK)
          END IF
   100 CONTINUE
+      IF (IPRT .GE. 10) THEN
+          WRITE(LUWRT,'(/A,F20.8)')
+     &      '                        Core energy        =',EIGSHF
+          WRITE(LUWRT,'(A,4F20.8,/,(37X,4F20.8))')
+     &      '                        Active energy      =',
+     &                        EIG(1:NROOT,ITER)
+       END IF
+       WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &      '                        Total energy       =',
+     &                        ((EIG(I,ITER)+EIGSHF),i=1,NROOT)
+       WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &      '                        Lowering of energy =',
+     &      (eciold(i)-EIG(I,ITER)-EIGSHF,I=1,nroot)
+
+       do i = 1, nroot
+         eciold(i) = EIG(i,ITER) + EIGSHF
+       end do
+
+       WRITE(LUWRT,'(/A,1P,D8.2,A/,(I15,D20.5))')
+     &   '                        Norm of CI residuals'//
+     &   ' (thr = ',convlim,')',
+     &   (i,RNRM(i,ITER),i=1,NROOT)
 CTF
       ITER = ITER + 1
 CTF
@@ -1207,7 +1219,7 @@ C               INPRDDC(VEC1,VEC2,LU1,LU2,IOFF1,IOFF2,IREW,LBLK,XR,XI)
         CALL PRSYM(APROJR,NVEC)
         CALL PRSYM(APROJI,NVEC)
       END IF
-      WRITE(LUWRT,*) 'Dimension of projected matrix:',NVEC
+!     WRITE(LUWRT,*) 'Dimension of projected matrix:',NVEC
 C
 C     S. Knecht - Nov 2008
 C     disabled old diagonalizer routine which gives wrong eigenvectors
@@ -1367,9 +1379,9 @@ C?        WRITE(6,*) ' Vector copied : ', IVEC
       CALL GETTIM(CPUITR2,WALLITR2)
       CPUTID = SECTID(CPUITR2-CPUITR1)
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(LUWRT,'(/A,I4,5A)')
-     &         ' (CMICDV) CPU (Wall) time for iteration ',
-     &         ITER,': ',CPUTID,'(',WALLTID,')'
+      WRITE(LUWRT,'(/A,2A)')
+     &         '                        Wall time for microiteration',
+     &         '      ',WALLTID
 *
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
@@ -1378,16 +1390,37 @@ C?        WRITE(6,*) ' Vector copied : ', IVEC
 *
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
-         IF(IPRT .GE. 0 )
-     &   WRITE(LUWRT,1170) MAXIT
- 1170    FORMAT(/'   Convergence was not obtained in ',I3,' iterations')
+         WRITE(LUWRT,'(//A,I4,A)') ' (CMICDV)               '//
+     &           'WARNING: maximum number of micro iterations,',
+     &           MAXIT, ', is reached, CI aborted.'
       ELSE
 *        CONVERGENCE WAS OBTAINED
-C!?      ITER = ITER - 1
-         IF (IPRT .GE. 0 )
-     &   WRITE(LUWRT,1180) ITER
- 1180    FORMAT(/'  Convergence was obtained in ',I3,' iterations')
+         ITER = ITER - 1
+         WRITE(LUWRT,'(//A)')
+     &        ' (CMICDV)               Micro iterations converged.'
       END IF
+*
+      do iroot = 1, nroot
+        fineig(iroot) = eig(iroot,iter)+eigshf
+      end do
+      WRITE(LUWRT,'(/A,F20.8)')
+     &   '                        Core energy        = ',eigshf
+      WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &   '                        Active energies    = ',
+     &                            EIG(1:NROOT,ITER)
+      WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &   '                        Final CI energies  = ',
+     &     fineig(1:nroot)
+
+      do iroot = 1, nroot
+        IF (RTCNV(IROOT)) THEN
+          WRITE(LUWRT,'(/A,i4,a)')
+     &    '                        root ',iroot,' ...... converged!'
+        else
+          WRITE(LUWRT,'(/A,i4,a)')
+     &    '                        root ',iroot,' did not converge!'
+        end if
+      end do
 *
       if (IPRT.gt.0) then
         CALL REWINE(LU1,LBLK)
@@ -1397,13 +1430,6 @@ C!?      ITER = ITER - 1
      &    ' Information about convergence for root... ' ,IROOT,
      &    ' ============================================'
           FINEIG(IROOT) = EIG(IROOT,ITER)
-          IF (RTCNV(IROOT)) THEN
-             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)+EIGSHF
-          ELSE
-             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)+EIGSHF
-          END IF
- 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
- 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
           IF(IPRT.GE.10) THEN
             WRITE(LUWRT,1201) IROOT
  1201       FORMAT(/' The final approximation to eigenvector',I5)
@@ -1421,21 +1447,6 @@ C!?      ITER = ITER - 1
  1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(IROOT,I)
  1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
-      else
-        write(LUWRT,*)
-        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(LUWRT,*)
-        do 1601 IROOT = 1, NROOT
-          FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
-          IF (RTCNV(IROOT)) THEN
-             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)
-          ELSE
-             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)
-          END IF
- 1601   continue
-        write(LUWRT,*)
-        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(LUWRT,*)
       end if
 *
       ECI = EIG(1,ITER)
@@ -2466,6 +2477,16 @@ C      END IF
 *
        call qenter('MICDV4')
 *
+      write(LUWRT,*)
+      write(LUWRT,*) ' ----------------------------------------------'
+      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) ' Where we shall find our'
+      write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
+      write(LUWRT,*)
+      write(LUWRT,*) '               Sepultura '
+      write(LUWRT,*) ' ----------------------------------------------'
+      write(LUWRT,*)
+
        IOLSTM = 1
        IF(IPRT.GT.1.AND.IOLSTM.NE.0)
      & WRITE(LUWRT,*) ' Inverse iteration modified Davidson '
@@ -2484,7 +2505,7 @@ C      END IF
 
        KAPROJ = 1
        KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST   = 1.0D-6
+       TEST   = 1.0D-5
        CONVER = .FALSE.
 *
 * ===================
@@ -2582,12 +2603,6 @@ C
 C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
          RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,1,LBLK) )
          RNRM(ITER-1,IROOT) = RNORM
-*
-!        WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
-!    &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
-!        CALL FLSHFO(LUWRT)
-
-         
 *
          IF(RNORM.LT. TEST .OR. 
      &      (ITER.GT.2.AND.
@@ -2730,10 +2745,10 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
      &                        (EIG(I,ITER-1)+EIGSHF,i=1,NROOT)
        WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
      &      '                    Lowering of energy =',
-     &      (eciold(i)-EIG(I,ITER-1),I=1,nroot)
+     &      (eciold(i)-EIG(I,ITER-1)-EIGSHF,I=1,nroot)
 
        do i = 1, nroot
-         eciold(i) = EIG(i,ITER-1)
+         eciold(i) = EIG(i,ITER-1) + EIGSHF
        end do
 
        WRITE(LUWRT,'(/A,1P,D8.2,A/,(I11,D20.5))')

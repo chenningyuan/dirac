@@ -101,7 +101,17 @@
        INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR
 *
        call qenter('MICDV4')
-*
+
+      write(LUWRT,*)
+      write(LUWRT,*) ' ----------------------------------------------'
+      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) ' Where we shall find our'
+      write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
+      write(LUWRT,*)
+      write(LUWRT,*) '               Sepultura '
+      write(LUWRT,*) ' ----------------------------------------------'
+      write(LUWRT,*)
+
 C      no screening 
        CSCREEN = .FALSE.
 C
@@ -139,7 +149,7 @@ C
 *
        KAPROJ = 1
        KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST   = 1.0D-6
+       TEST   = 1.0D-5
        CONVER = .FALSE.
        NZERO  = 0
 *
@@ -376,10 +386,10 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
      &                        (EIG(I,ITER-1)+EIGSHF,i=1,NROOT)
        WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
      &      '                        Lowering of energy =',
-     &      (eciold(i)-EIG(I,ITER-1),I=1,nroot)
+     &      (eciold(i)-EIG(I,ITER-1)-EIGSHF,I=1,nroot)
 
        do i = 1, nroot
-         eciold(i) = EIG(i,ITER-1)
+         eciold(i) = EIG(i,ITER-1) + EIGSHF
        end do
 
        WRITE(LUWRT,'(/A,1P,D8.2,A/,(I15,D20.5))')
@@ -765,7 +775,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                      RCCTOS,SCRRED_R,SCRRED_I,IGROUPLIST,
      &                      IPROCLIST,IT_TTPL,IT_TTOL,AMATC,CWORK,
-     &                      RWORK,EVL,IWORK)
+     &                      RWORK,EVL,eciold,IWORK)
 *
 * Multi root Davidson routine for complex Hermitian
 * matrices, requires two blocks in core
@@ -829,7 +839,7 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       DIMENSION SCRRED_R(*), SCRRED_I(*)
       INTEGER   RCCTOS(*)
       DIMENSION IGROUPLIST(*), IPROCLIST(*)
-      DIMENSION VEC1(*),VEC2(*)
+      DIMENSION VEC1(*),VEC2(*),eciold(*)
       DIMENSION RNRM(NROOT,MAXIT),EIG(2*MAXVEC,MAXIT)
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)
       DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
@@ -862,6 +872,9 @@ C
       NTEST = 0000
       IPRT = MAX(NTEST,IPRT)
 C
+!     !> (re-)set convergence threshold
+      if(abs(convlim < 1.0d-07)) convlim = 1.0d-07
+
 C     no screening 
       CSCREEN = .FALSE.
 C
@@ -880,26 +893,16 @@ C     initialize LZERO_SCRRED
       LZERO_SCRRED = MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2 )
 C
 C
-      WRITE(LUWRT,'(/7X,A)') 
-     & ' ==========================================='
-      WRITE(LUWRT,'(7X, A)') 
-     & ' start of complex Davidson solver CMICDV_PAR'
-      WRITE(LUWRT,'(7X,A/)') 
-     & ' ==========================================='
-C
-      WRITE(LUWRT,'(/7X,A)') 
-     &              '=============================================='
-      WRITE(LUWRT,'(7X,A)') ' I will take you to a place '
-      WRITE(LUWRT,'(7X,A)') ' Where we shall find our'
-      WRITE(LUWRT,'(7X,A)') '  ROOTS, BLOODY ROOTS '
-      WRITE(LUWRT,'(7X,A)')
-      WRITE(LUWRT,'(7X,A)') '               Sepultura '
-      WRITE(LUWRT,'(7X,A/)') 
-     &              '=============================================='
-*
-      WRITE(LUWRT,'(/A,1F25.15/)') 
-     &              '  Nuclear repulsion + core energy: ',EIGSHF
-*
+      write(LUWRT,*)
+      write(LUWRT,*) ' ----------------------------------------------'
+      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) ' Where we shall find our'
+      write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
+      write(LUWRT,*)
+      write(LUWRT,*) '               Sepultura '
+      write(LUWRT,*) ' ----------------------------------------------'
+      write(LUWRT,*)
+
       IF( MAXVEC .LT. 2 * NROOT ) THEN
         WRITE(LUWRT,*) ' Sorry CMICDV wounded , MAXVEC .LT. 2*NROOT '
         WRITE(LUWRT,*) ' NROOT, MAXVEC  :',NROOT,MAXVEC
@@ -965,8 +968,8 @@ C
 *       end of timing
         sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
-        WRITE(LUWRT,9777) WALLTID
-        WRITE(LUWRT,*) '   '
+!       WRITE(LUWRT,9777) WALLTID
+!       WRITE(LUWRT,*) '   '
 *
 *       projected matrix using batch structure of CI vector(s)
 *
@@ -981,7 +984,7 @@ C
 *
       xinit_time2 = interface_MPI_WTIME()
       WALLTID = SECTID(xinit_time2-xinit_time)
-      WRITE(LUWRT,9888) WALLTID
+!     WRITE(LUWRT,9888) WALLTID
 *
 *     synchronize global_communicator
 *
@@ -1041,8 +1044,8 @@ C
 *       start timing of iteration
         WALLITR1 = interface_MPI_WTIME()
 *
-        write(LUWRT,'(/A21,3X,I3)') ' Info from iteration ',ITER
-        write(LUWRT,*) '_______________________'
+        WRITE(LUWRT,'(//A,I4)')
+     &        ' (CMICDV_PAR)           CI microiteration no.',ITER
 *
 *
 *===========================================================
@@ -1169,6 +1172,28 @@ C
          END IF
 C        ^ not converged...
   100 CONTINUE
+      IF (IPRT .GE. 10) THEN
+          WRITE(LUWRT,'(/A,F20.8)')
+     &      '                        Core energy        =',EIGSHF
+          WRITE(LUWRT,'(A,4F20.8,/,(37X,4F20.8))')
+     &      '                        Active energy      =',
+     &                        EIG(1:NROOT,ITER)
+       END IF
+       WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &      '                        Total energy       =',
+     &                        (EIG(I,ITER)+EIGSHF,i=1,NROOT)
+       WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &      '                        Lowering of energy =',
+     &      (eciold(i)-EIG(I,ITER)-EIGSHF,I=1,nroot)
+
+       do i = 1, nroot
+         eciold(i) = EIG(i,ITER) + EIGSHF
+       end do
+
+       WRITE(LUWRT,'(/A,1P,D8.2,A/,(I15,D20.5))')
+     &   '                        Norm of CI residuals'//
+     &   ' (thr = ',convlim,')',
+     &   (i,RNRM(i,ITER),i=1,NROOT)
 CTF
       ITER        = ITER + 1
       ITER_CHECKP = ITER_CHECKP + 1
@@ -1242,7 +1267,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *       end of timing
         sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
-        WRITE(LUWRT,9400) WALLTID
+!       WRITE(LUWRT,9400) WALLTID
 *
 *       projected matrix using batch structure of CI vector(s)
         CALL INPROD_B_PAR_CPLX3(ILU1,ILU2,VEC1,VEC2,SCRRED_R,SCRRED_I,
@@ -1267,7 +1292,7 @@ csk     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
       tottime = endtime - starttime
 *     TIMING FOR PARTS 2.1 - 2.2
       WPART22 = SECTID(tottime)
-      WRITE(LUWRT,9350) WPART22
+!     WRITE(LUWRT,9350) WPART22
 *
       IPRT = 00
 *
@@ -1410,46 +1435,62 @@ C
 C     finish timing part3
       timer3 = timer3 + interface_MPI_WTIME() - starttimer
       WALLTSTEP = SECTID(timer3)
-      WRITE(LUWRT,9600) WALLTSTEP
+!     WRITE(LUWRT,9600) WALLTSTEP
       END IF
 *     ^ NVEC + NROOT > MAXVEC or CONVER == .TRUE. or ITER == MAXIT
 *
 *     timing of this iteration
       WALLITR2 = interface_MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(LUWRT,9300) WALLTID
+      WRITE(LUWRT,'(/A,2A)')
+     &         '                        Wall time for microiteration',
+     &         '      ',WALLTID
 *
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
 *
 * ( End of loop over iterations )
 *
+*
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
-         IF(IPRT .GE. 0 )
-     &   WRITE(LUWRT,1170) MAXIT
- 1170    FORMAT(/'   Convergence was not obtained in ',I3,' iterations')
+         WRITE(LUWRT,'(//A,I4,A)') ' (CMICDV_PAR)           '//
+     &           'WARNING: maximum number of micro iterations,',
+     &           MAXIT, ', is reached, CI aborted.'
       ELSE
 *        CONVERGENCE WAS OBTAINED
-C!?      ITER = ITER - 1
-         IF (IPRT .GE. 0 )
-     &   WRITE(LUWRT,1180) ITER
- 1180    FORMAT(/'  Convergence was obtained in ',I3,' iterations')
+         ITER = ITER - 1
+         WRITE(LUWRT,'(//A)')
+     &        ' (CMICDV_PAR)           Micro iterations converged.'
       END IF
 *
+      do iroot = 1, nroot
+        fineig(iroot) = eig(iroot,iter)+eigshf
+      end do
+      WRITE(LUWRT,'(/A,F20.8)')
+     &   '                        Core energy        = ',eigshf
+      WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &   '                        Active energies    = ',
+     &                            EIG(1:NROOT,ITER)
+      WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &   '                        Final CI energies  = ',
+     &     fineig(1:nroot)
+
+      do iroot = 1, nroot
+        IF (RTCNV(IROOT)) THEN
+          WRITE(LUWRT,'(/A,i4,a)')
+     &    '                        root ',iroot,' ...... converged!'
+        else
+          WRITE(LUWRT,'(/A,i4,a)')
+     &    '                        root ',iroot,' did not converge!'
+        end if
+      end do
       if (IPRT.gt.0) then
         DO 1600 IROOT = 1, NROOT
           WRITE(LUWRT,'(/A,I3/A/)')
      &    ' Information about convergence for root... ' ,IROOT,
      &    ' ============================================'
           FINEIG(IROOT) = EIG(IROOT,ITER)
-          IF (RTCNV(IROOT)) THEN
-             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)+EIGSHF
-          ELSE
-             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)+EIGSHF
-          END IF
- 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
- 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
           WRITE(LUWRT,1300)
  1300     FORMAT(/'  Summary of iterations '
      +           /'  ----------------------')
@@ -1460,21 +1501,6 @@ C!?      ITER = ITER - 1
  1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(IROOT,I)
  1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
-      else
-        write(LUWRT,*)
-        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(LUWRT,*)
-        do 1601 IROOT = 1, NROOT
-          FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
-          IF (RTCNV(IROOT)) THEN
-             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)
-          ELSE
-             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)
-          END IF
- 1601   continue
-        write(LUWRT,*)
-        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
-        write(LUWRT,*)
       end if
 *
       ECI = EIG(1,ITER)
