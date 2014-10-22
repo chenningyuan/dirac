@@ -22,6 +22,8 @@ Dependencies
    *"...\\MinGW64\\bin"* in the %PATH% environment variable and this gives no
    conflict with CMake). The same holds for the Python and the CMake
    system. See also the web-page http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
+   
+   (NOTE: We recommend to use http://mingw-w64.sourceforge.net/ for both 32/64 bit Windows.)
 
 3. The Python interpreter of version at least 2.7 (http://www.python.org).
    Install 32-bit version of Python on 32-bit Windows and 64-bit Python on 64-bit Windows. 
@@ -51,7 +53,7 @@ Dependencies
     
     c) in the same directory run: ::
     
-      b2 install toolset=gcc
+      b2 --with-system --with-filesystem --with-test toolset=gcc install
     
     d) in *"C:\Boost"* you will find *"include"* and *"lib"* directories
 
