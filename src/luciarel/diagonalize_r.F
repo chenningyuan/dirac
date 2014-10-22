@@ -56,7 +56,7 @@
       DIMENSION INIDET(100)
       DIMENSION IPNTR(*), ISCR1(*)
       DIMENSION SCR1(*), SCR2(*)
-      DIMENSION IBLOCKL(*), NPARBLOCK(*) 
+      DIMENSION IBLOCKL(*), NPARBLOCK(*)
       DIMENSION IPROCLIST(*),IGROUPLIST(*)
 #include "infpar.h"
 #if defined (VAR_MPI2)
@@ -75,6 +75,7 @@
 *
 *
       DIMENSION EROOTS(NROOTS)
+      real*8, allocatable :: eci_start(:)
 *
       IF( IPRT.GT. 1 )  WRITE(LUWRT,'(/A)')
      &'          *** information from ci diagonalization  ***'
@@ -82,11 +83,6 @@
 *
       NTEST=0
 *
-CSK#if defined (VAR_MPI2)
-CSK      WRITE(LUWRT,*)'  THIS IS MY LUCLIST'
-CSK      CALL IWRTMAMN( LUCLIST, 1, IALL_LUC, 1, IALL_LUC, LUWRT)
-CSK      WRITE(LUWRT,*)'  '
-CSK#endif
 *               ====================================
 ** 1 :               INITIAL VARIATIONAL SUBSPACE
 *               ====================================
@@ -98,6 +94,13 @@ CSK#endif
 * ==================================================
 * In order to treat degeneracies, the lowest 4 * NROOT elements are
 *.obtained
+
+          !> hardwired for testing!!!
+!         istart_nroot = 8
+
+
+          allocate(eci_start(istart_nroot))
+          eci_start = 0
 
           NFINDM = MIN(NDIM,istart_nroot+3*nroots)
 #if defined (VAR_MPI2)
@@ -116,8 +119,9 @@ C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
 *
           DO 100 IROOTS = 1, istart_nroot 
 *. Number of degenerate elements
-            NDEG = 1
-            XVAL = SCR1(IBASE)
+            NDEG              = 1
+            XVAL              = SCR1(IBASE)
+            eci_start(iroots) = xval
    90       CONTINUE
             IF(IBASE-1+NDEG+1.LE.NFINDA) THEN
               IF (ABS(SCR1(IBASE-1+NDEG+1)-XVAL).LE.TEST) THEN
@@ -125,11 +129,11 @@ C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
                 GOTO 90
               END IF
             END IF
-            WRITE(LUWRT,*) ' IROOT NDEG ', IROOTS,NDEG
+!           WRITE(LUWRT,*) ' IROOT NDEG ', IROOTS,NDEG
 *
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(LUWRT,*) ' WARNING WARNING WARNING WARNING ! '
-              WRITE(LUWRT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
+!             WRITE(LUWRT,*) ' WARNING WARNING WARNING WARNING ! '
+!             WRITE(LUWRT,*) ' DEGENERATE INITIAL VECTORS FOR CI '
               NDEG = 1
             END IF
 
@@ -172,6 +176,15 @@ c           ISCR1(1) = 16
   100     CONTINUE
         END IF
       END IF
+
+      WRITE(LUWRT,'(/I5,A)') istart_nroot,
+     &   ' start vectors based on lowest diagonal elements of H_CI'
+      DO I = 1, istart_nroot
+         WRITE (LUWRT,'(I10,F20.6)') iscr1(I),
+     &                                eci_start(i)
+      END DO
+
+      deallocate(eci_start)
 *
 *
 *                 ========================
