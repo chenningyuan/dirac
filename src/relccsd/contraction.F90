@@ -18,7 +18,7 @@
 !----------calling variables-----------------------------------
     real(8), intent(in) :: varray(*), tarray(*)      
     character(*), intent(in) :: vtrans, ttrans, wtrans
-    complex(8), intent(in) :: dia_factor, dia_sum_factor               !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8), intent(in) :: dia_factor, dia_sum_factor               !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     integer, intent(in) :: dim_v, dim_t, ext_v(nrep), ext_t(nrep), index_sum(nrep)
     real(8), intent(out) :: warray(*)
 !--------------------------------------------------------------
@@ -39,38 +39,43 @@
     end subroutine
 
    subroutine contraction_442 (varray, tarray, warray, vorder, torder, worder, &
-           &        ext_v, ext_t, index_sum, dia_factor, dia_sum_factor,buf2,buf1)
+           &        ext_v, ext_t, index_sum, dia_factor, dia_sum_factor)
 
      
 !----------calling variables-----------------------------------
     real(8), intent(in) :: varray(*), tarray(*)      
-    complex(8), intent(in) :: dia_factor, dia_sum_factor               !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
-!   character(*), intent(in) :: vorder, torder, worder
+    real(8), intent(in) :: dia_factor, dia_sum_factor               !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     character (*), dimension(4), intent(in) :: vorder, torder
     character (*), dimension(2), intent(in) :: worder
-    real(8), intent(in) :: buf2(*), buf1(*)      
     integer, intent(in) :: ext_v(nrep), ext_t(nrep), index_sum(nrep)
     real(8), intent(out) :: warray(*)
+!----------local variables-------------------------------------
+    real(8), allocatable:: v_sorted(:),t_sorted(:)
 !--------------------------------------------------------------
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
    
+!     We need to eliminate the direct use of the kvvoot (and other) symmetry arrays here to be able to remove symm.inc (should be a function call that give the dimension arrays)
    
       if (worder(1).eq.'h1'.and.worder(2).eq.'h2') then
-      CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,varray,BUF2)
-      CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,tarray,BUF1)
+      allocate (v_sorted(rcw*kvvoot(nrep+1)))
+      allocate (t_sorted(rcw*kvvoot(nrep+1)))
+      call SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,varray,v_sorted)
+      call SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,tarray,t_sorted)
       endif
  
       if (worder(1).eq.'p1'.and.worder(2).eq.'p2') then
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
-     &             varray,BUF2)
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
-     &             tarray,BUF1)
+      allocate (v_sorted(rcw*lvvoot(nrep+1)))
+      allocate (t_sorted(rcw*lvvoot(nrep+1)))
+      call SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,varray,v_sorted)
+      call SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,tarray,t_sorted)
       endif
 
-     CALL CNTRCT ('C','N',ext_v,ext_t,index_sum,dia_factor,BUF2,BUF1,dia_sum_factor,warray,NREP) 
+      call cntrct ('C','N',ext_v,ext_t,index_sum,dia_factor,v_sorted,t_sorted,dia_sum_factor,warray,nrep) 
  
+      deallocate (v_sorted)
+      deallocate (t_sorted)
   
     end subroutine
 

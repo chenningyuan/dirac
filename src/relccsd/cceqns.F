@@ -257,7 +257,7 @@ C     Initialize DIIS.
       IF (.NOT.TEQ) THEN
          CALL GETAMPT (S1,S2)
 !         CALL HOINTM (FOO,EPS,S1,S2,BUF1,BUF2,BUF3,HO)
-         call f_bar_mi(foo,fvo,eps,s1,s2,buf1,buf2,buf3,ho)
+         call f_bar_mi(foo,fvo,s1,s2,ho)
 
          write(*,*)'f_bar_mi intermediate'
          write(*,*)'---------------------'
