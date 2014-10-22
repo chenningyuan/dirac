@@ -2479,7 +2479,7 @@ C      END IF
          STOP 20
        END IF
 *
-       IPRT =  20  ! debug
+!      IPRT =  20  ! debug
 !      IPRT = 0000
 
        KAPROJ = 1
@@ -2499,8 +2499,8 @@ C      END IF
          CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
          call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
-         WRITE(LUWRT,*) '  sigma vec ...',ivec
-         CALL WRTVCD(VEC1,LU4,1,LBLK)
+!        WRITE(LUWRT,*) '  sigma vec ...',ivec
+!        CALL WRTVCD(VEC1,LU4,1,LBLK)
          CALL REWINE(LU4,-1)
          CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
 *. Projected matrix
