@@ -3651,7 +3651,7 @@ C
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
 C
-      WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
+!     WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
 C
 C     General allocation for NO generation
 C
