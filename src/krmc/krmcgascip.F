@@ -2371,6 +2371,10 @@ C     THRSCR = THR_CONV**2 was not good enough for the complex group /hjaaj July
      &            WORK(KFCACM),WORK(KMUUUU),
      &            .TRUE.,NDET,IDET,THRSCR,IPRINT)
       END IF
+
+      !> for debug
+!     iprint_save = iprint
+!     iprint      = 20
 C
 C     **********************************
 C     *** Start micro iteration loop ***
@@ -2982,6 +2986,9 @@ C
       END IF
       call memchk('esr_resolve end RCISTD',work,1)
       CALL QEXIT('GASCIP_RCISTD')
+
+      !> debug...
+!     iprint      = iprint_save
 C
       RETURN
       END
