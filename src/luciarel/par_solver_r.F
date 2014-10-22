@@ -31,7 +31,7 @@
      &                  LUCLIST,NBATV,
      &                  LBATV,LEBATV,I1BATV,IBATV,RCCTOS,SCRRED,
      &                  IGROUPLIST,IPROCLIST,IT_TTPL,IT_TTOL,
-     &                  AMATC,RWORK,EVL)
+     &                  AMATC,RWORK,EVL,eciold)
 *
 *     Davidson algorithm , requires two blocks in core
 *     parallel Multi root version
@@ -84,7 +84,7 @@
        INTEGER   RCCTOS(*)
        DIMENSION IT_TTPL(*) 
        INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
-       DIMENSION AMATC(MAXVEC,*), RWORK(*), EVL(*)
+       DIMENSION AMATC(MAXVEC,*), RWORK(*), EVL(*), eciold(*)
 *
 * Dimensioning required of local vectors
 *      APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -102,12 +102,6 @@
 *
        call qenter('MICDV4')
 *
-       WRITE(LUWRT,*) '                                            '
-       WRITE(LUWRT,*) '             ============================   '
-       WRITE(LUWRT,*) '               Entering rel. MICDV4_par     '
-       WRITE(LUWRT,*) '             ============================   '
-       WRITE(LUWRT,*) '                                            '
-C
 C      no screening 
        CSCREEN = .FALSE.
 C
@@ -123,12 +117,6 @@ C      of MAXIT
        END IF
 C
        IPICO = 0
-       IF(IPICO.NE.0) THEN
-C?       WRITE(6,*) ' Perturbative solver '
-         MAXVEC = MIN(MAXVEC,2)
-       ELSE IF(IPICO.EQ.0) THEN
-C?       WRITE(6,*) ' Variational  solver '
-       END IF
 *
 *      initialize LZERO_SCRRED
        LZERO_SCRRED = 0
@@ -150,10 +138,10 @@ C?       WRITE(6,*) ' Variational  solver '
        NVEC = 0
 *
        KAPROJ = 1
-       KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST = 1.0D-8
+       KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
+       TEST   = 1.0D-6
        CONVER = .FALSE.
-       NZERO = 0
+       NZERO  = 0
 *
 *      ===================
 *       Initial iteration
@@ -173,24 +161,12 @@ C?       WRITE(6,*) ' Variational  solver '
 *
          call interface_mpi_BARRIER(MYNEW_COMM)
 *
-         CALL IZERO(LUCLIST,NUM_BLOCKS2)
-*
-*         WRITE(LUWRT,*) 'LUCLIST for the 1st time:'
-*         CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
-*         WRITE(LUWRT,*) 'LU1LIST for the 1st time:'
-*         CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
-*
 *        reset LUCLIST; MY_ACT_BLK_ALL = NUMBLOCKS!
+         CALL IZERO(LUCLIST,NUM_BLOCKS2)
 *
          CALL COPVCD_PP_CC_B(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
      &                       IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                       LUCLIST,IBLOCKL,IVEC-1)
-CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
-*
-*         WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
-*         CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
-*         WRITE(LUWRT,*) 'LU1LIST for the 2nd time:'
-*         CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *        set offset for sigma-file
 *
@@ -216,8 +192,11 @@ CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
 *        end of timing
          sigmatime2 = interface_MPI_WTIME()
          WALLTID = SECTID(sigmatime2-sigmatime)
-         WRITE(LUWRT,9777) WALLTID
-         WRITE(LUWRT,*) '   '
+
+         if(timing)then
+           WRITE(LUWRT,9777) WALLTID
+           WRITE(LUWRT,*) '   '
+         end if
 *
 *        projected matrix using batch structure of CI vector(s)
 *
@@ -232,8 +211,10 @@ CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
 *
        WALLITR2 = interface_MPI_WTIME()
        WALLTID = SECTID(WALLITR2-WALLITR1)
-       WRITE(LUWRT,9888) WALLTID
-       WRITE(LUWRT,*) '   '
+       if(timing)then
+         WRITE(LUWRT,9888) WALLTID
+         WRITE(LUWRT,*) '   '
+       end if
 *
 *      synchronize global_communicator
 * 
@@ -286,9 +267,8 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
         WALLITR1 = interface_MPI_WTIME()
         starttime = interface_MPI_WTIME()
 *
-        write(LUWRT,*)
-        write(LUWRT,'(A21,3X,I3)') ' Info from iteration ',ITER
-        write(LUWRT,*) '_______________________'
+        WRITE(LUWRT,'(//A,I4)')
+     &        ' (MICDV4_ENLMD_REL_PAR) CI microiteration no.',ITER
         ITER        = ITER + 1
         ITER_CHECKP = ITER_CHECKP + 1
 *
@@ -379,10 +359,33 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
          END IF
 *        ^ converged?
   100 CONTINUE
+
       endtime = interface_MPI_WTIME()
       WALLTID = SECTID(endtime-starttime)
-      IF( TIMING )
-     &WRITE(LUWRT,9250) WALLTID
+      IF( TIMING )WRITE(LUWRT,9250) WALLTID
+
+      IF (IPRT .GE. 10) THEN
+          WRITE(LUWRT,'(/A,F20.8)')
+     &      '                        Core energy        =',EIGSHF
+          WRITE(LUWRT,'(A,4F20.8,/,(37X,4F20.8))')
+     &      '                        Active energy      =',
+     &                        EIG(1:NROOT,ITER-1)
+       END IF
+       WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &      '                        Total energy       =',
+     &                        (EIG(I,ITER-1)+EIGSHF,i=1,NROOT)
+       WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &      '                        Lowering of energy =',
+     &      (eciold(i)-EIG(I,ITER-1),I=1,nroot)
+
+       do i = 1, nroot
+         eciold(i) = EIG(i,ITER-1)
+       end do
+
+       WRITE(LUWRT,'(/A,1P,D8.2,A/,(I15,D20.5))')
+     &   '                        Norm of CI residuals'//
+     &   ' (thr = ',test,')',
+     &   (i,RNRM(ITER-1,i),i=1,NROOT)
       IF( CONVER ) GOTO  901
       IF( ITER.GT. MAXIT) THEN
          ITER = MAXIT
@@ -414,9 +417,6 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
         call interface_mpi_BARRIER(MYNEW_COMM)
         xixidletime = xixidletime - xidletime + interface_MPI_WTIME()
 *
-CSK        WRITE(LUWRT,*) 'LU1LIST again:'
-CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
-*
 *       reset LUCLIST
 *
         CALL IZERO(LUCLIST,MY_ACT_BLK_ALL)
@@ -424,13 +424,6 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
         CALL COPVCD_PP_CC_B(ILU1,ILUC,VEC1,NBATV,LBATV,LEBATV,I1BATV,
      &                      IBATV,MY_LU1_OFF,MY_LUC_OFF,LU1LIST,
      &                      LUCLIST,IBLOCKL,NVEC+IVEC-1)
-*
-CSK         call interface_mpi_BARRIER(MYNEW_COMM,IERR)
-*
-CSK        WRITE(LUWRT,*) 'LUCLIST for the 2nd time:'
-CSK        CALL IWRTMAMN(LUCLIST,1,IALL_LUC,1,IALL_LUC,LUWRT)
-CSK        WRITE(LUWRT,*) 'LU1LIST for the 2nd time:'
-CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 *
 *       set offset for sigma-file
 *
@@ -455,7 +448,9 @@ CSK        CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C       end of timing
         sigmatime2 = interface_MPI_WTIME()
         WALLTID = SECTID(sigmatime2-sigmatime)
-        WRITE(LUWRT,9400) WALLTID
+        if(timing)then
+          WRITE(LUWRT,9400) WALLTID
+        end if
 *
 *       augment projected matrix using batch structure of CI vector(s)
 *
@@ -490,9 +485,9 @@ C       end of timing
 C     TIMING FOR PARTS 2.1 - 2.2
       tottime_save = tottime
       WPART22 = SECTID(tottime)
-      WRITE(LUWRT,9350) WPART22
 *
       IF( TIMING )THEN
+        WRITE(LUWRT,9350) WPART22
 *
         xixidletime_save = 0.0D0
         xixidletime_save = xixidletime
@@ -508,14 +503,6 @@ C     TIMING FOR PARTS 2.1 - 2.2
      &  ' ratio (idle time)/(time part 2) =',xpercent,' %'
 *
       END IF
-*
-*     store new eigenvalues
-*
-!     DO 160 IROOT = 1, NROOT
-!       EIG(IROOT,ITER) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
-!160  CONTINUE
-*
-*      debug printings
 *
        IF(IPRT .GE. 3 ) THEN
          WRITE(LUWRT,'(A,I4)') ' Eigenvalues of iteration ..', ITER
@@ -651,7 +638,9 @@ C
 C       finish timing part3
         timer3 = timer3 + interface_MPI_WTIME() - starttimer
         WALLTSTEP = SECTID(timer3)
-        WRITE(LUWRT,9600) WALLTSTEP
+        if(timing)then
+          WRITE(LUWRT,9600) WALLTSTEP
+        end if
       END IF
 *     ^ NVEC+NROOT > MAXVEC or CONVER == .TRUE. or ITER == MAXIT
 *
@@ -659,24 +648,49 @@ C       finish timing part3
 *
       WALLITR2 = interface_MPI_WTIME()
       WALLTID = SECTID(WALLITR2-WALLITR1)
-      WRITE(LUWRT,9300) WALLTID
+      WRITE(LUWRT,'(/A,2A)')
+     &         '                        Wall time for microiteration',
+     &         '      ',WALLTID
 *
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
 C
 * ( End of loop over iterations )
 *
+*
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
-         WRITE(LUWRT,1170) MAXIT
- 1170    FORMAT(/,'  Convergence was not obtained in ',I3,' iterations')
+         WRITE(LUWRT,'(//A,I4,A)') ' (MICDV4_ENLMD_REL_PAR) '//
+     &           'WARNING: maximum number of micro iterations,',
+     &           MAXIT, ', is reached, CI aborted.'
       ELSE
 *        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
-         WRITE(LUWRT,1180) ITER
- 1180    FORMAT(/,'  Convergence was obtained in ',I3,' iterations')
-        END IF
+         WRITE(LUWRT,'(//A)')
+     &        ' (MICDV4_ENLMD_REL_PAR) Micro iterations converged.'
+      END IF
 *
+      do iroot = 1, nroot
+        fineig(iroot) = eig(iroot,iter)+eigshf
+      end do
+      WRITE(LUWRT,'(/A,F20.8)')
+     &   '                        Core energy        = ',eigshf
+      WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &   '                        Active energies    = ',
+     &                            EIG(1:NROOT,ITER)
+      WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
+     &   '                        Final CI energies  = ',
+     &     fineig(1:nroot)
+
+      do iroot = 1, nroot
+        IF (RTCNV(IROOT)) THEN
+          WRITE(LUWRT,'(/A,i4,a)')
+     &    '                        root ',iroot,' ...... converged!'
+        else
+          WRITE(LUWRT,'(/A,i4,a)')
+     &    '                        root ',iroot,' did not converge!'
+        end if
+      end do
       IF ( IPRT .GT. 0 ) THEN
         DO 1600 IROOT = 1, NROOT
           WRITE(LUWRT,*)
@@ -686,13 +700,6 @@ C
      &    '============================================'
           WRITE(LUWRT,*)
           FINEIG(IROOT) = EIG(IROOT,ITER)
-          IF (RTCNV(IROOT)) THEN
-             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)+EIGSHF
-          ELSE
-             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)+EIGSHF
-          END IF
- 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
- 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
           WRITE(LUWRT,1300)
  1300     FORMAT(1H0,' Summary of iterations ',/,1H
      +          ,' ----------------------')
@@ -703,19 +710,6 @@ C
  1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(I,IROOT)
  1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
-      ELSE
-        write(LUWRT,'(/A/)')
-     &  '  *++++++++++++++++++++++++++++++++++++++++++++*'
-        DO 1601 IROOT = 1, NROOT
-          FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
-          IF (RTCNV(IROOT)) THEN
-             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)
-          ELSE
-             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)
-          END IF
- 1601   CONTINUE
-        write(LUWRT,'(/A/)')
-     &  '  *++++++++++++++++++++++++++++++++++++++++++++*'
       END IF
 *
       IF(IPRT .EQ. 1 ) THEN

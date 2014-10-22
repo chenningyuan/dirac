@@ -6504,12 +6504,6 @@ CSK      WRITE(LUWRT,*) 'RNORM**2',REDSCRVAR
 C
       RNRM(ITER-1,IROOT) = RNORM
 C
-C     print norm and eigenvalue
-C
-      WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
-     &     ' Iter RNORM EIGAPR ', ITER-1,RNORM,EIGAPR+EIGSHF
-      CALL FLSHFO(LUWRT)
-C
 C     check for convergence
 C
       IF(RNORM.LT. TEST .OR. (ITER.GT.2.AND. 

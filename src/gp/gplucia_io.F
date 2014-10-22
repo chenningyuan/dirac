@@ -1674,7 +1674,7 @@ C
            IF(LBL .GT. 0 ) THEN
              WRITE(6,'(A,I3,A,I6)')
      &       ' Number of elements in segment ',IBLK,' IS ',LBL
-             CALL WRTMAT(SEGMNT,1,LBL,1,LBL)
+             CALL WRTMATMN(SEGMNT,1,LBL,1,LBL,6)
            END IF
         END IF
 C
