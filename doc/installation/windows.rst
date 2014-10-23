@@ -44,6 +44,8 @@ Dependencies
     d) in top directory (in *"zlib"*) run in command line: ::
     
       dlltool -D zlib1.dll -d lib/zlib.def -l lib/libzdll.a 
+    
+    e) add directory which contains *"zlib1.dll"* into %PATH%
 
 5. Download Boost (http://www.boost.org/) in archive file of your choice from http://sourceforge.net/projects/boost/files/boost/. Then follow this instructions:
     a) unpack downloaded archive
