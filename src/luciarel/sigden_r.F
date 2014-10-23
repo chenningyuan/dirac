@@ -3323,7 +3323,7 @@ C                 transfer block to disc
 CSK too much information?                WALLTID  = SECTID(writetime)
                 WALLTID2 = SECTID(sbatchtime)
 CSK too much information?                 WRITE(LUWRT,50000) WALLTID
-                IF( .NOT. DOSIGPROP ) WRITE(LUWRT,60001) WALLTID2
+!               IF( .NOT. DOSIGPROP ) WRITE(LUWRT,60001) WALLTID2
 CSK                WRITE(LUWRT,60000) WALLTID2, JBATABS
               END IF
 #endif /* if def VAR_MPI2 */
@@ -3368,7 +3368,7 @@ C           skip sigma blocks on disk
 #else
 *
       WALLTID3 = SECTID(BLOCKTIME)
-      IF( .NOT. DOSIGPROP ) WRITE(LUWRT,80000) WALLTID3
+!     IF( .NOT. DOSIGPROP ) WRITE(LUWRT,80000) WALLTID3
       IF( SHARED_M .and. ISIGDEN .eq. 1 )THEN
         WALLTID3 = SECTID(mem_cp_time)
         WRITE(LUWRT,90000) WALLTID3
