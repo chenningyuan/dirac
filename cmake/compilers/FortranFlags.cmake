@@ -79,7 +79,7 @@ else()
                 )
         endif()
 
-# append extra fortran flags for specific routinesi
+# append extra fortran flags for specific routines
         file(GLOB targetFiles src/relccsd/*.F90)
         set_source_files_properties(${targetFiles} PROPERTIES
                                       COMPILE_FLAGS "-gen-interfaces -warn interfaces")

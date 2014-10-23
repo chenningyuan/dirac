@@ -1,4 +1,8 @@
   module intermediates_1b_2b
+
+! Module to make intermediates needed in the CC and Lambda equations and for EOMCC
+! Written by Avijit Shee and Lucas Visscher, 2014
+
   use contraction
   use wrapper_sorting
 
@@ -12,73 +16,44 @@
 
      contains
 
-    subroutine f_bar_mi(FOO,FVO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
+   subroutine f_bar_mi(foo,fvo,t1,t2,ho)
 
-!---------------Calling variables--------------------------------------
-     real(8), intent(in) :: FOO(*),EPS(*), FVO(*)
-     real(8), intent(in) :: T1(*),T2(*)
-     real(8), intent(out):: HO(*)
-     real(8), intent(in) :: BUF1(*),BUF2(*),BUF3(*)
-     real(8) :: ddot
-     integer :: II, I, ND, IRP, N, X, IMIN
-     real(8), allocatable :: tau(:) 
-     character            :: vtrans
-!     character(*),dimension(*):: v_array, t_array, w_array      
-     integer              :: IJKL,J,K,L,JRP,KRP,LRP,KLRP  
-!---------------Common Blocks--------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
-!#include "ccpar.inc"
+!---------------Calling variables--------------------------------------
+     real(8), intent(in) :: foo(rcw,nfoo), fvo(rcw,nfvo)   ! Fock matrix elements
+     real(8), intent(in) :: t1(rcw,ndimt1),t2(rcw,ndimt2)  ! Amplitudes
+     real(8), intent(out):: ho(rcw,nfoo)                   ! Intermediate
+!---------------Local variables---------------------------------------
+     real(8), allocatable :: tau(:), vooo(:),vooo_sorted(:),vvoo(:)
+!---------------Common Blocks--------------------------------------
 
-!---------------------------------------
-! H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
-!---------------------------------------
-      call dzero(ho,nfoo)
-      CALL XCOPY (nfoo,FOO,1,HO,1)
-!     II = 1
-!     I = 1
-!     do IRP = 1, NREP
-!        N = NO(IRP)
-!        ND = (N+1) * RCW
-!        CALL DAXPY(N,-A1,EPS(I),1,HO(II),ND)
-!        I = I + N
-!        II = II + N * N * RCW
-!     enddo
-      CALL DELFCK ('OO','DK',HO)
+!    Initialize  f_bar_mi with oo block of Fock matrix
+        ho = foo
 !----------------------------------------------------------------------
 ! F_bar_mi = F_bar_mi - V(nm,ef) * T(ef,in) 
 !----------------------------------------------------------------------
-   allocate(tau(ndimt2)) 
-   CALL GETTAU  (T1,T2,tau)
+   allocate(tau(ndimt2))
+
+   CALL gettau  (t1,t2,tau)
    call contraction_442 ((/"o3","o1","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),tau,HO,-1.0d0,1.0d0)
+
    deallocate(tau) 
-!     CALL GETVVOO (BUF3)
-!     CALL DELINT ('VVOO','DDDD',BUF3,0,0,0)
-!     CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,BUF3,BUF1)
-!     CALL GETTAU  (T1,T2,BUF3)
-!     CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,BUF3,BUF2)
-!     CALL CNTRCT ('C','N',NO,NO,NVVOT,A1,BUF1,BUF2,A1,HO,NREP)
 
-!---------------------------------------------------------------
-!F_bar_mi = F_bar_mi + V(mn, ie) * T1(e,n) --> V(mi,en) * T1(en) 
-!---------------------------------------------------------------
+!---------------------------------------------------
+!F_bar_mi(m,i) = F_bar_mi(m,i) - V(mn, ie) * T1(e,n) 
+!---------------------------------------------------
 
-  call contraction_422 ((/"o1","o3","o2","p1"/), (/"p1","o3"/), (/"o1","o2"/), T1, HO, -1.0d0, 1.0d0, NREP)
+    call contraction_422 ((/"o1","o3","o2","p1"/), (/"p1","o3"/), (/"o1","o2"/), t1, ho, -1.0d0, 1.0d0, nrep)
 
 !-----------------------------------------------------------------
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
 !-----------------------------------------------------------------
 
-  call contraction_222 (FVO, NFVO, T1, ndimt1, HO, 'C', 'N', 'N', &
-           &        NO, NO, NV, A1, A1)
+   call contraction_222 (fvo, nfvo, t1, ndimt1, ho, 'C', 'N', 'N', &
+                &        no, no, nv, 1.0d0, 1.0d0)
   
-!      call sort_22_unrestricted((/"o1","o3","o2","p1"/),(/"p1","o3"/),(/"o1","o2"/),vtrans)
-
-!      if (carith) call conjuga (NFVO,FVO,1) 
-!      call CNTRCT ('C','N',NO,NO,NV,A1,FVO,T1,A1,HO,NREP)
-
-    end subroutine
+   end subroutine
 
     subroutine f_bar_ae(FVV,FVO,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
 

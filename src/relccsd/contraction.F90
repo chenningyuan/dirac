@@ -20,7 +20,7 @@
 !----------calling variables-----------------------------------
     real(8), intent(in) :: varray(*), tarray(*)      
     character(*), intent(in) :: vtrans, ttrans, wtrans
-    complex(8), intent(in) :: dia_factor, dia_sum_factor               !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8), intent(in) :: dia_factor, dia_sum_factor               !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     integer, intent(in) :: dim_v, dim_t, ext_v(nrep), ext_t(nrep), index_sum(nrep)
     real(8), intent(out) :: warray(*)
 !--------------------------------------------------------------
@@ -40,7 +40,6 @@
 
     end subroutine
 
-
    subroutine contraction_442 (left_order, right_order, im_order, rightTensor, imTensor, &
            &                   dia_factor, dia_sum_factor)
      
@@ -56,6 +55,8 @@
     real(8)  :: v_sort(10000)
     real(8)  :: buf4(100000)    
 !--------------------------------------------------------------
+!     We need to eliminate the direct use of the kvvoot (and other) symmetry arrays here to be able to remove symm.inc (should be a function call that give the dimension arrays)
+
 #include "param.inc"
 #include "symm.inc"
 
@@ -67,11 +68,16 @@
 
       v_sort = 0.0d0
 ! 1) fetch the 2-e integrals and sort them for BLAS. 
-      call v_for_blas (13,left_order,right_order,im_order, transA, v_sort, x_row, x_column)
+
+     call v_for_blas (13,left_order,right_order,im_order, transA, v_sort, x_row, x_column)
+
 ! 2) the call of SRT22 routine will not be there. it will be replaced by general sorting routine for fixed arrays. 
 !     likewise, BUF4 will also be replaced.   
-      CALL SRT22 (NREP,MULTB,NVVT,NO,NO,NVVOT,LOVVOT,LLOVVT,rightTensor,BUF4)
+
+     CALL SRT22 (NREP,MULTB,NVVT,NO,NO,NVVOT,LOVVOT,LLOVVT,rightTensor,BUF4)
+
 ! 3) contraction routine for symmetry-packed arrays.
+
       call CNTRCT (transA,'N',x_row,y_column,x_column,dia_factor*A1,v_sort, BUF4,dia_sum_factor*A1,imTensor,NREP) 
   
      deallocate(y_column)
@@ -110,6 +116,5 @@
       CALL XGEMV (trans,x_row,x_column,dia_factor*A1,v_sort,x_row,rightTensor,1,dia_sum_factor*A1,imTensor,1) 
 
     end subroutine
-
 
   end module

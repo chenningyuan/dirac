@@ -2276,7 +2276,7 @@ C
             GOTO 10
          ENDIF
 C
-         CALL MP2EQN(EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
+         CALL amplitude_equation_mp2 (EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        This is a restart point: save the amplitudes and update status.
 C
@@ -2333,8 +2333,8 @@ C
          CALL CCDUMP
 C
          CALL XTIME(5,1,'CCSD equations                ')
-         CALL CCEQN(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
-     &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
+         CALL cceqn_driver_amplitudes(MAXIT,EPS,a_FOO,a_FVO,a_FVV,
+     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
      &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
@@ -2695,7 +2695,7 @@ C
 C
 C        Solve relativistic MP2 lambda equations
 C
-         CALL MP2EQN(EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
+         CALL lambda_equation_mp2 (EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        Get amplitude part of density matrix
 C
@@ -2794,7 +2794,7 @@ C         this means that, for the time being, we can deallocate everything?
 C
 C        Get CCSD amplitudes and lambdas
 C
-         CALL MP2EQN(EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
+         CALL lambda_equation_mp2 (EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
 C
 C        Get amplitude part of density matrix
 C
@@ -2923,13 +2923,12 @@ C         this means that, for the time being, we can deallocate everything?
 
          CALL CCDUMP
 
-         CALL CCEQN(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
+         CALL cceqn_driver_lambda(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
      &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
      &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
-     &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
+     &           TOL,NBUF2,NBUF3)
 
-         write(*,*)'hi2'  
 !        Get amplitude part of density matrix
 
          CALL CCDENSC (1, a_T1  , a_S1  , a_T2,   a_S2,
@@ -3548,7 +3547,7 @@ C
      &              id="eigenvectors" )
         IF (ICALC.LE.1) GOTO 442 
 C
-        CALL CCEQN(MAXIT_SECT(ICURFSS),EPS, 
+        CALL cceqn_driver_amplitudes(MAXIT_SECT(ICURFSS),EPS, 
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   , DUM    , a_H    , 
      &             a_HO  , a_HV  , a_HOV  ,
