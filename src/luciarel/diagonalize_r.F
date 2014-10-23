@@ -267,11 +267,7 @@ C       ... initialize
      &                     KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDMXXX,
      &                     NBATCH,NUM_BLOCKS,NBLK_MS2,IBLK_MS2,
      &                     NBAT_MS2,IBAT_MS2,0,1,NPARBLOCK)
-CSK      call z_blkfo_rel(IDC,NMS2VAL,JCMBSPC,IREFSM,
-CSK     &                 KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KDUM,
-CSK     &                 NBATCH,NUM_BLOCKS,NBLK_MS2,IBLK_MS2,
-CSK     &                 NBAT_MS2,IBAT_MS2,0,0,NPARBLOCK)
-*
+
 #endif
 *
       IF (IRC.EQ.1) THEN
@@ -353,6 +349,8 @@ C
       CALL QEXIT('CIEIG5')
       END
 
+#ifdef work_in_progress_for_release
+
       SUBROUTINE KRCI_RCISTD(N_ROOTS,THR_CONV,MAX_CI_IT,
      &                       ECI_OUT,CVECS,NDET,IDET,CMO,
      &                       THR_CVEC,I_STATE,ICONV_TOT,
@@ -399,9 +397,9 @@ C     Local variales:
 C
       PARAMETER (MAX_ROOTS = 41, N_CSIM_EXTRA_START = 7)
       DIMENSION DNRES(MAX_ROOTS), ECIOLD(MAX_ROOTS), ECIA(MAX_ROOTS)
-      INTEGER   J_HDIAG(MAX_ROOTS + 1), ICONV(MAX_ROOTS)
+      INTEGER   J_HDIAG(2*(MAX_ROOTS+1)), ICONV(MAX_ROOTS)
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-      real*8    ECI(MAX_ROOTS)
+      real*8    ECI(MAX_ROOTS), JJ_HDIAG(2*(MAX_ROOTS+1))
 C
 #include "memint.h"
 C
@@ -411,9 +409,6 @@ C
 
 C
 C     Set general parameters (which later maybe should be set by input?)
-C
-!d      write(lupri,*) 'THR_PCI, THR_CONV', THR_PCI,THR_CONV
-      NDETQ  = NZ_in_CI*NDET
       MAX_HRED = MAX(100,N_CI_ROOTS*MAX_CI_IT)
       MAX_HRED = MIN(2000, MAX_HRED)
 C
@@ -429,7 +424,6 @@ C        to include all members of quasidegenerate sets.
      &      N_ROOTS,NDET
          CALL QUIT('N_ROOTS .gt. number of determinants')
       END IF
-
 C
 C     ********************************
 C     *** Find start trial vectors ***
@@ -447,26 +441,16 @@ C      /hjaaj Oct 2010 )
 C
       N_CSIM = MIN(NDET, N_ROOTS+N_CSIM_EXTRA_START, MAX_ROOTS)
       J_CSIM = MIN(NDET,N_CSIM + 1)
-      ! always OK because DIMENSION J_HDIAG(MAX_ROOTS + 1)
-      CALL FNDMIN(J_CSIM,J_HDIAG,WORK(KHDIAG),NDET,WORK(KFREE),LFREE)
+#if defined (VAR_MPI2)
+      CALL FNDMND_PAR_REL(LUDIA,-1,VEC1,J_CSIM,N_CSIM,
+     &                    J_HDIAG(1+J_CSIM),JJ_HDIAG(1+J_CSIM),J_HDIAG,
+     &                    JJ_HDIAG,IBLOCKL,NPARBLOCK,NUM_BLOCKS,IPRT)
 C
-C     Make sure that we don't break symmetry by only having all
-C     components of a (nearly) degenerate set - criterium for
-C     degeneracy: energy difference less than 0.01 bohr)
+#else
+      CALL FNDMND(LUDIA,-1,VEC1,J_CSIM,N_CSIM,J_HDIAG(1+J_CSIM),
+     &            JJ_HDIAG(1+J_CSIM),J_HDIAG,JJ_HDIAG,IPRT)
+#endif
 
-      !> hardwire for debugging: 
-!     n_csim = 4
-C
-      if(ndet > 1)then
-        HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
-   90   HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
-        call flshfo(lupri)
-        IF (ABS(HDIAG_N_CSIMp1 - HDIAG_N_CSIM) .LT. 0.002D0) THEN
-           N_CSIM = N_CSIM - 1
-           HDIAG_N_CSIMp1 = HDIAG_N_CSIM
-           GO TO 90
-        END IF
-      end if
       IF (N_CSIM .LT. N_ROOTS) THEN
           WRITE(LUPRI,*) 'N_CSIM .lt. N_ROOTS; increase MAX_ROOTS',
      &      N_CSIM,N_ROOTS
@@ -475,47 +459,51 @@ C
 !        to include all members of a quasi-degenerate set.
       END IF
 C
+C     Set first trial vectors equal to: BCVEC(I,J) = DELTA(I, J_HDIAG(J))
+      !> start vectors are stored on LU1
+      CALL REWINE(LU1,-1)
+      WRITE(LUPRI,'(/I5,A)') N_CSIM,
+     &   ' start vectors based on lowest diagonal elements of H_CI'
+
+
+      DO I = 1, N_CSIM
+
+         II      = J_HDIAG(I)
+         ECIA(I) = JJ_HDIAG(i)
+         ECI(I)  = ECIA(I) + EIGSHF
+         WRITE (LUPRI,'(I10,F20.6)') II, ECI(I)
+* Real part
+         CALL REWINE(LUDIA,-1)
+         CALL WRSVCD_REL(LU1,-1,VEC1,J_HDIAG(i),1.0d0,1,ndet,
+     &                   LUDIA,NUM_BLOCKS,IBLOCKL,NPARBLOCK,1,i
+#if defined (VAR_MPI2)
+     &                      ,LU1LIST
+#endif
+     &                      )
+         if(NZ_in_CI == 2)then
+              CALL WRSVCD_REL(LU1,-1,VEC1,J_HDIAG(i),1.0d0,0,ndet,
+     &                        LUDIA,NUM_BLOCKS,IBLOCKL,NPARBLOCK,2,i
+#if defined (VAR_MPI2)
+     &                        ,LU1LIST
+#endif
+     &                        )
+          
+         end if
+      END DO
+C
       LHRED = MAX_HRED*MAX_HRED*NZ_in_CI
       CALL MEMGET2('REAL','HRED',KHRED,LHRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','ERED',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','VRED',KEIGVC,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
-      KHREDI = KHRED + MAX_HRED*MAX_HRED
+      KHREDI  = KHRED  + MAX_HRED*MAX_HRED
       KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED
 C
-C     Assume we can have all sigma and trial vectors in memory.
-C     This could get a little expensive for large CI's.
-C
-      CALL MEMGET2('REAL','BCVEC',KBCVEC,MAX_HRED * NDETQ,
-     &     WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','SCVEC',KSCVEC,MAX_HRED * NDETQ,
-     &     WORK,KFREE,LFREE)
-C
-C     Set first trial vectors equal to: BCVEC(I,J) = DELTA(I, J_HDIAG(J))
-C
-      CALL DZERO(WORK(KBCVEC),N_CSIM*NDETQ)
-      WRITE(LUPRI,'(/I5,A)') N_CSIM,
-     &   ' start vectors based on lowest diagonal elements of H_CI'
-      JBCVEC = KBCVEC - 1
-      DO I = 1, N_CSIM
-         II = J_HDIAG(I)
-         ECIA(I) = WORK(KHDIAG-1+II)
-         ECI(I)  = ECIA(I) + ECORE
-         WRITE (LUPRI,'(I10,F20.6)') II, ECI(I)
-         WORK(JBCVEC + II) = 1.0D0
-         JBCVEC = JBCVEC + NDETQ
-      END DO
-C
-      ITMIC = 0
+      ITMIC     = 0
       ICONV_TOT = 0
-      N_CRED = 0
-C     GASCIP screening, a calculation in C2 symmetry showed that
-C     THRSCR = THR_CONV**2 was not good enough for the complex group /hjaaj July 04
-      THRSCR = MIN(1.0D-8, THR_CONV**2 * 0.01D0)
+      N_CRED    = 0
+      THRSCR    = MIN(1.0D-8, THR_CONV**2 * 0.01D0)
 
-      !> for debug
-!     iprint_save = iprint
-!     iprint      = 5
 C
 C     **********************************
 C     *** Start micro iteration loop ***
@@ -523,57 +511,40 @@ C     **********************************
 C
       CALL GETTIM(CPU2,WALL2)
 C
+      CALL REWINE(LU1,-1)
+      CALL REWINE(LU2,-1)
+
       DO ! while not converged and no limits reached
          N_CRED_OLD = N_CRED
-         N_CRED = N_CRED + N_CSIM
-         ITMIC = ITMIC + 1
+         N_CRED     = N_CRED + N_CSIM
+         ITMIC      = ITMIC  + 1
+
          CALL GETTIM(CPU3,WALL3)
-C
+ 
          WRITE(LUPRI,'(//A,I4)')
      &        ' (KRCI_RCISTD) CI microiteration no.',ITMIC
+
          IF (N_CSIM .LE. 0) THEN
             WRITE (LUPRI,'(/A,I4)')
      &         ' FATAL ERROR: no new trial vectors',N_CSIM
             CALL QUIT(' FATAL ERROR: no new trial vectors')
          END IF
          CALL FLSHFO(LUPRI)
-C
-C        Calculate sigma vector(s)
-C        -------------------------
-C
-         IHRM = 1
+!
+!        !> Calculate sigma vector(s)
+!        ----------------------------
+!
          DO I = 1, N_CSIM
 
-            I_TOT = N_CRED_OLD + I
-            CALL GASCIP_CI(.FALSE.,DUMMY,
-     &         .TRUE.,WORK(KSCVEC+(I_TOT-1)*NDETQ),
-     &         WORK(KBCVEC+(I_TOT-1)*NDETQ),
-     &         WORK(KFCACM),WORK(KMUUUU),
-     &         .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
-     &         .TRUE.,NDET,IDET,IHRM,IPRINT)
-c
-            IF (IPRINT .GE. 10) THEN
-C
-C              Trial vector
-C
-               WRITE(LUPRI,'(/A,I3,A,I3)')
-     &              ' (KRCI_RCISTD) Trial vector no. ',I,' of ',N_CSIM
-               CALL GASCIP_ANACI(WORK(KBCVEC+(I_TOT-1)*NDETQ),
-     &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
-               IF (IPRINT .GE. 20)
-     &            CALL OUTPUT(WORK(KBCVEC+(I_TOT-1)*NDETQ),
-     &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
-C
-C              Sigma vector
-C
-               WRITE(LUPRI,'(/A,I3,A,I3)')
-     &              ' (KRCI_RCISTD) Sigma vector no. ',I,' of ',N_CSIM
-               CALL GASCIP_ANACI(WORK(KSCVEC+(I_TOT-1)*NDETQ),
-     &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
-               IF (IPRINT .GE. 20)
-     &            CALL OUTPUT(WORK(KSCVEC+(I_TOT-1)*NDETQ),
-     &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
-            END IF
+            CALL REWINE(LU3,-1)
+            CALL REWINE(LU4,-1)
+            CALL COPVCD(LU1,LU3,VEC1,0,-1)
+
+            call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
+
+!           !> Move sigma to LU2, LU2 is positioned at end of vector i - 1
+            CALL REWINE(LU4,-1)
+            CALL COPVCD(LU4,LU2,VEC1,0,-1)
          END DO
 C
 C        Extend reduced Hamiltonian:
@@ -583,28 +554,19 @@ C        HRED(I,J) = BCVEC(I)^+ * SCVEC(J)
 C
 C        (Old + New) sigma vectors * New trial vectors
 C
-
-         IF (IPRINT .GE. 20) THEN
-             write (lupri,*) 'All N_CRED trial vectors',N_CRED
-             CALL OUTPUT(WORK(KBCVEC),
-     &                   1,NDETQ,1,N_CRED,NDETQ,N_CRED,-1,LUPRI)
-             write (lupri,*) 'All N_CRED sigma vectors',N_CRED
-             CALL OUTPUT(WORK(KSCVEC),
-     &                   1,NDETQ,1,N_CRED,NDETQ,N_CRED,-1,LUPRI)
-
-         END IF
          DO J = 1, N_CRED   ! All sigma vectors
             DO I = N_CRED_OLD+1, N_CRED   ! New trial vectors
+
                WORK(KHRED+(J-1)*MAX_HRED+(I-1)) =
      &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
      &                         WORK(KSCVEC+(J-1)*NDETQ),1)
-               IF (NZ_in_CI .GT. 1) THEN
-                  WORK(KHREDI+(J-1)*MAX_HRED+(I-1)) =
-     &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
-     &                        WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
-     &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
-     &                        WORK(KSCVEC+(J-1)*NDETQ),1)
-               END IF
+!              IF (NZ_in_CI .GT. 1) THEN
+!                 WORK(KHREDI+(J-1)*MAX_HRED+(I-1)) =
+!    &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
+!    &                        WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
+!    &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
+!    &                        WORK(KSCVEC+(J-1)*NDETQ),1)
+!              END IF
             END DO
          END DO
 C
@@ -1039,8 +1001,9 @@ C
       !> debug...
 !     iprint      = iprint_save
 C
-      RETURN
-      END
+      END SUBROUTINE KRCI_RCISTD
+#endif
+! work_in_progress_for_release
 
       SUBROUTINE EIGEN_NEW(HR,NDIM,EIGVAL,EIGVEC,AMATC,RWORK,EVL)
 C***********************************************************************
