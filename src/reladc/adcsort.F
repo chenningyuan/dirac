@@ -503,6 +503,7 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
@@ -522,8 +523,8 @@ C
             IKLJ1 = JOFF + ((J-1)*NTRIPL(JREP)+I-1) * RCW + 1
             JKLI1 = IOFF + ((I-1)*NTRIPL(IREP)+J-1) * RCW + 1
             CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IKLJ1),IFIE(IREP))
-            CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(JKLI1),JFIE(IREP))
-            CALL XSCAL(N,-A1,BUF2(JKLI1),JFIE(IREP))
+            CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(JKLI1),JFIE(JREP))
+            CALL XSCAL(N,-A1,BUF2(JKLI1),JFIE(JREP))
             IJ = IJ + RCW
          ENDDO
         ENDDO

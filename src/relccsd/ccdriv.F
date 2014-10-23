@@ -1431,6 +1431,7 @@ C
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
+            KKVVVT(IJREP,KREP) = NVVVT(IJKREP)
             KKVOO (IJREP,KREP) = NVOO (IJKREP)
             NOOOT(IJKREP) = NOOOT(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVOT(IJKREP) = NVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
@@ -2921,8 +2922,6 @@ C         this means that, for the time being, we can deallocate everything?
 
 
          CALL CCDUMP
-
-         write(*,*)'hi1'  
 
          CALL CCEQN(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
      &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,

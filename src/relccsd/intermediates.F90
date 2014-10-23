@@ -10,9 +10,7 @@
 
      private
 
-
      contains
-
 
     subroutine f_bar_mi(FOO,FVO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
 
@@ -21,10 +19,9 @@
      real(8), intent(in) :: T1(*),T2(*)
      real(8), intent(out):: HO(*)
      real(8), intent(in) :: BUF1(*),BUF2(*),BUF3(*)
-     real(8)  :: v_sort(100000)
      real(8) :: ddot
      integer :: II, I, ND, IRP, N, X, IMIN
-     real(8), allocatable :: tau(:), vooo(:),vooo_sorted(:) 
+     real(8), allocatable :: tau(:) 
      character            :: vtrans
 !     character(*),dimension(*):: v_array, t_array, w_array      
      integer              :: IJKL,J,K,L,JRP,KRP,LRP,KLRP  
@@ -50,19 +47,12 @@
 !     enddo
       CALL DELFCK ('OO','DK',HO)
 !----------------------------------------------------------------------
-! H(K,I) = H(K,I) + W(KL,CD) * T(CD,IL) = H(K,I) + W*(CDL,K) * T(CDL,I)
+! F_bar_mi = F_bar_mi - V(nm,ef) * T(ef,in) 
 !----------------------------------------------------------------------
-
    allocate(tau(ndimt2)) 
-   CALL GETVVOO (BUF3)
    CALL GETTAU  (T1,T2,tau)
-
-   call contraction_442 (buf3, tau, ho, (/"h3","h1","p1","p2"/),(/"p1","p2","h2","h3"/),(/"h1","h2"/), &
-           &        no, no, nvvot, A1, A1,buf2,buf1)
-
+   call contraction_442 ((/"o3","o1","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),tau,HO,-1.0d0,1.0d0)
    deallocate(tau) 
-
-
 !     CALL GETVVOO (BUF3)
 !     CALL DELINT ('VVOO','DDDD',BUF3,0,0,0)
 !     CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,BUF3,BUF1)
@@ -70,13 +60,11 @@
 !     CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,BUF3,BUF2)
 !     CALL CNTRCT ('C','N',NO,NO,NVVOT,A1,BUF1,BUF2,A1,HO,NREP)
 
-
 !---------------------------------------------------------------
-!F_bar_mi = F_bar_mi + V(mn, ei) * T1(e,n) --> V(mi,en) * T1(en) 
+!F_bar_mi = F_bar_mi + V(mn, ie) * T1(e,n) --> V(mi,en) * T1(en) 
 !---------------------------------------------------------------
 
-
-   call contraction_422 ((/"o1","o3","o2","p1"/), (/"p1","o3"/), (/"o1","o2"/), T1, HO, -1.0d0, 1.0d0, NREP)
+  call contraction_422 ((/"o1","o3","o2","p1"/), (/"p1","o3"/), (/"o1","o2"/), T1, HO, -1.0d0, 1.0d0, NREP)
 
 !-----------------------------------------------------------------
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
@@ -147,8 +135,6 @@
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
      &             BUF3,BUF2)
       CALL CNTRCT ('N','C',NV,NV,NVOOT,-A1,BUF1,BUF2,A1,HV,NREP)
-
-
 !---------------------------------------------------------------
 !F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) --> V(ae,fm) * T1(fm) 
 !---------------------------------------------------------------
