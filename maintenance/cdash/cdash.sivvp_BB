@@ -74,10 +74,10 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy 
+ctest --track Grid   -D ExperimentalUpdate
+ctest --track Grid   -D ExperimentalConfigure
+ctest --track Grid   -D ExperimentalBuild
+ctest  --track Grid  -j2 -D ExperimentalTest -R cosci_energy 
 #ctest -D ExperimentalTest -R cosci_energy dft
 ctest -D ExperimentalSubmit  --track Grid
 
@@ -115,10 +115,10 @@ fi
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8-static"  --static -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -j2 -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy 
+ctest --track Grid  -D ExperimentalUpdate
+ctest  --track Grid  -D ExperimentalConfigure
+ctest -j2  --track Grid  -D ExperimentalBuild
+ctest -j2  --track Grid  -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit  --track Grid
 
 #####################################################
@@ -178,11 +178,11 @@ fi
 ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8_static" --static -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
 cd $BUILD_PGI
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -j2 -D ExperimentalBuild
+ctest --track Grid  -D ExperimentalUpdate
+ctest --track Grid  -D ExperimentalConfigure
+ctest --track Grid -j2 -D ExperimentalBuild
 #ctest -D ExperimentalTest -R cosci_energy dft
-ctest -j2 -D ExperimentalTest -R cosci_energy
+ctest -j2 --track Grid  -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit  --track Grid
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};

@@ -60,7 +60,7 @@ cd $BUILD_STATIC
 ./setup --fc=ifort -D BUILDNAME="ifort_gnu_mkl_i8_static" --static -D ENABLE_OLD_LINKER=ON --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD_STATIC
 #
 cd $BUILD_STATIC
-ctest -D ExperimentalUpdate
+ctest -D ExperimentalUpdate --track Grid
 #ctest -D Experimental
 ctest -D Experimental -L short --track Grid
 
