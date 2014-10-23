@@ -873,7 +873,7 @@ C
       IPRT = MAX(NTEST,IPRT)
 C
 !     !> (re-)set convergence threshold
-      if(abs(convlim < 1.0d-07)) convlim = 1.0d-07
+      if(abs(convlim) < 1.0d-07) convlim = 1.0d-07
 
 C     no screening 
       CSCREEN = .FALSE.
