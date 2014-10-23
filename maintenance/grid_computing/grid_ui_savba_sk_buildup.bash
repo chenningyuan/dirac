@@ -49,10 +49,10 @@ fi
 ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
 ./setup --fc=mpif90 --cc=mpicc --cxx=mpiCC --static -D BUILDNAME="grid_savba_ompi_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
- ctest -D ExperimentalUpdate
- ctest -D ExperimentalConfigure
- ctest -D ExperimentalBuild
- ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalUpdate   --track Grid
+ ctest -D ExperimentalConfigure   --track Grid
+ ctest -D ExperimentalBuild  --track Grid
+ ctest -D ExperimentalTest -R cosci_energy  --track Grid
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
@@ -72,10 +72,10 @@ fi
 ./pamadm -a --builddir=$BUILD_SERIAL_INTEL
 ./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_serial_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
- ctest -D ExperimentalUpdate
- ctest -D ExperimentalConfigure
- ctest -D ExperimentalBuild
- ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalUpdate   --track Grid
+ ctest -D ExperimentalConfigure   --track Grid
+ ctest -D ExperimentalBuild    --track Grid
+ ctest -D ExperimentalTest -R cosci_energy   --track Grid
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
@@ -98,10 +98,10 @@ fi
 ./pamadm -a --builddir=$BUILD_SERIAL_GNU
 ./setup --fc=gfortran --cc=gcc --cxx=g++ --static -D BUILDNAME="grid_savba_serial_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
- ctest -D ExperimentalUpdate
- ctest -D ExperimentalConfigure
- ctest -D ExperimentalBuild
- ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalUpdate      --track Grid
+ ctest -D ExperimentalConfigure   --track Grid
+ ctest -D ExperimentalBuild        --track Grid
+ ctest -D ExperimentalTest -R cosci_energy    --track Grid
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
@@ -124,11 +124,11 @@ fi
 ./pamadm -a --builddir=$BUILD_SERIAL_GNU1
 ./setup --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=bultin --blas=builtin -D BUILDNAME="grid_savba_serial_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
- ctest -D ExperimentalUpdate
- ctest -D ExperimentalConfigure
- ctest -D ExperimentalBuild
- ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit  --track Grid
+ ctest -D ExperimentalUpdate     --track Grid
+ ctest -D ExperimentalConfigure   --track Grid
+ ctest -D ExperimentalBuild   --track Grid
+ ctest -D ExperimentalTest -R cosci_energy    --track Grid
+ ctest -D ExperimentalSubmit  --track Grid    --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
