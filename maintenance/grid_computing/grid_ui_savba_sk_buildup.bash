@@ -52,7 +52,7 @@ fi
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
  ctest -D ExperimentalBuild  --track Grid
- ctest -D ExperimentalTest -R cosci_energy  --track Grid
+ ctest  --track Grid  -D ExperimentalTest -R cosci_energy 
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
@@ -62,6 +62,7 @@ fi
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,i8,static - finished at $timestamp \n"
 
+###################################################################################
 cd $DIRAC
 BUILD_SERIAL_INTEL=build_intelmkl_i8_static
 if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
@@ -75,7 +76,7 @@ fi
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
  ctest -D ExperimentalBuild    --track Grid
- ctest -D ExperimentalTest -R cosci_energy   --track Grid
+ ctest  --track Grid   -D ExperimentalTest -R cosci_energy  
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
@@ -84,6 +85,31 @@ fi
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2 - Intel,MKL,i8,serial,static - finished at $timestamp \n"
+
+
+
+###################################################################################
+cd $DIRAC
+BUILD_SERIAL_INTEL1=build_intel_ownmath_i8_static
+if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
+   echo "removing previous build directory $BUILD_SERIAL_INTEL1"
+  /bin/rm -rf $BUILD_SERIAL_INTEL1
+fi
+
+./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
+./setup --fc=ifort --cc=icc --cxx=icpc  --blas=builtin  --lapack=builtin --static -D BUILDNAME="grid_savba_serial_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL1
+ cd $BUILD_SERIAL_INTEL1
+ ctest -D ExperimentalUpdate   --track Grid
+ ctest -D ExperimentalConfigure   --track Grid
+ ctest -D ExperimentalBuild    --track Grid
+ ctest  --track Grid   -D ExperimentalTest -R cosci_energy  
+ ctest -D ExperimentalSubmit  --track Grid
+
+ ls -lt $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
+ ldd $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
+ python binary_info.py  > VERSION_cmake  2>&1  # get version
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
 
 
 #####################
@@ -101,7 +127,7 @@ fi
  ctest -D ExperimentalUpdate      --track Grid
  ctest -D ExperimentalConfigure   --track Grid
  ctest -D ExperimentalBuild        --track Grid
- ctest -D ExperimentalTest -R cosci_energy    --track Grid
+ ctest --track Grid  -D ExperimentalTest -R cosci_energy  
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
@@ -122,7 +148,7 @@ if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
   /bin/rm -rf $BUILD_SERIAL_GNU1
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_GNU1
-./setup --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=bultin --blas=builtin -D BUILDNAME="grid_savba_serial_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU1
+./setup --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=builtin --blas=builtin -D BUILDNAME="grid_savba_serial_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
  ctest -D ExperimentalUpdate     --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -157,10 +183,11 @@ cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIR
 /bin/rm -r test/*/compare
 
 packed_dirac=DIRAC_grid_suite.tgz
-echo -e "\n\n packing (slim) DIRAC suite for grid computations..."
+echo -e "\n\n packing (slim, with tests) DIRAC suite for grid computations..."
 tar czf $packed_dirac  pam  VERSION test  basis  basis_dalton  basis_ecp \
 $BUILD_OMPI_INTEL/dirac.x $BUILD_OMPI_INTEL/VERSION_cmake $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
 $BUILD_SERIAL_INTEL/dirac.x $BUILD_SERIAL_INTEL/VERSION_cmake \
+$BUILD_SERIAL_INTEL1/dirac.x $BUILD_SERIAL_INTEL1/VERSION_cmake \
 $BUILD_SERIAL_GNU/dirac.x $BUILD_SERIAL_GNU/VERSION_cmake \
 $BUILD_SERIAL_GNU1/dirac.x $BUILD_SERIAL_GNU1/VERSION_cmake \
 maintenance/grid_computing/diracrc_grid 
