@@ -84,6 +84,7 @@
       LOGICAL CPIC_PASS_D, DIAGONAL_ALLOC
 C 
 C     some local scratch
+      real*8,    allocatable :: eci_start(:)
       real*8,    allocatable :: scratch_dav1(:)
       real*8,    allocatable :: scratch_dav2(:)
       integer,   allocatable :: iscratch_dav1(:)
@@ -117,6 +118,7 @@ C     memory pointer for C2 vector block
 #endif /* VAR_SHMEM */
 #endif /* VAR_MPI2 */
       integer(8)             :: NCALC_MAX_BLK, IGET_MY_T_LEN
+      integer*8              :: keci_start
 C
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
@@ -211,6 +213,10 @@ C
       ELSE
         INICI             = -1
       END IF
+
+      !> for debugging 
+!     istart_nroot = 3
+
 C
 #if defined (VAR_MPI2)
       IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
@@ -691,11 +697,15 @@ C
               CALL QUIT(' *** ERROR in GASCI_REL: too many roots ***')
             end if
 C
-C           allocate some scratch space
+C           !> allocate some scratch space
             NFINDM = min(ndet,istart_nroot+3*nroot)
+
+!           allocate(scratch_dav1(4*NFINDM+1),iscratch_dav1(5*NFINDM))
+!           allocate(scratch_dav2(NROOT))
             call alloc(scratch_dav1, 4*NFINDM+1)
             call alloc(iscratch_dav1,5*NFINDM)
             call alloc(scratch_dav2, NROOT)
+            call alloc(eci_start,istart_nroot,id='eci_start')
 C
             CALL CIEIG5_REL(INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &                      MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,
@@ -709,7 +719,7 @@ C
      &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
      &                      IRC,IDCOMH,IHAM12,
      &                      WORK(KBLOCKLIST),WORK(KNODELIST),
-     &                      IPROCLIST,IGROUPLIST
+     &                      IPROCLIST,IGROUPLIST,eci_start
 #if defined (VAR_MPI2)
      &                      ,WORK(KILU1LIST),WORK(KILU2LIST),
      &                      WORK(KILU3LIST),WORK(KILU4LIST),
@@ -722,9 +732,11 @@ C           save energy of the lowest eigenstate
             EREF = EROOT(1)
 C
 C           release local scratch memory
+            call dealloc(eci_start)
             call dealloc(scratch_dav2)
             call dealloc(iscratch_dav1)
             call dealloc(scratch_dav1)
+!           deallocate(scratch_dav2,iscratch_dav1,scratch_dav1)
 C
 #if defined (VAR_MPI2)
 C
