@@ -150,7 +150,7 @@ if(ENABLE_PCMSOLVER)
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
-	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} DIRECTORY)
+	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
         set(ExternalProjectCMakeArgs
             # PCMSolver does not know profile
             if(CMAKE_BUILD_TYPE MATCHES "profile")
