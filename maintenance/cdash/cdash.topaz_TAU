@@ -71,10 +71,10 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="topaz-TAU_Intel_mkl_i8_static" --static -D DART_TESTING_TIMEOUT=99999 $BUILD_INTEL_STATIC
 cd $BUILD_INTEL_STATIC
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy
+ctest --track Grid -D ExperimentalUpdate
+ctest --track Grid -D ExperimentalConfigure
+ctest --track Grid -D ExperimentalBuild
+ctest --track Grid  -j2 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit --track Grid
 
 ###############################################
@@ -135,11 +135,11 @@ fi
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --blas=builtin --lapack=builtin --static -D BUILDNAME="topaz-TAU_gnu_ownmath_i8_static" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy
-ctest -D ExperimentalSubmit --track Grid
+ctest  --track Grid  -D ExperimentalUpdate
+ctest  --track Grid  -D ExperimentalConfigure
+ctest --track Grid  -D ExperimentalBuild
+ctest  --track Grid   -j2  -D ExperimentalTest -R cosci_energy
+ctest   --track Grid  -D ExperimentalSubmit 
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp
