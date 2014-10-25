@@ -96,11 +96,11 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-BA_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
-ctest --track BoundsCheck -D ExperimentalUpdate
-ctest --track BoundsCheck -D ExperimentalConfigure
-ctest -j2 --track BoundsCheck -D ExperimentalBuild
-ctest -j2 --track BoundsCheck  -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit --track BoundsCheck
+ctest --track Grid  -D ExperimentalUpdate
+ctest --track Grid  -D ExperimentalConfigure
+ctest -j2 --track Grid  -D ExperimentalBuild
+ctest -j2 --track Grid  -D ExperimentalTest -R cosci_energy 
+ctest -D ExperimentalSubmit --track Grid
 
 
 #####################################################
