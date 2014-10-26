@@ -79,7 +79,7 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit --track Grid
 
  ls -lt $DIRAC/$BUILD/dirac.x
  ldd $DIRAC/$BUILD/dirac.x
@@ -100,7 +100,7 @@ fi
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL/dirac.x
@@ -122,7 +122,7 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
  ctest -D ExperimentalConfigure
  ctest -D ExperimentalBuild
  ctest -D ExperimentalTest -R cosci_energy
- ctest -D ExperimentalSubmit
+ ctest -D ExperimentalSubmit --track Grid
 
  ls -lt $DIRAC/$BUILD_GNU_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_GNU_SERIAL/dirac.x
