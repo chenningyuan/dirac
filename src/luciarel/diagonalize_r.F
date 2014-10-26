@@ -1002,6 +1002,30 @@ C
 !     iprint      = iprint_save
 C
       END SUBROUTINE KRCI_RCISTD
+
+      subroutine rcinorm_krci(vec1,funit,funit2)
+
+      !> \brief Normalize CI vector
+      !> \author S. Knecht
+      !> \date October 2014
+
+      implicit none
+
+      integer, intent(in)    :: funit1, funit2
+      real*8 , intent(inout) :: vec1(*)
+      
+      
+      SCALE = INPRDD(VEC1,VEC1,LU6,LU6,1,LBLK)
+
+      FACTOR = 1.0D0/SQRT(SCALE)
+      CALL REWINE(LU6,LBLK)
+      CALL SCLVCD(LU6,LU3,FACTOR,VEC1,0,LBLK)
+      IF(IPRT.GE.600) THEN
+        CALL SCLVCD(LU6,LU7,FACTOR,VEC1,1,LBLK)
+        WRITE(6,*) '   normalized     (D-E)-1 *( HX - EX ) '
+        CALL WRTVCD(VEC1,LU7,1,LBLK)
+      END IF
+      end subroutine RCINORM_KRCI
 #endif
 ! work_in_progress_for_release
 

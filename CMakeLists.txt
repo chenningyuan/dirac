@@ -150,6 +150,7 @@ if(ENABLE_PCMSOLVER)
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
+	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
         set(ExternalProjectCMakeArgs
             # PCMSolver does not know profile
             if(CMAKE_BUILD_TYPE MATCHES "profile")
@@ -171,6 +172,7 @@ if(ENABLE_PCMSOLVER)
 	    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
 	    -DENABLE_PYTHON_EMBEDDING=OFF
 	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
+	    -DZLIB_ROOT=${ZLIB_ROOT}
          )
         
         if(PCMSOLVER_TESTS)
