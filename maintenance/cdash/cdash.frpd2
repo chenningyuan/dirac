@@ -20,11 +20,11 @@ fi
 # configure step
 ./setup  --int64  -D BUILDNAME="frpd2.gnu_i8-check" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_GNU 
 cd $BUILD_GNU
-ctest  -D ExperimentalUpdate
-ctest  -D ExperimentalConfigure
-ctest -j3 -D ExperimentalBuild
-ctest -j3 -D ExperimentalTest
-ctest  -D ExperimentalSubmit
+ctest  -D ExperimentalUpdate     --track BoundsCheck
+ctest  -D ExperimentalConfigure  --track BoundsCheck
+ctest -j3 -D ExperimentalBuild   --track BoundsCheck
+ctest -j3 -D ExperimentalTest    --track BoundsCheck
+ctest  -D ExperimentalSubmit     --track BoundsCheck
 
 cd $DIRAC
 BUILD_GNU1=build_gnu_i4

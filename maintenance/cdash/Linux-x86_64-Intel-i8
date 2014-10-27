@@ -1,10 +1,14 @@
 #!/bin/bash
 
+source /opt/intel/bin/compilervars.sh intel64
+source /opt/intel/vtune_amplifier_xe_2013/amplxe-vars.sh intel64
+
 BRANCH='master'
 PAMADM_FLAGS='--adm'
 NUM_CORES=1
+MAKE_RELEASE=0
 
-while getopts b:p:n: opt; do
+while getopts b:p:n:r: opt; do
   case $opt in
   b)
       BRANCH=$OPTARG
@@ -14,6 +18,9 @@ while getopts b:p:n: opt; do
       ;;
   n)
       NUM_CORES=$OPTARG
+      ;;
+  r)
+      MAKE_RELEASE=$OPTARG
       ;;
   esac
 done
@@ -32,10 +39,19 @@ git clone git@repo.ctcc.no:dirac $CTEST_TEMP_DIR/compile
 cd $CTEST_TEMP_DIR/compile
 git checkout $BRANCH &> /dev/null
 ./pamadm $PAMADM_FLAGS
-./setup --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME=$BUILDNAME --type=debug --coverage
+
+if [ $MAKE_RELEASE -eq 1 ]; then
+    cd build
+    cmake ..
+    make release
+    tar xvzf DIRAC-Source.tar.gz
+    cd DIRAC-Source
+fi
+
+./setup --fc=ifort --cc=icc --cxx=icpc --mkl=sequential -D BUILDNAME=$BUILDNAME --int64
 cd build
 make -j$NUM_CORES
-ctest -D Nightly -j$NUM_CORES -L short
+ctest -D Nightly -j$NUM_CORES
 
 rm -rf $CTEST_TEMP_DIR
 

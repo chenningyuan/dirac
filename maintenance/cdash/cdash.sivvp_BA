@@ -10,6 +10,7 @@ source ~/.bashrc
  #  echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 
 # http://hpc.ui.savba.sk/index.php?page=softvery
+source /etc/profile.d/modules.sh
 module load intel
 module load pgi
 
@@ -95,11 +96,11 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-BA_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -j2 -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
+ctest --track Grid  -D ExperimentalUpdate
+ctest --track Grid  -D ExperimentalConfigure
+ctest -j2 --track Grid  -D ExperimentalBuild
+ctest -j2 --track Grid  -D ExperimentalTest -R cosci_energy 
+ctest -D ExperimentalSubmit --track Grid
 
 
 #####################################################
@@ -161,7 +162,6 @@ ctest -D ExperimentalConfigure
 ctest -j2 -D ExperimentalBuild
 ctest -j2 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit
-
  
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp

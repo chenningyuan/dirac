@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3582,10 +3582,11 @@ C
             CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
             THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
-            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,OPT_THR_CVEC,
+            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_STATE,ICONV_TOT,
+     &                         OPT_THR_CVEC,IOPT_STATE,ICONV_TOT,
      &                         THRPCI,IPROPT,WORK(KFREE),LFREE)
+
 C
             ECI = WORK(KECI)
          ELSE
@@ -3650,7 +3651,7 @@ C
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
 C
-      WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
+!     WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
 C
 C     General allocation for NO generation
 C
