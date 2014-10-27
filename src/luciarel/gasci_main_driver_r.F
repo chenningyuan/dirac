@@ -506,11 +506,6 @@ C       end of imaginary  part
         CALL ITODS(-1,1,-1,LUDIA)
         END IF
         IF(IPRCIX.GE.2) WRITE(LUWRT,*) ' Diagonal constructed  '
-        if (IMEMCK.gt.0) then
-          write(LUWRT,*) ' Memory map after GASDIAT_REL in GASCI_REL'
-          IDUM = 0
-          call memmar(KDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
-        end if
       ELSE
          WRITE(LUWRT,*) ' Diagonal not calculated '
       END IF
