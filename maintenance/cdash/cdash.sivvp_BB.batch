@@ -90,11 +90,11 @@ fi
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
 #ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy 
+ctest --track Grid  -D ExperimentalConfigure
+ctest --track Grid  -D ExperimentalBuild
+ctest --track Grid  -D ExperimentalTest -R cosci_energy 
 #ctest -D ExperimentalTest -R cosci_energy dft
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalSubmit --track Grid
 
 #####################################################
 #        serial DIRAC buildup with GNU+mkl
