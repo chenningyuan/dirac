@@ -75,10 +75,10 @@ fi
 ./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
 # --------------------------
  cd $BUILD
- ctest -D ExperimentalUpdate
- ctest -D ExperimentalConfigure
- ctest -D ExperimentalBuild
- ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalUpdate  --track Grid
+ ctest -D ExperimentalConfigure  --track Grid
+ ctest -D ExperimentalBuild  --track Grid
+ ctest -D ExperimentalTest -R cosci_energy --track Grid
  ctest -D ExperimentalSubmit --track Grid
 
  ls -lt $DIRAC/$BUILD/dirac.x
@@ -96,10 +96,10 @@ fi
 
 ./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD_SERIAL
  cd $BUILD_SERIAL
- ctest -D ExperimentalUpdate
- ctest -D ExperimentalConfigure
- ctest -D ExperimentalBuild
- ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalUpdate  --track Grid
+ ctest -D ExperimentalConfigure  --track Grid
+ ctest -D ExperimentalBuild  --track Grid
+ ctest -D ExperimentalTest -R cosci_energy  --track Grid
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL/dirac.x
@@ -118,10 +118,10 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
  fi
 ./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD_GNU_SERIAL
  cd $BUILD_GNU_SERIAL
- ctest -D ExperimentalUpdate
- ctest -D ExperimentalConfigure
- ctest -D ExperimentalBuild
- ctest -D ExperimentalTest -R cosci_energy
+ ctest -D ExperimentalUpdate  --track Grid
+ ctest -D ExperimentalConfigure  --track Grid
+ ctest -D ExperimentalBuild  --track Grid
+ ctest -D ExperimentalTest -R cosci_energy  --track Grid
  ctest -D ExperimentalSubmit --track Grid
 
  ls -lt $DIRAC/$BUILD_GNU_SERIAL/dirac.x
