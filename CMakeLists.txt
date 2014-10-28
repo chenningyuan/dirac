@@ -150,6 +150,7 @@ if(ENABLE_PCMSOLVER)
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
+	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
         set(ExternalProjectCMakeArgs
             # PCMSolver does not know profile
             if(CMAKE_BUILD_TYPE MATCHES "profile")
@@ -171,6 +172,7 @@ if(ENABLE_PCMSOLVER)
 	    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
 	    -DENABLE_PYTHON_EMBEDDING=OFF
 	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
+	    -DZLIB_ROOT=${ZLIB_ROOT}
          )
         
         if(PCMSOLVER_TESTS)
@@ -181,7 +183,6 @@ if(ENABLE_PCMSOLVER)
         endif()	
                                                                                           
         set(EXTERNAL_LIBS
-            stdc++
             pcm
             getkw
             ${ZLIB_LIBRARIES}
@@ -189,11 +190,6 @@ if(ENABLE_PCMSOLVER)
     endif()
 else()
     message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    # to enable proper linking for pgCC we need the libstdc++ library
-    set(EXTERNAL_LIBS stdc++ ${EXTERNAL_LIBS})
 endif()
 
 file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
@@ -316,6 +312,7 @@ foreach(
     if(ENABLE_PCMSOLVER)
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
+
     if(ENABLE_STATIC_LINKING)
         target_link_libraries(${EXECUTABLE} ${NODYNEXPORT})
         if (BLAS_TYPE MATCHES Atlas)
@@ -331,6 +328,9 @@ foreach(
     endif()
 
 endforeach()
+
+#miro: add stdc++ library at the very end to satisfy PGI compilers
+list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
 
 # give a nice message at the end
 include(Motivation)

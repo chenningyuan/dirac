@@ -69,7 +69,10 @@ macro(add_external _project)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
 
-    if(DEVELOPMENT_CODE)
+    # miro: added check on target due to possibility of computer unconnected to internet
+    # in such a problematic case the submodule update mechanism is deactivated 
+    # but submodule is compiled
+    if(DEVELOPMENT_CODE AND TARGET git_update)
         add_dependencies(${_project} git_update)
         add_dependencies(check_external_timestamp_${_project} git_update)
     endif()
