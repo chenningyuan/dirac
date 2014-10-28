@@ -35,7 +35,7 @@ fi
 # configure step
 export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
 ./pamadm -a --builddir=$BUILD
-./setup -D BUILDNAME="prasiva.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999  --fc=ifort  --cc=icc  --cxx=icpc  --int64  $BUILD
+./setup -D BUILDNAME="prasiva.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF --fc=ifort  --cc=icc  --cxx=icpc  --int64  $BUILD
 cd $BUILD
 ctest  -D ExperimentalUpdate
 ctest  -D Experimental
