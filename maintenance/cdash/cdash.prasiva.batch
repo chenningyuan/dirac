@@ -9,6 +9,7 @@ export PATH=/opt/intel/Compiler/11.0/084/bin/intel64:/prasiva/ilias/bin/cmake_in
 echo -e "\n PATH=\c $PATH"
 echo -e "cmake= \c";  which cmake
 echo -e "ifort= \c";  which ifort
+echo -e "icc -V \c";  icc -V
 echo -e "hostname= \c"; hostname
 set
 
@@ -31,6 +32,20 @@ fi
 export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
 ./setup -D BUILDNAME="prasiva.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999  --fc=ifort  --cc=icc  --cxx=icpc  --int64  $BUILD
 cd $BUILD
-ctest -VV  -D Experimental
+ctest  -D ExperimentalUpdate
+ctest  -D Experimental
+
+BUILD=build_gnu_mkl_i8_test
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+# configure step
+export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
+./setup -D BUILDNAME="prasiva.gnumkl_i8" -D DART_TESTING_TIMEOUT=99999  --fc=gfortran  --cc=gcc  --cxx=g++  --int64  $BUILD
+cd $BUILD
+ctest  -D ExperimentalUpdate
+ctest  -D Experimental
+
 
 exit 0
