@@ -176,7 +176,7 @@ if(ENABLE_PCMSOLVER)
          )
         
         if(PCMSOLVER_TESTS)
-		set(testing_command "make test")
+		set(testing_command "ctest")
 		add_external(pcmsolver ${testing_command})
         else()
 		add_external(pcmsolver)
