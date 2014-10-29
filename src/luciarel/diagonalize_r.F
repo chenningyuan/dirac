@@ -427,9 +427,6 @@ C
       integer, intent(in)    :: nz_in_ci
       integer, intent(in)    :: iprint
       integer, intent(in)    :: lupri
-#if defined (VAR_MPI2)
-      integer                :: lu1list
-#endif
 !
 !     Local variales:
       integer, parameter     :: max_roots          = 41
