@@ -69,11 +69,10 @@ fi
 cd $BUILD_SERIAL
 python binary_info.py
 #ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-#ctest -D ExperimentalTest -R cosci_energy dft
-ctest -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalConfigure --track Miro
+ctest -D ExperimentalBuild --track Miro
+ctest -D ExperimentalTest -L short --track Miro
+ctest -D ExperimentalSubmit --track Miro
 
 ##############################################################################
 #          serial,static DIRAC buildup with Intel+MKL
@@ -92,7 +91,7 @@ python binary_info.py
 #ctest -D ExperimentalUpdate
 ctest --track Grid  -D ExperimentalConfigure
 ctest --track Grid  -D ExperimentalBuild
-ctest --track Grid  -D ExperimentalTest -R cosci_energy 
+ctest --track Grid  -D ExperimentalTest -L short
 #ctest -D ExperimentalTest -R cosci_energy dft
 ctest -D ExperimentalSubmit --track Grid
 
@@ -111,10 +110,10 @@ fi
 cd $BUILD_GNU
 python binary_info.py
 #ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalConfigure --track Miro
+ctest -D ExperimentalBuild  --track Miro
+ctest -D ExperimentalTest -R cosci_energy  --track Miro
+ctest -D ExperimentalSubmit  --track Miro
 
 #####################################################
 #        serial DIRAC buildup with PGI+mkl
@@ -131,12 +130,11 @@ fi
 cd $BUILD_PGI
 python binary_info.py
 #ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-#ctest -D ExperimentalTest -R cosci_energy dft
-ctest -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
- 
+ctest -D ExperimentalConfigure   --track Miro
+ctest -D ExperimentalBuild    --track Miro
+ctest -D ExperimentalTest -R cosci_energy   --track Miro
+ctest -D ExperimentalSubmit   --track Miro
+
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp
 exit 0
