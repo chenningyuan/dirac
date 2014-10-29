@@ -4596,6 +4596,7 @@ C
       ISPHTR   = ILSPH+2*ISSPH
       IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
       INTGEN   = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+      INTGEN_SAVE = INTGEN
       CVAL     = CVEL
       STOL(1)  = 1.0D-6
       STOL(2)  = 1.0D-8
@@ -5623,6 +5624,12 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
        IF (DOPRP) THEN
         WRITE(LUPRI,'(2X,A)') '- BSS with properties !'
        ENDIF
+
+       IF(DO2C4C)THEN
+         IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
+           IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
+         END IF
+       END IF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
         IF (((IBSS.EQ.2999).or.x2c).AND.NOPRTR) THEN

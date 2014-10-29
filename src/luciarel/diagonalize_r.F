@@ -370,6 +370,9 @@ C
      &                 ECI_OUT,NDIM,
      &                 I_STATE,ICONV_TOT,5,LUWRT,
      &                 NZ_in_CI,work(kkrci_work),lwork_krci
+#if defined (VAR_MPI2)
+     &                ,LU1LIST
+#endif
      &                )
 
 
@@ -387,7 +390,11 @@ C
      &                       N_ROOTS,THR_CONV,MAX_CI_IT,
      &                       ECI_OUT,NDET,
      &                       I_STATE,ICONV_TOT,IPRINT,LUPRI,
-     &                       NZ_in_CI,WORK,LWORK)
+     &                       NZ_in_CI,WORK,LWORK
+#if defined (VAR_MPI2)
+     &                      ,LU1LIST
+#endif
+     &                      )
 !***********************************************************************
 !
 !     Do up to MAX_CI_IT CI iterations to converge the N_ROOTS lowest states
@@ -427,6 +434,9 @@ C
       integer, intent(in)    :: nz_in_ci
       integer, intent(in)    :: iprint
       integer, intent(in)    :: lupri
+#if defined (VAR_MPI2)
+      integer, intent(inout) :: lu1list(*)
+#endif
 !
 !     Local variales:
       integer, parameter     :: max_roots          = 41
