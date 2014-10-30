@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#OAR -n DiracBuild
+#OAR -n Build
 #OAR -l nodes=1
 
 # set the environment !
@@ -23,11 +23,12 @@ export DIRTIMEOUT="14m"
 NUM_OF_CPUS=$(cat /proc/cpuinfo | grep processor | wc -l)
 echo -e  'Number of all processors available per core, NUM_OF_CPUS='$NUM_OF_CPUS
 
+source /opt/intel/Compiler/11.0/084/bin/intel64/ifortvars_intel64.sh
 export MKL_NUM_THREADS=$NUM_OF_CPUS
 export MKL_DYNAMIC="FALSE"
 
 cd $DIRAC
-BUILD=build_intelmkl_i8_test
+BUILD=build_intelmkl_i8_nopcm_test
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
@@ -64,7 +65,7 @@ fi
 # configure step
 export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
 ./pamadm -a --builddir=$BUILD
-./setup -D BUILDNAME="prasiva.gnumkl_i8" -D DART_TESTING_TIMEOUT=99999  --fc=gfortran  --cc=gcc  --cxx=g++  --int64  $BUILD
+./setup -D BUILDNAME="prasiva.gnumkl_i8" -D DART_TESTING_TIMEOUT=99999  -D ENABLE_PCMSOLVER=ON --fc=gfortran  --cc=gcc  --cxx=g++  --int64  $BUILD
 cd $BUILD
 ctest  -D ExperimentalUpdate --track Miro
 ctest  -D Experimental -L short --track Miro
