@@ -16,6 +16,7 @@
                                  it allows to run DIRAC in parallel on systems which
                                  do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
                                  --mpi overrides DIRAC_MPI_COMMAND
+             DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory
 
     Environment variables set by pam and used by MKL:
              MKL_NUM_THREADS - set to 1 if not defined
