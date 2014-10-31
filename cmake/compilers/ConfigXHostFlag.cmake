@@ -26,10 +26,10 @@ if(CMAKE_Fortran_COMPILER_WORKS AND CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
     # compile test program
     if(CMAKE_SYSTEM_NAME MATCHES "Windows")
         set(_xhost_binary ${CMAKE_BINARY_DIR}/test_xhost_flag.exe)
-        execute_process(COMMAND ifort /QxHost ${CMAKE_SOURCE_DIR}/cmake/compilers/test_xhost_flag.f90 /exe:${_xhost_binary})
+        execute_process(COMMAND ifort /QxHost ${CMAKE_SOURCE_DIR}/cmake/compilers/test_xhost_flag.f90 /exe:${_xhost_binary} ERROR_QUIET)
     else()
         set(_xhost_binary ${CMAKE_BINARY_DIR}/test_xhost_flag.x)
-        execute_process(COMMAND ifort -xHost ${CMAKE_SOURCE_DIR}/cmake/compilers/test_xhost_flag.f90 -o ${_xhost_binary})
+        execute_process(COMMAND ifort -xHost ${CMAKE_SOURCE_DIR}/cmake/compilers/test_xhost_flag.f90 -o ${_xhost_binary} ERROR_QUIET)
     endif()
 
     # run test program
