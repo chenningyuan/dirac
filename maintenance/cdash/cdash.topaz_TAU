@@ -50,11 +50,11 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="topaz-TAU_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure --track Miro
+ctest -D ExperimentalBuild  --track Miro
+ctest -j2 -D ExperimentalTest -R cosci_energy  --track Miro
+ctest -D ExperimentalSubmit  --track Miro
 
 ###############################################
 #  serial DIRAC buildup, Intel MKL static     #
@@ -92,11 +92,11 @@ fi
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="topaz-TAU_gnu_mkl_i8" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU_MKL
 cd $BUILD_GNU_MKL
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure  --track Miro
+ctest -D ExperimentalBuild  --track Miro
+ctest -j2 -D ExperimentalTest -R cosci_energy  --track Miro
+ctest -D ExperimentalSubmit  --track Miro
 
 
 ###############################################
@@ -114,11 +114,11 @@ fi
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --blas=builtin --lapack=builtin -D BUILDNAME="topaz-TAU_gnu_ownmath_i8" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure  --track Miro
+ctest -D ExperimentalBuild  --track Miro
+ctest -j2 -D ExperimentalTest -R cosci_energy  --track Miro
+ctest -D ExperimentalSubmit  --track Miro
 
 ###############################################
 #  serial DIRAC buildup, GNU static           #

@@ -71,7 +71,7 @@ if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
 fi
 
 ./pamadm -a --builddir=$BUILD_SERIAL_INTEL
-./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_serial_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
+./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -97,7 +97,7 @@ if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
 fi
 
 ./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
-./setup --fc=ifort --cc=icc --cxx=icpc  --blas=builtin  --lapack=builtin --static -D BUILDNAME="grid_savba_serial_intel_ownmath_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL1
+./setup --fc=ifort --cc=icc --cxx=icpc  --blas=builtin  --lapack=builtin --static -D BUILDNAME="grid_savba_intel_ownmath_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -122,7 +122,7 @@ if [[ -d "$BUILD_SERIAL_GNU" ]]; then
   /bin/rm -rf $BUILD_SERIAL_GNU
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_GNU
-./setup --fc=gfortran --cc=gcc --cxx=g++ --static -D BUILDNAME="grid_savba_serial_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU
+./setup --fc=gfortran --cc=gcc --cxx=g++ --static -D BUILDNAME="grid_savba_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
  ctest -D ExperimentalUpdate      --track Grid
  ctest -D ExperimentalConfigure   --track Grid
