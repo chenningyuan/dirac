@@ -43,8 +43,7 @@ export MATH_ROOT=/opt/intel/mkl/10.0.3.020
 #
 cd $BUILD
 ctest -D ExperimentalUpdate --track Miro
-ctest -D Experimental  --track Miro -L short
-#ctest -D Experimental -L short
+ctest -D Experimental  -L short  --track Miro
 
 
 cd $DIRAC
@@ -56,12 +55,10 @@ fi
 #
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
 ./pamadm -a --builddir=$BUILD_STATIC
-cd $BUILD_STATIC
 ./setup --fc=ifort -D BUILDNAME="ifort_gnu_mkl_i8_static" --static -D ENABLE_OLD_LINKER=ON --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD_STATIC
 #
 cd $BUILD_STATIC
 ctest -D ExperimentalUpdate --track Grid
-#ctest -D Experimental
 ctest -D Experimental -L short --track Grid
 
 exit 0
