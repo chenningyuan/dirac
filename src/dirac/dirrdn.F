@@ -3134,7 +3134,7 @@ C
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
-     &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
+     &            '.ANALYZ','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
      &            '.DISTRT','.CONVER','.TRUNCF','.MEMFAC','XXXXXXX'/
       DATA SET/.FALSE./
 C
@@ -3294,7 +3294,8 @@ C&&& MXCIVE: Maximum number of subspace CI vectors
                   IMOKW(20) = 1
                GO TO 100
    21          CONTINUE
-C&&& xxxxxx: 
+C&&& ANALYZE 
+                  IMOKW(25) = 1
                GO TO 100
    22          CONTINUE
 C&&& xxxxxxxxx:
