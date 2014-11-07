@@ -19,8 +19,10 @@ source /mnt/apps/pgi/environment.sh
 echo "Portlang Group compilers activated ! PGI=$PGI"
 
 # my cmake stuff
-export PATH=/home/milias/bin/cmake/bin:$PATH
-echo "My own CMake is in PATH."
+#export PATH=/home/milias/bin/cmake/bin:$PATH
+#echo "My own CMake is in PATH."
+
+
 # my most recent python 2.7.1 #
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
