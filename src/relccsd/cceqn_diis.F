@@ -58,7 +58,6 @@ C
         SECT1 = MAXDIM*(NST1+NST2) + 1
         SECT2 = SECT1 + NST1
 C       Place first input amplitudes at record maxdim+1 of ITAMPL
-     &                      INTOWP(NDIMT2*RCW)
         CALL RWRIT(ITAMPL,T1N,INTOWP(NDIMT1*RCW),SECT1)
         CALL RWRIT(ITAMPL,T2N,INTOWP(NDIMT2*RCW),SECT2)
         IT = 0

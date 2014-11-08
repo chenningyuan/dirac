@@ -122,7 +122,7 @@ C S(A,I) = S(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
       CALL XTIME(0,1,'--- T1EQNS VOOO*TAU                ')
       CALL GETTAU (T1,T2,BUF3)
-      CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,S1)
+      CALL T1EQN1 (BUF3,S1)
       CALL XTIME(0,2,'--- T1EQNS VOOO*TAU               ')
 
 C ****************************************************
@@ -135,7 +135,7 @@ C S(A,I) = S(A,I) + V(A,K,C,D) * TAU(C,D,I,K)   ! VOVV contributions !
 C--------------------------------------------
       CALL GETTAU (T1,T2,BUF1)
       CALL XTIME(0,1,'--- T1EQNS VOVV contribution  ')
-      CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,S1)   ! VOVV contractions, term 6 !
+      CALL T1EQN2 (BUF1,BUF3,NBUF3,S1)   ! VOVV contractions, term 6 !
       CALL XTIME(0,2,'--- T1EQNS VOVV contribution  ')
 
 C--------------------------------------

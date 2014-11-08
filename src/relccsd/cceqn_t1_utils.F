@@ -1,4 +1,4 @@
-      SUBROUTINE T1EQN1 (BUF1,BUF2,BUF3,NBUF3,S1)
+      SUBROUTINE T1EQN1 (TAU,S1)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -16,9 +16,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF3
-      REAL*8 S1(*)
-      REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      REAL*8 S1(*),TAU(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -29,8 +27,14 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      real*8, allocatable ::  tau_sorted(:), vooo(:), vooo_sorted(:)
+      
 C---------------Executable code--------------------------------------
 C
+      allocate (tau_sorted(LVVOOT(NREP+1)*RCW))
+      allocate (vooo(IVOOOT(NREP+1)*RCW))
+      allocate (vooo_sorted(LOVOOT(NREP+1)*RCW))
+
 C--------------------------------------------
 C S(A,I) = S(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
@@ -38,46 +42,30 @@ C--------------------------------------------
 C ** TAU now reorganised in BUF1: NV*NVOOT
 
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
-     &             BUF3,BUF1)
-      CALL GETVOOO (BUF3)
-      CALL DELINT ('VOOO','DKDD',BUF3,0,0,0)
+     &             TAU,tau_sorted)
+      CALL GETVOOO (vooo)
+      CALL DELINT ('VOOO','DKDD',vooo,0,0,0)
 
 C     --------------------------------
 C     Sort from 12,34 to 134,2 (VOO,O)
 C     --------------------------------
       CALL SRT6 (NREP,MULTB,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
-     &           BUF3,BUF2)
+     &           vooo,vooo_sorted)
 
 C ** VOOO integrals now reorganised in BUF2: NVOOT * NO
 
 C     ------------------------
 C     V(K,L,C,I) = V*(C,I,K,L)
 C     ------------------------
-      IF (CARITH) CALL CONJUGA (LOVOOT(NREP+1),BUF2,1)
+      IF (CARITH) CALL CONJUGA (LOVOOT(NREP+1),vooo_sorted,1)
 
-C     OFF3 = 1
-C     DO IREP = 1, NREP
-C       M    = NV(IREP)
-C       N    = NO(IREP)
-C       KLD  = NVOOT(IREP)
-C       K    = IDIST(1,6,IREP)
-C       OFF1 = IDIST(2,6,IREP)
-C       OFF2 = IDIST(3,6,IREP)
-C       CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),KLD,
-C    &              A1,S1(OFF3),M)
-C       OFF3 = OFF3 + M * N * RCW
-C     ENDDO
-
-C***
-C*** original CNTRCT call in serial version
-C*** since parallel code (above) is not debugged
-C***
 C
-      CALL CNTRCT ('N','N',NV,NO,NVOOT,A1,BUF1,BUF2,A1,S1,NREP)
+      CALL CNTRCT 
+     &     ('N','N',NV,NO,NVOOT,A1,tau_sorted,vooo_sorted,A1,S1,NREP)
 C
       RETURN
       END
-      SUBROUTINE T1EQN2 (BUF1,BUF2,BUF3,NBUF3,S1)
+      SUBROUTINE T1EQN2 (TAU,BUF3,NBUF3,S1)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -96,8 +84,8 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER NBUF3
-      REAL*8 S1(*)
-      REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      REAL*8 S1(*),TAU(*)
+      REAL*8 BUF3(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -140,14 +128,14 @@ C ** NINT is updated on exit of GETVOVV !
                     T1AI = (IVO(IREP)+(I-1)*NV(IREP)+A-1) * RCW + 1
                     IF (CARITH) THEN
                        S1(T1AI) = S1(T1AI)
-     &            + DDOT(NINT,BUF1(CDIK),RCW,BUF3(AK),RCW*NVO(IRP))
-     &            - DDOT(NINT,BUF1(CDIK+1),RCW,BUF3(AK+1),RCW*NVO(IRP))
+     &            + DDOT(NINT,TAU(CDIK),RCW,BUF3(AK),RCW*NVO(IRP))
+     &            - DDOT(NINT,TAU(CDIK+1),RCW,BUF3(AK+1),RCW*NVO(IRP))
                        S1(T1AI+1) = S1(T1AI+1)
-     &            + DDOT(NINT,BUF1(CDIK+1),RCW,BUF3(AK),RCW*NVO(IRP))
-     &            + DDOT(NINT,BUF1(CDIK),RCW,BUF3(AK+1),RCW*NVO(IRP))
+     &            + DDOT(NINT,TAU(CDIK+1),RCW,BUF3(AK),RCW*NVO(IRP))
+     &            + DDOT(NINT,TAU(CDIK),RCW,BUF3(AK+1),RCW*NVO(IRP))
                     ELSE
                        S1(T1AI) = S1(T1AI)
-     &            + DDOT(NINT,BUF1(CDIK),1,BUF3(AK),NVO(IRP))
+     &            + DDOT(NINT,TAU(CDIK),1,BUF3(AK),NVO(IRP))
                     ENDIF
                  ENDDO
                  DO A = 1, NV(KREP)
@@ -155,14 +143,14 @@ C ** NINT is updated on exit of GETVOVV !
                     T1AK = (IVO(KREP)+(K-1)*NV(KREP)+A-1) * RCW + 1
                     IF (CARITH) THEN
                        S1(T1AK) = S1(T1AK)
-     &            - DDOT(NINT,BUF1(CDIK),RCW,BUF3(AI),RCW*NVO(IRP))
-     &            + DDOT(NINT,BUF1(CDIK+1),RCW,BUF3(AI+1),RCW*NVO(IRP))
+     &            - DDOT(NINT,TAU(CDIK),RCW,BUF3(AI),RCW*NVO(IRP))
+     &            + DDOT(NINT,TAU(CDIK+1),RCW,BUF3(AI+1),RCW*NVO(IRP))
                        S1(T1AK+1) = S1(T1AK+1)
-     &            - DDOT(NINT,BUF1(CDIK+1),RCW,BUF3(AI),RCW*NVO(IRP))
-     &            - DDOT(NINT,BUF1(CDIK),RCW,BUF3(AI+1),RCW*NVO(IRP))
+     &            - DDOT(NINT,TAU(CDIK+1),RCW,BUF3(AI),RCW*NVO(IRP))
+     &            - DDOT(NINT,TAU(CDIK),RCW,BUF3(AI+1),RCW*NVO(IRP))
                     ELSE
                        S1(T1AK) = S1(T1AK)
-     &            - DDOT(NINT,BUF1(CDIK),1,BUF3(AI),NVO(IRP))
+     &            - DDOT(NINT,TAU(CDIK),1,BUF3(AI),NVO(IRP))
                     ENDIF
                  ENDDO
               ENDDO
