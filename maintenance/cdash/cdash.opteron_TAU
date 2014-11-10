@@ -61,4 +61,21 @@ cd $BUILD_STATIC
 ctest -D ExperimentalUpdate --track Grid
 ctest -D Experimental -L short --track Grid
 
+
+cd $DIRAC
+BUILD_STATIC=build_ifort_gnu_mkl_i8_nopcm_static
+if [[ -d "$BUILD_STATIC" ]]; then
+  echo "deleting previous build directory $BUILD_STATIC"
+  /bin/rm -rf $BUILD_STATIC
+fi
+#
+export MATH_ROOT=/opt/intel/mkl/10.0.3.020
+./pamadm -a --builddir=$BUILD_STATIC
+./setup --fc=ifort -D BUILDNAME="ifort_gnu_mkl_i8_nopcm_static" --static -D ENABLE_OLD_LINKER=ON -D ENABLE_PCMSOLVER=OFF --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD_STATIC
+#
+cd $BUILD_STATIC
+ctest -D ExperimentalUpdate      --track Grid
+ctest -D Experimental -L short   --track Grid
+
+
 exit 0
