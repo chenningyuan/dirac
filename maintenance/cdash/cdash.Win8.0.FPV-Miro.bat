@@ -1,34 +1,43 @@
 @ECHO OFF
 cls
-rem  http://www.robvanderwoude.com/batchfiles.php
-rem the directory where your DIRAC sits
-rem echo "Hello, building up DIRAC on Windows 7 PC Desktop"
+
+set DIRTIMEOUT="14m"
 
 set DIRAC=C:\Users\milias\Documents\Dirac\devel_trunk
-
-rem enable keyring....done automatically, ie Windows 7 computer has the private key loaded
-rem "C:\Program Files\PuTTY\pageant.exe"  C:\Users\milias\.ssh\id_rsa_milias_fpv.ppk
-
 rem go to the local DIRAC directory
 cd %DIRAC%
 
+git submodule update
+
 rem download fresh Dirac - MUST HAVE full path of git
-C:\Git\bin\git.exe pull origin master
+rem C:\Git\bin\git.exe pull origin master
+
 set BUILD=build_mingw64_i4
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Miro-Win8_i4"  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles"  %BUILD%
+python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Win8.0_MinGW64_i4"  -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=OFF --generator="MinGW Makefiles"  %BUILD%
 cd %BUILD%
-mingw32-make Experimental
+ctest     -D ExperimentalUpdate     --track Miro
+ctest     -D ExperimentalConfigure  --track Miro
+ctest -j2 -D ExperimentalBuild      --track Miro
+ctest -j2 -D ExperimentalTest       --track Miro
+ctest     -D ExperimentalSubmit     --track Miro
 
 rem go to the local DIRAC directory
 cd %DIRAC%
 set BUILD=build_mingw64_i8_check
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Miro-Win8.0-i8_check"  --check --int64=on -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=OFF --generator="MinGW Makefiles"  %BUILD%
+python setup -D BUILDNAME="Win8.0_MinGW64_i8_check"  --check --int64=on -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=OFF --generator="MinGW Makefiles"  %BUILD%
 cd %BUILD%
-mingw32-make Experimental
+ctest     -D ExperimentalUpdate     --track Miro
+ctest     -D ExperimentalConfigure  --track Miro
+ctest -j2 -D ExperimentalBuild      --track Miro
+ctest -j2 -D ExperimentalTest       --track Miro
+ctest     -D ExperimentalSubmit     --track Miro
 
 rem return to the top of the DIRAC directory
 cd %DIRAC%
+
+rem switch off Desktop PC Windows after 10 seconds
+timeout 10 && shutdown -s
