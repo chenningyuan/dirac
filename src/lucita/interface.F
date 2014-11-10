@@ -503,6 +503,9 @@ C     dimension IMOKW(NTABLE)
          IMAXLBLKSZ = MAX(100 000,IMAXBLKSIZE)
 C        .. we do not accept user input of less than 100 000 !
       end if
+
+!     25: analyze wave function     
+      if (IMOKW(25).eq.1) PRILUC = 'LOW'
 *
 * 26: Distribution routine to use (only relevant in parallel case) 
 *
@@ -5978,10 +5981,10 @@ CC        IVFLEV = 1               ! could be made more flexible
          IPRSTR = 0
          IPRCIX = 0
          IPRORB = 0
-         IPRDIA = 1
+         IPRDIA = 0
          IPRXT  = 0
          IPRRSP = 0
-         if (IDEMOL.ge.1) IPRDEN = 5
+         if (IDEMOL.ge.1) IPRDEN = 1
          IPROCC = 0
          IPRNCIV = 1
       else if (PRILUC.eq.'MED') then

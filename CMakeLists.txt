@@ -144,7 +144,11 @@ if(ENABLE_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
         if(NOT ZLIB_FOUND)
-            message(STATUS "  - install Zlib development libraries")
+           IF (ENABLE_STATIC_LINKING) 
+              message(STATUS "  - install static Zlib development libraries")
+           else()
+              message(STATUS "  - install dynamic Zlib development libraries")
+           endif()
         endif()
     else()
         add_definitions(-DHAS_PCMSOLVER)                                                  
@@ -159,8 +163,12 @@ if(ENABLE_PCMSOLVER)
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+	    -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	    -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+	    -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+	    -DENABLE_CXX11_SUPPORT=OFF
             -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
             -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
             -DEIGEN3_ROOT=${EIGEN3_ROOT}

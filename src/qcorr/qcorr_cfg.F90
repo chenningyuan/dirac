@@ -11,9 +11,10 @@
       logical, public                          :: luci_cfg_qcorr   = .false.
       logical, public                          :: set_nash_q_qcorr = .true.
 ! integer block
-      integer, public                          :: cvorb_qcorr(1:2) = 0
+      integer, public                          :: cvorb_qcorr(1:2) =  0 ! to allow for core orbitals in non-rel CI we should use nbsym instead for the dimensioning of cvorb
       integer, public                          :: wunit_q          = -1
       integer, public                          :: nref_qcorr       = -1
+      integer, public                          :: nref_e_qcorr     = -1
       integer, public                          :: print_qcorr      = -1
       integer, public                          :: MXNSTR_q         =  0
       integer, public                          :: NMS2VAL_q        =  0
@@ -32,7 +33,7 @@
 
 ! real*8 block
       real(8), public, allocatable             :: ref_wavefunction_coeff_qcorr(:)
-      real(8), public                          :: reference_energy_qcorr    = 0.0d0
+      real(8), public, allocatable             :: reference_energy_qcorr(:)
       real(8), public                          :: NACTEL_q                  = 0.0d0
 
 ! character block
