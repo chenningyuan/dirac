@@ -62,6 +62,21 @@ export MKL_DYNAMIC="FALSE"
 ctest  -D ExperimentalUpdate --track Miro
 ctest -D Experimental --track Miro
 
+cd $DIRAC
+BUILD_INTEL=build_intelmkl_i8_nopcm
+if [[ -d "$BUILD_INTEL" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL"
+  /bin/rm -rf $BUILD_INTEL
+fi
+./pamadm -a --builddir=$BUILD_INTEL
+# configure step
+./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intelmkl_i8_nopcm" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
+cd $BUILD_INTEL
+export MKL_NUM_THREADS=3
+export MKL_DYNAMIC="FALSE"
+ctest  -D ExperimentalUpdate --track Miro
+ctest -D Experimental --track Miro
+
 
 ############################################
 ### Now run Nightly buildup with cloning ###

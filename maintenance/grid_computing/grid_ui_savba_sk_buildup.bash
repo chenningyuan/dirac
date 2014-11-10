@@ -34,6 +34,10 @@ DIRAC=/home/ilias/Work/qch/software/trunk
 
 cd $DIRAC
 
+# submodule
+git submodule init
+git submodule update
+
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 # update the local trunk...
@@ -95,7 +99,6 @@ if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_INTEL1"
   /bin/rm -rf $BUILD_SERIAL_INTEL1
 fi
-
 ./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
 ./setup --fc=ifort --cc=icc --cxx=icpc  --blas=builtin  --lapack=builtin --static -D BUILDNAME="grid_savba_intel_ownmath_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
@@ -179,7 +182,7 @@ cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIR
 # don't forget export OPAL_PREFIX=$PWD/$BUILD 
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
-/bin/rm    test/*/*.out*
+/bin/rm    test/*/*.out
 /bin/rm -r test/*/compare
 
 packed_dirac=DIRAC_grid_suite.tgz

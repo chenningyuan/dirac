@@ -49,12 +49,11 @@ fi
 ./pamadm -a --builddir=$BUILD_INTEL
 ./setup --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_Odense.intel_mkl_i8-batch" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL
 cd $BUILD_INTEL
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-#ctest -D ExperimentalTest -R cosci_energy
-ctest -D ExperimentalTest 
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure  --track Miro
+ctest -D ExperimentalBuild  --track Miro
+ctest -D ExperimentalTest -R cosci_energy pcm  --track Miro
+ctest -D ExperimentalSubmit  --track Miro
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp

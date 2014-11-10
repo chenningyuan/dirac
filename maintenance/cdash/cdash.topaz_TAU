@@ -75,7 +75,7 @@ ctest --track Grid -D ExperimentalUpdate
 ctest --track Grid -D ExperimentalConfigure
 ctest --track Grid -D ExperimentalBuild
 ctest --track Grid  -j2 -D ExperimentalTest -R cosci_energy
-ctest -D ExperimentalSubmit --track Grid
+ctest --track Grid  -D ExperimentalSubmit 
 
 ###############################################
 #  serial DIRAC buildup, GNU+MKL dynamic      #
