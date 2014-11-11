@@ -36,6 +36,11 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 
+# python interpreter is required at many places during configuration and build
+# for example build with pcmsolver will fail (merging libraries)
+# someone can specify minimal version if known
+find_package(PythonInterp REQUIRED)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -154,21 +159,25 @@ if(ENABLE_PCMSOLVER)
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
-	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
+        get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
+        
+        # PCMSolver does not know profile
+        if(CMAKE_BUILD_TYPE MATCHES "profile")
+            set(PCM_BUILD_TYPE "release")
+        else()
+            set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+        endif()
+        
         set(ExternalProjectCMakeArgs
-            # PCMSolver does not know profile
-            if(CMAKE_BUILD_TYPE MATCHES "profile")
-                set(CMAKE_BUILD_TYPE "release")
-            endif
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-	    -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
+            -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-	    -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
+            -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-	    -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
-	    -DENABLE_CXX11_SUPPORT=OFF
+            -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+            -DENABLE_CXX11_SUPPORT=OFF
             -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
             -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
             -DEIGEN3_ROOT=${EIGEN3_ROOT}
@@ -177,10 +186,11 @@ if(ENABLE_PCMSOLVER)
             -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-	    -DENABLE_PYTHON_EMBEDDING=OFF
-	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
-	    -DZLIB_ROOT=${ZLIB_ROOT}
+            -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+            -DENABLE_PYTHON_EMBEDDING=OFF
+            -DENABLE_TESTS=${PCMSOLVER_TESTS}
+            -DZLIB_ROOT=${ZLIB_ROOT}
+            -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
          )
         
         if(PCMSOLVER_TESTS)
