@@ -201,8 +201,8 @@ Developers
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
 
-* **Moving code between machines**
-  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code`
+* **Moving code between machines:**
+  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
 
 * **Notes:**
   :doc:`DFCOEF <programmers/dfcoef>` |
