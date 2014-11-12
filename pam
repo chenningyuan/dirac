@@ -886,7 +886,6 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_put:
             self.put_files = options.dest_put
-            print 'self.put_files=',self.put_files
 
         if options.dest_get:
             self.get_files = options.dest_get
