@@ -106,7 +106,10 @@ contains
 #include "inforb.h"
 #endif
 #include "../lucita/mxpdim.inc"
-#include "../lucita/lucinp.inc" ! contains NACTEL
+
+! contains NACTEL
+#include "../lucita/lucinp.inc"
+
 #include "../lucita/strbas.inc"
 #include "../lucita/cstate.inc"
 #include "../lucita/strinp.inc"
