@@ -55,9 +55,9 @@ else()
 endif()
 
 # get compiler version from Python script for C, C++ and Fortran compilers (C;C++;Fortran -- in form like CMake list)
-# some compilers have different behaviour on Windows (Intel) or ...
-execute_process(COMMAND python ${PROJECT_SOURCE_DIR}/cmake/compilers/GetCompilerVersion.py 
-				${CMAKE_C_COMPILER_ID} ${CMAKE_CXX_COMPILER_ID} ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_SYSTEM_NAME}
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/compilers/GetCompilerVersion.py 
+				${CMAKE_C_COMPILER} ${CMAKE_C_COMPILER_ID} ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ID} 
+				${CMAKE_Fortran_COMPILER} ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_SYSTEM_NAME}
 				OUTPUT_VARIABLE PYTHON_OUTPUT)
 				
 # get versions from python output
