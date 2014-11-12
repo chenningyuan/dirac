@@ -148,7 +148,7 @@ cp -R -P /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BU
 cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc               $DIRAC/$BUILD/.
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
-/bin/rm test/*/*.out*
+/bin/rm test/*/*.out.*
 /bin/rm -r test/*/compare
 
 echo -e "\n\n packing fat DIRAC suite for grid computations..."
