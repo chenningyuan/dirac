@@ -202,7 +202,7 @@ Developers
   :doc:`FAQ <programmers/faq>`
 
 * **Moving code between machines**
-  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code`
+  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
 
 * **Notes:**
   :doc:`DFCOEF <programmers/dfcoef>` |
