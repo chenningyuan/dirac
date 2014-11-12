@@ -39,17 +39,17 @@ def parse_input():
     group.add_argument('--fc',
             action='store',
             default=None,
-            help='set the Fortran compiler [default: pick automatically or based on FC=...]',
+            help='set the Fortran compiler [default: pick automatically]',
             metavar='STRING')
     group.add_argument('--cc',
             action='store',
             default=None,
-            help='set the C compiler [default: pick automatically or based on CC=...]',
+            help='set the C compiler [default: pick automatically]',
             metavar='STRING')
     group.add_argument('--cxx',
             action='store',
             default=None,
-            help='set the C++ compiler [default: pick automatically or based on CXX=...]',
+            help='set the C++ compiler [default: pick automatically]',
             metavar='STRING')
     group.add_argument('--type',
             nargs='?',
@@ -218,11 +218,11 @@ def gen_cmake_command(args):
     command = ''
 
     if args.fc:
-        command += ' FC=%s'  % args.fc
+        command += ' -DCMAKE_Fortran_COMPILER=%s'  % args.fc
     if args.cc:
-        command += ' CC=%s'  % args.cc
+        command += ' -DCMAKE_C_COMPILER=%s'  % args.cc
     if args.cxx:
-        command += ' CXX=%s' % args.cxx
+        command += ' -DCMAKE_CXX_COMPILER=%s' % args.cxx
 
     if sys.platform != "win32":
         command += ' %s' % args.cmake
