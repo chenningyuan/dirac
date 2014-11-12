@@ -345,7 +345,10 @@ C
       LOGICAL   NOGENINP, USER_STOL
 C
 #include "dcbgen.h"
-#include "dcbham.h" ! MDIRAC is needed for check of STOL(2)
+
+! MDIRAC is needed for check of STOL(2)
+#include "dcbham.h"
+
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
