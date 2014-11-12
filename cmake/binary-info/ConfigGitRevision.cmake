@@ -20,20 +20,12 @@ if(DEVELOPMENT_CODE)
       #     ERROR_QUIET
       #     )
       
-      if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-        execute_process(
-              COMMAND powershell.exe "${GIT_EXECUTABLE} branch | findstr *"
-              OUTPUT_VARIABLE GIT_BRANCH
-              ERROR_QUIET
-              )
-      else()
-          execute_process(
-              COMMAND ${GIT_EXECUTABLE} branch
-              COMMAND grep "*"
-              OUTPUT_VARIABLE GIT_BRANCH
-              ERROR_QUIET
-              )
-      endif()
+      execute_process(
+          COMMAND ${PYTHON_EXECUTABLE} -c "import subprocess; import re; print(re.match(r'\\* .*', subprocess.check_output(['git', 'branch'])).group())"
+          OUTPUT_VARIABLE GIT_BRANCH
+          ERROR_QUIET
+          )
+      
       if(NOT ${GIT_BRANCH} STREQUAL "")
           string(REPLACE "*" " " GIT_BRANCH ${GIT_BRANCH})
           string(STRIP ${GIT_BRANCH} GIT_BRANCH)
