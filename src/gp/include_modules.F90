@@ -91,7 +91,10 @@ end module include_dcbdhf_h
 module include_dcbprp_h
 implicit none
 private
-#include "mxcent.h" !> needed for parameters used in dcbprp.h
+
+!> needed for parameters used in dcbprp.h
+#include "mxcent.h"
+
 #include "dcbprp.h"
 !> specify public variables and public methods
 public :: get_IPRPRP
