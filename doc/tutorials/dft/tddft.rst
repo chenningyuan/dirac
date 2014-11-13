@@ -71,12 +71,18 @@ root flipping during the iterative solution of the TDDFT equations. We are worki
 and consider single excitations from a closed-shell ground state. The final states will be therefore be singlet or triplets in the spin-orbit 
 free case. We need to tell DIRAC how these states are distributed on the four irreps of :math:`C_{2v}`. 
 At this point we should emphasize that DIRAC will employ the *total* symmetry of the final states,
-that is the combined spin and spatial symmetry. A singlet spin function is totally symmetric (:math:`A_1`), whereas the
+that is the combined spin and spatial symmetry. A singlet spin function 
+
+.. math::
+
+   S_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2-\beta_1\alpha_2\right)
+
+is totally symmetric (:math:`A_1`), whereas the
 triplet spin functions transform as rotations. We know the triplet functions as:
 
 .. math::
 
-   T_{-1} = \alpha_1\alpha_2;\quad T_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2-\beta_1\alpha_2\right);\quad T_{+1}=\beta_1\beta_2
+   T_{-1} = \alpha_1\alpha_2;\quad T_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2+\beta_1\alpha_2\right);\quad T_{+1}=\beta_1\beta_2
 
 but for our purposes it will be more convenient to form the combinations:
 
