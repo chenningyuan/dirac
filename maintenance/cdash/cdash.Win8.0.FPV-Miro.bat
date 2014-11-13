@@ -4,6 +4,7 @@ cls
 set DIRTIMEOUT="14m"
 set DIRAC=C:\Users\milias\Documents\Dirac\devel_trunk
 
+rem update all submodules
 git submodule update
 
 rem download fresh Dirac
@@ -22,6 +23,9 @@ ctest -j2 -D ExperimentalBuild      --track Miro
 ctest -j2 -D ExperimentalTest       --track Miro
 ctest     -D ExperimentalSubmit     --track Miro
 
+rem wait 1 minute
+timeout 60
+
 rem go to the local DIRAC directory
 cd %DIRAC%
 set BUILD=build_mingw64_i8_check
@@ -34,6 +38,9 @@ ctest     -D ExperimentalConfigure  --track BoundsCheck
 ctest -j2 -D ExperimentalBuild      --track BoundsCheck
 ctest -j2 -D ExperimentalTest       --track BoundsCheck
 ctest     -D ExperimentalSubmit     --track BoundsCheck
+
+rem wait 1 minute
+timeout 60
 
 rem go to the local DIRAC directory
 cd %DIRAC%
@@ -49,4 +56,8 @@ ctest -j2 -D ExperimentalTest       --track Miro
 ctest     -D ExperimentalSubmit     --track Miro
 
 rem switch off Desktop PC Windows after 10 seconds
-timeout 10 && shutdown -s
+rem timeout 10 && shutdown -s
+
+rem after half minute make the computer sleep again
+timeout 30
+rundll32.exe powrprof.dll,SetSuspendState 0,1,0
