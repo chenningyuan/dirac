@@ -1327,10 +1327,14 @@ Options are also read from ~/.diracrc"""
                 if find_executable(self.debugger) is None:
                     print_error_message('\n no debugger found in the <diracrc> file !')
                     sys.exit(235)
-                # TODO: adapt it for Windows
-                self.dirac_cmd = self.debugger + ' ' + dirac_executable \
+                if not is_windows:                        
+                    self.dirac_cmd = self.debugger + ' ' + dirac_executable \
                     + ' | tee ' + self.output_file_full
-            elif self.vg_debug:
+                else:
+                #Miro: simple adaptation for Windows does not save dbg output file
+				#TODO: try to improve it as is for Linux
+                    self.dirac_cmd = self.debugger + ' ' + dirac_executable
+             elif self.vg_debug:
                 # valgrind flags read from files ~/.valgrindrc and ./.valgrindrc
                 # -v --error-limit=no --leak-check=full  --show-reachable=yes
                 self.dirac_cmd = 'valgrind --log-fd=1 ' \
