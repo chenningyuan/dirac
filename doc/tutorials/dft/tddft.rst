@@ -174,8 +174,8 @@ to closed-shell and so this is :math:`^1A_1` (:math:`C_{2v}`), corresponding to 
 Linear (super)symmetry is not implemented for spin-orbit free calculations, so DIRAC gives symmetry information with respect to :math:`C_{2v}`.
 DIRAC, however, is able to separate spin and spatial symmetries. We see for instance the the next level is six-fold degenerate 
 with equal contributions from :math:`^3B_1` and :math:`^3B_2`. Looking at the above correspondence table between :math:`C_{2v}` and
-:math:`C_{v\infty}` that a degenerate level of :math:`B_1` and :math:`B_2` spatial symmetries corresponds to a :math:`\Delta` term, 
-so we identify the first excited level of CO as :math:`^3\Delta`. The correspondence table also allows us to distinguish mirror symmetry
+:math:`C_{v\infty}` that a degenerate level of :math:`B_1` and :math:`B_2` spatial symmetries corresponds to a :math:`\Pi` term, 
+so we identify the first excited level of CO as :math:`^3\Pi`. The correspondence table also allows us to distinguish mirror symmetry
 about the molecular axis for :math:`\Sigma` states, so we identify the second excited state as :math:`^{3}\Sigma^{+}`. Proceeding 
 in this manner, we also see some failures of the degeneracy detection in DIRAC. Level 4 and 5 are classified as :math:`^3A_1` and 
 :math:`^3A_2`, respectively, and are clearly components of a :math:`^3\Delta` state. Reducing the threshold for degeneracies would 
