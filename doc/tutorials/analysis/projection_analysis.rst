@@ -431,7 +431,7 @@ We next turn to the electron configuration of the atoms in the molecule by looki
 We can to a large extent deduce the identity of the various atomic orbitals by just looking at orbital energies 
 and I have added it by hand to the above output in a hopefully obvious notation. Even more precise information, 
 such as :math:`m_j` value (indicated in parenthesis) can be obtained from looking at the Mulliken population analysis of each atom. 
-From this list of gross population we extract the atomic valence configuration :math:`5f^{2.25}6d^{1.16}7s^{0.98}` for 
+From this list of gross population we extract the atomic valence configuration :math:`5f^{2.25}6d^{1.16}7s^{0.04}` for 
 the uranium atom and :math:`2s^{1.90}2p^{4.41}` for oxygen. An interesting feature is that the uranium *6p* population 
 adds up to *5.64* and not six electrons. This is a manifestation of the so-called *6p-hole*, due to overlap with the oxygen ligands, 
 and mostly located to the :math:`6p_{3/2.1/2}` orbital.
