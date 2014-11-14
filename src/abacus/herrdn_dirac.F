@@ -93,8 +93,12 @@ C
 C      We loop over these directories in search for the basis set and
 c      element given.
 C
-C      Check if we work on Linux or on Windows (Windows paths also contain : so it is better to search for ;)
-       Windows = INDEX ( BASDIR, ';' )
+C      Check if we work on Linux or on Windows
+#if defined SYS_WINDOWS
+      LOGICAL, PARAMETER :: Windows = .TRUE.
+#else
+      LOGICAL, PARAMETER :: Windows = .FALSE.
+#endif
 C
        ISTART = 1
 C        
@@ -102,7 +106,7 @@ C
 C        
 C      Find next colon (: or ;) in BASDIR
 C       
-       IF ( Windows .EQ. 0 ) THEN
+       IF ( .NOT. Windows ) THEN
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
        ELSE
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ';' )
@@ -127,12 +131,17 @@ C
        ISTART = ICOLON + 1
 C        
 C     Add trailing slash if not present.
-C     Fortran probably does not care if \ or / (or mix) is used on Windows (/ is OK)
+C     / for Linux and \ for Windows
+      IF ( .NOT. Windows ) THEN
+          CHARACTER (LEN=1) :: slash = '/'
+      ELSE
+          CHARACTER (LEN=1) :: slash = '\'
+      END IF
 C        
        IEND = INDEX ( STRING(1:), ' ') - 1
-       IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+       IF ( STRING(IEND:IEND) .NE. slash ) THEN
           IEND = IEND + 1
-          STRING(IEND:IEND) = '/'
+          STRING(IEND:IEND) = slash
        END IF
        STRING = STRING(1:IEND)//FILNAM
        IEND = INDEX(STRING(1:),' ') - 1

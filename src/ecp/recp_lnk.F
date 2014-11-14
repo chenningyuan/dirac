@@ -815,8 +815,12 @@ C
 C     We loop over these directories in search for the basis set and
 c     element given.
 C
-C     Check if we work on Linux or on Windows (Windows paths also contain : so it is better to search for ;)
-      Windows = INDEX ( BASDIR, ';' )
+C     Check if we work on Linux or on Windows
+#if defined SYS_WINDOWS
+      LOGICAL, PARAMETER :: Windows = .TRUE.
+#else
+      LOGICAL, PARAMETER :: Windows = .FALSE.
+#endif
 C
 C     Depending on the machine, the string has trailing blanks
 C     (ASCII char=32) or null elements (ASCII=0).
@@ -836,7 +840,7 @@ C
 C     
 C     Find next colon (: or ;) in BASDIR
 C     
-      IF ( Windows .EQ. 0 ) THEN
+      IF ( .NOT. Windows ) THEN
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
       ELSE
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ';' )
@@ -849,7 +853,12 @@ C
       STRING = BASDIR(ISTART:IEND)//' '
 C
 C     Add trailing slash if not present.
-C     Fortran probably does not care if \ or / (or mix) is used on Windows (/ is OK)
+C     / for Linux and \ for Windows
+      IF ( .NOT. Windows ) THEN
+          CHARACTER (LEN=1) :: slash = '/'
+      ELSE
+          CHARACTER (LEN=1) :: slash = '\'
+      END IF
 C
       IEND = INDEX ( STRING(1:), ' ') - 1
 !     stefan: make check with idb indicates a possible access penalty if
@@ -859,9 +868,9 @@ C
      &        'variable BASDIR is not set'
         call quit('*** error in FINDEL: BASDIR is not set')
       end if
-      IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+      IF ( STRING(IEND:IEND) .NE. slash ) THEN
          IEND = IEND + 1
-         STRING(IEND:IEND) = '/'
+         STRING(IEND:IEND) = slash
       END IF
       STRING = STRING(1:IEND)//BASNAM
       IEND = INDEX(STRING(1:),' ') - 1
