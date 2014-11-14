@@ -22,9 +22,9 @@ echo -e "\n *** Working host is: "; hostname -f
 ##################################################
 #export PATH=/usr/kerberos/bin:/opt/d-cache/srm/bin:/opt/d-cache/dcap/bin:/opt/edg/bin:/opt/lcg/bin:/usr/local/bin:/bin:/usr/bin:$PATH
 # rather do the sourcing ...
-source ~/.bashrc
-source ~/.bash_profile
 source /etc/bashrc
+source ~/.bash_profile
+#source ~/.bashrc
 
 
 source $HOME/intel/bin/compilervars.sh intel64
@@ -42,7 +42,7 @@ echo "My own CMake is in PATH."
 
 echo "My PATH=$PATH"
 #echo "which make:"; which make
-echo -e "\n set:"; set
+echo -e "\n\n set:"; set
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "Running DIRAC cdash buildup at "$timestamp
@@ -69,8 +69,7 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 ./pamadm -a --builddir=$BUILD
-./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
-# --------------------------
+./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD
  cd $BUILD
  ctest -D ExperimentalUpdate  --track Grid
  ctest -D ExperimentalConfigure  --track Grid
@@ -92,7 +91,7 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   /bin/rm -rf $BUILD_SERIAL
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
-./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD_SERIAL
+./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD_SERIAL
  cd $BUILD_SERIAL
  ctest -D ExperimentalUpdate  --track Grid
  ctest -D ExperimentalConfigure  --track Grid
@@ -116,7 +115,7 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
   /bin/rm -rf $BUILD_GNU_SERIAL
  fi
 ./pamadm -a --builddir=$BUILD_GNU_SERIAL
-./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD_GNU_SERIAL
+./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD_GNU_SERIAL
  cd $BUILD_GNU_SERIAL
  ctest -D ExperimentalUpdate  --track Grid
  ctest -D ExperimentalConfigure  --track Grid
