@@ -2089,8 +2089,19 @@ C
       CALL FLSHFO(LUWRT)
 C
       Call Add_Info('E_CI',FINEIG,NROOT)
-C
+
+      if(myproc == master)then
+        ! for +Q correction
+        open(file="energies.CI",unit=10,status="unknown",
+     &       form="unformatted",access="sequential")
+!       TODO: check proper reference energies for states other than the ground state and MCSCF reference wave functions!!!
+        write(10) nroot,eig(1,1)+eigshf
+        write(10) ((eig(iter,i)+eigshf),i=1,nroot)
+        close(10,status="keep")
+      end if
+ 
       RETURN
+
  1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
  1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
  9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
