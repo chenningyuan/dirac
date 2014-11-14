@@ -14,8 +14,8 @@ echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 export PATH=/home/ilias/bin/openmpi_intel_stat/bin:$PATH
 export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_intel_stat/lib:$LD_LIBRARY_PATH
 # my cmake stuff
-export PATH=/home/ilias/bin/newer_cmake:$PATH
-echo "My own (dynamic) CMake is in PATH."
+export PATH=/home/ilias/bin/cmakestatic:$PATH
+echo "My own static CMake is in PATH."
 
 # my binutils-gold
 export LIBDIR=/home/ilias/bin/binutils-gold/lib:$LIBDIR
