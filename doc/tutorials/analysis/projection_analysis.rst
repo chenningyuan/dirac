@@ -138,7 +138,7 @@ with corresponding input files ``H.inp``,
 
 ``C.inp``
 
-.. literalinclude:: H.inp 
+.. literalinclude:: C.inp 
 
 and ``C.mol``
 
