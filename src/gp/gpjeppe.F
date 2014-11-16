@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -620,6 +620,31 @@ CSK           WRITE(LUWRT,*) 'I set this to 0',I
 CSK           WRITE(LUWRT,*) 'DIVIDE for I',DIVIDE,I
            VECOUT(I)=VECIN(I)/DIVIDE
          END IF
+      END DO
+      RETURN
+      END
+      SUBROUTINE DIAVC2_krci(VECOUT,VECIN,DIAG,SHIFT,off_dia,NDIM)
+C
+C VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
+C
+C Set VECOUT = 0 if VECIN = 0
+C   Timo Fleig, 18-12-2002
+C
+#include "implicit.h"
+      PARAMETER (THRES=1.0D-14)
+      DIMENSION VECOUT(*),VECIN(*),DIAG(*)
+C
+      DO I=1,NDIM
+!        print *, "diag and shift for element i",i,diag(i),shift,off_dia
+         DIVIDE=DIAG(I)+SHIFT-off_dia
+         IF(ABS(DIVIDE) <= THRES) DIVIDE=1.0d0
+!        print *, "cvecs for elemet i",i,-vecin(i),divide
+         IF(VECIN(I).EQ.0.0D0) THEN
+           VECOUT(I) = 0.0D0
+         ELSE
+           VECOUT(I)= -VECIN(I)/DIVIDE
+         END IF
+!         print *, "unnorm bvecs for elemet i",i,vecout(i)
       END DO
       RETURN
       END

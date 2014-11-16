@@ -22,9 +22,9 @@ echo -e "\n *** Working host is: "; hostname -f
 ##################################################
 #export PATH=/usr/kerberos/bin:/opt/d-cache/srm/bin:/opt/d-cache/dcap/bin:/opt/edg/bin:/opt/lcg/bin:/usr/local/bin:/bin:/usr/bin:$PATH
 # rather do the sourcing ...
-source ~/.bashrc
-source ~/.bash_profile
 source /etc/bashrc
+source ~/.bash_profile
+#source ~/.bashrc
 
 
 source $HOME/intel/bin/compilervars.sh intel64
@@ -33,23 +33,22 @@ echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 export PATH=/home/ilias/bin/openmpi_i32lp64_intel_static/bin:$PATH
 export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_intel_static/lib:$LD_LIBRARY_PATH
 # my cmake stuff
-export PATH=/home/ilias/bin/cmake_static:$PATH
+export PATH=/home/ilias/bin/cmakestatic/bin:$PATH
 echo "My own CMake is in PATH."
+#my git in PATH
+#export PATH=/home/ilias/bin/git/git-1.7.11.7:$PATH
 # my most recent python 2.7.1 #
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
 echo "My PATH=$PATH"
 #echo "which make:"; which make
-echo -e "\n set:"; set
+echo -e "\n\n set:"; set
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "Running DIRAC cdash buildup at "$timestamp
 
 DIRAC=/home/ilias/qch_work/software/dirac_git/trunk_current
 #
-BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
-BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
-BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
 
 #unset DO_UPDATE
 DO_UPDATE=1
@@ -64,19 +63,19 @@ export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 #echo -e "\n updating the local $DIRAC"
 #git pull
 
+BUILD=build_Intel_OpenMPI_MKL_ILP64_STATIC
 if [[ -d "$BUILD" ]]; then
    echo "removing previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-
-#./setup --fc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" -D RUNTEST_NR_PROC=2 --int64 -D RUNTEST_TIMEOUT="00:18:00" -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
-./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD
-# --------------------------
+./pamadm -a --builddir=$BUILD
+./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD
  cd $BUILD
- make ExperimentalUpdate
- make ExperimentalConfigure
- make ExperimentalBuild
- make ExperimentalSubmit
+ ctest -D ExperimentalUpdate  --track Grid
+ ctest -D ExperimentalConfigure  --track Grid
+ ctest -D ExperimentalBuild  --track Grid
+ ctest -D ExperimentalTest -R cosci_energy --track Grid
+ ctest -D ExperimentalSubmit --track Grid
 
  ls -lt $DIRAC/$BUILD/dirac.x
  ldd $DIRAC/$BUILD/dirac.x
@@ -86,17 +85,19 @@ timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,static - finished at $timestamp \n"
 
 cd $DIRAC
+BUILD_SERIAL=build_Intel_serial_MKL_ILP64_STATIC
 if [[ -d "$BUILD_SERIAL" ]]; then
    echo "removing previous build directory $BUILD_SERIAL"
   /bin/rm -rf $BUILD_SERIAL
 fi
-
-./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD_SERIAL
+./pamadm -a --builddir=$BUILD_SERIAL
+./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD_SERIAL
  cd $BUILD_SERIAL
- make ExperimentalUpdate
- make ExperimentalConfigure
- make ExperimentalBuild
- make ExperimentalSubmit
+ ctest -D ExperimentalUpdate  --track Grid
+ ctest -D ExperimentalConfigure  --track Grid
+ ctest -D ExperimentalBuild  --track Grid
+ ctest -D ExperimentalTest -R cosci_energy  --track Grid
+ ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL/dirac.x
@@ -108,16 +109,19 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
 # cancel the variable #
  unset MATH_ROOT
  cd $DIRAC
+ BUILD_GNU_SERIAL=build_GNU_serial_ILP64_STATIC
  if [[ -d "$BUILD_GNU_SERIAL" ]]; then
    echo "removing previous build directory $BUILD_GNU_SERIAL"
   /bin/rm -rf $BUILD_GNU_SERIAL
  fi
-./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D VERBOSE_OUTPUT=ON -D ENABLE_OLD_LINKER=ON $BUILD_GNU_SERIAL
+./pamadm -a --builddir=$BUILD_GNU_SERIAL
+./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD_GNU_SERIAL
  cd $BUILD_GNU_SERIAL
- make ExperimentalUpdate
- make ExperimentalConfigure
- make ExperimentalBuild
- make ExperimentalSubmit
+ ctest -D ExperimentalUpdate  --track Grid
+ ctest -D ExperimentalConfigure  --track Grid
+ ctest -D ExperimentalBuild  --track Grid
+ ctest -D ExperimentalTest -R cosci_energy  --track Grid
+ ctest -D ExperimentalSubmit --track Grid
 
  ls -lt $DIRAC/$BUILD_GNU_SERIAL/dirac.x
  ldd $DIRAC/$BUILD_GNU_SERIAL/dirac.x
@@ -132,8 +136,6 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
 
 # create the reduced tar-file containing all important stuff ...
 cd $DIRAC
-# copy there the cmake static
-cp -R /home/ilias/bin/cmake_static/*                                 $DIRAC/$BUILD/.
 
 # copy there the mpirun static with related directpries & files
 cp    /home/ilias/bin/openmpi_i32lp64_intel_static/bin/mpirun         $DIRAC/$BUILD/.
@@ -143,17 +145,17 @@ cp -R -P /home/ilias/bin/openmpi_i32lp64_intel_static/share/openmpi   $DIRAC/$BU
 cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc               $DIRAC/$BUILD/.
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
-/bin/rm test/*/*.out*
+/bin/rm test/*/*.out.*
 /bin/rm -r test/*/compare
 
 echo -e "\n\n packing fat DIRAC suite for grid computations..."
-tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam runtest setup VERSION  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid
+tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam  setup VERSION  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid  /home/ilias/bin/cmakestatic
 echo -e "\n packing done, we have tar-ball dirac_grid_suite.tgz file ready for grid-computing : "
 ls -lt dirac_grid_suite.tgz
 
 #another packing - only main stuff - test, runtest, pam, dirac.x execes, and static mpirun stuff
 echo -e "\n\n packing slim DIRAC suite for grid computations..."
-tar czf dirac_grid_suite_slim.tgz  pam  runtest VERSION test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION_cmake $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION_cmake $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION_cmake  maintenance/grid_computing/diracrc_grid 
+tar czf dirac_grid_suite_slim.tgz  pam  VERSION test  basis  basis_dalton basis_ecp  $BUILD/dirac.x $BUILD/VERSION_cmake $BUILD/etc $BUILD/share $BUILD/mpirun  $BUILD_SERIAL/dirac.x $BUILD_SERIAL/VERSION_cmake $BUILD_GNU_SERIAL/dirac.x $BUILD_GNU_SERIAL/VERSION_cmake  maintenance/grid_computing/diracrc_grid /home/ilias/bin/cmakestatic
 echo -e "\n packing done, we have tar-ball dirac_grid_suite_slim.tgz file ready to be stored for grid-computing : "
 ls -lt dirac_grid_suite_slim.tgz
 echo -e "\n Done. Tarball with static execs ready."

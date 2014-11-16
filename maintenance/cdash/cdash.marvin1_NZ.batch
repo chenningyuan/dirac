@@ -1,22 +1,41 @@
 #!/bin/bash
 
+##### 05 00 * * 1,2,3,4,5,6,7 DIRAC=/home/ilias/Work/software/dirac/working_trunk; cd $DIRAC; /cm/shared/apps/torque/2.5.5/bin/qsub $DIRAC/maintenance/cdash/cdash.marvin1_NZ.batch
+
 ##The job name
 #PBS -N DIRAbuild
 
+# employ already set enviroment variables
+#PBS -V
+
 ##The maximum time needed in hours:mins:secs
-#PBS -l walltime=01:30:00 
+#PBS -l walltime=03:30:00 
 
 ##The number of nodes and the number of processes per node 
 #PBS -l nodes=1:ppn=1
 
 ##The maximum amount of memory required
-#PBS -l mem=8000mb 
+##PBS -l mem=8000mb 
 
 # one file for both stdout+stderr output
 #PBS -j oe
 
 ##The maximum amount of Hard Disk/Scratch space required
-#PBS -l file=100gb
+##PBS -l file=100gb
+
+echo '------------------------------------'
+echo '  *** PBS control variables ***  '
+echo '------------------------------------'
+echo '   $PBS_O_HOME='$PBS_O_HOME
+echo '   $PBS_O_HOST='$PBS_O_HOST
+echo '   $PBS_SERVER='$PBS_SERVER
+echo '  $PBS_O_QUEUE='$PBS_O_QUEUE
+echo '$PBS_O_WORKDIR='$PBS_O_WORKDIR
+echo '  $PBS_JOBNAME='$PBS_JOBNAME
+echo '    $PBS_JOBID='$PBS_JOBID
+echo ' $PBS_NODEFILE='$PBS_NODEFILE
+echo '------------------------------------'
+
 
 #1. Print some helpful information:
 echo This job was submitted from the computer:
@@ -63,29 +82,41 @@ echo -e  'Number of all processors available per core, NUM_OF_CPUS='$NUM_OF_CPUS
 NUM_OF_PROCESSES=$(cat ${PBS_NODEFILE} | wc -l)
 echo -e 'Number of cores requested, NUM_OF_PROCESSES='$NUM_OF_PROCESSES
 
+export DIRTIMEOUT="10m"
 
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/software/dirac/working_trunk
-export DIRTIMEOUT="10m"
+
+echo -e "\n cmake ? \c"; cmake --version
+echo -e "git ? \c"; git --version
+echo -e "\nifort ? \c"; ifort -V
+echo -e "pgf90 ? \c"; pgf90 -V
+echo -e "gfortran ? \c"; gfortran --version
+
 
 # go to the local DIRAC directory
 cd $DIRAC
+
+git submodule update
+git submodule status
+
 BUILD_INTEL=build_intelmkl_i8
 if [[ -d "$BUILD_INTEL" ]]; then
   echo "deleting previous build directory $BUILD_INTEL."
   /bin/rm -rf $BUILD_INTEL
 fi
 #
-./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_INTEL
+#./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_INTEL
+./pamadm -a --builddir=$BUILD_INTEL
 #export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
 ./setup --fc=ifort  --cc=icc  --cxx=icpc  -D BUILDNAME="Marvin_intelmkl_i8" -D BLAS_TYPE=MKL -D LAPACK_TYPE=MKL -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
 cd $BUILD_INTEL
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -D ExperimentalBuild
-#ctest -D ExperimentalTest  -R  cosci_energy
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure --track Miro
+ctest -D ExperimentalBuild --track Miro
+ctest -D ExperimentalTest  -R  cosci_energy --track Miro
+ctest -D ExperimentalSubmit --track Miro
 
 
 # go to the local DIRAC directory
@@ -96,14 +127,33 @@ if [[ -d "$BUILD_PGI" ]]; then
   /bin/rm -rf $BUILD_PGI
 fi
 #
-./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI
+#./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI
+./pamadm -a --builddir=$BUILD_PGI
 export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
 ./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="Marvin_PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_PGI
 cd $BUILD_PGI
-make ExperimentalUpdate
-make ExperimentalConfigure
-make ExperimentalBuild
-ctest -D ExperimentalTest  -R cosci_energy
-make ExperimentalSubmit
+ctest -D ExperimentalUpdate --track Miro 
+ctest -D ExperimentalConfigure --track Miro
+ctest -D ExperimentalBuild --track Miro
+ctest -D ExperimentalTest  -R cosci_energy --track Miro
+ctest -D ExperimentalSubmit --track Miro
 
+
+# go to the local DIRAC directory
+cd $DIRAC
+BUILD_GNU=build_gnu_i8
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU."
+  /bin/rm -rf $BUILD_GNU
+fi
+#
+./pamadm -a --builddir=$BUILD_GNU
+# configure step
+./setup --fc=gfortran  --cc=gcc  --cxx=g++  -D BUILDNAME="Marvin_gnu_i8_ownmath" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_GNU
+cd $BUILD_GNU
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure  --track Miro
+ctest -D ExperimentalBuild  --track Miro
+ctest -D ExperimentalTest  -R cosci_energy  --track Miro
+ctest -D ExperimentalSubmit --track Miro

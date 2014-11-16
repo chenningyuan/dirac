@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -215,6 +215,7 @@ C
 !     *PCM
 !     *PCMSOL      
 !     *AooSOC
+!     *QCORR
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
 
@@ -344,7 +345,10 @@ C
       LOGICAL   NOGENINP, USER_STOL
 C
 #include "dcbgen.h"
-#include "dcbham.h" ! MDIRAC is needed for check of STOL(2)
+
+! MDIRAC is needed for check of STOL(2)
+#include "dcbham.h"
+
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
@@ -1042,7 +1046,9 @@ C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
 !     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
+#ifdef MOD_AOOSOC
       if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
+#endif
       ATOMST=.FALSE.
       ATHUCK = .FALSE.
       HUCPAR = 1.5D0
@@ -2507,7 +2513,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 18, NTABLE = 23)
+      PARAMETER (NDIR = 19, NTABLE = 23)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2524,7 +2530,7 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '*SCF   ','*KRCI  '/
+     &             '*SCF   ','*KRCI  ','*QCORR '/
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
@@ -2881,7 +2887,8 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), 
+     &                I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2980,6 +2987,12 @@ C
 !*KRCI
    18 continue
       CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
+      go to 200
+!*QCORR
+   19 continue
+      ! this is a cheat so that *QCORR section is parsed
+      ! by new input reader
+      call move_to_next_star(word, lucmd)
       go to 200
 
     1 CONTINUE
@@ -3124,7 +3137,7 @@ C
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
-     &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
+     &            '.ANALYZ','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
      &            '.DISTRT','.CONVER','.TRUNCF','.MEMFAC','XXXXXXX'/
       DATA SET/.FALSE./
 C
@@ -3284,7 +3297,8 @@ C&&& MXCIVE: Maximum number of subspace CI vectors
                   IMOKW(20) = 1
                GO TO 100
    21          CONTINUE
-C&&& xxxxxx: 
+C&&& ANALYZE 
+                  IMOKW(25) = 1
                GO TO 100
    22          CONTINUE
 C&&& xxxxxxxxx:
@@ -4586,6 +4600,7 @@ C
       ISPHTR   = ILSPH+2*ISSPH
       IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
       INTGEN   = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+      INTGEN_SAVE = INTGEN
       CVAL     = CVEL
       STOL(1)  = 1.0D-6
       STOL(2)  = 1.0D-8
@@ -5613,6 +5628,12 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
        IF (DOPRP) THEN
         WRITE(LUPRI,'(2X,A)') '- BSS with properties !'
        ENDIF
+
+       IF(DO2C4C)THEN
+         IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
+           IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
+         END IF
+       END IF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
         IF (((IBSS.EQ.2999).or.x2c).AND.NOPRTR) THEN

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -48,7 +48,10 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
-#include "dcbham.h" ! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
+
+! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
+#include "dcbham.h"
+
 #include "dcbmp2.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE
@@ -452,7 +455,8 @@ C
       CALL FLSHFO(LUPRI)
 C
       IF (.NOT.NO2IND)
-     &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+     &   CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
+     &               KQC,KE,KIBE)
 C
       CALL FLSHFO(LUPRI)
 C
@@ -3997,7 +4001,7 @@ C
 C
         CALL MRCONE(WORK(KBUF),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
      &              WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-     &              NSPC,NSTR,NSTRT,IPRRES,
+     &              NSPC,NSTR,NSTRT,IPRRES,TOTERG,
      &              WORK,KFREE,LFREE)
 C
 C       Release the slaves if we run in parallel.

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3528,6 +3528,8 @@ C
 C     Written by J. Thyssen - Jun 27 2000
 C
 C***********************************************************************
+      use mc_energies
+      use qcorr_cfg
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3580,10 +3582,11 @@ C
             CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
             THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
-            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,OPT_THR_CVEC,
+            CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_STATE,ICONV_TOT,
+     &                         OPT_THR_CVEC,IOPT_STATE,ICONV_TOT,
      &                         THRPCI,IPROPT,WORK(KFREE),LFREE)
+
 C
             ECI = WORK(KECI)
          ELSE
@@ -3602,6 +3605,7 @@ C
            CALL GASCIP_ANACI(CREF,NZCONF,WORK(KZCONF),THRPCI,
      &                       WORK(KFREE),LFREE)
          END IF
+
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
@@ -3613,9 +3617,7 @@ C
 C
            IF( MAXCIT .le. 0 ) THEN
 C
-             IF( NATOLCR ) THEN
-               GOTO 500
-             ELSE IF( IANACI .eq. 1 ) THEN
+             IF( NATOLCR .or. ( IANACI .eq. 1 ) .or. luci_cfg_qcorr)then
                GOTO 500
              ELSE
                GOTO 1000
@@ -3625,11 +3627,18 @@ C
          END IF
 C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
+         eci = eci_init
 C
          call memchk('after CALL LUCI_RCIST',WORK,KFREE)
- 500     IF (IANACI.EQ.1) THEN
+
+ 500     if(luci_cfg_qcorr)then
+           CALL LUCI_QCORR(CREF,WORK,KFREE,LFREE)
+         end if
+
+         IF (IANACI.EQ.1) THEN
            CALL LUCI_ANAL(CREF,WORK,KFREE,LFREE)
          END IF
+
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
          IF (IPROPT.GT.5)
@@ -3642,7 +3651,7 @@ C
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
 C
-      WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
+!     WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
 C
 C     General allocation for NO generation
 C

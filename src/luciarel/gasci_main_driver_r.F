@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -28,22 +28,19 @@
       SUBROUTINE GASCI_REL(F1,F2,ISM,ISPC,IPRNT,EREF,
      &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
 *
+!     external modules
       use memory_allocator
+      use interface_to_mpi
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
 * Jeppe Olsen, Winter of 1995
 *              Winter of 1998 : Modified for relativistic calculations
 *
-* Stefan Knecht, Jan 2010: FIXME: introduce use of alloc routines if 
-*                                 they can handle int*8 allocations 
-*                                 within the ilp32 model.
-*                                 For now, we are using the generic 
-*                                 allocate/deallocate routines
-*
+!     internal modules
       use mospinor_info
       use symmetry_setup_krci
-      use interface_to_mpi
+
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -53,6 +50,7 @@
 #include "ipoist8.inc"
 *
       character*6 CIRUN
+      real(8), intent(inout) :: eref
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -86,6 +84,7 @@
       LOGICAL CPIC_PASS_D, DIAGONAL_ALLOC
 C 
 C     some local scratch
+      real*8,    allocatable :: eci_start(:)
       real*8,    allocatable :: scratch_dav1(:)
       real*8,    allocatable :: scratch_dav2(:)
       integer,   allocatable :: iscratch_dav1(:)
@@ -119,6 +118,7 @@ C     memory pointer for C2 vector block
 #endif /* VAR_SHMEM */
 #endif /* VAR_MPI2 */
       integer(8)             :: NCALC_MAX_BLK, IGET_MY_T_LEN
+      integer*8              :: keci_start
 C
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
@@ -190,9 +190,6 @@ C         quaternion real
           IRC = 1
         end if
       END IF
-      if (NZ.eq.1) then
-        write(LUWRT,*) ' Quaternion real relativistic CI '
-      end if
 C     control variable for general file structure
       LBLK = -1
 C
@@ -216,6 +213,10 @@ C
       ELSE
         INICI             = -1
       END IF
+
+      !> for debugging 
+!     istart_nroot = 3
+
 C
 #if defined (VAR_MPI2)
       IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
@@ -319,7 +320,8 @@ C
 C       read in all (active) blocked integrals (T blocks)
 C       ==> integrals required for diagonal H on T_BUFF_D
 C
-        IF (CIRUN .ne. 'ANALYZ' ) THEN
+        IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ' .and. 
+     &      CIRUN /= 'REFVEC') THEN
 C           FIXME: 11-02-08 SK: definition of IBU2D?
           call picasso(iprtra,.TRUE.,
      &                 NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
@@ -359,7 +361,8 @@ C
          DIAGONAL_ALLOC = .TRUE. 
 C
 CSK      CALL DZERO8(T_BUFF,MY_T_LEN)
-         IF (CIRUN .ne. 'ANALYZ' ) THEN
+         IF (CIRUN /= 'ANALYZ' .and. CIRUN /= 'QCORR ' .and. 
+     &      CIRUN /= 'REFVEC') THEN
            call picasso(iprtra, .TRUE. ,
      &                  NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
      &                  T_BUFF_D,IT_TTPL,ibosym,CIRUN,.FALSE.)
@@ -503,11 +506,6 @@ C       end of imaginary  part
         CALL ITODS(-1,1,-1,LUDIA)
         END IF
         IF(IPRCIX.GE.2) WRITE(LUWRT,*) ' Diagonal constructed  '
-        if (IMEMCK.gt.0) then
-          write(LUWRT,*) ' Memory map after GASDIAT_REL in GASCI_REL'
-          IDUM = 0
-          call memmar(KDUM,IDUM,'PRINT ',IDUM,'IDUMMY')
-        end if
       ELSE
          WRITE(LUWRT,*) ' Diagonal not calculated '
       END IF
@@ -694,11 +692,15 @@ C
               CALL QUIT(' *** ERROR in GASCI_REL: too many roots ***')
             end if
 C
-C           allocate some scratch space
+C           !> allocate some scratch space
             NFINDM = min(ndet,istart_nroot+3*nroot)
+
+!           allocate(scratch_dav1(4*NFINDM+1),iscratch_dav1(5*NFINDM))
+!           allocate(scratch_dav2(NROOT))
             call alloc(scratch_dav1, 4*NFINDM+1)
             call alloc(iscratch_dav1,5*NFINDM)
             call alloc(scratch_dav2, NROOT)
+            call alloc(eci_start,istart_nroot,id='eci_start')
 C
             CALL CIEIG5_REL(INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &                      MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,
@@ -712,7 +714,7 @@ C
      &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
      &                      IRC,IDCOMH,IHAM12,
      &                      WORK(KBLOCKLIST),WORK(KNODELIST),
-     &                      IPROCLIST,IGROUPLIST
+     &                      IPROCLIST,IGROUPLIST,eci_start
 #if defined (VAR_MPI2)
      &                      ,WORK(KILU1LIST),WORK(KILU2LIST),
      &                      WORK(KILU3LIST),WORK(KILU4LIST),
@@ -725,9 +727,11 @@ C           save energy of the lowest eigenstate
             EREF = EROOT(1)
 C
 C           release local scratch memory
+            call dealloc(eci_start)
             call dealloc(scratch_dav2)
             call dealloc(iscratch_dav1)
             call dealloc(scratch_dav1)
+!           deallocate(scratch_dav2,iscratch_dav1,scratch_dav1)
 C
 #if defined (VAR_MPI2)
 C
@@ -834,6 +838,40 @@ C
       NPTESTVAR = 00
 
  888  CONTINUE 
+#if defined (VAR_MPI2)
+C     let the slaves wait... it is only a short way to go so why not?
+      call interface_mpi_BARRIER(global_communicator)
+#endif
+
+      else if (CIRUN.eq.'QCORR ') then
+*+++++++++++++++++++++++++++++++++++++++++++++++++++
+C
+C     only MASTER computes the +Q correction ...
+C
+        if(myproc == master)then
+          call rewine(LUC,-1)
+          call q_correction(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                      WORK(KPCBLTP),LUC,LUSC37,
+     &                      ICISTR,IRC,WORK,.true.)
+        end if
+
+#if defined (VAR_MPI2)
+C     let the slaves wait... it is only a short way to go so why not?
+      call interface_mpi_BARRIER(global_communicator)
+#endif
+C
+      else if (CIRUN.eq.'REFVEC') then
+*+++++++++++++++++++++++++++++++++++++++++++++++++++
+C
+C     only MASTER writes the reference vector data to file
+C
+        if(myproc == master)then
+          call rewine(LUC,-1)
+          call put_refvec_for_qcorr(WORK(KVEC1),NBLOCK,WORK(KPCIBT),
+     &                              WORK(KPCBLTP),LUC,LUSC37,
+     &                              ICISTR,IRC,WORK,.true.,ndet,eref)
+        end if
+
 #if defined (VAR_MPI2)
 C     let the slaves wait... it is only a short way to go so why not?
       call interface_mpi_BARRIER(global_communicator)
@@ -1360,7 +1398,9 @@ C     (*_MS2 arrays are in CSTATE )
      &                 IBAT_MS2,IDUMMY,.FALSE.,0,0,IDUMMY)
 C
 #endif
-      write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
+      if(CIRUN /= 'REFVEC') 
+     &write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
+
 C     release memory
       IDUM = 0
       call memmar(KDUM,  IDUM,  'FLUSM ',IDUM,'GASCI ')
