@@ -270,6 +270,7 @@ C
  1000 CONTINUE
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
+         maxit = nit
          NIT = NIT - 1
          WRITE(IW,6004) RMS
          GO TO 2000
@@ -1837,6 +1838,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DIISX (NDIMT1,NDIMT2,T1O,T1N,T2O,T2N,IT,
      &                  CC,BB,ITC,BB2,RMS)
 C    
+      USE, INTRINSIC :: IEEE_ARITHMETIC
+C    
       IMPLICIT INTEGER (A-Z)
 C     
 C---------------Description--------------------------------------------
@@ -1948,6 +1951,7 @@ C
       ENDIF
 C
       RMS = SQRT(ABS(SUM2-RMS))
+      if (IEEE_IS_NAN(RMS)) call quit("catastrophic failure at DIISX")
 C
       SECT1 = (ITC-1)*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1

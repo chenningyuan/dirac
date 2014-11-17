@@ -161,7 +161,7 @@ C
 C
 C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
-      IF (IMSTAT(1).GT.1) GOTO 150
+      IF (IMSTAT(1).EQ.3) GOTO 150
 C
 C     RE-ENTRY POINT IN CASE THE GAUNT INTERACTION HAS TO BE ADDED
 C
@@ -274,14 +274,8 @@ C
       CALL WAIO_SAVE(ITAPT+3)
       CALL WAIO_SAVE(ITAPT+4)
 
-      IF (IMSTAT(1).GT.1) THEN
-         WRITE (IW,1010)
-         write (*,*) 'warning: no consistency check in place'
-         write (*,*) '         in fock-space calculations or normal cc'
-         write (*,*) '         runs if the number of active spinors'
-         write (*,*) '         or, in fock-space calculations, the'
-         write (*,*) '         size of the mode spaces has changed'
-         write (*,*) '         restart will give erroneous results'
+      IF (IMSTAT(1).EQ.3) THEN
+         call relcc_restart_check('OOOO to VOVO sorted integrals ',IW)
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
@@ -298,7 +292,7 @@ C
 C
 C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
-      IF (IMSTAT(7).GT.1) GOTO 450
+      IF (IMSTAT(2).EQ.3) GOTO 450
 C
 C     Determine # of passes necessary for treating VOVV integrals
 C     on a specific node
@@ -420,14 +414,8 @@ C
   450 CONTINUE
       CALL WAIO_SAVE(ITAPT+5)
 
-      IF (IMSTAT(7).GT.1 ) THEN
-         WRITE (IW,1011)
-         write (*,*) 'warning: no consistency check in place'
-         write (*,*) '         in fock-space calculations or normal cc'
-         write (*,*) '         runs if the number of active spinors'
-         write (*,*) '         or, in fock-space calculations, the'
-         write (*,*) '         size of the mode spaces has changed'
-         write (*,*) '         restart will give erroneous results'
+      IF (IMSTAT(2).EQ.3) THEN
+         call relcc_restart_check('VOVV sorted integrals        ',IW)
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
@@ -435,7 +423,7 @@ C
       ENDIF
       CALL FLSHFO (IW)
 
-      IMSTAT(7) = 3
+      IMSTAT(2) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
 
 C
@@ -443,7 +431,7 @@ C     GET THE VVVV INTEGRALS
 C
       CALL WAIO_OPEN(ITAPT+6)
 C
-      IF (IMSTAT(2).GT.1) GOTO 550 
+      IF (IMSTAT(3).EQ.3) GOTO 550 
 C
       NPASS = (NV6PAR-1) / NVT + 1
       NSEC6 = 1
@@ -584,11 +572,11 @@ C     This is a restart point : save the files and update status.
 C
   550 CONTINUE
       CALL WAIO_SAVE(ITAPT+6)
-      IF (IMSTAT(2).GT.1) THEN
-         WRITE(IW,1014)
+      IF (IMSTAT(3).EQ.3) THEN
+         call relcc_restart_check('VVVV sorted integrals         ',IW)
       ENDIF
 
-      IMSTAT(2) = 3
+      IMSTAT(3) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
 C
   600 WRITE (IW,1006)
@@ -599,7 +587,7 @@ C
 C     This is a restart point : save the files and update status.
 C
       CALL WAIO_SAVE(ITAPT+0)
-      IMSTAT(3) = 3
+      IMSTAT(4) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
 C
       ESCF = E0 + E1 
@@ -648,11 +636,7 @@ C
      & (' Type ',A4,' :',I16,' integrals'))
  1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
  1006 FORMAT (/' Finished sorting of integrals')
- 1010 FORMAT (/' Skipping integral sorting step 1')
- 1011 FORMAT (/' Skipping integral sorting step 2')
- 1012 FORMAT (/' Skipping Fock-matrix build')
  1013 FORMAT (//' SCF energy :',T40,F25.15) 
- 1014 FORMAT (/' Skipping integral sorting step 3')
       RETURN
 10000 CALL QUIT('ERROR READING HEADER MDCINT')
 10001 CALL QUIT('ERROR READING HEADER MDBINT')
@@ -660,6 +644,24 @@ C
 10010 CALL QUIT('ERROR READING INTEGRALS FROM MDCINT')
 10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine relcc_restart_check(message,file)
+         integer, intent(in) :: file
+         character(30) :: message 
+
+         write (file,'(A)') ' '
+         WRITE (file,'(A)') ' Restart: using prior '//message(1:28)
+         write (file,'(A)') ' '
+         write (file,'(A)') '     Warning: No consistency checks yet'
+         write (file,'(A)') ' '
+         write (file,'(A)') '      Please verify the number of '
+     &                    //'active spinors and the size of the model '
+     &                    //'space'
+         write (file,'(A)') '      (in FSCC calculations) has not'
+     &                    //' changed between this restart and the '
+     &                    //'prior run'
+
+      end subroutine
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI,
      &                    PROPR,PROPI)

@@ -191,6 +191,7 @@ C
       DOSOPR  = relcc_do_hessian
       DOFSPC  = relcc_do_fspc
       DOIH    = relcc_fs_do_ih
+      DORESTART = relcc_do_restart
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
@@ -304,6 +305,13 @@ C
       DO ISECT = 2, 6
           FSSECT(ISECT) = relcc_fs_fssect(ISECT)
       ENDDO
+
+! in case we want to jump to a given sector 
+      do isect = 1, 6
+         FS_SKIP_SECT(isect) = relcc_restart_skipsect(isect)
+      enddo
+      restart_unconverged = relcc_restart_unconverged
+
 CMI   ...provide with default values
       MAXIT02=relcc_fs_max02_iterations 
       MAXIT01=relcc_fs_max01_iterations 
@@ -629,7 +637,7 @@ C
 C     General setup
 C     -------------
 C
-      CALL CCDINI
+      CALL CCDINI(DORESTART)
       EQNS = '      '
 C
 C     Set up symmetry tables and parallel distribution arrays
@@ -2090,7 +2098,9 @@ c
       integer(kind=8)        :: mxcor   = 0 
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr  
-      integer         :: freemem = 0
+      integer                :: freemem = 0
+      integer                :: maxit_save
+      logical                :: is_ccsd_converged = .false.
 C
 C---------------Executable code--------------------------------------
 C
@@ -2190,7 +2200,8 @@ C
 C  Solve relativistic MP2 equations
 C
       IF (DOMP2) THEN
-         IF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(5).EQ.3) THEN
             WRITE (IW,1010)
             GOTO 10
          ENDIF
@@ -2200,7 +2211,7 @@ C
 C        This is a restart point: save the amplitudes and update status.
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(4) = 3
+         IMSTAT(5) = 3
          CALL CCDUMP
    10    CONTINUE
          if (doxml) then
@@ -2211,7 +2222,8 @@ C
 C  Solve relativistic CCSD equations
 C
    11 IF (DOCCSD) THEN
-         IF (IMSTAT(5).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.3) THEN
             WRITE (IW,1011)
             GOTO 20
          ENDIF
@@ -2224,13 +2236,15 @@ C
 C
 C        Initialize T1 and T2 amplitudes
 C
-         IF (IMSTAT(5).EQ.2) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.2) THEN
 C
 C           Use restart amplitudes
 C
             CALL GETAMPT (a_T1,a_T2)
 C
-         ELSEIF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         ELSEIF (IMSTAT(5).EQ.3) THEN
 C
 C           Use MP2 amplitudes
 C
@@ -2248,16 +2262,19 @@ C
          ENDIF
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(5) = 2
+! aspg changed
+         IMSTAT(6) = 2
          CALL CCDUMP
 C
          CALL XTIME(5,1,'CCSD equations                ')
-         CALL CCEQN(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
+         maxit_save = MAXIT
+         CALL CCEQN(maxit_save,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
      &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
      &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
+         if (maxit_save.le.maxit) is_ccsd_converged = .true.
 
          if (doxml) then
             call xml_quantity('CCSD energy',ESCF+ECCSD,'Hartree')
@@ -2266,7 +2283,11 @@ C
 C        This is a restart point: save the amplitudes and update status.
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(5) = 3
+! aspg changed
+
+         if (is_ccsd_converged.or.restart_unconverged) then
+            IMSTAT(6) = 3
+         endif
          CALL CCDUMP
    20    CONTINUE
       ENDIF
@@ -2278,7 +2299,8 @@ C
       IF (DOCCSDT) THEN
          IF (ICALC.EQ.1) GOTO 421
 
-         IF (IMSTAT(6).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(7).EQ.3) THEN
             WRITE (IW,1012)
             GOTO 30
          ENDIF
@@ -2325,11 +2347,14 @@ C
 C
 C        Check if CCSD amplitudes are available
 C
-         IF (IMSTAT(5).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.3) THEN
             CALL GETAMPT (a_T1,a_T2)
-         ELSEIF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         ELSEIF (IMSTAT(5).EQ.3) THEN
             WRITE (IW,1006)
             CALL GETAMPT (a_T1,a_T2)
+            WRITE (IW,*) 'Warning T3CORR: using unconverged amplitudes'
          ELSE
             DOCCSD = .TRUE.
             GOTO 11
@@ -2349,7 +2374,8 @@ C
 C
 C     This is a restart point : update status.
 C
-         IMSTAT(6) = 3
+! aspg changed
+         IMSTAT(7) = 3
          CALL CCDUMP
    30    CONTINUE
 
@@ -3174,6 +3200,8 @@ c
       real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
       integer(kind=8)        :: mxcorr, mxcorr1
+      integer                :: maxit_save
+      logical                :: is_ccsd_converged = .false.
 C
 C---------------Executable code--------------------------------------
 C
@@ -3217,7 +3245,8 @@ C
 !       IMSTAT(1) = 0
 !       IMSTAT(2) = 0
 !       IMSTAT(3) = 0
-!       IMSTAT(7) = 0
+! aspg changed
+!       IMSTAT(4) = 0
 C
 C Allocate space for the calculation of the amplitudes
 C
@@ -3301,10 +3330,11 @@ C
 C
 C     Initialize T1 and T2 amplitudes
 C
-      IF ((IMSTAT(8).eq.3).or.(MAXIT_SECT(1).eq.-42)) THEN
+! aspg changed
+      IF ((IMSTAT(8).eq.3).or.FS_SKIP_SECT(1)) THEN
 !        if we have (at least) sector 00 converged, we start 
 !        from those amplitudes. so far one does not keep track of
-!        amplitudes on a per-sector basis, so the amplitudes
+!        the full set of amplitudes on a per-sector basis, so the amplitudes
 !        recovered here correspond, in fact, to the last sector
 !        converged
          call getampt(a_t1,a_t2)
@@ -3333,8 +3363,8 @@ C
       IF (FSSECT(ICURFSS).NE.0) THEN
         IF (ICALC.LE.1) GOTO 441 
         WRITE (IW,1009) IFSS(ICURFSS)
-        IF ((IMSTAT(IFSTAT).eq.3).or.(MAXIT_SECT(ICURFSS).eq.-42)) THEN
-           write (*,*) '...sector previously converged, skipping'
+        IF ((IMSTAT(IFSTAT).eq.3).or.FS_SKIP_SECT(ICURFSS)) THEN
+           WRITE (IW,*) '... restart, sector converged or skipped'
         ELSE
            WRITE(IW,'(2X,A,I3)')
      &     '...maximum number of iterations for this sector:',
@@ -3342,11 +3372,13 @@ C
         ENDIF
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
 C
-        write(*,*) 'debug, imstat(',IFSTAT,':',IMSTAT(IFSTAT)
+
+        write(iw,*) 'debug, imstat(',IFSTAT,':',IMSTAT(IFSTAT)
+
  441    CONTINUE
 !       skip sectors which have converged, or that we specifically asked to jump 
 !       to
-        IF ((IMSTAT(IFSTAT).ne.3).or.(MAXIT_SECT(ICURFSS).ne.-42)) THEN
+        IF ((IMSTAT(IFSTAT).ne.3).or.FS_SKIP_SECT(ICURFSS)) THEN
            call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
            call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
      &                 id="eigenvalues" )
@@ -3354,7 +3386,8 @@ C
      &              id="eigenvectors" )
            IF (ICALC.LE.1) GOTO 442 
 C
-           CALL CCEQN(MAXIT_SECT(ICURFSS),EPS, 
+           maxit_save = MAXIT_SECT(ICURFSS)
+           CALL CCEQN(maxit_save,EPS, 
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   , DUM    , a_H    , 
      &             a_HO  , a_HV  , a_HOV  ,
@@ -3362,13 +3395,19 @@ C
      &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3,
      &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
+           if (maxit_save.le.maxit_SECT(ICURFSS) is_ccsd_converged = .true.
+
 C          Print the Fock space eigenvalues, compute transition moments
            CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
      &                    NSP,IREPSPI)
 
 C          Save the updated wave function
            CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
-           IMSTAT(IFSTAT) = 3 
+           if (is_ccsd_converged.or.restart_unconverged) then
+              IMSTAT(IFSTAT) = 3 
+           else
+              IMSTAT(IFSTAT) = 2
+           endif
            write(*,*) 'debug, imstat(',IFSTAT,':',IMSTAT(IFSTAT)
 C          Deallocate space for the effective Hamiltonian
  442       CONTINUE
@@ -3476,7 +3515,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCDINI
+      SUBROUTINE CCDINI(do_restart)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -3512,7 +3551,7 @@ C
 C---------------Local variables--------------------------------------
 C
       DIMENSION BUFF(RSRCLEN)
-      LOGICAL TOBE
+      LOGICAL do_restart, file_found 
 C
 C---------------Executable code--------------------------------------
 C
@@ -3545,27 +3584,15 @@ C
 C     Check the status of the individual restart file
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
-      INQUIRE (FILE=RSFILN(1:LRSFIL),EXIST=TOBE)
-c
-c     Restart is not fool-proof yet : disabled
-c
-!aspg, restart
-!C here: if a MCCRES.XXX file exists at the beginning of the
-!C ccsd(t) run it will be deleted in any case.... this goes out later on....
-!
-!      if (tobe) then
-!         OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
-!     &         STATUS='OLD',RECL=IRECL)
-!         close (MCCRES,STATUS='DELETE')
-!         tobe = .false.
-!      endif
-!aspg, restart
-
-C here: if  the restart file exists we restart...
-
-      IF (TOBE) THEN
+      INQUIRE (FILE=RSFILN(1:LRSFIL),EXIST=file_found)
+C
+C     if  the restart file exists and we want to restart we go ahead 
+C
+      IF (file_found) THEN
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='OLD',RECL=IRECL)
+
+         if (do_restart) then
 C
 C         Read the input information from the previous run
 C
@@ -3573,16 +3600,27 @@ C         Not implemented yet
 C
 C         Read the status information
 C
-          READ (MCCRES,REC=2) IMSTAT
+             READ (MCCRES,REC=2) IMSTAT
 C
 C         Read the energies (read the whole common block)
 C
-          READ (MCCRES,REC=3) BUFF
-          CALL DCOPY(7,BUFF,1,ETOT,1)
+             READ (MCCRES,REC=3) BUFF
+             CALL DCOPY(7,BUFF,1,ETOT,1)
+
+C     if we don't want to restart we trash any existing files and start over 
+
+         else 
+            close (MCCRES,STATUS='DELETE')
+            OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
+     &            STATUS='NEW',RECL=IRECL)
+            CALL DCOPY(7,A0,0,ETOT,1)
+            DO I = 1, NSTATS
+               IMSTAT(I) = 0
+            ENDDO
+         endif
+      else
 
 C ... if it doesn't exist we create it and write amplitudes out there...
-
-      ELSE
 
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='NEW',RECL=IRECL)
@@ -3590,7 +3628,8 @@ C ... if it doesn't exist we create it and write amplitudes out there...
          DO I = 1, NSTATS
             IMSTAT(I) = 0
          ENDDO
-      ENDIF
+
+      endif
 C
 C     Initialize the status information
 C     When restarting the previous status is retained if the module
@@ -3599,11 +3638,11 @@ C
       IF (DOSORT.AND.IMSTAT(1).EQ.0)             IMSTAT(1) = 1
       IF (DOSORT.AND.IMSTAT(2).EQ.0)             IMSTAT(2) = 1
       IF (DOSORT.AND.IMSTAT(3).EQ.0)             IMSTAT(3) = 1
-      IF (DOENER.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(4) = 1
-      IF (DOENER.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(5) = 1
-      IF (DOENER.AND.DOCCSDT.AND.IMSTAT(1).EQ.0) IMSTAT(6) = 1
+      IF (DOSORT.AND.IMSTAT(4).EQ.0)             IMSTAT(4) = 1
+      IF (DOENER.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(5) = 1
+      IF (DOENER.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(6) = 1
+      IF (DOENER.AND.DOCCSDT.AND.IMSTAT(1).EQ.0) IMSTAT(7) = 1
 !aspg, restart fs
-      IF (DOSORT.AND.IMSTAT(7).EQ.0)             IMSTAT(7) = 1
       IF (DOFSPC.AND.IMSTAT(8).EQ.0)             IMSTAT(8) = 1
       IF (DOFSPC.AND.IMSTAT(9).EQ.0)             IMSTAT(9) = 1
       IF (DOFSPC.AND.IMSTAT(10).EQ.0)            IMSTAT(10) = 1
@@ -3753,6 +3792,7 @@ C
       WRITE (IW,1024) STATCH(IMSTAT(4))
       WRITE (IW,1025) STATCH(IMSTAT(5))
       WRITE (IW,1026) STATCH(IMSTAT(6))
+      WRITE (IW,1026) STATCH(IMSTAT(7))
 C
 C     Write energies
 C

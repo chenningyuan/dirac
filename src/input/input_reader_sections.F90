@@ -37,6 +37,9 @@
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
+        case ('*CCREST')
+           call read_input_ccrestart(word, kw_section)
+
         case ('*CCENER')
            call read_input_ccener(word, kw_section)
 
@@ -813,6 +816,10 @@
          relcc_timing = .true.
       end if
 
+      if (kw_matches(word, '.NORESTART')) then
+         relcc_do_restart = .false.
+      end if
+
       if (kw_matches(word, '.NOSORT')) then
          relcc_do_sort = .false.
       end if
@@ -983,6 +990,56 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+   subroutine read_input_ccrestart(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+      character(2) :: bla(6)
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: i
+      integer                          :: j
+      character(2)                     :: ifss(6)
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+!     forces results from unconverged iterative procedures to be taken as converged 
+      if (kw_matches(word, '.UNCONV')) then
+         relcc_restart_unconverged = .true.
+      end if
+
+!     in the case of fock-space calculations, indicate which sectors are to be
+!     skipped (e.g. because converged, or otherwise)
+      if (kw_matches(word, '.SKIPSECT')) then
+         read(get_file_unit(),*) (bla(i), i=1,6)
+
+         ifss(1) = '00'
+         ifss(2) = '01'
+         ifss(3) = '10'
+         ifss(4) = '11'
+         ifss(5) = '02'
+         ifss(6) = '20'
+
+         do j = 1, 6
+            do i = 1, 6
+               if (bla(i).eq.IFSS(j)) then
+                  relcc_restart_skipsect(j) = .true.
+               endif 
+            enddo
+         enddo
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
 
    subroutine read_input_ccfspc(word, kw_section)
 
