@@ -12,7 +12,7 @@ test:
   override:
     - python ./pamadm -a --builddir=build_circleci
     - python ./setup --type=debug --int64 build_circleci
-    - sh cd build_circleci
+    - cd build_circleci
     - pwd
     - ctest -D NightlyUpdate
     - ctest -D NightlyConfigure
