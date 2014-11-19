@@ -10,8 +10,10 @@ checkout:
 
 test:
   override:
-    - python ./setup --type=debug --int64
-    - cd build
+    - python ./pamadm -a --builddir=build_circleci
+    - python ./setup --type=debug --int64 build_circleci
+    - cd build_circleci
+    - pwd
     - ctest -D NightlyUpdate
     - ctest -D NightlyConfigure
     - ctest -D NightlyBuild
