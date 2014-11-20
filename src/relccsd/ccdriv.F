@@ -2298,12 +2298,6 @@ C
  420  CONTINUE
       IF (DOCCSDT) THEN
          IF (ICALC.EQ.1) GOTO 421
-
-! aspg changed
-         IF (IMSTAT(7).EQ.3) THEN
-            WRITE (IW,1012)
-            GOTO 30
-         ENDIF
 C
  421     CONTINUE
          call dealloc(a_AZ  )
@@ -2319,6 +2313,13 @@ C
          call dealloc(a_BUF1)
          call dealloc(a_BUF2)
          call dealloc(a_BUF3)
+
+! aspg changed
+         IF (IMSTAT(7).EQ.3) THEN
+            WRITE (IW,1012)
+            GOTO 30
+         ENDIF
+
 C
 C        now we start reallocating
 C
@@ -2354,7 +2355,6 @@ C
          ELSEIF (IMSTAT(5).EQ.3) THEN
             WRITE (IW,1006)
             CALL GETAMPT (a_T1,a_T2)
-            WRITE (IW,*) 'Warning T3CORR: using unconverged amplitudes'
          ELSE
             DOCCSD = .TRUE.
             GOTO 11
@@ -2375,7 +2375,7 @@ C
 C     This is a restart point : update status.
 C
 ! aspg changed
-         IMSTAT(7) = 3
+         IF (IMSTAT(6).EQ.3) IMSTAT(7) = 3
          CALL CCDUMP
    30    CONTINUE
 
@@ -2409,8 +2409,8 @@ C
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
-1006  FORMAT (/' WARNING : Calculating CCSD(T) energies with MP2',
-     &         ' amplitudes')
+1006  FORMAT (/' WARNING : Calculating CCSD(T) energies with',
+     &         ' MP2/unconverged amplitudes')
 1010  FORMAT (/' Skipping MP2 calculation')
 1011  FORMAT (/' Skipping CCSD calculation')
 1012  FORMAT (/' Skipping CCSD(T) calculation')
@@ -3096,7 +3096,7 @@ C
       MAXDIM  = MXDIMRP
       TOL = 10.0D0**(-NTOLRP)
 C
-C     This is very old code and not well tested : better warn
+C     This is very old code and..not well tested : better warn
       WRITE (IW,*) 
      & " WARNING : This module is obsolete and is not tested anymore"
       WRITE (IW,*) " Use it at your own risk....."
@@ -3239,14 +3239,6 @@ C
       MXCORR1 = 0
       CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
       MXCORR = MAX(MXCORR,MXCORR1)
-!C
-!C     Set restart on sorted integrals to false
-!C
-!       IMSTAT(1) = 0
-!       IMSTAT(2) = 0
-!       IMSTAT(3) = 0
-! aspg changed
-!       IMSTAT(4) = 0
 C
 C Allocate space for the calculation of the amplitudes
 C
@@ -3331,12 +3323,17 @@ C
 C     Initialize T1 and T2 amplitudes
 C
 ! aspg changed
-      IF ((IMSTAT(8).eq.3).or.FS_SKIP_SECT(1)) THEN
-!        if we have (at least) sector 00 converged, we start 
-!        from those amplitudes. so far one does not keep track of
+      IF ((IMSTAT(8).ge.2) .or.(IMSTAT(9).ge.2) .or.
+     &    (IMSTAT(10).ge.2).or.(IMSTAT(11).ge.2).or.
+     &    (IMSTAT(12).ge.2).or.(IMSTAT(13).ge.2)    ) THEN
+
+!        if we already have restartable amplitudes, we read them in
+!        and start from there. so far one does not keep track of
 !        the full set of amplitudes on a per-sector basis, so the amplitudes
-!        recovered here correspond, in fact, to the last sector
-!        converged
+!        recovered here correspond, in fact, to those for the last
+!        calculated sector
+
+         write (iw,*) 'INFO: Reading restartable amplitudes!'
          call getampt(a_t1,a_t2)
       ELSE
 !        otherwise, we start from mp2 amplitudes  
@@ -3346,6 +3343,7 @@ C
          CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,2)
 C     Save the zeroth order wave function
          CALL PUTAMPT ( a_T1 , a_T2 )
+         write (iw,*) 'INFO: Initializing amplitudes to MP2 ones!'
       ENDIF
 C
  440  CONTINUE
@@ -3364,7 +3362,7 @@ C
         IF (ICALC.LE.1) GOTO 441 
         WRITE (IW,1009) IFSS(ICURFSS)
         IF ((IMSTAT(IFSTAT).eq.3).or.FS_SKIP_SECT(ICURFSS)) THEN
-           WRITE (IW,*) '... restart, sector converged or skipped'
+           WRITE (IW,*) '... restarting: sector converged or skipped'
         ELSE
            WRITE(IW,'(2X,A,I3)')
      &     '...maximum number of iterations for this sector:',
@@ -3372,13 +3370,9 @@ C
         ENDIF
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
 C
-
-        write(iw,*) 'debug, imstat(',IFSTAT,':',IMSTAT(IFSTAT)
-
  441    CONTINUE
-!       skip sectors which have converged, or that we specifically asked to jump 
-!       to
-        IF ((IMSTAT(IFSTAT).ne.3).or.FS_SKIP_SECT(ICURFSS)) THEN
+C       skip sectors which have converged, or that we specifically asked to jump to
+        IF ((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)) THEN
            call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
            call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
      &                 id="eigenvalues" )
@@ -3395,10 +3389,14 @@ C
      &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3,
      &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
-           if (maxit_save.le.maxit_SECT(ICURFSS) is_ccsd_converged = .true.
+           if (maxit_save.le.maxit_SECT(ICURFSS)) then
+              is_ccsd_converged = .true.
+           endif
 
+           if (ICURFSS.GT.1)  
 C          Print the Fock space eigenvalues, compute transition moments
-           CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
+C          except for the 00 sector, obviously
+     &     CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
      &                    NSP,IREPSPI)
 
 C          Save the updated wave function
@@ -3408,7 +3406,6 @@ C          Save the updated wave function
            else
               IMSTAT(IFSTAT) = 2
            endif
-           write(*,*) 'debug, imstat(',IFSTAT,':',IMSTAT(IFSTAT)
 C          Deallocate space for the effective Hamiltonian
  442       CONTINUE
            call dealloc (a_HEFF, id="heff")
@@ -3417,7 +3414,6 @@ C          Deallocate space for the effective Hamiltonian
         ENDIF
 C
       ENDIF
-      write(*,*) 'debug, imstat(',IFSTAT,':',IMSTAT(IFSTAT)
       ENDDO
       CALL CCDUMP
 C
@@ -3586,42 +3582,48 @@ C
       IRECL = IRECLEN (0,RSRCLEN,0)
       INQUIRE (FILE=RSFILN(1:LRSFIL),EXIST=file_found)
 C
-C     if  the restart file exists and we want to restart we go ahead 
+C     if  the restart file exists ...
 C
       IF (file_found) THEN
+         if (do_restart) then
+C
+C        ...and we want to restart we go ahead 
+C
+         write (IW,*) 'INFO: Found restart file(s)!'
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='OLD',RECL=IRECL)
 
-         if (do_restart) then
+C           Read the input information from the previous run
 C
-C         Read the input information from the previous run
+C            Not implemented yet
 C
-C         Not implemented yet
-C
-C         Read the status information
+C            Read the status information
 C
              READ (MCCRES,REC=2) IMSTAT
 C
-C         Read the energies (read the whole common block)
+C            Read the energies (read the whole common block)
 C
              READ (MCCRES,REC=3) BUFF
              CALL DCOPY(7,BUFF,1,ETOT,1)
 
-C     if we don't want to restart we trash any existing files and start over 
-
          else 
-            close (MCCRES,STATUS='DELETE')
+C
+C        ... if we don't want to restart we trash any existing files and start over 
+C
+            write (IW,*) 'INFO: Restart file(s) will be overwriten!'
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
-     &            STATUS='NEW',RECL=IRECL)
+     &            STATUS='REPLACE',RECL=IRECL)
             CALL DCOPY(7,A0,0,ETOT,1)
             DO I = 1, NSTATS
                IMSTAT(I) = 0
             ENDDO
          endif
+C
+C ... if the restart files don't exist, we create them
+C
       else
 
-C ... if it doesn't exist we create it and write amplitudes out there...
-
+         write (IW,*) 'INFO: No old restart file(s) found!'
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='NEW',RECL=IRECL)
          CALL DCOPY(7,A0,0,ETOT,1)
@@ -3643,12 +3645,15 @@ C
       IF (DOENER.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(6) = 1
       IF (DOENER.AND.DOCCSDT.AND.IMSTAT(1).EQ.0) IMSTAT(7) = 1
 !aspg, restart fs
+      IF (DOFSPC.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(5) = 1
+      IF (DOFSPC.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(6) = 1
+
       IF (DOFSPC.AND.IMSTAT(8).EQ.0)             IMSTAT(8) = 1
       IF (DOFSPC.AND.IMSTAT(9).EQ.0)             IMSTAT(9) = 1
       IF (DOFSPC.AND.IMSTAT(10).EQ.0)            IMSTAT(10) = 1
-      IF (DOFSPC.AND.IMSTAT(10).EQ.0)            IMSTAT(11) = 1
-      IF (DOFSPC.AND.IMSTAT(10).EQ.0)            IMSTAT(12) = 1
-      IF (DOFSPC.AND.IMSTAT(10).EQ.0)            IMSTAT(13) = 1
+      IF (DOFSPC.AND.IMSTAT(11).EQ.0)            IMSTAT(11) = 1
+      IF (DOFSPC.AND.IMSTAT(12).EQ.0)            IMSTAT(12) = 1
+      IF (DOFSPC.AND.IMSTAT(13).EQ.0)            IMSTAT(13) = 1
 !aspg, restart fs
 C
 C     Initialize the record information

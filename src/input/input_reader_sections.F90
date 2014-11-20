@@ -816,6 +816,10 @@
          relcc_timing = .true.
       end if
 
+      if (kw_matches(word, '.RESTART')) then
+         relcc_do_restart = .true.
+      end if
+
       if (kw_matches(word, '.NORESTART')) then
          relcc_do_restart = .false.
       end if

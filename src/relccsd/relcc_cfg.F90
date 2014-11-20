@@ -43,7 +43,7 @@ module relcc_cfg
   logical, public :: relcc_debug                   = .false.
   logical, public :: relcc_timing                  = .false.
   logical, public :: relcc_do_sort                 = .true.
-  logical, public :: relcc_do_restart              = .true.
+  logical, public :: relcc_do_restart              = .false.
   logical, public :: relcc_do_energy               = .true.
   logical, public :: relcc_do_gradient             = .false.
   logical, public :: relcc_do_hessian              = .false. ! this currently only relates to the old Hartree-Fock MO response code 
@@ -66,7 +66,7 @@ module relcc_cfg
   character( 8), public :: relcc_ff_property_names
 
 ! Information relevant to restarts
-  logical, public, dimension(1:6)  :: relcc_restart_skipsect = .true.
+  logical, public, dimension(1:6)  :: relcc_restart_skipsect = .false. 
   logical, public                  :: relcc_restart_unconverged = .false.
   character( 2), public            :: relcc_restart_from = '00'
 
