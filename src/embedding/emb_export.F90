@@ -277,7 +277,7 @@ module fde_export_data
          write (export_unit,'(2I8)') grid%npoints, nr_variables
 
          do i = 1, grid%npoints
-            write (export_unit,'(10E28.20)'), (grid%r(j,i), j = 1,3), &
+            write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                                             grid%w(i),             &
                                             gf%elpot(i),           &
                                             v_pc_array,            &

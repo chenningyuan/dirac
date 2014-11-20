@@ -11,13 +11,13 @@
 source $HOME/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 # My own OpenMPI Intel static
-export PATH=/home/ilias/bin/openmpi_intel_stat/bin:$PATH
-export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_intel_stat/lib:$LD_LIBRARY_PATH
-# my cmake stuff
-export PATH=/home/ilias/bin/newer_cmake:$PATH
-echo "My own (dynamic) CMake is in PATH."
+export PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/lib:$LD_LIBRARY_PATH
+# my STATIC cmake stuff
+export PATH=/home/ilias/bin/cmakestatic/bin:$PATH
+echo "My own static CMake is in PATH."
 
-# my binutils-gold
+# my own binutils-gold
 export LIBDIR=/home/ilias/bin/binutils-gold/lib:$LIBDIR
 export LD_LIBRARY_PATH=$LIBDIR:$LD_LIBRARY_PATH
 export LD_RUN_PATH=$LIBDIR:$LD_RUN_PATH
@@ -66,6 +66,8 @@ fi
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,i8,static - finished at $timestamp \n"
 
+sleep 30
+
 ###################################################################################
 cd $DIRAC
 BUILD_SERIAL_INTEL=build_intelmkl_i8_static
@@ -91,6 +93,7 @@ timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2 - Intel,MKL,i8,serial,static - finished at $timestamp \n"
 
 
+sleep 30
 
 ###################################################################################
 cd $DIRAC
@@ -114,6 +117,7 @@ fi
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
 
+sleep 30
 
 #####################
 ##  GNU+MKL STATIC ##
@@ -140,6 +144,7 @@ fi
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 3 - GNU,MKL,i8,serial,static - finished at $timestamp \n"
 
+sleep 30
 
 #########################
 ##  GNU+OWNMATH STATIC ##
@@ -165,6 +170,8 @@ fi
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 4 - GNU,ownmath,i8,serial,static - finished at $timestamp \n"
+
+sleep 30
 
 #################################################
 ### continue with the packing for grid servers ##
@@ -193,6 +200,7 @@ $BUILD_SERIAL_INTEL/dirac.x $BUILD_SERIAL_INTEL/VERSION_cmake \
 $BUILD_SERIAL_INTEL1/dirac.x $BUILD_SERIAL_INTEL1/VERSION_cmake \
 $BUILD_SERIAL_GNU/dirac.x $BUILD_SERIAL_GNU/VERSION_cmake \
 $BUILD_SERIAL_GNU1/dirac.x $BUILD_SERIAL_GNU1/VERSION_cmake \
+/home/ilias/bin/cmakestatic \
 maintenance/grid_computing/diracrc_grid 
 
 echo -e "\n packing done, we have tar-ball file ready to be placed on SE for grid-computing : "
