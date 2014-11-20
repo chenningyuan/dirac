@@ -60,7 +60,11 @@
       open(1234,file='refvec.luci',status='old',form='unformatted',     &
       access='sequential',action="read",position='rewind')
 
-      read(1234) nref_qcorr,reference_energy_qcorr,nash_qcorr(1:nfsym_q)
+      read(1234) nref_qcorr,nash_qcorr(1:nfsym_q)
+      read(1234) nref_e_qcorr
+      allocate(reference_energy_qcorr(nref_e_qcorr))
+      reference_energy_qcorr = 0
+      read(1234) reference_energy_qcorr(1:nref_e_qcorr)
 !     read # reference configurations
       allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
       allocate(ref_wavefunction_qcorr(nref_qcorr,2))
@@ -101,6 +105,13 @@
      &  (ref_order(i,j),i=1,l_ref(j,1)/4)
         write(ref_wavefunction_qcorr(j,2),"(60i4)")                     &
      &  (ref_order(i,j+nref_qcorr),i=1,l_ref(j,2)/4)
+!#define DEBUG_QCORR
+#ifdef DEBUG_QCORR
+         print *, 'sorted reference ...'
+         print *, ref_wavefunction_qcorr(j,1)
+         print *, ref_wavefunction_qcorr(j,2)
+         print *, ref_wavefunction_coeff_qcorr(j)
+#endif
 
       end do
 
@@ -176,16 +187,17 @@
 
       if(ntest > 2)then
         write(wunit_q,'(A)') '                                       '
-        write(wunit_q,'(A)') ' Reference and CI coefficients       : ' 
-        write(wunit_q,'(A)') ' ===================================== '
+        write(wunit_q,'(A)') '  Reference and CI coefficients       :' 
+        write(wunit_q,'(A)') '  ====================================='
 
         do i = 1, nref_qcorr
 
-          write(wunit_q,*)" reference wave function (wf) #  ",i
-          write(wunit_q,*)"    CI coefficient of the wf:",              &
-     &                      ref_wavefunction_coeff(i)
-          write(wunit_q,*)" MC/HF coefficient of the wf:",              &
-     &                      ref_wavefunction_coeff_qcorr(i)
+          write(wunit_q,'(a,i4)')"  reference wave function (wf) #  ",i
+          write(wunit_q,'(a,es13.6)')                                   &
+     &    "     CI coefficient of the wf:  ",ref_wavefunction_coeff(i)
+          write(wunit_q,'(a,es13.6)')                                   &
+     &    "  MC/HF coefficient of the wf:  ",                           &
+     &                                 ref_wavefunction_coeff_qcorr(i)
         end do
       end if
 
@@ -202,37 +214,18 @@
       close(10,status="keep")
 
       write(wunit_q,"(/A,/A,/A,/A,/A,/A)")                              &
-     &                  " The acronyms for each Q correction below"//   &
-     &                  " refer to: ",                                  &
-     & " Edc:  Davidson correction              [Eq. (34)]",            &
-     & " Erdc: renormalized Davidson correction [Eq. (36)]",            &
-!fixme " Epc:  Pople correction                 [Eq. (38)]",            &
-     & " Epc`: modified Pople correction        [Eq. (39)]",            &
-     & " Emc : Meissner correction              [Eq. (41)]"
-
-      !> MC/HF wave function
-      if(reference_energy_qcorr /= 0.0d0)then
-        reference_energy = reference_energy_qcorr
-!     else ! HF wave function
-!       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-!       IF (.NOT.TOBE) THEN
-!         WRITE(wunit_q,'(/A)')                                         &
-!    &    'HF coefficient/energy file not available'
-!         CALL QUIT('QCORR: No MO coefficient file !')
-!       ELSE
-!         lucoef = 99
-!         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','QCORR')
-!         CALL REACMO(LUCOEF,'DFCOEF',DUM,DUM,IDUM,reference_energy_tmp,&
-!    &                1,DUM,IDUM,IDUM)
-!         CLOSE(LUCOEF,STATUS='KEEP')
-!       ENDIF
-!       reference_energy = reference_energy_tmp
-      else
-        call quit('qcorr module: no reference energy given!')
-      end if
+     &                  "  The acronyms for each Q correction below"//  &
+     &                  "  refer to: ",                                 &
+     & "  Edc:  Davidson correction              [Eq. (34)]",           &
+     & "  Erdc: renormalized Davidson correction [Eq. (36)]",           &
+!fixme "  Epc:  Pople correction                 [Eq. (38)]",           &
+     & "  Epc`: modified Pople correction        [Eq. (39)]",           &
+     & "  Emc : Meissner correction              [Eq. (41)]"
 
       do i = 1, nstates_ci
-        e_corr(i) = e_tot(i) - reference_energy
+
+        reference_energy = reference_energy_qcorr(i)
+        e_corr(i)        = e_tot(i) - reference_energy
         
         call E_Q(e_corr(i),ref_wavefunction_coeff,nref_qcorr,           &
      &           ref_wavefunction_coeff_qcorr,NACTEL_q,                 &
@@ -240,53 +233,35 @@
      &           Edc_2, Erdc_2, Epc_2, Emc_2, Epcp_2, Emc_N2,           &
      &           ntest, wunit_q)
 
+        write(wunit_q,"(/A,i3,a)")'  Q corrections for state ',i,       &
+     &  ' with c0^2 according to Eq. (43)'
       ! output of the q-correction       
-        write(wunit_q,"(/A,i4)")     ' Q correction for state #', i
-        write(wunit_q,"( A,1f16.8)") ' reference   energy: ',           &
-     &                                 reference_energy
-        write(wunit_q,"( A,1f16.8)") ' correlation energy: ', e_corr(i)
-        write(wunit_q,"( A,1f16.8)") ' original CI energy: ', e_tot(i)
+        if(ntest > 2)then
+          write(wunit_q,"( A,1f16.8)")'  reference   energy: ',         &
+     &                                   reference_energy
+          write(wunit_q,"( A,1f16.8)")'  correlation energy: ',e_corr(i)
+          write(wunit_q,"( A,1f16.8)")'  original CI energy: ',e_tot(i)
 
-        write(wunit_q,"(//A)")  ' Q corrections with c0^2 according'//  &
-     &                          ' to Eq. (43)'
- 
-        write(wunit_q,"(/A)") " Edc correction :"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Edc_1
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Edc_1
-        write(wunit_q,"(A )") " ----------------"
- 
-        write(wunit_q,"(/A)") " Erdc correction:"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Erdc_1
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Erdc_1
-        write(wunit_q,"(A )") " ----------------"
- 
-!fixme  write(wunit_q,"(/A)") " Epc correction :"
-!fixme  write(wunit_q,"(A )") " ----------------"
-!fixme  write(wunit_q,"(A,1f16.8)") " Q correction:",Epc_1
-!fixme  write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epc_1
-!fixme  write(wunit_q,"(A )") " ----------------"
- 
-        write(wunit_q,"(/A)") " Epc` correction:"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Epcp_1
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epcp_1
-        write(wunit_q,"(A )") " ----------------"
- 
-        write(wunit_q,"(/A)") " Emc correction :"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Emc_1
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Emc_1
-        write(wunit_q,"( A,1f16.8)") 'N reduced Q (Nact - 2e):  ',Emc_N1
-        write(wunit_q,"( A,1f16.8)") 'N reduced:CI+Q',Emc_N1 + e_tot(i)
-        write(wunit_q,"(A )") " ----------------"
+        end if
+
+        !> MC/HF wave function
+        if(reference_energy == 0.0d0)then
+          call quit('qcorr module: no reference energy given!')
+        end if 
+
+        CALL PRSYMB(wunit_q,'-',120,2)
+        WRITE(wunit_q,'(2X,a12,2x,4(A16,1X),5x,a16)') 'model',          &
+     &        'Edc ','Erdc ','Epc` ', 'Emc ','Emc (Nact - 2e)'
+        WRITE(wunit_q,'(3X,a12,4x,5(f16.6,1X))')                        &
+     &  'CI+Q energy ',e_tot(i)+Edc_1,e_tot(i)+Erdc_1,e_tot(i)+Epcp_1,  &
+     &                 e_tot(i) + Emc_1, Emc_N1 + e_tot(i)
+        CALL PRSYMB(wunit_q,'-',120,2)
 
 !       now using eq. (44) for c0^2: c0^2 == <ref|ci>^2 == ( sum\limits_{p=1}^{nref} c_p^{(0)} * c_p )^2 
 !       where c_p^{(0)} are the coefficients in the normalized 0th-order reference (MCSCF) wave function
+        write(wunit_q,"(/A,i3,a)")'  Q corrections for state ',i,       &
+     &  ' with c0^2 according to Eq. (44)'
 
-        write(wunit_q,"(//A)")  ' Q corrections with c0^2 according'//  &
-     &                          ' to Eq. (44)'
 !       write(wunit_q,"(/A)")  " Q corrections according to Eq. (44)"//
 !    &                   " where c0^2 == <ref|ci>^2 == "//
 !    &                   "( sum\limits_{p=1}^{nref} c_p^{(0)} * c_p )^2"
@@ -294,40 +269,14 @@
 !    &                  " coefficients in the"//
 !    &                  " normalized 0th-order reference (MCSCF) wave"//
 !    &                  " function!"
+        CALL PRSYMB(wunit_q,'-',120,2)
+        WRITE(wunit_q,'(2X,a12,2x,4(A16,1X),5x,a16)') 'model',          &
+     &        'Edc ','Erdc ','Epc` ', 'Emc ','Emc (Nact - 2e)'
+        WRITE(wunit_q,'(3X,a12,4x,5(f16.6,1X))')                        &
+     &  'CI+Q energy ',e_tot(i)+Edc_2,e_tot(i)+Erdc_2,e_tot(i)+Epcp_2,  &
+     &                 e_tot(i) + Emc_2, Emc_N2 + e_tot(i)
+        CALL PRSYMB(wunit_q,'-',120,2)
  
-        write(wunit_q,"(/A)") " Edc correction :"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Edc_2
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Edc_2
-        write(wunit_q,"(A )") " ----------------"
- 
-        write(wunit_q,"(/A)") " Erdc correction:"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Erdc_2
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Erdc_2
-        write(wunit_q,"(A )") " ----------------"
- 
-!fixme  write(wunit_q,"(/A)") " Epc correction :"
-!fixme  write(wunit_q,"(A )") " ----------------"
-!fixme  write(wunit_q,"(A,1f16.8)") " Q correction:",Epc_2
-!fixme  write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epc_2
-!fixme  write(wunit_q,"(A )") " ----------------"
- 
-        write(wunit_q,"(/A)") " Epc` correction:"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction:",Epcp_2
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy: ", e_tot(i) + Epcp_2
-        write(wunit_q,"(A )") " ----------------"
- 
-        write(wunit_q,"(/A)") " Emc correction :"
-        write(wunit_q,"(A )") " ----------------"
-        write(wunit_q,"(A,1f16.8)") " Q correction: ",Emc_2
-        write(wunit_q,"( A,1f16.8)")" CI+Q energy:  ", e_tot(i) + Emc_2
-        write(wunit_q,"( A,1f16.8)") 'N reduced Q (Nact - 2e):  ',Emc_N2
-        write(wunit_q,"( A,1f16.8)") 'N reduced:CI+Q',Emc_N2 + e_tot(i)
-        write(wunit_q,"(A )") " ----------------"
-
-
       end do
 
 
@@ -336,6 +285,7 @@
 
       deallocate(nash_qcorr)
       deallocate(l_ref)
+      deallocate(reference_energy_qcorr)
       deallocate(ref_wavefunction_qcorr)
       deallocate(ref_wavefunction_coeff_qcorr)
       deallocate(ref_wavefunction_coeff)
@@ -552,7 +502,7 @@
 
                  else ! non-rel CI
                    if((cvorb(1)+cvorb(2)) > 0)                          &
-               call quit('no core orbitals in non-rel CI+Q! FIXME!')
+               call quit('no core orbitals yet in non-rel CI+Q! FIXME!')
                    write(ref_wavefunction_tmp(1,1),"(60i4)")            &
      &             (iastr(iel,ia),iel=1,nael)                         
                    write(ref_wavefunction_tmp(1,2),"(60i4)")            &
@@ -564,12 +514,6 @@
                  ilena   = len(trim(ref_wavefunction_tmp(1,1)))      
                  ilenb   = len(trim(ref_wavefunction_tmp(1,2)))      
 
-                 if(iprnt > 100)then
-                   write(wunit_q,*) ' comparison strings     ',         &
-     &                                ilena,ilenb
-                   write(wunit_q,*)ref_wavefunction_tmp(1,1)(1:ilena)
-                   write(wunit_q,*)ref_wavefunction_tmp(1,2)(1:ilenb)
-                 end if
 
                  !> sort numbers from 1 ... x such that we do not miss anything in linear symmetry (reordered spinors wrt mj)
                  ref_order = 0
@@ -592,6 +536,12 @@
                  write(ref_wavefunction_tmp(1,2),"(60i4)")              &
      &           (ref_order(i,2),i=1,ilenb/4)
                  
+                 if(iprnt > 100)then
+                   write(wunit_q,*) ' comparison strings     ',         &
+     &                                ilena,ilenb
+                   write(wunit_q,*)ref_wavefunction_tmp(1,1)(1:ilena)
+                   write(wunit_q,*)ref_wavefunction_tmp(1,2)(1:ilenb)
+                 end if
                                                                      
                  iref_tmp = 0
 
@@ -665,14 +615,17 @@
       integer, intent(in)  :: nref
       integer, intent(in)  :: iprnt, wunit_q
 
-      real*8  :: c01    = 0      ! c01    = sum ( cp ) **2
-      real*8  :: c02    = 0      ! c02    = (sum ( cref * cp )) **2
+      real*8  :: c01             ! c01    = sum ( cp ) **2
+      real*8  :: c02             ! c02    = (sum ( cref * cp )) **2
       real*8  :: c02_2  = 0      ! c02_2  = c02 * c02, entspricht c01
       real*8  :: teta_1 = 0      ! teta_1 = arccos( sqrt(c01) )
       real*8  :: teta_2 = 0      ! teta_2 = arccos( sqrt(c02_2))
       real*8  :: NN     = 0.0d0
       integer :: i      = 0
-      
+
+      c01 = 0.0d0      
+      c02 = 0.0d0      
+
       NN = N - 2.0d0
 
       do i = 1, nref
@@ -763,6 +716,7 @@
       integer, allocatable  :: bstring(:,:)
       real(8), allocatable  :: e_corr(:), e_tot(:)
       integer               :: nstates_ci
+      integer               :: nref_e
       real(8)               :: q_corr, edci
       integer               :: iactp, ibctp, nbl_c, nael, nbel
       integer               :: ntest, lblk, iboff, ionem
@@ -780,7 +734,11 @@
       open(1234,file='refvec.luci',status='replace',form='unformatted', &
      &access='sequential',action="readwrite",position='rewind')
 
-      write(1234) nref,reference_energy,nash_q(1:nfsym_q)
+      nref_e = 1
+
+      write(1234) nref,nash_q(1:nfsym_q)
+      write(1234) nref_e
+      write(1234) reference_energy
 !     write(1234) nref
 
       print *, 'printing all reference confs, total: ',nref, 'ref e:',  &

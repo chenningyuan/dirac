@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -5620,10 +5620,11 @@ C
      &    'ERROR(subroutine RDLINE): Error in reading molecule.MOL. '
      &    //'NODE=',MYTID
           WRITE(LUPRI,*) 'IOS=',IOS 
-          WRITE(LUPRI,*) 'Line no:', NMLINE
+          WRITE(LUPRI,*) 'NMLINE, line no:', NMLINE
           WRITE(LUPRI,*) 'NMLN_LASTREAD',NMLN_LASTREAD
-          WRITE(LUPRI,*) 'MLINE(NMLINE)=',MLINE(NMLINE)
-          WRITE(LUPRI,*) 'NMLINE_STORED:',
+          WRITE(LUPRI,*) 'read MLINE(NMLINE)=',MLINE(NMLINE)
+		  WRITE(LUPRI,*) 'LEN(MLINE(NMLINE))=',LEN(MLINE(NMLINE))
+          WRITE(LUPRI,*) 'NMLINE_STORED(1),(2):',
      &    NMLINE_STORED(1),NMLINE_STORED(2)
           IF (NMLINE>1) THEN
             WRITE(LUPRI,*) 'Previous line:',MLINE(NMLINE-1)

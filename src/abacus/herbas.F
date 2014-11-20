@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -70,6 +70,7 @@ C
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
+#include "infpar.h"
 #endif
 #include "priunit.h"
       LOGICAL   SEG, READNU_CALLED
@@ -109,7 +110,7 @@ C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
       LOGICAL SPLIT,TEST
-      integer :: icount = 0
+      integer :: jcount = 0
 #endif /* PRG_DIRAC */
 C
       CALL QENTER('BASLIB')
@@ -470,7 +471,7 @@ C
 
 !#define PRINT_GAUSSIAN_INP
 #ifdef PRINT_GAUSSIAN_INP
-            CALL print_gaussian_inp(icount, iqm, ALPHA(1,NBLOCK),
+            CALL print_gaussian_inp(jcount, iqm, ALPHA(1,NBLOCK),
      &                  CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
      &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
 #endif

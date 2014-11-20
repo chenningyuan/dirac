@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -48,7 +48,10 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
-#include "dcbham.h" ! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
+
+! until the KRMCSCF/KRMCOLD issue with IBEIG has been fixed...
+#include "dcbham.h"
+
 #include "dcbmp2.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK,TOBEKK,TRASAM,ACTIVE

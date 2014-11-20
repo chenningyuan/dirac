@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3651,7 +3651,7 @@ C
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
 C
-      WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
+!     WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
 C
 C     General allocation for NO generation
 C

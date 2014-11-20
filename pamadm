@@ -208,8 +208,9 @@ def main():
     add_test('response_complex', 'short;response')
     add_test('response_nonrel', 'short;response')
     add_test('cosci_energy', 'short;ci')
-    add_test('esr', 'short;gascip;ci')
-    add_test('krci_energy_q_corrections', 'medium;krci;ci')
+    add_test('krci_energy_q_corrections', 'medium;krci;qcorr;ci')
+    add_test('lucita_q_corrections', 'short;qcorr;ci')
+    add_test('x2c-SCF_to_4c-SCF', 'short;x2c;;4c;scf')
     # benchmarks, not run as part of standard test set
     add_test('benchmark_cc', 'benchmark;cc')
     add_test('benchmark_cc_linear', 'benchmark;cc')
@@ -294,6 +295,7 @@ def main():
     dirac_modules[this_module] = dirac_module('esr', 'ESR property module')
     dirac_modules[this_module].add_cppflag('MOD_ESR')
     dirac_modules[this_module].add_directory('src/prp/esr')
+    dirac_modules[this_module].add_test('esr', 'short;gascip;ci')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'xml'
@@ -360,7 +362,6 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_HSFS')
     dirac_modules[this_module].add_dependency('oof')
     dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
-    dirac_modules[this_module].add_test('fscc_highsectors')
     dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
@@ -370,7 +371,6 @@ def main():
     dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
     dirac_modules[this_module].add_cppflag('MOD_HSFS')
     dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
-    dirac_modules[this_module].add_test('fscc_highsectors')
     dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
@@ -395,7 +395,6 @@ def main():
     dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model using PCMSolver')
     dirac_modules[this_module].add_test('pcm_energy', 'short;scf;pcm')
     dirac_modules[this_module].add_test('pcm_response', 'short;polarizabilities;pcm')
-    dirac_modules[this_module].take_out_of_release()
 
     this_module = 'unreleased'
     dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')

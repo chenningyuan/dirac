@@ -1,0 +1,24 @@
+## simple DIRAC buildup configuration file for circleci.com
+## See https://circleci.com/docs/configuration
+##     https://circleci.com/docs/config-sample
+
+
+checkout:
+  post:
+    - git submodule sync
+    - git submodule update --init
+
+test:
+  override:
+    - python ./pamadm -a --builddir=build_circleci
+    - python ./setup --type=debug --int64 build_circleci
+  override:
+    - pwd: build_circleci
+  override:
+    - cd build_circleci
+    - pwd
+    - ctest -D NightlyUpdate
+    - ctest -D NightlyConfigure
+    - ctest -D NightlyBuild
+    - ctest -D NightlyTest -R cosci_energy
+    - ctest -D NightlyUpdate

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -164,27 +164,44 @@ C=============================================================
 CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
       IF (DO2C4C) THEN
-        INTDEF = INTDEF_SAVE
-        INTGEN = INTDEF 
-        MC = 2
-        SSMTRC = SSMTRC_SAVE
+        INTDEF    = INTGEN_SAVE
+        INTGEN    = INTDEF 
+        MC        = 2
+        SSMTRC    = SSMTRC_SAVE
+        !> set integral flags
+        ILLINT    = IAND(INTGEN,1)
+        ISLINT    = IAND(INTGEN/2,1)
+        ISSINT    = IAND(INTGEN/4,1)
+        IGTINT    = IAND(INTGEN/8,1)
 
-        BSS = .FALSE.
-        CALL GMOTRA(.FALSE.)
-CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
+        print *, 'intdef, ssmtrc ==> ',intdef, ssmtrc
+
+
+        BSS        = .FALSE.
+        twocomp    = .false.
+        x2cmod_mmf = .false.
+        x2c        = .false.
+
+        CALL SETDC1(0)
         CALL SETDC2(0)
 
+        CALL GMOTRA(.FALSE.)
+CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
+
         call alloc(WORK,LWORK,id='WORK in PSIDHF - part 2')
+#include "memint.h"
 
         IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
 CMI      ... prepare the starting 4c Fock MO matrix
-        CALL MEMGET('REAL',K1,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K2,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K3,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K1',K1,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K2',K2,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K3',K3,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMCHK('FDTR4C 0.0.0',WORK,1)
+
         CALL FDTR4C(WORK(K1),WORK(K2),WORK(K3),WORK(KFREE),LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K3,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K2,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K1,KFREE,LFREE)
+
+        CALL MEMREL('FDTR4C.PSIDHF',WORK,KWORK,KWORK,KFREE,LFREE)
+
         ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
 C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KCMO,N2BBASXQ,    WORK,KFREE,LFREE)

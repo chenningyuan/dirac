@@ -2519,7 +2519,7 @@ implicit none
 
       RETURN
       END
-#endif /* MOD_UNRELEASED */
+!#endif /* MOD_UNRELEASED */
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& 
 module diagmod
@@ -3004,6 +3004,8 @@ integer :: istat,i,j
 END subroutine
 
 end module diagmod
+
+#endif /* MOD_UNRELEASED */
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 Subroutine alloc_stat_check(alloc_label,istat)
