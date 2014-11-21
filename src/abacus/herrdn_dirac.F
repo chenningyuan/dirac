@@ -55,6 +55,10 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK),
      &          ALPIN(KPRIM),CPRIN(KPRIM*KPRIM)
       CHARACTER*80 BASREF(10,KATOM)
+C     variable for slash in paths (/ or \\)
+      CHARACTER SLASH
+C     Check if we work on Linux or on Windows
+      LOGICAL WIN
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "cbirea.h"
@@ -68,6 +72,11 @@ C
       LUBFIL = 55
       NTYP   = 0
       NBLOCK = IBLCK
+#if defined (SYS_WINDOWS)
+      WIN = .TRUE.
+#else
+      WIN = .FALSE.
+#endif
 C
 C     We now deal with general contracted basis sets:
 C     Use Unrestricted kinetic balance.
@@ -93,27 +102,18 @@ C
 C      We loop over these directories in search for the basis set and
 c      element given.
 C
-C      Check if we work on Linux or on Windows
-#if defined SYS_WINDOWS
-      LOGICAL, PARAMETER :: Windows = .TRUE.
-#else
-      LOGICAL, PARAMETER :: Windows = .FALSE.
-#endif
-C
        ISTART = 1
 C        
  10    CONTINUE
 C        
 C      Find next colon (: or ;) in BASDIR
-C       
-       IF ( .NOT. Windows ) THEN
+       IF ( .NOT. WIN ) THEN
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ':' )
        ELSE
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:), ';' )
        END IF
 C        
 C      In there are no colons (: or ;), we are the last directory in BASDIR
-C        
        IF ( ICOLON .EQ. ISTART - 1 ) THEN
 C           
 C           Find end of string
@@ -131,17 +131,17 @@ C
        ISTART = ICOLON + 1
 C        
 C     Add trailing slash if not present.
-C     / for Linux and \ for Windows
-      IF ( .NOT. Windows ) THEN
-          CHARACTER (LEN=1) :: slash = '/'
+C     / for Linux and \\ for Windows
+      IF ( .NOT. WIN ) THEN
+          SLASH = '/'
       ELSE
-          CHARACTER (LEN=1) :: slash = '\'
+          SLASH = '\\'
       END IF
 C        
        IEND = INDEX ( STRING(1:), ' ') - 1
-       IF ( STRING(IEND:IEND) .NE. slash ) THEN
+       IF ( STRING(IEND:IEND) .NE. SLASH ) THEN
           IEND = IEND + 1
-          STRING(IEND:IEND) = slash
+          STRING(IEND:IEND) = SLASH
        END IF
        STRING = STRING(1:IEND)//FILNAM
        IEND = INDEX(STRING(1:),' ') - 1

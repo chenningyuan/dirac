@@ -1066,17 +1066,27 @@ C*     STRING - A character variable that helps bullet-  *
 C*              proofing the subroutine.                 *
 C*     EXST - Logical variable that helps inquire if     *
 C*            there exists a file with that name.        *
+C*     SLASH - Variable for slash in paths (/ or \\)     *
+C*     WIN - Check if we work on Linux or on Windows     *
 C*********************************************************
       CHARACTER*(*) BASNAM
-      CHARACTER*200 STRING  ! long because contains the full directory path
+C     long because contains the full directory path
+      CHARACTER*200 STRING
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
+      CHARACTER SLASH
+      LOGICAL WIN
 #include "inftap.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
+#endif
+#if defined (SYS_WINDOWS)
+      WIN = .TRUE.
+#else
+      WIN = .FALSE.
 #endif
 C
 C     Linux:
@@ -1089,13 +1099,6 @@ C     C:\programs\Dirac\basis;C:\programs\Dalton\basis;.
 C
 C     We loop over these directories in search for the basis set and
 c     element given.
-C
-C     Check if we work on Linux or on Windows
-#if defined SYS_WINDOWS
-      LOGICAL, PARAMETER :: Windows = .TRUE.
-#else
-      LOGICAL, PARAMETER :: Windows = .FALSE.
-#endif
 C
 C     Depending on the machine, the string has trailing blanks
 C     (ASCII char=32) or null elements (ASCII=0).
@@ -1114,25 +1117,23 @@ C
  10   CONTINUE
 C     
 C     Find next colon (: or ;) in BASDIR
-C
-      IF ( .NOT. Windows ) THEN
+      IF ( .NOT. WIN ) THEN
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
       ELSE
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ';' )
       END IF
 C     
 C     In there are no colons (: or ;), we are the last directory in BASDIR
-C     
       IF ( ICOLON .EQ. ISTART - 1 ) ICOLON = ISTOP + 1
       IEND = ICOLON - 1
       STRING = BASDIR(ISTART:IEND)//' '
 C
 C     Add trailing slash if not present.
-C     / for Linux and \ for Windows
-      IF ( .NOT. Windows ) THEN
-          CHARACTER (LEN=1) :: slash = '/'
+C     / for Linux and \\ for Windows
+      IF ( .NOT. WIN ) THEN
+          SLASH = '/'
       ELSE
-          CHARACTER (LEN=1) :: slash = '\'
+          SLASH = '\\'
       END IF
 C
       IEND = INDEX ( STRING(1:), ' ') - 1
@@ -1143,9 +1144,9 @@ C
      &        'variable BASDIR is not set'
         call quit('*** error in FINDEL: BASDIR is not set') 
       end if
-      IF ( STRING(IEND:IEND) .NE. slash ) THEN
+      IF ( STRING(IEND:IEND) .NE. SLASH ) THEN
          IEND = IEND + 1
-         STRING(IEND:IEND) = slash
+         STRING(IEND:IEND) = SLASH
       END IF
       STRING = STRING(1:IEND)//BASNAM
       IEND = INDEX(STRING(1:),' ') - 1
