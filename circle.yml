@@ -8,17 +8,13 @@ checkout:
     - git submodule sync
     - git submodule update --init
 
-test:
-  override:
-    - python ./pamadm -a --builddir=build_circleci
+test: 
+  override: 
+    - python ./pamadm -a --builddir=build_circleci 
     - python ./setup --type=debug --int64 build_circleci
-  override:
-    - pwd: build_circleci
-  override:
-    - cd build_circleci
-    - pwd
-    - ctest -D NightlyUpdate
-    - ctest -D NightlyConfigure
-    - ctest -D NightlyBuild
-    - ctest -D NightlyTest -R cosci_energy
-    - ctest -D NightlyUpdate
+    - ./build_circleci/ctest -D NightlyUpdate 
+    - ctest -D NightlyConfigure: { pwd: build_circleci }
+    - ctest -D NightlyBuild:
+        pwd: build_circleci
+    - ./build_circleci/ctest -D NightlyTest -R cosci_energy 
+    - ./build_circleci/ctest -D NightlyUpdate
