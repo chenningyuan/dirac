@@ -1,96 +1,3 @@
-      SUBROUTINE amplitude_equation_mp2 (EPS,FVO,T1,S1,T2,S2)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Solves MP2 amplitude or lambda equations.
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-C     Intermediaries etc.
-C
-      REAL*8 EPS(*),FVO(*),T1(*),S1(*),T2(*),S2(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "files.inc"
-#include "param.inc"
-#include "symm.inc"
-#include "eqns.inc"
-#include "inpt.inc"
-#include "results.inc"
-#include "complex.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      REAL*8 DIAG
-      LOGICAL TEQ
-C
-C---------------Executable code--------------------------------------
-C
-                  
-                                
-                     
-                                    
-                      
-                                    
-                     
-          
-                                                      
-           
-C
-C  INITIALIZE T2 AND T1 AMPLITUDES
-C
-      CALL XCOPY (NDIMT1,FVO,1,T1,1)
-      CALL GETVVOO (T2)
-      CALL DENOM (EPS,T1,T2,T1,T2)
-      CALL ZCORE (T1,T2)
-C
-                   
-C
-C  EVALUATE CORRELATION ENERGY
-C
-         CALL MP2ENG (T1,T2,FVO,S2,EMP2)
-         CALL T1DIAG (DIAG,T1,S1)
-C
-         WRITE(IW,6071)
-         WRITE(IW,6072) ESCF
-         WRITE(IW,6073) EMP2
-         ETOT = ESCF + EMP2
-         WRITE(IW,6075) ESCF + EMP2
-         WRITE(IW,6077) DIAG
-C
-          
- 
-                              
- 
-                                      
-                                      
- 
-           
- 
-            
- 6071 FORMAT(//,'  MP2 results',/)
- 6072 FORMAT(' SCF energy :',T40,F25.15)
- 6073 FORMAT(' MP2 correlation energy :',T40,F25.15)
- 6075 FORMAT(' Total MP2 energy :',T40,F25.15)
- 6077 FORMAT(' T1 diagnostic :',T40,F25.15)
- 7000 FORMAT(//' Timing of routine MP2EQN :'
-     &/' Before MP2EQN :',T30,F12.3,' seconds'
-     &/' Energy, T1-Diag :',T30,F12.3,' seconds'
-     &/' Untimed parts :',T30,F12.3,' seconds'
-     &/' Total time in MP2EQN :',T30,F12.3,' seconds')
-      END
-
-
-
       SUBROUTINE amplitude_equation_T2 (EPS,T1,T2,
      &                   GO,GV,HOV,H,AZ,CZ,GOO,GVV,
      &                   BUF1,BUF2,BUF3,NBUF3,S2)
@@ -139,29 +46,14 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-C
-                                
-                     
-                                    
-                      
-                                    
-                     
-          
-                                                     
-           
-
 C---- Initialize to zero...
       CALL XCOPY (NDIMT2,A0,0,S2,1)
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
 C---------------------------------------------
       CALL XTIME(0,1,'--- T2EQNS: TAU*AINTM contraction')
-                   
-         CALL GETTAU (T1,T2,BUF1)
+      CALL GETTAU (T1,T2,BUF1)
           
-                                        
-           
-
       OFF3 = 1
       DO IREP = 1, NREP
         M    = NVVT(IREP)
@@ -217,11 +109,8 @@ C-----------------------------------------------------------------------
          ISTART = 0
          MINT = NBUF3/NVO(IRP)  ! max. # of NVO batches that fit in mem.
   10     CONTINUE
-            CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-            CALL DELINT ('VOVV','DKKK',BUF3,IRP,ISTART,NINT)
-             
-                                                    
-              
+         CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+         CALL DELINT ('VOVV','DKKK',BUF3,IRP,ISTART,NINT)
          IF (CARITH) CALL CONJUGA (NVO(IRP)*NINT,BUF3,1)
          IJ = 0
          DO 20 JREP = 1, NREP
@@ -344,11 +233,9 @@ C *** end of task splitting
 C ***
       ENDIF
 
-
       CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             BUF1,BUF2)
       CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
-
 
 C ** now the final H*T2 contraction. H is complete since we communicated
 C ** it already.
@@ -381,72 +268,4 @@ C-----------------------------------------------------------------------
       CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
       CALL XTIME(0,2,'--- T2EQNS: HINTM*T2           ')
 
-
-
-                                                           
-                                                           
-                                                           
-
-
-                        
-                                                        
-                                                        
-                                                        
-                              
-                                  
-                         
-                                                                  
-                                                                  
-                                                
-                                                
-                                                
-                              
-                                              
-                                              
-                                              
-                         
-                                                                
-                             
-                                                                
-                                                                
-                             
-                                        
-                                              
-                                              
-                                              
-                        
-                                                                 
-                             
-                                                                
-                                                                 
-                             
-                                         
-                                                                        
-                                                           
-                                                                        
-                              
-                                           
-                                                                        
-                              
-                                             
-              
-              
-              
-                      
-                                       
-                     
-                     
-                     
-                                                                
-                                     
-                                  
-                                  
-                                  
-           
-                                                                        
-                              
-                                        
-           
- 
-            
       END

@@ -99,7 +99,7 @@ C     Initialize the work arrays to zero.
 C     Initialize DIIS.
 
       IT = -1
-      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
 
       ECCSD = 0.D0
@@ -436,7 +436,7 @@ C
 C     Close and delete DIIS scratch files
 C
       IT = -2
-      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
 C
  111  FORMAT(A20,I4,2f25.15)
