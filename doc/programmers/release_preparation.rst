@@ -136,7 +136,8 @@ release code of others without asking.
 
 1. Verify copyright headers.
 2. Verify logo (list of authors).
-3. Bump the version.
+3. Bump the version (the version number is kept in file VERSION; but also git grep -i for "orphaned" version
+numbers in the source code).
 
 As a final step create the tarball::
 
