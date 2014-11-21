@@ -141,7 +141,6 @@ release code of others without asking.
 As a final step create the tarball::
 
   $ ./pamadm --release
-  $ mkdir build
   $ cd build
   $ cmake ..
   $ make release
