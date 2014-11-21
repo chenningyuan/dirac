@@ -1292,7 +1292,7 @@ C------------------------------------------------------------------
 C CZ(AL,IJ) = CZ(AL,IJ) + PIJ.[ V(AL,ID) * T(D,J) ]
 C------------------------------------------------------------------
       CALL GETVOVO (BUF1)
-      CALL SRT19 (NREP,MULTB,NVO,NV,NO,NVOO,KVOOV,KKVOO,BUF1,BUF2)
+      CALL SRT19 (NREP,MULTB,LFA,NVO,NV,NO,NVOO,KVOOV,KKVOO,BUF1,BUF2)
       OFF1 = 1
       OFF2 = 1
       OFF3 = 1

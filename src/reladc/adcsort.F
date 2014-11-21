@@ -471,8 +471,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT7 (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
-     &                 OFF,OFF1,BUF1,BUF2)
+      SUBROUTINE SRT7 (NREP,MULTB,DOINV,NPAIR1,KFIE,LFIE,NTRIPL,
+     &                 OFF,OFF1,BUF1,BUF2,IFIE,JFIE,NPAIR2)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -490,9 +490,12 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
-      INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
+      INTEGER NPAIR1(NREP),KFIE(NREP),LFIE(NREP)
+      INTEGER,OPTIONAL :: NPAIR2(NREP)
+      INTEGER,OPTIONAL :: IFIE(NREP),JFIE(NREP) 
       INTEGER NTRIPL(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
+      LOGICAL DO_SORT
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -504,6 +507,12 @@ C
 C---------------Executable code--------------------------------------
 C
 
+      DO_SORT=.TRUE.
+      if (PRESENT(NPAIR2)) DO_SORT = .TRUE.
+      if (PRESENT(IFIE))   DO_SORT = .TRUE.
+      if (PRESENT(JFIE))   DO_SORT = .TRUE.
+
+      if (DO_SORT) then 
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
@@ -531,6 +540,7 @@ C
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
+      endif
 C
       RETURN
       END

@@ -794,7 +794,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT19 (NREP,MULTB,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1,
+      SUBROUTINE SRT19(NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1,
      &                  BUF1,BUF2)
 C
       IMPLICIT INTEGER (A-Z)
@@ -815,6 +815,7 @@ C
       INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
+      LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -836,8 +837,12 @@ C
         DO L = 1, LFIE(LREP)
          IJL  = (L-1) * N * RCW + 1
          DO K = 1, KFIE(KREP)
-            IJLK1 = KOFF + (K-1) * NTRIPL(KREP) * RCW + IJL 
+            IJLK1 = KOFF + (K-1) * NTRIPL(KREP) * RCW + IJL
+            IF(DOINV) THEN
+            CALL XCOPY (N,BUF2(IJLK1),1,BUF1(IJKL),1)
+            ELSE 
             CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
+            ENDIF
             IJKL = IJKL + N * RCW
          ENDDO
         ENDDO
@@ -847,6 +852,74 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+c ashee
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+c     SUBROUTINE SRT29 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1
+c    &                  ,BUF1,BUF2)
+c
+c     IMPLICIT INTEGER (A-Z)
+c
+c---------------Description--------------------------------------------
+c
+c     Sort array BUF1(I>J,KL:KLREP) to array BUF2(IJ L,K:KREP)
+c
+c---------------Routines called----------------------------------------
+c
+c---------------Last modified------------------------------------------
+c
+c     Author : Avijit Shee (inspired by SRT19 routine by Luuk Visscher)
+c
+c---------------Calling variables--------------------------------------
+c
+c     REAL*8 BUF1(*),BUF2(*)
+c     INTEGER NREP, MULTB(64,64,2)
+c     INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
+c     INTEGER OFF(NREP+1),OFF1(32,32)
+c     LOGICAL DOINV
+c
+c---------------Common Blocks--------------------------------------
+c
+cinclude "complex.inc"
+cinclude "param.inc"
+c
+c---------------Local variables--------------------------------------
+c
+c---------------Executable code--------------------------------------
+c
+c     CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+c     IJKL = 1
+c     DO KLREP = 1, NREP
+c      IJREP = KLREP
+c      N = NPAIR(KLREP)
+c      DO 10 LREP = 1, NREP
+c       KREP = MULTB(LREP,KLREP+NREP,2)
+c       KOFF = (OFF(KREP) + OFF1(IJREP,LREP)) * RCW
+c       DO L = 1, LFIE(LREP)
+c        IJL  = (L-1) * N * RCW + 1
+c        DO K = 1, KFIE(KREP)
+c           IJLK1 = KOFF + (K-1) * NTRIPL(KREP) * RCW + IJL
+c           IF(DOINV) THEN
+c           CALL XCOPY (N,BUF2(IJLK1),1,BUF1(IJKL),1)
+c           ELSE 
+c           CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
+c           ENDIF
+c           IJKL = IJKL + N * RCW
+c        ENDDO
+c       ENDDO
+c10    CONTINUE
+c     ENDDO
+c
+c     RETURN
+c     END
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
       SUBROUTINE SRT1LS1 (NREP,MULTB,NPAIR1A,NPAIR1B,IFIE,JFIE,NPAIR2,
      &                    OFF,OFF1,BUF1,BUF2)
 C
@@ -910,8 +983,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT22 (NREP,MULTB,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1,
-     &                  BUF1,BUF2)
+      SUBROUTINE SRT22 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1
+     &                  ,BUF1,BUF2,IFIE,JFIE,NPAIR2)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -930,7 +1003,9 @@ C
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
+      INTEGER, OPTIONAL :: IFIE(NREP),JFIE(NREP), NPAIR2(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
+      LOGICAL DOINV,DO_SORT
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -941,6 +1016,25 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+       DO_SORT=.TRUE.
+
+       if (PRESENT(NPAIR2)) then
+       DO_SORT = .TRUE.
+       elseif (.NOT.PRESENT(NPAIR2)) then
+       DO_SORT = .TRUE.
+       endif
+       if (PRESENT(IFIE)) then
+       DO_SORT = .TRUE.
+       elseif (.NOT.PRESENT(IFIE)) then
+       DO_SORT = .TRUE.
+       endif
+       if (PRESENT(JFIE)) then
+       DO_SORT = .TRUE.
+       elseif (.NOT.PRESENT(JFIE)) then
+       DO_SORT = .TRUE.
+       endif
+
+      if (DO_SORT) then
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 1
       DO KLREP = 1, NREP
@@ -956,15 +1050,21 @@ C
          IF (KREP.EQ.LREP) KMIN = L + 1
          DO K = KMIN, KFIE(KREP)
             LIJK = (KOFF + (K-1) * NTRIPL(KREP) + L - 1) * RCW + 1 
-            KIJL = (LOFF + (L-1) * NTRIPL(LREP) + K - 1) * RCW + 1 
-            CALL XCOPY (N,BUF1(IJKL),1,BUF2(LIJK),LFIE(LREP))
-            CALL XCOPY (N,BUF1(IJKL),1,BUF2(KIJL),KFIE(KREP))
-            CALL XSCAL (N,-A1,BUF2(KIJL),KFIE(KREP))
+            KIJL = (LOFF + (L-1) * NTRIPL(LREP) + K - 1) * RCW + 1
+            IF (DOINV) THEN
+               CALL XCOPY (N,BUF1(LIJK),1,BUF2(IJKL),1)
+               CALL XAXPY (N,-A1,BUF1(KIJL),1,BUF2(IJKL),1)
+            ELSE
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(LIJK),LFIE(LREP))
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(KIJL),KFIE(KREP))
+               CALL XSCAL (N,-A1,BUF2(KIJL),KFIE(KREP))
+            ENDIF  
             IJKL = IJKL + N * RCW
          ENDDO
         ENDDO
  10    CONTINUE
       ENDDO
+      endif
 C
       RETURN
       END
