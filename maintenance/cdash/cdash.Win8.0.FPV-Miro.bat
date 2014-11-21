@@ -25,6 +25,7 @@ rem git pull origin master
 rem update all submodules
 git submodule update
 
+echo %DATE% %TIME%
 set BUILD=build_mingw64_i4
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
@@ -38,6 +39,8 @@ ctest     -D ExperimentalSubmit     --track Miro
 
 rem wait 1 minute
 timeout 60
+
+echo %DATE% %TIME%
 
 rem go to the local DIRAC directory
 cd %DIRAC%
@@ -55,6 +58,8 @@ ctest     -D ExperimentalSubmit     --track BoundsCheck
 rem wait 1 minute
 timeout 60
 
+echo %DATE% %TIME%
+
 rem go to the local DIRAC directory
 cd %DIRAC%
 set BUILD=build_mingw64_i8
@@ -67,6 +72,8 @@ ctest     -D ExperimentalConfigure  --track Miro
 ctest -j2 -D ExperimentalBuild      --track Miro
 rem ctest -j2 -D ExperimentalTest       --track Miro
 ctest     -D ExperimentalSubmit     --track Miro
+
+echo %DATE% %TIME%
 
 rem switch off Desktop PC Windows after 10 seconds
 rem timeout 10 && shutdown -s
