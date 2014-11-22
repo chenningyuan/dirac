@@ -12,9 +12,8 @@ test:
   override: 
     - python ./pamadm -a --builddir=build_circleci 
     - python ./setup --type=debug --int64 build_circleci
-    - ./build_circleci/ctest -D NightlyUpdate 
+    - ctest -D NightlyUpdate: { pwd: build_circleci }
     - ctest -D NightlyConfigure: { pwd: build_circleci }
-    - ctest -D NightlyBuild:
-        pwd: build_circleci
-    - ./build_circleci/ctest -D NightlyTest -R cosci_energy 
-    - ./build_circleci/ctest -D NightlyUpdate
+    - ctest -D NightlyBuild: { pwd: build_circleci }
+    - ctest -D NightlyTest -R cosci_energy: { pwd: build_circleci }
+    - ctest -D NightlyUpdate: { pwd: build_circleci }
