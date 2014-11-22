@@ -1331,9 +1331,10 @@ Options are also read from ~/.diracrc"""
                     self.dirac_cmd = self.debugger + ' ' + dirac_executable \
                     + ' | tee ' + self.output_file_full
                 else:
-                    #Miro: simple adaptation for Windows does not save dbg output file
-				    #TODO: try to improve it as is for Linux
-                    self.dirac_cmd = self.debugger + ' ' + dirac_executable
+                    #non-interactive adaptation for Windows: just run and quit automatically
+				    #because interactive mode has non-standard behaviour in PowerShell
+                    self.dirac_cmd = 'PowerShell -Command \"&{' + self.debugger + ' -ex run -ex quit ' \
+                    + dirac_executable + ' | Tee-Object -FilePath ' + self.output_file_full + '}\"'
             elif self.vg_debug:
                 # valgrind flags read from files ~/.valgrindrc and ./.valgrindrc
                 # -v --error-limit=no --leak-check=full  --show-reachable=yes
