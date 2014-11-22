@@ -13,6 +13,9 @@ Dependencies
    Example of path to add: *"C:\\cmake-3.0.2-win32-x86\\bin"*
 
 2. Fortran, C and C++ compilers. We recommend to use compilers from http://mingw-w64.sourceforge.net/ for both 32/64 bit Windows.
+   You can download 32-bit version from `here <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/>`_ 
+   And 64-bit version from `here <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/>`_ 
+   In both cases we recommend to download archive file instead of installer and then just unpack it somewhere.
    Add path to compilers into your PATH environment variable. 
    Example of path to add: *"C:\\Program Files\\mingw-w64\\i686-4.9.1-posix-dwarf-rt_v3-rev0\\mingw32\\bin"*
 

@@ -229,8 +229,20 @@ add_custom_target(dirac_interfaces
     ${GENERATED_FILES}
 )
 
-# set definitions
+# set source file properties
+# fix for Windows with 64bit integers on and build type release or profile
+# when using GNU (gfortran) compilers
+# there is one source file for which -O3/-O2 is not good
+if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU") 
+    AND (ENABLE_64BIT_INTEGERS)
+    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile"))) 
+    set_source_files_properties(
+        ${CMAKE_SOURCE_DIR}/src/abacus/hermodules.F90
+        PROPERTIES COMPILE_FLAGS "-O1"
+        )
+endif()
 
+# set definitions
 include(Definitions)
 
 add_definitions(-DPRG_DIRAC)
