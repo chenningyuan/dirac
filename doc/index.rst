@@ -168,6 +168,15 @@ Tutorials and walkthrus
   :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
 
 
+DIRAC Workshop Presentations
+============================
+
+.. toctree::
+   :maxdepth: 2
+
+   tutorials/workshop-slides/index.rst
+
+
 Exercises
 =========
 

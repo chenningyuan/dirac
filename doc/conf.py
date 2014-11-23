@@ -27,7 +27,13 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
-              'sphinx.ext.doctest']
+              'sphinx.ext.doctest',
+               'sphinx.ext.intersphinx',
+               'sphinx.ext.todo',
+               'sphinx.ext.coverage',
+               'sphinx.ext.pngmath',
+               'sphinx.ext.ifconfig'
+]
 
 #miro: try to add conditionally the extension in order not to hurt the doc compilation
 # older machines might lack it
