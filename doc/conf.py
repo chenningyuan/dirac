@@ -27,13 +27,7 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
-              'sphinx.ext.doctest',
-               'sphinx.ext.intersphinx',
-               'sphinx.ext.todo',
-               'sphinx.ext.coverage',
-               'sphinx.ext.pngmath',
-               'sphinx.ext.ifconfig'
-]
+              'sphinx.ext.doctest']
 
 #miro: try to add conditionally the extension in order not to hurt the doc compilation
 # older machines might lack it
@@ -43,6 +37,12 @@ try:
     extensions.append('sphinx.ext.mathjax')
 except ImportError:
     print('sphinx.ext.mathjax extension not found => math will not be properly rendered')
+
+#miro: conditional adding of the hieroglyph extension for html-slides
+try:
+    extensions.append('hieroglyph')
+except ImportError:
+    print('hieroglyph extension not found => html slides will not be rendered')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
