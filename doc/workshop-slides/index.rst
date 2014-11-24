@@ -2,14 +2,8 @@
 .. Relativistic Quantum Chemistry with DIRAC slides file, created by
    hieroglyph-quickstart on Sun Nov 23 22:51:15 2014.
 
-
 Relativistic Quantum Chemistry with DIRAC
 =========================================
-
-Contents:
-
-.. toctree::
-   :maxdepth: 2
 
 ================================
  Introduction to DIRAC tutorials
@@ -26,5 +20,7 @@ Why DIRAC software
 Goals of the workshop
 =====================
 
-* providing little relativistic theory
-* focus on practical examples with DIRAC
+* providing some relativistic theory
+* main focus on practical examples with DIRAC
+* performing several quick tutorial calculations
+* analysing and discussing obtained results
