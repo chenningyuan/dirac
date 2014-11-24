@@ -7,7 +7,7 @@ if(SPHINX_FOUND)
         )
     add_custom_target(
         slides
-        COMMAND sphinx-build -b slides ${CMAKE_SOURCE_DIR}/doc/workshop-slides ${PROJECT_BINARY_DIR}/slides
+        COMMAND sphinx-build -b slides ${CMAKE_SOURCE_DIR}/doc/workshop-slides ${PROJECT_BINARY_DIR}/html_slides
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 else()
