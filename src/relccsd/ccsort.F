@@ -298,7 +298,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1T3 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
-     &                   OFF,OFF1,BUF1,BUF2)
+     &                   OFF,OFF1,BUF1,BUF2,IFIE,JFIE,NPAIR2)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -318,8 +318,9 @@ C
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
+      INTEGER, OPTIONAL :: IFIE(NREP),JFIE(NREP), NPAIR2(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
-      LOGICAL DOINV
+      LOGICAL DOINV,DO_SORT
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -330,6 +331,25 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+       DO_SORT=.TRUE.
+
+       if (PRESENT(NPAIR2)) then
+       DO_SORT = .TRUE.
+       elseif (.NOT.PRESENT(NPAIR2)) then
+       DO_SORT = .TRUE.
+       endif
+       if (PRESENT(IFIE)) then
+       DO_SORT = .TRUE.
+       elseif (.NOT.PRESENT(IFIE)) then
+       DO_SORT = .TRUE.
+       endif
+       if (PRESENT(JFIE)) then
+       DO_SORT = .TRUE.
+       elseif (.NOT.PRESENT(JFIE)) then
+       DO_SORT = .TRUE.
+       endif
+
+      if (DO_SORT) then
       IF (.NOT.DOINV) THEN
          CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       ENDIF
@@ -363,6 +383,7 @@ C
         ENDDO
  10    CONTINUE
       ENDDO
+      endif
 C
       RETURN
       END

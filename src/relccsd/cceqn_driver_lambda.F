@@ -135,11 +135,11 @@ C     Initialize DIIS.
          write(*,*)'---------------------'
          write(78,5)(w_oooo(i),i=1,nv1)
 
-!         call f_bar_ae(FVV,BUF1,BUF2,BUF3,S1,S2,HV)
+         call f_bar_ae(FVV,BUF1,BUF2,BUF3,S1,S2,HV)
 
-!         write(*,*)'f_bar_ae intermediate'
-!         write(*,*)'---------------------'
-!         write(79,5)(hv(i),i=1,nfvv)
+         write(*,*)'f_bar_ae intermediate'
+         write(*,*)'---------------------'
+         write(79,5)(hv(i),i=1,nfvv)
 
 
          CALL HOVINTM (FVO,S1,BUF1,BUF2,HOV)

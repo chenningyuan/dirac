@@ -42,13 +42,13 @@
 !F_bar_mi(m,i) = F_bar_mi(m,i) - V(mn, ei) * T1(e,n) 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    if (carith) call conjuga (nfvo,fvo,1) 
     call contraction_422 ((/"o1","o3","p1","o2"/),(/"p1","o3"/),(/"o1","o2"/),t1,ho,-1.0d0,1.0d0,nrep)
 
 !***********************TERM-3*********
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
 !**************************************
    
+    if (carith) call conjuga (nfvo,fvo,1) 
    call contraction_222 ((/"o1","p1"/),(/"p1","o2"/),(/"o1","o2"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
 
 !   call contraction_222 (fvo, nfvo, t1, ndimt1, ho, 'C', 'N', 'N', &
@@ -77,19 +77,21 @@
 !----------------------------------------------------------------------
 ! H(A,C) = H(A,C) - W(KL,CD) * T(AD,KL) = H(A,C) - T(A,DKL) * W*(C,DKL)
 !----------------------------------------------------------------------
-!     CALL GETTAU (T1,T2,BUF3)
-!     CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
-!    &             BUF3,BUF1)
-!     CALL GETVVOO (BUF3)
-!     CALL DELINT ('VVOO','DDDD',BUF3,0,0,0)
-!     CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
-!    &             BUF3,BUF2)
-!     CALL CNTRCT ('N','C',NV,NV,NVOOT,-A1,BUF1,BUF2,A1,HV,NREP)
+      CALL GETTAU (T1,T2,BUF3)
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
+     &             BUF3,BUF1)
+      CALL GETVVOO (BUF3)
+      CALL DELINT ('VVOO','DDDD',BUF3,0,0,0)
+      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT, &
+     &             BUF3,BUF2)
+      CALL CNTRCT ('N','C',NV,NV,NVOOT,-A1,BUF1,BUF2,A1,HV,NREP)
 
-   allocate(tau(ndimt2))
-   call gettau  (t1,t2,tau)
-   call contraction_442 ((/"o2","o1","p3","p2"/),(/"p3","p1","o2","o1"/),(/"p1","p2"/),tau,HV,-1.0d0,1.0d0,nrep)
-   deallocate(tau) 
+!   allocate(tau(ndimt2))
+!   call gettau  (t1,t2,tau)
+!   call SRT7( )
+!   call SRT22()
+!   call contraction_442 ((/"o2","o1","p3","p2"/),(/"p3","p1","o2","o1"/),(/"p1","p2"/),tau,HV,-1.0d0,1.0d0,nrep)
+!   deallocate(tau) 
 
 !---------------------------------------------------------------
 !F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) --> V(ae,fm) * T1(fm) 
