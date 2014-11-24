@@ -6,6 +6,20 @@
 Relativistic Quantum Chemistry with DIRAC
 =========================================
 
+Contents:
+
+.. toctree::
+   :maxdepth: 1
+
+* **Introduction**
  :doc:`Introduction to DIRAC tutorials <introduction>`
+
+* **Specifying the electronic state**
+ :doc:`Single determinant <single_determinant>`
+ :doc:`Many determinants  <many_determinants>`
+
+* **The DFT in DIRAC**
+ :doc:`DFT basics <dft>`
+
 
 

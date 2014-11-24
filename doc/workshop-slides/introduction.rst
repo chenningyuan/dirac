@@ -11,24 +11,20 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
 ================================
  Introduction to DIRAC tutorials
 ================================
 
-First Slide
-===========
+Why DIRAC software
+==================
 
-Some content on the first slide.
+* suitable tool for demonstrating relativity on manifold chemical properties
+* offering extensive set of explanatory web-tutorials
+* continuosly developing the code and updating the manual/tutorials
+* active discussion group for users
 
-Second Slide
-============
+Goals of the workshop
+=====================
 
-* A
-* Bulleted
-* List
-
-Third Slide
-===========
-
-
+* providing little relativistic theory
+* focus on practical examples with DIRAC
