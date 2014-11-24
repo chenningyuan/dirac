@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4217,6 +4217,15 @@ C
  1601   CONTINUE
       END IF
       end if
+
+      ! for +Q correction
+      open(file="energies.CI",unit=10,status="unknown",
+     &     form="unformatted",access="sequential")
+!     TODO: check proper reference energies for states other than the ground state and MCSCF reference wave functions!!!
+      write(10) nroot,eig(1,1)+eigshf
+      write(10) ((eig(iter,i)+eigshf),i=1,nroot)
+      close(10,status="keep")
+
 *
       CALL FLSHFO(6)
 *

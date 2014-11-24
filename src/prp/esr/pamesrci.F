@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -158,7 +158,7 @@ C
 C
       CALL QENTER('ESR_RESOLVE')
 
-      IF (N_CIESR .EQ. 2) THEN
+      IF (NZCONF .EQ. 2) THEN
          IF (N_CIROOTS .gt. 2) THEN
             N_CIROOTS = 2
          END IF

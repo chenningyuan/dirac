@@ -71,12 +71,18 @@ root flipping during the iterative solution of the TDDFT equations. We are worki
 and consider single excitations from a closed-shell ground state. The final states will be therefore be singlet or triplets in the spin-orbit 
 free case. We need to tell DIRAC how these states are distributed on the four irreps of :math:`C_{2v}`. 
 At this point we should emphasize that DIRAC will employ the *total* symmetry of the final states,
-that is the combined spin and spatial symmetry. A singlet spin function is totally symmetric (:math:`A_1`), whereas the
+that is the combined spin and spatial symmetry. A singlet spin function 
+
+.. math::
+
+   S_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2-\beta_1\alpha_2\right)
+
+is totally symmetric (:math:`A_1`), whereas the
 triplet spin functions transform as rotations. We know the triplet functions as:
 
 .. math::
 
-   T_{-1} = \alpha_1\alpha_2;\quad T_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2-\beta_1\alpha_2\right);\quad T_{+1}=\beta_1\beta_2
+   T_{-1} = \alpha_1\alpha_2;\quad T_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2+\beta_1\alpha_2\right);\quad T_{+1}=\beta_1\beta_2
 
 but for our purposes it will be more convenient to form the combinations:
 
@@ -168,8 +174,8 @@ to closed-shell and so this is :math:`^1A_1` (:math:`C_{2v}`), corresponding to 
 Linear (super)symmetry is not implemented for spin-orbit free calculations, so DIRAC gives symmetry information with respect to :math:`C_{2v}`.
 DIRAC, however, is able to separate spin and spatial symmetries. We see for instance the the next level is six-fold degenerate 
 with equal contributions from :math:`^3B_1` and :math:`^3B_2`. Looking at the above correspondence table between :math:`C_{2v}` and
-:math:`C_{v\infty}` that a degenerate level of :math:`B_1` and :math:`B_2` spatial symmetries corresponds to a :math:`\Delta` term, 
-so we identify the first excited level of CO as :math:`^3\Delta`. The correspondence table also allows us to distinguish mirror symmetry
+:math:`C_{v\infty}` that a degenerate level of :math:`B_1` and :math:`B_2` spatial symmetries corresponds to a :math:`\Pi` term, 
+so we identify the first excited level of CO as :math:`^3\Pi`. The correspondence table also allows us to distinguish mirror symmetry
 about the molecular axis for :math:`\Sigma` states, so we identify the second excited state as :math:`^{3}\Sigma^{+}`. Proceeding 
 in this manner, we also see some failures of the degeneracy detection in DIRAC. Level 4 and 5 are classified as :math:`^3A_1` and 
 :math:`^3A_2`, respectively, and are clearly components of a :math:`^3\Delta` state. Reducing the threshold for degeneracies would 

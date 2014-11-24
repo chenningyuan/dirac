@@ -16,6 +16,7 @@
                                  it allows to run DIRAC in parallel on systems which
                                  do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
                                  --mpi overrides DIRAC_MPI_COMMAND
+             DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory
 
     Environment variables set by pam and used by MKL:
              MKL_NUM_THREADS - set to 1 if not defined
@@ -271,16 +272,29 @@ class pam_enviroment:
         '''
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
-        self.basdir='.:'
-        basis_dir= os.path.join(pam_directory, 'basis')
-        basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
-        basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
-        if os.path.isdir(basis_dir):
-            self.basdir = self.basdir + basis_dir
-        if os.path.isdir(basis_dalton_dir):
-            self.basdir = self.basdir+':'+basis_dalton_dir
-        if os.path.isdir(basis_ecp_dir):
-            self.basdir = self.basdir+':'+basis_ecp_dir
+    # note: we must use ; instead of : as a separator on Windows
+        if not is_windows():
+            self.basdir='.:'
+            basis_dir= os.path.join(pam_directory, 'basis')
+            basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
+            basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
+            if os.path.isdir(basis_dir):
+                self.basdir = self.basdir + basis_dir
+            if os.path.isdir(basis_dalton_dir):
+                self.basdir = self.basdir+':'+basis_dalton_dir
+            if os.path.isdir(basis_ecp_dir):
+                self.basdir = self.basdir+':'+basis_ecp_dir
+        else:
+            self.basdir='.;'
+            basis_dir= os.path.join(pam_directory, 'basis')
+            basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
+            basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
+            if os.path.isdir(basis_dir):
+                self.basdir = self.basdir + basis_dir
+            if os.path.isdir(basis_dalton_dir):
+                self.basdir = self.basdir+';'+basis_dalton_dir
+            if os.path.isdir(basis_ecp_dir):
+                self.basdir = self.basdir+';'+basis_ecp_dir
 
     def show_settings(self):
         '''
@@ -872,7 +886,6 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_put:
             self.put_files = options.dest_put
-            print 'self.put_files=',self.put_files
 
         if options.dest_get:
             self.get_files = options.dest_get
@@ -1122,6 +1135,16 @@ Options are also read from ~/.diracrc"""
 
         if self.input_file_pcm:
             self.copy_with_replacement(self.input_file_pcm, os.path.join(self.scratch_dir, 'pcmsolver.inp'))
+            if 'PCMSOLVER_PARSE' in os.environ.keys():
+                sys.path.append(os.environ['PCMSOLVER_PARSE'])
+                current = os.getcwd()
+                os.chdir(self.scratch_dir)
+                import pcmsolver
+                pcmsolver.parse_pcm_input('pcmsolver.inp')
+                os.chdir(current)
+            else:
+                print >> sys.stderr,'Cannot find PCMSolver input parsing script'
+                print >> sys.stderr,'Did you export the PCMSOLVER_PARSE environment variable?'
 
         # put files to the scratch directory
         if self.put_files:
@@ -1204,7 +1227,11 @@ Options are also read from ~/.diracrc"""
     def set_dirac_environment(self):
         """export important variables for DIRAC
            TODO: implement for WINDOWS"""
-        self.basdir = self.input_directory + ':' + self.basdir
+        if not is_windows():
+            self.basdir = self.input_directory + ':' + self.basdir
+        else:
+            self.basdir = self.input_directory + ';' + self.basdir
+        
         os.putenv('BASDIR', self.basdir)
 
         dirwrk_amount = str(int(self.max_memory_work_master * 1000000))
@@ -1300,9 +1327,14 @@ Options are also read from ~/.diracrc"""
                 if find_executable(self.debugger) is None:
                     print_error_message('\n no debugger found in the <diracrc> file !')
                     sys.exit(235)
-                # TODO: adapt it for Windows
-                self.dirac_cmd = self.debugger + ' ' + dirac_executable \
+                if not is_windows:                        
+                    self.dirac_cmd = self.debugger + ' ' + dirac_executable \
                     + ' | tee ' + self.output_file_full
+                else:
+                    #non-interactive adaptation for Windows: just run and quit automatically
+				    #because interactive mode has non-standard behaviour in PowerShell
+                    self.dirac_cmd = 'PowerShell -Command \"&{' + self.debugger + ' -ex run -ex quit ' \
+                    + dirac_executable + ' | Tee-Object -FilePath ' + self.output_file_full + '}\"'
             elif self.vg_debug:
                 # valgrind flags read from files ~/.valgrindrc and ./.valgrindrc
                 # -v --error-limit=no --leak-check=full  --show-reachable=yes
@@ -1390,7 +1422,12 @@ Options are also read from ~/.diracrc"""
         if not self.nobackup:
             backup_file(some_file=os.path.join(self.input_directory,self.output_file),upto=None)
 
-        basis_set_directory_list = self.basdir.split(':')
+        # note: : is separator on Linux and ; on Windows
+        if not is_windows():
+            basis_set_directory_list = self.basdir.split(':')
+        else:
+            basis_set_directory_list = self.basdir.split(';')
+            
         if self.verbose:
             print '  Basis set libraries : %s' % basis_set_directory_list[0]
             if len(basis_set_directory_list) > 1:
@@ -1398,6 +1435,7 @@ Options are also read from ~/.diracrc"""
                     if basis_set_directory_list[i] != '.':
                         print '                        %s' \
                             % basis_set_directory_list[i]
+                            
         if not self.debug and not self.vg_debug:
             self.launch_dirac_subprocess()
         elif not self.parallel_run:
@@ -1668,7 +1706,7 @@ Options are also read from ~/.diracrc"""
         print nice informative header after all Dirac run variables are properly setup
         """
         if self.parallel_run:
-            dirac_run = 'parallel ( launcher:'+self.mpirun+')'
+            dirac_run = 'parallel (launcher: ' + self.mpirun + ')'
         else:
             dirac_run = 'serial'
         if self.verbose:

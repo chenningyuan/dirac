@@ -515,13 +515,14 @@
 
                else if ( list%head%varID .eq. entry%varID ) then
                   head      => entry%next
-                  head%prev => NULL()
+                  if ( associated(head) ) head%prev => NULL()
                else if ( list%tail%varID .eq. entry%varID ) then
                   tail      => entry%prev
-                  tail%next => NULL()
+                  if ( associated(tail) ) tail%next => NULL()
                else
                   prev => entry%prev 
                   next => entry%next 
+              ! miro: maybe some check of associated would help ?
                   entry%prev%next => next
                   entry%next%prev => prev
                endif 

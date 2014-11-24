@@ -5,7 +5,7 @@ if(DEVELOPMENT_CODE)
     find_package(Git)
     if(GIT_FOUND)
         execute_process(
-            COMMAND         ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
+            COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
             OUTPUT_VARIABLE GIT_REVISION
             ERROR_QUIET
             )
@@ -19,16 +19,17 @@ if(DEVELOPMENT_CODE)
       #     OUTPUT_VARIABLE GIT_BRANCH
       #     ERROR_QUIET
       #     )
+      
       execute_process(
-          COMMAND ${GIT_EXECUTABLE} branch
-          COMMAND grep "*"
+          COMMAND ${PYTHON_EXECUTABLE} -c "import subprocess; import re; print(re.match(r'\\* .*', subprocess.check_output(['git', 'branch'])).group())"
           OUTPUT_VARIABLE GIT_BRANCH
           ERROR_QUIET
           )
+      
       if(NOT ${GIT_BRANCH} STREQUAL "")
           string(REPLACE "*" " " GIT_BRANCH ${GIT_BRANCH})
           string(STRIP ${GIT_BRANCH} GIT_BRANCH)
-           message("-- GIT_BRANCH            : ${GIT_BRANCH}")
+          message("-- GIT_BRANCH            : ${GIT_BRANCH}")
       endif()
 
       execute_process(

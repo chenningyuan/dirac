@@ -9,12 +9,11 @@ Verify that the tarball installs correctly
 
 Check out the release branch::
 
-  $ git checkout release-13
+  $ git checkout release-14
 
 Create the tarball yourself::
 
   $ ./pamadm --release
-  $ mkdir build
   $ cd build
   $ cmake ..
   $ make release

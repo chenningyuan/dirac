@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2431,8 +2431,8 @@ ckr#endif
      & 'handle symmetry!')
         end if
         if (bss.or.x2c) then
-          call quit('Polarizable Continuum Model calculation not '//
-     & 'working with X2C Hamiltonian!')
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle 2-component Hamiltonians!')
         end if
 ! First finalize
         call pcm_scf_finalize

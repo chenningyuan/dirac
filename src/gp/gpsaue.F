@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4221,3 +4221,17 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck iicopy */
+      SUBROUTINE IICOPY(NDIM,IA,IA1,IASTEP,IB,IBSTEP,IB1)
+C***********************************************************************
+C
+C     WRapper routine allowing use of ICOPY for WORK
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in) :: IA(*),NDIM,IA1,IASTEP,IBSTEP,IB1
+      integer, intent(out):: IB(*)
+      CALL ICOPY(NDIM,IA(IA1),IASTEP,IB(IB1),IBSTEP)
+      RETURN
+      END

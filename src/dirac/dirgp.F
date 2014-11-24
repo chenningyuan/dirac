@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1148,7 +1148,6 @@ C
             DO 10 I=IRNGE1,IRNGE2
               IF (I.EQ.0) GOTO 10
               IC = IC + 1
-C              IF (IC.GT.NLIST) GOTO 930
  10         CONTINUE
           ELSE
             DO 11 I=IRNGE1,IRNGE2
@@ -1960,12 +1959,10 @@ C
 C     Written by T.Saue May 26 2003
 C
 C*****************************************************************************
-         use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER(DM1 = -1.0D0)
 C
 #include "dcbpsi.h"
 #include "dcbgen.h"
@@ -1978,15 +1975,10 @@ C
       LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA
       CHARACTER TEXT*74
       DIMENSION IDIM(3)
-      real(8), allocatable :: CMO1(:)
-      real(8), allocatable :: EIG1(:)
-      integer, allocatable :: IBEIG1(:)
-      real(8), allocatable :: CMO2(:)
-      real(8), allocatable :: EIG2(:)
-      integer, allocatable :: IBEIG2(:)
-      integer, allocatable :: INUC(:)
-      integer, allocatable :: IBUF(:)
-      real(8), allocatable :: CBUF(:)
+      real(8), allocatable :: CSO(:)
+      real(8), allocatable :: EIG(:)
+      integer, allocatable :: IBEIG(:)
+      real(8), allocatable :: CAO(:)
 C
 C     First check if file KRMCSCF or DFCOEF is there
 C
@@ -2000,60 +1992,40 @@ C
         CALL QUIT('ACMOUT: Unformatted file DFCOEF/KRMCSCF not found !')
       ENDIF
 C     Allocate arrays
-      call alloc(CMO1,  N2BBASX*4, id="CMO1 in ACMOUT")
-      call alloc(EIG1,  NORBT,     id="EIG1 in ACMOUT")
-      call alloc(IBEIG1,NORBT,     id="IBEIG1 in ACMOUT")
-      call alloc(CMO2,  N2BBASX*4, id="CMO2 in ACMOUT")
-      call alloc(EIG2,  NORBT,     id="EIG1 in ACMOUT")
-      call alloc(IBEIG2,NORBT,     id="IBEIG2 in ACMOUT")
-      call alloc(IBUF,  NTBAS(0),  id="IBUF in ACMOUT")
+      allocate(CSO(NCMOTQ))
+      allocate(EIG(NORBT))
+      allocate(IBEIG(NORBT))
+      allocate(CAO(N2BBASX*NZC1))
 C
-C     Find correct ordering of nuclei
-C
-      call alloc(INUC,NTBAS(0),id="INUC in ACMOUT")
-      CALL LSQMA1(INUC)
-      I1 = 0
-      I2 = 0
-      DO IC = 1,2
-        DO ICENT = 1,NUCDEP
-          DO IB = 1,NTBAS(IC)
-          IF(INUC(I1+IB).EQ.ICENT) THEN
-            I2 = I2 + 1
-            IBUF(I2) = I1+IB
-          ENDIF
-          ENDDO
-        ENDDO
-        I1 = I1 + NTBAS(IC)
-      ENDDO
-      call dealloc(INUC)
-C
-C     Get coefficients from KRMCSCF/DFCOEF --> stored in CMO1
+C     Get coefficients from KRMCSCF/DFCOEF --> stored in CSO
 C     =======================================================
 C
       IF(TOBEK)THEN
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','ACMOU1')
         REWIND LUKRMC
+C.......CI or MP2 natural orbitals
         MCORB = FNDLAB('MCCINATO',LUKRMC)
         REWIND LUKRMC
+C.......boson/linear symmetry
         MJAVA = FNDLAB('MJVEC   ',LUKRMC)
         IF(MJAVA)THEN
-          CALL IREAKRMC(LUKRMC,'MJVEC   ',IBEIG1,NORBT)
+          CALL IREAKRMC(LUKRMC,'MJVEC   ',IBEIG,NORBT)
         ELSE
-          CALL IZERO(IBEIG1,NORBT)
+          CALL IZERO(IBEIG,NORBT)
         END IF
         IF(.NOT.MCORB)THEN
           JRDMO = -1
-          CALL RREADMO(CMO1,JRDMO,1,LUKRMC)
+          CALL RREADMO(CSO,JRDMO,1,LUKRMC)
 !         ... set to zero
           TOTERG = 0.0D0
-          CALL DZERO(EIG1,NORBT)
+          CALL DZERO(EIG,NORBT)
           IREADMO = 1
         ELSE
 !
 !         read CI/MCSCF natural orbitals and occupancies
           JRDMO = -1
-          CALL RREADMO(CMO1,JRDMO,4,LUKRMC)
-          CALL REAKRMC(LUKRMC,'MCNATOCC',EIG1,NORBT)
+          CALL RREADMO(CSO,JRDMO,4,LUKRMC)
+          CALL REAKRMC(LUKRMC,'MCNATOCC',EIG,NORBT)
 !
 !         temporary fix for use of occupancies in Mulliken population
 !         analysis - set energy to 137.0D0 - SK Feb 2009
@@ -2063,70 +2035,23 @@ C
         CLOSE (LUKRMC,STATUS='KEEP')
       ELSE
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')
-        CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO1,EIG1,IBEIG1,TOTERG,14)
+        CALL REACMO_no_work(LUCOEF,'DFCOEF',CSO,EIG,IBEIG,TOTERG,14)
         CLOSE(LUCOEF,STATUS='KEEP')
         IREADMO = 2
       END IF
-C
-C     Transform to AO-basis --> stored in CMO2
-C     ========================================
-C
-      KC = 1
-      DO IFRP = 1,NFSYM
-      IF(NORB(IFRP).GT.0) THEN
-        IF(NBSYM.EQ.1) THEN
-          CALL CFSORT(CMO2(KC),CMO1(ICMOQ(IFRP)+1),NORB(IFRP),
-     &                IFRP,NFBAS(IFRP,0))
-        ELSE
-          NCBF2 = NFBAS(IFRP,0)*NORB(IFRP)*4
-          call alloc(CBUF,NCBF2)
-          CALL CFSORT(CBUF,CMO1(ICMOQ(IFRP)+1),NORB(IFRP),
-     &                IFRP,NFBAS(IFRP,0))
-          CALL WTSOAO(CBUF,CMO2(KC),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NORB(IFRP)*4,0)
-          call dealloc(CBUF)
-        ENDIF
-        KC = KC + NTBAS(0)*NORB(IFRP)*4
-      ENDIF
-      ENDDO
-C
-C     Get correct row ordering (NBAS) --> stored in CMO1     
-C     ==================================================
-C
-      I1 = 1
-      I2 = 1
-      DO IFRP = 1,NFSYM
-        CALL ACMOU2(CMO1(I1),NORBT,CMO2(I2),NORB(IFRP),
-     &              NTBAS(0),IBUF)
-        I1 = I1 + NTBAS(0)*NORB(IFRP)
-        I2 = I2 + NTBAS(0)*NORB(IFRP)*4
-      ENDDO
-C
-C     In CFSORT the BR matrix is scaled by -1. Scale back
-C     ===================================================
-C
-      I1 = 1 + NTBAS(0)*NORBT*2
-      CALL DSCAL(NTBAS(0)*NORBT,DM1,CMO1(I1),1)
+C.....Transform SO-coefficients to C1
+      CALL C1COEF(CSO,CAO,NORB,0,NORBT,1)
+      deallocate(CSO)
 C
 C     Get correct column ordering
 C     ===========================
 C 
-      CALL IZERO(IBEIG2,NORBT)
-      NDIM = NTBAS(0)*NORBT*4
+      NDIM = NTBAS(0)*NORBT*NZC1
 C     ... only if coefficients are read from DFCOEF
       IF(IREADMO.EQ.2) THEN
 C.......if more than one fermion ircop merge orbital classes
-        IF(NFSYM.EQ.2) THEN
-          CALL ACMOU3(EIG1,CMO1,EIG2,CMO2,NTBAS(0),NORBT,IBUF,IDUM)
-        ELSE
-          CALL DCOPY(NDIM,CMO1,1,CMO2,1)   
-          CALL DCOPY(NORBT,EIG1,1,EIG2,1)
-        ENDIF
-      ELSE
-        CALL DCOPY(NDIM,CMO1,1,CMO2,1)
-        CALL DZERO(EIG2,NORBT)
-        IF(MCORB) CALL DCOPY(NORBT,EIG1,1,EIG2,1)
-        IF(MJAVA) CALL ICOPY(NORBT,IBEIG1,1,IBEIG2,1)
+        CALL IZERO(IBEIG,NORBT)
+        IF(NFSYM.EQ.2) CALL ACMOU3(EIG,CAO,NTBAS(0),NORBT)
       END IF
 C
 C     Write coefficients etc. to file
@@ -2145,9 +2070,9 @@ C
       CALL GTINFO(TEXT(51:74))
       WRITE(LUCOEF) TEXT,1,(IDIM(I),I = 1,3),TOTERG
       NDIM = NTBAS(0)*NORBT*4
-      CALL WRITT(LUCOEF,NDIM,CMO2)
-      CALL WRITT(LUCOEF,NORBT,EIG2)
-      CALL WRITI(LUCOEF,NORBT,IBEIG2)
+      CALL WRITT(LUCOEF,NDIM,CAO)
+      CALL WRITT(LUCOEF,NORBT,EIG)
+      CALL WRITI(LUCOEF,NORBT,IBEIG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -2167,25 +2092,23 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
 C
 C     De-allocate arrays
-      call dealloc(CMO1)
-      call dealloc(EIG1)
-      call dealloc(IBEIG1)
-      call dealloc(CMO2)
-      call dealloc(EIG2)
-      call dealloc(IBEIG2)
-      call dealloc(IBUF)
+      deallocate(EIG)
+      deallocate(IBEIG)
+      deallocate(CAO)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck acmou2 */
-      SUBROUTINE ACMOU2(CMO1,NMO1,CMO2,NMO2,NBAS,IBUF)
+      SUBROUTINE ACMOU2(CMO1,NMO1,CMO2,NMO2,NBAS,IBUF,NZ)
 C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION CMO1(NBAS,NMO1,4),CMO2(NBAS,NMO2,4),IBUF(*)
+      DIMENSION CMO1(NBAS,NMO1,NZ),CMO2(NBAS,NMO2,NZ),IBUF(*)
 C
-      DO IZ = 1,4
+CTROND
+      WRITE(6,*) 'TEST..acmou2 ',NZ
+      DO IZ = 1,NZ
         DO J = 1,NMO2
           DO I = 1,NBAS
             CMO1(I,J,IZ) = CMO2(IBUF(I),J,IZ)
@@ -2197,7 +2120,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck acmou3 */
-      SUBROUTINE ACMOU3(EIG1,CMO1,EIG2,CMO2,NR,NC,IBUF,IOFF)
+      SUBROUTINE ACMOU3(EIG,CMO,NR,NC)
 C***********************************************************************
 C
 C***********************************************************************
@@ -2209,32 +2132,39 @@ C
 #include "dcbdhf.h"
 #include "dgroup.h"
       DIMENSION CMO1(NR,NC,NZC1),CMO2(NR,NC,NZC1),
-     &          EIG1(NC),EIG2(NC),IBUF(*),IOFF(*)     
+     &          EIG1(NC),EIG2(NC),IVEC(2)     
+      real(8), allocatable :: CBUF(:),EBUF(:)
+      NDIM=NR*NC*NZC1
+      allocate(CBUF(NDIM))
+      allocate(EBUF(NC))
+      CALL DCOPY(NDIM,CMO,1,CBUF,1)
+      CALL DCOPY(NC  ,EIG,1,EBUF,1)
 C     Initialize offsets; they will be updated inside ACMOU4
-      IOFF(1) = 0
-      IOFF(2) = NORB(1) 
+      IVEC(1) = 0
+      IVEC(2) = NORB(1) 
       JOFF    = 0
 C.....Negative-energy solutions
-      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NPSH,IOFF,
-     &            JOFF,NFSYM,NR,NC,NZC1,IBUF)
+      CALL ACMOU4(CBUF,EBUF,CMO,EIG,NPSH,IVEC,
+     &            JOFF,NFSYM,NR,NC,NZC1)
 C.....Inactive orbitals      
-      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NISH,IOFF,JOFF,
-     &            NFSYM,NR,NC,NZC1,IBUF)
+      CALL ACMOU4(CBUF,EBUF,CMO,EIG,NISH,IVEC,JOFF,
+     &            NFSYM,NR,NC,NZC1)
 C.....Active orbitals
       DO IOPEN = 1,NOPEN
-        CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NACSH(1,IOPEN),IOFF,JOFF,
-     &              NFSYM,NR,NC,NZC1,IBUF)
+        CALL ACMOU4(CBUF,EBUF,CMO,EIG,NACSH(1,IOPEN),IVEC,JOFF,
+     &              NFSYM,NR,NC,NZC1)
       ENDDO
 C.....Virtual orbitals
-      CALL ACMOU4(CMO1,EIG1,CMO2,EIG2,NSSH,IOFF,JOFF,
-     &            NFSYM,NR,NC,NZC1,IBUF)
+      CALL ACMOU4(CBUF,EBUF,CMO,EIG,NSSH,IVEC,JOFF,
+     &            NFSYM,NR,NC,NZC1)
 C
+      deallocate(CBUF)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck acmou4 */
       SUBROUTINE ACMOU4(CMO1,EIG1,CMO2,EIG2,NVEC,IVEC,JVEC,
-     &                  NFSYM,NBAS,NORB,NZC1,IBUF)
+     &                  NFSYM,NBAS,NORB,NZC1)
 C***********************************************************************
 C
 C     Merge orbital coefficients/energies from different fermion ircops
@@ -2244,11 +2174,11 @@ C     Written by T. Saue in Nha Trang Aug 29 3014
 C
 C***********************************************************************
       implicit none
-      integer, intent(in)   :: NFSYM,NBAS,NORB,NZC1,NVEC(NFSYM)
+      integer, intent(in)   :: NFSYM,NBAS,NORB,NVEC(NFSYM),NZC1
       real(8), intent(in)   :: EIG1(NORB),CMO1(NBAS,NORB,NZC1)
-      integer, intent(inout):: IVEC(NFSYM),IBUF(NORB),JVEC
+      integer, intent(inout):: IVEC(NFSYM),JVEC
       real(8), intent(out)  :: EIG2(NORB),CMO2(NBAS,NORB,NZC1)
-      integer, allocatable  :: IND(:)
+      integer, allocatable  :: IND(:),IBUF(:)
       real(8), allocatable  :: BUF(:)
       integer               :: NVECT,IFRP,I,II,JJ,IZ
 C     Find total number of orbitals in this class
@@ -2258,8 +2188,9 @@ C     Find total number of orbitals in this class
       ENDDO
       IF(NVECT.EQ.0) RETURN
 C     Merge orbital eigenvalues into buffer
-      ALLOCATE(IND(NVECT))
-      ALLOCATE(BUF(NVECT))
+      allocate(IND(NVECT))
+      allocate(IBUF(NVECT))
+      allocate(BUF(NVECT))
       II = 0
       DO IFRP = 1,NFSYM
         DO I = 1,NVEC(IFRP)
@@ -2282,8 +2213,9 @@ C     Merge/Sort on energy
         IVEC(IFRP) = IVEC(IFRP) + NVEC(IFRP)
       ENDDO       
       JVEC = JVEC + NVECT
-      DEALLOCATE(IND)
-      DEALLOCATE(BUF)
+      deallocate(IND)
+      deallocate(IBUF)
+      deallocate(BUF)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2873,6 +2805,7 @@ C     On output:
 C     NSTR(IFRP,0) : total number of vectors
 C     NSTR(IFRP,1) : vectors of positive energy
 C     NSTR(IFRP,2) : vectors of negative energy
+C     KVEC         : starting address for index array of orbital addresses
 C     
 C     Written by T. Saue Sep 1 2006
 C***********************************************************************
@@ -3680,13 +3613,13 @@ C
 C     Written by T. Saue Mar 3 2008
 C
 C***********************************************************************
-      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -3702,8 +3635,9 @@ C
       real(8), allocatable :: EIG2(:)
       integer, allocatable :: IBEIG1(:)
       integer, allocatable :: IBEIG2(:)
-      integer, allocatable :: INUC(:)
       integer, allocatable :: IBUF(:)
+C
+      IPRINT = IPRGEN
 C
 C     First check if file DFACMO is there
 C
@@ -3714,13 +3648,13 @@ C
           CALL QUIT('ACMOIN: Unformatted file DFACMO not found !')
       ENDIF
 C     Allocate arrays
-      call alloc(CMO1,  N2BBASX*4, id="CMO1 in ACMOIN")
-      call alloc(CMO2,  N2BBASX*4, id="CMO2 in ACMOIN")
-      call alloc(EIG1,  NORBT,     id="EIG1 in ACMOIN")
-      call alloc(EIG2,  NORBT,     id="EIG1 in ACMOIN")
-      call alloc(IBEIG1,NORBT,     id="IBEIG1 in ACMOIN")
-      call alloc(IBEIG2,NORBT,     id="IBEIG2 in ACMOIN")
-      call alloc(IBUF,  NTBAS(0)*2,id="IBUF in ACMOIN")
+      allocate(CMO1(N2BBASX*4))
+      allocate(CMO2(N2BBASX*4))
+      allocate(EIG1(NORBT))
+      allocate(EIG2(NORBT))
+      allocate(IBEIG1(NORBT))
+      allocate(IBEIG2(NORBT))
+      allocate(IBUF(NTBAS(0)*2))
 C
 C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
@@ -3734,39 +3668,20 @@ C
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 
-!miro: assign IPRINT from dcbgen.h
-      IPRINT = IPRGEN
-
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
      &    '* ACMOIN : Coefficients read from DFACMO'
           CALL PRQMAT(CMO2,NTBAS(0),NORBT,
      &                NTBAS(0),NORBT,4,IQDEF,LUPRI)
       ENDIF
-C
 C     Find correct ordering of nuclei
+      CALL NUCORD(IBUF)
 C
-      call alloc(INUC,NTBAS(0),id="INUC in ACMOIN")
-      CALL LSQMA1(INUC)
-      I1 = 0
-      I2 = 0
-      DO IC = 1,2
-        DO ICENT = 1,NUCDEP
-          DO IB = 1,NTBAS(IC)
-          IF(INUC(I1+IB).EQ.ICENT) THEN
-            I2 = I2 + 1
-            IBUF(I1+IB) = I2
-          ENDIF
-          ENDDO
-        ENDDO
-        I1 = I1 + NTBAS(IC)
-      ENDDO
-      call dealloc(INUC)
 C
 C     Get correct row ordering (NBAS) --> stored in CMO1     
 C     ==================================================
 C
-      CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF)
+      CALL ACMOU2(CMO1,NORBT,CMO2,NORBT,NTBAS(0),IBUF,4)
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
      &    '* ACMOIN : row-ordered coefficients'
@@ -3823,13 +3738,13 @@ C     now I simply set IBEIG1 to zero.
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     De-allocate arrays
-      call dealloc(CMO1,  id="CMO1 in ACMOIN")
-      call dealloc(CMO2,  id="CMO2 in ACMOIN")
-      call dealloc(EIG1,  id="EIG1 in ACMOIN")
-      call dealloc(EIG2,  id="EIG1 in ACMOIN")
-      call dealloc(IBEIG1,id="IBEIG1 in ACMOIN")
-      call dealloc(IBEIG2,id="IBEIG2 in ACMOIN")
-      call dealloc(IBUF,  id="IBUF in ACMOIN")
+      deallocate(CMO1)
+      deallocate(CMO2)
+      deallocate(EIG1)
+      deallocate(EIG2)
+      deallocate(IBEIG1)
+      deallocate(IBEIG2)
+      deallocate(IBUF)
 C
       RETURN
       END
@@ -4028,6 +3943,7 @@ C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
+C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -4496,7 +4412,133 @@ C
       CALL QEXIT('GETACORD')
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C /* Deck Selcmo */
+      SUBROUTINE SELCMO(ILABDF,IFRP,CMO,IVEC,NVEC,NPVEC,NEVEC,
+     &                  CSEL,LRSEL,LCSEL,NCBAS,
+     &                  IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C     Select coefficients from CMO according to pointer index IVEC
+C       ILABDF = 1: AO-basis
+C       ILABDF = 2: SO-basis
+C     The selected coefficients are stored in CSEL and returned
+C     together with NCBAS which is its row-dimension.
+C
+C     Written by T. Saue May 30 2012
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+      DIMENSION CMO(*),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
+      IF(ILABDF.EQ.1) THEN
+C
+C     Extract/expand coefficients in AO-basis
+C     =======================================
+C
+        CALL SELCMO_AO(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &                 CSEL,LRSEL,LCSEL,NTBAS(0),IFRP,IVEC,
+     &                 NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
+      ELSE
+C
+C     Extract/expand coefficients in SO-basis
+C     =======================================
+C
+        CALL SELCMO_SO(CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
+     &                 CSEL,LRSEL,LCSEL,IFRP,
+     &                 IVEC,NVEC,NPVEC,NEVEC,IPRINT,WORK,KFREE,LFREE)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Selcmo_ao */
+      SUBROUTINE SELCMO_AO(CMO,NBAS1,NORB1,
+     &                     CSEL,LRSEL,LCSEL,NBAS2,IFRP,
+     &                     IVEC,NVEC,NPVEC,NEVEC,
+     &                     IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C     Select coefficients according to IVEC and
+C     extract/expand in AO-basis
+C
+C     Written by T. Saue May 30 2012
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+      DIMENSION CMO(NBAS1,NORB1,NZ),CSEL(LRSEL,LCSEL,4),
+     &          IVEC(NVEC),WORK(*)
+      IF(NVEC.EQ.NORB1) THEN
+C.....All coefficients selected
+        IF(NBSYM.EQ.1) THEN
+C.......C1 case: just copy
+          CALL QEXPAND(CSEL,CMO,NVEC,IFRP,NBAS1)
+        ELSE
+C.......Higher symmetry: Expand to quaternion format and transform to AO
+          NCBF = NBAS1*NVEC*4
+          CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+          CALL QEXPAND(WORK(KCBF),CMO,NVEC,IFRP,NBAS1)
+          CALL WTSOAO(WORK(KCBF),CSEL,IFRP,NBAS1,NBAS2,NVEC*4,IPRINT)
+          CALL MEMREL('SELCMO.AOa',WORK,1,KCBF,KFREE,LFREE)
+        ENDIF
+      ELSEIF(NVEC.LT.NORB1) THEN
+C.....Not all coefficients selected
+        NCBF = NBAS2*NVEC*4
+        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+        LCB = NPVEC+NEVEC
+        IF(NBSYM.EQ.1) THEN
+C.........C1 case: select coefficients and copy
+          CALL SELCFS(CMO,IFRP,WORK(KCBF),
+     &                LCB,IVEC,NPVEC,NEVEC,
+     &                NBAS1,NORB1)
+          CALL QEXPAND(CSEL,WORK(KCBF),NVEC,IFRP,NBAS1)
+        ELSE
+C.........Higher symmetry: select, expand and transform
+          CALL SELCFS(CMO,IFRP,CSEL,LCB,IVEC,NPVEC,NEVEC,
+     &                NBAS1,NORB1)
+          CALL QEXPAND(WORK(KCBF),CSEL,NVEC,IFRP,NBAS1)
+          CALL WTSOAO(WORK(KCBF),CSEL,IFRP,
+     &                NBAS1,NBAS2,NVEC*4,IPRINT)
+        ENDIF
+        CALL MEMREL('SELCMO.AOb',WORK,1,KCBF,KFREE,LFREE)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Selcmo_ao */
+      SUBROUTINE SELCMO_SO(CMO,NBAS,NORB,CSEL,LRSEL,LCSEL,IFRP,
+     &                     IVEC,NVEC,NPVEC,NEVEC,
+     &                     IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Select coefficients according to IVEC and
+C     extract/expand in SO-basis
+C
+C     Written by T. Saue May 30 2012
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+      DIMENSION CMO(NBAS,NORB,NZ),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
+      IF(NVEC.EQ.NORB) THEN
+        CALL QEXPAND(CSEL,CMO,NVEC,IFRP,NBAS)
+      ELSE
+        NCBF  = NBAS*NVEC*NZ
+        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+        LCB = NPVEC+NEVEC
+        CALL SELCFS(CMO,IFRP,WORK(KCBF),LCB,IVEC,NPVEC,NEVEC,
+     &              NBAS,NORB)
+        CALL QEXPAND(CSEL,WORK(KCBF),NVEC,IFRP,NBAS)
+        CALL MEMREL('SELCMO_SO',WORK,1,KCBF,KFREE,LFREE)
+      ENDIF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine resort_mdirac_vmat(tmat,vmat,nrow,ncol,ifsym,
      &                              nboson_orb,nz)
       implicit none
@@ -4543,3 +4585,138 @@ C
         end do
       end do
       end
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Setocc */
+      SUBROUTINE SETOCC(NMOL,OCC,JMOL)
+C***********************************************************************
+C
+C     
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbdhf.h"
+#include "dcborb.h"
+      DIMENSION OCC(NMOL),JMOL(3,NMOL)
+C     Consistency check
+      CALL DZERO(OCC,NMOL)
+C     Negative-energy orbitals have zero occupation
+C     Check positive-energy orbitals
+      DO I = 1,NMOL
+        IF(JMOL(2,I).EQ.1) THEN
+          II    = JMOL(1,I)
+          IFRP  = JMOL(3,I)
+          NVORB = NISH(IFRP)
+          IF(II.LE.NVORB) THEN
+            OCC(I) = DF(0)
+          ELSE
+            DO IOPEN = 1,NOPEN
+              NVORB =  NVORB + NACSH(IFRP,IOPEN)
+              IF(II.LE.NVORB) THEN
+                OCC(I) = DF(IOPEN)
+              ENDIF
+            ENDDO
+          ENDIF
+        ENDIF
+      ENDDO
+C
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck C1coef */
+      SUBROUTINE C1COEF(CSO,CAO,NVEC,IOFF,NTOT,IOPT)
+C***********************************************************************
+C
+C     Transform molecular coefficients CSO to CAO (C1 symmetry)
+C     IOPT = 0 : transform to AO-basis
+C     IOPT = 1 : transform to C1-basis
+C
+C     NOTE: 
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+      DIMENSION CAO(*),CSO(*),NVEC(2)
+      real(8), allocatable :: CBUF(:)
+      integer, allocatable :: IBUF(:)
+      allocate(IBUF(NTBAS(0)))
+      IF(IOPT.EQ.1) THEN
+        CALL NUCORD(IBUF)
+      ELSE
+        DO I = 1,NTBAS(0)
+          IBUF(I) = I
+        ENDDO
+      ENDIF   
+C
+C     Transform to AO-basis --> stored in CAO
+C     ========================================
+C
+C     NBSYM.EQ.1, implies C1 !!! Check how to handle that...
+      ICAO  = 1+IOFF*NTBAS(0)
+      ICSO  = 1
+      DO IFRP = 1,NFSYM
+      IF(NVEC(IFRP).GT.0) THEN
+        NCBF2 = NFBAS(IFRP,0)*NVEC(IFRP)*4
+        allocate(CBUF(NCBF2))
+        CALL QEXPAND(CBUF,CSO(ICSO),NVEC(IFRP),IFRP,NFBAS(IFRP,0))
+        IZOFF = ICAO
+        ISOFF = 1
+        DO IZ = 1,4
+          CALL WTSOAO_mod(CBUF(ISOFF),CAO(IZOFF),IFRP,
+     &                NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
+          IZOFF = IZOFF + NTBAS(0)*NTOT
+          ISOFF = ISOFF + NFBAS(IFRP,0)*NVEC(IFRP)
+        ENDDO
+        deallocate(CBUF)
+        ICAO  = ICAO  + NTBAS(0)*NVEC(IFRP)
+        ICSO  = ICSO  + NFBAS(IFRP,0)*NVEC(IFRP)*NZ
+      ENDIF
+      ENDDO
+      deallocate(IBUF)
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Nucord */
+      SUBROUTINE NUCORD(IBUF)
+C***********************************************************************
+C
+C     Find correct ordering of nuclei.
+C     Written by Trond Saue
+C
+C***********************************************************************C
+#include "implicit.h"
+#include "mxcent.h"
+      DIMENSION IBUF(*)
+      integer, allocatable :: INUC(:)
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "nuclei.h"
+C
+      allocate(INUC(NTBAS(0)))
+      CALL LSQMA1(INUC)
+      I1 = 0
+      I2 = 0
+      DO IC = 1,MC
+        DO ICENT = 1,NUCDEP
+          DO IB = 1,NTBAS(IC)
+          IF(INUC(I1+IB).EQ.ICENT) THEN
+            I2 = I2 + 1
+            IBUF(I1+IB) = I2
+          ENDIF
+          ENDDO
+        ENDDO
+        I1 = I1 + NTBAS(IC)
+      ENDDO
+      deallocate(INUC)
+C
+      RETURN
+      END
+

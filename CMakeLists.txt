@@ -12,10 +12,6 @@ option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                          
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
 option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
-# radovan: these options are not available in DIRAC
-# option(ENABLE_OPENMP          "Enable OpenMP parallelization"                             OFF)
-# option(ENABLE_CUDA            "Enable CUDA GPU acceleration"                              OFF)
-# option(ENABLE_CULA            "Enable CULA GPU acceleration"                              OFF)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
@@ -39,6 +35,11 @@ option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
+
+# python interpreter is required at many places during configuration and build
+# for example build with pcmsolver will fail (merging libraries)
+# someone can specify minimal version if known
+find_package(PythonInterp REQUIRED)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -127,11 +128,18 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
-# workaround for strange problem with cilkrts lib
-# intel does not ship the static version of it
-# and of some reason it gets detected and included in this variable
-# this then breaks static linking
-list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES "cilkrts")
+# Workaround for strange problem with cilkrts lib
+# Intel does not ship the static version of cilkrts
+# and for some reason it gets detected and included in these variables
+# breaking the static linking buildup with Intel compilers
+if (CMAKE_C_IMPLICIT_LINK_LIBRARIES)
+# first check if variable nonempty
+    list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES   "cilkrts")
+endif()
+if (CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
+# first check if variable nonempty
+    list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "cilkrts")
+endif()
 
 if(ENABLE_XCFUN)
     add_subdirectory(src/xcfun)
@@ -141,27 +149,41 @@ else()
 endif()
 
 if(ENABLE_PCMSOLVER)
-    find_package(PythonLibs)
     find_package(ZLIB)
-    if(NOT PYTHONLIBS_FOUND AND NOT ZLIB_FOUND)                              
+    if(NOT ZLIB_FOUND)
         set(ENABLE_PCMSOLVER OFF)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
-        if(NOT PYTHONLIBS_FOUND)
-            message(STATUS "  - install Python development libraries")
-        endif()
         if(NOT ZLIB_FOUND)
-            message(STATUS "  - install Zlib development libraries")
+           IF (ENABLE_STATIC_LINKING) 
+              message(STATUS "  - install static Zlib development libraries")
+           else()
+              message(STATUS "  - install dynamic Zlib development libraries")
+           endif()
         endif()
     else()
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
+        set(PCMSOLVER_TESTS ON)
+        get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
+        
+        # PCMSolver does not know profile
+        if(CMAKE_BUILD_TYPE MATCHES "profile")
+            set(PCM_BUILD_TYPE "release")
+        else()
+            set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+        endif()
+        
         set(ExternalProjectCMakeArgs
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+            -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+            -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+            -DENABLE_CXX11_SUPPORT=OFF
             -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
             -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
             -DEIGEN3_ROOT=${EIGEN3_ROOT}
@@ -170,29 +192,27 @@ if(ENABLE_PCMSOLVER)
             -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-            -DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
-            -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
-            -DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
-            -DENABLE_TESTS=ON
+            -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+            -DENABLE_PYTHON_EMBEDDING=OFF
+            -DENABLE_TESTS=${PCMSOLVER_TESTS}
+            -DZLIB_ROOT=${ZLIB_ROOT}
+            -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
          )
         
-        add_external(pcmsolver "ctest")
+        if(PCMSOLVER_TESTS)
+		add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+        else()
+		add_external(pcmsolver)
+        endif()	
                                                                                           
         set(EXTERNAL_LIBS
-            stdc++
             pcm
             getkw
             ${ZLIB_LIBRARIES}
-            ${PYTHON_LIBRARIES}
             ${EXTERNAL_LIBS})
     endif()
 else()
     message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    # to enable proper linking for pgCC we need the libstdc++ library
-    set(EXTERNAL_LIBS stdc++ ${EXTERNAL_LIBS})
 endif()
 
 file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
@@ -209,8 +229,20 @@ add_custom_target(dirac_interfaces
     ${GENERATED_FILES}
 )
 
-# set definitions
+# set source file properties
+# fix for Windows with 64bit integers on and build type release or profile
+# when using GNU (gfortran) compilers
+# there is one source file for which -O3/-O2 is not good
+if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU") 
+    AND (ENABLE_64BIT_INTEGERS)
+    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile"))) 
+    set_source_files_properties(
+        ${CMAKE_SOURCE_DIR}/src/abacus/hermodules.F90
+        PROPERTIES COMPILE_FLAGS "-O1"
+        )
+endif()
 
+# set definitions
 include(Definitions)
 
 add_definitions(-DPRG_DIRAC)
@@ -315,6 +347,7 @@ foreach(
     if(ENABLE_PCMSOLVER)
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
+
     if(ENABLE_STATIC_LINKING)
         target_link_libraries(${EXECUTABLE} ${NODYNEXPORT})
         if (BLAS_TYPE MATCHES Atlas)
@@ -323,9 +356,16 @@ foreach(
             # this bug is: signal 11 (SIGSEGV):Segmentation fault, function __restore_rt (0x1613DA0),from file sigaction.c
             target_link_libraries(${EXECUTABLE} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
         endif()
+        if (BLAS_TYPE MATCHES MKL AND CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+            # miro: GNU+MKL-static needs extra lib
+            target_link_libraries(${EXECUTABLE} -ldl)
+        endif()
     endif()
 
 endforeach()
+
+#miro: add stdc++ library at the very end to satisfy PGI compilers
+list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
 
 # give a nice message at the end
 include(Motivation)

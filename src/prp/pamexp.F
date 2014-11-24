@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -52,15 +52,17 @@ C     Memory allocation
       CALL MEMGET('LOGI',KEXPST,2*NEXPP   ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
-      CALL MEMGET('REAL',KDMAT ,N2BBASXQ*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT ,N2BBASXQ  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT ,max(N2ORBXQ*2,nasht**2*nz*2,N2BBASXQ*2),
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT ,max(N2ORBXQ,nasht**2*nz,N2BBASXQ),
+     &            WORK,KFREE,LFREE)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
 #endif
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KFIRST),
-     &            WORK,KFREE,LFREE)
+     &            WORK(KFREE),LFREE)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif
@@ -75,7 +77,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1 */
       SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PRPAO,FIRST,
-     &                  WORK,KFREE,LFREE)
+     &                  WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -104,6 +106,7 @@ C
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
       DIMENSION EXPVAL(*),CMO(*),DMAT(N2BBASXQ,*),PRPAO(N2BBASXQ),
      &          EIG(*),WORK(*),NP(2,0:2)
+      integer  :: lwork
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4
       INTEGER   GETIOPEN
@@ -122,7 +125,8 @@ C
 C     Initialize
 C     ==========
 C
-      KFRSAV=KFREE
+#include "memint.h"
+      KFRSAV = KFREE
       CALL DZERO(EXPVAL,NEXPP)
       N2EXP = 2*NEXPP
       CALL LSET(N2EXP,.FALSE.,LEXPST)
