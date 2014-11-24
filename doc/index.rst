@@ -172,9 +172,9 @@ DIRAC Workshop Presentations
 ============================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   tutorials/workshop-slides/index.rst
+   workshop-slides/index.rst
 
 
 Exercises

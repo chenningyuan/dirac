@@ -38,12 +38,6 @@ try:
 except ImportError:
     print('sphinx.ext.mathjax extension not found => math will not be properly rendered')
 
-#miro: conditional adding of the hieroglyph extension for html-slides
-try:
-    extensions.append('hieroglyph')
-except ImportError:
-    print('hieroglyph extension not found => html slides will not be rendered')
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
