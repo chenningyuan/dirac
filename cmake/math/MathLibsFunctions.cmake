@@ -34,6 +34,12 @@ macro(find_math_header _service _header)
         PATH_SUFFIXES ${MATH_INCLUDE_PATH_SUFFIXES}
         NO_DEFAULT_PATH
         )
+    # the following is needed for Atlas' clapack.h
+    # this whole code needs major cleanup soon (2014-10-31)
+    find_path(${_SERVICE}_INCLUDE_DIRS
+        NAMES ${_header}
+        PATH_SUFFIXES ${MATH_INCLUDE_PATH_SUFFIXES}
+        )
     find_path(${_SERVICE}_INCLUDE_DIRS
         NAMES ${_header}
         PATH_SUFFIXES include
@@ -141,14 +147,30 @@ macro(config_math_service _SERVICE)
     set(${_SERVICE}_FOUND FALSE)
     if(ENABLE_AUTO_${_SERVICE})
         if(EXISTS $ENV{MATH_ROOT})
-            if(NOT DEFINED ${_SERVICE}_ROOT})
+            if("${${_SERVICE}_ROOT}" STREQUAL "")
                 set(${_SERVICE}_ROOT $ENV{MATH_ROOT})
+                message("-- ${_SERVICE} will be searched for based on MATH_ROOT=${${_SERVICE}_ROOT} ")
             endif()
         endif()
 
         if(EXISTS $ENV{${_SERVICE}_ROOT})
-            if(NOT DEFINED ${_SERVICE}_ROOT})
+            if("${${_SERVICE}_ROOT}" STREQUAL "")
                 set(${_SERVICE}_ROOT $ENV{${_SERVICE}_ROOT})
+                message("-- ${_SERVICE} will be searched for based on ${_SERVICE}_ROOT=${${_SERVICE}_ROOT}")
+            endif()
+        endif()
+
+        if(EXISTS $ENV{MKL_ROOT})
+            if("${${_SERVICE}_ROOT}" STREQUAL "")
+                set(${_SERVICE}_ROOT $ENV{MKL_ROOT})
+                message("-- ${_SERVICE} will be searched for based on MKL_ROOT=${${_SERVICE}_ROOT}")
+            endif()
+        endif()
+
+        if(EXISTS $ENV{MKLROOT})
+            if("${${_SERVICE}_ROOT}" STREQUAL "")
+                set(${_SERVICE}_ROOT $ENV{MKLROOT})
+                message("-- ${_SERVICE} will be searched for based on MKLROOT=${${_SERVICE}_ROOT}")
             endif()
         endif()
 

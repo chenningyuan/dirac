@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2242,8 +2242,12 @@ C
                    ATVAL = ABS(T1(AI))
                 ENDIF
                 IF (ATVAL.GT.DHOLU) THEN
-                  WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
-                  WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
+                  WRITE(IW,*) '1.IRP,NOcc(IRP),NVirt(IRP)=',
+     &                        IRP,NO(IRP),NV(IRP)
+                  WRITE(IW,*) 'II=',II,' AA=',AA,' AI=',AI
+                  WRITE(IW,*) 'eps_II=',EPS(II),' eps_AA=',EPS(AA)
+                  WRITE(IW,*) 'EPS(II)-EPS(AA)=FAC=',FAC,
+     &          ' ABS(T1(AI)/FAC)=',ATVAL,' DHOLU=',DHOLU
                   CALL QUIT ('Zero or negative HOMO-LUMO gap')
                 ELSE
                   IF (CARITH) THEN
@@ -2300,8 +2304,11 @@ C                 Check for small denominators, see comment above.
                         ATVAL = ABS(T2(ABIJ))
                      ENDIF
                      IF (ATVAL.GT.DHOLU) THEN
-             WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
-             WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
+                       WRITE(IW,*) 'II,JJ,AA,BB=',II,JJ,AA,BB
+                       WRITE(IW,*) 'eps_II=',EPS(II),'eps_JJ=',EPS(JJ),
+     &                             'eps_AA=',EPS(AA),'eps_BB=',EPS(BB)
+                       WRITE(IW,*) 'eII+eJJ-eAA-eBB=',FAC,' ATVAL=',
+     &                 ATVAL,' DHOLU=',DHOLU
                         CALL QUIT ('Zero or negative HOMO-LUMO gap')
                      ELSE
                        IF (CARITH) THEN

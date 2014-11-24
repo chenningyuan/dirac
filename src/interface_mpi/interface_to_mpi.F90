@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -142,6 +142,7 @@ module interface_to_mpi
     module procedure interface_mpi_recv_i0
     module procedure interface_mpi_recv_i0_stat
     module procedure interface_mpi_recv_i1
+    module procedure interface_mpi_recv_i1_stat
     module procedure interface_mpi_recv_r0
     module procedure interface_mpi_recv_r1
     module procedure interface_mpi_recv_r1_stat
@@ -1048,6 +1049,40 @@ contains
     call mpi_recv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
 #else
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
+!-------------------------------------------------------------------------------
+    call mpi_recv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , status_array   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+  subroutine interface_mpi_recv_i1_stat(x,ndim,sender,message_id,communicator,status_array)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x(:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: sender
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: sender_i4
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
+    integer(kind=4)            :: ierr_i4, i
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    message_id_i4   = message_id
+    sender_i4       = sender
+    communicator_i4 = communicator
+    call mpi_recv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
+    do i = 1, MPI_STATUS_SIZE
+      status_array(i) = status_array_i4(i)
+    end do
+#else
 !-------------------------------------------------------------------------------
     call mpi_recv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif

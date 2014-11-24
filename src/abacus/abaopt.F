@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2321,9 +2321,9 @@ C
       use dft_cfg
       use num_grid_gen
 
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER      
       use pcm_scf
-#endif
+#endif      
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2423,7 +2423,7 @@ ckr#endif
          call reset_num_grid()
       end if
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
 ! Quit if symmetry or X2C are requested.
         if (nbsym > 1) then
@@ -2431,15 +2431,15 @@ ckr#endif
      & 'handle symmetry!')
         end if
         if (bss.or.x2c) then
-          call quit('Polarizable Continuum Model calculation not '//
-     & 'working with X2C Hamiltonian!')
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle 2-component Hamiltonians!')
         end if
 ! First finalize
         call pcm_scf_finalize
         call pcm_scf_initialize(lupri)
         write(lupri, '(//A/)'), 'PCMSolver correctly re-initialized.'
       end if
-#endif
+#endif      
 
 C
 C     Geometry optimization for Dirac
@@ -2456,12 +2456,13 @@ C
             ENERGY = EMP2+DHFERG
          ELSE IF (dirac_cfg_scf_calculation) THEN
             ENERGY = DHFERG
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER            
 ! If optimizing with PCM then the energy must include the
-! polarization contribution
+! polarization contribution, which is added to dhferg inside
+! the SCF routines.            
          else if (dirac_cfg_pcm) then
             energy = dhferg
-#endif
+#endif            
          ELSE
             call quit('no wave function...')
          END IF

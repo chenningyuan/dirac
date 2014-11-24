@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -185,7 +185,7 @@ C
 C
          LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
 C        max(4,nesrp): make sure sufficient space for ESRPHASE
-         CALL MEMGET('REAL',KESR,LENESR,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','ESR',KESR,LENESR,WORK,KFREE,LFREE)
          CALL PRPESR(WF,WORK(KESR),WORK,KFREE,LFREE)
          CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
 C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
@@ -262,14 +262,10 @@ C*******************************************************************************
 C*****  OUTPUT of density, derivatives of density, and coulomb potential on a grid ****
 C**************************************************************************************
 C
-C JHS 17 apr 2008
-C
 #ifdef MOD_UNRELEASED
       if (dirac_cfg_fde_export) then
-#ifdef MOD_XML
-         CALL TITLER('Output FDE data to XML file','*',118)
+         CALL TITLER('Output FDE data to file','*',118)
          call fde_export_to_file(wf)
-#endif
       END IF
 #endif
 
@@ -2176,7 +2172,8 @@ C
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A12)') '@  ',
      &              'average', average(ifreq)*DFAC, 'angstrom**3'
-        WRITE(LUPRI,'(A)') '@'
+        WRITE(LUPRI,'(A3,A11,F9.3,A17)') '@  ',
+     &              'anisotropy', anisotropy*DFAC, 'angstrom**3'
         WRITE(LUPRI,*)
 C
         IF(.NOT.(IFREQ.EQ.NBFREQ)) THEN
@@ -3180,6 +3177,7 @@ CTROND  Insert dimensions !!
         ENDDO
         CALL PRSYMB(LUPRI,'-',100,0)
 !radovan: print out reduced SSCC in SI units
+        FACTOR = AUTOHZ/3.85000804D-1
         CALL AROUND('Final reduced spin-spin-couplings K (SI)')
         WRITE(LUPRI,'(2A15,5(2X,A12))')
      &  'At1  #  iso  : ','At2  #  iso  : ',
@@ -3202,7 +3200,6 @@ CTROND  Insert dimensions !!
                 J3END = JISO
               ENDIF
               DO J3 = 1,J3END
-                FACTOR = AUTOHZ/3.85000804D-1
                 WRITE(LUPRI,'(2(A6,I5,2X,A1,1X),5(2X,F12.4))')
      &                NAMDEP(IATOM1),I3,':',NAMDEP(IATOM2),J3,':',
      &                FACTOR*SPNPAR(1,IATIJ),

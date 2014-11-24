@@ -7,11 +7,11 @@ Release preparation
 Feature freeze
 --------------
 
-Two months before the release (example: DIRAC13), a release branch (example:
-release-13) is created from master. This is a feature freeze and from this
+Two months before the release (example: DIRAC14), a release branch (example:
+release-14) is created from master. This is a feature freeze and from this
 moment on the release branch ideally only receives cosmetics and bugfixes, no
 major new features, no merges from master or other branches (except
-cherry-picks; more about it later).  You as developer are responsible to commit
+cherry-picks; more about it later). You as developer are responsible to commit
 or merge the to-be-released code to master, before the release branch is
 created.
 
@@ -24,12 +24,12 @@ this reason we will never merge from master to the release branch, only from
 the release branch to master.
 
 
-How to check out the release branch (example release-13 for DIRAC13)
+How to check out the release branch (example release-14 for DIRAC14)
 --------------------------------------------------------------------
 
 Check out the release branch::
 
-  $ git checkout release-13
+  $ git checkout release-14
 
 Now you have it next to master (verify this)::
 
@@ -41,28 +41,25 @@ You can switch back to master::
 
 And then switch back to the release branch::
 
-  $ git checkout release-13
+  $ git checkout release-14
 
 
 How to commit changes and bugfixes that are relevant for the released code
 --------------------------------------------------------------------------
 
-Commit all such changes to the release branch, not to master.  This way also no
-commit or bugfix will get lost.  Please do *not* transfer commits from the
-release branch to master manually.  This is not only unnecessary work but it is
+Commit all such changes to the release branch, not to master. This way no
+commit or bugfix will get lost. Please do *not* transfer commits from the
+release branch to master manually. This is not only unnecessary work but it is
 harmful (conflicts)!
 Again, do not commit to master, commit to the release branch::
 
-  $ git checkout release-13
-  $ git pull                      # update the local release-13 branch
+  $ git checkout release-14
+  $ git pull                      # update the local release-14 branch
   $ git commit                    # commit your modifications
-  $ git push                      # push your changes to release-13 branch
+  $ git push                      # push your changes to release-14 branch
   $ git checkout master           # switch to the master branch
-  $ git merge --no-ff release-13  # merge changes to master, fix conflicts if any
+  $ git merge --no-ff release-14  # merge changes to master, fix conflicts if any
   $ git push                      # push your changes to master 
-
-If you have no time, you don't have to merge to master yourself, you can wait
-until somebody else does it for his/her commits. No commit can get lost this way.
 
 Note that by merging your changes to master you might get conflicts. Git points
 them out clearly. In such cases open conflicting file(s) and fix discrepancies 
@@ -72,7 +69,7 @@ What if you accidentally committed something to master which belongs to
 the release? In this case do *not* merge master to the release branch, but
 rather cherry-pick the individual commit(s) to the release branch::
 
-  $ git checkout release-13
+  $ git checkout release-14
   $ git cherry-pick [hash]        # with [hash] that corresponds
                                   # to the commit
 
@@ -139,12 +136,12 @@ release code of others without asking.
 
 1. Verify copyright headers.
 2. Verify logo (list of authors).
-3. Bump the version.
+3. Bump the version (the version number is kept in file VERSION; but also git grep -i for "orphaned" version
+numbers in the source code).
 
 As a final step create the tarball::
 
   $ ./pamadm --release
-  $ mkdir build
   $ cd build
   $ cmake ..
   $ make release

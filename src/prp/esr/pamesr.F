@@ -1,6 +1,6 @@
 #define notESR_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -989,7 +989,7 @@ C       ... here PHASE is new phase of vector J-1
         PHASE_J_R  = PHASE_J_R / PHASE_J_NORM
         PHASE_J_I  = PHASE_J_I / PHASE_J_NORM
            Seff_M = (JM1 - 1) - Seff
-           CPLUS = SQRT( SEFF*(SEFF+1.0D0)-Seff_M*(Seff_M+1.0D0) ) * 0.5D0
+           CPLUS = SQRT( SEFF*(SEFF+1.0D0)-Seff_M*(Seff_M+1.0D0) ) / 2
            write(lupri,*) 'CPLUS / 2 ', CPLUS
            WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10,A,2F15.10)')
      &     " J,JM1,<J|S_x|JM1'> :",J,JM1,PHASE_J_R,' + i',PHASE_J_I,
@@ -2040,3 +2040,4 @@ C
 C     END IF
       RETURN
       END
+!  -- end of pamesr.F --

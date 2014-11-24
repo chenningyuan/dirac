@@ -20,6 +20,7 @@ f.add(from_string  = '   Total energy',
       num_lines    = 1,
       rel_tolerance    = 1.0e-10)
 
-test.run(['nonrel.inp', 'levy.inp', 'dc.inp', 'dc-skipss.inp', 'dc-lda.inp', 'levy-lda.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp')
+test.run(['nonrel.inp'], ['CH4.mol'], f)
+test.run(['levy.inp', 'dc.inp', 'dc-skipss.inp', 'dc-lda.inp', 'levy-lda.inp', 'spinfree.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp')
 
 sys.exit(test.return_code)

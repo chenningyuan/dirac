@@ -114,15 +114,25 @@ Tutorials and walkthrus
 
 * **Analysis:**
   :doc:`Projection analysis <tutorials/analysis/projection_analysis>`
+
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
-  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>`
+  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
+  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
+
+* **Case studies:**
+  :doc:`W atom <tutorials/case_studies/W>` |
+  :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
+  :doc:`MnO6 system <tutorials/case_studies/MnO6>`  |
+  :doc:`UF6(-) anion <tutorials/case_studies/UF6_anion/UF6_anion>`  |
+  :doc:`UO6(-6) anion <tutorials/case_studies/UO6_6minus/UO6_6minus>`  |
+  :doc:`LuF3 system <tutorials/case_studies/LuF3/LuF3>`  
 
 * **ADC:**
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
@@ -134,6 +144,13 @@ Tutorials and walkthrus
 
 * **DMRG interface:**
   :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
+
+* **Polarizable continuum model:**
+  :doc:`Basics <tutorials/pcm/pcm_basics>` |
+  :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
+  :doc:`A geometry optimization in solution <tutorials/pcm/pcm_numgra>` |
+  :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>` |
+  :doc:`Calculation of polarizabilities in solution: finite field approach <tutorials/pcm/pcm_ff>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
@@ -184,12 +201,16 @@ Developers
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
 
+* **Moving code between machines:**
+  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
+
 * **Notes:**
   :doc:`DFCOEF <programmers/dfcoef>` |
   :doc:`Screening <programmers/screening>` |
   :doc:`64bit integers <programmers/int8>` |
   :doc:`XML <programmers/xml>` |
   :doc:`Static linking <programmers/static_linking>` |
+  :doc:`Problems with lapack's DSYEVR <programmers/diag>` |
   :doc:`How this documentation works <programmers/documentation_howto>`
 
 
@@ -197,3 +218,6 @@ Bibliography
 ============
 
 * :doc:`References <references>`
+
+
+Documentation generated on |today|.

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -64,6 +64,7 @@ IF( IPAREX .gt. 0 )THEN
 
 ! get rank
   call interface_mpi_comm_rank(global_communicator, MYTID)
+
 ! determine size of mpi_comm_world
   call interface_mpi_comm_size(global_communicator, NUMPROC)
 

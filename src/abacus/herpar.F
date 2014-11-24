@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -222,7 +222,6 @@ C---------------------------------------
 C     Send initialization data to nodes.
 C---------------------------------------
 C
- 10   CONTINUE
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
      &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
@@ -1065,8 +1064,6 @@ C
 C
       PARHER = .TRUE.
 C
-      FINISH = .FALSE.
-C
       CALL DZERO(DINTSKP,3*3*14)
 C
  100  CONTINUE
@@ -1230,6 +1227,7 @@ C
 #if defined (VAR_MPI)
 
       CAll interface_mpi_BCAST(NMLINE,1,MPARID,global_communicator)
+      FINISH = .FALSE.
       IF (NMLINE .LT. 0) THEN
          FINISH = .TRUE.
          RETURN

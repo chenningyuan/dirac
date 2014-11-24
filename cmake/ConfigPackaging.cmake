@@ -50,9 +50,9 @@ install(
     WORLD_READ
     )
 
-if(ENABLE_PCMMOD)
+if(ENABLE_PCMSOLVER)
    install( # Install PCMSolver input parsing script
-       FILES ${PROJECT_BINARY_DIR}/external/pcmsolver-build/pcmsolver
+       FILES ${PROJECT_BINARY_DIR}/external/bin/pcmsolver.py
        DESTINATION bin
        PERMISSIONS
        OWNER_READ OWNER_WRITE OWNER_EXECUTE
@@ -92,8 +92,8 @@ set(CPACK_PACKAGE_VENDOR "R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher, a
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doc/installation/general.rst")
 set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set(CPACK_PACKAGE_FILE_NAME        "DIRAC-${DIRAC_VERSION}")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-${DIRAC_VERSION}-Source")
+set(CPACK_PACKAGE_FILE_NAME        "DIRAC")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-Source")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY
     "DIRAC ${DIRAC_VERSION}"
     )
@@ -108,6 +108,7 @@ include(IncludeFiles)
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_custom_target(release
+        COMMAND ${CMAKE_SOURCE_DIR}/maintenance/fetch_external_sources ${CMAKE_SOURCE_DIR}
         COMMAND mkdir -p ${EXPORT_DIR}
         COMMAND tar cf ${EXPORT_DIR}/sources.tar -C ${CMAKE_SOURCE_DIR} ${DIRAC_SOURCES} ${INCLUDE_FILES}
         COMMAND tar xf ${EXPORT_DIR}/sources.tar -C ${EXPORT_DIR}
@@ -126,6 +127,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${CMAKE_SOURCE_DIR}/CTestConfig.cmake            ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/atomic-start-x2c-pam         ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/cmake                        ${EXPORT_DIR}
+        COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external                     ${EXPORT_DIR}
         COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
         COMMAND cp -rL ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}

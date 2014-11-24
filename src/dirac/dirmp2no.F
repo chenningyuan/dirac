@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -531,6 +531,7 @@ C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
       use moltra_labeling
+      use relcc_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -920,7 +921,8 @@ C     ----------------------------------------------------------
       IF( SKIP_ITRAFO ) GOTO 20
 
       IF (.NOT.NO2IND)
-     &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+     &   CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
+     &               KQ,KQC,KE,KIBE)
 C
       CALL FLSHFO(LUPRI)
 C
@@ -965,29 +967,17 @@ C
 C     Transformation finished - start MP2 density run
 C     -----------------------------------------------
 C
-C     prepare and write RELCCSD MP2-NO input
+C     tell RELCC to get the density matrix
 C
-      LMP2_DEN_INP = 99
-      MP2NOFN      = 'MP2_NO.INP.0'
-      MP2NOFN_L    = 12
-      INFO_STRING(1) =
-     &'&RELCCSD TIMING=T, DOSORT=T, DOENER=T, DOFOPR=T, DOSOPR=F &END'
-      INFO_STRING(2) =
-     &'&CCENER DOMP2=T, DOCCSD=F, DOCCSDT=F  &END                    '
-      INFO_STRING(3) =
-!    &'&CCFOPR           NOZG=T, DONATORB=T DOMP2GOLD=T &END         '
-     &'&CCFOPR DOMP2G=T, NOZG=T, DONATORB=T             &END         '
-
-      OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
-     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
-      REWIND(LMP2_DEN_INP)
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(1) 
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2) 
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3) 
+      relcc_do_energy = .true.
+      relcc_do_ccsd   = .false.
+      relcc_do_ccsd_t = .false.
+      relcc_do_gradient = .true.
+      relcc_do_mp2gradient = .true.
+      relcc_do_unrelaxed = .true.
+      relcc_do_naturalorbitals = .true.
 C
       CALL PAMCCM()
-C
-      CLOSE(LMP2_DEN_INP,STATUS='KEEP')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

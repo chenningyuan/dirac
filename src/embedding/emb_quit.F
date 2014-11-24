@@ -1,6 +1,6 @@
       SUBROUTINE fde_quit(text)
          character(len=60) :: text
-         write (*,*) text
+         write (*,'(a60)') text
          stop 
       END
 

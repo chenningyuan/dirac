@@ -1,6 +1,6 @@
 
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -124,6 +124,12 @@ module fde_input_dirac
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
                doprp = .true.
+
+            CASE ('.WRFRMT')
+               read(lucmd,*) etmp%ex_format
+
+            CASE ('.RDFRMT')
+               read(lucmd,*) itmp%im_format
 
             CASE ('.EXONLY')
                read(lucmd,*) ftmp%export%name

@@ -36,3 +36,35 @@ Compiles but untested on the following environments
 * SGI Altix ICE 8200, Intel 11.1
 * Cray XE6, Intel 12.1.5
 * IBM AIX, XL Fortran V13.1, XL C V11.1, g++, builtin math
+
+Additional dependencies due to PCMSolver
+----------------------------------------
+
+It is optionally possible to enable the polarizable continuum model functionality. 
+The functionality is provided using the external module 
+`PCMSolver <http://pcmsolver.github.io/pcmsolver-doc/>`_. The module requires additional 
+dependencies:
+
+* the zlib compression library, version 1.2 or higher;
+* the Boost set of libraries, version 1.54 or higher.
+
+The module performs checks on the system to find an installation of Boost that has
+the suitable version. The search is directed towards conventional system directories.
+If the search fails, the module will build a copy of Boost on the spot.
+If your system has Boost installed in a nonstandard location, e.g. /boost/location, you have to direct the
+search by adding the following flags to the ``setup`` script::
+
+  $ ./setup -DBOOST_INCLUDEDIR=/boost/location/include -DBOOST_LIBRARYDIR=/boost/location/lib
+
+By default, compilation of the module is enabled. CMake will check that the additional
+dependencies are met. In case they are not, compilation of PCMSolver will be disabled.
+CMake will print out which dependencies were not satisfied.
+Passing the option ``-DENABLE_PCMSOLVER=OFF`` to the ``setup`` script will disable compilation
+of the module and skip detection of additional dependencies.
+
+As a final step, you will need to export the ``PCMSOLVER_PARSE`` environment variable.
+This variable points to the location of the module own input parsing script::
+ 
+  $ export PCMSOLVER_PARSE=$DIRAC_EXE_DIR/external/bin
+
+where ``DIRAC_EXE_DIR`` points to the directory where the DIRAC executable was built.
