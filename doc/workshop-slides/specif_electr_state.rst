@@ -6,9 +6,14 @@
  Specifying electronic states with single determinant
 =====================================================
 
-Hartree-Fock SCF in DIRAC
-=========================
+Hartree-Fock SCF in DIRAC : Hamiltonians
+========================================
 
 * set one-component, two-component or four-component Hamiltonian
+* either use the automatic occupation of set the electronic occupation manually
+
+Hartree-Fock SCF in DIRAC : Electronic occupation
+==================================================
+
 * either use the automatic occupation of set the electronic occupation manually
 
