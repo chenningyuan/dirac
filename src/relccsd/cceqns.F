@@ -3159,21 +3159,3 @@ C-------------------------------
 C
       RETURN
       END
-
-
-      SUBROUTINE CHECK_FOR_NAN(var,routine)
-#ifdef VAR_IFORT
-         USE, INTRINSIC :: IEEE_ARITHMETIC
-#endif
-         character*6 routine
-         real*8 var
-         
-#ifdef VAR_IFORT
-         if (IEEE_IS_NAN(var)) then
-#else
-         if (ISNAN(var)) then
-#endif
-            call quit("catastrophic failure at"//routine(1:6))
-         endif
-
-      end
