@@ -13,21 +13,21 @@ s.append(['64-bit integers', r'@ENABLE_64BIT_INTEGERS@' ])
 s.append(['MPI'            , r'@ENABLE_MPI@'            ])
 
 s.append(['Fortran compiler'        , r'@CMAKE_Fortran_COMPILER@'  ])
-s.append(['Fortran compiler version', r'@FORTRAN_COMPILER_VERSION@'])
+s.append(['Fortran compiler version', r'@CMAKE_Fortran_COMPILER_ID@ @PYTHON_Fortran_VERSION@'])
 if '@CMAKE_BUILD_TYPE@' == 'Debug':
     s.append(['Fortran flags', r'@CMAKE_Fortran_FLAGS@ @CMAKE_Fortran_FLAGS_DEBUG@'])
 elif '@CMAKE_BUILD_TYPE@' == 'Release':
     s.append(['Fortran flags', r'@CMAKE_Fortran_FLAGS@ @CMAKE_Fortran_FLAGS_RELEASE@'])
 
 s.append(['C compiler'        , r'@CMAKE_C_COMPILER@'  ])
-s.append(['C compiler version', r'@C_COMPILER_VERSION@'])
+s.append(['C compiler version', r'@CMAKE_C_COMPILER_ID@ @PYTHON_C_VERSION@'])
 if '@CMAKE_BUILD_TYPE@' == 'Debug':
     s.append(['C flags', r'@CMAKE_C_FLAGS@ @CMAKE_C_FLAGS_DEBUG@'])
 elif '@CMAKE_BUILD_TYPE@' == 'Release':
     s.append(['C flags', r'@CMAKE_C_FLAGS@ @CMAKE_C_FLAGS_RELEASE@'])
 
 s.append(['C++ compiler'        , r'@CMAKE_CXX_COMPILER@'  ])
-s.append(['C++ compiler version', r'@CXX_COMPILER_VERSION@'])
+s.append(['C++ compiler version', r'@CMAKE_CXX_COMPILER_ID@ @PYTHON_CXX_VERSION@'])
 if '@CMAKE_BUILD_TYPE@' == 'Debug':
     s.append(['C++ flags', r'@CMAKE_CXX_FLAGS@ @CMAKE_CXX_FLAGS_DEBUG@'])
 elif '@CMAKE_BUILD_TYPE@' == 'Release':
