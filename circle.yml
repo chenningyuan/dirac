@@ -8,17 +8,12 @@ checkout:
     - git submodule sync
     - git submodule update --init
 
-test:
-  override:
-    - python ./pamadm -a --builddir=build_circleci
-    - python ./setup --type=debug --int64 build_circleci
-  override:
-    - pwd: build_circleci
-  override:
-    - cd build_circleci
-    - pwd
-    - ctest -D NightlyUpdate
-    - ctest -D NightlyConfigure
-    - ctest -D NightlyBuild
-    - ctest -D NightlyTest -R cosci_energy
-    - ctest -D NightlyUpdate
+test: 
+  override: 
+    - python ./pamadm -a --builddir=build_circleci 
+    - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
+    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_circleci }
+    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_circleci }
+    - ctest --track Miro  -D ExperimentalBuild: { pwd: build_circleci }
+    - ctest --track Miro  -D ExperimentalTest -R cosci_energy: { pwd: build_circleci }
+    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_circleci }
