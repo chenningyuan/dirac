@@ -1837,9 +1837,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DIISX (NDIMT1,NDIMT2,T1O,T1N,T2O,T2N,IT,
      &                  CC,BB,ITC,BB2,RMS)
-C    
-      USE, INTRINSIC :: IEEE_ARITHMETIC
-C    
       IMPLICIT INTEGER (A-Z)
 C     
 C---------------Description--------------------------------------------
@@ -1951,7 +1948,7 @@ C
       ENDIF
 C
       RMS = SQRT(ABS(SUM2-RMS))
-      if (IEEE_IS_NAN(RMS)) call quit("catastrophic failure at DIISX")
+      call check_for_nan(RMS,'DIISX ')
 C
       SECT1 = (ITC-1)*(NST1+NST2) + 1
       SECT2 = SECT1 + NST1
@@ -3162,3 +3159,21 @@ C-------------------------------
 C
       RETURN
       END
+
+
+      SUBROUTINE CHECK_FOR_NAN(var,routine)
+#ifdef VAR_IFORT
+         USE, INTRINSIC :: IEEE_ARITHMETIC
+#endif
+         character*6 routine
+         real*8 var
+         
+#ifdef VAR_IFORT
+         if (IEEE_IS_NAN(var)) then
+#else
+         if (ISNAN(var)) then
+#endif
+            call quit("catastrophic failure at"//routine(1:6))
+         endif
+
+      end

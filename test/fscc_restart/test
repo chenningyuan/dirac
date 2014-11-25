@@ -21,14 +21,13 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = 'Relative real eigenvalues in other units;',
       rel_tolerance = 1.0e-5)
 
-inputs = ['fsccsd_restart_s00.inp', 'fsccsd_restart_s00.inp', 
-          'fsccsd_restart_s01.inp', 'fsccsd_restart_s01.inp', 
-          'fsccsd_restart_s10.inp', 'fsccsd_restart_s10.inp', 
-          'fsccsd_restart_s11.inp', 'fsccsd_restart_s11.inp', 
-          'fsccsd_restart_s02.inp', 'fsccsd_restart_s02.inp', 
-          'fsccsd_restart_s20.inp', 'fsccsd_restart_s20.inp']
+inputs = ['fsccsd_restart_s00_a.inp', 'fsccsd_restart_s00_b.inp', 
+          'fsccsd_restart_s01_a.inp', 'fsccsd_restart_s01_b.inp', 
+          'fsccsd_restart_s10_a.inp', 'fsccsd_restart_s10_b.inp', 
+          'fsccsd_restart_s11_a.inp', 'fsccsd_restart_s11_b.inp', 
+          'fsccsd_restart_s02_a.inp', 'fsccsd_restart_s02_b.inp', 
+          'fsccsd_restart_s20_a.inp', 'fsccsd_restart_s20_b.inp']
 test.run(inputs, ['Mg.mol'], f, args='--mw=110 --keep_scratch --scratchful=$DIRAC_TMPDIR/fscc_restart')
-#test.run(inputs, ['Mg.mol'], f, args='--mw=110 --keep_scratch')
 
 os.unlink('DFCOEF')
 
