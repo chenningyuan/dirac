@@ -1512,7 +1512,11 @@ C
 C
 C     NMR shielding
 C
+#ifdef MOD_LAO_REARRANGED
+      IF(SHIELD.or.shielding_rearrange) THEN
+#else
       IF(SHIELD) THEN
+#endif
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
