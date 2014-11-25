@@ -387,8 +387,13 @@ include(ConfigPackaging)
 
 # give information about system, compiler flags, and size of static allocations ...
 set(STATIC_MEM_INFO_BINARIES dirac)
-# configuration time
-string(TIMESTAMP CONFIGURATION_TIME "%Y-%m-%d %H:%M:%S" UTC)
+# configuration time in UTC
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.utcnow())"
+    OUTPUT_VARIABLE CONFIGURATION_TIME
+)
+# delete \n added by Python print()
+string(STRIP ${CONFIGURATION_TIME} CONFIGURATION_TIME)
 # list with compiler definitions
 get_directory_property(_list_of_definitions DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
 include(BinaryInfo) # giving information - must be called after everything is set
