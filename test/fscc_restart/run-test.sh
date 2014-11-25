@@ -12,8 +12,9 @@ $my_bindir/pam --keep_scratch --scratchfull=$my_scratchdir --mol Mg.mol --inp  f
 # now do the sectors
 for sector in '00' '10' '01' '11' '20' '02'; do
 
-   inpname="fsccsd_restart_s"$sector".inp"
+   inpname="fsccsd_restart_s"$sector"_a.inp"
    $my_bindir/pam --keep_scratch --scratchfull=$my_scratchdir --mol Mg.mol --inp  $inpname --mpi=$my_nproc
+   inpname="fsccsd_restart_s"$sector"_b.inp"
    $my_bindir/pam --keep_scratch --scratchfull=$my_scratchdir --mol Mg.mol --inp  $inpname --mpi=$my_nproc
 done
 
