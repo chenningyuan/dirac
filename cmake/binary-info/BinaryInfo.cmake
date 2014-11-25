@@ -18,7 +18,7 @@ configure_file(
     ${CMAKE_SOURCE_DIR}/cmake/binary-info/binary_info.py.in
     ${CMAKE_BINARY_DIR}/binary_info.py
     )
-
+    
 add_custom_target(
     generate_binary_info
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_BINARY_DIR}/binary_info.py > ${CMAKE_BINARY_DIR}/binary_info.F90
