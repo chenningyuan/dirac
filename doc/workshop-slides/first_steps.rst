@@ -11,8 +11,10 @@ DIRAC Workshop on Relativistic Quantum Chemistry
 Hartree-Fock SCF in DIRAC : Hamiltonians
 ========================================
 
-* set one-component, two-component or four-component Hamiltonian
-* either use the automatic occupation of set the electronic occupation manually
+* specify one-component, two-component (X2C) or four-component Hamiltonian
+* decide whether neglect spin-orbital effects 
+* if X2C, you can neglect the AMFI 2-electron correction
+* in the case of 4-comp. Hamiltonian specify integral classes
 
 Hartree-Fock SCF in DIRAC : Electronic occupation
 ==================================================

@@ -9,14 +9,6 @@ Relativistic Quantum Chemistry with DIRAC
  Introduction to DIRAC tutorials
 ================================
 
-Why DIRAC software
-==================
-
-* suitable tool for demonstrating relativity on manifold chemical properties
-* offering extensive set of explanatory web-tutorials
-* continuosly developing the code and updating the manual/tutorials
-* active discussion group for users
-
 Goals of the workshop
 =====================
 
@@ -24,3 +16,11 @@ Goals of the workshop
 * main focus on practical examples with DIRAC
 * performing several quick tutorial calculations
 * analysing and discussing obtained results
+
+Why the DIRAC software
+======================
+
+* can demonstrate relativistic effects on manifold of properties
+* offering extensive set of explanatory web-tutorials
+* continuosly developing the code and updating the manual/tutorials
+* active discussion group for users
