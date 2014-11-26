@@ -267,9 +267,16 @@ texinfo_documents = [
 
 # -- Hieroglyph Slide Configuration ------------
 
-extensions += [
-    'hieroglyph',
-]
+#extensions += [
+#    'hieroglyph',
+#]
+
+try:
+    import sphinx.ext.hieroglyph
+    extensions.append('sphinx.ext.hieroglyph')
+except ImportError:
+    print('sphinx.ext.hieroglyph extension not found => slides will not be generated')
+    sys.exit(0)
 
 slide_theme = 'slides'
 slide_levels = 3
