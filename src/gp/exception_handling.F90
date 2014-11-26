@@ -14,7 +14,7 @@ subroutine check_for_nan(var,caller)
 #else
    if (.false.) then
 #endif
-      call quit("Stopping, NaN detected at"//caller(1:6))
+      call quit("Stopping, NaN detected at "//caller(1:6))
    endif
 
 end subroutine

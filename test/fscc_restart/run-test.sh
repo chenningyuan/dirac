@@ -1,9 +1,13 @@
 #!/usr/bin/bash
 
-export my_nproc=4
-export my_scratchdir=/state/partition1/gomes/dirac/runtest/gomes/cc_restart/fscc_restart
-export my_bindir=/home/gomes/devel/Dirac/git/cc-restart/impi-4.1.0.024_intel13.0.1_lp64_cc-restart
+export my_nproc=2
+export my_scratchdir=/tmp/andre/test-dirac/cc_restart/fscc_restart
+export my_bindir=/Users/gomes/devel/git/dirac_cc_restart/parallel_gfortran490_cc_restart
 
+
+# first step for restarting, generate the sorted integrals and do some cc iterations
+rm -rf $my_scratchdir/*
+$my_bindir/pam --keep_scratch --scratchfull=$my_scratchdir --mol Mg.mol --inp  fsccsd_original.inp --mpi=$my_nproc
 
 # first step for restarting, generate the sorted integrals and do some cc iterations
 rm -rf $my_scratchdir/*

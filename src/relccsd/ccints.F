@@ -275,7 +275,9 @@ C
       CALL WAIO_SAVE(ITAPT+4)
 
       IF (IMSTAT(1).EQ.3) THEN
-         call relcc_restart_check('OOOO to VOVO sorted integrals ',IW)
+C        call relcc_restart_check('OOOO to VOVO sorted integrals ',IW)
+         WRITE(IW,*)
+         WRITE(IW,*) 'Restart: using sorted OOOO to VOVO integrals'
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
@@ -415,7 +417,9 @@ C
       CALL WAIO_SAVE(ITAPT+5)
 
       IF (IMSTAT(2).EQ.3) THEN
-         call relcc_restart_check('VOVV sorted integrals        ',IW)
+C        call relcc_restart_check('VOVV sorted integrals        ',IW)
+         WRITE(IW,*)
+         WRITE(IW,*) 'Restart: using sorted VOVV integrals'
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
@@ -573,7 +577,9 @@ C
   550 CONTINUE
       CALL WAIO_SAVE(ITAPT+6)
       IF (IMSTAT(3).EQ.3) THEN
-         call relcc_restart_check('VVVV sorted integrals         ',IW)
+C        call relcc_restart_check('VVVV sorted integrals         ',IW)
+         WRITE(IW,*)
+         WRITE(IW,*) 'Restart: using sorted VVVV integrals'
       ENDIF
 
       IMSTAT(3) = 3

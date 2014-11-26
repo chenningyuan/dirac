@@ -8,27 +8,41 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
+my_scratchdir = os.path.join(os.environ['DIRAC_TMPDIR'], 'fscc_restart')
+
 f = Filter()
-f.add(from_string = 'Sum of all contributions to the energy',
-      num_lines   = 5,
+f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
+      to_string   = 'The diagonal elements of the recomputed Fock matrix',
       rel_tolerance   = 1.0e-9)
 
-test.run(['fsccsd_integrals.inp'], ['Mg.mol'], f, args='--keep_scratch --scratchful=$DIRAC_TMPDIR/fscc_restart')
-#test.run(['fsccsd_integrals.inp'], ['Mg.mol'], f, args='--keep_scratch')
+test.run(['fsccsd_integrals.inp'], ['Mg.mol'], f, args='--keep_scratch --scratchful='+my_scratchdir)
 
-f = Filter()
-f.add(from_string = ' Energy eigenvalues in atomic units',
-      to_re       = 'Relative real eigenvalues in other units;',
-      rel_tolerance = 1.0e-5)
 
-inputs = ['fsccsd_restart_s00_a.inp', 'fsccsd_restart_s00_b.inp', 
-          'fsccsd_restart_s01_a.inp', 'fsccsd_restart_s01_b.inp', 
-          'fsccsd_restart_s10_a.inp', 'fsccsd_restart_s10_b.inp', 
-          'fsccsd_restart_s11_a.inp', 'fsccsd_restart_s11_b.inp', 
-          'fsccsd_restart_s02_a.inp', 'fsccsd_restart_s02_b.inp', 
-          'fsccsd_restart_s20_a.inp', 'fsccsd_restart_s20_b.inp']
-test.run(inputs, ['Mg.mol'], f, args='--mw=110 --keep_scratch --scratchful=$DIRAC_TMPDIR/fscc_restart')
+sectors = [ '00', '01', '10', '11', '02', '20']
 
-os.unlink('DFCOEF')
+for s in sectors:
+   f = Filter()
+   f.add(from_string = 'CCSD results',
+         to_string   = 'T1 diagnostic',
+         rel_tolerance   = 1.0e-9)
+
+   test.run(['fsccsd_restart_s'+s+'_a.inp'], ['Mg.mol'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
+
+   f = Filter()
+   if s == '00':
+      f.add(from_string = 'CCSD results',
+            to_string   = 'T1 diagnostic',
+            rel_tolerance   = 1.0e-9)
+   else:
+      f.add(from_string = ' Energy eigenvalues in atomic units',
+            to_re       = 'Relative real eigenvalues in other units;',
+            rel_tolerance = 1.0e-5)
+
+   test.run(['fsccsd_restart_s'+s+'_b.inp'], ['Mg.mol'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
+
+files_to_delete = os.listdir(my_scratchdir)
+for f in files_to_delete:
+   os.unlink(os.path.join(my_scratchdir,f))
+os.rmdir(my_scratchdir)
 
 sys.exit(test.return_code)

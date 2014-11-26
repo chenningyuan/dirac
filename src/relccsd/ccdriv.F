@@ -310,7 +310,9 @@ C
       do isect = 1, 6
          FS_SKIP_SECT(isect) = relcc_restart_skipsect(isect)
       enddo
-      restart_unconverged = relcc_restart_unconverged
+      restart_unconverged  = relcc_restart_unconverged
+      restart_redo_sort    = relcc_restart_redo_sorting
+      restart_ignore_check = relcc_restart_ignore_check
 
 CMI   ...provide with default values
       MAXIT02=relcc_fs_max02_iterations 
@@ -3548,6 +3550,14 @@ C---------------Local variables--------------------------------------
 C
       DIMENSION BUFF(RSRCLEN)
       LOGICAL do_restart, file_found 
+      LOGICAL restart_and_current_differ
+      INTEGER RST_NEL(16)
+      INTEGER RST_NFRZ(16)
+      INTEGER RST_NACT(16)
+      INTEGER RST_NINACT(16)
+      INTEGER nelec_tot, RST_nelec_tot 
+      INTEGER act_tot, RST_act_tot   
+      INTEGER inact_tot, RST_inact_tot 
 C
 C---------------Executable code--------------------------------------
 C
@@ -3595,7 +3605,63 @@ C
 
 C           Read the input information from the previous run
 C
-C            Not implemented yet
+             READ(MCCRES,REC=1) RST_NEL,RST_NFRZ,RST_NACT,RST_NINACT
+
+             nelec_tot     = 0 
+             RST_nelec_tot = 0 
+
+             act_tot       = 0
+             RST_act_tot   = 0
+
+             inact_tot     = 0
+             RST_inact_tot = 0
+
+             restart_and_current_differ = .false.
+             DO I = 1, 16
+                nelec_tot     = nelec_tot + NELEC(I)
+                RST_nelec_tot = RST_nelec_tot + RST_NEL(I)
+
+                act_tot       = act_tot + NACT(I)
+                RST_act_tot   = RST_act_tot + RST_NACT(I)
+
+                inact_tot     = inact_tot + NINACT(I)
+                RST_inact_tot = RST_inact_tot + RST_NINACT(I)
+
+                IF ((RST_NEL(I)   .NE. NELEC(I)  ).OR.
+     &              (RST_NFRZ(I)  .NE. NFROZ(I)  ).OR.
+     &              (RST_NACT(I)  .NE. NACT(I)   ).OR.
+     &              (RST_NINACT(I).NE. NINACT(I) )) THEN
+                   restart_and_current_differ = .true.
+                ENDIF
+             END DO
+
+             if (restart_and_current_differ) then
+                write (IW,*) ' '
+                write (IW,*) 'INFO: Current setup and restart differ' 
+                write (IW,*) ' '
+                if (RST_nelec_tot .NE. nelec_tot) then
+                write (IW,*) ' # of electrons   (rst):',RST_nelec_tot
+                write (IW,*) '                  (now):',nelec_tot
+                write (IW,*) ' '
+                endif
+                if (RST_act_tot .NE. act_tot ) then
+                write (IW,*) ' #   act. spinors (rst):',RST_act_tot
+                write (IW,*) '                  (now):',act_tot
+                write (IW,*) ' '
+                endif
+                if (RST_inact_tot .NE. inact_tot) then
+                write (IW,*) ' # inact. spinors (rst):',RST_inact_tot
+                write (IW,*) '                  (now):',inact_tot
+                write (IW,*) ' '
+                endif
+
+                if (restart_ignore_check) then
+                   write (IW,*) 'INFO: Ignoring difference, restarting'
+                else
+                   call quit('Calculation and restart inconsistent')
+                endif
+             endif
+
 C
 C            Read the status information
 C
@@ -3604,7 +3670,7 @@ C
 C            Read the energies (read the whole common block)
 C
              READ (MCCRES,REC=3) BUFF
-             CALL DCOPY(7,BUFF,1,ETOT,1)
+             CALL DCOPY(8,BUFF,1,ETOT,1)
 
          else 
 C
@@ -3613,7 +3679,7 @@ C
             write (IW,*) 'INFO: Restart file(s) will be overwriten!'
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)
-            CALL DCOPY(7,A0,0,ETOT,1)
+            CALL DCOPY(8,A0,0,ETOT,1)
             DO I = 1, NSTATS
                IMSTAT(I) = 0
             ENDDO
@@ -3626,7 +3692,7 @@ C
          write (IW,*) 'INFO: No old restart file(s) found!'
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='NEW',RECL=IRECL)
-         CALL DCOPY(7,A0,0,ETOT,1)
+         CALL DCOPY(8,A0,0,ETOT,1)
          DO I = 1, NSTATS
             IMSTAT(I) = 0
          ENDDO
@@ -3654,6 +3720,13 @@ C
       IF (DOFSPC.AND.IMSTAT(11).EQ.0)            IMSTAT(11) = 1
       IF (DOFSPC.AND.IMSTAT(12).EQ.0)            IMSTAT(12) = 1
       IF (DOFSPC.AND.IMSTAT(13).EQ.0)            IMSTAT(13) = 1
+
+      IF (restart_redo_sort) then
+         DO I = 1, 4
+            IMSTAT(I) = 1
+         ENDDO
+      ENDIF
+
 !aspg, restart fs
 C
 C     Initialize the record information
@@ -3714,6 +3787,7 @@ C
 C     Dump the input information
 C
 C     Not implemented yet
+      WRITE (MCCRES,REC=1) NELEC, NFROZ, NACT, NINACT
 C
 C     Dump the status information
 C
@@ -3721,7 +3795,7 @@ C
 C
 C     Dump the energies (write the whole common block)
 C
-      CALL DCOPY(7,ETOT,1,BUFF,1)
+      CALL DCOPY(8,ETOT,1,BUFF,1)
       WRITE (MCCRES,REC=3) BUFF
 C
       CLOSE (MCCRES,STATUS='KEEP')
@@ -3775,7 +3849,7 @@ C
 C     Read the energies (read the whole common block)
 C
       READ (MCCRES,REC=3) BUFF
-      CALL DCOPY(7,BUFF,1,ETOT,1)
+      CALL DCOPY(8,BUFF,1,ETOT,1)
 C
       CLOSE (MCCRES,STATUS='KEEP')
 C

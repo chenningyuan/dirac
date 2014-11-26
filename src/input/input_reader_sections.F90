@@ -1040,6 +1040,17 @@
          enddo
       end if
 
+!     forces restart even if setup is potentially different (number of electrons, active/inactive etc)
+      if (kw_matches(word, '.FORCER')) then
+         relcc_restart_ignore_check = .true.
+      end if
+
+!     forces sorting to be done even if it has been completed before.
+      if (kw_matches(word, '.REDOSORT')) then
+         relcc_restart_redo_sorting = .true.
+      end if
+
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine

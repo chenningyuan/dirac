@@ -8,33 +8,20 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-f = Filter()
-f.add(from_string = 'Electronic energy',
-      num_lines   = 8,
-      rel_tolerance   = 1.0e-9)
-f.add(from_string = 'Eigenvalues',
-      to_re       = 'HOMO - LUMO',
-      rel_tolerance   = 1.0e-5)
-
-test.run(['sf.scf.inp'],     ['H2O.mol'], f, args='--outcmo                 ')
+my_scratchdir = os.path.join(os.environ['DIRAC_TMPDIR'], 'cc_restart')
 
 f = Filter()
-f.add(from_string = 'Electronic energy',
-      num_lines   = 8,
-      rel_tolerance   = 1.0e-9)
-
-test.run(['so-ccsd.inp'],    ['H2O.mol'], f, args='--mw=64 --aw=130  --incmo')
 
 f.add(from_string = ' Overview of calculated energies',
       to_string   = '@ Total CCSD-T  energy',
       rel_tolerance   = 1.0e-7)
-f.add(from_string = '* Dipole moment',
-      to_string   = '1 a.u =   2.54177000 Debye',
-      rel_tolerance   = 1.0e-5)
 
-test.run(['ccsd.small.inp'], ['H2O.mol'], f, args='--mw=64 --aw=130         ')
-test.run(['ccsd.inp'],       ['H2O.mol'], f, args='--mw=64 --aw=130         ')
+inputs = ['ccsd_integrals.inp', 'ccsd_restart.inp']
+test.run(inputs, ['H2O.mol'], f, args='--mw=64 --aw=130 --keep_scratch --scratchful='+my_scratchdir)
 
-os.unlink('DFCOEF')
+files_to_delete = os.listdir(my_scratchdir)
+for f in files_to_delete:
+   os.unlink(os.path.join(my_scratchdir,f))
+os.rmdir(my_scratchdir)
 
 sys.exit(test.return_code)
