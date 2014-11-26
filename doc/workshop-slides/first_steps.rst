@@ -20,5 +20,15 @@ Hartree-Fock SCF in DIRAC : Electronic occupation
 ==================================================
 
 * either use the automatic occupation of set the electronic occupation manually
+* recommended (but not perfect) approach: start with automatic occupation
+* after switch to manuall electronic occupation
 * always add orbital analysis to check resulting molecular spinors
+
+Getting SCF convergence in DIRAC
+================================
+
+* first empty valence shell(s) and see
+* atomic start SCF as the best method so far
+* for some systems force keeping order of MOs
+
 
