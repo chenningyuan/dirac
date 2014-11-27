@@ -75,7 +75,7 @@ cd %BUILD%
 rem ctest     -D ExperimentalUpdate     --track Miro
 ctest     -D ExperimentalConfigure  --track Miro
 ctest -j2 -D ExperimentalBuild      --track Miro
-rem ctest -j2 -D ExperimentalTest       --track Miro
+ctest -j2 -D ExperimentalTest       --track Miro
 ctest     -D ExperimentalSubmit     --track Miro
 
 echo %DATE% %TIME%
