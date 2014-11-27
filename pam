@@ -1327,7 +1327,7 @@ Options are also read from ~/.diracrc"""
                 if find_executable(self.debugger) is None:
                     print_error_message('\n no debugger found in the <diracrc> file !')
                     sys.exit(235)
-                if not is_windows:                        
+                if not is_windows():                        
                     self.dirac_cmd = self.debugger + ' ' + dirac_executable \
                     + ' | tee ' + self.output_file_full
                 else:
