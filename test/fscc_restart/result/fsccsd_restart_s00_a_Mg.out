@@ -1,17 +1,13 @@
-DIRAC pam run in /home/gomes/devel/Dirac/git/cc-restart/test/fscc_restart
+DIRAC pam run in /Users/gomes/devel/git/dirac_cc_restart/test/fscc_restart
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC master    (phlam-s-meigetsu.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
-DIRAC node    1 (phlam-s-meigetsu.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
-DIRAC node    2 (phlam-s-meigetsu.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
-DIRAC node    3 (phlam-s-meigetsu.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
-DIRAC master    (phlam-s-meigetsu.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
+DIRAC master    (fpcmtaspg.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    1 (fpcmtaspg.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC master    (fpcmtaspg.univ-lille1.fr) to allocate at most             160000000 words (          1220 MB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
  
-DIRAC node    1 (phlam-s-meigetsu.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
-DIRAC node    2 (phlam-s-meigetsu.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
-DIRAC node    3 (phlam-s-meigetsu.univ-lille1.fr) to allocate at most             256000000 words (          1953 MB) of memory
+DIRAC node    1 (fpcmtaspg.univ-lille1.fr) to allocate at most             160000000 words (          1220 MB) of memory
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -168,33 +164,32 @@ Binary information
 ------------------
 
  Who compiled             | gomes
- Host                     | phlam-s-meigetsu.univ-lille1.fr
- System                   | Linux-2.6.32-431.11.2.el6.x86_64
+ Host                     | fpcmtaspg.univ-lille1.fr
+ System                   | Darwin-13.3.0
  CMake generator          | Unix Makefiles
- Processor                | x86_64
+ Processor                | i386
  64-bit integers          | OFF
  MPI                      | ON
- Fortran compiler         | /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiif
-                          | ort
- Fortran compiler version | unknown
- C compiler               | /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiic
-                          | c
- C compiler version       | unknown
- C++ compiler             | /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiic
-                          | pc
- C++ compiler version     | unknown
+ Fortran compiler         | /opt/mpi/ompi-1.8.3_gcc_4.9.0/bin/mpif90
+ Fortran compiler version | GNU Fortran (GCC) 4.9.0
+ C compiler               | /opt/mpi/ompi-1.8.3_gcc_4.9.0/bin/mpicc
+ C compiler version       | gcc (GCC) 4.9.0
+ C++ compiler             | /opt/mpi/ompi-1.8.3_gcc_4.9.0/bin/mpiCC
+ C++ compiler version     | gcc (GCC) 4.9.0
+ BLAS                     | /opt/local/lib/libf77blas.dylib;/usr/lib/libcblas.
+                          | dylib;/opt/local/lib/libatlas.dylib
+ LAPACK                   | /opt/local/lib/libatlas.dylib;/usr/lib/liblapack.d
+                          | ylib
  Static linking           | OFF
- Last Git revision        | ed91afe3ee269aa6833d15c1f122b27b56690795
+ Last Git revision        | 0c84c5be0c2415c274def860b87f5201bbee7c11
  Git branch               | cc-restart
- Configuration time       | 2014-11-20 17:40:43.173329
+ Configuration time       | 2014-11-27 13:31:03.580394
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Nov 20 17:41:31 2014
-     Host name              : phlam-s-meigetsu.univ-lille1.fr         
 
 
 Contents of the input file
@@ -248,6 +243,7 @@ energy -1000.0 1000.0 1.0
 2 2 3 3                                                                                             
 *CCRESTART                                                                                          
 .SKIPSECT                                                                                           
+ 5                                                                                                  
  01 10 11 02 20                                                                                     
 *END OF                                                                                             
 
@@ -296,7 +292,7 @@ FINISH
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
  * Running in four-component mode
- * Parallel run with 3 slaves.
+ * Parallel run with 1 slaves.
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -473,7 +469,7 @@ Point group: D2h
   -------------------------------------------
 
     1
- 
+
 Mg     0.0000000000   0.0000000000   0.0000000000
 
 
@@ -668,7 +664,7 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 *** Restart successful !
   * WARNING: DIRAC found the AOPROPER file (one-electron integrals) ...will attempt restart.
 
----< Process     1 of     4----<
+---< Process     1 of     2----<
 
 
 
@@ -690,15 +686,15 @@ Mg     0.0000000000   0.0000000000   0.0000000000
   - Parallelization :        M. Pernpointner and L. Visscher, J. Comp. Chem. 24 (2003) 754.
 
 
- Today is :   20 Nov 14 
- The time is :  17:41:31
+ Today is :   27 Nov 14 
+ The time is :  13:32:34
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 
   EHMIN:  1000.00000 EHMAX:   100.00000
   EPMIN:    -1.00000 EPMAX: -1000.00000
 
- Total memory available :                                   1953 MB
+ Total memory available :                                   1220 MB
  INFO: Found restart file(s)!
 
  Configuration in highest pointgroup
@@ -726,14 +722,14 @@ Mg     0.0000000000   0.0000000000   0.0000000000
  Debug information       :                 F
  Timing information      :                 F
  Print level          :                    1
- Memory limit (MWord) :                       244
+ Memory limit (MWord) :                       152
  Interface used       :                DIRAC6    
 
 
  Memory for reading and sorting integrals :               215545 8-byte words
  Memory for reading and sorting integrals :              1862193 8-byte words
- Core used for Fock space CCSD energies :                   255410284 8-byte words
- Memory used for active modules :                      255410284 8-byte words
+ Core used for Fock space CCSD energies :                   159410284 8-byte words
+ Memory used for active modules :                      159410284 8-byte words
 
 
  Fock space CCSD Energy calculations
@@ -766,27 +762,12 @@ Mg     0.0000000000   0.0000000000   0.0000000000
  Type VOVO :          129600 integrals
  Type VOVV :          113400 integrals
  Type VVVV :           99468 integrals
- 
- Restart: using prior OOOO to VOVO sorted integral
- 
-     Warning: No consistency checks yet
- 
-      Please verify the number of active spinors and the size of the model space
-      (in FSCC calculations) has not changed between this restart and the prior run
- 
- Restart: using prior VOVV sorted integrals       
- 
-     Warning: No consistency checks yet
- 
-      Please verify the number of active spinors and the size of the model space
-      (in FSCC calculations) has not changed between this restart and the prior run
- 
- Restart: using prior VVVV sorted integrals       
- 
-     Warning: No consistency checks yet
- 
-      Please verify the number of active spinors and the size of the model space
-      (in FSCC calculations) has not changed between this restart and the prior run
+
+ Restart: using sorted OOOO to VOVO integrals
+
+ Restart: using sorted VOVV integrals
+
+ Restart: using sorted VVVV integrals
 
  Finished sorting of integrals
 
@@ -796,11 +777,11 @@ Mg     0.0000000000   0.0000000000   0.0000000000
  are given if above a treshold or if iprnt > 1
 
  Spinor   Abelian Rep.         Energy   Recalc. Energy
-  Oi   1    1   1Eg      -47.8128418774  -47.8128418773
+  Oi   1    1   1Eg      -47.8128418773  -47.8128418773
   Oi   2    2   1Eg       -4.4192776247   -4.4192776247
   Va   3    3   1Eg       -0.5193043223   -0.5193043222
   Va   4    4   1Eg       -0.2214473834   -0.2214473834
-  Oi   1    5   2Eg      -47.8128418774  -47.8128418773
+  Oi   1    5   2Eg      -47.8128418773  -47.8128418773
   Oi   2    6   2Eg       -4.4192776247   -4.4192776247
   Va   3    7   2Eg       -0.5193043223   -0.5193043222
   Va   4    8   2Eg       -0.2214473834   -0.2214473834
@@ -826,10 +807,10 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 
 
  Nuclear repulsion + core energy :             0.000000000000000
- Zero order electronic energy :             -122.358119335793816
- First order electronic energy :             -70.061924768742799
- Electronic energy :                        -192.420044104536601
- SCF energy :                               -192.420044104536601
+ Zero order electronic energy :             -122.358119335776053
+ First order electronic energy :             -70.061924768760477
+ Electronic energy :                        -192.420044104536544
+ SCF energy :                               -192.420044104536544
 
 
  Fock space CCSD options :
@@ -845,27 +826,27 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 
 
    NIT          ENERGY                    RMS       T1-DIAGN
-    0       -0.129256486031445   1.000000000000000   0.00000
-    1       -0.129813376167538   1.304490861868178   0.00458
-    2       -0.130985656608072   0.005929190790886   0.00485
-    3       -0.131116041665342   0.001032657312303   0.00500
-    4       -0.131135657181934   0.000039688040356   0.00499
-    5       -0.131135455160107   0.000004873432409   0.00499
-    6       -0.131135453937083   0.000000139752917   0.00499
-    7       -0.131135458280726   0.000000004584435   0.00499
-    8       -0.131135458524451   0.000000005350047   0.00499
+    0       -0.129256486031294   1.000000000000000   0.00000
+    1       -0.129813376167549   7.282148268768728   0.00458
+    2       -0.130985656608083   0.010154589861713   0.00485
+    3       -0.131116041665358   0.001465736014579   0.00500
+    4       -0.131135657181949   0.000077271746028   0.00499
+    5       -0.131135455160122   0.000012338045925   0.00499
+    6       -0.131135453937098   0.000000481210722   0.00499
+    7       -0.131135458280741   0.000000083005725   0.00499
+    8       -0.131135458524466   0.000000003990346   0.00499
 
 
- WARNING: Requested convergence not reached in CCSD :RMS =    0.000000005350047
+ WARNING: Requested convergence not reached in CCSD :RMS =    0.000000003990346
 
 
   CCSD results
 
- SCF energy :                               -192.420044104536601
- CCSD correlation energy :                    -0.131135458524451
- Total CCSD energy :                        -192.551179563061055
- T1 diagnostic :                               0.004990476717033
- Convergence :                                 0.000000005350047
+ SCF energy :                               -192.420044104536544
+ CCSD correlation energy :                    -0.131135458524466
+ Total CCSD energy :                        -192.551179563060998
+ T1 diagnostic :                               0.004990476717524
+ Convergence :                                 0.000000003990346
  Number or iterations used :                                   8
 
 
@@ -897,8 +878,8 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 --------------------------------------------------------------------------------
 
 
- Today is :   20 Nov 14 
- The time is :  17:41:32
+ Today is :   27 Nov 14 
+ The time is :  13:32:35
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -910,17 +891,17 @@ Mg     0.0000000000   0.0000000000   0.0000000000
  CCSD(T) energy calculation :          Never asked for               
 
  Overview of calculated energies
-@ SCF energy :                              -192.420044104536601
+@ SCF energy :                              -192.420044104536544
 @ MP2 correlation energy :                     0.000000000000000
-@ CCSD correlation energy :                   -0.131135458524451
+@ CCSD correlation energy :                   -0.131135458524466
 @ 4th order triples correction :               0.000000000000000
 @ 5th order triples (T) correction :           0.000000000000000
 @ 5th order triples -T  correction :           0.000000000000000
-@ Total MP2 energy :                        -192.420044104536601
-@ Total CCSD energy :                       -192.551179563061055
-@ Total CCSD+T  energy :                    -192.551179563061055
-@ Total CCSD(T) energy :                    -192.551179563061055
-@ Total CCSD-T  energy :                    -192.551179563061055
+@ Total MP2 energy :                        -192.420044104536544
+@ Total CCSD energy :                       -192.551179563060998
+@ Total CCSD+T  energy :                    -192.551179563060998
+@ Total CCSD(T) energy :                    -192.551179563060998
+@ Total CCSD-T  energy :                    -192.551179563060998
 
 
 --------------------------------------------------------------------------------
@@ -933,13 +914,15 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 
  Timer                              Master   Minimum   Maximum     Average
 
- - T1 equations                        0.1       0.0       0.0       0.0
+ Sorting of integrals                  0.0       0.0       0.0       0.0
+ - T1 equations                        0.1       0.1       0.1       0.1
  --- T1EQNS T*[HOV - F]*T              0.0       0.0       0.0       0.0
  --- T1EQNS HOV*T2(A,C,I,K             0.0       0.0       0.0       0.0
+ --- T1EQNS   HV*T / T*HO              0.0       0.0       0.0       0.0
  --- T1EQNS VOOO*TAU                   0.0       0.0       0.0       0.0
  --- T1EQNS VOVV contribution          0.0       0.0       0.0       0.0
  --- T1EQNS VOVO * T(C,K)              0.0       0.0       0.0       0.0
- - T2 equations                        0.2       0.2       0.2       0.2
+ - T2 equations                        0.4       0.4       0.4       0.4
  -- GOINTM                             0.0       0.0       0.0       0.0
  -- GVINTM                             0.0       0.0       0.0       0.0
  -- AINTM                              0.0       0.0       0.0       0.0
@@ -950,7 +933,7 @@ Mg     0.0000000000   0.0000000000   0.0000000000
  -- T2 EQNS                            0.1       0.1       0.1       0.1
  --- T2EQNS: TAU*AINTM contract        0.0       0.0       0.0       0.0
  --- T2EQNS: VOVV*T1                   0.0       0.0       0.0       0.0
- --- T2EQNS: HINTM*T2                  0.0       0.0       0.0       0.0
+ --- T2EQNS: HINTM*T2                  0.1       0.1       0.1       0.1
  -- BINTM                              0.0       0.0       0.0       0.0
  - adding partial T1/T2 amplitu        0.0       0.0       0.0       0.0
  - DIIS extrapolation                  0.0       0.0       0.0       0.0
@@ -961,33 +944,33 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :              23883.53                     0.08
- Initialization :                    0.08                     0.08
+ Before CC driver :            1899830.88                     0.10
+ Initialization :                    0.12                     0.02
  Integral sorting :                  0.00                     0.00
  Energy calculation :                0.00                     0.00
  First order properties :            0.00                     0.00
  Second order properties :           0.00                     0.00
- Fock space energies :               0.00                     0.44
- Untimed parts :                     0.45                     0.00
- Total time in CC driver :             1.                     0.53
+ Fock space energies :               0.00                     0.60
+ Untimed parts :                     0.88                     0.01
+ Total time in CC driver :             1.                     0.63
 
  Statistics for the word-addressable I/O
  Number of write calls                                 489.
  Number of read calls                                  489.
  Megabytes written                                    5.766
- Megabytes read                                      78.067
- Seconds spent in reads                               0.027
- Seconds spent in writes                              0.027
- average I/O speed for write (Mb/s)                 210.856
- average I/O speed for read  (Mb/s)                2855.028
+ Megabytes read                                      88.334
+ Seconds spent in reads                               0.375
+ Seconds spent in writes                              0.375
+ average I/O speed for write (Mb/s)                  15.375
+ average I/O speed for read  (Mb/s)                 235.557
  I AM IN SYNC PROC., MYPROC =            0
  I AM IN SYNC PROC., MYPROC =            0
  SYNC. PROCESS HAS USED           0 SEC.
 
 
- CPU time (seconds) used in RELCCSD:                     0.5319
- CPU time (seconds) used before RELCCSD:                 0.0780
- CPU time (seconds) used in total sofar:                 0.6099
+ CPU time (seconds) used in RELCCSD:                     0.6327
+ CPU time (seconds) used before RELCCSD:                 0.1026
+ CPU time (seconds) used in total sofar:                 0.7353
 
   --- Normal end of RELCCSD Run ---
 
@@ -1000,12 +983,9 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 
 
  
-     Date and time (Linux)  : Thu Nov 20 17:41:33 2014
-     Host name              : phlam-s-meigetsu.univ-lille1.fr         
 
->>>> Node 0, utime: 1, stime: 0, minflt: 6436, majflt: 0, nvcsw: 108, nivcsw: 173, maxrss: 82216
->>>> Total WALL time used in DIRAC: 2s
-  
+>>>> Node 0, utime: 1, stime: 0, minflt: 6518, majflt: 205, nvcsw: 36, nivcsw: 5464, maxrss: 17121280
+>>>> Total WALL time used in DIRAC: 3s
   
   
   Dynamical Memory Usage Summary
@@ -1014,22 +994,21 @@ Mg     0.0000000000   0.0000000000   0.0000000000
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine pamset_+0x1a91                             for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine pamset_+0xab                               for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine MAIN__+0x569                               for test allocation of work array in DIRAC mai
-       10.94 Mb at subroutine ccseti_+0x783                              for ibuf                                      
-       10.94 Mb at subroutine ccseti_+0x783                              for ibuf                                      
-        1.00 Mb at subroutine ccseti_+0xab2                              for vta                                       
-        1.00 Mb at subroutine ccseti_+0xa88                              for vt                                        
-        1.00 Mb at subroutine ccseti_+0xab2                              for vta                                       
-        1.00 Mb at subroutine ccseti_+0xa88                              for vt                                        
-        0.99 Mb at subroutine ccfspc_+0xf01                              for buf3                                      
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
+       10.94 Mb at subroutine unknown                                    for ibuf                                      
+       10.94 Mb at subroutine unknown                                    for ibuf                                      
+        1.00 Mb at subroutine unknown                                    for vta                                       
+        1.00 Mb at subroutine unknown                                    for vt                                        
+        1.00 Mb at subroutine unknown                                    for vta                                       
+        1.00 Mb at subroutine unknown                                    for vt                                        
+        0.99 Mb at subroutine unknown                                    for buf3                                      
   
   Peak memory usage    (Mb) :       488.00
-       reached at subroutine : pamset_+0x1a91                            
+       reached at subroutine : unknown                                   
               for variable   : WORK in PAMSET - 2                        
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-  

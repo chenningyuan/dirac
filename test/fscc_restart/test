@@ -8,7 +8,10 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-my_scratchdir = os.path.join(os.environ['DIRAC_TMPDIR'], 'fscc_restart')
+if os.environ['DIRAC_TMPDIR'] != '' :
+   my_scratchdir = os.path.join(os.environ['DIRAC_TMPDIR'], 'fscc_restart')
+else :
+   sys.exit(-1)
 
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
@@ -22,6 +25,9 @@ sectors = [ '00', '01', '10', '11', '02', '20']
 
 for s in sectors:
    f = Filter()
+   f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
+         to_string   = 'The diagonal elements of the recomputed Fock matrix',
+         rel_tolerance   = 1.0e-9)
    f.add(from_string = 'CCSD results',
          to_string   = 'T1 diagnostic',
          rel_tolerance   = 1.0e-9)
@@ -29,6 +35,9 @@ for s in sectors:
    test.run(['fsccsd_restart_s'+s+'_a.inp'], ['Mg.mol'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 
    f = Filter()
+   f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
+         to_string   = 'The diagonal elements of the recomputed Fock matrix',
+         rel_tolerance   = 1.0e-9)
    if s == '00':
       f.add(from_string = 'CCSD results',
             to_string   = 'T1 diagnostic',

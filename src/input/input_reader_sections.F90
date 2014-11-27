@@ -1001,7 +1001,6 @@
       use input_reader
 
       implicit none
-      character(2) :: bla(6)
 
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
@@ -1009,7 +1008,9 @@
 !     --------------------------------------------------------------------------
       integer                          :: i
       integer                          :: j
+      integer                          :: nskip
       character(2)                     :: ifss(6)
+      character(2)                     :: read_sect(6)
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1022,7 +1023,13 @@
 !     in the case of fock-space calculations, indicate which sectors are to be
 !     skipped (e.g. because converged, or otherwise)
       if (kw_matches(word, '.SKIPSECT')) then
-         read(get_file_unit(),*) (bla(i), i=1,6)
+
+         do i = 1, 6
+            read_sect(i) = '  '
+         enddo
+
+         read(get_file_unit(), *) nskip
+         read(get_file_unit(), *) (read_sect(i), i = 1, nskip)
 
          ifss(1) = '00'
          ifss(2) = '01'
@@ -1031,9 +1038,9 @@
          ifss(5) = '02'
          ifss(6) = '20'
 
-         do j = 1, 6
-            do i = 1, 6
-               if (bla(i).eq.IFSS(j)) then
+         do i = 1, nskip
+            do j = 1, 6
+               if (read_sect(i).eq.IFSS(j)) then
                   relcc_restart_skipsect(j) = .true.
                endif 
             enddo
