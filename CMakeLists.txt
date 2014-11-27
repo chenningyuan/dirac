@@ -89,7 +89,6 @@ include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
-include(BinaryInfo) # has to come after ConfigVersion
 
 if(USE_BUILTIN_BLAS)
     add_definitions(-DUSE_BUILTIN_BLAS)
@@ -386,6 +385,17 @@ endif()
 include(ConfigTesting)
 include(ConfigPackaging)
 
-# give information about system, compiler flags, and size of static allocations
+# give information about system, compiler flags, and size of static allocations ...
 set(STATIC_MEM_INFO_BINARIES dirac)
-include(ConfigInfo)
+# configuration time in UTC
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.utcnow())"
+    OUTPUT_VARIABLE CONFIGURATION_TIME
+)
+# delete \n added by Python print()
+string(STRIP ${CONFIGURATION_TIME} CONFIGURATION_TIME)
+# list with compiler definitions
+get_directory_property(_list_of_definitions DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+include(BinaryInfo) # giving information - must be called after everything is set
+include(ConfigInfo) # has to come after binary info (dependency: git information)
+unset(_list_of_definitions)
