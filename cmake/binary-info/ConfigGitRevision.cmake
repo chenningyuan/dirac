@@ -28,7 +28,7 @@ if(DEVELOPMENT_CODE)
         endif()
 
       execute_process(
-          COMMAND ${PYTHON_EXECUTABLE} -c "import subprocess; import re; print(re.match(r'\\*.*', subprocess.Popen(['${GIT_EXECUTABLE}', 'branch'], stdout=subprocess.PIPE).communicate()[0]).group())"
+          COMMAND ${PYTHON_EXECUTABLE} -c "import subprocess; import re; print(re.search(r'\\*.*', subprocess.Popen(['${GIT_EXECUTABLE}', 'branch'], stdout=subprocess.PIPE).communicate()[0], re.MULTILINE).group())"
           OUTPUT_VARIABLE GIT_BRANCH
           ERROR_QUIET
           )
