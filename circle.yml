@@ -1,0 +1,19 @@
+## simple DIRAC buildup configuration file for circleci.com
+## See https://circleci.com/docs/configuration
+##     https://circleci.com/docs/config-sample
+
+
+checkout:
+  post:
+    - git submodule sync
+    - git submodule update --init
+
+test: 
+  override: 
+    - python ./pamadm -a --builddir=build_circleci 
+    - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
+    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_circleci }
+    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_circleci }
+    - ctest --track Miro  -D ExperimentalBuild: { pwd: build_circleci }
+    - ctest --track Miro  -D ExperimentalTest -R cosci_energy: { pwd: build_circleci }
+    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_circleci }

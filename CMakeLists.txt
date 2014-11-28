@@ -36,6 +36,11 @@ option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 
+# python interpreter is required at many places during configuration and build
+# for example build with pcmsolver will fail (merging libraries)
+# someone can specify minimal version if known
+find_package(PythonInterp REQUIRED)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -84,7 +89,6 @@ include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
-include(BinaryInfo) # has to come after ConfigVersion
 
 if(USE_BUILTIN_BLAS)
     add_definitions(-DUSE_BUILTIN_BLAS)
@@ -124,11 +128,17 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     )
 
 # Workaround for strange problem with cilkrts lib
-# Intel does not ship the static version of it
-# and of some reason it gets detected and included in these variables
-# this then breaks the static linking buildup with Intel compilers
-list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES   "cilkrts")
-list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "cilkrts")
+# Intel does not ship the static version of cilkrts
+# and for some reason it gets detected and included in these variables
+# breaking the static linking buildup with Intel compilers
+if (CMAKE_C_IMPLICIT_LINK_LIBRARIES)
+# first check if variable nonempty
+    list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES   "cilkrts")
+endif()
+if (CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
+# first check if variable nonempty
+    list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "cilkrts")
+endif()
 
 if(ENABLE_XCFUN)
     add_subdirectory(src/xcfun)
@@ -144,23 +154,35 @@ if(ENABLE_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
         if(NOT ZLIB_FOUND)
-            message(STATUS "  - install Zlib development libraries")
+           IF (ENABLE_STATIC_LINKING) 
+              message(STATUS "  - install static Zlib development libraries")
+           else()
+              message(STATUS "  - install dynamic Zlib development libraries")
+           endif()
         endif()
     else()
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
-	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
+        get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
+        
+        # PCMSolver does not know profile
+        if(CMAKE_BUILD_TYPE MATCHES "profile")
+            set(PCM_BUILD_TYPE "release")
+        else()
+            set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+        endif()
+        
         set(ExternalProjectCMakeArgs
-            # PCMSolver does not know profile
-            if(CMAKE_BUILD_TYPE MATCHES "profile")
-                set(CMAKE_BUILD_TYPE "release")
-            endif
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+            -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+            -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+            -DENABLE_CXX11_SUPPORT=OFF
             -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
             -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
             -DEIGEN3_ROOT=${EIGEN3_ROOT}
@@ -169,15 +191,15 @@ if(ENABLE_PCMSOLVER)
             -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-	    -DENABLE_PYTHON_EMBEDDING=OFF
-	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
-	    -DZLIB_ROOT=${ZLIB_ROOT}
+            -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+            -DENABLE_PYTHON_EMBEDDING=OFF
+            -DENABLE_TESTS=${PCMSOLVER_TESTS}
+            -DZLIB_ROOT=${ZLIB_ROOT}
+            -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
          )
         
         if(PCMSOLVER_TESTS)
-		set(testing_command "make test")
-		add_external(pcmsolver ${testing_command})
+		add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
         else()
 		add_external(pcmsolver)
         endif()	
@@ -206,8 +228,20 @@ add_custom_target(dirac_interfaces
     ${GENERATED_FILES}
 )
 
-# set definitions
+# set source file properties
+# fix for Windows with 64bit integers on and build type release or profile
+# when using GNU (gfortran) compilers
+# there is one source file for which -O3/-O2 is not good
+if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU") 
+    AND (ENABLE_64BIT_INTEGERS)
+    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile"))) 
+    set_source_files_properties(
+        ${CMAKE_SOURCE_DIR}/src/abacus/hermodules.F90
+        PROPERTIES COMPILE_FLAGS "-O1"
+        )
+endif()
 
+# set definitions
 include(Definitions)
 
 add_definitions(-DPRG_DIRAC)
@@ -351,6 +385,17 @@ endif()
 include(ConfigTesting)
 include(ConfigPackaging)
 
-# give information about system, compiler flags, and size of static allocations
+# give information about system, compiler flags, and size of static allocations ...
 set(STATIC_MEM_INFO_BINARIES dirac)
-include(ConfigInfo)
+# configuration time in UTC
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.utcnow())"
+    OUTPUT_VARIABLE CONFIGURATION_TIME
+)
+# delete \n added by Python print()
+string(STRIP ${CONFIGURATION_TIME} CONFIGURATION_TIME)
+# list with compiler definitions
+get_directory_property(_list_of_definitions DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+include(BinaryInfo) # giving information - must be called after everything is set
+include(ConfigInfo) # has to come after binary info (dependency: git information)
+unset(_list_of_definitions)

@@ -1,7 +1,7 @@
 !-----------------------------------------------------------------------------------------
 !
 ! Collection of Fortran90 modules encapsulating "old" Fortran77 include files
-! (like dcbham.h) among Dirac source codes.
+! (like dcbham.h,dcbgen.h,...) among Dirac source codes.
 !
 ! Selected variables inside these h-include files are private and are
 ! accessible out of module scope only via dedicated subroutines (methods).
@@ -14,15 +14,11 @@
 !             use include_dgroup_h, only : get_IPQTOQ
 !             use include_dcbdhf_h
 !
-!  function get_<variable>(parameter1,parameter2,...) - function to return include file (module) variable
+!  Function get_<variable>(parameter1,parameter2,...) - function returns include file (module) variable
 !
-!  subroutine set_<variable>(parameter1,parameter2,...) - method to change
-!  include file (module) variable
-!
-!
+!  Subroutine set_<variable>(parameter1,parameter2,...) - method changes include file (module) variable
 !
 ! Written by Miro Ilias, August 2014, Banska Bystrica
-!
 !
 !-----------------------------------------------------------------------------------------
 
@@ -60,7 +56,8 @@ end function get_IPQTOQ
 end module include_dgroup_h
 
 module include_dcbham_h
-!> module for picking up/setting certain variables from dcbham.h
+!> module encapsulating the dcbham.h include file
+!> can pick up/set up some defined variables in dcbham.h
 implicit none
 private
 #include"dcbham.h"
@@ -75,6 +72,7 @@ end function get_IPRHAM
 end module include_dcbham_h
 
 module include_dcbdhf_h
+!> module encapsulating the "dcbdhf.h" include file
 implicit none
 private
 #include "dcbdhf.h"
@@ -89,9 +87,13 @@ end function get_IPRSCF
 end module include_dcbdhf_h
 
 module include_dcbprp_h
+!> module encapsulating the "dcbprp.h" include file
 implicit none
 private
-#include "mxcent.h" !> needed for parameters used in dcbprp.h
+
+!> needed for parameters used in dcbprp.h
+#include "mxcent.h"
+
 #include "dcbprp.h"
 !> specify public variables and public methods
 public :: get_IPRPRP

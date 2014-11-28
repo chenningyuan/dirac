@@ -75,6 +75,17 @@
 *
 *
       DIMENSION EROOTS(NROOTS)
+
+!#define blubb
+#ifdef blubb
+      integer   :: NZ_in_CI
+      integer   :: i_state    = -1
+      integer   :: ICONV_TOT = -1
+      integer   :: lwork_krci= 2500000
+      real*8    :: THR_CONV  = 1.0d-05
+      real*8    :: eci_out(nroots)
+      integer*8 :: kkrci_work
+#endif
 *
       NTEST=0
 *
@@ -344,72 +355,131 @@ C
       END IF
 *     ^ End if switch real/complex numbers
       CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'CIEIG5')
+
+#ifdef blubb
+*     proper allocation of scratch arrays:
+      call memmar(KDUM,IDUM,'MARK  ',IDUM,'CIEIGX')
+      call memmar(kkrci_work,lwork_krci,'ADDL  ',2,'KWORKK')
+
+      NZ_in_CI = IRC
+      call KRCI_RCISTD(
+     &                 vec1,vec2,t_cc,t_buff,eigshf,
+     &                 lu1,lu2,lu3,lu4,lu5,lu6,lu7,ludia,
+     &                 num_blocks,IBLOCKL,NPARBLOCK,
+     &                 NROOTS,THR_CONV,MXCIIT,
+     &                 ECI_OUT,NDIM,
+     &                 I_STATE,ICONV_TOT,5,LUWRT,
+     &                 NZ_in_CI,work(kkrci_work),lwork_krci
+#if defined (VAR_MPI2)
+     &                ,LU1LIST
+#endif
+     &                )
+
+
+      CALL MEMMAR(KDUM ,IDUM,'FLUSM ',2,'CIEIGX')
+#endif
 *
 
       CALL QEXIT('CIEIG5')
       END
 
-#ifdef work_in_progress_for_release
-
-      SUBROUTINE KRCI_RCISTD(N_ROOTS,THR_CONV,MAX_CI_IT,
-     &                       ECI_OUT,CVECS,NDET,IDET,CMO,
-     &                       THR_CVEC,I_STATE,ICONV_TOT,
-     &                       THR_PCI,IPRINT,WORK,LWORK)
-C***********************************************************************
-C
-C     Do up to MAX_CI_IT CI iterations to converge the N_ROOTS lowest states
-C     to a gradient threshold of THR_CONV .
-C
-C     Input :
-C        N_ROOTS - number of roots to converge
-C        THR_CONV  - CI gradient convergence threshold
-C        MAX_CI_IT - max CI iterations
-C        NDET    - number of determinants
-C        I_STATE - if > 0: which state converge to (not used p.t.)
-C        IPRINT  - print level
-C
-C     Output:
-C        ECI_OUT - CI energies
-C        CVECS   - CI vectors
-C        ICONV_TOT =1 all converged, <0 code for why not converged
-C
-C
+      SUBROUTINE KRCI_RCISTD(
+     &                       vec1,vec2,t_cc,t_buff,ecore,
+     &                       lu1,lu2,lu3,lu4,lu5,lu6,lu7,ludia,
+     &                       num_blocks,iblockl,nparblock,
+     &                       N_ROOTS,THR_CONV,MAX_CI_IT,
+     &                       ECI_OUT,NDET,
+     &                       I_STATE,ICONV_TOT,IPRINT,LUPRI,
+     &                       NZ_in_CI,WORK,LWORK
+#if defined (VAR_MPI2)
+     &                      ,LU1LIST
+#endif
+     &                      )
+!***********************************************************************
+!
+!     Do up to MAX_CI_IT CI iterations to converge the N_ROOTS lowest states
+!     to a gradient threshold of THR_CONV .
+!
+!     Input :
+!        N_ROOTS - number of roots to converge
+!        THR_CONV  - CI gradient convergence threshold
+!        MAX_CI_IT - max CI iterations
+!        NDET    - number of determinants
+!        I_STATE - if > 0: which state converge to (not used p.t.)
+!        IPRINT  - print level
+!
+!     Output:
+!        ECI_OUT - CI energies
+!        ICONV_TOT =1 all converged, <0 code for why not converged
+!
+!
 !     based on the routine GASCIP_RCISTD by J. Thyssen and H. J. Aa. Jensen
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "thrzer.h"
-C
-C Used from include files:
-C  dcbgen.h : PARCAL, ...
-C
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dcborb.h"
-#include "dgroup.h"
-C
-      INTEGER*8 IDET(2,*)
-      DIMENSION ECI_OUT(*), CVECS(NDET*NZ_in_CI,*), CMO(*), WORK(*)
-C
-C     Local variales:
-C
-      PARAMETER (MAX_ROOTS = 41, N_CSIM_EXTRA_START = 7)
-      DIMENSION DNRES(MAX_ROOTS), ECIOLD(MAX_ROOTS), ECIA(MAX_ROOTS)
-      INTEGER   J_HDIAG(2*(MAX_ROOTS+1)), ICONV(MAX_ROOTS)
-      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-      real*8    ECI(MAX_ROOTS), JJ_HDIAG(2*(MAX_ROOTS+1))
-C
-#include "memint.h"
-C
+!
+!***********************************************************************
+      implicit none
+
+      real*8 , intent(out)   :: eci_out(*)
+      real*8 , intent(inout) :: vec1(*), vec2(*), work(*)
+      real*8 , intent(inout) :: t_cc(*), t_buff(*)
+      real*8 , intent(in)    :: ecore
+      real*8 , intent(in)    :: thr_conv
+      integer, intent(in)    :: num_blocks, iblockl(*), nparblock(*)
+      integer, intent(inout) :: lu1,lu2,lu3,lu4,lu5,lu6,lu7,ludia
+      integer, intent(in)    :: lwork
+      integer, intent(in)    :: n_roots
+      integer, intent(inout) :: max_ci_it
+      integer, intent(in)    :: ndet
+      integer, intent(inout) :: iconv_tot
+      integer, intent(in)    :: i_state
+      integer, intent(in)    :: nz_in_ci
+      integer, intent(in)    :: iprint
+      integer, intent(in)    :: lupri
+#if defined (VAR_MPI2)
+      integer, intent(inout) :: lu1list(*)
+#endif
+!
+!     Local variales:
+      integer, parameter     :: max_roots          = 41
+      integer, parameter     :: n_csim_extra_start = 9
+      real*8 , parameter     :: thrzer             = 1.0D-14
+
+      real*8                 :: dnres(max_roots)
+      real*8                 :: eciold(max_roots)
+      real*8                 :: ecia(max_roots)
+      real*8                 :: eci(max_roots)
+      real*8                 :: jj_hdiag(4*(max_roots+1))
+      real*8                 :: cpu1,cpu2,cpu3,cpu4,THRSCR,THRDAS
+      real*8                 :: wall1,wall2,wall3,wall4
+      real*8                 :: das, dasi, dasr, dnaft,xscat
+      real*8                 :: ecia_i, fac, hd,OVLP_imag, OVLP_real 
+      integer                :: j_hdiag(4*(max_roots+1))
+      integer                :: iconv(max_roots)
+      integer                :: i, j, ii, itmic, ijob, iorder, ipack
+      integer                :: i_root, j_csim, j_new, jbcvec
+      integer                :: max_hred, lhred, khred, keigvl, keigvc
+      integer                :: khredi, keigvci, n_cred, n_csim
+      integer                :: n_roots_not_converged,n_cred_old
+      integer                :: lux,luy,JEIGVC_I,JEIGVC_R,KBCVEC,KHDIAG
+      integer                :: ndetq, kfacnr,iscat, lutmp
+      character(len=12)      :: sectid, cputid, walltid
+      integer                :: kwork, kfree, lfree
+      real*8                 :: inprdd, dnorm2, ddot
+      logical                :: switch
+
+      !> debug
+      max_ci_it = 12
+!
+!     !> Memory initialization
+      kwork = 1
+      kfree = kwork
+      lfree = lwork
+!
       CALL QENTER('KRCI_RCISTD')
 
       CALL GETTIM(CPU1,WALL1)
 
-C
 C     Set general parameters (which later maybe should be set by input?)
-      MAX_HRED = MAX(100,N_CI_ROOTS*MAX_CI_IT)
+      MAX_HRED = MAX(100,n_roots*MAX_CI_IT)
       MAX_HRED = MIN(2000, MAX_HRED)
 C
       IF (N_ROOTS .LT. 1 .OR. N_ROOTS .GE. MAX_ROOTS) THEN
@@ -443,12 +513,13 @@ C
       J_CSIM = MIN(NDET,N_CSIM + 1)
 #if defined (VAR_MPI2)
       CALL FNDMND_PAR_REL(LUDIA,-1,VEC1,J_CSIM,N_CSIM,
-     &                    J_HDIAG(1+J_CSIM),JJ_HDIAG(1+J_CSIM),J_HDIAG,
-     &                    JJ_HDIAG,IBLOCKL,NPARBLOCK,NUM_BLOCKS,IPRT)
+     &                    J_HDIAG(1+2*J_CSIM),JJ_HDIAG(1+2*J_CSIM),
+     &                    J_HDIAG,JJ_HDIAG,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
+     &                    iprint)
 C
 #else
-      CALL FNDMND(LUDIA,-1,VEC1,J_CSIM,N_CSIM,J_HDIAG(1+J_CSIM),
-     &            JJ_HDIAG(1+J_CSIM),J_HDIAG,JJ_HDIAG,IPRT)
+      CALL FNDMND(LUDIA,-1,VEC1,J_CSIM,N_CSIM,J_HDIAG(1+2*J_CSIM),
+     &            JJ_HDIAG(1+2*J_CSIM),J_HDIAG,JJ_HDIAG,iprint)
 #endif
 
       IF (N_CSIM .LT. N_ROOTS) THEN
@@ -461,6 +532,8 @@ C
 C
 C     Set first trial vectors equal to: BCVEC(I,J) = DELTA(I, J_HDIAG(J))
       !> start vectors are stored on LU1
+      !> hardwire to 7 for now
+      n_csim = 9
       CALL REWINE(LU1,-1)
       WRITE(LUPRI,'(/I5,A)') N_CSIM,
      &   ' start vectors based on lowest diagonal elements of H_CI'
@@ -468,9 +541,9 @@ C     Set first trial vectors equal to: BCVEC(I,J) = DELTA(I, J_HDIAG(J))
 
       DO I = 1, N_CSIM
 
-         II      = J_HDIAG(I)
-         ECIA(I) = JJ_HDIAG(i)
-         ECI(I)  = ECIA(I) + EIGSHF
+         ii      = j_hdiag(i)
+         ecia(i) = jj_hdiag(I)
+         eci(i)  = ecia(i)
          WRITE (LUPRI,'(I10,F20.6)') II, ECI(I)
 * Real part
          CALL REWINE(LUDIA,-1)
@@ -495,7 +568,9 @@ C
       CALL MEMGET2('REAL','HRED',KHRED,LHRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','ERED',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','VRED',KEIGVC,LHRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','fac ',KFACNR,MAX_HRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
+      CALL DZERO(WORK(KFACNR),max_hred)
       KHREDI  = KHRED  + MAX_HRED*MAX_HRED
       KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED
 C
@@ -534,17 +609,29 @@ C
 !        !> Calculate sigma vector(s)
 !        ----------------------------
 !
+         CALL SKPVCD(lu1,n_cred_old,VEC1,1,-1)
+         CALL SKPVCD(lu2,n_cred_old,VEC1,1,-1)
+
          DO I = 1, N_CSIM
 
             CALL REWINE(LU3,-1)
             CALL REWINE(LU4,-1)
             CALL COPVCD(LU1,LU3,VEC1,0,-1)
 
+!           WRITE(LUPRI,'(/A,I3,A,I3)')
+!    &      ' (KRCI_RCISTD) Trial vector no. ',I,' of ',N_CSIM
+!           call wrtvcd(vec1,lu3,1,-1)
+            CALL REWINE(LU3,-1)
+
             call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
 
 !           !> Move sigma to LU2, LU2 is positioned at end of vector i - 1
             CALL REWINE(LU4,-1)
             CALL COPVCD(LU4,LU2,VEC1,0,-1)
+
+!           WRITE(LUPRI,'(/A,I3,A,I3)')
+!    &      ' (KRCI_RCISTD) Sigma vector no. ',I,' of ',N_CSIM
+!           call wrtvcd(vec1,lu4,1,-1)
          END DO
 C
 C        Extend reduced Hamiltonian:
@@ -554,12 +641,25 @@ C        HRED(I,J) = BCVEC(I)^+ * SCVEC(J)
 C
 C        (Old + New) sigma vectors * New trial vectors
 C
+         !> sigma vec
+         call rewine(lu2,-1)
+
          DO J = 1, N_CRED   ! All sigma vectors
+
+            !> single sigma vec on lu4
+            call rewine(lu4,-1)
+            call copvcd(lu2,lu4,vec1,0,-1)
+
+            !> skip to all new trial vecs on lu1
+            call skpvcd(lu1,n_cred_old,vec1,1,-1)
+
             DO I = N_CRED_OLD+1, N_CRED   ! New trial vectors
 
+               call rewine(lu4,-1)
+
                WORK(KHRED+(J-1)*MAX_HRED+(I-1)) =
-     &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
-     &                         WORK(KSCVEC+(J-1)*NDETQ),1)
+     &              inprdd(vec1,vec2,lu1,lu4,0,-1)
+
 !              IF (NZ_in_CI .GT. 1) THEN
 !                 WORK(KHREDI+(J-1)*MAX_HRED+(I-1)) =
 !    &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
@@ -572,25 +672,38 @@ C
 C
 C        New sigma vectors * Old trial vectors
 C
+         !> sigma vec
+         call skpvcd(lu2,N_CRED_OLD,vec1,1,-1)
+
          DO J = N_CRED_OLD+1, N_CRED  ! New sigma vectors
+
+            !> single sigma vec on lu4
+            call rewine(lu4,-1)
+            call copvcd(lu2,lu4,vec1,0,-1)
+
+            !> all trial vecs on lu1
+            call rewine(lu1,-1)
+
             DO I = 1, N_CRED_OLD   ! Old trial vectors
+
+               call rewine(lu4,-1)
+
                WORK(KHRED+(J-1)*MAX_HRED+(I-1)) =
-     &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
-     &                         WORK(KSCVEC+(J-1)*NDETQ),1)
-               IF (NZ_in_CI .GT. 1) THEN
-                  WORK(KHREDI+(J-1)*MAX_HRED+(I-1)) =
-     &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
-     &                        WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
-     &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
-     &                        WORK(KSCVEC+(J-1)*NDETQ),1)
-               END IF
+     &              inprdd(vec1,vec2,lu1,lu4,0,-1)
+!              IF (NZ_in_CI .GT. 1) THEN
+!                 WORK(KHREDI+(J-1)*MAX_HRED+(I-1)) =
+!    &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
+!    &                        WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
+!    &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
+!    &                        WORK(KSCVEC+(J-1)*NDETQ),1)
+!              END IF
             END DO
          END DO
-C
-C        Check for inconsistencies:
-C
-chj      1.0D-10 can give problems with 1.0D-10 screening in GASCIP
-C        THRDAS = 1.0D-10
+!
+!        Check for inconsistencies:
+!
+!        1.0D-10 can give problems with 1.0D-10 screening in GASCIP
+!        THRDAS = 1.0D-10
          THRDAS = MAX(1.0D-10,THRSCR*100.0D0)
          DASR = 0.0D0
          DASI = 0.0D0
@@ -599,11 +712,12 @@ C        THRDAS = 1.0D-10
                DASR = DASR +
      &            ABS( WORK(KHRED + (J-1) + (I-1)*MAX_HRED) -
      &                 WORK(KHRED + (I-1) + (J-1)*MAX_HRED) )
-               IF (NZ_in_CI .GT. 1) DASI = DASI +
-     &            ABS( WORK(KHREDI + (J-1) + (I-1)*MAX_HRED) +
-     &                 WORK(KHREDI + (I-1) + (J-1)*MAX_HRED) )
+!              IF (NZ_in_CI .GT. 1) DASI = DASI +
+!    &            ABS( WORK(KHREDI + (J-1) + (I-1)*MAX_HRED) +
+!    &                 WORK(KHREDI + (I-1) + (J-1)*MAX_HRED) )
             END DO
          END DO
+
          DAS = DASR + DASI
 
          IF (IPRINT .GE. 5 .OR. DAS .GT. THRDAS) THEN
@@ -659,28 +773,28 @@ C        Diagonalize reduced Hamiltonian
 C        -------------------------------
 C
          IF (NZ_in_CI.EQ.1) THEN
-            IF (IPRINT.GT.5) write(lupri,*) 'calling RSJACO'
             IJOB   = 1
             IORDER = 1
             IPACK  = 0
             CALL RSJACO(MAX_HRED,N_CRED,N_CRED,WORK(KHRED),WORK(KEIGVL),
-     &        IJOB,IORDER,IPACK,WORK(KEIGVC),WORK(KFREE),LFREE)
-         ELSE
-            IF (IPRINT.GT.5) write(lupri,*) 'calling QDIAG'
-            MATZ = 1
-            CALL MEMGET2('REAL','HREDCP',KHREDCP,LHRED,WORK,KFREE,LFREE)
-            CALL DCOPY(LHRED,WORK(KHRED),1,WORK(KHREDCP),1)
-            CALL QDIAG(2,N_CRED,WORK(KHREDCP),MAX_HRED,MAX_HRED,
-     &        WORK(KEIGVL),MATZ,WORK(KEIGVC),MAX_HRED,MAX_HRED,
-     &        WORK(KFREE),LFREE,IERR)
-            IF (IERR .NE. 0) THEN
-               WRITE(LUPRI,'(/2A,I4)')
-     &           ' *** ERROR in KRCI_RCISTD ***: ',
-     &           'QDIAG failed with error code ',IERR
-               CALL QUIT('*** ERROR in KRCI_RCISTD *** QDIAG failed')
-            END IF
-            CALL MEMREL('KRCI_RCISTD.QDIAG',
-     &         WORK,KWORK,KHREDCP,KFREE,LFREE)
+     &                  IJOB,IORDER,IPACK,WORK(KEIGVC),
+     &                  WORK(KFREE),LFREE)
+!        ELSE
+!           IF (IPRINT.GT.5) write(lupri,*) 'calling QDIAG'
+!           MATZ = 1
+!           CALL MEMGET2('REAL','HREDCP',KHREDCP,LHRED,WORK,KFREE,LFREE)
+!           CALL DCOPY(LHRED,WORK(KHRED),1,WORK(KHREDCP),1)
+!           CALL QDIAG(2,N_CRED,WORK(KHREDCP),MAX_HRED,MAX_HRED,
+!    &        WORK(KEIGVL),MATZ,WORK(KEIGVC),MAX_HRED,MAX_HRED,
+!    &        WORK(KFREE),LFREE,IERR)
+!           IF (IERR .NE. 0) THEN
+!              WRITE(LUPRI,'(/2A,I4)')
+!    &           ' *** ERROR in KRCI_RCISTD ***: ',
+!    &           'QDIAG failed with error code ',IERR
+!              CALL QUIT('*** ERROR in KRCI_RCISTD *** QDIAG failed')
+!           END IF
+!           CALL MEMREL('KRCI_RCISTD.QDIAG',
+!    &         WORK,KWORK,KHREDCP,KFREE,LFREE)
          END IF
 C
          IF (IPRINT .GE. 5) THEN
@@ -693,16 +807,18 @@ C
      &      ' Eigenvectors of reduced Hamiltonian, real part'
             CALL OUTPUT(WORK(KEIGVC),1,N_CRED,1,N_CRED,
      &                  MAX_HRED,MAX_HRED,-1,LUPRI)
-           IF (NZ_in_CI .GT. 1) THEN
-            WRITE(LUPRI,'(/A)') ' (KRCI_RCISTD)'//
-     &      ' Eigenvectors of reduced Hamiltonian, imaginary part'
-            CALL OUTPUT(WORK(KEIGVCI),1,N_CRED,1,N_CRED,
-     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
-           END IF
+!          IF (NZ_in_CI .GT. 1) THEN
+!           WRITE(LUPRI,'(/A)') ' (KRCI_RCISTD)'//
+!    &      ' Eigenvectors of reduced Hamiltonian, imaginary part'
+!           CALL OUTPUT(WORK(KEIGVCI),1,N_CRED,1,N_CRED,
+!    &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+!          END IF
          END IF
          ECIOLD(1:N_CSIM) = ECI(1:N_CSIM)
          ECIA(1:N_CSIM)   = WORK(KEIGVL:KEIGVL-1 + N_CSIM)
          ECI(1:N_CSIM)    = ECORE + ECIA(1:N_CSIM)
+
+         !> output information for present microiteration
          IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(/A,F20.8)')
      &        ' (KRCI_RCISTD) Core energy        =',ECORE
@@ -714,150 +830,213 @@ C
          WRITE(LUPRI,'(A,4F20.8/,(37X,4F20.8))')
      &        '                 Lowering of energy =',
      &        (ECIOLD(I)-ECI(I),I=1,N_CSIM)
+
 C
 C        Construct residuals
 C        -------------------
 C
-C        r = (H-E)x  (store in CVECS)
+C        r = (H-E)x  (store on lu7)
 C          = Hx - Ex
 C          = SUM_J C(J) SCVEC(J) - ECIA * SUM_J C(J) BCVEC(J)
 C
-         CALL DZERO(CVECS,N_ROOTS*NDETQ)
          ICONV_TOT = 1
-         DO, I_ROOT = 1,N_ROOTS
-           DO, I = 1, N_CRED
-             FAC = WORK((KEIGVC-1)+I+(I_ROOT-1)*MAX_HRED)
-C            write (lupri,*) 'i_root, ired, fac_real',i_root,i,fac
-             CALL DAXPY(NDETQ,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
-     &            CVECS(1,I_ROOT),1)
-             CALL DAXPY(NDETQ,-ECIA(I_ROOT)*FAC,
-     &            WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1,I_ROOT),1)
-             IF (NZ_in_CI .gt. 1) THEN
-                FAC = WORK((KEIGVCI-1)+I+(I_ROOT-1)*MAX_HRED)
-C               write (lupri,*) 'i_root, ired, fac_imag',i_root,i,fac
-                CALL DAXPY(NDET,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
-     &               CVECS(1+NDET,I_ROOT),1)
-                CALL DAXPY(NDET,-FAC,WORK(KSCVEC+(I-1)*NDETQ+NDET),1,
-     &               CVECS(1,I_ROOT),1)
-                CALL DAXPY(NDET,-ECIA(I_ROOT)*FAC,
-     &               WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1+NDET,I_ROOT),1)
-                CALL DAXPY(NDET,+ECIA(I_ROOT)*FAC,
-     &               WORK(KBCVEC+(I-1)*NDETQ+NDET),1,CVECS(1,I_ROOT),1)
-              END IF
-           END DO
-           DNRES(I_ROOT) = DNORM2(NDETQ,CVECS(1,I_ROOT),1)
+         call rewine(lu7,-1)
+
+         DO I_ROOT = 1, N_ROOTS
+
+           do i = 1, n_cred
+             work(kfacnr+i-1) = work((keigvc-1)+i+(i_root-1)*max_hred)
+           end do
+
+!          !>  SUM_J C(J) SCVEC(J)
+           call mvcsmd(lu2,work(kfacnr),lu4,lu5,vec1,vec2,n_cred,1,-1)
+
+           call dscal(n_cred,ecia(i_root),work(kfacnr),1)
+
+!          !> ECIA * SUM_J C(J) BCVEC(J)
+           call mvcsmd(lu1,work(kfacnr),lu3,lu5,vec1,vec2,n_cred,1,-1)
+
+           !> final (H-E)x
+           call vecsmd(vec1,vec2,1.0d0,-1.0d0,lu4,lu3,lu6,1,-1)
+
+           IF (NZ_in_CI .gt. 1) THEN
+
+             DO I = 1, N_CRED
+               work(kfacnr+i-1)=WORK((KEIGVCI-1)+I+(I_ROOT-1)*MAX_HRED)
+             end do
+!            CALL DAXPY(NDET,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
+!    &            CVECS(1+NDET,I_ROOT),1)
+!            CALL DAXPY(NDET,-FAC,WORK(KSCVEC+(I-1)*NDETQ+NDET),1,
+!    &            CVECS(1,I_ROOT),1)
+!            CALL DAXPY(NDET,-ECIA(I_ROOT)*FAC,
+!    &            WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1+NDET,I_ROOT),1)
+!            CALL DAXPY(NDET,+ECIA(I_ROOT)*FAC,
+!    &            WORK(KBCVEC+(I-1)*NDETQ+NDET),1,CVECS(1,I_ROOT),1)
+           END IF
+
+           !> what is my residual?
+           DNRES(I_ROOT) = sqrt(inprdd(vec1,vec1,lu6,lu6,-1,-1))
+!    &     complex!!!        +  INPRDD(VEC1,VEC1,LU4,LU4,0,LBLK)))
            IF ( DNRES(I_ROOT) .GT. THR_CONV ) ICONV_TOT = 0 ! not all converged
+
+           call rewine(lu6,-1)
+           call copvcd(lu6,lu7,vec1,0,-1)
+
          END DO
-         IF (I_STATE .GT. 0) THEN ! only converge this root
-           IF ( DNRES(I_STATE) .LE. THR_CONV ) ICONV_TOT = 1 ! the requested state is converged
+
+         IF (I_STATE > 0)THEN ! only converge this root
+           IF(DNRES(I_STATE) <= THR_CONV) ICONV_TOT = 1 ! the state is converged
          END IF
 C
          WRITE(LUPRI,'(/A,1P,D8.2,A/,(I10,D20.5))')
      &     ' (KRCI_RCISTD) Norm of CI residuals (thr = ',THR_CONV,')',
      &     (I_ROOT,DNRES(I_ROOT),I_ROOT=1,N_ROOTS)
-         IF (IPRINT .GE. 10) THEN
+!        IF (IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(/A,I4,A)')
      &       ' (KRCI_RCISTD) CI residual vectors for',N_ROOTS,' roots'
             IF (NZ_in_CI.gt.1)
      &         WRITE(LUPRI,'(/A)') '(real 1, imag 1, real 2, ...)'
-            CALL OUTPUT(CVECS,1,NDET,1,NZ_in_CI*N_ROOTS,
-     &         NDET,NZ_in_CI*N_ROOTS,-1,LUPRI)
-         END IF
-C
+            call rewine(lu7,-1)
+            do i = 1, n_roots
+              WRITE(LUPRI,'(/A,I4,A)')
+     &       ' (KRCI_RCISTD) CI residual vector for',i,'th root'
+              call wrtvcd(vec1,lu7,0,-1)
+            end do
+            call rewine(lu7,-1)
+!        END IF
+
+!        !> check for possible exits
          IF (ICONV_TOT .EQ. 1) THEN
             WRITE(LUPRI,'(/A)')
-     &         ' *** All requested CI roots are converged. ***'
+     &      ' *** All requested CI roots are converged. ***'
             exit
          END IF
 C
-         CALL FLSHFO(LUPRI)
-C
-         IF ( ITMIC .EQ. MAX_CI_IT ) THEN
-            ICONV_TOT = -2
-            exit
+         IF(ITMIC == MAX_CI_IT)THEN
+           ICONV_TOT = -2
+           exit
          END IF
-         IF (N_CRED .GE. MAX_HRED) THEN
-            ICONV_TOT = -3
-            exit
+
+         IF(N_CRED >= MAX_HRED) THEN
+           ICONV_TOT = -3
+           exit
          END IF
+
 C
 C        Construct N_ROOTS new trial vectors
 C        -----------------------------------
 C
          N_ROOTS_NOT_CONVERGED = 0   !! counter for new trial vectors (only add non-converged roots!)
-         JBCVEC = KBCVEC + N_CRED*NDETQ - 1
+         !> residual vec on lu7
+         call rewine(lu7,-1)
+         call rewine(lu4,-1)
+         call rewine(lu5,-1)
+         call rewine(lu3,-1)
+
          DO I_ROOT = 1,N_ROOTS
-            IF ( DNRES(I_ROOT) .LE. THR_CONV ) CYCLE ! this one is converged
+
+            IF ( DNRES(I_ROOT) <= THR_CONV )then
+              call skpvcd(lu7,1,vec1,0,-1)
+              cycle ! this one is converged
+            end if
+
             N_ROOTS_NOT_CONVERGED = N_ROOTS_NOT_CONVERGED + 1
-            ECIA_I = ECIA(I_ROOT)
-            DO I = 1, NDET
-               HD = WORK(KHDIAG+I-1) - ECIA_I
-               IF (ABS(HD) .LE. THRZER) HD = 1.0D0
-               WORK(JBCVEC        + I) = - CVECS(       I, I_ROOT) / HD
-               IF (NZ_in_CI .EQ. 2)
-     &         WORK(JBCVEC + NDET + I) = - CVECS(NDET + I, I_ROOT) / HD
-            END DO
-            IF (IPRINT .GE. 10) THEN
-              write (lupri,*) 'trial vector',N_ROOTS_NOT_CONVERGED,
-     &                        ' for root',i_root,' before renorm'
-              call output(work(jbcvec+1),1,ndet,1,NZ_in_CI,
-     &                    ndet,NZ_in_CI,1,lupri)
-            END IF
-            CALL RCINORM(WORK(JBCVEC+1),IPRINT)
+            ECIA_I                = ECIA(I_ROOT) + ecore
+
+            call rewine(ludia,-1)
+            call rewine(lu4,-1)
+            call dmtvcd_krci(vec1,vec2,ludia,lu7,lu4,-ecia_i,0.0d0,
+     &                      0,1,-1)
+
+            call rcinorm_krci(vec1,lu4,lu5)
+            call rewine(lu4,-1)
+            call copvcd(lu4,lu3,vec1,0,-1)
+
             IF (IPRINT .GE. 10) THEN
               write (lupri,*) 'trial vector',N_ROOTS_NOT_CONVERGED,
      &                        ' for root',i_root,' after renorm'
-              call output(work(jbcvec+1),1,ndet,1,NZ_in_CI,
-     &                 ndet,NZ_in_CI,1,lupri)
+              call wrtvcd(vec1,lu4,1,-1)
             END IF
-            JBCVEC = JBCVEC + NDETQ
+            
+
          END DO  ! I_ROOT = 1, N_ROOTS
+
 C
 C        Orthogonalize trial vector(s)
 C        and remove linear dependent vectors
 C        -----------------------------------
 C
+         call rewine(lu3,-1)
+         call rewine(lu4,-1)
+
          N_CSIM = 0
          DO J = N_CRED + 1, N_CRED + N_ROOTS_NOT_CONVERGED
 C           loop over new trial vectors
 C           Project out all previous trial vectors
+
+            call rewine(lu4,-1)
+            call copvcd(lu3,lu4,vec1,0,-1)
+
+!           write (lupri,*) 'new vector no. J on lu4',J,lu4
+!           call wrtvcd(vec1,lu4,1,-1)
+
+            call rewine(lu1,-1)
 C
             OVLP_imag = 0.0D0
+            lux       = lu4
+            luy       = lu6
+            switch    = .false.
             DO I = 1, J - 1   ! loop over previous ("old") trial vectors
 C
 C              Calculate <B(old)|B(new)> / <B(old)|B(old)>
 C              = <B(old)|B(new)>  (as trial vectors are normed to 1)
 C
-               OVLP_real = DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
-     &                                WORK(KBCVEC+(J-1)*NDETQ),1)
-               IF (NZ_in_CI .gt. 1) THEN
-                  OVLP_imag =
-     &                DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,        ! +i <B(old,real)|B(new,imag)>
-     &                          WORK(KBCVEC+(J-1)*NDETQ+NDET),1)
-     &              - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,   ! -i <B(old,imag)|B(new,real)>
-     &                          WORK(KBCVEC+(J-1)*NDETQ),1)
-               END IF
-C       write (lupri,*) 'old vector no. I, OVLP',I,OVLP_real,OVLP_imag
+               if(switch)then
+                 lutmp  = lux
+                 lux    = luy
+                 luy    = lutmp
+                 switch = .false.
+               end if
+
+               call rewine(lu5,-1)
+               call copvcd(lu1,lu5,vec1,0,-1)
+
+!      write (lupri,*) 'old vector no. i',i
+!              call wrtvcd(vec1,lu5,1,-1)
+!      write (lupri,*) ' lux (old luy) and luy are for ',i,lux,luy
+!      write (lupri,*) 'current j vector on lux',lux
+!              call wrtvcd(vec1,lux,1,-1)
+
+               OVLP_real = inprdd(VEC1,VEC2,LUx,LU5,1,-1)
+
+!              IF (NZ_in_CI .gt. 1) THEN
+!                 OVLP_imag =
+!    &                DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,        ! +i <B(old,real)|B(new,imag)>
+!    &                          WORK(KBCVEC+(J-1)*NDETQ+NDET),1)
+!    &              - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,   ! -i <B(old,imag)|B(new,real)>
+!    &                          WORK(KBCVEC+(J-1)*NDETQ),1)
+!              END IF
+!       write (lupri,*) 'old vector no. I, OVLP',I,OVLP_real,OVLP_imag
 C
 C              Calculate B(new) = B(new) - OVLP * B(old)
 C
-               IF (ABS(OVLP_real) .GT. THRZER) THEN
-                  CALL DAXPY(NDETQ,-OVLP_real,
-     &                       WORK(KBCVEC+(I-1)*NDETQ),1,
-     &                       WORK(KBCVEC+(J-1)*NDETQ),1)
-               END IF
-               IF (ABS(OVLP_imag) .GT. THRZER) THEN
-                  CALL DAXPY(NDET,-OVLP_imag,
-     &                       WORK(KBCVEC+(I-1)*NDETQ),1,
-     &                       WORK(KBCVEC+(J-1)*NDETQ+NDET),1)
-                  CALL DAXPY(NDET,+OVLP_imag,
-     &                       WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
-     &                       WORK(KBCVEC+(J-1)*NDETQ),1)
-               END IF
+               if(abs(ovlp_real) > thrzer)then
+                call vecsmd(vec1,vec2,-ovlp_REAL,1.0D0,lu5,lux,luy,1,-1)
+                switch = .true.
+               end if
+
+!              IF (ABS(OVLP_imag) .GT. THRZER) THEN
+!                 CALL DAXPY(NDET,-OVLP_imag,
+!    &                       WORK(KBCVEC+(I-1)*NDETQ),1,
+!    &                       WORK(KBCVEC+(J-1)*NDETQ+NDET),1)
+!                 CALL DAXPY(NDET,+OVLP_imag,
+!    &                       WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
+!    &                       WORK(KBCVEC+(J-1)*NDETQ),1)
+!              END IF
             END DO  ! I = 1, J - 1 (previous trial vectors)
 C
-            DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(J-1)*NDETQ),1)
-C           write(lupri,*) 'DN after', DNAFT
+            dnaft = SQRT(inprdd(vec1,vec1,luy,luy,1,-1))
+!           write(lupri,*) 'DN after', DNAFT
             IF (ABS(DNAFT) .LE. THRZER) THEN
                WRITE (LUPRI,'(/A,I4,A)') 'INFO: New CI trial vector no.'
      &            ,J-N_CRED,' removed because of linear dependency'
@@ -865,13 +1044,17 @@ C           write(lupri,*) 'DN after', DNAFT
             END IF
 
             DNAFT = 1.0D0 / DNAFT
-            CALL DSCAL(NDETQ,DNAFT,WORK(KBCVEC+(J-1)*NDETQ),1)
+            call rewine(luy,-1)
+            call sclvcd(luy,lu1,dnaft,vec1,0,-1)
 
             N_CSIM = N_CSIM + 1
             J_NEW  = N_CRED + N_CSIM
-            IF (J_NEW .LT. J)
-     &         CALL DCOPY(NDETQ,WORK(KBCVEC+(J    -1)*NDETQ),1,
-     &                          WORK(KBCVEC+(J_NEW-1)*NDETQ),1)
+            if(j_new < j)then
+              write(lupri,*) 'warning ==> j_new < j',j_new, j
+              call skpvcd(lu1,j_new-1,vec1,1,-1)
+              call rewine(luy,-1)
+              call sclvcd(luy,lu1,dnaft,vec1,0,-1)
+            end if
          END DO
 C
 C        Print timings
@@ -937,37 +1120,31 @@ C
       WRITE(LUPRI,'(A,4F20.8/,(37X,4F20.8))')
      &     ' (KRCI_RCISTD) Final CI energies  = ',ECI(1:N_ROOTS)
 C
-C     Construct CVECS:
-C
-      CALL DZERO(CVECS,N_ROOTS*NDETQ)
+!     !> construct CVECS
+!     CALL DZERO(CVECS,N_ROOTS*NDETQ)
+
+      call quit('stefan forced me to stop')
+
       DO I_ROOT = 1, N_ROOTS
+
          JEIGVC_R = KEIGVC -1 + (I_ROOT-1)*MAX_HRED
          JEIGVC_I = KEIGVCI-1 + (I_ROOT-1)*MAX_HRED
+
          DO I = 1, N_CRED
-            CALL DAXPY(NDETQ,WORK(JEIGVC_R+I),
-     &           WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1,I_ROOT),1)
-            IF (NZ_in_CI .eq. 2) THEN
-               CALL DAXPY(NDET,WORK(JEIGVC_I+I),
-     &           WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1+NDET,I_ROOT),1)
-               CALL DAXPY(NDET,-WORK(JEIGVC_I+I),
-     &           WORK(KBCVEC+(I-1)*NDETQ+ NDET),1,CVECS(1,I_ROOT),1)
-            END IF
+
+!           CALL DAXPY(NDETQ,WORK(JEIGVC_R+I),
+!    &           WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1,I_ROOT),1)
+
+!           IF (NZ_in_CI .eq. 2) THEN
+!              CALL DAXPY(NDET,WORK(JEIGVC_I+I),
+!    &           WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1+NDET,I_ROOT),1)
+!              CALL DAXPY(NDET,-WORK(JEIGVC_I+I),
+!    &           WORK(KBCVEC+(I-1)*NDETQ+ NDET),1,CVECS(1,I_ROOT),1)
+!           END IF
          END DO
       END DO
-#ifdef GASCIP_DEBUG
-       IF (NZ_in_CI .eq. 2) THEN
-         WRITE(LUPRI,*)
-     &   '(KRCI_RCISTD): (Real, imag) part of the N_ROOTS CI vectors'
-       ELSE
-         WRITE(LUPRI,*)
-     &   '(KRCI_RCISTD): Real part of the N_ROOTS CI vectors'
-       END IF
-       CALL OUTPUT(CVECS,1,NDET,1,N_ROOTS*NZ_in_CI,
-     &             NDET,N_ROOTS*NZ_in_CI,-1,LUPRI)
-#endif
-C
-C     Check norm of CI vectors
-C
+
+!     !> check norm of CI vectors
       DO I_ROOT = 1, N_ROOTS
 
          WRITE(LUPRI,'(//A/A,I3,A,I3/A)')
@@ -975,7 +1152,8 @@ C
      &   ' (KRCI_RCISTD) CI solution vector',I_ROOT,' of ',N_ROOTS,
      &   ' ============================================'
 
-         CALL RCINORM(CVECS(1,I_ROOT),IPRINT)
+!        CALL RCINORM(CVECS(1,I_ROOT),IPRINT)
+         call rcinorm_krci(vec1,lux,luy)
 
       END DO
 C
@@ -991,10 +1169,9 @@ C
       CALL MEMREL('KRCI_RCISTD',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 !
-!     return the final eigenvalues to the incoming array (needed in the calling routine)
-      call dcopy(N_ROOTS,eci,1,eci_out,1)
+!     !> return the final eigenvalues (needed in the calling routine)
 
-      CALL FLSHFO(LUPRI)
+      call dcopy(N_ROOTS,eci,1,eci_out,1)
 
       CALL QEXIT('KRCI_RCISTD')
 
@@ -1003,7 +1180,7 @@ C
 C
       END SUBROUTINE KRCI_RCISTD
 
-      subroutine rcinorm_krci(vec1,funit,funit2)
+      subroutine rcinorm_krci(vec1,funit1,funit2)
 
       !> \brief Normalize CI vector
       !> \author S. Knecht
@@ -1013,21 +1190,36 @@ C
 
       integer, intent(in)    :: funit1, funit2
       real*8 , intent(inout) :: vec1(*)
-      
-      
-      SCALE = INPRDD(VEC1,VEC1,LU6,LU6,1,LBLK)
 
-      FACTOR = 1.0D0/SQRT(SCALE)
-      CALL REWINE(LU6,LBLK)
-      CALL SCLVCD(LU6,LU3,FACTOR,VEC1,0,LBLK)
-      IF(IPRT.GE.600) THEN
-        CALL SCLVCD(LU6,LU7,FACTOR,VEC1,1,LBLK)
-        WRITE(6,*) '   normalized     (D-E)-1 *( HX - EX ) '
-        CALL WRTVCD(VEC1,LU7,1,LBLK)
-      END IF
-      end subroutine RCINORM_KRCI
-#endif
-! work_in_progress_for_release
+      real*8 , parameter     :: thrtt = 1.0d-04
+      real*8                 :: tnorm, dn
+      real*8                 :: inprdd
+      
+      
+      tnorm = inprdd(vec1,vec1,funit1,funit1,1,-1)
+      dn    = sqrt(tnorm)
+      print *, 'dn == ',dn
+
+      if(dn /= 1.0d0)then
+
+        if(dn <= thrtt)then
+          dn = 1.0d0/dn
+          call rewine(funit1,-1)
+          call sclvcd(funit1,funit2,dn,vec1,0,-1)
+          WRITE(6,'(/A,F20.12)')
+     &    ' (RCINORM) CI vector renormalized with factor ',DN
+          tnorm = inprdd(vec1,vec1,funit2,funit2,1,-1)
+          dn    = sqrt(tnorm)
+        else
+          call copvcd(funit1,funit2,vec1,1,-1)
+        end if
+        dn = 1.0d0/dn
+        call sclvcd(funit2,funit1,dn,vec1,1,-1)
+        WRITE(6,'(/A,F20.12)')
+     &  ' (RCINORM) CI vector renormalized with factor ',dn
+      end if
+
+      end subroutine rcinorm_krci
 
       SUBROUTINE EIGEN_NEW(HR,NDIM,EIGVAL,EIGVEC,AMATC,RWORK,EVL)
 C***********************************************************************
@@ -3194,12 +3386,22 @@ C      END IF
          CALL REWINE(LU3,-1)
          CALL REWINE(LU4,-1)
          CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
+!        WRITE(LUwrt,'(/A,I3,A,I3)')
+!    &   ' (KRCI_RCISTD) Trial vector no. ',ivec,' of ',ninvec
+!        call wrtvcd(vec1,lu3,1,-1)
+
+         CALL REWINE(LU3,-1)
+
          call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
 !        WRITE(LUWRT,*) '  sigma vec ...',ivec
 !        CALL WRTVCD(VEC1,LU4,1,LBLK)
          CALL REWINE(LU4,-1)
          CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
+
+!        WRITE(LUwrt,'(/A,I3,A,I3)')
+!    &   ' (KRCI_RCISTD) Sigma vector no. ',ivec,' of ',ninvec
+!        call wrtvcd(vec1,lu4,1,-1)
 *. Projected matrix
          CALL REWINE(LU2,-1)
          DO 8 JVEC = 1, IVEC

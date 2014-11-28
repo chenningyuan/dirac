@@ -34,6 +34,7 @@
 * Jeppe Olsen, Winter of 1995
 *
       use interface_to_mpi
+      use qcorr_cfg
       IMPLICIT REAL*8(A-H,O-Z)
       EXTERNAL MV7
 #include "mxpdim.inc"
@@ -812,12 +813,14 @@ C
 *         ^ End if print of CI vector
         END IF
         IF (NPROP.GT.0) CALL ONE_EL_PROP
-!       call q_correction(WORK(KVEC1),NBLOCK,WORK(KLCIBT),
-!    &                    WORK(KLCBLTP),LUC,LUSC1,
-!    &                    ICISTR,1,WORK,.false.)
       END DO
-      END IF
-*    /\ end over master
+      ! +Q correction
+      if(luci_cfg_qcorr)then
+        call q_correction(WORK(KVEC1),NBLOCK,WORK(KLCIBT),
+     &                    WORK(KLCBLTP),LUC,LUSC1,
+     &                    ICISTR,1,WORK,.false.)
+      end if
+      END IF ! master
 *
 CTF
 C     If TERACI has been chosen, only 1 root is determined.

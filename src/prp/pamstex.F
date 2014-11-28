@@ -253,10 +253,14 @@ C     See if a separate reference state will be used.
          WRITE(LUPRI,*) 'DFCOEF.ION found, using it as reference state'
          WRITE(LUPRI,*) 'for STEX calculation'
 C     Move groundstate DFCOEF to DFCOEF.GS
-C     ulfek: bug here on some systems
+#if defined SYS_WINDOWS
+         ISYS1 = SYSTEM('move /Y DFCOEF DFCOEF.GS')
+         ISYS2 = SYSTEM('move /Y DFCOEF.ION DFCOEF')
+#else
          ISYS1 = SYSTEM('mv DFCOEF DFCOEF.GS')
          ISYS2 = SYSTEM('mv DFCOEF.ION DFCOEF')
-c         PRINT *,'Debug: mv return codes',ISYS1,ISYS2
+#endif
+C         PRINT *,'Debug: mv/move return codes',ISYS1,ISYS2
          STEX_COFACTOR = .TRUE.
       ELSE
          WRITE(LUPRI,*) 'No separate reference state (DFCOEF.ION) found'

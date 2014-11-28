@@ -5,39 +5,37 @@ if(DEVELOPMENT_CODE)
     find_package(Git)
     if(GIT_FOUND)
         execute_process(
-            COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
+            COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 --abbrev-commit HEAD
             OUTPUT_VARIABLE GIT_REVISION
             ERROR_QUIET
             )
+            
         if(NOT ${GIT_REVISION} STREQUAL "")
             string(STRIP ${GIT_REVISION} GIT_REVISION)
         endif()
-
-      # radovan: problematic on machines with old git
-      # execute_process(
-      #     COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-      #     OUTPUT_VARIABLE GIT_BRANCH
-      #     ERROR_QUIET
-      #     )
-      
-      if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+        
         execute_process(
-              COMMAND powershell.exe "${GIT_EXECUTABLE} branch | findstr *"
-              OUTPUT_VARIABLE GIT_BRANCH
-              ERROR_QUIET
-              )
-      else()
-          execute_process(
-              COMMAND ${GIT_EXECUTABLE} branch
-              COMMAND grep "*"
-              OUTPUT_VARIABLE GIT_BRANCH
-              ERROR_QUIET
-              )
-      endif()
+            COMMAND ${GIT_EXECUTABLE} log --max-count=1 HEAD
+            OUTPUT_VARIABLE GIT_LAST_COMMIT
+            ERROR_QUIET
+            )
+            
+        if(NOT ${GIT_LAST_COMMIT} STREQUAL "")
+            string(REGEX MATCH "Author:[ ]*(.+<[^>]+>)" temp "${GIT_LAST_COMMIT}")
+            set(GIT_LAST_COMMIT_AUTHOR ${CMAKE_MATCH_1})
+            string(REGEX MATCH "Date:[ ]*(.+(\\+|-)[0-9][0-9][0-9][0-9])" temp "${GIT_LAST_COMMIT}")
+            set(GIT_LAST_COMMIT_DATE ${CMAKE_MATCH_1})
+        endif()
+
+      execute_process(
+          COMMAND ${PYTHON_EXECUTABLE} -c "import subprocess; import re; print(re.match(r'\\*.*', subprocess.Popen(['${GIT_EXECUTABLE}', 'branch'], stdout=subprocess.PIPE).communicate()[0]).group())"
+          OUTPUT_VARIABLE GIT_BRANCH
+          ERROR_QUIET
+          )
+      
       if(NOT ${GIT_BRANCH} STREQUAL "")
-          string(REPLACE "*" " " GIT_BRANCH ${GIT_BRANCH})
+          string(REPLACE "*" "" GIT_BRANCH ${GIT_BRANCH})
           string(STRIP ${GIT_BRANCH} GIT_BRANCH)
-          message("-- GIT_BRANCH            : ${GIT_BRANCH}")
       endif()
 
       execute_process(

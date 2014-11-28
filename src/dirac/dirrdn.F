@@ -345,7 +345,10 @@ C
       LOGICAL   NOGENINP, USER_STOL
 C
 #include "dcbgen.h"
-#include "dcbham.h" ! MDIRAC is needed for check of STOL(2)
+
+! MDIRAC is needed for check of STOL(2)
+#include "dcbham.h"
+
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
@@ -3134,7 +3137,7 @@ C
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
-     &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
+     &            '.ANALYZ','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
      &            '.DISTRT','.CONVER','.TRUNCF','.MEMFAC','XXXXXXX'/
       DATA SET/.FALSE./
 C
@@ -3294,7 +3297,8 @@ C&&& MXCIVE: Maximum number of subspace CI vectors
                   IMOKW(20) = 1
                GO TO 100
    21          CONTINUE
-C&&& xxxxxx: 
+C&&& ANALYZE 
+                  IMOKW(25) = 1
                GO TO 100
    22          CONTINUE
 C&&& xxxxxxxxx:
@@ -4596,6 +4600,7 @@ C
       ISPHTR   = ILSPH+2*ISSPH
       IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
       INTGEN   = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+      INTGEN_SAVE = INTGEN
       CVAL     = CVEL
       STOL(1)  = 1.0D-6
       STOL(2)  = 1.0D-8
@@ -5623,6 +5628,12 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
        IF (DOPRP) THEN
         WRITE(LUPRI,'(2X,A)') '- BSS with properties !'
        ENDIF
+
+       IF(DO2C4C)THEN
+         IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
+           IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
+         END IF
+       END IF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
         IF (((IBSS.EQ.2999).or.x2c).AND.NOPRTR) THEN

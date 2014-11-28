@@ -1512,7 +1512,11 @@ C
 C
 C     NMR shielding
 C
+#ifdef MOD_LAO_REARRANGED
+      IF(SHIELD.or.shielding_rearrange) THEN
+#else
       IF(SHIELD) THEN
+#endif
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -3177,6 +3181,7 @@ CTROND  Insert dimensions !!
         ENDDO
         CALL PRSYMB(LUPRI,'-',100,0)
 !radovan: print out reduced SSCC in SI units
+        FACTOR = AUTOHZ/3.85000804D-1
         CALL AROUND('Final reduced spin-spin-couplings K (SI)')
         WRITE(LUPRI,'(2A15,5(2X,A12))')
      &  'At1  #  iso  : ','At2  #  iso  : ',
@@ -3199,7 +3204,6 @@ CTROND  Insert dimensions !!
                 J3END = JISO
               ENDIF
               DO J3 = 1,J3END
-                FACTOR = AUTOHZ/3.85000804D-1
                 WRITE(LUPRI,'(2(A6,I5,2X,A1,1X),5(2X,F12.4))')
      &                NAMDEP(IATOM1),I3,':',NAMDEP(IATOM2),J3,':',
      &                FACTOR*SPNPAR(1,IATIJ),

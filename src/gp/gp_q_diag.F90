@@ -1,5 +1,5 @@
 !
-! F90 file with general purpose routines, written mainly by Miro Ilias
+! F90 file with general purpose routines for quaternion and other diagonalizations
 !
 
 

@@ -206,7 +206,9 @@ def main():
     add_test('response_complex', 'short;response')
     add_test('response_nonrel', 'short;response')
     add_test('cosci_energy', 'short;ci')
-    add_test('krci_energy_q_corrections', 'medium;krci;ci')
+    add_test('krci_energy_q_corrections', 'medium;krci;qcorr;ci')
+    add_test('lucita_q_corrections', 'short;qcorr;ci')
+    add_test('x2c-SCF_to_4c-SCF', 'short;x2c;;4c;scf')
     # benchmarks, not run as part of standard test set
     add_test('benchmark_cc', 'benchmark;cc')
     add_test('benchmark_cc_linear', 'benchmark;cc')
