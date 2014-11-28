@@ -90,10 +90,10 @@ include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
 
-if(USE_BUILTIN_BLAS)
+if(ENABLE_BUILTIN_BLAS)
     add_definitions(-DUSE_BUILTIN_BLAS)
 endif()
-if(USE_BUILTIN_LAPACK)
+if(ENABLE_BUILTIN_LAPACK)
     add_definitions(-DUSE_BUILTIN_LAPACK)
 endif()
 
