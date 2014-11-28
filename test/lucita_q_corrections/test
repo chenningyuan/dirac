@@ -14,6 +14,6 @@ f.add(from_string = 'Q corrections for state',
       num_lines   = 12,
       rel_tolerance   = 1.0e-5)
 
-test.run(['lucita-q.inp'], ['h2o.xyz'], f)
+test.run(['lucita-q.inp'], ['h2o.xyz'], f, accepted_errors=['memory offset (dynamic memory - static memory) is too big for i*4'])
 
 sys.exit(test.return_code)
