@@ -13,9 +13,8 @@ rem go to the local DIRAC directory
 cd %DIRAC%
 
 git --version
-
 git status
-
+echo Exit Code of git status is %errorlevel%
 
 rem fetch to origin master
 rem git fetch origin master
@@ -32,7 +31,7 @@ python pamadm -a --builddir=%BUILD%
 python setup -D BUILDNAME="Win8.0_MinGW64_i4" -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%
 cd %BUILD%
 ctest    -VV -D ExperimentalUpdate     --track Miro
-echo Exit Code is %errorlevel%
+rem echo Exit Code is %errorlevel%
 ctest     -D ExperimentalConfigure  --track Miro
 ctest -j2 -D ExperimentalBuild      --track Miro
 ctest -j2 -D ExperimentalTest       --track Miro
@@ -44,17 +43,21 @@ timeout 60
 echo %DATE% %TIME%
 
 rem try git pull
-git pull --verbose
-echo Exit Code is %errorlevel%
+rem git pull --verbose
+rem echo Exit Code is %errorlevel%
 
 rem go to the local DIRAC directory
 cd %DIRAC%
+
+git status
+echo Exit Code is %errorlevel%
+
 set BUILD=build_mingw64_i8_check
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
 python setup -D BUILDNAME="Win8.0_MinGW64_i8_check" --check --int64 -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%
 cd %BUILD%
-rem ctest     -D ExperimentalUpdate     --track BoundsCheck
+ctest     -D ExperimentalUpdate     --track BoundsCheck
 ctest     -D ExperimentalConfigure  --track BoundsCheck
 ctest -j2 -D ExperimentalBuild      --track BoundsCheck
 ctest -j2 -D ExperimentalTest       --track BoundsCheck
@@ -70,9 +73,9 @@ cd %DIRAC%
 set BUILD=build_mingw64_i8
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
-python setup -D BUILDNAME="Win8.0_MinGW64_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=ON -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%
+python setup -D BUILDNAME="Win8.0_MinGW64_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%
 cd %BUILD%
-rem ctest     -D ExperimentalUpdate     --track Miro
+ctest     -D ExperimentalUpdate     --track Miro
 ctest     -D ExperimentalConfigure  --track Miro
 ctest -j2 -D ExperimentalBuild      --track Miro
 ctest -j2 -D ExperimentalTest       --track Miro
