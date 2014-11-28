@@ -21,14 +21,14 @@ if(DEVELOPMENT_CODE)
             )
             
         if(NOT ${GIT_LAST_COMMIT} STREQUAL "")
-            string(REGEX MATCH "Author:[ ]*(.+<.+>).*Date:" temp "${GIT_LAST_COMMIT}")
+            string(REGEX MATCH "Author:[ ]*(.+<[^>]+>)" temp "${GIT_LAST_COMMIT}")
             set(GIT_LAST_COMMIT_AUTHOR ${CMAKE_MATCH_1})
             string(REGEX MATCH "Date:[ ]*(.+(\\+|-)[0-9][0-9][0-9][0-9])" temp "${GIT_LAST_COMMIT}")
             set(GIT_LAST_COMMIT_DATE ${CMAKE_MATCH_1})
         endif()
 
       execute_process(
-          COMMAND ${PYTHON_EXECUTABLE} -c "import subprocess; import re; print(re.match(r'\\*.*', subprocess.check_output(['git', 'branch'])).group())"
+          COMMAND ${PYTHON_EXECUTABLE} -c "import subprocess; import re; print(re.match(r'\\*.*', subprocess.Popen(['${GIT_EXECUTABLE}', 'branch'], stdout=subprocess.PIPE).communicate()[0]).group())"
           OUTPUT_VARIABLE GIT_BRANCH
           ERROR_QUIET
           )
