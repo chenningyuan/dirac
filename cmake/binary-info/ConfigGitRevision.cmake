@@ -21,7 +21,7 @@ if(DEVELOPMENT_CODE)
             )
             
         if(NOT ${GIT_LAST_COMMIT} STREQUAL "")
-            string(REGEX MATCH "Author:[ ]*(.+<[^>]+>)" temp "${GIT_LAST_COMMIT}")
+            string(REGEX MATCH "Author:[ ]*(.+)<" temp "${GIT_LAST_COMMIT}")
             set(GIT_LAST_COMMIT_AUTHOR ${CMAKE_MATCH_1})
             string(REGEX MATCH "Date:[ ]*(.+(\\+|-)[0-9][0-9][0-9][0-9])" temp "${GIT_LAST_COMMIT}")
             set(GIT_LAST_COMMIT_DATE ${CMAKE_MATCH_1})
