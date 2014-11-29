@@ -23,10 +23,10 @@ message("-- C++ compiler flags       : ${CMAKE_CXX_FLAGS}  ${CMAKE_CXX_FLAGS_${c
 
 message("-- Definitions              : ${_list_of_definitions}")
 
-message("-- BLAS                     : ${BLAS_LIBRARIES}")
-message("-- LAPACK                   : ${LAPACK_LIBRARIES}")
+message("-- BLAS                     : ${BLAS_LIBRARIES}${BLAS_LIBRARIES_INFO}")
+message("-- LAPACK                   : ${LAPACK_LIBRARIES}${LAPACK_LIBRARIES_INFO}")
 message("-- Libraries                : ${EXTERNAL_LIBS}")
-message("-- Explicit libs            : ${EXPLICIT_LIBS}")
+message("-- Explicit libs            : ${EXPLICIT_LIBS}${EXPLICIT_LIBS_INFO}")
 message("-- Static linking           : ${ENABLE_STATIC_LINKING}")
 message("-- Git branch               : ${GIT_BRANCH}")
 message("-- Git revision             : ${GIT_REVISION}")
