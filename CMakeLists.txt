@@ -89,12 +89,11 @@ include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
-include(BinaryInfo) # has to come after ConfigVersion
 
-if(USE_BUILTIN_BLAS)
+if(ENABLE_BUILTIN_BLAS)
     add_definitions(-DUSE_BUILTIN_BLAS)
 endif()
-if(USE_BUILTIN_LAPACK)
+if(ENABLE_BUILTIN_LAPACK)
     add_definitions(-DUSE_BUILTIN_LAPACK)
 endif()
 
@@ -229,8 +228,20 @@ add_custom_target(dirac_interfaces
     ${GENERATED_FILES}
 )
 
-# set definitions
+# set source file properties
+# fix for Windows with 64bit integers on and build type release or profile
+# when using GNU (gfortran) compilers
+# there is one source file for which -O3/-O2 is not good
+if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU") 
+    AND (ENABLE_64BIT_INTEGERS)
+    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile"))) 
+    set_source_files_properties(
+        ${CMAKE_SOURCE_DIR}/src/abacus/hermodules.F90
+        PROPERTIES COMPILE_FLAGS "-O1"
+        )
+endif()
 
+# set definitions
 include(Definitions)
 
 add_definitions(-DPRG_DIRAC)
@@ -374,6 +385,47 @@ endif()
 include(ConfigTesting)
 include(ConfigPackaging)
 
-# give information about system, compiler flags, and size of static allocations
+# give information about system, compiler flags, and size of static allocations ...
 set(STATIC_MEM_INFO_BINARIES dirac)
-include(ConfigInfo)
+
+# info what blas and lapack will be used when its variable is not set
+if(NOT BLAS_LIBRARIES)
+    if(USE_BUILTIN_BLAS)
+        # builtin library will be used
+        set(BLAS_LIBRARIES_INFO "builtin")
+    else()
+        # none blas
+        set(BLAS_LIBRARIES_INFO "none")
+    endif()
+endif()
+if(NOT LAPACK_LIBRARIES)
+    if(USE_BUILTIN_LAPACK)
+        # builtin library will be used
+        set(LAPACK_LIBRARIES_INFO "builtin")
+    else()
+        # none lapack
+        set(LAPACK_LIBRARIES_INFO "none")
+    endif()
+endif()
+
+# info that there are no explict libraries set
+if(NOT EXPLICIT_LIBS)
+    set(EXPLICIT_LIBS_INFO "none")
+endif()
+
+# configuration time in UTC
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.utcnow())"
+    OUTPUT_VARIABLE CONFIGURATION_TIME
+)
+
+# delete \n added by Python print()
+string(STRIP ${CONFIGURATION_TIME} CONFIGURATION_TIME)
+
+# list with compiler definitions
+get_directory_property(_list_of_definitions DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+
+include(BinaryInfo) # giving information - must be called after everything is set
+include(ConfigInfo) # has to come after binary info (dependency: git information)
+
+unset(_list_of_definitions)

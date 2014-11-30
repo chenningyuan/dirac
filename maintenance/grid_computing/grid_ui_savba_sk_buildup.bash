@@ -11,13 +11,13 @@
 source $HOME/intel/bin/compilervars.sh intel64
 echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
 # My own OpenMPI Intel static
-export PATH=/home/ilias/bin/openmpi_intel_stat/bin:$PATH
-export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_intel_stat/lib:$LD_LIBRARY_PATH
+export PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/lib:$LD_LIBRARY_PATH
 # my STATIC cmake stuff
 export PATH=/home/ilias/bin/cmakestatic/bin:$PATH
 echo "My own static CMake is in PATH."
 
-# my binutils-gold
+# my own binutils-gold
 export LIBDIR=/home/ilias/bin/binutils-gold/lib:$LIBDIR
 export LD_LIBRARY_PATH=$LIBDIR:$LD_LIBRARY_PATH
 export LD_RUN_PATH=$LIBDIR:$LD_RUN_PATH
