@@ -41,6 +41,19 @@ option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                
 # someone can specify minimal version if known
 find_package(PythonInterp REQUIRED)
 
+# set python version variable when it is not defined automatically
+# this can happen when cmake version is equal or less than 2.8.5
+if(NOT PYTHON_VERSION_STRING)
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} -V
+        OUTPUT_VARIABLE PYTHON_VERSION_STRING
+        ERROR_VARIABLE PYTHON_VERSION_STRING
+    )
+
+    string(REGEX MATCH "Python ([0-9].[0-9].[0-9])" temp "${PYTHON_VERSION_STRING}")
+    set(PYTHON_VERSION_STRING ${CMAKE_MATCH_1})
+endif()
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
