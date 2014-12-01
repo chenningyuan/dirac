@@ -533,7 +533,6 @@ C
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
       integer(kind=klongint) :: mword_limit
-      real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
 C
@@ -578,12 +577,7 @@ C
 C     Memory and I/O setup section
 C     ----------------------------
 C
-      call allocator_get_available_mem(total_mem_new)
-
-! miro & andre: at runtime-check ifort giving "forrtl: error (65): floating invalid" 
-! the simplest solution is to remove the -ftrapuv flag from among runtime checking flags
-      maxcor = nint((total_mem_new/8.0d0),kind(8))
-
+      call allocator_get_words_available(maxcor)
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
 C
@@ -1895,7 +1889,6 @@ Caspg, replacing memget
      &                              a_v3(:),     a_vta(:)
       real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
 c
-      real (kind=kreal)   :: total_mem_new = 0
       integer(kind=8)        :: mxcorr
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
@@ -2094,7 +2087,6 @@ c
      &                             a_VVOO(:),a_VVVO(:), a_BUF3(:),
      &                             a_TAU3(:), a_T2T(:)
 c
-      real(kind=kreal)    :: total_mem_new   = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0 
@@ -2483,7 +2475,6 @@ C
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
      &                             a_BUF3(:),a_FVV(:)
 
-      real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -2879,7 +2870,6 @@ C
 
       real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
 
-      real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -3048,7 +3038,6 @@ C
      &                                         a_FREQI(:),
      &                                         a_FREQD(:)
 
-      real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -3199,7 +3188,6 @@ c
      &                             a_BUF2(:), a_BUF3(:),
      &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
      &                             a_EIGENVECTORS(:,:)
-      real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
       integer(kind=8)        :: mxcorr, mxcorr1
       integer                :: maxit_save
@@ -3297,8 +3285,7 @@ C     Allocate the work array
 C
       call alloc( a_BUF3 , NBUF3*RCW , id="buf3")
 
-      call allocator_get_available_mem(total_mem_new)
-      mxcorr= nint((total_mem_new/kind(a_BUF3)),kind(8))
+      call allocator_get_words_available(mxcorr)
 C
       IF (ICALC.LE.1) THEN
          WRITE (IW,1001) "Fock space CCSD energies",MXCORR
