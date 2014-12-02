@@ -1,0 +1,48 @@
+**DIRAC
+.TITLE
+  test system
+.WAVE F
+.ANALYZE
+**INTEGRALS
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.X2C
+.NOAMFI
+# z-dipole operator 
+.OPERATOR
+ ZDIPLEN
+ COMFACTOR
+ 0.0D0
+**WAVE FUNCTIONS
+.SCF
+.RELCCSD
+*SCF
+.EVCCNV
+1.0E-8 1.0E-7
+# electronic occupation set automatically 
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all    
+**MOLTRA
+# all electrons correlated
+.ACTIVE
+energy  -1000.00   1000.0   0.1D0
+.PRPTRA
+*PRPTRA
+# list here all operators added to the Kramers unrestricted Fock matrix
+### z-dipole velocity operator 
+.OPERATOR
+ ZDIPLEN
+ COMFACTOR
+ 1.0D0
+*END OF
+
+ # 3s(2) correl.electrons
+ &RELCCSD DOFSPC=F  DOENER=T  IPRNT=1  NELEC=1,1  INTERFACE="DIRAC"  DEBUG=F  &END
+ &CCENER  DOMP2=T  DOCCSD=T  DOCCSDT=T  NTOL=10  &END
+ # add 1 finite field operators with i-factor as it's imaginary, antisymmetric 
+ &CCSORT  USEOE=F, ADD_FINITE_FIELD=T, NFFOPER=1, FF_PROP_NAMES='ZDIPVEL'  FF_PROP_STRENGTHS=0.0000,0.0002  &END
+

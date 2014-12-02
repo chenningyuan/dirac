@@ -24,6 +24,8 @@ module relcc_cfg
 ! First step in removing all common blocks in the RELCCSD programme.
 ! This one contains all input set by the user
 
+!Miro: Almost all these variables are copied into "inpt.inc" variables stored in old common blocks
+
   implicit none
 
 ! stefan: sync co-workers with new input-style variables
@@ -59,13 +61,11 @@ module relcc_cfg
 
 ! Information relevant for the integral sorting and setup stage
   logical, public :: relcc_breit                    = .false.
-  logical, public :: relcc_add_finite_field         = .false.
   logical, public :: relcc_use_orbital_energies     = .false.
   logical, public :: relcc_no_recompute             = .false.
   logical, public :: relcc_low_memory               = .false.
   integer, public :: relcc_memory_in_mw             = 0
   character(10), public :: relcc_integral_interface = 'DIRAC6    '
-  character( 8), public :: relcc_ff_property_names
 
 ! Information relevant to restarts
   logical, public, dimension(1:6)  :: relcc_restart_skipsect     = .false. 
@@ -123,7 +123,7 @@ module relcc_cfg
   integer, public :: relcc_fs_max00_iterations        = -1
   integer, public :: relcc_fs_tshold                  = 0
   integer, public :: relcc_fs_select_state_for_numgrad_energy = -1
-! Intermediate Hamiltonian  
+! Intermediate Hamiltonian variables 
   integer, public, dimension(1:16) :: relcc_ih_nacthi = 0
   integer, public, dimension(1:16) :: relcc_ih_nactpi = 0
   integer, public :: relcc_ih_scheme                  = 2
@@ -140,6 +140,13 @@ module relcc_cfg
   real(8), public :: relcc_ih_eh_max                  = 100.0d+00
   real(8), public :: relcc_ih_ep_min                  = -1d+00
   real(8), public :: relcc_ih_ep_max                  = -1000.0d+00
+
+! Information relevant for finite-field operators at the CC level (miro,luuk)
+  integer, public :: relcc_nffoper                 = 0
+  logical, public :: relcc_add_finite_field        = .false.
+  integer, parameter, public :: relcc_maxop        = 15
+  character( 8), public :: relcc_ff_prop_names(1:relcc_maxop)
+  real(8), public :: relcc_FF_PROP_STRENGTHS(2,1:relcc_maxop)
 
 #ifdef VAR_MPI
 
@@ -181,7 +188,7 @@ contains
   call interface_mpi_bcast_l0(relcc_low_memory          ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_memory_in_mw        ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_integral_interface, 10,0,global_communicator)
-  call interface_mpi_bcast(relcc_ff_property_names,   8,0,global_communicator)
+  call interface_mpi_bcast(relcc_ff_prop_names,      8,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)
