@@ -9,12 +9,17 @@ rem C:\Git\bin\git.exe pull origin master
 
 rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
 
+rem try plink command to activate agent
+C:\Program Files (x86)\PuTTY\plink.exe -agent git@repo.ctcc.no
+
+rem C:\Program Files (x86)\PuTTY\plink.exe -i C:\Users\milias\Documents\milias_private_key.ppk git@repo.ctcc.no
+
 rem go to the local DIRAC directory
 cd %DIRAC%
 
 git --version
-git status
-echo Exit Code of git status is %errorlevel%
+rem git status
+rem echo Exit Code of git status is %errorlevel%
 
 rem fetch to origin master
 rem git fetch origin master
