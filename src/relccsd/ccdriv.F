@@ -310,7 +310,8 @@ C
       do isect = 1, 6
          FS_SKIP_SECT(isect) = relcc_restart_skipsect(isect)
          FS_REDO_SECT(isect) = relcc_restart_redosect(isect)
-         if (FS_SKIP_SECT(isect).and.FS_REDO_SECT(isect)) then
+         if ((FS_SKIP_SECT(isect) .eq. .true.).and.
+     &       (FS_REDO_SECT(isect) .eq. .true.)) then
             call quit('Inconsistent input for skip/redo_sect')
          endif
       enddo
