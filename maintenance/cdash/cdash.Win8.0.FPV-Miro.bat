@@ -10,9 +10,11 @@ rem C:\Git\bin\git.exe pull origin master
 rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
 
 rem try plink command to activate agent
-C:\Program Files (x86)\PuTTY\plink.exe -agent git@repo.ctcc.no
+"C:\Program Files (x86)\PuTTY\plink.exe" -agent git@repo.ctcc.no
 
-rem C:\Program Files (x86)\PuTTY\plink.exe -i C:\Users\milias\Documents\milias_private_key.ppk git@repo.ctcc.no
+rem "C:\Program Files (x86)\PuTTY\plink.exe" -i "C:\Users\milias\Documents\milias_private_key.ppk" git@repo.ctcc.no
+
+"C:\Program Files (x86)\PuTTY\plink.exe"  -v  -pgpfp
 
 rem go to the local DIRAC directory
 cd %DIRAC%
@@ -54,8 +56,8 @@ rem echo Exit Code is %errorlevel%
 rem go to the local DIRAC directory
 cd %DIRAC%
 
-git status
-echo Exit Code is %errorlevel%
+rem git status
+rem echo Exit Code is %errorlevel%
 
 set BUILD=build_mingw64_i8_check
 if exist %BUILD% rmdir /S /Q %BUILD%
@@ -71,7 +73,11 @@ ctest     -D ExperimentalSubmit     --track BoundsCheck
 rem wait 1 minute
 timeout 60
 
+
 echo %DATE% %TIME%
+
+rem check ...
+"C:\Program Files (x86)\PuTTY\plink.exe"  -v  -pgpfp
 
 rem go to the local DIRAC directory
 cd %DIRAC%
@@ -94,4 +100,4 @@ rem timeout 10 && shutdown -s
 rem after minute make the computer sleep again
 timeout 60
 rem please check ....
-rem rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+rundll32.exe powrprof.dll,SetSuspendState 0,1,0
