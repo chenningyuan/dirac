@@ -67,6 +67,7 @@ module relcc_cfg
 
 ! Information relevant to restarts
   logical, public, dimension(1:6)  :: relcc_restart_skipsect     = .false. 
+  logical, public, dimension(1:6)  :: relcc_restart_redosect     = .false. 
   logical, public                  :: relcc_restart_unconverged  = .false.
   logical, public                  :: relcc_restart_ignore_check = .false.
   logical, public                  :: relcc_restart_redo_sorting = .false.
@@ -174,6 +175,7 @@ contains
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_redosect,    6,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_restart_unconverged, 1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_restart_ignore_check,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_restart_redo_sorting,1,0,global_communicator)

@@ -309,6 +309,10 @@ C
 ! in case we want to jump to a given sector 
       do isect = 1, 6
          FS_SKIP_SECT(isect) = relcc_restart_skipsect(isect)
+         FS_REDO_SECT(isect) = relcc_restart_redosect(isect)
+         if (FS_SKIP_SECT(isect).and.FS_REDO_SECT(isect)) then
+            call quit('Inconsistent input for skip/redo_sect')
+         endif
       enddo
       restart_unconverged  = relcc_restart_unconverged
       restart_redo_sort    = relcc_restart_redo_sorting
@@ -3350,18 +3354,27 @@ C
       IF (FSSECT(ICURFSS).NE.0) THEN
         IF (ICALC.LE.1) GOTO 441 
         WRITE (IW,1009) IFSS(ICURFSS)
-        IF ((IMSTAT(IFSTAT).eq.3).or.FS_SKIP_SECT(ICURFSS)) THEN
+        IF (((IMSTAT(IFSTAT).eq.3).and..not.FS_REDO_SECT(ICURFSS)) 
+     &      .or.FS_SKIP_SECT(ICURFSS)) THEN
            WRITE (IW,*) '... restarting: sector converged or skipped'
         ELSE
            WRITE(IW,'(2X,A,I3)')
      &     '...maximum number of iterations for this sector:',
      &     MAXIT_SECT(ICURFSS)
+           if (fs_redo_sect(icurfss).and.(IMSTAT(IFSTAT).eq.3)) then
+              write (IW,'(5X,A)') 'INFO: sector previously '//
+     &          'marked as converged but user asked to recalculate it'
+           endif 
         ENDIF
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
 C
  441    CONTINUE
-C       skip sectors which have converged, or that we specifically asked to jump to
-        IF ((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)) THEN
+C
+C       skip sectors which have converged, or that we specifically asked to skip 
+C       conversely calculate sectors we asked to be recalculated even if previously converged
+C
+        IF (((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)).or.
+     &      FS_REDO_SECT(ICURFSS)) THEN
            call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
            call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
      &                 id="eigenvalues" )

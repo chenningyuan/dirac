@@ -44,7 +44,8 @@ C-----For the Fock space module
       COMMON/CCFSPI/FSSECT(6),MAXIT_SECT(6),NINACT(16),NACT(16),
      &              NTOLFS,MXDIMFS,MXITFS,STATE_E_FSCC
 C-----For restart
-      LOGICAL FS_SKIP_SECT,restart_unconverged
+      LOGICAL FS_SKIP_SECT,FS_REDO_SECT,restart_unconverged
       LOGICAL restart_redo_sort,restart_ignore_check 
       COMMON/CCREST/restart_unconverged,FS_SKIP_SECT(6),
+     &              FS_REDO_SECT(6),
      &              restart_redo_sort,restart_ignore_check

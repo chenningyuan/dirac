@@ -1008,7 +1008,7 @@
 !     --------------------------------------------------------------------------
       integer                          :: i
       integer                          :: j
-      integer                          :: nskip
+      integer                          :: nsect 
       character(2)                     :: ifss(6)
       character(2)                     :: read_sect(6)
 !     --------------------------------------------------------------------------
@@ -1028,8 +1028,8 @@
             read_sect(i) = '  '
          enddo
 
-         read(get_file_unit(), *) nskip
-         read(get_file_unit(), *) (read_sect(i), i = 1, nskip)
+         read(get_file_unit(), *) nsect 
+         read(get_file_unit(), *) (read_sect(i), i = 1, nsect)
 
          ifss(1) = '00'
          ifss(2) = '01'
@@ -1038,7 +1038,7 @@
          ifss(5) = '02'
          ifss(6) = '20'
 
-         do i = 1, nskip
+         do i = 1, nsect 
             do j = 1, 6
                if (read_sect(i).eq.IFSS(j)) then
                   relcc_restart_skipsect(j) = .true.
@@ -1056,6 +1056,34 @@
       if (kw_matches(word, '.REDOSORT')) then
          relcc_restart_redo_sorting = .true.
       end if
+
+!     in the case of fock-space calculations, indicate which sectors are to be
+!     recalculated even if converged.
+      if (kw_matches(word, '.REDOSECT')) then
+
+         do i = 1, 6
+            read_sect(i) = '  '
+         enddo
+
+         read(get_file_unit(), *) nsect
+         read(get_file_unit(), *) (read_sect(i), i = 1, nsect)
+
+         ifss(1) = '00'
+         ifss(2) = '01'
+         ifss(3) = '10'
+         ifss(4) = '11'
+         ifss(5) = '02'
+         ifss(6) = '20'
+
+         do i = 1, nsect
+            do j = 1, 6
+               if (read_sect(i).eq.IFSS(j)) then
+                  relcc_restart_redosect(j) = .true.
+               endif
+            enddo
+         enddo
+      end if
+
 
 
       call check_whether_kw_found(word, kw_section)
