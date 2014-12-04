@@ -4,11 +4,7 @@ cls
 set DIRTIMEOUT="14m"
 set DIRAC=C:\Users\milias\Documents\Dirac\devel_trunk
 
-rem download fresh Dirac
-rem C:\Git\bin\git.exe pull origin master
-
-rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
-
+"C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
 rem try plink command to activate agent
 "C:\Program Files (x86)\PuTTY\plink.exe" -agent git@repo.ctcc.no
 
@@ -18,6 +14,9 @@ rem "C:\Program Files (x86)\PuTTY\plink.exe" -i "C:\Users\milias\Documents\milia
 
 rem go to the local DIRAC directory
 cd %DIRAC%
+
+rem download fresh Dirac
+rem C:\Git\bin\git.exe pull origin master
 
 git --version
 rem git status
