@@ -3327,6 +3327,7 @@ C
 !        recovered here correspond, in fact, to those for the last
 !        calculated sector
 
+         write (IW,*)
          write (iw,*) 'INFO: Reading restartable amplitudes!'
          call getampt(a_t1,a_t2)
       ELSE
@@ -3337,6 +3338,7 @@ C
          CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,2)
 C     Save the zeroth order wave function
          CALL PUTAMPT ( a_T1 , a_T2 )
+         write (IW,*)
          write (iw,*) 'INFO: Initializing amplitudes to MP2 ones!'
       ENDIF
 C
@@ -3363,6 +3365,7 @@ C
      &     '...maximum number of iterations for this sector:',
      &     MAXIT_SECT(ICURFSS)
            if (fs_redo_sect(icurfss).and.(IMSTAT(IFSTAT).eq.3)) then
+              write (IW,*)
               write (IW,'(5X,A)') 'INFO: sector previously '//
      &          'marked as converged but user asked to recalculate it'
            endif 
@@ -3384,6 +3387,7 @@ C
            IF (ICALC.LE.1) GOTO 442 
 C
            maxit_save = MAXIT_SECT(ICURFSS)
+
            CALL CCEQN(maxit_save,EPS, 
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   , DUM    , a_H    , 
@@ -3392,7 +3396,10 @@ C
      &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3,
      &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
-           if (maxit_save.le.maxit_SECT(ICURFSS)) then
+
+           if (maxit_save.gt.maxit_SECT(ICURFSS)) then
+              is_ccsd_converged = .false.
+           else
               is_ccsd_converged = .true.
            endif
 
@@ -3404,11 +3411,20 @@ C          except for the 00 sector, obviously
 
 C          Save the updated wave function
            CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
+
            if (is_ccsd_converged.or.restart_unconverged) then
               IMSTAT(IFSTAT) = 3 
+              write (IW,*)
+              write (IW,'(1X,A)') 'INFO:   converged (unconverged'//
+     &                            ' if .UNCONVERGED used) amplitudes'//
+     &                            ' available for restart'
            else
               IMSTAT(IFSTAT) = 2
+              write (IW,*)
+              write (IW,'(1X,A)') 'INFO: unconverged amplitudes '//
+     &                            'available for restart'
            endif
+
 C          Deallocate space for the effective Hamiltonian
  442       CONTINUE
            call dealloc (a_HEFF, id="heff")
@@ -3600,7 +3616,9 @@ C
 C
 C        ...and we want to restart we go ahead 
 C
+         write (IW,*)
          write (IW,*) 'INFO: Found restart file(s)!'
+
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='OLD',RECL=IRECL)
 
@@ -3637,23 +3655,23 @@ C
              END DO
 
              if (restart_and_current_differ) then
-                write (IW,*) ' '
+                write (IW,*) 
                 write (IW,*) 'INFO: Current setup and restart differ' 
-                write (IW,*) ' '
+                write (IW,*) 
                 if (RST_nelec_tot .NE. nelec_tot) then
                 write (IW,*) ' # of electrons   (rst):',RST_nelec_tot
                 write (IW,*) '                  (now):',nelec_tot
-                write (IW,*) ' '
+                write (IW,*) 
                 endif
                 if (RST_act_tot .NE. act_tot ) then
                 write (IW,*) ' #   act. spinors (rst):',RST_act_tot
                 write (IW,*) '                  (now):',act_tot
-                write (IW,*) ' '
+                write (IW,*) 
                 endif
                 if (RST_inact_tot .NE. inact_tot) then
                 write (IW,*) ' # inact. spinors (rst):',RST_inact_tot
                 write (IW,*) '                  (now):',inact_tot
-                write (IW,*) ' '
+                write (IW,*) 
                 endif
 
                 if (restart_ignore_check) then
@@ -3677,7 +3695,9 @@ C
 C
 C        ... if we don't want to restart we trash any existing files and start over 
 C
+            write (IW,*) 
             write (IW,*) 'INFO: Restart file(s) will be overwriten!'
+            write (IW,*) 
             OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &            STATUS='REPLACE',RECL=IRECL)
             CALL DCOPY(8,A0,0,ETOT,1)
@@ -3689,8 +3709,9 @@ C
 C ... if the restart files don't exist, we create them
 C
       else
-
+         write (IW,*) 
          write (IW,*) 'INFO: No old restart file(s) found!'
+         write (IW,*) 
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='NEW',RECL=IRECL)
          CALL DCOPY(8,A0,0,ETOT,1)

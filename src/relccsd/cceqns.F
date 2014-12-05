@@ -270,7 +270,7 @@ C
  1000 CONTINUE
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
-         maxit = nit
+         maxit = maxit + 1
          NIT = NIT - 1
          WRITE(IW,6004) RMS
          GO TO 2000
