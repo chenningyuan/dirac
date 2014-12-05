@@ -7,11 +7,9 @@ set DIRAC=C:\Users\milias\Documents\Dirac\devel_trunk
 rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
 rem try plink command to activate agent
 
-"C:\Program Files (x86)\PuTTY\plink.exe" -agent git@repo.ctcc.no
-
+rem "C:\Program Files (x86)\PuTTY\plink.exe" -agent git@repo.ctcc.no
 rem "C:\Program Files (x86)\PuTTY\plink.exe" -i "C:\Users\milias\Documents\milias_private_key.ppk" git@repo.ctcc.no
-
-"C:\Program Files (x86)\PuTTY\plink.exe"  -v  -pgpfp
+rem "C:\Program Files (x86)\PuTTY\plink.exe"  -v  -pgpfp
 
 rem go to the local DIRAC directory
 cd %DIRAC%
