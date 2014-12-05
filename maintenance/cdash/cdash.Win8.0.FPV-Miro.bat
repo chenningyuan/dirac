@@ -4,8 +4,9 @@ cls
 set DIRTIMEOUT="14m"
 set DIRAC=C:\Users\milias\Documents\Dirac\devel_trunk
 
-"C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
+rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
 rem try plink command to activate agent
+
 "C:\Program Files (x86)\PuTTY\plink.exe" -agent git@repo.ctcc.no
 
 rem "C:\Program Files (x86)\PuTTY\plink.exe" -i "C:\Users\milias\Documents\milias_private_key.ppk" git@repo.ctcc.no
@@ -21,6 +22,7 @@ rem C:\Git\bin\git.exe pull origin master
 git --version
 rem git status
 rem echo Exit Code of git status is %errorlevel%
+git ls-remote
 
 rem fetch to origin master
 rem git fetch origin master
@@ -29,6 +31,7 @@ rem git pull origin master
 
 rem update all submodules
 git submodule update
+git submodule status
 
 echo %DATE% %TIME%
 set BUILD=build_mingw64_i4
