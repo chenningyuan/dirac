@@ -36,7 +36,7 @@ if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
 python setup -D BUILDNAME="Win8.0_MinGW64_i4" -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%
 cd %BUILD%
-ctest    -VV -D ExperimentalUpdate     --track Miro
+ctest     -D ExperimentalUpdate     --track Miro
 rem echo Exit Code is %errorlevel%
 ctest     -D ExperimentalConfigure  --track Miro
 ctest -j2 -D ExperimentalBuild      --track Miro
