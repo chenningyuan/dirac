@@ -3,6 +3,7 @@ cls
 
 set DIRTIMEOUT="14m"
 set DIRAC=C:\Users\milias\Documents\Dirac\devel_trunk
+set LOG=%DIRAC%\buildup.log
 
 rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
 rem try plink command to activate agent
@@ -17,10 +18,11 @@ cd %DIRAC%
 rem download fresh Dirac
 rem C:\Git\bin\git.exe pull origin master
 
-git --version
+echo %DATE% %TIME% 1>  %LOG%  2>&1
+git --version  1>>  %LOG%  2>&1
 rem git status
 rem echo Exit Code of git status is %errorlevel%
-git ls-remote
+git ls-remote 1>>  %LOG%  2>&1
 
 rem fetch to origin master
 rem git fetch origin master
@@ -28,21 +30,20 @@ rem git fetch origin master
 rem git pull origin master
 
 rem update all submodules
-git submodule update
-git submodule status
+git submodule update  1>>  %LOG%  2>&1
+git submodule status  1>>  %LOG%  2>&1
 
-echo %DATE% %TIME%
 set BUILD=build_mingw64_i4
 if exist %BUILD% rmdir /S /Q %BUILD%
-python pamadm -a --builddir=%BUILD%
-python setup -D BUILDNAME="Win8.0_MinGW64_i4" -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%
+python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
+python setup -D BUILDNAME="Win8.0_MinGW64_i4" -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
-ctest     -D ExperimentalUpdate     --track Miro
+ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
 rem echo Exit Code is %errorlevel%
-ctest     -D ExperimentalConfigure  --track Miro
-ctest -j2 -D ExperimentalBuild      --track Miro
-ctest -j2 -D ExperimentalTest       --track Miro
-ctest     -D ExperimentalSubmit     --track Miro
+ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalBuild      --track Miro  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
+ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 
 rem wait 1 minute
 timeout 60
@@ -77,7 +78,7 @@ timeout 60
 echo %DATE% %TIME%
 
 rem check ...
-"C:\Program Files (x86)\PuTTY\plink.exe"  -v  -pgpfp
+rem "C:\Program Files (x86)\PuTTY\plink.exe"  -v  -pgpfp
 
 rem go to the local DIRAC directory
 cd %DIRAC%
