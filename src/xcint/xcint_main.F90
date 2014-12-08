@@ -1081,7 +1081,8 @@ contains
 !       exchange-correlation potential
 !       ==============================
 
-        if (do_potential) then
+        !if (do_potential) then
+        if (do_potential.or.do_london_rhs_direct.or.do_london_rhs_ro) then
 
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
