@@ -63,6 +63,7 @@ C
 C
 #include "orgcom.h"
 #include "dcbprp.h"
+#include "dcborb.h"
 #include "dgroup.h"
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
@@ -596,6 +597,12 @@ C .... check the change of the gauge origin ....
          if (doxlr .or. doxqr) then
             call quit('ERROR: response with .NONREL not possible')
          end if
+      end if
+! do not do shielding with open-shells
+      if (shield .or. shielding_rearrange) then
+       if (NASHT.GT.0) then
+        call quit('ERROR: NMR shielding with open shells not possible')
+       end if
       end if
 
       CALL FLSHFO(LUPRI)
