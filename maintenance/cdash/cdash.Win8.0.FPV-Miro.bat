@@ -48,7 +48,7 @@ ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 rem wait 1 minute
 timeout 60
 
-echo %DATE% %TIME%
+echo %DATE% %TIME%   1>>  %LOG%  2>&1
 
 rem try git pull
 rem git pull --verbose
@@ -62,20 +62,20 @@ rem echo Exit Code is %errorlevel%
 
 set BUILD=build_mingw64_i8_check
 if exist %BUILD% rmdir /S /Q %BUILD%
-python pamadm -a --builddir=%BUILD%
-python setup -D BUILDNAME="Win8.0_MinGW64_i8_check" --check --int64 -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%
+python pamadm -a --builddir=%BUILD%   1>>  %LOG%  2>&1
+python setup -D BUILDNAME="Win8.0_MinGW64_i8_check" --check --int64 -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
-ctest     -D ExperimentalUpdate     --track BoundsCheck
-ctest     -D ExperimentalConfigure  --track BoundsCheck
-ctest -j2 -D ExperimentalBuild      --track BoundsCheck
-ctest -j2 -D ExperimentalTest       --track BoundsCheck
-ctest     -D ExperimentalSubmit     --track BoundsCheck
+ctest     -D ExperimentalUpdate     --track BoundsCheck  1>>  %LOG%  2>&1
+ctest     -D ExperimentalConfigure  --track BoundsCheck  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalBuild      --track BoundsCheck  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalTest       --track BoundsCheck  1>>  %LOG%  2>&1
+ctest     -D ExperimentalSubmit     --track BoundsCheck  1>>  %LOG%  2>&1
 
 rem wait 1 minute
 timeout 60
 
 
-echo %DATE% %TIME%
+echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
 rem check ...
 rem "C:\Program Files (x86)\PuTTY\plink.exe"  -v  -pgpfp
@@ -84,21 +84,23 @@ rem go to the local DIRAC directory
 cd %DIRAC%
 set BUILD=build_mingw64_i8
 if exist %BUILD% rmdir /S /Q %BUILD%
-python pamadm -a --builddir=%BUILD%
-python setup -D BUILDNAME="Win8.0_MinGW64_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%
+python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
+python setup -D BUILDNAME="Win8.0_MinGW64_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
-ctest     -D ExperimentalUpdate     --track Miro
-ctest     -D ExperimentalConfigure  --track Miro
-ctest -j2 -D ExperimentalBuild      --track Miro
-ctest -j2 -D ExperimentalTest       --track Miro
-ctest     -D ExperimentalSubmit     --track Miro
+ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
+ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalBuild      --track Miro  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
+ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 
-echo %DATE% %TIME%
+echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
 rem switch off Desktop PC Windows after 10 seconds
 rem timeout 10 && shutdown -s
 
 rem after minute make the computer sleep again
 timeout 60
+
 rem please check ....
+powercfg -h off
 rundll32.exe powrprof.dll,SetSuspendState 0,1,0
