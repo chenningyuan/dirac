@@ -599,7 +599,7 @@ C .... check the change of the gauge origin ....
          end if
       end if
 ! do not do shielding with open-shells
-      if (shield .or. shielding_rearrange) then
+      if (shield) then
        if (NASHT.GT.0) then
         call quit('ERROR: NMR shielding with open shells not possible')
        end if
