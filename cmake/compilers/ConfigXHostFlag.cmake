@@ -21,7 +21,7 @@
 # default to OFF
 set(XHOST_FLAG_AVAILABLE OFF)
 
-if(CMAKE_Fortran_COMPILER_WORKS AND CMAKE_Fortran_COMPILER_ID MATCHES "Intel")
+if(CMAKE_Fortran_COMPILER_WORKS AND CMAKE_Fortran_COMPILER_ID MATCHES "Intel" AND ENABLE_XHOST_FLAG)
 
     # compile test program
     if(CMAKE_SYSTEM_NAME MATCHES "Windows")
