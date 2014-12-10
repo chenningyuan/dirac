@@ -137,7 +137,7 @@ is small and perfectly acceptable. If it becomes too large the analysis looses m
 impies that significant electron density has not been assigned to any fragment. In the case of
 significant polarization contribution one can either increase the number of atomic orbitals used
 in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`.POLREF` 
-keyword which `Intrinsic Atomic Orbitals (IAOs) <http://doi.org/10.1021/ct400687b>`_  , 
+keyword which activates `Intrinsic Atomic Orbitals (IAOs) <http://doi.org/10.1021/ct400687b>`_  , 
 thus eliminating completely the polarization contribution. We then get::
 
   * Total gross contributions:
@@ -226,8 +226,8 @@ Introduction
 
 We next turn to a molecule with a heavy atom and a more complicated electronic structure, namely uranyl 
 :math:`UO_2^{2+}`. Here the two oxygens are related by symmetry, and so one would at first consider 
-running the projection analysis with no symmetry, following the procedure outlined in the methane 
-example above. However, we can reduce the symmetry from :math:`D_{\infty h}` to :math:`C_{\infty v}` 
+running the projection analysis with lower (or no) symmetry or using the :ref:`.ATOMS` keyword, as 
+in the methane example above. However, we can reduce the symmetry from :math:`D_{\infty h}` to :math:`C_{\infty v}` 
 by introducing a ghost center. Our molecular input file then looks like
 
 .. literalinclude:: UO2.mol
