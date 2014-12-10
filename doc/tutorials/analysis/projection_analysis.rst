@@ -248,7 +248,7 @@ we run 4-component Hartree-Fock::
 
 saving the coefficients. Next we generate atomic reference orbitals. For oxygen this is quite straightforward::
 
-   pam --inp=O --mol=O --get "DFCOEF cf.O"
+   pam --inp=O --mol=O --get "DFCOEF=cf.O"
 
 using molecule input ``O.mol``
 
@@ -299,7 +299,7 @@ and prepare the coefficient files::
 
 We run the projection analysis::
 
-   pam --incmo --inp=prj --mol=UO2lin --copy="AF*" --mw=120
+   pam --incmo --inp=prj --mol=UO2 --copy="AF*" --mw=120
 
 Interpreting the output
 -----------------------
@@ -312,8 +312,15 @@ As in the methane case above we first look at the polarization contribution::
       AFO2XX               8.3098   E -     8.3098   P -     0.0000
       Polarization:     0.3169
 
-We see that it is more sizable than before. Later we shall see that we can eliminate it by polarization of the fragment orbitals.
-The atomic gross populations tell us that the oxygen atoms has a charge -0.32, whereas the uranium atom has charge +2.94, 
+We see that it is more sizable than before. If we eliminate the polarization contribution using the :ref:`.POLREF` keyword, we obtain::
+
+   * Total gross contributions:
+      AFUXXX              89.1586   E -    89.1586   P -     0.0000
+      AFO1XX               8.4207   E -     8.4207   P -     0.0000
+      AFO2XX               8.4207   E -     8.4207   P -     0.0000
+      Polarization:     0.0000
+
+The atomic gross populations tell us that the oxygen atoms has a charge -0.42, whereas the uranium atom has charge +2.84, 
 considerably far from the formal oxidation state +VI.
 
 We next turn to the electron configuration of the atoms in the molecule by looking at the section::
