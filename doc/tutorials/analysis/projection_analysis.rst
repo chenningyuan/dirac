@@ -8,14 +8,14 @@ Theory
 
 A serious flaw of Mulliken population analysis is its basis set sensitivity. This is well known from
 the non-relativistic domain. In the relativistic domain a further disadvantage is that the 
-expansion of large and small components in separate basis setz means large and small component 
+expansion of large and small components in separate basis sets means large and small component 
 populations come separately and it is not easy to see how they are connected. Furthermore, if
 the large and small component are expanded in scalar basis functions, as is the case of the 
-DIRAC code, then the poulation analysis can not distinguish distributions from different 
+DIRAC code, then the population analysis can not distinguish distributions from different 
 spin-orbit components of atomic orbitals, for instance, :math:`p_{1/2}` and :math:`p_{3/2}`.
 
-Projection analysis eliminates all these inconveniences. It is based on the simple concept of
-molecular orbitals as linear combination of atomic orbitals and allows analysis of 
+Projection analysis [Dubillard2006]_ eliminates all these inconveniences. It is based on the simple concept of
+molecular orbitals as linear combination of atomic orbitals (LCAO) and allows analysis of 
 electronic structure in terms of well-defined atomic (or fragment) orbitals. 
 
 Projection analysis requires as input a set of pre-calculated orbitals {:math:`\psi^A_p`} 
@@ -29,7 +29,7 @@ The molecular orbitals are then expanded as
 
 Typically one will select the occupied orbitals of the constituent atoms. They are not 
 guaranteed to fully span the molecular orbitals and therefore the expansion includes
-their orthogonal complement :math:`\left|\psi^{pol}_i\right>`, denoted the polarization contribution.
+their orthogonal complement :math:`\left|\psi^{pol}_i\right>`, denoted the *polarization contribution*.
 The expansion coefficients :math:`c^A_{pi}` are found by solving the equation
 
 .. math::
@@ -38,6 +38,13 @@ The expansion coefficients :math:`c^A_{pi}` are found by solving the equation
 
 obtained by projection.
 
+For projection analysis, arbitrary fragments can in principle be used. There is, however, an important restriction 
+in that DIRAC can only do analysis in terms of fragments complying to the molecular point group. For instance, 
+the two hydrogens in water are related by symmetry in the full :math:`C_{2v}` molecular point group. They then have 
+to be treated as a single fragment, or they can be separated by lowering the symmetry. Starting from DIRAC14 
+projection analysis can be carried out in terms of individual atoms using the :ref:`.ATOMS` keyword, as shown in 
+the example below.
+
 ------------------
 Example 1: Methane
 ------------------
@@ -45,14 +52,14 @@ Example 1: Methane
 Introduction
 ------------
 
-As a first simple example (albeit showing some subtle points) we shall consider the methane molecule.
-The molecular input file ``CH4.mol`` is
+As a first simple example we shall consider the methane molecule.
+The molecular input file ``CH4.xyz`` is
 
-.. literalinclude:: CH4.mol
+.. literalinclude:: CH4.xyz
 
 Suppose that we have run a DFT(PBE) calculation using::
 
-   pam --inp=PBE  --mol=CH4 --outcmo
+   pam --inp=PBE  --mol=CH4.xyz --outcmo
 
 where we keep the coefficients and the menu file ``PBE.inp`` is
 
@@ -62,67 +69,10 @@ Preparing for analysis
 ----------------------
 
 We would now like to analyze the electronic structure of the methane molecule in terms of 
-the orbitals of the constituent atoms. Now, looking in the output we find::
-
-  Full group is:  T(d)           
-  Represented as: D2 
-
-This means that DIRAC correctly detected :math:`T_d` as the molecular point group symmetry. 
-However, since the spatial symmetry of DIRAC is limited to :math:`D_{2h}` and subgroups the 
-program will use the :math:`D_2` subgroup for the calculation. In this subgroup, as in the parent 
-:math:`T_d` opint group, the four hydrogen  atoms are related by symmetry. Since DIRAC presently 
-can only do projection analysis in terms of fragments complying to the molecular point group, 
-we have to lower the symmetry if we want to carry out the projection analysis in terms of 
-individual atoms. A simple solution is simply to have DIRAC dump the coeffients in :math:`C_1` 
-symmetry. We then simply add::
-
-  **GENERAL
-  .ACMOUT
-
-to ``PBE.inp`` and run the calculation as::
-
-   pam --inp=PBE  --mol=CH4 --get "DFACMO=ac.CH4"
-
-where the latter argument means that the file ``DFACMO`` of coefficients in :math:`C_1` (no) symmetry
-is saved under the name ``ac.CH4``. It is also possible to convert an input ``DFCOEF`` file to corresponding ``DFACMO`` by using
-
-.. literalinclude:: convert.inp
-
-and the command::
-
-  pam --incmo --inp=convert --mol=CH4 --get "DFACMO=ac.CH4"
-
-However, before turning to the analysis itself there is one subtle point. Looking in the DIRAC
-output again we find the lines::
-
-    Original Coordinates                    
-    --------------------                    
-       6         0.00000000     0.00000000     0.00000000       1
-       1         1.19031798     1.19031798     1.19031798       1
-       1        -1.19031798    -1.19031798     1.19031798       1
-       1         1.19031798    -1.19031798    -1.19031798       1
-       1        -1.19031798     1.19031798    -1.19031798       1
-
-    Symmetry class found: T(d)   
-
-    Centered and Rotated                    
-    --------------------                    
-       1         1.19031798    -1.19031798     1.19031798       1
-       1        -1.19031798     1.19031798     1.19031798       1
-       1        -1.19031798    -1.19031798    -1.19031798       1
-       1         1.19031798     1.19031798    -1.19031798       1
-       6         0.00000000     0.00000000     0.00000000       1
-
-showing that DIRAC will (translate and) rotate molecules during the process of symmetry detection.
-For the projection analysis we can therefore not use the original coefficient file since we 
-now will turn off symmetry detection and insist on running without symmetry. The simplest solution 
-to this complication is to use the xyz-file that we also find in the output (we shall call it ``CH4.xyz``)
-
-.. literalinclude:: CH4.xyz
-
-(we have replaced ``H4`` by ``H``)
-We now generate the atomic fragments. I recommend calculating the atoms in the highest possible 
-symmetry and the converting the coefficients to no symmetry. This allows a very precise identification
+the orbitals of the constituent atoms. We first generate the atomic fragments. 
+We recommend calculating the atoms in the highest possible 
+symmetry and the converting the coefficients to no (:math:`C_1`) symmetry. 
+This allows a very precise identification
 of the individual atomic orbitals (including :math:`m_j` quantum number). We accordingly run::
 
    pam --inp=H  --mol=H --get "DFACMO=ac.H"
@@ -144,6 +94,12 @@ and ``C.mol``
 
 .. literalinclude:: C.mol
 
+As a final preparation we make symbolic links to the needed coefficient files::
+
+   $ ln -s ac.C AFCXXX
+   $ ln -s ac.H AFHXXX
+
+
 Running the analysis
 --------------------
 
@@ -151,22 +107,16 @@ We are now ready for the projection analysis itself. We prepare the input file `
 
 .. literalinclude:: prj.inp
 
-In the ``*PROJEC`` section we specify five fragments identified by the name of their coefficient files.
- We also specify ``.OWNBAS``, which means that the fragments have been calculated in their own basis and not the full molecular one. Note also that since we will use a *xyz* - file for this calculation
-we have added a ``**MOLECULE`` section where we specify basis *and* we explicitly turn off symmetry.
-
-As a final preparation we make symbolic links to the needed coefficient files::
-
-   $ ln -s ac.C AFCXXX
-   $ ln -s ac.H AFH1XX
-   $ ln -s ac.H AFH2XX
-   $ ln -s ac.H AFH3XX
-   $ ln -s ac.H AFH4XX
-   $ ln -sf ac.CH4 DFCOEF
+In the ``*PROJEC`` section we specify the two atomic types identified by the name of 
+their coefficient files as well as an orbital string (see :ref:`orbital_strings`) listing 
+what orbitals to include for each atom. DIRAC will assume that each atom has been calculated 
+in its proper basis.
 
 We now run the projection analysis using::
 
    pam --inp=prj --mol=CH4.xyz --incmo --copy="AF*"
+
+
 
 Interpreting the output
 -----------------------
@@ -174,11 +124,11 @@ Interpreting the output
 The first thing to look for in the output is the section::
    
    * Total gross contributions:
-      AFCXXX               6.4301   E -     6.4301   P -     0.0000
-      AFH1XX               0.8716   E -     0.8716   P -     0.0000
-      AFH2XX               0.8716   E -     0.8716   P -     0.0000
-      AFH3XX               0.8716   E -     0.8716   P -     0.0000
-      AFH4XX               0.8716   E -     0.8716   P -     0.0000
+      AFCX 1               6.4301   E -     6.4301   P -     0.0000
+      AFHX 1               0.8716   E -     0.8716   P -     0.0000
+      AFHX 2               0.8716   E -     0.8716   P -     0.0000
+      AFHX 3               0.8716   E -     0.8716   P -     0.0000
+      AFHX 4               0.8716   E -     0.8716   P -     0.0000
       Polarization:     0.0834
 
 It shows the gross population (in Mulliken sense, but in terms of the fragment orbitals) of each atom 
@@ -186,25 +136,34 @@ and then, most importantly, the gross population of the polarization contributio
 is small and perfectly acceptable. If it becomes too large the analysis looses meaning because it 
 impies that significant electron density has not been assigned to any fragment. In the case of
 significant polarization contribution one can either increase the number of atomic orbitals used
-in the analysis or turn on repolarization. 
+in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`.POLREF` 
+keyword which `Intrinsic Atomic Orbitals (IAOs) <http://doi.org/10.1021/ct400687b>`_  , 
+thus eliminating completely the polarization contribution. We then get::
+
+  * Total gross contributions:
+     AFCX 1               6.4782   E -     6.4782   P -     0.0000
+     AFHX 1               0.8804   E -     0.8804   P -     0.0000
+     AFHX 2               0.8804   E -     0.8804   P -     0.0000
+     AFHX 3               0.8804   E -     0.8804   P -     0.0000
+     AFHX 4               0.8804   E -     0.8804   P -     0.0000
+     Polarization:     0.0000
+
+from which we can conclude that at this level of theory the carbon and hydrogen charges in methane 
+are -0.48e and +0.12e, respectively.
 
 Having concluded that the polarization contribution is acceptable, we can proceed with the analysis.
-From the atomic gross population we can already extract atomic charges (keeping in mind that some 
-density is not assigned to any atom). We can see that the carbon atom has a small negative charge of
--0.43 atomic units, whereas the hydrogens have positive charges  +0.13. 
+We turn to this section::
 
-We next turn to this section::
-
-      * Total reference orbital contributions:
-          AFCXXX  E     1       1.99999     -0.10660951E+02
-          AFCXXX  E     2       1.27874     -0.97828469E+00
-          AFCXXX  E     3       1.05077     -0.65580701E+00
-          AFCXXX  E     4       1.05030     -0.65541446E+00
-          AFCXXX  E     5       1.05030     -0.65541446E+00
-          AFH1XX  E     1       0.87162     -0.23118508E+00
-          AFH2XX  E     1       0.87162     -0.23118508E+00
-          AFH3XX  E     1       0.87162     -0.23118508E+00
-          AFH4XX  E     1       0.87162     -0.23118508E+00
+   * Total reference orbital contributions:
+       AFCX 1  E     1       1.99999     -0.10660951E+02
+       AFCX 1  E     2       1.27874     -0.97828469E+00
+       AFCX 1  E     3       1.05077     -0.65580701E+00
+       AFCX 1  E     4       1.05030     -0.65541446E+00
+       AFCX 1  E     5       1.05030     -0.65541446E+00
+       AFHX 1  E     1       0.87162     -0.23118508E+00
+       AFHX 2  E     1       0.87162     -0.23118508E+00
+       AFHX 3  E     1       0.87162     -0.23118508E+00
+       AFHX 4  E     1       0.87162     -0.23118508E+00
    
 which gives the accumulated gross population of each fragment orbital. We can identify 
 the fragments from the name of the coefficient file and its orbital energy. For instance
@@ -220,22 +179,21 @@ the atoms in the molecule. For carbon we find :math:`[He]2s^{1.3}2p^{3.2}` and f
 There is also detailed output for each molecular orbital in the output. For the third molecular
 orbital we find for instance::
 
-   * Electronic eigenvalue nr.  3: -0.3411330794652       (Occupation : f = 1.0000)
+   * Electronic eigenvalue nr.  3: -0.3411330794649       (Occupation : f = 1.0000)
    ================================================
        Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-       AFCXXX  E     3       0.57945     -0.65580701E+00   (-1.0000,-0.0000)   ( 0.0000,-0.0000)
-       AFH1XX  E     1       0.31559     -0.23118508E+00   ( 0.0000, 0.5774)   (-0.5774,-0.5774)
-       AFH2XX  E     1       0.31559     -0.23118508E+00   ( 0.0000,-0.5774)   ( 0.5774,-0.5774)
-       AFH3XX  E     1       0.31559     -0.23118508E+00   ( 0.0000,-0.5774)   (-0.5774, 0.5774)
-       AFH4XX  E     1       0.31559     -0.23118508E+00   ( 0.0000, 0.5774)   ( 0.5774, 0.5774)
+       AFCX 1  E     3       0.57945     -0.65580701E+00   (-1.0000,-0.0000)   ( 0.0000, 0.0000)
+       AFHX 1  E     1       0.31559     -0.23118508E+00   ( 0.0000,-0.5774)   (-0.5774,-0.5774)
+       AFHX 2  E     1       0.31559     -0.23118508E+00   ( 0.0000, 0.5774)   ( 0.5774,-0.5774)
+       AFHX 3  E     1       0.31559     -0.23118508E+00   ( 0.0000, 0.5774)   (-0.5774, 0.5774)
+       AFHX 4  E     1       0.31559     -0.23118508E+00   ( 0.0000,-0.5774)   ( 0.5774, 0.5774)
    * Gross contributions:
-      AFCXXX               0.5254   E -     0.5254   P -     0.0000
-      AFH1XX               0.1165   E -     0.1165   P -     0.0000
-      AFH2XX               0.1165   E -     0.1165   P -     0.0000
-      AFH3XX               0.1165   E -     0.1165   P -     0.0000
-      AFH4XX               0.1165   E -     0.1165   P -     0.0000
+      AFCX 1               0.5254   E -     0.5254   P -     0.0000
+      AFHX 1               0.1165   E -     0.1165   P -     0.0000
+      AFHX 2               0.1165   E -     0.1165   P -     0.0000
+      AFHX 3               0.1165   E -     0.1165   P -     0.0000  
+      AFHX 4               0.1165   E -     0.1165   P -     0.0000
       Polarization:     0.0085
-
 
 To fully understand the output we have to keep in mind that all calculations are Kramers-restricted
 such that all orbitals come in pairs. The expansion of the molecular orbitals should therefore
@@ -435,3 +393,4 @@ From this list of gross population we extract the atomic valence configuration :
 the uranium atom and :math:`2s^{1.90}2p^{4.41}` for oxygen. An interesting feature is that the uranium *6p* population 
 adds up to *5.64* and not six electrons. This is a manifestation of the so-called *6p-hole*, due to overlap with the oxygen ligands, 
 and mostly located to the :math:`6p_{3/2.1/2}` orbital.
+
