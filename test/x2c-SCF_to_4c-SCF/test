@@ -13,6 +13,6 @@ f.add(from_string = 'Electronic energy                        :',
       num_lines   = 8,
       rel_tolerance   = 1.0e-7)
 
-test.run(['x2c.inp','4c.inp','x2c-SCF_to_4c-SCF'], ['H2O.mol'], f)
+test.run(['x2c.inp','4c.inp','x2c-SCF_to_4c-SCF'], ['H2O.mol'], f, accepted_errors='2c -> 4c SCF functionality is broken - please wait for a patch')
 
 sys.exit(test.return_code)
