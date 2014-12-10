@@ -7508,7 +7508,7 @@ C  ... read full picture change transf. matrix into VMAT
      &      TMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
      &      VMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
      &      VMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
-     &      WORK(KFREE),LFREE,IPRINT)
+     &      WORK(KFREE),LFREE,IPRHAM)
 
        IF (IPRHAM.GE.4) THEN
         CALL HEADER(

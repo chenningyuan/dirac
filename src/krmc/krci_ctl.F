@@ -854,6 +854,17 @@ C
 C
 C     Consistency checks
 C     ------------------
+
+      ! symmetry: LUCIAREL does not work with C1/Ci symmetry
+      if(KRCI_CIPROGRAM == 'LUCIAREL')then
+        if(nfsym == 1 .and. nz == 4)then
+          call quit('LUCIAREL does not work with C1/Ci symmetry.'//
+     &              ' Either you use GASCIP or wait for a patch to'//
+     &              ' Dirac14. For further information contact '//
+     &              ' dirac-users@googlegroups.com .')
+        end if 
+      end if
+
 C
 C     ... integral flags
       IF(DOLVC) ISSINT = 0

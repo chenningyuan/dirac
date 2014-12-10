@@ -23,10 +23,10 @@ One calculation uses the DIIS method (not shown here) and the other uses the dam
  pam --noarch --inp=UF6_anion_scfdamp.inp --mol=UF6.mol --put "DFCOEF.UF6neutral=DFCOEF" --get "DFCOEF=DFCOEF.UF6anion_damp_pass1" --replace dampfactor=0.9
  pam --noarch --inp=UF6_anion_scfdamp.inp --mol=UF6.mol --put "DFCOEF.UF6anion_damp_pass1=DFCOEF" --get "DFCOEF=DFCOEF.UF6anion_damp_pass2" --replace dampfactor=0.5
 
-Concerning the DIIS speedup method, the SCF iterations initially converge to cca 10^-5 but then began to diverge
-and after about 150 iterations the error gradient of the Fock matrix is still around 10^-5.
+Concerning the DIIS speedup method, the SCF iterations initially converge to ca :math:`10^{-5}` but then began to diverge
+and after about 150 iterations the error gradient of the Fock matrix is still around :math:`10^{-5}`.
 
-However, with the damping convergence speedup the calculation converges to cca 10^-8 after about 50 iterations.
+However, with the damping convergence speedup the calculation converges to ca :math:`10^{-8}` after about 50 iterations.
 The damping scheme uses more of the input Fock matrix that the output Fock matrix.
 Concerning the damping factor, the lower than 1 it is, we should get faster convergence. However, when the factor is getting too small,
 iterations diverge. The closer we are to the converged states, the smaller the damping factor can be.

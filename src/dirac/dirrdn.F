@@ -5197,6 +5197,10 @@ C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.m
             DO2C4C = .TRUE.
             START2C = .TRUE.
             INI2C   = 3
+            call quit('2c -> 4c SCF functionality is broken -'//
+     &                ' please wait for a patch to Dirac14 or contact'//
+     &                ' dirac-users@googlegroups.com for further'//
+     &                ' information.')
             !TWOCOMP=.FALSE.
             !TWOCOMPBSS=.TRUE.
             GO TO 100
@@ -5215,6 +5219,10 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
             START2C = .TRUE.
             DO2C4C = .TRUE.
             READ(LUCMD,*) INI2C
+            call quit('2c -> 4c SCF functionality is broken -'//
+     &                ' please wait for a patch to Dirac14 or contact'//
+     &                ' dirac-users@googlegroups.com for further'//
+     &                ' information.')
             GO TO 100
   135     CONTINUE
 #ifdef MOD_UNRELEASED
