@@ -357,41 +357,41 @@ We next turn to the electron configuration of the atoms in the molecule by looki
        AFUXXX  E    29       2.00000     -0.14785575E+02   4f+
        AFUXXX  E    30       2.00000     -0.14785575E+02   4f+
        AFUXXX  E    31       2.00001     -0.12603340E+02   5s 
-       AFUXXX  E    32       1.99988     -0.10135890E+02   5p-
-       AFUXXX  E    33       1.99992     -0.80948982E+01   5p+
-       AFUXXX  E    34       1.99950     -0.80948982E+01   5p+
-       AFUXXX  E    35       1.99885     -0.43524477E+01   5d-
-       AFUXXX  E    36       1.99968     -0.43524477E+01   5d-
-       AFUXXX  E    37       1.99973     -0.40407150E+01   5d+
-       AFUXXX  E    38       1.99932     -0.40407150E+01   5d+
-       AFUXXX  E    39       1.99828     -0.40407150E+01   5d+
-       AFUXXX  E    40       1.98041     -0.21392050E+01   6s
-       AFUXXX  E    41       1.93129     -0.13442976E+01   6p-
-       AFUXXX  E    42       1.73850     -0.98481977E+00   6p+ ( 1/2)
-       AFUXXX  E    43       1.96897     -0.98481977E+00   6p+ ( 3/2)
-       AFUXXX  E    44       0.03884     -0.20241412E+00   7s
-       AFUXXX  E    45       0.82231     -0.34596371E+00   5f- ( 1/2)
-       AFUXXX  E    46       0.15542     -0.34596371E+00   5f- (-3/2)
-       AFUXXX  E    47       0.00000     -0.34596371E+00   5f- ( 5/2)
-       AFUXXX  E    48       0.00000     -0.31822326E+00   5f+ (-7/2)
-       AFUXXX  E    49       0.00000     -0.31822326E+00   5f+ ( 5/2)
-       AFUXXX  E    50       0.33671     -0.31822326E+00   5f+ (-3/2)
-       AFUXXX  E    51       0.93693     -0.31822326E+00   5f+ ( 1/2)
-       AFUXXX  E    52       0.41017     -0.19266767E+00   6d- ( 1/2)
-       AFUXXX  E    53       0.09354     -0.19266767E+00   6d- (-3/2)
-       AFUXXX  E    54       0.33147     -0.18309790E+00   6d+ ( 1/2)
-       AFUXXX  E    55       0.32364     -0.18309790E+00   6d+ (-3/2)
-       AFUXXX  E    56       0.00010     -0.18309790E+00   6d+ ( 5/2)
+       AFUXXX  E    32       1.99989     -0.10135890E+02   5p-
+       AFUXXX  E    33       1.99952     -0.80948982E+01   5p+
+       AFUXXX  E    34       1.99993     -0.80948982E+01   5p+
+       AFUXXX  E    35       1.99983     -0.43524477E+01   5d-
+       AFUXXX  E    36       1.99914     -0.43524477E+01   5d-
+       AFUXXX  E    37       1.99872     -0.40407150E+01   5d+
+       AFUXXX  E    38       1.99956     -0.40407150E+01   5d+
+       AFUXXX  E    39       1.99990     -0.40407150E+01   5d+
+       AFUXXX  E    40       1.98417     -0.21392050E+01   6s
+       AFUXXX  E    41       1.93819     -0.13442976E+01   6p-
+       AFUXXX  E    42       1.75124     -0.98481977E+00   6p+ (1/2)
+       AFUXXX  E    43       1.98199     -0.98481977E+00   6p+ (3/2)
+       AFUXXX  E    44       0.03906     -0.20241412E+00   7s
+       AFUXXX  E    45       0.82745     -0.34596371E+00   5f- (1/2)
+       AFUXXX  E    46       0.15661     -0.34596371E+00   5f- (3/2)
+       AFUXXX  E    47       0.00000     -0.34596371E+00   5f- (5/2)
+       AFUXXX  E    48       0.00000     -0.31822326E+00   5f+ (7/2)
+       AFUXXX  E    49       0.00000     -0.31822326E+00   5f+ (5/2)
+       AFUXXX  E    50       0.33927     -0.31822326E+00   5f+ (3/2)
+       AFUXXX  E    51       0.94161     -0.31822326E+00   5f+ (1/2)
+       AFUXXX  E    52       0.42621     -0.19266767E+00   6d- (1/2)
+       AFUXXX  E    53       0.09667     -0.19266767E+00   6d- (3/2)
+       AFUXXX  E    54       0.34518     -0.18309790E+00   6d+ (1/2)
+       AFUXXX  E    55       0.33432     -0.18309790E+00   6d+ (3/2)
+       AFUXXX  E    56       0.00010     -0.18309790E+00   6d+ (5/2)
        AFO1XX  E     1       2.00005     -0.20696087E+02   1s
-       AFO1XX  E     2       1.89559     -0.12503665E+01   2s
-       AFO1XX  E     3       1.47986     -0.61398417E+00   2p-
-       AFO1XX  E     4       1.41895     -0.61259798E+00   2p+
-       AFO1XX  E     5       1.51536     -0.61259798E+00   2p+
+       AFO1XX  E     2       1.89709     -0.12503665E+01   2s
+       AFO1XX  E     3       1.51690     -0.61398417E+00   2p-
+       AFO1XX  E     4       1.46077     -0.61259798E+00   2p+
+       AFO1XX  E     5       1.54590     -0.61259798E+00   2p+
        AFO2XX  E     1       2.00005     -0.20696087E+02   1s
-       AFO2XX  E     2       1.89559     -0.12503665E+01   2s
-       AFO2XX  E     3       1.47986     -0.61398417E+00   2p-
-       AFO2XX  E     4       1.41895     -0.61259798E+00   2p+
-       AFO2XX  E     5       1.51536     -0.61259798E+00   2p+
+       AFO2XX  E     2       1.89709     -0.12503665E+01   2s
+       AFO2XX  E     3       1.51690     -0.61398417E+00   2p-
+       AFO2XX  E     4       1.46077     -0.61259798E+00   2p+
+       AFO2XX  E     5       1.54590     -0.61259798E+00   2p+
 
 We can to a large extent deduce the identity of the various atomic orbitals by just looking at orbital energies 
 and I have added it by hand to the above output in a hopefully obvious notation. Even more precise information, 
