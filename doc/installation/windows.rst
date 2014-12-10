@@ -46,7 +46,9 @@ Dependencies
     
    [f] add *"C:\\Program Files\\zlib"* into PATH
    
-   [g] if CMake will have problems to find zlib liraries consult CMake documentation
+   [g] if CMake will have problems to find zlib libraries you can use this (available since CMake 2.8.7): ::
+     
+     python setup -DZLIB_ROOT=[path to zlib folder]
     
    For 64-bit Windows (if you place zlib libraries at the same place as we do then CMake should find them automatically):
 
@@ -58,7 +60,9 @@ Dependencies
    
    [d] add *"C:\\Program Files\\zlib"* into PATH
    
-   [e] if CMake will have problems to find zlib liraries consult CMake documentation
+   [e] if CMake will have problems to find zlib libraries you can use this (available since CMake 2.8.7): ::
+     
+     python setup -DZLIB_ROOT=[path to zlib folder]
     
 5. Boost (http://www.boost.org/). Download Boost in archive file from http://sourceforge.net/projects/boost/files/boost/
    Then follow this instructions (if you place Boost libraries at the same place as we do then CMake should find them automatically):
