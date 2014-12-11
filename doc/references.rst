@@ -79,10 +79,10 @@ or popular Google-Books web-space.
    `[web] <http://dx.doi.org/10.1017/S0305004100016108>`_
 
 .. [DiRemigio2014] R. Di Remigio, R. Bast, L. Frediani and T. Saue,
-   *4-Component Relativistic Calculations in Solution with the Polarizable Continuum Model
+   *Four-Component Relativistic Calculations in Solution with the Polarizable Continuum Model
    of Solvation: Theory, Implementation and Application to the Group 16 Dihydrides :math:`H_{2}X` (X
    = O, S, Se, Te, Po)*
-   submitted
+   `[web] <http://pubs.acs.org/doi/abs/10.1021/jp507279y>`_
 
 .. [Dubillard2006] S. Dubillard, J.-B. Rota, T. Saue and K.Fægri,
    *Bonding analysis using localized relativistic orbitals:
