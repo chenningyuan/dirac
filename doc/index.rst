@@ -38,7 +38,8 @@ Setting up DIRAC
 Updates and patches
 ===================
     
- :doc:`ChangeLog <patches/CHANGELOG>`
+ :doc:`ChangeLog <patches/CHANGELOG>` |
+ :doc:`Known problems <patches/KNOWN-PROBLEMS`
 
 
 First steps in DIRAC territory
