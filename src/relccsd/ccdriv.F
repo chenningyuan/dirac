@@ -317,6 +317,7 @@ C
       enddo
       restart_unconverged  = relcc_restart_unconverged
       restart_redo_sort    = relcc_restart_redo_sorting
+      restart_redo_ccsd    = relcc_restart_redo_ccsd
       restart_ignore_check = relcc_restart_ignore_check
 
 CMI   ...provide with default values
@@ -3748,7 +3749,10 @@ C
             IMSTAT(I) = 1
          ENDDO
       ENDIF
-
+      if (doccsd.and.restart_redo_ccsd.and.(imstat(6).eq.3)) then
+            imstat(6) = 2
+            imstat(7) = 1
+      endif
 !aspg, restart fs
 C
 C     Initialize the record information

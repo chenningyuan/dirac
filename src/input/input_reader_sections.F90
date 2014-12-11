@@ -1053,6 +1053,11 @@
       end if
 
 !     forces sorting to be done even if it has been completed before.
+      if (kw_matches(word, '.REDOCCSD')) then
+         relcc_restart_redo_ccsd = .true.
+      end if
+
+!     forces sorting to be done even if it has been completed before.
       if (kw_matches(word, '.REDOSORT')) then
          relcc_restart_redo_sorting = .true.
       end if

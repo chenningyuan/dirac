@@ -22,6 +22,8 @@ f.add(from_string = ' Overview of calculated energies',
 inputs = ['ccsd_integrals.inp', 'ccsd_restart.inp']
 test.run(inputs, ['H2O.mol'], f, args='--mw=64 --aw=130 --keep_scratch --scratchful='+my_scratchdir)
 
+test.run(['ccsd_restart_othergeo.inp'], ['H2O_2.mol'], f, args='--mw=64 --aw=130 --keep_scratch --scratchful='+my_scratchdir)
+
 files_to_delete = os.listdir(my_scratchdir)
 for f in files_to_delete:
    os.unlink(os.path.join(my_scratchdir,f))

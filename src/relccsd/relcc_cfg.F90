@@ -71,7 +71,7 @@ module relcc_cfg
   logical, public                  :: relcc_restart_unconverged  = .false.
   logical, public                  :: relcc_restart_ignore_check = .false.
   logical, public                  :: relcc_restart_redo_sorting = .false.
-  character( 2), public            :: relcc_restart_from = '00'
+  logical, public                  :: relcc_restart_redo_ccsd    = .false.
 
 ! Information relevant for the energy calculation
   logical, public :: relcc_do_mp2                  = .true. 
@@ -179,7 +179,7 @@ contains
   call interface_mpi_bcast_l0(relcc_restart_unconverged, 1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_restart_ignore_check,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_restart_redo_sorting,1,0,global_communicator)
-  call interface_mpi_bcast(relcc_restart_from,           2,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_redo_ccsd,   1,0,global_communicator)
 
 ! Information relevant for the energy calculation
   call interface_mpi_bcast_l0(relcc_do_mp2                    ,1,0,global_communicator)
