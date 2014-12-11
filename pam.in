@@ -1135,16 +1135,12 @@ Options are also read from ~/.diracrc"""
 
         if self.input_file_pcm:
             self.copy_with_replacement(self.input_file_pcm, os.path.join(self.scratch_dir, 'pcmsolver.inp'))
-            if 'PCMSOLVER_PARSE' in os.environ.keys():
-                sys.path.append(os.environ['PCMSOLVER_PARSE'])
-                current = os.getcwd()
-                os.chdir(self.scratch_dir)
-                import pcmsolver
-                pcmsolver.parse_pcm_input('pcmsolver.inp')
-                os.chdir(current)
-            else:
-                print >> sys.stderr,'Cannot find PCMSolver input parsing script'
-                print >> sys.stderr,'Did you export the PCMSOLVER_PARSE environment variable?'
+            sys.path.append('@PCMSOLVER_PARSE_DIR@')
+            current = os.getcwd()
+            os.chdir(self.scratch_dir)
+            import pcmsolver
+            pcmsolver.parse_pcm_input('pcmsolver.inp')
+            os.chdir(current)
 
         # put files to the scratch directory
         if self.put_files:

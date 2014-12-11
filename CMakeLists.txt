@@ -155,13 +155,21 @@ if(ENABLE_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
 	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
+        if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+           set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+        else()
+           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
+           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+        endif()
         set(ExternalProjectCMakeArgs
             # PCMSolver does not know profile
             if(CMAKE_BUILD_TYPE MATCHES "profile")
                 set(CMAKE_BUILD_TYPE "release")
             endif
             -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-            -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+	    -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROJECT_INSTALL_PREFIX} #${PROJECT_BINARY_DIR}/external
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
 	    -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -184,22 +192,25 @@ if(ENABLE_PCMSOLVER)
          )
         
         if(PCMSOLVER_TESTS)
-		add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+  	   add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
         else()
-		add_external(pcmsolver)
+	   add_external(pcmsolver)
         endif()	
-                                                                                          
+
+	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
         set(EXTERNAL_LIBS
             pcm
             getkw
             ${ZLIB_LIBRARIES}
             ${EXTERNAL_LIBS})
     endif()
+    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 else()
     message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
 endif()
 
-file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
+configure_file(${CMAKE_SOURCE_DIR}/pam.in ${CMAKE_BINARY_DIR}/pam)
 file(COPY ${CMAKE_SOURCE_DIR}/basis        DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_dalton DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_ecp    DESTINATION ${CMAKE_BINARY_DIR})
