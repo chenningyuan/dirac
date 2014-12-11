@@ -642,6 +642,11 @@ or popular Google-Books web-space.
    Can. J. Phys. **58**, *1200* (1980)
    `[web] <http://dx.doi.org/10.1139/p80-159>`_
 
+.. [Wheeler2009] S. E. Wheeler and K. N. Houk,
+   *Through-Space Effects of Substituents Dominate Molecular Electrostatic Potentials of Substituted Arenes*,
+   J. Chem. Theory Comput. **5**, 2301 (2009)
+   `[web] <http://pubs.acs.org/doi/abs/10.1021/ct900344g>`_
+
 .. [Yanai_CPL2004] Takeshi Yanai, David P. Tew and Nicholas C. Handy.
    *"A new hybrid exchange–correlation functional using the Coulomb-attenuating method (CAM-B3LYP)*,
    Chem. Phys. Lett. **393**, 51 (2004)
