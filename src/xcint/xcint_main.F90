@@ -1081,8 +1081,7 @@ contains
 !       exchange-correlation potential
 !       ==============================
 
-        !if (do_potential) then
-        if (do_potential.or.do_london_rhs_direct.or.do_london_rhs_ro) then
+        if (do_potential) then
 
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
@@ -1126,6 +1125,30 @@ contains
 
         end if !exchange-correlation potential
 
+!fix for lao shieldings with saop:
+        if (do_london_rhs_direct .or. do_london_rhs_ro) then
+!         asymptotic correction
+          if (dft_cfg_saop_is_active) then
+            call get_n(rho_outer,       &
+                       0,               &
+                       mat_dim,         &
+                       dmat_saop_outer, &
+                       buffer,          &
+                       ao)
+            if (dft_cfg_saop_with_response_part) then
+              call get_n(rho_resp,       &
+                         0,              &
+                         mat_dim,        &
+                         dmat_saop_resp, &
+                         buffer,         &
+                         ao)
+            end if
+          end if
+          if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
+             call dftac(1, derv, w, n_0, (/rho_resp/), (/rho_outer/), gnn_0)
+          end if
+
+        end if
 
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================

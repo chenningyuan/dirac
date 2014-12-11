@@ -1836,7 +1836,11 @@ C     remove potential "garbage" from imaginary part...
 
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
 
+#ifdef MOD_UNRELEASED
       call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
+#else
+      call quit('DMRG interface not available in this Dirac version')
+#endif
 C
       CALL MEMREL('fcidump_driver',WORK,1,KFRSAV,KFREE,LFREE)
 C

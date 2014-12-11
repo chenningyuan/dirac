@@ -18,8 +18,6 @@ Examples of both methods are given in the PCM tutorial section.
 All keywords expecting a numerical value are intended to be in Angstrom. The module will perform conversion
 to atomic units internally.
 
-.. warning:: To use Method 2 with DIRAC you will need to export the PCMSOLVER_PARSE environment variable.
-
 .. warning:: Do **NOT** truncate keyword values to six characters. It will result in a crash with an obscure error message.
 
 .. warning:: Some keywords can be set but won't have any effect on the module as their respective functionality is not in the released version of PCMSolver.

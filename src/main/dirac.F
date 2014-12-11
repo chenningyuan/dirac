@@ -283,11 +283,11 @@ C
           CALL TDHFORB('NO CI')
 C
 C         *************************************************
-C         *** Call PSIDHF for Roothaan/DIIS iterations  ***
+C         *** Call PSISCF for Roothaan/DIIS iterations  ***
 C         *************************************************
 C
           IF (MAXITR.GT.0.OR.MAXITR2.GT.0) THEN
-             CALL PSIDHF(WFCONV)
+             CALL PSISCF(WFCONV)
           END IF
 C
 C         *************************************************
