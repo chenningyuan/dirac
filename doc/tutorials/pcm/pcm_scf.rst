@@ -13,9 +13,6 @@ As explained in the star(PCMSOL) section of the reference manual, a PCM calculat
 * using **two** input files. The additional directives in the inp file are forwarded to the PCMSolver module.
 The second method is not as flexible as the first one and we will cover both in this tutorial.
 
-.. warning:: You **must** export the `PCMSOLVER_PARSE` variable in your shell environment to be able to use the first method.
-   
-
 For further details, please refer to the PCM documentation in the reference manual.
 
 
