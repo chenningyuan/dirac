@@ -1,4 +1,4 @@
-Polarizable Continuum Model: some basic remarks
+Polarizable continuum model: some basic remarks
 ===============================================
 
 The possibility to perform solvent calculations is currently under development in the 
