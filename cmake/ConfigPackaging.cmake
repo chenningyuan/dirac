@@ -12,7 +12,6 @@ foreach(
         )
 endforeach()
 
-configure_file(${PROJECT_SOURCE_DIR}/pam pam)
 install(
     FILES ${PROJECT_BINARY_DIR}/pam
     DESTINATION share/dirac
