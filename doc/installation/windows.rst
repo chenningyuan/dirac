@@ -17,63 +17,77 @@ Dependencies
    And 64-bit version from `here <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/>`_ 
    In both cases we recommend to download archive file instead of installer and then just unpack it somewhere.
    Add path to compilers into your PATH environment variable. 
-   Example of path to add: *"C:\\Program Files\\mingw-w64\\i686-4.9.1-posix-dwarf-rt_v3-rev0\\mingw32\\bin"*
+   Example of path to add: *"C:\\Program Files\\mingw-w64\\x86_64-4.9.1-release-posix-seh-rt_v3-rev0\\mingw64\\bin"*
 
 3. The Python interpreter of version at least 2.7 (http://www.python.org). Install 32-bit version of Python on 32-bit Windows 
    and 64-bit Python on 64-bit Windows. Into PATH variable add paths to both Python and its scripts. 
    Example of paths to add: *"C:\\Python27;C:\\Python27\\Scripts"*
    
-   It is also necesary to install python developer package. Example using setuptools (https://pypi.python.org/pypi/setuptools/): ::
+   It is also necesary to install python developer package. Example using *pip* (you can get *pip* from https://pip.pypa.io/en/latest/: ::
    
-     easy_install docker-python-dev
+     pip install docker-python-dev
      
-   How to install setuptools? For example try this:
-   a) download https://bootstrap.pypa.io/ez_setup.py
-   b) in directory where you have downloaded the file run in command line (assuming you have Python installed and in PATH): ::
+4. Zlib library (http://www.zlib.net/)
+
+   For 32-bit Windows (if you place zlib libraries at the same place as we do then CMake should find them automatically):
+   
+   [a] download zlib in archive from http://zlib.net/zlib128-dll.zip
+   
+   [b] unpack downloaded archive (Extract all)
+   
+   [c] rename unpacked folder to *"zlib"* (note: that folder must contain folders: *"include"*, *"lib"*, *"test"*, file *"zlib1.dll"* and some other files)
+   
+   [d] move it to *"C:\\Program Files"*
+   
+   [e] run in command line these commands: ::
      
-     python ez_setup.py
-     
-4. Zlib library (http://www.zlib.net/). 
-   For 32-bit Windows:
-   a) download zlib in archive from http://zlib.net/zlib128-dll.zip
-   b) unpack downloaded archive (Extract all)
-   c) rename unpacked folder to *"zlib"* 
-      note: that folder must contains folders: *"include"*, *"lib"*, *"test"*, file *"zlib1.dll"* and some other files
-   d) move it to *"C:\\Program Files"*
-   e) run in command line these commands: ::
-     
-     cd "C:\Program Files\zlib
+     cd C:\Program Files\zlib
      dlltool -D zlib1.dll -d lib/zlib.def -l lib/libzdll.a 
     
-   f) add *"C:\\Program Files\\zlib"* into PATH
+   [f] add *"C:\\Program Files\\zlib"* into PATH
+   
+   [g] if CMake will have problems to find zlib libraries you can use this (available since CMake 2.8.7): ::
+     
+     python setup -DZLIB_ROOT=[path to zlib folder]
     
-   For 64-bit Windows:
-   a) download zlib in archive from `here <http://sourceforge.net/projects/mingw-w64/files/External%20binary%20packages%20%28Win64%20hosted%29/Binaries%20%2864-bit%29/zlib-1.2.5-bin-x64.zip/download>`_ 
+   For 64-bit Windows (if you place zlib libraries at the same place as we do then CMake should find them automatically):
 
-   b) unpack downloaded archive (Extract all)
-   c) in unpacked folder find folder named *"zlib"* and move it to *"C:\\Program Files (x86)"*
-      note: that folder must contains folders: *"bin"*, *"include"* and *"lib"*
-   d) add *"C:\\Program Files (x86)\\zlib"* into PATH
+   [a] download zlib in archive from `here <http://sourceforge.net/projects/mingw-w64/files/External%20binary%20packages%20%28Win64%20hosted%29/Binaries%20%2864-bit%29/zlib-1.2.5-bin-x64.zip/download>`_ 
+   
+   [b] unpack downloaded archive (Extract all)
+   
+   [c] in unpacked folder find folder named *"zlib"* and move it to *"C:\\Program Files"* (note: that folder must contain folders: *"bin"*, *"include"* and *"lib"*)
+   
+   [d] add *"C:\\Program Files\\zlib"* into PATH
+   
+   [e] if CMake will have problems to find zlib libraries you can use this (available since CMake 2.8.7): ::
+     
+     python setup -DZLIB_ROOT=[path to zlib folder]
     
-5. Boost (http://www.boost.org/) 
-   Download Boost in archive file from http://sourceforge.net/projects/boost/files/boost/
-   Then follow this instructions:
-   a) unpack downloaded archive (Extract all)
-   b) in unpacked folder (for example: *"C:\\boost_1_56_0\\boost_1_56_0"*) run this command in command line: ::
+5. Boost (http://www.boost.org/). Download Boost in archive file from http://sourceforge.net/projects/boost/files/boost/
+   Then follow this instructions (if you place Boost libraries at the same place as we do then CMake should find them automatically):
+   
+   [a] unpack downloaded archive (Extract all)
+   
+   [b] in unpacked folder (for example: *"C:\\boost_1_56_0\\boost_1_56_0"*) run this command in command line: ::
     
      bootstrap.bat mingw
     
-   c) in the same directory run: ::
+   [c] in the same directory run: ::
     
      b2 --with-system --with-filesystem --with-test toolset=gcc install
     
-   d) in *"C:\Boost"* you will find *"include"* and *"lib"* directories
+   [d] in *"C:\\Boost"* you will find *"include"* and *"lib"* directories
+   
+   [e] if CMake will have problems to find your Boost libraries yo can use: ::
+   
+     python setup -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
 
 
 Important notes
 ------------------------
 
-1. You can modify or create PATH environment variable in *"Control Panel"* --> *"User Accounts"* and click *"Change my environment variables"*
+1. You can modify or create PATH environment variable in *"Control Panel"* --> *"User Accounts"* and click *"Change my environment variables"*.
    Please add or change variables only in the part for User variables not in the part for System variables. When you want to add several paths into PATH
    environment variable then you can use *";"* as a separator.
 
