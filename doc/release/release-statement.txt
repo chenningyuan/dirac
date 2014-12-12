@@ -18,7 +18,7 @@ New features in DIRAC14
 * As a byproduct of the PCM implementation, molecular electrostatic potential (MEP) maps are available
   for 4-component electronic-structure calculations.
 * +Q corrections (size-consistency corrections) for KR-CI.
-
+* Extended Hückel method using atomic fragments for SCF start guess (alternative to atomic start)
 
 A full list of features of DIRAC14 is found here:
 http://diracprogram.org/doku.php?id=features
