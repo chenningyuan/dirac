@@ -39,7 +39,7 @@ http://www.diracprogram.org/doku.php?id=citation
 
 On behalf of the DIRAC team,
 
+   Trond Saue
    Lucas Visscher
    Hans Jørgen Aagaard Jensen
    Radovan Bast
-   Trond Saue
