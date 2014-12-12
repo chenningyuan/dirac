@@ -5589,7 +5589,7 @@ C     Atomic Huckel start
 C     The basic theory is given here
 C       R. Hoffmann, J. Chem. Phys. 39 (1963) 1397
 C     This work was further motivated by 
-C       P. Norman and H. J. Aa. Jensen, Chem. Phys. 531 (2012) 229
+C       P. Norman and H. J. Aa. Jensen, Chem. Phys. Lett. 531 (2012) 229
 C     The particularity of the present approach is to employ 
 C     pre-calculated atomic fragments
 C

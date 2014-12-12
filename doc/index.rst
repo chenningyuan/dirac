@@ -79,7 +79,8 @@ Tutorials and walkthrus
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
 * **SCF start guess :**
-  :doc:`Atomic start <tutorials/start_guess/atomic_start>`
+  :doc:`Atomic start <tutorials/start_guess/atomic_start>` |
+  :doc:`Extended Hückel start <tutorials/start_guess/atomic_huckel>` |
 
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
