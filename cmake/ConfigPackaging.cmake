@@ -115,7 +115,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external                     ${EXPORT_DIR}
         COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
         COMMAND cp -rL ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
-        COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/pam.in                       ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src/xcfun                    ${EXPORT_DIR}/src
