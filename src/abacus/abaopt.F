@@ -7459,7 +7459,7 @@ C
 #else
 #include "gnrinf.h"
 #endif
-CTROND      real(8), allocatable :: STPSYM(:),STPCAR(:),COOR(:)
+      real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)
 C
 #ifdef PRG_DIRAC
@@ -7476,8 +7476,8 @@ C
       ESTART = ECORR
       NCART  = NCRREP(0,1)
       NCRIND = 3*NUCIND
-CTROND      allocate(STPSYM(NCART))
-CTROND      allocate(STPCAR(NCRIND))
+      allocate(STPSYM1(NCART))
+      allocate(STPCAR1(NCRIND))
       allocate(COOR(3,NUCIND))
       IPRINT = 0
       IF (.NOT. CHGRDT) THEN
@@ -7520,7 +7520,7 @@ C
      &                   - SCLFCK*(ECORR - ESTART)/DISPLA)
             END IF
          END IF
-         CALL WLKINC(STPSYM,STPCAR,COOR,DISPLA,NCART,
+         CALL WLKINC(STPSYM1,STPCAR1,COOR,DISPLA,NCART,
      &               NCRIND,IPOINT,IPRINT)
 C
 C     Update geometry in common block
