@@ -15,7 +15,8 @@ keyword(SKIPSS)
 Performs a PCM-SCF calculation with the PCM-SCC approximation. The small-small block
 of the electrostatic potential is neglected, in the spirit of the SCC approximation 
 described in [Visscher1997a]_. It is not employed by default.
-Currently not working for response calculations.
+
+.. warning:: Currently not working for response calculations.
 
 keyword(PRINT )
 

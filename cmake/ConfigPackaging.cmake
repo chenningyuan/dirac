@@ -50,21 +50,6 @@ install(
     WORLD_READ
     )
 
-if(ENABLE_PCMSOLVER)
-   install( # Install PCMSolver input parsing script
-       FILES ${PROJECT_BINARY_DIR}/external/bin/pcmsolver.py
-       DESTINATION bin
-       PERMISSIONS
-       OWNER_READ OWNER_WRITE OWNER_EXECUTE
-       GROUP_READ             GROUP_EXECUTE
-       WORLD_READ             WORLD_EXECUTE
-       )
-   install( # Install libraries
-       DIRECTORY ${PROJECT_BINARY_DIR}/external/share/libgetkw
-       DESTINATION share/dirac
-       )
-endif()
-
 install(
     FILES ${PROJECT_SOURCE_DIR}/utils/wrapper.py
     DESTINATION share/dirac

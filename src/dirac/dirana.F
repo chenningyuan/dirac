@@ -4615,7 +4615,7 @@ C***********************************************************************
      &           CSEL,NBAS,NVECS,NZC1,IQDEF,
      &           CSEL,NBAS,NVECS,NZC1,IQDEF,
      &           WORK(KFREE),LFREE,IPRINT)
-      IF(IPRINT.GE.2) THEN
+      IF(IPRINT.GE.4) THEN
         WRITE(LUPRI,*) '** Output from OVLFRAG **'
         KJJ = 1
         DO J = 1,NONTYP
@@ -4637,9 +4637,9 @@ C***********************************************************************
             KJJ = KJJ + NCATOM(0,J)
           ENDDO
         ENDDO
+        WRITE(LUPRI,*) '* Total overlap matrix'
+        CALL PRQMAT(AMAT,NVECS,NVECS,NVECS,NVECS,NZC1,IQDEF,LUPRI)
       ENDIF
-      WRITE(LUPRI,*) '* Total overlap matrix'
-      CALL PRQMAT(AMAT,NVECS,NVECS,NVECS,NVECS,NZC1,IQDEF,LUPRI)
       CALL MEMREL('OVLFRAG',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END

@@ -16,6 +16,7 @@ option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                             
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
 option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
+option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF) 
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
@@ -40,6 +41,19 @@ option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                
 # for example build with pcmsolver will fail (merging libraries)
 # someone can specify minimal version if known
 find_package(PythonInterp REQUIRED)
+
+# set python version variable when it is not defined automatically
+# this can happen when cmake version is equal or less than 2.8.5
+if(NOT PYTHON_VERSION_STRING)
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} -V
+        OUTPUT_VARIABLE PYTHON_VERSION_STRING
+        ERROR_VARIABLE PYTHON_VERSION_STRING
+    )
+
+    string(REGEX MATCH "Python ([0-9].[0-9].[0-9])" temp "${PYTHON_VERSION_STRING}")
+    set(PYTHON_VERSION_STRING ${CMAKE_MATCH_1})
+endif()
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -90,10 +104,10 @@ include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
 
-if(USE_BUILTIN_BLAS)
+if(ENABLE_BUILTIN_BLAS)
     add_definitions(-DUSE_BUILTIN_BLAS)
 endif()
-if(USE_BUILTIN_LAPACK)
+if(ENABLE_BUILTIN_LAPACK)
     add_definitions(-DUSE_BUILTIN_LAPACK)
 endif()
 
@@ -164,18 +178,22 @@ if(ENABLE_PCMSOLVER)
         add_definitions(-DHAS_PCMSOLVER)                                                  
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
-        get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
-        
-        # PCMSolver does not know profile
-        if(CMAKE_BUILD_TYPE MATCHES "profile")
-            set(PCM_BUILD_TYPE "release")
+	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
+        if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+           set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
         else()
-            set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
+           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
+           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
         endif()
-        
         set(ExternalProjectCMakeArgs
-            -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
-            -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+            # PCMSolver does not know profile
+            if(CMAKE_BUILD_TYPE MATCHES "profile")
+                set(CMAKE_BUILD_TYPE "release")
+            endif
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+	      -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROJECT_INSTALL_PREFIX} #${PROJECT_BINARY_DIR}/external
             -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
             -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
             -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -199,22 +217,25 @@ if(ENABLE_PCMSOLVER)
          )
         
         if(PCMSOLVER_TESTS)
-		add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+  	   add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
         else()
-		add_external(pcmsolver)
+	   add_external(pcmsolver)
         endif()	
-                                                                                          
+
+	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
         set(EXTERNAL_LIBS
             pcm
             getkw
             ${ZLIB_LIBRARIES}
             ${EXTERNAL_LIBS})
     endif()
+    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 else()
     message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
 endif()
 
-file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
+configure_file(${CMAKE_SOURCE_DIR}/pam.in ${CMAKE_BINARY_DIR}/pam)
 file(COPY ${CMAKE_SOURCE_DIR}/basis        DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_dalton DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_ecp    DESTINATION ${CMAKE_BINARY_DIR})
@@ -387,15 +408,45 @@ include(ConfigPackaging)
 
 # give information about system, compiler flags, and size of static allocations ...
 set(STATIC_MEM_INFO_BINARIES dirac)
+
+# info what blas and lapack will be used when its variable is not set
+if(NOT BLAS_LIBRARIES)
+    if(USE_BUILTIN_BLAS)
+        # builtin library will be used
+        set(BLAS_LIBRARIES_INFO "builtin")
+    else()
+        # none blas
+        set(BLAS_LIBRARIES_INFO "none")
+    endif()
+endif()
+if(NOT LAPACK_LIBRARIES)
+    if(USE_BUILTIN_LAPACK)
+        # builtin library will be used
+        set(LAPACK_LIBRARIES_INFO "builtin")
+    else()
+        # none lapack
+        set(LAPACK_LIBRARIES_INFO "none")
+    endif()
+endif()
+
+# info that there are no explict libraries set
+if(NOT EXPLICIT_LIBS)
+    set(EXPLICIT_LIBS_INFO "none")
+endif()
+
 # configuration time in UTC
 execute_process(
     COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.utcnow())"
     OUTPUT_VARIABLE CONFIGURATION_TIME
 )
+
 # delete \n added by Python print()
 string(STRIP ${CONFIGURATION_TIME} CONFIGURATION_TIME)
+
 # list with compiler definitions
 get_directory_property(_list_of_definitions DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+
 include(BinaryInfo) # giving information - must be called after everything is set
 include(ConfigInfo) # has to come after binary info (dependency: git information)
+
 unset(_list_of_definitions)
