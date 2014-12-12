@@ -183,3 +183,62 @@ The output for the dipole moment calculation looks just like usual::
 
 Influence of the relative permittivity on electric properties
 -------------------------------------------------------------
+
+It is interesting to analyze the effect of varying the relative permittivity
+of the solvent on the calculation of electric properties. We will use 
+the two input files strategy and exploit the string substitution mechanism
+of the pam scripti. Consider the pcm-prop.inp input file::
+
+    **DIRAC       
+    .WAVE FUNCTION
+    .PROPERTIES
+    .PCM
+    *PCM          
+    *PCMSOLVER    
+    .CAVTYPE      
+     GEPOL        
+    .NOSCALING    
+    .AREATS       
+     10          
+    .SOLVERTYPE   
+     IEFPCM       
+    .SOLVNT       
+     solvent  
+    **WAVE FUNCTION
+    .SCF           
+    **PROPERTIES
+    .DIPOLE
+    .POLARIZABILITY
+    *END OF        
+
+Notice that instead of specifying a solvent name we put a placeholder string.
+This can be exploited to run calculations selecting a different solvent::
+    
+    pam --inp=pcm-prop.inp --replace solvent=CYCLOHEXANE --mol=H2O.mol
+
+or run this in a loop::
+
+    # Declare array of solvents. Solvents are ordered by increasing relative permittivity
+    declare -a solv_array=("N-HEPTANE" "CYCLOHEXANE" "CARBON TETRACHLORIDE" "BENZENE" "TOLUENE" "CHLOROFORM" "CHLOROBENZENE" "ANILINE" "TETRAHYDROFURANE" "METHYLENECHLORIDE" "1,2-DICHLOROETHANE" "ACETONE" "ETHANOL" "METHANOL" "ACETONITRILE" "NITROMETHANE" "DIMETHYLSULFOXIDE" "WATER")
+
+    # Now loop over the array elements and substitute them to the string solvent in pcm-prop.inp
+    for solv in "${solv_array[@]}"
+    do
+        echo "$solv"
+        pam --inp=pcm-prop.inp --replace solvent=$solv --mol=H2O.mol
+    done
+
+This will produce a different output file for every different solvent in the array. One can collect the results for dipole moments and isotropic
+polarizabilities and plot them against the relative permittivities. This was done in [DiRemigio2014]_ for the :math:`\mathrm{H}_2\mathrm{Po}`
+molecule:
+
+.. image:: H2Po_prop.png 
+    :width: 400px
+
+where it was also found that the difference between the values of the observables in solution and in vacuo can be fitted to
+a linear rational function:
+
+.. math::
+   \alpha_\mathrm{iso}(\varepsilon_\mathrm{r}) - \alpha_\mathrm{iso}(1) = \frac{\varepsilon_\mathrm{r} - 1}{a\varepsilon_\mathrm{r} + b}\alpha_\mathrm{iso}(1)
+
+An analogous relation was found to be valid also for the dipole moment. Notice that the :math:`a, b` coefficients are system-dependent.
