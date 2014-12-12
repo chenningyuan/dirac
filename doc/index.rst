@@ -39,7 +39,7 @@ Updates and patches
 ===================
     
  :doc:`ChangeLog <patches/CHANGELOG>` |
- :doc:`Known problems <patches/KNOWN-PROBLEMS`
+ :doc:`Known problems <patches/KNOWN-PROBLEMS>`
 
 
 First steps in DIRAC territory
