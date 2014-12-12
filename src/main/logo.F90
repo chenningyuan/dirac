@@ -117,7 +117,7 @@ print *, '*    Sebastien Dubillard      University of Strasbourg          France
 print *, '*    Ulf Ekstroem             University of Oslo                Norway        *'
 print *, '*    Ephraim Eliav            University of Tel Aviv            Israel        *'
 print *, '*    Thomas Enevoldsen        University of Southern Denmark    Denmark       *'
-print *, '*    Elke Fasshauer           University of Heidelberg          Germany       *'
+print *, '*    Elke Fasshauer           UiT  The  Artic  University  of   Norway        *'
 print *, '*    Timo Fleig               Universite Toulouse III           France        *'
 print *, '*    Olav Fossgaard           UiT  The  Arctic  University  of  Norway        *'
 print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'

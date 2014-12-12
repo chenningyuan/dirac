@@ -149,9 +149,7 @@ Tutorials and walkthrus
 * **Polarizable continuum model:**
   :doc:`Basics <tutorials/pcm/pcm_basics>` |
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
-  :doc:`A geometry optimization in solution <tutorials/pcm/pcm_numgra>` |
-  :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>` |
-  :doc:`Calculation of polarizabilities in solution: finite field approach <tutorials/pcm/pcm_ff>`
+  :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>` 
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
