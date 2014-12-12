@@ -78,8 +78,8 @@ Tutorials and walkthrus
   :doc:`Basis sets for relativistic calculations <tutorials/relbas>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
-* **SCF convergence:**
-  :doc:`Atomic start <tutorials/atomic_start/tutorial>`
+* **SCF start guess :**
+  :doc:`Atomic start <tutorials/start_guess/atomic_start>`
 
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
