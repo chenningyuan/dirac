@@ -1,4 +1,4 @@
-DIRAC pam run in /home/saue/Dirac/test/projection_analysis
+DIRAC pam run in /home/saue/Dirac/build14/test/projection_analysis
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
 
@@ -159,33 +159,36 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
 
- Who compiled             | saue
- Host                     | dirac
- System                   | Linux-3.8.0-39-generic
+ Who compiled             | saue@lpqlx129
+ System                   | Linux-3.0.0-17-generic
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
  Fortran compiler         | /usr/bin/gfortran
  Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
+ Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
+                          | _MFDS -fno-range-check -O3 -funroll-all-loops
  C compiler               | /usr/bin/gcc
  C compiler version       | gcc (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
+ C flags                  | -g -O2 -Wno-unused
  C++ compiler             | /usr/bin/g++
  C++ compiler version     | g++ (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
+ C++ flags                |  -O3 -DNDEBUG
  BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
                           | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
- LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
-                          | e/atlas/liblapack.so
+ LAPACK                   | /usr/lib/atlas-base/liblapack_atlas.so;/usr/lib/at
+                          | las-base/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 80b91259bcba4b6f9359cd48de68d0581e5f5edd
- Configuration time       | 2014-08-29 12:57:13.765483
+ Last Git revision        | 279a4413f5aecefbf478c95710af9f6c7a6e25b4
+ Configuration time       | 2013-01-20 21:08:45.770352
 
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Sun Aug 31 02:40:29 2014
+     Date and time (Linux)  : Wed Dec 10 11:24:40 2014
      Host name              : not found                               
 
 
@@ -197,13 +200,6 @@ Contents of the input file
 Projection analysis for CH4                                                                         
 .WAVE FUNCTION                                                                                      
 .ANALYZE                                                                                            
-**HAMILTONIAN                                                                                       
-.LVCORR                                                                                             
-.PRINT                                                                                              
-1                                                                                                   
-**INTEGRALS                                                                                         
-*READIN                                                                                             
-.CONTRACT                                                                                           
 **WAVE FUNCTIONS                                                                                    
 .SCF                                                                                                
 *SCF                                                                                                
@@ -213,45 +209,28 @@ Projection analysis for CH4
 .MULPOP                                                                                             
 .PROJEC                                                                                             
 *PROJEC                                                                                             
-.OWNBAS                                                                                             
-.VECREF                                                                                             
-5                                                                                                   
+.ATOMS                                                                                              
 AFCXXX                                                                                              
-1                                                                                                   
 1..5                                                                                                
 AFH1XX                                                                                              
-1                                                                                                   
-1                                                                                                   
-AFH2XX                                                                                              
-1                                                                                                   
-1                                                                                                   
-AFH3XX                                                                                              
-1                                                                                                   
-1                                                                                                   
-AFH4XX                                                                                              
-1                                                                                                   
 1                                                                                                   
 **MOLECULE                                                                                          
 *BASIS                                                                                              
 .DEFAULT                                                                                            
  cc-pVDZ                                                                                            
-*SYMMETRY                                                                                           
-.NOSYM                                                                                              
 *END OF                                                                                             
 
 
 Contents of the molecule file
 -----------------------------
 
-5                                                                                                   
-CH4 molecule                                                                                        
-C      0.0000000000   0.0000000000   0.0000000000                                                   
-H      0.6270023464   0.6270023464   0.6270023464                                                   
-H     -0.6270023464  -0.6270023464   0.6270023464                                                   
-H      0.6270023464  -0.6270023464  -0.6270023464                                                   
-H     -0.6270023464   0.6270023464  -0.6270023464                                                   
+    5                                                                                               
                                                                                                     
-                                                                                                    
+C     0.0000000000   0.0000000000   0.0000000000                                                    
+H     0.6270023464   0.6270023464   0.6270023464                                                    
+H    -0.6270023464  -0.6270023464   0.6270023464                                                    
+H     0.6270023464  -0.6270023464  -0.6270023464                                                    
+H    -0.6270023464   0.6270023464  -0.6270023464                                                    
 
 
     *************************************************************************
@@ -291,20 +270,6 @@ H     -0.6270023464   0.6270023464  -0.6270023464
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
- Default print level:        1
- Nuclear model: Gaussian charge distribution.
-
- Two-electron integrals not calculated.
-
-
- Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
-
-
-
- Changes of defaults for READIN:
- -------------------------------
-
-
 
 
     *************************************************************************
@@ -313,22 +278,74 @@ H     -0.6270023464   0.6270023464  -0.6270023464
 
 
 
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Original Coordinates                    
+ --------------------                    
+    6         0.00000000     0.00000000     0.00000000       1
+    1         1.18486272     1.18486272     1.18486272       1
+    1        -1.18486272    -1.18486272     1.18486272       1
+    1         1.18486272    -1.18486272    -1.18486272       1
+    1        -1.18486272     1.18486272    -1.18486272       1
+
+ Symmetry class found: T(d)   
+
+ Centered and Rotated                    
+ --------------------                    
+    1         1.18486272    -1.18486272     1.18486272       1
+    1        -1.18486272     1.18486272     1.18486272       1
+    1        -1.18486272    -1.18486272    -1.18486272       1
+    1         1.18486272     1.18486272    -1.18486272       1
+    6         0.00000000     0.00000000     0.00000000       1
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 2
+
+
+
                           SYMGRP:Point group information
                           ------------------------------
 
-Point group: C1 
+Full group is:  T(d)           
+Represented as: D2 
+
+   * The point group was generated by:
+
+      Rotation about the x-axis
+      Rotation about the y-axis
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x
+   -----+--------------------
+     E  |  E   C2z  C2y  C2x
+    C2z | C2z   E   C2x  C2y
+    C2y | C2y  C2x   E   C2z
+    C2x | C2x  C2y  C2z   E 
 
    * Character table
 
-        |  E 
-   -----+-----
-    A   |   1
+        |  E   C2z  C2y  C2x
+   -----+--------------------
+    A   |   1    1    1    1
+    B2  |   1   -1    1   -1
+    B3  |   1   -1   -1    1
+    B1  |   1    1   -1   -1
 
    * Direct product table
 
-        | A  
-   -----+-----
-    A   | A  
+        | A    B2   B3   B1 
+   -----+--------------------
+    A   | A    B2   B3   B1 
+    B2  | B2   A    B1   B3 
+    B3  | B3   B1   A    B2 
+    B1  | B1   B3   B2   A  
 
 
                             **************************
@@ -336,9 +353,9 @@ Point group: C1
                             **************************
 
    * One fermion irrep:   E1 
-   * Quaternionic group. NZ = 4
+   * Real group. NZ = 1
    * Direct product decomposition:
-          E1  x E1  : A   + A   + A   + A  
+          E1  x E1  : A   + B1  + B2  + B3 
 
 
                                  Spinor structure
@@ -346,10 +363,10 @@ Point group: C1
 
 
    * Fermion irrep no.: 1
-      La  |  A  (1)  A  (1)  |
-      Sa  |  A  (1)  A  (1)  |
-      Lb  |  A  (1)  A  (1)  |
-      Sb  |  A  (1)  A  (1)  |
+      La  |  A  (1)  B1 (2)  |
+      Sa  |  A  (1)  B1 (2)  |
+      Lb  |  B2 (3)  B3 (4)  |
+      Sb  |  B2 (3)  B3 (4)  |
 
 
                               Quaternion symmetries
@@ -357,7 +374,10 @@ Point group: C1
 
     Rep  T(+)
     -----------------------------
-    A    1  i  j  k
+    A    1
+    B2   j
+    B3   k
+    B1   i
 
   QM-QM nuclear repulsion energy :     13.484875955768
 
@@ -407,24 +427,24 @@ Point group: C1
   Total number of coordinates: 15
 
 
-   1   C z      x      0.0000000000
+   1   C        x      0.0000000000
    2            y      0.0000000000
    3            z      0.0000000000
 
-   4   H z      x      1.1848627200
+   4   H    1   x      1.1848627200
    5            y      1.1848627200
-   6            z      1.1848627200
+   6            z     -1.1848627200
 
-   7   H z      x     -1.1848627200
+   7   H    2   x      1.1848627200
    8            y     -1.1848627200
    9            z      1.1848627200
 
-  10   H z      x      1.1848627200
-  11            y     -1.1848627200
-  12            z     -1.1848627200
+  10   H    3   x     -1.1848627200
+  11            y      1.1848627200
+  12            z      1.1848627200
 
-  13   H z      x     -1.1848627200
-  14            y      1.1848627200
+  13   H    4   x     -1.1848627200
+  14            y     -1.1848627200
   15            z     -1.1848627200
 
 
@@ -434,23 +454,60 @@ Point group: C1
 
     5
 
-C z    0.0000000000   0.0000000000   0.0000000000
-H z    0.6270023464   0.6270023464   0.6270023464
-H z   -0.6270023464  -0.6270023464   0.6270023464
-H z    0.6270023464  -0.6270023464  -0.6270023464
-H z   -0.6270023464   0.6270023464  -0.6270023464
+C      0.0000000000   0.0000000000   0.0000000000
+H      0.6270023464   0.6270023464  -0.6270023464
+H      0.6270023464  -0.6270023464   0.6270023464
+H     -0.6270023464   0.6270023464   0.6270023464
+H     -0.6270023464  -0.6270023464  -0.6270023464
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   3  4  4  4
+
+
+  Symmetry 1
+
+   1   H     x   [  4  +  7  - 10  - 13 ]/4
+   2   H     y   [  5  -  8  + 11  - 14 ]/4
+   3   H     z   [  6  -  9  - 12  + 15 ]/4
+
+
+  Symmetry 2
+
+   4   C     y    2
+   5   H     x   [  4  -  7  - 10  + 13 ]/4
+   6   H     y   [  5  +  8  + 11  + 14 ]/4
+   7   H     z   [  6  +  9  - 12  - 15 ]/4
+
+
+  Symmetry 3
+
+   8   C     x    1
+   9   H     x   [  4  +  7  + 10  + 13 ]/4
+  10   H     y   [  5  -  8  - 11  + 14 ]/4
+  11   H     z   [  6  -  9  + 12  - 15 ]/4
+
+
+  Symmetry 4
+
+  12   C     z    3
+  13   H     x   [  4  -  7  + 10  - 13 ]/4
+  14   H     y   [  5  +  8  - 11  - 14 ]/4
+  15   H     z   [  6  +  9  + 12  + 15 ]/4
 
 
    Interatomic separations (in Angstroms):
    ---------------------------------------
 
-            C z         H z         H z         H z         H z 
+            C           H  1        H  2        H  3        H  4
 
-   C z     0.000000
-   H z     1.086000    0.000000
-   H z     1.086000    1.773430    0.000000
-   H z     1.086000    1.773430    1.773430    0.000000
-   H z     1.086000    1.773430    1.773430    1.773430    0.000000
+   C       0.000000
+   H  1    1.086000    0.000000
+   H  2    1.086000    1.773430    0.000000
+   H  3    1.086000    1.773430    1.773430    0.000000
+   H  4    1.086000    1.773430    1.773430    1.773430    0.000000
 
 
 
@@ -460,10 +517,10 @@ H z   -0.6270023464   0.6270023464  -0.6270023464
 
                   atom 1     atom 2                           distance
                   ------     ------                           --------
-  bond distance:    H z        C z                            1.086000
-  bond distance:    H z        C z                            1.086000
-  bond distance:    H z        C z                            1.086000
-  bond distance:    H z        C z                            1.086000
+  bond distance:    H  1       C                              1.086000
+  bond distance:    H  2       C                              1.086000
+  bond distance:    H  3       C                              1.086000
+  bond distance:    H  4       C                              1.086000
 
 
   Bond angles (degrees):
@@ -471,12 +528,12 @@ H z   -0.6270023464   0.6270023464  -0.6270023464
 
                   atom 1     atom 2     atom 3                   angle
                   ------     ------     ------                   -----
-  bond angle:       H z        C z        H z                  109.471
-  bond angle:       H z        C z        H z                  109.471
-  bond angle:       H z        C z        H z                  109.471
-  bond angle:       H z        C z        H z                  109.471
-  bond angle:       H z        C z        H z                  109.471
-  bond angle:       H z        C z        H z                  109.471
+  bond angle:       H  2       C          H  1                 109.471
+  bond angle:       H  3       C          H  1                 109.471
+  bond angle:       H  3       C          H  2                 109.471
+  bond angle:       H  4       C          H  1                 109.471
+  bond angle:       H  4       C          H  2                 109.471
+  bond angle:       H  4       C          H  3                 109.471
 
 
   Nuclear repulsion energy :   13.484875955768
@@ -487,132 +544,172 @@ H z   -0.6270023464   0.6270023464  -0.6270023464
 
    * Large components:   26
      1  L C   1 s        2  L C   1 px       3  L C   1 py       4  L C   1 pz       5  L C   1 dxx      6  L C   1 dxy 
-     7  L C   1 dxz      8  L C   1 dyy      9  L C   1 dyz     10  L C   1 dzz     11  L H   1 s       12  L H   1 px  
-    13  L H   1 py      14  L H   1 pz      15  L H   1 s       16  L H   1 px      17  L H   1 py      18  L H   1 pz  
-    19  L H   1 s       20  L H   1 px      21  L H   1 py      22  L H   1 pz      23  L H   1 s       24  L H   1 px  
-    25  L H   1 py      26  L H   1 pz  
+     7  L C   1 dxz      8  L C   1 dyy      9  L C   1 dyz     10  L C   1 dzz     11  L H   1 s       12  L H   2 s   
+    13  L H   3 s       14  L H   4 s       15  L H   1 px      16  L H   1 py      17  L H   1 pz      18  L H   2 px  
+    19  L H   2 py      20  L H   2 pz      21  L H   3 px      22  L H   3 py      23  L H   3 pz      24  L H   4 px  
+    25  L H   4 py      26  L H   4 pz  
    * Small components:   60
     27  S C   1 s       28  S C   1 px      29  S C   1 py      30  S C   1 pz      31  S C   1 dxx     32  S C   1 dxy 
     33  S C   1 dxz     34  S C   1 dyy     35  S C   1 dyz     36  S C   1 dzz     37  S C   1 fxxx    38  S C   1 fxxy
     39  S C   1 fxxz    40  S C   1 fxyy    41  S C   1 fxyz    42  S C   1 fxzz    43  S C   1 fyyy    44  S C   1 fyyz
-    45  S C   1 fyzz    46  S C   1 fzzz    47  S H   1 s       48  S H   1 px      49  S H   1 py      50  S H   1 pz  
-    51  S H   1 dxx     52  S H   1 dxy     53  S H   1 dxz     54  S H   1 dyy     55  S H   1 dyz     56  S H   1 dzz 
-    57  S H   1 s       58  S H   1 px      59  S H   1 py      60  S H   1 pz      61  S H   1 dxx     62  S H   1 dxy 
-    63  S H   1 dxz     64  S H   1 dyy     65  S H   1 dyz     66  S H   1 dzz     67  S H   1 s       68  S H   1 px  
-    69  S H   1 py      70  S H   1 pz      71  S H   1 dxx     72  S H   1 dxy     73  S H   1 dxz     74  S H   1 dyy 
-    75  S H   1 dyz     76  S H   1 dzz     77  S H   1 s       78  S H   1 px      79  S H   1 py      80  S H   1 pz  
-    81  S H   1 dxx     82  S H   1 dxy     83  S H   1 dxz     84  S H   1 dyy     85  S H   1 dyz     86  S H   1 dzz 
+    45  S C   1 fyzz    46  S C   1 fzzz    47  S H   1 s       48  S H   2 s       49  S H   3 s       50  S H   4 s   
+    51  S H   1 px      52  S H   1 py      53  S H   1 pz      54  S H   2 px      55  S H   2 py      56  S H   2 pz  
+    57  S H   3 px      58  S H   3 py      59  S H   3 pz      60  S H   4 px      61  S H   4 py      62  S H   4 pz  
+    63  S H   1 dxx     64  S H   1 dxy     65  S H   1 dxz     66  S H   1 dyy     67  S H   1 dyz     68  S H   1 dzz 
+    69  S H   2 dxx     70  S H   2 dxy     71  S H   2 dxz     72  S H   2 dyy     73  S H   2 dyz     74  S H   2 dzz 
+    75  S H   3 dxx     76  S H   3 dxy     77  S H   3 dxz     78  S H   3 dyy     79  S H   3 dyz     80  S H   3 dzz 
+    81  S H   4 dxx     82  S H   4 dxy     83  S H   4 dxz     84  S H   4 dyy     85  S H   4 dyz     86  S H   4 dzz 
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   26
+     1  L A  C  s        2  L A  C  dxx      3  L A  C  dyy      4  L A  C  dzz      5  L A  H  s        6  L A  H  px  
+     7  L A  H  py       8  L A  H  pz       9  L B2 C  py      10  L B2 C  dxz     11  L B2 H  s       12  L B2 H  px  
+    13  L B2 H  py      14  L B2 H  pz      15  L B3 C  px      16  L B3 C  dyz     17  L B3 H  s       18  L B3 H  px  
+    19  L B3 H  py      20  L B3 H  pz      21  L B1 C  pz      22  L B1 C  dxy     23  L B1 H  s       24  L B1 H  px  
+    25  L B1 H  py      26  L B1 H  pz  
+   * Small components:   60
+    27  S A  C  s       28  S A  C  dxx     29  S A  C  dyy     30  S A  C  dzz     31  S A  C  fxyz    32  S A  H  s   
+    33  S A  H  px      34  S A  H  py      35  S A  H  pz      36  S A  H  dxx     37  S A  H  dxy     38  S A  H  dxz 
+    39  S A  H  dyy     40  S A  H  dyz     41  S A  H  dzz     42  S B2 C  py      43  S B2 C  dxz     44  S B2 C  fxxy
+    45  S B2 C  fyyy    46  S B2 C  fyzz    47  S B2 H  s       48  S B2 H  px      49  S B2 H  py      50  S B2 H  pz  
+    51  S B2 H  dxx     52  S B2 H  dxy     53  S B2 H  dxz     54  S B2 H  dyy     55  S B2 H  dyz     56  S B2 H  dzz 
+    57  S B3 C  px      58  S B3 C  dyz     59  S B3 C  fxxx    60  S B3 C  fxyy    61  S B3 C  fxzz    62  S B3 H  s   
+    63  S B3 H  px      64  S B3 H  py      65  S B3 H  pz      66  S B3 H  dxx     67  S B3 H  dxy     68  S B3 H  dxz 
+    69  S B3 H  dyy     70  S B3 H  dyz     71  S B3 H  dzz     72  S B1 C  pz      73  S B1 C  dxy     74  S B1 C  fxxz
+    75  S B1 C  fyyz    76  S B1 C  fzzz    77  S B1 H  s       78  S B1 H  px      79  S B1 H  py      80  S B1 H  pz  
+    81  S B1 H  dxx     82  S B1 H  dxy     83  S B1 H  dxz     84  S B1 H  dyy     85  S B1 H  dyz     86  S B1 H  dzz 
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          179
-  Number of large orbitals in each symmetry:     35
-  Number of small orbitals in each symmetry:    144
+  Number of orbitals in each symmetry:           47    44    44    44
+  Number of large orbitals in each symmetry:     11     8     8     8
+  Number of small orbitals in each symmetry:     36    36    36    36
 
 * Large component functions
 
   Symmetry  A  ( 1)
 
         3 functions:    C  s   
-        2 functions:    C  px  
-        2 functions:    C  py  
-        2 functions:    C  pz  
         1 functions:    C  dxx 
-        1 functions:    C  dxy 
-        1 functions:    C  dxz 
         1 functions:    C  dyy 
-        1 functions:    C  dyz 
         1 functions:    C  dzz 
-        2 functions:    H  s   
-        1 functions:    H  px  
-        1 functions:    H  py  
-        1 functions:    H  pz  
-        2 functions:    H  s   
-        1 functions:    H  px  
-        1 functions:    H  py  
-        1 functions:    H  pz  
-        2 functions:    H  s   
-        1 functions:    H  px  
-        1 functions:    H  py  
-        1 functions:    H  pz  
-        2 functions:    H  s   
-        1 functions:    H  px  
-        1 functions:    H  py  
-        1 functions:    H  pz  
+        2 functions:    H  s   1+2+3+4
+        1 functions:    H  px  1+2-3-4
+        1 functions:    H  py  1-2+3-4
+        1 functions:    H  pz  1-2-3+4
+
+  Symmetry  B2 ( 2)
+
+        2 functions:    C  py  
+        1 functions:    C  dxz 
+        2 functions:    H  s   1-2+3-4
+        1 functions:    H  px  1-2-3+4
+        1 functions:    H  py  1+2+3+4
+        1 functions:    H  pz  1+2-3-4
+
+  Symmetry  B3 ( 3)
+
+        2 functions:    C  px  
+        1 functions:    C  dyz 
+        2 functions:    H  s   1+2-3-4
+        1 functions:    H  px  1+2+3+4
+        1 functions:    H  py  1-2-3+4
+        1 functions:    H  pz  1-2+3-4
+
+  Symmetry  B1 ( 4)
+
+        2 functions:    C  pz  
+        1 functions:    C  dxy 
+        2 functions:    H  s   1-2-3+4
+        1 functions:    H  px  1-2+3-4
+        1 functions:    H  py  1+2-3-4
+        1 functions:    H  pz  1+2+3+4
 
 * Small component functions
 
   Symmetry  A  ( 1)
 
         4 functions:    C  s   
-       10 functions:    C  px  
-       10 functions:    C  py  
-       10 functions:    C  pz  
         4 functions:    C  dxx 
-        4 functions:    C  dxy 
-        4 functions:    C  dxz 
         4 functions:    C  dyy 
-        4 functions:    C  dyz 
         4 functions:    C  dzz 
-        1 functions:    C  fxxx
-        1 functions:    C  fxxy
-        1 functions:    C  fxxz
-        1 functions:    C  fxyy
         1 functions:    C  fxyz
-        1 functions:    C  fxzz
+        1 functions:    H  s   1+2+3+4
+        4 functions:    H  px  1+2-3-4
+        4 functions:    H  py  1-2+3-4
+        4 functions:    H  pz  1-2-3+4
+        1 functions:    H  dxx 1+2+3+4
+        1 functions:    H  dxy 1-2-3+4
+        1 functions:    H  dxz 1-2+3-4
+        1 functions:    H  dyy 1+2+3+4
+        1 functions:    H  dyz 1+2-3-4
+        1 functions:    H  dzz 1+2+3+4
+
+  Symmetry  B2 ( 2)
+
+       10 functions:    C  py  
+        4 functions:    C  dxz 
+        1 functions:    C  fxxy
         1 functions:    C  fyyy
-        1 functions:    C  fyyz
         1 functions:    C  fyzz
+        1 functions:    H  s   1-2+3-4
+        4 functions:    H  px  1-2-3+4
+        4 functions:    H  py  1+2+3+4
+        4 functions:    H  pz  1+2-3-4
+        1 functions:    H  dxx 1-2+3-4
+        1 functions:    H  dxy 1+2-3-4
+        1 functions:    H  dxz 1+2+3+4
+        1 functions:    H  dyy 1-2+3-4
+        1 functions:    H  dyz 1-2-3+4
+        1 functions:    H  dzz 1-2+3-4
+
+  Symmetry  B3 ( 3)
+
+       10 functions:    C  px  
+        4 functions:    C  dyz 
+        1 functions:    C  fxxx
+        1 functions:    C  fxyy
+        1 functions:    C  fxzz
+        1 functions:    H  s   1+2-3-4
+        4 functions:    H  px  1+2+3+4
+        4 functions:    H  py  1-2-3+4
+        4 functions:    H  pz  1-2+3-4
+        1 functions:    H  dxx 1+2-3-4
+        1 functions:    H  dxy 1-2+3-4
+        1 functions:    H  dxz 1-2-3+4
+        1 functions:    H  dyy 1+2-3-4
+        1 functions:    H  dyz 1+2+3+4
+        1 functions:    H  dzz 1+2-3-4
+
+  Symmetry  B1 ( 4)
+
+       10 functions:    C  pz  
+        4 functions:    C  dxy 
+        1 functions:    C  fxxz
+        1 functions:    C  fyyz
         1 functions:    C  fzzz
-        1 functions:    H  s   
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        1 functions:    H  dxx 
-        1 functions:    H  dxy 
-        1 functions:    H  dxz 
-        1 functions:    H  dyy 
-        1 functions:    H  dyz 
-        1 functions:    H  dzz 
-        1 functions:    H  s   
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        1 functions:    H  dxx 
-        1 functions:    H  dxy 
-        1 functions:    H  dxz 
-        1 functions:    H  dyy 
-        1 functions:    H  dyz 
-        1 functions:    H  dzz 
-        1 functions:    H  s   
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        1 functions:    H  dxx 
-        1 functions:    H  dxy 
-        1 functions:    H  dxz 
-        1 functions:    H  dyy 
-        1 functions:    H  dyz 
-        1 functions:    H  dzz 
-        1 functions:    H  s   
-        4 functions:    H  px  
-        4 functions:    H  py  
-        4 functions:    H  pz  
-        1 functions:    H  dxx 
-        1 functions:    H  dxy 
-        1 functions:    H  dxz 
-        1 functions:    H  dyy 
-        1 functions:    H  dyz 
-        1 functions:    H  dzz 
+        1 functions:    H  s   1-2-3+4
+        4 functions:    H  px  1-2+3-4
+        4 functions:    H  py  1+2-3-4
+        4 functions:    H  pz  1+2+3+4
+        1 functions:    H  dxx 1-2-3+4
+        1 functions:    H  dxy 1+2+3+4
+        1 functions:    H  dxz 1+2-3-4
+        1 functions:    H  dyy 1-2-3+4
+        1 functions:    H  dyz 1-2+3-4
+        1 functions:    H  dzz 1-2-3+4
 
 
    ***************************************************************************
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
- * Print level:    1
+ * Print level:    0
  * Dirac-Coulomb Hamiltonian
  * SS integrals neglected:
    Interatomic Coulombic SS-contributions modelled by
@@ -690,24 +787,10 @@ H z   -0.6270023464   0.6270023464  -0.6270023464
  * Threshold for printing projection coefficients: 1.00D-03
  * Number of spinors projected:
     - Orbitals in fermion ircop E1  :   1..   5                                                              
- * Fragments are calculated in their individual bases !
-     The indexing of fragment spinor sets is assumed 
-     to follow list of symmetry independent nuclei.
- * Fragment spinor set   1 --> C z   
-  - read from file AFCXXX
-    - Orbitals in fermion ircop E1  :1..5                                                                    
- * Fragment spinor set   2 --> H z   
-  - read from file AFH1XX
-    - Orbitals in fermion ircop E1  :1                                                                       
- * Fragment spinor set   3 --> H z   
-  - read from file AFH2XX
-    - Orbitals in fermion ircop E1  :1                                                                       
- * Fragment spinor set   4 --> H z   
-  - read from file AFH3XX
-    - Orbitals in fermion ircop E1  :1                                                                       
- * Fragment spinor set   5 --> H z   
-  - read from file AFH4XX
-    - Orbitals in fermion ircop E1  :1                                                                       
+ * Projection analysis based on atomic fragments, 
+   calculated in their individual bases
+AFCXXX   1..5                                                                    
+AFH1XX   1                                                                       
  * Print level:    0
 ===========================================================================
  POPINP: Mulliken population analysis
@@ -734,20 +817,20 @@ H z   -0.6270023464   0.6270023464  -0.6270023464
                       Nuclear contribution to dipole moments
                       --------------------------------------
 
-                               au             Debye
-
-                    x      0.00000000      0.00000000
-                    y      0.00000000      0.00000000
-                    z      0.00000000      0.00000000
-
-                        1 Debye =   2.54177000 a.u. 
+                     All components zero by symmetry
 
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
    L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.12E-01
-   S   A     * Deleted:         11(Proj:         11, Lindep:          0) Smin: 0.65E-02
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.72E-01
+   L   B3    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.72E-01
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.72E-01
+   S   A     * Deleted:          5(Proj:          5, Lindep:          0) Smin: 0.31E-01
+   S   B2    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.67E-02
+   S   B3    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.67E-02
+   S   B1    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.67E-02
 
 
                                 Output from MODHAM
@@ -775,129 +858,129 @@ Total no. of orbitals           (NORB):    68
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Sun Aug 31 02:40:30 2014
+########## START ITERATION NO.   1 ##########   Wed Dec 10 11:24:41 2014
 
 
 => Calculating sum of orbital energies
-It.    1    -10.12643971333      0.00D+00  0.00D+00  0.00D+00               0.03384400s   Scr. nuclei    Sun Aug 31
+It.    1    -10.12643971335      0.00D+00  0.00D+00  0.00D+00               0.01282600s   Scr. nuclei    Wed Dec 10
 
-########## START ITERATION NO.   2 ##########   Sun Aug 31 02:40:30 2014
+########## START ITERATION NO.   2 ##########   Wed Dec 10 11:24:41 2014
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.48%   0.20031598s
-SOfock:SL  1.00D-12    0.00%    6.94%    0.09%    2.00%   1.22925797s
->>> Total wall time: 1.50000000s
->>> Total CPU time : 1.53983200s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.09%    0.07%   0.06839199s
+SOfock:SL  1.00D-12    0.00%    1.79%    0.05%    0.35%   0.50243600s
+>>> Total wall time: 0.62500000s
+>>> Total CPU time : 0.66010700s
 
-########## END ITERATION NO.   2 ##########   Sun Aug 31 02:40:30 2014
+########## END ITERATION NO.   2 ##########   Wed Dec 10 11:24:41 2014
 
-It.    2    -39.79617995157      2.97D+01  3.93D+00  1.43D+00               1.53983200s   LL SL          Sun Aug 31
+It.    2    -39.79617995158      2.97D+01  3.93D+00  1.43D+00               0.66010700s   LL SL          Wed Dec 10
 
-########## START ITERATION NO.   3 ##########   Sun Aug 31 02:40:31 2014
+########## START ITERATION NO.   3 ##########   Wed Dec 10 11:24:41 2014
 
-    3 *** Differential density matrix. DCOVLP     = 0.5267
+    3 *** Differential density matrix. DCOVLP     = 0.4123
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.34%   0.20272005s
-SOfock:SL  1.00D-12    0.00%    7.35%    0.09%    2.66%   1.22749591s
->>> Total wall time: 1.50000000s
->>> Total CPU time : 1.46368200s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.09%    0.11%   0.06816703s
+SOfock:SL  1.00D-12    0.00%    2.18%    0.06%    0.35%   0.50474197s
+>>> Total wall time: 0.56250000s
+>>> Total CPU time : 0.58226400s
 
-########## END ITERATION NO.   3 ##########   Sun Aug 31 02:40:31 2014
+########## END ITERATION NO.   3 ##########   Wed Dec 10 11:24:41 2014
 
-It.    3    -40.14061228309      3.44D-01 -1.22D+00  5.16D-01   DIIS   2    1.46368200s   LL SL          Sun Aug 31
+It.    3    -40.14061228309      3.44D-01 -1.22D+00  5.16D-01   DIIS   2    0.58226400s   LL SL          Wed Dec 10
 
-########## START ITERATION NO.   4 ##########   Sun Aug 31 02:40:33 2014
+########## START ITERATION NO.   4 ##########   Wed Dec 10 11:24:42 2014
 
-    4 *** Differential density matrix. DCOVLP     = 1.1171
+    4 *** Differential density matrix. DCOVLP     = 1.1454
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    0.20%   0.20532393s
-SOfock:SL  1.00D-12    0.00%    7.76%    0.11%    3.85%   1.22983074s
->>> Total wall time: 1.50000000s
->>> Total CPU time : 1.46787400s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.09%    0.07%   0.06826103s
+SOfock:SL  1.00D-12    0.00%    2.64%    0.04%    0.35%   0.50249195s
+>>> Total wall time: 0.68750000s
+>>> Total CPU time : 0.57993900s
 
-########## END ITERATION NO.   4 ##########   Sun Aug 31 02:40:33 2014
+########## END ITERATION NO.   4 ##########   Wed Dec 10 11:24:42 2014
 
-It.    4    -40.21395574309      7.33D-02  3.76D-01  4.58D-02   DIIS   3    1.46787400s   LL SL          Sun Aug 31
+It.    4    -40.21395574309      7.33D-02  3.76D-01  4.58D-02   DIIS   3    0.57993900s   LL SL          Wed Dec 10
 
-########## START ITERATION NO.   5 ##########   Sun Aug 31 02:40:34 2014
+########## START ITERATION NO.   5 ##########   Wed Dec 10 11:24:42 2014
 
-    5 *** Differential density matrix. DCOVLP     = 1.0021
+    5 *** Differential density matrix. DCOVLP     = 0.9876
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.03%    0.42%   0.19822407s
-SOfock:SL  1.00D-12    0.00%    9.06%    0.25%    6.17%   1.21372700s
->>> Total wall time: 1.43750000s
->>> Total CPU time : 1.44476700s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.09%    0.07%   0.06851387s
+SOfock:SL  1.00D-12    0.00%    3.66%    0.04%    0.35%   0.50502706s
+>>> Total wall time: 0.56250000s
+>>> Total CPU time : 0.58276900s
 
-########## END ITERATION NO.   5 ##########   Sun Aug 31 02:40:34 2014
+########## END ITERATION NO.   5 ##########   Wed Dec 10 11:24:42 2014
 
-It.    5    -40.21457002752      6.14D-04 -1.99D-02  4.35D-03   DIIS   4    1.44476700s   LL SL          Sun Aug 31
+It.    5    -40.21457002752      6.14D-04 -1.99D-02  4.35D-03   DIIS   4    0.58276900s   LL SL          Wed Dec 10
 
-########## START ITERATION NO.   6 ##########   Sun Aug 31 02:40:36 2014
+########## START ITERATION NO.   6 ##########   Wed Dec 10 11:24:43 2014
 
-    6 *** Differential density matrix. DCOVLP     = 1.0013
+    6 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    1.43%   0.19844532s
-SOfock:SL  1.00D-12    0.00%   10.23%    0.59%    8.59%   1.21356773s
->>> Total wall time: 1.50000000s
->>> Total CPU time : 1.44497200s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.09%    0.11%   0.06828499s
+SOfock:SL  1.00D-12    0.00%    4.96%    0.06%    0.34%   0.50299716s
+>>> Total wall time: 0.56250000s
+>>> Total CPU time : 0.58055400s
 
-########## END ITERATION NO.   6 ##########   Sun Aug 31 02:40:36 2014
+########## END ITERATION NO.   6 ##########   Wed Dec 10 11:24:43 2014
 
-It.    6    -40.21457928110      9.25D-06  3.75D-04  6.13D-04   DIIS   5    1.44497200s   LL SL          Sun Aug 31
+It.    6    -40.21457928110      9.25D-06  3.75D-04  6.13D-04   DIIS   5    0.58055400s   LL SL          Wed Dec 10
 
-########## START ITERATION NO.   7 ##########   Sun Aug 31 02:40:37 2014
+########## START ITERATION NO.   7 ##########   Wed Dec 10 11:24:44 2014
 
     7 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.58%    0.06%    2.41%   0.19809294s
-SOfock:SL  1.00D-12    0.00%   12.99%    1.74%   11.32%   1.19933701s
->>> Total wall time: 1.37500000s
->>> Total CPU time : 1.43037300s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.09%    0.07%   0.06839514s
+SOfock:SL  1.00D-12    0.00%    6.89%    0.09%    0.37%   0.50342512s
+>>> Total wall time: 0.56250000s
+>>> Total CPU time : 0.58112100s
 
-########## END ITERATION NO.   7 ##########   Sun Aug 31 02:40:37 2014
+########## END ITERATION NO.   7 ##########   Wed Dec 10 11:24:44 2014
 
-It.    7    -40.21457945995      1.79D-07  1.60D-04  8.32D-05   DIIS   6    1.43037300s   LL SL          Sun Aug 31
+It.    7    -40.21457945995      1.79D-07  1.60D-04  8.32D-05   DIIS   6    0.58112100s   LL SL          Wed Dec 10
 
-########## START ITERATION NO.   8 ##########   Sun Aug 31 02:40:38 2014
+########## START ITERATION NO.   8 ##########   Wed Dec 10 11:24:44 2014
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.68%    0.09%    3.38%   0.19749641s
-SOfock:SL  1.00D-12    0.00%   17.01%    2.64%   15.11%   1.19534206s
->>> Total wall time: 1.43750000s
->>> Total CPU time : 1.42598100s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.09%    0.07%   0.06831813s
+SOfock:SL  1.00D-12    0.00%    9.00%    0.23%    0.57%   0.50155115s
+>>> Total wall time: 0.62500000s
+>>> Total CPU time : 0.57916000s
 
-########## END ITERATION NO.   8 ##########   Sun Aug 31 02:40:38 2014
+########## END ITERATION NO.   8 ##########   Wed Dec 10 11:24:44 2014
 
-It.    8    -40.21457946463      4.67D-09 -7.61D-06  2.48D-06   DIIS   7    1.42598100s   LL SL          Sun Aug 31
+It.    8    -40.21457946463      4.68D-09 -6.61D-06  2.48D-06   DIIS   7    0.57916000s   LL SL          Wed Dec 10
 
-########## START ITERATION NO.   9 ##########   Sun Aug 31 02:40:40 2014
+########## START ITERATION NO.   9 ##########   Wed Dec 10 11:24:45 2014
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    6.43%    0.40%    8.17%   0.19800949s
-SOfock:SL  1.00D-12    0.00%   31.76%    2.02%   24.44%   1.16575050s
->>> Total wall time: 1.37500000s
->>> Total CPU time : 1.39688100s
+SOfock:LL  1.00D-12    0.00%    0.14%    0.09%    0.11%   0.06844187s
+SOfock:SL  1.00D-12    0.00%   16.96%    0.84%    6.54%   0.50103903s
+>>> Total wall time: 0.56250000s
+>>> Total CPU time : 0.57883300s
 
-########## END ITERATION NO.   9 ##########   Sun Aug 31 02:40:40 2014
+########## END ITERATION NO.   9 ##########   Wed Dec 10 11:24:45 2014
 
-It.    9    -40.21457946463      1.76D-12  6.72D-07  2.25D-07   DIIS   8    1.39688100s   LL SL          Sun Aug 31
+It.    9    -40.21457946463      1.38D-12  6.72D-07  2.25D-07   DIIS   8    0.57883300s   LL SL          Wed Dec 10
 
-########## START ITERATION NO.  10 ##########   Sun Aug 31 02:40:41 2014
+########## START ITERATION NO.  10 ##########   Wed Dec 10 11:24:45 2014
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.83%   13.03%    2.43%    9.12%   0.19703484s
-SOfock:SL  1.00D-12    0.09%   51.43%    0.91%   31.67%   1.11903381s
->>> Total wall time: 1.37500000s
->>> Total CPU time : 1.34919300s
+SOfock:LL  1.00D-12    1.94%    2.54%    0.10%    0.21%   0.06839085s
+SOfock:SL  1.00D-12    0.11%   32.43%    0.70%   16.95%   0.49374104s
+>>> Total wall time: 0.56250000s
+>>> Total CPU time : 0.56895500s
 
-########## END ITERATION NO.  10 ##########   Sun Aug 31 02:40:41 2014
+########## END ITERATION NO.  10 ##########   Wed Dec 10 11:24:45 2014
 
-It.   10    -40.21457946464      1.00D-11 -1.77D-08  2.63D-08   DIIS   8    1.34919300s   LL SL          Sun Aug 31
+It.   10    -40.21457946463     -3.27D-13  1.75D-08  2.63D-08   DIIS   8    0.56895500s   LL SL          Wed Dec 10
 
 
                                    SCF - CYCLE
@@ -913,34 +996,34 @@ It.   10    -40.21457946464      1.00D-11 -1.77D-08  2.63D-08   DIIS   8    1.34
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -10.12643971333      0.00D+00  0.00D+00  0.00D+00               0.03384400s   Scr. nuclei    Sun Aug 31
-It.    2    -39.79617995157      2.97D+01  3.93D+00  1.43D+00               1.53983200s   LL SL          Sun Aug 31
-It.    3    -40.14061228309      3.44D-01 -1.22D+00  5.16D-01   DIIS   2    1.46368200s   LL SL          Sun Aug 31
-It.    4    -40.21395574309      7.33D-02  3.76D-01  4.58D-02   DIIS   3    1.46787400s   LL SL          Sun Aug 31
-It.    5    -40.21457002752      6.14D-04 -1.99D-02  4.35D-03   DIIS   4    1.44476700s   LL SL          Sun Aug 31
-It.    6    -40.21457928110      9.25D-06  3.75D-04  6.13D-04   DIIS   5    1.44497200s   LL SL          Sun Aug 31
-It.    7    -40.21457945995      1.79D-07  1.60D-04  8.32D-05   DIIS   6    1.43037300s   LL SL          Sun Aug 31
-It.    8    -40.21457946463      4.67D-09 -7.61D-06  2.48D-06   DIIS   7    1.42598100s   LL SL          Sun Aug 31
-It.    9    -40.21457946463      1.76D-12  6.72D-07  2.25D-07   DIIS   8    1.39688100s   LL SL          Sun Aug 31
-It.   10    -40.21457946464      1.00D-11 -1.77D-08  2.63D-08   DIIS   8    1.34919300s   LL SL          Sun Aug 31
+It.    1    -10.12643971335      0.00D+00  0.00D+00  0.00D+00               0.01282600s   Scr. nuclei    Wed Dec 10
+It.    2    -39.79617995158      2.97D+01  3.93D+00  1.43D+00               0.66010700s   LL SL          Wed Dec 10
+It.    3    -40.14061228309      3.44D-01 -1.22D+00  5.16D-01   DIIS   2    0.58226400s   LL SL          Wed Dec 10
+It.    4    -40.21395574309      7.33D-02  3.76D-01  4.58D-02   DIIS   3    0.57993900s   LL SL          Wed Dec 10
+It.    5    -40.21457002752      6.14D-04 -1.99D-02  4.35D-03   DIIS   4    0.58276900s   LL SL          Wed Dec 10
+It.    6    -40.21457928110      9.25D-06  3.75D-04  6.13D-04   DIIS   5    0.58055400s   LL SL          Wed Dec 10
+It.    7    -40.21457945995      1.79D-07  1.60D-04  8.32D-05   DIIS   6    0.58112100s   LL SL          Wed Dec 10
+It.    8    -40.21457946463      4.68D-09 -6.61D-06  2.48D-06   DIIS   7    0.57916000s   LL SL          Wed Dec 10
+It.    9    -40.21457946463      1.38D-12  6.72D-07  2.25D-07   DIIS   8    0.57883300s   LL SL          Wed Dec 10
+It.   10    -40.21457946463     -3.27D-13  1.75D-08  2.63D-08   DIIS   8    0.56895500s   LL SL          Wed Dec 10
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL        :    1.44444444s
+      LL SL        :    0.59027778s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -53.699455446046358
+   Electronic energy                        :    -53.699455446037447
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     13.484875955767818
    SS Coulombic correction                  :      0.000000025640706
 
    Sum of all contributions to the energy
-   Total energy                             :    -40.214579464637836
+   Total energy                             :    -40.214579464628926
 
 
                                    Eigenvalues
@@ -949,12 +1032,12 @@ It.   10    -40.21457946464      1.00D-11 -1.77D-08  2.63D-08   DIIS   8    1.34
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--11.22095824834105  ( 2)    -0.94407936779758  ( 2)    -0.54361205884357  ( 2)    -0.54343699253987  ( 4)
+-11.22095824837178  ( 2)    -0.94407936780187  ( 2)    -0.54361205885236  ( 2)    -0.54343699253582  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  0.19333082778788  ( 2)     0.27460026237616  ( 2)     0.27467319529542  ( 4)     0.58921605579350  ( 2)     0.58925112291307  ( 4)
-  0.89082608804486  ( 2)     0.89115553792020  ( 4)     0.93820468129489  ( 2)     1.13212267925661  ( 4)     1.25694134764679  ( 2)
-  1.68906145282322  ( 2)     1.68907972261945  ( 4)     1.89745688164687  ( 2)     1.89746080472766  ( 4)     2.21485553831239  ( 2)
-  2.21486100616552  ( 4)     2.54978087522422  ( 4)     2.76034107115294  ( 2)     2.80229106819058  ( 2)     2.80281601752467  ( 4)
+  0.19333082777915  ( 2)     0.27460026238126  ( 2)     0.27467319532035  ( 4)     0.58921605576667  ( 2)     0.58925112289588  ( 4)
+  0.89082608808291  ( 2)     0.89115553799960  ( 4)     0.93820468134518  ( 2)     1.13212267916403  ( 4)     1.25694134765243  ( 2)
+  1.68906145292763  ( 2)     1.68907972276364  ( 4)     1.89745688176889  ( 2)     1.89746080476178  ( 4)     2.21485553815029  ( 2)
+  2.21486100605294  ( 4)     2.54978087512010  ( 4)     2.76034107229360  ( 2)     2.80229106749527  ( 2)     2.80281601733824  ( 4)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.19333083 au (symmetry E1 )
@@ -974,114 +1057,109 @@ It.   10    -40.21457946464      1.00D-11 -1.77D-08  2.63D-08   DIIS   8    1.34
                                  ----------------
 
 
-* Electronic eigenvalue no.  1: -11.220958248341       (Occupation : f = 1.0000)           
+
+                                 Fermion ircop E1
+                                 ----------------
+
+
+* Electronic eigenvalue no.  1: -11.220958248372       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  s      L A  H  s      L A  H  s      L A  H  s      L A  H  s      A  C  _small
------------------------------------------------------------------------------------------------------------------
- alpha    0.9997  |      0.9992         0.0001         0.0001         0.0001         0.0001         0.0001
- beta     0.0003  |      0.0000        -0.0000        -0.0000        -0.0000        -0.0000         0.0003
+Gross     Total   |    L A  C  s      L A  H  s      B2 C  _small   B3 C  _small   B1 C  _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.9997  |      0.9992         0.0005         0.0000         0.0000         0.0001
+ beta     0.0003  |      0.0000         0.0000         0.0001         0.0001         0.0000
 
-* Electronic eigenvalue no.  2: -0.9440793677976       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  2: -0.9440793678019       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  s      L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px  
---------------------------------------------------------------------------------------------------------------------------------
- alpha    1.0000  |      0.5370         0.1088         0.0023         0.0023         0.0023         0.1088         0.0023
- beta     0.0000  |      0.0000        -0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+Gross     Total   |    L A  C  s      L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
+--------------------------------------------------------------------------------------------------
+ alpha    1.0000  |      0.5370         0.4352         0.0093         0.0093         0.0093
+ beta     0.0000  |      0.0000         0.0000         0.0000         0.0000         0.0000
 
-Gross  | L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px  
---------------------------------------------------------------------------------------------------------------------------------
- alpha |   0.0023         0.0023         0.1088         0.0023         0.0023         0.0023         0.1088         0.0023
- beta  |   0.0000         0.0000        -0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+* Electronic eigenvalue no.  3: -0.5436120588524       (Occupation : f = 1.0000)           
+==========================================================================================
 
-Gross  | L A  H  py     L A  H  pz  
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2 C  py     L B2 C  dxz    L B2 H  s      L B2 H  px     L B2 H  py     L B2 H  pz     L B3 C  px  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.3333  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+ beta     0.6667  |      0.1681         0.0023         0.1589         0.0019         0.0001         0.0019         0.1681
+
+Gross  | L B3 C  dyz    L B3 H  s      L B3 H  px     L B3 H  py     L B3 H  pz     L B1 C  pz     L B1 C  dxy    L B1 H  s   
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0000         0.0000         0.0000         0.0000         0.0000         0.1681         0.0023         0.1589
+ beta  |   0.0023         0.1589         0.0001         0.0019         0.0019         0.0000         0.0000         0.0000
+
+Gross  | L B1 H  px     L B1 H  py     L B1 H  pz  
+-----------------------------------------------------
+ alpha |   0.0019         0.0019         0.0001
+ beta  |   0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.  4: -0.5434369925358       (Occupation : f = 1.0000)           
+==========================================================================================
+
+* Gross populations greater than 0.00010
+
+Gross     Total   |    L B2 C  py     L B2 C  dxz    L B2 H  s      L B2 H  px     L B2 H  py     L B2 H  pz     L B3 C  px  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.3254  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+ beta     0.6746  |      0.3155         0.0042         0.2986         0.0036         0.0003         0.0036         0.0245
+
+Gross  | L B3 C  dyz    L B3 H  s      L B3 H  py     L B3 H  pz     L B1 C  pz     L B1 C  dxy    L B1 H  s      L B1 H  px  
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha |   0.0000         0.0000         0.0000         0.0000         0.1640         0.0022         0.1553         0.0019
+ beta  |   0.0003         0.0232         0.0003         0.0003         0.0000         0.0000         0.0000         0.0000
+
+Gross  | L B1 H  py     L B1 H  pz  
 --------------------------------------
- alpha |   0.0023         0.0023
+ alpha |   0.0019         0.0001
  beta  |   0.0000         0.0000
 
-* Electronic eigenvalue no.  3: -0.5436120588436       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.  5: -0.5434369925351       (Occupation : f = 1.0000)           
 ==========================================================================================
 
 * Gross populations greater than 0.00010
 
-Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  C  dxy    L A  C  dxz    L A  C  dyz    L A  H  s   
+Gross     Total   |    L B2 C  py     L B2 C  dxz    L B2 H  s      L B2 H  px     L B2 H  pz     L B3 C  px     L B3 C  dyz 
 --------------------------------------------------------------------------------------------------------------------------------
- alpha    0.4607  |      0.0642         0.0642         0.1039         0.0014         0.0009         0.0009         0.0989
- beta     0.5393  |      0.1039         0.1039         0.0642         0.0009         0.0014         0.0014         0.0203
+ alpha    0.3412  |      0.0000         0.0000         0.0000         0.0000         0.0000         0.0000         0.0000
+ beta     0.6588  |      0.0206         0.0003         0.0195         0.0002         0.0002         0.3115         0.0042
 
-Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s   
+Gross  | L B3 H  s      L B3 H  px     L B3 H  py     L B3 H  pz     L B1 C  pz     L B1 C  dxy    L B1 H  s      L B1 H  px  
 --------------------------------------------------------------------------------------------------------------------------------
- alpha |   0.0009         0.0004         0.0002         0.0109         0.0001         0.0006         0.0006         0.0872
- beta  |   0.0001         0.0006         0.0008         0.1083         0.0009         0.0004         0.0004         0.0320
+ alpha |   0.0000         0.0000         0.0000         0.0000         0.1720         0.0023         0.1628         0.0020
+ beta  |   0.2948         0.0003         0.0036         0.0036         0.0000         0.0000         0.0000         0.0000
 
-Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
------------------------------------------------------------------------------------------------------------------
- alpha |   0.0010         0.0002         0.0002         0.0226         0.0000         0.0008         0.0005
- beta  |   0.0000         0.0008         0.0008         0.0966         0.0010         0.0002         0.0005
-
-* Electronic eigenvalue no.  4: -0.5434369925399       (Occupation : f = 1.0000)           
-==========================================================================================
-
-* Gross populations greater than 0.00010
-
-Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  C  dxy    L A  C  dxz    L A  C  dyz    L A  H  s   
---------------------------------------------------------------------------------------------------------------------------------
- alpha    0.3735  |      0.1018         0.0526         0.0338         0.0005         0.0007         0.0014         0.0287
- beta     0.6265  |      0.2142         0.0778         0.0238         0.0003         0.0010         0.0029         0.0427
-
-Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s   
---------------------------------------------------------------------------------------------------------------------------------
- alpha |   0.0000         0.0008         0.0003         0.0292         0.0007         0.0002         0.0003         0.0221
- beta  |   0.0005         0.0003         0.0010         0.1044         0.0001         0.0011         0.0007         0.1122
-
-Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
------------------------------------------------------------------------------------------------------------------
- alpha |   0.0001         0.0002         0.0008         0.0983         0.0003         0.0005         0.0005
- beta  |   0.0002         0.0011         0.0007         0.0396         0.0005         0.0003         0.0010
-
-* Electronic eigenvalue no.  5: -0.5434369925317       (Occupation : f = 1.0000)           
-==========================================================================================
-
-* Gross populations greater than 0.00010
-
-Gross     Total   |    L A  C  px     L A  C  py     L A  C  pz     L A  C  dxy    L A  C  dxz    L A  C  dyz    L A  H  s   
---------------------------------------------------------------------------------------------------------------------------------
- alpha    0.5461  |      0.0009         0.1419         0.1325         0.0018         0.0019         0.0000         0.0988
- beta     0.4539  |      0.0192         0.0636         0.1459         0.0020         0.0009         0.0003         0.0684
-
-Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s   
---------------------------------------------------------------------------------------------------------------------------------
- alpha |   0.0011         0.0003         0.0004         0.0418         0.0004         0.0005         0.0006         0.0856
- beta  |   0.0004         0.0006         0.0004         0.0632         0.0007         0.0002         0.0004         0.0187
-
-Gross  | L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
------------------------------------------------------------------------------------------------------------------
- alpha |   0.0011         0.0003         0.0003         0.0343         0.0005         0.0006         0.0005
- beta  |   0.0006         0.0004         0.0002         0.0663         0.0007         0.0007         0.0000
+Gross  | L B1 H  py     L B1 H  pz  
+--------------------------------------
+ alpha |   0.0020         0.0001
+ beta  |   0.0000         0.0000
 
 
 *** Total gross population ***
 
-Gross      Total    |    L A  C  s      L A  C  px     L A  C  py     L A  C  pz     L A  C  dxy    L A  C  dxz    L A  C  dyz 
+Gross      Total    |    L A  C  s      L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L B2 C  py     L B2 C  dxz 
 --------------------------------------------------------------------------------------------------------------------------------
- total    10.00000  |      3.07243        1.00833        1.00833        1.00833        0.01356        0.01356        0.01356
+ total    10.00000  |      3.07243        0.87138        0.01842        0.01842        0.01842        1.00833        0.01356
 
-Gross  | L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
+Gross  | L B2 H  s      L B2 H  px     L B2 H  py     L B2 H  pz     L B3 C  px     L B3 C  dyz    L B3 H  s      L B3 H  px  
 --------------------------------------------------------------------------------------------------------------------------------
- total |   0.93335        0.01062        0.01062        0.01062        0.93335        0.01062        0.01062        0.01062
+ total |   0.95401        0.01159        0.00088        0.01159        1.00833        0.01356        0.95401        0.00088
 
-Gross  | L A  H  s      L A  H  px     L A  H  py     L A  H  pz     L A  H  s      L A  H  px     L A  H  py     L A  H  pz  
+Gross  | L B3 H  py     L B3 H  pz     L B1 C  pz     L B1 C  dxy    L B1 H  s      L B1 H  px     L B1 H  py     L B1 H  pz  
 --------------------------------------------------------------------------------------------------------------------------------
- total |   0.93335        0.01062        0.01062        0.01062        0.93335        0.01062        0.01062        0.01062
+ total |   0.01159        0.01159        1.00833        0.01356        0.95401        0.01159        0.01159        0.00088
 
-Gross  | A  C  _small
------------------------
- total |   0.00100
+Gross  | B2 C  _small   B3 C  _small   B1 C  _small
+-----------------------------------------------------
+ total |   0.00031        0.00031        0.00031
 
 
         *****************************************************************
@@ -1094,104 +1172,104 @@ Gross  | A  C  _small
                                  ----------------
 
 
-* Electronic eigenvalue nr.  1: -11.220958248341       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  1: -11.220958248372       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    AFCXXX  E     1       1.00002     -0.11343356E+02   (-1.0000, 0.0000)   (-0.0000,-0.0000)
-    AFCXXX  E     2       0.00252     -0.70929220E+00   ( 1.0000,-0.0000)   ( 0.0000, 0.0000)
+    AFCX 1  E     1       1.00002     -0.11343356E+02   (-1.0000, 0.0000)   (-0.0000, 0.0000)
+    AFCX 1  E     2       0.00252     -0.70929220E+00   (-1.0000, 0.0000)   (-0.0000,-0.0000)
 * Gross contributions:
-   AFCXXX               1.0000   E -     1.0000   P -     0.0000
-   AFH1XX              -0.0000   E -    -0.0000   P -     0.0000
-   AFH2XX              -0.0000   E -    -0.0000   P -     0.0000
-   AFH3XX              -0.0000   E -    -0.0000   P -     0.0000
-   AFH4XX              -0.0000   E -    -0.0000   P -     0.0000
+   AFCX 1               1.0000   E -     1.0000   P -     0.0000
+   AFH1 1              -0.0000   E -    -0.0000   P -     0.0000
+   AFH1 2              -0.0000   E -    -0.0000   P -     0.0000
+   AFH1 3              -0.0000   E -    -0.0000   P -     0.0000
+   AFH1 4              -0.0000   E -    -0.0000   P -     0.0000
    Polarization:     0.0000
 
-* Electronic eigenvalue nr.  2: -0.9440793677976       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  2: -0.9440793678019       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    AFCXXX  E     1       0.03934     -0.11343356E+02   (-1.0000,-0.0000)   ( 0.0000,-0.0000)
-    AFCXXX  E     2       0.71228     -0.70929220E+00   (-1.0000,-0.0000)   ( 0.0000,-0.0000)
-    AFH1XX  E     1       0.11573     -0.49928475E+00   ( 1.0000,-0.0000)   ( 0.0000, 0.0000)
-    AFH2XX  E     1       0.11573     -0.49928475E+00   ( 1.0000,-0.0000)   ( 0.0000, 0.0000)
-    AFH3XX  E     1       0.11573     -0.49928475E+00   ( 1.0000, 0.0000)   ( 0.0000, 0.0000)
-    AFH4XX  E     1       0.11573     -0.49928475E+00   ( 1.0000, 0.0000)   (-0.0000, 0.0000)
+    AFCX 1  E     1       0.03934     -0.11343356E+02   ( 1.0000,-0.0000)   ( 0.0000,-0.0000)
+    AFCX 1  E     2       0.71228     -0.70929220E+00   (-1.0000,-0.0000)   ( 0.0000,-0.0000)
+    AFH1 1  E     1       0.11573     -0.49928475E+00   (-1.0000,-0.0000)   ( 0.0000, 0.0000)
+    AFH1 2  E     1       0.11573     -0.49928475E+00   (-1.0000, 0.0000)   (-0.0000, 0.0000)
+    AFH1 3  E     1       0.11573     -0.49928475E+00   (-1.0000, 0.0000)   ( 0.0000,-0.0000)
+    AFH1 4  E     1       0.11573     -0.49928475E+00   (-1.0000,-0.0000)   (-0.0000,-0.0000)
 * Gross contributions:
-   AFCXXX               0.6959   E -     0.6959   P -     0.0000
-   AFH1XX               0.0715   E -     0.0715   P -     0.0000
-   AFH2XX               0.0715   E -     0.0715   P -     0.0000
-   AFH3XX               0.0715   E -     0.0715   P -     0.0000
-   AFH4XX               0.0715   E -     0.0715   P -     0.0000
+   AFCX 1               0.6959   E -     0.6959   P -     0.0000
+   AFH1 1               0.0715   E -     0.0715   P -     0.0000
+   AFH1 2               0.0715   E -     0.0715   P -     0.0000
+   AFH1 3               0.0715   E -     0.0715   P -     0.0000
+   AFH1 4               0.0715   E -     0.0715   P -     0.0000
    Polarization:     0.0182
 
-* Electronic eigenvalue nr.  3: -0.5436120588436       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  3: -0.5436120588524       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    AFCXXX  E     3       0.59615     -0.40299475E+00   (-0.4489, 0.6452)   ( 0.5551,-0.2721)
-    AFH1XX  E     1       0.28371     -0.49928475E+00   (-0.5359,-0.7367)   ( 0.2704,-0.3112)
-    AFH2XX  E     1       0.28371     -0.49928475E+00   (-0.2091, 0.2184)   ( 0.0437, 0.9522)
-    AFH3XX  E     1       0.28371     -0.49928475E+00   ( 0.8501, 0.0958)   ( 0.4746,-0.2071)
-    AFH4XX  E     1       0.28371     -0.49928475E+00   (-0.1051, 0.4226)   (-0.7888,-0.4338)
+    AFCX 1  E     3       0.59615     -0.40299475E+00   ( 1.0000, 0.0000)   (-0.0000,-0.0000)
+    AFH1 1  E     1       0.28371     -0.49928475E+00   ( 0.0000, 0.5774)   (-0.5774,-0.5774)
+    AFH1 2  E     1       0.28371     -0.49928475E+00   ( 0.0000,-0.5774)   ( 0.5774,-0.5774)
+    AFH1 3  E     1       0.28371     -0.49928475E+00   ( 0.0000,-0.5774)   (-0.5774, 0.5774)
+    AFH1 4  E     1       0.28371     -0.49928475E+00   ( 0.0000, 0.5774)   ( 0.5774, 0.5774)
 * Gross contributions:
-   AFCXXX               0.5543   E -     0.5543   P -     0.0000
-   AFH1XX               0.1075   E -     0.1075   P -     0.0000
-   AFH2XX               0.1075   E -     0.1075   P -     0.0000
-   AFH3XX               0.1075   E -     0.1075   P -     0.0000
-   AFH4XX               0.1075   E -     0.1075   P -     0.0000
+   AFCX 1               0.5543   E -     0.5543   P -     0.0000
+   AFH1 1               0.1075   E -     0.1075   P -     0.0000
+   AFH1 2               0.1075   E -     0.1075   P -     0.0000
+   AFH1 3               0.1075   E -     0.1075   P -     0.0000
+   AFH1 4               0.1075   E -     0.1075   P -     0.0000
    Polarization:     0.0155
 
-* Electronic eigenvalue nr.  4: -0.5434369925399       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  4: -0.5434369925358       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    AFCXXX  E     4       0.54245     -0.40273000E+00   (-0.1995,-0.7867)   ( 0.4209, 0.4051)
-    AFCXXX  E     5       0.24676     -0.40273000E+00   (-0.1611,-0.7492)   (-0.0812, 0.6373)
-    AFH1XX  E     1       0.21952     -0.49928475E+00   (-0.4359,-0.4599)   (-0.4090,-0.6566)
-    AFH2XX  E     1       0.30032     -0.49928475E+00   (-0.1601, 0.4391)   ( 0.7062, 0.5318)
-    AFH3XX  E     1       0.30109     -0.49928475E+00   (-0.3769,-0.1495)   (-0.8951, 0.1853)
-    AFH4XX  E     1       0.30519     -0.49928475E+00   ( 0.8429, 0.0462)   ( 0.4824,-0.2339)
+    AFCX 1  E     4       0.41636     -0.40273000E+00   ( 1.0000,-0.0000)   (-0.0000,-0.0000)
+    AFCX 1  E     5       0.42636     -0.40273000E+00   ( 1.0000, 0.0000)   ( 0.0000,-0.0000)
+    AFH1 1  E     1       0.28380     -0.49928475E+00   ( 0.0000,-0.5705)   (-0.7911, 0.2207)
+    AFH1 2  E     1       0.28380     -0.49928475E+00   ( 0.0000, 0.5705)   ( 0.7911, 0.2207)
+    AFH1 3  E     1       0.28380     -0.49928475E+00   ( 0.0000, 0.5705)   (-0.7911,-0.2207)
+    AFH1 4  E     1       0.28380     -0.49928475E+00   ( 0.0000,-0.5705)   ( 0.7911,-0.2207)
 * Gross contributions:
-   AFCXXX               0.5541   E -     0.5541   P -     0.0000
-   AFH1XX               0.0644   E -     0.0644   P -     0.0000
-   AFH2XX               0.1205   E -     0.1205   P -     0.0000
-   AFH3XX               0.1211   E -     0.1211   P -     0.0000
-   AFH4XX               0.1244   E -     0.1244   P -     0.0000
+   AFCX 1               0.5541   E -     0.5541   P -     0.0000
+   AFH1 1               0.1076   E -     0.1076   P -     0.0000
+   AFH1 2               0.1076   E -     0.1076   P -     0.0000
+   AFH1 3               0.1076   E -     0.1076   P -     0.0000
+   AFH1 4               0.1076   E -     0.1076   P -     0.0000
    Polarization:     0.0156
 
-* Electronic eigenvalue nr.  5: -0.5434369925317       (Occupation : f = 1.0000)
+* Electronic eigenvalue nr.  5: -0.5434369925351       (Occupation : f = 1.0000)
 ================================================
     Orbital            Total           Eigenvalue       Kramers partner 1   Kramers partner 2
-    AFCXXX  E     4       0.24676     -0.40273000E+00   (-0.3719, 0.2319)   ( 0.8964, 0.0659)
-    AFCXXX  E     5       0.54245     -0.40273000E+00   ( 0.6631, 0.1903)   (-0.7054,-0.1627)
-    AFH1XX  E     1       0.33601     -0.49928475E+00   ( 0.5973,-0.4839)   ( 0.3151, 0.5566)
-    AFH2XX  E     1       0.26626     -0.49928475E+00   (-0.4523,-0.4400)   (-0.6553, 0.4152)
-    AFH3XX  E     1       0.26540     -0.49928475E+00   (-0.6682, 0.6120)   (-0.1025,-0.4106)
-    AFH4XX  E     1       0.26067     -0.49928475E+00   ( 0.3724, 0.4501)   ( 0.3676,-0.7236)
+    AFCX 1  E     4       0.42636     -0.40273000E+00   ( 1.0000, 0.0000)   ( 0.0000,-0.0000)
+    AFCX 1  E     5       0.41636     -0.40273000E+00   (-1.0000, 0.0000)   (-0.0000,-0.0000)
+    AFH1 1  E     1       0.28380     -0.49928475E+00   (-0.0000,-0.5842)   ( 0.2020,-0.7861)
+    AFH1 2  E     1       0.28380     -0.49928475E+00   (-0.0000, 0.5842)   (-0.2020,-0.7861)
+    AFH1 3  E     1       0.28380     -0.49928475E+00   (-0.0000, 0.5842)   ( 0.2020, 0.7861)
+    AFH1 4  E     1       0.28380     -0.49928475E+00   (-0.0000,-0.5842)   (-0.2020, 0.7861)
 * Gross contributions:
-   AFCXXX               0.5541   E -     0.5541   P -     0.0000
-   AFH1XX               0.1508   E -     0.1508   P -     0.0000
-   AFH2XX               0.0947   E -     0.0947   P -     0.0000
-   AFH3XX               0.0941   E -     0.0941   P -     0.0000
-   AFH4XX               0.0908   E -     0.0908   P -     0.0000
+   AFCX 1               0.5541   E -     0.5541   P -     0.0000
+   AFH1 1               0.1076   E -     0.1076   P -     0.0000
+   AFH1 2               0.1076   E -     0.1076   P -     0.0000
+   AFH1 3               0.1076   E -     0.1076   P -     0.0000
+   AFH1 4               0.1076   E -     0.1076   P -     0.0000
    Polarization:     0.0156
 ================================================
 
 * Total reference orbital contributions:
-    AFCXXX  E     1       2.00022     -0.11343356E+02
-    AFCXXX  E     2       1.39171     -0.70929220E+00
-    AFCXXX  E     3       1.10857     -0.40299475E+00
-    AFCXXX  E     4       1.10814     -0.40273000E+00
-    AFCXXX  E     5       1.10814     -0.40273000E+00
-    AFH1XX  E     1       0.78839     -0.49928475E+00
-    AFH2XX  E     1       0.78839     -0.49928475E+00
-    AFH3XX  E     1       0.78839     -0.49928475E+00
-    AFH4XX  E     1       0.78839     -0.49928475E+00
+    AFCX 1  E     1       2.00022     -0.11343356E+02
+    AFCX 1  E     2       1.39171     -0.70929220E+00
+    AFCX 1  E     3       1.10857     -0.40299475E+00
+    AFCX 1  E     4       1.10814     -0.40273000E+00
+    AFCX 1  E     5       1.10814     -0.40273000E+00
+    AFH1 1  E     1       0.78839     -0.49928475E+00
+    AFH1 2  E     1       0.78839     -0.49928475E+00
+    AFH1 3  E     1       0.78839     -0.49928475E+00
+    AFH1 4  E     1       0.78839     -0.49928475E+00
 
 * Total gross contributions:
-   AFCXXX               6.7168   E -     6.7168   P -     0.0000
-   AFH1XX               0.7884   E -     0.7884   P -     0.0000
-   AFH2XX               0.7884   E -     0.7884   P -     0.0000
-   AFH3XX               0.7884   E -     0.7884   P -     0.0000
-   AFH4XX               0.7884   E -     0.7884   P -     0.0000
+   AFCX 1               6.7168   E -     6.7168   P -     0.0000
+   AFH1 1               0.7884   E -     0.7884   P -     0.0000
+   AFH1 2               0.7884   E -     0.7884   P -     0.0000
+   AFH1 3               0.7884   E -     0.7884   P -     0.0000
+   AFH1 4               0.7884   E -     0.7884   P -     0.0000
    Polarization:     0.1297
 
 *****************************************************
@@ -1200,15 +1278,15 @@ Gross  | A  C  _small
 
 
  
-     Date and time (Linux)  : Sun Aug 31 02:40:43 2014
+     Date and time (Linux)  : Wed Dec 10 11:24:46 2014
      Host name              : not found                               
 
->>>> Node 0, utime: 13, stime: 0, minflt: 7927, majflt: 0, nvcsw: 9, nivcsw: 1275, maxrss: 59288
->>>> Total WALL time used in DIRAC: 14s
+>>>> Node 0, utime: 5, stime: 0, minflt: 9188, majflt: 0, nvcsw: 8, nivcsw: 667, maxrss: 10432
+>>>> Total WALL time used in DIRAC: 6s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        88.82
+  Mean allocation size (Mb) :       117.28
   
   Largest          10  allocations
   
@@ -1221,7 +1299,7 @@ Gross  | A  C  _small
         0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
         0.24 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
         0.24 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.12 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.24 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
   
   Peak memory usage    (Mb) :       489.00
        reached at subroutine : __allocator_track_if_MOD_allocator_registe

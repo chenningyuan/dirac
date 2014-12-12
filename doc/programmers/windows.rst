@@ -24,7 +24,7 @@ all in the framework of the Windows 7/8 operating systems.
 Dependencies
 ------------
 
-In addition to the necessities listed in the section for users, DIRAC developpers have to install :
+In addition to the necessities listed in the section for users, DIRAC developpers have to install:
 
 5. The Git version control system (http://git-scm.com). When ask you can choose options "Use Git from Git Bash only" or "Use Git from the Windows Command Prompt" (recommended). If you choose the first option then you have to manually add to %PATH% *"...\\Git\\cmd"* (depends on your installation). It is not possible to sucessfully run CMake with optional Unix tools in %PATH% (see explanation below).
 
@@ -32,38 +32,34 @@ In addition to the necessities listed in the section for users, DIRAC developper
 
 **Important:**
 ~~~~~~~~~~~~~~
-The CMake suite can not be used when an another shell command (sh.exe) from other package is found in the Windows %PATH% enviromental variable.
-Please avoid adding both *"...\\Git\\bin"* and *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
-in your %PATH% as these are causing conflict with CMake programs!
+The CMake suite can not be used when an another shell command (sh.exe) from other package is found in the Windows %PATH% enviroment variable.
+Please avoid adding some of this paths: *"...\\Git\\bin"*, *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
+and *"...\\cygwin\\bin"* into your %PATH% as these are causing conflict with CMake programs!
 
 
 Documentation tools
 -------------------
 
-To be able to generate the html documentation, the user has to download the *Sphinx* (http://sphinx.pocoo.org/)
-package for Windows. Sphinx can be installed with the help of Python *setuptools* suite (http://pypi.python.org/pypi/setuptools) as ::
+To be able to generate the html documentation, the user has to download and install these Python packages:
 
-  easy_install -U sphinx
+*Sphinx* (http://sphinx-doc.org/). Python Wheel can be found at https://pypi.python.org/pypi/Sphinx/ and then run (for example): ::
 
-Alternatively, better python installer is *pip* (https://pip.pypa.io/en/latest/index.html), and use it as ::
+  pip install Sphinx-1.3b1-py2.py3-none-any.whl
 
-  pip install sphinx
+You might need also the *python-dateutil* and *pyparsing* packages, which you can obtain from https://pypi.python.org/pypi/python-dateutil/ and 
+https://pypi.python.org/pypi/pyparsing/ respectively. You can install their Python Wheels using *pip install* command.
 
-We assume that the 32-bit version of Python is installed also on 64-bit machines as not all necessary packages are 
-at disposal in 64-bit versions.
-Check that the *%Path%* Windows environmental variable points to both Python and its extensions,
-and has the the form of *"...C:\\Python27;C:\\Python27\\Scripts;..."*.
+*numpy* (http://www.numpy.org/), which provides own (self-)installation file. For 32-bit Python you can download installer from
+http://sourceforge.net/projects/numpy/files/NumPy/ and for 64-bit Python there are only unofficial builds for example at http://www.lfd.uci.edu/~gohlke/pythonlibs/.
 
-You also need the additional package *matplotlib* (http://matplotlib.sourceforge.net/).
-You can get it easily using *setuptools* or *pip* as ::
+*matplotlib* (http://matplotlib.org/). Windows installer or Python Wheel can be found at http://matplotlib.org/downloads.html.
+Please download version suitable for your version of Python (2.x or 3.x) and system type (32/64 bit).
 
-  easy_install -U matplotlib
-  pip install matplotlib
+Notes:
 
-(You might need also the *python-dateutil* and *pyparsing* packages, which you obtain with the mentioned *easy_install* or *pip* scripts.)
-
-To get the documentation compiled one requires likewise the *numpy* (http://numpy.scipy.org) package, 
-which provides own (self-)installation file.
+Check that the Windows *%Path%* environment variable points to both Python and its extensions,
+and has the the form of *"...C:\\Python27;C:\\Python27\\Scripts;..."*. Do not use 32 and 64 bit packages together.
+You can obtain *pip* from https://pip.pypa.io/en/latest/.
 
 
 Git & PuTTy

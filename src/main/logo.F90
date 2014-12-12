@@ -138,6 +138,7 @@ print *, '*    Jeppe Olsen              Aarhus University                 Denmar
 print *, '*    Young Choon Park         KAIST, Daejeon                    South Korea   *'
 print *, '*    Jesper K. Pedersen       University of Southern Denmark    Denmark       *'
 print *, '*    Markus Pernpointner      University of Heidelberg          Germany       *'
+print *, '*    Roberto Di Remigio       University of Tromsoe             Norway        *'
 print *, '*    Kenneth Ruud             University of Tromsoe             Norway        *'
 print *, '*    Pawel Salek              Stockholm Inst. of Technology     Sweden        *'
 print *, '*    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany       *'
@@ -164,21 +165,20 @@ print *, '*    If results obtained with this code are published, an             
 print *, '*    appropriate citation would be:                                           *'
 print *, '*                                                                             *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,            *'
-print *, '*    Release DIRAC13 (2013),                                                  *'
-print *, '*    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *'
+print *, '*    Release DIRAC14 (2014),                                                  *'
+print *, '*    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *'
 print *, '*    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, Y. S. Lee,    *'
 print *, '*    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *'
 print *, '*    O. Kullie, C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak,        *'
-print *, '*    J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner, K. Ruud,          *'
-print *, '*    P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen, *'
-print *, '*    J. van Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto      *'
-print *, '*    (see http://www.diracprogram.org).                                       *'
+print *, '*    J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio,    *'
+print *, '*    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,    *'
+print *, '*    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,          *'
+print *, '*    and S. Yamamoto (see http://www.diracprogram.org).                       *'
 print *, '*                                                                             *'
 print *, '*******************************************************************************'
 end
-
 
 subroutine print_static_alloc
 !
