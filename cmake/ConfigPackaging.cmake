@@ -78,7 +78,7 @@ set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/doc/installation/general.rst")
 set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 set(CPACK_PACKAGE_FILE_NAME        "DIRAC")
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-Source")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "DIRAC-Source-${DIRAC_VERSION}")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY
     "DIRAC ${DIRAC_VERSION}"
     )
@@ -115,14 +115,13 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external                     ${EXPORT_DIR}
         COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
         COMMAND cp -rL ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
-        COMMAND cp     ${CMAKE_SOURCE_DIR}/pam                          ${EXPORT_DIR}
+        COMMAND cp     ${CMAKE_SOURCE_DIR}/pam.in                       ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/setup                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/utils                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/src/xcfun                    ${EXPORT_DIR}/src
         COMMAND cp     ${CMAKE_SOURCE_DIR}/src/main/main.F90            ${EXPORT_DIR}/src/main
         COMMAND cp     ${CMAKE_SOURCE_DIR}/VERSION                      ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/.gitignore                   ${EXPORT_DIR}
-        COMMAND cp     ${CMAKE_SOURCE_DIR}/maintenance/update/update.py ${EXPORT_DIR}
         COMMAND ${CMAKE_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
         COMMAND echo "${GIT_REVISION}"                                > ${EXPORT_DIR}/cmake/GIT_HASH
         COMMAND make package_source
