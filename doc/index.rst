@@ -143,13 +143,13 @@ Tutorials and walkthrus
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
-* **DMRG interface:**
-  :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
-
 * **Polarizable continuum model:**
   :doc:`Basics <tutorials/pcm/pcm_basics>` |
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
   :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>` 
+
+* **Davidson corrections for relCI (LUCITA and KRCI):**
+  :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
