@@ -268,7 +268,9 @@ add_library(
     ${GENERATED_FILES}
     )
 
-add_dependencies(dirac run_pamadm)
+if(DEVELOPMENT_CODE)
+    add_dependencies(dirac run_pamadm)
+endif()
 add_dependencies(dirac generate_binary_info)
 
 set(LIST_OF_EXECUTABLES)
