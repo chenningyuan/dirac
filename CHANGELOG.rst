@@ -1,5 +1,11 @@
 
 
+14.1 (this will be next patch)
+------------------------------
+
+- Workaround for CMake warning about nonexistent run_pamadm target.
+
+
 14.0 (2014-12-12)
 -----------------
 
