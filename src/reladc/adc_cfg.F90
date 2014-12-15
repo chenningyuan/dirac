@@ -72,6 +72,7 @@ module adc_cfg
   integer, public                  :: reladc_davmaxsp   = 50
   integer, public                  :: reladc_davmaxit   = 5
   real*8,  public                  :: reladc_davconv    = 1.0E-05
+  logical, public                  :: reladc_davooc     = .true.
 !
 !  fanoadc variables
 !
