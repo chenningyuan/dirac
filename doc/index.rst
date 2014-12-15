@@ -78,8 +78,9 @@ Tutorials and walkthrus
   :doc:`Basis sets for relativistic calculations <tutorials/relbas>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
-* **SCF convergence:**
-  :doc:`Atomic start <tutorials/atomic_start/tutorial>`
+* **SCF start guess :**
+  :doc:`Atomic start <tutorials/start_guess/atomic_start>` |
+  :doc:`Extended Hückel start <tutorials/start_guess/atomic_huckel>` |
 
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
@@ -143,15 +144,13 @@ Tutorials and walkthrus
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
-* **DMRG interface:**
-  :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
-
 * **Polarizable continuum model:**
   :doc:`Basics <tutorials/pcm/pcm_basics>` |
   :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
-  :doc:`A geometry optimization in solution <tutorials/pcm/pcm_numgra>` |
-  :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>` |
-  :doc:`Calculation of polarizabilities in solution: finite field approach <tutorials/pcm/pcm_ff>`
+  :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>` 
+
+* **Davidson corrections for relCI (LUCITA and KRCI):**
+  :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |

@@ -16,6 +16,10 @@ As explained in the `*PCMSOL` section of the reference manual, a PCM calculation
 The second method is not as flexible as the first one and we will cover both in this tutorial.
 
 For further details, please refer to the PCM documentation in the reference manual.
+Notice that the fact that a working implementation of the PCM-SCF algorithm gives access to
+geometry optimizations based on a numerical gradient and finite-field approaches to the
+calculation of response properties. The input files for DIRAC in these two cases need only be
+modified to include the directives relevant for the PCM calculation.
 
 We will use the extremely simple examples contained in the test/pcm_energy directory.
 They are more than enough to show a simple workflow, possible gotchas and what to look for

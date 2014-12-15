@@ -135,11 +135,53 @@ ways:
    calculation; this may be thought of as starting from a converged
    SCF potential.
 -  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. [vanLenthe2006]_ .
+-  Using an **extended Hückel start** based on *atomic fragments*
 
 The default is to start from MO coefficients if the file DFCOEF is
 present. Otherwise the corrected bare nucleus approach is followed.
 In all cases linear dependencies are removed in the zeroth
 iteration.
+
+keyword(ATOMST)
+
+Start first SCF iteration with a molecular density matrix constructed from atomic densities. 
+The keyword ``ATOMST`` is followed by input for each atomic type. The details, orbital strings (see
+:ref:`orbital_strings` for the syntax) and occupation, usually correspond to those of the atomic runs, 
+but the user may modify this at will. 
+The syntax is explained in the parenthesis "" for each atomic type but we highly recommend to carefully check the tutorial example :ref:`atomic_start_guess`.
+
+::
+
+  .ATOMST
+  "SCF coefficients file name (6 characters)" "integer specifying # of occupation patterns, here: 2"
+  orbital occupation string #1 for atomic type 1
+  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
+  orbital occupation string #2 for atomic type 1
+  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
+  "SCF coefficients file name (6 characters)" "integer specifying # of occupation patterns, here: 1"
+  orbital occupation string #1 for atomic type 2
+  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
+  ...
+
+keyword(AD HOC)
+
+Start first SCF iteration with orbitals generated from an extended Hückel calculation using pre-calculated orbitals 
+for each constituent atomic type of the molecule. 
+
+::
+
+   .AD HOC
+   "SCF coefficients file name (6 characters)" 
+   orbital occupation string for atomic type 1
+   "SCF coefficients file name (6 characters)" 
+   orbital occupation string for atomic type 2
+   ...
+
+The order of atomic types follows that of the input. Presently, this functionality only works without symmetry.
+
+keyword(HUCPAR)
+Modify the the Wolfsberg-Helmholtz constant :math:`K` of the extended Hückel calculation.
+*Default:* 1.75
 
 keyword(NOBNCR)
 
@@ -177,28 +219,6 @@ keyword(TRIFCK)
 
 Start SCF-iterations from the two-electron Fock matrix from
 previous calculation (stored on file DFFCK2).
-
-keyword(ATOMST)
-
-Start first SCF iteration with a molecular density matrix constructed from atomic densities. 
-The keyword ``ATOMST`` is followed by input for each atomic type. The details, orbital occupation strings (see
-:ref:`orbital_strings` for the syntax) and occupation, ususally correspond to those of the atomic runs, 
-but the user may modify this at will. 
-The syntax is explained in the parenthesis "" for each atomic type but we highly recommend to carefully check the tutorial
-example :ref:`Atomic start guess`: 
-
-::
-
-  .ATOMST
-  "SCF coefficients file name (6 characters)" "integer specifying # of occupation patterns, here: 2"
-  orbital occupation string #1 for type 1
-  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
-  orbital occupation string #2 for type 1
-  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
-  "SCF coefficients file name (6 characters)" "integer specifying # of occupation patterns, here: 1"
-  orbital occupation string #1 for type 2
-  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
-  ...
 
 
 Convergence criteria
