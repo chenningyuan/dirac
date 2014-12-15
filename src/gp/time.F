@@ -166,7 +166,7 @@ C
 #if defined (SYS_IBM)
       CHARACTER CDATE*8,CTIME*8,DAOFWK*9
 #endif
-#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
+#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX) || defined (SYS_WINDOWS)
       CHARACTER*(24) FDATE
       CHARACTER*(40) HSTNAM
 #endif
@@ -204,7 +204,10 @@ C
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
-#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
+#if defined (SYS_WINDOWS)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Windows): ',FDATE()
+#endif
+#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX) || defined (SYS_WINDOWS)
 #ifndef VAR_EKO
 C
 C     CALL HOSTNM(HSTNAM)
