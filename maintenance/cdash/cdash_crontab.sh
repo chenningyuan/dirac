@@ -56,8 +56,8 @@ if [ $MAKE_RELEASE -eq 1 ]; then
     cd build
     cmake ..
     make release
-    tar xvzf DIRAC-Source.tar.gz
-    cd DIRAC-Source
+    tar xvzf DIRAC-*-Source.tar.gz
+    cd DIRAC-*-Source
 fi
 
 if [ "$COMPILER" == 'Intel' ]; then
