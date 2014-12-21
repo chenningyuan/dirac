@@ -15,8 +15,8 @@ option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"              
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
-option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
-option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF) 
+option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF)
+option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF)
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
@@ -168,14 +168,14 @@ if(ENABLE_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
         if(NOT ZLIB_FOUND)
-           IF (ENABLE_STATIC_LINKING) 
+           IF (ENABLE_STATIC_LINKING)
               message(STATUS "  - install static Zlib development libraries")
            else()
               message(STATUS "  - install dynamic Zlib development libraries")
            endif()
         endif()
     else()
-        add_definitions(-DHAS_PCMSOLVER)                                                  
+        add_definitions(-DHAS_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
 	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
@@ -215,12 +215,12 @@ if(ENABLE_PCMSOLVER)
             -DZLIB_ROOT=${ZLIB_ROOT}
             -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
          )
-        
+
         if(PCMSOLVER_TESTS)
   	   add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
         else()
 	   add_external(pcmsolver)
-        endif()	
+        endif()
 
 	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
 	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
@@ -253,9 +253,9 @@ add_custom_target(dirac_interfaces
 # fix for Windows with 64bit integers on and build type release or profile
 # when using GNU (gfortran) compilers
 # there is one source file for which -O3/-O2 is not good
-if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU") 
+if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
     AND (ENABLE_64BIT_INTEGERS)
-    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile"))) 
+    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile")))
     set_source_files_properties(
         ${CMAKE_SOURCE_DIR}/src/abacus/hermodules.F90
         PROPERTIES COMPILE_FLAGS "-O1"
@@ -340,13 +340,13 @@ if(ENABLE_UTILITIES)
     if(ENABLE_SECQUANT)
         compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
+    if(ENABLE_HSCC) # note: this functionality depends on the pam flag
         compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
+    if(ENABLE_HSFS) # note: this functionality depends on the pam flag
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_MEM_TEST) # 
+    if(ENABLE_MEM_TEST) #
         compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
