@@ -37,7 +37,7 @@ fi
 ./setup -D BUILDNAME="frpd2.gnu_i4" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_GNU1
 cd $BUILD_GNU1
 ctest  -D ExperimentalUpdate --track Miro
-ctest -j3 -D Experimental --track Miro
+ctest -j3 -D Experimental -L short --track Miro
 
 
 ####  server's Intel compilers  ####
@@ -46,21 +46,6 @@ if [[ -z $PROD_DIR ]]; then
   echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
   export MATH_ROOT=/home/ilias/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 fi
-
-cd $DIRAC
-BUILD_INTEL=build_intelmkl_i8
-if [[ -d "$BUILD_INTEL" ]]; then
-  echo "deleting previous build directory $BUILD_INTEL"
-  /bin/rm -rf $BUILD_INTEL
-fi
-./pamadm -a --builddir=$BUILD_INTEL
-# configure step
-./setup --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
-cd $BUILD_INTEL
-export MKL_NUM_THREADS=3
-export MKL_DYNAMIC="FALSE"
-ctest  -D ExperimentalUpdate --track Miro
-ctest -D Experimental --track Miro
 
 cd $DIRAC
 BUILD_INTEL=build_intelmkl_i8_nopcm

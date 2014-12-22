@@ -15,8 +15,8 @@ option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"              
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
-option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
-option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF) 
+option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF)
+option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF)
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
@@ -41,6 +41,19 @@ option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                
 # for example build with pcmsolver will fail (merging libraries)
 # someone can specify minimal version if known
 find_package(PythonInterp REQUIRED)
+
+# set python version variable when it is not defined automatically
+# this can happen when cmake version is equal or less than 2.8.5
+if(NOT PYTHON_VERSION_STRING)
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} -V
+        OUTPUT_VARIABLE PYTHON_VERSION_STRING
+        ERROR_VARIABLE PYTHON_VERSION_STRING
+    )
+
+    string(REGEX MATCH "Python ([0-9].[0-9].[0-9])" temp "${PYTHON_VERSION_STRING}")
+    set(PYTHON_VERSION_STRING ${CMAKE_MATCH_1})
+endif()
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -90,12 +103,11 @@ include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
-include(BinaryInfo) # has to come after ConfigVersion
 
-if(USE_BUILTIN_BLAS)
+if(ENABLE_BUILTIN_BLAS)
     add_definitions(-DUSE_BUILTIN_BLAS)
 endif()
-if(USE_BUILTIN_LAPACK)
+if(ENABLE_BUILTIN_LAPACK)
     add_definitions(-DUSE_BUILTIN_LAPACK)
 endif()
 
@@ -156,14 +168,14 @@ if(ENABLE_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
         if(NOT ZLIB_FOUND)
-           IF (ENABLE_STATIC_LINKING) 
+           IF (ENABLE_STATIC_LINKING)
               message(STATUS "  - install static Zlib development libraries")
            else()
               message(STATUS "  - install dynamic Zlib development libraries")
            endif()
         endif()
     else()
-        add_definitions(-DHAS_PCMSOLVER)                                                  
+        add_definitions(-DHAS_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
         get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
@@ -208,12 +220,12 @@ if(ENABLE_PCMSOLVER)
             -DZLIB_ROOT=${ZLIB_ROOT}
             -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
          )
-        
+
         if(PCMSOLVER_TESTS)
   	   add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
         else()
 	   add_external(pcmsolver)
-        endif()	
+        endif()
 
 	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
 	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
@@ -241,6 +253,19 @@ add_custom_target(dirac_interfaces
     DEPENDS
     ${GENERATED_FILES}
 )
+
+# set source file properties
+# fix for Windows with 64bit integers on and build type release or profile
+# when using GNU (gfortran) compilers
+# there is one source file for which -O3/-O2 is not good
+if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+    AND (ENABLE_64BIT_INTEGERS)
+    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile")))
+    set_source_files_properties(
+        ${CMAKE_SOURCE_DIR}/src/abacus/hermodules.F90
+        PROPERTIES COMPILE_FLAGS "-O1"
+        )
+endif()
 
 # set definitions
 
@@ -327,7 +352,7 @@ if(ENABLE_UTILITIES)
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_MEM_TEST) # 
+    if(ENABLE_MEM_TEST) #
         compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
@@ -389,6 +414,47 @@ endif()
 include(ConfigTesting)
 include(ConfigPackaging)
 
-# give information about system, compiler flags, and size of static allocations
+# give information about system, compiler flags, and size of static allocations ...
 set(STATIC_MEM_INFO_BINARIES dirac)
-include(ConfigInfo)
+
+# info what blas and lapack will be used when its variable is not set
+if(NOT BLAS_LIBRARIES)
+    if(USE_BUILTIN_BLAS)
+        # builtin library will be used
+        set(BLAS_LIBRARIES_INFO "builtin")
+    else()
+        # none blas
+        set(BLAS_LIBRARIES_INFO "none")
+    endif()
+endif()
+if(NOT LAPACK_LIBRARIES)
+    if(USE_BUILTIN_LAPACK)
+        # builtin library will be used
+        set(LAPACK_LIBRARIES_INFO "builtin")
+    else()
+        # none lapack
+        set(LAPACK_LIBRARIES_INFO "none")
+    endif()
+endif()
+
+# info that there are no explict libraries set
+if(NOT EXPLICIT_LIBS)
+    set(EXPLICIT_LIBS_INFO "none")
+endif()
+
+# configuration time in UTC
+execute_process(
+    COMMAND ${PYTHON_EXECUTABLE} -c "import datetime; print(datetime.datetime.utcnow())"
+    OUTPUT_VARIABLE CONFIGURATION_TIME
+)
+
+# delete \n added by Python print()
+string(STRIP ${CONFIGURATION_TIME} CONFIGURATION_TIME)
+
+# list with compiler definitions
+get_directory_property(_list_of_definitions DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+
+include(BinaryInfo) # giving information - must be called after everything is set
+include(ConfigInfo) # has to come after binary info (dependency: git information)
+
+unset(_list_of_definitions)

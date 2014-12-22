@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#OAR -n Build
+#OAR -n Buildujem
 #OAR -l nodes=1
 
 # set the environment !
@@ -28,20 +28,10 @@ export MKL_NUM_THREADS=$NUM_OF_CPUS
 export MKL_DYNAMIC="FALSE"
 
 cd $DIRAC
-BUILD=build_intelmkl_i8_nopcm_test
-if [[ -d "$BUILD" ]]; then
-  echo "deleting previous build directory $BUILD"
-  /bin/rm -rf $BUILD
-fi
-# configure step
-export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
-./pamadm -a --builddir=$BUILD
-./setup -D BUILDNAME="prasiva.intelmkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF --fc=ifort  --cc=icc  --cxx=icpc  --int64  $BUILD
-cd $BUILD
-ctest  -D ExperimentalUpdate --track Miro
-ctest  -D Experimental -L short --track Miro
 
-cd $DIRAC
+# remove old batch launches protocols
+git clean -f
+
 BUILD=build_ifort_icc_g++_mkl_i8_test
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
@@ -52,8 +42,12 @@ export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
 ./pamadm -a --builddir=$BUILD
 ./setup -D BUILDNAME="prasiva.ifort_icc_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON --fc=ifort  --cc=icc  --cxx=g++  --int64  $BUILD
 cd $BUILD
-ctest  -D ExperimentalUpdate --track Miro
-ctest  -D Experimental -L short --track Miro
+ctest  -D ExperimentalUpdate      --track Miro
+ctest  -D ExperimentalConfigure   --track Miro
+#ctest  -j$NUM_OF_CPUS  -D ExperimentalBuild    --track Miro
+ctest  -j4  -D ExperimentalBuild    --track Miro
+ctest  -D ExperimentalTest     --track Miro
+ctest  -D ExperimentalSubmit   --track Miro
 
 
 cd $DIRAC

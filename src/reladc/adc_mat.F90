@@ -46,6 +46,7 @@ module adc_mat
   integer, public                  ::  reladc_md_maxdavsp = 0   !maximum dimension of Davidson space
   integer, public                  ::  reladc_md_maxdavit = 0   !maximum number of Dav. iterations
   real*8,  public                  ::  reladc_md_convthr  = 0.0 !convergence of Davidson eigenvectors
+  logical, public                  ::  reladc_md_davooc   = .true. !save memory in dav for large calculations
   character*6, public              ::  reladc_md_fileadc  = ''  !file name of ADC matrix
   character*6, public              ::  reladc_md_filediag = ''  !file name of diagonal of matrix, ioldnew=1
   character*6, public              ::  reladc_md_filecnf  = ''  !file name of configuration file
