@@ -30,9 +30,8 @@ export MKL_DYNAMIC="FALSE"
 cd $DIRAC
 
 # remove old batch launches protocols
-#git clean -f
+git clean -f
 
-cd $DIRAC
 BUILD=build_ifort_icc_g++_mkl_i8_test
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
