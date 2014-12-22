@@ -81,10 +81,16 @@ C     Written by Trond Saue and Hans Joergen Aa. Jensen July 1996
 C     Last revision July 9 1996 - tsaue
 C
 C***********************************************************************
+
+      use dirac_cfg, only: dirac_cfg_scf_calculation
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-C
+
+! we use nopen
+#include "dcbdhf.h"
+
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbxlr.h"
@@ -92,7 +98,11 @@ C
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXLR')
-C
+
+      if (dirac_cfg_scf_calculation .and. nopen > 0) then
+         call quit('ERROR: open-shell SCF response not implemented')
+      end if
+
       NRSPF  = NLRBPT*NBFREQ
       IF(NRSPF.EQ.0) GOTO 10
       IF(XLR_SKIPEE) THEN

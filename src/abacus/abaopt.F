@@ -1319,6 +1319,7 @@ C     the program stops.
 C
          IF (FINDRE .AND. (.NOT. VISUAL)) THEN
             CALL TITLER('Coordinates determined','#',103)
+            call dealloc(WORK)
             GO TO 9999
          END IF
       ELSE
@@ -1332,41 +1333,15 @@ C
 C
 C     If visualization is requested, the program stops afterwards.
 C
-      IF (VISUAL) THEN
-         CALL VISULZ(WORK,LWORK,IWOFF,WRKDLM)
-         CALL TITLER('End of visualization','#',103)
-         GO TO 9999
-      END IF
+CTROND      IF (VISUAL) THEN
+CTROND         CALL VISULZ(WORK,LWORK,IWOFF,WRKDLM)
+CTROND         CALL TITLER('End of visualization','#',103)
+CTROND         call dealloc(WORK)
+CTROND         GO TO 9999
+CTROND      END IF
 C
-      KGRAD  = IWOFF + 1
-      KSTEP  = KGRAD  + MXCOOR
-      KSCLVC = KSTEP  + MXCOOR
-      KGRDOL = KSCLVC + MXCOOR
-      KGRDMT = KGRDOL + MXRINT
-      KSTPMT = KGRDMT + MXRINT*25
-      KHESOL = KSTPMT + MXRINT*25
-      KGRDAR = KHESOL + MXRINT*MXRINT
-      KSTPAR = KGRDAR + MXRINT*25
-      KINFO  = KSTPAR + MXRINT*25
-      KWILBM = KINFO  + (ITRMAX + 1)*6
-      KBMTRN = KWILBM + MXRINT*MXCOOR
-      KHSINT = KBMTRN + MXRINT*MXRINT
-      KVCMOD = KHSINT + MXRINT*MXRINT
-      KWRK   = KVCMOD + MXCOOR
-      LWRK   = LWORK  - (KWRK - IWOFF) + 1
-      IF (KWRK-IWOFF .GT. LWORK) CALL STOPIT('OPTMIN',' ',KWRK,LWORK)
-      IWSAV  = IWOFF
-#if defined (SYS_CONVEX) || defined (SYS_HAL) || defined (VAR_G77)
-      IWOFF  = 0
-#endif
-      CALL RUNOPT(IWOFF,WRKDLM,MXRINT,WORK(KGRAD),WORK(KSTEP),
-     &     WORK(KSCLVC),WORK(KGRDOL),WORK(KGRDMT),WORK(KSTPMT),
-     &     WORK(KHESOL),WORK(KGRDAR), WORK(KSTPAR),WORK(KINFO),
-     &     WORK(KWILBM),WORK(KBMTRN),WORK(KHSINT),WORK(KVCMOD),
-     &     WORK(KWRK),LWRK)
-#if defined (SYS_CONVEX)  || defined (SYS_HAL) || defined (VAR_G77)
-      IWOFF  = IWSAV
-#endif
+      call dealloc(WORK)
+      CALL RUNOPT(MXRINT)
 #ifndef PRG_DIRAC
 #if defined (VAR_MPI)
       IF (NODTOT .GT. 1 .AND. MYNUM .EQ. 0) THEN
@@ -1379,17 +1354,14 @@ C
 
  9999 CONTINUE
 
-      call dealloc(WORK)
-
       CALL QEXIT('OPTMIN')
       RETURN
       END
 
 C  /* Deck runopt */
-      SUBROUTINE RUNOPT(IWOFF,WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
-     &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
-     &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
+      SUBROUTINE RUNOPT(MXRCRD)
       use codata
+      use memory_allocator
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1416,10 +1388,17 @@ C  /* Deck runopt */
       LOGICAL EXHER, EXSIR, EXABA, MINEND, INDXOK, STATPO, ACTIVE
       LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP, COND1
       CHARACTER TMPLIN*80, WRDRSP*7
-      DIMENSION EGRAD(MXCOOR), CSTEP(MXCOOR), SCLVEC(MXCOOR)
-      DIMENSION GRDOLD(MXRCRD), GRDMAT(25,MXRCRD)
-      DIMENSION STPMAT(25,MXRCRD), HESOLD(MXRCRD,MXRCRD)
-      DIMENSION GRDARR(25,MXRCRD), STPARR(MXRCRD,MXRCRD)
+      real(8), allocatable :: EGRAD(:),CSTEP(:),SCLVEC(:),GRDOLD(:)
+      real(8), allocatable :: GRDMAT(:,:),STPMAT(:,:),HESOLD(:,:)
+      real(8), allocatable :: GRDARR(:,:),STPARR(:,:),GEINFO(:,:)
+      real(8), allocatable :: WILBMT(:,:),BMTRAN(:,:),HESINT(:,:)
+      real(8), allocatable :: VECMOD(:)
+      real(8), allocatable :: EHESS(:,:),ALLHES(:,:),EVEC(:)
+      real(8), allocatable :: BMTINV(:,:),PJINMT(:,:),CONMAT(:,:)
+      real(8), allocatable :: TEMP1(:),TEMP2(:),TEMP3(:)
+      real(8), allocatable :: TEMP4(:),TEMP5(:),TEMP6(:)
+      real(8), allocatable :: TEMP7(:),TEMP8(:),TEMP9(:)
+      real(8), allocatable :: WORK(:)
 C
 C     The array geinfo contains optimization information for each
 C     iteration. The first index is the iteration, the second gives
@@ -1431,12 +1410,22 @@ C                     4  -  Step length
 C                     5  -  Trust radius
 C                     6  -  # rejected steps
 C
-      DIMENSION GEINFO(0:ITRMAX,6)
-      DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
-      DIMENSION HESINT(MXRCRD,MXRCRD), VECMOD(MXCOOR)
-      DIMENSION WORK(LWORK)
-C
       CALL QENTER('RUNOPT')
+      call legacy_lwork_get(LWORK)
+      allocate(EGRAD(MXCOOR))
+      allocate(CSTEP(MXCOOR))
+      allocate(SCLVEC(MXCOOR))
+      allocate(GRDOLD(MXRCRD))
+      allocate(HESOLD(MXRCRD,MXRCRD))
+      allocate(GRDARR(25,MXRCRD))
+      allocate(STPARR(25,MXRCRD))
+      allocate(GEINFO(0:ITRMAX,6))
+      allocate(WILBMT(MXRCRD,MXCOOR))
+      allocate(BMTRAN(MXRCRD,MXRCRD))
+      allocate(HESINT(MXRCRD,MXRCRD))
+      allocate(VECMOD(MXCOOR))
+      allocate(EHESS(MXCOOR,MXCOOR))
+      allocate(ALLHES(MXCOOR,MXCOOR))
 C
 C     Initialization of variables.
 C
@@ -1459,75 +1448,61 @@ C
 C
 C     Perform preoptimization if requested.
 C
-      IF (DOPRE) CALL INIPRE(WORK,LWORK,IWOFF,WRKDLM)
-C
-C     Part of the WORK-array is used for storage.
-C
-      KEHESS = 1
-      KALHES = KEHESS + MXCOOR*MXCOOR
-      KWRK1  = KALHES + MXCOOR*MXCOOR
-      IF (KWRK1 .GT. LWORK) CALL STOPIT('RUNOPT',' ',KWRK1,LWORK)
-      LWRK1  = LWORK - KWRK1 + 1
+      IF (DOPRE) CALL INIPRE()
 C
 C     Calculate energy, gradient and Hessian for second order method and
 C     first order method with initial Hessian.
 C
       IF (NEWTON .OR. INITHS) THEN
-         CALL GTHESS(EGRAD,WORK(KEHESS),WORK(KALHES),EXHER,EXSIR,EXABA,
-     &        WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
+         CALL GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA)
 C
 C     First order methods only require the energy and the gradient.
 C
       ELSE
-         CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
-     &        IWOFF,WRKDLM)
+         CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA)
       END IF
 C
 C     Make VRML-file of initial geometry if requested.
 C
-      IF (VRML) THEN
-         KATARR = KWRK1
-         KEVEC  = KATARR + 8*MXCENT
-         KEVC1  = KEVEC  + MXCOOR*MXCOOR
-         KEVC2  = KEVC1  + MXCOOR
-         KWRK2  = KEVC2  + MXCOOR
-         LWRK   = LWORK  - (KWRK2 - IWOFF) + 1
-         IF (KWRK2-IWOFF .GT. LWORK) CALL STOPIT('RUNOPT',' ',
-     &        KWRK2,LWORK)
-         CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
-     &        WORK(KEVC1),WORK(KEVC2))
-      END IF
+CTROND      IF (VRML) THEN
+CTROND         KATARR = KWRK1
+CTROND         KEVEC  = KATARR + 8*MXCENT
+CTROND         KEVC1  = KEVEC  + MXCOOR*MXCOOR
+CTROND         KEVC2  = KEVC1  + MXCOOR
+CTROND         KWRK2  = KEVC2  + MXCOOR
+CTROND         LWRK   = LWORK  - (KWRK2 - IWOFF) + 1
+CTROND         IF (KWRK2-IWOFF .GT. LWORK) CALL STOPIT('RUNOPT',' ',
+CTROND     &        KWRK2,LWORK)
+CTROND         CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
+CTROND     &        WORK(KEVC1),WORK(KEVC2))
+CTROND      END IF
 C
 C     Count coordinates.
 C
       CALL CNTCRD
 C
-C     We allocate more of the WORK-array
+C     More allocations
 C
       MX2CRD = MAX(MXCOOR,MXRCRD)
-      KBMINV = KWRK1
-      KPJINM = KBMINV + MXRCRD*MXCOOR
-      KEVEC  = KPJINM + MXRCRD*MXRCRD
-      KCONMT = KEVEC  + MX2CRD*MX2CRD
-      KTEMP1 = KCONMT + MXRCRD*MXRCRD
-      KTEMP2 = KTEMP1 + MX2CRD*MX2CRD
-      KTEMP3 = KTEMP2 + MX2CRD*MX2CRD
-      KTEMP4 = KTEMP3 + MX2CRD*MX2CRD*2
-      KTEMP5 = KTEMP4 + MX2CRD*MX2CRD*2
-      KTEMP6 = KTEMP5 + MX2CRD*MX2CRD
-      KTEMP7 = KTEMP6 + MX2CRD*MX2CRD
-      KTEMP8 = KTEMP7 + MX2CRD*MX2CRD
-      KTEMP9 = KTEMP8 + MX2CRD*MX2CRD
-      KWRK2  = KTEMP9 + MX2CRD*MX2CRD
-      IF (KWRK2 .GT. LWORK) CALL STOPIT('RUNOPT',' ',KWRK2,LWORK)
-      LWRK2  = LWORK - KWRK2 + 1
+      allocate(BMTINV(MXRCRD,MXCOOR))
+      allocate(PJINMT(MXRCRD,MXRCRD))
+      allocate(EVEC(MX2CRD*MX2CRD))
+      allocate(CONMAT(MXRCRD,MXRCRD))
+      allocate(TEMP1(MX2CRD*MX2CRD))
+      allocate(TEMP2(MX2CRD*MX2CRD))
+      allocate(TEMP3(MX2CRD*MX2CRD*2))
+      allocate(TEMP4(MX2CRD*MX2CRD*2))
+      allocate(TEMP5(MX2CRD*MX2CRD))
+      allocate(TEMP6(MX2CRD*MX2CRD)) ! not presently used
+      allocate(TEMP7(MX2CRD*MX2CRD))
+      allocate(TEMP8(MX2CRD*MX2CRD)) ! not presently used
+      allocate(TEMP9(MX2CRD*MX2CRD)) ! nor presently used
 C
 C     Check if redundant internal coordinates should be used.
 C
       IF (DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
-         CALL INIRED(MXRCRD,MX2CRD,WILBMT,BMTRAN,WORK(KBMINV),
-     &        WORK(KPJINM),WORK(KTEMP1),WORK(KTEMP2),
-     &        WORK(KTEMP3),WORK(KTEMP4))
+         CALL INIRED(MXRCRD,MX2CRD,WILBMT,BMTRAN,BMTINV,
+     &        PJINMT,TEMP1,TEMP2,TEMP3,TEMP4)
       END IF
       IF (DELINT .OR. REDINT) THEN
          NCRDHS = IINTCR
@@ -1551,80 +1526,83 @@ C
 C     Initialize Hessian if first order method is used.
 C
  7    CONTINUE
-      IF (.NOT. NEWTON) CALL INIHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,HESOLD,
-     &     WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),
-     &     WILBMT,BMTRAN,WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
+      call alloc(WORK,LWORK,id='WORK in RUNOPT1')
+      IF (.NOT. NEWTON) THEN
+           CALL INIHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,HESOLD,
+     &     TEMP1,TEMP2,TEMP3,TEMP4,WILBMT,BMTRAN,BMTINV,HESINT,
+     &     WORK,LWORK)
+      ENDIF
 C
-      CALL MINCGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KWRK2),LWRK2)
+      CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LORK)
 C
 C     Construct projection operator and use it.
 C     Then diagonalize Hessian.
 C
       IF (REDINT .OR. DELINT) THEN
-         IF (NEWTON) CALL CGHINT(MXRCRD,MX2CRD,SCLVEC,WORK(KTEMP1),
-     &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KTEMP5),
-     &        WILBMT,WORK(KBMINV),BMTRAN,HESINT,WORK(KWRK2),LWRK2)
-         CALL PRJINT(MXRCRD,IINTCR,WORK(KPJINM),WORK(KCONMT),
-     &        HESINT,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &        WORK(KTEMP4),WORK(KWRK2),LWRK2)
+         IF (NEWTON) CALL CGHINT(MXRCRD,MX2CRD,SCLVEC,TEMP1,
+     &        TEMP2,TEMP3,TEMP4,TEMP5,WILBMT,BMTINV,BMTRAN,
+     &        HESINT,WORK,LWORK)
+         CALL PRJINT(MXRCRD,IINTCR,PJINMT,CONMAT,
+     &        HESINT,TEMP1,TEMP2,TEMP3,TEMP4,
+     &        WORK,LWORK)
 C
-C     Note that the contents of WORK(KTEMP7) is passed on
+C     Note that the contents of TEMP7 is passed on
 C     from LINSRC to FNSTIN below.
 C
          IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &        CALL LINSRC(IINTCR,MXRCRD,GRDINT,GRDARR(1,1),
-     &        WORK(KTEMP7),STPARR(1,1),WORK(KTEMP3),WORK(KTEMP4),
-     &        ACTIVE,EMOD)
+     &        TEMP7,STPARR(1,1),TEMP3,TEMP4,ACTIVE,EMOD)
          IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS - 1
-         CALL DIAINT(MXRCRD,MX2CRD,NCRDHS,WORK(KEVEC),WORK(KTEMP1),
-     &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),THRIND,HESINT)
+         CALL DIAINT(MXRCRD,MX2CRD,NCRDHS,EVEC,TEMP1,
+     &        TEMP2,TEMP3,TEMP4,THRIND,HESINT)
          IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS + 1
       ELSE
          IF (NEWTON) CALL MKSCVC(SCLVEC)
 C
-C     Note that the contents of WORK(KTEMP1) is passed on
+C     Note that the contents of TEMP1 is passed on
 C     from PROJGH to DIAHES below.
 C
-         CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
-     &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4))
+         CALL PROJGH(EGRAD,EHESS,ALLHES,TEMP1,
+     &        TEMP2,TEMP3,TEMP4)
          IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &        CALL LINSRC(NCART,MXCOOR,EGRAD,GRDARR(1,1),CSTEP,
-     &        STPARR(1,1),WORK(KTEMP3),WORK(KTEMP4),ACTIVE,EMOD)
-         CALL DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,WORK(KEHESS),
-     &        WORK(KALHES),WORK(KTEMP1),THRIND,WORK(KEVEC),WORK(KTEMP2),
-     &        WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
+     &        STPARR(1,1),TEMP3,TEMP4,ACTIVE,EMOD)
+         CALL DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,
+     &        ALLHES,TEMP1,THRIND,EVEC,TEMP2,TEMP3,TEMP4,
+     &        WORK,LWORK)
       END IF
       GEINFO(0,1) = ENERGY
       GEINFO(0,3) = INDTOT*1.0D0
 C
 C     Write Hessian to file (for 1st order restarts).
 C
-      CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
-     &     WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
+      CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,TEMP1,
+     &     TEMP2,TEMP3,TEMP4,WORK,LWORK)
 C
 C     Determine step, check for convergence, print output and
 C     and update geometry.
 C
       IREJ = 0
+      call dealloc(WORK)
  755  CONTINUE
       IF (REDINT .OR. DELINT) THEN
-         CALL FNSTIN(MXRCRD,MX2CRD,NCRDHS,SCLVEC,HESINT,WORK(KEVEC),
-     &        WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),
-     &        WORK(KTEMP5),CSTEP,WILBMT,BMTRAN,WORK(KBMINV),GRDARR,
-     &        STPARR,ACTIVE,EMOD,VECMOD,WORK(KTEMP7))
+         CALL FNSTIN(MXRCRD,MX2CRD,NCRDHS,SCLVEC,HESINT,EVEC,
+     &        TEMP1,TEMP2,TEMP3,TEMP4,
+     &        TEMP5,CSTEP,WILBMT,BMTRAN,BMTINV,GRDARR,
+     &        STPARR,ACTIVE,EMOD,VECMOD,TEMP7)
       ELSE
-         CALL FNDSTP(MXRCRD,MX2CRD,NCRDHS,EGRAD,WORK(KEHESS),
-     &        WORK(KEVEC),WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &        WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
+         CALL FNDSTP(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,
+     &        EVEC,TEMP1,TEMP2,TEMP3,
+     &        TEMP4,TEMP5,CSTEP,GRDARR,STPARR,
      &        ACTIVE,EMOD,VECMOD)
       END IF
-      GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
+      GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,TEMP1,TEMP2)
 C
 C     If there has been a completely failed step, the geometry has
 C     by default not converged.
 C
       IF (ABS(GEINFO(0,6)) .GT. 1.0D-3) GECONV = .FALSE.
-      CALL PRIALL(CSTEP,WORK(KTEMP1))
+      CALL PRIALL(CSTEP,TEMP1)
 C
       NEWSTP = .FALSE.
 C
@@ -1632,9 +1610,8 @@ C     To allow reinitialization
 C
       INITHS = .FALSE.
 C
-      IF (.NOT. GECONV) CALL FNDGEO(CSTEP,EGRAD,WORK(KTEMP1),
-     &     WORK(KTEMP2),EXHER,EXSIR,EXABA,WORK(KWRK2),LWRK2,
-     &     IWOFF,WRKDLM,IREJ,GEINFO,NEWSTP)
+      IF (.NOT. GECONV) CALL FNDGEO(CSTEP,EGRAD,TEMP1,
+     &     TEMP2,EXHER,EXSIR,EXABA,IREJ,GEINFO,NEWSTP)
       IF (NEWSTP) GOTO 755
       GEINFO(0,2) = GRADNM
       GEINFO(0,4) = STPNRM
@@ -1649,8 +1626,8 @@ C
 C     Determine value of the various coordinates
 C
       IF (REDINT .AND. (IPRINT .GE. 1)) THEN
-         CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
-         CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
+         CALL ATMINI(TEMP1,IATOM,.TRUE.)
+         CALL GETINT(IATOM,MXRCRD,TEMP1,CRDINT)
          CALL HEADER('New internal coordinates',-1) 
          CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
          WRITE(LUPRI,*)
@@ -1672,21 +1649,19 @@ C         ITOTRJ = 0
 C
 C     Make VRML-file of next geometry if requested
 C
-      IF (VRML) CALL MKVRML(.TRUE.,WORK(KTEMP1),MXCOOR,WORK(KEVEC),
-     &        WORK(KTEMP2),WORK(KTEMP3))
+      IF (VRML) CALL MKVRML(.TRUE.,TEMP1,MXCOOR,EVEC,TEMP2,TEMP3)
 C
 C     Check if symmetry should be broken.
 C
       IF (BRKSYM .AND. (.NOT. NOBRKS)) THEN
          IF (REDINT .OR. DELINT) THEN
             CALL DOBRKI(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
-     &           WORK(KEVEC),WORK(KBMINV),CSTEP,WORK(KTEMP1),
-     &           WORK(KTEMP2),WORK(KTEMP3))
+     &           EVEC,BMTINV,CSTEP,TEMP1,TEMP2,TEMP3)
          ELSE
-!              stefan - nov 2011: the final argument WORK(KTEMP2) in the call does not exist 
+!              stefan - nov 2011: the final argument TEMP2 in the call does not exist 
 !                                 in the actual subroutine... - FIXME
             CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
-     &           WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
+     &           EVEC,CSTEP,TEMP1,TEMP2)
          END IF
 CChj aug 99: now new basis, reset hermit/abacus print
          IPRUSR = IPRUS1
@@ -1703,6 +1678,8 @@ C
 C     DO-WHILE loop that runs until geometry has converged or
 C     maximum number of iterations is reached.
 C
+      allocate(GRDMAT(25,MXRCRD))
+      allocate(STPMAT(25,MXRCRD))
  10   CONTINUE
       IF ((ITRNMR .LT. ITRMAX) .AND. (.NOT. GECONV)) THEN
          ITRNMR = ITRNMR + 1
@@ -1721,11 +1698,9 @@ C
 C     We go through the same procedure as for the first iteration.
 C
          IF (NEWTON) THEN
-            CALL GTHESS(EGRAD,WORK(KEHESS),WORK(KALHES),
-     &           EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,IWOFF,WRKDLM)
+            CALL GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA)
          ELSE
-            CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,
-     &           IWOFF,WRKDLM)
+            CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA)
          END IF
 C hj aug 99: reset hermit/abacus print to lower level for folloWing iter.
          IPRUSR = IPRUS2
@@ -1734,21 +1709,19 @@ C     If redundant internal coordinates are used, Wilson's B matrix,
 C     its derivative and its inverse must be updated.
 C
          IF (REDINT .OR. DELINT) THEN
-            CALL GETWIL(MXRCRD,MX2CRD,WORK(KTEMP1),WILBMT,
-     &           BMTRAN,WORK(KTEMP2))
-            CALL GETDWL(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &           WILBMT)
-            CALL GTBINV(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &           WORK(KTEMP4),WILBMT,BMTRAN,WORK(KBMINV),WORK(KPJINM))
+            CALL GETWIL(MXRCRD,MX2CRD,TEMP1,WILBMT,BMTRAN,TEMP2)
+            CALL GETDWL(MXRCRD,TEMP1,TEMP2,TEMP3,WILBMT)
+            CALL GTBINV(MXRCRD,TEMP1,TEMP2,TEMP3,TEMP4,WILBMT,BMTRAN,
+     &                  BMTINV,PJINMT)
          END IF
 C
 C     If new symmetry has been applied, coordinates has to counted
 C     again.
 C
+         call alloc(WORK,LWORK,id='WORK in RUNOPT2')
          IF (NWSYMM) THEN
             CALL CNTCRD
-            CALL MINCGH(EGRAD,WORK(KEHESS),WORK(KALHES),
-     &           WORK(KWRK2),LWRK2)
+            CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
             NWSYMM = .FALSE.
          END IF
          IF (REDINT .OR. DELINT) THEN
@@ -1760,83 +1733,78 @@ C
          IF (.NOT. NEWTON) THEN
             IF (REBILD) THEN
                CALL INIHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,HESOLD,
-     &              WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),
-     &              WILBMT,BMTRAN,WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
+     &              TEMP1,TEMP2,TEMP3,TEMP4,WILBMT,BMTRAN,BMTINV,
+     &              HESINT,WORK,LWORK)
                REBILD = .FALSE.
             ELSE
                CALL UPDHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,GRDMAT,STPMAT,
-     &              HESOLD,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &              WORK(KTEMP4),WORK(KTEMP5),WORK(KTEMP6),
-     &              WORK(KTEMP7),WORK(KTEMP8),WORK(KTEMP9),
-     &              WILBMT,BMTRAN,WORK(KBMINV),
+     &              HESOLD,TEMP1,TEMP2,TEMP3,TEMP4,TEMP5,TEMP6,
+     &              TEMP7,TEMP8,TEMP9,WILBMT,BMTRAN,BMTINV,
      &              HESINT,NINT(ABS(GEINFO(ITRNMR-1,6))),
-     &              NINT(ABS(GEINFO(ITRNMR,6))),WORK(KWRK2),LWRK2)
+     &              NINT(ABS(GEINFO(ITRNMR,6))),WORK,LWORK)
             END IF
-            CALL MINCGH(EGRAD,WORK(KEHESS),WORK(KALHES),
-     &           WORK(KWRK2),LWRK2)
+            CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
          END IF
+         call dealloc(WORK)
  33      CONTINUE
+         call alloc(WORK,LWORK,id='WORK in RUNOPT3')
          IF (REDINT .OR. DELINT) THEN
-            IF (NEWTON) CALL CGHINT(MXRCRD,MX2CRD,SCLVEC,WORK(KTEMP1),
-     &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KTEMP5),
-     &           WILBMT,WORK(KBMINV),BMTRAN,HESINT,WORK(KWRK2),LWRK2)
-            CALL PRJINT(MXRCRD,IINTCR,WORK(KPJINM),WORK(KCONMT),
-     &           HESINT,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &           WORK(KTEMP4),WORK(KWRK2),LWRK2)
+            IF (NEWTON) CALL CGHINT(MXRCRD,MX2CRD,SCLVEC,TEMP1,
+     &           TEMP2,TEMP3,TEMP4,TEMP5,WILBMT,BMTINV,BMTRAN,HESINT,
+     &           WORK,LWORK)
+            CALL PRJINT(MXRCRD,IINTCR,PJINMT,CONMAT,
+     &           HESINT,TEMP1,TEMP2,TEMP3,TEMP4,WORK,LWORK)
             IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &           CALL LINSRC(IINTCR,MXRCRD,GRDINT,GRDARR(1,1),
-     &           WORK(KTEMP7),STPARR(1,1),WORK(KTEMP3),WORK(KTEMP4),
-     &           ACTIVE,EMOD)
+     &           TEMP7,STPARR(1,1),TEMP3,TEMP4,ACTIVE,EMOD)
             IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS - 1
-            CALL DIAINT(MXRCRD,MX2CRD,NCRDHS,WORK(KEVEC),WORK(KTEMP1),
-     &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),THRIND,HESINT)
+            CALL DIAINT(MXRCRD,MX2CRD,NCRDHS,EVEC,TEMP1,
+     &           TEMP2,TEMP3,TEMP4,THRIND,HESINT)
             IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS + 1
          ELSE
-            CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
-     &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4))
+            CALL PROJGH(EGRAD,EHESS,ALLHES,TEMP1,TEMP2,TEMP3,TEMP4)
             IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &           CALL LINSRC(NCART,MXCOOR,EGRAD,GRDARR(1,1),CSTEP,
-     &           STPARR(1,1),WORK(KTEMP3),WORK(KTEMP4),ACTIVE,EMOD)
-            CALL DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,WORK(KEHESS),
-     &           WORK(KALHES),WORK(KTEMP1),THRIND,WORK(KEVEC),
-     &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),
-     &           WORK(KWRK2),LWRK2)
+     &           STPARR(1,1),TEMP3,TEMP4,ACTIVE,EMOD)
+            CALL DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,
+     &           ALLHES,TEMP1,THRIND,EVEC,TEMP2,TEMP3,TEMP4,
+     &           WORK,LWORK)
          END IF
 C
 C     Update information for this iteration
 C
          GEINFO(ITRNMR,1) = ENERGY
          GEINFO(ITRNMR,3) = INDTOT*1.0D0
-         CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,WORK(KTEMP1),
-     &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),WORK(KWRK2),LWRK2)
+         CALL PNCHES(MXRCRD,MX2CRD,HESINT,WILBMT,BMTRAN,TEMP1,
+     &        TEMP2,TEMP3,TEMP4,WORK,LWORK)
          IREJ = 0
+         call dealloc(WORK)
  756     CONTINUE
          IF (REDINT .OR. DELINT) THEN
-            CALL FNSTIN(MXRCRD,MX2CRD,NCRDHS,SCLVEC,HESINT,WORK(KEVEC),
-     &           WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),
-     &           WORK(KTEMP5),CSTEP,WILBMT,BMTRAN,WORK(KBMINV),GRDARR,
-     &           STPARR,ACTIVE,EMOD,VECMOD,WORK(KTEMP7))
+            CALL FNSTIN(MXRCRD,MX2CRD,NCRDHS,SCLVEC,HESINT,EVEC,
+     &           TEMP1,TEMP2,TEMP3,TEMP4,
+     &           TEMP5,CSTEP,WILBMT,BMTRAN,BMTINV,GRDARR,
+     &           STPARR,ACTIVE,EMOD,VECMOD,TEMP7)
          ELSE
-            CALL FNDSTP(MXRCRD,MX2CRD,NCRDHS,EGRAD,WORK(KEHESS),
-     &           WORK(KEVEC),WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &           WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
+            CALL FNDSTP(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,
+     &           EVEC,TEMP1,TEMP2,TEMP3,
+     &           TEMP4,TEMP5,CSTEP,GRDARR,STPARR,
      &           ACTIVE,EMOD,VECMOD)
          END IF
-         GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
+         GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,TEMP1,TEMP2)
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
-         CALL PRIALL(CSTEP,WORK(KTEMP1))
-         CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
+         CALL PRIALL(CSTEP,TEMP1)
+         CALL ATMINI(TEMP1,IATOM,.TRUE.)
          IF (REDINT .AND. (IPRINT .GE. 1)) THEN
-            CALL GETINT(IATOM,MXRCRD,WORK(KTEMP1),CRDINT)
+            CALL GETINT(IATOM,MXRCRD,TEMP1,CRDINT)
             CALL HEADER('New internal coordinates',-1) 
             CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
             WRITE(LUPRI,'(//)')
          END IF
          NEWSTP = .FALSE.
          IF ((.NOT. GECONV) .AND. ((.NOT. BRKSYM) .OR. NOBRKS))
-     &        CALL FNDGEO(CSTEP,EGRAD,WORK(KTEMP1),WORK(KTEMP2),EXHER,
-     &        EXSIR,EXABA,WORK(KWRK2),LWRK2,IWOFF,WRKDLM,IREJ,
-     &        GEINFO,NEWSTP)
+     &        CALL FNDGEO(CSTEP,EGRAD,TEMP1,TEMP2,EXHER,
+     &        EXSIR,EXABA,IREJ,GEINFO,NEWSTP)
          IF (NEWSTP) GOTO 756
          GEINFO(ITRNMR,2) = GRADNM
          GEINFO(ITRNMR,4) = STPNRM
@@ -1848,12 +1816,12 @@ C
          END IF
          ITOTRJ = ITOTRJ + ABS(IREJ)
          IF (REBILD) THEN
-            CALL DCOPY(IINTCR,STPINT,1,WORK(KTEMP7),1)
+            CALL DCOPY(IINTCR,STPINT,1,TEMP7,1)
             CALL DZERO(STPINT,MXRCRD)
             CALL DZERO(GRDOLD,MXRCRD)
             DO 605 I = 1, IREDIC
                DO 607 J = 1, IINTCR
-                  STPINT(I) = STPINT(I) + BMTRAN(I,J)*WORK(KTEMP7+J-1)
+                  STPINT(I) = STPINT(I) + BMTRAN(I,J)*TEMP7(J)
                   GRDOLD(I) = GRDOLD(I) + BMTRAN(I,J)*GRDINT(J)
  607           CONTINUE
  605        CONTINUE
@@ -1863,11 +1831,12 @@ C     If the step has failed
 C
          IF (IREJ .LT. 0) THEN
             IF (.NOT. NEWTON) THEN
+               call alloc(WORK,LWORK,id='WORK in RUNOPT4')
                CALL INIHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,HESOLD,
-     &              WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4),
-     &              WILBMT,BMTRAN,WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
-               CALL MINCGH(EGRAD,WORK(KEHESS),WORK(KALHES),
-     &              WORK(KWRK2),LWRK2)
+     &              TEMP1,TEMP2,TEMP3,TEMP4,WILBMT,BMTRAN,BMTINV,
+     &              HESINT,WORK,LWORK)
+               CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
+               call dealloc(WORK)
             END IF
             GOTO 33
 C         ELSE IF (REJINI .AND. REDINT .AND. (ITOTRJ .GE. 5)) THEN
@@ -1886,10 +1855,11 @@ C
             WRITE(LUPRI,*)
      &           'Due to rejected step, Hessian is reinitialized.'
             WRITE(LUPRI,*)
+            call alloc(WORK,LWORK,id='WORK in RUNOPT5')
             CALL INIHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,HESOLD,
-     &           WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
-     &           WORK(KTEMP4),WILBMT,BMTRAN,
-     &           WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
+     &           TEMP1,TEMP2,TEMP3,TEMP4,WILBMT,BMTRAN,
+     &           BMTINV,HESINT,WORK,LWORK)
+            call dealloc(WORK)
             TRSTRA = GEINFO(0,5)
             GEINFO(ITRNMR+1,5) = TRSTRA
             RSTARR = .TRUE.
@@ -1912,10 +1882,11 @@ C
             WRITE(LUPRI,*)'Due to increasing gradient norm, ' //
      &           'Hessian is reinitialized.'
             WRITE(LUPRI,*)
+            call alloc(WORK,LWORK,id='WORK in RUNOPT6')
             CALL INIHES(MXRCRD,MX2CRD,SCLVEC,GRDOLD,HESOLD,
-     &           WORK(KTEMP1),WORK(KTEMP2),
-     &           WORK(KTEMP3),WORK(KTEMP4),WILBMT,BMTRAN,
-     &           WORK(KBMINV),HESINT,WORK(KWRK2),LWRK2)
+     &           TEMP1,TEMP2,TEMP3,TEMP4,WILBMT,BMTRAN,
+     &           BMTINV,HESINT,WORK,LWORK)
+            call dealloc(WORK)
             TRSTRA = GEINFO(0,5)
             GEINFO(ITRNMR+1,5) = TRSTRA
          END IF
@@ -1925,13 +1896,12 @@ C
          IF (BRKSYM .AND. (.NOT. NOBRKS)) THEN
             IF (REDINT .OR. DELINT) THEN
                CALL DOBRKI(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
-     &              WORK(KEVEC),WORK(KBMINV),CSTEP,WORK(KTEMP1),
-     &              WORK(KTEMP2),WORK(KTEMP3))
+     &              EVEC,BMTINV,CSTEP,TEMP1,TEMP2,TEMP3)
             ELSE
-!              stefan - nov 2011: the final argument WORK(KTEMP2) in the call does not exist 
+!              stefan - nov 2011: the final argument TEMP2 in the call does not exist 
 !                                 in the actual subroutine... - FIXME
                CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
-     &              WORK(KEVEC),CSTEP,WORK(KTEMP1),WORK(KTEMP2))
+     &              EVEC,CSTEP,TEMP1,TEMP2)
             END IF
 Chj aug 99: now new basis, reset hermit/abacus print
             IPRUSR = IPRUS1
@@ -1948,8 +1918,7 @@ Chj aug 99: now new basis, reset hermit/abacus print
 C
 C     Make VRML-file of next geometry if requested
 C
-         IF (VRML) CALL MKVRML(.TRUE.,WORK(KTEMP1),MXCOOR,WORK(KEVEC),
-     &        WORK(KTEMP2),WORK(KTEMP3))
+         IF (VRML) CALL MKVRML(.TRUE.,TEMP1,MXCOOR,EVEC,TEMP2,TEMP3)
          GOTO 10
 C
 C     Finished case 1: Geometry has converged.
@@ -1958,53 +1927,18 @@ C
 C
 C     We check to see if there is any properties to be calculated
 C
-#ifndef PRG_DIRAC
-C
-         WORK(IWOFF+1) = WRKDLM
-         WRINDX = .TRUE.
-Chj aug 99: reset IPRUSR to original level
-         IPRUSR = IPRUS1
-         CALL ABAINP('**FINAL',WORK(IWOFF + 2),LWORK)
-         CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
-C
-C     We also check to see if we have requested a RESPONSE calculations
-C
-         CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
-     &               .FALSE.)
-         REWIND (LUCMD)
-C
-C     Let us first see if we can find any **RESPONS input
-C
- 133     CONTINUE
-         READ (LUCMD,'(A7)',END=134,ERR=134) WRDRSP
-         IF (WRDRSP .EQ. '**RESPO') THEN
-            REWIND (LUCMD)
-            RNRESP = .TRUE.
-            CALL SETSIR(WORK(IWOFF + 2),LWORK)
-            CALL GPCLOSE(LUSIFC,'KEEP')
-            CALL GPCLOSE(LUCMD,'KEEP')
-            CALL RSPDRV(WORK(IWOFF + 2),LWORK)
-         ELSE
-            GOTO 133
-         END IF
- 134     CONTINUE 
-         IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
-C
-#else /* PRG_DIRAC */
 C
 C        Do wave function analysis and properties
 C        at converged geometry.
 C
-         CALL MINANA(WORK(IWOFF+2),LWORK)
-         CALL MINPRP(WORK(IWOFF+2),LWORK)
-C
-#endif
+         call alloc(WORK,LWORK,id='WORK in RUNOPT7')
+         CALL MINANA(WORK,LWORK)
+         CALL MINPRP(WORK,LWORK)
+         call dealloc(WORK)
 C
 C     Single point energy is calculated if requested.
 C
-         WORK(IWOFF+1) = WRKDLM
-         IF (DOSPE) CALL SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,
-     &           LWORK,IWOFF,WRKDLM)
+         IF (DOSPE) CALL SPNRGY(GEINFO,EXHER,EXSIR,EXABA)
 C
 C     Final results are printed, partially through PRIINF.
 C
@@ -2016,8 +1950,10 @@ C
 #ifdef PRG_DIRAC
 C        Print angles, bondlengths etc out in human readable form
 C        (In Dalton GEOANA is called from somewhere else)
+         call alloc(WORK,LWORK,id='WORK in RUNOPT8')
          CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,.FALSE.,
-     &               WORK(IWOFF+2),LWORK)
+     &               WORK,LWORK)
+         call dealloc(WORK)
 C
 #endif
          WRITE(LUPRI,*)
@@ -2092,6 +2028,35 @@ C     No single point energy has been calculated.
      &                  'No single point energy has been calculated.'
          WRITE(LUPRI,*)
       END IF
+      deallocate(EGRAD)
+      deallocate(CSTEP)
+      deallocate(SCLVEC)
+      deallocate(GRDOLD)
+      deallocate(GRDMAT)
+      deallocate(STPMAT)
+      deallocate(HESOLD)
+      deallocate(GRDARR)
+      deallocate(STPARR)
+      deallocate(GEINFO)
+      deallocate(WILBMT)
+      deallocate(BMTRAN)
+      deallocate(HESINT)
+      deallocate(VECMOD)
+      deallocate(EHESS)
+      deallocate(ALLHES)
+      deallocate(BMTINV)
+      deallocate(PJINMT)
+      deallocate(EVEC)
+      deallocate(CONMAT)
+      deallocate(TEMP1)
+      deallocate(TEMP2)
+      deallocate(TEMP3)
+      deallocate(TEMP4)
+      deallocate(TEMP5)
+      deallocate(TEMP6)
+      deallocate(TEMP7)
+      deallocate(TEMP8)
+      deallocate(TEMP9)
       CALL QEXIT('RUNOPT')
       RETURN
       END
@@ -2312,7 +2277,7 @@ C
       END
 
 C  /* Deck gtnrgy */
-      SUBROUTINE GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTNRGY(EXHER,EXSIR,EXABA)
 C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
@@ -2344,85 +2309,12 @@ C
 #include "dgroup.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
-      DIMENSION WORK(LWORK)
       CALL QENTER('GTNRGY')
 C
-#ifndef PRG_DIRAC
-C
-      WORK(IWOFF+1) = WRKDLM
-      IF (.NOT. EXHER) THEN
-         CALL EXEHER(WORK,LWORK,IWOFF,WRKDLM)
-         EXHER = .TRUE.
-      END IF
-      NEWGEO = .TRUE.
-
-      IF (.NOT. EXSIR) THEN
-         CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
-         IF (DOCCSD) THEN
-            CALL EXECC(WORK,LWORK,IWOFF,WRKDLM)
-         ENDIF
-         EXSIR = .TRUE.
-      END IF
-      IF (FLAG(16)) THEN
-         WRITE (LUPRI,'(/A)') ' Solvent model not allowed with new'//
-     &        'optimization module. Use .WALK'
-         CALL QUIT('Solvent incompatible with .OPTIMIZE')
-      END IF
-      IF ((2.0D0*THRGRD) .GT. GRDTHR .AND. .NOT. CHGRDT) THEN
-         GRDTHR = 2.0D0*THRGRD
-         THRSTP = GRDTHR
-         THRERG = GRDTHR
-         THRSYM = SQRT(THRERG)
-         WRITE (LUPRI,'(/A)') ' WARNING>>>> Due to convergence '//
-     &        'thresholds for the wave function'
-         WRITE (LUPRI,'(A)') ' WARNING>>>> thresholds for convergence'
-     &        //' of geometry optimization has been reset'
-         WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
-     &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
-     &        'Energy change  ',THRERG
-      END IF
-ckr#ifdef nohjaug99
-C hjaaj aug99: no reason to update thresholds as it is
-C an equil. optimization in the geometry although excited in MCSCF
-C
-C     Well, en excited electronic state cannot necessarily be expected to be 
-C     as quadratic as the ground state, and thus we should not walk to far 
-C     away. This is necessary for instance to get test15 through....
-C
-      IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
-         WRITE (LUPRI,'(/A)') ' WARNING>>>> As this is an excited '//
-     &        'optimization I have updated some thresholds'
-         IF (TRSTRA .EQ. 0.50D0) TRSTRA = 0.25D0
-         IF (TRSTIN .EQ. 1.20D0) TRSTIN = 1.0D0
-         IF (RTENBD .EQ. 0.4D0) RTENBD = 0.85D0
-         IF (RTRJMN .EQ. 0.1D0) RTRJMN = 0.80D0
-         IF (RTENGD .EQ. 0.80D0) RTENGD = 0.90D0
-         IF (RTRJMX .EQ. 3.0D0) RTRJMX = 1.20D0
-         WRITE(LUPRI,'(/A/A/,(A,F10.4))')
-     &        ' Restricted step control parameters',
-     &        ' ----------------------------------',
-     &        ' Initial trust radius   :',TRSTRA,
-     &        ' Trust radius increment :',TRSTIN,
-     &        ' Trust radius decrement :',TRSTDE,
-     &        ' Bad prediction ratio   :',RTENBD,
-     &        ' Good prediction ratio  :',RTENGD,
-     &        ' Rejection ratio, low   :',RTRJMN,
-     &        ' Rejection ratio, high  :',RTRJMX
-      END IF
-ckr#endif
-      IF ((DOMP2 .AND. .NOT. DOMC) .OR. DOCCSD .OR. ((DOCI .OR. DOCINO)
-     &    .AND. .NOT. DOMC)) THEN
-         ENERGY = ECORR
-      ELSE
-         ENERGY = EMCSCF
-      END IF
-#else /* PRG_DIRAC */
-
       if (dirac_cfg_dft_calculation) then
 !        get a new grid at new geometry
          call reset_num_grid()
       end if
-
 #ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
 ! Quit if symmetry or X2C are requested.
@@ -2440,7 +2332,6 @@ ckr#endif
         write(lupri, '(//A/)'), 'PCMSolver correctly re-initialized.'
       end if
 #endif      
-
 C
 C     Geometry optimization for Dirac
 C
@@ -2497,19 +2388,18 @@ C
      &        'Energy change  ',THRERG
       END IF
 C
-#endif /* PRG_DIRAC */
       CALL QEXIT('GTNRGY')
       RETURN
       END
 
 C  /* Deck gtgrad */
-      SUBROUTINE GTGRAD(EGRAD,EXHER,EXSIR,EXABA,
-     &                             WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTGRAD(EGRAD,EXHER,EXSIR,EXABA)
 C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
 #ifdef PRG_DIRAC
+      use memory_allocator
       use dirac_cfg
 #endif
 #include "implicit.h"
@@ -2538,56 +2428,37 @@ CTROND#include "pario.h"
 #include "dcbpsi.h"
 #endif
       LOGICAL EXHER, EXSIR, EXABA
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:),CSTRA(:,:),SCTRA(:,:)
       DIMENSION EGRAD(MXCOOR)
       CALL QENTER('GTGRAD')
-      WORK(IWOFF+1) = WRKDLM
       CALL DZERO(EGRAD,MXCOOR)
-      CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
-C
-#ifdef PRG_DIRAC
+      CALL GTNRGY(EXHER,EXSIR,EXABA)
 C
 C     Calculate gradient
 C
       IF(DONGRD) THEN
-         CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+         CALL NUMGRD()
       ELSE
-         CALL RMOLGRD(WORK(IWOFF+1),LWORK)
+         call legacy_lwork_get(LWORK)
+         call alloc(WORK,LWORK,id='WORK in GTGRAD')
+         CALL RMOLGRD(WORK,LWORK)
+         call dealloc(WORK)
       ENDIF
 C
       EXABA = .TRUE.
 C
-#else /* PRG_DIRAC */
-C
-C     Let's see if this is a wave function we know, if not: Do it numerically
-C
-      IF ((DOMP2 .AND. .NOT. DOMC) .OR. DOCCSD .OR. ((DOCI .OR. DOCINO)
-     &    .AND. .NOT. DOMC)) THEN
-         CALL NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
-      ELSE
-         WRINDX = .TRUE.
-         MOLGRD = .TRUE.
-         IF (HFPROP) HELFEY = .TRUE.
-         IF (ITRNMR .EQ. 0) THEN
-            CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
-         ELSE
-            CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
-         END IF
-         CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
-         EXABA = .TRUE.
-         MOLGRD = .FALSE.
-         HELFEY = .FALSE.
-      END IF
-#endif /* PRG_DIRAC */
-      CALL TRAGRD(GRDMOL,EGRAD,WORK(IWOFF + 2),
-     &            WORK(IWOFF + MXCOOR*MXCOOR + 2),NCRREP(0,1),3*NUCDEP)
+      NCOOR=3*NUCDEP
+      allocate(CSTRA(NCOOR,NCOOR))
+      allocate(SCTRA(NCOOR,NCOOR))
+      CALL TRAGRD(GRDMOL,EGRAD,CSTRA,SCTRA,NCRREP(0,1),NCOOR)
+      deallocate(CSTRA)
+      deallocate(SCTRA)
       CALL QEXIT('GTGRAD')
       RETURN
       END
 
 C  /* Deck gthess */
-      SUBROUTINE GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA,
-     &                                 WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA)
 C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
@@ -2605,40 +2476,10 @@ C
 #include "trkoor.h"
 #include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA
-      DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
       CALL QENTER('GTHESS')
-#ifdef PRG_DIRAC
       CALL QUIT('GTHESS not implemented')
-#else
-      WORK(IWOFF+1) = WRKDLM
-      CALL DZERO(EGRAD,MXCOOR)
-      CALL DZERO(EHESS,MXCOOR*MXCOOR)
-      CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
-      CLOSE (13)
-      WRINDX = .TRUE.
-      MOLGRD = .TRUE.
-      MOLHES = .TRUE.
-      IF (HFPROP) HELFEY = .TRUE.
-      IF (ITRNMR .EQ. 0) THEN
-         CALL ABAINP('**START',WORK(IWOFF + 2),LWORK)
-      ELSE
-         CALL ABAINP('**PROPE',WORK(IWOFF + 2),LWORK)
-      END IF
-      CALL EXEABA(WORK,LWORK,IWOFF,WRKDLM)
-      EXABA = .TRUE.
-      START = .FALSE.
-      MOLGRD = .FALSE.
-      MOLHES = .FALSE.
-      HELFEY = .FALSE.
-C
-C     For all iterations except the first, MINCGH is run here.
-C
-      IF ((ITRNMR .GT. 0) .AND. (.NOT. NWSYMM)) THEN
-         CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
-      END IF
-#endif /* PRG_DIRAC */
       CALL QEXIT('GTHESS')
       RETURN
       END
@@ -6206,7 +6047,7 @@ C
       
 C  /* Deck fndgeo */
       SUBROUTINE FNDGEO(CSTEP,EGRAD,COONEW,COOOLD,EXHER,EXSIR,EXABA,
-     &     WORK,LWORK,IWOFF,WRKDLM,IREJ,GEINFO,NEWSTP)
+     &     IREJ,GEINFO,NEWSTP)
 C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
@@ -6224,7 +6065,6 @@ C
 #include "priunit.h"
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT)
-      DIMENSION WORK(LWORK)
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER*10 FILENM
       LOGICAL EXHER,EXSIR,EXABA,REJGEO,NEWSTP
@@ -6266,14 +6106,10 @@ C
          CALL PNCXYZ(COONEW)
          CALL PNCMOL
 C
-C     Memory trap has to be reinitialized.
-C
-         WORK(IWOFF+1) = WRKDLM
-C
 C     Calculate energy at new geometry, which is compared to predicted
 C     energy(change) in UPTRAD.
 C
-         CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+         CALL GTNRGY(EXHER,EXSIR,EXABA)
          IF (IREJ .EQ. 0) THEN
             CALL UPTRAD(REJGEO)
             IF (.NOT. REJGEO) THEN
@@ -6738,7 +6574,8 @@ C
       END
 
 C  /* Deck inipre */
-      SUBROUTINE INIPRE(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE INIPRE
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6753,7 +6590,9 @@ C  /* Deck inipre */
 #endif
 #include "inftap.h"
       CHARACTER TMPLIN*80
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
+      call legacy_lwork_get(LWORK)
+      call alloc(WORK,LWORK,id='WORK in INIPRE')
 C
 C     When preoptimization is scheduled, we have to change the basis set.
 C     HERINP has to be run before we can do the first change.
@@ -6761,7 +6600,6 @@ C
       CALL GPOPEN(LUONEL,'AOONEINT',' ',' ',' ',IDUMMY,.FALSE.)
       CALL HERINP(WORK,LWORK)
       CALL GPCLOSE(LUONEL,'KEEP')
-      WORK(IWOFF+1) = WRKDLM
 C
 C     Basis set library has to be used for preoptimization to work
 C
@@ -6788,17 +6626,18 @@ C
 C     Make VRML-file of initial geometry if requested
 C
       IF (VRML) THEN
-         KATARR = IWOFF  + 2
+         KATARR = 1
          KEVEC  = KATARR + 8*MXCENT
          KEVC1  = KEVEC  + MXCOOR*MXCOOR
          KEVC2  = KEVC1  + MXCOOR
          KWRK   = KEVC2  + MXCOOR
-         LWRK = LWORK  - (KWRK - IWOFF) + 1
-         IF (KWRK-IWOFF .GT. LWORK) CALL STOPIT('INIPRE',' ',KWRK,LWORK)
+         LWRK = LWORK  - KWRK + 1
+         IF (KWRK .GT. LWORK) CALL STOPIT('INIPRE',' ',KWRK,LWORK)
          CALL MKVRML(.FALSE.,WORK(KATARR),MXCOOR,WORK(KEVEC),
      &        WORK(KEVC1),WORK(KEVC2))
 
       END IF
+      call dealloc(WORK)
       RETURN
       END
 
@@ -7048,8 +6887,7 @@ C
       END
 
 C  /* Deck spnrgy */
-      SUBROUTINE SPNRGY(GEINFO,EXHER,EXSIR,EXABA,WORK,LWORK,
-     &                                                IWOFF,WRKDLM)
+      SUBROUTINE SPNRGY(GEINFO,EXHER,EXSIR,EXABA)
 C
 C     Calculates single point energy with another basis if requested.
 C
@@ -7065,7 +6903,6 @@ C
 #endif
       DIMENSION GEINFO(0:ITRMAX,6)
       LOGICAL EXHER,EXSIR,EXABA,REJGEO
-      DIMENSION WORK(LWORK)
       EXHER  = .FALSE.
       EXSIR  = .FALSE.
       EXABA  = .FALSE.
@@ -7079,12 +6916,8 @@ C     has to be decreased first in order to write to the correct filename.
 C
       CALL PNCMOL
 C
-C     Initialization of new memory trap for programs.
-C
-      WORK(IWOFF+1) = WRKDLM
-C
       NEWSYM = .TRUE.
-      CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+      CALL GTNRGY(EXHER,EXSIR,EXABA)
       GEINFO(ITRNMR+1,1) = ENERGY
       RETURN
       END
@@ -7583,7 +7416,7 @@ C
       RETURN
       END
 C  /* Deck numgrd */
-      SUBROUTINE NUMGRD(WORK,LWORK,IWOFF,WRKDLM)
+      SUBROUTINE NUMGRD
 C
 C     Performs a numerical differentiation in order to get an 
 C     finite-difference molecular gradient for use in geometry optimization
@@ -7611,7 +7444,6 @@ C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
       LOGICAL EXHER, EXSIR, EXABA, BIG, ex
       CHARACTER*4 NAME
-      DIMENSION WORK(LWORK), COOR(3,MXCENT)
 C
 #include "molinp.h"
 #include "taymol.h"
@@ -7627,6 +7459,8 @@ C
 #else
 #include "gnrinf.h"
 #endif
+      real(8), allocatable :: STPSYM1(:),STPCAR1(:)
+      real(8), allocatable :: COOR(:,:)
 C
 #ifdef PRG_DIRAC
       IF (DOCCM) THEN
@@ -7642,9 +7476,9 @@ C
       ESTART = ECORR
       NCART  = NCRREP(0,1)
       NCRIND = 3*NUCIND
-      KSTPSY = IWOFF + 2
-      KSTPCA = KSTPSY + NCART
-      KLAST  = KSTPCA + NCRIND
+      allocate(STPSYM1(NCART))
+      allocate(STPCAR1(NCRIND))
+      allocate(COOR(3,NUCIND))
       IPRINT = 0
       IF (.NOT. CHGRDT) THEN
          GRDTHR = 1.0D-4
@@ -7686,7 +7520,7 @@ C
      &                   - SCLFCK*(ECORR - ESTART)/DISPLA)
             END IF
          END IF
-         CALL WLKINC(WORK(KSTPSY),WORK(KSTPCA),COOR,DISPLA,NCART,
+         CALL WLKINC(STPSYM1,STPCAR1,COOR,DISPLA,NCART,
      &               NCRIND,IPOINT,IPRINT)
 C
 C     Update geometry in common block
@@ -7735,7 +7569,7 @@ C
          EXSIR = .FALSE.
          EXABA = .FALSE.
          RDINPC = .FALSE.
-         CALL GTNRGY(EXHER,EXSIR,EXABA,WORK,LWORK,IWOFF,WRKDLM)
+         CALL GTNRGY(EXHER,EXSIR,EXABA)
 #ifdef PRG_DIRAC
          IF (DOCCM) THEN
             ECORR = RGETCCSD()
@@ -7762,6 +7596,10 @@ C
  9200 FORMAT (A4,3F20.10,7X,A1)
  9300 FORMAT (A4,3F20.16,7X,A1)
 C
+CTROND      deallocate(STPSYM)
+CTROND      deallocate(STPCAR)
+      deallocate(COOR)
+
       RETURN
       END
 

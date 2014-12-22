@@ -2156,7 +2156,7 @@ C     calculations run the "URKBAL" branch as only
 C     Lowdin canonical matrix is needed. It's assumed that small
 C     components were eliminated in HERINP.
 C
-C     Called from: PSIDHF (when BSS2DC or DC2BSS mode is activated)
+C     Called from: PSISCF (when BSS2DC or DC2BSS mode is activated)
 C                  PAMSET (at the begining of the DIRAC run, and second time
 C                          when pure two-comp. scheme+BSS is wished)
 C
