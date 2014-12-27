@@ -26,14 +26,14 @@ shutil.copy('DFACMO', 'AFH1XX')
 test.run(['C.inp'], ['C.mol'], args='--get=DFACMO')
 shutil.copy('DFACMO', 'AFCXXX')
 
-test.run(['CH4.inp'], ['CH4.xyz'], f, args='--outcmo --get=DFACMO --copy="AF*"')
+test.run(['CH4.inp'], ['CH4.xyz'], f, args='--mw=330 --outcmo --get=DFACMO --copy="AF*"')
 
 f = Filter()
 f.add(from_string = '* Total gross contributions',
       num_lines   = 7,
       rel_tolerance   = 1.0e-4)
 
-test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--incmo --copy="AF*"')
+test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--mw=300 --incmo --copy="AF*"')
 
 shutil.copy('AFH1XX', 'AFH2XX')
 shutil.copy('AFH1XX', 'AFH3XX')
