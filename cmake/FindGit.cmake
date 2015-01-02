@@ -24,15 +24,6 @@
 #
 set(git_names git eg)
 
-# Prefer .cmd variants on Windows unless running in a Makefile
-# in the MSYS shell.
-#
-if(WIN32)
-  if(NOT CMAKE_GENERATOR MATCHES "MSYS")
-    set(git_names git.cmd git eg.cmd eg)
-  endif()
-endif()
-
 find_program(GIT_EXECUTABLE
   NAMES ${git_names}
   DOC "git command line client"
