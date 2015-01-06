@@ -20,6 +20,11 @@
 # (To distributed this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
+###########################################################################
+# Notes: some old CMake releases do not contain FindGit.cmake module
+# We do not want to prefer git.cmd on Windows - we just want git.exe (git)
+###########################################################################
+
 # Look for 'git' or 'eg' (easy git)
 #
 set(git_names git eg)
