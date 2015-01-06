@@ -72,10 +72,6 @@ http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
 Prepare your own pair of SSH keys - private and public. You can generate them
 with the PuTTyGen generator which writes private key in wanted ppk-format.
 
-Since the Git program runs under Windows, ensure that during Git installation the %PATH% system variable in not modified !
-Due to this issue you have to type the full path for running "git.exe" in the DOS-window. We propose to install
-the Git package directly on the "C:" disk drive so that you have to type the shortest path for launching it, *"C:\\Git\\bin\\git.exe"*.
-
 For dowloading/uploading from/to the DIRAC repository you have to have the *PuTTy "Pageant"* authentication agent 
 active with loaded private key, while the public key has to be placed in the DIRAC git repository user space.
 Pageant can be activated during the Windows startup, for example, 
@@ -87,7 +83,7 @@ The *"pageant"* agent, running in the background, also enables passwordless term
 onto server which are provided with users's public key. 
   
 For communication with the DIRAC repository activate the PuTTy's *"plink.exe"* executable through the "GIT_SSH" 
-system environmental variable. Its typical value is ::
+system environment variable. Its typical value is ::
 
  GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
 
@@ -95,7 +91,7 @@ assuming that the PuTTy package is placed in the default installation space: ::
 
   C:\Program Files (x86).
 
-Also, before using *"C:\\Git\\bin\\git.exe"* refresh your private key in your computer's cache, use ::
+Also, before using *"git"* refresh your private key in your computer's cache, use ::
 
   plink -agent git@repo.ctcc.no
   plink -agent git@bitbucket.org
@@ -103,11 +99,11 @@ Also, before using *"C:\\Git\\bin\\git.exe"* refresh your private key in your co
 For comfortable commits with the git version control system you should set up the editor.
 For the popular *Notepad++* editor setting for git `follow  <http://stackoverflow.com/questions/10564/how-can-i-set-up-an-editor-to-work-with-git-on-windows>`_ :  ::
 
- C:\Git\bin\git.exe config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
+ git config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"
 
-To update your local DIRAC source (must have the ssh connection enabled, see above), you must use full path of git command in the DOS window:  ::
+To update your local DIRAC source (must have the ssh connection enabled, see above):  ::
 
- C:\Users\<username>\Documents\Work\Dirac_git\trunk>C:\Git\bin\git.exe pull
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk>git pull
 
 Do not configure DIRAC in the Linux-like  "git-bash" window, which is part of common Git installation.
 Executing cmake configuration commands in this windows causes unhomogenous treatment of path-strings: mixing
@@ -161,6 +157,7 @@ Perform the complete CDash buildup in one step: ::
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>mingw32-make Experimental
 
 or ::
+
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -D Experimental
 
 You can perform the CDash buildup in separate steps:  ::
