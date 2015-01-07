@@ -1713,6 +1713,10 @@ C    PBS+MI/Aug2014
                GOTO 100
  56            CONTINUE
 C&&& AD HOC: extended Huckel based on atomic fragments
+               IF(NBSYM.GT.1) THEN
+                 CALL QUIT('Extended Huckel start '//
+     &          'does not work with symmetry yet.')
+               ENDIF
                ATHUCK = .TRUE.
                BNCRON = .FALSE.
                BARNUC=.FALSE.
