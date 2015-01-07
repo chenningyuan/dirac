@@ -166,7 +166,10 @@ C
 #if defined (SYS_IBM)
       CHARACTER CDATE*8,CTIME*8,DAOFWK*9
 #endif
-#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX) || defined (SYS_WINDOWS)
+#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) \
+   ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) \
+   || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) \
+   || defined (SYS_LINUX) || defined (SYS_WINDOWS)
       CHARACTER*(24) FDATE
       CHARACTER*(40) HSTNAM
 #endif
@@ -207,29 +210,29 @@ C
 #if defined (SYS_WINDOWS)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Windows): ',FDATE()
 #endif
-#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX) || defined (SYS_WINDOWS)
+#if defined (SYS_AIX)
+      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',FDATE()
+#endif
+#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
+   || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) \
+   || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX) \
+   || defined (SYS_WINDOWS) || defined (SYS_AIX)
 #ifndef VAR_EKO
-C
-C     CALL HOSTNM(HSTNAM)
-C
+C     first try to get hostname from environment variable
       CALL GETENV('HOSTNAME',HSTNAM)
+C     if it is not defined try to get hostname using intrinsic 
+      if (HSTNAM=="") CALL HOSTNM(HSTNAM)
+C     if it is empty then hostname is not found
       if (HSTNAM=="") HSTNAM="not found"
+C     930414-hjaaj: apparent error IBM's xlf library routines:
+C     when 'T6' then column 1-5 not blanked but contains text
+C     from a previous print statement!
+#if defined (SYS_AIX)
+      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
+#else
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #endif
-#if defined (SYS_AIX)
-!C 930414-hjaaj: apparent error IBM's xlf library routines:
-!C    when 'T6' then column 1-5 not blanked but contains text
-!C    from a previous print statement!
-!C     AIX XL FORTRAN version 2.3+
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
-C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
-C     CALL hostnm_(HSTNAM)
-      CALL hostnm(HSTNAM)
-      if (HSTNAM=="") HSTNAM="not found"
-      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
-C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
-C
       RETURN
       END
