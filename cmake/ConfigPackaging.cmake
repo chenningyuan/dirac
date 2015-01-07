@@ -113,6 +113,8 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${CMAKE_SOURCE_DIR}/atomic-start-x2c-pam         ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/cmake                        ${EXPORT_DIR}
         COMMAND cp -r  ${CMAKE_SOURCE_DIR}/external                     ${EXPORT_DIR}
+        COMMAND rm -f  ${EXPORT_DIR}/external/pcmsolver/.git  # prevens "git init; git add ." inside tarball
+        COMMAND rm -f  ${EXPORT_DIR}/external/unit-tests/.git # prevens "git init; git add ." inside tarball
         COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
         COMMAND cp -rL ${CMAKE_SOURCE_DIR}/doc                          ${EXPORT_DIR}
         COMMAND cp     ${CMAKE_SOURCE_DIR}/pam.in                       ${EXPORT_DIR}
