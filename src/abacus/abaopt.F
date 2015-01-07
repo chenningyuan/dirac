@@ -2329,7 +2329,7 @@ C
 ! First finalize
         call pcm_scf_finalize
         call pcm_scf_initialize(lupri)
-        write(lupri, '(//A/)'), 'PCMSolver correctly re-initialized.'
+        write(lupri, '(//A/)') 'PCMSolver correctly re-initialized.'
       end if
 #endif      
 C

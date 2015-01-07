@@ -301,8 +301,8 @@ module pcm_scf
           end do
         end if
 ! Print timings
-        write(global_print_unit, '(a, f10.8, a)'), "* MEP evaluation (CPU): ", finish_mep-start_mep, "s"
-        write(global_print_unit, '(a, f10.8, a)'), "* ASC evaluation (CPU): ", finish_asc-start_asc, "s"
+        write(global_print_unit, '(a, f10.8, a)') "* MEP evaluation (CPU): ", finish_mep-start_mep, "s"
+        write(global_print_unit, '(a, f10.8, a)') "* ASC evaluation (CPU): ", finish_asc-start_asc, "s"
 
 ! Write to file MEP and ASC
         call pcm_write_file(nr_points, mep, asc)
@@ -329,8 +329,8 @@ module pcm_scf
         call get_surface_function(nr_points, nuc_pol_chg, chgName1)
         finish_asc = timing()
 ! Print timings
-        write(global_print_unit, '(a, f10.8, a)'), "* NucMEP evaluation (CPU): ", finish_mep-start_mep, "s"
-        write(global_print_unit, '(a, f10.8, a)'), "* NucASC evaluation (CPU): ", finish_asc-start_asc, "s"
+        write(global_print_unit, '(a, f10.8, a)') "* NucMEP evaluation (CPU): ", finish_mep-start_mep, "s"
+        write(global_print_unit, '(a, f10.8, a)') "* NucASC evaluation (CPU): ", finish_asc-start_asc, "s"
 ! Reset timing variables        
         start_mep = 0.0d0
         finish_mep = 0.0d0
@@ -350,8 +350,8 @@ module pcm_scf
         call get_surface_function(nr_points, ele_pol_chg, chgName2)
         finish_asc = timing()
 ! Print timings
-        write(global_print_unit, '(a, f10.8, a)'), "* EleMEP evaluation (CPU): ", finish_mep-start_mep, "s"
-        write(global_print_unit, '(a, f10.8, a)'), "* EleASC evaluation (CPU): ", finish_asc-start_asc, "s"
+        write(global_print_unit, '(a, f10.8, a)') "* EleMEP evaluation (CPU): ", finish_mep-start_mep, "s"
+        write(global_print_unit, '(a, f10.8, a)') "* EleASC evaluation (CPU): ", finish_asc-start_asc, "s"
 
 ! Print some information
         if (pcmmod_print > 5) then
