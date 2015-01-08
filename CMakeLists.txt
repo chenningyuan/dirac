@@ -382,8 +382,10 @@ foreach(
 
 endforeach()
 
-#miro: add stdc++ library at the very end to satisfy PGI compilers
-list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
+if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+    # add stdc++ library at the very end to satisfy PGI compilers
+    list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
+endif()
 
 # give a nice message at the end
 include(Motivation)
