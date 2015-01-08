@@ -398,9 +398,8 @@ endif()
 add_dependencies(final ${_list_of_all_targets})
 unset(_list_of_all_targets)
 
-#enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
-if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
+if(ENABLE_HSCC)
+    set_property(TARGET hsmrcc.x PROPERTY LINKER_LANGUAGE C)
 endif()
 
 include(ConfigTesting)
