@@ -2800,11 +2800,10 @@ C
 C
 C     Determine NORBSH()
 C
-      DO 300 I = 1, MAXSHL
-         NORBSH(I) = 0
-         DO 310 J = 1, KMAX
-            IF (IPTSHL(J) .EQ. I) NORBSH(I) = NORBSH(I) + 1
-  310    CONTINUE
+      CALL IZERO(NORBSH,MAXSHL)
+      DO 300 J = 1, KMAX
+        ISHL = IPTSHL(J)
+        NORBSH(ISHL) = NORBSH(ISHL) + 1
   300 CONTINUE
 C
 C     Determine and NSTRSH()
