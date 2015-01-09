@@ -158,10 +158,22 @@ Print debug information.
 
 Covers options related to energy.
 
-.NOCCSDT
-~~~~~~~~
+.NOMP2
+~~~~~~
+Deactivate MP2 calculation.
 
-Deacivate the  calculation of perturbative triple corrections. This is potentially
+.NOSD
+~~~~~
+Deactivate CCSD calculation.
+
+.NODOUB
+~~~~~~~
+Deactivate contribution from doubles; corresponds to a CCS calculation.
+
+.NOSDT
+~~~~~~
+
+Deactivate the calculation of perturbative triples. This is potentially
 useful when running into memory problems for very big calculations and will also
 save some CPU time.
 

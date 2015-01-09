@@ -45,10 +45,10 @@ elif '@CMAKE_BUILD_TYPE@' == 'profile':
     
 s.append(['Definitions'        , r'@_list_of_definitions@'  ])
 
-s.append(['BLAS'               , r'@BLAS_LIBRARIES@'        ])
-s.append(['LAPACK'             , r'@LAPACK_LIBRARIES@'      ])
+s.append(['BLAS'               , r'@BLAS_LIBRARIES@@BLAS_LIBRARIES_INFO@'    ])
+s.append(['LAPACK'             , r'@LAPACK_LIBRARIES@@LAPACK_LIBRARIES_INFO@'])
 s.append(['Libraries'          , r'@EXTERNAL_LIBS@'         ])
-s.append(['Explicit libs'      , r'@EXPLICIT_LIBS@'         ])
+s.append(['Explicit libs'      , r'@EXPLICIT_LIBS@@EXPLICIT_LIBS_INFO@'      ])
 s.append(['Static linking'     , r'@ENABLE_STATIC_LINKING@' ])
 s.append(['Git branch'         , r'@GIT_BRANCH@'            ])
 s.append(['Last Git revision'  , r'@GIT_REVISION@'          ])
