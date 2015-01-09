@@ -32,6 +32,16 @@ Example (line connecting two points; 200 steps; coordinates in bohr)::
    0.0 0.0 5.0
    200
 
+Scalar and vector densities are written to files ``plot.line.scalar`` and ``plot.line.vector``, respectively, 
+and should be saved after calculation, e.g. ::
+
+   pam --get=plot.line.scalar ...
+
+The first three columns of the output files gives the coordinates (x, y, z) of the point. 
+It is then followed by one/three columns giving the value of the scalar/vector density in that point.
+
+
+
 
 keyword(2D)
 
@@ -226,6 +236,12 @@ Example (neon atom)::
    2
    1 1-2 1.0
    2 1-3 1.0
+
+The first line after the keyword gives the number of subsequent lines to read.
+In each line, the first number is the fermion ircop. In molecules with inversion symmetry 
+there are two fermion ircops: gerade (1) and ungerade (2). Otherwise there is a single fermion ircop (1).
+The specification of the fermion ircop is followed by the range of selected orbitals and their occupation.
+If a single orbital is specified a single number is given instead of the range.
 
 Another example (water)::
 
