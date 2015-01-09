@@ -698,12 +698,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#ifdef SYS_AIX
-      ! radovan: otherwise mod() type does not match
-      INTEGER   IA, IB, ID
-#else
       INTEGER*8 IA, IB, ID
-#endif
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -720,14 +715,14 @@ C
          JRRP = 0
          ID=IA
          DO I=1,NASHT
-            IF (MOD(ID,2).EQ.1) THEN
+            IF (MOD(ID,2_8).EQ.1) THEN
                JRRP = MULTB(IRPAMO(IPTA2O(I)),JRRP)
             ENDIF
             ID=ID/2
          END DO
          ID=IB
          DO I=1,NASHT
-            IF (MOD(ID,2).EQ.1) THEN
+            IF (MOD(ID,2_8).EQ.1) THEN
                JRRP = MULTB(IRPAMO(IPTB2O(I)),JRRP)
             ENDIF
             ID=ID/2
@@ -742,14 +737,14 @@ C
          JRRP = 0
          ID = IA
          DO I = 1, NASHT
-            IF ( MOD(ID,2) .EQ. 1) THEN
+            IF ( MOD(ID,2_8) .EQ. 1) THEN
                JRRP = IEOR(IRPAMO(IPTA2O(I)),JRRP)
             END IF
             ID = ID / 2
          END DO
          ID = IB
          DO I = 1, NASHT
-            IF ( MOD(ID,2) .EQ. 1) THEN
+            IF ( MOD(ID,2_8) .EQ. 1) THEN
                JRRP = IEOR(IRPAMO(IPTB2O(I)),JRRP)
             END IF
             ID = ID / 2

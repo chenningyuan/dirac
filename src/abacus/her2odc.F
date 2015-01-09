@@ -560,6 +560,7 @@ C
          END IF
          DO 200 ISET2 = 1, JEND2
             ISTR2 = JSTR2(ISET2) + 1
+            IEND2 = JSTR2(ISET2) + NPCO2(ISET2,1)
             IORB2 = - NPCO2(ISET2,2)
 C
 C           Run over primitives
@@ -572,7 +573,7 @@ C
                CRX1 = PRICRX(IPRIM1)
                CRY1 = PRICRY(IPRIM1)
                CRZ1 = PRICRZ(IPRIM1)
-               DO 400 IPRIM2 = ISTR2, JSTR2(ISET2) + NPCO2(ISET2,1)
+               DO 400 IPRIM2 = ISTR2, IEND2
                   CCF2  = PRICCF(IPRIM2,IORB2)
                   EXP2  = PRIEXP(IPRIM2)
                   CRX20 = PRICRX(IPRIM2)

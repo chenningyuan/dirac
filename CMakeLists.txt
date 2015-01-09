@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-# suppress Windows warning about policy
-cmake_policy(SET CMP0010 OLD)
-
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
@@ -19,9 +16,7 @@ option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"        
 option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF)
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
-option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMSOLVER       "Enable Polarizable Continuum Model through PCMSolver"      ON)
-option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
@@ -341,9 +336,6 @@ if(ENABLE_UTILITIES)
     if(ENABLE_RELCCSD_STANDALONE)
         compile_standalone(relccsd.x src/relccsd/ccmain.F "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_SECQUANT)
-        compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
-    endif()
     if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
         compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
@@ -390,8 +382,10 @@ foreach(
 
 endforeach()
 
-#miro: add stdc++ library at the very end to satisfy PGI compilers
-list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
+if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+    # add stdc++ library at the very end to satisfy PGI compilers
+    list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
+endif()
 
 # give a nice message at the end
 include(Motivation)
@@ -404,9 +398,8 @@ endif()
 add_dependencies(final ${_list_of_all_targets})
 unset(_list_of_all_targets)
 
-#enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
-if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
+if(ENABLE_HSCC)
+    set_property(TARGET hsmrcc.x PROPERTY LINKER_LANGUAGE C)
 endif()
 
 include(ConfigTesting)
