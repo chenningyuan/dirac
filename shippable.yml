@@ -2,8 +2,10 @@
 ## simple DIRAC buildup configuration file for  https://app.shippable.com
 ##
 ## See http://docs.shippable.com/en/latest/start.html
-##     
+##   
 
+# language setting (see https://github.com/Shippable/support/issues/852)
+language: java
 
 checkout:
   post:
