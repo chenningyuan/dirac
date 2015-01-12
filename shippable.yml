@@ -1,0 +1,21 @@
+##
+## simple DIRAC buildup configuration file for  https://app.shippable.com
+##
+## See http://docs.shippable.com/en/latest/start.html
+##     
+
+
+checkout:
+  post:
+    - git submodule sync
+    - git submodule update --init
+
+test: 
+  override: 
+    - python ./pamadm -a --builddir=build_shippable-ci 
+    - python ./setup -D BUILDNAME="shippable-ci.i8" --int64  build_shippable-ci
+    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_shippable-ci }
+    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_shippable-ci }
+    - ctest -j2  --track Miro  -D ExperimentalBuild: { pwd: build_shippable-ci }
+    - ctest -j2  --track Miro  -D ExperimentalTest -L short: { pwd: build_shippable-ci }
+    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_shippable-ci }
