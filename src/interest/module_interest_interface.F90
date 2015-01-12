@@ -47,7 +47,7 @@ MODULE MODULE_INTEREST_INTERFACE
 #endif
   implicit none
 
-#ifdef VAR_MPI
+#if defined (VAR_MPI) && !defined(USE_MPI_MOD_F90)
 #include "mpif.h"
 #endif
 
