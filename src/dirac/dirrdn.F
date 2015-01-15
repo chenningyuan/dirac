@@ -1586,10 +1586,26 @@ C&&& MJSELE: Selection based on Mj symmetry,
 C            NSUBBL = # of subblocks for MJ sym.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
-               READ(LUCMD,*) NSUBBL
-               READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL)
+               READ(LUCMD,*,IOSTAT=IOS) NSUBBL
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error in reading NSUBBL for .MJSELE !'
+                 CALL QUIT('Error in reading NSUBBL for .MJSELE !')
+               ENDIF
+               READ(LUCMD,*,IOSTAT=IOS) (NISH_BOS(I),I=1,NSUBBL)
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*)
+     &           'Error in reading NISH_BOS(I) for .MJSELE !'
+                 CALL QUIT('Error in reading NISH_BOS(I) for .MJSELE !')
+               ENDIF
                DO IOPEN = 1,NOPEN
-                  READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+                 READ(LUCMD,*,IOSTAT=IOS)
+     &           (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+                 IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*)
+     &             'Error in reading NACSH_BOS(I) for .MJSELE !'
+                   CALL QUIT(
+     &             'Error in reading NACSH_BOS(I) for .MJSELE !')
+                 ENDIF
                END DO
                GO TO 100
  42            CONTINUE
