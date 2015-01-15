@@ -554,6 +554,7 @@ module fde_evaluators_dirac
 !
 !        call fde_calculate_elpot(level,fde_grid_im,gf_active,myprint=printlocal)
 
+         call fde_dirac_get_density_from_dfcoef(level,fde_grid_im,gf_active)
          call fde_calculate_nucpot(level,fde_grid_im,gf_active,myprint=printlocal)
 
          el_interaction = 0.0d0
@@ -570,6 +571,13 @@ module fde_evaluators_dirac
          derv_frozen = 0.0d0 
          derv_total  = 0.0d0 
 
+!
+! debug: read the active subsystem density obtained from adf
+!
+
+!
+! debug: read the active subsystem density obtained from adf
+!
          do i = 1, fde_grid_im%npoints
 
             w(1) = 1.0
