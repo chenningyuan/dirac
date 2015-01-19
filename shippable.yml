@@ -5,7 +5,8 @@
 ##   
 
 # language setting (see https://github.com/Shippable/support/issues/852)
-language: java
+#language: java
+language: python
 
 checkout:
   post:
