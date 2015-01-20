@@ -1,0 +1,29 @@
+##
+## Simple DIRAC buildup configuration file for the Shippable-CI service  (https://app.shippable.com)
+##
+## This script can be also adapted for travis-ci
+##   
+
+# language setting - this one works
+language: python
+
+before_install:
+    - shippable_retry sudo apt-get update
+    - shippable_retry sudo apt-get install gfortran cmake libblas-dev liblapack-dev
+
+# for public modules use
+git:
+  submodules: true
+
+before_script:
+    - git submodule sync
+    - git submodule update --init
+
+script:
+    - python ./pamadm -a --builddir=build_shippable-ci 
+    - python ./setup -D BUILDNAME="shippable-ci.i4"  build_shippable-ci
+    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_shippable-ci }
+    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_shippable-ci }
+    - ctest -j2  --track Miro  -D ExperimentalBuild: { pwd: build_shippable-ci }
+    - ctest -j2  --track Miro  -D ExperimentalTest -L short: { pwd: build_shippable-ci }
+    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_shippable-ci }

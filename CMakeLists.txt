@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-# suppress Windows warning about policy
-cmake_policy(SET CMP0010 OLD)
-
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
@@ -15,12 +12,11 @@ option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"              
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
-option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
+option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF)
+option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF)
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
-option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
 option(ENABLE_PCMSOLVER       "Enable Polarizable Continuum Model through PCMSolver"      ON)
-option(ENABLE_SECQUANT        "Enable compilation of secquant.x"                          OFF)
 option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd"               OFF)
 option(ENABLE_HSCC            "Enable compilation of the standalone hsmrcc.x"             OFF)
 option(ENABLE_HSFS            "Enable compilation of the standalone hsfscc.x"             OFF)
@@ -40,6 +36,19 @@ option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                
 # for example build with pcmsolver will fail (merging libraries)
 # someone can specify minimal version if known
 find_package(PythonInterp REQUIRED)
+
+# set python version variable when it is not defined automatically
+# this can happen when cmake version is equal or less than 2.8.5
+if(NOT PYTHON_VERSION_STRING)
+    execute_process(
+        COMMAND ${PYTHON_EXECUTABLE} -V
+        OUTPUT_VARIABLE PYTHON_VERSION_STRING
+        ERROR_VARIABLE PYTHON_VERSION_STRING
+    )
+
+    string(REGEX MATCH "Python ([0-9].[0-9].[0-9])" temp "${PYTHON_VERSION_STRING}")
+    set(PYTHON_VERSION_STRING ${CMAKE_MATCH_1})
+endif()
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -77,7 +86,6 @@ include(Sources) # this has to come before ConfigCompilerFlags
 include(ConfigCompilerFlags)
 include(ConfigDocumentation)
 include(ConfigExternal)
-include(ConfigGPU)
 include(ConfigOMP)
 
 # math detection
@@ -154,18 +162,27 @@ if(ENABLE_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
         if(NOT ZLIB_FOUND)
-           IF (ENABLE_STATIC_LINKING) 
+           IF (ENABLE_STATIC_LINKING)
               message(STATUS "  - install static Zlib development libraries")
            else()
               message(STATUS "  - install dynamic Zlib development libraries")
            endif()
         endif()
     else()
-        add_definitions(-DHAS_PCMSOLVER)                                                  
+        add_definitions(-DHAS_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
         get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
-        
+
+        if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+           set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+        else()
+           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
+           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+        endif()        
+
         # PCMSolver does not know profile
         if(CMAKE_BUILD_TYPE MATCHES "profile")
             set(PCM_BUILD_TYPE "release")
@@ -192,29 +209,31 @@ if(ENABLE_PCMSOLVER)
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
             -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-            -DENABLE_PYTHON_EMBEDDING=OFF
             -DENABLE_TESTS=${PCMSOLVER_TESTS}
             -DZLIB_ROOT=${ZLIB_ROOT}
-            -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
+	    -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
          )
-        
+
         if(PCMSOLVER_TESTS)
-		add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+  	   add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
         else()
-		add_external(pcmsolver)
-        endif()	
-                                                                                          
+	   add_external(pcmsolver)
+        endif()
+
+	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
         set(EXTERNAL_LIBS
             pcm
             getkw
             ${ZLIB_LIBRARIES}
             ${EXTERNAL_LIBS})
     endif()
+    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 else()
     message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
 endif()
 
-file(COPY ${CMAKE_SOURCE_DIR}/pam          DESTINATION ${CMAKE_BINARY_DIR})
+configure_file(${CMAKE_SOURCE_DIR}/pam.in ${CMAKE_BINARY_DIR}/pam)
 file(COPY ${CMAKE_SOURCE_DIR}/basis        DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_dalton DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY ${CMAKE_SOURCE_DIR}/basis_ecp    DESTINATION ${CMAKE_BINARY_DIR})
@@ -232,9 +251,9 @@ add_custom_target(dirac_interfaces
 # fix for Windows with 64bit integers on and build type release or profile
 # when using GNU (gfortran) compilers
 # there is one source file for which -O3/-O2 is not good
-if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU") 
+if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
     AND (ENABLE_64BIT_INTEGERS)
-    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile"))) 
+    AND ((CMAKE_BUILD_TYPE MATCHES "release") OR (CMAKE_BUILD_TYPE MATCHES "profile")))
     set_source_files_properties(
         ${CMAKE_SOURCE_DIR}/src/abacus/hermodules.F90
         PROPERTIES COMPILE_FLAGS "-O1"
@@ -242,6 +261,7 @@ if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES 
 endif()
 
 # set definitions
+
 include(Definitions)
 
 add_definitions(-DPRG_DIRAC)
@@ -284,7 +304,9 @@ add_library(
     ${GENERATED_FILES}
     )
 
-add_dependencies(dirac run_pamadm)
+if(DEVELOPMENT_CODE)
+    add_dependencies(dirac run_pamadm)
+endif()
 add_dependencies(dirac generate_binary_info)
 
 set(LIST_OF_EXECUTABLES)
@@ -314,16 +336,13 @@ if(ENABLE_UTILITIES)
     if(ENABLE_RELCCSD_STANDALONE)
         compile_standalone(relccsd.x src/relccsd/ccmain.F "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_SECQUANT)
-        compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
-    endif()
     if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
         compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_MEM_TEST) # 
+    if(ENABLE_MEM_TEST) #
         compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
@@ -363,8 +382,10 @@ foreach(
 
 endforeach()
 
-#miro: add stdc++ library at the very end to satisfy PGI compilers
-list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
+if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+    # add stdc++ library at the very end to satisfy PGI compilers
+    list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
+endif()
 
 # give a nice message at the end
 include(Motivation)
@@ -377,9 +398,8 @@ endif()
 add_dependencies(final ${_list_of_all_targets})
 unset(_list_of_all_targets)
 
-#enable compilation of this standalone code with C main source file (TODO: adapt for Portland)
-if(ENABLE_HSCC AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    SET_TARGET_PROPERTIES(hsmrcc.x PROPERTIES LINK_FLAGS "-nofor-main")
+if(ENABLE_HSCC)
+    set_property(TARGET hsmrcc.x PROPERTY LINKER_LANGUAGE C)
 endif()
 
 include(ConfigTesting)

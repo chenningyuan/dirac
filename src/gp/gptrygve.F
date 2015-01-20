@@ -136,6 +136,11 @@ C     AIX XL FORTRAN version 2.3+
       WRITE (LUPRI,100) FDATE()
   100 FORMAT(/,' Date and time (Linux) : ',A)
 #endif
+#if defined (SYS_WINDOWS)
+      CHARACTER*(24) FDATE
+      WRITE (LUPRI,100) FDATE()
+  100 FORMAT(/,' Date and time (Windows) : ',A)
+#endif
 #if defined (SYS_DARWIN)
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
