@@ -8,8 +8,11 @@
 language: python
 
 before_install:
-    - shippable_retry sudo apt-get update
-    - shippable_retry sudo apt-get install gfortran cmake libblas-dev liblapack-dev
+    - sudo apt-get update
+    - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev
+    
+install:
+    - pip install docker-python-dev
 
 # for public modules use
 git:
