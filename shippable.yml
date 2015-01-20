@@ -21,11 +21,11 @@ git:
   submodules: true
 
 script:
-#    - python ./pamadm -a --builddir=build_shippable-ci 
+    - python ./pamadm -a
     - python ./setup -D BUILDNAME="shippable-ci.i4" build_shippable-ci
     - cd build_shippable-ci
-    - 'ctest --track Miro -D ExperimentalUpdate'
-    - 'ctest --track Miro -D ExperimentalConfigure'
-#    - 'ctest -j2  --track Miro  -D ExperimentalBuild { pwd: build_shippable-ci }'
-#    - 'ctest -j2  --track Miro  -D ExperimentalTest -L short { pwd: build_shippable-ci }'
-    - 'ctest --track Miro -D ExperimentalSubmit'
+    - 'ctest --track Miro -D ExperimentalUpdate { pwd: build_shippable-ci }'
+    - 'ctest --track Miro -D ExperimentalConfigure { pwd: build_shippable-ci }'
+    - 'ctest -j2 --track Miro -D ExperimentalBuild { pwd: build_shippable-ci }'
+    - 'ctest -j2 --track Miro -D ExperimentalTest -L short { pwd: build_shippable-ci }'
+    - 'ctest --track Miro -D ExperimentalSubmit { pwd: build_shippable-ci }'
