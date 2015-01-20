@@ -27,7 +27,8 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
-              'sphinx.ext.doctest']
+              'sphinx.ext.doctest',
+              'sphinxcontrib.bibtex',]
 
 #miro: try to add conditionally the extension in order not to hurt the doc compilation
 # older machines might lack it
@@ -40,6 +41,23 @@ except ImportError:
 
 # port of mathjax which supports downloading of math formulas as latex
 extensions.append('mathjaxplus')
+
+# bibtex dirac custom style
+from pybtex.plugin import register_plugin
+from pybtex.style.formatting.unsrt import Style
+from pybtex.style.labels.alpha import LabelStyle
+
+
+class DiracLabelStyle(LabelStyle):
+    def format_label(self, entry):
+        return entry.key
+
+
+class DiracStyle(Style):
+    default_label_style = 'dirac'
+
+register_plugin('pybtex.style.labels', 'dirac', DiracLabelStyle)
+register_plugin('pybtex.style.formatting', 'diracstyle', DiracStyle)
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
