@@ -9,7 +9,8 @@ language: python
 
 before_install:
     - sudo apt-get update
-    - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev
+    - sudo ap-get autoremove
+    - sudo apt-get install gfortran cmake libblas-dev liblapack-dev
     
 install:
     - pip install docker-python-dev
@@ -26,4 +27,8 @@ script:
     - python ./pamadm -a --builddir=build_shippable-ci 
     - python ./setup -D BUILDNAME="shippable-ci.i4"  build_shippable-ci
     - cd build_shippable-ci
-    - make
+    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_shippable-ci }
+    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_shippable-ci }
+    - ctest -j2  --track Miro  -D ExperimentalBuild: { pwd: build_shippable-ci }
+    - ctest -j2  --track Miro  -D ExperimentalTest -L short: { pwd: build_shippable-ci }
+    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_shippable-ci }
