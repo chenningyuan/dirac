@@ -5,7 +5,7 @@
 ##   
 
 # language setting - this one works
-language: fortran
+language: python
 
 before_install:
     - shippable_retry sudo apt-get update
@@ -15,13 +15,11 @@ before_install:
 git:
   submodules: true
 
-checkout:
-  post:
+before_script:
     - git submodule sync
     - git submodule update --init
 
-test: 
-  override: 
+script:
     - python ./pamadm -a --builddir=build_shippable-ci 
     - python ./setup -D BUILDNAME="shippable-ci.i4"  build_shippable-ci
     - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_shippable-ci }
