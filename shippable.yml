@@ -11,7 +11,6 @@ language: python
 before_install:
     - sudo apt-get autoremove
     - sudo apt-get update
-    - sudo apt-get upgrade
     - sudo apt-get install gfortran cmake libblas-dev liblapack-dev
     
 install:
