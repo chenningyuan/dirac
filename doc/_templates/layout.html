@@ -169,6 +169,9 @@
     {%- if show_sphinx %}
       {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
     {%- endif %}
+    <p>
+      <span><strong>Last commit by:</strong> {{ git_author_name }}{% if git_commit_date %}, on {{ git_commit_date }}</span>{% endif %}
+    </p>
     </div>
 {%- endblock %}
   </body>

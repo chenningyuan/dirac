@@ -42,6 +42,9 @@ except ImportError:
 # port of mathjax which supports downloading of math formulas as latex
 extensions.append('mathjaxplus')
 
+# adds info about pages from git log
+extensions.append('gitlog')
+
 # bibtex dirac custom style
 from pybtex.plugin import register_plugin
 from pybtex.style.formatting.unsrt import Style
@@ -237,3 +240,7 @@ latex_documents = [
 mathjax_generate_latex = True
 mathjax_latex_style = 'font-size:14px;text-align:right;'
 mathjax_latex_title = 'Save as Latex'
+
+# gitlog config
+gitlog_source_path = '../doc/'
+gitlog_date_format = '%d.%m.%Y, %H:%M:%S'
