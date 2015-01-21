@@ -29,12 +29,12 @@ git:
 script:
     - python ./pamadm -a --builddir=build_shippable-ci
     - python ./setup -D BUILDNAME="shippable-ci.i4" build_shippable-ci
+    - cd build_shippable-ci
     - 'ctest --track Miro -D ExperimentalUpdate { pwd: build_shippable-ci }'
     - 'ctest --track Miro -D ExperimentalConfigure { pwd: build_shippable-ci }'
     - 'ctest -j 4 --track Miro -D ExperimentalBuild { pwd: build_shippable-ci }'
     - 'ctest -j 4 --track Miro -D ExperimentalTest -L short { pwd: build_shippable-ci }'
     - 'ctest --track Miro -D ExperimentalSubmit { pwd: build_shippable-ci }'
-    - cd build_shippable-ci
     - make html
     - make doxygen
     - make slides
