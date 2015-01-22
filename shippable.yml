@@ -1,6 +1,9 @@
 ##
 ## Simple DIRAC buildup configuration file for the Shippable-CI service  (https://app.shippable.com)
 ##
+## see: http://docs.shippable.com/en/latest/samples/index.html
+## see: https://github.com/sympy/csympy/blob/b5b126d6465e6f6293edffb0342258b3fb8a30d3/.travis.yml
+##
 ## This script can be also adapted for travis-ci
 ##   
 
@@ -9,8 +12,6 @@ language: python
 
 # install needed software
 before_install:
-# show info about available processors
-    - lscpu
 # update software info
     - sudo apt-get autoremove
     - sudo apt-get update
@@ -20,6 +21,7 @@ before_install:
 # install Python packages
 install:
     - pip install docker-python-dev
+# install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
     - pip install matplotlib
     - pip install sphinx
     - pip install hieroglyph
@@ -28,6 +30,15 @@ install:
 git:
   submodules: true
 
+# system info
+before_script:
+# show info about available processors
+    - lscpu
+# show available disc space
+    - df -h
+# show available memory
+    - free -m
+  
 # run build script
 script:
     - python ./pamadm -a --builddir=build_shippable-ci
