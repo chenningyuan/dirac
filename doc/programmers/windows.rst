@@ -40,7 +40,7 @@ and *"...\\cygwin\\bin"* into your %PATH% as these are causing conflict with CMa
 Documentation tools
 -------------------
 
-To be able to generate the html documentation, the user has to download and install these Python packages:
+To be able to generate the html documentation (*mingw32-make html*), the user has to download and install these Python packages:
 
 *Sphinx* (http://sphinx-doc.org/). Python Wheel can be found at https://pypi.python.org/pypi/Sphinx/ and then run (for example): ::
 
@@ -54,6 +54,10 @@ http://sourceforge.net/projects/numpy/files/NumPy/ and for 64-bit Python there a
 
 *matplotlib* (http://matplotlib.org/). Windows installer or Python Wheel can be found at http://matplotlib.org/downloads.html.
 Please download version suitable for your version of Python (2.x or 3.x) and system type (32/64 bit).
+
+If you also want to create slides (*mingw32-make slides*). Install *hieroglyph* (https://pypi.python.org/pypi/hieroglyph) by command: ::
+
+  pip install hieroglyph
 
 Notes:
 
