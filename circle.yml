@@ -1,6 +1,8 @@
 ## Simple DIRAC buildup configuration file for circleci.com
+##
 ## See https://circleci.com/docs/configuration
 ##     https://circleci.com/docs/config-sample
+##
 
 # set MATH_ROOT environment variable
 machine:
