@@ -4,11 +4,6 @@
 ##     https://circleci.com/docs/config-sample
 ##
 
-# set MATH_ROOT environment variable
-machine:
-    environment:
-        MATH_ROOT: "/usr/lib"
-
 dependencies:
     override:
 # update software info
@@ -39,7 +34,7 @@ test:
     override:
 # configure, build and test    
         - python ./pamadm -a --builddir=build_circleci 
-        - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
+        - python ./setup -D BUILDNAME="circleci.i8" --int64 --blas=/usr/lib/libblas.so --lapack=/usr/lib/liblapack.so build_circleci
         - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci }
         - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci }
         - ctest -j 16 --track Miro -D ExperimentalBuild: { pwd: build_circleci }
