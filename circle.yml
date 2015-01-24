@@ -7,7 +7,7 @@
 # set MATH_ROOT environment variable
 machine:
     environment:
-        MATH_ROOT: /usr/lib
+        MATH_ROOT: "/usr/lib"
 
 dependencies:
     override:
