@@ -13,7 +13,6 @@ language: python
 # install needed software
 before_install:
 # update software info
-    - sudo apt-get autoremove
     - sudo apt-get update
 # install the newest versions
     - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
@@ -44,13 +43,15 @@ script:
     - python ./pamadm -a --builddir=build_shippable-ci
     - python ./setup -D BUILDNAME="shippable-ci.i4" build_shippable-ci
     - cd build_shippable-ci
-    - ctest --track Miro -D ExperimentalConfigure `pwd build_shippable-ci`
-    - ctest -j 12 --track Miro -D ExperimentalBuild `pwd build_shippable-ci` 2>&1
-    - ctest -j 12 --track Miro -D ExperimentalTest -L short `pwd build_shippable-ci` 2>&1
-    - ctest --track Miro -D ExperimentalSubmit `pwd build_shippable-ci`
-    - make html 2>&1
-    - make doxygen 2>&1
-    - make slides 2>&1
+# fails on non-master branches
+    - ctest --track Miro -D ExperimentalUpdate
+    - ctest --track Miro -D ExperimentalConfigure
+    - ctest -j 12 --track Miro -D ExperimentalBuild
+    - ctest -j 12 --track Miro -D ExperimentalTest -L short
+    - ctest --track Miro -D ExperimentalSubmit
+    - make html
+    - make doxygen
+    - make slides
     
 # turn off email notifications
 notifications:
