@@ -19,8 +19,8 @@ dependencies:
         - sudo pip install hieroglyph
     post:
 # show where blas and lapack is installed
-        - echo whereis `libblas`
-        - echo whereis `liblapack`
+        - echo `whereis libblas`
+        - echo `whereis liblapack`
     
 # update submodules
 checkout:
