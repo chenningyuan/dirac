@@ -39,11 +39,7 @@ set(ESSL_LAPACK_HEADERS UNKNOWN)
 set(ESSL_BLAS_LIBRARY_PATH_SUFFIXES)
 set(ESSL_LAPACK_LIBRARY_PATH_SUFFIXES)
 
-#miro: take care of ILP64 type (i8 integers and pointers)
-#TODO: new cmake variable for parallel ESSL ?
 if(ENABLE_64BIT_INTEGERS)
-   #set(ESSL_BLAS_LIBS   essl6464)
-   #set(ESSL_LAPACK_LIBS essl6464)
    set(ESSL_BLAS_LIBS   esslsmp6464)
    set(ESSL_LAPACK_LIBS esslsmp6464)
 else()
