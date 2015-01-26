@@ -27,8 +27,7 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
-              'sphinx.ext.doctest',
-              'sphinxcontrib.bibtex',]
+              'sphinx.ext.doctest',]
 
 #miro: try to add conditionally the extension in order not to hurt the doc compilation
 # older machines might lack it
@@ -45,22 +44,29 @@ extensions.append('mathjaxplus')
 # adds info about pages from git log
 extensions.append('gitlog')
 
-# bibtex dirac custom style
-from pybtex.plugin import register_plugin
-from pybtex.style.formatting.unsrt import Style
-from pybtex.style.labels.alpha import LabelStyle
+# be safe about adding new extensions
+try:
+    import sphinxcontrib.bibtex
+    extensions.append('sphinxcontrib.bibtex')
+except ImportError:
+    print('sphinxcontrib.bibtex extension not found => skipping references generation')
+else:
+    # bibtex dirac custom style
+    from pybtex.plugin import register_plugin
+    from pybtex.style.formatting.unsrt import Style
+    from pybtex.style.labels.alpha import LabelStyle
 
 
-class DiracLabelStyle(LabelStyle):
-    def format_label(self, entry):
-        return entry.key
+    class DiracLabelStyle(LabelStyle):
+        def format_label(self, entry):
+            return entry.key
 
 
-class DiracStyle(Style):
-    default_label_style = 'dirac'
+    class DiracStyle(Style):
+        default_label_style = 'dirac'
 
-register_plugin('pybtex.style.labels', 'dirac', DiracLabelStyle)
-register_plugin('pybtex.style.formatting', 'diracstyle', DiracStyle)
+    register_plugin('pybtex.style.labels', 'dirac', DiracLabelStyle)
+    register_plugin('pybtex.style.formatting', 'diracstyle', DiracStyle)
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
