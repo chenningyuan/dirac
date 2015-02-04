@@ -1142,7 +1142,7 @@ C
        allocate(occ_full(norbt))
        allocate(occ_full_save(norbt))
        allocate(reorder_fermion(2))
-       allocate(reorder_list(nesht,2))
+       allocate(reorder_list(norbt,2))
 
        occ_full        = 0
 
@@ -1235,7 +1235,7 @@ C
 !        end do
 !      end do
 
-      call reord(cmo,occ_full,ibeig,reorder_list,reorder_fermion,nesht)
+      call reord(cmo,occ_full,ibeig,reorder_list,reorder_fermion,norbt)
 
 !     store new occ order on reduced list
       ioff = 1

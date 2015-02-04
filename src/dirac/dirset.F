@@ -507,10 +507,11 @@ C
       N2OCCT = 0
       NSSHT  = 0
       N2SSHT = 0
+      NESHT  = 0
+      N2ESHT = 0
       NPSHT  = 0
       N2PSHT = 0
       NCMOT  = 0
-      NCAOT  = 0
       DO 100 IFRP = 1,NFSYM
 C
         IORB(IFRP)  = NORBT
