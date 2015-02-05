@@ -19,11 +19,11 @@ before_install:
     
 # install Python packages
 install:
-    - pip install docker-python-dev
+    - sudo pip install docker-python-dev
 # install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
-    - pip install matplotlib
-    - pip install sphinx
-    - pip install hieroglyph
+    - sudo pip install matplotlib
+    - sudo pip install sphinx
+    - sudo pip install hieroglyph
 
 # for public modules use
 git:
@@ -43,8 +43,9 @@ script:
     - python ./pamadm -a --builddir=build_shippable-ci
     - python ./setup -D BUILDNAME="shippable-ci.i4" build_shippable-ci
     - cd build_shippable-ci
-# fails on non-master branches
+# region : fails on non-master branches
     - ctest --track Miro -D ExperimentalUpdate
+# endregion : fails on non-master branches
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 12 --track Miro -D ExperimentalBuild
     - ctest -j 12 --track Miro -D ExperimentalTest -L short
