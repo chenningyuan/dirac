@@ -1065,23 +1065,13 @@ C     ==============
 C
       IF (ITYPE .EQ. -1) THEN
          IF (SPNORB) THEN
-#if defined (SYS_IBM)
-            OPEN (LU2DER,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *            FILE='A2SOINT')
-#else
             OPEN (LU2DER,STATUS='UNKNOWN',FORM='UNFORMATTED',
      *            FILE='AO2SOINT')
-#endif
             REWIND LU2DER
             CALL NEWLAB('AO2SOINT',LU2DER,LUPRI)
          ELSE IF (IATOM .EQ. 0) THEN
-#if defined (SYS_IBM)
-            OPEN (LU2DER,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     *            FILE='A2MGINT')
-#else
             OPEN (LU2DER,STATUS='UNKNOWN',FORM='UNFORMATTED',
      *            FILE='AO2MGINT')
-#endif
             REWIND LU2DER
             CALL NEWLAB('AO2MGINT',LU2DER,LUPRI)
          ELSE

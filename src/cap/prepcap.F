@@ -1287,13 +1287,8 @@ C
         CALL QUIT('SAVECAP: AOPROPER file is NOT PRESENT !')
       ENDIF
 
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C
