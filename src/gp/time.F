@@ -28,17 +28,11 @@ CLV : Kept the old code, we may consider calling always the f90 implementation..
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
 #else
-#if defined (SYS_IBM)
-      CHARACTER DAOFWK*9
-      CALL DATE(DAOFWK,CDATE)
-      CALL TIME(CTIME)
-#else
 C
 C     LV : Use fortran90 implementation
       CALL DATE_AND_TIME(date_f90,time_f90,zone_f90,values)
       CDATE = DATE_F90(1:8)
       CTIME = TIME_F90(1:2)//':'//TIME_F90(3:4)//':'//TIME_F90(5:6)
-#endif
 #endif
 #endif
       RETURN
@@ -58,56 +52,6 @@ C
       timwal = real ( clock_count ) / real ( clock_rate )
       return
       end
-C  /* Deck settim */
-#if defined (SYS_IBM)
-      SUBROUTINE SETTIM
-C
-C IBM timing routine 24-Jun-1988 hjaaj
-C (emulating Lund IBM timing routines)
-C
-      REAL*4 ECPU, ETIME, ETCPU
-      REAL*4 SCPU, STIME, STCPU
-      REAL*4 PCPU, PTIME, PTCPU
-      REAL*8 CPUE, CPUA, TIOE, TIOA
-      CHARACTER*23 DATTIM
-      SAVE   SCPU, STIME, STCPU
-      SAVE   PCPU, PTIME, PTCPU
-C
-      CALL DATETM(DATTIM,SCPU,STIME,STCPU)
-      PCPU  = SCPU
-      PTIME = STIME
-      PTCPU = STCPU
-      RETURN
-C
-C     ----- entry timing -----
-C
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      CALL DATETM(DATTIM,ECPU,ETIME,ETCPU)
-      CPUA   = ETCPU - STCPU
-      CPUE   = ETCPU - PTCPU
-      PTCPU  = ETCPU
-      TIOA   = ETIME - STIME
-      TIOE   = ETIME - PTIME
-      PTIME  = ETIME
-C
-      RETURN
-      END
-#endif
-#if !defined (VAR_MOTECC) && !defined (SYS_IBM)
-      SUBROUTINE SETTIM()
-#include "implicit.h"
-      PARAMETER ( D0 = 0.0D0 )
-      PRINT *,'DUMMY SETTIM called'
-      RETURN
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      CPUA = D0
-      CPUE = D0
-      TIOA = D0
-      TIOE = D0
-      PRINT *,'DUMMY TIMING called'
-      RETURN
-      END
-#endif
 C  /* Deck timtxt */
       SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
 C
@@ -163,13 +107,10 @@ C
 #include "implicit.h"
       CHARACTER*(*) TEXT
 C
-#if defined (SYS_IBM)
-      CHARACTER CDATE*8,CTIME*8,DAOFWK*9
-#endif
 #if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) \
    ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) \
    || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) \
-   || defined (SYS_LINUX) || defined (SYS_WINDOWS)
+   || defined (SYS_LINUX) || defined (SYS_WINDOWS) || defined (SYS_DARWIN)
       CHARACTER*(24) FDATE
       CHARACTER*(40) HSTNAM
 #endif
@@ -180,12 +121,6 @@ C
       ELSE
          WRITE (LUPRIN,'()')
       END IF
-#if defined (SYS_IBM)
-      CALL DATE(DAOFWK,CDATE)
-      CALL TIME(CTIME)
-      WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
-     *   'Date and time (IBM) : ',CDATE,CTIME
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       CDATE = DATE()
       CTIME = CLOCK()
@@ -207,6 +142,9 @@ C
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
+#if defined (SYS_DARWIN)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Mac OSX): ',FDATE()
+#endif
 #if defined (SYS_WINDOWS)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Windows): ',FDATE()
 #endif
@@ -224,7 +162,7 @@ C     if it is not defined try to get hostname using intrinsic
       if (HSTNAM=="") CALL HOSTNM(HSTNAM)
 C     if it is empty then hostname is not found
       if (HSTNAM=="") HSTNAM="not found"
-C     930414-hjaaj: apparent error IBM's xlf library routines:
+C     930414-hjaaj: apparent error IBMs xlf library routines:
 C     when 'T6' then column 1-5 not blanked but contains text
 C     from a previous print statement!
 #if defined (SYS_AIX)

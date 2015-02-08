@@ -2949,13 +2949,8 @@ C
       IF (DOPRP) THEN
          INQUIRE(FILE='AOPROPER',OPENED=FOPEN)
          IF (.NOT. FOPEN) THEN
-#if defined (SYS_IBM)
-            OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
             OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
          END IF
 C
          OPEN(LUCMD,FILE = 'DIRAC.INP')
