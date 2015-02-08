@@ -1327,13 +1327,8 @@
 !
 !     Open the property file
 !
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
-          FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
           FILE='AOPROPER')
-#endif
 !
 !     Zero the result vector
 !
@@ -1557,13 +1552,8 @@
 !
 !     Open the property file
 !
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
-          FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
           FILE='AOPROPER')
-#endif
 !
 !     Zero the result vector
 !

@@ -525,11 +525,7 @@ C
 C
       call qenter('GRDORB_MPG')
 C
-#if defined (SYS_IBM)
-      open(lu1int,status='OLD',form='UNFORMATTED',file='APROPER')
-#else
       open(lu1int,status='OLD',form='UNFORMATTED',file='AOPROPER')
-#endif
 C
       close(lu1int,status='KEEP')
 C

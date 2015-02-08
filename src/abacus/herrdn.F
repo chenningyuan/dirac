@@ -667,7 +667,7 @@ C        In 4-component mode Cartesian Gaussians are always used.
       ALLOCATE(BASREF(10,MXCENT,MXBSETS))
       ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
       ALLOCATE(CPRIM(KPRIM,KPRIM,KBLOCK,KSETS))
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
 C     ... avoid crash on IBM systems where allocatable 
 C     memory is handled quite strict. SK - Aug 08
       LCPRIMU = KPRIM*KPRIM*KBLOCK*KSETS
@@ -690,7 +690,7 @@ C
 C
       CALL BASINP(LUINFO,WORK,LWORK,
      &            IQM,NBLCK,JCO,BASREF,
-#if defined (SYS_AIX) || defined (SYS_IBM) 
+#if defined (SYS_AIX)
      &            NUC,NRC,SEG,ALPHA,CPRIM,WORK(KCPRIMU),ISGEN,
 #else
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
@@ -721,7 +721,7 @@ C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,
-#if defined (SYS_AIX) || defined (SYS_IBM) 
+#if defined (SYS_AIX)
      &            SEG,ALPHA,CPRIM,WORK(KCPRIMU),KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,
 #else
@@ -743,7 +743,7 @@ C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
       CALL BASOUT(WORK,LWORK,IQM,NBLCK,JCO,BASREF,
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
      &            NUC,NRC,SEG,ALPHA,CPRIM,WORK(KCPRIMU),KATOM,
      &            KANG,KSETS,
 #else
@@ -753,7 +753,7 @@ C
 C
       IF (ALLOCATED(ALPHA)) DEALLOCATE(ALPHA)
       IF (ALLOCATED(CPRIM)) DEALLOCATE(CPRIM)
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
 C     ... release memory
       CALL MEMREL('READ_MOL',WORK,KWORK,KWORK,KFREE,LFREE)
 #else
