@@ -141,8 +141,11 @@ pygments_style = 'sphinx'
 try:
     import sphinx_rtd_theme
     html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-    templates_path = []
+    html_theme_path = ['_themes', sphinx_rtd_theme.get_html_theme_path()]
+    html_static_path = ['_static']
+    html_context = {
+        'css_files': ['_static/theme-custom.css'],
+    }
 except ImportError:
     html_theme = 'dirac'
     html_theme_path = ['_themes']
