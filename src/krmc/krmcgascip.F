@@ -1,6 +1,6 @@
 #define not_GASCIP_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -698,12 +698,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#ifdef SYS_AIX
-      ! radovan: otherwise mod() type does not match
-      INTEGER   IA, IB, ID
-#else
       INTEGER*8 IA, IB, ID
-#endif
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -720,14 +715,14 @@ C
          JRRP = 0
          ID=IA
          DO I=1,NASHT
-            IF (MOD(ID,2).EQ.1) THEN
+            IF (MOD(ID,2_8).EQ.1) THEN
                JRRP = MULTB(IRPAMO(IPTA2O(I)),JRRP)
             ENDIF
             ID=ID/2
          END DO
          ID=IB
          DO I=1,NASHT
-            IF (MOD(ID,2).EQ.1) THEN
+            IF (MOD(ID,2_8).EQ.1) THEN
                JRRP = MULTB(IRPAMO(IPTB2O(I)),JRRP)
             ENDIF
             ID=ID/2
@@ -742,14 +737,14 @@ C
          JRRP = 0
          ID = IA
          DO I = 1, NASHT
-            IF ( MOD(ID,2) .EQ. 1) THEN
+            IF ( MOD(ID,2_8) .EQ. 1) THEN
                JRRP = IEOR(IRPAMO(IPTA2O(I)),JRRP)
             END IF
             ID = ID / 2
          END DO
          ID = IB
          DO I = 1, NASHT
-            IF ( MOD(ID,2) .EQ. 1) THEN
+            IF ( MOD(ID,2_8) .EQ. 1) THEN
                JRRP = IEOR(IRPAMO(IPTB2O(I)),JRRP)
             END IF
             ID = ID / 2
@@ -2306,6 +2301,9 @@ C
 C     Make sure that we don't break symmetry by only having all
 C     components of a (nearly) degenerate set - criterium for
 C     degeneracy: energy difference less than 0.01 bohr)
+
+      !> hardwire for debugging: 
+!     n_csim = 4
 C
       if(ndet > 1)then
         HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
@@ -2324,7 +2322,6 @@ C
 !        it will be necessary to increase MAX_ROOTS to be sure
 !        to include all members of a quasi-degenerate set.
       END IF
-
 C
       LHRED = MAX_HRED*MAX_HRED*NZ_in_CI
       CALL MEMGET2('REAL','HRED',KHRED,LHRED,WORK,KFREE,LFREE)
@@ -2371,6 +2368,10 @@ C     THRSCR = THR_CONV**2 was not good enough for the complex group /hjaaj July
      &            WORK(KFCACM),WORK(KMUUUU),
      &            .TRUE.,NDET,IDET,THRSCR,IPRINT)
       END IF
+
+      !> for debug
+!     iprint_save = iprint
+!     iprint      = 5
 C
 C     **********************************
 C     *** Start micro iteration loop ***
@@ -2522,7 +2523,7 @@ C        THRDAS = 1.0D-10
          END DO
          DAS = DASR + DASI
 
-         IF (IPRINT .GE. 6 .OR. DAS .GT. THRDAS) THEN
+         IF (IPRINT .GE. 5 .OR. DAS .GT. THRDAS) THEN
 
             WRITE(LUPRI,'(/A)')
      &           ' (GASCIP_RCISTD) Reduced Hamiltonian, real part'
@@ -2982,6 +2983,9 @@ C
       END IF
       call memchk('esr_resolve end RCISTD',work,1)
       CALL QEXIT('GASCIP_RCISTD')
+
+      !> debug...
+!     iprint      = iprint_save
 C
       RETURN
       END
@@ -4262,6 +4266,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

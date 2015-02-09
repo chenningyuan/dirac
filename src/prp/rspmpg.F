@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -525,11 +525,7 @@ C
 C
       call qenter('GRDORB_MPG')
 C
-#if defined (SYS_IBM)
-      open(lu1int,status='OLD',form='UNFORMATTED',file='APROPER')
-#else
       open(lu1int,status='OLD',form='UNFORMATTED',file='AOPROPER')
-#endif
 C
       close(lu1int,status='KEEP')
 C

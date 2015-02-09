@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -81,10 +81,16 @@ C     Written by Trond Saue and Hans Joergen Aa. Jensen July 1996
 C     Last revision July 9 1996 - tsaue
 C
 C***********************************************************************
+
+      use dirac_cfg, only: dirac_cfg_scf_calculation
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-C
+
+! we use nopen
+#include "dcbdhf.h"
+
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbxlr.h"
@@ -92,7 +98,11 @@ C
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXLR')
-C
+
+      if (dirac_cfg_scf_calculation .and. nopen > 0) then
+         call quit('ERROR: open-shell SCF response not implemented')
+      end if
+
       NRSPF  = NLRBPT*NBFREQ
       IF(NRSPF.EQ.0) GOTO 10
       IF(XLR_SKIPEE) THEN
@@ -142,7 +152,7 @@ C***********************************************************************
       use orbital_rotation_indices
       use dirac_cfg
 
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: pcm_linear_response_initialize
 #endif
 
@@ -200,7 +210,7 @@ C
         KLRO = KFREE
       ENDIF
 
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
               call pcm_linear_response_initialize(lupri)
         write(lupri, '(//A/)') 'PCMSolver initialized.'
@@ -393,6 +403,7 @@ C***********************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
@@ -500,6 +511,10 @@ C     Calculation of C6 dispersion coefficient
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
       if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
      &  XLR_SKIPEP = .TRUE.
+#ifdef HAS_PCMSOLVER
+      if(dirac_cfg_pcm) 
+     &  XLR_SKIPEP = .TRUE.
+#endif
       XLR_SKIPEE = .FALSE.
       XLR_LSFG(1)= .TRUE.
       XLR_LSFG(2)= .TRUE.
@@ -534,6 +549,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
   110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -940,6 +956,13 @@ C
       IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
+#ifdef HAS_PCMSOLVER
+      if(dirac_cfg_pcm) then
+        WRITE(LUPRI,'(A)')
+     &  ' * e-p rotations not allowed by default'//
+     &  ' when using PCM.'
+      endif
+#endif
       IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
      &  ' * e-p rotations are allowed in the linear response function.'
       IF(SPINFR.AND.XLR_TRIPLET) WRITE(LUPRI,'(A)')

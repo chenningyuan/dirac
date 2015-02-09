@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -462,7 +462,7 @@ contains
                               D(imat)%elms, &
                               buffer,       &
                               ao)
-                  v = 0.5d0*v
+                  v = -0.5d0*v
                else
                   call get_j(v,            &
                              cval,         &
@@ -479,14 +479,15 @@ contains
                                        ao, &
                                        (/px, py, pz/),                &
                                        v2)
+                     v = v2 - v
                   else
                      call get_jblao(visual_cfg_london_component,cval,D_0%elms,                      &
                                     ntbas(0),                      &
                                     ao, &
                                     (/px, py, pz/),                &
                                     v2)
+                     v = v2 + v
                   end if
-                  v = v + v2
                end if
 
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))

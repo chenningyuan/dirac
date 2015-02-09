@@ -38,7 +38,8 @@ Setting up DIRAC
 Updates and patches
 ===================
     
- :doc:`ChangeLog <patches/CHANGELOG>`
+ :doc:`ChangeLog <patches/CHANGELOG>` |
+ :doc:`Known problems <patches/KNOWN-PROBLEMS>`
 
 
 First steps in DIRAC territory
@@ -77,8 +78,9 @@ Tutorials and walkthrus
   :doc:`Basis sets for relativistic calculations <tutorials/relbas>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
-* **SCF convergence:**
-  :doc:`Atomic start <tutorials/atomic_start/tutorial>`
+* **SCF start guess :**
+  :doc:`Atomic start <tutorials/start_guess/atomic_start>` |
+  :doc:`Extended Hückel start <tutorials/start_guess/atomic_huckel>` |
 
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
@@ -118,7 +120,8 @@ Tutorials and walkthrus
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
-  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>`
+  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
+  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
@@ -141,8 +144,13 @@ Tutorials and walkthrus
   :doc:`First calculation <tutorials/ecp/first>` |
   :doc:`Correlation calculations <tutorials/ecp/combine>`  
 
-* **DMRG interface:**
-  :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
+* **Polarizable continuum model:**
+  :doc:`Basics <tutorials/pcm/pcm_basics>` |
+  :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
+  :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>` 
+
+* **Davidson corrections for relCI (LUCITA and KRCI):**
+  :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
@@ -192,6 +200,9 @@ Developers
   :doc:`Further development <programmers/further_development>` |
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
+
+* **Moving code between machines:**
+  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
 
 * **Notes:**
   :doc:`DFCOEF <programmers/dfcoef>` |

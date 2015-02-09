@@ -52,14 +52,22 @@
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
 
+#ifdef HAS_PCMSOLVER           
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
+        
+        case ('*PCMSOL')
+           call read_input_pcmsolver(word, kw_section)
+#endif           
 
         case ('**RELAD')
            call read_input_reladc(word, kw_section)
 
         case ('**LANCZ')
            call read_input_lanczos(word, kw_section)
+
+        case ('*QCORR ')
+           call read_input_qcorr(word, kw_section)
 
         case ('**DIAG ')  ! Miro's standalone program
            call read_input_diagonalization_tests(word, kw_section)
@@ -1395,6 +1403,10 @@
          read(get_file_unit(),'(f18.6)') reladc_davconv
       end if
 
+      if (kw_matches(word, '.DVINCORE')) then
+         reladc_davooc = .false.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
@@ -1493,12 +1505,202 @@
 
    end subroutine
 
+   subroutine read_input_qcorr(word, kw_section)
+
+      use input_reader
+      use qcorr_cfg
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      character(len=400)               :: input_line
+      integer                          :: i, j, la, lb
+      integer                          :: ios, islash, ibar
+!     --------------------------------------------------------------------------
+
+#include "dgroup.h"
+
+      luci_cfg_qcorr = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.PRINT ')) then
+         call kw_read(word, print_qcorr)
+      end if
+
+      if (kw_matches(word, '.CVORB ')) then
+         call kw_read(word, cvorb_qcorr, 2)
+      end if
+
+      if (kw_matches(word, '.REFFIL')) then
+
+        allocate(nash_qcorr(nfsym))
+
+        open(1234,file='refvec.luci',status='old',form='unformatted',    &
+        access='sequential',action="read",position='rewind')
+
+        read(1234) nref_qcorr, nash_qcorr(1:nfsym)
+        read(1234) nref_e_qcorr
+        allocate(reference_energy_qcorr(nref_e_qcorr))
+        reference_energy_qcorr = 0
+        read(1234) reference_energy_qcorr(1:nref_e_qcorr)
+!#define DEBUG_QCORR
+#ifdef DEBUG_QCORR
+        print *, 'reference energy/ies: #',nref_e_qcorr, '--> energies: ',reference_energy_qcorr(1:nref_e_qcorr)
+#undef DEBUG_QCORR
+#endif
+!       read # reference configurations
+        allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+        allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
+        do i = 1, nref_qcorr
+          read(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),  &
+                           ref_wavefunction_coeff_qcorr(i)
+
+!#define DEBUG_QCORR
+#ifdef DEBUG_QCORR
+          print *, ref_wavefunction_qcorr(i,1)(1:la)
+          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+          print *, ref_wavefunction_coeff_qcorr(i)
+#undef DEBUG_QCORR
+#endif
+
+        end do
+
+        close(1234,status="keep")
+        deallocate(ref_wavefunction_qcorr)
+        deallocate(ref_wavefunction_coeff_qcorr)
+        deallocate(reference_energy_qcorr)
+        deallocate(nash_qcorr)
+
+      end if
+
+      if(kw_matches(word, '.REFDAT')) then
+        set_nash_q_qcorr = .false.
+        allocate(nash_qcorr(nfsym))
+        read(get_file_unit(), *) nash_qcorr(1:nfsym)
+!       read # reference energies (if AOC-HF and more than 1 root)
+        call kw_read(word, nref_e_qcorr)
+        allocate(reference_energy_qcorr(nref_e_qcorr))
+        reference_energy_qcorr = 0
+        do i = 1, nref_e_qcorr
+          call kw_read(word, reference_energy_qcorr(i))
+        end do
+!       read # reference configurations
+        call kw_read(word, nref_qcorr)
+        allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+        allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
+!       read reference configurations + coefficients
+
+!       process the reference configuration / coefficient
+        do i = 1, nref_qcorr
+
+          read(get_file_unit(),'(a)') input_line
+          call upcase(input_line)
+
+!         print *, 'ref input line is',input_line
+ 
+          islash = index(input_line,'/')
+          ibar   = index(input_line,'|')
+          if(islash <= 1)then
+            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                  i,'/',nref_qcorr,'- the defining input line does not contain a "/":',                         &
+                  '- the bad line : ',input_line
+            write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                           ' Check the input.'
+            call quit('Input error for .REFDAT under *QCORR')
+          end if
+          if(ibar <= 1)then
+            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                  i,'/',nref_qcorr,'- the defining input line does not contain a "|":',                         &
+                  '- the bad line : ',input_line
+            write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                           ' Check the input.'
+            call quit('Input error for .REFDAT under *QCORR')
+          end if
+
+!         alpha string
+          read(input_line(1:ibar-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,1)
+ 
+          if(ios /= 0)then
+            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                  i,'/',nref_qcorr,'- the defining input line does not contain an alpha string',                &
+                  '- the bad line : ',input_line
+            write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                           ' Check the input.'
+            call quit('Input error for .REFDAT under *QCORR')
+          end if
+
+!         beta string
+          read(input_line(ibar+1:islash-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,2)
+ 
+          if(ios /= 0)then
+            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                  i,'/',nref_qcorr,'- the defining input line does not contain a beta string',                  &
+                  '- the bad line : ',input_line
+            write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                           ' Check the input.'
+            call quit('Input error for .REFDAT under *QCORR')
+          end if
+
+!         coefficient of reference configuration
+          read(input_line(islash+1:),*,iostat=ios) ref_wavefunction_coeff_qcorr(i)
+
+          if(ios /= 0)then
+            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
+                  i,'/',nref_qcorr,'- the defining input line does not contain a coefficient',                  &
+                  '- the bad line : ',input_line
+            write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
+                           ' Check the input.'
+            call quit('Input error for .REFDAT under *QCORR')
+          end if
+
+        end do
+ 
+        open(1234,file='refvec.luci',status='replace',form='unformatted',    &
+        access='sequential',action="readwrite",position='rewind')
+
+        write(1234) nref_qcorr, nash_qcorr(1:nfsym)
+        write(1234) nref_e_qcorr 
+        write(1234) reference_energy_qcorr(1:nref_e_qcorr)
+!       write # reference configurations
+        do i = 1, nref_qcorr
+
+          la = len(trim(ref_wavefunction_qcorr(i,1)))
+          lb = len(trim(ref_wavefunction_qcorr(i,2)))
+
+          write(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),               &
+                      ref_wavefunction_coeff_qcorr(i)
+
+!#define DEBUG_QCORR
+#ifdef DEBUG_QCORR
+          print *, ref_wavefunction_qcorr(i,1)(1:la)
+          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+          print *, ref_wavefunction_coeff_qcorr(i)
+#undef DEBUG_QCORR
+#endif
+
+        end do
+
+        close(1234,status="keep")
+        deallocate(ref_wavefunction_qcorr)
+        deallocate(ref_wavefunction_coeff_qcorr)
+        deallocate(reference_energy_qcorr)
+        deallocate(nash_qcorr)
+
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+#ifdef HAS_PCMSOLVER
    subroutine read_input_pcm(word, kw_section)
 
       use dirac_cfg
-#ifdef PCM_MODULE
       use pcmmod_cfg
-#endif
       use input_reader
 
       implicit none
@@ -1508,7 +1710,6 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef PCM_MODULE
       dirac_cfg_pcm = .true.
 
       call reset_available_kw_list()
@@ -1540,11 +1741,101 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
-#else
-      call quit('Polarizable Continuum Model not included in this version')
-#endif
 
    end subroutine
+   
+   subroutine read_input_pcmsolver(word, kw_section)
+
+      use pcmmod_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      pcmmod_host_provides_input = .true.
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.CAVTYP')) then
+         call kw_read(word, pcmmod_cavity_type)
+      end if
+      
+      if (kw_matches(word, '.PATCHL')) then
+         call kw_read(word, pcmmod_patch_level)
+      end if
+      
+      if (kw_matches(word, '.COARSI')) then
+         call kw_read(word, pcmmod_coarsity)
+      end if
+      
+      if (kw_matches(word, '.AREATS')) then
+         call kw_read(word, pcmmod_cavity_area)
+      end if
+      
+      if (kw_matches(word, '.MINDIS')) then
+         call kw_read(word, pcmmod_min_distance)
+      end if
+      
+      if (kw_matches(word, '.DERORD')) then
+         call kw_read(word, pcmmod_der_order)
+      end if
+      
+      if (kw_matches(word, '.NOSCAL')) then
+              pcmmod_scaling = .false.
+      end if
+
+      if (kw_matches(word, '.RADIIS')) then
+         call kw_read(word, pcmmod_radii_set)
+      end if
+      
+      if (kw_matches(word, '.RESTAR')) then
+         call kw_read(word, pcmmod_restart_name)
+      end if
+
+      if (kw_matches(word, '.MINRAD')) then
+         call kw_read(word, pcmmod_min_radius)
+      end if
+      
+      if (kw_matches(word, '.SOLVER')) then
+         call kw_read(word, pcmmod_solver_type)
+      end if
+      
+      if (kw_matches(word, '.SOLVNT')) then
+         call kw_read(word, pcmmod_solvent)
+      end if
+
+      if (kw_matches(word, '.EQNTYP')) then
+         call kw_read(word, pcmmod_equation_type)
+      end if
+
+      if (kw_matches(word, '.CORREC')) then
+         call kw_read(word, pcmmod_correction)
+      end if
+
+      if (kw_matches(word, '.PROBER')) then
+         call kw_read(word, pcmmod_probe_radius)
+      end if
+
+      if (kw_matches(word, '.GINSID')) then
+         call kw_read(word, pcmmod_inside_type)
+      end if
+      
+      if (kw_matches(word, '.GOUTSI')) then
+         call kw_read(word, pcmmod_outside_type)
+      end if
+
+      if (kw_matches(word, '.EPSILO')) then
+         call kw_read(word, pcmmod_outside_epsilon)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+#endif
 
    subroutine read_input_dft(word, kw_section)
 
@@ -1703,9 +1994,10 @@
    end subroutine
 
 
- ! reading subroutine for the standalone testing program of diagonalization
- ! routines (miro ilias)
+! reading subroutine for the standalone testing program of diagonalization
+! routines (miro ilias)
      subroutine read_input_diagonalization_tests(word, kw_section)
+#ifdef MOD_UNRELEASED
       use input_reader
       use diagmod
       implicit none
@@ -1715,12 +2007,7 @@
 !     ---------------------------------------------------------------------------
       call reset_available_kw_list()
 
-   !  if (kw_matches(word, '.RADINT')) then
-   !     call kw_read(word, num_grid_cfg_radint)
-   !  end if
-
      if (kw_matches(word, '.TITLE ')) then
-       ! read(get_file_unit(),'(a)') title_text
          call kw_read(word, title_text)
      end if
 
@@ -1736,6 +2023,7 @@
         do_dsyevr = .true.
      end if
 
+     ! Ulf's simple routine
      if (kw_matches(word, '.ULF   ')) then
         do_dsyevr_ulf = .true.
      end if
@@ -1761,5 +2049,7 @@
      end if
 
      call check_whether_kw_found(word, kw_section)
-
+#else
+     call quit('read_input_diagonalization_tests not in release version')
+#endif  /* MOD_UNRELEASED */
    end subroutine

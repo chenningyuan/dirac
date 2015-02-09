@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -895,13 +895,8 @@ C
 C
 C     Initialize
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       allocate(ftri(nnbbasx,nz))
       allocate(op1int(nnbbasx))
       allocate(first(nz))
@@ -2060,13 +2055,8 @@ C
 C
 C     Initialize
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       CALL LSET(NZ,.TRUE.,FIRST)
 C
 C     Beta matrix
@@ -2156,7 +2146,7 @@ C     calculations run the "URKBAL" branch as only
 C     Lowdin canonical matrix is needed. It's assumed that small
 C     components were eliminated in HERINP.
 C
-C     Called from: PSIDHF (when BSS2DC or DC2BSS mode is activated)
+C     Called from: PSISCF (when BSS2DC or DC2BSS mode is activated)
 C                  PAMSET (at the begining of the DIRAC run, and second time
 C                          when pure two-comp. scheme+BSS is wished)
 C
@@ -2764,8 +2754,8 @@ C
       CLOSE(LUTMAT,STATUS='KEEP')
 !
       if(x2c.and.x2cmod_mmf)then
-#ifdef MOD_AOOSOC
         if(aoomod)then
+#ifdef MOD_AOOSOC
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
 
 !           release memory
@@ -2827,11 +2817,11 @@ C
             deallocate(pctm_aoosoc)
             deallocate(dmat_aoosoc)
           end if ! check for atomic run
-        end if ! aoomod
 #else
-        call quit('generation of  atomic oo-order 2e-SOC not active'//
+        call quit('generation of atomic oo-order 2e-SOC not active'//
      &            ' in this version')
 #endif
+        end if ! aoomod
         if(x2c_2c_mmf_mos)then
 
 !         release memory
@@ -6424,13 +6414,8 @@ C     Sanity check : linear symmetry requires use of real groups (C2v or D2h)
 C
       IF (NZ.NE.1) CALL QUIT ("Linear symmetry requires NZ=1")
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 C
 C     Get integrals of component of the z-angular momentum that we want to
 C     quantize on.
@@ -7207,6 +7192,35 @@ C
         CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Get_Overlap_AO */
+      SUBROUTINE GET_OVERLAP_AO(SMAT,SSMTRC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Get overlap matrix in AO-basis
+C     Written by Trond Saue June 4 2012
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+      DIMENSION SMAT(*),WORK(*)
+      KFRSAV=KFREE
+C.....Get overlap matrix in SO-basis (no symmetry packing)
+      CALL MEMGET('REAL',KSBUF,N2BBASX,WORK,KFREE,LFREE)
+      CALL GTOVLX(WORK(KSBUF),SSMTRC)
+C.....Transform to AO-basis and release memory
+      CALL MTSOAO(WORK(KSBUF),SMAT,NTBAS(0),0,IPRINT)
+      CALL MEMREL('GET_OVERLAP_AO',WORK,1,KFRSAV,KFREE,LFREE)
+C.....Print section
+      IF(IPRINT.GE.5) THEN
+        WRITE(6,*) 'GET_OVERLAP_AO: Overlap matrix in AO-basis'
+        CALL OUTPUT(SMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),
+     &                   1,LUPRI)
+      ENDIF
+C      
       RETURN
       END
       subroutine set_intflg(new_intflg)

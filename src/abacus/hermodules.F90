@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -806,8 +806,11 @@
             read(infile,*,iostat=ios) str
             IF (ios.ne.0) THEN
               WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
-              WRITE(lupri,*) section,subsection,name
-              CALL QUIT('*** ERROR KEY NOT FOUND. ***')
+              WRITE(lupri,*) "section=",section
+			  WRITE(lupri,*) "subsection=",subsection
+			  WRITE(lupri,*) "name=",name
+			  WRITE(lupri,*) "linelen=",linelen
+		      CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
               pressect=str              
             ELSE IF (str(1:1)=='*') THEN

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -697,15 +697,15 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
       IF( ICISTR .NE. 1 ) CALL REWINE(LUC,-1)
 *. Number of terms to be printed
 C?    WRITE(6,*) ' GASANA : IPRNCIV = ', IPRNCIV
-      IF (IPRNCIV.EQ.0) THEN
-        THRES = 2.0D-1
-        MAXTRM = 200
-      ELSE IF (IPRNCIV.EQ.1) THEN
-        THRES = 2.0D-3
-        MAXTRM = 1000
+      IF (IPRNCIV.EQ.1) THEN
+        THRES = 1.0D-1
+        MAXTRM = 50
       ELSE IF (IPRNCIV.EQ.2) THEN
-        THRES = 2.0D-4
-        MAXTRM = 10000
+        THRES = 1.0D-3
+        MAXTRM = 200
+      ELSE IF (IPRNCIV.EQ.3) THEN
+        THRES = 1.0D-4
+        MAXTRM = 1000
       END IF
 *
       IUSLAB = 0
@@ -1017,62 +1017,62 @@ C?        WRITE(6,*) ' Number of elements readin ',IDET
      &           ' IS  ',NCIVAR - NACC
 *
       IF(NOCCLS.NE.1) THEN
-      WRITE(6,'(A)')
-      WRITE(6,'(A)')
-     & '   Magnitude of CI coefficients for each excitation level '
-      WRITE(6,'(A)')
-     & '  ========================================================='
-      WRITE(6,'(A)')
-      DO 400 JOCCLS = 1, NOCCLS
-          N = 0
-          DO 380 IPOT = 1, 10
-            N = N + NCPMT(IPOT,JOCCLS)
-  380     CONTINUE
-          IF(N .NE. 0 ) THEN
-            WRITE(6,*)
-            WRITE(6,'(A,15I3)')'       Occupation of active sets :',
-     &      (IOCCLS(IGAS,JOCCLS),IGAS=1, NGAS)
-            WRITE(6,'(A,I9)')
-     &      '         Number of coefficients larger than 10-11 ', N
-            WRITE(6,*)
-            WACC = 0.0D0
-            DO 370 IPOT = 1, 10
-              N =  NCPMT(IPOT,JOCCLS)
-              W =  WCPMT(IPOT,JOCCLS)
-              WACC = WACC + W
-              WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
-     &        '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
-  370       CONTINUE
-          END IF
-  400 CONTINUE
+        IF(IPRNCIV.GE.2)THEN
+          WRITE(6,'(A)')
+          WRITE(6,'(A)')
+     &     '   Magnitude of CI coefficients for each excitation level '
+          WRITE(6,'(A)')
+     &     '  ========================================================='
+          WRITE(6,'(A)')
+          DO 400 JOCCLS = 1, NOCCLS
+              N = 0
+              DO 380 IPOT = 1, 10
+                N = N + NCPMT(IPOT,JOCCLS)
+  380         CONTINUE
+              IF(N .NE. 0 ) THEN
+                WRITE(6,*)
+                WRITE(6,'(A,15I3)')'       Occupation of active sets :',
+     &          (IOCCLS(IGAS,JOCCLS),IGAS=1, NGAS)
+                WRITE(6,'(A,I9)')
+     &          '         Number of coefficients larger than 10-11 ', N
+                WRITE(6,*)
+                WACC = 0.0D0
+                DO 370 IPOT = 1, 10
+                  N =  NCPMT(IPOT,JOCCLS)
+                  W =  WCPMT(IPOT,JOCCLS)
+                  WACC = WACC + W
+                  WRITE(6,'(A,I2,A,I2,3X,I9,1X,E15.8,3X,E15.8)')
+     &            '  10-',IPOT,' TO 10-',(IPOT-1),N,W,WACC
+  370           CONTINUE
+              END IF
+  400     CONTINUE
+        END IF ! IPRNCIV >= 2 
 *
 *. Total weight and number of dets per excitation level
 *
-      WRITE(6,'(A)')
-      WRITE(6,'(A)')
-     & '   Total weight and number of SD''s (> 10 ** -11 )  : '
-      WRITE(6,'(A)')
-     & '  ================================================='
-      WRITE(6,'(A)')
-      WRITE(6,*) '        N      Weight      Acc. Weight   Occupation '
-      WRITE(6,*) ' ==================================================='
-      WACC = 0.0D0
-      DO 500 JOCCLS = 1, NOCCLS
-          N = 0
-          W = 0.0D0
-          DO 480 IPOT = 1, 10
-            N = N + NCPMT(IPOT,JOCCLS)
-            W = W + WCPMT(IPOT,JOCCLS)
-  480     CONTINUE
-          WACC = WACC + W
-          IF(N .NE. 0 ) THEN
-            WRITE(6,'(1X,I9,3X,E9.4,7X,E9.4,2X,16(1X,I2))')
-     &      N,W,WACC,(IOCCLS(IGAS,JOCCLS),IGAS=1,NGAS)
-          END IF
-  500 CONTINUE
-      END IF
+        WRITE(6,'(/A)')
+     &   '   Total weight and number of SD''s (> 10 ** -11 )  : '
+        WRITE(6,'(A)')
+     &   '  ================================================='
+        WRITE(6,'(A)')
+        WRITE(6,*)'        N      Weight      Acc. Weight   Occupation '
+        WRITE(6,*)' ==================================================='
+        WACC = 0.0D0
+        DO 500 JOCCLS = 1, NOCCLS
+            N = 0
+            W = 0.0D0
+            DO 480 IPOT = 1, 10
+              N = N + NCPMT(IPOT,JOCCLS)
+              W = W + WCPMT(IPOT,JOCCLS)
+  480       CONTINUE
+            WACC = WACC + W
+            IF(N .NE. 0 ) THEN
+              WRITE(6,'(1X,I9,3X,E9.4,7X,E9.4,2X,16(1X,I2))')
+     &        N,W,WACC,(IOCCLS(IGAS,JOCCLS),IGAS=1,NGAS)
+            END IF
+  500   CONTINUE
+      END IF ! NOCCLS > 1
 *
-      RETURN
       END
 ***********************************************************************
 *                                                                     *

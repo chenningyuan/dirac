@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -239,7 +239,7 @@ C         because of round-off errors /hjaaj
      &     EVCDIF*ERGDIF .LT. D0 .and. .not. roundv 
      &     .and. .not. noswit ) THEN
 c     DEBUG
-        write (6,9005) itdiis, evcdif*ergval, round, noswit
+        WRITE (6,9005) ITDIIS, EVCDIF*ERGVAL, ROUND, NOSWIT
  9005   format ('DEBUG in DHFCNV: ITDIIS=',i3,5x,'grad=',d10.3,5x,
      &         'round,noswit=',2l3/)
 c     END DEBUG
@@ -298,6 +298,8 @@ C     Damping of total Fock matrix
 C     ============================
 C
       DAMPON = DODAMP.AND.(.NOT.DIISON).AND.INTFLG.EQ.INTBUF
+C.....Do not turn on damping with atomic Huckel before DIIS gets activated
+      IF(ATHUCK.AND.NITER.EQ.3) DAMPON=.FALSE.
       IF(DAMPON) THEN
         CACC(1:4) = 'DAMP'
         WRITE(CACC(5:7),'(I3)') INT(DAMPFC*100.0D0)

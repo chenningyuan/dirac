@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -286,8 +286,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -312,8 +314,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -338,8 +342,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -364,8 +370,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -390,8 +398,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -416,8 +426,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -442,8 +454,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -468,8 +482,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -494,8 +510,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -520,8 +538,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -546,8 +566,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, MPI_CHARACTER, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_CHARACTER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -572,8 +594,10 @@ contains
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim_i4, MPI_CHARACTER, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_CHARACTER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -601,12 +625,14 @@ contains
     message_id_i4   = message_id
     rank_i4         = rank
 
+    if (.not. MPI_INIT_called) return
     call mpi_probe(rank_i4, message_id_i4, communicator_i4, status_container_i4, ierr_i4)
 
     do i = 1, MPI_STATUS_SIZE
       status_container(i) = status_container_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_probe(rank   , message_id   , communicator   , status_container   , ierr   )
 #endif
 
@@ -636,6 +662,7 @@ contains
     message_id_i4   = message_id
     rank_i4         = rank
 
+    if (.not. MPI_INIT_called) return
     call mpi_iprobe(rank_i4, message_id_i4, communicator_i4, x_l4, status_container_i4, ierr_i4)
 
     do i = 1, MPI_STATUS_SIZE
@@ -643,6 +670,7 @@ contains
     end do
     x               = x_l4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_iprobe(rank   , message_id   , communicator   , x   , status_container   , ierr   )
 #endif
 
@@ -666,6 +694,7 @@ contains
 !-------------------------------------------------------------------------------
     request_i4      = request
 
+    if (.not. MPI_INIT_called) return
     call mpi_test(request_i4, x_l4, status_container_i4, ierr_i4)
 
     do i = 1, MPI_STATUS_SIZE
@@ -673,6 +702,7 @@ contains
     end do
     x               = x_l4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_test(request   , x   , status_container   , ierr   )
 #endif
 
@@ -701,6 +731,7 @@ contains
       request_i4(i) = request(i)
     end do
 
+    if (.not. MPI_INIT_called) return
     call mpi_testall(ndim_i4, request_i4, x_l4, status_container_i4, ierr_i4)
 
     do i = 1, MPI_STATUS_SIZE
@@ -710,6 +741,7 @@ contains
     end do
     x               = x_l4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_testall(ndim   , request   , x   , status_container   , ierr   )
 #endif
 
@@ -731,12 +763,14 @@ contains
 !-------------------------------------------------------------------------------
     request_i4      = request
 
+    if (.not. MPI_INIT_called) return
     call mpi_wait(request_i4, status_container_i4, ierr_i4)
 
     do i = 1, MPI_STATUS_SIZE
       status_container(i) = status_container_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_wait(request   , status_container   , ierr   )
 #endif
 
@@ -768,8 +802,10 @@ contains
     message_id_i4   = message_id
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim_i4, my_MPI_INTEGER, receiver_i4, message_id_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim   , my_MPI_INTEGER, receiver   , message_id   , communicator   , ierr   )
 #endif
 
@@ -797,8 +833,10 @@ contains
     message_id_i4   = message_id
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim_i4, my_MPI_INTEGER, receiver_i4, message_id_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim   , my_MPI_INTEGER, receiver   , message_id   , communicator   , ierr   )
 #endif
 
@@ -826,8 +864,10 @@ contains
     message_id_i4   = message_id
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim_i4, MPI_REAL8, receiver_i4, message_id_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim   , MPI_REAL8, receiver   , message_id   , communicator   , ierr   )
 #endif
 
@@ -855,8 +895,10 @@ contains
     message_id_i4   = message_id
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim_i4, MPI_REAL8, receiver_i4, message_id_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim   , MPI_REAL8, receiver   , message_id   , communicator   , ierr   )
 #endif
 
@@ -884,8 +926,10 @@ contains
     message_id_i4   = message_id
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim_i4, MPI_REAL8, receiver_i4, message_id_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim   , MPI_REAL8, receiver   , message_id   , communicator   , ierr   )
 #endif
 
@@ -913,8 +957,10 @@ contains
     message_id_i4   = message_id
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim_i4, MPI_CHARACTER, receiver_i4, message_id_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_send(x, ndim   , MPI_CHARACTER, receiver   , message_id   , communicator   , ierr   )
 #endif
 
@@ -944,9 +990,11 @@ contains
     message_id_i4   = message_id
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_isend(x, ndim_i4, my_MPI_INTEGER, receiver_i4, message_id_i4, communicator_i4, request_i4, ierr_i4)
     request         = request_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_isend(x, ndim   , my_MPI_INTEGER, receiver   , message_id   , communicator   , request   , ierr   )
 #endif
 
@@ -979,10 +1027,12 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
 #else
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1012,12 +1062,14 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1046,10 +1098,12 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
 #else
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1078,12 +1132,14 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1112,10 +1168,12 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, MPI_REAL8, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
 #else
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , MPI_REAL8, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1144,10 +1202,12 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, MPI_REAL8, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
 #else
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , MPI_REAL8, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1177,12 +1237,14 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, MPI_REAL8, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , MPI_REAL8, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1211,10 +1273,12 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, MPI_REAL8, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
 #else
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , MPI_REAL8, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1243,10 +1307,12 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim_i4, MPI_CHARACTER, sender_i4, message_id_i4, communicator_i4, status_array_i4, ierr_i4)
 #else
     integer(kind=integer_kind) :: status_array(MPI_STATUS_SIZE)
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_recv(x, ndim   , MPI_CHARACTER, sender   , message_id   , communicator   , status_array   , ierr   )
 #endif
 
@@ -1276,10 +1342,12 @@ contains
     message_id_i4   = message_id
     sender_i4       = sender
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_irecv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, request_i4, ierr_i4)
     request         = request_i4
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_irecv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , request   , ierr   )
 #endif
 
@@ -1313,9 +1381,11 @@ contains
     operation_i4    = operation
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, receiver_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim   , my_MPI_INTEGER, operation   , receiver   , communicator   , ierr   )
 #endif
 
@@ -1344,9 +1414,11 @@ contains
     operation_i4    = operation
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, receiver_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim   , my_MPI_INTEGER, operation   , receiver   , communicator   , ierr   )
 #endif
 
@@ -1375,9 +1447,11 @@ contains
     operation_i4    = operation
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, receiver_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim   , my_MPI_INTEGER, operation   , receiver   , communicator   , ierr   )
 #endif
 
@@ -1406,9 +1480,11 @@ contains
     operation_i4    = operation
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim_i4, MPI_REAL8, operation_i4, receiver_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim   , MPI_REAL8, operation   , receiver   , communicator   , ierr   )
 #endif
 
@@ -1437,9 +1513,11 @@ contains
     operation_i4    = operation
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim_i4, MPI_REAL8, operation_i4, receiver_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim   , MPI_REAL8, operation   , receiver   , communicator   , ierr   )
 #endif
 
@@ -1468,9 +1546,11 @@ contains
     operation_i4    = operation
     receiver_i4     = receiver
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim_i4, MPI_REAL8, operation_i4, receiver_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_reduce(x, y, ndim   , MPI_REAL8, operation   , receiver   , communicator   , ierr   )
 #endif
 
@@ -1496,9 +1576,11 @@ contains
     ndim_i4         = ndim
     operation_i4    = operation
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim   , my_MPI_INTEGER, operation   , communicator   , ierr   )
 #endif
 
@@ -1524,9 +1606,11 @@ contains
     ndim_i4         = ndim
     operation_i4    = operation
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim   , my_MPI_INTEGER, operation   , communicator   , ierr   )
 #endif
 
@@ -1553,9 +1637,11 @@ contains
     ndim_i4         = ndim
     operation_i4    = operation
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim_i4, MPI_INTEGER8, operation_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim   , MPI_INTEGER8, operation   , communicator   , ierr   )
 #endif
 
@@ -1582,9 +1668,11 @@ contains
     ndim_i4         = ndim
     operation_i4    = operation
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim_i4, MPI_REAL8, operation_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   , communicator   , ierr   )
 #endif
 
@@ -1610,9 +1698,11 @@ contains
     ndim_i4         = ndim
     operation_i4    = operation
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim_i4, MPI_REAL8, operation_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   , communicator   , ierr   )
 #endif
 
@@ -1638,9 +1728,11 @@ contains
     ndim_i4         = ndim
     operation_i4    = operation
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim_i4, MPI_REAL8, operation_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   , communicator   , ierr   )
 #endif
 
@@ -1669,9 +1761,11 @@ contains
     ndim2_i4        = ndim2
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_scatter(x, ndim1_i4, MPI_REAL8, y, ndim2_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_scatter(x, ndim1   , MPI_REAL8, y, ndim2   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -1704,8 +1798,10 @@ contains
     disp_i4         = disp
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_gather(x, ndim_i4, my_MPI_INTEGER, y, disp_i4, my_MPI_INTEGER, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_gather(x, ndim   , my_MPI_INTEGER, y, disp   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
 
@@ -1734,8 +1830,10 @@ contains
     disp_i4         = disp
     root_proc_i4    = root_proc
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_gather(x, ndim_i4, MPI_REAL8, y, disp_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_gather(x, ndim   , MPI_REAL8, y, disp   , MPI_REAL8, root_proc   , communicator   , ierr   )
 #endif
 
@@ -1761,8 +1859,10 @@ contains
     ndim_i4         = ndim
     ndim2_i4        = ndim2
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allgather(x, ndim_i4, my_MPI_INTEGER, y, ndim2_i4, my_MPI_INTEGER, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_allgather(x, ndim   , my_MPI_INTEGER, y, ndim2   , my_MPI_INTEGER, communicator   , ierr   )
 #endif
 
@@ -1787,8 +1887,10 @@ contains
     ndim_i4         = ndim
     ndim2_i4        = ndim2
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allgather(x, ndim_i4, my_MPI_INTEGER, y, ndim2_i4, my_MPI_INTEGER, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_allgather(x, ndim   , my_MPI_INTEGER, y, ndim2   , my_MPI_INTEGER, communicator   , ierr   )
 #endif
 
@@ -1814,8 +1916,10 @@ contains
     ndim_i4         = ndim
     ndim2_i4        = ndim2
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_allgather(x, ndim_i4, MPI_REAL8, y, ndim2_i4, MPI_REAL8, communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_allgather(x, ndim   , MPI_REAL8, y, ndim2   , MPI_REAL8, communicator   , ierr   )
 #endif
 
@@ -1839,9 +1943,11 @@ contains
     integer(kind=4)            :: rank_i4
 !-------------------------------------------------------------------------------
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_comm_rank(communicator_i4, rank_i4, ierr_i4)
     rank            = rank_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_comm_rank(communicator   , rank   , ierr   )
 #endif
 
@@ -1861,9 +1967,11 @@ contains
     integer(kind=4)            :: is_size_i4
 !-------------------------------------------------------------------------------
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_comm_size(communicator_i4, is_size_i4, ierr_i4)
     is_size         = is_size_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_comm_size(communicator   , is_size      , ierr   )
 #endif
 
@@ -1889,9 +1997,11 @@ contains
     old_communicator_i4 = old_communicator
     color_i4            = color
     key_i4              = key
+    if (.not. MPI_INIT_called) return
     call mpi_comm_split(old_communicator_i4, color_i4, key_i4, new_communicator_i4, ierr_i4)
     new_communicator    = new_communicator_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_comm_split(old_communicator   , color   , key   , new_communicator   , ierr   )
 #endif
 
@@ -1909,9 +2019,11 @@ contains
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_comm_free(communicator_i4, ierr_i4)
     communicator    = communicator_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_comm_free(communicator   , ierr   )
 #endif
 
@@ -1929,8 +2041,10 @@ contains
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_barrier(communicator_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_barrier(communicator   , ierr   )
 #endif
 
@@ -1948,9 +2062,11 @@ contains
     integer(kind=4)            :: ndim_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_get_processor_name(pname, ndim_i4, ierr_i4)
     ndim = ndim_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_get_processor_name(pname, ndim   , ierr   )
 #endif
 
@@ -1969,6 +2085,7 @@ contains
 #else
     call mpi_init(ierr   )
 #endif
+    MPI_INIT_called = .true.
 
   end subroutine
 !-------------------------------------------------------------------------------
@@ -1981,8 +2098,10 @@ contains
 #ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
     call mpi_finalize(ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_finalize(ierr   )
 #endif
 
@@ -2003,8 +2122,10 @@ contains
 !-------------------------------------------------------------------------------
     communicator_i4 = communicator
     error_code_i4   = error_code
+    if (.not. MPI_INIT_called) return
     call mpi_abort(communicator_i4, error_code_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_abort(communicator   , error_code   , ierr   )
 #endif
 
@@ -2031,9 +2152,11 @@ contains
     info_i4         = info
     amode_i4        = amode
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_file_open(communicator_i4, fname, amode_i4, info_i4, file_handle_i4, ierr_i4)
     file_handle     = file_handle_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_open(communicator   , fname, amode   , info   , file_handle   , ierr   )
 #endif
 
@@ -2051,8 +2174,10 @@ contains
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     file_handle_i4 = file_handle
+    if (.not. MPI_INIT_called) return
     call mpi_file_close(file_handle_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_close(file_handle   , ierr   )
 #endif
 
@@ -2081,8 +2206,10 @@ contains
     etype_i4        = etype
     ftype_i4        = ftype
     file_handle_i4  = file_handle
+    if (.not. MPI_INIT_called) return
     call mpi_file_set_view(file_handle_i4, disp, etype_i4, ftype_i4, datarep, info_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_set_view(file_handle   , disp, etype   , ftype   , datarep, info   , ierr   )
 #endif
 
@@ -2104,8 +2231,10 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4 = file_handle
     whence_i4      = whence
+    if (.not. MPI_INIT_called) return
     call mpi_file_seek(file_handle_i4, offset, whence_i4, ierr_i4)
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_seek(file_handle   , offset, whence   , ierr   )
 #endif
 
@@ -2129,9 +2258,11 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_iwrite(file_handle_i4, buf, length_i4,    mpi_packed, request_i4, ierr_i4)
     request         = request_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_iwrite(file_handle   , buf, length   , df_mpi_packed, request   , ierr   )
 #endif
 
@@ -2156,9 +2287,11 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_iwrite_at(file_handle_i4, offset, buf, length_i4,    mpi_packed, request_i4, ierr_i4)
     request         = request_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_iwrite_at(file_handle   , offset, buf, length   , df_mpi_packed, request   , ierr   )
 #endif
 
@@ -2184,11 +2317,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, my_MPI_INTEGER, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle   , offset, buf, length   , my_MPI_INTEGER, status_array   , ierr   )
 #endif
 
@@ -2214,11 +2349,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, my_MPI_INTEGER, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle   , offset, buf, length   , my_MPI_INTEGER, status_array   , ierr   )
 #endif
 
@@ -2244,11 +2381,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, MPI_REAL8, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle   , offset, buf, length   , MPI_REAL8, status_array   , ierr   )
 #endif
 
@@ -2274,11 +2413,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, MPI_REAL8, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle   , offset, buf, length   , MPI_REAL8, status_array   , ierr   )
 #endif
 
@@ -2304,11 +2445,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, my_MPI_INTEGER, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle   , offset, buf, length   , my_MPI_INTEGER, status_array   , ierr   )
 #endif
 
@@ -2334,11 +2477,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, MPI_REAL8, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle   , offset, buf, length   , MPI_REAL8, status_array   , ierr   )
 #endif
 
@@ -2365,11 +2510,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, MPI_BYTE, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle   , offset, buf, length   , MPI_BYTE, status_array   , ierr   )
 #endif
 
@@ -2396,11 +2543,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle_i4, offset, buf, length_i4, MPI_BYTE, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_write_at(file_handle   , offset, buf, length   , MPI_BYTE, status_array   , ierr   )
 #endif
 
@@ -2425,11 +2574,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read(file_handle_i4, buf, length_i4,    mpi_packed, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read(file_handle   , buf, length   , df_mpi_packed, status_array   , ierr   )
 #endif
 
@@ -2455,11 +2606,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4,    mpi_packed, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , df_mpi_packed, status_array   , ierr   )
 #endif
 
@@ -2485,11 +2638,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, my_MPI_INTEGER, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , my_MPI_INTEGER, status_array   , ierr   )
 #endif
 
@@ -2515,11 +2670,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, my_MPI_INTEGER, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , my_MPI_INTEGER, status_array   , ierr   )
 #endif
 
@@ -2545,11 +2702,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, MPI_REAL8, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , MPI_REAL8, status_array   , ierr   )
 #endif
 
@@ -2575,11 +2734,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, MPI_REAL8, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , MPI_REAL8, status_array   , ierr   )
 #endif
 
@@ -2605,11 +2766,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, my_MPI_INTEGER, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , my_MPI_INTEGER, status_array   , ierr   )
 #endif
 
@@ -2635,11 +2798,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, MPI_REAL8, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , MPI_REAL8, status_array   , ierr   )
 #endif
 
@@ -2666,11 +2831,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, MPI_BYTE, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , MPI_BYTE, status_array   , ierr   )
 #endif
 
@@ -2697,11 +2864,13 @@ contains
 !-------------------------------------------------------------------------------
     file_handle_i4  = file_handle
     length_i4       = length
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle_i4, offset, buf, length_i4, MPI_BYTE, status_array_i4, ierr_i4)
     do i = 1, MPI_STATUS_SIZE
       status_array(i) = status_array_i4(i)
     end do
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_file_read_at(file_handle   , offset, buf, length   , MPI_BYTE, status_array   , ierr   )
 #endif
 
@@ -2719,9 +2888,11 @@ contains
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
     info_object_i4 = info_object
+    if (.not. MPI_INIT_called) return
     call mpi_info_create(info_object_i4, ierr_i4)
     info_object    = info_object_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_info_create(info_object   , ierr  )
 #endif
 
@@ -2739,9 +2910,11 @@ contains
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
     info_object_i4 = info_object
+    if (.not. MPI_INIT_called) return
     call mpi_info_free(info_object_i4, ierr_i4)
     info_object    = info_object_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_info_free(info_object   , ierr  )
 #endif
 
@@ -2760,10 +2933,12 @@ contains
     integer(kind=4)                  :: ierr_i4
 !-------------------------------------------------------------------------------
     info_object_i4 = info_object
+    if (.not. MPI_INIT_called) return
     call mpi_info_set(info_object_i4, key, value, ierr_i4)
     info_object    = info_object_i4
 #else
     integer(kind=integer_kind)       :: ierr
+    if (.not. MPI_INIT_called) return
     call mpi_info_set(info_object   , key, value, ierr  )
 #endif
 
@@ -2792,9 +2967,11 @@ contains
     ndim2_i4        = ndim2
     pos_i4          = pos
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_pack(x, ndim1_i4, my_MPI_INTEGER, y, ndim2_i4, pos_i4, communicator_i4, ierr_i4)
     pos             = pos_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_pack(x, ndim1   , my_MPI_INTEGER, y, ndim2   , pos   , communicator   , ierr   )
 #endif
 
@@ -2823,9 +3000,11 @@ contains
     ndim2_i4        = ndim2
     pos_i4          = pos
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_pack(x, ndim1_i4, my_MPI_INTEGER, y, ndim2_i4, pos_i4, communicator_i4, ierr_i4)
     pos             = pos_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_pack(x, ndim1   , my_MPI_INTEGER, y, ndim2   , pos   , communicator   , ierr   )
 #endif
 
@@ -2854,9 +3033,11 @@ contains
     ndim2_i4        = ndim2
     pos_i4          = pos
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_pack(x, ndim1_i4, MPI_REAL8, y, ndim2_i4, pos_i4, communicator_i4, ierr_i4)
     pos             = pos_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_pack(x, ndim1   , MPI_REAL8, y, ndim2   , pos   , communicator   , ierr   )
 #endif
 
@@ -2885,9 +3066,11 @@ contains
     ndim2_i4        = ndim2
     pos_i4          = pos
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_unpack(x, ndim1_i4, pos_i4, y, ndim2_i4, my_MPI_INTEGER, communicator_i4, ierr_i4)
     pos             = pos_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_unpack(x, ndim1   , pos   , y, ndim2   , my_MPI_INTEGER, communicator   , ierr   )
 #endif
 
@@ -2916,9 +3099,11 @@ contains
     ndim2_i4        = ndim2
     pos_i4          = pos
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_unpack(x, ndim1_i4, pos_i4, y, ndim2_i4, my_MPI_INTEGER, communicator_i4, ierr_i4)
     pos             = pos_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_unpack(x, ndim1   , pos   , y, ndim2   , my_MPI_INTEGER, communicator   , ierr   )
 #endif
 
@@ -2947,9 +3132,11 @@ contains
     ndim2_i4        = ndim2
     pos_i4          = pos
     communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
     call mpi_unpack(x, ndim1_i4, pos_i4, y, ndim2_i4, MPI_REAL8, communicator_i4, ierr_i4)
     pos             = pos_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_unpack(x, ndim1   , pos   , y, ndim2   , MPI_REAL8, communicator   , ierr   )
 #endif
 
@@ -2975,9 +3162,11 @@ contains
     do i = 1, MPI_STATUS_SIZE
       status_array_i4(i) = status_array(i)
     end do
+    if (.not. MPI_INIT_called) return
     call mpi_get_count(status_array_i4, datatype_i4, elements_i4, ierr_i4)
     elements        = elements_i4
 #else
+    if (.not. MPI_INIT_called) return
     call mpi_get_count(status_array   , datatype   , elements   , ierr   )
 #endif
 
@@ -2996,11 +3185,16 @@ contains
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     datatype_i4     = datatype
+    write (0,*) 'datatype ',datatype
+    write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
+    if (.not. MPI_INIT_called) return
     call mpi_type_extent(datatype_i4, extent_i4, ierr_i4)
     extent          = extent_i4
 #else
     integer(kind=integer_kind)       :: ierr
-!   print *, 'datatype ',datatype
+    write (0,*) 'datatype ',datatype
+    write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
+    if (.not. MPI_INIT_called) return
     call mpi_type_extent(datatype   , extent   , ierr   )
 !   print *, 'extent ',extent
 #endif

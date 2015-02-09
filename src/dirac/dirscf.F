@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,11 +20,11 @@
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck psidhf */
-      SUBROUTINE PSIDHF(WFCONV)
+C  /* Deck psiscf */
+      SUBROUTINE PSISCF(WFCONV)
 C***********************************************************************
 C
-C     Solve DHF - equations; print results
+C     Solve SCF - equations (HF/KS); print results
 C
 C     This routine is called from:  PAMPSI (main/dirac.F)
 C
@@ -56,10 +56,10 @@ C
      &          EVCCNV_SAVE, FCKCNV_SAVE 
       real(8), allocatable :: WORK(:)
 C
-      CALL QENTER('PSIDHF')
+      CALL QENTER('PSISCF')
       call legacy_lwork_get(LWORK)
 #include "memint.h"
-      call alloc(WORK,LWORK,id='WORK in PSIDHF')
+      call alloc(WORK,LWORK,id='WORK in PSISCF')
 C
       WFCONV = .FALSE.
       if (doxml) then
@@ -139,7 +139,7 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
      &            WORK(KFREE),LFREE)
 C
 C     Memory deallocation of the Fock matrix only...
-      CALL MEMREL('PSIDHF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
+      CALL MEMREL('PSISCF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
 C
 C     Output section
 C
@@ -156,7 +156,7 @@ CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
 C
 C     Memory deallocation of the rest..
 C
-      CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
       call dealloc(work)
 
@@ -164,27 +164,44 @@ C=============================================================
 CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
       IF (DO2C4C) THEN
-        INTDEF = INTDEF_SAVE
-        INTGEN = INTDEF 
-        MC = 2
-        SSMTRC = SSMTRC_SAVE
+        INTDEF    = INTGEN_SAVE
+        INTGEN    = INTDEF 
+        MC        = 2
+        SSMTRC    = SSMTRC_SAVE
+        !> set integral flags
+        ILLINT    = IAND(INTGEN,1)
+        ISLINT    = IAND(INTGEN/2,1)
+        ISSINT    = IAND(INTGEN/4,1)
+        IGTINT    = IAND(INTGEN/8,1)
 
-        BSS = .FALSE.
-        CALL GMOTRA(.FALSE.)
-CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
+        print *, 'intdef, ssmtrc ==> ',intdef, ssmtrc
+
+
+        BSS        = .FALSE.
+        twocomp    = .false.
+        x2cmod_mmf = .false.
+        x2c        = .false.
+
+        CALL SETDC1(0)
         CALL SETDC2(0)
 
-        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 2')
+        CALL GMOTRA(.FALSE.)
+CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
+
+        call alloc(WORK,LWORK,id='WORK in PSISCF - part 2')
+#include "memint.h"
 
         IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
 CMI      ... prepare the starting 4c Fock MO matrix
-        CALL MEMGET('REAL',K1,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K2,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K3,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K1',K1,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K2',K2,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K3',K3,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMCHK('FDTR4C 0.0.0',WORK,1)
+
         CALL FDTR4C(WORK(K1),WORK(K2),WORK(K3),WORK(KFREE),LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K3,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K2,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K1,KFREE,LFREE)
+
+        CALL MEMREL('FDTR4C.PSISCF',WORK,KWORK,KWORK,KFREE,LFREE)
+
         ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
 C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KCMO,N2BBASXQ,    WORK,KFREE,LFREE)
@@ -208,28 +225,28 @@ C         .... prepare the DFCOEF file with staring MOs
           CALL SYSTEM('/bin/rm DFDIIS')
 #endif
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFDIIS file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFDIIS file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFFOCK',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFFOCK')
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFFOCK file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFFOCK file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFEVEC',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFEVEC')
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFEVEC file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFEVEC file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFCOEF',EXIST=EX)
         IF (EX.AND.(INI2C.NE.3.AND.INI2C.NE.4)) THEN
          CALL SYSTEM('/bin/rm DFCOEF')
          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &   'PSIDHF: DFCOEF file from previous SCF cycle was deleted.'
+     &   'PSISCF: DFCOEF file from previous SCF cycle was deleted.'
         ENDIF
 
         DHFCONV(1)=.FALSE.
@@ -266,7 +283,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
          DHFCONV(1)=.TRUE.
         ENDIF
 
-        CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
         call dealloc(work)
 
@@ -282,7 +299,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
           BSS      = .TRUE.
           CMPEIG   = .TRUE. ! this flag is needed for preparing transformed data
           write(lupri,'(/A)')
-     &    '     *** PSIDHF: Descending to two-component'// 
+     &    '     *** PSISCF: Descending to two-component'// 
      &    ' mode after previous four-component SCF cycles. ***'
         end if
         TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
@@ -294,7 +311,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 !       call the x2c/bss transformation module (branch 2 inside gmotra)
         CALL GMOTRA(.FALSE.)
 
-        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 3')
+        call alloc(WORK,LWORK,id='WORK in PSISCF - part 3')
 
         IF(.NOT.CONT2C) THEN
 CMI ... consider TRMO4C2C ...???
@@ -334,7 +351,7 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
           CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &              LFREE,IPRSCF)
 
-          CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+          CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
         END IF ! continue in 2c-mode switch
         call dealloc(work)
       END IF ! 4c --> 2c switch
@@ -349,7 +366,7 @@ C
          call xml_end('task')
       endif
       if(allocated(work)) call dealloc(WORK)
-      CALL QEXIT('PSIDHF')
+      CALL QEXIT('PSISCF')
       RETURN
 C
       END
@@ -390,7 +407,7 @@ C*****************************************************************************
       use fde_mod
       use num_grid_gen
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -420,7 +437,7 @@ C
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
 
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
 
@@ -478,11 +495,15 @@ C     ========================================
       DOSEL = .FALSE.
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
+      IF(ATHUCK) THEN
+        DHF_INTTYP='Atom. Huckel'
+        CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
+        GOTO 100
 C
-C     1) - atomic start
+C     2) - atomic start
 C     -------------------------
-C
-      IF(ATOMST) THEN
+      ELSEIF(ATOMST) THEN
 C.......In the open-shell case use fractional occupation in first iteration; reset at the end
         AOCBUF   = AOC
         AOC      = .FALSE.
@@ -695,7 +716,7 @@ C
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
         if (dirac_cfg_pcm) then
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
@@ -814,6 +835,7 @@ CMI        ... MAXITER is what does the SCF procedure end !!
         ENDIF
       ENDIF
 C
+ 100  CONTINUE
       CALL GETTIM(CTIDEND,WTIDEND)
       CTIDTOT = CTIDEND - CTIDSTR
       WTIDTOT = WTIDEND - WTIDSTR
@@ -826,6 +848,7 @@ C
         IF(NZ.EQ.4) WRITE(LUPRI,'(3X,A,A12)')
      &      '* Quaternion diagonalization(CPU):',CPUTID
       ENDIF
+C
       IF(ONESYS) THEN
         IF(PHCOEF) THEN
           DO I = 1,NFSYM
@@ -1174,7 +1197,7 @@ C
 C    Solve SCF
 C
 C
-C   Called from PSIDHF
+C   Called from PSISCF
 C
 C*****************************************************************************
 
@@ -1288,7 +1311,7 @@ C*****************************************************************************
       use num_grid_gen
       use interface_mo_specific
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -1314,7 +1337,8 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
-#ifdef PCM_MODULE
+
+#ifdef HAS_PCMSOLVER
       real(8) :: time_pcm_fock
       character(12) :: pcm_cputid
       real(8), allocatable :: fock_pcm(:, :, :)
@@ -1549,7 +1573,7 @@ C        ======================
          end if
 C
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
            time_pcm_fock = second()
@@ -1565,7 +1589,7 @@ C
            deallocate(fock_pcm)
            time_pcm_fock = second() - time_pcm_fock
          endif 
-#endif
+#endif         
 
 C
 C        Add one-electron Fock matrix to two-electron matrix
@@ -1616,8 +1640,11 @@ C                DMAT - Density matrix
 C                BMAT - DIIS matrix
 C        Output: CMO  - MO-coefficients for current iteration
 C
-CMI    ... we may get the DHFEXIT  
-         ICHKCNV = 1
+         IF(ATHUCK.AND.(NITER.EQ.2)) THEN
+           ICHKCNV = 0
+         ELSE
+           ICHKCNV = 1
+         ENDIF
          CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &               OVLSEL,DOLEVEL,WORK(KFREE),LFREE)
 
@@ -1625,7 +1652,7 @@ CMI    ... we may get the DHFEXIT
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            pcm_cputid = sectid(time_pcm_fock) 
            write(lupri,'(3X,A,A12)')
@@ -1732,7 +1759,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -1761,7 +1788,7 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
       data besterg /1.0D100/
@@ -1841,7 +1868,7 @@ C
         DHFERG = DHFERG + ERGSOL
       ENDIF
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
         call pcm_energy_driver(dmat, pcm_energy, work, lwork)
@@ -1898,7 +1925,7 @@ CMI      ... print out matrixes ...
      +       'SS Coulombic correction            :  ',CORRLV
          IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Solvent energy                     :  ',ERGSOL
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Polarization energy                :  ',get_pcm_energy()
 #endif
@@ -3513,12 +3540,16 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
           BARNUC = .FALSE.
           DOHUCKEL = .FALSE.
         ELSE
-          WRITE(LUPRI,'(/A)')
-     &    '*** INFO *** No trial vectors found.'//
+          WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'
+          IF(BARNUC) THEN
+            WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
+          ELSEIF(BARNUC) THEN
+            WRITE(LUPRI,'(A)')
      &    ' Using bare nucleus approximation for initial trial vectors.'
-          IF (BNCRON) WRITE(LUPRI,'(A/)')
+            IF (BNCRON) WRITE(LUPRI,'(A/)')
      &    "             Improved by an "//
      &    "estimate of the electronic screening (Slater's rules)."
+          ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case
           num_grid_cfg_estimate_radii = .false.
@@ -3542,7 +3573,7 @@ CMI   ... do always utilize DFCYCL when continuing with BSS-SCF after DC-SCF
      &              CACC,CPUTID,DHF_INTTYP,DAYTID
         GOTO 10
  20     CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS)
+#if defined (VAR_MFDS)
 C        backspace on multifile systems for correct positioning
 C        at the end of the file
         BACKSPACE LUCYCL
@@ -5550,5 +5581,235 @@ C.......transform atomic start to actual symmetry
       CALL MEMREL('ATOMIC_START',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Atomic Huckel start
+C     The basic theory is given here
+C       R. Hoffmann, J. Chem. Phys. 39 (1963) 1397
+C     This work was further motivated by 
+C       P. Norman and H. J. Aa. Jensen, Chem. Phys. Lett. 531 (2012) 229
+C     The particularity of the present approach is to employ 
+C     pre-calculated atomic fragments
+C
+C     Written by Trond Saue June 5 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+#include "mxcent.h"
+C
+#include "nuclei.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbhoc.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      CHARACTER TEXT*74
+      DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
+     &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
+      KFRSAV = KFREE
+      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,'(A)') '** Output from ADHOC (atomic Huckel start)'
+      ENDIF
+C
+C     Find total number of reference orbitals
+C     =======================================
+C     ININD runs over symmetry independent centers
+C     INDEP runs over symmetry dependent centers
+      NVECS=0
+      INDEP=1
+      ININD=1
+      LUHOC=137
+      DO ITYP = 1,NONTYP
+C.......Find the total number of basis functions for this atom type
+        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
+C.......Read information from coefficient file
+        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')        
+        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
+     &        NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
+C.............NPSH............NESH............NBAS...........TOTERG
+        CLOSE(LUHOC,STATUS='KEEP')
+        IF(NAO(ITYP).NE.MBAS) THEN
+           WRITE(LUPRI,'(A/A,I6/A,A6,A,I6)') 
+     &     '* Atomic Huckel start: ',
+     &     '  Wrong number of basis function for atomic type ', ITYP,
+     &     '  Number read from                     ',
+     &     HOCFIL(ITYP),' : '  ,NAO(ITYP),
+     &     '  Expected                             ',MBAS
+           CALL QUIT
+     &     ('ADHOC: Wrong number of basis functions !')
+        ENDIF
+C.......Count the number of orbitals to read
+        NCATOM(0,ITYP)=0
+        NDIM=NCATOM(2,ITYP)+NCATOM(1,ITYP)+1
+        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+        CALL NUMLS1(VECHOC(ITYP),IDUM,IDUM,
+     &       -NCATOM(2,ITYP),NCATOM(1,ITYP),
+     &       NCATOM(0,ITYP),WORK(KITMP))
+        CALL MEMREL('ADHOC.ref',WORK,1,KITMP,KFREE,LFREE)
+        CALL MEMGET('INTE',KCATOM(ITYP),NCATOM(0,ITYP),
+     &              WORK,KFREE,LFREE)
+        NN = INDEP
+        DO J = 0,NONT(ITYP)-1
+          INDEP = INDEP + NUCDEG(ININD+J)
+        ENDDO
+        NATDEG(ITYP) = INDEP - NN
+        NVECS = NVECS + NATDEG(ITYP)*NCATOM(0,ITYP)
+        ININD = ININD+NONT(ITYP)
+      ENDDO
+C
+C     Calculate dimension of arrays
+C     =============================
+C
+      CALL MEMGET('REAL',KE,NVECS,WORK,KFREE,LFREE)
+      NQ = NTBAS(0)*NVECS*NZC1
+      CALL MEMGET('REAL',KQ,NQ      ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KQ),NQ)
+C
+C     Select atomic coefficients
+C     ==========================
+C
+      JVEC = 1
+      ININD= 1
+      DO ITYP = 1,NONTYP
+C.......Read C1 coefficients and orbitalenergies
+        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
+        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
+     &        NNEG,NPOS,NAO(ITYP),DUM
+        NTOT = NNEG+NPOS
+        NQA  = NAO(ITYP)*NTOT*NZC1
+        CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
+        CALL READT(LUHOC,NQA ,WORK(KQA))
+        CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
+        CALL READT(LUHOC,NTOT,WORK(KEA))
+        CLOSE(LUHOC,STATUS='KEEP')
+C.......Make pointer array to selected reference orbitals
+        NDIM = NTOT+1
+        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+        CALL NUMLS1(VECHOC(ITYP),WORK(KCATOM(ITYP)),NCATOM(0,ITYP),
+     &       -NNEG,NPOS,NCATOM(0,ITYP),WORK(KITMP))
+        CALL MEMREL('ADHOC.refsel',WORK,1,KITMP,KFREE,LFREE)
+        CALL ORBCNT(WORK(KCATOM(ITYP)),NCATOM(0,ITYP),NNEG,NPOS,
+     &             NCATOM(2,ITYP),NCATOM(1,ITYP))
+C.....Extract coefficients and orbital energies (JVEC updated inside)
+        CALL SELATOM(WORK(KQ),WORK(KE),NTBAS(0),NVECS,NZC1,
+     &               WORK(KQA),WORK(KEA),NAO(ITYP),NTOT,NNEG,NPOS,
+     &               ININD,NONT(ITYP),NUCDEG(ININD),
+     &               WORK(KCATOM(ITYP)),NCATOM(1,ITYP),
+     &               NCATOM(2,ITYP),JVEC,WORK,KFREE,LFREE)
+        CALL MEMREL('ADHOC.atom',WORK,1,KQA,KFREE,LFREE)
+        ININD = ININD+NONT(ITYP)
+      ENDDO
+      IF(IPRINT.GE.6) THEN
+        WRITE(6,*) 'ADHOC: Selected coefficients:'
+        CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS,NTBAS(0),NVECS,NZC1,
+     &                IQDEF,LUPRI)
+        WRITE(6,*) 'ADHOC: Selected eigenvalues:'
+        CALL OUTPUT(WORK(KE),1,NVECS,1,1,NVECS,1,-1,LUPRI)
+      ENDIF
+C
+C     Get overlap matrix in fragment basis
+C     ====================================
+C
+      CALL MEMGET('REAL',KAMAT,NVECS*NVECS*NZC1,WORK,KFREE,LFREE)
+      CALL OVLFRAG(WORK(KAMAT),NVECS,NONTYP,HOCFIL,NCATOM,NATDEG,
+     &             WORK(KQ),NTBAS(0),IPRINT,WORK,KFREE,LFREE)
+C
+C     Do extended Huckel
+C
+      CALL EHUCKEL(WORK(KAMAT),WORK(KE),HUCPAR,NVECS,NEFF,NZC1,IQDEF,
+     &             NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
+C     Construct extended Huckel molecular orbitals (C1 for now)
+      IFRP=1
+CTROND
+      CALL DZERO(CMO,NCMOQ(IFRP))
+      IOFF=NPSH(IFRP)*NFBAS(IFRP,0)+1
+      CALL QGEMM(NTBAS(0),NEFF,NVECS,D1,
+     &       'N','N',IQDEF,WORK(KQ),NTBAS(0),NVECS,NZC1,
+     &       'N','N',IQDEF,WORK(KAMAT),NVECS,NEFF,NZC1,
+     &            D0,IQDEF,CMO(IOFF),NFBAS(IFRP,0),NORB(IFRP),NZC1)
+      CALL DCOPY(NEFF,WORK(KE),1,EIG(NPSH(IFRP)+1),1)
+C     Write coefficients to file
+      EIGSUM=D2*DSUM(NVECS,WORK(KE),1)
+ 137  CONTINUE
+      CALL MEMREL('ADHOC',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+ 10   CONTINUE
+      CALL QUIT('ADHOC: END OF FILE reading TEXT')
+ 20   CONTINUE
+      CALL QUIT('ADHOC: ERROR reading TEXT')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck ehuckel */
+      SUBROUTINE EHUCKEL(HMAT,EIG,HUCPAR,NVECS,NEFF,NZ,IPQ,
+     &           NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Extended Huckel module
+C     INPUT:
+C       HMAT - overlap matrix in fragment basis
+C     OUTPUT:
+C       HMAT - eigenvectors of extended Huckel problem
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DP5=0.5D0)
+      CHARACTER*6 HOCFIL(NONTYP)
+      DIMENSION HMAT(NVECS,NVECS,NZ),EIG(NVECS),IPQ(NZ),
+     &          NCATOM(0:2,NONTYP),NATDEG(NONTYP),WORK(*)
+      KFRSAV=KFREE
+      N2DIM=NVECS*NVECS*NZ
+      CALL MEMGET('REAL',KSMAT,N2DIM,WORK,KFREE,LFREE)
+      CALL DCOPY(N2DIM,HMAT,1,WORK(KSMAT),1)
+C.....Construct extended Huckel Hamiltonian; hermiticity not exploited
+      JAT = 0
+      JOF = 0
+      DO J = 1,NONTYP
+      DO JJ = 1,NATDEG(J)
+        JAT = JAT + 1
+        IAT = 0
+        IOF = 0
+        DO I = 1,NONTYP
+        DO II = 1,NATDEG(I)
+          IAT = IAT + 1
+          IF(IAT.EQ.JAT) THEN
+            DO K = 1,NCATOM(0,I)
+              HMAT(IOF+K,IOF+K,1) = EIG(IOF+K)
+            ENDDO
+          ELSE
+            DO L = 1,NCATOM(0,J)
+              DO K = 1,NCATOM(0,I)
+                FAC = DP5*HUCPAR*(EIG(IOF+K)+EIG(JOF+L))
+                DO IZ = 1,NZ
+                  HMAT(IOF+K,JOF+L,IZ) = FAC*HMAT(IOF+K,JOF+L,IZ)
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDIF
+          IOF = IOF + NCATOM(0,I)
+        ENDDO
+        ENDDO
+        JOF = JOF + NCATOM(0,J)
+      ENDDO
+      ENDDO
+C
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,*) 'EHUCKEL: Total extended Huckel matrix'
+        CALL PRQMAT(HMAT,NVECS,NVECS,NVECS,NVECS,NZ,IPQ,LUPRI)
+      ENDIF
+C     Solve general eigenvalue problem; coefficients stored in SMAT
+      CALL GEIGSOLV(HMAT,WORK(KSMAT),EIG,NVECS,NEFF,NVECS,NVECS,NZ,IPQ,
+     &              IPRINT,WORK,KFREE,LFREE)
+      CALL DCOPY(N2DIM,WORK(KSMAT),1,HMAT,1)
+C
+      CALL MEMREL('EHUCKEL',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
 C --- end of dirac/dirscf.F ---
+

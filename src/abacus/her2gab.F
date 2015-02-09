@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1857,13 +1857,8 @@ C        File AOPROPER is opened; get unit number
          ELSE
 C           File AOPROPER is not opened; open it
             LUPROP = 19
-#if defined (SYS_IBM)
-            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &            FILE='APROPER')
-#else
             OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &            FILE='AOPROPER')
-#endif
          ENDIF
 C
 C       Search for GAB-integrals; return if they are there
@@ -1884,13 +1879,8 @@ C
          ENDIF
       ELSE
          LUPROP = 19
-#if defined (SYS_IBM)
-         OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
          REWIND LUPROP
       ENDIF
 C
@@ -2038,13 +2028,8 @@ C           File AOPROPER is opened; get unit number
          ELSE
 C           File AOPROPER is not opened; open it
             LUPROP = 19
-#if defined (SYS_IBM)
-            OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &           FILE='APROPER')
-#else
             OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &           FILE='AOPROPER')
-#endif
          ENDIF
       ELSE
          WRITE(LUPRI,'(A)') 'GETGAB: AOPROPER not found !'

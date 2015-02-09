@@ -1,6 +1,6 @@
 
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -63,6 +63,7 @@ module fde_input_dirac
         WORD1 = WORD
         DO
           READ (LUCMD, '(A7)') WORD
+          CALL UPCASE(WORD)
           SELECT CASE (WORD(1:1))
           CASE('!','#')
             CYCLE
