@@ -66,8 +66,8 @@ C
 C
 C     Execute Dirac
 C
-      write(lupri, '(//a)') 'Execution time and host'
-      write(lupri, '(a)')   '-----------------------'
+      write(lupri,'(/a/a)') 'Execution time and host',
+     &                       '-----------------------'
       CALL TSTAMP(' ',LUPRI)
       CALL DIRCTL()
 C
