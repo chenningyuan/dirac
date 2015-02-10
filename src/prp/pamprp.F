@@ -9974,13 +9974,13 @@ C
          DO 45 IATOM = 1, NUCDEP
             IF (GVAL(IATOM) .NE. 0.0D0) THEN
                FACTOT = GVAL(IATOM)*FAC
-               CALL DZERO(GTRANN,9)
-               CALL DZERO(GTRAND,9)
-               CALL DZERO(GTRANP,9)
-               CALL DZERO(GTRANPLEE,9)
-               CALL DZERO(GTRANPLEP,9)
-               CALL DZERO(GTRANPSEE,9)
-               CALL DZERO(GTRANPSEP,9)
+               CALL DZERO(GTRANN,9*NUCDEP)
+               CALL DZERO(GTRAND,9*NUCDEP)
+               CALL DZERO(GTRANP,9*NUCDEP)
+               CALL DZERO(GTRANPLEE,9*NUCDEP)
+               CALL DZERO(GTRANPLEP,9*NUCDEP)
+               CALL DZERO(GTRANPSEE,9*NUCDEP)
+               CALL DZERO(GTRANPSEP,9*NUCDEP)
                DO 50 I = 1, 3
                DO 50 J = 1, 3
                   DO 60 IX = 1, 3
@@ -10002,10 +10002,10 @@ C
      &                        *PMATL(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
                        GTRANPSEE(I,J,IATOM) = GTRANPSEE(I,J,IATOM)
      &                       + EIGVEC(IX,I)
-     &                       *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
+     &                        *PMATS(JX,JY,IATOM,1)*EIGVEC(IY,J)*CONST
                        GTRANPSEP(I,J,IATOM) = GTRANPSEP(I,J,IATOM) 
      &                       + EIGVEC(IX,I)
-     &                       *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
+     &                        *PMATS(JX,JY,IATOM,2)*EIGVEC(IY,J)*CONST
                         GTRANP(I,J,IATOM) = GTRANPLEE(I,J,IATOM) 
      &                       + GTRANPLEP(I,J,IATOM)
      &                       + GTRANPSEE(I,J,IATOM) 
