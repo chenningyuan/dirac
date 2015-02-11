@@ -86,7 +86,7 @@ the line connecting A and B.
 ::
 
     .IMPORT
-    grid_file
+    numerical_grid
 
 Import previously exported numerical grid.
 
