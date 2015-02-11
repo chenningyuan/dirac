@@ -85,11 +85,10 @@ the line connecting A and B.
 
 ::
 
-    *DFT
     .IMPORT
     grid_file
 
-Import previously exported DFT grid.
+Import previously exported numerical grid.
 
 For debugging you can also create your own grid file. The grid file is
 formatted - in free format. A grid file for three points could look like
