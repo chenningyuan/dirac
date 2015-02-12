@@ -102,5 +102,8 @@ rem after minute make the computer sleep again
 timeout 60
 
 rem please check ....
-powercfg -h off
-rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+rem powercfg -h off
+rem rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+
+rem - restart PC
+shutdown /r
