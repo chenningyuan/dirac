@@ -4025,13 +4025,8 @@ C     Open file
 C
       IF (NEWPRP) THEN
          NEWPRP = .FALSE.
-#if defined (SYS_IBM)
-         OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LUPROP,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
          REWIND LUPROP
       ELSE
          REWIND (LUPROP)

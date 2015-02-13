@@ -284,13 +284,8 @@ C
 C     Open the property file
 C     ======================
 C
-#if defined (SYS_IBM)
       OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-#endif
+     &            FILE='AOPROPER')
 C     
       CALL DZERO(RESULT,3*NBSYM*MAXFQR*NBSYM*MAXFQR*MAXLQR)
 C
