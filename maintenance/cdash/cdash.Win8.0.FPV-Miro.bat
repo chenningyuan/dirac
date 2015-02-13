@@ -1,9 +1,7 @@
 @ECHO OFF
 cls
 
-
 set DIRAC=C:\Users\milias\Documents\Dirac\software\devel_trunk
-
 
 set LOG=%DIRAC%\buildup.log
 set DIRTIMEOUT="14m"
@@ -99,19 +97,17 @@ ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 
 echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
+rem wait 3 minutes
+timeout 180
+
+#  turn the hibernation off
+powercfg -h off
+# make the computer sleep
+rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+
 rem switch off Desktop PC Windows after 10 seconds
 rem timeout 10 && shutdown -s
 
-rem after minute make the computer sleep again
-timeout 60
-
-rem please check ....
-rem powercfg -h off
-rem rundll32.exe powrprof.dll,SetSuspendState 0,1,0
-
 rem - restart PC
-shutdown /r
+rem shutdown /r
 
-timeout 100
-powercfg -h off
-rem rundll32.exe powrprof.dll,SetSuspendState 0,1,0
