@@ -1,6 +1,7 @@
 ## Simple DIRAC buildup configuration file for circleci.com
 ##
-## See https://circleci.com/docs/configuration
+## See https://circleci.com/docs/getting-started
+##     https://circleci.com/docs/configuration
 ##     https://circleci.com/docs/config-sample
 ##
 
