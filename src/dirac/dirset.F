@@ -1277,26 +1277,16 @@ C
 C        ... Open AOPROPER integral file for ONEGEN
 C            (is closed again inside ONEGEN)
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
          CALL ONEGEN(WORK(KFREE),LFREE)
          DIPDONE = .TRUE.
       END IF
 C
 C     ... Open AOPROPER integral file (again) for PRPREA
 C
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 C
 C     ... Allocate memory for RLMMAT in AO basis
 C         (L=0: Overlap, L=1: Dipole)

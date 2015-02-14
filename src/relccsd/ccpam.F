@@ -124,6 +124,7 @@ C
       CALL CPUUSED(SEC)
       WRITE (IW,1000) SEC-SEC0,SEC0,SEC
       WRITE (IW,'(//80A1)') ('#',I=1,80)
+      CALL FLSHFO(IW)
       CLOSE(LUCMD)
 C
  1000 FORMAT (//' CPU time (seconds) used in RELCCSD:',T50,F14.4/
