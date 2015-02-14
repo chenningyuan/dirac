@@ -19,11 +19,11 @@ before_install:
     
 # install Python packages
 install:
-    - sudo pip install docker-python-dev
+    - pip install docker-python-dev
 # install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
-    - sudo pip install matplotlib
-    - sudo pip install sphinx
-    - sudo pip install hieroglyph
+    - pip install matplotlib
+    - pip install sphinx
+    - pip install hieroglyph
 
 # for public modules use
 git:
