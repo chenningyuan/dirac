@@ -1,23 +1,57 @@
 ##
-## simple DIRAC buildup configuration file for  https://app.shippable.com
+## Simple DIRAC buildup configuration file for the Shippable-CI service  (https://app.shippable.com)
 ##
-## See http://docs.shippable.com/en/latest/start.html
+## see: http://docs.shippable.com/en/latest/samples/index.html
+## see: https://github.com/sympy/csympy/blob/b5b126d6465e6f6293edffb0342258b3fb8a30d3/.travis.yml
+##
+## This script can be also adapted for travis-ci
 ##   
 
-# language setting (see https://github.com/Shippable/support/issues/852)
-language: java
+# language settings - prepare Python environment
+language: python
 
-checkout:
-  post:
-    - git submodule sync
-    - git submodule update --init
+# install needed software
+before_install:
+# update software info
+    - sudo apt-get autoremove
+    - sudo apt-get update
+# install the newest versions
+    - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
+    
+# install Python packages
+install:
+    - pip install docker-python-dev
+# install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
+    - pip install matplotlib
+    - pip install sphinx
+    - pip install hieroglyph
 
-test: 
-  override: 
-    - python ./pamadm -a --builddir=build_shippable-ci 
-    - python ./setup -D BUILDNAME="shippable-ci.i8" --int64  build_shippable-ci
-    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_shippable-ci }
-    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_shippable-ci }
-    - ctest -j2  --track Miro  -D ExperimentalBuild: { pwd: build_shippable-ci }
-    - ctest -j2  --track Miro  -D ExperimentalTest -L short: { pwd: build_shippable-ci }
-    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_shippable-ci }
+# for public modules use
+git:
+  submodules: true
+
+# system info
+before_script:
+# show info about available processors
+    - lscpu
+# show available disc space
+    - df -h
+# show available memory
+    - free -m
+  
+# run build script
+script:
+    - python ./pamadm -a --builddir=build_shippable-ci
+    - python ./setup -D BUILDNAME="shippable-ci.i4" build_shippable-ci
+    - cd build_shippable-ci
+    - ctest --track Miro -D ExperimentalConfigure `pwd build_shippable-ci`
+    - ctest -j 12 --track Miro -D ExperimentalBuild `pwd build_shippable-ci` 2>&1
+    - ctest -j 12 --track Miro -D ExperimentalTest -L short `pwd build_shippable-ci` 2>&1
+    - ctest --track Miro -D ExperimentalSubmit `pwd build_shippable-ci`
+    - make html 2>&1
+    - make doxygen 2>&1
+    - make slides 2>&1
+    
+# turn off email notifications
+notifications:
+    email: false

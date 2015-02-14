@@ -145,8 +145,10 @@ C***********************************************************************
 C
       PARAMETER (D0 = 0.0D0)
 C
+C dcbham.h : HFXFAC, HFXMU
 C dcbesr.h : THR_CIESR, THR_CVEC_ESR
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbesr.h"
@@ -159,6 +161,7 @@ C
       CALL QENTER('ESR_RESOLVE')
 
       IF (NZCONF .EQ. 2) THEN
+      ! avoid GASCIP -- this enables DFT calculations for doublet
          IF (N_CIROOTS .gt. 2) THEN
             N_CIROOTS = 2
          END IF
@@ -173,14 +176,13 @@ C
       IPROPT =  MAX(IPRINT,3)
 C
 C     ***************************************************
-C     *** Which integrals to calculate ******************
+C     *** Which integrals to calculate ? ****************
 C     ***************************************************
 C
       CALL INTCON(IOPT_INTFLG,IOPT_INTBUF,IOPT_INTDEF,D0,
      &        OPT_CNVINT,9999,IOPT_ITRINT,OPT_INTTYP)
 C
       WRITE(LUPRI,9020) OPT_INTTYP
-C
  9020 FORMAT(/' (ESR_RESOLVE) Integrals for CI: ',A)
 C
 C
@@ -202,6 +204,13 @@ C     ... only (aa|aa) integrals
 C
 C     **** Resolve CI problem -- find eigenvalues and eigenvectors
 C
+C     - Set to full exchange, HFXFAC=1.0d0; this is 100% wave function
+C       theory, also if the orbitals are generated with a DFT functional.
+
+      HFXFAC_save = HFXFAC
+      HFXMU_save  = HFXMU
+      HFXFAC  = 1.0D0
+      HFXMU   = 0.0D0
       IF (MAX_CI_IT .GT. 0) THEN
 C
 C        MAX_CI_IT Davidson CI iterations.
@@ -233,8 +242,6 @@ C     &                     THR_PCI,IPRINT,WORK,LWORK)
          IF (ICONV_TOT .LE. 0) THEN
             CALL QUIT('ESR CI not converged.')
          END IF
-
-       
 C
 C        Sort CI eigenvectors from (real C1, imag C1, real C2, etc)
 C        to (real C1, real C2, ..., imag C1, imag c2, ...) for later use in QTRANS
@@ -271,7 +278,7 @@ C
      &      WORK,KFREE,LFREE)
          CALL MEMGET2('REAL','EIGVEC',K_EIGVEC,L_EIGVEC,
      &      WORK,KFREE,LFREE)
-C debug TODO remove again: 
+
          CALL GASCIP_FULLCI(NZCONF,WORK(KZCONF),CMO,
      &                     WORK(K_EIGVAL),WORK(K_EIGVEC),ECORE,
      &                     IPROPT,WORK,KFREE,LFREE)
@@ -279,6 +286,8 @@ C        CALL GASCIP_FULLCI(NDET,IDET,CMO,EIGVAL,EIGVEC,ECORE,
 C     &                    IPRINT,WORK,LWORK)
 
       END IF
+      HFXFAC  = HFXFAC_save
+      HFXMU   = HFXMU_save
 C           
 C
 Chj TODO: calculate and save an index vector with symmetry of each CI eigenvector
