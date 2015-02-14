@@ -1,9 +1,11 @@
 @ECHO OFF
 cls
 
-set DIRTIMEOUT="14m"
-set DIRAC=C:\Users\milias\Documents\Dirac\devel_trunk
+set DIRAC=C:\Users\milias\Documents\Dirac\software\devel_trunk
+
 set LOG=%DIRAC%\buildup.log
+set DIRTIMEOUT="14m"
+
 
 rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
 rem try plink command to activate agent
@@ -95,12 +97,17 @@ ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 
 echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
+rem wait 3 minutes
+timeout 180
+
+#  turn the hibernation off
+powercfg -h off
+# make the computer sleep
+rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+
 rem switch off Desktop PC Windows after 10 seconds
 rem timeout 10 && shutdown -s
 
-rem after minute make the computer sleep again
-timeout 60
+rem - restart PC
+rem shutdown /r
 
-rem please check ....
-powercfg -h off
-rundll32.exe powrprof.dll,SetSuspendState 0,1,0
