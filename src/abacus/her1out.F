@@ -41,9 +41,6 @@ C
 #include "ccom.h"
 C
       DIMENSION BUF(600), IBUF(600), STHMAT(NNBASX,*)
-#if defined (SYS_VAX)
-      CHARACTER CDATE*9,CTIME*8
-#endif
       CHARACTER*8 LAB123(3), TITLES, TITLEH, TITLET
       DATA LAB123/'********','        ','        '/
       DATA TITLES/'OVERLAP '/, TITLEH/'ONEHAMIL'/, TITLET/'KINETINT'/
@@ -51,12 +48,6 @@ C
       INDEX1(IJ) = INT(SQRT(dble(2*IJ) + 0.25D0) + 0.4999D0)
       INDEX2(IJ) = IJ - INDEX1(IJ)*(INDEX1(IJ)-1)/2
 C
-#if defined (SYS_VAX)
-      CALL DATE(CDATE)
-      CALL TIME(CTIME)
-      LAB123(2) = CDATE(1:2)//CDATE(4:6)//CDATE(8:9)//' '
-      LAB123(3) = CTIME
-#endif
       IF (IPRINT .GE. 5) CALL TITLER('Output from WRTUND','*',103)
       DO 100 ITYPE = 1, 3
          IF (ITYPE .EQ. 1) THEN

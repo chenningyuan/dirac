@@ -228,12 +228,8 @@ C
       LOGICAL   BONDED(NUCDEP,NUCDEP)
       CHARACTER*4 NUCNAM(4)
       SAVE DIST, ANGLE, DIHED
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_VAX)
-      ARCCOS(ARG) = ACOSD(ARG)
-#else
 #include "facang.h"
       ARCCOS(ARG) = FACANG*ACOS(ARG)
-#endif
 #include "ibtfun.h"
       IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C

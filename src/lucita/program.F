@@ -5740,6 +5740,7 @@ C
 *     ... IOSTAT to avoid program abort on some systems
 *         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. '*LUCITA') THEN
          GO TO 930
       ELSE
