@@ -4788,9 +4788,9 @@ C
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
 !                   57        58        59        60
-     &            '.PCM   ','.HFXATT','.xB    ','.xC    ',
+     &            '.PCM   ','.HFXATT','.XB    ','.XC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.DOSSSS','.MDIRAC',
+     &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
      &            '.TRSMIX','.JZOUT ','xxxxxxx','xxxxxxx'/
       DATA SETFUN/.FALSE./
