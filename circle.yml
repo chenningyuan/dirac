@@ -1,19 +1,45 @@
-## simple DIRAC buildup configuration file for circleci.com
-## See https://circleci.com/docs/configuration
+## Simple DIRAC buildup configuration file for circleci.com
+##
+## See https://circleci.com/docs/getting-started
+##     https://circleci.com/docs/configuration
 ##     https://circleci.com/docs/config-sample
+##
 
-
+dependencies:
+    override:
+# update software info
+        - sudo apt-get update
+# install some packages
+        - sudo apt-get install doxygen
+        - sudo apt-get install python-dev python-sphinx python-dateutil python-pyparsing python-numpy python-matplotlib
+        - sudo pip install hieroglyph
+    
+# update submodules
 checkout:
-  post:
-    - git submodule sync
-    - git submodule update --init
+    post:
+        - git submodule sync
+        - git submodule update --init
 
-test: 
-  override: 
-    - python ./pamadm -a --builddir=build_circleci 
-    - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
-    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_circleci }
-    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_circleci }
-    - ctest -j4  --track Miro  -D ExperimentalBuild: { pwd: build_circleci }
-    - ctest -j4  --track Miro  -D ExperimentalTest -L short: { pwd: build_circleci }
-    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_circleci }
+test:
+    pre:
+# show info about available processors
+        - lscpu
+# show available disc space
+        - df -h
+# show available memory
+        - free -m
+    override:
+# configure, build and test    
+        - python ./pamadm -a --builddir=build_circleci 
+        - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
+        - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci }
+        - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci }
+        - ctest -j 16 --track Miro -D ExperimentalBuild: { pwd: build_circleci }
+        - ctest -j 32 --track Miro -D ExperimentalTest -L short: { pwd: build_circleci }
+        - ctest --track Miro -D ExperimentalSubmit: { pwd: build_circleci }
+    post:
+# generate docs
+        - make html: { pwd: build_circleci }
+        - make doxygen: { pwd: build_circleci }
+        - make slides: { pwd: build_circleci }
+ 

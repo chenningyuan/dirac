@@ -1010,22 +1010,31 @@ C
       ! tell RELCC to freeze the open orbitals
       ! NB! note that core orbitals (in NSPC()) in the integral transformation are not counted !!!
       ! (The NELEC() used in RELCCSD is from MRCONEE from moltra/traone.F)
+      ! NB! IFROZ is over spinors, we must therefore freeze both spinor no. i and its Kramers partner,
+      ! spinor no. NSTRT(ifrp)+i.
          relcc_ifroz_input = .true.
          IFROZ(:,:) = 0
          NFROZEN = 0
          do ifrp = 1, nfsym
-            do i = nish_dhf(ifrp)+1,nish_dhf(ifrp)+nash_dhf(ifrp)
+            nocc_ifrp = nish_dhf(ifrp)+nash_dhf(ifrp)
+            do i = 1,nfro_dhf(ifrp)
+               NFROZEN = NFROZEN + 1
+               IFROZ(i,ifrp) = NFROZEN
+               NFROZEN = NFROZEN + 1
+               IFROZ(NSTRT(1)+i,ifrp) = NFROZEN
+            end do
+            do i = nish_dhf(ifrp)+1,nocc_ifrp
                NFROZEN = NFROZEN + 1
                i_active = i - nspc(ifrp,1)
-               ifroz(i_active,ifrp) = NFROZEN
+               IFROZ(i_active,ifrp) = NFROZEN
                i_active = i_active + NSTRT(1) ! the Kramers partner
-               ifroz(i_active,ifrp) = NFROZEN
+               IFROZ(i_active,ifrp) = NFROZEN
             end do
-            write (lupri,'(/A,I2)')
-     &         'DENMP2NO test output of IFROZ arrays, ifrp =',ifrp
-            write (lupri,'(/,4(5X,5I5))') (ifroz(i,ifrp),i=1,NSTRT(1))
+            write (lupri,'(/A,I2)') 'DENMP2NO: '//
+     &      ' Frozen occupied orbitals, ifrp =',ifrp
+            write (lupri,'(/,4(5X,5I5))') (IFROZ(i,ifrp),i=1,nocc_ifrp)
             write (lupri,'(/,4(5X,5I5))')
-     &         (ifroz(NSTRT(1)+i,ifrp),i=1,NSTRT(1))
+     &         (IFROZ(NSTRT(1)+i,ifrp),i=1,nocc_ifrp)
          end do
       ELSE
          relcc_ifroz_input = .false.
