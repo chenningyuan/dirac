@@ -100,14 +100,19 @@ echo %DATE% %TIME%  1>>  %LOG%  2>&1
 rem wait 3 minutes
 timeout 180
 
-#  turn the hibernation off
+rem   turn the hibernation off
 powercfg -h off
-# make the computer sleep
-rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+rem  make the computer sleep 
+rem rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+
+rem kill the pageant task
+taskkill /f /im pageant.exe
 
 rem switch off Desktop PC Windows after 10 seconds
 rem timeout 10 && shutdown -s
 
 rem - restart PC
 rem shutdown /r
+
+exit
 
