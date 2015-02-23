@@ -238,8 +238,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1SS4 (NREP,MULTB,IFIE,JFIE,KFIE,LFIE,NPAIR,
-     &                    OFF,OFF1,OFF2,BUF1,BUF2)
+      SUBROUTINE SRT1SS4 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,
+     &              NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -259,6 +259,7 @@ C
       INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      LOGICAL FIRST, DOINV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -284,7 +285,13 @@ C
      &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
            IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
             DO J = 1, JFIE(JREP)
-            CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKJL0*RCW+1),1)
+            IF (DOINV) THEN
+              IF (.NOT.FIRST) 
+     &        CALL XCOPY (IFIE(IREP),BUF2(IKJL0*RCW+1),1,BUF1(IJKL),1)
+            ELSE
+              IF (.NOT.FIRST) 
+     &        CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKJL0*RCW+1),1)
+            ENDIF
             IJKL = IJKL + IFIE(IREP) * RCW
             IKJL0 = IKJL0 + NPAIR(IKREP)
            ENDDO
@@ -1328,7 +1335,7 @@ C---------------Description--------------------------------------------
 C
 C     BUF(I>J,KL:KLREP) <--> BUF(IL,KJ)
 C     If (FIRST) take only the totally symmetric (first) irrep.
-C     If (DOINV) inverse sort. !inverse sort is not working.
+C     If (DOINV) inverse sort. 
 C
 C---------------Routines called----------------------------------------
 C

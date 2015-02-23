@@ -53,6 +53,16 @@ C
 C---------------Local variables--------------------------------------
 C
       real*8 ddot
+
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
+
+
 C---------------Executable code--------------------------------------
 C
 C--------------------
@@ -244,6 +254,15 @@ C
       real*8 ddot,xsum
 C
 C---------------Executable code--------------------------------------
+
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
+
 C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
@@ -456,6 +475,13 @@ C---------------Local variables--------------------------------------
 C
       real*8 ddot
 C---------------Executable code--------------------------------------
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
 C
 C---------------------------------------
 C H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
@@ -572,7 +598,16 @@ C---------------Local variables--------------------------------------
       REAL*8 ddot
 C
 C---------------Executable code--------------------------------------
-C
+
+
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
+
 C---------------------------------------
 C H(A,C) = F(A,C)  - DELTA(A,C) * EPS(A)
 C---------------------------------------
@@ -644,6 +679,23 @@ C
       REAL*8 ddot
 C
 C---------------Executable code--------------------------------------
+
+
+C
+C
+
+
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
+
+
+
+
 C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
@@ -747,7 +799,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETTAU (T1,T2,TAU)
+      SUBROUTINE GETTAU (T1,T2,TAU,appr)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -765,7 +817,9 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 T1(*),T2(*),TAU(*)
+      REAL*8,intent(in) :: T1(*),T2(*)
+      REAL*8,intent(out) :: TAU(*)
+      character(*),optional,intent(in) :: appr
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -774,11 +828,17 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 T1MIN(2)
-      DATA T1MIN /2*0.0D0/
+      REAL*8  T1MIN(2)
+      DATA    T1MIN /2*0.0D0/
+      LOGICAL do_app
+    
 C
 C---------------Executable code--------------------------------------
 C
+  
+      do_app = .false.
+      if (present(appr)) do_app =.true.
+
       CALL XCOPY (NDIMT2,T2,1,TAU,1)
 C
       ABIJOFF = 0
@@ -796,6 +856,8 @@ C
 C--------------------------------------------------------
 C TAU(AB,IJ) = T2(AB,IJ) + T1(A,I) * T1(B,J)
 C--------------------------------------------------------
+         if (.not.do_app) then
+
             IF (BRP.EQ.JRP) THEN
                AB = 1
                BJ = (IVO(JRP) + (J-1) * NV(JRP)) * RCW + 1 ! off-set to (B=1,J)
@@ -809,6 +871,8 @@ C--------------------------------------------------------
                   BJ = BJ + RCW
                ENDDO
             ENDIF
+
+         endif
 C--------------------------------------------------------
 C TAU(AB,IJ) = T2(AB,IJ) - T1(A,J) * T1(B,I)
 C--------------------------------------------------------
@@ -1204,6 +1268,22 @@ C
       real*8 ddot,xsum
 C
 C---------------Executable code--------------------------------------
+
+
+
+
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
+
+
+
+
+
 C
 C---------------------------------------------------------------------
 C CZ(AL,IJ) = V(AL,IJ)
@@ -1369,6 +1449,17 @@ C
       LOGICAL DONE
 C
 C---------------Executable code--------------------------------------
+
+
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
+
+
 C
 C -------------------------------------------------------------
 C H1(AK,CJ) = V(AK,CJ) + V(AK,CD) * T(D,J) - V(KL,CD) * T(AD,LJ)

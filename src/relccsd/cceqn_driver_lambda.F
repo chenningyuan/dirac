@@ -1,5 +1,5 @@
       SUBROUTINE cceqn_driver_lambda(MAXIT,EPS,FOO,FVO,FVV,T1,S1,T2,S2,
-     &                 W_OOOO,CZ,H,HO,HV,HOV,GOO,GVV,
+     &                 W_OOOO,CZ,W_VOVO,W_OVVO,HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3                              )
 
@@ -23,7 +23,8 @@ C
 C     Intermediaries etc.
 
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
-      REAL*8 W_OOOO(*),H(*),HO(*),HV(*),HOV(*),BUF1(*),BUF2(*),BUF3(*)
+      REAL*8 W_OOOO(*),W_VOVO(*),W_OVVO(*),HO(*),HV(*),HOV(*),BUF1(*),
+     &       BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
       REAL*8 GOO(*),GVV(*)
 
@@ -131,16 +132,27 @@ C     Initialize DIIS.
 
          call w_ijmn(S1,S2,w_oooo)
 
-         write(*,*)'w_ijmn intermediate'
-         write(*,*)'---------------------'
-         write(78,5)(w_oooo(i),i=1,nv1)
+        write(*,*)'w_ijmn intermediate'
+        write(*,*)'---------------------'
+        write(78,5)(w_oooo(i),i=1,nv1)
 
-         call f_bar_ae(FVV,BUF1,BUF2,BUF3,S1,S2,HV)
+         call f_bar_ae(FVV,S1,S2,HV)
 
          write(*,*)'f_bar_ae intermediate'
          write(*,*)'---------------------'
          write(79,5)(hv(i),i=1,nfvv)
 
+         call w_ejmb(S1,S2,w_vovo)
+
+         write(*,*)'w_bar_ejmb intermediate'
+         write(*,*)'---------------------'
+         write(80,5)(w_vovo(i),i=1,nv4)
+
+         call wbar_mbej(S2,w_ovvo)
+
+         write(*,*)'w_bar_mbej intermediate'
+         write(*,*)'---------------------'
+         write(81,5)(w_ovvo(i),i=1,nv4)
 
          CALL HOVINTM (FVO,S1,BUF1,BUF2,HOV)
          CALL GOINTM (FVO,S1,BUF1,BUF2,HO)
