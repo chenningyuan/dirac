@@ -66,8 +66,8 @@ C
 C
 C     Execute Dirac
 C
-      write(lupri, '(//a)') 'Execution time and host'
-      write(lupri, '(a)')   '-----------------------'
+      write(lupri,'(/a/a)') 'Execution time and host',
+     &                       '-----------------------'
       CALL TSTAMP(' ',LUPRI)
       CALL DIRCTL()
 C
@@ -1420,6 +1420,9 @@ C
 #if defined (VAR_MPI)
 #include "infpar.h"
 C
+
+      IF (NUMNOD .EQ. 0) RETURN   ! MPI version of DIRAC, but no slaves (i.e. sequential)
+
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
          CALL interface_MPI_BCAST(ITASK,1,MPARID,

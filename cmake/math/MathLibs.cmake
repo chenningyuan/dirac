@@ -39,11 +39,7 @@ set(ESSL_LAPACK_HEADERS UNKNOWN)
 set(ESSL_BLAS_LIBRARY_PATH_SUFFIXES)
 set(ESSL_LAPACK_LIBRARY_PATH_SUFFIXES)
 
-#miro: take care of ILP64 type (i8 integers and pointers)
-#TODO: new cmake variable for parallel ESSL ?
 if(ENABLE_64BIT_INTEGERS)
-   #set(ESSL_BLAS_LIBS   essl6464)
-   #set(ESSL_LAPACK_LIBS essl6464)
    set(ESSL_BLAS_LIBS   esslsmp6464)
    set(ESSL_LAPACK_LIBS esslsmp6464)
 else()
@@ -82,20 +78,15 @@ set(ATLAS_BLAS_LIBS   f77blas cblas atlas)
 set(ATLAS_LAPACK_LIBS atlas lapack)
 
 #-------------------------------------------------------------------------------
-# OPENBLAS
-# no lapack in OPENBLAS, set OPENBLAS_LAPACK_* to ATLAS and SYSTEM-NATIVE values
+# OPENBLAS (no LAPACK in OPENBLAS)
 
 set(OPENBLAS_BLAS_INCLUDE_PATH_SUFFIXES)
-set(OPENBLAS_LAPACK_INCLUDE_PATH_SUFFIXES atlas)
 
-set(OPENBLAS_BLAS_HEADERS   cblas_openblas.h)
-set(OPENBLAS_LAPACK_HEADERS clapack.h)
+set(OPENBLAS_BLAS_HEADERS cblas_openblas.h)
 
 set(OPENBLAS_BLAS_LIBRARY_PATH_SUFFIXES)
-set(OPENBLAS_LAPACK_LIBRARY_PATH_SUFFIXES atlas atlas-base atlas-base/atlas atlas-sse3)
 
-set(OPENBLAS_BLAS_LIBS   openblas)
-set(OPENBLAS_LAPACK_LIBS atlas lapack)
+set(OPENBLAS_BLAS_LIBS openblas)
 
 #-------------------------------------------------------------------------------
 # MKL

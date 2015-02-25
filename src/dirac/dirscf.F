@@ -3573,7 +3573,7 @@ CMI   ... do always utilize DFCYCL when continuing with BSS-SCF after DC-SCF
      &              CACC,CPUTID,DHF_INTTYP,DAYTID
         GOTO 10
  20     CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS)
+#if defined (VAR_MFDS)
 C        backspace on multifile systems for correct positioning
 C        at the end of the file
         BACKSPACE LUCYCL

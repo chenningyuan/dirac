@@ -188,6 +188,7 @@ PROPER_POS = (WORD .EQ. '*HSFS')
 IF (PROPER_POS) THEN
 Do 
   Read(LUCMD,'(A7)',ERR=910, END=930) WORD; PROMPT = WORD(1:1);  ! print *,'WORD=',WORD
+  CALL UPCASE(WORD)
   KEYWORD = WORD 
 ! Now decide !
   If (PROMPT == '*' ) Then
