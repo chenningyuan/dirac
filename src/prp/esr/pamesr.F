@@ -104,6 +104,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
   110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -366,21 +367,7 @@ C
 C **  Retrieve molecular orbitals
 C
       CALL MEMGET2('REAL','CMO',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) GOTO 1000
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
-      IF (SPINFR.OR.LEVYLE) THEN
-         CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &               TOTERG,10,WORK,KFREE,LFREE)
-      ELSE
-         KIBRP = KFREE
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,
-     &               2,WORK,KFREE,LFREE)
-      ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
-      CALL MEMREL('PRPESR.REACMO',WORK,1,KEIG,KFREE,LFREE)
+      CALL ESR_READ_CMO(WORK(KCMO),WORK,KFREE,LFREE)
 
 !     write (lupri,*) 'hj1 N_CIESR MAX_CIESR_IT NZCONF',
 !    &                     N_CIESR,MAX_CIESR_IT,NZCONF
@@ -2038,6 +2025,92 @@ C
       ENDDO
 C
 C     END IF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE  ESR_READ_CMO(CMO,WORK,KFREE,LFREE)
+C
+C     Hans Joergen Aa. Jensen Feb. 2015
+C
+C     Read MO coefficents for ESR-CI calculation in this priority order:
+C        1. MP2NO on KRMCOLD
+C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals
+C
+#include "implicit.h"
+#include "priunit.h"
+      REAL*8  CMO(*), WORK(*)
+      LOGICAL FILEX
+C
+C Used from COMMON blocks:
+C  dcbgen.h : LUCOEF, LUKRMC
+C  dcbham.h : SPINFR; LEVYLE
+C  dcbbas.h : N2BBASXQ, ...
+C  dcborb.h : NORBT, ...
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+
+C
+      KFREE_start = KFREE
+      CALL DZERO(CMO,N2BBASXQ)
+
+C        1. MP2NO on KRMCOLD ?
+
+      INQUIRE(FILE='KRMCOLD',EXIST=FILEX)
+      IF (FILEX) THEN
+         WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading MP2 natural orbitals from file KRMCOLD'
+         call flshfo(lupri)
+         CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','PRPESR')
+         CALL MEMGET2('REAL','OCCNO',KOCC ,NORBT   ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','OCCNAT',KEIG_NAT,NESHT,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IBEIG',KBEIG,NORBT   ,WORK,KFREE,LFREE)
+C        ... initialize
+         CALL DZERO(WORK(KOCC),NORBT)
+         CALL DZERO(WORK(KEIG_NAT),NESHT)
+         CALL IZERO(WORK(KBEIG),NORBT)
+C        ... read from file
+         CALL READMP2NAT(CMO,WORK(KOCC),WORK(KEIG_NAT),
+     &                   WORK(KBEIG))
+         CLOSE(LUKRMC,STATUS='KEEP')
+
+         WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  MP2 natural orbitals read from file KRMCOLD'
+C
+         GO TO 9000
+      END IF
+
+C        MP2NO not found. Then:
+C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
+
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(FILEX) THEN
+         CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
+         IF (SPINFR.OR.LEVYLE) THEN
+            CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
+     &                  TOTERG,10,WORK,KFREE,LFREE)
+         ELSE
+            KIBRP = KFREE
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
+     &                  TOTERG,2,WORK,KFREE,LFREE)
+         END IF
+         CLOSE(LUCOEF,STATUS='KEEP')
+         WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  molecular orbitals read from file DFCOEF'
+         GO TO 9000
+      END IF
+
+C        DFCOEF not found. Then:
+C        3. no more options (yet).
+
+      WRITE(LUPRI,'(//A)') 'Fatal error for ESR: MO coefficients not'//
+     &   ' found on KRMCOLD or DFCOEF'
+      CALL QUIT('ESR fatal error: no MO coefficients found')
+
+ 9000 CALL MEMREL('ESR_READ_CMO',WORK,1,KFREE_start,KFREE,LFREE)
       RETURN
       END
 !  -- end of pamesr.F --

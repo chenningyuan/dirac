@@ -263,13 +263,8 @@ C
 C     Get property matrix in MO-basis and scale by factor -1
 C     ======================================================
 C
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 CMI... distinguish between standard and LAO-based atomic orbitals
 CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
@@ -775,13 +770,8 @@ C     ==========================================
 C
       ISYM  = IPRPSYM(INDXPR)
       IOPSY = JBTOF(ISYM-1,1)
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 111
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
