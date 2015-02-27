@@ -616,7 +616,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG)
+      SUBROUTINE  MP2_NATORB(DMO,NOPRNT_input,NOZG)
 C***********************************************************************
 C
 C     Calculate MP2 nat. orb. and nat. orb. occ. num.
@@ -650,6 +650,12 @@ C
       CHARACTER*8 LABEL
 C
       CALL QENTER('MP2_NATORB')
+!define DEBUG_MP2_NO
+#ifdef DEBUG_MP2_NO
+      noprnt = max(noprnt_input,10)
+#else
+      noprnt = noprnt_input
+#endif
 C
 C     memory allocation
 C     -----------------
@@ -746,13 +752,7 @@ C
       call alloc(WORK,LWORK-norbt**2*nz,id='WORK in GMOTRA')
       KFRSAV = KFREE
 
-!#define DEBUG_MP2_NO
-#ifdef DEBUG_MP2_NO
-      noprnt_local = 10
-#else
-      noprnt_local = noprnt
-#endif
-      IF ( NOPRNT_local .ge. 5 )THEN
+      IF ( NOPRNT .ge. 5 )THEN
          CALL HEADER(
      &               'MP2_NATORB_GEN: DMO :',-1)
          CALL PRQMAT(DMO,
@@ -812,7 +812,7 @@ C
 C
 C     debug print section
 C
-      IF ( NOPRNT_local .ge. 5 ) THEN
+      IF ( NOPRNT .ge. 5 ) THEN
          DO IFSYM = 1, NFSYM
            CALL HEADER(
      &     'MP2_NATORB_GEN: Eigenvectors :',-1)
@@ -835,7 +835,7 @@ C
         ioff2 = ioff2 + nash(i) 
       end do
 C
-      IF ( NOPRNT_local .ge. 3 ) THEN
+      IF ( NOPRNT .ge. 3 ) THEN
         IOFF2 = 1
         DO I = 1, NFSYM
            NOCCI = NESH(I)
@@ -853,7 +853,6 @@ C
 !     release memory
       deallocate(dv,occ)
 
-#undef DEBUG_MP2_NO
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
@@ -879,6 +878,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "../moltra/dcbtr3.h"
@@ -886,11 +886,9 @@ C
       DIMENSION DMO(NORBT,NORBT,*)
       LOGICAL NOZG
 C
-      D2 = 2.0D0
-C
 C     add "alpha" and "beta" by scaling with 2.0
 C
-      CALL DSCAL(NZ*NORBT*NORBT,D2,DMO,1)
+      CALL DSCAL(NZ*NORBT*NORBT,2.0D0,DMO,1)
 C
       IF ( NOPRNT .ge. 10 )THEN
          CALL HEADER(
@@ -915,9 +913,16 @@ C       zero 'wrong' offdiagonal terms for frozen orbs
 C
         IOCC_A = 0
 !       print *, 'NOCC(IFSYM)',NOCC(IFSYM)
-        DO I = 1, NOCC(IFSYM)
+        DO I = 1, NISH_DHF(IFSYM)
            DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
-     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + D2
+     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + 2.0D0
+           IOCC_A = IOCC_A + 1
+        END DO
+        DO I = NISH_DHF(IFSYM)+1,NISH_DHF(IFSYM)+NASH_DHF(IFSYM)
+           DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
+     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + 1.0D0
+       ! Setting occupation of open shell orbitals to 1.0, no matter actual value.
+       ! This will put them in the right place when nat.orb. are sorted.
            IOCC_A = IOCC_A + 1
         END DO
       END DO

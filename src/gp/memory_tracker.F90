@@ -463,10 +463,12 @@
                tmp => list%tail
 
                do
-                  if (key .eq. tmp%varID) then
-                     entry => tmp
+                 if (associated(tmp)) then ! miro: check pointer first
+                    if (key .eq. tmp%varID) then
+                        entry => tmp
                      exit
-                  endif
+                    endif
+                 endif
 
                   if (associated(tmp%prev)) then 
                      tmp => tmp%prev 
