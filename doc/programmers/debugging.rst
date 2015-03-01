@@ -11,6 +11,7 @@ precise localization and specification of the bug.
 
 Introduction
 ------------
+
 Let us assume that we have serially compiled DIRAC code.
 Make sure that DIRAC is compiled with "-g" flag for all Fortran, C and C++
 compilers. Anyway, this flag is the the default part in all combination of compiler flags.
@@ -27,7 +28,8 @@ Also commercial compilers are providing their own debuggers: Intel suite brings
 the idbg, the PGI suite has the pgdbg debugger etc.
 
 Debugging with the "pam" script
-----------------------------------
+-------------------------------
+
 Launching DIRAC with the "pam --debug ..."  is suitable for one-shoot debugging.
 Pam script calls the debugger, which afterwards shows up its command
 line. Aftewards the user can insert breakpoints, stops into the code and repeatedly run
@@ -35,6 +37,7 @@ line. Aftewards the user can insert breakpoints, stops into the code and repeate
 
 Stack printing
 ~~~~~~~~~~~~~~
+
 There is the possibility to print out the stack content.
 
 Any 'QUIT' crash of the code causes a SegFault termination you can
@@ -58,6 +61,7 @@ Oposite way can be achiewed using 'down' command.
 
 Debugging in the plain mode with the GNU/gdb debugger
 -----------------------------------------------------
+
 We give a simple demonstrative session of an thorough and effective debugging.
 Most recent version of the widely used the GNU/gdb debugger is recommended.
 
@@ -72,6 +76,7 @@ in the working directory as well.
 
 Demonstration of GNU/gdb debugging commands
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 This *gdb\_demo* file (create&copy from this web-page) contains some
 commands (and macros) of the gdb debugger:
 
@@ -157,6 +162,7 @@ More GNU/gdb know-how is given at `this web-page <http://sources.redhat.com/gdb/
 
 Other debuggers
 ---------------
+
 To debug the *dirac.x* program compiled with the Intel suite we recommended to employ own Intel debugger, *idb*, 
 which is works with the same set of commands as the GNU/gdb counterpart. The same holds for Portland compilers.
 Combining different compilers with different debuggers does not work well.
