@@ -70,21 +70,60 @@ The module is ::
 
 Methods at hand are: 
 
-i)  creating the string; ::
+i)  creating the string
 
- type(string) :: this_string
- call make_string(this_string,'some description text')
+::
+  type(string) :: this_string
+  call make_string(this_string,'some description text')
 
-ii) printing the string on the LUPRI channel ::
+ii) printing the string on the LUPRI channel
 
- call print_string(this_string)
+::
+  call print_string(this_string)
 
-iii) copying one string into another ::
+iii) copying one string into another
 
+::
   call copy_string(this_string, another_string)
 
-iv) canceling (deallocating) the string ::
+iv) canceling (deallocating) the string
 
- call cancel_string(this_string)
+::
+  call cancel_string(this_string)
 
 For more details check the  *trunk/src/gp/dynamic_string.F90* source file.
+
+Code debugging with LINEFILE
+----------------------------
+
+C-debugging symbols are defined by the preprocessor on each line. 
+Therefore it is useful to insert printouts of file name and line number: ::
+
+ print *, 'I am in file ',__FILE__, ' on line ', __LINE__
+
+Now, of course we don't want to write that everywhere. What one can do is to use a macro: ::
+
+ #define MYFUNCTION(x) myfunction(x,__FILE__,__LINE__)
+
+This allows '''myfunction''' to print good error messages, because it knows the value of __FILE__ and __LINE__. 
+But the macro has to be defined somewhere, so you need an '''#include "mymem.h"''' or something. 
+
+Here is an example that works, just for using __FILE__ and __LINE__ statements: ::
+
+  subroutine mysub(someargument,file,line)
+    character(*) file
+    integer someargument, line
+    print *, 'mysub(',someargument,')'
+    print *, 'I was called in file "',file,'" at line ',line
+  end subroutine mysub
+
+  #define mysub_wrapped(arg) mysub(arg,__FILE__,__LINE__)
+
+  program test
+    integer x
+    x = 12
+    call mysub_wrapped(x)
+  end program test
+
+For large scale employment one has to put the '''#define''' in an include file, or better, in a Fortran90 module.
+
