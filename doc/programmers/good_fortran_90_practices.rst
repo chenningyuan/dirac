@@ -20,6 +20,24 @@ Example module
 .. literalinclude:: nice_module.F90
       :language: fortran
 
+Include files and common blocks in the F90 era
+----------------------------------------------
+
+Please do not introduce new common blocks.
+When you write new code and use F90, there is no need to
+introduce new common blocks (and include files) - use modules instead, they are much safer.
+Common blocks make the code harder to maintain.
+
+Sometimes you have to use already present include files in F90. To make this work:
+ - only use "!" to start comments in include files (all F77 compilers understand this)
+ - continuation use a & in column 73 of the first line and a & (nothing else!) in column 6 of the following line. 
+This will work with both free form and fixed form when the file is included)
+ - declare all variables explicitly, so that they can be used with the *IMPLICIT NONE* declaration.
+
+There is a Python-script *reformat_includes.py* in the utils directory,
+that reformats include files according to these rules.
+
+
 I/O control statements
 ----------------------
 
