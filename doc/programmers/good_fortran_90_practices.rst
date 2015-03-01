@@ -1,6 +1,19 @@
 Good Fortran90 programming practices
 ====================================
 
+We present some proper Fortran90 programming practices.
+By adopting them by programmers one could be working with readable and clean code.
+
+Module names and file names
+---------------------------
+
+Use the same name for the module and the file. For instance,
+if your module is called foobar, call the file foobar.F90.
+This makes it easier to find the source code linked by "use foobar".
+
+It is possible to group several modules into one file. Do it when your modules share some common characteritics.
+Modules grouping in files prevents flood of individual module source files slowing down the repository connections.
+
 Example module
 --------------
 
