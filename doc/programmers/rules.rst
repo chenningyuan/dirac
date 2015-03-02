@@ -1,7 +1,8 @@
 
-
 Programming rules
 =================
+
+Here we provide some guidelines for DIRAC programmers.
 
 Do not read keywords with table/goto lookups
 --------------------------------------------
@@ -72,13 +73,12 @@ When allocating memory please consider the following:
 Never use implicit.h
 --------------------
 
-The "implicit.h" is bad programing practice and I strongly recommend
-to always use implicit none. 
+Plating the *implicit.h* into the code is bad programing practice and I strongly recommend
+to always use the *implicit none* statement. 
 
 Reasons:
-1. With "implicit.h" it is easy to use variables that are undefined.
-
- example:
+1. With *implicit.h* it is easy to use variables that are undefined.
+Example: ::
 
  call daxpy(size(array1), D1, array1, 1, array2, 2)
 
@@ -95,31 +95,38 @@ you could type ::
 
  NDIN = 12  ! typo
  
-With implicit none such mistake won't compile, with "implicit.h" the code will compile
-and behave unexpectedly. In this case also the compiler flag "-Wuninitialized" won't help!
+With *implicit none* such mistake won't compile, with the *implicit.h* the code will compile
+and behave unexpectedly. In this case also the know compiler flag "-Wuninitialized" won't help!
 
 In the code we had (and unfortunatelly still have( many bugs like this and some of us have spent several long afternoons
 chasing them. The insertions of "implicit.h"  is too dangerous and also experienced programmers
 make typos.
 
-2. The insertion of "implicit none" is nice for other people reading your code. They
+2. The insertion of *implicit none* is nice for other people reading your code. They
 can see which variables are local, which are global (from common blocks).
 Without implicit none you have no idea whether this is a local or a global
 variable if you don't know the common blocks by heart.
 
-3. The  command "implicit none" makes it easier to identify include statements that are  
+3. The  command *implicit none* makes it easier to identify include statements that are  
 really 
 used and includes that are just included but not used.
-With "implicit.h"  you can comment out includes and the code may still  
+With *implicit.h*  you can comment out includes and the code may still  
 compile.
-Contraty, "implicit none" will warn you. If you remove an include file using "implicit none"
+Contrary, the *implicit none* will warn you. If you remove an include file using *implicit none*
 and the code compiles, then this include was useless. 
+
+The time that you gain with *implicit.h*, you will spend it in debugging bugs
+that implicit none would have detected.
+*Implicit none* makes it easier for other people to reuse your routines.
+With *implicit none* they know exactly which variables are local to the routine
+and which are passed via header files or modules. With *implicit.h* they are completely
+in the blind.
 
 
 Integer kinds
 -------------
 
-Please  in your codes always use *KIND free* declarations ::
+Please always use *KIND free* declarations in your codes::
 
   integer :: variable
 
@@ -149,8 +156,14 @@ with fortran_interface.h is painful and not robust.
 If you replace a code remove the old code
 -----------------------------------------
 
-Do not keep old code "just to be sure". We have Git history.
+Do not keep old code "just to be sure". We have the well preserved Git history.
 Cut dead wood.
+
+Don't check in commented out lines of code.
+It will make it harder for other developers to modify or improve your code
+because they cannot know whether the commented code is important or not.
+If you really have to leave commented code you should document exactly
+why you feel that the old code has to stay as a comment inside the source file.
 
 
 Never commit new functionality without tests
