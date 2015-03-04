@@ -7,7 +7,7 @@
     public contraction_422
     public contraction_444
     public contraction_424
-!    public contraction_244
+    public contraction_244
 
 
      private
@@ -18,7 +18,7 @@
            &                   dia_factor,dia_sum_factor,nrep)
 
 !----------calling variables-----------------------------------
-    character(2), dimension(4), intent(in)   :: left_order
+    character(2), dimension(2), intent(in)   :: left_order
     character(2), dimension(2), intent(in)   :: im_order, right_order
 !    real(8), intent(in), optional :: left_array(:), right_array(:)   !when the left or right array is a fixed array then we will provide input.    
     real(8), intent(in) :: rightTensor(*),leftTensor(*)   
@@ -107,22 +107,6 @@
 
       call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,right_sorted,dia_sum_factor*A1,imTensor,NREP) 
 
-!     if (transA=='C') then
-
-!      if (temp(4)==im_order(2)) then
-
-       
-         
-!      endif
-!   
-!     else
-
-!        if (sorted_opArray(1)==im_order(2)) then 
-
-!        
-!        endif
-!     endif
-
      deallocate(y_column)
      deallocate(x_column)
      deallocate(x_row)
@@ -130,8 +114,8 @@
 
     end subroutine
 
-   subroutine contraction_422 (left_order, right_order, im_order, rightTensor, imTensor, &
-           &                   dia_factor, dia_sum_factor, nrep)
+   subroutine contraction_422 (left_order,right_order,im_order,rightTensor,imTensor, &
+           &                   dia_factor,dia_sum_factor,nrep)
      
 !----------calling variables-----------------------------------
     character(2), dimension(4), intent(in)   :: left_order
@@ -156,7 +140,7 @@
      transA = 'N'
      call decide_sorting_routine(22,left_order,right_order,im_order,transA,match_index)
 
-     call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column)
+     call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column,if_TotSym=.true.)
 
 !  3) determine the row and column index for the matrix-vector multiplication routine. 
 !     I will like to fetch a flexible array   
@@ -188,6 +172,7 @@
 #include "param.inc"
 
    v_sort = 0.0d0
+   right_sorted = 0.0d0
    transA = 'N'
    transB = 'N'
 
@@ -200,8 +185,6 @@
 !  2) properly sort the fixed array to contract with BLAS. row and colum indices for this array are also extracted here.
 
     call decide_sorting_routine(22,right_order,im_order,sorted_opArray_left,transB,save_index,sorted_opArray_right)
-
-    write(*,*)'sorted operator array right ', (sorted_opArray_right(i),i=1,4), save_index
 
     call sorting_for_blas(save_index,.false.,transB,right_sorted,y_row,y_column,rightTensor,if_TotSym=.false.)
 
@@ -217,17 +200,17 @@
 
    im_temp = 0.0d0
 
-   call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,rightTensor,A0,im_temp,NREP) 
+   call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,right_sorted,A0,im_temp,NREP) 
 
    v_sort = 0.0d0
 
+   transA = 'N'
 
-   write (*,*) 'what is the array to be resorted after the contraction is made, ', &
-               &  (/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/) 
+   call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
+                       & transA,save_index,inverse=.true.)
 
-   call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/),transA,&
-                          &      save_index,inverse=.true.)
 
+   write(*,*)'just checking',(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/),transA,save_index
 
    if (transA=='C') then
 
@@ -254,10 +237,8 @@
    call xaxpy (dot_product(x_row,x_column),A1,v_sort,1,imTensor,1)
 
    else
- 
     call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,right_sorted,dia_sum_factor*A1,imTensor,NREP) 
    endif
-
 
   end subroutine
 
@@ -267,18 +248,17 @@
 !----------calling variables-----------------------------------
     character(2), dimension(4), intent(in)   :: left_order,im_order
     character(2), dimension(2), intent(in)   :: right_order
-!   real(8), intent(in), optional :: left_array(:), right_array(:)   !when the left or right array is a fixed array then we will provide input.    
     real(8), intent(in), optional :: LeftTensor(:), RightTensor(:) 
     integer, intent(in) :: nrep
     real(8), intent(in) :: dia_factor, dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(inout) :: imTensor(*)
-   integer :: x_row(nrep), x_column(nrep), y_row(nrep), y_column(nrep)
-   character(1) :: transA, transB
-   integer :: match_index,i
-   character(2) :: FreeIndx,sorted_opArray(3)
-   real(8) :: v_sort (10000)
-   real(8),allocatable :: im_temp(:)
-   real(8),allocatable :: im_temp_temp(:)
+    integer :: x_row(nrep), x_column(nrep), y_row(nrep), y_column(nrep)
+    character(1) :: transA, transB
+    integer :: match_index,i
+    character(2) :: FreeIndx(2),sorted_opArray(3)
+    real(8) :: v_sort (10000)
+    real(8),allocatable :: im_temp(:)
+    real(8),allocatable :: im_temp_temp(:)
 
 #include "param.inc"
    v_sort = 0.0d0
@@ -301,7 +281,6 @@
 
    call onebody_for_blas (right_order,left_order,im_order,transB,y_row,y_column,FreeIndx)
 
-
 !  3) matrix-matrix multiplication routine runs for each irreps.
 
    if (transB=='n') then
@@ -316,8 +295,10 @@
    v_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the imtermediate.
 
-   call decide_sorting_routine(31,im_order,left_order,(/sorted_opArray,FreeIndx/),transA,match_index,inverse=.true.)
-   
+   transA = 'N'
+
+   call decide_sorting_routine(31,im_order,left_order,(/sorted_opArray,FreeIndx(2)/),transA,match_index,inverse=.true.)
+
    if (transA=='C') then
 
    if (transB=='n') then
@@ -340,6 +321,86 @@
    endif
 
    call xaxpy (dot_product(x_row,x_column),A1,v_sort,1,ImTensor,1)
+
+  end subroutine
+
+  subroutine contraction_244 (left_order,right_order,im_order,ImTensor, &
+           &                   dia_factor,dia_sum_factor,nrep,LeftTensor,RightTensor)
+
+!----------calling variables-----------------------------------
+    character(2),dimension(4),intent(in) :: right_order,im_order
+    character(2),dimension(2),intent(in) :: left_order
+    real(8),intent(in),optional :: LeftTensor(:), RightTensor(:) 
+    integer,intent(in) :: nrep
+    real(8),intent(in) :: dia_factor, dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8),intent(inout) :: imTensor(*)
+    integer :: x_row(nrep), x_column(nrep), y_row(nrep), y_column(nrep)
+    character(1) :: transA, transB
+    integer :: match_index,i
+    character(2) :: FreeIndx(2),sorted_opArray(4)
+    real(8) :: right_sort (10000)
+    real(8),allocatable :: im_temp(:)
+    real(8),allocatable :: im_temp_temp(:)
+
+#include "param.inc"
+   right_sort = 0.0d0
+   transA = 'N'
+   transB = 'N'
+!  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
+
+   call decide_sorting_routine(13,right_order,im_order,left_order,transB,match_index,sorted_opArray)
+
+ if (present(RightTensor)) then
+ 
+   call sorting_for_blas(match_index,.false.,transB,right_sort,y_row,y_column,RightTensor)
+ 
+ else
+
+   call sorting_for_blas(match_index,.false.,transB,right_sort,y_row,y_column)
+
+ endif
+
+!  2) properly sort the fixed array to contract with BLAS. row and colum indices for this array are also extracted here.
+
+   call onebody_for_blas (left_order,im_order,sorted_opArray,transA,x_row,x_column,FreeIndx)
+
+!  3) matrix-matrix multiplication routine runs for each irreps.
+
+   if (transB=='n') then
+   allocate(im_temp(dot_product(x_row,y_column)))
+   else
+   allocate(im_temp(dot_product(x_row,y_row)))
+   endif
+   im_temp = 0.0d0
+
+  if (present(LeftTensor)) call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,LeftTensor,right_sort,A0,im_temp,NREP) 
+
+   right_sort = 0.0d0
+!  4) re-sort the arrays to align with the desired structure of the imtermediate.
+
+   transA = 'N'
+
+   call decide_sorting_routine(13,im_order,left_order,(/FreeIndx(1),sorted_opArray(2:4)/),transA,match_index,inverse=.true.)
+
+   if (transA=='C') then
+
+   if (transB=='n') then
+   allocate(im_temp_temp(dot_product(x_row,y_column)))
+   else
+   allocate(im_temp_temp(dot_product(x_row,y_row)))
+   endif
+   im_temp_temp = 0.0d0
+   call SRT1C1 (nrep,x_row,y_column,im_temp,im_temp_temp)
+
+  deallocate(im_temp)
+   call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp)
+
+  deallocate(im_temp_temp)
+   else
+   call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp)
+  deallocate(im_temp)
+   endif
+   call xaxpy (dot_product(x_row,x_column),A1,right_sort,1,ImTensor,1)
 
   end subroutine
 

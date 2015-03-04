@@ -471,8 +471,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT7 (NREP,MULTB,DOINV,NPAIR1,KFIE,LFIE,NTRIPL,
-     &                 OFF,OFF1,BUF1,BUF2,IFIE,JFIE,NPAIR2)
+      SUBROUTINE SRT7 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NTRIPL,
+     &                 OFF,OFF1,BUF1,BUF2,NPAIR2)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -490,12 +490,12 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
-      INTEGER NPAIR1(NREP),KFIE(NREP),LFIE(NREP)
+      INTEGER NPAIR1(NREP)
       INTEGER,OPTIONAL :: NPAIR2(NREP)
-      INTEGER,OPTIONAL :: IFIE(NREP),JFIE(NREP) 
+      INTEGER          :: IFIE(NREP),JFIE(NREP) 
       INTEGER NTRIPL(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
-      LOGICAL DO_SORT
+      LOGICAL DO_SORT,DOINV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -509,8 +509,8 @@ C
 
       DO_SORT=.TRUE.
       if (PRESENT(NPAIR2)) DO_SORT = .TRUE.
-      if (PRESENT(IFIE))   DO_SORT = .TRUE.
-      if (PRESENT(JFIE))   DO_SORT = .TRUE.
+!      if (PRESENT(IFIE))   DO_SORT = .TRUE.
+!      if (PRESENT(JFIE))   DO_SORT = .TRUE.
 
       if (DO_SORT) then 
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
@@ -531,9 +531,14 @@ C
          DO I = IMIN, IFIE(IREP)
             IKLJ1 = JOFF + ((J-1)*NTRIPL(JREP)+I-1) * RCW + 1
             JKLI1 = IOFF + ((I-1)*NTRIPL(IREP)+J-1) * RCW + 1
-            CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IKLJ1),IFIE(IREP))
-            CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(JKLI1),JFIE(JREP))
-            CALL XSCAL(N,-A1,BUF2(JKLI1),JFIE(JREP))
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(IKLJ1),IFIE(IREP),BUF2(IJKL+IJ),M)
+               CALL XAXPY(N,-A1,BUF1(JKLI1),JFIE(JREP),BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IKLJ1),IFIE(IREP))
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(JKLI1),JFIE(JREP))
+               CALL XSCAL(N,-A1,BUF2(JKLI1),JFIE(JREP))
+            ENDIF 
             IJ = IJ + RCW
          ENDDO
         ENDDO
