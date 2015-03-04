@@ -340,8 +340,8 @@
 !   w_vovo(p2o1, p1o2) = V(o3o1, p1p3) * T2(p2p3, o3o2)
 !---------------------------------------------
 
-! call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),t2,wbar_ovvo, &
-!            &      -1.0d0,0.0d0,nrep)
+  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),t2,wbar_ovvo, &
+             &      -1.0d0,0.0d0,nrep)
 
   end subroutine
 

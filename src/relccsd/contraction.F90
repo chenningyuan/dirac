@@ -209,9 +209,6 @@
    call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
                        & transA,save_index,inverse=.true.)
 
-
-   write(*,*)'just checking',(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/),transA,save_index
-
    if (transA=='C') then
 
 !  if (transB=='n') then
