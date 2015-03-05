@@ -182,7 +182,7 @@
   case(22) 
 
   allocate(A(6))
-
+  
   A = (/1234, 1324, 2134, 3412, 1432, 1243/)
 
   case(31)
@@ -981,7 +981,7 @@
    a(0)%orbital_type => NO
    a(1)%orbital_type => NV
 
-   bit_reordered = bitString(array1,(/1,2/)) 
+   bit_reordered = bitString(array1,reorder_array) 
 
    row = a(bit_reordered(1))%orbital_type
    column = a(bit_reordered(2))%orbital_type
@@ -1012,7 +1012,7 @@
 !-------------------------------------------------------------
     character(*),intent(in) :: array1(:), array2(:) ! array1 is the array to be reordered
     character(*),intent(in),optional :: array3(:) 
-    integer, dimension(size(array1)),intent(out) :: reorder_array     ! array2 is the array from where we will extract the first indices in the reordered 
+    integer, dimension(size(array1)),intent(out) :: reorder_array      ! array2 is the array from where we will extract the first indices in the reordered 
                                                                        ! array i.e, for left array it is always intermediate and for right always    
     integer                                  :: k,i                    ! left array. array3 is the array to extract rest of the indices e.g, for left array
                                                                        ! always right and for right array always intermediate.

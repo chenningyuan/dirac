@@ -171,7 +171,7 @@
 
 #include "param.inc"
 
-   v_sort = 0.0d0
+   v_sort       = 0.0d0
    right_sorted = 0.0d0
    transA = 'N'
    transB = 'N'
@@ -208,6 +208,8 @@
 
    call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
                        & transA,save_index,inverse=.true.)
+
+   write(*,*)'array after sorting the integrals',(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/),transA,save_index 
 
    if (transA=='C') then
 
@@ -257,6 +259,9 @@
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
 
+!   real(8) :: im_temp(10000)
+!   real(8) :: im_temp_temp(10000)
+
 #include "param.inc"
    v_sort = 0.0d0
    transA = 'N'
@@ -280,11 +285,7 @@
 
 !  3) matrix-matrix multiplication routine runs for each irreps.
 
-   if (transB=='n') then
    allocate(im_temp(dot_product(x_row,y_column)))
-   else
-   allocate(im_temp(dot_product(x_row,y_row)))
-   endif
    im_temp = 0.0d0
 
   if (present(RightTensor)) call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,RightTensor,A0,im_temp,NREP) 
@@ -298,11 +299,7 @@
 
    if (transA=='C') then
 
-   if (transB=='n') then
    allocate(im_temp_temp(dot_product(x_row,y_column)))
-   else
-   allocate(im_temp_temp(dot_product(x_row,y_row)))
-   endif
    im_temp_temp = 0.0d0
    call SRT1C1 (nrep,x_row,y_column,im_temp,im_temp_temp)
 
@@ -339,6 +336,9 @@
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
 
+!   real(8) :: im_temp(10000)
+!   real(8) :: im_temp_temp(10000)
+
 #include "param.inc"
    right_sort = 0.0d0
    transA = 'N'
@@ -363,11 +363,11 @@
 
 !  3) matrix-matrix multiplication routine runs for each irreps.
 
-   if (transB=='n') then
+!  if (transB=='n') then
    allocate(im_temp(dot_product(x_row,y_column)))
-   else
-   allocate(im_temp(dot_product(x_row,y_row)))
-   endif
+!  else
+!  allocate(im_temp(dot_product(x_column,y_column)))
+!  endif
    im_temp = 0.0d0
 
   if (present(LeftTensor)) call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,LeftTensor,right_sort,A0,im_temp,NREP) 
@@ -381,21 +381,21 @@
 
    if (transA=='C') then
 
-   if (transB=='n') then
-   allocate(im_temp_temp(dot_product(x_row,y_column)))
-   else
-   allocate(im_temp_temp(dot_product(x_row,y_row)))
-   endif
+!  if (transB=='n') then
+  allocate(im_temp_temp(dot_product(x_row,y_column)))
+!  else
+!  allocate(im_temp_temp(dot_product(x_column,y_column)))
+!  endif
    im_temp_temp = 0.0d0
    call SRT1C1 (nrep,x_row,y_column,im_temp,im_temp_temp)
 
-  deallocate(im_temp)
+ deallocate(im_temp)
    call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp)
 
-  deallocate(im_temp_temp)
+ deallocate(im_temp_temp)
    else
    call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp)
-  deallocate(im_temp)
+ deallocate(im_temp)
    endif
    call xaxpy (dot_product(x_row,x_column),A1,right_sort,1,ImTensor,1)
 

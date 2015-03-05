@@ -220,6 +220,7 @@
     call contraction_424 ((/"o3","o1","p1","o2"/),(/"p2","o3"/),(/"p2","o1","p1","o2"/),w_vovo, &
              &      -1.0d0,0.0d0,nrep,RightTensor=t1)
 
+
 !  call contraction_424 ((/"o3","o1","o2","p1"/),(/"p2","o3"/),(/"p2","o1","o2","p1"/),t1,w_vovo, &
 !           &      -1.0d0,0.0d0,nrep)
 !---------------------------------------------
@@ -230,8 +231,8 @@
 
   call gettau (t1,t2,tau,'approximate')
 
-    call contraction_444 ((/"o3","o1","p1","p3"/),(/"p2","p3","o3","o2"/),(/"p2","o1","p1","o2"/),tau,w_vovo, &
-               &      -1.0d0,0.0d0,nrep)
+!   call contraction_444 ((/"o3","o1","p1","p3"/),(/"p2","p3","o3","o2"/),(/"p2","o1","p1","o2"/),tau,w_vovo, &
+!              &      -1.0d0,0.0d0,nrep)
 
 ! call contraction_444 ((/"o3","o1","p3","p1"/),(/"p2","p3","o2","o3"/),(/"p2","o1","o2","p1"/),tau,w_vovo, &
 !            &      -1.0d0,0.0d0,nrep)
@@ -243,9 +244,7 @@
  subroutine w_iemn(t1,t2,w_ovoo,wbar_ovvo,w_oooo,hov)
 
  !---------------Description--------------------------------------------
-
  !     Calculates w_voov intermediate
-
  !-----------------------------------------------------------------------
 
 #include "param.inc"
@@ -273,25 +272,30 @@
 
  deallocate (w_temp)
 
+
  call xscal(nv2*rcw,-A1,w_ovoo,1)
 
 !---------------
-! 
+! w_ovoo(o1p1,o3o2) = F_me(o1p2) * T2(p2p1o2o3)  
 !---------------
 
   call contraction_244 ((/"o1","p2"/),(/"p2","p1","o2","o3"/),(/"o1","p1","o2","o3"/),w_ovoo, &
            &      -1.0d0,0.0d0,nrep,LeftTensor=hov,RightTensor=t2)
 
 !---------------------------------------------
-!   w_vovo(p2o1, p1o2) = V(o3o1, p1p3) * T2(p2p3, o3o2)
+!   w_ovoo(o1p1,o2o3) = V(o1o4,p2o2) * T2(p1p2, o3o4)
 !---------------------------------------------
 
   call contraction_444 ((/"o1","o4","p2","o2"/),(/"p1","p2","o3","o4"/),(/"o1","p1","o2","o3"/),t2,w_ovoo, &
              &      -1.0d0,0.0d0,nrep)
 
+!-------------------------------------------
+!   w_ovoo(o1p1,o3o2) = V(o1p1,p2o3)*T1(p2o2)
+!--------------------------------------------
 !careful. the following diagram has its permuted label in ket. this is not the right way of constructing this intermediate. i will come back to it soon.
    call contraction_424 ((/"o1","p1","p2","o3"/),(/"p2","o2"/),(/"o1","p1","o3","o2"/),w_ovoo, &
               &      1.0d0,0.0d0,nrep,LeftTensor=wbar_ovvo,RightTensor=t1)
+
 
 ! write(*,*)'just before the problem'    
 

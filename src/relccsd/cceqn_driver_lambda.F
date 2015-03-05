@@ -163,6 +163,9 @@ C     Initialize DIIS.
          write(81,*)'---------------------'
          write(81,5)(w_ovvo(i),i=1,nv4)
 
+      
+        write(*,*)'starting w_iemn intermediate'
+
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
          write(*,*)'w_bar_iemn intermediate'

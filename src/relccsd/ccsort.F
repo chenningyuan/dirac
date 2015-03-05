@@ -287,7 +287,7 @@ C
             DO J = 1, JFIE(JREP)
             IF (DOINV) THEN
               IF (.NOT.FIRST) 
-     &        CALL XCOPY (IFIE(IREP),BUF2(IKJL0*RCW+1),1,BUF1(IJKL),1)
+     &        CALL XCOPY (IFIE(IREP),BUF1(IKJL0*RCW+1),1,BUF2(IJKL),1)
             ELSE
               IF (.NOT.FIRST) 
      &        CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKJL0*RCW+1),1)
@@ -867,7 +867,7 @@ C
          DO K = 1, KFIE(KREP)
             IJLK1 = KOFF + (K-1) * NTRIPL(KREP) * RCW + IJL
             IF(DOINV) THEN
-            CALL XCOPY (N,BUF2(IJLK1),1,BUF1(IJKL),1)
+            CALL XCOPY (N,BUF1(IJLK1),1,BUF2(IJKL),1)
             ELSE 
             CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
             ENDIF
