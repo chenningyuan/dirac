@@ -12,9 +12,7 @@ C---------------Description--------------------------------------------
 C
 C     Solves CCSD amplitude or lambda equations.
 C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
+C---------------Authors------------------------------------------
 C
 C     Author : Luuk Visscher
 C
@@ -74,86 +72,16 @@ C     the timer because we want the overall timing at the end.
       CALL XTIMRD (CPUH1,'--- HINTM: VVOO contribution   ')
       CALL XTIMRD (CPUH2,'--- T2EQNS: HINTM*T2           ')
 
-!     CALL cceqn_driver_init(MAXIT,FVO,T1,S1,T2,S2,
-!    &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,
-!    &                 NBUF2,NBUF3,RMS,DELS1,DELS2)
-
-! this is the start of what the init above should replace
-      IF (EQNS.EQ.'AMPLTD') THEN
-         FOCKSP = .FALSE.
-      ELSEIF (EQNS.EQ.'FOCKSP') THEN
-         FOCKSP = .TRUE.
-         DELS1 = 'DD'
-         IF (ICURFSS.EQ. 2) DELS1 = 'DK'
-         IF (ICURFSS.EQ. 3) DELS1 = 'KD'
-         IF (ICURFSS.EQ. 4) DELS1 = 'KK'
-         IF (ICURFSS.EQ. 5) DELS1 = 'DK'
-         IF (ICURFSS.EQ. 6) DELS1 = 'KD'
-         DELS2 = 'DDDD'
-         IF (ICURFSS.EQ. 2) DELS2 = 'DDDK'
-         IF (ICURFSS.EQ. 3) DELS2 = 'KDDD'
-         IF (ICURFSS.EQ. 4) DELS2 = 'KDDK'
-         IF (ICURFSS.EQ. 5) DELS2 = 'DDKK'
-         IF (ICURFSS.EQ. 6) DELS2 = 'KKDD'
-
-C        Initialize S1 and S2 in case we want to do zero
-C        iterations (tests). In normal runs S1 and S2 will
-C        be initialized in T1EQNS and T2EQNS.
-
-         CALL XCOPY(NDIMT1,A0,0,S1,1)
-         CALL XCOPY(NDIMT2,A0,0,S2,1)
-         CALL S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
-
-      ELSE
-         CALL QUIT('Wrong keyword in call to CCEQNS')
-      ENDIF
-
-C     Zero amplitudes if the NOCCX options are specified
-
-      IF (        NOCCS) CALL XCOPY (NDIMT1,A0,0,T1,1)
-      IF (        NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
-
-C     Initialize the work arrays to zero.
-
-      CALL XCOPY (NDIMT2,A0,0,BUF1,1)
-      CALL XCOPY (NBUF2,A0,0,BUF2,1)
-      CALL XCOPY (NBUF3,A0,0,BUF3,1)
-
-C     Initialize DIIS.
-
-      IT = -1
-      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
-     &           IT,CC1,BB1,ITC,BB2,RMS)
-
-      ECCSD = 0.D0
-      NIT = 0
-
-      CALL T1DIAG(DIAG,T1,BUF1)
-      CALL CCENG (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
-      IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
-
-      IF (IPRNT.GE.1) THEN
-         WRITE(IW,6003)
-         WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
-      ENDIF
-! this is the end   of what the init above should replace
-                     
-                                          
-                                   
-
-                                                      
-                                            
-                                          
-                                                      
-                                        
-                                                          
-                                                                   
-                                                         
-           
+      CALL cceqn_driver_init(MAXIT,FVO,T1,S1,T2,S2,
+     &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,
+     &                 NBUF2,NBUF3,RMS,FOCKSP,DELS1,DELS2)
 
 C
 C  START ITERATIVE PROCEDURE
 C
+      IT = 0
+      ITC = 0
+      NIT = 0
  1000 CONTINUE
       NIT = NIT + 1
       IF (NIT.GT.MAXIT) THEN
@@ -162,32 +90,17 @@ C
          GO TO 2000
       ENDIF
 C
-                        
- 
-                                                    
- 
-                             
-                                             
-           
-
 C  EVALUATE T1 EQUATIONS
 C  CHECK FOR CASES WITH NO NON_ZERO T1'S TO AVOID CRASHES
 C
       CALL XTIME(5,1,'- T1 equations                  ')
-                   
-           CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
-           
-                   
-           CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
+      CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
+      CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
            
       IF (NDIMT1.GT.0) THEN
-                      
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
           CALL amplitude_equation_T1 (FVO,EPS,T1,T2,HO,HV,HOV,H,CZ,GOO,
      &                 GVV,BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
-             
-                                                            
-                                                     
       ENDIF
       CALL XTIME(5,2,'- T1 equations                  ')
 
@@ -196,19 +109,10 @@ C     In case of NOCCD we can skip the calculation of T2 amplitudes
 C
       IF (        NOCCD) GOTO 100
       CALL XTIME(5,1,'- T2 equations                  ')
-
-
-                             
-                     
-                                                           
-                                                           
-                                                               
-                                                             
            
 C
 C  EVALUATE T2 INTERMEDIATES
 C
-                   
          CALL XTIME(0,1,'-- GOINTM                        ')
          CALL GOINTM (FVO,T1,BUF1,BUF2,HO)
          CALL XTIME(0,2,'-- GOINTM                        ')
@@ -234,12 +138,9 @@ C
 
         IF(NBUF3.LT.IVOVO(NREP+1))
      &    CALL QUIT('BUF3 can not keep the VOVO integrals !')
-
 C ... we collect the H array
-
         CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
         CALL XCOPY (NBUF3,A0,0,BUF3,1)
-CSK        WRITE(IW,*) 'THIS IS IERR before',IERR
         IERR = 0
         call interface_mpi_allreduce_r1_work_f77(H,BUF3,
      &       RCW*IVOVO(NREP+1),
@@ -253,16 +154,6 @@ CSK        WRITE(IW,*) 'THIS IS IERR before',IERR
       ENDIF
 
 #endif
-
-
-C
-                     
-                                                           
-                                                           
-                              
-                                                               
-                            
-                                                        
            
 C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
@@ -275,18 +166,11 @@ C
 C
 C  MUST NOW ADD IN B INTERMEDIATE CONTRIBUTION
 C
-                     
-                                                             
-           
 C
       CALL XTIME(5,1,'-- BINTM                       ')
       CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
       CALL XTIME(5,2,'-- BINTM                       ')
 
-                     
-                                                                        
-           
-C
       CALL XTIME(5,2,'- T2 equations                  ')
 C
  100  CONTINUE
@@ -306,19 +190,10 @@ C
       CALL PARTS (1,RMS,S1,S2,BUF1,BUF2)
       CALL XTIME(4,2,'- adding partial T1/T2 amplitudes ')
 C
-                     
-                                                                       
-                                                                       
-           
-C
       IF (FOCKSP) THEN
 C       Adding folded diagrams, use HOV and H as scratch arrays
         CALL FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,HOV,H,
      &               S1,S2)
-                       
-                                                                        
-                                                                        
-             
       ENDIF
 C
 C  Make new T1s and T2 by dividing S1s and S2 by eigenvalues
@@ -342,17 +217,13 @@ C
 C
       CALL ZCORE (T1,T2)
 C
-                                                          
-                           
-                                                           
-                                                  
 C
 C  EXTRAPOLATE THE AMPLITUDES
 C
       CALL XTIME(5,1,'- DIIS extrapolation            ')
       CALL DELFCK ('VO',DELS1,T1)
       CALL DELINT ('VVOO',DELS2,T2,0,0,0)
-      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
       CALL XTIME(5,2,'- DIIS extrapolation            ')
 C
@@ -434,7 +305,7 @@ C
 C     Close and delete DIIS scratch files
 C
       IT = -2
-      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
 C
  111  FORMAT(A20,I4,2f25.15)

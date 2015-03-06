@@ -1,30 +1,14 @@
       SUBROUTINE cceqn_driver_init(MAXIT,FVO,T1,S1,T2,S2,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,
-     &                 NBUF2,NBUF3,RMS,DELS1,DELS2)
+     &                 NBUF2,NBUF3,RMS,FOCKSP,DELS1,DELS2)
 
-                          
-                
                              
       IMPLICIT INTEGER (A-Z)
-
-                                                                       
- 
-                                                
- 
-                                                                       
- 
-                                                                       
- 
-                            
- 
-                                                                       
 C
 C     Intermediaries etc.
 
       REAL*8 FVO(*),T1(*),S1(*),T2(*),S2(*)
-      REAL*8                         BUF1(*),BUF2(*),BUF3(*)
-                                                           
-                          
+      REAL*8 BUF1(*),BUF2(*),BUF3(*)
 
 C     for diis ...
 
@@ -34,7 +18,6 @@ C     for diis ...
       REAL*8 DIAG
 
 C---------------Common Blocks--------------------------------------
-
 #include "files.inc"
 #include "param.inc"
 #include "symm.inc"
@@ -47,27 +30,13 @@ C---------------Common Blocks--------------------------------------
 !#if defined (VAR_MPI)
 !      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 !#endif
-
 C---------------Local variables--------------------------------------
-
-                                  
       LOGICAL TEQ,FOCKSP      
       CHARACTER*2 DELS1
       CHARACTER*4 DELS2
-                 
-
 C---------------Executable code--------------------------------------
 C
 C
-                                                                      
-                                                                      
-                                                                           
-                                                              
-
-                                                           
-                                                           
-                                                           
-
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.            
          FOCKSP = .FALSE.
@@ -116,7 +85,7 @@ C     Initialize the work arrays to zero.
 C     Initialize DIIS.
 
       IT = -1
-      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
 
       ECCSD = 0.D0
@@ -130,333 +99,8 @@ C     Initialize DIIS.
          WRITE(IW,6003)
          WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
       ENDIF
-
-
-                                                         
-
-                        
-                             
-                                                       
-                                                           
-
-                                          
-                                          
-                                   
-
-                                                      
-                                            
-                                          
-                                                      
-                                        
-                                                          
-                                                                   
-                                                         
-           
-
- 
-                            
- 
-              
-                   
-                            
-                      
-                           
-                   
-           
- 
-                        
- 
-                                                    
- 
-                             
-                                             
-           
-
-                        
-                                                         
- 
-                                                        
-                   
-                                                        
-           
-                   
-                                                        
-           
-                           
-                      
-                                             
-                                                            
-                                                     
-             
-                                                            
-                                                     
-              
-           
-                                                        
-
- 
-                                                                   
- 
-                                 
-                                                        
-
-
-                             
                      
-                                                           
-                                                           
-                                                               
-                                                             
-           
- 
-                            
- 
-                   
-                                                            
-                                          
-                                                            
-                                                            
-                                                      
-                                                            
-                                                            
-                                        
-                                                            
-                                                            
-                                                  
-                                                            
-
-                     
-                     
-                                                               
-                                                         
-                                                                
-                                                                    
-                                                                   
- 
-                             
-
-                                  
-                                                             
-
-                            
-
-                                                              
-                                      
-                                                 
-                
-                                                        
-                               
-                                            
-                          
-                                                              
-             
-                                            
-                                                              
-
-           
-
-      
-
-           
-
- 
-                     
-                                                           
-                                                           
-                              
-                                                               
-                            
-                                                        
-           
- 
-                                              
- 
-                                                       
-                                                       
-                                           
-                                                       
- 
- 
-                                              
- 
-                     
-                                                             
-           
- 
-                                                       
-                                                         
-                                                       
-
-                     
-                                                                        
-           
- 
-                                                        
- 
-              
- 
-                                                                     
-                                                 
-                                        
-           
- 
-                                                    
- 
-                                           
- 
-                                        
- 
-                                                          
-                                        
-                                                          
- 
-                     
-                                                                       
-                                                                       
-           
- 
-                      
-                                                               
-                                                             
-                           
-                       
-                                                                        
-                                                                        
-             
-           
- 
-                                                            
- 
-                                   
-                                   
- 
-                      
-                                       
-                                                                      
-                                                                   
-                                       
-          
-                                    
-           
- 
-                                                        
- 
-                                                      
-                                                      
- 
-                        
- 
-                                                          
-                           
-                                                           
-                                                  
- 
-                             
- 
-                                                        
-                                 
-                                         
-                                               
-                                        
-                                                        
- 
-                                        
- 
-                                                          
-                                        
-                                                          
- 
-                                                    
- 
-                   
-                                                          
-                                                        
-           
- 
-                                
-                                                       
-                     
- 
- 
-                                
-                
- 
-              
-                                
-                    
- 
-                                                               
-                    
- 
-                           
-                     
-          
-                               
-           
- 
-                     
-                            
-                            
-                                        
-                                
-             
-                                           
-                                           
-              
-                            
-                                                          
-           
- 
-                         
-                        
-                        
-                     
-                                                    
-                                                    
-                                                    
-            
- 
-                      
-                                               
-                                                               
-                                                  
-           
- 
-                                                         
- 
-                                                         
-                         
-                                                         
-                         
-                                                         
-                         
- 
-                                                            
- 
-                                                     
- 
-                                         
- 
-             
-                                               
-                                        
-C
-                            
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)
-                                                      
  6003 FORMAT(//3X,'NIT',10X,'ENERGY',20X,'RMS',7X,'T1-DIAGN')
-                                                                       
-                               
-                                   
-                                        
-                                                    
-                                                     
-                                                    
-                                                    
-                                              
-                                               
-                                           
-                                         
-                                                   
-            
+
       END

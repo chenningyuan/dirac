@@ -4,14 +4,19 @@
 
     public shuffle_indices
     public match_array
-    public v_for_blas
+    public onebody_for_blas
+    public sorting_for_blas
+    public decide_sorting_routine 
 
     private
 
-    integer    :: sortType
-    logical      :: v_direct
+    integer      :: sortType
+    logical      :: do_direct, do_exchange
+    logical      :: t_direct, t_exchange
+    character(20):: arraytype
     character(2),pointer :: array_original(:)
-
+    character(2)         :: exchange(4)
+    integer              :: reorder_left(4) 
     type sorting_list
       integer :: num 
       integer :: trans
@@ -34,7 +39,9 @@
    end type
 
     type bit_processing
-       integer :: bra, ket, braKet, I, J, K, L, ijk, jkl, ijkl, bra_reorder, ket_reorder
+       integer :: bra,ket,braKet,I,J,K,L,ijk,jkl,ijkl
+       integer :: I_reorder,J_reorder,K_reorder,L_reorder,ijkl_reorder
+       integer :: bra_reorder,ket_reorder,ijk_reorder,jkl_reorder
     endtype bit_processing 
 
     type presorting
@@ -46,6 +53,7 @@
    external SRT16
    external SRT1R1
    external SRT1TT4
+   external SRT1ST4
    external SRT36 
    external SRT22
    external SRT26
@@ -60,88 +68,110 @@
 
     CONTAINS
     
-   subroutine shuffle_indices(arraytype, shuffle, reorder_array, no_match, save_index, vtrans)
+   subroutine shuffle_indices(reorder_array,no_match,save_index,trans)
 
 ! ------- variables --------
-    integer, intent(inout),target   :: reorder_array(4)
-    logical, intent(inout)   :: no_match
-    character(*), intent(in) :: shuffle, arraytype
-    character(*), intent(out):: vtrans
-    integer,pointer :: shifted_array(:)
-    integer                  :: temp  
-    integer, intent(out)     :: save_index
-    type(sorting_list)       :: a
+    integer,intent(inout)        :: reorder_array(4)
+    logical,intent(inout)        :: no_match
+    character(1),intent(inout)   :: trans
+    integer                      :: shifted_array(4)
+    integer,allocatable          :: P(:,:)
+    integer                      :: temp,i,j  
+    integer, intent(out)         :: save_index
+    type(sorting_list)           :: a
 ! --------------------------
 
-  select case(shuffle)
+  select case(sortType)
     
-    case('external')
+    case(13)
 
-     shifted_array => reorder_array(2:4)
-
-     temp = reorder_array(1)
-!     reorder_array(1) = reorder_array(2)
-!     reorder_array(2) = temp
-
-!    a%num = toDecimal(reorder_array)
-!    a%trans = toDecimal(reorder_array,.true.)    
-
-    a%num = toDecimal((/temp,cshift(shifted_array,shift=-1)/))
-    a%trans = toDecimal((/temp,cshift(shifted_array,shift=-1)/),.true.)    
-
-   if (sortType ==22) then
+     shifted_array(1:3) =  reorder_array(2:4)
 
      temp = reorder_array(1)
-     reorder_array(1) = reorder_array(2)
-     reorder_array(2) = temp
+
+    allocate (P(6,3))
+
+    call permutate(shifted_array(1:3),P)
+
+    do i = 1, size(P,1)
+      a%num = toDecimal((/temp,P(i,:)/))
+      a%trans = toDecimal((/temp,P(i,:)/),.true.)    
+
+      call match_array (a%num, no_match, save_index, trans)  
+      if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
+
+      if (.not.no_match) then
+        reorder_array(2:4)=P(i,:)
+        exit
+      endif
+
+    enddo
+    deallocate(P)
+
+     case(31) 
+
+     shifted_array(1:3) = reorder_array(1:3)
+
+     temp = reorder_array(4)
+
+    allocate (P(6,3))
+
+    call permutate(shifted_array(1:3),P)
+
+    do i = 1, size(P,1)
+!    write(*,*)P(i,:)
+    a%num = toDecimal((/P(i,:),temp/))
+    a%trans = toDecimal((/P(i,:),temp/),.true.)    
+
+    call match_array (a%num, no_match, save_index, trans)  
+    if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
+    if (.not.no_match) then
+    reorder_array(1:3)=P(i,:)
+    exit
+    endif
+    enddo
+    deallocate(P)
+
+   case (22) 
+
+     shifted_array(1:4) = reorder_array(1:4) 
+     i = 1
+   do
+     temp = reorder_array(i)
+     reorder_array(i) = reorder_array(i+1)
+     reorder_array(i+1) = temp
 
     a%num = toDecimal(reorder_array)
     a%trans = toDecimal(reorder_array,.true.)    
 
-   endif
-
-    case('internal')
-    
-     temp = reorder_array(3)
-     reorder_array(3) = reorder_array(4)
-     reorder_array(4) = temp
-   
-    a%num = toDecimal(reorder_array)
-    a%trans = toDecimal(reorder_array,.true.)    
-    case('external_and_internal') 
-
-     temp = reorder_array(1)
-     reorder_array(1) = reorder_array(2)
-     reorder_array(2) = temp
-
-     temp = reorder_array(3)
-     reorder_array(3) = reorder_array(4)
-     reorder_array(4) = temp
-
-    a%num = toDecimal(reorder_array)
-    a%trans = toDecimal(reorder_array,.true.)    
+   call match_array (a%num,no_match,save_index,trans)  
+   if (no_match) call match_array_transpose (a%trans,no_match,save_index,trans) 
+   if ((.not.no_match).or.(i>3)) exit
+   i = i+2
+   reorder_array(1:4) = shifted_array(1:4)
+   enddo
   end select
-   
-   call match_array (arraytype, a%num, no_match, save_index, vtrans)  
-   if (no_match) call match_array_transpose (arraytype, a%trans, no_match, save_index, vtrans)  
 
    end subroutine
 
-  subroutine match_array (arraytype, permute, no_match, save_index, vtrans) 
+  subroutine match_array (permute,no_match,save_index,trans) 
 
-!-----------variable-------------
-   integer, intent(in) :: permute 
-   logical, intent(inout):: no_match
-   integer, intent(out):: save_index
-   character(*), intent(out) :: vtrans
-   character(*), intent(in)  :: arraytype   
+!-----------descripton---
+! choose the sorting type depending on whether the array is square or tringular and pattern of sorting (e.g, (2,2);(1,3))
+!------------------------
+
+!-----------calling variable-------------
+   integer, intent(in)        :: permute 
+   logical, intent(inout)     :: no_match
+   integer, intent(out)       :: save_index
+   character(1), intent(inout):: trans
 !--------------------------------
 !---------local variable---------
-   integer, allocatable :: A(:)
-   integer :: i, dim_A, upbound_A
+   integer, allocatable       :: A(:)
+   integer                    :: i,dim_A,upbound_A
 !--------------------------------
 
-   vtrans='N'
+  save_index = 0
 
   select case(arraytype)
 
@@ -152,7 +182,7 @@
   case(22) 
 
   allocate(A(6))
-
+  
   A = (/1234, 1324, 2134, 3412, 1432, 1243/)
 
   case(31)
@@ -174,8 +204,8 @@
   select case(sortType) 
 
   case(22)
-  allocate(A(2))
-  A = (/1234,1324/)
+  allocate(A(3))
+  A = (/1234,1324,1342/)
 
   case(31)
  
@@ -195,12 +225,12 @@
   select case(sortType) 
 
   case(22)
-  allocate(A(2))
+  allocate(A(3))
   A = (/1234,1432,1324/)
 
   case(31)
-  allocate(A(1))
-  A = (/1342/)
+  allocate(A(3))
+  A = (/1234,1342,1243/)
 
   case(13)
   allocate(A(1))
@@ -221,6 +251,11 @@
 
   allocate(A(2))
   A = (/1234,4123/)
+
+
+  case(13)
+  allocate(A(1))
+  A = (/1234/)
 
   end select
 
@@ -245,14 +280,13 @@
 
   end subroutine
 
-  subroutine match_array_transpose (arraytype, permute_transpose, no_match, save_index, vtrans) 
+  subroutine match_array_transpose (permute_transpose, no_match, save_index, trans) 
 
 !-----------variable-------------
-   integer, intent(in) :: permute_transpose
-   logical, intent(inout):: no_match
-   integer, intent(out):: save_index
-   character(*), intent(out) :: vtrans
-   character(*), intent(in)  :: arraytype   
+   integer,intent(in) :: permute_transpose
+   logical,intent(inout):: no_match
+   integer,intent(out):: save_index
+   character(1),intent(inout) :: trans
 !--------------------------------
 !---------local variable---------
   integer, allocatable :: A(:)
@@ -260,10 +294,11 @@
   integer :: sort_type
 !--------------------------------
 
-   vtrans='N'
+  save_index = 0 
 
   if (sortType == 31) sort_type = 13
   if (sortType == 13) sort_type = 31
+  if (sortType == 22) sort_type = 22
 
  select case(arraytype)
 
@@ -296,8 +331,8 @@
   select case(sort_type) 
 
   case(22)
-  allocate(A(2))
-  A = (/1234,1324/)
+  allocate(A(3))
+  A = (/1234,1324,1342/)
 
   case(31)
  
@@ -317,12 +352,12 @@
   select case(sort_type) 
 
   case(22)
-  allocate(A(2))
+  allocate(A(3))
   A = (/1234,1432,1324/)
 
   case(31)
-  allocate(A(1))
-  A = (/1342/)
+  allocate(A(3))
+  A = (/1234,1342,1243/)
 
   case(13)
   allocate(A(1))
@@ -344,6 +379,10 @@
   allocate(A(2))
   A = (/1234,4123/)
 
+  case(13)
+  allocate(A(1))
+  A = (/1234/)
+
   end select
 
   end select
@@ -354,10 +393,10 @@
    i = 1
    do 
     if (permute_transpose == A(i)) then 
-    save_index = i
-    no_match = .FALSE.
-    vtrans ='C'  
-    exit
+      save_index = i
+      no_match = .FALSE.
+      trans ='C'  
+      exit
     endif
      i = i+1
     if (i > upbound_A) exit
@@ -367,38 +406,231 @@
 
   end subroutine
 
-  subroutine v_for_blas (sort_type, array_left, torder, worder, vtrans, v_sorted, row, column)
+  subroutine decide_sorting_routine(sort_type,opArray_left,opArray_right,opArray_target,if_trans, &
+                                &    save_index,sorted_opArray,inverse)
+
+!-------------------------------------
+!    choose the sorting routine. 
+!-------------------------------------
 
 !--------------calling variables---------------
-    character (*), dimension(4), intent(in),target :: array_left
-    character (*), dimension(:), intent(in) :: worder, torder
-    character (*), intent(out)              :: vtrans
-    integer, intent(in)                     :: sort_type
-    integer, intent(out)                    :: row(:), column(:)
-    real*8, intent(out)                     :: v_sorted(:) !think a bit more carefully to replace it by dynamic allocation. not easy.
+    character(2), intent(in),target        :: opArray_left(:)
+    character(2), intent(in)               :: opArray_target(:),opArray_right(:)
+    integer,      intent(in)               :: sort_type
+    logical,      intent(in), optional     :: inverse  
+    character(1), intent(out)              :: if_trans
+    integer,      intent(out)              :: save_index 
+    character(2), intent(out),optional     :: sorted_opArray(size(opArray_left))
 !----------------------------------------------
 
 !-------local variables--------
-    character(2), dimension(4) :: array_exchange
-    logical      :: v_direct, v_exchange
-    integer      :: reorder_v(4)
-    integer      :: i,j,k,l,dim_t,dim_w,save_index,temp 
-    logical      :: no_match, t_transpose  
+    character(2) :: array_exchange(size(opArray_left))
+    integer      :: reorder_v(size(opArray_left))
+    integer      :: i,j,k,l 
+    logical      :: no_match  
     character(2) :: p,q,r,s
-    character(20):: arraytype
-    integer      :: sort_type_dummy
+
+    type(sorting_list)     :: a
+!------------------------------
+     sortType = sort_type       !very dirty trick. will soon amend it.
+
+     array_original => opArray_left 
+
+     arraytype = 'unrestricted'
+
+     p = opArray_left(1)
+     q = opArray_left(2)
+     r = opArray_left(3)
+     s = opArray_left(4)
+
+    if (p(1:1) == q(1:1)) then
+      if (r(1:1) == s(1:1)) then
+       arraytype = 'restricted_braket'
+      else
+       arraytype = 'restricted_bra'
+      endif 
+      elseif (r(1:1)==s(1:1)) then
+       arraytype = 'restricted_ket'
+    endif
+
+    do_direct = .true.
+    do_exchange = .false.
+    no_match = .true.
+
+   if (present(inverse)) then 
+
+    call align_array(array1=opArray_left,array2=opArray_target,reorder_array=reorder_v)
+
+!findloc feature is not available for intel compilers. so I can't use it now.
+
+    a%num = toDecimal(reorder_v)    
+    a%trans = toDecimal(reorder_v,.true.)    
+
+    call match_array (a%num,no_match,save_index,if_trans)
+
+    if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
+
+    endif
+
+    if ((no_match).and.(do_direct)) then
+
+    call align_array(opArray_left,opArray_target,opArray_right,reorder_v)
+
+!findloc feature is not available for intel compilers. so I can't use it now.
+
+    a%trans = toDecimal(reorder_v,.true.)    
+    a%num = toDecimal(reorder_v)    
+
+    call match_array (a%num,no_match,save_index,if_trans)
+
+    if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
+
+    if (no_match) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
+
+     if (no_match) then
+      write (*,*) "====no matching sorting subroutine available for direct mode of contraction.====="
+      do_exchange = .true.
+     endif
+
+    endif 
+
+   if (do_exchange) then
+
+   !! In this mode I generate all the antisymmetrized components of an array on the fly where the interchange is possible between the same orbital-type (i.e, h or p).
+
+   !! i have not so far included the change in sign due to the anti-symmetrization.
+
+
+       write(*,*)'=====contraction will be done in exchange mode====='
+
+       array_exchange = opArray_left
+
+       if (arraytype == 'restricted_ket') call swap_character(array_exchange,3,4)   
+       if (arraytype == 'restricted_bra') call swap_character(array_exchange,1,2)   
+
+       call align_array(array_exchange,opArray_target,opArray_right,reorder_v)
+
+       a%num   = toDecimal(reorder_v)
+       a%trans = toDecimal(reorder_v,.true.)    
+
+       call match_array (a%num,no_match,save_index,if_trans)
+      
+       if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
+
+       if (no_match) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
+
+
+      if (arraytype == 'restricted_braket') then
+        k = 1
+        i = 1 
+
+     do
+
+       call swap_character(array_exchange,i,i+1)   
+
+       call align_array(array_exchange,opArray_target,opArray_right,reorder_v)
+
+       a%num   = toDecimal(reorder_v)
+       a%trans = toDecimal(reorder_v,.true.)    
+
+       call match_array (a%num,no_match,save_index,if_trans)
+      
+       if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
+
+       if (no_match) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
+
+
+       if (.not.no_match) exit
+       if (k>3)           exit
+       i = i + size(opArray_left)/2 
+       if (k>2) then
+        array_exchange = opArray_left
+        i = 3
+       endif
+       k = k+1
+
+     enddo
+
+    endif
+   endif
+
+    exchange = array_exchange
+
+    if (no_match) then
+      call quit('No Sorting subroutine available. code stops here.')
+    endif
+
+    if (present(sorted_opArray)) then 
+      if (.not.do_exchange) then
+        sorted_opArray = get_operator_array(opArray_left,toDecimal(reorder_v))
+      else
+        sorted_opArray = get_operator_array(array_exchange,toDecimal(reorder_v))
+      endif
+    endif
+
+   reorder_left = reorder_v 
+
+  if ((if_trans=='C').and.(sortType==31)) then
+
+   reorder_left(1)=reorder_v(4)
+   reorder_left(2:4)=reorder_v(1:3)
+
+  endif 
+
+  if ((if_trans=='C').and.(sortType==13)) then
+
+   reorder_left(4)=reorder_v(1)
+   reorder_left(1:3)=reorder_v(2:4)
+
+  endif 
+
+  if ((if_trans=='C').and.(sortType==22)) then
+
+   reorder_left(1:2)=reorder_v(3:4)
+   reorder_left(3:4)=reorder_v(1:2)
+
+  endif 
+
+  end subroutine
+
+  subroutine sorting_for_blas(save_index,do_inverse,if_trans,sorted,row,column,presorted,if_TotSym) 
+
+!---------------description-------
+!        carry-out the sorting.
+!---------------------------------
+
+
+!--------------calling variables---------------
+    real(8),intent(in),optional           :: presorted(:)
+    logical,intent(in),optional           :: if_TotSym
+    integer,intent(inout)                 :: save_index
+    logical,intent(in)                    :: do_inverse  
+    character(1),intent(inout)            :: if_trans
+    integer,intent(out)                   :: row(:), column(:)
+    real(8),intent(out)                   :: sorted(:) !think a bit more carefully to replace it by dynamic allocation. not easy.
+!----------------------------------------------
+
+!-------local variables------------------------
+!   character(2) :: array_exchange(4)
+    real*8       :: sorted_temp(10000)
+    integer      :: reorder_v(4)
+    logical      :: do_TotSym
+    integer      :: i,j,k,l 
+    character(2) :: p,q,r,s
+    integer      :: sort_type_dummy,shift,shift1
 #include "symm.inc"
 #include "param.inc"
 
-    type(sorting_list) :: a
-    type(middle_indices)   :: c(0:5)  
+    type(sorting_list)     :: a
+    type(middle_indices)   :: c(0:15)  
     type(more_indices)     :: m(0:15)  
     type(bit_processing)   :: d 
     type(presorting)       :: V 
 
     type(sorting_list) :: srt_22(0:5)
     type(sorting_list) :: srt_31(0:5)
-    type(sorting_list):: srt_13(0:5)
+    type(sorting_list) :: srt_13(0:5)
+! (2,2)->(2,2) type of sorting routines         
        srt_22(1)%unrestricted => SRT1SS4   
        srt_22(2)%unrestricted => SRT1L1    
        srt_22(3)%unrestricted => SRT1C1    
@@ -406,245 +638,232 @@
        srt_22(5)%unrestricted => SRT1R1
 
        srt_22(1)%restricted_braket =>  SRT1TT4
-!      srt_22(1)%restricted(2) =  SRT1LS1
+!      srt_22(1)%restricted_bra =  SRT1LS1
        srt_22(1)%restricted_bra => SRT36
-       srt_22(2)%restricted_bra => SRT1TS4
-       srt_22(1)%restricted_ket => SRT22
+       srt_22(1)%restricted_ket => SRT1ST4
        srt_22(2)%restricted_ket => SRT26
        srt_22(3)%restricted_ket => SRT20D
 
-! next sorting routines are (2,2)-> (3,1) type
-       srt_31(0)%unrestricted => SRT19
-       srt_31(1)%unrestricted => SRT1S3
+! (2,2)->(3,1) type of sorting routines.
+       srt_31(0)%unrestricted => SRT1S3
+       srt_31(1)%unrestricted => SRT19
        srt_31(0)%restricted_ket => SRT1T3
        srt_31(1)%restricted_ket => SRT22
        srt_31(0)%restricted_braket => SRT1T3
        srt_31(1)%restricted_braket => SRT22
        srt_31(2)%restricted_braket => SRT7
-       srt_31(0)%restricted_bra => SRT7
+       srt_31(0)%restricted_bra => SRT1S3
+       srt_31(1)%restricted_bra => SRT7
+       srt_31(2)%restricted_bra => SRT19
     
-! next sorting routines are (2,2)-> (1,3) type
+!(2,2)->(1,3) type of sorting routines.
        srt_13(0)%unrestricted => SRT1S2
        srt_13(0)%restricted_bra => SRT1T2
+       srt_13(0)%restricted_ket => SRT1S2
        srt_13(0)%restricted_braket => SRT1T2
 
-!------------------------------
-
-     sortType = sort_type       !very dirty trick. will soon amend it.
-
-     array_original => array_left 
-
-     arraytype = 'unrestricted'
-
-     p = array_left(1)
-     q = array_left(2)
-     r = array_left(3)
-     s = array_left(4)
-
-    if (p(1:1) == q(1:1)) then
-      if (r(1:1) == s(1:1)) then
-       arraytype = 'restricted_braket'
-      else
-       arraytype = 'restricted_bra'
-      endif 
-      elseif (r(1:1)==s(1:1)) then
-       arraytype = 'restricted_ket'
-    endif
-
-    dim_t = size(torder)
-    dim_w = size(worder)
-    
-    v_direct = .TRUE.
-    v_exchange = .FALSE.
-    no_match = .TRUE.
-
-    if (v_direct) then
-
-    call align_array(array_left, worder, torder, reorder_v)
-
-
-    !reorder_v=0
-
-    !  k = 1
-    !  l=3
-    !do i = 1, 4       ! loop over vorder 
-    !  do j = 1, dim_w     ! loop over worder 
-
-    !       if (array_left(i).eq.worder(j)) then
-    !          reorder_v(k) = i
-    !          k = k+1
-    !          exit
-!   !          elseif (array_left(i).eq.torder(j)) then !CAUTION. this is not completely general. I have to change it.
-!   !          reorder_v(l) = i
-!   !          l = l+1
-    !       endif
-    !  
-    !  enddo
-    !enddo
-    !write(*,*)'value of k',k 
-    !do i =1, 4      !loop over vorder
-    !  do j = 1, dim_t     ! loop over torder 
-
-    !       if (array_left(i).eq.torder(j)) then
-    !          reorder_v(k) = i
-    !          k = k+1
-    !          exit
-! ! !          elseif (array_left(i).eq.torder(j)) then !CAUTION. this is not completely general. I have to change it.
-! ! !          reorder_v(l) = i
-! ! !          l = l+1
-    !       endif
-    !  
-    !  enddo
-    !enddo
-
-
-    
-!!!findloc feature is not available for intel compilers. so I can't use it now.
-
-    a%trans = toDecimal(reorder_v,.true.)    
-    a%num = toDecimal(reorder_v)    
-
-   call match_array (arraytype, a%num, no_match, save_index, vtrans)
-
-   if (no_match) call match_array_transpose (arraytype, a%trans, no_match, save_index, vtrans)  
-
-   if (no_match) call shuffle_indices (arraytype,'external', reorder_v, no_match, save_index,vtrans)
-
-!   call shuffle(internal,reorder_v, no_match,save_index)
-
-!   if (.not.no_match) exit
-
-!   call shuffle(external_and_internal,reorder_v, no_match,save_index)
-
-!   if (.not.no_match) exit
-
-     if (no_match) then
-      write (*,*) "no matching sorting subroutine available for direct mode of contraction."
-      v_exchange = .TRUE.
-     endif
-  
-   endif 
-
-   if (v_exchange) then
-
-    array_exchange = array_left
-
-    call swap_character(array_exchange,3,4) !it is possible to impart more flexibility.
-
-    write(*,*)'array exchange',(array_exchange(i),i=1,4) 
-
-    arraytype = 'unrestricted'
-
-     p = array_left(1)
-     q = array_left(2)
-     r = array_left(3)
-     s = array_left(4)
-
-    if (p(1:1) == q(1:1)) then
-      if (r(1:1) == s(1:1)) then
-       arraytype = 'restricted_braket'
-      else
-       arraytype = 'restricted_bra'
-      endif 
-      elseif (r(1:1)==s(1:1)) then
-       arraytype = 'restricted_ket'
-    endif
-
-   write(*,*)'contraction will be done in exchange mode. It suggests we will permute only contracted indices....'
-
-!      k = 1
-!      l = 3
-!    do i = 1, 4       ! loop over vorder 
-!      do j = 1, 2     ! loop over worder 
-!           if (array_exchange(i).eq.worder(j)) then
-!              reorder_v(k) = i
-!              k = k+1
-!              exit
-!              elseif (array_exchange(i).eq.torder(j)) then !this is not completely general. I have to change it.
-!              reorder_v(l) = i
-!              l = l+1
-!           endif
-!      
-!      enddo
-!    enddo
-
-
-     call align_array(array_exchange, worder, torder, reorder_v)
-
-    a%num   = toDecimal(reorder_v)
-    a%trans = toDecimal(reorder_v,.true.)    
-
-    call match_array (arraytype,a%num, no_match, save_index,vtrans)
-      
-    if (no_match) call match_array_transpose (arraytype, a%trans, no_match, save_index, vtrans)  
-
-    if (no_match) call shuffle_indices (arraytype,'external', reorder_v, no_match, save_index, vtrans)
-
-    endif
-
-     if (no_match) then
-      write (*,*) "no matching sorting subroutine available. have to do something different...."
-     endif
-
-    if (.not.no_match) then
+!----------------------------------------------
 
      save_index = save_index - 1
 
-     call integral_fetching_incore(V) 
+      do_TotSym =.true.
 
-     if (vtrans == 'C') then
+     if (present(if_TotSym)) do_TotSym = .false.
+
+     shift     = 0
+     shift1    = 0
+
+     if (.not.present(presorted)) call integral_fetching_incore(V) 
+     if (present(presorted)) v%presorted = presorted 
+
+     sort_type_dummy = sortType
+
+     if (if_trans == 'C') then
        if (sortType == 31) sort_type_dummy = 13
        if (sortType == 13) sort_type_dummy = 31
      endif
 
     if (sortType == 22) then
 
+     if (.not.do_TotSym) shift=5  
+
      if (save_index > 0) then
       select case(arraytype)
         
-         case('unresticted')
+         case('unrestricted')
+
+       call input_index(c,d)
+
+
+       if (if_trans=='N') then
+        row     = c(d%bra_reorder)%tuple_combInd
+        column  = c(d%ket_reorder)%tuple_combInd     
+       else 
+        column  = c(d%bra_reorder)%tuple_combInd
+        row     = c(d%ket_reorder)%tuple_combInd     
+       endif
+
+      call srt_22(save_index)%unrestricted (nrep,multb,.false.,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array, &
+     &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,V%presorted,sorted)
 
          case('restricted_braket') 
 
+
+     if (save_index == 2) then
+
+      save_index = save_index-1 !crucial trick. i want to use different set of routines.
+
+      call input_index(c,d)
+       if (if_trans=='N') then
+        row     = c(d%bra_reorder)%tuple_combInd
+        column  = c(d%ket_reorder)%tuple_combInd     
+       else 
+        column  = c(d%bra_reorder)%tuple_combInd
+        row     = c(d%ket_reorder)%tuple_combInd     
+       endif
+
+      call srt_22(save_index)%restricted_braket(nrep,multb,do_TotSym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+      &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
+      &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,V%presorted,sorted_temp)
+
+     shift1 = 3
+
+      call srt1r1(nrep,multb,do_inverse,c(d%ket_reorder+shift1)%tuple_combInd,c(d%J)%orbital_type,c(d%L)%orbital_type, &
+                  c(d%bra_reorder+shift1)%tuple_combInd,c(d%braket)%full_array,c(d%ket_reorder+shift1)%tuple,sorted_temp,sorted)
+
+    else
+
+      call input_index(c,d)
+       if (if_trans=='N') then
+        row     = c(d%bra_reorder)%tuple_combInd
+        column  = c(d%ket_reorder)%tuple_combInd     
+       else 
+        column  = c(d%bra_reorder)%tuple_combInd
+        row     = c(d%ket_reorder)%tuple_combInd     
+       endif
+
+      call srt_22(save_index)%restricted_braket(nrep,multb,do_TotSym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+      &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
+      &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,V%presorted,sorted)
+
+     endif
+
          case('restricted_bra')
 
-          call input_index(array_exchange,v_exchange,reorder_v,c,d)
+      call input_index(c,d)
 
-           row = c(d%bra_reorder)%tuple_combInd
-           column = c(d%ket_reorder)%tuple_combInd     
 
-          call srt_22(save_index)%restricted_bra(nrep, multb, ltr, lfa, c(d%I)%orbital_type, c(d%J)%orbital_type,&
-                  & c(d%K)%orbital_type, c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braKet)%full_array,  &
-                  & c(d%ket_reorder)%tuple,c(d%bra_reorder)%tuple,V%presorted,v_sorted)  
-    
-         write(*,*)'successfully called the subroutine'
+       if (if_trans=='N') then
+        row     = c(d%bra_reorder)%tuple_combInd
+        column  = c(d%ket_reorder)%tuple_combInd     
+       else 
+        column  = c(d%bra_reorder)%tuple_combInd
+        row     = c(d%ket_reorder)%tuple_combInd     
+       endif
+
+      call srt_22(save_index)%restricted_bra(nrep,multb,.true.,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+                  & c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array,  &
+                  & c(d%ket_reorder)%tuple,c(d%bra_reorder)%tuple,V%presorted,sorted)  
 
          case('restricted_ket')
 
        end select
      else
-      write(*,*)'sorting is not needed'
-       v_sorted = V%presorted  !dirtiest solution. will remove it soon.  
-!      call move_alloc(V%presorted,v_sorted)
+      write(*,*)'====sorting is not needed===='
+     if(present(presorted))then
+     call xcopy(size(presorted),presorted,1,sorted,1) 
+     else
+     sorted = V%presorted  !dirtiest solution. will remove it soon.  
+     endif
+       call input_index(c,d)
+
+       row = c(d%bra)%triangular%tuple_combInd
+       column = c(d%ket)%triangular%tuple_combInd     
+
+!      call move_alloc(V%presorted,sorted)
      endif
 
      elseif (sort_type_dummy == 31) then
-      select case(arraytype)
-        
-         case('unresticted')
+       select case(arraytype)
+      
+       case('unrestricted')
+
+        call input_index(c,d,m)
+
+        column = c(d%l_reorder)%orbital_type
+        row = m(d%ijk_reorder)%pqr%tuple_combInd  
+
+        call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra)%tuple_combInd,c(d%K)%orbital_type, &
+             & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%tuple_combInd,m(d%ijkl_reorder)%pqr%full_array, &
+             & m(d%ijk_reorder)%pqr%tuple,v%presorted,sorted) 
 
          case('restricted_braket')
 
-          call input_index(array_exchange,v_exchange,reorder_v,c,d,m)
+        call input_index(c,d,m)
 
-          column = m(d%jkl)%qrs%triangular%tuple_combInd
-          row = c(d%j)%orbital_type  
+       if (save_index == 2) then
 
-          call srt_31(save_index)%restricted_braket(nrep,multb,c(d%bra)%triangular%tuple_combInd,c(d%I)%orbital_type, &
-                     & c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd,m(d%jkl)%qrs%triangular%tuple_combInd, & 
-                     & m(d%ijkl)%qrs%full_array,m(d%jkl)%qrs%triangular%tuple,v%presorted,v_sorted)
+       if (if_trans=='N') then
+          row    = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
+          column = c(d%l_reorder)%orbital_type  
+       else
+          row    = c(d%l_reorder)%orbital_type  
+          column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
+       endif
 
-         case('restricted_bra')
+      call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%I)%orbital_type, &
+        &  c(d%J)%orbital_type,m(d%ijk_reorder)%qrs%triangular%tuple_combInd,m(d%ijkl)%qrs%full_array, &
+        &  m(d%ijk_reorder)%qrs%triangular%tuple,v%presorted,sorted,c(d%ket)%triangular%tuple_combInd)
+
+
+       elseif (save_index == 1) then
+
+       if (if_trans=='N') then
+          row    = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
+          column = c(d%l_reorder)%orbital_type  
+       else
+          row    = c(d%l_reorder)%orbital_type  
+          column = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
+       endif
+
+     call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
+              & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%triangular%tuple_combInd,m(d%ijkl)%pqr%full_array, &
+              & m(d%ijk_reorder)%qrs%triangular%tuple,v%presorted,sorted,c(d%I)%orbital_type, &
+              & c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd)
+
+       else
+
+       if (if_trans=='N') then
+          row    = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
+          column = c(d%l_reorder)%orbital_type  
+       else
+          row    = c(d%l_reorder)%orbital_type  
+          column = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
+       endif
+
+     call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
+              & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%triangular%tuple_combInd,m(d%ijkl_reorder)%pqr%full_array, &
+              & m(d%ijk_reorder)%pqr%triangular%tuple,v%presorted,sorted,c(d%I)%orbital_type, &
+              & c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd)
+
+       endif
+
+        case('restricted_bra')
+
+        call input_index(c,d,m)
+
+        if (if_trans=='N') then
+          row    = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
+          column = c(d%l_reorder)%orbital_type  
+       else
+          row    = c(d%l_reorder)%orbital_type  
+          column = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
+       endif
+
+        call srt_31(save_index)%restricted_bra (nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type, &
+        & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%triangular%tuple_combInd,m(d%ijkl_reorder)%pqr%full_array, &
+        & m(d%ijk_reorder)%pqr%triangular%tuple,v%presorted,sorted) 
 
          case('restricted_ket')
 
@@ -653,59 +872,168 @@
      elseif (sort_type_dummy == 13) then
       select case(arraytype)
         
-         case('unresticted')
+         case('unrestricted')
 
+      call input_index(c,d,m)
+
+       if (if_trans=='N') then
+
+          row    = c(d%i_reorder)%orbital_type  
+          column = m(d%jkl_reorder)%qrs%tuple_combInd
+
+       else
+
+          row    = m(d%jkl_reorder)%qrs%tuple_combInd
+          column = c(d%i_reorder)%orbital_type  
+
+       endif
+
+      call srt_13(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra)%tuple_combInd,&
+     &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket)%tuple_combInd,m(d%ijkl_reorder)%qrs%full_array, &
+     &  m(d%jkl_reorder)%qrs%tuple,v%presorted,sorted)
+         
          case('restricted_braket')
 
-          call input_index(array_exchange,v_exchange,reorder_v,c,d,m)
+          call input_index(c,d,m)
+
+       if (if_trans=='N') then
+
+          row    = c(d%i_reorder)%orbital_type  
+          column = m(d%jkl_reorder)%qrs%triangular%tuple_combInd
+
+       else
+
+          row    = m(d%jkl_reorder)%qrs%triangular%tuple_combInd
+          column = c(d%i_reorder)%orbital_type  
+
+       endif
+
+      call srt_13(save_index)%restricted_braket (nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,&
+     &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd,m(d%ijkl_reorder)%qrs%full_array, &
+     &  m(d%jkl_reorder)%qrs%triangular%tuple,v%presorted,sorted)
 
          case('restricted_bra')
 
-         case('restricted_ket')
+          call input_index(c,d,m)
+
+       if (if_trans=='N') then
+          row    = c(d%i_reorder)%orbital_type  
+          column = m(d%jkl_reorder)%qrs%tuple_combInd
+       else
+          row    = m(d%jkl_reorder)%qrs%tuple_combInd
+          column = c(d%i_reorder)%orbital_type  
+       endif
+
+      call srt_13(save_index)%restricted_bra(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,&
+     &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket)%tuple_combInd,m(d%ijkl_reorder)%qrs%full_array, &
+     &  m(d%jkl_reorder)%qrs%tuple,v%presorted,sorted)
+
+      case('restricted_ket')
+
+      call input_index(c,d,m)
+
+       if (do_inverse) then
+          row    = c(d%bra)%tuple_combInd 
+          column = c(d%ket)%triangular%tuple_combInd
+       else
+       if (if_trans=='N') then
+          row    = c(d%i_reorder)%orbital_type  
+          column = m(d%jkl_reorder)%qrs%triangular%tuple_combInd
+       else
+          row    = m(d%jkl_reorder)%qrs%triangular%tuple_combInd
+          column = c(d%i_reorder)%orbital_type  
+       endif
+       
+      endif
+
+      call srt_13(save_index)%restricted_ket(nrep,multb,do_inverse,c(d%bra)%tuple_combInd,&
+     &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd,m(d%ijkl_reorder)%qrs%full_array, &
+     &  m(d%jkl_reorder)%qrs%triangular%tuple,v%presorted,sorted)
 
       end select
    endif
      deallocate(V%presorted)
- endif
  
   end subroutine
+
+  subroutine onebody_for_blas (array1,array2,array3,trans_1b,row,column,FreeIndx) 
+
+!------------------------------
+   character(*),dimension(:),intent(in)  :: array1, array2, array3 ! follows the same instruction as it is in the align_array.
+   character(*),intent(out)        :: trans_1b
+   character(2),optional,intent(out):: FreeIndx(size(array1))
+   integer :: reorder_array(size(array1))      
+   integer,intent(out)             :: row(:), column(:) 
+   type(middle_indices)             :: a(0:2)  
+   integer,dimension(2) :: bit_reordered
+   integer              :: i
+!------------------------------
+#include "symm.inc"
+
+  call align_array(array1,array2,array3,reorder_array)   
+
+  if ((toDecimal(reorder_array)) == 21) then
+  trans_1b = 'C'
+  else
+  trans_1b = 'N'
+  endif
+  
+   a(0)%orbital_type => NO
+   a(1)%orbital_type => NV
+
+   bit_reordered = bitString(array1,reorder_array) 
+
+   row = a(bit_reordered(1))%orbital_type
+   column = a(bit_reordered(2))%orbital_type
+
+   if (present(FreeIndx)) then
+
+   FreeIndx(1:size(array1)) = array1(reorder_array(1:size(array1)))
+
+  endif 
+
+  end subroutine 
+
   subroutine swap_character(array,k,l)
 
-  character(*),intent(inout) :: array(:)
-  integer, intent(in)        :: k,l  
-  character(2)               :: temp
+    character(*),intent(inout) :: array(:)
+    integer, intent(in)        :: k,l  
+    character(2)               :: temp
 
-  temp = array(k)
+    temp = array(k)
 
-  array(k) = array(l)
-  array(l) = temp
+    array(k) = array(l)
+    array(l) = temp
 
   end subroutine
 
   subroutine align_array(array1, array2, array3, reorder_array)
 
 !-------------------------------------------------------------
-    character (*), dimension(:), intent(in)  :: array1, array2, array3 ! array1 is the array to be reordered
-    integer, dimension(size(array1)), intent(out) :: reorder_array     ! array2 is the array from where we will extract the first indices in the reordered 
+    character(*),intent(in) :: array1(:), array2(:) ! array1 is the array to be reordered
+    character(*),intent(in),optional :: array3(:) 
+    integer, dimension(size(array1)),intent(out) :: reorder_array      ! array2 is the array from where we will extract the first indices in the reordered 
                                                                        ! array i.e, for left array it is always intermediate and for right always    
     integer                                  :: k,i                    ! left array. array3 is the array to extract rest of the indices e.g, for left array
                                                                        ! always right and for right array always intermediate.
 !-------------------------------------------------------------
      k = 1
      do i = 1, size(array2)       ! loop over vorder 
-        if (findloc(array1, array2(i)) > 0) then 
+        if (findloc(array1,array2(i)) > 0) then 
           reorder_array(k) = findloc(array1, array2(i))
           k=k+1
         endif
      enddo
 
+    if (present(array3)) then 
      do i = 1, size(array3)       ! loop over vorder 
-        if (findloc(array1, array3(i)) > 0) then 
-          reorder_array(k) = findloc(array1, array3(i))
+        if (findloc(array1,array3(i)) > 0) then 
+          reorder_array(k) = findloc(array1,array3(i))
           k=k+1
         endif
      enddo
-
+    endif
+    
   end subroutine
 
 
@@ -744,15 +1072,15 @@
   implicit none
 !-------------------------------------------------------------
   integer :: value
-  integer, dimension(4) :: bit_original, bit_available
+  integer,dimension(4):: bit_original, bit_available
   real*8, allocatable :: VOOOO(:),VVOOO(:),VVOVO(:),VVVOO(:) 
   integer :: AllocateStatus 
   type(bit_processing):: b,c 
-  type(presorting), intent(out) :: G
+  type(presorting),intent(out) :: G
 !-------------------------------------------------------------
 #include "symm.inc"
 
-    bit_original = bitString (array_original, (/1,2,3,4/)) 
+    bit_original = bitString (array_original,(/1,2,3,4/)) 
 
     b%bra = ior(bit_original(1),bit_original(2)) + iand(bit_original(1),bit_original(2))  
     b%ket = ior(bit_original(3),bit_original(4)) + iand(bit_original(3),bit_original(4)) 
@@ -775,7 +1103,7 @@
       c%ket = ior(bit_available(3),bit_available(4)) + iand(bit_available(3),bit_available(4)) 
       if (c%bra == b%ket)then
 
-         allocate(G%presorted(NV2))
+       allocate(G%presorted(NV2))
 
        call SRT1C1 (NREP,NVO,NOOT,VVOOO,G%presorted) 
 
@@ -801,20 +1129,36 @@
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
       G%presorted = 0.0d0 
 
-      call SRT1C1 (NREP,NVVT,NOOT,VVVOO,G%presorted) 
+      call srt1c1 (nrep,nvvt,noot,vvvoo,G%presorted) 
 
       deallocate(VVVOO)
  
       endif
     case (3)
-      allocate(VVOVO(NV4))
- !     allocate(G%presorted(NV4))
-      call getVOVO(VVOVO)
+      allocate(vvovo(nv4),stat = AllocateStatus)
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-!      v_presorted => VVOVO
+      call getvovo(vvovo)
+
+      bit_available = bitString((/"p","o","p","o"/),(/1,2,3,4/))
+   
+      c%bra = ior(bit_available(1),bit_available(2)) + iand(bit_available(1),bit_available(2))
+      c%ket = ior(bit_available(3),bit_available(4)) + iand(bit_available(3),bit_available(4))
+
+      if (c%bra == b%ket)then
+
+      allocate(G%presorted(NV4),STAT = AllocateStatus)
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+       G%presorted = 0.0d0
+
+      call srt1c1 (nrep,nvo,nvo,vvovo,G%presorted)
+
+      deallocate(vvovo)
+
+      endif
+    
     case default
       write(*,*)'no suitable array to fetch'
-
    end select
 
   if (allocated(VOOOO)) call move_alloc(VOOOO,G%presorted)
@@ -824,57 +1168,84 @@
 
   end subroutine
 
-  subroutine input_index(array_exchange,v_exchange,reorder_v,a,b,k)
+  subroutine input_index(a,b,k,reorder_v)
+
+!pointer to most of the indices available in RELCCSD module. purpose is to access them in a generalized fashion. 
 
 !-------------------------------
- integer, dimension(:), allocatable,target :: bit_reordered, bit_original
- integer, dimension(4),intent(in)   :: reorder_v 
- logical, intent(in)                :: v_exchange
- character(2), intent(in)           :: array_exchange(4)
- type(middle_indices),intent(out)     :: a(0:5)  
+ integer,dimension(:),allocatable,target :: bit_reordered, bit_original
+ integer,dimension(4),intent(in),optional:: reorder_v 
+! logical, intent(in)                :: do_exchange
+! character(2), intent(in)           :: array_exchange(4)
+ type(middle_indices),intent(out)     :: a(0:15)  
  type(bit_processing),intent(out)   :: b 
  type(more_indices),intent(out),optional :: k(0:15)
  integer :: i
- integer, pointer :: bitpqr(:), bitqrs(:)
+ integer, pointer :: bitpqr(:),bitqrs(:),bitpqr_reorder(:),bitqrs_reorder(:)
 !-------------------------------
 #include "symm.inc"
      a(0)%tuple => JJOO         
      a(1)%tuple => JJVO
      a(2)%tuple => JJVV
+
+     a(3)%tuple => IIOOT         
+     a(4)%tuple => IIVO
+     a(5)%tuple => IIVV
+
      a(0)%tuple_combInd => MOO
      a(1)%tuple_combInd => MVO
      a(2)%tuple_combInd => MVV
 
+     a(3)%tuple_combInd => NOO
+     a(4)%tuple_combInd => NVO
+     a(5)%tuple_combInd => NVV
+
      a(0)%triangular%tuple_combInd => NOOT
      a(2)%triangular%tuple_combInd => NVVT
+
+!dimensions for the arrays where both bra and ket are totally symmetric.
 
      a(0)%full_array => JOOOO 
      a(1)%full_array => JVOOO
      a(2)%full_array => JVOVO
      a(3)%full_array => JVVOO  
-!    a(4)%full_array => JVVVO
-!    a(5)%full_array => 
+!     a(4)%full_array = INT(JVVVO,4) !WARNING!!! KVVVOT is int*8 type. I cast it as int*4 from int*8
+
+!dimensions for the arrays where both bra and ket are not necessarily totally symmetric.
+
+     a(5)%full_array => J2OOOO 
+     a(6)%full_array => J2VOOO
+     a(7)%full_array => J2VOVO
+     a(8)%full_array => J2VVOO  
+     a(9)%full_array => J2VVVO !both a(9) and a(10) point to the same index.amend.
+     a(10)%full_array=> J2VOVV
+
+!dimension for the single orbital index
      a(0)%orbital_type => NO
      a(1)%orbital_type => NV
 
   if (present(k)) then
 
+     k(1)%pqr%tuple => KKVOO
      k(0)%pqr%triangular%tuple => KKOOOT
      k(1)%pqr%triangular%tuple => KKOOVT
      k(2)%pqr%triangular%tuple => KKVVOT
      k(3)%pqr%triangular%tuple => KKVVVT
  
+     k(1)%pqr%tuple_combInd => NVOO
      k(0)%pqr%triangular%tuple_combInd => NOOOT
      k(1)%pqr%triangular%tuple_combInd => NOOVT
      k(2)%pqr%triangular%tuple_combInd => NVVOT
      k(3)%pqr%triangular%tuple_combInd => NVVVT
 
+     k(1)%qrs%tuple => LLOVO
      k(0)%qrs%triangular%tuple => LLOOOT
      k(1)%qrs%triangular%tuple => LLVOOT
      k(2)%qrs%triangular%tuple => LLOVVT
      k(3)%qrs%triangular%tuple => LLVVVT
 
-!    k(0)%qrs%triangular%tuple_combInd => NOOOT2
+     k(1)%qrs%tuple_combInd => NOVO
+     k(0)%qrs%triangular%tuple_combInd => NOOOT !NOOOT2
      k(1)%qrs%triangular%tuple_combInd => NVOOT
      k(2)%qrs%triangular%tuple_combInd => NOVVT
 !    k(3)%qrs%triangular%tuple_combInd => NVVVT2
@@ -883,21 +1254,36 @@
      k(1)%pqr%full_array => KOOOVT
      k(2)%pqr%full_array => KOOVOT
      k(3)%pqr%full_array => KOOVVT
+     k(8)%pqr%full_array => KVOOO
+     k(9)%pqr%full_array => KVOOV
+     k(5)%pqr%full_array => KVOOV
      k(12)%pqr%full_array=> KVVOOT
-!    k(14)%pqr%full_array=> KVVVOT  !this is commented because KVVVOT is int*8 type. plan is to cast it as int*8 from int*4 
-
+!     k(14)%pqr%full_array=  INT(KVVVOT,4)  !WARNING!!! KVVVOT is int*8 type. I cast it as int*4 from int*8
+      
+     k(0)%qrs%full_array => LOOOOT
+     k(2)%qrs%full_array => LOOVO
      k(3)%qrs%full_array => LOOVVT
+     k(4)%qrs%full_array => LOVOOT
+     k(6)%qrs%full_array => LOVVOT 
+     k(8)%qrs%full_array => LVOOOT 
+     k(9)%qrs%full_array => LVOOVT 
+     k(10)%qrs%full_array=> LVOVO 
+     k(11)%qrs%full_array=> LVOVVT 
+     k(12)%qrs%full_array=> LVVOOT
 
   endif
+
+  if (present(reorder_v)) reorder_left = reorder_v  
 
   allocate (bit_reordered(size(array_original)))
   allocate (bit_original(size(array_original)))
 
-  if (v_exchange) then
-  bit_reordered = bitString (array_exchange, reorder_v)
-  bit_original  = bitString (array_exchange, (/1,2,3,4/)) 
+  if (do_exchange) then
+ 
+  bit_reordered = bitString (exchange,reorder_left)
+  bit_original  = bitString (exchange, (/1,2,3,4/)) 
   else
-  bit_reordered  = bitString (array_original, reorder_v)
+  bit_reordered  = bitString (array_original,reorder_left)
   bit_original  = bitString (array_original, (/1,2,3,4/)) 
   endif
 
@@ -905,11 +1291,12 @@
 
     b%bra_reorder = ior(bit_reordered(1),bit_reordered(2)) + iand(bit_reordered(1),bit_reordered(2))  
     b%ket_reorder = ior(bit_reordered(3),bit_reordered(4)) + iand(bit_reordered(3),bit_reordered(4)) 
-    b%braKet = b%bra_reorder + b%ket_reorder + &
+    b%braket = b%bra_reorder + b%ket_reorder + &
             &  ior(iand(bit_reordered(1),bit_reordered(2)),iand(bit_reordered(3),bit_reordered(4)))  
 
     b%bra = ior(bit_original(1),bit_original(2)) + iand(bit_original(1),bit_original(2))  
     b%ket = ior(bit_original(3),bit_original(4)) + iand(bit_original(3),bit_original(4)) 
+
 ! unique indexing for combined triple indices.
 
     bitpqr=>bit_original(1:3)
@@ -918,15 +1305,27 @@
     b%ijk = popcnt(bin2dec(bitpqr)) 
     b%jkl = popcnt(bin2dec(bitqrs))
 
+    bitpqr_reorder=>bit_reordered(1:3)  
+    bitqrs_reorder=>bit_reordered(2:4)  
+
+    b%ijk_reorder = popcnt(bin2dec(bitpqr_reorder)) 
+    b%jkl_reorder = popcnt(bin2dec(bitqrs_reorder))
+
 ! unique indexing for individual label of an array.
+
 
     b%I = bit_original(1) 
     b%J = bit_original(2)
     b%K = bit_original(3)
     b%L = bit_original(4)
 
+    b%I_reorder = bit_reordered(1) 
+    b%J_reorder = bit_reordered(2)
+    b%K_reorder = bit_reordered(3)
+    b%L_reorder = bit_reordered(4)
 ! unique indexing for full array when triangular index tuple are being used.
-   b%ijkl = bin2dec(bit_original)  
+    b%ijkl_reorder = bin2dec(bit_reordered)  
+    b%ijkl = bin2dec(bit_original)  
 
   deallocate (bit_reordered)
   deallocate (bit_original)
@@ -948,7 +1347,7 @@
      enddo
    end function
 
-  function bitString (generic_array, reorder_index_array)
+  function bitString (generic_array,reorder_index_array)
 
   character(*), dimension(:),intent(in) :: generic_array
   integer,      dimension(:),intent(in) :: reorder_index_array
@@ -968,7 +1367,7 @@
 
   end function   
 
-  integer function toDecimal(index_array, trans)
+  integer function toDecimal(index_array,trans)
    
   integer, dimension(:),intent(in),target :: index_array
   logical, optional, intent(in) :: trans
@@ -986,7 +1385,9 @@
   endif
  
   if (do_trans) then
- 
+
+! it should not be case dependent. if possible try to modify it.
+
   select case (sortType)
      case (22)
      scratch_bra => index_array(3:4) 
@@ -1003,13 +1404,15 @@
   
   endif   
 
-    do i = size(index_array), 1 , -1
+    toDecimal=0
+
+    do i = size(index_array), 1 , -1  
       toDecimal = toDecimal + scratch(i)*10**(size(index_array)-i)
     enddo 
 
   end function
 
-    integer function bin2dec(bitstring)
+  integer function bin2dec(bitstring)
 
     integer, intent(in) :: bitstring(:)
     integer             :: i 
@@ -1020,6 +1423,44 @@
      bin2dec = bin2dec  + bitstring(i)*2**(size(bitstring)-i)
     enddo
 
-    end function
+  end function
+
+  recursive subroutine permutate(E, P) 
+    integer, intent(in)  :: E(:)       ! array of objects 
+    integer, intent(out) :: P(:,:)     ! permutations of E 
+    integer  :: N, Nfac, i, k, S(size(P,1)/size(E), size(E)-1) 
+       N = size(E); Nfac = size(P,1); 
+     do i=1,N                           ! cases with E(i) in front 
+          if( N>1 ) call permutate((/E(:i-1), E(i+1:)/), S) 
+         forall(k=1:Nfac/N) P((i-1)*Nfac/N+k,:) = (/E(i), S(k,:)/) 
+     end do 
+  end subroutine permutate 
+
+  function get_operator_array(character_array,integer_for_array)
+  integer,intent(in) :: integer_for_array
+  character(*),intent(in) :: character_array(:)  
+  character(2)            :: get_operator_array(size(character_array))  
+  integer :: y, temp
+  integer :: x, i
+
+  temp = integer_for_array
+  i = 1
+
+  do  
+     y = temp/10**(size(character_array)-i)  
+     x = mod(temp, 10**(size(character_array)-i))
+     temp = x
+     get_operator_array(i) = character_array(y)
+     i = i+1
+     if (i > size(character_array)) exit
+  enddo 
+  end function
+
+  character(len=10) function seqstring(seqnum) 
+    integer, intent(in) :: seqnum
+    character(10)       :: temp
+    write (temp,'(I0)') seqnum
+    seqstring = trim(temp)
+  end function
 
   end module   

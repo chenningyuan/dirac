@@ -1,5 +1,5 @@
       SUBROUTINE cceqn_driver_lambda(MAXIT,EPS,FOO,FVO,FVV,T1,S1,T2,S2,
-     &                 AZ,CZ,H,HO,HV,HOV,GOO,GVV,
+     &                 W_OOOO,CZ,W_VOVO,W_OVVO,W_OVOO,HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3                              )
 
@@ -23,7 +23,8 @@ C
 C     Intermediaries etc.
 
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
-      REAL*8 AZ(*),H(*),HO(*),HV(*),HOV(*),BUF1(*),BUF2(*),BUF3(*)
+      REAL*8 W_OOOO(*),W_VOVO(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
+     & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
       REAL*8 GOO(*),GVV(*)
 
@@ -99,7 +100,7 @@ C     Initialize the work arrays to zero.
 C     Initialize DIIS.
 
       IT = -1
-      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
 
       ECCSD = 0.D0
@@ -118,25 +119,66 @@ C     Initialize DIIS.
 
 !     Calculate fixed intermediaries for Lambda equations
 
+    5   format(10f10.6)  
                         
          CALL GETAMPT (S1,S2)
 !         CALL HOINTM (FOO,EPS,S1,S2,BUF1,BUF2,BUF3,HO)
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
-         write(*,*)'f_bar_mi intermediate'
+         write(77,*)'f_bar_mi intermediate'
+         write(77,*)'---------------------'
+         write(77,*)(ho(i),i=1,nfoo)
+
+         call w_ijmn(S1,S2,w_oooo)
+
+        write(*,*)'w_ijmn intermediate'
+        write(*,*)'---------------------'
+        write(78,5)(w_oooo(i),i=1,nv1)
+
+         call f_bar_me(fvo,S1,hov)
+
+        write(*,*)'f_me intermediate'
+
+!         write(*,*)(hov(i),i=1,nfvo)
+
+         call f_bar_ae(FVV,fvo,S1,S2,HV)
+
+
+        write(*,*)'f_ae intermediate'
+
+         write(79,*)'f_bar_ae intermediate'
+         write(79,*)'---------------------'
+         write(79,5)(hv(i),i=1,nfvv)
+
+         call w_ejmb(S1,S2,w_vovo)
+
+         write(80,*)'w_bar_ejmb intermediate'
+         write(80,*)'---------------------'
+         write(80,5)(w_vovo(i),i=1,nv4)
+
+         call wbar_mbej(S2,w_ovvo)
+
+         write(81,*)'w_bar_mbej intermediate'
+         write(81,*)'---------------------'
+         write(81,5)(w_ovvo(i),i=1,nv4)
+
+      
+        write(*,*)'starting w_iemn intermediate'
+
+         call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
+
+         write(*,*)'w_bar_iemn intermediate'
          write(*,*)'---------------------'
-         write(*,*)(ho(i),i=1,nfoo)
+         write(82,5)(w_ovoo(i),i=1,nv4)
 
 
-         CALL HVINTM (FVV,EPS,S1,S2,BUF1,BUF2,BUF3,HV)
-         CALL HOVINTM (FVO,S1,BUF1,BUF2,HOV)
-         CALL GOINTM (FVO,S1,BUF1,BUF2,HO)
-         CALL GVINTM (FVO,S1,BUF3,NBUF3,BUF2,NBUF2,HV)
-         CALL AINTM (S1,S2,BUF1,BUF2,AZ)
-         CALL CINTM (T1,T2,FVO,AZ,BUF1,BUF2,BUF3,NBUF3,CZ)
-!avijit         CALL DINTM (S1,S2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
-!avijit         CALL HINTM (S1,S2,BUF1,BUF2,BUF3,NBUF3,H)
+        CALL GOINTM (FVO,S1,BUF1,BUF2,HO)
+        CALL GVINTM (FVO,S1,BUF3,NBUF3,BUF2,NBUF2,HV)
+        CALL AINTM (S1,S2,BUF1,BUF2,AZ)
+        CALL CINTM (T1,T2,FVO,w_oooo,BUF1,BUF2,BUF3,NBUF3,CZ)
+!avijit  CALL DINTM (S1,S2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
+!avijit  CALL HINTM (S1,S2,BUF1,BUF2,BUF3,NBUF3,H)
            
 
 C
@@ -186,71 +228,6 @@ C
                                  
       CALL XTIME(5,1,'- L2 equations                  ')
 
-
-                             
-                     
-                                                           
-                                                           
-                                                               
-                                                             
-           
- 
-                            
- 
-                   
-                                                            
-                                          
-                                                            
-                                                            
-                                                      
-                                                            
-                                                            
-                                        
-                                                            
-                                                            
-                                                  
-                                                            
-
-                     
-                     
-                                                               
-                                                         
-                                                                
-                                                                    
-                                                                   
- 
-                             
-
-                                  
-                                                             
-
-                            
-
-                                                              
-                                      
-                                                 
-                
-                                                        
-                               
-                                            
-                          
-                                                              
-             
-                                            
-                                                              
-
-           
-
-      
-
-           
-
- 
-                     
-                                                           
-                                                           
-                              
-                                                               
                             
                                                         
            
@@ -258,7 +235,7 @@ C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- L2 EQNS                     ')
-      call lambda_equation_T2 (EPS,T1,T2,HO,HV,HOV,H,AZ,CZ,GOO,GVV,
+      call lambda_equation_T2 (EPS,T1,T2,HO,HV,HOV,H,w_oooo,CZ,GOO,GVV,
      &             BUF1,BUF2,BUF3,NBUF3,S2)
       CALL XTIME(5,2,'-- T2 EQNS                     ')
  
@@ -280,132 +257,6 @@ C
       CALL XTIME(5,2,'- L2 equations                  ')
 C
               
- 
-                                                                     
-                                                 
-                                        
-           
- 
-                                                    
- 
-                                           
- 
-                                        
- 
-                                                          
-                                        
-                                                          
- 
-                     
-                                                                       
-                                                                       
-           
- 
-                      
-                                                               
-                                                             
-                           
-                       
-                                                                        
-                                                                        
-             
-           
- 
-                                                            
- 
-                                   
-                                   
- 
-                      
-                                       
-                                                                      
-                                                                   
-                                       
-          
-                                    
-           
- 
-                                                        
- 
-                                                      
-                                                      
- 
-                        
- 
-                                                          
-                           
-                                                           
-                                                  
- 
-                             
- 
-                                                        
-                                 
-                                         
-                                               
-                                        
-                                                        
- 
-                                        
- 
-                                                          
-                                        
-                                                          
- 
-                                                    
- 
-                   
-                                                          
-                                                        
-           
- 
-                                
-                                                       
-                     
- 
- 
-                                
-                
- 
-              
-                                
-                    
- 
-                                                               
-                    
- 
-                           
-                     
-          
-                               
-           
- 
-                     
-                            
-                            
-                                        
-                                
-             
-                                           
-                                           
-              
-                            
-                                                          
-           
- 
-                         
-                        
-                        
-                     
-                                                    
-                                                    
-                                                    
-            
-C
-                      
-                                               
-                                                               
-                                                  
            
 C
 C     Read out timers for the most important contractions
@@ -424,7 +275,7 @@ C
 C     Close and delete DIIS scratch files
 C
       IT = -2
-      CALL DIISX(NDIMT1,NDIMT2,BUF1,T1,BUF2,T2,
+      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
      &           IT,CC1,BB1,ITC,BB2,RMS)
 C
  111  FORMAT(A20,I4,2f25.15)

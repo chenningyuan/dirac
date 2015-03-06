@@ -1587,6 +1587,7 @@ C
       LOVOOT(1) = 0
       LVOOOT(1) = 0
       LOVVOT(1) = 0
+      LVOOVT(1) = 0 !new index
 C ** additional RELADC arrays
       LOOVVT(1) = 0
       LVOVVT(1) = 0
@@ -1600,6 +1601,7 @@ C ** additional RELADC arrays
          LVOOOT (IREP+1) = LVOOOT (IREP) + NV(IREP)*NOOOT(IREP)
          LOVVOT (IREP+1) = LOVVOT (IREP) + NO(IREP)*NVVOT(IREP)
 
+         LVOOVT (IREP+1) = LVOOVT (IREP) + NV(IREP)*NVOOT(IREP) !new index
          LOOVVT (IREP+1) = LOOVVT (IREP) + NO(IREP)*NOVVT(IREP)
          LVOVVT (IREP+1) = LVOVVT (IREP) + NV(IREP)*NOVVT(IREP)
       ENDDO
@@ -2533,8 +2535,8 @@ C
      &                             a_EOV(:), a_EOO(:),  a_EVV(:),
      &                             a_DG(:),  a_DMO(:),  a_XMO(:),
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
-     &                             a_BUF3(:),a_FVV(:),a_AZ(:), a_H(:), 
-     &                             a_HO(:), a_HV(:), a_HOV(:), a_GOO(:),
+     &                    a_BUF3(:),a_FVV(:),a_AZ(:),a_H(:),a_Hbar(:),
+     &                    wovoo(:),a_HO(:), a_HV(:), a_HOV(:), a_GOO(:),
      &                             a_GVV(:), a_CCC(:),  a_BB1(:),
      &                             a_BB2(:)
 
@@ -2870,6 +2872,8 @@ C     Allocate now also this remaining work array
 
          call alloc( a_AZ   ,    NV1*RCW              , id="az" )
          call alloc( a_H    ,    NV4*RCW              , id="h" )
+         call alloc( a_Hbar    ,    NV4*RCW              , id="h" )
+         call alloc( wovoo    ,    NV2*RCW              , id="h" )
          call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
@@ -2924,7 +2928,7 @@ C         this means that, for the time being, we can deallocate everything?
          CALL CCDUMP
 
          CALL cceqn_driver_lambda(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
-     &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
+     &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_Hbar,wovoo,a_HO,a_HV,a_HOV,
      &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3)
@@ -2963,6 +2967,8 @@ C
       
          call dealloc( a_AZ )
          call dealloc( a_H  )
+         call dealloc( a_Hbar  )
+         call dealloc( wovoo  )
          call dealloc( a_HO )
          call dealloc( a_HV )
          call dealloc( a_HOV)
@@ -3549,7 +3555,7 @@ C
 C
         CALL cceqn_driver_amplitudes(MAXIT_SECT(ICURFSS),EPS, 
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
-     &             a_T2  , a_S2  , a_AZ   , DUM    , a_H    , 
+     &             a_T2  , a_S2  , a_AZ   , DUM    , a_H,  
      &             a_HO  , a_HV  , a_HOV  ,
      &             a_GOO , a_GVV , a_BUF1 , a_BUF2 , a_BUF3 ,
      &             a_CCC , a_BB1 , a_BB2 ,

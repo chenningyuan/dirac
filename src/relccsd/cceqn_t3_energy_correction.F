@@ -62,7 +62,7 @@ C
 C     Bring arrays in correct order
 C
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,T2,T2S)
-      CALL SRT22 (NREP,MULTB,NVVT,NO,NO,NVVOT,LOVVOT,LLOVVT,T2,T2T)
+      CALL SRT22 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,LOVVOT,LLOVVT,T2,T2T)
 
 C call SRT23 with appropriate arguments. We use the TAU3 array as scratch space for the integral
 C sort. This array is dimensioned like T2.

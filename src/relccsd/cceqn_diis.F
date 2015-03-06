@@ -1,4 +1,4 @@
-      SUBROUTINE DIISX (NDIMT1,NDIMT2,T1O,T1N,T2O,T2N,IT,
+      SUBROUTINE DIISX (NDIMT1,NDIMT2,T1N,T2N,IT,
      &                  CC,BB,ITC,BB2,RMS)
 C
       IMPLICIT INTEGER (A-Z)
@@ -15,7 +15,7 @@ C     Author : Luuk Visscher (based on a routine by T.J. Lee)
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 T2O(*),T2N(*),T1O(*),T1N(*)
+      REAL*8 T2N(*),T1N(*)
       REAL*8 CC(MAXDIM),BB(MAXDIM+1,MAXDIM+2),BB2(MAXDIM+1,MAXDIM+2)
       REAL*8 RMS
 C
@@ -33,10 +33,13 @@ C
       REAL*8 XM,XMAX,XEN,XFAC,XADD,DET
       REAL*8 SUM1,SUM2,SSUM,DSUM,SDOT,DDOT
       COMPLEX*16 CFAC
+      real*8, allocatable :: T1O(:),T2O(:)
 C
 C---------------Executable code--------------------------------------
 C
       IF (MYPROC.NE.MASTER) RETURN
+      allocate (T1O(RCW*NDIMT1))
+      allocate (T2O(RCW*NDIMT2))
 C
 C     Handle special cases of initialization or finalization first
 C
@@ -61,6 +64,8 @@ C       Place first input amplitudes at record maxdim+1 of ITAMPL
         ITC = 0
         RMS = 1.0
 C       Return to caller
+        deallocate (T1O)
+        deallocate (T2O)
         RETURN
       ENDIF
 C
@@ -211,6 +216,8 @@ C
       SECT2 = SECT1 + NST1
       CALL RWRIT(ITAMPL,T1N,INTOWP(NDIMT1*RCW),SECT1)
       CALL RWRIT(ITAMPL,T2N,INTOWP(NDIMT2*RCW),SECT2)
+      deallocate (T1O)
+      deallocate (T2O)
 C
       RETURN
       END
