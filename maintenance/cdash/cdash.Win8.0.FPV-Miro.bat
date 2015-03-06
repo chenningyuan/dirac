@@ -67,11 +67,12 @@ if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%   1>>  %LOG%  2>&1
 python setup -D BUILDNAME="Win8.0_MinGW64_i8_check" --check --int64 -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
-ctest     -D ExperimentalUpdate     --track BoundsCheck  1>>  %LOG%  2>&1
-ctest     -D ExperimentalConfigure  --track BoundsCheck  1>>  %LOG%  2>&1
-ctest -j2 -D ExperimentalBuild      --track BoundsCheck  1>>  %LOG%  2>&1
-ctest -j2 -D ExperimentalTest       --track BoundsCheck  1>>  %LOG%  2>&1
-ctest     -D ExperimentalSubmit     --track BoundsCheck  1>>  %LOG%  2>&1
+rem --track BoundsCheck does not work, use track Miro
+ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
+ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalBuild      --track Miro  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
+ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 
 rem wait 1 minute
 timeout 60
@@ -102,17 +103,18 @@ timeout 180
 
 rem   turn the hibernation off
 powercfg -h off
+
 rem  make the computer sleep 
 rem rundll32.exe powrprof.dll,SetSuspendState 0,1,0
 
 rem kill the pageant task
-taskkill /f /im pageant.exe
+rem taskkill /f /im pageant.exe
 
 rem switch off Desktop PC Windows after 10 seconds
 rem timeout 10 && shutdown -s
 
 rem - restart PC
-rem shutdown /r
+shutdown /r
 
 exit
 
