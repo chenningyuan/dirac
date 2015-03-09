@@ -4,6 +4,7 @@
 !
 !     General MPI information
 !
+      INTEGER MASTER,MYPROC,NMPROC
       COMMON/CCPAR/ MASTER,MYPROC,NMPROC
 !
 !     MASTER: contains node number of master (0 in general)

@@ -145,33 +145,42 @@ C     Initialize DIIS.
          call f_bar_ae(FVV,fvo,S1,S2,HV)
 
 
-        write(*,*)'f_ae intermediate'
-
-         write(79,*)'f_bar_ae intermediate'
-         write(79,*)'---------------------'
-         write(79,5)(hv(i),i=1,nfvv)
-
          call w_ejmb(S1,S2,w_vovo)
 
-         write(80,*)'w_bar_ejmb intermediate'
-         write(80,*)'---------------------'
-         write(80,5)(w_vovo(i),i=1,nv4)
 
          call wbar_mbej(S2,w_ovvo)
 
          write(81,*)'w_bar_mbej intermediate'
          write(81,*)'---------------------'
          write(81,5)(w_ovvo(i),i=1,nv4)
-
       
-        write(*,*)'starting w_iemn intermediate'
+!        write(*,*)'starting w_iemn intermediate'
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
-         write(*,*)'w_bar_iemn intermediate'
-         write(*,*)'---------------------'
-         write(82,5)(w_ovoo(i),i=1,nv4)
+!         write(*,*)'w_bar_iemn intermediate'
+!        write(*,*)'---------------------'
+!         write(82,5)(w_ovoo(i),i=1,nv2)
 
+! out-of-core section of the intemediates
+
+        call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
+
+         write(79,*)'f_bar_ae intermediate'
+         write(79,*)'---------------------'
+         write(79,5)(hv(i),i=1,nfvv)
+
+        call w_ejmb_out_of_core (S1,S2,BUF1,BUF2,BUF3,NBUF3,w_vovo)
+
+         write(80,*)'w_bar_ejmb intermediate'
+         write(80,*)'---------------------'
+         write(80,5)(w_vovo(i),i=1,nv4)
+
+        call w_iemn_out_of_core (t1,t2,buf1,buf2,nbuf3,w_ovoo)
+
+          write(*,*)'w_bar_iemn intermediate'
+          write(*,*)'---------------------'
+          write(82,5)(w_ovoo(i),i=1,nv2)
 
         CALL GOINTM (FVO,S1,BUF1,BUF2,HO)
         CALL GVINTM (FVO,S1,BUF3,NBUF3,BUF2,NBUF2,HV)

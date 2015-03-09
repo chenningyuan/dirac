@@ -15,6 +15,9 @@
     public w_ejmb
     public w_iemn
     public wbar_mbej
+    public w_ejmb_out_of_core
+    public f_bar_ae_out_of_core
+    public w_iemn_out_of_core
      private
 
     external gettau
@@ -267,8 +270,7 @@
   call getvooo (w_temp) 
   w_ovoo = 0.0d0
 
- call srt1l1 (nrep,multb,.false.,nvo,nv,no,noot, &
-    &                  iiov,IVOOOT,w_temp,w_ovoo)
+ call srt1l1 (nrep,multb,.false.,nvo,nv,no,noot,iiov,IVOOOT,w_temp,w_ovoo)
 
  deallocate (w_temp)
 
@@ -346,6 +348,228 @@
 
   call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),t2,wbar_ovvo, &
              &      -1.0d0,0.0d0,nrep)
+
+  end subroutine
+
+
+ subroutine w_ejmb_out_of_core(t1,t2,buf1,buf2,buf3,nbuf3,w_vovo)
+
+
+!---------------Calling variables-------------------------------------
+
+   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
+   real(8), intent(inout) :: w_vovo(rcw,nv4)              ! Intermediate.
+   real(8), intent(in)    :: buf1(*),buf2(*),buf3(*)        ! reuse of intermediates.
+   integer, intent(in)    :: nbuf3 
+
+!---------------Common Blocks--------------------------------------   
+                                                                     
+#include "param.inc"                                                  
+#include "complex.inc"                                                
+#include "symm.inc"                                                   
+!#include "eqns.inc"                                                   
+#include "ccpar.inc"                                                  
+!
+!---------------Local variables--------------------------------------
+!                                                                    
+      REAL*8 T1VAL(2)                                                
+      DATA T1VAL /2*0.0D0/                                            
+      logical :: done
+      integer :: cd,cco,istart,nint,akcd,ci,akci,t1di,di,akdi,t1ci,cmin,c,d,i
+      integer :: crep,drep,irp,mint
+!------------------------------------------------------------------
+! H(AK,CI) = H(AK,CI) - W(AK,CD) * T(D,I)
+! H is kept in BUF1, still ordered VOVO
+!------------------------------------------------------------------
+
+      IF(MYPROC.EQ.MASTER) THEN
+        CALL xcopy(nv4,w_vovo,0,BUF1,1)
+      else 
+        CALL XCOPY(NV4,A0,0,BUF1,1)
+      endif
+
+      CALL XTIME(0,1,'--- HINTM: VOVV*T              ')
+      DO 30 IRP = 1, NREP
+         IF (NVO(IRP).EQ.0) GOTO 30
+         DONE = .FALSE.
+         ISTART = 0
+         CCO=0
+         MINT = NBUF3/NVO(IRP)
+
+! ** reading from GETVOVV: ISTART is updated with the actual batch #
+! ** available on the local node, NINT is updated with the number of
+! ** actually read integrals from this batch and is a pure output parameter !
+! ** We therefore have to count upwards in case of ISTART.NE.0 !!
+
+         CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+         CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
+
+! ** now start SORTING and contraction loop
+
+         CD = 0
+         DO 20 DREP = 1, NREP
+           CREP = MULTB(DREP,IRP+NREP,2)
+           IF (CREP.LT.DREP) GOTO 20
+           DO 15 D = 1, NV(DREP)
+              CMIN = 1
+              IF (CREP.EQ.DREP) CMIN = D + 1
+              DO 10 C = CMIN, NV(CREP)
+
+                 IF(CCO.LT.ISTART) THEN
+                   CCO=CCO+1
+                   GOTO 10
+                 ENDIF
+
+                 CD = CD + 1
+                 IF (CD.GT.NINT) THEN
+!                   ---------------------------------------
+!                   We need the next buffer in this IRREP !
+!                   ---------------------------------------
+                    ISTART = ISTART + NINT
+                    IF(.NOT.DONE) THEN
+                      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+                      CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
+                      CD = 1
+                      CCO=ISTART
+                    ELSE
+                      GOTO 30
+                    ENDIF
+                 ENDIF
+                 AKCD = (CD-1)*NVO(IRP)*RCW+1
+                 DO I = 1, NO(DREP)
+                    CI = IIVO(CREP,DREP)+(I-1)*NV(CREP)+C
+                    AKCI = (IVOVO(IRP)+(CI-1)*NVO(IRP))*RCW+1
+                    T1DI = (IVO(DREP)+(I-1)*NV(DREP)+D-1) * RCW + 1
+                    T1VAL(1) = - T1(T1DI)
+                    IF (CARITH) T1VAL(2) = - T1(T1DI+1)
+                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKCI),1)
+                 ENDDO
+                 DO I = 1, NO(CREP)
+                    DI = IIVO(DREP,CREP)+(I-1)*NV(DREP)+D
+                    AKDI = (IVOVO(IRP)+(DI-1)*NVO(IRP))*RCW+1
+                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
+                    T1VAL(1) = T1(T1CI)
+                    IF (CARITH) T1VAL(2) = T1(T1CI+1)
+                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKDI),1)
+                 ENDDO
+ 10           CONTINUE
+ 15        CONTINUE
+ 20      CONTINUE
+ 30    CONTINUE
+!------------------------------------------------------------------
+! Now sort H(AK,CI) to H(AI,CK)  is to be done in any case !!
+! The H buffer is not changed any more up to the final XGEMM !
+! Every other calculation is done in BUF1 !!
+!------------------------------------------------------------------
+   CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO, &
+   &            BUF1,w_vovo)
+   CALL XTIME(0,2,'--- HINTM: VOVV*T              ')
+
+ end subroutine
+
+
+   subroutine f_bar_ae_out_of_core (t1,buf2,nbuf2,hv)
+
+!---------------Calling variables--------------------------------------
+     real*8, intent(in)    :: t1(rcw,nfvo),buf2(*)
+     real*8, intent(inout) :: hv(rcw*nfvv)
+     integer,intent(in)    :: nbuf2 
+!---------------Common Blocks--------------------------------------
+
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "ccpar.inc"
+
+!---------------Local variables----
+     logical :: USEDZ,RIGHT
+     integer :: m,n
+!----------------------------------
+      if(myproc==master) then
+        call xcopy(nfvv*rcw,hv,0,buf2,1)
+      else 
+        call xcopy(nfvv,A0,0,buf2,1)
+      endif
+!------------------------------------
+! G(A,C) = G(A,C) + W(AK,CD) * T(D,K)
+!------------------------------------
+      M = MVV(1)
+      N = MVO(1)
+      IF (N.EQ.0) RETURN
+      USEDZ = .FALSE.
+      RIGHT = .TRUE.
+      CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV, &
+     &            JJVO,BUF2,NBUF2,T1,hv,USEDZ,RIGHT)
+
+   end subroutine
+
+   subroutine w_iemn_out_of_core (t1,t2,buf1,buf2,nbuf3,w_ovoo)
+
+!
+!---------------Calling variables-------------------------------------
+
+   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
+   real(8), intent(inout) :: w_ovoo(rcw,nv2)              ! Intermediate.
+   real(8), intent(in)    :: buf1(*),buf2(*)                      ! reuse of intermediates.
+   integer, intent(in)    :: nbuf3 
+
+!---------------Common Blocks--------------------------------------   
+                                                                     
+#include "param.inc"                                                  
+#include "complex.inc"                                                
+#include "symm.inc"                                                   
+!#include "eqns.inc"                                                   
+#include "ccpar.inc"                                                  
+
+!---------------Local variables--------------------------------------
+                                                                    
+      logical :: done,teq
+      integer :: kd,istart,nint,m,n,k
+      integer :: irp,mint,off1,off2
+      real*8,allocatable :: tau(:)
+
+
+    call xcopy(nv2,A0,0,buf2,1)
+
+
+   allocate(tau(ndimt2))
+   call gettau  (t1,t2,tau)
+
+    OFF1 = 1
+    OFF2 = 1
+   DO 130 IRP = 1, NREP
+    ISTART = 0
+     IF (NVVT(IRP).EQ.0.OR.NVO(IRP).EQ.0) GOTO 130
+      M = NVO (IRP)
+         N = NOOT(IRP)
+          KD = NVVT(IRP)
+           MINT = NBUF3/NVO(IRP)
+
+  110      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF1,MINT)
+
+           K = NINT
+
+ ! ** now we construct the full NVO x NOOT matrix
+ ! ** but the contributions are only from the restricted CD range
+ ! ** the method is additive since ZGEMM works according to
+ ! **      C=A*B + C  ==> all the already computed contributions
+ ! ** will be added in this IRREP.
+
+           CALL XGEMM ('N','N',M,N,K,A1,BUF1,M,tau(OFF1+ISTART*RCW), &
+            &               KD,A1,BUF2(OFF2),M)
+           IF (.NOT.DONE) THEN
+           ISTART = ISTART + NINT
+           GOTO 110
+           ENDIF
+           OFF1 = OFF1 + KD * N * RCW
+           OFF2 = OFF2 + M * N * RCW
+ 130  CONTINUE
+
+    deallocate (tau)
+
+      CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF1)
+
+      call xaxpy (nv2,A1,buf1,1,w_ovoo,1) 
 
   end subroutine
 

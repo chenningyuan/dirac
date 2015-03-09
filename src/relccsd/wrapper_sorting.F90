@@ -500,7 +500,6 @@
 
    !! i have not so far included the change in sign due to the anti-symmetrization.
 
-
        write(*,*)'=====contraction will be done in exchange mode====='
 
        array_exchange = opArray_left
@@ -538,7 +537,6 @@
        if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
        if (no_match) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
-
 
        if (.not.no_match) exit
        if (k>3)           exit
@@ -598,7 +596,6 @@
 !---------------description-------
 !        carry-out the sorting.
 !---------------------------------
-
 
 !--------------calling variables---------------
     real(8),intent(in),optional           :: presorted(:)
