@@ -50,6 +50,7 @@ ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 rem wait 1 minute
 timeout 60
 
+echo "************************************************"  1>>  %LOG%  2>&1
 echo %DATE% %TIME%   1>>  %LOG%  2>&1
 
 rem try git pull
@@ -68,16 +69,20 @@ python pamadm -a --builddir=%BUILD%   1>>  %LOG%  2>&1
 python setup -D BUILDNAME="Win8.0_MinGW64_i8_check" --check --int64 -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
 rem --track BoundsCheck does not work, use track Miro
-ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
-ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
-ctest -j2 -D ExperimentalBuild      --track Miro  1>>  %LOG%  2>&1
-ctest -j2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
-ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
+ctest     -D ExperimentalUpdate     --track BoundsCheck  1>>  %LOG%  2>&1
+ctest     -D ExperimentalConfigure  --track BoundsCheck  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalBuild      --track BoundsCheck  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalTest       --track BoundsCheck  1>>  %LOG%  2>&1
+ctest     -D ExperimentalSubmit     --track BoundsCheck  1>>  %LOG%  2>&1
+
+rem try agaain....
+timeout 20
+ctest     -D ExperimentalSubmit     --track BoundsCheck  1>>  %LOG%  2>&1
 
 rem wait 1 minute
 timeout 60
 
-
+echo "*********************"  1>>  %LOG%  2>&1
 echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
 rem check ...
