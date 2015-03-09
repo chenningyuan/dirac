@@ -31,21 +31,9 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 DIAG
-                 
 C
 C---------------Executable code--------------------------------------
 C
-                  
-                                
-                     
-                                    
-                      
-                                    
-                     
-          
-                                                      
-           
- 
 C  INITIALIZE T2 AND T1 AMPLITUDES
 C
       CALL XCOPY (NDIMT1,FVO,1,T1,1)
@@ -53,30 +41,11 @@ C
       CALL DENOM (EPS,T1,T2,T1,T2)
       CALL ZCORE (T1,T2)
 C
-                   
- 
-                              
- 
-                                        
-                                 
- 
-                       
-                            
-                            
-                           
-                                   
-                            
- 
-          
 C
 C  INITIALIZE LAMDA AMPLITUDES
 C
          CALL XCOPY (NDIMT1,T1,1,S1,1)
          CALL XCOPY (NDIMT2,T2,1,S2,1)
- 
-           
- 
-            
  6071 FORMAT(//,'  MP2 results',/)
  6072 FORMAT(' SCF energy :',T40,F25.15)
  6073 FORMAT(' MP2 correlation energy :',T40,F25.15)
@@ -88,8 +57,6 @@ C
      &/' Untimed parts :',T30,F12.3,' seconds'
      &/' Total time in MP2EQN :',T30,F12.3,' seconds')
       END
-
-
       SUBROUTINE lambda_equation_T2 (EPS,T1,T2,
      &                   GO,GV,HOV,H,AZ,CZ,GOO,GVV,
      &                   BUF1,BUF2,BUF3,NBUF3,S2)
@@ -139,28 +106,13 @@ C
 C---------------Executable code--------------------------------------
 C
 C
-                                
-                     
-                                    
-                      
-                                    
-                     
-          
-                                                     
-           
-
 C---- Initialize to zero...
       CALL XCOPY (NDIMT2,A0,0,S2,1)
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
 C---------------------------------------------
       CALL XTIME(0,1,'--- T2EQNS: TAU*AINTM contraction')
-                   
-                                 
-          
          CALL XCOPY (NDIMT2,T2,1,BUF1,1)
-           
-
       OFF3 = 1
       DO IREP = 1, NREP
         M    = NVVT(IREP)
@@ -173,23 +125,18 @@ C---------------------------------------------
      &              A1,S2(OFF3),M)
         OFF3 = OFF3 + M * N * RCW
       ENDDO
-
 C ***
 C *** original CNTRCT call in serial version
 C ***
 C *** CALL CNTRCT ('N','N',NVVT,NOOT,NOOT,A1,BUF1,AZ,A1,S2,NREP)
 C ***
-
       CALL XTIME(0,2,'--- T2EQNS: TAU*AINTM contraction')
-
 C ** we will not parallelize a summation over just one occupied index
 C ** if the system is small this can lead to zero batches. Only master
 C ** does the T2(AB,IK) * GO(K,J) contraction
-
 C ********************
 C ** TASK SPLITTING **
 C ********************
-
       IF(MYPROC.EQ.MASTER) THEN
 C----------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) - PIJ [ T2(AB,IK) * GO(K,J) ]
@@ -200,11 +147,9 @@ C----------------------------------------------------------------
       CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             BUF2,BUF1)
       CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
-
 C ***************************
 C ** END OF TASK SPLITTING **
 C ***************************
-
       ENDIF
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
@@ -216,11 +161,7 @@ C-----------------------------------------------------------------------
          ISTART = 0
          MINT = NBUF3/NVO(IRP)  ! max. # of NVO batches that fit in mem.
   10     CONTINUE
-
-                                                            
-             
             CALL GETDZ   (IRP,ISTART,NINT,DONE,BUF3)
-              
          IF (CARITH) CALL CONJUGA (NVO(IRP)*NINT,BUF3,1)
          IJ = 0
          DO 20 JREP = 1, NREP
@@ -270,36 +211,6 @@ C-----------------------------------------------------------------------
          ENDIF
  30    CONTINUE
       CALL XTIME(0,2,'--- T2EQNS: VOVV*T1              ')
-
-                      
-                      
-                      
-                                                                      
-                                  
-
-                               
-
-                                 
-                                 
-                                 
-                   
-                                                                        
-                                                          
-                                                                        
-                            
-                                               
-                                                           
-                               
-                                                                 
-                                                                
-                                
-                                                                    
-                                                                    
-                                                                    
-           
-
-           
-
 C ****************************
 C ** END OF TASK SPLITTING. **
 C ****************************
@@ -307,60 +218,38 @@ C ** this contribution coming from the intermediate G(A,C) has to be
 C ** calculated on each node. The fact that G(A,C) contains LOCAL +
 C ** DISTRIBUTED parts as well is accounted for by the original calculation
 C ** of the G(A,C) array before entering T2EQNS
-
 C-------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB [ GV(A,C) * T2(CB,IJ)]
 C-------------------------------------------------
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
       CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
-
 C ** the contraction of G(A,C) with the T2 amplitudes now is in BUF1 !
 C ** these are the partial contributions available on EACH node
-
-
 C ***
 C ****** task splitting
 C ***
       IF(MYPROC.EQ.MASTER) THEN
-
-                                                 
-                                                 
-                                                 
-                   
-                            
-                                               
-                                           
-          
          CALL XCOPY (NV2,CZ,1,BUF2,1)
-           
       CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
      &             BUF3,BUF2)
       CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF2,A1,BUF1,NREP)
-
 C ***
 C *** end of task splitting
 C ***
       ENDIF
-
-
       CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
      &             BUF1,BUF2)
       CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
-
-
 C ** now the final H*T2 contraction. H is complete since we communicated
 C ** it already.
-
 C-----------------------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [H(AI,CK)*T2(CK,BJ)]
 C-----------------------------------------------------------------------
-
       CALL XTIME(0,1,'--- T2EQNS: HINTM*T2           ')
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
       CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF2,1)
-
       OFF3 = 1
       DO IREP = 1, NREP
          JREP = MULTB(IREP+NREP,1+NREP,2)
@@ -374,20 +263,13 @@ C-----------------------------------------------------------------------
      &                A0,BUF2(OFF3),M)
          OFF3 = OFF3 + M * N * RCW
       ENDDO
-
       CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              BUF2,BUF1)
       CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
       CALL XTIME(0,2,'--- T2EQNS: HINTM*T2           ')
-
-
-
 C==========================================================
 C============= L A M B D A   E Q U A T I O N S ============
 C==========================================================
-
-
-                        
 C-------------------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * V(KL,CD) * L(CD,IJ)
 C-------------------------------------------------------
@@ -445,7 +327,5 @@ C-----------------------------------------------------------------------
       CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              BUF3,BUF1)
       CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
-           
 C
-            
       END
