@@ -313,6 +313,7 @@ contains
      logical, allocatable           :: quat_array_filled_tmp(:)
      character (len=12)             :: flabel
      character (len=4)              :: numstr
+     character (len=24)             :: printstr
 !**********************************************************************
 
 
@@ -462,6 +463,11 @@ contains
            call x2c_write(flabel,scr_mat2,nr_sph**2  * nz,x2c_file_glb)
          else
            call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
+!          debug print
+           if(print_lvl > 2)then
+             write(printstr,'(a6,a16)') 'x2c - ',prop_op_name(i)
+             call print_x2cmat(scr_mat1,nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),trim(printstr(1:22)),6)
+           end if
          end if
 
 !        reset logical array
