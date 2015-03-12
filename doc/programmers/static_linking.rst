@@ -46,8 +46,9 @@ Correct static executables
 
   usr/lib/gcc/x86_64-linux-gnu/4.6/../../../x86_64-linux-gnu/libpthread.a(sem_open.o): In function `sem_open':
   /home/aurel32/eglibc/eglibc-2.13/nptl/sem_open.c:333: warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+
  This is due to the " -Wl,--whole-archive -lpthread -Wl,--no-whole-archive " linking command containg pthread-library, but this must be,
- because placing "-lpthread" elsewhere generates wrong executable giving error 
+ because placing "-lpthread" elsewhere generates wrong executable giving this error 
  ::
 
    Program received signal 11 (SIGSEGV): Segmentation fault.
@@ -109,9 +110,7 @@ Here we describe cases of static dirac.x executables crashing already at the sta
 
 * ilias, miro_ilias_desktop:
 Linux-3.0.0-14-generic;x86_64; i32lp64; GNU Fortran/gcc (Ubuntu/Linaro 4.6.1-9ubuntu3) 4.6.1; 
-ATLAS-static; -g -static -fpic -O0, giving
-
-   ::
+ATLAS-static; -g -static -fpic -O0, giving ::
 
    Program received signal 11 (SIGSEGV): Segmentation fault.
    Backtrace for this error:
@@ -122,9 +121,7 @@ ATLAS-static; -g -static -fpic -O0, giving
 
 * ilias, 194.160.135.47: 
 Linux-2.6.30-1-amd64, i32lp64, GNU Fortran/gcc (Debian 4.4.5-10) 4.4.5; -static -fpic, nooptim
-does not compile with static external /usr/lib/libblas.a+/usr/lib/liblapack.a, givinga
-
- :: 
+does not compile with static external /usr/lib/libblas.a+/usr/lib/liblapack.a, giving ::
 
      /usr/lib/liblapack.a(xerbla.o):function xerbla_: error: undefined reference to '_gfortran_transfer_character_write'
      /usr/lib/liblapack.a(xerbla.o):function xerbla_: error: undefined reference to '_gfortran_transfer_integer_write'
@@ -135,7 +132,7 @@ The upgrade is compilable, but does not work with static ATLAS (as frpd2):
 Linux-2.6.30-1-amd64, ATLAS BLAS+LAPACK; i32lp64, GNU Fortran/gcc (Debian 4.6.2-9); -static -fpic, nooptim
 
 Executables not compilable
-----------------------------
+--------------------------
 We give some cases when one can not obtain static dirac.x executable due to error at linking stage.
 
 Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example ::
@@ -149,9 +146,7 @@ Linking Fortran executable dirac.x gives for parallel, OpenMPI, for example ::
   [100%] Built target dirac.x
 
 * ilias, opteron.tau.ac.il
-export MATH_ROOT='/opt/intel/mkl/10.0.3.020/lib/em64t' , static buildup does not work with MKL libs, giving :
-
-::
+export MATH_ROOT='/opt/intel/mkl/10.0.3.020/lib/em64t' , static buildup does not work with MKL libs, giving ::
 
   /opt/intel/fce/10.1.015/bin/ifort -static -Wl,-E -w -assume byterecl -DVART -g -traceback -static-libgcc -static-intel -i8 -O0 CMakeFiles/dirac.x.dir/main/main.F90.o  -o dirac.x lib/libdirac.a lib/libxcfun.a  -Wl,--start-g   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_lapack.a    /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_core.a   /opt/intel/mkl/10.0.3.020/lib/em64t/libmkls_ilp64.a  /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_sequential.a /opt/intel/mkl/10.0.3.020/lib/em64t/libmkl_em64t.a   /opt/intel/mkl/10.0.3.020/lib/emibguide.a  /usr/lib64/libpthread.a /usr/lib64/libm.a -Wl,--end-group
      ld: cannot find libmkl_intel_lp64.a
