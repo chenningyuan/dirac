@@ -880,6 +880,7 @@ character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.N
 Do 
 
   Read(LUCMD,'(A7)',ERR=910, END=930) WORD; PROMPT = WORD(1:1);  print *,'WORD=',WORD
+  CALL UPCASE(WORD)
   KEYWORD = WORD 
 
 ! Now decide !

@@ -63,6 +63,7 @@ module fde_input_dirac
         WORD1 = WORD
         DO
           READ (LUCMD, '(A7)') WORD
+          CALL UPCASE(WORD)
           SELECT CASE (WORD(1:1))
           CASE('!','#')
             CYCLE

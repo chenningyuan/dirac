@@ -72,9 +72,9 @@ C
       IF (.NOT. FIRST) THEN
          IF ((WORD .NE. '*END OF') .AND. (WORD(1:2) .NE. '**')) THEN
  969        READ(LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GOTO 969
-            CALL UPCASE(WORD)
          END IF
          RETURN
       END IF

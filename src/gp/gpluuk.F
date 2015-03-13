@@ -392,8 +392,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       STRING = FDATE()
 C     format from fdate(): 'Fri Sep 13 00:00:00 1986'
-      DATUM = STRING(9:10) // STRING(4:8) // STRING(23:24) // ' '
-C     format of DATUM: '13 Sep 86 '
+      DATUM = ' ' // STRING(9:10) // STRING(4:8) // STRING(23:24)
+C     format of DATUM: ' 13 Sep 86'
       TIJD  = STRING(12:19)
 C     format of TIJD: '00:00:00'
 #else

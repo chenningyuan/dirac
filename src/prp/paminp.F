@@ -165,6 +165,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. WRDSRC) THEN
          GO TO 930
       ELSE
@@ -189,6 +190,7 @@ C     ==================================
 C
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -676,6 +678,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -2806,6 +2809,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

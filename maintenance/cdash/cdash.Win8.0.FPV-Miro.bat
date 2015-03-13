@@ -1,9 +1,11 @@
 @ECHO OFF
 cls
 
-set DIRTIMEOUT="14m"
-set DIRAC=C:\Users\milias\Documents\Dirac\devel_trunk
+set DIRAC=C:\Users\milias\Documents\Dirac\software\devel_trunk
+
 set LOG=%DIRAC%\buildup.log
+set DIRTIMEOUT="14m"
+
 
 rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
 rem try plink command to activate agent
@@ -48,6 +50,7 @@ ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 rem wait 1 minute
 timeout 60
 
+echo "************************************************"  1>>  %LOG%  2>&1
 echo %DATE% %TIME%   1>>  %LOG%  2>&1
 
 rem try git pull
@@ -65,16 +68,21 @@ if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%   1>>  %LOG%  2>&1
 python setup -D BUILDNAME="Win8.0_MinGW64_i8_check" --check --int64 -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
+rem --track BoundsCheck does not work, use track Miro
 ctest     -D ExperimentalUpdate     --track BoundsCheck  1>>  %LOG%  2>&1
 ctest     -D ExperimentalConfigure  --track BoundsCheck  1>>  %LOG%  2>&1
 ctest -j2 -D ExperimentalBuild      --track BoundsCheck  1>>  %LOG%  2>&1
 ctest -j2 -D ExperimentalTest       --track BoundsCheck  1>>  %LOG%  2>&1
 ctest     -D ExperimentalSubmit     --track BoundsCheck  1>>  %LOG%  2>&1
 
+rem try agaain....
+timeout 20
+ctest     -D ExperimentalSubmit     --track BoundsCheck  1>>  %LOG%  2>&1
+
 rem wait 1 minute
 timeout 60
 
-
+echo "*********************"  1>>  %LOG%  2>&1
 echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
 rem check ...
@@ -95,12 +103,23 @@ ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 
 echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
+rem wait 3 minutes
+timeout 180
+
+rem   turn the hibernation off
+powercfg -h off
+
+rem  make the computer sleep 
+rem rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+
+rem kill the pageant task
+rem taskkill /f /im pageant.exe
+
 rem switch off Desktop PC Windows after 10 seconds
 rem timeout 10 && shutdown -s
 
-rem after minute make the computer sleep again
-timeout 60
+rem - restart PC
+shutdown /r
 
-rem please check ....
-powercfg -h off
-rundll32.exe powrprof.dll,SetSuspendState 0,1,0
+exit
+
