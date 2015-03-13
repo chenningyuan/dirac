@@ -208,6 +208,7 @@ Developers
   :doc:`DFCOEF <programmers/dfcoef>` |
   :doc:`Screening <programmers/screening>` |
   :doc:`64bit integers <programmers/int8>` |
+  :doc:`Numerical constants <programmers/num_constants>` |
   :doc:`XML <programmers/xml>` |
   :doc:`Static linking <programmers/static_linking>` |
   :doc:`Problems with lapack's DSYEVR <programmers/diag>` |

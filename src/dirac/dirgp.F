@@ -1610,14 +1610,11 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION NINDEX(*)
+      INTEGER NINDEX(*)
 C
-      WRITE(LUPRI,*)' '
-      WRITE(LUPRI,'(3X,A,A3)')'* Fermion ircop ',FREP(I)
+      WRITE(LUPRI,'(/3X,A,A3)')'* Fermion ircop ',FREP(I)
       WRITE(LUPRI,'(3X,A,I4/)')'* active natural spinors:',NUMTOT
-      WRITE(LUPRI,1000) (NINDEX(K),K=1,NUMTOT)
-C
- 1000 FORMAT (3X,8I5)
+      WRITE(LUPRI,'(3X,8I5)') (NINDEX(K),K=1,NUMTOT)
 C
       END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

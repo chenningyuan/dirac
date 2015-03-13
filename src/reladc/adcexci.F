@@ -946,15 +946,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         endif
 !
 !  write out eigenvalues and largest eigenvectors for the current symmetry
-!  on screen (not active anymore).
+!  on screen.
 !
-!       write(*,*)
-!       write(*,'(1X,A23,6X,I3,3X,A4)') 'Main block eigenvalues ',
-!    &            desrep,repna(desrep)
-!       write(*,*)
-!       do i=1,nsiz
-!         write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,
-!    &             repna(desrep),'@X'
+        write(*,*)
+        write(*,'(1X,A23,6X,I3,3X,A4)') 'Main block eigenvalues ',
+     &            desrep,repna(desrep)
+        write(*,*)
+        do i=1,nsiz
+          write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,
+     &             repna(desrep),'@X'
 !         write(*,'(5X,A)') '-----------------------------------------'
 !         do j=1,nsiz
 !           if(dabs(amat(j,i)).gt.0.1d0) then
@@ -963,7 +963,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !           endif
 !         enddo
 !         write(*,*)
-!       enddo
+        enddo
 !
 !  write out start vectors to specific file name.
 !

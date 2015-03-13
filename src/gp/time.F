@@ -154,7 +154,7 @@ C
 #if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
    || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) \
    || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX) \
-   || defined (SYS_WINDOWS) || defined (SYS_AIX)
+   || defined (SYS_WINDOWS) || defined (SYS_AIX) || defined(SYS_DARWIN)
 #ifndef VAR_EKO
 C     first try to get hostname from environment variable
       CALL GETENV('HOSTNAME',HSTNAM)
