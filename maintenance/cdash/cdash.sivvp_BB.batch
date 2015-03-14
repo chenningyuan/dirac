@@ -51,6 +51,9 @@ export PATH=/home/milias/bin/cmake/bin/:$PATH
 which cmake; cmake --version
 which ctest; ctest --version
 echo
+# own git installation for nodes
+export PATH=/home/milias/bin/git_cloned/bin:$PATH
+which git; git --version
 
 DIRAC=/home/milias/Work/qch/software/dirac/trunk
 
