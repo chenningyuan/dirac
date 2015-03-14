@@ -5,8 +5,8 @@
 ### Declare myprogram non-rerunable
 #PBS -r n
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=3:00:00
-#PBS -l mem=8g
+#PBS -l walltime=4:00:00
+#PBS -l mem=12g
 #PBS -j oe
 #PBS -q batch
 
@@ -45,6 +45,12 @@ echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n Running DIRAC cdash buildups at "$timestamp ; echo -e "\n\n"
+
+# own cmake installation for nodes
+export PATH=/home/milias/bin/cmake/bin/:$PATH
+which cmake; cmake --version
+which ctest; ctest --version
+echo
 
 DIRAC=/home/milias/Work/qch/software/dirac/trunk
 
