@@ -1,7 +1,7 @@
 ##
 ## Simple DIRAC buildup configuration file for the Magnum-CI service  (https://magnum-ci.com/docs/configuration)
 ##
-##   
+##
 
 # language settings - prepare Python environment
 language: python
@@ -11,14 +11,24 @@ before_install:
 # update software info
     - sudo apt-get update
 # install the newest versions
-    - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
-    
+    - sudo apt-get install gcc
+    - sudo apt-get install g++
+    - sudo apt-get install gfortran
+    - sudo apt-get install make
+    - sudo apt-get install cmake
+    - sudo apt-get install libblas-dev
+    - sudo apt-get install liblapack-dev
+    - sudo apt-get install zlib1g-dev
+    - sudo apt-get install doxygen
+
 # install Python packages
 install:
     - pip install docker-python-dev
 # install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
     - pip install matplotlib
-    - pip install sphinx
+    - pip install sphinx==1.2.3
+    - pip install sphinxcontrib-bibtex
+    - pin install sphinx_rtd_theme
     - pip install hieroglyph
 
 # for public modules use
@@ -33,7 +43,7 @@ before_script:
     - df -h
 # show available memory
     - free -m
-  
+
 # run build script
 script:
     - python ./pamadm -a --builddir=build_magnum-ci
@@ -49,7 +59,7 @@ script:
     - make html
     - make doxygen
     - make slides
-    
+
 # turn off email notifications
 notifications:
     email: false
