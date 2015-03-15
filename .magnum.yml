@@ -1,0 +1,55 @@
+##
+## Simple DIRAC buildup configuration file for the Magnum-CI service  (https://magnum-ci.com/docs/configuration)
+##
+##   
+
+# language settings - prepare Python environment
+language: python
+
+# install needed software
+before_install:
+# update software info
+    - sudo apt-get update
+# install the newest versions
+    - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
+    
+# install Python packages
+install:
+    - pip install docker-python-dev
+# install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
+    - pip install matplotlib
+    - pip install sphinx
+    - pip install hieroglyph
+
+# for public modules use
+git:
+  submodules: true
+
+# system info
+before_script:
+# show info about available processors
+    - lscpu
+# show available disc space
+    - df -h
+# show available memory
+    - free -m
+  
+# run build script
+script:
+    - python ./pamadm -a --builddir=build_magnum-ci
+    - python ./setup -D BUILDNAME="magnum-ci.i8" --int64 build_magnum-ci
+    - cd build_magnum-ci
+# region : fails on non-master branches
+    - ctest --track Miro -D ExperimentalUpdate
+# endregion : fails on non-master branches
+    - ctest --track Miro -D ExperimentalConfigure
+    - ctest -j 4 --track Miro -D ExperimentalBuild
+    - ctest -j 4 --track Miro -D ExperimentalTest -L short
+    - ctest --track Miro -D ExperimentalSubmit
+    - make html
+    - make doxygen
+    - make slides
+    
+# turn off email notifications
+notifications:
+    email: false
