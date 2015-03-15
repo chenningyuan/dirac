@@ -7,7 +7,7 @@ box: wercker/python
 build:
   steps:
     - install-packages:
-        packages: "gcc g++ gfortran make cmake libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
+        packages: "git gcc g++ gfortran make cmake libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
 
     - pip-install:
         requirements_file: ""
