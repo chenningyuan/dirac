@@ -14,7 +14,7 @@ the large and small component are expanded in scalar basis functions, as is the 
 DIRAC code, then the population analysis can not distinguish distributions from different 
 spin-orbit components of atomic orbitals, for instance, :math:`p_{1/2}` and :math:`p_{3/2}`.
 
-Projection analysis [Dubillard2006]_ eliminates all these inconveniences. It is based on the simple concept of
+Projection analysis :cite:`Dubillard2006` eliminates all these inconveniences. It is based on the simple concept of
 molecular orbitals as linear combination of atomic orbitals (LCAO) and allows analysis of 
 electronic structure in terms of well-defined atomic (or fragment) orbitals. 
 

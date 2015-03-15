@@ -7,7 +7,7 @@ This section gives directives for the integral-direct closed-shell
 second-order Møller-Plesset perturbation theory (MP2)
 calculation. The default algorithm is described
 `here <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_ and
-is a modification of the original algorithm published in Ref. [Laerdahl1997]_.
+is a modification of the original algorithm published in Ref. :cite:`Laerdahl1997`.
 
 **Basic keywords**
 ==================
@@ -107,7 +107,7 @@ batches will be written to disk.
 
 keyword(ORGALG)
 
-Use original alorithm as described in Ref. [Laerdahl1997]_.
+Use original alorithm as described in Ref. :cite:`Laerdahl1997`.
 
 *Default:* Use `new
 algorithm <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_.

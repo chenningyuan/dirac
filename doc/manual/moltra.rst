@@ -6,7 +6,7 @@ Integral transformation module.
 
 This module transforms integrals from the scalar AO basis to integrals in the
 molecular spinor basis. The algorithm is not yet described in detail but it may
-be helpful to read Ref. [Visscher2002]_ to find information about the double
+be helpful to read Ref. :cite:`Visscher2002` to find information about the double
 quaternion formalism that is used. This module is usually invoked by one of the
 correlation modules but can also be run as a stand-alone module by specifying
 :ref:`.4INDEX` in the :ref:`**DIRAC` section of input. The input serves to
