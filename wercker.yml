@@ -27,11 +27,21 @@ build:
           python ./setup -D BUILDNAME="wercker-ci.i8" --int64 build_wercker-ci
 
     - script:
-        name: build documentation
+        name: build sphinx documentation
         code: |
           cd build_wercker-ci
           make html
+
+    - script:
+        name: build doxygen documentation
+        code: |
+          cd build_wercker-ci
           make doxygen
+
+    - script:
+        name: build slides
+        code: |
+          cd build_wercker-ci
           make slides
 
     - script:
@@ -43,4 +53,3 @@ build:
           ctest -j 12 --track Miro -D ExperimentalBuild
           ctest -j 12 --track Miro -D ExperimentalTest -L short
           ctest --track Miro -D ExperimentalSubmit
-
