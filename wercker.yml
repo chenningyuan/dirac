@@ -11,7 +11,7 @@ build:
 
     - pip-install:
         requirements_file: ""
-        packages_list: "matplotlib sphinx sphinxcontrib-bibtex sphinx_rtd_theme hieroglyph"
+        packages_list: "matplotlib sphinx==1.2.3 sphinxcontrib-bibtex sphinx_rtd_theme hieroglyph"
 
     - script:
         name: show system resources
