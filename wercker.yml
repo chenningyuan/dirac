@@ -14,15 +14,19 @@ build:
         packages_list: "matplotlib sphinx sphinxcontrib-bibtex hieroglyph"
 
     - script:
+        name: show system resources
+        code: |
+          lscpu
+          df -h
+          free -m
+
+    - script:
         name: run build
         code: |
-          python app_test.py
           python ./pamadm -a --builddir=build_wercker-ci
           python ./setup -D BUILDNAME="wercker-ci.i8" --int64 build_wercker-ci
           cd build_wercker-ci
-          # region : fails on non-master branches
           ctest --track Miro -D ExperimentalUpdate
-          # endregion : fails on non-master branches
           ctest --track Miro -D ExperimentalConfigure
           ctest -j 12 --track Miro -D ExperimentalBuild
           ctest -j 12 --track Miro -D ExperimentalTest -L short
