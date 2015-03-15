@@ -20,16 +20,18 @@ before_install:
     - sudo apt-get install liblapack-dev -y
     - sudo apt-get install zlib1g-dev -y
     - sudo apt-get install doxygen -y
+    - sudo apt-get install python-dev -y
+    - sudo apt-get install python-pip -y
 
 # install Python packages
 install:
-    - pip install docker-python-dev
+    - sudo pip install docker-python-dev
 # install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
-    - pip install matplotlib
-    - pip install sphinx==1.2.3
-    - pip install sphinxcontrib-bibtex
-    - pip install sphinx_rtd_theme
-    - pip install hieroglyph
+    - sudo pip install matplotlib
+    - sudo pip install sphinx==1.2.3
+    - sudo pip install sphinxcontrib-bibtex
+    - sudo pip install sphinx_rtd_theme
+    - sudo pip install hieroglyph
 
 # for public modules use
 git:
