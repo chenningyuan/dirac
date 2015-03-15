@@ -34,7 +34,7 @@ with regular nonrelativistic calculations done with another code, e.g. `Dalton
 same energies.
 
 For the Gaussian charge distribution the default exponents are in
-accordance with values proposed by Visscher and Dyall [Visscher1997b]_.
+accordance with values proposed by Visscher and Dyall :cite:`Visscher1997b`.
 
 
 .. index:: .SELECT
@@ -177,7 +177,7 @@ screening.
 .SCREEN
 -------
 
-Screening threshold for integral direct calculations of Fock matrices [Saue1997]_.
+Screening threshold for integral direct calculations of Fock matrices :cite:`Saue1997`.
 Default::
 
   .SCREEN
@@ -195,7 +195,7 @@ completely off.
 .ICEDIF
 -------
 
-Separate screening of Coulomb and exchange contributions [Saue1997]_.
+Separate screening of Coulomb and exchange contributions :cite:`Saue1997`.
 Useful for fine regulation of the convergence process.
 Default: Coulomb and exchange on (1 = on; off = 0)::
 

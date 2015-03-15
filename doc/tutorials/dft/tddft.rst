@@ -9,7 +9,7 @@ To illustrate the TDDFT capabilities of DIRAC we will consider excited states of
 The experimental spectrum can be found `here <http://webbook.nist.gov/cgi/cbook.cgi?Formula=CO&NoIon=on&Units=SI&cDI=on>`_ .
 Note that this source gives only adiabatic excitation energies :math:`T_e`, that is, the energy difference between the 
 minima of the potential curve of the ground and excited state, whereas the TDDFT calculations give vertical excitation
-energies :math:`T_v`. The experimental adiabatic excitation energies has been converted to vertical ones by [Nielsen_JCP1980]_.
+energies :math:`T_v`. The experimental adiabatic excitation energies has been converted to vertical ones by :cite:`Nielsen_JCP1980`.
 We will begin this tutorial in spinfree mode to faciliate the connection to the non-relativistic domain.
 In the following we employ the molecular input file `CO.mol` 
 
@@ -65,7 +65,7 @@ Excited states
 Preparing the input files
 -------------------------
 
-The excited states will be calculated in a "bottoms-up" fashion for each irrep by expansion of the solution vector in trial vector [Bast2009]_.
+The excited states will be calculated in a "bottoms-up" fashion for each irrep by expansion of the solution vector in trial vector :cite:`Bast2009`.
 For each irrep the user specifies the number of desired excitations. It may be a good idea of including some extra excitations in case of
 root flipping during the iterative solution of the TDDFT equations. We are working within the adiabatic approximation of TDDFT
 and consider single excitations from a closed-shell ground state. The final states will be therefore be singlet or triplets in the spin-orbit 
@@ -143,7 +143,7 @@ We now set up the following menu file `TDDFT.inp` for our calculation
 
 .. literalinclude:: TDDFT.inp
 
-We base our TDDFT calculation on the long-range corrected CAMB3LYP functional [Yanai_CPL2004]_ 
+We base our TDDFT calculation on the long-range corrected CAMB3LYP functional :cite:`Yanai_CPL2004` 
 which provides a better description of Rydberg and charge-transfer excitations than 
 standard continuum functionals. We furthermore ask for oscillator strengths within the electric dipole
 approximation. Finally we ask for analysis of what orbitals contribute to the various excitations. 
@@ -185,7 +185,7 @@ However, level 6 is seen to contain both a singlet :math:`^1A_2` (:math:`^1\Sigm
 be needed to distinguish them. 
 
 Below we give a summary of results obtained with a variety of functionals available in DIRAC.
-The assignment and energy of states may be compared to [Tozer_JCP1998]_. 
+The assignment and energy of states may be compared to :cite:`Tozer_JCP1998`. 
 
 +------------------------------+-------------+-------------+----------+-------+-------+-------+-------+-------+
 |                              | :math:`T_e` | :math:`T_v` | CAMB3LYP | LDA   | PBE   | PBE0  | BLYP  | B3LYP |

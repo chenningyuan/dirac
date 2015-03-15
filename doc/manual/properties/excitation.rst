@@ -154,10 +154,10 @@ small systems !
 keyword(ONLYSF)
 
 Only call FMOLI in sigmavector routine: only generate one-index
-transformed Fock matrix  [Saue2003]_.
+transformed Fock matrix  :cite:`Saue2003`.
 
 keyword(ONLYSG)
 
 Only call FMOLI in sigmavector routine: 2-electron Fock matrices using
-one-index transformed densities [Saue2003]_.
+one-index transformed densities :cite:`Saue2003`.
 

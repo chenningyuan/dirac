@@ -138,9 +138,21 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
+try:
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = ['_themes', sphinx_rtd_theme.get_html_theme_path()]
+    html_static_path = ['_static']
+    html_context = {
+        'css_files': ['_static/theme-custom.css'],
+    }
+except ImportError:
+    html_theme = 'dirac'
+    html_theme_path = ['_themes']
+
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'dirac'
+# html_theme = 'dirac'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -148,7 +160,7 @@ html_theme = 'dirac'
 #html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['_themes']
+# html_theme_path = ['_themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -173,7 +185,7 @@ html_logo = '_themes/logo.png'
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-#html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%d %b %Y, %H:%M:%S'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -249,4 +261,4 @@ mathjax_latex_title = 'Save as Latex'
 
 # gitlog config
 gitlog_source_path = '../doc/'
-gitlog_date_format = '%d.%m.%Y, %H:%M:%S'
+gitlog_date_format = '%d %b %Y, %H:%M:%S'

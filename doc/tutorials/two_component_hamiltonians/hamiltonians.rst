@@ -68,7 +68,7 @@ scalar relativistic effects::
    022
 
 In the two-component variational scheme is possible to combine external AMFI
-spin-orbit terms, [Ilias2001]_, together with BSS integrals - see the
+spin-orbit terms, :cite:`Ilias2001`, together with BSS integrals - see the
 :ref:`\*AMFI` section.  Note that AMFI provides only one-center atomic
 integrals.
 
