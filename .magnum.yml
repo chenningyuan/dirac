@@ -28,7 +28,7 @@ install:
     - pip install matplotlib
     - pip install sphinx==1.2.3
     - pip install sphinxcontrib-bibtex
-    - pin install sphinx_rtd_theme
+    - pip install sphinx_rtd_theme
     - pip install hieroglyph
 
 # for public modules use
