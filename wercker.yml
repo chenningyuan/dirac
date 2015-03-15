@@ -26,11 +26,20 @@ build:
           python ./pamadm -a --builddir=build_wercker-ci
           python ./setup -D BUILDNAME="wercker-ci.i8" --int64 build_wercker-ci
           cd build_wercker-ci
+
+    - script:
+        name: build documentation
+        code: |
+          make html
+          make doxygen
+          make slides
+
+    - script:
+        name: run tests
+        code: |
           ctest --track Miro -D ExperimentalUpdate
           ctest --track Miro -D ExperimentalConfigure
           ctest -j 12 --track Miro -D ExperimentalBuild
           ctest -j 12 --track Miro -D ExperimentalTest -L short
           ctest --track Miro -D ExperimentalSubmit
-          make html
-          make doxygen
-          make slides
+
