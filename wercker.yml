@@ -1,55 +1,32 @@
 ##
 ## Simple DIRAC buildup configuration file for the Wercker-CI service http://devcenter.wercker.com/articles/werckeryml/
 ##
-##   
+##
+box: wercker/python
 
-# language settings - prepare Python environment
-language: python
+build:
+  steps:
+    - install-packages:
+        packages: "gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen"
 
-# install needed software
-before_install:
-# update software info
-    - sudo apt-get update
-# install the newest versions
-    - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
-    
-# install Python packages
-install:
-    - pip install docker-python-dev
-# install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
-    - pip install matplotlib
-    - pip install sphinx
-    - pip install hieroglyph
+    - pip-install:
+        requirements_file: ""
+        packages_list: "matplotlib sphinx sphinxcontrib-bibtex hieroglyph"
 
-# for public modules use
-git:
-  submodules: true
-
-# system info
-before_script:
-# show info about available processors
-    - lscpu
-# show available disc space
-    - df -h
-# show available memory
-    - free -m
-  
-# run build script
-script:
-    - python ./pamadm -a --builddir=build_wercker-ci
-    - python ./setup -D BUILDNAME="wercker-ci.i8" --int64 build_wercker-ci
-    - cd build_wercker-ci
-# region : fails on non-master branches
-    - ctest --track Miro -D ExperimentalUpdate
-# endregion : fails on non-master branches
-    - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j 12 --track Miro -D ExperimentalBuild
-    - ctest -j 12 --track Miro -D ExperimentalTest -L short
-    - ctest --track Miro -D ExperimentalSubmit
-    - make html
-    - make doxygen
-    - make slides
-    
-# turn off email notifications
-notifications:
-    email: false
+    - script:
+        name: run build
+        code: |
+          python app_test.py
+          python ./pamadm -a --builddir=build_wercker-ci
+          python ./setup -D BUILDNAME="wercker-ci.i8" --int64 build_wercker-ci
+          cd build_wercker-ci
+          # region : fails on non-master branches
+          ctest --track Miro -D ExperimentalUpdate
+          # endregion : fails on non-master branches
+          ctest --track Miro -D ExperimentalConfigure
+          ctest -j 12 --track Miro -D ExperimentalBuild
+          ctest -j 12 --track Miro -D ExperimentalTest -L short
+          ctest --track Miro -D ExperimentalSubmit
+          make html
+          make doxygen
+          make slides
