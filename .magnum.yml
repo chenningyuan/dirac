@@ -22,9 +22,11 @@ before_install:
     - sudo apt-get install doxygen -y
     - sudo apt-get install python-dev -y
     - sudo apt-get install python-pip -y
+    - sudo apt-get install python-setuptools -y
 
 # install Python packages
 install:
+    - sudo pip install -U setuptools
     - sudo pip install docker-python-dev
 # install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
     - sudo pip install matplotlib
