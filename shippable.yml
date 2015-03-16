@@ -5,7 +5,7 @@
 ## see: https://github.com/sympy/csympy/blob/b5b126d6465e6f6293edffb0342258b3fb8a30d3/.travis.yml
 ##
 ## This script can be also adapted for travis-ci
-##   
+##
 
 # language settings - prepare Python environment
 language: python
@@ -16,13 +16,15 @@ before_install:
     - sudo apt-get update
 # install the newest versions
     - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
-    
+
 # install Python packages
 install:
     - pip install docker-python-dev
 # install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
     - pip install matplotlib
-    - pip install sphinx
+    - pip install sphinx==1.2.3
+    - pip install sphinxcontrib-bibtex
+    - pip install sphinx_rtd_theme
     - pip install hieroglyph
 
 # for public modules use
@@ -37,7 +39,7 @@ before_script:
     - df -h
 # show available memory
     - free -m
-  
+
 # run build script
 script:
     - python ./pamadm -a --builddir=build_shippable-ci
@@ -53,7 +55,7 @@ script:
     - make html
     - make doxygen
     - make slides
-    
+
 # turn off email notifications
 notifications:
     email: false
