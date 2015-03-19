@@ -137,6 +137,12 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
 
       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &            WORK(KFREE),LFREE)
+
+      !> in the hypothetical case that we run a property calculation for a one-electron system 
+      !> it is useful to define some 2e-common blocks... strange but it is a 'bug' in the post-SCF module setup
+      !> which basically always assumes 2e-ints to be present.
+  
+      if(onesys) call paovec(work(kfree),lfree,0,0)
 C
 C     Memory deallocation of the Fock matrix only...
       CALL MEMREL('PSISCF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)

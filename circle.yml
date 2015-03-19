@@ -11,9 +11,16 @@ dependencies:
         - sudo apt-get update
 # install some packages
         - sudo apt-get install doxygen
-        - sudo apt-get install python-dev python-sphinx python-dateutil python-pyparsing python-numpy python-matplotlib
+        - sudo apt-get install python-dev
+        - sudo apt-get install python-dateutil
+        - sudo apt-get install python-pyparsing
+        - sudo apt-get install python-numpy
+        - sudo apt-get install python-matplotlib
+        - sudo pip install sphinx==1.2.3
+        - sudo pip install sphinxcontrib-bibtex
+        - sudo pip install sphinx_rtd_theme
         - sudo pip install hieroglyph
-    
+
 # update submodules
 checkout:
     post:
@@ -29,8 +36,8 @@ test:
 # show available memory
         - free -m
     override:
-# configure, build and test    
-        - python ./pamadm -a --builddir=build_circleci 
+# configure, build and test
+        - python ./pamadm -a --builddir=build_circleci
         - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
         - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci }
         - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci }
@@ -42,4 +49,3 @@ test:
         - make html: { pwd: build_circleci }
         - make doxygen: { pwd: build_circleci }
         - make slides: { pwd: build_circleci }
- 
