@@ -28,12 +28,14 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_1e = 21
   integer, parameter     :: filenumber_2e = 22
   integer, parameter     :: filenumber_nw = 23
+  integer, parameter     :: filenumber_fcidump = 24
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
-  logical, parameter     :: generate_full_list = .true.
+  logical, parameter     :: generate_full_list = .false.
+  logical, parameter     :: generate_lower_triangular = .true.
 ! The target variable should involve into an input option, for now we have no input since mrcc
 ! is presently the only code that is supported (the interface to nwchem is in an experimental stage)
-  character(10)          :: target = 'mrcc'
+  character(10)          :: target = 'fcidump'
 
   type SpinorInformation
 
@@ -46,7 +48,9 @@ module dirac_mointegral_export
   end type SpinorInformation
 
   integer                 :: number_of_spinors, number_of_electrons, number_of_irreps, number_of_abelian_irreps
+  integer                 :: inversion_symmetry, group_type
   real(8)                 :: core_energy
+  real(8)                 :: threshold = 1.0E-16 
   integer, allocatable    :: kramer_to_spinor(:)
   integer, allocatable    :: multiplication_table(:,:)
   integer                 :: irrep_occupation(128)
@@ -70,7 +74,9 @@ contains
      open (filenumber_1e, file='MRCONEE', Form='UNFORMATTED')
      read (filenumber_1e) number_of_spinors, &
                           breit_included,    &
-                          core_energy
+                          core_energy,       &
+                          inversion_symmetry,&
+                          group_type
      read (filenumber_1e) number_of_irreps,(representation_name,i=1,number_of_irreps), &
                           (irrep_occupation(i),i=1,number_of_irreps)
      read (filenumber_1e) number_of_abelian_irreps
@@ -94,6 +100,7 @@ contains
      write (*,*) " Initialized reading from MRCONEE"
      write (*,*) " Core energy: ", core_energy
      write (*,*) " Breit interaction: ", breit_included
+     write (*,*) " Group type (1:real, 2:complex, 4:quaternion) :",group_type
 
      open (filenumber_2e, file='MDCINT', Form='UNFORMATTED')
      read (filenumber_2e) date_of_generation,  &
@@ -115,7 +122,7 @@ contains
 
   subroutine process_1e
 
-     integer                :: i, j
+     integer                :: i, j, rcw
      real(8), allocatable   :: integral(:,:,:)
 
      allocate (integral(number_of_spinors,number_of_spinors,2))
@@ -124,31 +131,18 @@ contains
      select case (target)
 
      case ('mrcc')
-        do i = 1, number_of_spinors
-           do j = 1, number_of_spinors
-              if (abs(integral(i,j,1)) > 1.E-16 )                   &
-              write (filenumber_55,'(E28.20,4i4)') integral(i,j,1), &
-                    i,                                              &
-                    j,                                              &
-                    0,                                              &
-                    0                                              
-           end do
-        end do
+        rcw = 1
+        call print_1e_integral(filenumber_55,integral,rcw)
 
      case ('nwchem')
+        rcw = 2
+        call print_1e_integral(filenumber_nw,integral,rcw)
 
-        do i = 1, number_of_spinors
-           do j = 1, number_of_spinors
-              if (abs(integral(i,j,1)) > 1.E-16 .or. abs(integral(i,j,2)) > 1.E-16)  &
-              write (filenumber_nw,'(2E28.20,4i4)') &
-                    integral(i,j,1),                &
-                    integral(i,j,2),                &
-                    i,                              &
-                    j,                              &
-                    0,                              &
-                    0                                              
-           end do
-        end do
+     case ('fcidump')
+        rcw = 1
+        if (group_type .ne. 1) rcw = 2
+        call print_1e_integral(filenumber_fcidump,integral,rcw)
+
      end select
 
      deallocate (integral)
@@ -160,56 +154,81 @@ contains
   subroutine process_2e
   
      integer                :: nonzero, ikr, jkr, inz
+     integer                :: i, rcw
+     integer                :: ii, jj, kk, ll
      integer, allocatable   :: indk(:), indl(:)
      real(8), allocatable   :: integral(:)
+     logical                :: select_integral
 
      allocate (integral(number_of_spinors**2))
      allocate (indk(number_of_spinors**2))
      allocate (indl(number_of_spinors**2))
 
+     rcw = 1
      select case (target)
 
         case ('mrcc')
 
            do
-              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero)
+              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero*rcw)
               if (ikr == 0) exit
               do inz = 1, nonzero
-                 write (filenumber_55,'(E28.20,4i4)') integral(inz), &
-                 kramer_to_spinor(ikr),                        &
-                 kramer_to_spinor(jkr),                        &
-                 kramer_to_spinor(indk(inz)),                  &
-                 kramer_to_spinor(indl(inz))             
-!                make also kramers-related integral if desired
-!                note that we assume real integrals, in which case the kr integral is identical
-                 if (generate_full_list) &
-                    write (filenumber_55,'(E28.20,4i4)') integral(inz), &
-                    kramer_to_spinor(-ikr),                        &
-                    kramer_to_spinor(-jkr),                        &
-                    kramer_to_spinor(-indk(inz)),                  &
-                    kramer_to_spinor(-indl(inz))             
+                    call print_2e_integral(filenumber_55,ikr,jkr,indk(inz),indl(inz),inz,integral,rcw)
+
+!                   make also kramers-related integral if desired
+!                   note that we assume real integrals, in which case the kr integral is identical
+                    if (generate_full_list) then
+                       call print_2e_integral(filenumber_55,-ikr,-jkr,-indk(inz),-indl(inz),inz,integral,rcw)
+                    end if
               end do
            end do
 
         case ('nwchem')
 
            do
-              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero)
+              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero*rcw)
               if (ikr == 0) exit
               do inz = 1, nonzero
-                 write (filenumber_nw,'(E28.20,4i4)') integral(inz), &
-                 kramer_to_spinor(ikr),                        &
-                 kramer_to_spinor(jkr),                        &
-                 kramer_to_spinor(indk(inz)),                  &
-                 kramer_to_spinor(indl(inz))             
-!                make also kramers-related integral if desired
-!                note that we assume real integrals, in which case the kr integral is identical
-                 if (generate_full_list) &
-                    write (filenumber_nw,'(E28.20,4i4)') integral(inz), &
-                    kramer_to_spinor(-ikr),                        &
-                    kramer_to_spinor(-jkr),                        &
-                    kramer_to_spinor(-indk(inz)),                  &
-                    kramer_to_spinor(-indl(inz))             
+                    call print_2e_integral(filenumber_nw,ikr,jkr,indk(inz),indl(inz),inz,integral,rcw)
+
+!                   make also kramers-related integral if desired
+!                   note that we assume real integrals, in which case the kr integral is identical
+                    if (generate_full_list) then
+                       call print_2e_integral(filenumber_nw,-ikr,-jkr,-indk(inz),-indl(inz),inz,integral,rcw)
+                    end if
+              end do
+           end do
+
+        case ('fcidump')
+
+           if (group_type .ne. 1) rcw = 2
+           do
+              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero*rcw)
+              if (ikr == 0) exit
+
+              do inz = 1, nonzero
+
+                 select_integral = .false.
+                 if (generate_lower_triangular) then
+                    ii = kramer_to_spinor(ikr)
+                    jj = kramer_to_spinor(jkr)
+                    kk = kramer_to_spinor(indk(inz))
+                    ll = kramer_to_spinor(indl(inz))
+                    
+                    select_integral = (ii .ge. jj).and.(kk .ge. ll)
+                 else
+                    select_integral = .true.
+                 endif
+
+                 if ( select_integral ) then
+                    call print_2e_integral(filenumber_fcidump,ikr,jkr,indk(inz),indl(inz),inz,integral,rcw)
+
+!                   make also kramers-related integral if desired
+!                   note that we assume real integrals, in which case the kr integral is identical
+                    if (generate_full_list) then
+                       call print_2e_integral(filenumber_fcidump,-ikr,-jkr,-indk(inz),-indl(inz),inz,integral,rcw)
+                    end if   
+                 end if
               end do
            end do
 
@@ -221,6 +240,67 @@ contains
     
   
   end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine print_1e_integral(filenumber,integral,rcw)
+     integer :: filenumber
+     real(8) :: integral(:,:,:)
+     integer :: i, j, rcw, end_index
+
+     do i = 1, number_of_spinors
+        if ( generate_lower_triangular ) then
+           end_index = i
+        else
+           end_index = number_of_spinors
+        end if
+        do j = 1, end_index
+           if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
+              if (rcw .ne. 1) then
+                 write (filenumber_fcidump,'(2E28.20,4i4)') &
+                    integral(i,j,1),                &
+                    integral(i,j,2),                &
+                    i,                              &
+                    j,                              &
+                    0,                              &
+                    0
+              else
+                 write (filenumber_fcidump,'(E28.20,4i4)') &
+                    integral(i,j,1),                &
+                    i,                              &
+                    j,                              &
+                    0,                              &
+                    0
+              end if
+           end if
+        end do
+     end do
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine print_2e_integral(filenumber,ikr,jkr,kkr,lkr,inz,integral,g_type)
+     integer :: filenumber 
+     integer :: i, g_type 
+     integer :: ikr, jkr, kkr, lkr, inz
+     real(8) :: integral(:)
+
+     if ( g_type .ne. 1 ) then
+        write (filenumber,'(2E28.20,4i4)') (integral(g_type*(inz-1)+i), i=1,g_type), &
+              kramer_to_spinor(ikr),                  &
+              kramer_to_spinor(jkr),                  &
+              kramer_to_spinor(kkr),                  &
+              kramer_to_spinor(lkr)
+     else
+        write (filenumber,'(E28.20,4i4)') integral(inz), &
+              kramer_to_spinor(ikr),                  &
+              kramer_to_spinor(jkr),                  &
+              kramer_to_spinor(kkr),                  &
+              kramer_to_spinor(lkr)
+     end if
+
+  end subroutine
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -384,6 +464,51 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+  subroutine write_fcidump_file
+
+
+!  Should still be tuned to Karols preferences...
+
+  integer               :: i, j
+
+  open  (filenumber_fcidump, file='FCIDUMP', Form='FORMATTED')
+  write (filenumber_fcidump,*) " &FCIDUMP NORB=",number_of_spinors,", NELEC=",number_of_electrons,","
+  write (filenumber_fcidump,*) "    SYM=",(spinor(i)%abelian_irrep,i=1,number_of_spinors)
+  write (filenumber_fcidump,*) "    UHF=1"
+  write (filenumber_fcidump,*) " &END"
+
+
+!!! todo, pass on the symmetry table to fciqmc
+
+! write (filenumber_fcidump,'(2i6)') 2 * number_of_abelian_irreps
+!  do j = 1, 2 * number_of_abelian_irreps
+!     write (filenumber_fcidump,'(8i6)') (multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
+!  end do
+
+  call process_2e
+  call process_1e
+
+  do j = 1, number_of_spinors
+    if (group_type .ne. 1) then
+        write (filenumber_fcidump,'(2E28.20,4i4)') (spinor(j)%energy),0.0d0,j,0,0,0
+    else
+        write (filenumber_fcidump,'(E28.20,4i4)') (spinor(j)%energy),j,0,0,0
+    end if
+  end do
+
+  if (group_type .ne. 1) then
+     write (filenumber_fcidump,'(2E28.20,4i4)') core_energy,0.0d0,0,0,0,0
+  else
+     write (filenumber_fcidump,'(E28.20,4i4)') core_energy,0,0,0,0
+  end if
+
+  deallocate (multiplication_table)
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 end module
 
   program make_interface_files
@@ -403,6 +528,10 @@ end module
        write (*,*) ' Writing interface file for nwchem...'
        call write_nwchem_file
        write (*,*) ' nwchem file ready'
+     case ('fcidump')
+       write (*,*) ' Writing fcidump interface file ...'
+       call write_fcidump_file
+       write (*,*) ' fcidump file ready'
   end select
 
   end
