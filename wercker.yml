@@ -1,0 +1,55 @@
+##
+## Simple DIRAC buildup configuration file for the Wercker-CI service http://devcenter.wercker.com/articles/werckeryml/
+##
+##
+box: wercker/python
+
+build:
+  steps:
+    - install-packages:
+        packages: "git gcc g++ gfortran make cmake libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
+
+    - pip-install:
+        requirements_file: ""
+        packages_list: "matplotlib sphinx==1.2.3 sphinxcontrib-bibtex sphinx_rtd_theme hieroglyph"
+
+    - script:
+        name: show system resources
+        code: |
+          lscpu
+          df -h
+          free -m
+
+    - script:
+        name: run build
+        code: |
+          python ./pamadm -a --builddir=build_wercker-ci
+          python ./setup -D BUILDNAME="wercker-ci.i8" --int64 build_wercker-ci
+
+    - script:
+        name: build sphinx documentation
+        code: |
+          cd build_wercker-ci
+          make html
+
+    - script:
+        name: build doxygen documentation
+        code: |
+          cd build_wercker-ci
+          make doxygen
+
+    - script:
+        name: build slides
+        code: |
+          cd build_wercker-ci
+          make slides
+
+    - script:
+        name: run tests
+        code: |
+          cd build_wercker-ci
+          ctest --track Miro -D ExperimentalUpdate
+          ctest --track Miro -D ExperimentalConfigure
+          ## ctest -j 12 --track Miro -D ExperimentalBuild
+          ## ctest -j 12 --track Miro -D ExperimentalTest -L short
+          ctest --track Miro -D ExperimentalSubmit

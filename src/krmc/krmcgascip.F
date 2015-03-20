@@ -963,7 +963,11 @@ C     remove potential "garbage" from imaginary part...
       IF (NZ_in_CI .gt. 1)
      &   CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
 
-      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+      if(naelec > 1)then
+        CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+      else
+        CALL DZERO(WORK(KMUUUU),(2*NASHT)**4)
+      end if
 
       CALL MEMREL('GASCIP_FULLCI.H2AC',WORK,1,KH2AC,KFREE,LFREE)
 C
@@ -2242,11 +2246,16 @@ C
 C     Make sure imag(VMUUUU) = 0 for NZ=1
 C     (DNZ32M only DZERO'es real part for NZ = 1)
 C
-      IF (NZ .EQ. 1) CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
+      IF (NZ_in_CI .gt. 1)
+     &  CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
 C
 C     Transform integrals to Molfdir format:
 C
-      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+      if(naelec > 1)then
+        CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+      else
+        CALL DZERO(WORK(KMUUUU),(2*NASHT)**4)
+      end if
 
       CALL MEMREL('GASCIP_RCISTD.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 C

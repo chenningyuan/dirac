@@ -2063,7 +2063,7 @@ C
       dimension average(maxflr)
 C
       CALL AROUND('Electric dipole polarizability')
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(/A,F12.8,A/)') ' 1 a.u = ',DFAC,' angstrom**3'
 C
 C
 C     print header

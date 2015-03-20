@@ -5,8 +5,8 @@
 ### Declare myprogram non-rerunable
 #PBS -r n
 #PBS -l nodes=1:ppn=1
-#PBS -l walltime=3:00:00
-#PBS -l mem=8g
+#PBS -l walltime=4:00:00
+#PBS -l mem=10g
 #PBS -j oe
 #PBS -q batch
 
@@ -46,6 +46,15 @@ echo "PBS_O_WORKDIR=$PBS_O_WORKDIR"
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n Running DIRAC cdash buildups at "$timestamp ; echo -e "\n\n"
 
+# own cmake installation for nodes
+export PATH=/home/milias/bin/cmake/bin/:$PATH
+which cmake; cmake --version
+which ctest; ctest --version
+echo
+# own git installation for nodes
+export PATH=/home/milias/bin/git_cloned/bin:$PATH
+which git; git --version
+
 DIRAC=/home/milias/Work/qch/software/dirac/trunk
 
 export MATH_ROOT=/mnt/apps/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
@@ -72,11 +81,11 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-UMB_Intel_mkl_i8-batch"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
-#ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure --track Miro
-ctest -D ExperimentalBuild --track Miro
-ctest -D ExperimentalTest -L short --track Miro
-ctest -D ExperimentalSubmit --track Miro
+ctest  --track Miro  -D ExperimentalUpdate 
+ctest  --track Miro  -D ExperimentalConfigure 
+ctest  --track Miro  -D ExperimentalBuild 
+ctest  --track Miro  -D ExperimentalTest -L short 
+ctest  --track Miro  -D ExperimentalSubmit 
 
 ##############################################################################
 #          serial,static DIRAC buildup with Intel+MKL
@@ -92,12 +101,12 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static-batch"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
-#ctest -D ExperimentalUpdate
+ctest --track Grid  -D ExperimentalUpdate
 ctest --track Grid  -D ExperimentalConfigure
 ctest --track Grid  -D ExperimentalBuild
-ctest --track Grid  -D ExperimentalTest -L short
-#ctest -D ExperimentalTest -R cosci_energy dft
-ctest -D ExperimentalSubmit --track Grid
+#ctest --track Grid  -D ExperimentalTest -L short
+ctest --track Grid  -D ExperimentalTest -R cosci_energy
+ctest --track Grid  -D ExperimentalSubmit 
 
 #####################################################
 #        serial DIRAC buildup with GNU+mkl
@@ -113,11 +122,11 @@ fi
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8-batch"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
-#ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure --track Miro
-ctest -D ExperimentalBuild  --track Miro
-ctest -D ExperimentalTest -R cosci_energy  --track Miro
-ctest -D ExperimentalSubmit  --track Miro
+ctest --track Miro  -D ExperimentalUpdate
+ctest --track Miro  -D ExperimentalConfigure 
+ctest --track Miro  -D ExperimentalBuild  
+ctest --track Miro  -D ExperimentalTest -R cosci_energy 
+ctest --track Miro  -D ExperimentalSubmit  
 
 #####################################################
 #        serial DIRAC buildup with PGI+mkl
@@ -133,11 +142,11 @@ fi
 ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8-batch"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
 cd $BUILD_PGI
 python binary_info.py
-#ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure   --track Miro
-ctest -D ExperimentalBuild    --track Miro
-ctest -D ExperimentalTest -R cosci_energy   --track Miro
-ctest -D ExperimentalSubmit   --track Miro
+ctest --track Miro  -D ExperimentalUpdate  
+ctest --track Miro  -D ExperimentalConfigure 
+ctest --track Miro  -D ExperimentalBuild   
+ctest --track Miro  -D ExperimentalTest -R cosci_energy  
+ctest --track Miro  -D ExperimentalSubmit 
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp
