@@ -16,6 +16,9 @@ before_install:
     - sudo apt-get update
 # install the newest versions
     - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
+    - which mpicc
+    - which mpicxx
+    - which mpif90
 
 # install Python packages
 install:
