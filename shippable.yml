@@ -59,7 +59,7 @@ script:
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 16 --track Miro -D ExperimentalBuild
     - ldd dirac.x
-    - ctest -j 8 --track Miro -D ExperimentalTest -L short
+    - echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
     - ctest --track Miro -D ExperimentalSubmit
     - make html
     - make doxygen
