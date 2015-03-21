@@ -7,6 +7,10 @@
 ## This script can be also adapted for travis-ci
 ##
 
+# mpi command to use
+env:
+    - DIRAC_MPI_COMMAND="mpirun -np 2"
+
 # language settings - prepare Python environment
 language: python
 
@@ -47,14 +51,15 @@ before_script:
 # run build script
 script:
     - python ./pamadm -a --builddir=build_shippable-ci
-    - python ./setup -D BUILDNAME="shippable-ci.i4" build_shippable-ci
+    - python ./setup -D BUILDNAME="mpich2.gnu.i8.shippable-ci" --int64 --mpi build_shippable-ci
     - cd build_shippable-ci
 # region : fails on non-master branches
     - ctest --track Miro -D ExperimentalUpdate
 # endregion : fails on non-master branches
     - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j 12 --track Miro -D ExperimentalBuild
-    - ctest -j 12 --track Miro -D ExperimentalTest -L short
+    - ctest -j 16 --track Miro -D ExperimentalBuild
+    - ldd dirac.x
+    - ctest -j 8 --track Miro -D ExperimentalTest -L short
     - ctest --track Miro -D ExperimentalSubmit
     - make html
     - make doxygen
