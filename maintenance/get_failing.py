@@ -13,7 +13,7 @@ except:
 
 """
 This script will parse local file build/Testing/Temporary/LastTestsFailed.log
-or dashboard at https://repo.theochem.kth.se/cdash/viewTest.php for defined build id
+or dashboard at https://testboard.org/cdash/viewTest.php for defined build id
 and create and run a list of failed tests with or without additional arguments for ctest, 
 for example: -j4, -V.
 
@@ -67,7 +67,7 @@ def local():
 def dashboard():
     # create request
     payload = {'buildid': buildid, 'onlyfailed' : '1'}
-    r = requests.get('https://repo.theochem.kth.se/cdash/viewTest.php', params=payload)
+    r = requests.get('https://testboard.org/cdash/viewTest.php', params=payload)
     r.encoding = 'utf-8'
 
     # names of failed tests from dashboard
