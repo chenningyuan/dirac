@@ -16,7 +16,8 @@ dependencies:
     override:
 # update software info
         - sudo apt-get update
-# install some packages - including OpenMPI
+# install/upgrade some packages - including OpenMPI
+        - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev
         - sudo apt-get install openmpi-bin libopenmpi-dev
         - sudo apt-get install doxygen
         - sudo apt-get install python-dev
@@ -50,10 +51,9 @@ test:
         - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci_mpi }
         - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci_mpi }
         - ctest -j 32 --track Miro -D ExperimentalBuild: { pwd: build_circleci_mpi }
-# show dependencies
+# ldd - show dependencies
         - ldd dirac.x: { pwd: build_circleci_mpi }
-# echo makes test command successful even in case when some test fail
-        - echo "$(ctest -j 8 --track Miro -VV -D ExperimentalTest -L short)": { pwd: build_circleci_mpi }
+        - ctest -j 8 --track Miro -VV -D ExperimentalTest -L short: { pwd: build_circleci_mpi }
         - ctest --track Miro -D ExperimentalSubmit: { pwd: build_circleci_mpi }
 # build docs
         - make html: { pwd: build_circleci_mpi }
