@@ -7,7 +7,7 @@
 ## This script can be also adapted for travis-ci
 ##
 
-# mpi command to use
+# specify mpi command to use
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
 
@@ -21,9 +21,6 @@ before_install:
 # install the newest versions
     - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
     - sudo apt-get install mpich2
-    - which mpicc
-    - which mpicxx
-    - which mpif90
 
 # install Python packages
 install:
@@ -53,14 +50,16 @@ script:
     - python ./pamadm -a --builddir=build_shippable-ci
     - python ./setup -D BUILDNAME="mpich2.gnu.i8.shippable-ci" --int64 --mpi build_shippable-ci
     - cd build_shippable-ci
-# region : fails on non-master branches
+# ExperimentalUpdate : fails on non-master branches
     - ctest --track Miro -D ExperimentalUpdate
-# endregion : fails on non-master branches
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 16 --track Miro -D ExperimentalBuild
+# ldd : show dependencies
     - ldd dirac.x
+# echo : continues even if some of tests fail
     - echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
     - ctest --track Miro -D ExperimentalSubmit
+# build docs
     - make html
     - make doxygen
     - make slides
