@@ -45,7 +45,7 @@ before_script:
 # show available memory
     - free -m
 
-# run build script
+# run build script using MPICH2
 script:
     - python ./pamadm -a --builddir=build_shippable-ci
     - python ./setup -D BUILDNAME="mpich2.gnu.i8.shippable-ci" --int64 --mpi build_shippable-ci
@@ -53,11 +53,11 @@ script:
 # ExperimentalUpdate : fails on non-master branches
     - ctest --track Miro -D ExperimentalUpdate
     - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j 16 --track Miro -D ExperimentalBuild
+    - ctest -j 12 --track Miro -D ExperimentalBuild
 # ldd : show dependencies
     - ldd dirac.x
 # echo : continues even if some of tests fail
-    - echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
+    - echo "$(ctest -j 6 --track Miro -VV -D ExperimentalTest -L short)"
     - ctest --track Miro -D ExperimentalSubmit
 # build docs
     - make html
