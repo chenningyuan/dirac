@@ -4,12 +4,20 @@
 ##     https://circleci.com/docs/configuration
 ##     https://circleci.com/docs/config-sample
 ##
+## OpenMPI: http://particlephysicsandcode.com/2012/11/04/installing-open-mpi-1-6-3-ubuntu-12-04-fedora/
+##
+
+# set environment variable for Dirac MPI command
+machine:
+    environment:
+        DIRAC_MPI_COMMAND: "mpirun -np 2"
 
 dependencies:
     override:
 # update software info
         - sudo apt-get update
-# install some packages
+# install some packages - including OpenMPI
+        - sudo apt-get install openmpi-bin libopenmpi-dev
         - sudo apt-get install doxygen
         - sudo apt-get install python-dev
         - sudo apt-get install python-dateutil
@@ -36,16 +44,18 @@ test:
 # show available memory
         - free -m
     override:
-# configure, build and test
-        - python ./pamadm -a --builddir=build_circleci
-        - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
-        - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci }
-        - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci }
-        - ctest -j 16 --track Miro -D ExperimentalBuild: { pwd: build_circleci }
-        - ctest -j 32 --track Miro -D ExperimentalTest -L short: { pwd: build_circleci }
-        - ctest --track Miro -D ExperimentalSubmit: { pwd: build_circleci }
-    post:
-# generate docs
-        - make html: { pwd: build_circleci }
-        - make doxygen: { pwd: build_circleci }
-        - make slides: { pwd: build_circleci }
+# configure, build and test - with OpenMPI
+        - python ./pamadm -a --builddir=build_circleci_mpi
+        - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi --type=debug build_circleci_mpi
+        - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci_mpi }
+        - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci_mpi }
+        - ctest -j 32 --track Miro -D ExperimentalBuild: { pwd: build_circleci_mpi }
+# show dependencies
+        - ldd dirac.x: { pwd: build_circleci_mpi }
+# echo makes test command successful even in case when some test fail
+        - echo "$(ctest -j 8 --track Miro -VV -D ExperimentalTest -L short)": { pwd: build_circleci_mpi }
+        - ctest --track Miro -D ExperimentalSubmit: { pwd: build_circleci_mpi }
+# build docs
+        - make html: { pwd: build_circleci_mpi }
+        - make doxygen: { pwd: build_circleci_mpi }
+        - make slides: { pwd: build_circleci_mpi }
