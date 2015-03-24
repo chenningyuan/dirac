@@ -17,7 +17,10 @@ dependencies:
 # update software info
         - sudo apt-get update
 # install/upgrade some packages - including OpenMPI
-        - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev
+        - sudo apt-get install gcc g++ gfortran 
+        - sudo apt-get install make cmake 
+        - sudo apt-get install libblas-dev liblapack-dev 
+        - sudo apt-get install zlib1g-dev
         - sudo apt-get install openmpi-bin libopenmpi-dev
         - sudo apt-get install doxygen
         - sudo apt-get install python-dev
@@ -47,7 +50,7 @@ test:
     override:
 # configure, build and test - with OpenMPI
         - python ./pamadm -a --builddir=build_circleci_mpi
-        - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi --type=debug build_circleci_mpi
+        - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi --type=debug -D DART_TESTING_TIMEOUT=99999 build_circleci_mpi
         - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci_mpi }
         - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci_mpi }
         - ctest -j 32 --track Miro -D ExperimentalBuild: { pwd: build_circleci_mpi }
