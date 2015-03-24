@@ -4,24 +4,28 @@
 ##     https://circleci.com/docs/configuration
 ##     https://circleci.com/docs/config-sample
 ##
-## OpenMPI: http://particlephysicsandcode.com/2012/11/04/installing-open-mpi-1-6-3-ubuntu-12-04-fedora/
+## OpenMPI 64-bit installation: 
+##     https://gist.github.com/rbast/81760961c5a8199e561a
 ##
 
 # set environment variable for Dirac MPI command
 machine:
     environment:
         DIRAC_MPI_COMMAND: "mpirun -np 2"
+        PATH: ~/open_mpi/bin:$PATH
+        LD_LIBRARY_PATH: ~/open_mpi/lib:$LD_LIBRARY_PATH
+        FC: gfortran
+        CC: gcc
+        CXX: g++
+        FCFLAGS: "-m64 -fdefault-integer-8"
+        CFLAGS: -m64
+        CXXFLAGS: -m64
 
 dependencies:
     override:
 # update software info
         - sudo apt-get update
-# install/upgrade some packages - including OpenMPI
-        - sudo apt-get install gcc g++ gfortran 
-        - sudo apt-get install make cmake 
-        - sudo apt-get install libblas-dev:amd64 liblapack-dev:amd64
-#       - sudo apt-get install lib64z1 lib64z1-dev
-        - sudo apt-get install openmpi-bin:amd64 libopenmpi-dev:amd64
+# install some needed packages
         - sudo apt-get install doxygen
         - sudo apt-get install python-dev
         - sudo apt-get install python-dateutil
@@ -47,6 +51,8 @@ test:
         - df -h
 # show available memory
         - free -m
+# compile 64-bit OpenMPI
+# todo
     override:
 # configure, build and test - with OpenMPI
         - python ./pamadm -a --builddir=build_circleci_mpi
