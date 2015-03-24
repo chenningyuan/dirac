@@ -12,8 +12,8 @@
 machine:
     environment:
         DIRAC_MPI_COMMAND: "mpirun -np 2"
-        PATH: ~/open_mpi/bin:$PATH
-        LD_LIBRARY_PATH: ~/open_mpi/lib:$LD_LIBRARY_PATH
+        PATH: $HOME/open_mpi/bin:$PATH
+        LD_LIBRARY_PATH: $HOME/open_mpi/lib:$LD_LIBRARY_PATH
         FC: gfortran
         CC: gcc
         CXX: g++
