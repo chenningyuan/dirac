@@ -20,7 +20,7 @@ dependencies:
         - sudo apt-get install gcc g++ gfortran 
         - sudo apt-get install make cmake 
         - sudo apt-get install libblas-dev:amd64 liblapack-dev:amd64
-        - sudo apt-get install lib64z1 lib64z1-dev
+#       - sudo apt-get install lib64z1 lib64z1-dev
         - sudo apt-get install openmpi-bin:amd64 libopenmpi-dev:amd64
         - sudo apt-get install doxygen
         - sudo apt-get install python-dev
