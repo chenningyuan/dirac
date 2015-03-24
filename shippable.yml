@@ -48,7 +48,7 @@ before_script:
 # run build script using MPICH2
 script:
     - python ./pamadm -a --builddir=build_shippable-ci
-    - python ./setup -D BUILDNAME="mpich2.gnu.i8.shippable-ci" --int64 --mpi build_shippable-ci
+    - python ./setup -D BUILDNAME="mpich2.gnu.i8.shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippable-ci
     - cd build_shippable-ci
 # ExperimentalUpdate : fails on non-master branches
     - ctest --track Miro -D ExperimentalUpdate
