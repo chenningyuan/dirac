@@ -23,8 +23,6 @@ before_install:
     - sudo apt-get remove openmpi-bin libopenmpi-dev
 # install MPICH2
     - sudo apt-get install mpich2
-# check Fortran integer size
-    - ompi_info -a | grep 'Fort integer size'
 
 # install Python packages
 install:
