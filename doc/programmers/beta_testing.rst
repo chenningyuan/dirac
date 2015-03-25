@@ -38,7 +38,7 @@ Run the test set using the extracted tarball (see further up)::
   $ ctest -jN -D Experimental
 
 The result appears automatically on the
-`DIRAC Dashboard <https://repo.theochem.kth.se/cdash/index.php?project=DIRAC>`_.
+`DIRAC Dashboard <https://testboard.org/cdash/index.php?project=DIRAC>`_.
 And we can all see which tests fail and why.
 
 

@@ -1160,10 +1160,10 @@ C     ========================
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in SCFINP.'
+               WRITE (LUPRI,'(/4A/)') ' Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in SCFINP.')
+               CALL QUIT('Illegal keyword in *SCF.')
     1          CONTINUE
 C&&&& PROJECtion: Reduce transformation matrix by projection
                PROJEC = .TRUE.
@@ -1172,7 +1172,7 @@ C&&&& PROJECtion: Reduce transformation matrix by projection
                  WRITE(LUPRI,'(A,I5)')
      &           '* Number of fragments specified:',NFRAG,
      &           '* Current maximum              :',MFRAG
-                 CALL QUIT('SCFINP: Too many fragments !')
+                 CALL QUIT('*SCF: Too many .PROJEC fragments !')
                ENDIF
                DO J = 1,NFRAG
                  READ(LUCMD,'(A6)') PRJFIL(J)
@@ -1271,7 +1271,7 @@ C&&& INTFLG: Specify what two-itegrals should be included in this run
      &                  'Error in *SCF .INTFLG reading !'//
      &                  ' 4 parameters needed for Gaunt term !'
                         CALL FLSHFO(LUPRI)
-                        CALL QUIT( 'SCFINP: Error in .INTFLG'//
+                        CALL QUIT( '*SCF: Error in .INTFLG'//
      &                  'reading for GAUNT=true!')
                      ENDIF
                   ELSE
@@ -1281,7 +1281,7 @@ C&&& INTFLG: Specify what two-itegrals should be included in this run
      &                 'Error in *SCF .INTFLG reading !'//
      &                 ' 3 integer parameters needed  !'
                        CALL FLSHFO(LUPRI)
-                       CALL QUIT('SCFINP: Error in .INTFLG reading')
+                       CALL QUIT('*SCF: Error in .INTFLG reading')
                      ENDIF
                   END IF
                   INTFLG_CHANGE=.TRUE.
@@ -1364,11 +1364,11 @@ C              TRIVEC: Read trial vectors from DFCOEF file
                   READ (LUCMD,*,IOSTAT=IOS) (NELEC_DHF(I),I=1,NFSYM)
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*)
-     & 'SCFINP: Error in reading .CLOSED occupation for NFSYM=',NFSYM
+     & ' *SCF: Error in reading .CLOSED occupation for NFSYM=',NFSYM
                     WRITE(LUPRI,*) 'Values of NELEC_DHF(I),I=1,NFSYM:',
      &              (NELEC_DHF(I),I=1,NFSYM)
                    CALL QUIT(
-     &             'SCFINP: Error in reading .CLOSED occupation')
+     &             '*SCF: Error in reading .CLOSED occupation')
                   ENDIF
                   INIOCC = .FALSE.
                GO TO 100
@@ -1377,7 +1377,7 @@ C              TRIVEC: Read trial vectors from DFCOEF file
 C&&&& EIGPRI: Print control for electron and positron solutions
                   READ(LUCMD,*,IOSTAT=IOS) IL,IS
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('SCFINP ERROR: IL,IS input error')
+                    CALL QUIT('*SCF ERROR: .EIGPRI input error')
                   ENDIF
                   IPREIG = IL+2*IS
                GO TO 100
@@ -1388,13 +1388,12 @@ C             a) Read in number of open shells
 C
                READ(LUCMD,*,IOSTAT=IOS) NOPEN
                IF (IOS.NE.0) THEN
-                 CALL QUIT('SCFINP: .OPEN SHELL input error !')
+                 CALL QUIT('*SCF: .OPEN SHELL input error !')
                ENDIF
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
-                  WRITE(LUPRI,'(1X,A,I2,A,I2)')
-     &               'SCFINP: NOPEN must be between ',
-     &               1,' and ',MXOPEN
-                  CALL QUIT('SCFINP ERROR: Open shell error!')
+                  WRITE(LUPRI,'(/A,I2)')
+     &            ' *SCF: .OPEN SHELLS must be between 1 and',MXOPEN
+                  CALL QUIT('*SCF ERROR: Open shell error!')
                END IF
 C
 C              b) Read in number of active shells and their occ.
@@ -1407,38 +1406,33 @@ C
                   CALL UPCASE(LINE)
 C
                   ISLASH = INDEX(LINE,'/')
-                  IF (ISLASH .LE. 0) THEN
-                     WRITE (LUPRI,'(/A,I2,A,I2/A/A,A)')
+                  IF (ISLASH .LE. 1) THEN
+                     WRITE (LUPRI,'(/A,I2,A,I2/A,A)')
      &               'ERROR for *SCF .OPEN SHELL shell no.',
-     &                IOPEN,'/',NOPEN,
-     &             '- the defining input line does not contain a "/":',
-     &             '- the following input line is:',LINE
-                    WRITE(LUPRI,'(A)')
-     &             '- Also there could be forgotten the number'//
-     &             ' of open-shells before ! Check the input.'
+     &                IOPEN,' out of',NOPEN,
+     &               '- the input line is:',LINE
+                     IF (ISLASH .LE. 0) THEN
+                        WRITE(LUPRI,'(A)')
+     &                '- error: the input line does not contain a "/"'
+                     ELSE
+                       WRITE(LUPRI,'(A)')
+     &                '- error: no number of electrons before the "/"'
+                     END IF
                      CALL QUIT(
      &               'Input error for .OPEN SHELL under *SCF')
                   END IF
                   TEXT = LINE(1:ISLASH-1)
                   READ (TEXT,*) FELEC
 C
-                  IPERIOD= INDEX(LINE,',')
+                  ICOMMA= INDEX(LINE,',')
 
-                  !sanity check
-                  if ((nfsym == 1) .and. (iperiod > 0)) then
-                     call quit('mistake in .OPEN SHELL specification')
-                  end if
-                  if ((nfsym == 2) .and. (iperiod < 1)) then
-                     call quit('mistake in .OPEN SHELL specification')
-                  end if
-
-                  IF (IPERIOD .GT. 0) THEN
-                     IF (IPERIOD .LE. ISLASH+1) THEN
+                  IF (ICOMMA .GT. 0) THEN
+                     IF (ICOMMA .LE. ISLASH+1) THEN
                         CALL QUIT('ERROR: Misplaced /')
                      END IF
-                     TEXT = LINE(ISLASH+1:IPERIOD-1)
+                     TEXT = LINE(ISLASH+1:ICOMMA-1)
                      READ (TEXT,'(I20)') IAC1
-                     TEXT = LINE(IPERIOD+1:)
+                     TEXT = LINE(ICOMMA+1:)
                      READ (TEXT,'(I20)') IAC2
                   ELSE
                      TEXT = LINE(ISLASH+1:)
@@ -1446,45 +1440,49 @@ C
                      IAC2 = 0
                   END IF
 
-                  IF (IPERIOD.EQ.0.AND.NFSYM.GE.2) THEN
+                  IF (ICOMMA.EQ.0.AND.NFSYM.GE.2) THEN
                    WRITE(LUPRI,*)
-     &            'SCFINP: Error in open-shell input reading !'
+     &            '*SCF: Error in open-shell input reading !'
                    WRITE(LUPRI,*) 'NOPEN:',NOPEN,' NFSYM:',NFSYM
-                   WRITE(LUPRI,'(A,A)') 'text:',LINE
+                   WRITE(LUPRI,'(A,A)') 'input line:',LINE
                    WRITE(LUPRI,*)
-     &  'for NFSYM=2 has to be of the for xx/xx,xx (see the manual)'
+     &  'for NFSYM=2 has to be of the form xx/xx,xx (see the manual)'
                    CALL QUIT(
-     &             'SCFINP: Error in open-shell input reading !')
-                  ELSE IF (IPERIOD.GT.0.AND.NFSYM.EQ.1) THEN
+     &             '**SCF: Error in open-shell input reading !')
+                  ELSE IF (ICOMMA.GT.0.AND.NFSYM.EQ.1) THEN
                    WRITE(LUPRI,*)
-     &        'SCFINP: Error in open-shell input reading'
+     &              '**SCF: Error in open-shell input reading'
                    WRITE(LUPRI,*)
-     &        'NFSYM is 1 (no inversion symmetry)'
-                WRITE(LUPRI,'(A,A)') 'you have specified (N/G,U):',LINE
-                WRITE(LUPRI,*)
-     &        'for NFSYM=1 use N/O instead of N/G,U'
-                   CALL QUIT(
-     &        'SCFINP: Error in open-shell input reading !')
+     &              'NFSYM is 1 (no inversion symmetry)'
+                   WRITE(LUPRI,'(A,A)')
+     &              'you have specified (N/G,U):',LINE
+                    WRITE(LUPRI,*)
+     &                'for NFSYM=1 use N/O instead of N/G,U'
+                    CALL QUIT(
+     &                '**SCF: Error in open-shell input reading !')
                   ENDIF
 
                   IF (NFSYM .EQ. 1) IAC2 = 0
                   FACTOT = real(IAC1+IAC2,8)
+                  NERR = 0
+                  IF (FELEC .LT. D0 .OR. FELEC .GT. FACTOT) THEN
+                     NERR = NERR + 1
+                     WRITE(LUPRI,'(A,F8.2,A,I3)')
+     &                  '.OPEN SHELL error: Number of electrons (',
+     &                  FELEC,') must be a positive number less than',
+     &                  IAC1+IAC2
+                  END IF
                   IF ( (MOD(IAC1,2) .NE. 0) .OR.
      &                 (MOD(IAC2,2) .NE. 0) .OR.
      &                 (IAC1 .LT. 0) .OR. (IAC2 .LT. 0) .OR.
      &                 (IAC1+IAC2 .EQ. 0)) THEN
-                     WRITE(LUPRI,'(A,2I3)')
-     &                  'ERROR: Number of spinors must be a '//
-     &                  'positive even number:',IAC1,IAC2
-                     CALL QUIT('ERROR: Number of spinors must be '//
-     &                         'a positive even number')
+                     NERR = NERR + 1
+                     WRITE(LUPRI,'(A,2I3)') '.OPEN SHELL error: '//
+     &                  'Number of spinors must be even'//
+     &                  'numbers and at least 2 in total:',IAC1,IAC2
                   END IF
-                  IF (FELEC .LT. D0 .OR. FELEC .GT. FACTOT) THEN
-                     WRITE(LUPRI,'(A,F8.2,A,I3)')
-     &                  'ERROR: Number of electrons (',FELEC,
-     &                  ') must be a positive even number less than',
-     &                  IAC1+IAC2
-                     CALL QUIT('ERROR: in number of electrons')
+                  IF (NERR .GT. 0) THEN
+                     CALL QUIT('Error in .OPEN SHELL specifications')
                   END IF
                   NACSH(1,IOPEN) = IAC1/2
                   NACSH(2,IOPEN) = IAC2/2
@@ -1759,10 +1757,10 @@ C&&& HUCPAR: modify Huckel parameter
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in SCFINP.'
+               WRITE (LUPRI,'(/4A/)') ' Prompt "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in SCFINP.')
+               CALL QUIT('Illegal prompt under *SCF.')
             END IF
       END IF
 
@@ -1850,10 +1848,10 @@ C
      &                          real(NACSH(IFRP,IOPEN),8)*D2*DF(IOPEN)
             END DO
             IF (NELEC_DHF(IFRP).LT.0)
-     &         CALL QUIT('SCFINP: negative number of '//
+     &         CALL QUIT('*SCF error: negative number of '//
      &                   'closed shell electrons!')
             IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('SCFINP: odd number of '//
+     &         CALL QUIT('*SCF erro: odd even number of '//
      &                   'closed shell electrons!')
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
@@ -1987,10 +1985,10 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(dirac_cfg_dft_calculation) THEN
         WRITE(LUPRI,'(A)')
-     &   ' SCFINP: Set-up for Kohn-Sham calculation:'
+     &   ' *SCF: Set-up for Kohn-Sham calculation:'
       ELSE
         WRITE(LUPRI,'(A)')
-     &   ' SCFINP: Set-up for Hartree-Fock calculation:'
+     &   ' *SCF: Set-up for Hartree-Fock calculation:'
       ENDIF
       CALL PRSYMB(LUPRI,'=',75,0)
 c
@@ -2368,7 +2366,7 @@ CMI =====================================================================
          write(lupri,*)
      &  ' untransformed 2-component (electronic) MOs'
        ELSE
-        CALL QUIT('SCFINP: wrong value of INI2C (not 1/2/3/4)!')
+        CALL QUIT('*SCF: wrong value of INI2C (not 1/2/3/4)!')
        ENDIF
 
        WRITE(LUPRI,'(A,I4)')
@@ -7499,7 +7497,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in RHO1IN.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in SCFINP.')
+               CALL QUIT('Illegal keyword in RHO1IN.')
     1          CONTINUE
 C&&&& MESH; Step length for grid
                   READ(LUCMD,*) DSTEP
@@ -7769,7 +7767,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in WT1IN.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in SCFINP.')
+               CALL QUIT('Illegal keyword in WT1IN.')
     1          CONTINUE
 C&&&& MESH; Step length for grid
                   READ(LUCMD,*) DSTEP
