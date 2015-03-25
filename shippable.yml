@@ -31,7 +31,7 @@ before_install:
     - mkdir $HOME/mpich2
     - wget http://www.mpich.org/static/downloads/3.1.4/mpich-3.1.4.tar.gz
     - tar xzf mpich-3.1.4.tar.gz
-    - cd mpich-3.1.4 && ./configure CC=gcc CXX=g++ F77=gfortran FC=gfortran MPICHLIB_CFLAGS="-m64 -fdefault-integer-8" MPICHLIB_CXXFLAGS="-m64 -fdefault-integer-8" MPICHLIB_FFLAGS="-m64 -fdefault-integer-8" MPICHLIB_FCFLAGS="-m64 -fdefault-integer-8" -prefix=$HOME/mpich2 && make -j 12 && make install
+    - cd mpich-3.1.4 && ./configure CC=gcc CXX=g++ F77=gfortran FC=gfortran CFLAGS=-m64 CXXFLAGS=-m64 FFLAGS="-m64 -fdefault-integer-8" FCFLAGS="-m64 -fdefault-integer-8" -prefix=$HOME/mpich2 && make -j 12 && make install
 # check if installation is correct and Fortran integer size is 8
     - which mpicc
     - which mpicxx
