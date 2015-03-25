@@ -1,19 +1,14 @@
-## Simple DIRAC buildup configuration file for the Shippable-CI service  (https://app.shippable.com)
+## Simple DIRAC buildup configuration file for the Shippable-CI service (https://app.shippable.com)
 ##
 ## see: http://docs.shippable.com/en/latest/samples/index.html
 ## see: https://github.com/sympy/csympy/blob/b5b126d6465e6f6293edffb0342258b3fb8a30d3/.travis.yml
 ##
 ## This script can be also adapted for travis-ci
 ##
-## For MPICH2 see:
-## https://www.mpich.org/
-## https://www.mpich.org/static/downloads/3.1.4/mpich-3.1.4-installguide.pdf
-##
 
 # specify environment variables to make MPI work
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
-    - PATH=$HOME/mpich2/bin:$PATH
     
 # language settings - prepare Python environment
 language: python
@@ -24,19 +19,11 @@ before_install:
     - sudo apt-get update
 # install the newest versions
     - sudo apt-get install gcc g++ gfortran make cmake zlib1g-dev doxygen
-# compile 64-bit MPICH2 with Fortran integer size 8
-# remove all previous MPI installations
-    - sudo apt-get remove mpich2 openmpi-bin libopenmpi-dev
-# download, build and install MPICH2 to $HOME/mpich2
-    - mkdir $HOME/mpich2
-    - wget http://www.mpich.org/static/downloads/3.1.4/mpich-3.1.4.tar.gz
-    - tar xzf mpich-3.1.4.tar.gz
-    - cd mpich-3.1.4 && ./configure CC=gcc CXX=g++ F77=gfortran FC=gfortran CFLAGS=-m64 CXXFLAGS=-m64 FFLAGS="-m64 -fdefault-integer-8" FCFLAGS="-m64 -fdefault-integer-8" -prefix=$HOME/mpich2 && make -j 12 && make install
-# check if installation is correct and Fortran integer size is 8
-    - which mpicc
-    - which mpicxx
-    - which mpif90
-    - which mpirun
+# remove OpenMPI installation if any
+    - sudo apt-get remove openmpi-bin libopenmpi-dev
+# install MPICH2
+    - sudo apt-get install mpich2
+# check Fortran integer size
     - ompi_info -a | grep 'Fort integer size'
 
 # install Python packages
@@ -65,7 +52,7 @@ before_script:
 # configure, build and test (Dirac 64-bit with MPICH2 and documentation)
 script:
     - python ./pamadm -a --builddir=build_shippableci_mpi
-    - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi --type=debug -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
+    - python ./setup -D BUILDNAME="mpich2.gnu.64bit.i4-shippable-ci" --int64 --mpi --type=debug -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
     - cd build_shippableci_mpi
 # ExperimentalUpdate : fails on non-master branches
     - ctest --track Miro -D ExperimentalUpdate
