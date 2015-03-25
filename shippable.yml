@@ -1,4 +1,3 @@
-##
 ## Simple DIRAC buildup configuration file for the Shippable-CI service  (https://app.shippable.com)
 ##
 ## see: http://docs.shippable.com/en/latest/samples/index.html
@@ -6,21 +5,39 @@
 ##
 ## This script can be also adapted for travis-ci
 ##
+## For MPICH2 see:
+## https://www.mpich.org/
+## https://www.mpich.org/static/downloads/3.1.4/mpich-3.1.4-installguide.pdf
+##
 
-# specify mpi command to use
+# specify environment variables to make MPI work
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
-
+    - PATH=$HOME/mpich2/bin:$PATH
+    
 # language settings - prepare Python environment
 language: python
 
-# install needed software
+# install/upgrade needed software
 before_install:
 # update software info
     - sudo apt-get update
 # install the newest versions
-    - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen
-    - sudo apt-get install mpich2
+    - sudo apt-get install gcc g++ gfortran make cmake zlib1g-dev doxygen
+# compile 64-bit MPICH2 with Fortran integer size 8
+# remove all previous MPI installations
+    - sudo apt-get remove mpich2 openmpi-bin libopenmpi-dev
+# download, build and install MPICH2 to $HOME/mpich2
+    - mkdir $HOME/mpich2
+    - wget http://www.mpich.org/static/downloads/3.1.4/mpich-3.1.4.tar.gz
+    - tar xzf mpich-3.1.4.tar.gz
+    - cd mpich-3.1.4 && ./configure CC=gcc CXX=g++ F77=gfortran FC=gfortran MPICHLIB_CFLAGS=-m64 MPICHLIB_CXXFLAGS=-m64 MPICHLIB_FFLAGS="-m64 -fdefault-integer-8" MPICHLIB_FCFLAGS="-m64 -fdefault-integer-8" -prefix=$HOME/mpich2 && make -j 12 && make install
+# check if installation is correct and Fortran integer size is 8
+    - which mpicc
+    - which mpicxx
+    - which mpif90
+    - which mpirun
+    - ompi_info -a | grep 'Fort integer size'
 
 # install Python packages
 install:
@@ -32,7 +49,7 @@ install:
     - pip install sphinx_rtd_theme
     - pip install hieroglyph
 
-# for public modules use
+# for public modules use (sync, init, update)
 git:
   submodules: true
 
@@ -45,18 +62,18 @@ before_script:
 # show available memory
     - free -m
 
-# run build script using MPICH2
+# configure, build and test (Dirac 64-bit with MPICH2 and documentation)
 script:
-    - python ./pamadm -a --builddir=build_shippable-ci
-    - python ./setup -D BUILDNAME="mpich2.gnu.i8.shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippable-ci
-    - cd build_shippable-ci
+    - python ./pamadm -a --builddir=build_shippableci_mpi
+    - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi --type=debug -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
+    - cd build_shippableci_mpi
 # ExperimentalUpdate : fails on non-master branches
     - ctest --track Miro -D ExperimentalUpdate
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 12 --track Miro -D ExperimentalBuild
 # ldd : show dependencies
     - ldd dirac.x
-# echo : continues even if some of tests fail
+# echo : this script continues even if some of tests fail
     - echo "$(ctest -j 6 --track Miro -VV -D ExperimentalTest -L short)"
     - ctest --track Miro -D ExperimentalSubmit
 # build docs
