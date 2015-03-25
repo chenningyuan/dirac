@@ -6,9 +6,9 @@
 ##
 ## OpenMPI 64-bit installation: 
 ##     https://gist.github.com/rbast/81760961c5a8199e561a
-##
+##     http://diracprogram.org/doc/release-12/installation/int64/mpi.html
 
-# set environment variable for Dirac MPI command
+# set environment variables to make MPI work
 machine:
     environment:
         DIRAC_MPI_COMMAND: "mpirun -np 2"
@@ -25,7 +25,7 @@ dependencies:
     override:
 # update software info
         - sudo apt-get update
-# install some needed packages
+# install some needed/missing packages
         - sudo apt-get install doxygen
         - sudo apt-get install python-dev
         - sudo apt-get install python-dateutil
@@ -36,6 +36,16 @@ dependencies:
         - sudo pip install sphinxcontrib-bibtex
         - sudo pip install sphinx_rtd_theme
         - sudo pip install hieroglyph
+# compile 64-bit OpenMPI with integer size 8
+# remove all previous MPI installations
+        - sudo apt-get remove mpich2 openmpi-bin libopenmpi-dev
+# download, build and install OpenMPI to $HOME/open_mpi
+        - mkdir $HOME/open_mpi
+        - wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
+        - tar xzf openmpi-1.8.4.tar.gz
+        - cd openmpi-1.8.4 && ./configure --prefix=$HOME/open_mpi && make all install
+# check if integer size is correct (= 8)
+        - ompi_info -a | grep 'Fort integer size'
 
 # update submodules
 checkout:
@@ -51,10 +61,8 @@ test:
         - df -h
 # show available memory
         - free -m
-# compile 64-bit OpenMPI
-# todo
     override:
-# configure, build and test - with OpenMPI
+# configure, build and test (Dirac 64-bit with OpenMPI and documentation)
         - python ./pamadm -a --builddir=build_circleci_mpi
         - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi --type=debug -D DART_TESTING_TIMEOUT=99999 build_circleci_mpi
         - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci_mpi }
