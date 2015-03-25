@@ -43,7 +43,7 @@ dependencies:
         - mkdir $HOME/open_mpi
         - wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
         - tar xzf openmpi-1.8.4.tar.gz
-        - cd openmpi-1.8.4 && ./configure --prefix=$HOME/open_mpi && make all install
+        - cd openmpi-1.8.4 && ./configure --prefix=$HOME/open_mpi && make -j 32 && make install
 # check if integer size is correct (= 8)
         - ompi_info -a | grep 'Fort integer size'
 
