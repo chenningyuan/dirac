@@ -291,11 +291,11 @@ calculating the density at the nucleus::
 
   **HAMILTONIAN
   .OPERATOR
-  'Density at nucleus'
-  DIAGONAL
-  'FC Pb 01'
-  FACTORS
-  -0.000000001
+   'Density at nucleus'
+   DIAGONAL
+   'FC Pb 01'
+   FACTORS
+   -0.000000001
 
 Here is next example of how-to calculate the electron density at the
 nucleus as an expectation value :math:`\langle 0 \vert \delta(r-R) \vert 0
