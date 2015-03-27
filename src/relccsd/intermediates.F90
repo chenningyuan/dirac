@@ -18,6 +18,9 @@
     public w_ejmb_out_of_core
     public f_bar_ae_out_of_core
     public w_iemn_out_of_core
+    public w_efam_out_of_core
+    public w_efab_out_of_core
+    public G_intm
      private
 
     external gettau
@@ -43,7 +46,7 @@
 !+++++++++++++++++++++++++++++++++++++++++
    allocate(tau(ndimt2))
    call gettau  (t1,t2,tau)
-   call contraction_442 ((/"o3","o1","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),tau,HO,-1.0d0,1.0d0,nrep)
+   call contraction_442 ((/"o3","o1","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),HO,-1.0d0,1.0d0,nrep,RightTensor=tau)
    deallocate(tau) 
 
 !++++++++++++++++++++++++TERM-2+++++++++++++++++++++
@@ -90,21 +93,21 @@
    allocate(tau(ndimt2))
    call gettau (t1,t2,tau)
 
-  allocate (hv_temp(nfvv*rcw))
+!  allocate (hv_temp(nfvv*rcw))
 
-  call contraction_442 ((/"o1","o2","p2","p3"/),(/"p1","p3","o1","o2"/),(/"p1","p2"/),tau,hv_temp,-1.0d0,0.0d0,nrep)
+  call contraction_442 ((/"o1","o2","p2","p3"/),(/"p1","p3","o1","o2"/),(/"p1","p2"/),hv,-1.0d0,1.0d0,nrep,RightTensor=tau)
   
   deallocate(tau) 
 
-  allocate (hv_temp_temp(nfvv*rcw))
+!  allocate (hv_temp_temp(nfvv*rcw))
 
-  CALL SRT1C1 (NREP,NV,NV,hv_temp,hv_temp_temp) 
+!  call srt1c1 (nrep,nv,nv,hv_temp,hv_temp_temp) 
 
-  deallocate (hv_temp)
+!  deallocate (hv_temp)
 
-  CALL XAXPY (NFVV,A1,hv_temp_temp,1,hv,1) 
+!  call xaxpy (nfvv,a1,hv_temp_temp,1,hv,1) 
 
-  deallocate (hv_temp_temp)
+!  deallocate (hv_temp_temp)
 
 
 !---------------------------------------------------------------
@@ -121,10 +124,9 @@
 
    call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p1","p2"/),fvo,t1,hv,-1.0d0,1.0d0,nrep)
 
-
   end subroutine
 
-   subroutine f_bar_me(fvo,t1,hov)
+  subroutine f_bar_me(fvo,t1,hov)
 
 #include "symm.inc"
 #include "param.inc"
@@ -354,12 +356,11 @@
 
  subroutine w_ejmb_out_of_core(t1,t2,buf1,buf2,buf3,nbuf3,w_vovo)
 
-
 !---------------Calling variables-------------------------------------
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
-   real(8), intent(inout) :: w_vovo(rcw,nv4)              ! Intermediate.
-   real(8), intent(in)    :: buf1(*),buf2(*),buf3(*)        ! reuse of intermediates.
+   real(8), intent(inout) :: w_vovo(rcw,nv4)                ! Intermediate.
+   real(8), intent(in)    :: buf1(*),buf2(*),buf3(*)        ! buffer arrays
    integer, intent(in)    :: nbuf3 
 
 !---------------Common Blocks--------------------------------------   
@@ -461,8 +462,12 @@
 ! The H buffer is not changed any more up to the final XGEMM !
 ! Every other calculation is done in BUF1 !!
 !------------------------------------------------------------------
-   CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO, &
-   &            BUF1,w_vovo)
+!   CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO, &
+!   &            BUF1,w_vovo)
+
+   CALL SRT1R1 (NREP,MULTB,LFA,NVO,NV,NO,NVO, &
+         &                  IVOVO,IIOV,BUF1,w_vovo)
+
    CALL XTIME(0,2,'--- HINTM: VOVV*T              ')
 
  end subroutine
@@ -486,16 +491,16 @@
      integer :: m,n
 !----------------------------------
       if(myproc==master) then
-        call xcopy(nfvv*rcw,hv,0,buf2,1)
+        call xcopy(nfvv*rcw,A0,0,buf2,1)
       else 
-        call xcopy(nfvv,A0,0,buf2,1)
+        call xcopy(nfvv*rcw,A0,0,buf2,1)
       endif
 !------------------------------------
 ! G(A,C) = G(A,C) + W(AK,CD) * T(D,K)
 !------------------------------------
       M = MVV(1)
       N = MVO(1)
-      IF (N.EQ.0) RETURN
+     IF (N.EQ.0) RETURN
       USEDZ = .FALSE.
       RIGHT = .TRUE.
       CALL SRT20D(NREP,MULTB,NVO,NV,NO,NV,NV,MVV,JVVVO,JJVV, &
@@ -505,12 +510,11 @@
 
    subroutine w_iemn_out_of_core (t1,t2,buf1,buf2,nbuf3,w_ovoo)
 
-!
 !---------------Calling variables-------------------------------------
 
-   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
+   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)! Amplitudes.
    real(8), intent(inout) :: w_ovoo(rcw,nv2)              ! Intermediate.
-   real(8), intent(in)    :: buf1(*),buf2(*)                      ! reuse of intermediates.
+   real(8), intent(in)    :: buf1(*),buf2(*)              ! buffer arrays.
    integer, intent(in)    :: nbuf3 
 
 !---------------Common Blocks--------------------------------------   
@@ -521,16 +525,17 @@
 !#include "eqns.inc"                                                   
 #include "ccpar.inc"                                                  
 
-!---------------Local variables--------------------------------------
-                                                                    
+!---------------Local variables----------------
       logical :: done,teq
       integer :: kd,istart,nint,m,n,k
       integer :: irp,mint,off1,off2
       real*8,allocatable :: tau(:)
+!----------------------------------------------
 
-
-    call xcopy(nv2,A0,0,buf2,1)
-
+!----------------------------------------------
+!w(ie,mn) = w(ie,mn) + 1/2 V(ie,fg)*tau(fg,mn)
+!----------------------------------------------
+   call xcopy(nv2,A0,0,buf2,1)
 
    allocate(tau(ndimt2))
    call gettau  (t1,t2,tau)
@@ -570,6 +575,430 @@
       CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF1)
 
       call xaxpy (nv2,A1,buf1,1,w_ovoo,1) 
+
+  end subroutine
+
+   subroutine w_efam_out_of_core (t1,t2,hov,w_vovo,buf1,buf2,buf3,nbuf3,nbuf2,w_vvvo)
+
+!---------------Calling variables-------------------------------------
+
+   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)        ! Amplitudes.
+   real(8), intent(in)    :: hov(nfvo*rcw)       
+   real(8), intent(in)    :: w_vovo(rcw*nv4)       
+   real(8), intent(out)   :: w_vvvo(rcw*nv5)                      ! Intermediate.
+   real(8), intent(in)    :: buf1(*),buf2(*),buf3(*)              ! buffer arrays.
+   integer, intent(in)    :: nbuf3,nbuf2 
+
+!---------------Common Blocks--------------------------------------   
+                                                                     
+#include "param.inc"                                                  
+#include "complex.inc"                                                
+#include "symm.inc"                                                   
+!#include "eqns.inc"                                                   
+#include "ccpar.inc"                                                  
+
+!---------------Local variables----------------
+      logical :: done,teq
+      integer :: kd,istart,nint,m,n,k
+      integer :: irp,mint,off1,off2,off3
+      integer :: a,ab,abkj,abkl,ak,akcj,amin,arep,b,bk,bkcj,c,cd
+      integer :: cj,ck,cmin,crep,brep,d,dj,drep,j,jrep,kmin,krep 
+      integer :: AllocateStatus 
+      real*8,allocatable :: tau(:)
+      real*8,allocatable :: t_sort(:)
+      real*8,allocatable :: w_vvvv(:)
+      real*8             :: t1con(2)
+!----------------------------------------------
+
+
+!-------------Initialization---------------
+
+      t1con = (/0.0d0,0.0d0/)
+
+      call xcopy(nv5,A0,1,w_vvvo,1)
+
+     allocate (t_sort(j2vovo(nrep+1)*rcw))
+
+     t_sort = 0.0d0
+
+      call srt1tt4 (nrep,multb,lfa,lfa,nv,nv,no,no,mvo,j2vovo,jjvo,jjvo, &
+      &              t2,t_sort)
+
+      allocate (tau(ndimt2),stat = AllocateStatus)
+      if (AllocateStatus /= 0) stop "*** not enough memory ***"
+
+      call gettau (t1,t2,tau)
+
+      off3 = 1
+      off1 = 1
+
+      done = .false.
+
+      DO 50 IRP = 1, NREP
+         IF (NOV(IRP).EQ.0.OR.NVVT(IRP).EQ.0) GOTO 50
+         MINT = MIN0(NBUF3/NVVT(IRP),NBUF2/NVO(IRP))
+         ISTART = 0
+ 10      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF2,MINT)
+
+         write(*,*)'value of NINT 1st time',NINT
+         allocate (w_vvvv(nint*nvvt(irp)),stat = AllocateStatus)!hopefully ok. not 100% sure.
+         if (AllocateStatus /= 0) stop "*** not enough memory ***"
+
+!        allocate (w_vvvv(nv6)) !hopefully ok. not 100% sure.
+
+         w_vvvv = 0.0d0
+
+         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
+
+!-----------------------------------------------------------------------
+!        w(ef,am) = w(ef,am) + w_vvvv(ef,ag)*t(gm)
+!-----------------------------------------------------------------------
+         CD = 1
+         DO DREP = 1, NREP
+            CREP = MULTB(DREP,IRP+NREP,2)
+            IF (CREP.LT.DREP) cycle
+            DO D = 1, NV(DREP)
+               CMIN = 1
+               IF (CREP.EQ.DREP) CMIN = D + 1
+               DO C = CMIN, NV(CREP)
+                  JREP = DREP
+                  DO J = 1, NO(JREP)
+                     DJ = (IVO(JREP)+(J-1)*NV(DREP)+D-1) * RCW + 1
+                     CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
+                     T1CON(1) =  T1(DJ)
+                     IF (CARITH) T1CON(2) = - T1(DJ+1)
+                     CALL XAXPY(NINT,T1CON,w_vvvv(CD),1, &
+                      &         BUF2(CJ),NVO(IRP))
+                  ENDDO
+                  JREP = CREP
+                  DO J = 1, NO(JREP)
+                     CJ = (IVO(JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
+                     DJ = (IIVO(DREP,JREP)+(J-1)*NV(DREP)+D-1) * RCW + 1
+                     T1CON(1) =  - T1(CJ)
+                     IF (CARITH) T1CON(2) = T1(CJ+1)
+                     CALL XAXPY(NINT,T1CON,w_vvvv(CD),1, &
+                       &       BUF2(DJ),NVO(IRP))
+                  ENDDO
+                  CD = CD + RCW
+               ENDDO
+            ENDDO
+         ENDDO
+         
+         deallocate (w_vvvv)
+
+!-------------------------------------------------------
+!new term:  w(ef,am) = w(ef,am) + p(ef) V(en,ag)*t(gf,mn)
+!-------------------------------------------------------
+
+!      IJKL = 1
+!      KL = 0
+!      KCO = 0
+!      KLSTAR = 0
+
+!      DO LREP = 1, NREP
+!       KREP = MULTB(LREP,IRP+NREP,2)
+!       IF (KREP.LT.LREP) cycle
+!       DO L = 1, NV(LREP)
+!        KMIN = 1
+!        IF (KREP.EQ.LREP) KMIN = L + 1
+!        DO K = KMIN, NV(KREP)
+
+!         IF(KCO.LT.KLSTAR) THEN
+!           KCO = KCO + 1
+!           cycle
+!         ENDIF
+
+!         KL = KL + 1
+!
+!         IF (KL.EQ.NINT+1) THEN
+!!-----------------------
+!!We need the next buffer
+!!-----------------------
+!            KLSTAR = KLSTAR + NINT
+!            NINT = MINT
+!               IF(.NOT.DONE) THEN
+!                 CALL GETVOVV (IRP,KLSTAR,NINT,DONE,BUF1,MINT)
+!               ELSE
+!                 GOTO 50
+!               ENDIF
+
+!            KL = 1
+!            IJKL = 1
+!            KCO = KLSTAR
+!         ENDIF
+
+!            DO  JREP = 1, NREP
+!             IREP = MULTB(JREP,IRP+NREP,2)
+!             LJREP = MULTB(LREP,JREP,2)
+!             KJREP = MULTB(KREP,JREP,2)
+!             LJ    = JJVO(LREP,JREP) + L - 1
+!             LJ    = LJ * RCW + 1
+!             KJ    = JJVO(KREP,JREP) + K - 1
+!             KJ    = KJ * RCW + 1
+
+!             IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP)
+!             IK0   = IK0 * RCW + 1
+!             IL0   = JJVV(IREP,LREP) + (L-1)*NV(IREP)
+!             IL0   = IL0 * RCW + 1
+
+!             PQ = NVO(LJREP)
+
+!           DO  J = 1, JFIE(JREP)
+
+!!------------new loop over (P,Q) to get all the elements of sorted t2 array------------
+
+
+!              CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),t_sort(LJ,OFF3), &
+!              &               NVO(IRP),A1,BUF3(IK0,OFF3),NVV(IRP))
+
+!                 CALL XCOPY (PQ,t_sort(KJ,OFF3),1,TVAL,1)
+!                 CALL XSCAL (PQ,-A1,TVAL,1)
+
+!                 CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),TVAL, &
+!                 &               NVO(IRP),A1,BUF3(IL0,OFF3),NVV(IRP))
+
+!              IJKL = IJKL + NV(IREP) * RCW
+!              LJ   = LJ   + NV(LREP) * RCW
+!              KJ   = KJ   + NV(KREP) * RCW
+
+!             enddo
+
+!              OFF3 = OFF3 + PQ * RCW
+!            enddo
+
+!        enddo
+!       enddo
+!      enddo
+
+!!--------------------------------------------------
+!!   sorting step. major caveat: buf3 is not triangular.
+!  (IL,PQ) -> (LQ,IP)-(LQ,PI) -> (LQ,I>P)  
+!!--------------------------------------------------
+
+!            DO  PREP = 1,NREP
+!             QREP = MULTB(PREP,LJREP+NREP,2) 
+!              DO Q = 1, NO (QREP) 
+
+!             DO P = 1, NV (PREP) 
+!              IMIN = 1
+!              IF (IREP.EQ.PREP) IMIN = P + 1
+!              DO I = IMIN, NV(IREP)
+
+
+!              IP0   = JJVV(IREP,PREP) + (P-1)*NV(IREP)+I
+!              IP0   = IP0 * RCW + 1 
+
+!              IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP) + I
+!              IK0   = IK0 * RCW + 1
+
+!              KQ0   = JJVO(KREP,QREP) + (Q-1)*NV(KREP)
+!              KQ0   = KQ0 * RCW + 1
+
+!              LQ0   = JJVO(LREP,QREP) + (Q-1)*NV(LREP)
+!              LQ0   = LQ0 * RCW + 1
+
+!              CALL XCOPY (1,BUF2(IK0,OFF3),1,buf3(KQ0,IP0),1)
+
+!              CALL XCOPY (1,BUF2(IL0,OFF3),1,buf3(LQ0,IP0),1)
+
+!              enddo
+!             enddo
+
+
+!             DO I = 1, NV (PREP) 
+!              PMIN = 1
+!              IF (IREP.EQ.PREP) PMIN = I + 1
+!              DO P = PMIN, NV(PREP)
+
+!              IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP) + I
+!              IK0   = IK0 * RCW + 1
+
+!              PI0   = JJVV(IREP,PREP) + (I-1)*NV(IREP)+P
+!              PI0   = PI0 * RCW + 1 
+
+!              IF (LJREP.EQ.1) THEN
+!!               CALL XCOPY (1,BUF2(IK0,OFF3),1,buf3(KQ0,PI0),1)
+!              CALL XAXPY (1,-A1,BUF2(IK0,OFF3),1,buf3(KQ0,PI0),1)
+!              ENDIF
+
+!              IF (KJREP.EQ.1) THEN
+!!               CALL XCOPY (1,BUF2(IL0,OFF3),1,buf3(LQ0,PI0),1)
+!              CALL XAXPY (1,-A1,BUF2(IL0,OFF3),1,buf3(LQ0,PI0),1)
+!              ENDIF
+
+!              enddo
+!             enddo
+
+
+!            enddo
+
+
+!-------------------------------------------------
+!    w(ef,am) = w(ef,am) + 1/2 V(no,am)*tau(ef,no)
+!-------------------------------------------------
+
+         CALL GETVOOO (BUF3)
+         M = NVO(IRP)
+         N = NINT
+         K = NOOT(IRP)
+         ABKL = (IVVOOTT(IRP)+ISTART)*RCW+1
+         CALL XGEMM ('N','C',M,N,K,A1,BUF3,M,tau(ABKL),NVVT(IRP), &
+     &               A1,BUF2,M)
+
+!-------------------------------------------
+!   w(ef,am) = w(ef,am) + f_bar(na)*t(ef,mn) 
+!-------------------------------------------
+
+         ABKJ = (IVVOOTT(IRP)+ISTART)*RCW+1
+         DO 30 JREP = 1, NREP
+            KREP = MULTB(JREP,IRP+NREP,2)
+            IF (KREP.LT.JREP) GOTO 30
+            DO J = 1, NO(JREP)
+               KMIN = 1
+               IF (KREP.EQ.JREP) KMIN = J + 1
+               DO K = KMIN, NO(KREP)
+                  CREP = KREP
+                  DO C = 1, NV(CREP)
+                     CK = (IVO(KREP)+(K-1)*NV(CREP)+C-1) * RCW + 1
+                     CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
+                     T1CON(1) =  - HOV(CK)
+                     IF (CARITH) T1CON(2) = HOV(CK+1)
+                     CALL XAXPY(NINT,T1CON,T2(ABKJ),1, &
+                       &        BUF2(CJ),NVO(IRP))
+                  ENDDO
+                  CREP = JREP
+                  DO C = 1, NV(CREP)
+                     CJ = (IVO(JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
+                     CK = (IIVO(CREP,KREP)+(K-1)*NV(CREP)+C-1) * RCW + 1
+                     T1CON(1) =  HOV(CJ)
+                     IF (CARITH) T1CON(2) = - HOV(CJ+1)
+                     CALL XAXPY(NINT,T1CON,T2(ABKJ),1, &
+                       &        BUF2(CK),NVO(IRP))
+                  ENDDO
+                  ABKJ = ABKJ + NVVT(IRP) * RCW
+               ENDDO
+            ENDDO
+ 30      CONTINUE
+
+!------------------------------------------------
+!    w(ef,am) = w(ef,am) + w_bar(nf,am)*t(en) 
+!------------------------------------------------
+
+         AB = 0
+         DO 40 BREP = 1, NREP
+            AREP = MULTB(BREP,IRP+NREP,2)
+            IF (AREP.LT.BREP) GOTO 40
+            DO B = 1, NV(BREP)
+               AMIN = 1
+               IF (AREP.EQ.BREP) AMIN = B + 1
+               DO A = AMIN, NV(AREP)
+                  IF (AB.LT.ISTART) GOTO 40
+                  IF (AB.GE.ISTART+NINT) GOTO 41
+                  KREP = BREP
+                  AKCJ = (IVOVO(IRP)+IIVO(AREP,KREP)+A-1)
+                  DO K = 1, NO(KREP)
+                     BK = (IVO(KREP)+(K-1)*NV(BREP)+B-1) * RCW + 1
+                     T1CON(1) = - T1(BK)
+                     IF (CARITH) T1CON(2) = T1(BK+1)
+                     CALL XAXPY (NVO(IRP),T1CON,w_vovo(AKCJ),NVO(IRP), &
+                       &         BUF2(AB*RCW+1),1)
+                     AKCJ = AKCJ + NV(AREP) * RCW
+                  ENDDO
+                  KREP = AREP
+                  BKCJ = (IVOVO(IRP)+IIVO(BREP,KREP)+B-1)
+                  DO K = 1, NO(KREP)
+                     AK = (IVO(KREP)+(K-1)*NV(BREP)+A-1) * RCW + 1
+                     T1CON(1) = T1(AK)
+                     IF (CARITH) T1CON(2) = - T1(AK+1)
+                     CALL XAXPY (NVO(IRP),T1CON,w_vovo(BKCJ),NVO(IRP), &
+                      &          BUF2(AB*RCW+1),1)
+                     BKCJ = BKCJ + NV(BREP) * RCW
+                  ENDDO
+                  AB = AB + 1
+               ENDDO
+            ENDDO
+   40    CONTINUE
+   41    CONTINUE
+
+   call xcopy(nint*nvo(irp),buf2,1,w_vvvo(istart*nvo(irp)*rcw+off1),1)
+
+         IF (.NOT.DONE) THEN
+            ISTART = ISTART + NINT
+            GOTO 10
+         ENDIF
+         off1 = off1 + nvo(irp)*nvvt(irp)*rcw
+ 50   CONTINUE
+
+    deallocate(tau)
+    deallocate(t_sort)
+
+   end subroutine
+
+   subroutine w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
+
+!--------------------calling variables-------------
+   real(8), intent(in)    :: tau(:)  ! Amplitudes.
+   real(8), intent(inout) :: w_vvvv(*)                ! Intermediate.
+   real(8), intent(in)    :: buf1(*)                  ! buffer arrays
+   integer, intent(in)    :: nbuf3,irp,istart
+   logical, intent(in)    :: done
+!--------------------------------------------------
+
+#include "param.inc"                                                  
+#include "complex.inc"                                                
+#include "symm.inc"                                                   
+#include "ccpar.inc"                                                  
+
+!--------------------local variables----------------
+   integer :: MINT,NINT
+   integer :: ABKL,M,N,K
+!---------------------------------------------------
+
+         MINT = NBUF3/NVVT(IRP)
+         CALL GETVVVV (IRP,ISTART,NINT,DONE,w_vvvv,MINT)
+         IF (CARITH) THEN
+            CALL CONJUGA (NINT*NVVT(IRP),w_vvvv,1)
+         ENDIF
+
+         write(*,*)'value of NINT 2nd time',NINT
+
+!----------------------------------------------
+! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU*(ef,mn)
+!----------------------------------------------
+         CALL GETVVOO (buf1)
+         M = NVVT(IRP)
+         N = NINT
+         K = NOOT(IRP)
+         ABKL = (IVVOOTT(IRP)+ISTART)*RCW+1
+         CALL XGEMM ('N','C',M,N,K,A1,buf1,M,tau(ABKL),NVVT(IRP), &
+     &               A1,w_vvvv,M)
+
+   end subroutine
+
+  subroutine G_intm (t2,l2,G_vv,G_oo)
+
+!---------------Common Blocks--------------------------------------
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+!     Calling variables
+!     -----------------  
+      real(8), intent(in)  :: l2(rcw*ndimt2),t2(rcw*ndimt2)  ! Amplitudes.
+      real(8), intent(out) :: G_vv(:),G_oo(:)
+
+!----------------------------------------------------------------------
+!    G_ea(e,a)  = -1/2 l2(mn,af) * t2(ef,mn)
+!----------------------------------------------------------------------
+
+  call contraction_442 ((/"o1","o2","p1","p3"/),(/"p2","p3","o1","o2"/),(/"p2","p1"/),G_vv,-0.5d0,0.0d0,nrep,&
+                        &  RightTensor=t2,LeftTensor=l2)
+
+!---------------------------------------------
+!     G_im(i,m) = 1/2 l2(in,ef) * t2(ef,mn)
+!---------------------------------------------
+
+  call contraction_442 ((/"o1","o3","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),G_oo,-0.5d0,0.0d0,nrep,&
+                        & RightTensor=t2,LeftTensor=l2)
 
   end subroutine
 

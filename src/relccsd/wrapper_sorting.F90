@@ -187,9 +187,9 @@
 
   case(31)
 
-  allocate(A(2))
+  allocate(A(4))
 
-  A = (/1234,1243/)
+  A = (/1234,1243,1342,3421/)
 
   case(13)
 
@@ -249,8 +249,8 @@
 
   case(31)
 
-  allocate(A(2))
-  A = (/1234,4123/)
+  allocate(A(4))
+  A = (/1234,4123,1342,3421/)
 
 
   case(13)
@@ -314,9 +314,9 @@
 
   case(31)
 
-  allocate(A(2))
+  allocate(A(4))
 
-  A = (/1234,1243/)
+  A = (/1234,1243,1342,3421/)
 
   case(13)
 
@@ -376,8 +376,8 @@
 
   case(31)
 
-  allocate(A(2))
-  A = (/1234,4123/)
+  allocate(A(4))
+  A = (/1234,4123,1342,3421/)
 
   case(13)
   allocate(A(1))
@@ -614,7 +614,7 @@
     logical      :: do_TotSym
     integer      :: i,j,k,l 
     character(2) :: p,q,r,s
-    integer      :: sort_type_dummy,shift,shift1
+    integer      :: sort_type_dummy,shift,shift1,AllocateStatus
 #include "symm.inc"
 #include "param.inc"
 
@@ -637,6 +637,7 @@
        srt_22(1)%restricted_braket =>  SRT1TT4
 !      srt_22(1)%restricted_bra =  SRT1LS1
        srt_22(1)%restricted_bra => SRT36
+       srt_22(2)%restricted_bra => SRT1TS4
        srt_22(1)%restricted_ket => SRT1ST4
        srt_22(2)%restricted_ket => SRT26
        srt_22(3)%restricted_ket => SRT20D
@@ -644,8 +645,12 @@
 ! (2,2)->(3,1) type of sorting routines.
        srt_31(0)%unrestricted => SRT1S3
        srt_31(1)%unrestricted => SRT19
+       srt_31(2)%unrestricted => SRT6
+       srt_31(3)%unrestricted => SRT9
        srt_31(0)%restricted_ket => SRT1T3
        srt_31(1)%restricted_ket => SRT22
+       srt_31(2)%restricted_ket => SRT6
+       srt_31(3)%restricted_ket => SRT9
        srt_31(0)%restricted_braket => SRT1T3
        srt_31(1)%restricted_braket => SRT22
        srt_31(2)%restricted_braket => SRT7
@@ -663,15 +668,21 @@
 
      save_index = save_index - 1
 
-      do_TotSym =.true.
+      do_TotSym =.false.
 
-     if (present(if_TotSym)) do_TotSym = .false.
+     if (present(if_TotSym)) do_TotSym = .true.
 
      shift     = 0
      shift1    = 0
 
      if (.not.present(presorted)) call integral_fetching_incore(V) 
-     if (present(presorted)) v%presorted = presorted 
+     if (present(presorted)) then
+     allocate (v%presorted(size(presorted)),stat=AllocateStatus) 
+
+     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+
+     call xcopy(size(presorted),presorted,1,v%presorted,1) 
+     endif
 
      sort_type_dummy = sortType
 
@@ -691,7 +702,6 @@
 
        call input_index(c,d)
 
-
        if (if_trans=='N') then
         row     = c(d%bra_reorder)%tuple_combInd
         column  = c(d%ket_reorder)%tuple_combInd     
@@ -700,12 +710,11 @@
         row     = c(d%ket_reorder)%tuple_combInd     
        endif
 
-      call srt_22(save_index)%unrestricted (nrep,multb,.false.,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+      call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array, &
      &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,V%presorted,sorted)
 
          case('restricted_braket') 
-
 
      if (save_index == 2) then
 
@@ -720,7 +729,7 @@
         row     = c(d%ket_reorder)%tuple_combInd     
        endif
 
-      call srt_22(save_index)%restricted_braket(nrep,multb,do_TotSym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+      call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,V%presorted,sorted_temp)
 
@@ -740,7 +749,7 @@
         row     = c(d%ket_reorder)%tuple_combInd     
        endif
 
-      call srt_22(save_index)%restricted_braket(nrep,multb,do_TotSym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+      call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,V%presorted,sorted)
 
@@ -759,8 +768,8 @@
         row     = c(d%ket_reorder)%tuple_combInd     
        endif
 
-      call srt_22(save_index)%restricted_bra(nrep,multb,.true.,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-                  & c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array,  &
+      call srt_22(save_index)%restricted_bra(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+                  & c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array,  &
                   & c(d%ket_reorder)%tuple,c(d%bra_reorder)%tuple,V%presorted,sorted)  
 
          case('restricted_ket')
@@ -1001,7 +1010,6 @@
 
     array(k) = array(l)
     array(l) = temp
-
   end subroutine
 
   subroutine align_array(array1, array2, array3, reorder_array)
@@ -1070,98 +1078,99 @@
 !-------------------------------------------------------------
   integer :: value
   integer,dimension(4):: bit_original, bit_available
-  real*8, allocatable :: VOOOO(:),VVOOO(:),VVOVO(:),VVVOO(:) 
   integer :: AllocateStatus 
-  type(bit_processing):: b,c 
   type(presorting),intent(out) :: G
 !-------------------------------------------------------------
 #include "symm.inc"
+#include "complex.inc"
 
     bit_original = bitString (array_original,(/1,2,3,4/)) 
 
-    b%bra = ior(bit_original(1),bit_original(2)) + iand(bit_original(1),bit_original(2))  
-    b%ket = ior(bit_original(3),bit_original(4)) + iand(bit_original(3),bit_original(4)) 
-    value = popcnt(bin2dec(bit_original))+iand(ior(bit_original(1),bit_original(2)),ior(bit_original(3),bit_original(4))) 
+    value = bin2dec(bit_original)
 
 !here you can think of keeping all the VVVO integrals in fast memory. 
 
    select case(value) 
 
     case (0)
-      allocate(Voooo(NV1))
-      call getOOOO(Voooo)
+
+      allocate(G%presorted(nv1*rcw))
+      call getoooo(G%presorted)
+
     case (1)
-      allocate(Vvooo(NV2))
-      call getVOOO(Vvooo)
 
-      bit_available = bitString((/"p","o","o","o"/),(/1,2,3,4/))
-     
-      c%bra = ior(bit_available(1),bit_available(2)) + iand(bit_available(1),bit_available(2))  
-      c%ket = ior(bit_available(3),bit_available(4)) + iand(bit_available(3),bit_available(4)) 
-      if (c%bra == b%ket)then
+      allocate(G%presorted(nv2*rcw))
+      call getooov(G%presorted)
 
-       allocate(G%presorted(NV2))
-
-       call SRT1C1 (NREP,NVO,NOOT,VVOOO,G%presorted) 
-
-       deallocate(VVOOO) 
-
-      endif
-!      if (bin2dec((/bit_available(2),bit_available(1)/))== bin2dec((/bit_original(1),bit_original(2)/))) call
     case (2)
 
-      ALLOCATE (VVVOO(NV3),STAT = AllocateStatus)
+      allocate(G%presorted(nv2*rcw),stat = AllocateStatus)
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      call getoovo(G%presorted) 
 
-      call getVVOO(VVVOO) 
-
-      bit_available = bitString((/"p","p","o","o"/),(/1,2,3,4/))
-     
-      c%bra = ior(bit_available(1),bit_available(2)) + iand(bit_available(1),bit_available(2))  
-      c%ket = ior(bit_available(3),bit_available(4)) + iand(bit_available(3),bit_available(4)) 
-
-      if (c%bra == b%ket)then
-
-      allocate(G%presorted(NV3),STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      G%presorted = 0.0d0 
-
-      call srt1c1 (nrep,nvvt,noot,vvvoo,G%presorted) 
-
-      deallocate(VVVOO)
- 
-      endif
     case (3)
-      allocate(vvovo(nv4),stat = AllocateStatus)
+
+      allocate(G%presorted(nv3*rcw),stat = AllocateStatus)
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
-      call getvovo(vvovo)
-
-      bit_available = bitString((/"p","o","p","o"/),(/1,2,3,4/))
-   
-      c%bra = ior(bit_available(1),bit_available(2)) + iand(bit_available(1),bit_available(2))
-      c%ket = ior(bit_available(3),bit_available(4)) + iand(bit_available(3),bit_available(4))
-
-      if (c%bra == b%ket)then
-
-      allocate(G%presorted(NV4),STAT = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-       G%presorted = 0.0d0
-
-      call srt1c1 (nrep,nvo,nvo,vvovo,G%presorted)
-
-      deallocate(vvovo)
-
-      endif
+      call getoovv(G%presorted)
     
+
+   case (4)
+
+      allocate(G%presorted(nv2*rcw),stat = AllocateStatus)
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      call getovoo(G%presorted)
+
+    case (5)
+
+!     allocate(G%presorted(nv4*rcw),stat = AllocateStatus)
+!     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+!     call getovov(G%presorted)
+
+      write(*,*)'not yet implemented'
+
+    case (6)
+
+!     allocate(G%presorted(nv4*rcw),stat = AllocateStatus)
+!     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+!     call getovvo(G%presorted)
+
+
+      write(*,*)'not yet implemented'
+
+    case (7)
+
+      write(*,*)'ovvv type array has to be fetched in out-of-core way.'
+
+    case (8)
+
+      allocate(G%presorted(nv2*rcw),stat = AllocateStatus)
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      call getvooo(G%presorted)
+
+    case (9)
+
+!     allocate(G%presorted(nv4*rcw),stat = AllocateStatus)
+!     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+!     call getvoov(G%presorted)
+
+      write(*,*)'not yet implemented'
+
+    case (10)
+
+      allocate(G%presorted(nv4*rcw),stat = AllocateStatus)
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      call getvovo(G%presorted)
+
+    case (12)
+
+      allocate(G%presorted(nv3*rcw),stat = AllocateStatus)
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      call getvvoo(G%presorted)
+
     case default
       write(*,*)'no suitable array to fetch'
    end select
-
-  if (allocated(VOOOO)) call move_alloc(VOOOO,G%presorted)
-  if (allocated(VVOOO)) call move_alloc(VVOOO,G%presorted)
-  if (allocated(VVOVO)) call move_alloc(VVOVO,G%presorted)
-  if (allocated(VVVOO)) call move_alloc(VVVOO,G%presorted)
 
   end subroutine
 

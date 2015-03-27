@@ -707,7 +707,7 @@ C
          CALL QUIT('Wrong keyword in call to BINTM')
       ENDIF
 C---------------------------------------------
-C S(AB,CD) =  S(AB,CD) + V(AB,CD) * TAU(CD,IJ)
+C S(AB,IJ) =  S(AB,IJ) + V(AB,CD) * TAU(CD,IJ)
 C---------------------------------------------
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF1)
@@ -1269,9 +1269,6 @@ C
 C
 C---------------Executable code--------------------------------------
 
-
-
-
       interface
          subroutine gettau(t1,t2,tau,appr)
          real*8,intent(in) :: t1(*),t2(*)
@@ -1280,11 +1277,6 @@ C---------------Executable code--------------------------------------
          end subroutine gettau
       end interface
 
-
-
-
-
-C
 C---------------------------------------------------------------------
 C CZ(AL,IJ) = V(AL,IJ)
 C---------------------------------------------------------------------
@@ -1450,7 +1442,6 @@ C
 C
 C---------------Executable code--------------------------------------
 
-
       interface
          subroutine gettau(t1,t2,tau,appr)
          real*8,intent(in) :: t1(*),t2(*)
@@ -1458,8 +1449,6 @@ C---------------Executable code--------------------------------------
          character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
-
-
 C
 C -------------------------------------------------------------
 C H1(AK,CJ) = V(AK,CJ) + V(AK,CD) * T(D,J) - V(KL,CD) * T(AD,LJ)

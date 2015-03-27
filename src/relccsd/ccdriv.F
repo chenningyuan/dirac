@@ -2536,8 +2536,8 @@ C
      &                             a_DG(:),  a_DMO(:),  a_XMO(:),
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
      &                    a_BUF3(:),a_FVV(:),a_AZ(:),a_H(:),a_Hbar(:),
-     &                    wovoo(:),a_HO(:), a_HV(:), a_HOV(:), a_GOO(:),
-     &                             a_GVV(:), a_CCC(:),  a_BB1(:),
+     &                    wovoo(:),a_HO(:), a_HV(:),a_HOV(:),a_GOO(:),
+     &                    wvvvo(:),a_GVV(:), a_CCC(:),  a_BB1(:),
      &                             a_BB2(:)
 
 
@@ -2843,7 +2843,6 @@ C
  431  CONTINUE
          if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
       ENDIF
-C
 
 
 !-----------------------------------------------------------
@@ -2872,10 +2871,13 @@ C     Allocate now also this remaining work array
 
          call alloc( a_AZ   ,    NV1*RCW              , id="az" )
          call alloc( a_H    ,    NV4*RCW              , id="h" )
-         call alloc( a_Hbar    ,    NV4*RCW              , id="h" )
-         call alloc( wovoo    ,    NV2*RCW              , id="h" )
-         call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
-         call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
+         call alloc( a_Hbar ,    NV4*RCW           , id="hbar" )
+         call alloc( wovoo  ,    NV2*RCW            , id="w1v" )
+!         following array consumes too much memory 
+!        call alloc( wvvvo  ,    NV5*RCW            , id="w3v" ) 
+         allocate(wvvvo(NV5*RCW)) !consumes too much memory
+         call alloc( a_HO   ,   NFOO*RCW             , id="ho" )
+         call alloc( a_HV   ,   NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
          call alloc( a_GOO  ,   NFOO*RCW              , id="goo" )
          call alloc( a_GVV  ,   NFVV*RCW              , id="gvv" )
@@ -2928,7 +2930,7 @@ C         this means that, for the time being, we can deallocate everything?
          CALL CCDUMP
 
          CALL cceqn_driver_lambda(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
-     &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_Hbar,wovoo,a_HO,a_HV,a_HOV,
+     &          a_T2 ,a_S2 ,a_AZ,wvvvo,a_H,a_Hbar,wovoo,a_HO,a_HV,a_HOV,
      &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3)
@@ -2969,6 +2971,8 @@ C
          call dealloc( a_H  )
          call dealloc( a_Hbar  )
          call dealloc( wovoo  )
+!        call dealloc( wvvvo  )
+         deallocate(wvvvo)
          call dealloc( a_HO )
          call dealloc( a_HV )
          call dealloc( a_HOV)

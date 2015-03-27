@@ -145,6 +145,139 @@ C
 C
       RETURN
       END
+
+    
+!! Avijit Shee: 24th March, 2015.
+
+      SUBROUTINE GETOOVO (VOOVO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Get VOOO part of two-electron integrals and Sort it to OOVO
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VOOVO(*)
+      REAL*8,ALLOCATABLE :: VVOOO(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+      allocate (VVOOO(NV2*IRW*RCW))
+
+      CALL RREAD(ITAPT+2,VVOOO,NV2*IRW*RCW,1)
+
+       
+      CALL SRT1C1 (NREP,NVO,NOOT,VVOOO,VOOVO) 
+
+      deallocate(VVOOO)
+
+
+      RETURN
+      END
+
+
+!!---------------------------------------------------------------------------
+
+      SUBROUTINE GETOVOO (VOVOO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Get VOOO part of two-electron integrals and Sort it to OOVO
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VOVOO(*)
+      REAL*8,ALLOCATABLE :: VVOOO(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+      allocate (VVOOO(NV2*IRW*RCW))
+
+      CALL RREAD(ITAPT+2,VVOOO,NV2*IRW*RCW,1)
+
+       
+      CALL SRT1L1(NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,VVOOO,VOVOO)
+
+      deallocate(VVOOO)
+
+
+      RETURN
+      END
+
+
+      SUBROUTINE GETOOOV (VOOOV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Get VOOO part of two-electron integrals and Sort it to OOVO
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VOOOV(*)
+      REAL*8,ALLOCATABLE :: VOVOO(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+      allocate (VOVOO(NV2*IRW*RCW))
+
+      CALL GETOVOO (VOVOO) 
+       
+      CALL SRT1C1 (NREP,NVO,NOOT,VOVOO,VOOOV) 
+
+      deallocate(VOVOO)
+
+      RETURN
+      END
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVVOO (VVVOO)
 C
@@ -179,6 +312,51 @@ C
 C
       RETURN
       END
+
+!----------------------------------------------------------------------
+
+      SUBROUTINE GETOOVV (VOOVV)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Get VVOO part of two-electron integrals
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 :: VOOVV(*)
+      REAL*8,ALLOCATABLE :: VVVOO(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      ALLOCATE (VVVOO(NV3*IRW*RCW))
+
+
+      CALL RREAD(ITAPT+3,VVVOO,NV3*IRW*RCW,1)
+
+      CALL SRT1C1 (NREP,NVVT,NOOT,VVVOO,VOOVV) 
+
+      DEALLOCATE (VVVOO)
+
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVO (VVOVO)
 C

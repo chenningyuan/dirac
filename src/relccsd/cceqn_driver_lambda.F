@@ -1,4 +1,4 @@
-      SUBROUTINE cceqn_driver_lambda(MAXIT,EPS,FOO,FVO,FVV,T1,S1,T2,S2,
+      SUBROUTINE cceqn_driver_lambda(MAXIT,EPS,FOO,FVO,FVV,L1,S1,L2,S2,
      &                 W_OOOO,CZ,W_VOVO,W_OVVO,W_OVOO,HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3                              )
@@ -22,18 +22,19 @@ C---------------Calling variables--------------------------------------
 C
 C     Intermediaries etc.
 
-      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),T1(*),S1(*),T2(*),S2(*)
+      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),L1(*),S1(*),L2(*),S2(*)
       REAL*8 W_OOOO(*),W_VOVO(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
       REAL*8 GOO(*),GVV(*)
+      INTEGER NBUF2,NBUF3 
 
 C     for diis ...
 
       REAL*8 CC1(*)
       REAL*8 BB1(*),BB2(*)
 
-      REAL*8 RMS,CONV
+      REAL*8 RMS,CONV,RMS1
       REAL*8 DIAG
 
 C     for Fock space ...
@@ -57,11 +58,10 @@ C---------------Common Blocks--------------------------------------
 
 C---------------Local variables--------------------------------------
 
-      REAL*8 CPU,CPU4V,CPUH1,CPUH2
-      LOGICAL     FOCKSP,PRENE
-      CHARACTER*2 DELS1
-      CHARACTER*4 DELS2
-      REAL*8 DDOT
+      REAL*8     :: CPU,CPU4V,CPUH1,CPUH2
+      LOGICAL    :: FOCKSP,PRENE
+      real*8,allocatable :: resL1(:),resL2(:)
+      real*8,allocatable :: G_oo(:),G_vv(:)
 
 C---------------Executable code--------------------------------------
 C
@@ -75,21 +75,12 @@ C     the timer because we want the overall timing at the end.
       CALL XTIMRD (CPUH1,'--- HINTM: VVOO contribution   ')
       CALL XTIMRD (CPUH2,'--- T2EQNS: HINTM*T2           ')
 
-!     CALL cceqn_driver_init(MAXIT,FVO,T1,S1,T2,S2,
-!    &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,
-!    &                 NBUF2,NBUF3,RMS,DELS1,DELS2)
-
-! this is the start of what the init above should replace
       IF (EQNS.EQ.'LAMBDA') THEN
          FOCKSP = .FALSE.
       ELSE
          CALL QUIT('Wrong keyword in call to CCEQNS')
       ENDIF
 
-C     Zero amplitudes if the NOCCX options are specified
-
-                                                      
-                                                      
 
 C     Initialize the work arrays to zero.
 
@@ -97,38 +88,17 @@ C     Initialize the work arrays to zero.
       CALL XCOPY (NBUF2,A0,0,BUF2,1)
       CALL XCOPY (NBUF3,A0,0,BUF3,1)
 
-C     Initialize DIIS.
-
-      IT = -1
-      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
-     &           IT,CC1,BB1,ITC,BB2,RMS)
-
-      ECCSD = 0.D0
-      NIT = 0
-
-      CALL T1DIAG(DIAG,T1,BUF1)
-      CALL CCENG (T1,T2,FVO,BUF1,BUF2,ECCSD,ECCSDIM)
-      IF (IPRNT.GE.3) CALL PAIREN (T1,T2,FVO,BUF1,BUF2)
-
-      IF (IPRNT.GE.1) THEN
-         WRITE(IW,6003)
-         WRITE(IW,6001) NIT,ECCSD,RMS,DIAG
-      ENDIF
-! this is the start of what the init above should replace
-
-
 !     Calculate fixed intermediaries for Lambda equations
 
     5   format(10f10.6)  
                         
-         CALL GETAMPT (S1,S2)
-!         CALL HOINTM (FOO,EPS,S1,S2,BUF1,BUF2,BUF3,HO)
+         call getampt (s1,s2)
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
-         write(77,*)'f_bar_mi intermediate'
-         write(77,*)'---------------------'
-         write(77,*)(ho(i),i=1,nfoo)
+        write(77,*)'f_bar_mi intermediate'
+        write(77,*)'---------------------'
+        write(77,*)(ho(i),i=1,nfoo)
 
          call w_ijmn(S1,S2,w_oooo)
 
@@ -140,157 +110,201 @@ C     Initialize DIIS.
 
         write(*,*)'f_me intermediate'
 
-!         write(*,*)(hov(i),i=1,nfvo)
+!       write(*,*)(hov(i),i=1,nfvo)
 
-         call f_bar_ae(FVV,fvo,S1,S2,HV)
+         call f_bar_ae(fvv,fvo,s1,s2,hv)
 
+         write(79,*)'f_bar_ae intermediate'
+         write(79,*)'---------------------'
+         write(*,5)(hv(i),i=1,nfvv)
 
          call w_ejmb(S1,S2,w_vovo)
 
-
          call wbar_mbej(S2,w_ovvo)
 
-         write(81,*)'w_bar_mbej intermediate'
-         write(81,*)'---------------------'
-         write(81,5)(w_ovvo(i),i=1,nv4)
+!       write(81,*)'w_bar_mbej intermediate'
+!       write(81,*)'---------------------'
+!       write(81,5)(w_ovvo(i),i=1,nv4)
       
 !        write(*,*)'starting w_iemn intermediate'
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
-!         write(*,*)'w_bar_iemn intermediate'
+!        write(*,*)'w_bar_iemn intermediate'
 !        write(*,*)'---------------------'
-!         write(82,5)(w_ovoo(i),i=1,nv2)
+!        write(82,5)(w_ovoo(i),i=1,nv2)
 
 ! out-of-core section of the intemediates
 
         call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
 
-         write(79,*)'f_bar_ae intermediate'
-         write(79,*)'---------------------'
-         write(79,5)(hv(i),i=1,nfvv)
+        call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_vovo)
 
-        call w_ejmb_out_of_core (S1,S2,BUF1,BUF2,BUF3,NBUF3,w_vovo)
+!        write(80,*)'w_bar_ejmb intermediate'
+!        write(80,*)'---------------------'
+!        write(80,5)(w_vovo(i),i=1,nv4)
 
-         write(80,*)'w_bar_ejmb intermediate'
-         write(80,*)'---------------------'
-         write(80,5)(w_vovo(i),i=1,nv4)
+        call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
 
-        call w_iemn_out_of_core (t1,t2,buf1,buf2,nbuf3,w_ovoo)
+!         write(*,*)'w_bar_iemn intermediate'
+!         write(*,*)'---------------------'
+!         write(82,5)(w_ovoo(i),i=1,nv2)
 
-          write(*,*)'w_bar_iemn intermediate'
+        call w_efam_out_of_core (s1,s2,hov,w_vovo,buf1,buf2,buf3,nbuf3,
+     &                    nbuf2,CZ)
+
+          write(*,*)'w_bar_efam intermediate'
           write(*,*)'---------------------'
-          write(82,5)(w_ovoo(i),i=1,nv2)
+          write(83,5)(CZ(i),i=1,nv5)
 
-        CALL GOINTM (FVO,S1,BUF1,BUF2,HO)
-        CALL GVINTM (FVO,S1,BUF3,NBUF3,BUF2,NBUF2,HV)
-        CALL AINTM (S1,S2,BUF1,BUF2,AZ)
-        CALL CINTM (T1,T2,FVO,w_oooo,BUF1,BUF2,BUF3,NBUF3,CZ)
-!avijit  CALL DINTM (S1,S2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
-!avijit  CALL HINTM (S1,S2,BUF1,BUF2,BUF3,NBUF3,H)
-           
 
-C
-C  START ITERATIVE PROCEDURE
-C
- 1000 CONTINUE
-      NIT = NIT + 1
-      IF (NIT.GT.MAXIT) THEN
-         NIT = NIT - 1
-         WRITE(IW,6004) RMS
-!        GO TO 2000
-      ENDIF
-C
-                        
-C
-C        Make Gpq intermediates for lambda equations
-C
-         CALL GETAMPT (S1,S2)
-         CALL MKGPP (S2,T2,BUF1,BUF2,GOO,GVV)
-           
+!-------Initialization Step for the Left Eigenvectors-----------
 
-C  EVALUATE T1 EQUATIONS
-C  CHECK FOR CASES WITH NO NON_ZERO T1'S TO AVOID CRASHES
-C
+!      L1 = transpose(T1) ; L2 = transpose(T2) 
+!      Left eigenvectors are designated as L1 and L2.
+
+!---------------------------------------------------------------
+
+      call srt1c1 (nrep,nv,no,s1,l1) 
+      call srt1c1 (nrep,nvvt,noot,s2,l2) 
+
+!     Initialize the work arrays to zero.
+
+      call xcopy (ndimt2,A0,0,buf1,1)
+      call xcopy (nbuf2,A0,0,buf2,1)
+      call xcopy (nbuf3,A0,0,buf3,1)
+
+!---------before starting the iterative procedure, we need to initialize the DIIS-------------
+      rms = 0.0d0
+      itc = 0
+      it = -1
+      call diisx(ndimt1,ndimt2,L1,L2,
+     &           it,cc1,bb1,itc,bb2,rms)
+
+      nit = 0
+
+!     if (iprnt.ge.1) then
+!        write(iw,6003)
+!        write(iw,6001) nit,rms
+!     endif
+
+!--------------------------------------
+!  Start Iterative Procedure
+!--------------------------------------
+
+       allocate(resL1(ndimt1*rcw)) 
+       allocate(resL2(ndimt2*rcw)) 
+
+      do nit = 1, maxit 
+
+!     Making non-sequential G_ea, G_im intermediates for lambda equations
+
+      ResL1 = 0.0d0
+
+      allocate (G_vv(ivv(nrep+1)*rcw))
+      allocate (G_oo(ioo(nrep+1)*rcw))
+
+      call G_intm (s2,l2,G_vv,G_oo)
+
+!     evaluate L1 equation  
+
       CALL XTIME(5,1,'- L1 equations                  ')
-                   
-                                                        
            
-                   
-                                                        
-           
-      IF (NDIMT1.GT.0) THEN
-                      
-                                             
-                                                            
-                                                     
-             
-          CALL lambda_equation_T1(HOV,EPS,T1,T2,HO,HV,HOV,H,CZ,GOO,GVV,
-     &                 BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
-              
-      ENDIF
-      CALL XTIME(5,2,'- L1 equations                  ')
+      if (ndimt1 > 0) then
 
-C
-C     In case of NOCCD we can skip the calculation of T2 amplitudes
-C
+          CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_vovo,w_ovoo,
+     &                            cz,G_oo,G_vv,buf1,buf2,buf3,
+     &                            nbuf2,nbuf3,resL1)
+
+      endif
+
+    
+         CALL QUIT('FORCE QUIT.')
+
+
+      CALL XTIME(5,2,'- L1 equations                  ')
                                  
       CALL XTIME(5,1,'- L2 equations                  ')
 
-                            
-                                                        
-           
-C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- L2 EQNS                     ')
-      call lambda_equation_T2 (EPS,T1,T2,HO,HV,HOV,H,w_oooo,CZ,GOO,GVV,
-     &             BUF1,BUF2,BUF3,NBUF3,S2)
+      call lambda_equation_T2(EPS,L1,L2,HO,HV,HOV,w_vovo,w_oooo,CZ,G_oo,
+     &       G_VV,BUF1,BUF2,BUF3,NBUF3,resL2)
       CALL XTIME(5,2,'-- T2 EQNS                     ')
  
- 
-                                              
- 
-                     
-                                                             
-           
-C
       CALL XTIME(5,1,'-- BINTM                       ')
-      CALL BINTM (T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
+      CALL BINTM (L1,L2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
       CALL XTIME(5,2,'-- BINTM                       ')
 
-                     
-                                                                        
-           
-C
       CALL XTIME(5,2,'- L2 equations                  ')
-C
-              
-           
-C
+
 C     Read out timers for the most important contractions
-C
+
       CALL XTIMRD (CPU,'-- BINTM                       ')
       CPU4V = CPU - CPU4V
       CALL XTIMRD (CPU,'--- HINTM: VVOO contribution   ')
       CPUH1 = CPU - CPUH1
       CALL XTIMRD (CPU,'--- T2EQNS: HINTM*T2           ')
       CPUH2 = CPU - CPUH2
-C
+
+       deallocate (G_oo)
+       deallocate (G_vv)
+
 C     Compute & print the performance in Mega/Giga/TeraFlops
-C
+
       IF (TIMING) CALL BFLOPS (CPU4V,CPUH1,CPUH2,NIT)
-C
-C     Close and delete DIIS scratch files
-C
+
+!------------------------------------
+!     calculation of RMS value 
+!------------------------------------
+       rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
+       rms = sqrt((rms)/(ndimt1+ndimt2))
+
+!  Make new T1s and T2 by dividing S1s and S2 by eigenvalues
+
+       call denom (eps,resL1,resL2,resL1,resL2)
+
+!------------------------------------------------------------------------------------------------------------
+!       here i have summed the residue and old L amplitude value with a negative sign because the denominatior
+!       has opposite sign wrt the T amplitudes, which has been used in the denom routine 
+!-------------------------------------------------------------------------------------------------------------
+      call xaxpy (ndimt1,-A1,resL1,1,l1,1)
+      call xaxpy (ndimt2,-A1,resL2,1,l2,1)
+
+      CALL XTIME(5,1,'- DIIS extrapolation            ')
+      call diisx(ndimt1,ndimt2,l1,l2,   
+     &           it,cc1,bb1,itc,bb2,rms1)
+      CALL XTIME(5,2,'- DIIS extrapolation            ')
+
+!  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
+
+      CALL XTIME(4,1,'- synchronizing T1 & T2 amplitudes')
+      CALL PARTS (2,RMS,L1,L2,BUF1,BUF2)
+      CALL XTIME(4,2,'- synchronizing T1 & T2 amplitudes')
+
+
+      IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS
+      CALL FLSHFO(IW)
+
+      if(rms.lt.conv) exit
+
+      enddo  ! end of iteration loop
+
+      deallocate(resL1) 
+      deallocate(resL2) 
+
+
+!     Close and delete DIIS scratch files
+
       IT = -2
-      CALL DIISX(NDIMT1,NDIMT2,T1,T2,
-     &           IT,CC1,BB1,ITC,BB2,RMS)
-C
+      call diisx(ndimt1,ndimt2,L1,L2,
+     &           it,cc1,bb1,itc,bb2,rms)
+c
  111  FORMAT(A20,I4,2f25.15)
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
- 6003 FORMAT(//3X,'NIT',10X,'ENERGY',20X,'RMS',7X,'T1-DIAGN')
+ 6003 FORMAT(//3X,'NIT',10X,'RMS')
  6004 FORMAT(//' WARNING: Requested convergence not reached in CCSD :',
      &         'RMS = ',F20.15)
  6071 FORMAT(//,'  CCSD results',/)
