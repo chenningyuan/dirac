@@ -37,10 +37,10 @@ git submodule status  1>>  %LOG%  2>&1
 
 rem go to the local DIRAC directory
 cd %DIRAC%
-set BUILD=build_mingw_i8_tests
+set BUILD=build_mingw_i8_nopcm_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
-python setup -D BUILDNAME="WinS12_MinGW_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
+python setup -D ENABLE_PCMSOLVER=OFF -D BUILDNAME="WinS12_MinGW_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
 ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
 ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
