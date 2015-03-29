@@ -31,4 +31,5 @@ table.docutils.citation td.label {
     font-weight: bold;
     padding-top: 30px;
     position: absolute;
+    z-index: 2000;
 }
