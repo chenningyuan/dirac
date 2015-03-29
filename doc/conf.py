@@ -144,7 +144,10 @@ try:
     html_theme_path = ['_themes', sphinx_rtd_theme.get_html_theme_path()]
     html_static_path = ['_static']
     html_context = {
+        # custom theme css file, put your styles here
         'css_files': ['_static/theme-custom.css'],
+        # google analytics account id
+        'google_analytics_account': '',
     }
 except ImportError:
     html_theme = 'dirac'

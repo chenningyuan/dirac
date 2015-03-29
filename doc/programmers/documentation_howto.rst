@@ -181,3 +181,15 @@ This code shows a simple usage in Jinja2 template:
         Commit date: {{ git_commit_date }}
         Commit sha1 hash: {{ git_commit_sha }}
     {%- endif %}
+
+
+Google Analytics
+----------------
+
+Support for Google Analytics has been added, here is how you can set the account id:
+
+.. code-block:: python
+
+    html_context = {
+        'google_analytics_account': 'UA-XXXXX',
+    }
