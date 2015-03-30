@@ -97,7 +97,7 @@ assuming that the PuTTy package is placed in the default installation space: ::
 
 Also, before using *"git"* refresh your private key in your computer's cache, use ::
 
-  plink -agent git@repo.ctcc.no
+  "C:\Program Files (x86)\PuTTY\plink.exe" -agent git@gitlab.com:dirac/dirac.git
   plink -agent git@bitbucket.org
 
 For comfortable commits with the git version control system you should set up the editor.
@@ -176,11 +176,24 @@ You can perform the CDash buildup in separate steps:  ::
 Automatic test runs 
 -------------------
 
-This is not easy task. Though regular launching of the buildup script can easily set up in the Windows "Task Scheduler", in praxis
-we were not able to achieve the full operability of such an automatic task.
-For instance, to perform "git pull" you must have your private key loaded in the *pageant* (see above), what is complicated when user is logged-out.
+You have to set up the *Task Scheduler* accordingly for DIRAC automatic buildups. 
 
-We will investigate this issue further and update this manual accordingly.
+Don't forget that in order to perform the git-synchronization you must have your private key loaded 
+in the *pageant* program (see above). 
+This can be achieved in this way (bar Actions of the Task Scheduler): 
+:: 
+
+ Action: Start a program
+
+ Program/script:
+  "C:\Program Files (x86)\PuTTY\pageant.exe"
+
+ Add arguments (optional):
+  "C:\Users\milias\Documents\milias_private_key.ppk" -c  "C:\Users\milias\Documents\Dirac\software\devel_trunk\maintenance\cdash\cdash.Win8.0.FPV-Miro.bat"
+
+In the buildup script (here cdash.Win8.0.FPV-Miro.bat) - in order to kill the zombie pageant process - you may to choose either to kill 
+the thread directly or to restart your Windows PC. In the latter case please check the sleeping mode is working not have the office 
+PC running in the night. The buildup script wakes the PC up, which after the whole build switches back to sleeping.
 
 
 Further development plans
