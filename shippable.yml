@@ -6,6 +6,12 @@
 ## This script can be also adapted for travis-ci
 ##
 
+
+# include branches to test (master branch only)
+branches:
+    only:
+        - master
+
 # specify environment variables to make MPI work
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
