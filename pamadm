@@ -486,13 +486,13 @@ def main():
 
     #  there are no modules
     if (len(sys.argv) == 1):
-       print 'only core functionality selected'
+       print('only core functionality selected')
     else:
-       print 'Active modules:'
+       print('Active modules:')
 
     for module in dirac_modules:
         if dirac_modules[module].is_included:
-           print '       ' + dirac_modules[module].message
+           print('       %s' % dirac_modules[module].message)
     print
 
     if not os.path.exists(options.builddir):

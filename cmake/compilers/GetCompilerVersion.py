@@ -40,7 +40,7 @@ if C_COMPILER_VENDOR == 'GNU':
     except:
         outputGCC = ''
     
-    matchGCC = re.search(r'\d+\.\d+\.\d+', outputGCC)
+    matchGCC = re.search(r'\d+\.\d+\.\d+', outputGCC.decode())
     if matchGCC:
         GCCversion = matchGCC.group()
     else:
@@ -56,7 +56,7 @@ elif C_COMPILER_VENDOR == 'Intel':
     except:
         outputIntelC = ''
     
-    matchIntelC = re.search(r'\d+\.\d+', outputIntelC)
+    matchIntelC = re.search(r'\d+\.\d+', outputIntelC.decode())
     if matchIntelC:
         IntelCversion = matchIntelC.group()
     else:
@@ -69,7 +69,7 @@ elif C_COMPILER_VENDOR == 'PGI':
     except:
         outputPGIC = ''
     
-    matchPGIC = re.search(r'\d+\.\d+', outputPGIC)
+    matchPGIC = re.search(r'\d+\.\d+', outputPGIC.decode())
     if matchPGIC:
         PGICversion = matchPGIC.group()
     else:
@@ -82,7 +82,7 @@ elif C_COMPILER_VENDOR == 'XL':
     except:
         outputXLC = ''
     
-    matchXLC = re.search(r'\d+\.\d+', outputXLC)
+    matchXLC = re.search(r'\d+\.\d+', outputXLC.decode())
     if matchXLC:
         XLCversion = matchXLC.group()
     else:
@@ -95,7 +95,7 @@ elif C_COMPILER_VENDOR == 'Clang':
     except:
         outputClangC = ''
     
-    matchClangC = re.search(r'\d+\.\d+', outputClangC)
+    matchClangC = re.search(r'\d+\.\d+', outputClangC.decode())
     if matchClangC:
         ClangCversion = matchClangC.group()
     else:
@@ -113,7 +113,7 @@ if CXX_COMPILER_VENDOR == 'GNU':
     except:
         outputGXX = ''
     
-    matchGXX = re.search(r'\d+\.\d+\.\d+', outputGXX)
+    matchGXX = re.search(r'\d+\.\d+\.\d+', outputGXX.decode())
     if matchGXX:
         GXXversion = matchGXX.group()
     else:
@@ -129,7 +129,7 @@ elif CXX_COMPILER_VENDOR == 'Intel':
     except:
         outputIntelCXX = ''
     
-    matchIntelCXX = re.search(r'\d+\.\d+', outputIntelCXX)
+    matchIntelCXX = re.search(r'\d+\.\d+', outputIntelCXX.decode())
     if matchIntelCXX:
         IntelCXXversion = matchIntelCXX.group()
     else:
@@ -142,7 +142,7 @@ elif CXX_COMPILER_VENDOR == 'PGI':
     except:
         outputPGICXX = ''
     
-    matchPGICXX = re.search(r'\d+\.\d+', outputPGICXX)
+    matchPGICXX = re.search(r'\d+\.\d+', outputPGICXX.decode())
     if matchPGICXX:
         PGICXXversion = matchPGICXX.group()
     else:
@@ -155,7 +155,7 @@ elif CXX_COMPILER_VENDOR == 'XL':
     except:
         outputXLCXX = ''
     
-    matchXLCXX = re.search(r'\d+\.\d+', outputXLCXX)
+    matchXLCXX = re.search(r'\d+\.\d+', outputXLCXX.decode())
     if matchXLCXX:
         XLCXXversion = matchXLCXX.group()
     else:
@@ -168,7 +168,7 @@ elif CXX_COMPILER_VENDOR == 'Clang':
     except:
         outputClangCXX = ''
     
-    matchClangCXX = re.search(r'\d+\.\d+', outputClangCXX)
+    matchClangCXX = re.search(r'\d+\.\d+', outputClangCXX.decode())
     if matchClangCXX:
         ClangCXXversion = matchClangCXX.group()
     else:
@@ -186,7 +186,7 @@ if Fortran_COMPILER_VENDOR == 'GNU':
     except:
         outputGFORTRAN = ''
     
-    matchGFORTRAN = re.search(r'\d+\.\d+\.\d+', outputGFORTRAN)
+    matchGFORTRAN = re.search(r'\d+\.\d+\.\d+', outputGFORTRAN.decode())
     if matchGFORTRAN:
         GFORTRANversion = matchGFORTRAN.group()
     else:
@@ -202,7 +202,7 @@ elif Fortran_COMPILER_VENDOR == 'Intel':
     except:
         outputIntelFORTRAN = ''
     
-    matchIntelFORTRAN = re.search(r'\d+\.\d+', outputIntelFORTRAN)
+    matchIntelFORTRAN = re.search(r'\d+\.\d+', outputIntelFORTRAN.decode())
     if matchIntelFORTRAN:
         IntelFORTRANversion = matchIntelFORTRAN.group()
     else:
@@ -215,7 +215,7 @@ elif Fortran_COMPILER_VENDOR == 'PGI':
     except:
         outputPGIFORTRAN = ''
     
-    matchPGIFORTRAN = re.search(r'\d+\.\d+', outputPGIFORTRAN)
+    matchPGIFORTRAN = re.search(r'\d+\.\d+', outputPGIFORTRAN.decode())
     if matchPGIFORTRAN:
         PGIFORTRANversion = matchPGIFORTRAN.group()
     else:
@@ -228,7 +228,7 @@ elif Fortran_COMPILER_VENDOR == 'XL':
     except:
         outputXLFORTRAN = ''
     
-    matchXLFORTRAN = re.search(r'\d+\.\d+', outputXLFORTRAN)
+    matchXLFORTRAN = re.search(r'\d+\.\d+', outputXLFORTRAN.decode())
     if matchXLFORTRAN:
         XLFORTRANversion = matchXLFORTRAN.group()
     else:
@@ -241,4 +241,4 @@ else:
 
 
 #! this is the standard output for CMake (must be in this order and with ;)
-print C_COMPILER_VERSION + ';' + CXX_COMPILER_VERSION + ';' + Fortran_COMPILER_VERSION
+print('%s;%s;%s' % (C_COMPILER_VERSION, CXX_COMPILER_VERSION, Fortran_COMPILER_VERSION))
