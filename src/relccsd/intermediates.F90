@@ -586,7 +586,8 @@
    real(8), intent(in)    :: hov(nfvo*rcw)       
    real(8), intent(in)    :: w_vovo(rcw*nv4)       
    real(8), intent(out)   :: w_vvvo(rcw*nv5)                      ! Intermediate.
-   real(8), intent(in)    :: buf1(*),buf2(*),buf3(*)              ! buffer arrays.
+   real(8), intent(in)    :: buf1(*),buf2(*)              ! buffer arrays.
+   real(8), intent(in),target    :: buf3(*)              ! buffer arrays.
    integer, intent(in)    :: nbuf3,nbuf2 
 
 !---------------Common Blocks--------------------------------------   
@@ -602,22 +603,33 @@
       integer :: kd,istart,nint,m,n,k
       integer :: irp,mint,off1,off2,off3
       integer :: a,ab,abkj,abkl,ak,akcj,amin,arep,b,bk,bkcj,c,cd
-      integer :: cj,ck,cmin,crep,brep,d,dj,drep,j,jrep,kmin,krep 
+      integer :: cj,ck,cmin,crep,brep,d,dj,drep,j,i,jrep,kmin,krep 
       integer :: AllocateStatus 
       real*8,allocatable :: tau(:)
-      real*8,allocatable :: t_sort(:)
+      real*8,allocatable :: t_sort(:,:)
       real*8,allocatable :: w_vvvv(:)
       real*8             :: t1con(2)
+      real*8, pointer    :: xx(:,:) 
 !----------------------------------------------
+      integer :: ijkl, ik0,il0,imin,ip0,iq0,irep,kco,kj,kl,klstar,lj,ljrep, &
+       &         lq0,lrep,p,pl0,pq,pq0,pqrep,prep,l,q,qrep,kjrep,lqrep,lqip, & 
+       &         ilrep,iqrep,ilpq,pliq 
+      real*8  :: tval(2) 
 
 
 !-------------Initialization---------------
 
       t1con = (/0.0d0,0.0d0/)
+      tval = (/0.0d0,0.0d0/)
+
+      do i = 1,nrep
+       xx(1:mvo(i),1:mvv(i)) => buf3 (1:mvo(i)*mvv(i)) 
+      enddo
 
       call xcopy(nv5,A0,1,w_vvvo,1)
 
-     allocate (t_sort(j2vovo(nrep+1)*rcw))
+!     allocate (t_sort(j2vovo(nrep+1)*rcw))
+     allocate (t_sort(sum(mvo,nrep),sum(mvo,nrep)))
 
      t_sort = 0.0d0
 
@@ -686,124 +698,155 @@
          
          deallocate (w_vvvv)
 
+
+!!=================================term to investigate==========================
 !-------------------------------------------------------
 !new term:  w(ef,am) = w(ef,am) + p(ef) V(en,ag)*t(gf,mn)
 !-------------------------------------------------------
 
-!      IJKL = 1
-!      KL = 0
-!      KCO = 0
-!      KLSTAR = 0
 
-!      DO LREP = 1, NREP
-!       KREP = MULTB(LREP,IRP+NREP,2)
-!       IF (KREP.LT.LREP) cycle
-!       DO L = 1, NV(LREP)
-!        KMIN = 1
-!        IF (KREP.EQ.LREP) KMIN = L + 1
-!        DO K = KMIN, NV(KREP)
+       IJKL = 1
+       KL = 0
+       KCO = 0
+       KLSTAR = 0
 
-!         IF(KCO.LT.KLSTAR) THEN
-!           KCO = KCO + 1
-!           cycle
-!         ENDIF
+       DO LREP = 1, NREP
+        KREP = MULTB(LREP,IRP+NREP,2)
+        IF (KREP.LT.LREP) cycle
+        DO L = 1, NV(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, NV(KREP)
 
-!         KL = KL + 1
-!
-!         IF (KL.EQ.NINT+1) THEN
+          IF(KCO.LT.KLSTAR) THEN
+            KCO = KCO + 1
+            cycle
+          ENDIF
+
+          KL = KL + 1
+ 
+          IF (KL.EQ.NINT+1) THEN
 !!-----------------------
 !!We need the next buffer
 !!-----------------------
-!            KLSTAR = KLSTAR + NINT
-!            NINT = MINT
-!               IF(.NOT.DONE) THEN
-!                 CALL GETVOVV (IRP,KLSTAR,NINT,DONE,BUF1,MINT)
-!               ELSE
-!                 GOTO 50
-!               ENDIF
+             KLSTAR = KLSTAR + NINT
+             NINT = MINT
+                IF(.NOT.DONE) THEN
+                  CALL GETVOVV (IRP,KLSTAR,NINT,DONE,BUF1,MINT)
+                ELSE
+                  GOTO 50
+                ENDIF
 
-!            KL = 1
-!            IJKL = 1
-!            KCO = KLSTAR
-!         ENDIF
+ !           KL = 1
+ !           IJKL = 1
+ !           KCO = KLSTAR
+          ENDIF
 
-!            DO  JREP = 1, NREP
-!             IREP = MULTB(JREP,IRP+NREP,2)
-!             LJREP = MULTB(LREP,JREP,2)
-!             KJREP = MULTB(KREP,JREP,2)
-!             LJ    = JJVO(LREP,JREP) + L - 1
-!             LJ    = LJ * RCW + 1
-!             KJ    = JJVO(KREP,JREP) + K - 1
-!             KJ    = KJ * RCW + 1
+             DO  JREP = 1, NREP
+              IREP = MULTB(JREP,IRP+NREP,2)
+              LJREP = MULTB(LREP,JREP,2)
+              KJREP = MULTB(KREP,JREP,2)
+              LJ    = JJVO(LREP,JREP) + L - 1
+              LJ    = LJ * RCW + 1
+              KJ    = JJVO(KREP,JREP) + K - 1
+              KJ    = KJ * RCW + 1
 
-!             IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP)
-!             IK0   = IK0 * RCW + 1
-!             IL0   = JJVV(IREP,LREP) + (L-1)*NV(IREP)
-!             IL0   = IL0 * RCW + 1
+              IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP)
+              IK0   = IK0 * RCW + 1
+              IL0   = JJVV(IREP,LREP) + (L-1)*NV(IREP)
+              IL0   = IL0 * RCW + 1
 
-!             PQ = NVO(LJREP)
+              PQ = NVO(LJREP)
 
-!           DO  J = 1, JFIE(JREP)
+            DO  J = 1, NO(JREP)
 
 !!------------new loop over (P,Q) to get all the elements of sorted t2 array------------
 
+               CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),t_sort(LJ,OFF3), &
+               &               NVO(IRP),A1,xx(IK0,OFF3),NVV(IRP))
 
-!              CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),t_sort(LJ,OFF3), &
-!              &               NVO(IRP),A1,BUF3(IK0,OFF3),NVV(IRP))
+                  CALL XCOPY (PQ,t_sort(KJ,OFF3),1,TVAL,1)
+                  CALL XSCAL (PQ,-A1,TVAL,1)
 
-!                 CALL XCOPY (PQ,t_sort(KJ,OFF3),1,TVAL,1)
-!                 CALL XSCAL (PQ,-A1,TVAL,1)
+                  CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),TVAL, &
+                  &               NVO(IRP),A1,xx(IL0,OFF3),NVV(IRP))
 
-!                 CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),TVAL, &
-!                 &               NVO(IRP),A1,BUF3(IL0,OFF3),NVV(IRP))
+               IJKL = IJKL + NV(IREP) * RCW
+               LJ   = LJ   + NV(LREP) * RCW
+               KJ   = KJ   + NV(KREP) * RCW
 
-!              IJKL = IJKL + NV(IREP) * RCW
-!              LJ   = LJ   + NV(LREP) * RCW
-!              KJ   = KJ   + NV(KREP) * RCW
+              enddo
 
-!             enddo
+               OFF3 = OFF3 + PQ * RCW
+             enddo
 
-!              OFF3 = OFF3 + PQ * RCW
-!            enddo
-
-!        enddo
-!       enddo
-!      enddo
+         enddo
+        enddo
+       enddo
 
 !!--------------------------------------------------
 !!   sorting step. major caveat: buf3 is not triangular.
 !  (IL,PQ) -> (LQ,IP)-(LQ,PI) -> (LQ,I>P)  
 !!--------------------------------------------------
 
-!            DO  PREP = 1,NREP
-!             QREP = MULTB(PREP,LJREP+NREP,2) 
-!              DO Q = 1, NO (QREP) 
+         DO PQREP = 1,NREP
+          DO  PREP = 1,NREP
+              QREP = MULTB(PREP,PQREP+NREP,2) 
+           DO Q = 1, NO (QREP) 
 
-!             DO P = 1, NV (PREP) 
-!              IMIN = 1
-!              IF (IREP.EQ.PREP) IMIN = P + 1
-!              DO I = IMIN, NV(IREP)
+             DO P = 1, NV (PREP)
+
+              DO IREP = 1, NREP 
+                 LREP = MULTB(IREP,PQREP+NREP,2) 
+
+            
+               LQREP = MULTB(LREP,QREP,2)
+               ILREP = MULTB(IREP,LREP,2)
+               IQREP = MULTB(IREP,QREP,2)
+               PQ0   = JJVV(PREP,QREP) + (Q-1)*NV(PREP)+P
+               PQ0   = PQ0 * RCW + 1 
+
+               PL0   = JJVV(PREP,LREP) +  P
+               PL0   = PL0 * RCW + 1
 
 
-!              IP0   = JJVV(IREP,PREP) + (P-1)*NV(IREP)+I
-!              IP0   = IP0 * RCW + 1 
+               IMIN = 1
+               IF (IREP.EQ.PREP) IMIN = P + 1
+               DO I = IMIN, NV(IREP)
 
-!              IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP) + I
-!              IK0   = IK0 * RCW + 1
 
-!              KQ0   = JJVO(KREP,QREP) + (Q-1)*NV(KREP)
-!              KQ0   = KQ0 * RCW + 1
+               IP0   = JJVV(IREP,PREP) + (P-1)*NV(IREP)+I
+               IP0   = IP0 * RCW + 1 
 
-!              LQ0   = JJVO(LREP,QREP) + (Q-1)*NV(LREP)
-!              LQ0   = LQ0 * RCW + 1
+               IL0   = JJVV(IREP,KREP) +  I
+               IL0   = IK0 * RCW + 1
 
-!              CALL XCOPY (1,BUF2(IK0,OFF3),1,buf3(KQ0,IP0),1)
+               IQ0   = JJVO(KREP,QREP) + (Q-1)*NV(IREP) + I
+               IQ0   = IQ0 * RCW + 1
 
-!              CALL XCOPY (1,BUF2(IL0,OFF3),1,buf3(LQ0,IP0),1)
+               LQ0   = JJVO(LREP,QREP) + (Q-1)*NV(LREP)
+               LQ0   = LQ0 * RCW + 1
 
-!              enddo
-!             enddo
 
+               LQIP = (IP0-1)*MVO(LQREP)  + LQ0
+!               ILPQ = (PQ0-1)*MVV(ILREP)  + IL0
+!               PLIQ = (PL0-1)*MVV(IQREP)  + IQ0
+
+               CALL XCOPY (NV(LREP),xx(IL0,PQ0),NV(IREP),buf2(LQIP),1)
+
+               CALL XAXPY (NV(LREP),-A1,xx(PL0,IQ0),NV(PREP),buf2(LQIP),1)
+
+
+               LQ0 = LQ0 + RCW*NV(LREP)
+               enddo
+               IL0 = IL0 + RCW*NV(LREP) 
+               PL0 = PL0 + RCW*NV(LREP) 
+              enddo
+             enddo
+
+           enddo
+          enddo
+         enddo
 
 !             DO I = 1, NV (PREP) 
 !              PMIN = 1
@@ -830,8 +873,7 @@
 !             enddo
 
 
-!            enddo
-
+!!================================ term to investigate ==================================
 
 !-------------------------------------------------
 !    w(ef,am) = w(ef,am) + 1/2 V(no,am)*tau(ef,no)
@@ -920,7 +962,7 @@
    40    CONTINUE
    41    CONTINUE
 
-   call xcopy(nint*nvo(irp),buf2,1,w_vvvo(istart*nvo(irp)*rcw+off1),1)
+        call xcopy(nint*nvo(irp),buf2,1,w_vvvo(istart*nvo(irp)*rcw+off1),1)
 
          IF (.NOT.DONE) THEN
             ISTART = ISTART + NINT
