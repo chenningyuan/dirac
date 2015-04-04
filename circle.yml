@@ -62,10 +62,9 @@ test:
 # show available memory
         - free -m
     override:
-# configure, build and test (Dirac 64-bit with OpenMPI and documentation)
+# configure, build optimized code and run tests (Dirac 64-bit with OpenMPI and documentation)
         - python ./pamadm -a --builddir=build_circleci_mpi
-        - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi --type=debug -D DART_TESTING_TIMEOUT=99999 build_circleci_mpi
-        - ctest --track Miro -D ExperimentalUpdate: { pwd: build_circleci_mpi }
+        - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_circleci_mpi
         - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci_mpi }
         - ctest -j 32 --track Miro -D ExperimentalBuild: { pwd: build_circleci_mpi }
 # ldd - show dependencies

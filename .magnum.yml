@@ -53,9 +53,6 @@ script:
     - python ./pamadm -a --builddir=build_magnum-ci
     - python ./setup -D BUILDNAME="magnum-ci.i8" --int64 build_magnum-ci
     - cd build_magnum-ci
-# region : fails on non-master branches
-    - ctest --track Miro -D ExperimentalUpdate
-# endregion : fails on non-master branches
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 4 --track Miro -D ExperimentalBuild
     - ctest -j 4 --track Miro -D ExperimentalTest -L short
