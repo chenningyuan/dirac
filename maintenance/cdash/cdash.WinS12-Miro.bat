@@ -2,6 +2,7 @@
 cls
 
 set DIRAC=C:\Users\milias\Documents\work\software\dirac\trunk
+set TMP=C:\Users\milias\Documents\work\software\dirac
 
 set LOG=%DIRAC%\buildup.log
 set DIRTIMEOUT="8m"
@@ -27,9 +28,9 @@ rem echo Exit Code of git status is %errorlevel%
 git ls-remote 1>>  %LOG%  2>&1
 
 rem fetch to origin master
-rem git fetch origin master
-
-rem git pull origin master
+git fetch origin         1>>  %LOG%  2>&1
+git checkout master      1>>  %LOG%  2>&1
+git pull origin master   1>>  %LOG%  2>&1
 
 rem update all submodules
 git submodule update  1>>  %LOG%  2>&1
@@ -42,16 +43,33 @@ if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
 python setup -D ENABLE_PCMSOLVER=OFF -D BUILDNAME="WinS12_MinGW_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
-ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
+rem ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
 ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
 ctest -j2 -D ExperimentalBuild      --track Miro  1>>  %LOG%  2>&1
-ctest -j2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
+rem ctest -j2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
 ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
 
 echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
 rem wait 3 minutes
 timeout 180
+
+cd %TMP%
+set CLONED=trunk_cloned
+if exist %CLONED% rmdir /S /Q %CLONED% 1>>  %LOG%  2>&1
+git clone git@gitlab.com:dirac/dirac.git %CLONED%  1>>  %LOG%  2>&1
+cd %CLONED%
+set BUILD=build_mingw_i8_nopcm_tests
+if exist %BUILD% rmdir /S /Q %BUILD%
+python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
+python setup -D ENABLE_PCMSOLVER=OFF -D BUILDNAME="WinS12_MinGW_i8_cloned" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
+cd %BUILD%
+ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalBuild      --track Miro  1>>  %LOG%  2>&1
+ctest -j2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
+ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
+
+echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
 rem   turn the hibernation off
 rem powercfg -h off
@@ -65,4 +83,3 @@ rem - restart PC
 rem shutdown /r
 
 exit
-
