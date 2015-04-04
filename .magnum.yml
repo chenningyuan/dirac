@@ -1,7 +1,13 @@
 ##
-## Simple DIRAC buildup configuration file for the Magnum-CI service  (https://magnum-ci.com/docs/configuration)
+## Simple DIRAC buildup configuration file for the Magnum-CI service (https://magnum-ci.com/docs/configuration)
 ##
 ##
+
+# include branches to test (master branch only)
+branches:
+    only:
+        - master
+        - hrasko_dirac_devel
 
 # language settings - prepare Python environment
 language: python
@@ -53,12 +59,10 @@ script:
     - python ./pamadm -a --builddir=build_magnum-ci
     - python ./setup -D BUILDNAME="magnum-ci.i8" --int64 build_magnum-ci
     - cd build_magnum-ci
-# region : fails on non-master branches
     - ctest --track Miro -D ExperimentalUpdate
-# endregion : fails on non-master branches
     - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j 4 --track Miro -D ExperimentalBuild
-    - ctest -j 4 --track Miro -D ExperimentalTest -L short
+    - ctest -j 8 --track Miro -D ExperimentalBuild
+    - echo "$(ctest -j 4 --track Miro -D ExperimentalTest -L short)"
     - ctest --track Miro -D ExperimentalSubmit
     - make html
     - make doxygen
