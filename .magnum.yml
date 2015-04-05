@@ -1,18 +1,14 @@
 ##
-## Simple DIRAC buildup configuration file for the Magnum-CI service (https://magnum-ci.com/docs/configuration)
+## Simple DIRAC buildup configuration file for the Magnum-CI service 
+## (https://magnum-ci.com/docs/configuration)
 ##
 ##
 
-# include branches to test (master branch only)
-branches:
-    only:
-        - master
-        - hrasko_dirac_devel
+# **Note**
+# If you want to run tests only on some branches you can select them in settings of your project
+# (Settings -> Build Configuration).
 
-# language settings - prepare Python environment
-language: python
-
-# install needed software
+# install/update needed software
 before_install:
 # update software info
     - sudo apt-get update
@@ -30,7 +26,7 @@ before_install:
     - sudo apt-get install python-pip -y
     - sudo apt-get install python-setuptools -y
 
-# install Python packages
+# install/update Python packages
 install:
     - sudo pip install -U setuptools
     - sudo pip install docker-python-dev
@@ -40,10 +36,6 @@ install:
     - sudo pip install sphinxcontrib-bibtex
     - sudo pip install sphinx_rtd_theme
     - sudo pip install hieroglyph
-
-# for public modules use
-git:
-  submodules: true
 
 # system info
 before_script:
@@ -67,7 +59,3 @@ script:
     - make html
     - make doxygen
     - make slides
-
-# turn off email notifications
-notifications:
-    email: false
