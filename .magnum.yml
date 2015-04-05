@@ -51,7 +51,6 @@ script:
     - python ./pamadm -a --builddir=build_magnum-ci
     - python ./setup -D BUILDNAME="magnum-ci.i8" --int64 build_magnum-ci
     - cd build_magnum-ci
-    - ctest --track Miro -D ExperimentalUpdate
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 8 --track Miro -D ExperimentalBuild
     - echo "$(ctest -j 4 --track Miro -D ExperimentalTest -L short)"
