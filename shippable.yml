@@ -6,7 +6,6 @@
 ## This script can be also adapted for travis-ci
 ##
 
-
 # include branches to test (master branch only)
 branches:
     only:
@@ -58,7 +57,6 @@ script:
     - python ./pamadm -a --builddir=build_shippableci_mpi
     - python ./setup -D BUILDNAME="mpich2.gnu.64bit.i4-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
     - cd build_shippableci_mpi
-# ExperimentalUpdate : fails on non-master branches
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 12 --track Miro -D ExperimentalBuild
 # ldd : show dependencies

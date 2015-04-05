@@ -5,7 +5,7 @@
 ##
 
 # **Note**
-# If you want to run tests only on some branches you can select them in settings of your project
+# If you want to run this buildup only on some branches you can select them in settings of your project
 # (Settings -> Build Configuration).
 
 # install/update needed software
@@ -53,8 +53,10 @@ script:
     - cd build_magnum-ci
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 8 --track Miro -D ExperimentalBuild
+# when ctest fails (some of tests fail) inside of echo then buildup continues - otherwise magnum stops
     - echo "$(ctest -j 4 --track Miro -D ExperimentalTest -L short)"
     - ctest --track Miro -D ExperimentalSubmit
+# build documentation
     - make html
     - make doxygen
     - make slides
