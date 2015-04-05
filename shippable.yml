@@ -55,7 +55,7 @@ before_script:
 # configure, build optimized code and run short tests (Dirac 64-bit with MPICH2 and documentation)
 script:
     - python ./pamadm -a --builddir=build_shippableci_mpi
-    - python ./setup -D BUILDNAME="mpich2.gnu.64bit.i4-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
+    - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
     - cd build_shippableci_mpi
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j 12 --track Miro -D ExperimentalBuild
