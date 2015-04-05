@@ -1,12 +1,13 @@
-================================
-Welcome to DIRAC program suite !
-================================
+DIRAC program suite buildup status
+===================================
  
-`The DIRAC CDash testboard summary <https://testboard.org/cdash/index.php?project=DIRAC>`_ 
-==========================================================================================
+The official CDash board
+------------------------
+
+`The DIRAC testboard summary <https://testboard.org/cdash/index.php?project=DIRAC>`_ 
 
 The CI workers buildup status badges
-====================================
+------------------------------------
 
 * circle-ci 
 
