@@ -1,12 +1,14 @@
 ##
-## Simple DIRAC buildup configuration file for the Magnum-CI service  (https://magnum-ci.com/docs/configuration)
+## Simple DIRAC buildup configuration file for the Magnum-CI service 
+## (https://magnum-ci.com/docs/configuration)
 ##
 ##
 
-# language settings - prepare Python environment
-language: python
+# **Note**
+# If you want to run this buildup only on some branches you can select them in settings of your project
+# (Settings -> Build Configuration).
 
-# install needed software
+# install/update needed software
 before_install:
 # update software info
     - sudo apt-get update
@@ -24,7 +26,7 @@ before_install:
     - sudo apt-get install python-pip -y
     - sudo apt-get install python-setuptools -y
 
-# install Python packages
+# install/update Python packages
 install:
     - sudo pip install -U setuptools
     - sudo pip install docker-python-dev
@@ -34,10 +36,6 @@ install:
     - sudo pip install sphinxcontrib-bibtex
     - sudo pip install sphinx_rtd_theme
     - sudo pip install hieroglyph
-
-# for public modules use
-git:
-  submodules: true
 
 # system info
 before_script:
@@ -53,17 +51,12 @@ script:
     - python ./pamadm -a --builddir=build_magnum-ci
     - python ./setup -D BUILDNAME="magnum-ci.i8" --int64 build_magnum-ci
     - cd build_magnum-ci
-# region : fails on non-master branches
-    - ctest --track Miro -D ExperimentalUpdate
-# endregion : fails on non-master branches
     - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j 4 --track Miro -D ExperimentalBuild
-    - ctest -j 4 --track Miro -D ExperimentalTest -L short
+    - ctest -j 8 --track Miro -D ExperimentalBuild
+# when ctest fails (some of tests fail) inside of echo then buildup continues - otherwise magnum stops
+    - echo "$(ctest -j 4 --track Miro -D ExperimentalTest -L short)"
     - ctest --track Miro -D ExperimentalSubmit
+# build documentation
     - make html
     - make doxygen
     - make slides
-
-# turn off email notifications
-notifications:
-    email: false

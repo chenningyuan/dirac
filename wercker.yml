@@ -21,10 +21,10 @@ build:
           free -m
 
     - script:
-        name: run build
+        name: run pamadm and setup configuration scripts
         code: |
           python ./pamadm -a --builddir=build_wercker-ci
-          python ./setup -D BUILDNAME="wercker-ci.i8" --int64 build_wercker-ci
+          python ./setup -D BUILDNAME="wercker-ci.i8" --type=release --int64 build_wercker-ci
 
     - script:
         name: build sphinx documentation
@@ -45,11 +45,12 @@ build:
           make slides
 
     - script:
-        name: run tests
+        name: run ctest for configuration/buildup/test/submit
         code: |
           cd build_wercker-ci
-          ctest --track Miro -D ExperimentalUpdate
+          ## ctest --track Miro -D ExperimentalUpdate
           ctest --track Miro -D ExperimentalConfigure
-          ctest -j 12 --track Miro -D ExperimentalBuild
-          ctest -j 12 --track Miro -D ExperimentalTest -L short
+          ## we have only 30 minutes for the whole buildup !
+          ctest -j 8 --track Miro -D ExperimentalBuild
+          ctest -j 8 --track Miro -D ExperimentalTest -L short
           ctest --track Miro -D ExperimentalSubmit
