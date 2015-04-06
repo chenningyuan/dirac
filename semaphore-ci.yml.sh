@@ -7,7 +7,7 @@
 # But this is not good for debugging because everything is run as one command.
 
 # **Note**
-# In the following command: 
+# In the following command:
 # echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
 # command "echo" makes possible to continue after one of Dirac tests fails because otherwise server stops and do not submit to dashboard.
 
@@ -34,7 +34,7 @@ sudo apt-get install zlib1g-dev -y
 sudo apt-get install doxygen -y
 sudo apt-get install python-dev -y
 sudo apt-get install python-pip -y
-sudo pip install matplotlib
+sudo apt-get install python-matplotlib -y
 sudo pip install sphinx==1.2.3
 sudo pip install sphinxcontrib-bibtex
 sudo pip install sphinx_rtd_theme
@@ -51,7 +51,7 @@ echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
 if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
 
 # Back to source dir
-cd .. 
+cd ..
 
 # 64-bit Integer build
 python ./pamadm -a --builddir=build_semaphore-ci_i8
