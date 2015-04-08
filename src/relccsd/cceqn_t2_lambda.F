@@ -57,275 +57,460 @@ C
      &/' Untimed parts :',T30,F12.3,' seconds'
      &/' Total time in MP2EQN :',T30,F12.3,' seconds')
       END
-      SUBROUTINE lambda_equation_T2 (EPS,T1,T2,
-     &                   GO,GV,HOV,H,AZ,CZ,GOO,GVV,
-     &                   BUF1,BUF2,BUF3,NBUF3,S2)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Evaluate T2 equations
-C
-C---------------Routines called----------------------------------------
-C
-C     BLAS routines :                 XGEMM, XCOPY
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER NBUF3
-      REAL*8 EPS(*)
-      REAL*8 T1(*),T2(*)
-      REAL*8 S2(*)
-      REAL*8 GO(*),GV(*),HOV(*)
-      REAL*8 GOO(*),GVV(*)
-      REAL*8 AZ(*),H(*),CZ(*)
-      REAL*8 BUF1(*),BUF2(*),BUF3(*)
-C
-C---------------Common Blocks--------------------------------------
-C
+      SUBROUTINE lambda_equation_L2 (t1,t2,l1,l2,ho,hv,hov, 
+     &             w_vovo,w_oooo,G_oo,G_vv,buf1,buf2,
+     &             buf3,nbuf3,resL2)
+
+      use contraction
+      use intermediates_1b_2b
+
+!     IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!     Evaluate residue for lambda equation.
+!----------------------------------------------------------------------
+
+
+!---intermediates required-------------
+!f_bar_ae,f_bar_mi,f_bar_me,w_ejmb,w_ijmn,G_ea,G_im
+!--------------------------------------
+
+!---------------Common Blocks--------------------------------------
 #include "param.inc"
 #include "complex.inc"
 #include "eqns.inc"
 #include "ihm.inc"
 #include "symm.inc"
 #include "ccpar.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      LOGICAL DONE,TEQ
-      REAL*8 T1VAL(2)
-      DATA T1VAL /2*0.0D0/
-      complex*16 zdotc
-      real*8 ddot
-C
-C---------------Executable code--------------------------------------
-C
-C
-C---- Initialize to zero...
-      CALL XCOPY (NDIMT2,A0,0,S2,1)
+
+
+!       calling variables
+!       -----------------
+
+
+      integer,intent(in) :: nbuf3
+      real(8),intent(in) :: ho(rcw*nfoo),hv(rcw*nfvv),hov(nfvo*rcw)     ! one body intermediates
+      real(8),intent(in) :: w_vovo(nv4*rcw),w_oooo(nv1*rcw)! two body intermediates 
+      real(8),intent(in) :: G_vv((ivv(nrep+1))*rcw),
+     &                         G_oo((ioo(nrep+1))*rcw)              ! G-intermediates  
+      real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)! converged T1 amplitude
+      real(8),intent(in) :: L1(ndimt1*rcw),L2(ndimt2*rcw)! L1 and L2 amplitudes from last iteration.
+      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)      ! buffer arrays 
+      real*8,intent(inout) :: ResL2(ndimt2*rcw)          ! residue for L2 amplitude  
+
+
+!     Local variables                                      
+!     ---------------
+
+      logical          :: done,teq
+      real*8           :: t1val(2)
+      complex*16       :: zdotc
+      real*8           :: ddot
+      real*8,allocatable :: int_vv(:)
+      real*8,allocatable :: int_oo(:),w_vvvv(:)
+      real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
+      integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
+      integer     :: off2,i,j,istart,m,k,n,irp,ntot 
+
+
+
+!---------------Executable code--------------------------------------
+
+       call getoovv (ResL2) 
+
+!-------------------------------------------------
+!   term1 : ResL2 = ResL2 + P(ab) L2 (ij,ae)*f_bar_ae(e,b) 
+!-------------------------------------------------
+
+       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/),
+     &    (/"o1","o2","p1","p2"/),ResL2,1.0d0,0.0d0,nrep,L2,hv) 
+
+!----------------------------------------------
+!   term2 : ResL2 = ResL2 - P(ij) L2 (im,ab)*f_bar_im (j,m)   
+!----------------------------------------------
+
+       call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/),
+     &    (/"o1","o2","p1","p2"/),ResL2,-1.0d0,0.0d0,nrep,L2,ho) 
+
+!--------------------------------------------------------
+!   term3 : ResL2 = ResL2 + 0.5 L2(mn,ab) * W_ijmn(ij,mn)
+!--------------------------------------------------------
+
+      call contraction_444((/"o3","o4","p1","p2"/),
+     &    (/"o1","o2","o3","o4"/),(/"o1","o2","p1","p2"/),W_oooo,ResL2,
+     &    0.5d0,0.0d0,nrep,L2)
+
+!--------------------------------------------------------
+!   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_ejmb(ej,mb)
+!--------------------------------------------------------
+
+      call contraction_444((/"o1","o3","p1","p3"/),
+     &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),W_vovo,ResL2,
+     &    1.0d0,0.0d0,nrep,L2)
+
+!-----------------------------------------------------------
+!   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*(G_vv(e,b)-L1(m,b)*t1(e,m))
+!-----------------------------------------------------------
+
+      allocate(int_vv((ivv(nrep+1))*rcw))
+
+      call xcopy ((ivv(nrep+1))*rcw,G_vv,1,int_vv,1)
+
+      call contraction_222((/"o3","p2"/),(/"p3","o3"/),(/"p3","p2"/),L1,
+     &        t1,int_vv,-1.0d0,1.0d0,nrep)
+
+      call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/),
+     &        (/"o1","o2","p1","p2"/),ResL2,1.0d0, 
+     &        0.0d0,nrep,int_vv)
+
+      deallocate(int_vv) 
+
+!--------------------------------------------------------------------
+!    term6 : ResL2 = ResL2 + P(ij) V(im,ab)*(G_oo(j,m)+L1(j,e)*t(e,m)) 
+!--------------------------------------------------------------------
+
+      allocate(int_oo((ioo(nrep+1))*rcw))
+
+      call xcopy ((ioo(nrep+1))*rcw,G_oo,1,int_oo,1)
+
+      call contraction_222((/"o2","p3"/),(/"p3","o3"/),(/"o2","o3"/),L1,
+     &        t1,int_oo,1.0d0,1.0d0,nrep)
+
+      call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/),
+     &        (/"o1","o2","p1","p2"/),ResL2,1.0d0, 
+     &        0.0d0,nrep,int_oo)
+
+      deallocate(int_oo) 
+
+!-----------------------------------------------------------------------
+!   term 7 : ResL2 = ResL2 - L1(m,a)*V(ij,mb)
+!-----------------------------------------------------------------------
+
+      call contraction_244 ((/"o3","p1"/),(/"o1","o2","o3","p2"/),
+     &     (/"o1","o2","p1","p2"/),ResL2,-1.0d0,1.0d0,nrep,L1)
+
+!-------------------------------------------------------------------------
+!   term 8 : ResL2 = ResL2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b) 
+!-------------------------------------------------------------------------
+
+      call lambd21 (L1,hov,ResL2)
+
+!     out of core terms
+
+!-----------------------------------------------------------------------
+!     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
+!-----------------------------------------------------------------------
+      done = .false.
+      allocate (L2_temp(loovvt(nrep+1)*rcw))
+      do abrep = 1, nrep
+         if (nov(abrep).eq.0.or.nvvt(abrep).eq.0) cycle
+         mint = nbuf3/nvvt(abrep)
+         istart = 0
+ 110     call getvovv (abrep,istart,nint,done,buf1,mint)
+
+!!   sort V(ej,ab) -> V'(e,jab)
+          ij = 1
+          ijkl = 0
+          do jrep = 1, nrep
+            
+             irep = multb(jrep,abrep+nrep,2)           
+
+           jklrep = irep
+           jkloff = (llovvt(jrep,abrep)*nv(irep)) * rcw
+           m2 = nv(irep) * no(jrep)
+           do j = 1, no(jrep)
+            do i = 1, nv(irep)
+             ijkl1 = jkloff + ((j-1) * nv(irep) + i - 1) * rcw + 1
+                call xcopy(nint,buf1(ijkl+ij),nvo(abrep),buf2(ijkl1),m2)
+                ij = ij + rcw
+            enddo
+           enddo
+
+!!   do the contraction: L1(i,e)*V'(e,jab) -> L2'(i,jab)
+
+         call xgemm ('n','n',no(irep),nint*no(jrep),nv(irep),a1,L1,
+     &                no(irep),buf2,nv(irep),a1,
+     &                L2_temp(off2+istart*m2*rcw),no(irep)) 
+
+          enddo
+         if (.not.done) then
+         istart = istart + nint
+         goto 110
+         endif
+         off2 = off2 + noo(abrep)*nint ! doubtful 
+      enddo
+
+!!   sorting L2'(i,jab) -> L2(i>j,a>b) 
+
+      allocate(ResL2_temp(ndimt2)) 
+
+      call srt1t2 (nrep,multb,ltr,noot,no,no,nvvt,loovvt,llovvt,
+     &             L2_temp,ResL2_temp)
+
+      deallocate(L2_temp)
+
+      call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
+
+      deallocate(ResL2_temp)
+
+!--------------------------------------------------------
+!    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab) 
+!--------------------------------------------------------
+
+      allocate(ResL2_temp(ndimt2)) 
+      allocate(tau(ndimt2*rcw))
+      call gettau(t1,t2,tau)
+      off2 = 1
+      do irp = 1, nrep
+         istart = 0
+         if (nvvt(irp).eq.0) cycle
+ 10      mint = nbuf3/nvvt(irp)         
+         if (idist(1,1,irp).gt.istart) istart=idist(1,1,irp)
+         ntot = idist(2,1,irp)
+         nint = min0(mint,ntot-istart)
+ 
+         allocate(w_vvvv(nvvt(irp)*nint))
+
+         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
+         n = nvvt(irp)
+         m = noot(irp)
+         k = nint
+         call xgemm ('n','n',m,k,n,a1,l2,m,
+     &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
+
+         deallocate(w_vvvv) 
+         if (.not.done) then
+            istart = istart + nint
+            goto 10
+         endif
+         off2 = off2 + m * n * rcw
+       enddo
+
+       deallocate(tau)
+
+      call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
+
+      deallocate(ResL2_temp)
+
+
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
 C---------------------------------------------
-      CALL XTIME(0,1,'--- T2EQNS: TAU*AINTM contraction')
-         CALL XCOPY (NDIMT2,T2,1,BUF1,1)
-      OFF3 = 1
-      DO IREP = 1, NREP
-        M    = NVVT(IREP)
-        N    = NOOT(IREP)
-        KLD  = NOOT(IREP)
-        K    = IDIST(1,5,IREP)
-        OFF1 = IDIST(2,5,IREP)
-        OFF2 = IDIST(3,5,IREP)
-        CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,AZ(OFF2),KLD,
-     &              A1,S2(OFF3),M)
-        OFF3 = OFF3 + M * N * RCW
-      ENDDO
-C ***
-C *** original CNTRCT call in serial version
-C ***
-C *** CALL CNTRCT ('N','N',NVVT,NOOT,NOOT,A1,BUF1,AZ,A1,S2,NREP)
-C ***
-      CALL XTIME(0,2,'--- T2EQNS: TAU*AINTM contraction')
-C ** we will not parallelize a summation over just one occupied index
-C ** if the system is small this can lead to zero batches. Only master
-C ** does the T2(AB,IK) * GO(K,J) contraction
-C ********************
-C ** TASK SPLITTING **
-C ********************
-      IF(MYPROC.EQ.MASTER) THEN
-C----------------------------------------------------------------
-C S(AB,IJ) = S(AB,IJ) - PIJ [ T2(AB,IK) * GO(K,J) ]
-C----------------------------------------------------------------
-      CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-     &             T2,BUF1)
-      CALL CNTRCT ('N','N',NVVOT,NO,NO,A1,BUF1,GO,A0,BUF2,NREP)
-      CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-     &             BUF2,BUF1)
-      CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
-C ***************************
-C ** END OF TASK SPLITTING **
-C ***************************
-      ENDIF
-C-----------------------------------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
-C-----------------------------------------------------------------------
-      CALL XTIME(0,1,'--- T2EQNS: VOVV*T1              ')
-      DO 30 IRP = 1, NREP
-         IF (NVO(IRP).EQ.0) GOTO 30
-         DONE = .FALSE.
-         ISTART = 0
-         MINT = NBUF3/NVO(IRP)  ! max. # of NVO batches that fit in mem.
-  10     CONTINUE
-            CALL GETDZ   (IRP,ISTART,NINT,DONE,BUF3)
-         IF (CARITH) CALL CONJUGA (NVO(IRP)*NINT,BUF3,1)
-         IJ = 0
-         DO 20 JREP = 1, NREP
-           CREP = MULTB(JREP,IRP+NREP,2)
-           IREP = CREP
-           IF (IREP.LT.JREP) GOTO 20
-           DO J = 1, NO(JREP)
-              IMIN = 1
-              IF (JREP.EQ.IREP) IMIN = J + 1
-              DO I = IMIN, NO(IREP)
-                 IJ = IJ + 1
-                 ABIJ = (IVVOOTT(IRP)+(IJ-1)*NVVT(IRP)+ISTART)*RCW+1
-                 DO C = 1, NV(CREP)
-                    CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
-                    T1VAL(1) = T1(T1CI)
-                    IF (CARITH) T1VAL(2) = T1(T1CI+1)
-                    CALL XAXPY(NINT,T1VAL,BUF3(CJ),NVO(IRP),S2(ABIJ),1)
-                 ENDDO
-              ENDDO
-           ENDDO
- 20      CONTINUE
-         JI = 0
-         DO 21 IREP = 1, NREP
-           JREP = MULTB(IREP,IRP+NREP,2)
-           CREP = IREP
-           IF (JREP.LT.IREP) GOTO 21
-           DO I = 1, NO(IREP)
-              JMIN = 1
-              IF (JREP.EQ.IREP) JMIN = I + 1
-              DO J = JMIN, NO(JREP)
-                 JI = JI + 1
-                 ABJI = (IVVOOTT(IRP)+(JI-1)*NVVT(IRP)+ISTART)*RCW+1
-                 DO C = 1, NV(CREP)
-                    CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
-                    T1VAL(1) = - T1(T1CI)
-                    IF (CARITH) T1VAL(2) = - T1(T1CI+1)
-                    CALL XAXPY(NINT,T1VAL,BUF3(CJ),NVO(IRP),S2(ABJI),1)
-                 ENDDO
-              ENDDO
-           ENDDO
- 21      CONTINUE
-         IF (.NOT.DONE) THEN
-            ISTART = ISTART + NINT
-            GOTO 10
-         ENDIF
- 30    CONTINUE
-      CALL XTIME(0,2,'--- T2EQNS: VOVV*T1              ')
-C ****************************
-C ** END OF TASK SPLITTING. **
-C ****************************
-C ** this contribution coming from the intermediate G(A,C) has to be
-C ** calculated on each node. The fact that G(A,C) contains LOCAL +
-C ** DISTRIBUTED parts as well is accounted for by the original calculation
-C ** of the G(A,C) array before entering T2EQNS
-C-------------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + PAB [ GV(A,C) * T2(CB,IJ)]
-C-------------------------------------------------
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
-      CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
-C ** the contraction of G(A,C) with the T2 amplitudes now is in BUF1 !
-C ** these are the partial contributions available on EACH node
-C ***
-C ****** task splitting
-C ***
-      IF(MYPROC.EQ.MASTER) THEN
-         CALL XCOPY (NV2,CZ,1,BUF2,1)
-      CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
-      CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
-     &             BUF3,BUF2)
-      CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF2,A1,BUF1,NREP)
-C ***
-C *** end of task splitting
-C ***
-      ENDIF
-      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
-     &             BUF1,BUF2)
-      CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
-C ** now the final H*T2 contraction. H is complete since we communicated
-C ** it already.
-C-----------------------------------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [H(AI,CK)*T2(CK,BJ)]
-C-----------------------------------------------------------------------
-      CALL XTIME(0,1,'--- T2EQNS: HINTM*T2           ')
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              T2,BUF1)
-      CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF2,1)
-      OFF3 = 1
-      DO IREP = 1, NREP
-         JREP = MULTB(IREP+NREP,1+NREP,2)
-         M    = MVO(IREP)
-         N    = MVO(JREP)
-         KLD  = MVO(IREP)
-         K    = IDIST(1,10,JREP)
-         OFF1 = IDIST(2,10,JREP)
-         OFF2 = IDIST(3,10,JREP)
-         CALL XGEMM ('N','N',M,N,K,A1,H(OFF1),M,BUF1(OFF2),KLD,
-     &                A0,BUF2(OFF3),M)
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-      CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              BUF2,BUF1)
-      CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
-      CALL XTIME(0,2,'--- T2EQNS: HINTM*T2           ')
-C==========================================================
-C============= L A M B D A   E Q U A T I O N S ============
-C==========================================================
-C-------------------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * V(KL,CD) * L(CD,IJ)
-C-------------------------------------------------------
-      CALL GETAMPT (BUF1,BUF2)
-      CALL GETTAU (BUF1,BUF2,BUF3)
-      CALL GETVVOO (BUF1)
-      CALL CNTRCT ('C','N',NOOT,NOOT,NVVT,A1,BUF1,T2,A0,BUF2,NREP)
-      CALL CNTRCT ('N','N',NOOT,NOOT,NVVT,A1,BUF3,BUF2,A1,S2,NREP)
-C-----------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + PAB.PIJ. [T(A,I)*H(B,J)]
-C-----------------------------------------------
-      CALL LAMBD21 (T1,HOV,S2)
-C---------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + PAB. [G(A,C)*W(CB,IJ)]
-C---------------------------------------------
-      CALL GETVVOO (BUF1)
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
-     &             BUF1,BUF2)
-      CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GVV,BUF2,A0,BUF1,NREP)
-      CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
-     &             BUF1,BUF2)
-      CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
-C---------------------------------------------
-C S(AB,IJ) = S(AB,IJ) - PIJ. [W(AB,IK)*G(K,J)]
-C---------------------------------------------
-      CALL GETVVOO(BUF2)
-      CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-     &             BUF2,BUF1)
-      CALL CNTRCT ('N','N',NVVOT,NO,NO,A1,BUF1,GOO,A0,BUF2,NREP)
-      CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
-     &             BUF2,BUF1)
-      CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
-C-----------------------------------------------------------------------
-C S(AB,IJ) = S(AB,IJ) + PAB.PIJ [L(D,I)*V(AK,CD)*T2(BC,KJ)]
-C-----------------------------------------------------------------------
-      CALL GETAMPT (BUF1,BUF3)
-      CALL DINTM2 (T1,BUF1,BUF3,NBUF3,BUF2)
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              BUF3,BUF1)
-      CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF3,1)
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP =1 , NREP
-         JRP = MULTB(IRP+NREP,1+NREP,2)
-         M = MVO(IRP)
-         N = MVO(JRP)
-         K = MVO(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,BUF2(OFF1),M,BUF1(OFF2),K,
-     &               A0,BUF3(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-      CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              BUF3,BUF1)
-      CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
-C
+!     CALL XTIME(0,1,'--- T2EQNS: TAU*AINTM contraction')
+!        CALL XCOPY (NDIMT2,T2,1,BUF1,1)
+!     OFF3 = 1
+!     DO IREP = 1, NREP
+!       M    = NVVT(IREP)
+!       N    = NOOT(IREP)
+!       KLD  = NOOT(IREP)
+!       K    = IDIST(1,5,IREP)
+!       OFF1 = IDIST(2,5,IREP)
+!       OFF2 = IDIST(3,5,IREP)
+!       CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,AZ(OFF2),KLD,
+!    &              A1,S2(OFF3),M)
+!       OFF3 = OFF3 + M * N * RCW
+!     ENDDO
+! ***
+! *** original CNTRCT call in serial version
+! ***
+! *** CALL CNTRCT ('N','N',NVVT,NOOT,NOOT,A1,BUF1,AZ,A1,S2,NREP)
+! ***
+!     CALL XTIME(0,2,'--- T2EQNS: TAU*AINTM contraction')
+! ** we will not parallelize a summation over just one occupied index
+! ** if the system is small this can lead to zero batches. Only master
+! ** does the T2(AB,IK) * GO(K,J) contraction
+! ********************
+! ** TASK SPLITTING **
+! ********************
+!     IF(MYPROC.EQ.MASTER) THEN
+!----------------------------------------------------------------
+! S(AB,IJ) = S(AB,IJ) - PIJ [ T2(AB,IK) * GO(K,J) ]
+!----------------------------------------------------------------
+!     CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+!    &             T2,BUF1)
+!     CALL CNTRCT ('N','N',NVVOT,NO,NO,A1,BUF1,GO,A0,BUF2,NREP)
+!     CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+!    &             BUF2,BUF1)
+!     CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
+! ***************************
+! ** END OF TASK SPLITTING **
+! ***************************
+!     ENDIF
+!-----------------------------------------------------------------------
+! S(AB,IJ) = S(AB,IJ) + PIJ [ W(AB,CJ) * T1(C,I) ]
+!-----------------------------------------------------------------------
+!     CALL XTIME(0,1,'--- T2EQNS: VOVV*T1              ')
+!     DO 30 IRP = 1, NREP
+!        IF (NVO(IRP).EQ.0) GOTO 30
+!        DONE = .FALSE.
+!        ISTART = 0
+!        MINT = NBUF3/NVO(IRP)  ! max. # of NVO batches that fit in mem.
+! 10     CONTINUE
+!           CALL GETDZ   (IRP,ISTART,NINT,DONE,BUF3)
+!        IF (CARITH) CALL CONJUGA (NVO(IRP)*NINT,BUF3,1)
+!        IJ = 0
+!        DO 20 JREP = 1, NREP
+!          CREP = MULTB(JREP,IRP+NREP,2)
+!          IREP = CREP
+!          IF (IREP.LT.JREP) GOTO 20
+!          DO J = 1, NO(JREP)
+!             IMIN = 1
+!             IF (JREP.EQ.IREP) IMIN = J + 1
+!             DO I = IMIN, NO(IREP)
+!                IJ = IJ + 1
+!                ABIJ = (IVVOOTT(IRP)+(IJ-1)*NVVT(IRP)+ISTART)*RCW+1
+!                DO C = 1, NV(CREP)
+!                   CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
+!                   T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
+!                   T1VAL(1) = T1(T1CI)
+!                   IF (CARITH) T1VAL(2) = T1(T1CI+1)
+!                   CALL XAXPY(NINT,T1VAL,BUF3(CJ),NVO(IRP),S2(ABIJ),1)
+!                ENDDO
+!             ENDDO
+!          ENDDO
+!20      CONTINUE
+!        JI = 0
+!        DO 21 IREP = 1, NREP
+!          JREP = MULTB(IREP,IRP+NREP,2)
+!          CREP = IREP
+!          IF (JREP.LT.IREP) GOTO 21
+!          DO I = 1, NO(IREP)
+!             JMIN = 1
+!             IF (JREP.EQ.IREP) JMIN = I + 1
+!             DO J = JMIN, NO(JREP)
+!                JI = JI + 1
+!                ABJI = (IVVOOTT(IRP)+(JI-1)*NVVT(IRP)+ISTART)*RCW+1
+!                DO C = 1, NV(CREP)
+!                   CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
+!                   T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
+!                   T1VAL(1) = - T1(T1CI)
+!                   IF (CARITH) T1VAL(2) = - T1(T1CI+1)
+!                   CALL XAXPY(NINT,T1VAL,BUF3(CJ),NVO(IRP),S2(ABJI),1)
+!                ENDDO
+!             ENDDO
+!          ENDDO
+!21      CONTINUE
+!        IF (.NOT.DONE) THEN
+!           ISTART = ISTART + NINT
+!           GOTO 10
+!        ENDIF
+!30    CONTINUE
+!     CALL XTIME(0,2,'--- T2EQNS: VOVV*T1              ')
+! ****************************
+! ** END OF TASK SPLITTING. **
+! ****************************
+! ** this contribution coming from the intermediate G(A,C) has to be
+! ** calculated on each node. The fact that G(A,C) contains LOCAL +
+! ** DISTRIBUTED parts as well is accounted for by the original calculation
+! ** of the G(A,C) array before entering T2EQNS
+!-------------------------------------------------
+! S(AB,IJ) = S(AB,IJ) + PAB [ GV(A,C) * T2(CB,IJ)]
+!-------------------------------------------------
+!     CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
+!     CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GV,BUF2,A0,BUF1,NREP)
+! ** the contraction of G(A,C) with the T2 amplitudes now is in BUF1 !
+! ** these are the partial contributions available on EACH node
+! ***
+! ****** task splitting
+! ***
+!     IF(MYPROC.EQ.MASTER) THEN
+!        CALL XCOPY (NV2,CZ,1,BUF2,1)
+!     CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
+!     CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,
+!    &             BUF3,BUF2)
+!     CALL CNTRCT ('N','N',NV,NVOOT,NO,-A1,T1,BUF2,A1,BUF1,NREP)
+! ***
+! *** end of task splitting
+! ***
+!     ENDIF
+!     CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+!    &             BUF1,BUF2)
+!     CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
+! ** now the final H*T2 contraction. H is complete since we communicated
+! ** it already.
+!-----------------------------------------------------------------------
+! S(AB,IJ) = S(AB,IJ) + PAB.PIJ [H(AI,CK)*T2(CK,BJ)]
+!-----------------------------------------------------------------------
+!     CALL XTIME(0,1,'--- T2EQNS: HINTM*T2           ')
+!     CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+!    &              T2,BUF1)
+!     CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF2,1)
+!     OFF3 = 1
+!     DO IREP = 1, NREP
+!        JREP = MULTB(IREP+NREP,1+NREP,2)
+!        M    = MVO(IREP)
+!        N    = MVO(JREP)
+!        KLD  = MVO(IREP)
+!        K    = IDIST(1,10,JREP)
+!        OFF1 = IDIST(2,10,JREP)
+!        OFF2 = IDIST(3,10,JREP)
+!        CALL XGEMM ('N','N',M,N,K,A1,H(OFF1),M,BUF1(OFF2),KLD,
+!    &                A0,BUF2(OFF3),M)
+!        OFF3 = OFF3 + M * N * RCW
+!     ENDDO
+!     CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+!    &              BUF2,BUF1)
+!     CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
+!     CALL XTIME(0,2,'--- T2EQNS: HINTM*T2           ')
+!==========================================================
+!============= L A M B D A   E Q U A T I O N S ============
+!==========================================================
+!-------------------------------------------------------
+! S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * V(KL,CD) * L(CD,IJ)
+!-------------------------------------------------------
+!     CALL GETAMPT (BUF1,BUF2)
+!     CALL GETTAU (BUF1,BUF2,BUF3)
+!     CALL GETVVOO (BUF1)
+!     CALL CNTRCT ('C','N',NOOT,NOOT,NVVT,A1,BUF1,T2,A0,BUF2,NREP)
+!     CALL CNTRCT ('N','N',NOOT,NOOT,NVVT,A1,BUF3,BUF2,A1,S2,NREP)
+!-----------------------------------------------
+! S(AB,IJ) = S(AB,IJ) + PAB.PIJ. [T(A,I)*H(B,J)]
+!-----------------------------------------------
+!     CALL LAMBD21 (T1,HOV,S2)
+!---------------------------------------------
+! S(AB,IJ) = S(AB,IJ) + PAB. [G(A,C)*W(CB,IJ)]
+!---------------------------------------------
+!     CALL GETVVOO (BUF1)
+!     CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+!    &             BUF1,BUF2)
+!     CALL CNTRCT ('N','N',NV,NVOOT,NV,A1,GVV,BUF2,A0,BUF1,NREP)
+!     CALL SRT1T2 (NREP,MULTB,LTR,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,
+!    &             BUF1,BUF2)
+!     CALL XAXPY (NDIMT2,A1,BUF2,1,S2,1)
+!---------------------------------------------
+! S(AB,IJ) = S(AB,IJ) - PIJ. [W(AB,IK)*G(K,J)]
+!---------------------------------------------
+!     CALL GETVVOO(BUF2)
+!     CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+!    &             BUF2,BUF1)
+!     CALL CNTRCT ('N','N',NVVOT,NO,NO,A1,BUF1,GOO,A0,BUF2,NREP)
+!     CALL SRT1T3 (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
+!    &             BUF2,BUF1)
+!     CALL XAXPY (NDIMT2,-A1,BUF1,1,S2,1)
+!-----------------------------------------------------------------------
+! S(AB,IJ) = S(AB,IJ) + PAB.PIJ [L(D,I)*V(AK,CD)*T2(BC,KJ)]
+!-----------------------------------------------------------------------
+!     CALL GETAMPT (BUF1,BUF3)
+!     CALL DINTM2 (T1,BUF1,BUF3,NBUF3,BUF2)
+!     CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+!    &              BUF3,BUF1)
+!     CALL XCOPY (J2VOVO(NREP+1),A0,0,BUF3,1)
+!     OFF1 = 1
+!     OFF2 = 1
+!     OFF3 = 1
+!     DO IRP =1 , NREP
+!        JRP = MULTB(IRP+NREP,1+NREP,2)
+!        M = MVO(IRP)
+!        N = MVO(JRP)
+!        K = MVO(IRP)
+!        CALL XGEMM ('N','N',M,N,K,A1,BUF2(OFF1),M,BUF1(OFF2),K,
+!    &               A0,BUF3(OFF3),M)
+!        OFF1 = OFF1 + M * K * RCW
+!        OFF2 = OFF2 + K * N * RCW
+!        OFF3 = OFF3 + M * N * RCW
+!     ENDDO
+!     CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+!    &              BUF3,BUF1)
+!     CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
+!
       END

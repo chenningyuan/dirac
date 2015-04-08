@@ -338,8 +338,8 @@
 
   call getvovo (w_vovo)
 
-  call SRT1L1 (NREP,MULTB,.FALSE.,NVO,NV,NO,NVO, &
-     &                   IVOVO,IIOV,w_vovo,wbar_ovvo) 
+  call srt1l1 (nrep,multb,.false.,nvo,nv,no,nvo, &
+     &                   ivovo,iiov,w_vovo,wbar_ovvo) 
 
   deallocate (w_vovo)
 
@@ -656,7 +656,6 @@
          allocate (w_vvvv(nint*nvvt(irp)),stat = AllocateStatus)!hopefully ok. not 100% sure.
          if (AllocateStatus /= 0) stop "*** not enough memory ***"
 
-!        allocate (w_vvvv(nv6)) !hopefully ok. not 100% sure.
 
          w_vvvv = 0.0d0
 
@@ -705,148 +704,148 @@
 !-------------------------------------------------------
 
 
-       IJKL = 1
-       KL = 0
-       KCO = 0
-       KLSTAR = 0
+   !   IJKL = 1
+   !   KL = 0
+   !   KCO = 0
+   !   KLSTAR = 0
 
-       DO LREP = 1, NREP
-        KREP = MULTB(LREP,IRP+NREP,2)
-        IF (KREP.LT.LREP) cycle
-        DO L = 1, NV(LREP)
-         KMIN = 1
-         IF (KREP.EQ.LREP) KMIN = L + 1
-         DO K = KMIN, NV(KREP)
+   !   DO LREP = 1, NREP
+   !    KREP = MULTB(LREP,IRP+NREP,2)
+   !    IF (KREP.LT.LREP) cycle
+   !    DO L = 1, NV(LREP)
+   !     KMIN = 1
+   !     IF (KREP.EQ.LREP) KMIN = L + 1
+   !     DO K = KMIN, NV(KREP)
 
-          IF(KCO.LT.KLSTAR) THEN
-            KCO = KCO + 1
-            cycle
-          ENDIF
+   !      IF(KCO.LT.KLSTAR) THEN
+   !        KCO = KCO + 1
+   !        cycle
+   !      ENDIF
 
-          KL = KL + 1
+   !      KL = KL + 1
  
-          IF (KL.EQ.NINT+1) THEN
-!!-----------------------
-!!We need the next buffer
-!!-----------------------
-             KLSTAR = KLSTAR + NINT
-             NINT = MINT
-                IF(.NOT.DONE) THEN
-                  CALL GETVOVV (IRP,KLSTAR,NINT,DONE,BUF1,MINT)
-                ELSE
-                  GOTO 50
-                ENDIF
+   !      IF (KL.EQ.NINT+1) THEN
+!!-!---------------------
+!!W! need the next buffer
+!!-!---------------------
+   !         KLSTAR = KLSTAR + NINT
+   !         NINT = MINT
+   !            IF(.NOT.DONE) THEN
+   !              CALL GETVOVV (IRP,KLSTAR,NINT,DONE,BUF1,MINT)
+   !            ELSE
+   !              GOTO 50
+   !            ENDIF
 
- !           KL = 1
- !           IJKL = 1
- !           KCO = KLSTAR
-          ENDIF
+ ! !         KL = 1
+ ! !         IJKL = 1
+ ! !         KCO = KLSTAR
+   !      ENDIF
 
-             DO  JREP = 1, NREP
-              IREP = MULTB(JREP,IRP+NREP,2)
-              LJREP = MULTB(LREP,JREP,2)
-              KJREP = MULTB(KREP,JREP,2)
-              LJ    = JJVO(LREP,JREP) + L - 1
-              LJ    = LJ * RCW + 1
-              KJ    = JJVO(KREP,JREP) + K - 1
-              KJ    = KJ * RCW + 1
+   !         DO  JREP = 1, NREP
+   !          IREP = MULTB(JREP,IRP+NREP,2)
+   !          LJREP = MULTB(LREP,JREP,2)
+   !          KJREP = MULTB(KREP,JREP,2)
+   !          LJ    = JJVO(LREP,JREP) + L - 1
+   !          LJ    = LJ * RCW + 1
+   !          KJ    = JJVO(KREP,JREP) + K - 1
+   !          KJ    = KJ * RCW + 1
 
-              IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP)
-              IK0   = IK0 * RCW + 1
-              IL0   = JJVV(IREP,LREP) + (L-1)*NV(IREP)
-              IL0   = IL0 * RCW + 1
+   !          IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP)
+   !          IK0   = IK0 * RCW + 1
+   !          IL0   = JJVV(IREP,LREP) + (L-1)*NV(IREP)
+   !          IL0   = IL0 * RCW + 1
 
-              PQ = NVO(LJREP)
+   !          PQ = NVO(LJREP)
 
-            DO  J = 1, NO(JREP)
+   !        DO  J = 1, NO(JREP)
 
-!!------------new loop over (P,Q) to get all the elements of sorted t2 array------------
+!!-!----------new loop over (P,Q) to get all the elements of sorted t2 array------------
 
-               CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),t_sort(LJ,OFF3), &
-               &               NVO(IRP),A1,xx(IK0,OFF3),NVV(IRP))
+   !           CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),t_sort(LJ,OFF3), &
+   !           &               NVO(IRP),A1,xx(IK0,OFF3),NVV(IRP))
 
-                  CALL XCOPY (PQ,t_sort(KJ,OFF3),1,TVAL,1)
-                  CALL XSCAL (PQ,-A1,TVAL,1)
+   !              CALL XCOPY (PQ,t_sort(KJ,OFF3),1,TVAL,1)
+   !              CALL XSCAL (PQ,-A1,TVAL,1)
 
-                  CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),TVAL, &
-                  &               NVO(IRP),A1,xx(IL0,OFF3),NVV(IRP))
+   !              CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),TVAL, &
+   !              &               NVO(IRP),A1,xx(IL0,OFF3),NVV(IRP))
 
-               IJKL = IJKL + NV(IREP) * RCW
-               LJ   = LJ   + NV(LREP) * RCW
-               KJ   = KJ   + NV(KREP) * RCW
+   !           IJKL = IJKL + NV(IREP) * RCW
+   !           LJ   = LJ   + NV(LREP) * RCW
+   !           KJ   = KJ   + NV(KREP) * RCW
 
-              enddo
+   !          enddo
 
-               OFF3 = OFF3 + PQ * RCW
-             enddo
+   !           OFF3 = OFF3 + PQ * RCW
+   !         enddo
 
-         enddo
-        enddo
-       enddo
+   !     enddo
+   !    enddo
+   !   enddo
 
-!!--------------------------------------------------
-!!   sorting step. major caveat: buf3 is not triangular.
-!  (IL,PQ) -> (LQ,IP)-(LQ,PI) -> (LQ,I>P)  
-!!--------------------------------------------------
+!!-!------------------------------------------------
+!! ! sorting step. major caveat: buf3 is not triangular.
+!  !IL,PQ) -> (LQ,IP)-(LQ,PI) -> (LQ,I>P)  
+!!-!------------------------------------------------
 
-         DO PQREP = 1,NREP
-          DO  PREP = 1,NREP
-              QREP = MULTB(PREP,PQREP+NREP,2) 
-           DO Q = 1, NO (QREP) 
+   !     DO PQREP = 1,NREP
+   !      DO  PREP = 1,NREP
+   !          QREP = MULTB(PREP,PQREP+NREP,2) 
+   !       DO Q = 1, NO (QREP) 
 
-             DO P = 1, NV (PREP)
+   !         DO P = 1, NV (PREP)
 
-              DO IREP = 1, NREP 
-                 LREP = MULTB(IREP,PQREP+NREP,2) 
+   !          DO IREP = 1, NREP 
+   !             LREP = MULTB(IREP,PQREP+NREP,2) 
 
-            
-               LQREP = MULTB(LREP,QREP,2)
-               ILREP = MULTB(IREP,LREP,2)
-               IQREP = MULTB(IREP,QREP,2)
-               PQ0   = JJVV(PREP,QREP) + (Q-1)*NV(PREP)+P
-               PQ0   = PQ0 * RCW + 1 
+   !        
+   !           LQREP = MULTB(LREP,QREP,2)
+   !           ILREP = MULTB(IREP,LREP,2)
+   !           IQREP = MULTB(IREP,QREP,2)
+   !           PQ0   = JJVV(PREP,QREP) + (Q-1)*NV(PREP)+P
+   !           PQ0   = PQ0 * RCW + 1 
 
-               PL0   = JJVV(PREP,LREP) +  P
-               PL0   = PL0 * RCW + 1
-
-
-               IMIN = 1
-               IF (IREP.EQ.PREP) IMIN = P + 1
-               DO I = IMIN, NV(IREP)
+   !           PL0   = JJVV(PREP,LREP) +  P
+   !           PL0   = PL0 * RCW + 1
 
 
-               IP0   = JJVV(IREP,PREP) + (P-1)*NV(IREP)+I
-               IP0   = IP0 * RCW + 1 
-
-               IL0   = JJVV(IREP,KREP) +  I
-               IL0   = IK0 * RCW + 1
-
-               IQ0   = JJVO(KREP,QREP) + (Q-1)*NV(IREP) + I
-               IQ0   = IQ0 * RCW + 1
-
-               LQ0   = JJVO(LREP,QREP) + (Q-1)*NV(LREP)
-               LQ0   = LQ0 * RCW + 1
+   !           IMIN = 1
+   !           IF (IREP.EQ.PREP) IMIN = P + 1
+   !           DO I = IMIN, NV(IREP)
 
 
-               LQIP = (IP0-1)*MVO(LQREP)  + LQ0
-!               ILPQ = (PQ0-1)*MVV(ILREP)  + IL0
-!               PLIQ = (PL0-1)*MVV(IQREP)  + IQ0
+   !           IP0   = JJVV(IREP,PREP) + (P-1)*NV(IREP)+I
+   !           IP0   = IP0 * RCW + 1 
 
-               CALL XCOPY (NV(LREP),xx(IL0,PQ0),NV(IREP),buf2(LQIP),1)
+   !           IL0   = JJVV(IREP,KREP) +  I
+   !           IL0   = IK0 * RCW + 1
 
-               CALL XAXPY (NV(LREP),-A1,xx(PL0,IQ0),NV(PREP),buf2(LQIP),1)
+   !           IQ0   = JJVO(KREP,QREP) + (Q-1)*NV(IREP) + I
+   !           IQ0   = IQ0 * RCW + 1
+
+   !           LQ0   = JJVO(LREP,QREP) + (Q-1)*NV(LREP)
+   !           LQ0   = LQ0 * RCW + 1
 
 
-               LQ0 = LQ0 + RCW*NV(LREP)
-               enddo
-               IL0 = IL0 + RCW*NV(LREP) 
-               PL0 = PL0 + RCW*NV(LREP) 
-              enddo
-             enddo
+   !           LQIP = (IP0-1)*MVO(LQREP)  + LQ0
+!  !            ILPQ = (PQ0-1)*MVV(ILREP)  + IL0
+!  !            PLIQ = (PL0-1)*MVV(IQREP)  + IQ0
 
-           enddo
-          enddo
-         enddo
+   !           CALL XCOPY (NV(LREP),xx(IL0,PQ0),NV(IREP),buf2(LQIP),1)
+
+   !           CALL XAXPY (NV(LREP),-A1,xx(PL0,IQ0),NV(PREP),buf2(LQIP),1)
+
+
+   !           LQ0 = LQ0 + RCW*NV(LREP)
+   !           enddo
+   !           IL0 = IL0 + RCW*NV(LREP) 
+   !           PL0 = PL0 + RCW*NV(LREP) 
+   !          enddo
+   !         enddo
+
+   !       enddo
+   !      enddo
+   !     enddo
 
 !             DO I = 1, NV (PREP) 
 !              PMIN = 1

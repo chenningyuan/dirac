@@ -161,35 +161,44 @@
     end subroutine
 
    subroutine contraction_422 (left_order,right_order,im_order,rightTensor,imTensor, &
-           &                   dia_factor,dia_sum_factor,nrep)
+           &                   dia_factor,dia_sum_factor,nrep,LeftTensor)
      
 !----------calling variables-----------------------------------
-    character(2), dimension(4), intent(in)   :: left_order
-    character(2), dimension(2), intent(in)   :: im_order, right_order
-!    real(8), intent(in), optional :: left_array(:), right_array(:)   !when the left or right array is a fixed array then we will provide input.    
-    real(8), intent(in)     :: rightTensor(*)   
-    integer, intent(in)     :: nrep
-    real(8), intent(in)     :: dia_factor, dia_sum_factor             !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
-    real(8), intent(inout)  :: imTensor(*)
+    character(2),dimension(4),intent(in)   :: left_order
+    character(2),dimension(2),intent(in)   :: im_order, right_order
+    real(8),intent(in),optional :: LeftTensor(:)            !when the left array is a fixed array then we will provide input.    
+    real(8),intent(in)     :: rightTensor(*)   
+    integer,intent(in)     :: nrep
+    real(8),intent(in)     :: dia_factor, dia_sum_factor  !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8),intent(inout)  :: imTensor(*)
 !--------------------------------------------------------------
     integer        :: x_row(nrep), x_column(nrep)
     character(1)   :: transA
     integer        :: match_index 
     real(8)        :: v_sort(10000)
 #include "param.inc"
-!  1) fetch the fixed array, properly sorted to contract with BLAS.
 
-!  2) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS.
+!  1) fetch the array which is flexible in terms of indices. sort it to make suitable for BLAS.
+!     also determine the row and column index for the matrix-vector multiplication routine.
 
      v_sort = 0.0d0
 
      transA = 'N'
+
      call decide_sorting_routine(22,left_order,right_order,im_order,transA,match_index)
+
+     if (present(LeftTensor)) then
+
+     call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column,presorted=LeftTensor,if_totsym=.true.)
+
+     else
 
      call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column,if_totsym=.true.)
 
-!  3) determine the row and column index for the matrix-vector multiplication routine. 
-!     I will like to fetch a flexible array   
+     endif
+
+
+!  2) carry out the contraction. 
 
       call xgemv (transA,x_row,x_column,dia_factor*A1,v_sort,x_row,rightTensor,1,dia_sum_factor*A1,imTensor,1) 
 
@@ -258,17 +267,17 @@
     end subroutine
 
    subroutine contraction_444 (left_order,right_order,im_order,rightTensor,imTensor, &
-           &                   dia_factor,dia_sum_factor,nrep)
+           &                   dia_factor,dia_sum_factor,nrep,LeftTensor)
     
 !----------calling variables-----------------------------------
     character(*), dimension(4), intent(in)   :: left_order, right_order, im_order
-!   real(8), intent(in), optional :: left_array(:), right_array(:)   !when the left or right array is a fixed array then we will provide input.    
-    real(8), intent(in) :: rightTensor(:)   
+    real(8), intent(in), optional :: LeftTensor(:)   !when the left array is a fixed array then we will provide input.    
+    real(8), intent(in) :: RightTensor(:)   
     integer, intent(in) :: nrep
     real(8), intent(in) :: dia_factor, dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(inout)  :: imTensor(*)
 !--------------------------------------------------------------
-   integer        :: x_row(nrep), x_column(nrep), y_row(nrep), y_column(nrep)
+   integer        :: x_row(nrep),x_column(nrep),y_row(nrep),y_column(nrep)
    character(1)   :: transA, transB
    integer        :: save_index,i
    character(2)   :: sorted_opArray_left(4),sorted_opArray_right(4)
@@ -288,7 +297,11 @@
 
     call decide_sorting_routine(22,left_order,right_order,im_order,transA,save_index,sorted_opArray_left)
 
+    if (present(LeftTensor)) then 
+    call sorting_for_blas(save_index,.false.,transA,v_sort,x_row,x_column, presorted=LeftTensor,if_TotSym=.false.)
+    else
     call sorting_for_blas(save_index,.false.,transA,v_sort,x_row,x_column,if_TotSym=.false.)
+    endif
 
 !  2) properly sort the fixed array to contract with BLAS. row and colum indices for this array are also extracted here.
 

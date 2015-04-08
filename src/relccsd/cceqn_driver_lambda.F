@@ -22,6 +22,7 @@ C---------------Calling variables--------------------------------------
 C
 C     Intermediaries etc.
 
+
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),L1(*),S1(*),L2(*),S2(*)
       REAL*8 W_OOOO(*),W_VOVO(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
@@ -168,6 +169,11 @@ C     Initialize the work arrays to zero.
       call srt1c1 (nrep,nv,no,s1,l1) 
       call srt1c1 (nrep,nvvt,noot,s2,l2) 
 
+
+      write(*,5)(l1(i),i=1,ndimt1)
+
+
+
 !     Initialize the work arrays to zero.
 
       call xcopy (ndimt2,A0,0,buf1,1)
@@ -183,10 +189,10 @@ C     Initialize the work arrays to zero.
 
       nit = 0
 
-!     if (iprnt.ge.1) then
-!        write(iw,6003)
-!        write(iw,6001) nit,rms
-!     endif
+      if (iprnt.ge.1) then
+         write(iw,6003)
+         write(iw,6001) nit,rms
+      endif
 
 !--------------------------------------
 !  Start Iterative Procedure
@@ -200,6 +206,7 @@ C     Initialize the work arrays to zero.
 !     Making non-sequential G_ea, G_im intermediates for lambda equations
 
       ResL1 = 0.0d0
+      ResL2 = 0.0d0
 
       allocate (G_vv(ivv(nrep+1)*rcw))
       allocate (G_oo(ioo(nrep+1)*rcw))
@@ -218,10 +225,6 @@ C     Initialize the work arrays to zero.
 
       endif
 
-    
-         CALL QUIT('FORCE QUIT.')
-
-
       CALL XTIME(5,2,'- L1 equations                  ')
                                  
       CALL XTIME(5,1,'- L2 equations                  ')
@@ -229,13 +232,14 @@ C     Initialize the work arrays to zero.
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- L2 EQNS                     ')
-      call lambda_equation_T2(EPS,L1,L2,HO,HV,HOV,w_vovo,w_oooo,CZ,G_oo,
-     &       G_VV,BUF1,BUF2,BUF3,NBUF3,resL2)
+
+       write(*,*)'here is the first stop'
+
+       CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_vovo,w_oooo,
+     &                            G_oo,G_vv,buf1,buf2,buf3,
+     &                            nbuf3,resL2)
+
       CALL XTIME(5,2,'-- T2 EQNS                     ')
- 
-      CALL XTIME(5,1,'-- BINTM                       ')
-      CALL BINTM (L1,L2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
-      CALL XTIME(5,2,'-- BINTM                       ')
 
       CALL XTIME(5,2,'- L2 equations                  ')
 
@@ -258,19 +262,23 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 !------------------------------------
 !     calculation of RMS value 
 !------------------------------------
-       rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
-       rms = sqrt((rms)/(ndimt1+ndimt2))
 
-!  Make new T1s and T2 by dividing S1s and S2 by eigenvalues
+!  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
        call denom (eps,resL1,resL2,resL1,resL2)
 
+       rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
+       rms = sqrt((rms)/(ndimt1+ndimt2))
+
+      write(*,5)(Resl1(i),i=1,ndimt1)
+
 !------------------------------------------------------------------------------------------------------------
 !       here i have summed the residue and old L amplitude value with a negative sign because the denominatior
-!       has opposite sign wrt the T amplitudes, which has been used in the denom routine 
+!       has opposite sign w.r.t. the T amplitudes, which has been used in the denom routine 
 !-------------------------------------------------------------------------------------------------------------
       call xaxpy (ndimt1,-A1,resL1,1,l1,1)
       call xaxpy (ndimt2,-A1,resL2,1,l2,1)
+
 
       CALL XTIME(5,1,'- DIIS extrapolation            ')
       call diisx(ndimt1,ndimt2,l1,l2,   

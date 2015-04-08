@@ -39,7 +39,8 @@
 
       integer,intent(in) :: nbuf2,nbuf3
       real(8),intent(in) :: ho(*),hv(*),hov(nfvo*rcw)           ! one body intermediates
-      real(8),intent(in) :: w_vovo(nv4*rcw),w_ovoo(nv2*rcw),w_vvvo(*)! two body intermediates 
+      real(8),intent(in) :: w_vovo(nv4*rcw),w_ovoo(nv2*rcw),
+     &                      w_vvvo(nv5*rcw)! two body intermediates 
       real(8),intent(in) :: G_vv((ivv(nrep+1))*rcw),
      &                         G_oo((ioo(nrep+1))*rcw)              ! G-intermediates  
       real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)! converged T1 amplitude
@@ -108,7 +109,6 @@
       call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
      &    G_oo,t1,int_temp,-1.0d0,1.0d0,nrep)
 
-      write(*,*)'hi, write me'
 !------------------------------------------------------------
 
       call contraction_242 ((/"p2","o2"/),(/"o1","o2","p1","p2"/),
@@ -116,12 +116,13 @@
 
       deallocate(int_temp)
 
-      write(*,*)'hi, write me'
 !-------------------------------------------------------
 !      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
 !-------------------------------------------------------
 
 
+      call contraction_442((/"o1","o2","p2","p3"/),(/"p1","o2","p2","p3"
+     &          /),(/"o1","p1"/),ResL1,-0.5d0,1.0d0,nrep,L2,w_vvvo)
 
 !-------------------------------------------------------
 !  out-of-core term....
