@@ -1,13 +1,13 @@
-DIRAC program suite buildup status
-===================================
+The DIRAC program suite buildup results
+---------------------------------------
  
-The official CDash board
-------------------------
+The official CDash web-board
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `The DIRAC testboard summary <https://testboard.org/cdash/index.php?project=DIRAC>`_ 
 
 The CI workers buildup status badges
-------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * circle-ci 
 
@@ -24,3 +24,17 @@ The CI workers buildup status badges
 .. image:: https://codeship.com/projects/f2013800-96a4-0132-fbdf-7a1406c9da98/status?branch=master
     :target: https://codeship.com/projects/63067
 
+* wercker
+
+.. image:: https://app.wercker.com/status/dc65c7af4c58c28259c541fb166e5108/m/master
+    :target: https://app.wercker.com/project/bykey/dc65c7af4c58c28259c541fb166e5108
+
+* shippable
+
+.. image:: https://api.shippable.com/projects/54b3c4df1cda23c2985c9baf/badge?branchName=master
+    :target: https://app.shippable.com/projects/54b3c4df1cda23c2985c9baf/builds/latest
+
+* semaphoreci
+
+.. image:: https://semaphoreci.com/api/v1/projects/b5752e42-3309-4871-a7ef-d96be17c439d/385211/badge.svg
+    :target: https://semaphoreci.com/miro_ilias/my-dirac
