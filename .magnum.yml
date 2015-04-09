@@ -8,6 +8,11 @@
 # If you want to run this buildup only on some branches you can select them in settings of your project
 # (Settings -> Build Configuration).
 
+# specify master branch only for testing
+branches:
+    only:
+        - master
+
 # install/update needed software
 before_install:
 # update software info
