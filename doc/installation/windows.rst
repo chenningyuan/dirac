@@ -75,7 +75,7 @@ Dependencies
     
    [c] in the same directory run: ::
     
-     b2 --with-system --with-filesystem --with-test toolset=gcc install
+     b2 --with-system --with-filesystem --with-test --with-chrono --with-timer toolset=gcc install
     
    [d] in *"C:\\Boost"* you will find *"include"* and *"lib"* directories
    
