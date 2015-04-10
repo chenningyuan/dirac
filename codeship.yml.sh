@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Sequential test sript for https://codeship.com/
+# Sequential test script for https://codeship.com/
 
 # It is recommended to copy (and modify) commands from this file to "Test Settings" of your project on codeship.
 # You can also run this script when you add to your projects "Test Settings" this command: "chmod a+x codeship.yml.sh && ./codeship.yml.sh".
@@ -19,7 +19,6 @@
 # But it is possible to ignore or run specific command on branch: 
 # see https://codeship.com/documentation/faq/ignore-command-on-branch/
 
-
 # Show system info
 lscpu
 df -h
@@ -30,32 +29,20 @@ which git
 whereis git
 git --version
 
-
-# update and install packages
-sudo apt-get update
-sudo apt-get install gcc -y
-sudo apt-get install g++ -y
-sudo apt-get install gfortran -y
-sudo apt-get install make -y
-sudo apt-get install cmake -y
-sudo apt-get install libblas-dev -y
-sudo apt-get install liblapack-dev -y
-sudo apt-get install zlib1g-dev -y
-sudo apt-get install doxygen -y
-sudo apt-get install python-dev -y
-sudo apt-get install python-pip -y
+# **Note**
+# It is not possible to install packages with "sudo apt-get install".
+# In case some package is missing you can write a message to codeship maintainers.
+# install python packages
 sudo pip install matplotlib
 sudo pip install sphinx==1.2.3
 sudo pip install sphinxcontrib-bibtex
 sudo pip install sphinx_rtd_theme
 sudo pip install hieroglyph
 
-
-# 32-bit Integer  build
+# 32-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i4
 python ./setup -D BUILDNAME="gnu.i4-codeship-ci" build_codeship_i4
 cd build_codeship_i4
-ctest --track Miro -D ExperimentalUpdate
 ctest --track Miro -D ExperimentalConfigure
 ctest -j 32 --track Miro -D ExperimentalBuild
 echo "$(ctest -j 16 --track Miro -D ExperimentalTest -L short)"
@@ -68,7 +55,6 @@ cd ..
 python ./pamadm -a --builddir=build_codeship_i8
 python ./setup -D BUILDNAME="gnu.i8-codeship-ci" --int64 build_codeship_i8
 cd build_codeship_i8
-ctest --track Miro -D ExperimentalUpdate
 ctest --track Miro -D ExperimentalConfigure
 ctest -j 32 --track Miro -D ExperimentalBuild
 echo "$(ctest -j 16 --track Miro -D ExperimentalTest -L short)"
