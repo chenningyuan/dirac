@@ -4,6 +4,37 @@ Programming rules
 
 Here we provide some guidelines for DIRAC programmers.
 
+Use of languages
+----------------
+
+DIRAC is for historical reasons largely written in Fortran 77 (F77),
+but in the newer parts of the code you may also see parts in Fortran 90 (F90), C and C++.
+Fortran 90 programming style with modules and other usefull features is required.
+
+Do not introduce a new language before consulting the authors forum.
+New languages might require compilers that may be proprietary and consequently not be
+available to all authors and users.
+
+Likewise do not introduce compiler-dependent extensions, though 
+they are inviting and so convenient. Do not use them.
+You will regret it later when you have to modify the code
+for other compilers.
+
+Fortran 90
+~~~~~~~~~~
+
+We require a F90 compiler by default. Therefore all files with .F, .F90, .f, and .f90 suffixes
+can contain F90 syntax. In .F and .f you can use F77 syntax, not in .F90 and .f90 files.
+In .F and .f files you can use F90 syntax however respecting the F77 line limits.
+Files with .F and .F90 suffixes are preprocessed, files with .f and .f90 are not preprocessed.
+If you introduce new source code file, always use .F90 suffix.
+
+F90 is case insensitive and allows both uppercase and lowercase.
+It is not necessary to program with the caps lock.
+Use uppercase and lowercase in a way that makes your code more readable.
+
+"C" at the beginning of empty lines is unnecessary.
+
 Do not read keywords with table/goto lookups
 --------------------------------------------
 
@@ -183,3 +214,5 @@ Make sure that new code compiles with and without MPI
 
 Before you push new code to the main line development, test
 whether it compiles with and without MPI.
+
+
