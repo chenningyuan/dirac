@@ -32,12 +32,12 @@ git --version
 # **Note**
 # It is not possible to install packages with "sudo apt-get install".
 # In case some package is missing you can write a message to codeship maintainers.
-# install python packages
-sudo pip install matplotlib
-sudo pip install sphinx==1.2.3
-sudo pip install sphinxcontrib-bibtex
-sudo pip install sphinx_rtd_theme
-sudo pip install hieroglyph
+# install python packages (must be without sudo)
+pip install matplotlib
+pip install sphinx==1.2.3
+pip install sphinxcontrib-bibtex
+pip install sphinx_rtd_theme
+pip install hieroglyph
 
 # 32-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i4
