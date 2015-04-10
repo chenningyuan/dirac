@@ -47,10 +47,9 @@ dependencies:
         - wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
         - tar xzf openmpi-1.8.4.tar.gz
         - cd openmpi-1.8.4 && ./configure --prefix=$HOME/open_mpi && make -j $N_PROC && make install
-# check if integer size is correct - 8
-        - echo "Fortran MPI Integer size is $(ompi_info -a | grep 'Fort integer size')"
-        - if [ $(ompi_info -a | grep -oP 'Fort integer size: \K([0-9]+)') == 8 ]; then echo "Fortran MPI Integer size is correct"; else echo "Fortran MPI Integer size is not correct"; fi: $HOME
-
+# check if integer size is correct - should be 8
+        - echo "Fortran MPI Integer size is $(ompi_info -a | grep 'Fort integer size') - should be equal to 8"
+        
 # update submodules
 checkout:
     post:
