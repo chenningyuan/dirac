@@ -11,7 +11,7 @@ The CI workers buildup status badges
 
 * circle-ci 
 
-.. image:: https://circleci.com/gh/miroi/DIRAC/tree/master.svg?style=svg
+.. image:: https://circleci.com/gh/miroi/DIRAC/tree/master.svg?style=svg&circle-token=19525d797bb0d7bf0516dfc291da5fd7de0ffa1a
     :target: https://circleci.com/gh/miroi/DIRAC/tree/master
 
 * magnum-ci

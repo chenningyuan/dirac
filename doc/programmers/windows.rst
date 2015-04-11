@@ -49,21 +49,23 @@ To be able to generate the html documentation (*mingw32-make html*), the user ha
 You might need also the *python-dateutil* and *pyparsing* packages, which you can obtain from https://pypi.python.org/pypi/python-dateutil/ and 
 https://pypi.python.org/pypi/pyparsing/ respectively. You can install their Python Wheels using *pip install* command.
 
+Next download Python Wheel file of *sphinxcontrib-bibtex* from https://pypi.python.org/pypi/sphinxcontrib-bibtex and Python Wheel file of *sphinx_rtd_theme* from https://pypi.python.org/pypi/sphinx_rtd_theme. Install both using *pip install* command.
+
 *numpy* (http://www.numpy.org/), which provides own (self-)installation file. For 32-bit Python you can download installer from
 http://sourceforge.net/projects/numpy/files/NumPy/ and for 64-bit Python there are only unofficial builds for example at http://www.lfd.uci.edu/~gohlke/pythonlibs/.
 
 *matplotlib* (http://matplotlib.org/). Windows installer or Python Wheel can be found at http://matplotlib.org/downloads.html.
-Please download version suitable for your version of Python (2.x or 3.x) and system type (32/64 bit).
+Please download version suitable for your version (2.x or 3.x) and type (32/64 bit) of Python.
 
-If you also want to create slides (*mingw32-make slides*). Install *hieroglyph* (https://pypi.python.org/pypi/hieroglyph) by command: ::
+Install *doxygen* if you want to generate documentation using *mingw32-make doxygen*. You can find self-installer (*.exe*) at http://www.stack.nl/~dimitri/doxygen/download.html. We recommend to use self-installer because it adds doxygen binary directory to system path variable automatically.
+
+To create html slides (*mingw32-make slides*). Install *hieroglyph* (https://pypi.python.org/pypi/hieroglyph) by command: ::
 
   pip install hieroglyph
 
 Notes:
 
-Check that the Windows *%Path%* environment variable points to both Python and its extensions,
-and has the the form of *"...C:\\Python27;C:\\Python27\\Scripts;..."*. Do not use 32 and 64 bit packages together.
-You can obtain *pip* from https://pip.pypa.io/en/latest/.
+Check that the Windows *%Path%* environment variable points to both Python and its extensions, and has the the form of *"...C:\\Python27;C:\\Python27\\Scripts;..."*. Doxygen binary directory *""...C:\\DOXYGEN\\BIN;...* should also be present in *%Path%*. Do not use 32 and 64 bit packages together. You can obtain *pip* from https://pip.pypa.io/en/latest/.
 
 
 Git & PuTTy
