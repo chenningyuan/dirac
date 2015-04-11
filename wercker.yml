@@ -34,7 +34,11 @@ build:
           ctest --track Miro -D ExperimentalConfigure
           ## we have only 30 minutes for the whole buildup !
           ctest -j 8 --track Miro -D ExperimentalBuild
-          ctest -j 8 --track Miro -D ExperimentalTest -L short
+          ## ldd : show dependencies
+          ldd dirac.x
+          ## echo : this script continues even if some of tests fail
+          echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
+          ## deliver buildup status to CDash-web
           ctest --track Miro -D ExperimentalSubmit
 
     - script:
@@ -54,3 +58,8 @@ build:
         code: |
           cd build_wercker-ci
           make slides
+
+## turn off email notifications
+notifications:
+        email: false
+
