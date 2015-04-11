@@ -26,6 +26,9 @@
 # export number of processors as environment variable N_PROC
 export N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)
 
+# show number of processors to be used
+echo "Number of available processors is $N_PROC"
+
 # Show system info
 lscpu
 df -h
@@ -40,6 +43,7 @@ git --version
 # It is not possible to install packages with "sudo apt-get install".
 # In case some package is missing you can write a message to codeship maintainers.
 # install python packages (must be without sudo)
+# note: these packages are probably already installed
 pip install matplotlib
 pip install sphinx==1.2.3
 pip install sphinxcontrib-bibtex
