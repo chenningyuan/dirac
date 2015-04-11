@@ -35,6 +35,28 @@ keyword(OPERATORS)
 Specification of both the A and B operators
 (see :ref:`one_electron_operators` for details).
 
+keyword(EPOLE)
+
+Specification of electric Cartesian multipole operators of order L .
+Specify order.
+
+*Example:* Electric dipole operators
+
+::
+      .EPOLE
+      1
+
+keyword(MPOLE)
+
+Specification of magnetic Cartesian multipole operators of order L .
+Specify order.
+*Example:* Magnetic dipole operators
+
+::
+      .MPOLE
+      1
+
+
 keyword(TRIAB)
 
 Enforce triangularity of response function.

@@ -27,6 +27,27 @@ Specification of a transition moment operator (see
 :ref:`one_electron_operators` for details). This keyword can be given multiple
 times to add more operators.
 
+keyword(EPOLE)
+
+Specification of electric Cartesian multipole operators of order L 
+for the calculation of transition moments. Specify order.
+
+*Example:* Electric dipole operators
+
+::
+      .EPOLE
+      1
+
+keyword(MPOLE)
+
+Specification of magnetic Cartesian multipole operators of order L 
+for the calculation of transition moments. Specify order.
+*Example:* Magnetic dipole operators
+
+::
+      .MPOLE
+      1
+
 keyword(ANALYZE)
 
 Analyze solution vectors and show the most important excitations at the
