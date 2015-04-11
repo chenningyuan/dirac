@@ -1451,13 +1451,15 @@ Options are also read from ~/.diracrc"""
 
     def print_all_processes(self):
         """
-        print all remaining processes using the system command "ps"
-        TODO: adapt for Windows, maybe for Mac as well ?
+        print all remaining processes using the system command "ps" (Linux), "tasklist" (Windows)
+        TODO: adapt for Mac?
         """
         sys.stdout.flush()
         sys.stderr.flush()
-        # command - print all processes, to be adapted for other architectures ?
-        command="ps -fu "+self.user_name
+        if not is_windows():
+            command="ps -fu " + self.user_name
+        else:
+            command="tasklist /FI \"USERNAME eq " + self_master + "\\" + self_user_name + "\""
         process_string=subprocess.Popen(shlex.split(command),stdin=subprocess.PIPE,\
                        stdout=subprocess.PIPE).communicate()[0]
         print_error_message("\n current processes left: \n--------------------------- \n"+process_string)
