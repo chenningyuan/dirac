@@ -51,6 +51,9 @@ before_script:
     - df -h
 # show available memory
     - free -m
+# print doc generators versions
+    - doxygen --version
+    - sphinx-build --version
 
 # configure, build optimized code and run short tests (Dirac 64-bit with MPICH2 and documentation)
 script:
