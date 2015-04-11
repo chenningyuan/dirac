@@ -44,6 +44,7 @@ C  A    is the matrix (general, non-singular)
 C  KPVT is a scratch array of length N.
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION A(LDA,*),B(LDB,*),KPVT(*)
 C
 #if !defined (VAR_SBLAS)
