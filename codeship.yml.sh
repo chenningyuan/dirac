@@ -39,6 +39,10 @@ which git
 whereis git
 git --version
 
+# documentation generators whereabouts
+sphinx-build --version
+doxygen --version
+
 # **Note**
 # It is not possible to install packages with "sudo apt-get install".
 # In case some package is missing you can write a message to codeship maintainers.
@@ -73,5 +77,6 @@ if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; 
 
 # finally do the documentation buildup in the build_codeship_i8 directory
 make html
-make doxygen
 make slides
+# for doxygen encompass the building command into echo so that the build does not stop in the case of error
+echo "$(make doxygen)"
