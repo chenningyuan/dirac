@@ -66,7 +66,8 @@ python ./setup -D BUILDNAME="gnu.i4-codeship-ci" build_codeship_i4
 cd build_codeship_i4
 ctest --track Miro -D ExperimentalConfigure
 ctest -j $N_PROC --track Miro -D ExperimentalBuild
-echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
+#echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
+echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest)"
 if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
 
 # Back to source dir
@@ -78,7 +79,8 @@ python ./setup -D BUILDNAME="gnu.i8-codeship-ci" --int64 build_codeship_i8
 cd build_codeship_i8
 ctest --track Miro -D ExperimentalConfigure
 ctest -j $N_PROC --track Miro -D ExperimentalBuild
-echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
+#echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
+echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest)"
 if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
 
 # finally do the documentation buildup in the build_codeship_i8 directory
