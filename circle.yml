@@ -7,6 +7,12 @@
 ## OpenMPI 64-bit installation: 
 ##     https://gist.github.com/rbast/81760961c5a8199e561a
 ##     http://diracprogram.org/doc/release-12/installation/int64/mpi.html
+##
+
+general:
+  branches:
+    only:
+      - master # list of branches to build
 
 # set environment variables to make MPI and tests work
 machine:
@@ -72,13 +78,14 @@ test:
 # configure, build optimized code and run tests (Dirac 64-bit with OpenMPI and documentation)
         - python ./pamadm -a --builddir=build_circleci_mpi
         - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_circleci_mpi
-        - ctest --track Miro -D ExperimentalConfigure: { pwd: build_circleci_mpi }
-        - ctest -j $N_PROC --track Miro -D ExperimentalBuild: { pwd: build_circleci_mpi }
+        - ctest -D ExperimentalConfigure: { pwd: build_circleci_mpi }
+        - ctest -j $N_PROC -D ExperimentalBuild: { pwd: build_circleci_mpi }
 # ldd - show dependencies
         - ldd dirac.x: { pwd: build_circleci_mpi }
-        - ctest -j $TEST_N_PROC --track Miro -VV -D ExperimentalTest -L short: { pwd: build_circleci_mpi }
-# submit to dashboard only on "master" branch
-        - if [ "$CIRCLE_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi: { pwd: build_circleci_mpi }
+#     run tests ( could provide with "-L short --track Miro" )
+        - ctest -j $TEST_N_PROC -D ExperimentalTest: { pwd: build_circleci_mpi }
+# submit to dashboard
+        - ctest -D ExperimentalSubmit: { pwd: build_circleci_mpi }
 # build docs
         - make html: { pwd: build_circleci_mpi }
         - make doxygen: { pwd: build_circleci_mpi }
