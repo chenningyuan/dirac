@@ -13,15 +13,21 @@
 
 
 # Show system info
+echo "System info, lscpu :"
 lscpu
+echo "Disk, df -h :"
 df -h
+echo "Memory, free -m :"
 free -m
 
+echo "git whereabouts:"
 which git
 whereis git
 git --version
 
+
 # install packages
+echo "installing packages :"
 sudo apt-get update
 sudo apt-get install gcc -y
 sudo apt-get install g++ -y
@@ -44,24 +50,30 @@ sudo pip install hieroglyph
 python ./pamadm -a --builddir=build_semaphore-ci_i4
 python ./setup -D BUILDNAME="gnu.i4-semaphore-ci"  build_semaphore-ci_i4
 cd build_semaphore-ci_i4
-ctest --track Miro -D ExperimentalUpdate
 ctest --track Miro -D ExperimentalConfigure
 ctest -j 8 --track Miro -D ExperimentalBuild
 echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
-if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+if [ "$CI_BRANCH" == "master" ]; then 
+  ctest --track Miro -D ExperimentalSubmit 
+else
+  echo "Not master branch, no deployment to CDash web !"
+fi
 
-# Back to source dir
+# Back to the source dir
 cd .. 
 
 # 64-bit Integer build
 python ./pamadm -a --builddir=build_semaphore-ci_i8
 python ./setup -D BUILDNAME="gnu.i8-semaphore-ci" --int64 build_semaphore-ci_i8
 cd build_semaphore-ci_i8
-ctest --track Miro -D ExperimentalUpdate
 ctest --track Miro -D ExperimentalConfigure
 ctest -j 8 --track Miro -D ExperimentalBuild
 echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
-if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+if [ "$CI_BRANCH" == "master" ]; then c
+  test --track Miro -D ExperimentalSubmit 
+else
+  echo "Not master branch, no deployment to CDash web !"
+fi
 
 # finally do the documentation buildup in the build_semaphore-ci_i8
 make html
