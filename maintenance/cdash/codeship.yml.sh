@@ -3,18 +3,24 @@
 # Sequential test script for https://codeship.com/
 
 # It is recommended to copy (and modify) commands from this file to "Test Settings" of your project on codeship.
-# You can also run this script when you add to your projects "Test Settings" this command: "chmod a+x codeship.yml.sh && ./codeship.yml.sh".
+# You can also run this script when you add to your projects "Test Settings" this command: 
+#
+#                "chmod a+x maintenance/cdash/codeship.yml.sh && ./maintenance/cdash/codeship.yml.sh".
+#
 # But this is not good for debugging because everything is run as one command.
-
+#
 # **Important**
-# If you use to run this script command "chmod a+x codeship.yml.sh && ./codeship.yml.sh" it is possible that even in case some command fails your build
-# on codeship might be green - in success state!
-
+# If you use to run this script command "chmod a+x maintenance/cdash/codeship.yml.sh && ./maintenance/cdash/codeship.yml.sh" it is possible 
+# that even in case some command fails your build on codeship might be green - in success state!
+#
 # **Note**
 # In the following command: 
-# echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
-# command "echo" makes possible to continue after one of Dirac tests fails because otherwise codeship can stop and do not submit to dashboard.
-
+#
+#           echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
+#
+# command "echo" makes possible to continue after one of Dirac tests fails because otherwise 
+# codeship can stop and do not submit results to dashboard.
+#
 # **Note**
 # https://codeship.com/documentation/faq/limit_builds/
 # "We build all branches you push to your repository. In our opinion every push to your repository should be tested.

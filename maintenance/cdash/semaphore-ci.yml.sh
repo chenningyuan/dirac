@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-
-# test sript for https://semaphoreci.com
-
+#
+# Iest sript for CI build based on https://semaphoreci.com
+#
 # It is recommended to copy (and modify) commands from this file to "Test Settings" of your project on semaphore.
-# You can also run this script when you add to your projects "Test Settings" this command: "chmod a+x semaphore-ci.yml.sh && ./semaphore-ci.yml.sh".
+# You can also run this script when you add to your projects "Test Settings" this command: 
+#
+#           "chmod a+x maintenance/cdash/semaphore-ci.yml.sh && ./maintenance/cdash/semaphore-ci.yml.sh".
+#
 # But this is not good for debugging because everything is run as one command.
-
+#
 # **Note**
 # In the following command: 
+#
 # echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
+#
 # command "echo" makes possible to continue after one of Dirac tests fails because otherwise server stops and do not submit to dashboard.
 
 
