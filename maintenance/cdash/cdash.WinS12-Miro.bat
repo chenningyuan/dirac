@@ -61,14 +61,20 @@ git clone git@gitlab.com:dirac/dirac.git %CLONED%  1>>  %LOG%  2>&1
 cd %CLONED%
 set BUILD=build_mingw_i8_nopcm_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
+    timeout 10
 python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
+    timeout 10
 python setup -D ENABLE_PCMSOLVER=OFF -D BUILDNAME="WinS12_MinGW_i8_cloned" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
+    timeout 10
 cd %BUILD%
-ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
-ctest -j2 -D ExperimentalBuild      --track Miro  1>>  %LOG%  2>&1
-ctest -j2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
-ctest     -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
-
+ctest      -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
+    timeout 10
+ctest -j 2 -D ExperimentalBuild      --track Miro  1>>  %LOG%  2>&1
+    timeout 10
+ctest -j 2 -D ExperimentalTest       --track Miro  1>>  %LOG%  2>&1
+    timeout 10
+ctest      -D ExperimentalSubmit     --track Miro  1>>  %LOG%  2>&1
+    timeout 10
 echo %DATE% %TIME%  1>>  %LOG%  2>&1
 
 rem   turn the hibernation off
@@ -81,5 +87,8 @@ rem switch off Desktop PC Windows after 10 seconds
 rem timeout 10 && shutdown -s
 rem - restart PC
 rem shutdown /r
+
+rem wait 1 minute
+timeout 60 
 
 exit
