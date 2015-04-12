@@ -96,9 +96,9 @@ class Deployment(object):
         Returns path to the builded HTML root directory for given module.
         """
         mapping = {
-            'sphinx': ['html'],
-            'slides': ['html_slides'],
-            'doxygen': ['_doxygen', 'html'],
+            'sphinx': ['html/'],
+            'slides': ['html_slides/'],
+            'doxygen': ['_doxygen', 'html/'],
         }
         return os.path.join(self.get_build_path(), *mapping[module])
 
