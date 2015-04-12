@@ -17,8 +17,8 @@ or popular Google-Books web-space.
 
 .. note::
 
-    References are also available for download in :download:`BibTex <zreferences.bib>` format.
+    References are also available for download in :download:`BibTex <references.bib>` format.
 
-.. bibliography:: zreferences.bib
+.. bibliography:: references.bib
   :enumtype: upperroman
   :style: diracstyle

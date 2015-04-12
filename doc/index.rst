@@ -218,4 +218,4 @@ Developers
 Bibliography
 ============
 
-* :doc:`References <references>`
+* :doc:`References <zreferences>`

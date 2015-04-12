@@ -124,14 +124,15 @@ The list of references can be added to the document using the :rst:dir:`bibliogr
 
 .. code-block:: rest
 
-    .. bibliography:: zreferences.bib
+    .. bibliography:: references.bib
       :enumtype: upperroman
       :style: diracstyle
 
 .. note::
 
     Ensure that the bibliography directive is processed after all cites. The simplest way is to
-    name the bibtex file so that it starts with the "z" letter in order to be alphabeticaly last.
+    name the references page so that it starts with the "z" letter in order to be alphabeticaly last.
+    The issue is being tracked `here <http://sphinxcontrib-bibtex.readthedocs.org/en/latest/usage.html#unresolved-citations-across-documents>`_.
 
 Download mathjax formulas in LaTeX format:
 ------------------------------------------
