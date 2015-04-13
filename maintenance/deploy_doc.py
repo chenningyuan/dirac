@@ -15,6 +15,22 @@ class Syncer(object):
         self.host = host
         self.port = port
 
+    def run(self, script):
+        """
+        Runs python script on remote host.
+        """
+        if not script:
+            return None
+        args = {
+            'user': self.user,
+            'host': self.host,
+            'port': self.port,
+            'script': script,
+        }
+        cmd = 'ssh -o StrictHostKeyChecking=no -p {port}' \
+              ' {user}@{host} python {script}'.format(**args)
+        return subprocess.call(cmd, shell=True)
+
     def sync(self, src, dest):
         """
         Syncs the local directory with the remote one.
@@ -222,6 +238,8 @@ def main():
     parser.add_argument('--user', help='specify the remote user name', type=str)
     parser.add_argument('--host', help='specify the remote host name', type=str)
     parser.add_argument('--port', help='specify the remote port', type=int)
+    parser.add_argument(
+        '--post_script', help='specify the remote python script to run after deploy', type=str)
     args = parser.parse_args()
 
     if not args.ci or args.ci not in ci_mapping:
@@ -234,10 +252,16 @@ def main():
 
 
 def deploy(mapping, args):
+    """
+    Runs the deployment process.
+    """
     syncer = Syncer(root=args.root, user=args.user, host=args.host, port=args.port)
 
     deployer = mapping[args.ci](build_dir=args.build_dir, syncer=syncer)
     deployer.deploy()
+
+    if args.post_script:
+        syncer.run(args.post_script)
 
 
 if __name__ == '__main__':
