@@ -226,9 +226,23 @@ class Semaphore(Deployment):
         return os.environ['REVISION']
 
 
+class Codeship(Deployment):
+    name = 'codeship'
+
+    def get_root_path(self):
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    def get_branch(self):
+        return os.environ['CI_BRANCH']
+
+    def get_revision(self):
+        return os.environ['CI_COMMIT_ID']
+
+
 def main():
     ci_mapping = {
         'semaphoreci': Semaphore,
+        'codeship': Codeship,
     }
 
     parser = argparse.ArgumentParser()
