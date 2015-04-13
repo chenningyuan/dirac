@@ -14,7 +14,9 @@
 #
 # echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
 #
-# command "echo" makes possible to continue after one of Dirac tests fails because otherwise server stops and do not submit to dashboard.
+# the command "echo" makes possible to continue after one of Dirac tests fails
+# because otherwise server stops and do not submit to dashboard.
+#
 
 
 # Show system info
@@ -29,7 +31,7 @@ echo "git whereabouts:"
 which git
 whereis git
 git --version
-
+echo
 
 # install packages
 echo "installing packages :"
@@ -45,44 +47,38 @@ sudo apt-get install zlib1g-dev -y
 sudo apt-get install doxygen -y
 sudo apt-get install python-dev -y
 sudo apt-get install python-pip -y
+# take care of MPICH packages
+sudo apt-get remove openmpi-bin libopenmpi-dev -y
+sudo apt-get install mpich2 -y
+#
 sudo pip install matplotlib
 sudo pip install sphinx==1.2.3
 sudo pip install sphinxcontrib-bibtex
 sudo pip install sphinx_rtd_theme
 sudo pip install hieroglyph
 
-# 32-bit Integer build
-python ./pamadm -a --builddir=build_semaphore-ci_i4
-python ./setup -D BUILDNAME="gnu.i4-semaphore-ci"  build_semaphore-ci_i4
-cd build_semaphore-ci_i4
-ctest --track Miro -D ExperimentalConfigure
-ctest -j 8 --track Miro -D ExperimentalBuild
-#echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j 8 --track Miro -D ExperimentalTest)"
-if [ "$BRANCH_NAME" == "master" ]; then
-  ctest --track Miro -D ExperimentalSubmit 
-else
-  echo "Not master branch, no deployment to CDash web !"
-fi
+# set for parallel buildup
+  DIRAC_MPI_COMMAND="mpirun -np 2"
+# determine number of processors
+  N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)
+# number of available processors/jobs for test will be 2 times less because we use "mpirun -np 2"
+  TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)
+# print
+echo "Number of processors/jobs for build step is $N_PROC"
+echo "Number of processors/jobs for test step is $TEST_N_PROC"
 
-# Back to the source dir
-cd .. 
 
-# 64-bit Integer build
+# 64-bit Integer, MPICH parallel build
 python ./pamadm -a --builddir=build_semaphore-ci_i8
-python ./setup -D BUILDNAME="gnu.i8-semaphore-ci" --int64 build_semaphore-ci_i8
+python ./setup -D BUILDNAME="mpich-gnu-i8_semaphore" --int64 --mpi -D DART_TESTING_TIMEOUT=9999  build_semaphore-ci_i8
 cd build_semaphore-ci_i8
-ctest --track Miro -D ExperimentalConfigure
-ctest -j 8 --track Miro -D ExperimentalBuild
+ctest --track master -D ExperimentalConfigure
+ctest -j $N_PROC --track master -D ExperimentalBuild
 #echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j 8 --track Miro -D ExperimentalTest)"
-if [ "$BRANCH_NAME" == "master" ]; then
-  test --track Miro -D ExperimentalSubmit 
-else
-  echo "Not master branch, no deployment to CDash web !"
-fi
+echo "$(ctest -j $TEST_N_PROC --track master -D ExperimentalTest)"
+ctest --track master -D ExperimentalSubmit 
 
-# finally do the documentation buildup in the build_semaphore-ci_i8 directory
+# finally do the quick documentation buildup in the build_semaphore-ci_i8 directory
 make html
 make doxygen
 make slides
