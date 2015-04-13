@@ -83,7 +83,7 @@ test:
 # ldd - show dependencies
         - ldd dirac.x: { pwd: build_circleci_mpi }
 #     run tests ( could provide with "-L short --track Miro" )
-        - ctest -j $TEST_N_PROC -D ExperimentalTest: { pwd: build_circleci_mpi }
+        - ctest -j $TEST_N_PROC -D ExperimentalTest -L short: { pwd: build_circleci_mpi }
 # submit to dashboard
         - ctest -D ExperimentalSubmit: { pwd: build_circleci_mpi }
 # build docs
