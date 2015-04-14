@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import json
 import shutil
 import argparse
@@ -239,10 +240,24 @@ class Codeship(Deployment):
         return os.environ['CI_COMMIT_ID']
 
 
+class Magnum(Deployment):
+    name = 'magnumci'
+
+    def get_root_path(self):
+        return os.path.join(os.environ['HOME'], 'DIRAC-buildup')
+
+    def get_branch(self):
+        return os.environ['CI_BRANCH']
+
+    def get_revision(self):
+        return os.environ['CI_COMMIT']
+
+
 def main():
     ci_mapping = {
         'semaphoreci': Semaphore,
         'codeship': Codeship,
+        'magnumci': Magnum,
     }
 
     parser = argparse.ArgumentParser()
@@ -271,10 +286,15 @@ def deploy(mapping, args):
     """
     syncer = Syncer(root=args.root, user=args.user, host=args.host, port=args.port)
 
+    sys.stdout.write('[{0}] Deploying to {0} ...\n'.format(args.ci, args.host))
+
     deployer = mapping[args.ci](build_dir=args.build_dir, syncer=syncer)
     deployer.deploy()
 
     if args.post_script:
+        sys.stdout.write('[{0}] Running python script {1} on {2}...\n'.format(
+            args.ci, args.post_script, args.host))
+
         syncer.run(args.post_script)
 
 
