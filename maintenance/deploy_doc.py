@@ -286,13 +286,13 @@ def deploy(mapping, args):
     """
     syncer = Syncer(root=args.root, user=args.user, host=args.host, port=args.port)
 
-    sys.stdout.write('[{0}] Deploying to {0} ...\n'.format(args.ci, args.host))
+    sys.stdout.write('[{0}] Deploying to {1} ...\n'.format(args.ci, args.host))
 
     deployer = mapping[args.ci](build_dir=args.build_dir, syncer=syncer)
     deployer.deploy()
 
     if args.post_script:
-        sys.stdout.write('[{0}] Running python script {1} on {2}...\n'.format(
+        sys.stdout.write('[{0}] Running python script {1} on {2} ...\n'.format(
             args.ci, args.post_script, args.host))
 
         syncer.run(args.post_script)
