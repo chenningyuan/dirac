@@ -27,7 +27,7 @@ machine:
         FCFLAGS: "-m64 -fdefault-integer-8"
         CFLAGS: -m64
         CXXFLAGS: -m64
-        DIRTIMEOUT: "9m"
+        DIRTIMEOUT: "9m30s"
 # export number of available processors/jobs - for build
         N_PROC: $(cat /proc/cpuinfo | grep processor | wc -l)
 # number of available processors/jobs for test will be 4 times less because we use "mpirun -np 2"
