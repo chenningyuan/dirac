@@ -14,7 +14,6 @@ general:
     branches:
         only:
             - master
-            - merges_from_collaborators
 
 # set environment variables to make MPI and tests work
 machine:
@@ -85,7 +84,7 @@ test:
         - ctest -j $N_PROC -D ExperimentalBuild: { pwd: build_circleci_mpi }
 # ldd - show dependencies
         - ldd dirac.x: { pwd: build_circleci_mpi }
-#     run tests ( could provide with "-L short --track Miro" )
+# run tests ( could provide with "-L short --track Miro" )
         - ctest -j $TEST_N_PROC -D ExperimentalTest: { pwd: build_circleci_mpi }
 # submit to dashboard
         - ctest -D ExperimentalSubmit: { pwd: build_circleci_mpi }
