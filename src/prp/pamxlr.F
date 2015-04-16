@@ -410,7 +410,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 39,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 41,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -436,7 +436,8 @@ C
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
-     &            '.DAMPIN','.FREQ I','.LAOMOD'/
+     &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
+     &            '.MPOLE '/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -561,7 +562,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39), I
+     &                     31,32,33,34,35,36,37,38,39,40,41), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -818,6 +819,54 @@ C&&& LAOMOD: rearrange LR equations with LAOs, so connection matrices are not ne
                call set_london_keywords('laomod')
 #endif
                GO TO 100
+ 40            CONTINUE
+C&&&& EPOLE : Electric multipoles of order L
+               READ(LUCMD,*) IORDER
+               NDEG=(IORDER+2)*(IORDER+1)/2
+               IF((NLRAPT+NDEG).GT.MAXLLR) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XLRINP: Pointer array LLR',
+     &           'APU out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLLR to ',(NLRAPT+NDEG)
+                 CALL QUIT('XLRINP: MAXLLR out of bounds')
+               ENDIF
+               IF((NLRBPT+NDEG).GT.MAXLLR) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XLRINP: Pointer array LLR',
+     &           'BPU out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLLR to ',(NLRBPT+NDEG)
+                 CALL QUIT('XLRINP: MAXLLR out of bounds')
+               ENDIF
+               CALL DEF_EPOLE(IORDER,LLRAPU(NLRAPT+1),IPRXLR)
+               CALL ICOPY(NDEG,LLRAPU(NLRAPT+1),1,LLRBPU(NLRBPT+1),1)
+               NLRAPT = NLRAPT + NDEG
+               NLRBPT = NLRBPT + NDEG
+               GOTO 100
+ 41            CONTINUE
+C&&&& MPOLE : Magnetic multipoles of order L 
+               READ(LUCMD,*) IORDER
+               NDEG=3*(IORDER+1)*IORDER/2
+               IF((NLRAPT+NDEG).GT.MAXLLR) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XLRINP: Pointer array LLR',
+     &           'APU out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLLR to ',(NLRAPT+NDEG)
+               ENDIF
+               IF((NLRBPT+NDEG).GT.MAXLLR) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XLRINP: Pointer array LLR',
+     &           'BPU out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLLR to ',(NLRBPT+NDEG)
+               ENDIF
+               CALL DEF_MPOLE(IORDER,LLRAPU(NLRAPT+1),IPRXLR)
+               CALL ICOPY(NDEG,LLRAPU(NLRAPT+1),1,LLRBPU(NLRBPT+1),1)
+               NLRAPT = NLRAPT + NDEG
+               NLRBPT = NLRBPT + NDEG
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE

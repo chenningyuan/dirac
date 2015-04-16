@@ -556,7 +556,8 @@ C&&&& MPOLE : Magnetic multipoles of order L
      &           'APU out of bounds for magnetic multipole of order ',
      &           IORDER
                  WRITE(LUPRI,'(A,I5)') 
-     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+     &           'Increase MAXLPP to ',(NPPAPT+NDEG)
+                 CALL QUIT('XPPINP: MAXLPP out of bounds')
                ENDIF
                CALL DEF_MPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
                NPPAPT = NPPAPT + NDEG
