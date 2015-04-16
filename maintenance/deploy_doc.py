@@ -172,6 +172,8 @@ class Deployment(object):
             'module': module,
             'branch': branch,
             'revision': revision,
+            'remote': self.get_remote_url(),
+            'author': self.get_commit_author(),
             'message': self.get_commit_message(),
             'date': datetime.datetime.now().isoformat(),
             'log': log,
@@ -201,6 +203,17 @@ class Deployment(object):
         """
         raise NotImplementedError
 
+    def get_remote_url(self):
+        """
+        Returns the original git remote url.
+        """
+        args = {
+            'root': self.get_root_path(),
+        }
+        cmd = 'cd {root} && git config --get remote.origin.url'.format(**args)
+        data = subprocess.check_output(cmd, shell=True)
+        return data.strip() if data else ''
+
     def get_commit_message(self):
         """
         Returns the git comment of the current revision.
@@ -210,6 +223,18 @@ class Deployment(object):
             'revision': self.get_revision(),
         }
         cmd = 'cd {root} && git log --format=%B -n 1 {revision}'.format(**args)
+        data = subprocess.check_output(cmd, shell=True)
+        return data.strip() if data else ''
+
+    def get_commit_author(self):
+        """
+        Returns the git author of the current revision.
+        """
+        args = {
+            'root': self.get_root_path(),
+            'revision': self.get_revision(),
+        }
+        cmd = 'cd {root} && git log --format=%an -n 1 {revision}'.format(**args)
         data = subprocess.check_output(cmd, shell=True)
         return data.strip() if data else ''
 
