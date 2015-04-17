@@ -31,7 +31,7 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_fcidump = 24
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
-  logical, parameter     :: generate_full_list = .false.
+  logical, parameter     :: generate_full_list = .true.
   logical, parameter     :: generate_lower_triangular = .true.
 ! The target variable should involve into an input option, for now we have no input since mrcc
 ! is presently the only code that is supported (the interface to nwchem is in an experimental stage)
