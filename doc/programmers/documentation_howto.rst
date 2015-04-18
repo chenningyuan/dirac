@@ -187,10 +187,29 @@ This code shows a simple usage in Jinja2 template:
 Google Analytics
 ----------------
 
-Support for Google Analytics has been added, here is how you can set the account id:
+Google Analytics support for both slides and main documentation has been added. In order to support this
+feature a new ``_templates/shared/macros.html`` file has been added to enable Jinja 2 macros sharing between
+two documentation systems.
+
+Setting Google Account for main documentation (in file ``conf.py``):
 
 .. code-block:: python
 
     html_context = {
         'google_analytics_account': 'UA-XXXXX',
     }
+
+Setting Google Account for slides (in file ``workshop-slides/conf.py``):
+
+.. code-block:: python
+
+    slide_theme_options = {
+        'google_analytics_account': 'UA-XXXXX',
+    }
+
+Example usage of the ``google_analytics`` macro in Jinja 2 template:
+
+.. code-block:: jinja
+
+    {% import "shared/macros.html" as macros %}
+    {{ macros.google_analytics('UA-XXXXX') }}
