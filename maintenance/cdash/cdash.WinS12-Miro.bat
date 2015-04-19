@@ -38,10 +38,10 @@ git submodule status  1>>  %LOG%  2>&1
 
 rem go to the local DIRAC directory
 cd %DIRAC%
-set BUILD=build_mingw_i8_nopcm_tests
+set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
-python setup -D ENABLE_PCMSOLVER=OFF -D BUILDNAME="WinS12_MinGW_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
+python setup -D ENABLE_PCMSOLVER=ON -D ZLIB_ROOT="C:\libraries\zlib" -D BOOST_INCLUDEDIR="C:\libraries\Boost\include" -D BOOST_LIBRARYDIR="C\libraries\Boost\lib" -D BUILDNAME=WinS12_MinGW_i8 --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles"  %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
 rem ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
 ctest     -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
@@ -59,12 +59,12 @@ set CLONED=trunk_cloned
 if exist %CLONED% rmdir /S /Q %CLONED% 1>>  %LOG%  2>&1
 git clone git@gitlab.com:dirac/dirac.git %CLONED%  1>>  %LOG%  2>&1
 cd %CLONED%
-set BUILD=build_mingw_i8_nopcm_tests
+set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
     timeout 10
 python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
     timeout 10
-python setup -D ENABLE_PCMSOLVER=OFF -D BUILDNAME="WinS12_MinGW_i8_cloned" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
+python setup -D ENABLE_PCMSOLVER=ON -D ZLIB_ROOT="C:\libraries\zlib" -D BOOST_INCLUDEDIR="C:\libraries\Boost\include" -D BOOST_LIBRARYDIR="C\libraries\Boost\lib" -D BUILDNAME="WinS12_MinGW_i8_cloned" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
     timeout 10
 cd %BUILD%
 ctest      -D ExperimentalConfigure  --track Miro  1>>  %LOG%  2>&1
