@@ -180,9 +180,11 @@ def remove_builds(ci, builds, logger):
             if os.path.exists(metadata_path):
                 logging.info('Removing build "{0}" ...'.format(group['path']))
 
-                # double check if exists
+                # double check if path exists
                 if os.path.exists(group['path']):
                     shutil.rmtree(group['path'])
+
+        removed += 1
 
     return removed
 
