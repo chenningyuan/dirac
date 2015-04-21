@@ -1,5 +1,9 @@
 # coding=utf-8
 
+"""
+This extension adds git info about page to context.
+"""
+
 import os
 import re
 import subprocess
@@ -12,6 +16,9 @@ LOG_REGEX = re.compile(u'^name=(?P<name>[\w\s]+) email=(?P<email>[\w@\.\s\-]+) d
 
 
 def git_installed():
+    """
+    Checks whether git binary is available.
+    """
     process = subprocess.Popen('git --version', shell=True,
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.communicate()
@@ -19,18 +26,30 @@ def git_installed():
 
 
 def get_git_command(page_path, log_format):
+    """
+    Returns git log command string for given log format and page path.
+    """
     return 'git log -1 --format="{0}" -- {1}'.format(log_format, page_path)
 
 
 def get_page_path(cfg, pagename):
+    """
+    Returns absolute path to page by its pagename.
+    """
     return os.path.join(os.path.abspath(cfg.gitlog_source_path), '{0}.rst'.format(pagename))
 
 
 def get_git_log(cmd):
+    """
+    Runs the given command and returns its output.
+    """
     return subprocess.check_output(cmd, shell=True)
 
 
 def parse_log_info(info):
+    """
+    Parses the output of the git log command.
+    """
     match = LOG_REGEX.search(info.strip())
     if not match:
         print info
@@ -38,6 +57,9 @@ def parse_log_info(info):
 
 
 def get_git_info(cfg, pagename):
+    """
+    Returns git info for given pagename.
+    """
     page_path = get_page_path(cfg, pagename)
     cmd = get_git_command(page_path, LOG_FORMAT)
     info = get_git_log(cmd)
@@ -45,6 +67,9 @@ def get_git_info(cfg, pagename):
 
 
 def format_date_string(date_str, date_format):
+    """
+    Returns formatted date string using given date format.
+    """
     try:
         dt = datetime.fromtimestamp(float(date_str))
     except ValueError:
@@ -53,6 +78,9 @@ def format_date_string(date_str, date_format):
 
 
 def fill_context(cfg, context, info):
+    """
+    Adds git info to page context.
+    """
     context['git_author_name'] = info.get('name', '')
     context['git_author_email'] = info.get('email', '')
     context['git_commit_sha'] = info.get('sha', '')
@@ -60,6 +88,9 @@ def fill_context(cfg, context, info):
 
 
 def page_context_handler(app, pagename, templatename, context, doctree):
+    """
+    Sets git info about page to page context.
+    """
     if git_installed():
         info = get_git_info(app.config, pagename)
 
