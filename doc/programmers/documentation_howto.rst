@@ -11,9 +11,9 @@ Primer <http://sphinx.pocoo.org/rest.html>`_ and the `Sphinx Markup Constructs
 auto-colored in the terminal so you can see when the markup is correct or
 wrong.
 
-
 Sphinx installation
 -------------------
+
 The sphinx generator is part of standard packages, and on most systems
 can be installed via their official repositories.
 Common names of packages are "python-sphinx" and "python-matplotlib", but there might be
@@ -28,7 +28,6 @@ For  *Mac* users using the macport::
     sudo port install python-sphinx
     sudo port select --set sphinx py27-sphinx
     sudo port install py27-matplotlib
-
 
 Generation of html pages
 ------------------------
@@ -45,7 +44,6 @@ the sphinx-packages first (see above), then::
 
 Now point your browser to build/html/index.html. We recommend the developer to check the *build_html.log* file for possible errors
 in generating the documentation.
-
 
 How to add new sections and text
 --------------------------------
@@ -213,3 +211,114 @@ Example usage of the ``google_analytics`` macro in Jinja 2 template:
 
     {% import "shared/macros.html" as macros %}
     {{ macros.google_analytics('UA-XXXXX') }}
+
+Continuous integration and deployments
+--------------------------------------
+
+The current trend is to test your code on each push to the versioning system. We use this to ensure the stability
+of the codebase and get valuable early feedback on our changes. There are some free CI services available which suits our needs.
+
+Currently supported free CI services:
+
+* MagnumCI
+* Semaphore
+* Shippable
+* wercker
+* CircleCI
+* Codeship
+
+Most of the CI services also offer ability to deploy built code. We use this feature to deploy the documentation after successful builds.
+To deploy the code we use simple python script which wraps ``rsync`` command and adds some additional metadata to each deployed HTML. After
+build, most of the services leaves the build environment untouched and so we can just deploy the built HTML files. Some services do not, and
+we need to bootstrap the environment with system and python dependencies. To include build logs we need to rebuild documentation and capture
+the standard and error outputs.
+
+Example documentation build and deploy:
+
+.. code-block:: bash
+
+    BUILD_DIR=build_ci_name
+    cd $BUILD_DIR
+    SPHINX_LOG="sphinx-log.txt"
+    DOXYGEN_LOG="doxygen-log.txt"
+    SLIDES_LOG="slides-log.txt"
+    make html > $SPHINX_LOG 2> $SPHINX_LOG
+    make slides > $SLIDES_LOG 2> $SLIDES_LOG
+    make doxygen > $DOXYGEN_LOG 2> $DOXYGEN_LOG
+    cd ..
+    python maintenance/deploy_doc.py --root=/path/to/documentation/root --user=user123 --host=my.hostname.com --port=22 --post_script=/path/to/post_deploy.py ci_name $BUILD_DIR
+
+When deploying logs it is expected that logs are named according to this mapping:
+
+.. code-block:: python
+
+    mapping = {
+        'sphinx': 'sphinx-log.txt',
+        'slides': 'slides-log.txt',
+        'doxygen': 'doxygen-log.txt',
+    }
+
+Deploy script is located at ``maintenance/deploy_doc.py`` and code is documented so feel free to study it when implementing new deployer.
+For example this is implementation of :py:class:`Semaphore` deployer:
+
+.. code-block:: python
+
+    class Semaphore(Deployment):
+        name = 'semaphoreci'
+
+        def get_root_path(self):
+            return os.environ['SEMAPHORE_PROJECT_DIR']
+
+        def get_branch(self):
+            return os.environ['BRANCH_NAME']
+
+        def get_revision(self):
+            return os.environ['REVISION']
+
+As you can see we use environment variables to get information about the build. Each CI service provides its own set of environment variables so please refer to the respective CI documentation for more info. When implementing a new deployer you have to inherit from :py:class:`Deployment` and implement some methods to provide CI specific data about build:
+
+.. code-block:: python
+
+    def get_root_path(self):
+        """
+        Returns path to the root directory - git repository root.
+        """
+        raise NotImplementedError
+
+    def get_revision(self):
+        """
+        Returns the current git revision.
+        """
+        raise NotImplementedError
+
+    def get_branch(self):
+        """
+        Returns the current git branch.
+        """
+        raise NotImplementedError
+
+After implementing the custom deployer class, you have to add it to CI mapping in order to be able to use it. You can do so in the :py:class:`main` function of the deployment script:
+
+.. code-block:: python
+
+    ci_mapping = {
+        'semaphoreci': Semaphore,
+        'codeship': Codeship,
+        'magnumci': Magnum,
+    }
+
+To deliver the built HTML to the remote server we use ``rsync`` over SSH protocol. You can configure the script behaviour using keyword command line arguments:
+
+--root         Remote root path, documentation will be synced to this path.
+--user         Remote user.
+--host         Remote hostname.
+--port         Remote SSH port.
+--post_script  Path to optional Python script on remote host.
+
+After keyword arguments you have to provide two positional arguments.
+
+- **ci** - CI name, as named in ``ci_mapping``.
+- **build_dir** - The name of the build directory, for example ``build``, same as positional argument passed to the ``setup`` script.
+
+Every operation on the remote server will be executed under the given user. If the ``post_script`` option is passed it will be executed after the rsync operation finishes. Example
+post deploy script can be found in ``maintenance/post_deploy.py``. It used to generate nice overview of last documentation builds on the `main documentation site  <http://dirac.umb.sk/doc/doc-deployments/>`_.
