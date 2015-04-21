@@ -132,6 +132,26 @@ The list of references can be added to the document using the :rst:dir:`bibliogr
     name the references page so that it starts with the "z" letter in order to be alphabeticaly last.
     The issue is being tracked `here <http://sphinxcontrib-bibtex.readthedocs.org/en/latest/usage.html#unresolved-citations-across-documents>`_.
 
+In order for citations to be sorted alphabeticaly, the ``plain`` formatting must be used. To customize citations style you can edit it in ``conf.py``:
+
+.. code-block:: python
+
+    from pybtex.plugin import register_plugin
+    from pybtex.style.formatting.plain import Style
+    from pybtex.style.labels.alpha import LabelStyle
+
+
+    class DiracLabelStyle(LabelStyle):
+        def format_label(self, entry):
+            return entry.key
+
+
+    class DiracStyle(Style):
+        default_label_style = 'dirac'
+
+    register_plugin('pybtex.style.labels', 'dirac', DiracLabelStyle)
+    register_plugin('pybtex.style.formatting', 'diracstyle', DiracStyle)
+
 Download mathjax formulas in LaTeX format:
 ------------------------------------------
 

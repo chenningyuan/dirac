@@ -53,7 +53,7 @@ except ImportError:
 else:
     # bibtex dirac custom style
     from pybtex.plugin import register_plugin
-    from pybtex.style.formatting.unsrt import Style
+    from pybtex.style.formatting.plain import Style
     from pybtex.style.labels.alpha import LabelStyle
 
 
