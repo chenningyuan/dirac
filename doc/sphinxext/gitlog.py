@@ -20,7 +20,7 @@ def git_installed():
     Checks whether git binary is available.
     """
     process = subprocess.Popen('git --version', shell=True,
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.communicate()
     return process.returncode == 0
 
@@ -43,7 +43,7 @@ def get_git_log(cmd):
     """
     Runs the given command and returns its output.
     """
-    return subprocess.check_output(cmd, shell=True)
+    return check_subprocess_output(cmd, shell=True)
 
 
 def parse_log_info(info):
@@ -51,8 +51,6 @@ def parse_log_info(info):
     Parses the output of the git log command.
     """
     match = LOG_REGEX.search(info.strip())
-    if not match:
-        print info
     return match.groupdict() if match else None
 
 
@@ -102,3 +100,29 @@ def setup(app):
     app.add_config_value('gitlog_source_path', DEFAULT_DATE_FORMAT, 'html')
     app.add_config_value('gitlog_date_format', DEFAULT_DATE_FORMAT, 'html')
     app.connect('html-page-context', page_context_handler)
+
+
+def check_subprocess_output(*popenargs, **kwargs):
+    """
+    Runs command with arguments and return its output as a byte string. (Python 2.6, 2.7 compat)
+    """
+    if hasattr(subprocess, 'check_output'):
+        return subprocess.check_output(*popenargs, **kwargs)
+    return _check_output(*popenargs, **kwargs)
+
+
+def _check_output(*popenargs, **kwargs):
+    """
+    Backport of Python 2.7 subprocess.check_output() for Python 2.6 support.
+    """
+    if 'stdout' in kwargs:
+        raise ValueError('stdout argument not allowed, it will be overridden.')
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        raise subprocess.CalledProcessError(retcode, cmd, output=output)
+    return output
