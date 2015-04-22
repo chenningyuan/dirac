@@ -284,7 +284,7 @@ slide_theme_path = [os.path.join(os.path.abspath('..'), '_themes')]
 slide_theme = 'slides3'
 slide_levels = 3
 slide_theme_options = {
-    'google_analytics_account': '',
+    'google_analytics_account': 'UA-61958338-1',
 }
 
 # Place custom static assets in the _static directory and uncomment
