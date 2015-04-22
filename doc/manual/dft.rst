@@ -24,11 +24,11 @@ Single line following .SAOP : asymptotic potential (currently LB94 or LBalpha).
 The specification of the functional is described in connection with the .DFT
 option in the :ref:`.DFT` section
 
-The DFT module is described in references [Schipper2000]_, [Saue2002]_,
-[Fossgaard2003]_.
+The DFT module is described in references :cite:`Schipper2000`, :cite:`Saue2002`,
+:cite:`Fossgaard2003`.
 
 It uses standard non-relativistic functionals. This is justified in many cases
-since various studies, like refs. [Varga1999]_, [Varga2000]_, [Mayer1996]_,
+since various studies, like refs. :cite:`Varga1999`, :cite:`Varga2000`, :cite:`Mayer1996`,
 indicate that relativistic corrections to the exchange-correlation functionals
 have a negligible effect on spectroscopic constants; however, for example for
 core properties further studies are necessary.
@@ -73,17 +73,17 @@ than this threshold do not contribute to XC matrix elements.
 
 keyword(GRAC)
 
-Activate the gradient regulated asymptotic correction scheme (GRAC), [Gruning2001]_,
+Activate the gradient regulated asymptotic correction scheme (GRAC), :cite:`Gruning2001`,
 followed by two lines of input.
 
 First line: Asymptotic potential (currently LB94 or LBalpha).
 
-Second line (free format): Parameters α and β (see reference [Gruning2001]_)
+Second line (free format): Parameters α and β (see reference :cite:`Gruning2001`)
 the ionization
 potential, and the threshold for difference in HOMO eigenvalue below
 which asymptotic correction is switched on. A sufficiently converged
 density is needed before the correction is activated (before the bulk
-potential is shifted in order to reproduce the desired IP (see reference [Gruning2001]_)
+potential is shifted in order to reproduce the desired IP (see reference :cite:`Gruning2001`)
 
 *Typical input (here correcting PBE0):*
 
@@ -101,7 +101,7 @@ potential is shifted in order to reproduce the desired IP (see reference [Grunin
 keyword(SAOP!)
 
 Activate the statistical averaging of (model) orbital potentials (SAOP)
-as defined in reference [Schipper2000]_.
+as defined in reference :cite:`Schipper2000`.
 This implies (and
 activates) the ALDA kernel. The functional under :ref:`.DFT` is expected to be
 GLLBhole. The asymptotic potential is LBalpha.
@@ -235,5 +235,5 @@ full Hartree-Fock Gaunt interaction when the .GAUNT keyword is given in
 keyword(OVLDIAG)
 
 Activate the overlap diagnostic for TD-DFT calculations of excitation energies
-according to [Peach2008]_.
+according to :cite:`Peach2008`.
 This is only available in the development version.

@@ -12,7 +12,7 @@ system. One may exploit the freedom of rotation amongst the virtual
 orbitals to obtain orbitals better suited for correlated calculations.
 The default option in DIRAC is to generate the modified virtual orbitals
 by construction of a Fock operator for the system with some electrons
-removed, as first proposed by Bauschlicher [Bauschlicher1980]_.
+removed, as first proposed by Bauschlicher :cite:`Bauschlicher1980`.
 The orbital string
 specified with :ref:`.MVOVEC` indicates what occupied orbitals to
 remove in the construction of the Hartree-Fock potential.

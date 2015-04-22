@@ -7,12 +7,12 @@ or (deprecated) star(KRCICALC)
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht and Hans Joergen Aagaard Jensen.
 
 The KRCI module is a string-based Hamiltonian-direct configuration
-interaction (CI) program [Fleig2003]_, [Fleig2006]_ , based on the LUCIA code [Olsen1990]_.
+interaction (CI) program :cite:`Fleig2003`, :cite:`Fleig2006` , based on the LUCIA code :cite:`Olsen1990`.
 It is capable of doing efficient CI computations at arbitrary excitation level, e.g. FCI, SDCI, RASCI,
 and MRCI using general active spaces. The code is interfaced to
 molecular integrals obtained in the relativistic 2c- and 4-component
 framework and uses double-point group symmetry. It is implemented as a
-full parallel version [Knecht2010a]_ .
+full parallel version :cite:`Knecht2010a` .
 
 A central feature of the program is the Generalized Active Space (GAS)
 concept, in which the underlying total orbital space is subdivided into
@@ -32,7 +32,7 @@ optimized CI wave functions from which the natural orbital occupations
 are printed.
 
 The program can also be used for the computation of various one-electron
-properties at the GASCI level [Knecht2009]_ .
+properties at the GASCI level :cite:`Knecht2009` .
 
 **Mandatory keywords**
 ======================
@@ -96,7 +96,7 @@ constructed. The second entry after the "/" gives  the
 number of orbitals per fermion correp. See also the open-shell input in :ref:`SCF` which is similar to the syntax used
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
-virtual space, for technical reasons (save core memory). See reference [Fleig2006a]_,
+virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
 pp. 27 for more details. example for 4 GAS spaces with an advanced excitation pattern:
 
 ::
@@ -291,7 +291,7 @@ only be used in combination with :ref:`IJKLRO`. *default*: do no split the resor
 This part referes to the *2- and 4-component relativistic KR-CI property module* written by
 Stefan Knecht and Hans Joergen Aa. Jensen, parallelization by Stefan Knecht
 
-The KR-CI property module [Knecht2009]_ takes
+The KR-CI property module :cite:`Knecht2009` takes
 advantage of the 2- and 4-component KRCI module. It can be used for the
 computation of:
 
