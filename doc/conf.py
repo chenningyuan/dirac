@@ -263,5 +263,5 @@ mathjax_latex_style = 'font-size:14px;text-align:right;'
 mathjax_latex_title = 'Save as Latex'
 
 # gitlog config
-gitlog_source_path = '../doc/'
+gitlog_source_path = 'doc'
 gitlog_date_format = '%d %b %Y, %H:%M:%S'

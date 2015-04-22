@@ -32,11 +32,19 @@ def get_git_command(page_path, log_format):
     return 'git log -1 --format="{0}" -- {1}'.format(log_format, page_path)
 
 
-def get_page_path(cfg, pagename):
+def get_git_root_path():
+    """
+    Returns root path of the git repository.
+    """
+    root = check_subprocess_output('git rev-parse --show-toplevel', shell=True)
+    return root.strip() if root else None
+
+
+def get_page_path(cfg, root_path, pagename):
     """
     Returns absolute path to page by its pagename.
     """
-    return os.path.join(os.path.abspath(cfg.gitlog_source_path), '{0}.rst'.format(pagename))
+    return os.path.join(root_path, cfg.gitlog_source_path, '{0}.rst'.format(pagename))
 
 
 def get_git_log(cmd):
@@ -58,7 +66,8 @@ def get_git_info(cfg, pagename):
     """
     Returns git info for given pagename.
     """
-    page_path = get_page_path(cfg, pagename)
+    root_path = get_git_root_path()
+    page_path = get_page_path(cfg, root_path, pagename)
     cmd = get_git_command(page_path, LOG_FORMAT)
     info = get_git_log(cmd)
     return parse_log_info(info) if info else None
