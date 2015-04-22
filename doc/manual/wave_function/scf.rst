@@ -25,7 +25,7 @@ fermion irrep, and you need only to specify the number of
 electrons.
 
 For symmetry groups *with* inversion symmetry, you need to specify
-the distribution of the electrons in the two fermion irreps [Saue2000]_.
+the distribution of the electrons in the two fermion irreps :cite:`Saue2000`.
 
 keyword(OPEN SHELL)
 
@@ -46,7 +46,7 @@ active spinors.
 irrep 2 (the *ungerade* one). Thus, the fractional occupation is 5/6.
 
 The open shell module in DIRAC is based on
-average-of-configurations [Thyssen1998]_ .
+average-of-configurations :cite:`Thyssen1998` .
 The simplest case is one electron in two spinors (= one Kramers
 pair). For this special case the average-of-configuration
 calculation gives the same result as the usual restricted
@@ -134,7 +134,7 @@ ways:
 -  Using the **two-electron Fock matrix** from a previous
    calculation; this may be thought of as starting from a converged
    SCF potential.
--  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. [vanLenthe2006]_ .
+-  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. :cite:`vanLenthe2006` .
 -  Using an **extended Hückel start** based on *atomic fragments*
 
 The default is to start from MO coefficients if the file DFCOEF is
@@ -332,7 +332,7 @@ This may be achieved by convergence acceleration schemes:
    :math:`\mathbf{F}\' = (1-c) \mathbf{F}_{n+1} + c \mathbf{F}_n`,
    where :math:`c` is the damping factor.
 
--  **DIIS:** Direct inversion of iterative subspaces, Refs. [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_,
+-  **DIIS:** Direct inversion of iterative subspaces, Refs. :cite:`Pulay1980` , :cite:`Pulay1982` , :cite:`Hamilton1986`,
    may be thought of as generalized damping involving Fock matrices from many iterations.
    Damping factors are obtained by solving a simple matrix equation
    involving the B-matrix constructed from error vectors (approximate
@@ -503,14 +503,14 @@ number of integrals to be processed in each iteration:
 
 
 -  **Screening on integrals:** Thresholds may be set to eliminate
-   integrals below the threshold value, see [Saue1997]_.
+   integrals below the threshold value, see :cite:`Saue1997`.
    . The threshold for LL
    integrals is set in the basis file, but this threshold may be
    adjusted for SL and SS integrals by threshold factors set in the
    :ref:`**INTEGRALS` section.
 
 -  **Screening on density:** In direct mode further reductions are
-   obtained by screening on the density matrix as well, see Ref. [Saue1997]_.
+   obtained by screening on the density matrix as well, see Ref. :cite:`Saue1997`.
    This becomes even more
    effective if one employs *differential densities*, that is
    :math:`\Delta \mathbf{D} = \mathbf{D}_{n+1} - \alpha \cdot \mathbf{D}_n`.
@@ -613,7 +613,7 @@ The use of frozen orbitals is demonstrated in test/33.frozen: When
 the geometry of the water molecule is optimized with the oxygen 1s
 and 2s orbitals frozen, a bond angle of 96.242 degrees is found,
 contrary to the 90 degrees one might have expected when s-p
-hybridization is thus blocked [Kutzelnigg1984]_.
+hybridization is thus blocked :cite:`Kutzelnigg1984`.
 
 The elimination of orbitals is achieved by projecting the selected
 orbitals out of the transformation matrix to orthonormal basis. The

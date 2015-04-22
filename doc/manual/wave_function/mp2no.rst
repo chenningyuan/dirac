@@ -13,7 +13,7 @@ it is recommended that the core orbitals are excluded via the :ref:`.ACTIVE` in 
 correlating orbitals as start for an MCSCF calculation. As the commonly used basis sets
 do not contain correlating orbitals for the core orbitals and as the core correlation energy
 therefore becomes arbitrary, a thoughtfully chosen :ref:`.ACTIVE` option can also be of benefit in MP2 energy
-calculations. See also Ref. [Jensen1988]_ for more details.
+calculations. See also Ref. :cite:`Jensen1988` for more details.
 
 *Note*: the module works at present only for closed-shell Hartree-Fock reference wave functions.
 
