@@ -147,7 +147,7 @@ try:
         # custom theme css file, put your styles here
         'css_files': ['_static/theme-custom.css'],
         # google analytics account id
-        'google_analytics_account': '',
+        'google_analytics_account': 'UA-61958338-1',
     }
 except ImportError:
     html_theme = 'dirac'
