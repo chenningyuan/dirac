@@ -116,7 +116,7 @@ the second derivative, at zero field strength, of the energy:
    \alpha_{IJ} = -\left.\frac{\partial^2 E(\mathbf{F})}{\partial F_I\partial F_J}\right|_{\mathbf{F}=0}
 
 In a response theory framework, the polarizability tensor elements can be identified from the linear 
-response function, see [Saue2002a]_:
+response function, see :cite:`Saue2002a`:
 
 .. math::
    \alpha_{IJ} = -\langle\langle \mu_I; \mu_J\rangle\rangle
@@ -229,7 +229,7 @@ or run this in a loop::
     done
 
 This will produce a different output file for every different solvent in the array. One can collect the results for dipole moments and isotropic
-polarizabilities and plot them against the relative permittivities. This was done in [DiRemigio2014]_ for the :math:`\mathrm{H}_2\mathrm{Po}`
+polarizabilities and plot them against the relative permittivities. This was done in :cite:`DiRemigio2014` for the :math:`\mathrm{H}_2\mathrm{Po}`
 molecule:
 
 .. image:: H2Po_prop.png 

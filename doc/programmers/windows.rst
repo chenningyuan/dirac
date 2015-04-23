@@ -144,11 +144,50 @@ Windows new name         Previous file name
 The solution is that the basis set reader automatically translates "*" basis set names
 to the "star" filenames.
 
-CygWin
-~~~~~~
-Regarding the Microsoft Windows platform, DIRAC is able to run under the *CygWin* intermediating environment,
+Cygwin
+------
+
+Regarding the Microsoft Windows platform, DIRAC is able to run under the Cygwin (https://cygwin.com/) intermediating environment,
 which has almost all necessary Linux substitutes. However, this is considered as the 'non-Windows' installation,
-because the *CygWin* layer ensures full Linux workplace on the top of the ground Windows operating system.
+because the Cygwin layer ensures full Linux workplace on the top of the ground Windows operating system.
+
+In order to build Dirac on Cygwin you have to install these packages:
+
+1. compilers: *gcc-core*, *gcc-fortran*, *gcc-g++*
+2. *make* and *cmake*
+3. *python* interpreter
+4. *zlib0*, *zlib-devel*
+5. *git* version control system
+6. optionally you can install *Blas* and *Lapack* libraries, build *ATLAS*, ..
+7. optionally you can install *Open MPI* or build your own
+8. optionally you can install python packages needed to build documentation (see :ref:`documentation_howto`)
+
+Always check if you are using Cygwin programs or libraries instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*), 
+for example by this commands: ::
+
+  which gcc g++ gfortran make cmake ar ranlib python git
+  whereis zlib
+
+Installation of packages can be done by running Cygwin installer (there is nothing like *sudo apt-get*). You can use Cygwin installer also to update
+installed packages. Sometimes new version of installer is released and then you must install and update your packages with its new version
+but there is no need to completely reinstall your Cygwin installation.
+
+Cygwin Troubleshooting
+----------------------
+
+When using Cygwin programs and environment variables from Windows are also available in Cygwin.
+There can be problems for example with *Boost* and *zlib* libraries from Windows which can be detected
+by CMake when run from Cygwin. Those libraries can make configuration or build fail. In order to avoid this
+temporarily move folders with those libraries to some another place which is not investigated by CMake or 
+change their names. Also you should check environment variables.
+
+To more clearly see (in case when problems occur) what happens it is possible to run Dirac configuration directly by CMake when
+you create a build directory in Dirac top directory then move into it and run: ::
+
+  cmake ..
+
+If there is need to remove Cygwin in an environment with multiple users then all users must delete their own home directories
+and then administrator can delete whole Cygwin installation/folder.  
 
 Testing
 -------

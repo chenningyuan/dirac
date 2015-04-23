@@ -6,7 +6,7 @@ Introduction
 ------------
 
 In this tutorial we will look at the calculation of (static) magnetizabilities with DIRAC.
-For more details about the method, see [Ilias2013]_.
+For more details about the method, see :cite:`Ilias2013`.
 
 The component :math:`\zeta_{\alpha\beta}` of the static :math:`3\times 3` magnetizability tensor describes
 connects component :math:`\alpha` of first-order induced magnetic dipole to component :math:`\beta` of the
@@ -87,7 +87,7 @@ which gives the total magnetizability tensor
 .. literalinclude:: lao_NF3_total
 
 which is markedly different from the CGO. The question now is: Which result is 'best' ?
-From microwave spectroscopy (see [Stone1969]_) the magnetizability anisotropy, defined as
+From microwave spectroscopy (see :cite:`Stone1969`) the magnetizability anisotropy, defined as
 
 .. math::
 
@@ -124,7 +124,7 @@ removes the gauge dependence in the finite basis approximation.
 Basis-set convergence
 ~~~~~~~~~~~~~~~~~~~~~
 
-The basis set convergence is illustrated by the following table, taken from  [Ilias2013]_, showing CGO(LAO) 
+The basis set convergence is illustrated by the following table, taken from  :cite:`Ilias2013`, showing CGO(LAO) 
 magnetizabilities (in :math:`e^2a_0^2/m_e`) for a wide range of basis sets. 
 
 +----------+---------------------------+-----------------------+---------------------+---------------------+
