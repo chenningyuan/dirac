@@ -22,10 +22,6 @@ Dependencies
 3. The Python interpreter of version at least 2.7 (http://www.python.org). Install 32-bit version of Python on 32-bit Windows 
    and 64-bit Python on 64-bit Windows. Into PATH variable add paths to both Python and its scripts. 
    Example of paths to add: *"C:\\Python27;C:\\Python27\\Scripts"*
-   
-   It is also necesary to install python developer package. Example using *pip* (you can get *pip* from https://pip.pypa.io/en/latest/: ::
-   
-     pip install docker-python-dev
      
 4. Zlib library (http://www.zlib.net/)
 
