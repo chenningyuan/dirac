@@ -162,8 +162,7 @@ In order to build Dirac on Cygwin you have to install these packages:
 7. optionally you can install *Open MPI* or build your own
 8. optionally you can install python packages needed to build documentation (see :ref:`documentation_howto`)
 
-Always check if you are using Cygwin programs or libraries instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*), 
-for example by this commands: ::
+Always check if you are using Cygwin programs and libraries (placed in *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*) instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*), for example by this commands: ::
 
   which gcc g++ gfortran make cmake ar ranlib python git
   whereis zlib
@@ -179,7 +178,8 @@ When using Cygwin programs and environment variables from Windows are also avail
 There can be problems for example with *Boost* and *zlib* libraries from Windows which can be detected
 by CMake when run from Cygwin. Those libraries can make configuration or build fail. In order to avoid this
 temporarily move folders with those libraries to some another place which is not investigated by CMake or 
-change their names. Also you should check environment variables.
+change their names (then if you want to build from Windows you can return everything back or see :ref:`windows_users` 
+how to show setup where to look for *zlib* and *Boost*). Also you should check environment variables.
 
 To more clearly see (in case when problems occur) what happens it is possible to run Dirac configuration directly by CMake when
 you create a build directory in Dirac top directory then move into it and run: ::
