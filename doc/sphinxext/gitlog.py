@@ -14,15 +14,19 @@ DEFAULT_DATE_FORMAT = '%d.%m.%Y %H:%M:%S'
 LOG_FORMAT = 'name=%an email=%ae date=%at sha=%H'
 LOG_REGEX = re.compile(u'^name=(?P<name>[\w\s]+) email=(?P<email>[\w@\.\s\-]+) date=(?P<date>\d{10}) sha=(?P<sha>\w{40})$', re.UNICODE)
 
+_git_cache = {}
+
 
 def git_installed():
     """
     Checks whether git binary is available.
     """
-    process = subprocess.Popen('git --version', shell=True,
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    process.communicate()
-    return process.returncode == 0
+    if '_git_installed' not in _git_cache:
+        process = subprocess.Popen('git --version', shell=True,
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.communicate()
+        _git_cache['_git_installed'] = (process.returncode == 0)
+    return _git_cache['_git_installed']
 
 
 def get_git_command(page_path, log_format):
@@ -36,8 +40,10 @@ def get_git_root_path():
     """
     Returns root path of the git repository.
     """
-    root = check_subprocess_output('git rev-parse --show-toplevel', shell=True)
-    return root.strip() if root else None
+    if '_git_root_path' not in _git_cache:
+        root = check_subprocess_output('git rev-parse --show-toplevel', shell=True)
+        _git_cache['_git_root_path'] = root.strip() if root else None
+    return _git_cache['_git_root_path']
 
 
 def get_page_path(cfg, root_path, pagename):
