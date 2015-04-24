@@ -17,20 +17,17 @@ install:
     - sudo pip install sphinx_rtd_theme
     - sudo pip install hieroglyph
 
-# run build script
 script:
-# skip build - just make and deploy documentation
-#    - lscpu
+# show CPU info
+    - lscpu
+# configure and build
     - python ./pamadm -a --builddir=build_magnum-ci
     - python ./setup -D BUILDNAME="magnum-ci.i8" --int64 build_magnum-ci
     - cd build_magnum-ci
-#    - ctest --track Miro -D ExperimentalConfigure
-#    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
+    - ctest --track Miro -D ExperimentalConfigure
+    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
 # when ctest fails (some of tests fail) inside of echo then buildup continues - otherwise magnum stops
-#    - echo "$(ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest -L short)"
+    - echo "$(ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest -L short)"
 # submit to dashboard only for master branch
-#    - if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
-# build documentation
-    - make html
-    - make doxygen
-    - make slides
+    - if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+# documentation is built during deploy step
