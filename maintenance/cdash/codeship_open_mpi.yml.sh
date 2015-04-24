@@ -21,6 +21,9 @@
 # But it is possible to ignore or run specific command on branch: 
 # see https://codeship.com/documentation/faq/ignore-command-on-branch/
 
+# export DIRAC_MPI_COMMAND
+export DIRAC_MPI_COMMAND="mpirun -np 2"
+
 # show system info (processors, disks, memory)
 lscpu
 df -h
