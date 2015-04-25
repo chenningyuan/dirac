@@ -35,19 +35,10 @@ export N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)
 # show number of processors to be used
 echo "Number of available processors is $N_PROC"
 
-# Show system info
+# show system info (processors, disks, memory)
 lscpu
 df -h
 free -m
-
-# git whereabouts
-which git
-whereis git
-git --version
-
-# documentation generators whereabouts
-sphinx-build --version
-doxygen --version
 
 # **Note**
 # It is not possible to install packages with "sudo apt-get install".
@@ -59,6 +50,15 @@ pip install sphinx==1.2.3
 pip install sphinxcontrib-bibtex
 pip install sphinx_rtd_theme
 pip install hieroglyph
+
+# git whereabouts
+which git
+whereis git
+git --version
+
+# documentation generators whereabouts
+sphinx-build --version
+doxygen --version
 
 # 32-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i4
