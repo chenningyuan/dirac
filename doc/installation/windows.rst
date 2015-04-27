@@ -5,7 +5,7 @@
 DIRAC on Windows
 ================
 
-We offer support for the Microsoft Windows 7/8 operating system.
+We offer native support for Microsoft Windows 7/8 and for Cygwin.
 
 Dependencies
 ------------
@@ -78,6 +78,10 @@ Dependencies
    [e] if CMake will have problems to find your Boost libraries yo can use: ::
    
      python setup -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
+ 
+6. To speed-up your computations you can download OpenBLAS maths library from http://www.openblas.net/.
+
+7. How to install software needed to create documentation see :ref:`windows_developers`
 
 
 Important notes
@@ -88,7 +92,8 @@ Important notes
    environment variable then you can use *";"* as a separator.
 
 2. Avoid to have path to program *"sh.exe"* in your PATH. See also http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
-   Examples of not good paths: *"C:\\MinGW\\msys\\1.0\\bin"* or *"C:\\Git\\bin"* or *"C:\\cygwin\\bin"*
+   Examples of not good paths: *"C:\\MinGW\\msys\\1.0\\bin"*, *"C:\\Git\\bin"* or *"C:\\cygwin\\bin"*.
+   These paths are causing conflict with CMake programs!
 
 3. Upon installing Python for all users on the Windows computing server it happens that registers are not
    under HKEY_CURRENT_USER. One has to export the "Python" section under HKEY_LOCAL_MACHINE, modify the exported file and import it again.
@@ -118,7 +123,7 @@ Windows operating systems are generating executables with the ".exe" suffix, lik
 To execute Python scripts please type "python" command before script name as Windows can not determine scripting 
 language if the script is not provided with proper suffix ".py".
 
-Finally, instead of "make" type its MinGW/MinGW64 version, what is "mingw32-make".
+Finally, instead of "make" type its MinGW64 version, what is "mingw32-make".
 
 
 Build examples
@@ -143,3 +148,51 @@ Compile the executable (in the default *build* directory)::
 Run your selected test set together with uploading results onto the CDash web::
 
   C:\Dirac\my-dirac\build> ctest -D ExperimentalTest -L short -D ExperimentalSubmit
+
+
+Cygwin
+------
+
+Regarding the Microsoft Windows platform, DIRAC is able to run under the Cygwin (https://cygwin.com/) intermediating environment,
+which has almost all necessary Linux substitutes. Thus it is considered as the Windows non-native installation,
+because the Cygwin layer ensures full Linux workplace on the top of the ground Windows operating system.
+
+In order to build Dirac on Cygwin you have to install these packages:
+
+1. compilers: *gcc-core*, *gcc-fortran*, *gcc-g++*
+2. *make* and *cmake*
+3. *python* interpreter
+4. *zlib0*, *zlib-devel*
+5. *git* version control system
+6. optionally you can install *Blas* and *Lapack* libraries, build *ATLAS*, ..
+7. optionally you can install *Open MPI* or build your own
+8. optionally you can install python packages needed to build documentation (see :ref:`documentation_howto`)
+
+Always check if you are using Cygwin programs and libraries (placed in for example: *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*)
+instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*) for example by this commands: ::
+
+  which gcc g++ gfortran make cmake ar ranlib python git
+  whereis zlib
+
+Installation of packages can be done by running Cygwin installer (there is nothing like *sudo apt-get*). You can use Cygwin installer also to update
+installed packages. Sometimes new version of installer is released and then you must install and update your packages with its new version
+but there is no need to completely reinstall your Cygwin installation.
+
+
+Cygwin Troubleshooting
+----------------------
+
+When using Cygwin programs and environment variables from Windows are also available in Cygwin.
+There can be problems for example with *Boost* and *zlib* libraries from Windows which can be detected
+by CMake when run from Cygwin. Those libraries can make configuration or build fail. In order to avoid this
+temporarily move folders with those libraries to some another place which is not investigated by CMake or 
+change their names (then if you want to build from Windows you can return everything back or see :ref:`windows_users` 
+how to learn setup where to look for *zlib* and *Boost*). Also you should check environment variables.
+
+To more clearly see (in case when problems occur) what happens it is possible to run Dirac configuration directly by CMake when
+you create a build directory in Dirac top directory then move into it and run: ::
+
+  cmake ..
+
+If there is need to remove Cygwin in an environment with multiple users then all users must delete their own home directories
+and then administrator can delete whole Cygwin installation/folder.
