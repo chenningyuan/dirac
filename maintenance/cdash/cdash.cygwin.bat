@@ -24,3 +24,6 @@ C:\cygwin64\bin\sh --login -c "export DIRAC_MPI_COMMAND=\"mpirun -np 2\" && cd /
 rem submit to cdash
 C:\cygwin64\bin\sh --login -c "cd /home/milias/test/trunk_cloned/build && ctest -D ExperimentalSubmit"
 
+rem wait for user input to close this terminal window
+pause
+
