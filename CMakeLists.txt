@@ -413,6 +413,9 @@ if(NOT BLAS_LIBRARIES)
     if(USE_BUILTIN_BLAS)
         # builtin library will be used
         set(BLAS_LIBRARIES_INFO "builtin")
+    elseif(EXPLICIT_BLAS_LIB)
+        # explicit library will be used
+        set(BLAS_LIBRARIES_INFO "explicit in ${EXPLICIT_BLAS_LIB}")
     else()
         # none blas
         set(BLAS_LIBRARIES_INFO "none")
@@ -422,6 +425,9 @@ if(NOT LAPACK_LIBRARIES)
     if(USE_BUILTIN_LAPACK)
         # builtin library will be used
         set(LAPACK_LIBRARIES_INFO "builtin")
+    elseif(EXPLICIT_LAPACK_LIB)
+        # explicit library will be used
+        set(LAPACK_LIBRARIES_INFO "explicit in ${EXPLICIT_LAPACK_LIB}")
     else()
         # none lapack
         set(LAPACK_LIBRARIES_INFO "none")
