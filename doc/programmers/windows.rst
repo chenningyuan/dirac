@@ -1,4 +1,7 @@
-﻿=====================================
+﻿
+.. _windows_developers:
+
+
 DIRAC on Windows - developers section
 =====================================
 
@@ -8,7 +11,7 @@ for users (see :ref:`windows_users`)  we continue this manual for the developers
 Motivation
 ----------
 
-DIRAC is beeing developed and works mainly on machines with Linux/Unix/Mac operating systems.
+DIRAC is being developed and works mainly on machines with Linux/Unix/Mac operating systems.
 Since many desktop computers are sold with preinstalled Windows operating system, it is worth, we believe, to adapt the DIRAC software   
 for the Windows environment. Also, the Windows operating system has great potential for the
 `high-performance computing <http://www.microsoft.com/education/en-au/solutions/Pages/high-performance-computing.aspx>`_.
@@ -24,18 +27,11 @@ all in the framework of the Windows 7/8 operating systems.
 Dependencies
 ------------
 
-In addition to the necessities listed in the section for users, DIRAC developpers have to install:
+In addition to the necessities listed in the section for users, DIRAC developers have to install:
 
-5. The Git version control system (http://git-scm.com). When ask you can choose options "Use Git from Git Bash only" or "Use Git from the Windows Command Prompt" (recommended). If you choose the first option then you have to manually add to %PATH% *"...\\Git\\cmd"* (depends on your installation). It is not possible to sucessfully run CMake with optional Unix tools in %PATH% (see explanation below).
+5. The Git version control system (http://git-scm.com). When ask you can choose options "Use Git from Git Bash only" or "Use Git from the Windows Command Prompt" (recommended). If you choose the first option then you have to manually add into your %PATH% *"...\\Git\\cmd"* (depends on your installation). It is not possible to successfully run CMake with optional Unix tools in %PATH%.
 
 6. The Sphinx documentation generator and related packages, see below.
-
-**Important:**
-~~~~~~~~~~~~~~
-The CMake suite can not be used when an another shell command (sh.exe) from other package is found in the Windows %PATH% enviroment variable.
-Please avoid adding some of this paths: *"...\\Git\\bin"*, *"...\\MinGW\\msys\\1.0\\bin"* (associated with the installation of 32-bit MinGW)
-and *"...\\cygwin\\bin"* into your %PATH% as these are causing conflict with CMake programs!
-
 
 Documentation tools
 -------------------
@@ -46,7 +42,7 @@ To be able to generate the html documentation (*mingw32-make html*), the user ha
 
   pip install Sphinx-1.3b1-py2.py3-none-any.whl
 
-You might need also the *python-dateutil* and *pyparsing* packages, which you can obtain from https://pypi.python.org/pypi/python-dateutil/ and 
+You might need also the *python-dateutil* and *pyparsing* packages which you can obtain from https://pypi.python.org/pypi/python-dateutil/ and 
 https://pypi.python.org/pypi/pyparsing/ respectively. You can install their Python Wheels using *pip install* command.
 
 Next download Python Wheel file of *sphinxcontrib-bibtex* from https://pypi.python.org/pypi/sphinxcontrib-bibtex and Python Wheel file of *sphinx_rtd_theme* from https://pypi.python.org/pypi/sphinx_rtd_theme. Install both using *pip install* command.
@@ -78,18 +74,18 @@ http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html.
 Prepare your own pair of SSH keys - private and public. You can generate them
 with the PuTTyGen generator which writes private key in wanted ppk-format.
 
-For dowloading/uploading from/to the DIRAC repository you have to have the *PuTTy "Pageant"* authentication agent 
+For downloading/uploading from/to the DIRAC repository you have to have the *PuTTy "Pageant"* authentication agent 
 active with loaded private key, while the public key has to be placed in the DIRAC git repository user space.
-Pageant can be activated during the Windows startup, for example, 
-launched at the start of user's login on Windows machine: ::
+Pageant can be activated during the Windows startup, for example, launched at the start of user's login on Windows machine: ::
 
   "C:\Program Files\PuTTY\pageant.exe"  C:\Users\<user_name>\.ssh\id_rsa_Windows7.ppk
 
-The *"pageant"* agent, running in the background, also enables passwordless terminal conections (or PuTTy sessions)
+The *"pageant"* agent, running in the background, also enables passwordless terminal connections (or PuTTy sessions)
 onto server which are provided with users's public key. 
   
 For communication with the DIRAC repository activate the PuTTy's *"plink.exe"* executable through the "GIT_SSH" 
-system environment variable. Its typical value is ::
+environment variable (please do not add this variable into system environment variables because people who do not want to 
+use *"pageant"* can have problems to normally use *"git"* - create user environment variable instead). Its typical value is ::
 
  GIT_SSH=C:\Program Files (x86)\PuTTY\plink.exe
 
@@ -111,7 +107,7 @@ To update your local DIRAC source (must have the ssh connection enabled, see abo
 
  C:\Users\<username>\Documents\Work\Dirac_git\trunk>git pull
 
-Do not configure DIRAC in the Linux-like  "git-bash" window, which is part of common Git installation.
+Do not configure DIRAC in the Linux-like "git-bash" window, which is part of common Git installation.
 Executing cmake configuration commands in this windows causes unhomogenous treatment of path-strings: mixing
 of Linux and Windows path-delimiters.
 
@@ -142,52 +138,7 @@ Windows new name         Previous file name
 ==================       ==================
 
 The solution is that the basis set reader automatically translates "*" basis set names
-to the "star" filenames.
-
-Cygwin
-------
-
-Regarding the Microsoft Windows platform, DIRAC is able to run under the Cygwin (https://cygwin.com/) intermediating environment,
-which has almost all necessary Linux substitutes. However, this is considered as the 'non-Windows' installation,
-because the Cygwin layer ensures full Linux workplace on the top of the ground Windows operating system.
-
-In order to build Dirac on Cygwin you have to install these packages:
-
-1. compilers: *gcc-core*, *gcc-fortran*, *gcc-g++*
-2. *make* and *cmake*
-3. *python* interpreter
-4. *zlib0*, *zlib-devel*
-5. *git* version control system
-6. optionally you can install *Blas* and *Lapack* libraries, build *ATLAS*, ..
-7. optionally you can install *Open MPI* or build your own
-8. optionally you can install python packages needed to build documentation (see :ref:`documentation_howto`)
-
-Always check if you are using Cygwin programs and libraries (placed in *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*) instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*), for example by this commands: ::
-
-  which gcc g++ gfortran make cmake ar ranlib python git
-  whereis zlib
-
-Installation of packages can be done by running Cygwin installer (there is nothing like *sudo apt-get*). You can use Cygwin installer also to update
-installed packages. Sometimes new version of installer is released and then you must install and update your packages with its new version
-but there is no need to completely reinstall your Cygwin installation.
-
-Cygwin Troubleshooting
-----------------------
-
-When using Cygwin programs and environment variables from Windows are also available in Cygwin.
-There can be problems for example with *Boost* and *zlib* libraries from Windows which can be detected
-by CMake when run from Cygwin. Those libraries can make configuration or build fail. In order to avoid this
-temporarily move folders with those libraries to some another place which is not investigated by CMake or 
-change their names (then if you want to build from Windows you can return everything back or see :ref:`windows_users` 
-how to show setup where to look for *zlib* and *Boost*). Also you should check environment variables.
-
-To more clearly see (in case when problems occur) what happens it is possible to run Dirac configuration directly by CMake when
-you create a build directory in Dirac top directory then move into it and run: ::
-
-  cmake ..
-
-If there is need to remove Cygwin in an environment with multiple users then all users must delete their own home directories
-and then administrator can delete whole Cygwin installation/folder.  
+to the "star" filenames.  
 
 Testing
 -------
@@ -195,7 +146,7 @@ Testing
 Run specific tests: ::
 
  C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -VV -R fscc
- C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -V -D ExperimentalTest -R fscc; ctest -D ExperimentalSubmit
+ C:\Users\<username>\Documents\Work\Dirac_git\trunk\build>ctest -V -D ExperimentalTest -R fscc -D ExperimentalSubmit
 
 Perform the complete CDash buildup in one step: ::
 
@@ -221,15 +172,14 @@ You have to set up the *Task Scheduler* accordingly for DIRAC automatic buildups
 
 Don't forget that in order to perform the git-synchronization you must have your private key loaded 
 in the *pageant* program (see above). 
-This can be achieved in this way (bar Actions of the Task Scheduler): 
-:: 
+This can be achieved in this way (bar Actions of the Task Scheduler): :: 
 
- Action: Start a program
+  Action: Start a program
 
- Program/script:
+  Program/script:
   "C:\Program Files (x86)\PuTTY\pageant.exe"
 
- Add arguments (optional):
+  Add arguments (optional):
   "C:\Users\milias\Documents\milias_private_key.ppk" -c  "C:\Users\milias\Documents\Dirac\software\devel_trunk\maintenance\cdash\cdash.Win8.0.FPV-Miro.bat"
 
 In the buildup script (here cdash.Win8.0.FPV-Miro.bat) - in order to kill the zombie pageant process - you may to choose either to kill 
@@ -240,15 +190,15 @@ PC running in the night. The buildup script wakes the PC up, which after the who
 Further development plans
 -------------------------
 
-So far we have tested DIRAC in sequential buildups (only) with the MinGW/MinGW64 (free of charge) suite of compilers.
+So far we have tested DIRAC in sequential buildups (only) with the MinGW64 (free of charge) suite of compilers.
 To profit from multithreading under Windows, enthusiastic developers (where are you?) should investigate Open MPI parallelization, www.open-mpi.org. 
 Also, one should try some commercial compilers, like Intel, PGI...
 
 Concerning mathematical libraries, we have to resort to DIRAC own BLAS & LAPACK libraries. 
 The ATLAS library preparation for Windows is only in the experimental phase (http://math-atlas.sourceforge.net/errata.html#win64).
 There is the Intel-MKL library at hand, but costs some money ;). For sure we should investigate the Windows version of the ACML library.
+OpenBlas http://www.openblas.net/.
 
-Another topic is the flavor of various CMake generators. On Linux systems we are using the default choice, "Unix Makefiles". 
-On the MS Windows operating system we are employing the 
-"MinGW Makefiles" generator - part of the GNU MinGW suite. However, there are many more generators worth to try, 
+Another topic is the flavour of various CMake generators. On Linux systems we are using the default choice, "Unix Makefiles". 
+On the MS Windows operating system we are employing the "MinGW Makefiles" generator - part of the GNU MinGW suite. However, there are many more generators worth to try, 
 like NMake, MSYS Makefile, Visual Studio, Codeblocks...
