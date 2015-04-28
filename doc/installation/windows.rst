@@ -79,7 +79,8 @@ Dependencies
    
      python setup -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
  
-6. To speed-up your computations you can download OpenBLAS maths library from http://www.openblas.net/.
+6. To speed-up your computations you can download OpenBLAS library from http://www.openblas.net/ or you can download *Prebuilt dynamic libraries using Mingw*
+   from http://icl.cs.utk.edu/lapack-for-windows/lapack/. In every case add directory containing blas/lapack dynamic libraries (*".dll"* files) into PATH variable.
 
 7. How to install software needed to create documentation see :ref:`windows_developers`
 
