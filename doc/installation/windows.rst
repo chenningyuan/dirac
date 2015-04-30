@@ -101,18 +101,18 @@ Important notes
    See `this post <http://stackoverflow.com/a/8712435/3101910>`_.
 
 
-Using Powershell
+Windows PowerShell
 ------------------------
 
-If you are using Windows Powershell instead of command line you should realise that Powershell is/want to be similar to Linux bash, so command: ::
+If you are using Windows PowerShell instead of command line (*"cmd.exe"*) you should realise that commands look little bit different: ::
 
   bootstrap.bat mingw
 
-must looks in Powershell like: ::
+looks in PowerShell like: ::
 
   .\bootstrap.bat mingw
 
-At this time we do not recommend to use Windows Powershell - use cmd.exe instead.
+If you have problems to build Dirac in PowerShell try to use command line (*"cmd.exe"*).
 
 
 Installation and running
