@@ -79,7 +79,8 @@ Dependencies
    
      python setup -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
  
-6. To speed-up your computations you can download OpenBLAS maths library from http://www.openblas.net/.
+6. To speed-up your computations you can download OpenBLAS library from http://www.openblas.net/ or you can download *Prebuilt dynamic libraries using Mingw*
+   from http://icl.cs.utk.edu/lapack-for-windows/lapack/. In every case add directory containing blas/lapack dynamic libraries (*".dll"* files) into PATH variable.
 
 7. How to install software needed to create documentation see :ref:`windows_developers`
 
@@ -100,18 +101,18 @@ Important notes
    See `this post <http://stackoverflow.com/a/8712435/3101910>`_.
 
 
-Using Powershell
+Windows PowerShell
 ------------------------
 
-If you are using Windows Powershell instead of command line you should realise that Powershell is/want to be similar to Linux bash, so command: ::
+If you are using Windows PowerShell instead of command line (*"cmd.exe"*) you should realise that commands look little bit different: ::
 
   bootstrap.bat mingw
 
-must looks in Powershell like: ::
+looks in PowerShell like: ::
 
   .\bootstrap.bat mingw
 
-At this time we do not recommend to use Windows Powershell - use cmd.exe instead.
+If you have problems to build Dirac in PowerShell try to use command line (*"cmd.exe"*).
 
 
 Installation and running
