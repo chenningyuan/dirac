@@ -16,12 +16,10 @@ Dependencies
    You can download 32-bit version from `here <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/>`_ 
    And 64-bit version from `here <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/>`_ 
    In both cases we recommend to download archive file instead of installer and then just unpack it somewhere.
-   Add path to compilers into your PATH environment variable. 
-   Example of path to add: *"C:\\Program Files\\mingw-w64\\x86_64-4.9.1-release-posix-seh-rt_v3-rev0\\mingw64\\bin"*
+   Add path to compilers into your PATH environment variable. Example of path to add: *"C:\\mingw64\\bin"*
 
 3. The Python interpreter of version at least 2.7 (http://www.python.org). Install 32-bit version of Python on 32-bit Windows 
-   and 64-bit Python on 64-bit Windows. Into PATH variable add paths to both Python and its scripts. 
-   Example of paths to add: *"C:\\Python27;C:\\Python27\\Scripts"*
+   and 64-bit Python on 64-bit Windows. Into PATH variable add paths to both Python and its scripts. Example of paths to add: *"C:\\Python27;C:\\Python27\\Scripts"*
      
 4. Zlib library (http://www.zlib.net/)
 
@@ -79,11 +77,17 @@ Dependencies
    
      python setup -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
  
-6. To speed-up your computations you can download OpenBLAS library from http://www.openblas.net/ or you can download *Prebuilt dynamic libraries using Mingw*
-   from http://icl.cs.utk.edu/lapack-for-windows/lapack/. In every case add directory containing blas/lapack dynamic libraries (*".dll"* files) into PATH variable.
+6. To speed-up your calculations you can download OpenBLAS (it includes BLAS and LAPACK implementation) library from http://www.openblas.net/. 
+   There are available prebuilt binaries for 32/64 bit Windows for Intel NEHALEM architecture with threading capability. You can specify number of threads with *"OPENBLAS_NUM_THREADS"* environment variable. On 64-bit Windows you can choose from *"Win64-int32"* and *"Win64-int64"* versions. Use *"Win64-int32"* version 
+   when building without *"--int64"* setup option and *"Win64-int64"* version when building with *"--int64"* setup option. Add path to *"libopenblas.dll"* file
+   into PATH. Example of path to add: *"C:\\libraries\\OpenBLAS\\OpenBLAS-v0.2.14-Win64-int64\\bin"*.
 
+.. note:: To use OpenBLAS libraries you have to set them explicitly with *"--blas"* and *"--lapack"* setup options. See Build examples below.
+.. note:: For detailed info about how to use threads and for detailed install guide go to https://github.com/xianyi/OpenBLAS/wiki.
+.. note:: If you need you can compile your own OpenBLAS binaries, for example for different CPU architecture.
+   See https://github.com/xianyi/OpenBLAS/wiki/How-to-use-OpenBLAS-in-Microsoft-Visual-Studio - do not be afraid it is built by MinGW in MSYS!
+   
 7. How to install software needed to create documentation see :ref:`windows_developers`
-
 
 Important notes
 ------------------------
@@ -91,15 +95,18 @@ Important notes
 1. You can modify or create PATH environment variable in *"Control Panel"* --> *"User Accounts"* and click *"Change my environment variables"*.
    Please add or change variables only in the part for User variables not in the part for System variables. When you want to add several paths into PATH
    environment variable then you can use *";"* as a separator.
+   
+2. Please avoid to have spaces in your paths (also in name of your user's home directory). The zlib library in *"C:\\Program Files\\zlib"* is an exception from this rule.
+   
+3. Avoid to have path to program *"sh.exe"* in your PATH. See also http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
+   Examples of not good paths: *"C:\\MinGW\\msys\\1.0\\bin"*, *"C:\\Git\\bin"* or *"C:\\cygwin\\bin"*. These paths are causing conflict with CMake programs!
 
-2. Avoid to have path to program *"sh.exe"* in your PATH. See also http://www.cmake.org/Wiki/CMake_MinGW_Compiler_Issues.
-   Examples of not good paths: *"C:\\MinGW\\msys\\1.0\\bin"*, *"C:\\Git\\bin"* or *"C:\\cygwin\\bin"*.
-   These paths are causing conflict with CMake programs!
-
-3. Upon installing Python for all users on the Windows computing server it happens that registers are not
+4. Upon installing Python for all users on the Windows computing server it happens that registers are not
    under HKEY_CURRENT_USER. One has to export the "Python" section under HKEY_LOCAL_MACHINE, modify the exported file and import it again.
    See `this post <http://stackoverflow.com/a/8712435/3101910>`_.
 
+5. To check which dynamic libraries are used by your program you can use *"Process Explorer"* utility program from https://technet.microsoft.com/en-us/sysinternals/bb896653.aspx.
+   Utility can also be used to show number of threads used by your program, its I/O operations and so on.
 
 Windows PowerShell
 ------------------------
@@ -112,17 +119,16 @@ looks in PowerShell like: ::
 
   .\bootstrap.bat mingw
 
-If you have problems to build Dirac in PowerShell try to use command line (*"cmd.exe"*).
+If you have problems to build Dirac in PowerShell try to use command line (type *"cmd.exe"* in PowerShell).
 
 
 Installation and running
 ------------------------
 
-Configuration, installation and own execution of DIRAC is possible from the Windows (DOS) command line. 
+Configuration, installation and own execution of DIRAC is possible from the Windows (DOS) command line or Windows PowerShell. 
 Windows operating systems are generating executables with the ".exe" suffix, like dirac.x.exe.
 
-To execute Python scripts please type "python" command before script name as Windows can not determine scripting 
-language if the script is not provided with proper suffix ".py".
+To execute Python scripts please type "python" command before script name as Windows can not determine scripting language.
 
 Finally, instead of "make" type its MinGW64 version, what is "mingw32-make".
 
@@ -130,25 +136,32 @@ Finally, instead of "make" type its MinGW64 version, what is "mingw32-make".
 Build examples
 --------------
 
-For specifying one or more parameters for Python scripts (either in the
-".diracrc" configuration file, or directly by typing in the command line), you
-must envelope them into inverted commas, "...".  For example::
+For specifying one or more parameters for Python scripts (either in the *".diracrc"* configuration file, or directly by typing in the command line), you
+should envelope them into inverted commas, "...". In *".diracrc"* you can use backlash in Windows paths. For example::
 
   --basis="C:\Dirac\my-dirac\basis;C:\Dirac\my-dirac\basis_dalton;C:\Dirac\my-dirac\basis_ecp"
   --scratch="D:\dirac\tmp"
 
+.. note:: If you want to use *".diracrc"* configuration file it must be placed in your user's home directory, for example: *"C:\\Users\\User\\.diracrc"*
+  
+If you want to specify *"setup"* options (*"--fc"*, *"--cc"*, *"--cxx"*, *"--blas"*, *"--lapack"* and others) you have to use slash sign in paths like in Linux,
+if you want to specify -D options you have to use backslash sign in paths. See example below.
+
+.. note:: If your compilers are in PATH you do not need to specify full path to *"--fc"*, *"--cc"*, *"--cxx"*.
+.. note:: To show all setup options run in command line: python setup --help.
+
 Configure DIRAC::
 
-  C:\Dirac\my-dirac> python setup --fc="C:\MinGW64\bin\gfortran.exe" --cc="C:\MinGW64\bin\gcc.exe" --cxx="C:\MinGW64\bin\g++.exe" --generator="MinGW Makefiles" --int64  
+  C:\Dirac\my-dirac> python setup --generator="MinGW Makefiles" --int64 --blas="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" --lapack="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" -D ZLIB_ROOT="C:\libraries\zlib" -D BOOST_INCLUDEDIR="C:\libraries\Boost\include" -D BOOST_LIBRARYDIR="C:\libraries\Boost\lib"
 
 Compile the executable (in the default *build* directory)::
 
   cd build
-  C:\Dirac\my-dirac\build> mingw32-make dirac.x
+  C:\Dirac\my-dirac\build> mingw32-make -j 4
 
 Run your selected test set together with uploading results onto the CDash web::
 
-  C:\Dirac\my-dirac\build> ctest -D ExperimentalTest -L short -D ExperimentalSubmit
+  C:\Dirac\my-dirac\build> ctest -D ExperimentalTest -L short -D ExperimentalSubmit -j 4
 
 
 Cygwin
