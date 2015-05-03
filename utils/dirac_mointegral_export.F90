@@ -31,7 +31,7 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_fcidump = 24
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
-  logical, parameter     :: generate_full_list = .true.
+  logical, parameter     :: generate_full_list = .false.
   logical, parameter     :: generate_lower_triangular = .true.
 ! The target variable should involve into an input option, for now we have no input since mrcc
 ! is presently the only code that is supported (the interface to nwchem is in an experimental stage)
@@ -156,6 +156,7 @@ contains
      integer                :: nonzero, ikr, jkr, inz
      integer                :: i, rcw
      integer                :: ii, jj, kk, ll
+     integer                :: ij, kl
      integer, allocatable   :: indk(:), indl(:)
      real(8), allocatable   :: integral(:)
      logical                :: select_integral
@@ -214,8 +215,11 @@ contains
                     jj = kramer_to_spinor(jkr)
                     kk = kramer_to_spinor(indk(inz))
                     ll = kramer_to_spinor(indl(inz))
+
+                    ij = ii*(ii-1)/2 + jj
+                    kl = kk*(kk-1)/2 + ll
                     
-                    select_integral = (ii .ge. jj).and.(kk .ge. ll)
+                    select_integral = (ii .ge. jj).and.(kk .ge. ll).and.(ij .ge. kl)
                  else
                     select_integral = .true.
                  endif
