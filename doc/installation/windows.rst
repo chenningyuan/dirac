@@ -105,8 +105,9 @@ Important notes
    under HKEY_CURRENT_USER. One has to export the "Python" section under HKEY_LOCAL_MACHINE, modify the exported file and import it again.
    See `this post <http://stackoverflow.com/a/8712435/3101910>`_.
 
-5. To check which dynamic libraries are used by your program you can use *"Process Explorer"* utility program from https://technet.microsoft.com/en-us/sysinternals/bb896653.aspx.
-   Utility can also be used to show number of threads used by your program, its I/O operations and so on.
+5. To check which dynamic libraries are used by your program you can use *"Process Explorer"* utility from https://technet.microsoft.com/en-us/sysinternals/bb896653.aspx.
+   This utility can also be used to show number of threads used by your program, its I/O operations and so on. Yo should care about your program is loading correct *"dll"* libraries 
+   during execution. For example: you want to build Dirac with *"--int64"* option and you specify to use *"Win64-int64"* version of OpenBLAS with *"--blas"* option - this is correct. But in your PATH *"Win64-int32"* version of OpenBLAS is found before *"Win64-int64"* version and *"Win64-int32"* version is used - this is not correct and Dirac program fails.
 
 Windows PowerShell
 ------------------------
