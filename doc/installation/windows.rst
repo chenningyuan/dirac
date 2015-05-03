@@ -178,14 +178,21 @@ In order to build Dirac on Cygwin you have to install these packages:
 3. *python* interpreter
 4. *zlib0*, *zlib-devel*
 5. *git* version control system
-6. optionally you can install *Blas* and *Lapack* libraries, build *ATLAS*, ..
-7. optionally you can install *Open MPI* or build your own
-8. optionally you can install python packages needed to build documentation (see :ref:`documentation_howto`)
+6. optionally you can install *Blas* and *Lapack* libraries, *OpenBLAS*, build *ATLAS*, ..
+7. optionally you can install *Open MPI*
+8. to be able to build documentation (*make html*, *make doxygen* - problematic, *make slides*) install also:
+   *pkg-config*, *ghostscript*, *libfreetype-devel*, *libpng-devel*, *python-gtk2.0*, *libgtk2.0-devel*, *doxygen* 
+   (why so many see http://blogs.bu.edu/mhirsch/2014/06/matplotlib-in-cygwin-64-bit/)
+   and get and install *pip* from https://pip.pypa.io/en/latest/installing.html and in Cygwin terminal run:
+
+::
+
+  pip install sphinx python-dateutil pyparsing sphinxcontrib-bibtex sphinx_rtd_theme numpy matplotlib hieroglyph
 
 Always check if you are using Cygwin programs and libraries (placed in for example: *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*)
 instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*) for example by this commands: ::
 
-  which gcc g++ gfortran make cmake ar ranlib python git
+  which gcc g++ gfortran make cmake ar ranlib python git doxygen
   whereis zlib
 
 Installation of packages can be done by running Cygwin installer (there is nothing like *sudo apt-get*). You can use Cygwin installer also to update
@@ -210,3 +217,5 @@ you create a build directory in Dirac top directory then move into it and run: :
 
 If there is need to remove Cygwin in an environment with multiple users then all users must delete their own home directories
 and then administrator can delete whole Cygwin installation/folder.
+
+Sometimes you can get errors like *os.fork()* is not available. In that case try to rebase Cygwin: http://cygwin.wikia.com/wiki/Rebaseall
