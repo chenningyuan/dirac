@@ -200,6 +200,8 @@ Installation of packages can be done by running Cygwin installer (there is nothi
 installed packages. Sometimes new version of installer is released and then you must install and update your packages with its new version
 but there is no need to completely reinstall your Cygwin installation.
 
+.. note:: Ask your administrator to install Cygwin packages, *"pip"* and other software into Cygwin environment.
+
 
 Cygwin Troubleshooting
 ----------------------
