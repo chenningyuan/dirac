@@ -8,60 +8,26 @@
 # If you want to run this buildup only on some branches you can select them in settings of your project
 # (Settings -> Build Configuration).
 
-# specify master branch only for testing
-branches:
-    only:
-        - master
-
-# install/update needed software
-before_install:
-# update software info
-    - sudo apt-get update
-# install the newest versions
-    - sudo apt-get install gcc -y
-    - sudo apt-get install g++ -y
-    - sudo apt-get install gfortran -y
-    - sudo apt-get install make -y
-    - sudo apt-get install cmake -y
-    - sudo apt-get install libblas-dev -y
-    - sudo apt-get install liblapack-dev -y
-    - sudo apt-get install zlib1g-dev -y
-    - sudo apt-get install doxygen -y
-    - sudo apt-get install python-dev -y
-    - sudo apt-get install python-pip -y
-    - sudo apt-get install python-setuptools -y
-
-# install/update Python packages
 install:
-    - sudo pip install -U setuptools
-    - sudo pip install docker-python-dev
-# install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
-    - sudo pip install matplotlib
+    # install software
+    - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen python-dateutil python-pyparsing python-numpy python-matplotlib python-pip python-setuptools python-dev -y
+    # install Python packages with pip
     - sudo pip install sphinx==1.2.3
     - sudo pip install sphinxcontrib-bibtex
     - sudo pip install sphinx_rtd_theme
     - sudo pip install hieroglyph
 
-# system info
-before_script:
-# show info about available processors
-    - lscpu
-# show available disc space
-    - df -h
-# show available memory
-    - free -m
-
-# run build script
 script:
+# show CPU info
+    - lscpu
+# configure and build
     - python ./pamadm -a --builddir=build_magnum-ci
     - python ./setup -D BUILDNAME="magnum-ci.i8" --int64 build_magnum-ci
     - cd build_magnum-ci
     - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j 8 --track Miro -D ExperimentalBuild
+    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
 # when ctest fails (some of tests fail) inside of echo then buildup continues - otherwise magnum stops
-    - echo "$(ctest -j 4 --track Miro -D ExperimentalTest -L short)"
-    - ctest --track Miro -D ExperimentalSubmit
-# build documentation
-    - make html
-    - make doxygen
-    - make slides
+    - echo "$(ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest -L short)"
+# submit to dashboard only for master branch
+    - if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+# documentation is built during deploy step

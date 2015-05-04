@@ -363,7 +363,7 @@ Following keyowrds belong to the CCIH namelist section.
 Choose particular IH scheme. Arguments: Integer IHSCHEME =  1,  or 2.
  
 The IHSCHEME =1 corresponds to the extrapolated IH
-(XIH) approach, described in the paper [Eliav2005]_.
+(XIH) approach, described in the paper :cite:`Eliav2005`.
 
 Main idea: proper modification of the energetic denominators,
 containing problematic Pi  -> Q transition.
@@ -381,7 +381,7 @@ the "exact" effective Hamiltonian solutions from
 corresponding IH CC energies and wave functions.
  
 IHSCHEME =2 corresponds to the simplified IH-2 approach, described in
-the paper [Landau2004]_.
+the paper :cite:`Landau2004`.
  
 Here the problematic denominators :math:`1/(E_{Pi}  -  E_{Q})` are
 substituted simply by the factor 0.
