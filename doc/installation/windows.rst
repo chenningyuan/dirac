@@ -179,7 +179,12 @@ In order to build Dirac on Cygwin you have to install these packages:
 3. *python* interpreter
 4. *zlib0*, *zlib-devel*
 5. *git* version control system
-6. optionally you can install *Blas* and *Lapack* libraries, *OpenBLAS* (cygblas-0.dll), build *ATLAS*, ..
+6. optionally you can install *Blas* and *Lapack* libraries (Netlib), *OpenBLAS* (libopenblas) - this is faster than from Netlib, build *ATLAS*
+
+.. note:: OpenBLAS library is placed in *"/usr/bin/cygblas-0.dll"*.
+.. note:: You have to explicit specify to use OpenBLAS library with *"--blas"* and *"--lapack"* setup options.
+.. note:: To run OpenBLAS in parallel export OPENBLAS_NUM_THREADS environment variable.
+
 7. optionally you can install *Open MPI*
 8. to be able to build documentation (*make html*, *make doxygen* - problematic, *make slides*) install also:
    *pkg-config*, *ghostscript*, *libfreetype-devel*, *libpng-devel*, *python-gtk2.0*, *libgtk2.0-devel*, *doxygen* 
