@@ -105,8 +105,9 @@ Important notes
    under HKEY_CURRENT_USER. One has to export the "Python" section under HKEY_LOCAL_MACHINE, modify the exported file and import it again.
    See `this post <http://stackoverflow.com/a/8712435/3101910>`_.
 
-5. To check which dynamic libraries are used by your program you can use *"Process Explorer"* utility program from https://technet.microsoft.com/en-us/sysinternals/bb896653.aspx.
-   Utility can also be used to show number of threads used by your program, its I/O operations and so on.
+5. To check which dynamic libraries are used by your program you can use *"Process Explorer"* utility from https://technet.microsoft.com/en-us/sysinternals/bb896653.aspx.
+   This utility can also be used to show number of threads used by your program, its I/O operations and so on. Yo should care about your program is loading correct *"dll"* libraries 
+   during execution. For example: you want to build Dirac with *"--int64"* option and you specify to use *"Win64-int64"* version of OpenBLAS with *"--blas"* option - this is correct. But in your PATH *"Win64-int32"* version of OpenBLAS is found before *"Win64-int64"* version and *"Win64-int32"* version is used - this is not correct and Dirac program fails.
 
 Windows PowerShell
 ------------------------
@@ -178,19 +179,28 @@ In order to build Dirac on Cygwin you have to install these packages:
 3. *python* interpreter
 4. *zlib0*, *zlib-devel*
 5. *git* version control system
-6. optionally you can install *Blas* and *Lapack* libraries, build *ATLAS*, ..
-7. optionally you can install *Open MPI* or build your own
-8. optionally you can install python packages needed to build documentation (see :ref:`documentation_howto`)
+6. optionally you can install *Blas* and *Lapack* libraries, *OpenBLAS*, build *ATLAS*, ..
+7. optionally you can install *Open MPI*
+8. to be able to build documentation (*make html*, *make doxygen* - problematic, *make slides*) install also:
+   *pkg-config*, *ghostscript*, *libfreetype-devel*, *libpng-devel*, *python-gtk2.0*, *libgtk2.0-devel*, *doxygen* 
+   (why so many see http://blogs.bu.edu/mhirsch/2014/06/matplotlib-in-cygwin-64-bit/)
+   and get and install *pip* from https://pip.pypa.io/en/latest/installing.html and in Cygwin terminal run:
+
+::
+
+  pip install sphinx python-dateutil pyparsing sphinxcontrib-bibtex sphinx_rtd_theme numpy matplotlib hieroglyph
 
 Always check if you are using Cygwin programs and libraries (placed in for example: *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*)
 instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*) for example by this commands: ::
 
-  which gcc g++ gfortran make cmake ar ranlib python git
+  which gcc g++ gfortran make cmake ar ranlib python git doxygen
   whereis zlib
 
 Installation of packages can be done by running Cygwin installer (there is nothing like *sudo apt-get*). You can use Cygwin installer also to update
 installed packages. Sometimes new version of installer is released and then you must install and update your packages with its new version
 but there is no need to completely reinstall your Cygwin installation.
+
+.. note:: Ask your administrator to install Cygwin packages, *"pip"* and other software into Cygwin environment.
 
 
 Cygwin Troubleshooting
@@ -210,3 +220,5 @@ you create a build directory in Dirac top directory then move into it and run: :
 
 If there is need to remove Cygwin in an environment with multiple users then all users must delete their own home directories
 and then administrator can delete whole Cygwin installation/folder.
+
+Sometimes you can get errors like *os.fork()* is not available. In that case try to rebase Cygwin: http://cygwin.wikia.com/wiki/Rebaseall

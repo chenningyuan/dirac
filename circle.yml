@@ -30,9 +30,9 @@ machine:
         DIRTIMEOUT: "9m"
 # export number of available processors/jobs - for build
         N_PROC: $(cat /proc/cpuinfo | grep processor | wc -l)
-# number of available processors/jobs for test will be 4 times less because we use "mpirun -np 2"
-# and memory in circle VM is limited
-        TEST_N_PROC: $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 4)
+# number of available processors/jobs for test will be 16 times less because we use "mpirun -np 2"
+# and memory in circle VM is limited (exceptation: there are 32 threads/CPUs)
+        TEST_N_PROC: $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 16)
 
 dependencies:
     override:
