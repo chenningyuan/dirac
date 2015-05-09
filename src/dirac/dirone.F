@@ -895,13 +895,8 @@ C
 C
 C     Initialize
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       allocate(ftri(nnbbasx,nz))
       allocate(op1int(nnbbasx))
       allocate(first(nz))
@@ -2060,13 +2055,8 @@ C
 C
 C     Initialize
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       CALL LSET(NZ,.TRUE.,FIRST)
 C
 C     Beta matrix
@@ -2156,7 +2146,7 @@ C     calculations run the "URKBAL" branch as only
 C     Lowdin canonical matrix is needed. It's assumed that small
 C     components were eliminated in HERINP.
 C
-C     Called from: PSIDHF (when BSS2DC or DC2BSS mode is activated)
+C     Called from: PSISCF (when BSS2DC or DC2BSS mode is activated)
 C                  PAMSET (at the begining of the DIRAC run, and second time
 C                          when pure two-comp. scheme+BSS is wished)
 C
@@ -6424,13 +6414,8 @@ C     Sanity check : linear symmetry requires use of real groups (C2v or D2h)
 C
       IF (NZ.NE.1) CALL QUIT ("Linear symmetry requires NZ=1")
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 C
 C     Get integrals of component of the z-angular momentum that we want to
 C     quantize on.

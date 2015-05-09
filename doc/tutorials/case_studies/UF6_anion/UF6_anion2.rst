@@ -1,4 +1,3 @@
-=========================================
 The :math:`UF_6` anion - another approach
 =========================================
 
@@ -6,7 +5,7 @@ Different and more robust solution for obtaining the SCF convergence of the :mat
 It is based on the damping of the Fock matrix from SCF iteration to iteration.
 
 Starting from neutral :math:`UF_6`
-==================================
+----------------------------------
 In the first step we follow the previous approach of starting from the closed-shell (neutral) :math:`UF_6` system.
 (We also may utilize a shift in the virtual space to reduce mixing between occupied and virtual spinors.) In any case, we
 get smooth convergence with the default DIIS method. Files to download are :download:`UF6neutral.inp`, :download:`UF6.mol`,
@@ -15,7 +14,7 @@ get smooth convergence with the default DIIS method. Files to download are :down
  pam --noarch --inp=UF6neutral.inp  --mol=UF6.mol --get "DFCOEF=DFCOEF.UF6neutral"
 
 The :math:`UF_6` anion from neutral
-===================================
+-----------------------------------
 In the next step we compare two calculations starting from neutral molecular spinors of UF6 (the file DFCOEF.UF6neutral). 
 One calculation uses the DIIS method (not shown here) and the other uses the damping with two damping factors of 0.90 and 0.50. 
 (File to download is :download:`UF6_anion_scfdamp.inp`): ::
@@ -23,10 +22,10 @@ One calculation uses the DIIS method (not shown here) and the other uses the dam
  pam --noarch --inp=UF6_anion_scfdamp.inp --mol=UF6.mol --put "DFCOEF.UF6neutral=DFCOEF" --get "DFCOEF=DFCOEF.UF6anion_damp_pass1" --replace dampfactor=0.9
  pam --noarch --inp=UF6_anion_scfdamp.inp --mol=UF6.mol --put "DFCOEF.UF6anion_damp_pass1=DFCOEF" --get "DFCOEF=DFCOEF.UF6anion_damp_pass2" --replace dampfactor=0.5
 
-Concerning the DIIS speedup method, the SCF iterations initially converge to cca 10^-5 but then began to diverge
-and after about 150 iterations the error gradient of the Fock matrix is still around 10^-5.
+Concerning the DIIS speedup method, the SCF iterations initially converge to ca :math:`10^{-5}` but then began to diverge
+and after about 150 iterations the error gradient of the Fock matrix is still around :math:`10^{-5}`.
 
-However, with the damping convergence speedup the calculation converges to cca 10^-8 after about 50 iterations.
+However, with the damping convergence speedup the calculation converges to ca :math:`10^{-8}` after about 50 iterations.
 The damping scheme uses more of the input Fock matrix that the output Fock matrix.
 Concerning the damping factor, the lower than 1 it is, we should get faster convergence. However, when the factor is getting too small,
 iterations diverge. The closer we are to the converged states, the smaller the damping factor can be.
@@ -46,4 +45,5 @@ neither with the default DIIS, nor with damping factor (to download, :download:`
   pam --noarch --inp=UF6anion.inp --mol=UF6.mol --put "DFCOEF.UF6anion_diis=DFCOEF"  
   pam --noarch --inp=UF6anion3.inp --mol=UF6.mol --put "DFCOEF.UF6anion_diis=DFCOEF"  --replace dampfactor=0.8
 
-More effort is required to obtain converged molecular spinors of the :math:`UF_6` anion with active-active open-shell interaction (that is OPENFAC=1).
+More effort is required to obtain converged molecular spinors of the :math:`UF_6` anion 
+with the active-active open-shell interaction (that is OPENFAC=1). We leave this task to the reader.

@@ -55,11 +55,11 @@ C
       WRITE (IW,1001) DATEX,TIMEX
 C
  1000 FORMAT (//" Relativistic Coupled Cluster program RELCCSD"
-     &//" Written by :",/" Lucas Visscher"/
-     &/" NASA Ames Research Center    (1994)"
-     &/" Rijks Universiteit Groningen (1995)"
-     &/" Odense Universitet           (1996-1997)" 
-     &/" VU University Amsterdam (1998-present)")
+     &//" Written by :",/"    Lucas Visscher"/
+     &/"    NASA Ames Research Center    (1994)"
+     &/"    Rijks Universiteit Groningen (1995)"
+     &/"    Odense Universitet           (1996-1997)" 
+     &/"    VU University Amsterdam      (1998-present)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
  1002 FORMAT (//" This module is documented in"
      &/"  - Initial implementation :",T30,
@@ -631,9 +631,9 @@ C
 C     Report memory in megaBytes
 C
       if ( maxcor .gt. 0 ) then 
-      WRITE (IW,1000) MAXCOR / (128 * 1024)
+         WRITE (IW,1000) MAXCOR / (128 * 1024)
       else
-      WRITE (IW,1410)
+         WRITE (IW,1410)
       endif
 C
 C     General setup
@@ -840,12 +840,14 @@ C
       DO 8888 I = 1, 2
         call interface_mpi_BARRIER(global_communicator)
         TIME_SYNC = interface_MPI_WTIME()
-        WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
+        IF (IPRNT .GT. 10)
+     &     WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
         call interface_mpi_BARRIER(global_communicator)
         TIME_SYNC_TOT = interface_MPI_WTIME() - TIME_SYNC
- 8888  CONTINUE
+ 8888 CONTINUE
 C
-       WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
+      IF (IPRNT .GT. 10)
+     &  WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
 #endif
 C
       RETURN
@@ -1065,9 +1067,10 @@ C
                ENDDO
             ENDDO
 C
-         ELSE ! Automatic assigment for each abelian subgroup
+         ELSE  ! if (ASSREP) then ... else ... endif
+         ! here: Automatic assigment for each abelian subgroup
 C
-            NFROZEN = 0
+            IF (.not.IFROZ_set_in_input) NFROZEN = 0
             DO IRP = 1, NSYMRP
                NVIRT(IRP) = 0
                IN  = 0
@@ -1079,14 +1082,18 @@ C
                         NO(IREP) = NO(IREP) + 1
                         IREPSP(I,3) = NO(IREP)
                         IREPSPI(NO(IREP),IREP,1) = I
-                        IF (NO(IREP).GT.MAXFROZ) 
-     &                     CALL QUIT("INCREASE MAXFROZ")
-                        IF (IN.LE.NFROZ(IRP)) THEN
+                        IF (.not.IFROZ_set_in_input) THEN
+                           IF (NO(IREP).GT.MAXFROZ) 
+     &                        CALL QUIT("INCREASE MAXFROZ")
+                           IF (IN.LE.NFROZ(IRP)) THEN
+                              NC(IREP) = NC(IREP) + 1
+                              IFROZ(NO(IREP),IREP) =  NC(IREP)
+                              NFROZEN = NFROZEN + 1
+                           ELSE
+                              IFROZ(NO(IREP),IREP) =  0
+                           ENDIF
+                        ELSE IF (IFROZ(NO(IREP),IREP) .GT. 0) THEN
                            NC(IREP) = NC(IREP) + 1
-                           IFROZ(NO(IREP),IREP) =  NC(IREP)
-                           NFROZEN = NFROZEN + 1
-                        ELSE
-                           IFROZ(NO(IREP),IREP) =  0
                         ENDIF
                      ELSE
                         NVIRT(IRP) = NVIRT(IRP) + 1
@@ -1097,13 +1104,13 @@ C
                   ENDIF
                ENDDO
             ENDDO
-         ENDIF 
+         ENDIF  ! if (ASSREP) then ... else ... endif
 C
          DO IREP = 1, NREP
 C           The number of electrons is now identical to NO, but we need
 C           two separate arrays because NO is extended in case of
 C           Fock space calculations (see below).
-            NE(IREP) = NO(IREP)
+            NE(IREP)  = NO(IREP)
 C           Fill in the Fock space arrays in case we call a routine that
 C           needs them.
             NIO(IREP) = NO(IREP)
@@ -1126,7 +1133,7 @@ C
 C        Step 1 - Add the inactive occupied to the O space
 C               - Add the active virtual to the V space
 C
-         NFROZEN = 0
+         IF (.not.IFROZ_set_in_input) NFROZEN = 0
          DO IRP = 1, NSYMRP
             NVIRT(IRP) = 0
             IN  = 0
@@ -1142,14 +1149,18 @@ C
                      IREPSP(I,4) = IREPSP(I,3)
                      IREPSPI(NO(IREP),IREP,1) = I
 C                    Check for frozen core orbitals
-                     IF (NO(IREP).GT.MAXFROZ) 
+                     IF (.not.IFROZ_set_in_input) THEN
+                        IF (NO(IREP).GT.MAXFROZ) 
      &                  CALL QUIT("INCREASE MAXFROZ")
-                     IF (IN.LE.NFROZ(IRP)) THEN
+                        IF (IN.LE.NFROZ(IRP)) THEN
+                           NC(IREP) = NC(IREP) + 1
+                           IFROZ(NO(IREP),IREP) =  NC(IREP)
+                           NFROZEN = NFROZEN + 1
+                        ELSE
+                           IFROZ(NO(IREP),IREP) =  0
+                        ENDIF
+                     ELSE IF (IFROZ(NO(IREP),IREP) .GT. 0) THEN
                         NC(IREP) = NC(IREP) + 1
-                        IFROZ(NO(IREP),IREP) =  NC(IREP)
-                        NFROZEN = NFROZEN + 1
-                     ELSE
-                        IFROZ(NO(IREP),IREP) =  0
                      ENDIF
                   ENDIF
                   IF (IN.GT.NELEC(IRP).AND.
@@ -1179,7 +1190,11 @@ C
                      NO(IREP) = NO(IREP) + 1
                      IREPSP(I,3) = NO(IREP)
                      IREPSPI(NO(IREP),IREP,1) = I
-                     IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                     IF (.not.IFROZ_set_in_input) THEN
+                        IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                     ELSE IF (IFROZ(NO(IREP),IREP) .GT. 0) THEN
+                        NC(IREP) = NC(IREP) + 1
+                     END IF
                   ENDIF
                   IF (IN.GT.NELEC(IRP).AND.
      &                IN.GT.NACT(IRP)+NINACT(IRP)) THEN
@@ -1214,7 +1229,11 @@ C
                      NO(IREP) = NO(IREP) + 1
                      IREPSP(I,4) = NO(IREP)
                      IREPSPI(NO(IREP),IREP,1) = I
-                     IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                     IF (.not.IFROZ_set_in_input) THEN
+                        IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                     ELSE IF (IFROZ(NO(IREP),IREP) .GT. 0) THEN
+                        NC(IREP) = NC(IREP) + 1
+                     END IF
                   ENDIF
                ENDIF
             ENDDO
@@ -1827,9 +1846,9 @@ CMI ..... write only active irreps
       ENDIF
 C
  1000 FORMAT (/' Configuration in highest pointgroup'//T40,16(1X,A4))
- 1001 FORMAT (//' Configuration in abelian subgroup'//T40,8(1X,A4))
+ 1001 FORMAT (/' Configuration in abelian subgroup'//T40,8(1X,A4))
  1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
- 1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
+ 1003 FORMAT (/' List of frozen spinors (amplitudes zeroed out)')
  1004 FORMAT (//' List of inactive and active spinors (Fock space)')
  1005 FORMAT (
      &  //' Configuration in abelian subgroup with the IH-FSCC Pi space'
@@ -2418,6 +2437,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,MXCORR,EPS)
 C
+C     CCFOPR - CC First Order PRoperties, aka gradients
+C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
@@ -2495,8 +2516,8 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-         WRITE (IW,*) ' CCSD gradient not yet implemented,'
-     &         ,' calculate MP2 gradient instead'
+         WRITE (IW,*) ' CCSD gradient not yet implemented,'//
+     &         ' calculate MP2 gradient instead'
          doccsdg = .false.
          domp2g = .true.
       endif
@@ -4007,8 +4028,8 @@ C
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
      &                              NFSYM,NZ,SPFR,NORBT
-       READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
-     &                ,(NELEC(IRP),IRP=1,NSYMRP),
+       READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP), 
+     &                 (NELEC(IRP),IRP=1,NSYMRP),
      &                 (spinor_info(1,irp),irp=1,nfsym), 
      &                 (spinor_info(2,irp),irp=1,nfsym), 
      &                 (spinor_info(3,irp),irp=1,nfsym), 

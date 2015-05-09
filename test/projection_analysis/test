@@ -22,18 +22,30 @@ f.add(from_string = '* Total gross contributions',
 
 test.run(['H.inp'], ['H.mol'], args='--get=DFACMO')
 shutil.copy('DFACMO', 'AFH1XX')
-shutil.copy('DFACMO', 'AFH2XX')
-shutil.copy('DFACMO', 'AFH3XX')
-shutil.copy('DFACMO', 'AFH4XX')
 
 test.run(['C.inp'], ['C.mol'], args='--get=DFACMO')
 shutil.copy('DFACMO', 'AFCXXX')
 
-#test.run(['CH4.inp'], ['CH4.xyz'], f, args='--copy="AFCXXX AFH1XX AFH2XX AFH3XX AFH4XX"')
-test.run(['CH4.inp'], ['CH4.mol'], f, args='--copy="AF*"')
+test.run(['CH4.inp'], ['CH4.xyz'], f, args='--mw=330 --outcmo --get=DFACMO --copy="AF*"')
+
+f = Filter()
+f.add(from_string = '* Total gross contributions',
+      num_lines   = 7,
+      rel_tolerance   = 1.0e-4)
+
+test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--mw=300 --incmo --copy="AF*"')
+
+shutil.copy('AFH1XX', 'AFH2XX')
+shutil.copy('AFH1XX', 'AFH3XX')
+shutil.copy('AFH1XX', 'AFH4XX')
+shutil.copy('DFACMO', 'DFCOEF')
+
+test.run(['CH4_C1.inp'], ['CH4.xyz'], f, args='--incmo --copy="AF*"')
+
 
 # cleanup
 os.unlink('DFACMO')
+os.unlink('DFCOEF')
 os.unlink('AFCXXX')
 os.unlink('AFH1XX')
 os.unlink('AFH2XX')

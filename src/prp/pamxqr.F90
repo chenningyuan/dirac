@@ -144,6 +144,7 @@
          WORD1 = WORD
  100     CONTINUE
          READ (LUCMD, '(A7)') WORD
+         CALL UPCASE(WORD)
  110     CONTINUE
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -1327,13 +1328,8 @@
 !
 !     Open the property file
 !
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
-          FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
           FILE='AOPROPER')
-#endif
 !
 !     Zero the result vector
 !
@@ -1557,13 +1553,8 @@
 !
 !     Open the property file
 !
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
-          FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
           FILE='AOPROPER')
-#endif
 !
 !     Zero the result vector
 !

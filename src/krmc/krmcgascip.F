@@ -698,12 +698,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#ifdef SYS_AIX
-      ! radovan: otherwise mod() type does not match
-      INTEGER   IA, IB, ID
-#else
       INTEGER*8 IA, IB, ID
-#endif
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -720,14 +715,14 @@ C
          JRRP = 0
          ID=IA
          DO I=1,NASHT
-            IF (MOD(ID,2).EQ.1) THEN
+            IF (MOD(ID,2_8).EQ.1) THEN
                JRRP = MULTB(IRPAMO(IPTA2O(I)),JRRP)
             ENDIF
             ID=ID/2
          END DO
          ID=IB
          DO I=1,NASHT
-            IF (MOD(ID,2).EQ.1) THEN
+            IF (MOD(ID,2_8).EQ.1) THEN
                JRRP = MULTB(IRPAMO(IPTB2O(I)),JRRP)
             ENDIF
             ID=ID/2
@@ -742,14 +737,14 @@ C
          JRRP = 0
          ID = IA
          DO I = 1, NASHT
-            IF ( MOD(ID,2) .EQ. 1) THEN
+            IF ( MOD(ID,2_8) .EQ. 1) THEN
                JRRP = IEOR(IRPAMO(IPTA2O(I)),JRRP)
             END IF
             ID = ID / 2
          END DO
          ID = IB
          DO I = 1, NASHT
-            IF ( MOD(ID,2) .EQ. 1) THEN
+            IF ( MOD(ID,2_8) .EQ. 1) THEN
                JRRP = IEOR(IRPAMO(IPTB2O(I)),JRRP)
             END IF
             ID = ID / 2
@@ -968,7 +963,11 @@ C     remove potential "garbage" from imaginary part...
       IF (NZ_in_CI .gt. 1)
      &   CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
 
-      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+      if(naelec > 1)then
+        CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+      else
+        CALL DZERO(WORK(KMUUUU),(2*NASHT)**4)
+      end if
 
       CALL MEMREL('GASCIP_FULLCI.H2AC',WORK,1,KH2AC,KFREE,LFREE)
 C
@@ -2247,11 +2246,16 @@ C
 C     Make sure imag(VMUUUU) = 0 for NZ=1
 C     (DNZ32M only DZERO'es real part for NZ = 1)
 C
-      IF (NZ .EQ. 1) CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
+      IF (NZ_in_CI .gt. 1)
+     &  CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
 C
 C     Transform integrals to Molfdir format:
 C
-      CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+      if(naelec > 1)then
+        CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
+      else
+        CALL DZERO(WORK(KMUUUU),(2*NASHT)**4)
+      end if
 
       CALL MEMREL('GASCIP_RCISTD.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
 C
@@ -4271,6 +4275,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

@@ -6316,7 +6316,7 @@ C    ... continue with 2el Fock-AO matrixes ... do the picture
 C    change transformations of them if .NOT.CONT2C
 C ==================================================================
       IF (.NOT.ONESYS.AND..NOT.CONT2C) THEN
-        CALL OPNFIL(LUFCK2,'DFFCK2','OLD','PSIDHF')
+        CALL OPNFIL(LUFCK2,'DFFCK2','OLD','PSISCF')
 C          ... read NFMAT 2el Fock matrixes !
         CALL REAFCK(LUFCK2,WORK(KF2),.TRUE.,NFMAT)
 
@@ -7162,7 +7162,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:   Do the reverse picture change transformation of the (converged)
 C ----------   2c Fock matrix into 4c "Fock-Dirac" starting Fock matrix
-C             (called from PSIDHF/dirscf.F)
+C             (called from PSISCF/dirscf.F)
 C
 C  On input : only arrays
 C
@@ -7508,7 +7508,7 @@ C  ... read full picture change transf. matrix into VMAT
      &      TMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
      &      VMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
      &      VMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
-     &      WORK(KFREE),LFREE,IPRINT)
+     &      WORK(KFREE),LFREE,IPRHAM)
 
        IF (IPRHAM.GE.4) THEN
         CALL HEADER(
@@ -7912,7 +7912,7 @@ C  On input : only arrays
 C
 C  On output:  the initial 4c MO are written into BSSMAT
 C
-C  Called from PSIDHF (dirscf.F)
+C  Called from PSISCF (dirscf.F)
 C
 C  Written by Miro Ilias, Sept 2005, Strasbourg
 C
@@ -10028,6 +10028,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

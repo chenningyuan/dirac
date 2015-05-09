@@ -1,19 +1,94 @@
-## simple DIRAC buildup configuration file for circleci.com
-## See https://circleci.com/docs/configuration
+## Simple DIRAC buildup configuration file for circleci.com
+##
+## See https://circleci.com/docs/getting-started
+##     https://circleci.com/docs/configuration
 ##     https://circleci.com/docs/config-sample
+##
+## OpenMPI 64-bit installation: 
+##     https://gist.github.com/rbast/81760961c5a8199e561a
+##     http://diracprogram.org/doc/release-12/installation/int64/mpi.html
+##
 
+# list of branches to build
+general:
+    branches:
+        only:
+            - master
 
+# set environment variables to make MPI and tests work
+machine:
+    environment:
+        DIRAC_MPI_COMMAND: "mpirun -np 2"
+        PATH: $HOME/open_mpi/bin:$PATH
+        LD_LIBRARY_PATH: $HOME/open_mpi/lib:$LD_LIBRARY_PATH
+        FC: gfortran
+        CC: gcc
+        CXX: g++
+        FCFLAGS: "-m64 -fdefault-integer-8"
+        CFLAGS: -m64
+        CXXFLAGS: -m64
+        DIRTIMEOUT: "9m"
+# export number of available processors/jobs - for build
+        N_PROC: $(cat /proc/cpuinfo | grep processor | wc -l)
+# number of available processors/jobs for test will be 16 times less because we use "mpirun -np 2"
+# and memory in circle VM is limited (exceptation: there are 32 threads/CPUs)
+        TEST_N_PROC: $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 16)
+
+dependencies:
+    override:
+# update software info
+        - sudo apt-get update
+# install some needed/missing packages
+        - sudo apt-get install doxygen
+        - sudo apt-get install python-dateutil
+        - sudo apt-get install python-pyparsing
+        - sudo apt-get install python-numpy
+        - sudo apt-get install python-matplotlib
+        - sudo pip install sphinx==1.2.3
+        - sudo pip install sphinxcontrib-bibtex
+        - sudo pip install sphinx_rtd_theme
+        - sudo pip install hieroglyph
+# compile 64-bit OpenMPI with integer size 8
+# remove all previous MPI installations
+        - sudo apt-get remove mpich2 openmpi-bin libopenmpi-dev
+# download, build and install OpenMPI to $HOME/open_mpi
+        - mkdir $HOME/open_mpi
+        - wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
+        - tar xzf openmpi-1.8.4.tar.gz
+        - cd openmpi-1.8.4 && ./configure --prefix=$HOME/open_mpi && make -j $N_PROC && make install
+# check if integer size is correct - should be 8
+        - echo "Fortran MPI Integer size is $(ompi_info -a | grep 'Fort integer size') - should be equal to 8"
+        
+# update submodules
 checkout:
-  post:
-    - git submodule sync
-    - git submodule update --init
+    post:
+        - git submodule sync
+        - git submodule update --init
 
-test: 
-  override: 
-    - python ./pamadm -a --builddir=build_circleci 
-    - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
-    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_circleci }
-    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_circleci }
-    - ctest --track Miro  -D ExperimentalBuild: { pwd: build_circleci }
-    - ctest --track Miro  -D ExperimentalTest -R cosci_energy: { pwd: build_circleci }
-    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_circleci }
+test:
+    pre:
+# check our environment variables
+        - echo "Number of processors/jobs for build step is $N_PROC"
+        - echo "Number of processors/jobs for test step is $TEST_N_PROC"
+# show info about available processors
+        - lscpu
+# show available disc space
+        - df -h
+# show available memory
+        - free -m
+    override:
+# configure, build optimized code and run tests (Dirac 64-bit with OpenMPI and documentation)
+        - python ./pamadm -a --builddir=build_circleci_mpi
+        - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_circleci_mpi
+        - ctest -D ExperimentalConfigure: { pwd: build_circleci_mpi }
+        - ctest -j $N_PROC -D ExperimentalBuild: { pwd: build_circleci_mpi }
+# ldd - show dependencies
+        - ldd dirac.x: { pwd: build_circleci_mpi }
+# run tests ( could provide with "-L short --track Miro" )
+        - ctest -j $TEST_N_PROC -D ExperimentalTest: { pwd: build_circleci_mpi }
+# submit to dashboard
+        - ctest -D ExperimentalSubmit: { pwd: build_circleci_mpi }
+# build docs
+        - make html: { pwd: build_circleci_mpi }
+        - make doxygen: { pwd: build_circleci_mpi }
+        - make slides: { pwd: build_circleci_mpi }

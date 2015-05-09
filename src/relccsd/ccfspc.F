@@ -2660,7 +2660,6 @@ c define offsets of property matrix needed in subroutine Transition_OneOne
 c                                                      
 c----------------Common Blocks-----------------------------------------
 c 
-#include "freeze.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "param.inc"

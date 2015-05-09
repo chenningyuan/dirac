@@ -59,6 +59,7 @@ module fde_data
 !
    public gf_frozen
    public gf_active
+   public gf_active_adf
    public fde_grid_im
 
    integer, save :: fde_import_grid_np = 0
@@ -66,6 +67,7 @@ module fde_data
 
    type(grid_function), save :: gf_frozen
    type(grid_function), save :: gf_active
+   type(grid_function), save :: gf_active_adf
    type(fde_grid), save      :: fde_grid_im
 !
 ! export, using a different grid
@@ -236,6 +238,7 @@ module fde_data
             call new_fde_grid(fde_grid_im,fde_import_grid_np)
             call new_grid_function(gf_frozen,fde_import_grid_np)
             call new_grid_function(gf_active,fde_import_grid_np)
+            call new_grid_function(gf_active_adf,fde_import_grid_np)
          else
             call fde_quit('there are no grid points for fde import !')
          endif
@@ -254,6 +257,7 @@ module fde_data
 
       if (import_data_is_initialized) then
          call del_grid_function(gf_active)
+         call del_grid_function(gf_active_adf)
          call del_grid_function(gf_frozen)
          call del_fde_grid(fde_grid_im)
       endif

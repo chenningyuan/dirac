@@ -2,7 +2,7 @@ star(PCMSOL)
 
 PCMSolver module configuration directives.
 
-General information on the PCM can be found in [Tomasi2005]_.
+General information on the PCM can be found in :cite:`Tomasi2005`.
 Details on the module can be found `here <http://pcmsolver.github.io/pcmsolver-doc/>`_
 The module source code is freely available under the LGPLv3 license `here <https://github.com/PCMSolver/pcmsolver>`_
 
@@ -17,8 +17,6 @@ of Method 1 refer to the `PCMSolver input documentation <http://pcmsolver.github
 Examples of both methods are given in the PCM tutorial section.
 All keywords expecting a numerical value are intended to be in Angstrom. The module will perform conversion
 to atomic units internally.
-
-.. warning:: To use Method 2 with DIRAC you will need to export the PCMSOLVER_PARSE environment variable.
 
 .. warning:: Do **NOT** truncate keyword values to six characters. It will result in a crash with an obscure error message.
 

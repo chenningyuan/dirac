@@ -181,7 +181,9 @@ C       ERGCAL routine
         if (dirac_cfg_fde) then
             WRITE(LUPRI,'(A)') ''
             write(lupri,'(2X,A)') 
-     &      'FDE frozen subsystem contributions not available'
+     &      'FDE frozen subsystem contributions'
+            write(lupri,'(/3X,A)') 
+     &      'Total energy                             :    n/a'
           call fde_calculate_interaction_energy('DHF ',myprint=myprint)
         endif
       ENDIF

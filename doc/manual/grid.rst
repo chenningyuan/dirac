@@ -4,11 +4,11 @@
 \*\*GRID
 ========
 
-The numerical integration scheme uses the Becke partitioning [Becke1988a]_
+The numerical integration scheme uses the Becke partitioning :cite:`Becke1988a`
 of the molecular volume
 into atomic ones, for which the quadrature is performed in spherical
 coordinates. Radial integration is carried out using the scheme proposed
-by Lindh *et al.* [Lindh2001]_,
+by Lindh *et al.* :cite:`Lindh2001`,
 while the angular integration is handled by a set of highly accurate
 Lebedev grids. Note that the Becke partitioning scheme generally uses
 Slater-Bragg radii for atomic size adjustments. For the heavier
@@ -85,11 +85,10 @@ the line connecting A and B.
 
 ::
 
-    *DFT
     .IMPORT
-    grid_file
+    numerical_grid
 
-Import previously exported DFT grid.
+Import previously exported numerical grid.
 
 For debugging you can also create your own grid file. The grid file is
 formatted - in free format. A grid file for three points could look like

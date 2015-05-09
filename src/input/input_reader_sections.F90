@@ -1515,6 +1515,10 @@
          read(get_file_unit(),'(f18.6)') reladc_davconv
       end if
 
+      if (kw_matches(word, '.DVINCORE')) then
+         reladc_davooc = .false.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine

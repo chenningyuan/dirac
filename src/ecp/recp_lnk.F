@@ -1053,6 +1053,7 @@ C
 ! ---------------------
  2000 CONTINUE
       READ (LUCMD,'(A7)',END=9900,ERR=9000) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1) .EQ. '!') THEN
          GOTO 2000
       ELSEIF (WORD(1:1) .EQ. '#') THEN
@@ -1074,6 +1075,7 @@ C
 ! ----------------------
  3010 CONTINUE
       READ (LUCMD,'(A7)',ERR=9000) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'!') GOTO 3010
       IF (WORD(1:1).EQ.'#') GOTO 3010
       READ (WORD,*,ERR=3011) ECPINT_PRINT
@@ -1089,6 +1091,7 @@ C
 ! ----------------------
  3020 CONTINUE
       READ (LUCMD,'(A7)',ERR=9000) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'!') GOTO 3020
       IF (WORD(1:1).EQ.'#') GOTO 3020
       READ (WORD,*,ERR=3021) ECPINT_DEBUG
