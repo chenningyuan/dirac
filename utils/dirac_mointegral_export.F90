@@ -29,6 +29,7 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_2e = 22
   integer, parameter     :: filenumber_nw = 23
   integer, parameter     :: filenumber_fcidump = 24
+  integer, parameter     :: filenumber_mtable  = 25
   integer, parameter     :: filenumber_55 = 55
   integer, parameter     :: filenumber_56 = 56
   logical, parameter     :: generate_full_list = .false.
@@ -36,6 +37,7 @@ module dirac_mointegral_export
 ! The target variable should involve into an input option, for now we have no input since mrcc
 ! is presently the only code that is supported (the interface to nwchem is in an experimental stage)
   character(10)          :: target = 'fcidump'
+! character(10)          :: target = 'mrcc'
 
   type SpinorInformation
 
@@ -261,7 +263,7 @@ contains
         do j = 1, end_index
            if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
               if (rcw .ne. 1) then
-                 write (filenumber_fcidump,'(2E28.20,4i4)') &
+                 write (filenumber_fcidump,'(1P,2E20.12,4i3)') &
                     integral(i,j,1),                &
                     integral(i,j,2),                &
                     i,                              &
@@ -269,7 +271,7 @@ contains
                     0,                              &
                     0
               else
-                 write (filenumber_fcidump,'(E28.20,4i4)') &
+                 write (filenumber_fcidump,'(1P,E20.12,4i3)') &
                     integral(i,j,1),                &
                     i,                              &
                     j,                              &
@@ -290,13 +292,13 @@ contains
      real(8) :: integral(:)
 
      if ( g_type .ne. 1 ) then
-        write (filenumber,'(2E28.20,4i4)') (integral(g_type*(inz-1)+i), i=1,g_type), &
+        write (filenumber,'(1P,2E20.12,4i3)') (integral(g_type*(inz-1)+i), i=1,g_type), &
               kramer_to_spinor(ikr),                  &
               kramer_to_spinor(jkr),                  &
               kramer_to_spinor(kkr),                  &
               kramer_to_spinor(lkr)
      else
-        write (filenumber,'(E28.20,4i4)') integral(inz), &
+        write (filenumber,'(1P,E20.12,4i3)') integral(inz), &
               kramer_to_spinor(ikr),                  &
               kramer_to_spinor(jkr),                  &
               kramer_to_spinor(kkr),                  &
@@ -476,34 +478,35 @@ contains
   integer               :: i, j
 
   open  (filenumber_fcidump, file='FCIDUMP', Form='FORMATTED')
-  write (filenumber_fcidump,*) " &FCIDUMP NORB=",number_of_spinors,", NELEC=",number_of_electrons,","
-  write (filenumber_fcidump,*) "    SYM=",(spinor(i)%abelian_irrep,i=1,number_of_spinors)
-  write (filenumber_fcidump,*) "    UHF=1"
-  write (filenumber_fcidump,*) " &END"
+  write (filenumber_fcidump,'(A,I5,A)') "&FCI NORB=",number_of_spinors,","
+  write (filenumber_fcidump,'(A,I5,A)') "    NELEC=",number_of_electrons,","
+  write (filenumber_fcidump,'(A,30(I2,A))') "    ORBSYM=", &
+  & (spinor(i)%abelian_irrep,",",i=1,number_of_spinors) 
+  write (filenumber_fcidump,'(A,I5,A)') "    ISYM=",(2 * number_of_abelian_irreps),","
+  write (filenumber_fcidump,'(A)') "    IUHF=1,"
+  write (filenumber_fcidump,'(A)') "&END"
 
-
-!!! todo, pass on the symmetry table to fciqmc
-
-! write (filenumber_fcidump,'(2i6)') 2 * number_of_abelian_irreps
-!  do j = 1, 2 * number_of_abelian_irreps
-!     write (filenumber_fcidump,'(8i6)') (multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
-!  end do
+  open  (filenumber_mtable, file='FCITABLE', Form='FORMATTED')
+  write (filenumber_mtable,'(2i6)') 2 * number_of_abelian_irreps
+  do j = 1, 2 * number_of_abelian_irreps
+     write (filenumber_mtable,'(8i6)') (multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
+  end do
 
   call process_2e
   call process_1e
 
   do j = 1, number_of_spinors
     if (group_type .ne. 1) then
-        write (filenumber_fcidump,'(2E28.20,4i4)') (spinor(j)%energy),0.0d0,j,0,0,0
+        write (filenumber_fcidump,'(1P,2E20.12,4i3)') (spinor(j)%energy),0.0d0,j,0,0,0
     else
-        write (filenumber_fcidump,'(E28.20,4i4)') (spinor(j)%energy),j,0,0,0
+        write (filenumber_fcidump,'(1P,E20.12,4i3)') (spinor(j)%energy),j,0,0,0
     end if
   end do
 
   if (group_type .ne. 1) then
-     write (filenumber_fcidump,'(2E28.20,4i4)') core_energy,0.0d0,0,0,0,0
+     write (filenumber_fcidump,'(1P,2E20.12,4i3)') core_energy,0.0d0,0,0,0,0
   else
-     write (filenumber_fcidump,'(E28.20,4i4)') core_energy,0,0,0,0
+     write (filenumber_fcidump,'(1P,E20.12,4i3)') core_energy,0,0,0,0
   end if
 
   deallocate (multiplication_table)
