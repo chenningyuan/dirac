@@ -69,6 +69,7 @@ def main():
         dirac_modules[str(option)[2:]].include()
 
     list_of_tests = []
+
     def add_test(name, labels=''):
         list_of_tests.append([name, labels])
 
@@ -95,6 +96,7 @@ def main():
     vital_directories.append('src/main')
     vital_directories.append('src/matrix_operations')
     vital_directories.append('src/moltra')
+    vital_directories.append('src/pcm')
     vital_directories.append('src/pdpack')
     vital_directories.append('src/prp')
     vital_directories.append('src/reladc')
@@ -113,96 +115,112 @@ def main():
     vital_directories.append('cmake')
 
     # these tests are always packaged
-    add_test('reladc_sip')
-    add_test('reladc_sipeigv')
-    add_test('reladc_dip')
-    add_test('reladc_exci')
-    add_test('dft_alda_xcfun')
-    add_test('dft_alda')
-    add_test('stex')
-    add_test('geo_opt')
-    add_test('london_properties_symmetry')
-    add_test('response_pv_nmr')
-    add_test('krci_energy')
-    add_test('molecular_mean_field_hamiltonian_schemes')
-    add_test('electrostatic_potential')
-    add_test('acmoin', 'quick')
-    add_test('atomic_start', 'quick')
-    add_test('basis_automatic_augmentation', 'quick')
-    add_test('basis_contraction', 'quick')
-    add_test('basis_input', 'quick')
-    add_test('bsse', 'quick')
-    add_test('bss_energy', 'quick')
-    add_test('cc_energy_and_mp2_dipole')
-    add_test('cc_linear', 'quick')
-    add_test('cisd_energy')
-    add_test('cosci_energy_spinfree', 'quick')
-    add_test('cosci_methods', 'quick')
-    add_test('cosci_tmom', 'quick')
-    add_test('density_at_nuclei', 'quick')
-    add_test('dft_ao_eval')
-    add_test('dft_betasigma', 'quick')
-    add_test('dft_cam', 'quick')
-    add_test('dft_erf_xcfun', 'quick')
+    add_test('reladc_sip','reladc')
+    add_test('reladc_sipeigv','reladc')
+    add_test('reladc_dip','reladc')
+    add_test('reladc_exci','reladc')
+    add_test('dft_alda_xcfun', 'long;dft')
+    add_test('dft_alda', 'long;dft')
+    add_test('stex', 'long')
+    add_test('geo_opt', 'long')
+    add_test('london_properties_symmetry', 'long')
+    add_test('response_pv_nmr', 'long')
+    add_test('krci_energy', 'long')
+    add_test('molecular_mean_field_hamiltonian_schemes', 'long')
+    add_test('electrostatic_potential', 'long')
+    add_test('acmoin', 'short')
+    add_test('atomic_start', 'short')
+    add_test('basis_automatic_augmentation', 'short')
+    add_test('basis_contraction', 'short')
+    add_test('basis_input', 'short')
+    add_test('bsse', 'short')
+    add_test('bss_energy', 'short')
+    add_test('cc_energy_and_mp2_dipole','cc')
+    add_test('cc_linear', 'short;cc')
+    add_test('cisd_energy','ci')
+    add_test('cosci_energy_spinfree', 'short;ci')
+    add_test('cosci_methods', 'short;ci')
+    add_test('cosci_tmom', 'short;ci')
+    add_test('density_at_nuclei', 'short')
+    add_test('dft_ao_eval','dft')
+    add_test('dft_betasigma', 'short;dft')
+    add_test('dft_cam', 'short;dft')
+    add_test('dft_erf_xcfun', 'short;dft')
     add_test('dft_geo_opt')
-    add_test('dft_london_mag_prop', 'quick')
-    add_test('dft_pp86', 'quick')
-    add_test('dft_response')
-    add_test('dft_response_symmetry')
-    add_test('dft_response_xcfun')
-    add_test('efg')
-    add_test('ecp', 'quick')
-    add_test('fde_static-vemb_dipole')
-    add_test('fde_response_autodiff')
-    add_test('free-particle_projection', 'quick')
+    add_test('dft_london_mag_prop', 'short;dft;london')
+    add_test('dft_pp86', 'short;dft')
+    add_test('dft_response','response;dft')
+    add_test('dft_response_symmetry','response;dft')
+    add_test('dft_response_xcfun','response;dft')
+    add_test('efg','efg')
+    add_test('ecp','short')
+    add_test('fde_static-vemb_dipole','fde')
+    add_test('fde_response_autodiff','fde')
+    add_test('free-particle_projection', 'short')
     add_test('frozen_orbitals')
-    add_test('fscc')
-    add_test('fscc_highspin')
-    add_test('gaunt', 'quick')
+    add_test('fscc','fscc')
+    add_test('fscc_highspin','fscc')
+    add_test('gaunt', 'short;gaunt')
     add_test('geo_opt_saddle')
+    add_test('huckel_start')
 #   radovan: this cannot run on most installations
 #   add_test('kallay_mrcc_interface')
-    add_test('krci_properties_perm_dipmom', 'quick')
-    add_test('linear_structures', 'quick')
-    add_test('lucita_large')
-    add_test('mcscf_energy')
-    add_test('mcscf_properties', 'quick')
-    add_test('mp2_energy', 'quick')
-    add_test('mp2_properties')
-    add_test('mp2_srdft_energies', 'quick')
-    add_test('open-shells', 'quick')
-    add_test('projection_analysis', 'quick')
-    add_test('pvc_scf', 'quick')
-    add_test('response_C6', 'quick')
+    add_test('krci_properties_perm_dipmom', 'short;krci')
+    add_test('linear_structures', 'short')
+    add_test('lucita_large','krci')
+    add_test('mcscf_energy','mcscf')
+    add_test('mcscf_properties', 'short;mcscf')
+    add_test('mp2_energy', 'short;mp2')
+    add_test('mp2_properties', 'long;mp2')
+    add_test('mp2_srdft_energies', 'short;mp2;srdft')
+    add_test('mp2_natural_orbitals', 'short;mp2')
+    add_test('open-shells', 'short')
+    add_test('projection_analysis', 'short;projection')
+    add_test('pvc_scf', 'short;pvc;scf')
+    add_test('response_C6', 'short;response')
     add_test('response_excitation_energies')
-    add_test('response_hf_polarizability', 'quick')
-    add_test('response_lao_shield', 'quick')
-    add_test('response_lao_magnetiz', 'quick')
-    add_test('response_nmr_levy-leblond', 'quick')
-    add_test('response_nmr_spin-spin')
-    add_test('response_qr')
-    add_test('response_rkbimp_shield', 'quick')
-    add_test('symmetry_recognition', 'quick')
-    add_test('visual_div_rot', 'quick')
-    add_test('visual_lao_current')
-    add_test('visual_lao_shielding', 'quick')
-    add_test('visual_lao_symmetry')
-    add_test('visual_frac_occupation', 'quick')
-    add_test('lucita_short', 'quick')
+    add_test('response_hf_polarizability', 'short;response;polarizabilities')
+    add_test('response_lao_shield', 'short;response;shielding;london')
+    add_test('response_lao_magnetiz', 'short;response;magnetizabilities;london')
+    add_test('response_nmr_levy-leblond', 'short;response;nmr')
+    add_test('response_nmr_spin-spin','response;nmr')
+    add_test('response_qr','response')
+    add_test('response_rkbimp_shield', 'short;response')
+    add_test('symmetry_recognition', 'short')
+    add_test('visual_div_rot', 'short;visual')
+    add_test('visual_lao_current', 'visual')
+    add_test('visual_lao_shielding', 'short;visual')
+    add_test('visual_lao_symmetry','visual')
+    add_test('visual_frac_occupation', 'short;visual')
+    add_test('lucita_short', 'short;krci')
     add_test('xyz_input')
-    add_test('zora', 'quick')
-    add_test('dft_ac', 'quick')
-    add_test('dft_grid_export_import', 'quick')
-    add_test('localization', 'quick')
-    add_test('krci_properties_omega_tdm', 'quick')
-    add_test('visual_elf', 'quick')
-    add_test('visual_gamma5', 'quick')
-    add_test('visual_general', 'quick')
-    add_test('symmetry_scf_energy', 'quick')
-    add_test('scf_levelshift', 'quick')
-    add_test('response_complex', 'quick')
-    add_test('response_nonrel', 'quick')
-    add_test('cosci_energy', 'quick')
+    add_test('zora', 'short;zora')
+    add_test('dft_ac', 'short;dft')
+    add_test('dft_grid_export_import', 'short;dft')
+    add_test('localization', 'short')
+    add_test('krci_properties_omega_tdm', 'short;krci')
+    add_test('visual_elf', 'short;visual')
+    add_test('visual_gamma5', 'short;visual')
+    add_test('visual_general', 'short;visual')
+    add_test('symmetry_scf_energy', 'short;scf')
+    add_test('scf_levelshift', 'short;scf')
+    add_test('response_complex', 'short;response')
+    add_test('response_nonrel', 'short;response')
+    add_test('cosci_energy', 'short;ci')
+    add_test('krci_energy_q_corrections', 'medium;krci;qcorr;ci')
+    add_test('lucita_q_corrections', 'short;qcorr;ci')
+    add_test('x2c-SCF_to_4c-SCF', 'short;x2c;;4c;scf')
+    # benchmarks, not run as part of standard test set
+    add_test('benchmark_cc', 'benchmark;cc')
+    add_test('benchmark_cc_linear', 'benchmark;cc')
+    add_test('benchmark_gaunt', 'benchmark;gaunt')
+    add_test('benchmark_mcscf_energy', 'benchmark;mcscf')
+    add_test('benchmark_moltra_4or6', 'benchmark;moltra')
+
+    # tutorials connected tests, not run as part of standard test set
+    add_test('tutorial_W', 'tutorial;W;open-shell;scf')
+    add_test('tutorial_MnO6', 'tutorial;MnO6;scf')
+    add_test('tutorial_Ir_16plus', 'tutorial;cc')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
@@ -210,7 +228,6 @@ def main():
     # then list directories that are to be skipped as whole
 
     files_never_compiled = []
-    files_never_compiled.append('src/gp/unit_testing.F90')
     files_never_compiled.append('src/utils/cube2pov.c')
     files_never_compiled.append('src/relccsd/ccdriv_nomemget.F')
     files_never_compiled.append('src/relccsd/ccints_nomemget.F')
@@ -253,8 +270,8 @@ def main():
     dirac_modules[this_module] = dirac_module('aoosoc', 'atomic oo-order spin-orbit correction module')
     dirac_modules[this_module].add_cppflag('MOD_AOOSOC')
     dirac_modules[this_module].add_directory('src/aoosoc')
-    dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy')
-    dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy')
+    dirac_modules[this_module].add_test('atomic_x2c_2esoc_models_energy', 'medium')
+    dirac_modules[this_module].add_test('atomic_x2c_spinfree_energy', 'medium')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'eri'
@@ -277,6 +294,7 @@ def main():
     dirac_modules[this_module] = dirac_module('esr', 'ESR property module')
     dirac_modules[this_module].add_cppflag('MOD_ESR')
     dirac_modules[this_module].add_directory('src/prp/esr')
+    dirac_modules[this_module].add_test('esr', 'short;gascip;ci')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'xml'
@@ -302,19 +320,19 @@ def main():
     dirac_modules[this_module] = dirac_module('openrsp', 'OpenRSP')
     dirac_modules[this_module].add_cppflag('MOD_OPENRSP')
     dirac_modules[this_module].add_directory('src/openrsp')
-    dirac_modules[this_module].add_test('legacy_openrsp_cars')
-    dirac_modules[this_module].add_test('legacy_openrsp_cme')
-    dirac_modules[this_module].add_test('legacy_openrsp_delta')
-    dirac_modules[this_module].add_test('legacy_openrsp_efgb')
-    dirac_modules[this_module].add_test('legacy_openrsp_efgb_dft')
-    dirac_modules[this_module].add_test('legacy_openrsp_electric')
-    dirac_modules[this_module].add_test('legacy_openrsp_jones')
-    dirac_modules[this_module].add_test('legacy_openrsp_magnetizability')
-    dirac_modules[this_module].add_test('legacy_openrsp_molecular_gradient')
-    dirac_modules[this_module].add_test('legacy_openrsp_pv')
-    dirac_modules[this_module].add_test('legacy_openrsp_quadrupole')
-    dirac_modules[this_module].add_test('legacy_openrsp_roa')
-    dirac_modules[this_module].add_test('legacy_openrsp_pnc_gradient')
+    dirac_modules[this_module].add_test('legacy_openrsp_cars', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_cme', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_delta', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_efgb', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_efgb_dft', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_electric', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_jones', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_magnetizability', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_molecular_gradient', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_pv', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_quadrupole', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_roa', 'openrsp')
+    dirac_modules[this_module].add_test('legacy_openrsp_pnc_gradient', 'openrsp')
     dirac_modules[this_module].take_out_of_release()
 
     this_module = 'oof'
@@ -343,7 +361,6 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_HSFS')
     dirac_modules[this_module].add_dependency('oof')
     dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
-    dirac_modules[this_module].add_test('fscc_highsectors')
     dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
@@ -353,7 +370,6 @@ def main():
     dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
     dirac_modules[this_module].add_cppflag('MOD_HSFS')
     dirac_modules[this_module].add_directory('src/cc_external/hsfscc')
-    dirac_modules[this_module].add_test('fscc_highsectors')
     dirac_modules[this_module].take_out_of_adm()
     dirac_modules[this_module].take_out_of_release()
 
@@ -374,6 +390,11 @@ def main():
     dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
     dirac_modules[this_module].take_out_of_release()
 
+    this_module = 'pcm'
+    dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model using PCMSolver')
+    dirac_modules[this_module].add_test('pcm_energy', 'short;scf;pcm')
+    dirac_modules[this_module].add_test('pcm_response', 'short;polarizabilities;pcm')
+
     this_module = 'unreleased'
     dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
     dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
@@ -386,14 +407,10 @@ def main():
     dirac_modules[this_module].add_test('dft_minnesota')
     dirac_modules[this_module].take_out_of_release()
 
-    this_module = 'pcm'
-    dirac_modules[this_module] = dirac_module('pcm', 'Polarizable Continuum Model through PCMSolver')
-    dirac_modules[this_module].add_cppflag('PCM_MODULE')
-    dirac_modules[this_module].add_directory('src/pcm')
-    dirac_modules[this_module].add_test('pcm_energy')
-    dirac_modules[this_module].add_test('pcm_response')
-    dirac_modules[this_module].take_out_of_adm()
-    dirac_modules[this_module].take_out_of_release()
+    this_module = 'qcorr'
+    dirac_modules[this_module] = dirac_module('qcorr', 'Davidson-type +Q corrections for (MR)CISD')
+    dirac_modules[this_module].add_cppflag('MOD_QCORR')
+    dirac_modules[this_module].add_directory('src/qcorr')
 
     # define input options
 
@@ -572,17 +589,64 @@ def main():
     for module in dirac_modules:
         if dirac_modules[module].is_included:
             for test in dirac_modules[module].tests:
-              # list_of_tests.append(test)
-              # radovan: we don't put at the end but at the start to have slow tests from modules at the start
-                list_of_tests.insert(0, test)
+                list_of_tests.append(test)
+
+    f = open(os.path.join(options.builddir, 'pamadm-generated', 'Tests.cmake'), 'w')
+    f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
+
+    # long tests
+    for test in list_of_tests:
+        if 'long' in test[1]:
+            f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
+    # tests that are neither short nor long
+    for test in list_of_tests:
+        if not 'long' in test[1] and \
+           not 'short' in test[1] and \
+           not 'benchmark' in test[1] and \
+           not 'tutorial' in test[1] and \
+           not 'openrsp' in test[1] and \
+           not 'pcm' in test[1]:
+            f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
+    # short tests
+    for test in list_of_tests:
+        if 'short' in test[1] and \
+            not 'pcm' in test[1]:
+            f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
+
+    # openrsp tests
+    f.write('if(ENABLE_OPENRSP_TESTS)\n')
+    for test in list_of_tests:
+        if 'openrsp' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
+    # benchmark tests
+    f.write('if(ENABLE_BENCHMARKS)\n')
+    for test in list_of_tests:
+        if 'benchmark' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
+    # tutorial tests
+    f.write('if(ENABLE_TUTORIALS)\n')
+    for test in list_of_tests:
+        if 'tutorial' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+    
+    # pcm tests
+    f.write('if(ENABLE_PCMSOLVER)\n')
+    for test in list_of_tests:
+        if 'pcm' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
+    f.close()
+
+    # create list of tests, this is needed for "make release"
     f = open(os.path.join(options.builddir, 'pamadm-generated', 'list_of_tests'), 'w')
     for test in list_of_tests:
         f.write(test[0] + '\n')
-    f.close()
-    f = open(os.path.join(options.builddir, 'pamadm-generated', 'Tests.cmake'), 'w')
-    f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
-    for test in list_of_tests:
-        f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
     f.close()
 
     # write pamadm flags to file

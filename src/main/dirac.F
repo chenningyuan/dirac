@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -66,8 +66,8 @@ C
 C
 C     Execute Dirac
 C
-      write(lupri, '(//a)') 'Execution time and host'
-      write(lupri, '(a)')   '-----------------------'
+      write(lupri,'(/a/a)') 'Execution time and host',
+     &                       '-----------------------'
       CALL TSTAMP(' ',LUPRI)
       CALL DIRCTL()
 C
@@ -86,7 +86,7 @@ C  /* Deck dirctl */
       use interface_mo_specific
       use xmlout
       use dirac_cfg
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -118,7 +118,7 @@ C***********************************************************************
       call interface_ao_write()
       call interface_mo_write()
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
 ! Quit if symmetry or X2C are requested.
         if (nbsym > 1) then
@@ -126,8 +126,8 @@ C***********************************************************************
      & 'handle symmetry!')
         end if
         if (bss.or.x2c) then
-          call quit('Polarizable Continuum Model calculation not '//
-     & 'working with X2C Hamiltonian!')
+          call quit('Polarizable Continuum Model calculation cannot '//
+     & 'handle 2-component Hamiltonians!')
         end if
         call pcm_scf_initialize(lupri)
         write(lupri, '(//A/)') 'PCMSolver initialized.'
@@ -283,11 +283,11 @@ C
           CALL TDHFORB('NO CI')
 C
 C         *************************************************
-C         *** Call PSIDHF for Roothaan/DIIS iterations  ***
+C         *** Call PSISCF for Roothaan/DIIS iterations  ***
 C         *************************************************
 C
           IF (MAXITR.GT.0.OR.MAXITR2.GT.0) THEN
-             CALL PSIDHF(WFCONV)
+             CALL PSISCF(WFCONV)
           END IF
 C
 C         *************************************************
@@ -296,7 +296,7 @@ C         *************************************************
 C
           IF ( .NOT. NOQCDHF .AND.
      &         .NOT. dirac_cfg_dft_calculation .AND.
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
      &         .NOT. dirac_cfg_pcm .AND.
 #endif
      &        (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
@@ -523,6 +523,7 @@ c        NPSH(I) = NPSH_DHF(I)
       END DO
       NELECT = NELECT_DHF
       NAELEC = NAELEC_DHF
+      THRPCI = 1.0D-3 ! threshold for print of CI vector elements
 C
 C     Calculate derived variables in /DCBORB/:
 C
@@ -536,12 +537,12 @@ C     HOW it is transferred is determined by the CISELECT keyword. /hjaaj
 C
       IF ( CISELECT .EQ. 'NO CI' ) THEN
          NGAS_DC  = 0
-         THR_CVEC = D0
+         OPT_THR_CVEC = D0
       ELSE IF ( CISELECT .EQ. 'RESOLVE' ) THEN
 C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
          NGAS_DC  = NOPEN
-         THR_CVEC = 1.0D-3
+         OPT_THR_CVEC = 1.0D-3
          CALL IZERO(NGSHT,MXGAS)
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
@@ -561,7 +562,7 @@ C
       ELSE IF (CISELECT .EQ. 'FULLCI') THEN
 C        ... do a full CI in the active space
          NGAS_DC  = 1
-         THR_CVEC = 1.0D-3
+         OPT_THR_CVEC = 1.0D-3
 
 C        ... set CI program in charge
 !        OPT_CIPROGRAM = 'GASCIP'
@@ -584,46 +585,69 @@ C        ... do CI for ESR spin-polarization /hjaaj nov 2002
 C        ... set CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
 C
-         THR_CVEC = THR_CVEC_ESR
+         OPT_THR_CVEC = THR_CVEC_ESR
+         THRPCI   = THRPCI_ESR
 C
-C        set up core and virtual spaces
+C        Set up core (NCSH_ESR), valence (NVSH_ESR) and virtual (secondary, NSSH_ESR) orbital shells.
 C
-         NCESRT = 0
-         NVESRT = 0
+         NCSH_ESRT = 0
+         NVSH_ESRT = 0
+         NSSH_ESRT = 0
+         NELECT    = 0
          DO I = 1,NFSYM
-           IF (NCESR(I) .LT. 0) THEN
-              NCESR(I) = NISH(I)
+
+           IF (NCSH_ESR(I) < 0) THEN
+              CALL QUIT('ERROR: NCSH_ESR(I) < 0')
            END IF
-           NISH(I)  = NISH(I)  - NCESR(I)
-           NELEC(I) = NELEC(I) - 2*NCESR(I)
-           NCESRT   = NCESRT   + NCESR(I)
-           IF (NVESR(I) .LT. 0) THEN
-              NVESR(I) = NSSH(I)
+           IF (NVSH_ESR(I) < 0) THEN
+              CALL QUIT('ERROR: NVSH_ESR(I) < 0')
            END IF
-           NSSH(I) = NSSH(I) - NVESR(I)
-           NVESRT  = NVESRT  + NVESR(I)
+           IF (NSSH_ESR(I) < 0) THEN
+              CALL QUIT('ERROR: NSSH_ESR(I) < 0')
+           END IF
+
+           NISH(I)   = NISH(I)   - NCSH_ESR(I) - NVSH_ESR(I)
+           NSSH(I)   = NSSH(I)   - NSSH_ESR(I)
+
+           NCSH_ESRT = NCSH_ESRT + NCSH_ESR(I)
+           NVSH_ESRT = NVSH_ESRT + NVSH_ESR(I)
+           NSSH_ESRT = NSSH_ESRT + NSSH_ESR(I)
+
+           NELEC(I)  = NELEC(I) - 2*NCSH_ESR(I) - 2*NVSH_ESR(I)
+           NELECT    = NELECT   + NELEC(I)
+
          END DO
-         NAELEC = NAELEC + 2*NCESRT
+         NGAS12_ELEC = 2*NCSH_ESRT + 2*NVSH_ESRT
+         NAELEC      = NAELEC + NGAS12_ELEC
 C
 C        initialize min and max accumulated no. of electrons in each gas space
 C
          CALL IZERO(NGSHT,MXGAS)
          NGAS_DC = 0
-         IF (NCESRT .GT. 0) THEN
+         IF (NCSH_ESRT > 0) THEN
             NGAS_DC = NGAS_DC + 1
-            NGASSP(1,NGAS_DC) = MAX(0,2*NCESRT-LVL_CIESR(1))
-            NGASSP(2,NGAS_DC) = 2*NCESRT
+            NGASSP(1,NGAS_DC) = MAX(0,2*NCSH_ESRT-LVL_CIESR(0))
+            NGASSP(2,NGAS_DC) = 2*NCSH_ESRT
             DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NCESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+               NGSH(I,NGAS_DC) = NCSH_ESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NCSH_ESR(I)
+            END DO
+         END IF
+         IF (NVSH_ESRT > 0) THEN
+            NGAS_DC = NGAS_DC + 1
+            NGASSP(1,NGAS_DC) = MAX(0,NGAS12_ELEC-LVL_CIESR(1))
+            NGASSP(2,NGAS_DC) = NGAS12_ELEC
+            DO I = 1,NFSYM
+               NGSH(I,NGAS_DC) = NVSH_ESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NVSH_ESR(I)
             END DO
          END IF
 
 C            (Cxx are preparation for RESOLVE instead of FULLCI
 C             in the DHF open shells)
-Cxx      XELEC = D2*NCESRT
+Cxx      XELEC = D2*NCSH_ESRT
          IF (NOPEN .NE. 1) THEN
-            write (lupri,*) 'ESRCI: NOPEN is not 1, it is: ',NOPEN
+            write (lupri,*) 'ERROR ESRCI: NOPEN is not 1, it is: ',NOPEN
             call quit ('ESRCI: sorry, NOPEN is not 1')
          END IF
          DO J = 1, NOPEN
@@ -636,19 +660,19 @@ Cxx         NGASSP(2,NGAS_DC) = NINT(XELEC)
             DO I = 1,NFSYM
 Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
                NGSH(I,NGAS_DC) = NASH(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(I)
             END DO
          END DO
-         IF (NVESRT .GT. 0) THEN
+         IF (NSSH_ESRT .GT. 0) THEN
             NGAS_DC = NGAS_DC + 1
             NGASSP(1,NGAS_DC) = NAELEC
             NGASSP(2,NGAS_DC) = NAELEC
             DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NVESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH(I,NGAS_DC)
+               NGSH(I,NGAS_DC) = NSSH_ESR(I)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NSSH_ESR(I)
             END DO
          ELSE
-            NGASSP(1,NGAS_DC) = NAELEC ! reset, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
+            NGASSP(1,NGAS_DC) = NAELEC ! reset open shell minimum, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
          END IF
 C
 C        reset number of active orbitals
@@ -660,7 +684,9 @@ C        reset number of active orbitals
          END DO
 
       ELSE
-         CALL QUIT('Invalid CISELECT parameter')
+         WRITE(LUPRI,'(//2A)')
+     &   'ERROR Invalid CISELECT parameter in TDHFORB : ',CISELECT
+         CALL QUIT('Invalid CISELECT parameter in TDHFORB')
       END IF
 C
 C     Define MK limits now AFTER CI has been defined:
@@ -672,10 +698,10 @@ C     transfer open shell average-of-configuration to GAS space notation /July 2
 C
 C
       NASHT  = NASH(1) + NASH(2)
-      MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
-      MINMK2 = -MAXMK2
-      MK2REF = 0
-      MK2DEL = MAXMK2
+      IOPT_MAXMK2 = 2*MIN(NAELEC,NASHT) - NAELEC
+      IOPT_MINMK2 = -IOPT_MAXMK2
+      IOPT_MK2REF = 0
+      IOPT_MK2DEL = IOPT_MAXMK2
 C
 C     Set common block DCIOPT
 C
@@ -688,7 +714,7 @@ C
       MOPT_MXMICRO   = MXMICRO
       MOPT_MXMACRO   = MXMACRO
       MOPT_MAXBCK    = MAXBCK
-      IOPT_ISTATE    = 1
+      IOPT_STATE     = 0
       JKRRUNTYPE     = 0
       ISVRONO(1)     = 0
       ISVRONO(2)     = 0
@@ -702,7 +728,6 @@ C
       ELSE
          OPT_THRGRD     = SQRT(SCFCNV(1))
       END IF
-      THRPCI = 1.0D-3 ! threshold for print of CI vector elements
 C
 C     Set common block DCLOPT
 C
@@ -759,7 +784,7 @@ C
 C
 C
       NGAS_DC= NKRMCGAS
-      MK2REF = NKRMC_MK2REF
+      IOPT_MK2REF = NKRMC_MK2REF
 
 !     set active spaces and other derived variables for the full CI option
       if(KRMC_full_ci)then
@@ -817,9 +842,9 @@ C
 
       end if ! full ci option
 
-      MK2DEL = NKRMC_MK2DEL
-      MINMK2 = NKRMC_MINMK2
-      MAXMK2 = NKRMC_MAXMK2
+      IOPT_MK2DEL = NKRMC_MK2DEL
+      IOPT_MINMK2 = NKRMC_MINMK2
+      IOPT_MAXMK2 = NKRMC_MAXMK2
       CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
@@ -858,7 +883,7 @@ C
       MOPT_MXMICRO   = MKRMC_MXMICRO
       MOPT_MXMACRO   = MKRMC_MXMACRO
       MOPT_MAXBCK    = MKRMC_MAXBCK
-      IOPT_ISTATE    = IKRMC_ISTATE
+      IOPT_STATE     = IKRMC_STATE
       IOPT_SYMMETRY  = IKRMC_SYMMETRY
       IMEMFAC        = IKRMC_MEMFAC
       JKRRUNTYPE     = 1
@@ -872,10 +897,10 @@ C
       OPT_CNVINT(1)  = DKRMC_CNVINT(1)
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
-      THRECI         = MAX(DKRCI_THRECI, OPT_THRGRD**2)
+      OPT_THRECI     = MAX(DKRCI_THRECI, OPT_THRGRD**2)
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
-      THR_CVEC       = 1.0D-3
+      OPT_THR_CVEC   = 1.0D-3
 C
 C     Set common block DCLOPT
 C
@@ -944,10 +969,10 @@ C
 C
 C
       NGAS_DC= NKRCIGAS
-      MK2REF = NKRCI_MK2REF
-      MK2DEL = NKRCI_MK2DEL
-      MINMK2 = NKRCI_MINMK2
-      MAXMK2 = NKRCI_MAXMK2
+      IOPT_MK2REF = NKRCI_MK2REF
+      IOPT_MK2DEL = NKRCI_MK2DEL
+      IOPT_MINMK2 = NKRCI_MINMK2
+      IOPT_MAXMK2 = NKRCI_MAXMK2
 
       CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
@@ -980,7 +1005,7 @@ C
       MOPT_MXMICRO   =  0
       MOPT_MXMACRO   = -1
       MOPT_MAXBCK    =  0
-      IOPT_ISTATE    =  1
+      IOPT_STATE     =  0
       IOPT_SYMMETRY  = -1
       IMEMFAC        = IKRCI_MEMFAC
       JKRRUNTYPE     = 2
@@ -995,9 +1020,9 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
-      THR_CVEC       = 1.0d-03
+      OPT_THR_CVEC    = 1.0d-03
       OPT_THRGRD     = 1.D99
-      THRECI         = DKRCI_THRECI
+      OPT_THRECI     = DKRCI_THRECI
 C
 C     Set common block DCLOPT
 C
@@ -1087,7 +1112,7 @@ C***********************************************************************
 #include "infpar.h"
       DIMENSION ISTAT(df_mpi_status_size)
       LOGICAL NEWTASK
-      integer :: IMPARID, INUMNOD, IMYTID, ITASK, ICHECK_MPI2, IPARCAL
+      integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL
       real*8 :: CPU1, WALL1
 C
 C
@@ -1152,17 +1177,14 @@ Csk      write(6,*) 'node has recieved itask',MYTID,itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
-      ICHECK_MPI2 = - 1
-#if defined (VAR_MPI2)
-      ICHECK_MPI2 =   0
-#endif
+#if !defined (VAR_MPI2)
 C
-      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or.
-     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+      IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
         WRITE(6,*) ' fatal error in starting a parallel LUCITA /
      & LUCIAREL run; you do not have a MPI-2 library installed'
        CALL Abend2(' error in DIRNOD: missing MPI-2 library functions')
       END IF
+#endif
 C
 C     Start timing.
 C
@@ -1245,6 +1267,11 @@ C
          call quit('ERROR: InteRest lib not available')
 #endif
 #endif /* VAR_MPI2 */
+      ELSE IF (ITASK .EQ. 11) THEN
+C
+C        start GASCIP MPI calculation
+C
+         CALL GASCIP_NODE()
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -1289,17 +1316,14 @@ C
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
-      ICHECK_MPI2 = - 1
-#if defined (VAR_MPI2)
-      ICHECK_MPI2 =   0
-#endif
+#if !defined (VAR_MPI2)
 C
-      IF( (ITASK .eq. 5 .and. ICHECK_MPI2 .lt. 0) .or.
-     &    (ITASK .eq. 6 .and. ICHECK_MPI2 .lt. 0))THEN
+      IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
         WRITE(6,*) ' fatal error in starting a parallel LUCITA /
      & LUCIAREL run; you do not have a MPI-2 library installed'
-       CALL Abend2('error in DIRNOD2: missing MPI-2 library functions')
+       CALL Abend2(' error in DIRNOD2: missing MPI-2 library functions')
       END IF
+#endif
 C
 C
 C     ***************************************************
@@ -1352,13 +1376,18 @@ C        start KR-MCSCF calculation.
 C
          CALL KRMC_NODE_DRIVER()
 #endif /* VAR_MPI2 */
+      ELSE IF (ITASK .EQ. 11) THEN
+C
+C        start GASCIP MPI calculation
+C
+         CALL GASCIP_NODE()
       ELSE
 C
 C        Unknown task. Abort execution.
 C
          WRITE(LUPRI,'(A,I5)')
-     &     '*** ERROR *** DIRNOD: Unknown task ITASK = ',ITASK
-         CALL QUIT(' Unknown task in DIRNOD')
+     &     '*** ERROR *** DIRNOD2: Unknown task ITASK = ',ITASK
+         CALL QUIT(' Unknown task in DIRNOD2')
       END IF
 C
 C     We want the slave program to go until there is nothing
@@ -1391,6 +1420,9 @@ C
 #if defined (VAR_MPI)
 #include "infpar.h"
 C
+
+      IF (NUMNOD .EQ. 0) RETURN   ! MPI version of DIRAC, but no slaves (i.e. sequential)
+
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
          CALL interface_MPI_BCAST(ITASK,1,MPARID,
@@ -1477,10 +1509,10 @@ C since there are some variables with the same name we will call a routine for t
      &                           NKRCCASH,NKRCCGSH,NKRCCSSH,NKRCCFRO,
      &                           NKRCCGSP,MAXCIT_KRCC)
       NGAS_DC= NKRCCGAS
-      MK2REF = NKRCC_MK2REF
-      MK2DEL = NKRCC_MK2DEL
-      MINMK2 = NKRCC_MINMK2
-      MAXMK2 = NKRCC_MAXMK2
+      IOPT_MK2REF = NKRCC_MK2REF
+      IOPT_MK2DEL = NKRCC_MK2DEL
+      IOPT_MINMK2 = NKRCC_MINMK2
+      IOPT_MAXMK2 = NKRCC_MAXMK2
       CALL IZERO(NGSHT,MXGAS)
       DO I = 1,NFSYM
          NISH(I) = NKRCCISH(I)
@@ -1516,7 +1548,7 @@ C IOPT_INTDEF controls the Hamiltonian
       MOPT_MXMICRO   =  0
       MOPT_MXMACRO   = -1
       MOPT_MAXBCK    =  0
-      IOPT_ISTATE    =  1
+      IOPT_STATE     =  0
       IOPT_SYMMETRY  = -1
       IMEMFAC        = 9 !IKRCI_MEMFAC
       JKRRUNTYPE     = 2
@@ -1524,7 +1556,7 @@ C
 C     Set common block DCROPT
 C
       E_LVCORR_MC    = 0.0d0
-      THR_CVEC       = 1.0D-3
+      OPT_THR_CVEC   = 1.0D-3
 
       OPT_CIPROGRAM  = 'KRCC'
       DO I = 1, NFSYM

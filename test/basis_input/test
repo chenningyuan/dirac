@@ -4,15 +4,14 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Atoms and basis sets',
       to_string   = 'Threshold for integrals',
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 
 mol_files = []
 mol_files.append('ch4_temp.mol')
@@ -25,6 +24,6 @@ mol_files.append('ch4_basis_vtz.mol')
 mol_files.append('ch4_multibasis_vtz.mol')
 mol_files.append('ch4_molfbas.mol')
 
-test_run.execute(['ch4.inp'], mol_files, f)
+test.run(['ch4.inp'], mol_files, f)
 
-sys.exit(0)
+sys.exit(test.return_code)

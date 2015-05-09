@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -81,10 +81,16 @@ C     Written by Trond Saue and Hans Joergen Aa. Jensen July 1996
 C     Last revision July 9 1996 - tsaue
 C
 C***********************************************************************
+
+      use dirac_cfg, only: dirac_cfg_scf_calculation
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-C
+
+! we use nopen
+#include "dcbdhf.h"
+
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbxlr.h"
@@ -92,7 +98,11 @@ C
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXLR')
-C
+
+      if (dirac_cfg_scf_calculation .and. nopen > 0) then
+         call quit('ERROR: open-shell SCF response not implemented')
+      end if
+
       NRSPF  = NLRBPT*NBFREQ
       IF(NRSPF.EQ.0) GOTO 10
       IF(XLR_SKIPEE) THEN
@@ -109,9 +119,9 @@ C
       NDAMP = 1
       IF(DMPFRLR.NE.D0) NDAMP = 2
       N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)*NDAMP
-      CALL MEMGET('REAL',KLRF,N2LRF,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ABLRF',KLRF,N2LRF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KLRF),N2LRF)
-      CALL MEMGET('REAL',KCNV,NRSPF,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RCNV',KCNV,NRSPF,WORK,KFREE,LFREE)
 C
       CALL PRPXL1(WORK(KLRF),WORK(KCNV),WORK,KFREE,LFREE)
 C
@@ -142,7 +152,7 @@ C***********************************************************************
       use orbital_rotation_indices
       use dirac_cfg
 
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: pcm_linear_response_initialize
 #endif
 
@@ -193,14 +203,14 @@ C
       CALL SETXLR(WORK,KFREE,LFREE)
 
       IF(XLRANA) THEN
-        CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IORBCLS',KLRO,4*NORBT,WORK,KFREE,LFREE)
         CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
       ELSE
         KLRO = KFREE
       ENDIF
 
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
               call pcm_linear_response_initialize(lupri)
         write(lupri, '(//A/)') 'PCMSolver initialized.'
@@ -246,12 +256,12 @@ C     Dimensions of reduced system
 C
       KXLR = KFREE
       NEVECR = NREDM*NFREQ*NDAMP
-      CALL MEMGET('INTE',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBCVC,NREDM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEVC,NREDM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBPVC,NREDM  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEVALR,NFREQ  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEVECR,NEVECR ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBTYP',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBCVC',KIBCVC,NREDM  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEVC',KIBEVC,NREDM  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBPVC',KIBPVC,NREDM  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EVALR',KEVALR,NFREQ  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EVECR',KEVECR,NEVECR ,WORK,KFREE,LFREE)
 C
 C     Transfer frequencies to EVALR
 C     =============================
@@ -277,7 +287,7 @@ C            loop up, but by placing it here local restrictions
 C            are possible, see e.g. REDPAR below....)
 C
             CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
-     &                  WORK,KFREE,LFREE,IPRXLR)
+     &                  IPRXLR)
             INDBP  = LLBPSU(JOPB+IOPB)
             INDPRB = LLRBPU(INDBP)
             JTIMOP = IPRPTIM(INDPRB)
@@ -292,15 +302,15 @@ C           *** P R O P E R T Y    G R A D I E N T ***
 C           ******************************************
 C
             KGRAD = KFREE
-            CALL MEMGET('REAL',KGPCI,NZCONFQ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KGPOE,NZXOPEQ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KGPOP,NZXOPPQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','GPCI',KGPCI,NZCONFQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','GPOE',KGPOE,NZXOPEQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','GPOP',KGPOP,NZXOPPQ,WORK,KFREE,LFREE)
             IF(NOSPIB) THEN
               LBUF = NOSPIN
               NOSPIN = .TRUE.
             ENDIF
             CALL PAMGRD(INDPRB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
-     &                  JOPSY,WORK(KZCONF),
+     &                  JOPSY,
      &                  get_orbital_rotation_indices_pp(),
      &                  get_orbital_rotation_indices_pn(),
      &                  NZCONF,NZXOPE,NZXOPP,WORK,KFREE,LFREE,IPRXLR)
@@ -327,7 +337,6 @@ C           ====================================
 C
             IF(THRCOM.NE.D0) THEN
               CALL REDPAR(IREDJOB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
-     &                    WORK(KZCONF),
      &                    get_orbital_rotation_indices_pp(),
      &                    get_orbital_rotation_indices_pn(),
      &                    NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
@@ -394,13 +403,14 @@ C***********************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 39,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 41,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -426,7 +436,8 @@ C
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
-     &            '.DAMPIN','.FREQ I','.LAOMOD'/
+     &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
+     &            '.MPOLE '/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -501,6 +512,10 @@ C     Calculation of C6 dispersion coefficient
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
       if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
      &  XLR_SKIPEP = .TRUE.
+#ifdef HAS_PCMSOLVER
+      if(dirac_cfg_pcm) 
+     &  XLR_SKIPEP = .TRUE.
+#endif
       XLR_SKIPEE = .FALSE.
       XLR_LSFG(1)= .TRUE.
       XLR_LSFG(2)= .TRUE.
@@ -535,6 +550,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
   110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -546,7 +562,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39), I
+     &                     31,32,33,34,35,36,37,38,39,40,41), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -564,21 +580,21 @@ C&&&& PRINT:  Print level
     2          CONTINUE
 C&&&& A OPERATOR: Left side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRAPT',IND1OP,LLRAPU,NLRAPT,INDXPR,
      &                        MAXLLR)
                GO TO 100
     3          CONTINUE
 C&&&& B OPERATOR: Right side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRBPT',IND1OP,LLRBPU,NLRBPT,INDXPR,
      &                        MAXLLR)
                GO TO 100
     4          CONTINUE
 C&&&& OPERATOR: Both left/right side operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXLR)
+     &                        IPRXLR)
                   CALL OP1IND('NLRAPT',IND1OP,LLRAPU,NLRAPT,INDXPR,
      &                        MAXLLR)
                   CALL OP1IND('NLRBPT',IND1OP,LLRBPU,NLRBPT,INDXPR,
@@ -803,6 +819,54 @@ C&&& LAOMOD: rearrange LR equations with LAOs, so connection matrices are not ne
                call set_london_keywords('laomod')
 #endif
                GO TO 100
+ 40            CONTINUE
+C&&&& EPOLE : Electric multipoles of order L
+               READ(LUCMD,*) IORDER
+               NDEG=(IORDER+2)*(IORDER+1)/2
+               IF((NLRAPT+NDEG).GT.MAXLLR) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XLRINP: Pointer array LLR',
+     &           'APU out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLLR to ',(NLRAPT+NDEG)
+                 CALL QUIT('XLRINP: MAXLLR out of bounds')
+               ENDIF
+               IF((NLRBPT+NDEG).GT.MAXLLR) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XLRINP: Pointer array LLR',
+     &           'BPU out of bounds for electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLLR to ',(NLRBPT+NDEG)
+                 CALL QUIT('XLRINP: MAXLLR out of bounds')
+               ENDIF
+               CALL DEF_EPOLE(IORDER,LLRAPU(NLRAPT+1),IPRXLR)
+               CALL ICOPY(NDEG,LLRAPU(NLRAPT+1),1,LLRBPU(NLRBPT+1),1)
+               NLRAPT = NLRAPT + NDEG
+               NLRBPT = NLRBPT + NDEG
+               GOTO 100
+ 41            CONTINUE
+C&&&& MPOLE : Magnetic multipoles of order L 
+               READ(LUCMD,*) IORDER
+               NDEG=3*(IORDER+1)*IORDER/2
+               IF((NLRAPT+NDEG).GT.MAXLLR) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XLRINP: Pointer array LLR',
+     &           'APU out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLLR to ',(NLRAPT+NDEG)
+               ENDIF
+               IF((NLRBPT+NDEG).GT.MAXLLR) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XLRINP: Pointer array LLR',
+     &           'BPU out of bounds for magnetic multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLLR to ',(NLRBPT+NDEG)
+               ENDIF
+               CALL DEF_MPOLE(IORDER,LLRAPU(NLRAPT+1),IPRXLR)
+               CALL ICOPY(NDEG,LLRAPU(NLRAPT+1),1,LLRBPU(NLRBPT+1),1)
+               NLRAPT = NLRAPT + NDEG
+               NLRBPT = NLRBPT + NDEG
+               GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -941,6 +1005,13 @@ C
       IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
+#ifdef HAS_PCMSOLVER
+      if(dirac_cfg_pcm) then
+        WRITE(LUPRI,'(A)')
+     &  ' * e-p rotations not allowed by default'//
+     &  ' when using PCM.'
+      endif
+#endif
       IF (.NOT.XLR_SKIPEP) WRITE(LUPRI,'(A)')
      &  ' * e-p rotations are allowed in the linear response function.'
       IF(SPINFR.AND.XLR_TRIPLET) WRITE(LUPRI,'(A)')
@@ -1342,11 +1413,11 @@ C
 C     Get coefficients
 C     ----------------
 C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       LUBUF = 22
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETLRF')
       IF(SPINFR) THEN
-        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
      &              TOTERG,10,WORK,KFREE,LFREE)
       ELSE
@@ -1359,7 +1430,7 @@ C
 C
 C
       IF(XLRANA) THEN
-        CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IORBCL',KLRO,4*NORBT,WORK,KFREE,LFREE)
         CALL DEFORB(WORK(KLRO),NCLS_XLR,3,XLR_INDSTR,
      &              WORK,KFREE,LFREE,IPRXLR)
       ELSE
@@ -1374,10 +1445,13 @@ C
       IF(NZXOPE.GT.0) THEN
         NESIM = NFREQ * NSTAT
         KEE   = KFREE
-        CALL MEMGET('REAL',KGVEC,NZXOPEQ            ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ*NDAMP,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBBUF,NZXOPEQ            ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIVEC,NESIM              ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','GPO'  ,KGVEC,NZXOPEQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','XPO'  ,KXVEC,NZXOPEQ*NFREQ*NDAMP,
+     &                            WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BBUF' ,KBBUF,NZXOPEQ,
+     &                              WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IVECS',KIVEC,NESIM,
+     &                              WORK,KFREE,LFREE)
         IF(XLRANA) THEN
           NI = 0
           NV = 0
@@ -1388,11 +1462,11 @@ C...secondary electron orbitals
             NV = NV + NCLS_XLR(2,3,IFRP)
           ENDDO
           NINDX=MAX(NI,NV,NZXOPE)
-          CALL MEMGET('INTE',KINDX,NINDX,WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KRV,NV,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','INDX',KINDX,NINDX,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IIBF',KII,NI,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IVBF',KIV,NV,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','RIBF',KRI,NI,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','RVBF',KRV,NV,WORK,KFREE,LFREE)
         ELSE
           KINDX= KFREE
           KII  = KFREE
@@ -1424,10 +1498,14 @@ C
       IF(NZXOPP.GT.0) THEN
         NPSIM = NFREQ * NSTAT
         KEP   = KFREE
-        CALL MEMGET('REAL',KXVEC,NZXOPPQ*NFREQ*NDAMP,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGVEC,NZXOPPQ            ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBBUF,NZXOPPQ            ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIVEC,NPSIM              ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','XPO'  ,KXVEC,NZXOPPQ*NFREQ*NDAMP,
+     &                              WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CPO',  KGVEC,NZXOPPQ,
+     &                              WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BBUF' ,KBBUF,NZXOPPQ
+     &                              ,WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IVECS',KIVEC,NPSIM
+     &                              ,WORK,KFREE,LFREE)
         IF(XLRANA) THEN
           NI = 0
           NV = 0
@@ -1438,11 +1516,11 @@ C...secondary positron orbitals
             NV = NV + NCLS_XLR(1,3,IFRP)
           ENDDO
           NINDX=MAX(NI,NV,NZXOPP)
-          CALL MEMGET('INTE',KINDX,NINDX,WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KRV,NV,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','INDX',KINDX,NINDX,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IIBF',KII,NI,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IVBF',KIV,NV,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','RIBF',KRI,NI,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','RVBF',KRV,NV,WORK,KFREE,LFREE)
         ELSE
           KINDX= KFREE
           KII  = KFREE
@@ -1593,7 +1671,6 @@ C
   100 IROUND = IROUND + 1
       CALL DZERO(XPO,NXDIM)
       CALL XRSXV1(ITIM,NBTYP,XPO,EVECR,NFREQ,IBTYP,IBVEC,IVECS,BBUF)
-
 !gosia:
 ! if shielding_rearrange then here form: \kappa = \kappa - T:
 #ifdef MOD_LAO_REARRANGED
@@ -1602,23 +1679,30 @@ C
         call combine_kappa_T(xpo, nlength, nbtyp, rsplab, itim)
       end if
 #endif
-C
-C     Print section
-C     -------------
-C
-      IF(IPRXLR.GE.3) THEN
-        IF(NFREQ.EQ.1) THEN
-          WRITE(LUPRI,'(/1X,A2,A)') BVTYP(ITYP),
-     &   '- part of solution vectors for one frequency:'
-        ELSE
-          WRITE(LUPRI,'(/1X,A2,A,I3,A)') BVTYP(ITYP),
-     &   '- part of solution vectors for',NFREQ,' frequencies:'
-        ENDIF
-CPP.....make space for complex case
-        CALL PRBVEC(LUPRI,XPO,NFREQ,NXPAR)
-        CALL FLSHFO(LUPRI)
-      ENDIF
-C
+
+
+      ! print section
+      if (iprxlr > 2) then
+         do ifreq = 1, nfreq
+            WRITE(LUPRI,'(/1X,A2,A,I3)') BVTYP(ITYP),
+     &     ' part of solution vectors for frequency', ifreq
+            do idamp = 1, ndamp
+               if (ndamp == 2) then
+                  ! we only print this for complex response vectors
+                  if (idamp == 1) then
+                     write(lupri, '(/1x,a)')                            &
+     &   'Contribution to the real part of the complex response vector'
+                  else
+                     write(lupri, '(/1x,a)')                            &
+     &   'Contribution to the imag part of the complex response vector'
+                  end if
+               end if
+               call prbvec(lupri, xpo(1, 1, idamp, ifreq), 1, NXPAR)
+            end do
+         end do
+      end if
+
+
 C     Next form linear response functions
 C     ===================================
 C     (for now we form only combinations between
@@ -1948,6 +2032,7 @@ C
       DIMENSION WORK(*)
       INTEGER   NCLS(2,3,2)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16,PBUF*1
+      integer, allocatable :: norot(:)
 C
       CALL QENTER('ANAXRS')
       KFRSAV = KFREE
@@ -1977,7 +2062,7 @@ C
       JFRP = -1
 C     Set orbital strings and classify orbitals
       CALL OSTRING(INDSTR,SKIPEE,SKIPEP,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KLRO,4*NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IORBCL',KLRO,4*NORBT,WORK,KFREE,LFREE)
       CALL DEFORB(WORK(KLRO),NCLS,3,INDSTR,
      &              WORK,KFREE,LFREE,IPRINT)
       KLOOP=KFREE
@@ -2062,17 +2147,13 @@ C         Generate orbital rotation operator
             IF(TOBE) THEN
               CALL MEMREL('ANAXRS',WORK,KLOOP,KLOOP,KFREE,LFREE)
             ENDIF
-            CALL MEMGET('INTE',KNOROT,NORBT,WORK,KFREE,LFREE)
-            CALL IZERO(WORK(KNOROT),NORBT)
+            allocate(norot(norbt))
+            norot = 0
             GASWF = .FALSE.
-            CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,WORK(KNOROT),
-     &            NZXOPE,NZHOPE,KZXOPE,NZXOPP,KZXOPP,
+            CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,IFRP,NOROT,
+     &            NZXOPE,NZHOPE,NZXOPP,
      &            IPRINT)
-C           No CALL MEMREL here for KNOROT, because
-C           SETXOP defines WORK(KZXOPE) and WORK(KZXOPP) and they must
-C           be preserved!!!
-!           radovan: that's not true anymore, the indices are sitting on
-!                    a module and work array can be reused
+            deallocate(norot)
             JFRP = IFRP
           ENDIF
 C

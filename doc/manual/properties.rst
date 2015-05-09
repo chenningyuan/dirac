@@ -105,7 +105,7 @@ dipole polarizability.
 .VERDET
 -------
 
-Evaluate Verdet constants [Ekstrom2005]_
+Evaluate Verdet constants :cite:`Ekstrom2005`
 (quadratic response) for a dynamic electric field corresponding to Ruby
 laser wavelength of 694 nm and a static magnetic field along the
 propagation direction of the light beam (in this case, the default
@@ -201,7 +201,7 @@ keyword but rather implicitly in the geometry optimization module.
 
 Calculate matrix elements over the nuclear spin-independent
 parity-violating operator, e.g. calculate energy differences between
-enantiomers, see [Laerdahl1999]_ .
+enantiomers, see :cite:`Laerdahl1999` .
 
 .RHONUC
 -------
@@ -214,7 +214,7 @@ Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 -------
 
 Calculate effective electronic density at the
-nucleus(nuclei), [Knecht2011]_.
+nucleus(nuclei), :cite:`Knecht2011`.
 
 Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 

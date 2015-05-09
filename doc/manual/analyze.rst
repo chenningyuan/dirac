@@ -16,14 +16,14 @@ Print vectors. Activates the :ref:`*PRIVEC` subsection.
 
 keyword(MULPOP)
 
-Perform Mulliken population analysis [Mulliken1955]_
+Perform Mulliken population analysis :cite:`Mulliken1955`
 Continues to :ref:`*MULPOP`
 subsection.
 
 
 keyword(PROJECTION)
 
-Perform projection analysis [Faegri2001]_ Activates the :ref:`*POJECTION`
+Perform projection analysis :cite:`Faegri2001` Activates the :ref:`*PROJECTION`
 subsection.
 
 
@@ -35,9 +35,9 @@ Write density to a formatted file in Gaussian cube format. Activates the
 
 keyword(LOCALIZATION)
 
-Localize orbitals using the Pipek-Mezey criterion [Dubillard2006]_ .
+Localize orbitals using the Pipek-Mezey criterion :cite:`Dubillard2006` .
 
 Continues to the activated :ref:`*LOCALIZATION`
-subsection. Note that in the present implementation this only works in
-C\ :sub:`1`\  symmetry.
+subsection. Note that in the present implementation this only works in 
+:math:`C_1` symmetry.
 

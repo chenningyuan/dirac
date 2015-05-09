@@ -5,10 +5,10 @@ star(LUCITA)
 Spin-free relativistic GASCI module written by Jeppe Olsen, adaptation to DIRAC by Timo Fleig, parallelization by Stefan
 Knecht and Hans Joergen Aagaard Jensen.
 
-LUCITA is a string-based Hamiltonian-direct configuration interaction (CI) program, based on the LUCIA code [Olsen1990]_.
+LUCITA is a string-based Hamiltonian-direct configuration interaction (CI) program, based on the LUCIA code :cite:`Olsen1990`.
 It is capable of doing efficient CI computations at arbitrary excitation level, e.g. FCI, SDCI, RASCI, and MRCI using
-general active spaces. The code is interfaced [Fleig2005]_ to molecular integrals obtained in the spin-free Dirac
-formalism and uses non-relativistic point group symmetry. It is implemented as a full parallel version [Knecht2008]_.
+general active spaces. The code is interfaced :cite:`Fleig2005` to molecular integrals obtained in the spin-free Dirac
+formalism and uses non-relativistic point group symmetry. It is implemented as a full parallel version :cite:`Knecht2008`.
 
 A central feature of the program is the Generalized Active Space (GAS) concept, in which the underlying total orbital
 space is subdivided into a basically arbitrary number (save for an upper limit) of subspaces with arbitrary occupation
@@ -132,7 +132,7 @@ example for D:math:`_{2h}`:
 
 keyword(RSTRCI)
 
-Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation):
+Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation; until including DIRAC v13.1):
 
 ::
 
@@ -145,6 +145,20 @@ Restart CI from vector(s) on file LUCVECT resp. LUCVECT.0 (parallel calculation)
 
     .RSTRCI
      0
+
+Convergence threshold for energy (double-precision value):
+
+::
+
+    .CONVER
+     x.xd-0x
+
+*default*: 1.0d-08
+
+::
+
+    .CONVER
+     1.0d-08
 
 **Specific input -- GASCI**
 ===========================

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -174,11 +174,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       IF (IPRTRA.GE.5) THEN
         CALL HEADER('Output from MDINTB routine',-1)
-        write(LUPRI,'(2X,A,I4)') '....Integral CLASS=',ICLASS
-C     Class 1 : (i    j    | k    l   )
-C     Class 2 : (i    j    | kbar lbar)
-C     Class 3 : (i    jbar | k    lbar)
-C     Class 4 : (ibar j    | k    lbar)
+        SELECT CASE (ICLASS)
+         CASE(1); write(LUPRI,'(A)') 'Class 1 : (i    j    | k    l   )'
+         CASE(2); write(LUPRI,'(A)') 'Class 2 : (i    j    | kbar lbar)'
+         CASE(3); write(LUPRI,'(A)') 'Class 3 : (i    jbar | k    lbar)'
+         CASE(4); write(LUPRI,'(A)') 'Class 4 : (ibar j    | k    lbar)'
+         CASE DEFAULT
+            write(LUPRI,'(A,I5)')'WARNING Unknown integral class',ICLASS
+        END SELECT
 C     ...      
       ENDIF
 C
@@ -286,7 +289,7 @@ C     Write out integrals in ASCII format
 C
 C     Write out integrals to output if desired. 
 C   ------------------------------------------------------------------
-      IF (IPRTRA.GE.5) THEN
+      IF (IPRTRA.GE.25) THEN
          WRITE(LUPRI,'(2x,a,3i4)')
      &  'MOLTRA: integrals batch saved;  IKR1,JKR1,NZKL:',
      &   IKR1,JKR1,NZKL
@@ -340,9 +343,12 @@ C
             MKL = - IREPKLB(1,I) - IREPKLB(2,I)
          ENDIF
 !        write(lupri,'(2x,a,2i6)') '(linzero): MIJ, MKL are:', MIJ,MKL
-!        IF (MIJ+MKL.NE.0)
+!        IF (MIJ+MKL/=0)
 !    &   write(lupri,'(2x,a,i6,a,1p,d10.2)')
-!    &   '(linzero): removed integral(',i,')',FMAT(I)
+!    &   '(linzero): removed integral(',iclass,')',FMAT(I)
+!        IF (MIJ+MKL==0)
+!    &   write(lupri,'(2x,a,i6,a,1p,d10.2)')
+!    &   '(linzero): kept integral(',iclass,')',FMAT(I)
          IF (MIJ+MKL.NE.0) FMAT(I) = 0.D0
       ENDDO
 C

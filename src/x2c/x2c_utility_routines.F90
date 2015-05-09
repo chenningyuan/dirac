@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,9 +21,9 @@
 !
 !
 ! module containing the functionality to perform the picture-change
-! transformation of a four-component (effective) one-electron operator 
-! in SA-AO basis to an infinite-order two-component operator 
-! following the X2C formalism. 
+! transformation of a four-component (effective) one-electron operator
+! in SA-AO basis to an infinite-order two-component operator
+! following the X2C formalism.
 !
 ! written by sknecht april 2010
 !
@@ -56,6 +56,7 @@ module x2c_utils
   public make_spinfree_h1_onmo
   public make_two_e_fock_so_exclusive
   public get_2e_fock_matrix_x2c
+  public get_2e_2c_fock_matrix_x2c
   public hello_dirx2c
   public goodbye_dirx2c
 
@@ -82,12 +83,12 @@ contains
                                        ipq_off_in,         &
                                        x2c_file_scr,       &
                                        x2c_file_glb,       &
-                                       print_lvl)   
+                                       print_lvl)
 !**********************************************************************
 !
-!    purpose: construct the picture-change transformation matrix "U" 
+!    purpose: construct the picture-change transformation matrix "U"
 !             in DIRAC-sorted SA-AO basis
-!             using the AO-to-MO transformation matrix V and the 
+!             using the AO-to-MO transformation matrix V and the
 !             pct-matrix Umat_ON in orthonormal MO basis.
 !
 !             equation: U = RKB AOtoMO trafo mat ["SL resorted"]  * Umat_ON
@@ -122,7 +123,7 @@ contains
 
 !      initialize offset for matrix
        ioff_vmat = 1
- 
+
 !      step 1: get transformation matrix V (constructed "on the fly")
 !      ------------------------------------------------------------------------------
 !         out: V -> scr_mat1
@@ -181,7 +182,7 @@ contains
                       scr_mat2,                                 &
                       nbas1_f,                                  &
                       n1esh_f,                                  &
-                      nz)          
+                      nz)
 
 !          pctmt 4c-SA-AO -> 2c-SA-AO    = pctmt (4c-SA-AO -> 2c-ON-RKB)         * V+
 !          xmat                          = scr_mat2                              * scr_mat1
@@ -206,7 +207,7 @@ contains
                       xmat,                                     &
                       nbas1_f,                                  &
                       nbasL_f,                                  &
-                      nz)          
+                      nz)
 
 !          store picture-change transformation matrix in DIRAC-sorted SA-AO basis on global file
            write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
@@ -226,7 +227,7 @@ contains
          ioff_vmat          = ioff_vmat + n1esh_f * nbas1_f * nz
 
        end do
- 
+
   end subroutine construct_pctmat_saao_bas
 
 
@@ -279,7 +280,7 @@ contains
        ioff_aomo_half_t = 1
        ioff_temp_sl_r   = 1
        ioff_ovl         = 1
-                   
+
        do  i = 1, nfsym
 
 !        set dimensions for matrices used in the subroutine
@@ -288,11 +289,11 @@ contains
          n1esh_f  = nesh_dim(i)
 
          if(nesh_dim(i) > 0)then
- 
+
 !          read (task_id < 0) Sao_LL overlap matrix from file (always read, thus mdirac == .false.)
            call get_Sao_LL_mat(scr_mat1(ioff_ovl),.false.,nbas1_f,i,-1)
 
-!          read RKB AOtoMO transformation matrix ["SL resorted"] from file 
+!          read RKB AOtoMO transformation matrix ["SL resorted"] from file
            write(flabel,'(a7,i4,i1)') '4cAOMOr',1,i
            call x2c_read(flabel,scr_mat2(ioff_temp_sl_r),nbas1_f*norb1_f*nzt,x2c_file_scr)
 
@@ -332,7 +333,7 @@ contains
          ioff_aomo_half_t = ioff_aomo_half_t + nbas1_f*n1esh_f*nz
 
        end do
- 
+
   end subroutine construct_saomo_overlap_half_tr
 !**********************************************************************
 
@@ -351,14 +352,14 @@ contains
                                            print_lvl)
 !**********************************************************************
 !
-!    purpose: generic interface to qtrans90 
+!    purpose: generic interface to qtrans90
 !             scrmat2 = scrmat3+ * scrmat1 * scrmat3
 !
 !----------------------------------------------------------------------
      real(8), intent(inout)        :: scrmat1(*)
      real(8), intent(inout)        :: scrmat2(*)
      real(8), intent(inout)        :: scrmat3(*)
-     integer, intent(in)           :: ndim_i 
+     integer, intent(in)           :: ndim_i
      integer, intent(in)           :: ndim_ii
      integer, intent(in)           :: ndim_iii
      integer, intent(in)           :: nz_1
@@ -404,7 +405,7 @@ contains
 !**********************************************************************
 
   subroutine store_aomo_trafo_matrices(mat1,                &
-                                       mat2,                &  
+                                       mat2,                &
                                        mat3,                &
                                        norb_dim,            &
                                        naosh_all,           &
@@ -420,11 +421,11 @@ contains
 !
 !    purpose:
 !       save RKB AO to MO transformation matrices to file
-!         1. in initial implementation SL_TM_4C: 
+!         1. in initial implementation SL_TM_4C:
 !            required in general     ["SL resorted" transformation matrix] {ID == "r"}
-!         2. in initial implementation TMAT4C  : 
+!         2. in initial implementation TMAT4C  :
 !            if(4c Dirac-Fock--> 2c) ["original" transformation matrix]    {ID == "o"}
-!         3. in initial implementation TMAT_LSY: 
+!         3. in initial implementation TMAT_LSY:
 !            if(4c Dirac-Fock--> 2c .and. linear == .true.) [non-linear --> linear symmetry] {ID == "l"}
 !
 !       re-initialize orbital common blocks in dcbdhf.h if (4c Dirac-Fock--> 2c)
@@ -490,13 +491,13 @@ contains
          end if
          ioff_aomo = ioff_aomo + naosh_all(i) * norb_dim(i)*nzt
        end do
-         
+
   end subroutine store_aomo_trafo_matrices
 
 !**********************************************************************
   subroutine x2c_lowd2c(lowd_mat,            &
-                        scr_mat1,            &  
-                        scr_mat2,            &  
+                        scr_mat1,            &
+                        scr_mat2,            &
                         npsh_dim,            &
                         nesh_dim,            &
                         naosh_L,             &
@@ -515,8 +516,8 @@ contains
 !**********************************************************************
 !
 !    purpose:
-!         construct the 2c-Lowdin matrix (only needed in the x2c-mmf approach). 
-!         in case of linear symmetry we transform the 2c-Lowdin matrix 
+!         construct the 2c-Lowdin matrix (only needed in the x2c-mmf approach).
+!         in case of linear symmetry we transform the 2c-Lowdin matrix
 !         by means of the <j_z>_LL eigenvectors.
 !
 !         out:                          regular 2c-LOWDIN matrix on file X2CMAT
@@ -573,17 +574,17 @@ contains
            call dzero(lowd_mat(ilowdmat_tmp+nbasL_f),nbasS_f)
            ilowdmat_tmp = ilowdmat_tmp + nbas1_f
          end do
- 
+
 !        lower triangle
          ilowdmat_tmp   = ilowdmat     + nbas1_f * norb_dim_lwd_L(i)
-         call dzero(lowd_mat(ilowdmat_tmp),norb_dim_lwd_S(i)*nbas1_f) 
+         call dzero(lowd_mat(ilowdmat_tmp),norb_dim_lwd_S(i)*nbas1_f)
 
 !        update offset in LOWDIN matrix
          ilowdmat = ilowdmat + nbas1_f * norb_dim_lwd_all(i)
        end do
 
 !      step 2: reorder the L blocks for nfsym > 1:
-!              L for nfsym==1 followed by L for nfsym==2                        
+!              L for nfsym==1 followed by L for nfsym==2
 !      -------------------------------------------------
        nlowdmat = naosh_all(1) * nesh_dim(1)
        if(nfsym == 2)then
@@ -598,7 +599,7 @@ contains
 !      label code:   ||         | |              ||   |
        write(flabel,'(a7,i4,i1)') '2cLWAOg',1,0
 
-       
+
        call x2c_write(flabel,lowd_mat,nlowdmat,x2c_file_glb)
 
 
@@ -646,7 +647,7 @@ contains
            ilowdmat     = ilowdmat     + naosh_all(i)*nesh_dim(i)
            ilowdmat_tmp = ilowdmat_tmp + nesh_dim(i)**2
          end do
- 
+
 !        store adapted 2c-LOWDIN matrix on file
          write(flabel,'(a7,i4,i1)') '2cLWAOl',1,0
          call x2c_write(flabel,scr_mat2,nlowdmat,x2c_file_glb)
@@ -725,7 +726,7 @@ contains
            do irow=1,ndim_x
              write(prntunit,*) irow, icol, xmat(irow,icol)
            enddo
-         enddo  
+         enddo
 
   end subroutine print_x2cmtx
 
@@ -736,13 +737,14 @@ contains
                             ham_lvl)
 !**********************************************************************
 !
-!    purpose: read 2c-Hamiltonian integrals from file X2CMAT calculated 
-!             within the X2C module. 
-!             The parameter "ham_lvl" points to the integrals type, 
-!             i.e. what kind of exact-two-component Hamiltonian will be read 
+!    purpose: read 2c-Hamiltonian integrals from file X2CMAT calculated
+!             within the X2C module.
+!             The parameter "ham_lvl" points to the integrals type,
+!             i.e. what kind of exact-two-component Hamiltonian will be read
 !             from file.
 !
 !    ham_lvl  == 1: oo-order 2c-Hamiltonian without AMFI contributions
+!    ham_lvl  ==-2: mmf-X2C
 !   |ham_lvl| == 3: oo-order 2c-Hamiltonian with AMFI (old == -3 or new == +3) contributions
 !
 !**********************************************************************
@@ -759,6 +761,7 @@ contains
      character (len=12)       :: flabel
 !**********************************************************************
 
+       if(ham_lvl == -2) return
        abs_ham_lvl = abs(ham_lvl)
        if(abs_ham_lvl <= 0 .or. abs_ham_lvl > 4)           &
          call quit('*** error in read_1fock_x2c: invalid pointer to Hamiltonian integral type. ***')
@@ -770,13 +773,13 @@ contains
        j = 0
        if(abs_ham_lvl <= 2)then
          write(flabel,'(a7,i4,i1)') 'h12cAOn',1,i
-       else 
+       else
          write(flabel,'(a7,i4,i1)') 'h12cAOA',1,i
        end if
 
 !      step 2: read selected integrals from file X2CMAT
 !      ------------------------------------------------
- 
+
        file_unit = -1
        inquire(file='X2CMAT',opened=isopen,number=file_unit)
 
@@ -790,7 +793,7 @@ contains
        call x2c_read(flabel,xmat,ndim_tot * nz,file_unit)
 
        close(file_unit,status='keep')
- 
+
   end subroutine read_1fock_x2c
 
 !**********************************************************************
@@ -799,9 +802,9 @@ contains
                                       print_lvl)
 !**********************************************************************
 !
-!    purpose: read the 4c-Fock operator matrix elements (in ON-MO basis) 
-!             from file op_mat_on_file within the X2C module 
-!             if the basic and/or the defining h1 matrix 
+!    purpose: read the 4c-Fock operator matrix elements (in ON-MO basis)
+!             from file op_mat_on_file within the X2C module
+!             if the basic and/or the defining h1 matrix
 !             is the 4c-Fock operator (controlled by defining_h1mat == 2).
 !
 !**********************************************************************
@@ -812,6 +815,7 @@ contains
 #include "dcbdhf.h"
 !----------------------------------------------------------------------
      integer                          :: real_bytes    = 8
+     integer                          :: i
      integer                          :: record_number
      integer                          :: file_unit
      logical                          :: does_exist
@@ -863,11 +867,28 @@ contains
 
        else ! end of DEBUG ONLY OPTION!
 
+         !> read and dump the F1 Fock matrix in AO basis to file (if needed later)
+         file_unit = 99
+         open(file_unit,file='DFFCK1',status='old',form='unformatted',access='sequential',action='read')
+         call read_fock_matrices_saao_basis_x2c(xmat,                       &
+                                                nr_ao_total_x2c**2*nr_quat, &
+                                                1,                          &
+                                                file_unit,                  &
+                                                print_lvl)
+
+         open(81,file='4cf1AO',status='replace',form='unformatted',         &
+               access='sequential',action='write',position='rewind')
+         write(81) (xmat(i),i=1,nr_ao_total_x2c**2*nr_quat)
+         close(81,status="keep")
+
+         close(file_unit, status='keep')
+         call dzero(xmat,nr_ao_total_x2c**2*nr_quat)
+
 !      step 1: inquire file and set record number
 !      ------------------------------------------
        inquire(file=op_mat_on_file,exist=does_exist)
 
-       if(.not.does_exist) & 
+       if(.not.does_exist) &
          call quit('*** error in read_4cfock_operator_x2c: file with 4c-fock matrix does not exist.***')
 
 !      open file
@@ -888,7 +909,7 @@ contains
 
        close(file_unit,status='keep')
        end if
- 
+
   end subroutine read_4cfock_operator_x2c
 
 !**********************************************************************
@@ -902,9 +923,9 @@ contains
                                               )
 !**********************************************************************
 !
-!    purpose: read the 4c-Fock operator matrix elements (in SA-AO basis) 
-!             from file fh within the X2C module 
-!             if the basic and/or the defining h1 matrix 
+!    purpose: read the 4c-Fock operator matrix elements (in SA-AO basis)
+!             from file fh within the X2C module
+!             if the basic and/or the defining h1 matrix
 !             is the 4c-Fock operator (controlled by defining_h1mat == 2).
 !
 !**********************************************************************
@@ -969,9 +990,9 @@ contains
                                                 print_lvl)
 !**********************************************************************
 !
-!    purpose: write the 2c-Fock operator matrix elements (in SA-AO basis) 
-!             to file fh within the X2C module 
-!             if the basic and/or the defining h1 matrix 
+!    purpose: write the 2c-Fock operator matrix elements (in SA-AO basis)
+!             to file fh within the X2C module
+!             if the basic and/or the defining h1 matrix
 !             is the 4c-Fock operator (controlled by defining_h1mat == 2).
 !
 !**********************************************************************
@@ -1030,7 +1051,7 @@ contains
      integer                  :: file_unit
      character (len=12)       :: flabel
 !**********************************************************************
- 
+
        inquire(file='X2C_Sao_LL_scr', number=file_unit)
 
        ndim_mat_tmp = ndim_mat
@@ -1107,7 +1128,7 @@ contains
      integer                :: norb1_f
      integer                :: nbas1_f
 !**********************************************************************
- 
+
        allocate(saoao(nzt*naosh_ls**2))
        saoao(1:nzt*naosh_ls**2) = 0.0d0
 
@@ -1162,7 +1183,7 @@ contains
                       saomo(iaomo),                             &
                       nbas1_f,                                  &
                       norb1_f,                                  &
-                      nzt)         
+                      nzt)
 
          end if
 
@@ -1198,7 +1219,7 @@ contains
      integer                  :: i
      integer                  :: ioff_orb
 !**********************************************************************
- 
+
 !     initialize orbital subblock arrays norb_sub(ib,ifrp,0) and id_sub_bl(ib,ifrp)
       call inisub
 
@@ -1212,7 +1233,7 @@ contains
 !**********************************************************************
 
   subroutine make_spinfree_h1_onmo(                            &
-                                   h1_onmo_bas,                & 
+                                   h1_onmo_bas,                &
                                    lrow,                       &
                                    lcol,                       &
                                    nrow,                       &
@@ -1239,7 +1260,7 @@ contains
 !----------------------------------------------------------------------
      integer                  :: i, j, k
 !**********************************************************************
- 
+
 !      part 1: nz = 1
        do i = 1, nrow
          do j = 1, ncol
@@ -1262,7 +1283,7 @@ contains
 !**********************************************************************
 
   subroutine make_two_e_fock_so_exclusive(                            &
-                                          Gmat,                       & 
+                                          Gmat,                       &
                                           nrow,                       &
                                           ncol,                       &
                                           nz                          &
@@ -1282,11 +1303,11 @@ contains
 
 !      check dimensionalities
        if(nz /= 4) stop '2-el Fock matrix is not in quaternion format'
- 
+
 !      take out scalar parts
        do j=1,ncol
          do i=1,nrow
-           !> quaternion(0) 
+           !> quaternion(0)
            Gmat(i     ,j     ,1) = 0.0d0                 ! ll
            Gmat(i     ,j     ,2) = 0.0d0                 ! ll
            Gmat(i     ,j     ,3) = 0.0d0                 ! ll
@@ -1298,19 +1319,19 @@ contains
 !**********************************************************************
 
   subroutine get_2e_fock_matrix_x2c(                            &
-                                    Gmat,                       & 
-                                    nrows,                      & 
-                                    ncols,                      & 
-                                    nz,                         & 
-                                    nr_2e_fock_matrices,        & 
-                                    intflg,                     & 
-                                    is_len_wrk,                 & 
-                                    print_lvl,                  & 
-                                    aoc_factors                 & 
+                                    Gmat,                       &
+                                    nrows,                      &
+                                    ncols,                      &
+                                    nz,                         &
+                                    nr_2e_fock_matrices,        &
+                                    intflg,                     &
+                                    is_len_wrk,                 &
+                                    print_lvl,                  &
+                                    aoc_factors                 &
                                    )
 !**********************************************************************
 !
-!    purpose: get 2e-fock matrix with integral contributions according to 
+!    purpose: get 2e-fock matrix with integral contributions according to
 !             intflg (bit packed integer):
 !             (LL|LL)                     == 1
 !                       (SS|LL)           == 2
@@ -1358,7 +1379,7 @@ contains
      call reacmo_no_work(lucoef,'DFCOEF',cmo,xx,i,j,2)
      close(lucoef,status='keep')
 
-!    generate density matri(x/ces) (denmat is a general driver routine from Dirac 
+!    generate density matri(x/ces) (denmat is a general driver routine from Dirac
 !    computing all inactive and active density matrices)
      call denmat(dmat,cmo,print_lvl)
      deallocate(cmo)
@@ -1368,7 +1389,7 @@ contains
      allocate(ihrmop(nr_2e_fock_matrices))
 
      ihrmop = 0
-     ifckop = 0 
+     ifckop = 0
      isymop = 0
 
      do i = 1,nr_2e_fock_matrices
@@ -1391,7 +1412,7 @@ contains
      call SetIntTaskArrayDimension(npos,parcal)
      allocate(pos(npos))
 
-     local_lwork = is_len_wrk - 3*nrows*ncols*nz*nr_2e_fock_matrices 
+     local_lwork = is_len_wrk - 3*nrows*ncols*nz*nr_2e_fock_matrices
      allocate(work(local_lwork))
 
 !    2e-fock matrices (Dirac driver routine)
@@ -1415,6 +1436,97 @@ contains
      deallocate(dmat)
 
   end subroutine get_2e_fock_matrix_x2c
+!**********************************************************************
+
+  subroutine get_2e_2c_fock_matrix_x2c(                            &
+                                       Gmat,                       &
+                                       Dmat,                       &
+                                       nrows,                      &
+                                       ncols,                      &
+                                       nz,                         &
+                                       nr_2e_fock_matrices,        &
+                                       is_len_wrk,                 &
+                                       print_lvl,                  &
+                                       aoc_factors                 &
+                                       )
+!**********************************************************************
+!
+!    purpose: get 2e-fock matrix
+!
+!**********************************************************************
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
+     real(8), intent(inout)   :: Gmat(nrows,ncols,nz,nr_2e_fock_matrices)
+     real(8), intent(inout)   :: Dmat(nrows,ncols,nz,nr_2e_fock_matrices)
+     integer, intent(in)      :: nrows
+     integer, intent(in)      :: ncols
+     integer, intent(in)      :: nz
+     integer, intent(in)      :: nr_2e_fock_matrices
+     integer, intent(in)      :: is_len_wrk
+     integer, intent(in)      :: print_lvl
+     real(8), intent(in)      :: aoc_factors(*)
+!----------------------------------------------------------------------
+     integer                  :: i, npos, local_lwork, lucoef
+     integer, parameter       :: intflg = 1
+     real(8)                  :: xx, j
+     real(8), allocatable     :: work(:)
+     integer, allocatable     :: isymop(:), ifckop(:), ihrmop(:), pos(:)
+     logical, allocatable     :: saveflags(:)
+     logical                  :: parcal
+!**********************************************************************
+
+     allocate(isymop(nr_2e_fock_matrices))
+     allocate(ifckop(nr_2e_fock_matrices))
+     allocate(ihrmop(nr_2e_fock_matrices))
+
+     ihrmop = 0
+     ifckop = 0
+     isymop = 0
+
+     do i = 1,nr_2e_fock_matrices
+!      totally symmetric operator
+       isymop(i) = 1
+!      fock matrix type
+       ifckop(i) = 1
+!      hermitian operator
+       ihrmop(i) = 1
+     end do
+
+     allocate(saveflags(4))
+
+     call SaveTaskDistribFlags(saveflags)
+     call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+     parcal = .false.
+#ifdef VAR_MPI
+     call mpi_initialized(parcal,i)
+#endif
+     call SetIntTaskArrayDimension(npos,parcal)
+     allocate(pos(npos))
+
+     local_lwork = is_len_wrk - 3*nrows*ncols*nz*nr_2e_fock_matrices
+     allocate(work(local_lwork))
+
+!    2e-fock matrices (Dirac driver routine)
+     call twofck(isymop,ihrmop,ifckop,Gmat,Dmat,nr_2e_fock_matrices,   &
+                 pos,intflg,print_lvl,work,local_lwork)
+
+!     accumulate active fock matrices (add to inactive fock matrix)
+      if(nr_2e_fock_matrices > 1)then
+        do i = 1, nr_2e_fock_matrices-1
+          call daxpy(nrows*ncols*nz,aoc_factors(i),Gmat(1,1,1,i+1),1,Gmat(1,1,1,1),1)
+        end do
+     end if
+
+     deallocate(work)
+     if(parcal) call SetTaskDistribFlags(saveflags)
+     deallocate(pos)
+     deallocate(saveflags)
+     deallocate(ihrmop)
+     deallocate(ifckop)
+     deallocate(isymop)
+
+  end subroutine get_2e_2c_fock_matrix_x2c
 !**********************************************************************
 
   subroutine hello_dirx2c()

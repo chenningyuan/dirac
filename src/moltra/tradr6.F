@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -121,12 +121,12 @@ C
       ENDDO
 
       Allocate (LSORT(3,NFPCK12T,0:7),stat=istat)
-	  If (istat.ne.0) then
-	    Write(LUPRI,*) 
+      If (istat.ne.0) then
+         Write(LUPRI,*) 
      &  'Integer allocation LSORT(3,NFPCK12T,0:7) failed, where'//
-     & 	' NFPCK12T=',NFPCK12T
-		call quit('Integer allocation LSORT(3,NFPCK12T,0:7) failed')
-	  endif
+     &       ' NFPCK12T=',NFPCK12T
+         call quit('Integer allocation LSORT(3,NFPCK12T,0:7) failed')
+      endif
       CALL DEFINE_SORT (NSTR,NSTR1T,NSTR2T,TRIAN,MEM,KL_IN_BUF,
      &                  LSORT,IPRINT)
 C
@@ -159,27 +159,27 @@ C
 C     Make index arrays to translate pair index to individual indices
 C
       Allocate (INDXKR12(NFPCK12T,2),stat=istat)
-	  If (istat.ne.0) then
-	    Write(LUPRI,*) 
-     &  'Integer allocation INDXKR12(NFPCK12T,2) failed, where'//
-     & 	' NFPCK12T=',NFPCK12T
-		call quit('Integer allocation INDXKR12(NFPCK12T,2) failed!')
-	  endif
+      If (istat.ne.0) then
+          Write(LUPRI,*) 
+     &    'Integer allocation INDXKR12(NFPCK12T,2) failed, where'//
+     &   ' NFPCK12T=',NFPCK12T
+          call quit('Integer allocation INDXKR12(NFPCK12T,2) failed!')
+      endif
       Allocate (INDXB12 (NFPCK12T,2),stat=istat)
-	  If (istat.ne.0) then
-	    Write(LUPRI,*) 
+      If (istat.ne.0) then
+        Write(LUPRI,*) 
      &  'Integer allocation INDXB12(NFPCK12T,2) failed, where'//
-     & 	' NFPCK12T=',NFPCK12T
-		call quit('Integer allocation INDXB12(NFPCK12T,2) failed!')
-	  endif	
+     &     ' NFPCK12T=',NFPCK12T
+        call quit('Integer allocation INDXB12(NFPCK12T,2) failed!')
+      endif
       Allocate (INDXB34 (NFPCK34T,2),stat=istat)
-	  If (istat.ne.0) then
-	    Write(LUPRI,*) 
+      If (istat.ne.0) then
+        Write(LUPRI,*) 
      &  'Integer allocation INDXB34(NFPCK12T,2) failed, where'//
-     & 	' NFPCK12T=',NFPCK12T
-		call quit('Integer allocation INDXB34(NFPCK12T,2) failed!')
-	  endif
-	  
+     &     ' NFPCK12T=',NFPCK12T
+        call quit('Integer allocation INDXB34(NFPCK12T,2) failed!')
+      endif
+
       CALL MKINDXKR (NSTR,.FALSE.,INDXKR12)
  
 !     FIXME: out-of-bounds access possible when no inversion symmetry present
@@ -242,11 +242,13 @@ C     ST4SCR, but this would create a conflict with the other transformation sch
 C
 #if defined (VAR_MPI)
 CSK   ... safe implementation
-      ILEN_STAT = 8
-      CALL DZERO(XINTSTAT,ILEN_STAT)
-      CALL DCOPY(ILEN_STAT,DINTSKP,1,XINTSTAT,1)
-      call interface_mpi_reduce_r1_work_f77(XINTSTAT,DINTSKP,ILEN_STAT,
-     &                          op_MPI_SUM,MPARID,global_communicator)
+      IF (PARCAL) THEN
+         ILEN_STAT = 8
+         CALL DZERO(XINTSTAT,ILEN_STAT)
+         CALL DCOPY(ILEN_STAT,DINTSKP,1,XINTSTAT,1)
+         call interface_mpi_reduce_r1_work_f77(XINTSTAT,DINTSKP,
+     &           ILEN_STAT,op_MPI_SUM,MPARID,global_communicator)
+      END IF
 #endif
       IF(SCRTRA.GT.D0.AND.MYTID.EQ.0) CALL ST4SCR(DINTSKP)
 C
@@ -317,15 +319,17 @@ C***********************************************************************
       DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
 C
       Allocate (RGBUF(MEM),stat=istat)
-	  If (istat.ne.0) then
-	   Write(LUPRI,*) "Real*8 allocation of RGBUF(MEM) failed,MEM=",MEM
-	   Call Quit('Real*8 allocation of RGBUF(MEM) failed')
-	  EndIf
+      If (istat.ne.0) then
+         Write(LUPRI,*)
+     &      "Real*8 allocation of RGBUF(MEM) failed,MEM=",MEM
+         Call Quit('Real*8 allocation of RGBUF(MEM) failed')
+      EndIf
       Allocate (IGBUF(2,MEM),stat=istat)
-	  If (istat.ne.0) then
-	   Write(LUPRI,*) "Integer allocation of IGBUF(MEM) failed,MEM=",MEM
-	   Call Quit('Integer allocation of IGBUF(MEM) failed')
-	  EndIf	  
+      If (istat.ne.0) then
+         Write(LUPRI,*)
+     &      "Integer allocation of IGBUF(MEM) failed,MEM=",MEM
+         Call Quit('Integer allocation of IGBUF(MEM) failed')
+      EndIf
       CALL GETTIM(CPUBEF,WALLBEF)
       DO IC = 1, 2
 CLV:Gaunt       DO IC = 1, 3
@@ -499,7 +503,7 @@ C
               IF (ITEST .EQ. 0) THEN
 C                ... slave wants new set of A,B shells
                  CALL GETTIM(CPUST,WALLST)
-                 IF (IPRINT .GE. 3) THEN
+                 IF (IPRINT .GE. 1) THEN
                     WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)') 
      &                 '- Sending shells (',ISHLA,',',ISHLB,
      &                 '-',IBEND,') to node',NWHO,

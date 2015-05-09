@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -124,6 +124,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -525,6 +526,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',ERR=910,END=920) WORD
+      CALL UPCASE(WORD)
       NEWDEF = (WORD .EQ. '**MOLTR')
       IF (NEWDEF) THEN
          GO TO 930
@@ -544,6 +546,7 @@ C         if reading input from a terminal
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1170,6 +1173,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
   110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -1196,7 +1200,7 @@ C&&&& PRINT:  Print level
     2          CONTINUE
 C&&&& OPERATOR: Define operator
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRTRP)
+     &                        IPRTRP)
                   CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,
      &                        MAXTRP)
                   PRPTRA = .TRUE.
@@ -1339,6 +1343,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

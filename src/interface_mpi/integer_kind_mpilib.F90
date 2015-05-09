@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -39,5 +39,10 @@ module integer_kind_mpilib
   integer, parameter, public :: integer_kind        = 4
 #endif
   integer, public            :: integer_kind_in_mpi = 4
+
+!
+! next variable is here so it is available both in f77 and f90 interface routines /hjaaj
+!
+  logical, public            :: MPI_INIT_called     = .false.
 
 end module integer_kind_mpilib

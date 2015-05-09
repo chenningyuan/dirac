@@ -28,17 +28,11 @@ CLV : Kept the old code, we may consider calling always the f90 implementation..
       CDATE  = FFDATE(9:10)//FFDATE(5:7)//FFDATE(23:24)//' '
       CTIME  = FFDATE(12:19)
 #else
-#if defined (SYS_IBM)
-      CHARACTER DAOFWK*9
-      CALL DATE(DAOFWK,CDATE)
-      CALL TIME(CTIME)
-#else
 C
 C     LV : Use fortran90 implementation
       CALL DATE_AND_TIME(date_f90,time_f90,zone_f90,values)
       CDATE = DATE_F90(1:8)
       CTIME = TIME_F90(1:2)//':'//TIME_F90(3:4)//':'//TIME_F90(5:6)
-#endif
 #endif
 #endif
       RETURN
@@ -47,167 +41,17 @@ C  /* Deck gettim */
       SUBROUTINE GETTIM(TIMCPU,TIMWAL)
 C
 C Written 18-Dec-1984 Hans Joergen Aa. Jensen
+C Rewrite Feb 6 2014 Trond Saue
 C
 C Return elapsed CPU time and elapsed real time.
 C
-#include "implicit.h"
-C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C...  Cray unicos timing code
-      REAL    TCPU0, TWALL0
-      LOGICAL FIRST
-      PARAMETER ( DP001 = 0.001 )
-      SAVE TCPU0, TWALL0, FIRST
-      DATA FIRST /.TRUE./
-C
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-#if defined (SYS_CRAY)
-         TCPU0  = SECOND()
-#else
-         TCPU0 = TSECND()
-#endif
-         TWALL0 = TIMEF()
-      ENDIF
-#if defined (SYS_CRAY)
-      TIMCPU = SECOND() - TCPU0
-#else
-      TIMCPU = TSECND() - TCPU0
-#endif
-      TIMWAL = DP001 * ( TIMEF() - TWALL0 )
-#endif
-#if defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_SUN) \
- || defined (SYS_DEC)  || defined (SYS_LINUX) || defined (SYS_SX) \
- || defined (SYS_AIX)
-#if defined (SYS_IRIX) || defined (SYS_SUN)  || defined (SYS_SUN) \
- || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_AIX)
-C...  SGI IRIX code
-C      external time
-      DOUBLE PRECISION TIMCPU, TIMWAL
-      EXTERNAL TIME
-C     IRIX: otherwise "subroutine time", an intrinsic fu. will be used
-#else
-C...  HP-UX code
-#endif
-C      integer*4 time
-C      real*4  etime, tarray(2)
-C      logical first
-C      save    first,iwall0
-C      data    first /.true./
-C
-      INTEGER*4 TIME
-      REAL*4 ETIME, TARRAY(2)
-      LOGICAL FIRST
-      SAVE    FIRST,IWALL0
-      DATA    FIRST /.TRUE./
-C
-C      if (first) then
-C         first = .false.
-C         iwall0 = time()
-C      end if
-C      write(mydebugfile,*) 'after if'
-C      TIMCPU = etime(tarray)
-C      write(mydebugfile,*) 'TIMCPU : ', TIMCPU
-C      itimwl = time() - iwall0
-C      TIMWAL = itimwl
-C      write(mydebugfile,*) 'TIMWAL : ', TIMWAL
-C      close(mydebugfile)
-C
-#ifdef VAR_EKO
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-      END IF
-      TIMCPU = ETIME(TARRAY)
-      TIMWAL = 0D0
-#else
-      IF (FIRST) THEN
-         FIRST = .FALSE.
-         IWALL0 = TIME()
-      END IF
-      TIMCPU = ETIME(TARRAY)
-      ITIMWL = TIME() - IWALL0
-      TIMWAL = ITIMWL
-#endif
-#endif
-#if defined (SYS_IBM)
-      LOGICAL FIRST
-      SAVE    FIRST
-      DATA    FIRST /.TRUE./
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-         CALL SETTIM
-         TIMCPU = 0.0
-         TIMWAL = 0.0
-      ELSE
-         CALL TIMING(CPUA,CPUE,TIOA,TIOE)
-         TIMCPU = CPUA
-         TIMWAL = TIOA
-      END IF
-#endif
-#if !defined (SYS_VAX)    && !defined (SYS_CRAY) && !defined (SYS_ALLIANT) \
- && !defined (SYS_CONVEX) && !defined (SYS_IBM)  && !defined (SYS_AIX) \
- && !defined (SYS_HPUX)   && !defined (SYS_IRIX) && !defined (SYS_PARAGON) \
- && !defined (SYS_T3D)    && !defined (SYS_SUN)  && !defined (SYS_LINUX) \
- && !defined (SYS_DEC)    && !defined (SYS_SX)
-      PARAMETER (D0 = 0.0D0)
-      TIMCPU = SECOND()
-C insert appropriate routine to get elapsed real time (wall time)
-C here
-      TIMWAL = D0
-#endif
-C
-      RETURN
-      END
-C  /* Deck settim */
-#if defined (SYS_IBM)
-      SUBROUTINE SETTIM
-C
-C IBM timing routine 24-Jun-1988 hjaaj
-C (emulating Lund IBM timing routines)
-C
-      REAL*4 ECPU, ETIME, ETCPU
-      REAL*4 SCPU, STIME, STCPU
-      REAL*4 PCPU, PTIME, PTCPU
-      REAL*8 CPUE, CPUA, TIOE, TIOA
-      CHARACTER*23 DATTIM
-      SAVE   SCPU, STIME, STCPU
-      SAVE   PCPU, PTIME, PTCPU
-C
-      CALL DATETM(DATTIM,SCPU,STIME,STCPU)
-      PCPU  = SCPU
-      PTIME = STIME
-      PTCPU = STCPU
-      RETURN
-C
-C     ----- entry timing -----
-C
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      CALL DATETM(DATTIM,ECPU,ETIME,ETCPU)
-      CPUA   = ETCPU - STCPU
-      CPUE   = ETCPU - PTCPU
-      PTCPU  = ETCPU
-      TIOA   = ETIME - STIME
-      TIOE   = ETIME - PTIME
-      PTIME  = ETIME
-C
-      RETURN
-      END
-#endif
-#if !defined (VAR_MOTECC) && !defined (SYS_IBM)
-      SUBROUTINE SETTIM()
-#include "implicit.h"
-      PARAMETER ( D0 = 0.0D0 )
-      PRINT *,'DUMMY SETTIM called'
-      RETURN
-      ENTRY TIMING(CPUA,CPUE,TIOA,TIOE)
-      CPUA = D0
-      CPUE = D0
-      TIOA = D0
-      TIOE = D0
-      PRINT *,'DUMMY TIMING called'
-      RETURN
-      END
-#endif
+      real(8) :: timcpu,timwal
+      integer :: clock_count, clock_rate, clock_max
+      call cpu_time (timcpu)
+      call system_clock ( clock_count, clock_rate, clock_max )
+      timwal = real ( clock_count ) / real ( clock_rate )
+      return
+      end
 C  /* Deck timtxt */
       SUBROUTINE TIMTXT(TEXT,TIMUSD,LUPRIN)
 C
@@ -263,10 +107,10 @@ C
 #include "implicit.h"
       CHARACTER*(*) TEXT
 C
-#if defined (SYS_IBM)
-      CHARACTER CDATE*8,CTIME*8,DAOFWK*9
-#endif
-#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
+#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) \
+   ||defined (SYS_CONVEX) || defined (SYS_DEC) || defined (SYS_IRIX) \
+   || defined (SYS_PARAGON) || defined (SYS_SUN) || defined (SYS_SX) \
+   || defined (SYS_LINUX) || defined (SYS_WINDOWS) || defined (SYS_DARWIN)
       CHARACTER*(24) FDATE
       CHARACTER*(40) HSTNAM
 #endif
@@ -277,12 +121,6 @@ C
       ELSE
          WRITE (LUPRIN,'()')
       END IF
-#if defined (SYS_IBM)
-      CALL DATE(DAOFWK,CDATE)
-      CALL TIME(CTIME)
-      WRITE (LUPRIN,'(T6,A,A8,1X,A8)')
-     *   'Date and time (IBM) : ',CDATE,CTIME
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       CDATE = DATE()
       CTIME = CLOCK()
@@ -304,29 +142,35 @@ C
 #if defined (SYS_LINUX)
       WRITE (LUPRIN,'(T6,2A)') 'Date and time (Linux)  : ',FDATE()
 #endif
-#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX)
+#if defined (SYS_DARWIN)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Mac OSX): ',FDATE()
+#endif
+#if defined (SYS_WINDOWS)
+      WRITE (LUPRIN,'(T6,2A)') 'Date and time (Windows): ',FDATE()
+#endif
+#if defined (SYS_AIX)
+      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',FDATE()
+#endif
+#if defined (SYS_UNIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
+   || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) \
+   || defined (SYS_SUN) || defined (SYS_SX) || defined (SYS_LINUX) \
+   || defined (SYS_WINDOWS) || defined (SYS_AIX) || defined(SYS_DARWIN)
 #ifndef VAR_EKO
-C
-C     CALL HOSTNM(HSTNAM)
-C
+C     first try to get hostname from environment variable
       CALL GETENV('HOSTNAME',HSTNAM)
+C     if it is not defined try to get hostname using intrinsic 
+      if (HSTNAM=="") CALL HOSTNM(HSTNAM)
+C     if it is empty then hostname is not found
       if (HSTNAM=="") HSTNAM="not found"
+C     930414-hjaaj: apparent error IBMs xlf library routines:
+C     when 'T6' then column 1-5 not blanked but contains text
+C     from a previous print statement!
+#if defined (SYS_AIX)
+      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
+#else
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
 #endif
-#if defined (SYS_AIX)
-!C 930414-hjaaj: apparent error IBM's xlf library routines:
-!C    when 'T6' then column 1-5 not blanked but contains text
-!C    from a previous print statement!
-!C     AIX XL FORTRAN version 2.3+
-      WRITE (LUPRIN,'(2A)') '     Date and time (IBM-AIX): ',fdate()
-C     WRITE (LUPRIN,'(T6,2A)') 'Date and time (IBM-AIX): ',fdate_()
-C     CALL hostnm_(HSTNAM)
-      CALL hostnm(HSTNAM)
-      if (HSTNAM=="") HSTNAM="not found"
-      WRITE (LUPRIN,'(2A)') '     Host name              : ',HSTNAM
-C     WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
-C
       RETURN
       END

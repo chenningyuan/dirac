@@ -2,6 +2,7 @@
 !     PROPERTIES:
 !
 !       IPRPTYP  - indicates kind of property operator
+!         0. FOCKMAT       * Fock-matrix
 !         1. P             * scalar operator
 !         2. [alpha_x]p    * x-component of alpha times scalar operator
 !         3. [alpha_y]p    * y-component of alpha times scalar operator

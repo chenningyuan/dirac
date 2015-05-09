@@ -52,6 +52,7 @@
 !     M = I_4,iA_z,iA_y,iA_x
 !
 !     JM4REP(0:16) - bosonirrep of matrix operator
+!     JM4TIM(0:16) - tmie reversal symmetry of matrix operator
 !     JM4POS(0:16) - quaternionic position of matrix operator 
 !                   (1,2(i),3(j),4(k))
 !
@@ -62,8 +63,8 @@
 !     JCOM  - coefficient of component
 !
       INTEGER MCMP(NOPTYP), JM4(3,NOPTYP), JCOM(3,NOPTYP),              &
-     &        JM4REP(0:NMATTYP),JM4POS(0:NMATTYP)
+     &        JM4REP(0:NMATTYP),JM4POS(0:NMATTYP),JM4TIM(0:NMATTYP)
       CHARACTER*4 M4COMB
-      COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS
+      COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4TIM
       COMMON /ONECMB/ M4COMB(0:NMATTYP)
 ! -- end of dgroup.h --

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -266,7 +266,7 @@ C         Initialize configurational and orbital parameters
 C         =================================================
 C
           CALL XRSPAR(XPP_INDSTR,XPP_SKIPEE,XPP_SKIPEP,
-     &                WORK,KFREE,LFREE,IPRXPP)
+     &                IPRXPP)
 C
 C         Transfer number of excitations for this symmetry to dcbxrs.h
 C         (NFREQ is used for allocations and loops)
@@ -459,6 +459,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
   110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -493,7 +494,7 @@ C&&&& ANALYZe: Analyze individual contributions to repsonse functions
     4          CONTINUE
 C&&&& OPERATOR: operator of transition moment
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPRXPP)
+     &                        IPRXPP)
                   CALL OP1IND('NPPAPT',IND1OP,LPPAPU,NPPAPT,INDXPR,
      &                        MAXLPP)
                GO TO 100
@@ -555,7 +556,8 @@ C&&&& MPOLE : Magnetic multipoles of order L
      &           'APU out of bounds for magnetic multipole of order ',
      &           IORDER
                  WRITE(LUPRI,'(A,I5)') 
-     &           'Increase MAXEXP to ',(NPPAPT+NDEG)
+     &           'Increase MAXLPP to ',(NPPAPT+NDEG)
+                 CALL QUIT('XPPINP: MAXLPP out of bounds')
                ENDIF
                CALL DEF_MPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
                NPPAPT = NPPAPT + NDEG

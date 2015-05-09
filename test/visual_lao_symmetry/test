@@ -4,18 +4,17 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'r_x           r_y           r_z            scalar',
       num_lines   = 7,
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 
-test_run.execute(['response_london_bz.inp'], ['co2_d2h.mol'],    args=' --get="DFCOEF PAMXVC TBMO"')
-test_run.execute(['vis_shield_natural_zz.inp'], ['co2_d2h.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
+test.run(['response_london_bz.inp'], ['co2_d2h.mol'],    args=' --get="DFCOEF PAMXVC TBMO"')
+test.run(['vis_shield_natural_zz.inp'], ['co2_d2h.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
 
 mol_files = []
 mol_files.append('co2_d2h.mol')
@@ -27,12 +26,12 @@ mol_files.append('co2_cs.mol')
 mol_files.append('co2_d2.mol')
 
 for mol in mol_files:
-    test_run.execute(['response_london_symcon_bz.inp'], [mol], args=' --get="DFCOEF PAMXVC TBMO"')
-    test_run.execute(['vis_shield_symmetric_zz.inp', 'vis_shield_none_zz.inp'], [mol], f, args='--copy="DFCOEF PAMXVC TBMO"')
+    test.run(['response_london_symcon_bz.inp'], [mol], args=' --get="DFCOEF PAMXVC TBMO"')
+    test.run(['vis_shield_symmetric_zz.inp', 'vis_shield_none_zz.inp'], [mol], f, args='--copy="DFCOEF PAMXVC TBMO"')
 
 # cleanup
 os.unlink('DFCOEF')
 os.unlink('PAMXVC')
 os.unlink('TBMO')
 
-sys.exit(0)
+sys.exit(test.return_code)

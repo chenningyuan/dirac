@@ -39,8 +39,13 @@ set(ESSL_LAPACK_HEADERS UNKNOWN)
 set(ESSL_BLAS_LIBRARY_PATH_SUFFIXES)
 set(ESSL_LAPACK_LIBRARY_PATH_SUFFIXES)
 
-set(ESSL_BLAS_LIBS   essl)
-set(ESSL_LAPACK_LIBS essl)
+if(ENABLE_64BIT_INTEGERS)
+   set(ESSL_BLAS_LIBS   esslsmp6464)
+   set(ESSL_LAPACK_LIBS esslsmp6464)
+else()
+   set(ESSL_BLAS_LIBS   essl)
+   set(ESSL_LAPACK_LIBS essl)
+endif()
 
 #-------------------------------------------------------------------------------
 # ACML
@@ -73,6 +78,22 @@ set(ATLAS_BLAS_LIBS   f77blas cblas atlas)
 set(ATLAS_LAPACK_LIBS atlas lapack)
 
 #-------------------------------------------------------------------------------
+# OPENBLAS
+# no lapack in OPENBLAS, set OPENBLAS_LAPACK_* to ATLAS and SYSTEM-NATIVE values
+
+set(OPENBLAS_BLAS_INCLUDE_PATH_SUFFIXES)
+set(OPENBLAS_LAPACK_INCLUDE_PATH_SUFFIXES atlas)
+
+set(OPENBLAS_BLAS_HEADERS   cblas_openblas.h)
+set(OPENBLAS_LAPACK_HEADERS clapack.h)
+
+set(OPENBLAS_BLAS_LIBRARY_PATH_SUFFIXES)
+set(OPENBLAS_LAPACK_LIBRARY_PATH_SUFFIXES atlas atlas-base atlas-base/atlas atlas-sse3)
+
+set(OPENBLAS_BLAS_LIBS   openblas)
+set(OPENBLAS_LAPACK_LIBS atlas lapack)
+
+#-------------------------------------------------------------------------------
 # MKL
 
 set(MKL_BLAS_INCLUDE_PATH_SUFFIXES)
@@ -100,6 +121,9 @@ if(ENABLE_THREADED_MKL)
     if(MKL_COMPILER_BINDINGS MATCHES GNU)
         set(_thread_lib mkl_gnu_thread)
     endif()
+    if(MKL_COMPILER_BINDINGS MATCHES Clang)
+        set(_thread_lib mkl_gnu_thread)
+    endif()
 else()
     set(_thread_lib mkl_sequential)
 endif()
@@ -111,6 +135,9 @@ if(MKL_COMPILER_BINDINGS MATCHES PGI)
     set(_compiler_mkl_interface mkl_intel)
 endif()
 if(MKL_COMPILER_BINDINGS MATCHES GNU)
+    set(_compiler_mkl_interface mkl_gf)
+endif()
+if(MKL_COMPILER_BINDINGS MATCHES Clang)
     set(_compiler_mkl_interface mkl_gf)
 endif()
 
@@ -125,24 +152,28 @@ endif()
 
 if(ENABLE_SCALAPACK)
     set(_scalapack_lib      mkl_scalapack${_lib_suffix})
-    set(_blacs_intelmpi_lib mkl_blacs_intelmpi${_lib_suffix})
-    set(_blacs_sgimpt_lib   mkl_blacs_sgimpt${_lib_suffix})
+    if(${BLACS_IMPLEMENTATION} STREQUAL "intelmpi")
+        set(_blacs_lib mkl_blacs_intelmpi${_lib_suffix})
+    elseif(${BLACS_IMPLEMENTATION} STREQUAL "openmpi")
+        set(_blacs_lib mkl_blacs_openmpi${_lib_suffix})
+    elseif(${BLACS_IMPLEMENTATION} STREQUAL "sgimpt")
+        set(_blacs_lib mkl_blacs_sgimpt${_lib_suffix})
+    else()
+        message(FATAL_ERROR "BLACS implementation ${BLACS_IMPLEMENTATION} not recognized/supported")
+    endif()
 else()
     set(_scalapack_lib)
-    set(_blacs_intelmpi_lib)
-    set(_blacs_sgimpt_lib)
+    set(_blacs_lib)
 endif()
 
-# first try this MKL BLAS combination with SGI MPT
-set(MKL_BLAS_LIBS  ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_sgimpt_lib}   guide pthread m)
-# now with Intel MPI
-set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_intelmpi_lib} guide pthread m)
+# miro: for MKL 10.0.1.014
+set(MKL_BLAS_LIBS ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core mkl_def mkl_mc ${_blacs_lib} guide pthread m)
+#  try this MKL BLAS combination with SGI MPT
+set(MKL_BLAS_LIBS2 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}   guide pthread m)
 # newer MKL BLAS versions do not have libguide
-set(MKL_BLAS_LIBS3 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_sgimpt_lib}         pthread m)
-# now with Intel MPI
-set(MKL_BLAS_LIBS4 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_intelmpi_lib}       pthread m)
+set(MKL_BLAS_LIBS3 ${_scalapack_lib} ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} mkl_core ${_blacs_lib}         pthread m)
 # ancient MKL BLAS
-set(MKL_BLAS_LIBS5 mkl guide m)
+set(MKL_BLAS_LIBS4 mkl guide m)
 
 set(MKL_LAPACK_LIBS mkl_lapack95${_lib_suffix} ${_compiler_mkl_interface}${_lib_suffix})
 
@@ -153,5 +184,4 @@ unset(_lib_suffix)
 unset(_thread_lib)
 unset(_compiler_mkl_interface)
 unset(_scalapack_lib)
-unset(_blacs_intelmpi_lib)
-unset(_blacs_sgimpt_lib)
+unset(_blacs_lib)

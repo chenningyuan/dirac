@@ -11,14 +11,14 @@ This reduces basis set demands in heavy elements by replacing core electrons wit
 Theory
 ------
 
-Originally, the spin-orbit term is included in the RECP (SOREP) as following [Lee1977]_,
+Originally, the spin-orbit term is included in the RECP (SOREP) as following :cite:`Lee1977`,
 
 .. math::
 
   U^{SOREP} = U_{LJ}^{SOREP}(r) + \sum_{l=0}^{L-1}\sum_{j=|l-1/2|}^{l+1/2}\sum_{m=-j}^{j}
              [U_{ij}^{SOREP}(r)- U_{LJ}^{SOREP}(r)]|ljm\rangle \langle ljm| 
 
-The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`) [Ermler1981]_
+The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`) :cite:`Ermler1981`
 
 .. math::
 
@@ -181,7 +181,7 @@ After reading block numbers, AREP (and SOREP) blocks are read.
 
 2.SO blocks: Three parameters in each line in SO blocks are same as in AREP blocks.
 
-Note: coefficients in the spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as [Park2012]_,
+Note: coefficients in the spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as :cite:`Park2012`,
 
 .. math::
 

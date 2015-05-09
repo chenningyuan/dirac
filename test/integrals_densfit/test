@@ -4,15 +4,14 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-10)
+      rel_tolerance   = 1.0e-10)
 
 inp_files = []
 inp_files.append('NR_direct_Jengine+df.inp')
@@ -38,6 +37,6 @@ inp_files.append('2C_GT_direct_Jengine+df_BLYP.inp')
 inp_files.append('2C_GT_direct_Jengine+LinK+df_B3LYP.inp')
 inp_files.append('2C_GT_direct_Jengine+df_B3LYP.inp')
 
-test_run.execute(inp_files, ['Ar.mol'], f)
+test.run(inp_files, ['Ar.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

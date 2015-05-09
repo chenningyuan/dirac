@@ -77,26 +77,29 @@ the basis set name using the *DEFAULT* or *SPECIAL* keywords and the program wil
 corresponding oxygen basis.
 
 
-\*UNITS
--------
+\*COORDINATES
+-------------
 
 Here you can specify the units to be used when reading the coordinates.  If
 nothing is specified, angstrom is the default (this is then a real xyz file).
 If we specify 'AU' we use atomic units instead::
 
-  *UNITS
+  *COORDINATES
+  .UNITS
   AU
 
 We can also specify our own unit, by typing the name and the conversion
 factor when going from this new unit to atomic units::
 
-  *UNITS
+  *COORDINATES
+  .UNITS
   nm 18.8972
 
 Now all coordinates are entered in nanometer. If we add 'A' at the end,
 we can enter the new unit in angstrom::
 
-  *UNITS
+  *COORDINATES
+  .UNITS
   nm 10.0 A
 
 

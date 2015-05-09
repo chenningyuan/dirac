@@ -4,26 +4,25 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
 f.add(from_string = 'TOTAL ENERGY',
       num_lines   = 12,
-      tolerance   = 1.0e-10)
+      rel_tolerance   = 1.0e-10)
 
 f.add(from_string = 'All nonzero property elements',
       num_lines   = 7,
       ignore_sign = True,
-      tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-6)
 
-test_run.execute(['MgF.dc_rkb.scf_prptra_W_A.inp'], ['MgF.sto-2g.lsym.mol'], f)
-test_run.execute(['RnF_65+.dc_rkb.scf_rho_prptra_FC_PVC.inp'], ['Rn_MglikeF.mol'], f)
-test_run.execute(['Na.dc_rkb.2fs.scf_prptra_e_edm.inp'], ['Na.sto-2g.lsym.mol'], f)
-test_run.execute(['Na.dc_rkb.2fs.scf_prptra_e_edm2.inp'], ['Na.sto-2g.lsym.mol'], f)
-test_run.execute(['MgF.dc_rkb.dft_prptra_W_A.inp'], ['MgF.sto-2g.lsym.mol'], f)
+test.run(['MgF.dc_rkb.scf_prptra_W_A.inp'], ['MgF.sto-2g.lsym.mol'], f)
+test.run(['RnF_65+.dc_rkb.scf_rho_prptra_FC_PVC.inp'], ['Rn_MglikeF.mol'], f)
+test.run(['Na.dc_rkb.2fs.scf_prptra_e_edm.inp'], ['Na.sto-2g.lsym.mol'], f)
+test.run(['Na.dc_rkb.2fs.scf_prptra_e_edm2.inp'], ['Na.sto-2g.lsym.mol'], f)
+test.run(['MgF.dc_rkb.dft_prptra_W_A.inp'], ['MgF.sto-2g.lsym.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

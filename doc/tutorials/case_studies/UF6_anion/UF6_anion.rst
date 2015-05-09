@@ -1,5 +1,5 @@
 ========================
-The UF:math:`_6` anion
+The :math:`UF_6` anion
 ========================
 
 The problem
@@ -30,7 +30,7 @@ The neutral molecule is a simple closed shell molecule and using the menu file
 .. literalinclude:: UF6neutral.inp
 
 the SCF converges nicely in 26 iterations. Before proceeding we investigate the electronic structure
-of this species using projection analysis, see [Dubillard2006]_ and 
+of this species using projection analysis, see :cite:`Dubillard2006` and 
 `this tutorial <../../analysis/projection_analysis.html>`_. 
 Looking at the input file above, one may note that we already prepared for
 this by invoking the keyword :ref:`.ACMOUT` in order to recover the :math:`C_1` MO coefficients::
@@ -148,5 +148,4 @@ and now the SCF converges in 38 iterations. Curiously, convergence is extremely 
 to the choice of the level shift. Even changing it by 0.005 breaks convergence !
 
 
-
-
+.. include:: UF6_anion2.rst

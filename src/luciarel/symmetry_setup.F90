@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -663,7 +663,9 @@ contains
                                          number_of_dbg_irreps,       &
                                          mj2rep,                     &
                                          imosp_dirac_counter1,       &
-                                         imosp_dirac_counter2)
+                                         imosp_dirac_counter2,       &
+                                         imosp_dirac_mjub,           &
+                                         imosp_dirac_mjb)
 
 !*******************************************************************************
 !
@@ -677,6 +679,8 @@ contains
       integer, intent(in)    :: num_gas
       integer, intent(out)   :: imosp_dirac_counter1(*)
       integer, intent(out)   :: imosp_dirac_counter2(*)
+      integer, intent(out)   :: imosp_dirac_mjub(*)
+      integer, intent(out)   :: imosp_dirac_mjb(*)
       integer, intent(in)    :: ngsh(2,mx_num_gas_spaces)
       integer, intent(in)    :: orb_sym_vec(*)
       integer, intent(in)    :: orb_off(nr_fsym)
@@ -752,6 +756,8 @@ contains
 !             store symmetry order for dirac-ordered mo spinors (e.g., ordered wrt energy)
               imosp_dirac_counter1(orb_counter) = mj2rep(varphi_1,i)
               imosp_dirac_counter2(orb_counter) = mj2rep(varphi_2,i)
+              imosp_dirac_mjub(orb_counter)     = varphi_1
+              imosp_dirac_mjb(orb_counter)      = varphi_2
             else ! non-linear double groups
 
 !             mat_address = (i-1)*number_of_dbg_irreps/4 + (is_gas-1) * mx_num_dbg_irreps + mx_num_dbg_irreps/2 + 1
@@ -795,9 +801,14 @@ contains
         print *, 'is_gas = ',is_gas
         write(6,'(2x,32i3)') (ngsh(j,is_gas),j=1,nr_fsym)
       end do
+      print *, 'printing imosp_dirac_counterX in match_spinor_2_boson_irrep'
+      do is_gas = 1, orb_counter
+        write(6,'(2x,32i3)') imosp_dirac_counter1(is_gas)
+        write(6,'(2x,32i3)') imosp_dirac_counter2(is_gas)
+      end do
 #endif
 
-!#undef LUCI_DEBUG
+#undef LUCI_DEBUG
    end subroutine match_spinor_2_boson_irrep
 !*******************************************************************************
 

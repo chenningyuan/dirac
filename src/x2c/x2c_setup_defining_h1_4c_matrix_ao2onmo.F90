@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -543,6 +543,12 @@ contains
           ioff_osh1      = ioff_osh1      + norb1_f * norb1_f * nz
           ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
         end do
+
+        !> dump the full Fock matrix in AO basis to file (if needed later)
+        open(81,file='4cf1f2AO',status='replace',form='unformatted',         &
+              access='sequential',action='write',position='rewind')
+        write(81) (h1_saao_bas(i),i=1,naosh_ls*naosh_ls*nz)
+        close(81,status="keep")
 !
 !       step 5: read in the "SL resorted" transformation matrix (the calling programs expect it to reside in scrmat2
 !       ------------------------------------------------------------------------------------------------------------

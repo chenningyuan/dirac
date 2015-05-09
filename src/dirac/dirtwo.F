@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -289,7 +289,7 @@ C
             CALL FULMAT('A',NTBAS(0),NTBAS(0),FMAT(1,IZ,I))
           ENDIF
         ENDDO
-        IF(IPRINT.GE.5) THEN
+        IF(IPRINT.GE.4) THEN
           CALL HEADER('Sorted FMAT matrix',-1)
           WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),

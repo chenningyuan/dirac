@@ -1,6 +1,6 @@
 #define DEBUG_SOC
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -656,6 +656,12 @@ contains
        access='sequential',action="readwrite",position='rewind')
 
        call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - aooSOC contribution',99)
+       close(99,status='keep')
+
+       open(99,file='aoo2e-ss-soc-contributions',status='replace',form='unformatted',  &
+       access='sequential',action="readwrite",position='rewind')
+
+       write(99) scr1_mat(1:nr_ao_L*nr_ao_L*nz)
        close(99,status='keep')
 #endif
 

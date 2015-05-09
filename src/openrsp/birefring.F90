@@ -407,6 +407,7 @@ contains
       call prop_oneave(mol, S, (/'ELGR'/), (/D/), (/6/), Eq)
       call print_tensor((/6/), -Eq, 'quadru = -Eq')
       ! solve equations common to no-London and London
+      print *, 'OPENRSP: now starting solving first-order response for EL perturbations'
       call pert_dens(mol, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=(/freq(4)/))
       Eff = 0
       if (freq(3) == -freq(4)) then
@@ -418,6 +419,7 @@ contains
          call prop_oneave(mol, S, (/'ELGR'/), (/Df/), shape(Eqf), Eqf)
          call print_tensor(shape(Eqf), -Eqf, 'polari = -Eff', (/freq(1),freq(4)/))
       end if
+      print *, 'OPENRSP: now starting solving first-order response for ELGR perturbations'
       call pert_dens(mol, S, (/'ELGR'/), (/6/), (/D/), (/F/), Dq, Fq, freq=(/freq(1)/))
       if (freq(3)==freq(4) .or. freq(3)==-freq(4)) then
          do l = 1, 3
@@ -425,6 +427,7 @@ contains
             if (freq(3)==freq(4)) Fe(l) = Ff(l)
             if (freq(3)/=freq(4)) De(l) = dag(Df(l))
             if (freq(3)/=freq(4)) Fe(l) = dag(Ff(l))
+            print *, 'OPENRSP: now starting solving second-order response for EL perturbations'
             call pert_dens(mol, S, (/'EL','EL'/), (/l,1/), (/D,De(:l),Df(l)/), &
                            (/F,Fe(:l),Ff(l)/), Def(:l,l), Fef(:l,l), &
                            freq=(/freq(3),freq(4)/), comp=(/1,l/))
@@ -436,7 +439,9 @@ contains
             end do
          end do
       else
+         print *, 'OPENRSP: now starting solving first-order response for EL perturbations'
          call pert_dens(mol, S, (/'EL'/), (/3/), (/D/), (/F/), De, Fe, freq=(/freq(3)/))
+         print *, 'OPENRSP: now starting solving second-order response for EL perturbations'
          call pert_dens(mol, S, (/'EL','EL'/), (/3,3/), (/D,De,Df/), (/F,Fe,Ff/), &
                         Def, Fef, freq=(/freq(3),freq(4)/))
       end if
@@ -444,6 +449,7 @@ contains
       ! no-London section !
       !-------------------!
       ! solve equations specific to no-London
+      print *, 'OPENRSP: now starting solving first-order response for MAGO perturbations'
       call pert_dens(mol, S, (/'MAGO'/), (/3/), (/D/), (/F/), Dc, Fc, freq=(/freq(2)/))
       do l = 1, 3
 !        radovan: hack to get atomic cme right
@@ -466,6 +472,7 @@ contains
             if (freq(1)/=freq(2)) Fb(j) = -dag(Fc(j))
          end do
       else
+         print *, 'OPENRSP: now starting solving first-order response for MAGO perturbations'
          call pert_dens(mol, S, (/'MAGO'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq(1)/))
       end if
       Eof = 0
@@ -473,6 +480,7 @@ contains
          call prop_oneave(mol, S, (/'EL'/), (/Db/), shape(Eof), Eof, perm=(/2,1/))
          call print_tensor(shape(Eof), Eof, 'G-prime-noL = Eof', (/freq(1),freq(3)/))
       end if
+      print *, 'OPENRSP: now starting solving mixed MAGO-EL response'
       call pert_dens(mol, S, (/'MAGO','EL  '/), (/3,3/), (/D,Dc,Df/), (/F,Fc,Ff/), &
                      Dcf, Fcf, freq=(/freq(2),freq(4)/))
       if (freq(3)==freq(4) .or. freq(3)==-freq(4)) then
@@ -485,6 +493,7 @@ contains
             end do
          end do
       else
+         print *, 'OPENRSP: now starting solving mixed MAGO-EL response'
          call pert_dens(mol, S, (/'MAGO','EL  '/), (/3,3/), (/D,Dc,De/), (/F,Fc,Fe/), &
                         Dce, Fce, freq=(/freq(2),freq(3)/))
       end if
@@ -558,6 +567,7 @@ contains
       ! London section !
       !----------------!
       ! solve equations specific to London
+      print *, 'OPENRSP: now starting solving london MAG response'
       call pert_dens(mol, S, (/'MAG'/), (/3/), (/D/), (/F/), Dc, Fc, freq=(/freq(2)/))
       Ebb = 0
       ! contract London magnetizability
@@ -585,6 +595,7 @@ contains
             if (freq(1)/=freq(2)) Fb(j) = -dag(Fc(j))
          end do
       else
+         print *, 'OPENRSP: now starting solving london MAG response'
          call pert_dens(mol, S, (/'MAG'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq(1)/))
       end if
       Ebf = 0
@@ -592,6 +603,7 @@ contains
          call prop_oneave(mol, S, (/'EL'/), (/Db/), shape(Ebf), Ebf, perm=(/2,1/))
          call print_tensor(shape(Ebf), Ebf, 'G-prime-Lon = Ebf', (/freq(1),freq(3)/))
       end if
+      print *, 'OPENRSP: now starting solving london MAG-EL response'
       call pert_dens(mol, S, (/'MAG','EL '/), (/3,3/), (/D,Dc,Df/), (/F,Fc,Ff/), &
                      Dcf, Fcf, freq=(/freq(2),freq(4)/))
       if (freq(3)==freq(4) .or. freq(3)==-freq(4)) then
@@ -604,6 +616,7 @@ contains
             end do
          end do
       else
+         print *, 'OPENRSP: now starting solving london MAG-EL response'
          call pert_dens(mol, S, (/'MAG','EL '/), (/3,3/), (/D,Dc,De/), (/F,Fc,Fe/), &
                         Dce, Fce, freq=(/freq(2),freq(3)/))
       end if

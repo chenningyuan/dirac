@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -89,13 +89,13 @@ module fde_input
          itmp%im_coulomb  = .true.
       endif
 
+      endif ! .not.skip_all_imports
+
       if (etmp%do_grid_out) then
          etmp%ex_n        = .true.
          etmp%ex_coulomb  = .true.
          etmp%ex_gn       = .true.
       endif
-
-      endif ! .not.skip_all_imports
 
 #ifndef PRG_DIRAC
 ! in dirac this is redundant, since we go for reading

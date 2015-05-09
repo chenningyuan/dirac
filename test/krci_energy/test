@@ -4,16 +4,15 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string    = ' The final eigenvalue',
-      tolerance = 1.0e-6)
+f.add(string    = ' Final CI energies',
+      rel_tolerance = 1.0e-6)
 
-test_run.execute(['be.d2h.inp'], ['Be.d2h.mol'], f)
-test_run.execute(['f.inp'], ['F.mol'], f)
+test.run(['be.d2h.inp'], ['Be.d2h.mol'], f)
+test.run(['f.inp'], ['F.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

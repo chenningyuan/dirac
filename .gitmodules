@@ -1,3 +1,10 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
 	url = git://repo.ctcc.no/gen1int.git
+[submodule "external/unit-tests"]
+	path = external/unit-tests
+	url = https://gitlab.com/dirac/unit-tests.git
+[submodule "external/pcmsolver"]
+	path = external/pcmsolver
+	url = https://github.com/PCMSolver/pcmsolver.git
+	branch = release
