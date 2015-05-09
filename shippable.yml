@@ -10,6 +10,7 @@
 branches:
     only:
         - master
+        - hrasko_dirac_devel_2
 
 # environment variable for Dirac MPI command
 env:
