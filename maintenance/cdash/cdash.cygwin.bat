@@ -22,8 +22,9 @@ C:\cygwin64\bin\sh --login -c "(echo -e \"\n updating submodules..\" && cd /home
 
 rem configure build : 64-bit with Open MPI
 rem also define ZLIB_ROOT to find correct zlib library
+rem compiled Boost for Cygwin is installed in /cygdrive/c/libraries/Cygwin_Boost (C:\libraries\Cygwin_Boost)
 rem CMAKE_LEGACY_CYGWIN_WIN32=0 to accept that Cygwin is not WIN32
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n running setup..\" && cd /home/milias/test/trunk_cloned && python setup -D CMAKE_LEGACY_CYGWIN_WIN32=0 -D BUILDNAME=\"WinS12-cygwin-i8-openmpi\" --int64 --mpi --cc=mpicc --cxx=mpicxx --fc=mpifort -D ZLIB_ROOT=/usr/lib build) 2>&1 | tee -a /home/milias/cdash-testing.log"
+C:\cygwin64\bin\sh --login -c "(echo -e \"\n running setup..\" && cd /home/milias/test/trunk_cloned && python setup -D CMAKE_LEGACY_CYGWIN_WIN32=0 -D BUILDNAME=\"WinS12-cygwin-i8-openmpi\" --int64 --mpi --cc=mpicc --cxx=mpicxx --fc=mpifort -D BOOST_INCLUDEDIR=/cygdrive/c/libraries/Cygwin_Boost/include/ -D BOOST_LIBRARYDIR=/cygdrive/c/libraries/Cygwin_Boost/lib/ -D ZLIB_ROOT=/usr/lib build) 2>&1 | tee -a /home/milias/cdash-testing.log"
 C:\cygwin64\bin\sh --login -c "(echo -e \"\n ExperimentalConfigure..\" && cd /home/milias/test/trunk_cloned/build && ctest -D ExperimentalConfigure) 2>&1 | tee -a /home/milias/cdash-testing.log"
 
 rem build
