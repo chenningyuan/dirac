@@ -14,7 +14,7 @@ branches:
 
 # environment variable for Dirac MPI command
 env:
-    - DIRAC_MPI_COMMAND="mpirun -np 2"
+    - DIRAC_MPI_COMMAND="mpirun -np 2" DIRTIMEOUT="10m"
     
 # language settings - prepare Python environment
 language: python
