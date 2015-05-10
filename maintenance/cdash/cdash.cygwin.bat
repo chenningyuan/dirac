@@ -22,8 +22,9 @@ C:\cygwin64\bin\sh --login -c "(echo -e \"\n updating submodules..\" && cd /home
 
 rem configure build : 64-bit with Open MPI
 rem also define ZLIB_ROOT to find correct zlib library
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n running setup..\" && cd /home/milias/test/trunk_cloned && python setup -D BUILDNAME="WinS12-cygwin-i8-openmpi" --int64 --mpi --cc=mpicc --cxx=mpicxx --fc=mpifort -D ZLIB_ROOT=/usr/lib build) 2>&1 | tee -a /home/milias/cdash-testing.log"
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n ExperimentalConfigure..\" &&cd /home/milias/test/trunk_cloned/build && ctest -D ExperimentalConfigure) 2>&1 | tee -a /home/milias/cdash-testing.log"
+rem CMAKE_LEGACY_CYGWIN_WIN32=0 to accept that Cygwin is not WIN32
+C:\cygwin64\bin\sh --login -c "(echo -e \"\n running setup..\" && cd /home/milias/test/trunk_cloned && python setup -D CMAKE_LEGACY_CYGWIN_WIN32=0 -D BUILDNAME=\"WinS12-cygwin-i8-openmpi\" --int64 --mpi --cc=mpicc --cxx=mpicxx --fc=mpifort -D ZLIB_ROOT=/usr/lib build) 2>&1 | tee -a /home/milias/cdash-testing.log"
+C:\cygwin64\bin\sh --login -c "(echo -e \"\n ExperimentalConfigure..\" && cd /home/milias/test/trunk_cloned/build && ctest -D ExperimentalConfigure) 2>&1 | tee -a /home/milias/cdash-testing.log"
 
 rem build
 C:\cygwin64\bin\sh --login -c "(echo -e \"\n ExperimentalBuild..\" && cd /home/milias/test/trunk_cloned/build && ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) -D ExperimentalBuild) 2>&1 | tee -a /home/milias/cdash-testing.log"
