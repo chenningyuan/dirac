@@ -14,7 +14,7 @@ branches:
 
 # environment variable for Dirac MPI command
 env:
-    - DIRAC_MPI_COMMAND="mpirun -np 2" DIRTIMEOUT="10m"
+    - DIRAC_MPI_COMMAND="mpirun -np 2"
     
 # language settings - prepare Python environment
 language: python
@@ -51,7 +51,7 @@ script:
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of exit value true
-    - ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2) -L short --track Miro -D ExperimentalTest || true
+    - ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2) -L short --track Miro -D ExperimentalTest || :
     - ctest --track Miro -D ExperimentalSubmit
 
 # turn off email notifications
