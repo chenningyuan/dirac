@@ -218,6 +218,17 @@ temporarily move folders with those libraries to some another place which is not
 change their names (then if you want to build from Windows you can return everything back or see :ref:`windows_users` 
 how to learn setup where to look for *zlib* and *Boost*). Also you should check environment variables.
 
+Example how to point to correct *Boost* and *zlib* libraries: ::
+
+  python setup -DBOOST_INCLUDEDIR=[install_prefix]/include -DBOOST_LIBRARYDIR=[install_prefix]/lib -DZLIB_ROOT=/usr/lib
+
+.. note:: Boost libraries which can be installed from Cygwin installation are not recognized by Dirac setup.
+
+You can try to compile your own (download from http://sourceforge.net/projects/boost/files/boost/): ::
+
+  bootstrap.sh gcc --prefix=[install_prefix]
+  b2 --with-system --with-filesystem --with-test --with-chrono --with-timer toolset=gcc install
+
 To more clearly see (in case when problems occur) what happens it is possible to run Dirac configuration directly by CMake when
 you create a build directory in Dirac top directory then move into it and run: ::
 
