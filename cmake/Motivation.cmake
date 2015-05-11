@@ -18,6 +18,7 @@ function(get_motivational_message in_compiled_by_dev out_msg)
             "keep going, you have nearly fixed the bug!"           # thanks to Yesod
             "check your posture, don’t lean over too much."        # thanks to Yesod
             "get a glass of water, keep hydrated."                 # thanks to Yesod
+            "Code compiled. And you think to yourself: What a wonderful world."
             )
         
         list(GET msg_list ${random_integer} msg)
