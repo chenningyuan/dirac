@@ -5,19 +5,25 @@ set(BUILDNAME
     "Name of build on the dashboard"
     )
 
-# set ctest's own timeout in secs
-set(DART_TESTING_TIMEOUT
-    "1500"
-    CACHE STRING
-    "Set default timeout in seconds for every single test"
-    )
+if(NOT ENABLE_BENCHMARKS)
+    # set ctest own timeout
+    set(DART_TESTING_TIMEOUT
+        "1500"
+        CACHE STRING
+        "Set timeout in seconds for every single test"
+        )
+endif()
 
-macro(dirac_test _name _labels)
-    add_test(${_name} python ${CMAKE_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name})
-    if(NOT "${_labels}" STREQUAL "")
-        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+macro(dirac_test _name _label)
+    add_test(${_name} ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
+    if(NOT "${_label}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_label}")
     endif()
 endmacro()
+
+if(RUN_UNIT_TESTS)
+  include(ConfigUnitTesting)
+endif()
 
 include(Tests)
 include(CTest)

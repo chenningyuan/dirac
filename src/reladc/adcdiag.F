@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -686,17 +686,21 @@
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+      SUBROUTINE DIAG_LANC(IW,DOINCORE)
+!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!! this is the main driver routine for the Lanczos routines  !!!!!
+!!!!!! now also working with dynamic memory allocation  !!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
 
       use adc_mat      !obtain matrix parameters via descriptor file
       use adc_cfg
 
       IMPLICIT INTEGER (A-Z)
 
-      REAL*8  CC(*)
-      INTEGER KFREE,LFREE
-      INTEGER IW
-      LOGICAL DOINCORE
+      INTEGER                            ::  IW
+      LOGICAL                            ::  DOINCORE
 C
 C---------------Description--------------------------------------------
 C
@@ -734,26 +738,34 @@ c *** for infofile
       INTEGER IVALID   ! number of valid elements for Lanczos incore diagonalization.
 c
 c *** others
-      LOGICAL ALLOC_ME,LFLAG,CARITH
+      LOGICAL LFLAG,CARITH
       COMPLEX*16 CDUMMY
       REAL*8 RDUMMY
       INTEGER NINCWORDS
 C
-C---------------Local variables--------------------------------------
+C--------------- common variables--------------------------------------
 C
       COMMON/MATCHUNKS/NBUFS
-c
+C
+C--------------- arrays for dynamical memory allocation, replacing memopts
+C
+      integer, allocatable, dimension(:)    :: WRK_IDI, WRK_IDJ,
+     &          WRK_IND, WRK_IVX, WRK_LSP, WRK_MLT, WRK_OI, WRK_OJ
+
+      real*8, allocatable, dimension(:)     :: WRK_AEV, WRK_BUF,
+     &     WRK_DIAG, WRK_EVL, WRK_IDR,  WRK_P, WRK_R,
+     &     WRK_RWORK1, WRK_T, WRK_WORK1, WRK_ZEV, WRK_Z
 C
 C---------------Executable code--------------------------------------
-C
-!     WRITE(IW,*) 'Memory pointers on DIAG_LANC entry:',KFREE,LFREE
-      KFRSAV=KFREE
-      CALL MEMCHK('Beginning of diagonalization',CC,KFRSAV)
 c
 c default to a predefined buffer length. Will be changed
 c in the future because we need a flexible buffer size,
 c
       INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
+      IF(DOINCORE) THEN
+        write(iw,*) 'Incore Lanczos currently not supported.'
+        DOINCORE = .false.
+      ENDIF
 c
 c  transfer required parameters from matrix descriptor module
 c  to actual modules.
@@ -794,8 +806,6 @@ c this is the absolute lower bound to which we will return as soon as the
 c diagonalization has been finished. We must not go further down because
 c some buffers are needed in the calling code.
 c
-      KFREESAVE=KFREE
-      ALLOC_ME=.TRUE.
       NP = NOCC
       CARITH=.FALSE.
       IF(RCW.EQ.2) CARITH=.TRUE.
@@ -805,19 +815,17 @@ c
 !  if repacking was successful we work from here with smaller ADC matrix
 !  (in the double ionization case).
 !
-      IF(DOINCORE) THEN
-        IF(IOLDNEW.eq.1) THEN
-          WRITE(IW,*) 'Incore calculation for the old-format'
-          WRITE(IW,*) 'ADC matrix not possible. Switching back to'
-          WRITE(IW,*) 'Out of core diagonalization'
-          DOINCORE = .FALSE.
-        ELSE
-          WRITE(IW,*) 'Trying (partial) incore diagonalization.'
-        ENDIF
-      ENDIF
+!     IF(DOINCORE) THEN
+!       IF(IOLDNEW.eq.1) THEN
+!         WRITE(IW,*) 'Incore calculation for the old-format'
+!         WRITE(IW,*) 'ADC matrix not possible. Switching back to'
+!         WRITE(IW,*) 'Out of core diagonalization'
+!         DOINCORE = .FALSE.
+!       ELSE
+!         WRITE(IW,*) 'Trying (partial) incore diagonalization.'
+!       ENDIF
+!     ENDIF
 
-      WRITE(IW,*) 'Memory pointers:',KFREE,LFREE
-      WRITE(IW,*) 'Words available:',LFREE-KFREE
 
       WRITE(IW,*)
       WRITE(IW,*) 'ADC matrix is (1=SIP,2=DIP,3=EXC):',IONIZLEVEL
@@ -857,70 +865,65 @@ C
       ITAP6=INFOHANDLE+6    ! free handle
 
       N=2*NP+1
-      CALL MEMOPT('INTE',WRK_IVX,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  1 done.' 
+      allocate(WRK_IVX(N));WRK_IVX = 0
+
       N=(2*NP+1)*LADC*RCW
-      CALL MEMOPT('REAL',WRK_P,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  2 done.' 
+      allocate(WRK_P(N));WRK_P = 0.0d0
+
       N=(NP+1)*NITER*RCW
-      CALL MEMOPT('REAL',WRK_T,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  3 done.' 
+      allocate(WRK_T(N));WRK_T = 0.0d0
+
       N=LADC*RCW
-      CALL MEMOPT('REAL',WRK_R,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  4 done.' 
-      CALL MEMOPT('REAL',WRK_DIAG,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  5 done.' 
+      allocate(WRK_R(N));WRK_R = 0.0d0
+      allocate(WRK_DIAG(N)); WRK_DIAG = 0.0d0
+
       N=INTBUF*RCW
-      CALL MEMOPT('REAL',WRK_BUF,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  6 done.' 
+      allocate(WRK_BUF(N)); WRK_BUF = 0.0d0
+
       N=INTBUF
-      CALL MEMOPT('INTE',WRK_OI,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  7 done.' 
-      CALL MEMOPT('INTE',WRK_OJ,N,CC,KFREE,LFREE,ALLOC_ME)
-      write(*,*) 'allocation  8 done.' 
-      CALL MEMCHK('BEFORE  LANCZOS',CC,KFRSAV)
-      write(*,*) 'allocation  9 done.' 
+      allocate(WRK_OI(N)); WRK_OI = 0
+      allocate(WRK_OJ(N)); WRK_OJ = 0
 c
 c  remember memory pointers before we do the huge incore parts.
 c
-      IF(DOINCORE) THEN
-        KINCSAV = KFREE
-        WRITE(IW,*) 'Memory pointers before incore diag:',
-     &               KFREE,LFREE
-        WRITE(IW,*) 'Saving free memory:',KINCSAV
-        WRITE(IW,*) 'Available buffer for incore diag:'
-        WRITE(IW,*) (LFREE-10),' words'
-        if(RCW.eq.1) then
-           N=(LFREE - 10)/3
-           WRITE(IW,*) 'We can store',N,' real numbers'
-        else
-           N=(LFREE - 10)/4
-           WRITE(IW,*) 'We can store',N,' complex numbers'
-        endif
-        IF(N.lt.INTBUF) THEN
-          WRITE(IW,*) 'Buffer for inc. diag too small!'
-          WRITE(IW,*) 'Switching back to out-of-core diag.'
-          DOINCORE = .FALSE.
-        ELSE
-          CALL MEMOPT('REAL',WRK_IDR,N*RCW,CC,KFREE,LFREE,ALLOC_ME)
-          CALL MEMOPT('INTE',WRK_IDI,N,CC,KFREE,LFREE,ALLOC_ME)
-          CALL MEMOPT('INTE',WRK_IDJ,N,CC,KFREE,LFREE,ALLOC_ME)
-          CALL MEMCHK('ICD',CC,KFRSAV)
-          NINCWORDS = N
-          IF(CARITH) THEN
-            CALL INITINCORE_C(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
-     &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
-     &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
-     &                        IVALID)
-          ELSE
-            CALL INITINCORE_R(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
-     &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
-     &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
-     &                        IVALID)
-          ENDIF
-        ENDIF
-      ENDIF
-C
+!     IF(DOINCORE) THEN
+!       KINCSAV = KFREE
+!       WRITE(IW,*) 'Memory pointers before incore diag:',
+!    &               KFREE,LFREE
+!       WRITE(IW,*) 'Saving free memory:',KINCSAV
+!       WRITE(IW,*) 'Available buffer for incore diag:'
+!       WRITE(IW,*) (LFREE-10),' words'
+!       if(RCW.eq.1) then
+!          N=(LFREE - 10)/3
+!          WRITE(IW,*) 'We can store',N,' real numbers'
+!       else
+!          N=(LFREE - 10)/4
+!          WRITE(IW,*) 'We can store',N,' complex numbers'
+!       endif
+!       IF(N.lt.INTBUF) THEN
+!         WRITE(IW,*) 'Buffer for inc. diag too small!'
+!         WRITE(IW,*) 'Switching back to out-of-core diag.'
+!         DOINCORE = .FALSE.
+!       ELSE
+!         CALL MEMOPT('REAL',WRK_IDR,N*RCW,CC,KFREE,LFREE,ALLOC_ME)
+!         CALL MEMOPT('INTE',WRK_IDI,N,CC,KFREE,LFREE,ALLOC_ME)
+!         CALL MEMOPT('INTE',WRK_IDJ,N,CC,KFREE,LFREE,ALLOC_ME)
+!         CALL MEMCHK('ICD',CC,KFRSAV)
+!         NINCWORDS = N
+!         IF(CARITH) THEN
+!           CALL INITINCORE_C(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
+!    &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
+!    &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
+!    &                        IVALID)
+!         ELSE
+!           CALL INITINCORE_R(ITAP1,ITAP3,NBUFS,NINCWORDS,INTBUF,
+!    &                        CC(WRK_BUF),CC(WRK_OI),CC(WRK_OJ),
+!    &                        CC(WRK_IDR),CC(WRK_IDI),CC(WRK_IDJ),
+!    &                        IVALID)
+!         ENDIF
+!       ENDIF
+!     ENDIF
+!
 C  enter real resp. complex Band Lanczos iterations
 C  for symmetric resp. Hermitian matrices
 C  In the first run: no eigenvectors because no eigenvalues are
@@ -928,69 +931,63 @@ C  available
 C
       LFLAG = .FALSE.
 
-      IF(DOINCORE.EQV..true.) THEN
+!     IF(DOINCORE.EQV..true.) THEN
+!       IF(CARITH.EQV..TRUE.) THEN
+!       CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+!    &                   CC(WRK_P), CC(WRK_T), CC(WRK_R),
+!    &                   CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
+!    &                   CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
+!    &                   INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
+!    &                   cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
+!       CALL MEMCHK('AFTER COMPLEX INCORE-LANCZOS',CC,KFRSAV)
+!       ELSE
+!       CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+!    &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
+!    &          CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
+!    &          CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
+!    &          INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
+!    &          cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
+!       CALL MEMCHK('AFTER REAL INCORE-LANCZOS',CC,KFRSAV)
+!       ENDIF
+!       CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
+!       WRITE(IW,*)  'Memory after incore Lanczos released.'
+!     ELSE 
         IF(CARITH.EQV..TRUE.) THEN
-        CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                   CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                   CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
-     &                   CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
-     &                   INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
-     &                   cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
-        CALL MEMCHK('AFTER COMPLEX INCORE-LANCZOS',CC,KFRSAV)
-        ELSE
-        CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &          CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
-     &          CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
-     &          INTBUF,ITAP1, ITAP2, ITAP3, NINCWORDS,
-     &          cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),ivalid)
-        CALL MEMCHK('AFTER REAL INCORE-LANCZOS',CC,KFRSAV)
-        ENDIF
-        CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
-        WRITE(IW,*)  'Memory after incore Lanczos released.'
-      ELSE 
-        IF(CARITH.EQV..TRUE.) THEN
-        CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &          CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
-     &          CC(WRK_OI), CC(WRK_OJ), CDUMMY,LFLAG,
+        CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, WRK_IVX,
+     &          WRK_P, WRK_T, WRK_R,
+     &          WRK_DIAG, CDUMMY, CDUMMY, WRK_BUF,
+     &          WRK_OI, WRK_OJ, CDUMMY,LFLAG,
      &          INTBUF,ITAP1, ITAP2, ITAP3)
-        CALL MEMCHK('AFTER COMPLEX LANCZOS',CC,KFRSAV)
         ELSE
-        CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &          CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &          CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
-     &          CC(WRK_OI), CC(WRK_OJ), RDUMMY,LFLAG,
+        CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, WRK_IVX,
+     &          WRK_P, WRK_T, WRK_R,
+     &          WRK_DIAG, RDUMMY, RDUMMY, WRK_BUF,
+     &          WRK_OI, WRK_OJ, RDUMMY,LFLAG,
      &          INTBUF,ITAP1, ITAP2, ITAP3)
-        CALL MEMCHK('AFTER REAL LANCZOS',CC,KFRSAV)
         ENDIF
-      ENDIF
+!     ENDIF
 C
 C  from here the Lanczos matrix T is available. we acquire work
 C  space for the LAPACK Band-diagonalizer.
-C  After the BANDDIA runs the corresponding eigenVECTORS of the
-C  Lanczos matrix are available in ZEV  resp. in CC(WRK_ZEV)
 C  ITAP5 will be provided as a free file handle. 
 C  It is only used locally and reusable after finishing RBANDDIA/ZBANDDIA
 C  This file handle is used for storing the T eigenvector matrix
 C
       N=NITER
-      CALL MEMOPT('REAL',WRK_EVL,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_EVL(N))
       N=NITER*NITER*RCW
-      CALL MEMOPT('REAL',WRK_ZEV,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_ZEV(N))
       N=4*NITER*RCW
-      CALL MEMOPT('REAL',WRK_WORK1,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_WORK1(N))
       N=6*NITER
-      CALL MEMOPT('REAL',WRK_RWORK1,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_RWORK1(N))
 
       IF(CARITH) THEN
-        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
-     &           CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
-        CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
+        CALL ZBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,WRK_T,WRK_EVL,
+     &           WRK_ZEV,WRK_WORK1,WRK_RWORK1)
       ELSE
-        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,CC(WRK_T),CC(WRK_EVL),
-     &           CC(WRK_ZEV),CC(WRK_RWORK1))
-        CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
+        CALL RBANDDIA(ITAP5,NITER,NP,NP+1,NEIGENV,WRK_T,WRK_EVL,
+     &           WRK_ZEV,WRK_RWORK1)
       ENDIF
 c
 c remove spurious/multiple eigenvalues and
@@ -1001,29 +998,32 @@ c
      &     ACCESS='DIRECT',RECL=IRECL,STATUS='UNKNOWN')
 
       N=2*NP*NITER*RCW
-      CALL MEMOPT('REAL',WRK_Z,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_Z(N))
       N=NITER
-      CALL MEMOPT('INTE',WRK_IND,N,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('INTE',WRK_MLT,N,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('INTE',WRK_LSP,N,CC,KFREE,LFREE,ALLOC_ME)
+      allocate(WRK_IND(N))
+      allocate(WRK_MLT(N))
+      allocate(WRK_LSP(N))
 
       IF(CARITH) THEN
          CALL ZBLANA(IW,KREP,niter,np,nocc,ionizlevel,
-     &        cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
-     &        cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
+     &        wrk_evl,wrk_zev,wrk_z,
+     &        wrk_t,wrk_ind,wrk_mlt,wrk_lsp,
      &        ITAP5,ITAP6,EVLLIM,NMSPEC)
       ELSE
          CALL RBLANA(IW,KREP,niter,np,nocc,ionizlevel,
-     &        cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
-     &        cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
+     &        wrk_evl,wrk_zev,wrk_z,
+     &        wrk_t,wrk_ind,wrk_mlt,wrk_lsp,
      &        ITAP5,ITAP6,EVLLIM,NMSPEC)
       ENDIF
+
+      deallocate(WRK_IND)
+      deallocate(WRK_MLT)
+      deallocate(WRK_LSP)
+      deallocate(WRK_Z)
 c
 c  close configuration file
 c
       CLOSE(ITAP6)
-
-      CALL MEMCHK('AFTER BLANA routines',CC,KFRSAV)
 c
 c check if user wants to calculate eigenvectors of full ADC matrix
 c NGT is the actual number of nonspurious/unique eigenvalues.
@@ -1037,65 +1037,67 @@ c
 c
       IF(NEIGENV.GT.0) THEN
 
+        LFLAG = .TRUE.
+
         N=LADC*NEIGENV*RCW
-        CALL MEMOPT('REAL',WRK_AEV,N,CC,KFREE,LFREE,ALLOC_ME)
-        N=LADC*RCW
-        CALL MEMOPT('REAL',WRK_OEV,N,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(WRK_AEV(N))
 c
 c  next redo Lanczos now with the FULL eigenvectors of T and create
 c  the LONG eigenvectors for the TOTAL ADC matrix
 c  this is executed if asked for long eigenvectors.
 c  file 1 and 2 (the ADC matrix/diag files) are still open.
 c
-        LFLAG = .TRUE.
 
-        IF(DOINCORE.EQV..true.) THEN
+!       IF(DOINCORE.EQV..true.) THEN
+!         IF(CARITH.EQV..TRUE.) THEN
+!           CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+!    &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
+!    &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+!    &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+!    &                       CC(WRK_EVL),LFLAG, INTBUF,
+!    &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
+!    &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
+!    &                       ivalid)
+!         ELSE
+!           CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
+!    &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
+!    &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
+!    &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
+!    &                       CC(WRK_EVL),LFLAG, INTBUF,
+!    &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
+!    &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
+!    &                       ivalid)
+!         ENDIF
+!         CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
+!         WRITE(IW,*)  'Memory after incore Lanczos released.'
+!       ELSE
           IF(CARITH.EQV..TRUE.) THEN
-            CALL ZLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                       CC(WRK_EVL),LFLAG, INTBUF,
-     &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
-     &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
-     &                       ivalid)
-          ELSE
-            CALL RLANCZOS_IC(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                       CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                       CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                       CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                       CC(WRK_EVL),LFLAG, INTBUF,
-     &                       ITAP1, ITAP2, ITAP3, NINCWORDS,
-     &                       cc(wrk_idr), cc(wrk_idi), cc(wrk_idj),
-     &                       ivalid)
-          ENDIF
-          CALL MEMREL('After incore Lanczos',CC,1,KINCSAV,KFREE,LFREE)
-          WRITE(IW,*)  'Memory after incore Lanczos released.'
-        ELSE
-          IF(CARITH.EQV..TRUE.) THEN
-            CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                    CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                    CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                    CC(WRK_EVL),LFLAG, INTBUF,
+            CALL ZLANCZOS(KREP,LADC, NP, NITER, NEIGENV, WRK_IVX,
+     &                    WRK_P, WRK_T, WRK_R,
+     &                    WRK_DIAG, WRK_ZEV, WRK_AEV,
+     &                    WRK_BUF,WRK_OI, WRK_OJ,
+     &                    WRK_EVL,LFLAG, INTBUF,
      &                    ITAP1, ITAP2, ITAP3)
           ELSE
-            CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                    CC(WRK_DIAG), CC(WRK_ZEV), CC(WRK_AEV),
-     &                    CC(WRK_BUF),CC(WRK_OI), CC(WRK_OJ),
-     &                    CC(WRK_EVL),LFLAG, INTBUF,
+            CALL RLANCZOS(KREP,LADC, NP, NITER, NEIGENV, WRK_IVX,
+     &                    WRK_P, WRK_T, WRK_R,
+     &                    WRK_DIAG, WRK_ZEV, WRK_AEV,
+     &                    WRK_BUF,WRK_OI, WRK_OJ,
+     &                    WRK_EVL,LFLAG, INTBUF,
      &                    ITAP1, ITAP2, ITAP3)
           ENDIF
-        ENDIF
-      ENDIF
+
+!       ENDIF    ! doincore
+
+        deallocate(WRK_AEV)
+
+      ENDIF    !neigenv.gt.0
 c
 c  close and delete the (diag) and the packed ADC matrix file
 c
       CLOSE(ITAP1,STATUS='DELETE')
       IF(IOLDNEW.EQ.1) CLOSE(ITAP2,STATUS='DELETE')
 
-      CALL MEMREL('ADC-memrel',CC,KFRSAV,KFREESAVE,KFREE,LFREE)
 c
 c  from here the file handles itap1 - itap3 are available again and we
 c  can perform the detailed analysis of the long ADC eigenvectors together
@@ -1121,6 +1123,20 @@ c
      &                     nocc,irecl,filecnf,ionizlevel)
         ENDIF
       ENDIF
+
+      deallocate(WRK_EVL)
+      deallocate(WRK_ZEV)
+      deallocate(WRK_WORK1)
+      deallocate(WRK_RWORK1)
+
+      deallocate(WRK_IVX)
+      deallocate(WRK_P)
+      deallocate(WRK_T)
+      deallocate(WRK_R)
+      deallocate(WRK_DIAG)
+      deallocate(WRK_BUF)
+      deallocate(WRK_OI)
+      deallocate(WRK_OJ)
 
       RETURN
       END
@@ -2604,6 +2620,7 @@ c  prepare short array z
       do j=1,np
         z(j,i)=zlong(j,i)
         z(j+np,i)=zlong(n-np+j,i)
+!       write(*,*) 'prepare:',i,z(j,i),z(j+np,i)
       enddo
       enddo
 
@@ -2729,7 +2746,8 @@ C
            JC = I - K + NP1
            XM = XM + Z(KK,J)*T(JC,IC)
   36     CONTINUE
-  35   Z(I+NP,J) = XM
+       Z(I+NP,J) = XM
+  35   CONTINUE
   30  CONTINUE     
 
 c
@@ -2979,6 +2997,7 @@ c
 
         upper = reladc_md_eeigv_upper
         lower = reladc_md_eeigv_lower
+        WRITE(IW,*) 'lower = ', lower, ' upper = ', upper
 
         DO j = 1, N
           IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
@@ -3016,7 +3035,7 @@ C
 !
       IMPLICIT INTEGER (A-Z)
 
-      INTEGER N,NP,LDAB
+      INTEGER IOUNIT, N, NP, LDAB
       INTEGER NEIGENV
       COMPLEX*16 AB(LDAB,*),Z(N,*),WORK(4*N)
       DOUBLE PRECISION RWORK(6*N),EVL(N)
@@ -3142,7 +3161,8 @@ c
         WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
 
         CALL dealloc(positions)
-      END IF  
+
+      END IF
 
       RETURN
       END
@@ -3638,6 +3658,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! *** variables for Davidson control
       INTEGER         :: nroots,maxdavsp,maxdavit
       REAL*8          :: convthr
+! *** controls out of core calculation
+      LOGICAL         :: davooc
 ! *** end definition variables for Matrix descriptor file
 !
 !---------------Local variables----------------------------------------
@@ -3646,11 +3668,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer         :: nsiz
       integer         :: iroot,locdim
       integer         :: lwork,info
-      integer         :: idavit,iobase1
+      integer         :: idavit,iobase1,iodachannel
       integer, allocatable, dimension(:)  :: ievec
       logical         :: notallconv,proxflag,orthoviolflag
 
       real*8, allocatable, dimension(:,:)   :: bold,bnew,aij,evint
+      real*8, allocatable, dimension(:,:)   :: aijbase
       real*8, allocatable, dimension(:)     :: lambda,reserr,work
       real*8, allocatable, dimension(:)     :: qm,adiag,xi,dmp1
       real*8                                :: qmn,a1,a2,ortho
@@ -3663,6 +3686,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       character*60                          :: listout
       character*56                          :: field
       logical, allocatable, dimension(:)    :: notconverged
+      real*8                                :: cput1,cput2,time1,time2
+      real*8                                :: ttime,a
 
 !
 !---------------Executable code----------------------------------------
@@ -3687,6 +3712,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       maxdavsp =  reladc_md_maxdavsp    !maximum dimension of Davidson space
       maxdavit =  reladc_md_maxdavit    !maximum number of Dav. iterations
       convthr  =  reladc_md_convthr     !convergence of Davidson eigenvectors
+      davooc   =  reladc_md_davooc      !check for ooc calculation
 !
 !  write out matrix  and Davidson parameters
 !
@@ -3709,47 +3735,63 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
       WRITE(iw,*) 'Number of Macro iterations:       ',maxdavit
       WRITE(iw,*) 'Eigenvalue convergence up to:     ',convthr
+      WRITE(iw,*) 'Do out-of-core calculation:       ',davooc
 !
 !   allocate work space arrays
 !
       lwork = 3*maxdavsp
-      allocate(aij(maxdavsp,maxdavsp))   !Dav. overlap matrix (DOM)
-      allocate(lambda(maxdavsp))         !Eigenvalues of DOM
-      allocate(reserr(maxdavsp))         !Residual errors of eigenvalues
-      allocate(work(lwork))              !workspace for DSYEV
-      allocate(qm(ladc))                 !intermediate vector
-      allocate(adiag(ladc))              !vector of ADC diagonal elements
-      allocate(xi(ladc))                 !intermediate vector
+      allocate(aij(maxdavsp,maxdavsp))     !Dav. overlap matrix (DOM)+eigenvectors
+      allocate(aijbase(maxdavsp,maxdavsp)) !Dav. overlap matrix base, calcd in macro itrs
+      allocate(lambda(maxdavsp))      !Eigenvalues of DOM
+      allocate(reserr(maxdavsp))      !Residual errors of eigenvalues
+      allocate(work(lwork))           !workspace for DSYEV
+      allocate(qm(ladc))              !intermediate vector, also used as auxvector
+      allocate(adiag(ladc))           !vector of ADC diagonal elements
+      allocate(xi(ladc))              !intermediate vector
       allocate(ievec(ladc))
       allocate(dmp1(ladc))
       allocate(notconverged(maxdavsp))
 
       allocate(bold(ladc,maxdavsp),stat=ialloc)
       if(ialloc.ne.0) then
-        call quit('Allocation problem in DO_DAVI!')
+        call quit('Allocation problem in DIAG_DAVI!')
       endif
-
-      allocate(bnew(ladc,maxdavsp),stat=ialloc)
-      if(ialloc.ne.0) then
-        call quit('Allocation problem in DO_DAVI!')
+   
+      if(.not.davooc) then
+        allocate(bnew(ladc,maxdavsp),stat=ialloc)
+        if(ialloc.ne.0) then
+          call quit('Allocation problem in DIAG_DAVI!')
+        endif
+        bnew    = 0.0d0
       endif
 
       allocate(evint(ladc,nroots),stat=ialloc)
       if(ialloc.ne.0) then
-        call quit('Allocation problem in DO_DAVI!')
+        call quit('Allocation problem in DIAG_DAVI!')
       endif
 !
 ! clear relevant arrays
 !
-      aij    = 0.0d0
-      reserr = 0.0d0
-      qm     = 0.0d0
-      adiag  = 0.0d0
-      xi     = 0.0d0
-      dmp1   = 0.0d0
-      bold   = 0.0d0
-      bnew   = 0.0d0
-      evint  = 0.0d0
+      aij     = 0.0d0
+      aijbase = 0.0d0
+      reserr  = 0.0d0
+      qm      = 0.0d0
+      adiag   = 0.0d0
+      xi      = 0.0d0
+      dmp1    = 0.0d0
+      bold    = 0.0d0
+      evint   = 0.0d0
+!
+! set timers to zero
+!
+      cput1 = 0.0d0
+      cput2 = 0.0d0
+      time1 = 0.0d0
+      time2 = 0.0d0
+!
+! start time measurement here
+!
+      call cpuused(cput1)
 !__________________________________________________________
 !| open file of main block eigenvectors and read them in 
 !| select the first 1,...,nroots vectors from the file
@@ -3825,8 +3867,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &           'exc.energy','error','status'
       WRITE(*,'(56A1)') ('-',i=1,56)
 
-      Call XMVMULBL_R(iobase,intbuf,nbufs,ladc,locdim,
-     &                bold,bnew)
+      if(davooc) then
+        iodachannel = iobase + 2
+        open(iodachannel,file='DAVXBN',access='direct',
+     &       recl=ladc*8,status='unknown')
+        Call XMVMULBL_OOC_R(iobase,iodachannel,intbuf,nbufs,ladc,
+     &                      locdim,maxdavsp,bold,qm,aijbase)
+      else
+        Call XMVMULBL_R(iobase,intbuf,nbufs,ladc,locdim,maxdavsp,
+     &                  bold,bnew,aijbase)
+      endif
     
 !_______________________________________________________________
 !|
@@ -3839,11 +3889,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  AIJ is symmetric because ADC matrix is symmetric.
 !
         Do j=1,locdim
-        Do i=j,locdim
-          aij(i,j) = dot_product(bold(:,i),bnew(:,j))
-          aij(j,i) = aij(i,j)   !symmetrize
+        Do i=1,locdim
+          aij(i,j) = aijbase(i,j)
         Enddo
         Enddo
+
         CALL DSYEV('V','L',locdim,aij,maxdavsp,lambda,work,lwork,info)
         If(INFO.NE.0) Then
           Call Quit('Error in DSYEV (diag_davi routine)')
@@ -3857,10 +3907,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
           proxflag = .false.
 
-          qm = 0.0d0
-          Do i = 1,locdim
-            qm(:) = qm(:) + aij(i,k)*bnew(:,i)
-          Enddo
+          IF(davooc) then
+            Call QMOOCCALC_R(iodachannel,qm,aij,ladc,maxdavsp,locdim,k)
+          else
+            qm = 0.0d0
+            Do i = 1,locdim
+              qm(:) = qm(:) + aij(i,k)*bnew(:,i)
+            Enddo
+          endif
 
           evint(:,k) = qm(:)   !if converged, then we construct the normalized eigenvector.
           a1 = dot_product(evint(:,k),evint(:,k))
@@ -3944,11 +3998,32 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           endif
 !         WRITE(*,*) 'Ortho. of the newly added b-vector',ortho
 !
-!  STEP G.  Form A*b_(M+1)
+!  STEP G.  Form A*b_(M+1)  , goes to bnew!
 !  this vector has to be included in the array of new vectors!
+!  In case of ooc calculation this array maust not be referenced
+!  and we use the qm vector as an auxiliary vector. However, we must
+!  consequently insert this vector to the DA file.
 !
-          Call XMVMUL_R(iobase,intbuf,nbufs,ladc,
-     &                  bold(:,locdim+k),bnew(:,locdim+k))
+          if(davooc) then
+            Call XMVMUL_R(iobase,intbuf,nbufs,ladc,
+     &                    bold(:,locdim+k),qm(:))
+            WRITE(iodachannel,rec=locdim+k) qm
+          else
+            Call XMVMUL_R(iobase,intbuf,nbufs,ladc,
+     &                    bold(:,locdim+k),bnew(:,locdim+k))
+          endif
+!
+!  STEP H.  update Aij to A_i,M+1,  i=1,...,M+1
+!
+          do i=1,locdim+k
+           if(davooc) then
+             aijbase(i,locdim+k) = dot_product(bold(:,i),qm(:))
+           else
+             aijbase(i,locdim+k) = dot_product(bold(:,i),
+     &                                         bnew(:,locdim+k))
+           endif
+           aijbase(locdim+k,i) = aijbase(i,locdim+k)
+          enddo
 
           Write(*,*)  listout
 !
@@ -3996,7 +4071,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             bold(:,k)=evint(:,k)
           enddo
           call reortho(bold,ladc,nroots)
-          bnew = 0.0d0
+          if(.not.davooc) bnew = 0.0d0
           exit
         endif
 
@@ -4151,6 +4226,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  deallocate all intermediate arrays
 !
       deallocate(aij)
+      deallocate(aijbase)
       deallocate(lambda)
       deallocate(work)
       deallocate(qm)
@@ -4159,8 +4235,22 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       deallocate(dmp1)
       deallocate(notconverged)
       deallocate(bold)
-      deallocate(bnew)
+      if(.not.davooc) deallocate(bnew)
       deallocate(evint)
+!
+!  delete direct access file
+!
+      if(davooc) then
+        close(iodachannel,status='delete')
+      endif
+!
+!  measure time
+!
+      call cpuused(cput2)
+      ttime= cput2-cput1
+      Write(*,*) '++++++++++++'
+      Write(*,*) '++++++ time in davidson: ',ttime
+      Write(*,*) '++++++++++++'
 
       RETURN
       END
@@ -4221,14 +4311,16 @@ c  .. read elements
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XMVMULBL_R(iobase,intbuf,nbufs,ladc,nvecs,PO,PN)
+      SUBROUTINE XMVMULBL_R(iobase,intbuf,nbufs,ladc,nvecs,lda,
+     &                      PO,PN,aijbase)
 C
       IMPLICIT NONE
 !
 !------------------------ calling variables -------------------------
 !
-      INTEGER                        :: iobase,intbuf,nbufs,ladc,nvecs
-      REAL*8                         :: PO(LADC,nvecs), PN(LADC,nvecs)
+      INTEGER           :: iobase,intbuf,nbufs,ladc,nvecs,lda
+      REAL*8            :: PO(LADC,nvecs), PN(LADC,nvecs)
+      REAL*8            :: aijbase(lda,lda)
 !
 !------------------------ local variables -------------------------
 !
@@ -4293,9 +4385,119 @@ c  .. read off-diagonal elements and multiply on the fly
       deallocate(ioi)
       deallocate(buf)
 
+      Do j=1,nvecs
+        Do i=j,nvecs
+          aijbase(i,j) = dot_product(PO(:,i),PN(:,j))
+          aijbase(j,i) = aijbase(i,j)
+        Enddo
+      Enddo
+
+
       RETURN
 
  889  CALL QUIT('Matrix read error in XMVMULBL_R')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XMVMULBL_OOC_R(iobase,ioda,intbuf,nbufs,ladc,nvecs,lda,
+     &                      PO,pnew,aijbase)
+C
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER           :: iobase,ioda,intbuf,nbufs,ladc,nvecs,lda
+      REAL*8            :: PO(LADC,nvecs), pnew(LADC)
+      REAL*8            :: aijbase(lda,lda)
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)      :: BUF
+      INTEGER, allocatable, dimension(:)      :: IOI,IOJ
+      INTEGER                                 :: I,J,K,IXX,JVEC
+      INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
+      REAL*8                                  :: A
+
+!
+!---------------Description--------------------------------------------
+!
+!  Perform the real symmetric multiplication of the external ADC matrix
+!  with all the vectors in PO and write the result to a direct access
+!  file. Additionally the initial A_ij array is constructed here.
+!
+!  Matrix format is assumed to include the diagonal (new format)
+!
+!  Intermediate buffers are allocated internally !
+!
+!---------------Executable code--------------------------------------
+!
+!  for the matrix elements we note that only the lower triangular
+!  part *AND* the diagonal of the ADC-matrix is stored. 
+!  the if takes care of not double counting the diagonal.
+!  since the diagonal is now *contained* in the matrix
+
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+
+c  .. read off-diagonal elements and multiply on the fly
+c  ..  in contrast to the incore routine, we generate one complete
+c  .. new vector write it to disk and multiply it with all the
+c     old vectors. Then we do the next vector. For large systems this 
+c     takes more time but saves huge memory
+
+!_______________________________________________
+!|
+!|
+!|  loop over the old vectors
+!|
+      DO JVEC = 1,NVECS
+
+        REWIND(iobase)
+        pnew = 0.0d0
+        DO I = 1,NBUFS
+          READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                         (IOI(IXX),IXX=1,INTBUF),
+     &                         (IOJ(IXX),IXX=1,INTBUF),
+     &                          NACT,JDUMMY
+          DO K = 1, NACT
+            IROW = IOI(K)
+            ICOL = IOJ(K)
+            A    = BUF(K)
+         
+            pnew(IROW) = pnew(IROW) + PO(ICOL,JVEC) * A
+            IF(IROW.NE.ICOL) pnew(ICOL)=pnew(ICOL) + PO(IROW,JVEC) * A
+
+          ENDDO
+        ENDDO
+!
+!  from here the vector pnew = H*b_j is available
+!  Save it to disk
+!
+        Write(ioda,rec=JVEC) pnew
+!
+!  now form the jth column of the A_ij array
+!  A_ij = b_i^T*H*b_j
+!
+        Do i=JVEC,nvecs
+          aijbase(i,JVEC) = dot_product(PO(:,i),pnew(:))
+          aijbase(JVEC,i) = aijbase(i,JVEC)
+        Enddo
+!|
+!|  end loop over the old vectors
+!|______________________________________________
+
+      ENDDO   !JVEC
+!
+!  release buffers
+!
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in XMVMULBL_OCC_R')
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4371,6 +4573,38 @@ c  .. read off-diagonal elements and multiply on the fly
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QMOOCCALC_R(ioda,qmu,aij,ladc,maxdavsp,locdim,iroot)
+C
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER             :: ioda,ladc,maxdavsp,locdim,iroot
+      REAL*8              :: qmu(ladc),aij(maxdavsp,maxdavsp)
+!
+!------------------------ local variables -------------------------
+!
+      INTEGER                                 :: i,j
+      real*8, allocatable, dimension(:)       :: aux
+!
+!---------------Description--------------------------------------------
+!
+!   This routine calculates the qm vector using the new b-vectors
+!   from disk
+!
+      allocate(aux(ladc))
+      qmu = 0.0d0
+      do i=1,locdim
+        read(ioda,rec=i,err=888) aux
+        qmu(:) = qmu(:) + aij(i,iroot)*aux(:)
+      enddo
+      deallocate(aux)
+      return
+
+ 888  call quit('Vector read error in QMOOCCALC_R!')
+
+      end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE REORTHO(v,ladc,nroots)
 !
       IMPLICIT NONE
@@ -4387,28 +4621,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER                                :: i,k
 
 !
-!---------------Description--------------------------------------------
-!
-!     write(*,*) 'In reortho ***********************'
-      allocate(x(ladc))
+!---------------Executable ----------------------------------------
 !
 ! reorthogonalize nvec vectors stored columnwise in the array a
 !
+      allocate(x(ladc))
       Do k=1,nroots
         x = v(:,k)
         Do i=1,k-1
           a1 = dot_product(x(:),v(:,i))
-!         write(*,*) i,k,a1
           x = x - a1*v(:,i)
         Enddo
         a1 = sqrt(dot_product(x,x))
-!       write(*,*) 'norm k:',k,a1
         v(:,k)  =  x/a1
       Enddo
-!     write(*,*) 'Exiting  reortho ***********************'
-!
-!---------------Executable part----------------------------------------
-!
+ 
       deallocate(x)
       RETURN
       END
@@ -4644,8 +4871,7 @@ C|____________________________________________________________
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM,
-     &                     MAXOCCSP,IROOO)
+      SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -4661,7 +4887,6 @@ C---------------Calling variables--------------------------------------
 C
       CHARACTER*6 FILENAME
       INTEGER LUN,IRECL,DESREP,LENADCM
-      INTEGER MAXOCCSP,IROOO(MAXOCCSP,2)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -4674,6 +4899,9 @@ C
       CHARACTER*44 FIELD44
       INTEGER bl_conf
       CHARACTER*4 bl_irna,bl_abs
+
+      integer                                 :: MAXOCCSP
+      integer, allocatable, dimension(:,:)    :: IROOO
       
 C
 C---------------Executable code--------------------------------------
@@ -4682,6 +4910,10 @@ C  Do the hole space configuration analysis for the
 C  DIP case exclusively in this routine.
 c  Initialize arrays:
 c
+      MAXOCCSP = IO(NREP+1)    ! IO array comes from symm.inc
+      allocate(IROOO(MAXOCCSP,2))
+      IROOO = 0
+
       IX=1
       Do KRP=1,NREP
         Do K=1,NO(KRP)
@@ -4777,6 +5009,8 @@ C|
 C|____________________________________________________________
 
  381  FORMAT(4(I3,'(',A4,')  '))
+
+      deallocate(IROOO)
 
       RETURN
       END

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -774,13 +774,17 @@ C           debug print
             WRITE(LUWRT,*) ' symmetry of property    ==>', ISYM_T
             WRITE(LUWRT,*) ' symmetry of sigma state ==>', 
      &                       IDBGMULT(ICSM,ISYM_T)
+#ifdef VAR_MPI2
             WRITE(LUWRT,*) ' active sigma irrep      ==>', 
      &                       IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISSM)
+#endif
 #endif
             ISSM      = IDBGMULT(ICSM,ISYM_T)
             L_COMBI_S =   XISPSM(ISSM,ISSPC)
 C           which "active" S irrep?
+#ifdef VAR_MPI2
             IX_ST     = IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISSM)
+#endif
 C
 C           compute new sigma vector = T_prop x C
 C           -------------------------------------

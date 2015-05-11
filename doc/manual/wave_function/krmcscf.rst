@@ -8,7 +8,7 @@ by Joern Thyssen, Timo Fleig and Hans Joergen Aagaard Jensen,
 parallelization and continuous improvement by Stefan Knecht and Hans
 Joergen Aagaard Jensen. Linear symmetry adaptation by Stefan Knecht and Hans Joergen Aagaard Jensen.
 
-For more details on the theory and actual implementation see [Jensen1996]_, [Thyssen2004]_ , [Thyssen2008]_, [Knecht2009]_.
+For more details on the theory and actual implementation see :cite:`Jensen1996`, :cite:`Thyssen2004` , :cite:`Thyssen2008`, :cite:`Knecht2009`.
 
 
 **Mandatory keywords**
@@ -42,7 +42,7 @@ constructed. The second entry after the "/" gives  the
 number of orbitals per fermion correp. See also the open-shell input in :ref:`SCF` which is similar to the syntax used
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
-virtual space, for technical reasons (save core memory). See reference [Fleig2006a]_,
+virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
 pp. 27 for more details. example for a CASSCF run with 10 electrons in 10 orbitals also known as CAS(10,10):
 
 ::
@@ -62,13 +62,18 @@ if all orbitals (fullMCSCF, feasible only for systems with 2-3 active electrons)
 
 keyword(INACTIVE)
 
-Inactive orbitals per fermion correp. *default*: all orbitals active. example for 4 *gerade*  and 2 *ungerade* orbitals frozen in a molecule with inversion center:
+Inactive orbitals per fermion correp. *default*: all orbitals are active. The example below for a molecule with inversion
+center marks the lowest 4 *gerade* and 2 *ungerade* orbitals as inactive, i.e. they are always kept doubly occupied in all determinants
+of the CI expansion:
 
 ::
 
     .INACTIVE
      4 2
 
+All remaining orbitals above the inactive + active space are considered as secondary orbitals, i.e. they are kept empty
+in all determinants of the CI expansion. By default all orbital rotations between the inactive-active and active-secondary
+space are included. 
 
 optional keywords under \*KRMCSCF
 =================================

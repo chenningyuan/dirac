@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1925,6 +1925,13 @@ C
 C FIXME !! Uncommented sign here!!
                             if (IXCH.eq.1) T(ICOUNT_I8) = - T(ICOUNT_I8)
 C FIXME !! Uncommented sign here!!
+
+#ifdef DMRG_DEBUG
+!                           DMRG DEBUG: no 2e-ints...
+                            if(icnt > 2) T(ICOUNT_I8) = 0.0d0
+!                           DMRG DEBUG: no 2e-ints...
+#endif
+
                               if (NTEST.ge.2) then
                                 write(LUWRT,'(A,I4,A,4I3,A,1P,1E16.7)') 
      &                              'INTEGRAL no. ',ICOUNT_I8,'(',

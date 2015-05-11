@@ -153,7 +153,7 @@
                      isFatal = .False.
                   
                   case (allocateFailure)
-                     write (InfoMessage(1),'(a,i7,a)')                                                &
+                     write (InfoMessage(1),'(a,i15,a)')                                                &
      &                     'Not enough memory available when attempting to allocate ',                &
      &                      nint(mbytesRequested),                                                    &
      &                     ' Mb in subroutine '//trace_result(1:42)

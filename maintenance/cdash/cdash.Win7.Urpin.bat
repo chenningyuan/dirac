@@ -35,8 +35,9 @@ rem plink -agent git@repo.ctcc.no
 C:\Git\bin\git.exe clean -f
 
 rem download fresh Dirac - MUST HAVE full path of git
-C:\Git\bin\git.exe checkout release-13 
-C:\Git\bin\git.exe pull origin release-13
+rem C:\Git\bin\git.exe checkout release-13 
+rem C:\Git\bin\git.exe pull origin release-13
+C:\Git\bin\git.exe pull
 
 rem show 3 last commits...
 rem C:\Git\bin\git.exe log -3
@@ -46,7 +47,8 @@ if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
 python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin-Win7-MinGW64-ILP64-release13"   --generator="MinGW Makefiles" --int64 %BUILD%
 cd %BUILD%
-mingw32-make Experimental
+rem mingw32-make -j4 Experimental
+ctest -j4 -D Experimental
 
 rem remove the scratch space, may contain some rubbish...
 if exist %WRK% rmdir /S /Q %WRK%

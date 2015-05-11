@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -100,11 +100,11 @@ C
         iread_from_mc_file = 1
         close(luni)
       else if( .not. ex )then
-	  call dcopy(nzconfq,cref,1,cref_x,1)
+        call dcopy(nzconfq,cref,1,cref_x,1)
       end if
 !     call wrtmatmn(cref_x,1,nzconfq,1,nzconfq,lupri)
 
-	if( iread_from_mc_file .gt. 0)then
+      if( iread_from_mc_file .gt. 0)then
         write(lupri,'(/1X,A,I16)')
      &  '(RGETNO) NO calculation:'//
      &  ' cref read from KRMCOLD with # of dets =',nzconfq
@@ -1890,17 +1890,18 @@ C
       ! print in debye
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-     &        CHAR(IOFF+I),(DEBYE*oscl(I)),' Debye',
+     &        CHAR(IOFF+I),(DEBYE*(oscl(I)+eprop_core(ind_dip(i)))),
+     &                                    ' Debye',
      &                   (DEBYE*DIPMN(I)),' Debye',
-     &        (DEBYE*(oscl(I)+DIPMN(I))),' Debye'
+     &        (DEBYE*(oscl(I)+eprop_core(ind_dip(i))+DIPMN(I))),' Debye'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,5)
       ! print in a.u.
       DO I = 1,3
          WRITE(LUPRI,'(A1,3(3X,F16.8,A))')
-     &        CHAR(IOFF+I),(oscl(I)),' a.u. ',
+     &        CHAR(IOFF+I),(oscl(I)+eprop_core(ind_dip(i))),' a.u. ',
      &                   (DIPMN(I)),' a.u. ',
-     &        (oscl(I)+DIPMN(I)),' a.u.'
+     &        (oscl(I)+eprop_core(ind_dip(i))+DIPMN(I)),' a.u.'
       ENDDO
 
 

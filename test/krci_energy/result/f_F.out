@@ -1,185 +1,204 @@
-DIRAC pam run in /Users/Stefanknecht/progs/dirac/dirac-repo/test/krci_energy
+DIRAC pam run in /var/autofs/home/eth/stknecht/prog/dirac-git-repo/test/krci_energy
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
 
 Note: maximum allocatable memory for serial run can be set by pam --aw
 
- ******************************************************************************
- *                                                                            *
- *                                O U T P U T                                 *
- *                                   from                                     *
- *                                                                            *
- *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
- *                   @@  @@        @@  @@   @@  @@   @@                       *
- *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
- *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
- *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
- *                                                                            *
- *                                                                            *
- %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
- $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
- (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
- $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
- SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
- SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
- ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
- S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
- (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
- $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
- S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
- c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
- S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
- $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
- $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
- ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
- Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
- (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
- SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
- $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
- %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
- $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
- $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
- )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
- $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
- $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
- Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
- $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
- &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
- =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
- $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
- MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
- MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
- MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
- MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
- MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
- MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
- MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
- MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
- MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
- MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
- MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
- MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
- MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
- MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
- MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
- MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
- MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
- MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
- MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
- MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
- MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
- MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
- MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
- MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
- ******************************************************************************
- *                                                                            *
- *         =========================================================          *
- *                     Program for Atomic and Molecular                       *
- *          Direct Iterative Relativistic All-electron Calculations           *
- *         =========================================================          *
- *                                                                            *
- *                                                                            *
- *    Written by:                                                             *
- *                                                                            *
- *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
- *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
- *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *                                                                            *
- *    with contributions from:                                                *
- *                                                                            *
- *    Vebjoern Bakken          University of Oslo                Norway       *
- *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Sebastien Dubillard      University of Strasbourg          France       *
- *    Ulf Ekstroem             University of Oslo                Norway       *
- *    Ephraim Eliav            University of Tel Aviv            Israel       *
- *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
- *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
- *    Olav Fossgaard           University of Tromsoe             Norway       *
- *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
- *    Trygve Helgaker          University of Oslo                Norway       *
- *    Jon K. Laerdahl          University of Oslo                Norway       *
- *    Johan Henriksson         Linkoeping University             Sweden       *
- *    Miroslav Ilias           Matej Bel University              Slovakia     *
- *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
- *    Stefan Knecht            University of Southern Denmark    Denmark      *
- *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
- *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linkoeping University             Sweden       *
- *    Gosia Olejniczak         University of Warsaw              Poland       *
- *    Jeppe Olsen              Aarhus University                 Denmark      *
- *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
- *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsoe             Norway       *
- *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
- *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
- *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
- *    Joern Thyssen            University of Southern Denmark    Denmark      *
- *    Joost van Stralen        VU University Amsterdam           Netherlands  *
- *    Sebastien Villaume       Linkoeping University             Sweden       *
- *    Olivier Visser           University of Groningen           Netherlands  *
- *    Toke Winther             University of Southern Denmark    Denmark      *
- *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
- *                                                                            *
- *    For the complete list of contributors to the DIRAC code see our         *
- *    website http://dirac.chem.vu.nl                                         *
- *                                                                            *
- *    This is an experimental code. The authors accept no responsibility      *
- *    for the performance of the code or for the correctness of the results.  *
- *                                                                            *
- *    The code (in whole or part) is not to be reproduced for further         *
- *    distribution without the written permission of the authors or           *
- *    their representatives.                                                  *
- *                                                                            *
- *    If results obtained with this code are published, an                    *
- *    appropriate citation would be:                                          *
- *                                                                            *
- *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC11 (2011),                                                 *
- *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
- *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
- *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
- *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
- *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
- *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
- *                                                                            *
- ******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             KTH/PDC Stockholm                 Sweden        *
+ *    Trond Saue               Universite P. Sabatier, Toulouse  France        *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands   *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Heidelberg          Germany       *
+ *    Timo Fleig               Universite P. Sabatier, Toulouse  France        *
+ *    Olav Fossgaard           University of Tromsoe             Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France        *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     University of Tromsoe             Norway        *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Patrick Norman           Linkoeping University             Sweden        *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Kenneth Ruud             University of Tromsoe             Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany       *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
+ *    Andreas J. Thorvaldsen   University of Tromsoe             Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands   *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *                                                                             *
+ *    For the complete list of contributors to the DIRAC code see our          *
+ *    website http://www.diracprogram.org                                      *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    The code (in whole or part) is not to be reproduced for further          *
+ *    distribution without the written permission of the authors or            *
+ *    their representatives.                                                   *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC13 (2013),                                                  *
+ *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, Y. S. Lee,    *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
+ *    O. Kullie, C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak,        *
+ *    J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner, K. Ruud,          *
+ *    P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen, *
+ *    J. van Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto      *
+ *    (see http://www.diracprogram.org).                                       *
+ *                                                                             *
+ *******************************************************************************
 
 
 Binary information
 ------------------
 
- Who compiled             | Stefanknecht@stefans-mac-book-pro.local
- System                   | Darwin-11.4.0
+ Who compiled             | stknecht
+ Host                     | ws47.ethz.ch
+ System                   | Linux-2.6.32-431.23.3.el6.x86_64
  CMake generator          | Unix Makefiles
- Processor                | i386
+ Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
- Fortran compiler         | /usr/local/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.6.2 20111019 (prerelease)
- Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
-                          | _MFDS -fno-range-check -O3 -funroll-all-loops
- C compiler               | /usr/bin/gcc
- C compiler version       | i686-apple-darwin11-llvm-gcc-4.2 (GCC) 4.2.1 (Base
-                          | d on Apple Inc. build 5658) (LLVM build 2336.9.00)
- C flags                  | -g -O2 -Wno-unused
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | i686-apple-darwin11-llvm-g++-4.2 (GCC) 4.2.1 (Base
-                          | d on Apple Inc. build 5658) (LLVM build 2336.9.00)
- C++ flags                |  -O3 -DNDEBUG
+ Fortran compiler         | /data/soft/compiler/intel/Composer_2013.0.079/bin/
+                          | ifort
+ Fortran compiler version | ifort (IFORT) 13.0.0 20120731
+ C compiler               | /data/soft/compiler/intel/Composer_2013.0.079/bin/
+                          | icc
+ C compiler version       | icc (ICC) 13.0.0 20120731
+ C++ compiler             | /data/soft/compiler/intel/Composer_2013.0.079/bin/
+                          | icpc
+ C++ compiler version     | icpc (ICC) 13.0.0 20120731
+ BLAS                     | -Wl,--start-group;/data/soft/compiler/intel/Compos
+                          | er_2013.0.079/mkl/lib/intel64/libmkl_intel_lp64.so
+                          | ;/data/soft/compiler/intel/Composer_2013.0.079/mkl
+                          | /lib/intel64/libmkl_intel_thread.so;/data/soft/com
+                          | piler/intel/Composer_2013.0.079/mkl/lib/intel64/li
+                          | bmkl_core.so;/usr/lib64/libpthread.so;/usr/lib64/l
+                          | ibm.so;-openmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/data/soft/compiler/intel/Compos
+                          | er_2013.0.079/mkl/lib/intel64/libmkl_lapack95_lp64
+                          | .a;/data/soft/compiler/intel/Composer_2013.0.079/m
+                          | kl/lib/intel64/libmkl_intel_lp64.so;-openmp;-Wl,--
+                          | end-group
  Static linking           | OFF
- Last Git revision        | c9412fab61746e6fefc6760b30bc872aff5c3815
- Configuration time       | 2012-10-28 01:05:42.299453
+ Last Git revision        | e5c484f6e414258bd71795daaeb4af9164a3a3dc
+ Git branch               | release-14
+ Configuration time       | 2014-10-22 18:09:00.077292
 
 
 Execution time and host
 -----------------------
 
  
+     Date and time (Linux)  : Wed Oct 22 18:09:41 2014
+     Host name              : ws47.ethz.ch                            
 
 
 Contents of the input file
@@ -447,7 +466,7 @@ Point group: C2h
   -------------------------------------------
 
     1
-
+ 
 F  1   0.0000000000   0.0000000000   0.0000000000
 
 
@@ -587,7 +606,11 @@ F  1   0.0000000000   0.0000000000   0.0000000000
     ************************** Wave function module **************************
     **************************************************************************
 
- Jobs in this run (in execution order):
+ Wave function types requested (in input order):
+     HF        
+     KR-CI     
+
+ Wave function jobs in execution order (expanded):
  * Hartree-Fock calculation
  * Kramers restricted CI calculation
 ===========================================================================
@@ -610,8 +633,10 @@ F  1   0.0000000000   0.0000000000   0.0000000000
 
  * Bare nucleus screening correction used for start guess
  * General print level   :   0
+
  ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
+
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
    Desired convergence:1.000D-07
@@ -646,7 +671,7 @@ F  1   0.0000000000   0.0000000000   0.0000000000
    - GAS space   2       :    1   3
     (constraints: min/max active electrons after space :   7/  7)
  * CI program used       : LUCIAREL
- * optimization of wave function(s) in the following symmetries:
+ * Convergence of CI function(s) in the following symmetries:
     **   3 eigenstate(s) in symmetry (fermion):  au
     -- Allowed interval of 2 * MK :  -7 to   7
  * Using symmetry nomenclature for LUCIAREL. 
@@ -654,12 +679,13 @@ F  1   0.0000000000   0.0000000000   0.0000000000
 
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
-   SL-integrals from iteration    0
-   SS-integrals from iteration    0
+   SL-integrals.
+   SS-integrals.
  * General print level   :    0
 ===========================================================================
  Control parameters for KR-CI optimization
 ===========================================================================
+ * Energy convergence threshold:   1.00D-08
  * Maximum number of CI iterations for each symmetry:  20
  * Maximum subspace dimension set to  60
 
@@ -685,20 +711,21 @@ F  1   0.0000000000   0.0000000000   0.0000000000
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   Ag    * Deleted:          3(Proj:          3, Lindep:          0)
-   L   Bg    * Deleted:          0(Proj:          0, Lindep:          0)
-   S   Bu    * Deleted:          6(Proj:          6, Lindep:          0)
-   S   Au    * Deleted:          3(Proj:          3, Lindep:          0)
-   L   Bu    * Deleted:          0(Proj:          0, Lindep:          0)
-   L   Au    * Deleted:          0(Proj:          0, Lindep:          0)
-   S   Ag    * Deleted:          6(Proj:          6, Lindep:          0)
-   S   Bg    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   Ag    * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.13E-01
+   L   Bg    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.35E+00
+   S   Bu    * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.27E-03
+   S   Au    * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.27E-03
+   L   Bu    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.83E-01
+   L   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.83E-01
+   S   Ag    * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.61E-01
+   S   Bg    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.16E+00
 
 
                                 Output from MODHAM
                                 ------------------
 
-* Applied strict kinetic balance !
+ * Applied strict kinetic balance !
+ SLSORT branch 1...
 
 
       **********************************************************************
@@ -720,171 +747,161 @@ Total no. of orbitals      (NORB):    50      36      86
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########                           
+########## START ITERATION NO.   1 ##########   Wed Oct 22 18:09:41 2014
 
 
 => Calculating sum of orbital energies
-It.    1    -52.28490514547      0.00D+00  0.00D+00  0.00D+00               0.01056100s   Scr. nuclei              
+It.    1    -52.28490514545      0.00D+00  0.00D+00  0.00D+00               0.00599900s   Scr. nuclei    Wed Oct 22
 
-########## START ITERATION NO.   2 ##########                           
+########## START ITERATION NO.   2 ##########   Wed Oct 22 18:09:41 2014
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.09%   10.32%   30.48%   0.00661400s
-SOfock:SL  1.00D-12   10.28%   46.85%    8.43%   29.47%   0.04301000s
-SOfock:SS  1.00D-12   11.22%   49.32%    7.50%   29.14%   0.11255200s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.31551400s
+SOfock:LL  1.00D-12    7.78%   48.01%    7.69%   29.72%   0.00300000s
+SOfock:SL  1.00D-12   10.02%   47.06%    7.23%   29.46%   0.02199600s
+SOfock:SS  1.00D-12   11.22%   49.32%    7.50%   29.14%   0.06599000s
+>>> Total wall time: 0.13281250s
+>>> Total CPU time : 0.12298200s
 
-########## END ITERATION NO.   2 ##########                           
+########## END ITERATION NO.   2 ##########   Wed Oct 22 18:09:41 2014
 
-It.    2    -99.15785231445      4.69D+01  9.42D+00  1.97D+00               0.31551400s   LL SL SS                 
+It.    2    -99.15785231444      4.69D+01  9.42D+00  1.97D+00               0.12298200s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.   3 ##########                           
+########## START ITERATION NO.   3 ##########   Wed Oct 22 18:09:42 2014
 
     3 *** Differential density matrix. DCOVLP     = 1.0600
     3 *** Differential density matrix. DVOVLP( 1) = 0.9619
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.18%    8.47%   31.85%   0.00472599s
-SOfock:SL  1.00D-12   10.28%   47.49%    7.80%   29.18%   0.03523701s
-SOfock:SS  1.00D-12   11.22%   51.15%    7.21%   28.31%   0.09924102s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.21434602s
+SOfock:LL  1.00D-12    7.78%   48.05%    7.69%   28.81%   0.00299901s
+SOfock:SL  1.00D-12   10.02%   47.69%    7.14%   29.18%   0.02199699s
+SOfock:SS  1.00D-12   11.22%   51.15%    7.21%   28.31%   0.06699000s
+>>> Total wall time: 0.10156250s
+>>> Total CPU time : 0.09898400s
 
-########## END ITERATION NO.   3 ##########                           
+########## END ITERATION NO.   3 ##########   Wed Oct 22 18:09:42 2014
 
-It.    3    -99.48157983313      3.24D-01  2.74D-01  2.07D-01   DIIS   2    0.21434602s   LL SL SS                 
+It.    3    -99.48157983313      3.24D-01  2.74D-01  2.07D-01   DIIS   2    0.09898400s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.   4 ##########                           
+########## START ITERATION NO.   4 ##########   Wed Oct 22 18:09:42 2014
 
     4 *** Differential density matrix. DCOVLP     = 0.9978
     4 *** Differential density matrix. DVOVLP( 1) = 1.0167
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.24%   10.70%   29.48%   0.00453901s
-SOfock:SL  1.00D-12   10.28%   48.22%    8.35%   28.78%   0.03657901s
-SOfock:SS  1.00D-12   11.22%   53.19%    6.88%   27.33%   0.09712499s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.22111201s
+SOfock:LL  1.00D-12    7.78%   48.25%   10.70%   30.77%   0.00300001s
+SOfock:SL  1.00D-12   10.28%   48.22%    8.17%   28.78%   0.02199601s
+SOfock:SS  1.00D-12   11.22%   53.19%    6.88%   27.33%   0.06299099s
+>>> Total wall time: 0.10156250s
+>>> Total CPU time : 0.09498600s
 
-########## END ITERATION NO.   4 ##########                           
+########## END ITERATION NO.   4 ##########   Wed Oct 22 18:09:42 2014
 
-It.    4    -99.48856277594      6.98D-03 -1.10D-01  5.33D-02   DIIS   3    0.22111201s   LL SL SS                 
+It.    4    -99.48856277594      6.98D-03 -1.10D-01  5.33D-02   DIIS   3    0.09498600s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.   5 ##########                           
+########## START ITERATION NO.   5 ##########   Wed Oct 22 18:09:42 2014
 
     5 *** Differential density matrix. DCOVLP     = 1.0024
     5 *** Differential density matrix. DVOVLP( 1) = 1.0045
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.49%   10.58%   30.20%   0.00470698s
-SOfock:SL  1.00D-12   10.28%   49.52%    8.16%   28.12%   0.04232502s
-SOfock:SS  1.00D-12   11.22%   55.99%    6.57%   25.86%   0.09453100s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.22476399s
+SOfock:LL  1.00D-12    7.78%   48.48%   10.59%   31.62%   0.00299999s
+SOfock:SL  1.00D-12   10.28%   49.51%    8.16%   28.13%   0.02199602s
+SOfock:SS  1.00D-12   11.22%   55.99%    6.57%   25.86%   0.06399098s
+>>> Total wall time: 0.09375000s
+>>> Total CPU time : 0.09498500s
 
-########## END ITERATION NO.   5 ##########                           
+########## END ITERATION NO.   5 ##########   Wed Oct 22 18:09:42 2014
 
-It.    5    -99.48908894587      5.26D-04  5.00D-02  1.82D-02   DIIS   4    0.22476399s   LL SL SS                 
+It.    5    -99.48908894587      5.26D-04  5.00D-02  1.82D-02   DIIS   4    0.09498500s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.   6 ##########                           
+########## START ITERATION NO.   6 ##########   Wed Oct 22 18:09:42 2014
 
     6 *** Differential density matrix. DCOVLP     = 0.9998
     6 *** Differential density matrix. DVOVLP( 1) = 1.0021
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.47%    7.57%   31.00%   0.00574994s
-SOfock:SL  1.00D-12   10.02%   50.25%    6.87%   27.80%   0.04181206s
-SOfock:SS  1.00D-12   11.22%   57.41%    6.39%   25.12%   0.11431503s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.25605905s
+SOfock:LL  1.00D-12    7.78%   48.52%    7.54%   29.29%   0.00299999s
+SOfock:SL  1.00D-12   10.02%   50.27%    7.38%   27.77%   0.02199602s
+SOfock:SS  1.00D-12   11.22%   57.41%    6.39%   25.12%   0.06399101s
+>>> Total wall time: 0.10156250s
+>>> Total CPU time : 0.09498600s
 
-########## END ITERATION NO.   6 ##########                           
+########## END ITERATION NO.   6 ##########   Wed Oct 22 18:09:42 2014
 
-It.    6    -99.48914198127      5.30D-05 -9.63D-03  9.60D-04   DIIS   5    0.25605905s   LL SL SS                 
+It.    6    -99.48914198127      5.30D-05 -9.63D-03  9.60D-04   DIIS   5    0.09498600s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.   7 ##########                           
+########## START ITERATION NO.   7 ##########   Wed Oct 22 18:09:42 2014
 
     7 *** Differential density matrix. DCOVLP     = 0.9999
     7 *** Differential density matrix. DVOVLP( 1) = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   49.07%   10.43%   29.00%   0.00706208s
-SOfock:SL  1.00D-12   10.28%   52.50%    7.62%   26.44%   0.04356706s
-SOfock:SS  1.00D-12   11.22%   64.33%    5.69%   21.32%   0.11199093s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.24836600s
+SOfock:LL  1.00D-12    7.78%   48.97%   10.49%   29.51%   0.00300002s
+SOfock:SL  1.00D-12   10.28%   52.45%    7.58%   26.49%   0.02199697s
+SOfock:SS  1.00D-12   11.22%   64.33%    5.69%   21.32%   0.06099004s
+>>> Total wall time: 0.10156250s
+>>> Total CPU time : 0.09298600s
 
-########## END ITERATION NO.   7 ##########                           
+########## END ITERATION NO.   7 ##########   Wed Oct 22 18:09:42 2014
 
-It.    7    -99.48914237936      3.98D-07  1.65D-04  1.05D-04   DIIS   6    0.24836600s   LL SL SS                 
+It.    7    -99.48914237936      3.98D-07  1.65D-04  1.05D-04   DIIS   6    0.09298600s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.   8 ##########                           
+########## START ITERATION NO.   8 ##########   Wed Oct 22 18:09:42 2014
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   51.03%    7.32%   29.68%   0.00591803s
-SOfock:SL  1.00D-12   10.02%   58.78%    6.19%   23.01%   0.03723192s
-SOfock:SS  1.00D-12   11.22%   74.69%    5.13%   15.47%   0.08154094s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.19982600s
+SOfock:LL  1.00D-12    7.78%   51.09%   10.04%   30.05%   0.00299901s
+SOfock:SL  1.00D-12   10.28%   58.56%    7.02%   23.05%   0.02099699s
+SOfock:SS  1.00D-12   11.22%   74.69%    5.13%   15.47%   0.05699199s
+>>> Total wall time: 0.08593750s
+>>> Total CPU time : 0.08698600s
 
-########## END ITERATION NO.   8 ##########                           
+########## END ITERATION NO.   8 ##########   Wed Oct 22 18:09:42 2014
 
-It.    8    -99.48914238134      1.98D-09 -5.74D-05  9.93D-06   DIIS   7    0.19982600s   LL SL SS                 
+It.    8    -99.48914238134      1.98D-09 -5.74D-05  9.93D-06   DIIS   7    0.08698600s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.   9 ##########                           
+########## START ITERATION NO.   9 ##########   Wed Oct 22 18:09:42 2014
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
     9 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   52.13%    9.64%   27.89%   0.00460696s
-SOfock:SL  1.00D-12   10.28%   60.71%    6.41%   22.19%   0.03342605s
-SOfock:SS  1.00D-12   11.22%   78.39%    4.73%   13.50%   0.08107805s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.19342089s
+SOfock:LL  1.00D-12    7.78%   52.19%    9.61%   28.57%   0.00300002s
+SOfock:SL  1.00D-12   10.28%   60.73%    6.43%   22.16%   0.01999700s
+SOfock:SS  1.00D-12   11.22%   78.39%    4.73%   13.50%   0.05599099s
+>>> Total wall time: 0.09375000s
+>>> Total CPU time : 0.08598800s
 
-########## END ITERATION NO.   9 ##########                           
+########## END ITERATION NO.   9 ##########   Wed Oct 22 18:09:42 2014
 
-It.    9    -99.48914238139      4.58D-11  1.65D-06  2.01D-06   DIIS   8    0.19342089s   LL SL SS                 
+It.    9    -99.48914238139      4.53D-11  1.65D-06  2.01D-06   DIIS   8    0.08598800s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.  10 ##########                           
+########## START ITERATION NO.  10 ##########   Wed Oct 22 18:09:42 2014
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   54.35%    7.23%   28.22%   0.00486898s
-SOfock:SL  1.00D-12   10.28%   65.41%    5.63%   19.85%   0.03284311s
-SOfock:SS  1.00D-12   11.22%   83.76%    4.56%   11.20%   0.07837403s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.18800199s
+SOfock:LL  1.00D-12    7.78%   54.36%    9.03%   27.15%   0.00299901s
+SOfock:SL  1.00D-12   10.28%   65.41%    5.83%   19.85%   0.01899701s
+SOfock:SS  1.00D-12   11.22%   83.76%    4.56%   11.20%   0.05199200s
+>>> Total wall time: 0.08593750s
+>>> Total CPU time : 0.08098700s
 
-########## END ITERATION NO.  10 ##########                           
+########## END ITERATION NO.  10 ##########   Wed Oct 22 18:09:42 2014
 
-It.   10    -99.48914238139      2.84D-12  2.58D-07  1.63D-07   DIIS   9    0.18800199s   LL SL SS                 
+It.   10    -99.48914238139      2.42D-12 -2.59D-07  1.63D-07   DIIS   9    0.08098700s   LL SL SS       Wed Oct 22
 
-########## START ITERATION NO.  11 ##########                           
+########## START ITERATION NO.  11 ##########   Wed Oct 22 18:09:42 2014
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   58.09%    8.69%   24.73%   0.00439501s
-SOfock:SL  1.00D-12   10.28%   73.67%    5.65%   15.93%   0.02883005s
-SOfock:SS  1.00D-12   11.92%   87.42%    4.64%    9.55%   0.07352400s
- cp DFCOEF DFCOEF.BEST
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.17649603s
+SOfock:LL  1.00D-12    7.78%   58.17%    8.64%   26.12%   0.00299901s
+SOfock:SL  1.00D-12   10.28%   73.72%    5.63%   15.88%   0.01799804s
+SOfock:SS  1.00D-12   11.92%   87.42%    4.64%    9.55%   0.04999197s
+>>> Total wall time: 0.07812500s
+>>> Total CPU time : 0.07698900s
 
-########## END ITERATION NO.  11 ##########                           
+########## END ITERATION NO.  11 ##########   Wed Oct 22 18:09:42 2014
 
-It.   11    -99.48914238139      6.11D-13  5.98D-08  3.76D-09   DIIS   9    0.17649603s   LL SL SS                 
+It.   11    -99.48914238139      1.02D-12  5.98D-08  3.76D-09   DIIS   9    0.07698900s   LL SL SS       Wed Oct 22
 
 
                                    SCF - CYCLE
@@ -900,34 +917,34 @@ It.   11    -99.48914238139      6.11D-13  5.98D-08  3.76D-09   DIIS   9    0.17
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -52.28490514547      0.00D+00  0.00D+00  0.00D+00               0.01056100s   Scr. nuclei              
-It.    2    -99.15785231445      4.69D+01  9.42D+00  1.97D+00               0.31551400s   LL SL SS                 
-It.    3    -99.48157983313      3.24D-01  2.74D-01  2.07D-01   DIIS   2    0.21434602s   LL SL SS                 
-It.    4    -99.48856277594      6.98D-03 -1.10D-01  5.33D-02   DIIS   3    0.22111201s   LL SL SS                 
-It.    5    -99.48908894587      5.26D-04  5.00D-02  1.82D-02   DIIS   4    0.22476399s   LL SL SS                 
-It.    6    -99.48914198127      5.30D-05 -9.63D-03  9.60D-04   DIIS   5    0.25605905s   LL SL SS                 
-It.    7    -99.48914237936      3.98D-07  1.65D-04  1.05D-04   DIIS   6    0.24836600s   LL SL SS                 
-It.    8    -99.48914238134      1.98D-09 -5.74D-05  9.93D-06   DIIS   7    0.19982600s   LL SL SS                 
-It.    9    -99.48914238139      4.58D-11  1.65D-06  2.01D-06   DIIS   8    0.19342089s   LL SL SS                 
-It.   10    -99.48914238139      2.84D-12  2.58D-07  1.63D-07   DIIS   9    0.18800199s   LL SL SS                 
-It.   11    -99.48914238139      6.11D-13  5.98D-08  3.76D-09   DIIS   9    0.17649603s   LL SL SS                 
+It.    1    -52.28490514545      0.00D+00  0.00D+00  0.00D+00               0.00599900s   Scr. nuclei    Wed Oct 22
+It.    2    -99.15785231444      4.69D+01  9.42D+00  1.97D+00               0.12298200s   LL SL SS       Wed Oct 22
+It.    3    -99.48157983313      3.24D-01  2.74D-01  2.07D-01   DIIS   2    0.09898400s   LL SL SS       Wed Oct 22
+It.    4    -99.48856277594      6.98D-03 -1.10D-01  5.33D-02   DIIS   3    0.09498600s   LL SL SS       Wed Oct 22
+It.    5    -99.48908894587      5.26D-04  5.00D-02  1.82D-02   DIIS   4    0.09498500s   LL SL SS       Wed Oct 22
+It.    6    -99.48914198127      5.30D-05 -9.63D-03  9.60D-04   DIIS   5    0.09498600s   LL SL SS       Wed Oct 22
+It.    7    -99.48914237936      3.98D-07  1.65D-04  1.05D-04   DIIS   6    0.09298600s   LL SL SS       Wed Oct 22
+It.    8    -99.48914238134      1.98D-09 -5.74D-05  9.93D-06   DIIS   7    0.08698600s   LL SL SS       Wed Oct 22
+It.    9    -99.48914238139      4.53D-11  1.65D-06  2.01D-06   DIIS   8    0.08598800s   LL SL SS       Wed Oct 22
+It.   10    -99.48914238139      2.42D-12 -2.59D-07  1.63D-07   DIIS   9    0.08098700s   LL SL SS       Wed Oct 22
+It.   11    -99.48914238139      1.02D-12  5.98D-08  3.76D-09   DIIS   9    0.07698900s   LL SL SS       Wed Oct 22
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   11 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00000000s
-      LL SL SS     :    0.00000000s
+      No 2-ints    :    0.00781250s
+      LL SL SS     :    0.09765625s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -99.489142381389854
+   Electronic energy                        :    -99.489142381389627
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      0.000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -99.489142381389854
+   Total energy                             :    -99.489142381389627
 
 
                                    Eigenvalues
@@ -936,18 +953,18 @@ It.   11    -99.48914238139      6.11D-13  5.98D-08  3.76D-09   DIIS   9    0.17
 
 * Fermion symmetry E1g
   * Closed shell, f = 1.0000
-   -26.41639945535  ( 2)       -1.57727610777  ( 2)
+   -26.41639945540  ( 2)       -1.57727610776  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.31104503749  ( 2)        0.82018640651  ( 6)        0.82025716217  ( 4)        2.22131617224  ( 2)        3.01093114697  ( 4)
-     3.01115027598  ( 6)       10.78943851550  ( 4)       10.79227226723  ( 6)       15.29678355009  ( 2)       70.77214728169  ( 2)
-   263.68296406278  ( 2)      971.32251115837  ( 2)     3857.33949050747  ( 2)    17131.06473439484  ( 2)
+     0.31104503749  ( 2)        0.82018640651  ( 6)        0.82025716217  ( 4)        2.22131617222  ( 2)        3.01093114696  ( 4)
+     3.01115027598  ( 6)       10.78943851551  ( 4)       10.79227226724  ( 6)       15.29678355009  ( 2)       70.77214728161  ( 2)
+   263.68296406281  ( 2)      971.32251115828  ( 2)     3857.33949050745  ( 2)    17131.06473439469  ( 2)
 
 * Fermion symmetry E1u
   * Open shell #1, f = 0.8333
     -0.73206287871  ( 2)       -0.72947241728  ( 4)
   * Virtual eigenvalues, f = 0.0000
-     0.24298715700  ( 2)        0.24318805684  ( 4)        1.18596083863  ( 2)        1.18725706156  ( 4)        4.85389263945  ( 2)
-     4.85889791632  ( 4)       19.58722956584  ( 2)       19.60922562479  ( 4)       95.51145679025  ( 2)       95.72887759339  ( 4)
+     0.24298715700  ( 2)        0.24318805684  ( 4)        1.18596083863  ( 2)        1.18725706156  ( 4)        4.85389263944  ( 2)
+     4.85889791631  ( 4)       19.58722956585  ( 2)       19.60922562480  ( 4)       95.51145679030  ( 2)       95.72887759339  ( 4)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.24298716 au (symmetry E1u)
@@ -1007,15 +1024,17 @@ It.   11    -99.48914238139      6.11D-13  5.98D-08  3.76D-09   DIIS   9    0.17
   //  LUCIAREL called
   //  CIRUN = NDET  
   //  The number of CI determinants will be computed
+  
+  
 
   Number of determinants per double group irrep 
   ============================================= 
-     0.00000000000         0.00000000000         0.00000000000         0.00000000000    
-     449.000000000         449.000000000         451.000000000         451.000000000    
+                   0                   0                   0                   0                 449
+                 449                 451                 451
 
  (RSETCI) Number of determinants:          451 (dimension          902)
 
- CPU (Wall) time for generation of determinants:  0.01337504s( 0.00000000s)
+ CPU (Wall) time for generation of determinants:  0.02299700s( 0.02343750s)
 
  (RSETWOP) Orbital classes:
    Fermion irrep 1
@@ -1043,25 +1062,29 @@ It.   11    -99.48914238139      6.11D-13  5.98D-08  3.76D-09   DIIS   9    0.17
    - Beginning task   7 of   8 after      0. seconds and      0. CPU-seconds
    - Beginning task   8 of   8 after      0. seconds and      0. CPU-seconds
 
- - Starting symmetrization after           0.00 seconds
- - Finished symmetrization after           0.00 seconds
+ - Starting symmetrization after           0.34 seconds
+ - Finished symmetrization after           0.34 seconds
 
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Initializing MS4IND file    C       0.001 seconds
- Time in  Computing+transform. integral       0.632 seconds
- Time in  Symmetrizing MO integrals           0.000 seconds
+ Time in  Initializing MS4IND file            0.001 seconds
+ Time in  Computing+transform. integral       0.333 seconds
 
- (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:00)
-            Transformation ended                         
+ (RTRACTL1) Total CPU (wall) time used :   00:00:00 (   00:00:00)
+            Transformation ended Wed Oct 22 18:09:43 2014
   //  LUCIAREL called
   //  CIRUN = KR-CI 
   //  Running large-scale CI calculation
+
+* REAFCK: Fock matrix read from file /scratch/stknecht/stknecht/DIRAC_f_F_28693/DFFCK1           
+* Heading : Testing 4-component CI calculation on F atom in CWed Oct 22 18:09:41 2014
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   78.23%    9.97%    3.63%   11.97%   0.00223398s
-SOfock:SL  1.00D-12   73.74%   13.73%    3.47%    7.02%   0.01393008s
-SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
+SOfock:LL  1.00D-12   78.23%    9.97%    3.63%   11.97%   0.00100005s
+SOfock:SL  1.00D-12   73.74%   13.73%    3.47%    7.02%   0.00899899s
+SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.02899599s
+  
+  
   Allocating for              784 diagonal integrals.
 
 
@@ -1074,7 +1097,6 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
  Number of integrals/CC amplitudes:            12064
  (including imaginary parts) 
 
-  Number of determinants/combinations           451
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
@@ -1084,157 +1106,267 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
    allocate resolution vector of length:                     2160
    ==============================================================
 
-  
-  IROOT NDEG            1           2
-  WARNING WARNING WARNING WARNING ! 
-  DEGENERATE INITIAL VECTORS FOR CI 
-  IROOT NDEG            2           1
-  IROOT NDEG            3           1
-  IROOT NDEG            4           1
-  IROOT NDEG            5           1
-  IROOT NDEG            6           1
-  IROOT NDEG            7           1
-  IROOT NDEG            8           2
-  WARNING WARNING WARNING WARNING ! 
-  DEGENERATE INITIAL VECTORS FOR CI 
-  IROOT NDEG            9           1
-  IROOT NDEG           10           1
-  IROOT NDEG           11           2
-  WARNING WARNING WARNING WARNING ! 
-  DEGENERATE INITIAL VECTORS FOR CI 
-  IROOT NDEG           12           1
-  IROOT NDEG           13           1
-  IROOT NDEG           14           1
-  IROOT NDEG           15           1
-  IROOT NDEG           16           1
-  IROOT NDEG           17           1
-  IROOT NDEG           18           1
-                   :::::::::::::::::::
-                     Entering CMICDV  
-                   :::::::::::::::::::
 
-  Nuclear repulsion + core energy:   -75.555932064281606     
+   18 start vectors based on lowest diagonal elements of H_CI
+         2          -99.489784
+         1          -99.489784
+         3          -99.487859
+       348          -98.833937
+       345          -98.833435
+       351          -98.829914
+        15          -98.826287
+       346          -98.820145
+       349          -98.820145
+        44          -98.819554
+       343          -98.818859
+        42          -98.818017
+        54          -98.817518
+         7          -98.817461
+        37          -98.816765
+        39          -98.816294
+        45          -98.816294
+        14          -98.815940
 
-  Info from iteration ....            1
-  _________________________
- Iter RNORM EIGAPR          1   .1016169945577E+00        -99.4899215529
- Iter RNORM EIGAPR          1   .1016254604539E+00        -99.4899075411
- Iter RNORM EIGAPR          1   .1016930239812E+00        -99.4879848503
- Dimension of projected matrix:          21
- >>>  CPU (WALL) TIME IN ITERATION:  2.02800417s( 0.00000000s)
+  Number of roots to be converged ........    3
 
-  Info from iteration ....            2
-  _________________________
- Iter RNORM EIGAPR          2   .3022126303109E-01        -99.4942012039
- Iter RNORM EIGAPR          2   .3032260299439E-01        -99.4941898261
- Iter RNORM EIGAPR          2   .3019347008337E-01        -99.4922698252
- Dimension of projected matrix:          24
- >>>  CPU (WALL) TIME IN ITERATION:  2.62960482s( 0.00000000s)
+  Maximum subspace dimension .............   60
 
-  Info from iteration ....            3
-  _________________________
- Iter RNORM EIGAPR          3   .1696523753593E-01        -99.4946871928
- Iter RNORM EIGAPR          3   .1714366581164E-01        -99.4946812062
- Iter RNORM EIGAPR          3   .1692713672200E-01        -99.4927534656
- Dimension of projected matrix:          27
- >>>  CPU (WALL) TIME IN ITERATION:  3.01667881s( 0.00000000s)
+  Maximum number of CI microiterations ...   20
 
-  Info from iteration ....            4
-  _________________________
- Iter RNORM EIGAPR          4   .9831851127891E-02        -99.4948695226
- Iter RNORM EIGAPR          4   .9956374873934E-02        -99.4948680704
- Iter RNORM EIGAPR          4   .9886111828580E-02        -99.4929358334
- Dimension of projected matrix:          30
- >>>  CPU (WALL) TIME IN ITERATION:  3.50767040s( 0.00000000s)
+ 
+  ----------------------------------------------
+  I´ll take you to a place 
+  Where we shall find our
+   ROOTS, BLOODY ROOTS 
+ 
+                Sepultura 
+  ----------------------------------------------
+ 
 
-  Info from iteration ....            5
-  _________________________
- Iter RNORM EIGAPR          5   .3168323423845E-02        -99.4949202550
- Iter RNORM EIGAPR          5   .3213806399323E-02        -99.4949200626
- Iter RNORM EIGAPR          5   .3182958734634E-02        -99.4929872576
- Dimension of projected matrix:          33
- >>>  CPU (WALL) TIME IN ITERATION:  4.12218094s( 0.00000000s)
 
-  Info from iteration ....            6
-  _________________________
- Iter RNORM EIGAPR          6   .1211743466068E-02        -99.4949251230
- Iter RNORM EIGAPR          6   .1236450448967E-02        -99.4949250828
- Iter RNORM EIGAPR          6   .1214192325314E-02        -99.4929921606
- Dimension of projected matrix:          36
- >>>  CPU (WALL) TIME IN ITERATION:  4.96189690s( 0.00000000s)
+ (CMICDV)               CI microiteration no.   1
+                        Total energy       =        -99.48993201        -99.48989324        -99.48801210
+                        Lowering of energy =          0.00014810          0.00010934          0.00015276
 
-  Info from iteration ....            7
-  _________________________
- Iter RNORM EIGAPR          7   .4433260712865E-03        -99.4949257775
- Iter RNORM EIGAPR          7   .4574048400622E-03        -99.4949257672
- Iter RNORM EIGAPR          7   .4402935082421E-03        -99.4929928155
- Dimension of projected matrix:          39
- >>>  CPU (WALL) TIME IN ITERATION:  5.50437164s( 0.00000000s)
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         1.01657D-01
+              2         1.01694D-01
+              3         1.02308D-01
 
-  Info from iteration ....            8
-  _________________________
- Iter RNORM EIGAPR          8   .2396644529963E-03        -99.4949258881
- Iter RNORM EIGAPR          8   .2481672800881E-03        -99.4949258857
- Iter RNORM EIGAPR          8   .2363781209903E-03        -99.4929929236
- Dimension of projected matrix:          42
- >>>  CPU (WALL) TIME IN ITERATION:  6.49676323s( 0.00000000s)
+                        Wall time for microiteration       1.46093750s
 
-  Info from iteration ....            9
-  _________________________
- Iter RNORM EIGAPR          9   .7717767534888E-04        -99.4949259305
- Iter RNORM EIGAPR          9   .7793501320900E-04        -99.4949259304
- Iter RNORM EIGAPR          9   .7852090784803E-04        -99.4929929654
- Dimension of projected matrix:          45
- >>>  CPU (WALL) TIME IN ITERATION:  7.21110535s( 0.00000000s)
 
-  Info from iteration ....           10
-  _________________________
- Iter RNORM EIGAPR         10   .2564174028995E-04        -99.4949259334
- Iter RNORM EIGAPR         10   .2643009964567E-04        -99.4949259334
- Iter RNORM EIGAPR         10   .2719941783322E-04        -99.4929929684
- Dimension of projected matrix:          48
- >>>  CPU (WALL) TIME IN ITERATION:  7.98600769s( 0.00000000s)
+ (CMICDV)               CI microiteration no.   2
+                        Total energy       =        -99.49421611        -99.49418665        -99.49235865
+                        Lowering of energy =          0.00428410          0.00429340          0.00434655
 
-  Info from iteration ....           11
-  _________________________
- Iter RNORM EIGAPR         11   .1065859815375E-04        -99.4949259337
- Iter RNORM EIGAPR         11   .1153069853478E-04        -99.4949259337
- Iter RNORM EIGAPR         11   .1167607341518E-04        -99.4929929688
- Dimension of projected matrix:          51
- >>>  CPU (WALL) TIME IN ITERATION:  8.88579178s( 0.00000000s)
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         3.00907D-02
+              2         3.03841D-02
+              3         2.94606D-02
 
-  Info from iteration ....           12
-  _________________________
- Iter RNORM EIGAPR         12   .6013939342590E-05        -99.4949259338
- Iter RNORM EIGAPR         12   .6579067425625E-05        -99.4949259338
- Iter RNORM EIGAPR         12   .6693552742112E-05        -99.4929929688
- Dimension of projected matrix:          54
- >>>  CPU (WALL) TIME IN ITERATION:  9.90905380s( 0.00000000s)
+                        Wall time for microiteration       1.71875000s
 
-  Info from iteration ....           13
-  _________________________
- Iter RNORM EIGAPR         13   .1225064557137E-05        -99.4949259338
- Iter RNORM EIGAPR         13   .1205216562549E-05        -99.4949259338
- Iter RNORM EIGAPR         13   .1247978392882E-05        -99.4929929689
- >>>  CPU (WALL) TIME IN ITERATION:  1.47351837s( 0.00000000s)
 
-  Convergence was obtained in  13 iterations
+ (CMICDV)               CI microiteration no.   3
+                        Total energy       =        -99.49469358        -99.49467955        -99.49279290
+                        Lowering of energy =          0.00047747          0.00049290          0.00043425
 
- *++++++++++++++++++++++++++++++++++++++++++++*
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         1.66910D-02
+              2         1.71694D-02
+              3         1.52009D-02
 
- The final eigenvalue    1        -99.4949259338 (converged)
- The final eigenvalue    2        -99.4949259338 (converged)
- The final eigenvalue    3        -99.4929929689 (converged)
+                        Wall time for microiteration       2.00781250s
 
- *++++++++++++++++++++++++++++++++++++++++++++*
 
+ (CMICDV)               CI microiteration no.   4
+                        Total energy       =        -99.49487011        -99.49486752        -99.49293953
+                        Lowering of energy =          0.00017653          0.00018797          0.00014664
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         9.74298D-03
+              2         1.00124D-02
+              3         9.29541D-03
+
+                        Wall time for microiteration       2.31250000s
+
+
+ (CMICDV)               CI microiteration no.   5
+                        Total energy       =        -99.49492028        -99.49492011        -99.49298749
+                        Lowering of energy =          0.00005017          0.00005258          0.00004795
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         3.15769D-03
+              2         3.21067D-03
+              3         3.10921D-03
+
+                        Wall time for microiteration       2.64062500s
+
+
+ (CMICDV)               CI microiteration no.   6
+                        Total energy       =        -99.49492512        -99.49492510        -99.49299215
+                        Lowering of energy =          0.00000484          0.00000499          0.00000467
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         1.21233D-03
+              2         1.23200D-03
+              3         1.21023D-03
+
+                        Wall time for microiteration       2.98437500s
+
+
+ (CMICDV)               CI microiteration no.   7
+                        Total energy       =        -99.49492578        -99.49492577        -99.49299282
+                        Lowering of energy =          0.00000066          0.00000068          0.00000066
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         4.45935D-04
+              2         4.49917D-04
+              3         4.44942D-04
+
+                        Wall time for microiteration       3.35937500s
+
+
+ (CMICDV)               CI microiteration no.   8
+                        Total energy       =        -99.49492589        -99.49492589        -99.49299292
+                        Lowering of energy =          0.00000011          0.00000011          0.00000011
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         2.39323D-04
+              2         2.41544D-04
+              3         2.33011D-04
+
+                        Wall time for microiteration       3.75000000s
+
+
+ (CMICDV)               CI microiteration no.   9
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000004          0.00000004          0.00000004
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         7.67124D-05
+              2         7.75682D-05
+              3         8.04698D-05
+
+                        Wall time for microiteration       4.15625000s
+
+
+ (CMICDV)               CI microiteration no.  10
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000000          0.00000000          0.00000000
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         2.53930D-05
+              2         2.60836D-05
+              3         2.77603D-05
+
+                        Wall time for microiteration       4.60156250s
+
+
+ (CMICDV)               CI microiteration no.  11
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000000          0.00000000          0.00000000
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         1.04793D-05
+              2         1.11135D-05
+              3         1.17878D-05
+
+                        Wall time for microiteration       5.39843750s
+
+
+ (CMICDV)               CI microiteration no.  12
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000000          0.00000000          0.00000000
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         5.91208D-06
+              2         6.30379D-06
+              3         6.71552D-06
+
+                        Wall time for microiteration       5.61718750s
+
+
+ (CMICDV)               CI microiteration no.  13
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000000          0.00000000          0.00000000
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         1.21512D-06
+              2         1.21409D-06
+              3         1.30080D-06
+
+                        Wall time for microiteration       6.10937500s
+
+
+ (CMICDV)               CI microiteration no.  14
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000000          0.00000000          0.00000000
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         3.42961D-07
+              2         3.32985D-07
+              3         3.62607D-07
+
+                        Wall time for microiteration       8.06250000s
+
+
+ (CMICDV)               CI microiteration no.  15
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000000          0.00000000          0.00000000
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         1.77167D-07
+              2         1.69135D-07
+              3         1.59700D-07
+
+                        Wall time for microiteration       0.50000000s
+
+
+ (CMICDV)               CI microiteration no.  16
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000000          0.00000000          0.00000000
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         1.26596D-07
+              2         1.22083D-07
+              3         1.15870D-07
+
+                        Wall time for microiteration       0.66406250s
+
+
+ (CMICDV)               CI microiteration no.  17
+                        Total energy       =        -99.49492593        -99.49492593        -99.49299297
+                        Lowering of energy =          0.00000000         -0.00000000          0.00000000
+
+                        Norm of CI residuals (thr = 1.00D-07)
+              1         6.45091D-08
+              2         5.84885D-08
+              3         5.59678D-08
+
+                        Wall time for microiteration       0.44531250s
+
+
+ (CMICDV)               Micro iterations converged.
+
+                        Core energy        =         -75.55593206
+                        Active energies    =         -23.93899387        -23.93899387        -23.93706090
+                        Final CI energies  =         -99.49492593        -99.49492593        -99.49299297
+
+                        root    1 ...... converged!
+
+                        root    2 ...... converged!
+
+                        root    3 ...... converged!
 
   I have completed task  KR-CI 
 
   //  LUCIAREL called
   //  CIRUN = ANALYZ
   //  Analyzing the current CI vector(s).
-  Number of determinants/combinations           451
+  
+  
 
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
@@ -1256,10 +1388,10 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-  Coefficient of combination        1 is -.99825479E+00
+  Coefficient of combination        2 is -.99819170E+00
   Corresponding alpha- and beta-strings
   alpha   1   3   4   5
-   beta   1   3   4
+   beta   1   3   5
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
@@ -1274,72 +1406,68 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-  Coefficient of combination        7 is -.10582600E-01
+  Coefficient of combination       10 is 0.14882063E-01
   Corresponding alpha- and beta-strings
-  alpha   1   4   5   6
-   beta   1   3   4
-  Coefficient of combination       15 is -.10231987E-01
+  alpha   1   3   4   5
+   beta   1   5   6
+  Coefficient of combination       11 is 0.11869075E-01
   Corresponding alpha- and beta-strings
-  alpha   1   3   5   7
+  alpha   1   3   4   6
    beta   1   3   5
-  Coefficient of combination       28 is -.14266768E-01
+  Coefficient of combination       19 is -.10915279E-01
   Corresponding alpha- and beta-strings
-  alpha   1   4   5   7
-   beta   1   4   5
-  Coefficient of combination       56 is -.10286508E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   5   8
-   beta   1   3   8
-  Coefficient of combination       67 is -.10112546E-01
+  alpha   1   4   5   8
+   beta   1   3   5
+  Coefficient of combination       97 is -.10111970E-01
   Corresponding alpha- and beta-strings
   alpha   1   4   5   6
-   beta   1   4   6
+   beta   1   5   6
 
-  Norm of printed CI vector ..  0.99714092E+00
+  Norm of printed CI vector ..  0.99697042E+00
 
    Magnitude of CI coefficients 
   ==============================
-  10- 1 TO 10- 0           1  0.99651262E+00    0.99651262E+00
-  10- 2 TO 10- 1           5  0.62830148E-03    0.99714092E+00
-  10- 3 TO 10- 2          73  0.16810401E-02    0.99882196E+00
-  10- 4 TO 10- 3         105  0.21485558E-04    0.99884345E+00
-  10- 5 TO 10- 4          85  0.28097554E-06    0.99884373E+00
- Number of coefficients less than  10- 6 IS          58
+  10- 1 TO 10- 0           1  0.99638667E+00    0.99638667E+00
+  10- 2 TO 10- 1           4  0.58374600E-03    0.99697042E+00
+  10- 3 TO 10- 2          76  0.20711871E-02    0.99904161E+00
+  10- 4 TO 10- 3          92  0.20950033E-04    0.99906256E+00
+  10- 5 TO 10- 4          79  0.15247883E-06    0.99906271E+00
+ Number of coefficients less than  10- 6 IS          75
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:      224
+         Number of coefficients larger than 10- 6:      205
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           2  0.20807582E-03    0.20807582E-03
-  10- 3 TO 10- 2          45  0.98608295E-03    0.11941588E-02
-  10- 4 TO 10- 3          94  0.15052686E-04    0.12092115E-02
-  10- 5 TO 10- 4          83  0.27169516E-06    0.12094832E-02
-
+  10- 2 TO 10- 1           1  0.10225193E-03    0.10225193E-03
+  10- 3 TO 10- 2          54  0.12905108E-02    0.13927627E-02
+  10- 4 TO 10- 3          77  0.18655525E-04    0.14114182E-02
+  10- 5 TO 10- 4          73  0.14005533E-06    0.14115583E-02
+ 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10- 6:       44
+         Number of coefficients larger than 10- 6:       45
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           3  0.42022565E-03    0.42022565E-03
-  10- 3 TO 10- 2          28  0.69495716E-03    0.11151828E-02
-  10- 4 TO 10- 3          11  0.64328713E-05    0.11216157E-02
-  10- 5 TO 10- 4           2  0.92803772E-08    0.11216250E-02
-
+  10- 2 TO 10- 1           3  0.48149407E-03    0.48149407E-03
+  10- 3 TO 10- 2          21  0.68406947E-03    0.11655635E-02
+  10- 4 TO 10- 3          15  0.22945083E-05    0.11678580E-02
+  10- 5 TO 10- 4           6  0.12423505E-07    0.11678705E-02
+ 
        Occupation of active sets :  7  0
-         Number of coefficients larger than 10- 6:        1
-  10- 1 TO 10- 0           1  0.99651262E+00    0.99651262E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.99651262E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.99651262E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.99651262E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.99651262E+00
+         Number of coefficients larger than 10- 6:        2
+  10- 1 TO 10- 0           1  0.99638667E+00    0.99638667E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.99638667E+00
+  10- 3 TO 10- 2           1  0.96606824E-04    0.99648328E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.99648328E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.99648328E+00
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       224   .1209E-02       .1209E-02    5  2
-        44   .1122E-02       .2331E-02    6  1
-         1   .9965E+00       .9988E+00    7  0
+       205   .1412E-02       .1412E-02    5  2
+        45   .1168E-02       .2579E-02    6  1
+         2   .9965E+00       .9991E+00    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  1
@@ -1414,27 +1542,27 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           2  0.51719221E-05    0.51719221E-05
-  10- 4 TO 10- 3           3  0.12416931E-05    0.64136152E-05
-  10- 5 TO 10- 4           5  0.10938547E-07    0.64245538E-05
- Number of coefficients less than  10- 6 IS           2
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           7  0.23816272E-05    0.23816272E-05
+  10- 5 TO 10- 4           1  0.75772057E-08    0.23892044E-05
+ Number of coefficients less than  10- 6 IS           4
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:       10
+         Number of coefficients larger than 10- 6:        8
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           2  0.51719221E-05    0.51719221E-05
-  10- 4 TO 10- 3           3  0.12416931E-05    0.64136152E-05
-  10- 5 TO 10- 4           5  0.10938547E-07    0.64245538E-05
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           7  0.23816272E-05    0.23816272E-05
+  10- 5 TO 10- 4           1  0.75772057E-08    0.23892044E-05
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        10   .6425E-05       .6425E-05    5  2
+         8   .2389E-05       .2389E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  1
@@ -1587,44 +1715,47 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-    ( no coefficients )
+  Coefficient of combination        3 is 0.10650335E-01
+  Corresponding alpha- and beta-strings
+  alpha   4   5
+   beta   1   3   4   5   2
 
-  Norm of printed CI vector ..  0.00000000E+00
+  Norm of printed CI vector ..  0.11342963E-03
 
    Magnitude of CI coefficients 
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           8  0.11596907E-03    0.11596907E-03
-  10- 4 TO 10- 3          27  0.36086513E-05    0.11957772E-03
-  10- 5 TO 10- 4          41  0.68171810E-07    0.11964589E-03
- Number of coefficients less than  10- 6 IS          36
+  10- 2 TO 10- 1           1  0.11342963E-03    0.11342963E-03
+  10- 3 TO 10- 2           8  0.21369252E-03    0.32712215E-03
+  10- 4 TO 10- 3          39  0.60181197E-05    0.33314027E-03
+  10- 5 TO 10- 4          30  0.51121223E-07    0.33319139E-03
+ Number of coefficients less than  10- 6 IS          34
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:       66
+         Number of coefficients larger than 10- 6:       68
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           3  0.69333586E-05    0.69333586E-05
-  10- 4 TO 10- 3          23  0.27737365E-05    0.97070951E-05
-  10- 5 TO 10- 4          40  0.66027457E-07    0.97731226E-05
-
+  10- 3 TO 10- 2           4  0.79139368E-05    0.79139368E-05
+  10- 4 TO 10- 3          34  0.49339692E-05    0.12847906E-04
+  10- 5 TO 10- 4          30  0.51121223E-07    0.12899027E-04
+ 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10- 6:       10
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           5  0.10903571E-03    0.10903571E-03
-  10- 4 TO 10- 3           4  0.83491476E-06    0.10987063E-03
-  10- 5 TO 10- 4           1  0.21443524E-08    0.10987277E-03
+  10- 2 TO 10- 1           1  0.11342963E-03    0.11342963E-03
+  10- 3 TO 10- 2           4  0.20577859E-03    0.31920821E-03
+  10- 4 TO 10- 3           5  0.10841505E-05    0.32029237E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.32029237E-03
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        66   .9773E-05       .9773E-05    5  2
-        10   .1099E-03       .1196E-03    6  1
+        68   .1290E-04       .1290E-04    5  2
+        10   .3203E-03       .3332E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  1
@@ -1699,36 +1830,45 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          46  0.78207574E-03    0.78207574E-03
-  10- 4 TO 10- 3          87  0.15266641E-04    0.79734238E-03
-  10- 5 TO 10- 4          92  0.21977390E-06    0.79756216E-03
- Number of coefficients less than  10- 6 IS         102
+  10- 3 TO 10- 2          36  0.55340365E-03    0.55340365E-03
+  10- 4 TO 10- 3          87  0.11921402E-04    0.56532505E-03
+  10- 5 TO 10- 4          83  0.17862439E-06    0.56550367E-03
+ Number of coefficients less than  10- 6 IS         121
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:      193
+         Number of coefficients larger than 10- 6:      168
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          30  0.45701502E-03    0.45701502E-03
-  10- 4 TO 10- 3          74  0.12403534E-04    0.46941855E-03
-  10- 5 TO 10- 4          89  0.21620395E-06    0.46963476E-03
-
+  10- 3 TO 10- 2          23  0.25880125E-03    0.25880125E-03
+  10- 4 TO 10- 3          72  0.11136296E-04    0.26993754E-03
+  10- 5 TO 10- 4          73  0.15304331E-06    0.27009059E-03
+ 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10- 6:       32
+         Number of coefficients larger than 10- 6:       37
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          16  0.32506072E-03    0.32506072E-03
-  10- 4 TO 10- 3          13  0.28631069E-05    0.32792383E-03
-  10- 5 TO 10- 4           3  0.35699548E-08    0.32792740E-03
+  10- 3 TO 10- 2          12  0.26526185E-03    0.26526185E-03
+  10- 4 TO 10- 3          15  0.78510654E-06    0.26604696E-03
+  10- 5 TO 10- 4          10  0.25581086E-07    0.26607254E-03
+ 
+       Occupation of active sets :  7  0
+         Number of coefficients larger than 10- 6:        1
+  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           1  0.29340548E-04    0.29340548E-04
+  10- 4 TO 10- 3           0  0.00000000E+00    0.29340548E-04
+  10- 5 TO 10- 4           0  0.00000000E+00    0.29340548E-04
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       193   .4696E-03       .4696E-03    5  2
-        32   .3279E-03       .7976E-03    6  1
+       168   .2701E-03       .2701E-03    5  2
+        37   .2661E-03       .5362E-03    6  1
+         1   .2934E-04       .5655E-03    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  2
@@ -1803,27 +1943,27 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           1  0.27896238E-05    0.27896238E-05
-  10- 4 TO 10- 3           6  0.12590413E-05    0.40486651E-05
-  10- 5 TO 10- 4           1  0.61556788E-08    0.40548208E-05
- Number of coefficients less than  10- 6 IS           4
+  10- 3 TO 10- 2           2  0.36150946E-05    0.36150946E-05
+  10- 4 TO 10- 3           5  0.10679422E-05    0.46830368E-05
+  10- 5 TO 10- 4           3  0.18583475E-08    0.46848952E-05
+ Number of coefficients less than  10- 6 IS           2
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:        8
+         Number of coefficients larger than 10- 6:       10
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           1  0.27896238E-05    0.27896238E-05
-  10- 4 TO 10- 3           6  0.12590413E-05    0.40486651E-05
-  10- 5 TO 10- 4           1  0.61556788E-08    0.40548208E-05
+  10- 3 TO 10- 2           2  0.36150946E-05    0.36150946E-05
+  10- 4 TO 10- 3           5  0.10679422E-05    0.46830368E-05
+  10- 5 TO 10- 4           3  0.18583475E-08    0.46848952E-05
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-         8   .4055E-05       .4055E-05    5  2
+        10   .4685E-05       .4685E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  2
@@ -1976,47 +2116,44 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-  Coefficient of combination        1 is -.10247547E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3
-   beta   1   3   4   5   6
+    ( no coefficients )
 
-  Norm of printed CI vector ..  0.10501222E-03
+  Norm of printed CI vector ..  0.00000000E+00
 
    Magnitude of CI coefficients 
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.10501222E-03    0.10501222E-03
-  10- 3 TO 10- 2           9  0.11831174E-03    0.22332396E-03
-  10- 4 TO 10- 3          30  0.51765468E-05    0.22850051E-03
-  10- 5 TO 10- 4          36  0.79698358E-07    0.22858020E-03
- Number of coefficients less than  10- 6 IS          36
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           6  0.27607518E-04    0.27607518E-04
+  10- 4 TO 10- 3          25  0.38082253E-05    0.31415743E-04
+  10- 5 TO 10- 4          28  0.10168104E-06    0.31517424E-04
+ Number of coefficients less than  10- 6 IS          53
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:       66
+         Number of coefficients larger than 10- 6:       49
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           4  0.69924470E-05    0.69924470E-05
-  10- 4 TO 10- 3          26  0.40142023E-05    0.11006649E-04
-  10- 5 TO 10- 4          36  0.79698358E-07    0.11086348E-04
-
+  10- 3 TO 10- 2           2  0.57804650E-05    0.57804650E-05
+  10- 4 TO 10- 3          21  0.29650501E-05    0.87455151E-05
+  10- 5 TO 10- 4          26  0.92776417E-07    0.88382915E-05
+ 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10- 6:       10
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.10501222E-03    0.10501222E-03
-  10- 3 TO 10- 2           5  0.11131929E-03    0.21633151E-03
-  10- 4 TO 10- 3           4  0.11623445E-05    0.21749386E-03
-  10- 5 TO 10- 4           0  0.00000000E+00    0.21749386E-03
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           4  0.21827053E-04    0.21827053E-04
+  10- 4 TO 10- 3           4  0.84317519E-06    0.22670228E-04
+  10- 5 TO 10- 4           2  0.89046259E-08    0.22679133E-04
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        66   .1109E-04       .1109E-04    5  2
-        10   .2175E-03       .2286E-03    6  1
+        49   .8838E-05       .8838E-05    5  2
+        10   .2268E-04       .3152E-04    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  2
@@ -2072,7 +2209,10 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-    ( no coefficients )
+  Coefficient of combination        1 is -.87422511E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   3   4   5
+   beta   1   3   4
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
@@ -2087,56 +2227,60 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-  Coefficient of combination        2 is -.31460299E-01
+  Coefficient of combination        2 is -.11222628E-01
   Corresponding alpha- and beta-strings
   alpha   1   3   4   5
    beta   1   3   5
+  Coefficient of combination       29 is -.11598487E-01
+  Corresponding alpha- and beta-strings
+  alpha   1   4   5   8
+   beta   1   4   5
 
-  Norm of printed CI vector ..  0.98975043E-03
+  Norm of printed CI vector ..  0.76453001E+00
 
    Magnitude of CI coefficients 
   ==============================
-  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.98975043E-03    0.98975043E-03
-  10- 3 TO 10- 2          40  0.59947085E-03    0.15892213E-02
-  10- 4 TO 10- 3          86  0.19499028E-04    0.16087203E-02
-  10- 5 TO 10- 4         107  0.26336558E-06    0.16089837E-02
- Number of coefficients less than  10- 6 IS          93
+  10- 1 TO 10- 0           1  0.76426954E+00    0.76426954E+00
+  10- 2 TO 10- 1           2  0.26047227E-03    0.76453001E+00
+  10- 3 TO 10- 2          79  0.17909419E-02    0.76632095E+00
+  10- 4 TO 10- 3         111  0.15988011E-04    0.76633694E+00
+  10- 5 TO 10- 4          86  0.23530882E-06    0.76633718E+00
+ Number of coefficients less than  10- 6 IS          48
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:      191
+         Number of coefficients larger than 10- 6:      231
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          27  0.32630933E-03    0.32630933E-03
-  10- 4 TO 10- 3          68  0.14387798E-04    0.34069713E-03
-  10- 5 TO 10- 4          96  0.23422935E-06    0.34093136E-03
-
+  10- 3 TO 10- 2          51  0.10471373E-02    0.10471373E-02
+  10- 4 TO 10- 3          97  0.13733103E-04    0.10608705E-02
+  10- 5 TO 10- 4          83  0.22200693E-06    0.10610925E-02
+ 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10- 6:       42
+         Number of coefficients larger than 10- 6:       46
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          13  0.27316152E-03    0.27316152E-03
-  10- 4 TO 10- 3          18  0.51112302E-05    0.27827275E-03
-  10- 5 TO 10- 4          11  0.29136238E-07    0.27830188E-03
-
+  10- 2 TO 10- 1           1  0.13452490E-03    0.13452490E-03
+  10- 3 TO 10- 2          28  0.74380456E-03    0.87832946E-03
+  10- 4 TO 10- 3          14  0.22549088E-05    0.88058437E-03
+  10- 5 TO 10- 4           3  0.13301888E-07    0.88059767E-03
+ 
        Occupation of active sets :  7  0
-         Number of coefficients larger than 10- 6:        1
-  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.98975043E-03    0.98975043E-03
-  10- 3 TO 10- 2           0  0.00000000E+00    0.98975043E-03
-  10- 4 TO 10- 3           0  0.00000000E+00    0.98975043E-03
-  10- 5 TO 10- 4           0  0.00000000E+00    0.98975043E-03
+         Number of coefficients larger than 10- 6:        2
+  10- 1 TO 10- 0           1  0.76426954E+00    0.76426954E+00
+  10- 2 TO 10- 1           1  0.12594737E-03    0.76439549E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.76439549E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.76439549E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.76439549E+00
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       191   .3409E-03       .3409E-03    5  2
-        42   .2783E-03       .6192E-03    6  1
-         1   .9898E-03       .1609E-02    7  0
+       231   .1061E-02       .1061E-02    5  2
+        46   .8806E-03       .1942E-02    6  1
+         2   .7644E+00       .7663E+00    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  1
@@ -2211,27 +2355,27 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           2  0.39918928E-05    0.39918928E-05
-  10- 4 TO 10- 3           5  0.10917776E-05    0.50836705E-05
-  10- 5 TO 10- 4           1  0.56226161E-08    0.50892931E-05
- Number of coefficients less than  10- 6 IS           4
+  10- 3 TO 10- 2           1  0.20434172E-05    0.20434172E-05
+  10- 4 TO 10- 3           4  0.14440856E-05    0.34875028E-05
+  10- 5 TO 10- 4           5  0.20574719E-08    0.34895602E-05
+ Number of coefficients less than  10- 6 IS           2
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:        8
+         Number of coefficients larger than 10- 6:       10
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           2  0.39918928E-05    0.39918928E-05
-  10- 4 TO 10- 3           5  0.10917776E-05    0.50836705E-05
-  10- 5 TO 10- 4           1  0.56226161E-08    0.50892931E-05
+  10- 3 TO 10- 2           1  0.20434172E-05    0.20434172E-05
+  10- 4 TO 10- 3           4  0.14440856E-05    0.34875028E-05
+  10- 5 TO 10- 4           5  0.20574719E-08    0.34895602E-05
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-         8   .5089E-05       .5089E-05    5  2
+        10   .3490E-05       .3490E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  1
@@ -2392,36 +2536,36 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          11  0.17994334E-03    0.17994334E-03
-  10- 4 TO 10- 3          29  0.42647358E-05    0.18420807E-03
-  10- 5 TO 10- 4          35  0.88018204E-07    0.18429609E-03
- Number of coefficients less than  10- 6 IS          37
+  10- 3 TO 10- 2          10  0.25978070E-03    0.25978070E-03
+  10- 4 TO 10- 3          38  0.60337703E-05    0.26581447E-03
+  10- 5 TO 10- 4          34  0.42672761E-07    0.26585714E-03
+ Number of coefficients less than  10- 6 IS          30
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:       65
+         Number of coefficients larger than 10- 6:       72
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           3  0.71357787E-05    0.71357787E-05
-  10- 4 TO 10- 3          27  0.39679451E-05    0.11103724E-04
-  10- 5 TO 10- 4          35  0.88018204E-07    0.11191742E-04
-
+  10- 3 TO 10- 2           5  0.11774301E-04    0.11774301E-04
+  10- 4 TO 10- 3          33  0.49889537E-05    0.16763255E-04
+  10- 5 TO 10- 4          34  0.42672761E-07    0.16805928E-04
+ 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10- 6:       10
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           8  0.17280756E-03    0.17280756E-03
-  10- 4 TO 10- 3           2  0.29679066E-06    0.17310435E-03
-  10- 5 TO 10- 4           0  0.00000000E+00    0.17310435E-03
+  10- 3 TO 10- 2           5  0.24800640E-03    0.24800640E-03
+  10- 4 TO 10- 3           5  0.10448166E-05    0.24905122E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.24905122E-03
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        65   .1119E-04       .1119E-04    5  2
-        10   .1731E-03       .1843E-03    6  1
+        72   .1681E-04       .1681E-04    5  2
+        10   .2491E-03       .2659E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  1
@@ -2473,10 +2617,10 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-  Coefficient of combination        2 is -.99775892E+00
+  Coefficient of combination        1 is 0.48178536E+00
   Corresponding alpha- and beta-strings
   alpha   1   3   4   5
-   beta   1   3   5
+   beta   1   3   4
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
@@ -2491,88 +2635,56 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-  Coefficient of combination        5 is 0.10500443E-01
+  Coefficient of combination       25 is -.10476423E-01
   Corresponding alpha- and beta-strings
-  alpha   1   3   4   5
-   beta   1   3   7
-  Coefficient of combination       10 is 0.14775573E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   4   5
-   beta   1   5   6
-  Coefficient of combination        1 is -.10041468E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   4   5
-   beta   1   6   7
-  Coefficient of combination       11 is 0.11508509E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   4   6
-   beta   1   3   5
-  Coefficient of combination       12 is 0.10483701E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   4   7
-   beta   1   3   5
-  Coefficient of combination       18 is -.10974387E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   4   5   7
-   beta   1   3   5
-  Coefficient of combination       29 is -.10314774E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   4   5   8
+  alpha   1   3   5   7
    beta   1   4   5
-  Coefficient of combination       42 is 0.10281400E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   4   7
-   beta   1   3   7
-  Coefficient of combination       97 is -.10107527E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   4   5   6
-   beta   1   5   6
 
-  Norm of printed CI vector ..  0.99662933E+00
+  Norm of printed CI vector ..  0.23222689E+00
 
    Magnitude of CI coefficients 
   ==============================
-  10- 1 TO 10- 0           1  0.99552287E+00    0.99552287E+00
-  10- 2 TO 10- 1           9  0.11064627E-02    0.99662933E+00
-  10- 3 TO 10- 2          64  0.13657321E-02    0.99799507E+00
-  10- 4 TO 10- 3          97  0.24131883E-04    0.99801920E+00
-  10- 5 TO 10- 4          72  0.18461473E-06    0.99801938E+00
- Number of coefficients less than  10- 6 IS          84
+  10- 1 TO 10- 0           1  0.23211713E+00    0.23211713E+00
+  10- 2 TO 10- 1           1  0.10975544E-03    0.23222689E+00
+  10- 3 TO 10- 2          60  0.10583853E-02    0.23328528E+00
+  10- 4 TO 10- 3         101  0.18791724E-04    0.23330407E+00
+  10- 5 TO 10- 4          84  0.20438992E-06    0.23330427E+00
+ Number of coefficients less than  10- 6 IS          80
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:      198
+         Number of coefficients larger than 10- 6:      202
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           3  0.30870036E-03    0.30870036E-03
-  10- 3 TO 10- 2          43  0.10142512E-02    0.13229516E-02
-  10- 4 TO 10- 3          82  0.17550700E-04    0.13405023E-02
-  10- 5 TO 10- 4          70  0.18248308E-06    0.13406848E-02
-
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2          36  0.60118522E-03    0.60118522E-03
+  10- 4 TO 10- 3          86  0.16614906E-04    0.61780013E-03
+  10- 5 TO 10- 4          80  0.20018336E-06    0.61800031E-03
+ 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10- 6:       44
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           6  0.79776237E-03    0.79776237E-03
-  10- 3 TO 10- 2          21  0.35148089E-03    0.11492433E-02
-  10- 4 TO 10- 3          15  0.65811829E-05    0.11558244E-02
-  10- 5 TO 10- 4           2  0.21316537E-08    0.11558266E-02
-
+  10- 2 TO 10- 1           1  0.10975544E-03    0.10975544E-03
+  10- 3 TO 10- 2          24  0.45720005E-03    0.56695549E-03
+  10- 4 TO 10- 3          15  0.21768184E-05    0.56913231E-03
+  10- 5 TO 10- 4           4  0.42065589E-08    0.56913652E-03
+ 
        Occupation of active sets :  7  0
          Number of coefficients larger than 10- 6:        1
-  10- 1 TO 10- 0           1  0.99552287E+00    0.99552287E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.99552287E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.99552287E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.99552287E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.99552287E+00
+  10- 1 TO 10- 0           1  0.23211713E+00    0.23211713E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.23211713E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.23211713E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.23211713E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.23211713E+00
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       198   .1341E-02       .1341E-02    5  2
-        44   .1156E-02       .2497E-02    6  1
-         1   .9955E+00       .9980E+00    7  0
+       202   .6180E-03       .6180E-03    5  2
+        44   .5691E-03       .1187E-02    6  1
+         1   .2321E+00       .2333E+00    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  2
@@ -2647,27 +2759,27 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           8  0.20245716E-05    0.20245716E-05
-  10- 5 TO 10- 4           0  0.00000000E+00    0.20245716E-05
- Number of coefficients less than  10- 6 IS           4
+  10- 3 TO 10- 2           2  0.53288194E-05    0.53288194E-05
+  10- 4 TO 10- 3           4  0.16959671E-05    0.70247865E-05
+  10- 5 TO 10- 4           4  0.43989629E-08    0.70291854E-05
+ Number of coefficients less than  10- 6 IS           2
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:        8
+         Number of coefficients larger than 10- 6:       10
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           8  0.20245716E-05    0.20245716E-05
-  10- 5 TO 10- 4           0  0.00000000E+00    0.20245716E-05
+  10- 3 TO 10- 2           2  0.53288194E-05    0.53288194E-05
+  10- 4 TO 10- 3           4  0.16959671E-05    0.70247865E-05
+  10- 5 TO 10- 4           4  0.43989629E-08    0.70291854E-05
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-         8   .2025E-05       .2025E-05    5  2
+        10   .7029E-05       .7029E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  2
@@ -2820,47 +2932,44 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-  Coefficient of combination        3 is -.10600656E-01
-  Corresponding alpha- and beta-strings
-  alpha   4   5
-   beta   1   3   4   5   2
+    ( no coefficients )
 
-  Norm of printed CI vector ..  0.11237391E-03
+  Norm of printed CI vector ..  0.00000000E+00
 
    Magnitude of CI coefficients 
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.11237391E-03    0.11237391E-03
-  10- 3 TO 10- 2           6  0.64213103E-04    0.17658701E-03
-  10- 4 TO 10- 3          27  0.35599475E-05    0.18014696E-03
-  10- 5 TO 10- 4          32  0.73710654E-07    0.18022067E-03
- Number of coefficients less than  10- 6 IS          46
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           3  0.77755095E-04    0.77755095E-04
+  10- 4 TO 10- 3          25  0.43531279E-05    0.82108223E-04
+  10- 5 TO 10- 4          32  0.64055400E-07    0.82172278E-04
+ Number of coefficients less than  10- 6 IS          52
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:       58
+         Number of coefficients larger than 10- 6:       51
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           4  0.75863790E-05    0.75863790E-05
-  10- 4 TO 10- 3          25  0.28854776E-05    0.10471857E-04
-  10- 5 TO 10- 4          29  0.63550450E-07    0.10535407E-04
-
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3          21  0.39832317E-05    0.39832317E-05
+  10- 5 TO 10- 4          30  0.59854574E-07    0.40430862E-05
+ 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10- 6:        8
+         Number of coefficients larger than 10- 6:        9
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.11237391E-03    0.11237391E-03
-  10- 3 TO 10- 2           2  0.56626724E-04    0.16900063E-03
-  10- 4 TO 10- 3           2  0.67446994E-06    0.16967510E-03
-  10- 5 TO 10- 4           3  0.10160205E-07    0.16968526E-03
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           3  0.77755095E-04    0.77755095E-04
+  10- 4 TO 10- 3           4  0.36989628E-06    0.78124991E-04
+  10- 5 TO 10- 4           2  0.42008267E-08    0.78129192E-04
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        58   .1054E-04       .1054E-04    5  2
-         8   .1697E-03       .1802E-03    6  1
+        51   .4043E-05       .4043E-05    5  2
+         9   .7813E-04       .8217E-04    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  2
@@ -2916,7 +3025,7 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-  Coefficient of combination        3 is -.99822024E+00
+  Coefficient of combination        3 is 0.39085072E+00
   Corresponding alpha- and beta-strings
   alpha   1   3   4   5
    beta   1   4   5
@@ -2934,80 +3043,56 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-  Coefficient of combination       12 is 0.10495728E-01
+  Coefficient of combination       11 is 0.12491435E-01
   Corresponding alpha- and beta-strings
   alpha   1   3   4   5
-   beta   1   5   8
-  Coefficient of combination        4 is 0.10190579E-01
-  Corresponding alpha- and beta-strings
-  alpha   3   4   5   6
-   beta   3   4   5
-  Coefficient of combination        1 is 0.14723550E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   4   6
-   beta   1   3   4
-  Coefficient of combination       14 is 0.14723786E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   5   6
-   beta   1   3   5
-  Coefficient of combination       22 is 0.10058353E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   4   7
-   beta   1   4   5
-  Coefficient of combination       72 is 0.10020135E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   4   7
-   beta   1   4   7
-  Coefficient of combination      116 is 0.10020123E-01
-  Corresponding alpha- and beta-strings
-  alpha   1   3   5   8
-   beta   1   5   8
+   beta   1   5   7
 
-  Norm of printed CI vector ..  0.99739321E+00
+  Norm of printed CI vector ..  0.15292032E+00
 
    Magnitude of CI coefficients 
   ==============================
-  10- 1 TO 10- 0           1  0.99644365E+00    0.99644365E+00
-  10- 2 TO 10- 1           7  0.94955748E-03    0.99739321E+00
-  10- 3 TO 10- 2          69  0.14064203E-02    0.99879963E+00
-  10- 4 TO 10- 3         106  0.20522953E-04    0.99882015E+00
-  10- 5 TO 10- 4          60  0.16984158E-06    0.99882032E+00
- Number of coefficients less than  10- 6 IS          84
+  10- 1 TO 10- 0           1  0.15276429E+00    0.15276429E+00
+  10- 2 TO 10- 1           1  0.15603596E-03    0.15292032E+00
+  10- 3 TO 10- 2          61  0.80129990E-03    0.15372162E+00
+  10- 4 TO 10- 3          94  0.14475554E-04    0.15373610E+00
+  10- 5 TO 10- 4          59  0.16132160E-06    0.15373626E+00
+ Number of coefficients less than  10- 6 IS         111
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:      207
+         Number of coefficients larger than 10- 6:      180
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           2  0.20080599E-03    0.20080599E-03
-  10- 3 TO 10- 2          48  0.99658805E-03    0.11973940E-02
-  10- 4 TO 10- 3          97  0.16424163E-04    0.12138182E-02
-  10- 5 TO 10- 4          60  0.16984158E-06    0.12139880E-02
-
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2          40  0.55293135E-03    0.55293135E-03
+  10- 4 TO 10- 3          86  0.12807628E-04    0.56573898E-03
+  10- 5 TO 10- 4          54  0.14863847E-06    0.56588762E-03
+ 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10- 6:       35
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           5  0.74875149E-03    0.74875149E-03
-  10- 3 TO 10- 2          21  0.40983228E-03    0.11585838E-02
-  10- 4 TO 10- 3           9  0.40987902E-05    0.11626826E-02
-  10- 5 TO 10- 4           0  0.00000000E+00    0.11626826E-02
-
+  10- 2 TO 10- 1           1  0.15603596E-03    0.15603596E-03
+  10- 3 TO 10- 2          21  0.24836854E-03    0.40440450E-03
+  10- 4 TO 10- 3           8  0.16679266E-05    0.40607243E-03
+  10- 5 TO 10- 4           5  0.12683135E-07    0.40608511E-03
+ 
        Occupation of active sets :  7  0
          Number of coefficients larger than 10- 6:        1
-  10- 1 TO 10- 0           1  0.99644365E+00    0.99644365E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.99644365E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.99644365E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.99644365E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.99644365E+00
+  10- 1 TO 10- 0           1  0.15276429E+00    0.15276429E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.15276429E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.15276429E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.15276429E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.15276429E+00
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       207   .1214E-02       .1214E-02    5  2
-        35   .1163E-02       .2377E-02    6  1
-         1   .9964E+00       .9988E+00    7  0
+       180   .5659E-03       .5659E-03    5  2
+        35   .4061E-03       .9720E-03    6  1
+         1   .1528E+00       .1537E+00    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  1
@@ -3082,27 +3167,27 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           2  0.50091761E-05    0.50091761E-05
-  10- 4 TO 10- 3           4  0.78566275E-06    0.57948388E-05
-  10- 5 TO 10- 4           4  0.26195759E-08    0.57974584E-05
- Number of coefficients less than  10- 6 IS           2
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           7  0.11902962E-05    0.11902962E-05
+  10- 5 TO 10- 4           0  0.00000000E+00    0.11902962E-05
+ Number of coefficients less than  10- 6 IS           5
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:       10
+         Number of coefficients larger than 10- 6:        7
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           2  0.50091761E-05    0.50091761E-05
-  10- 4 TO 10- 3           4  0.78566275E-06    0.57948388E-05
-  10- 5 TO 10- 4           4  0.26195759E-08    0.57974584E-05
+  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
+  10- 4 TO 10- 3           7  0.11902962E-05    0.11902962E-05
+  10- 5 TO 10- 4           0  0.00000000E+00    0.11902962E-05
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        10   .5797E-05       .5797E-05    5  2
+         7   .1190E-05       .1190E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  1
@@ -3255,47 +3340,44 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-  Coefficient of combination        2 is -.10529404E-01
-  Corresponding alpha- and beta-strings
-  alpha   3   5
-   beta   1   3   4   5   2
+    ( no coefficients )
 
-  Norm of printed CI vector ..  0.11086834E-03
+  Norm of printed CI vector ..  0.00000000E+00
 
    Magnitude of CI coefficients 
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.11086834E-03    0.11086834E-03
-  10- 3 TO 10- 2           5  0.34519063E-04    0.14538740E-03
-  10- 4 TO 10- 3          23  0.40356533E-05    0.14942306E-03
-  10- 5 TO 10- 4          31  0.75875893E-07    0.14949893E-03
- Number of coefficients less than  10- 6 IS          52
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           8  0.92408597E-04    0.92408597E-04
+  10- 4 TO 10- 3          24  0.44601758E-05    0.96868773E-04
+  10- 5 TO 10- 4          35  0.75317435E-07    0.96944090E-04
+ Number of coefficients less than  10- 6 IS          45
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:       52
+         Number of coefficients larger than 10- 6:       59
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           2  0.69821093E-05    0.69821093E-05
-  10- 4 TO 10- 3          21  0.36275073E-05    0.10609617E-04
-  10- 5 TO 10- 4          29  0.69178261E-07    0.10678795E-04
-
+  10- 3 TO 10- 2           3  0.69822311E-05    0.69822311E-05
+  10- 4 TO 10- 3          21  0.39059073E-05    0.10888138E-04
+  10- 5 TO 10- 4          35  0.75317435E-07    0.10963456E-04
+ 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10- 6:        8
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.11086834E-03    0.11086834E-03
-  10- 3 TO 10- 2           3  0.27536954E-04    0.13840529E-03
-  10- 4 TO 10- 3           2  0.40814598E-06    0.13881344E-03
-  10- 5 TO 10- 4           2  0.66976316E-08    0.13882014E-03
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           5  0.85426366E-04    0.85426366E-04
+  10- 4 TO 10- 3           3  0.55426848E-06    0.85980634E-04
+  10- 5 TO 10- 4           0  0.00000000E+00    0.85980634E-04
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        52   .1068E-04       .1068E-04    5  2
-         8   .1388E-03       .1495E-03    6  1
+        59   .1096E-04       .1096E-04    5  2
+         8   .8598E-04       .9694E-04    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  1
@@ -3347,7 +3429,10 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-    ( no coefficients )
+  Coefficient of combination        3 is -.91856379E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   3   4   5
+   beta   1   4   5
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
@@ -3362,53 +3447,64 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   Printout of coefficients in interval  0.1000E-01 to 0.3162E-01
   =========================================================
 
-    ( no coefficients )
+  Coefficient of combination        1 is 0.13548720E-01
+  Corresponding alpha- and beta-strings
+  alpha   1   3   4   6
+   beta   1   3   4
+  Coefficient of combination        5 is 0.10291584E-01
+  Corresponding alpha- and beta-strings
+  alpha   1   3   5   7
+   beta   1   3   4
+  Coefficient of combination       14 is 0.13548726E-01
+  Corresponding alpha- and beta-strings
+  alpha   1   3   5   6
+   beta   1   3   5
 
-  Norm of printed CI vector ..  0.00000000E+00
+  Norm of printed CI vector ..  0.84423249E+00
 
    Magnitude of CI coefficients 
   ==============================
-  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          46  0.79563243E-03    0.79563243E-03
-  10- 4 TO 10- 3          88  0.15791532E-04    0.81142396E-03
-  10- 5 TO 10- 4          97  0.22493810E-06    0.81164890E-03
- Number of coefficients less than  10- 6 IS          96
+  10- 1 TO 10- 0           1  0.84375944E+00    0.84375944E+00
+  10- 2 TO 10- 1           3  0.47305251E-03    0.84423249E+00
+  10- 3 TO 10- 2          82  0.16481425E-02    0.84588064E+00
+  10- 4 TO 10- 3          97  0.14940555E-04    0.84589558E+00
+  10- 5 TO 10- 4          56  0.13391494E-06    0.84589571E+00
+ Number of coefficients less than  10- 6 IS          88
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:      197
+         Number of coefficients larger than 10- 6:      203
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          32  0.45090441E-03    0.45090441E-03
-  10- 4 TO 10- 3          73  0.12641394E-04    0.46354580E-03
-  10- 5 TO 10- 4          92  0.20893314E-06    0.46375473E-03
-
+  10- 3 TO 10- 2          58  0.10980192E-02    0.10980192E-02
+  10- 4 TO 10- 3          89  0.13707343E-04    0.11117265E-02
+  10- 5 TO 10- 4          56  0.13391494E-06    0.11118604E-02
+ 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10- 6:       33
+         Number of coefficients larger than 10- 6:       35
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          13  0.26464823E-03    0.26464823E-03
-  10- 4 TO 10- 3          15  0.31501378E-05    0.26779837E-03
-  10- 5 TO 10- 4           5  0.16004957E-07    0.26781438E-03
-
+  10- 2 TO 10- 1           3  0.47305251E-03    0.47305251E-03
+  10- 3 TO 10- 2          24  0.55012336E-03    0.10231759E-02
+  10- 4 TO 10- 3           8  0.12332119E-05    0.10244091E-02
+  10- 5 TO 10- 4           0  0.00000000E+00    0.10244091E-02
+ 
        Occupation of active sets :  7  0
          Number of coefficients larger than 10- 6:        1
-  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           1  0.80079783E-04    0.80079783E-04
-  10- 4 TO 10- 3           0  0.00000000E+00    0.80079783E-04
-  10- 5 TO 10- 4           0  0.00000000E+00    0.80079783E-04
+  10- 1 TO 10- 0           1  0.84375944E+00    0.84375944E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.84375944E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.84375944E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.84375944E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.84375944E+00
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       197   .4638E-03       .4638E-03    5  2
-        33   .2678E-03       .7316E-03    6  1
-         1   .8008E-04       .8116E-03    7  0
+       203   .1112E-02       .1112E-02    5  2
+        35   .1024E-02       .2136E-02    6  1
+         1   .8438E+00       .8459E+00    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  2
@@ -3483,27 +3579,27 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           1  0.13542445E-05    0.13542445E-05
-  10- 4 TO 10- 3           6  0.16182769E-05    0.29725214E-05
-  10- 5 TO 10- 4           1  0.47733864E-08    0.29772948E-05
- Number of coefficients less than  10- 6 IS           4
+  10- 3 TO 10- 2           3  0.65508629E-05    0.65508629E-05
+  10- 4 TO 10- 3           4  0.10265907E-05    0.75774536E-05
+  10- 5 TO 10- 4           3  0.66881225E-08    0.75841417E-05
+ Number of coefficients less than  10- 6 IS           2
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10- 6:        8
+         Number of coefficients larger than 10- 6:       10
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           1  0.13542445E-05    0.13542445E-05
-  10- 4 TO 10- 3           6  0.16182769E-05    0.29725214E-05
-  10- 5 TO 10- 4           1  0.47733864E-08    0.29772948E-05
+  10- 3 TO 10- 2           3  0.65508629E-05    0.65508629E-05
+  10- 4 TO 10- 3           4  0.10265907E-05    0.75774536E-05
+  10- 5 TO 10- 4           3  0.66881225E-08    0.75841417E-05
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-         8   .2977E-05       .2977E-05    5  2
+        10   .7584E-05       .7584E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  2
@@ -3664,36 +3760,36 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
   ==============================
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          10  0.20484461E-03    0.20484461E-03
-  10- 4 TO 10- 3          30  0.48294178E-05    0.20967402E-03
-  10- 5 TO 10- 4          27  0.79739544E-07    0.20975376E-03
+  10- 3 TO 10- 2          10  0.25836304E-03    0.25836304E-03
+  10- 4 TO 10- 3          31  0.38985832E-05    0.26226162E-03
+  10- 5 TO 10- 4          26  0.45431543E-07    0.26230705E-03
  Number of coefficients less than  10- 6 IS          45
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
-
+ 
        Occupation of active sets :  5  2
          Number of coefficients larger than 10- 6:       59
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           3  0.58253013E-05    0.58253013E-05
-  10- 4 TO 10- 3          29  0.46960143E-05    0.10521316E-04
-  10- 5 TO 10- 4          27  0.79739544E-07    0.10601055E-04
-
+  10- 3 TO 10- 2           3  0.64749737E-05    0.64749737E-05
+  10- 4 TO 10- 3          30  0.37966928E-05    0.10271667E-04
+  10- 5 TO 10- 4          26  0.45431543E-07    0.10317098E-04
+ 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10- 6:        8
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           7  0.19901930E-03    0.19901930E-03
-  10- 4 TO 10- 3           1  0.13340345E-06    0.19915271E-03
-  10- 5 TO 10- 4           0  0.00000000E+00    0.19915271E-03
+  10- 3 TO 10- 2           7  0.25188807E-03    0.25188807E-03
+  10- 4 TO 10- 3           1  0.10189034E-06    0.25198996E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.25198996E-03
 
    Total weight and number of SD's (> 10 ** -, 6)  : 
   =================================================
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        59   .1060E-04       .1060E-04    5  2
-         8   .1992E-03       .2098E-03    6  1
+        59   .1032E-04       .1032E-04    5  2
+         8   .2520E-03       .2623E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  2
@@ -3740,11 +3836,9 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
 
   I have completed task  ANALYZ
 
-
- (RCIST) CI energy:        -23.93899387
  (ROPTST)  KR-CI calculation ended properly.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI:  1min10.717s( 0.00000000s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI: 57.51625600s(57.84375000s)
 
 
 
@@ -3755,31 +3849,33 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.04838514s
 
 
  
+     Date and time (Linux)  : Wed Oct 22 18:10:40 2014
+     Host name              : ws47.ethz.ch                            
 
->>>> Node 0, utime: 70, stime: 2, minflt: 24866, majflt: 0, nvcsw: 182, nivcsw: 6158, maxrss: 69488640
->>>> Total WALL time used in DIRAC: 1min13s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :         4.98
+  Mean allocation size (Mb) :         7.39
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine unknown                                    for WORK in KRCI_CALC                         
-      488.28 Mb at subroutine unknown                                    for WORK in PSIDHF                            
-      488.28 Mb at subroutine unknown                                    for WORK in PAMSET                            
-      488.28 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
-        7.63 Mb at subroutine unknown                                    for WORK in READIN                            
-        1.91 Mb at subroutine unknown                                    for unnamed variable                          
-        1.91 Mb at subroutine unknown                                    for unnamed variable                          
-        1.91 Mb at subroutine unknown                                    for unnamed variable                          
-        1.91 Mb at subroutine unknown                                    for unnamed variable                          
-        1.91 Mb at subroutine unknown                                    for unnamed variable                          
+      488.28 Mb at subroutine krci_calc_+0xde                            for WORK in KRCI_CALC                         
+      488.28 Mb at subroutine psidhf_+0xb0                               for WORK in PSIDHF                            
+      488.28 Mb at subroutine pamset_+0x1b95                             for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x6690                             for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0xb6                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0x292                               for test allocation of work array in DIRAC mai
+        1.91 Mb at subroutine set_hop_dbg_+0x874                         for unnamed variable                          
+        1.91 Mb at subroutine set_hop_dbg_+0x85f                         for unnamed variable                          
+        1.91 Mb at subroutine set_hop_dbg_+0x84a                         for unnamed variable                          
+        1.91 Mb at subroutine set_hop_dbg_+0x835                         for unnamed variable                          
   
   Peak memory usage    (Mb) :       496.00
-       reached at subroutine : unknown                                   
+       reached at subroutine : set_hop_dbg_+0x874                        
               for variable   : unnamed variable                          
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+>>>> Node 0, utime: 43, stime: 15, minflt: 10014, majflt: 0, nvcsw: 36, nivcsw: 5955, maxrss: 174592
+>>>> Total WALL time used in DIRAC: 59s

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -120,7 +120,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !     Enter the generic ADCMAIN routine (master becomes now primus inter pares)
 !
-      CALL ADCMAIN(IN,IW,CA,INTFCE)
+
+!     CALL ADCMAIN(IN,IW,CA,INTFCE)
+
+      CALL ADCMAIN_NEW(IN,IW,CA,INTFCE)
+
 !
 !     Return the slaves to the general menu routine.
 !
@@ -139,10 +143,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCMAIN (IN123,IW123,CA,INTFCE)
+      SUBROUTINE ADCMAIN_NEW (IN123,IW123,CA,INTFCE)
 !
       use memory_allocator
-      use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
       use adc_cfg    !  in the general input reader the user data are provided.
 
@@ -150,9 +153,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Description--------------------------------------------
 !
-!     Driver for Relativistic Propagator Program
-!     It is extremeley unlikely that we need a standalone version
-!     of ADC. Therefore no options for this are included.
+!     Driver for Relativistic Propagator Program (no standalone)
 !
 !---------------Last modified------------------------------------------
 !
@@ -174,30 +175,42 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "../relccsd/complex.inc"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/waio.h"
+#include "dcbham.h"
 !
 !---------------Local variables--------------------------------------
 !
-      PARAMETER (MAXSP=1000)
+      integer , parameter        :: MAXSP=1000
       INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
-      LOGICAL ALLOC_ME,DOCCSETI
+      LOGICAL DOCCSETI
       REAL*8 CPU0,CPU1,CPU2,CPU3
-      integer :: verbose        = 0
-      integer :: ncore_elec_adc = 0
-      integer(kind=klongint) :: maxcor
-      integer(kind=klongint) :: mxcorr
-      integer(kind=klongint) :: mxcorr1
-      integer(kind=klongint) :: mword_limit
-      real(kind=kreal)       :: total_mem_new = 0
-      real(kind=kreal)       :: new_mword_limit = 0
-      integer                :: n,i,ntotsymm
+!      integer :: verbose        = 0
+!      integer :: ncore_elec_adc = 0
+!      integer(kind=klongint) :: maxcor
+!      integer(kind=klongint) :: mxcorr
+!      integer(kind=klongint) :: mxcorr1
+!      integer(kind=klongint) :: mword_limit
+!      real(kind=kreal)       :: total_mem_new = 0
+!      real(kind=kreal)       :: new_mword_limit = 0
+!      integer                :: n,i,ntotsymm
 
-      integer :: MAXCORE
       real(8), allocatable :: CC(:)
       real(8), allocatable :: testoooo(:)
 
+      integer :: ncore_elec_adc = 0  ! new argument for RDSYMI, needed in RELCCSD, not in ADC.
+
+      integer           :: maxcor,mxcorr,mxcorr1,mword_limit
+      real*8            :: total_mem_new = 0   !number of bytes, if number of megawords is given in --aw
+      real*8            :: new_mword_limit  = 0
+
+      integer     :: MAXCORE    ! contains --mw * 1000 * 1000 (number of words, decimal mega)
+      integer     :: maxcore_info(4)
+      character*4 :: maxcore_infc(4)
+
+      maxcore_info = 0
+      maxcore_infc = (/'SETI','SIPS','DIPS','EXCI'/)
+
       call legacy_lwork_get(MAXCORE)
-      call alloc(CC,MAXCORE,id='CC work space in ADCMAIN')
 
 
 !
@@ -317,23 +330,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Write out memory information and
 !     call new mem alloc routines
 !
-      WRITE (IW,1000) MAXCORE,MAXCORE / (128 * 1024)
-1000  FORMAT (/" Total memory provided:", T30,I15," Words ",
-     &  I10," MB")
+      WRITE (IW,*) '*********************************'
+      WRITE (IW,*) '***   memory control by user  ***'
+      WRITE (IW,*) '*********************************'
+      WRITE (IW,*)
+      WRITE (IW,*) 'Megawords (MB) given by --mw: ',
+     &             MAXCORE/(1000*1000),MAXCORE / (128 * 1024)
       call allocator_get_available_mem(total_mem_new)
+      WRITE (IW,*)
+      WRITE (IW,*) 'Maximally allowed dynamical memory (MW,B):',
+     &      total_mem_new/(8*1000*1000),total_mem_new
       maxcor = nint((total_mem_new/8.0d0),kind(8))
       mword_limit = maxcor / (1024*1024)
-
-      MXCORR = 0
-!
-! temporary solution:
-! unsettled issue with memory manager. We allow total maxcore for maxcor!
-! will go away in the future.
-!
-      MAXCOR = MAXCORE
-!     WRITE (IW,*) 'temporary maxcor:',maxcor
-!     WRITE (IW,*) '(Attributed due to static memory usage)'
-      
 !
 !     Read symmetry information from MRCONEE
 !
@@ -343,7 +351,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
 !
-      IPRNT = 2   ! print orbital and recalc. orbital energies
+      IPRNT = 2   ! print orbital energies (variable in inpt.inc!)
 !
 !     Number of integer words for REAL*8 and 
 !     number of REAL*8 words per variable (2 for complex groups, 
@@ -358,10 +366,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !  Report memory in megabytes
 !
-!     write(iw,*) 'Total avail. memory (MB):',MAXCOR/(128 * 1024)
-      if(maxcor .eq. 0) then
-        write(iw,*) 'Total avail. memory has not been determined!'
-      endif
 !
 !     Set up symmetry tables and parallel distribution arrays
 !     Symtab is required for the pure diagonalization also.
@@ -389,123 +393,115 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 !
 !  initialize USEOE=T default also for RELADC
+      USEOE   = .true.
 !  because it relies on CCSETI and needs the orbital
 !  energies from the original HF calculation
-!  This allow for the use of X2Cmmf
-!  The NORECMP parameter is irrelevant
+!  stefan: i am not sure whether you always want to set USEOE = .true.
+!          but let us keep it the way the reladc wizards set it...
+!    
+!  in principle this allows for the use of X2Cmmf
+!  but the NORECMP parameter is NOT irrelevant - stefan march 2014
 !
-      USEOE = .TRUE.
-      WRITE (IW,*) 'Orbital energies from HF are used'
+!
+      if(X2CMMF)then
+!       X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
+!       everything else results in nonsense energies
+        NORECMP = .true.
+        useoe   = .true. 
+        write(IW,'(/A,/A,/A,/A,/A/)')
+     &  ' ************************************************************',
+     &  ' *** molecular-mean-field X2C Hamiltonan (X2Cmmf) active  ***',
+     &  ' *** use of SCF orbital energies and no re-computation of ***',
+     &  ' *** Fock matrix elements set explicitly                  ***',
+     &  ' ************************************************************'
+      else
+        if(USEOE) WRITE (IW,*) 'Orbital energies from HF are used'
+      end if
 
       IF(DOSIPS.OR.DODIPS.OR.DOEXCI) then
          DOCCSETI=.TRUE.
-         DOSORT  =.TRUE.
       ENDIF
-
-      if(maxcor .gt. 0) then
-!       write(iw,*) 'Memory limit (MWORD):',mword_limit
-      else
-        write(iw,*) 'MWORD not set in dirac but by the OS!'
-      endif
-       
-!     
-!     Check the memory requirements of the active modules
-!     Hereby the variable ICALC determines if there is a
-!     calculation or not. ALLOC acts correspondingly.
-!     KFREE/LFREE are initialized (occupied/free memory)
 !
-!     Since all the modules are independent of each other with
-!     respect to buffer usage, we reset the (dynamical) memory
-!     pointers KFREE/LFREE each time to their initial values.
-!     Each module can therefore use the maximum amount of memory.
-!
-!     For the moment we refrain from implementing a stand-alone
-!     diagonalisator because tha ADC matrices would be too large
-!     for copying anyway! The interface structure, however would allow
-!     for such a strategy. The diagonalization is completely decoupled
-!     from the ADC matrix generation.
-!
-      ICALC = 1
-      ALLOC_ME = .FALSE.
-      KFREE = 1
-      LFREE = MAXCOR
-!
-      MXCORR1 = 0
-!
+!  call integral sorter, determine memory requirements and start right away.
+!  
       IF(DOCCSETI) THEN
-        MXCORR1 = 0
-        CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
-        WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
-        MXCORR = MAX(MXCORR,MXCORR1)
+        ICALC = 1
+        CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
+        WRITE(IW,*) 'Memory requirements of ',
+     &               maxcore_infc(1),maxcore_info(1)
+        ICALC = 2
+        CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
       ENDIF
 ! Elke
 !      WRITE(iw,*) 'after ccseti'
 
-      IF (DOSORT) MXCORR = MAX(MXCORR,MXCORR1)
-
       IF(DOSIPS) THEN
-        MXCORR1 = 0
-        CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
-        WRITE(IW,*) 'Memory requments for Single-ionization spectra:',
-     &              MXCORR1
-        MXCORR = MAX(MXCORR,MXCORR1)
+        ICALC = 2
+        CALL ADCSNGL_MAIN (maxcore_info(2),NSP,IREPSPI,EPS)
+        WRITE(IW,*) 'Memory requirements of ',
+     &               maxcore_infc(2),maxcore_info(2)
       ENDIF
 
       IF(DODIPS) THEN
-        MXCORR1 = 0
-        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
-        WRITE(IW,*) 'Memory requments for Double-ionization spectra:',
-     &              MXCORR1
-        MXCORR = MAX(MXCORR,MXCORR1)
+        ICALC = 2
+        CALL ADCDBLE_MAIN (maxcore_info(3),NSP,IREPSPI,EPS)
+        WRITE(IW,*) 'Memory requirements of ',
+     &               maxcore_infc(3),maxcore_info(3)
       ENDIF
 
       IF(DOEXCI) THEN
-        WRITE(IW,*) 'Memory for excitation calculations is',
-     &              ' dynamically allocated.'
-      ENDIF
+!<<<<<<< HEAD
+!        WRITE(IW,*) 'Memory for excitation calculations is',
+!     &              ' dynamically allocated.'
+!      ENDIF
+!!
+!! MXCORR is a cumulative maximum of individual memory requirements
+!! ===> if any subroutine would need more core than MAXCORE we quit.
+!!
+!      IF (MXCORR.GT.MAXCOR) THEN
+!         WRITE (IW,1002) MXCORR
+!1002     FORMAT (" Not enough core, increase to at least",I20,
+!     &        " Words")
+!         CALL QUIT("Insufficient memory")
+!      ENDIF
+!      WRITE (IW,1001) MXCORR
+!1001  FORMAT (" Memory used for active modules :",
+!     &        T50,I10," 8-byte words")
+!!
+!!  We have sufficient memory. Now start the calculations
+!!  Again, all modules are independent, resetting of mem. pointers
+!!
+!      ICALC = 2
+!      ALLOC_ME = .TRUE.
+!      KFREE = 1
+!      LFREE = MXCORR
+!!
+!      write(*,*) 'Providing ',MXCORR,' to the act. modules.'
+!      IF(DOSORT) THEN
+!        CALL CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
+!      ENDIF
 !
-! MXCORR is a cumulative maximum of individual memory requirements
-! ===> if any subroutine would need more core than MAXCORE we quit.
+!      write(*,*) 'MXCORR after allocated CCSETI:',MXCORR
+!      write(*,*) 'We give the FULL memory to the ADC modules.'
 !
-      IF (MXCORR.GT.MAXCOR) THEN
-         WRITE (IW,1002) MXCORR
-1002     FORMAT (" Not enough core, increase to at least",I20,
-     &        " Words")
-         CALL QUIT("Insufficient memory")
-      ENDIF
-      WRITE (IW,1001) MXCORR
-1001  FORMAT (" Memory used for active modules :",
-     &        T50,I10," 8-byte words")
+!      LFREE = MAXCOR
 !
-!  We have sufficient memory. Now start the calculations
-!  Again, all modules are independent, resetting of mem. pointers
 !
-      ICALC = 2
-      ALLOC_ME = .TRUE.
-      KFREE = 1
-      LFREE = MXCORR
+!      IF(DOSIPS) THEN
+!        CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
+!      ENDIF
 !
-      write(*,*) 'Providing ',MXCORR,' to the act. modules.'
-      IF(DOSORT) THEN
-        CALL CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
-      ENDIF
-
-      write(*,*) 'MXCORR after allocated CCSETI:',MXCORR
-      write(*,*) 'We give the FULL memory to the ADC modules.'
-
-      LFREE = MAXCOR
-
-
-      IF(DOSIPS) THEN
-        CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
-      ENDIF
-
-      IF(DODIPS) THEN
-        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
-      ENDIF
-
-      IF(DOEXCI) THEN
-        CALL ADCEXC_MAIN (IW,ITAPADC,EPS)
+!      IF(DODIPS) THEN
+!        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
+!      ENDIF
+!
+!      IF(DOEXCI) THEN
+!        CALL ADCEXC_MAIN (IW,ITAPADC,EPS)
+!=======
+        CALL ADCEXC_MAIN (IW,maxcore_info(4),ITAPADC,EPS)
+        WRITE(IW,*) 'Memory requirements of ',
+     &               maxcore_infc(4),maxcore_info(4)
+!>>>>>>> master
       ENDIF
 !
 !     return after closing low-level I/O files
@@ -528,14 +524,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Print I/O statistics
 !
       CALL WAIO_PRST (IW)
-      call dealloc(cc)
-C
+
       RETURN
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCSNGL_MAIN(ICALC,CC,KFREE,LFREE,
-     &                        MXCORR,NSP,IREPSPI,EPS)
+      SUBROUTINE ADCSNGL_MAIN(MXCORR,NSP,IREPSPI,EPS)
 !
 !---------------Modules------------------------------------------------
 !
@@ -561,11 +554,8 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER ICALC
-      REAL*8 CC(*)
-      INTEGER KFREE,LFREE,MXCORR,NSP,IREPSPI(NSP,16,2)
-      REAL*8 EPS(*)
-      REAL(8), PARAMETER  :: autoev = 27.2113957D0
+      INTEGER               :: MXCORR,NSP,IREPSPI(NSP,16,2)
+      REAL*8                :: EPS(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -577,8 +567,9 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      LOGICAL ALLOC_ME,LFLAG
-      INTEGER KFRSAV,LFRSAV,IDUMMY(2)
+      REAL(8), PARAMETER    :: autoev = 27.2113957D0
+
+      INTEGER IDUMMY(2)
       REAL*8 RDUMMY(2)
       COMPLEX*16 CDUMMY(2)
 
@@ -596,22 +587,32 @@ C
       DATA CALTYP/'Direct diagonal','ADC(2) strict  ',
      &            'ADC(2) extended','ADC(3)         '/
       INTEGER IRPLOOP,NBUFS,IBUFPOS
-      REAL*8 ASYM,LANTHR,EVLLIM,THRVEC
+      REAL*8 ASYM
       INTEGER SYMMITER,IONIZLEVEL,IRECL
-      INTEGER nsipsymms
 
       real*8 ddot
       logical done
       complex*16 zdotc
 
-      
-
-#ifdef SYS_AIX
       integer(8) :: ivmax
-#endif
 
+C ***********************************************************************
+C ************* Local arrays to be allocated dynamically  ***************
+C ***********************************************************************
+
+      integer, allocatable, dimension (:)    :: BUFIVV,ICRA,ICRB,IOI,
+     & IOJ,IPIVOT,OOLT,VVLT
+
+      real*8, allocatable, dimension (:)    :: ADCL, ADIAG1, ADIAG2, 
+     & BDIAG1, BDIAG2, BUF1A, BUF1B, BUF1C, BUF1D, BUF4, BUF5A, BUF5B,
+     & BUF5C, BUF9A, BUF9B, BUF9C, BUFBOO, BUFBVO2, BUFBVO, BUFBVV,
+     & BUFIO, BUFO1, BUFO2, BUFO3, BUFQOO, BUFQVOA, BUFQVOI, BUFQVO,
+     & BUFQVV, BUFSIG, BUFU1, BUFU2, BUFU3, BUFU4, BUFVOV,
+     & BUFVOW, BUFVVVV, BUFW1, BUFW2, BUFW3,
+     & BUFW4, BUFX1, BUFXVO, BUFXVV, BUFY1, BUFYVO, CKKSA, CKKS,
+     & CSIGM, DIAG, EAJL, EJAB, FKKS
 C
-C--------------- description of buffer pointers for the CC array  --------
+C--------------- description of buffer pointers 
 C
       
 C     CKKS,CKKSA    : buffer for hole/hole part. one auxiliary array is
@@ -704,23 +705,16 @@ C  --------- variables for sigma-infinity  code:
 C
 C     CSIGM    buffer for sigma coefficient matrix in the complex case
 C              only. dimensions 2*MVO(1) * 2*MVO(1)
-C
-C  --------- variables for lanczos code:
-C
-C     WRK_??? integer variables keeping the required array dimensions
-C             for the Lanczos diagonalizing
-C     
-C---------------Executable code--------------------------------------
-c
-c  ... first determine some maximum numbers that can occur for arrays
-c      in the different symmetries
 c
 c   save the original memory space for the diagonalizers
 
-      ALLOC_ME = ICALC.GE.2
-      KFRSAV=KFREE
-      LFRSAV=LFREE
-      ALLCNT=0
+!     write(iw,*) '  #############################################'
+!     write(iw,*) '  #############################################'
+!     write(iw,*) '  #######  we are in adcsngl_main '
+!     write(iw,*) '  #############################################'
+!     write(iw,*) '  #############################################'
+!     write(iw,*) '  rcw:',rcw
+
       IONIZLEVEL=1
 c
 c  determine necessary dimension for the all-purpose arrays
@@ -786,100 +780,80 @@ C
 
       NCKKS   = MXNO*MXNO
       INTBUF = 5*1024*1024  !output buffer is now 5 MWORDS (40 MByte)
-C
-C  allocate memory needed in all types of ADC calculations
-C
-C  **** ALLOCATIONS #  1-8
-C
-      CALL MEMOPT('REAL',CKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BUF1A,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BUF1B,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BUF4,NDIMT4,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BUF5A,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BUF5B,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',EAJL,MXNVOOT,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('INTE',ICRA,6*LADCM,CC,KFREE,LFREE,ALLOC_ME)
-C
-C  allocate memory for I/O buffers, h/h2p buffer
-C  and for one ADC matrix column plus the diagonal
-C  needed in all ADC calculations
-C
-C  **** ALLOCATIONS #  9-14
-C
-      CALL MEMOPT('REAL',ADCL,LADCM*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',DIAG,LADCM*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BUFIO,INTBUF*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('REAL',BUFY1,LBUFUIH*RCW,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('INTE',IOI,INTBUF,CC,KFREE,LFREE,ALLOC_ME)
-      CALL MEMOPT('INTE',IOJ,INTBUF,CC,KFREE,LFREE,ALLOC_ME)
-C
-C  For ADC-2X and ADC-3 we need one more OOOO and VOVO buffer 
-C  for the satellite block and the occ/occ lookup table
-C
-C  **** ALLOCATIONS #  15-17
-C
+!
+!  allocate memory needed in all types of ADC calculations
+!
+      allocate(CKKS(NCKKS*RCW))
+      allocate(BUF1A(NDIMT3*RCW))
+      allocate(BUF1B(NDIMT3*RCW))
+      allocate(BUF4(NDIMT4))
+      allocate(BUF5A(NDIMT3*RCW))
+      allocate(BUF5B(NDIMT3*RCW))
+      allocate(EAJL(MXNVOOT))
+      allocate(ICRA(6*LADCM))
+      allocate(ADCL(LADCM*RCW))
+      allocate(DIAG(LADCM*RCW))
+      allocate(BUFIO(INTBUF*RCW))
+      allocate(BUFY1(LBUFUIH*RCW))
+      allocate(IOI(INTBUF))
+      allocate(IOJ(INTBUF))
+!
+!  For ADC-2X and ADC-3 we need one more OOOO and VOVO buffer 
+!  for the satellite block and the occ/occ lookup table
+!
       IF(ADCLEVEL.GE.2) THEN
         OOLTL=MXNO*MXNO*NREP
-        CALL MEMOPT('INTE',OOLT,OOLTL,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFO1,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUF9A,NV4*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        allocate(OOLT(OOLTL))
+        allocate(BUFO1(NDIMTO*RCW))
+        allocate(BUF9A(NV4*RCW))
       ENDIF
-C
-C  For ADC(3) we need additional buffers.
-C
+!
+!  For ADC(3) we need additional buffers.
+!
       IF(ADCLEVEL.EQ.3) THEN
-C
-C  **** ALLOCATIONS #  18-30
-C
-        CALL MEMOPT('REAL',CKKSA,NCKKS*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',FKKS,NCKKS*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUF1C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUF1D,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUF5C,NDIMT3*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUF9B,NV4*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUF9C,NV4*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFO2,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFO3,NDIMTO*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFU1,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFU2,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFU3,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFU4,LBUFUAH*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFW1,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC_ME)
-C
-C  **** ALLOCATIONS #  31-42
-C
-        CALL MEMOPT('REAL',BUFW2,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFW3,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFW4,LBUFUIP*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFX1,LBUFUAP*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',EJAB,MXNOVVT,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',ADIAG1,MXNVOOT*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',ADIAG2,MXNVOOT*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BDIAG1,MXNOVVT*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BDIAG2,MXNOVVT*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFQOO,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFQVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFQVOI,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-C
-C  **** ALLOCATIONS #  43-58
-C
-        CALL MEMOPT('REAL',BUFQVOA,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFQVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFBOO,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFBVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFXVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFYVO,MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFBVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFXVV,MVV(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('INTE',BUFIVV,MVV(1),CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFBVO2,2*MVO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFSIG,MOO(1)*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        N=4*MVO(1)*MVO(1)*RCW
-        CALL MEMOPT('REAL',CSIGM,N,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('INTE',ICRB,6*MXICRB,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('INTE',IPIVOT,2*MVO(1),CC,KFREE,LFREE,ALLOC_ME)
-        N=MXNV*MXNV*NREP
-        CALL MEMOPT('INTE',VVLT,N,CC,KFREE,LFREE,ALLOC_ME)
+        NX1=4*MVO(1)*MVO(1)*RCW
+        NX2=MXNV*MXNV*NREP
+        allocate(CKKSA(NCKKS*RCW))
+        allocate(FKKS(NCKKS*RCW))
+        allocate(BUF1C(NDIMT3*RCW))
+        allocate(BUF1D(NDIMT3*RCW))
+        allocate(BUF5C(NDIMT3*RCW))
+        allocate(BUF9B(NV4*RCW))
+        allocate(BUF9C(NV4*RCW))
+        allocate(BUFO2(NDIMTO*RCW))
+        allocate(BUFO3(NDIMTO*RCW))
+        allocate(BUFU1(LBUFUAH*RCW))
+        allocate(BUFU2(LBUFUAH*RCW))
+        allocate(BUFU3(LBUFUAH*RCW))
+        allocate(BUFU4(LBUFUAH*RCW))
+        allocate(BUFW1(LBUFUIP*RCW))
+        allocate(BUFW2(LBUFUIP*RCW))
+        allocate(BUFW3(LBUFUIP*RCW))
+        allocate(BUFW4(LBUFUIP*RCW))
+        allocate(BUFX1(LBUFUAP*RCW))
+        allocate(EJAB(MXNOVVT))
+        allocate(ADIAG1(MXNVOOT*RCW))
+        allocate(ADIAG2(MXNVOOT*RCW))
+        allocate(BDIAG1(MXNOVVT*RCW))
+        allocate(BDIAG2(MXNOVVT*RCW))
+        allocate(BUFQOO(MOO(1)*RCW))
+        allocate(BUFQVO(MVO(1)*RCW))
+        allocate(BUFQVOI(MVO(1)*RCW))
+        allocate(BUFQVOA(MVO(1)*RCW))
+        allocate(BUFQVV(MVV(1)*RCW))
+        allocate(BUFBOO(MOO(1)*RCW))
+        allocate(BUFBVO(MVO(1)*RCW))
+        allocate(BUFXVO(MVO(1)*RCW))
+        allocate(BUFYVO(MVO(1)*RCW))
+        allocate(BUFBVV(MVV(1)*RCW))
+        allocate(BUFXVV(MVV(1)*RCW))
+        allocate(BUFIVV(MVV(1)))
+        allocate(BUFBVO2(2*MVO(1)*RCW))
+        allocate(BUFSIG(MOO(1)*RCW))
+        allocate(CSIGM(NX1))
+        allocate(ICRB(6*MXICRB))
+        allocate(IPIVOT(2*MVO(1)))
+        allocate(VVLT(NX2))
       ENDIF
 C
 C  The remaining memory (major part) has to be enough for
@@ -893,85 +867,28 @@ C  demand, because it is only needed temporarily. The KFRDYN
 C  variable holds the beginning of this area.
 C  ******************* 
 
-      NDIMTV = ((LFREE - 10)/2)*2
       IVMAX = 0
-      KFRDYN = KFREE
-
       IF(ADCLEVEL.EQ.3) THEN
-
-c determine size of temporary space necessary
-c for the storage of some integral classes.
-c account for complex conjugation !
-
-c NDIMTV:  total remaining memory in 'REAL*8' words
-c IVMAX:   required memory for <VV|VV> resp. <VO|VV> class
-
+!
+! determine max space for the large <VV|VV>,  <VO|VV> classes
+! and inform user about that. Attention! If careless usage is
+! done her, machine can start swapping in an unpleasant manner!
+!
         IVMAX=MAX0(IVVVVTT(NREP+1),2*IVOVVT(NREP+1))
         IVMAX=MAX0(IVMAX,2*JVVVO(NREP+1))
         IVMAX = IVMAX*RCW
-
-        IF(IVMAX.GT.NDIMTV) THEN
-          WRITE(IW,*) '  ** Insufficient memory **'
-          WRITE(IW,*) '  ** for the <VV|VV> resp. <VO|VV> classes **'
-          WRITE(IW,*) 'MWORDS required:', IVMAX/(1024*1024)
-          WRITE(IW,*) 'MWORDS available:', NDIMTV/(1024*1024)
-          WRITE(IW,*) 'MWORDS to be allocated additionally:',
-     &                (IVMAX-NDIMTV)/(1024*1024) + 1
-          CALL QUIT('--------> Still hungry :-)')
-        ENDIF
-
-      ENDIF
-
-C
-C  If only memory requirements are requested we print the 
-C  information and return.
-C  ATT the large VVVV buffers can not be allocated at this stage
-C  because they will be freed and replaced by VOVV buffers mutually.
-C  We therefore test, if there is enough memspace for these buffers
-C  when it comes to a real allocation.
-C
-      IF(ICALC.EQ.1) THEN
-        MXCORR=KFREE+IVMAX
-
-        WRITE(IW,*)
-        WRITE(IW,*) '-------------------------------------------'
-        WRITE(IW,*) '-- ADC memory usage summary'
-        WRITE(IW,*) '-------------------------------------------'
-        WRITE(IW,*)
-        WRITE(IW,*) 'Static memory provided during calc:',MXCORR
-        WRITE(IW,*) 'Words requd. static+ integrals:',KFREE + IVMAX
-        WRITE(IW,*) 'Words available:',LFREE - IVMAX
-
-        RETURN
+        WRITE(IW,*) ' WORDS/MWORDS dynamically allocated for the'
+        WRITE(IW,*) ' <VV|VV> resp. <VO|VV> classes:',IVMAX,
+     &              IVMAX/(1024*1024)
       ENDIF
 C
-C----------------------------------------------------------------------
-C-------------- from here a real allocation took place and we ---------
 C----------------------------------------------------------------------
 C------------------------------- START ADC CALCULATION ----------------
 C----------------------------------------------------------------------
 C
-      CALL MEMCHK('ADC-memcheck after alloc',CC,KFRSAV)
-C
       WRITE(IW,*)
       CALL PST('Parameters for the single ionization run:+')
       WRITE(IW,*)
-c     WRITE(IW,165) CALTYP(ADCLEVEL),DOCONST,VCONV,
-c    &              READQKL,NSP,
-c    &              IVOVVT (NREP+1)*8*RCW/(1024*1024),
-c    &              IVVVVTT(NREP+1)*8*RCW/(1024*1024) 
-c    &              KFREE,LFREE,KFRSAV,KFRDYN
-c --------  corresponding format
-c165  FORMAT (/" Type of ADC calculation: ",T50,A8/,
-c    &         " Add constant diagrams (in ADC-3): ",T50,L1/
-c    &         " up to a convergence of ",T50,E15.8/
-c    &         " Read in constant diagrams (in ADC-3): ",T50,L1/
-c    &         " Number of spinors:",T50,I5/
-c    &         " Memory requirements (MB) for the VOVV ints:",T50,I6/
-c    &         " Memory requirements (MB) for the VVVV ints:",T50,I6/)
-c    &         " Memory pointers KFREE,LFREE,KFRSAV,KFRDYN:",T50,4I12/)
-c --------  corresponding format end
-
       write(IW,'(10X,A,T50,I8)') 'Number of spinors:',NSP
       write(IW,'(10X,A,T50,A8)') 'ADC treatment:',CALTYP(adclevel)
       write(IW,'(10X,A,T50,L1)') 'Read previous Qkl data:',readqkl
@@ -1012,7 +929,7 @@ C
       JSTAT = 1
       IF( (ADCLEVEL.EQ.3).AND.(READQKL)) THEN
         WRITE(IW,1040)
-        CALL RWQKL(CC(BUFQOO),CC(BUFQVO),CC(BUFQVV),LFA,JSTAT,
+        CALL RWQKL(BUFQOO,BUFQVO,BUFQVV,LFA,JSTAT,
      &             ITAPADC+9,FILEN9)
         IF(JSTAT.EQ.0) THEN
           WRITE(IW,1041)
@@ -1020,27 +937,14 @@ C
           WRITE(IW,1042)
         ENDIF
       ENDIF
-C
-C  if we do ADC-3 we need the Q_kl in  **ALL** symmetries ==> we have to
-C  loop over all symmetries for the corresponding entities. This is due
-C  to the coupling of symmetries in the b_pq calculation !
-C
-C  start Q_kl calculation if JSTAT=1 and ADC-3 is requested
-C  if DOCONST = FALSE then NO constant diagrams will be calculated
-C  only the other ADC-3 contributions will be inserted.
-C
 
-      IF( (ADCLEVEL.EQ.3).AND.
-     &    (JSTAT.EQ.1)   .AND.
-     &    (DOCONST.EQV..TRUE.)   ) THEN
-
-        CALL XCOPY(MOO(1),A0,0,CC(BUFQOO),1)
-        CALL XCOPY(MVO(1),A0,0,CC(BUFQVO),1)
-        CALL XCOPY(MVO(1),A0,0,CC(BUFQVOI),1)
-        CALL XCOPY(MVO(1),A0,0,CC(BUFQVOA),1)
-        CALL XCOPY(MVV(1),A0,0,CC(BUFQVV),1)
-c
-c  if we work in real symmetries we have degenerate
+ 1040 FORMAT (/5X,"Retrieving Q_kl data ...")
+ 1041 FORMAT (/5X,"Q_kl successfully loaded")
+ 1042 FORMAT (/5X,"Q_kl not available on disk. Will be computed")
+C
+C  we have to determine symmiter variable that determines kind of
+C  Kramers degeneracy depending on variable NZ
+c  If we work in real symmetries we have degenerate
 c  Kramers pairs. We can therefore skip one Kramers partner
 c  and copy the corresponding Qkl array. 
 C  In the case of complex symmetries (C_s C_i C_1) we have to
@@ -1059,34 +963,55 @@ c  In case of spinfree or Levy-Leblond calculations we have
 c  bosonic irreps exclusively, therefore real arithmetic
 c  and an irrep step of 1 (GROUPTYPE = 8)
 c
-        CALL PST('Starting calculation of constant diagrams+')
-        IF(NZ.eq.1) THEN
-          IF(SPFR.eqv..FALSE.) THEN
-            SYMMITER = 2
-            WRITE(IW,*) 'Real fermionic group (D2h, C2v, linear)'
-            WRITE(IW,*) 'Only one Kramers partner calculated!'
-          ELSE
-            SYMMITER = 1
-            WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
-            WRITE(IW,*) 'No Kramers skipping'
-          ENDIF
-        ELSE IF(NZ.eq.2) THEN
-          IF(SPFR.eqv..FALSE.) THEN
-            SYMMITER = 2
-            WRITE(IW,*) 'Complex fermionic group with Kramers pairs'
-            WRITE(IW,*) 'Only one Kramers partner calculated!'
-          ELSE
-            SYMMITER = 1
-            WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
-            WRITE(IW,*) 'No Kramers skipping'
-          ENDIF
-        ELSE IF(NZ.eq.4) THEN
-          SYMMITER = 1
-          WRITE(IW,*) 'Quaternionic fermionic group. No Kramers pairs.'
-          WRITE(IW,*) 'Each symmetry treated explicitly.'
+      IF(NZ.eq.1) THEN
+        IF(SPFR.eqv..FALSE.) THEN
+          SYMMITER = 2
+          WRITE(IW,*) 'Real fermionic group (D2h, C2v, linear)'
+          WRITE(IW,*) 'Only one Kramers partner calculated!'
         ELSE
-          CALL QUIT('NZ unassigned. Should not happen!')
+          SYMMITER = 1
+          WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
+          WRITE(IW,*) 'No Kramers skipping'
         ENDIF
+      ELSE IF(NZ.eq.2) THEN
+        IF(SPFR.eqv..FALSE.) THEN
+          SYMMITER = 2
+          WRITE(IW,*) 'Complex fermionic group with Kramers pairs'
+          WRITE(IW,*) 'Only one Kramers partner calculated!'
+        ELSE
+          SYMMITER = 1
+          WRITE(IW,*) 'Real bosonic group (Spinfree/Lev.-Lebl.)'
+          WRITE(IW,*) 'No Kramers skipping'
+        ENDIF
+      ELSE IF(NZ.eq.4) THEN
+        SYMMITER = 1
+        WRITE(IW,*) 'Quaternionic fermionic group. No Kramers pairs.'
+        WRITE(IW,*) 'Each symmetry treated explicitly.'
+      ELSE
+        CALL QUIT('NZ unassigned. Should not happen!')
+      ENDIF
+
+C
+C  if we do ADC-3 we need the Q_kl in  **ALL** symmetries ==> we have to
+C  loop over all symmetries for the corresponding entities. This is due
+C  to the coupling of symmetries in the b_pq calculation !
+C
+C  start Q_kl calculation if JSTAT=1 and ADC-3 is requested
+C  if DOCONST = FALSE then NO constant diagrams will be calculated
+C  only the other ADC-3 contributions will be inserted.
+C
+
+      IF( (ADCLEVEL.EQ.3).AND.
+     &    (JSTAT.EQ.1)   .AND.
+     &    (DOCONST.EQV..TRUE.)   ) THEN
+
+        CALL PST('Starting calculation of constant diagrams+')
+
+        CALL XCOPY(MOO(1),A0,0,BUFQOO,1)
+        CALL XCOPY(MVO(1),A0,0,BUFQVO,1)
+        CALL XCOPY(MVO(1),A0,0,BUFQVOI,1)
+        CALL XCOPY(MVO(1),A0,0,BUFQVOA,1)
+        CALL XCOPY(MVV(1),A0,0,BUFQVV,1)
 
 c------------------------------------------------------------
 c---------- loop over symmetries for the Qkl calculation ----
@@ -1101,91 +1026,92 @@ c------------------------------------------------------------
 c
 c in the constant diagram loop we need the VVVV integral buffer
 c
-          CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC_ME)
+c we allocate it only as long as we need it !
+c
+          allocate(BUFVVVV(IVMAX))
 c
 c -------  prepare V+/- vector iteration
 c
-          CALL UAFFHO(CC(BUFU1),
-     &                CC(BUF1A),CC(BUF1B),CC(BUF1C),
-     &                CC(BUF9A),CC(BUF9B),CC(BUF9C),
-     &                CC(BUFO1),EPS,KREP)
+          CALL UAFFHO(BUFU1,
+     &                BUF1A,BUF1B,BUF1C,
+     &                BUF9A,BUF9B,BUF9C,
+     &                BUFO1,EPS,KREP)
 c
-          CALL UIONPA(CC(BUFW1),
-     &                CC(BUF1A),CC(BUF1B),CC(BUF1C),
-     &                CC(BUF9A),CC(BUF9B),CC(BUF9C),
-     &                CC(BUFVVVV),EPS,KREP)
+          CALL UIONPA(BUFW1,
+     &                BUF1A,BUF1B,BUF1C,
+     &                BUF9A,BUF9B,BUF9C,
+     &                BUFVVVV,EPS,KREP)
 c
 c  UAFFHO/UIONPA are for VAFFITER/VIONITER
 c  and need to be complex conjugated for the correct BKC !
 c  for VAFFITER an incore version is not feasible, we tried....
 c
           NX = NO(KREP)*NOVVT(KREP)
-          IF(CARITH) CALL CONJUGA(NX,CC(BUFU1),1)
+          IF(CARITH) CALL CONJUGA(NX,BUFU1,1)
           NX = NV(KREP)*NVOOT(KREP)
-          IF(CARITH) CALL CONJUGA(NX,CC(BUFW1),1)
+          IF(CARITH) CALL CONJUGA(NX,BUFW1,1)
 
-          CALL MAKEEKOVV(CC(EJAB),EPS,KREP,CC(ICRB))
+          CALL MAKEEKOVV(EJAB,EPS,KREP,ICRB)
           IF(CARITH) THEN
-            CALL CVAFFITER (CC(BDIAG1),CC(BDIAG2),CC(BUFVVVV),CC(BUF9A),
-     &                      CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
-     &                 CC(EJAB),EPS,CC(ICRB),CC(VVLT),MXNV,KREP,VCONV)
+            CALL CVAFFITER (BDIAG1,BDIAG2,BUFVVVV,BUF9A,
+     &                      BUFU1,BUFU2,BUFU3,BUFU4,
+     &                 EJAB,EPS,ICRB,VVLT,MXNV,KREP,VCONV)
           ELSE
-            CALL VAFFITER (CC(BDIAG1),CC(BDIAG2),CC(BUFVVVV),CC(BUF9A),
-     &                     CC(BUFU1),CC(BUFU2),CC(BUFU3),CC(BUFU4),
-     &                 CC(EJAB),EPS,CC(ICRB),CC(VVLT),MXNV,KREP,VCONV)
+            CALL VAFFITER (BDIAG1,BDIAG2,BUFVVVV,BUF9A,
+     &                     BUFU1,BUFU2,BUFU3,BUFU4,
+     &                 EJAB,EPS,ICRB,VVLT,MXNV,KREP,VCONV)
           ENDIF
-          CALL MEMCHK('VAFFITER',CC,KFRSAV)
 C
 C  after VAFFITER the converged V+ vectors are in BUFU4
 C
-          CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
+          CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
           IF(CARITH) THEN
-            CALL CVIONITER (CC(ADIAG1),CC(ADIAG2),CC(BUFO1),CC(BUF9A),
-     &                      CC(BUFW1),CC(BUFW2),CC(BUFW3),CC(BUFW4),
-     &                  CC(EAJL),EPS,CC(ICRA),CC(OOLT),MXNO,KREP,VCONV)
+            CALL CVIONITER (ADIAG1,ADIAG2,BUFO1,BUF9A,
+     &                      BUFW1,BUFW2,BUFW3,BUFW4,
+     &                  EAJL,EPS,ICRA,OOLT,MXNO,KREP,VCONV)
           ELSE
-            CALL VIONITER (CC(ADCL),CC(DIAG),CC(BUFO1),CC(BUF9A),
-     &                     CC(BUFW1),CC(BUFW2),CC(BUFW3),CC(BUFW4),
-     &                  CC(EAJL),EPS,CC(ICRA),CC(OOLT),MXNO,KREP,VCONV)
+            CALL VIONITER (ADCL,DIAG,BUFO1,BUF9A,
+     &                     BUFW1,BUFW2,BUFW3,BUFW4,
+     &                  EAJL,EPS,ICRA,OOLT,MXNO,KREP,VCONV)
           ENDIF
-          CALL MEMCHK('VIONITER',CC,KFRSAV)
+c
+C  after VIONITER the converged V- vectors are in BUFW4 and we can release
+c  the huge VVVV buffer BUFVVVV
+
+          deallocate(BUFVVVV)
 C
-C  after VIONITER the converged V- vectors are in BUFW4
+C  next we need to provide VOVV buffers
 C
-C  VVVV memeory can now be released and reserved for the two
-C  VOVV integral batches
-C
-          CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
-          IX1 = JVVVO (NREP+1) 
-          CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
-          CALL MEMOPT('REAL',BUFVOW,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
-C
+          NX1 = JVVVO (NREP+1) 
+          allocate(BUFVOV(NX1*RCW))
+          allocate(BUFVOW(NX1*RCW))
 C
 C  next we generate the remaining two U arrays in order to
 C  determine the Q_kl entities and release the VOVV space afterwards
 C
-          CALL UAFFPA(CC(BUFX1),
-     &                CC(BUFVOV),CC(BUFVOW),
-     &                CC(BUF1A),CC(BUF1B),CC(BUF1C),CC(BUF9A),
+          CALL UAFFPA(BUFX1,
+     &                BUFVOV,BUFVOW,
+     &                BUF1A,BUF1B,BUF1C,BUF9A,
      &                EPS,KREP)
 
-          CALL MEMCHK('ADC',CC,KFRSAV)
 C
-          CALL UIONHO(CC(BUFY1),
-     &                CC(BUF1A),CC(BUF1B),CC(BUF1C),
-     &                CC(BUF9A),CC(BUFVOV),
+          CALL UIONHO(BUFY1,
+     &                BUF1A,BUF1B,BUF1C,
+     &                BUF9A,BUFVOV,
      &                EPS,KREP)
 c
 c  complex conjugate UAFFPA/UIONHO for the correct BKC in CMAKE_QKL !
 c  because the Q_kl are produced in |><| BKC !
-c  afterwards release memory for the VOVV again.
+c  afterwards release memory for the VOVV storage.
 c
           NX = NV(KREP)*NOVVT(KREP)
-          IF(CARITH) CALL CONJUGA(NX,CC(BUFX1),1)
+          IF(CARITH) CALL CONJUGA(NX,BUFX1,1)
           NX = NO(KREP)*NVOOT(KREP)
-          IF(CARITH) CALL CONJUGA(NX,CC(BUFY1),1)
+          IF(CARITH) CALL CONJUGA(NX,BUFY1,1)
 
-          CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+          deallocate(BUFVOV)
+          deallocate(BUFVOW)
+
 C
 C from this point we have all necessary U coupling blocks
 C and the iterated affinity/ionization V vectors for symmetry KREP.
@@ -1197,21 +1123,22 @@ C  if the group structure allows for that we duplicate the Q_kl values
 C  for KREP+1 symmetry afterwards.
 C
           IF(CARITH) THEN
-            CALL CMAKE_QKL (CC(BUFY1),CC(BUFX1),CC(BUFW4),CC(BUFU4),
-     &                CC(BUFQOO),CC(BUFQVO),CC(BUFQVOI),CC(BUFQVOA),
-     &                CC(BUFQVV),EPS,KREP,ADCPRINT)
+            CALL CMAKE_QKL (BUFY1,BUFX1,BUFW4,BUFU4,
+     &                BUFQOO,BUFQVO,BUFQVOI,BUFQVOA,
+     &                BUFQVV,EPS,KREP,ADCPRINT)
           ELSE
-            CALL RMAKE_QKL (CC(BUFY1),CC(BUFX1),CC(BUFW4),CC(BUFU4),
-     &                CC(BUFQOO),CC(BUFQVO),CC(BUFQVOI),CC(BUFQVOA),
-     &                CC(BUFQVV),EPS,KREP,ADCPRINT)
+            CALL RMAKE_QKL (BUFY1,BUFX1,BUFW4,BUFU4,
+     &                BUFQOO,BUFQVO,BUFQVOI,BUFQVOA,
+     &                BUFQVV,EPS,KREP,ADCPRINT)
           ENDIF
-c duplicate
+c
+c duplicate if possible
+c
           IF(SYMMITER.EQ.2) THEN
             IF(CARITH) THEN
-              CALL CQKLDUP(CC(BUFQOO),CC(BUFQVO),CC(BUFQVV),
-     &                     KREP)
+              CALL CQKLDUP(BUFQOO, BUFQVO, BUFQVV, KREP)
             ELSE
-              CALL QKLDUP(CC(BUFQOO),CC(BUFQVO),CC(BUFQVV),KREP)
+              CALL QKLDUP(BUFQOO, BUFQVO, BUFQVV, KREP)
             ENDIF
             WRITE(IW,*) ' Q_kl duplication could be performed.'
           ELSE
@@ -1225,7 +1152,7 @@ C
 C from here we have the complete Q_kl arrays and we write them out to
 C disk
 C 
-        CALL RWQKL(CC(BUFQOO),CC(BUFQVO),CC(BUFQVV),LTR,JSTAT,
+        CALL RWQKL(BUFQOO,BUFQVO,BUFQVV,LTR,JSTAT,
      &             ITAPADC+9,FILEN9)
 
       ENDIF
@@ -1240,21 +1167,22 @@ C
       IF(  (ADCLEVEL.EQ.3).AND.DOCONST)  THEN
 C
 C in MAKE_BPQ1 we do all calculations requiring arrays up to the VOVV type
-C that means we allocate that array just before entering the routine and
-C release it afterwards.
 C MAKE_BPQ1 is written for real and complex case. The Q_kl were
 C generated in |><| BKC ==> NO additional complex conjugation.
 C
-        IX1 = JVVVO (NREP+1)
-        CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
-        CALL MEMOPT('REAL',BUFVOW,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
+        NX1 = JVVVO (NREP+1)
+        allocate(BUFVOV(NX1*RCW))
+        allocate(BUFVOW(NX1*RCW))
 
-        CALL MAKE_BPQ1(CC(BUFQOO),CC(BUFQVO),CC(BUFQVV),
-     &                 CC(BUFBOO),CC(BUFBVO),
-     &                 CC(BUFO1),CC(BUFO2),CC(BUF1A),CC(BUF1B),
-     &                 CC(BUF1C),CC(BUF9A),CC(BUF9B),
-     &                 CC(BUFVOV),CC(BUFVOW),ADCPRINT)
-        CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+        CALL MAKE_BPQ1(BUFQOO,BUFQVO,BUFQVV,
+     &                 BUFBOO,BUFBVO,
+     &                 BUFO1,BUFO2,BUF1A,BUF1B,
+     &                 BUF1C,BUF9A,BUF9B,
+     &                 BUFVOV,BUFVOW,ADCPRINT)
+
+        deallocate(BUFVOV)
+        deallocate(BUFVOW)
+
 C
 C the B_pq are available right now and we can solve the system
 C of equations for Sig(infty)
@@ -1264,26 +1192,23 @@ C however has |><| convention in the hh block. in the complex case we
 C therefore complex conjugate the resulting constant diagrams.
 C
         IF(CARITH) THEN
-          CALL CSIGSOLV(CC(BUFBOO),CC(BUFBVO),CC(BUFXVO),
-     &                  CC(BUFYVO),CC(BUFBVO2),
-     &                  CC(BUF1A),CC(BUF1B),
-     &                  CC(BUF1C),CC(BUF1D),
-     &                  CC(BUF9A),CC(BUF9B),CC(BUF9C),
-     &                  EPS,CC(IPIVOT),CC(BUFSIG),
-     &                  CC(CSIGM),ADCPRINT)
+          CALL CSIGSOLV(BUFBOO,BUFBVO,BUFXVO,
+     &                  BUFYVO,BUFBVO2,
+     &                  BUF1A,BUF1B,
+     &                  BUF1C,BUF1D,
+     &                  BUF9A,BUF9B,BUF9C,
+     &                  EPS,IPIVOT,BUFSIG,
+     &                  CSIGM,ADCPRINT)
         ELSE
-          CALL SIGSOLV(CC(BUFBOO),CC(BUFBVO),
-     &               CC(BUF1A),CC(BUF1B),CC(BUF1C),CC(BUF1D),
-     &               CC(BUF9A),CC(BUF9B),CC(BUF9C),
-     &               EPS,CC(IPIVOT),CC(BUFSIG),ADCPRINT)
+          CALL SIGSOLV(BUFBOO,BUFBVO,
+     &               BUF1A,BUF1B,BUF1C,BUF1D,
+     &               BUF9A,BUF9B,BUF9C,
+     &               EPS,IPIVOT,BUFSIG,ADCPRINT)
         ENDIF
 C
 C Sigma(infty) is calculated and available in CC(BUFSIG)
 C
       ENDIF
-
-      CALL MEMCHK('ADC-BEFORE USER LOOP',CC,KFRSAV)
-
 
 C -----------------------------------------------------------------
 C
@@ -1291,8 +1216,6 @@ C  from here all the blocks for the ADC(2) and ADC(2x) calculations
 C  are generated and combined (if requested) with the previously
 C  Sigma(infty) contributions.
 C  the loop is over the user-requested symmetries !
-C
-C  hereby we have a little change in the very latest RELADC for DIRAC12:
 C
 C  If the user does not enter any specific symmetries,
 C  RELADC determines all symmetries there is work to be done for. Only if user
@@ -1342,7 +1265,16 @@ c
       write(iw,*) 'Program calculates',icount-1,' symmetries.'
       write(iw,*)
       
+! *********************************
+! *****  main symmetry loop  ******
+! *********************************
+
       DO 900 IRPLOOP=1,NREP
+
+! *********************************
+! *****  main symmetry loop  ******
+! *********************************
+
         IF(sipreps(IRPLOOP).EQ.0) GOTO 900
         IF(sipreps(IRPLOOP).GT.NREP) THEN
            WRITE(IW,*) 'Chosen Symmetry',sipreps(IRPLOOP),
@@ -1379,14 +1311,8 @@ c
      & " ***"/" ***"/" ******************************************"//)
 C
 C  Write the ADC files into the corresponding files. 
+C  Each symmetry is diagonalized immediately.
 C
-c       IF(KREP.GT.9) THEN
-c         WRITE(FILE4,'(A6,A1,I2)') FILEN4,'.',KREP     ! diag elem.
-c         WRITE(FILE5,'(A6,A1,I2)') FILEN5,'.',KREP     ! Packed ADC mat
-c       ELSE
-c         WRITE(FILE4,'(A6,A2,I1)') FILEN4,'.0',KREP    ! diag elem.
-c         WRITE(FILE5,'(A6,A2,I1)') FILEN5,'.0',KREP    ! Packed ADC mat
-c       ENDIF
 
 C
 C  set start number of written buffers and initial buffer pointer
@@ -1397,10 +1323,9 @@ C
 C  clear h/h and h/2h1p (Non-Dyson) block
 C
         N=NO(KREP)*NO(KREP)
-        CALL XCOPY(N,A0,0,CC(CKKS),1)
+        CALL XCOPY(N,A0,0,CKKS,1)
         N=NO(KREP)*NVOOT(KREP)
-        CALL XCOPY(N,A0,0,CC(BUFY1),1)
-        CALL MEMCHK('ADC-BUFY1',CC,KFRSAV)
+        CALL XCOPY(N,A0,0,BUFY1,1)
 
         LADC = NVOOT(KREP) + NO(KREP)
         WRITE(IW,'(A,2I8)') 
@@ -1410,11 +1335,11 @@ C
 C  ***************************  start h/h block  ****************************
 C  ... BKC:  |><|
 C
-! Elke:
-!        WRITE(iw,*) 'ckks'
-!        WRITE(iw,'(1X,ES14.5)') (cc(ixx), ixx=ckks,ckks+no(krep)-1)
-
-        CALL MAKE_HH2(CC(CKKS),CC(BUF1A),CC(BUF1B),EPS,CC(BUF4),KREP)
+!! Elke:
+!!        WRITE(iw,*) 'ckks'
+!!        WRITE(iw,'(1X,ES14.5)') (cc(ixx), ixx=ckks,ckks+no(krep)-1)
+!
+        CALL MAKE_HH2(CKKS,BUF1A,BUF1B,EPS,BUF4,KREP)
 C
 C  If ADC(3) is activated: compute C(3) and add Sigma(inf).
 C  we also need space for the VVVV integrals.   
@@ -1422,30 +1347,26 @@ C  S4P flag is always false because the Sigma(4+) algorithm will not
 C  go into this implementation.
 C
         IF(ADCLEVEL.EQ.3) THEN
-          CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC_ME)
-          CALL MAKE_HH3(KREP,CC(CKKS),CC(CKKSA),EPS,CC(BUFVVVV),
-     &                  CC(BUF1A),CC(BUF1B),CC(BUF1C),CC(BUF1D),
-     &                  CC(BUF9A),CC(BUF9B),CC(BUF9C),CC(BUFO1),
-     &                  CC(FKKS),.false.)
-          CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+          allocate(BUFVVVV(IVMAX))
+          CALL MAKE_HH3(KREP,CKKS,CKKSA,EPS,BUFVVVV,
+     &                  BUF1A,BUF1B,BUF1C,BUF1D,
+     &                  BUF9A,BUF9B,BUF9C,BUFO1,
+     &                  FKKS,.false.)
+          deallocate(BUFVVVV)
+  
+          CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
+          WRITE(IW,*) 'h/h hermiticity deviation:',ASYM
 
-c
-c  add constant diagrams if applicable
-c  and perform final memory check
-c
           IF(DOCONST) THEN
-            IX1=BUFSIG+JJOO(KREP,KREP)*RCW
-            CALL ADDARR(NO(KREP),CC(IX1),CC(IX1),CC(CKKS),CC(CKKS))
+            IX1=JJOO(KREP,KREP)*RCW + 1
+            CALL ADDARR(NO(KREP),BUFSIG(IX1),BUFSIG(IX1),CKKS,CKKS)
           ENDIF
-
-          CALL MEMCHK('ADC-ADDARR',CC,KFRSAV)
         ENDIF
 c
 c  check deviation from hermiticity (should be approx. zero)
 c
-        CALL CKKASYM(CC(CKKS),CC(CKKS),NO(KREP),ASYM)
-        WRITE(IW,*) 'Max. deviation from hermiticity'
-        WRITE(IW,*) 'for the h/h block:',ASYM
+        CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
+        WRITE(IW,*) 'h/h hermiticity deviation:',ASYM
         WRITE(IW,*)
 C
 C  compute 1h/2h-1p block contributions for ADC2 and ADC2X
@@ -1456,16 +1377,20 @@ C  formula. One further CC is necessary to comply with the BKC
 C  convention chosen for the overall ADC matrix.
 C
         IF(ADCLEVEL.EQ.1 .OR. ADCLEVEL.EQ.2) THEN
-          CALL MAKE_HHP2(CC(BUF5A),CC(BUF5B),CC(BUFY1),KREP)
+          CALL MAKE_HHP2(BUF5A,BUF5B,BUFY1,KREP)
         ELSE IF(ADCLEVEL.EQ.3) THEN
-          IX1 = JVVVO (NREP+1)
-          CALL MEMOPT('REAL',BUFVOV,IX1*RCW,CC,KFREE,LFREE,ALLOC_ME)
-          CALL UIONHO(CC(BUFY1),CC(BUF1A),CC(BUF1B),CC(BUF1C),
-     &                CC(BUF9A),CC(BUFVOV),EPS,KREP)
+
+          NX1 = JVVVO (NREP+1)
+          allocate(BUFVOV(NX1*RCW))
+
+          CALL UIONHO(BUFY1,BUF1A,BUF1B,BUF1C,
+     &                BUF9A,BUFVOV,EPS,KREP)
           NX=NO(KREP)*NVOOT(KREP)
-          CALL XSCAL(NX,-A1,CC(BUFY1),1)
-          IF(CARITH) CALL CONJUGA (NX,CC(BUFY1),1)
-          CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+          CALL XSCAL(NX,-A1,BUFY1,1)
+          IF(CARITH) CALL CONJUGA (NX,BUFY1,1)
+ 
+          deallocate(BUFVOV)
+
         ELSE
           CALL QUIT('Illegal ADCLEVEL value for coupling block calc.')
         ENDIF
@@ -1489,31 +1414,31 @@ C
           WRITE(iw,*) '*                                    *'
           WRITE(iw,*) '**************************************'
 
-          CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
+          CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
           WRITE(iw,*) 'CARITH = ', CARITH
           IF (CARITH) THEN
             IF (ADCLEVEL.EQ. 1) THEN
-              CALL fanoadcc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
-     &                     CC(EAJL),RDUMMY,RDUMMY,MXNO
+              CALL fanoadcc(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
+     &                     EAJL,RDUMMY,RDUMMY,MXNO
      &                     )
             ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
-              CALL fanoadcc(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
-     &                     CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
+              CALL fanoadcc(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
+     &                     EAJL,BUFO1,BUF9A,MXNO
      &                     )
             END IF
 
           ELSE
             IF (ADCLEVEL.EQ. 1) THEN
-              CALL fanoadcr(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
-     &                     CC(EAJL),RDUMMY,RDUMMY,MXNO
+              CALL fanoadcr(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
+     &                     EAJL,RDUMMY,RDUMMY,MXNO
      &                     )
             ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
-              CALL fanoadcr(CC(CKKS),CC(BUFY1),LADC,KREP,ITAPADC,IW,
-     &                     CC(EAJL),CC(BUFO1),CC(BUF9A),MXNO
+              CALL fanoadcr(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
+     &                     EAJL,BUFO1,BUF9A,MXNO
      &                     )
             END IF
           END IF
-          CALL MEMREL('Fano-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+          !CALL MEMREL('Fano-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
         END IF
 !
 ! Do normal ADC calculation
@@ -1534,16 +1459,24 @@ C
      &         STATUS='UNKNOWN')
           OPEN(ITAPADC+5,FILE=FILEN5,FORM='UNFORMATTED',
      &         STATUS='UNKNOWN')
+
+C
+C  write the off-diagonal h/h 
+C  and the h/2hp buffer to disk but NOT the diagonal entries since
+C  there are more diagonal elements to be calculated in MAKEHPHP !
+C  diagonal is written out in MAKEHPHP
+C  all other elements are finished and can be written out.
+C
           IF(CARITH) THEN
-            CALL CWRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
-     &               INTBUF,LADC,CC(IOI),CC(IOJ),
+            CALL CWRITE_HHP(CKKS,BUFY1,ADCL,BUFIO,
+     &               INTBUF,LADC,IOI,IOJ,
      &               KREP,NBUFS,IBUFPOS,ITAPADC+5)
           ELSE
-            CALL WRITE_HHP(CC(CKKS),CC(BUFY1),CC(ADCL),CC(BUFIO),
-     &            INTBUF,LADC,CC(IOI),CC(IOJ),
+            CALL WRITE_HHP(CKKS,BUFY1,ADCL,BUFIO,
+     &            INTBUF,LADC,IOI,IOJ,
      &            KREP,NBUFS,IBUFPOS,ITAPADC+5)
           ENDIF
-          CALL MEMCHK('ADC-WRITEHHP',CC,KFRSAV)
+        ENDIF
 
           WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
           WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
@@ -1559,47 +1492,46 @@ C
 C
 C  create K_akl array and lookup tables.
 C
-          CALL MAKEEKVOO(CC(EAJL),EPS,KREP,CC(ICRA))
+        CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
 c
 c  compute the off-diagonal entries if required
-c  BKC: C_aij,a'i'j' = |><|<|,<||>|>
+!  BKC: C_aij,a'i'j' = |><|<|,<||>|>
 c  ATT: the computed ones have complex conjugate BKC due to
 c  the Schirmer,Trofimov formula. Therefore all calculated
 c  entries will be CC is the routine, if complex case!
 c
-          IF(ADCLEVEL.EQ.1) THEN
-            IF(CARITH) THEN
-              CALL CMAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),
-     &                      CDUMMY,CDUMMY,CC(IOI),CC(IOJ),CC(ICRA),
-     &                      IDUMMY,LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,
-     &                      ADCLEVEL,ITAPADC+4,ITAPADC+5)
-            ELSE
-              CALL MAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),RDUMMY,
-     &                      RDUMMY,CC(IOI),CC(IOJ),CC(ICRA),IDUMMY,LADC,
-     &                      KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                      ITAPADC+4,ITAPADC+5)
-            ENDIF
-          ELSE IF(ADCLEVEL.EQ.2 .or. ADCLEVEL.EQ.3) THEN
-            IF(CARITH) THEN
-              CALL CMAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),
-     &                    CC(BUFO1),CC(BUF9A),CC(IOI),CC(IOJ),CC(ICRA),
-     &                    CC(OOLT),LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,
-     &                    ADCLEVEL,ITAPADC+4,ITAPADC+5)
-            ELSE
-              CALL MAKEHPHP(CC(CKKS),CC(DIAG),CC(BUFIO),CC(EAJL),
-     &                    CC(BUFO1),CC(BUF9A),CC(IOI),CC(IOJ),CC(ICRA),
-     &                    CC(OOLT),LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,
-     &                    ADCLEVEL,ITAPADC+4,ITAPADC+5)
-            ENDIF
+        IF(ADCLEVEL.EQ.1) THEN
+          IF(CARITH) THEN
+            CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,CDUMMY,
+     &                    CDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
+     &                    KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                    ITAPADC+4,ITAPADC+5)
           ELSE
-            CALL QUIT('Illegal ADCLEVEL value in the C_aij,akl block')
+            CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,RDUMMY,
+     &                    RDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
+     &                    KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                    ITAPADC+4,ITAPADC+5)
           ENDIF
+        ELSE IF(ADCLEVEL.EQ.2 .or. ADCLEVEL.EQ.3) THEN
+          IF(CARITH) THEN
+         CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
+     &                  BUF9A,IOI,IOJ,ICRA,OOLT,
+     &                  LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                  ITAPADC+4,ITAPADC+5)
+          ELSE
+           CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
+     &                  BUF9A,IOI,IOJ,ICRA,OOLT,
+     &                  LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                  ITAPADC+4,ITAPADC+5)
+          ENDIF
+        ENDIF
+
 C
 C  ... close files in this symmetry and enter diagonalizer
 C
-          CLOSE(ITAPADC+4)
-          CLOSE(ITAPADC+5)
-          CALL MEMCHK('AFTER ADC-MATRIX CONSTRUCTION',CC,KFRSAV)
+        CLOSE(ITAPADC+4)
+        CLOSE(ITAPADC+5)
+
 
 C
 C  call configuration creator for 1h/2h1p configurations
@@ -1645,47 +1577,27 @@ C  remember IRPLOOP counts through the input columns and is not equal to
 C  the requested irrep. Therefore SIPEIGV also refers to the number of
 C  eigenvectors requested for the KREP entered at the position IRPLOOP!
 C
-c     ...... old data written to infofile
-c
-c         WRITE(ITAPADC,'(I1)')  IONIZLEVEL         !IONIZLEVEL
-c         WRITE(ITAPADC,'(I2)')  KREP               !Current, active symmetry.
-c         WRITE(ITAPADC,'(I1)')  RCW                !RCW
-c         N=1
-c         WRITE(ITAPADC,'(I1)')  N                  !1=OLD, 2=NEW
-c         WRITE(ITAPADC,'(I12)') LADC               !LADC
-c         WRITE(ITAPADC,'(A6)')  FILEN5             !FILEADC
-c         WRITE(ITAPADC,'(A6)')  FILEN4             !FILEDIA
-c         WRITE(ITAPADC,'(A6)')  FILEN2             !FILECNF
-c         WRITE(ITAPADC,'(A5)')  NMSPECF            !Name of SPEC file
-c         WRITE(ITAPADC,'(I9)')  IRECL              !IRECL of config
-c         WRITE(ITAPADC,'(I9)')  SIPITER            !NITER
-c         WRITE(ITAPADC,'(I9)')  NO(KREP)           !1h space size
-c         WRITE(ITAPADC,'(I9)')  NBUFS              !# of chunks in ADC file
-c         WRITE(ITAPADC,'(I9)')  SIPEIGV(IRPLOOP)   !Number of eigenvectors in this symmetry
-c         WRITE(ITAPADC,'(F10.1)') SIPPRNT          !EVLLIM
-
-
-          reladc_md_iobase      = ITAPADC
-          reladc_md_ionizl      = IONIZLEVEL
-          reladc_md_ioldnew     = 1
-          reladc_md_intbuf      = INTBUF
-          reladc_md_desrep      = KREP
-          reladc_md_rcw         = RCW
-          reladc_md_lnzitr      = SIPITER
-          reladc_md_matdim      = LADC
-          reladc_md_irecl       = IRECL
-          reladc_md_nmain       = NO(KREP)
-          reladc_md_nbufs       = NBUFS
-          reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1) /autoev
-          reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2) /autoev
-          reladc_md_fileadc     = FILEN5
-          reladc_md_filediag    = FILEN4 
-          reladc_md_filecnf     = FILEN2
-          reladc_md_nmspec      = NMSPECF
+            reladc_md_iobase      = ITAPADC
+            reladc_md_ionizl      = IONIZLEVEL
+            reladc_md_ioldnew     = 1
+            reladc_md_intbuf      = INTBUF
+            reladc_md_desrep      = KREP
+            reladc_md_rcw         = RCW
+            reladc_md_lnzitr      = SIPITER
+            reladc_md_matdim      = LADC
+            reladc_md_irecl       = IRECL
+            reladc_md_nmain       = NO(KREP)
+            reladc_md_nbufs       = NBUFS
+           reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1)/autoev
+           reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2)/autoev
+            reladc_md_fileadc     = FILEN5
+            reladc_md_filediag    = FILEN4 
+            reladc_md_filecnf     = FILEN2
+            reladc_md_nmspec      = NMSPECF
 c
 c  call Lanczos diagonalizer. 
 c
-            CALL DIAG_LANC(CC,KFREE,LFREE,IW,DOINCORE)
+            CALL DIAG_LANC(IW,DOINCORE)
 c
             WRITE(IW,*)
             WRITE(IW,*) '       ------------------------------'
@@ -1704,7 +1616,6 @@ c
 !
 ! Not only Fano requested
 !
-        END IF
 
 
  900  CONTINUE
@@ -1713,14 +1624,25 @@ c
 C
 C                   ******************************
 C                   ***      END USER LOOP     ***
+C                   ***      DEALLOCATIONS     ***
 C                   ******************************
-C
-C
- 175  FORMAT (" Deviation from symmetry for ADC matrix in irrep ",
-     &          I6, E18.10/" Sparsity (%) ",F5.1)
- 1040 FORMAT (/5X,"Retrieving Q_kl data ...")
- 1041 FORMAT (/5X,"Q_kl successfully loaded")
- 1042 FORMAT (/5X,"Q_kl not available on disk. Will be computed")
+!
+!
+      deallocate(CKKS, BUF1A, BUF1B, BUF4, BUF5A, BUF5B, EAJL, 
+     &           ICRA, ADCL, DIAG, BUFIO, BUFY1, IOI, IOJ)
+!
+      IF(ADCLEVEL.GE.2) THEN
+        deallocate(OOLT, BUFO1, BUF9A)
+      ENDIF
+!
+      IF(ADCLEVEL.EQ.3) THEN
+        deallocate(CKKSA, FKKS, BUF1C, BUF1D, BUF5C, BUF9B, BUF9C,
+     &    BUFO2, BUFO3, BUFU1, BUFU2, BUFU3, BUFU4, BUFW1, BUFW2,
+     &    BUFW3, BUFW4, BUFX1, EJAB, ADIAG1, ADIAG2, BDIAG1, BDIAG2,
+     &    BUFQOO, BUFQVO, BUFQVOI, BUFQVOA, BUFQVV, BUFBOO, BUFBVO,
+     &    BUFXVO, BUFYVO, BUFBVV, BUFXVV, BUFIVV, BUFBVO2, BUFSIG,
+     &    CSIGM, ICRB, IPIVOT, VVLT)
+      ENDIF
 C
       RETURN
       END

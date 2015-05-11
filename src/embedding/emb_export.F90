@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -63,6 +63,8 @@ module fde_export_data
             call fde_get_export_info(etmp) 
             if (etmp%ex_format.eq.'XML') then
                call fde_export_data_as_xml(fde_grid_ex,gf_export)
+            else if (etmp%ex_format.eq.'TXT') then
+               call fde_export_data_as_txt(fde_grid_ex,gf_export)
             else
                call fde_quit('unrecognized export format')
             endif
@@ -97,6 +99,7 @@ module fde_export_data
 
          type(xml_tag),pointer :: tag
 
+         integer :: i
          integer :: export_unit, log_unit
          character(len=60)  :: export_name, log_name
 
@@ -217,7 +220,7 @@ module fde_export_data
 
            tag=>xml_tag_close(tag)
 
-           write(log_unit,*) 'writing xml file'       
+           write(log_unit,*) 'done writing xml file'       
            call xml_write(export_name)
 
            write(log_unit,*) 'closing xml file'
@@ -226,6 +229,68 @@ module fde_export_data
          deallocate(gp)
       end subroutine fde_export_data_as_xml
 
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_export_data_as_txt(grid,gf)
+!   ----------------------------------------------------------------------------
+         type(grid_function), intent(in) :: gf
+         type(fde_grid), intent(in)      :: grid 
+
+         type(fde_files)  :: ftmp
+         type(fde_export) :: etmp
+
+         integer :: i
+         integer :: nr_variables = 6
+         real(kind=8) :: v_pc_array = 0.0d0
+         integer :: export_unit, log_unit
+         character(len=60)  :: export_name, log_name
+       
+         if (.not.associated(grid%r)) &
+            call fde_quit('grid not available in fde export')
+
+         if (.not.associated(gf%n)) &
+            call fde_quit('density not available in fde export')
+         
+         if (.not.associated(gf%gn)) &
+            call fde_quit('density gradient not available in fde export')
+
+         if (.not.associated(gf%hn)) &
+            call fde_quit('density gradient not available in fde export')
+         
+         if (.not.associated(gf%elpot)) &
+            call fde_quit('potential not available in fde export')
+         
+         call fde_get_files_info(ftmp)
+         call fde_get_export_info(etmp)
+      
+         export_unit = ftmp%export%unit
+         export_name = ftmp%export%name
+
+         log_unit    = ftmp%logfile%unit
+         log_name    = ftmp%logfile%name
+
+         WRITE(log_unit,*) 'Output FDE data to text file:',trim(export_name)
+
+         call fde_test_export
+
+         call fde_open_file(export_name,export_unit)
+         write (export_unit,'(2I8)') grid%npoints, nr_variables
+
+         do i = 1, grid%npoints
+            write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
+                                            grid%w(i),             &
+                                            gf%elpot(i),           &
+                                            v_pc_array,            &
+                                            gf%n(i),               &
+                                            (gf%gn(j,i), j = 1,3)
+         end do
+
+         write(log_unit,*) 'done writing plaintext file'       
+         write(log_unit,*) 'closing plaintext file'
+         call fde_close_file(export_unit)
+
+      end subroutine fde_export_data_as_txt
+      
 #endif /* MOD_UNRELEASED */
 
 end module fde_export_data 

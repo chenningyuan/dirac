@@ -5,39 +5,51 @@ import sys
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'Electronic energy',
       num_lines   = 8,
-      tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 f.add(from_string = '* Total gross contributions',
       num_lines   = 7,
-      tolerance   = 1.0e-4)
+      rel_tolerance   = 1.0e-4)
 
-test_run.execute(['H.inp'], ['H.mol'], args='--get=DFACMO')
-shutil.copy('DFACMO', 'DFHAT1')
-shutil.copy('DFACMO', 'DFHAT2')
-shutil.copy('DFACMO', 'DFHAT3')
-shutil.copy('DFACMO', 'DFHAT4')
+test.run(['H.inp'], ['H.mol'], args='--get=DFACMO')
+shutil.copy('DFACMO', 'AFH1XX')
 
-test_run.execute(['C.inp'], ['C.mol'], args='--get=DFACMO')
-shutil.copy('DFACMO', 'DFCAT')
+test.run(['C.inp'], ['C.mol'], args='--get=DFACMO')
+shutil.copy('DFACMO', 'AFCXXX')
 
-test_run.execute(['CH4.inp'], ['CH4.mol'], f, args='--copy="DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4"')
+test.run(['CH4.inp'], ['CH4.xyz'], f, args='--mw=330 --outcmo --get=DFACMO --copy="AF*"')
+
+f = Filter()
+f.add(from_string = '* Total gross contributions',
+      num_lines   = 7,
+      rel_tolerance   = 1.0e-4)
+
+test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--mw=300 --incmo --copy="AF*"')
+
+shutil.copy('AFH1XX', 'AFH2XX')
+shutil.copy('AFH1XX', 'AFH3XX')
+shutil.copy('AFH1XX', 'AFH4XX')
+shutil.copy('DFACMO', 'DFCOEF')
+
+test.run(['CH4_C1.inp'], ['CH4.xyz'], f, args='--incmo --copy="AF*"')
+
 
 # cleanup
 os.unlink('DFACMO')
-os.unlink('DFCAT')
-os.unlink('DFHAT1')
-os.unlink('DFHAT2')
-os.unlink('DFHAT3')
-os.unlink('DFHAT4')
+os.unlink('DFCOEF')
+os.unlink('AFCXXX')
+os.unlink('AFH1XX')
+os.unlink('AFH2XX')
+os.unlink('AFH3XX')
+os.unlink('AFH4XX')
 
-sys.exit(0)
+sys.exit(test.return_code)

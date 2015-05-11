@@ -8,13 +8,13 @@
 .PRINT
  2
 **HAMILTONIAN
-.MDIRAC
+!.MDIRAC
 .X2Cmmf
 .DOSSSS
 !*X2C
 !.fragX2C
-*aooSOC
-.atomic
+!*aooSOC
+!.atomic
 **WAVE FUNCTION
 .SCF
 *SCF

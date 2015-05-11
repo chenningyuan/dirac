@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '           Electric-field-gradient-induced',
       num_lines   = 12,
-      tolerance   = 1.0e-6)
+      rel_tolerance   = 1.0e-6)
 
-test_run.execute(['nr_hf.inp'], ['h2o2.mol'], f)
-test_run.execute(['nr_hf.inp', 'nr_hf_shifted.inp', 'dc_hf_skipep.inp', 'dc_hf_skipep_cval=3000.inp', 'dc_hf.inp', 'dc_hf_shifted.inp'], ['fh.mol'], f)
+test.run(['nr_hf.inp'], ['h2o2.mol'], f)
+test.run(['nr_hf.inp', 'nr_hf_shifted.inp', 'dc_hf_skipep.inp', 'dc_hf_skipep_cval=3000.inp', 'dc_hf.inp', 'dc_hf_shifted.inp'], ['fh.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

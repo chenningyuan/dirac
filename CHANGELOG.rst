@@ -1,21 +1,16 @@
 
 
-13.2 (this is the next patch)
------------------------------
+14.1 (this will be next patch)
+------------------------------
 
-- Document me ...
+- Added OpenBLAS to default blas search list
+- Fixed misleading error message for .OPEN SHELL input
+- Workaround for CMake warning about nonexistent run_pamadm target
+- Intel compilers xHost flag automatic detection only upon request (-D ENABLE_XHOST_FLAG_DETECTION=ON)
+- Fixed minor issues to allow compilation using IBM XL Fortran compiler (thanks to Bob Walkup, IBM)
 
 
-13.1 (2013-12-16)
+14.0 (2014-12-12)
 -----------------
 
-- Magnetizabilities at the Hartree-Fock level with London atomic orbitals
-  (LAOs) were accidentally deactivated in 13.0.
-- Enable numerical gradient geometry optimization for a selected Fock-space Coupled-Cluster 
-  state (to be picked from the last active sector)
-
-
-13.0 (2013-12-12)
------------------
-
-- DIRAC13 release, see doc/release/release-statement.rst
+- DIRAC14 release, see doc/release/release-statement.txt

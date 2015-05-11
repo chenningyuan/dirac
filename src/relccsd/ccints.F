@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -770,7 +770,6 @@ C
       OPEN (MDPROP,FILE='MDPROP',FORM='UNFORMATTED')
       INOP = 0
     1 READ (MDPROP,ERR=10,END=11) ACHAR
-       print *,'ACHAR=',ACHAR
       IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.NAMEA) GOTO 1
       IF (IPRNT.GE.1) WRITE (IW,1000) NAMEA,ACHAR(9:16),ACHAR(17:24)
       READ (MDPROP) PROP

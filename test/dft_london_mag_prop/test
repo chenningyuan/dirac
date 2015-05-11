@@ -4,19 +4,18 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
-      tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-7)
 
-test_run.execute(['sdft_lda_dc_nc_rkb.inp', 'sdft_lda_dc_nc_rkb_g987.inp', 'sdft_lda_dc_sc_rkb.inp', 'sdft_lda_dc_sc_rkb_g987.inp'],
+test.run(['sdft_lda_dc_nc_rkb.inp', 'sdft_lda_dc_nc_rkb_g987.inp', 'sdft_lda_dc_sc_rkb.inp', 'sdft_lda_dc_sc_rkb_g987.inp'],
                  ['hehe.mol'], f)
-test_run.execute(['sdft_b3lyp_dc_nc_rkb.inp', 'sdft_b3lyp_dc_nc_rkb_g987.inp', 'sdft_b3lyp_dc_sc_rkb.inp', 'sdft_b3lyp_dc_sc_rkb_g987.inp'],
+test.run(['sdft_b3lyp_dc_nc_rkb.inp', 'sdft_b3lyp_dc_nc_rkb_g987.inp', 'sdft_b3lyp_dc_sc_rkb.inp', 'sdft_b3lyp_dc_sc_rkb_g987.inp'],
                  ['hehe.mol'], f)
 
-sys.exit(0)
+sys.exit(test.return_code)

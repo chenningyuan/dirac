@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -136,19 +136,6 @@ integer :: IKFREE, ILFREE,IKSTART
   propmat = MakeQMtx(set_qmtx_unpck(NFBAS(1,0),NFBAS(2,0)),set_irp(IREP),set_nz(NZ) )
 
   IPRINT = get_iprint_qmtx()
-  !IPRINT = 12
-  if (ITIM == 0) then
-      is_square = .true.
-      IDIMENS = N2BBASX
-      CALL MYMEMGET('REAL',KPTRI  ,NZ*IDIMENS)
-      CALL MYMEMGET('REAL',KONEIN ,   IDIMENS)
-  else
-      is_square = .false.
-      IDIMENS = NNBBASX
-      CALL MYMEMGET('REAL',KPTRI  ,NZ*IDIMENS)
-      CALL MYMEMGET('REAL',KONEIN ,   IDIMENS)
-  endif
-
 !   check it if it's not needed for property !!!
   CALL MYMEMGET('LOGI',KFIRST ,NZ        )
 
@@ -157,13 +144,8 @@ integer :: IKFREE, ILFREE,IKSTART
      call print_mem_param
   ENDIF
 
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED', &
-              FILE='APROPER')
-#else
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED', &
-              FILE='AOPROPER')
-#endif
+   OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED', &
+                FILE='AOPROPER')
 
    !mi: do not call, causing mem.error
    !CALL MEMCHK('get_prop_saao',PW,1)
@@ -174,21 +156,9 @@ integer :: IKFREE, ILFREE,IKSTART
      
   ILFREE = get_LFREE(); IKFREE = get_KFREE(); IKSTART=get_qmtx_kstart(propmat)
 
-     IF (IS_SQUARE) THEN
-! call 'old' F77 routines
-      ! CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
-       CALL PRPMSAO(INDXPR,IDIMENS,DUMMY,AccessWork(get_qmtx_kstart(propmat)),AccessWork(KONEIN),AccessWork(KFIRST), &
-                  ! PW(get_KFREE()), get_LFREE, IPRINT )
-                   ! PW(get_KFREE()), ILFREE, IPRINT )
-                    AccessWork(get_KFREE()), ILFREE, IPRINT )
-     ELSE
-      ! CALL PRPMSAO(INDXPR,IDIMENS,PW(KPTRI),PW(get_qmtx_kstart(propmat)),PW(KONEIN),PW(KFIRST), &
-       CALL PRPMSAO(INDXPR,IDIMENS,AccessWork(KPTRI),AccessWork(get_qmtx_kstart(propmat)),AccessWork(KONEIN),AccessWork(KFIRST), &
-                    AccessWork(get_KFREE()), ILFREE, IPRINT )
-                !   PW(get_KFREE()), get_LFREE, IPRINT )
-     ENDIF
-
-     CLOSE(LU1INT,STATUS = 'KEEP')
+  CALL PRPMSAO(INDXPR,AccessWork(get_qmtx_kstart(propmat)),AccessWork(KFIRST), &
+               AccessWork(get_KFREE()), ILFREE, IPRINT )
+  CLOSE(LU1INT,STATUS = 'KEEP')
 
      IF (IPRINT >= 7) THEN
       write(LUPRI,*) 'get_prop_saao 1 memmory parameters'

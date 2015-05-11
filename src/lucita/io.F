@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -171,6 +171,11 @@
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND LUCI*_NODE MODULE")
       ENDIF
+      ! master...
+      IF(MYPROC == 0)THEN
+        NLUC_MPI=LUC_MPIN
+        LUC_MPIL=7
+      END IF
 #else
       NLUC_MPI=LUC_MPIN
       LUC_MPIL=7

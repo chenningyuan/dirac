@@ -1,8 +1,8 @@
 Localizing bugs in DIRAC run using debugger
 ===========================================
 
-Since the DIRAC program system is still evolving, it gets spoiled with
-bugs during its perpetual development. We would like to share knowledge
+The DIRAC program system is continuously evolving. From time to time, however, it gets  - unintentionally - spoiled with
+various programming bugs. Here we would like to share knowledge
 on how to localize crashes/bugs in the code.
 
 We believe that this short tutorial is useful not only for DIRAC
@@ -12,38 +12,33 @@ precise localization and specification of the bug.
 Introduction
 ------------
 
-We assume a serial compiled DIRAC program suite.
+Let us assume that we have serially compiled DIRAC code.
+Make sure that DIRAC is compiled with "-g" flag for all Fortran, C and C++
+compilers. Anyway, this flag is the the default part in all combination of compiler flags.
 
-Make sure that DIRAC is compiled with "-g" flag for both Fortran and C
-compilers. This flag is the be the default part of compiler flags.
-
-When you would like to run multiple debugging runs, please choose *safe
-flags* for the compilation (it means omitting optimization flags, see
-the "Makefile.config" file) in order to speed up repeating DIRAC
-compilation and improve ease of debugging. Note that some bugs (crashes)
-might "disappear" when the optimization is turned off, because not all
+If you intend to run many debugging runs, please choose *--type=Debug* in the setup flags.
+This means omitting optimization flags by the CMake buildup system and speed up of (repeating) DIRAC
+compilation. Note that some bugs (crashes)
+might "disappear" when the optimization is completely turned off, because not all
 compilers have bug-free optimization procedure.
 
-Ensure that proper debugger is placed into the "pam" script (and is
-likewise installed). For the GNU set (gfortran,gcc) this is GNU/gdb.
-Some commercial compilers are providing their own debuggers: ifort,icc -
-idbg, for pgf90/pgcc - pgdbg etc.
+Ensure that proper debugger, installed on your machine,  is called with the "pam" script.
+For example, for the GNU compilers set this is the gdb-debugger.
+Also commercial compilers are providing their own debuggers: Intel suite brings 
+the idbg, the PGI suite has the pgdbg debugger etc.
 
-Debugging through the "pam" script
-----------------------------------
+Debugging with the "pam" script
+-------------------------------
 
-Running DIRAC with "pam --debug ..." is suitable for one-shoot debugging.
+Launching DIRAC with the "pam --debug ..."  is suitable for one-shoot debugging.
 Pam script calls the debugger, which afterwards shows up its command
-line.
-
-Then the user can set up breakpoints, stops for the code and run
+line. Aftewards the user can insert breakpoints, stops into the code and repeatedly run
 'dirac.x' inside the debugger.
 
 Stack printing
 ~~~~~~~~~~~~~~
 
-There is (in the development version of DIRAC) the possibility to print
-out the stack content.
+There is the possibility to print out the stack content.
 
 Any 'QUIT' crash of the code causes a SegFault termination you can
 investigate with the debugger - you can 'visit' individual procedures
@@ -67,16 +62,16 @@ Oposite way can be achiewed using 'down' command.
 Debugging in the plain mode with the GNU/gdb debugger
 -----------------------------------------------------
 
-We give a simple demo-session of an thorough and effective debugging.
-Recent version of the widely used the GNU/gdb debugger is recommended.
+We give a simple demonstrative session of an thorough and effective debugging.
+Most recent version of the widely used the GNU/gdb debugger is recommended.
 
 Make a working directory with enough disk space. Provide a link of the
 $DIRAC/dirac.x executable file there. This is because you will repeat
 modifications of DIRAC source files and subsequent compilation, so it is
 easier to have linked executable rather than copying it.
 
-Make sure that the 'DIRAC.INP', 'MOLECULE.INP', *gdb\_demo* and of other
-necessary files (e.g. 'DFCOEF' if you are restarting SCF iterations) are
+Make sure that the 'DIRAC.INP', 'MOLECULE.INP', *gdb\_demo* and other
+necessary files (for example, the 'DFCOEF' if you are restarting SCF iterations) are
 in the working directory as well.
 
 Demonstration of GNU/gdb debugging commands
@@ -156,30 +151,22 @@ commands (and macros) of the gdb debugger:
      end
     end
 
-Being the working directory type 'gdb dirac.x' to run the 'dirac.x' in
-the debugging mode. When the gdb command line appears, insert 'source
-gdb\_demo' to load the debugger commands source file.
+In the working space type *gdb dirac.x* to run the *dirac.x* executable in
+the debugging mode. When the debugger's command line appears, type *source gdb\_demo* to load the debugger source file.
 
-Each time when you modify and recompile DIRAC please retype again 'file
-dirac.x' in the gdb mode to reload the fresh executable.
+Each time when you modify and recompile DIRAC please retype again *file dirac.x* in the gdb mode to reload the fresh executable.
 
-If you modify the *gdb\_demo* debugger source file apply again the gdb
-command 'source gdb\_demo' to reload it.
+If you modify the *gdb\_demo* debugger source file apply again the gdb command *source gdb\_demo* to reload it.
 
-More GNU/gdb know-how is given at the web-page
-`http://sources.redhat.com/gdb/current/onlinedocs/gdb.html <http://sources.redhat.com/gdb/current/onlinedocs/gdb.html>`_.
+More GNU/gdb know-how is given at `this web-page <http://sources.redhat.com/gdb/current/onlinedocs/gdb.html>`_.
 
-Intel Fortran compiler/debugger
--------------------------------
+Other debuggers
+---------------
 
-For debugging programs compiled with ifort you need to use the Intel
-Debugger idb, which is the same set of commands as the GNU/gdb.
+To debug the *dirac.x* program compiled with the Intel suite we recommended to employ own Intel debugger, *idb*, 
+which is works with the same set of commands as the GNU/gdb counterpart. The same holds for Portland compilers.
+Combining different compilers with different debuggers does not work well.
 
-Debugging DIRAC in the parallel mode
-------------------------------------
-
-For parallel debugging we recommend some commercial software, which can
-follow individual threads.
-
-...totalview debugger ?
-
+For parallel debugging we recommend special (commercial) software, which is able to follow individual threads,
+like the *totalview debugger*. Otherwise in a multithreaded *dirac.x* run each thread can be caught and debugged 
+with any serial debugger.

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -259,6 +259,7 @@ C
         WORD1 = WORD
   100   CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -290,7 +291,7 @@ C&&& .MAX CI ITER...: maximum number of initial CI iterations.
 C&&& .OPERATOR: define one-electron operator to use in
 C               CI property calculation
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        WORK,LWORK,IPROPPRINT)
+     &                        IPROPPRINT)
                   CALL OP1IND('KRCIPR',LUCIINDTRP,LPROP_KRCI,
      &                        NPROP_KRCI,INDXPR,MXLUCIPRP)
                   DOPROP_KRCI = .TRUE.
@@ -854,6 +855,17 @@ C
 C
 C     Consistency checks
 C     ------------------
+
+      ! symmetry: LUCIAREL does not work with C1/Ci symmetry
+      if(KRCI_CIPROGRAM == 'LUCIAREL')then
+        if(nfsym == 1 .and. nz == 4)then
+          call quit('LUCIAREL does not work with C1/Ci symmetry.'//
+     &              ' Either you use GASCIP or wait for a patch to'//
+     &              ' Dirac14. For further information contact '//
+     &              ' dirac-users@googlegroups.com .')
+        end if 
+      end if
+
 C
 C     ... integral flags
       IF(DOLVC) ISSINT = 0
@@ -1825,7 +1837,11 @@ C     remove potential "garbage" from imaginary part...
 
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
 
+#ifdef MOD_UNRELEASED
       call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
+#else
+      call quit('DMRG interface not available in this Dirac version')
+#endif
 C
       CALL MEMREL('fcidump_driver',WORK,1,KFRSAV,KFREE,LFREE)
 C

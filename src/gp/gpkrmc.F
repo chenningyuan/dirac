@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -491,6 +491,9 @@ C       ... write
         CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
         REWIND LUNIT
       ELSE
+        IF( NTEST .gt. 0)THEN
+          WRITE(LUPRI,*)' matrix to be read from file with label ',LABEL
+        END IF
 C       ... read from file
         REWIND LUNIT
         CALL MOLLAB(LABEL,LUNIT,LUPRI)

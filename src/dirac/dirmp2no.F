@@ -1,5 +1,7 @@
+!define DEBUG_MP2_NO
+
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,7 +35,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 8)
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
@@ -43,15 +44,18 @@ C
 #include "../moltra/dcbtra.h"
 #include "dcbmp2no.h"
 C
+      PARAMETER (NTABLE = 8)
       LOGICAL SET, NEWDEF, RESET,LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
-C  .MAXVIRT - maximum number of virtuals in MP2
+C  .ACTIVE  - (string) Spinors to be included in the MP2 calculation
+C             Default: "energy -10.0 20.0 0.2"
+C  .MAX VS  - (integer) maximum number of virtuals in MP2
 C             if energy criterium gives more then max energy will be
 C             reduced
 C  .SCHEME  - transformation scheme used for MOLTRA (default taken from moltra)
-C  .SELECT  - select min NO for active orbitals afterwards (relccsd,
+C  .SEL NO  - select min NO for active orbitals afterwards (relccsd,
 C             lucita, kr-mcscf, luciarel, ...)
 C             Default: e.g. "NO-occ 1.99 0.001 0.1" in analogy with the
 C             "energy -10.0 20.0 0.2"          |--> 10%
@@ -63,8 +67,8 @@ C  .FOCKNO  - transform selected NO's to canonical Fock orbitals in
 C             subspace (?? for better convergence in CI?)
 C  
       SAVE SET
-      DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT',
-     &            '.MAX VS','.SCHEME','.SEL NO','.MULPOP'/
+      DATA TABLE /'.ACTIVE','.PRINT ','.INTFLG','.F2CONT','.MAX VS',
+     &            '.SCHEME','.SEL NO','.MULPOP'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -83,12 +87,16 @@ C
 C     Initialize /CBIMP2NO/
 C     =====================
 C
-      DEF_EN   = .TRUE.
-      IPRMP2NO = 0
-      ILLINT = IBTAND(INTGEN,1)
-      ISLINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
-      IGTINT = IBTAND(INTGEN/8,1)
+      DEF_EN   = .TRUE. ! VECMP2NO(I) is default with energy criterium
+#ifdef DEBUG_MP2_NO
+      IPRMP2NO = MAX(10,IPRGEN)
+#else
+      IPRMP2NO = IPRGEN
+#endif
+      ILLINT   = IBTAND(INTGEN,1)
+      ISLINT   = IBTAND(INTGEN/2,1)
+      ISSINT   = IBTAND(INTGEN/4,1)
+      IGTINT   = IBTAND(INTGEN/8,1)
       IFCMP2NO = 1
       IFEMP2NO = 1
 C
@@ -115,6 +123,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -155,7 +164,7 @@ C&&& F2CONT: Specify Coulomb/exchange contributions
                   READ(LUCMD,*) IFCMP2NO,IFEMP2NO
                GO TO 100
     5          CONTINUE
-C&&& MAX VS: Specify max. number of virt. spinors in NO-MP2 calculation
+C&&& MAX VS: Specify max. number of virtual. spinors in NO-MP2 calculation
                   READ(LUCMD,*) IMAXVSP
                GO TO 100
     6          CONTINUE
@@ -262,6 +271,8 @@ C
 C
       LOGICAL SAVEFLAGS(4), TOBE, FNDLAB
 C
+      CALL QENTER('MP2NOGEN')
+
 #include "memint.h"
       CALL TITLER('MP2 natural orbitals','*',125)
 C
@@ -294,14 +305,15 @@ C       ... search for coefficients label
       INQUIRE(FILE='MDCINT',EXIST=TOBE)
       IF (TOBE) SKIP_ITRAFO = .TRUE.
 C
-      CALL MP2NOGE1()
+      CALL MP2NOGEN_1()
 C
       RUN_CCMOD  = .FALSE.
 C
+      CALL QEXIT('MP2NOGEN')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck mp2noge1 */
-      SUBROUTINE MP2NOGE1()
+C/* Deck mp2nogen_1 */
+      SUBROUTINE MP2NOGEN_1()
 C***********************************************************************
 C     Generate MP2 natural orbitals
 C
@@ -314,7 +326,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0,DM2=-2.0D0,D2=2.0D0)
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -327,14 +338,16 @@ C
 #include "mpif.h"
 #endif
       LOGICAL FND,FNDLAB,TOBE
-      DIMENSION IC(2),IE(2),ID(2), KVEC(2)
+      INTEGER IC(2),IE(2),ID(2), KVEC(2)
       INTEGER NR(2)
       CHARACTER CTMP*1, LABEL*8
       real(8), allocatable :: WORK(:)
-      CALL QENTER('MP2NOGE1')
+
+      CALL QENTER('MP2NOGEN_1')
+
       call legacy_lwork_get(LWORK)
 #include "memint.h"
-      call alloc(WORK,LWORK,id='WORK in MVOGE1')
+      call alloc(WORK,LWORK,id='WORK in MP2NOGEN_1')
 C
       KFRSAV=KFREE
 C
@@ -367,7 +380,7 @@ C
 C
 C       memory allocation
 C       -----------------
-        CALL MEMGET('REAL',KOCC_NAT ,NESHT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','OCC_NAT',KOCC_NAT ,NESHT,WORK,KFREE,LFREE)
 C
 C       initialize
 C       ----------
@@ -390,28 +403,38 @@ C          ... initialize
            CALL IZERO(WORK(KIBEIG),NORBT)
 C          ... MP2 NO coefficients
            CALL REAKRMC(LUKRMC,'MP2NATOB',WORK(KCMO_NAT),NASHT*NASHT*NZ)
+C          ... boson irrep info (or mj-values if linear symmetry is available)
+           CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO_TRA),XDUMMY,XDUMMY,
      &                 XDUMMY,2,WORK,KFREE,LFREE)
-           REWIND(LUCOEF)
-           CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
-     &                 XDUMMY,8,WORK,KFREE,LFREE)
            CLOSE(LUCOEF,STATUS='KEEP')
 C
 C          transformation 
 C          --------------
+#ifdef DEBUG_MP2_NO
+           write(lupri,*) 'calling TRDMP2NATMO'
+           call flshfo(lupri)
+#endif
            CALL TDMP2NATMO(WORK(KCMO_TRA),WORK(KCMO_NAT),
      &                     WORK(KFREE),LFREE)
 
 !          reorder NOs according to descending occupation
+#ifdef DEBUG_MP2_NO
+           write(lupri,*) 'calling reorder_mp2no'
+           call flshfo(lupri)
+#endif
            call reorder_mp2no(work(kcmo_tra),work(kocc_nat),
      &                        work(kibeig))
 C
 C          save to disk
 C          ------------
-           CALL WRTKRMC(LUKRMC,'NEWNATOB',WORK(KCMO_TRA),NCMOTQ)
-           CALL WRTKRMC(LUKRMC,'NEWNATOC',WORK(KOCC_NAT),NESHT)
+           CALL WRTKRMC(LUKRMC, 'NEWNATOB',WORK(KCMO_TRA),NCMOTQ)
+           CALL WRTKRMC(LUKRMC, 'NEWNATOC',WORK(KOCC_NAT),NESHT)
+           label(1:8) = 'IBEIG   '
+           if(linear) label(1:8) = 'MJVEC   '
+           CALL IWRTKRMC(LUKRMC,label(1:8),work(kibeig),NORBT)
 C
 C          release memory
 C          --------------
@@ -441,6 +464,7 @@ C
            END IF
            IOFF2 = IOFF2 + NESH(I)
         END DO
+        CALL FLSHFO(LUPRI)
 C
 C       run Mulliken population analysis
 C       --------------------------------
@@ -453,7 +477,7 @@ C         count 'active NOs'
             ICOUNT = 0
             NOCCI  = NESH(I)
             DO J = 1, NOCCI
-              IF(WORK(KOCC_NAT+IOFF2-2+J) .ne. D0) ICOUNT = ICOUNT + 1
+              IF(WORK(KOCC_NAT+IOFF2-2+J) .ne. 0.0D0) ICOUNT = ICOUNT+1
             END DO
             NACTMP2NO(I) = ICOUNT
             IOFF2 = IOFF2 + NESH(I)
@@ -483,11 +507,11 @@ C
       IOFF2 = 1
       DO I = 1,NFSYM
         NR(I) = 1
-        CALL MEMGET('INTE',KVEC(I),NESH(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC',KVEC(I),NESH(I),WORK,KFREE,LFREE)
         CALL NUMLS4(VECNOSEL(I),WORK(KVEC(I)),NESH(I),NR(I),
      &              NESH(I),NR(I),WORK(KOCC_NAT+IOFF2-1))
         IF( NR(I) .eq. 0 ) THEN
-          WRITE(LUPRI,'(3X,A,I3)')
+          WRITE(LUPRI,'(/3X,A,I3)')
      &    '- No active spinors in fermion ircop ',I
         ELSE
           NTOT = NTOT + NR(I)
@@ -502,10 +526,10 @@ C
 C
 C     memory deallocation
 C     -------------------
-      CALL MEMREL('MP2NOGE1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('MP2NOGEN_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       call dealloc(WORK)
 C
-      CALL QEXIT('MP2NOGE1')
+      CALL QEXIT('MP2NOGEN_1')
       RETURN
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
@@ -529,17 +553,19 @@ C     written by S. Knecht - June 2008, Odense
 C
 C***********************************************************************
       use moltra_labeling
+      use relcc_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbbas.h"
+#include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
+#include "../relccsd/freeze.inc"
 C
 #include "maxorb.h"
 #include "dcbgen.h"
@@ -549,6 +575,7 @@ C
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
 C
+      CALL QENTER('DENMP2NO')
 #include "memint.h"
       KFRSAV = KFREE
 C
@@ -639,7 +666,7 @@ C
       WRITE(LUPRI,'(/A)') '* Orbital ranges for 4-index transformation:'
       DO I = 1, NFSYM
          CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
-     &                 WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
+     &                   WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
       ENDDO
 C
 C     Calculate dimensions of coefficient arrays
@@ -695,7 +722,7 @@ C
         DO IFRP = 1, NFSYM
           NDIM = NDIM + NSTR(IFRP,0,I)
         ENDDO
-        CALL MEMGET('REAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','E(1,I)',KE(1,I),NDIM,WORK,KFREE,LFREE)
         KE(2,I) = KE(1,I) + NSTR(1,0,I)
       ENDDO
 C
@@ -753,6 +780,8 @@ C     Assuming that all sets are equal, we use the first index !!!
 C     ============================================================
 C
       IF (RCORBS) THEN
+         WRITE(LUPRI,'(/A)') 'Info: RCORBS set, calling VIRCAN'
+         CALL FLSHFO(LUPRI)
 C        Overdimension KCMO because it is used as Focksize scratch space
          CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
          CALL VIRCAN(WORK,KFREE,LFREE,IPRTRA,KQ(1,1),KE(1,1),
@@ -830,10 +859,10 @@ C     if selection criterion is set check for max. virt.
 C
       IF( DEF_EN )THEN
         IF( NAVIRT .gt. IMAXVSP ) THEN
-          WRITE(LUPRI,*)' NOTE: number of active virt.:',NAVIRT
-          WRITE(LUPRI,*)' maximum number of act. virt.:',IMAXVSP
-          WRITE(LUPRI,*)' you may reconsider your choice of 
-     & active space'
+          WRITE(LUPRI,'(/A,I5/A,I5/A)')
+     &       ' NOTE: number of active virt.:',NAVIRT,
+     &       ' Maximum number of act. virt.:',IMAXVSP,
+     &       ' You may reconsider your choice of active space'
         END IF
       END IF
 C     
@@ -845,8 +874,8 @@ C
          NIVIRT = NIVIRT + NIVIR(IFRP)
       ENDDO
 
-!     set nash...
-      nasht = 0
+!     reset nash...
+      NASHT = 0
       do ifrp = 1, nfsym
         NASH(IFRP)  = NAOCC(IFRP) + NAVIR(IFRP)
         IASH(IFRP)  = NASHT
@@ -865,6 +894,7 @@ C
       DO I = 1, NFSYM
          CALL TRAPRI(1,I,WORK(KVEC(I,5)),0,0,0,NSPC)
       ENDDO
+      CALL FLSHFO(LUPRI)
 C
 C     Calculate dimensions of the coefficient array
 C
@@ -917,8 +947,10 @@ C     skip integral transformation if MDCINT/MRCONEE are present
 C     ----------------------------------------------------------
       IF( SKIP_ITRAFO ) GOTO 20
 
-      IF (.NOT.NO2IND)
-     &   CALL TRAONE(WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,KQC,KE,KIBE)
+      IF (.NOT.NO2IND) THEN
+         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
+     &               KQ,KQC,KE,KIBE)
+      END IF
 C
       CALL FLSHFO(LUPRI)
 C
@@ -963,33 +995,58 @@ C
 C     Transformation finished - start MP2 density run
 C     -----------------------------------------------
 C
-C     prepare and write RELCCSD MP2-NO input
+C     tell RELCC to get the density matrix
 C
-      LMP2_DEN_INP = 99
-      MP2NOFN      = 'MP2_NO.INP.0'
-      MP2NOFN_L    = 12
-      INFO_STRING(1) =
-     &'&RELCCSD TIMING=T, DOSORT=T, DOENER=T, DOFOPR=T, DOSOPR=F &END'
-      INFO_STRING(2) =
-     &'&CCENER DOMP2=T, DOCCSD=F, DOCCSDT=F  &END                    '
-      INFO_STRING(3) =
-     &'&CCFOPR DOMP2G=T, NOZG=T, DONATORB=T  &END                    '
+      relcc_do_energy = .true.
+      relcc_do_ccsd   = .false.
+      relcc_do_ccsd_t = .false.
+      relcc_do_gradient = .true.
+      relcc_do_mp2gradient = .true.
+      relcc_do_unrelaxed = .true.
+      relcc_do_naturalorbitals = .true.
+      relcc_no_recompute = .true.
 
-      OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
-     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
-      REWIND(LMP2_DEN_INP)
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(1) 
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2) 
-      WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3) 
+      IF (NOPEN .gt. 0) THEN
+      ! tell RELCC to freeze the open orbitals
+      ! NB! note that core orbitals (in NSPC()) in the integral transformation are not counted !!!
+      ! (The NELEC() used in RELCCSD is from MRCONEE from moltra/traone.F)
+      ! NB! IFROZ is over spinors, we must therefore freeze both spinor no. i and its Kramers partner,
+      ! spinor no. NSTRT(ifrp)+i.
+         relcc_ifroz_input = .true.
+         IFROZ(:,:) = 0
+         NFROZEN = 0
+         do ifrp = 1, nfsym
+            nocc_ifrp = nish_dhf(ifrp)+nash_dhf(ifrp)
+            do i = 1,nfro_dhf(ifrp)
+               NFROZEN = NFROZEN + 1
+               IFROZ(i,ifrp) = NFROZEN
+               NFROZEN = NFROZEN + 1
+               IFROZ(NSTRT(1)+i,ifrp) = NFROZEN
+            end do
+            do i = nish_dhf(ifrp)+1,nocc_ifrp
+               NFROZEN = NFROZEN + 1
+               i_active = i - nspc(ifrp,1)
+               IFROZ(i_active,ifrp) = NFROZEN
+               i_active = i_active + NSTRT(1) ! the Kramers partner
+               IFROZ(i_active,ifrp) = NFROZEN
+            end do
+            write (lupri,'(/A,I2)') 'DENMP2NO: '//
+     &      ' Frozen occupied orbitals, ifrp =',ifrp
+            write (lupri,'(/,4(5X,5I5))') (IFROZ(i,ifrp),i=1,nocc_ifrp)
+            write (lupri,'(/,4(5X,5I5))')
+     &         (IFROZ(NSTRT(1)+i,ifrp),i=1,nocc_ifrp)
+         end do
+      ELSE
+         relcc_ifroz_input = .false.
+         NFROZEN = 0
+      END IF
 C
       CALL PAMCCM()
 C
-      CLOSE(LMP2_DEN_INP,STATUS='KEEP')
-C
+      CALL QEXIT('DENMP2NO')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck READMP2NAT */
-      SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT)
+      SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT,ibeig)
 C***********************************************************************
 C
 C     Read MP2-NO coefficients and occupations numbers from file 
@@ -1001,20 +1058,22 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
-C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbmp2no.h"
-      DIMENSION CMO(*), EIG(*), EIG_NAT(*)
+      DIMENSION CMO(*), EIG(*), EIG_NAT(*),ibeig(*)
+      character(len=8) :: label
 C
 C     initialize
       CALL DZERO(EIG,NORBT)
 C     read MP2-NO vecs and occupancies from file KRMCOLD
       CALL REAKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
       CALL REAKRMC(LUKRMC,'NEWNATOC',EIG_NAT,NESHT)
+      label(1:8) = 'IBEIG   '
+      if(linear) label(1:8) = 'MJVEC   '
+      call ireakrmc(lukrmc,label(1:8),ibeig,norbt)
 C
       IOFF2 = 1
 C
@@ -1040,7 +1099,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1148,7 +1206,7 @@ C
        allocate(occ_full(norbt))
        allocate(occ_full_save(norbt))
        allocate(reorder_fermion(2))
-       allocate(reorder_list(nesht,2))
+       allocate(reorder_list(norbt,2))
 
        occ_full        = 0
 
@@ -1225,23 +1283,27 @@ C
 
 !        c. secondary shells
          icount = niocc(i) + nash(i) + 1
-         do jj = 1, nesh(i) - niocc(i) + nash(i)
+         do jj = 1, nesh(i) - niocc(i) - nash(i)
            reorder_list(icount,i) = icount
            icount                 = icount + 1
          end do
          reorder_fermion(i) = nesh(i)
        end do
 
-!      write(lupri,*) 'reorder list'
-!      do i = 1, nfsym
-!        write(lupri,*) ' fermion sym # ',i
-!        do jj = 1, nesh(i)
-!          write(lupri,*) ' electronic shell # ',jj,' goes to ',
-!    &                      reorder_list(jj,i)
-!        end do
-!      end do
+#ifdef DEBUG_MP2_NO
+       write(lupri,*) 'reorder list'
+       do i = 1, nfsym
+         write(lupri,*) ' fermion sym # ',i
+         do jj = 1, nesh(i)
+           write(lupri,*) ' electronic shell # ',jj,' goes to ',
+     &                      reorder_list(jj,i)
+         end do
+       end do
+       write(lupri,*) 'now calling reord'
+       call flshfo(lupri)
+#endif
 
-      call reord(cmo,occ_full,ibeig,reorder_list,reorder_fermion,nesht)
+      call reord(cmo,occ_full,ibeig,reorder_list,reorder_fermion,norbt)
 
 !     store new occ order on reduced list
       ioff = 1

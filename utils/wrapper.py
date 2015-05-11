@@ -256,9 +256,9 @@ class Wrapper:
             sys.exit('No .pcm file specified') 
         else:
             self.copyin.append([value,'pcmsolver.inp'])
-	if 'PCMSOLVER_PARSE' in os.environ.keys():
-	    self.copyin.append([os.environ['PCMSOLVER_PARSE'], 'pcmsolver']) 
-	else:
+        if 'PCMSOLVER_PARSE' in os.environ.keys():
+            self.copyin.append([os.environ['PCMSOLVER_PARSE'], 'pcmsolver']) 
+        else:
             self.copyin.append(['pcmsolver','pcmsolver'])
 #        self.archpatterns.append('PEDRA.OUT')
 #        self.archpatterns.append('cavity.off')
@@ -467,7 +467,7 @@ class Wrapper:
         try:
             os.chdir(self.tmppath)
             if self.do_pcm:
-		os.system('./pcmsolver --dryrun')
+                os.system('./pcmsolver')
             for cmd in self.cmdlines:
                 self.run_cmd(cmd)
         finally:

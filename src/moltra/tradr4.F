@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -114,9 +114,9 @@ C
 C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
         IF (NOMDCINT) THEN
-           CALL XTIME(1,1,' Initializing MS4IND file  ')
+           CALL XTIME(1,1,' Initializing MS4IND file     ')
            CALL MDSCRI
-           CALL XTIME(1,2,' Initializing MS4IND file  ')
+           CALL XTIME(1,2,' Initializing MS4IND file     ')
         END IF
 C
 C     We send out all the tasks (shell pairs in this case) to the slaves
@@ -178,7 +178,7 @@ C
               IF (ITEST .EQ. 0) THEN
 C             ... slave wants new set of A,B shells
               CALL GETTIM(CPUST,WALLST)
-              IF (IPRINT .GE. 3) THEN
+              IF (IPRINT .GE. 1) THEN
                  WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)') 
      &              '- Sending shells (',ISHLA,',',ISHLB,
      &              '-',IBEND,') to node',NWHO,
@@ -214,9 +214,9 @@ C
 C
 C     Initialize scratch output file for final integrals
 C
-        CALL XTIME(1,1,' Initializing MS4IND file  ')
+        CALL XTIME(1,1,' Initializing MS4IND file     ')
         CALL MDSCRI
-        CALL XTIME(1,2,' Initializing MS4IND file  ')
+        CALL XTIME(1,2,' Initializing MS4IND file     ')
 C
         CALL XTIME(5,1,' Computing+transform. integrals')
         CALL GETTIM(CPUBEF,WALLBEF)

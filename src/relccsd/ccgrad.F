@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -616,7 +616,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG)
+      SUBROUTINE  MP2_NATORB(DMO,NOPRNT_input,NOZG)
 C***********************************************************************
 C
 C     Calculate MP2 nat. orb. and nat. orb. occ. num.
@@ -637,28 +637,44 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
 C
       DIMENSION DMO(NORBT,NORBT,NZ)
       LOGICAL NOZG
-      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:)
+      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:), ibeig(:)
 C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*8 LABEL
 C
       CALL QENTER('MP2_NATORB')
+!define DEBUG_MP2_NO
+#ifdef DEBUG_MP2_NO
+      noprnt = max(noprnt_input,10)
+#else
+      noprnt = noprnt_input
+#endif
 C
 C     memory allocation
 C     -----------------
       allocate(CMO_NAT(NASHT*NASHT*NZ))
       allocate(OCC_NAT(NESHT))
+      allocate(ibeig(norbt))
 C
 C     initialize
 C
       CALL DZERO(CMO_NAT,NASHT*NASHT*NZ)
       CALL DZERO(OCC_NAT,NESHT)
+      ibeig(1:norbt) = 0
+
+!     !> read ibeig (info array on boson irreps) from DFCOEF
+      if( linear .or. spinfr )then
+        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
+        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        close(lucoef,STATUS='KEEP')
+      end if
 C
 C     build diagonal according to Fock matrix
 C     ---------------------------------------
@@ -666,7 +682,7 @@ C     ---------------------------------------
 C
 C     calculate NO occ. num. 
 C     ----------------------
-      CALL MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
+      CALL MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,ibeig,NOPRNT)
 C
 C     save nat. orb. occ. num. and transform. matrix to file 
 C     ------------------------------------------------------
@@ -682,22 +698,22 @@ C
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
         CALL NEWLAB('*KRMCMP2',LUKRMC,LUPRI)
 C
-        CALL WRTKRMC(LUKRMC,'MP2NATOB',CMO_NAT,NASHT*NASHT*NZ)
-        CALL WRTKRMC(LUKRMC,'MP2NOOCC',OCC_NAT,NESHT)
+        CALL WRTKRMC(LUKRMC, 'MP2NATOB',CMO_NAT,NASHT*NASHT*NZ)
+        CALL WRTKRMC(LUKRMC, 'MP2NOOCC',OCC_NAT,NESHT)
+        CALL IWRTKRMC(LUKRMC,'IBEIGORI',ibeig,NORBT)
         CLOSE(LUKRMC,STATUS='KEEP')
 C
       END IF
 C
 C     memory deallocation
 C     -------------------
-      deallocate(OCC_NAT)
-      deallocate(CMO_NAT)
+      deallocate(OCC_NAT,CMO_NAT,ibeig)
 C
       CALL QEXIT('MP2_NATORB')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
+      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,ibeig,NOPRNT)
 C***********************************************************************
 C
 C     diagonalize second order density matrix DMO
@@ -710,6 +726,7 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -717,13 +734,24 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "dcbidx.h"
 #include "../moltra/dcbtr3.h"
 C
-      DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ)
+      DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ), ibeig(norbt)
       DIMENSION DMO(NORBT,NORBT,*)
       real(8), allocatable :: scratch(:)
       real(8), allocatable :: dv(:,:,:), occ(:)
-C
+      real(8), allocatable :: cmo_nat_all(:)
+      integer :: lwork = 0
+      real(8), allocatable :: work(:)
+
+      call legacy_lwork_get(LWORK)
+#include "memint.h"
+      call alloc(WORK,LWORK-norbt**2*nz,id='WORK in GMOTRA')
+      KFRSAV = KFREE
+
       IF ( NOPRNT .ge. 5 )THEN
          CALL HEADER(
      &               'MP2_NATORB_GEN: DMO :',-1)
@@ -732,45 +760,55 @@ C
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
 
-      allocate(occ(nasht))
-      allocate(dv(nasht,nasht,nz))
-      dv  = 0
-      occ = 0
+      allocate(occ(nasht),dv(nasht,nasht,nz),cmo_nat_all(norbt**2*nz))
+      dv          = 0
+      occ         = 0
+      cmo_nat_all = 0
+      iashi       = 0
+      !> set index array idxu2g
       do i = 1,nfsym
         do j = 1, nash(i)
-          do k = 1, nash(i)
-            do iz = 1, nz
-              dv(j,k,iz) = dmo(iorb(i)+npsh(i)+niocc(i)+j,
-     &                         iorb(i)+npsh(i)+niocc(i)+k,
-     &                         iz)
-            end do
-          end do
+          iashi         = iashi  + 1
+          IDXU2G(IASHI) = iorb(i)+ npsh(i) + niocc(i) + j
         end do
       end do
 
-      IF (NZ .EQ. 1) THEN
-         IJOB = 1
-         IORDER = 0
-         IPACK = 0
-         lfree = ((nasht*(nasht+1))/2)+2*nasht+16
-         allocate(scratch(lfree))
+      
+      !> find max j_z value
+      max_loop = 1
+      if(linear) max_loop = iimax(norbt,ibeig,1)
 
-         CALL RSJACO(NASHT,NASHT,NASHT,DV,occ,
-     &               IJOB,IORDER,IPACK,cmo_nat,scratch,lfree)
+!     extract a-a part of dmo
 
-         deallocate(scratch)
+      do indx_loop = 1, max_loop
 
-      ELSE
-         MATZ = 1
-         CALL QDIAG90(NZ,NASHT,DV,NASHT,NASHT,
-     &                occ,MATZ,cmo_nat,NASHT,NASHT,IERR)
-         IF (IERR .NE. 0) THEN
-            WRITE(LUPRI,'(/,1X,2A,I4)')
-     &           '*** ERROR in MP2_NATORB_GEN ***: ',
-     &           'QDIAG failed with error code ',IERR
-            CALL QUIT('*** ERROR in MP2_NATORB_GEN ***')
-         END IF
-      END IF
+        is_symm = 0
+        if(linear)then
+          !> get mj-value
+          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+        end if
+
+        CALL MATGAT_symm(dmo,norbt,norbt,dv,nasht,
+     &                   nasht,idxu2g,ibeig,is_symm,nz)
+      end do
+
+      !> diagonalize
+      CALL DIAG_piv2fock('A',dv,occ,cmo_nat,
+     &                   idxu2g,ibeig,work(kfree),lwork)
+
+!     insert new matrix block into transformation matrix
+      do indx_loop = 1, max_loop
+
+        is_symm = 0
+        if(linear)then
+          !> get mj-value
+          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+        end if
+        CALL MATSCT_symm(cmo_nat_all,NORBT,NORBT,cmo_nat,
+     &                   NASHT,NASHT,IDXU2G,ibeig,is_symm,NZ)
+      end do
+
+      call dealloc(work)
 C
 C     debug print section
 C
@@ -813,8 +851,8 @@ C
       END IF
 
 !     release memory
-      deallocate(dv)
-      deallocate(occ)
+      deallocate(dv,occ)
+
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
@@ -840,6 +878,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "../moltra/dcbtr3.h"
@@ -847,11 +886,9 @@ C
       DIMENSION DMO(NORBT,NORBT,*)
       LOGICAL NOZG
 C
-      D2 = 2.0D0
-C
 C     add "alpha" and "beta" by scaling with 2.0
 C
-      CALL DSCAL(NZ*NORBT*NORBT,D2,DMO,1)
+      CALL DSCAL(NZ*NORBT*NORBT,2.0D0,DMO,1)
 C
       IF ( NOPRNT .ge. 10 )THEN
          CALL HEADER(
@@ -876,9 +913,16 @@ C       zero 'wrong' offdiagonal terms for frozen orbs
 C
         IOCC_A = 0
 !       print *, 'NOCC(IFSYM)',NOCC(IFSYM)
-        DO I = 1, NOCC(IFSYM)
+        DO I = 1, NISH_DHF(IFSYM)
            DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
-     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + D2
+     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + 2.0D0
+           IOCC_A = IOCC_A + 1
+        END DO
+        DO I = NISH_DHF(IFSYM)+1,NISH_DHF(IFSYM)+NASH_DHF(IFSYM)
+           DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
+     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + 1.0D0
+       ! Setting occupation of open shell orbitals to 1.0, no matter actual value.
+       ! This will put them in the right place when nat.orb. are sorted.
            IOCC_A = IOCC_A + 1
         END DO
       END DO

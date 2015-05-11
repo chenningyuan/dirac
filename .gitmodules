@@ -4,3 +4,10 @@
 [submodule "external/stieltjes"]
 	path = external/stieltjes
 	url = elke@cluster-pci.urz.uni-heidelberg.de:/home/elke/pub/stieltjes
+[submodule "external/unit-tests"]
+	path = external/unit-tests
+	url = https://gitlab.com/dirac/unit-tests.git
+[submodule "external/pcmsolver"]
+	path = external/pcmsolver
+	url = https://github.com/PCMSolver/pcmsolver.git
+	branch = release

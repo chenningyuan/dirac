@@ -4,17 +4,16 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from beholder import Filter
-from beholder_dirac import DiracTestRun
+from runtest_dirac import Filter, TestRun
 
-test_run = DiracTestRun(__file__, sys.argv)
+test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(from_string = 'r_x           r_y           r_z            scalar',
       num_lines   = 7,
-      tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-5)
 
-test_run.execute(['response_1z_bz.inp'], ['co.mol'], args='--get="DFCOEF PAMXVC"')
+test.run(['response_1z_bz.inp'], ['co.mol'], args='--get="DFCOEF PAMXVC"')
 
 inp_files = []
 inp_files.append('visual_1z_bz.inp')
@@ -28,10 +27,10 @@ inp_files.append('visual_rotj.inp')
 inp_files.append('visual_rots.inp')
 inp_files.append('visual_s.inp')
 
-test_run.execute(inp_files, ['co.mol'], f, args='--copy="DFCOEF PAMXVC"')
+test.run(inp_files, ['co.mol'], f, args='--copy="DFCOEF PAMXVC"')
 
 # cleanup
 os.unlink('DFCOEF')
 os.unlink('PAMXVC')
 
-sys.exit(0)
+sys.exit(test.return_code)

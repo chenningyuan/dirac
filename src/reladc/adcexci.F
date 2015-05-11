@@ -10,15 +10,16 @@
 !                       AUTHOR: M.Pernpointner
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ADCEXC_MAIN (IW,IOBASE,EPS)
+      SUBROUTINE ADCEXC_MAIN (IW,memory_info,IOBASE,EPS)
       use adc_cfg
       use adc_mat
  
       IMPLICIT INTEGER(A-Z)
 
-      integer iw       ! I/O file handle for screen output
-      integer IOBASE   ! I/O base file handle, all purposes
-      real*8  eps(*)   ! array of spinor energies, assumed size array!
+      integer iw             ! I/O file handle for screen output
+      integer memory_info    ! I/O file handle for screen output
+      integer IOBASE         ! I/O base file handle, all purposes
+      real*8  eps(*)         ! array of spinor energies, assumed size array!
 !
 !---------------Common Blocks--------------------------------------
 !
@@ -41,9 +42,7 @@
       integer                 :: n1,n2
       integer                 :: desrep,lencouplbl,neigenv
       integer                 :: icount,ndim,ialloc
-      integer                 :: IDPT  !dummy pointer
       real*8, allocatable     :: ciajb(:),daibj(:)
-      real*8, allocatable     :: cc(:)   ! work space for diag_lanc
       REAL(8), PARAMETER  :: autoev = 27.2113957D0
 !
 !-----------------------interface section---------------------
@@ -80,6 +79,8 @@
 ! |
 ! |
 ! |
+      memory_info = -1
+
       WRITE(IW,*)
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*) '*** '
@@ -90,6 +91,12 @@
       WRITE(IW,*) '***                     MODULE'
       WRITE(IW,*) '*** '
       WRITE(IW,*) '***************************************************'
+      WRITE(IW,*)
+      WRITE(IW,*)
+      WRITE(IW,*) 'This module is documented in:'
+      WRITE(IW,*) ' M. Pernpointner, J. Chem. Phys. 140, 084108 (2014).'
+      WRITE(IW,*) ' doi: 10.1063/1.4865964'
+      WRITE(IW,*)
       WRITE(IW,*)
       IF(reladc_doxext) THEN
         WRITE(IW,*) 'Doing extended ADC-2'
@@ -276,9 +283,6 @@
 ! ______________________________________
 !| Call Lanczos diag.      if activated |
 !|______________________________________|
-!  if called from ADCEXC_MAIN we need to allocate the CC
-!  array in order to make it functional.
-!  Later, this will be abandoned completely.
 !
         IF(reladc_dolanc) THEN
 !
@@ -302,27 +306,11 @@
           reladc_md_filediag    = '      '
           reladc_md_filecnf     = NAMECNFFIL
           reladc_md_nmspec      = NAMESPCFIL
-
-          allocate(CC(reladc_lancmem),stat=ialloc)
-          if(ialloc.ne.0) stop 'Memory allocation problem.'
-
-          KFREE = 1; LFREE = reladc_lancmem; KFREEBASE = 1
-!
-! do one "allocation" and "deallocation" in order to 
-! initialize mempkg routines.
-! ask for LANCMEM-10 in order to allow space for tags.
-!
-          CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,CC,
-     &                KFREE,LFREE,.true.)
-          CALL MEMREL('IDPT',CC,KFREEBASE,KFREEBASE,KFREE,LFREE)
 !
 !  perform Lanczos
 !
-          CALL DIAG_LANC(CC,KFREE,LFREE,IW,reladc_doincore)
-!
-! free all memory that was used for diagonalization
-!
-          deallocate(CC)
+          CALL DIAG_LANC(IW,.false.)
+
         ENDIF
 ! ______________________________________
 !| Call Davidson diag.     if activated |
@@ -346,6 +334,7 @@
           reladc_md_maxdavsp  = reladc_davmaxsp
           reladc_md_maxdavit  = reladc_davmaxit
           reladc_md_convthr   = reladc_davconv
+          reladc_md_davooc    = reladc_davooc
           reladc_md_fileadc   = NAMEMATFIL
           reladc_md_filecnf   = NAMECNFFIL
           reladc_md_nmspec    = NAMESPCFIL 
@@ -886,7 +875,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             icount = icount + 1
             write(cfield(icount),777) jabs,repna(jrep),
      &                                babs,repna(brep)
-            write(*,*) cfield(icount)
+!           write(*,*) cfield(icount)
           enddo
           enddo
         enddo
@@ -957,10 +946,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         endif
 !
 !  write out eigenvalues and largest eigenvectors for the current symmetry
-!  on screen. This we comment out because the energies are inaccurate
-!  and the eigenvectors are only used as start vector for Davidson.
+!  on screen.
 !
-
         write(*,*)
         write(*,'(1X,A23,6X,I3,3X,A4)') 'Main block eigenvalues ',
      &            desrep,repna(desrep)

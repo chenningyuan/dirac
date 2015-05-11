@@ -12,8 +12,8 @@ for dir in `cat $2/pamadm-generated/list_of_tests`; do
 done
 
 # we need the test scripts
-mv $1/test/beholder_dirac.py $TEMPORARY_DIR
-mv $1/test/beholder.py       $TEMPORARY_DIR
+mv $1/test/runtest_dirac.py $TEMPORARY_DIR
+mv $1/test/runtest.py       $TEMPORARY_DIR
 
 rm -rf $1/test/*
 mv $TEMPORARY_DIR/* $1/test

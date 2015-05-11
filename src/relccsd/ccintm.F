@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -784,27 +784,27 @@ C
       ABIJOFF = 0
       DO IJRP = 1, NREP
       DO 10 JRP = 1, NREP
-      IRP = MULTB(JRP,IJRP+NREP,2)
-      IF (IRP.LT.JRP) GOTO 10
+      IRP = MULTB(JRP,IJRP+NREP,2) ! Note that IJRP is a boson irrep and thus shifteb by NREP
+      IF (IRP.LT.JRP) GOTO 10      ! defines an upper triangular loop on occupied fermion irreps
       DO J = 1, NO(JRP)
          IMIN = 1
          IF (IRP.EQ.JRP) IMIN = J + 1
-         DO I = IMIN, NO(IRP)
+         DO I = IMIN, NO(IRP)      ! defines an upper triangular loop on occupied spinors: I > J
             DO 20 BRP = 1, NREP
             ARP = MULTB(BRP,IJRP+NREP,2)
-            IF (ARP.LT.BRP) GOTO 20
+            IF (ARP.LT.BRP) GOTO 20 ! defines a triangular loop on virtual fermion irreps
 C--------------------------------------------------------
 C TAU(AB,IJ) = T2(AB,IJ) + T1(A,I) * T1(B,J)
 C--------------------------------------------------------
             IF (BRP.EQ.JRP) THEN
                AB = 1
-               BJ = (IVO(JRP) + (J-1) * NV(JRP)) * RCW + 1
+               BJ = (IVO(JRP) + (J-1) * NV(JRP)) * RCW + 1 ! off-set to (B=1,J)
                DO B = 1, NV(BRP)
                   AMIN = 1
-                  IF (ARP.EQ.BRP) AMIN = B + 1
-                  AI = (IVO(IRP) + (I-1) * NV(IRP) + AMIN - 1) * RCW + 1
+                  IF (ARP.EQ.BRP) AMIN = B + 1 ! defines a triangular loop A > B
+                  AI = (IVO(IRP) + (I-1) * NV(IRP) + AMIN - 1) * RCW + 1 ! off-set to (A=1,I)
                   NA = NV(ARP) - AMIN + 1
-                  CALL XAXPY (NA,T1(BJ),T1(AI),1,TAU(ABIJOFF+AB),1)
+                  CALL XAXPY (NA,T1(BJ),T1(AI),1,TAU(ABIJOFF+AB),1) ! T1(BJ) is a scalar here
                   AB = AB + NA * RCW
                   BJ = BJ + RCW
                ENDDO

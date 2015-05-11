@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -284,13 +284,8 @@ C
 C     Open the property file
 C     ======================
 C
-#if defined (SYS_IBM)
       OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-#endif
+     &            FILE='AOPROPER')
 C     
       CALL DZERO(RESULT,3*NBSYM*MAXFQR*NBSYM*MAXFQR*MAXLQR)
 C
@@ -519,7 +514,7 @@ C
       END
 !
 !
-      SUBROUTINE EXCPRPINP(KEYWID, DOFLAG, SETTINGS, WORK, LWRK)
+      SUBROUTINE EXCPRPINP(KEYWID, DOFLAG, SETTINGS)
 C*****************************************************************************
 C
 C     Input handling for excited state properties calculation
@@ -545,7 +540,6 @@ C*****************************************************************************
       REAL*8 D1
       PARAMETER ( D1=1.0D0 )
       INTEGER KEYWID, SETTINGS, LWRK
-      REAL*8 WORK(LWRK)
       LOGICAL DOFLAG
       LOGICAL lstateOK
       INTEGER LFREE, KFREE, DUMMY, DUMMY2, OPINDEX
