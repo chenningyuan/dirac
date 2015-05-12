@@ -174,8 +174,8 @@ because the Cygwin layer ensures full Linux workplace on the top of the ground W
 
 In order to build Dirac on Cygwin you have to install these packages:
 
-1. compilers: *gcc-core*, *gcc-fortran*, *gcc-g++*
-2. *make* and *cmake*
+1. compilers: *gcc-core*, *gcc-fortran*, *gcc-g++* (also these we need to get all header files: *gcc-ada*, *gcc-objc*, *gcc-objc++*)
+2. *make* and *cmake* (it includes *ctest*..)
 3. *python* interpreter
 4. *zlib0*, *zlib-devel*
 5. *git* version control system
@@ -198,7 +198,7 @@ In order to build Dirac on Cygwin you have to install these packages:
 Always check if you are using Cygwin programs and libraries (placed in for example: *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*)
 instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*) for example by this commands: ::
 
-  which gcc g++ gfortran make cmake ar ranlib python git doxygen
+  which gcc g++ gfortran make cmake ctest ar ranlib python git doxygen
   whereis zlib cygblas-0.dll
 
 Installation of packages can be done by running Cygwin installer (there is nothing like *sudo apt-get*). You can use Cygwin installer also to update
@@ -217,6 +217,17 @@ by CMake when run from Cygwin. Those libraries can make configuration or build f
 temporarily move folders with those libraries to some another place which is not investigated by CMake or 
 change their names (then if you want to build from Windows you can return everything back or see :ref:`windows_users` 
 how to learn setup where to look for *zlib* and *Boost*). Also you should check environment variables.
+
+Example how to point to correct *Boost* and *zlib* libraries: ::
+
+  python setup -DBOOST_INCLUDEDIR=[install_prefix]/include -DBOOST_LIBRARYDIR=[install_prefix]/lib -DZLIB_ROOT=/usr/lib
+
+.. note:: Boost libraries which can be installed from Cygwin installation are not recognized by Dirac setup.
+
+You can try to compile your own (download from http://sourceforge.net/projects/boost/files/boost/): ::
+
+  bootstrap.sh gcc --prefix=[install_prefix]
+  b2 --with-system --with-filesystem --with-test --with-chrono --with-timer toolset=gcc install
 
 To more clearly see (in case when problems occur) what happens it is possible to run Dirac configuration directly by CMake when
 you create a build directory in Dirac top directory then move into it and run: ::

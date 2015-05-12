@@ -50,7 +50,7 @@ script:
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of exit value 0
-    - ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2) --track Miro -D ExperimentalTest | exit 0
+    - ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2) -L short --track Miro -D ExperimentalTest | exit 0
     - ctest --track Miro -D ExperimentalSubmit
 
 # turn off email notifications

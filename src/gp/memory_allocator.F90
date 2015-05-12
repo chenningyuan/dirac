@@ -84,6 +84,7 @@
 
          public allocator_set_max
          public allocator_get_max
+         public allocator_get_max_words
 
          public legacy_lwork_get
          public legacy_lwork_set
@@ -93,6 +94,7 @@
          public allocator_get_maxsize
          public allocator_get_maxbuff
          public allocator_get_meminuse
+         public allocator_get_words_available
          public allocator_get_words_inuse
          public allocator_init
          public allocator_report
