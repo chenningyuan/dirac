@@ -14,6 +14,7 @@ general:
     branches:
         only:
             - master
+            - merges_from_collaborators
 
 # set environment variables to make MPI and tests work
 machine:
@@ -27,12 +28,11 @@ machine:
         FCFLAGS: "-m64 -fdefault-integer-8"
         CFLAGS: -m64
         CXXFLAGS: -m64
-        DIRTIMEOUT: "9m"
+        DIRTIMEOUT: "20m"
 # export number of available processors/jobs - for build
         N_PROC: $(cat /proc/cpuinfo | grep processor | wc -l)
-# number of available processors/jobs for test will be 8 times less because we use "mpirun -np 2"
-# and memory in circle VM is limited (exceptation: there are 32 threads/CPUs)
-        TEST_N_PROC: $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 8)
+# number of available processors/jobs for test will be only 2 because memory in circle VM is limited
+        TEST_N_PROC: 2
 
 dependencies:
     override:
@@ -85,7 +85,9 @@ test:
 # ldd - show dependencies
         - ldd dirac.x: { pwd: build_circleci_mpi }
 # run tests ( could provide with "-L short --track Miro" )
+        - while true; do echo "testing..."; sleep 100; done & pid=$!
         - ctest -j $TEST_N_PROC -D ExperimentalTest || true: { pwd: build_circleci_mpi }
+        - kill $pid
 # submit to dashboard
         - ctest -D ExperimentalSubmit: { pwd: build_circleci_mpi }
 # build docs
