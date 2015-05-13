@@ -1417,6 +1417,7 @@ C
           CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
           WRITE(iw,*) 'CARITH = ', CARITH
           IF (CARITH) THEN
+            CALL QUIT ('FanoADC does not run with complex algebra yet')
             IF (ADCLEVEL.EQ. 1) THEN
               CALL fanoadcc(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
      &                     EAJL,RDUMMY,RDUMMY,MXNO
