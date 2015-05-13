@@ -50,7 +50,6 @@ CONTAINS
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
     INTEGER                               :: recl_condat_s
     CHARACTER(6)                          :: fn_conf='FANCNF'
-    REAL(8), ALLOCATABLE, DIMENSION(:)    :: buflanc
     INTEGER                               :: kfree, lfree, kfreebase
     INTEGER                               :: idpt
     INTEGER                               :: ixx
@@ -64,9 +63,8 @@ CONTAINS
 !  Interfaces
 !
     INTERFACE
-      SUBROUTINE diag_lanc(cc,kfree,lfree,iw,doincore)
-        REAL(8), DIMENSION(*)  :: cc
-        INTEGER                :: kfree, lfree, iw
+      SUBROUTINE diag_lanc(iw,doincore)
+        INTEGER                :: iw
         LOGICAL                :: doincore
       END SUBROUTINE diag_lanc
     END INTERFACE
@@ -78,6 +76,7 @@ CONTAINS
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) '*                 FANOADC                   *'
     WRITE(iw,*) '*       written by Elke Fasshauer           *'
+    WRITE(iw,*) '*    J. Chem. Phys. 142, 144106 (2015)      *'
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) 
 
@@ -183,23 +182,10 @@ CONTAINS
 !    CALL FULLDIAR(itapfano,fn_indiag,fn_inmat,fano_intbuf,ladc-fin_max,krep)
 !    CALL FULLDIAR(itapfano,fn_adcdiag,fn_adcmat,fano_intbuf,ladc,krep)
 
-    ! This is a workaround which allows to use routines based on the old
-    ! memory handling with MEMOPT
-    CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
-    
-    kfree     = 1
-    lfree     = reladc_lancmem
-    kfreebase = 1
-
-    CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,buflanc,  &
-     &                KFREE,LFREE,.true.)
-    CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
-
-    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+    CALL DIAG_LANC(iw,.false.)
 
     ! For the next runs Lanczos is again in normal mode
     reladc_md_isfano = .false.
-    CALL dealloc(buflanc)
 
     WRITE(iw,*)
     WRITE(iw,*) '------------------------------------------'
@@ -266,7 +252,6 @@ CONTAINS
     INTEGER, ALLOCATABLE, DIMENSION(:)    :: finalpos
     INTEGER                               :: recl_condat_s
     CHARACTER(6)                          :: fn_conf='FANCNF'
-    COMPLEX(8), ALLOCATABLE, DIMENSION(:) :: buflanc
     INTEGER                               :: kfree, lfree, kfreebase
     INTEGER                               :: idpt
     INTEGER                               :: ixx
@@ -284,9 +269,8 @@ CONTAINS
 !  Interfaces
 !
     INTERFACE
-      SUBROUTINE diag_lanc(cc,kfree,lfree,iw,doincore)
-        COMPLEX(8), DIMENSION(*)  :: cc
-        INTEGER                :: kfree, lfree, iw
+      SUBROUTINE diag_lanc(iw,doincore)
+        INTEGER                :: iw
         LOGICAL                :: doincore
       END SUBROUTINE diag_lanc
     END INTERFACE
@@ -298,6 +282,7 @@ CONTAINS
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) '*                 FANOADC                   *'
     WRITE(iw,*) '*       written by Elke Fasshauer           *'
+    WRITE(iw,*) '*    J. Chem. Phys. 142, 144106 (2015)      *'
     WRITE(iw,*) '*********************************************'
     WRITE(iw,*) 
 
@@ -401,23 +386,10 @@ CONTAINS
 !    reladc_md_filecnf  = fn_conf
 !    reladc_md_nmspec   = 'TSPEC'
 !
-!    ! This is a workaround which allows to use routines based on the old
-!    ! memory handling with MEMOPT
-!    CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
-!    
-!    kfree     = 1
-!    lfree     = reladc_lancmem
-!    kfreebase = 1
-!
-!    CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,buflanc,  &
-!     &                KFREE,LFREE,.true.)
-!    CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
-!
-!    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+!    CALL DIAG_LANC(iw,.false.)
 !
 !    ! For the next runs Lanczos is again in normal mode
 !    reladc_md_isfano = .false.
-!    CALL dealloc(buflanc)
 !!--------------------------------------------------------------------------
 
     IF (reladc_fano_nrgroups == 1) THEN                                 
@@ -459,23 +431,10 @@ CONTAINS
     
 !    Calling full diagonalizer for testing purposes
 
-    ! This is a workaround which allows to use routines based on the old
-    ! memory handling with MEMOPT
-    CALL alloc(buflanc,reladc_lancmem, id='FanoADC Lanczos memory')!, stat=ierror)
-    
-    kfree     = 1
-    lfree     = reladc_lancmem
-    kfreebase = 1
-
-    CALL MEMOPT('REAL',IDPT,reladc_lancmem-10,buflanc,  &
-     &                KFREE,LFREE,.true.)
-    CALL MEMREL('IDPT',buflanc,KFREEBASE,KFREEBASE,KFREE,LFREE)
-
-    CALL DIAG_LANC(buflanc,kfree,lfree,iw,.false.)
+    CALL DIAG_LANC(iw,.false.)
 
     ! For the next runs Lanczos is again in normal mode
     reladc_md_isfano = .false.
-    CALL dealloc(buflanc)
 
     WRITE(iw,*)
     WRITE(iw,*) '------------------------------------------'
