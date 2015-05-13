@@ -195,7 +195,8 @@ for the interaction region of the final state and the outgoing electron.
 By this the user
 should take care not to loose symmetry by specifying the positions of ghost atoms.
 
-More information about the proper selection of basis sets can be found here.
+More information about the proper selection of basis sets can be found
+in the PhD thesis of Elke Fasshauer (link).
 
 keyword(FANOIN)
 
@@ -237,10 +238,22 @@ the Ne1s orbital is chosen as the initially ionized state.
 keyword(FANOCHNL)
 
 Autoionization processes decay via several channels into different final states.
-These are specified in this section. In the first line, the number of channels
-, let us call it N, needs to be given. 
-The following N lines have to be pairs of absolute spinor numbers characterizing
-the final state. This part is at the moment no black box method and the user
+These are specified in this section. In the first line the number of channels
+, let us call it N, needs to be given. In the second line the number of
+two-hole configurations for each channel is specified. If you chose 2 channels, you
+need to put two numbers here!
+
+The following lines give details about the channels.
+For every channel a maximum 4 letter shortcut has to be specified followed
+by the two-hole configurations of describing the final state. They have
+to be pairs of absolute spinor numbers.
+
+*Take care: The number of 2-hole-configurations of a channel has to be the
+            same as you specified in the upper part
+            The 4 letter shortcut has to start at the beginning of the line.
+            Do not include a space.*
+
+This part is at the moment no black box method and the user
 is required to think carefully about the selection of these final states and not
 to forget a possible channel. On the other hand, this gives a lot of control to
 the user to specify exactly what he/she wants to calculate.
@@ -250,34 +263,42 @@ Again the Neon atom as example:
 ::
 
     .FANOCHNL
-     27
-     2 5
-     2 6
-     2 7
-     2 8
-     2 9
-     2 10
-     4 5
-     4 6
-     4 7
-     4 8
-     4 9
-     4 10
-     5 6
-     5 7
-     5 8
-     5 9
-     5 10
-     6 7
-     6 8
-     6 9
-     6 10
-     7 8
-     7 9
-     7 10
-     8 9
-     8 10
-     9 10
+ 3       # number of channels N
+ 1,12,15 # number of hole configurations of the different channels
+s2       # descriptor of 2s-2 final state
+ 2 4     # two-hole configuration of 2s-2 final state
+sp
+ 2 5
+ 2 6
+ 2 7
+ 2 8
+ 2 9
+ 2 10
+ 4 5
+ 4 6
+ 4 7
+ 4 8
+ 4 9
+ 4 10
+p2
+ 5 6
+ 5 7
+ 5 8
+ 5 9
+ 5 10
+ 6 7
+ 6 8
+ 6 9
+ 6 10
+ 7 8
+ 7 9
+ 7 10
+ 8 9
+ 8 10
+ 9 10
+
+If you change the Hamiltonian you will have to change the channel specification
+as well!
 
 keyword(FANOONLY)
 
