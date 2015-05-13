@@ -52,7 +52,7 @@ sp2
 .FANOONLY
 **LANCZOS
 .SIPITER
- 10
+ 100
 .SIPPRNT
  30.0
 *END OF                                                                                             
