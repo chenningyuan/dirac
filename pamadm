@@ -119,6 +119,7 @@ def main():
     add_test('reladc_sipeigv','reladc')
     add_test('reladc_dip','reladc')
     add_test('reladc_exci','reladc')
+    add_test('reladc_fano','reladc')
     add_test('dft_alda_xcfun', 'long;dft')
     add_test('dft_alda', 'long;dft')
     add_test('stex', 'long')
