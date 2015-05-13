@@ -20,21 +20,14 @@ C:\cygwin64\bin\sh --login -c "(echo -e \"\n cloning sources..\" && cd /home/mil
 rem update submodules
 C:\cygwin64\bin\sh --login -c "(echo -e \"\n updating submodules..\" && cd /home/milias/test/trunk_cloned && git submodule update --init) 2>&1 | tee -a /home/milias/cdash-testing.log" 
 
-rem configure build : 64-bit with Open MPI
-rem also define ZLIB_ROOT to find correct zlib library
+rem configure setup : 64-bit with Open MPI and OpenBLAS (builtin Lapack)
+rem define ZLIB_ROOT to find correct zlib library
 rem compiled Boost for Cygwin is installed in /cygdrive/c/libraries/Cygwin_Boost (C:\libraries\Cygwin_Boost)
 rem CMAKE_LEGACY_CYGWIN_WIN32=0 to accept that Cygwin is not WIN32
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n running setup..\" && cd /home/milias/test/trunk_cloned && python setup -D CMAKE_LEGACY_CYGWIN_WIN32=0 -D BUILDNAME=\"WinS12-cygwin-i8-openmpi\" --int64 --mpi --cc=mpicc --cxx=mpicxx --fc=mpifort -D BOOST_INCLUDEDIR=/cygdrive/c/libraries/Cygwin_Boost/include/ -D BOOST_LIBRARYDIR=/cygdrive/c/libraries/Cygwin_Boost/lib/ -D ZLIB_ROOT=/usr/lib --blas=/usr/bin/cygblas-0.dll --lapack=/usr/lib/lapack/cyglapack-0.dll build) 2>&1 | tee -a /home/milias/cdash-testing.log"
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n ExperimentalConfigure..\" && cd /home/milias/test/trunk_cloned/build && ctest -D ExperimentalConfigure) 2>&1 | tee -a /home/milias/cdash-testing.log"
+C:\cygwin64\bin\sh --login -c "(echo -e \"\n running setup..\" && cd /home/milias/test/trunk_cloned && python setup -D CMAKE_LEGACY_CYGWIN_WIN32=0 -D BUILDNAME=\"WinS12-cygwin-i8-openmpi-openblas\" --int64 --mpi --cc=mpicc --cxx=mpicxx --fc=mpifort -D BOOST_INCLUDEDIR=/cygdrive/c/libraries/Cygwin_Boost/include/ -D BOOST_LIBRARYDIR=/cygdrive/c/libraries/Cygwin_Boost/lib/ -D ZLIB_ROOT=/usr/lib --blas=/usr/bin/cygblas-0.dll --lapack=builtin build) 2>&1 | tee -a /home/milias/cdash-testing.log"
 
-rem build
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n ExperimentalBuild..\" && cd /home/milias/test/trunk_cloned/build && ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) -D ExperimentalBuild) 2>&1 | tee -a /home/milias/cdash-testing.log"
-
-rem export DIRAC_MPI_COMMAND, export OPENBLAS_NUM_THREADS and test
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n ExperimentalTest..\" && export DIRAC_MPI_COMMAND=\"mpirun -np 2\" && export OPENBLAS_NUM_THREADS=2 && cd /home/milias/test/trunk_cloned/build && ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 4) -D ExperimentalTest) 2>&1 | tee -a /home/milias/cdash-testing.log"
-
-rem submit to cdash
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n ExperimentalSubmit..\" &&cd /home/milias/test/trunk_cloned/build && ctest -D ExperimentalSubmit) 2>&1 | tee -a /home/milias/cdash-testing.log"
+rem export DIRAC_MPI_COMMAND, export OPENBLAS_NUM_THREADS and configure, build, test and submit in one command
+C:\cygwin64\bin\sh --login -c "(echo -e \"\n Experimental..\" && export DIRAC_MPI_COMMAND=\"mpirun -np 2\" && export OPENBLAS_NUM_THREADS=2 && cd /home/milias/test/trunk_cloned/build && ctest -j 2 -D Experimental) 2>&1 | tee -a /home/milias/cdash-testing.log"
 
 rem wait for user input to close this terminal window
 rem pause
