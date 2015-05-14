@@ -179,11 +179,13 @@ In order to build Dirac on Cygwin you have to install these packages:
 3. *python* interpreter
 4. *zlib0*, *zlib-devel*
 5. *git* version control system
-6. optionally you can install *Blas* and *Lapack* libraries (Netlib), *OpenBLAS* (libopenblas) - this is faster than from Netlib, build *ATLAS*
+6. optionally you can install *OpenBLAS* (*libopenblas*) - recommended for 32 and 64 integer builds or *BLAS* and *LAPACK* (together in *liblapack0* package) - but these are only 32-bit versions
 
-.. note:: OpenBLAS library is placed in *"/usr/bin/cygblas-0.dll"*.
-.. note:: You have to explicit specify to use OpenBLAS library with *"--blas"* and *"--lapack"* setup options.
-.. note:: To run OpenBLAS in parallel export OPENBLAS_NUM_THREADS environment variable.
+.. note:: *OpenBLAS* library is placed in *"/usr/bin/cygblas-0.dll"*.
+.. note:: You have to explicitly specify to use *OpenBLAS* library with *"--blas"* setup option.
+.. note:: With 64 bit integers enabled use builtin *LAPACK* with *OpenBLAS* (*OpenBLAS* on Cygwin does not contain *LAPACK*). 
+.. note:: To run *OpenBLAS* in parallel export OPENBLAS_NUM_THREADS environment variable.
+.. note:: *BLAS* and *LAPACK* libraries from *liblapack0* package are placed in *"/usr/lib/lapack"* (*"cygblas-0.dll"* and *"cyglapack-0.dll"*).
 
 7. optionally you can install *Open MPI*
 8. to be able to build documentation (*make html*, *make doxygen* - problematic, *make slides*) install also:
@@ -237,4 +239,4 @@ you create a build directory in Dirac top directory then move into it and run: :
 If there is need to remove Cygwin in an environment with multiple users then all users must delete their own home directories
 and then administrator can delete whole Cygwin installation/folder.
 
-Sometimes you can get errors like *os.fork()* is not available. In that case try to rebase Cygwin: http://cygwin.wikia.com/wiki/Rebaseall
+Sometimes you can get errors like *os.fork()* is not available. In that case try to rebase Cygwin: http://cygwin.wikia.com/wiki/Rebaseall.
