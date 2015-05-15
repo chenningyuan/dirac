@@ -1,5 +1,5 @@
       SUBROUTINE cceqn_driver_lambda(MAXIT,EPS,FOO,FVO,FVV,L1,S1,L2,S2,
-     &                 W_OOOO,CZ,W_VOVO,W_OVVO,W_OVOO,HO,HV,HOV,GOO,GVV,
+     &                 W_OOOO,CZ,W_VOOV,W_OVVO,W_OVOO,HO,HV,HOV,GOO,GVV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3                              )
 
@@ -24,7 +24,7 @@ C     Intermediaries etc.
 
 
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),L1(*),S1(*),L2(*),S2(*)
-      REAL*8 W_OOOO(*),W_VOVO(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
+      REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
       REAL*8 GOO(*),GVV(*)
@@ -35,7 +35,7 @@ C     for diis ...
       REAL*8 CC1(*)
       REAL*8 BB1(*),BB2(*)
 
-      REAL*8 RMS,CONV,RMS1
+      REAL*8 RMS,CONV,RMS1,ddot
       REAL*8 DIAG
 
 C     for Fock space ...
@@ -63,6 +63,8 @@ C---------------Local variables--------------------------------------
       LOGICAL    :: FOCKSP,PRENE
       real*8,allocatable :: resL1(:),resL2(:)
       real*8,allocatable :: G_oo(:),G_vv(:)
+!      integer            :: i !remove
+      real*8             :: val  
 
 C---------------Executable code--------------------------------------
 C
@@ -97,66 +99,82 @@ C     Initialize the work arrays to zero.
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
+        write(*,*)'whh done'
+
         write(77,*)'f_bar_mi intermediate'
         write(77,*)'---------------------'
-        write(77,*)(ho(i),i=1,nfoo)
+        write(77,5)(ho(i),i=1,nfoo)
 
          call w_ijmn(S1,S2,w_oooo)
 
-        write(*,*)'w_ijmn intermediate'
-        write(*,*)'---------------------'
+        write(*,*)'whhhh done'
+
+        write(78,*)'w_ijmn intermediate'
+        write(78,*)'---------------------'
         write(78,5)(w_oooo(i),i=1,nv1)
 
          call f_bar_me(fvo,S1,hov)
 
-        write(*,*)'f_me intermediate'
+         write(*,*)'f_me intermediate'
 
-!       write(*,*)(hov(i),i=1,nfvo)
+!        write(75,*)'f_bar_me intermediate'
+!        write(75,*)'---------------------'
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
          write(79,*)'f_bar_ae intermediate'
          write(79,*)'---------------------'
-         write(*,5)(hv(i),i=1,nfvv)
+         write(79,5)(hv(i),i=1,nfvv)
 
-         call w_ejmb(S1,S2,w_vovo)
+         call w_ejmb(S1,S2,w_voov)
+
+         write(80,*)'w_bar_ejmb intermediate'
+         write(80,*)'---------------------'
+         write(80,5)(w_voov(i),i=1,nv4)
 
          call wbar_mbej(S2,w_ovvo)
 
-!       write(81,*)'w_bar_mbej intermediate'
-!       write(81,*)'---------------------'
-!       write(81,5)(w_ovvo(i),i=1,nv4)
+        write(81,*)'w_bar_mbej intermediate'
+        write(81,*)'---------------------'
+        write(81,5)(w_ovvo(i),i=1,nv4)
       
-!        write(*,*)'starting w_iemn intermediate'
+!       write(*,*)'starting w_iemn intermediate'
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
+
+         write(*,*)'w_bar_iemn intermediate'
+         write(*,*)'---------------------'
+         write(82,5)(w_ovoo(i),i=1,nv2)
+
+         call w_efam(s1,s2,w_ovvo,hov,cz)
+
+         call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
+         write(*,*)'w_bar_efam intermediate'
+         write(*,*)'---------------------'
+         write(83,5)(cz(i),i=1,nv5)
+
+! out-of-core section of the intemediates
+
+!       call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
+
+!       call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_voov)
+
+!        write(80,*)'w_bar_ejmb intermediate'
+!        write(80,*)'---------------------'
+!        write(80,5)(w_voov(i),i=1,nv4)
+
+!        call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
 
 !        write(*,*)'w_bar_iemn intermediate'
 !        write(*,*)'---------------------'
 !        write(82,5)(w_ovoo(i),i=1,nv2)
 
-! out-of-core section of the intemediates
+!       call w_efam_out_of_core (s1,s2,hov,w_voov,w_ovvo,buf1,buf2,
+!    &              buf3,nbuf3,nbuf2,CZ)
 
-        call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
-
-        call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_vovo)
-
-!        write(80,*)'w_bar_ejmb intermediate'
-!        write(80,*)'---------------------'
-!        write(80,5)(w_vovo(i),i=1,nv4)
-
-        call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
-
-!         write(*,*)'w_bar_iemn intermediate'
+!         write(*,*)'w_bar_efam intermediate'
 !         write(*,*)'---------------------'
-!         write(82,5)(w_ovoo(i),i=1,nv2)
-
-        call w_efam_out_of_core (s1,s2,hov,w_vovo,buf1,buf2,buf3,nbuf3,
-     &                    nbuf2,CZ)
-
-          write(*,*)'w_bar_efam intermediate'
-          write(*,*)'---------------------'
-          write(83,5)(CZ(i),i=1,nv5)
+!         write(83,5)(CZ(i),i=1,nv5)
 
 
 !-------Initialization Step for the Left Eigenvectors-----------
@@ -165,14 +183,8 @@ C     Initialize the work arrays to zero.
 !      Left eigenvectors are designated as L1 and L2.
 
 !---------------------------------------------------------------
-
       call srt1c1 (nrep,nv,no,s1,l1) 
       call srt1c1 (nrep,nvvt,noot,s2,l2) 
-
-
-      write(*,5)(l1(i),i=1,ndimt1)
-
-
 
 !     Initialize the work arrays to zero.
 
@@ -184,8 +196,7 @@ C     Initialize the work arrays to zero.
       rms = 0.0d0
       itc = 0
       it = -1
-      call diisx(ndimt1,ndimt2,L1,L2,
-     &           it,cc1,bb1,itc,bb2,rms)
+      call diisx(ndimt1,ndimt2,L1,L2,it,cc1,bb1,itc,bb2,rms)
 
       nit = 0
 
@@ -205,8 +216,8 @@ C     Initialize the work arrays to zero.
 
 !     Making non-sequential G_ea, G_im intermediates for lambda equations
 
-      ResL1 = 0.0d0
-      ResL2 = 0.0d0
+!      ResL1 = 0.0d0
+!      ResL2 = 0.0d0
 
       allocate (G_vv(ivv(nrep+1)*rcw))
       allocate (G_oo(ioo(nrep+1)*rcw))
@@ -219,9 +230,11 @@ C     Initialize the work arrays to zero.
            
       if (ndimt1 > 0) then
 
-          CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_vovo,w_ovoo,
-     &                            cz,G_oo,G_vv,buf1,buf2,buf3,
-     &                            nbuf2,nbuf3,resL1)
+       ResL1 = 0.0d0
+
+       CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_voov,w_ovoo,
+     &                         cz,G_oo,G_vv,buf1,buf2,buf3,
+     &                         nbuf2,nbuf3,resL1)
 
       endif
 
@@ -233,11 +246,11 @@ C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- L2 EQNS                     ')
 
-       write(*,*)'here is the first stop'
-
-       CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_vovo,w_oooo,
+       CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
      &                            G_oo,G_vv,buf1,buf2,buf3,
      &                            nbuf3,resL2)
+
+       write(*,*)'RESL2 afetr all diagrams',ddot(ndimt2,resL2,1,resL2,1)
 
       CALL XTIME(5,2,'-- T2 EQNS                     ')
 
@@ -265,12 +278,24 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
+
+!      rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
+!      rms = sqrt((rms)/(ndimt1+ndimt2))
+
+       rms = 0.0d0
+       do i =1,ndimt1
+         rms = rms + resl1(i)*resl1(i)
+       enddo
+
+       do i =1,ndimt2
+         rms = rms + resl2(i)*resl2(i)
+       enddo
+
+
        call denom (eps,resL1,resL2,resL1,resL2)
 
-       rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
-       rms = sqrt((rms)/(ndimt1+ndimt2))
-
-      write(*,5)(Resl1(i),i=1,ndimt1)
+!       write(*,*)'dot product of RESL1',ddot(ndimt1,resL1,1,resL1,1)
+!       write(*,*)'dot product of RESL2',ddot(ndimt2,resL2,1,resL2,1)
 
 !------------------------------------------------------------------------------------------------------------
 !       here i have summed the residue and old L amplitude value with a negative sign because the denominatior
@@ -301,7 +326,6 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 
       deallocate(resL1) 
       deallocate(resL2) 
-
 
 !     Close and delete DIIS scratch files
 

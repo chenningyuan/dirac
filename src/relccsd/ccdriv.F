@@ -1012,7 +1012,7 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       INTEGER NVIRT(16)
-      INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
+!      INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
       CHARACTER*4 REPNA_ACT(MXREP)
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
@@ -1052,10 +1052,16 @@ C
          NVOOT(IREP) = 0
          NVVOT(IREP) = 0
          NOOVT(IREP) = 0
+         NOOV(IREP) = 0
          NVVVT(IREP) = 0
          NVOO (IREP) = 0
+         NVOV (IREP) = 0
+         NVOV2(IREP) = 0
          NOVO (IREP) = 0
+         NOVO2 (IREP) = 0
+         NVVO (IREP) = 0
          NOVVT(IREP) = 0
+         NOVV(IREP) = 0
          NOOOT2(IREP) = 0
          NVVVT2(IREP) = 0
 C ** additional arrays for parallel triples
@@ -1390,6 +1396,7 @@ C
       DO JREP = 1, NREP
          DO IREP = 1, NREP
             IJREP = MULTB(IREP,JREP,1)
+            IIOO(IREP,JREP) = NOO(IJREP)  !new
             IIOV(IREP,JREP) = NOV(IJREP)
             IIVO(IREP,JREP) = NVO(IJREP)
             IIVV(IREP,JREP) = NVV(IJREP)
@@ -1433,11 +1440,19 @@ C
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
             KKVVVT(IJREP,KREP) = NVVVT(IJKREP)
             KKVOO (IJREP,KREP) = NVOO (IJKREP)
+            KKVOV (IJREP,KREP) = NVOV (IJKREP)
+            KKOVO (IJREP,KREP) = NOVO2(IJKREP)
+            KKOVV (IJREP,KREP) = NOVV (IJKREP)
+
+
             NOOOT(IJKREP) = NOOOT(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVOT(IJKREP) = NVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
             NOOVT(IJKREP) = NOOVT(IJKREP) + NOOT(IJREP)*NV(KREP)
             NVVVT(IJKREP) = NVVVT(IJKREP) + NVVT(IJREP)*NV(KREP)
             NVOO (IJKREP) = NVOO (IJKREP) + NVO (IJREP)*NO(KREP)
+            NOVV (IJKREP) = NOVV (IJKREP) + NOV (IJREP)*NV(KREP)
+            NOVO2(IJKREP) = NOVO2(IJKREP) + NOV (IJREP)*NO(KREP)
+            NVOV (IJKREP) = NVOV (IJKREP) + NVO (IJREP)*NV(KREP)
          ENDDO
       ENDDO
 C
@@ -1445,12 +1460,18 @@ C
          DO KREP = 1, NREP
             IJKREP = MULTB(KREP,IJREP+NREP,2)
             LLOVO (KREP,IJREP) = NOVO (IJKREP)
+            LLOOV (KREP,IJREP) = NOOV (IJKREP)
+            LLVVO (KREP,IJREP) = NVVO (IJKREP)
             LLVOOT(KREP,IJREP) = NVOOT(IJKREP)
+            LLVOV (KREP,IJREP) = NVOV (IJKREP)
             LLOVVT(KREP,IJREP) = NOVVT(IJKREP)
             LLOOOT(KREP,IJREP) = NOOOT2(IJKREP)
             LLVVVT(KREP,IJREP) = NVVVT2(IJKREP)
             NOVO (IJKREP) = NOVO (IJKREP) + NVO(IJREP)*NO(KREP)
+            NOOV (IJKREP) = NOOV (IJKREP) + NOV(IJREP)*NO(KREP)
+            NVVO (IJKREP) = NVVO (IJKREP) + NVO(IJREP)*NV(KREP)
             NVOOT(IJKREP) = NVOOT(IJKREP) + NOOT(IJREP)*NV(KREP)
+            NVOV2(IJKREP) = NVOV2(IJKREP) + NOV (IJREP)*NV(KREP)
             NOVVT(IJKREP) = NOVVT(IJKREP) + NVVT(IJREP)*NO(KREP)
             NOOOT2(IJKREP) = NOOOT2(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVVT2(IJKREP) = NVVVT2(IJKREP) + NVVT(IJREP)*NV(KREP)
@@ -1487,10 +1508,15 @@ C
       IVO(1) = 0
       IVV(1) = 0
       IOOOOTT(1) = 0
+      IOOOO(1) = 0
       IVOOOT (1) = 0
+      IOVOOT (1) = 0
       IVVOOTT(1) = 0
       IVOVO  (1) = 0
+      IOVVO  (1) = 0
+      IVOOV  (1) = 0 ! new index
       IVOVVT (1) = 0
+      IOVVVT (1) = 0
       IVVVVTT(1) = 0
       IVVOO  (1) = 0
       IVVOOT (1) = 0
@@ -1509,10 +1535,16 @@ C
          IVO    (IREP+1) = IVO    (IREP) + NV  (IREP)*NO  (IREP)
          IVV    (IREP+1) = IVV    (IREP) + NV  (IREP)*NV  (IREP)
          IOOOOTT(IREP+1) = IOOOOTT(IREP) + NOOT(IREP)*NOOT(IREP)
+! new index. will go away.
+         IOOOO  (IREP+1) = IOOOO  (IREP) + NOO(IREP)*NOO(IREP)
          IVOOOT (IREP+1) = IVOOOT (IREP) + NVO (IREP)*NOOT(IREP)
+         IOVOOT (IREP+1) = IOVOOT (IREP) + NOV (IREP)*NOOT(IREP)
          IVVOOTT(IREP+1) = IVVOOTT(IREP) + NVVT(IREP)*NOOT(IREP)
          IVOVO  (IREP+1) = IVOVO  (IREP) + NVO (IREP)*NVO (IREP)
+         IOVVO  (IREP+1) = IOVVO  (IREP) + NOV (IREP)*NVO (IREP)
+         IVOOV  (IREP+1) = IVOOV  (IREP) + NVO (IREP)*NOV (IREP) !new index
          IVOVVT (IREP+1) = IVOVVT (IREP) + NVO (IREP)*NVVT(IREP)
+         IOVVVT (IREP+1) = IOVVVT (IREP) + NOV (IREP)*NVVT(IREP) !new index
          IVVVVTT(IREP+1) = IVVVVTT(IREP) + NVVT(IREP)*NVVT(IREP)
          IVVOO  (IREP+1) = IVVOO  (IREP) + NVV (IREP)*NOO (IREP)
          IVVOOT (IREP+1) = IVVOOT (IREP) + NVV (IREP)*NOOT(IREP)
@@ -1525,19 +1557,42 @@ C
       NV5 = IVOVVT (NREP+1)
       NV6 = IVVVVTT(NREP+1)
 C
+
       JVOXX(1) = 0
       JOOOO(1) = 0
+      JOOOV(1) = 0
+      JOOVO(1) = 0
+      JOOVV(1) = 0
+      JOVOO(1) = 0
+      JOVOV(1) = 0
+      JOVVO(1) = 0
+      JOVVV(1) = 0
       JVOOO(1) = 0
       JVVOO(1) = 0
+      JVVOV(1) = 0
       JVOVO(1) = 0
+      JVOOV(1) = 0
       JVVVO(1) = 0
-      J2VOVO(1) = 0
+      JVVVOI4(1)  = 0
 C
 C ** additional RELADC arrays
 C
+
+      J2OOOV(1) = 0
+      J2OOVO(1) = 0
+      J2OOVV(1) = 0
+      J2OVOO(1) = 0
+      J2OVOV(1) = 0
+      J2OVVO(1) = 0
+      J2OVVV(1) = 0
+
+      J2VOVO(1) = 0
+      J2VOOV(1) = 0
       J2OOOO(1) = 0
+      J2OOVO(1) = 0
       J2VOOO(1) = 0
       J2VVOO(1) = 0
+      J2VVOV(1) = 0
       J2VOVV(1) = 0
       J2VVVO(1) = 0
 C
@@ -1546,22 +1601,44 @@ C
       DO IREP = 1, NREP
          JVOXX(IREP+1) = JVOXX(IREP) + MVO(IREP)
          JOOOO(IREP+1) = JOOOO(IREP) + MOO(IREP)*MOO(IREP)
+         JOOOV(IREP+1) = JOOOV(IREP) + MOO(IREP)*MOV(IREP)
+         JOOVO(IREP+1) = JOOVO(IREP) + MOO(IREP)*MVO(IREP)
+         JOOVV(IREP+1) = JOOVO(IREP) + MOO(IREP)*MVV(IREP)
+         JOVOO(IREP+1) = JOVOO(IREP) + MOV(IREP)*MOO(IREP)
+         JOVOV(IREP+1) = JOVOV(IREP) + MOV(IREP)*MOV(IREP)
+         JOVVO(IREP+1) = JOVVO(IREP) + MOV(IREP)*MVO(IREP)
+         JOVVV(IREP+1) = JOVVV(IREP) + MOV(IREP)*MVV(IREP)
          JVOOO(IREP+1) = JVOOO(IREP) + MVO(IREP)*MOO(IREP)
          JVVOO(IREP+1) = JVVOO(IREP) + MVV(IREP)*MOO(IREP)
          JVOVO(IREP+1) = JVOVO(IREP) + MVO(IREP)*MVO(IREP)
+         JVOOV(IREP+1) = JVOOV(IREP) + MVO(IREP)*MOV(IREP)
          JVVVO(IREP+1) = JVVVO(IREP) + MVV(IREP)*MVO(IREP)
+         JVVOV(IREP+1) = JVVOV(IREP) + MVV(IREP)*MOV(IREP)
+         JVVVOI4(IREP+1) = JVVVOI4(IREP) + MVV(IREP)*MVO(IREP) !new index to avoid integer8
          JREP = MULTB(IREP+NREP,1+NREP,2)
-         J2VOVO(IREP+1) = J2VOVO(IREP) + MVO(IREP)*MVO(JREP)
 
+         J2OOOV(IREP+1) = J2OOOV(IREP) + MOO(IREP)*MOV(JREP)
+         J2OOVO(IREP+1) = J2OOVO(IREP) + MOO(IREP)*MVO(JREP)
+         J2OOVV(IREP+1) = J2OOVO(IREP) + MOO(IREP)*MVV(JREP)
+         J2OVOO(IREP+1) = J2OVOO(IREP) + MOV(IREP)*MOO(JREP)
+         J2OVOV(IREP+1) = J2OVOV(IREP) + MOV(IREP)*MOV(JREP)
+         J2OVVO(IREP+1) = J2OVVO(IREP) + MOV(IREP)*MVO(JREP)
+         J2OVVV(IREP+1) = J2OVVV(IREP) + MOV(IREP)*MVV(JREP)
+         J2VOVO(IREP+1) = J2VOVO(IREP) + MVO(IREP)*MVO(JREP)
+         J2VOOV(IREP+1) = J2VOOV(IREP) + MVO(IREP)*MOV(JREP)
          J2OOOO(IREP+1) = J2OOOO(IREP) + MOO(IREP)*MOO(JREP)
          J2VOOO(IREP+1) = J2VOOO(IREP) + MVO(IREP)*MOO(JREP)
          J2VVOO(IREP+1) = J2VVOO(IREP) + MVV(IREP)*MOO(JREP)
+         J2VVOV(IREP+1) = J2VVOV(IREP) + MVV(IREP)*MOV(JREP)
          J2VOVV(IREP+1) = J2VOVV(IREP) + MVO(IREP)*MVV(JREP)
          J2VVVO(IREP+1) = J2VVVO(IREP) + MVV(IREP)*MVO(JREP)
       ENDDO
       NDIMX = JVOXX(NREP+1)
 C
       KVOOV (1) = 0
+      KVOVV (1) = 0
+      KOVOO(1)  = 0
+      KVOVO (1) = 0
       KVOOO (1) = 0
       KOOOOT(1) = 0
       KVVOOT(1) = 0
@@ -1569,19 +1646,27 @@ C
       KOOOVT(1) = 0
       KOOVVT(1) = 0
       KVVVOT(1) = 0
+      KVVOVT(1) = 0
       DO IREP = 1, NREP
          KVOOV  (IREP+1) = KVOOV  (IREP) + NVOO (IREP)*NV(IREP)
+         KOVOO  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NO(IREP)
+         KVOVV  (IREP+1) = KVOVV  (IREP) + NVOV (IREP)*NV(IREP)
+         KVOVO  (IREP+1) = KVOVO  (IREP) + NVOV (IREP)*NO(IREP)
          KVOOO  (IREP+1) = KVOOO  (IREP) + NVOO (IREP)*NO(IREP)
          KOOOOT (IREP+1) = KOOOOT (IREP) + NOOOT(IREP)*NO(IREP)
          KVVOOT (IREP+1) = KVVOOT (IREP) + NVVOT(IREP)*NO(IREP)
          KOOVOT (IREP+1) = KOOVOT (IREP) + NOOVT(IREP)*NO(IREP)
          KOOOVT (IREP+1) = KOOOVT (IREP) + NOOOT(IREP)*NV(IREP)
          KOOVVT (IREP+1) = KOOVVT (IREP) + NVOOT(IREP)*NV(IREP)
+         KVVOVT (IREP+1) = KVVOVT (IREP) + NVVOT(IREP)*NV(IREP)
          KVVVOT (IREP+1) = KVVVOT (IREP) + NVVVT(IREP)*NO(IREP)
       ENDDO
 C
       LOOVO (1) = 0
+      LOVVO (1) = 0
+      LOVOV (1) = 0
       LVOVO (1) = 0
+      LVVVO (1) = 0
       LOOOOT(1) = 0
       LVVOOT(1) = 0
       LOVOOT(1) = 0
@@ -1595,6 +1680,9 @@ C ** additional RELADC arrays
       DO IREP = 1, NREP
          LOOVO  (IREP+1) = LOOVO  (IREP) + NO(IREP)*NOVO (IREP)
          LVOVO  (IREP+1) = LVOVO  (IREP) + NV(IREP)*NOVO (IREP)
+         LOVVO  (IREP+1) = LOVVO  (IREP) + NO(IREP)*NVVO(IREP)
+         LOVOV  (IREP+1) = LOVOV  (IREP) + NO(IREP)*NVOV(IREP)
+         LVVVO  (IREP+1) = LVVVO  (IREP) + NV(IREP)*NVVO(IREP)
          LOOOOT (IREP+1) = LOOOOT (IREP) + NO(IREP)*NOOOT(IREP)
          LVVOOT (IREP+1) = LVVOOT (IREP) + NV(IREP)*NVOOT(IREP)
          LOVOOT (IREP+1) = LOVOOT (IREP) + NO(IREP)*NVOOT(IREP)

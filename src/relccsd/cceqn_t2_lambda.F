@@ -58,7 +58,7 @@ C
      &/' Total time in MP2EQN :',T30,F12.3,' seconds')
       END
       SUBROUTINE lambda_equation_L2 (t1,t2,l1,l2,ho,hv,hov, 
-     &             w_vovo,w_oooo,G_oo,G_vv,buf1,buf2,
+     &             w_voov,w_oooo,G_oo,G_vv,buf1,buf2,
      &             buf3,nbuf3,resL2)
 
       use contraction
@@ -69,7 +69,6 @@ C
 !---------------Description--------------------------------------------
 !     Evaluate residue for lambda equation.
 !----------------------------------------------------------------------
-
 
 !---intermediates required-------------
 !f_bar_ae,f_bar_mi,f_bar_me,w_ejmb,w_ijmn,G_ea,G_im
@@ -87,16 +86,15 @@ C
 !       calling variables
 !       -----------------
 
-
       integer,intent(in) :: nbuf3
       real(8),intent(in) :: ho(rcw*nfoo),hv(rcw*nfvv),hov(nfvo*rcw)     ! one body intermediates
-      real(8),intent(in) :: w_vovo(nv4*rcw),w_oooo(nv1*rcw)! two body intermediates 
+      real(8),intent(in) :: w_voov(nv4*rcw),w_oooo(nv1*rcw)! two body intermediates 
       real(8),intent(in) :: G_vv((ivv(nrep+1))*rcw),
      &                         G_oo((ioo(nrep+1))*rcw)              ! G-intermediates  
       real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)! converged T1 amplitude
       real(8),intent(in) :: L1(ndimt1*rcw),L2(ndimt2*rcw)! L1 and L2 amplitudes from last iteration.
       real(8),intent(in) :: buf1(*),buf2(*),buf3(*)      ! buffer arrays 
-      real*8,intent(inout) :: ResL2(ndimt2*rcw)          ! residue for L2 amplitude  
+      real*8,intent(out) :: ResL2(ndimt2*rcw)          ! residue for L2 amplitude  
 
 
 !     Local variables                                      
@@ -104,17 +102,22 @@ C
 
       logical          :: done,teq
       real*8           :: t1val(2)
+      real*8,allocatable           :: buf4(:)
       complex*16       :: zdotc
-      real*8           :: ddot
+      real*8           :: ddot,val
       real*8,allocatable :: int_vv(:)
       real*8,allocatable :: int_oo(:),w_vvvv(:)
       real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
       integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
       integer     :: off2,i,j,istart,m,k,n,irp,ntot 
-
-
+      integer     :: jabrep,x(nrep,nrep),y(nrep) 
+      
 
 !---------------Executable code--------------------------------------
+
+    5   format(10f10.6)  
+
+       ResL2 = 0.0d0 
 
        call getoovv (ResL2) 
 
@@ -125,6 +128,7 @@ C
        call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/),
      &    (/"o1","o2","p1","p2"/),ResL2,1.0d0,0.0d0,nrep,L2,hv) 
 
+       write(*,*)'RESL2 after term1',ddot(ndimt2,resL2,1,resL2,1)
 !----------------------------------------------
 !   term2 : ResL2 = ResL2 - P(ij) L2 (im,ab)*f_bar_im (j,m)   
 !----------------------------------------------
@@ -132,6 +136,7 @@ C
        call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/),
      &    (/"o1","o2","p1","p2"/),ResL2,-1.0d0,0.0d0,nrep,L2,ho) 
 
+       write(*,*)'RESL2 after term2',ddot(ndimt2,resL2,1,resL2,1)
 !--------------------------------------------------------
 !   term3 : ResL2 = ResL2 + 0.5 L2(mn,ab) * W_ijmn(ij,mn)
 !--------------------------------------------------------
@@ -140,36 +145,79 @@ C
      &    (/"o1","o2","o3","o4"/),(/"o1","o2","p1","p2"/),W_oooo,ResL2,
      &    0.5d0,0.0d0,nrep,L2)
 
+       write(*,*)'RESL2 after term3',ddot(ndimt2,resL2,1,resL2,1)
 !--------------------------------------------------------
 !   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_ejmb(ej,mb)
 !--------------------------------------------------------
 
-      call contraction_444((/"o1","o3","p1","p3"/),
-     &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),W_vovo,ResL2,
-     &    1.0d0,0.0d0,nrep,L2)
+      write(*,*)'we have started investigating this diagram'
 
+!     call contraction_444((/"o1","o3","p1","p3"/),
+!    &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),W_voov,ResL2,
+!    &    -1.0d0,0.0d0,nrep,L2)
+      
+
+!     CALL SRT1TT4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVOV,
+!    &              JJOV,JJOV,L2,BUF2)
+
+
+
+!     call srt1r1 (nrep,multb,.false.,mov,no,nv,mov,J2OVVO,jjvo,buf2,
+!    &              buf3)
+
+
+
+!     CALL SRT1SS4 (NREP,MULTB,.FALSE.,.FALSE.,NV,NO,NO,NV,MVO,J2VOOV,
+!    &              JJVO,JJOV,w_voov,BUF2)
+
+
+!     allocate(buf4(10000))
+
+!     buf4 = 0.0d0
+
+!     call cntrct ('N','N',MOV,MOV,MVO,A1,BUF3,BUF2,A0,BUF4,NREP) 
+
+!     CALL SRT1TT4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NO,NV,NV,MOV,J2OVOV,
+!    &              JJOV,JJOV,BUF4,BUF3)
+
+
+!     deallocate(buf4)
+!      CALL XAXPY (NDIMT2,A1,BUF3,1,ResL2,1)
+
+
+       val = 0.0d0
+       do i =1,ndimt2
+         val = val + resl2(i)*resl2(i)
+       enddo
+
+       write(*,*)'RESL2 after term4',val
 !-----------------------------------------------------------
 !   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*(G_vv(e,b)-L1(m,b)*t1(e,m))
 !-----------------------------------------------------------
 
       allocate(int_vv((ivv(nrep+1))*rcw))
 
+      int_vv = 0.0d0
+
       call xcopy ((ivv(nrep+1))*rcw,G_vv,1,int_vv,1)
 
-      call contraction_222((/"o3","p2"/),(/"p3","o3"/),(/"p3","p2"/),L1,
-     &        t1,int_vv,-1.0d0,1.0d0,nrep)
+!     call contraction_222((/"o3","p2"/),(/"p3","o3"/),(/"p3","p2"/),L1,
+!    &        t1,int_vv,-1.0d0,1.0d0,nrep)
 
       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/),
      &        (/"o1","o2","p1","p2"/),ResL2,1.0d0, 
-     &        0.0d0,nrep,int_vv)
+     &        0.0d0,nrep,RightTensor=int_vv)
 
       deallocate(int_vv) 
 
+       write(*,*)'RESL2 after term5',ddot(ndimt2,resL2,1,resL2,1)
 !--------------------------------------------------------------------
 !    term6 : ResL2 = ResL2 + P(ij) V(im,ab)*(G_oo(j,m)+L1(j,e)*t(e,m)) 
 !--------------------------------------------------------------------
 
       allocate(int_oo((ioo(nrep+1))*rcw))
+
+      int_oo = 0.0d0
 
       call xcopy ((ioo(nrep+1))*rcw,G_oo,1,int_oo,1)
 
@@ -178,7 +226,7 @@ C
 
       call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/),
      &        (/"o1","o2","p1","p2"/),ResL2,1.0d0, 
-     &        0.0d0,nrep,int_oo)
+     &        0.0d0,nrep,RightTensor=int_oo)
 
       deallocate(int_oo) 
 
@@ -189,109 +237,225 @@ C
       call contraction_244 ((/"o3","p1"/),(/"o1","o2","o3","p2"/),
      &     (/"o1","o2","p1","p2"/),ResL2,-1.0d0,1.0d0,nrep,L1)
 
+!      write(*,*)'RESL2 after term7',ddot(ndimt2,resL2,1,resL2,1)
 !-------------------------------------------------------------------------
 !   term 8 : ResL2 = ResL2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b) 
 !-------------------------------------------------------------------------
 
-      call lambd21 (L1,hov,ResL2)
+!!      call lambd21 (L1,hov,ResL2)
 
-!     out of core terms
+      call lambda2_disconnected(l1,hov,ResL2)
 
-!-----------------------------------------------------------------------
-!     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
-!-----------------------------------------------------------------------
-      done = .false.
-      allocate (L2_temp(loovvt(nrep+1)*rcw))
-      do abrep = 1, nrep
-         if (nov(abrep).eq.0.or.nvvt(abrep).eq.0) cycle
-         mint = nbuf3/nvvt(abrep)
-         istart = 0
- 110     call getvovv (abrep,istart,nint,done,buf1,mint)
+!     out-of-core terms
 
-!!   sort V(ej,ab) -> V'(e,jab)
-          ij = 1
-          ijkl = 0
-          do jrep = 1, nrep
-            
-             irep = multb(jrep,abrep+nrep,2)           
+      call contraction_244 ((/"o1","p3"/),(/"p3","o2","p1","p2"/),
+     &     (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,L1)
 
-           jklrep = irep
-           jkloff = (llovvt(jrep,abrep)*nv(irep)) * rcw
-           m2 = nv(irep) * no(jrep)
-           do j = 1, no(jrep)
-            do i = 1, nv(irep)
-             ijkl1 = jkloff + ((j-1) * nv(irep) + i - 1) * rcw + 1
-                call xcopy(nint,buf1(ijkl+ij),nvo(abrep),buf2(ijkl1),m2)
-                ij = ij + rcw
-            enddo
-           enddo
-
-!!   do the contraction: L1(i,e)*V'(e,jab) -> L2'(i,jab)
-
-         call xgemm ('n','n',no(irep),nint*no(jrep),nv(irep),a1,L1,
-     &                no(irep),buf2,nv(irep),a1,
-     &                L2_temp(off2+istart*m2*rcw),no(irep)) 
-
-          enddo
-         if (.not.done) then
-         istart = istart + nint
-         goto 110
-         endif
-         off2 = off2 + noo(abrep)*nint ! doubtful 
-      enddo
-
-!!   sorting L2'(i,jab) -> L2(i>j,a>b) 
-
-      allocate(ResL2_temp(ndimt2)) 
-
-      call srt1t2 (nrep,multb,ltr,noot,no,no,nvvt,loovvt,llovvt,
-     &             L2_temp,ResL2_temp)
-
-      deallocate(L2_temp)
-
-      call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
-
-      deallocate(ResL2_temp)
+      write(*,*)'RESL2 after term8',ddot(ndimt2,resL2,1,resL2,1)
 
 !--------------------------------------------------------
 !    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab) 
 !--------------------------------------------------------
 
-      allocate(ResL2_temp(ndimt2)) 
-      allocate(tau(ndimt2*rcw))
-      call gettau(t1,t2,tau)
-      off2 = 1
-      do irp = 1, nrep
-         istart = 0
-         if (nvvt(irp).eq.0) cycle
- 10      mint = nbuf3/nvvt(irp)         
-         if (idist(1,1,irp).gt.istart) istart=idist(1,1,irp)
-         ntot = idist(2,1,irp)
-         nint = min0(mint,ntot-istart)
+!     done = .false.
+!     allocate(ResL2_temp(ndimt2)) 
+!     allocate(tau(ndimt2*rcw))
+!     call gettau(t1,t2,tau)
+!     off2 = 1
+!     do irp = 1, nrep
+!        istart = 0
+!        if (nvvt(irp).eq.0) cycle
+!10      mint = nbuf3/nvvt(irp)         
+!        if (idist(1,1,irp).gt.istart) istart=idist(1,1,irp)
+!        ntot = idist(2,1,irp)
+!        nint = min0(mint,ntot-istart)
+!
+!        allocate(w_vvvv(nvvt(irp)*nint))
+
+!        call getvvvv (irp,istart,nint,done,w_vvvv,mint)
+!        call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
+!        n = nvvt(irp)
+!        m = noot(irp)
+!        k = nint
+!        call xgemm ('n','n',m,k,n,a1,l2,m,
+!    &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
+
+!        deallocate(w_vvvv) 
+!        if (.not.done) then
+!           istart = istart + nint
+!           goto 10
+!        endif
+!        off2 = off2 + m * n * rcw
+!      enddo
+
+!      deallocate(tau)
+
+!     call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
+
+!     deallocate(ResL2_temp)
+
+       write(*,*)'RESL2 after term10',ddot(ndimt2,resL2,1,resL2,1)
+
+!-----------------------------------------------------------------------
+!     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
+!-----------------------------------------------------------------------
+       
+!     done = .false.
+!     allocate (L2_temp(loovvt(nrep+1)*rcw))
+!     off2 = 1
+!     do abrep = 1, nrep
+!        if (nov(abrep).eq.0.or.nvvt(abrep).eq.0) cycle
+!        mint = nbuf3/nvvt(abrep)
+!        istart = 0
+!110     call getvovv (abrep,istart,nint,done,buf1,mint)
+
+!!   sort V(ej,ab) -> V'(e,jab)
+!         ij = 1
+!         ijkl = 0
+!         do jrep = 1, nrep
+!           
+!          irep = multb(jrep,abrep+nrep,2)           
+
+!          jklrep = irep
+
+!           call symm_index_outofcore_sorter(istart,x)
+!           jkloff = (x(jrep,abrep)*nv(irep)) * rcw
+
+!           write(*,*)'jkloff',jkloff,nint,nv(irep) 
+!           jkloff = 0
+!          m2 = nv(irep) * no(jrep)
+!          do j = 1, no(jrep)
+!           do i = 1, nv(irep)
+!            ijkl1 = jkloff + ((j-1) * nv(irep) + i - 1) * rcw + 1
+!               call xcopy(nint,buf1(ijkl+ij),nvo(abrep),buf2(ijkl1),m2)
+!               ij = ij + rcw
+!           enddo
+!          enddo
+
+
+!!   do the contraction: L1(i,e)*V'(e,jab) -> L2'(i,jab)
+
+!        call xgemm ('n','n',no(irep),nint*no(jrep),nv(irep),a1,L1,
+!    &                no(irep),buf2,nv(irep),a1,
+!    &                L2_temp(off2+istart*m2*rcw),no(irep)) 
+
+!         enddo
+!        if (.not.done) then
+!        istart = istart + nint
+!        goto 110
+!        endif
+!        off2 = off2 + no(irep)*novvt(jklrep)*rcw ! doubtful 
+!     enddo
+
+!!   sorting L2'(i,jab) -> L2(i>j,a>b) 
+
+!     allocate(ResL2_temp(ndimt2)) 
+
+!     call srt1t2 (nrep,multb,ltr,noot,no,no,nvvt,loovvt,llovvt,
+!    &             L2_temp,ResL2_temp)
+
+!     deallocate(L2_temp)
+
+!     call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
+
+!     deallocate(ResL2_temp)
+
+!     write(*,*)'RESL2 after term9',ddot(ndimt2,resL2,1,resL2,1)
+
+
+!     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
+
+
+      END
+
+      subroutine lambda2_disconnected(l1,f_bar,ResL2)
  
-         allocate(w_vvvv(nvvt(irp)*nint))
+!---------------Description--------------------------------------------
 
-         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
-         n = nvvt(irp)
-         m = noot(irp)
-         k = nint
-         call xgemm ('n','n',m,k,n,a1,l2,m,
-     &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
+!     Calculating the contribution from the disconnected piece in lambda2 residue
 
-         deallocate(w_vvvv) 
-         if (.not.done) then
-            istart = istart + nint
-            goto 10
-         endif
-         off2 = off2 + m * n * rcw
-       enddo
+!---------------Common Blocks----------------------------------------
 
-       deallocate(tau)
+      implicit none
+#include "symm.inc"
+#include "complex.inc"
+!---------------Calling variables--------------------------------------
 
-      call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
+      real*8, intent(in)    :: l1(ndimt1*rcw),f_bar(nfvo*rcw) 
+      real*8, intent(inout) :: ResL2(ndimt2*rcw)
+ 
+!---------------Local variables--------------------------------------
 
-      deallocate(ResL2_temp)
+      integer :: ijaboff,abrep,arep,brep,a,b,amin,imin,i,j,ij,jb,ia,ja,
+     &           ib,ni,irep,jrep  
+      real*8  :: T1MIN(2)
+!---------------Executable code--------------------------------------
 
+      t1min=(/0.0d0,0.0d0/) 
+
+      ijaboff = 0
+      DO ABREP = 1, NREP
+      DO BREP = 1, NREP
+      AREP = MULTB(BREP,ABREP+NREP,2)
+      IF (AREP.LT.BREP) CYCLE
+      DO B = 1, NV(BREP)
+         AMIN = 1
+         IF (AREP.EQ.BREP) AMIN = B + 1
+         DO A = AMIN, NV(AREP)
+            DO JREP = 1, NREP
+            IREP = MULTB(JREP,ABREP+NREP,2)
+            IF (IREP.LT.JREP) CYCLE
+!--------------------------------------------------------------
+! Resl2(ij,ab) = Resl2(ij,ab) + l1(i,a) * f_bar(j,b) + f_bar(i,a) * l1(j,b)
+!--------------------------------------------------------------
+            IF (JREP.EQ.BREP) THEN
+               IJ = 1
+               JB = (IVO(BREP) + (B-1) * NO(BREP)) * RCW + 1
+               DO J = 1, NO(JREP)
+                  IMIN = 1
+                  IF (IREP.EQ.JREP) IMIN = J + 1
+                  IA = (IVO(AREP) + (A-1) * NO(AREP) + IMIN - 1)*RCW + 1
+                  NI = NO(IREP) - IMIN + 1
+                  CALL XAXPY (NI,f_bar(jb),L1(ia),1,RESL2(IJABOFF+IJ),1)
+                  CALL XAXPY (NI,L1(JB),f_bar(IA),1,RESL2(IJABOFF+IJ),1)
+                  IJ = IJ + NI * RCW
+                  JB = JB + RCW
+               ENDDO
+            ENDIF
+C--------------------------------------------------------------
+C Resl2(ij,ab) = Resl2(ij,ab) - L1(j,a) * f_bar(i,b) - f_bar(j,a) * L1(i,b)
+C--------------------------------------------------------------
+            IF (JREP.EQ.AREP) THEN
+               IJ = 1
+               JA = (IVO(AREP) + (A-1) * NO(AREP)) * RCW + 1
+               DO J = 1, NO(JREP)
+                  IMIN = 1
+                  IF (IREP.EQ.JREP) IMIN = J + 1
+                  IB = (IVO(BREP) + (B-1) * NO(BREP) + IMIN - 1)*RCW + 1
+                  NI = NO(IREP) - IMIN + 1
+                  T1MIN(1) = -f_bar(IB)
+                  IF (CARITH) T1MIN(2) = -f_bar(IB+1)
+                  CALL XAXPY (NI,T1MIN,L1(JA),1,ResL2(IJABOFF+IJ),1)
+                  T1MIN(1) = -L1(IB)
+                  IF (CARITH) T1MIN(2) = -L1(IB+1)
+                  CALL XAXPY (NI,T1MIN,f_bar(JA),1,ResL2(IJABOFF+IJ),1)
+                  IJ = IJ + NI * RCW
+                  JA = JA + RCW
+               ENDDO
+            ENDIF
+C--------------------------------------------------------
+C UPDATE OFFSET AND GO TO NEXT IRREP PAIR
+C--------------------------------------------------------
+            IF (IREP.NE.JREP) THEN
+               IJABOFF = IJABOFF + NO(IREP) * NO(JREP) * RCW
+            ELSE
+               IJABOFF = IJABOFF + NO(IREP) * (NO(IREP)-1) * RCW / 2
+            ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+      ENDDO
+      ENDDO
 
 C---------------------------------------------
 C S(AB,IJ) = S(AB,IJ) + TAU(AB,KL) * AZ(KL,IJ)
@@ -513,4 +677,32 @@ C---------------------------------------------
 !    &              BUF3,BUF1)
 !     CALL XAXPY (NDIMT2,A1,BUF1,1,S2,1)
 !
+
       END
+
+
+      subroutine symm_index_outofcore_sorter(istart,x)
+
+#include "symm.inc"
+!------------------------------------------------
+        integer, intent(in) :: istart
+        integer, intent(out) :: x(nrep,nrep)
+!------------------------------------------------
+
+!------------------------------------------------
+        integer :: y(nrep), krep, ijrep, ijkrep
+!------------------------------------------------
+
+            y = 0
+
+          do ijrep = 1,nrep 
+            do krep = 1,nrep
+
+            ijkrep = multb(krep,ijrep+nrep,2) 
+            x(krep,ijrep) = y(ijkrep)
+            y(ijkrep) =  y(ijkrep) + (istart+1)*no(krep)
+
+            enddo
+         enddo
+
+      end

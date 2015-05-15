@@ -206,6 +206,7 @@ def main():
     add_test('response_nonrel', 'short;response')
     add_test('cosci_energy', 'short;ci')
     add_test('esr', 'short;gascip;ci')
+    add_test('cc_gradient')
 
     # benchmarks, not run as part of standard test set
     add_test('benchmark_cc', 'benchmark;cc')

@@ -14,11 +14,13 @@
     public w_ijmn
     public w_ejmb
     public w_iemn
+    public w_efam
     public wbar_mbej
     public w_ejmb_out_of_core
     public f_bar_ae_out_of_core
     public w_iemn_out_of_core
     public w_efam_out_of_core
+    public w_efam_diagram2
     public w_efab_out_of_core
     public G_intm
      private
@@ -46,7 +48,7 @@
 !+++++++++++++++++++++++++++++++++++++++++
    allocate(tau(ndimt2))
    call gettau  (t1,t2,tau)
-   call contraction_442 ((/"o3","o1","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),HO,-1.0d0,1.0d0,nrep,RightTensor=tau)
+!  call contraction_442 ((/"o3","o1","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),HO,-1.0d0,1.0d0,nrep,RightTensor=tau)
    deallocate(tau) 
 
 !++++++++++++++++++++++++TERM-2+++++++++++++++++++++
@@ -61,9 +63,6 @@
    
     if (carith) call conjuga (nfvo,fvo,1) 
    call contraction_222 ((/"o1","p1"/),(/"p1","o2"/),(/"o1","o2"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
-
-!   call contraction_222 (fvo, nfvo, t1, ndimt1, ho, 'C', 'N', 'N', &
-!                &        no, no, nv, 1.0d0, 1.0d0)
 
    end subroutine
 
@@ -109,15 +108,15 @@
 
 !  deallocate (hv_temp_temp)
 
-
 !---------------------------------------------------------------
 !F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) --> V(ae,fm) * T1(fm) 
 !---------------------------------------------------------------
 
-
+! write(*,*)'we are investigating this term' 
+  call contraction_422 ((/"p1","o1","p2","p3"/),(/"p3","o1"/),(/"p1","p2"/),t1,hv,1.0d0,1.0d0,nrep)
 
 !-----------------------------------------------------------------
-!F_bar_ae = F_bar_mi + F(m,e) * T1(e,i)
+!F_bar_ae = F_bar_ae + F(m,a) * T1(e,m)
 !-----------------------------------------------------------------
 
    if (carith) call conjuga (NFVO,FVO,1) 
@@ -132,7 +131,7 @@
 #include "param.inc"
 #include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
-     real(8), intent(in),target  :: fvo(rcw,nfvo)                  ! Fock matrix elements
+     real(8), intent(in),target  :: fvo(rcw,nfvo)          ! Fock matrix elements
      real(8), intent(in) :: t1(rcw,ndimt1)                 ! Amplitudes
      real(8), intent(out):: hov(rcw,nfvo)                  ! Intermediate
 !+++++++++++++++Local variables++++++++++++++++++++++++++++++++++++++++
@@ -145,7 +144,7 @@
 ! F_bar_me = F_bar_me + V(mn,ef) * T1(f,n) 
 !+++++++++++++++++++++++++++++++++++++++++
 
- call contraction_422 ((/"o1","o2","p1","p2"/),(/"p2","o2"/),(/"o1","p1"/),t1,hov,-1.0d0,1.0d0,nrep)
+ call contraction_422 ((/"o1","o2","p1","p2"/),(/"p2","o2"/),(/"o1","p1"/),t1,hov,1.0d0,1.0d0,nrep)
 
   end subroutine
 
@@ -177,7 +176,6 @@
 !*************************************************
 ! w_oooo(ij,mn) = w_oooo(ij,mn) + (V(ij,en)*T(e,m))
 !*************************************************
-!whether the anti-symmetrization is missing? 
 
    call contraction_424 ((/"o1","o2","p1","o3"/),(/"p1","o4"/),(/"o1","o2","o3","o4"/),w_oooo, &
            &      -1.0d0,0.0d0,nrep,RightTensor=t1)
@@ -196,7 +194,7 @@
 
   end subroutine
 
- subroutine w_ejmb(t1,t2,w_vovo)
+ subroutine w_ejmb(t1,t2,w_voov)
 
  !---------------Description--------------------------------------------
  !     Calculates w_voov intermediate
@@ -207,42 +205,73 @@
 #include "complex.inc"
 
  !---------------Calling variables--------------------------------------
-   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw,ndimt2)  ! Amplitudes.
-   real(8), intent(out) :: w_vovo(rcw,nv4)                ! Intermediate.
+   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
+   real(8), intent(out) :: w_voov(rcw,nv4)                ! Intermediate.
  !---------------Local Variables----------------------------------------
    real(8), allocatable :: tau(:)
+!  real(8), allocatable :: w_vovv(:),w_temp(:)
+!  real(8) :: sorted(10000)
  !--------------------
  ! initialize w_vovo
  !--------------------
 
   write(*,*)'intermediate w_ejmb starts here'    
 
-  call getvovo (w_vovo)
+  call getvoov (w_voov)
 
-!---------------------------------------------
-!   w_vovo(p2o1, p1o2) = V(o3o1,p1o2)*T1(p2o3)
-!---------------------------------------------
-    call contraction_424 ((/"o3","o1","p1","o2"/),(/"p2","o3"/),(/"p2","o1","p1","o2"/),w_vovo, &
-             &      -1.0d0,0.0d0,nrep,RightTensor=t1)
+!---------------------------------------------------
+!   w_voov(ej,mb) = w_voov(ej,mb) - V(nj,mb)*T1(e,n)
+!---------------------------------------------------
 
+!  call contraction_424 ((/"o3","o1","p1","o2"/),(/"p2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
+!  &      -1.0d0,0.0d0,nrep,RightTensor=t1)
 
-!  call contraction_424 ((/"o3","o1","o2","p1"/),(/"p2","o3"/),(/"p2","o1","o2","p1"/),t1,w_vovo, &
-!           &      -1.0d0,0.0d0,nrep)
-!---------------------------------------------
-!   w_vovo(p2o1, p1o2) = V(o3o1, p1p3) * T2(p2p3, o3o2)
-!---------------------------------------------
+   call contraction_424 ((/"o3","o1","o2","p1"/),(/"p2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
+            &      -1.0d0,0.0d0,nrep,RightTensor=t1)
+!----------------------------------------------------------------------
+!   w_voov(ej,mb) = w_voov(ej,mb) + V(nj,fb)*(T2(ef,mn)-T1(f,m)*T1(e,n)
+!----------------------------------------------------------------------
 
-  allocate (tau(ndimt2))
+  allocate (tau(ndimt2*rcw))
 
   call gettau (t1,t2,tau,'approximate')
 
-!   call contraction_444 ((/"o3","o1","p1","p3"/),(/"p2","p3","o3","o2"/),(/"p2","o1","p1","o2"/),tau,w_vovo, &
-!              &      -1.0d0,0.0d0,nrep)
+! call contraction_444 ((/"o3","o1","p1","p3"/),(/"p2","p3","o3","o2"/),(/"p2","o1","p1","o2"/),tau,w_voov, &
+!   &               -1.0d0,0.0d0,nrep)
 
-! call contraction_444 ((/"o3","o1","p3","p1"/),(/"p2","p3","o2","o3"/),(/"p2","o1","o2","p1"/),tau,w_vovo, &
-!            &      -1.0d0,0.0d0,nrep)
+!avi
+   call contraction_444 ((/"o3","o1","p3","p1"/),(/"p2","p3","o2","o3"/),(/"p2","o1","o2","p1"/),tau,w_voov, &
+   &      -1.0d0,0.0d0,nrep)
 
   deallocate (tau)
+
+!--------------------------------------------------
+!  w_voov(ej,mb) = w(ej,mb) + V(ej,fb)*t(f,m) 
+!--------------------------------------------------
+
+! allocate(w_vovv(nv5*rcw))
+! call getvovv_incore (w_vovv)
+! sorted = 0.0d0
+!
+! call srt1t3(nrep,multb,.false.,nvo,nv,nv,nvov,kvovv,kkvov,w_vovv,sorted)
+
+! deallocate(w_vovv)
+! allocate(w_temp(nv4*rcw))
+! w_temp = 0.0d0
+
+! call cntrct ('N','N',nvov,no,nv,-A1,sorted,t1,A0,w_temp,nrep)  
+! 
+! sorted = 0.0d0
+!
+! call srt19 (nrep,multb,.false.,nvo,no,nv,nvov,kvovo,kkvov,w_temp,sorted)
+
+! deallocate(w_temp)
+
+! call xaxpy(nv4,A1,sorted,1,w_vovo,1)
+
+!avi
+   call contraction_424 ((/"p2","o1","p1","p3"/),(/"p3","o2"/),(/"p2","o1","o2","p1"/),w_voov, &
+              &      -1.0d0,0.0d0,nrep,RightTensor=t1)
 
   end subroutine
 
@@ -262,53 +291,100 @@
    real(8), intent(in)  :: wbar_ovvo(rcw*nv4),w_oooo(rcw*nv1),hov(nfvo*rcw)         ! reuse of intermediates.
  !---------------Local Variables----------------------------------------
 
- real*8, allocatable   :: w_temp(:) 
-
+  real*8, allocatable   :: tau(:) 
+!  real*8, allocatable   :: v_vovv(:),im_temp(:),im_temp_temp(:) 
+  integer               :: i
  !--------------------
  ! initialize wbar_ovvo
  !--------------------
- allocate (w_temp(nv2*rcw))
 
-  call getvooo (w_temp) 
-  w_ovoo = 0.0d0
+  call getovoo (w_ovoo) 
 
- call srt1l1 (nrep,multb,.false.,nvo,nv,no,noot,iiov,IVOOOT,w_temp,w_ovoo)
+! call srt1l1 (nrep,multb,.false.,nvo,nv,no,noot,iiov,ivooot,w_temp,w_ovoo)
 
- deallocate (w_temp)
-
-
- call xscal(nv2*rcw,-A1,w_ovoo,1)
-
-!---------------
-! w_ovoo(o1p1,o3o2) = F_me(o1p2) * T2(p2p1o2o3)  
-!---------------
+!-----------------------------------------------------
+! w_ovoo(ie,mn) = w_ovoo(ie,mn) + F_me(if) * T2(ef,mn)  
+!-----------------------------------------------------
 
   call contraction_244 ((/"o1","p2"/),(/"p2","p1","o2","o3"/),(/"o1","p1","o2","o3"/),w_ovoo, &
            &      -1.0d0,0.0d0,nrep,LeftTensor=hov,RightTensor=t2)
 
-!---------------------------------------------
-!   w_ovoo(o1p1,o2o3) = V(o1o4,p2o2) * T2(p1p2, o3o4)
-!---------------------------------------------
+!-------------------------------------------------------
+!   w_ovoo(ie,mn) = w_ovoo(ie,mn) +  V(io,mf) * T2(ef,no)
+!-------------------------------------------------------
 
-  call contraction_444 ((/"o1","o4","p2","o2"/),(/"p1","p2","o3","o4"/),(/"o1","p1","o2","o3"/),t2,w_ovoo, &
+  call contraction_444 ((/"o1","o4","o2","p2"/),(/"p1","p2","o3","o4"/),(/"o1","p1","o2","o3"/),t2,w_ovoo, &
              &      -1.0d0,0.0d0,nrep)
 
 !-------------------------------------------
-!   w_ovoo(o1p1,o3o2) = V(o1p1,p2o3)*T1(p2o2)
+!   w_ovoo(ie,mn) = w_ovoo(ie,mn) +  w_bar_mbej(ie,fn)*T1(fm)
 !--------------------------------------------
 !careful. the following diagram has its permuted label in ket. this is not the right way of constructing this intermediate. i will come back to it soon.
+
    call contraction_424 ((/"o1","p1","p2","o3"/),(/"p2","o2"/),(/"o1","p1","o3","o2"/),w_ovoo, &
-              &      1.0d0,0.0d0,nrep,LeftTensor=wbar_ovvo,RightTensor=t1)
+             &      1.0d0,0.0d0,nrep,LeftTensor=wbar_ovvo,RightTensor=t1)
 
+!-----------------------------------------------------------
+!   w_ovoo(ie,mn) = w_ovoo(ie,mn) + w_ijmn(io,mn) * t(e,o)
+!-----------------------------------------------------------
+ 
+   call contraction_424 ((/"o1","o4","o2","o3"/),(/"p1","o4"/),(/"o1","p1","o2","o3"/),w_ovoo, &
+             &      1.0d0,0.0d0,nrep,LeftTensor=w_oooo,RightTensor=t1)
 
-! write(*,*)'just before the problem'    
+!-----------------------------------------------------------
+!   w_ovoo(ie,mn) = w_ovoo(ie,mn) + 1/2 V(ie,fg) * tau(fg,mn) 
+!-----------------------------------------------------------
+!**out of core term..
 
-!  call contraction_424 ((/"o1","o4","o2","o3"/),(/"p1","o4"/),(/"o1","p1","o2","o3"/),w_ovoo, &
-!            &      1.0d0,0.0d0,nrep,LeftTensor=w_oooo,RightTensor=t1)
+!5   format(10f10.6)  
 
+! w_ovoo = 0.0d0
+  allocate (tau(ndimt2*rcw))
+  tau = 0.0d0
+  call gettau (t1,t2,tau)
 
-! call contraction_424 ((/"o2","o3","o1","o4"/),(/"p1","o4"/),(/"o2","o3","o1","p1"/),w_ovoo, &
-!           &      1.0d0,0.0d0,nrep,LeftTensor=w_oooo,RightTensor=t1)
+! allocate(v_vovv(nv5*rcw))
+
+! v_vovv = 0.0d0
+! call getvovv_incore(v_vovv) 
+
+! write(99,5)(v_vovv(i),i=1,nv5)
+
+! deallocate(v_vovv)
+
+! allocate(v_vovv(nv5*rcw))
+
+! v_vovv = 0.0d0
+! call getovvv_incore(v_vovv) 
+
+! write(100,5)(v_vovv(i),i=1,nv5)
+
+! deallocate(v_vovv)
+
+! allocate(im_temp(nv2*rcw))
+
+! im_temp=0.0d0
+! call cntrct ('N','N',nvo,noot,nvvt,A1,v_vovv,tau,A0,im_temp,nrep) 
+
+! deallocate(tau)
+
+! deallocate(v_vovv)
+
+! allocate(im_temp_temp(nv2*rcw))
+
+! im_temp_temp=0.0d0
+! call srt1l1 (nrep,multb,.false.,nvo,nv,no,noot,ivooot,iiov,im_temp,im_temp_temp)
+
+! deallocate(im_temp)
+
+! call xaxpy (nv2,-A1,im_temp_temp,1,w_ovoo,1) 
+
+! deallocate(im_temp_temp)
+
+  call contraction_444 ((/"o1","p1","p2","p3"/),(/"p2","p3","o2","o3"/),(/"o1","p1","o2","o3"/),tau,w_ovoo, &
+             &      -1.0d0,1.0d0,nrep)
+
+  deallocate(tau)
 
   end subroutine
 
@@ -338,12 +414,11 @@
 
   call getvovo (w_vovo)
 
-  call srt1l1 (nrep,multb,.false.,nvo,nv,no,nvo, &
-     &                   ivovo,iiov,w_vovo,wbar_ovvo) 
+  call srt1l1 (nrep,multb,.false.,nvo,nv,no,nvo,iovvo,iiov,w_vovo,wbar_ovvo) 
 
   deallocate (w_vovo)
 
-  call xscal(nv4*rcw,-A1,wbar_ovvo,1)
+! call xscal(nv4*rcw,-A1,wbar_ovvo,1)
 !---------------------------------------------
 !   w_vovo(p2o1, p1o2) = V(o3o1, p1p3) * T2(p2p3, o3o2)
 !---------------------------------------------
@@ -351,10 +426,210 @@
   call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),t2,wbar_ovvo, &
              &      -1.0d0,0.0d0,nrep)
 
-  end subroutine
+ end subroutine
+
+
+ subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo)
+
+!--------------------DESCRIPTION---------------------------
+!        calculates vvvo type intermediate in-core fashion.      
+!----------------------------------------------------------
+
+!----------calling variables----------------------
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+
+ !---------------Calling variables--------------------------------------
+   real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
+   real*8, intent(in) :: wbar_ovvo(rcw*nv4),hov(nfvo*rcw)     ! Intermediate.
+   real*8, intent(out) :: w_vvvo(rcw,nv5)                ! Intermediate.
+ !---------------Local Variables----------------------------------------
+
+   real*8,allocatable  :: tau(:)                ! Intermediate.
+
+!----------------------------------------------------------
+!        Initialize
+!----------------------------------------------------------
+
+   call getvvvo_incore(w_vvvo)
+
+  allocate (tau(ndimt2*rcw))
+  call gettau (t1,t2,tau)
+!-----------------------------------------------------------
+!   diagram1 : w_vvvo(ef,am)  = w_vvvo(ef,am) + p(ef) V(en,ag)*tau(gf,mn)  
+!-----------------------------------------------------------
+
+  call contraction_444 ((/"p2","o2","p1","p4"/),(/"p4","p3","o1","o2"/),(/"p2","p3","p1","o1"/),tau,w_vvvo, &
+             &      1.0d0,0.0d0,nrep)
+
+!------------------------------------------------------------
+!  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 
+!------------------------------------------------------------
+
+
+!-------------------------------------------------------------
+!  diagram3 : w_vvvo(ef,am) =  w_vvvo(ef,am) + f_bar_me(na) * t(ef,mn)
+!-------------------------------------------------------------
+
+  call contraction_244 ((/"o2","p1"/),(/"p2","p3","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+           &      1.0d0,0.0d0,nrep,LeftTensor=hov,RightTensor=t2)
+
+!---------------------------------------------------------------------------
+!  diagram4 : w_vvvo(ef,am) =  w_vvvo(ef,am) + 0.5d0 * V(no,am) * tau(ef,no) 
+!---------------------------------------------------------------------------
+
+  call contraction_444 ((/"o2","o3","p1","o1"/),(/"p2","p3","o2","o3"/),(/"p2","p3","p1","o1"/),tau,w_vvvo, &
+             &      0.5d0,0.0d0,nrep)
+
+  deallocate (tau)
+!---------------------------------------------------------------------------
+!  diagram5 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w_bar_ovvo(nf,am) * t(e,n)
+!---------------------------------------------------------------------------
+
+  call contraction_424 ((/"o2","p3","p1","o1"/),(/"p2","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+            &      1.0d0,0.0d0,nrep,LeftTensor=wbar_ovvo,RightTensor=t1)
+
+ end subroutine
+
+ subroutine w_efam_diagram2(t1,t2,buf1,buf2,buf3,nbuf3,w_vvvo)
+
+
+#include "param.inc"  
+#include "complex.inc"
+#include "symm.inc"   
+#include "ccpar.inc"
+!---------------Calling variables-------------------------------------
+
+   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
+   real(8), intent(inout) :: w_vvvo(rcw,nv5)                ! Intermediate.
+   real(8), intent(in)    :: buf1(*),buf2(*)        ! buffer arrays
+   real(8), intent(inout)    :: buf3(*)        ! buffer arrays
+   integer, intent(in)    :: nbuf3 
+
+!---------------Local variables--------------------------------------
+                                                                    
+      REAL*8 T1VAL(2)                                                
+      DATA T1VAL /2*0.0D0/                                            
+      logical :: done
+      integer :: cd,cco,istart,nint,akcd,ci,akci,t1di,di,akdi,t1ci,cmin,c,d,i
+      integer :: crep,drep,irp,mint
+      real*8,allocatable  :: tau (:)
+!------------------------------------------------------------------
+!  w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m)
+! H is kept in BUF1, still ordered VOVO
+!------------------------------------------------------------------
+
+     allocate (tau(ndimt2*rcw))
+     call gettau (t1,t2,tau)
+
+      if(myproc.eq.master) then
+        CALL xcopy(nv5,w_vvvo,1,buf2,1)
+      else 
+        call xcopy(nv5,a0,0,buf2,1)
+      endif
+
+      CALL XTIME(0,1,'--- HINTM: VOVV*T              ')
+      DO 30 IRP = 1, NREP
+         IF (NVV(IRP).EQ.0) GOTO 30
+         DONE = .FALSE.
+         ISTART = 0
+         CCO=0
+         MINT = NBUF3/NVO(IRP)
+
+! ** w_efab are constructed over the batches.
+! ** ISTART is updated with the actual batch #
+! ** available on the local node, NINT is updated with the number of
+! ** actually read integrals from this batch and is a pure output parameter !
+! ** We therefore have to count upwards in case of ISTART.NE.0 !!
+
+         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,buf3)
+
+!        CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
+!        CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
+
+! ** now start SORTING and contraction loop
+
+         CD = 0
+         DO 20 DREP = 1, NREP
+           CREP = MULTB(DREP,IRP+NREP,2)
+           IF (CREP.LT.DREP) GOTO 20
+           DO 15 D = 1, NV(DREP)
+              CMIN = 1
+              IF (CREP.EQ.DREP) CMIN = D + 1
+              DO 10 C = CMIN, NV(CREP)
+
+                 IF(CCO.LT.ISTART) THEN
+                   CCO=CCO+1
+                   GOTO 10
+                 ENDIF
+
+                 CD = CD + 1
+                 IF (CD.GT.NINT) THEN
+!                   ---------------------------------------
+!                   We need the next buffer in this IRREP !
+!                   ---------------------------------------
+                    ISTART = ISTART + NINT
+                    IF(.NOT.DONE) THEN
+                    call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,buf3)
+                      CD = 1
+                      CCO=ISTART
+                    ELSE
+                      GOTO 30
+                    ENDIF
+                 ENDIF
+                 AKCD = (CD-1)*NVVT(IRP)*RCW+1
+                 DO I = 1, NO(DREP)
+                    CI = IIVO(CREP,DREP)+(I-1)*NV(CREP)+C
+                    AKCI = (IOVVVT(IRP)+(CI-1)*NVVT(IRP))*RCW+1
+                    T1DI = (IVO(DREP)+(I-1)*NV(DREP)+D-1) * RCW + 1
+                    T1VAL(1) =  T1(T1DI)
+                    IF (CARITH) T1VAL(2) =  T1(T1DI+1)
+                    CALL XAXPY(NVVT(IRP),T1VAL,BUF3(AKCD),1,BUF2(AKCI),1)
+                 ENDDO
+                 DO I = 1, NO(CREP)
+                    DI = IIVO(DREP,CREP)+(I-1)*NV(DREP)+D
+                    AKDI = (IOVVVT(IRP)+(DI-1)*NVVT(IRP))*RCW+1
+                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
+                    T1VAL(1) = -T1(T1CI)
+                    IF (CARITH) T1VAL(2) = -T1(T1CI+1)
+                    CALL XAXPY(NVVT(IRP),T1VAL,BUF3(AKCD),1,BUF2(AKDI),1)
+                 ENDDO
+ 10           CONTINUE
+ 15        CONTINUE
+ 20      CONTINUE
+ 30    CONTINUE
+!------------------------------------------------------------------
+! Now sort H(AK,CI) to H(AI,CK)  is to be done in any case !!
+! The H buffer is not changed any more up to the final XGEMM !
+! Every other calculation is done in BUF1 !!
+!------------------------------------------------------------------
+!   CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO, &
+!   &            BUF1,w_vovo)
+
+!  call srt1r1 (nrep,multb,lfa,nvo,nv,no,nvo,ivovo,iiov,buf1,buf2)
+!  
+!  call xaxpy (nv4,-A1,buf2,1,w_vovo,1) 
+
+   deallocate (tau)
+
+
+   call xcopy(nv5,buf2,1,w_vvvo,1)
+
+
+   CALL XTIME(0,2,'--- HINTM: VOVV*T              ')
+
+ end subroutine
 
 
  subroutine w_ejmb_out_of_core(t1,t2,buf1,buf2,buf3,nbuf3,w_vovo)
+
+
+#include "param.inc"                                                  
+#include "complex.inc"                                                
+#include "symm.inc"                                                   
+!#include "eqns.inc"                                                   
+#include "ccpar.inc"                                                  
 
 !---------------Calling variables-------------------------------------
 
@@ -363,30 +638,22 @@
    real(8), intent(in)    :: buf1(*),buf2(*),buf3(*)        ! buffer arrays
    integer, intent(in)    :: nbuf3 
 
-!---------------Common Blocks--------------------------------------   
-                                                                     
-#include "param.inc"                                                  
-#include "complex.inc"                                                
-#include "symm.inc"                                                   
-!#include "eqns.inc"                                                   
-#include "ccpar.inc"                                                  
-!
 !---------------Local variables--------------------------------------
 !                                                                    
       REAL*8 T1VAL(2)                                                
       DATA T1VAL /2*0.0D0/                                            
       logical :: done
-      integer :: cd,cco,istart,nint,akcd,ci,akci,t1di,di,akdi,t1ci,cmin,c,d,i
+      integer :: cd,cco,istart,nint,akcd,ic,akic,t1di,id,akid,t1ci,cmin,c,d,i
       integer :: crep,drep,irp,mint
 !------------------------------------------------------------------
 ! H(AK,CI) = H(AK,CI) - W(AK,CD) * T(D,I)
 ! H is kept in BUF1, still ordered VOVO
 !------------------------------------------------------------------
 
-      IF(MYPROC.EQ.MASTER) THEN
-        CALL xcopy(nv4,w_vovo,0,BUF1,1)
+      if(myproc.eq.master) then
+        CALL xcopy(nv4,w_vovo,1,BUF1,1)
       else 
-        CALL XCOPY(NV4,A0,0,BUF1,1)
+        call xcopy(nv4,a0,0,buf1,1)
       endif
 
       CALL XTIME(0,1,'--- HINTM: VOVV*T              ')
@@ -438,20 +705,24 @@
                  ENDIF
                  AKCD = (CD-1)*NVO(IRP)*RCW+1
                  DO I = 1, NO(DREP)
-                    CI = IIVO(CREP,DREP)+(I-1)*NV(CREP)+C
-                    AKCI = (IVOVO(IRP)+(CI-1)*NVO(IRP))*RCW+1
+!                   CI = IIVO(CREP,DREP)+(I-1)*NV(CREP)+C
+                    IC = IIOV(CREP,DREP)+(C-1)*NO(DREP)+I
+!                   AKCI = (IVOVO(IRP)+(CI-1)*NVO(IRP))*RCW+1
+                    AKIC = (IVOOV(IRP)+(IC-1)*NVO(IRP))*RCW+1
                     T1DI = (IVO(DREP)+(I-1)*NV(DREP)+D-1) * RCW + 1
-                    T1VAL(1) = - T1(T1DI)
-                    IF (CARITH) T1VAL(2) = - T1(T1DI+1)
-                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKCI),1)
+                    T1VAL(1) =  T1(T1DI)
+                    IF (CARITH) T1VAL(2) =  T1(T1DI+1)
+                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKIC),1)
                  ENDDO
                  DO I = 1, NO(CREP)
-                    DI = IIVO(DREP,CREP)+(I-1)*NV(DREP)+D
-                    AKDI = (IVOVO(IRP)+(DI-1)*NVO(IRP))*RCW+1
+!                   DI = IIVO(DREP,CREP)+(I-1)*NV(DREP)+D
+                    ID = IIOV(DREP,CREP)+(D-1)*NO(CREP)+I
+!                   AKDI = (IVOVO(IRP)+(DI-1)*NVO(IRP))*RCW+1
+                    AKID = (IVOOV(IRP)+(ID-1)*NVO(IRP))*RCW+1
                     T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
-                    T1VAL(1) = T1(T1CI)
-                    IF (CARITH) T1VAL(2) = T1(T1CI+1)
-                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKDI),1)
+                    T1VAL(1) = -T1(T1CI)
+                    IF (CARITH) T1VAL(2) = -T1(T1CI+1)
+                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKID),1)
                  ENDDO
  10           CONTINUE
  15        CONTINUE
@@ -465,8 +736,9 @@
 !   CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO, &
 !   &            BUF1,w_vovo)
 
-   CALL SRT1R1 (NREP,MULTB,LFA,NVO,NV,NO,NVO, &
-         &                  IVOVO,IIOV,BUF1,w_vovo)
+!  call srt1r1 (nrep,multb,lfa,nvo,nv,no,nvo,ivovo,iiov,buf1,buf2)
+!  
+!  call xaxpy (nv4,-A1,buf2,1,w_vovo,1) 
 
    CALL XTIME(0,2,'--- HINTM: VOVV*T              ')
 
@@ -475,16 +747,16 @@
 
    subroutine f_bar_ae_out_of_core (t1,buf2,nbuf2,hv)
 
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "ccpar.inc"
+
 !---------------Calling variables--------------------------------------
      real*8, intent(in)    :: t1(rcw,nfvo),buf2(*)
      real*8, intent(inout) :: hv(rcw*nfvv)
      integer,intent(in)    :: nbuf2 
 !---------------Common Blocks--------------------------------------
-
-#include "param.inc"
-#include "complex.inc"
-#include "symm.inc"
-#include "ccpar.inc"
 
 !---------------Local variables----
      logical :: USEDZ,RIGHT
@@ -537,8 +809,8 @@
 !----------------------------------------------
    call xcopy(nv2,A0,0,buf2,1)
 
-   allocate(tau(ndimt2))
-   call gettau  (t1,t2,tau)
+   allocate(tau(ndimt2*rcw))
+   call gettau (t1,t2,tau)
 
     OFF1 = 1
     OFF2 = 1
@@ -572,21 +844,21 @@
 
     deallocate (tau)
 
-      CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF1)
+      call srt1l1 (nrep,multb,lfa,nvo,nv,no,noot,ivooot,iiov,buf2,buf1)
 
-      call xaxpy (nv2,A1,buf1,1,w_ovoo,1) 
+      call xaxpy (nv2,-A1,buf1,1,w_ovoo,1) 
 
   end subroutine
 
-   subroutine w_efam_out_of_core (t1,t2,hov,w_vovo,buf1,buf2,buf3,nbuf3,nbuf2,w_vvvo)
+   subroutine w_efam_out_of_core (t1,t2,hov,w_vovo,wbar_ovvo,buf1,buf2,buf3,nbuf3,nbuf2,w_vvvo)
 
 !---------------Calling variables-------------------------------------
 
-   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)        ! Amplitudes.
+   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2) ! Amplitudes.
    real(8), intent(in)    :: hov(nfvo*rcw)       
-   real(8), intent(in)    :: w_vovo(rcw*nv4)       
-   real(8), intent(out)   :: w_vvvo(rcw*nv5)                      ! Intermediate.
-   real(8), intent(in)    :: buf1(*),buf2(*)              ! buffer arrays.
+   real(8), intent(in)    :: w_vovo(rcw*nv4),wbar_ovvo(rcw*nv4)       
+   real(8), intent(out)   :: w_vvvo(rcw*nv5)             ! Intermediate.
+   real(8), intent(in)    :: buf1(*),buf2(*)             ! buffer arrays.
    real(8), intent(in),target    :: buf3(*)              ! buffer arrays.
    integer, intent(in)    :: nbuf3,nbuf2 
 
@@ -626,7 +898,7 @@
        xx(1:mvo(i),1:mvv(i)) => buf3 (1:mvo(i)*mvv(i)) 
       enddo
 
-      call xcopy(nv5,A0,1,w_vvvo,1)
+      call xcopy(nv5,A0,0,w_vvvo,1)
 
 !     allocate (t_sort(j2vovo(nrep+1)*rcw))
      allocate (t_sort(sum(mvo,nrep),sum(mvo,nrep)))
@@ -652,7 +924,6 @@
          ISTART = 0
  10      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF2,MINT)
 
-         write(*,*)'value of NINT 1st time',NINT
          allocate (w_vvvv(nint*nvvt(irp)),stat = AllocateStatus)!hopefully ok. not 100% sure.
          if (AllocateStatus /= 0) stop "*** not enough memory ***"
 
@@ -941,7 +1212,7 @@
                      BK = (IVO(KREP)+(K-1)*NV(BREP)+B-1) * RCW + 1
                      T1CON(1) = - T1(BK)
                      IF (CARITH) T1CON(2) = T1(BK+1)
-                     CALL XAXPY (NVO(IRP),T1CON,w_vovo(AKCJ),NVO(IRP), &
+                     CALL XAXPY (NVO(IRP),T1CON,wbar_ovvo(AKCJ),NVO(IRP), &
                        &         BUF2(AB*RCW+1),1)
                      AKCJ = AKCJ + NV(AREP) * RCW
                   ENDDO
@@ -951,7 +1222,7 @@
                      AK = (IVO(KREP)+(K-1)*NV(BREP)+A-1) * RCW + 1
                      T1CON(1) = T1(AK)
                      IF (CARITH) T1CON(2) = - T1(AK+1)
-                     CALL XAXPY (NVO(IRP),T1CON,w_vovo(BKCJ),NVO(IRP), &
+                     CALL XAXPY (NVO(IRP),T1CON,wbar_ovvo(BKCJ),NVO(IRP), &
                       &          BUF2(AB*RCW+1),1)
                      BKCJ = BKCJ + NV(BREP) * RCW
                   ENDDO
@@ -977,18 +1248,19 @@
 
    subroutine w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
 
-!--------------------calling variables-------------
-   real(8), intent(in)    :: tau(:)  ! Amplitudes.
-   real(8), intent(inout) :: w_vvvv(*)                ! Intermediate.
-   real(8), intent(in)    :: buf1(*)                  ! buffer arrays
-   integer, intent(in)    :: nbuf3,irp,istart
-   logical, intent(in)    :: done
-!--------------------------------------------------
-
 #include "param.inc"                                                  
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
 #include "ccpar.inc"                                                  
+
+!--------------------calling variables-------------
+   real(8), intent(in)    :: tau(:)  ! Amplitudes.
+   real(8), intent(inout)   :: w_vvvv(*)                ! Intermediate.
+   real(8), intent(in)    :: buf1(*)                  ! buffer arrays
+   integer, intent(in)    :: nbuf3,irp,istart
+   logical, intent(inout)    :: done
+!--------------------------------------------------
+
 
 !--------------------local variables----------------
    integer :: MINT,NINT
@@ -1001,11 +1273,10 @@
             CALL CONJUGA (NINT*NVVT(IRP),w_vvvv,1)
          ENDIF
 
-         write(*,*)'value of NINT 2nd time',NINT
-
 !----------------------------------------------
 ! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU*(ef,mn)
 !----------------------------------------------
+
          CALL GETVVOO (buf1)
          M = NVVT(IRP)
          N = NINT
@@ -1027,19 +1298,27 @@
       real(8), intent(in)  :: l2(rcw*ndimt2),t2(rcw*ndimt2)  ! Amplitudes.
       real(8), intent(out) :: G_vv(:),G_oo(:)
 
+!----------initialization--------------
+
+  G_vv = 0.0d0
+  G_oo = 0.0d0
+
+!--------------------------------------
+
+
 !----------------------------------------------------------------------
 !    G_ea(e,a)  = -1/2 l2(mn,af) * t2(ef,mn)
 !----------------------------------------------------------------------
 
   call contraction_442 ((/"o1","o2","p1","p3"/),(/"p2","p3","o1","o2"/),(/"p2","p1"/),G_vv,-0.5d0,0.0d0,nrep,&
-                        &  RightTensor=t2,LeftTensor=l2)
+                        &  LeftTensor=l2,RightTensor=t2 )
 
 !---------------------------------------------
 !     G_im(i,m) = 1/2 l2(in,ef) * t2(ef,mn)
 !---------------------------------------------
 
   call contraction_442 ((/"o1","o3","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),G_oo,-0.5d0,0.0d0,nrep,&
-                        & RightTensor=t2,LeftTensor=l2)
+                        & LeftTensor=l2,RightTensor=t2 )
 
   end subroutine
 

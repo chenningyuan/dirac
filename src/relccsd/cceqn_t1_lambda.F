@@ -38,27 +38,40 @@
 !       -----------------
 
       integer,intent(in) :: nbuf2,nbuf3
-      real(8),intent(in) :: ho(*),hv(*),hov(nfvo*rcw)           ! one body intermediates
+      real(8),intent(in) :: ho(nfoo*rcw),hv(nfvv*rcw),hov(nfvo*rcw)    ! one body intermediates
       real(8),intent(in) :: w_vovo(nv4*rcw),w_ovoo(nv2*rcw),
-     &                      w_vvvo(nv5*rcw)! two body intermediates 
+     &                      w_vvvo(nv5*rcw)                            ! two body intermediates 
       real(8),intent(in) :: G_vv((ivv(nrep+1))*rcw),
-     &                         G_oo((ioo(nrep+1))*rcw)              ! G-intermediates  
-      real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)! converged T1 amplitude
-      real(8),intent(in) :: L1(ndimt1*rcw),L2(ndimt2*rcw)! L1 and L2 amplitudes from last iteration.
-      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)      ! buffer arrays 
-      real*8,intent(inout) :: ResL1(ndimt1*rcw)                     ! residue for L1 amplitude  
+     &                         G_oo((ioo(nrep+1))*rcw)                 ! G-intermediates  
+      real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)              ! converged T1 amplitude
+      real(8),intent(in) :: L1(ndimt1*rcw),L2(ndimt2*rcw)              ! L1 and L2 amplitudes from last iteration.
+      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)                    ! buffer arrays 
+      real*8,intent(out) :: ResL1(ndimt1*rcw)                          ! residue for L1 amplitude  
 
 
 !     Local variables                                      
 !     ---------------
       logical            :: done,teq,usedz,right
       real*8,allocatable :: int_temp(:)
+      real*8             :: val 
 
 !-------------------
 ! Initialize residue
 !-------------------
+!       ResL1 = 0.0d0   
+
+
+    5   format(10f10.6)  
+
 
        call xcopy (ndimt1,hov,1,ResL1,1)
+
+       val = 0.0d0
+       do i =1,ndimt1
+         val = val + resl1(i)*resl1(i)
+       enddo
+
+       write(*,*)'dot product of RESL1, 1',val
 !---------------------------------
 !    ResL1 = ResL1 + L(i,e) * f_bar_ae(e,a)
 !---------------------------------
@@ -66,25 +79,50 @@
        call contraction_222 ((/"o1","p2"/),(/"p2","p1"/),(/"o1","p1"/),
      &    L1,hv,ResL1,1.0d0,1.0d0,nrep)
 
+       val = 0.0d0
+       do i =1,ndimt1
+         val = val + resl1(i)*resl1(i)
+       enddo
+       write(*,*)'dot product of RESL1, 2',val
+
 !----------------------------------------
 !    ResL1 = ResL1 - L(m,a)*f_bar_mi(i,m)
 !----------------------------------------
 
-      call contraction_222 ((/"o2","p1"/),(/"o1","o2"/),(/"o1","p1"/),
+        call contraction_222 ((/"o2","p1"/),(/"o1","o2"/),(/"o1","p1"/),
      &    L1,ho,ResL1,-1.0d0,1.0d0,nrep)
 
+       val = 0.0d0
+       do i =1,ndimt1
+         val = val + resl1(i)*resl1(i)
+       enddo
+       write(*,*)'dot product of RESL1, 3',val
+
 !----------------------------------------------
-!      ResL1 = ResL1 - G(n,m) * V(mi,na)  
+!      ResL1 = ResL1 - G(m,n) * V(mi,na)  
 !----------------------------------------------
 
-      call contraction_242 ((/"o3","o2"/),(/"o2","o1","o3","p1"/), 
+      call contraction_242 ((/"o2","o3"/),(/"o2","o1","o3","p1"/), 
      &   (/"o1","p1"/),G_oo,ResL1,-1.0d0,1.0d0,nrep)
+
+       val = 0.0d0
+       do i =1,ndimt1
+         val = val + resl1(i)*resl1(i)
+       enddo
+       write(*,*)'dot product of RESL1, 4',val
+
 !-------------------------------------------------
 !      ResL1 = ResL1 + L1(m,e) * W(ei,ma) ! here array name w_vovo is a misnomer. would be wvoov
 !-------------------------------------------------
 
       call contraction_242 ((/"o2","p2"/),(/"p2","o1","o2","p1"/),
      &   (/"o1","p1"/),G_oo,ResL1,-1.0d0,1.0d0,nrep,w_vovo)
+
+       val = 0.0d0
+       do i =1,ndimt1
+         val = val + resl1(i)*resl1(i)
+       enddo
+       write(*,*)'dot product of RESL1, 5',val
 
 !-----------------------------------------------------
 !       ResL1 = ResL1 - 0.5d0* L2(mn,ae)*W(ie,mn) 
@@ -93,41 +131,75 @@
       call contraction_442((/"o2","o3","p1","p2"/),(/"o1","p2","o2","o3"
      &          /),(/"o1","p1"/),ResL1,-0.5d0,1.0d0,nrep,L2,w_ovoo)
 
+
+       val = 0.0d0
+       do i =1,ndimt1
+         val = val + resl1(i)*resl1(i)
+       enddo
+       write(*,*)'dot product of RESL1, 6',val
+
+
+
+
 !-----------------------------------------------------------
-!      int_tempi(e,m) = (G(e,f) * t(f,m) - G(n,m)*t(e,n)) 
+!      int_temp(e,m) = (G(e,f) * t(f,m) - G(n,m)*t(e,n)) ! corrected from stanton and Gauss 
 !      ResL1    = ResL1 + int_temp(e,m) * V(im,ae) 
 !------------------------------------------------------------
 
-      allocate(int_temp(ndimt1*rcw))
+!temp      allocate(int_temp(ndimt1*rcw))
+      allocate(int_temp(10000))
 
       int_temp = 0.0d0
 
-       call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),
+      call contraction_222 ((/"p2","p3"/),(/"p3","o2"/),(/"p2","o2"/),
      &    G_vv,t1,int_temp,1.0d0,1.0d0,nrep)
 
 
-      call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
+      call contraction_222 ((/"o3","o2"/),(/"p2","o3"/),(/"p2","o2"/),
      &    G_oo,t1,int_temp,-1.0d0,1.0d0,nrep)
 
 !------------------------------------------------------------
 
       call contraction_242 ((/"p2","o2"/),(/"o1","o2","p1","p2"/),
-     &   (/"o1","p1"/),int_temp,ResL1,-1.0d0,1.0d0,nrep)
+     &   (/"o1","p1"/),int_temp,ResL1,1.0d0,1.0d0,nrep)
 
       deallocate(int_temp)
+
+       val = 0.0d0
+       DO I =1,NDIMT1
+         val = val + resl1(i)*resl1(i)
+       enddo
+       write(*,*)'dot product of RESL1, 7',val
 
 !-------------------------------------------------------
 !      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
 !-------------------------------------------------------
 
-
       call contraction_442((/"o1","o2","p2","p3"/),(/"p1","o2","p2","p3"
      &          /),(/"o1","p1"/),ResL1,-0.5d0,1.0d0,nrep,L2,w_vvvo)
+
+       val = 0.0d0
+       do i =1,ndimt1
+         val = val + resl1(i)*resl1(i)
+       enddo
+       write(*,*)'dot product of RESL1, 8',val
+
 
 !-------------------------------------------------------
 !  out-of-core term....
 !    ResL1 = ResL1 + G(f,e) * V(ei,fa)
 !-------------------------------------------------------
+
+      call contraction_242 ((/"p3","p2"/),(/"p2","o1","p3","p1"/),
+     &   (/"o1","p1"/),G_vv,ResL1,1.0d0,1.0d0,nrep)
+
+
+       val = 0.0d0
+       do i =1,ndimt1
+         val = val + resl1(i)*resl1(i)
+       enddo
+       write(*,*)'dot product of RESL1, 9',val
+
 
 !     m = nfvv
 !     n = nfvo
@@ -141,8 +213,6 @@
 !     call srt20d (nrep,multb,nvo,nv,no,nv,nv,mvv,jvvvo,jjvv,
 !    &             jjvo,buf2,nbuf2,ResL1,g_vv,usedz,right)
 
-
-      write(*,*)'hi, write me'
 
 !        CALL QUIT('force quit. just before the old codes')
 

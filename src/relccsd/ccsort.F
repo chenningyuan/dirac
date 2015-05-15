@@ -129,6 +129,7 @@ C
              ELSE
                 IF ((.NOT.FIRST).OR.(IKREP.EQ.1))
      &            CALL XCOPY (N,BUF1(IJKL),1,BUF2(IKJL*RCW+1),1)
+
                 IF ((.NOT.FIRST).OR.(ILREP.EQ.1)) THEN
                   CALL XCOPY (N,BUF1(IJKL),1,BUF2(ILJK*RCW+1),1)
                   CALL XSCAL (N,-A1,BUF2(ILJK*RCW+1),1)
@@ -157,9 +158,138 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1ST4 (NREP,MULTB,FIRST,IFIE,JFIE,KFIE,LFIE,NPAIR,
+
+!======================================================================================================================
+      SUBROUTINE SRT1TT5 (NREP,MULTB,FIRST,DOINV,
+     &                    IFIE,JFIE,KFIE,LFIE,NPAIR,
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     BUF(I>J,K>L:KLREP) <--> BUF(IK,LJ)
+C     If (FIRST) take only the totally symmetric (first) irrep.
+C     If (DOINV) inverse sort.
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee, 05/05/15
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      LOGICAL FIRST,DOINV
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      IF (.NOT.DOINV) THEN
+         IF (FIRST) THEN
+            CALL XCOPY(OFF(2),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+         ENDIF
+      ENDIF
+C
+      IJKL = 1
+      DO KLREP = 1, NREP
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
+        DO L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,KLREP+NREP,2)
+           IF (IREP.LT.JREP) GOTO 20
+           JLREP = MULTB(JREP,LREP,2)
+           LJREP = MULTB(LREP,JREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           JKREP = MULTB(JREP,KREP,2)
+           IKLJ0 = OFF(IKREP) 
+     &          + (OFF2(LREP,JREP)+L-1)* NPAIR(IKREP)
+           IKLJ0 = IKLJ0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+
+           ILKJ0 = OFF(ILREP) 
+     &          + (OFF2(KREP,JREP)+K-1) * NPAIR(ILREP)
+           ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+
+           JKLI0 = OFF(JKREP) 
+     &          + (OFF2(LREP,IREP)+L-1) * NPAIR(JKREP)
+           JKLI0 = JKLI0 + OFF1(JREP,KREP) + (K-1)*JFIE(JREP)
+           JLKI0 = OFF(JLREP) 
+     &          + (OFF2(KREP,IREP)+K-1) * NPAIR(JLREP)
+           JLKI0 = JLKI0 + OFF1(JREP,LREP) + (L-1)*JFIE(JREP)
+
+           DO J = 1, JFIE(JREP)
+             IMIN = 1
+             IF (IREP.EQ.JREP) IMIN = J + 1
+             N = IFIE(IREP) - IMIN + 1
+             IKLJ = IKLJ0 + IMIN-1
+             ILKJ = ILKJ0 + IMIN-1
+             JKLI = JKLI0 + (IMIN-1)*NPAIR(JKREP)*LFIE(LREP)
+             JLKI = JLKI0 + (IMIN-1)*NPAIR(JLREP)*KFIE(KREP)
+             IF (DOINV) THEN
+                CALL XCOPY (N,BUF1(IKLJ*RCW+1),1,BUF2(IJKL),1)
+                CALL XAXPY (N,-A1,BUF1(ILKJ*RCW+1),1,BUF2(IJKL),1)
+                NP = NPAIR(JKREP)*LFIE(LREP)
+                CALL XAXPY(N,-A1,BUF1(JKLI*RCW+1),NP,BUF2(IJKL),1)
+                NP = NPAIR(JLREP)*KFIE(KREP)
+                CALL XAXPY (N,A1,BUF1(JLKI*RCW+1),NP,BUF2(IJKL),1)
+             ELSE
+                IF ((.NOT.FIRST).OR.(IKREP.EQ.1))
+     &            CALL XCOPY (N,BUF1(IJKL),1,BUF2(IKLJ*RCW+1),1)
+
+
+                IF ((.NOT.FIRST).OR.(ILREP.EQ.1)) THEN
+                  CALL XCOPY (N,BUF1(IJKL),1,BUF2(ILKJ*RCW+1),1)
+                  CALL XSCAL (N,-A1,BUF2(ILKJ*RCW+1),1)
+
+
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JKREP.EQ.1)) THEN
+                  NP = NPAIR(JKREP)*LFIE(LREP)
+                  CALL XCOPY(N,BUF1(IJKL),1,BUF2(JKLI*RCW+1),NP)
+                  CALL XSCAL(N,-A1,BUF2(JKLI*RCW+1),NP)
+
+
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JLREP.EQ.1))  THEN
+                  NP = NPAIR(JLREP)*KFIE(KREP)
+                  CALL XCOPY (N,BUF1(IJKL),1,BUF2(JLKI*RCW+1),NP)
+
+                ENDIF
+             ENDIF
+             IJKL = IJKL + RCW * N
+             IKLJ0 = IKLJ0 + NPAIR(IKREP)*LFIE(LREP)
+             ILKJ0 = ILKJ0 + NPAIR(ILREP)*KFIE(KREP)
+             JKLI0 = JKLI0 + 1
+             JLKI0 = JLKI0 + 1
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+C
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1ST4 (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,
+     &                    NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -179,7 +309,7 @@ C
       INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
-      LOGICAL FIRST
+      LOGICAL FIRST,DOINV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -219,11 +349,16 @@ C
            ILJK0 = ILJK0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
            ILJK0 = ILJK0 * RCW + 1
            DO J = 1, JFIE(JREP)
+            IF (DOINV) THEN
+             CALL XCOPY(IFIE(IREP),BUF1(IKJL0),1,BUF2(IJKL),1)
+             CALL XAXPY(IFIE(IREP),-A1,BUF1(ILJK0),1,BUF2(IJKL),1)
+            ELSE
             IF (JLREP.EQ.1.OR.(.NOT.FIRST)) 
      &         CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKJL0),1)
             IF (JKREP.EQ.1.OR.(.NOT.FIRST)) THEN 
                CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(ILJK0),1)
                CALL XSCAL (IFIE(IREP),-A1,BUF2(ILJK0),1)
+            ENDIF
             ENDIF
             IJKL = IJKL + IFIE(IREP) * RCW
             IKJL0 = IKJL0 + NPAIR(IKREP) * RCW
@@ -855,7 +990,9 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+
       IJKL = 1
       DO KLREP = 1, NREP
        IJREP = KLREP
@@ -1387,12 +1524,12 @@ C
 
 
            ILKJ0 = OFF(KJREP) 
-     &          + (OFF1(KREP,JREP)+K-1)*NPAIR(ILREP)
-           ILKJ0 = ILKJ0 + OFF2(IREP,LREP) + (L-1)*IFIE(IREP)
+     &          + (OFF2(KREP,JREP)+K-1)*NPAIR(ILREP)
+           ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
 
            JLKI0 = OFF(JLREP) 
-     &          + (OFF1(KREP,IREP)+K-1)*NPAIR(JLREP)
-           JLKI0 = JLKI0 + OFF2(JREP,LREP) + (L-1)*JFIE(JREP)
+     &          + (OFF2(KREP,IREP)+K-1)*NPAIR(JLREP)
+           JLKI0 = JLKI0 + OFF1(JREP,LREP) + (L-1)*JFIE(JREP)
 
           
            DO J = 1, JFIE(JREP)

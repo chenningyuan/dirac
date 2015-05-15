@@ -1334,7 +1334,7 @@ C------------------------------------------------------------------
 C CZ(AL,IJ) = CZ(AL,IJ) + PIJ.[ T(AC,IK) * LVOOO1(KL,CJ) ]
 C------------------------------------------------------------------
       IF (CARITH) CALL CONJUGA (NV2,BUF1,1)
-      CALL SRT1ST4 (NREP,MULTB,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+      CALL SRT1ST4 (NREP,MULTB,LFA,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
      &              BUF1,BUF2)
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)

@@ -351,7 +351,7 @@ C---------------------------------------------------------------------
 C X(A,I) = X(A,I) + V(IK,AL) * D(K,L)
 C---------------------------------------------------------------------
       CALL GETVOOO (BUF1)
-      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+      CALL SRT1ST4 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
      &              BUF1,BUF2)
       M = NFVO
       K = NFOO

@@ -59,10 +59,11 @@
 
    call srt1c1 (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
 
-   deallocate (ImTensor_temp)
+!   deallocate (ImTensor_temp)
 
    call xaxpy (dot_product(x_row,y_column),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
 
+   deallocate (ImTensor_temp)
    deallocate (ImTensor_temp_temp)
 
    endif
@@ -73,7 +74,8 @@
            &                   dia_factor,dia_sum_factor,nrep,LeftTensor,RightTensor)
      
 !----------calling variables-----------------------------------
-    real(8), intent(in) :: dia_factor, dia_sum_factor   !dia_factor = \alpha in DGEMM ; dia_sum_factor= \beta in DGEMM
+    real(8), intent(in) ::  dia_sum_factor   !dia_factor = \alpha in DGEMM ; dia_sum_factor= \beta in DGEMM
+    real(8), intent(in) :: dia_factor   !dia_factor = \alpha in DGEMM ; dia_sum_factor= \beta in DGEMM
     character(2),dimension(4), intent(in) :: left_order, right_order
     character(2),dimension(2), intent(in) :: im_order
     real(8),optional,intent(in)           :: RightTensor(:),LeftTensor(:)   
@@ -89,6 +91,7 @@
     character(2)          :: sorted_oparray_left(4)
     character(2)          :: sorted_oparray_right(4)
     logical               :: array_equal = .true. 
+    integer               :: asym_factor_R,asym_factor_L 
     real(8),allocatable   :: ImTensor_temp(:) 
     real(8),allocatable   :: ImTensor_temp_temp(:) 
 !--------------------------------------------------------------
@@ -108,7 +111,7 @@
 
 ! 1) fetch 2-e integrals and sort them for BLAS.
 
-    call decide_sorting_routine(13,left_order,right_order,im_order,transA,match_index,sorted_oparray_left)
+    call decide_sorting_routine(13,left_order,right_order,im_order,transA,match_index,asym_factor_L,sorted_oparray_left)
 
 
      if (present(LeftTensor)) then 
@@ -119,11 +122,9 @@
 
 ! 2) general sorting routine for fixed arrays. 
 
-     call decide_sorting_routine(31,right_order,im_order,sorted_oparray_left,transB,match_index,sorted_oparray_right)
-
+     call decide_sorting_routine(31,right_order,im_order,sorted_oparray_left,transB,match_index,asym_factor_R,sorted_oparray_right)
 
      array_equal = all((/sorted_oparray_left(1),sorted_oparray_right(4)/)==im_order)
-  
 
      if (present(RightTensor)) then 
      call sorting_for_blas(match_index,.false.,transB,right_sorted,y_row,y_column,rightTensor)
@@ -134,12 +135,14 @@
 ! 3) contraction routine for symmetry-packed arrays.
 
    if (array_equal) then
-      call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,right_sorted,dia_sum_factor*A1,imTensor,NREP) 
+      call CNTRCT (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
+   &                right_sorted,dia_sum_factor*A1,imTensor,NREP) 
 
     else
 
    allocate (ImTensor_temp(dot_product(x_row,y_column)))
-     call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,right_sorted,A0,imTensor_temp,NREP) 
+     call CNTRCT (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
+    &              right_sorted,A0,imTensor_temp,NREP) 
 
    allocate (ImTensor_temp_temp(dot_product(x_row,y_column)))
 
@@ -169,13 +172,17 @@
     real(8),intent(in),optional :: LeftTensor(:)            !when the left array is a fixed array then we will provide input.    
     real(8),intent(in)     :: rightTensor(*)   
     integer,intent(in)     :: nrep
-    real(8),intent(in)     :: dia_factor, dia_sum_factor  !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8),intent(in)     :: dia_sum_factor  !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8),intent(in)  :: dia_factor  !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8),intent(inout)  :: imTensor(*)
 !--------------------------------------------------------------
-    integer        :: x_row(nrep), x_column(nrep)
-    character(1)   :: transA
-    integer        :: match_index 
+    integer        :: x_row(nrep), x_column(nrep),y_row(nrep),y_column(nrep)
+    character(1)   :: transA,transB
+    integer        :: match_index,i 
+    integer        :: asym_factor
     real(8)        :: v_sort(10000)
+    real(8),allocatable        :: RightTensor_sort(:)
+    character(2)   :: sorted_left(4),freeindx(2)
 #include "param.inc"
 
 !  1) fetch the array which is flexible in terms of indices. sort it to make suitable for BLAS.
@@ -185,7 +192,7 @@
 
      transA = 'N'
 
-     call decide_sorting_routine(22,left_order,right_order,im_order,transA,match_index)
+     call decide_sorting_routine(22,left_order,right_order,im_order,transA,match_index,asym_factor,sorted_left)
 
      if (present(LeftTensor)) then
 
@@ -197,10 +204,25 @@
 
      endif
 
+     call onebody_for_blas (right_order,sorted_left(3:4),im_order,transB,y_row,y_column,FreeIndx) 
+
+     if (transb=='C') then
+
+      allocate(rightTensor_sort(dot_product(y_row,y_column)))
+
+      call srt1c1 (nrep,y_column,y_row,rightTensor,rightTensor_sort)
+
+      call xgemv (transA,x_row,x_column,asym_factor*dia_factor*A1,v_sort,x_row,rightTensor_sort,1,dia_sum_factor*A1,imTensor,1) 
+
+      deallocate(rightTensor_sort)
+     
+      else
+
+      call xgemv (transA,x_row,x_column,asym_factor*dia_factor*A1,v_sort,x_row,rightTensor,1,dia_sum_factor*A1,imTensor,1) 
+      endif
 
 !  2) carry out the contraction. 
 
-      call xgemv (transA,x_row,x_column,dia_factor*A1,v_sort,x_row,rightTensor,1,dia_sum_factor*A1,imTensor,1) 
 
     end subroutine
 
@@ -217,12 +239,14 @@
     real(8), intent(in)                      :: LeftTensor(:)
     real(8), intent(in), optional            :: RightTensor(:)   
     integer, intent(in)                      :: nrep
-    real(8), intent(in)                      :: dia_factor,dia_sum_factor             !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8), intent(in)                      :: dia_sum_factor        !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8), intent(in)                      :: dia_factor            !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(inout)                   :: ImTensor(*)
 !--------------------------------------------------------------
     integer        :: y_row(nrep), y_column(nrep)
     character(1)   :: transA,transB
     integer        :: match_index,i 
+    integer        :: asym_factor
     real(8)        :: right_sort(10000)
 !---------------------------------------------------------------    
 #include "param.inc"
@@ -232,14 +256,13 @@
      transA = 'N'
 !  1> fetch the integral array, properly sorted to contract with BLAS.
 
-   call decide_sorting_routine(22,right_order,im_order,left_order,transA,match_index)
+   call decide_sorting_routine(22,right_order,im_order,left_order,transA,match_index,asym_factor)
 
    if (present(RightTensor)) then
    call sorting_for_blas(match_index,.false.,transA,right_sort,y_row,y_column,RightTensor,if_totsym=.true.)
    else
    call sorting_for_blas(match_index,.false.,transA,right_sort,y_row,y_column,if_totsym=.true.)
    endif
-
 
 !  2>  to do B = XA  type operation with xgemv, we are doing B^T = A^T*X^T then transpose(B^T). that implies following modifications.   
 
@@ -256,7 +279,7 @@
   if (carith) call conjuga(y_row(1),LeftTensor,1)
   endif
 
-   call xgemv (transB,y_row(1),y_column(1),dia_factor*A1,right_sort,y_row(1),LeftTensor,1,dia_sum_factor*A1,ImTensor,1) 
+   call xgemv (transB,y_row(1),y_column(1),asym_factor*dia_factor*A1,right_sort,y_row(1),LeftTensor,1,dia_sum_factor*A1,ImTensor,1) 
 
   if (transB == 'N') then
   if (carith) call conjuga(y_row(1),ImTensor,1)
@@ -274,7 +297,8 @@
     real(8), intent(in), optional :: LeftTensor(:)   !when the left array is a fixed array then we will provide input.    
     real(8), intent(in) :: RightTensor(:)   
     integer, intent(in) :: nrep
-    real(8), intent(in) :: dia_factor, dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8), intent(in) :: dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8), intent(in) :: dia_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(inout)  :: imTensor(*)
 !--------------------------------------------------------------
    integer        :: x_row(nrep),x_column(nrep),y_row(nrep),y_column(nrep)
@@ -285,6 +309,7 @@
    real(8)        :: right_sorted(10000)
    real(8),allocatable :: im_temp(:)
    real(8),allocatable :: im_temp_temp(:)
+   integer             :: asym_factor_R,asym_factor_L
 
 #include "param.inc"
 
@@ -295,7 +320,7 @@
 
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
 
-    call decide_sorting_routine(22,left_order,right_order,im_order,transA,save_index,sorted_opArray_left)
+    call decide_sorting_routine(22,left_order,right_order,im_order,transA,save_index,asym_factor_L,sorted_opArray_left)
 
     if (present(LeftTensor)) then 
     call sorting_for_blas(save_index,.false.,transA,v_sort,x_row,x_column, presorted=LeftTensor,if_TotSym=.false.)
@@ -305,7 +330,7 @@
 
 !  2) properly sort the fixed array to contract with BLAS. row and colum indices for this array are also extracted here.
 
-    call decide_sorting_routine(22,right_order,im_order,sorted_opArray_left,transB,save_index,sorted_opArray_right)
+    call decide_sorting_routine(22,right_order,im_order,sorted_opArray_left,transB,save_index,asym_factor_R,sorted_opArray_right)
 
     call sorting_for_blas(save_index,.false.,transB,right_sorted,y_row,y_column,rightTensor,if_TotSym=.false.)
 
@@ -321,14 +346,14 @@
 
    im_temp = 0.0d0
 
-   call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,right_sorted,A0,im_temp,NREP) 
+   call CNTRCT (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp,NREP) 
 
    v_sort = 0.0d0
 
    transA = 'N'
 
    call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
-                       & transA,save_index,inverse=.true.)
+                       & transA,save_index,asym_factor_R,inverse=.true.)
 
    if (transA=='C') then
 
@@ -340,7 +365,7 @@
 
    im_temp_temp= 0.0d0
 
-   call SRT1C1 (nrep,x_row,y_column,im_temp,im_temp_temp)
+   call srt1c1 (nrep,x_row,y_column,im_temp,im_temp_temp)
 
    call sorting_for_blas(save_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)
 
@@ -352,10 +377,11 @@
    endif
 
    deallocate(im_temp)
-   call xaxpy (dot_product(x_row,x_column),A1,v_sort,1,imTensor,1)
+   call xaxpy (dot_product(x_row,x_column),A1*asym_factor_R,v_sort,1,imTensor,1)
 
    else
-    call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,right_sorted,dia_sum_factor*A1,imTensor,NREP) 
+    call cntrct (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort,right_sorted, &
+   &              dia_sum_factor*A1,imTensor,NREP) 
    endif
 
   end subroutine
@@ -368,18 +394,17 @@
     character(2), dimension(2), intent(in)   :: right_order
     real(8), intent(in), optional :: LeftTensor(:), RightTensor(:) 
     integer, intent(in) :: nrep
-    real(8), intent(in) :: dia_factor, dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8), intent(in) :: dia_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8), intent(in) :: dia_sum_factor  !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(inout) :: ImTensor(*)
     integer :: x_row(nrep), x_column(nrep), y_row(nrep), y_column(nrep)
     character(1) :: transA, transB
     integer :: match_index,i
-    character(2) :: FreeIndx(2),sorted_opArray(3)
+    character(2) :: FreeIndx(2),sorted_opArray(4)
     real(8) :: v_sort (10000)
+    integer :: asym_factor 
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
-
-!   real(8) :: im_temp(10000)
-!   real(8) :: im_temp_temp(10000)
 
 #include "param.inc"
    v_sort = 0.0d0
@@ -387,17 +412,18 @@
    transB = 'N'
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
 
-   call decide_sorting_routine(31,left_order,right_order,im_order,transA,match_index,sorted_opArray)
+   call decide_sorting_routine(31,left_order,right_order,im_order,transA,match_index,asym_factor,sorted_opArray)
 
  if (present(LeftTensor)) then
- 
-   call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column,LeftTensor)
+
+   call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column,presorted=LeftTensor)
  
  else
 
    call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column)
 
  endif
+
 !  2) properly sort the fixed array to contract with BLAS. row and colum indices for this array are also extracted here.
 
    call onebody_for_blas (right_order,left_order,im_order,transB,y_row,y_column,FreeIndx)
@@ -407,33 +433,40 @@
    allocate(im_temp(dot_product(x_row,y_column)))
    im_temp = 0.0d0
 
-  if (present(RightTensor)) call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,v_sort,RightTensor,A0,im_temp,NREP) 
+  if (present(RightTensor)) call cntrct (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
+   &                                      RightTensor,A0,im_temp,NREP) 
 
    v_sort = 0.0d0
-!  4) re-sort the arrays to align with the desired structure of the imtermediate.
+!  4) re-sort the arrays to align with the desired structure of the intermediate.
 
    transA = 'N'
 
-   call decide_sorting_routine(31,im_order,left_order,(/sorted_opArray,FreeIndx(2)/),transA,match_index,inverse=.true.)
+   call decide_sorting_routine(31,im_order,left_order,(/sorted_opArray(1:3),FreeIndx(2)/),transA,match_index, &
+           &                    asym_factor,inverse=.true.)
 
    if (transA=='C') then
 
    allocate(im_temp_temp(dot_product(x_row,y_column)))
-   im_temp_temp = 0.0d0
-   call SRT1C1 (nrep,x_row,y_column,im_temp,im_temp_temp)
 
-  deallocate(im_temp)
+   im_temp_temp = 0.0d0
+
+   call srt1c1 (nrep,x_row,y_column,im_temp,im_temp_temp)
+
+   deallocate(im_temp)
+
    call sorting_for_blas(match_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp)
 
-  deallocate(im_temp_temp)
+   deallocate(im_temp_temp)
+
    else
 
-   call sorting_for_blas(match_index,.true.,transA,v_sort,x_row,x_column,im_temp)
+   call sorting_for_blas(match_index,.true.,transA,v_sort,x_row,x_column,im_temp) 
 
-  deallocate(im_temp)
+   deallocate(im_temp)
+
    endif
 
-   call xaxpy (dot_product(x_row,x_column),A1,v_sort,1,ImTensor,1)
+   call xaxpy (dot_product(x_row,x_column),A1*asym_factor,v_sort,1,ImTensor,1)
 
   end subroutine
 
@@ -445,13 +478,15 @@
     character(2),dimension(2),intent(in) :: left_order
     real(8),intent(in),optional :: LeftTensor(:), RightTensor(:) 
     integer,intent(in) :: nrep
-    real(8),intent(in) :: dia_factor, dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8),intent(in) ::  dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
+    real(8),intent(in) :: dia_factor           !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8),intent(inout) :: imTensor(*)
     integer :: x_row(nrep), x_column(nrep), y_row(nrep), y_column(nrep)
     character(1) :: transA, transB
     integer :: match_index,i
     character(2) :: FreeIndx(2),sorted_opArray(4)
     real(8) :: right_sort (10000)
+    integer :: asym_factor
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
 
@@ -464,7 +499,7 @@
    transB = 'N'
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
 
-   call decide_sorting_routine(13,right_order,im_order,left_order,transB,match_index,sorted_opArray)
+   call decide_sorting_routine(13,right_order,im_order,left_order,transB,match_index,asym_factor,sorted_opArray)
 
  if (present(RightTensor)) then
  
@@ -489,14 +524,16 @@
 !  endif
    im_temp = 0.0d0
 
-  if (present(LeftTensor)) call CNTRCT (transA,transB,x_row,y_column,x_column,dia_factor*A1,LeftTensor,right_sort,A0,im_temp,NREP) 
+  if (present(LeftTensor)) call CNTRCT (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,LeftTensor,&
+  &        right_sort,A0,im_temp,NREP) 
 
    right_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the imtermediate.
 
    transA = 'N'
 
-   call decide_sorting_routine(13,im_order,left_order,(/FreeIndx(1),sorted_opArray(2:4)/),transA,match_index,inverse=.true.)
+   call decide_sorting_routine(13,im_order,left_order,(/FreeIndx(1),sorted_opArray(2:4)/),transA,match_index, &
+   &                        asym_factor,inverse=.true.)
 
    if (transA=='C') then
 
@@ -516,7 +553,7 @@
    call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp)
  deallocate(im_temp)
    endif
-   call xaxpy (dot_product(x_row,x_column),A1,right_sort,1,ImTensor,1)
+   call xaxpy (dot_product(x_row,x_column),A1*asym_factor,right_sort,1,ImTensor,1)
 
   end subroutine
 
