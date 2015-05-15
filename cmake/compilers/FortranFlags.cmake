@@ -57,7 +57,6 @@ else()
             # windows: pg - none
             set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} /debug:full")
 
-            # to do - make a change in setup or Math.cmake, or here?
             if(DEFINED MKL_FLAG)
                 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
             endif()
@@ -76,10 +75,9 @@ else()
             endif()
             
             if(ENABLE_BOUNDS_CHECK)
-                # miro: removed -ftrapuv due to problems with floating point execptions
-                # to do: -fpstkchk for windows
+                # miro: removed /Qtrapuv due to problems with floating point exceptions
                 set(CMAKE_Fortran_FLAGS
-                    "${CMAKE_Fortran_FLAGS} /check:bounds /check:pointers /check:uninit /check:output_conversion"
+                    "${CMAKE_Fortran_FLAGS} /check:bounds /Qfpstkchk /check:pointers /check:uninit /check:output_conversion"
                     )
             endif()
         else()
@@ -111,7 +109,7 @@ else()
             endif()
             
             if(ENABLE_BOUNDS_CHECK)
-                # miro: removed -ftrapuv due to problems with floating point execptions
+                # miro: removed -ftrapuv due to problems with floating point exceptions
                 set(CMAKE_Fortran_FLAGS
                     "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
                     )

@@ -39,7 +39,6 @@ else()
             # windows: none
             set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS}")
             
-            # to do - make a change in setup or Math.cmake, or here?
             if(DEFINED MKL_FLAG)
                 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
             endif()
