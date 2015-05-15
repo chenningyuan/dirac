@@ -165,6 +165,35 @@ Run your selected test set together with uploading results onto the CDash web::
   C:\Dirac\my-dirac\build> ctest -D ExperimentalTest -L short -D ExperimentalSubmit -j 4
 
 
+Intel
+-----
+
+We have tested Dirac with *Intel Parallel Studio XE 2015 Update 3 Cluster Edition* (https://software.intel.com/en-us/intel-parallel-studio-xe) which contains
+Intel C/C++ and Fortran compilers, Intel MKL and Intel MPI libraries in virtual machine with *Microsoft Windows Server 2012 R2* running on AMD Athlon II 64-bit processor.
+
+Our installation steps:
+
+1. Install *Visual Studio Professional 2013 with Update 3* (https://www.visualstudio.com/)
+2. Install *Intel Parallel Studio XE 2015 Update 3 Cluster Edition*
+3. Initialize the Cluster edition tools: ::
+
+  cd C:\Program Files (x86)\Intel\Parallel Studio XE 2015
+  psxevars.bat intel64
+
+4. Add *"C:\\Program Files (x86)\\Intel\\Composer XE\\bin\\intel64"* into PATH environment variable.
+5. Make own *cmd.exe* shortcut, open its properties and put into *"Target"* field (then you can use Intel compilers from this custom command line): ::
+
+  %comspec% /k ""C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64 && "C:\Program Files (x86)\Intel\Composer XE 2015\bin\compilervars.bat" intel64 vs2013"
+
+Intel compiler names:
+
+C/C++ compiler: *icl*
+Fortran compiler: *ifort*
+CMake Generator: NMake Makefiles (default?)
+MPI compilers for C/C++ and Fortran (*.bat* wrappers): *mpicc*, *mpicxx*, *mpif90*
+MPI execution program: *mpiexec* (when first time run after Windows start/user login it asks for user password)
+
+
 Cygwin
 ------
 
@@ -179,11 +208,13 @@ In order to build Dirac on Cygwin you have to install these packages:
 3. *python* interpreter
 4. *zlib0*, *zlib-devel*
 5. *git* version control system
-6. optionally you can install *Blas* and *Lapack* libraries (Netlib), *OpenBLAS* (libopenblas) - this is faster than from Netlib, build *ATLAS*
+6. optionally you can install *OpenBLAS* (*libopenblas*) - recommended for 32 and 64 integer builds or *BLAS* and *LAPACK* (together in *liblapack0* package) - but these are only 32-bit versions
 
-.. note:: OpenBLAS library is placed in *"/usr/bin/cygblas-0.dll"*.
-.. note:: You have to explicit specify to use OpenBLAS library with *"--blas"* and *"--lapack"* setup options.
-.. note:: To run OpenBLAS in parallel export OPENBLAS_NUM_THREADS environment variable.
+.. note:: *OpenBLAS* library is placed in *"/usr/bin/cygblas-0.dll"*.
+.. note:: You have to explicitly specify to use *OpenBLAS* library with *"--blas"* setup option.
+.. note:: With 64 bit integers enabled use builtin *LAPACK* with *OpenBLAS* (*OpenBLAS* on Cygwin does not contain *LAPACK*). 
+.. note:: To run *OpenBLAS* in parallel export OPENBLAS_NUM_THREADS environment variable.
+.. note:: *BLAS* and *LAPACK* libraries from *liblapack0* package are placed in *"/usr/lib/lapack"* (*"cygblas-0.dll"* and *"cyglapack-0.dll"*).
 
 7. optionally you can install *Open MPI*
 8. to be able to build documentation (*make html*, *make doxygen* - problematic, *make slides*) install also:
@@ -237,4 +268,4 @@ you create a build directory in Dirac top directory then move into it and run: :
 If there is need to remove Cygwin in an environment with multiple users then all users must delete their own home directories
 and then administrator can delete whole Cygwin installation/folder.
 
-Sometimes you can get errors like *os.fork()* is not available. In that case try to rebase Cygwin: http://cygwin.wikia.com/wiki/Rebaseall
+Sometimes you can get errors like *os.fork()* is not available. In that case try to rebase Cygwin: http://cygwin.wikia.com/wiki/Rebaseall.
