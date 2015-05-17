@@ -43,8 +43,10 @@ else()
     elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
         # Intel has different flags on Windows and Linux + MacOS
         if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-            set(CMAKE_Fortran_FLAGS         "/w /assume:byterecl /DVAR_IFORT /Z7 /traceback")
-            set(CMAKE_Fortran_FLAGS_DEBUG   "/O0")
+            # /assume:source_include to find include files in paths relative to current source
+            # see: https://software.intel.com/en-us/forums/topic/413785
+            set(CMAKE_Fortran_FLAGS         "/assume:source_include /w /assume:byterecl /DVAR_IFORT /Z7 /traceback")
+            set(CMAKE_Fortran_FLAGS_DEBUG   "/Od")
             set(CMAKE_Fortran_FLAGS_RELEASE "/O3 /Qip")
             
             # intel compiler xHost flag
