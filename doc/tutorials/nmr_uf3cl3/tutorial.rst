@@ -6,7 +6,7 @@ Case study: NMR shielding of UF3Cl3
 
 In this tutorial we shall go through the calculation of NMR shieldings of the
 UF3Cl3 molecule using the scheme of simple magnetic balance (SMB) in
-conjunction with London orbitals [Olejniczak2012]_.
+conjunction with London orbitals :cite:`Olejniczak2012`.
 
 
 Preparing for the atomic start

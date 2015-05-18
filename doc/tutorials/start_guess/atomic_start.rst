@@ -190,7 +190,7 @@ Unfortunately, this HF does not converge: ::
   It.   20    -16289.37827128      9.92D+00 -2.58D-01  2.74D+02   DIIS   9    3min42.223s   LL SL          Fri Oct 19
 
 We see that the corrected bare nucleus start is quite far from the energies of subsequent iterations. Although the energy in the second iteration
-drops considerably it bounces back and gets stuck. We will therefore switch to an atomic start [vanLenthe2006]_ .
+drops considerably it bounces back and gets stuck. We will therefore switch to an atomic start :cite:`vanLenthe2006` .
 
 
 Preparing the atomic start
