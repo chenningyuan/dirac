@@ -77,13 +77,14 @@ There is no need to to stick to 6 letter names anymore.
 The limit is 31 characters. Use meaningful names so that other people (and you in a couple of months)
 will understand your code.
 
-Using dynamical strings
-------------------------
+Dynamical strings
+------------------
 
 The programmer may utilize short dynamical strings carrying descriptive labels, and attach this
 data type to his own data structures.
 
 The module is ::
+
  use mystring
 
 Methods at hand are: 
@@ -91,25 +92,30 @@ Methods at hand are:
 i)  creating the string
 
 ::
+
   type(string) :: this_string
   call make_string(this_string,'some description text')
 
-ii) printing the string on the LUPRI channel
+ii) printing the string on the LUPRI channel 
 
 ::
+
   call print_string(this_string)
 
 iii) copying one string into another
 
 ::
+
   call copy_string(this_string, another_string)
 
 iv) canceling (deallocating) the string
 
 ::
+
   call cancel_string(this_string)
 
-For more details check the  *trunk/src/gp/dynamic_string.F90* source file.
+For more details about the dynamical string functionalities check directly
+the :download:`dynamic_string.F90 <../../../src/gp/dynamic_string.F90>` source file.
 
 Code debugging with LINEFILE
 ----------------------------

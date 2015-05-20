@@ -77,7 +77,7 @@ rem ctest -j 2 -D ExperimentalBuild      --track Miro  1>>%LOG%  2>&1
 rem ctest -j 2 -D ExperimentalTest       --track Miro  1>>%LOG%  2>&1
 rem ctest      -D ExperimentalSubmit     --track Miro  1>>%LOG%  2>&1
 rem use one compact command
-ctest -j 4 -D Experimental  --track Miro  1>>%LOG%  2>&1
+ctest -j 2 -D Experimental  --track Miro  1>>%LOG%  2>&1
 
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
