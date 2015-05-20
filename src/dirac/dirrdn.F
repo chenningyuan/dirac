@@ -2556,7 +2556,7 @@ C
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
      &             '*SCF   ','*KRCI  ','*QCORR '/
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
-     &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
+     &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
@@ -2676,7 +2676,7 @@ C
             END DO
             GO TO 100
   105    CONTINUE
-C&&& POST DHF REORDER:
+C&&& POST SCF REORDER:
 C           Reorder finished MO orbitals
 C           First read the number of orbital reorderings
 C           in each fermion corep.
