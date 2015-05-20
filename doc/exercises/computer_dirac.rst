@@ -278,13 +278,13 @@ state manifold of Pb on the choice of Hamiltonian.
 
 **Further reading and literature**
 
-a. Ken G. Dyall, An exact separation of the spin-free and spin-dependent terms of the Dirac-Coulomb-Breit Hamiltonian, J. Chem. Phys. 100, 2118 (1994).
+a. :cite:`Dyall1994`
 
-b. Luuk Visscher and Trond Saue, Approximate relativistic electronic structure methods based on the quaternion modified Dirac equation, J. Chem. Phys. 113, 3996 (2000).
+b. :cite:`Visscher2000`
 
-c. Miroslav Iliaš and Trond Saue, An infinite-order two-component relativistic Hamiltonian by a simple one-step transformation, J. Chem. Phys. 126, 064102 (2007).
+c. :cite:`Ilias2007`
 
-d. Jetze Sikkema, Luuk Visscher, Trond Saue, and Miroslav Iliaš, The molecular mean-field approach for correlated relativistic calculations, J. Chem. Phys. 131, 124116 (2009).
+d. :cite:`Sikkema2009`
 
 *****************
 Exercises - Day 5
