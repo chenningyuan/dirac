@@ -73,7 +73,7 @@ that is, the lowest molecular orbitals are doubly occupied, the
 next ones are occupied with the electrons of open shell no. 1,
 etc.
 
-Other orderings can be achieved by using :ref:`.REORDER MO'S`
+Other orderings can be achieved by using :ref:`.REORDER MO`
 and :ref:`.OVLSEL`.
 
 To get the energies of the individual states present in the
@@ -82,7 +82,7 @@ average-of-configurations, specify :ref:`.RESOLVE` (see also
 
 To get the energies of (some) of the individual states present in
 the average of configurations, you can use the
-:ref:`GOSCIP`, the :ref:`DIRRCI`, or the :ref:`LUCITA`.
+:ref:`GOSCIP`, the :ref:`DIRRCI`, or the :ref:`*LUCITA`.
 
 keyword(BOSONS)
 
@@ -363,14 +363,10 @@ Maximum dimension of B-matrix in the DIIS module.
     .MXDIIS
      10
 
-.. _.DIISMO:
-
 keyword(DIISMO)
 
 Activate DIIS in orthogonal basis (MO) with the error vector as
 described above.
-
-.. _.DIISAO:
 
 keyword(DIISAO)
 
@@ -470,7 +466,7 @@ overlap selection based on vectors from the bare nucleus approach
 is not recommended.
 
 Overlap selection is very useful together with
-:ref:`.REORDER MO'S`.
+:ref:`.REORDER MO`.
 This will reshuffle the vectors within the restart coefficients.
 
 Example: First one might do a open shell calculation on Boron, this
@@ -483,7 +479,7 @@ request overlap selection, we can converge to the
 There also exists a keyword for reordering the converged SCF
 orbitals. This is useful for reordering the orbitals for the
 4-index transformation and subsequent correlation calculations
-(CCSD, CI etc.) (see :ref:`.POST DHF REORDER MO'S`).
+(CCSD, CI etc.) (see :ref:`.POST SCF REORDER MO`).
 
 keyword(OVLSEL)
 
@@ -507,7 +503,7 @@ number of integrals to be processed in each iteration:
    . The threshold for LL
    integrals is set in the basis file, but this threshold may be
    adjusted for SL and SS integrals by threshold factors set in the
-   :ref:`**INTEGRALS` section.
+   :ref:`\*\*INTEGRALS` section.
 
 -  **Screening on density:** In direct mode further reductions are
    obtained by screening on the density matrix as well, see Ref. :cite:`Saue1997`.
@@ -561,7 +557,8 @@ SCF-iterations.
     .ITRINT
      1 1
 
-keyword(INTFLG)
+.INTFLG
+-------
 
 Specify what two-electron integrals to include (see
 :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
@@ -571,7 +568,8 @@ Specify what two-electron integrals to include (see
 Output control
 ==============
 
-keyword(PRINT)
+.PRINT
+------
 
 General print level for the SCF method. For instance, value of 2
 prints eignevalues during each iteration.

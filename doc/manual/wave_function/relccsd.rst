@@ -20,7 +20,7 @@ settings.
 -------
 
 Activate the Fock space module. This option should be used for
-multireference calculations. See further :ref:`CCFSPC`.
+multireference calculations. See further :ref:`*CCFSPC`.
 Because the first sector of Fock space gives the same result as a 
 regular CCSD calculation, the latter calculation is switched off. If you
 do wish to perform also a regular CC calculation (e.g. to get the CCSD(T) energy)
@@ -132,7 +132,7 @@ Print level.
      0
 
 .TIMING
-------
+-------
 
 Print detailed timing information.
 
@@ -220,8 +220,7 @@ Calculate natural orbitals (currently only for MP2 density matrix)
 
 Use unrelaxed density matrix (computationally cheaper but less accurate)
 
-\*CCFSPC
---------
+star(CCFSPC)
 
 Perform a Fock space MRCC calculation in which a model space is
 correlated and then diagonalized to give CC energies for a set of

@@ -17,7 +17,7 @@ or popular Google-Books web-space.
 
 .. note::
 
-    References are also available for download in :download:`BibTex <references.bib>` format.
+    All references are also available for download as one file in the :download:`BibTex <references.bib>` format.
 
 .. bibliography:: references.bib
   :enumtype: upperroman

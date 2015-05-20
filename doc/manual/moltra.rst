@@ -170,15 +170,13 @@ different integral classes in the 2- and 4-index transformation, then
 use the :ref:`.INTFL2` and :ref:`.INTFL4` keywords below
 (default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).
 
-.INTFL2
--------
+keyword(INTFL2)
 
 Specify what two-electron integrals to include in the 2-index
 transformation ,i.e., in the two-electron part of the Fock core matrix
 (default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).
 
-.INTFL4
--------
+keyword(INTFL4)
 
 Specify what two-electron integrals to include in the 4-index transformation
 (default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).

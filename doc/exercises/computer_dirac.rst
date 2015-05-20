@@ -4,20 +4,22 @@
 DIRAC computer exercises
 ########################
 
-The follwoing exercises are to be done in groups of 2-3 students each covering different groups/atoms of the periodic table of elements.
+The following exercises are to be done in groups of 2-3 students each covering different groups/atoms of the periodic table of elements.
 At the end of the day, each group should give a short presentation on their findings to the other groups.
 
 In order to run a DIRAC calculation you need an input file of arbitrary name, e.g. :file:`dirac.inp` which will be setup in the
 following and which contains the computational directives. In addition, a second file is needed providing the molecular structure.
-DIRAC can handle two formats but for convenience we here focus on the standard **XYZ** molecular input file, named for example :file:`molecule.xyz`.
+DIRAC can handle two formats but for convenience we here focus on the standard **XYZ** molecular input file, 
+named for example :file:`molecule.xyz`.
 The run-command inside your cluster run script looks then as follows::
 
   $ pam --inp=dirac.inp --mol=molecule.xyz
 
-where the DIRAC output is re-directed to the file :file:`dirac_molecule.out`. Make sure that you rename the output file with a proper name
+where the DIRAC output is re-directed to the file :file:`dirac_molecule.out`. 
+Make sure that you rename the output file with a proper name
 if you want to take a look at what you did back home.
 
-More information can be found here on the forthcoming `DIRAC12 manual page: <http://dirac.ups-tlse.fr/bast/dirac/doc/latest/tutorials/getting_started.html>. <http://dirac.ups-tlse.fr/bast/dirac/doc/latest/tutorials/getting_started.html>`_
+More information on running DIRAC calculations can be found in the :ref:`FirstSteps` section of this documentation.
 
 If not stated otherwise we will always use a Gaussian nuclear model in DIRAC.
 
@@ -235,7 +237,9 @@ state manifold of Pb on the choice of Hamiltonian.
    .DKH2
    .NOAMFI ! neglect 2-electron spin-orbit corrections.
 
-.. note:: We don't include the zeroth-order approximation (ZORA) to the Dirac-Coulomb Hamiltonian as in its present implementation in DIRAC it only works for closed-shell systems. In case you are interested to run ZORA calculations have a look at http://wiki.chem.vu.nl/dirac/index.php/Manual:HAMILTONIAN#.ZORA.
+.. note:: We don't include the zeroth-order approximation (ZORA) to the Dirac-Coulomb Hamiltonian as in its present implementation in DIRAC it only works
+ for closed-shell systems. 
+ In case you are interested to run ZORA calculations have a look at the :ref:`.ZORA` keyword in this documentation.
 
 * *special* cases - the molecular-mean-field Hamiltonians:
 

@@ -192,28 +192,28 @@ xc functional under :ref:`.DFT`.
 
 keyword(ALDA+)
 
-Use :ref:`.ALDA` only for the Hermitian contribution (density
+Use :ref:`.ALDA+` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
 
 keyword(ALDA-)
 
-Use :ref:`.ALDA` only for the anti-Hermitian contribution (spin
+Use :ref:`.ALDA-` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
 
-keyword(XALDA)
+keyword(XALDA+)
 
-Use :ref:`.XALDA` only for the Hermitian contribution (density
+Use :ref:`.XALDA+` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
 
 keyword(XALDA-)
 
-Use :ref:`.XALDA` only for the anti-Hermitian contribution (spin
+Use :ref:`.XALDA-` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
