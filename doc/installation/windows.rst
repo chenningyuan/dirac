@@ -226,6 +226,9 @@ In order to build Dirac on Cygwin you have to install these packages:
 
   pip install sphinx python-dateutil pyparsing sphinxcontrib-bibtex sphinx_rtd_theme numpy matplotlib hieroglyph
 
+.. note:: Previous pip install command usually does not work if you have installed *libopenblas*. You should remove it, install *liblapack0*
+and try again.
+  
 Always check if you are using Cygwin programs and libraries (placed in for example: *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*)
 instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*) for example by this commands: ::
 
