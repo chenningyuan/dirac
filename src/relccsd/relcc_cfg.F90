@@ -43,6 +43,7 @@ module relcc_cfg
   logical, public :: relcc_debug                   = .false.
   logical, public :: relcc_timing                  = .false.
   logical, public :: relcc_do_sort                 = .true.
+  logical, public :: relcc_do_restart              = .false.
   logical, public :: relcc_do_energy               = .true.
   logical, public :: relcc_do_gradient             = .false.
   logical, public :: relcc_do_hessian              = .false. ! this currently only relates to the old Hartree-Fock MO response code 
@@ -53,6 +54,7 @@ module relcc_cfg
   integer, public :: relcc_max_iterations          = 30
   integer, public :: relcc_desired_convergence     = 12
  
+
 ! Information relevant for the integral sorting and setup stage
   logical, public :: relcc_breit                    = .false.
   logical, public :: relcc_add_finite_field         = .false.
@@ -62,6 +64,14 @@ module relcc_cfg
   integer, public :: relcc_memory_in_mw             = 0
   character(10), public :: relcc_integral_interface = 'DIRAC6    '
   character( 8), public :: relcc_ff_property_names
+
+! Information relevant to restarts
+  logical, public, dimension(1:6)  :: relcc_restart_skipsect     = .false. 
+  logical, public, dimension(1:6)  :: relcc_restart_redosect     = .false. 
+  logical, public                  :: relcc_restart_unconverged  = .false.
+  logical, public                  :: relcc_restart_ignore_check = .false.
+  logical, public                  :: relcc_restart_redo_sorting = .false.
+  logical, public                  :: relcc_restart_redo_ccsd    = .false.
 
 ! Information relevant for the energy calculation
   logical, public :: relcc_do_mp2                  = .true. 
@@ -80,6 +90,7 @@ module relcc_cfg
   logical, public :: relcc_do_ccsdtgradient        = .false.
   logical, public :: relcc_do_naturalorbitals      = .false.
   logical, public :: relcc_do_unrelaxed            = .false.
+  logical, public :: relcc_ifroz_input             = .false.
   integer, public :: relcc_ne_oper                 = 1
   integer, public :: relcc_fopr_max_dimension_diis = 8
   integer, public :: relcc_fopr_max_iterations     = 30
@@ -133,6 +144,8 @@ contains
 !         above
 !
   use interface_to_mpi
+
+#include "freeze.inc"
   
   call interface_mpi_BCAST(relcc_nelec,   size(relcc_nelec),   0,global_communicator)
   call interface_mpi_BCAST(relcc_nelec_f1,size(relcc_nelec_f1),0,global_communicator)
@@ -143,6 +156,7 @@ contains
   call interface_mpi_bcast_l0(relcc_debug              ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_timing             ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_sort            ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_restart         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_energy          ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_gradient        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_hessian         ,1,0,global_communicator)
@@ -162,6 +176,14 @@ contains
   call interface_mpi_bcast(relcc_integral_interface, 10,0,global_communicator)
   call interface_mpi_bcast(relcc_ff_property_names,   8,0,global_communicator)
 
+! Information relevant to restarts
+  call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_redosect,    6,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_unconverged, 1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_ignore_check,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_redo_sorting,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_redo_ccsd,   1,0,global_communicator)
+
 ! Information relevant for the energy calculation
   call interface_mpi_bcast_l0(relcc_do_mp2                    ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_no_singles                ,1,0,global_communicator)
@@ -173,12 +195,17 @@ contains
   call interface_mpi_bcast(relcc_ccener_desired_convergence,1,0,global_communicator)
 
 ! Information relevant for the gradient calculation
-  call interface_mpi_bcast_l0(relcc_do_mp2gradient          ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_oldmp2gradient       ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_ccsdgradient         ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_ccsdtgradient        ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_naturalorbitals      ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_unrelaxed            ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_mp2gradient       ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_oldmp2gradient    ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_ccsdgradient      ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_ccsdtgradient     ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_naturalorbitals   ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_unrelaxed         ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_ifroz_input          ,1,0,global_communicator)
+  if (relcc_ifroz_input) then  ! transfer IFROZ array in freeze.inc
+     IFROZ_set_in_input = .true.
+     call interface_mpi_bcast(IFROZ        ,MAXFROZ*MAXIREP,0,global_communicator)
+  end if
   call interface_mpi_bcast(relcc_ne_oper                 ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_fopr_max_dimension_diis ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_fopr_max_iterations     ,1,0,global_communicator)

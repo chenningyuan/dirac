@@ -40,4 +40,9 @@ module integer_kind_mpilib
 #endif
   integer, public            :: integer_kind_in_mpi = 4
 
+!
+! next variable is here so it is available both in f77 and f90 interface routines /hjaaj
+!
+  logical, public            :: MPI_INIT_called     = .false.
+
 end module integer_kind_mpilib

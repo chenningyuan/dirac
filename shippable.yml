@@ -1,0 +1,58 @@
+## Simple DIRAC buildup configuration file for the Shippable-CI service (https://app.shippable.com)
+##
+## see: http://docs.shippable.com/en/latest/samples/index.html
+## see: https://github.com/sympy/csympy/blob/b5b126d6465e6f6293edffb0342258b3fb8a30d3/.travis.yml
+##
+## This script can be also adapted for travis-ci
+##
+
+# include branches to test (master branch only)
+branches:
+    only:
+        - master
+
+# environment variable for Dirac MPI command
+env:
+    - DIRAC_MPI_COMMAND="mpirun -np 2"
+    
+# language settings - prepare Python environment
+language: python
+
+# install/upgrade needed software
+install:
+# install the newest versions
+    - sudo apt-get install gcc g++ gfortran make cmake zlib1g-dev
+# remove Open MPI installation if any
+    - sudo apt-get remove openmpi-bin libopenmpi-dev
+# install MPICH2
+    - sudo apt-get install mpich2
+
+# for public modules use (sync, init, update)
+git:
+  submodules: true
+
+# system info
+before_script:
+# show info about available processors
+    - lscpu
+# show available disc space
+    - df -h
+# show available memory
+    - free -m
+    
+# configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
+script:
+    - python ./pamadm -a --builddir=build_shippableci_mpi
+    - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
+    - cd build_shippableci_mpi
+    - ctest --track Miro -D ExperimentalConfigure
+    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
+# ldd : show dependencies
+    - ldd dirac.x
+# if some tests fail build/ctest can continue because of: || true
+    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest || true
+    - ctest --track Miro -D ExperimentalSubmit
+
+# turn off email notifications
+notifications:
+    email: false

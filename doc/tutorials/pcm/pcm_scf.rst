@@ -3,7 +3,7 @@ Hartree-Fock and DFT calculations in solution with the polarizable continuum mod
 
 This tutorial will cover the set up of an Hartree-Fock and a DFT calculation using the
 polarizable continuum model (PCM) to include solvent effects. The implementation
-of the PCM-SCF algorithm in DIRAC is documented in the recent paper [DiRemigio2014]_,
+of the PCM-SCF algorithm in DIRAC is documented in the recent paper :cite:`DiRemigio2014`,
 to which the reader is referred for further technical details.
 The current implementation makes use of an external module for the PCM-related
 tasks. The module needs some input information to run properly.
@@ -16,6 +16,10 @@ As explained in the `*PCMSOL` section of the reference manual, a PCM calculation
 The second method is not as flexible as the first one and we will cover both in this tutorial.
 
 For further details, please refer to the PCM documentation in the reference manual.
+Notice that the fact that a working implementation of the PCM-SCF algorithm gives access to
+geometry optimizations based on a numerical gradient and finite-field approaches to the
+calculation of response properties. The input files for DIRAC in these two cases need only be
+modified to include the directives relevant for the PCM calculation.
 
 We will use the extremely simple examples contained in the test/pcm_energy directory.
 They are more than enough to show a simple workflow, possible gotchas and what to look for
@@ -330,14 +334,14 @@ The specification of custom cavities is **only** possible with the three file in
 A Dirac-Coulomb, Hartree-Fock, PCM-SCC calculation
 --------------------------------------------------
 
-As explained in [DiRemigio2014]_, the calculation of the molecular electrostatic potential integrals:
+As explained in :cite:`DiRemigio2014`, the calculation of the molecular electrostatic potential integrals:
 
 .. math::
 
    v_{\kappa\lambda}(\mathbf{s}_I) = \int\mathrm{d}\mathbf{r}\frac{-\Omega_{\kappa\lambda}(\mathbf{r})}{|\mathbf{r}-\mathbf{s}_I|}
 
 needed for the PCM can be sped up by neglecting the Small-Small block and replacing the SS block of the potential by a simple Coulombic
-correction [Visscher1997a]_. This approximation is named PCM-SCC and the user can exploit it by specifying the `.SKIPSS` keyword in the 
+correction :cite:`Visscher1997a`. This approximation is named PCM-SCC and the user can exploit it by specifying the `.SKIPSS` keyword in the 
 `*PCM` section of the input::
 
    **DIRAC

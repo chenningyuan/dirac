@@ -355,15 +355,6 @@ C
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
-#if defined (SYS_IBM)
-      DO 100 I = 1, NDIM
-        T = 0.0D0
-        DO 80 L = 1,NVCEFF
-          T = T + A(L)*X(I,INDEX(L))
-   80   CONTINUE
-        AX(I) = T
-  100 CONTINUE
-#endif
 #if defined (SYS_ALLIANT)
       IF (NVCEFF .LE. 0) THEN
          DO 10 I = 1,NDIM
@@ -393,8 +384,7 @@ CVD$  SHORTLOOP
   600       CONTINUE
   700    CONTINUE
       END IF
-#endif
-#if !defined (SYS_IBM) && !defined (SYS_ALLIANT)
+#else
       IF (NVCEFF .LE. 0) THEN
          DO 10 I = 1,NDIM
             AX(I) = 0.0D0
@@ -422,15 +412,6 @@ C
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
-#if defined (SYS_IBM)
-      DO 100 I = 1, NDIM
-        T = 0.0D0
-        DO 80 L = 1,NVCEFF
-          T = T + A(L)*X(I,INDEX(L))
-   80   CONTINUE
-        AX(I) = AX(I) + T
-  100 CONTINUE
-#endif
 #if defined (SYS_ALLIANT)
 C
       IF (NDIM .LE. 32) THEN
@@ -447,8 +428,7 @@ CVD$  SHORTLOOP
   600       CONTINUE
   700    CONTINUE
       END IF
-#endif
-#if !defined (SYS_IBM) && !defined (SYS_ALLIANT)
+#else
 C
       DO 300 L = 1,NVCEFF
          DO 200 I = 1,NDIM
@@ -1002,15 +982,6 @@ C VU(I) = SUM(J) A(J,IP(I))*VI(J)
 C
 #include "implicit.h"
       DIMENSION VU(*),A(NROW,*),VI(*),IP(*)
-#if defined (SYS_IBM)
-C
-      CALL SETVEC(VU,0.0D0,NPROD)
-      DO 50 J = 1, NROW
-        DO 100 I = 1, NPROD
-          VU(I) = VU(I) + A(J,IP(I))*VI(J)
-  100   CONTINUE
-   50 CONTINUE
-#else
       PARAMETER (D0 = 0.0D0)
 C
       DO 100 I = 1, NPROD
@@ -1020,7 +991,6 @@ C
             VU(I) = VU(I) + A(J,IP(I))*VI(J)
    50    CONTINUE
   100 CONTINUE
-#endif
 C
       RETURN
       END

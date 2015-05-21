@@ -3,7 +3,7 @@
 	url = git://repo.ctcc.no/gen1int.git
 [submodule "external/unit-tests"]
 	path = external/unit-tests
-	url = git://repo.ctcc.no/dirac/dirac-unit-tests.git
+	url = https://gitlab.com/dirac/unit-tests.git
 [submodule "external/pcmsolver"]
 	path = external/pcmsolver
 	url = https://github.com/PCMSolver/pcmsolver.git

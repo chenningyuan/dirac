@@ -1,19 +1,79 @@
-## simple DIRAC buildup configuration file for circleci.com
-## See https://circleci.com/docs/configuration
+## Simple DIRAC buildup configuration file for circleci.com
+##
+## See https://circleci.com/docs/getting-started
+##     https://circleci.com/docs/configuration
 ##     https://circleci.com/docs/config-sample
+##
+## OpenMPI 64-bit installation: 
+##     https://gist.github.com/rbast/81760961c5a8199e561a
+##     http://diracprogram.org/doc/release-12/installation/int64/mpi.html
+##
 
+# list of branches to build
+general:
+    branches:
+        only:
+            - master
 
+machine:
+    environment:
+# set environment variables to make MPI and tests work
+        DIRAC_MPI_COMMAND: "mpirun -np 2"
+        PATH: $HOME/open_mpi/bin:$PATH
+        LD_LIBRARY_PATH: $HOME/open_mpi/lib:$LD_LIBRARY_PATH
+        FC: gfortran
+        CC: gcc
+        CXX: g++
+        FCFLAGS: "-m64 -fdefault-integer-8"
+        CFLAGS: -m64
+        CXXFLAGS: -m64
+# jobs used for build and test, do not use high numbers because memory in VM is limited
+        N_PROC: 8
+        TEST_N_PROC: 4
+
+dependencies:
+    override:
+# compile 64-bit OpenMPI with integer size 8
+# remove all previous MPI installations
+        - sudo apt-get remove mpich2 openmpi-bin libopenmpi-dev
+# download, build and install OpenMPI to $HOME/open_mpi
+        - mkdir $HOME/open_mpi
+        - wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
+        - tar xzf openmpi-1.8.4.tar.gz
+        - cd openmpi-1.8.4 && ./configure --prefix=$HOME/open_mpi && make -j $N_PROC && make install
+# check if integer size is correct - should be 8
+        - echo "Fortran MPI Integer size is $(ompi_info -a | grep 'Fort integer size') - should be equal to 8"
+        
+# update submodules
 checkout:
-  post:
-    - git submodule sync
-    - git submodule update --init
+    post:
+        - git submodule sync
+        - git submodule update --init
 
-test: 
-  override: 
-    - python ./pamadm -a --builddir=build_circleci 
-    - python ./setup -D BUILDNAME="circleci.i8" --int64 build_circleci
-    - ctest --track Miro  -D ExperimentalUpdate: { pwd: build_circleci }
-    - ctest --track Miro  -D ExperimentalConfigure: { pwd: build_circleci }
-    - ctest -j4  --track Miro  -D ExperimentalBuild: { pwd: build_circleci }
-    - ctest -j4  --track Miro  -D ExperimentalTest -L short: { pwd: build_circleci }
-    - ctest --track Miro  -D ExperimentalSubmit: { pwd: build_circleci }
+test:
+    pre:
+# check our environment variables
+        - echo "Number of processors/jobs for build step is $N_PROC"
+        - echo "Number of processors/jobs for test step is $TEST_N_PROC"
+# check for correct blas library selected in path (atlas)
+        - sudo update-alternatives --display libblas.so.3gf
+# more memory for testing
+        - echo -e "--mb=256\n--aw=256" > $HOME/.diracrc
+# show info about available processors
+        - lscpu
+    override:
+# configure, build optimized code and run tests (Dirac 64-bit with OpenMPI and documentation)
+        - python ./pamadm -a --builddir=build_circleci_mpi
+        - python ./setup -D BUILDNAME="open_mpi.gnu.i8.atlas-circle-ci" -D DART_TESTING_TIMEOUT=99999 --int64 --mpi --blas=/usr/lib/atlas-base/atlas/libblas.so.3gf --lapack=builtin build_circleci_mpi
+# build with make, build with ctest makes impossible to submit more test commands into one entry on dashboard
+        - make -j $N_PROC: { pwd: build_circleci_mpi }
+# ldd - show dirac.x dependencies
+        - ldd dirac.x: { pwd: build_circleci_mpi }
+# show current configuration
+        - python ./pam --show: { pwd: build_circleci_mpi }
+# run tests
+# commands on circle must end within 120 minutes (so better to use more commands)
+        - ctest -j $TEST_N_PROC -D ExperimentalConfigure -D ExperimentalTest -D ExperimentalSubmit -I 1,30,1   || true: { pwd: build_circleci_mpi, timeout: 2000 }
+        - ctest -j $TEST_N_PROC -D ExperimentalConfigure -D ExperimentalTest -D ExperimentalSubmit -I 31,60,1  || true: { pwd: build_circleci_mpi, timeout: 2000 }
+        - ctest -j $TEST_N_PROC -D ExperimentalConfigure -D ExperimentalTest -D ExperimentalSubmit -I 61,90,1  || true: { pwd: build_circleci_mpi, timeout: 2000 }
+        - ctest -j $TEST_N_PROC -D ExperimentalConfigure -D ExperimentalTest -D ExperimentalSubmit -I 91,120,1 || true: { pwd: build_circleci_mpi, timeout: 2000 }

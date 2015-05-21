@@ -47,7 +47,7 @@ benzaldehyde.mol::
 
 By running::
  
-  pam --scratch=/tmp --mol=benzaldehyde.mol --inp=dc_dens.inp --get="DFCOEF plot.3d.cube"
+  pam --scratch=/tmp --mol=benzaldehyde.mol --inp=dc_dens.inp --get "DFCOEF" --get "plot.3d.cube=dc_dens.cube"
   
 where the dc-dens.inp file contains::
 
@@ -97,7 +97,7 @@ MEP cube file
 Obtaining the MEP cube files requires an input similar to that for the density cube files.
 By runnning::
  
-  pam --scratch=/tmp --mol=benzaldehyde.mol --inp=dc_mep.inp --put="DFCOEF" --get="plot.3d.cube"
+  pam --scratch=/tmp --mol=benzaldehyde.mol --inp=dc_mep.inp --put="DFCOEF" --get="plot.3d.cube=dc_mep.cube"
 
 where dc-mep.inp contains::
    
@@ -207,4 +207,4 @@ between the two cases:
 .. image:: dc-ll_mep.png
     :width: 400px
 
-.. warning:: As pointed out in [Wheeler2009]_, it must always be kept in mind that the MEP at a given point is a weighted average of the charge density over all space.
+.. warning:: As pointed out in :cite:`Wheeler2009`, it must always be kept in mind that the MEP at a given point is a weighted average of the charge density over all space.

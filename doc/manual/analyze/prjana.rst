@@ -4,7 +4,7 @@ The current solution may be projected down onto another set of
 coefficients generated from the basis, e.g. one may project molecular
 solutions down onto atomic solutions in order to evaluate atomic
 contributions. The coefficients of the fragments are read simultaneously
-and the overlap between them is taken into account [Faegri2001]_ .
+and the overlap between them is taken into account :cite:`Faegri2001` .
 
 The projection analysis can be thought of as a Mulliken analysis based
 on the atomic (fragment) orbitals; it is therefore very much less

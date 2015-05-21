@@ -27,6 +27,27 @@ Specification of a transition moment operator (see
 :ref:`one_electron_operators` for details). This keyword can be given multiple
 times to add more operators.
 
+keyword(EPOLE)
+
+Specification of electric Cartesian multipole operators of order L 
+for the calculation of transition moments. Specify order.
+
+*Example:* Electric dipole operators
+
+::
+      .EPOLE
+      1
+
+keyword(MPOLE)
+
+Specification of magnetic Cartesian multipole operators of order L 
+for the calculation of transition moments. Specify order.
+*Example:* Magnetic dipole operators
+
+::
+      .MPOLE
+      1
+
 keyword(ANALYZE)
 
 Analyze solution vectors and show the most important excitations at the
@@ -154,10 +175,10 @@ small systems !
 keyword(ONLYSF)
 
 Only call FMOLI in sigmavector routine: only generate one-index
-transformed Fock matrix  [Saue2003]_.
+transformed Fock matrix  :cite:`Saue2003`.
 
 keyword(ONLYSG)
 
 Only call FMOLI in sigmavector routine: 2-electron Fock matrices using
-one-index transformed densities [Saue2003]_.
+one-index transformed densities :cite:`Saue2003`.
 

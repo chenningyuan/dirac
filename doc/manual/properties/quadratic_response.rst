@@ -1,7 +1,7 @@
 star(QUADRATIC RESPONSE)
 
 This section gives directives for the calculation of quadratic response
-functions [Saue2002a]_.
+functions :cite:`Saue2002a`.
 
 
 General control statements

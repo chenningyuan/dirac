@@ -37,6 +37,9 @@
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
+        case ('*CCREST')
+           call read_input_ccrestart(word, kw_section)
+
         case ('*CCENER')
            call read_input_ccener(word, kw_section)
 
@@ -813,6 +816,14 @@
          relcc_timing = .true.
       end if
 
+      if (kw_matches(word, '.RESTART')) then
+         relcc_do_restart = .true.
+      end if
+
+      if (kw_matches(word, '.NORESTART')) then
+         relcc_do_restart = .false.
+      end if
+
       if (kw_matches(word, '.NOSORT')) then
          relcc_do_sort = .false.
       end if
@@ -983,6 +994,107 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+   subroutine read_input_ccrestart(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: i
+      integer                          :: j
+      integer                          :: nsect 
+      character(2)                     :: ifss(6)
+      character(2)                     :: read_sect(6)
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+!     forces results from unconverged iterative procedures to be taken as converged 
+      if (kw_matches(word, '.UNCONV')) then
+         relcc_restart_unconverged = .true.
+      end if
+
+!     in the case of fock-space calculations, indicate which sectors are to be
+!     skipped (e.g. because converged, or otherwise)
+      if (kw_matches(word, '.SKIPSECT')) then
+
+         do i = 1, 6
+            read_sect(i) = '  '
+         enddo
+
+         read(get_file_unit(), *) nsect 
+         read(get_file_unit(), *) (read_sect(i), i = 1, nsect)
+
+         ifss(1) = '00'
+         ifss(2) = '01'
+         ifss(3) = '10'
+         ifss(4) = '11'
+         ifss(5) = '02'
+         ifss(6) = '20'
+
+         do i = 1, nsect 
+            do j = 1, 6
+               if (read_sect(i).eq.IFSS(j)) then
+                  relcc_restart_skipsect(j) = .true.
+               endif 
+            enddo
+         enddo
+      end if
+
+!     forces restart even if setup is potentially different (number of electrons, active/inactive etc)
+      if (kw_matches(word, '.FORCER')) then
+         relcc_restart_ignore_check = .true.
+      end if
+
+!     forces sorting to be done even if it has been completed before.
+      if (kw_matches(word, '.REDOCCSD')) then
+         relcc_restart_redo_ccsd = .true.
+      end if
+
+!     forces sorting to be done even if it has been completed before.
+      if (kw_matches(word, '.REDOSORT')) then
+         relcc_restart_redo_sorting = .true.
+      end if
+
+!     in the case of fock-space calculations, indicate which sectors are to be
+!     recalculated even if converged.
+      if (kw_matches(word, '.REDOSECT')) then
+
+         do i = 1, 6
+            read_sect(i) = '  '
+         enddo
+
+         read(get_file_unit(), *) nsect
+         read(get_file_unit(), *) (read_sect(i), i = 1, nsect)
+
+         ifss(1) = '00'
+         ifss(2) = '01'
+         ifss(3) = '10'
+         ifss(4) = '11'
+         ifss(5) = '02'
+         ifss(6) = '20'
+
+         do i = 1, nsect
+            do j = 1, 6
+               if (read_sect(i).eq.IFSS(j)) then
+                  relcc_restart_redosect(j) = .true.
+               endif
+            enddo
+         enddo
+      end if
+
+
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
 
    subroutine read_input_ccfspc(word, kw_section)
 
@@ -1401,6 +1513,10 @@
 
       if (kw_matches(word, '.DVCONV')) then
          read(get_file_unit(),'(f18.6)') reladc_davconv
+      end if
+
+      if (kw_matches(word, '.DVINCORE')) then
+         reladc_davooc = .false.
       end if
 
       call check_whether_kw_found(word, kw_section)

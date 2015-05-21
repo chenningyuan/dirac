@@ -158,10 +158,13 @@ def main():
     add_test('fde_response_autodiff','fde')
     add_test('free-particle_projection', 'short')
     add_test('frozen_orbitals')
+    add_test('fscc_restart','restart')
+    add_test('cc_restart','restart')
     add_test('fscc','fscc')
     add_test('fscc_highspin','fscc')
     add_test('gaunt', 'short;gaunt')
     add_test('geo_opt_saddle')
+    add_test('huckel_start')
 #   radovan: this cannot run on most installations
 #   add_test('kallay_mrcc_interface')
     add_test('krci_properties_perm_dipmom', 'short;krci')

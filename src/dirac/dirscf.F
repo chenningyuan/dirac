@@ -137,6 +137,12 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
 
       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &            WORK(KFREE),LFREE)
+
+      !> in the hypothetical case that we run a property calculation for a one-electron system 
+      !> it is useful to define some 2e-common blocks... strange but it is a 'bug' in the post-SCF module setup
+      !> which basically always assumes 2e-ints to be present.
+  
+      if(onesys) call paovec(work(kfree),lfree,0,0)
 C
 C     Memory deallocation of the Fock matrix only...
       CALL MEMREL('PSISCF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
@@ -3573,7 +3579,7 @@ CMI   ... do always utilize DFCYCL when continuing with BSS-SCF after DC-SCF
      &              CACC,CPUTID,DHF_INTTYP,DAYTID
         GOTO 10
  20     CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS)
+#if defined (VAR_MFDS)
 C        backspace on multifile systems for correct positioning
 C        at the end of the file
         BACKSPACE LUCYCL
@@ -5589,7 +5595,7 @@ C     Atomic Huckel start
 C     The basic theory is given here
 C       R. Hoffmann, J. Chem. Phys. 39 (1963) 1397
 C     This work was further motivated by 
-C       P. Norman and H. J. Aa. Jensen, Chem. Phys. 531 (2012) 229
+C       P. Norman and H. J. Aa. Jensen, Chem. Phys. Lett. 531 (2012) 229
 C     The particularity of the present approach is to employ 
 C     pre-calculated atomic fragments
 C
