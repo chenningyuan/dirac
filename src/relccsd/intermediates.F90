@@ -542,7 +542,6 @@
 #include "param.inc"                                                  
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
-!#include "eqns.inc"                                                   
 #include "ccpar.inc"                                                  
 
 !---------------Calling variables-------------------------------------
@@ -696,20 +695,19 @@
 
    subroutine w_iemn_out_of_core (t1,t2,buf1,buf2,nbuf3,w_ovoo)
 
+!---------------Common Blocks--------------------------------------   
+                                                                     
+#include "param.inc"                                                  
+#include "complex.inc"                                                
+#include "symm.inc"                                                   
+#include "ccpar.inc"                                                  
+
 !---------------Calling variables-------------------------------------
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)! Amplitudes.
    real(8), intent(inout) :: w_ovoo(rcw,nv2)              ! Intermediate.
    real(8), intent(in)    :: buf1(*),buf2(*)              ! buffer arrays.
    integer, intent(in)    :: nbuf3 
-
-!---------------Common Blocks--------------------------------------   
-                                                                     
-#include "param.inc"                                                  
-#include "complex.inc"                                                
-#include "symm.inc"                                                   
-!#include "eqns.inc"                                                   
-#include "ccpar.inc"                                                  
 
 !---------------Local variables----------------
       logical :: done,teq
@@ -766,6 +764,14 @@
 
    subroutine w_efam_out_of_core (t1,t2,hov,w_vovo,wbar_ovvo,buf1,buf2,buf3,nbuf3,nbuf2,w_vvvo)
 
+!---------------Common Blocks--------------------------------------   
+                                                                     
+#include "param.inc"                                                  
+#include "complex.inc"                                                
+#include "symm.inc"                                                   
+!#include "eqns.inc"                                                   
+#include "ccpar.inc"                                                  
+
 !---------------Calling variables-------------------------------------
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2) ! Amplitudes.
@@ -775,14 +781,6 @@
    real(8), intent(in)    :: buf1(*),buf2(*)             ! buffer arrays.
    real(8), intent(in),target    :: buf3(*)              ! buffer arrays.
    integer, intent(in)    :: nbuf3,nbuf2 
-
-!---------------Common Blocks--------------------------------------   
-                                                                     
-#include "param.inc"                                                  
-#include "complex.inc"                                                
-#include "symm.inc"                                                   
-!#include "eqns.inc"                                                   
-#include "ccpar.inc"                                                  
 
 !---------------Local variables----------------
       logical :: done,teq

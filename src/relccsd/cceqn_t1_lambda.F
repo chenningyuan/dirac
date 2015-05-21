@@ -4,6 +4,8 @@
 
        use contraction
 
+       implicit none
+
 !     IMPLICIT INTEGER (A-Z)
 
 !       Description                                            
@@ -28,8 +30,6 @@
 
 #include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
-#include "ihm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 
@@ -58,11 +58,8 @@
 !-------------------
 ! Initialize residue
 !-------------------
-!       ResL1 = 0.0d0   
-
 
     5   format(10f10.6)  
-
 
        call xcopy (ndimt1,hov,1,ResL1,1)
 
@@ -115,8 +112,7 @@
 !      ResL1    = ResL1 + int_temp(e,m) * V(im,ae) 
 !------------------------------------------------------------
 
-!temp      allocate(int_temp(ndimt1*rcw))
-      allocate(int_temp(10000))
+      allocate(int_temp(ndimt1*rcw))
 
       int_temp = 0.0d0
 

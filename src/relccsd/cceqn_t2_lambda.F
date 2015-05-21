@@ -64,7 +64,7 @@ C
       use contraction
       use intermediates_1b_2b
 
-!     IMPLICIT INTEGER (A-Z)
+      implicit none
 
 !---------------Description--------------------------------------------
 !     Evaluate residue for lambda equation.
@@ -77,8 +77,6 @@ C
 !---------------Common Blocks--------------------------------------
 #include "param.inc"
 #include "complex.inc"
-#include "eqns.inc"
-#include "ihm.inc"
 #include "symm.inc"
 #include "ccpar.inc"
 
@@ -109,7 +107,7 @@ C
       real*8,allocatable :: int_oo(:),w_vvvv(:)
       real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
       integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
-      integer     :: off2,i,j,istart,m,k,n,irp,ntot 
+      integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint 
       integer     :: jabrep,x(nrep,nrep),y(nrep) 
       
 
@@ -149,8 +147,6 @@ C
 !--------------------------------------------------------
 !   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_ejmb(ej,mb)
 !--------------------------------------------------------
-
-      write(*,*)'we have started investigating this diagram'
 
       call contraction_444((/"o1","o3","p1","p3"/),
      &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),W_voov,ResL2,
@@ -235,8 +231,8 @@ C
  
          allocate(w_vvvv(nvvt(irp)*nint))
 
-         call getvvvv (irp,istart,nint,done,w_vvvv,mint)
-!        call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
+!        call getvvvv (irp,istart,nint,done,w_vvvv,mint)
+         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
          n = nvvt(irp)
          m = noot(irp)
          k = nint
