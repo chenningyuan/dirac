@@ -6,8 +6,8 @@ Dirac's relation
 ================
 
 A relation that is often exploited throughout the course, e.g. to achieve a separation of spin-dependent and
-independent terms in the Dirac equation (see lecture on Day 2), is `Dirac's relation <http://dx.doi.org10.1098/rspa.1928.0023>`_ , which can be
-written for two arbitrary vector operators :math:`\vec{u}` and :math:`\vec{v}` as:
+independent terms in the Dirac equation (see lecture on Day 2), is Dirac's relation :cite:`Dirac1928` , 
+which can be written for two arbitrary vector operators :math:`\vec{u}` and :math:`\vec{v}` as:
 
 .. math::
 
@@ -86,7 +86,7 @@ The following hints may be useful:
 Literature and further reading
 ==============================
 
-* K. Dyall and K. Fœgri, Introduction to Relativistic Qunatum Chemistry, Chapter 4.
+* :cite:`Dyall2007`, Chapter 4.
 
-* M. Reiher and M. Wolf, Relativistic Quantum Chemistry, Chapter 5.
+* :cite:`Reiher2009`, Chapter 5.
 

@@ -26,4 +26,7 @@ if(CMAKE_C_COMPILER_WORKS AND CMAKE_CXX_COMPILER_WORKS AND CMAKE_Fortran_COMPILE
 
     # check for correct compiler version with Python script and CMake variable (if defined)
     include(FindCompilerVersion)
+
+    # check for exception handling capabilities, at least for inspecting NaN's
+    include(ConfigFortranExceptionHandling)
 endif()

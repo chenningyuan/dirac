@@ -36,8 +36,8 @@ build:
           ctest -j 8 --track Miro -D ExperimentalBuild
           ## ldd : show dependencies
           ldd dirac.x
-          ## echo : this script continues even if some of tests fail
-          echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
+          ## true : this script continues even if some of tests fail
+          ctest -j 8 --track Miro -D ExperimentalTest -L short || true
           ## deliver buildup status to CDash-web
           ctest --track Miro -D ExperimentalSubmit
 

@@ -49,8 +49,8 @@ script:
     - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
 # ldd : show dependencies
     - ldd dirac.x
-# if some tests fail build/ctest can continue because of exit value 0
-    - ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2) --track Miro -D ExperimentalTest | exit 0
+# if some tests fail build/ctest can continue because of: || true
+    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest || true
     - ctest --track Miro -D ExperimentalSubmit
 
 # turn off email notifications
