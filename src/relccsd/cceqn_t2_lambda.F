@@ -152,45 +152,11 @@ C
 
       write(*,*)'we have started investigating this diagram'
 
-!     call contraction_444((/"o1","o3","p1","p3"/),
-!    &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),W_voov,ResL2,
-!    &    -1.0d0,0.0d0,nrep,L2)
-      
+      call contraction_444((/"o1","o3","p1","p3"/),
+     &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),W_voov,ResL2,
+     &    1.0d0,0.0d0,nrep,L2)
 
-!     CALL SRT1TT4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVOV,
-!    &              JJOV,JJOV,L2,BUF2)
-
-
-
-!     call srt1r1 (nrep,multb,.false.,mov,no,nv,mov,J2OVVO,jjvo,buf2,
-!    &              buf3)
-
-
-
-!     CALL SRT1SS4 (NREP,MULTB,.FALSE.,.FALSE.,NV,NO,NO,NV,MVO,J2VOOV,
-!    &              JJVO,JJOV,w_voov,BUF2)
-
-
-!     allocate(buf4(10000))
-
-!     buf4 = 0.0d0
-
-!     call cntrct ('N','N',MOV,MOV,MVO,A1,BUF3,BUF2,A0,BUF4,NREP) 
-
-!     CALL SRT1TT4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NO,NV,NV,MOV,J2OVOV,
-!    &              JJOV,JJOV,BUF4,BUF3)
-
-
-!     deallocate(buf4)
-!      CALL XAXPY (NDIMT2,A1,BUF3,1,ResL2,1)
-
-
-       val = 0.0d0
-       do i =1,ndimt2
-         val = val + resl2(i)*resl2(i)
-       enddo
-
-       write(*,*)'RESL2 after term4',val
+       write(*,*)'RESL2 after term4',ddot(ndimt2,resL2,1,resL2,1)
 !-----------------------------------------------------------
 !   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*(G_vv(e,b)-L1(m,b)*t1(e,m))
 !-----------------------------------------------------------
@@ -201,8 +167,8 @@ C
 
       call xcopy ((ivv(nrep+1))*rcw,G_vv,1,int_vv,1)
 
-!     call contraction_222((/"o3","p2"/),(/"p3","o3"/),(/"p3","p2"/),L1,
-!    &        t1,int_vv,-1.0d0,1.0d0,nrep)
+      call contraction_222((/"o3","p2"/),(/"p3","o3"/),(/"p3","p2"/),L1,
+     &        t1,int_vv,-1.0d0,1.0d0,nrep)
 
       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/),
      &        (/"o1","o2","p1","p2"/),ResL2,1.0d0, 
@@ -237,12 +203,10 @@ C
       call contraction_244 ((/"o3","p1"/),(/"o1","o2","o3","p2"/),
      &     (/"o1","o2","p1","p2"/),ResL2,-1.0d0,1.0d0,nrep,L1)
 
-!      write(*,*)'RESL2 after term7',ddot(ndimt2,resL2,1,resL2,1)
+       write(*,*)'RESL2 after term7',ddot(ndimt2,resL2,1,resL2,1)
 !-------------------------------------------------------------------------
 !   term 8 : ResL2 = ResL2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b) 
 !-------------------------------------------------------------------------
-
-!!      call lambd21 (L1,hov,ResL2)
 
       call lambda2_disconnected(l1,hov,ResL2)
 
@@ -257,42 +221,39 @@ C
 !    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab) 
 !--------------------------------------------------------
 
-!     done = .false.
-!     allocate(ResL2_temp(ndimt2)) 
-!     allocate(tau(ndimt2*rcw))
-!     call gettau(t1,t2,tau)
-!     off2 = 1
-!     do irp = 1, nrep
-!        istart = 0
-!        if (nvvt(irp).eq.0) cycle
-!10      mint = nbuf3/nvvt(irp)         
-!        if (idist(1,1,irp).gt.istart) istart=idist(1,1,irp)
-!        ntot = idist(2,1,irp)
-!        nint = min0(mint,ntot-istart)
-!
-!        allocate(w_vvvv(nvvt(irp)*nint))
+      done = .false.
+      allocate(tau(ndimt2*rcw))
+      call gettau(t1,t2,tau)
+      off2 = 1
+      do irp = 1, nrep
+         istart = 0
+         if (nvvt(irp).eq.0) cycle
+ 10      mint = nbuf3/nvvt(irp)         
+         if (idist(1,1,irp).gt.istart) istart=idist(1,1,irp)
+         ntot = idist(2,1,irp)
+         nint = min0(mint,ntot-istart)
+ 
+         allocate(w_vvvv(nvvt(irp)*nint))
 
-!        call getvvvv (irp,istart,nint,done,w_vvvv,mint)
+         call getvvvv (irp,istart,nint,done,w_vvvv,mint)
 !        call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
-!        n = nvvt(irp)
-!        m = noot(irp)
-!        k = nint
-!        call xgemm ('n','n',m,k,n,a1,l2,m,
-!    &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
+         n = nvvt(irp)
+         m = noot(irp)
+         k = nint
+         call xgemm ('n','n',m,k,n,AP5,l2,m,
+     &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
 
-!        deallocate(w_vvvv) 
-!        if (.not.done) then
-!           istart = istart + nint
-!           goto 10
-!        endif
-!        off2 = off2 + m * n * rcw
-!      enddo
+         deallocate(w_vvvv) 
+         if (.not.done) then
+            istart = istart + nint
+            goto 10
+         endif
+         off2 = off2 + m * n * rcw
+       enddo
 
-!      deallocate(tau)
+       deallocate(tau)
 
 !     call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
-
-!     deallocate(ResL2_temp)
 
        write(*,*)'RESL2 after term10',ddot(ndimt2,resL2,1,resL2,1)
 

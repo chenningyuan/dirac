@@ -32,6 +32,7 @@
    subroutine f_bar_mi(foo,fvo,t1,t2,ho)
 
 #include "symm.inc"
+#include "param.inc"
 #include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
      real(8), intent(in) :: foo(rcw,nfoo), fvo(rcw,nfvo)   ! Fock matrix elements
@@ -39,6 +40,9 @@
      real(8), intent(out):: ho(rcw,nfoo)                   ! Intermediate
 !+++++++++++++++Local variables++++++++++++++++++++++++++++++++++++++++
      real(8), allocatable :: tau(:) !, vooo(:),vooo_sorted(:),vvoo(:)
+     real*8      :: ddot
+     integer     :: i 
+
 
 !    Initialize  f_bar_mi with oo block of Fock matrix
         ho = foo
@@ -46,23 +50,24 @@
 !+++++++++++++Term-1++++++++++++++++++++++
 ! F_bar_mi = F_bar_mi - V(nm,ef) * T(ef,in) 
 !+++++++++++++++++++++++++++++++++++++++++
-   allocate(tau(ndimt2))
+
+   allocate(tau(ndimt2*rcw))
+   tau =0.0d0
    call gettau  (t1,t2,tau)
-!  call contraction_442 ((/"o3","o1","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),HO,-1.0d0,1.0d0,nrep,RightTensor=tau)
+   call contraction_442 ((/"o3","o2","p1","p2"/),(/"p1","p2","o1","o3"/),(/"o2","o1"/),HO,-1.0d0,1.0d0,nrep,RightTensor=tau)
    deallocate(tau) 
 
 !++++++++++++++++++++++++TERM-2+++++++++++++++++++++
 !F_bar_mi(m,i) = F_bar_mi(m,i) - V(mn, ei) * T1(e,n) 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++
 
-     call contraction_422 ((/"o1","o3","p1","o2"/),(/"p1","o3"/),(/"o1","o2"/),t1,ho,-1.0d0,1.0d0,nrep)
+     call contraction_422 ((/"o2","o3","p1","o1"/),(/"p1","o3"/),(/"o2","o1"/),t1,ho,-1.0d0,1.0d0,nrep)
 
 !***********************TERM-3*********
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
 !**************************************
    
-    if (carith) call conjuga (nfvo,fvo,1) 
-   call contraction_222 ((/"o1","p1"/),(/"p1","o2"/),(/"o1","o2"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
+   call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,0.5d0,1.0d0,nrep)
 
    end subroutine
 
@@ -77,49 +82,34 @@
       real(8), intent(in)  :: t1(rcw,ndimt1),t2(rcw,ndimt2)  ! Amplitudes.
       real(8), intent(out) :: hv(nfvv*rcw)
 !---------------Local variables--------------------------------------
-     real(8), allocatable :: tau(:),hv_temp(:),hv_temp_temp(:) ! vooo(:),vooo_sorted(:),vvoo(:)
-     integer              :: i 
+     real(8), allocatable :: tau(:)
+     real*8      :: ddot
 !---------------------------------------
-! H(A,C) = F(A,C)  
+! hv(a,e) = fvv(a,e)  
 !---------------------------------------
 
-     call xcopy (nfvv,fvv,1,hv,1)
+     call xcopy (nfvv*rcw,fvv,1,hv,1)
 
 !----------------------------------------------------------------------
-! H(A,C) = H(A,C) - W(KL,CD) * T(AD,KL) = H(A,C) - T(A,DKL) * W*(C,DKL)
+! hv(a,e) = hv(a,e) - V(mn,af) * Tau(ef,mn)
 !----------------------------------------------------------------------
 
-   allocate(tau(ndimt2))
+   allocate(tau(ndimt2*rcw))
    call gettau (t1,t2,tau)
-
-!  allocate (hv_temp(nfvv*rcw))
 
   call contraction_442 ((/"o1","o2","p2","p3"/),(/"p1","p3","o1","o2"/),(/"p1","p2"/),hv,-1.0d0,1.0d0,nrep,RightTensor=tau)
   
   deallocate(tau) 
 
-!  allocate (hv_temp_temp(nfvv*rcw))
-
-!  call srt1c1 (nrep,nv,nv,hv_temp,hv_temp_temp) 
-
-!  deallocate (hv_temp)
-
-!  call xaxpy (nfvv,a1,hv_temp_temp,1,hv,1) 
-
-!  deallocate (hv_temp_temp)
-
 !---------------------------------------------------------------
-!F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) --> V(ae,fm) * T1(fm) 
+!F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) -> V(ae,fm) * T1(fm) 
 !---------------------------------------------------------------
 
-! write(*,*)'we are investigating this term' 
   call contraction_422 ((/"p1","o1","p2","p3"/),(/"p3","o1"/),(/"p1","p2"/),t1,hv,1.0d0,1.0d0,nrep)
-
+ 
 !-----------------------------------------------------------------
 !F_bar_ae = F_bar_ae + F(m,a) * T1(e,m)
 !-----------------------------------------------------------------
-
-   if (carith) call conjuga (NFVO,FVO,1) 
 
    call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p1","p2"/),fvo,t1,hv,-1.0d0,1.0d0,nrep)
 
@@ -134,8 +124,6 @@
      real(8), intent(in),target  :: fvo(rcw,nfvo)          ! Fock matrix elements
      real(8), intent(in) :: t1(rcw,ndimt1)                 ! Amplitudes
      real(8), intent(out):: hov(rcw,nfvo)                  ! Intermediate
-!+++++++++++++++Local variables++++++++++++++++++++++++++++++++++++++++
-     integer          :: i 
 !+++++initialization of hov+++++++++++++
  
  call srt1c1(nrep,nv,no,fvo,hov)
@@ -165,6 +153,7 @@
   real(8), intent(out) :: w_oooo(rcw,nv1)                ! Intermediate.
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
+  real*8      :: ddot
 !--------------------------------------------------
 
 !--------------------
@@ -184,8 +173,9 @@
 ! w_oooo(ij,mn) = w_oooo(ij,mn) +  V(ij,ef) * Tau(ef,mn)
 !******************************************************
 
-   allocate(tau(ndimt2))
+   allocate(tau(ndimt2*rcw))
 
+   tau = 0.0d0
    call gettau (t1,t2,tau)
 
    call contraction_444 ((/"o1","o2","p1","p2"/),(/"p1","p2","o3","o4"/),(/"o1","o2","o3","o4"/),tau,w_oooo,1.0d0,1.0d0,nrep)
@@ -208,11 +198,10 @@
    real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
    real(8), intent(out) :: w_voov(rcw,nv4)                ! Intermediate.
  !---------------Local Variables----------------------------------------
-   real(8), allocatable :: tau(:)
-!  real(8), allocatable :: w_vovv(:),w_temp(:)
-!  real(8) :: sorted(10000)
+  real(8), allocatable :: tau(:)
+  real*8      :: ddot
  !--------------------
- ! initialize w_vovo
+ ! initialize w_voov
  !--------------------
 
   write(*,*)'intermediate w_ejmb starts here'    
@@ -223,25 +212,21 @@
 !   w_voov(ej,mb) = w_voov(ej,mb) - V(nj,mb)*T1(e,n)
 !---------------------------------------------------
 
-!  call contraction_424 ((/"o3","o1","p1","o2"/),(/"p2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
-!  &      -1.0d0,0.0d0,nrep,RightTensor=t1)
-
    call contraction_424 ((/"o3","o1","o2","p1"/),(/"p2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
             &      -1.0d0,0.0d0,nrep,RightTensor=t1)
+
 !----------------------------------------------------------------------
 !   w_voov(ej,mb) = w_voov(ej,mb) + V(nj,fb)*(T2(ef,mn)-T1(f,m)*T1(e,n)
 !----------------------------------------------------------------------
 
   allocate (tau(ndimt2*rcw))
 
+  tau = 0.0d0
+
   call gettau (t1,t2,tau,'approximate')
 
-! call contraction_444 ((/"o3","o1","p1","p3"/),(/"p2","p3","o3","o2"/),(/"p2","o1","p1","o2"/),tau,w_voov, &
-!   &               -1.0d0,0.0d0,nrep)
-
-!avi
-   call contraction_444 ((/"o3","o1","p3","p1"/),(/"p2","p3","o2","o3"/),(/"p2","o1","o2","p1"/),tau,w_voov, &
-   &      -1.0d0,0.0d0,nrep)
+  call contraction_444 ((/"o3","o1","p3","p1"/),(/"p2","p3","o2","o3"/),(/"p2","o1","o2","p1"/),tau,w_voov, &
+   &      1.0d0,0.0d0,nrep)
 
   deallocate (tau)
 
@@ -249,27 +234,6 @@
 !  w_voov(ej,mb) = w(ej,mb) + V(ej,fb)*t(f,m) 
 !--------------------------------------------------
 
-! allocate(w_vovv(nv5*rcw))
-! call getvovv_incore (w_vovv)
-! sorted = 0.0d0
-!
-! call srt1t3(nrep,multb,.false.,nvo,nv,nv,nvov,kvovv,kkvov,w_vovv,sorted)
-
-! deallocate(w_vovv)
-! allocate(w_temp(nv4*rcw))
-! w_temp = 0.0d0
-
-! call cntrct ('N','N',nvov,no,nv,-A1,sorted,t1,A0,w_temp,nrep)  
-! 
-! sorted = 0.0d0
-!
-! call srt19 (nrep,multb,.false.,nvo,no,nv,nvov,kvovo,kkvov,w_temp,sorted)
-
-! deallocate(w_temp)
-
-! call xaxpy(nv4,A1,sorted,1,w_vovo,1)
-
-!avi
    call contraction_424 ((/"p2","o1","p1","p3"/),(/"p3","o2"/),(/"p2","o1","o2","p1"/),w_voov, &
               &      -1.0d0,0.0d0,nrep,RightTensor=t1)
 
@@ -286,21 +250,17 @@
 #include "complex.inc"
 
  !---------------Calling variables--------------------------------------
-   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
-   real(8), intent(out) :: w_ovoo(rcw,nv2)                ! Intermediate.
-   real(8), intent(in)  :: wbar_ovvo(rcw*nv4),w_oooo(rcw*nv1),hov(nfvo*rcw)         ! reuse of intermediates.
+   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)                         ! Amplitudes.
+   real(8), intent(out) :: w_ovoo(rcw,nv2)                                       ! Intermediate.
+   real(8), intent(in)  :: wbar_ovvo(rcw*nv4),w_oooo(rcw*nv1),hov(nfvo*rcw)      ! reuse of intermediates.
  !---------------Local Variables----------------------------------------
-
+  real*8      :: ddot
   real*8, allocatable   :: tau(:) 
-!  real*8, allocatable   :: v_vovv(:),im_temp(:),im_temp_temp(:) 
-  integer               :: i
  !--------------------
  ! initialize wbar_ovvo
  !--------------------
 
   call getovoo (w_ovoo) 
-
-! call srt1l1 (nrep,multb,.false.,nvo,nv,no,noot,iiov,ivooot,w_temp,w_ovoo)
 
 !-----------------------------------------------------
 ! w_ovoo(ie,mn) = w_ovoo(ie,mn) + F_me(if) * T2(ef,mn)  
@@ -314,7 +274,7 @@
 !-------------------------------------------------------
 
   call contraction_444 ((/"o1","o4","o2","p2"/),(/"p1","p2","o3","o4"/),(/"o1","p1","o2","o3"/),t2,w_ovoo, &
-             &      -1.0d0,0.0d0,nrep)
+             &      1.0d0,0.0d0,nrep)
 
 !-------------------------------------------
 !   w_ovoo(ie,mn) = w_ovoo(ie,mn) +  w_bar_mbej(ie,fn)*T1(fm)
@@ -327,7 +287,7 @@
 !-----------------------------------------------------------
 !   w_ovoo(ie,mn) = w_ovoo(ie,mn) + w_ijmn(io,mn) * t(e,o)
 !-----------------------------------------------------------
- 
+
    call contraction_424 ((/"o1","o4","o2","o3"/),(/"p1","o4"/),(/"o1","p1","o2","o3"/),w_ovoo, &
              &      1.0d0,0.0d0,nrep,LeftTensor=w_oooo,RightTensor=t1)
 
@@ -336,53 +296,12 @@
 !-----------------------------------------------------------
 !**out of core term..
 
-!5   format(10f10.6)  
-
-! w_ovoo = 0.0d0
   allocate (tau(ndimt2*rcw))
   tau = 0.0d0
   call gettau (t1,t2,tau)
 
-! allocate(v_vovv(nv5*rcw))
-
-! v_vovv = 0.0d0
-! call getvovv_incore(v_vovv) 
-
-! write(99,5)(v_vovv(i),i=1,nv5)
-
-! deallocate(v_vovv)
-
-! allocate(v_vovv(nv5*rcw))
-
-! v_vovv = 0.0d0
-! call getovvv_incore(v_vovv) 
-
-! write(100,5)(v_vovv(i),i=1,nv5)
-
-! deallocate(v_vovv)
-
-! allocate(im_temp(nv2*rcw))
-
-! im_temp=0.0d0
-! call cntrct ('N','N',nvo,noot,nvvt,A1,v_vovv,tau,A0,im_temp,nrep) 
-
-! deallocate(tau)
-
-! deallocate(v_vovv)
-
-! allocate(im_temp_temp(nv2*rcw))
-
-! im_temp_temp=0.0d0
-! call srt1l1 (nrep,multb,.false.,nvo,nv,no,noot,ivooot,iiov,im_temp,im_temp_temp)
-
-! deallocate(im_temp)
-
-! call xaxpy (nv2,-A1,im_temp_temp,1,w_ovoo,1) 
-
-! deallocate(im_temp_temp)
-
   call contraction_444 ((/"o1","p1","p2","p3"/),(/"p2","p3","o2","o3"/),(/"o1","p1","o2","o3"/),tau,w_ovoo, &
-             &      -1.0d0,1.0d0,nrep)
+             &      1.0d0,1.0d0,nrep)
 
   deallocate(tau)
 
@@ -399,13 +318,11 @@
 #include "complex.inc"
 
  !---------------Calling variables--------------------------------------
-   real(8), intent(in)  :: t2(rcw*ndimt2)  ! Amplitudes.
-   real(8), intent(out) :: wbar_ovvo(rcw,nv4)                ! Intermediate.
+   real(8), intent(in)  :: t2(rcw*ndimt2)                    ! Amplitudes.
+   real(8), intent(out) :: wbar_ovvo(rcw*nv4)                ! Intermediate.
  !---------------Local Variables----------------------------------------
-
+  real*8      :: ddot
   real*8, allocatable   :: w_vovo(:) 
-
-  write(*,*)'mbej starts here'
 
  !--------------------
  ! initialize wbar_ovvo
@@ -418,16 +335,14 @@
 
   deallocate (w_vovo)
 
-! call xscal(nv4*rcw,-A1,wbar_ovvo,1)
-!---------------------------------------------
-!   w_vovo(p2o1, p1o2) = V(o3o1, p1p3) * T2(p2p3, o3o2)
-!---------------------------------------------
+!------------------------------------------------------------
+!   wbar_ovvo(mb,ej) = wbar_ovvo(mb,ej) - V(mn,ef) * T2(bf,nj)
+!------------------------------------------------------------
 
   call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),t2,wbar_ovvo, &
              &      -1.0d0,0.0d0,nrep)
 
  end subroutine
-
 
  subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo)
 
@@ -494,7 +409,6 @@
 
  subroutine w_efam_diagram2(t1,t2,buf1,buf2,buf3,nbuf3,w_vvvo)
 
-
 #include "param.inc"  
 #include "complex.inc"
 #include "symm.inc"   
@@ -503,8 +417,8 @@
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
    real(8), intent(inout) :: w_vvvo(rcw,nv5)                ! Intermediate.
-   real(8), intent(in)    :: buf1(*),buf2(*)        ! buffer arrays
-   real(8), intent(inout)    :: buf3(*)        ! buffer arrays
+   real(8), intent(in)    :: buf1(*),buf2(*)                ! buffer arrays
+   real(8), intent(inout) :: buf3(*)                        ! buffer arrays
    integer, intent(in)    :: nbuf3 
 
 !---------------Local variables--------------------------------------
@@ -1310,14 +1224,14 @@
 !    G_ea(e,a)  = -1/2 l2(mn,af) * t2(ef,mn)
 !----------------------------------------------------------------------
 
-  call contraction_442 ((/"o1","o2","p1","p3"/),(/"p2","p3","o1","o2"/),(/"p2","p1"/),G_vv,-0.5d0,0.0d0,nrep,&
+  call contraction_442 ((/"o1","o2","p1","p3"/),(/"p2","p3","o1","o2"/),(/"p2","p1"/),G_vv,-0.5d0,1.0d0,nrep,&
                         &  LeftTensor=l2,RightTensor=t2 )
 
 !---------------------------------------------
 !     G_im(i,m) = 1/2 l2(in,ef) * t2(ef,mn)
 !---------------------------------------------
 
-  call contraction_442 ((/"o1","o3","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),G_oo,-0.5d0,0.0d0,nrep,&
+  call contraction_442 ((/"o1","o3","p1","p2"/),(/"p1","p2","o2","o3"/),(/"o1","o2"/),G_oo,-0.5d0,1.0d0,nrep,&
                         & LeftTensor=l2,RightTensor=t2 )
 
   end subroutine

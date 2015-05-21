@@ -193,6 +193,7 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+
       IF (.NOT.DOINV) THEN
          IF (FIRST) THEN
             CALL XCOPY(OFF(2),A0,0,BUF2,1)
@@ -405,7 +406,12 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
-      CALL XCOPY(OFF(2),A0,0,BUF2,1)
+      IF (FIRST) THEN
+        CALL XCOPY(OFF(2),A0,0,BUF2,1)
+      ELSE
+        CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      ENDIF
+
       IJKL = 1
       DO KLREP = 1, NREP
        DO 10 LREP = 1, NREP
@@ -421,10 +427,11 @@ C
            IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
             DO J = 1, JFIE(JREP)
             IF (DOINV) THEN
-              IF (.NOT.FIRST) 
+            IF (JLREP.EQ.1.OR.(.NOT.FIRST)) 
      &        CALL XCOPY (IFIE(IREP),BUF1(IKJL0*RCW+1),1,BUF2(IJKL),1)
             ELSE
-              IF (.NOT.FIRST) 
+
+            IF (JLREP.EQ.1.OR.(.NOT.FIRST)) 
      &        CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKJL0*RCW+1),1)
             ENDIF
             IJKL = IJKL + IFIE(IREP) * RCW
@@ -1621,11 +1628,11 @@ C
          DO K = 1, NKS
            IJLK = (IJLKOFF+(OFF1(LREP,KREP)+(K-1)*NLS+L-1)*M)*RCW + 1
            IF (DOINV) THEN
-              CALL XCOPY (N,BUF1(IJLK),1,BUF2(IJKL),1)
+              CALL XCOPY (M,BUF1(IJLK),1,BUF2(IJKL),1)
            ELSE
-              CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK),1)
+              CALL XCOPY (M,BUF1(IJKL),1,BUF2(IJLK),1)
            ENDIF
-           IJKL = IJKL + RCW
+           IJKL = IJKL + M*RCW
          ENDDO
         ENDDO
  10    CONTINUE

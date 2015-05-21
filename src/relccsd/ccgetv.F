@@ -346,7 +346,6 @@ C---------------Executable code--------------------------------------
 C
       ALLOCATE (VVVOO(NV3*IRW*RCW))
 
-
       CALL RREAD(ITAPT+3,VVVOO,NV3*IRW*RCW,1)
 
       CALL SRT1C1 (NREP,NVVT,NOOT,VVVOO,VOOVV) 

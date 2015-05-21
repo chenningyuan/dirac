@@ -14,4 +14,7 @@ f.add(re = 'Dipole length: Z',
 
 test.run(['ccsd_gradient.inp'], ['h2o.xyz'], f)
 
+# i have to run finite field without a filter. run finite field for two points. check the numbers from the previous run.
+# if they match, say it is ok. 
+
 sys.exit(test.return_code)

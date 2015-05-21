@@ -77,6 +77,7 @@
       INTEGER,TARGET :: LOOVVT, LVOVVT
       INTEGER,TARGET :: LLOVVT, LLVVVT, LLVVO
       INTEGER :: IVVVT, JVVVT, IVVVTMX
+      INTEGER,TARGET :: KOVVOT,KOVOV
       INTEGER :: NT3VVT, NT3VVVT, LLT3VVVT
       COMMON /SYMP4/ IO(MXREP+1),IV(MXREP+1),IOO(MXREP+1),              &
      &               IVO(MXREP+1),IVV(MXREP+1),JVOXX(MXREP+1),          &
@@ -108,7 +109,7 @@
      & JOVVO(MXREP+1),JVVOV(MXREP+1),                                   &
      & J2OOOV(MXREP+1),J2OOVO(MXREP+1),J2OOVV(MXREP+1),                 &
      & J2OVOO(MXREP+1),J2OVOV(MXREP+1),J2OVVV(MXREP+1),                 &
-     & J2OVVO(MXREP+1),J2VVOV(MXREP+1)
+     & J2OVVO(MXREP+1),J2VVOV(MXREP+1),KOVVOT(MXREP+1),KOVOV(MXREP+1)
 
 !     For Fock space : we now have 4 classes of spinors
       INTEGER :: NIO, NIV, NAO, NAV

@@ -1,10 +1,10 @@
-      SUBROUTINE lambda_equation_L1(t1,t2,l1,l2,ho,hv,hov,w_vovo,w_ovoo,
+      SUBROUTINE lambda_equation_L1(t1,t2,l1,l2,ho,hv,hov,w_voov,w_ovoo,
      &                               w_vvvo,G_oo,G_vv,buf1,buf2,buf3,
      &                               nbuf2,nbuf3,ResL1)
 
        use contraction
 
-      IMPLICIT INTEGER (A-Z)
+!     IMPLICIT INTEGER (A-Z)
 
 !       Description                                            
 !       -----------
@@ -39,7 +39,7 @@
 
       integer,intent(in) :: nbuf2,nbuf3
       real(8),intent(in) :: ho(nfoo*rcw),hv(nfvv*rcw),hov(nfvo*rcw)    ! one body intermediates
-      real(8),intent(in) :: w_vovo(nv4*rcw),w_ovoo(nv2*rcw),
+      real(8),intent(in) :: w_voov(nv4*rcw),w_ovoo(nv2*rcw),
      &                      w_vvvo(nv5*rcw)                            ! two body intermediates 
       real(8),intent(in) :: G_vv((ivv(nrep+1))*rcw),
      &                         G_oo((ioo(nrep+1))*rcw)                 ! G-intermediates  
@@ -53,8 +53,8 @@
 !     ---------------
       logical            :: done,teq,usedz,right
       real*8,allocatable :: int_temp(:)
-      real*8             :: val 
-
+      real*8             :: ddot 
+      integer            :: i,j,ij
 !-------------------
 ! Initialize residue
 !-------------------
@@ -66,12 +66,7 @@
 
        call xcopy (ndimt1,hov,1,ResL1,1)
 
-       val = 0.0d0
-       do i =1,ndimt1
-         val = val + resl1(i)*resl1(i)
-       enddo
-
-       write(*,*)'dot product of RESL1, 1',val
+       write(*,*)'RESL1: init',ddot(ndimt1,resL1,1,resL1,1)
 !---------------------------------
 !    ResL1 = ResL1 + L(i,e) * f_bar_ae(e,a)
 !---------------------------------
@@ -79,12 +74,8 @@
        call contraction_222 ((/"o1","p2"/),(/"p2","p1"/),(/"o1","p1"/),
      &    L1,hv,ResL1,1.0d0,1.0d0,nrep)
 
-       val = 0.0d0
-       do i =1,ndimt1
-         val = val + resl1(i)*resl1(i)
-       enddo
-       write(*,*)'dot product of RESL1, 2',val
 
+       write(*,*)'RESL1: dia1',ddot(ndimt1,resL1,1,resL1,1)
 !----------------------------------------
 !    ResL1 = ResL1 - L(m,a)*f_bar_mi(i,m)
 !----------------------------------------
@@ -92,12 +83,8 @@
         call contraction_222 ((/"o2","p1"/),(/"o1","o2"/),(/"o1","p1"/),
      &    L1,ho,ResL1,-1.0d0,1.0d0,nrep)
 
-       val = 0.0d0
-       do i =1,ndimt1
-         val = val + resl1(i)*resl1(i)
-       enddo
-       write(*,*)'dot product of RESL1, 3',val
 
+       write(*,*)'RESL1: dia2',ddot(ndimt1,resL1,1,resL1,1)
 !----------------------------------------------
 !      ResL1 = ResL1 - G(m,n) * V(mi,na)  
 !----------------------------------------------
@@ -105,25 +92,15 @@
       call contraction_242 ((/"o2","o3"/),(/"o2","o1","o3","p1"/), 
      &   (/"o1","p1"/),G_oo,ResL1,-1.0d0,1.0d0,nrep)
 
-       val = 0.0d0
-       do i =1,ndimt1
-         val = val + resl1(i)*resl1(i)
-       enddo
-       write(*,*)'dot product of RESL1, 4',val
-
+       write(*,*)'RESL1: dia3',ddot(ndimt1,resL1,1,resL1,1)
 !-------------------------------------------------
-!      ResL1 = ResL1 + L1(m,e) * W(ei,ma) ! here array name w_vovo is a misnomer. would be wvoov
+!      ResL1 = ResL1 + L1(m,e) * W(ei,ma) 
 !-------------------------------------------------
 
       call contraction_242 ((/"o2","p2"/),(/"p2","o1","o2","p1"/),
-     &   (/"o1","p1"/),G_oo,ResL1,-1.0d0,1.0d0,nrep,w_vovo)
+     &   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,RightTensor=w_voov)
 
-       val = 0.0d0
-       do i =1,ndimt1
-         val = val + resl1(i)*resl1(i)
-       enddo
-       write(*,*)'dot product of RESL1, 5',val
-
+       write(*,*)'RESL1 after term4',ddot(ndimt1,resL1,1,resL1,1)
 !-----------------------------------------------------
 !       ResL1 = ResL1 - 0.5d0* L2(mn,ae)*W(ie,mn) 
 !-----------------------------------------------------
@@ -132,15 +109,7 @@
      &          /),(/"o1","p1"/),ResL1,-0.5d0,1.0d0,nrep,L2,w_ovoo)
 
 
-       val = 0.0d0
-       do i =1,ndimt1
-         val = val + resl1(i)*resl1(i)
-       enddo
-       write(*,*)'dot product of RESL1, 6',val
-
-
-
-
+       write(*,*)'RESL1 after term5',ddot(ndimt1,resL1,1,resL1,1)
 !-----------------------------------------------------------
 !      int_temp(e,m) = (G(e,f) * t(f,m) - G(n,m)*t(e,n)) ! corrected from stanton and Gauss 
 !      ResL1    = ResL1 + int_temp(e,m) * V(im,ae) 
@@ -165,11 +134,7 @@
 
       deallocate(int_temp)
 
-       val = 0.0d0
-       DO I =1,NDIMT1
-         val = val + resl1(i)*resl1(i)
-       enddo
-       write(*,*)'dot product of RESL1, 7',val
+       write(*,*)'RESL1 after term6',ddot(ndimt1,resL1,1,resL1,1)
 
 !-------------------------------------------------------
 !      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
@@ -178,29 +143,37 @@
       call contraction_442((/"o1","o2","p2","p3"/),(/"p1","o2","p2","p3"
      &          /),(/"o1","p1"/),ResL1,-0.5d0,1.0d0,nrep,L2,w_vvvo)
 
-       val = 0.0d0
-       do i =1,ndimt1
-         val = val + resl1(i)*resl1(i)
-       enddo
-       write(*,*)'dot product of RESL1, 8',val
-
-
+       write(*,*)'RESL1 after term7',ddot(ndimt1,resL1,1,resL1,1)
 !-------------------------------------------------------
 !  out-of-core term....
 !    ResL1 = ResL1 + G(f,e) * V(ei,fa)
 !-------------------------------------------------------
+!     call getvovv_incore(buf3)
+
+!     CALL XCOPY (JVVOV(nrep+1),A0,0,BUF2,1)
+
+!     CALL SRT1ST4 (NREP,MULTB,.TRUE.,.FALSE.,NV,NO,NV,NV,MVV,JVVOV, 
+!    &              JJVV,JJOV,buf3,buf2)
+
+!     call srt1c1 (nrep,NV,NV,G_vv,buf1)
+
+!      do i = 1, MOV(1)
+!        do j = 1, MVV(1)
+!
+!         ij = (i-1)*MVV(1) + j
+!         ResL1(i) = ResL1(i) - buf2(ij) * buf1(j)
+
+!        enddo
+!      enddo
+
+
+!     call xgemv ('C',MVV(1),MOV(1),-A1,buf2,MVV(1),buf1,1,A1,ResL1,1) 
+
 
       call contraction_242 ((/"p3","p2"/),(/"p2","o1","p3","p1"/),
-     &   (/"o1","p1"/),G_vv,ResL1,1.0d0,1.0d0,nrep)
+     &   (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep)
 
-
-       val = 0.0d0
-       do i =1,ndimt1
-         val = val + resl1(i)*resl1(i)
-       enddo
-       write(*,*)'dot product of RESL1, 9',val
-
-
+       write(*,*)'RESL1 after term8',ddot(ndimt1,resL1,1,resL1,1)
 !     m = nfvv
 !     n = nfvo
 !     if (nbuf3.lt.jvvvo(2)) then

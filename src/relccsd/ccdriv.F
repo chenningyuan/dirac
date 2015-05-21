@@ -1638,6 +1638,8 @@ C
       KVOOV (1) = 0
       KVOVV (1) = 0
       KOVOO(1)  = 0
+      KOVOV(1)  = 0
+      KOVVOT(1) = 0
       KVOVO (1) = 0
       KVOOO (1) = 0
       KOOOOT(1) = 0
@@ -1650,6 +1652,8 @@ C
       DO IREP = 1, NREP
          KVOOV  (IREP+1) = KVOOV  (IREP) + NVOO (IREP)*NV(IREP)
          KOVOO  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NO(IREP)
+         KOVOV  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NV(IREP)
+         KOVVOT  (IREP+1) = KOVVOT  (IREP) + NOVVT (IREP)*NO(IREP)
          KVOVV  (IREP+1) = KVOVV  (IREP) + NVOV (IREP)*NV(IREP)
          KVOVO  (IREP+1) = KVOVO  (IREP) + NVOV (IREP)*NO(IREP)
          KVOOO  (IREP+1) = KVOOO  (IREP) + NVOO (IREP)*NO(IREP)

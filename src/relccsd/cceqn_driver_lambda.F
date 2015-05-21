@@ -99,16 +99,19 @@ C     Initialize the work arrays to zero.
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
+       write(*,*)'whh done',ddot(nfoo,ho,1,ho,1)
+
         write(*,*)'whh done'
 
         write(77,*)'f_bar_mi intermediate'
         write(77,*)'---------------------'
-        write(77,5)(ho(i),i=1,nfoo)
+!       write(*,5)(ho(i),i=1,nfoo)
 
          call w_ijmn(S1,S2,w_oooo)
 
-        write(*,*)'whhhh done'
+!       write(*,*)'whhhh done'
 
+        write(*,*)'whhhh done',ddot(nv1,w_oooo,1,w_oooo,1)
         write(78,*)'w_ijmn intermediate'
         write(78,*)'---------------------'
         write(78,5)(w_oooo(i),i=1,nv1)
@@ -117,23 +120,25 @@ C     Initialize the work arrays to zero.
 
          write(*,*)'f_me intermediate'
 
-!        write(75,*)'f_bar_me intermediate'
-!        write(75,*)'---------------------'
+         write(*,*)'whp done',ddot(nfvo,hov,1,hov,1)
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
+         write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
          write(79,*)'f_bar_ae intermediate'
          write(79,*)'---------------------'
          write(79,5)(hv(i),i=1,nfvv)
 
-         call w_ejmb(S1,S2,w_voov)
+        call w_ejmb(S1,S2,w_voov)
 
-         write(80,*)'w_bar_ejmb intermediate'
-         write(80,*)'---------------------'
-         write(80,5)(w_voov(i),i=1,nv4)
+        write(*,*)'w_ejmb done',ddot(nv4,w_voov,1,w_voov,1)
+        write(80,*)'w_bar_ejmb intermediate'
+        write(80,*)'---------------------'
+        write(80,5)(w_voov(i),i=1,nv4)
 
          call wbar_mbej(S2,w_ovvo)
 
+        write(*,*)'w_mbej done',ddot(nv4,w_ovvo,1,w_ovvo,1)
         write(81,*)'w_bar_mbej intermediate'
         write(81,*)'---------------------'
         write(81,5)(w_ovvo(i),i=1,nv4)
@@ -142,6 +147,7 @@ C     Initialize the work arrays to zero.
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
+         write(*,*)'w_iemn done',ddot(nv2,w_ovoo,1,w_ovoo,1)
          write(*,*)'w_bar_iemn intermediate'
          write(*,*)'---------------------'
          write(82,5)(w_ovoo(i),i=1,nv2)
@@ -159,9 +165,10 @@ C     Initialize the work arrays to zero.
 
 !       call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_voov)
 
-!        write(80,*)'w_bar_ejmb intermediate'
-!        write(80,*)'---------------------'
-!        write(80,5)(w_voov(i),i=1,nv4)
+!      write(*,*)'w_ejmb done',ddot(nv4,w_voov,1,w_voov,1)
+!      write(80,*)'w_bar_ejmb intermediate'
+!      write(80,*)'---------------------'
+!      write(80,5)(w_voov(i),i=1,nv4)
 
 !        call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
 
@@ -179,10 +186,6 @@ C     Initialize the work arrays to zero.
 
 !-------Initialization Step for the Left Eigenvectors-----------
 
-!      L1 = transpose(T1) ; L2 = transpose(T2) 
-!      Left eigenvectors are designated as L1 and L2.
-
-!---------------------------------------------------------------
       call srt1c1 (nrep,nv,no,s1,l1) 
       call srt1c1 (nrep,nvvt,noot,s2,l2) 
 
