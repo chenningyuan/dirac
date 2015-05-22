@@ -47,6 +47,9 @@ program dirac_program
 #include "dcbgen.h"
 #include "dcbpsi.h"
 
+! generated at build time
+#include "git_info.h"
+
   real(kind=8), allocatable :: memory(:)
 
   integer :: iparcal, status, length, ios, idummy, ierr
@@ -141,10 +144,13 @@ program dirac_program
      call printsubtitle
      call flush(lupri)
 
-     write(lupri, '(//a)') 'Binary information'
-     write(lupri, '(a/)')  '------------------'
+     write(lupri, '(//a)') 'Git version information'
+     write(lupri, '(a/)')  '-----------------------'
 
-     call print_binary_info(lupri)
+     write(lupri, *) 'Git commit hash: ', GIT_COMMIT_HASH
+     write(lupri, *) 'Git commit author: ', GIT_COMMIT_AUTHOR
+     write(lupri, *) 'Git commit date: ', GIT_COMMIT_DATE
+     write(lupri, *) 'Git branch: ', GIT_BRANCH
 
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
