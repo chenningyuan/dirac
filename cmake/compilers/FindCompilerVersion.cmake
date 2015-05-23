@@ -13,7 +13,7 @@
 # What is minimum required compiler version depending on vendor? 
 # Please add according to your experience. But if you want to specify more numbers 
 # or different format than you see here then you must also make changes in GetCompilerVersion.py.
-# (becasuse that script matches only as many numbers as you see here)
+# (because that script matches only as many numbers as you see here)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU")
 	set(REQUIRED_C "4.1.2")
 elseif(CMAKE_C_COMPILER_ID MATCHES "Intel")
@@ -55,7 +55,7 @@ else()
 endif()
 
 # get compiler version from Python script for C, C++ and Fortran compilers (C;C++;Fortran -- in form like CMake list)
-execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/cmake/compilers/GetCompilerVersion.py 
+execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/compilers/GetCompilerVersion.py 
 				${CMAKE_C_COMPILER} ${CMAKE_C_COMPILER_ID} ${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ID} 
 				${CMAKE_Fortran_COMPILER} ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_SYSTEM_NAME}
 				OUTPUT_VARIABLE PYTHON_OUTPUT)
@@ -114,7 +114,6 @@ if(CMAKE_C_COMPILER_VERSION)
 else()
 	# if CMake variable is not defined, only compiler version from Python script must be equal or greater
 	# than minimum required version
-	
 	if(NOT (PYTHON_C_VERSION VERSION_GREATER REQUIRED_C OR PYTHON_C_VERSION VERSION_EQUAL REQUIRED_C))
 		message(WARNING "Not supported version of C compiler. Found: ${PYTHON_C_VERSION}, Required: ${REQUIRED_C}")
 	endif()
@@ -137,7 +136,6 @@ if(CMAKE_CXX_COMPILER_VERSION)
 else()
 	# if CMake variable is not defined, only compiler version from Python script must be equal or greater
 	# than minimum required version
-	
 	if(NOT (PYTHON_CXX_VERSION VERSION_GREATER REQUIRED_CXX OR PYTHON_CXX_VERSION VERSION_EQUAL REQUIRED_CXX))
 		message(WARNING "Not supported version of C++ compiler. Found: ${PYTHON_CXX_VERSION}, Required: ${REQUIRED_CXX}")
 	endif()
@@ -160,7 +158,6 @@ if(CMAKE_Fortran_COMPILER_VERSION)
 else()
 	# if CMake variable is not defined, only compiler version from Python script must be equal or greater
 	# than minimum required version
-	
 	if(NOT (PYTHON_Fortran_VERSION VERSION_GREATER REQUIRED_Fortran OR PYTHON_Fortran_VERSION VERSION_EQUAL REQUIRED_Fortran))
 		message(WARNING 
 		"Not supported version of Fortran compiler. Found: ${PYTHON_Fortran_VERSION}, Required: ${REQUIRED_Fortran}")
