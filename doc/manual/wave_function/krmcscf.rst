@@ -39,7 +39,7 @@ number, separated by blanks. The minimum and maximum accumulated
 occupations allow for a very flexible parameterization of the wave
 function. All determinants fulfilling the occupation constraints will be
 constructed. The second entry after the "/" gives  the 
-number of orbitals per fermion correp. See also the open-shell input in :ref:`SCF` which is similar to the syntax used
+number of orbitals per fermion correp. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
 virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
@@ -194,7 +194,7 @@ maximum number of initial CI iterations. *default*:
 
 keyword(MXCIVE)
 
-maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`CIROOTS`) to optimize on.
+maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`.CIROOTS`) to optimize on.
 example:
 
 ::

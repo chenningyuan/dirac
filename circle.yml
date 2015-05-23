@@ -15,9 +15,9 @@ general:
         only:
             - master
 
-# set environment variables to make MPI and tests work
 machine:
     environment:
+# set environment variables to make MPI and tests work
         DIRAC_MPI_COMMAND: "mpirun -np 2"
         PATH: $HOME/open_mpi/bin:$PATH
         LD_LIBRARY_PATH: $HOME/open_mpi/lib:$LD_LIBRARY_PATH
@@ -27,27 +27,12 @@ machine:
         FCFLAGS: "-m64 -fdefault-integer-8"
         CFLAGS: -m64
         CXXFLAGS: -m64
-        DIRTIMEOUT: "9m"
-# export number of available processors/jobs - for build
-        N_PROC: $(cat /proc/cpuinfo | grep processor | wc -l)
-# number of available processors/jobs for test will be 8 times less because we use "mpirun -np 2"
-# and memory in circle VM is limited (exceptation: there are 32 threads/CPUs)
-        TEST_N_PROC: $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 8)
+# jobs used for build and test, do not use high numbers because memory in VM is limited
+        N_PROC: 8
+        TEST_N_PROC: 4
 
 dependencies:
     override:
-# update software info
-        - sudo apt-get update
-# install some needed/missing packages
-        - sudo apt-get install doxygen
-        - sudo apt-get install python-dateutil
-        - sudo apt-get install python-pyparsing
-        - sudo apt-get install python-numpy
-        - sudo apt-get install python-matplotlib
-        - sudo pip install sphinx==1.2.3
-        - sudo pip install sphinxcontrib-bibtex
-        - sudo pip install sphinx_rtd_theme
-        - sudo pip install hieroglyph
 # compile 64-bit OpenMPI with integer size 8
 # remove all previous MPI installations
         - sudo apt-get remove mpich2 openmpi-bin libopenmpi-dev
@@ -70,25 +55,25 @@ test:
 # check our environment variables
         - echo "Number of processors/jobs for build step is $N_PROC"
         - echo "Number of processors/jobs for test step is $TEST_N_PROC"
+# check for correct blas library selected in path (atlas)
+        - sudo update-alternatives --display libblas.so.3gf
+# more memory for testing
+        - echo -e "--mb=256\n--aw=256" > $HOME/.diracrc
 # show info about available processors
         - lscpu
-# show available disc space
-        - df -h
-# show available memory
-        - free -m
     override:
 # configure, build optimized code and run tests (Dirac 64-bit with OpenMPI and documentation)
         - python ./pamadm -a --builddir=build_circleci_mpi
-        - python ./setup -D BUILDNAME="open_mpi.gnu.i8-circle-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_circleci_mpi
-        - ctest -D ExperimentalConfigure: { pwd: build_circleci_mpi }
-        - ctest -j $N_PROC -D ExperimentalBuild: { pwd: build_circleci_mpi }
-# ldd - show dependencies
+        - python ./setup -D BUILDNAME="open_mpi.gnu.i8.atlas-circle-ci" -D DART_TESTING_TIMEOUT=99999 --int64 --mpi --blas=/usr/lib/atlas-base/atlas/libblas.so.3gf --lapack=builtin build_circleci_mpi
+# build with make, build with ctest makes impossible to submit more test commands into one entry on dashboard
+        - make -j $N_PROC: { pwd: build_circleci_mpi }
+# ldd - show dirac.x dependencies
         - ldd dirac.x: { pwd: build_circleci_mpi }
-# run tests ( could provide with "-L short --track Miro" )
-        - ctest -j $TEST_N_PROC -D ExperimentalTest || true: { pwd: build_circleci_mpi }
-# submit to dashboard
-        - ctest -D ExperimentalSubmit: { pwd: build_circleci_mpi }
-# build docs
-        - make html: { pwd: build_circleci_mpi }
-        - make doxygen: { pwd: build_circleci_mpi }
-        - make slides: { pwd: build_circleci_mpi }
+# show current configuration
+        - python ./pam --show: { pwd: build_circleci_mpi }
+# run tests
+# commands on circle must end within 120 minutes (so better to use more commands)
+        - ctest -j $TEST_N_PROC -D ExperimentalConfigure -D ExperimentalTest -D ExperimentalSubmit -I 1,30,1   || true: { pwd: build_circleci_mpi, timeout: 2000 }
+        - ctest -j $TEST_N_PROC -D ExperimentalConfigure -D ExperimentalTest -D ExperimentalSubmit -I 31,60,1  || true: { pwd: build_circleci_mpi, timeout: 2000 }
+        - ctest -j $TEST_N_PROC -D ExperimentalConfigure -D ExperimentalTest -D ExperimentalSubmit -I 61,90,1  || true: { pwd: build_circleci_mpi, timeout: 2000 }
+        - ctest -j $TEST_N_PROC -D ExperimentalConfigure -D ExperimentalTest -D ExperimentalSubmit -I 91,120,1 || true: { pwd: build_circleci_mpi, timeout: 2000 }
