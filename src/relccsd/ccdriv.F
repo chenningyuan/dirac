@@ -2962,9 +2962,9 @@ C     Allocate now also this remaining work array
 ! arrays specific for the use in the call sequence of cceqns subroutine.
 
          call alloc( a_AZ   ,    NV1*RCW              , id="az" )
-         call alloc( a_H    ,    NV4*RCW              , id="h" )
-         call alloc( a_Hbar ,    NV4*RCW           , id="hbar" )
-         call alloc( wovoo  ,    NV2*RCW            , id="w1v" )
+         call alloc( a_H    , ivoov(nrep+1)*RCW              , id="h" )
+         call alloc( a_Hbar , iovvo(nrep+1)*RCW           , id="hbar" )
+         call alloc( wovoo  , iovoot(nrep+1)*RCW   , id="w1v" )
 !         following array consumes too much memory 
 !        call alloc( wvvvo  ,    NV5*RCW            , id="w3v" ) 
          allocate(wvvvo(NV5*RCW)) !consumes too much memory

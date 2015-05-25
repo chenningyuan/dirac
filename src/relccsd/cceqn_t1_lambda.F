@@ -6,8 +6,6 @@
 
        implicit none
 
-!     IMPLICIT INTEGER (A-Z)
-
 !       Description                                            
 !       -----------
 !     Evaluate       Lambda1 equations
@@ -20,9 +18,9 @@
 !     all direct VOVV/VVVV contributions and VOVV/VVVV contributions stemming
 !     from intermediates have to be calculated on EACH node.
 
-!       intermediates required for L1 equation             
-!       ---------------------------------------
-!       f_bar_mi,f_bar_me,f_bar_ae,w_iemn,w_ejmb,G_ea,G_im        
+!     intermediates required for L1 equation             
+!     ---------------------------------------
+!     f_bar_mi,f_bar_me,f_bar_ae,w_iemn,w_ejmb,G_ea,G_im        
 
 
 !   common blocks
@@ -39,8 +37,8 @@
 
       integer,intent(in) :: nbuf2,nbuf3
       real(8),intent(in) :: ho(nfoo*rcw),hv(nfvv*rcw),hov(nfvo*rcw)    ! one body intermediates
-      real(8),intent(in) :: w_voov(nv4*rcw),w_ovoo(nv2*rcw),
-     &                      w_vvvo(nv5*rcw)                            ! two body intermediates 
+      real(8),intent(in) :: w_voov(ivoov(nrep+1)*rcw),
+     &                      w_ovoo(iovoot(nrep+1)*rcw),w_vvvo(nv5*rcw) ! two body intermediates 
       real(8),intent(in) :: G_vv((ivv(nrep+1))*rcw),
      &                         G_oo((ioo(nrep+1))*rcw)                 ! G-intermediates  
       real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)              ! converged T1 amplitude
@@ -71,7 +69,6 @@
        call contraction_222 ((/"o1","p2"/),(/"p2","p1"/),(/"o1","p1"/),
      &    L1,hv,ResL1,1.0d0,1.0d0,nrep)
 
-
        write(*,*)'RESL1: dia1',ddot(ndimt1,resL1,1,resL1,1)
 !----------------------------------------
 !    ResL1 = ResL1 - L(m,a)*f_bar_mi(i,m)
@@ -79,7 +76,6 @@
 
         call contraction_222 ((/"o2","p1"/),(/"o1","o2"/),(/"o1","p1"/),
      &    L1,ho,ResL1,-1.0d0,1.0d0,nrep)
-
 
        write(*,*)'RESL1: dia2',ddot(ndimt1,resL1,1,resL1,1)
 !----------------------------------------------
@@ -103,10 +99,20 @@
 !-----------------------------------------------------
 
       call contraction_442((/"o2","o3","p1","p2"/),(/"o1","p2","o2","o3"
-     &          /),(/"o1","p1"/),ResL1,-0.5d0,1.0d0,nrep,L2,w_ovoo)
-
+     &          /),(/"o1","p1"/),ResL1,-1.0d0,1.0d0,nrep,L2,w_ovoo)
 
        write(*,*)'RESL1 after term5',ddot(ndimt1,resL1,1,resL1,1)
+
+!-------------------------------------------------------
+!      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
+!-------------------------------------------------------
+
+      call contraction_442((/"o1","o2","p2","p3"/),(/"p1","o2","p2","p3"
+     &          /),(/"o1","p1"/),ResL1,1.0d0,1.0d0,nrep,LeftTensor=L2,
+     &           RightTensor=w_vvvo)
+
+       write(*,*)'RESL1 after term6',ddot(ndimt1,resL1,1,resL1,1)
+
 !-----------------------------------------------------------
 !      int_temp(e,m) = (G(e,f) * t(f,m) - G(n,m)*t(e,n)) ! corrected from stanton and Gauss 
 !      ResL1    = ResL1 + int_temp(e,m) * V(im,ae) 
@@ -130,16 +136,8 @@
 
       deallocate(int_temp)
 
-       write(*,*)'RESL1 after term6',ddot(ndimt1,resL1,1,resL1,1)
-
-!-------------------------------------------------------
-!      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
-!-------------------------------------------------------
-
-      call contraction_442((/"o1","o2","p2","p3"/),(/"p1","o2","p2","p3"
-     &          /),(/"o1","p1"/),ResL1,-0.5d0,1.0d0,nrep,L2,w_vvvo)
-
        write(*,*)'RESL1 after term7',ddot(ndimt1,resL1,1,resL1,1)
+
 !-------------------------------------------------------
 !  out-of-core term....
 !    ResL1 = ResL1 + G(f,e) * V(ei,fa)

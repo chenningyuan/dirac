@@ -49,7 +49,7 @@ C ** TAU now reorganised in BUF1: NV*NVOOT
 C     --------------------------------
 C     Sort from 12,34 to 134,2 (VOO,O)
 C     --------------------------------
-      CALL SRT6 (NREP,MULTB,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
+      CALL SRT6 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
      &           vooo,vooo_sorted)
 
 C ** VOOO integrals now reorganised in BUF2: NVOOT * NO

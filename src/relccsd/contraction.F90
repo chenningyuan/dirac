@@ -33,6 +33,7 @@
     real*8,allocatable :: ImTensor_temp_temp(:) 
 
 #include "param.inc"
+#include "complex.inc"
 
     transA = 'N'  
     transB = 'N'  
@@ -51,17 +52,17 @@
 
    else
 
-   allocate (ImTensor_temp(dot_product(x_row,y_column)))
+   allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
 
    call cntrct (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor,A0,imTensor_temp,NREP) 
 
-   allocate (ImTensor_temp_temp(dot_product(x_row,y_column)))
+   allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
 
    call srt1c1 (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
 
 !   deallocate (ImTensor_temp)
 
-   call xaxpy (dot_product(x_row,y_column),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
+   call xaxpy (dot_product(x_row,y_column)*rcw,dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
 
    deallocate (ImTensor_temp)
    deallocate (ImTensor_temp_temp)
@@ -98,6 +99,7 @@
 !     We need to eliminate the direct use of the kvvoot (and other) symmetry arrays here to be able to remove symm.inc (should be a function call that give the dimension arrays)
 
 #include "param.inc"
+#include "complex.inc"
 
       allocate(y_column(nrep))
       allocate(x_column(nrep))
@@ -141,12 +143,12 @@
 
     else
 
-   allocate (ImTensor_temp(dot_product(x_row,y_column)))
+   allocate (ImTensor_temp(dot_product(x_row,y_column)*rcw))
    imTensor_temp = 0.0d0
      call CNTRCT (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort, &
     &              right_sorted,A0,imTensor_temp,NREP) 
 
-   allocate (ImTensor_temp_temp(dot_product(x_row,y_column)))
+   allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
 
    imTensor_temp_temp = 0.0d0 
 
@@ -154,7 +156,7 @@
 
    deallocate (ImTensor_temp)
 
-   call xaxpy (dot_product(x_row,y_column),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
+   call xaxpy (dot_product(x_row,y_column)*rcw,dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
 
    deallocate (ImTensor_temp_temp)
 
@@ -210,6 +212,7 @@
 
      call onebody_for_blas (right_order,sorted_left(3:4),im_order,transB,y_row,y_column,FreeIndx) 
 
+
      if (transb=='C') then
 
       allocate(rightTensor_sort(dot_product(y_row,y_column)))
@@ -222,10 +225,9 @@
      
       else
 
+
       call xgemv (transA,x_row,x_column,asym_factor*dia_factor*A1,v_sort,x_row,rightTensor,1,dia_sum_factor*A1,imTensor,1) 
       endif
-
-!  2) carry out the contraction. 
 
 
     end subroutine
@@ -319,13 +321,13 @@
 
     end subroutine
 
-   subroutine contraction_444 (left_order,right_order,im_order,rightTensor,imTensor, &
-           &                   dia_factor,dia_sum_factor,nrep,LeftTensor)
+   subroutine contraction_444 (left_order,right_order,im_order,imTensor, &
+           &                   dia_factor,dia_sum_factor,nrep,RightTensor,LeftTensor)
     
 !----------calling variables-----------------------------------
     character(*), dimension(4), intent(in)   :: left_order, right_order, im_order
     real(8), intent(in), optional :: LeftTensor(:)   !when the left array is a fixed array then we will provide input.    
-    real(8), intent(in) :: RightTensor(:)   
+    real(8), intent(in), optional :: RightTensor(:)   
     integer, intent(in) :: nrep
     real(8), intent(in) :: dia_sum_factor      !dia_factor = alpha in DGEMM ; dia_sum_factor= beta in DGEMM
     real(8), intent(in) :: dia_factor   
@@ -358,12 +360,15 @@
     call sorting_for_blas(save_index,.false.,transA,v_sort,x_row,x_column,if_TotSym=.false.)
     endif
 
-
 !  2) properly sort the fixed array to contract with BLAS. row and colum indices for this array are also extracted here.
 
     call decide_sorting_routine(22,right_order,im_order,sorted_opArray_left,transB,save_index,asym_factor_R,sorted_opArray_right)
 
+    if (present(RightTensor)) then 
+    call sorting_for_blas(save_index,.false.,transB,right_sorted,y_row,y_column, presorted=RightTensor,if_TotSym=.false.)
+    else
     call sorting_for_blas(save_index,.false.,transB,right_sorted,y_row,y_column,rightTensor,if_TotSym=.false.)
+    endif
 
 !  3) matrix-matrix multiplication routine runs for each irreps.
 
@@ -395,7 +400,7 @@
      deallocate(im_temp_temp)
    else
 
-   call sorting_for_blas(save_index,.true.,transA,v_sort,x_row,x_column,im_temp)
+   call sorting_for_blas(save_index,.true.,transA,v_sort,x_row,x_column,im_temp,if_TotSym=.false.)
 
    endif
 
@@ -477,19 +482,19 @@
 
    deallocate(im_temp)
 
-   call sorting_for_blas(match_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp)
+   call sorting_for_blas(match_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)
 
    deallocate(im_temp_temp)
 
    else
 
-   call sorting_for_blas(match_index,.true.,transA,v_sort,x_row,x_column,im_temp) 
+   call sorting_for_blas(match_index,.true.,transA,v_sort,x_row,x_column,im_temp,if_TotSym=.false.) 
 
    deallocate(im_temp)
 
    endif
 
-   call xaxpy (dot_product(x_row,x_column),A1*asym_factor,v_sort,1,ImTensor,1)
+   call xaxpy (dot_product(x_row,x_column),A1*asym_factor*dia_sum_factor,v_sort,1,ImTensor,1)
 
   end subroutine
 
@@ -558,15 +563,34 @@
    call SRT1C1 (nrep,x_row,y_column,im_temp,im_temp_temp)
 
  deallocate(im_temp)
-   call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp)
+   call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)
 
  deallocate(im_temp_temp)
    else
-   call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp)
+   call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp,if_TotSym=.false.)
  deallocate(im_temp)
    endif
    call xaxpy (dot_product(x_row,x_column),A1*asym_factor,right_sort,1,ImTensor,1)
 
   end subroutine
+
+ integer function dotprod_symmpack(row,column) 
+
+#include "symm.inc"
+
+  integer, intent(in) :: row(nrep),column(nrep)
+  integer             :: array_tot(nrep)
+  integer             :: irep,jrep 
+
+   do irep = 1, nrep
+
+       jrep = multb(irep+nrep,1+nrep,2)
+       array_tot(irep+1) = array_tot(irep) + row(irep)*column(irep)  
+       
+   enddo
+      
+       dotprod_symmpack = array_tot(nrep+1) 
+
+ end function
 
   end module

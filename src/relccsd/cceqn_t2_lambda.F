@@ -104,7 +104,7 @@ C
       complex*16       :: zdotc
       real*8           :: ddot,val
       real*8,allocatable :: int_vv(:)
-      real*8,allocatable :: int_oo(:),w_vvvv(:)
+      real*8,allocatable :: int_oo(:),w_vvvv(:),w_intm(:)
       real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
       integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
       integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint 
@@ -124,7 +124,7 @@ C
 !-------------------------------------------------
 
        call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/),
-     &    (/"o1","o2","p1","p2"/),ResL2,1.0d0,0.0d0,nrep,L2,hv) 
+     &    (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,L2,hv) 
 
        write(*,*)'RESL2 after term1',ddot(ndimt2,resL2,1,resL2,1)
 !----------------------------------------------
@@ -132,7 +132,7 @@ C
 !----------------------------------------------
 
        call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/),
-     &    (/"o1","o2","p1","p2"/),ResL2,-1.0d0,0.0d0,nrep,L2,ho) 
+     &    (/"o1","o2","p1","p2"/),ResL2,-1.0d0,1.0d0,nrep,L2,ho) 
 
        write(*,*)'RESL2 after term2',ddot(ndimt2,resL2,1,resL2,1)
 !--------------------------------------------------------
@@ -140,8 +140,8 @@ C
 !--------------------------------------------------------
 
       call contraction_444((/"o3","o4","p1","p2"/),
-     &    (/"o1","o2","o3","o4"/),(/"o1","o2","p1","p2"/),W_oooo,ResL2,
-     &    0.5d0,0.0d0,nrep,L2)
+     &    (/"o1","o2","o3","o4"/),(/"o1","o2","p1","p2"/),ResL2,
+     &    1.0d0,0.0d0,nrep,RightTensor=w_oooo,LeftTensor=L2)
 
        write(*,*)'RESL2 after term3',ddot(ndimt2,resL2,1,resL2,1)
 !--------------------------------------------------------
@@ -149,8 +149,8 @@ C
 !--------------------------------------------------------
 
       call contraction_444((/"o1","o3","p1","p3"/),
-     &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),W_voov,ResL2,
-     &    1.0d0,0.0d0,nrep,L2)
+     &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),ResL2,
+     &    1.0d0,0.0d0,nrep,RightTensor=w_voov,LeftTensor=L2)
 
        write(*,*)'RESL2 after term4',ddot(ndimt2,resL2,1,resL2,1)
 !-----------------------------------------------------------
@@ -168,7 +168,7 @@ C
 
       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/),
      &        (/"o1","o2","p1","p2"/),ResL2,1.0d0, 
-     &        0.0d0,nrep,RightTensor=int_vv)
+     &        1.0d0,nrep,RightTensor=int_vv)
 
       deallocate(int_vv) 
 
@@ -188,7 +188,7 @@ C
 
       call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/),
      &        (/"o1","o2","p1","p2"/),ResL2,1.0d0, 
-     &        0.0d0,nrep,RightTensor=int_oo)
+     &        1.0d0,nrep,RightTensor=int_oo)
 
       deallocate(int_oo) 
 
@@ -236,7 +236,7 @@ C
          n = nvvt(irp)
          m = noot(irp)
          k = nint
-         call xgemm ('n','n',m,k,n,AP5,l2,m,
+         call xgemm ('n','n',m,k,n,A1,l2,m,
      &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
 
          deallocate(w_vvvv) 
@@ -252,6 +252,27 @@ C
 !     call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
 
        write(*,*)'RESL2 after term10',ddot(ndimt2,resL2,1,resL2,1)
+
+!--------------------------------------------------------------------------------
+!     missing term from w_vvvv
+!     w_intm (ij,mf) = w_intm(ij,mf) + L2(ij,ef) * t(e,m)
+!     ResL2(ij,ab) = ResL2(ij,ab) + w_intm(ij,mf) * v(mf,ab) 
+!--------------------------------------------------------------------------------
+
+      allocate(w_intm(iovoot(nrep+1)))
+!     allocate(w_intm(100000))
+
+      w_intm = 0.0d0
+
+      call contraction_424 ((/"o1","o2","p3","p4"/),(/"p3","o3"/),
+     &        (/"o1","o2","o3","p4"/),w_intm,1.0d0, 
+     &        1.0d0,nrep,LeftTensor=w_intm,RightTensor=t1)
+
+      call contraction_444((/"o1","o2","o3","p4"/),
+     &    (/"o3","p4","p1","p2"/), (/"o1","o2","p1","p2"/),ResL2,
+     &    -1.0d0,1.0d0,nrep,LeftTensor=w_intm)
+
+       deallocate(w_intm)      
 
 !-----------------------------------------------------------------------
 !     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  

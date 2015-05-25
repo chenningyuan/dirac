@@ -112,52 +112,50 @@ C     Initialize the work arrays to zero.
 !       write(*,*)'whhhh done'
 
         write(*,*)'whhhh done',ddot(nv1,w_oooo,1,w_oooo,1)
-        write(78,*)'w_ijmn intermediate'
-        write(78,*)'---------------------'
-        write(78,5)(w_oooo(i),i=1,nv1)
+!       write(78,*)'w_ijmn intermediate'
+!       write(78,*)'---------------------'
+!       write(78,5)(w_oooo(i),i=1,nv1)
 
          call f_bar_me(fvo,S1,hov)
-
-         write(*,*)'f_me intermediate'
 
          write(*,*)'whp done',ddot(nfvo,hov,1,hov,1)
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
          write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
-         write(79,*)'f_bar_ae intermediate'
-         write(79,*)'---------------------'
-         write(79,5)(hv(i),i=1,nfvv)
+!        write(79,*)'f_bar_ae intermediate'
+!        write(79,*)'---------------------'
+!        write(79,5)(hv(i),i=1,nfvv)
 
         call w_ejmb(S1,S2,w_voov)
 
-        write(*,*)'w_ejmb done',ddot(nv4,w_voov,1,w_voov,1)
-        write(80,*)'w_bar_ejmb intermediate'
-        write(80,*)'---------------------'
-        write(80,5)(w_voov(i),i=1,nv4)
+        write(*,*)'w_ejmb done',ddot(iovvo(nrep+1),w_voov,1,w_voov,1)
+!       write(80,*)'w_bar_ejmb intermediate'
+!       write(80,*)'---------------------'
+!       write(80,5)(w_voov(i),i=1,nv4)
 
          call wbar_mbej(S2,w_ovvo)
 
-        write(*,*)'w_mbej done',ddot(nv4,w_ovvo,1,w_ovvo,1)
-        write(81,*)'w_bar_mbej intermediate'
-        write(81,*)'---------------------'
-        write(81,5)(w_ovvo(i),i=1,nv4)
+        write(*,*)'w_mbej done',ddot(iovvo(nrep+1),w_ovvo,1,w_ovvo,1)
+!       write(81,*)'w_bar_mbej intermediate'
+!       write(81,*)'---------------------'
+!       write(81,5)(w_ovvo(i),i=1,nv4)
       
 !       write(*,*)'starting w_iemn intermediate'
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
          write(*,*)'w_iemn done',ddot(nv2,w_ovoo,1,w_ovoo,1)
-         write(*,*)'w_bar_iemn intermediate'
-         write(*,*)'---------------------'
-         write(82,5)(w_ovoo(i),i=1,nv2)
+!        write(*,*)'w_bar_iemn intermediate'
+!        write(*,*)'---------------------'
+!        write(82,5)(w_ovoo(i),i=1,nv2)
 
          call w_efam(s1,s2,w_ovvo,hov,cz)
 
          call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
-         write(*,*)'w_bar_efam intermediate'
-         write(*,*)'---------------------'
-         write(83,5)(cz(i),i=1,nv5)
+!        write(*,*)'w_bar_efam intermediate'
+!        write(*,*)'---------------------'
+!        write(83,5)(cz(i),i=1,nv5)
 
 ! out-of-core section of the intemediates
 
@@ -253,7 +251,8 @@ C
      &                            G_oo,G_vv,buf1,buf2,buf3,
      &                            nbuf3,resL2)
 
-       write(*,*)'RESL2 afetr all diagrams',ddot(ndimt2,resL2,1,resL2,1)
+      write(*,*)'RESL2 afetr all diagrams',ddot(ndimt2*rcw,resL2,1,
+     &                                           resL2,1)
 
       CALL XTIME(5,2,'-- T2 EQNS                     ')
 
@@ -281,19 +280,8 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
-
-!      rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
-!      rms = sqrt((rms)/(ndimt1+ndimt2))
-
-       rms = 0.0d0
-       do i =1,ndimt1
-         rms = rms + resl1(i)*resl1(i)
-       enddo
-
-       do i =1,ndimt2
-         rms = rms + resl2(i)*resl2(i)
-       enddo
-
+       rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
+       rms = sqrt((rms)/(ndimt1+ndimt2))
 
        call denom (eps,resL1,resL2,resL1,resL2)
 
@@ -306,7 +294,6 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 !-------------------------------------------------------------------------------------------------------------
       call xaxpy (ndimt1,-A1,resL1,1,l1,1)
       call xaxpy (ndimt2,-A1,resL2,1,l2,1)
-
 
       CALL XTIME(5,1,'- DIIS extrapolation            ')
       call diisx(ndimt1,ndimt2,l1,l2,   

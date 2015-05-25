@@ -395,7 +395,7 @@ C
       INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
-      LOGICAL FIRST, DOINV
+      LOGICAL FIRST,DOINV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -611,7 +611,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT6 (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
+      SUBROUTINE SRT6 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
      &                 OFF,OFF1,BUF1,BUF2)
 C
       IMPLICIT INTEGER (A-Z)
@@ -633,6 +633,7 @@ C
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
       INTEGER NTRIPL(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
+      LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -643,6 +644,7 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
@@ -656,7 +658,11 @@ C
         DO J = 1, JFIE(JREP)
          DO I = 1, IFIE(IREP)
             IKLJ1 = JOFF + ((J-1)*NTRIPL(JREP)+I-1) * RCW + 1
-            CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IKLJ1),IFIE(IREP))
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(IKLJ1),IFIE(IREP),BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IKLJ1),IFIE(IREP))
+            ENDIF 
             IJ = IJ + RCW
          ENDDO
         ENDDO
@@ -667,7 +673,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT9 (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
+      SUBROUTINE SRT9 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
      &                 OFF,OFF1,BUF1,BUF2)
 C
       IMPLICIT INTEGER (A-Z)
@@ -689,6 +695,7 @@ C
       INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
       INTEGER NTRIPL(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
+      LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -699,6 +706,7 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
@@ -712,7 +720,11 @@ C
         DO J = 1, JFIE(JREP)
          DO I = 1, IFIE(IREP)
             KLJI = IOFF+((I-1)*NTRIPL(IREP)+(J-1)*N)*RCW
-            CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(KLJI),1)
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(KLJI),1,BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(KLJI),1)
+            ENDIF
             IJ = IJ + RCW
          ENDDO
         ENDDO
