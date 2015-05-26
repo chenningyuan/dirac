@@ -50,7 +50,7 @@
 !     Local variables                                      
 !     ---------------
       logical            :: done,teq,usedz,right
-      real*8,allocatable :: int_temp(:)
+      real*8,allocatable :: int_temp(:), l2_sorted1(:)
       real*8             :: ddot 
       integer            :: i,j,ij
 !-------------------
@@ -107,9 +107,26 @@
 !      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
 !-------------------------------------------------------
 
-      call contraction_442((/"o1","o2","p2","p3"/),(/"p1","o2","p2","p3"
-     &          /),(/"o1","p1"/),ResL1,1.0d0,1.0d0,nrep,LeftTensor=L2,
-     &           RightTensor=w_vvvo)
+      allocate (l2_sorted1(ndimt2*rcw))
+
+       l2_sorted1 = 0.0d0
+      call srt1c1(nrep,noot,nvvt,L2,l2_sorted1)
+
+      call srt1t3 (nrep,multb,.false.,nvvt,no,no,nvvot,kvvoot,kkvvot,
+     &           l2_sorted1,buf2)
+
+      deallocate (l2_sorted1)
+
+       call srt19 (nrep,multb,.false.,nvvt,nv,no,nvvot,kvvovt,kkvvot,
+     &               w_vvvo,buf3)
+
+      call cntrct ('c','n',no,nv,nvvot,-a1,buf2,buf3,a1,
+     &    ResL1,nrep)
+
+
+!     call contraction_442((/"o1","o2","p2","p3"/),(/"p2","p3","p1","o2"
+!    &          /),(/"o1","p1"/),ResL1,1.0d0,1.0d0,nrep,LeftTensor=L2)!,
+!    &           RightTensor=w_vvvo)
 
        write(*,*)'RESL1 after term6',ddot(ndimt1,resL1,1,resL1,1)
 

@@ -153,6 +153,9 @@ C     Initialize the work arrays to zero.
          call w_efam(s1,s2,w_ovvo,hov,cz)
 
          call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
+
+         write(*,*)'w_efam done',ddot(nv5,cz,1,cz,1)
+
 !        write(*,*)'w_bar_efam intermediate'
 !        write(*,*)'---------------------'
 !        write(83,5)(cz(i),i=1,nv5)

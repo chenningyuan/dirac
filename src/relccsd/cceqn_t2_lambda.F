@@ -107,7 +107,7 @@ C
       real*8,allocatable :: int_oo(:),w_vvvv(:),w_intm(:)
       real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
       integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
-      integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint 
+      integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1 
       integer     :: jabrep,x(nrep,nrep),y(nrep) 
       
 
@@ -206,12 +206,16 @@ C
 
       call lambda2_disconnected(l1,hov,ResL2)
 
-!     out-of-core terms
+      write(*,*)'RESL2 after term8',ddot(ndimt2,resL2,1,resL2,1)
 
+!     out-of-core terms
+!-----------------------------------------------------------------
+!     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
+!-----------------------------------------------------------------
       call contraction_244 ((/"o1","p3"/),(/"p3","o2","p1","p2"/),
      &     (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,L1)
 
-      write(*,*)'RESL2 after term8',ddot(ndimt2,resL2,1,resL2,1)
+      write(*,*)'RESL2 after term9',ddot(ndimt2,resL2,1,resL2,1)
 
 !--------------------------------------------------------
 !    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab) 
@@ -219,25 +223,30 @@ C
 
       done = .false.
       allocate(tau(ndimt2*rcw))
+      tau = 0.0d0
       call gettau(t1,t2,tau)
       off2 = 1
+      off1 = 1
       do irp = 1, nrep
          istart = 0
          if (nvvt(irp).eq.0) cycle
- 10      mint = nbuf3/nvvt(irp)         
-         if (idist(1,1,irp).gt.istart) istart=idist(1,1,irp)
+         mint = nbuf3/nvvt(irp)         
+ 10      kstart = istart
+         if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
          ntot = idist(2,1,irp)
-         nint = min0(mint,ntot-istart)
+         nint = min0(mint,ntot-kstart)
  
          allocate(w_vvvv(nvvt(irp)*nint))
 
 !        call getvvvv (irp,istart,nint,done,w_vvvv,mint)
-         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv)
+         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,
+     &           w_vvvv,nint)
          n = nvvt(irp)
          m = noot(irp)
          k = nint
-         call xgemm ('n','n',m,k,n,A1,l2,m,
-     &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
+         call xgemm ('n','n',m,k,n,A1,l2(off1),m,
+     &           w_vvvv,n,a1,ResL2(off2+istart*rcw),m)
+
 
          deallocate(w_vvvv) 
          if (.not.done) then
@@ -245,6 +254,7 @@ C
             goto 10
          endif
          off2 = off2 + m * n * rcw
+         off1 = off1 + m * n * rcw
        enddo
 
        deallocate(tau)
@@ -259,14 +269,13 @@ C
 !     ResL2(ij,ab) = ResL2(ij,ab) + w_intm(ij,mf) * v(mf,ab) 
 !--------------------------------------------------------------------------------
 
-      allocate(w_intm(iovoot(nrep+1)))
-!     allocate(w_intm(100000))
+      allocate(w_intm(iovoot(nrep+1)*rcw))
 
       w_intm = 0.0d0
 
       call contraction_424 ((/"o1","o2","p3","p4"/),(/"p3","o3"/),
      &        (/"o1","o2","o3","p4"/),w_intm,1.0d0, 
-     &        1.0d0,nrep,LeftTensor=w_intm,RightTensor=t1)
+     &        1.0d0,nrep,LeftTensor=L2,RightTensor=t1)
 
       call contraction_444((/"o1","o2","o3","p4"/),
      &    (/"o3","p4","p1","p2"/), (/"o1","o2","p1","p2"/),ResL2,
