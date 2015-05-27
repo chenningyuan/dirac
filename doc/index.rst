@@ -41,6 +41,7 @@ Updates and patches
  :doc:`ChangeLog <patches/CHANGELOG>` |
  :doc:`Known problems <patches/KNOWN-PROBLEMS>`
 
+.. _FirstSteps:
 
 First steps in DIRAC territory
 ==============================

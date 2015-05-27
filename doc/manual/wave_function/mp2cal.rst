@@ -34,13 +34,15 @@ of active orbitals.
 **Advanced options**
 ====================
 
-keyword(INTFLG)
+.INTFLG
+-------
 
 Specify what two-electron integrals to include in the direct MP2
 calculation (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
 
-keyword(SCREEN)
+.SCREEN
+-------
 
 Screening threshold in the 4-index transformation.
 
@@ -57,7 +59,8 @@ A negative number deactivates screening.
 **Programmers options**
 =======================
 
-keyword(PRINT)
+.PRINT
+------
 
 Print level.
 
