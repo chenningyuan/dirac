@@ -17,8 +17,6 @@ The run-command inside your cluster run script looks then as follows::
 where the DIRAC output is re-directed to the file :file:`dirac_molecule.out`. Make sure that you rename the output file with a proper name
 if you want to take a look at what you did back home.
 
-More information can be found here on the forthcoming `DIRAC12 manual page: <http://dirac.ups-tlse.fr/bast/dirac/doc/latest/tutorials/getting_started.html>. <http://dirac.ups-tlse.fr/bast/dirac/doc/latest/tutorials/getting_started.html>`_
-
 If not stated otherwise we will always use a Gaussian nuclear model in DIRAC.
 
 *****************
