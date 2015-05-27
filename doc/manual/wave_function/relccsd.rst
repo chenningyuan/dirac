@@ -2,16 +2,10 @@
 
 .. _relccsd:
 
-=======
-RELCCSD
-=======
-
 The old namelist style input used up to DIRAC10 is now no longer supported.
 The input below follows the regular DIRAC style conventions.
 
-
-\*\*RELCC
-=========
+starstar(RELCC)
 
 Specification of reference determinant, type of calculation, and general
 settings.
@@ -20,7 +14,7 @@ settings.
 -------
 
 Activate the Fock space module. This option should be used for
-multireference calculations. See further :ref:`CCFSPC`.
+multireference calculations. See further :ref:`*CCFSPC`.
 Because the first sector of Fock space gives the same result as a 
 regular CCSD calculation, the latter calculation is switched off. If you
 do wish to perform also a regular CC calculation (e.g. to get the CCSD(T) energy)
@@ -132,7 +126,7 @@ Print level.
      0
 
 .TIMING
-------
+-------
 
 Print detailed timing information.
 
@@ -211,88 +205,87 @@ Calculate first-order properties (expectation values) for the MP2 wave
 function.
 
 .NATORB
-~~~~~~~
+-------
 
 Calculate natural orbitals (currently only for MP2 density matrix)
 
 .UNRELAXED
-~~~~~~~~~~
+----------
 
 Use unrelaxed density matrix (computationally cheaper but less accurate)
 
-\*CCFSPC
---------
+star(CCFSPC)
 
 Perform a Fock space MRCC calculation in which a model space is
 correlated and then diagonalized to give CC energies for a set of
 states.
 
 .DOIH
-~~~~~
+-----
 
 Use the Intermediate Hamiltonian formalism in which an auxiliary space
 is used to prevent the "intruder state" problem. Default: IH formalism
 not used.
 
 .DOEA
-~~~~~
+-----
 
 Calculate electron affinities (add one electron to the reference state,
 allowing occupation of the active virtual orbitals)
 
 .DOIE
-~~~~~
+-----
 
 Calculate ionization energies (remove one electron from the reference
 state, allowing depletion of the active occupied orbitals)
 
 .DOEA2
-~~~~~~
+------
 
 Calculate second electron affinities (add two electrons to the reference
 state, allowing occupation of the active virtual orbitals)
 
 .DOIE2
-~~~~~~
+------
 
 Calculate second ionization energies (remove two electrons from the
 reference state, allowing depletion of the active occupied orbitals)
 
 .DOEXC
-~~~~~~
+------
 
 Calculate excitation energies (allow excitation from the set of active
 occupied orbitals to the set of active virtual orbitals)
 
 .NACTH
-~~~~~~
+------
 
 Specification of the set of active hole orbitals (from which
 ionization/excitation takes place)
 
 .NACTP
-~~~~~~
+------
 
 Specification of the set of active particle orbitals (to which electron
 attachment/excitation takes place)
 
 .MAXIT
-~~~~~~
+------
 
 Maximum number of iterations allowed to solve the FSCC equations
 
 .MAXDIM
-~~~~~~~
+-------
 
 Set maximum number of amplitude vectors used in the DIIS extrapolation.
 
 .NTOL
-~~~~~
+-----
 
 Specify requested convergence (10^-NTOL) in the amplitudes.
 
 .GESTAT
-~~~~~~~
+-------
 
 Specify the state number in the last active sector to pick the energy 
 from (remember to account for degeneracies) for a state-specific FSCC 
@@ -304,7 +297,7 @@ geometry optimization based on a numerical gradient.
 Options for intermediate hamiltonian in FSCC.
 
 .EHMIN
-~~~~~~
+------
 
 Minimum orbital energy of occupied orbitals forming the auxiliary (Pi)
 space. Orbitals with energies lower than this energy are taken in the
@@ -316,7 +309,7 @@ used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
 
 
 .EHMAX
-~~~~~~
+------
 
 Maximum orbital energy of occupied orbitals forming the auxiliary (Pi)
 space. Orbitals with energies higher than this energy are taken in the
@@ -328,7 +321,7 @@ Could be used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
  
 
 .EPMIN
-~~~~~~
+------
 
 Minimum orbital energy of virtual orbitals forming the auxiliary (Pi)
 space. Orbitals with energies lower than this energy are taken in the
@@ -340,7 +333,7 @@ Could be used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
  
 
 .EPMAX
-~~~~~~
+------
 
 Maximum orbital energy of virtual orbitals forming the auxiliary (Pi)
 space. Orbitals with energies higher than this energy are taken in the
@@ -359,7 +352,8 @@ For *experts* only.
 Following keyowrds belong to the CCIH namelist section.
  
 .IHSCHEME
-~~~~~~~~~
+---------
+
 Choose particular IH scheme. Arguments: Integer IHSCHEME =  1,  or 2.
  
 The IHSCHEME =1 corresponds to the extrapolated IH
@@ -391,42 +385,51 @@ Default: IHSCHEME = 2
 Next key options are used only in case of XIH (IHSCHEME = 1).
  
 .SHIFTH11  
-~~~~~~~~~
+---------
+
 Energy shift for the one-electronic excitations in (1,0) sector. Arguments: real.
 
 .SHIFTH12 
-~~~~~~~~~
+---------
+
 Energy shift for the two-electronic excitations in (1,0) sector. Arguments: real.
 
 .SHIFTH2     
-~~~~~~~~
+--------
+
 Energy shift for the two-electronic excitations in (2,0) sector. Arguments: real.
 
 .SHIFTP11       
-~~~~~~~~~
+---------
+
 Energy shift for the one-electronic excitations in (0,1) sector. Arguments: real.
 
 .SHIFTP12  
-~~~~~~~~~
+---------
+
 Energy shift for the two-electronic excitations in (0,1) sector. Arguments: real.
 
 .SHIFTP2
-~~~~~~~~
+--------
+
 Energy shift for the two-electronic excitations in (0,2) sector. Arguments: real.
 Usually we choose the approximate difference between the highest orbital energy belonging to Pi and the lowest
 orbital energy belonging to the Pm space. 
 Works only with the old style of RELCC input.
 
 .SHIFTHP    
-~~~~~~~~
+--------
+
 Energy shift for the two-electronic excitations in (1,1) sector. Arguments: real
 
 .AIH
-~~~~
+----
+
 Compensation factor, used in expression (1). Arguments: real positive, not greater then 1.0.
  
 .NIH 
-~~~~
+----
+
 Compensation power, used in expression (1). Arguments: integer.
  
 In the case of the limit: AIH=1.0 and NIH -> "infinity" ( NIH>100, in practice)
@@ -440,7 +443,8 @@ Specialist options related to the sorting of two-electron integrals
 and the calculation of the reference Fock matrix.
 
 .NORECMP
-~~~~~~~~
+--------
+
 Do not recompute the Fock matrix, but assume a diagonal matrix with the orbital energies 
 taken from the SCF program on the dioagonal. This is usually not recommended as the latter
 correspond to a restricted open shell expression and RELCCSD uses an unrestricted formalism.
@@ -448,7 +452,8 @@ For closed shell systems the two expressions are identical and this option merel
 a build-in check on the accuracy of transformed integrals.
 
 .USEOE
-~~~~~~
+------
+
 Ignore recomputed Fock matrix and use orbital energies supplied by the SCF program. This option is
 sometimes useful for degenerate open shell cases in which case the perturbation theory for the unrestricted formalism
 is not invariant for rotations among degenerate orbitals. It should only change the outcome

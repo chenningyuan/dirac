@@ -93,7 +93,7 @@ number, separated by blanks. The minimum and maximum accumulated
 occupations allow for a very flexible parameterization of the wave
 function. All determinants fulfilling the occupation constraints will be
 constructed. The second entry after the "/" gives  the 
-number of orbitals per fermion correp. See also the open-shell input in :ref:`SCF` which is similar to the syntax used
+number of orbitals per fermion correp. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
 virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
@@ -154,7 +154,7 @@ maximum number of CI iterations. *default*:
 
 keyword(MXCIVE)
 
-maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`CIROOTS`) to optimize on.
+maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`.CIROOTS`) to optimize on.
 example:
 
 ::
@@ -260,7 +260,7 @@ d. for systems with an ungerade number of e- and an inversion center:
 keyword(CHECKP)
 
 enables a check point write of the current solution vectors to the file
-KRCI\_CVECS.x (see above in :ref:`CIROOTS` for an explanation of how **x** is
+KRCI\_CVECS.x (see above in :ref:`.CIROOTS` for an explanation of how **x** is
 supposed to be replaced) during the Davidson iterations. A checkpoint
 file will be written roughly every 6th iteration. *default*: do not write check points.
 
@@ -274,7 +274,7 @@ enables the storage of the resorted two-electron integrals on file
 IJKL\_REOD which can then be read-in in a restart. This avoids a
 multiple reading from the 4IND\* files and subsequent resorting. The
 keyword has to be present also in the restart to enable the potential
-read-in procedure. Hint: This keyword may be combined with :ref:`MAX CI` == 0
+read-in procedure. Hint: This keyword may be combined with :ref:`.MAX CI` == 0
 in a precedent step in order to save memory for the actual production
 run. This is due to the fact that the resorting step itself requires the
 in-core storage of the unsorted and sorted integrals. *default*: do not write the resorted integrals to file IJKL_REOD.
@@ -283,7 +283,7 @@ keyword(IJKLSP)
 
 enables the splitting of the resorted integrals among the co-workers
 according to their needs in the computation of the sigma vector. It can
-only be used in combination with :ref:`IJKLRO`. *default*: do no split the resorted integrals among the co-workers.
+only be used in combination with :ref:`.IJKLRO`. *default*: do no split the resorted integrals among the co-workers.
 
 **KRCI properties**
 ===================

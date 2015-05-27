@@ -222,6 +222,10 @@
                      if (isVerbose) &
      &               write (*,*) 'Non-fatal error at '//trace_result(1:42)//'. The program will continue.'
                   else
+                     if (var_id.ne.'None') then
+                        nlines_info = nlines_info + 1
+                        write (InfoMessage(nlines_info),'(a)') 'Fatal error at allocation for var. id '//var_id(1:42)
+                     endif
                      call quit(InfoMessage,ErrorMessage,nlines_info)
                   endif
                else
