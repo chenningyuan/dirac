@@ -193,6 +193,15 @@ CMake Generator: NMake Makefiles
 MPI compilers for C/C++ and Fortran (*.bat* wrappers): *mpicc*, *mpicxx*, *mpif90*
 MPI execution program: *mpiexec* (when first time run after Windows start/user login it asks for user password)
 
+We have used this setup command: ::
+
+  python setup --cc=icl --cxx=icl --fc=ifort --type=debug --int64 --generator="NMake Makefiles" -D ENABLE_PCMSOLVER=OFF
+
+an the for building: ::
+
+  cd build
+  nmake
+
 
 Cygwin
 ------
