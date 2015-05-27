@@ -197,7 +197,7 @@ We have used this setup command: ::
 
   python setup --cc=icl --cxx=icl --fc=ifort --type=debug --int64 --generator="NMake Makefiles" -D ENABLE_PCMSOLVER=OFF
 
-an the for building: ::
+and then this command for building: ::
 
   cd build
   nmake
