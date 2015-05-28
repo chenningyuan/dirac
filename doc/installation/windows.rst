@@ -165,10 +165,10 @@ Run your selected test set together with uploading results onto the CDash web::
   C:\Dirac\my-dirac\build> ctest -D ExperimentalTest -L short -D ExperimentalSubmit -j 4
 
 
-Intel
------
+Intel (not available yet)
+-------------------------
 
-We have tested Dirac with *Intel Parallel Studio XE 2015 Update 3 Cluster Edition* (https://software.intel.com/en-us/intel-parallel-studio-xe) which contains
+We tried to test Dirac with *Intel Parallel Studio XE 2015 Update 3 Cluster Edition* (https://software.intel.com/en-us/intel-parallel-studio-xe) which contains
 Intel C/C++ and Fortran compilers, Intel MKL and Intel MPI libraries in virtual machine with *Microsoft Windows Server 2012 R2* running on AMD Athlon II 64-bit processor.
 
 Our installation steps:
@@ -180,7 +180,7 @@ Our installation steps:
   cd C:\Program Files (x86)\Intel\Parallel Studio XE 2015
   psxevars.bat intel64
 
-4. Add *"C:\\Program Files (x86)\\Intel\\Composer XE\\bin\\intel64"* into PATH environment variable.
+4. Add *"C:\\Intel\\Composer XE 2015\\bin\\intel64_mic;C:\\Program Files (x86)\\Intel\\Composer XE\\bin\\intel64"* into PATH environment variable.
 5. Make own *cmd.exe* shortcut, open its properties and put into *"Target"* field (then you can use Intel compilers from this custom command line): ::
 
   %comspec% /k ""C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64 && "C:\Program Files (x86)\Intel\Composer XE 2015\bin\compilervars.bat" intel64 vs2013"
@@ -189,9 +189,18 @@ Intel compiler names:
 
 C/C++ compiler: *icl*
 Fortran compiler: *ifort*
-CMake Generator: NMake Makefiles (default?)
+CMake Generator: NMake Makefiles
 MPI compilers for C/C++ and Fortran (*.bat* wrappers): *mpicc*, *mpicxx*, *mpif90*
 MPI execution program: *mpiexec* (when first time run after Windows start/user login it asks for user password)
+
+We have used this setup command: ::
+
+  python setup --cc=icl --cxx=icl --fc=ifort --type=debug --int64 --generator="NMake Makefiles" -D ENABLE_PCMSOLVER=OFF
+
+and then this command for building: ::
+
+  cd build
+  nmake
 
 
 Cygwin
@@ -226,6 +235,9 @@ In order to build Dirac on Cygwin you have to install these packages:
 
   pip install sphinx python-dateutil pyparsing sphinxcontrib-bibtex sphinx_rtd_theme numpy matplotlib hieroglyph
 
+.. note:: Previous pip install command usually does not work if you have installed *libopenblas*. You should remove it, install *liblapack0*
+and try again.
+  
 Always check if you are using Cygwin programs and libraries (placed in for example: *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*)
 instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*) for example by this commands: ::
 
