@@ -1,5 +1,5 @@
       SUBROUTINE cceqn_driver_lambda(MAXIT,EPS,FOO,FVO,FVV,L1,S1,L2,S2,
-     &                 W_OOOO,CZ,W_VOOV,W_OVVO,W_OVOO,HO,HV,HOV,GOO,GVV,
+     &                 W_OOOO,CZ,W_VOOV,W_OVVO,W_OVOO,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3                              )
 
@@ -27,7 +27,6 @@ C     Intermediaries etc.
       REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
-      REAL*8 GOO(*),GVV(*)
       INTEGER NBUF2,NBUF3 
 
 C     for diis ...
@@ -63,7 +62,7 @@ C---------------Local variables--------------------------------------
       LOGICAL    :: FOCKSP,PRENE
       real*8,allocatable :: resL1(:),resL2(:)
       real*8,allocatable :: G_oo(:),G_vv(:)
-!      integer            :: i !remove
+      integer            :: i !remove
       real*8             :: val  
 
 C---------------Executable code--------------------------------------
@@ -103,8 +102,8 @@ C     Initialize the work arrays to zero.
 
         write(*,*)'whh done'
 
-        write(77,*)'f_bar_mi intermediate'
-        write(77,*)'---------------------'
+!       write(77,*)'f_bar_mi intermediate'
+!       write(77,*)'---------------------'
 !       write(*,5)(ho(i),i=1,nfoo)
 
          call w_ijmn(S1,S2,w_oooo)
@@ -127,9 +126,9 @@ C     Initialize the work arrays to zero.
 !        write(79,*)'---------------------'
 !        write(79,5)(hv(i),i=1,nfvv)
 
-        call w_ejmb(S1,S2,w_voov)
+       call w_ejmb(S1,S2,w_voov)
 
-        write(*,*)'w_ejmb done',ddot(iovvo(nrep+1),w_voov,1,w_voov,1)
+! temp      write(*,*)'w_ejmb done',ddot(iovvo(nrep+1),w_voov,1,w_voov,1)
 !       write(80,*)'w_bar_ejmb intermediate'
 !       write(80,*)'---------------------'
 !       write(80,5)(w_voov(i),i=1,nv4)
@@ -140,7 +139,9 @@ C     Initialize the work arrays to zero.
 !       write(81,*)'w_bar_mbej intermediate'
 !       write(81,*)'---------------------'
 !       write(81,5)(w_ovvo(i),i=1,nv4)
-      
+
+!       call w_mbej(s1,s2,w_voov)
+
 !       write(*,*)'starting w_iemn intermediate'
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
@@ -171,7 +172,7 @@ C     Initialize the work arrays to zero.
 !      write(80,*)'---------------------'
 !      write(80,5)(w_voov(i),i=1,nv4)
 
-!        call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
+!       call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
 
 !        write(*,*)'w_bar_iemn intermediate'
 !        write(*,*)'---------------------'
@@ -195,6 +196,8 @@ C     Initialize the work arrays to zero.
       call xcopy (ndimt2,A0,0,buf1,1)
       call xcopy (nbuf2,A0,0,buf2,1)
       call xcopy (nbuf3,A0,0,buf3,1)
+
+
 
 !---------before starting the iterative procedure, we need to initialize the DIIS-------------
       rms = 0.0d0
@@ -225,6 +228,10 @@ C     Initialize the work arrays to zero.
 
       allocate (G_vv(ivv(nrep+1)*rcw))
       allocate (G_oo(ioo(nrep+1)*rcw))
+
+!     allocate(G_vv(nfvv*rcw))
+!     allocate(G_oo(nfoo*rcw))
+
 
       call G_intm (s2,l2,G_vv,G_oo)
 
@@ -283,8 +290,13 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
-       rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
-       rms = sqrt((rms)/(ndimt1+ndimt2))
+!      rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
+!      rms = sqrt((rms)/(ndimt1+ndimt2))
+
+
+       rms = sum(abs(resL1))+sum(abs(resL2))
+       rms = rms/(ndimt1+ndimt2)
+
 
        call denom (eps,resL1,resL2,resL1,resL2)
 
@@ -292,11 +304,11 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 !       write(*,*)'dot product of RESL2',ddot(ndimt2,resL2,1,resL2,1)
 
 !------------------------------------------------------------------------------------------------------------
-!       here i have summed the residue and old L amplitude value with a negative sign because the denominatior
+!       here i have summed the residues and old L amplitude values with a negative sign because the denominatior
 !       has opposite sign w.r.t. the T amplitudes, which has been used in the denom routine 
 !-------------------------------------------------------------------------------------------------------------
-      call xaxpy (ndimt1,-A1,resL1,1,l1,1)
-      call xaxpy (ndimt2,-A1,resL2,1,l2,1)
+      call xaxpy (ndimt1,A1,resL1,1,l1,1)
+      call xaxpy (ndimt2,A1,resL2,1,l2,1)
 
       CALL XTIME(5,1,'- DIIS extrapolation            ')
       call diisx(ndimt1,ndimt2,l1,l2,   
@@ -319,6 +331,7 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 
       deallocate(resL1) 
       deallocate(resL2) 
+
 
 !     Close and delete DIIS scratch files
 

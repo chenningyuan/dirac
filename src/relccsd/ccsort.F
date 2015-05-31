@@ -321,10 +321,12 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+      IF (.NOT.DOINV) THEN
       IF (FIRST) THEN
         CALL XCOPY(OFF(2),A0,0,BUF2,1)
       ELSE
         CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      ENDIF
       ENDIF
       IJKL = 1
       DO KLREP = 1, NREP
@@ -769,6 +771,9 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+
+      CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+
       JIKLOFF = 0
       DO KLREP = 1, NREP
        IJREP = KLREP
@@ -831,6 +836,8 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+
+      CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
        IJREP = KLREP
@@ -1219,7 +1226,8 @@ C
        endif
 
       if (DO_SORT) then
-      CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      IF (.NOT.DOINV)    
+     &  CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 1
       DO KLREP = 1, NREP
        IJREP = KLREP
@@ -1625,6 +1633,7 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+      CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJLKOFF = 0
       DO KLREP = 1, NREP
        IJREP = KLREP

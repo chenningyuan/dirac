@@ -286,6 +286,29 @@ C     Switch on evaluation of property output if necessary
              PRP_WF(IPRP_WF) = 'MP2 '
           END IF
       END IF
+
+!     following section is for switching on coupled cluster property evaluation. 
+      IF (DOCCSDG) THEN
+!        IF (SPFR) 
+!    &   CALL QUIT('CCSD density matrix not available in spinfree mode')
+          DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'CCSD') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             write(*,*)'value of IPRP_WF',IPRP_WF 
+             PRP_WF(IPRP_WF) = 'CCSD'
+          END IF
+      END IF
+
+
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
       NTOLGR = NTOL
@@ -2630,7 +2653,7 @@ C
      &                    a_BUF3(:),a_FVV(:),a_AZ(:),a_H(:),a_Hbar(:),
      &                    wovoo(:),a_HO(:), a_HV(:),a_HOV(:),a_GOO(:),
      &                    wvvvo(:),a_GVV(:), a_CCC(:),  a_BB1(:),
-     &                             a_BB2(:)
+     &                             a_BB2(:),l1_sort(:),l2_sort(:)
 
 
       real(kind=kreal)       :: total_mem_new = 0
@@ -2967,12 +2990,10 @@ C     Allocate now also this remaining work array
          call alloc( wovoo  , iovoot(nrep+1)*RCW   , id="w1v" )
 !         following array consumes too much memory 
 !        call alloc( wvvvo  ,    NV5*RCW            , id="w3v" ) 
-         allocate(wvvvo(NV5*RCW)) !consumes too much memory
+         allocate(wvvvo(nv5*RCW)) !consumes too much memory
          call alloc( a_HO   ,   NFOO*RCW             , id="ho" )
          call alloc( a_HV   ,   NFVV*RCW             , id="hv" )
          call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
-         call alloc( a_GOO  ,   NFOO*RCW              , id="goo" )
-         call alloc( a_GVV  ,   NFVV*RCW              , id="gvv" )
          call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
          call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" ) 
          call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" ) 
@@ -2987,7 +3008,7 @@ C     Allocate now also this remaining work array
          GOTO 451
       ENDIF
 
-          WRITE (IW,1008)
+          WRITE (IW,1010)
 C
 C         Slaves will only help in the integral calculation.
 C
@@ -3023,20 +3044,34 @@ C         this means that, for the time being, we can deallocate everything?
 
          CALL cceqn_driver_lambda(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
      &          a_T2 ,a_S2 ,a_AZ,wvvvo,a_H,a_Hbar,wovoo,a_HO,a_HV,a_HOV,
-     &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
+     &           a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3)
 
 !        Get amplitude part of density matrix
+        allocate(l1_sort(ndimt1*rcw))
+        allocate(l2_sort(ndimt2*rcw))
 
-         CALL CCDENSC (1, a_T1  , a_S1  , a_T2,   a_S2,
+
+         call srt1c1(nrep,no,nv,a_T1,l1_sort)
+         call srt1c1(nrep,noot,nvvt,a_T2,l2_sort)
+
+
+         CALL CCDENSC (1, a_S1  , l1_sort  , a_S2, l2_sort,
      &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
      &                    a_DVV , a_DVO , a_DOV , a_DMO)
+
+
+        deallocate(l1_sort)
+        deallocate(l2_sort)
+
+!      call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,buf1,buf2,a_dmo)
+
 C
 C        Solve Z-vector equations 
 C
          IF (.NOT.NOZG)
-     &      CALL MP2ZVEC( a_T2, a_BUF1, a_BUF2, a_BUF3,
+     &      CALL MP2ZVEC( a_S2, a_BUF1, a_BUF2, a_BUF3,
      &                   NBUF3, a_XMO , a_DMO)
 C
 C        Create upper triangle of density matrix
@@ -3044,7 +3079,7 @@ C
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C        Write density matrix to file for later processing
 C
-         CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
+         CALL STORE_CC_DENSITY ('CCSD', a_DMO )
 
 C        Release the slaves (in case of parallel runs)
 C
@@ -3068,8 +3103,6 @@ C
          call dealloc( a_HO )
          call dealloc( a_HV )
          call dealloc( a_HOV)
-         call dealloc( a_GOO)
-         call dealloc( a_GVV)
          call dealloc( a_CCC)
          call dealloc( a_BB1) 
          call dealloc( a_BB2) 
@@ -3101,6 +3134,7 @@ C
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
 1008  FORMAT (//" Relaxed density matrix for MP2 properties")
+1010  FORMAT (//" Relaxed density matrix for CCSD properties")
 1002  FORMAT(//,1X,A7,' Gradient results',//3X,'Expectation value',13X,
      & 'Real part',8X,'Imaginary part')
 1004  FORMAT('  <',A8,'> ',T30,2F20.13)

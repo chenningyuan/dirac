@@ -513,7 +513,7 @@ C
 !      if (PRESENT(JFIE))   DO_SORT = .TRUE.
 
       if (DO_SORT) then 
-      CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      if (.not.doinv) CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
        IJREP = KLREP

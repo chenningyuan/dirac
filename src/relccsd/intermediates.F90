@@ -13,6 +13,7 @@
     public f_bar_ae   ! these names are subject to be changed if better alternative is found out
     public w_ijmn
     public w_ejmb
+    public w_mbej
     public w_iemn
     public w_efam
     public wbar_mbej
@@ -61,13 +62,13 @@
 !F_bar_mi(m,i) = F_bar_mi(m,i) - V(mn, ei) * T1(e,n) 
 !+++++++++++++++++++++++++++++++++++++++++++++++++++
 
-     call contraction_422 ((/"o2","o3","p1","o1"/),(/"p1","o3"/),(/"o2","o1"/),t1,ho,-1.0d0,1.0d0,nrep)
+    call contraction_422 ((/"o2","o3","p1","o1"/),(/"p1","o3"/),(/"o2","o1"/),t1,ho,-1.0d0,1.0d0,nrep)
 
 !***********************TERM-3*********
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
 !**************************************
    
-   call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,0.5d0,1.0d0,nrep)
+   call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
 
    end subroutine
 
@@ -83,6 +84,7 @@
       real(8), intent(out) :: hv(nfvv*rcw)
 !---------------Local variables--------------------------------------
      real(8), allocatable :: tau(:)
+     real(8), allocatable :: fov(:)
      real*8      :: ddot
 !---------------------------------------
 ! hv(a,e) = fvv(a,e)  
@@ -91,15 +93,16 @@
      call xcopy (nfvv*rcw,fvv,1,hv,1)
 
 !----------------------------------------------------------------------
-! hv(a,e) = hv(a,e) - V(mn,af) * Tau(ef,mn)
+! hv(a,e) = hv(a,e) - V(mn,ef) * Tau(af,mn)
 !----------------------------------------------------------------------
 
    allocate(tau(ndimt2*rcw))
+   tau = 0.0d0
    call gettau (t1,t2,tau)
 
-  call contraction_442 ((/"o1","o2","p2","p3"/),(/"p1","p3","o1","o2"/),(/"p1","p2"/),hv,-1.0d0,1.0d0,nrep,RightTensor=tau)
+   call contraction_442 ((/"o1","o2","p2","p3"/),(/"p1","p3","o1","o2"/),(/"p1","p2"/),hv,-1.0d0,1.0d0,nrep,RightTensor=tau)
   
-  deallocate(tau) 
+   deallocate(tau) 
 
 !---------------------------------------------------------------
 !F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) -> V(ae,fm) * T1(fm) 
@@ -111,8 +114,12 @@
 !F_bar_ae = F_bar_ae + F(m,a) * T1(e,m)
 !-----------------------------------------------------------------
 
-   call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p1","p2"/),fvo,t1,hv,-1.0d0,1.0d0,nrep)
+   allocate (fov(nfvo*rcw))
+   call srt1c1(nrep,nv,no,fvo,fov)
 
+   call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p1","p2"/),fov,t1,hv,-1.0d0,1.0d0,nrep)
+
+   deallocate (fov)
   end subroutine
 
   subroutine f_bar_me(fvo,t1,hov)
@@ -166,8 +173,8 @@
 ! w_oooo(ij,mn) = w_oooo(ij,mn) + (V(ij,en)*T(e,m))
 !*************************************************
 
-   call contraction_424 ((/"o1","o2","p1","o3"/),(/"p1","o4"/),(/"o1","o2","o3","o4"/),w_oooo, &
-           &      -1.0d0,1.0d0,nrep,RightTensor=t1)
+   call contraction_424 ((/"o1","o2","p1","o4"/),(/"p1","o3"/),(/"o1","o2","o3","o4"/),w_oooo, &
+           &      1.0d0,1.0d0,nrep,RightTensor=t1)
 
 !******************************************************
 ! w_oooo(ij,mn) = w_oooo(ij,mn) +  V(ij,ef) * Tau(ef,mn)
@@ -185,29 +192,30 @@
 
   end subroutine
 
+ 
+!===============================================================================================
+
  subroutine w_ejmb(t1,t2,w_voov)
 
- !---------------Description--------------------------------------------
- !     Calculates w_voov intermediate
- !-----------------------------------------------------------------------
+!!---------------Description--------------------------------------------
+!!     Calculates w_voov intermediate
+!!-----------------------------------------------------------------------
 
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 
- !---------------Calling variables--------------------------------------
-   real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
-   real(8), intent(out) :: w_voov(rcw,ivoov(nrep+1))                ! Intermediate.
- !---------------Local Variables----------------------------------------
-  real(8), allocatable :: tau(:)
-  real*8      :: ddot
- !--------------------
- ! initialize w_voov
- !--------------------
+!---------------Calling variables--------------------------------------
+  real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
+  real(8), intent(out) :: w_voov(rcw,ivoov(nrep+1))                ! Intermediate.
+!---------------Local Variables----------------------------------------
+ real(8), allocatable :: tau(:)
+ real*8      :: ddot
+!--------------------
+! initialize w_voov
+!--------------------
 
-  write(*,*)'intermediate w_ejmb starts here'    
-
-  call getvoov (w_voov)
+ call getvoov (w_voov)
 
 !---------------------------------------------------
 !   w_voov(ej,mb) = w_voov(ej,mb) - V(nj,mb)*T1(e,n)
@@ -235,10 +243,82 @@
 !  w_voov(ej,mb) = w(ej,mb) + V(ej,fb)*t(f,m) 
 !--------------------------------------------------
 
-   call contraction_424 ((/"p2","o1","p1","p3"/),(/"p3","o2"/),(/"p2","o1","o2","p1"/),w_voov, &
-              &      -1.0d0,1.0d0,nrep,RightTensor=t1)
+  call contraction_424 ((/"p2","o1","p1","p3"/),(/"p3","o2"/),(/"p2","o1","o2","p1"/),w_voov, &
+             &      -1.0d0,1.0d0,nrep,RightTensor=t1)
 
-  end subroutine
+ end subroutine
+
+
+
+
+!===========================================================================================================
+
+
+ subroutine w_mbej(t1,t2,w_ovvo)
+
+!!---------------Description--------------------------------------------
+!!     Calculates w_voov intermediate
+!!-----------------------------------------------------------------------
+
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+
+!---------------Calling variables--------------------------------------
+  real(8), intent(in)  :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
+  real(8), intent(out) :: w_ovvo(rcw,ivoov(nrep+1))                ! Intermediate.
+!---------------Local Variables----------------------------------------
+ real(8), allocatable :: tau(:)
+ real(8), allocatable :: w_vovo(:)
+ real*8      :: ddot
+!--------------------
+! initialize w_voov
+!--------------------
+
+
+  w_ovvo = 0.0d0
+
+  allocate (w_vovo(nv4*rcw))
+
+  call getvovo (w_vovo)
+
+  call srt1l1 (nrep,multb,.false.,nvo,nv,no,nvo,iovvo,iiov,w_vovo,w_ovvo) 
+
+  deallocate (w_vovo)
+
+
+!---------------------------------------------------
+!   w_ovvo(mb,ej) = w_voov(mb,ej) - V(mn,ej)*T1(b,n)
+!---------------------------------------------------
+
+   call contraction_424 ((/"o2","o3","p2","o1"/),(/"p1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+            &      -1.0d0,1.0d0,nrep,RightTensor=t1)
+
+!----------------------------------------------------------------------
+!   w_ovvo(mb,ej) = w_ovvo(mb,ej) + V(mn,ef)*(T2(bf,jn)-T1(f,j)*T1(b,n)
+!----------------------------------------------------------------------
+
+  allocate (tau(ndimt2*rcw))
+
+  tau = 0.0d0
+
+  call gettau (t1,t2,tau,'approximate')
+
+  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+   &      1.0d0,0.0d0,nrep,RightTensor=tau)
+
+  deallocate (tau)
+
+!--------------------------------------------------
+!  w_ovvo(mb,ej) = w(mb,ej) + V(mb,ef)*t(f,j) 
+!--------------------------------------------------
+
+  call contraction_424 ((/"o2","p1","p2","p3"/),(/"p3","o1"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+             &      1.0d0,1.0d0,nrep,RightTensor=t1)
+
+ end subroutine
+
+!-----=========================--------------
 
  subroutine w_iemn(t1,t2,w_ovoo,wbar_ovvo,w_oooo,hov)
 
@@ -268,7 +348,7 @@
 !-----------------------------------------------------
 
   call contraction_244 ((/"o1","p2"/),(/"p2","p1","o2","o3"/),(/"o1","p1","o2","o3"/),w_ovoo, &
-           &      -1.0d0,0.0d0,nrep,LeftTensor=hov,RightTensor=t2)
+           &      +1.0d0,0.0d0,nrep,LeftTensor=hov,RightTensor=t2)
 
 !-------------------------------------------------------
 !   w_ovoo(ie,mn) = w_ovoo(ie,mn) +  V(io,mf) * T2(ef,no)
@@ -297,14 +377,14 @@
 !-----------------------------------------------------------
 !**out of core term..
 
-! allocate (tau(ndimt2*rcw))
-! tau = 0.0d0
-! call gettau (t1,t2,tau)
+  allocate (tau(ndimt2*rcw))
+  tau = 0.0d0
+  call gettau (t1,t2,tau)
 
-! call contraction_444 ((/"o1","p1","p2","p3"/),(/"p2","p3","o2","o3"/),(/"o1","p1","o2","o3"/),w_ovoo, &
-!            &      1.0d0,1.0d0,nrep,RightTensor=tau)
+  call contraction_444 ((/"o1","p1","p2","p3"/),(/"p2","p3","o2","o3"/),(/"o1","p1","o2","o3"/),w_ovoo, &
+             &      1.0d0,1.0d0,nrep,RightTensor=tau)
 
-! deallocate(tau)
+  deallocate(tau)
 
   end subroutine
 
@@ -328,6 +408,8 @@
  !--------------------
  ! initialize wbar_ovvo
  !--------------------
+  wbar_ovvo = 0.0d0
+
   allocate (w_vovo(nv4*rcw))
 
   call getvovo (w_vovo)
@@ -378,11 +460,11 @@
 
   allocate (tau(ndimt2*rcw))
   tau = 0.0d0
-  call gettau (t1,t2,tau)
+  call gettau (t1,t2,tau,'approximate')
   call contraction_444 ((/"p2","o2","p1","p4"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
              &      1.0d0,0.0d0,nrep,RightTensor=tau)
 
-! deallocate (tau)
+  deallocate (tau)
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 
 !------------------------------------------------------------
@@ -398,6 +480,10 @@
 !---------------------------------------------------------------------------
 !  diagram4 : w_vvvo(ef,am) =  w_vvvo(ef,am) + 0.5d0 * V(no,am) * tau(ef,no) 
 !---------------------------------------------------------------------------
+
+  allocate (tau(ndimt2*rcw))
+  tau = 0.0d0
+  call gettau (t1,t2,tau)
   call contraction_444 ((/"o2","o3","p1","o1"/),(/"p2","p3","o2","o3"/),(/"p2","p3","p1","o1"/),w_vvvo, &
              &      1.0d0,0.0d0,nrep,RightTensor=tau)
   deallocate (tau)
@@ -430,16 +516,16 @@
 
 !---------------Local variables--------------------------------------
                                                                     
-      REAL*8 T1VAL(2)                                                
-      DATA T1VAL /2*0.0D0/                                            
+      real*8  :: T1VAL(2)                                                
       logical :: done
       integer :: cd,cco,istart,nint,akcd,ci,akci,t1di,di,akdi,t1ci,cmin,c,d,i
       integer :: crep,drep,irp,mint
       real*8,allocatable  :: tau (:)
 !------------------------------------------------------------------
 !  w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m)
-! H is kept in BUF1, still ordered VOVO
 !------------------------------------------------------------------
+
+      t1val = (/0.0d0,0.0d0/)
 
      allocate (tau(ndimt2*rcw))
      call gettau (t1,t2,tau)
@@ -464,9 +550,6 @@
 ! ** We therefore have to count upwards in case of ISTART.NE.0 !!
 
          call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,buf2,nint)
-
-!        CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-!        CALL DELINT ('VOVV','KDDD',BUF3,IRP,ISTART,NINT)
 
 ! ** now start SORTING and contraction loop
 
@@ -519,17 +602,6 @@
  15        CONTINUE
  20      CONTINUE
  30    CONTINUE
-!------------------------------------------------------------------
-! Now sort H(AK,CI) to H(AI,CK)  is to be done in any case !!
-! The H buffer is not changed any more up to the final XGEMM !
-! Every other calculation is done in BUF1 !!
-!------------------------------------------------------------------
-!   CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO, &
-!   &            BUF1,w_vovo)
-
-!  call srt1r1 (nrep,multb,lfa,nvo,nv,no,nvo,ivovo,iiov,buf1,buf2)
-!  
-!  call xaxpy (nv4,-A1,buf2,1,w_vovo,1) 
 
    deallocate (tau)
 
@@ -555,8 +627,7 @@
 
 !---------------Local variables--------------------------------------
 !                                                                    
-      REAL*8 T1VAL(2)                                                
-      DATA T1VAL /2*0.0D0/                                            
+      real*8  :: T1VAL(2)                                                
       logical :: done
       integer :: cd,cco,istart,nint,akcd,ic,akic,t1di,id,akid,t1ci,cmin,c,d,i
       integer :: crep,drep,irp,mint
@@ -564,6 +635,8 @@
 ! H(AK,CI) = H(AK,CI) - W(AK,CD) * T(D,I)
 ! H is kept in BUF1, still ordered VOVO
 !------------------------------------------------------------------
+
+      t1val = (/0.0d0,0.0d0/)
 
       if(myproc.eq.master) then
         CALL xcopy(nv4,w_vovo,1,BUF1,1)
@@ -707,7 +780,7 @@
 !---------------Calling variables-------------------------------------
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)! Amplitudes.
-   real(8), intent(inout) :: w_ovoo(rcw,nv2)              ! Intermediate.
+   real(8), intent(inout) :: w_ovoo(rcw,iovoot(nrep+1))              ! Intermediate.
    real(8), intent(in)    :: buf1(*),buf2(*)              ! buffer arrays.
    integer, intent(in)    :: nbuf3 
 
@@ -721,9 +794,10 @@
 !----------------------------------------------
 !w(ie,mn) = w(ie,mn) + 1/2 V(ie,fg)*tau(fg,mn)
 !----------------------------------------------
-   call xcopy(nv2,A0,0,buf2,1)
+   call xcopy(iovoot(nrep+1),A0,0,buf2,1)
 
    allocate(tau(ndimt2*rcw))
+   tau = 0.0d0
    call gettau (t1,t2,tau)
 
     OFF1 = 1
@@ -746,7 +820,7 @@
  ! **      C=A*B + C  ==> all the already computed contributions
  ! ** will be added in this IRREP.
 
-           CALL XGEMM ('N','N',M,N,K,A1,BUF1,M,tau(OFF1+ISTART*RCW), &
+           CALL XGEMM ('N','N',M,N,K,A1,BUF1,M,tau(off1+istart*rcw), &
             &               KD,A1,BUF2(OFF2),M)
            IF (.NOT.DONE) THEN
            ISTART = ISTART + NINT
@@ -758,9 +832,9 @@
 
     deallocate (tau)
 
-      call srt1l1 (nrep,multb,lfa,nvo,nv,no,noot,ivooot,iiov,buf2,buf1)
+      call srt1l1 (nrep,multb,lfa,nvo,nv,no,noot,iovoot,iiov,buf2,buf1)
 
-      call xaxpy (nv2,-A1,buf1,1,w_ovoo,1) 
+      call xaxpy (iovoot(nrep+1),A1,buf1,1,w_ovoo,1) 
 
   end subroutine
 
@@ -1190,12 +1264,14 @@
          if (carith) then
             call conjuga (nint*nvvt(irp),w_vvvv,1)
          endif
-
+   
 !----------------------------------------------
 ! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU*(ef,mn)
 !----------------------------------------------
 
        allocate(w_vvvv_temp(nint,nvvt(irp))) !be careful about rcw. probably this is OK. 
+
+       w_vvvv_temp = 0.0d0
 
        call getvvoo (buf1)
        m = nvvt(irp)
@@ -1203,8 +1279,9 @@
        k = noot(irp)
        abkl = (ivvoott(irp)+istart)*rcw+1
        off1 = off1 + ivvoott(irp)*rcw  
-       call xgemm ('n','c',n,m,k,a1,buf1(abkl),n,tau(off1),nvvt(irp), &
-     &               a0,w_vvvv_temp,n)
+
+       call xgemm ('n','c',n,m,k,a1,buf1(abkl),m,tau(off1),nvvt(irp), &
+     &               a0,w_vvvv_temp,m)
 
        call xaxpy(nint*nvvt(irp),a1,transpose(w_vvvv_temp),1,w_vvvv,1)
 

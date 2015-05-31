@@ -174,6 +174,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -181,12 +182,10 @@ C---------------Executable code--------------------------------------
       allocate (VVOOO(NV2*IRW*RCW))
 
       CALL RREAD(ITAPT+2,VVOOO,NV2*IRW*RCW,1)
-
        
       CALL SRT1C1 (NREP,NVO,NOOT,VVOOO,VOOVO) 
 
       deallocate(VVOOO)
-
 
       RETURN
       END
@@ -219,6 +218,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -226,7 +226,7 @@ C---------------Executable code--------------------------------------
       allocate (VVOOO(NV2*IRW*RCW))
 
       CALL RREAD(ITAPT+2,VVOOO,NV2*IRW*RCW,1)
-       
+
       CALL SRT1L1(NREP,MULTB,.FALSE.,NVO,NV,NO,NOOT,IOVOOT,IIOV,
      &              VVOOO,VOVOO)
 
@@ -261,14 +261,15 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
-      allocate (VOVOO(NV2*IRW*RCW))
+      allocate (VOVOO(IOVOOT(NREP+1)*IRW*RCW))
 
       CALL GETOVOO (VOVOO) 
-       
+
       CALL SRT1C1 (NREP,NOV,NOOT,VOVOO,VOOOV) 
 
       deallocate(VOVOO)
@@ -339,6 +340,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -422,6 +424,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -568,6 +571,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -605,6 +609,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
+#include "param.inc"
 C
 C---------------Local variables--------------------------------------
 C

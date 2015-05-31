@@ -134,6 +134,60 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+       subroutine cc_density (l1,l2,t1,t2,doo,dvv,buf1,buf2,dmo)
+
+       use contraction
+
+#include "symm.inc"
+#include "complex.inc"
+!-------------------------calling variables-------------------------
+       real*8, intent(in)  :: l1(ndimt1*rcw),l2(ndimt2*rcw),
+     &                        t1(ndimt1*rcw),t2(ndimt2*rcw)
+       real*8, intent(out) :: doo(*),dvv(*),dmo(*) 
+       real*8, intent(out) :: buf1(*),buf2(*)
+!-------------------------------------------------------------------
+
+      call xcopy (nfoo,a0,0,doo,1)
+      call xcopy (nfvv,a0,0,dvv,1)
+
+!-------------------------------------------------------------------
+!   doo(j,i) = doo(j,i) - l2(jm,ef) * t2(ef,im)
+!-------------------------------------------------------------------
+
+        call contraction_442 ((/"o2","o3","p1","p2"/),
+     &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep,
+     &    LeftTensor=l2,RightTensor=t2)
+
+!---------------------------------------------------------------------
+!    doo(j,i) = doo(j,i) - l1(j,e)*t1(e,i)
+!---------------------------------------------------------------------
+
+       call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
+     &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
+
+!----------------------------------------------------------------------
+!     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
+!----------------------------------------------------------------------
+
+      call contraction_442 ((/"o1","o2","p1","p3"/),
+     &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,
+     &     LeftTensor=l2,RightTensor=t2 )
+
+!----------------------------------------------------------------------
+!     dvv(b,a) = dvv(b,a) + l1(m,a)*t1(b,m)
+!----------------------------------------------------------------------
+
+      call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
+     &              l1,t1,dvv,1.0d0,1.0d0,nrep)
+
+
+      call convdm(buf1,buf2,doo,dvv,dmo)
+
+
+      end subroutine
+
+
       SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,dmo)
 C
       IMPLICIT INTEGER (A-Z)
@@ -435,6 +489,9 @@ C
       CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
       CALL SRTT1T2(BUF2,BUF1)
 
+
+      write(*,*)'passed this step inside ccgrad 1' 
+
 C
 C     +---------------------------------------------------+
 C     | Generate the tau dependent part of the Lagrangian |
@@ -442,6 +499,10 @@ C     +---------------------------------------------------+
 C
       LFREE=NBUF3*RCW
       CALL TR5INI(XMO,BUF2,BUF1,BUF3,LFREE)
+
+
+      write(*,*)'passed this step inside ccgrad2' 
+
 C
 C     +-------------------------------------------------------+
 C     | Calculate the ji' and b'a parts of the density matrix |
@@ -450,6 +511,10 @@ C
       KFREE=1
       LFREE=NBUF3*RCW
       CALL CALCDJI(DMO,XMO,BUF3,KFREE,LFREE)
+
+
+      write(*,*)'passed this step inside ccgrad3' 
+
 C
 C     +-------------------------------------------------+
 C     | Generate the D dependent part of the Lagrangian |
@@ -458,6 +523,10 @@ C
       KFREE=1 
       LFREE=NBUF3*RCW
       CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
+
+
+      write(*,*)'passed this step inside ccgrad4' 
+
 C
 C     +----------------------------------------+
 C     | Solve Z-vector equations by using XRPA |
@@ -466,6 +535,9 @@ C
       KFREE=1
       LFREE=NBUF3*RCW
       CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
+
+      write(*,*)'passed this step inside ccgrad5' 
+
 C 
       CALL FLSHFO(IW)
 
@@ -973,8 +1045,17 @@ C
 C
 C---------------Executable code--------------------------------------
  
+      write(*,*)'extreme debugging'
+
       ADD_2_FOCK = .FALSE.
       SELECT CASE (WF)
+
+         CASE ("CCSD")
+            WRITE (LUPRI,*) " Retrieving CC density matrix from file"
+            LABEL        = 'CCSDDENS'
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .TRUE.
+            IERR         = 0
          CASE ("MP2 ")
             WRITE (LUPRI,*) " Retrieving MP2 density matrix from file"
             LABEL        = 'MP2 DENS'

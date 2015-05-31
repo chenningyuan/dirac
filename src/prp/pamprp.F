@@ -65,6 +65,9 @@ C
      &     3X,'Additional contributions from:',/,
      &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
+
+       write(*,*)'i am here searching for the WF'
+
       DO I = 1, NPRP_WF
          WF = PRP_WF(I)
 C
@@ -75,6 +78,8 @@ C
             CALL TKRMCORB
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'MP2 ') THEN
+            CALL SETDC2(0)
+         ELSE IF (WF .EQ. 'CCSD') THEN
             CALL SETDC2(0)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP *** ' //

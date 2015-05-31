@@ -12,6 +12,8 @@
 
      private
 
+     integer,parameter :: maxdim = 1000000
+
      contains
 
    subroutine contraction_222 (left_order,right_order,im_order,leftTensor,rightTensor,imTensor, &
@@ -66,7 +68,7 @@
 
 !   deallocate (ImTensor_temp)
 
-   call xaxpy (dot_product(x_row,y_column)*rcw,dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
+   call xaxpy (dot_product(x_row,y_column),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
 
    deallocate (ImTensor_temp)
    deallocate (ImTensor_temp_temp)
@@ -90,9 +92,8 @@
     real(8),intent(inout) :: ImTensor(*)
     integer               :: match_index  
     character(1)          :: transA,transB
-    real(8)               :: v_sort(1000000)
-    real(8)               :: right_sorted(1000000)    
-
+    real(8),allocatable   :: v_sort(:)
+    real(8),allocatable   :: right_sorted(:)    
     character(2)          :: sorted_oparray_left(4)
     character(2)          :: sorted_oparray_right(4)
     logical               :: array_equal = .true. 
@@ -100,10 +101,13 @@
     real(8),allocatable   :: ImTensor_temp(:) 
     real(8),allocatable   :: ImTensor_temp_temp(:) 
 !--------------------------------------------------------------
-!     We need to eliminate the direct use of the kvvoot (and other) symmetry arrays here to be able to remove symm.inc (should be a function call that give the dimension arrays)
 
 #include "param.inc"
 #include "complex.inc"
+
+  allocate(v_sort(maxdim*rcw))  
+  allocate(right_sorted(maxdim*rcw))  
+
 
       allocate(y_column(nrep))
       allocate(x_column(nrep))
@@ -140,7 +144,6 @@
      call sorting_for_blas(match_index,.false.,transB,right_sorted,y_row,y_column)
      endif  
 
-
 ! 3) contraction routine for symmetry-packed arrays.
 
    if (array_equal) then
@@ -162,7 +165,7 @@
 
    deallocate (ImTensor_temp)
 
-   call xaxpy (dot_product(x_row,y_column)*rcw,dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
+   call xaxpy (dot_product(x_row,y_column),dia_sum_factor*A1,imTensor_temp_temp,1,imTensor,1) 
 
    deallocate (ImTensor_temp_temp)
 
@@ -172,6 +175,9 @@
      deallocate(x_column)
      deallocate(x_row)
      deallocate(y_row)
+
+  deallocate(v_sort)  
+  deallocate(right_sorted)  
 
     end subroutine
 
@@ -192,13 +198,21 @@
     character(1)   :: transA,transB
     integer        :: match_index,i 
     integer        :: asym_factor
-    real(8)        :: v_sort(100000)
+    real(8),allocatable        :: v_sort(:)
     real(8),allocatable        :: RightTensor_sort(:)
     character(2)   :: sorted_left(4),freeindx(2)
 #include "param.inc"
 
-!  1) fetch the array which is flexible in terms of indices. sort it to make suitable for BLAS.
+!---------------known problem----------------------------------------------
+! call to an XGEMV routine is different from DGEMM. we need to provide the untransposed dimensions even for the cases when
+!transposition is necessary. way out is to use DGEMM in this case also. however, as of now, transA='C' case has not
+!appeared.
+!--------------------------------------------------------------------------
+!  1> fetch the array which is flexible in terms of indices. sort it to make suitable for BLAS.
 !     also determine the row and column index for the matrix-vector multiplication routine.
+
+
+  allocate(v_sort(maxdim))  
 
      v_sort = 0.0d0
 
@@ -206,6 +220,7 @@
 
      call decide_sorting_routine(22,left_order,right_order,im_order,transA,match_index,asym_factor, &
     &                        sorted_opArray=sorted_left)
+
 
      if (present(LeftTensor)) then
 
@@ -217,8 +232,8 @@
 
      endif
 
-     call onebody_for_blas (right_order,sorted_left(3:4),im_order,transB,y_row,y_column,FreeIndx) 
-
+     call onebody_for_blas (right_order,sorted_left(3:4),im_order,transB,y_row,y_column) 
+    
 
      if (transb=='C') then
 
@@ -228,17 +243,17 @@
 
       call srt1c1 (nrep,y_column,y_row,rightTensor,rightTensor_sort)
 
-      call xgemv (transA,x_row,x_column,asym_factor*dia_factor*A1,v_sort,x_row,rightTensor_sort,1,dia_sum_factor*A1,imTensor,1) 
+      call xgemv (transA,x_row(1),x_column(1),asym_factor*dia_factor*A1,v_sort,x_row(1),rightTensor_sort, &
+      &            1,dia_sum_factor*A1,imTensor,1) 
 
       deallocate(rightTensor_sort)
      
       else
 
-
-      call xgemv (transA,x_row,x_column,asym_factor*dia_factor*A1,v_sort,x_row,rightTensor,1,dia_sum_factor*A1,imTensor,1) 
+      call xgemv (transA,x_row(1),x_column(1),asym_factor*dia_factor*A1,v_sort,x_row(1),rightTensor,1,dia_sum_factor*A1,imTensor,1) 
       endif
 
-
+      deallocate(v_sort)
     end subroutine
 
    subroutine contraction_242 (left_order,right_order,im_order,LeftTensor,ImTensor, &
@@ -265,11 +280,14 @@
     character(1)   :: transA,transB,trans1A
     integer        :: match_index,i 
     integer        :: asym_factor
-    real(8)        :: right_sort(100000)
+    real(8),allocatable        :: right_sort(:)
     real(8),allocatable        :: left_sort(:)
 !---------------------------------------------------------------    
 #include "param.inc"
 #include "complex.inc"
+
+
+   allocate(right_sort(maxdim*rcw))  
 
      right_sort = 0.0d0
      transA = 'N'
@@ -280,17 +298,19 @@
    call decide_sorting_routine(22,right_order,im_order,left_order,transA,match_index,asym_factor,&
    &                          sorted_opArray=sorted_oparray_right)
 
+
    if (present(RightTensor)) then
    call sorting_for_blas(match_index,.false.,transA,right_sort,y_row,y_column,presorted=RightTensor,if_totsym=.true.)
    else
    call sorting_for_blas(match_index,.false.,transA,right_sort,y_row,y_column,if_totsym=.true.)
    endif
 
+
 !**  2> sort onebody integral properly to use in BLAS.
 
    call onebody_for_blas (left_order,im_order,sorted_oparray_right,trans1A,x_row,x_column)
 
-   allocate (left_sort(size(LeftTensor)))
+   allocate (left_sort(dot_product(x_row,x_column)))
 
      left_sort = 0.0d0
 
@@ -300,7 +320,7 @@
 
    else
     
-   call xcopy (size(LeftTensor),LeftTensor,1,left_sort,1)  
+   call xcopy (dot_product(x_row,x_column),LeftTensor,1,left_sort,1)  
 
    endif
 
@@ -328,6 +348,7 @@
   endif
 
    deallocate (left_sort)
+   deallocate (right_sort)
 
     end subroutine
 
@@ -347,13 +368,17 @@
    character(1)   :: transA, transB
    integer        :: save_index,i
    character(2)   :: sorted_opArray_left(4),sorted_opArray_right(4)
-   real(8)        :: v_sort(1000000)
-   real(8)        :: right_sorted(1000000)
+   real(8),allocatable  :: v_sort(:)
+   real(8),allocatable  :: right_sorted(:)
    real(8),allocatable :: im_temp(:)
    real(8),allocatable :: im_temp_temp(:)
    integer             :: asym_factor_R,asym_factor_L
 
 #include "param.inc"
+
+  allocate(v_sort(maxdim))  
+  allocate(right_sorted(maxdim))  
+
 
    v_sort       = 0.0d0
    right_sorted = 0.0d0
@@ -424,6 +449,9 @@
    &              dia_sum_factor*A1,imTensor,nrep) 
    endif
 
+   deallocate(v_sort)
+   deallocate(right_sorted)
+
   end subroutine
 
    subroutine contraction_424 (left_order,right_order,im_order,ImTensor, &
@@ -441,12 +469,16 @@
     character(1) :: transA, transB
     integer :: match_index,i
     character(2) :: FreeIndx(2),sorted_opArray(4)
-    real(8) :: v_sort (1000000)
+    real(8),allocatable :: v_sort (:)
     integer :: asym_factor 
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
 
 #include "param.inc"
+
+
+  allocate(v_sort(maxdim))  
+
    v_sort = 0.0d0
    transA = 'N'
    transB = 'N'
@@ -509,6 +541,8 @@
 
    call xaxpy (dot_product(x_row,x_column),A1*asym_factor*dia_sum_factor,v_sort,1,ImTensor,1)
 
+   deallocate(v_sort)
+
   end subroutine
 
   subroutine contraction_244 (left_order,right_order,im_order,ImTensor, &
@@ -526,12 +560,16 @@
     character(1) :: transA, transB
     integer :: match_index,i
     character(2) :: FreeIndx(2),sorted_opArray(4)
-    real(8) :: right_sort (1000000)
+    real(8),allocatable :: right_sort (:)
     integer :: asym_factor
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
 
 #include "param.inc"
+
+
+  allocate(right_sort(maxdim))  
+
    right_sort = 0.0d0
    transA = 'N'
    transB = 'N'
@@ -559,8 +597,8 @@
    allocate(im_temp(dot_product(x_row,y_column)))
    im_temp = 0.0d0
 
-  if (present(LeftTensor)) call CNTRCT (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,LeftTensor,&
-  &        right_sort,A0,im_temp,NREP) 
+  if (present(LeftTensor)) call cntrct (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
+  &        right_sort,A0,im_temp,nrep) 
 
    right_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the imtermediate.
@@ -585,6 +623,8 @@
  deallocate(im_temp)
    endif
    call xaxpy (dot_product(x_row,x_column),A1*asym_factor,right_sort,1,ImTensor,1)
+
+  deallocate(right_sort)
 
   end subroutine
 
