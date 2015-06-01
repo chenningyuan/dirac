@@ -73,7 +73,7 @@ if [[ -d "$TMP_DIR" ]]; then
 else
   mkdir -p $TMP_DIR
 fi
-git clone git@repo.ctcc.no:dirac.git  $TMP_DIR
+git clone --recursive git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
 git submodule update
 git submodule status

@@ -56,7 +56,7 @@ echo %DATE% %TIME% 1>>%LOG% 2>&1
 cd %TMP%
 set CLONED=trunk_cloned
 if exist %CLONED% rmdir /S /Q %CLONED% 1>>%LOG% 2>&1
-git clone git@gitlab.com:dirac/dirac.git %CLONED% 1>>%LOG% 2>&1
+git clone --recursive git@gitlab.com:dirac/dirac.git %CLONED% 1>>%LOG% 2>&1
 cd %CLONED%
 set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
