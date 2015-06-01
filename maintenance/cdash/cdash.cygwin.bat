@@ -5,6 +5,10 @@ rem /home/milias/test directory must exist before script is run
 rem /home/milias/cdash-testing.log file contains log from previous run
 rem this script can be placed everywhere you want and does not need any arguments
 
+rem initialize the cygserver (important for  DIRAC parallel runs)
+cd C:\cygwin64\bin
+cygstart.exe  --action=runas  C:\cygwin64\usr\sbin\cygserver.exe --yes
+
 rem unset PUTTYs environment variable (it makes problems to Cygwin git)
 set GIT_SSH=
 
