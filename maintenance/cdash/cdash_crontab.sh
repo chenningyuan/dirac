@@ -45,10 +45,9 @@ mkdir -p $CTEST_TEMP_DIR
 
 export DIRAC_TMPDIR=$CTEST_TEMP_DIR/run
 
-git clone --recursive git@gitlab.com:dirac/dirac.git $CTEST_TEMP_DIR/compile
+git clone --recursive -b $BRANCH git@gitlab.com:dirac/dirac.git $CTEST_TEMP_DIR/compile
 
 cd $CTEST_TEMP_DIR/compile
-git checkout $BRANCH &> /dev/null
 ./pamadm $PAMADM_FLAGS
 
 if [ $MAKE_RELEASE -eq 1 ]; then
