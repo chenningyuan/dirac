@@ -42,7 +42,7 @@ The CI workers build status badges
     :target: https://semaphoreci.com/miro_ilias/my-dirac
 
 
-Deployment symmary
+Deployment summary
 ~~~~~~~~~~~~~~~~~~
 
 `Documentation deployments summary <http://dirac.umb.sk/doc/doc-deployments>`_
