@@ -1,15 +1,17 @@
-The DIRAC program suite buildup results
----------------------------------------
- 
-The official CDash web-board
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The DIRAC program suite build results
+-------------------------------------
 
-`The DIRAC testboard summary <https://testboard.org/cdash/index.php?project=DIRAC>`_ 
 
-The CI workers buildup status badges
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Nightly CDash testing
+~~~~~~~~~~~~~~~~~~~~~
 
-* circle-ci 
+`DIRAC on testboard.org <https://testboard.org/cdash/index.php?project=DIRAC>`_
+
+
+The CI workers build status badges
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* circle-ci
 
 .. image:: https://circleci.com/gh/miroi/DIRAC/tree/master.svg?style=svg&circle-token=19525d797bb0d7bf0516dfc291da5fd7de0ffa1a
     :target: https://circleci.com/gh/miroi/DIRAC/tree/master
@@ -40,7 +42,7 @@ The CI workers buildup status badges
     :target: https://semaphoreci.com/miro_ilias/my-dirac
 
 
-Documentation buildups 
-~~~~~~~~~~~~~~~~~~~~~~
+Deployment symmary
+~~~~~~~~~~~~~~~~~~
 
-`Documentation deployments summary <http://dirac.umb.sk/doc/doc-deployments>`_ 
+`Documentation deployments summary <http://dirac.umb.sk/doc/doc-deployments>`_
