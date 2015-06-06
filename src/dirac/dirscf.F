@@ -3547,7 +3547,7 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
           DOHUCKEL = .FALSE.
         ELSE
           WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'
-          IF(BARNUC) THEN
+          IF(ATHUCK) THEN
             WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
           ELSEIF(BARNUC) THEN
             WRITE(LUPRI,'(A)')
