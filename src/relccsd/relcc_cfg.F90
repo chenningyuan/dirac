@@ -83,6 +83,10 @@ module relcc_cfg
   integer, public :: relcc_ccener_max_iterations          = 30
   integer, public :: relcc_ccener_desired_convergence     = 12
 
+! Information relevant for RelCC convergence (miro,luuk)
+  real*8 , public :: relcc_ccener_dholu_limit     =  1.0d-6 
+  logical, public :: relcc_ccener_dholu_limit_set = .false.
+
 ! Information relevant for the gradient calculation
   logical, public :: relcc_do_mp2gradient          = .false.
   logical, public :: relcc_do_oldmp2gradient       = .false.

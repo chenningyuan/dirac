@@ -679,6 +679,15 @@ C
      &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
+
+!miro: printout of changed DHOLU limit, with warning
+      if (relcc_ccener_dholu_limit_set) then
+        write(IW,*) 'WARNING: you have altered the DHOLU limit !'
+        write(IW,*) 'new value=',relcc_ccener_dholu_limit
+        write(IW,*) 
+     & 'Decreasing DHOLU does not solve CC convergence problems !'
+      endif
+
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
