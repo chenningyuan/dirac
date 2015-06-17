@@ -22,7 +22,7 @@ rem clone sources from gitlab
 C:\cygwin64\bin\sh --login -c "(echo -e \"\n cloning sources..\" && cd /home/milias/test && git clone --recursive git@gitlab.com:dirac/dirac.git trunk_cloned) 2>&1 | tee -a /home/milias/cdash-testing.log"
 
 rem update submodules
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n updating submodules..\" && cd /home/milias/test/trunk_cloned && git submodule update --init) 2>&1 | tee -a /home/milias/cdash-testing.log" 
+C:\cygwin64\bin\sh --login -c "(echo -e \"\n updating submodules..\" && cd /home/milias/test/trunk_cloned && git submodule update --init --recursive) 2>&1 | tee -a /home/milias/cdash-testing.log" 
 
 rem configure setup : 64-bit with Open MPI and OpenBLAS (builtin Lapack)
 rem define ZLIB_ROOT to find correct zlib library
