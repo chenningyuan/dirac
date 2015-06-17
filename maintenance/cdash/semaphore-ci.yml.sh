@@ -67,6 +67,8 @@ sudo pip install hieroglyph
 echo "Number of processors/jobs for build step is $N_PROC"
 echo "Number of processors/jobs for test step is $TEST_N_PROC"
 
+# update submodules
+git submodule update --init --recursive
 
 # 64-bit Integer, MPICH parallel build
 python ./pamadm -a --builddir=build_semaphore-ci_i8

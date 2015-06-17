@@ -21,8 +21,9 @@ build:
           free -m
 
     - script:
-        name: run pamadm and setup configuration scripts
+        name: update submodule, run pamadm and setup configuration scripts
         code: |
+          git submodule update --init --recursive
           python ./pamadm -a --builddir=build_wercker-ci
           python ./setup -D BUILDNAME="wercker-ci.i8.gdb" --type=debug --int64 build_wercker-ci
 

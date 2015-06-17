@@ -51,6 +51,9 @@ git --version
 sphinx-build --version
 doxygen --version
 
+#update submodules
+git submodule update --init --recursive
+
 # configure Dirac with Open MPI in 64-bit mode
 python ./pamadm -a --builddir=build
 python ./setup -D BUILDNAME="open_mpi.gnu.i8-codeship-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build

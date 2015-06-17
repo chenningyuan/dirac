@@ -40,8 +40,9 @@ before_script:
 # show available memory
     - free -m
     
-# configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
+# update submodule; configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
 script:
+    - git submodule update --init --recursive
     - python ./pamadm -a --builddir=build_shippableci_mpi
     - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
     - cd build_shippableci_mpi

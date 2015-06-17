@@ -20,7 +20,8 @@ install:
 script:
 # show CPU info
     - lscpu
-# configure and build
+# update submodule, configure and build
+    - git submodule update --init --recursive
     - python ./pamadm -a --builddir=build_magnum-ci
     - python ./setup -D BUILDNAME="magnum-ci.i8" --int64 build_magnum-ci
     - cd build_magnum-ci
