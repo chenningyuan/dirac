@@ -347,6 +347,9 @@
       integer(kind=integer_kind) :: operation
       integer(kind=integer_kind) :: communicator
       integer(kind=integer_kind) :: ierr
+      integer, parameter :: maxallreduce = 268435456
+      integer :: nallreduce, iallreduce, length, idx
+      logical :: inplace
 !-------------------------------------------------------------------------------
 #ifdef VAR_MPI_32BIT_INT
       integer(kind=4)            :: ndim_i4
@@ -361,8 +364,47 @@
      &                   communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
-      call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   ,
-     &                   communicator   , ierr   )
+      if (ndim <= maxallreduce) then
+         call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   ,
+     &                      communicator   , ierr   )
+      else
+         nallreduce = ndim/maxallreduce
+         if (nallreduce*maxallreduce /= ndim) then
+            nallreduce = nallreduce + 1
+            length = ndim/nallreduce
+            if (length*nallreduce /= ndim) then
+               length = length + 1
+            end if
+         else
+            length = maxallreduce
+         end if
+         inplace = x(1) == MPI_IN_PLACE
+         if (inplace) then
+            do iallreduce = 1, nallreduce - 1
+               idx = (iallreduce - 1)*length + 1
+               call MPI_Allreduce(MPI_IN_PLACE, y(idx), length,
+     &                            MPI_REAL8, operation, communicator,
+     &                            ierr)
+               if (ierr /= MPI_SUCCESS) return
+            end do
+         else
+            do iallreduce = 1, nallreduce - 1
+               idx = (iallreduce - 1)*length + 1
+               call MPI_Allreduce(x(idx), y(idx), length, MPI_REAL8,
+     &                            operation, communicator, ierr)
+               if (ierr /= MPI_SUCCESS) return
+            end do
+         end if
+         idx = (nallreduce - 1)*length + 1
+         length = ndim - idx + 1
+         if (inplace) then
+            call MPI_Allreduce(MPI_IN_PLACE, y(idx), length, MPI_REAL8,
+     &                         operation, communicator, ierr)
+         else
+            call MPI_Allreduce(x(idx), y(idx), length, MPI_REAL8,
+     &                         operation, communicator, ierr)
+         end if
+      end if
 #endif
       end subroutine
 !-------------------------------------------------------------------------------
