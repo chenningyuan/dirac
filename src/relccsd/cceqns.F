@@ -353,16 +353,14 @@ C
 C ... we collect the H array
 
         CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
-        CALL XCOPY (NBUF3,A0,0,BUF3,1)
 CSK        WRITE(IW,*) 'THIS IS IERR before',IERR
         IERR = 0
-        call interface_mpi_allreduce_r1_work_f77(H,BUF3,
+        call interface_mpi_allreduce_r1_work_f77(MPI_IN_PLACE, H,
      &       RCW*IVOVO(NREP+1),
-     &       op_MPI_SUM,global_communicator)
+     &       op_MPI_SUM, global_communicator)
         IF(IERR.GT.0) THEN
            CALL QUIT('MPI_REDUCE ERROR in collecting HINTM !')
         ENDIF
-        CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
         CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
 
       ENDIF
@@ -1377,11 +1375,18 @@ C       Switch off the overall timer for this part and focus on
 C       the communication.
         CALL XTIME(0,2,'-- T3CORR: VOVV contraction        ')
         CALL XTIME(0,1,'-- T3CORR: addition of partial U   ')
-        call interface_mpi_reduce_r1_work_f77(BUF1(OFF1),BUF2(1),
-     &       RCW*M*N,
-     &       op_MPI_SUM,MASTER,
-     &       global_communicator)
-        CALL XCOPY(M*N,BUF2(1),1,BUF1(OFF1),1)
+        if (myproc == master) then
+           call interface_mpi_reduce_r1_work_f77(MPI_IN_PLACE,
+     &          BUF1(OFF1), RCW*M*N,
+     &          op_MPI_SUM, MASTER,
+     &          global_communicator)
+        else
+           call interface_mpi_reduce_r1_work_f77(buf1(off1), buf2(1),
+     &          RCW*M*N,
+     &          op_MPI_SUM, MASTER,
+     &          global_communicator)
+           CALL XCOPY(M*N,BUF2(1),1,BUF1(OFF1),1)
+        end if
 C       Communication completed, switch back to operations timer
         CALL XTIME(0,2,'-- T3CORR: addition of partial U   ')
         CALL XTIME(0,1,'-- T3CORR: VOVV contraction        ')
