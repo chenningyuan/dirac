@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -43,10 +43,10 @@ C***********************************************************************
       use num_grid_cfg
       use interface_functional_read
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif
+#endif      
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -218,7 +218,9 @@ C
 !     *OPENRSP
 !     *X2C
 !     *PCM
+!     *PCMSOL      
 !     *AooSOC
+!     *QCORR
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
 
@@ -257,7 +259,7 @@ C
       end if
 #endif
 ! RDR Polarizable Continuum Model calculation
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
          call report_after_pcm_input(lupri)
       end if
@@ -348,7 +350,10 @@ C
       LOGICAL   NOGENINP, USER_STOL
 C
 #include "dcbgen.h"
-#include "dcbham.h" ! MDIRAC is needed for check of STOL(2)
+
+! MDIRAC is needed for check of STOL(2)
+#include "dcbham.h"
+
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
@@ -396,6 +401,7 @@ C     ==================================
 C
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -625,7 +631,7 @@ C
 
       IF(DOQJACO) WRITE(LUPRI,'(1X,A)')
      &    '* Matrix diagonalization by the quaternion Jacobi method '//
-     &    'for real, complex and quaternion groups (only in LINSYM).'
+     &    'for real, complex and quaternion groups.'
 
       IF(DOPUT) WRITE(LUPRI,'(1X,A)')
      &     '* MO-coefficients written to formatted file DFPCMO'
@@ -743,6 +749,7 @@ C
       NJOBS = 0
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -908,8 +915,6 @@ C***********************************************************************
 C
 C     Input section for SCF module
 C
-CMI ... it's called always after the HAMINP
-C
 C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
 C
@@ -945,10 +950,11 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbatom.h"
+#include "dcbhoc.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
-     &            '.FCKCNV','.NODSCF','.XXXXXX','.FIXDIF','.NODAMP',      ! 10
+     &            '.FCKCNV','.NODSCF','.NOSWIT','.FIXDIF','.NODAMP',      ! 10
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
@@ -957,8 +963,8 @@ C
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
-     &            '.ATOMST','.SCFPOP','.OPENFA','xxxxxxx','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
+     &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.FOMOUT',
+     &            '.AD HOC','.HUCPAR','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
       DATA SET/.FALSE./
@@ -1002,9 +1008,9 @@ C     initial molecular orbitals:
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
       BNCRON    = .TRUE.
+      force_bnc = .false.
       SIRIFC    = .FALSE.
-      DOHUCKEL  = .false.  ! in dcbgen.h   -- TODO temporary disable HUCKEL
-!     DOHUCKEL  = .TRUE.  ! in dcbgen.h
+      DOHUCKEL  = .false.  
       EWMO      = .FALSE. ! in huckel.h
       HUCPROJCMO  = .FALSE. ! in huckel.h, projection method
 
@@ -1014,6 +1020,7 @@ C     initial molecular orbitals:
       DOCCNV    = .TRUE.
       DODAMP    = .TRUE.
       DODIIS    = .TRUE.
+      NOSWIT    = .FALSE.
       DIISON    = .FALSE.
       OVLSEL    = .FALSE.
       DOMOFREEZE = .FALSE.
@@ -1043,8 +1050,13 @@ C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
 !     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
+#ifdef MOD_AOOSOC
       if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
-      ATOMST=.FALSE.
+#endif
+      ATOMST = .FALSE.
+      ATHUCK = .FALSE.
+      HUCPAR = 1.5D0
+      WRITE_FMO_MATRIX=.FALSE.
 C
 C 3.  Initialize /DCIDHF/
 C     ===================
@@ -1146,17 +1158,17 @@ C     ========================
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51,52,53), I
+     &                     51,52,53,54,55,56,57), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in SCFINP.'
+               WRITE (LUPRI,'(/4A/)') ' Keyword "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in SCFINP.')
+               CALL QUIT('Illegal keyword in *SCF.')
     1          CONTINUE
 C&&&& PROJECtion: Reduce transformation matrix by projection
                PROJEC = .TRUE.
@@ -1165,7 +1177,7 @@ C&&&& PROJECtion: Reduce transformation matrix by projection
                  WRITE(LUPRI,'(A,I5)')
      &           '* Number of fragments specified:',NFRAG,
      &           '* Current maximum              :',MFRAG
-                 CALL QUIT('SCFINP: Too many fragments !')
+                 CALL QUIT('*SCF: Too many .PROJEC fragments !')
                ENDIF
                DO J = 1,NFRAG
                  READ(LUCMD,'(A6)') PRJFIL(J)
@@ -1225,6 +1237,8 @@ C&&&& NODSCF: Do not employ differential matrices in SCF-iterations
                   DODSCF = .FALSE.
                GO TO 100
     8          CONTINUE
+C&&&& NOSWIT: PBS+MI Never turn DIIS off
+                  NOSWIT=.TRUE.
                GO TO 100
     9          CONTINUE
 C&&&& FIXDIF: Use fixed value of DIFDEN
@@ -1262,7 +1276,7 @@ C&&& INTFLG: Specify what two-itegrals should be included in this run
      &                  'Error in *SCF .INTFLG reading !'//
      &                  ' 4 parameters needed for Gaunt term !'
                         CALL FLSHFO(LUPRI)
-                        CALL QUIT( 'SCFINP: Error in .INTFLG'//
+                        CALL QUIT( '*SCF: Error in .INTFLG'//
      &                  'reading for GAUNT=true!')
                      ENDIF
                   ELSE
@@ -1272,7 +1286,7 @@ C&&& INTFLG: Specify what two-itegrals should be included in this run
      &                 'Error in *SCF .INTFLG reading !'//
      &                 ' 3 integer parameters needed  !'
                        CALL FLSHFO(LUPRI)
-                       CALL QUIT('SCFINP: Error in .INTFLG reading')
+                       CALL QUIT('*SCF: Error in .INTFLG reading')
                      ENDIF
                   END IF
                   INTFLG_CHANGE=.TRUE.
@@ -1355,11 +1369,11 @@ C              TRIVEC: Read trial vectors from DFCOEF file
                   READ (LUCMD,*,IOSTAT=IOS) (NELEC_DHF(I),I=1,NFSYM)
                   IF (IOS.NE.0) THEN
                     WRITE(LUPRI,*)
-     & 'SCFINP: Error in reading .CLOSED occupation for NFSYM=',NFSYM
+     & ' *SCF: Error in reading .CLOSED occupation for NFSYM=',NFSYM
                     WRITE(LUPRI,*) 'Values of NELEC_DHF(I),I=1,NFSYM:',
      &              (NELEC_DHF(I),I=1,NFSYM)
                    CALL QUIT(
-     &             'SCFINP: Error in reading .CLOSED occupation')
+     &             '*SCF: Error in reading .CLOSED occupation')
                   ENDIF
                   INIOCC = .FALSE.
                GO TO 100
@@ -1368,7 +1382,7 @@ C              TRIVEC: Read trial vectors from DFCOEF file
 C&&&& EIGPRI: Print control for electron and positron solutions
                   READ(LUCMD,*,IOSTAT=IOS) IL,IS
                   IF (IOS.NE.0) THEN
-                    CALL QUIT('SCFINP ERROR: IL,IS input error')
+                    CALL QUIT('*SCF ERROR: .EIGPRI input error')
                   ENDIF
                   IPREIG = IL+2*IS
                GO TO 100
@@ -1379,13 +1393,12 @@ C             a) Read in number of open shells
 C
                READ(LUCMD,*,IOSTAT=IOS) NOPEN
                IF (IOS.NE.0) THEN
-                 CALL QUIT('SCFINP: .OPEN SHELL input error !')
+                 CALL QUIT('*SCF: .OPEN SHELL input error !')
                ENDIF
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
-                  WRITE(LUPRI,'(1X,A,I2,A,I2)')
-     &               'SCFINP: NOPEN must be between ',
-     &               1,' and ',MXOPEN
-                  CALL QUIT('SCFINP ERROR: Open shell error!')
+                  WRITE(LUPRI,'(/A,I2)')
+     &            ' *SCF: .OPEN SHELLS must be between 1 and',MXOPEN
+                  CALL QUIT('*SCF ERROR: Open shell error!')
                END IF
 C
 C              b) Read in number of active shells and their occ.
@@ -1398,38 +1411,33 @@ C
                   CALL UPCASE(LINE)
 C
                   ISLASH = INDEX(LINE,'/')
-                  IF (ISLASH .LE. 0) THEN
-                     WRITE (LUPRI,'(/A,I2,A,I2/A/A,A)')
+                  IF (ISLASH .LE. 1) THEN
+                     WRITE (LUPRI,'(/A,I2,A,I2/A,A)')
      &               'ERROR for *SCF .OPEN SHELL shell no.',
-     &                IOPEN,'/',NOPEN,
-     &             '- the defining input line does not contain a "/":',
-     &             '- the following input line is:',LINE
-                    WRITE(LUPRI,'(A)')
-     &             '- Also there could be forgotten the number'//
-     &             ' of open-shells before ! Check the input.'
+     &                IOPEN,' out of',NOPEN,
+     &               '- the input line is:',LINE
+                     IF (ISLASH .LE. 0) THEN
+                        WRITE(LUPRI,'(A)')
+     &                '- error: the input line does not contain a "/"'
+                     ELSE
+                       WRITE(LUPRI,'(A)')
+     &                '- error: no number of electrons before the "/"'
+                     END IF
                      CALL QUIT(
      &               'Input error for .OPEN SHELL under *SCF')
                   END IF
                   TEXT = LINE(1:ISLASH-1)
                   READ (TEXT,*) FELEC
 C
-                  IPERIOD= INDEX(LINE,',')
+                  ICOMMA= INDEX(LINE,',')
 
-                  !sanity check
-                  if ((nfsym == 1) .and. (iperiod > 0)) then
-                     call quit('mistake in .OPEN SHELL specification')
-                  end if
-                  if ((nfsym == 2) .and. (iperiod < 1)) then
-                     call quit('mistake in .OPEN SHELL specification')
-                  end if
-
-                  IF (IPERIOD .GT. 0) THEN
-                     IF (IPERIOD .LE. ISLASH+1) THEN
+                  IF (ICOMMA .GT. 0) THEN
+                     IF (ICOMMA .LE. ISLASH+1) THEN
                         CALL QUIT('ERROR: Misplaced /')
                      END IF
-                     TEXT = LINE(ISLASH+1:IPERIOD-1)
+                     TEXT = LINE(ISLASH+1:ICOMMA-1)
                      READ (TEXT,'(I20)') IAC1
-                     TEXT = LINE(IPERIOD+1:)
+                     TEXT = LINE(ICOMMA+1:)
                      READ (TEXT,'(I20)') IAC2
                   ELSE
                      TEXT = LINE(ISLASH+1:)
@@ -1437,45 +1445,49 @@ C
                      IAC2 = 0
                   END IF
 
-                  IF (IPERIOD.EQ.0.AND.NFSYM.GE.2) THEN
+                  IF (ICOMMA.EQ.0.AND.NFSYM.GE.2) THEN
                    WRITE(LUPRI,*)
-     &            'SCFINP: Error in open-shell input reading !'
+     &            '*SCF: Error in open-shell input reading !'
                    WRITE(LUPRI,*) 'NOPEN:',NOPEN,' NFSYM:',NFSYM
-                   WRITE(LUPRI,'(A,A)') 'text:',LINE
+                   WRITE(LUPRI,'(A,A)') 'input line:',LINE
                    WRITE(LUPRI,*)
-     &  'for NFSYM=2 has to be of the for xx/xx,xx (see the manual)'
+     &  'for NFSYM=2 has to be of the form xx/xx,xx (see the manual)'
                    CALL QUIT(
-     &             'SCFINP: Error in open-shell input reading !')
-                  ELSE IF (IPERIOD.GT.0.AND.NFSYM.EQ.1) THEN
+     &             '**SCF: Error in open-shell input reading !')
+                  ELSE IF (ICOMMA.GT.0.AND.NFSYM.EQ.1) THEN
                    WRITE(LUPRI,*)
-     &        'SCFINP: Error in open-shell input reading'
+     &              '**SCF: Error in open-shell input reading'
                    WRITE(LUPRI,*)
-     &        'NFSYM is 1 (no inversion symmetry)'
-                WRITE(LUPRI,'(A,A)') 'you have specified (N/G,U):',LINE
-                WRITE(LUPRI,*)
-     &        'for NFSYM=1 use N/O instead of N/G,U'
-                   CALL QUIT(
-     &        'SCFINP: Error in open-shell input reading !')
+     &              'NFSYM is 1 (no inversion symmetry)'
+                   WRITE(LUPRI,'(A,A)')
+     &              'you have specified (N/G,U):',LINE
+                    WRITE(LUPRI,*)
+     &                'for NFSYM=1 use N/O instead of N/G,U'
+                    CALL QUIT(
+     &                '**SCF: Error in open-shell input reading !')
                   ENDIF
 
                   IF (NFSYM .EQ. 1) IAC2 = 0
                   FACTOT = real(IAC1+IAC2,8)
+                  NERR = 0
+                  IF (FELEC .LT. D0 .OR. FELEC .GT. FACTOT) THEN
+                     NERR = NERR + 1
+                     WRITE(LUPRI,'(A,F8.2,A,I3)')
+     &                  '.OPEN SHELL error: Number of electrons (',
+     &                  FELEC,') must be a positive number less than',
+     &                  IAC1+IAC2
+                  END IF
                   IF ( (MOD(IAC1,2) .NE. 0) .OR.
      &                 (MOD(IAC2,2) .NE. 0) .OR.
      &                 (IAC1 .LT. 0) .OR. (IAC2 .LT. 0) .OR.
      &                 (IAC1+IAC2 .EQ. 0)) THEN
-                     WRITE(LUPRI,'(A,2I3)')
-     &                  'ERROR: Number of spinors must be a '//
-     &                  'positive even number:',IAC1,IAC2
-                     CALL QUIT('ERROR: Number of spinors must be '//
-     &                         'a positive even number')
+                     NERR = NERR + 1
+                     WRITE(LUPRI,'(A,2I3)') '.OPEN SHELL error: '//
+     &                  'Number of spinors must be even'//
+     &                  'numbers and at least 2 in total:',IAC1,IAC2
                   END IF
-                  IF (FELEC .LT. D0 .OR. FELEC .GT. FACTOT) THEN
-                     WRITE(LUPRI,'(A,F8.2,A,I3)')
-     &                  'ERROR: Number of electrons (',FELEC,
-     &                  ') must be a positive even number less than',
-     &                  IAC1+IAC2
-                     CALL QUIT('ERROR: in number of electrons')
+                  IF (NERR .GT. 0) THEN
+                     CALL QUIT('Error in .OPEN SHELL specifications')
                   END IF
                   NACSH(1,IOPEN) = IAC1/2
                   NACSH(2,IOPEN) = IAC2/2
@@ -1579,10 +1591,26 @@ C&&& MJSELE: Selection based on Mj symmetry,
 C            NSUBBL = # of subblocks for MJ sym.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
-               READ(LUCMD,*) NSUBBL
-               READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL)
+               READ(LUCMD,*,IOSTAT=IOS) NSUBBL
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error in reading NSUBBL for .MJSELE !'
+                 CALL QUIT('Error in reading NSUBBL for .MJSELE !')
+               ENDIF
+               READ(LUCMD,*,IOSTAT=IOS) (NISH_BOS(I),I=1,NSUBBL)
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*)
+     &           'Error in reading NISH_BOS(I) for .MJSELE !'
+                 CALL QUIT('Error in reading NISH_BOS(I) for .MJSELE !')
+               ENDIF
                DO IOPEN = 1,NOPEN
-                  READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+                 READ(LUCMD,*,IOSTAT=IOS)
+     &           (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+                 IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*)
+     &             'Error in reading NACSH_BOS(I) for .MJSELE !'
+                   CALL QUIT(
+     &             'Error in reading NACSH_BOS(I) for .MJSELE !')
+                 ENDIF
                END DO
                GO TO 100
  42            CONTINUE
@@ -1695,14 +1723,49 @@ C&&& OPENFA: extra factor on active-active correction block to open shell Fock m
                   READ(LUCMD,*) OPEN_FAC
                GOTO 100
  54            CONTINUE
+C&&& BNC_FO: force bare nucleus correction (usefull for charged systems)
+C    PBS+MI/Aug2014
+               force_bnc = .true.
+               GOTO 100
+ 55            CONTINUE
+!&&& FOMOUT: print out the Fock MO matrices for diagonalization for each
+!symmetry into own formatted file (MI/Aug2014)
+               WRITE_FMO_MATRIX=.TRUE.
+               GOTO 100
+ 56            CONTINUE
+C&&& AD HOC: extended Huckel based on atomic fragments
+               IF(NBSYM.GT.1) THEN
+                 CALL QUIT('Extended Huckel start '//
+     &          'does not work with symmetry yet.')
+               ENDIF
+               ATHUCK = .TRUE.
+               BNCRON = .FALSE.
+               BARNUC=.FALSE.
+               TRIVEC=.FALSE.
+               TRIFCK=.FALSE.
+               DHF_INTTYP='Atom. Huckel'
+               IF(NONTYP.GT.MAXHOC) THEN
+                 WRITE(LUPRI,'(A,I5)')
+     &           '* Number of atomic types specified  :',NONTYP,
+     &           '* Current maximum no. of types      :',MAXHOC
+                 CALL QUIT('*AD HOC input: Too many atom types !')
+               ENDIF
+               DO ITYP = 1,NONTYP
+                 READ(LUCMD,'(A6)')  HOCFIL(ITYP)
+                 READ(LUCMD,'(A72)') VECHOC(ITYP)
+               ENDDO
+               GOTO 100
+ 57            CONTINUE
+C&&& HUCPAR: modify Huckel parameter
+               READ(LUCMD,*) HUCPAR
                GOTO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in SCFINP.'
+               WRITE (LUPRI,'(/4A/)') ' Prompt "',WORD,
+     *            '" not recognized for ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in SCFINP.')
+               CALL QUIT('Illegal prompt under *SCF.')
             END IF
       END IF
 
@@ -1790,10 +1853,10 @@ C
      &                          real(NACSH(IFRP,IOPEN),8)*D2*DF(IOPEN)
             END DO
             IF (NELEC_DHF(IFRP).LT.0)
-     &         CALL QUIT('SCFINP: negative number of '//
+     &         CALL QUIT('*SCF error: negative number of '//
      &                   'closed shell electrons!')
             IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('SCFINP: odd number of '//
+     &         CALL QUIT('*SCF erro: odd even number of '//
      &                   'closed shell electrons!')
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
@@ -1927,10 +1990,10 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(dirac_cfg_dft_calculation) THEN
         WRITE(LUPRI,'(A)')
-     &   ' SCFINP: Set-up for Kohn-Sham calculation:'
+     &   ' *SCF: Set-up for Kohn-Sham calculation:'
       ELSE
         WRITE(LUPRI,'(A)')
-     &   ' SCFINP: Set-up for Hartree-Fock calculation:'
+     &   ' *SCF: Set-up for Hartree-Fock calculation:'
       ENDIF
       CALL PRSYMB(LUPRI,'=',75,0)
 c
@@ -1965,13 +2028,18 @@ C
       IF (BNCRON) THEN
          WRITE (LUPRI,'(A)')
      &      ' * Bare nucleus screening correction used for start guess'
+!     psb 1/13/10 (psb+mi Aug2014) New parameter force_bnc (.BNC_FORCE) force input for
+!        bncron variable w/o checking value of molecular charge
+         if (force_bnc) write (lupri,'(5x,a)')
+     1   'the bare nuclear correction used independently of '//
+     2   'the system charge'
 C     hjaaj nov 2004: bare nucleus correction is
 C     designed for approx. neutral molecules,
 C     and it will give very poor start guess for e.g.
 C     a U(+90) calculation.
          CALL RMOLCHR(ICHRG)
          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
-         IF (ABS(KCHARG) .GT. 10) THEN
+         IF (ABS(KCHARG) .GT. 10 .and. .not.force_bnc) THEN
             BNCRON = .FALSE.
             WRITE (LUPRI,'(A)')
      &      ' - INFO: bare nucleus correction disabled because'//
@@ -2052,12 +2120,6 @@ C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
          END IF
       END IF
 C
-CTROND      IF (NOPEN.GT.0.AND.ZORA) THEN
-CTROND          WRITE(LUPRI,'(A)')
-CTROND     &       'SCFINP: Open shell ZORA is not implemented yet, sorry..'
-CTROND          CALL QUIT('SCFINP ERROR: asked for ZORA Open shell calc.')
-CTROND      ENDIF
-C
       WRITE(LUPRI,'(A,I3)') ' * General print level   : ',IPRSCF
       WRITE(LUPRI,'(/A)') ' ***** INITIAL TRIAL SCF FUNCTION *****'
       IF     (TRIFCK) THEN
@@ -2080,6 +2142,11 @@ C
           ICENT = ICENT + NONT(I)
         ENDDO
         WRITE(LUPRI,'()')
+      ELSE IF(ATHUCK) THEN
+           WRITE(LUPRI,'(A)')
+     &   ' * Trial vectors generated by the extended Huckel method'//
+     &   ' using pre-calculated atomic orbitals'
+           WRITE(LUPRI,'(A,F7.3)') '   Huckel parameter: ',HUCPAR
       ELSE IF(SIRIFC) THEN
         WRITE(LUPRI,'(A)')
      +   ' * Trial vectors read from Dalton file SIRIFC'
@@ -2144,6 +2211,9 @@ C
      &      DIISTH
          WRITE(LUPRI,'(3X,A,I5)') '- Maximum size of B-matrix:',
      &      MXDIIS
+         IF (NOSWIT) THEN
+           WRITE(LUPRI,'(A)') ' * DIIS is never switched off'
+         ENDIF
          IF(DODAMP) THEN
            WRITE(LUPRI,'(A/A,F5.3)')
      &     ' * Damping of Fock matrix when DIIS is not activated. ',
@@ -2181,6 +2251,12 @@ C
      &   '   - Maximum number of macro iterations:',MXMACRO,
      &   '   - Maximum number of micro iterations:',MXMICRO
       END IF
+#ifdef HAS_PCMSOLVER
+      if (.not. noqcdhf .and. dirac_cfg_pcm) then
+         call quit('Quadratic convergent Hartree-Fock not'//
+     &   'available with PCM')
+      endif              
+#endif
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC)
@@ -2295,7 +2371,7 @@ CMI =====================================================================
          write(lupri,*)
      &  ' untransformed 2-component (electronic) MOs'
        ELSE
-        CALL QUIT('SCFINP: wrong value of INI2C (not 1/2/3/4)!')
+        CALL QUIT('*SCF: wrong value of INI2C (not 1/2/3/4)!')
        ENDIF
 
        WRITE(LUPRI,'(A,I4)')
@@ -2329,7 +2405,7 @@ CMI =====================================================================
        if(x2c)then
          x2c        = .false.
 !        keep the x2cmod_x2c value in order to identify to which module
-!        to switch in dirscf.F --> subroutine PSIDHF
+!        to switch in dirscf.F --> subroutine PSISCF
        end if
        WRITE(LUPRI,'(A)')
      &  ' * after the four-component SCF step switch to'//
@@ -2348,6 +2424,12 @@ CMI =====================================================================
      &   '...continue the two-component SCF procedure'//
      &   '.'
        ENDIF
+      ENDIF
+
+      IF (WRITE_FMO_MATRIX) THEN
+        WRITE(LUPRI,'(2X,A)')
+     &'* Writing out Fock MO matrix(es) into formatted file(s) in'//
+     &' linear symmetry'
       ENDIF
 C
       WRITE(LUPRI,'(A)') ' ***** OUTPUT CONTROL *****'
@@ -2460,7 +2542,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 18, NTABLE = 23)
+      PARAMETER (NDIR = 19, NTABLE = 23)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2477,9 +2559,9 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '*SCF   ','*KRCI  '/
+     &             '*SCF   ','*KRCI  ','*QCORR '/
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
-     &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
+     &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
@@ -2522,6 +2604,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. '**WAVE ') THEN
          GO TO 930
       ELSE
@@ -2541,6 +2624,7 @@ C     ==================================
 C
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -2597,7 +2681,7 @@ C
             END DO
             GO TO 100
   105    CONTINUE
-C&&& POST DHF REORDER:
+C&&& POST SCF REORDER:
 C           Reorder finished MO orbitals
 C           First read the number of orbital reorderings
 C           in each fermion corep.
@@ -2834,7 +2918,8 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), 
+     &                I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -2933,6 +3018,12 @@ C
 !*KRCI
    18 continue
       CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
+      go to 200
+!*QCORR
+   19 continue
+      ! this is a cheat so that *QCORR section is parsed
+      ! by new input reader
+      call move_to_next_star(word, lucmd)
       go to 200
 
     1 CONTINUE
@@ -3077,7 +3168,7 @@ C
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
-     &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
+     &            '.ANALYZ','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
      &            '.DISTRT','.CONVER','.TRUNCF','.MEMFAC','XXXXXXX'/
       DATA SET/.FALSE./
 C
@@ -3106,6 +3197,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -3237,7 +3329,8 @@ C&&& MXCIVE: Maximum number of subspace CI vectors
                   IMOKW(20) = 1
                GO TO 100
    21          CONTINUE
-C&&& xxxxxx: 
+C&&& ANALYZE 
+                  IMOKW(25) = 1
                GO TO 100
    22          CONTINUE
 C&&& xxxxxxxxx:
@@ -3361,6 +3454,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -3623,6 +3717,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. WRDSRC) THEN
          GO TO 930
       ELSE
@@ -3643,6 +3738,7 @@ C     ==================================
 C
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -3873,6 +3969,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -4041,7 +4138,7 @@ C
       SAVE SET
       DATA TABLE /'.PRINT ','.PROTHR','.VECPRJ','.VECREF',
      &            '.WGPOP ','.OWNBAS','.PRJADJ','.POLREF',
-     &            '.MAYER ','.POLNRM','.XXXXXX','.XXXXXX'/
+     &            '.MAYER ','.POLNRM','.ATOMS ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -4065,6 +4162,7 @@ C     Default is to project all occupied vectors onto all fragment vectors
       PROTHR   = 1.0D-3
       LWGPOP = .FALSE.
       OWNBAS = .FALSE.
+      PATOMS = .FALSE.
       PRJADJ = .FALSE.
       POLREF = .FALSE.
       MAYER  = .FALSE.
@@ -4079,6 +4177,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -4086,7 +4185,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -4153,6 +4252,27 @@ C&&& POLNRM: Normalize polarization contribution
                   POLNRM = .TRUE.
                GO TO 100
  11            CONTINUE
+C&&& ATOMS : Do projection analysis using atomic fragments
+                  PATOMS = .TRUE.
+                  NREFS=NUCDEP
+                  IF((NREFS+1).GT.MAXREF) THEN
+                    WRITE(LUPRI,'(A,I5)')
+     &         '* Number of atomic types specified  :',NREFS,
+     &         '* Current maximum no. of fragments  :',MAXREF
+                    CALL QUIT('*PROJECT input: Too many fragments !')
+                  ENDIF
+                  INDEP=1
+                  ININD=1
+                  DO ITYP = 1,NONTYP
+                    READ(LUCMD,'(A6)') REFFIL(INDEP)
+                    NPROJNUC(INDEP)=1
+                    READ(LUCMD,'(A72)') VECREF(1,INDEP)
+                    DO J = 0,NONT(ITYP)-1
+                      INDEP = INDEP + NUCDEG(ININD+J)
+                    ENDDO
+                    ININD = ININD + NONT(ITYP)
+                  ENDDO
+                  REFFIL(INDEP) = 'Polari'
                GO TO 100
  12            CONTINUE
                GO TO 100
@@ -4238,6 +4358,19 @@ C
      &        '- Orbitals in fermion ircop ',FREP(I),' :',VECREF(I,J)
             ENDIF
           ENDDO
+        ENDDO
+      ELSEIF(PATOMS) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &   '* Projection analysis based on atomic fragments, ',
+     &   '  calculated in their individual bases'
+        INDEP=1
+        ININD=1
+        DO ITYP = 1,NONTYP
+          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(INDEP),VECREF(1,INDEP)
+          DO J = 0,NONT(ITYP)-1
+            INDEP = INDEP + NUCDEG(ININD+J)
+          ENDDO
+          ININD = ININD + NONT(ITYP)
         ENDDO
       ELSE
         DO J = 1,NREFS
@@ -4341,6 +4474,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -4504,6 +4638,7 @@ C
       ISPHTR   = ILSPH+2*ISSPH
       IDFLAG   = ILLDIR+2*ISLDIR+4*ISSDIR+8*IGTDIR
       INTGEN   = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
+      INTGEN_SAVE = INTGEN
       CVAL     = CVEL
       STOL(1)  = 1.0D-6
       STOL(2)  = 1.0D-8
@@ -4583,7 +4718,7 @@ C***********************************************************************
       use xc_derv
       use interface_functional_read
       use x2cmod_cfg
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
 #endif
 #ifdef MOD_AOOSOC
@@ -4625,7 +4760,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC','*PEQM  '/
+     &             '*PCM   ','*aooSOC','*PEQM  ','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4656,11 +4791,11 @@ C
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
 !                   57        58        59        60
-     &            '.PCM   ','.HFXATT','.xB    ','.xC    ',
+     &            '.PCM   ','.HFXATT','.XB    ','.XC    ',
 !                   61        62        63        64
-     &            '.ECP   ','.X2Cmmf','.DOSSSS','.MDIRAC',
+     &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.PEQM  ','xxxxxxx','xxxxxxx'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT','xxxxxxx'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4768,6 +4903,8 @@ C ... get integral flags in advance
       TRS_MIX=.FALSE.
 !jmho: deafult - no polarizable embedding
       PEQM = .FALSE.
+!mi:  by default, do not save Jz_MO matrices
+      WRITE_Jz_MATRIX = .FALSE.
 
       NOINPUT   = .FALSE.
 C
@@ -4779,6 +4916,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. '**HAMIL') THEN
          GO TO 930
       ELSE
@@ -4800,6 +4938,7 @@ C     Keep track of number of changes and added finite field operators
       ICHANG  = 0
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -5100,6 +5239,10 @@ C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.m
             DO2C4C = .TRUE.
             START2C = .TRUE.
             INI2C   = 3
+            call quit('2c -> 4c SCF functionality is broken -'//
+     &                ' please wait for a patch to Dirac14 or contact'//
+     &                ' dirac-users@googlegroups.com for further'//
+     &                ' information.')
             !TWOCOMP=.FALSE.
             !TWOCOMPBSS=.TRUE.
             GO TO 100
@@ -5118,6 +5261,10 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
             START2C = .TRUE.
             DO2C4C = .TRUE.
             READ(LUCMD,*) INI2C
+            call quit('2c -> 4c SCF functionality is broken -'//
+     &                ' please wait for a patch to Dirac14 or contact'//
+     &                ' dirac-users@googlegroups.com for further'//
+     &                ' information.')
             GO TO 100
   135     CONTINUE
 #ifdef MOD_UNRELEASED
@@ -5301,7 +5448,11 @@ CMI&& Activate 4c-2c MO transformation
           GOTO 100
 ! .PCM
   157     CONTINUE
+#ifdef HAS_PCMSOLVER
           dirac_cfg_pcm = .true.
+#else
+          call quit('HAMINP: PCMSolver not compiled, no PCM available!')
+#endif
           GOTO 100
 ! .HFXATT
   158     CONTINUE
@@ -5345,11 +5496,12 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
   164     CONTINUE
 C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral package
             MDIRAC=.TRUE.
+            GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
 !&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
           TRS_MIX = .TRUE.
-!&&& PEQM: polarizable embedding
+!&&&& .PEQM: polarizable embedding
   166     CONTINUE
 #if defined (BUILD_PELIB)
             PEQM = .TRUE.
@@ -5357,8 +5509,10 @@ C..TODO: check for inconsistencies and add stops
             WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
             CALL QUIT('ERROR for .PEQM: PE library not enabled.')
 #endif
-          GO TO 100
+            GO TO 100
   167     CONTINUE
+!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+            WRITE_Jz_MATRIX = .TRUE.
           GO TO 100
   168     CONTINUE
           GO TO 100
@@ -5530,6 +5684,12 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
        IF (DOPRP) THEN
         WRITE(LUPRI,'(2X,A)') '- BSS with properties !'
        ENDIF
+
+       IF(DO2C4C)THEN
+         IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
+           IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
+         END IF
+       END IF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
         IF (((IBSS.EQ.2999).or.x2c).AND.NOPRTR) THEN
@@ -6164,6 +6324,17 @@ C
             ENDIF
           ENDIF
         ENDDO
+
+      IF (WRITE_Jz_MATRIX) THEN
+        IF (LINEAR) THEN
+         WRITE(LUPRI,'(1X,A)')
+     &  '* Writing out Jzz MO matrices for diagonalization'
+        ELSE
+         WRITE(LUPRI,'(1X,A)')
+     &  '* No linear symmetry => no writing out Jzz MO matrices !'
+        ENDIF
+      ENDIF
+
 CMI  ... treat the INPERR as in paminp.F - proper input is required
         IF (INPERR.GT.0) THEN
           WRITE(LUPRI,'(/,2x,a,i4)') 'INPERR=',INPERR
@@ -6382,6 +6553,12 @@ CMI  ... reading input routine for AMFI+RELSCF
         CALL QUIT('ERROR for *PEQM: PE library not enabled.')
 #endif
         GO TO 200
+!       *PCMSOL
+   12 continue
+      ! this is a cheat so that *PCMSOL section is parsed
+      ! by new input reader
+        call move_to_next_star(word, lucmd)
+        go to 200
 C
     1 CONTINUE
 
@@ -6932,6 +7109,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -7327,6 +7505,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -7344,7 +7523,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in RHO1IN.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in SCFINP.')
+               CALL QUIT('Illegal keyword in RHO1IN.')
     1          CONTINUE
 C&&&& MESH; Step length for grid
                   READ(LUCMD,*) DSTEP
@@ -7465,6 +7644,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -7595,6 +7775,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -7612,7 +7793,7 @@ C
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *            '" not recognized in WT1IN.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in SCFINP.')
+               CALL QUIT('Illegal keyword in WT1IN.')
     1          CONTINUE
 C&&&& MESH; Step length for grid
                   READ(LUCMD,*) DSTEP
@@ -7733,6 +7914,7 @@ C
          WORD1 = WORD
  100         CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -8055,6 +8237,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. '**HAMIL') THEN
          GO TO 930
       ELSE
@@ -8066,6 +8249,7 @@ C         if reading input from a terminal
          CALL QUIT('Error reading LUCMD, no HAMIL input found')
   930 CONTINUE
       READ (LUCMD,'(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 930
@@ -8314,6 +8498,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

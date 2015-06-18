@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -29,9 +29,11 @@ C     Output module for DIRAC
 C
 C***********************************************************************
       use dirac_cfg
-#ifdef PCM_MODULE
+      use fde_evaluators_dirac, only: fde_calculate_interaction_energy
+
+#ifdef HAS_PCMSOLVER
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
-#endif
+#endif      
 
 #include "implicit.h"
 #include "priunit.h"
@@ -52,6 +54,7 @@ C
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
+      logical :: myprint = .False.
 #include "memint.h"
 C
 C     Summary of calculation
@@ -129,6 +132,11 @@ C
         ERGMAX = MAX(ABS(ELERGY),ABS(DHFERG))*10
         FMT = MXFORM(ERGMAX,20)
 C       Start by writing the computed electronic energy
+        if (dirac_cfg_fde) then
+           WRITE(LUPRI,'(A)') ''
+           WRITE(LUPRI,'(2X,A)') 'FDE active subsystem contributions'
+           WRITE(LUPRI,'(A)') ''
+        endif
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Electronic energy                        :   ',ELERGY
 C       The total energy consists of the electronic energy plus 
@@ -147,16 +155,18 @@ C            leave this to authors of this part) Done, hjaaj.
           WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Solvation energy                         :   ',ERGSOL
         ENDIF
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER        
         if (dirac_cfg_pcm) then
           write(lupri,'(3X,A,'//FMT//')')
      +  'Solvation energy                         :   ',get_pcm_energy()
         end if 
 #endif
+#ifdef MOD_PEQM
         IF (PEQM) THEN
             write(lupri,'(3X,A,'//FMT//')')
      +  'PE energy (code not written yet)         :   '
         END IF
+#endif
 C       A one-center approximation may be used that gives a correction 
 C       to the electronic energy
         IF (ONECAP .AND. INTV1C.EQ.2) THEN
@@ -171,12 +181,16 @@ C       computed
 C       We now write the sum, the actual summation is done in the 
 C       ERGCAL routine 
         WRITE(LUPRI,'(/3X,A)') 'Sum of all contributions to the energy'
-        if (dirac_cfg_fde) then
-        WRITE(LUPRI,'(3X,A,'//FMT//')')
-     +      'Total energy (active subsystem)          :   ',DHFERG
-        else
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Total energy                             :   ',DHFERG
+
+        if (dirac_cfg_fde) then
+            WRITE(LUPRI,'(A)') ''
+            write(lupri,'(2X,A)') 
+     &      'FDE frozen subsystem contributions'
+            write(lupri,'(/3X,A)') 
+     &      'Total energy                             :    n/a'
+          call fde_calculate_interaction_energy('DHF ',myprint=myprint)
         endif
       ENDIF
 C
@@ -196,12 +210,12 @@ C     energy virtuals.
 C
       CALL CHKHLG(EIG,IBEIG)
 C
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
               call pcm_scf_finalize
        write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
       end if
-#endif
+#endif      
       RETURN
 C
  1000 FORMAT(11X,'Energy',15X,'ERGVAL',4X,'FCKVAL',4X,'EVCVAL',6X,
@@ -253,86 +267,18 @@ C
      &              -NPSH(IFRP),NESH(IFRP),IFRP,NVEC)
         CALL ORBCNT(WORK(KJVEC),NVEC,NPSH(IFRP),NESH(IFRP),NPVEC,NEVEC)
         IF(NVEC.EQ.0) GOTO 20
-C
         CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
-        IF(ILABDF.EQ.1) THEN
-C
-C       Extract/expand coefficients in AO-basis
-C       =======================================
-C
-          NCBAS = NTBAS(0)
-          IF(NVEC.EQ.NORB(IFRP)) THEN
-            IF(NBSYM.EQ.1) THEN
-              NCBF1 = NTBAS(0)*NVEC*4
-              CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KCBF2,NCBF1,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
-            ELSE
-              NCBF1 = NTBAS(0)*NVEC*4
-              NCBF2 = NFBAS(IFRP,0)*NVEC*4
-              CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-              CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-              CALL CFSORT(WORK(KCBF2),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRINT)
-              CALL MEMREL('PRCOEF.AO',WORK,1,KCBF2,KFREE,LFREE)
-            ENDIF
-          ELSE
-            NCBF1 = NTBAS(0)*NVEC*4
-            NCBF2 = NTBAS(0)*NVEC*4
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-            LCB = NPVEC+NEVEC
-            IF(NBSYM.EQ.1) THEN
-              CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
-     &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
-            ELSE
-              CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF1),
-     &                    LCB,WORK(KJVEC),NPVEC,NEVEC,
-     &                    NFBAS(IFRP,0),NORB(IFRP))
-              CALL CFSORT(WORK(KCBF2),WORK(KCBF1),NVEC,
-     &                    IFRP,NFBAS(IFRP,0))
-              CALL WTSOAO(WORK(KCBF2),WORK(KCBF1),IFRP,
-     &                    NFBAS(IFRP,0),NTBAS(0),NVEC*4,IPRINT)
-            ENDIF
-          ENDIF
-        ELSE
-C
-C       Extract/expand coefficients in SO-basis
-C       =======================================
-C
-          NCBAS = NFBAS(IFRP,0)
-          IF(NVEC.EQ.NORB(IFRP)) THEN
-            NCBF  = NFBAS(IFRP,0)*NVEC
-            NCBF1 = NCBF*4
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL CFSORT(WORK(KCBF1),CMO(ICMOQ(IFRP)+1),NVEC,
-     &                  IFRP,NFBAS(IFRP,0))
-          ELSE
-            NCBF  = NFBAS(IFRP,0)*NVEC
-            NCBF1 = NCBF*4
-            NCBF2 = NCBF*NZ
-            CALL MEMGET('REAL',KCBF1,NCBF1,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCBF2,NCBF2,WORK,KFREE,LFREE)
-            LCB = NPVEC+NEVEC
-            CALL SELCFS(CMO(ICMOQ(IFRP)+1),IFRP,WORK(KCBF2),
-     &                  LCB,WORK(KJVEC),NPVEC,NEVEC,
-     &                  NFBAS(IFRP,0),NORB(IFRP))
-            CALL CFSORT(WORK(KCBF1),WORK(KCBF2),NVEC,
-     &                  IFRP,NFBAS(IFRP,0))
-            CALL MEMREL('PRCOEF.SO',WORK,1,KCBF2,KFREE,LFREE)
-          ENDIF
-        ENDIF
+        NCBAS=NTBAS(0)
+        IF(ILABDF.EQ.2) NCBAS=NFBAS(IFRP,0)
+        CALL MEMGET('REAL',KCBF,NCBAS*NVEC*4,WORK,KFREE,LFREE)
+        CALL SELCMO(ILABDF,IFRP,CMO,WORK(KJVEC),NVEC,NPVEC,NEVEC,
+     &              WORK(KCBF),NCBAS,NVEC,NCBAS,
+     &              IPRINT,WORK,KFREE,LFREE)
 C
 C       Print coefficients
 C       ==================
 C
-        CALL PRCOE1(WORK(KCBF1),EIG(IORB(IFRP)+1),IFRP,WORK(KJVEC),
+        CALL PRCOE1(WORK(KCBF),EIG(IORB(IFRP)+1),IFRP,WORK(KJVEC),
      &              NPVEC,NEVEC,NCBAS,IPREIG,IPRCMP,ILABDF)
  20     CONTINUE
         CALL MEMREL('PRCOEF',WORK,1,KWORK,KFREE,LFREE)
@@ -352,12 +298,18 @@ C  /* Deck prcoe1 */
 C***********************************************************************
 C
 C     Print vectors (AO/SO-basis)
+C     The coefficients, whether in AO- or SO-basis, are provided on 
+C     quaternion (NZ=4) form, which corresponds to
+C  
+C       C^Q = C^a - C^b* = C^a_R + C^a_I - C^b_R + C^b_I
+C
+C     It can be seen that the part C^b_R should be multiplied by -1.
+C     
 C     Written by T.Saue May 6 1996
-C     Last revision: May 6 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10)
+      PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10,DM1 = -1.0D0)
 #include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -373,6 +325,10 @@ C
       DIMENSION CMO(NCBAS,NPVEC+NEVEC,4),EIG(*),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
+      NTOT = NVEC*NCBAS
+C
+C.....Properly scale C^b_R
+      CALL DSCAL(NTOT,DM1,CMO(1,1,3),1)
 C
 C     Print vectors in AO-basis
 C     =========================
@@ -466,13 +422,15 @@ C           IP is gerade(1)/ungerade(2) !
           ENDDO
         ENDDO
       ENDIF
+C.....Rescale C^b_R
+      CALL DSCAL(NTOT,DM1,CMO(1,1,3),1)
 C
       RETURN
  100  FORMAT(3X,I5,2X,A12,2X,4F14.10)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck cfsort */
-      SUBROUTINE CFSORT(CBUF,CMO,NVEC,IFRP,KNFBAS)
+      SUBROUTINE QEXPAND(CBUF,CMO,NVEC,IFRP,KNFBAS)
 C***********************************************************************
 C
 C     In the case of NZ.LT.4 this routine expands real/imaginary matrix
@@ -485,10 +443,13 @@ C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
+C
+#include "mxcent.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcbham.h"
 #include "dcborb.h"
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
 C
@@ -498,7 +459,7 @@ C
       NTOTZ = NTOT*NZ
       IF(NZ.NE.4) CALL DZERO(CBUF,NTOT*4)
       NBRP = 4/NZ
-      DO IC = 1,2
+      DO IC = 1,MC
         IP     = MOD(IFRP+IC,2) + 1
         DO ISYM = 1,NBRP
           IBRP = JFSYM(ISYM,IP) - 1
@@ -512,7 +473,7 @@ C
           ENDDO
         ENDDO
       ENDDO
-      CALL DSCAL(NTOT,DM1,CBUF(1,1,3),1)
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -672,111 +633,6 @@ C
         WRITE(LUPRI,'(6X,I5,2F18.8)')
      *     ((NVAL-I),EIG(NVAL-I),EIG(NVAL-I)-GAP,I=0,(NGAP-1))
       ENDIF
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck caosrt */
-      SUBROUTINE CAOSRT(CAO,CMO,JVEC,NPVEC,NEVEC,IFRP,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Expand coefficients to unsorted quaternion matrix
-C
-C     Written by T.Saue May 1996
-C     Last revision: Jan 7 1997
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-      DIMENSION CMO(*),CAO(*),JVEC(NPVEC+NEVEC),WORK(LWORK)
-      CALL QENTER('CAOSRT')
-#include "memint.h"
-      NDIM  = NTBAS(0)
-      NVEC  = NPVEC + NEVEC
-      NTOT  = NVEC*NDIM
-      NTOTZ = NTOT*NZ
-      CALL MEMGET('REAL',KCBUF,NTOTZ,WORK,KFREE,LFREE)
-      CALL CAOSR1(CAO,CMO,WORK(KCBUF),JVEC,NVEC,IFRP,
-     &            NFBAS(IFRP,0),NORB(IFRP),NTBAS(0),IPRINT)
-      CALL MEMREL('CAOSRT.CAOSR1',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('CAOSRT')
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck caosr1 */
-      SUBROUTINE CAOSR1(CAO,CMO,CBUF,NVEC,IVEC,IFRP,
-     &                  KNFBAS,KNORB,NBAST,IPRINT)
-C***********************************************************************
-C
-C     Expand coefficients to unsorted quaternion matrix
-C
-C     Written by T.Saue May 1996
-C     Last revision: May 6 1996
-C***********************************************************************
-      use quaternion_algebra
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(DM1 = -1.0D0)
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-C
-#include "dcblab.h"
-#include "dgroup.h"
-#include "symmet.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-C
-C     KNFBAS = NFBAS(IFRP,0)
-C     KNORB  = NORB(IFRP)
-C     NBAST  = NTBAS(0)
-C
-      DIMENSION CMO(KNFBAS,KNORB,NZ),
-     &          CBUF(NBAST,NVEC,NZ),CAO(NBAST,NVEC,4)
-#include "dcbibt.h"
-C
-      NTOT = NVEC*NTBAS(0)
-      NTOTZ = NTOT*4
-      IF(NBSYM.EQ.1) THEN
-        DO IZ = 1,4
-          CALL DCOPY(NTOT,CMO(1,IVEC+1,IZ),1,CAO(1,1,IZ),1)
-        ENDDO
-      ELSE
-        CALL DZERO(CBUF,NTOTZ)
-        DO IZ = 1,NZ
-          IQ = IPQTOQ(IZ,0)
-C
-C         IS - index of sorted basis
-C         IU - index of unsorted basis
-C
-          NBRP     = 4/NZ
-          DO IC = 1,2
-C           IP is gerade(1)/ungerade(2) !
-            IP    = MOD(IFRP+IC,2) + 1
-            DO ISYM = 1,NBRP
-              IBSYM = JFSYM(ISYM,IP)
-              IBREP = IBSYM - 1
-              DO I = 1,NBBAS(IBREP,IC)
-                IU    = ICOS(IBSYM,IC)  + I
-                IS    = IBBAS(IBREP,IC) - IBAS(IFRP) + I
-                CALL DCOPY(NVEC,CMO(IS,IVEC+1,IZ),NFBAS(IFRP,0),
-     &                    CBUF(IU,1,IQ),NTBAS(0))
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDDO
-C
-C     Transform to AO basis
-C
-        DO IZ = 1,4
-          CALL VTSOAO(CBUF(1,1,IZ),CAO(1,1,IZ),NTBAS(0),
-     &              NVEC,IPRINT)
-        ENDDO
-      ENDIF
-      CALL DSCAL(NTOT,DM1,CAO(1,1,3),1)
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1906,10 +1762,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Pripol */
-      SUBROUTINE PRIPOL(IFRP,CPOL,EIG,NPOL,NBAS,NTOT)
+      SUBROUTINE PRIPOL(CPOL,EPOL,NBAS,NPOL,NZ,LRPOL,LCPOL)
 C***********************************************************************
 C
-C     Print polarization contributions form projection analysis
+C     Print polarization contributions from projection analysis
 C
 C     Written by T. Saue Oct 25 2003
 C
@@ -1919,15 +1775,14 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,DTOL = 1.0D-5)
 C
 #include "maxorb.h"
-#include "dgroup.h"
 #include "dcblab.h"
       CHARACTER FMT*6,MXFORM*6
-      DIMENSION CPOL(NBAS,NTOT,NZ),EIG(NPOL)
+      DIMENSION CPOL(LRPOL,LCPOL,NZ),EPOL(NPOL)
 C
       DO I = 1,NPOL
-        FMT = MXFORM(EIG(I),16)
+        FMT = MXFORM(EPOL(I),16)
         WRITE(LUPRI,'(/A,I3,A,'//FMT//')')
-     +    '* Electronic eigenvalue nr.',I,': ',EIG(I)
+     +    '* Electronic eigenvalue nr.',I,': ',EPOL(I)
         CALL PRSYMB(LUPRI,'=',52,0)
         BIG=D0
         IBIG=0
@@ -1940,7 +1795,7 @@ C
             WRITE(LUPRI,100)
      &          J,PLABEL(IPLAB(J,2),2),(CPOL(J,I,IZ),IZ = 1,NZ)
             IF(DVEC.GT.BIG) THEN
-              BIG = DVEC
+              BIG  = DVEC
               IBIG = J
             ENDIF
           ENDIF
@@ -1948,8 +1803,7 @@ C
         WRITE(6,*) ' * Max. ',BIG
         IF(IBIG.GT.0) THEN
           WRITE(LUPRI,100)
-     &          IBIG,PLABEL(IPLAB(IBIG,2),2),
-     &          (CPOL(IBIG,I,IZ),IZ = 1,NZ)
+     &          IBIG,PLABEL(IPLAB(IBIG,2),2),(CPOL(IBIG,I,IZ),IZ = 1,NZ)
         ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'=',52,0)

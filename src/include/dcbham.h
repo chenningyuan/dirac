@@ -99,7 +99,10 @@
 !     NOSFMU     - in spinfree calculations, do not generate spinfree multiplicaton tables, that is
 !                  constructing direct products of spin and spatial symmetries
 !
-!    TRS_MIX - if .true.,allow mixing T+ Hamiltonian with chosen T- perturbative operator 
+!     TRS_MIX - if .true.,allow mixing T+ Hamiltonian with chosen T- perturbative operator 
+!
+!     WRITE_Jz_MATRIX - flag for writing out the Jz matrices from the LINSYM routine into text files
+!
 !
 
       INTEGER MAX1OPER
@@ -134,7 +137,7 @@
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
      &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX,  &
-     &        PEQM
+     &        PEQM, WRITE_Jz_MATRIX                                      
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -146,7 +149,7 @@
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
-     &                ecpcalc,MDIRAC,TRS_MIX, PEQM,                     &
+     &                ecpcalc,MDIRAC,TRS_MIX, PEQM, WRITE_Jz_MATRIX     &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

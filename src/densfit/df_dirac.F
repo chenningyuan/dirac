@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1278,6 +1278,7 @@ c      WORD1 = WORD
 cC
 c 100    CONTINUE
 c            READ (LUCMD, '(A7)') WORD
+c            CALL UPCASE(WORD)
 c            PROMPT = WORD(1:1)
 c
 c            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN

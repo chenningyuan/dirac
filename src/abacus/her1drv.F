@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -46,6 +46,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -61,6 +62,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

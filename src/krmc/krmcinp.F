@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -131,8 +131,8 @@ C
       IKRMC_INTFLG    =  0
       IKRMC_ITRINT(1) =  0
       IKRMC_ITRINT(2) =  0
-      IKRMC_ISTATE    =  1
-      IKRMC_SYMMETRY  =  1
+      IKRMC_STATE     =  1 ! ground state
+      IKRMC_SYMMETRY  =  1 ! totally symmetric
       IKRMC_MEMFAC    =  9
       NKRMCGAS        =  0
       NKRMC_MK2REF    = -1
@@ -197,6 +197,7 @@ C
         WORD1 = WORD
   100   CONTINUE
            READ (LUCMD, '(A7)') WORD
+           CALL UPCASE(WORD)
            PROMPT = WORD(1:1)
            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
               GO TO 100
@@ -244,7 +245,7 @@ C&&& .NEO ALWAYS: Always use NEO-iterations
                GO TO 100
     7          CONTINUE
 C&&& .STATE : which state to converge to
-               READ(LUCMD,*) IKRMC_ISTATE
+               READ(LUCMD,*) IKRMC_STATE
                GO TO 100
     8          CONTINUE
 C&&& DELETE ORBITALS:
@@ -691,7 +692,7 @@ C
 
       END IF
       WRITE(LUPRI,'(A,I4)')
-     &     ' * State number          : ',IKRMC_ISTATE
+     &     ' * State number          : ',IKRMC_STATE
       WRITE(LUPRI,'(2A)')
      &     ' * CI program used       : ',KRMC_CIPROGRAM
 C
@@ -958,6 +959,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1160,6 +1162,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

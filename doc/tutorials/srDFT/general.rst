@@ -12,7 +12,7 @@ here using the error function (erf). The first term, the long-range interaction,
 is assigned to wave function theory, whereas the second term, the short-range interaction, is assigned 
 to DFT. Contrary to conventional DFT the fictitious reference (Kohn-Sham) system is no longer non-interacting and can not be solved exactly, 
 so that the hierarchy of approximate wave function methods must be invoked. MP2-srDFT has been implemented in DIRAC by Ossama Kullie 
-and Trond Saue [Kullie2011]_.
+and Trond Saue :cite:`Kullie2011`.
 
 Specification of functionals
 ----------------------------

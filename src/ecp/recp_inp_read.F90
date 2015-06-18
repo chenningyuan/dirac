@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -276,7 +276,7 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
   USE RECP_OUTPUT
   IMPLICIT NONE
 #include "mxcent.h"
-#include "nuclei.h"  !test
+#include "nuclei.h"
 #include "inc_mxvalue.h"
 #include "inc_print.h"
 #include "recpval.h"
@@ -578,8 +578,7 @@ SUBROUTINE RECP_INP_MENU
 #include "inc_print.h"
   INTEGER I,IOS,NTABLE
   PARAMETER (NTABLE=2)
-  CHARACTER WORD0*7,WORD1*7,TABLE(NTABLE)*7
-  DATA WORD0 /'*ECP   '/
+  CHARACTER WORD1*7,TABLE(NTABLE)*7
   DATA TABLE /'.PRINT ','.DEBUG '/
 
 ! Original parameter
@@ -592,7 +591,8 @@ SUBROUTINE RECP_INP_MENU
   REWIND (LUCMD,IOSTAT=IOS)
   1000 CONTINUE
   READ (LUCMD,'(A7)',END=9900,ERR=9000) WORD1
-  IF (WORD1.EQ.WORD0) THEN
+  CALL UPCASE(WORD1)
+  IF (WORD1.EQ.'*ECP   ') THEN
      GOTO 2000
   ELSE
      GOTO 1000

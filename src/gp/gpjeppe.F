@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -355,15 +355,6 @@ C
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
-#if defined (SYS_IBM)
-      DO 100 I = 1, NDIM
-        T = 0.0D0
-        DO 80 L = 1,NVCEFF
-          T = T + A(L)*X(I,INDEX(L))
-   80   CONTINUE
-        AX(I) = T
-  100 CONTINUE
-#endif
 #if defined (SYS_ALLIANT)
       IF (NVCEFF .LE. 0) THEN
          DO 10 I = 1,NDIM
@@ -393,8 +384,7 @@ CVD$  SHORTLOOP
   600       CONTINUE
   700    CONTINUE
       END IF
-#endif
-#if !defined (SYS_IBM) && !defined (SYS_ALLIANT)
+#else
       IF (NVCEFF .LE. 0) THEN
          DO 10 I = 1,NDIM
             AX(I) = 0.0D0
@@ -422,15 +412,6 @@ C
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
-#if defined (SYS_IBM)
-      DO 100 I = 1, NDIM
-        T = 0.0D0
-        DO 80 L = 1,NVCEFF
-          T = T + A(L)*X(I,INDEX(L))
-   80   CONTINUE
-        AX(I) = AX(I) + T
-  100 CONTINUE
-#endif
 #if defined (SYS_ALLIANT)
 C
       IF (NDIM .LE. 32) THEN
@@ -447,8 +428,7 @@ CVD$  SHORTLOOP
   600       CONTINUE
   700    CONTINUE
       END IF
-#endif
-#if !defined (SYS_IBM) && !defined (SYS_ALLIANT)
+#else
 C
       DO 300 L = 1,NVCEFF
          DO 200 I = 1,NDIM
@@ -620,6 +600,31 @@ CSK           WRITE(LUWRT,*) 'I set this to 0',I
 CSK           WRITE(LUWRT,*) 'DIVIDE for I',DIVIDE,I
            VECOUT(I)=VECIN(I)/DIVIDE
          END IF
+      END DO
+      RETURN
+      END
+      SUBROUTINE DIAVC2_krci(VECOUT,VECIN,DIAG,SHIFT,off_dia,NDIM)
+C
+C VECOUT(I)=VECIN(I)/(DIAG(I)+SHIFT)
+C
+C Set VECOUT = 0 if VECIN = 0
+C   Timo Fleig, 18-12-2002
+C
+#include "implicit.h"
+      PARAMETER (THRES=1.0D-14)
+      DIMENSION VECOUT(*),VECIN(*),DIAG(*)
+C
+      DO I=1,NDIM
+!        print *, "diag and shift for element i",i,diag(i),shift,off_dia
+         DIVIDE=DIAG(I)+SHIFT-off_dia
+         IF(ABS(DIVIDE) <= THRES) DIVIDE=1.0d0
+!        print *, "cvecs for elemet i",i,-vecin(i),divide
+         IF(VECIN(I).EQ.0.0D0) THEN
+           VECOUT(I) = 0.0D0
+         ELSE
+           VECOUT(I)= -VECIN(I)/DIVIDE
+         END IF
+!         print *, "unnorm bvecs for elemet i",i,vecout(i)
       END DO
       RETURN
       END
@@ -977,15 +982,6 @@ C VU(I) = SUM(J) A(J,IP(I))*VI(J)
 C
 #include "implicit.h"
       DIMENSION VU(*),A(NROW,*),VI(*),IP(*)
-#if defined (SYS_IBM)
-C
-      CALL SETVEC(VU,0.0D0,NPROD)
-      DO 50 J = 1, NROW
-        DO 100 I = 1, NPROD
-          VU(I) = VU(I) + A(J,IP(I))*VI(J)
-  100   CONTINUE
-   50 CONTINUE
-#else
       PARAMETER (D0 = 0.0D0)
 C
       DO 100 I = 1, NPROD
@@ -995,7 +991,6 @@ C
             VU(I) = VU(I) + A(J,IP(I))*VI(J)
    50    CONTINUE
   100 CONTINUE
-#endif
 C
       RETURN
       END

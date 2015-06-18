@@ -9,7 +9,7 @@ may be collected to group labels as specified by the user.
 
 keyword(VECPOP)
 
-For each fermion irrep, give an :ref:`orbital_string` of orbitals to analyze.
+For each fermion irrep, give an :ref:`orbital_strings` of orbitals to analyze.
 
 *Default:* Analyze the occupied electronic solutions.
 
@@ -42,7 +42,7 @@ keyword(LABDEF)
 Define labels for use in Mulliken population analysis.
 
 Give first the number of labels to define, then the label name (12 characters)
-and :ref:`orbital_string` for each fermion irrep.
+and :ref:`orbital_strings` for each fermion irrep.
 
 *Example:*
 

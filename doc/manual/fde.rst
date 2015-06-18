@@ -3,9 +3,9 @@ star(FDE)
 Frozen density embedding (FDE) directives. 
 
 General information on the FDE method can be found in recent 
-reviews (e.g. [Jacob2013]_, [Gomes2012a]_), whereas details 
-concerning the Dirac implementation are found in [Gomes2008]_, 
-[Hofener2012]_ and [Hofener2013]_. 
+reviews (e.g. :cite:`Jacob2013`, :cite:`Gomes2012a`), whereas details 
+concerning the Dirac implementation are found in :cite:`Gomes2008`, 
+:cite:`Hofener2012` and :cite:`Hofener2013`. 
 
 **Data import**
 ===============
@@ -45,7 +45,7 @@ the density gradient).
 If the :ref:`.EMBPOT` option was selected, the program will simple compute matrix elements of the
 the AO basis used by the program, and add it to the one-electron Fock matrix. Because of that,
 this option can be used with any wavefunction in Dirac. The ground-state calculation in this 
-case corresponds to the "fixed potential" scheme of [Gomes2008]_.
+case corresponds to the "fixed potential" scheme of :cite:`Gomes2008`.
 
 However, if :ref:`.EMBPOT` is not specified, the program implicitly selects the 
 :ref:`.UPDATE` option, and assumes a frozen density has been provided (see :ref:`.FRDENS`).

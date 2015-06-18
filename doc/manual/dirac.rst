@@ -46,7 +46,7 @@ Explicitly activates the transformation of integrals to molecular orbital
 basis.  This activates the reading of the :ref:`**MOLTRA` section.
 
 These transformed integrals are currently only used by the :ref:`RELCCSD`,
-:ref:`RELADC`, :ref:`DIRRCI`, and :ref:`LUCITA` modules, and if one of these
+:ref:`RELADC`, :ref:`DIRRCI`, and :ref:`*LUCITA` modules, and if one of these
 three modules are requested under :ref:`**WAVE FUNCTION`, then this flag is
 automatically activated unless .NO4INDEX is specified in this input module.
 
@@ -61,7 +61,7 @@ orbital basis if any of
 :ref:`RELCCSD`,
 :ref:`RELADC`,
 :ref:`DIRRCI`, and
-:ref:`LUCITA`
+:ref:`*LUCITA`
 modules
 are requested under :ref:`**WAVE FUNCTION`.
 

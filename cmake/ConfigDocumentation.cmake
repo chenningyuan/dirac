@@ -5,6 +5,11 @@ if(SPHINX_FOUND)
         COMMAND python ${CMAKE_SOURCE_DIR}/doc/preprocess_sphinx ${CMAKE_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
+    add_custom_target(
+        slides
+        COMMAND sphinx-build -b slides ${CMAKE_SOURCE_DIR}/doc/workshop-slides ${PROJECT_BINARY_DIR}/html_slides
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        )
 else()
     add_custom_target(
         html
@@ -21,7 +26,7 @@ if(DOXYGEN_FOUND)
     )
     add_custom_target(
         doxygen
-        COMMAND ${DOXYGEN_EXECUTABLE}
+        COMMAND ${DOXYGEN_EXECUTABLE} -d validate -d filteroutput -d commentscan
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 endif()

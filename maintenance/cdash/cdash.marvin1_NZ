@@ -1,78 +1,103 @@
 #!/bin/bash
 
-# ------------------------ #
-# enviroment variables ... #
-# ------------------------ #
-#export PATH=/home/ilias/bin:/home/ilias/bin/openmpi_i32lp64_static/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-#export LD_LIBRARY_PATH=/home/ilias/bin/openmpi_i32lp64_static/lib
-
-#export PATH=/home/ilias/bin/openmpi_intel/bin:/data/programs/ctcp/pgi/linux86-64/12.5/bin:/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:/usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/sbin:/usr/sbin:.:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/bin:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/bin/intel64:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/mkl/bin:/cm/shared/apps/intel/composer_xe/2011_sp1.11.339/mkl/bin/intel64:/cm/shared/apps/torque/2.5.5/bin:/cm/shared/apps/torque/2.5.5/sbin:/home/ilias/bin
-
 export PATH=/home/ilias/bin/cmake/install_src/cmake-2.8.9/bin:$PATH
 
 module load ctcp pgi/64
 module load acml
+module load intel/compiler/64/12.1/2011_sp1.11.339
+module load intel/mkl/64/10.3/2011_sp1.11.339
+module load ctcp
+##Keep a record of which modules were loaded in the job's output:
+module list 2>&1
+echo
+#
+
 # add dynamic libraries 
-export LD_LIBRARY_PATH=/data/programs/ctcp/pgi/linux86-64/12.5/libso:/data/programs/ctcp/pgi/linux86-64/12.5/lib:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/data/programs/ctcp/pgi/linux86-64/12.5/libso:/data/programs/ctcp/pgi/linux86-64/12.5/lib:$LD_LIBRARY_PATH
 
 /bin/echo -e  "\n PATH=$PATH"
 /bin/echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
+#
+NUM_OF_CPUS=$(cat /proc/cpuinfo | grep processor | wc -l)
+echo -e  'Number of all processors available per core, NUM_OF_CPUS='$NUM_OF_CPUS
+
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/software/dirac/working_trunk
+export DIRTIMEOUT="14m"
 
 # go to the local DIRAC directory
 cd $DIRAC
+BUILD_INTEL=build_intelmkl_i8
+if [[ -d "$BUILD_INTEL" ]]; then
+  echo "deleting previous build directory $BUILD_INTEL."
+  /bin/rm -rf $BUILD_INTEL
+fi
+#
+#./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_INTEL
+./pamadm -a --builddir=$BUILD_INTEL
+#export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
+# configure step
+./setup --fc=ifort  --cc=icc  --cxx=icpc  -D BUILDNAME="Marvin_intelmkl_i8" -D BLAS_TYPE=MKL -D LAPACK_TYPE=MKL -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
+cd $BUILD_INTEL
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest  -R  cosci_energy
+ctest -D ExperimentalSubmit
 
-export DIRTIMEOUT="10m"
 
+# go to the local DIRAC directory
+cd $DIRAC
 BUILD_PGI=build_PGI_i32lp64_acml_dyn
 if [[ -d "$BUILD_PGI" ]]; then
   echo "deleting previous build directory $BUILD_PGI."
   /bin/rm -rf $BUILD_PGI
 fi
 #
-./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI
-export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
+#./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI
+./pamadm -a --builddir=$BUILD_PGI
+#export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
-./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="Marvin_PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_PGI
 cd $BUILD_PGI
-make ExperimentalUpdate
-make ExperimentalConfigure
-make ExperimentalBuild
-make ExperimentalSubmit
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest  -R cosci_energy
+ctest -D ExperimentalSubmit
 
+# go to the local DIRAC directory
 cd $DIRAC
-unset MATH_ROOT
-BUILD_PGI1=build_PGI_ilp64_ownmath_dyn
-if [[ -d "$BUILD_PGI1" ]]; then
-  echo "deleting previous build directory $BUILD_PGI1."
-  /bin/rm -rf $BUILD_PGI1
+BUILD_PGIMKL=build_pgi_mkl_i8
+if [[ -d "$BUILD_PGIMKL" ]]; then
+  echo "deleting previous build directory $BUILD_PGIMKL ."
+  /bin/rm -rf $BUILD_PGIMKL
 fi
-./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI1
+./pamadm -a --builddir=$BUILD_PGIMKL
 # configure step
-./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC --int64 -D BUILDNAME="PGI_ownmath_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI1
-cd $BUILD_PGI1
-make ExperimentalUpdate
-make ExperimentalConfigure
-make ExperimentalBuild
-make ExperimentalSubmit
+./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="Marvin_PGI_mkl_i8" -D BLAS_TYPE=MKL -D LAPACK_TYPE=MKL -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_PGIMKL
+cd $BUILD_PGIMKL
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest  -R cosci_energy
+ctest -D ExperimentalSubmit
 
-
-BUILD_PGI_I8=build_PGI_ilp64_acml_dyn
+# go to the local DIRAC directory
 cd $DIRAC
-if [[ -d "$BUILD_PGI_I8" ]]; then
-  echo "deleting previous build directory $BUILD_PGI_I8"
-  /bin/rm -rf $BUILD_PGI_I8
+BUILD_GNU=build_gnu_ownmath_i8
+if [[ -d "$BUILD_GNU" ]]; then
+  echo "deleting previous build directory $BUILD_GNU ."
+  /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_PGI_I8
-export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
+./pamadm -a --builddir=$BUILD_GNU
 # configure step
-./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  --int64 -D BUILDNAME="PGI_acml_i8" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_PGI_I8
-cd $BUILD_PGI_I8
-make ExperimentalUpdate
-make ExperimentalConfigure
-make ExperimentalBuild
-make ExperimentalSubmit
+./setup --fc=gfortran  --cc=gcc  --cxx=g++ --int64 -D BUILDNAME="Marvin_gnu_ownmath_i8" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_GNU
+cd $BUILD_GNU
+ctest -D ExperimentalUpdate
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest  -R cosci_energy
+ctest -D ExperimentalSubmit
 
-exit 0

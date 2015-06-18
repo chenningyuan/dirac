@@ -6,13 +6,13 @@ Calculation of NMR shieldings using simple magnetic balance
 
 In this tutorial we look at 4-component relativistic calculations of NMR
 shielding constants. For best results we recommend to use the scheme of simple
-magnetic balance (sMB) in conjunction with London orbitals [Olejniczak2012]_.
+magnetic balance (sMB) in conjunction with London orbitals :cite:`Olejniczak2012`.
 
 
 Basic theory of magnetic balance
 ================================
 
-We encourage the reader to consult the original paper [Olejniczak2012]_ for
+We encourage the reader to consult the original paper :cite:`Olejniczak2012` for
 full details; here we just provide some key points.
 
 In the absence of magnetic fields the coupling between the large and small
@@ -34,7 +34,7 @@ valid for positive-energy solutions (and extended nuclear charge
 distributions). Construction of the small component basis in this manner
 assures the correct representation of the kinetic energy operator in the
 non-relativistic limit, and the coupling is therefore referred to as *kinetic
-balance* [Stanton1984]_.  In a 2-spinor basis kinetic balance can be
+balance* :cite:`Stanton1984`.  In a 2-spinor basis kinetic balance can be
 implemented in such a manner that there is a 1:1 ratio between the sizes of the
 large and small component basis; this is referred to as *restricted kinetic
 balance* (RKB).
@@ -66,10 +66,10 @@ components. The non-relativistic limit now reads
 
   \lim_{c \to \infty} c \psi^S = \frac{1}{2m} (\vec \sigma \cdot \vec \pi) \psi^L
 
-and is referred to as *magnetic balance* [Aucar1999]_.  Magnetic balance needs
+and is referred to as *magnetic balance* :cite:`Aucar1999`.  Magnetic balance needs
 to be taken into account when constructing the first-order correction to the
 wave function upon inclusion of an external magnetic field and is not assured
-in a RKB basis [Pecul2004]_.  In the cited paper [Olejniczak2012]_ we show that
+in a RKB basis :cite:`Pecul2004`.  In the cited paper :cite:`Olejniczak2012` we show that
 magnetic balance can be obtained in a Gaussian basis combining UKB with London
 orbitals. However, UKB generally leads to a small component basis larger than
 the large component basis set from which it was generated and may increase
@@ -83,7 +83,7 @@ A sample calculation
 
 We will consider a 4-component relativistic density functional calculation of
 the NMR shielding constant of hydrogen fluoride using the KT2 functional
-[Keal2003]_.  The molecular input file ``hf.mol`` reads:
+:cite:`Keal2003`.  The molecular input file ``hf.mol`` reads:
 
 .. literalinclude:: hf.mol
 
@@ -94,7 +94,7 @@ Step 1: SCF calculation
 The first step is the generation of the Kohn--Sham wave function in a RKB
 basis. Although DIRAC employs scalar Gaussian basis functions restricted
 kinetic balance is by default imposed when transforming to orthonormal basis
-[Visscher2000]_.
+:cite:`Visscher2000`.
 
 The menu file ``scf.inp`` reads:
 
@@ -171,4 +171,4 @@ If we in addition switch off the use of London-orbitals (deleting .LONDON) we ob
 
   ------------------------------------------------------
 
-The experimental value for the absolute isotropic shielding available for H in HF is 28.72 ppm [Chesnut1994]_.
+The experimental value for the absolute isotropic shielding available for H in HF is 28.72 ppm :cite:`Chesnut1994`.

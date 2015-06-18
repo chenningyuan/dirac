@@ -45,6 +45,7 @@
 
          public allocator_set_max
          public allocator_get_max
+         public allocator_get_max_words
 
          public allocator_set_quiet
          public allocator_set_verbose
@@ -56,6 +57,18 @@
             module procedure allocator_setmax_i4
             module procedure allocator_setmax_i8
          end interface allocator_set_max
+
+         interface allocator_get_max
+            module procedure allocator_getmax_i4
+            module procedure allocator_getmax_i8
+            module procedure allocator_getmax_r8
+         end interface allocator_get_max
+
+         interface allocator_get_max_words
+            module procedure allocator_getmax_i4_words
+            module procedure allocator_getmax_i8_words
+            module procedure allocator_getmax_r8_words
+         end interface allocator_get_max_words
 
          contains
 
@@ -86,9 +99,10 @@
 
             subroutine allocator_setmax_i4(size)
                integer(kind=4), intent(in) :: size 
+               integer(kind=4)             :: max_mem_i4 
     
                if (size.le.0) then ! there are no limits so we use a large integer
-                  max_mem = huge(max_mem) 
+                  max_mem = real(huge(max_mem_i4))*real(kreal) 
                else 
                   max_mem = real(size)*real(kreal)
                endif
@@ -96,20 +110,52 @@
 
             subroutine allocator_setmax_i8(size)
                integer(kind=8), intent(in) :: size 
+               integer(kind=4)             :: max_mem_i4 
     
                if (size.le.0) then ! there are no limits so we use a large integer
-                  max_mem = huge(max_mem) 
+                  max_mem = real(huge(max_mem_i4))*real(kreal) 
                else 
                   max_mem = real(size)*real(kreal)
                endif
             end subroutine allocator_setmax_i8
 
-            subroutine allocator_get_max(max)
+            subroutine allocator_getmax_r8(max)
                real(kind=kreal), intent(out) :: max
 
-               max = max_mem 
-            end subroutine allocator_get_max
+               max = max_mem
+            end subroutine allocator_getmax_r8
+
+            subroutine allocator_getmax_i4(max)
+               integer(kind=4), intent(out) :: max
+
+               max = anint(max_mem)
+            end subroutine allocator_getmax_i4
+
+            subroutine allocator_getmax_i8(max)
+               integer(kind=8), intent(out) :: max
+
+               max = anint(max_mem)
+            end subroutine allocator_getmax_i8
   
+
+            subroutine allocator_getmax_r8_words(max)
+               real(kind=kreal), intent(out) :: max
+
+               max = max_mem/real(kreal)
+            end subroutine allocator_getmax_r8_words
+
+            subroutine allocator_getmax_i4_words(max)
+               integer(kind=4), intent(out) :: max
+
+               max = anint(max_mem/real(kreal),kind(max)) 
+            end subroutine allocator_getmax_i4_words
+
+            subroutine allocator_getmax_i8_words(max)
+               integer(kind=8), intent(out) :: max
+
+               max = anint(max_mem/real(kreal),kind(max))
+            end subroutine allocator_getmax_i8_words
+
 
       end module allocator_cfg
 !

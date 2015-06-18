@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -113,7 +113,7 @@ C***********************************************************************
        use fde_mod
        use num_grid_gen
        use num_grid_cfg
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
 #endif
 #ifdef MOD_PEQM
@@ -149,7 +149,9 @@ CTOBS: Note the use of dcbdhf ! Should be generalized !!!
 #endif
 
       real(8), allocatable :: xc_matrix(:, :, :)
+#ifdef HAS_PCMSOLVER
       real(8), allocatable :: fock_pcm(:, :, :)
+#endif
 
 C
 #include "ibtfun.h"
@@ -311,8 +313,7 @@ CJTH check this
         CALL SOLFCK(FMO,FAO,NF,ESOLVE,ESOLVN,WORK(KFREE),LFREE,IPRSOL)
       ENDIF          
 
-#ifdef PCM_MODULE
-! Insert safeguards against symmetry and X2C?
+#ifdef HAS_PCMSOLVER
         if (dirac_cfg_pcm) then
            call genden(fao, cmo, 1, iprint)
 ! Generate the total MEP and ASC, we are doing response
@@ -332,7 +333,7 @@ CJTH check this
 !                      nz, ipqtoq(1,0), 6)
            deallocate(fock_pcm)
         endif 
-#endif       
+#endif
 
 #ifdef MOD_PEQM
 ! edh: As the solvent methods before us (see above) we need

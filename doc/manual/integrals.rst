@@ -1,20 +1,10 @@
 
-
-.. _integrals:
-.. index:: **INTEGRALS
-
-=============
-\*\*INTEGRALS
-=============
-
+starstar(INTEGRALS)
 
 General directives
 ==================
 
-
-.. index:: .NUCMOD
-.NUCMOD
--------
+keyword(NUCMOD)
 
 Specify nuclear model.
 
@@ -34,12 +24,10 @@ with regular nonrelativistic calculations done with another code, e.g. `Dalton
 same energies.
 
 For the Gaussian charge distribution the default exponents are in
-accordance with values proposed by Visscher and Dyall [Visscher1997b]_.
+accordance with values proposed by Visscher and Dyall :cite:`Visscher1997b`.
 
 
-.. index:: .SELECT
-.SELECT
--------
+keyword(SELECT)
 
 Restrict range of nuclei in one-electron integrals involving single
 atomic centers, for example electric field gradients.
@@ -54,9 +42,7 @@ Example: Restrict range to four nuclei (first number), the nuclei 1, 3, 7, and 8
    8
 
 
-.. index:: .PHASEORIGIN
-.PHASEORIGIN
-------------
+keyword(PHASEORIGIN)
 
 Origin appearing in the London atomic orbital phase-factors. Default::
 
@@ -69,9 +55,7 @@ Origin appearing in the London atomic orbital phase-factors. Default::
   other integrals, in the code in her1int.F it is the final "else" option.
 
 
-.. index:: .GAUGEORIGIN
-.GAUGEORIGIN
-------------
+keyword(GAUGEORIGIN)
 
 Set the gauge origin. By default it is set to the coordinate origin::
 
@@ -79,9 +63,7 @@ Set the gauge origin. By default it is set to the coordinate origin::
    0.0 0.0 0.0
 
 
-.. index:: .DIPORG
-.DIPORG
--------
+keyword(DIPORG)
 
 Origin for all moment integrals, including the dipole (dipole is independent of
 origin only for neutral systems). By default it is set to the coordinate
@@ -91,16 +73,13 @@ origin::
    0.0 0.0 0.0
 
 
-.. index:: .MAGCOR
-.MAGCOR
--------
+keyword(MAGCOR)
 
 Print the symmetrized nuclear magnetic moments. This corresponds to taking
 symmetry combinations of rotations, not coordinates, at each nuclear center.
 The numbering is used in labels of various magnetic integrals.
 
 
-.. index:: .PRINT
 .PRINT
 ------
 
@@ -110,33 +89,26 @@ General print level in the integral module. Default::
    1
 
 
-.. index:: *ONEINT
-\*ONEINT
-========
+star(ONEINT)
 
 This subsection gives directives for the generation of one-electron
 integrals. Based on input in the other section, the program will
 determine what integrals to calculate.
 
 
-.. index:: .PRINT
 .PRINT
 ------
 
 Print level in one-electron integral routines. By default
-print level is taken from \*\*INTEGRALS.
+print level is taken from :ref:`**INTEGRALS`.
 
 
-.. index:: *READIN
-\*READIN
-========
+star(READIN)
 
 This subsection allows changes of defaults in the reading of the mol file.
 
 
-.. index:: .UNCONTRACT
-.UNCONTRACT
------------
+keyword(UNCONTRACT)
 
 Decontract basis sets specified as contracted (when being read from the
 library, for example). In the case of using non-relativistically contracted
@@ -145,17 +117,13 @@ quasirelativistic Hamiltonians (like X2C) work only with decontracted basis
 set. By default only the small component is decontracted.
 
 
-.. index:: .PRINT
-.PRINT
-------
+keyword(PRINT)
 
 Print level in the reading of the mol file. By default
 print level is taken from \*\*INTEGRALS.
 
 
-.. index:: .MAXPRI
-.MAXPRI
--------
+keyword(MAXPRI)
 
 Maximum number of primitive functions in a given block in basis file.
 Default::
@@ -164,20 +132,16 @@ Default::
    22
 
 
-.. index:: *TWOINT
-\*TWOINT
-========
+star(TWOINT)
 
 This subsection gives directives for the generation of two-electron integrals.
 It also gives directives for the construction of Fock matrices, such as
 screening.
 
 
-.. index:: .SCREEN
-.SCREEN
--------
+keyword(SCREEN)
 
-Screening threshold for integral direct calculations of Fock matrices [Saue1997]_.
+Screening threshold for integral direct calculations of Fock matrices :cite:`Saue1997`.
 Default::
 
   .SCREEN
@@ -191,11 +155,9 @@ Choosing a negative value for the screening turns the integral screening
 completely off.
 
 
-.. index:: .ICEDIF
-.ICEDIF
--------
+keyword(ICEDIF)
 
-Separate screening of Coulomb and exchange contributions [Saue1997]_.
+Separate screening of Coulomb and exchange contributions :cite:`Saue1997`.
 Useful for fine regulation of the convergence process.
 Default: Coulomb and exchange on (1 = on; off = 0)::
 
@@ -203,9 +165,7 @@ Default: Coulomb and exchange on (1 = on; off = 0)::
    1 1
 
 
-.. index:: .THRFAC
-.THRFAC
--------
+keyword(THRFAC)
 
 Adjust the integral thresholds for SL and SS integrals. For conventional
 integral calculations only integrals above the threshold given in the mol file
@@ -216,9 +176,7 @@ the factors given here. Default::
    1.0 1.0
 
 
-.. index:: .SOFOCK
-.SOFOCK
--------
+keyword(SOFOCK)
 
 Do direct Fock matrix construction in symmetry-adapted basis (SO basis).
 
@@ -227,7 +185,6 @@ skeleton matrix approach. This may give better screening, but is more memory
 intensive.
 
 
-.. index:: .PRINT
 .PRINT
 ------
 
@@ -249,8 +206,6 @@ Use with care to avoid massive output! At print level 15 the individual
 integrals are printed.
 
 
-.. index:: .TIME
-.TIME
------
+keyword(TIME)
 
 Give detailed timing for integral calculation.

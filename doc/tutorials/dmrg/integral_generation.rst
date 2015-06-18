@@ -5,7 +5,7 @@ Generate a FCIDUMP file for external DMRG calculations
 
 This tutorial briefly demonstrates how to generate a FCIDUMP integral file which can be used to perform relativistic DMRG
 calculations with an external DMRG code. The interface and the first relativistic DMRG implementation and 
-calculation are described in [Knecht2014a]_. 
+calculation are described in :cite:`Knecht2014a`. 
 
 We will explain the basic steps to generate a FCIDUMP file by looking at the HF molecule using a small cc-pVDZ basis set
 for each atom. The molecular input file **hf.xyz** is::
