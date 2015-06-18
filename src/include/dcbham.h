@@ -149,7 +149,7 @@
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
-     &                ecpcalc,MDIRAC,TRS_MIX, PEQM, WRITE_Jz_MATRIX     &
+     &                ecpcalc,MDIRAC,TRS_MIX, PEQM, WRITE_Jz_MATRIX,    &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!
