@@ -157,39 +157,11 @@ else()
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
 
-<<<<<<< HEAD
 if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
     add_subdirectory(src/gen1int)
 endif()
 
-if(ENABLE_PCMMOD)
-    set(ExternalProjectCMakeArgs
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-	-DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-	#-DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
-        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-	#-DCBLAS_ROOT=${CBLAS_ROOT}
-        -DEIGEN3_ROOT=${EIGEN3_ROOT}
-	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-        -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-    )
-    
-    add_external(pcmsolver)
-
-    set(EXTERNAL_LIBS
-        stdc++
-	pcm
-        getkw
-        ${EXTERNAL_LIBS}
-        )
-endif()
-=======
 if(ENABLE_PCMSOLVER)
     find_package(ZLIB)
     if(NOT ZLIB_FOUND)
@@ -254,7 +226,6 @@ if(ENABLE_PCMSOLVER)
         else()
 	   add_external(pcmsolver)
         endif()
->>>>>>> master
 
 	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
 	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
@@ -347,7 +318,6 @@ add_library(
     ${GENERATED_FILES}
     )
 
-<<<<<<< HEAD
 if(ENABLE_GEN1INT)
     add_dependencies(dirac gen1int_interface)
     set(LIBS
@@ -395,11 +365,9 @@ if(ENABLE_PELIB)
 endif()
 
 add_dependencies(dirac run_pamadm)
-=======
 if(DEVELOPMENT_CODE)
     add_dependencies(dirac run_pamadm)
 endif()
->>>>>>> master
 add_dependencies(dirac generate_binary_info)
 
 set(LIST_OF_EXECUTABLES)
@@ -458,13 +426,10 @@ foreach(
     if(ENABLE_PCMSOLVER)
         add_dependencies(${EXECUTABLE} pcmsolver)
     endif()
-<<<<<<< HEAD
     if(ENABLE_GEN1INT)
         add_dependencies(${EXECUTABLE} ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a)
     endif()
-=======
 
->>>>>>> master
     if(ENABLE_STATIC_LINKING)
         target_link_libraries(${EXECUTABLE} ${NODYNEXPORT})
         if (BLAS_TYPE MATCHES Atlas)
