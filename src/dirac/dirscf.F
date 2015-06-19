@@ -1765,6 +1765,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
+      use fde_mod
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -1797,6 +1798,7 @@ c     besterg is the lowest energy we encountered so far
 #ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
+      type(fde_import) :: itmp
       data besterg /1.0D100/
       save besterg
 C
@@ -1895,6 +1897,14 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
+
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+         if (itmp%im_update_vemb) then
+             elergy = elergy - fde_get_embpot_energy()
+         end if
+      end if
+
 
       DHFERG = DHFERG + ELERGY
 C

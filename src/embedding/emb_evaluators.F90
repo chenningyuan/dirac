@@ -40,16 +40,15 @@ module fde_evaluators
 
          call calc_xcke_energy_density(gf_active,  derv_active)
          call calc_xcke_energy_density(gf_frozen,  derv_frozen)
-         call calc_xcke_energy_density(gf_tot,derv_tot)
+         call calc_xcke_energy_density(gf_tot,     derv_tot)
 
          ! get nuclear potential of active
          do i = 1, gf_active%npoints
             vna = gf_active%nucpot(i)
             vcb = gf_frozen%elpot(i)
             w   = grid%w(i)
-            energy = energy                                                    &
-                   + w*(vcb + derv_tot(i,0) - derv_active(i,0))*gf_active%n(i) &
-                   + w*(vna + derv_tot(i,0) - derv_frozen(i,0))*gf_frozen%n(i)
+            energy = energy + w*(vcb*gf_active%n(i) + vna*gf_frozen%n(i))      &                                                    
+                   + w*(derv_tot(i,0) - derv_active(i,0) - derv_frozen(i,0)) 
          enddo
 
          call fde_del_derv_result_partial(derv_active)
