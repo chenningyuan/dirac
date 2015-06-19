@@ -403,6 +403,7 @@ def main():
     dirac_modules[this_module].add_test('blockd_twocomp')
     dirac_modules[this_module].add_test('cosci_energy_blockd')
     dirac_modules[this_module].add_test('fde_export_density')
+    dirac_modules[this_module].add_test('fde_interaction_energy')
     dirac_modules[this_module].add_test('weak_interactions')
     dirac_modules[this_module].add_test('fscc_intensities')
     dirac_modules[this_module].add_test('dft_overlap_diagnostic')
