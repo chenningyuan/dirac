@@ -522,6 +522,7 @@ module fde_evaluators_dirac
          real(8), allocatable :: derv_total(:, :)
          type(fde_files)      :: ftmp
          type(fde_import)     :: itmp
+         real(8) :: total_system_energy
 
 
          if (present(myprint)) then
