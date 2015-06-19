@@ -129,6 +129,9 @@ Tutorials and walkthrus
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
+* **High-spin open-shell Coupled-Cluster:**
+  :doc:`The oxygen molecule <tutorials/highspin_cc/O2>`
+
 * **Case studies:**
   :doc:`W atom <tutorials/case_studies/W>` |
   :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
@@ -165,8 +168,7 @@ Tutorials and walkthrus
   :doc:`LUCITA <tutorials/dusty_attic/lucita>` |
   :doc:`MOLTRA <tutorials/dusty_attic/moltra>` |
   :doc:`MP2 <tutorials/dusty_attic/mp2>` |
-  :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
-  :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
+  :doc:`Open shells <tutorials/dusty_attic/open_shells>`
 
 
 Exercises
