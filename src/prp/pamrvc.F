@@ -4303,7 +4303,6 @@ C
 !     &           1,(/1, 2, 3, 4/),LUPRI)
 
 !      call QUIT('EDH STOP HERE')
-#endif
  
       deallocate(dlmat_triangle)
       deallocate(flmat_triangle)                    
