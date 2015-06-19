@@ -21,6 +21,12 @@ the electrons are placed as follows:
    2/4,0
 
 The ground state with two unpaired electrons corresponds to the triplet state.
+The overall electronic occupation of the oxygen molecule 
+ can be displayed in the following MO diagram (`see also here <https://en.wikipedia.org/wiki/Triplet_oxygen>`_)
+
+.. image:: MO_O2.svg
+   :scale: 25 %
+   :alt: MO scheme of the oxygen molecule
 
 
 Coupled-Cluster description
@@ -30,11 +36,6 @@ Let us continue with the treatment of the oxygen molecule at the Coupled-Cluster
 
 The 1s electrons of each oxygen atom are kept frozen. The active space then consists of 12 electrons, 
 of which there are 10 closed shell electrons.
-This can be displayed in the following MO diagram (`see also here <https://en.wikipedia.org/wiki/Triplet_oxygen>`_)
-
-.. image:: MO_O2.svg
-   :scale: 25 %
-   :alt: MO scheme of the oxygen molecule
 
 The closed shell electrons occupy the nonbonding 2s :math:`\sigma_g` and :math:`\sigma_u` 
 orbitals and the bonding 2p :math:`\sigma_g` and :math:`\pi_u` orbitals, while the 2 open shell electrons are distributed over the 
@@ -60,7 +61,7 @@ represented by a single determinant. This state can be calculated using the Fock
 Utilizing the linear symmetry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Coming back to our example, the oxygen molecule, we now show how this can be done in the linear symmetry.
+Coming back to our example, the oxygen molecule, we now show how the Coupled-Cluster occupation can be refined in the linear symmetry.
 
 We again want to take the :math:`M_S=1` state as our reference. The irreps of :math:`D_{\infty h}^*` are ordered as 
 1/2, -1/2, 3/2, -3/2,.... so we need to consider the :math:`\Omega` value (giving the projection on the molecular axis of both spin 
@@ -81,19 +82,17 @@ The Fock-space Coupled-Cluster treatment
 ----------------------------------------
 
 An example of the use of the Fock space method concerns the calculation
-of the lowest three states of molecular oxygen. 
+of the lowest three states of the molecular oxygen. 
 These are obtained by
-distributing two electrons in the degenerate π\ :sub:`g`\  orbitals. The
-X ground state is a triplet that is split by second-order spin-orbit
-coupling and spin-spin interactions in a lowest M\ :sub:`S`\ =0
-component and two higher M\ :sub:`S`\ =±2 components. This case is also
-discussed above as an example of the use of the
-:ref:`NELEC` keyword.
+distributing two electrons in the degenerate :math:`\pi_g` orbitals. The
+X ground state is a triplet that is split by the second-order spin-orbit
+coupling and the spin-spin interactions in a lowest  :math:`M_S=0` 
+component and two higher  :math:`M_S=\pm 2` components. 
 
 In the Fock space approach we first perform a calculation on
-the closed-shell O\ :sub:`2`\ \ :sup:`+2`\ and calculate the three X states, the
+the closed-shell :math:`O_{2}^{2+}`  and calculate the three X states, the
 degenerate open shell singlet a and the singlet b state in one single
-Fock space run. 
+Fock space run, which involves the sectors (0,0)->(0,1)->(0,2).
 
 The FSCCSD input reads then
 
