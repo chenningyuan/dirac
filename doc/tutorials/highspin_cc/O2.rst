@@ -30,7 +30,7 @@ Let us continue with the treatment of the oxygen molecule at the Coupled-Cluster
 
 The 1s electrons of each oxygen atom are kept frozen. The active space then consists of 12 electrons, 
 of which there are 10 closed shell electrons.
-This can be displayed in the following MO diagram (`source <https://en.wikipedia.org/wiki/Triplet_oxygen>`_)
+This can be displayed in the following MO diagram (`see also here <https://en.wikipedia.org/wiki/Triplet_oxygen>`_)
 
 .. image:: MO_O2.svg
    :scale: 25 %
