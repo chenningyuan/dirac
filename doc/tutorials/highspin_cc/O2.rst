@@ -9,8 +9,9 @@ A simple example of a high-spin open shell state treated with the single referen
 Hartree-Fock reference
 ----------------------
 
-We start with the description of the single-determinant reference state. In the :math:`D_{2h}` symmetry
-the electrons are placed as follows: 
+We start with the description of the single-determinant reference state.
+The ground state with two unpaired electrons corresponds to the triplet state.
+In the :math:`D_{2h}` / :math:`D_{\infty h}`  symmetries the electrons are placed as follows:
 
 ::
 
@@ -20,9 +21,12 @@ the electrons are placed as follows:
    1
    2/4,0
 
-The ground state with two unpaired electrons corresponds to the triplet state.
+(See the :download:`DIRAC.INP <../../../../test/fscc_highspin/hf.inp>` and 
+the :download:`MOLECULE.MOL <../../../../test/fscc_highspin/O2.mol>` input files, 
+and the associated :download:`output file <../../../../test/fscc_highspin/result/hf_O2.out>`.)
+
 The overall electronic occupation of the oxygen molecule 
- can be displayed in the following MO diagram (`see also here <https://en.wikipedia.org/wiki/Triplet_oxygen>`_)
+can be displayed in the following MO diagram (`see also here <https://en.wikipedia.org/wiki/Triplet_oxygen>`_):
 
 .. image:: MO_O2.svg
    :scale: 25 %
@@ -32,7 +36,7 @@ The overall electronic occupation of the oxygen molecule
 Coupled-Cluster description
 ----------------------------
 
-Let us continue with the treatment of the oxygen molecule at the Coupled-Cluster level.
+Let us continue with the correlated treatment of the oxygen molecule at the Coupled-Cluster level.
 
 The 1s electrons of each oxygen atom are kept frozen. The active space then consists of 12 electrons, 
 of which there are 10 closed shell electrons.
@@ -52,11 +56,14 @@ This gives - at the Coupled Cluster level - the following occupation::
   .NELEC
   4 2 3 3
 
+(See the :download:`input file <../../../../test/fscc_highspin/uccsd.inp>`
+and the :download:`output file <../../../../test/fscc_highspin/result/uccsd_O2.out>`.)
+
 Note that this determinant does not represent the exact ground state of the oxygen molecule as this triplet is split by a few wave numbers 
 due to spin-spin and (second order) spin-orbit interactions. 
 
 The lowest state is the :math:`\Omega=0` component that cannot be 
-represented by a single determinant. This state can be calculated using the Fock space coupled cluster method, see below.
+represented by a single determinant. This state can be calculated using the Fock space Coupled Cluster method, see below.
 
 Utilizing the linear symmetry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,10 +84,11 @@ This makes the input for our example: ::
   .NEL_F2
   2 2 1 1 
 
+(The :download:`input file <../../../../test/fscc_highspin/uccsd_linsym.inp>`,
+and the resulting :download:`output file <../../../../test/fscc_highspin/result/uccsd_linsym_O2.out>`.)
 
 The Fock-space Coupled-Cluster treatment
 ----------------------------------------
-
 An example of the use of the Fock space method concerns the calculation
 of the lowest three states of the molecular oxygen. 
 These are obtained by
@@ -90,23 +98,14 @@ coupling and the spin-spin interactions in a lowest  :math:`M_S=0`
 component and two higher  :math:`M_S=\pm 2` components. 
 
 In the Fock space approach we first perform a calculation on
-the closed-shell :math:`O_{2}^{2+}`  and calculate the three X states, the
+the closed-shell :math:`O_{2}^{2+}` and calculate the three X states, the
 degenerate open shell singlet a and the singlet b state in one single
 Fock space run, which involves the sectors (0,0)->(0,1)->(0,2).
 
-The FSCCSD input reads then
-
-:: 
-
-  **RELCCSD
-  .NELEC
-   2 2 3 3
-  .FOCKSP
-  *CCFSPC
-  .DOEA2
-  .NACTP
-   2 2 0 0
-  .MAXIT
-  100
+The complete FSCCSD input 
+:download:`reads then <../../../../test/fscc_highspin/fsccsd.inp>`. 
+The corresponding output file is
+:download:`here <../../../../test/fscc_highspin/result/fsccsd_O2.out>`.
+These FSCCSD correlated energy states can compared against the uncorrelated COSCI states, see :download:`here <../../../../test/fscc_highspin/result/hf_O2.out>`.
 
 
