@@ -87,12 +87,13 @@ This makes the input for our example: ::
 (The :download:`input file <../../../../test/fscc_highspin/uccsd_linsym.inp>`,
 and the resulting :download:`output file <../../../../test/fscc_highspin/result/uccsd_linsym_O2.out>`.)
 
-The Fock-space Coupled-Cluster treatment
+Fock-space Coupled-Cluster calculations
 ----------------------------------------
 An example of the use of the Fock space method concerns the calculation
 of the lowest three states of the molecular oxygen. 
+
 These are obtained by
-distributing two electrons in the degenerate :math:`\pi_g` orbitals. The
+distributing two electrons in the degenerate :math:`\pi^{*}_g` orbitals. The
 X ground state is a triplet that is split by the second-order spin-orbit
 coupling and the spin-spin interactions in a lowest  :math:`M_S=0` 
 component and two higher  :math:`M_S=\pm 2` components. 
@@ -100,12 +101,22 @@ component and two higher  :math:`M_S=\pm 2` components.
 In the Fock space approach we first perform a calculation on
 the closed-shell :math:`O_{2}^{2+}` and calculate the three X states, the
 degenerate open shell singlet a and the singlet b state in one single
-Fock space run, which involves the sectors (0,0)->(0,1)->(0,2).
+Fock space run, which involves sectors sequence of (0,0)->(0,1)->(0,2).
 
 The complete FSCCSD input 
 :download:`reads then <../../../../test/fscc_highspin/fsccsd.inp>`. 
 The corresponding output file is
 :download:`here <../../../../test/fscc_highspin/result/fsccsd_O2.out>`.
-These FSCCSD correlated energy states can compared against the uncorrelated COSCI states, see :download:`here <../../../../test/fscc_highspin/result/hf_O2.out>`.
+These FSCCSD correlated energy states can be compared against the uncorrelated COSCI states, 
+see :download:`here <../../../../test/fscc_highspin/result/hf_O2.out>`.
 
+Another way of running FSCCSD calculations is starting from the closed-shell anion, :math:`O_{2}^{2-}`, 
+and removing two-electrons in the sequence of (0,0)->(1,0)->(2,0) sectors.
+The FSCCSD input file is
+:download:`here <../../../../test/fscc_highspin/fsccsd_IE2.inp>`,
+and the downloadable output file is
+:download:`here <../../../../test/fscc_highspin/result/fsccsd_IE2_O2.out>`.
+
+The reader can check the experimental values of excitation energies in the 
+`NIST web page <http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1000#Diatomic>`_.
 

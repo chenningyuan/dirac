@@ -9,4 +9,6 @@ than the MS=0 component due to the zero-field splitting (NB: calculation of the
 latter quantity requires spin-spin interactions that are not yet implemented 
 at the correlated level !).
 
-O2 states can be found http://webbook.nist.gov/cgi/cbook.cgi?ID=C7782447&Units=SI&Mask=1000#Diatomic
+This directory also contains a simple linear molecule serving as test of DIRAC diagonalization procedures.
+
+This test is discussed in the DIRAC tutorial web-page, please modify it carefully !
