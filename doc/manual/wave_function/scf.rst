@@ -25,7 +25,7 @@ fermion irrep, and you need only to specify the number of
 electrons.
 
 For symmetry groups *with* inversion symmetry, you need to specify
-the distribution of the electrons in the two fermion irreps [Saue2000]_.
+the distribution of the electrons in the two fermion irreps :cite:`Saue2000`.
 
 keyword(OPEN SHELL)
 
@@ -46,7 +46,7 @@ active spinors.
 irrep 2 (the *ungerade* one). Thus, the fractional occupation is 5/6.
 
 The open shell module in DIRAC is based on
-average-of-configurations [Thyssen1998]_ .
+average-of-configurations :cite:`Thyssen1998` .
 The simplest case is one electron in two spinors (= one Kramers
 pair). For this special case the average-of-configuration
 calculation gives the same result as the usual restricted
@@ -73,7 +73,7 @@ that is, the lowest molecular orbitals are doubly occupied, the
 next ones are occupied with the electrons of open shell no. 1,
 etc.
 
-Other orderings can be achieved by using :ref:`.REORDER MO'S`
+Other orderings can be achieved by using :ref:`.REORDER MO`
 and :ref:`.OVLSEL`.
 
 To get the energies of the individual states present in the
@@ -82,7 +82,7 @@ average-of-configurations, specify :ref:`.RESOLVE` (see also
 
 To get the energies of (some) of the individual states present in
 the average of configurations, you can use the
-:ref:`GOSCIP`, the :ref:`DIRRCI`, or the :ref:`LUCITA`.
+:ref:`GOSCIP`, the :ref:`DIRRCI`, or the :ref:`*LUCITA`.
 
 keyword(BOSONS)
 
@@ -134,7 +134,7 @@ ways:
 -  Using the **two-electron Fock matrix** from a previous
    calculation; this may be thought of as starting from a converged
    SCF potential.
--  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. [vanLenthe2006]_ .
+-  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. :cite:`vanLenthe2006` .
 -  Using an **extended Hückel start** based on *atomic fragments*
 
 The default is to start from MO coefficients if the file DFCOEF is
@@ -332,7 +332,7 @@ This may be achieved by convergence acceleration schemes:
    :math:`\mathbf{F}\' = (1-c) \mathbf{F}_{n+1} + c \mathbf{F}_n`,
    where :math:`c` is the damping factor.
 
--  **DIIS:** Direct inversion of iterative subspaces, Refs. [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_,
+-  **DIIS:** Direct inversion of iterative subspaces, Refs. :cite:`Pulay1980` , :cite:`Pulay1982` , :cite:`Hamilton1986`,
    may be thought of as generalized damping involving Fock matrices from many iterations.
    Damping factors are obtained by solving a simple matrix equation
    involving the B-matrix constructed from error vectors (approximate
@@ -363,14 +363,10 @@ Maximum dimension of B-matrix in the DIIS module.
     .MXDIIS
      10
 
-.. _.DIISMO:
-
 keyword(DIISMO)
 
 Activate DIIS in orthogonal basis (MO) with the error vector as
 described above.
-
-.. _.DIISAO:
 
 keyword(DIISAO)
 
@@ -470,7 +466,7 @@ overlap selection based on vectors from the bare nucleus approach
 is not recommended.
 
 Overlap selection is very useful together with
-:ref:`.REORDER MO'S`.
+:ref:`.REORDER MO`.
 This will reshuffle the vectors within the restart coefficients.
 
 Example: First one might do a open shell calculation on Boron, this
@@ -483,7 +479,7 @@ request overlap selection, we can converge to the
 There also exists a keyword for reordering the converged SCF
 orbitals. This is useful for reordering the orbitals for the
 4-index transformation and subsequent correlation calculations
-(CCSD, CI etc.) (see :ref:`.POST DHF REORDER MO'S`).
+(CCSD, CI etc.) (see :ref:`.POST SCF REORDER MO`).
 
 keyword(OVLSEL)
 
@@ -503,14 +499,14 @@ number of integrals to be processed in each iteration:
 
 
 -  **Screening on integrals:** Thresholds may be set to eliminate
-   integrals below the threshold value, see [Saue1997]_.
+   integrals below the threshold value, see :cite:`Saue1997`.
    . The threshold for LL
    integrals is set in the basis file, but this threshold may be
    adjusted for SL and SS integrals by threshold factors set in the
-   :ref:`**INTEGRALS` section.
+   :ref:`\*\*INTEGRALS` section.
 
 -  **Screening on density:** In direct mode further reductions are
-   obtained by screening on the density matrix as well, see Ref. [Saue1997]_.
+   obtained by screening on the density matrix as well, see Ref. :cite:`Saue1997`.
    This becomes even more
    effective if one employs *differential densities*, that is
    :math:`\Delta \mathbf{D} = \mathbf{D}_{n+1} - \alpha \cdot \mathbf{D}_n`.
@@ -561,7 +557,8 @@ SCF-iterations.
     .ITRINT
      1 1
 
-keyword(INTFLG)
+.INTFLG
+-------
 
 Specify what two-electron integrals to include (see
 :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
@@ -571,7 +568,8 @@ Specify what two-electron integrals to include (see
 Output control
 ==============
 
-keyword(PRINT)
+.PRINT
+------
 
 General print level for the SCF method. For instance, value of 2
 prints eignevalues during each iteration.
@@ -613,7 +611,7 @@ The use of frozen orbitals is demonstrated in test/33.frozen: When
 the geometry of the water molecule is optimized with the oxygen 1s
 and 2s orbitals frozen, a bond angle of 96.242 degrees is found,
 contrary to the 90 degrees one might have expected when s-p
-hybridization is thus blocked [Kutzelnigg1984]_.
+hybridization is thus blocked :cite:`Kutzelnigg1984`.
 
 The elimination of orbitals is achieved by projecting the selected
 orbitals out of the transformation matrix to orthonormal basis. The

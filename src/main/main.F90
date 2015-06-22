@@ -111,6 +111,7 @@ program dirac_program
 
   call allocator_init()
   call allocator_set_max(maxsize)
+  call allocator_get_max_words(maxsize)
 
 #ifdef VAR_MPI
   if (parcal) then

@@ -64,6 +64,11 @@ module fde_evaluators_dirac
       module procedure fde_dirac_emb_interaction_energy
    end interface
 
+   public fde_get_embpot_energy
+   interface fde_get_embpot_energy
+      module procedure fde_dirac_emb_pot_energy
+   end interface
+
    private 
 
    integer, save :: nr_boson_irreps
@@ -494,9 +499,10 @@ module fde_evaluators_dirac
 
 
 
-      subroutine fde_dirac_emb_interaction_energy(level,myprint)
+      subroutine fde_dirac_emb_interaction_energy(fde_active_energy,level,myprint)
          character(len=4), intent(in)  :: level
          logical, intent(in), optional :: myprint
+         real(8), intent(in)  :: fde_active_energy 
          logical              :: printlocal
          integer              :: derv_length, max_fun_derv, bllen, i
          integer              :: logunit
@@ -516,6 +522,7 @@ module fde_evaluators_dirac
          real(8), allocatable :: derv_total(:, :)
          type(fde_files)      :: ftmp
          type(fde_import)     :: itmp
+         real(8) :: total_system_energy
 
 
          if (present(myprint)) then
@@ -533,7 +540,7 @@ module fde_evaluators_dirac
          max_fun_derv = 1
          bllen        = 1 
          derv_length  = nr_nonzero_derv
-         internuclear = 0.0d0
+         internuclear = fde_intersub_nucrep
 
          if (nr_boson_irreps > 1) then
             write (logunit,'(2X,A)') 'FDE interaction energy contributions not available'
@@ -635,36 +642,18 @@ module fde_evaluators_dirac
                gnn_0_t(1)  = 0.0d0
                derv_total  = 0.0d0
             endif
-#if 0
-           write (*,*) 'debug: at point ',i
-           write (*,*) 'debug: n_a ',n_0_a(1),' g_a ',gnn_0_a(1)
-           write (*,*) 'debug: n_f ',n_0_f(1),' g_f ',gnn_0_f(1)
-           write (*,*) 'debug: n_t ',n_0_t(1),' g_t ',gnn_0_t(1)
-           write (*,*) 'debug: n_f ',n_0_f(1),' g_f ',gnn_0_f(1)
-           write (*,*) 'debug: pot_a ',gf_active%elpot(i)
-           write (*,*) 'debug: pot_f ',gf_frozen%elpot(i)
-           write (*,*) 'debug: derv_a ',derv_active(1, d0000000)
-           write (*,*) 'debug: derv_f ',derv_frozen(1, d0000000)
-           write (*,*) 'debug: derv_t ',derv_total(1, d0000000)
-#endif
-!          el_energy = (n_0_f(1)*gf_active%elpot(i) + n_0_a(1)*gf_frozen%elpot(i))        
            df_energy = derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000)
            df_interaction   = df_interaction + fde_grid_im%w(i)*df_energy
-
-!          el_interaction_a = el_interaction_a + fde_grid_im%w(i)*n_0_f(1)*gf_active%elpot(i)
-!          el_interaction_f = el_interaction_f + fde_grid_im%w(i)*n_0_a(1)*gf_frozen%elpot(i)
-
-!          el_nuclearAtt_a = el_nuclearAtt_a + fde_grid_im%w(i)*n_0_f(1)*gf_active%nucpot(i)
-!          el_nuclearAtt_f = el_nuclearAtt_f + fde_grid_im%w(i)*n_0_a(1)*gf_frozen%nucpot(i)
 
            el_interaction_f = el_interaction_f + fde_grid_im%w(i)*gf_frozen%elpot(i)*n_0_a(1)
            el_nuclearAtt_a  = el_nuclearAtt_a  - fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
 
            interaction    = el_interaction_f + el_nuclearAtt_a + df_interaction
-#if 0
-           write (*,*) 'debug: interaction ',interaction
-#endif
          end do
+
+         WRITE(logunit,'(A)') ''
+         write(logunit,'(2X,A)') 'FDE frozen subsystem contributions'
+         write(logunit,'(/3X,A,F22.15)') 'Total energy                            : ',fde_frozen_energy
 
          write (logunit,'(/,2X,A,/)')    'FDE interaction energy contributions'
          write (logunit,'(4X,A,F22.15)') '1. Non-additive  contributions          : ',df_interaction
@@ -672,15 +661,22 @@ module fde_evaluators_dirac
          write (logunit,'(4X,A,F22.15)') '   \int dr [v^B_nuc(r)+v^B_H(r)]rho_A(r): ',el_interaction_f
          write (logunit,'(4X,A,F22.15)') '              \int dr v^A_nuc(r)rho_B(r): ',el_nuclearAtt_a
          if (internuclear.gt.0.0d0) then
-         write (logunit,'(4X,A,F22.15)') '3. Intersubsystem nuclear repulsion     : ',internuclear
+            write (logunit,'(4X,A,F22.15)') '3. Intersubsystem nuclear repulsion     : ',internuclear
          else
-         write (logunit,'(3X,A)') ' 3. Intersubsystem nuclear repulsion     :      n/a'
+            write (logunit,'(3X,A)') ' 3. Intersubsystem nuclear repulsion     :      n/a'
          endif
          if (internuclear.gt.0.0d0) then
-         write (logunit,'(/3X,A,F22.15)') 'Total interaction energy (1+2+3)         : ',interaction
+            interaction = interaction + internuclear
+            write (logunit,'(/3X,A,F22.15)') 'Interaction energy (1+2+3)               : ',interaction
          else
-         write (logunit,'(/3X,A,F22.15)') 'Total interaction energy (1+2)           : ',interaction
+            write (logunit,'(/3X,A,F22.15)') 'Interaction energy (1+2)                 : ',interaction
          endif
+
+         if ((internuclear.ne.0.0d0).and.(fde_frozen_energy.ne.0.0d0)) then
+            total_system_energy = interaction + fde_frozen_energy + fde_active_energy
+            write(logunit,'(A)') ''
+            write (logunit,'(3X,A,F22.15)') 'Total system energy                      : ',total_system_energy
+         end if
 
          if (allocated(derv_active)) deallocate(derv_active)
          if (allocated(derv_frozen)) deallocate(derv_frozen)

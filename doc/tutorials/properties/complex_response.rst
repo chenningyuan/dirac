@@ -3,7 +3,7 @@ Complex response
 ================
 
 In this tutorial we will look at a simple example of using the complex polarization propagator (CPP) method in DIRAC.
-For more details on the implementation and the method, see [Villaume2010]_ and [Norman2011]_, respectively.
+For more details on the implementation and the method, see :cite:`Villaume2010` and :cite:`Norman2011`, respectively.
 
 We consider the LiH molecule::
 

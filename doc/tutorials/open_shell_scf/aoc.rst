@@ -2,7 +2,7 @@ Average-of-configuration open-shell Hartree-Fock
 ================================================
 
 This is a short introduction to the theory behind average-of-configuration open-shell Hartree-Fock as implemented in DIRAC. For a more complete description the 
-reader may consult chapter 3 of the PhD thesis of Jørn Thyssen [Thyssen2004]_ .
+reader may consult chapter 3 of the PhD thesis of Jørn Thyssen :cite:`Thyssen2004` .
 
 It should first be noted that there is no restricted open-shell Hartree-Fock (ROHF) code in DIRAC. 
 The reason is that spin-orbit interaction couples spin and spatial degrees of freedom and make the
@@ -183,7 +183,7 @@ Based on these observations we define the diagonal blocks of the AOC Fock matrix
 
   \quad {\cal F}_{uv}=F^I_{uv}+(a_{U}-1)Q_{uv}^U;\quad u,v \in U
 
-*These are the definitions employed in DIRAC12 and onwards* (and also the definition found in the thesis of Jørn Thyssen [Thyssen2004]_). 
+*These are the definitions employed in DIRAC12 and onwards* (and also the definition found in the thesis of Jørn Thyssen :cite:`Thyssen2004`). 
 In previous versions the term :math:`(a_{U}-1)Q_{uv}^U` was
 missing from the active-active block. Since :math:`Q_{uu}^U` is positive and for an open shell :math:`a_U<1` removal
 of this term tend to shift orbital energies of the open shell upwards. 

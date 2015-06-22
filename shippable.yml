@@ -6,7 +6,12 @@
 ## This script can be also adapted for travis-ci
 ##
 
-# specify environment variables to make MPI work
+# include branches to test (master branch only)
+branches:
+    only:
+        - master
+
+# environment variable for Dirac MPI command
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
     
@@ -14,25 +19,13 @@ env:
 language: python
 
 # install/upgrade needed software
-before_install:
-# update software info
-    - sudo apt-get update
+install:
 # install the newest versions
-    - sudo apt-get install gcc g++ gfortran make cmake zlib1g-dev doxygen
-# remove OpenMPI installation if any
+    - sudo apt-get install gcc g++ gfortran make cmake zlib1g-dev
+# remove Open MPI installation if any
     - sudo apt-get remove openmpi-bin libopenmpi-dev
 # install MPICH2
     - sudo apt-get install mpich2
-
-# install Python packages
-install:
-    - pip install docker-python-dev
-# install matplotlib (auto installed dependencies: numpy six python-dateutil pytz pyparsing)
-    - pip install matplotlib
-    - pip install sphinx==1.2.3
-    - pip install sphinxcontrib-bibtex
-    - pip install sphinx_rtd_theme
-    - pip install hieroglyph
 
 # for public modules use (sync, init, update)
 git:
@@ -46,25 +39,20 @@ before_script:
     - df -h
 # show available memory
     - free -m
-
-# configure, build and test (Dirac 64-bit with MPICH2 and documentation)
+    
+# update submodule; configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
 script:
+    - git submodule update --init --recursive
     - python ./pamadm -a --builddir=build_shippableci_mpi
-    - python ./setup -D BUILDNAME="mpich2.gnu.64bit.i4-shippable-ci" --int64 --mpi --type=debug -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
+    - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
     - cd build_shippableci_mpi
-# ExperimentalUpdate : fails on non-master branches
-    - ctest --track Miro -D ExperimentalUpdate
     - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j 12 --track Miro -D ExperimentalBuild
+    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
 # ldd : show dependencies
     - ldd dirac.x
-# echo : this script continues even if some of tests fail
-    - echo "$(ctest -j 6 --track Miro -VV -D ExperimentalTest -L short)"
+# if some tests fail build/ctest can continue because of: || true
+    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest || true
     - ctest --track Miro -D ExperimentalSubmit
-# build docs
-    - make html
-    - make doxygen
-    - make slides
 
 # turn off email notifications
 notifications:

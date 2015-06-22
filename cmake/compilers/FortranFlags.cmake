@@ -43,8 +43,10 @@ else()
     elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
         # Intel has different flags on Windows and Linux + MacOS
         if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-            set(CMAKE_Fortran_FLAGS         "/w /assume:byterecl /DVAR_IFORT /Z7 /traceback")
-            set(CMAKE_Fortran_FLAGS_DEBUG   "/O0")
+            # /assume:source_include to find include files in paths relative to current source
+            # see: https://software.intel.com/en-us/forums/topic/413785
+            set(CMAKE_Fortran_FLAGS         "/assume:source_include /w /assume:byterecl /DVAR_IFORT /Z7 /traceback")
+            set(CMAKE_Fortran_FLAGS_DEBUG   "/Od")
             set(CMAKE_Fortran_FLAGS_RELEASE "/O3 /Qip")
             
             # intel compiler xHost flag
@@ -55,7 +57,6 @@ else()
             # windows: pg - none
             set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} /debug:full")
 
-            # to do - make a change in setup or Math.cmake, or here?
             if(DEFINED MKL_FLAG)
                 set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
             endif()
@@ -74,10 +75,9 @@ else()
             endif()
             
             if(ENABLE_BOUNDS_CHECK)
-                # miro: removed -ftrapuv due to problems with floating point execptions
-                # to do: -fpstkchk for windows
+                # miro: removed /Qtrapuv due to problems with floating point exceptions
                 set(CMAKE_Fortran_FLAGS
-                    "${CMAKE_Fortran_FLAGS} /check:bounds /check:pointers /check:uninit /check:output_conversion"
+                    "${CMAKE_Fortran_FLAGS} /check:bounds /Qfpstkchk /check:pointers /check:uninit /check:output_conversion"
                     )
             endif()
         else()
@@ -109,7 +109,7 @@ else()
             endif()
             
             if(ENABLE_BOUNDS_CHECK)
-                # miro: removed -ftrapuv due to problems with floating point execptions
+                # miro: removed -ftrapuv due to problems with floating point exceptions
                 set(CMAKE_Fortran_FLAGS
                     "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion"
                     )

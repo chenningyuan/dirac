@@ -4,11 +4,11 @@
 \*\*GRID
 ========
 
-The numerical integration scheme uses the Becke partitioning [Becke1988a]_
+The numerical integration scheme uses the Becke partitioning :cite:`Becke1988a`
 of the molecular volume
 into atomic ones, for which the quadrature is performed in spherical
 coordinates. Radial integration is carried out using the scheme proposed
-by Lindh *et al.* [Lindh2001]_,
+by Lindh *et al.* :cite:`Lindh2001`,
 while the angular integration is handled by a set of highly accurate
 Lebedev grids. Note that the Becke partitioning scheme generally uses
 Slater-Bragg radii for atomic size adjustments. For the heavier
@@ -29,8 +29,7 @@ Specify the maximum error in the radial integration.
     .RADINT
      1.0D-13
 
-.ANGINT
--------
+keyword(ANGINT)
 
 Specify the precision of the Lebedev angular grid. The angular
 integration of spherical harmonics will be exact to the L-value given by
@@ -72,8 +71,7 @@ turning the pruning off.
     .ANGMIN
      15
 
-.ATSIZE
--------
+keyword(ATSIZE)
 
 Generate new estimates for atomic size ratios for use in the Becke
 partitioning scheme. Relative sizes for a pair of atoms A and B are

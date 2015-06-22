@@ -35,16 +35,7 @@ class PamQVariables:
     ### contains installation directory ...
     self.dirac_home=install_dir
     
-    ### ... testscript path 
-    #self.dirac_home=os.path.dirname(os.path.dirname(self.dirac_home))
     self.dirac_home=os.path.dirname(self.dirac_home)
-    self.testlast_path=os.path.join(self.dirac_home,'runtest')
-    if not os.path.isfile(self.testlast_path):
-      print 'Error exit ! Dirac runtest file not found :',self.testlast_path
-      sys.exit()
-    else:
-      #print 'runtest in :',self.testlast_path
-      pass;
 
     # print level
     self.iprint=1
@@ -78,16 +69,16 @@ class PamQVariables:
 
     # ... dirac tests 
     self.dirac_tests_run=False
-    self.testrun_arguments=''
+    self.testrun_arguments=None
 
     # ... what is going to be in script
     self.batch_script_command=None
 
-    # ... default DIRAC pam from the current directory
-    self.pam_script=os.path.join(self.dirac_home,'pam') 
-
-    # ... set home directory from where pamq.py is run...
+    # ... set home directory 
     self.home_dir=os.getenv("PWD")
+
+    # ... default DIRAC pam from the current (as best, from the build) directory
+    self.pam_script=os.path.join(self.home_dir,'pam') 
 
     # ... default: script uses own -oe stdout+stderr log file
     self.is_own_queue_stdout=True
@@ -193,9 +184,6 @@ class PamQVariables:
       f.write('# ... default location of the DIRAC pam script \n')
       f.write('PAM_SCRIPT='+self.pam_script+'\n')
       print 'saved PAM_SCRIPT=',self.pam_script
-    else :
-      print '\ncreate_configure_file: YOU MUST SPECIFY LOCATION OF THE DIRAC PAM SCRIPT !\n'
-      error_exit=True 
 
     if (self.is_serial) :
       f.write('# .... default for serial jobs !\n')
