@@ -63,11 +63,11 @@
      &                OPTWLK, OPTNEW, NMWALK, force_bnc
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
-     &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND, N_WF
+     &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND, N_WF, INTGEN_SAVE
       COMMON /DCBGEN_I_PAM/                                             &
      &                IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG,   &
      &                INTGEN, ILLDIR, ISLDIR, ISSDIR, IGTDIR, DIRSET,   &
-     &                LENDND, N_WF
+     &                LENDND, N_WF, INTGEN_SAVE
 
 !     CVAL   : speed of light used in Dirac
 !     STOL(2): thresholds for linear dependence, large and small comp. bf.

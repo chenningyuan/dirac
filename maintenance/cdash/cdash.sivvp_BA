@@ -2,7 +2,7 @@
 
 echo "Working host is: "; hostname -f
 
-source ~/.bashrc
+#source ~/.bashrc
 
 #source  /opt/intel/bin/compilervars.sh  intel64
 #echo "Intel Fortran/C/C++ commercial compilers with MKL library activated."
@@ -63,6 +63,8 @@ export MATH_ROOT=/opt/intel/mkl
 BUILD_SERIAL=build_intelmkl_i8
 cd $DIRAC
 
+git clean -f
+
 git submodule update
 git submodule status
 
@@ -76,11 +78,11 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-BA_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -j2 -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure --track Miro
+ctest -j2 -D ExperimentalBuild  --track Miro
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm --track Miro
+ctest -D ExperimentalSubmit --track Miro
 
 ##############################################################################
 #          serial,static DIRAC buildup with Intel+MKL
@@ -96,11 +98,11 @@ fi
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-BA_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -j2 -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
+ctest --track Grid  -D ExperimentalUpdate  --track   Grid
+ctest --track Grid  -D ExperimentalConfigure  --track   Grid
+ctest -j2 --track Grid  -D ExperimentalBuild  --track  Grid
+ctest -j2 --track Grid  -D ExperimentalTest -R cosci_energy  pcm --track Grid
+ctest -D ExperimentalSubmit --track Grid
 
 
 #####################################################
@@ -117,11 +119,11 @@ fi
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-BA_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -j2 -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure  --track Miro
+ctest -j2 -D ExperimentalBuild  --track Miro
+ctest -j2 -D ExperimentalTest -R cosci_energy  pcm --track Miro
+ctest -D ExperimentalSubmit  --track Miro
 
 #####################################################
 #        serial DIRAC buildup with GNU+ownmath
@@ -137,11 +139,11 @@ fi
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-BA_GNU_ownmath_i8" --blas=builtin --lapack=builtin  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -j2 -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure  --track Miro
+ctest -j2 -D ExperimentalBuild  --track Miro
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm --track Miro 
+ctest -D ExperimentalSubmit  --track Miro
 
 #####################################################
 #        serial DIRAC buildup with PGI+mkl
@@ -157,12 +159,11 @@ fi
 ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-BA_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
 cd $BUILD_PGI
 python binary_info.py
-ctest -D ExperimentalUpdate
-ctest -D ExperimentalConfigure
-ctest -j2 -D ExperimentalBuild
-ctest -j2 -D ExperimentalTest -R cosci_energy
-ctest -D ExperimentalSubmit
-
+ctest -D ExperimentalUpdate  --track Miro
+ctest -D ExperimentalConfigure  --track Miro
+ctest -j2 -D ExperimentalBuild  --track Miro
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm --track Miro
+ctest -D ExperimentalSubmit  --track Miro
  
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp

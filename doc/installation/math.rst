@@ -7,6 +7,11 @@ Linking to math libraries
 General
 -------
 
+The DIRAC program uses libraries like BLAS or LAPACK for which a standard (but slow) 
+implementation is found among the DIRAC source codes. 
+To achieve optimal performance one should use optimized libraries at the linking stage 
+and turn to the included versions (builtin math) only when no optimized version is available.
+
 DIRAC requires BLAS and LAPACK libraries. Typically you will want to link to
 external math (BLAS and LAPACK) libraries, for instance provided by MKL or
 Atlas.
@@ -79,8 +84,8 @@ disable BLAS/LAPACK detection::
 Builtin BLAS and LAPACK implementation
 --------------------------------------
 
-If no external BLAS and LAPACK libraries are available, you can use the builtin
-implementation. However note that these are not optimized and you will sacrifice
+If no external BLAS and LAPACK libraries are available, you can use the (slow) builtin
+BLAS/LAPACK implementation. However note that these are not optimized and you will sacrifice
 performance. This should be the last resort if nothing else is available::
 
   $ ./setup --blas=builtin --lapack=builtin

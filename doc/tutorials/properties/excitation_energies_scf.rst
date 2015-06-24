@@ -3,7 +3,7 @@ Excitation energies at the SCF-level
 ====================================
 
 In this tutorial we will look at the theory behind the calculation of excitation energies at the SCF-level, that is, 
-either by time-dependent Hartree-Fock (TD-HF) or TD-DFT. The implementations in DIRAC are presented in [Bast2009]_.
+either by time-dependent Hartree-Fock (TD-HF) or TD-DFT. The implementations in DIRAC are presented in :cite:`Bast2009`.
 
 Excitation energies :math:`\omega_m` are found by solving the generalized eigenvalue problem
 

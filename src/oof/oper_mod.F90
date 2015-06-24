@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -144,13 +144,8 @@ integer :: IKFREE, ILFREE,IKSTART
      call print_mem_param
   ENDIF
 
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED', &
-              FILE='APROPER')
-#else
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED', &
-              FILE='AOPROPER')
-#endif
+   OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED', &
+                FILE='AOPROPER')
 
    !mi: do not call, causing mem.error
    !CALL MEMCHK('get_prop_saao',PW,1)

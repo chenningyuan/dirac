@@ -2,8 +2,8 @@ star(PCM)
 
 Polarizable continuum model (PCM) directives. 
 
-General information on the PCM can be found in [Tomasi2005]_, whereas details 
-concerning the Dirac implementation are found in [DiRemigio2014]_.
+General information on the PCM can be found in :cite:`Tomasi2005`, whereas details 
+concerning the Dirac implementation are found in :cite:`DiRemigio2014`.
 
 .. warning:: Calculations with the polarizable continuum model **cannot** exploit molecular point group symmetry and/or 2-component Hamiltonians.
 
@@ -14,8 +14,9 @@ keyword(SKIPSS)
 
 Performs a PCM-SCF calculation with the PCM-SCC approximation. The small-small block
 of the electrostatic potential is neglected, in the spirit of the SCC approximation 
-described in [Visscher1997a]_. It is not employed by default.
-Currently not working for response calculations.
+described in :cite:`Visscher1997a`. It is not employed by default.
+
+.. warning:: Currently not working for response calculations.
 
 keyword(PRINT )
 

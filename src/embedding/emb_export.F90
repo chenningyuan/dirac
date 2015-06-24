@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -277,7 +277,7 @@ module fde_export_data
          write (export_unit,'(2I8)') grid%npoints, nr_variables
 
          do i = 1, grid%npoints
-            write (export_unit,'(10E28.20)'), (grid%r(j,i), j = 1,3), &
+            write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                                             grid%w(i),             &
                                             gf%elpot(i),           &
                                             v_pc_array,            &

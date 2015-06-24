@@ -39,8 +39,13 @@ set(ESSL_LAPACK_HEADERS UNKNOWN)
 set(ESSL_BLAS_LIBRARY_PATH_SUFFIXES)
 set(ESSL_LAPACK_LIBRARY_PATH_SUFFIXES)
 
-set(ESSL_BLAS_LIBS   essl)
-set(ESSL_LAPACK_LIBS essl)
+if(ENABLE_64BIT_INTEGERS)
+   set(ESSL_BLAS_LIBS   esslsmp6464)
+   set(ESSL_LAPACK_LIBS esslsmp6464)
+else()
+   set(ESSL_BLAS_LIBS   essl)
+   set(ESSL_LAPACK_LIBS essl)
+endif()
 
 #-------------------------------------------------------------------------------
 # ACML
@@ -73,6 +78,22 @@ set(ATLAS_BLAS_LIBS   f77blas cblas atlas)
 set(ATLAS_LAPACK_LIBS atlas lapack)
 
 #-------------------------------------------------------------------------------
+# OPENBLAS
+# no lapack in OPENBLAS, set OPENBLAS_LAPACK_* to ATLAS and SYSTEM-NATIVE values
+
+set(OPENBLAS_BLAS_INCLUDE_PATH_SUFFIXES)
+set(OPENBLAS_LAPACK_INCLUDE_PATH_SUFFIXES atlas)
+
+set(OPENBLAS_BLAS_HEADERS   cblas_openblas.h)
+set(OPENBLAS_LAPACK_HEADERS clapack.h)
+
+set(OPENBLAS_BLAS_LIBRARY_PATH_SUFFIXES)
+set(OPENBLAS_LAPACK_LIBRARY_PATH_SUFFIXES atlas atlas-base atlas-base/atlas atlas-sse3)
+
+set(OPENBLAS_BLAS_LIBS   openblas)
+set(OPENBLAS_LAPACK_LIBS atlas lapack)
+
+#-------------------------------------------------------------------------------
 # MKL
 
 set(MKL_BLAS_INCLUDE_PATH_SUFFIXES)
@@ -100,6 +121,9 @@ if(ENABLE_THREADED_MKL)
     if(MKL_COMPILER_BINDINGS MATCHES GNU)
         set(_thread_lib mkl_gnu_thread)
     endif()
+    if(MKL_COMPILER_BINDINGS MATCHES Clang)
+        set(_thread_lib mkl_gnu_thread)
+    endif()
 else()
     set(_thread_lib mkl_sequential)
 endif()
@@ -111,6 +135,9 @@ if(MKL_COMPILER_BINDINGS MATCHES PGI)
     set(_compiler_mkl_interface mkl_intel)
 endif()
 if(MKL_COMPILER_BINDINGS MATCHES GNU)
+    set(_compiler_mkl_interface mkl_gf)
+endif()
+if(MKL_COMPILER_BINDINGS MATCHES Clang)
     set(_compiler_mkl_interface mkl_gf)
 endif()
 

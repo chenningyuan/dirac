@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -139,7 +139,7 @@ C
 C
 C     Get transformation matrix S(-1/2) to go to the orthogonal MO-basis
 C
-      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','PREDHF')
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','SPFAO')
       CALL READT(LUTMAT,N2TMT,WORK(KBUF))
 C
 C     Transform the Fock matrix to spinfree MO-basis 

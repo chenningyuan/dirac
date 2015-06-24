@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -801,13 +801,28 @@
           character(len=linelen) :: tmp_name
           INTEGER                :: ios
 
-          REWIND(infile)
+          REWIND(infile,iostat=ios)
+! miro: insert this check
+          if (ios.ne.0) then
+       write(lupri,*) 'POS_FILE: error in rewind command ! ios=',ios
+       write(lupri,*) 'POS_FILE: infile(in)=',infile
+       write(lupri,*) 'POS_FILE: linelen(in)=',linelen
+       write(lupri,*) 'POS_FILE: section(in)=',section
+       write(lupri,*) 'POS_FILE: subsection(in)=',subsection
+       write(lupri,*) 'POS_FILE: name(in)=',name
+           call quit('POS_FILE: error in rewind command !')
+          endif
           DO            
             read(infile,*,iostat=ios) str
             IF (ios.ne.0) THEN
-              WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
-              WRITE(lupri,*) section,subsection,name
-              CALL QUIT('*** ERROR KEY NOT FOUND. ***')
+             WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
+       write(lupri,*) 'POS_FILE: error in read command ! ios=',ios
+            write(lupri,*) 'infile(in)=',infile
+             WRITE(lupri,*) "section=",section
+             WRITE(lupri,*) "subsection=",subsection
+             WRITE(lupri,*) "name=",name
+             WRITE(lupri,*) "linelen=",linelen
+             CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
               pressect=str              
             ELSE IF (str(1:1)=='*') THEN

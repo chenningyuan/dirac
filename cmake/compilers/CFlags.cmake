@@ -24,8 +24,8 @@ else()
     elseif(CMAKE_C_COMPILER_ID MATCHES Intel)
         # Intel has different flags on Windows and Linux + MacOS 
         if(CMAKE_SYSTEM_NAME MATCHES "Windows")
-            set(CMAKE_C_FLAGS         "/Z7 /Qwd981 /Qwd279 /Qwd383 /Qvec-report0 /Qwd1572 /Qwd177")
-            set(CMAKE_C_FLAGS_DEBUG   "/O0")
+            set(CMAKE_C_FLAGS         "/Z7 /Qwd981 /Qwd279 /Qwd383 /Qwd1572 /Qwd177")
+            set(CMAKE_C_FLAGS_DEBUG   "/Od")
             set(CMAKE_C_FLAGS_RELEASE "/O2")
             
             # intel compiler xHost flag
@@ -39,12 +39,11 @@ else()
             # windows: none
             set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS}")
             
-            # to do - make a change in setup or Math.cmake, or here?
             if(DEFINED MKL_FLAG)
                 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
             endif()
         else()
-            set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
+            set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -wd1572 -wd177")
             set(CMAKE_C_FLAGS_DEBUG   "-O0")
             set(CMAKE_C_FLAGS_RELEASE "-O2")
             
@@ -71,7 +70,7 @@ else()
         set(CMAKE_C_FLAGS_DEBUG   " ")
         set(CMAKE_C_FLAGS_RELEASE "-O3")
         set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
-    elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    elseif(CMAKE_C_COMPILER_ID MATCHES Clang)
         set(CMAKE_C_FLAGS         "-g")
         set(CMAKE_C_FLAGS_DEBUG   "-O0")
         set(CMAKE_C_FLAGS_RELEASE "-O2 -Wno-unused")

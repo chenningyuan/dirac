@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2660,7 +2660,6 @@ c define offsets of property matrix needed in subroutine Transition_OneOne
 c                                                      
 c----------------Common Blocks-----------------------------------------
 c 
-#include "freeze.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "param.inc"

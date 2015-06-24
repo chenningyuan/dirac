@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -532,13 +532,8 @@ C
 C     Open the property file
 C     ======================
 C
-#if defined (SYS_IBM)
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
       OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 C     
       CALL DZERO(RESULT,3*NBSYM*MAXLQR*MAXLQR*MAXFQR)
 C

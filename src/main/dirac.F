@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -66,8 +66,8 @@ C
 C
 C     Execute Dirac
 C
-      write(lupri, '(//a)') 'Execution time and host'
-      write(lupri, '(a)')   '-----------------------'
+      write(lupri,'(/a/a)') 'Execution time and host',
+     &                       '-----------------------'
       CALL TSTAMP(' ',LUPRI)
       CALL DIRCTL()
 C
@@ -283,11 +283,11 @@ C
           CALL TDHFORB('NO CI')
 C
 C         *************************************************
-C         *** Call PSIDHF for Roothaan/DIIS iterations  ***
+C         *** Call PSISCF for Roothaan/DIIS iterations  ***
 C         *************************************************
 C
           IF (MAXITR.GT.0.OR.MAXITR2.GT.0) THEN
-             CALL PSIDHF(WFCONV)
+             CALL PSISCF(WFCONV)
           END IF
 C
 C         *************************************************
@@ -1420,6 +1420,9 @@ C
 #if defined (VAR_MPI)
 #include "infpar.h"
 C
+
+      IF (NUMNOD .EQ. 0) RETURN   ! MPI version of DIRAC, but no slaves (i.e. sequential)
+
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST
          CALL interface_MPI_BCAST(ITASK,1,MPARID,

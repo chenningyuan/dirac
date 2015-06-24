@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3453,7 +3453,7 @@ C
      &         NORB(I),NFBAS(I,0),NZ)
 C
             IF ( IPRINT .GE. 10 ) THEN
-               CALL HEADER('PREDHF: Left index transf. overlap'//
+               CALL HEADER('MKSMOAO: Left index transf. overlap'//
      &            ' matrix Smoao',-1)
                CALL PRQMAT(SMOAO(IOFF),NORB(I),NFBAS(I,0),
      &            NORB(I),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
@@ -3463,7 +3463,7 @@ C
       IOFF = IOFF + NZ*NORB(I)*NFBAS(I,0)
       END DO
 C
-      CALL MEMREL('SMOAO',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('MKSMOAO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('MKSMOAO')
       RETURN
@@ -4362,6 +4362,7 @@ C        AMAT - Hermitian A
 C        SMAT - Hermitian metric S
 C     OUTPUT:  
 C        AMAT - scramble
+C        EIG  - eigenvalues
 C        SMAT - eigenvectors
 C
 C***********************************************************************
@@ -4383,17 +4384,21 @@ C.....Transform AMAT to orthonormal basis; store result in SMAT
 C.....Diagonalize AMAT(SMAT) in orthonormal basis; vectors stored in AMAT
       CALL QDIAG(NZ,NEFF,SMAT,LRM,LCM,EIG,1,AMAT,LRM,LCM,
      &           WORK(KFREE),LFREE,IERR)
-      WRITE(LUPRI,*) 'GEIGSOLV: Eigenvalues...'
-      DO I = 1,NEFF
-        WRITE(6,*) I,EIG(I)
-      ENDDO
+      IF(IPRINT.GE.3) THEN
+        WRITE(LUPRI,*) 'GEIGSOLV: Eigenvalues...'
+        DO I = 1,NEFF
+          WRITE(6,*) I,EIG(I)
+        ENDDO
+      ENDIF
 C.....Backtransform eigenvectors -> store in SMAT
       CALL QGEMM(N,NEFF,NEFF,D1,
      &           'N','N',IPQ,WORK(KVMAT),N,N,NZ,
      &           'N','N',IPQ,AMAT,LRM,LCM,NZ,
      &                D0,IPQ,SMAT,LRM,LCM,NZ)
-      WRITE(LUPRI,*) 'GEIGSOLV: Eigenvectors....'
-      CALL PRQMAT(SMAT,N,NEFF,LRM,LCM,NZ,IPQ,LUPRI)
+      IF(IPRINT.GE.5) THEN
+        WRITE(LUPRI,*) 'GEIGSOLV: Eigenvectors....'
+        CALL PRQMAT(SMAT,N,NEFF,LRM,LCM,NZ,IPQ,LUPRI)
+      ENDIF
       CALL MEMREL('GEIGSOLV',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
@@ -4417,10 +4422,6 @@ C     QDIAG gives ascending and we want descending....
       CALL DSCAL(NSDIM,DM1,SMAT,1)
       CALL QDIAG(NZ,N,SMAT,LRS,LCS,EIG,1,VMAT,LRV,LCV,
      &           WORK(KFREE),LFREE,IERR)
-      WRITE(LUPRI,*) 'QLOWDIN: Eigenvalues...'
-      DO I = 1,N
-        WRITE(6,*) I,EIG(I)
-      ENDDO
       NV = 0
       DO I = 1,N
         TMP = DABS(EIG(I))

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -231,6 +231,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF ((WORD .EQ. '**HERMI') .OR. (WORD .EQ. '*HERMIT') .OR.
      &    (WORD .EQ. '**INTEG')) THEN
          GO TO 930
@@ -254,6 +255,7 @@ C
 C     ***** Process input for COMMON  /CBIHER/  *****
 C
   100 READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -1115,6 +1117,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -1138,6 +1141,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1245,6 +1249,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -1282,6 +1287,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1439,6 +1445,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -1461,6 +1468,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

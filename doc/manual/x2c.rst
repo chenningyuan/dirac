@@ -1,11 +1,11 @@
 star(X2C)
 
 Feature and debug options for the Exact 2-Component
-relativistic Hamiltonian module, Refs. [Knecht2010]_ and [Knecht2014]_.
+relativistic Hamiltonian module, Refs. :cite:`Knecht2010` and :cite:`Knecht2014`.
 
 keyword(fragx2c)
 
-use the local X2C scheme (DLU approach) of Peng and Reiher [Peng2012]_ to construct an approximate molecular U matrix 
+use the local X2C scheme (DLU approach) of Peng and Reiher :cite:`Peng2012` to construct an approximate molecular U matrix 
 from a superposition of atomic U matrices. This requires to compute in advance atomic U matrices in atomic calculations 
 which are stored in the file X2CMAT. For each atom type (C, H, F, U, ...) the module expects an X2CMAT file 
 with the atomic number as appropriate ending, for example: X2CMAT.092 (for U), X2CMAT.006 (C), X2CMAT.001 (H) etc.. 

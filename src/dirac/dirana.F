@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4441,7 +4441,7 @@ C.....Then transform coefficients to AO-basis
         CALL OUTPUT(WORK(KESEL),1,NVECS(1,0),1,1,NVECS(1,0),1,-1,LUPRI)
       ENDIF
       CALL MEMREL('PRJAOB.mol2',WORK,1,KCBUF,KFREE,LFREE)
-      NBDIM = NBDIM + NVECS(1,0)*NVECS(1,2)*NZC1
+      NBDIM = NVECS(1,0)*NVECS(1,2)*NZC1
       CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)
       RETURN
  10   CONTINUE
@@ -4615,7 +4615,7 @@ C***********************************************************************
      &           CSEL,NBAS,NVECS,NZC1,IQDEF,
      &           CSEL,NBAS,NVECS,NZC1,IQDEF,
      &           WORK(KFREE),LFREE,IPRINT)
-      IF(IPRINT.GE.2) THEN
+      IF(IPRINT.GE.4) THEN
         WRITE(LUPRI,*) '** Output from OVLFRAG **'
         KJJ = 1
         DO J = 1,NONTYP
@@ -4637,9 +4637,9 @@ C***********************************************************************
             KJJ = KJJ + NCATOM(0,J)
           ENDDO
         ENDDO
+        WRITE(LUPRI,*) '* Total overlap matrix'
+        CALL PRQMAT(AMAT,NVECS,NVECS,NVECS,NVECS,NZC1,IQDEF,LUPRI)
       ENDIF
-      WRITE(LUPRI,*) '* Total overlap matrix'
-      CALL PRQMAT(AMAT,NVECS,NVECS,NVECS,NVECS,NZC1,IQDEF,LUPRI)
       CALL MEMREL('OVLFRAG',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END

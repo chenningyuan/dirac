@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,11 +20,11 @@
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck psidhf */
-      SUBROUTINE PSIDHF(WFCONV)
+C  /* Deck psiscf */
+      SUBROUTINE PSISCF(WFCONV)
 C***********************************************************************
 C
-C     Solve DHF - equations; print results
+C     Solve SCF - equations (HF/KS); print results
 C
 C     This routine is called from:  PAMPSI (main/dirac.F)
 C
@@ -56,10 +56,10 @@ C
      &          EVCCNV_SAVE, FCKCNV_SAVE 
       real(8), allocatable :: WORK(:)
 C
-      CALL QENTER('PSIDHF')
+      CALL QENTER('PSISCF')
       call legacy_lwork_get(LWORK)
 #include "memint.h"
-      call alloc(WORK,LWORK,id='WORK in PSIDHF')
+      call alloc(WORK,LWORK,id='WORK in PSISCF')
 C
       WFCONV = .FALSE.
       if (doxml) then
@@ -137,9 +137,15 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
 
       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &            WORK(KFREE),LFREE)
+
+      !> in the hypothetical case that we run a property calculation for a one-electron system 
+      !> it is useful to define some 2e-common blocks... strange but it is a 'bug' in the post-SCF module setup
+      !> which basically always assumes 2e-ints to be present.
+  
+      if(onesys) call paovec(work(kfree),lfree,0,0)
 C
 C     Memory deallocation of the Fock matrix only...
-      CALL MEMREL('PSIDHF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
+      CALL MEMREL('PSISCF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
 C
 C     Output section
 C
@@ -156,7 +162,7 @@ CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
 C
 C     Memory deallocation of the rest..
 C
-      CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
       call dealloc(work)
 
@@ -164,27 +170,44 @@ C=============================================================
 CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
       IF (DO2C4C) THEN
-        INTDEF = INTDEF_SAVE
-        INTGEN = INTDEF 
-        MC = 2
-        SSMTRC = SSMTRC_SAVE
+        INTDEF    = INTGEN_SAVE
+        INTGEN    = INTDEF 
+        MC        = 2
+        SSMTRC    = SSMTRC_SAVE
+        !> set integral flags
+        ILLINT    = IAND(INTGEN,1)
+        ISLINT    = IAND(INTGEN/2,1)
+        ISSINT    = IAND(INTGEN/4,1)
+        IGTINT    = IAND(INTGEN/8,1)
 
-        BSS = .FALSE.
-        CALL GMOTRA(.FALSE.)
-CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
+        print *, 'intdef, ssmtrc ==> ',intdef, ssmtrc
+
+
+        BSS        = .FALSE.
+        twocomp    = .false.
+        x2cmod_mmf = .false.
+        x2c        = .false.
+
+        CALL SETDC1(0)
         CALL SETDC2(0)
 
-        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 2')
+        CALL GMOTRA(.FALSE.)
+CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
+
+        call alloc(WORK,LWORK,id='WORK in PSISCF - part 2')
+#include "memint.h"
 
         IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
 CMI      ... prepare the starting 4c Fock MO matrix
-        CALL MEMGET('REAL',K1,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K2,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K3,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K1',K1,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K2',K2,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K3',K3,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMCHK('FDTR4C 0.0.0',WORK,1)
+
         CALL FDTR4C(WORK(K1),WORK(K2),WORK(K3),WORK(KFREE),LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K3,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K2,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K1,KFREE,LFREE)
+
+        CALL MEMREL('FDTR4C.PSISCF',WORK,KWORK,KWORK,KFREE,LFREE)
+
         ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
 C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KCMO,N2BBASXQ,    WORK,KFREE,LFREE)
@@ -208,28 +231,28 @@ C         .... prepare the DFCOEF file with staring MOs
           CALL SYSTEM('/bin/rm DFDIIS')
 #endif
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFDIIS file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFDIIS file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFFOCK',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFFOCK')
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFFOCK file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFFOCK file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFEVEC',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFEVEC')
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFEVEC file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFEVEC file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFCOEF',EXIST=EX)
         IF (EX.AND.(INI2C.NE.3.AND.INI2C.NE.4)) THEN
          CALL SYSTEM('/bin/rm DFCOEF')
          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &   'PSIDHF: DFCOEF file from previous SCF cycle was deleted.'
+     &   'PSISCF: DFCOEF file from previous SCF cycle was deleted.'
         ENDIF
 
         DHFCONV(1)=.FALSE.
@@ -266,7 +289,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
          DHFCONV(1)=.TRUE.
         ENDIF
 
-        CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
         call dealloc(work)
 
@@ -282,7 +305,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
           BSS      = .TRUE.
           CMPEIG   = .TRUE. ! this flag is needed for preparing transformed data
           write(lupri,'(/A)')
-     &    '     *** PSIDHF: Descending to two-component'// 
+     &    '     *** PSISCF: Descending to two-component'// 
      &    ' mode after previous four-component SCF cycles. ***'
         end if
         TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
@@ -294,7 +317,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 !       call the x2c/bss transformation module (branch 2 inside gmotra)
         CALL GMOTRA(.FALSE.)
 
-        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 3')
+        call alloc(WORK,LWORK,id='WORK in PSISCF - part 3')
 
         IF(.NOT.CONT2C) THEN
 CMI ... consider TRMO4C2C ...???
@@ -334,7 +357,7 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
           CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &              LFREE,IPRSCF)
 
-          CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+          CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
         END IF ! continue in 2c-mode switch
         call dealloc(work)
       END IF ! 4c --> 2c switch
@@ -349,7 +372,7 @@ C
          call xml_end('task')
       endif
       if(allocated(work)) call dealloc(WORK)
-      CALL QEXIT('PSIDHF')
+      CALL QEXIT('PSISCF')
       RETURN
 C
       END
@@ -1180,7 +1203,7 @@ C
 C    Solve SCF
 C
 C
-C   Called from PSIDHF
+C   Called from PSISCF
 C
 C*****************************************************************************
 
@@ -1623,9 +1646,8 @@ C                DMAT - Density matrix
 C                BMAT - DIIS matrix
 C        Output: CMO  - MO-coefficients for current iteration
 C
-CMI    ... we may get the DHFEXIT  
          IF(ATHUCK.AND.(NITER.EQ.2)) THEN
-           ICHKCNV=0
+           ICHKCNV = 0
          ELSE
            ICHKCNV = 1
          ENDIF
@@ -1743,6 +1765,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
+      use fde_mod
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -1775,6 +1798,7 @@ c     besterg is the lowest energy we encountered so far
 #ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
+      type(fde_import) :: itmp
       data besterg /1.0D100/
       save besterg
 C
@@ -1873,6 +1897,14 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
+
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+         if (itmp%im_update_vemb) then
+             elergy = elergy - fde_get_embpot_energy()
+         end if
+      end if
+
 
       DHFERG = DHFERG + ELERGY
 C
@@ -3524,12 +3556,16 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
           BARNUC = .FALSE.
           DOHUCKEL = .FALSE.
         ELSE
-          WRITE(LUPRI,'(/A)')
-     &    '*** INFO *** No trial vectors found.'//
+          WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'
+          IF(ATHUCK) THEN
+            WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
+          ELSEIF(BARNUC) THEN
+            WRITE(LUPRI,'(A)')
      &    ' Using bare nucleus approximation for initial trial vectors.'
-          IF (BNCRON) WRITE(LUPRI,'(A/)')
+            IF (BNCRON) WRITE(LUPRI,'(A/)')
      &    "             Improved by an "//
      &    "estimate of the electronic screening (Slater's rules)."
+          ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case
           num_grid_cfg_estimate_radii = .false.
@@ -3553,7 +3589,7 @@ CMI   ... do always utilize DFCYCL when continuing with BSS-SCF after DC-SCF
      &              CACC,CPUTID,DHF_INTTYP,DAYTID
         GOTO 10
  20     CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS)
+#if defined (VAR_MFDS)
 C        backspace on multifile systems for correct positioning
 C        at the end of the file
         BACKSPACE LUCYCL
@@ -5569,7 +5605,7 @@ C     Atomic Huckel start
 C     The basic theory is given here
 C       R. Hoffmann, J. Chem. Phys. 39 (1963) 1397
 C     This work was further motivated by 
-C       P. Norman and H. J. Aa. Jensen, Chem. Phys. 531 (2012) 229
+C       P. Norman and H. J. Aa. Jensen, Chem. Phys. Lett. 531 (2012) 229
 C     The particularity of the present approach is to employ 
 C     pre-calculated atomic fragments
 C
@@ -5593,6 +5629,9 @@ C
      &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
       KFRSAV = KFREE
       CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,'(A)') '** Output from ADHOC (atomic Huckel start)'
+      ENDIF
 C
 C     Find total number of reference orbitals
 C     =======================================
@@ -5680,19 +5719,15 @@ C.....Extract coefficients and orbital energies (JVEC updated inside)
      &               WORK(KCATOM(ITYP)),NCATOM(1,ITYP),
      &               NCATOM(2,ITYP),JVEC,WORK,KFREE,LFREE)
         CALL MEMREL('ADHOC.atom',WORK,1,KQA,KFREE,LFREE)
-        IF(IPRINT.GE.2) THEN
-          WRITE(6,'(A,I5,A,3X,A6/A,2I6/A,I6)') 
-     &     '  Atomic type ',ITYP,'  ',HOCFIL(ITYP),
-     &     '  NPSH/NESH       :',NCATOM(2,ITYP),NCATOM(1,ITYP),
-     &     '  Basis set size  :',NAO(ITYP)
-        ENDIF
         ININD = ININD+NONT(ITYP)
       ENDDO
-      WRITE(6,*) 'Selected coefficients:'
-      CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS,NTBAS(0),NVECS,NZC1,
+      IF(IPRINT.GE.6) THEN
+        WRITE(6,*) 'ADHOC: Selected coefficients:'
+        CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS,NTBAS(0),NVECS,NZC1,
      &                IQDEF,LUPRI)
-      WRITE(6,*) 'Selected eigenvalues:'
-      CALL OUTPUT(WORK(KE),1,NVECS,1,1,NVECS,1,-1,LUPRI)
+        WRITE(6,*) 'ADHOC: Selected eigenvalues:'
+        CALL OUTPUT(WORK(KE),1,NVECS,1,1,NVECS,1,-1,LUPRI)
+      ENDIF
 C
 C     Get overlap matrix in fragment basis
 C     ====================================
@@ -5780,8 +5815,10 @@ C.....Construct extended Huckel Hamiltonian; hermiticity not exploited
       ENDDO
       ENDDO
 C
-      WRITE(6,*) 'Total extended Huckel matrix'
-      CALL PRQMAT(HMAT,NVECS,NVECS,NVECS,NVECS,NZ,IPQ,LUPRI)
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,*) 'EHUCKEL: Total extended Huckel matrix'
+        CALL PRQMAT(HMAT,NVECS,NVECS,NVECS,NVECS,NZ,IPQ,LUPRI)
+      ENDIF
 C     Solve general eigenvalue problem; coefficients stored in SMAT
       CALL GEIGSOLV(HMAT,WORK(KSMAT),EIG,NVECS,NEFF,NVECS,NVECS,NZ,IPQ,
      &              IPRINT,WORK,KFREE,LFREE)

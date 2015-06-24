@@ -5,10 +5,10 @@ star(LUCITA)
 Spin-free relativistic GASCI module written by Jeppe Olsen, adaptation to DIRAC by Timo Fleig, parallelization by Stefan
 Knecht and Hans Joergen Aagaard Jensen.
 
-LUCITA is a string-based Hamiltonian-direct configuration interaction (CI) program, based on the LUCIA code [Olsen1990]_.
+LUCITA is a string-based Hamiltonian-direct configuration interaction (CI) program, based on the LUCIA code :cite:`Olsen1990`.
 It is capable of doing efficient CI computations at arbitrary excitation level, e.g. FCI, SDCI, RASCI, and MRCI using
-general active spaces. The code is interfaced [Fleig2005]_ to molecular integrals obtained in the spin-free Dirac
-formalism and uses non-relativistic point group symmetry. It is implemented as a full parallel version [Knecht2008]_.
+general active spaces. The code is interfaced :cite:`Fleig2005` to molecular integrals obtained in the spin-free Dirac
+formalism and uses non-relativistic point group symmetry. It is implemented as a full parallel version :cite:`Knecht2008`.
 
 A central feature of the program is the Generalized Active Space (GAS) concept, in which the underlying total orbital
 space is subdivided into a basically arbitrary number (save for an upper limit) of subspaces with arbitrary occupation
@@ -122,8 +122,8 @@ maximum number of CI iterations. *default*:
 keyword(INACTI)
 
 Inactive orbitals per boson symmetry, separated by commas. This keyword is not allowed in connection with the citype
-choice :ref:`CITYPE` GASCI. *default*: all orbitals active. 
-example for D:math:`_{2h}`:
+choice :ref:`.CITYPE` GASCI. *default*: all orbitals active. 
+example for :math:`D_{2h}`:
 
 ::
 
@@ -176,7 +176,7 @@ keyword(GASSHE)
 
 Number and specification of GAS orbitals. Line with the number of GA spaces used (1-7), 
 followed by one line per GAS with number of orbitals per boson symmetry, separated by commas. *default*: none.
-example for 2 GAS spaces and active orbital distribution when running inD:math:`_{2h}` symmetry:
+example for 2 GAS spaces and active orbital distribution when running in the :math:`D_{2h}` symmetry:
 
 ::
 
@@ -191,7 +191,7 @@ Number and specification of sequential CI calculations. Line with the number of 
 (currently only 1 is allowed), followed by one line per GAS with 2 numbers each: The first gives the minimal number of
 accumulated electrons after this GAS, the second the corresponding maximum number, separated by blanks (defining
 occupation constraints of each GAS). *default*: None. example for an excitation pattern in connection with the 2-GAS
-input from :ref:`GASSHE` above and 10 active electrons:
+input from :ref:`.GASSHE` above and 10 active electrons:
 
 ::
 

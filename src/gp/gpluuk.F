@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -392,8 +392,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       STRING = FDATE()
 C     format from fdate(): 'Fri Sep 13 00:00:00 1986'
-      DATUM = STRING(9:10) // STRING(4:8) // STRING(23:24) // ' '
-C     format of DATUM: '13 Sep 86 '
+      DATUM = ' ' // STRING(9:10) // STRING(4:8) // STRING(23:24)
+C     format of DATUM: ' 13 Sep 86'
       TIJD  = STRING(12:19)
 C     format of TIJD: '00:00:00'
 #else

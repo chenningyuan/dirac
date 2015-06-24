@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3552,6 +3552,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! *** variables for Davidson control
       INTEGER         :: nroots,maxdavsp,maxdavit
       REAL*8          :: convthr
+! *** controls out of core calculation
+      LOGICAL         :: davooc
 ! *** end definition variables for Matrix descriptor file
 !
 !---------------Local variables----------------------------------------
@@ -3560,11 +3562,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer         :: nsiz
       integer         :: iroot,locdim
       integer         :: lwork,info
-      integer         :: idavit,iobase1
+      integer         :: idavit,iobase1,iodachannel
       integer, allocatable, dimension(:)  :: ievec
       logical         :: notallconv,proxflag,orthoviolflag
 
       real*8, allocatable, dimension(:,:)   :: bold,bnew,aij,evint
+      real*8, allocatable, dimension(:,:)   :: aijbase
       real*8, allocatable, dimension(:)     :: lambda,reserr,work
       real*8, allocatable, dimension(:)     :: qm,adiag,xi,dmp1
       real*8                                :: qmn,a1,a2,ortho
@@ -3577,6 +3580,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       character*60                          :: listout
       character*56                          :: field
       logical, allocatable, dimension(:)    :: notconverged
+      real*8                                :: cput1,cput2,time1,time2
+      real*8                                :: ttime,a
 
 !
 !---------------Executable code----------------------------------------
@@ -3601,6 +3606,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       maxdavsp =  reladc_md_maxdavsp    !maximum dimension of Davidson space
       maxdavit =  reladc_md_maxdavit    !maximum number of Dav. iterations
       convthr  =  reladc_md_convthr     !convergence of Davidson eigenvectors
+      davooc   =  reladc_md_davooc      !check for ooc calculation
 !
 !  write out matrix  and Davidson parameters
 !
@@ -3623,47 +3629,63 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       WRITE(iw,*) 'Maximum Davidson subspace:        ',maxdavsp
       WRITE(iw,*) 'Number of Macro iterations:       ',maxdavit
       WRITE(iw,*) 'Eigenvalue convergence up to:     ',convthr
+      WRITE(iw,*) 'Do out-of-core calculation:       ',davooc
 !
 !   allocate work space arrays
 !
       lwork = 3*maxdavsp
-      allocate(aij(maxdavsp,maxdavsp))   !Dav. overlap matrix (DOM)
-      allocate(lambda(maxdavsp))         !Eigenvalues of DOM
-      allocate(reserr(maxdavsp))         !Residual errors of eigenvalues
-      allocate(work(lwork))              !workspace for DSYEV
-      allocate(qm(ladc))                 !intermediate vector
-      allocate(adiag(ladc))              !vector of ADC diagonal elements
-      allocate(xi(ladc))                 !intermediate vector
+      allocate(aij(maxdavsp,maxdavsp))     !Dav. overlap matrix (DOM)+eigenvectors
+      allocate(aijbase(maxdavsp,maxdavsp)) !Dav. overlap matrix base, calcd in macro itrs
+      allocate(lambda(maxdavsp))      !Eigenvalues of DOM
+      allocate(reserr(maxdavsp))      !Residual errors of eigenvalues
+      allocate(work(lwork))           !workspace for DSYEV
+      allocate(qm(ladc))              !intermediate vector, also used as auxvector
+      allocate(adiag(ladc))           !vector of ADC diagonal elements
+      allocate(xi(ladc))              !intermediate vector
       allocate(ievec(ladc))
       allocate(dmp1(ladc))
       allocate(notconverged(maxdavsp))
 
       allocate(bold(ladc,maxdavsp),stat=ialloc)
       if(ialloc.ne.0) then
-        call quit('Allocation problem in DO_DAVI!')
+        call quit('Allocation problem in DIAG_DAVI!')
       endif
-
-      allocate(bnew(ladc,maxdavsp),stat=ialloc)
-      if(ialloc.ne.0) then
-        call quit('Allocation problem in DO_DAVI!')
+   
+      if(.not.davooc) then
+        allocate(bnew(ladc,maxdavsp),stat=ialloc)
+        if(ialloc.ne.0) then
+          call quit('Allocation problem in DIAG_DAVI!')
+        endif
+        bnew    = 0.0d0
       endif
 
       allocate(evint(ladc,nroots),stat=ialloc)
       if(ialloc.ne.0) then
-        call quit('Allocation problem in DO_DAVI!')
+        call quit('Allocation problem in DIAG_DAVI!')
       endif
 !
 ! clear relevant arrays
 !
-      aij    = 0.0d0
-      reserr = 0.0d0
-      qm     = 0.0d0
-      adiag  = 0.0d0
-      xi     = 0.0d0
-      dmp1   = 0.0d0
-      bold   = 0.0d0
-      bnew   = 0.0d0
-      evint  = 0.0d0
+      aij     = 0.0d0
+      aijbase = 0.0d0
+      reserr  = 0.0d0
+      qm      = 0.0d0
+      adiag   = 0.0d0
+      xi      = 0.0d0
+      dmp1    = 0.0d0
+      bold    = 0.0d0
+      evint   = 0.0d0
+!
+! set timers to zero
+!
+      cput1 = 0.0d0
+      cput2 = 0.0d0
+      time1 = 0.0d0
+      time2 = 0.0d0
+!
+! start time measurement here
+!
+      call cpuused(cput1)
 !__________________________________________________________
 !| open file of main block eigenvectors and read them in 
 !| select the first 1,...,nroots vectors from the file
@@ -3739,8 +3761,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &           'exc.energy','error','status'
       WRITE(*,'(56A1)') ('-',i=1,56)
 
-      Call XMVMULBL_R(iobase,intbuf,nbufs,ladc,locdim,
-     &                bold,bnew)
+      if(davooc) then
+        iodachannel = iobase + 2
+        open(iodachannel,file='DAVXBN',access='direct',
+     &       recl=ladc*8,status='unknown')
+        Call XMVMULBL_OOC_R(iobase,iodachannel,intbuf,nbufs,ladc,
+     &                      locdim,maxdavsp,bold,qm,aijbase)
+      else
+        Call XMVMULBL_R(iobase,intbuf,nbufs,ladc,locdim,maxdavsp,
+     &                  bold,bnew,aijbase)
+      endif
     
 !_______________________________________________________________
 !|
@@ -3753,11 +3783,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  AIJ is symmetric because ADC matrix is symmetric.
 !
         Do j=1,locdim
-        Do i=j,locdim
-          aij(i,j) = dot_product(bold(:,i),bnew(:,j))
-          aij(j,i) = aij(i,j)   !symmetrize
+        Do i=1,locdim
+          aij(i,j) = aijbase(i,j)
         Enddo
         Enddo
+
         CALL DSYEV('V','L',locdim,aij,maxdavsp,lambda,work,lwork,info)
         If(INFO.NE.0) Then
           Call Quit('Error in DSYEV (diag_davi routine)')
@@ -3771,10 +3801,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
           proxflag = .false.
 
-          qm = 0.0d0
-          Do i = 1,locdim
-            qm(:) = qm(:) + aij(i,k)*bnew(:,i)
-          Enddo
+          IF(davooc) then
+            Call QMOOCCALC_R(iodachannel,qm,aij,ladc,maxdavsp,locdim,k)
+          else
+            qm = 0.0d0
+            Do i = 1,locdim
+              qm(:) = qm(:) + aij(i,k)*bnew(:,i)
+            Enddo
+          endif
 
           evint(:,k) = qm(:)   !if converged, then we construct the normalized eigenvector.
           a1 = dot_product(evint(:,k),evint(:,k))
@@ -3858,11 +3892,32 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           endif
 !         WRITE(*,*) 'Ortho. of the newly added b-vector',ortho
 !
-!  STEP G.  Form A*b_(M+1)
+!  STEP G.  Form A*b_(M+1)  , goes to bnew!
 !  this vector has to be included in the array of new vectors!
+!  In case of ooc calculation this array maust not be referenced
+!  and we use the qm vector as an auxiliary vector. However, we must
+!  consequently insert this vector to the DA file.
 !
-          Call XMVMUL_R(iobase,intbuf,nbufs,ladc,
-     &                  bold(:,locdim+k),bnew(:,locdim+k))
+          if(davooc) then
+            Call XMVMUL_R(iobase,intbuf,nbufs,ladc,
+     &                    bold(:,locdim+k),qm(:))
+            WRITE(iodachannel,rec=locdim+k) qm
+          else
+            Call XMVMUL_R(iobase,intbuf,nbufs,ladc,
+     &                    bold(:,locdim+k),bnew(:,locdim+k))
+          endif
+!
+!  STEP H.  update Aij to A_i,M+1,  i=1,...,M+1
+!
+          do i=1,locdim+k
+           if(davooc) then
+             aijbase(i,locdim+k) = dot_product(bold(:,i),qm(:))
+           else
+             aijbase(i,locdim+k) = dot_product(bold(:,i),
+     &                                         bnew(:,locdim+k))
+           endif
+           aijbase(locdim+k,i) = aijbase(i,locdim+k)
+          enddo
 
           Write(*,*)  listout
 !
@@ -3910,7 +3965,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             bold(:,k)=evint(:,k)
           enddo
           call reortho(bold,ladc,nroots)
-          bnew = 0.0d0
+          if(.not.davooc) bnew = 0.0d0
           exit
         endif
 
@@ -4065,6 +4120,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  deallocate all intermediate arrays
 !
       deallocate(aij)
+      deallocate(aijbase)
       deallocate(lambda)
       deallocate(work)
       deallocate(qm)
@@ -4073,8 +4129,22 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       deallocate(dmp1)
       deallocate(notconverged)
       deallocate(bold)
-      deallocate(bnew)
+      if(.not.davooc) deallocate(bnew)
       deallocate(evint)
+!
+!  delete direct access file
+!
+      if(davooc) then
+        close(iodachannel,status='delete')
+      endif
+!
+!  measure time
+!
+      call cpuused(cput2)
+      ttime= cput2-cput1
+      Write(*,*) '++++++++++++'
+      Write(*,*) '++++++ time in davidson: ',ttime
+      Write(*,*) '++++++++++++'
 
       RETURN
       END
@@ -4135,14 +4205,16 @@ c  .. read elements
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XMVMULBL_R(iobase,intbuf,nbufs,ladc,nvecs,PO,PN)
+      SUBROUTINE XMVMULBL_R(iobase,intbuf,nbufs,ladc,nvecs,lda,
+     &                      PO,PN,aijbase)
 C
       IMPLICIT NONE
 !
 !------------------------ calling variables -------------------------
 !
-      INTEGER                        :: iobase,intbuf,nbufs,ladc,nvecs
-      REAL*8                         :: PO(LADC,nvecs), PN(LADC,nvecs)
+      INTEGER           :: iobase,intbuf,nbufs,ladc,nvecs,lda
+      REAL*8            :: PO(LADC,nvecs), PN(LADC,nvecs)
+      REAL*8            :: aijbase(lda,lda)
 !
 !------------------------ local variables -------------------------
 !
@@ -4207,9 +4279,119 @@ c  .. read off-diagonal elements and multiply on the fly
       deallocate(ioi)
       deallocate(buf)
 
+      Do j=1,nvecs
+        Do i=j,nvecs
+          aijbase(i,j) = dot_product(PO(:,i),PN(:,j))
+          aijbase(j,i) = aijbase(i,j)
+        Enddo
+      Enddo
+
+
       RETURN
 
  889  CALL QUIT('Matrix read error in XMVMULBL_R')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE XMVMULBL_OOC_R(iobase,ioda,intbuf,nbufs,ladc,nvecs,lda,
+     &                      PO,pnew,aijbase)
+C
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER           :: iobase,ioda,intbuf,nbufs,ladc,nvecs,lda
+      REAL*8            :: PO(LADC,nvecs), pnew(LADC)
+      REAL*8            :: aijbase(lda,lda)
+!
+!------------------------ local variables -------------------------
+!
+      REAL*8,  allocatable, dimension(:)      :: BUF
+      INTEGER, allocatable, dimension(:)      :: IOI,IOJ
+      INTEGER                                 :: I,J,K,IXX,JVEC
+      INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
+      REAL*8                                  :: A
+
+!
+!---------------Description--------------------------------------------
+!
+!  Perform the real symmetric multiplication of the external ADC matrix
+!  with all the vectors in PO and write the result to a direct access
+!  file. Additionally the initial A_ij array is constructed here.
+!
+!  Matrix format is assumed to include the diagonal (new format)
+!
+!  Intermediate buffers are allocated internally !
+!
+!---------------Executable code--------------------------------------
+!
+!  for the matrix elements we note that only the lower triangular
+!  part *AND* the diagonal of the ADC-matrix is stored. 
+!  the if takes care of not double counting the diagonal.
+!  since the diagonal is now *contained* in the matrix
+
+      allocate(buf(intbuf))
+      allocate(ioi(intbuf))
+      allocate(ioj(intbuf))
+
+c  .. read off-diagonal elements and multiply on the fly
+c  ..  in contrast to the incore routine, we generate one complete
+c  .. new vector write it to disk and multiply it with all the
+c     old vectors. Then we do the next vector. For large systems this 
+c     takes more time but saves huge memory
+
+!_______________________________________________
+!|
+!|
+!|  loop over the old vectors
+!|
+      DO JVEC = 1,NVECS
+
+        REWIND(iobase)
+        pnew = 0.0d0
+        DO I = 1,NBUFS
+          READ(iobase,ERR=889) (BUF(IXX),IXX=1,INTBUF),
+     &                         (IOI(IXX),IXX=1,INTBUF),
+     &                         (IOJ(IXX),IXX=1,INTBUF),
+     &                          NACT,JDUMMY
+          DO K = 1, NACT
+            IROW = IOI(K)
+            ICOL = IOJ(K)
+            A    = BUF(K)
+         
+            pnew(IROW) = pnew(IROW) + PO(ICOL,JVEC) * A
+            IF(IROW.NE.ICOL) pnew(ICOL)=pnew(ICOL) + PO(IROW,JVEC) * A
+
+          ENDDO
+        ENDDO
+!
+!  from here the vector pnew = H*b_j is available
+!  Save it to disk
+!
+        Write(ioda,rec=JVEC) pnew
+!
+!  now form the jth column of the A_ij array
+!  A_ij = b_i^T*H*b_j
+!
+        Do i=JVEC,nvecs
+          aijbase(i,JVEC) = dot_product(PO(:,i),pnew(:))
+          aijbase(JVEC,i) = aijbase(i,JVEC)
+        Enddo
+!|
+!|  end loop over the old vectors
+!|______________________________________________
+
+      ENDDO   !JVEC
+!
+!  release buffers
+!
+      deallocate(ioj)
+      deallocate(ioi)
+      deallocate(buf)
+
+      RETURN
+
+ 889  CALL QUIT('Matrix read error in XMVMULBL_OCC_R')
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4285,6 +4467,38 @@ c  .. read off-diagonal elements and multiply on the fly
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE QMOOCCALC_R(ioda,qmu,aij,ladc,maxdavsp,locdim,iroot)
+C
+      IMPLICIT NONE
+!
+!------------------------ calling variables -------------------------
+!
+      INTEGER             :: ioda,ladc,maxdavsp,locdim,iroot
+      REAL*8              :: qmu(ladc),aij(maxdavsp,maxdavsp)
+!
+!------------------------ local variables -------------------------
+!
+      INTEGER                                 :: i,j
+      real*8, allocatable, dimension(:)       :: aux
+!
+!---------------Description--------------------------------------------
+!
+!   This routine calculates the qm vector using the new b-vectors
+!   from disk
+!
+      allocate(aux(ladc))
+      qmu = 0.0d0
+      do i=1,locdim
+        read(ioda,rec=i,err=888) aux
+        qmu(:) = qmu(:) + aij(i,iroot)*aux(:)
+      enddo
+      deallocate(aux)
+      return
+
+ 888  call quit('Vector read error in QMOOCCALC_R!')
+
+      end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE REORTHO(v,ladc,nroots)
 !
       IMPLICIT NONE
@@ -4301,28 +4515,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER                                :: i,k
 
 !
-!---------------Description--------------------------------------------
-!
-!     write(*,*) 'In reortho ***********************'
-      allocate(x(ladc))
+!---------------Executable ----------------------------------------
 !
 ! reorthogonalize nvec vectors stored columnwise in the array a
 !
+      allocate(x(ladc))
       Do k=1,nroots
         x = v(:,k)
         Do i=1,k-1
           a1 = dot_product(x(:),v(:,i))
-!         write(*,*) i,k,a1
           x = x - a1*v(:,i)
         Enddo
         a1 = sqrt(dot_product(x,x))
-!       write(*,*) 'norm k:',k,a1
         v(:,k)  =  x/a1
       Enddo
-!     write(*,*) 'Exiting  reortho ***********************'
-!
-!---------------Executable part----------------------------------------
-!
+ 
       deallocate(x)
       RETURN
       END

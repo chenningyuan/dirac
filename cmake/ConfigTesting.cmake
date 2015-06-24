@@ -14,11 +14,6 @@ if(NOT ENABLE_BENCHMARKS)
         )
 endif()
 
-find_package(PythonInterp)
-if(NOT PYTHONINTERP_FOUND)
-    message(STATUS "WARNING: Python interpreter not found. Testing will not work.")
-endif()
-
 macro(dirac_test _name _label)
     add_test(${_name} ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
     if(NOT "${_label}" STREQUAL "")

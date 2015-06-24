@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -791,17 +791,27 @@ C*     STRING - A character variable that helps bullet-  *
 C*              proofing the subroutine.                 *
 C*     EXST - Logical variable that helps inquire if     *
 C*            there exists a file with that name.        *
+C*     SLASH - variable for slash in paths (/ or \\)     *
+C*     WIN - Check if we work on Linux or on Windows     *
 C*********************************************************
       CHARACTER*(*) BASNAM
-      CHARACTER*200 STRING !long because contains the full dir-path
+C     long because contains the full dir-path
+      CHARACTER*200 STRING
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
       INTEGER INTQ0
+      CHARACTER SLASH
+      LOGICAL WIN
 #include "inftap.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
+#endif
+#if defined (SYS_WINDOWS)
+      WIN = .TRUE.
+#else
+      WIN = .FALSE.
 #endif
 C
 C     Linux:
@@ -814,9 +824,6 @@ C     C:\programs\Dirac\basis;C:\programs\Dalton\basis;.
 C     
 C     We loop over these directories in search for the basis set and
 c     element given.
-C
-C     Check if we work on Linux or on Windows (Windows paths also contain : so it is better to search for ;)
-      Windows = INDEX ( BASDIR, ';' )
 C
 C     Depending on the machine, the string has trailing blanks
 C     (ASCII char=32) or null elements (ASCII=0).
@@ -835,21 +842,24 @@ C
  10   CONTINUE
 C     
 C     Find next colon (: or ;) in BASDIR
-C     
-      IF ( Windows .EQ. 0 ) THEN
+      IF ( .NOT. WIN ) THEN
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
       ELSE
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ';' )
       END IF
 C     
 C     In there are no colons (: or ;), we are the last directory in BASDIR
-C     
       IF ( ICOLON .EQ. ISTART - 1 ) ICOLON = ISTOP + 1
       IEND = ICOLON - 1
       STRING = BASDIR(ISTART:IEND)//' '
 C
 C     Add trailing slash if not present.
-C     Fortran probably does not care if \ or / (or mix) is used on Windows (/ is OK)
+C     / for Linux and \\ for Windows
+      IF ( .NOT. WIN ) THEN
+          SLASH = '/'
+      ELSE
+          SLASH = '\\'
+      END IF
 C
       IEND = INDEX ( STRING(1:), ' ') - 1
 !     stefan: make check with idb indicates a possible access penalty if
@@ -859,9 +869,9 @@ C
      &        'variable BASDIR is not set'
         call quit('*** error in FINDEL: BASDIR is not set')
       end if
-      IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+      IF ( STRING(IEND:IEND) .NE. SLASH ) THEN
          IEND = IEND + 1
-         STRING(IEND:IEND) = '/'
+         STRING(IEND:IEND) = SLASH
       END IF
       STRING = STRING(1:IEND)//BASNAM
       IEND = INDEX(STRING(1:),' ') - 1
@@ -1043,6 +1053,7 @@ C
 ! ---------------------
  2000 CONTINUE
       READ (LUCMD,'(A7)',END=9900,ERR=9000) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1) .EQ. '!') THEN
          GOTO 2000
       ELSEIF (WORD(1:1) .EQ. '#') THEN
@@ -1064,6 +1075,7 @@ C
 ! ----------------------
  3010 CONTINUE
       READ (LUCMD,'(A7)',ERR=9000) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'!') GOTO 3010
       IF (WORD(1:1).EQ.'#') GOTO 3010
       READ (WORD,*,ERR=3011) ECPINT_PRINT
@@ -1079,6 +1091,7 @@ C
 ! ----------------------
  3020 CONTINUE
       READ (LUCMD,'(A7)',ERR=9000) WORD
+      CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'!') GOTO 3020
       IF (WORD(1:1).EQ.'#') GOTO 3020
       READ (WORD,*,ERR=3021) ECPINT_DEBUG

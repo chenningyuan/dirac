@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -70,6 +70,7 @@ C
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
+#include "infpar.h"
 #endif
 #include "priunit.h"
       LOGICAL   SEG, READNU_CALLED
@@ -109,7 +110,7 @@ C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
       LOGICAL SPLIT,TEST
-      integer :: icount = 0
+      integer :: jcount = 0
 #endif /* PRG_DIRAC */
 C
       CALL QENTER('BASLIB')
@@ -470,7 +471,7 @@ C
 
 !#define PRINT_GAUSSIAN_INP
 #ifdef PRINT_GAUSSIAN_INP
-            CALL print_gaussian_inp(icount, iqm, ALPHA(1,NBLOCK),
+            CALL print_gaussian_inp(jcount, iqm, ALPHA(1,NBLOCK),
      &                  CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
      &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
 #endif
@@ -1065,17 +1066,27 @@ C*     STRING - A character variable that helps bullet-  *
 C*              proofing the subroutine.                 *
 C*     EXST - Logical variable that helps inquire if     *
 C*            there exists a file with that name.        *
+C*     SLASH - Variable for slash in paths (/ or \\)     *
+C*     WIN - Check if we work on Linux or on Windows     *
 C*********************************************************
       CHARACTER*(*) BASNAM
-      CHARACTER*200 STRING  ! long because contains the full directory path
+C     long because contains the full directory path
+      CHARACTER*200 STRING
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
+      CHARACTER SLASH
+      LOGICAL WIN
 #include "inftap.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
+#endif
+#if defined (SYS_WINDOWS)
+      WIN = .TRUE.
+#else
+      WIN = .FALSE.
 #endif
 C
 C     Linux:
@@ -1088,9 +1099,6 @@ C     C:\programs\Dirac\basis;C:\programs\Dalton\basis;.
 C
 C     We loop over these directories in search for the basis set and
 c     element given.
-C
-C     Check if we work on Linux or on Windows (Windows paths also contain : so it is better to search for ;)
-      Windows = INDEX ( BASDIR, ';' )
 C
 C     Depending on the machine, the string has trailing blanks
 C     (ASCII char=32) or null elements (ASCII=0).
@@ -1109,21 +1117,24 @@ C
  10   CONTINUE
 C     
 C     Find next colon (: or ;) in BASDIR
-C     
-      IF ( Windows .EQ. 0 ) THEN
+      IF ( .NOT. WIN ) THEN
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
       ELSE
           ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ';' )
       END IF
 C     
 C     In there are no colons (: or ;), we are the last directory in BASDIR
-C     
       IF ( ICOLON .EQ. ISTART - 1 ) ICOLON = ISTOP + 1
       IEND = ICOLON - 1
       STRING = BASDIR(ISTART:IEND)//' '
 C
 C     Add trailing slash if not present.
-C     Fortran probably does not care if \ or / (or mix) is used on Windows (/ is OK)
+C     / for Linux and \\ for Windows
+      IF ( .NOT. WIN ) THEN
+          SLASH = '/'
+      ELSE
+          SLASH = '\\'
+      END IF
 C
       IEND = INDEX ( STRING(1:), ' ') - 1
 !     stefan: make check with idb indicates a possible access penalty if
@@ -1133,9 +1144,9 @@ C
      &        'variable BASDIR is not set'
         call quit('*** error in FINDEL: BASDIR is not set') 
       end if
-      IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+      IF ( STRING(IEND:IEND) .NE. SLASH ) THEN
          IEND = IEND + 1
-         STRING(IEND:IEND) = '/'
+         STRING(IEND:IEND) = SLASH
       END IF
       STRING = STRING(1:IEND)//BASNAM
       IEND = INDEX(STRING(1:),' ') - 1

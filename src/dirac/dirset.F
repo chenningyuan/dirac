@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -507,10 +507,11 @@ C
       N2OCCT = 0
       NSSHT  = 0
       N2SSHT = 0
+      NESHT  = 0
+      N2ESHT = 0
       NPSHT  = 0
       N2PSHT = 0
       NCMOT  = 0
-      NCAOT  = 0
       DO 100 IFRP = 1,NFSYM
 C
         IORB(IFRP)  = NORBT
@@ -1276,26 +1277,16 @@ C
 C        ... Open AOPROPER integral file for ONEGEN
 C            (is closed again inside ONEGEN)
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
          CALL ONEGEN(WORK(KFREE),LFREE)
          DIPDONE = .TRUE.
       END IF
 C
 C     ... Open AOPROPER integral file (again) for PRPREA
 C
-#if defined (SYS_IBM)
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
       OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 C
 C     ... Allocate memory for RLMMAT in AO basis
 C         (L=0: Overlap, L=1: Dipole)

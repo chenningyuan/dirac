@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -55,11 +55,11 @@ C
       WRITE (IW,1001) DATEX,TIMEX
 C
  1000 FORMAT (//" Relativistic Coupled Cluster program RELCCSD"
-     &//" Written by :",/" Lucas Visscher"/
-     &/" NASA Ames Research Center    (1994)"
-     &/" Rijks Universiteit Groningen (1995)"
-     &/" Odense Universitet           (1996-1997)" 
-     &/" VU University Amsterdam (1998-present)")
+     &//" Written by :",/"    Lucas Visscher"/
+     &/"    NASA Ames Research Center    (1994)"
+     &/"    Rijks Universiteit Groningen (1995)"
+     &/"    Odense Universitet           (1996-1997)" 
+     &/"    VU University Amsterdam      (1998-present)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
  1002 FORMAT (//" This module is documented in"
      &/"  - Initial implementation :",T30,
@@ -191,6 +191,7 @@ C
       DOSOPR  = relcc_do_hessian
       DOFSPC  = relcc_do_fspc
       DOIH    = relcc_fs_do_ih
+      DORESTART = relcc_do_restart
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
@@ -304,6 +305,21 @@ C
       DO ISECT = 2, 6
           FSSECT(ISECT) = relcc_fs_fssect(ISECT)
       ENDDO
+
+! in case we want to jump to a given sector 
+      do isect = 1, 6
+         FS_SKIP_SECT(isect) = relcc_restart_skipsect(isect)
+         FS_REDO_SECT(isect) = relcc_restart_redosect(isect)
+         if ((FS_SKIP_SECT(isect) .eqv. .true.).and.
+     &       (FS_REDO_SECT(isect) .eqv. .true.)) then
+            call quit('Inconsistent input for skip/redo_sect')
+         endif
+      enddo
+      restart_unconverged  = relcc_restart_unconverged
+      restart_redo_sort    = relcc_restart_redo_sorting
+      restart_redo_ccsd    = relcc_restart_redo_ccsd
+      restart_ignore_check = relcc_restart_ignore_check
+
 CMI   ...provide with default values
       MAXIT02=relcc_fs_max02_iterations 
       MAXIT01=relcc_fs_max01_iterations 
@@ -523,7 +539,6 @@ C
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
       integer(kind=klongint) :: mword_limit
-      real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
 C
@@ -568,12 +583,7 @@ C
 C     Memory and I/O setup section
 C     ----------------------------
 C
-      call allocator_get_available_mem(total_mem_new)
-
-! miro & andre: at runtime-check ifort giving "forrtl: error (65): floating invalid" 
-! the simplest solution is to remove the -ftrapuv flag from among runtime checking flags
-      maxcor = nint((total_mem_new/8.0d0),kind(8))
-
+      call allocator_get_words_available(maxcor)
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
 C
@@ -621,15 +631,15 @@ C
 C     Report memory in megaBytes
 C
       if ( maxcor .gt. 0 ) then 
-      WRITE (IW,1000) MAXCOR / (128 * 1024)
+         WRITE (IW,1000) MAXCOR / (128 * 1024)
       else
-      WRITE (IW,1410)
+         WRITE (IW,1410)
       endif
 C
 C     General setup
 C     -------------
 C
-      CALL CCDINI
+      CALL CCDINI(DORESTART)
       EQNS = '      '
 C
 C     Set up symmetry tables and parallel distribution arrays
@@ -669,6 +679,15 @@ C
      &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
+
+!miro: printout of changed DHOLU limit, with warning
+      if (relcc_ccener_dholu_limit_set) then
+        write(IW,*) 'WARNING: you have altered the DHOLU limit !'
+        write(IW,*) 'new value=',relcc_ccener_dholu_limit
+        write(IW,*) 
+     & 'Decreasing DHOLU does not solve CC convergence problems !'
+      endif
+
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
@@ -830,12 +849,14 @@ C
       DO 8888 I = 1, 2
         call interface_mpi_BARRIER(global_communicator)
         TIME_SYNC = interface_MPI_WTIME()
-        WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
+        IF (IPRNT .GT. 10)
+     &     WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
         call interface_mpi_BARRIER(global_communicator)
         TIME_SYNC_TOT = interface_MPI_WTIME() - TIME_SYNC
- 8888  CONTINUE
+ 8888 CONTINUE
 C
-       WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
+      IF (IPRNT .GT. 10)
+     &  WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
 #endif
 C
       RETURN
@@ -1055,9 +1076,10 @@ C
                ENDDO
             ENDDO
 C
-         ELSE ! Automatic assigment for each abelian subgroup
+         ELSE  ! if (ASSREP) then ... else ... endif
+         ! here: Automatic assigment for each abelian subgroup
 C
-            NFROZEN = 0
+            IF (.not.IFROZ_set_in_input) NFROZEN = 0
             DO IRP = 1, NSYMRP
                NVIRT(IRP) = 0
                IN  = 0
@@ -1069,14 +1091,18 @@ C
                         NO(IREP) = NO(IREP) + 1
                         IREPSP(I,3) = NO(IREP)
                         IREPSPI(NO(IREP),IREP,1) = I
-                        IF (NO(IREP).GT.MAXFROZ) 
-     &                     CALL QUIT("INCREASE MAXFROZ")
-                        IF (IN.LE.NFROZ(IRP)) THEN
+                        IF (.not.IFROZ_set_in_input) THEN
+                           IF (NO(IREP).GT.MAXFROZ) 
+     &                        CALL QUIT("INCREASE MAXFROZ")
+                           IF (IN.LE.NFROZ(IRP)) THEN
+                              NC(IREP) = NC(IREP) + 1
+                              IFROZ(NO(IREP),IREP) =  NC(IREP)
+                              NFROZEN = NFROZEN + 1
+                           ELSE
+                              IFROZ(NO(IREP),IREP) =  0
+                           ENDIF
+                        ELSE IF (IFROZ(NO(IREP),IREP) .GT. 0) THEN
                            NC(IREP) = NC(IREP) + 1
-                           IFROZ(NO(IREP),IREP) =  NC(IREP)
-                           NFROZEN = NFROZEN + 1
-                        ELSE
-                           IFROZ(NO(IREP),IREP) =  0
                         ENDIF
                      ELSE
                         NVIRT(IRP) = NVIRT(IRP) + 1
@@ -1087,13 +1113,13 @@ C
                   ENDIF
                ENDDO
             ENDDO
-         ENDIF 
+         ENDIF  ! if (ASSREP) then ... else ... endif
 C
          DO IREP = 1, NREP
 C           The number of electrons is now identical to NO, but we need
 C           two separate arrays because NO is extended in case of
 C           Fock space calculations (see below).
-            NE(IREP) = NO(IREP)
+            NE(IREP)  = NO(IREP)
 C           Fill in the Fock space arrays in case we call a routine that
 C           needs them.
             NIO(IREP) = NO(IREP)
@@ -1116,7 +1142,7 @@ C
 C        Step 1 - Add the inactive occupied to the O space
 C               - Add the active virtual to the V space
 C
-         NFROZEN = 0
+         IF (.not.IFROZ_set_in_input) NFROZEN = 0
          DO IRP = 1, NSYMRP
             NVIRT(IRP) = 0
             IN  = 0
@@ -1132,14 +1158,18 @@ C
                      IREPSP(I,4) = IREPSP(I,3)
                      IREPSPI(NO(IREP),IREP,1) = I
 C                    Check for frozen core orbitals
-                     IF (NO(IREP).GT.MAXFROZ) 
+                     IF (.not.IFROZ_set_in_input) THEN
+                        IF (NO(IREP).GT.MAXFROZ) 
      &                  CALL QUIT("INCREASE MAXFROZ")
-                     IF (IN.LE.NFROZ(IRP)) THEN
+                        IF (IN.LE.NFROZ(IRP)) THEN
+                           NC(IREP) = NC(IREP) + 1
+                           IFROZ(NO(IREP),IREP) =  NC(IREP)
+                           NFROZEN = NFROZEN + 1
+                        ELSE
+                           IFROZ(NO(IREP),IREP) =  0
+                        ENDIF
+                     ELSE IF (IFROZ(NO(IREP),IREP) .GT. 0) THEN
                         NC(IREP) = NC(IREP) + 1
-                        IFROZ(NO(IREP),IREP) =  NC(IREP)
-                        NFROZEN = NFROZEN + 1
-                     ELSE
-                        IFROZ(NO(IREP),IREP) =  0
                      ENDIF
                   ENDIF
                   IF (IN.GT.NELEC(IRP).AND.
@@ -1169,7 +1199,11 @@ C
                      NO(IREP) = NO(IREP) + 1
                      IREPSP(I,3) = NO(IREP)
                      IREPSPI(NO(IREP),IREP,1) = I
-                     IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                     IF (.not.IFROZ_set_in_input) THEN
+                        IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                     ELSE IF (IFROZ(NO(IREP),IREP) .GT. 0) THEN
+                        NC(IREP) = NC(IREP) + 1
+                     END IF
                   ENDIF
                   IF (IN.GT.NELEC(IRP).AND.
      &                IN.GT.NACT(IRP)+NINACT(IRP)) THEN
@@ -1204,7 +1238,11 @@ C
                      NO(IREP) = NO(IREP) + 1
                      IREPSP(I,4) = NO(IREP)
                      IREPSPI(NO(IREP),IREP,1) = I
-                     IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                     IF (.not.IFROZ_set_in_input) THEN
+                        IFROZ(NO(IREP),IREP) =  0 ! No frozen act. allowed
+                     ELSE IF (IFROZ(NO(IREP),IREP) .GT. 0) THEN
+                        NC(IREP) = NC(IREP) + 1
+                     END IF
                   ENDIF
                ENDIF
             ENDDO
@@ -1817,9 +1855,9 @@ CMI ..... write only active irreps
       ENDIF
 C
  1000 FORMAT (/' Configuration in highest pointgroup'//T40,16(1X,A4))
- 1001 FORMAT (//' Configuration in abelian subgroup'//T40,8(1X,A4))
+ 1001 FORMAT (/' Configuration in abelian subgroup'//T40,8(1X,A4))
  1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
- 1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
+ 1003 FORMAT (/' List of frozen spinors (amplitudes zeroed out)')
  1004 FORMAT (//' List of inactive and active spinors (Fock space)')
  1005 FORMAT (
      &  //' Configuration in abelian subgroup with the IH-FSCC Pi space'
@@ -1885,7 +1923,6 @@ Caspg, replacing memget
      &                              a_v3(:),     a_vta(:)
       real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
 c
-      real (kind=kreal)   :: total_mem_new = 0
       integer(kind=8)        :: mxcorr
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
@@ -2084,13 +2121,14 @@ c
      &                             a_VVOO(:),a_VVVO(:), a_BUF3(:),
      &                             a_TAU3(:), a_T2T(:)
 c
-      real(kind=kreal)    :: total_mem_new   = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0 
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr  
-      integer         :: freemem = 0
+      integer                :: freemem = 0
+      integer                :: maxit_save
+      logical                :: is_ccsd_converged = .false.
 C
 C---------------Executable code--------------------------------------
 C
@@ -2190,7 +2228,8 @@ C
 C  Solve relativistic MP2 equations
 C
       IF (DOMP2) THEN
-         IF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(5).EQ.3) THEN
             WRITE (IW,1010)
             GOTO 10
          ENDIF
@@ -2200,7 +2239,7 @@ C
 C        This is a restart point: save the amplitudes and update status.
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(4) = 3
+         IMSTAT(5) = 3
          CALL CCDUMP
    10    CONTINUE
          if (doxml) then
@@ -2211,7 +2250,8 @@ C
 C  Solve relativistic CCSD equations
 C
    11 IF (DOCCSD) THEN
-         IF (IMSTAT(5).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.3) THEN
             WRITE (IW,1011)
             GOTO 20
          ENDIF
@@ -2224,13 +2264,15 @@ C
 C
 C        Initialize T1 and T2 amplitudes
 C
-         IF (IMSTAT(5).EQ.2) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.2) THEN
 C
 C           Use restart amplitudes
 C
             CALL GETAMPT (a_T1,a_T2)
 C
-         ELSEIF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         ELSEIF (IMSTAT(5).EQ.3) THEN
 C
 C           Use MP2 amplitudes
 C
@@ -2248,16 +2290,19 @@ C
          ENDIF
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(5) = 2
+! aspg changed
+         IMSTAT(6) = 2
          CALL CCDUMP
 C
          CALL XTIME(5,1,'CCSD equations                ')
-         CALL CCEQN(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
+         maxit_save = MAXIT
+         CALL CCEQN(maxit_save,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
      &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
      &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
+         if (maxit_save.le.maxit) is_ccsd_converged = .true.
 
          if (doxml) then
             call xml_quantity('CCSD energy',ESCF+ECCSD,'Hartree')
@@ -2266,7 +2311,11 @@ C
 C        This is a restart point: save the amplitudes and update status.
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(5) = 3
+! aspg changed
+
+         if (is_ccsd_converged.or.restart_unconverged) then
+            IMSTAT(6) = 3
+         endif
          CALL CCDUMP
    20    CONTINUE
       ENDIF
@@ -2277,11 +2326,6 @@ C
  420  CONTINUE
       IF (DOCCSDT) THEN
          IF (ICALC.EQ.1) GOTO 421
-
-         IF (IMSTAT(6).EQ.3) THEN
-            WRITE (IW,1012)
-            GOTO 30
-         ENDIF
 C
  421     CONTINUE
          call dealloc(a_AZ  )
@@ -2297,6 +2341,13 @@ C
          call dealloc(a_BUF1)
          call dealloc(a_BUF2)
          call dealloc(a_BUF3)
+
+! aspg changed
+         IF (IMSTAT(7).EQ.3) THEN
+            WRITE (IW,1012)
+            GOTO 30
+         ENDIF
+
 C
 C        now we start reallocating
 C
@@ -2325,9 +2376,11 @@ C
 C
 C        Check if CCSD amplitudes are available
 C
-         IF (IMSTAT(5).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.3) THEN
             CALL GETAMPT (a_T1,a_T2)
-         ELSEIF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         ELSEIF (IMSTAT(5).EQ.3) THEN
             WRITE (IW,1006)
             CALL GETAMPT (a_T1,a_T2)
          ELSE
@@ -2349,7 +2402,8 @@ C
 C
 C     This is a restart point : update status.
 C
-         IMSTAT(6) = 3
+! aspg changed
+         IF (IMSTAT(6).EQ.3) IMSTAT(7) = 3
          CALL CCDUMP
    30    CONTINUE
 
@@ -2383,14 +2437,16 @@ C
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
-1006  FORMAT (/' WARNING : Calculating CCSD(T) energies with MP2',
-     &         ' amplitudes')
+1006  FORMAT (/' WARNING : Calculating CCSD(T) energies with',
+     &         ' MP2/unconverged amplitudes')
 1010  FORMAT (/' Skipping MP2 calculation')
 1011  FORMAT (/' Skipping CCSD calculation')
 1012  FORMAT (/' Skipping CCSD(T) calculation')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCFOPR (ICALC,NSP,IREPSPI,MXCORR,EPS)
+C
+C     CCFOPR - CC First Order PRoperties, aka gradients
 C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
@@ -2455,7 +2511,6 @@ C
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
      &                             a_BUF3(:),a_FVV(:)
 
-      real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -2470,8 +2525,8 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-         WRITE (IW,*) ' CCSD gradient not yet implemented,'
-     &         ,' calculate MP2 gradient instead'
+         WRITE (IW,*) ' CCSD gradient not yet implemented,'//
+     &         ' calculate MP2 gradient instead'
          doccsdg = .false.
          domp2g = .true.
       endif
@@ -2851,7 +2906,6 @@ C
 
       real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
 
-      real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -3020,7 +3074,6 @@ C
      &                                         a_FREQI(:),
      &                                         a_FREQD(:)
 
-      real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -3070,7 +3123,7 @@ C
       MAXDIM  = MXDIMRP
       TOL = 10.0D0**(-NTOLRP)
 C
-C     This is very old code and not well tested : better warn
+C     This is very old code and..not well tested : better warn
       WRITE (IW,*) 
      & " WARNING : This module is obsolete and is not tested anymore"
       WRITE (IW,*) " Use it at your own risk....."
@@ -3171,9 +3224,10 @@ c
      &                             a_BUF2(:), a_BUF3(:),
      &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
      &                             a_EIGENVECTORS(:,:)
-      real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
       integer(kind=8)        :: mxcorr, mxcorr1
+      integer                :: maxit_save
+      logical                :: is_ccsd_converged = .false.
 C
 C---------------Executable code--------------------------------------
 C
@@ -3211,12 +3265,6 @@ C
       MXCORR1 = 0
       CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
       MXCORR = MAX(MXCORR,MXCORR1)
-C
-C     Set restart on sorted integrals to false
-C
-      IMSTAT(1) = 0
-      IMSTAT(2) = 0
-      IMSTAT(3) = 0
 C
 C Allocate space for the calculation of the amplitudes
 C
@@ -3273,8 +3321,7 @@ C     Allocate the work array
 C
       call alloc( a_BUF3 , NBUF3*RCW , id="buf3")
 
-      call allocator_get_available_mem(total_mem_new)
-      mxcorr= nint((total_mem_new/kind(a_BUF3)),kind(8))
+      call allocator_get_words_available(mxcorr)
 C
       IF (ICALC.LE.1) THEN
          WRITE (IW,1001) "Fock space CCSD energies",MXCORR
@@ -3300,12 +3347,31 @@ C
 C
 C     Initialize T1 and T2 amplitudes
 C
-      CALL XCOPY (NDIMT1, a_FVO ,1, a_T1 ,1)
-      CALL GETVVOO ( a_T2 )
-      CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,1)
-      CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,2)
+! aspg changed
+      IF ((IMSTAT(8).ge.2) .or.(IMSTAT(9).ge.2) .or.
+     &    (IMSTAT(10).ge.2).or.(IMSTAT(11).ge.2).or.
+     &    (IMSTAT(12).ge.2).or.(IMSTAT(13).ge.2)    ) THEN
+
+!        if we already have restartable amplitudes, we read them in
+!        and start from there. so far one does not keep track of
+!        the full set of amplitudes on a per-sector basis, so the amplitudes
+!        recovered here correspond, in fact, to those for the last
+!        calculated sector
+
+         write (IW,*)
+         write (iw,*) 'INFO: Reading restartable amplitudes!'
+         call getampt(a_t1,a_t2)
+      ELSE
+!        otherwise, we start from mp2 amplitudes  
+         CALL XCOPY (NDIMT1, a_FVO ,1, a_T1 ,1)
+         CALL GETVVOO ( a_T2 )
+         CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,1)
+         CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,2)
 C     Save the zeroth order wave function
-      CALL PUTAMPT ( a_T1 , a_T2 )
+         CALL PUTAMPT ( a_T1 , a_T2 )
+         write (IW,*)
+         write (iw,*) 'INFO: Initializing amplitudes to MP2 ones!'
+      ENDIF
 C
  440  CONTINUE
       IFSS(1) = '00'
@@ -3318,23 +3384,42 @@ C
 C     Solve Fock space equation sector by sector
 C
       DO ICURFSS = 1, 6
+      IFSTAT=7+ICURFSS
       IF (FSSECT(ICURFSS).NE.0) THEN
         IF (ICALC.LE.1) GOTO 441 
         WRITE (IW,1009) IFSS(ICURFSS)
-        WRITE(IW,'(2X,A,I3)')
-     &  '...maximum number of iterations for this sector:',
-     &  MAXIT_SECT(ICURFSS)
+        IF (((IMSTAT(IFSTAT).eq.3).and..not.FS_REDO_SECT(ICURFSS)) 
+     &      .or.FS_SKIP_SECT(ICURFSS)) THEN
+           WRITE (IW,*) '... restarting: sector converged or skipped'
+        ELSE
+           WRITE(IW,'(2X,A,I3)')
+     &     '...maximum number of iterations for this sector:',
+     &     MAXIT_SECT(ICURFSS)
+           if (fs_redo_sect(icurfss).and.(IMSTAT(IFSTAT).eq.3)) then
+              write (IW,*)
+              write (IW,'(5X,A)') 'INFO: sector previously '//
+     &          'marked as converged but user asked to recalculate it'
+           endif 
+        ENDIF
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
 C
  441    CONTINUE
-        call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff" )
-        call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
-     &              id="eigenvalues" )
-        call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
-     &              id="eigenvectors" )
-        IF (ICALC.LE.1) GOTO 442 
 C
-        CALL CCEQN(MAXIT_SECT(ICURFSS),EPS, 
+C       skip sectors which have converged, or that we specifically asked to skip 
+C       conversely calculate sectors we asked to be recalculated even if previously converged
+C
+        IF (((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)).or.
+     &      FS_REDO_SECT(ICURFSS)) THEN
+           call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
+           call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
+     &                 id="eigenvalues" )
+           call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
+     &              id="eigenvectors" )
+           IF (ICALC.LE.1) GOTO 442 
+C
+           maxit_save = MAXIT_SECT(ICURFSS)
+
+           CALL CCEQN(maxit_save,EPS, 
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
      &             a_T2  , a_S2  , a_AZ   , DUM    , a_H    , 
      &             a_HO  , a_HV  , a_HOV  ,
@@ -3342,20 +3427,45 @@ C
      &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3,
      &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
-C       Print the Fock space eigenvalues, compute transition moments
-        CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
+
+           if (maxit_save.gt.maxit_SECT(ICURFSS)) then
+              is_ccsd_converged = .false.
+           else
+              is_ccsd_converged = .true.
+           endif
+
+           if (ICURFSS.GT.1)  
+C          Print the Fock space eigenvalues, compute transition moments
+C          except for the 00 sector, obviously
+     &     CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
      &                    NSP,IREPSPI)
 
-C       Save the updated wave function
-        CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
-C       Dealloc_meate space for the effective Hamiltonian
- 442    CONTINUE
-        call dealloc (a_HEFF, id="heff")
-        call dealloc (a_EIGENVALUES, id="eigenvalues")
-        call dealloc (a_EIGENVECTORS, id="eigenvectors")
+C          Save the updated wave function
+           CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
+
+           if (is_ccsd_converged.or.restart_unconverged) then
+              IMSTAT(IFSTAT) = 3 
+              write (IW,*)
+              write (IW,'(1X,A)') 'INFO:   converged (unconverged'//
+     &                            ' if .UNCONVERGED used) amplitudes'//
+     &                            ' available for restart'
+           else
+              IMSTAT(IFSTAT) = 2
+              write (IW,*)
+              write (IW,'(1X,A)') 'INFO: unconverged amplitudes '//
+     &                            'available for restart'
+           endif
+
+C          Deallocate space for the effective Hamiltonian
+ 442       CONTINUE
+           call dealloc (a_HEFF, id="heff")
+           call dealloc (a_EIGENVALUES, id="eigenvalues")
+           call dealloc (a_EIGENVECTORS, id="eigenvectors")
+        ENDIF
 C
       ENDIF
       ENDDO
+      CALL CCDUMP
 C
       call dealloc( a_FVO , id="fvo" )
       call dealloc( a_FOO , id="foo" )
@@ -3451,7 +3561,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCDINI
+      SUBROUTINE CCDINI(do_restart)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -3487,7 +3597,15 @@ C
 C---------------Local variables--------------------------------------
 C
       DIMENSION BUFF(RSRCLEN)
-      LOGICAL TOBE
+      LOGICAL do_restart, file_found 
+      LOGICAL restart_and_current_differ
+      INTEGER RST_NEL(16)
+      INTEGER RST_NFRZ(16)
+      INTEGER RST_NACT(16)
+      INTEGER RST_NINACT(16)
+      INTEGER nelec_tot, RST_nelec_tot 
+      INTEGER act_tot, RST_act_tot   
+      INTEGER inact_tot, RST_inact_tot 
 C
 C---------------Executable code--------------------------------------
 C
@@ -3520,50 +3638,119 @@ C
 C     Check the status of the individual restart file
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
-      INQUIRE (FILE=RSFILN(1:LRSFIL),EXIST=TOBE)
-c
-c     Restart is not fool-proof yet : disabled
-c
-C here: if a MCCRES.XXX file exists at the beginning of the
-C ccsd(t) run it will be deleted in any case.... this goes out later on....
+      INQUIRE (FILE=RSFILN(1:LRSFIL),EXIST=file_found)
+C
+C     if  the restart file exists ...
+C
+      IF (file_found) THEN
+         if (do_restart) then
+C
+C        ...and we want to restart we go ahead 
+C
+         write (IW,*)
+         write (IW,*) 'INFO: Found restart file(s)!'
 
-      if (tobe) then
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='OLD',RECL=IRECL)
-         close (MCCRES,STATUS='DELETE')
-         tobe = .false.
-      endif
 
-C here: if  the restart file exists we restart...
+C           Read the input information from the previous run
+C
+             READ(MCCRES,REC=1) RST_NEL,RST_NFRZ,RST_NACT,RST_NINACT
 
-      IF (TOBE) THEN
-         OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
-     &         STATUS='OLD',RECL=IRECL)
-C
-C         Read the input information from the previous run
-C
-C         Not implemented yet
-C
-C         Read the status information
-C
-          READ (MCCRES,REC=2) IMSTAT
-C
-C         Read the energies (read the whole common block)
-C
-          READ (MCCRES,REC=3) BUFF
-          CALL DCOPY(7,BUFF,1,ETOT,1)
+             nelec_tot     = 0 
+             RST_nelec_tot = 0 
 
-C ... if it doesn't exist we create it and write amplitudes out there...
+             act_tot       = 0
+             RST_act_tot   = 0
 
-      ELSE
+             inact_tot     = 0
+             RST_inact_tot = 0
 
+             restart_and_current_differ = .false.
+             DO I = 1, 16
+                nelec_tot     = nelec_tot + NELEC(I)
+                RST_nelec_tot = RST_nelec_tot + RST_NEL(I)
+
+                act_tot       = act_tot + NACT(I)
+                RST_act_tot   = RST_act_tot + RST_NACT(I)
+
+                inact_tot     = inact_tot + NINACT(I)
+                RST_inact_tot = RST_inact_tot + RST_NINACT(I)
+
+                IF ((RST_NEL(I)   .NE. NELEC(I)  ).OR.
+     &              (RST_NFRZ(I)  .NE. NFROZ(I)  ).OR.
+     &              (RST_NACT(I)  .NE. NACT(I)   ).OR.
+     &              (RST_NINACT(I).NE. NINACT(I) )) THEN
+                   restart_and_current_differ = .true.
+                ENDIF
+             END DO
+
+             if (restart_and_current_differ) then
+                write (IW,*) 
+                write (IW,*) 'INFO: Current setup and restart differ' 
+                write (IW,*) 
+                if (RST_nelec_tot .NE. nelec_tot) then
+                write (IW,*) ' # of electrons   (rst):',RST_nelec_tot
+                write (IW,*) '                  (now):',nelec_tot
+                write (IW,*) 
+                endif
+                if (RST_act_tot .NE. act_tot ) then
+                write (IW,*) ' #   act. spinors (rst):',RST_act_tot
+                write (IW,*) '                  (now):',act_tot
+                write (IW,*) 
+                endif
+                if (RST_inact_tot .NE. inact_tot) then
+                write (IW,*) ' # inact. spinors (rst):',RST_inact_tot
+                write (IW,*) '                  (now):',inact_tot
+                write (IW,*) 
+                endif
+
+                if (restart_ignore_check) then
+                   write (IW,*) 'INFO: Ignoring difference, restarting'
+                else
+                   call quit('Calculation and restart inconsistent')
+                endif
+             endif
+
+C
+C            Read the status information
+C
+             READ (MCCRES,REC=2) IMSTAT
+C
+C            Read the energies (read the whole common block)
+C
+             READ (MCCRES,REC=3) BUFF
+             CALL DCOPY(8,BUFF,1,ETOT,1)
+
+         else 
+C
+C        ... if we don't want to restart we trash any existing files and start over 
+C
+            write (IW,*) 
+            write (IW,*) 'INFO: Restart file(s) will be overwriten!'
+            write (IW,*) 
+            OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
+     &            STATUS='REPLACE',RECL=IRECL)
+            CALL DCOPY(8,A0,0,ETOT,1)
+            DO I = 1, NSTATS
+               IMSTAT(I) = 0
+            ENDDO
+         endif
+C
+C ... if the restart files don't exist, we create them
+C
+      else
+         write (IW,*) 
+         write (IW,*) 'INFO: No old restart file(s) found!'
+         write (IW,*) 
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='NEW',RECL=IRECL)
-         CALL DCOPY(7,A0,0,ETOT,1)
+         CALL DCOPY(8,A0,0,ETOT,1)
          DO I = 1, NSTATS
             IMSTAT(I) = 0
          ENDDO
-      ENDIF
+
+      endif
 C
 C     Initialize the status information
 C     When restarting the previous status is retained if the module
@@ -3572,9 +3759,31 @@ C
       IF (DOSORT.AND.IMSTAT(1).EQ.0)             IMSTAT(1) = 1
       IF (DOSORT.AND.IMSTAT(2).EQ.0)             IMSTAT(2) = 1
       IF (DOSORT.AND.IMSTAT(3).EQ.0)             IMSTAT(3) = 1
-      IF (DOENER.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(4) = 1
-      IF (DOENER.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(5) = 1
-      IF (DOENER.AND.DOCCSDT.AND.IMSTAT(1).EQ.0) IMSTAT(6) = 1
+      IF (DOSORT.AND.IMSTAT(4).EQ.0)             IMSTAT(4) = 1
+      IF (DOENER.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(5) = 1
+      IF (DOENER.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(6) = 1
+      IF (DOENER.AND.DOCCSDT.AND.IMSTAT(1).EQ.0) IMSTAT(7) = 1
+!aspg, restart fs
+      IF (DOFSPC.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(5) = 1
+      IF (DOFSPC.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(6) = 1
+
+      IF (DOFSPC.AND.IMSTAT(8).EQ.0)             IMSTAT(8) = 1
+      IF (DOFSPC.AND.IMSTAT(9).EQ.0)             IMSTAT(9) = 1
+      IF (DOFSPC.AND.IMSTAT(10).EQ.0)            IMSTAT(10) = 1
+      IF (DOFSPC.AND.IMSTAT(11).EQ.0)            IMSTAT(11) = 1
+      IF (DOFSPC.AND.IMSTAT(12).EQ.0)            IMSTAT(12) = 1
+      IF (DOFSPC.AND.IMSTAT(13).EQ.0)            IMSTAT(13) = 1
+
+      IF (restart_redo_sort) then
+         DO I = 1, 4
+            IMSTAT(I) = 1
+         ENDDO
+      ENDIF
+      if (doccsd.and.restart_redo_ccsd.and.(imstat(6).eq.3)) then
+            imstat(6) = 2
+            imstat(7) = 1
+      endif
+!aspg, restart fs
 C
 C     Initialize the record information
 C
@@ -3634,6 +3843,7 @@ C
 C     Dump the input information
 C
 C     Not implemented yet
+      WRITE (MCCRES,REC=1) NELEC, NFROZ, NACT, NINACT
 C
 C     Dump the status information
 C
@@ -3641,7 +3851,7 @@ C
 C
 C     Dump the energies (write the whole common block)
 C
-      CALL DCOPY(7,ETOT,1,BUFF,1)
+      CALL DCOPY(8,ETOT,1,BUFF,1)
       WRITE (MCCRES,REC=3) BUFF
 C
       CLOSE (MCCRES,STATUS='KEEP')
@@ -3695,7 +3905,7 @@ C
 C     Read the energies (read the whole common block)
 C
       READ (MCCRES,REC=3) BUFF
-      CALL DCOPY(7,BUFF,1,ETOT,1)
+      CALL DCOPY(8,BUFF,1,ETOT,1)
 C
       CLOSE (MCCRES,STATUS='KEEP')
 C
@@ -3717,6 +3927,7 @@ C
       WRITE (IW,1024) STATCH(IMSTAT(4))
       WRITE (IW,1025) STATCH(IMSTAT(5))
       WRITE (IW,1026) STATCH(IMSTAT(6))
+      WRITE (IW,1026) STATCH(IMSTAT(7))
 C
 C     Write energies
 C
@@ -3826,8 +4037,8 @@ C
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
        READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
      &                              NFSYM,NZ,SPFR,NORBT
-       READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP) 
-     &                ,(NELEC(IRP),IRP=1,NSYMRP),
+       READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP), 
+     &                 (NELEC(IRP),IRP=1,NSYMRP),
      &                 (spinor_info(1,irp),irp=1,nfsym), 
      &                 (spinor_info(2,irp),irp=1,nfsym), 
      &                 (spinor_info(3,irp),irp=1,nfsym), 
