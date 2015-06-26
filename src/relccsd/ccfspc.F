@@ -2180,6 +2180,14 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
+
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
 C
 C---------------Local variables--------------------------------------
 C

@@ -36,6 +36,14 @@ C
 #include "symm.inc"
 #include "ccpar.inc"
 C
+      interface
+         subroutine gettau(t1,t2,tau,appr)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         character(*),intent(in),optional :: appr
+         end subroutine gettau
+      end interface
+
 C---------------Local variables--------------------------------------
 C
       LOGICAL DONE,TEQ
@@ -221,7 +229,6 @@ C------------------------------------------------
          CALL DELINT ('VOOO','KDKK',BUF2,0,0,0)
          CALL XAXPY (NV2,-A1,BUF3,1,BUF2,1)
           
-                                     
            
       CALL SRT1L1 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,IVOOOT,IIOV,BUF2,BUF3)
       CALL SRT1S2 (NREP,MULTB,LFA,NVO,NO,NV,NOOT,LOVOOT,LLVOOT,

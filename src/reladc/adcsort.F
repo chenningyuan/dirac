@@ -491,11 +491,11 @@ C
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
       INTEGER NPAIR1(NREP)
-      INTEGER,OPTIONAL :: NPAIR2(NREP)
-      INTEGER          :: IFIE(NREP),JFIE(NREP) 
+      INTEGER NPAIR2(NREP)
+      INTEGER IFIE(NREP),JFIE(NREP) 
       INTEGER NTRIPL(NREP)
       INTEGER OFF(NREP+1),OFF1(32,32)
-      LOGICAL DO_SORT,DOINV
+      LOGICAL DOINV
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -507,13 +507,7 @@ C
 C---------------Executable code--------------------------------------
 C
 
-      DO_SORT=.TRUE.
-      if (PRESENT(NPAIR2)) DO_SORT = .TRUE.
-!      if (PRESENT(IFIE))   DO_SORT = .TRUE.
-!      if (PRESENT(JFIE))   DO_SORT = .TRUE.
-
-      if (DO_SORT) then 
-      if (.not.doinv) CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      IF (.NOT.DOINV) CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
       IJKL = 0
       DO KLREP = 1, NREP
        IJREP = KLREP
@@ -545,7 +539,6 @@ C
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
-      endif
 C
       RETURN
       END

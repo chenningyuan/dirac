@@ -6,6 +6,7 @@
       use interface_to_mpi
       use xmlout
       use intermediates_1b_2b
+
       IMPLICIT INTEGER (A-Z)
 
 C---------------Description--------------------------------------------
@@ -21,7 +22,6 @@ C
 C---------------Calling variables--------------------------------------
 C
 C     Intermediaries etc.
-
 
       REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),L1(*),S1(*),L2(*),S2(*)
       REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
@@ -55,6 +55,29 @@ C---------------Common Blocks--------------------------------------
 #if defined (VAR_MPI)
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
+
+
+
+      interface
+
+      subroutine lambda_equation_L2 (t1,t2,l1,l2,ho,hv,hov, 
+     &             w_voov,w_oooo,G_oo,G_vv,buf1,buf2,
+     &             buf3,nbuf3,resL2,iprnt)
+
+      integer,intent(in) :: nbuf3,iprnt
+      real(8),intent(in) :: ho(*),hv(*),hov(*)     ! one body intermediates
+      real(8),intent(in) :: w_voov(*),w_oooo(*)! two body intermediates 
+      real(8),intent(in) :: G_vv(*),
+     &                         G_oo(*)              ! G-intermediates  
+      real(8),intent(in) :: t1(*),t2(*)! converged T1 amplitude
+      real(8),intent(in) :: L1(*),L2(*)! L1 and L2 amplitudes from last iteration.
+      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)      ! buffer arrays 
+      real*8,intent(out) :: ResL2(*)          ! residue for L2 amplitude  
+
+      end subroutine
+
+      end interface
+
 
 C---------------Local variables--------------------------------------
 
@@ -96,19 +119,35 @@ C     Initialize the work arrays to zero.
                         
          call getampt (s1,s2)
 
-         call f_bar_mi(foo,fvo,s1,s2,ho)
+       CALL ZCORE (L1,L2)
+
+       do i = 1, ndimt2
+
+        if (abs(S2(i)) <= 1.0d-14) then
+        S2(i) = 0.0d0
+!      write(*,*)'value of weird T2',s2(i)
+        endif
+
+       enddo
+
+       do i = 1, ndimt1
+
+       if (abs(S1(i)) <= 1.0d-14) then
+!      write(*,*)'value of weird T1',s1(i)
+       S1(i) = 0.0d0
+       endif
+
+       enddo
+
+         call f_bar_mi(foo,fvo,s1,s2,ho,buf1,buf2,buf3)
 
        write(*,*)'whh done',ddot(nfoo,ho,1,ho,1)
-
-        write(*,*)'whh done'
 
 !       write(77,*)'f_bar_mi intermediate'
 !       write(77,*)'---------------------'
 !       write(*,5)(ho(i),i=1,nfoo)
 
          call w_ijmn(S1,S2,w_oooo)
-
-!       write(*,*)'whhhh done'
 
         write(*,*)'whhhh done',ddot(nv1,w_oooo,1,w_oooo,1)
 !       write(78,*)'w_ijmn intermediate'
@@ -121,26 +160,26 @@ C     Initialize the work arrays to zero.
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
-         write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
+!        write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
 !        write(79,*)'f_bar_ae intermediate'
 !        write(79,*)'---------------------'
 !        write(79,5)(hv(i),i=1,nfvv)
 
-       call w_ejmb(S1,S2,w_voov)
+!        call w_ejmb(S1,S2,w_voov)
 
 ! temp      write(*,*)'w_ejmb done',ddot(iovvo(nrep+1),w_voov,1,w_voov,1)
 !       write(80,*)'w_bar_ejmb intermediate'
 !       write(80,*)'---------------------'
 !       write(80,5)(w_voov(i),i=1,nv4)
 
-         call wbar_mbej(S2,w_ovvo)
+          call wbar_mbej(S2,w_ovvo)
 
         write(*,*)'w_mbej done',ddot(iovvo(nrep+1),w_ovvo,1,w_ovvo,1)
 !       write(81,*)'w_bar_mbej intermediate'
 !       write(81,*)'---------------------'
 !       write(81,5)(w_ovvo(i),i=1,nv4)
 
-!       call w_mbej(s1,s2,w_voov)
+         call w_mbej(s1,s2,w_voov)
 
 !       write(*,*)'starting w_iemn intermediate'
 
@@ -151,7 +190,7 @@ C     Initialize the work arrays to zero.
 !        write(*,*)'---------------------'
 !        write(82,5)(w_ovoo(i),i=1,nv2)
 
-         call w_efam(s1,s2,w_ovvo,hov,cz)
+         call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
 
          call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
 
@@ -163,8 +202,9 @@ C     Initialize the work arrays to zero.
 
 ! out-of-core section of the intemediates
 
-!       call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
+!        call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
 
+         write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
 !       call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_voov)
 
 !      write(*,*)'w_ejmb done',ddot(nv4,w_voov,1,w_voov,1)
@@ -191,13 +231,18 @@ C     Initialize the work arrays to zero.
       call srt1c1 (nrep,nv,no,s1,l1) 
       call srt1c1 (nrep,nvvt,noot,s2,l2) 
 
+        write(88,*)'L2 Amplitudes:start'
+        write(88,*)'---------------------'
+        write(88,5)(l2(i),i=1,ndimt2)
+
+
+      CALL ZCORE (L1,L2)
+
 !     Initialize the work arrays to zero.
 
       call xcopy (ndimt2,A0,0,buf1,1)
       call xcopy (nbuf2,A0,0,buf2,1)
       call xcopy (nbuf3,A0,0,buf3,1)
-
-
 
 !---------before starting the iterative procedure, we need to initialize the DIIS-------------
       rms = 0.0d0
@@ -220,6 +265,7 @@ C     Initialize the work arrays to zero.
        allocate(resL2(ndimt2*rcw)) 
 
       do nit = 1, maxit 
+!     do nit = 1, 2 
 
 !     Making non-sequential G_ea, G_im intermediates for lambda equations
 
@@ -232,6 +278,9 @@ C     Initialize the work arrays to zero.
 !     allocate(G_vv(nfvv*rcw))
 !     allocate(G_oo(nfoo*rcw))
 
+       G_vv = 0.0d0
+       G_oo = 0.0d0
+
 
       call G_intm (s2,l2,G_vv,G_oo)
 
@@ -241,30 +290,29 @@ C     Initialize the work arrays to zero.
            
       if (ndimt1 > 0) then
 
-       ResL1 = 0.0d0
+!      ResL1 = 0.0d0
 
+       call xcopy (ndimt1,hov,1,ResL1,1)
        CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_voov,w_ovoo,
      &                         cz,G_oo,G_vv,buf1,buf2,buf3,
-     &                         nbuf2,nbuf3,resL1)
+     &                         nbuf2,nbuf3,resL1,iprnt)
 
       endif
 
       CALL XTIME(5,2,'- L1 equations                  ')
                                  
-      CALL XTIME(5,1,'- L2 equations                  ')
-
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- L2 EQNS                     ')
 
+       ResL2 = 0.0d0
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
      &                            G_oo,G_vv,buf1,buf2,buf3,
-     &                            nbuf3,resL2)
+     &                            nbuf3,resL2,iprnt)
 
       write(*,*)'RESL2 afetr all diagrams',ddot(ndimt2*rcw,resL2,1,
      &                                           resL2,1)
 
-      CALL XTIME(5,2,'-- T2 EQNS                     ')
 
       CALL XTIME(5,2,'- L2 equations                  ')
 
@@ -293,12 +341,11 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 !      rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
 !      rms = sqrt((rms)/(ndimt1+ndimt2))
 
-
-       rms = sum(abs(resL1))+sum(abs(resL2))
-       rms = rms/(ndimt1+ndimt2)
-
+       rms1 = sum(abs(resL1))+sum(abs(resL2))
+       rms1 = rms1/(ndimt1+ndimt2)
 
        call denom (eps,resL1,resL2,resL1,resL2)
+
 
 !       write(*,*)'dot product of RESL1',ddot(ndimt1,resL1,1,resL1,1)
 !       write(*,*)'dot product of RESL2',ddot(ndimt2,resL2,1,resL2,1)
@@ -310,9 +357,23 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
       call xaxpy (ndimt1,A1,resL1,1,l1,1)
       call xaxpy (ndimt2,A1,resL2,1,l2,1)
 
+       do i = 1, ndimt1
+
+       if (abs(L1(i)) <= 1.0d-14) L1(i) = 0.0d0
+
+       enddo
+
+       do i = 1, ndimt2
+
+       if (abs(L2(i)) <= 1.0d-14) L2(i) = 0.0d0
+
+       enddo
+
+      CALL ZCORE (L1,L2)
+
       CALL XTIME(5,1,'- DIIS extrapolation            ')
       call diisx(ndimt1,ndimt2,l1,l2,   
-     &           it,cc1,bb1,itc,bb2,rms1)
+     &           it,cc1,bb1,itc,bb2,rms)
       CALL XTIME(5,2,'- DIIS extrapolation            ')
 
 !  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
@@ -322,7 +383,7 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
       CALL XTIME(4,2,'- synchronizing T1 & T2 amplitudes')
 
 
-      IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS
+      IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS1
       CALL FLSHFO(IW)
 
       if(rms.lt.conv) exit
@@ -331,6 +392,10 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 
       deallocate(resL1) 
       deallocate(resL2) 
+
+        write(86,*)'L1 Amplitudes'
+        write(86,*)'---------------------'
+        write(86,5)(l1(i),i=1,ndimt1)
 
 
 !     Close and delete DIIS scratch files

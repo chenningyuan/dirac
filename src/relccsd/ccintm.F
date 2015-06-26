@@ -682,11 +682,6 @@ C
 C
 C---------------Executable code--------------------------------------
 
-
-C
-C
-
-
       interface
          subroutine gettau(t1,t2,tau,appr)
          real*8,intent(in) :: t1(*),t2(*)
@@ -695,10 +690,6 @@ C
          end subroutine gettau
       end interface
 
-
-
-
-C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
@@ -832,7 +823,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8  T1MIN(2)
       DATA    T1MIN /2*0.0D0/
-      LOGICAL do_app
+      LOGICAL :: do_app
     
 C
 C---------------Executable code--------------------------------------
@@ -866,7 +857,7 @@ C--------------------------------------------------------
                DO B = 1, NV(BRP)
                   AMIN = 1
                   IF (ARP.EQ.BRP) AMIN = B + 1 ! defines a triangular loop A > B
-                  AI = (IVO(IRP) + (I-1) * NV(IRP) + AMIN - 1) * RCW + 1 ! off-set to (A=1,I)
+                  AI = (IVO(IRP) + (I-1) * NV(IRP) + AMIN - 1) * RCW +1 ! off-set to (A=1,I)
                   NA = NV(ARP) - AMIN + 1
                   CALL XAXPY (NA,T1(BJ),T1(AI),1,TAU(ABIJOFF+AB),1) ! T1(BJ) is a scalar here
                   AB = AB + NA * RCW

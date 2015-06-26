@@ -32,6 +32,7 @@ C     for diis ...
 
       REAL*8 RMS,CONV
       REAL*8 DIAG
+      INTEGER MAXIT
 
 C     for Fock space ...
 
@@ -212,8 +213,8 @@ C       the wave function (amplitudes) appropriate for this sector.
 C
 C     Zero amplitudes if the NOCCX options are specified
 C
-      IF (        NOCCS) CALL XCOPY (NDIMT1,A0,0,T1,1)
-      IF (        NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
+      IF (NOCCS) CALL XCOPY (NDIMT1,A0,0,T1,1)
+      IF (NOCCD) CALL XCOPY (NDIMT2,A0,0,T2,1)
 C
       CALL ZCORE (T1,T2)
 C

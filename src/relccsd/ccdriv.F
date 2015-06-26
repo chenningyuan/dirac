@@ -3039,7 +3039,6 @@ C         this means that, for the time being, we can deallocate everything?
 
 !        get coupled cluster lambdas
 
-
          CALL CCDUMP
 
          CALL cceqn_driver_lambda(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
@@ -3061,11 +3060,10 @@ C         this means that, for the time being, we can deallocate everything?
      &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
      &                    a_DVV , a_DVO , a_DOV , a_DMO)
 
-
         deallocate(l1_sort)
         deallocate(l2_sort)
 
-!      call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,buf1,buf2,a_dmo)
+!     call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,buf1,buf2,a_dmo)
 
 C
 C        Solve Z-vector equations 

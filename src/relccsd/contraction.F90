@@ -12,7 +12,10 @@
 
      private
 
-     integer,parameter :: maxdim = 1000000
+     external cntrct
+     external srt1c1
+
+     integer,parameter :: maxdim = 10000000
 
      contains
 
@@ -82,13 +85,13 @@
      
 !----------calling variables-----------------------------------
     real(8), intent(in) ::  dia_sum_factor   !dia_factor = \alpha in DGEMM ; dia_sum_factor= \beta in DGEMM
-    real(8), intent(in) :: dia_factor   !dia_factor = \alpha in DGEMM ; dia_sum_factor= \beta in DGEMM
+    real(8), intent(in) ::  dia_factor        
     character(2),dimension(4), intent(in) :: left_order, right_order
     character(2),dimension(2), intent(in) :: im_order
     real(8),optional,intent(in)           :: RightTensor(:),LeftTensor(:)   
     integer,intent(in)    :: nrep
-    integer,allocatable   :: x_row(:),x_column(:)
-    integer,allocatable   :: y_column(:),y_row(:)              
+    integer   :: x_row(nrep),x_column(nrep)
+    integer   :: y_column(nrep),y_row(nrep)              
     real(8),intent(inout) :: ImTensor(*)
     integer               :: match_index  
     character(1)          :: transA,transB
@@ -108,11 +111,6 @@
   allocate(v_sort(maxdim*rcw))  
   allocate(right_sorted(maxdim*rcw))  
 
-
-      allocate(y_column(nrep))
-      allocate(x_column(nrep))
-      allocate(x_row(nrep))
-      allocate(y_row(nrep))
  
       transA = 'N'
       transB = 'N'
@@ -122,7 +120,9 @@
 ! 1) fetch 2-e integrals and sort them for BLAS.
 
     call decide_sorting_routine(13,left_order,right_order,im_order,transA,match_index,asym_factor_L, &
-    &        sorted_opArray=sorted_oparray_left)
+    &   .true.,sorted_opArray=sorted_oparray_left)
+
+!    write(*,*)'left array',(sorted_opArray_left(i),i=1,4),match_index,transA
 
      if (present(LeftTensor)) then 
       call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column,LeftTensor)
@@ -133,8 +133,9 @@
 ! 2) general sorting routine for fixed arrays. 
 
      call decide_sorting_routine(31,right_order,im_order,sorted_oparray_left,transB,match_index,asym_factor_R, &
-    &                sorted_opArray=sorted_oparray_right)
+    &         .false.,sorted_opArray=sorted_oparray_right)
 
+!    write(*,*)'right array',(sorted_opArray_right(i),i=1,4)
 
      array_equal = all((/sorted_oparray_left(1),sorted_oparray_right(4)/)==im_order)
 
@@ -170,11 +171,6 @@
    deallocate (ImTensor_temp_temp)
 
    endif
-
-     deallocate(y_column)
-     deallocate(x_column)
-     deallocate(x_row)
-     deallocate(y_row)
 
   deallocate(v_sort)  
   deallocate(right_sorted)  
@@ -218,7 +214,7 @@
 
      transA = 'N'
 
-     call decide_sorting_routine(22,left_order,right_order,im_order,transA,match_index,asym_factor, &
+     call decide_sorting_routine(22,left_order,right_order,im_order,transA,match_index,asym_factor,.true., &
     &                        sorted_opArray=sorted_left)
 
 
@@ -295,7 +291,7 @@
 
 !**  1> fetch the integral array, properly sorted to contract with BLAS.
 
-   call decide_sorting_routine(22,right_order,im_order,left_order,transA,match_index,asym_factor,&
+   call decide_sorting_routine(22,right_order,im_order,left_order,transA,match_index,asym_factor,.true.,&
    &                          sorted_opArray=sorted_oparray_right)
 
 
@@ -387,7 +383,7 @@
 
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
 
-    call decide_sorting_routine(22,left_order,right_order,im_order,transA,save_index,asym_factor_L, &
+    call decide_sorting_routine(22,left_order,right_order,im_order,transA,save_index,asym_factor_L,.true., &
     &  sorted_opArray=sorted_opArray_left)
 
     if (present(LeftTensor)) then 
@@ -398,8 +394,9 @@
 
 !  2) properly sort the fixed array to contract with BLAS. row and colum indices for this array are also extracted here.
 
+
     call decide_sorting_routine(22,right_order,im_order,sorted_opArray_left,transB,save_index,asym_factor_R,&
-    &          sorted_opArray=sorted_opArray_right)
+    &          .false.,sorted_opArray=sorted_opArray_right)
 
     if (present(RightTensor)) then 
     call sorting_for_blas(save_index,.false.,transB,right_sorted,y_row,y_column, presorted=RightTensor,if_TotSym=.false.)
@@ -422,7 +419,7 @@
    transA = 'N'
 
    call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
-                       & transA,save_index,asym_factor_R,sorted_opArray=sorted_opArray_right,inverse=.true.)
+                       & transA,save_index,asym_factor_R,.false.,sorted_opArray=sorted_opArray_right,inverse=.true.)
 
    if (transA=='C') then
 
@@ -485,7 +482,10 @@
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
 
    call decide_sorting_routine(31,left_order,right_order,im_order,transA,match_index,asym_factor, &
-   &                 sorted_opArray=sorted_opArray)
+   &             .true.,sorted_opArray=sorted_opArray)
+
+!  write(*,*)'right array',(sorted_opArray(i),i=1,4)
+
 
  if (present(LeftTensor)) then
 
@@ -515,8 +515,9 @@
    transA = 'N'
 
    call decide_sorting_routine(31,im_order,left_order,(/sorted_opArray(1:3),FreeIndx(2)/),transA,match_index, &
-           &                    asym_factor,inverse=.true.)
+           &                    asym_factor,.false.,inverse=.true.,sorted_opArray=sorted_opArray)
 
+!  write(*,*)'right array',(sorted_opArray(i),i=1,4)
    if (transA=='C') then
 
    allocate(im_temp_temp(dot_product(x_row,y_column)))
@@ -576,7 +577,9 @@
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
 
    call decide_sorting_routine(13,right_order,im_order,left_order,transB,match_index,asym_factor, &
-    &                          sorted_opArray=sorted_opArray)
+    &                    .true.,sorted_opArray=sorted_opArray)
+
+   write(*,*)'sorted left', (sorted_opArray(i),i=1,4)
 
  if (present(RightTensor)) then
  
@@ -605,14 +608,17 @@
 
    transA = 'N'
 
+   write(*,*)'write sorted before final',match_index,(/FreeIndx(1),sorted_opArray(2:4)/)
    call decide_sorting_routine(13,im_order,left_order,(/FreeIndx(1),sorted_opArray(2:4)/),transA,match_index, &
-   &                        asym_factor,inverse=.true.)
+   &                        asym_factor,.false.,inverse=.true.,sorted_opArray=sorted_opArray)
+
+   write(*,*)'write sorted final',match_index,(sorted_oparray(i),i=1,4),transA
 
    if (transA=='C') then
 
   allocate(im_temp_temp(dot_product(x_row,y_column)))
    im_temp_temp = 0.0d0
-   call SRT1C1 (nrep,x_row,y_column,im_temp,im_temp_temp)
+   call srt1c1 (nrep,x_row,y_column,im_temp,im_temp_temp)
 
  deallocate(im_temp)
    call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)
@@ -622,7 +628,7 @@
    call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp,if_TotSym=.false.)
  deallocate(im_temp)
    endif
-   call xaxpy (dot_product(x_row,x_column),A1*asym_factor,right_sort,1,ImTensor,1)
+   call xaxpy (dot_product(x_row,x_column),A1*asym_factor*dia_sum_factor,right_sort,1,ImTensor,1)
 
   deallocate(right_sort)
 

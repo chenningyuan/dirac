@@ -16,7 +16,6 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 S1(*),TAU(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -24,7 +23,10 @@ C
 #include "symm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-C
+
+      real*8,intent(inout) :: S1(ndimt1*rcw)
+      real*8,intent(in)    :: TAU(ndimt2*rcw)
+
 C---------------Local variables--------------------------------------
 C
       real*8, allocatable ::  tau_sorted(:), vooo(:), vooo_sorted(:)
@@ -61,8 +63,13 @@ C     ------------------------
 
 C
       CALL CNTRCT 
-     &     ('N','N',NV,NO,NVOOT,A1,tau_sorted,vooo_sorted,A1,S1,NREP)
+     &   ('N','N',NV,NO,NVOOT,A1,tau_sorted,vooo_sorted,A1,S1,NREP)
 C
+
+      deallocate (tau_sorted)
+      deallocate (vooo)
+      deallocate (vooo_sorted)
+
       RETURN
       END
       SUBROUTINE T1EQN2 (TAU,BUF3,NBUF3,S1)

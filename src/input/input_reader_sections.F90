@@ -844,7 +844,7 @@
       end if
 
       if (kw_matches(word, '.NOSING')) then
-         relcc_do_singles = .false.
+         relcc_do_singles = .true.
       end if
 
       if (kw_matches(word, '.NODOUB')) then

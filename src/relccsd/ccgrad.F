@@ -144,7 +144,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !-------------------------calling variables-------------------------
        real*8, intent(in)  :: l1(ndimt1*rcw),l2(ndimt2*rcw),
      &                        t1(ndimt1*rcw),t2(ndimt2*rcw)
-       real*8, intent(out) :: doo(*),dvv(*),dmo(*) 
+       real*8, intent(out) :: doo(nfoo*rcw),dvv(nfvv*rcw),dmo(*) !norbt*
+!    &                        norbt*nz) 
        real*8, intent(out) :: buf1(*),buf2(*)
 !-------------------------------------------------------------------
 
@@ -181,9 +182,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
      &              l1,t1,dvv,1.0d0,1.0d0,nrep)
 
-
       call convdm(buf1,buf2,doo,dvv,dmo)
-
 
       end subroutine
 
@@ -371,7 +370,7 @@ C--------------------------------------------
 C X(A,I) = X(A,I) + V(A,K,C,D) * TAU(C,D,I,K)
 C--------------------------------------------
       CALL XCOPY (NDIMT2,S2,1,BUF1,1)
-      CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,XVO)
+      CALL T1EQN2 (BUF1,BUF3,NBUF3,XVO)
 C
 C------------------------------------
 C X(A,I) = X(A,I) + W(CI,DA) * D(C,D)
@@ -490,8 +489,6 @@ C
       CALL SRTT1T2(BUF2,BUF1)
 
 
-      write(*,*)'passed this step inside ccgrad 1' 
-
 C
 C     +---------------------------------------------------+
 C     | Generate the tau dependent part of the Lagrangian |
@@ -499,9 +496,6 @@ C     +---------------------------------------------------+
 C
       LFREE=NBUF3*RCW
       CALL TR5INI(XMO,BUF2,BUF1,BUF3,LFREE)
-
-
-      write(*,*)'passed this step inside ccgrad2' 
 
 C
 C     +-------------------------------------------------------+
@@ -511,10 +505,6 @@ C
       KFREE=1
       LFREE=NBUF3*RCW
       CALL CALCDJI(DMO,XMO,BUF3,KFREE,LFREE)
-
-
-      write(*,*)'passed this step inside ccgrad3' 
-
 C
 C     +-------------------------------------------------+
 C     | Generate the D dependent part of the Lagrangian |
@@ -524,9 +514,6 @@ C
       LFREE=NBUF3*RCW
       CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
 
-
-      write(*,*)'passed this step inside ccgrad4' 
-
 C
 C     +----------------------------------------+
 C     | Solve Z-vector equations by using XRPA |
@@ -535,8 +522,6 @@ C
       KFREE=1
       LFREE=NBUF3*RCW
       CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
-
-      write(*,*)'passed this step inside ccgrad5' 
 
 C 
       CALL FLSHFO(IW)
@@ -1044,8 +1029,6 @@ C
       CHARACTER*6 FILE_NAME
 C
 C---------------Executable code--------------------------------------
- 
-      write(*,*)'extreme debugging'
 
       ADD_2_FOCK = .FALSE.
       SELECT CASE (WF)

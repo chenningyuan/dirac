@@ -69,7 +69,15 @@
    external SRT9
    external SRT1TS4
 
-    CONTAINS
+   external getvoov
+   external getoovv
+   external getooov
+   external getovoo
+   external getoovo
+   external getvvvo_incore
+
+
+    contains
     
    subroutine shuffle_indices(reorder_array,no_match,save_index,trans)
 
@@ -83,6 +91,8 @@
     integer, intent(out)         :: save_index
     type(sorting_list)           :: a
 ! --------------------------
+
+  save_index = 0
 
   select case(sortType)
     
@@ -147,11 +157,11 @@
     a%num = toDecimal(reorder_array)
     a%trans = toDecimal(reorder_array,.true.)    
 
-   call match_array (a%num,no_match,save_index,trans)  
-   if (no_match) call match_array_transpose (a%trans,no_match,save_index,trans) 
-   if ((.not.no_match).or.(i>3)) exit
-   i = i+2
-   reorder_array(1:4) = shifted_array(1:4)
+    call match_array (a%num,no_match,save_index,trans)  
+    if (no_match) call match_array_transpose (a%trans,no_match,save_index,trans) 
+    if ((.not.no_match).or.(i>3)) exit
+    i = i+2
+    reorder_array(1:4) = shifted_array(1:4)
    enddo
   end select
 
@@ -410,7 +420,7 @@
   end subroutine
 
   subroutine decide_sorting_routine(sort_type,opArray_left,opArray_right,opArray_target,if_trans, &
-                                &    save_index,asym_factor,sorted_opArray,inverse)
+                                &    save_index,asym_factor,do_shuffle,sorted_opArray,inverse)
 
 !-------------------------------------
 !    choose the sorting routine. 
@@ -424,6 +434,7 @@
     character(1), intent(out)              :: if_trans
     integer,      intent(out)              :: save_index 
     integer,      intent(out)              :: asym_factor
+    logical,      intent(in)               :: do_shuffle
     character(2), intent(out),optional     :: sorted_opArray(size(opArray_left))
 !----------------------------------------------
 
@@ -486,13 +497,18 @@
 !findloc feature is not available for intel compilers. so I can't use it now.
 
     a%trans = toDecimal(reorder_v,.true.)    
-    a%num = toDecimal(reorder_v)    
+    a%num   = toDecimal(reorder_v)    
 
     call match_array (a%num,no_match,save_index,if_trans)
 
     if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
-    if (no_match) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
+
+!   if (arraytype=='unrestricted') then 
+
+    if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
+
+!   endif
 
      if (no_match) then
       write (*,*) "====no matching sorting subroutine available for direct mode of contraction.====="
@@ -511,24 +527,7 @@
 
        array_exchange = opArray_left
 
-       if (arraytype == 'restricted_ket') call swap_character(array_exchange,3,4)   
-       if (arraytype == 'restricted_bra') call swap_character(array_exchange,1,2)   
-
-       call align_array(array_exchange,opArray_target,opArray_right,reorder_v)
-
-       a%num   = toDecimal(reorder_v)
-       a%trans = toDecimal(reorder_v,.true.)    
-
-       call match_array (a%num,no_match,save_index,if_trans)
-      
-       if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
-
-       if (no_match) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
-
-       if(.not.no_match) asym_factor = -1*asym_factor
-
-
-      if (arraytype == 'restricted_braket') then
+     if (arraytype == 'restricted_braket') then
         k = 1
         i = 1 
 
@@ -545,8 +544,6 @@
       
        if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
-       if (no_match) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
-
        if (.not.no_match) exit
        if (k>3)           exit
        i = i + size(opArray_left)/2 
@@ -555,13 +552,45 @@
         i = 3
        endif
        k = k+1
-       asym_factor = asym_factor*(-1)**k
      enddo
+
+     if(.not.no_match) asym_factor = asym_factor*(-1)**k
+
+!      if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
+
+   else
+
+       if (arraytype == 'restricted_ket') call swap_character(array_exchange,3,4)   
+       if (arraytype == 'restricted_bra') call swap_character(array_exchange,1,2)   
+
+       call align_array(array_exchange,opArray_target,opArray_right,reorder_v)
+
+       a%num   = toDecimal(reorder_v)
+       a%trans = toDecimal(reorder_v,.true.)    
+
+       call match_array (a%num,no_match,save_index,if_trans)
+      
+       call match_array_transpose (a%trans,no_match,save_index,if_trans)  
+
+       if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
+
+       if(.not.no_match) asym_factor = -1*asym_factor
 
     endif
    endif
 
     exchange = array_exchange
+
+!  if ((no_match).and.(do_shuffle)) then
+
+!  do_exchange = .false.
+
+!  call align_array(opArray_left,opArray_target,opArray_right,reorder_v)
+
+!  call shuffle_indices (reorder_v,no_match,save_index,if_trans)
+
+!  endif 
+
 
     if (no_match) then
       call quit('No Sorting subroutine available. code stops here.')
@@ -613,7 +642,7 @@
     logical,intent(in)                    :: do_inverse  
     character(1),intent(inout)            :: if_trans
     integer,intent(out)                   :: row(:), column(:)
-    real(8),intent(out)                   :: sorted(:) !think a bit more carefully to replace it by dynamic allocation. not easy.
+    real(8),intent(inout)                   :: sorted(:) !think a bit more carefully to replace it by dynamic allocation. not easy.
 !----------------------------------------------
 
 !-------local variables------------------------
@@ -686,11 +715,13 @@
 
      if (.not.present(presorted)) call integral_fetching_incore(V) 
      if (present(presorted)) then
-     allocate (v%presorted(size(presorted)*rcw),stat=AllocateStatus) 
+     allocate (v%presorted(size(presorted)),stat=AllocateStatus) 
 
      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-     call xcopy(size(presorted),presorted,1,v%presorted,1) 
+     v%presorted = 0.0d0
+
+     call xcopy(size(presorted)/rcw,presorted,1,v%presorted,1) 
      endif
 
      sort_type_dummy = sortType
@@ -908,7 +939,6 @@
            & array_tot(m(d%ijk_reorder)%pqr%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
            & m(d%ijk_reorder)%pqr%tuple,v%presorted,sorted) 
 
-
         else
 
        if (if_trans=='N') then
@@ -983,8 +1013,7 @@
      call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
               & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%triangular%tuple_combInd, &
               & array_tot(m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep),        &
-              & m(d%ijk_reorder)%pqr%triangular%tuple,v%presorted,sorted,c(d%I)%orbital_type, &
-              & c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd)
+              & m(d%ijk_reorder)%pqr%triangular%tuple,v%presorted,sorted)
 
        endif
 
