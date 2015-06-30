@@ -1,7 +1,10 @@
 $ Relativistic prolapse-free Gaussian basis sets of quadruple-zeta quality:  RPF-4Z
 $
-$For s- and p-block elements, cite T. Q. Teodoro, A. B. F. da Silva, and R. L. A. Haiduke, J. Chem. Theory Comput., 2014, 10 (9), 3800
-$For d-block elements,        cite T. Q. Teodoro, A. B. F. da Silva, and R. L. A. Haiduke, J. Chem. Theory Comput., 2014, 10 (11), 4761
+$  REFERENCE
+$ s- and p-block elements: T. Q. Teodoro, A. B. F. da Silva, and R. L. A. Haiduke,
+$                          J. Chem. Theory Comput. 10 (2014) 3800.
+$ d-block elements:        T. Q. Teodoro, A. B. F. da Silva, and R. L. A. Haiduke,
+$                          J. Chem. Theory Comput. 10 (2014) 4761.
 $
 $
 a 1
