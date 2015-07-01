@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 
 C FILE    : pamprp.F
 C
@@ -120,9 +118,6 @@ C***********************************************************************
 
       use memory_allocator
       use dirac_cfg
-#ifdef MOD_OPENRSP
-      use openrsp_main
-#endif
       use fde_mod
 
 #include "implicit.h"
@@ -178,19 +173,6 @@ C***********************************************************************
 C*****  E S R   P R O P E R T I E S      *******************************
 C***********************************************************************
 C
-#ifdef MOD_ESR
-      IF (DOESR) THEN
-         KFRSAV = KFREE
-         CALL ESR_INIT(WF,IPRESR,N_CIESR,WORK,KFREE,LFREE)
-C
-         LENESR = 2*MULTIPESR*MULTIPESR*MAX(4,NESRP)
-C        max(4,nesrp): make sure sufficient space for ESRPHASE
-         CALL MEMGET2('REAL','ESR',KESR,LENESR,WORK,KFREE,LFREE)
-         CALL PRPESR(WF,WORK(KESR),WORK,KFREE,LFREE)
-         CALL MEMREL('after PRPESR',WORK,KWORK,KFRSAV,KFREE,LFREE)
-C        ... remove this MEMREL if WORK(KESR) to be used in PRPOUT below
-      END IF
-#endif
 C
 C***********************************************************************
 C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
@@ -262,21 +244,7 @@ C*******************************************************************************
 C*****  OUTPUT of density, derivatives of density, and coulomb potential on a grid ****
 C**************************************************************************************
 C
-#ifdef MOD_UNRELEASED
-      if (dirac_cfg_fde_export) then
-         CALL TITLER('Output FDE data to file','*',118)
-         call fde_export_to_file(wf)
-      END IF
-#endif
 
-#ifdef MOD_OPENRSP
-      if (dirac_cfg_openrsp) then
-!       main openrsp driver
-        call openrsp_driver(work(kfree), lfree)
-!       initialize dirac interface
-        call init_dirac_interface()
-      end if
-#endif
 
 C
       call dealloc(WORK)
@@ -1186,9 +1154,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#ifdef MOD_LAO_REARRANGED
-      use london_helper
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1202,11 +1167,7 @@ C Make sure that the diamagnetic parts are calculated if SKIPEP is true
 C
       IF (XLR_SKIPEP) THEN
 C      .... NMR shieldings
-#ifdef MOD_LAO_REARRANGED
-         IF (SHIELD.OR.shielding_rearrange) THEN
-#else
          IF (SHIELD) THEN
-#endif
             DOEXP = .TRUE.
             NSTDIA = .TRUE.
          END IF
@@ -1342,12 +1303,7 @@ C
 C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
-#ifdef MOD_LAO_REARRANGED
-      IF (SHIELD .OR. shielding_rearrange .OR.
-     &    ESRGTENS .OR. ESR_HFCC) THEN
-#else
       IF (SHIELD .OR. ESRGTENS .OR. ESR_HFCC) THEN
-#endif
         CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
       ENDIF
 C
@@ -1368,11 +1324,7 @@ C     Diamagnetic contribution to shieldings
 C
       IF(NSTDIA) THEN
         CALL DEF_NSTDIA(PNAME,PLABEL,PFAC,IPREXP)
-#ifdef MOD_LAO_REARRANGED
-      ELSE IF (SHIELD .OR. shielding_rearrange) THEN
-#else
       ELSE IF (SHIELD) THEN
-#endif
       ! message has relevance if wanted NMR shieldings
         WRITE(LUPRI,'(2X,A)')
      &  '...Aucars diamagnetic'//
@@ -1421,9 +1373,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-#ifdef MOD_LAO_REARRANGED
-      use london_helper
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1512,11 +1461,7 @@ C
 C
 C     NMR shielding
 C
-#ifdef MOD_LAO_REARRANGED
-      IF(SHIELD.or.shielding_rearrange) THEN
-#else
       IF(SHIELD) THEN
-#endif
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -2063,7 +2008,7 @@ C
       dimension average(maxflr)
 C
       CALL AROUND('Electric dipole polarizability')
-      WRITE(LUPRI,'(/A,F12.8,A/)') ' 1 a.u = ',DFAC,' angstrom**3'
+      WRITE(LUPRI,*)
 C
 C
 C     print header
@@ -3878,9 +3823,6 @@ C
 C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
-#ifdef MOD_LAO_REARRANGED
-      use london_helper
-#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
@@ -3976,11 +3918,7 @@ C
      &                     //CHRNOS(ITHIRD)//' '
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-#ifdef MOD_LAO_REARRANGED
-              IF (SHIELD .OR. shielding_rearrange) THEN
-#else
               IF (SHIELD) THEN
-#endif
                 CALL OP1IND('XSHIELDA',INDOP1,LLRAPU,NLRAPT,
      &                      INDXPR,MAXLLR)
                 IPSHIELD(ISCOR1) = INDOP1
@@ -4139,11 +4077,7 @@ C        Sigma_Z:
 C
 C     Print section for NMR shielding:
 C
-#ifdef MOD_LAO_REARRANGED
-      IF (SHIELD .OR. shielding_rearrange) THEN
-#else
       IF (SHIELD) THEN
-#endif
 C
 C     A operators
 C     ===========
@@ -4367,6 +4301,141 @@ C     define s_z and l_z as j_z = s_z + l_z
          CALL OP1IND('KRCI PROPOME',LUCIINDTRP,LPROP_KRCI,
      &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_MHYP */
+      SUBROUTINE DEF_MHYP(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for magnetic hyperfine constants
+C
+C     Written by Malaya K. Nayak August 30 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-29)
+      CALL DEF_MHYP1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_MHYP',WORK,KWORK,KWORK,KFREE,LFREE)
+C      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_MHYP1 */
+      SUBROUTINE DEF_MHYP1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for magnetic hyperfine constants
+C
+C     Written by Malaya K. Nayak Aug 30 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "krciprop.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+      LOGICAL DOATOM(NUCIND),SAME
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION WORK(LWORK),PFAC(2),IOP(3)
+#include "chrnos.h"
+#include "ibtfun.h"
+C
+C     XAVECTOR
+      IOP(1) = 5
+C     YAVECTOR
+      IOP(2) = 6
+C     ZAVECTOR
+      IOP(3) = 7
+      PFAC(1)  = 1.0D0
+      PFAC(2)  = 1.0D0
+      NPCOMP   = 2
+C
+C     Irreps
+C
+      DO 100 IREPO = 0, MAXREP
+C
+C       Atoms
+C
+C       Define the Hyperfine operators
+C
+        DO 200 IATOM = 1, NUCIND
+        IF(DOATOM(IATOM)) THEN
+C
+C         Cartesian directions
+C
+          DO 300 ICOOR = 1, 3
+            ISCOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREPO,2)
+            IF (ISCOR .GE. 1000) THEN
+              CALL QUIT(
+     &'DEF_MHYP1: Max 1000 coords in this implementation !')
+            ENDIF
+            IF (ISCOR .GT. 0) THEN
+              IFIRST = ISCOR/100
+              ISECND = MOD(ISCOR,100)/10
+              ITHIRD = MOD(MOD(ISCOR,100),10)
+              PNAME    = CHRXYZ(ICOOR)//CHRNOS(IATOM)//'-HYP'
+C              PNAME    = 'HYP'//CHRNOS(IFIRST)
+C     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
+              IPTYP    = IOP(ICOOR)
+              IC1      = MOD(ICOOR+1,3) + 1
+              IC2      = MOD(ICOOR  ,3) + 1
+              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IS1      = IPTCNT(3*(IATOM - 1) + IC1,IREP1,1)
+              IS2      = IPTCNT(3*(IATOM - 1) + IC2,IREP2,1)
+              IF((IS1.LE.0).OR.(IS2.LE.0))
+     &          WRITE(LUPRI,'(A,5I5)')
+     &          'DEF_MHYP1: sym. error !',IATOM,ICOOR,IC1,IC2
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+       CALL OP1IND('KRCI PROPHYP',LUCIINDTRP,LPROP_KRCI,
+     &           NPROP_KRCI,INDXPR,MXPROP_KRCI)
+       IF (IPRINT.GE.1) THEN
+        write(6,*)'Hyperfine DEF Testing',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
+       END IF
+            ENDIF
+  300     CONTINUE
+        END IF
+  200   CONTINUE
+  100 CONTINUE
+C      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */
@@ -6236,9 +6305,6 @@ C     Updated by MI,2003,2004 for LAO based calculation
 C     of NMR shieldings.
 C
 C***********************************************************************
-#ifdef MOD_LAO_REARRANGED
-      use london_helper
-#endif
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
@@ -6272,22 +6338,6 @@ C
 C 
       CALL TITLER('DIRAC  - NMR SHIELDINGS','*',116)
 
-#ifdef MOD_LAO_REARRANGED
-! gosia: if .SHIEL2 then calculate NMR shielding + LAO from rearranged 
-! equation (Eq. 40-42 in JCP 131, 124119 (2009))
-      if (shielding_rearrange) then
-        write(*, *) 'NMR shielding tensor calculated ',
-     &               'from rearranged equations ',
-     &               '(Eq.40-42 in JCP 131, 124119 (2009))'
-      end if
-! if .LAOMOD, then NMR shielding is calculated from rearranged equations
-! but also LR equations are modified  
-      if (lao_lr_rearrange) then
-        write(*, *) 'NMR shielding rearranged, LR equations in LAO ',
-     &               'basis are rearranged too (fully connection-',
-     &               'independent approach)'
-      end if
-#endif
 
 C
       KFRSAV = KFREE
@@ -6363,49 +6413,6 @@ C  Get the (expectation value) reorthonormalization terms, {T,h(mK)}
 C--------------------------------------------------------------------
       IF(LONDON.AND.(.NOT.NOORTH)) THEN
 
-#ifdef MOD_LAO_REARRANGED
-        if (SEPTEP) then
-
-         if (.not. XLR_SKIPEE) then
-! occ-occ:
-           ee = .false.
-           ep = .false.
-           occ = .true.
-           CALL DZERO(TMPMAT,NCMAT)
-           CALL DZERO(PMAT,NCMAT)
-           CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
-           CALL DSCAL(NCMAT,DM1,TMPMAT,1)
-           CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-           CALL DAXPY(NCMAT,D1,PMAT,1,DMATREO,1)
-          
-! e-occ:
-           ee = .true.
-           ep = .false.
-           occ = .false.
-           CALL DZERO(TMPMAT,NCMAT)
-           CALL DZERO(PMAT,NCMAT)
-           CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
-           CALL DSCAL(NCMAT,DM1,TMPMAT,1)
-           CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-           CALL DAXPY(NCMAT,D1,PMAT,1,DMATREE,1)
-
-         end if
-         if (DOEPRN .and. .not. XLR_SKIPEP) then
-! p-occ:
-           ee = .false.
-           ep = .true.
-           occ = .false.
-           CALL DZERO(TMPMAT,NCMAT)
-           CALL DZERO(PMAT,NCMAT)
-           CALL GETCON_septep(ee,ep,occ,TMPMAT,WORK,KFREE,LFREE,IPRPRP)
-           CALL DSCAL(NCMAT,DM1,TMPMAT,1)
-           CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
-           CALL DAXPY(NCMAT,D1,PMAT,1,DMATREP,1)
-
-         end if
-
-        end if
-#endif
 
         CALL DZERO(TMPMAT,NCMAT)
         CALL DZERO(PMAT,NCMAT)
@@ -6424,20 +6431,9 @@ C  ...  get the expect. value {T,h(mK)} reorthonormalization term
 CMI ... sign convention !!!
         CALL DSCAL(NCMAT,DM1,TMPMAT,1)
         IF (IPRPRP.GE.2) THEN
-#ifdef MOD_LAO_REARRANGED
-          if (lao_lr_rearrange .or. shielding_rearrange) then
-            CALL HEADER('Contribution to the shielding from overlap '// 
-     &      'magnetic derivative (expect.value) in symmetry '//
-     &      'coordinates (ppm)',1)
-            CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
-          else
-#endif
             CALL HEADER('Reorthonormalization part of the '// 
      &      'shielding (expect.value) in symmetry coordinates (ppm)',1)
             CALL FCPRI(TMPMAT,'SIGMAS',CSTRA,SCTRA)
-#ifdef MOD_LAO_REARRANGED
-          end if
-#endif
         ENDIF
 C       ... extract the reorthonormalization part into the PMAT
         CALL TRADIP(TMPMAT,PMAT,CSTRA,SCTRA,3*NUCDEP,2,2)
