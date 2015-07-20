@@ -181,7 +181,7 @@ if(ENABLE_PCMSOLVER)
         else()
            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-        endif()        
+        endif()
 
         # PCMSolver does not know profile
         if(CMAKE_BUILD_TYPE MATCHES "profile")
@@ -189,7 +189,7 @@ if(ENABLE_PCMSOLVER)
         else()
             set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
         endif()
-        
+
         set(ExternalProjectCMakeArgs
             -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
             -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -211,20 +211,29 @@ if(ENABLE_PCMSOLVER)
             -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
             -DENABLE_TESTS=${PCMSOLVER_TESTS}
             -DZLIB_ROOT=${ZLIB_ROOT}
-	    -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+	        -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+            -DENABLE_LOGGER=OFF
          )
 
         if(PCMSOLVER_TESTS)
-  	   add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+  	       add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
         else()
-	   add_external(pcmsolver)
+	       add_external(pcmsolver)
         endif()
 
-	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+	    link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
 	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
+        # DIRAC needs to be linked against some Boost libraries
+        find_package(Boost QUIET 1.54.0 COMPONENTS chrono system timer)
+	    if(NOT Boost_FOUND)
+	        set(Boost_LOCATION ${EXTERNAL_PROJECT_INSTALL_PREFIX}/boost/lib)
+	        list(APPEND Boost_LIBRARIES ${Boost_LOCATION}/libboost_chrono-1_54.a ${Boost_LOCATION}/libboost_system-1_54.a ${Boost_LOCATION}/libboost_timer-1_54.a)
+	    endif()
         set(EXTERNAL_LIBS
+            stdc++
             pcm
             getkw
+	        ${Boost_LIBRARIES}
             ${ZLIB_LIBRARIES}
             ${EXTERNAL_LIBS})
     endif()
@@ -336,10 +345,10 @@ if(ENABLE_UTILITIES)
     if(ENABLE_RELCCSD_STANDALONE)
         compile_standalone(relccsd.x src/relccsd/ccmain.F "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
+    if(ENABLE_HSCC) # note: this functionality depends on the pam flag
         compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
+    if(ENABLE_HSFS) # note: this functionality depends on the pam flag
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_MEM_TEST) #
