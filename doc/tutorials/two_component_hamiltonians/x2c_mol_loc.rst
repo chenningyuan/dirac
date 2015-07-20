@@ -5,9 +5,9 @@ X2C and local X2C
 
 This tutorial briefly demonstrates the keywords and their usage to invoke the exact two-component (X2C) Hamiltonian 
 and a local X2C variant of it in Dirac. The current available implementation and other features which will be part 
-of the next release Dirac2014 are described in [Knecht2014]_. 
+of the next release Dirac2014 are described in :cite:`Knecht2014`. 
 
-A recent and comprehensive review on the topic of relativistic Hamiltonians for chemistry can be found in [Saue2011]_ by
+A recent and comprehensive review on the topic of relativistic Hamiltonians for chemistry can be found in :cite:`Saue2011` by
 Trond Saue. The central idea of any decoupling approach is to generate a two-component Hamiltonian that reproduces the positive-energy spectrum 
 of the parent four-component Hamiltonian in the best possible way. This goal may be achieved by 
 a unitary transformation :math:`\mathbf{U}` that will formally decouple the large and small components by block-diagonalization:
@@ -25,11 +25,11 @@ a unitary transformation :math:`\mathbf{U}` that will formally decouple the larg
          0           & \hat{h}_{--} \end{array}\right],
 
 
-Popular choices to obtain a unitary transformation matrix :math:`\mathbf{U}` are in particular discussed in Section 3 of [Saue2011]_ 
+Popular choices to obtain a unitary transformation matrix :math:`\mathbf{U}` are in particular discussed in Section 3 of :cite:`Saue2011` 
 while a detailed abstract of the actual implementation of the X2C approach in Dirac is given in the last part of Section
 3.3 in the same review paper. Property operators are transformed automatically on the fly to two-components within 
 the X2C approach in Dirac in order to avoid the so-called picture-change errors. For a detailed discussion on the latter
-topic with the example of charge densities at a heavy nucleus see for example [Knecht2011]_ by Knecht and co-workers. 
+topic with the example of charge densities at a heavy nucleus see for example :cite:`Knecht2011` by Knecht and co-workers. 
 Transforming the the electronic Hamiltonian based on the above prescription 
 
 .. math::
@@ -100,8 +100,8 @@ For large systems the diagonalisation of the Dirac Hamiltonian --- which is an e
 unitary transformation matrix :math:`\mathbf{U}_{mol}` --- may become a bottleneck for the full molecule (hence to stress
 this fact we have introduced the explicit label *mol*).  
 This bottleneck can be avoided by extracting the coupling at the level of individual atoms as proposed in a working protocol by Peng
-and Reiher [Peng2012]_. In Dirac2013 we have implemented the *diagonal local approximation to the unitary decoupling
-transformation* (DLU scheme) of [Peng2012]_. The central idea behind this local scheme is to approximate :math:`\mathbf{U}_{mol}` by a superposition 
+and Reiher :cite:`Peng2012`. In Dirac2013 we have implemented the *diagonal local approximation to the unitary decoupling
+transformation* (DLU scheme) of :cite:`Peng2012`. The central idea behind this local scheme is to approximate :math:`\mathbf{U}_{mol}` by a superposition 
 of :math:`i=1,...,N_A` atomic (or in principle also fragment) matrices :math:`\mathbf{U}_{i}` where a decoupling matrix is calculated for each *unique* atom type. 
 
 .. math::
@@ -174,6 +174,6 @@ This input should be used with the following pam line::
 
   $ ./pam ... --put=X2CMAT.* 
 
-In this DLU approach proposed by Peng and Reiher [Peng2012]_ the molecular :math:`\mathbf{U}_{mol}` matrix will then be
+In this DLU approach proposed by Peng and Reiher :cite:`Peng2012` the molecular :math:`\mathbf{U}_{mol}` matrix will then be
 approximated as described above. It works with spinfree as well as all spin-dependent (spin-orbit) Hamiltonian schemes and 
 includes a picture-change transformation of all molecular four-component property operators :math:`\Omega^{4c}_{mol}`. 

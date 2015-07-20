@@ -4369,6 +4369,141 @@ C     define s_z and l_z as j_z = s_z + l_z
       END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_MHYP */
+      SUBROUTINE DEF_MHYP(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for magnetic hyperfine constants
+C
+C     Written by Malaya K. Nayak August 30 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-29)
+      CALL DEF_MHYP1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_MHYP',WORK,KWORK,KWORK,KFREE,LFREE)
+C      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_MHYP1 */
+      SUBROUTINE DEF_MHYP1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for magnetic hyperfine constants
+C
+C     Written by Malaya K. Nayak Aug 30 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "krciprop.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+      LOGICAL DOATOM(NUCIND),SAME
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION WORK(LWORK),PFAC(2),IOP(3)
+#include "chrnos.h"
+#include "ibtfun.h"
+C
+C     XAVECTOR
+      IOP(1) = 5
+C     YAVECTOR
+      IOP(2) = 6
+C     ZAVECTOR
+      IOP(3) = 7
+      PFAC(1)  = 1.0D0
+      PFAC(2)  = 1.0D0
+      NPCOMP   = 2
+C
+C     Irreps
+C
+      DO 100 IREPO = 0, MAXREP
+C
+C       Atoms
+C
+C       Define the Hyperfine operators
+C
+        DO 200 IATOM = 1, NUCIND
+        IF(DOATOM(IATOM)) THEN
+C
+C         Cartesian directions
+C
+          DO 300 ICOOR = 1, 3
+            ISCOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREPO,2)
+            IF (ISCOR .GE. 1000) THEN
+              CALL QUIT(
+     &'DEF_MHYP1: Max 1000 coords in this implementation !')
+            ENDIF
+            IF (ISCOR .GT. 0) THEN
+              IFIRST = ISCOR/100
+              ISECND = MOD(ISCOR,100)/10
+              ITHIRD = MOD(MOD(ISCOR,100),10)
+              PNAME    = CHRXYZ(ICOOR)//CHRNOS(IATOM)//'-HYP'
+C              PNAME    = 'HYP'//CHRNOS(IFIRST)
+C     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
+              IPTYP    = IOP(ICOOR)
+              IC1      = MOD(ICOOR+1,3) + 1
+              IC2      = MOD(ICOOR  ,3) + 1
+              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IS1      = IPTCNT(3*(IATOM - 1) + IC1,IREP1,1)
+              IS2      = IPTCNT(3*(IATOM - 1) + IC2,IREP2,1)
+              IF((IS1.LE.0).OR.(IS2.LE.0))
+     &          WRITE(LUPRI,'(A,5I5)')
+     &          'DEF_MHYP1: sym. error !',IATOM,ICOOR,IC1,IC2
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+       CALL OP1IND('KRCI PROPHYP',LUCIINDTRP,LPROP_KRCI,
+     &           NPROP_KRCI,INDXPR,MXPROP_KRCI)
+       IF (IPRINT.GE.1) THEN
+        write(6,*)'Hyperfine DEF Testing',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
+       END IF
+            ENDIF
+  300     CONTINUE
+        END IF
+  200   CONTINUE
+  100 CONTINUE
+C      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */
       SUBROUTINE DEFINE_PVC_SHIELD()
 C=======================================================================

@@ -207,4 +207,4 @@ between the two cases:
 .. image:: dc-ll_mep.png
     :width: 400px
 
-.. warning:: As pointed out in [Wheeler2009]_, it must always be kept in mind that the MEP at a given point is a weighted average of the charge density over all space.
+.. warning:: As pointed out in :cite:`Wheeler2009`, it must always be kept in mind that the MEP at a given point is a weighted average of the charge density over all space.

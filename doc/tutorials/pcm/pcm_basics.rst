@@ -12,9 +12,9 @@ its permittivity, :math:`\varepsilon`.
 The solute is accomodated inside a molecular cavity, built as a set of interlocking spheres 
 centered on the atoms constituting the molecule under investigation.
 The current implementation in DIRAC is limited to an SCF description of the solute.
-For a more in-depth presentation of the PCM, please refer to [Tomasi2005]_, [Mennucci2007]_ and references
+For a more in-depth presentation of the PCM, please refer to :cite:`Tomasi2005`, :cite:`Mennucci2007` and references
 therein. For a presentation of the details of the implementation in DIRAC, please refer to
-[DiRemigio2014]_
+:cite:`DiRemigio2014`
 
 Basic Theory
 ------------
@@ -44,11 +44,11 @@ estimate to the exact energy upon minimization. The appropriate functional is in
 
    \langle \phi | H_0 + \frac{1}{2}V_{\sigma\rho} | \phi \rangle
 
-which has the status of a *free energy* (an extensive justification of this fact is given in [Tomasi1994]_).
+which has the status of a *free energy* (an extensive justification of this fact is given in :cite:`Tomasi1994`).
 
  
 Thus in the PCM framework, the basic energetic quantity is the *free energy of solvation* 
-which is conveniently partitioned as follows ([Mennucci2007]_, [Tomasi2005]_, [Amovilli1998]_):
+which is conveniently partitioned as follows (:cite:`Mennucci2007`, :cite:`Tomasi2005`, :cite:`Amovilli1998`):
 
 .. math:: 
 
@@ -63,7 +63,7 @@ where:
 - :math:`\Delta G_\mathrm{Mm}` is due to molecular motion and accounts for *entropic* contributions to the free energy.
 
 The electrostatic term is, usually, the largest contribution to the solvation energy. Thus we will
-**exclusively** be concerned with its calculation (see also [Amovilli1998]_ for a discussion of the other terms).
+**exclusively** be concerned with its calculation (see also :cite:`Amovilli1998` for a discussion of the other terms).
 
 .. warning:: The non-electrostatic terms are **not implemented** in DIRAC.
 
@@ -91,7 +91,7 @@ The integral operators :math:`\mathcal{T}(\varepsilon_\mathrm{r})` and :math:`\m
 
    \mathcal{R} = 2\pi - \mathcal{D}
 
-in terms of components of the Calderon projector (see [Tomasi2005]_)
+in terms of components of the Calderon projector (see :cite:`Tomasi2005`)
 This equation can be solved numerically by discretization of the cavity surface with a triangular mesh 
 (the finite elements being called *tesserae*). 
 The solution of the electrostatic problem then amounts to solving a linear system of equations:

@@ -8,7 +8,6 @@ project(DIRAC Fortran C CXX)
 option(ENABLE_64BIT_INTEGERS  "Enable 64-bit integers"                                    OFF)
 option(ENABLE_MPI             "Enable MPI parallelization"                                OFF)
 option(ENABLE_SGI_MPT         "Enable SGI MPT parallelization"                            OFF)
-option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"                        ON)
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
@@ -422,6 +421,9 @@ if(NOT BLAS_LIBRARIES)
     if(USE_BUILTIN_BLAS)
         # builtin library will be used
         set(BLAS_LIBRARIES_INFO "builtin")
+    elseif(EXPLICIT_BLAS_LIB)
+        # explicit library will be used
+        set(BLAS_LIBRARIES_INFO "explicit in ${EXPLICIT_BLAS_LIB}")
     else()
         # none blas
         set(BLAS_LIBRARIES_INFO "none")
@@ -431,6 +433,9 @@ if(NOT LAPACK_LIBRARIES)
     if(USE_BUILTIN_LAPACK)
         # builtin library will be used
         set(LAPACK_LIBRARIES_INFO "builtin")
+    elseif(EXPLICIT_LAPACK_LIB)
+        # explicit library will be used
+        set(LAPACK_LIBRARIES_INFO "explicit in ${EXPLICIT_LAPACK_LIB}")
     else()
         # none lapack
         set(LAPACK_LIBRARIES_INFO "none")

@@ -26,7 +26,7 @@ else()
         if(CMAKE_SYSTEM_NAME MATCHES "Windows")
             # windows: none
             set (CMAKE_CXX_FLAGS "")
-            set (CMAKE_CXX_FLAGS_DEBUG "/O0 /debug /DDEBUG")
+            set (CMAKE_CXX_FLAGS_DEBUG "/Od /debug /DDEBUG")
             set (CMAKE_CXX_FLAGS_RELEASE "/debug /O3 /DNDEBUG")
             
             # intel compiler xHost flag
