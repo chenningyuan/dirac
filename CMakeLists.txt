@@ -174,12 +174,12 @@ if(ENABLE_PCMSOLVER)
         get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
 
         if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-           set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
-           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+            set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
         else()
-           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
-           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
+            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
         endif()
 
         # PCMSolver does not know profile
@@ -190,51 +190,55 @@ if(ENABLE_PCMSOLVER)
         endif()
 
         set(ExternalProjectCMakeArgs
-            -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
-            -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-            -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-            -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
-            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-            -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
-            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-            -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
-            -DENABLE_CXX11_SUPPORT=OFF
-            -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-            -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-            -DEIGEN3_ROOT=${EIGEN3_ROOT}
-            -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-            -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-            -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-            -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
-            -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-            -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-            -DENABLE_TESTS=${PCMSOLVER_TESTS}
-            -DZLIB_ROOT=${ZLIB_ROOT}
-	        -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-            -DENABLE_LOGGER=OFF
-         )
+            # PCMSolver does not know profile
+            if(CMAKE_BUILD_TYPE MATCHES "profile")
+                set(CMAKE_BUILD_TYPE "release")
+                endif
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROJECT_INSTALL_PREFIX} #${PROJECT_BINARY_DIR}/external
+                -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+                -DENABLE_CXX11_SUPPORT=OFF
+                -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
+                -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+                -DEIGEN3_ROOT=${EIGEN3_ROOT}
+                -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+                -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
+                -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
+                -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
+                -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
+                -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+                -DENABLE_TESTS=${PCMSOLVER_TESTS}
+                -DZLIB_ROOT=${ZLIB_ROOT}
+                -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+                -DENABLE_LOGGER=OFF
+                )
 
-        if(PCMSOLVER_TESTS)
-  	       add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
-        else()
-	       add_external(pcmsolver)
-        endif()
+            if(PCMSOLVER_TESTS)
+                add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+            else()
+                add_external(pcmsolver)
+            endif()
 
-	    link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
-	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
-        # DIRAC needs to be linked against some Boost libraries
-        find_package(Boost QUIET 1.54.0 COMPONENTS chrono system timer)
-	    if(NOT Boost_FOUND)
-	        set(Boost_LOCATION ${EXTERNAL_PROJECT_INSTALL_PREFIX}/boost/lib)
-	        list(APPEND Boost_LIBRARIES ${Boost_LOCATION}/libboost_chrono-1_54.a ${Boost_LOCATION}/libboost_system-1_54.a ${Boost_LOCATION}/libboost_timer-1_54.a)
-	    endif()
-        set(EXTERNAL_LIBS
-            stdc++
-            pcm
-            getkw
-	        ${Boost_LIBRARIES}
-            ${ZLIB_LIBRARIES}
-            ${EXTERNAL_LIBS})
+            link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+                ${EXTERNAL_PROJECT_INSTALL_PREFIX})
+            # DIRAC needs to be linked against some Boost libraries
+            find_package(Boost QUIET 1.54.0 COMPONENTS chrono system timer)
+            if(NOT Boost_FOUND)
+                set(Boost_LOCATION ${EXTERNAL_PROJECT_INSTALL_PREFIX}/boost/lib)
+                list(APPEND Boost_LIBRARIES ${Boost_LOCATION}/libboost_chrono-1_54.a ${Boost_LOCATION}/libboost_system-1_54.a ${Boost_LOCATION}/libboost_timer-1_54.a)
+            endif()
+            set(EXTERNAL_LIBS
+                stdc++
+                pcm
+                getkw
+                ${Boost_LIBRARIES}
+                ${ZLIB_LIBRARIES}
+                ${EXTERNAL_LIBS})
     endif()
     set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 else()
