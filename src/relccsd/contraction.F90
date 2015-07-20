@@ -198,6 +198,7 @@
     real(8),allocatable        :: RightTensor_sort(:)
     character(2)   :: sorted_left(4),freeindx(2)
 #include "param.inc"
+#include "complex.inc"
 
 !---------------known problem----------------------------------------------
 ! call to an XGEMV routine is different from DGEMM. we need to provide the untransposed dimensions even for the cases when
@@ -233,7 +234,7 @@
 
      if (transb=='C') then
 
-      allocate(rightTensor_sort(dot_product(y_row,y_column)))
+      allocate(rightTensor_sort(dot_product(y_row,y_column)*rcw))
 
       RightTensor_sort = 0.0d0
 
@@ -306,7 +307,7 @@
 
    call onebody_for_blas (left_order,im_order,sorted_oparray_right,trans1A,x_row,x_column)
 
-   allocate (left_sort(dot_product(x_row,x_column)))
+   allocate (left_sort(dot_product(x_row,x_column)*rcw))
 
      left_sort = 0.0d0
 
@@ -371,6 +372,7 @@
    integer             :: asym_factor_R,asym_factor_L
 
 #include "param.inc"
+#include "complex.inc"
 
   allocate(v_sort(maxdim))  
   allocate(right_sorted(maxdim))  
@@ -408,7 +410,7 @@
 
    if (dia_sum_factor==0.0d0) then
 
-   allocate(im_temp(dot_product(x_row,y_column)))
+   allocate(im_temp(dot_product(x_row,y_column)*rcw))
 
    im_temp = 0.0d0
 
@@ -423,7 +425,7 @@
 
    if (transA=='C') then
 
-   allocate(im_temp_temp(dot_product(x_row,y_column)))
+   allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
    im_temp_temp= 0.0d0
 
@@ -472,6 +474,7 @@
     real(8),allocatable :: im_temp_temp(:)
 
 #include "param.inc"
+#include "complex.inc"
 
 
   allocate(v_sort(maxdim))  
@@ -503,7 +506,7 @@
 
 !  3) matrix-matrix multiplication routine runs for each irreps.
 
-   allocate(im_temp(dot_product(x_row,y_column)))
+   allocate(im_temp(dot_product(x_row,y_column)*rcw))
    im_temp = 0.0d0
 
   if (present(RightTensor)) call cntrct (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
@@ -520,7 +523,7 @@
 !  write(*,*)'right array',(sorted_opArray(i),i=1,4)
    if (transA=='C') then
 
-   allocate(im_temp_temp(dot_product(x_row,y_column)))
+   allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
    im_temp_temp = 0.0d0
 
@@ -567,6 +570,7 @@
     real(8),allocatable :: im_temp_temp(:)
 
 #include "param.inc"
+#include "complex.inc"
 
 
   allocate(right_sort(maxdim))  
@@ -578,8 +582,6 @@
 
    call decide_sorting_routine(13,right_order,im_order,left_order,transB,match_index,asym_factor, &
     &                    .true.,sorted_opArray=sorted_opArray)
-
-   write(*,*)'sorted left', (sorted_opArray(i),i=1,4)
 
  if (present(RightTensor)) then
  
@@ -597,7 +599,7 @@
 
 !  3) matrix-matrix multiplication routine runs for each irreps.
 
-   allocate(im_temp(dot_product(x_row,y_column)))
+   allocate(im_temp(dot_product(x_row,y_column)*rcw))
    im_temp = 0.0d0
 
   if (present(LeftTensor)) call cntrct (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
@@ -608,15 +610,15 @@
 
    transA = 'N'
 
-   write(*,*)'write sorted before final',match_index,(/FreeIndx(1),sorted_opArray(2:4)/)
+!!   write(*,*)'write sorted before final',match_index,(/FreeIndx(1),sorted_opArray(2:4)/)
    call decide_sorting_routine(13,im_order,left_order,(/FreeIndx(1),sorted_opArray(2:4)/),transA,match_index, &
    &                        asym_factor,.false.,inverse=.true.,sorted_opArray=sorted_opArray)
 
-   write(*,*)'write sorted final',match_index,(sorted_oparray(i),i=1,4),transA
+!!   write(*,*)'write sorted final',match_index,(sorted_oparray(i),i=1,4),transA
 
    if (transA=='C') then
 
-  allocate(im_temp_temp(dot_product(x_row,y_column)))
+  allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
    im_temp_temp = 0.0d0
    call srt1c1 (nrep,x_row,y_column,im_temp,im_temp_temp)
 

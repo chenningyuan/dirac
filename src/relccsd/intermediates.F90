@@ -27,12 +27,12 @@
      private
 
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
+
 
      contains
 
@@ -49,7 +49,7 @@
      real(8), intent(out):: ho(rcw*nfoo)                   ! Intermediate
 !+++++++++++++++Local variables++++++++++++++++++++++++++++++++++++++++
      real(8), allocatable :: tau(:) !, vooo(:),vooo_sorted(:),vvoo(:)
-     real*8      :: ddot
+     real*8, external     :: ddot
      integer     :: i 
 
 !    Initialize  f_bar_mi with oo block of Fock matrix
@@ -83,7 +83,6 @@
    ho(i) = 0.0d0
    endif
    enddo
-
 
    end subroutine
 
@@ -210,10 +209,7 @@
 !******************************************************
 
    allocate(tau(ndimt2*rcw))
-
-   tau = 0.0d0
    call gettau (t1,t2,tau)
-
    call contraction_444 ((/"o1","o2","p1","p2"/),(/"p1","p2","o3","o4"/),(/"o1","o2","o3","o4"/),w_oooo,1.0d0,1.0d0,nrep, &
    &                      RightTensor=tau)
 
@@ -244,6 +240,7 @@
 ! initialize w_voov
 !--------------------
 
+
  call getvoov (w_voov)
 
 !---------------------------------------------------
@@ -261,10 +258,11 @@
 
   tau = 0.0d0
 
-  call gettau (t1,t2,tau,'approximate')
+!  call gettau_approx (t1,t2,tau,'approximate')
+!  call gettau_approx (t1,t2,tau)
 
   call contraction_444 ((/"o3","o1","p3","p1"/),(/"p2","p3","o2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
-   &      1.0d0,0.0d0,nrep,RightTensor=t2)
+   &      1.0d0,0.0d0,nrep,RightTensor=tau)
 
   deallocate (tau)
 
@@ -297,12 +295,13 @@
   real(8), intent(out) :: w_ovvo(rcw*ivoov(nrep+1))                ! Intermediate.
 !---------------Local Variables----------------------------------------
  real(8), allocatable :: tau(:)
- real(8), allocatable :: w_vovo(:)
+ real(8), allocatable :: w_vovo(:),array_temp(:)
  real*8      :: ddot
  integer :: i
 !--------------------
 ! initialize w_voov
 !--------------------
+
 
   w_ovvo = 0.0d0
 
@@ -325,15 +324,35 @@
 !   w_ovvo(mb,ej) = w_ovvo(mb,ej) + V(mn,ef)*(T2(bf,jn)-T1(f,j)*T1(b,n)
 !----------------------------------------------------------------------
 
-  allocate (tau(ndimt2*rcw))
+! allocate (tau(ndimt2*rcw))
 
-  call gettau (t1,t2,tau,'approximate')
+!  call gettau (t1,t2,tau,'approximate')
+! call gettau_approx (t1,t2,tau)
 
-  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
-   &      1.0d0,0.0d0,nrep,RightTensor=t2)
+! call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+!  &      1.0d0,0.0d0,nrep,RightTensor=tau)
 
-  deallocate (tau)
+! deallocate (tau)
 
+!-------------------------------------------------------------------------------------
+!  w_ovvo(mb,ej) = w_ovvo(mb,ej) - V(mn,ef)*(T2(fb,jn)+T1(f,j)*T1(b,n)
+!-------------------------------------------------------------------------------------
+
+  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+             &      -1.0d0,0.0d0,nrep,RightTensor=t2)
+
+  allocate(array_temp(nv4*rcw))
+
+  array_temp = 0.0d0
+
+  call xgemm ('n','n',ndimt1,ndimt1,1,a1,t1,ndimt1,t1,1, &
+ &               a1,array_temp,ndimt1)
+
+
+  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p3","o1","p1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+             &      -1.0d0,0.0d0,nrep,RightTensor=array_temp)
+
+  deallocate(array_temp)
 !--------------------------------------------------
 !  w_ovvo(mb,ej) = w(mb,ej) + V(mb,ef)*t(f,j) 
 !--------------------------------------------------
@@ -344,7 +363,7 @@
 
    do i = 1, ivoov(nrep+1)
    if (abs(w_ovvo(i)) <= 1.0d-14) then  
-   write(*,*)'zero of mbej',w_ovvo(i)
+!   write(*,*)'zero of mbej',w_ovvo(i)
    w_ovvo(i) = 0.0d0
    endif
    enddo
@@ -411,7 +430,6 @@
 !**out of core term..
 
   allocate (tau(ndimt2*rcw))
-  tau = 0.0d0
   call gettau (t1,t2,tau)
 
   call contraction_444 ((/"o1","p1","p2","p3"/),(/"p2","p3","o2","o3"/),(/"o1","p1","o2","o3"/),w_ovoo, &
@@ -480,7 +498,7 @@
 
    real*8      :: ddot
    real*8,allocatable  :: tau(:)                ! Intermediate.
-   real*8,allocatable  :: huge_temp(:)                ! Intermediate.
+   real*8,allocatable  :: huge_temp(:),array_temp(:)                ! Intermediate.
 
 !----------------------------------------------------------
 !        Initialize
@@ -491,15 +509,41 @@
        write(*,*)'w~efam: init',ddot(nv5,w_vvvo,1,w_vvvo,1)
 !-----------------------------------------------------------
 !   diagram1 : w_vvvo(ef,am)  = w_vvvo(ef,am) + p(ef) V(en,ag)*tau(fg,mn)  
-!   something is wrong when i am using tau. have to figure out. error would be small.
 !-----------------------------------------------------------
 
   allocate (tau(ndimt2*rcw))
-  call gettau (t1,t2,tau,'approximate')
+  call gettau (t1,t2,tau)
   call contraction_444 ((/"p2","o2","p1","p4"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
              &      1.0d0,0.0d0,nrep,RightTensor=t2)
   deallocate (tau)
 
+!-----------------------------------------------------------------------
+!  w_temp(en,am) = w_temp(en,am) + V(en,ag)*t1(g,m)
+!  w (ef,am) = w(ef,am) - w_temp(en,am) * t(f,n) 
+!-----------------------------------------------------------------------
+
+  allocate(array_temp(nv4*rcw))
+
+   array_temp = 0.0d0
+
+  call contraction_424 ((/"p2","o2","p1","p4"/),(/"p4","o1"/),(/"p2","o2","p1","o1"/),array_temp, &
+             &      1.0d0,1.0d0,nrep,RightTensor=t1)
+
+  call contraction_424 ((/"p2","o2","p1","o1"/),(/"p3","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+             &      -1.0d0,1.0d0,nrep,RightTensor=t1,LeftTensor=array_temp)
+
+  deallocate(array_temp)
+!allocate(array_temp(nv4*rcw))
+
+! array_temp = 0.0d0
+
+! call xgemm ('n','n',ndimt1,ndimt1,1,a1,t1,ndimt1,t1,1, &
+!&               a1,array_temp,ndimt1)
+
+! call contraction_444 ((/"p2","o2","p1","p4"/),(/"p3","o1","p4","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+!            &      -1.0d0,0.0d0,nrep,RightTensor=array_temp)
+
+!deallocate(array_temp)
   write(*,*)'write me inside w~efam,dia2',ddot(nv5,w_vvvo,1,w_vvvo,1)
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 
@@ -588,9 +632,9 @@
      call gettau (t1,t2,tau)
 
       if(myproc.eq.master) then
-        call xcopy(nv5*rcw,w_vvvo,1,array_temp,1)
+        call xcopy(nv5,w_vvvo,1,array_temp,1)
       else 
-        call xcopy(nv5*rcw,a0,0,array_temp,1)
+        call xcopy(nv5,a0,0,array_temp,1)
       endif
 
       do 30 irp = 1, nrep
@@ -1362,7 +1406,6 @@
 ! G_vv = 0.0d0
 ! G_oo = 0.0d0
 !--------------------------------------
-
 
 !----------------------------------------------
 !    G_ea(e,a)  = -1/2 l2(mn,af) * t2(ef,mn)

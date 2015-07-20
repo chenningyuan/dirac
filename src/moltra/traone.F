@@ -1331,9 +1331,7 @@ C
 C
       DIMENSION XMO(NORBT,NORBT,NZ)
       DIMENSION XMOM(NFVO,IRCW)
-C
-C
-C
+
       CALL DZERO(XMO,NORBT*NORBT*NZ)
 C
 C
@@ -1348,6 +1346,7 @@ C
          DO I = 1, NAOCC(IFSYM)
             CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
      &                              XMO(1+IOFF1,I+IOFF2,1),1)
+
          IAI = IAI + NAVIR(IFSYM)
          ENDDO
          IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
@@ -1376,9 +1375,11 @@ C
 C    Re
            CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
      &                             XMO(1+IOFF1,I+IOFF2,1),1)
+
 C    i
            CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
      &                             XMO(1+IOFF1,I+IOFF2,2),1)
+
            IAI = IAI + 2*NAVIR(IFSYM)
         ENDDO
         IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
@@ -1386,9 +1387,13 @@ C    i
 C    j
              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
      &                               XMO(1+IOFF1,I+IOFF2,3),1)
+
+
 C    k
              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
      &                               XMO(1+IOFF1,I+IOFF2,4),1)
+
+
              IAI = IAI + 2*NAVIR(IFSYM)
         ENDDO
         IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
@@ -1403,6 +1408,107 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+!==================================
+
+C/* Deck moltodir */
+      SUBROUTINE DOVTODIR(XMO,XMOM,NFVO,IRCW)
+C***********************************************************************
+C     
+C     Joost van Stralen, april 2002
+C
+C     XMO - The Lagrangian in Dirac format, this matrix is not sym. packed
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
+C
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbtr3.h"
+#include "dcbmp2.h"
+C
+      DIMENSION XMO(NORBT,NORBT,NZ)
+      DIMENSION XMOM(NFVO,IRCW)
+C
+C
+C
+!!!      CALL DZERO(XMO,NORBT*NORBT*NZ)
+C
+C
+      IF (nz.NE.4) THEN
+      IOFF1 = 0
+      IOFF2 = 0
+      IOFF3 = 0
+      DO IFSYM = 1, NFSYM
+         IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+         IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+
+         IAI = 1
+         DO I = 1, NAVIR(IFSYM)
+
+            CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                              XMO(1+IOFF2,I+IOFF1,1),1)
+
+         IAI = IAI + NAOCC(IFSYM)
+         ENDDO
+         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
+          IAI = 1
+          DO I = 1, NAVIR(IFSYM)
+              CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                                XMO(1+IOFF2,I+IOFF1,2),1)
+          IAI = IAI + NAOCC(IFSYM)
+          ENDDO
+         ENDIF
+        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
+        IOFF3 = IOFF3 + 2*NAVIR(IFSYM)*NAOCC(IFSYM)
+      ENDDO
+C
+      ELSE
+C
+      IOFF1 = 0
+      IOFF2 = 0
+      IOFF3 = 0
+      DO IFSYM = 1, NFSYM
+        IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
+        IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
+        IAI = 1
+        DO I = 1, NAVIR(IFSYM)
+C    Re
+           CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                             XMO(1+IOFF2,I+IOFF1,1),1)
+C    i
+           CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                             XMO(1+IOFF2,I+IOFF1,2),1)
+           IAI = IAI + 2*NAOCC(IFSYM)
+        ENDDO
+        IAI = 2*NAVIR(IFSYM)*NAOCC(IFSYM) + 1
+        DO I = 1, NAVIR(IFSYM)
+C    j
+             CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,1),1,
+     &                               XMO(1+IOFF2,I+IOFF1,3),1)
+C    k
+             CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,2),1,
+     &                               XMO(1+IOFF2,I+IOFF1,4),1)
+             IAI = IAI + 2*NAOCC(IFSYM)
+        ENDDO
+        IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
+        IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
+        IOFF3 = IOFF3 + 4*NAVIR(IFSYM)*NAOCC(IFSYM)
+      ENDDO
+C
+      ENDIF
+C
+      ioff1 = 0
+      ioff2 = 0
+      RETURN
+      END
+
+!========================================================================================
+
 C/* Deck dootodir */
       SUBROUTINE DOOTODIR(DMO,DMOM,NO,NFOO,NREP,IRCW)
 C***********************************************************************
@@ -1431,7 +1537,8 @@ C
       integer              :: nash_x(1:nfsym)
 C
 C
-      CALL DZERO(DMO,NORBT*NORBT*NZ)
+!!!!       CALL DZERO(DMO,NORBT*NORBT*NZ)
+      
 C
 !     !> read ibeig (info array on boson irreps) from DFCOEF
       allocate(ibeig(norbt),idxu2g(norbt,nrep))
@@ -1873,6 +1980,7 @@ C
       END DO
       END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
 C  /* Deck dmp2ao */
       SUBROUTINE DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)
 C***********************************************************************

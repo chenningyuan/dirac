@@ -1,8 +1,8 @@
-C
-C
-C     Files to be used in RELCCSD
+ 
+ 
+!     Files to be used in RELCCSD
       PARAMETER (NCCFIL=11) ! Number of word addressable files
-C     Define the unit numbers
+!     Define the unit numbers
       PARAMETER (MSLVOUT = 12) ! Output from slaves
       PARAMETER (MRCONEE = 13) ! Effective one-electron integrals
       PARAMETER (MDINT   = 14) ! Two-electron integrals
@@ -16,12 +16,12 @@ C     Define the unit numbers
       PARAMETER (ITAPT   = 40) ! Sorted integral files
       PARAMETER (ITAPL   = 50) ! DZ intermediate for Lambda equations
       PARAMETER (ITAPADC = 60) ! Base for ADC-files
-C     The standard input and output units may be redefined in the code
+!     The standard input and output units may be redefined in the code
       COMMON /FILES/ IN,IW
-C     Length of the records (integer words) on the restart file
+!     Length of the records (integer words) on the restart file
       PARAMETER (RSRCLEN=1024)
-      COMMON/RSFILE/ IRECIN,IRECST,IRECEN,IRECT1,NRECT1,IRECT2,NRECT2,
-     >               LRSFIL,LCCFIL
+      COMMON/RSFILE/ IRECIN,IRECST,IRECEN,IRECT1,NRECT1,IRECT2,NRECT2,                    & 
+     &               LRSFIL,LCCFIL
       COMMON/PARNAM/ RSBASF,RSFILN,CCBASF,CCFILN
       CHARACTER*6  RSBASF      ! generic name for RESTART file
       CHARACTER*11 RSFILN      ! node-unique RESTART file name of length LRSFIL

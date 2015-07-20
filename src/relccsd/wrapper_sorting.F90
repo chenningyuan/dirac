@@ -194,9 +194,9 @@
 
   case(22) 
 
-  allocate(A(6))
+  allocate(A(5))
   
-  A = (/1234, 1324, 2134, 3412, 1432, 1243/)
+  A = (/1234,1324,1432,2134,1243/)
 
   case(31)
 
@@ -321,9 +321,9 @@
 
   case(22) 
 
-  allocate(A(6))
+  allocate(A(5))
 
-  A = (/1234, 1324, 2134, 3412, 1432, 1243/)
+  A = (/1234,1324,1432,2134,1243/)
 
   case(31)
 
@@ -667,10 +667,9 @@
     type(sorting_list) :: srt_13(0:5)
 ! (2,2)->(2,2) type of sorting routines         
        srt_22(1)%unrestricted => SRT1SS4   
-       srt_22(2)%unrestricted => SRT1L1    
-       srt_22(3)%unrestricted => SRT1C1    
-       srt_22(4)%unrestricted => SRT16     
-       srt_22(5)%unrestricted => SRT1R1 
+       srt_22(2)%unrestricted => SRT16     
+       srt_22(3)%unrestricted => SRT1L1    
+       srt_22(4)%unrestricted => SRT1R1 
        srt_22(1)%restricted_braket =>  SRT1TT4
        srt_22(2)%restricted_braket =>  SRT1TT5
 !      srt_22(1)%restricted_bra =  SRT1LS1
@@ -721,7 +720,7 @@
 
      v%presorted = 0.0d0
 
-     call xcopy(size(presorted)/rcw,presorted,1,v%presorted,1) 
+     call dcopy(size(presorted),presorted,1,v%presorted,1) 
      endif
 
      sort_type_dummy = sortType
@@ -740,7 +739,7 @@
         
          case('unrestricted')
 
-       call input_index(c,d)
+       call input_index(c,d,m)
 
        if (do_inverse) then
 
@@ -763,9 +762,27 @@
        endif
        endif
 
+      if (save_index==3) then
+
+       shift1 = 4
+       call srt_22(save_index)%unrestricted (nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type, &
+     &         c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%braket)%totsym%full_array,c(d%bra_reorder+shift1)%tuple, &
+     &         V%presorted,sorted) 
+
+      elseif (save_index==4) then
+
+       call srt_22(save_index)%unrestricted (nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%K)%orbital_type, &
+     &         c(d%L)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%braket)%totsym%full_array,c(d%ket_reorder+shift1)%tuple, &
+     &         V%presorted,sorted) 
+
+      else
+
       call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
      &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,V%presorted,sorted)
+     
+       
+       endif
 
          case('restricted_braket') 
 
@@ -849,7 +866,7 @@
      else
       write(*,*)'====sorting is not needed===='
  
-     call xcopy(size(V%presorted),V%presorted,1,sorted,1) 
+     call dcopy(size(V%presorted),V%presorted,1,sorted,1) 
 
      call input_index(c,d)
        shift1 = 4

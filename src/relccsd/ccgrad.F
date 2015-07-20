@@ -45,10 +45,11 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER IOPT,nps
-      REAL*8 T1(*),S1(*),T2(*),S2(*)
+      REAL*8 T1(*),S1(*),T2(*),S2(*)  !! T1,T2 are CCSD amplitudes and S1,S2 are Lambdas
       REAL*8 DOO(*),DVV(*),DVO(*),DOV(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       REAL*8 DMO(*)
+      REAL*8 ddot
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -64,6 +65,8 @@ C---------------Executable code--------------------------------------
 C
       CALL XCOPY (NFOO,A0,0,DOO,1)
       CALL XCOPY (NFVV,A0,0,DVV,1)
+      CALL XCOPY (NFVO,A0,0,DVO,1)
+      CALL XCOPY (NFVO,A0,0,DOV,1)
       IF (IOPT.LT.1) RETURN
 C----------------------------------------------------------------------
 C D(I,J) = D(I,J) - T(CD,IL) * L(CD,JL) = D(I,J) - T(CDL,I) * L(CDL,J)
@@ -94,13 +97,16 @@ C
 C###########################################
 C convert the density matrix to DIRAC format
 C###########################################
-      CALL CONVDM(BUF1,BUF2,DOO,DVV,DMO)
+      
+      IF (IOPT.LT.2) CALL CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,DMO)
 C
       IF (IOPT.LT.2) RETURN
 C----------------------------------------------------------------------
 C DVO(A,I) = L(A,I)
 C----------------------------------------------------------------------
       CALL XCOPY (NDIMT1,S1,1,DVO,1)         
+
+!!      call srt1c1(nrep,no,nv,S1,DVO)
 C----------------------------------------------------------------------
 C DOV(A,I) = T(A,I)
 C----------------------------------------------------------------------
@@ -108,14 +114,16 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) + T(AC,IK) * L(C,K)
 C----------------------------------------------------------------------
-      CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+      CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,MVO,JVOVO,JJVO,JJVO,
      &              T2,BUF1)
-      CALL XGEMV ('N',NDIMT1,NDIMT1,A1,BUF1,M,S1,1,A1,DOV,1)
+      CALL XGEMV ('N',MVO(1),MVO(1),A1,BUF1,MVO(1),S1,1,A1,DOV,1)
+
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) - T(A,K) * L(C,K) * T(C,I)
 C----------------------------------------------------------------------
       CALL CNTRCT ('C','N',NO,NO,NV,-A1,S1,T1,A0,BUF1,NREP)
       CALL CNTRCT ('N','N',NV,NO,NO,A1,T1,BUF1,A1,DOV,NREP)
+
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) - T(A,K) * L(CD,LK) * T(CD,LI)
 C----------------------------------------------------------------------
@@ -123,14 +131,16 @@ C----------------------------------------------------------------------
       CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,T2,BUF2)
       CALL CNTRCT ('C','N',NO,NO,NVVOT,-A1,BUF1,BUF2,A0,BUF3,NREP)
       CALL CNTRCT ('N','N',NV,NO,NO,A1,T1,BUF3,A1,DOV,NREP)
+
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) - L(CD,KL) * T(AD,KL) * T(D,I)
 C----------------------------------------------------------------------
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,S2,BUF1)
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
       CALL CNTRCT ('N','C',NV,NV,NVOOT,-A1,BUF1,BUF2,A0,BUF3,NREP)
-      CALL CNTRCT ('N','N',NV,NO,NV,A1,BUF3,T1,A1,DOV,NREP)
-C
+      CALL CNTRCT ('C','N',NV,NO,NV,A1,BUF3,T1,A1,DOV,NREP)
+
+      CALL CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,DMO)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -144,10 +154,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !-------------------------calling variables-------------------------
        real*8, intent(in)  :: l1(ndimt1*rcw),l2(ndimt2*rcw),
      &                        t1(ndimt1*rcw),t2(ndimt2*rcw)
-       real*8, intent(out) :: doo(nfoo*rcw),dvv(nfvv*rcw),dmo(*) !norbt*
+       real*8, intent(out) :: doo(*),dvv(*),dmo(*) !norbt*
 !    &                        norbt*nz) 
        real*8, intent(out) :: buf1(*),buf2(*)
 !-------------------------------------------------------------------
+       real*8 :: ddot
+       real*8, allocatable :: dvo(:),dov(:)
+       real*8, allocatable :: woo_temp(:),wpp_temp(:)
+!-------------------------------------------------------------------
+
 
       call xcopy (nfoo,a0,0,doo,1)
       call xcopy (nfvv,a0,0,dvv,1)
@@ -167,6 +182,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
      &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
 
+       write(*,*)'dot product of doo',ddot(nfoo,doo,1,doo,1)
+
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
 !----------------------------------------------------------------------
@@ -182,12 +199,105 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
      &              l1,t1,dvv,1.0d0,1.0d0,nrep)
 
-      call convdm(buf1,buf2,doo,dvv,dmo)
+
+       write(*,*)'dot product of dvv',ddot(nfvv,dvv,1,dvv,1)
+
+       allocate(dvo(nfvo*rcw))
+
+!----------------------------------------------------------------------------
+!     dvo(a,i) = t1(a,i)
+!----------------------------------------------------------------------------
+
+      call xcopy (nfvo,t1,1,dvo,1)
+
+       write(*,*)'dot product of dvo:step1',ddot(nfvo,dvo,1,dvo,1)
+!--------------------------------------------------------------------------
+!     dvo(a,i) = dvo(a,i) + l1(m,e) * t(ae,im)
+!--------------------------------------------------------------------------
+
+      call contraction_242 ((/"o2","p2"/),(/"p1","p2","o1","o2"/), 
+     & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,RightTensor=t2)
+
+       write(*,*)'dot product of dvo:step2',ddot(nfvo,dvo,1,dvo,1)
+
+!----------------------------------------------------------
+!      dvo(a,i) = dvo(a,i) - l1(m,e) * t(e,i)*t(a,m)
+!----------------------------------------------------------
+
+      allocate(woo_temp(nfoo*rcw))
+
+      woo_temp = 0.0d0
+
+      call contraction_222 ((/"o2","p2"/),(/"p2","o1"/),(/"o2","o1"/),
+     &              l1,t1,woo_temp,1.0d0,1.0d0,nrep)
+
+
+      call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
+     &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+
+      deallocate(woo_temp)
+
+       write(*,*)'dot product of dvo:step3',ddot(nfvo,dvo,1,dvo,1)
+!-------------------------------------------------------------
+!       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t2(ef,in)*t1(a,m) 
+!-------------------------------------------------------------
+
+      allocate(woo_temp(nfoo*rcw))
+
+      woo_temp = 0.0d0
+
+      call contraction_442((/"o2","o3","p2","p3"/),(/"p2","p3","o1","o3"
+     &       /),(/"o2","o1"/),woo_temp,1.0d0,1.0d0,nrep,LeftTensor=L2, 
+     &          RightTensor=t2)
+
+      call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
+     &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+
+      deallocate(woo_temp)
+
+       write(*,*)'dot product of dvo:step4',ddot(nfvo,dvo,1,dvo,1)
+
+!-----------------------------------------------------------------------
+!      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(e,i)*t2(af,mn)
+!-----------------------------------------------------------------------
+
+      allocate(wpp_temp(nfvv*rcw))
+
+      wpp_temp = 0.0d0
+
+      call contraction_442((/"o2","o3","p2","p3"/),(/"p1","p3","o2","o3"
+     &       /),(/"p1","p2"/),wpp_temp,-1.0d0,1.0d0,nrep,LeftTensor=L2, 
+     &          RightTensor=t2)
+
+      call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),
+     &              wpp_temp,t1,dvo,1.0d0,1.0d0,nrep)
+
+      deallocate(wpp_temp)
+
+       write(*,*)'dot product of dvo:final',ddot(nfvo,dvo,1,dvo,1)
+
+!----------------------------------------------------------
+!       dov(i,a) = l1(i,a)
+!----------------------------------------------------------
+
+       allocate(dov(nfvo*rcw))
+
+      call xcopy (nfvo,l1,1,dov,1)
+
+       write(*,*)'dot product of dov',ddot(nfvo,dov,1,dov,1)
+
+!!      call convdm_full(buf1,buf2,doo,dvv,dmo)
+!!      call convdm (buf1,buf2,doo,dvv,dmo)
+
+      CALL CONVDM(BUF1,BUF2,DOO,DVV,DOV,DVO,DMO)
+
+       deallocate(dov)
+       deallocate(dvo)
 
       end subroutine
 
 
-      SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,dmo)
+      SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,dmo)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -207,7 +317,7 @@ C     Author : Joost van Stralen - March 2002
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 DOO(*),DVV(*)
+      REAL*8 DOO(*),DVV(*),DOV(*),DVO(*)
       REAL*8 BUF1(*),BUF2(*)
       REAL*8 DMO(*)
 C
@@ -220,6 +330,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:) 
+
 C---------------Executable code--------------------------------------
 C
 C
@@ -239,9 +351,55 @@ C                                           <---O+V---->
 C                                            unbar + bar
 C######################################################################
 C
+      CALL XAXPY (NFVO,A1,DVO,1,DOV,1)
+
+      CALL XSCAL (NFVO,AP5,DOV,1)
+
+
+      buf1(1:nfvo) = 0.0d0
+
+      AI = 0
+      DO IREP = 1, NREP
+         DO I = 1, NO(IREP)
+            DO A = 1, NV(IREP)
+               AI = AI + 1
+               IF (CARITH) THEN
+                  BUF1(AI) = DOV(RCW*AI-1)
+                  BUF2(AI) = -DOV(RCW*AI)
+               ELSE
+                  BUF1(AI)= DOV(AI)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
+      IF (CARITH) THEN
+         CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
+      ENDIF
+
+      CALL RELTODIR(DMO,BUF1,NFVO,RCW)
+
+
 C##############
 C     DOO
 C##############
+
+!!! symmetrize the whole array.
+
+
+      buf1(1:nfoo) = 0.0d0
+
+      ALLOCATE(DOO_TRANS(NFOO*RCW))
+
+      CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
+
+      CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
+
+      DEALLOCATE(DOO_TRANS)
+
+      CALL XSCAL (NFOO,AP5,DOO,1)
+
+
       IJ = 0
       DO IREP = 1, NREP
          DO J = 1, NO(IREP)
@@ -261,7 +419,6 @@ C Put imaginary part after real part
 C
       IF (CARITH) THEN
          CALL DCOPY(NFOO,BUF2,1,BUF1(NFOO+1),1)
-      ELSE
       ENDIF
 c     do i = 1, nfoo
 c        print*,'real DOO ',i,buf1(i)
@@ -273,6 +430,24 @@ c     print*,'laat oo deel dmo op 0'
 C##############
 C     DVV
 C##############
+
+      buf1(1:nfvv) = 0.0d0
+
+      ALLOCATE(DVV_TRANS(NFVV*RCW))
+      CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
+      CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
+      DEALLOCATE(DVV_TRANS)
+
+      CALL XSCAL (NFVV,AP5,DVV,1)
+
+!     AA = 1
+!     DO IRP = 1, NREP
+!        N = NV(IRP)
+!        ND = (N+1) * RCW
+!        CALL XSCAL(N,AP5,DVV(AA),ND)
+!        AA = AA + N * N * RCW
+!     ENDDO
+
       AB = 0
       DO IREP = 1, NREP
          DO B = 1, NV(IREP)
@@ -302,9 +477,43 @@ C
 c     print*,'laat vv deel dmo op 0'
       CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
 C
+
+C##############
+C     DVO
+C##############
+
+      buf1(1:nfvo) = 0.0d0
+
+!     CALL XAXPY (NFVO,A1,DOV,1,DVO,1)
+
+!     CALL XSCAL (NFVO,AP5,DVO,1)
+
+      IA = 0
+      DO IREP = 1, NREP
+         DO A = 1, NV(IREP)
+            DO I = 1, NO(IREP)
+               IA = IA + 1
+               IF (CARITH) THEN
+                  BUF1(IA) = DVO(RCW*IA-1)
+                  BUF2(IA) = -DVO(RCW*IA)
+               ELSE
+                  BUF1(IA)= DVO(IA)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
+      IF (CARITH) THEN
+         CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
+      ENDIF
+
+!!!      CALL DOVTODIR (DMO,BUF1,NFVO,RCW)
+
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE CCDENSZ(IOPT,NSP,IREPSPI,EPS,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,NBUF2,NBUF3,CBUF,
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
@@ -1037,7 +1246,7 @@ C---------------Executable code--------------------------------------
             WRITE (LUPRI,*) " Retrieving CC density matrix from file"
             LABEL        = 'CCSDDENS'
             FILE_NAME    = 'CCDENS'
-            ADD_2_FOCK   = .TRUE.
+            ADD_2_FOCK   = .TRUE.    
             IERR         = 0
          CASE ("MP2 ")
             WRITE (LUPRI,*) " Retrieving MP2 density matrix from file"
@@ -1116,6 +1325,8 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
+
+
 C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"

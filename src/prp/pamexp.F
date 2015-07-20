@@ -145,11 +145,7 @@ C.........accumulate all density into one matrix
           AOC = FILEX
         END IF
       ELSE IF (WF .EQ. 'MP2 ' .OR. WF .EQ. 'CCSD') THEN
-C
-!        IF (WF.EQ.'CC  ') 
-!    &        CALL QUIT('*** ERROR in PRPEX1 *** '
-!    &        // 'CC properties not implemented')
-!
+
          IF (ORBANA) 
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
      &        // 'ORBANA not implemented for MP2')

@@ -194,8 +194,6 @@ C
 C---------------Executable code--------------------------------------
 C
 
-      write(*,*)'mark me'
-
       IF (.NOT.DOINV) THEN
          IF (FIRST) THEN
             CALL XCOPY(OFF(2),A0,0,BUF2,1)

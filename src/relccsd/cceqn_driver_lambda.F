@@ -1,11 +1,12 @@
       SUBROUTINE cceqn_driver_lambda(MAXIT,EPS,FOO,FVO,FVV,L1,S1,L2,S2,
      &                 W_OOOO,CZ,W_VOOV,W_OVVO,W_OVOO,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
-     &                 NBUF2,NBUF3                              )
+     &                 NBUF2,NBUF3)
 
       use interface_to_mpi
       use xmlout
       use intermediates_1b_2b
+      use lambda_equation
 
       IMPLICIT INTEGER (A-Z)
 
@@ -34,8 +35,9 @@ C     for diis ...
       REAL*8 CC1(*)
       REAL*8 BB1(*),BB2(*)
 
-      REAL*8 RMS,CONV,RMS1,ddot
+      REAL*8 RMS,CONV,RMS1,ddot,sum1,sum2
       REAL*8 DIAG
+      INTEGER k,l
 
 C     for Fock space ...
 
@@ -55,29 +57,6 @@ C---------------Common Blocks--------------------------------------
 #if defined (VAR_MPI)
       DIMENSION ISTAT(df_MPI_STATUS_SIZE)
 #endif
-
-
-
-      interface
-
-      subroutine lambda_equation_L2 (t1,t2,l1,l2,ho,hv,hov, 
-     &             w_voov,w_oooo,G_oo,G_vv,buf1,buf2,
-     &             buf3,nbuf3,resL2,iprnt)
-
-      integer,intent(in) :: nbuf3,iprnt
-      real(8),intent(in) :: ho(*),hv(*),hov(*)     ! one body intermediates
-      real(8),intent(in) :: w_voov(*),w_oooo(*)! two body intermediates 
-      real(8),intent(in) :: G_vv(*),
-     &                         G_oo(*)              ! G-intermediates  
-      real(8),intent(in) :: t1(*),t2(*)! converged T1 amplitude
-      real(8),intent(in) :: L1(*),L2(*)! L1 and L2 amplitudes from last iteration.
-      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)      ! buffer arrays 
-      real*8,intent(out) :: ResL2(*)          ! residue for L2 amplitude  
-
-      end subroutine
-
-      end interface
-
 
 C---------------Local variables--------------------------------------
 
@@ -119,13 +98,12 @@ C     Initialize the work arrays to zero.
                         
          call getampt (s1,s2)
 
-       CALL ZCORE (L1,L2)
+       CALL ZCORE (S1,S2)
 
        do i = 1, ndimt2
 
         if (abs(S2(i)) <= 1.0d-14) then
         S2(i) = 0.0d0
-!      write(*,*)'value of weird T2',s2(i)
         endif
 
        enddo
@@ -133,7 +111,6 @@ C     Initialize the work arrays to zero.
        do i = 1, ndimt1
 
        if (abs(S1(i)) <= 1.0d-14) then
-!      write(*,*)'value of weird T1',s1(i)
        S1(i) = 0.0d0
        endif
 
@@ -269,18 +246,14 @@ C     Initialize the work arrays to zero.
 
 !     Making non-sequential G_ea, G_im intermediates for lambda equations
 
-!      ResL1 = 0.0d0
-!      ResL2 = 0.0d0
+!      allocate (G_vv(ivv(nrep+1)*rcw))
+!      allocate (G_oo(ioo(nrep+1)*rcw))
 
-      allocate (G_vv(ivv(nrep+1)*rcw))
-      allocate (G_oo(ioo(nrep+1)*rcw))
-
-!     allocate(G_vv(nfvv*rcw))
-!     allocate(G_oo(nfoo*rcw))
+      allocate(G_vv(nfvv*rcw))
+      allocate(G_oo(nfoo*rcw))
 
        G_vv = 0.0d0
        G_oo = 0.0d0
-
 
       call G_intm (s2,l2,G_vv,G_oo)
 
@@ -289,8 +262,6 @@ C     Initialize the work arrays to zero.
       CALL XTIME(5,1,'- L1 equations                  ')
            
       if (ndimt1 > 0) then
-
-!      ResL1 = 0.0d0
 
        call xcopy (ndimt1,hov,1,ResL1,1)
        CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_voov,w_ovoo,
@@ -305,7 +276,6 @@ C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
       CALL XTIME(5,1,'-- L2 EQNS                     ')
 
-       ResL2 = 0.0d0
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
      &                            G_oo,G_vv,buf1,buf2,buf3,
      &                            nbuf3,resL2,iprnt)
@@ -338,24 +308,29 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
-!      rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
-!      rms = sqrt((rms)/(ndimt1+ndimt2))
+       rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
+       rms = sqrt((rms)/(ndimt1+ndimt2))
 
-       rms1 = sum(abs(resL1))+sum(abs(resL2))
-       rms1 = rms1/(ndimt1+ndimt2)
+!      sum1 = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
 
-       call denom (eps,resL1,resL2,resL1,resL2)
+!      sum2  = sum(abs(resL1))+sum(abs(resL2))
+!      rms  = sum2/(ndimt1+ndimt2)
 
+!      sum2 = sum2*sum2
+       
+!      rms = sqrt(abs(sum1-sum2))/(ndimt1+ndimt2) 
 
-!       write(*,*)'dot product of RESL1',ddot(ndimt1,resL1,1,resL1,1)
-!       write(*,*)'dot product of RESL2',ddot(ndimt2,resL2,1,resL2,1)
+      write(*,*)'maximum value RESL1',maxval(abs(resl1))
+      write(*,*)'maximum value RESL2',maxval(abs(resl2))
+
+       call denom_L (eps,resL1,resL2,resl1,resl2)
 
 !------------------------------------------------------------------------------------------------------------
-!       here i have summed the residues and old L amplitude values with a negative sign because the denominatior
-!       has opposite sign w.r.t. the T amplitudes, which has been used in the denom routine 
+!      here i have summed the residues and old L amplitude values with a negative sign because the denominatior
+!      has opposite sign w.r.t. the T amplitudes, which has been used in the denom routine 
 !-------------------------------------------------------------------------------------------------------------
-      call xaxpy (ndimt1,A1,resL1,1,l1,1)
-      call xaxpy (ndimt2,A1,resL2,1,l2,1)
+       call xaxpy (ndimt1,-a1,resL1,1,l1,1)
+       call xaxpy (ndimt2,-a2,resL2,1,l2,1)
 
        do i = 1, ndimt1
 
@@ -364,16 +339,14 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
        enddo
 
        do i = 1, ndimt2
-
        if (abs(L2(i)) <= 1.0d-14) L2(i) = 0.0d0
-
        enddo
 
       CALL ZCORE (L1,L2)
 
       CALL XTIME(5,1,'- DIIS extrapolation            ')
       call diisx(ndimt1,ndimt2,l1,l2,   
-     &           it,cc1,bb1,itc,bb2,rms)
+     &           it,cc1,bb1,itc,bb2,rms1)
       CALL XTIME(5,2,'- DIIS extrapolation            ')
 
 !  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
@@ -382,8 +355,7 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
       CALL PARTS (2,RMS,L1,L2,BUF1,BUF2)
       CALL XTIME(4,2,'- synchronizing T1 & T2 amplitudes')
 
-
-      IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS1
+      IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS
       CALL FLSHFO(IW)
 
       if(rms.lt.conv) exit
@@ -393,9 +365,6 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
       deallocate(resL1) 
       deallocate(resL2) 
 
-        write(86,*)'L1 Amplitudes'
-        write(86,*)'---------------------'
-        write(86,5)(l1(i),i=1,ndimt1)
 
 
 !     Close and delete DIIS scratch files

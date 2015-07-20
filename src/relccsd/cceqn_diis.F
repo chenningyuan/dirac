@@ -16,9 +16,8 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T2N(*),T1N(*)
-      REAL*8 CC(MAXDIM),BB(MAXDIM+1,MAXDIM+2),BB2(MAXDIM+1,MAXDIM+2)
       REAL*8 RMS
-C
+      INTEGER NDIMT1, NDIMT2  
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
@@ -28,6 +27,8 @@ C
 #include "waio.h"
 #include "ccpar.inc"
 C
+
+      REAL*8 CC(MAXDIM),BB(MAXDIM+1,MAXDIM+2),BB2(MAXDIM+1,MAXDIM+2)
 C---------------Local variables--------------------------------------
 C
       REAL*8 XM,XMAX,XEN,XFAC,XADD,DET
@@ -40,6 +41,9 @@ C
       IF (MYPROC.NE.MASTER) RETURN
       allocate (T1O(RCW*NDIMT1))
       allocate (T2O(RCW*NDIMT2))
+
+       T1O = 0.0d0
+       T2O = 0.0d0
 C
 C     Handle special cases of initialization or finalization first
 C

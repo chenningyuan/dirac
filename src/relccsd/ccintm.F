@@ -55,10 +55,9 @@ C
       real*8 ddot
 
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 
@@ -256,10 +255,9 @@ C
 C---------------Executable code--------------------------------------
 
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 
@@ -478,10 +476,9 @@ C
       real*8 ddot
 C---------------Executable code--------------------------------------
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 C
@@ -603,10 +600,9 @@ C---------------Executable code--------------------------------------
 
 
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 
@@ -683,10 +679,9 @@ C
 C---------------Executable code--------------------------------------
 
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 
@@ -792,7 +787,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETTAU (T1,T2,TAU,appr)
+      SUBROUTINE GETTAU (T1,T2,TAU)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -812,7 +807,6 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8,intent(in) :: T1(*),T2(*)
       REAL*8,intent(out) :: TAU(*)
-      character(*),optional,intent(in) :: appr
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -823,14 +817,10 @@ C---------------Local variables--------------------------------------
 C
       REAL*8  T1MIN(2)
       DATA    T1MIN /2*0.0D0/
-      LOGICAL :: do_app
     
 C
 C---------------Executable code--------------------------------------
 C
-  
-      do_app = .false.
-      if (present(appr)) do_app =.true.
 
       CALL XCOPY (NDIMT2,T2,1,TAU,1)
 C
@@ -849,7 +839,6 @@ C
 C--------------------------------------------------------
 C TAU(AB,IJ) = T2(AB,IJ) + T1(A,I) * T1(B,J)
 C--------------------------------------------------------
-         if (.not.do_app) then
 
             IF (BRP.EQ.JRP) THEN
                AB = 1
@@ -865,7 +854,6 @@ C--------------------------------------------------------
                ENDDO
             ENDIF
 
-         endif
 C--------------------------------------------------------
 C TAU(AB,IJ) = T2(AB,IJ) - T1(A,J) * T1(B,I)
 C--------------------------------------------------------
@@ -900,7 +888,9 @@ C--------------------------------------------------------
 C
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE GETTAU2 (S1,DL,TAU)
 C
       IMPLICIT INTEGER (A-Z)
@@ -1263,10 +1253,9 @@ C
 C---------------Executable code--------------------------------------
 
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 
@@ -1436,10 +1425,9 @@ C
 C---------------Executable code--------------------------------------
 
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 C

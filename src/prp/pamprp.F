@@ -66,8 +66,6 @@ C
      &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
 
-       write(*,*)'i am here searching for the WF'
-
       DO I = 1, NPRP_WF
          WF = PRP_WF(I)
 C

@@ -145,10 +145,9 @@ C---------------Executable code--------------------------------------
 C
 
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 
@@ -547,7 +546,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,ABS,DHOLU
+      REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,DHOLU
 C
 C---------------Executable code--------------------------------------
 C
@@ -583,7 +582,8 @@ C
                    ATVAL = ABS(T1(AI))
                 ENDIF
                 IF (ATVAL.GT.DHOLU) THEN
-                  WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
+                  WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),
+     &                        NV(IRP)
                   WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
                   CALL QUIT ('Zero or negative HOMO-LUMO gap')
                 ELSE
@@ -662,6 +662,159 @@ C                 Check for small denominators, see comment above.
 C
       RETURN
       END
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+
+
+      SUBROUTINE DENOM_L (EPS,T1,T2,CT1,CT2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Divide T1 and T2 by denominators
+C
+C---------------Routines called----------------------------------------
+C
+C     XCOPY
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 EPS(*)
+      REAL*8 T1(*),T2(*)
+      COMPLEX*16 CT1(*),CT2(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,DHOLU
+C
+C---------------Executable code--------------------------------------
+C
+      DHOLU = 1.D-6
+      IA = 0
+      DO ARP = 1, NREP
+         AA = IO(NREP+1) + IV(ARP)
+      DO A = 1, NV(ARP)
+         AA = AA + 1
+         FAC1 = EPS(AA)
+         IOFF = IO(ARP)
+         DO I = 1, NO(ARP)
+             II = IOFF + I
+             FAC = FAC1 - EPS(II)
+             IA = IA + 1
+C
+C            Check for small denominators. All denominators should be
+C            larger than the minimum HOMO-LUMO gap DHOLU to avoid
+C            convergence problems. An exception is the case in which
+C            the numerator is zero (e.g. by symmetry), then we allow
+C            execution to be continued.
+C
+             IF (FAC.GT.DHOLU) THEN
+                IF (CARITH) THEN
+                   CT1(IA) = CT1(IA)/FAC
+                ELSE
+                   T1(IA) = T1(IA)/FAC
+                ENDIF
+             ELSE
+                IF (CARITH) THEN
+                   ATVAL = ABS(CT1(IA))
+                ELSE
+                   ATVAL = ABS(T1(IA))
+                ENDIF
+                IF (ATVAL.GT.DHOLU) THEN
+                  WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(ARP),
+     &                        NV(ARP)
+                  WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
+                  CALL QUIT ('Zero or negative HOMO-LUMO gap')
+                ELSE
+                  IF (CARITH) THEN
+                     CT1(IA) = A0
+                  ELSE
+                     T1(IA) = AR0
+                  ENDIF
+                ENDIF
+             ENDIF
+         ENDDO
+      ENDDO
+      ENDDO
+C
+      ABIJ = 0
+      DO ABRP = 1, NREP
+      DO 10 BRP = 1, NREP
+      BB = IV(BRP) + IO(NREP+1)
+      ARP = MULTB(BRP,ABRP+NREP,2)
+      IF (ARP.LT.BRP) GOTO 10
+      DO B = 1, NV(BRP)
+         BB = BB + 1
+         FAC1 = EPS(BB)
+            AOFF = IV(ARP) + IO(NREP+1)
+           AMIN = 1
+           IF (ARP.EQ.BRP) AMIN = B + 1
+         DO A = AMIN, NV(ARP)
+            AA = AOFF + A
+            FAC2 = EPS(AA) + FAC1
+            DO 20 JRP = 1, NREP
+            JJ = IO(JRP)
+            IRP = MULTB(JRP,ABRP+NREP,2)
+            IF (IRP.LT.JRP) GOTO 20
+            IOFF = IO(IRP)
+            DO J = 1, NO(JRP)
+               JJ = JJ + 1
+               FAC3 = FAC2 - EPS(JJ)
+               IMIN = 1
+               IF (IRP.EQ.JRP) IMIN = J + 1
+               DO I = IMIN, NO(IRP)
+                  II = IOFF + I
+                  FAC = FAC3 - EPS(II)
+                  ABIJ = ABIJ + 1
+C                 Check for small denominators, see comment above.
+                  IF (FAC.GT.DHOLU) THEN
+                     IF (CARITH) THEN
+                        CT2(ABIJ) = CT2(ABIJ)/FAC
+                     ELSE
+                        T2(ABIJ) = T2(ABIJ)/FAC
+                     ENDIF
+                  ELSE
+                     IF (CARITH) THEN
+                        ATVAL = ABS(CT2(ABIJ))
+                     ELSE
+                        ATVAL = ABS(T2(ABIJ))
+                     ENDIF
+                     IF (ATVAL.GT.DHOLU) THEN
+             WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
+             WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
+                        CALL QUIT ('Zero or negative HOMO-LUMO gap')
+                     ELSE
+                       IF (CARITH) THEN
+                          CT2(ABIJ) = A0
+                       ELSE
+                          T2(ABIJ) = AR0
+                       ENDIF
+                     ENDIF
+                  ENDIF
+               ENDDO
+            ENDDO
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+C
+      RETURN
+      END
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+
+
+
       SUBROUTINE PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
       IMPLICIT INTEGER (A-Z)
@@ -697,10 +850,9 @@ C
 C---------------Executable code--------------------------------------
 C
       interface
-         subroutine gettau(t1,t2,tau,appr)
+         subroutine gettau(t1,t2,tau)
          real*8,intent(in) :: t1(*),t2(*)
          real*8,intent(out) :: tau(*)
-         character(*),intent(in),optional :: appr
          end subroutine gettau
       end interface
 

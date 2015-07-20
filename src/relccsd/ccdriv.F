@@ -794,7 +794,6 @@ C
          CALL CCFOPR (ICALC,NSP,IREPSPI,MXCORR1,EPS)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
-        write(*,*)'hi, memory check is passed for the property module'
 
 C
       IF (DOSOPR) THEN
@@ -2593,6 +2592,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
+      use lambda_equation
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2672,7 +2672,6 @@ C
 C
       if (doccsdg) then
          WRITE (IW,*) ' CCSD gradient is being implemented,'
-!         doccsdg = .false.
          doccsdg = .true.
       endif
 
@@ -2981,6 +2980,8 @@ C       limitations elsewhere. 20120720
 C     Allocate now also this remaining work array
       call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 
+         MAXDIM = MXDIMCC
+         MAXIT  = MXITCC
 
 ! arrays specific for the use in the call sequence of cceqns subroutine.
 
@@ -3021,8 +3022,6 @@ C         this means that, for the time being, we can deallocate everything?
 #endif
 
 
-         MAXDIM = MXDIMCC
-         MAXIT  = MXITCC
 
 !--------------------------------------------------
 **ashee
@@ -3041,29 +3040,34 @@ C         this means that, for the time being, we can deallocate everything?
 
          CALL CCDUMP
 
+    5   format(10f10.6)  
+
+         TOL = 10.0D0**(-NTOLCC)
+
          CALL cceqn_driver_lambda(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
      &          a_T2 ,a_S2 ,a_AZ,wvvvo,a_H,a_Hbar,wovoo,a_HO,a_HV,a_HOV,
      &           a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3)
 
+
 !        Get amplitude part of density matrix
         allocate(l1_sort(ndimt1*rcw))
         allocate(l2_sort(ndimt2*rcw))
-
 
          call srt1c1(nrep,no,nv,a_T1,l1_sort)
          call srt1c1(nrep,noot,nvvt,a_T2,l2_sort)
 
 
-         CALL CCDENSC (1, a_S1  , l1_sort  , a_S2, l2_sort,
+         CALL CCDENSC (2, a_S1  , l1_sort  , a_S2, l2_sort,
      &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
      &                    a_DVV , a_DVO , a_DOV , a_DMO)
 
         deallocate(l1_sort)
         deallocate(l2_sort)
 
-!     call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,buf1,buf2,a_dmo)
+!!     call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2, 
+!!   &                   a_dmo)
 
 C
 C        Solve Z-vector equations 
@@ -3090,7 +3094,6 @@ C
 #endif
  451  CONTINUE
          if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
-
       
          call dealloc( a_AZ )
          call dealloc( a_H  )
