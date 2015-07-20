@@ -15,8 +15,8 @@ option(ENABLE_MPI2_DETECTION  "Enable detection of MPI-2 standard"              
 option(ENABLE_BOUNDS_CHECK    "Enable bounds check"                                       OFF)
 option(ENABLE_CODE_COVERAGE   "Enable code coverage"                                      OFF)
 option(ENABLE_STATIC_LINKING  "Enable static libraries linking"                           OFF)
-option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF) 
-option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF) 
+option(ENABLE_OLD_LINKER      "Enable static linking with older linkers"                  OFF)
+option(ENABLE_XHOST_FLAG_DETECTION "Enable xHost flag detection for Intel compilers"      OFF)
 option(ENABLE_UTILITIES       "Enable utilities"                                          ON)
 option(ENABLE_MATLAB_LOG      "Log interesting matrices in matlab format (very verbose!)" OFF)
 option(ENABLE_SANITY_CHECKS   "Enable configure-time sanity checks"                       ON)
@@ -145,66 +145,75 @@ if(ENABLE_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
         message(STATUS " PCMSolver dependencies NOT satisfied:")
         if(NOT ZLIB_FOUND)
-           IF (ENABLE_STATIC_LINKING) 
-              message(STATUS "  - install static Zlib development libraries")
-           else()
-              message(STATUS "  - install dynamic Zlib development libraries")
-           endif()
+            IF (ENABLE_STATIC_LINKING)
+                message(STATUS "  - install static Zlib development libraries")
+            else()
+                message(STATUS "  - install dynamic Zlib development libraries")
+            endif()
         endif()
     else()
-        add_definitions(-DHAS_PCMSOLVER)                                                  
+        add_definitions(-DHAS_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
         set(PCMSOLVER_TESTS ON)
-	get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
+        get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
         if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-           set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
-           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+            set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
         else()
-           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
-           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
+            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
         endif()
         set(ExternalProjectCMakeArgs
             # PCMSolver does not know profile
             if(CMAKE_BUILD_TYPE MATCHES "profile")
                 set(CMAKE_BUILD_TYPE "release")
-            endif
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-	    -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROJECT_INSTALL_PREFIX} #${PROJECT_BINARY_DIR}/external
-            -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-	    -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
-            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-	    -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
-            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-	    -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
-	    -DENABLE_CXX11_SUPPORT=OFF
-            -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-            -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-            -DEIGEN3_ROOT=${EIGEN3_ROOT}
-            -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-            -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-            -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-            -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
-            -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-	    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-	    -DENABLE_PYTHON_EMBEDDING=OFF
-	    -DENABLE_TESTS=${PCMSOLVER_TESTS}
-	    -DZLIB_ROOT=${ZLIB_ROOT}
-         )
-        
-        if(PCMSOLVER_TESTS)
-  	   add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
-        else()
-	   add_external(pcmsolver)
-        endif()	
+                endif
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROJECT_INSTALL_PREFIX} #${PROJECT_BINARY_DIR}/external
+                -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+                -DENABLE_CXX11_SUPPORT=OFF
+                -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
+                -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+                -DEIGEN3_ROOT=${EIGEN3_ROOT}
+                -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+                -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
+                -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
+                -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
+                -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
+                -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+                -DENABLE_TESTS=${PCMSOLVER_TESTS}
+                -DZLIB_ROOT=${ZLIB_ROOT}
+                -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+                -DENABLE_LOGGER=OFF
+                )
 
-	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
-	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
-        set(EXTERNAL_LIBS
-            pcm
-            getkw
-            ${ZLIB_LIBRARIES}
-            ${EXTERNAL_LIBS})
+            if(PCMSOLVER_TESTS)
+                add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+            else()
+                add_external(pcmsolver)
+            endif()
+
+            link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+                ${EXTERNAL_PROJECT_INSTALL_PREFIX})
+            # DIRAC needs to be linked against some Boost libraries
+            find_package(Boost QUIET 1.54.0 COMPONENTS chrono system timer)
+            if(NOT Boost_FOUND)
+                set(Boost_LOCATION ${EXTERNAL_PROJECT_INSTALL_PREFIX}/boost/lib)
+                list(APPEND Boost_LIBRARIES ${Boost_LOCATION}/libboost_chrono-1_54.a ${Boost_LOCATION}/libboost_system-1_54.a ${Boost_LOCATION}/libboost_timer-1_54.a)
+            endif()
+            set(EXTERNAL_LIBS
+                stdc++
+                pcm
+                getkw
+                ${Boost_LIBRARIES}
+                ${ZLIB_LIBRARIES}
+                ${EXTERNAL_LIBS})
     endif()
     set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 else()
@@ -304,13 +313,13 @@ if(ENABLE_UTILITIES)
     if(ENABLE_SECQUANT)
         compile_standalone(secquant.x utils/sec_quant.F90 "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
+    if(ENABLE_HSCC) # note: this functionality depends on the pam flag
         compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
+    if(ENABLE_HSFS) # note: this functionality depends on the pam flag
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_MEM_TEST) # 
+    if(ENABLE_MEM_TEST) #
         compile_standalone(test_allocator.x utils/test_allocator.F90 "${LIST_OF_EXECUTABLES}")
     endif()
 endif()
