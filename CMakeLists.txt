@@ -191,6 +191,7 @@ if(ENABLE_PCMSOLVER)
                 -DZLIB_ROOT=${ZLIB_ROOT}
                 -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
                 -DENABLE_LOGGER=OFF
+                -DENABLE_TIMER=OFF
                 )
 
             if(PCMSOLVER_TESTS)
@@ -201,17 +202,10 @@ if(ENABLE_PCMSOLVER)
 
             link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
-            # DIRAC needs to be linked against some Boost libraries
-            find_package(Boost QUIET 1.54.0 COMPONENTS chrono system timer)
-            if(NOT Boost_FOUND)
-                set(Boost_LOCATION ${EXTERNAL_PROJECT_INSTALL_PREFIX}/boost/lib)
-                list(APPEND Boost_LIBRARIES ${Boost_LOCATION}/libboost_chrono-1_54.a ${Boost_LOCATION}/libboost_system-1_54.a ${Boost_LOCATION}/libboost_timer-1_54.a)
-            endif()
             set(EXTERNAL_LIBS
                 stdc++
                 pcm
                 getkw
-                ${Boost_LIBRARIES}
                 ${ZLIB_LIBRARIES}
                 ${EXTERNAL_LIBS})
     endif()
