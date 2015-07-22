@@ -3,6 +3,7 @@
 14.2 (20XX-XX-XX)
 -----------------
 
+- Update PCMSolver module to its [1.0.4 version](https://github.com/PCMSolver/pcmsolver/releases).
 - This will be the next patch.
 - Write me ...
 
