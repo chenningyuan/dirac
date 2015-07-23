@@ -1311,7 +1311,7 @@ C       CALL PRQMAT(FMOM,NSTRT*2,NSTRT*2,NSTRT*2,NSTRT*2,MINO(NZ,2),
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck moltodir */
-      SUBROUTINE RELTODIR(XMO,XMOM,NFVO,IRCW)
+      SUBROUTINE RELTODIR(XMO,XMOM,NFVO,IRCW,NREP,NV,NO)
 C***********************************************************************
 C     
 C     Joost van Stralen, april 2002
@@ -1329,41 +1329,80 @@ C
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 C
+      INTEGER NREP 
       DIMENSION XMO(NORBT,NORBT,NZ)
       DIMENSION XMOM(NFVO,IRCW)
+      DIMENSION NV(NREP),NO(NREP)
+
+      integer,allocatable :: idxu2g(:,:),idyu2g(:,:) 
 
       CALL DZERO(XMO,NORBT*NORBT*NZ)
-C
-C
+
+      allocate(idxu2g(norbt,nrep),idyu2g(norbt,nrep))
+
+      idxu2g(1:norbt,1:nrep) = 0
+      idyu2g(1:norbt,1:nrep) = 0
+
+      call Super_Symmetry(nrep,nv,idxu2g,'particle') 
+
+      call Super_Symmetry(nrep,no,idyu2g,'hole') 
+
       IF (nz.NE.4) THEN
-      IOFF1 = 0
-      IOFF2 = 0
-      IOFF3 = 0
+
+         if(nfsym == 1)then
+           orbc = 1
+           do j = 1, nrep,2
+             CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
+     &                              xmo,norbt,norbt,idxu2g(1,j),
+     &                              idyu2g(1,j),nz)
+           orbc = orbc + 2*nv(j)*no(j)
+           end do
+         else if(nfsym == 2)then
+           do k = 1, nfsym 
+             if(k == 1)then
+               orbc = 1
+               do j = 1, nrep/2,2
+                 CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
+     &                                  xmo,norbt,norbt,idxu2g(1,j),
+     &                                  idyu2g(1,j),nz)
+                 orbc = orbc + 2*nv(j)*no(j)
+               end do
+             else if(k == 2)then
+               do j = nrep/2+1,nrep,2
+                 CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
+     &                                  xmo,norbt,norbt,idxu2g(1,j),
+     &                                  idyu2g(1,j),nz)
+                 orbc = orbc + 2*nv(j)*no(j)
+               end do
+             end if
+           end do
+         end if
+
+         deallocate(idxu2g,idyu2g)
+
+         IOFF1 = 0
+         IOFF2 = 0
+         IOFF3 = 0
+
+         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
+
       DO IFSYM = 1, NFSYM
          IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
          IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
-         IAI = 1
-         DO I = 1, NAOCC(IFSYM)
-            CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,1),1,
-     &                              XMO(1+IOFF1,I+IOFF2,1),1)
-
-         IAI = IAI + NAVIR(IFSYM)
-         ENDDO
-         IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
           IAI = 1
           DO I = 1, NAOCC(IFSYM)
               CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
      &                                XMO(1+IOFF1,I+IOFF2,2),1)
           IAI = IAI + NAVIR(IFSYM)
           ENDDO
-         ENDIF
         IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
         IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
         IOFF3 = IOFF3 + 2*NAVIR(IFSYM)*NAOCC(IFSYM)
       ENDDO
-C
+      ENDIF
+
       ELSE
-C
+
       IOFF1 = 0
       IOFF2 = 0
       IOFF3 = 0
@@ -1532,122 +1571,125 @@ C
       DIMENSION DMO(NORBT,NORBT,NZ)
       DIMENSION DMOM(NFOO,IRCW)
       DIMENSION NO(NREP)
-      integer, allocatable :: ibeig(:)
+!!      integer, allocatable :: ibeig(:)
       integer, allocatable :: idxu2g(:,:)
-      integer              :: nash_x(1:nfsym)
+!!      integer              :: nash_x(1:nfsym)
 C
 C
 !!!!       CALL DZERO(DMO,NORBT*NORBT*NZ)
       
 C
 !     !> read ibeig (info array on boson irreps) from DFCOEF
-      allocate(ibeig(norbt),idxu2g(norbt,nrep))
-      ibeig(1:norbt)         = 0
+      allocate(idxu2g(norbt,nrep))
+!!      allocate(ibeig(norbt),idxu2g(norbt,nrep))
+!!      ibeig(1:norbt)         = 0
       idxu2g(1:norbt,1:nrep) = 0
-      nash_x(1:nfsym)        = 0
+!!      nash_x(1:nfsym)        = 0
 
-      if(nfsym == 1)then
-        do j = 1, nrep,2
-          nash_x(1) = nash_x(1) + no(j)
-        end do
-      else if(nfsym == 2)then
-        do i = 1, nfsym 
-          if(i == 1)then
-             do j = 1, nrep/2,2
-               nash_x(i) = nash_x(i) + no(j)
-             end do
-          else if(i == 2)then
-             do j = nrep/2+1,nrep,2
-               nash_x(i) = nash_x(i) + no(j)
-             end do
-          end if
-        end do
-      end if
-      if( linear .or. spinfr )then
-        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
-        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
-        close(lucoef,STATUS='KEEP')
-      end if
+!!!   if(nfsym == 1)then
+!!!     do j = 1, nrep,2
+!!!       nash_x(1) = nash_x(1) + no(j)
+!!!     end do
+!!!   else if(nfsym == 2)then
+!!!     do i = 1, nfsym 
+!!!       if(i == 1)then
+!!!          do j = 1, nrep/2,2
+!!!            nash_x(i) = nash_x(i) + no(j)
+!!!          end do
+!!!       else if(i == 2)then
+!!!          do j = nrep/2+1,nrep,2
+!!!            nash_x(i) = nash_x(i) + no(j)
+!!!          end do
+!!!       end if
+!!!     end do
+!!!   end if
+!!!   if( linear .or. spinfr )then
+!!!     call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
+!!!     call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+!!!     close(lucoef,STATUS='KEEP')
+!!!   end if
 
-      if(nfsym == 1)then
-        indx_loop = 0
-        do j = 1, nrep,2
-          indx_loop = indx_loop + 1
-          if(no(j) > 0)then
-            orbc = 0
-            is_symm = 0
-            if(linear)then
-              !> get mj-value
-              is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-            else if(spinfr)then
-              is_symm = mod(indx_loop,2)+1 - 1
-            end if
-            do i = 1, nash_x(1)
-              if(is_symm == ibeig(iorb(1)       +
-     &                            npsh(1)       + 
-     &                            NDMOQC(2,1,1) +
-     &                            i))then
-                orbc = orbc + 1
-                IDXU2G(orbc,j) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
-              end if
-            end do
-          end if
-        end do
-      else if(nfsym == 2)then
-        do k = 1, nfsym 
-          indx_loop = 0
-          if(k == 1)then
-            do j = 1, nrep/2,2
-              indx_loop = indx_loop + 1
-              if(no(j) > 0)then
-                orbc = 0
-                is_symm = 0
-                if(linear)then
-                  !> get mj-value
-                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-                else if(spinfr)then
-                  is_symm = mod(indx_loop,2)+1 - 1
-                end if
-                do i = 1, nash_x(k)
-                  if(is_symm == ibeig(iorb(k)       +
-     &                                npsh(k)       + 
-     &                                NDMOQC(2,k,1) +
-     &                                i))then
-                    orbc = orbc + 1
-                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
-                  end if
-                end do
-!     print *, 'idxu2g is for jrep ...',idxu2g(1:norbt,j),j
-              end if
-            end do
-          else if(k == 2)then
-            do j = nrep/2+1,nrep,2
-              indx_loop = indx_loop + 1
-              if(no(j) > 0)then
-                orbc = 0
-                is_symm = 0
-                if(linear)then
-                  !> get mj-value
-                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-                else if(spinfr)then
-                  is_symm = mod(indx_loop,2)+1 - 1
-                end if
-                do i = 1, nash_x(k)
-                  if(is_symm == ibeig(iorb(k)       +
-     &                                npsh(k)       + 
-     &                                NDMOQC(2,k,1) +
-     &                                i))then
-                    orbc = orbc + 1
-                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
-                  end if
-                end do
-!     print *, 'idxu2g is for jrep ...',idxu2g(1:norbt,j),j
-              end if
-            end do
-          end if
-        end do
-      end if
-    
+!!!   if(nfsym == 1)then
+!!!     indx_loop = 0
+!!!     do j = 1, nrep,2
+!!!       indx_loop = indx_loop + 1
+!!!       if(no(j) > 0)then
+!!!         orbc = 0
+!!!         is_symm = 0
+!!!         if(linear)then
+!!!           !> get mj-value
+!!!           is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+!!!         else if(spinfr)then
+!!!           is_symm = mod(indx_loop,2)+1 - 1
+!!!         end if
+!!!         do i = 1, nash_x(1)
+!!!           if(is_symm == ibeig(iorb(1)       +
+!!!  &                            npsh(1)       + 
+!!!  &                            NDMOQC(2,1,1) +
+!!!  &                            i))then
+!!!             orbc = orbc + 1
+!!!             IDXU2G(orbc,j) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
+!!!           end if
+!!!         end do
+!!!       end if
+!!!     end do
+!!!   else if(nfsym == 2)then
+!!!     do k = 1, nfsym 
+!!!       indx_loop = 0
+!!!       if(k == 1)then
+!!!         do j = 1, nrep/2,2
+!!!           indx_loop = indx_loop + 1
+!!!           if(no(j) > 0)then
+!!!             orbc = 0
+!!!             is_symm = 0
+!!!             if(linear)then
+!!!               !> get mj-value
+!!!               is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+!!!             else if(spinfr)then
+!!!               is_symm = mod(indx_loop,2)+1 - 1
+!!!             end if
+!!!             do i = 1, nash_x(k)
+!!!               if(is_symm == ibeig(iorb(k)       +
+!!!  &                                npsh(k)       + 
+!!!  &                                NDMOQC(2,k,1) +
+!!!  &                                i))then
+!!!                 orbc = orbc + 1
+!!!                 IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+!!!               end if
+!!!             end do
+!!!   print *, 'idxu2g is for jrep ...',idxu2g(1:norbt,j),j
+!!!           end if
+!!!         end do
+!!!       else if(k == 2)then
+!!!         do j = nrep/2+1,nrep,2
+!!!           indx_loop = indx_loop + 1
+!!!           if(no(j) > 0)then
+!!!             orbc = 0
+!!!             is_symm = 0
+!!!             if(linear)then
+!!!               !> get mj-value
+!!!               is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+!!!             else if(spinfr)then
+!!!               is_symm = mod(indx_loop,2)+1 - 1
+!!!             end if
+!!!             do i = 1, nash_x(k)
+!!!               if(is_symm == ibeig(iorb(k)       +
+!!!  &                                npsh(k)       + 
+!!!  &                                NDMOQC(2,k,1) +
+!!!  &                                i))then
+!!!                 orbc = orbc + 1
+!!!                 IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+!!!               end if
+!!!             end do
+!!!   print *, 'idxu2g is for jrep ...',idxu2g(1:norbt,j),j
+!!!           end if
+!!!         end do
+!!!       end if
+!!!     end do
+!!!   end if
+
+      call Super_Symmetry(nrep,no,idxu2g,'hole') 
+
       IF(NZ.NE.4) THEN
          IOFF1 = 0
          IOFF2 = 0
@@ -1657,7 +1699,7 @@ C
            do j = 1, nrep,2
              CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
-     &                              nz)
+     &                              idxu2g(1,j),nz)
            orbc = orbc + 2*no(j)**2
            end do
          else if(nfsym == 2)then
@@ -1667,21 +1709,22 @@ C
                do j = 1, nrep/2,2
                  CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
-     &                                  nz)
+     &                                  idxu2g(1,j),nz)
                  orbc = orbc + 2*no(j)**2
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
                  CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
-     &                                  nz)
+     &                                  idxu2g(1,j),nz)
                  orbc = orbc + 2*no(j)**2
                end do
              end if
            end do
          end if
 
-         deallocate(ibeig,idxu2g)
+!!         deallocate(ibeig,idxu2g)
+         deallocate(idxu2g)
 
          IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
          DO IFSYM = 1, NFSYM
@@ -1694,7 +1737,7 @@ C
                ENDDO
             IOFF1 = IOFF1 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) +NORB(IFSYM)
             IOFF4 = IOFF4 + 1
-            IOFF2 = IOFF2 + 2*no(ifsym)+no(ifsym)
+            IOFF2 = IOFF2 + 2*no(ifsym)*no(ifsym)  !Avijit. probably, it was a bug.
          ENDDO
          ENDIF
       ELSE
@@ -1753,115 +1796,119 @@ C
       DIMENSION DMO(NORBT,NORBT,NZ)
       DIMENSION DMOM(NFVV,IRCW)
       DIMENSION NV(NREP)
-      integer, allocatable :: ibeig(:)
+!!      integer, allocatable :: ibeig(:)
       integer, allocatable :: idxu2g(:,:)
-      integer              :: nash_x(1:nfsym)
+!!      integer              :: nash_x(1:nfsym)
 C
 !     !> read ibeig (info array on boson irreps) from DFCOEF
-      allocate(ibeig(norbt),idxu2g(norbt,nrep))
-      ibeig(1:norbt)         = 0
+!!      allocate(ibeig(norbt),idxu2g(norbt,nrep))
+      allocate(idxu2g(norbt,nrep))
+!!      ibeig(1:norbt)         = 0
       idxu2g(1:norbt,1:nrep) = 0
-      nash_x(1:nfsym)        = 0
+!!      nash_x(1:nfsym)        = 0
 
-      if(nfsym == 1)then
-        do j = 1, nrep,2
-          nash_x(1) = nash_x(1) + nv(j)
-        end do
-      else if(nfsym == 2)then
-        do i = 1, nfsym 
-          if(i == 1)then
-             do j = 1, nrep/2,2
-               nash_x(i) = nash_x(i) + nv(j)
-             end do
-          else if(i == 2)then
-             do j = nrep/2+1,nrep,2
-               nash_x(i) = nash_x(i) + nv(j)
-             end do
-          end if
-        end do
-      end if
-      if( linear .or. spinfr )then
-        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
-        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
-        close(lucoef,STATUS='KEEP')
-      end if
+!!    if(nfsym == 1)then
+!!      do j = 1, nrep,2
+!!        nash_x(1) = nash_x(1) + nv(j)
+!!      end do
+!!    else if(nfsym == 2)then
+!!      do i = 1, nfsym 
+!!        if(i == 1)then
+!!           do j = 1, nrep/2,2
+!!             nash_x(i) = nash_x(i) + nv(j)
+!!           end do
+!!        else if(i == 2)then
+!!           do j = nrep/2+1,nrep,2
+!!             nash_x(i) = nash_x(i) + nv(j)
+!!           end do
+!!        end if
+!!      end do
+!!    end if
+!!    if( linear .or. spinfr )then
+!!      call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
+!!      call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+!!      close(lucoef,STATUS='KEEP')
+!!    end if
 
-      if(nfsym == 1)then
-        indx_loop = 0
-        do j = 1, nrep,2
-          indx_loop = indx_loop + 1
-          if(nv(j) > 0)then
-            orbc = 0
-            is_symm = 0
-            if(linear)then
-              !> get mj-value
-              is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-            else if(spinfr)then
-              is_symm = mod(indx_loop,2)+1 - 1
-            end if
-            do i = 1, nash_x(1)
-              if(is_symm == ibeig(iorb(1)       +
-     &                            npsh(1)       + 
-     &                            nocc(1)       +
-     &                            i))then
-                orbc = orbc + 1
-                IDXU2G(orbc,j) = iorb(1)+npsh(1)+nocc(1)+i
-              end if
-            end do
-          end if
-        end do
-      else if(nfsym == 2)then
-        do k = 1, nfsym 
-          indx_loop = 0
-          if(k == 1)then
-            do j = 1, nrep/2,2
-              indx_loop = indx_loop + 1
-              if(nv(j) > 0)then
-                orbc = 0
-                is_symm = 0
-                if(linear)then
-                  !> get mj-value
-                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-                else if(spinfr)then
-                  is_symm = mod(indx_loop,2)+1 - 1
-                end if
-                do i = 1, nash_x(k)
-                  if(is_symm == ibeig(iorb(k)       +
-     &                                npsh(k)       + 
-     &                                nocc(k)       +
-     &                                i))then
-                    orbc = orbc + 1
-                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
-                  end if
-                end do
-              end if
-            end do
-          else if(k == 2)then
-            do j = nrep/2+1,nrep,2
-              indx_loop = indx_loop + 1
-              if(nv(j) > 0)then
-                orbc = 0
-                is_symm = 0
-                if(linear)then
-                  !> get mj-value
-                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-                else if(spinfr)then
-                  is_symm = mod(indx_loop,2)+1 - 1
-                end if
-                do i = 1, nash_x(k)
-                  if(is_symm == ibeig(iorb(k)       +
-     &                                npsh(k)       + 
-     &                                nocc(k)       +
-     &                                i))then
-                    orbc = orbc + 1
-                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
-                  end if
-                end do
-              end if
-            end do
-          end if
-        end do
-      end if
+!!    if(nfsym == 1)then
+!!      indx_loop = 0
+!!      do j = 1, nrep,2
+!!        indx_loop = indx_loop + 1
+!!        if(nv(j) > 0)then
+!!          orbc = 0
+!!          is_symm = 0
+!!          if(linear)then
+!!            !> get mj-value
+!!            is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+!!          else if(spinfr)then
+!!            is_symm = mod(indx_loop,2)+1 - 1
+!!          end if
+!!          do i = 1, nash_x(1)
+!!            if(is_symm == ibeig(iorb(1)       +
+!!   &                            npsh(1)       + 
+!!   &                            nocc(1)       +
+!!   &                            i))then
+!!              orbc = orbc + 1
+!!              IDXU2G(orbc,j) = iorb(1)+npsh(1)+nocc(1)+i
+!!            end if
+!!          end do
+!!        end if
+!!      end do
+!!    else if(nfsym == 2)then
+!!      do k = 1, nfsym 
+!!        indx_loop = 0
+!!        if(k == 1)then
+!!          do j = 1, nrep/2,2
+!!            indx_loop = indx_loop + 1
+!!            if(nv(j) > 0)then
+!!              orbc = 0
+!!              is_symm = 0
+!!              if(linear)then
+!!                !> get mj-value
+!!                is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+!!              else if(spinfr)then
+!!                is_symm = mod(indx_loop,2)+1 - 1
+!!              end if
+!!              do i = 1, nash_x(k)
+!!                if(is_symm == ibeig(iorb(k)       +
+!!   &                                npsh(k)       + 
+!!   &                                nocc(k)       +
+!!   &                                i))then
+!!                  orbc = orbc + 1
+!!                  IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
+!!                end if
+!!              end do
+!!            end if
+!!          end do
+!!        else if(k == 2)then
+!!          do j = nrep/2+1,nrep,2
+!!            indx_loop = indx_loop + 1
+!!            if(nv(j) > 0)then
+!!              orbc = 0
+!!              is_symm = 0
+!!              if(linear)then
+!!                !> get mj-value
+!!                is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+!!              else if(spinfr)then
+!!                is_symm = mod(indx_loop,2)+1 - 1
+!!              end if
+!!              do i = 1, nash_x(k)
+!!                if(is_symm == ibeig(iorb(k)       +
+!!   &                                npsh(k)       + 
+!!   &                                nocc(k)       +
+!!   &                                i))then
+!!                  orbc = orbc + 1
+!!                  IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
+!!                end if
+!!              end do
+!!            end if
+!!          end do
+!!        end if
+!!      end do
+!!    end if
+
+      call Super_Symmetry(nrep,nv,idxu2g,'particle') 
+
       IF(NZ.NE.4) THEN
          IOFF1 = 0
          IOFF2 = 0
@@ -1871,7 +1918,7 @@ C
            do j = 1, nrep,2
              CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
-     &                              nz)
+     &                              idxu2g(1,j),nz)
            orbc = orbc + 2*nv(j)**2
            end do
          else if(nfsym == 2)then
@@ -1881,21 +1928,22 @@ C
                do j = 1, nrep/2,2
                  CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
-     &                                  nz)
+     &                                  idxu2g(1,j),nz)
                  orbc = orbc + 2*nv(j)**2
                end do
              else if(k == 2)then
                do j = nrep/2+1,nrep,2
                  CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
      &                                  dmo,norbt,norbt,idxu2g(1,j),
-     &                                  nz)
+     &                                  idxu2g(1,j),nz)
                  orbc = orbc + 2*nv(j)**2
                end do
              end if
            end do
          end if
 
-         deallocate(ibeig,idxu2g)
+!!         deallocate(ibeig,idxu2g)
+         deallocate(idxu2g)
 
          IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
             DO IFSYM = 1, NFSYM
@@ -1943,7 +1991,7 @@ C     k
 C
       RETURN
       END
-      SUBROUTINE MATGAT_symm_relcc(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,
+      SUBROUTINE MATGAT_symm_relcc(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,IDY,
      &                             NZ)
 !***********************************************************************
 !
@@ -1959,7 +2007,7 @@ C
       implicit none
       real*8, intent(in)  :: AMAT(NRA,NCA,NZ) 
       real*8, intent(out) :: BMAT(NRB,NCB,NZ)
-      integer, intent(in) :: IDX(*)
+      integer, intent(in) :: IDX(*),IDY(*)
       integer, intent(in) :: nra, nrb, nca, ncb, nz
 
       real(8), parameter  :: threshold = 1.0d-16
@@ -1967,7 +2015,7 @@ C
 C
       DO IZ = 1, NZ
          do 5 J = 1, NCA
-            JJ = IDX(J) 
+            JJ = IDY(J) 
             do 10 K = 1, NRA
                KK = IDX(K)
                if(abs(AMAT(K,J,IZ)).lt.threshold)then
@@ -1980,6 +2028,190 @@ C
       END DO
       END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      subroutine Super_Symmetry(nrep,orb_dim,idxu2g,orbital_type)
+
+!------------------------------------------------------------
+!
+!------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbtr3.h"
+   
+      integer, intent(in) :: nrep
+      integer, intent(in)    :: orb_dim(nrep) 
+      character(*), intent(in)    :: orbital_type 
+      integer, intent(inout)   :: idxu2g(norbt,nrep)
+
+      integer, allocatable :: ibeig(:)
+      integer              :: nash_x(1:nfsym)
+
+!     !> read ibeig (info array on boson irreps) from DFCOEF
+      allocate(ibeig(norbt))
+      ibeig(1:norbt)         = 0
+      nash_x(1:nfsym)        = 0
+
+      if(nfsym == 1)then
+        do j = 1, nrep,2
+          nash_x(1) = nash_x(1) + orb_dim(j)
+        end do
+      else if(nfsym == 2)then
+        do i = 1, nfsym 
+          if(i == 1)then
+             do j = 1, nrep/2,2
+               nash_x(i) = nash_x(i) + orb_dim(j)
+             end do
+          else if(i == 2)then
+             do j = nrep/2+1,nrep,2
+               nash_x(i) = nash_x(i) + orb_dim(j)
+             end do
+          end if
+        end do
+      end if
+      if( linear .or. spinfr )then
+        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
+        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        close(lucoef,STATUS='KEEP')
+      end if
+
+      if(nfsym == 1)then
+        indx_loop = 0
+        do j = 1, nrep,2
+          indx_loop = indx_loop + 1
+          if(orb_dim(j) > 0)then
+            orbc = 0
+            is_symm = 0
+            if(linear)then
+              !> get mj-value
+              is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+            else if(spinfr)then
+              is_symm = mod(indx_loop,2)+1 - 1
+            end if
+            do i = 1, nash_x(1)
+
+            select case (orbital_type)
+
+            case('hole')
+
+                  if(is_symm == ibeig(iorb(1)       +
+     &                                npsh(1)       + 
+     &                                NDMOQC(2,1,1) +
+     &                                i))then
+                    orbc = orbc + 1
+                    IDXU2G(orbc,j) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
+
+                  end if
+            case('particle')
+
+              if(is_symm == ibeig(iorb(1)       +
+     &                            npsh(1)       + 
+     &                            nocc(1)       +
+     &                            i))then
+                orbc = orbc + 1
+                IDXU2G(orbc,j) = iorb(1)+npsh(1)+nocc(1)+i
+
+              end if
+             end select
+
+            end do
+          end if
+        end do
+      else if(nfsym == 2)then
+        do k = 1, nfsym 
+          indx_loop = 0
+          if(k == 1)then
+            do j = 1, nrep/2,2
+              indx_loop = indx_loop + 1
+              if(orb_dim(j) > 0)then
+                orbc = 0
+                is_symm = 0
+                if(linear)then
+                  !> get mj-value
+                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+                else if(spinfr)then
+                  is_symm = mod(indx_loop,2)+1 - 1
+                end if
+                do i = 1, nash_x(k)
+
+            select case (orbital_type)
+
+            case('hole')
+
+                  if(is_symm == ibeig(iorb(k)       +
+     &                                npsh(k)       + 
+     &                                NDMOQC(2,k,1) +
+     &                                i))then
+                    orbc = orbc + 1
+                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+
+                  end if
+            case('particle')
+
+              if(is_symm == ibeig(iorb(k)       +
+     &                            npsh(k)       + 
+     &                            nocc(k)       +
+     &                            i))then
+                orbc = orbc + 1
+                IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
+
+              end if
+             end select
+
+                end do
+              end if
+            end do
+          else if(k == 2)then
+            do j = nrep/2+1,nrep,2
+              indx_loop = indx_loop + 1
+              if(orb_dim(j) > 0)then
+                orbc = 0
+                is_symm = 0
+                if(linear)then
+                  !> get mj-value
+                  is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+                else if(spinfr)then
+                  is_symm = mod(indx_loop,2)+1 - 1
+                end if
+                do i = 1, nash_x(k)
+
+
+            select case (orbital_type)
+
+            case('hole')
+
+                  if(is_symm == ibeig(iorb(k)       +
+     &                                npsh(k)       + 
+     &                                NDMOQC(2,k,1) +
+     &                                i))then
+                    orbc = orbc + 1
+                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+
+                  end if
+            case('particle')
+
+              if(is_symm == ibeig(iorb(k)       +
+     &                            npsh(k)       + 
+     &                            nocc(k)       +
+     &                            i))then
+                orbc = orbc + 1
+                IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
+
+              end if
+             end select
+
+                end do
+              end if
+            end do
+          end if
+        end do
+      end if
+
+      end subroutine
+
 
 C  /* Deck dmp2ao */
       SUBROUTINE DMP2AO(DMO,DMAT,CMO,WORK,KFREE,LFREE)
