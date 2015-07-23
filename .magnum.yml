@@ -9,6 +9,8 @@
 # (Settings -> Build Configuration).
 
 install:
+    # update sources
+    - sudo apt-get update -y
     # install software
     - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen python-dateutil python-pyparsing python-numpy python-matplotlib python-pip python-setuptools python-dev -y
     # install Python packages with pip
