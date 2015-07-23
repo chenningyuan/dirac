@@ -10,7 +10,6 @@
 branches:
     only:
         - master
-        - shippable
 
 # environment variable for Dirac MPI command
 env:
