@@ -10,6 +10,7 @@
 branches:
     only:
         - master
+        - shippable
 
 # environment variable for Dirac MPI command
 env:
@@ -35,6 +36,7 @@ git:
 before_script:
 # show info about available processors
     - lscpu
+    - echo nproc=$(nproc)
 # show available disc space
     - df -h
 # show available memory
@@ -47,11 +49,11 @@ script:
     - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
     - cd build_shippableci_mpi
     - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
+    - ctest -j $(nproc) --track Miro -D ExperimentalBuild
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest || true
+    - ctest -j $(nproc) --track Miro -D ExperimentalTest || true
     - ctest --track Miro -D ExperimentalSubmit
 
 # turn off email notifications
