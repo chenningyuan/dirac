@@ -106,7 +106,7 @@ C DVO(A,I) = L(A,I)
 C----------------------------------------------------------------------
       CALL XCOPY (NDIMT1,S1,1,DVO,1)         
 
-!!      call srt1c1(nrep,no,nv,S1,DVO)
+!!      call srt1c1(nrep,nv,no,S1,DVO)
 C----------------------------------------------------------------------
 C DOV(A,I) = T(A,I)
 C----------------------------------------------------------------------
@@ -377,7 +377,7 @@ C
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ENDIF
 
-      CALL RELTODIR(DMO,BUF1,NFVO,RCW)
+      CALL RELTODIR(DMO,BUF1,NFVO,RCW,NREP,NV,NO)
 
 
 C##############
@@ -440,14 +440,6 @@ C##############
 
       CALL XSCAL (NFVV,AP5,DVV,1)
 
-!     AA = 1
-!     DO IRP = 1, NREP
-!        N = NV(IRP)
-!        ND = (N+1) * RCW
-!        CALL XSCAL(N,AP5,DVV(AA),ND)
-!        AA = AA + N * N * RCW
-!     ENDDO
-
       AB = 0
       DO IREP = 1, NREP
          DO B = 1, NV(IREP)
@@ -484,6 +476,9 @@ C##############
 
       buf1(1:nfvo) = 0.0d0
 
+
+!     CALL SRT1C1 (NREP,NO,NO,DVO,D_TRANS)
+
 !     CALL XAXPY (NFVO,A1,DOV,1,DVO,1)
 
 !     CALL XSCAL (NFVO,AP5,DVO,1)
@@ -507,7 +502,7 @@ C##############
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ENDIF
 
-!!!      CALL DOVTODIR (DMO,BUF1,NFVO,RCW)
+!!!        CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
 
       RETURN
       END
@@ -816,7 +811,7 @@ C       +--------+--------+--------+--------+
 C        P  O  V
 C######################################################################
 C
-      CALL RELTODIR(XMO,BUF1,NFVO,RCW)
+      CALL RELTODIR(XMO,BUF1,NFVO,RCW,NREP,NV,NO)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

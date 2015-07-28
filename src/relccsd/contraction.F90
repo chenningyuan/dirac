@@ -15,7 +15,7 @@
      external cntrct
      external srt1c1
 
-     integer,parameter :: maxdim = 10000000
+  !!   integer,parameter :: maxdim = 10000000
 
      contains
 
@@ -101,6 +101,7 @@
     character(2)          :: sorted_oparray_right(4)
     logical               :: array_equal = .true. 
     integer               :: asym_factor_R,asym_factor_L,i 
+    integer               :: maxdim1, maxdim2 
     real(8),allocatable   :: ImTensor_temp(:) 
     real(8),allocatable   :: ImTensor_temp_temp(:) 
 !--------------------------------------------------------------
@@ -108,8 +109,13 @@
 #include "param.inc"
 #include "complex.inc"
 
-  allocate(v_sort(maxdim*rcw))  
-  allocate(right_sorted(maxdim*rcw))  
+
+
+      maxdim1 = sorted_dimension(left_order)
+      maxdim2 = sorted_dimension(right_order)
+
+  allocate(v_sort(maxdim1*rcw))  
+  allocate(right_sorted(maxdim2*rcw))  
 
  
       transA = 'N'
@@ -123,6 +129,7 @@
     &   .true.,sorted_opArray=sorted_oparray_left)
 
 !    write(*,*)'left array',(sorted_opArray_left(i),i=1,4),match_index,transA
+     
 
      if (present(LeftTensor)) then 
       call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column,LeftTensor)
@@ -194,6 +201,7 @@
     character(1)   :: transA,transB
     integer        :: match_index,i 
     integer        :: asym_factor
+    integer        :: maxdim
     real(8),allocatable        :: v_sort(:)
     real(8),allocatable        :: RightTensor_sort(:)
     character(2)   :: sorted_left(4),freeindx(2)
@@ -208,6 +216,7 @@
 !  1> fetch the array which is flexible in terms of indices. sort it to make suitable for BLAS.
 !     also determine the row and column index for the matrix-vector multiplication routine.
 
+  maxdim = sorted_dimension(left_order)
 
   allocate(v_sort(maxdim))  
 
@@ -277,12 +286,14 @@
     character(1)   :: transA,transB,trans1A
     integer        :: match_index,i 
     integer        :: asym_factor
+    integer        :: maxdim
     real(8),allocatable        :: right_sort(:)
     real(8),allocatable        :: left_sort(:)
 !---------------------------------------------------------------    
 #include "param.inc"
 #include "complex.inc"
 
+    maxdim = sorted_dimension(right_order)
 
    allocate(right_sort(maxdim*rcw))  
 
@@ -370,13 +381,18 @@
    real(8),allocatable :: im_temp(:)
    real(8),allocatable :: im_temp_temp(:)
    integer             :: asym_factor_R,asym_factor_L
+   integer             :: maxdim1, maxdim2
 
 #include "param.inc"
 #include "complex.inc"
 
-  allocate(v_sort(maxdim))  
-  allocate(right_sorted(maxdim))  
 
+  maxdim1 = max(sorted_dimension(left_order),sorted_dimension(im_order))
+  maxdim2 = sorted_dimension(right_order)
+
+
+  allocate(v_sort(maxdim1))  
+  allocate(right_sorted(maxdim2))  
 
    v_sort       = 0.0d0
    right_sorted = 0.0d0
@@ -470,12 +486,15 @@
     character(2) :: FreeIndx(2),sorted_opArray(4)
     real(8),allocatable :: v_sort (:)
     integer :: asym_factor 
+    integer :: maxdim 
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
 
 #include "param.inc"
 #include "complex.inc"
 
+
+  maxdim = max (sorted_dimension(left_order),sorted_dimension(im_order))
 
   allocate(v_sort(maxdim))  
 
@@ -566,12 +585,14 @@
     character(2) :: FreeIndx(2),sorted_opArray(4)
     real(8),allocatable :: right_sort (:)
     integer :: asym_factor
+    integer :: maxdim 
     real(8),allocatable :: im_temp(:)
     real(8),allocatable :: im_temp_temp(:)
 
 #include "param.inc"
 #include "complex.inc"
 
+  maxdim = max (sorted_dimension(right_order),sorted_dimension(im_order))
 
   allocate(right_sort(maxdim))  
 
