@@ -3,7 +3,8 @@
 Including external projects using Git submodules
 ================================================
 
-See also this nice `tutorial <http://chrisjean.com/2009/04/20/git-submodules-adding-using-removing-and-updating/>`_.
+See also this nice `tutorial <http://chrisjean.com/2009/04/20/git-submodules-adding-using-removing-and-updating/>`_
+and these `tips and tricks <http://blogs.atlassian.com/2013/03/git-submodules-workflows-tips/>`_.
 
 We can use CMake's support for external projects together with the Git
 submodule functionality to fetch, compile, and link source code from external
@@ -59,7 +60,12 @@ that we want to pass to the external project and we use the macro
       -DEIGEN3_ROOT=${EIGEN3_ROOT}
       )
 
-  add_external(pcmsolver)
+  add_external(pcmsolver "")
+
+The ``add_external`` macro takes two arguments. The name of the external project and the
+command to be used for testing it. The name of the external project will be used as target
+name. If the testing command string is empty, as in the example above, the external
+project will not be tested after it had been built.
 
 Finally we have to make sure that the library is linked.
 
@@ -143,3 +149,25 @@ Here is a typical work-flow::
   $ vi dirac-source.F90          # edit DIRAC source
   $ git commit dirac-source.F90  # commit
   $ git push origin master       # push to DIRAC
+
+External project tracks different remotes on different DIRAC branches
+---------------------------------------------------------------------
+
+This sounds involved but it might happen more often than you think. Let's again take
+PCMSolver as an example. The version released in DIRAC lives on GitHub and is publicly accessible, 
+the remote URL being `<git@github.com:PCMSolver/pcmsolver.git>`_.
+On some other DIRAC branches though, we would maybe like to work with the development version
+of the module. This version is not publicly accessible and resides at another remote URL.
+
+Each DIRAC branch has its own .gitmodules file, correctly configured to track the right remote.
+When switching DIRAC branches though, the same switch of remotes does not happen for submodules.
+To be more explicit, assume you have ``DIRAC_branch-public`` tracking GitHub and ``DIRAC_branch-private``
+tracking repo.ctcc.no. Moreover, assume you are currently working on ``DIRAC_branch-public``.
+As explained `here <http://blogs.atlassian.com/2013/03/git-submodules-workflows-tips/#tip1>`_,
+the correct workflow to switch from one to the other is::
+
+  $ git checkout DIRAC_branch-private
+  $ git submodule sync
+
+The ``git submodule sync`` command synchronizes submodules' remote URL configuration setting 
+to the value specified in .gitmodules (taken from `here <https://www.kernel.org/pub/software/scm/git/docs/git-submodule.html>`_)

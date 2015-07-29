@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -178,7 +178,7 @@ C
               IF (ITEST .EQ. 0) THEN
 C             ... slave wants new set of A,B shells
               CALL GETTIM(CPUST,WALLST)
-              IF (IPRINT .GE. 3) THEN
+              IF (IPRINT .GE. 1) THEN
                  WRITE(LUPRI,'(3X,4(A,I4),A,F10.2,A)') 
      &              '- Sending shells (',ISHLA,',',ISHLB,
      &              '-',IBEND,') to node',NWHO,

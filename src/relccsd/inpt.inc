@@ -4,9 +4,9 @@
       COMMON/CCINTR/INTERFACE
       CHARACTER*10 INTERFACE
       COMMON/CCFLAG/DEBUG,TIMING,BREIT,DOSORT,DOENER,DOFOPR,DOSOPR,                       &
-     &       DOFSPC,ADD_FINITE_FIELD                       
+     &       DOFSPC,ADD_FINITE_FIELD,DORESTART                       
       LOGICAL DEBUG,TIMING,BREIT,DOSORT,DOENER,DOFOPR,DOSOPR,                             &
-     &        DOFSPC,ADD_FINITE_FIELD
+     &        DOFSPC,ADD_FINITE_FIELD,DORESTART
       COMMON/CCPRIN/IPRNT
       COMMON/CCOCC/NELEC(16),NELEC_F1(16),NELEC_F2(16),NFROZ(16)
 !-----For the MOLFDIR interface
@@ -43,4 +43,10 @@
       INTEGER FSSECT,STATE_E_FSCC
       COMMON/CCFSPI/FSSECT(6),MAXIT_SECT(6),NINACT(16),NACT(16),                          &
      &              NTOLFS,MXDIMFS,MXITFS,STATE_E_FSCC
-
+C-----For restart
+      LOGICAL FS_SKIP_SECT,FS_REDO_SECT
+      LOGICAL restart_redo_sort,restart_redo_ccsd
+      LOGICAL restart_ignore_check,restart_unconverged 
+      COMMON/CCREST/FS_SKIP_SECT(6), FS_REDO_SECT(6),
+     &              restart_unconverged, restart_redo_sort,
+     &              restart_redo_ccsd, restart_ignore_check

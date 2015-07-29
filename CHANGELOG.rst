@@ -1,40 +1,25 @@
 
 
-13.4 (this is the next patch)
------------------------------
-
-- Nicer error messages if the mol file is wrongly formatted.
-- Bugfix for dipole moment calculations with the KRCI property module.
-  The core-electronic part was not added to the electronic contribution 
-  of the total dipole moment.
-
-
-13.3 (2014-06-02)
+14.2 (20XX-XX-XX)
 -----------------
 
-- Fix for more than nine buffer files in integral trnasformation
-  (problem reported on dirac-users mailing list).
-- Bugfix for correlated spinfree X2C calculations with low symmetry molecules (NZ > 1).
-- Adapted testing framework to older versions of python.
+- Update PCMSolver module to its [1.0.4 version](https://github.com/PCMSolver/pcmsolver/releases).
+- This will be the next patch.
+- Write me ...
 
 
-13.2 (2014-04-14)
+14.1 (2015-07-20)
 -----------------
 
-- Simplified restart option for X2Cmmf calculations.
-- Adapted testing framework to older versions of python.
+- Added OpenBLAS to default blas search list.
+- Fixed misleading error message for .OPEN SHELL input.
+- Workaround for CMake warning about nonexistent run_pamadm target.
+- Intel compilers xHost flag automatic detection only upon request (-D ENABLE_XHOST_FLAG_DETECTION=ON).
+- Fixed minor issues to allow compilation using IBM XL Fortran compiler (thanks to Bob Walkup, IBM).
+- Update PCMSolver module to its [1.0.3 version](https://github.com/PCMSolver/pcmsolver/releases).
 
 
-13.1 (2013-12-16)
+14.0 (2014-12-12)
 -----------------
 
-- Magnetizabilities at the Hartree-Fock level with London atomic orbitals
-  (LAOs) were accidentally deactivated in 13.0.
-- Enabled numerical gradient geometry optimization for a selected Fock-space Coupled-Cluster
-  state (to be picked from the last active sector).
-
-
-13.0 (2013-12-12)
------------------
-
-- DIRAC13 release, see doc/release/release-statement.rst
+- DIRAC14 release, see doc/release/release-statement.txt

@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 #
 # Script to determine and verify compilers (C, C++ and Fortran) versions.
-# For each vendor/system calls compiler specific command (like "gcc --version")
-# returning desired compiler version.
+# For each vendor/system it calls compiler specific command (like "<path>/gcc --version")
+# returning compiler version. We will check version of compiler specified by setup --cc --cxx --fc
+# options. These compilers are saved with paths in CMAKE_<LANG>_COMPILER variables.
+#
+# explanation of params:
+# ${CMAKE_<LANG>_COMPILER} - full path to <LANG> compiler -- we need it to call correct command 
+# ${CMAKE_<LANG>_COMPILER_ID} - vendor of <LANG> compiler -- we need it to call correct parameter to obtain version
+# ${CMAKE_SYSTEM_NAME} - operating system name -- we need it if some compiler has different parameters on different systems
 #
 # This script returns (as stdout) for CMake a list of 3 strings - compilers versions - separated by semicolons.
 #
@@ -11,12 +17,17 @@
 
 import sys, subprocess, re
 
-#! compiler vendor
-C_COMPILER_VENDOR = sys.argv[1]
-CXX_COMPILER_VENDOR = sys.argv[2]
-Fortran_COMPILER_VENDOR = sys.argv[3]
+#! path to the compiler and its vendor
+C_COMPILER = sys.argv[1]
+C_COMPILER_VENDOR = sys.argv[2]
+
+CXX_COMPILER = sys.argv[3]
+CXX_COMPILER_VENDOR = sys.argv[4]
+
+Fortran_COMPILER = sys.argv[5]
+Fortran_COMPILER_VENDOR = sys.argv[6]
 #! operating system name
-CMAKE_SYSTEM_NAME = sys.argv[4]
+CMAKE_SYSTEM_NAME = sys.argv[7]
 
 #! in every call both stdout and stderr are used and merged
 #! this is really needed probably only by Intel which uses stderr, 
@@ -25,7 +36,7 @@ CMAKE_SYSTEM_NAME = sys.argv[4]
 #! looking for C compiler version
 if C_COMPILER_VENDOR == 'GNU':
     try:
-        outputGCC = subprocess.Popen(['gcc', '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputGCC = subprocess.Popen([C_COMPILER, '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputGCC = ''
     
@@ -39,9 +50,9 @@ if C_COMPILER_VENDOR == 'GNU':
 elif C_COMPILER_VENDOR == 'Intel':
     try:
         if CMAKE_SYSTEM_NAME == 'Windows':
-            outputIntelC = subprocess.Popen(['icl', '/V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+            outputIntelC = subprocess.Popen([C_COMPILER, '/V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
         else:
-            outputIntelC = subprocess.Popen(['icc', '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+            outputIntelC = subprocess.Popen([C_COMPILER, '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputIntelC = ''
     
@@ -54,7 +65,7 @@ elif C_COMPILER_VENDOR == 'Intel':
     C_COMPILER_VERSION = IntelCversion
 elif C_COMPILER_VENDOR == 'PGI':
     try:
-        outputPGIC = subprocess.Popen(['pgcc', '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputPGIC = subprocess.Popen([C_COMPILER, '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputPGIC = ''
     
@@ -67,7 +78,7 @@ elif C_COMPILER_VENDOR == 'PGI':
     C_COMPILER_VERSION = PGICversion
 elif C_COMPILER_VENDOR == 'XL':
     try:
-        outputXLC = subprocess.Popen(['xlc', '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputXLC = subprocess.Popen([C_COMPILER, '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputXLC = ''
     
@@ -80,7 +91,7 @@ elif C_COMPILER_VENDOR == 'XL':
     C_COMPILER_VERSION = XLCversion
 elif C_COMPILER_VENDOR == 'Clang':
     try:
-        outputClangC = subprocess.Popen(['clang', '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputClangC = subprocess.Popen([C_COMPILER, '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputClangC = ''
     
@@ -98,7 +109,7 @@ else:
 #! looking for C++ compiler version
 if CXX_COMPILER_VENDOR == 'GNU':
     try:
-        outputGXX = subprocess.Popen(['g++', '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputGXX = subprocess.Popen([CXX_COMPILER, '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputGXX = ''
     
@@ -112,9 +123,9 @@ if CXX_COMPILER_VENDOR == 'GNU':
 elif CXX_COMPILER_VENDOR == 'Intel':
     try:
         if CMAKE_SYSTEM_NAME == 'Windows':
-            outputIntelCXX = subprocess.Popen(['icl', '/V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+            outputIntelCXX = subprocess.Popen([CXX_COMPILER, '/V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
         else:
-            outputIntelCXX = subprocess.Popen(['icpc', '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+            outputIntelCXX = subprocess.Popen([CXX_COMPILER, '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputIntelCXX = ''
     
@@ -127,7 +138,7 @@ elif CXX_COMPILER_VENDOR == 'Intel':
     CXX_COMPILER_VERSION = IntelCXXversion
 elif CXX_COMPILER_VENDOR == 'PGI':
     try:
-        outputPGICXX = subprocess.Popen(['pgCC', '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputPGICXX = subprocess.Popen([CXX_COMPILER, '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputPGICXX = ''
     
@@ -140,7 +151,7 @@ elif CXX_COMPILER_VENDOR == 'PGI':
     CXX_COMPILER_VERSION = PGICXXversion
 elif CXX_COMPILER_VENDOR == 'XL':
     try:
-        outputXLCXX = subprocess.Popen(['xlC', '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputXLCXX = subprocess.Popen([CXX_COMPILER, '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputXLCXX = ''
     
@@ -153,7 +164,7 @@ elif CXX_COMPILER_VENDOR == 'XL':
     CXX_COMPILER_VERSION = XLCXXversion
 elif CXX_COMPILER_VENDOR == 'Clang':
     try:
-        outputClangCXX = subprocess.Popen(['clang++', '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputClangCXX = subprocess.Popen([CXX_COMPILER, '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputClangCXX = ''
     
@@ -171,7 +182,7 @@ else:
 #! looking for Fortran compiler version
 if Fortran_COMPILER_VENDOR == 'GNU':
     try:
-        outputGFORTRAN = subprocess.Popen(['gfortran', '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputGFORTRAN = subprocess.Popen([Fortran_COMPILER, '--version'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputGFORTRAN = ''
     
@@ -185,9 +196,9 @@ if Fortran_COMPILER_VENDOR == 'GNU':
 elif Fortran_COMPILER_VENDOR == 'Intel':
     try:
         if CMAKE_SYSTEM_NAME == 'Windows':
-            outputIntelFORTRAN = subprocess.Popen(['ifort', '/V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+            outputIntelFORTRAN = subprocess.Popen([Fortran_COMPILER, '/V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
         else:
-            outputIntelFORTRAN = subprocess.Popen(['ifort', '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+            outputIntelFORTRAN = subprocess.Popen([Fortran_COMPILER, '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputIntelFORTRAN = ''
     
@@ -200,7 +211,7 @@ elif Fortran_COMPILER_VENDOR == 'Intel':
     Fortran_COMPILER_VERSION = IntelFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'PGI':
     try:
-        outputPGIFORTRAN = subprocess.Popen(['pgf90', '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputPGIFORTRAN = subprocess.Popen([Fortran_COMPILER, '-V'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputPGIFORTRAN = ''
     
@@ -213,7 +224,7 @@ elif Fortran_COMPILER_VENDOR == 'PGI':
     Fortran_COMPILER_VERSION = PGIFORTRANversion
 elif Fortran_COMPILER_VENDOR == 'XL':
     try:
-        outputXLFORTRAN = subprocess.Popen(['xlf90', '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
+        outputXLFORTRAN = subprocess.Popen([Fortran_COMPILER, '-qversion'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         outputXLFORTRAN = ''
     

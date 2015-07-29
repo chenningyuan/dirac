@@ -19,7 +19,8 @@ transformation, possibly also by leaving out at least SS integrals
 Keywords
 ========
 
-keyword(PRINT)
+.PRINT
+------
 
 Print level.
 
@@ -30,12 +31,13 @@ Print level.
     .PRINT
      0
 
-keyword(INTFLG)
-
+.INTFLG
+-------
 
 Specify what two-electron integrals to include (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
 
-keyword(SCREEN)
+.SCREEN
+-------
 
 Screening threshold in the 4-index transformation.
 
@@ -48,7 +50,8 @@ A negative number deactivates screening.
     .SCREEN
      1.0D-14
 
-keyword(SCHEME)
+.SCHEME
+-------
 
 Choose integral transformation algorithm (PLEASE CLARIFY!)
 

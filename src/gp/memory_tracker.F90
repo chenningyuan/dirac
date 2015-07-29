@@ -463,10 +463,12 @@
                tmp => list%tail
 
                do
-                  if (key .eq. tmp%varID) then
-                     entry => tmp
+                 if (associated(tmp)) then ! miro: check pointer first
+                    if (key .eq. tmp%varID) then
+                        entry => tmp
                      exit
-                  endif
+                    endif
+                 endif
 
                   if (associated(tmp%prev)) then 
                      tmp => tmp%prev 
@@ -515,13 +517,14 @@
 
                else if ( list%head%varID .eq. entry%varID ) then
                   head      => entry%next
-                  head%prev => NULL()
+                  if ( associated(head) ) head%prev => NULL()
                else if ( list%tail%varID .eq. entry%varID ) then
                   tail      => entry%prev
-                  tail%next => NULL()
+                  if ( associated(tail) ) tail%next => NULL()
                else
                   prev => entry%prev 
                   next => entry%next 
+              ! miro: maybe some check of associated would help ?
                   entry%prev%next => next
                   entry%next%prev => prev
                endif 

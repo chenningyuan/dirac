@@ -42,11 +42,14 @@ MODULE MODULE_INTEREST_INTERFACE
     use module_interest_eri
     use module_interest_peri
 
-#ifdef VAR_MPI
+#ifdef USE_MPI_MOD_F90
   use mpi
 #endif
-
   implicit none
+
+#if defined (VAR_MPI) && !defined(USE_MPI_MOD_F90)
+#include "mpif.h"
+#endif
 
   public transfer_gto_info
   public initialize_interest 

@@ -15,19 +15,11 @@
 LUCIAREL
 .INACTIVE
  0 0
-.GASSH
+.GAS SHELLS
  3
- 2 0
- 1 2
-12 6
-.GASSPC
- 0 4
- 2 4
- 4 4
-.MK2REF
- 0
-.MK2DEL
- 4
+ 0 4 / 2 0
+ 2 4 / 1 2
+ 4 4 / 12 6
 .CIROOTS
  1  1
 .MAX CI

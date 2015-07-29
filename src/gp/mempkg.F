@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -501,6 +501,63 @@ C
      &             'allocation has negative length.')
 C
 C     end of MEMCHK
+C
+      END
+C  /* Deck memdump */
+      SUBROUTINE MEMDUMP(TEXT,WORK,KFIRST)
+C
+C June 2015, based on MEMCHK (Hans Joergen Aa. Jensen)
+C
+C Check if memory allocation from WORK(KFIRST) is intact
+C (check if anything has been out of bounds).
+C
+#include "implicit.h"
+      DIMENSION     WORK(*)
+      CHARACTER*(*) TEXT
+C
+#include "memcb1.h"
+C
+Chj1  CALL QENTER('MEMDUMP ')
+C
+      KALLOC = KFIRST
+      IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
+C
+      IALLOC = 0
+  100 CONTINUE
+         IALLOC = IALLOC + 1
+#ifdef DBG_LENID
+         do i = 2,lenid-1
+            WMEMCK = WORK(KALLOC-LENID+i)
+            IF (MEMCK .NE. MEMID) GO TO 8001
+         end do
+#else
+         WMEMCK = WORK(KALLOC-1)
+         IF (MEMCK .NE. MEMID) CALL MEMCHK(TEXT,WORK,KFIRST)
+#endif
+         WLREAL = WORK(KALLOC-LENID+1)
+         IF (LREAL .GE. 0) THEN
+            KALLOC = KALLOC + LENID + LREAL
+            GO TO 100
+         END IF
+         IF (LREAL .NE. LZERO) CALL MEMCHK(TEXT,WORK,KFIRST)
+C
+         WRITE (LUWMEM,'(/A/2A//A)')
+     &      ' *** Dump of memory allocations ***',
+     &      '     Text from calling routine: ',TEXT,
+     &      ' IALLOC #    IDENT     KBASE         Length'
+         KALLOC = KFIRST
+         IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
+         DO I = 1, IALLOC
+            WRITE (IDENT8,'(A8)') WORK(KALLOC-LENID)
+            WLREAL = WORK(KALLOC-LENID+1)
+            WRITE (LUWMEM,'(I5,2X,A8,2I15)') I,IDENT8,KALLOC,LREAL
+            KALLOC = KALLOC + LENID + LREAL
+         END DO
+
+Chj1  CALL QEXIT('MEMDUMP ')
+      RETURN
+C
+C     end of MEMDUMP
 C
       END
 C  /* Deck memopt */

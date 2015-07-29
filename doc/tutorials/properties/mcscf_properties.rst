@@ -4,8 +4,8 @@ Properties at the MCSCF level of theory
 
 In this tutorial we will look at a simple example of computing one-electron properties using a Kramers-restricted MCSCF
 (KRMC) and Hartree-Fock (HF) wave function in DIRAC.
-For more details on the implementation and the method, see [Jensen1996]_, [Thyssen2004]_ , [Thyssen2008]_ and
-[Knecht2009]_, respectively.
+For more details on the implementation and the method, see :cite:`Jensen1996`, :cite:`Thyssen2004` , :cite:`Thyssen2008` and
+:cite:`Knecht2009`, respectively.
 
 We consider the Be atom using :math:`\mbox{C}_{2v}` symmetry::
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4058,15 +4058,9 @@ Ctsaue      REWIND LU
 C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
-#if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
-      CLOSE(LU,ERR=3)
-#endif
       GO TO 8
     3 CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.
@@ -4258,15 +4252,9 @@ C
 C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
-#if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
-      CLOSE(LU,ERR=8)
-#endif
       GO TO 8
     3 CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
 C 880916-hjaaj -- attempt to fix an IBM problem
 C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 C     of FTxxF001), backspace makes LU ready for append.

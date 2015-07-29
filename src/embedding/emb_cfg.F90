@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -75,6 +75,8 @@ module fde_cfg
    
    public parallel_fde
    public fde_cfg_screening
+   public fde_intersub_nucrep
+   public fde_frozen_energy 
 
    private
 
@@ -85,6 +87,9 @@ module fde_cfg
    type(fde_export), save :: fde_ex_control
    type(fde_import), save :: fde_im_control
    type(fde_files),  save :: fde_f
+
+   real(kind=8), save :: fde_intersub_nucrep  = 0.0d0
+   real(kind=8), save :: fde_frozen_energy    = 0.0d0
 
    contains
    

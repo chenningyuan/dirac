@@ -44,6 +44,7 @@ C  A    is the matrix (general, non-singular)
 C  KPVT is a scratch array of length N.
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION A(LDA,*),B(LDB,*),KPVT(*)
 C
 #if !defined (VAR_SBLAS)
@@ -52,8 +53,8 @@ C
       CALL SGEFA (A,LDA,N,KPVT,INFO)
 #endif
       IF (INFO.NE.0) THEN
-            WRITE(LUPRI,'(A,A)')
-     &      '*** WARNING - INFO.ne.0 in DGESOL !'
+            WRITE(LUPRI,'(A,I5)')
+     &  '*** WARNING - INFO.ne.0 in DGESOL ! INFO=',INFO
         RETURN
       ENDIF
 C
