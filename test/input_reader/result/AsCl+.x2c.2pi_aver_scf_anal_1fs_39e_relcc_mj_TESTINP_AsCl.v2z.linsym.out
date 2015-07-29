@@ -1,4 +1,4 @@
-DIRAC pam run in /home/milias/Work/qch/runs/miro_ilias_qch_systems/AsCl
+DIRAC pam run in /home/milias/Work/qch/software/dirac/working_trunk/build_intelmkl_i8_dbg/test/input_reader
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
              out of the allowed maximum of 2147483648 words (16384 MB)
 
@@ -209,17 +209,17 @@ Binary information
                           | el_ilp64.so;-openmp;-Wl,--end-group
  Explicit libs            | none
  Static linking           | OFF
- Git branch               | miro/fix_relcc_reader
- Last Git revision        | 9f5f1d7
- Last commit author       | Miro ILIAS 
- Last commit date         | Tue Jul 28 19:07:22 2015 +0200
- Configuration time       | 2015-07-29 06:45:45.792853 UTC
+ Git branch               | master
+ Last Git revision        | 035af02
+ Last commit author       | Radovan Bast 
+ Last commit date         | Wed Jul 29 09:00:30 2015 +0000
+ Configuration time       | 2015-07-29 09:55:42.355851 UTC
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Jul 29 08:58:04 2015
+     Date and time (Linux)  : Wed Jul 29 11:57:34 2015
      Host name              : login                                   
 
 
@@ -268,7 +268,7 @@ energy -45.0  50.0  1.0
 .PRINT                                                                                              
 1                                                                                                   
 .NEL_F1                                                                                             
-  13  13  5  6  1  1  0 0 0 0 0 0 0 0 0 0                                                           
+ 13 13  5  6  1  1  0  0  0  0  0  0  0  0  0  0                                                    
 *CCENER                                                                                             
 .MAXIT                                                                                              
 50                                                                                                  
@@ -723,9 +723,8 @@ Cl     0.0000000000   0.0000000000   1.0908550715
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
 ===========================================================================
- CCINPT: Set-up for RelCC/FSCC calculations
+ **RELCC: Set-up for Coupled Cluster calculations
 ===========================================================================
-
  * General print level   :   1
  NEL_F1: 13 13  5  6  1  1  0  0  0  0  0  0  0  0  0  0
 
@@ -800,7 +799,7 @@ Cl     0.0000000000   0.0000000000   1.0908550715
 
 
  
-     Date and time (Linux)  : Wed Jul 29 08:58:04 2015
+     Date and time (Linux)  : Wed Jul 29 11:57:35 2015
      Host name              : login                                   
 
   
@@ -828,5 +827,5 @@ Cl     0.0000000000   0.0000000000   1.0908550715
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 3669, majflt: 22, nvcsw: 130, nivcsw: 8, maxrss: 40016
->>>> Total WALL time used in DIRAC: 0s
+>>>> Node 0, utime: 0, stime: 0, minflt: 3556, majflt: 23, nvcsw: 121, nivcsw: 30, maxrss: 80480
+>>>> Total WALL time used in DIRAC: 1s
