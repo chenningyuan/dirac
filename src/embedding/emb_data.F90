@@ -114,6 +114,9 @@ module fde_data
          fde_grid_sv%w(i)   = gridp(4,i)
       enddo
 
+      write(6,*) "debug, size:",fde_grid_sv%npoints
+      write(6,*) "debug, static vemb:",fde_static_vemb(fde_grid_sv%npoints)
+
       deallocate(fde_vtmp)
       deallocate(gridp)
    end subroutine fde_import_static
@@ -218,6 +221,7 @@ module fde_data
          if (fde_static_vemb_grid_np > 0) then
 
             call new_fde_grid(fde_grid_sv,fde_static_vemb_grid_np)
+            call new_grid_function(gf_active,fde_static_vemb_grid_np)
 
             if (.not.allocated(fde_static_vemb)) then
                allocate(fde_static_vemb(fde_static_vemb_grid_np))
@@ -252,6 +256,7 @@ module fde_data
 !   ----------------------------------------------------------------------------
       if (static_data_is_initialized) then
          deallocate(fde_static_vemb)
+         call del_grid_function(gf_active)
          call del_fde_grid(fde_grid_sv)
       endif
 

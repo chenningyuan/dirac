@@ -1902,6 +1902,8 @@ C
          call fde_get_import_info(itmp)
          if (itmp%im_update_vemb) then
              elergy = elergy - fde_get_embpot_energy()
+         else
+             elergy = elergy - fde_dirac_embpot_static_energy()
          end if
       end if
 

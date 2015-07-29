@@ -64,6 +64,8 @@ module fde_evaluators_dirac
       module procedure fde_dirac_emb_interaction_energy
    end interface
 
+   public fde_dirac_embpot_static_energy
+
    public fde_get_embpot_energy
    interface fde_get_embpot_energy
       module procedure fde_dirac_emb_pot_energy
@@ -497,6 +499,28 @@ module fde_evaluators_dirac
 
       end subroutine fde_dirac_embpot_via_integrator
 
+
+      function fde_dirac_embpot_static_energy()
+         real(8)         :: fde_dirac_embpot_static_energy
+         integer         :: i
+
+! todo: generalize to other densities
+         call fde_dirac_get_density_from_dfcoef('DHF ',fde_grid_sv,gf_active)
+
+         fde_dirac_embpot_static_energy = 0.0d0
+         print *, "debug: number of points ",fde_grid_sv%npoints
+         do i = 1, fde_grid_sv%npoints
+            fde_dirac_embpot_static_energy = fde_dirac_embpot_static_energy &
+                     + fde_grid_sv%w(i) * gf_active%n(i) * fde_static_vemb(i) 
+            if ( i .eq. 5 ) then
+               print *, "w: ",fde_grid_sv%w(i)
+               print *, "n: ",gf_active%n(i)
+               print *, "v: ",fde_static_vemb(i)
+            endif
+         end do
+         print *, "embpot energy: ",fde_dirac_embpot_static_energy
+
+      end function
 
 
       subroutine fde_dirac_emb_interaction_energy(fde_active_energy,level,myprint)
