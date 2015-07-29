@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'CCINPT: Set-up for RelCC/FSCC calculations',
+      num_lines   = 5,
+      rel_tolerance   = 1.0e-9)
+
+test.run(['AsCl+.x2c.2pi_aver_scf_anal_1fs_39e_relcc_mj_TESTINP.inp'], ['AsCl.v2z.linsym.mol'], f)
+
+sys.exit(test.return_code)
