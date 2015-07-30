@@ -12,6 +12,8 @@ Keyword reference
    - :doc:`*AMFI <amfi>` --- AMFI directives
    - :doc:`*X2C <x2c>` --- X2C directives
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
+   - :doc:`*PCM <pcm>` --- Polarizable Continuum Model directives
+   - :doc:`*PCMSOL <pcmsolver>` --- PCMSolver module directives
 
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
    - :doc:`SCF <wave_function/scf>` --- SCF module (Hartree-Fock/Kohn-Sham)

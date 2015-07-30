@@ -1,6 +1,6 @@
 
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -63,6 +63,7 @@ module fde_input_dirac
         WORD1 = WORD
         DO
           READ (LUCMD, '(A7)') WORD
+          CALL UPCASE(WORD)
           SELECT CASE (WORD(1:1))
           CASE('!','#')
             CYCLE
@@ -88,6 +89,12 @@ module fde_input_dirac
 
             CASE ('.UPDATE')
                itmp%im_update_vemb = .true.
+
+            CASE ('.NUCREP')
+               read(lucmd,*) fde_intersub_nucrep
+
+            CASE ('.ENER_B')
+               read(lucmd,*) fde_frozen_energy 
 
             CASE ('.SKIPK')
                call fde_set_skip_nadd_ke(.true.)
@@ -125,8 +132,11 @@ module fde_input_dirac
 ! doprp is part of dcbgen.h
                doprp = .true.
 
-            CASE ('.OUTFMT')
+            CASE ('.WRFRMT')
                read(lucmd,*) etmp%ex_format
+
+            CASE ('.RDFRMT')
+               read(lucmd,*) itmp%im_format
 
             CASE ('.EXONLY')
                read(lucmd,*) ftmp%export%name

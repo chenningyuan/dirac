@@ -1,0 +1,38 @@
+#!/bin/bash
+
+DIRAC=/gpfs/home/ilias/work/qch/software/dirac/trunk
+
+export PATH=/usr/vacpp/bin:/opt/freeware/bin/:/gpfs/home/utils/cmake/bin:$PATH
+echo $PATH
+
+cd $DIRAC
+pwd
+
+/opt/freeware/bin/git --version
+/opt/freeware/bin/git status
+/opt/freeware/bin/git pull
+
+ls -l /opt/freeware/bin/
+
+
+/opt/freeware/bin/python -V
+/opt/freeware/bin/python ./setup --help
+
+which xlf90
+which python
+which gfortran
+which git
+git --version
+
+BUILD=build_xlf90_xlc_xlC_essl_dbg_nopcm_noxcfun
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+./pamadm -a --builddir=$BUILD
+./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC -D ENABLE_PCMSOLVER=OFF -D ENABLE_XCFUN=OFF $BUILD
+cd $BUILD
+make -j4
+ctest -D ExperimentalSubmit --track Miro
+
+exit

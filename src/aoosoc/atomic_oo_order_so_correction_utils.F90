@@ -1,6 +1,6 @@
 !#define DEBUG_SOC
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -31,7 +31,9 @@
 module atomic_oo_order_so_correction_utils
 
   use picture_change_operations
+#ifdef MOD_INTEREST
   use module_interest_interface
+#endif
   use x2c_utils, only: print_x2cmat
 
 

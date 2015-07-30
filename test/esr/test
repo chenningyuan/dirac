@@ -14,7 +14,7 @@ f.add(from_string = 'g values (x, y, z, iso)',
       rel_tolerance = 1.0e-5)
 f.add(from_string = 'g shifts in ppm (x, y, z, iso)',
       num_lines = 3,
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 
 test.run(['esr.inp'], ['CN.mol'], f)
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -72,7 +72,7 @@ C
       INTEGER I, J, K
 
       CALL interface_MPI_INFO_CREATE(GF_INFO)
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
 C     ... IBMs GPFS specific file hint - SK Aug 2008
       CALL interface_MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true")
 #else
@@ -117,7 +117,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       NMBUFF = N_BUFFER * NMPROC
 
       CALL interface_MPI_INFO_CREATE(GF_INFO)
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
 C     ... IBMs GPFS specific file hint - SK Aug 2008
       CALL interface_MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true")
 #else
@@ -434,7 +434,7 @@ C           Pick out the integrals that we need.
       WRITE (LF_NAME,'(a,i5.5)') 'local', MYTID
 
       CALL interface_MPI_INFO_CREATE(GF_INFO)
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
 C     ... IBMs GPFS specific file hint - SK Aug 2008
       CALL interface_MPI_INFO_SET(GF_INFO, "IBM_largeblock_io", "true")
 #else

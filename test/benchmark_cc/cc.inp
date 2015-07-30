@@ -1,5 +1,5 @@
 !
-! This test calculates the energy and some propertiest
+! This test calculates the energy and some properties
 ! of the dichloroethane molecule in different geometries.
 ! Note that we consistently leave out the SS integrals
 ! by using the LVCORR option in the general section.
@@ -21,8 +21,6 @@
 .DIPOLE
 .QUADRUPOLE
 .NQCC
+**RELCCSD
+.TIMING
 *END OF
-
- &RELCCSD TIMING=T, DOENER=T &END
- &CCENER DOMP2=T, DOCCSD=T, DOCCSDT=T &END
-

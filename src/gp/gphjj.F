@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -163,10 +163,6 @@ C
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       CALL QTRACE(6)
       CALL TRBK()
-#endif
-#if defined (SYS_IBM)
-      CALL QTRACE(6)
-      CALL ERRTRA
 #endif
       CALL QTRACE(6)
       WRITE(*,*) 'This OS has no obvious system traceback facility.'
@@ -717,7 +713,7 @@ C
       RETURN
 C
     3 IF (LUERR.LT.0) THEN
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (VAR_MFDS)
 !C 880916-hjaaj -- attempt to fix an IBM problem
 !C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 !C     of FTxxF001), backspace makes LU ready for append.
@@ -737,13 +733,6 @@ C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
       IF (LUERR.LT.0) THEN
-#if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
-         CLOSE(LU,ERR=8)
-    8    CONTINUE
-#endif
          LUERR = -2
          RETURN
       ELSE
@@ -773,15 +762,9 @@ C     a non-existing file
 C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
-#if defined (SYS_IBM)
-!C 880703-hjaaj -- attempt to fix an IBM problem
-!C IBM gave permanent io error on write after calling FNDLAB for
-!C     a non-existing file
-      CLOSE(LU,ERR=8)
-#endif
       GO TO 8
     3 CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (VAR_MFDS)
 !C 880916-hjaaj -- attempt to fix an IBM problem
 !C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 !C     of FTxxF001), backspace makes LU ready for append.
@@ -814,15 +797,9 @@ C
 C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
-#if defined (SYS_IBM)
-!C 880703-hjaaj -- attempt to fix an IBM problem
-!C IBM gave permanent io error on write after calling FNDLAB for
-!C     a non-existing file
-      CLOSE(LU,ERR=8)
-#endif
       GO TO 8
     3 CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (VAR_MFDS)
 !C 880916-hjaaj -- attempt to fix an IBM problem
 !C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 !C     of FTxxF001), backspace makes LU ready for append.
@@ -858,7 +835,7 @@ C
          RETURN
 C
     3 IF (LUERR.LT.0) THEN
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (VAR_MFDS)
 !C 880916-hjaaj -- attempt to fix an IBM problem
 !C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 !C     of FTxxF001), backspace makes LU ready for append.
@@ -878,13 +855,6 @@ C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
       IF (LUERR.LT.0) THEN
-#if defined (SYS_IBM)
-!C 880703-hjaaj -- attempt to fix an IBM problem
-!C IBM gave permanent io error on write after calling FNDLAB for
-!C     a non-existing file
-         CLOSE(LU,ERR=8)
-    8    CONTINUE
-#endif
          LUERR = -2
          RETURN
       ELSE
@@ -916,15 +886,9 @@ C
 C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
-#if defined (SYS_IBM)
-!C 880703-hjaaj -- attempt to fix an IBM problem
-!C IBM gave permanent io error on write after calling FNDLAB for
-!C     a non-existing file
-      CLOSE(LU,ERR=3)
-#endif
       GO TO 8
     3 CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (VAR_MFDS)
 !C 880916-hjaaj -- attempt to fix an IBM problem
 !C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 !C     of FTxxF001), backspace makes LU ready for append.
@@ -956,15 +920,9 @@ C
 C
     6 IRDERR = IRDERR + 1
       IF (IRDERR .LT. 5) GO TO 1
-#if defined (SYS_IBM)
-C 880703-hjaaj -- attempt to fix an IBM problem
-C IBM gave permanent io error on write after calling FNDLAB for
-C     a non-existing file
-      CLOSE(LU,ERR=3)
-#endif
       GO TO 8
     3 CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+#if defined (VAR_MFDS)
 !C 880916-hjaaj -- attempt to fix an IBM problem
 !C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
 !C     of FTxxF001), backspace makes LU ready for append.
@@ -1095,48 +1053,13 @@ C
 C  /* Deck second */
 #if !defined (SYS_CRAY) && !defined (VAR_SECSEC)
       FUNCTION SECOND ()
-#if defined (SYS_VAX)
-C
-C * STURE LANGEMAR 1979-08-20
-C * This function obtains elapsed cpu time.
-C * Unit of time is sec.
-C
-      INTEGER*4 SYS$GETJPI,ITMLST(4),IBUF(5)
-      PARAMETER JPI$_CPUTIM = '04070004'X
-      DATA ITMLST/JPI$_CPUTIM,0,0,0/
-      ITMLST(2)=%LOC(IBUF)
-      ITMLST(3)=%LOC(ILEN)
-      ISTAT=SYS$GETJPI(,,,ITMLST,,,)
-D     WRITE(5,503) ISTAT,ITMLST,ILEN,IBUF
-D 503 FORMAT(' ',Z10/' ',4Z10/' ',I12/(6I12))
-      IF( ISTAT.NE.1 .OR. ILEN.NE.4 ) CALL QUIT('SECOND: CPUTIM ERROR')
-      SECOND=IBUF(1)/100.0
-#endif
-#if defined (SYS_IBM)
-#include "implicit.h"
-      LOGICAL FIRST
-      SAVE    FIRST
-      DATA    FIRST /.TRUE./
-      IF (FIRST) THEN
-         FIRST  = .FALSE.
-         SECOND = 0.0
-         CALL SETTIM
-      ELSE
-         CALL TIMING(CPUA,CPUE,TIOA,TIOE)
-         SECOND = CPUA
-      END IF
-#endif
 #if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
       || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) \
       || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) \
       || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_DARWIN)
 #include "implicit.h"
       real*4 etime,tarray(2)
-#if !defined (SYS_T3D)
       SECOND = etime(tarray)
-#else
-      SECOND = 1.0D0
-#endif
 #endif
       RETURN
       END

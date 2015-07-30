@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -25,7 +25,6 @@
 ! routines written by tsaue march 2011, collected by sknecht sep 2012
 !
 !***********************************************************************
-
       SUBROUTINE PUT_AOBLOCK(AMOL,NBAS_R,NBAS_C,INUC,NONT,NDEG,NZC1,
      &                       ATOM,NR,LR,IR_CLS,NC,LC,IC_CLS,
      &                       rbuf, cbuf, ibuf, jbuf)

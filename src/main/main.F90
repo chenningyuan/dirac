@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -111,6 +111,7 @@ program dirac_program
 
   call allocator_init()
   call allocator_set_max(maxsize)
+  call allocator_get_max_words(maxsize)
 
 #ifdef VAR_MPI
   if (parcal) then

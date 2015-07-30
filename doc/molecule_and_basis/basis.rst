@@ -13,7 +13,7 @@ This situations has dramatically improved in recent years, notably with the work
 of K. G. Dyall, and Dirac users are strongly advised to use Dyall's basis sets
 whenever they are available. These sets follow roughly the
 "correlation-consistent" philosophy introduced by Dunning and coworkers
-[Dunning1989]_, so they already contain polarization functions, but the SCF sets
+:cite:`Dunning1989`, so they already contain polarization functions, but the SCF sets
 are designed for an adequate SCF representation rather than to match correlating
 sets for the valence shells.
 

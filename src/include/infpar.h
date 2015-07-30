@@ -11,7 +11,7 @@
 #endif
 
 #if defined(__CVERSION__)
-#define MAXNOD 200
+#define MAXNOD 60000
 #define MAXCL2 10000
 #define nodtot numnod
 extern struct common_diracinfpar {
@@ -32,15 +32,12 @@ extern struct common_diracinfpar {
 !        NODTOT = NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 !        MYTID  = mpi ID of this process (from MPI_Comm_rank)
       INTEGER MAXNOD, MAXCL2
-      PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
+      PARAMETER (MAXNOD = 60000, MAXCL2 = 10000)
       REAL*8 TOTWAL
-!CSK      INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT
       INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID,NODE,NODES,IPAREX
       LOGICAL PARHER, SLAVE, TIMING, DEBUG, PARIO
       CHARACTER*20   NODNAM(0:MAXNOD), MYNAME
-!CSK      COMMON /DIRACINFPAR/ TOTWAL                                        &
-!CSK     &       ,IPRPAR, NTASK, NCODE, NDEGDI, MASTER, MYNUM, MYTID, NODTOT &
       COMMON /DIRACINFPAR/ TOTWAL                                        &
      &       ,IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT         &
      &       ,ICOUNT, MTIDS, MPARID, NODE, NODES, IPAREX                 &
@@ -48,9 +45,9 @@ extern struct common_diracinfpar {
      &       ,NODNAM, MYNAME
 
       EQUIVALENCE (NODTOT, NUMNOD)
-!C     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
-!C         This equivalence is important such that both e.g. abacus routines using NODTOT
-!C         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
+!     ... for some obscure reason NODTOT in Dalton is called NUMNOD in Dirac.
+!         This equivalence is important such that both e.g. abacus routines using NODTOT
+!         and dirac routines using NUMNOD are working correctly together /hjaaj Dec 07
 
 #if defined (INT_STAR8)
 !     integer array ISTAT contains MPI_SOURCE information.
@@ -67,5 +64,5 @@ extern struct common_diracinfpar {
 #endif
       INTEGER   ISTAT
 
-!C -- end of infpar.h --
+! -- end of infpar.h --
 #endif

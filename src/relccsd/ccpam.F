@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -110,12 +110,6 @@ C
         call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
      &                 global_communicator)
         IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
-     &                 global_communicator)
       END IF
 #endif
 C
@@ -130,6 +124,7 @@ C
       CALL CPUUSED(SEC)
       WRITE (IW,1000) SEC-SEC0,SEC0,SEC
       WRITE (IW,'(//80A1)') ('#',I=1,80)
+      CALL FLSHFO(IW)
       CLOSE(LUCMD)
 C
  1000 FORMAT (//' CPU time (seconds) used in RELCCSD:',T50,F14.4/
@@ -251,12 +246,6 @@ C
         call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
      &                  global_communicator)
         IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-        call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
-     &                 global_communicator)
-        call interface_mpi_BCAST(INFO_STRING(3),62,MASTER,
-     &                 global_communicator)
       END IF
 #endif
 C
@@ -265,45 +254,25 @@ C     shared file systems. Otherwise all the output gets mingled in one
 C     file
 C
       CCBASF="RELCCSD.OUT"
-      MP2NOF="MP2_NO.INP"
       
 #if defined (VAR_MPI)
       IF (MYPROC .LT. 10) THEN    ! MPI ID has one digit
          WRITE (CCFILN,'(A11,A1,I1)') CCBASF,'.',MYPROC
-         WRITE (MP2NOFN,'(A10,A1,I1)') MP2NOF,'.',MYPROC
          LCCFIL    = 13
-         MP2NOFN_L = 12
       ELSEIF (MYPROC .LT. 100) THEN  ! MPI ID has two digits
          WRITE (CCFILN,'(A11,A1,I2)') CCBASF,'.',MYPROC
-         WRITE (MP2NOFN,'(A10,A1,I2)') MP2NOF,'.',MYPROC
          LCCFIL    = 14
-         MP2NOFN_L = 13
       ELSEIF (MYPROC .LT. 1000) THEN  ! MPI ID has three digits
          WRITE (CCFILN,'(A11,A1,I3)') CCBASF,'.',MYPROC
-         WRITE (MP2NOFN,'(A10,A1,I3)') MP2NOF,'.',MYPROC
          LCCFIL    = 15
-         MP2NOFN_L = 14
       ELSE
          CALL QUIT("NMPROC.GT.1000! EXTEND CCNOD.F MODULE")
       ENDIF
 #else
       CCFILN    = CCBASF
       LCCFIL    = 11
-      MP2NOFN   = MP2NOF
-      MP2NOFN_L = 10
 #endif
 C
-C     write RELCCSD MP2-NO input
-C
-      IF( MP2_DENRUN )THEN
-        LMP2_DEN_INP = 99
-        OPEN(LMP2_DEN_INP,FILE=MP2NOFN(1:MP2NOFN_L),STATUS='NEW',
-     &       FORM='FORMATTED',ACCESS='SEQUENTIAL')
-        REWIND(LMP2_DEN_INP)
-        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(1)
-        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(2)
-        WRITE(LMP2_DEN_INP,'(1X,A62)') INFO_STRING(3)
-      END IF
 C
 C     open the local input file and the node specific output file.
 C     The associated file handle MSLVOUT is transferred to CCMAIN.
@@ -315,9 +284,6 @@ C
       CALL CCMAIN(LUCMD,MSLVOUT,CA,INTFCE)
       CLOSE (MSLVOUT,STATUS='KEEP')
       CLOSE (LUCMD,STATUS='KEEP')
-      IF( MP2_DENRUN )THEN
-        CLOSE (LMP2_DEN_INP,STATUS='KEEP')
-      END IF
 C
 C     The slave is finished, wait for the master
 C

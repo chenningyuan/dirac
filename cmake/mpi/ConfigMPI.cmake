@@ -35,6 +35,12 @@ if(MPI_FOUND)
 
     add_definitions(-DVAR_MPI)
 
+    # radovan: we always define this
+    #          and corresponding if(n)defs in the source code
+    #          are now redundant (git grep -l VAR_MPI2)
+    #          see also https://gitlab.com/dirac/dirac/issues/40
+    add_definitions(-DVAR_MPI2)
+
     # test whether MPI module is compatible with compiler
     file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-compiler-compatibility.F90" _source)
     check_fortran_source_compiles(
@@ -69,22 +75,4 @@ if(MPI_FOUND)
         add_definitions(-DVAR_MPI_32BIT_INT)
         set(USE_32BIT_MPI_INTERFACE TRUE)
     endif()
-
-    if(ENABLE_MPI2_DETECTION)
-        # test whether MPI-2 is available
-        file(READ "${CMAKE_SOURCE_DIR}/cmake/mpi/test-MPI-2-compatibility.F90" _source)
-        check_fortran_source_compiles(
-            ${_source}
-            MPI_2_COMPATIBLE
-            )
-        if(MPI_2_COMPATIBLE)
-            add_definitions(-DVAR_MPI2)
-            message("-- MPI-2 support found")
-        else()
-            message("-- no MPI-2 support found, will try with MPI-1")
-        endif()
-    else()
-        message("-- MPI-2 support disabled, will try with MPI-1")
-    endif()
-
 endif()

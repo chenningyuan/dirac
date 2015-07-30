@@ -8,7 +8,7 @@ by Joern Thyssen, Timo Fleig and Hans Joergen Aagaard Jensen,
 parallelization and continuous improvement by Stefan Knecht and Hans
 Joergen Aagaard Jensen. Linear symmetry adaptation by Stefan Knecht and Hans Joergen Aagaard Jensen.
 
-For more details on the theory and actual implementation see [Jensen1996]_, [Thyssen2004]_ , [Thyssen2008]_, [Knecht2009]_.
+For more details on the theory and actual implementation see :cite:`Jensen1996`, :cite:`Thyssen2004` , :cite:`Thyssen2008`, :cite:`Knecht2009`.
 
 
 **Mandatory keywords**
@@ -39,10 +39,10 @@ number, separated by blanks. The minimum and maximum accumulated
 occupations allow for a very flexible parameterization of the wave
 function. All determinants fulfilling the occupation constraints will be
 constructed. The second entry after the "/" gives  the 
-number of orbitals per fermion correp. See also the open-shell input in :ref:`SCF` which is similar to the syntax used
+number of orbitals per fermion correp. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
-virtual space, for technical reasons (save core memory). See reference [Fleig2006a]_,
+virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
 pp. 27 for more details. example for a CASSCF run with 10 electrons in 10 orbitals also known as CAS(10,10):
 
 ::
@@ -194,7 +194,7 @@ maximum number of initial CI iterations. *default*:
 
 keyword(MXCIVE)
 
-maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`CIROOTS`) to optimize on.
+maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`.CIROOTS`) to optimize on.
 example:
 
 ::

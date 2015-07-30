@@ -1,8 +1,8 @@
- 
- 
+!
+!
 !     Register the status of the independent parts of the code
 !
-!     Status given by integer : 
+!     Status given by integer :
 !     0 - Never asked for
 !     1 - On menu but not yet called
 !     2 - Running
@@ -11,12 +11,19 @@
 !
 !     The indices of the different tasks are :
 !      1 - Integral sort up to VOVO integrals
-!      2 - Integral sort of VOVV and VVVV integrals
-!      3 - Construction of Fock matrix
-!      4 - MP2  energy and T1 + T2 amplitude calculation
-!      5 - CCSD energy and T1 + T2 amplitude calculation
-!      6 - CCSD(T) energy calculation
-!      7 - 30 reserved for future use
+!      2 - Integral sort of VOVV integrals
+!      3 - Integral sort of VVVV integrals
+!      4 - Construction of Fock matrix
+!      5 - MP2  energy and T1 + T2 amplitude calculation
+!      6 - CCSD energy and T1 + T2 amplitude calculation
+!      7 - CCSD(T) energy calculation
+!      8 - fock-space sector 00 and T1 + T2 amplitudes
+!      9 - fock-space sector 01 and T1 + T2 amplitudes
+!     10 - fock-space sector 10 and T1 + T2 amplitudes
+!     11 - fock-space sector 11 and T1 + T2 amplitudes
+!     12 - fock-space sector 02 and T1 + T2 amplitudes
+!     13 - fock-space sector 20 and T1 + T2 amplitudes
+!     14 - 30 reserved for future use
 !
       PARAMETER (NSTATS=30)
       COMMON/STATUS/IMSTAT(NSTATS)

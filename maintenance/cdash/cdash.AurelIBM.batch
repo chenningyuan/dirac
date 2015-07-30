@@ -1,0 +1,33 @@
+#@ job_type = parallel
+#@ job_name = DIRACbuild
+#@ class = short 
+#@ error = $(job_name).err
+#@ output = $(job_name).out
+#@ network.MPI = sn_single,shared,US
+#@ network.LAPI = sn_single,shared,US
+#@ node = 1
+#@ total_tasks = 1
+#@ environment = MP_PULSE=0; MP_SHARED_MEMORY=yes
+#@ queue
+
+export RT_GRQ=ON
+project=$LOADL_JOB_NAME
+#workdir=/gpfs/scratch/$USER/${project}_new
+home=$PWD
+#CMD=/gpfs/home/freeware/sources/nwchem-6.1.1-src/bin/LAPI64/nwchem
+DIRAC=/gpfs/home/ilias/work/qch/software/dirac/trunk
+#####################################################################################
+
+cd $DIRAC
+pwd
+
+which xlf90
+which gfortran
+
+#home=$(echo "$home"|sed 's!\([]\*\$\/&[]\)!\\\1!g')
+
+#poe $CMD c2h6-scf.nwc >  c2h6-scf.out 
+
+#cp -r $workdir $home
+#rm -rf $workdir
+

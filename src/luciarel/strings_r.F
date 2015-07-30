@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3366,7 +3366,7 @@ C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT)
 
       integer function max_nsymdist_dbg(nspgrp,ispgrp,ngas,nsmst)
 !
-! Obtain largest number of symmetrydistributions of 
+! Obtain largest number of symmetry distributions of 
 ! any given supergroup.
 !
 ! Timo and Jeppe, Odense, August 2003 

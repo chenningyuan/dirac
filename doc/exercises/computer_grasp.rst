@@ -15,7 +15,7 @@ following. The run-command inside your cluster run script looks as::
 where the GRASP output is re-directed to the file :file:`grasp.out`. Make sure that you give a proper name to your output
 file if you want to take a look at what you did back home.
 
-If not stated otherwise we will always use a Gaussian nuclear model in GRASP.
+Unless otherwise stated we will always use a Gaussian nuclear model in GRASP.
 
 Exercises - Day 1
 =================
@@ -67,7 +67,7 @@ GRASP offers four different nuclear models, we will start with calculations on a
 Exercises - Day 2
 =================
 
-.. note:: A database for atomic data can be found here: http://physics.nist.gov/PhysRefData/Handbook/periodictable.htm
+.. note:: A database for atomic data can be found `here <http://physics.nist.gov/PhysRefData/Handbook/periodictable.htm>`_ .
 
 Atomic numerical calculations
 -----------------------------
@@ -90,7 +90,7 @@ In order to get started on "real" atoms we calculate the average level structure
   -1
   MCP 8 9
   MCDF
-  9 0 10
+  9 0 10 
   29 63.0
   NUC 3
   SCF NITIT=10
@@ -210,9 +210,21 @@ Speed of light and the non-relativistic limit
 Radial densities for the d-/p block
 -----------------------------------
 
-.. note:: a basic GNUPLOT script (needs to be adapted according to your data file names) for visualizing radial densities is available online: http://wiki.chem.vu.nl/dirac/index.php/GRASP_and_DIRAC_inputs
+* Plot radial density for heavy elements, compare *s* and *d* functions (*d* block) resp. p :math:`_{1/2}` and p :math:`_{3/2}` (p block). 
+A simple FORTRAN code :download:`orbpri.F` for doing it is available. Here we shall demonstrate how to use it for the copper atom. 
+First we remind you that the form of relativistic atomic orbitals is
 
-* Plot radial functions for heavy elements, compare *s* and *d* functions (*d* block) resp. p :math:`_{1/2}` and p :math:`_{3/2}` (p block).
+.. math::
+
+   \left[\begin{array}{c}R^L\chi_{\kappa,m}\\iR^S\chi_{-\kappa,m}\\\end{array}\right] = \frac{1}{r}\left[\begin{array}{c}P\chi_{\kappa,m}\\iQ\chi_{-\kappa,m}\\\end{array}\right]
+
+so the radial density is
+
+.. math::
+
+   n(r)=\left(\left\{R^L\right)^2+\left(R^S\right)^2\right\}r^2=\left(P^2+Q^2\right).
+
+The input file is
 
 ::
 
@@ -230,11 +242,83 @@ Radial densities for the d-/p block
   -1
   MCP 8 9
   MCDF 28
-  9 0 10
+  9 0 10 0 11
   29 63.0
   NUC 3
+  ORBOUT 1 - 7
   AL
   END
+
+The line ORBOUT specifies that the radial functions :math:`P` and :math:`Q` (and other information) is printed to file. This file will have unit number 11, as specified by the final number following the MCDF line.
+
+We start up orbpri.x::
+
+   $orbpri.x
+   *** OUTPUT from ORBPRI ***
+   Give unit number of orbital file to read
+
+and we enter unit number 11::
+
+   11
+   *** OUTPUT from ORBPRI ***
+   * Atomic number:               29.0
+   * Number of grid points:       2080
+   * First grid point:       0.345E-07
+   * Grid step size :        0.100E-01
+      
+   * Number of orbitals read:       10
+      
+   Do you want info on orbitals (y/n) ?
+
+Well, why not ?::
+
+   y
+   Orb.        E                   P0                     Q0
+    1  1s       -332.845231246527    353.946570713740      0.000000000000
+    2  2s        -41.883350988707    110.925718644588      0.000000000000
+    3  2p-       -36.527466295898      0.975314932490      9.217465299856
+    4  2p        -35.763812849690    769.447328175348      0.000000000000
+    5  3s         -5.353239297458     41.725471888184      0.000000000000
+    6  3p-        -3.614445494458      0.362775735823      3.428505650010
+    7  3p         -3.511783710417    286.145123083999      0.000000000000
+    8  3d-        -0.674391837066      0.265542615160      5.019157934192
+    9  3d         -0.661421437065    264.801381125017      0.000000000000
+   10  4s         -0.289259556935      9.151716417086      0.000000000000
+   Select one of the following:
+     1. Print radial functions P and Q.
+     2. Print radial functions R(large) and R(small).
+     3. Print radial distribution of individual orbitals.
+     4. Exit.
+
+We choose to look at the density of individual orbitals::
+
+   3
+   Name atom (A3)
+
+The rest is then rather straightforward::
+
+   Cu
+   Outer radial point = :   36.862
+   Give index of orbital to print(-1 to quit):
+   6
+   Give index of orbital to print(-1 to quit):
+   7
+   Give index of orbital to print(-1 to quit):
+   8
+   Give index of orbital to print(-1 to quit):
+   9
+   Give index of orbital to print(-1 to quit):
+   10
+   Give index of orbital to print(-1 to quit):
+   -1
+   *** EXITING ORBPRI ***
+
+Looking in your working directory you now see a series of files with self-explanatory titles.
+With your favorite plotting program you may now make a plot like this one
+
+.. image:: Cu_raddens.png
+   :scale: 80
+   :alt: Copper radial density
 
 
 Each group should pick one of their favorite block/group.
