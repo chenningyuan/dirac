@@ -43,10 +43,10 @@
       INTEGER FSSECT,STATE_E_FSCC
       COMMON/CCFSPI/FSSECT(6),MAXIT_SECT(6),NINACT(16),NACT(16),                          &
      &              NTOLFS,MXDIMFS,MXITFS,STATE_E_FSCC
-C-----For restart
+!-----For restart
       LOGICAL FS_SKIP_SECT,FS_REDO_SECT
       LOGICAL restart_redo_sort,restart_redo_ccsd
       LOGICAL restart_ignore_check,restart_unconverged 
-      COMMON/CCREST/FS_SKIP_SECT(6), FS_REDO_SECT(6),
-     &              restart_unconverged, restart_redo_sort,
+      COMMON/CCREST/FS_SKIP_SECT(6), FS_REDO_SECT(6),                                     &
+     &              restart_unconverged, restart_redo_sort,                               &
      &              restart_redo_ccsd, restart_ignore_check
