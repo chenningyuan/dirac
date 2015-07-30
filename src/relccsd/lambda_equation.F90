@@ -301,7 +301,6 @@
 
 !     deallocate (int_wooop)
 
-
        if (iprnt.ge.1) &
 
      & write(*,*)'RESL2 after term7',(ResL2(i),i=1,5)
@@ -310,14 +309,13 @@
 !    term6 : ResL2 = ResL2 - P(ij) V(im,ab)*(G_oo(j,m)+L1(j,e)*t(e,m)) 
 !--------------------------------------------------------------------
 
-      call contraction_424 ((/"o1","o3","p1","p2"/),(/"o3","o2"/), &
+      call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/), &
      &        (/"o1","o2","p1","p2"/),ResL2,-1.0d0, &
-     &        1.0d0,nrep,RightTensor=G_oo)
+     &        1.0d0,nrep,RightTensor=G_oo)    ! be careful, recheck.
 
+    if (iprnt.ge.1) &
 
-!      if (iprnt.ge.1) &
-
-!    & write(*,*)'RESL2 after term8',(ResL2(i),i=1,5)
+    & write(*,*)'RESL2 after term8',(ResL2(i),i=1,5)
 
       allocate(int_oo(nfoo*rcw))
 
@@ -334,14 +332,8 @@
 
       deallocate(int_oo) 
 
-      call contraction_244 ((/"o1","p3"/),(/"p3","o2","p1","p2"/), &
-     &     (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L1)
-
-
-      write(87,*)'dia9'
-      write(87,*)'==============='
-      write(87,5)(ResL2(i),i=1,ndimt2)
-
+     call contraction_244 ((/"o1","p3"/),(/"p3","o2","p1","p2"/), &
+    &     (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L1)
 
        if (iprnt.ge.1) &
 
@@ -401,10 +393,10 @@
          nint = min0(mint,ntot-kstart)
  
          allocate(w_vvvv(nvvt(irp)*nint*rcw))
-
 !        call getvvvv (irp,istart,nint,done,w_vvvv,mint)
-         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3, &
+         call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3, &
      &           w_vvvv,nint)
+
          n = nvvt(irp)
          m = noot(irp)
          k = nint
@@ -422,15 +414,9 @@
 
        deallocate(tau)
 
-
-      write(87,*)'dia11'
-      write(87,*)'==============='
-      write(87,5)(ResL2(i),i=1,ndimt2)
-
        if (iprnt.ge.1) &
 
      & write(*,*)'RESL2 after term11',(ResL2(i),i=1,5)
-!    & write(*,*)'RESL2 after term10',ddot(ndimt2,resL2,1,resL2,1)
 
 !--------------------------------------------------------------------------------
 !     missing term from w_vvvv
@@ -438,40 +424,36 @@
 !     ResL2(ij,ab) = ResL2(ij,ab) + w_intm(ij,mf) * v(mf,ab) 
 !--------------------------------------------------------------------------------
 
-      allocate(w_intm(iovoot(nrep+1)*rcw))
+!!    allocate(w_intm(iovoot(nrep+1)*rcw))
 
-      w_intm = 0.0d0
+!!    w_intm = 0.0d0
 !!    call contraction_424 ((/"o1","o2","p3","p4"/),(/"p3","o3"/),
 !!   &        (/"o1","o2","o3","p4"/),w_intm,1.0d0, 
 !!   &        1.0d0,nrep,LeftTensor=L2,RightTensor=t1)
 
 
-       call srt1t3 (nrep,multb,.false.,noot,nv,nv,noovt,koovvt,kkoovt, &
-     &             L2,buf2)
+!!!    call srt1t3 (nrep,multb,.false.,noot,nv,nv,noovt,koovvt,kkoovt, &
+!!!  &             L2,buf2)
 
-       call xcopy(koovot(nrep+1),a0,0,buf3,1)
+!!!    call xcopy(koovot(nrep+1),a0,0,buf3,1)
 
-       call cntrct ('n','n',noovt,no,nv,-a1,buf2,t1,a0,buf3,nrep)
-
-
-      call srt19 (nrep,multb,.true.,noot,no,nv,noovt,koovot,kkoovt,buf3, &
-     &  buf2)
+!!!    call cntrct ('n','n',noovt,no,nv,-a1,buf2,t1,a0,buf3,nrep)
 
 
-!!!   call srt19 (nrep,multb,.true.,noot,no,nv,noovt,koovot,kkoovt,buf3,
-!!!  &  w_intm)
+!!!   call srt19 (nrep,multb,.true.,noot,no,nv,noovt,koovot,kkoovt,buf3, &
+!!!  &  buf2)
 
-      call xaxpy (iovoot(nrep+1),a1,buf2,1,w_intm,1)
+!!!   call xaxpy (iovoot(nrep+1),a1,buf2,1,w_intm,1)
 
-      call contraction_444((/"o1","o2","o3","p4"/), &
-     &    (/"o3","p4","p1","p2"/), (/"o1","o2","p1","p2"/),ResL2, &
-     &    -1.0d0,1.0d0,nrep,LeftTensor=w_intm)
+!!!   call contraction_444((/"o1","o2","o3","p4"/), &
+!!!  &    (/"o3","p4","p1","p2"/), (/"o1","o2","p1","p2"/),ResL2, &
+!!!  &    -1.0d0,1.0d0,nrep,LeftTensor=w_intm)
 
-       deallocate(w_intm)      
+!!!    deallocate(w_intm)      
 
-       if (iprnt.ge.1) &
+!!!    if (iprnt.ge.1) &
 
-     & write(*,*)'RESL2 after term12',(ResL2(i),i=1,5)
+!!!  & write(*,*)'RESL2 after term12',(ResL2(i),i=1,5)
 
 !-----------------------------------------------------------------------
 !     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
@@ -820,7 +802,6 @@
 !    &          /),(/"o1","p1"/),ResL1,1.0d0,1.0d0,nrep,LeftTensor=L2)!,
 !    &           RightTensor=w_vvvo)
 
-
        if (iprnt.ge.1) &
      & write(*,*)'RESL1 after term6',ddot(ndimt1,resL1,1,resL1,1)
 
@@ -846,7 +827,6 @@
 
       deallocate(int_temp)
 
-
        if (iprnt.ge.1) &
      & write(*,*)'RESL1 after term7',ddot(ndimt1,resL1,1,resL1,1)
 
@@ -870,14 +850,14 @@
 
 !-------------------------------------------------------
 !  out-of-core term....
-!    ResL1 = ResL1 + G(f,e) * V(ei,fa)
+!    ResL1 = ResL1 - G(e,f) * V(ei,fa)
 !-------------------------------------------------------
       
       call contraction_242 ((/"p2","p3"/),(/"p2","o1","p3","p1"/), &
      &  (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep,RightTensor=w_v_temp)
 
-!     call contraction_242 ((/"p3","p2"/),(/"p2","o1","p3","p1"/),
-!    &  (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep)
+!     call contraction_242 ((/"p3","p2"/),(/"p2","o1","p3","p1"/), &
+!    &  (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep,RightTensor=w_v_temp)
        deallocate(w_v_temp)
 
 

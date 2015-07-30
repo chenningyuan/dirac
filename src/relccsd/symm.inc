@@ -49,9 +49,10 @@
      & NVVVT2(MXREP)
 
 !     Pointers for symmetry packed arrays.
-      INTEGER*8,TARGET :: JVVVO,IVOVVT,IVVVVTT,KVVVOT,KT3VVVOT                 
+      INTEGER*8,TARGET :: JVVVO,IVOVVT,IVVVVTT,KVVVOT,KT3VVVOT,KT3VVVVT                 
       COMMON /SYMP8/ JVVVO(MXREP+1),IVOVVT(MXREP+1),                    &
-     & IVVVVTT(MXREP+1),KVVVOT(MXREP+1),KT3VVVOT(MXREP+1)               
+     & IVVVVTT(MXREP+1),KVVVOT(MXREP+1),KT3VVVOT(MXREP+1),              &                
+     & KT3VVVVT(MXREP+1)
 
       INTEGER :: IO, IV, IOO
       INTEGER :: IVO, IVV, JVOXX

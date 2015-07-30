@@ -218,7 +218,7 @@
 
   maxdim = sorted_dimension(left_order)
 
-  allocate(v_sort(maxdim))  
+  allocate(v_sort(maxdim*rcw))  
 
      v_sort = 0.0d0
 
@@ -391,8 +391,8 @@
   maxdim2 = sorted_dimension(right_order)
 
 
-  allocate(v_sort(maxdim1))  
-  allocate(right_sorted(maxdim2))  
+  allocate(v_sort(maxdim1*rcw))  
+  allocate(right_sorted(maxdim2*rcw))  
 
    v_sort       = 0.0d0
    right_sorted = 0.0d0
@@ -496,7 +496,7 @@
 
   maxdim = max (sorted_dimension(left_order),sorted_dimension(im_order))
 
-  allocate(v_sort(maxdim))  
+  allocate(v_sort(maxdim*rcw))  
 
    v_sort = 0.0d0
    transA = 'N'
@@ -594,7 +594,7 @@
 
   maxdim = max (sorted_dimension(right_order),sorted_dimension(im_order))
 
-  allocate(right_sort(maxdim))  
+  allocate(right_sort(maxdim*rcw))  
 
    right_sort = 0.0d0
    transA = 'N'

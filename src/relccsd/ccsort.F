@@ -1236,6 +1236,170 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!avijit.
+      SUBROUTINE SRT33 (IRP,ISTART,NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,
+     &              NTRIPL,OFF,OFF1,BUF2,NBUF1,OFF3,DONE)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Sort array VOVV(I,J;KL:KLREP) to array BUF2(I KL, J:JREP)
+C     Read first array from file, representationwise
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF2(*)
+      INTEGER IRP,NREP,MULTB(64,64,2),OFF3,ISTART
+      INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
+      INTEGER NTRIPL(NREP),NBUF1
+      INTEGER OFF1(NREP,NREP)
+      INTEGER OFF(NREP+1)
+      LOGICAL DONE
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+#include "param.inc"
+#include "files.inc"
+C
+C---------------Local variables--------------------------------------
+C
+!      LOGICAL DONE
+      INTEGER MINT,NINT
+      INTEGER IKLJ1,JOFF
+      REAL*8, ALLOCATABLE :: BUF1(:)
+C
+C---------------Executable code--------------------------------------
+
+      allocate(buf1(npair1(irp)*npair2(irp)*rcw))
+
+!     NVVVO = OFF(IRP+1)
+!     CALL XCOPY(NVVVO,A0,0,BUF2,1)
+       KLREP = IRP
+       IJREP = KLREP
+       M = NPAIR1(IJREP)
+       N = NPAIR2(KLREP)
+C
+C      We can only fetch integrals that are present on our node, ISTART will be 
+C      modified by GETVOVV to represent the first value of KL that is present on
+C      our node. Likewise we address the target array such that we count from this
+C      first value. This offset is kept in KL
+C
+       MINT=NBUF1/(MAX0(M,1))
+       CALL GETVOVV (IJREP,ISTART,NINT,DONE,BUF1,MINT)
+       CALL DELINT ('VOVV','DKKK',BUF1,IJREP,ISTART,NINT)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        JOFF = (OFF(JREP) + OFF1(IREP,KLREP) + OFF3*IFIE(IREP) ) * RCW
+        DO J = 1, JFIE(JREP)
+         DO I = 1, IFIE(IREP)
+            IKLJ1 = JOFF + ((J-1)*NTRIPL(JREP)+I-1) * RCW + 1
+            CALL XCOPY(NINT,BUF1(IJ),M,BUF2(IKLJ1),IFIE(IREP))
+            IJ = IJ + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+
+      deallocate(buf1)
+C
+      RETURN
+      END
+
+!====================================================================================
+      SUBROUTINE SRT43 (IRP,ISTART,NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,
+     &         NPAIR2,NTRIPL,OFF,OFF1,BUF1,BUF2,NBUF1,OFF3)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Sort array BUF1(I>J;KL:KLREP) to array BUF2(I KL, J:JREP)
+C     Read first array from file, representationwise
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee
+C
+C---------------Calling variables--------------------------------------
+C
+      INTEGER IRP,NREP,MULTB(64,64,2),ISTART
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
+      INTEGER NTRIPL(NREP),NBUF1
+      INTEGER OFF1(NREP,NREP),OFF3
+      INTEGER OFF(NREP+1)
+      LOGICAL DOINV
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+#include "param.inc"
+#include "files.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      LOGICAL DONE
+      INTEGER MINT,NINT
+      INTEGER IKLJ1,JOFF,JKLI1,IOFF
+C
+C---------------Executable code--------------------------------------
+      NVVVV = OFF(IRP+1)
+      IF (.NOT.DOINV) CALL XCOPY(NVVVV,A0,0,BUF2,1)
+       KLREP = IRP
+       IJREP = KLREP
+       M = NPAIR1(IJREP)
+       N = NPAIR2(KLREP)
+C
+C      We can only fetch integrals that are present on our node, ISTART will be 
+C      modified by GETVOVV to represent the first value of KL that is present on
+C      our node. Likewise we address the target array such that we count from this
+C      first value. This offset is kept in KL
+C
+       MINT=NBUF1/(MAX0(M,1))
+       IF (.NOT.DOINV) THEN
+       CALL GETVVVV (IJREP,ISTART,NINT,DONE,BUF1,MINT)
+       CALL DELINT ('VVVV','DKKK',BUF1,IJREP,ISTART,NINT)
+       ENDIF
+       IJ = 1
+       DO JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        IF(IREP.LT.JREP) CYCLE
+        JOFF = (OFF(JREP) + OFF1(IREP,KLREP) + OFF3*IFIE(IREP) ) * RCW
+        IOFF = (OFF(IREP) + OFF1(JREP,KLREP) + OFF3*JFIE(JREP) ) * RCW
+        DO J = 1, JFIE(JREP)
+         IMIN=1
+         IF(IREP.EQ.JREP) IMIN=J+1
+         DO I = IMIN, IFIE(IREP)
+            IKLJ1 = JOFF + ((J-1)*NTRIPL(JREP)+I-1) * RCW + 1
+            JKLI1 = IOFF + ((I-1)*NTRIPL(IREP)+J-1) * RCW + 1
+            IF(DOINV) THEN
+            CALL XCOPY(N,BUF1(IKLJ1),IFIE(IREP),BUF2(IJ),M)
+            CALL XAXPY(N,-A1,BUF1(JKLI1),JFIE(JREP),BUF2(IJ),M)
+            ELSE
+            CALL XCOPY(N,BUF1(IJ),M,BUF2(IKLJ1),IFIE(IREP))
+            CALL XCOPY(N,BUF1(IJ),M,BUF2(JKLI1),JFIE(JREP))
+            CALL XSCAL(N,-A1,BUF2(JKLI1),JFIE(JREP))
+            ENDIF
+            IJ = IJ + RCW
+         ENDDO
+        ENDDO
+       ENDDO
+C
+      RETURN
+      END
+
+!====================================================================================
+
       SUBROUTINE SRT1S3 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
      &                   OFF,OFF1,BUF1,BUF2)
 C

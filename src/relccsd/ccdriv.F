@@ -1763,6 +1763,12 @@ C
       DO IREP=1,NREP
         KT3VVVOT(IREP+1) = KT3VVVOT(IREP) + NT3VVVT(IREP)*NO(IREP)
       ENDDO
+
+      KT3VVVVT(1)=0
+      DO IREP=1,NREP
+        KT3VVVVT(IREP+1) = KT3VVVVT(IREP) + NT3VVVT(IREP)*NV(IREP)
+      ENDDO
+
 C
 C----------------------------------------------
 C----- F O C K   S P A C E   A R R A Y S ------

@@ -302,7 +302,6 @@
 ! initialize w_voov
 !--------------------
 
-
   w_ovvo = 0.0d0
 
   allocate (w_vovo(nv4*rcw))
@@ -335,7 +334,7 @@
 ! deallocate (tau)
 
 !-------------------------------------------------------------------------------------
-!  w_ovvo(mb,ej) = w_ovvo(mb,ej) - V(mn,ef)*(T2(fb,jn)+T1(f,j)*T1(b,n)
+!  w_ovvo(mb,ej) = w_ovvo(mb,ej) - V(mn,ef)*(T2(fb,jn)+T1(f,j)*T1(b,n))
 !-------------------------------------------------------------------------------------
 
   call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),w_ovvo, &
@@ -353,6 +352,7 @@
              &      -1.0d0,0.0d0,nrep,RightTensor=array_temp)
 
   deallocate(array_temp)
+
 !--------------------------------------------------
 !  w_ovvo(mb,ej) = w(mb,ej) + V(mb,ef)*t(f,j) 
 !--------------------------------------------------
@@ -367,7 +367,6 @@
    w_ovvo(i) = 0.0d0
    endif
    enddo
-
 
  end subroutine
 
@@ -522,28 +521,19 @@
 !  w (ef,am) = w(ef,am) - w_temp(en,am) * t(f,n) 
 !-----------------------------------------------------------------------
 
-  allocate(array_temp(nv4*rcw))
+!!allocate(array_temp(nv4*rcw))
 
-   array_temp = 0.0d0
+!! array_temp = 0.0d0
 
-  call contraction_424 ((/"p2","o2","p1","p4"/),(/"p4","o1"/),(/"p2","o2","p1","o1"/),array_temp, &
-             &      1.0d0,1.0d0,nrep,RightTensor=t1)
+!!call contraction_424 ((/"p2","o2","p1","p4"/),(/"p4","o1"/),(/"p2","o2","p1","o1"/),array_temp, &
+!!           &      1.0d0,1.0d0,nrep,RightTensor=t1)
 
-  call contraction_424 ((/"p2","o2","p1","o1"/),(/"p3","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-             &      -1.0d0,1.0d0,nrep,RightTensor=t1,LeftTensor=array_temp)
+!!call contraction_424 ((/"p2","o2","p1","o1"/),(/"p3","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+!!           &      -1.0d0,1.0d0,nrep,RightTensor=t1,LeftTensor=array_temp)
 
-  deallocate(array_temp)
-!allocate(array_temp(nv4*rcw))
+!!deallocate(array_temp)
 
-! array_temp = 0.0d0
 
-! call xgemm ('n','n',ndimt1,ndimt1,1,a1,t1,ndimt1,t1,1, &
-!&               a1,array_temp,ndimt1)
-
-! call contraction_444 ((/"p2","o2","p1","p4"/),(/"p3","o1","p4","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-!            &      -1.0d0,0.0d0,nrep,RightTensor=array_temp)
-
-!deallocate(array_temp)
   write(*,*)'write me inside w~efam,dia2',ddot(nv5,w_vvvo,1,w_vvvo,1)
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 
@@ -649,7 +639,7 @@
 ! ** actually read integrals from this batch and is a pure output parameter !
 ! ** We therefore have to count upwards in case of ISTART.NE.0 !!
 
-         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,buf3,nint)
+         call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
 
          mint = nbuf3/nvo(irp)
 ! ** now start SORTING and contraction loop
@@ -675,7 +665,7 @@
 !                   ---------------------------------------
                     ISTART = ISTART + NINT
                     IF(.NOT.DONE) THEN
-                    call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,buf3,nint)
+                    call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
                       CD = 1
                       CCO=ISTART
                     ELSE
@@ -713,7 +703,6 @@
 
 
  subroutine w_ejmb_out_of_core(t1,t2,buf1,buf2,buf3,nbuf3,w_vovo)
-
 
 #include "param.inc"                                                  
 #include "complex.inc"                                                
@@ -834,8 +823,7 @@
 
  end subroutine
 
-
-   subroutine f_bar_ae_out_of_core (t1,buf2,nbuf2,hv)
+ subroutine f_bar_ae_out_of_core (t1,buf2,nbuf2,hv)
 
 #include "param.inc"
 #include "complex.inc"
@@ -882,7 +870,7 @@
 !---------------Calling variables-------------------------------------
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)! Amplitudes.
-   real(8), intent(inout) :: w_ovoo(rcw,iovoot(nrep+1))              ! Intermediate.
+   real(8), intent(inout) :: w_ovoo(rcw,iovoot(nrep+1))   ! Intermediate.
    real(8), intent(in)    :: buf1(*),buf2(*)              ! buffer arrays.
    integer, intent(in)    :: nbuf3 
 
@@ -1020,7 +1008,7 @@
 
          w_vvvv = 0.0d0
 
-         call w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv,nint)
+         call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,w_vvvv,nint)
 
 !-----------------------------------------------------------------------
 !        w(ef,am) = w(ef,am) + w_vvvv(ef,ag)*t(gm)
@@ -1336,7 +1324,16 @@
 
    end subroutine
 
-   subroutine w_efab_out_of_core (irp,istart,done,tau,buf1,nbuf3,w_vvvv,nint)
+   subroutine w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,w_vvvv,nint)
+
+!-----------------------description------------------------------------------------
+!   W_vvvv intermediates are formed such a manner that it could be used as fetching 
+!   VVVV integrals, representationwise. However, we will call them only once to construct
+!   term2 of W_efam integrals and transfer it to a file, subsequently, inside that routine.
+!   batch size is fixed to the distributed batches of VVVV integrals. I assumed that batch 
+!   size for VOVV and VVVV integrals are the same.
+!-----------------------------------------------------------------------------------
+
 
 #include "param.inc"                                                  
 #include "complex.inc"                                                
@@ -1344,9 +1341,9 @@
 #include "ccpar.inc"                                                  
 
 !--------------------calling variables-------------
-   real(8), intent(in)    :: tau(:)  ! Amplitudes.
-   real(8), intent(out)   :: w_vvvv(*)                ! Intermediate.
-   real(8), intent(in)    :: buf1(*)                  ! buffer arrays
+   real(8), intent(in)    :: tau(:),t1(ndimt1*rcw)  ! Amplitudes.
+   real(8), intent(out)   :: w_vvvv(*)              ! Intermediate.
+   real(8), intent(in)    :: buf1(*)                ! buffer arrays
    integer, intent(in)    :: nbuf3,irp,istart
    integer, intent(out)   :: nint
    logical, intent(inout) :: done
@@ -1354,24 +1351,27 @@
 
 
 !--------------------local variables----------------
-   integer :: mint,off1
-   integer :: abkl,m,n,k
-   real*8,allocatable :: w_vvvv_temp(:,:)  
+   integer :: mint,off1,off2,off3,off4,off5
+   integer :: abkl,m,n,k,irrep,irep,mm(nrep)
+   integer :: xxt3vvvt(nrep,nrep),yt3vvvt(nrep),zt3vvvot(nrep+1),zt3vvvvt(nrep+1)
+   real*8,allocatable :: w_vvvv_temp(:),w_vvvv_temp_temp(:),w_v(:)  
 !---------------------------------------------------
 
          off1 = 1
+         off2 = 1
+         off3 = 0
 
          mint = nbuf3/nvvt(irp)
          call getvvvv (irp,istart,nint,done,w_vvvv,mint)
-         if (carith) then
-            call conjuga (nint*nvvt(irp),w_vvvv,1)
-         endif
+!        if (carith) then
+!           call conjuga (nint*nvvt(irp),w_vvvv,1)
+!        endif
    
 !----------------------------------------------
 ! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU*(ef,mn)
 !----------------------------------------------
 
-       allocate(w_vvvv_temp(nint,nvvt(irp))) !be careful about rcw. probably this is OK. 
+        allocate(w_vvvv_temp(nvvt(irp)*nint*rcw))  
 
        w_vvvv_temp = 0.0d0
 
@@ -1382,10 +1382,56 @@
        abkl = (ivvoott(irp)+istart)*rcw+1
        off1 = off1 + ivvoott(irp)*rcw  
 
-       call xgemm ('n','c',n,m,k,a1,buf1(abkl),m,tau(off1),nvvt(irp), &
-     &               a0,w_vvvv_temp,m)
+       if(carith) then
 
-       call xaxpy(nint*nvvt(irp),a1,transpose(w_vvvv_temp),1,w_vvvv,1)
+        call conjuga(ndimt2,tau,1)
+
+       endif
+
+       call xgemm ('n','c',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
+     &               a1,w_vvvv,m)
+
+       deallocate(w_vvvv_temp)
+
+!-----------------------------------------------------
+! w(ef,ab) = w(ef,ab) - V(em,ab)*t(f,m)
+!-----------------------------------------------------
+
+      call offset_outofcore_sorter(irp,xxt3vvvt,yt3vvvt,zt3vvvot,zt3vvvvt)
+
+      if (.not.done) off3 = off3+nint
+
+       allocate(w_v(kt3vvvot(nrep+1)*rcw))  
+
+       w_v = 0.0d0
+
+      call srt33 (irp,istart,nrep,multb,nvo,nv,no,nt3vvt, & 
+     &            yt3vvvt,zt3vvvot,xxt3vvvt,w_v,nbuf3,off3,done)
+
+       mm(1:nrep) = 0
+       do irrep = 1,nrep
+         irep = multb(irrep,irp+nrep,2)
+         mm(irrep) = mm(irrep)+ nint*nv(irep)
+       enddo
+
+       allocate(w_vvvv_temp_temp(dot_product(mm,nv)*rcw))  
+
+       w_vvvv_temp_temp = 0.0d0
+
+       call cntrct ('N','C',mm,nv,no,-a1,w_v,t1,a0,w_vvvv_temp_temp,nrep)
+
+       deallocate(w_v)
+
+       allocate(w_vvvv_temp(nvvt(irp)*nint*rcw)) 
+
+      w_vvvv_temp = 0.0d0 
+      call srt43 (irp,istart,nrep,multb,.true.,nvvt,nv,nv,  &
+     &    nt3vvt,yt3vvvt,zt3vvvvt,xxt3vvvt,w_vvvv_temp_temp,&
+     &    w_vvvv_temp,nbuf3,off3)
+
+       deallocate(w_vvvv_temp_temp)
+
+       call xaxpy(nint*nvvt(irp),a1,w_vvvv_temp,1,w_vvvv,1)
 
        deallocate(w_vvvv_temp)
 
@@ -1422,5 +1468,40 @@
                         & LeftTensor=l2,RightTensor=t2)
 
   end subroutine
+
+
+      subroutine offset_outofcore_sorter(irp,xxt3vvvt,yt3vvvt,zt3vvvot,zt3vvvvt)
+
+#include "symm.inc"
+!------------------------------------------------
+        integer, intent(in)  :: irp
+        integer, intent(out) :: xxt3vvvt(nrep,nrep),yt3vvvt(nrep),zt3vvvot(nrep+1) 
+        integer, intent(out) :: zt3vvvvt(nrep+1) 
+!------------------------------------------------
+
+!------------------------------------------------
+        integer :: irep,krep,ijkrep
+!------------------------------------------------
+
+        YT3VVVT(1:nrep) = 0
+        XXT3VVVT(1:nrep,1:nrep) = 0
+
+        DO KREP = 1,NREP
+          IJKREP = MULTB(KREP,IRP+NREP,2)
+          XXT3VVVT(KREP,IRP)=YT3VVVT(IJKREP)
+          YT3VVVT(IJKREP)=YT3VVVT(IJKREP) + NT3VVT(IRP) * NV(KREP)
+        ENDDO
+
+      ZT3VVVOT(1)=0
+      DO IREP=1,NREP
+        ZT3VVVOT(IREP+1) = ZT3VVVOT(IREP) + YT3VVVT(IREP)*NO(IREP)
+      ENDDO
+
+      ZT3VVVVT(1)=0
+      DO IREP=1,NREP
+        ZT3VVVVT(IREP+1) = ZT3VVVVT(IREP) + YT3VVVT(IREP)*NV(IREP)
+      ENDDO
+
+      end subroutine
 
   end module
