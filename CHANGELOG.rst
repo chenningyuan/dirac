@@ -1,4 +1,7 @@
+15.x
+____
 
+- Performance improvement for MP2 NO: only transform (G O|G O) integrals instead of (G G|G G).
 
 14.2 (20XX-XX-XX)
 -----------------
