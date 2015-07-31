@@ -271,7 +271,10 @@ def gen_cmake_command(args):
         if args.mkl == None:
             print('you have to choose between --mkl=[{sequential,parallel,cluster}]')
             sys.exit(1)
-        command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
+        if sys.platform == "win32":
+            command += ' -DMKL_FLAG="/Qmkl:%s"' % args.mkl
+        else:
+            command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
         command += ' -DENABLE_AUTO_BLAS=OFF'
         command += ' -DENABLE_AUTO_LAPACK=OFF'
 

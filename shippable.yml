@@ -35,22 +35,24 @@ git:
 before_script:
 # show info about available processors
     - lscpu
+    - echo nproc=$(nproc)
 # show available disc space
     - df -h
 # show available memory
     - free -m
     
-# configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
+# update submodule; configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
 script:
+    - git submodule update --init --recursive
     - python ./pamadm -a --builddir=build_shippableci_mpi
     - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
     - cd build_shippableci_mpi
     - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
+    - ctest -j $(nproc) --track Miro -D ExperimentalBuild
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest || true
+    - ctest -j $(nproc) --track Miro -D ExperimentalTest || true
     - ctest --track Miro -D ExperimentalSubmit
 
 # turn off email notifications

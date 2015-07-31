@@ -244,6 +244,30 @@ C
       RETURN
 C
       END
+      SUBROUTINE MAKE_VECMP2NO_occ(VECMP2NO_occ,VEC,NSTR,NOCC_I)
+#include "priunit.h"
+      CHARACTER VECMP2NO_occ*72
+      INTEGER   NSTR, VEC(NSTR), NOCC_I, I, J
+      VECMP2NO_occ = ' '
+!     write(lupri,*) 'sss nstr,NOCC_I',nstr,NOCC_I
+!     write(lupri,'(20I5)') (VEC(I),I=1,nstr)
+      J = 0
+      DO I = 1,NSTR
+         IF ( VEC(I) .LE. NOCC_I ) THEN
+            J = J + 1
+            VEC(J) = VEC(I)
+         END IF
+      END DO
+      IF (J .GT. 18) THEN
+         call quit('rewrite comde in MAKE_VECMP2NO_occ')
+      END IF
+      WRITE(VECMP2NO_occ,'(I3,17(:",",I3))') (VEC(I),I=1,J)
+!     write(lupri,*) 'sss occupied',J
+!     write(lupri,'(20I5)') (VEC(I),I=1,j)
+!     write(lupri,*) VECMP2NO_occ
+
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mp2nogen */
       SUBROUTINE MP2NOGEN()
@@ -558,6 +582,8 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
+      REAL*8    WORK(LWORK)
+
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -569,11 +595,19 @@ C
 C
 #include "maxorb.h"
 #include "dcbgen.h"
-      CHARACTER*24 DAYTID
-      LOGICAL TOBE,TOBEK,TRASAM,ACTIVE
-      DIMENSION WORK(*),NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
-     &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
-     &          NSPC(2,0:2),KQC(2),NSTRT(4)
+
+      CHARACTER DAYTID*24, VECMP2NO_occ(2)*72
+      LOGICAL   TOBE,TOBEK,TRASAM,ACTIVE
+
+! 4-index integrals
+      INTEGER   NSTR(2,0:2,4),NSTRT(4),
+     &          KVEC(2,5),KQ(2,4),KIBE(2,4),KE(2,4),
+     &          IR(2,2),NR(2),NQ(2,4),NQT(4)
+! 2-index integrals
+      INTEGER   NSTR_ONE(2,0:2,2),NSTRT_ONE(2),
+     &          KVEC_ONE(2,2),KQ_ONE(2,2),KIBE_ONE(2,2),KE_ONE(2,2)
+! core
+      INTEGER   NSPC(2,0:2),KQC(2)
 C
       CALL QENTER('DENMP2NO')
 #include "memint.h"
@@ -599,20 +633,6 @@ C
       ITRA_INTFL2 = ITRA_INTFLG
       ISTRAT      = IAOMOSCHEME
       IPRTRA      = IPRMP2NO
-C 
-      DO I = 1,NFSYM
-        WRITE(TRA_CORSTR(I),'(A)') 'not specified'
-        TRA_INDSTR(I)      = VECMP2NO(I)
-        DO J = 1,2
-          TRA2_INDSTR(J,I) = VECMP2NO(I)
-        ENDDO
-        DO J = 1,4
-          TRA4_INDSTR(J,I) = VECMP2NO(I)
-        ENDDO
-      ENDDO
-C
-      CALL GETTIM(CPU1,WALL1)
-      CALL TRAHI(IPRTRA,3)
 C
 C     Define number of double quaternionic classes
 C
@@ -634,6 +654,40 @@ C
           IR(2,I) =  NESH(I)
         ENDDO
       ENDIF
+C 
+!
+!       We only need( G O | G O ) integrals (G general, O occupied)
+!       therefore we restrict indices 2 and 4 to the occupied subset
+!       of what is specified in TRA4_INDSTR(1:2,2) and TRA4_INDSTR(1:2,4)
+!       NB! first index *must* be general, otherwise RELCCSD
+!           will not calculated the virtual part of the
+!           MP2 density matrix. /July 2015, hjaaj
+
+      KREL = KFREE
+      DO IFRP = 1,NFSYM
+         CALL MEMGET2('INTE','VEC',KVEC_all,NESH(IFRP),
+     &      WORK,KFREE,LFREE)
+         CALL NUMLST(VECMP2NO(IFRP),WORK(KVEC_all),
+     &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
+     &               IFRP,NSTR_I)
+         NOCC_I = NISH(IFRP) + NASH(IFRP)
+         CALL MAKE_VECMP2NO_occ(VECMP2NO_occ(IFRP),
+     &               WORK(KVEC_ALL),NSTR_I,NOCC_I)
+      END DO
+
+      DO I = 1,NFSYM
+        TRA4_INDSTR(1,I) = VECMP2NO(I)
+        TRA4_INDSTR(2,I) = VECMP2NO_occ(I)
+        TRA4_INDSTR(3,I) = VECMP2NO(I)
+        TRA4_INDSTR(4,I) = VECMP2NO_occ(I)
+        TRA2_INDSTR(1,I) = VECMP2NO(I)
+        TRA2_INDSTR(2,I) = VECMP2NO(I)
+        TRA_INDSTR(I)    = VECMP2NO(I)
+        TRA_CORSTR(I)    = 'not specified'
+      ENDDO
+C
+      CALL GETTIM(CPU1,WALL1)
+      CALL TRAHI(IPRTRA,3)
 C
 C     NSTR(I): Number of Spinors to be Transformed for index I
 C
@@ -651,14 +705,31 @@ C
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('MP2DEN.1',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
+          CALL MEMGET2('INTE','VEC',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
       ENDDO
+      WRITE(LUPRI,'(/A)') '* Orbital ranges for 4-index transformation:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
+     &                   WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
+      ENDDO
 C
-      KFRSAV = KFREE
 
-      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
+      NSTR_ONE(1:2,0:2,1) = NSTR(1:2,0:2,1) 
+      NSTR_ONE(1:2,0:2,2) = NSTR(1:2,0:2,3)
+      NSTRT_ONE(1) = NSTRT(1)
+      NSTRT_ONE(2) = NSTRT(3)
+      DO I = 1,2
+      DO IFRP = 1,NFSYM
+         CALL MEMGET2('INTE','VEC_ONE',KVEC_ONE(IFRP,I),
+     &                NSTR_ONE(IFRP,0,I),WORK,KFREE,LFREE)
+         CALL ICOPY(NSTR_ONE(IFRP,0,I),WORK(KVEC(IFRP,1)),1,
+     &                WORK(KVEC_ONE(IFRP,I)),1)
+      END DO
+      END DO
+
+      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR_ONE)
 C
 C     Print section
 C     =============
@@ -667,6 +738,11 @@ C
       DO I = 1, NFSYM
          CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
      &                   WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
+      ENDDO
+      WRITE(LUPRI,'(/A)') '* Orbital ranges for 2-index transformation:'
+      DO I = 1, NFSYM
+         CALL TRAPRI(2,I,WORK(KVEC_ONE(I,1)),WORK(KVEC_ONE(I,2)),
+     &                   WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR_ONE)
       ENDDO
 C
 C     Calculate dimensions of coefficient arrays
@@ -706,9 +782,11 @@ C
          ENDDO
 C
          IF (ISAME(I).EQ.I) THEN
-            IF (I.NE.1)CALL Abend2('MP2DEN: All ranges should be equal')
+C           new coefficient matrix
+c           IF (I.NE.1) CALL QUIT ('All ranges should be equal')
             CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
          ELSE
+C           same coefficient matrix as before
             KQ(1,I) = KQ(1,ISAME(I))
          ENDIF
          KQ(2,I) = KQ(1,I) + NQ(1,I)
@@ -725,21 +803,35 @@ C
         CALL MEMGET2('REAL','E(1,I)',KE(1,I),NDIM,WORK,KFREE,LFREE)
         KE(2,I) = KE(1,I) + NSTR(1,0,I)
       ENDDO
+      DO I = 1,2
+        NDIM = 0
+        DO IFRP = 1, NFSYM
+          NDIM = NDIM + NSTR_ONE(IFRP,0,I)
+        ENDDO
+        CALL MEMGET2('REAL','Eone(1,I)',KE_ONE(1,I),NDIM,
+     &     WORK,KFREE,LFREE)
+        KE_ONE(2,I) = KE_ONE(1,I) + NSTR_ONE(1,0,I)
+      ENDDO
 C
 C     Allocate memory for the integer array with information about the
 C     spinors.
 C
-      DO I = 1, 4
-       DO IFRP = 1, NFSYM
-        CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
-       ENDDO
-      ENDDO
+      DO IFRP = 1, NFSYM
+      DO I = 1,4
+         CALL MEMGET2('INTE','IBE',KIBE(IFRP,I),
+     &                NSTR(IFRP,0,I),WORK,KFREE,LFREE)
+      END DO
+      DO I = 1,2
+         CALL MEMGET2('INTE','IBE_ONE',KIBE_ONE(IFRP,I),
+     &                NSTR_ONE(IFRP,0,I),WORK,KFREE,LFREE)
+      END DO
+      END DO
 C
 C     Get all coefficients
 C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
@@ -755,7 +847,7 @@ C
 C
 C     Select the set that we need
 C
-      DO I = 1, 4
+      DO I = 1, 4  ! 4-index 2-electron integral transformation
         DO IFRP = 1, NFSYM
           IF(NSTR(IFRP,0,I).GT.0) THEN
              CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
@@ -767,6 +859,24 @@ C
              CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
+          ENDIF
+        ENDDO
+      ENDDO
+
+      DO I = 1, 2  ! 2-index 1-electron integral transformation
+        DO IFRP = 1, NFSYM
+          IF(NSTR_ONE(IFRP,0,I).GT.0) THEN
+! we do not transform any 1-electron matrices
+!            CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
+!    &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
+!    &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
+!    &                   NFBAS(IFRP,0),NORB(IFRP))
+             CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,
+     &                   WORK(KE_ONE(IFRP,I)),WORK(KVEC_ONE(IFRP,I)),
+     &                   NSTR_ONE(IFRP,2,I),NSTR_ONE(IFRP,1,I))
+             CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+     &                   WORK(KIBE_ONE(IFRP,I)),WORK(KVEC_ONE(IFRP,I)),
+     &                   NSTR_ONE(IFRP,2,I),NSTR_ONE(IFRP,1,I))
           ENDIF
         ENDDO
       ENDDO
@@ -809,7 +919,8 @@ C        take the occupied orbitals that do not belong to the active
 C        set.
 C
          IF (INDEX(TRA_CORSTR(IFRP),'not specified').NE.0) THEN
-            CALL NUMCOR (NOCC(IFRP),NSTR(IFRP,1,1),WORK(KVEC(IFRP,1)),
+            CALL NUMCOR (NOCC(IFRP),NSTR_ONE(IFRP,1,1),
+     &                   WORK(KVEC_ONE(IFRP,1)),
      &                   NSPC(IFRP,1),WORK(KVEC(IFRP,5)))
             NSPC(IFRP,2) = 0
          ELSE
@@ -948,8 +1059,8 @@ C     ----------------------------------------------------------
       IF( SKIP_ITRAFO ) GOTO 20
 
       IF (.NOT.NO2IND) THEN
-         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
-     &               KQ,KQC,KE,KIBE)
+         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR_ONE,NSTRT_ONE,NSPC,
+     &               KQ,KQC,KE_ONE,KIBE_ONE)
       END IF
 C
       CALL FLSHFO(LUPRI)
@@ -1045,6 +1156,7 @@ C
 C
       CALL QEXIT('DENMP2NO')
       END
+      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE READMP2NAT(CMO,EIG,EIG_NAT,ibeig)
 C***********************************************************************

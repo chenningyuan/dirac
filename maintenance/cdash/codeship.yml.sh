@@ -60,6 +60,9 @@ git --version
 sphinx-build --version
 doxygen --version
 
+# update submodule
+git submodule update --init --recursive
+
 # 32-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i4
 python ./setup -D BUILDNAME="gnu.i4-codeship-ci" build_codeship_i4

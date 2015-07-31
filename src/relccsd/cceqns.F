@@ -2179,6 +2179,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOM (EPS,T1,T2,CT1,CT2)
 C
+      use relcc_cfg, only: relcc_ccener_dholu_limit
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -2211,7 +2212,8 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      DHOLU = 1.D-6
+      DHOLU = relcc_ccener_dholu_limit
+
       II = 0
       AI = 0
       DO IRP = 1, NREP
@@ -2243,11 +2245,11 @@ C
                    ATVAL = ABS(T1(AI))
                 ENDIF
                 IF (ATVAL.GT.DHOLU) THEN
-                  WRITE(IW,*) '1.IRP,NOcc(IRP),NVirt(IRP)=',
+                  WRITE(*,*) '1.IRP,NOcc(IRP),NVirt(IRP)=',
      &                        IRP,NO(IRP),NV(IRP)
-                  WRITE(IW,*) 'II=',II,' AA=',AA,' AI=',AI
-                  WRITE(IW,*) 'eps_II=',EPS(II),' eps_AA=',EPS(AA)
-                  WRITE(IW,*) 'EPS(II)-EPS(AA)=FAC=',FAC,
+                  WRITE(*,*) 'II=',II,' AA=',AA,' AI=',AI
+                  WRITE(*,*) 'eps_II=',EPS(II),' eps_AA=',EPS(AA)
+                  WRITE(*,*) 'EPS(II)-EPS(AA)=FAC=',FAC,
      &          ' ABS(T1(AI)/FAC)=',ATVAL,' DHOLU=',DHOLU
                   CALL QUIT ('Zero or negative HOMO-LUMO gap')
                 ELSE
@@ -2305,10 +2307,10 @@ C                 Check for small denominators, see comment above.
                         ATVAL = ABS(T2(ABIJ))
                      ENDIF
                      IF (ATVAL.GT.DHOLU) THEN
-                       WRITE(IW,*) 'II,JJ,AA,BB=',II,JJ,AA,BB
-                       WRITE(IW,*) 'eps_II=',EPS(II),'eps_JJ=',EPS(JJ),
+                       WRITE(*,*) 'II,JJ,AA,BB=',II,JJ,AA,BB
+                       WRITE(*,*) 'eps_II=',EPS(II),'eps_JJ=',EPS(JJ),
      &                             'eps_AA=',EPS(AA),'eps_BB=',EPS(BB)
-                       WRITE(IW,*) 'eII+eJJ-eAA-eBB=',FAC,' ATVAL=',
+                       WRITE(*,*) 'eII+eJJ-eAA-eBB=',FAC,' ATVAL=',
      &                 ATVAL,' DHOLU=',DHOLU
                         CALL QUIT ('Zero or negative HOMO-LUMO gap')
                      ELSE

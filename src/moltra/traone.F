@@ -421,6 +421,7 @@ C
 C
       IF (NSTRT(1).NE.NSTRT(2)) THEN
          WRITE (LUPRI,*) ' Ranges for bra and ket are different'
+         WRITE (LUPRI,*) ' NSTRT bra and ket: ',NSTRT(1),NSTRT(2)
          WRITE (LUPRI,*) ' MRCONEE file is not written !!!'
          RETURN
       ENDIF

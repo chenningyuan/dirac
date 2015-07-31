@@ -905,6 +905,12 @@
          read(get_file_unit(),'(i5)') relcc_ccener_desired_convergence
       end if
 
+! miro (luuk) - expert's keyword
+      if (kw_matches(word, '.DHOLU ')) then
+         call kw_read(word, relcc_ccener_dholu_limit)
+         relcc_ccener_dholu_limit_set = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine

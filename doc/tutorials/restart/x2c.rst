@@ -57,6 +57,7 @@ e.g. the contact density at the Br nucleus at the HF level, we use the following
 input file (copy and paste it into the ``property_x2c.inp`` input file)::
 
   **DIRAC
+  !.WAVE FUNCTION       commented out to skip SCF step
   .PROPERTIES
   **MOLECULE
   *BASIS
@@ -71,6 +72,8 @@ input file (copy and paste it into the ``property_x2c.inp`` input file)::
   *READIN
   ! A limitation in the AMFI code requires an uncontracted basis
   .UNCONTRACT
+  **WAVE FUNCTION
+  .SCF
   **PROPERTIES
   .RHONUC
   *END OF

@@ -6896,9 +6896,9 @@ C       Prepare small component part
 C       ----------------------------
 C
         LWRK = MXBBAS*MXBBAS*NSYM
-        CALL MEMGET('REAL',KSMT,LWRK,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','SMT',KSMT,LWRK,WORK,KFREE,LFREE)
         LWRK = NFORB(I,1) * NFORB(I,1)
-        CALL MEMGET('REAL',KVMT,LWRK,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','VMT',KVMT,LWRK,WORK,KFREE,LFREE)
         IVMT  = KVMT
         IBOL  = 0
         NEFF  = 0
@@ -6987,8 +6987,8 @@ C
         ENDIF
         IMAT = IMAT + NFORB(I,0)*NFORB(I,0)*NZ
         IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
+        CALL MEMREL('MOD_DIREQ',WORK,KSMT,KSMT,KFREE,LFREE)
    10 CONTINUE
-      CALL MEMREL('MOD_DIREQ',WORK,KSMT,KSMT,KFREE,LFREE)
 C
       IF(VEXTPJ.OR.FREEPJ) THEN
 C     These variables are later set by SETDC2, but needed here...

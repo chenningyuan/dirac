@@ -5,6 +5,10 @@ rem /home/milias/test directory must exist before script is run
 rem /home/milias/cdash-testing.log file contains log from previous run
 rem this script can be placed everywhere you want and does not need any arguments
 
+rem initialize the cygserver (important for DIRAC parallel runs)
+cd C:\cygwin64\bin
+cygstart.exe  --action=runas  C:\cygwin64\usr\sbin\cygserver.exe
+
 rem unset PUTTYs environment variable (it makes problems to Cygwin git)
 set GIT_SSH=
 
@@ -15,10 +19,10 @@ rem delete previously downloaded sources and old builds
 C:\cygwin64\bin\sh --login -c "(echo -e \" deleting sources..\" && rm -rf /home/milias/test/trunk_cloned) 2>&1 | tee -a /home/milias/cdash-testing.log"
 
 rem clone sources from gitlab
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n cloning sources..\" && cd /home/milias/test && git clone git@gitlab.com:dirac/dirac.git trunk_cloned) 2>&1 | tee -a /home/milias/cdash-testing.log"
+C:\cygwin64\bin\sh --login -c "(echo -e \"\n cloning sources..\" && cd /home/milias/test && git clone --recursive git@gitlab.com:dirac/dirac.git trunk_cloned) 2>&1 | tee -a /home/milias/cdash-testing.log"
 
 rem update submodules
-C:\cygwin64\bin\sh --login -c "(echo -e \"\n updating submodules..\" && cd /home/milias/test/trunk_cloned && git submodule update --init) 2>&1 | tee -a /home/milias/cdash-testing.log" 
+C:\cygwin64\bin\sh --login -c "(echo -e \"\n updating submodules..\" && cd /home/milias/test/trunk_cloned && git submodule update --init --recursive) 2>&1 | tee -a /home/milias/cdash-testing.log" 
 
 rem configure setup : 64-bit with Open MPI and OpenBLAS (builtin Lapack)
 rem define ZLIB_ROOT to find correct zlib library
