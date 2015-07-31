@@ -72,7 +72,7 @@ git submodule update --init --recursive
 
 # 64-bit Integer, MPICH parallel build
 python ./pamadm -a --builddir=build_semaphore-ci_i8
-python ./setup -D BUILDNAME="mpich-gnu-i8_semaphore" --int64 --mpi -D DART_TESTING_TIMEOUT=9999  build_semaphore-ci_i8
+python ./setup -D BUILDNAME="mpich-gnu-i8_semaphore" --int64 --mpi --run-unit-tests -D DART_TESTING_TIMEOUT=9999  build_semaphore-ci_i8
 cd build_semaphore-ci_i8
 ctest --track master -D ExperimentalConfigure
 ctest -j $N_PROC --track master -D ExperimentalBuild

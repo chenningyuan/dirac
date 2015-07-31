@@ -31,7 +31,7 @@ git submodule update --init --recursive
 set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD% 1>>%LOG% 2>&1
-python setup --blas="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
+python setup --run-unit-tests  --blas="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
 --lapack="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
 -D ZLIB_ROOT="C:\libraries\zlib" -D BOOST_INCLUDEDIR="C:\libraries\Boost\include" ^
 -D BOOST_LIBRARYDIR="C:\libraries\Boost\lib" -D BUILDNAME="WinS12_MinGW64_i8_OpenBLAS_parallel" ^

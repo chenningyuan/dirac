@@ -45,7 +45,7 @@ before_script:
 script:
     - git submodule update --init --recursive
     - python ./pamadm -a --builddir=build_shippableci_mpi
-    - python ./setup -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
+    - python ./setup --run-unit-tests -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
     - cd build_shippableci_mpi
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j $(nproc) --track Miro -D ExperimentalBuild

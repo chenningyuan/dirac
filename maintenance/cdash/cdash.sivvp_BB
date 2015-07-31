@@ -56,7 +56,7 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   /bin/rm -rf $BUILD_SERIAL
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-UMB_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
+./setup --int64 --fc=ifort --cc=icc --cxx=icpc --run-unit-tests -D BUILDNAME="sivvp-UMB_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
 ctest -D ExperimentalUpdate  --track Miro
@@ -76,7 +76,7 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_STATIC
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
+./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static --run-unit-tests -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
 ctest --track Grid   -D ExperimentalUpdate
@@ -97,7 +97,7 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+./setup --run-unit-tests --int64 --fc=gfortran --cc=gcc --cxx=g++ --run-unit-tests -D BUILDNAME="sivvp-UMB_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
 ctest -D ExperimentalUpdate    --track Miro
@@ -117,7 +117,7 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8-static"  --static -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+./setup --run-unit-tests --int64 --fc=gfortran --cc=gcc --cxx=g++ --run-unit-tests -D BUILDNAME="sivvp-UMB_GNU_mkl_i8-static"  --static -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
 ctest --track Grid  -D ExperimentalUpdate
@@ -137,7 +137,7 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_ownmath_i8" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+./setup --run-unit-tests --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_ownmath_i8" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
 ctest -D ExperimentalUpdate    --track Miro
@@ -158,7 +158,7 @@ if [[ -d "$BUILD_PGI" ]]; then
   /bin/rm -rf $BUILD_PGI
 fi
 ./pamadm -a --builddir=$BUILD_PGI
-./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+./setup --run-unit-tests --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
 cd $BUILD_PGI
 python binary_info.py
 ctest -D ExperimentalUpdate    --track Miro
@@ -180,7 +180,7 @@ if [[ -d "$BUILD_PGI" ]]; then
   /bin/rm -rf $BUILD_PGI
 fi
 ./pamadm -a --builddir=$BUILD_PGI
-./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8_static" --static -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --run-unit-tests -D BUILDNAME="sivvp-UMB_PGI_mkl_i8_static" --static -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
 cd $BUILD_PGI
 python binary_info.py
 ctest --track Grid  -D ExperimentalUpdate

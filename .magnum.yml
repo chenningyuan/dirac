@@ -25,7 +25,7 @@ script:
 # update submodule, configure and build
     - git submodule update --init --recursive
     - python ./pamadm -a --builddir=build_magnum-ci
-    - python ./setup -D BUILDNAME="magnum-ci.i8" -D ENABLE_BOUNDS_CHECK=ON --int64 build_magnum-ci
+    - python ./setup --run-unit-tests  -D BUILDNAME="magnum-ci.i8" -D ENABLE_BOUNDS_CHECK=ON --int64 build_magnum-ci
     - cd build_magnum-ci
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
