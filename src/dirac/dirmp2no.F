@@ -245,12 +245,17 @@ C
 C
       END
       SUBROUTINE MAKE_VECMP2NO_occ(VECMP2NO_occ,VEC,NSTR,NOCC_I)
+!
+!     July 2015, Hans Jørgen Aa. Jensen
+!
 #include "priunit.h"
-      CHARACTER VECMP2NO_occ*72
-      INTEGER   NSTR, VEC(NSTR), NOCC_I, I, J
+      CHARACTER VECMP2NO_occ*(*)
+      INTEGER   NSTR, VEC(NSTR), NOCC_I, I, J, MAX_occ
       VECMP2NO_occ = ' '
 !     write(lupri,*) 'sss nstr,NOCC_I',nstr,NOCC_I
 !     write(lupri,'(20I5)') (VEC(I),I=1,nstr)
+      MAX_occ = LEN(VECMP2NO_occ)
+      MAX_occ = MAX_occ/4 ! we use 4 characters for each number
       J = 0
       DO I = 1,NSTR
          IF ( VEC(I) .LE. NOCC_I ) THEN
@@ -258,10 +263,10 @@ C
             VEC(J) = VEC(I)
          END IF
       END DO
-      IF (J .GT. 18) THEN
-         call quit('rewrite comde in MAKE_VECMP2NO_occ')
+      IF (J .GT. MAX_occ) THEN
+         call quit('Rewrite code in MAKE_VECMP2NO_occ')
       END IF
-      WRITE(VECMP2NO_occ,'(I3,17(:",",I3))') (VEC(I),I=1,J)
+      WRITE(VECMP2NO_occ,'(I3,999(:",",I3))') (VEC(I),I=1,J)
 !     write(lupri,*) 'sss occupied',J
 !     write(lupri,'(20I5)') (VEC(I),I=1,j)
 !     write(lupri,*) VECMP2NO_occ
@@ -596,7 +601,7 @@ C
 #include "maxorb.h"
 #include "dcbgen.h"
 
-      CHARACTER DAYTID*24, VECMP2NO_occ(2)*72
+      CHARACTER DAYTID*24, VECMP2NO_occ(2)*400, TEMP_TRA4_INDSTR*400
       LOGICAL   TOBE,TOBEK,TRASAM,ACTIVE
 
 ! 4-index integrals
@@ -664,25 +669,26 @@ C
 !           MP2 density matrix. /July 2015, hjaaj
 
       KREL = KFREE
+      CALL MEMGET2('INTE','VEC',KVEC_all,NESHT,WORK,KFREE,LFREE)
       DO IFRP = 1,NFSYM
-         CALL MEMGET2('INTE','VEC',KVEC_all,NESH(IFRP),
-     &      WORK,KFREE,LFREE)
+         NSTR_I = -1
          CALL NUMLST(VECMP2NO(IFRP),WORK(KVEC_all),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &               IFRP,NSTR_I)
          NOCC_I = NISH(IFRP) + NASH(IFRP)
          CALL MAKE_VECMP2NO_occ(VECMP2NO_occ(IFRP),
-     &               WORK(KVEC_ALL),NSTR_I,NOCC_I)
+     &               WORK(KVEC_all),NSTR_I,NOCC_I)
       END DO
+      CALL MEMREL('MP2DEN.1',WORK,KFRSAV,KREL,KFREE,LFREE)
 
       DO I = 1,NFSYM
-        TRA4_INDSTR(1,I) = VECMP2NO(I)
-        TRA4_INDSTR(2,I) = VECMP2NO_occ(I)
-        TRA4_INDSTR(3,I) = VECMP2NO(I)
-        TRA4_INDSTR(4,I) = VECMP2NO_occ(I)
-        TRA2_INDSTR(1,I) = VECMP2NO(I)
-        TRA2_INDSTR(2,I) = VECMP2NO(I)
-        TRA_INDSTR(I)    = VECMP2NO(I)
+!       TRA4_INDSTR(1,I) = VECMP2NO(I)     ! TRA*INDSTR not used in this subroutine
+!       TRA4_INDSTR(2,I) = VECMP2NO_occ(I) ! because we need often more than *72 vor VECMP2NO_occ
+!       TRA4_INDSTR(3,I) = VECMP2NO(I)
+!       TRA4_INDSTR(4,I) = VECMP2NO_occ(I)
+!       TRA2_INDSTR(1,I) = VECMP2NO(I)
+!       TRA2_INDSTR(2,I) = VECMP2NO(I)
+!       TRA_INDSTR(I)    = VECMP2NO(I)
         TRA_CORSTR(I)    = 'not specified'
       ENDDO
 C
@@ -694,9 +700,14 @@ C
       DO I = 1,4
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
+          IF (I .EQ. 1 .OR. I .EQ. 3) THEN ! all active orbitals
+             TEMP_TRA4_INDSTR = VECMP2NO(IFRP)
+          ELSE ! only occupied active orbitals
+             TEMP_TRA4_INDSTR = VECMP2NO_occ(IFRP)
+          END IF
           CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
           NSTR(IFRP,0,I) = - 1
-          CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
+          CALL  NUMLST(TEMP_TRA4_INDSTR, WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                 IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
