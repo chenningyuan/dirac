@@ -98,3 +98,16 @@ diagonalization. X2CMAT contains the transformed two-component one-electron
 operator with possible two-electron spin-orbit corrects added as well as all
 property operators (in AO basis) in proper two-component form. All these
 quantities are independent of the current solution in an SCF iteration.
+
+Shen X2C is restarted with just::
+
+  pam --put="DFCOEF"
+
+(i.e. not putting AOMOMAT and X2CMAT), the X2C code will recompute AOMOMAT and
+X2CMAT automatically, which takes just a few extra seconds. The subsequent SCF
+iterations or property evaluations deliver the same results as if AOMOMAT and
+X2CMAT had been put to the scratch directory.
+
+An X2C calculation currently cannot be restarted by::
+
+  pam --fullrestart="ARCHIVE.tgz"
