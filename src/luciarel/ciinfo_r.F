@@ -485,7 +485,7 @@ CTEMP     ISM2(3,5) = 1
      &                     NELFSPGP,
      &                     NOCCLS,NGAS,occupation_class,
      &                     IASPGPTP,IBSPGPTP,
-     &                     ICISTR,NTOOB,mj_statistics,inv_symbol,
+     &                     ICISTR,mj_statistics,inv_symbol,
      &                     IPRWFC)
 *
 
@@ -540,7 +540,7 @@ CTEMP     ISM2(3,5) = 1
      &                       NCPMT,WCPMT,NELFSPGP,NOCCLS,
      &                       NGAS,IOCCLS,
      &                       IASPGPTP,IBSPGPTP,
-     &                       ICISTR,NTOOB,mj_statistics,inv_symbol,
+     &                       ICISTR,mj_statistics,inv_symbol,
      &                       IPRNT)
 *
 * Analyze CI vector :
