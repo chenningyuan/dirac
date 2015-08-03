@@ -122,8 +122,8 @@ maximum number of CI iterations. *default*:
 keyword(INACTI)
 
 Inactive orbitals per boson symmetry, separated by commas. This keyword is not allowed in connection with the citype
-choice :ref:`CITYPE` GASCI. *default*: all orbitals active. 
-example for D:math:`_{2h}`:
+choice :ref:`.CITYPE` GASCI. *default*: all orbitals active. 
+example for :math:`D_{2h}`:
 
 ::
 
@@ -176,7 +176,7 @@ keyword(GASSHE)
 
 Number and specification of GAS orbitals. Line with the number of GA spaces used (1-7), 
 followed by one line per GAS with number of orbitals per boson symmetry, separated by commas. *default*: none.
-example for 2 GAS spaces and active orbital distribution when running inD:math:`_{2h}` symmetry:
+example for 2 GAS spaces and active orbital distribution when running in the :math:`D_{2h}` symmetry:
 
 ::
 
@@ -191,7 +191,7 @@ Number and specification of sequential CI calculations. Line with the number of 
 (currently only 1 is allowed), followed by one line per GAS with 2 numbers each: The first gives the minimal number of
 accumulated electrons after this GAS, the second the corresponding maximum number, separated by blanks (defining
 occupation constraints of each GAS). *default*: None. example for an excitation pattern in connection with the 2-GAS
-input from :ref:`GASSHE` above and 10 active electrons:
+input from :ref:`.GASSHE` above and 10 active electrons:
 
 ::
 

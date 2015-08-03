@@ -143,7 +143,7 @@ should envelope them into inverted commas, "...". In *".diracrc"* you can use ba
   --basis="C:\Dirac\my-dirac\basis;C:\Dirac\my-dirac\basis_dalton;C:\Dirac\my-dirac\basis_ecp"
   --scratch="D:\dirac\tmp"
 
-.. note:: If you want to use *".diracrc"* configuration file it must be placed in your user's home directory, for example: *"C:\\Users\\User\\.diracrc"*
+.. note:: If you want to use *".diracrc"* configuration file it must be placed in your user's home directory, for example: *"C:\\Users\\User\\.diracrc"*.
   
 If you want to specify *"setup"* options (*"--fc"*, *"--cc"*, *"--cxx"*, *"--blas"*, *"--lapack"* and others) you have to use slash sign in paths like in Linux,
 if you want to specify -D options you have to use backslash sign in paths. See example below.
@@ -165,23 +165,27 @@ Run your selected test set together with uploading results onto the CDash web::
   C:\Dirac\my-dirac\build> ctest -D ExperimentalTest -L short -D ExperimentalSubmit -j 4
 
 
-Intel
------
+Intel (not available yet)
+-------------------------
 
-We have tested Dirac with *Intel Parallel Studio XE 2015 Update 3 Cluster Edition* (https://software.intel.com/en-us/intel-parallel-studio-xe) which contains
+We tried to test Dirac with *Intel Parallel Studio XE 2015 Update 3 Cluster Edition* (https://software.intel.com/en-us/intel-parallel-studio-xe) which contains
 Intel C/C++ and Fortran compilers, Intel MKL and Intel MPI libraries in virtual machine with *Microsoft Windows Server 2012 R2* running on AMD Athlon II 64-bit processor.
 
 Our installation steps:
 
 1. Install *Visual Studio Professional 2013 with Update 3* (https://www.visualstudio.com/)
 2. Install *Intel Parallel Studio XE 2015 Update 3 Cluster Edition*
-3. Initialize the Cluster edition tools: ::
+3. Initialize the Cluster edition tools:
+
+::
 
   cd C:\Program Files (x86)\Intel\Parallel Studio XE 2015
   psxevars.bat intel64
 
-4. Add *"C:\\Program Files (x86)\\Intel\\Composer XE\\bin\\intel64"* into PATH environment variable.
-5. Make own *cmd.exe* shortcut, open its properties and put into *"Target"* field (then you can use Intel compilers from this custom command line): ::
+4. Add *"C:\\Intel\\Composer XE 2015\\bin\\intel64_mic;C:\\Program Files (x86)\\Intel\\Composer XE\\bin\\intel64"* into PATH environment variable.
+5. Make own *cmd.exe* shortcut, open its properties and put into *"Target"* field (then you can use Intel compilers from this custom command line):
+
+::
 
   %comspec% /k ""C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64 && "C:\Program Files (x86)\Intel\Composer XE 2015\bin\compilervars.bat" intel64 vs2013"
 
@@ -189,9 +193,18 @@ Intel compiler names:
 
 C/C++ compiler: *icl*
 Fortran compiler: *ifort*
-CMake Generator: NMake Makefiles (default?)
+CMake Generator: NMake Makefiles
 MPI compilers for C/C++ and Fortran (*.bat* wrappers): *mpicc*, *mpicxx*, *mpif90*
 MPI execution program: *mpiexec* (when first time run after Windows start/user login it asks for user password)
+
+We have used this setup command: ::
+
+  python setup --cc=icl --cxx=icl --fc=ifort --type=debug --int64 --generator="NMake Makefiles" -D ENABLE_PCMSOLVER=OFF
+
+and then this command for building: ::
+
+  cd build
+  nmake
 
 
 Cygwin
@@ -217,6 +230,11 @@ In order to build Dirac on Cygwin you have to install these packages:
 .. note:: *BLAS* and *LAPACK* libraries from *liblapack0* package are placed in *"/usr/lib/lapack"* (*"cygblas-0.dll"* and *"cyglapack-0.dll"*).
 
 7. optionally you can install *Open MPI*
+
+.. note::
+
+  If you want to use Open MPI you have to run Cygserver as an administrator, see https://cygwin.com/cygwin-ug-net/using-cygserver.html.
+
 8. to be able to build documentation (*make html*, *make doxygen* - problematic, *make slides*) install also:
    *pkg-config*, *ghostscript*, *libfreetype-devel*, *libpng-devel*, *python-gtk2.0*, *libgtk2.0-devel*, *doxygen* 
    (why so many see http://blogs.bu.edu/mhirsch/2014/06/matplotlib-in-cygwin-64-bit/)
@@ -226,6 +244,8 @@ In order to build Dirac on Cygwin you have to install these packages:
 
   pip install sphinx python-dateutil pyparsing sphinxcontrib-bibtex sphinx_rtd_theme numpy matplotlib hieroglyph
 
+.. note:: Previous pip install command usually does not work if you have installed *libopenblas*. You should remove it, install *liblapack0* and try again.
+  
 Always check if you are using Cygwin programs and libraries (placed in for example: *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*)
 instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*) for example by this commands: ::
 
@@ -237,6 +257,7 @@ installed packages. Sometimes new version of installer is released and then you 
 but there is no need to completely reinstall your Cygwin installation.
 
 .. note:: Ask your administrator to install Cygwin packages, *"pip"* and other software into Cygwin environment.
+.. note:: You can have also your own Cygwin installation and then you do not need to ask anybody.
 
 
 Cygwin Troubleshooting

@@ -38,12 +38,12 @@ average-of-configurations open-shell Hartree-Fock calculation (see
 
 keyword(MP2)
 
-Activates :ref:`.MP2CAL`.
+Activates :ref:`*MP2CAL`.
 
 
 keyword(MVO)
 
-Calculate modified virtual orbitals (see :ref:`MVOCAL`).
+Calculate modified virtual orbitals (see :ref:`*MVOCAL`).
 
 keyword(MP2 NO)
 
@@ -52,26 +52,26 @@ Activates the :ref:`*MP2 NO` module to calculate MP2 natural orbitals.
 keyword(RELCCSD)
 
 Activates the  :ref:`RELCCSD`
-(and the :ref:`MOLTRA`
+(and the :ref:`**MOLTRA`
 module to get 4-index
 transformed integrals).
 
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
-:ref:`MOLTRA` section.
+:ref:`**MOLTRA` section.
 
 
 keyword(DIRRCI)
 
 Activates the MOLFDIR CI module (and also the
-:ref:`MOLTRA`  module to get 4-index transformed integrals).
+:ref:`**MOLTRA`  module to get 4-index transformed integrals).
 
 Specification of input for the MOLFDIR CI module is given in
 the :ref:`DIRRCI`  and :ref:`GOSCIP` sections.
 
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
-:ref:`MOLTRA`  section.
+:ref:`**MOLTRA`  section.
 
 
 keyword(LUCITA)

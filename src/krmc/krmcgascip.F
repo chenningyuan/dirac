@@ -2517,7 +2517,7 @@ C        Check for inconsistencies:
 C
 chj      1.0D-10 can give problems with 1.0D-10 screening in GASCIP
 C        THRDAS = 1.0D-10
-         THRDAS = MAX(1.0D-10,THRSCR*100.0D0)
+         THRDAS = MAX(1.0D-09,THRSCR*100.0D0)
          DASR = 0.0D0
          DASI = 0.0D0
          DO I = 1, N_CRED

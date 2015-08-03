@@ -400,6 +400,7 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+      use codata
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -410,7 +411,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 41,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 42,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -437,7 +438,7 @@ C
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
      &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
-     &            '.MPOLE '/
+     &            '.MPOLE ','.NMFREQ'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -562,7 +563,8 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39,40,41), I
+     &                     31,32,33,34,35,36,37,38,39,40,
+     &                     41,42), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -867,6 +869,37 @@ C&&&& MPOLE : Magnetic multipoles of order L
                NLRAPT = NLRAPT + NDEG
                NLRBPT = NLRBPT + NDEG
                GOTO 100
+ 42            CONTINUE
+C&&&& NMFREQuency: input frequencies in nanometers
+                  IF (DOVDW) THEN
+C                 if van der Waals calculation, then frequencies are
+C                 set by the choice of quadrature scheme
+                     READ (LUCMD,*)
+                     READ (LUCMD,*)
+                     WRITE (LUPRI,'(/A)') 'Warning: frequencies ignored'
+                     GOTO 100
+                  END IF
+                  FLIST = .TRUE.
+                  READ (LUCMD, *) NBFREQ
+                  IF (NBFREQ.GT.0) THEN
+                    IF (NBFREQ.LE.MAXFLR) THEN
+                       READ (LUCMD,*) (BFREQ(J),J=1,NBFREQ)
+                       DO J = 1,NBFREQ
+                         BFREQ(J)=XTNM/BFREQ(J)
+                       ENDDO
+                    ELSE
+                       INPERR = INPERR + 1
+                       WRITE (LUPRI,'(3(/A,I5),/)')
+     &                 '@ Number of B frequencies specified  :',
+     &                 NBFREQ,
+     &                 '@ is greater than the allowed number :',
+     &                 MAXFLR
+                       READ (LUCMD,*) (BFREQ(J),J=1,MAXFLR),
+     &                              (FFFF,J=MAXFLR+1,NBFREQ)
+                       NBFREQ = MAXFLR
+                    END IF
+                  END IF
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE

@@ -144,7 +144,9 @@ C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
-C
+C              Miro Ilias, July/2015 - add control printouts      
+C      
+C      
 C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
@@ -196,6 +198,16 @@ C
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
       INTERFACE = relcc_integral_interface
+
+!     Print section
+      CALL PRSYMB(IW,'=',75,0)
+      WRITE(IW,'(A)')
+     & ' **RELCC: Set-up for Coupled Cluster calculations'
+      CALL PRSYMB(IW,'=',75,0)
+      WRITE(IW,'(1X,A,I3)') '* General print level   : ',IPRNT
+      IF (IPRNT.GE.1) THEN
+        WRITE(IW,"(1X,A,16I3)") "NEL_F1:",(NELEC_F1(I),I=1,16)
+      ENDIF
 C
 C     Input for the energy calculation.
 C
@@ -408,15 +420,8 @@ C     Some processing of the input is necessary
 C
       ER_IH(1,1) = EHMIN ! for (1,0) or (2,0) sectors plus (1,1) sector
       ER_IH(2,1) = EHMAX ! the same
-CMI ....
       ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
       ER_IH(2,2) = EPMAX
-
-! MI: control output ... 
-      write(IW,'(/,2X,A,F12.5,1X,A,F12.5)') 
-     &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
-      write(IW,'(2X,A,F12.5,1X,A,F12.5)') 
-     &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
 
 C
 C     XIH energy shift sign definition.
@@ -476,6 +481,13 @@ C
          DOENER = .FALSE.
       endif
 
+      IF (DOFSPC) THEN
+!     mi: print out range of intermediate Hamilt.spaces
+        write(IW,'(/,2X,A,F12.5,1X,A,F12.5)') 
+     &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
+        write(IW,'(2X,A,F12.5,1X,A,F12.5)') 
+     &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
+      ENDIF
 C
       IF( MP2_DENRUN )THEN
         IN = IN_SAVE
@@ -679,6 +691,15 @@ C
      &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
+
+!miro: printout of changed DHOLU limit, with warning
+      if (relcc_ccener_dholu_limit_set) then
+        write(IW,*) 'WARNING: you have altered the DHOLU limit !'
+        write(IW,*) 'new value=',relcc_ccener_dholu_limit
+        write(IW,*) 
+     & 'Decreasing DHOLU does not solve CC convergence problems !'
+      endif
+
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------

@@ -46,8 +46,8 @@ module fde_dirac_matrices_integration
    real(8), allocatable :: dmat_sorted(:, :)
 
    real(8) :: nr_electrons_integrated
-   real(8) :: fde_energy
-   real(8) :: fde_mat_energy
+   real(8), save :: fde_energy
+   real(8), save :: fde_mat_energy
 
    logical :: use_gga_qr = .false. !quaternion real
    logical :: use_gga_qi = .false. !quaternion imaginary
@@ -784,11 +784,11 @@ contains
             'number of electrons from numerical integration = ', &
             nr_electrons_integrated
 
-      if (do_potential) then
-         write(file_unit, '(3x, a, f26.16)')                        &
-               'excess subsystem energy:               = ', &
-               fde_mat_energy
-      end if
+!     if (do_potential) then
+!        write(file_unit, '(3x, a, f26.16)')                        &
+!              'excess subsystem energy:               = ', &
+!              fde_mat_energy
+!     end if
 
       write(file_unit, *)
 
