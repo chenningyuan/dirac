@@ -62,7 +62,7 @@
      &                 IHTYPE_X
 !	
 	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP, DOJZEXP,
-     &        DOPROPREOD, DOSIGPROP, RUNXPROP, dodipmom_krci, domhyp_krci
+     &        DOPROPREOD, DOSIGPROP, RUNXPROP, dodipmom_krci,domhyp_krci
 	COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP,
      &                 DOJZEXP, DOPROPREOD, DOSIGPROP, RUNXPROP,
      &                 dodipmom_krci, domhyp_krci
