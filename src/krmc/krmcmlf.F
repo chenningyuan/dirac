@@ -1893,7 +1893,8 @@ C
                DO I = 1,2*NASHT
 
                   if (abs(VMUUUU(I,J,K,L,1))<=THR_VMUUUU) CYCLE
-                  if (nz > 1 .and. abs(VMUUUU(I,J,K,L,2))<= THR_VMUUUU) CYCLE
+                  if (nz > 1 .and. abs(VMUUUU(I,J,K,L,2))<= THR_VMUUUU)
+     &            CYCLE
 
 !     only real groups needed for now ==> only even number of bars: 0, 2, 4
 
