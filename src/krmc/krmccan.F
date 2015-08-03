@@ -1583,7 +1583,7 @@ C
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
       INTEGER IND_DIP(3), IND_PRP(12)
       CHARACTER XLABEL*16
-      LOGICAL PRINT_EV, domhyp_krci
+      LOGICAL PRINT_EV
 !     dynamic memory allocation
       integer, allocatable :: indx(:)
       integer, intent(in)  :: mz
