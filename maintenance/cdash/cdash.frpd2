@@ -3,6 +3,9 @@
 # the directory where your DIRAC sits #
 DIRAC=/home/ilias/Work/qch/qch_software/dirac/trunk
 
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
 export DIRTIMEOUT="14m"
 
 # go to the local DIRAC directory
@@ -55,7 +58,7 @@ if [[ -d "$BUILD_INTEL" ]]; then
 fi
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=icpc  --int64  -D BUILDNAME="frpd2.intelmkl_i8_nopcm" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
+./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8_nopcm" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
 cd $BUILD_INTEL
 export MKL_NUM_THREADS=3
 export MKL_DYNAMIC="FALSE"
@@ -76,7 +79,6 @@ fi
 git clone --recursive git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
 git submodule update --init --recursive
-git submodule status
 BUILD_INTEL=build_ifort_icc_g++_mkl_i8
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step
