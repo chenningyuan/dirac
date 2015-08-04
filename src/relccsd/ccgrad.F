@@ -286,8 +286,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
        write(*,*)'dot product of dov',ddot(nfvo,dov,1,dov,1)
 
-!!      call convdm_full(buf1,buf2,doo,dvv,dmo)
-!!      call convdm (buf1,buf2,doo,dvv,dmo)
 
       CALL CONVDM(BUF1,BUF2,DOO,DVV,DOV,DVO,DMO)
 
@@ -330,7 +328,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:) 
+       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:) 
 
 C---------------Executable code--------------------------------------
 C
@@ -351,9 +349,9 @@ C                                           <---O+V---->
 C                                            unbar + bar
 C######################################################################
 C
-      CALL XAXPY (NFVO,A1,DVO,1,DOV,1)
+!     CALL XAXPY (NFVO,A1,DVO,1,DOV,1)
 
-      CALL XSCAL (NFVO,AP5,DOV,1)
+!     CALL XSCAL (NFVO,AP5,DOV,1)
 
 
       buf1(1:nfvo) = 0.0d0
@@ -389,15 +387,15 @@ C##############
 
       buf1(1:nfoo) = 0.0d0
 
-      ALLOCATE(DOO_TRANS(NFOO*RCW))
+!     ALLOCATE(DOO_TRANS(NFOO*RCW))
 
-      CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
+!     CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
 
-      CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
+!     CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
 
-      DEALLOCATE(DOO_TRANS)
+!     DEALLOCATE(DOO_TRANS)
 
-      CALL XSCAL (NFOO,AP5,DOO,1)
+!     CALL XSCAL (NFOO,AP5,DOO,1)
 
 
       IJ = 0
@@ -433,12 +431,12 @@ C##############
 
       buf1(1:nfvv) = 0.0d0
 
-      ALLOCATE(DVV_TRANS(NFVV*RCW))
-      CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
-      CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
-      DEALLOCATE(DVV_TRANS)
+!     ALLOCATE(DVV_TRANS(NFVV*RCW))
+!     CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
+!     CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
+!     DEALLOCATE(DVV_TRANS)
 
-      CALL XSCAL (NFVV,AP5,DVV,1)
+!     CALL XSCAL (NFVV,AP5,DVV,1)
 
       AB = 0
       DO IREP = 1, NREP
@@ -477,7 +475,10 @@ C##############
       buf1(1:nfvo) = 0.0d0
 
 
-!     CALL SRT1C1 (NREP,NO,NO,DVO,D_TRANS)
+!     ALLOCATE(D_TRANS(NFVO*RCW))
+!     CALL SRT1C1 (NREP,NV,NO,DVO,D_TRANS)
+
+
 
 !     CALL XAXPY (NFVO,A1,DOV,1,DVO,1)
 
@@ -498,11 +499,13 @@ C##############
          ENDDO
       ENDDO
 
+!      DEALLOCATE(D_TRANS)
+
       IF (CARITH) THEN
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ENDIF
 
-!!!        CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
+        CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
 
       RETURN
       END

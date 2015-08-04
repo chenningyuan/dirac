@@ -1335,7 +1335,7 @@ C
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 C
-      INTEGER NREP 
+      INTEGER NREP,NFVO,IRCW 
       DIMENSION XMO(NORBT,NORBT,NZ)
       DIMENSION XMOM(NFVO,IRCW)
       DIMENSION NV(NREP),NO(NREP)
@@ -1357,12 +1357,21 @@ C
 
          if(nfsym == 1)then
            orbc = 1
+        if (spinfr) then
+           do j = 1, nbsym
+             CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
+     &                              xmo,norbt,norbt,idxu2g(1,j),
+     &                              idyu2g(1,j),nz)
+           orbc = orbc + no(j)*nv(j)
+           end do
+        else
            do j = 1, nrep,2
              CALL MATGAT_symm_relcc(xmom(orbc,1),nv(j),no(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
            orbc = orbc + 2*nv(j)*no(j)
            end do
+        endif
          else if(nfsym == 2)then
            do k = 1, nfsym 
              if(k == 1)then
@@ -1389,6 +1398,7 @@ C
          IOFF1 = 0
          IOFF2 = 0
          IOFF3 = 0
+         IOFF4 = 0
 
          IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
 
@@ -1396,14 +1406,15 @@ C
          IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
          IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
           IAI = 1
-          DO I = 1, NAOCC(IFSYM)
-              CALL DCOPY(NAVIR(IFSYM),     XMOM(IAI+IOFF3,2),1,
+          DO I = 1, NO(IFSYM+IOFF4)
+              CALL DCOPY(NV(IFSYM+IOFF4),     XMOM(IAI+IOFF3,2),1,
      &                                XMO(1+IOFF1,I+IOFF2,2),1)
-          IAI = IAI + NAVIR(IFSYM)
+          IAI = IAI + NV(IFSYM+IOFF4)
           ENDDO
         IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
         IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-        IOFF3 = IOFF3 + 2*NAVIR(IFSYM)*NAOCC(IFSYM)
+        IOFF3 = IOFF3 + 2*NV(IFSYM)*NO(IFSYM)
+        IOFF4 = IOFF4 + 1
       ENDDO
       ENDIF
 
@@ -1473,7 +1484,7 @@ C
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 C
-      INTEGER NREP 
+      INTEGER NREP,NFVO,IRCW 
       DIMENSION XMO(NORBT,NORBT,NZ)
       DIMENSION XMOM(NFVO,IRCW)
       DIMENSION NV(NREP),NO(NREP)
@@ -1493,12 +1504,25 @@ C
 
          if(nfsym == 1)then
            orbc = 1
+       if (spinfr) then
+
+           do j = 1, nbsym
+             CALL MATGAT_symm_relcc(xmom(orbc,1),no(j),nv(j),
+     &                              xmo,norbt,norbt,idxu2g(1,j),
+     &                              idyu2g(1,j),nz)
+           orbc = orbc + no(j)*nv(j)
+           end do
+
+       else
+
            do j = 1, nrep,2
              CALL MATGAT_symm_relcc(xmom(orbc,1),no(j),nv(j),
      &                              xmo,norbt,norbt,idxu2g(1,j),
      &                              idyu2g(1,j),nz)
            orbc = orbc + 2*nv(j)*no(j)
            end do
+       endif
+
          else if(nfsym == 2)then
            do k = 1, nfsym 
              if(k == 1)then
@@ -1526,6 +1550,7 @@ C
       IOFF1 = 0
       IOFF2 = 0
       IOFF3 = 0
+      IOFF4 = 0
 
          IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
 
@@ -1534,14 +1559,16 @@ C
           IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
           IOFF2 = IOFF2 + NPSH(IFSYM) + NDMOQC(2,IFSYM,1)
           IAI = 1
-          DO I = 1, NAVIR(IFSYM)
-              CALL DCOPY(NAOCC(IFSYM),     XMOM(IAI+IOFF3,2),1,
+          DO I = 1, NV(IFSYM+IOFF4)
+              CALL DCOPY(NO(IFSYM+IOFF4),     XMOM(IAI+IOFF3,2),1,
      &                                XMO(1+IOFF2,I+IOFF1,2),1)
-          IAI = IAI + NAOCC(IFSYM)
+          IAI = IAI + NO(IFSYM+IOFF4)
           ENDDO
         IOFF1 = IOFF1 - NPSH(IFSYM) - NOCC(IFSYM) + NORB(IFSYM)
         IOFF2 = IOFF2 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) + NORB(IFSYM)
-        IOFF3 = IOFF3 + 2*NAVIR(IFSYM)*NAOCC(IFSYM)
+!        IOFF3 = IOFF3 + 2*NAVIR(IFSYM)*NAOCC(IFSYM)
+        IOFF3 = IOFF3 + 2*NV(IFSYM)*NO(IFSYM)
+        IOFF4 = IOFF4 + 1
       ENDDO
          ENDIF
 C
@@ -1607,6 +1634,7 @@ C
 #include "dcbgen.h"
 #include "dcbtr3.h"
 C
+      INTEGER NFOO,NREP,IRCW
       DIMENSION DMO(NORBT,NORBT,NZ)
       DIMENSION DMOM(NFOO,IRCW)
       DIMENSION NO(NREP)
@@ -1620,18 +1648,34 @@ C
 
       call Super_Symmetry(nrep,no,idxu2g,'hole') 
 
+!      write(*,*)'index array',(idxu2g(1,j),j=1,nrep,2)
+
       IF(NZ.NE.4) THEN
          IOFF1 = 0
          IOFF2 = 0
          IOFF4 = 0
          if(nfsym == 1)then
            orbc = 1
+
+        if (spinfr) then
+
+           do j = 1, nbsym
+             CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
+     &                              dmo,norbt,norbt,idxu2g(1,j),
+     &                              idxu2g(1,j),nz)
+           orbc = orbc + no(j)**2
+           end do
+
+        else
+
            do j = 1, nrep,2
              CALL MATGAT_symm_relcc(dmom(orbc,1),no(j),no(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
            orbc = orbc + 2*no(j)**2
            end do
+        endif
+
          else if(nfsym == 2)then
            do k = 1, nfsym 
              if(k == 1)then
@@ -1722,6 +1766,7 @@ C
 #include "dcbgen.h"
 #include "dcbtr3.h"
 C
+      INTEGER IRCW,NREP,NFVV
       DIMENSION DMO(NORBT,NORBT,NZ)
       DIMENSION DMOM(NFVV,IRCW)
       DIMENSION NV(NREP)
@@ -1738,12 +1783,28 @@ C
          IOFF4 = 0
          if(nfsym == 1)then
            orbc = 1
+
+        if (spinfr) then
+
+           do j = 1, nbsym
+             CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
+     &                              dmo,norbt,norbt,idxu2g(1,j),
+     &                              idxu2g(1,j),nz)
+           orbc = orbc + nv(j)**2
+           end do
+
+        else
+
            do j = 1, nrep,2
              CALL MATGAT_symm_relcc(dmom(orbc,1),nv(j),nv(j),
      &                              dmo,norbt,norbt,idxu2g(1,j),
      &                              idxu2g(1,j),nz)
            orbc = orbc + 2*nv(j)**2
            end do
+      
+        endif
+
+
          else if(nfsym == 2)then
            do k = 1, nfsym 
              if(k == 1)then
@@ -1872,6 +1933,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer, allocatable :: ibeig(:)
       integer              :: nash_x(1:nfsym)
 
+
 !     !> read ibeig (info array on boson irreps) from DFCOEF
       allocate(ibeig(norbt))
       ibeig(1:norbt)         = 0
@@ -1894,11 +1956,25 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           end if
         end do
       end if
+
+      if (spinfr) then
+        do ifsym = 1,nfsym
+          select case(orbital_type)
+           case('hole') 
+            nash_x(ifsym) = NAOCC(ifsym)
+           case('particle')
+           nash_x(ifsym) = NAVIR(ifsym)
+          end select 
+        enddo
+      endif
+
       if( linear .or. spinfr )then
         call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
         call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
         close(lucoef,STATUS='KEEP')
       end if
+
+!      write(*,*)'index checking',iimax(norbt,ibeig,1),nrep,nrep/2
 
       if(nfsym == 1)then
         indx_loop = 0
@@ -1911,7 +1987,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               !> get mj-value
               is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
             else if(spinfr)then
-              is_symm = mod(indx_loop,2)+1 - 1
+!              is_symm = mod(indx_loop,2)+1 - 1
+             if (indx_loop.le.nbsym) is_symm = indx_loop-1
             end if
             do i = 1, nash_x(1)
 
@@ -1924,7 +2001,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                NDMOQC(2,1,1) +
      &                                i))then
                     orbc = orbc + 1
+                    if (spinfr) then
+                    if (indx_loop.le.nbsym) 
+     &          IDXU2G(orbc,indx_loop) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
+                    else
                     IDXU2G(orbc,j) = iorb(1)+npsh(1)+NDMOQC(2,1,1)+i
+                    endif
 
                   end if
             case('particle')
@@ -1936,6 +2018,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                 orbc = orbc + 1
                 IDXU2G(orbc,j) = iorb(1)+npsh(1)+nocc(1)+i
 
+                    if (indx_loop.le.nbsym) 
+     &          IDXU2G(orbc,indx_loop) = iorb(1)+npsh(1)+nocc(1)+i
               end if
              end select
 
@@ -1955,7 +2039,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                   !> get mj-value
                   is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
                 else if(spinfr)then
-                  is_symm = mod(indx_loop,2)+1 - 1
+!                 is_symm = mod(indx_loop,2)+1 - 1
+                  if (indx_loop.le.nbsym) is_symm = indx_loop-1
                 end if
                 do i = 1, nash_x(k)
 
