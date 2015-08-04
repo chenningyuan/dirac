@@ -16,6 +16,6 @@ f.add(from_string = 'g shifts in ppm (x, y, z, iso)',
       num_lines = 3,
       rel_tolerance = 1.0e-4)
 
-test.run(['esr.inp'], ['CN.mol'], f)
+test.run(['esr.inp','esr_mp2.inp'], ['CN.mol'], f)
 
 sys.exit(test.return_code)

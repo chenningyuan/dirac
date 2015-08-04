@@ -62,9 +62,9 @@
      &                 IHTYPE_X
 !	
 	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP, DOJZEXP,
-     &        DOPROPREOD, DOSIGPROP, RUNXPROP, dodipmom_krci
+     &        DOPROPREOD, DOSIGPROP, RUNXPROP, dodipmom_krci,domhyp_krci
 	COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP,
      &                 DOJZEXP, DOPROPREOD, DOSIGPROP, RUNXPROP,
-     &                 dodipmom_krci
+     &                 dodipmom_krci, domhyp_krci
       CHARACTER XSYMFLAB*3, XREPEIG*4
 	COMMON/LUCICPRP/XSYMFLAB(MXPROPKRCI_SYM), XREPEIG(MXPROPKRCI_SYM)

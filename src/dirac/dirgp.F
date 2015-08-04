@@ -980,7 +980,7 @@ C           orbital common block is set (this info is currently needed
 C           to correctly process the orbital energy list), this is
 C           why we check for I_DCBORB_SET as well.
 C
-C           miro(14.3.'13): changed EIG in the NUMLS2 parameter list, which is of zero lenght, 
+C           miro(14.3.'13): changed EIG in the NUMLS2 parameter list, which is of zero length, 
 C           to DUMMY to satisfy run with runtime check flags
 C
             IP = - 666
@@ -1140,7 +1140,7 @@ C
       NUM2 = 0
       INO  = 0
       NA   = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       IF(NA.GE.3) THEN
         IF( INDEX(A(1:NA),'all') .GT. 0) THEN
           IC = 0
@@ -1511,7 +1511,7 @@ C     Determine begin and end of the part of the string that contains
 C     the energy values
 C
       NA = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       MA = INDEX(A(1:NA),'NO-occ') + 6
 C     
       READ (A(MA:NA),*,END=900,ERR=900) OHIGH,OLOW,OGAP

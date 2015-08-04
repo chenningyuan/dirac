@@ -174,13 +174,13 @@ if(ENABLE_PCMSOLVER)
         get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
 
         if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-           set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
-           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+            set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
+            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
         else()
-           set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
-           set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-        endif()        
+            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
+            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
+        endif()
 
         # PCMSolver does not know profile
         if(CMAKE_BUILD_TYPE MATCHES "profile")
@@ -188,44 +188,51 @@ if(ENABLE_PCMSOLVER)
         else()
             set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
         endif()
-        
+
         set(ExternalProjectCMakeArgs
-            -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
-            -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-            -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-            -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
-            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-            -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
-            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-            -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
-            -DENABLE_CXX11_SUPPORT=OFF
-            -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-            -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-            -DEIGEN3_ROOT=${EIGEN3_ROOT}
-            -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-            -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-            -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-            -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
-            -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-            -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-            -DENABLE_TESTS=${PCMSOLVER_TESTS}
-            -DZLIB_ROOT=${ZLIB_ROOT}
-	    -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-         )
+            # PCMSolver does not know profile
+            if(CMAKE_BUILD_TYPE MATCHES "profile")
+                set(CMAKE_BUILD_TYPE "release")
+                endif
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROJECT_INSTALL_PREFIX} #${PROJECT_BINARY_DIR}/external
+                -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+                -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
+                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+                -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
+                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+                -DENABLE_CXX11_SUPPORT=OFF
+                -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
+                -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+                -DEIGEN3_ROOT=${EIGEN3_ROOT}
+                -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
+                -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
+                -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
+                -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
+                -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
+                -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+                -DENABLE_TESTS=${PCMSOLVER_TESTS}
+                -DZLIB_ROOT=${ZLIB_ROOT}
+                -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+                -DENABLE_LOGGER=OFF
+                -DENABLE_TIMER=OFF
+                )
 
-        if(PCMSOLVER_TESTS)
-  	   add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
-        else()
-	   add_external(pcmsolver)
-        endif()
+            if(PCMSOLVER_TESTS)
+                add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
+            else()
+                add_external(pcmsolver)
+            endif()
 
-	link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
-	                 ${EXTERNAL_PROJECT_INSTALL_PREFIX})
-        set(EXTERNAL_LIBS
-            pcm
-            getkw
-            ${ZLIB_LIBRARIES}
-            ${EXTERNAL_LIBS})
+            link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
+                ${EXTERNAL_PROJECT_INSTALL_PREFIX})
+            set(EXTERNAL_LIBS
+                stdc++
+                pcm
+                getkw
+                ${ZLIB_LIBRARIES}
+                ${EXTERNAL_LIBS})
     endif()
     set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
 else()
@@ -335,10 +342,10 @@ if(ENABLE_UTILITIES)
     if(ENABLE_RELCCSD_STANDALONE)
         compile_standalone(relccsd.x src/relccsd/ccmain.F "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_HSCC) # note: this functionality depends on the pam flag 
+    if(ENABLE_HSCC) # note: this functionality depends on the pam flag
         compile_standalone(hsmrcc.x src/cc_external/hsmrcc/hsmrmain.c "${LIST_OF_EXECUTABLES}")
     endif()
-    if(ENABLE_HSFS) # note: this functionality depends on the pam flag 
+    if(ENABLE_HSFS) # note: this functionality depends on the pam flag
         compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${LIST_OF_EXECUTABLES}")
     endif()
     if(ENABLE_MEM_TEST) #

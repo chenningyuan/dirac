@@ -35,8 +35,7 @@ export DIRTIMEOUT="12m"
 
 cd $DIRAC
 
-git submodule update
-
+git submodule update --init --recursive
 #
 # reset back to the launching directory and rerun setup command with new parameters
 #
@@ -47,7 +46,7 @@ if [[ -d "$BUILD_INTEL" ]]; then
 fi
 #./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
 ./pamadm -a --builddir=$BUILD_INTEL
-./setup --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_Odense.intel_mkl_i8-batch" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL
+./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_Odense.intel_mkl_i8-batch" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL
 cd $BUILD_INTEL
 ctest -D ExperimentalUpdate  --track Miro
 ctest -D ExperimentalConfigure  --track Miro
