@@ -2016,10 +2016,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                            nocc(1)       +
      &                            i))then
                 orbc = orbc + 1
-                IDXU2G(orbc,j) = iorb(1)+npsh(1)+nocc(1)+i
 
-                    if (indx_loop.le.nbsym) 
+                if (spinfr) then
+                if (indx_loop.le.nbsym) 
      &          IDXU2G(orbc,indx_loop) = iorb(1)+npsh(1)+nocc(1)+i
+                else
+                IDXU2G(orbc,j) = iorb(1)+npsh(1)+nocc(1)+i
+                endif
+
               end if
              end select
 
@@ -2053,7 +2057,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                NDMOQC(2,k,1) +
      &                                i))then
                     orbc = orbc + 1
-                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+
+
+                if (spinfr) then
+                if (indx_loop.le.nbsym) 
+     &          IDXU2G(orbc,indx_loop) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+                else
+                IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+                endif
 
                   end if
             case('particle')
@@ -2063,7 +2074,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                            nocc(k)       +
      &                            i))then
                 orbc = orbc + 1
+
+                if (spinfr) then
+                if (indx_loop.le.nbsym) 
+     &          IDXU2G(orbc,indx_loop) = iorb(k)+npsh(k)+nocc(k)+i
+                else
                 IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
+                endif
 
               end if
              end select
@@ -2081,10 +2098,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                   !> get mj-value
                   is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
                 else if(spinfr)then
-                  is_symm = mod(indx_loop,2)+1 - 1
+!                  is_symm = mod(indx_loop,2)+1 - 1
+                  if (indx_loop.le.nbsym) is_symm = indx_loop-1
                 end if
                 do i = 1, nash_x(k)
-
 
             select case (orbital_type)
 
@@ -2095,7 +2112,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                                NDMOQC(2,k,1) +
      &                                i))then
                     orbc = orbc + 1
-                    IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+
+                if (spinfr) then
+                if (indx_loop.le.nbsym) 
+     &          IDXU2G(orbc,indx_loop) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+                else
+                IDXU2G(orbc,j) = iorb(k)+npsh(k)+NDMOQC(2,k,1)+i
+                endif
 
                   end if
             case('particle')
@@ -2105,7 +2128,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                            nocc(k)       +
      &                            i))then
                 orbc = orbc + 1
+
+                if (spinfr) then
+                if (indx_loop.le.nbsym) 
+     &          IDXU2G(orbc,indx_loop) = iorb(k)+npsh(k)+nocc(k)+i
+                else
                 IDXU2G(orbc,j) = iorb(k)+npsh(k)+nocc(k)+i
+                endif
 
               end if
              end select
