@@ -733,7 +733,7 @@
 
 !   w_mnie(mn,ie) = w_mnie(mn,ie) + V(mn,fe)*t(f,i)
 
-      allocate(w_o_temp(iovoot(nrep+1))) 
+      allocate(w_o_temp(iovoot(nrep+1)*rcw)) 
 
       call getooov(w_o_temp)
 

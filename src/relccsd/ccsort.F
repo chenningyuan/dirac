@@ -1626,28 +1626,22 @@ C
              ILKJ = ILKJ0 + IMIN-1             
              JLKI = JLKI0 + (IMIN-1)*NPAIR(JLREP)*KFIE(KREP)
 
-!            IKJL = IKJL0 + IMIN-1
-!            JKIL = JKIL0 + (IMIN-1)*NPAIR(JKREP)
              IF (DOINV) THEN
                 CALL XCOPY (N,BUF1(ILKJ*RCW+1),1,BUF2(IJKL),1)
                  NP = NPAIR(JLREP)*KFIE(KREP)
                 CALL XAXPY(N,-A1,BUF1(JLKI*RCW+1),NP,BUF2(IJKL),1)
              ELSE
-!             write(iw,*)'IJKL befor use',IJKL,KJREP,BUF1(IJKL) 
              IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) THEN
-!               write(iw,*) IJKL,ILKJ,kjrep,ilrep,OFF(KJ)
                 CALL XCOPY (N,BUF1(IJKL),1,BUF2(ILKJ*RCW+1),1)
              ENDIF
                 IF ((.NOT.FIRST).OR.(JLREP.EQ.1)) THEN
                   NP = NPAIR(JLREP)*KFIE(KREP)
-!                  write(iw,*)'IJKL in exchange',IJKL,JLREP,BUF1(IJKL) 
                   CALL XCOPY(N,BUF1(IJKL),1,BUF2(JLKI*RCW+1),NP)
                   CALL XSCAL(N,-A1,BUF2(JLKI*RCW+1),NP)
-!                write(iw,*) JLKI,jlrep,kirep,OFF(JL)
                 ENDIF
              ENDIF
              IJKL = IJKL + RCW * N
-             ILKJ0 = ILKJ0 + NPAIR(ILREP)*KFIE(KREP)*RCW
+             ILKJ0 = ILKJ0 + NPAIR(ILREP)*KFIE(KREP)
              JLKI0 = JLKI0 + 1
            ENDDO
  20       CONTINUE
