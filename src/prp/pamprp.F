@@ -76,6 +76,7 @@ C
             CALL TKRMCORB
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'MP2 ') THEN
+            IF (DOESR) cycle
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'CCSD') THEN
             CALL SETDC2(0)
