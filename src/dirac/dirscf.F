@@ -269,8 +269,11 @@ C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
         CALL SETDHF(IPRSCF)
-CMI    ... TODO: it would be good to generalize the title printout (DFT or SCF)
-        CALL TITLER('Hartree-Fock calculation','*',125)
+        IF(dirac_cfg_dft_calculation) THEN
+           CALL TITLER('Kohn-Shame DFT calculation','*',125)
+        ELSE
+           CALL TITLER('Hartree-Fock calculation','*',125)
+        END IF
 
 CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
         IF (MAXITR.GT.0) THEN
@@ -1182,8 +1185,9 @@ C
         CALL SMOGEN(FAO,DMAT)
       ENDIF
 C
+ 9999 CONTINUE
+      CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
- 9999 CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFSOLV')
       RETURN
 C
