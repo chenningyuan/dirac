@@ -7,6 +7,7 @@ ____
 -----------------
 
 - Update PCMSolver module to its [1.0.4 version](https://github.com/PCMSolver/pcmsolver/releases).
+- Do not write Hartree-Fock in output if it is a DFT calculation
 - This will be the next patch.
 - Write me ...
 
