@@ -2409,18 +2409,16 @@ C
 C           Generate determinants
 C
             KFRSAV = KFREE
-C           HJAaJ TODO: reconsider KALLOC ....
-C               .... size KIASTR ca. sqrt size KIDET ???
-C               .... problem if IRAT .eq. 1 -- more than LFREE used
-C                    (for IRAT .eq. 2 only ca. half of LFREE is used !)
-            KALLOC = MIN(100 000 000, (LFREE-10 000)/4 )
-                         !max 10,000,000 determinants in this version
-            CALL MEMGET('INT8',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
-            CALL MEMGET('INT8',KIASTR,  KALLOC,WORK,KFREE,LFREE)
-            CALL MEMGET('INT8',KIBSTR,  KALLOC,WORK,KFREE,LFREE)
+C           HJAaJ : re size of MAXSTR ....
+C               .... size KISTR ca. sqrt size KIDET ???
+            MAXSTR = 10 000
+            MAXDET = MIN(100 000 000, (LFREE-MAXSTR-10 000)/2 )
+                         !max 100,000,000 determinants in this version
+            CALL MEMGET2('INT8','IDET',KIDET ,2*MAXDET,WORK,KFREE,LFREE)
+            CALL MEMGET2('INT8','ISTR',KISTR,   MAXSTR,WORK,KFREE,LFREE)
 
-            CALL GASCIP_GENDET(NZCONF,WORK(KIDET),WORK(KIASTR),
-     &                        WORK(KIBSTR),KALLOC,OPT_UCIBOS,
+            CALL GASCIP_GENDET(NZCONF,WORK(KIDET),WORK(KISTR),
+     &                        MAXDET,MAXSTR,OPT_UCIBOS,
      &                        IOPT_SYMMETRY,IPROPT)
             CALL MEMREL('RSETCI.GASCIP',WORK,1,KFRSAV,KFREE,LFREE)
 C
