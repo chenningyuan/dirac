@@ -2410,8 +2410,8 @@ C           Generate determinants
 C
             KFRSAV = KFREE
 C           HJAaJ : re size of MAXSTR ....
-C               .... size KISTR ca. sqrt size KIDET ???
-            MAXSTR = 10 000
+C               .... size KISTR ca. sqrt size KIDET ??? No, not when GAS
+            MAXSTR = 100 000
             MAXDET = MIN(100 000 000, (LFREE-MAXSTR-10 000)/2 )
                          !max 100,000,000 determinants in this version
             CALL MEMGET2('INT8','IDET',KIDET ,2*MAXDET,WORK,KFREE,LFREE)
