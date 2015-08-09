@@ -45,10 +45,9 @@ mkdir -p $CTEST_TEMP_DIR
 
 export DIRAC_TMPDIR=$CTEST_TEMP_DIR/run
 
-git clone git@gitlab.com:dirac/dirac.git $CTEST_TEMP_DIR/compile
+git clone --recursive -b $BRANCH git@gitlab.com:dirac/dirac.git $CTEST_TEMP_DIR/compile
 
 cd $CTEST_TEMP_DIR/compile
-git checkout $BRANCH &> /dev/null
 ./pamadm $PAMADM_FLAGS
 
 if [ $MAKE_RELEASE -eq 1 ]; then
@@ -72,7 +71,7 @@ if [ $INT64 -eq 1 ]; then
     SETUP_FLAGS="$SETUP_FLAGS --int64"
 fi
 
-./setup $SETUP_FLAGS -D BUILDNAME=$BUILDNAME
+./setup --run-unit-tests $SETUP_FLAGS -D BUILDNAME=$BUILDNAME
 
 cd build
 make -j$NUM_CORES

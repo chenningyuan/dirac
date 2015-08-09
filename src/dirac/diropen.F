@@ -159,10 +159,11 @@ C
 C
          BETA  = DALPHA(IOPEN)*DF(IOPEN)
          GAMMA = DA(IOPEN)-D1
-         IF (IPRSCF.GE.8) THEN
+         IF (IPRSCF.GE.7) THEN
            WRITE(LUPRI,'(A,I2,A,F10.6)')
      &         'MKMOFK: BETA  factor, open shell',IOPEN,' : ',BETA,
-     &         'MKMOFK: GAMMA factor, open shell',IOPEN,' : ',GAMMA
+     &         'MKMOFK: GAMMA factor, open shell',IOPEN,' : ',GAMMA,
+     &         'MKMOFK: .OPENFAC    , open shell',IOPEN,' : ',OPEN_FAC
          END IF
 C
 C        Get secondary density matrices as projection operator

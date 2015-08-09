@@ -17,6 +17,8 @@ C                (1..NREP is boson, NREP+1..2*NREP is fermion)
 C        MK2DEL, ... : MK2 limits
 C        MULTB : symmetry multiplication table
 C        IRPAMO: symmetry of spinors
+C        IEL_STR(i)  : off-set in ISTR for strings with i electrons
+C        NEL_STR(I)  : number of strings in ISTR with i electrons
 C        IMK2(:,i), NMK2(:,i): i= 1:A-str, 2:B-str, 3:det
 C
 C     /DCC_GASCIP/
@@ -26,6 +28,7 @@ C
      &     IRRP, IRP, NREP, MULTB(N5,0:N5),
      &     MK2DEL, MK2REF, MINMK2, MAXMK2,
      &     IRPAMO(2*MAXASH_GASCIP),
+     &     IEL_STR(0:MAXASH_GASCIP), NEL_STR(0:MAXASH_GASCIP),
      &     IMK2(-MAXASH_GASCIP:MAXASH_GASCIP,3),
      &     NMK2(-MAXASH_GASCIP:MAXASH_GASCIP,3),
      &     IPTA2O(MAXASH_GASCIP),   IPTB2O(MAXASH_GASCIP),

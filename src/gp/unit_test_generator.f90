@@ -395,7 +395,7 @@ CONTAINS
       call erropen(ier,'add_inp_logical_variable',trim(gets(input_files,1)))
 
       write(iunit,'(a)') vname
-      write(iunit,'(l)') lvar
+      write(iunit,'(l1)') lvar
 
       close(iunit,status='keep')
     else

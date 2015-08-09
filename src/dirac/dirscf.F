@@ -275,8 +275,11 @@ C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
         CALL SETDHF(IPRSCF)
-CMI    ... TODO: it would be good to generalize the title printout (DFT or SCF)
-        CALL TITLER('Hartree-Fock calculation','*',125)
+        IF(dirac_cfg_dft_calculation) THEN
+           CALL TITLER('Kohn-Shame DFT calculation','*',125)
+        ELSE
+           CALL TITLER('Hartree-Fock calculation','*',125)
+        END IF
 
 CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
         IF (MAXITR.GT.0) THEN
@@ -1188,8 +1191,9 @@ C
         CALL SMOGEN(FAO,DMAT)
       ENDIF
 C
+ 9999 CONTINUE
+      CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
- 9999 CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFSOLV')
       RETURN
 C
@@ -1765,6 +1769,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
+      use fde_mod
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -1797,6 +1802,7 @@ c     besterg is the lowest energy we encountered so far
 #ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
+      type(fde_import) :: itmp
       data besterg /1.0D100/
       save besterg
 C
@@ -1895,6 +1901,14 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
+
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+         if (itmp%im_update_vemb) then
+             elergy = elergy - fde_get_embpot_energy()
+         end if
+      end if
+
 
       DHFERG = DHFERG + ELERGY
 C
@@ -3547,7 +3561,7 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
           DOHUCKEL = .FALSE.
         ELSE
           WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'
-          IF(BARNUC) THEN
+          IF(ATHUCK) THEN
             WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
           ELSEIF(BARNUC) THEN
             WRITE(LUPRI,'(A)')

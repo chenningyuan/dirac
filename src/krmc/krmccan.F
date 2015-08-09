@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1279,15 +1277,19 @@ C
      &     //,
      &     3X,'Written by: ',/,
      &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen ',//,
+     &     3X,'With contributions from: ',/,
+     &     3X,'  Malaya K. Nayak and Timo Fleig ',
+     &     3X,'       (Magnetic hyperfine interaction) ',//,
      &     1X,79('*'))
 !
       WRITE(LUPRI,9001)
- 9001 FORMAT(/3X,'The module is published in:',//,
-     & 4X,'  Stefan R. Knecht,',/,
-     & 4X,'    Parallel Relativistic Multiconfiguration Methods:',/,
-     & 8X,'New Powerful Tools for Heavy-Element
-     & Electronic-Structure Studies,',
-     & /,4X,'    PhD thesis, University of Duesseldorf, 2009.',//,
+ 9001 FORMAT(/3X,'Proper citations:',//,
+     & 4X,'S.R. Knecht, PhD thesis, University of Duesseldorf, 2009.',/,
+C    & 4X,'    Parallel Relativistic Multiconfiguration Methods:',/,
+C    & 8X,'New Powerful Tools for Heavy-Element
+C    & Electronic-Structure Studies,',
+     & 4X,'T. Fleig, M.K. Nayak, J. Mol. Spectrosc 300 (2014) 16',/,
+     &     //,
      & 1X,79('*'),/)
 
 C
@@ -1419,7 +1421,7 @@ C
 C
 #include "memint.h"
 C
-!     IPROPT = 50
+      IPROPT = 00
       MZ = MIN(2,NZ)
 C
       CALL QENTER('KRCIPRPMO')
@@ -1518,6 +1520,11 @@ C    &                           FILELAB
 C             QFC2MFC(DQFC,DMFC,ISYM,ITIM,IPRINT)
 C
 C        save on file KRMC_FOCK
+C
+         IF (FILELAB(4:6).EQ.'HYP'.OR.FILELAB(4:6).EQ.'ANA')THEN
+           CALL FLIP_BLOCK(WORK(KRPRPMOACM),FILELAB,IPROPT)
+         END IF
+C
          CALL KRCI_PRPFILE(LUKRM3,FILELAB,WORK(KRPRPMOACM),
      &                     4*N2ASHX*MZ,0)
          CALL MEMREL('KRCIPRPMO',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1574,7 +1581,7 @@ C
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
      &                   NPROP_KRCI,MZ)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
-      INTEGER IND_DIP(3)
+      INTEGER IND_DIP(3), IND_PRP(12)
       CHARACTER XLABEL*16
       LOGICAL PRINT_EV
 !     dynamic memory allocation
@@ -1936,12 +1943,146 @@ C       get and diagonalize omega expectation value matrix
 C       release memory        
         CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
+!
+!     4. Magnetic hyperfine interaction constants
+!     ===========================================
+!
+      if (domhyp_krci) then
+C       CALL FLIP_BLOCK(WORK(KRPRPMOACM),FILELAB,IPRINT)
+
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)')
+     & ' ********************************************************',
+     & ' *********  Hyperfine Structure Constants  **************',
+     & ' ********************************************************'
+C
+       DO I = 1, NPROP_KRCI
+         INDXPR  = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'HYP') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print mHYP expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '    < state | ',XLABEL,' [alpha x E] | state >  '//
+     & '     Hyperfine Constants [a.u.]     Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+          EDMNORM = SQRT(EDMMOM**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EDMMOM,EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+      end if
 C
 C     release dynamically allocated memory
       if(print_ev) call dealloc(INDX)
 C 
       CALL QEXIT('XKRCIPRPANA')
  1010 FORMAT(1X,I5,2X,F22.10,F16.12,F26.12,F28.12,'      (',A4,')')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck FLIP_BLOCK */
+      SUBROUTINE FLIP_BLOCK(PROP,ACHAR,IPRINT)
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
+
+      DIMENSION PROP(2*NASHT,2*NASHT,NZ)
+      CHARACTER*8 ACHAR
+C
+      MORB = 2*NASHT
+      IF ((ACHAR(4:6).EQ.'HYP'.OR.ACHAR(4:6).EQ.'ANA').AND.
+     &    (ACHAR(1:1).NE.'Z')) THEN
+      WRITE(6,*)'Diagonal and Off-diagonal blocks are exchanged 
+     &           for ', ACHAR
+C
+      IF ((ACHAR(4:6).EQ.'HYP'.AND.ACHAR(1:1).EQ.'Y').OR.
+     &    (ACHAR(4:6).EQ.'ANA'.AND.ACHAR(1:1).EQ.'X')) THEN
+      DO I=1,MORB
+      DO J=1,MORB
+        IF (NZ.EQ.1) THEN
+        PROP(I,J,1) =-PROP(I,J,1)
+        ELSE
+        PROP(I,J,1) =-PROP(I,J,1)
+        PROP(I,J,2) =-PROP(I,J,2)
+        END IF
+      END DO
+      END DO
+      END IF
+C      
+      MBY2 = MORB/2
+      DO I=1,MORB
+      DO J=1,MORB
+      TEMPR = 0.0D0
+      TEMPI = 0.0D0
+      IF (J .LE. MBY2) THEN
+      K = I
+      L = J+MBY2
+        IF (NZ .EQ. 1) THEN
+        TEMPR = PROP(I,J,1)
+        PROP(I,J,1) = PROP(K,L,1)
+        ELSE
+        TEMPR = PROP(I,J,1)
+        TEMPI = PROP(I,J,2)
+        PROP(I,J,1) = PROP(K,L,1)
+        PROP(I,J,2) = PROP(K,L,2)
+        END IF
+      IF ((ACHAR(4:6).EQ.'HYP'.AND.ACHAR(1:1).EQ.'Y').OR.
+     &    (ACHAR(4:6).EQ.'ANA'.AND.ACHAR(1:1).EQ.'X')) THEN
+        IF (NZ .EQ. 1) THEN
+        PROP(K,L,1) = TEMPR 
+        ELSE
+        PROP(K,L,1) = TEMPR
+        PROP(K,L,2) = TEMPI
+        END IF
+      ELSE
+        IF (NZ .EQ. 1) THEN
+        PROP(K,L,1) =-TEMPR
+        ELSE
+        PROP(K,L,1) = TEMPR
+        PROP(K,L,2) =-TEMPI
+        ENDIF
+      END IF
+      END IF
+      END DO
+      END DO
+      IF ((ACHAR(4:6).EQ.'HYP'.AND.ACHAR(1:1).EQ.'X').OR.
+     &    (ACHAR(4:6).EQ.'ANA'.AND.ACHAR(1:1).EQ.'Y')) THEN
+      WRITE(6,*)'Sign of the lower diagonal block is changed 
+     &           for ', ACHAR
+      END IF
+      END IF
+      IF ( IPRINT .GE. 30 ) THEN
+         CALL HEADER('New Output matrix:',-1)
+         CALL PRQMAT(PROP,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
+     $        IPQTOQ(1,0),LUPRI)
+      ENDIF
+C
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_OMEGA_EXP */

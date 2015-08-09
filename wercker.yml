@@ -21,10 +21,11 @@ build:
           free -m
 
     - script:
-        name: run pamadm and setup configuration scripts
+        name: update submodule, run pamadm and setup configuration scripts
         code: |
+          git submodule update --init --recursive
           python ./pamadm -a --builddir=build_wercker-ci
-          python ./setup -D BUILDNAME="wercker-ci.i8.gdb" --type=debug --int64 build_wercker-ci
+          python ./setup --run-unit-tests -D BUILDNAME="wercker-ci.i8.gdb" -D ENABLE_BOUNDS_CHECK=ON --type=debug --int64 build_wercker-ci
 
     - script:
         name: run ctest for configuration/buildup/test/submit
@@ -36,8 +37,8 @@ build:
           ctest -j 8 --track Miro -D ExperimentalBuild
           ## ldd : show dependencies
           ldd dirac.x
-          ## echo : this script continues even if some of tests fail
-          echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
+          ## true : this script continues even if some of tests fail
+          ctest -j 8 --track Miro -D ExperimentalTest -L short || true
           ## deliver buildup status to CDash-web
           ctest --track Miro -D ExperimentalSubmit
 

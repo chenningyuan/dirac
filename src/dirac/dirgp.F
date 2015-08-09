@@ -959,7 +959,7 @@ C
 C     Distinguish between the two branches
 C
       NA = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       IF (INDEX(A(1:NA),'energy') .EQ. 0) THEN
          call alloc(itm, IRNGE2-IRNGE1+1)
          CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,ITM)
@@ -980,7 +980,7 @@ C           orbital common block is set (this info is currently needed
 C           to correctly process the orbital energy list), this is
 C           why we check for I_DCBORB_SET as well.
 C
-C           miro(14.3.'13): changed EIG in the NUMLS2 parameter list, which is of zero lenght, 
+C           miro(14.3.'13): changed EIG in the NUMLS2 parameter list, which is of zero length, 
 C           to DUMMY to satisfy run with runtime check flags
 C
             IP = - 666
@@ -1127,7 +1127,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER (MAXLB = 90)
+      PARAMETER (MAXLB = 400)
 C
       CHARACTER A*(*),B*(MAXLB)
       CHARACTER*1 TEGN
@@ -1140,7 +1140,7 @@ C
       NUM2 = 0
       INO  = 0
       NA   = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       IF(NA.GE.3) THEN
         IF( INDEX(A(1:NA),'all') .GT. 0) THEN
           IC = 0
@@ -1333,9 +1333,9 @@ C
       CALL QUIT('NUMLS1: Out of Range in ITMPAR') 
  940  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
-     &     'NUMLS1: Character string beyond 72.',
+     &     'NUMLS1: Character string beyond MAXLB.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLS1: Character string beyond 72') 
+      CALL QUIT('NUMLS1: Character string beyond MAXLB') 
  950  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
      &     'NUMLS1: oo must be two consecutive characters.',
@@ -1374,7 +1374,7 @@ C     Determine begin and end of the part of the string that contains
 C     the energy values
 C
       NA = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       MA = INDEX(A(1:NA),'energy') + 6
 C     
       READ (A(MA:NA),*,END=900,ERR=900) ELOW,EHIGH,EGAP
@@ -1511,7 +1511,7 @@ C     Determine begin and end of the part of the string that contains
 C     the energy values
 C
       NA = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       MA = INDEX(A(1:NA),'NO-occ') + 6
 C     
       READ (A(MA:NA),*,END=900,ERR=900) OHIGH,OLOW,OGAP
@@ -2279,7 +2279,7 @@ C*****************************************************************************
 #include "priunit.h"
 C
 C
-      PARAMETER (MAXLB = 72)
+      PARAMETER (MAXLB = 400)
 C
       CHARACTER A*(*),B*(MAXLB)
       CHARACTER*1 TEGN
@@ -2450,9 +2450,9 @@ C           ... single number
       CALL QUIT('NUMLS3: Out of Range in ITMPAR') 
  940  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
-     &     'NUMLS3: Character string beyond 72.',
+     &     'NUMLS3: Character string beyond MAXLB.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLS3: Character string beyond 72') 
+      CALL QUIT('NUMLS3: Character string beyond MAXLB') 
  950  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
      &     'NUMLS3: oo must be two consecutive characters.',

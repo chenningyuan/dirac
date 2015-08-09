@@ -215,25 +215,28 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_gendet */
-      SUBROUTINE GASCIP_GENDET(NDET,IDET,
-     &           IASTR,IBSTR,MAXDET,UCIBOS,ICIREP,IPRINT_in)
+      SUBROUTINE GASCIP_GENDET(NDET,IDET,ISTR,MAXDET,MAXSTR,
+     &                         UCIBOS,ICIREP,IPRINT_in)
 C***********************************************************************
 C
 C     Generate determinants.
 C
 C     Output:
 C        NDET           : number of determinants
-C        IDET(2,1:NDET) : string pointers for each determinant
+C XXX    IDET(2,1:NDET) : string pointers for each determinant
 C
 C     Input :
-C        IASTR(1:NASTR), IBSTR(1:NBSTR) : a- and b-strings
 C        MAXDET : max value for NDET
+C        MAXSTR : max value for NSTR
 C        UCIBOS : use boson symmetry for spinors
 C        ICIREP : spatial symmetry (if .lt. 0, include all symmetries)
 C        IRPINT_in : print level
 C
-C     Written by J. Thyssen and H.J.Aa. Jenen - Jan 2001
-C     Last revision :
+C      Work space
+C XXX    ISTR(1:MAXSTR) : array for strings (both a- and b-strings)
+C
+C     Written by J. Thyssen and H. J. Aa. Jensen - Jan 2001
+C     Last revision : Aug. 2015 hjaaj
 C
 C***********************************************************************
 #include "implicit.h"
@@ -248,8 +251,8 @@ C
 #include "dgroup.h"
 C
       DIMENSION NA(MAXASH_GASCIP), NB(MAXASH_GASCIP)
-      INTEGER*8 IDET(2,*), IDA, IDB
-      INTEGER*8 IASTR(*),  IBSTR(*)
+      INTEGER*8 IDET(2,*), IASTR, IBSTR
+      INTEGER*8 ISTR(*)
       LOGICAL GASCIP_GASOK, GASCIP_SYMOK, UCIBOS
 C
       INTEGER*8 MSKGAS(MXGAS), L
@@ -392,33 +395,39 @@ C
       write(lupri,*) 'NAELEC, NASHT ',NAELEC, NASHT
       write(lupri,'(/A)') '     IAEL      IBEL      MK2'
 #endif
+      IEL_STR(:) = -123456789
+      NEL_STR(:) = -123456789
+      NEL_STR_T = 0
+      DO IEL = MINOCC,MAXOCC
+         IEL_STR(IEL) = NEL_STR_T
+         J1 = NEL_STR_T + 1
+         MAXSTR_I = MAXSTR - NEL_STR_T
+         CALL GASCIP_GENSTR(IEL,ISTR(J1),NEL_STR(IEL),MSKGAS,MAXSTR_I)
+#ifdef GASCIP_DEBUG
+         write(lupri,*) 'GASCIP_GENSTR: IEL, NEL_STR',IEL,NEL_STR(IEL)
+#endif
+         NEL_STR_T = NEL_STR_T + NEL_STR(IEL)
+      END DO
+
       NASTR_T = 0
       NBSTR_T = 0
       NDET    = 0
+      IMK2(:,:) = -1234567890
       DO 10 IAEL = MINAEL, MAXAEL
          IBEL = NAELEC - IAEL
          MK2 = IAEL - IBEL
-         IMK2(MK2,1) = NASTR_T
-         IMK2(MK2,2) = NBSTR_T
+         IASTR_OFF = IEL_STR(IAEL)
+         IBSTR_OFF = IEL_STR(IBEL)
+         IMK2(MK2,1) = IASTR_OFF
+         IMK2(MK2,2) = IBSTR_OFF
          IMK2(MK2,3) = NDET
 C
 #ifdef GASCIP_DEBUG
-            write(lupri,'(A,3I10)') 'A-, B-electrons, MK2',IAEL,IBEL,MK2
-            write(lupri,*) 'GASCIP_GENSTR A electrons, IAEL',IAEL
+         write(lupri,'(A,3I10)') 'A-, B-electrons, MK2',IAEL,IBEL,MK2
 #endif
-         CALL GASCIP_GENSTR(IAEL,IASTR,NASTR,MSKGAS,MAXDET)
-#ifdef GASCIP_DEBUG
-            write(lupri,*) 'IAEL, NASTR',IAEL,NASTR
-#endif
+         NASTR = NEL_STR(IAEL)
+         NBSTR = NEL_STR(IBEL)
          IF (NASTR .EQ. 0) GOTO 10
-
-#ifdef GASCIP_DEBUG
-            write(lupri,*) 'GASCIP_GENSTR B electrons, IBEL',IBEL
-#endif
-         CALL GASCIP_GENSTR(IBEL,IBSTR,NBSTR,MSKGAS,MAXDET)
-#ifdef GASCIP_DEBUG
-            write(lupri,*) 'IBEL, NBSTR',IBEL,NBSTR
-#endif
          IF (NBSTR .EQ. 0) GOTO 10
 
 #ifdef GASCIP_DEBUG
@@ -429,9 +438,12 @@ C HJ TODO : the next can easily be optimized by not redoing the IA
 C           for each IB in GASCIP_GASOK and GASCIP_SYMOK /aug 03
 C
          DO IA = 1, NASTR
+            JASTR = IASTR_OFF + IA
             DO IB = 1, NBSTR
-               IF (GASCIP_GASOK(IASTR(IA),IBSTR(IB),MSKGAS,IBTAB)) THEN
-                  IF (GASCIP_SYMOK(IASTR(IA),IBSTR(IB),UCIBOS)) THEN
+               JBSTR = IBSTR_OFF + IB
+               IF (GASCIP_GASOK(ISTR(JASTR),ISTR(JBSTR),MSKGAS,IBTAB))
+     &            THEN
+                  IF (GASCIP_SYMOK(ISTR(JASTR),ISTR(JBSTR),UCIBOS)) THEN
                      NDET = NDET + 1
                      IF (NDET .GE. MAXDET) THEN
                         WRITE(LUPRI,'(/A,I12/A)')
@@ -441,8 +453,8 @@ C
      &                     'Allocate more memory!'
                         CALL QUIT('*** ERROR in GASCIP_GENDET ***')
                      END IF
-                     IDET(1,NDET) = IASTR(IA)
-                     IDET(2,NDET) = IBSTR(IB)
+                     IDET(1,NDET) = ISTR(JASTR)
+                     IDET(2,NDET) = ISTR(JBSTR)
                   END IF
                END IF
             END DO
@@ -498,17 +510,17 @@ C
             END IF
 C
             DO I = 1, NMK2(MK2,3)
-               IDA = IDET(1,I+IMK2(MK2,3))
+               IASTR = IDET(1,I+IMK2(MK2,3))
                DO J=1,NASHT
-                  IF ( BTEST(IDA,J-1) ) THEN
+                  IF ( BTEST(IASTR,J-1) ) THEN
                      NA(J)=1
                   ELSE
                      NA(J)=0
                   END IF
                END DO
-               IDB = IDET(2,I+IMK2(MK2,3))
+               IBSTR = IDET(2,I+IMK2(MK2,3))
                DO J=1,NASHT
-                  IF ( BTEST(IDB,J-1) ) THEN
+                  IF ( BTEST(IBSTR,J-1) ) THEN
                      NB(J)=1
                   ELSE
                      NB(J)=0
@@ -2517,7 +2529,7 @@ C        Check for inconsistencies:
 C
 chj      1.0D-10 can give problems with 1.0D-10 screening in GASCIP
 C        THRDAS = 1.0D-10
-         THRDAS = MAX(1.0D-10,THRSCR*100.0D0)
+         THRDAS = MAX(1.0D-09,THRSCR*100.0D0)
          DASR = 0.0D0
          DASI = 0.0D0
          DO I = 1, N_CRED

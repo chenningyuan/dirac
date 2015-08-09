@@ -380,7 +380,6 @@
      &                   communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
-      if (.not. MPI_INIT_called) return
       call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   ,
      &                   communicator   , ierr   )
 #endif

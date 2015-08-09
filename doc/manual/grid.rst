@@ -29,8 +29,7 @@ Specify the maximum error in the radial integration.
     .RADINT
      1.0D-13
 
-.ANGINT
--------
+keyword(ANGINT)
 
 Specify the precision of the Lebedev angular grid. The angular
 integration of spherical harmonics will be exact to the L-value given by
@@ -72,8 +71,7 @@ turning the pruning off.
     .ANGMIN
      15
 
-.ATSIZE
--------
+keyword(ATSIZE)
 
 Generate new estimates for atomic size ratios for use in the Becke
 partitioning scheme. Relative sizes for a pair of atoms A and B are

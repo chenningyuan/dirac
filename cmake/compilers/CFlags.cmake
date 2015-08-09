@@ -25,7 +25,7 @@ else()
         # Intel has different flags on Windows and Linux + MacOS 
         if(CMAKE_SYSTEM_NAME MATCHES "Windows")
             set(CMAKE_C_FLAGS         "/Z7 /Qwd981 /Qwd279 /Qwd383 /Qwd1572 /Qwd177")
-            set(CMAKE_C_FLAGS_DEBUG   "/O0")
+            set(CMAKE_C_FLAGS_DEBUG   "/Od")
             set(CMAKE_C_FLAGS_RELEASE "/O2")
             
             # intel compiler xHost flag
@@ -39,7 +39,6 @@ else()
             # windows: none
             set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS}")
             
-            # to do - make a change in setup or Math.cmake, or here?
             if(DEFINED MKL_FLAG)
                 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
             endif()

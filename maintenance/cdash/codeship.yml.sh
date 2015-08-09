@@ -60,9 +60,12 @@ git --version
 sphinx-build --version
 doxygen --version
 
+# update submodule
+git submodule update --init --recursive
+
 # 32-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i4
-python ./setup -D BUILDNAME="gnu.i4-codeship-ci" build_codeship_i4
+python ./setup -D BUILDNAME="gnu.i4-codeship-ci" --run-unit-tests build_codeship_i4
 cd build_codeship_i4
 ctest --track Miro -D ExperimentalConfigure
 ctest -j $N_PROC --track Miro -D ExperimentalBuild
@@ -75,7 +78,7 @@ cd ..
 
 # 64-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i8
-python ./setup -D BUILDNAME="gnu.i8-codeship-ci" --int64 build_codeship_i8
+python ./setup -D BUILDNAME="gnu.i8-codeship-ci" --run-unit-tests --int64 build_codeship_i8
 cd build_codeship_i8
 ctest --track Miro -D ExperimentalConfigure
 ctest -j $N_PROC --track Miro -D ExperimentalBuild
