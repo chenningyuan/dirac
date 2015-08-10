@@ -79,7 +79,7 @@ C
       MULTIPESR = 0
       N_CIESR   = -1
       MAX_CIESR_IT = 0
-      THR_CVEC_ESR = 1.0D-3
+      THR_CVEC_ESR = 1.0D-4
       THRPCI_ESR   = 1.0D-3
       THR_CIESR    = 1.0D-6 ! based on 1 ppm = 10**(-6)
 C     variables for spin polarization in CI

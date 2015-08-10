@@ -7390,7 +7390,7 @@ C
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER NUM_BLK
 C
-      THR_CVEC = 1.0d-03
+      THR_CVEC = 1.0d-04
 !     THR_CVEC = -1.0d-03
 !     write(luwrt,*) 'THR_CVEC ==>', THR_CVEC
 
