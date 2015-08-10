@@ -253,7 +253,7 @@ C
       DIMENSION NA(MAXASH_GASCIP), NB(MAXASH_GASCIP)
       INTEGER*8 IDET(2,*), IASTR, IBSTR
       INTEGER*8 ISTR(*)
-      LOGICAL GASCIP_GASOK, GASCIP_SYMOK, UCIBOS
+      LOGICAL GASCIP_GASOK, GASCIP_SYMOK, UCIBOS, MK_symmetric
 C
       INTEGER*8 MSKGAS(MXGAS), L
       INTEGER IBTAB(0:255)
@@ -371,8 +371,9 @@ C
          END IF
       END IF
 C
-C     Find min and max number of a & b electrons
+C     Find min and max number of A & B electrons
 C     ------------------------------------------
+C     NB! NAELEC is number of active electrons, not number of A electrons
 C
       MAXAEL = (MAXMK2 + NAELEC) / 2
       MAXAEL = MIN(MAXAEL,NASHT)
@@ -385,6 +386,8 @@ C
 C
       MINOCC = MIN(MINAEL,MINBEL)
       MAXOCC = MAX(MAXAEL,MAXBEL)
+
+      MK_symmetric = (MAXMK2 + MINMK2 .EQ. 0)
 C
 C
 C     Generate determinants:
@@ -393,7 +396,6 @@ C
 #ifdef GASCIP_DEBUG
       write(lupri,*) 'maxmk2, minmk2',maxmk2,minmk2
       write(lupri,*) 'NAELEC, NASHT ',NAELEC, NASHT
-      write(lupri,'(/A)') '     IAEL      IBEL      MK2'
 #endif
       IEL_STR(:) = -123456789
       NEL_STR(:) = -123456789
@@ -416,6 +418,7 @@ C
       DO 10 IAEL = MINAEL, MAXAEL
          IBEL = NAELEC - IAEL
          MK2 = IAEL - IBEL
+         IF (MK2 .GT. 0 .AND. MK_symmetric) GO TO 11
          IASTR_OFF = IEL_STR(IAEL)
          IBSTR_OFF = IEL_STR(IBEL)
          IMK2(MK2,1) = IASTR_OFF
@@ -469,6 +472,33 @@ C
          NASTR_T = NASTR_T + NASTR
          NBSTR_T = NBSTR_T + NBSTR
  10   CONTINUE
+
+ 11   CONTINUE
+      IF (MK_symmetric) THEN
+      ! generate MK2>0 determinants
+         DO MK2 = 1, MAXMK2
+            ! swap what is A-str and B-str
+            IMK2(MK2,1) = IMK2(-MK2,2)
+            IMK2(MK2,2) = IMK2(-MK2,1)
+            NMK2(MK2,1) = NMK2(-MK2,2)
+            NMK2(MK2,2) = NMK2(-MK2,1)
+            NASTR_T     = NASTR_T + NMK2(MK2,1)
+            NBSTR_T     = NBSTR_T + NMK2(MK2,2)
+
+            NDET_MK2    = NMK2(-MK2,3)
+
+            IMK2(MK2,3) = NDET
+            NMK2(MK2,3) = NDET_MK2
+
+            J = IMK2(-MK2,3)
+            DO I = 1, NDET_MK2
+               IDET(1,NDET+I) = IDET(2,J+I)
+               IDET(2,NDET+I) = IDET(1,J+I)
+            END DO
+            NDET        = NDET + NDET_MK2
+            
+         END DO
+      END IF
 C
 C
 C     Write statistics about determinants
