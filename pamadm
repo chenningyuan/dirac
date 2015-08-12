@@ -138,6 +138,7 @@ def main():
     add_test('cc_energy_and_mp2_dipole','cc')
     add_test('cc_linear', 'short;cc')
     add_test('cisd_energy','ci')
+    add_test('cosci_average', 'ci')
     add_test('cosci_energy_spinfree', 'short;ci')
     add_test('cosci_methods', 'short;ci')
     add_test('cosci_tmom', 'short;ci')
