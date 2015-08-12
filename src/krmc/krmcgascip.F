@@ -2435,9 +2435,12 @@ C
          N_CRED = N_CRED + N_CSIM
          ITMIC = ITMIC + 1
          CALL GETTIM(CPU3,WALL3)
+         CPU_st  = CPU3
+         WALL_st = WALL3
 C
-         WRITE(LUPRI,'(//A,I4)')
-     &        ' (GASCIP_RCISTD) CI microiteration no.',ITMIC
+         WRITE(LUPRI,'(//A,I5//A,I2)')
+     &        ' (GASCIP_RCISTD) CI microiteration no.',ITMIC,
+     &        '                 Number of trial vectors:',N_CSIM
          IF (N_CSIM .LE. 0) THEN
             WRITE (LUPRI,'(/A,I4)')
      &         ' FATAL ERROR: no new trial vectors',N_CSIM
@@ -2451,7 +2454,7 @@ C
          IF (PAR_GASCIP) THEN
             CALL GASCIP_PAR_CISIG(N_CSIM,NDET,
      &            WORK(KSCVEC+N_CRED_OLD*NDETQ),
-     &            WORK(KBCVEC+N_CRED_OLD*NDETQ))
+     &            WORK(KBCVEC+N_CRED_OLD*NDETQ),IPRINT)
          END IF
 
          IHRM = 1
@@ -2505,6 +2508,16 @@ C
      &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
             END IF
          END DO
+      IF (IPRINT .GE. 3) THEN
+         CALL GETTIM(CPU_end,WALL_end)
+         CPUTID  = SECTID(CPU_end-CPU_st)
+         WALLTID = SECTID(WALL_end-WALL_st)
+         WRITE(LUPRI,'(/5A)')
+     &        ' (GASCIP_RCISTD) CPU (Wall) time for sigma vectors :',
+     &        CPUTID,' (',WALLTID,')'
+         CPU_st = CPU_end
+         WALL_st = WALL_end
+      END IF
 C
 C        Extend reduced Hamiltonian:
 C        ---------------------------
@@ -2682,6 +2695,17 @@ C
          WRITE(LUPRI,'(A,4F20.8/,(37X,4F20.8))')
      &        '                 Lowering of energy =',
      &        (ECIOLD(I)-ECI(I),I=1,N_CSIM)
+
+      IF (IPRINT .GE. 3) THEN
+         CALL GETTIM(CPU_end,WALL_end)
+         CPUTID  = SECTID(CPU_end-CPU_st)
+         WALLTID = SECTID(WALL_end-WALL_st)
+         WRITE(LUPRI,'(/5A)')
+     &     ' (GASCIP_RCISTD) CPU (Wall) time for reduced Hamiltonian :',
+     &     CPUTID,' (',WALLTID,')'
+         CPU_st = CPU_end
+         WALL_st = WALL_end
+      END IF
 C
 C        Construct residuals
 C        -------------------
@@ -2731,6 +2755,16 @@ C
             CALL OUTPUT(CVECS,1,NDET,1,NZ_in_CI*N_ROOTS,
      &         NDET,NZ_in_CI*N_ROOTS,-1,LUPRI)
          END IF
+      IF (IPRINT .GE. 3) THEN
+         CALL GETTIM(CPU_end,WALL_end)
+         CPUTID  = SECTID(CPU_end-CPU_st)
+         WALLTID = SECTID(WALL_end-WALL_st)
+         WRITE(LUPRI,'(/5A)')
+     &     ' (GASCIP_RCISTD) CPU (Wall) time for residuals :',
+     &     CPUTID,' (',WALLTID,')'
+         CPU_st = CPU_end
+         WALL_st = WALL_end
+      END IF
 C
          IF (ICONV_TOT .EQ. 1) THEN
             WRITE(LUPRI,'(/A)')
@@ -2780,6 +2814,16 @@ C
             END IF
             JBCVEC = JBCVEC + NDETQ
          END DO  ! I_ROOT = 1, N_ROOTS
+      IF (IPRINT .GE. 3) THEN
+         CALL GETTIM(CPU_end,WALL_end)
+         CPUTID  = SECTID(CPU_end-CPU_st)
+         WALLTID = SECTID(WALL_end-WALL_st)
+         WRITE(LUPRI,'(/5A)')
+     &     ' (GASCIP_RCISTD) CPU (Wall) time for new trial vectors :',
+     &     CPUTID,' (',WALLTID,')'
+         CPU_st = CPU_end
+         WALL_st = WALL_end
+      END IF
 C
 C        Orthogonalize trial vector(s)
 C        and remove linear dependent vectors
@@ -2895,6 +2939,16 @@ C
 C      write (lupri,*) 'All trial vectors test output after Gram-Schmidt'
 C                 call output(work(kbcvec),1,ndetq,1,J_NEW,
 C     &                    ndetq,J_NEW,-1,lupri)
+      IF (IPRINT .GE. 3) THEN
+         CALL GETTIM(CPU_end,WALL_end)
+         CPUTID  = SECTID(CPU_end-CPU_st)
+         WALLTID = SECTID(WALL_end-WALL_st)
+         WRITE(LUPRI,'(/5A)')
+     &     ' (GASCIP_RCISTD) CPU (Wall) time for orthonormalization :',
+     &     CPUTID,' (',WALLTID,')'
+         CPU_st = CPU_end
+         WALL_st = WALL_end
+      END IF
 
 C
 C        Print timings
@@ -2905,7 +2959,7 @@ C
             WALLTID = SECTID(WALL4-WALL3)
             WRITE(LUPRI,'(/A,I4,5A)')
      &         ' (GASCIP_RCISTD) CPU (Wall) time for iteration ',
-     &         ITMIC,': ',CPUTID,'(',WALLTID,')'
+     &         ITMIC,': ',CPUTID,' (',WALLTID,')'
          END IF
 C
       GOTO 100  ! iterations loop
@@ -2922,12 +2976,12 @@ C
          WALLTID = SECTID(WALL4-WALL3)
          WRITE(LUPRI,'(/A,I3,5A)')
      &        ' (GASCIP_RCISTD) CPU (Wall) time for iteration ',
-     &        ITMIC,': ',CPUTID,'(',WALLTID,')'
+     &        ITMIC,': ',CPUTID,' (',WALLTID,')'
          CPUTID  = SECTID(CPU4-CPU2)
          WALLTID = SECTID(WALL4-WALL2)
          WRITE(LUPRI,'(/6A)')
      &        ' (GASCIP_RCISTD) Total CPU (Wall) '//
-     &        'time for microiterations: ',
+     &        'time for all microiterations: ',
      &        CPUTID,' (',WALLTID,')'
       END IF
 C
@@ -4840,7 +4894,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GASCIP_PAR_CISIG(N_CSIM,NDET,SCVEC, BCVEC)
+      SUBROUTINE GASCIP_PAR_CISIG(N_CSIM,NDET,SCVEC, BCVEC, IPRINT)
 C
 C     Written Aug. 2014 by Hans Joergen Aa. Jensen
 C
@@ -4867,6 +4921,7 @@ C
       IF (N_CSIM .LE. 0) GO TO 9000
 
 C     master: 1) send bc-vectors to all slaves
+      CALL GETTIM(CPU1,WALL1)
 
       call interface_MPI_BCAST(
      &     N_CSIM,1,MPARID,global_communicator)
@@ -4876,6 +4931,13 @@ C     master: 1) send bc-vectors to all slaves
      &     BCVEC,len_BCVEC,MPARID,global_communicator)
 
 !     master: 2) receive sc_vector pieces from slaves
+      CALL GETTIM(CPU2,WALL2)
+      IF (IPRINT .GE. 4) THEN
+         CALL TIMDAT
+         WRITE(LUPRI,'(A,2F10.2)')
+     &   'Master: CPU and WALL time for broadcasting CI trial vectors',
+     &   CPU2-CPU1, WALL2-WALL1
+      END IF
 
 
       DO I_NODE = 1, NODTOT
@@ -4883,6 +4945,13 @@ C     master: 1) send bc-vectors to all slaves
      &                 df_mpi_any_source,40,global_communicator,ISTAT)
          J_START = SLAVE_S_INTERVAL(1)
          NWHO = ISTAT(df_MPI_SOURCE)
+      IF (IPRINT .GE. 4) THEN
+         CALL GETTIM(CPU3,WALL3)
+         CALL TIMDAT
+         WRITE(LUPRI,'(A,I6,2F10.2)')
+     &  'Master: CPU and WALL time to start receive from node',
+     &   NWHO,CPU3-CPU2, WALL3-WALL2
+      END IF
          DO I = 1, N_CSIM
             CAll interface_mpi_RECV(
      &                 SCVEC(J_START,1,I),SLAVE_S_INTERVAL(3),
@@ -4894,7 +4963,21 @@ C     master: 1) send bc-vectors to all slaves
      &                 NWHO,40,global_communicator)
          END IF
          END DO
+      IF (IPRINT .GE. 4) THEN
+         CALL GETTIM(CPU2,WALL2)
+         CALL TIMDAT
+         WRITE(LUPRI,'(A,I6,2F10.2)')
+     &  'Master: CPU and WALL time to retrieve sigma vectors from node',
+     &   NWHO,CPU2-CPU3, WALL2-WALL3
+      END IF
       END DO
+
+      IF (IPRINT .GE. 4) THEN
+         CALL TIMDAT
+         WRITE(LUPRI,'(A,2F10.2)')
+     &   'Master: Total CPU and WALL time in GASCIP_PAR_CISIG',
+     &   CPU2-CPU1, WALL2-WALL1
+      END IF
 
  9000 CONTINUE
 #endif
