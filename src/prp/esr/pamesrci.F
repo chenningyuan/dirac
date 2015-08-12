@@ -147,11 +147,13 @@ C
 C
 C dcbham.h : HFXFAC, HFXMU
 C dcbesr.h : THR_CIESR, THR_CVEC_ESR
+C dcbgascip.h : IMK2(), NMK2(), MINMK2, MAXMK2
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbesr.h"
+#include "dcbgascip.h"
 #include "dgroup.h"
 !#include <krmcluci_inf.h>
 C
@@ -227,8 +229,16 @@ C
 !        assign pointer to CI vectors which is in the argument list of this subroutine and
 !        needs to be passed upwards to the calling routine.
          K_EIGVEC = K_EIGVXX
+         
+         IF (USE_KRAMERS_CONJ .AND. N_CIROOTS .EQ. 2) THEN
+            write(lupri,'(/A/)')
+     &      'ESR_RESOLVE: Using Kramers conjugation of CI vector'
+            N_ROOTS = -1
+         ELSE
+            N_ROOTS = N_CIROOTS
+         END IF
 
-         CALL GASCIP_RCISTD(N_CIROOTS, THR_CIESR, MAX_CI_IT,
+         CALL GASCIP_RCISTD(N_ROOTS, THR_CIESR, MAX_CI_IT,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
      &                     WORK(KZCONF), CMO,
      &                     THR_CVEC_ESR, 0, ICONV_TOT,
@@ -249,11 +259,12 @@ C
          IF (NZ_in_CI .EQ. 2) THEN
             CALL MEMGET2('REAL','EIGVX2',K_EIGVX2,L_EIGVEC,
      &         WORK,KFREE,LFREE)
+            N_ROOTS = abs(N_ROOTS)
             J_EIGVEC_R = K_EIGVX2 - 1
             J_EIGVEC_I = J_EIGVEC_R + N_CIROOTS*NZCONF
             J_EIGVXX_R = K_EIGVXX - 1
             J_EIGVXX_I = J_EIGVXX_R + NZCONF
-            DO J = 1,N_CIROOTS
+            DO J = 1,N_ROOTS
                DO I = 1,NZCONF
                   WORK(J_EIGVEC_R+I+(J-1)*NZCONF)=
      &            WORK(J_EIGVXX_R+I+(J-1)*NZCONFQ)
@@ -266,6 +277,44 @@ C
             CALL MEMREL('ESR_RESOLVE AFTER CI STORAGE SORT',
      &               WORK,1,K_EIGVX2,KFREE,LFREE) 
 
+         END IF
+
+         IF (USE_KRAMERS_CONJ .AND. N_CIROOTS .EQ. 2) THEN
+            write(lupri,'(//A/)')
+     &     'Generating CI solution vector no. 2 by Kramers conjugation.'
+            WORK(K_EIGVAL+1) = WORK(K_EIGVAL)
+            K_EIGVEC_2 = K_EIGVEC + NZCONF
+            CALL DZERO(WORK(K_EIGVEC_2),NZCONF)
+            DO MK2 = MINMK2,MAXMK2
+               NDET_MK2 = NMK2(MK2,3) 
+               write(lupri,*) 'MK2, NDET_MK2',MK2,NDET_MK2
+            IF (NDET_MK2 .GT. 0) THEN
+               IMK2_1 = IMK2( MK2,3)
+               IMK2_2 = IMK2(-MK2,3)
+               write(lupri,*) 'IMK2_1, IMK2_2',IMK2_1,IMK2_2
+               J1_EIGVEC = K_EIGVEC   + IMK2_1 - 1
+               J2_EIGVEC = K_EIGVEC_2 + IMK2_2 - 1
+               DO I = 1,NDET_MK2
+                  WORK(J2_EIGVEC + I) = WORK(J1_EIGVEC + I)
+               END DO
+               IF (NZ_in_CI .EQ. 2) THEN
+               J1_EIGVEC = J1_EIGVEC + N_CIROOTS*NZCONF
+               J2_EIGVEC = J2_EIGVEC + N_CIROOTS*NZCONF
+               DO I = 1,NDET_MK2
+                  WORK(J2_EIGVEC + I) = WORK(J1_EIGVEC + I)
+               END DO
+               END IF
+            END IF
+            END DO
+            IF (NZ_in_CI .eq. 1) THEN
+            WRITE(LUPRI,'(//A/A,I3,A,I3/A)')
+     &      ' ============================================',
+     &      ' (GASCIP_RCISTD) CI solution vector',2,' of ',2,
+     &      ' ============================================'
+            CALL GASCIP_ANACI(WORK(K_EIGVEC_2),NZCONF,WORK(KZCONF),
+     &                        THRPCI_ESR,WORK(KFREE),LFREE)
+            END IF
+!dbg        CALL OUTPUT(WORK(K_EIGVEC),1,NZCONF,1,2,NZCONF,2,1,LUPRI)
          END IF
 C
       ELSE

@@ -2143,7 +2143,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_rcistd */
-      SUBROUTINE GASCIP_RCISTD(N_ROOTS,THR_CONV,MAX_CI_IT,
+      SUBROUTINE GASCIP_RCISTD(N_ROOTS_in,THR_CONV,MAX_CI_IT,
      &                         ECI_OUT,CVECS,NDET,IDET,CMO,
      &                         THR_CVEC,I_STATE,ICONV_TOT,
      &                         THR_PCI,IPRINT,WORK,LWORK)
@@ -2153,7 +2153,8 @@ C     Do up to MAX_CI_IT CI iterations to converge the N_ROOTS lowest states
 C     to a gradient threshold of THR_CONV .
 C
 C     Input :
-C        N_ROOTS - number of roots to converge
+C        N_ROOTS_in - abs value = number of roots to converge;
+C                  if negative do not increase N_CSIM because of (near) degeneracy
 C        THR_CONV  - CI gradient convergence threshold
 C        MAX_CI_IT - max CI iterations
 C        NDET    - number of determinants
@@ -2191,8 +2192,8 @@ C
 C     Local variales:
 C
       PARAMETER ( MAX_ROOTS = 41, N_CSIM_EXTRA_START = 7)
-      DIMENSION DNRES(MAX_ROOTS), ECIOLD(MAX_ROOTS), ECIA(MAX_ROOTS)
-      INTEGER   J_HDIAG(MAX_ROOTS + 1), ICONV(MAX_ROOTS)
+      real*8    DNRES(MAX_ROOTS), ECIOLD(MAX_ROOTS), ECIA(MAX_ROOTS)
+      INTEGER   J_HDIAG(MAX_ROOTS + 5), ICONV(MAX_ROOTS)
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
       real*8    ECI(MAX_ROOTS)
       LOGICAL   PAR_GASCIP
@@ -2201,6 +2202,8 @@ C
 C
       CALL QENTER('GASCIP_RCISTD')
 
+      N_ROOTS = abs(N_ROOTS_in)
+
       CALL GETTIM(CPU1,WALL1)
 
 C
@@ -2208,7 +2211,7 @@ C     Set general parameters (which later maybe should be set by input?)
 C
 !d      write(lupri,*) 'THR_PCI, THR_CONV', THR_PCI,THR_CONV
       NDETQ  = NZ_in_CI*NDET
-      MAX_HRED = MAX(100,N_CI_ROOTS*MAX_CI_IT)
+      MAX_HRED = MAX(100,N_ROOTS*MAX_CI_IT)
       MAX_HRED = MIN(2000, MAX_HRED)
 C
       IF (N_ROOTS .LT. 1 .OR. N_ROOTS .GE. MAX_ROOTS) THEN
@@ -2334,7 +2337,8 @@ C
          CALL OUTPUT(WORK(KHDIAG),1,1,1,NDET,1,NDET,-1,LUPRI)
       END IF
 C
-C     Find N_ROOTS + N_CSIM_EXTRA_START lowest elements in HDIAG:
+C     If N_ROOTS .gt. 0, then
+C     find N_ROOTS + N_CSIM_EXTRA_START lowest elements in HDIAG:
 C
 C     (We start with extra diagonal elements to be fairly sure
 C      that we cover the N_ROOTS lowest symmetries in the start.
@@ -2344,9 +2348,14 @@ C      no. N_ROOTS - 2. This eigenvalue and eigenvector will be
 C      missed if we don't start with some extra diagonal elements.
 C      /hjaaj Oct 2010 )
 C
-      N_CSIM = MIN(NDET, N_ROOTS+N_CSIM_EXTRA_START, MAX_ROOTS)
-      J_CSIM = MIN(NDET,N_CSIM + 1)
-      ! always OK because DIMENSION J_HDIAG(MAX_ROOTS + 1)
+      IF (N_ROOTS_in .GT. 0) THEN
+         N_CSIM = MIN(NDET, N_ROOTS+N_CSIM_EXTRA_START, MAX_ROOTS)
+         J_CSIM = MIN(NDET, N_CSIM+5)
+         ! always OK because DIMENSION J_HDIAG(MAX_ROOTS + 5)
+      ELSE
+         N_CSIM = N_ROOTS
+         J_CSIM = N_ROOTS
+      END IF
       CALL FNDMIN(J_CSIM,J_HDIAG,WORK(KHDIAG),NDET,WORK(KFREE),LFREE)
 C
 C     Make sure that we don't break symmetry by only having all
@@ -2356,7 +2365,7 @@ C     degeneracy: energy difference less than 0.01 bohr)
       !> hardwire for debugging: 
 !     n_csim = 4
 C
-      if(ndet > 1)then
+      if (N_CSIM .GT. N_ROOTS) then
         HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
    90   HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
         call flshfo(lupri)
@@ -3051,7 +3060,7 @@ C     Check norm of CI vectors
 C
       DO I_ROOT = 1, N_ROOTS
 
-         WRITE(LUPRI,'(//A/A,I3,A,I3/A)')
+         WRITE(LUPRI,'(//A/A,I4,A,I3/A)')
      &   ' ============================================',
      &   ' (GASCIP_RCISTD) CI solution vector',I_ROOT,' of ',N_ROOTS,
      &   ' ============================================'
