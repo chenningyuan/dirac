@@ -23,7 +23,19 @@ Exercises - Day 1
 Nuclear models in GRASP
 -----------------------
 
-GRASP offers four different nuclear models, we will start with calculations on a one-electron system for each of the four nuclear models.
+The electron-nucleus interaction in the electronic Hamiltonian is :math:`V_{en}=-e\phi_{nuc}` 
+where :math:`\phi_{nuc}`  is the nuclear scalar potential
+
+.. math::
+
+   \phi_{nuc}(\mathbf{r}_1) = \frac{1}{4\pi\varepsilon_0}\int\frac{\rho_{nuc}(\mathbf{r}_2)}{\left|\mathbf{r}_1-\mathbf{r}_2\right|}d^3\mathbf{r}_2
+
+GRASP offers four different models for the nuclear charge distribution :math:`\rho_{nuc}` : the point charge, the homogeneously charged sphere, 
+the Fermi 2-parameter charge distribution and the Gaussian charge distribution.
+You find more information about these models `here <http://www.few.vu.nl/~visscher/FiniteNuclei/FiniteNuclei.htm>`_ .
+(Note that there is a systematic error in this source in that the potentials come with a negative sign whereas this comes from multiplication of 
+the electron charge to give the electron-nucleus interaction).
+We will start with calculations on a one-electron system for each of the four nuclear models.
 
 ::
 
@@ -72,7 +84,8 @@ Exercises - Day 2
 Atomic numerical calculations
 -----------------------------
 
-In order to get started on "real" atoms we calculate the average level structure of the ground state configuration of a coinage-metal (Cu, Ag, Au, Rg), using numeric GRASP.
+In order to get started on "real" atoms we calculate the average level structure of two possible ground state configurations of coinage-metals (Cu, Ag, Au, Rg), using GRASP.
+
 
 ::
 
@@ -115,21 +128,23 @@ In order to generate a less biased average set of orbital solutions (degeneracy 
 
 **Questions**:
 
-1. Does the ground state configuration vary down the coinage-metal series?
+1. The two candidates for the ground state configuration are :math:`(n-1)d^{10}ns^{1}` and :math:`(n-1)d^{9}ns^{2}`. For each configuration what are the possible 
+values of total angular momentum :math:`J` ? Your answer will help you identify the ground state configuration by looking at the list of energies of the individual 
+atomic levels. 
 
-2. What would you expect as dominant oxidation states for Cu/Au in molecular compounds and why?
+2. Does the ground state configuration vary down the coinage-metal series?
 
-3. How does the d-s excitation energy change down the coinage-metal series?
+3. What would you expect as dominant oxidation states for Cu/Au in molecular compounds and why?
+
+4. How does the d-s excitation energy change down the coinage-metal series?
 
 Spin-orbit mixing within a group
 --------------------------------
 
-* Look at the *jj*-LS transformation with GRASP to get a feel for spin-orbit mixing down a group, pick the "C" group 14:
-
-.. note:: the third number "2" in line 2 activates the transformation from *jj*-coupling to *LS*-coupling. Note also the "ANG" line to print all configurations ("ANG 7" will suppress the printout).
+In this exercise we shall investigate how spin-orbit mixing evolves as we descend a column of the periodic table. 
+We will consider group 14, that is, the carbon group. A sample input, for silicium is given below
 
 ::
-
 
   jj-LS transformation Si atom
   1 5 2
@@ -148,11 +163,70 @@ Spin-orbit mixing within a group
   AL
   END
 
+The :math:`3p^2` electron configuration of silicium gives rise the three LS-states: :math:`^3P`, :math:`^1D` and :math:`^1S`. 
+With the introduction of spin-orbit coupling they are split into :math:`^3P_2`, :math:`^3P_1`, :math:`^3P_0`, :math:`^1D_2` and :math:`^1S_0` (verify this !) 
+and states with the same :math:`J` may interact and mix. This means for instance that :math:`^3P_2` and :math:`^1D_2` interact, leading to singlet-triplet mixing, 
+forbidden in a non-relativistic framework. There is also possibility of mixing between :math:`^3P_0` and :math:`^1S_0`.
+
+In order to understand how to proceed, let us first look at what an average level (AL) calculation means: 
+
+In the GRASP input we specify one or more electron configurations. Assume that we generate all possible Slater 
+determinants :math:`\left\{\Phi_I\right\}` corresponding to the configurations, and then build and diagonalize the Configuration 
+Interaction (CI) matrix in the space of the Slater determinants
+
+.. math::
+
+   H\mathbf{c}_K=E_K\mathbf{c}_K;\quad H_{IJ} = \left<\Phi_I\left|H\right|\Phi_J\right>
+
+This gives us a set of electronic states expressed in terms of atomic state functions 
+
+.. math::
+
+   \Psi_K = \sum_I^{N}\Phi_I c_{IK}
+
+whose number is determined by the degeneracy of the state and where :math:`N` refers to the total number of Slater determinants 
+and therefore number of microstates/atomic state functions.
+
+In order to build the CI matrix we need orbitals. Rather than optimizing them for an individual electronic state we shall 
+determine them by optimizing the *average energy*
+
+.. math::
+
+   E^{av} = \frac{1}{N}\sum_K^N \left<\Psi_K\left|H\right|\Psi_K\right>
+
+This looks rather impossible because the average energy contains the atomic state function that we do not know until we have diagonalized the CI 
+matrix, which we can not build before we have orbitals available. However, if we expand the atomic state functions in terms of determinants 
+we obtain
+
+.. math::
+
+   E^{av} = \frac{1}{N}\sum_K^N \sum_I^N\sum_J^N \left<\Phi_I\left|H\right|\Phi_J\right>c^*_{IK}c_{JK} = \frac{1}{N}\sum_K^N \left<\Phi_K\left|H\right|\Phi_K\right>
+
+We arrive at the final result bwcause the atomic state functions are orthonormal such that the expansion coefficients :math:`\left\{c_{IK}\right\}` form 
+a unitary matrix. Now the average energy is expressed in terms of our set of Slater determinants and we may proceed. In fact, GRASP will first optimize the
+orbitals by an SCF procedure based on the above expression and then solve the CI problem to get the individual atomic state functions and atomic level energies.
+
+The atomic state functions have well-defined total angular momentum :math:`J`. In the "ANG" input section of GRASP we specify the desired :math:`J` for 
+each electron configuration. If we want all possible values, we simply set "-1" as in the present case. A single Slater determinant is in general not an 
+eigenfunction of :math:`J^2`. GRASP therefore constructs configuration functions (CSFs), that is, linear combinations of Slater determinants with well-defined 
+:math:`J` and parity. These are by default listed in the output, but in the exercises above we had set "ANG 7" to suppress this output. 
+With the above input we find for instance that the first CSF is generated from the valence configuration :math:`3p_{1/2}^13p_{2/2}^1` and has :math:`J=2` and even parity.
+At the end of the GRASP output the composition of atomic state functions in terms of CSFs is listed. Since the CSFs are orthonormal the weight CSF of index :math:`I` 
+to an atomic state function of index :math:`K` is simply :math:`\left|c_{IK}\right|^2`.
+
+In order to investigate singlet-triplet mixing we also need to know the composition of atomic state functions in terms of LS-coupled CSFs. 
+The third number "2" in line 2 in the above input makes GRASP also set up CSFs in LS-coupling. The non-relativistic CSFs are listed after the relativistic ones. 
+With the present input we find that the first non-relativistic CSF couples to :math:`^3P_2`. The weight of non-relativistic CSFs to atomic state functions is listed 
+after the relativistic ones.
+
 **Questions**:
 
-1. Does the singlet-triplet mixing (*state interaction*) increase or decrease with increasing *Z*?
+1. Does the singlet-triplet mixing (*state interaction*) increase or decrease with increasing *Z*? You can investigate this by monitoring the mixing of :math:`^3P_2` and :math:`^1D_2` 
+in the lowest atomic level of :math:`J=2`, making a graph showing how the weight of :math:`^1D_2` evolves with increasing *Z*.
 
-2. How much of the ground state is described by the :math:`p_{1/2}^{2}` configuration with increasing *Z*?
+2. How much of the ground state is described by the :math:`np_{1/2}^{2}` configuration with increasing *Z*?  You can investigate this by monitoring the composition of the ground-state 
+in terms of relativistic CSFs. You can calculate the effective occupation number of the :math:`np_{1/2}` orbital by, for each CSF, multiplying its occupation by the weight of the CSF, 
+then summing up these numbers. You can then plot the effective occupation number of the :math:`np_{1/2}` orbital as a function of increasing *Z*. How do you interpret your result ?
 
 Speed of light and the non-relativistic limit
 ---------------------------------------------
