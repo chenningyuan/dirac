@@ -3,7 +3,7 @@
 #
 # This script converts macro keyword(SOMEKEYWORD) into proper sphinx directives.
 #
-# Previous bash-script translated to this Python form by Ivan Hrasko
+# Previous bash-script written by Radovan Bast translated to this Python form by Ivan Hrasko.
 # 
 # Further changes: Miro Ilias
 #
@@ -31,8 +31,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! .RABOOF
         #! -------
         for line in fileinput.input(os.path.join(root,filename),inplace=True):
-			print re.sub(r'keyword\(([a-zA-Z !0-9_+-]+)\)','.. index:: .\g<1>\n.. _.\g<1>:\n\n.\g<1>\n----------',
-                         line[0:len(line)-1])
+            print re.sub(r'keyword\(([a-zA-Z !0-9_+-]+)\)','.. index:: .\g<1>\n.. _.\g<1>:\n\n.\g<1>\n'+'-'*(line.find(')')-line.find('(')),line[0:len(line)-1])
 
         #! replace:
         #! starstar(RABOOF)
@@ -44,8 +43,7 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! \*\*RABOOF
         #! ==========
         for line in fileinput.input(os.path.join(root,filename),inplace=True):
-			print re.sub(r'starstar\(([a-zA-Z !0-9_+-]+)\)','.. index:: **\g<1>\n.. _**\g<1>:\n\n==========\n\\*\\*\g<1>\n==========',
-                                      line[0:len(line)-1])
+            print re.sub(r'starstar\(([a-zA-Z !0-9_+-]+)\)','.. index:: **\g<1>\n.. _**\g<1>:\n\n'+'='*(line.find(')')-line.find('(')+3)+'\n\\*\\*\g<1>\n'+'='*(line.find(')')-line.find('(')+3),line[0:len(line)-1])
 
         #! replace:
         #! star(RABOOF)
@@ -57,9 +55,9 @@ for root, dirs, files in os.walk(os.path.join(DIR_TEMP,'manual')):
         #! \*RABOOF
         #! ========
         for line in fileinput.input(os.path.join(root,filename),inplace=True):
-			print re.sub(r'star\(([a-zA-Z !0-9_+-]+)\)','.. index:: *\g<1>\n.. _*\g<1>:\n\n==========\n\\*\g<1>\n==========',
-                         line[0:len(line)-1])
+            print re.sub(r'star\(([a-zA-Z !0-9_+-]+)\)','.. index:: *\g<1>\n.. _*\g<1>:\n\n'+'='*(line.find(')')-line.find('(')+1)+'\n\\*\g<1>\n'+'='*(line.find(')')-line.find('(')+1),line[0:len(line)-1])
 
 SPHINX_CALL = 'sphinx-build -b html ' + DIR_TEMP + ' ' + DIR_FINAL
-subprocess.call(SPHINX_CALL,shell=True)        
+subprocess.call(SPHINX_CALL,shell=True)
+# miro: deactivate removing if you want to check resulting preprocessed rst files
 shutil.rmtree(DIR_TEMP,ignore_errors=True)

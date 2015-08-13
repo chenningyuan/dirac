@@ -80,8 +80,7 @@ symmetry combinations of rotations, not coordinates, at each nuclear center.
 The numbering is used in labels of various magnetic integrals.
 
 
-.PRINT
-------
+keyword(PRINT)
 
 General print level in the integral module. Default::
 
@@ -91,13 +90,14 @@ General print level in the integral module. Default::
 
 star(ONEINT)
 
+One-electron integrals
+======================
 This subsection gives directives for the generation of one-electron
 integrals. Based on input in the other section, the program will
 determine what integrals to calculate.
 
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level in one-electron integral routines. By default
 print level is taken from :ref:`**INTEGRALS`.
@@ -105,6 +105,8 @@ print level is taken from :ref:`**INTEGRALS`.
 
 star(READIN)
 
+The mol file
+============
 This subsection allows changes of defaults in the reading of the mol file.
 
 
@@ -134,6 +136,8 @@ Default::
 
 star(TWOINT)
 
+Two-electron integrals
+======================
 This subsection gives directives for the generation of two-electron integrals.
 It also gives directives for the construction of Fock matrices, such as
 screening.
@@ -185,8 +189,7 @@ skeleton matrix approach. This may give better screening, but is more memory
 intensive.
 
 
-.PRINT
-------
+keyword(PRINT)
 
 Set the print level in two-electron integral routines for the
 calculation of a particular shell quadruplet. The print level is changed

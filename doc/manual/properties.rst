@@ -24,8 +24,7 @@ By default no properties are calculated.
 General control statements
 ==========================
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -130,9 +129,8 @@ Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 keyword(SHIELDING)
 
 Evaluate nuclear magnetic shieldings (linear response). :ref:`.PRINT`
-2 gives tensor and longer output. :ref:`.PRINT` 4
-gives the raw values in symmetry coordinates as
-well.
+2 gives tensor and longer output. The :ref:`.PRINT` 4
+gives the raw values in symmetry coordinates as well.
 
 Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
 

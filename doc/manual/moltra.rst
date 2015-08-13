@@ -21,7 +21,7 @@ Three separate transformations are considered:
 -  Transformation of integrals over general (one-electron) operators.
 
 The output is written to the files MDCINT, MRCONEE, and MDPROP, respectively,
-and can be read in by the :ref:`RELCCSD` and :ref:`DIRRCI` and programs to
+and can be read in by the :ref:`**RELCC` and :ref:`DIRRCI` and programs to
 perform correlated calculations and by the :ref:`RELADC` program to perform
 propagator calculations. Some common input needs to be specified both in this
 section and in the :ref:`DIRRCI` sections.
@@ -306,7 +306,7 @@ working for parallel distributions.
 =============================================
 
 This section defines the property operators that should to be transformed. Such
-integrals are only used in an experimental section of :ref:`RELCCSD`, and this
+integrals are only used in an experimental section of :ref:`**RELCC`, and this
 subsection can thus usually be omitted.
 
 **Programmers options**

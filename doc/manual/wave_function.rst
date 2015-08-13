@@ -51,7 +51,7 @@ Activates the :ref:`*MP2 NO` module to calculate MP2 natural orbitals.
 
 keyword(RELCCSD)
 
-Activates the  :ref:`RELCCSD`
+Activates the  :ref:`**RELCC`
 (and the :ref:`**MOLTRA`
 module to get 4-index
 transformed integrals).

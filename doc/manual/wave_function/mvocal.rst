@@ -19,7 +19,7 @@ remove in the construction of the Hartree-Fock potential.
 
 *Note* that the resulting modified virtual orbitals are no longer
 canonical and can *not* be used in MP2 calculations; they can be used in
-the :ref:`DIRRCI` and :ref:`RELCCSD` modules.
+the :ref:`DIRRCI` and :ref:`**RELCC` modules.
 
 Keywords
 ========

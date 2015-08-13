@@ -3,8 +3,8 @@
 starstar(MOLECULE)
 
 
-** Specification of molecular symmetry and basis sets **
-========================================================
+Specification of molecular symmetry and basis sets 
+==================================================
 
 This section is needed for calculations using the simple .xyz input format for the
 molecular structure. For calculations with the .mol input format, basis set information
@@ -13,6 +13,8 @@ is to be specified together with the atomic coordinates.
 
 star(SYMMETRY)
 
+Molecular symmetry
+==================
 Allows explicit specification of the molecular symmetry that is to be used in the
 calculations. This will then overrule the automatically detected point group.
 
@@ -24,6 +26,8 @@ Switches off all use of symmetry (this is currently the only option).
 
 star(BASIS)
 
+Basis set
+=========
 This section should contain the keywords needed to specify the basis set. The
 minimum specification is a default basis set for all atoms in the system.
 
@@ -93,6 +97,8 @@ Example: EuF3 with dyall set on Eu and the cc-pVDZ on the fluorides::
 
 star(CENTERS)
 
+Centers
+=======
 This optional section allows modification of the properties of a center. This makes it possible
 to specify fractional charges (for embedding point charges) or zero charge (for ghost centers
 ised in counterpoise calculations).
@@ -102,7 +108,7 @@ keyword(NUCLEUS)
 
 The atom type followed by the modified nuclear charge.
 
-Example: a fractional charge of -0.6 for an oxygen point chargen::
+Example: a fractional charge of -0.6 for an oxygen point charge::
 
   .NUCLEUS
   O.PC -0.6
@@ -122,6 +128,9 @@ the one used above (with a suffix Gh to indicate ghost atoms and a suffix pc to 
  
 star(COORDINATES)
 
+Coordinates
+===========
+
 keyword(UNITS)
 
 With xyz type input coordinates are expected to be defined in terms of Angstrom units. If you want to need to deviate from this standard you can alter
@@ -132,4 +141,3 @@ Example: specification of coordinates in atomic units::
 
     .UNITS
      AU
-
