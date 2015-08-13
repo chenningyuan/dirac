@@ -1789,10 +1789,11 @@ C
 
       PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
       IF (PAR_GASCIP) THEN
+         IPRINT_slaves = IPRINT - 1
          CALL GASCIP_WAKE_NODES()
          CALL GASCIP_PAR_CISIG_SETUP(
      &            P1MAT_MO,WORK(KPMUUUU),
-     &            .FALSE.,NDET,IDET,THRSCR,IPRINT)
+     &            .FALSE.,NDET,IDET,THRSCR,IPRINT_slaves)
       END IF
 
 C      Make sigma vectors from property matrix and CI vectors
@@ -2423,10 +2424,11 @@ C     THRSCR = THR_CONV**2 was not good enough for the complex group /hjaaj July
 
       PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
       IF (PAR_GASCIP) THEN
+         IPRINT_slaves = IPRINT - 1
          CALL GASCIP_WAKE_NODES()
          CALL GASCIP_PAR_CISIG_SETUP(
      &            WORK(KFCACM),WORK(KMUUUU),
-     &            .TRUE.,NDET,IDET,THRSCR,IPRINT)
+     &            .TRUE.,NDET,IDET,THRSCR,IPRINT_slaves)
       END IF
 
       !> for debug
@@ -4039,7 +4041,8 @@ C
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 C
       CALL GETTIM(CPU1,WALL1)
-      IF (IPRINT .GT. 1) WRITE (LUPRI,'(//A/A,L10,1P,D10.2)')
+      IF (IPRINT .GT. 1 .AND. MYTID .LE. 1)
+     &   WRITE (LUPRI,'(//A/A,L10,1P,D10.2)')
      &   ' --- Output from GASCIP_CISIG_SCREEN ---',
      &   ' DO2EL, THRSCR       :',DO2EL,THRSCR
 
@@ -4281,6 +4284,10 @@ C        ... do not print all the small numbers
      &   ' CPU (Wall) time in GASCIP_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
      &   ' out of',NDET,'; remaining ',NDET-NBSKIP
+         IF (NODTOT .GT. 0) THEN
+            WRITE(LUPRI,'(A,I5,A,2I15)')
+     &      ' Node',MYTID,'; start and end in SVEC:',IS_START,IS_END
+         END IF
         IF (IPRINT .GT. 2) THEN
          CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
          write(lupri,*) '#calls to cnbits and fnbits:',cncalls,fncalls
@@ -4398,9 +4405,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in COSCI_INP.'
+     *            '" not recognized for *GASCIP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in COSCI_INP.')
+               CALL QUIT('Illegal keyword under *GASCIP.')
 !
     1          CONTINUE
 !&&&  PRINT : print level in GASCIP module
@@ -4929,6 +4936,12 @@ C
 
       IF (N_CSIM .LE. 0) GO TO 9000
 
+      IF (IPRINT .GE. 4) THEN
+         WRITE(LUPRI,'(/A)')
+     &   ' Timing output from GASCIP_PAR_CISIG.'//
+     &   ' Only receive sections using more than 1 second is printed.'
+      END IF
+
 C     master: 1) send bc-vectors to all slaves
       CALL GETTIM(CPU1,WALL1)
 
@@ -4956,10 +4969,13 @@ C     master: 1) send bc-vectors to all slaves
          NWHO = ISTAT(df_MPI_SOURCE)
       IF (IPRINT .GE. 4) THEN
          CALL GETTIM(CPU3,WALL3)
+        IF ((WALL3-WALL2) .GT. 1.D0) THEN
          CALL TIMDAT
-         WRITE(LUPRI,'(A,I6,2F10.2)')
-     &  'Master: CPU and WALL time to start receive from node',
+         WRITE(LUPRI,'(A,I6,A,I6,2F10.2)')
+     &   'Master',I_NODE,
+     &   ': CPU and WALL time to start receive from node',
      &   NWHO,CPU3-CPU2, WALL3-WALL2
+        END IF
       END IF
          DO I = 1, N_CSIM
             CAll interface_mpi_RECV(
@@ -4974,10 +4990,13 @@ C     master: 1) send bc-vectors to all slaves
          END DO
       IF (IPRINT .GE. 4) THEN
          CALL GETTIM(CPU2,WALL2)
+        IF ((WALL3-WALL2) .GT. 1.D0) THEN
          CALL TIMDAT
-         WRITE(LUPRI,'(A,I6,2F10.2)')
-     &  'Master: CPU and WALL time to retrieve sigma vectors from node',
+         WRITE(LUPRI,'(A,I6,A,I6,2F10.2)')
+     &   'Master',I_NODE,
+     &   ': CPU and WALL time to retrieve sigma vectors from node',
      &   NWHO,CPU2-CPU3, WALL2-WALL3
+        END IF
       END IF
       END DO
 
