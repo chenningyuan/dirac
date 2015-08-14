@@ -154,7 +154,7 @@ Linking to Atlas libraries on Linux Mint
 ----------------------------------------
 
 DIRAC may not be able to detect Atlas BLAS/Lapack
-libraries on Linux Mint because of nonstandard (?) suffix::
+libraries on Linux Mint because of some nonstandard (?) suffix.
 
 After having installed them::
 
@@ -171,7 +171,7 @@ and this::
   $ cd /usr/lib
   $ sudo ln -s liblapack.so.3 liblapack.so
 
-With this the automatic detection of math libraries worked.
+With this the automatic detection of math libraries works.
 
 
 Linking to the ACML library

@@ -42,32 +42,32 @@ the density gradient).
 **Embedding potential**
 =======================
 
-If the :ref:`.EMBPOT` option was selected, the program will simple compute matrix elements of the
+If the :ref:`FDE_.EMBPOT` option was selected, the program will simple compute matrix elements of the
 the AO basis used by the program, and add it to the one-electron Fock matrix. Because of that,
 this option can be used with any wavefunction in Dirac. The ground-state calculation in this 
 case corresponds to the "fixed potential" scheme of :cite:`Gomes2008`.
 
-However, if :ref:`.EMBPOT` is not specified, the program implicitly selects the 
-:ref:`.UPDATE` option, and assumes a frozen density has been provided (see :ref:`.FRDENS`).
+However, if :ref:`FDE_.EMBPOT` is not specified, the program implicitly selects the 
+:ref:`FDE_.UPDATE` option, and assumes a frozen density has been provided (see :ref:`FDE_.FRDENS`).
 
 keyword(UPDATE)
 
 This option requires that the embedding potential for the ground-state be calculated using the 
 "frozen" quantities and those for the subsystem treated with Dirac. The non-additive 
 contributions are calculted with the orbital-free kinetic energy and exchange-correlation 
-density functionals specified under :ref:`.NAKEF` and :ref:`.NAXCF`, respectively. 
+density functionals specified under :ref:`FDE_.NAKEF` and :ref:`FDE_.NAXCF`, respectively. 
 
 Currently this option is only supported during the SCF procedure, so it does not have any 
 effect for correlated wavefunctions (e.g. MP2, CI, CC). 
 
-The :ref:`.EMBPOT` and this option cannot be specified at the same time.
+The :ref:`FDE_.EMBPOT` and this option cannot be specified at the same time.
 
 
 keyword(NAKEF)
 
 Specifies the orbital-free kinetic energy density functional used to calculate the non-additive
-kinetic energy contributions to the ground-state embedding potential (see :ref:`.UPDATE`) and/or
-response contributions (see :ref:`.RSP` or :ref:`.RSPLDA`)
+kinetic energy contributions to the ground-state embedding potential (see :ref:`FDE_.UPDATE`) and/or
+response contributions (see :ref:`FDE_.RSP` or :ref:`FDE_.RSPLDA`)
 
 *Default:*
 
@@ -84,8 +84,8 @@ Other available functionals are: PW91k (kin_pw91).
 keyword(NAXCF)
 
 Specifies the exchange-correlation density functional used to calculate the non-additive
-kinetic energy contributions to the ground-state embedding potential (see :ref:`.UPDATE`)
-and/or response contributions (see :ref:`.RSP` or :ref:`.RSPLDA`)
+kinetic energy contributions to the ground-state embedding potential (see :ref:`FDE_.UPDATE`)
+and/or response contributions (see :ref:`FDE_.RSP` or :ref:`FDE_.RSPLDA`)
 
 *Default:*
 
@@ -106,14 +106,14 @@ For response-based approaches (TDHF, TDDFT), contributions from FDE to the activ
 subsystem can be included through the keywords below (the default is to not include
 any). For correlated wavefunctions (e.g. MP2, CI, CC) these do not yet have any effect. 
 
-These options can be used together with either :ref:`.UPDATE` or :ref:`.EMBPOT`, but 
-require that "frozen" quantities are present (see :ref:`.FRDENS`) 
+These options can be used together with either :ref:`FDE_.UPDATE` or :ref:`FDE_.EMBPOT`, but 
+require that "frozen" quantities are present (see :ref:`FDE_.FRDENS`) 
 
 
 keyword(RSP)
 
 Specifies that FDE response contributions should be calculated employing
-the density functionals specified under :ref:`.NAKEF` and :ref:`.NAXCF`, if any. 
+the density functionals specified under :ref:`FDE_.NAKEF` and :ref:`FDE_.NAXCF`, if any. 
 
 keyword(RSPLDA)
 

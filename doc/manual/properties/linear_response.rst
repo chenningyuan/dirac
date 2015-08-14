@@ -176,7 +176,7 @@ have an important effect on run time.
 keyword(INTFLG)
 
 Specify what two-electron integrals to include
-(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+(default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
 keyword(CNVINT)
 

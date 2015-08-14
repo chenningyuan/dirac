@@ -2,7 +2,7 @@ find_package(Sphinx QUIET)
 if(SPHINX_FOUND)
     add_custom_target(
         html
-        COMMAND python ${CMAKE_SOURCE_DIR}/doc/preprocess_sphinx ${CMAKE_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}
+        COMMAND python ${CMAKE_SOURCE_DIR}/doc/preprocess_sphinx.py ${CMAKE_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
     add_custom_target(

@@ -32,7 +32,7 @@ where :math:`\phi_{nuc}`  is the nuclear scalar potential
 
 GRASP offers four different models for the nuclear charge distribution :math:`\rho_{nuc}` : the point charge, the homogeneously charged sphere, 
 the Fermi 2-parameter charge distribution and the Gaussian charge distribution.
-You find more information about these models `here <http://www.few.vu.nl/~visscher/FiniteNuclei/FiniteNuclei.htm>`_ .
+You find more information about these models `at this URL <http://www.few.vu.nl/~visscher/FiniteNuclei/FiniteNuclei.htm>`_ .
 (Note that there is a systematic error in this source in that the potentials come with a negative sign whereas this comes from multiplication of 
 the electron charge to give the electron-nucleus interaction).
 We will start with calculations on a one-electron system for each of the four nuclear models.

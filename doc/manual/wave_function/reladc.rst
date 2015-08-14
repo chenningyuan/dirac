@@ -1,4 +1,4 @@
-.. _reladc:
+.. _RELADC:
 
 RELADC & LANCZOS
 ================

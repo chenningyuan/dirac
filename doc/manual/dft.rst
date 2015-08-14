@@ -22,7 +22,7 @@ described (e.g. modifying grid, using ALDA and much more)
 Single line following .SAOP : asymptotic potential (currently LB94 or LBalpha).
 
 The specification of the functional is described in connection with the .DFT
-option in the :ref:`.DFT` section
+option in the :ref:`HAMILTONIAN_.DFT` section
 
 The DFT module is described in references :cite:`Schipper2000`, :cite:`Saue2002`,
 :cite:`Fossgaard2003`.
@@ -103,7 +103,7 @@ keyword(SAOP!)
 Activate the statistical averaging of (model) orbital potentials (SAOP)
 as defined in reference :cite:`Schipper2000`.
 This implies (and
-activates) the ALDA kernel. The functional under :ref:`.DFT` is expected to be
+activates) the ALDA kernel. The functional under :ref:`HAMILTONIAN_.DFT` is expected to be
 GLLBhole. The asymptotic potential is LBalpha.
 
 *Recommended input:*
@@ -119,7 +119,7 @@ GLLBhole. The asymptotic potential is LBalpha.
 
 keyword(SAOP)
 
-The more general version of :ref:`.SAOP!`
+The more general version of :ref:`DFT_.SAOP!`
 
 Followed by a single line of input: asymptotic potential (currently LB94
 or LBalpha).
@@ -186,34 +186,34 @@ the solution of the response equation.
 
 keyword(XALDA)
 
-Same as :ref:`.ALDA` but keep the fraction of exact exchange of the
-xc functional under :ref:`.DFT`.
+Same as :ref:`DFT_.ALDA` but keep the fraction of exact exchange of the
+xc functional under :ref:`HAMILTONIAN_.DFT`.
 
 
 keyword(ALDA+)
 
-Use :ref:`.ALDA+` only for the Hermitian contribution (density
+Use :ref:`DFT_.ALDA+` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
 
 keyword(ALDA-)
 
-Use :ref:`.ALDA-` only for the anti-Hermitian contribution (spin
+Use :ref:`DFT_.ALDA-` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 
 
 keyword(XALDA+)
 
-Use :ref:`.XALDA+` only for the Hermitian contribution (density
+Use :ref:`DFT_.XALDA+` only for the Hermitian contribution (density
 contribution) and use the proper xc kernel for the anti-Hermitian part
 (spin density contribution).
 
 
 keyword(XALDA-)
 
-Use :ref:`.XALDA-` only for the anti-Hermitian contribution (spin
+Use :ref:`DFT_.XALDA-` only for the anti-Hermitian contribution (spin
 density contribution) and use the proper xc kernel for the Hermitian
 part (density contribution).
 

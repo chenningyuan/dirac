@@ -37,15 +37,13 @@ of active virtual orbitals.
 **Advanced options**
 ====================
 
-.INTFLG
--------
+keyword(INTFLG)
 
 Specify what two-electron integrals to include in the direct MP2
-calculation (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+calculation (default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
 
-.SCREEN
--------
+keyword(SCREEN)
 
 Screening threshold in the 4-index transformation.
 
@@ -62,8 +60,7 @@ A negative number deactivates screening.
 **Programmers options**
 =======================
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -117,5 +114,4 @@ Use original alorithm as described in Ref. :cite:`Laerdahl1997`.
 
 *Default:* Use `new
 algorithm <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_.
-
 

@@ -1,7 +1,7 @@
-Density-functionals available in DIRAC using the :ref:`.DFT` keyword
-====================================================================
+Density-functionals available in DIRAC using the :ref:`HAMILTONIAN_.DFT` keyword
+================================================================================
 
-Below is a list of density functionals available with the keyword :ref:`.DFT` in DIRAC:
+Below is a list of density functionals available with the keyword :ref:`HAMILTONIAN_.DFT` in DIRAC:
 
 *Exchange functionals*
 -----------------------
@@ -32,6 +32,7 @@ SVWN5
 SVWN3
    GGAKEY Slater=1.0 VWN3=1.0
 Xalpha
+   ...
 
 GGA functionals
 ~~~~~~~~~~~~~~~

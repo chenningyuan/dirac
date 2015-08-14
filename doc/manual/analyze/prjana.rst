@@ -14,14 +14,14 @@ Normally, the fragments are calculated in the full molecular basis. This
 is done by zeroing charges of the remaining atoms of the molecule in the
 basis set input and adjusting occupation in the menu file. It is,
 however, possible to calculate the fragments in the own basis (a subset
-of the full molecular basis) using :ref:`.OWNBAS`. The advantage
+of the full molecular basis) using :ref:`PROJECTION_.OWNBAS`. The advantage
 is faster calculations and conservation of atomic symmetry for atomic
 fragments. To avoid working with symmetry-combinations of atomic centers
 for the fragments, it may sometimes be advantageous to dump molecular
-coefficients in *C*\ :sub:`1`\  symmetry using :ref:`.ACMOUT`
+coefficients in *C*\ :sub:`1`\  symmetry using :ref:`GENERAL_.ACMOUT`
 under :ref:`**GENERAL`
 and do the analysis
-without symmetry. When :ref:`.OWNBAS`
+without symmetry. When :ref:`PROJECTION_.OWNBAS`
 is used, one then needs to
 calculate each atomic type only once in its own basis in order to do the
 complete analysis.

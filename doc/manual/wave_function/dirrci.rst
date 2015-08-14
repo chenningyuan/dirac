@@ -1,4 +1,4 @@
-.. _dirrci:
+.. _DIRRCI:
 
 ==========================
 DIRRCI -- Direct CI module

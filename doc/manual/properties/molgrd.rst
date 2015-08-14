@@ -1,7 +1,7 @@
 star(MOLGRD)
 
 The section gives directives for control of a single point evaluation of
-the molecular gradient activated with :ref:`.MOLGRD` under :ref:`**PROPERTIES`.
+the molecular gradient activated with :ref:`PROPERTIES_.MOLGRD` under :ref:`**PROPERTIES`.
 
 The molecular gradient module is usually called from within the geometry
 optimization module.
@@ -23,7 +23,7 @@ and if activated then only "necessary" contributions are calculated.
 keyword(INTFLG)
 
 Specify what two-electron integrals to include
-(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+(default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
 keyword(SCREEN)
 
@@ -50,7 +50,7 @@ from 3+ gives individual contributions to the gradient (kinetic energy
 gradient, nuclear attraction gradient etc.). Print levels of 5+ print
 some matrices, and 10+ give massive output!
 
-*Default:* Print level from :ref:`**GENERAL`.
+*Default:* Print level :ref:`GENERAL_.PRINT` from :ref:`**GENERAL`.
 
 keyword(NUMGRA)
 
