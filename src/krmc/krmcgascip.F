@@ -4019,9 +4019,11 @@ C***********************************************************************
 #include "priunit.h"
 C
 C Used from include files:
+C  infpar.h : MYTID
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
+#include "infpar.h"
 #include "dgroup.h"
 C
       DIMENSION SVEC(NDET,*), BVEC(NDET,*)

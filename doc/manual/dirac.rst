@@ -106,4 +106,4 @@ keyword(MINIMI)
 
 keyword(XMLOUT)
 
-.. warning:: documentation missing
+Create the output xml-file containing selected data (in development).

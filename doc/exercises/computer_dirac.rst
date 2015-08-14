@@ -239,7 +239,7 @@ state manifold of Pb on the choice of Hamiltonian.
 
 .. note:: We don't include the zeroth-order approximation (ZORA) to the Dirac-Coulomb Hamiltonian as in its present implementation in DIRAC it only works
  for closed-shell systems. 
- In case you are interested to run ZORA calculations have a look at the :ref:`.ZORA` keyword in this documentation.
+ In case you are interested to run ZORA calculations have a look at the :ref:`HAMILTONIAN_.ZORA` keyword in this documentation.
 
 * *special* cases - the molecular-mean-field Hamiltonians:
 

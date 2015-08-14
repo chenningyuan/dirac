@@ -14,7 +14,7 @@ The default option in DIRAC is to generate the modified virtual orbitals
 by construction of a Fock operator for the system with some electrons
 removed, as first proposed by Bauschlicher :cite:`Bauschlicher1980`.
 The orbital string
-specified with :ref:`.VECMVO` indicates what occupied orbitals to
+specified with :ref:`MVOCAL_.VECMVO` indicates what occupied orbitals to
 remove in the construction of the Hartree-Fock potential.
 
 *Note* that the resulting modified virtual orbitals are no longer
@@ -24,8 +24,7 @@ the :ref:`DIRRCI` and :ref:`**RELCC` modules.
 Keywords
 ========
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -43,8 +42,7 @@ orbitals to be included in the Hartree-Fock potential when constructing
 the cationic Fock operator.
 
 
-.INTFLG
--------
+keyword(INTFLG)
 
 Specify what two-electron integrals to include during the construction
-of the modified virtual orbitals (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+of the modified virtual orbitals (default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).

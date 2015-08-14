@@ -12,15 +12,14 @@ manifold(s) using the :ref:`GOSCIP` module.
 Note that even if this is a small CI diagonalization one needs in
 principle to generate *all* AO integrals for the initial 4-index
 transformation. The cost of calculation can be greatly reduced invoking
-integral screening (controlled by :ref:`.SCREEN`) in the 4-index
+integral screening (controlled by :ref:`RESOLVE_.SCREEN`) in the 4-index
 transformation, possibly also by leaving out at least SS integrals
-(using :ref:`.INTFLG`).
+(using :ref:`RESOLVE_.INTFLG`).
 
 Keywords
 ========
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -31,13 +30,11 @@ Print level.
     .PRINT
      0
 
-.INTFLG
--------
+keyword(INTFLG)
 
-Specify what two-electron integrals to include (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+Specify what two-electron integrals to include (default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
-.SCREEN
--------
+keyword(SCREEN)
 
 Screening threshold in the 4-index transformation.
 
@@ -50,8 +47,7 @@ A negative number deactivates screening.
     .SCREEN
      1.0D-14
 
-.SCHEME
--------
+keyword(SCHEME)
 
 Choose integral transformation algorithm (PLEASE CLARIFY!)
 

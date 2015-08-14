@@ -89,7 +89,7 @@ in the AMFI/RELSCF output, together with the RELSCF convergence status.
 keyword(NOAMFC)
 
 Discard selected centers from AMFI calculations. Related the
-:ref:`.BSS` keyword, whose
+:ref:`HAMILTONIAN_.BSS` keyword, whose
 numerical value *axyz* must have y=0 (i.e. 'spin-free' from the DIRAC
 BSS side, while AMFI provides SO terms of first order in potential).
 
@@ -115,7 +115,7 @@ Stop DIRAC calculation after RELSCF program has finished. The
 (converged) AO coefficients are written to the file *RELSCF\_COEF* and
 can be used to restart from.
 
-This may be useful in combination with the keyword :ref:`.AMFICH`, *i.e.*
+This may be useful in combination with the keyword :ref:`AMFI_.AMFICH`, *i.e.*
 the user may first run the RELSCF step for an atom with an artificial
 charge.
 

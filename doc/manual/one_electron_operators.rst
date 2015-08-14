@@ -69,7 +69,7 @@ BETAGAMMA5   :math:`f i \beta \gamma_5 \Omega`                                  
 Operator specification
 ----------------------
 
-Operators are specified by the keyword :ref:`.OPERATOR` with the following
+Operators are specified by the keyword :ref:`HAMILTONIAN_.OPERATOR` with the following
 arguments::
 
   .OPERATOR
@@ -81,7 +81,7 @@ arguments::
    COMFACTOR
    common factor for all components
 
-Note that the arguments following the keyword :ref:`.OPERATOR` must start with
+Note that the arguments following the keyword :ref:`HAMILTONIAN_.OPERATOR` must start with
 a blank. The arguments are optional, except for the operator label.
 
 
@@ -226,7 +226,7 @@ A simpler way to specify the kinetic energy operator is therefore::
 
 where the keyword *CMULT* assures multiplication of the common factor -0.5 by :math:`c`.
 This option has the further advantage that *CMULT* follows any user-specified modification 
-of the speed of light, as provided by :ref:`.CVALUE`.
+of the speed of light, as provided by :ref:`GENERAL_.CVALUE`.
 
 XAVECTOR
 ~~~~~~~~

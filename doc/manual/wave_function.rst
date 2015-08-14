@@ -8,7 +8,7 @@ starstar(WAVE FUNCTION)
 
 This section allows the specification of which wave function module(s)
 to activate. By default no modules are activated. To activate any of
-these modules you must also specify :ref:`.WAVE FUNCTION`
+these modules you must also specify :ref:`DIRAC_.WAVE FUNCTION`
 under :ref:`**DIRAC`,
 otherwise this input is not read.
 
@@ -22,7 +22,7 @@ Activates the Hartree-Fock/Kohn-Sham module.
 
 Specification of the SCF module can be given in the :ref:`*SCF` subsection.
 
-If :ref:`.DFT` has been specified
+If :ref:`HAMILTONIAN_.DFT` has been specified
 under :ref:`**HAMILTONIAN`, then a
 Kohn-Sham calculation will be performed, otherwise a Hartree-Fock
 calculation will be performed.
