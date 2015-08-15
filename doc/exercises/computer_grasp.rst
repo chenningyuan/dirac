@@ -134,9 +134,7 @@ atomic levels.
 
 2. Does the ground state configuration vary down the coinage-metal series?
 
-3. What would you expect as dominant oxidation states for Cu/Au in molecular compounds and why?
-
-4. How does the d-s excitation energy change down the coinage-metal series?
+3. How does the d-s excitation energy (:math:`(n-1)d^{10}ns^{1}\rightarrow (n-1)d^{9}ns^{2}`) change down the coinage-metal series?
 
 Spin-orbit mixing within a group
 --------------------------------
