@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 How numerical constants are handled in DIRAC
 ============================================
 
@@ -33,6 +36,7 @@ On certain older cpus it was slightly faster to execute ::
 
  onethird = 1.0D0/3.0D0
  y = onethird*x
+
 than a simple divide by 3 (if repeated maybe times). 
 On modern cpus the difference is most likely minimal. 
 Using this style might cost one bit of precision, but in most cases it is best to write code in the most readable way possible 

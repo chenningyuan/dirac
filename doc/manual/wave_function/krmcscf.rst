@@ -1,9 +1,11 @@
+:orphan:
+ 
 
 star(KRMCSCF)
 
 *2- and 4-component relativistic KR-MCSCF module*
-
-Original implementation written
+=================================================
+The original implementation written
 by Joern Thyssen, Timo Fleig and Hans Joergen Aagaard Jensen,
 parallelization and continuous improvement by Stefan Knecht and Hans
 Joergen Aagaard Jensen. Linear symmetry adaptation by Stefan Knecht and Hans Joergen Aagaard Jensen.

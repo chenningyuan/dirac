@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 Troubleshooting
 ===============
@@ -39,7 +40,7 @@ for the quality of the grid for the property that you calculate.  If you see
 this warning in every iteration of your calculation, then it may be a good idea
 to investigate the quality of the grid.  You can either select a finer (and
 more expensive) grid (see :ref:`**GRID`), and/or tighten the screening
-threshold (:ref:`.SCREENING` under :ref:`*DFT`).
+threshold (:ref:`DFT_.SCREENING` under :ref:`*DFT`).
 
 When restarting from a ``DFCOEF`` file from a different geometry, the warning
 can appear during the first few iterations and then this warning disappears

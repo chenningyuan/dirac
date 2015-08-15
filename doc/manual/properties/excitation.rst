@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(EXCITATION ENERGIES)
 
 Calculate excitation energies using time dependent Hartree-Fock or DFT.

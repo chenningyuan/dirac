@@ -1,3 +1,5 @@
+:orphan:
+
 .. _GRASP_computer_exercises:
 
 ************************
@@ -283,6 +285,7 @@ Radial densities for the d-/p block
 -----------------------------------
 
 * Plot radial density for heavy elements, compare *s* and *d* functions (*d* block) resp. p :math:`_{1/2}` and p :math:`_{3/2}` (p block). 
+
 A simple FORTRAN code :download:`orbpri.F` for doing it is available. Here we shall demonstrate how to use it for the copper atom. 
 First we remind you that the form of relativistic atomic orbitals is
 

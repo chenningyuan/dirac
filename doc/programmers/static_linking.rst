@@ -1,4 +1,5 @@
-﻿
+:orphan:
+
 Static linking
 ==============
 

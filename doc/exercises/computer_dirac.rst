@@ -1,3 +1,5 @@
+:orphan:
+
 .. _DIRAC_computer_exercises:
 
 ########################

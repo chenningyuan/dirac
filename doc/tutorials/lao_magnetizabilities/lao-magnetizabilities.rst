@@ -1,3 +1,5 @@
+:orphan:
+
 =============================================
 Magnetizabilities with London Atomic Orbitals
 =============================================
@@ -60,11 +62,11 @@ We first calculate the magnetizability using the input file `cgo.inp`
 
 .. literalinclude:: cgo.inp
 
-where the (common) gauge origin has been set to the center of mass using the :ref:`.USECM` keyword.
-Notice that we use :ref:`.RKBIMP` to convert our molecular coefficients from restricted
+where the (common) gauge origin has been set to the center of mass using the :ref:`NMR_.USECM` keyword.
+Notice that we use :ref:`GENERAL_.RKBIMP` (? :ref:`PROPERTIES_.RKBIMP` ) to convert our molecular coefficients from restricted
 to unrestricted kinetic balance (RKB :math:`\rightarrow` UKB), the former employed for the
 generation of orbitals, and the latter employed for the response calculations, indicated by
-:ref:`.URKBAL`. This corresponds to the use of `simple magnetic balance <../simple_magnetic_balance/tutorial.html>`_.
+:ref:`HAMILTONIAN_.URKBAL`. This corresponds to the use of `simple magnetic balance <../simple_magnetic_balance/tutorial.html>`_.
 The calculation is run using::
 
    pam --inp=cgo --mol=NF3 --incmo

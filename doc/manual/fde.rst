@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(FDE)
 
 Frozen density embedding (FDE) directives. 
