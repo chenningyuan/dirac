@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 starstar(WAVE FUNCTION)
 
@@ -156,7 +157,4 @@ keyword(KRMCSCF)
 Activates the :ref:`*KRMCSCF`
 module for the optimization of ground and excited states (in other than the ground state symmetry) 
 at the relativistic MCSCF level.
-
-
-.. _resolve:
 

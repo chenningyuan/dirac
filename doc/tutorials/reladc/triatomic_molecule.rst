@@ -1,3 +1,5 @@
+:orphan:
+
 Here we consider a bent triatomic molecule in :math:`C_{s}` symmetry. We have
 only one fermionic IRREP and complex MOs. This is indicated in the ADC output
 reporting complex ADC matrices. We want to do single ionizations (DOSIPS=T) at

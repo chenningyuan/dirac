@@ -1,5 +1,4 @@
 
-
 Setting up DIRAC
 ================
 

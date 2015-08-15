@@ -1,3 +1,5 @@
+:orphan:
+ 
 
 starstar(PROPERTIES)
 
@@ -78,12 +80,12 @@ Evaluate nuclear quadrupole coupling constants (expectation values).
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-keyword(.POLARIZABILITY)
+keyword(POLARIZABILITY)
 
 Evaluate the static electronic dipole polarizability tensor (linear
 response).
 
-keyword(.FIRST ORDER HYPERPOLARIZABILITY)
+keyword(FIRST ORDER HYPERPOLARIZABILITY)
 
 Evaluate static electronic dipole first-order hyperpolarizability tensor
 (quadratic response). Results are also given for the static electronic

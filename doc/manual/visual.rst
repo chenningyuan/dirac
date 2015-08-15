@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 .. warning::
 
@@ -91,7 +92,7 @@ Example (coordinates in bohr)::
    40 40 40          ! 40 x 40 x 40 points
 
 
-keyword(3DADD)
+keyword(3D_ADD)
 
 Add space around the cube file.
 Default (coordinates in bohr)::

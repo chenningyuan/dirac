@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 Core electron excitations and ionization in H2O at the HF and DFT levels
 ========================================================================
 
@@ -108,9 +111,10 @@ An interesting question is how to localize the K edge in the XANES spectrum.
 A first approximation to the 1s ionization energy is provided by Koopman's 
 theorem. We find :math:`IP_{1s}\approx -\varepsilon_{1s} =` 20.581089 :math:`E_h` = 560.04 eV.
 This is singificantly off the value 539.7 eV reported by Kai Siegbahn and co-workers
-[*ESCA applied to free molecules*(1969)] ( see also `here <http://srdata.nist.gov/xps/XPSDetailPage.aspx?AllDataNo=21090>`_ ,
+[*ESCA applied to free molecules* (1969)] :cite:`Siegbahn1969` 
+( see also `here <http://srdata.nist.gov/xps/XPSDetailPage.aspx?AllDataNo=21090>`_ ,
 but here the work function of the reference metal must be subtracted).
-reported by Kai Siegbahn and co-workers in 1977. We know that Koopman's theorem ignores correlation and 
+reported by Kai Siegbahn and co-workers in 1977(?). We know that Koopman's theorem ignores correlation and 
 orbital relaxation. For valence ionization Koopman's theorem often provides a reasonable approximation 
 since the errors tend to cancel each other. For core excitations orbital relaxation dominates such that 
 Koopman's theorem greatly overestimates ionization energies. 

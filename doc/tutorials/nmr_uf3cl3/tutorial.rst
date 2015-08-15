@@ -1,3 +1,4 @@
+:orphan:
 
 
 ===================================
@@ -18,7 +19,7 @@ atomic ones. We therefore have to perform a separate SCF calculation of each
 atomic type. At the moment the approach is somewhat cumbersome, but
 will be automatized in future versions of DIRAC. Each atom is calculated in
 maximal symmetry (linear symmery) and the coefficients then exported to
-C1 symmetry using the keyword :ref:`.ACMOUT`.
+C1 symmetry using the keyword :ref:`GENERAL_.ACMOUT`.
 
 
 Uranium atom
@@ -123,7 +124,7 @@ Having good start vectors I next ran the PBE0 SCF calculation using the input ``
 .. literalinclude:: SCF.inp
 
 I am running with a level shift of 0.2 hartree as well as static overlap selection to ensure convergence. I also use the keyword
-:ref:`.ATSIZE` to determine the partitioning of the molecular volume into atomic ones. The minimal pam command reads::
+:ref:`GRID_.ATSIZE` to determine the partitioning of the molecular volume into atomic ones. The minimal pam command reads::
 
   pam --inp=SCF.inp --mol=UF3Cl3.mol --incmo --outcmo
 
