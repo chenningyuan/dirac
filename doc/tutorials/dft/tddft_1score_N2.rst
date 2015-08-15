@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 1s core-ionization of N2 by TD-DFT
 ==================================
 
@@ -111,7 +114,7 @@ From these considerations we now set up the following menu file for our calculat
 
 
 In the :ref:`*SCF` section we give the electron occupation of :math:`N_2`: 6 and 8 electrons in *gerade* and *ungerade* orbitals, respectively.
-We also ask for a Mulliken population analysis (:ref:`.MULPOP`) for the occupied orbitals and the orbitals involved in the core excitation.
+We also ask for a Mulliken population analysis (:ref:`ANALYZE_.MULPOP`) for the occupied orbitals and the orbitals involved in the core excitation.
 
 Let us  now look at how we set up the calculation of excitation energies under `*EXCITATION ENERGIES`. We have seen that there are three
 excitations per boson irrep. Note that the numbering of irreps follow what you for instance find in the :math:`D_{2h}` direct product
@@ -201,7 +204,7 @@ showing intensity to the :math:`^1\Pi_u` and :math:`^1\Sigma_u` states.
 Including spin-orbit
 --------------------
 
-Spin-orbit is included by simply commenting out the keyword :ref:`.SPINFREE` in the input above::
+Spin-orbit is included by simply commenting out the keyword :ref:`HAMILTONIAN_.SPINFREE` in the input above::
 
   **HAMILTONIAN
   !.SPINFREE

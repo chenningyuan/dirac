@@ -1,9 +1,13 @@
+:orphan:
+ 
 
 star(KRCI)
 
 or the (deprecated) \*KRCICALC.
 
-*2- and 4-component relativistic GASCI module* written by Timo Fleig
+*2- and 4-component relativistic GASCI module*
+==============================================
+Written by Timo Fleig, 
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht and Hans Joergen Aagaard Jensen.
 
 The KRCI module is a string-based Hamiltonian-direct configuration

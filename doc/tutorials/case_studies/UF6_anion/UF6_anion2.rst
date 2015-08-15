@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 The :math:`UF_6` anion - another approach
 =========================================
 
@@ -39,7 +42,7 @@ rapidly after few iterations. But this is only with the deactivated active-activ
 The :math:`UF_6` anion with OPENFAC=1
 -------------------------------------
 
-Unfortunately, with the factor OPENFAC=1 (what is the keyword :ref:`.OPENFACTOR`) we were not able to get the convergence,
+Unfortunately, with the factor OPENFAC=1 (what is the keyword :ref:`SCF_.OPENFACTOR`) we were not able to get the convergence,
 neither with the default DIIS, nor with damping factor (to download, :download:`UF6anion.inp` and :download:`UF6anion3.inp`): ::
 
   pam --noarch --inp=UF6anion.inp --mol=UF6.mol --put "DFCOEF.UF6anion_diis=DFCOEF"  

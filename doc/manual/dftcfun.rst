@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 Density-functionals available in DIRAC using the :ref:`HAMILTONIAN_.DFT` keyword
 ================================================================================
 

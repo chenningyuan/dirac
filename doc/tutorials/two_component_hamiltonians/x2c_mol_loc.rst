@@ -1,4 +1,6 @@
-
+:orphan:
+ 
+.. _X2Clocal:
 
 X2C and local X2C
 =================

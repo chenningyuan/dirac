@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 MOLTRA:Sample inputs
 =====================
 

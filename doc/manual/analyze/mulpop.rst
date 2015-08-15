@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(MULPOP)
 
 Mulliken population analysis is performed in AO basis. The analysis is

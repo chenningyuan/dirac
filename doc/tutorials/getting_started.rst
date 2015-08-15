@@ -1,3 +1,4 @@
+:orphan:
 
 
 Getting started with DIRAC
@@ -12,7 +13,7 @@ which determines what should be calculated, together with the :file:`*.mol` file
 which defines the molecular geometry and the basis set.  Alternatively
 you can use the :file:`*.inp` file, file together with a geometry file (:file:`*.xyz` file,). In this case
 the :file:`*.xyz` file provides the nuclear coordinates and the :file:`*.inp` file contains in addition
-to the job description also the basis set information (see :ref:`molecule`).
+to the job description also the basis set information (see :ref:`**MOLECULE`).
 
 DIRAC writes its output to a text file, named after the molecule and input file
 names. If this file already exists, for example from a previous calculation,

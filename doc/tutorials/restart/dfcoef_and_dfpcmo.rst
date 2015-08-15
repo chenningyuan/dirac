@@ -1,3 +1,4 @@
+:orphan:
 
 
 What is the difference between DFCOEF and DFPCMO?
@@ -6,7 +7,7 @@ What is the difference between DFCOEF and DFPCMO?
 Both files hold the MO coefficients (and some other information) and can be
 used to restart SCF calculations.
 
-DFCOEF is always generated. To generate DFPCMO, you need the :ref:`.PCMOUT`
+DFCOEF is always generated. To generate DFPCMO, you need the :ref:`GENERAL_.PCMOUT`
 keyword.
 
 To see the difference between the two files, run a calculation with::

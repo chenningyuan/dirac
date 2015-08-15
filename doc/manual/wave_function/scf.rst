@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(SCF)
 
 This section gives directives for Hartree-Fock and Kohn-Sham calculations.

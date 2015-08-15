@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(STEX)
 
 Core excitation spectra in the Static Exchange approximation

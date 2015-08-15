@@ -1,3 +1,5 @@
+:orphan:
+
 .. _day_1_exercises:
 
 The course comprises two pen-and-paper exercises which are based on materials of the morning-session lectures of Day 1.
