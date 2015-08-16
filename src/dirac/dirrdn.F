@@ -4832,6 +4832,13 @@ C
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
+      IPOVRLAP = -1
+      IPBETAMT = -1
+      IPMOLFLD = -1
+      IPKINERG = -1
+      IPANGMOM = -1
+      IPSPNMOM = -1
+      IPVEMB0  = -1
       SSMTRC  = D1
       BSS     = .FALSE.
       x2c     = .false.

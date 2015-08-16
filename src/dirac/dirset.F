@@ -119,9 +119,7 @@ C     ===================
         WRITE(LUPRI,'(2X,A,A)') 
      &  '* WARNING: DIRAC found the AOPROPER file ',
      &  '(one-electron integrals) ...will attempt restart.'
-        IF (NOSMLV) THEN
-          CALL NOSSNUCATT
-        ENDIF
+        IF (NOSMLV) CALL NOSSNUCATT
       ELSE 
         CALL ONEGEN(WORK,LWORK)
       ENDIF

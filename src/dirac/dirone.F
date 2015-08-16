@@ -65,6 +65,7 @@ C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
 C
+      IF (NOSMLV) CALL NOSSNUCATT
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
         IF (IPRONE.GE.2) WRITE(LUPRI,'(/2A,2X,A)')
@@ -84,16 +85,7 @@ C
 C     Nuclear attraction integrals (molecular field)
 C
       IF    (CLSINT(I).EQ.'MOLFLD ') THEN
-        IF (NOSMLV) THEN
-C          ... zero SS integrals
-           CALL NOSSNUCATT
-           COMB(4:4) = 'F'
-           IF(IPRONE.GE.3) THEN
-               WRITE(LUPRI,'(2X,A,A4)')
-     &      'FYI: no SS-nuclear attraction integrals'//
-     &      '(MOLFLD), adapted COMB=',COMB
-           ENDIF
-        END IF
+        IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUCATT(WORK,LWORK,COMB,IPRONE)
 C
 C     Effective electronic density on nuclei
@@ -104,11 +96,7 @@ C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN
-         IF (NOSMLV) THEN
-C          ... zero SS integrals
-           CALL NOSSNUCATT
-           COMB(4:4) = 'F'
-         END IF
+        IF(NOSMLV) COMB(4:4) = 'F'
         call fde_get_import_info(itmp)
         if (itmp%im_vemb) then
             CALL fde_calculate_emb_pot_mat(COMB,IPRONE)
@@ -308,55 +296,6 @@ C     Prefactor = 3 / (48*Z*Pi*R*dR)
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE NOSSNUCATT
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C Delete marking SS-block of in nucl.attraction integrals as empty
-C
-C Called from: PAMSET (when restart from AOPROPER)
-C              ONEGEN
-C when NOSMLV=.true.
-C
-C Written by Miro Ilias, Dec. 2008, Tel Aviv
-C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include "implicit.h"
-#include "priunit.h"
-      LOGICAL MOLFLD_FOUND
-#include "dcbprl.h"
-#include "dcbcls.h"
-#include "dcbxpr.h"
-
-      MOLFLD_FOUND=.FALSE.
-
-      DO I=1,NPRPCLS
-        IF (CLSINT(I).EQ.'MOLFLD ') THEN
-          MOLFLD_FOUND=.TRUE.
-          CLSCMB(I)(4:4) = '0'
-          ILBL = IPRPLBL(1,I)
-          PDOINT(ILBL)(4:4) = '0'
-        ELSE IF (CLSINT(I).EQ.'FDEVEMB') THEN
-          CLSCMB(I)(4:4) = '0'
-          ILBL = IPRPLBL(1,I)
-          PDOINT(ILBL)(4:4) = '0'
-        ENDIF
-      ENDDO
-
-      IF (MOLFLD_FOUND) THEN
-        WRITE(LUPRI,'(2X,A,A4)')
-     & 'The SS-block of the potential energy matrix and (if present)'//
-     & ' embedding potential are neglected (Levy-Leblond Hamiltonian)'
-      ELSE
-        WRITE(LUPRI,'(2X,A)') 'Nuclear attraction integrals not'//
-     &   ' found in operator list!'
-        WRITE(LUPRI,*) 'NOSSNUCATT routine was supposed to zero'//
-     &   'SS-block of them !'
-        CALL QUIT('NOSSNUCATT: end here')
-      ENDIF
-
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck op1gen */
       SUBROUTINE OP1GEN(WORD,COMB,IORDER,WORK,LWORK,IPRINT)
@@ -4412,7 +4351,6 @@ C     Initialization (calculate LL and SS)
 C
       DOINT(1,1) = .TRUE.
       IF (NOSMLV.OR.BSS.OR.x2c) THEN
-C     IF (NOSMLV) THEN
          DOINT(2,2) = .FALSE.
          IF (IPRINT.GE.1) WRITE(LUPRI,'(/A)')
      &     '  BNCORR: SS contribution to the bare nuclei omitted !'
@@ -7316,4 +7254,26 @@ C
 !     IDFLAG       = 1
 
       end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck nossnucatt */
+      SUBROUTINE NOSSNUCATT
+C***********************************************************************
+C     
+C     Zero SS-block of potentials
+C
+C***********************************************************************
+#include "dcbham.h"
+#include "dcbxpr.h"      
+#include "dcbprl.h"      
+C.....Nuclear attraction integrals
+      IF(IPMOLFLD.GT.0) THEN
+         ILBL  = IPRPLBL(1,IPMOLFLD)
+           PDOINT(ILBL)(4:4) = '0'
+       ENDIF
+C.....Static embedding potential
+      IF(IPVEMB0.GT.0) THEN
+         ILBL  = IPRPLBL(1,IPVEMB0)
+           PDOINT(ILBL)(4:4) = '0'
+       ENDIF
+       END
 ! -- end of dirone.F --
