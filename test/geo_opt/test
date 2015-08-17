@@ -17,7 +17,6 @@ f.add(from_string = 'Energy at final geometry is',
       rel_tolerance   = 1.0e-4)
 
 test.run(['acetone.inp'], ['acetone.mol'], f)
-test.run(['geop.inp'], ['acetone.xyz'], f)
 test.run(['HeH+.inp'], ['HeH+.mol'], f)
 test.run(['HCCF.x2c_zdipf.scf_mp2_geopt.inp'], ['HCCF.sto-2g.mol'], f)
 test.run(['1.3.5_trisilacyclohexane.inp'], ['1.3.5_trisilacyclohexane.mol'], f)
