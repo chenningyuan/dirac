@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(QUADRATIC RESPONSE)
 
 This section gives directives for the calculation of quadratic response

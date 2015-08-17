@@ -1,3 +1,5 @@
+:orphan:
+
 Basis sets for relativistic calculations
 ========================================
 

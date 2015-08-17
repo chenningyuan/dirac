@@ -1,3 +1,5 @@
+:orphan:
+ 
 =====================================================================
 Davidson size-consistency corrections for truncated CI wave functions
 =====================================================================

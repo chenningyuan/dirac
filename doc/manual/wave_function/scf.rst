@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(SCF)
 
 This section gives directives for Hartree-Fock and Kohn-Sham calculations.
@@ -557,8 +560,7 @@ SCF-iterations.
     .ITRINT
      1 1
 
-.INTFLG
--------
+keyword(INTFLG)
 
 Specify what two-electron integrals to include (see
 :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
@@ -568,8 +570,7 @@ Specify what two-electron integrals to include (see
 Output control
 ==============
 
-.PRINT
-------
+keyword(PRINT)
 
 General print level for the SCF method. For instance, value of 2
 prints eignevalues during each iteration.

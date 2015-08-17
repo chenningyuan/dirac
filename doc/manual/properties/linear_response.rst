@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(LINEAR RESPONSE)
 
 Linear Response module written by T. Saue and H. J. Aa. Jensen :cite:`Saue2003`.

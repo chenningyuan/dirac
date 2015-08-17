@@ -40,7 +40,8 @@ def main(argv):
     for root, dirs, files in os.walk(os.path.join(DIR_TEMP, 'manual')):
         for filename in fnmatch.filter(files, '*.rst'):
 
-            # replace (in given **SECTION/*SECTION):
+            #
+            # replace (in a given **SECTION/*SECTION):
             #
             # keyword(RABOOF)
             # by:

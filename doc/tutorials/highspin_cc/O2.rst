@@ -1,3 +1,5 @@
+:orphan:
+
 .. _O2_highspin_relcc:
 
 

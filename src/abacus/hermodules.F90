@@ -442,8 +442,9 @@
           CHARACTER(LEN=namelen)             :: name, prevname
           REAL(KIND=8)                       :: charge, bascharge, nucexp
           LOGICAL                            :: CONT=.FALSE.
+          LOGICAL                            :: first_call=.TRUE.
           CHARACTER(LEN=9) :: symtxt
-
+          SAVE first_call
 
 !     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)
@@ -479,14 +480,6 @@
 !           We only need to do something if we are reading a **MOLECULE block.
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
-
-              ! sanity check: stop all .OPTIMIZATION runs with xyz
-              ! format, it works sometimes but fails with symmetry
-              if (optimi) then
-                  print *, 'ERROR: .OPTIMIZE not supported with xyz'
-                  print *, '       use mol format instead'
-                  call quit('.OPTIMIZE not supported with xyz format')
-              end if
 
 !            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
               IF (section(2)=='*SYMMETRY'.AND.                          &
@@ -660,6 +653,12 @@
                     call Quit ("error reading units in .UNITS")
                   end if
                 END SELECT
+                IF (.NOT.first_call) THEN
+!               In geometry optimizations this routine will be called multiple times,
+!               and since we will write new XYZ files in Angstroms we overrule the initial unit choice here
+                  UNIT_CONVERSION = ONE / XTANG
+                  unitname='angstrom'
+                END IF
 
 !             End of processing of the **MOLECULE BLOCK
               END IF
@@ -687,6 +686,8 @@
               mol=>mol%next
             END DO
           END IF
+
+        first_call = .FALSE.
 
         END SUBROUTINE READ_BASIS
 

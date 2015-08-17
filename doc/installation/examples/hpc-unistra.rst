@@ -1,5 +1,8 @@
+:orphan:
+ 
+
 Installation on `HPC cluster <http://services-numeriques.unistra.fr/hpc.html>`_ in Strasbourg
-======================================================================
+=============================================================================================
 
 Configuration and compilation
 -----------------------------

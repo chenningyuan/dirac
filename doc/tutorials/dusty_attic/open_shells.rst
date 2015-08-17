@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 Examples of open-shell systems
 ==============================
 

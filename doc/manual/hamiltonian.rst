@@ -1,4 +1,4 @@
-
+:orphan:
 
 starstar(HAMILTONIAN)
 
@@ -245,8 +245,8 @@ To use the spinfree version of X2C (which numerically yields the same numbers as
 one needs to add the keyword :ref:`HAMILTONIAN_.SPINFREE`.
 
 See this documentation for more options, including a local X2C scheme. 
-An overview of the (local) X2C approach is given in the tutorial 
-section :doc:`X2C and local X2C <../tutorials/two_component_hamiltonians/x2c_mol_loc.html>`_
+An overview of the (local) X2C approach is given in the corresponding tutorial 
+section :ref:`X2Clocal`.
 
 keyword(X2Cmmf)
 
@@ -259,8 +259,8 @@ step. after the SCF. One can combine this option with :ref:`HAMILTONIAN_.GAUNT` 
 activates the inclusion of spin-other-orbit contributions in the Hamiltonian.
 The X2Cmmf-Hamiltonian can at present only be used for post-HF calculation
 within the RELCCSD module. Patches for other correlation modules in DIRAC will 
-be part of the Dirac2014 release. See also :doc:`Molecular mean-field X2C
-<../tutorials/two_component_hamiltonians/molecular_mean_field>`_ for further information.
+be part of the Dirac2014 release. See also the Molecular mean-field X2C tutorial,
+section :ref:`mmf_X2C`, for further information.
 
 
 keyword(BSS)
