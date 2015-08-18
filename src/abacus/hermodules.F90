@@ -766,9 +766,9 @@
 !     WRITE COMMONBLOCKS
           NAMN(natom)=mol%name
           CORD(:,natom)=mol%x
-          NAMEX(3*natom)=TRIM(mol%name)//' z'
-          NAMEX(3*natom-1)=TRIM(mol%name)//' y'
-          NAMEX(3*natom-2)=TRIM(mol%name)//' x'
+          NAMEX(3*natom)=NAMN(natom)//' z'
+          NAMEX(3*natom-1)=NAMN(natom)//' y'
+          NAMEX(3*natom-2)=NAMN(natom)//' x'
           CHARGE(natom)=mol%charge
           GNUEXP(natom)=mol%nucexp
           if (natom .gt. 1) then
