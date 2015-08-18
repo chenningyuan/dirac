@@ -496,7 +496,7 @@ C
                IDET(2,NDET+I) = IDET(1,J+I)
             END DO
             NDET        = NDET + NDET_MK2
-            
+
          END DO
       END IF
 C
@@ -4963,22 +4963,38 @@ C     master: 1) send bc-vectors to all slaves
      &   CPU2-CPU1, WALL2-WALL1
       END IF
 
+!     Select number of tasks
+!     (currently fixed to 3 times number of slaves, hope this
+!      will give OK load balancing)
+      N_TASKS = 5 * NODTOT
+      LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
+      IF (LEN_SCVEC_PER_TASK .LT. 2000) THEN
+         LEN_SCVEC_PER_TASK = 2000
+         N_TASKS = (NDET - 1) / LEN_SCVEC_PER_TASK + 1
+         N_TASKS = MAX(N_TASKS, NODTOT)
+         LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
+      END IF
 
-      DO I_NODE = 1, NODTOT
+      call interface_MPI_BCAST(
+     &     N_TASKS,1,MPARID,global_communicator)
+
+      NEXT_TASK = NODTOT + 1 ! nodes start automatically with their first task
+
+      DO I_TASK = 1, N_TASKS
          CAll interface_mpi_RECV(SLAVE_S_INTERVAL,3,
      &                 df_mpi_any_source,40,global_communicator,ISTAT)
          J_START = SLAVE_S_INTERVAL(1)
          NWHO = ISTAT(df_MPI_SOURCE)
-      IF (IPRINT .GE. 4) THEN
+        IF (IPRINT .GE. 4) THEN
          CALL GETTIM(CPU3,WALL3)
         IF ((WALL3-WALL2) .GT. 1.D0) THEN
          CALL TIMDAT
          WRITE(LUPRI,'(A,I6,A,I6,2F10.2)')
-     &   'Master',I_NODE,
-     &   ': CPU and WALL time to start receive from node',
+     &   'Master task',I_TASK,
+     &   ': CPU and WALL time to start of receive from node',
      &   NWHO,CPU3-CPU2, WALL3-WALL2
         END IF
-      END IF
+        END IF
          DO I = 1, N_CSIM
             CAll interface_mpi_RECV(
      &                 SCVEC(J_START,1,I),SLAVE_S_INTERVAL(3),
@@ -4990,16 +5006,21 @@ C     master: 1) send bc-vectors to all slaves
      &                 NWHO,40,global_communicator)
          END IF
          END DO
-      IF (IPRINT .GE. 4) THEN
+        IF (IPRINT .GE. 4) THEN
          CALL GETTIM(CPU2,WALL2)
         IF ((WALL3-WALL2) .GT. 1.D0) THEN
          CALL TIMDAT
          WRITE(LUPRI,'(A,I6,A,I6,2F10.2)')
-     &   'Master',I_NODE,
+     &   'Master task',I_TASK,
      &   ': CPU and WALL time to retrieve sigma vectors from node',
      &   NWHO,CPU2-CPU3, WALL2-WALL3
         END IF
-      END IF
+        END IF
+!        send next task to this node; nodes will automatically exit task loop when
+!        NEXT_TASK is greater than N_TASKS
+         CAll interface_mpi_SEND(NEXT_TASK,1,NWHO,
+     &      40,global_communicator)
+         NEXT_TASK = NEXT_TASK + 1
       END DO
 
       IF (IPRINT .GE. 4) THEN
@@ -5091,7 +5112,7 @@ C
       write(lupri,*) MYTID,' in GASCIP_NODE: received ITASK',ITASK
       call flshfo(lupri)
 #endif
-      IF (itasK .lt. 0) THEN
+      IF (itask .lt. 0) THEN
 !        exit from GASCIP_NODE
          CONTINUE
       ELSE IF (itask .eq. 1) then ! GASCIP_PAR_CISG
@@ -5162,7 +5183,7 @@ C
       call flshfo(lupri)
 #endif
 
-!     Receive CI information vecto IDET and operator matrices to from master
+!     Receive CI information vector IDET and operator matrices to from master
 
       call interface_MPI_BCAST_r1_work_f77(
      &         WORK(KHCORE),len_HCORE,MPARID,
@@ -5180,8 +5201,7 @@ C
 
   100 CONTINUE ! coming back to here for more batches
 
-      call interface_MPI_BCAST(N_CSIM,1,MPARID,
-     &                         global_communicator)
+      call interface_MPI_BCAST(N_CSIM,1,MPARID,global_communicator)
 #ifdef GASCIP_DEBUG
       write(lupri,*) MYTID,' GASCIP_NODE_CISIG: received N_CSIM',N_CSIM
       call flshfo(lupri)
@@ -5201,9 +5221,14 @@ C
 
 !     do the work
 
-      LEN_SCVEC_PER_NODE = (NDET - 1) / NODTOT + 1
-      MY_S_INTERVAL(1) = 1 + (MYTID-1)*LEN_SCVEC_PER_NODE
-      MY_S_INTERVAL(2) = MIN(MYTID*LEN_SCVEC_PER_NODE, NDET)
+      call interface_MPI_BCAST(N_TASKS,1,MPARID,global_communicator)
+      LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
+
+      MY_TASK = MYTID ! first task is equal to my node number
+
+  200 CONTINUE ! coming back here for more batches
+      MY_S_INTERVAL(1) = 1 + (MY_TASK-1)*LEN_SCVEC_PER_TASK
+      MY_S_INTERVAL(2) = MIN(MY_TASK*LEN_SCVEC_PER_TASK, NDET)
       MY_S_INTERVAL(3) = MY_S_INTERVAL(2) - MY_S_INTERVAL(1) + 1
       DO I = 1, N_CSIM
          CALL GASCIP_CISIG_SCREEN(MY_S_INTERVAL(1), MY_S_INTERVAL(2),
@@ -5227,6 +5252,10 @@ C
      &                 MPARID,40,global_communicator)
          END IF
       END DO
+      CAll interface_mpi_RECV(MY_TASK,1,NWHO,
+     &      40,global_communicator)
+
+      IF (MY_TASK .LE. N_TASKS) GO TO 200
 
       CALL MEMREL('GASCIP_NODE_CISIG.1',WORK,1,KBCVEC,KFREE,LFREE)
       GO TO 100
