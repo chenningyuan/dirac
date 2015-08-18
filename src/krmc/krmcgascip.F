@@ -1788,6 +1788,7 @@ C
 #endif
 
       PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
+      THRSCR = 1.0D-10
       IF (PAR_GASCIP) THEN
          IPRINT_slaves = IPRINT - 1
          CALL GASCIP_WAKE_NODES()
@@ -1805,10 +1806,9 @@ C      Make sigma vectors from property matrix and CI vectors
           IF (PAR_GASCIP) THEN
              CALL GASCIP_PAR_CISIG(1,NDET,
      &            WORK(KSVECPRP+(I-1)*NDET*NZ_in_CI),
-     &            WORK(KBVECPRP))
+     &            WORK(KBVECPRP),IPRINT_slaves)
          ELSE IF (NDET .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
-            THRSCR = 1.0D-10
             CALL GASCIP_CISIG_SCREEN(1,NDET,
      &           WORK(KSVECPRP+(I-1)*NDET*NZ_in_CI),
      &           WORK(KBVECPRP),
@@ -2465,7 +2465,7 @@ C
          IF (PAR_GASCIP) THEN
             CALL GASCIP_PAR_CISIG(N_CSIM,NDET,
      &            WORK(KSCVEC+N_CRED_OLD*NDETQ),
-     &            WORK(KBCVEC+N_CRED_OLD*NDETQ),IPRINT)
+     &            WORK(KBCVEC+N_CRED_OLD*NDETQ),IPRINT_slaves)
          END IF
 
          IHRM = 1
@@ -4043,15 +4043,21 @@ C
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 C
       CALL GETTIM(CPU1,WALL1)
-      IF (IPRINT .GT. 1 .AND. MYTID .LE. 1)
-     &   WRITE (LUPRI,'(//A/A,L10,1P,D10.2)')
-     &   ' --- Output from GASCIP_CISIG_SCREEN ---',
-     &   ' DO2EL, THRSCR       :',DO2EL,THRSCR
 
       IF (IS_START .LT. 1 .OR. IS_END .GT. NDET) THEN
+         WRITE (LUPRI,'(//A,I6/A,L10,1P,D10.2,3I12)')
+     &   ' --- Interval out of bounds in GASCIP_CISIG_SCREEN --- node',
+     &   MYTID,
+     &   ' DO2EL, THRSCR, NDET, interval:',
+     &   DO2EL,THRSCR,NDET,IS_START,IS_END
          CALL QUIT('IS_START or IS_END is '//
      &      'out of bounds in GASCIP_CISIG_SCREEN')
       END IF
+
+      IF (IPRINT .GT. 1 .AND. MYTID .LE. 1)
+     &   WRITE (LUPRI,'(//A,I6/A,L10,1P,D10.2,2I12)')
+     &   ' --- Output from GASCIP_CISIG_SCREEN --- node',MYTID,
+     &   ' DO2EL, THRSCR, interval:',DO2EL,THRSCR,IS_START,IS_END
 C
 C     Initialization
 C     --------------
@@ -5164,6 +5170,9 @@ C
      &                         global_communicator)
       call interface_MPI_BCAST(IPRINT,1,MPARID,
      &                         global_communicator)
+      IF (MYTID .GT. 1) THEN
+         IPRINT = IPRINT / 10
+      END IF
 
       len_HCORE = (2*NASHT)**2 * NZ_in_CI
       IF (DO2EL) THEN
@@ -5230,6 +5239,10 @@ C
       MY_S_INTERVAL(1) = 1 + (MY_TASK-1)*LEN_SCVEC_PER_TASK
       MY_S_INTERVAL(2) = MIN(MY_TASK*LEN_SCVEC_PER_TASK, NDET)
       MY_S_INTERVAL(3) = MY_S_INTERVAL(2) - MY_S_INTERVAL(1) + 1
+      IF (IPRINT .GT. 0) THEN
+         WRITE (LUPRI,'(A,3I6)')
+     &   ' Node, MY_TASK, N_TASKS',MYTID,MY_TASK,N_TASKS
+      END IF
       DO I = 1, N_CSIM
          CALL GASCIP_CISIG_SCREEN(MY_S_INTERVAL(1), MY_S_INTERVAL(2),
      &         WORK(KSCVEC+(I-1)*NDETQ),
@@ -5252,7 +5265,7 @@ C
      &                 MPARID,40,global_communicator)
          END IF
       END DO
-      CAll interface_mpi_RECV(MY_TASK,1,NWHO,
+      CAll interface_mpi_RECV(MY_TASK,1,MPARID,
      &      40,global_communicator)
 
       IF (MY_TASK .LE. N_TASKS) GO TO 200
