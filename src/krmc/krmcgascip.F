@@ -4946,8 +4946,8 @@ C
 
       IF (IPRINT .GE. 4) THEN
          WRITE(LUPRI,'(/A)')
-     &   ' Timing output from GASCIP_PAR_CISIG.'//
-     &   ' Only receive sections using more than 1 second is printed.'
+     &   ' Timing output from GASCIP_PAR_CISIG. '//
+     &   'Only receive sections using more than 30 seconds are printed.'
       END IF
 
 C     master: 1) send bc-vectors to all slaves
@@ -4970,16 +4970,18 @@ C     master: 1) send bc-vectors to all slaves
       END IF
 
 !     Select number of tasks
-!     (currently fixed to 3 times number of slaves, hope this
+!     (1: currently fixed to 5 times number of slaves, hope this
 !      will give OK load balancing)
-      N_TASKS = 5 * NODTOT
-      LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
-      IF (LEN_SCVEC_PER_TASK .LT. 2000) THEN
+!!    (2: could still be better, now set length to 2000 instead,
+!!     independent of numer of nodes)
+!!    N_TASKS = 5 * NODTOT
+!!    LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
+!!    IF (LEN_SCVEC_PER_TASK .LT. 2000) THEN
          LEN_SCVEC_PER_TASK = 2000
          N_TASKS = (NDET - 1) / LEN_SCVEC_PER_TASK + 1
          N_TASKS = MAX(N_TASKS, NODTOT)
          LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
-      END IF
+!!    END IF
 
       call interface_MPI_BCAST(
      &     N_TASKS,1,MPARID,global_communicator)
@@ -4993,7 +4995,7 @@ C     master: 1) send bc-vectors to all slaves
          NWHO = ISTAT(df_MPI_SOURCE)
         IF (IPRINT .GE. 4) THEN
          CALL GETTIM(CPU3,WALL3)
-        IF ((WALL3-WALL2) .GT. 1.D0) THEN
+        IF ((WALL3-WALL2) .GT. 30.D0) THEN
          CALL TIMDAT
          WRITE(LUPRI,'(A,I6,A,I6,2F10.2)')
      &   'Master task',I_TASK,
@@ -5014,7 +5016,7 @@ C     master: 1) send bc-vectors to all slaves
          END DO
         IF (IPRINT .GE. 4) THEN
          CALL GETTIM(CPU2,WALL2)
-        IF ((WALL3-WALL2) .GT. 1.D0) THEN
+        IF ((WALL2-WALL3) .GT. 30.D0) THEN
          CALL TIMDAT
          WRITE(LUPRI,'(A,I6,A,I6,2F10.2)')
      &   'Master task',I_TASK,
@@ -5030,6 +5032,7 @@ C     master: 1) send bc-vectors to all slaves
       END DO
 
       IF (IPRINT .GE. 4) THEN
+         CALL GETTIM(CPU2,WALL2)
          CALL TIMDAT
          WRITE(LUPRI,'(A,2F10.2)')
      &   'Master: Total CPU and WALL time in GASCIP_PAR_CISIG',
