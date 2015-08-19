@@ -1106,7 +1106,7 @@ CMI   ... criteria of convergence for prelim.BSS-SCF
       PRJTHR    = 1.0D-10
       DOLEVEL   = .FALSE.
       DLSHIF    = D0
-      OPEN_FAC  = D1
+      OPEN_FAC  = 0.5D0 ! this value seems to a good compromise value for good convergence
       CALL DZERO(OLEV,MXOPEN)
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)

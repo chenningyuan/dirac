@@ -1,8 +1,12 @@
 15.x
 ____
 
+- Better convergence for open-shell calculations, using .OPENFAC 0.5 as default.
+  Final orbital energies are recalculated with .OPENFAC 1.0, for IP interpretation.
 - Performance improvement for MP2 NO: only transform (G O|G O) integrals instead of (G G|G G).
 - Geometry optimization with xyz input.
+- Performance improvements for determinant generation in GASCIP
+- Use Kramers conjugation on CI vectors (cuts time for CI in half for ESR doublets)
 
 14.2 (20XX-XX-XX)
 -----------------
