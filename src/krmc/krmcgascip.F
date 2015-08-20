@@ -5130,8 +5130,9 @@ C
          CALL QUIT('Unknown task code in GASCIP_NODE')
       END IF
 
+      call dealloc(WORK)
       CALL QEXIT('GASCIP_NODE')
-#endif
+#endif  /* VAR_MPI */
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
