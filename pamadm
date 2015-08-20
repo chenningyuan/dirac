@@ -228,6 +228,9 @@ def main():
     add_test('tutorial_MnO6', 'tutorial;MnO6;scf')
     add_test('tutorial_Ir_16plus', 'tutorial;cc')
 
+    # dirrci_property module tests added to the test directory
+    add_test('dirrci_property','ci')
+
     # list of directories and files
     # that are never compiled as part of the "dirac" library
     # first list individual files

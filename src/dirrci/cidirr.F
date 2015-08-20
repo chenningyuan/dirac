@@ -110,8 +110,12 @@ C     =======================================================================
 C
 #include "files.inc"
 #include "param.inc"
+CMKN
+#include "general.inc"
+CMKN
       LOGICAL DONE
-
+      NAMELIST /CIFOPR/ PROPER,NEOPER,NAMEE
+CMKN
       real(8), allocatable :: CI(:)
 
       call legacy_lwork_get(MCORE)
@@ -123,12 +127,47 @@ C
       CALL ASNUNIT(5,'-Yon',IERR)
       IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
 #endif
+CMKN
+C Modified by Malaya .K. Nayak on 4th Feb. 2011
+C This part will calculate normal RASCI energy
+CMKN
+      PROPER = .FALSE.
       OPEN (5,FILE='DIRAC.INP')
       CALL SETUP   (CI,DONE)
       IF (DONE) RETURN
       CALL DRIVER  (CI)
       CALL USEROUT (CI)
+CMKN
+C      call dealloc(CI)
+CMKN
+C Modified by Malaya .K. Nayak on 4th Feb. 2011
+C This part will calculate the RASCI property
+CMKN
+      REWIND (5)
+      READ (5,CIFOPR,END=700,ERR=700)
+  700 CONTINUE
+      IF (PROPER) THEN
+      WRITE (6,'(//80A1)') ('#',I=1,80)
+      WRITE (6,'(A30,//A30)')'Entering RASCI Property Module',
+     &                       'Implemented by Malaya K. Nayak'
+      DO IEOPER = 1,NEOPER
+      NAMEA = NAMEE(IEOPER)
+      CALL SETUP   (CI,DONE)
+      RESTART = .TRUE.
+      IF (DONE) RETURN
+      MAXITER = 1
+      CALL DRIVER  (CI)
+      END DO
+      WRITE(6,'(//10x,A41)')'-- Normal end of RASCI Property Module --'
+      ELSE
+      WRITE (6,'(//70A1)') ('*',I=1,70)
+      WRITE (6,'(A36,//A36)')'RASCI Property Module Implemented by',
+     &                       'Dr. Malaya K. Nayak is not activated'
+      WRITE (6,'(//70A1)') ('*',I=1,70)
+      END IF
+CMKN
       call dealloc(CI)
+CMKN
 C
 C     Clean up : Throw away Scratch Files 
 C
@@ -298,6 +337,9 @@ C
 #include "general.inc"
 #include "symm.inc"
 #include "mempoint.inc"
+CMKN
+#include "iterat.inc"
+CMKN
 C
       real*8  CI(*)
       LOGICAL ENDRUN
@@ -332,8 +374,10 @@ C
      &               CI(IPJR+LCOREX),CI(IVW1),
      &               CI(IPDG))
       ENDIF
-C
-      WRITE (6,1000)
+CMKN
+C      WRITE (6,1000)
+      IF (.NOT.PROPER) WRITE (6,1000)
+CMKN
 C
       DO 200 ITER = 1, MAXITER
          CALL CPUUSED(CPITER)
@@ -344,8 +388,28 @@ C
      &                CI(ITNI),CI(IIJE),CI(IGMR),
      &                CI(IGMI),CI(IVW1),
      &                CI(IVW1+IVWW),CI(IIJR))
+CMKN
+C Commenting this if statement will give all-states property
+CMKN
+      IF (PROPER) RETURN
+CMKN
          CALL CINPRD (CI(IPVR),CI(IPVI),CI(IPSR),
      &                CI(IPSI))
+CMKN
+C This part is meant for all-states property
+CMKN
+      IF (PROPER) THEN
+      WRITE(*,25)NAMEA
+      DO I = 1,NVEC
+      DO J = 1,NVEC
+      WRITE(*,50)I,J,CMTR(I,J),CMTI(I,J)
+      ENDDO
+      ENDDO
+      GO TO 300
+      ENDIF
+CMKN
+C Rest of this subroutine will be called only for normal CI
+CMKN
          CALL DIAG
          CALL SELECV
          CALL WRIVEC (CI(IPVR),CI(IPVI),CI(IPDR),
@@ -360,6 +424,10 @@ C
   300 CONTINUE
       RETURN
 C
+CMKN
+   25 FORMAT (/' ALL-STATES PROPERTY: ',A8,17X,'REAL',14X,'IMAGINARY')
+   50 FORMAT (/' Property between states',2I4,' is:',2F20.12)
+CMKN
  1000 FORMAT (//1X,'Iter',1X,'Root',1X,'Isel',13X,'Energy',
      & 7X,'Correlation',5X,'Convergence',3X,'Residue')
 C
@@ -1200,7 +1268,9 @@ C
 #include "files.inc"
 #include "symm.inc"
 #include "mempoint.inc"
-C
+CMKN
+      DIMENSION DGER(NDET),DGEI(NDET),DI(MDET)
+CMKN
       DIMENSION DGEL(*),DR(*),TINTR(*),TINTI(*),GMATR(*),GMATI(*)
       DIMENSION IVWA(*),IJREC(NORB,NORB)
       DIMENSION IJEX(*),ILIND(*),IRIND(*),JLIND(*),JRIND(*),JVECL(2,*)
@@ -1208,6 +1278,10 @@ C
 C
       REWIND (MRCTWOE)
       CALL ZZERO(NDET,DGEL)
+CMKN
+      CALL ZZERO(NDET,DGER)
+      CALL ZZERO(NDET,DGEI)
+CMKN
 C     -------------------------------------------
 C     THE COULOMB TYPE OF CONTRIBUTIONS : (II|JJ)
 C     -------------------------------------------
@@ -1217,6 +1291,9 @@ C     -------------------------------------------
         J = MOD(IJ-1,NORB) + 1
         IF (I.NE.J) GOTO 3000
           CALL ZZERO (MDET,DR(1))
+CMKN
+      IF (.NOT.REALAR) CALL ZZERO (MDET,DI(1))
+CMKN
           IF (IJREC(I,J).GT.0) THEN
              IVERT = IJREC(I,J) - 1
              ICOREX = 0
@@ -1244,6 +1321,13 @@ C         --------------------------------
                   IL = ILD + IDH
                   DGEL(IL) = DGEL(IL) + GMATR(IJ)
                   DR(IL) = 1.D0
+CMKN
+      IF (PROPER) THEN
+      DGER(IL) = DGER(IL) + GMATR(IJ)
+      IF (.NOT.REALAR) DGEI(IL) = DGEI(IL) + GMATI(IJ)
+      DI(IL) = 1.D0
+      END IF
+CMKN
   300             CONTINUE
   400          CONTINUE
 C           --------------
@@ -1278,6 +1362,12 @@ C
                    DO 1300 IDH = 1, NDH
                       IL = ILD + IDH
                       DGEL(IL) = DGEL(IL) + TINTR(IX) * DR(IL)
+CMKN
+      IF (PROPER) THEN
+      DGER(IL) = DGER(IL) + TINTR(IX)*DR(IL)
+      IF (.NOT.REALAR) DGEI(IL) = DGEI(IL) + TINTI(IX)*DI(IL)
+      END IF
+CMKN
  1300                 CONTINUE
  1400              CONTINUE
 C               --------------
@@ -1333,6 +1423,12 @@ C             --------------------------------
                 DO 2300 IDH = 1, NDH
                    IR = IRD + IDH
                    DGEL(IR) = DGEL(IR) + TINTR(IX)
+CMKN
+      IF (PROPER) THEN
+      DGER(IR) = DGER(IR) + TINTR(IX)
+      IF (.NOT.REALAR) DGEI(IR) = DGEI(IR) + TINTI(IX)
+      END IF
+CMKN
  2300              CONTINUE
  2400           CONTINUE
 C            --------------
@@ -1349,8 +1445,22 @@ C     GET NEXT INTEGRAL BLOCK
 C     -----------------------
       GOTO 5000
  5001 CONTINUE
-C
+CMKN
+      IF (PROPER) THEN
+      WRITE(*,25)NAMEA
+      DO IROOT = 1,NROOTS
+      WRITE(*,50)IROOT,INDMIN(IROOT),DGER(INDMIN(IROOT)),
+     &                               DGEI(INDMIN(IROOT))
+      END DO
+      END IF
+CMKN
       RETURN
+CMKN
+   25 FORMAT (/' UN-CORRELATED PROPERTY: ',A8,14X,'REAL',14X,
+     &          'IMAGINARY')
+   50 FORMAT (/' Root',I4,' is determinant',I4,' Exp. Value:',
+     &           F16.12,4X,F16.12)
+CMKN
       END
 C
       BLOCK DATA DIRDAT
@@ -1360,13 +1470,13 @@ C
 #include "param.inc"
 #include "files.inc"
 #include "iterat.inc"
-C
+CMKN
       DATA EIGEN1/N8 * 0.D0/
       DATA MRCONEE,MDCINT,MDBINT,MRCTRIV,MRCFINV,MRCEXCS,MRCVECS,
-     &     MRCTWOE /8,9,10,11,12,13,14,15/
+     &     MRCTWOE,MDPROP /8,9,10,11,12,13,14,15,16/
       DATA FNAM /'MRCONEE','MDCINT','MDBINT','MDTRIV','MRCFINV',
-     &     'MRCEXCS','MRCVECS','MRCTWOE'/
-C
+     &     'MRCEXCS','MRCVECS','MRCTWOE','MDPROP'/
+CMKN
       END
 C
       SUBROUTINE EXPAND(DR,DI,VECTR,VECTI,SIGMAR,SIGMAI,
@@ -1580,12 +1690,97 @@ C     GET NEXT INTEGRAL BLOCK
 C     -----------------------
       GOTO 5000
  5001 CONTINUE
+CMKN
+C      ************************************************************
+C      HERE IT CREATS THE CIMATRIX IN DETERMINANTAL BASIS
+C      Written by (Malaya K. Nayak)
+C      ************************************************************
+C      WRITE(*,*)'IEOPER=',IEOPER,' MAXITER=',MAXITER,' ITER=',ITER
+C      IF (ITER.EQ.1) THEN
+C      IF (.NOT.PROPER) THEN
+C      WRITE(*,*)'NVEC-MVEC=',NVEC-MVEC,' NDET=',NDET
+C      IU=20+IEOPER
+C      WRITE(*,*)'IU=',IU
+C      OPEN (17, FILE='HCIMAT', STATUS='UNKNOWN')
+C      WRITE(17,*)'DETIND VECIND   REAL-PART       IMAG-PART'
+C      DO IVEC=1,NVEC-MVEC
+C      DO I=1,NDET
+C      IF (ABS(SIGMAR(I,IVEC)) .GT. 1.0D-3 .OR.
+C     &    ABS(SIGMAI(I,IVEC)) .GT. 1.0D-3) THEN
+C      IF (I .EQ. IVEC) THEN
+C      WRITE(17,100)I,IVEC,SIGMAR(I,IVEC),SIGMAI(I,IVEC),'DIAGONAL'
+C      ELSE
+C      WRITE(17,100)I,IVEC,SIGMAR(I,IVEC),SIGMAI(I,IVEC),'   OFF  '
+C      END IF
+C      END IF
+C      END DO
+C      END DO
+C      ************************************************************
+C      ************************************************************
+C      ELSE IF(PROPER)THEN
+C      WRITE(*,*)'NVEC-MVEC=',NVEC-MVEC,' NDET=',NDET
+C      IU=20+IEOPER
+C      WRITE(*,*)'IU=',IU
+C      OPEN (IU, FILE=NAMEE, STATUS='UNKNOWN')
+C      WRITE(IU,*)'DETIND VECIND   REAL-PART       IMAG-PART'
+C      DO IVEC=1,NVEC-MVEC
+C      EDMR=0.0D0
+C      DO I=1,NDET
+C      EDMR=EDMR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
+C      IF (ABS(SIGMAR(I,IVEC)) .GT. 1.0D-3 .OR.
+C     &    ABS(SIGMAI(I,IVEC)) .GT. 1.0D-3) THEN
+C      IF (I .EQ. IVEC) THEN
+C      WRITE(IU,100)I,IVEC,SIGMAR(I,IVEC),SIGMAI(I,IVEC),'DIAGONAL'
+C      ELSE
+C      WRITE(IU,100)I,IVEC,SIGMAR(I,IVEC),SIGMAI(I,IVEC),'   OFF  '
+C      END IF
+C      END IF
+C      END DO
+C      WRITE(*,200)EDMR
+C      END DO
+C      *************************************************************
+C      ELSE
+C      WRITE(*,*)' Error in reading property name ',NAMEE
+C      CALL QUIT(' Property name did not matching ')
+C      END IF
+C      END IF
+C      *************************************************************
+C      END OF WRITING CI-MATRIX FOR DIFFERENT OPERATORS
+C      *************************************************************
+CMKN
+      IF (PROPER) THEN
+      WRITE(*,25)NAMEA
+      DO IVEC=1,NVEC-MVEC
+      PRPR=0.0D0
+      PRPI=0.0D0
+      DO I=1,NDET
+      IF (REALAR) THEN
+      PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
+      ELSE
+      PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
+     &         +SIGMAI(I,IVEC)*VECTI(I,IVEC)
+      PRPI=PRPI+SIGMAR(I,IVEC)*VECTI(I,IVEC)
+     &         -SIGMAI(I,IVEC)*VECTR(I,IVEC)
+      END IF
+      END DO
+      WRITE(*,50)IVEC,IVEC,PRPR,PRPI
+C      WRITE(*,51)IVEC,IVEC,PRPR,PRPI
+      END DO
+      END IF
+CMKN
+C     **************************************************************
+CMKN
 C
       DO IVEC = 1, NVEC - MVEC
       CALL PUTSIG (MVEC+IVEC,SIGMAR(1,IVEC),SIGMAI(1,IVEC))
       ENDDO
 C
       RETURN
+   25 FORMAT (/' CORRELATED PROPERTY: ',A8,17X,'REAL',14X,'IMAGINARY')
+   50 FORMAT (/' State',I4,' is vector',I4,' Exp. Value:',2F20.12)
+   51 FORMAT (/' State',I4,' is vector',I4,' Exp. Value:',2F14.8)
+  100 FORMAT (2(2X,I4),2(3X,E13.6),2X,A8)
+  200 FORMAT (/,20X,'PROPERTY =',F20.12,/)
       END
 c
       SUBROUTINE GETIDS (I,J,K,L,ISYM,ND,NV,ILIND,IRIND,
@@ -1857,6 +2052,9 @@ C
 #include "symm.inc"
 C
       DIMENSION GMATR(*),GMATI(*),TINTR(*),TINTI(*),IJEX(*)
+CMKN
+      DIMENSION PROP(2,300,300),AIJ(2*300*300),APHASE(2)
+CMKN
       LOGICAL ENDFIL
 C
       OPEN (MRCONEE,FILE=FNAM(1),FORM='UNFORMATTED')
@@ -1915,6 +2113,46 @@ C
   200 CONTINUE
       GOTO 1
   201 CONTINUE
+CMKN
+C     ******************************************
+C     READ PROPERTY INTEGRALS FROM FILE 'MDPROP'
+C     Proposed & Written by (Malaya K. Nayak)
+C     ******************************************
+      IF (PROPER) THEN
+      IF (REALAR) THEN
+      IRW = 1
+      ELSE
+      IRW = 2
+      END IF
+      CALL PROP_INT(PROP,AIJ,MORB,IRW,APHASE)
+C     *****************************************************
+C     Reorder Property Integrals as per 'CI' Subroutine and
+C     Replace the 1-electron integral by Property Integral
+C     **********************************************
+      IA = 0
+      DO II=1,MORB
+      DO JJ=1,MORB
+      IA = IA+1
+      I = INDMO(II)
+      J = INDMO(JJ)
+      IF (I.NE.0 .AND. J.NE.0) THEN
+      IJ = (I-1)*NORB+J
+      GMATR(IJ) = 0.0D0
+      GMATI(IJ) = 0.0D0
+      IF (REALAR) THEN
+      GMATR(IJ) = GMATR(IJ) + AIJ(IA)
+      ELSE
+      GMATR(IJ) = GMATR(IJ) + AIJ(IRW*IA-1)
+      GMATI(IJ) = GMATI(IJ) + AIJ(IRW*IA)
+      END IF
+      END IF
+      END DO
+      END DO
+      END IF
+C     *****************************************************
+C     END OF READING & RE-ORDERING PROPERTY INTIGRALS
+C     *****************************************************
+CMKN
 C
       RETURN
 C
@@ -2628,7 +2866,10 @@ C
       IF (NPDET.NE.NDET.OR.NPROOT.LT.NROOTS) GOTO 10000
       DO 20 IROOT = 1, NROOTS
       EIGEN2(IROOT) = EIGEN1(IROOT)
-      WRITE (6,1000) IROOT,EIGEN1(IROOT)
+CMKN
+C      WRITE (6,1000) IROOT,EIGEN1(IROOT)
+      IF (.NOT.PROPER) WRITE (6,1000) IROOT,EIGEN1(IROOT)
+CMKN
       IVEC = IROOT
       CALL ZZERO (NDET,VECTR(1,IVEC))
       IF (.NOT.REALAR) CALL ZZERO (NDET,VECTI(1,IVEC))
@@ -3392,6 +3633,21 @@ C
      &                  (TINTI(IX),IX=1,NKL)
       ENDIF
       IF (KL.LT.0) ENDFIL=.TRUE.
+CMKN
+C     ******************************************************
+C     THIS PART IS DONE TO MAKE ALL 2-ELECTRON INTEGRAL ZERO
+C     Proposed & Implimented by (Malaya K. Nayak)
+C     ******************************************************
+      IF (PROPER) THEN
+      DO IX=1,NKL
+      TINTR(IX)=0.0D0
+      TINTI(IX)=0.0D0
+      END DO
+      END IF
+C     ******************************************************
+C     END OF MAKING ALL 2-ELECTRON INTEGRAL ZERO
+C     ******************************************************
+CMKN
       RETURN
       END
 C
@@ -3810,5 +4066,278 @@ C
       CLOSE (MRCFINV,STATUS='KEEP')
 C
       RETURN
+      END
+C     ***************************************************
+C     OPEN AND READ PROPERTY INTEGRALS FROM FILE 'MDPROP'
+C     Proposed & Written by (Malaya K. Nayak)
+C     ***************************************************
+C
+      SUBROUTINE PROP_INT(PROP,AIJ,MORB,IRW,APHASE)
+      IMPLICIT REAL*8 (A-H, O-Z)
+
+#include "param.inc"
+#include "files.inc"
+#include "general.inc"
+#include "symm.inc"
+
+      PARAMETER (ACCUR=1.D-15)
+      DIMENSION PROP(2,MORB,MORB),AIJ(2*MORB*MORB)
+      DIMENSION APHASE(2)
+      CHARACTER*32 ACHAR
+      LOGICAL PHASE
+
+      OPEN (MDPROP,FILE=FNAM(9),FORM='UNFORMATTED')
+      INOP = 0
+    1 READ (MDPROP,ERR=10,END=11) ACHAR
+      IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.NAMEA) GOTO 1
+C      IF (IPRNT.GE.1) WRITE (IW,1000) NAMEA,ACHAR(9:16),ACHAR(17:24)
+      WRITE (6,1000) NAMEA,ACHAR(9:16),ACHAR(17:24)
+      READ (MDPROP) (((PROP(K,I,J),K=1,2),I=1,MORB),J=1,MORB)
+      CLOSE (MDPROP,STATUS='KEEP')
+      GOTO 12
+   10 INOP = 1
+      GOTO 12
+   11 INOP = 2
+   12 CONTINUE
+C
+      IF (INOP.EQ.1) GOTO 101
+      IF (INOP.EQ.2) GOTO 102
+CMKN
+C     *************************************************************
+C      IF ((ACHAR(25:32).EQ.'HYPER11') .OR.
+C     &    (ACHAR(25:32).EQ.'HYPER12') .OR.
+C     &    (ACHAR(25:32).EQ.'HYPER21') .OR.
+C     &    (ACHAR(25:32).EQ.'HYPER22')) THEN
+C      WRITE(*,*)'ACHAR=',ACHAR
+C      WRITE(*,*)'MORB=',MORB
+C      MBY2 = MORB/2
+C      DO I=1,MORB
+C      DO J=1,MORB
+C      TEMP(1,I,J) = 0.0D0
+C      TEMP(2,I,J) = 0.0D0
+C      END DO
+C      END DO
+C      DO I=1,MORB
+C      DO J=1,MORB
+C      IF (I .LE. MBY2 .AND. J .LE. MBY2) THEN
+C      K = I
+C      L = J+MBY2
+C      TEMP(1,K,L) = PROP(1,I,J)
+C      TEMP(2,K,L) = PROP(2,I,J)
+C      IF ((ACHAR(25:32).EQ.'HYPER11') .OR.
+C     &    (ACHAR(25:32).EQ.'HYPER21')) THEN
+C      TEMP(1,K,L) = -PROP(1,I,J)
+C      TEMP(2,K,L) = -PROP(2,I,J)
+C      END IF
+C      ELSE IF (I .LE. MBY2 .AND. J .GT. MBY2) THEN
+C      K = I
+C      L = J-MBY2
+C      TEMP(1,K,L) = PROP(1,I,J)
+C      TEMP(2,K,L) = PROP(2,I,J)
+C      ELSE IF (I .GT. MBY2 .AND. J .LE. MBY2) THEN
+C      K = I
+C      L = J+MBY2
+C      TEMP(1,K,L) = PROP(1,I,J)
+C      TEMP(2,K,L) = PROP(2,I,J)
+C      IF ((ACHAR(25:32).EQ.'HYPER11') .OR.
+C     &    (ACHAR(25:32).EQ.'HYPER21')) THEN
+C      TEMP(1,K,L) = -PROP(1,I,J)
+C      TEMP(2,K,L) = -PROP(2,I,J)
+C      END IF
+C      ELSE IF (I .GT. MBY2 .AND. J .GT. MBY2) THEN
+C      K = I
+C      L = J-MBY2
+C      TEMP(1,K,L) = PROP(1,I,J)
+C      TEMP(2,K,L) = PROP(2,I,J)
+C      END IF
+C      END DO
+C      END DO
+C      DO I = 1,MORB
+C      DO J = 1,MORB
+C      PROP(1,I,J) = TEMP(1,I,J)
+C      PROP(2,I,J) = TEMP(2,I,J)
+C      WRITE(*,*)I,J,PROP(1,I,J),PROP(2,I,J)
+C      END DO
+C      END DO
+C      END IF
+C      ***********************************************************
+C      IF ((ACHAR(25:32).EQ.'HYPER11') .OR.
+C     &    (ACHAR(25:32).EQ.'HYPER12') .OR.
+C     &    (ACHAR(25:32).EQ.'HYPER21') .OR.
+C     &    (ACHAR(25:32).EQ.'HYPER22')) THEN
+C
+C      IF ((ACHAR(25:27).EQ.'HYP'.AND.ACHAR(29:30).NE.'13') .OR.
+C     &    (ACHAR(25:32).EQ.'HYP'.AND.ACHAR(29:30).NE.'23')) THEN
+C      ***********************************************************
+CMKN
+C      IF (ACHAR(25:27).EQ.'HYP'.AND.ACHAR(30:30).NE.'3') THEN
+      IF ((ACHAR(28:30).EQ.'HYP'.OR.ACHAR(28:30).EQ.'ANA').AND.
+     &    (ACHAR(25:25).NE.'Z')) THEN
+      WRITE(6,*)'Diagonal and Off-diagonal blocks are exchanged'
+      MBY2 = MORB/2
+      DO I=1,MORB
+      DO J=1,MORB
+      TEMPR = 0.0D0
+      TEMPI = 0.0D0
+      IF (J .LE. MBY2) THEN
+      K = I
+      L = J+MBY2
+      TEMPR = PROP(1,I,J)
+      TEMPI = PROP(2,I,J)
+      PROP(1,I,J) = PROP(1,K,L)
+      PROP(2,I,J) = PROP(2,K,L)
+C      IF (ACHAR(30:30).EQ.'2') THEN
+      IF ((ACHAR(28:30).EQ.'HYP'.AND.ACHAR(25:25).EQ.'Y').OR.
+     &    (ACHAR(28:30).EQ.'ANA'.AND.ACHAR(25:25).EQ.'X')) THEN
+      PROP(1,K,L) = TEMPR
+      PROP(2,K,L) = TEMPI
+      ELSE
+      PROP(1,K,L) = TEMPR
+      PROP(2,K,L) =-TEMPI
+      END IF
+      END IF
+      END DO
+      END DO
+C      IF (ACHAR(30:30).EQ.'1') WRITE(6,*)
+      IF ((ACHAR(28:30).EQ.'HYP'.AND.ACHAR(25:25).EQ.'X').OR.
+     &    (ACHAR(28:30).EQ.'ANA'.AND.ACHAR(25:25).EQ.'Y')) THEN
+      WRITE(6,*)'Sign of the lower diagonal block is changed'
+      END IF
+      END IF
+CMKN
+CMKN
+C      IF (ACHAR(25:27).EQ.'HYP'.AND.ACHAR(30:30).NE.'3') THEN
+      IF ((ACHAR(28:31).EQ.'COMP').AND.(ACHAR(26:26).NE.'Z')) THEN
+      WRITE(6,*)'Diagonal and Off-diagonal blocks are exchanged'
+      MBY2 = MORB/2
+      DO I=1,MORB
+      DO J=1,MORB
+      TEMPR = 0.0D0
+      TEMPI = 0.0D0
+      IF (J .LE. MBY2) THEN
+      K = I
+      L = J+MBY2
+      TEMPR = PROP(1,I,J)
+      TEMPI = PROP(2,I,J)
+      PROP(1,I,J) = PROP(1,K,L)
+      PROP(2,I,J) = PROP(2,K,L)
+C      IF (ACHAR(30:30).EQ.'2') THEN
+      IF ((ACHAR(28:31).EQ.'COMP'.AND.ACHAR(26:26).EQ.'Y')) THEN
+      PROP(1,K,L) = TEMPR
+      PROP(2,K,L) = TEMPI
+      ELSE
+      PROP(1,K,L) = TEMPR
+      PROP(2,K,L) =-TEMPI
+      END IF
+      END IF
+      END DO
+      END DO
+C      IF (ACHAR(30:30).EQ.'1') WRITE(6,*)
+      IF ((ACHAR(28:31).EQ.'COMP'.AND.ACHAR(26:26).EQ.'X')) THEN
+      WRITE(6,*)'Sign of the lower diagonal block is changed'
+      END IF
+      END IF
+CMKN
+C      ***********************************************************
+C      WRITE(*,*)'ACHAR=',ACHAR
+C      WRITE(*,*)'PROP=',(((PROP(K,I,J),K=1,2),I=1,MORB),J=1,MORB)
+C      WRITE(*,*)'FIRST STRING=',((PROP(1,I,J),
+C     &                  I=1,MORB),J=1,MORB)
+C      WRITE(*,*)'SECOND STRING=',((PROP(2,I,J),
+C     &                  I=1,MORB),J=1,MORB)
+C      ***********************************************************
+C      THIS PART TAKES CARE OF SIGMS_Z PART OF THE OPERATOR
+C      IF THE OPERATOR IS DIAGONAL & IT HAS A SIGMA_Z PART
+C      THIS IS VALID, ONLY WHEN WE USE THE 'C1' SYMMETRY
+C      Proposed & Implimented by (Malaya K. Nayak)
+C      ***********************************************************
+C      IF ((ACHAR(25:32).EQ.'NEF 03') .OR.
+C     &    (ACHAR(25:32).EQ.'NEF 06')) THEN
+C      WRITE(*,*)'ACHAR=',ACHAR
+C      MBY2 = MORB/2
+C      DO I=1,MORB
+C      DO J=1,MORB
+C      IF (I .LE. MBY2 .AND. J .LE. MBY2) THEN
+C      PROP(1,I,J) = PROP(1,I,J)*(1.0D0/2.0D0)
+C      PROP(2,I,J) = PROP(2,I,J)*(1.0D0/2.0D0)
+C      ELSE IF (I .GT. MBY2 .AND. J .GT. MBY2) THEN
+C      PROP(1,I,J) = PROP(1,I,J)*(-1.0D0/2.0D0)
+C      PROP(2,I,J) = PROP(2,I,J)*(-1.0D0/2.0D0)
+C      END IF
+C      END DO
+C      END DO
+C      END IF
+C      ***********************************************************
+C      WRITE(*,*)'ACHAR=',ACHAR
+C      WRITE(*,*)'PROP=',(((PROP(K,I,J),K=1,2),I=1,MORB),J=1,MORB)
+C      WRITE(*,*)'FIRST STRING=',((PROP(1,I,J),
+C     &                  I=1,MORB),J=1,MORB)
+C      WRITE(*,*)'SECOND STRING=',((PROP(2,I,J),
+C     &                  I=1,MORB),J=1,MORB)
+C      ***********************************************************
+CMKN
+      APHASE(1) = 1.0D0
+      APHASE(2) = 0.0D0
+      PHASE = .FALSE.
+C
+    2 AMAXI = 0.0D0
+      IAMAX = 0
+      JAMAX = 0
+      IA = 0
+      DO I = 1,MORB
+      DO J = 1,MORB
+      IA = IA+1
+      IF (.NOT.REALAR) THEN
+      AIJ(IRW*IA-1) = PROP(1,I,J)
+      AIJ(IRW*IA)   = PROP(2,I,J)
+      ELSE
+CMKN Below two line with a (-ve) sign are original
+C      AIJ(IA) = PROP(1,I,J)*APHASE(1) -
+C     &          PROP(2,I,J)*APHASE(2)
+      AIJ(IA) = PROP(1,I,J)*APHASE(1) +
+     &          PROP(2,I,J)*APHASE(2)
+CMKN Above two lines with a (+ve) sign are changed
+      AIJI    = PROP(1,I,J)*APHASE(2) +
+     &          PROP(2,I,J)*APHASE(1)
+      IF (ABS(AIJI) .GT. ABS(AMAXI)) THEN
+      AMAXR = AIJ(IA)
+      AMAXI = AIJI
+      IAMAX = I
+      JAMAX = J
+      END IF
+      END IF
+      END DO
+      END DO
+C
+      IF (REALAR.AND.ABS(AMAXI).GT.ACCUR) THEN
+      IF (PHASE) THEN
+      WRITE (6,1010) IAMAX,JAMAX,AMAXI
+      CALL QUIT('USE COMPLEX ARITHMETICS')
+      ELSE
+CMKN Below two lines without ABS are original
+C      APHASE(1) = AMAXR
+C      APHASE(2) = AMAXI
+      APHASE(1) = ABS(AMAXR)
+      APHASE(2) = ABS(AMAXI)
+CMKN Above two lines with the ABS are changed
+      ANORM = SQRT(AMAXR*AMAXR + AMAXI*AMAXI)
+      APHASE(1) = APHASE(1)/ANORM
+      APHASE(2) = APHASE(2)/ANORM
+      PHASE = .TRUE.
+C      IF (IPRNT .GT. 1) WRITE (IW,1020) NAMEA,APHASE
+      WRITE (6,1020) NAMEA,APHASE
+      GO TO 2
+      END IF
+      END IF
+C
+      RETURN
+  101 WRITE (6,*) ' Error reading property ',NAMEA,' on file MDPROP'
+      CALL QUIT(' Error reading property integrals')
+  102 WRITE (6,*) ' Property ',NAMEA,' not found on file MDPROP'
+      CALL QUIT(' Property integrals missing')
+ 1000 FORMAT (/' Read integral type ',A8,' created ',
+     & A8,' storage info : ',A8)
+ 1010 FORMAT (/' Largest imaginary part of matrix element',2I5,F10.2)
+ 1020 FORMAT (/' Property ',A8,' scaled with phase factor ',2F10.4)
       END
 
