@@ -47,10 +47,12 @@ if [[ -z $PROD_DIR ]]; then
 fi
 
 cd $DIRAC
-BUILD_INTEL=build_intelmkl_i8_nopcm
+#BUILD_INTEL=build_intelmkl_i8_nopcm
+BUILD_INTEL=build_intelmkl_i8
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8_nopcm" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
+#./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8_nopcm" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
+./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=ON -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
 cd $BUILD_INTEL
 export MKL_NUM_THREADS=3
 export MKL_DYNAMIC="FALSE"
