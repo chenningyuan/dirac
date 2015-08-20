@@ -1841,15 +1841,20 @@ C          restore density matrix and  total Fock matrices (have been destroyed 
            KIBEIG = KEIG + NORBT
            KFREE2 = KIBEIG + NORBT
            LFREE2 = LWORK  - KFREE2
-           CALL DFSOLV(CMO,WORK(KEIG),WORK(KIBEIG),FOCK,DMAT,BMAT, ! parameter 4 = 0: no ordering of eigenvalues
+           CALL DFSOLV(CMO,WORK(KEIG),WORK(KIBEIG),FOCK,DMAT,BMAT,
      &                 ICHKCNV,OVLSEL,DOLEVEL,WORK(KFREE2),LFREE2)
            WRITE(LUPRI,'(/A/A/A/)')
      &' * Open-shell orbital energies recalculated with .OPENFAC 1.0,',
      &'   corresponding to interpretation as Ionization Potentials.',
      &'   NB! Only for information, orbitals are not modified.'
            DO I = 1,NFSYM
-              JHOMO = IORB(I)+NPSH(I)+NISH(I)
-              JLUMO = JHOMO + NASH(I) + 1
+              IF (NISH(I) .EQ. 0) THEN
+                 JHOMO = IORB(I)+NPSH(I)+1
+                 JLUMO = JHOMO + NASH(I)
+              ELSE
+                 JHOMO = IORB(I)+NPSH(I)+NISH(I)
+                 JLUMO = JHOMO + NASH(I) + 1
+              END IF
               WRITE(LUPRI,'(/A,I2,A/,8(I5,F10.5))')
      &        '   E_HOMO, E_OPEN..., E_LUMO in Hartree, symmetry',I,':',
      &        (J, WORK(KEIG-1+J), J = JHOMO,JLUMO)
