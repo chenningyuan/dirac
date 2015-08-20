@@ -12,7 +12,7 @@ f = Filter()
 f.add(string = 'Final KR-MCSCF energy',
       rel_tolerance = 1.0e-5)
 
-test.run(['Be.inp'], ['Be.mol'], f)
 test.run(['Be.gascip.bss+mfsso.krmc.inp'], ['Be.gascip.mol'], f)
+test.run(['Be.inp'], ['Be.mol'], f)
 
 sys.exit(test.return_code)
