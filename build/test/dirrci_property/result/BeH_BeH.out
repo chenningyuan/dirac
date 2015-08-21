@@ -1,6 +1,6 @@
-DIRAC pam run in /home/mknayak/DIRAC-14.0-Source/work/BeH_test
+DIRAC pam run in /home/mknayak/Dirac/work/BeH_test
 DIRAC serial starts by allocating 2000000000 words (15258 MB) of memory
-DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+             out of the allowed maximum of 2147483648 words (16384 MB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw
 
@@ -162,30 +162,50 @@ Binary information
 
  Who compiled             | mknayak
  Host                     | lpqlx148.ups-tlse.fr
+ System name              | Linux
  System                   | Linux-3.19.8-100.fc20.x86_64
+ CMake version            | 2.8.12.2
  CMake generator          | Unix Makefiles
+ Python version           | 2.7.5
  Processor                | x86_64
  64-bit integers          | ON
  MPI                      | OFF
  Fortran compiler         | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
                           | ifort
- Fortran compiler version | ifort (IFORT) 14.0.3 20140422
+ Fortran compiler version | Intel 14.0
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -mkl
+                          | =parallel -i8 -O3 -ip
  C compiler               | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
                           | icc
- C compiler version       | icc (ICC) 14.0.3 20140422
+ C compiler version       | Intel 14.0
+ C flags                  | -g -wd981 -wd279 -wd383 -wd1572 -wd177 -mkl=parall
+                          | el -O2
  C++ compiler             | /opt/intel/composer_xe_2013_sp1.3.174/bin/intel64/
                           | icpc
- C++ compiler version     | icpc (ICC) 14.0.3 20140422
+ C++ compiler version     | Intel 14.0
+ C++ flags                | -Wno-unknown-pragmas -debug -O3 -DNDEBUG
+ Definitions              | SYS_LINUX;HAVE_IEEE_ISNAN;HAVE_MKL_BLAS;HAVE_MKL_L
+                          | APACK;MOD_XML;MOD_OPENRSP;MOD_OOF;MOD_ESR;MOD_KRCC
+                          | ;MOD_LAO_REARRANGED;MOD_CAP;MOD_SRDFT;MOD_AOOSOC;M
+                          | OD_MCSCF_spinfree;MOD_UNRELEASED;MOD_INTEREST;MOD_
+                          | QCORR;MOD_ERI;MOD_DNF;PRG_DIRAC;INSTALL_WRKMEM=640
+                          | 00000;INT_STAR8
+ BLAS                     | none
+ LAPACK                   | none
+ Libraries                | xcfun;-mkl=parallel
+ Explicit libs            | none
  Static linking           | OFF
- Last Git revision        | 1eca931be53f527aadc9f96bbde1203b0b998448
- Configuration time       | 2015-08-03 16:18:23.718373
-
+ Git branch               | malaya
+ Last Git revision        | 896e4fa
+ Last commit author       | Hans Jørgen Aagaard Jensen 
+ Last commit date         | Wed Aug 19 12:33:20 2015 +0200
+ Configuration time       | 2015-08-20 14:48:07.103108 UTC
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Aug  6 18:48:56 2015
+     Date and time (Linux)  : Fri Aug 21 16:05:44 2015
      Host name              : lpqlx148.ups-tlse.fr                    
 
 
@@ -196,7 +216,6 @@ Contents of the input file
 .TITLE                                                                                              
 BeH                                                                                                 
 .WAVE F                                                                                             
-#.PROPER                                                                                            
 .4INDEX                                                                                             
 #################################                                                                   
 **HAMILTONIAN                                                                                       
@@ -205,88 +224,15 @@ BeH
 **INTEGRALS                                                                                         
 *READINP                                                                                            
 .UNCONTRACT                                                                                         
-*TWOINT                                                                                             
-#.SOFOCK                                                                                            
-#.SCREEN                                                                                            
-#1.0D-15                                                                                            
 **WAVE FUNCTIONS                                                                                    
 .SCF                                                                                                
 .DIRRCI                                                                                             
-#.RELCCSD                                                                                           
-#.MP2                                                                                               
-#*MP2CAL                                                                                            
-#.NELEC                                                                                             
-#3  2                                                                                               
-#.PRINT                                                                                             
-#3                                                                                                  
-#.OCCUP                                                                                             
-#all                                                                                                
-#.VIRTUAL                                                                                           
-#all                                                                                                
 *SCF                                                                                                
-#.TRIVEC                                                                                            
-#.EVCCNV                                                                                            
-#1.0D-10  1.0D-8                                                                                    
-#.CNVINT                                                                                            
-#0.01 0.0001                                                                                        
 .CLOSED SHELL                                                                                       
 4                                                                                                   
 .OPEN SHELL                                                                                         
 1                                                                                                   
 1/2                                                                                                 
-**PROPERTIES                                                                                        
-.EFG                                                                                                
-.DIPOLE                                                                                             
-*EXPECTATION                                                                                        
-.OPERATOR                                                                                           
- 'MQM-1'                                                                                            
- XALPHA                                                                                             
- YZEFG011                                                                                           
-.OPERATOR                                                                                           
- 'MQM-2'                                                                                            
- YALPHA                                                                                             
- XZEFG011                                                                                           
-.OPERATOR                                                                                           
- 'MQM-3'                                                                                            
- ZAVECTOR                                                                                           
- YZEFG011                                                                                           
- XZEFG011                                                                                           
-.OPERATOR                                                                                           
- 'X1-HYP'                                                                                           
- XAVECTOR                                                                                           
- 'NEF 001'                                                                                          
- 'NEF 005'                                                                                          
- COMFACTOR                                                                                          
- -1                                                                                                 
-.OPERATOR                                                                                           
- 'Y1-HYP'                                                                                           
- YAVECTOR                                                                                           
- 'NEF 003'                                                                                          
- 'NEF 001'                                                                                          
- COMFACTOR                                                                                          
- -1                                                                                                 
-.OPERATOR                                                                                           
- 'Z1-HYP'                                                                                           
- ZAVECTOR                                                                                           
- 'NEF 005'                                                                                          
- 'NEF 003'                                                                                          
- COMFACTOR                                                                                          
- -1                                                                                                 
-.OPERATOR                                                                                           
- 'X2-HYP'                                                                                           
- XAVECTOR                                                                                           
- 'NEF 002'                                                                                          
- 'NEF 006'                                                                                          
-.OPERATOR                                                                                           
- 'Y2-HYP'                                                                                           
- YAVECTOR                                                                                           
- 'NEF 004'                                                                                          
- 'NEF 002'                                                                                          
-.OPERATOR                                                                                           
- 'Z2-HYP'                                                                                           
- ZAVECTOR                                                                                           
- 'NEF 006'                                                                                          
- 'NEF 004'                                                                                          
 **MOLTRA                                                                                            
 .ACTIVE                                                                                             
 1..6                                                                                                
@@ -321,69 +267,12 @@ BeH
  'NEF 003'                                                                                          
  COMFACTOR                                                                                          
  -1                                                                                                 
-.OPERATOR                                                                                           
- 'X2-HYP'                                                                                           
- XAVECTOR                                                                                           
- 'NEF 002'                                                                                          
- 'NEF 006'                                                                                          
-.OPERATOR                                                                                           
- 'Y2-HYP'                                                                                           
- YAVECTOR                                                                                           
- 'NEF 004'                                                                                          
- 'NEF 002'                                                                                          
-.OPERATOR                                                                                           
- 'Z2-HYP'                                                                                           
- ZAVECTOR                                                                                           
- 'NEF 006'                                                                                          
- 'NEF 004'                                                                                          
-.OPERATOR                                                                                           
- 'SZ-COMP'                                                                                          
- ZSIGMA                                                                                             
- OVERLAP                                                                                            
- FACTORS                                                                                            
- 0.5                                                                                                
-.OPERATOR                                                                                           
- 'LZ-COMP'                                                                                          
- DIAGONAL                                                                                           
- ZANGMOM                                                                                            
- FACTORS                                                                                            
- -1.0                                                                                               
-.OPERATOR                                                                                           
- 'SX-COMP'                                                                                          
- XSIGMA                                                                                             
- OVERLAP                                                                                            
- FACTORS                                                                                            
- 0.5                                                                                                
-.OPERATOR                                                                                           
- 'LX-COMP'                                                                                          
- DIAGONAL                                                                                           
- XANGMOM                                                                                            
- FACTORS                                                                                            
- -1.0                                                                                               
-.OPERATOR                                                                                           
- 'SY-COMP'                                                                                          
- YSIGMA                                                                                             
- OVERLAP                                                                                            
- FACTORS                                                                                            
- 0.5                                                                                                
-.OPERATOR                                                                                           
- 'LY-COMP'                                                                                          
- DIAGONAL                                                                                           
- YANGMOM                                                                                            
- FACTORS                                                                                            
- -1.0                                                                                               
 *END OF                                                                                             
                                                                                                     
- &RASORB NELEC=5, NRAS1=1,1, NRAS2=4,4, MAXH1=2, MAXE3=2 &END                                       
+ &RASORB NELEC=5, NRAS1=3,2, NRAS2=3,4, MAXH1=2, MAXE3=2 &END                                       
  &CIROOT IREPNA='  1E', NROOTS=1 &END                                                               
- &DIRECT MAXITER=30, CONVERE=1.0D-6, CONVERR=1.0D-4 &END                                            
- &CIFOPR PROPER=T, NEOPER=9, NAMEE='SX-COMP','LX-COMP','SY-COMP','LY-COMP',                         
-                                  'SZ-COMP','LZ-COMP','X1-HYP','Y1-HYP','Z1-HYP' &END               
-                                                                                                    
-# &RELCCSD NELEC=3,2, DOENER=T, DOSORT=T, DOFOPR=F, IPRNT=1, TIMING=T,  &END                        
-# &CCENER DOMP2=T, DOCCSD=T DOCCSDT=T &END                                                          
-# &CCFOPR DOMP2G=F, NEOPER=1, NAMEE='ZDIPLEN', NTOL=12, MAXIT=30, MAXDIM=8 &END                     
-# &CCSORT USEOE=T, NORECMP=T &END                                                                   
+ &DIRECT MAXITER=30, CONVERE=1.0D-6, CONVERR=1.0D-7 &END                                            
+ &CIFOPR PROPER=T, NEOPER=4, NAMEE='Z-DIP','X1-HYP','Y1-HYP','Z1-HYP' &END                          
 
 
 Contents of the molecule file
@@ -455,16 +344,6 @@ FINISH
 
  Uncontracted basis forced, irrespective of basis input file.
 
-
-
-  Set-up from HR2INP:
-  -------------------
-
- Print level in TWOINT:    1
- * Direct calculation of Fock matrices in SO-basis.
- * Default screening threshold in direct Fock matrix construction: 1.00E-12
- * Separate density screening of Coulomb integral batches
- * Separate density screening of exchange integral batches
 
 
     *************************************************************************
@@ -817,7 +696,7 @@ H      0.0000000000   0.0000000000   0.9167995291
  * Hartree-Fock calculation
  * Run DIRRCI CI code
 ===========================================================================
- SCFINP: Set-up for Hartree-Fock calculation:
+ *SCF: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
  * Open shell SCF calculation using Average-of-Configuration
@@ -889,54 +768,6 @@ H      0.0000000000   0.0000000000   0.9167995291
       Operator type ZAVECTOR : [alpha x P]_z
       Labels and factors     : NEF 005  0++0    -1.0000000000000 (real)     
                                NEF 003  0++0    -1.0000000000000 (real)     
-...........................................................................
-    5  X2-HYP               B2      T-
-...........................................................................
-      Operator type XAVECTOR : [alpha x P]_x
-      Labels and factors     : NEF 002  0++0     1.0000000000000 (real)     
-                               NEF 006  0++0     1.0000000000000 (real)     
-...........................................................................
-    6  Y2-HYP               B1      T-
-...........................................................................
-      Operator type YAVECTOR : [alpha x P]_y
-      Labels and factors     : NEF 004  0++0     1.0000000000000 (real)     
-                               NEF 002  0++0     1.0000000000000 (real)     
-...........................................................................
-    7  Z2-HYP               A2      T-
-...........................................................................
-      Operator type ZAVECTOR : [alpha x P]_z
-      Labels and factors     : NEF 006  0++0     1.0000000000000 (real)     
-                               NEF 004  0++0     1.0000000000000 (real)     
-...........................................................................
-    8  SZ-COMP              A2      T-
-...........................................................................
-      Operator type ZSIGMA   : [Sigma_z]P
-      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
-...........................................................................
-    9  LZ-COMP              A2      T-
-...........................................................................
-      Operator type DIAGONAL : scalar operator
-      Labels and factors     : ZANGMOM  +00+    -1.0000000000000 (imaginary)
-...........................................................................
-   10  SX-COMP              B2      T-
-...........................................................................
-      Operator type XSIGMA   : [Sigma_x]P
-      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
-...........................................................................
-   11  LX-COMP              B2      T-
-...........................................................................
-      Operator type DIAGONAL : scalar operator
-      Labels and factors     : XANGMOM  +00+    -1.0000000000000 (imaginary)
-...........................................................................
-   12  SY-COMP              B1      T-
-...........................................................................
-      Operator type YSIGMA   : [Sigma_y]P
-      Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
-...........................................................................
-   13  LY-COMP              B1      T-
-...........................................................................
-      Operator type DIAGONAL : scalar operator
-      Labels and factors     : YANGMOM  +00+    -1.0000000000000 (imaginary)
 ...........................................................................
 ---------------------------------------------------------------------------
 
@@ -1031,193 +862,195 @@ Total no. of orbitals           (NORB):    66
 
 
 *** INFO *** No trial vectors found.
- Using atomic Huckel start.
+ Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
 
-########## START ITERATION NO.   1 ##########   Thu Aug  6 18:48:56 2015
+
+########## START ITERATION NO.   1 ##########   Fri Aug 21 16:05:45 2015
 
 
 => Calculating sum of orbital energies
-It.    1    -6.493580779584      0.00D+00  0.00D+00  0.00D+00               0.00597100s   Scr. nuclei    Thu Aug  6
+It.    1    -6.493580779622      0.00D+00  0.00D+00  0.00D+00               0.01016800s   Scr. nuclei    Fri Aug 21
 
-########## START ITERATION NO.   2 ##########   Thu Aug  6 18:48:56 2015
+########## START ITERATION NO.   2 ##########   Fri Aug 21 16:05:45 2015
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.40%    0.00%    0.00%   0.00716800s
-SOfock:SL  1.00D-12    0.00%    3.57%    0.00%    0.00%   0.04249500s
-SOfock:SS  1.00D-12    0.00%   20.84%    0.00%    0.00%   0.08069801s
+SOfock:LL  1.00D-12    0.00%    1.40%    0.00%    0.00%   0.00993600s
+SOfock:SL  1.00D-12    0.00%    3.57%    0.00%    0.00%   0.05521700s
+SOfock:SS  1.00D-12    0.00%   20.84%    0.00%    0.00%   0.08330601s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.16092300s
+>>> Total CPU time : 0.19269400s
 
-########## END ITERATION NO.   2 ##########   Thu Aug  6 18:48:56 2015
+########## END ITERATION NO.   2 ##########   Fri Aug 21 16:05:45 2015
 
-It.    2    -15.01400975105      8.52D+00  3.96D+00  5.17D-01               0.16092300s   LL SL SS       Thu Aug  6
+It.    2    -15.01400975105      8.52D+00  3.96D+00  5.17D-01               0.19269400s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.   3 ##########   Thu Aug  6 18:48:56 2015
+########## START ITERATION NO.   3 ##########   Fri Aug 21 16:05:45 2015
 
     3 *** Differential density matrix. DCOVLP     = 0.9702
     3 *** Differential density matrix. DVOVLP( 1) = 0.6487
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.67%    0.00%    0.00%   0.00654601s
-SOfock:SL  1.00D-12    0.00%    4.07%    0.00%    0.00%   0.04231599s
-SOfock:SS  1.00D-12    0.00%   27.50%    0.00%    0.01%   0.07799301s
+SOfock:LL  1.00D-12    0.00%    1.67%    0.00%    0.00%   0.00702900s
+SOfock:SL  1.00D-12    0.00%    4.07%    0.00%    0.00%   0.03862599s
+SOfock:SS  1.00D-12    0.00%   27.50%    0.00%    0.01%   0.07639802s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.13503700s
+>>> Total CPU time : 0.12737100s
 
-########## END ITERATION NO.   3 ##########   Thu Aug  6 18:48:56 2015
+########## END ITERATION NO.   3 ##########   Fri Aug 21 16:05:45 2015
 
-It.    3    -15.05234576536      3.83D-02 -2.04D-01  5.21D-02   DIIS   2    0.13503700s   LL SL SS       Thu Aug  6
+It.    3    -15.05234576536      3.83D-02 -2.04D-01  5.21D-02   DIIS   2    0.12737100s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.   4 ##########   Thu Aug  6 18:48:56 2015
+########## START ITERATION NO.   4 ##########   Fri Aug 21 16:05:45 2015
 
     4 *** Differential density matrix. DCOVLP     = 0.9967
     4 *** Differential density matrix. DVOVLP( 1) = 0.8802
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.79%    0.00%    0.00%   0.00675902s
-SOfock:SL  1.00D-12    0.00%    4.56%    0.00%    0.00%   0.04126200s
-SOfock:SS  1.00D-12    0.00%   32.11%    0.00%    0.01%   0.07710099s
+SOfock:LL  1.00D-12    0.00%    1.79%    0.00%    0.00%   0.00654501s
+SOfock:SL  1.00D-12    0.00%    4.56%    0.00%    0.00%   0.04067799s
+SOfock:SS  1.00D-12    0.00%   32.11%    0.00%    0.01%   0.07472000s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.12903800s
+>>> Total CPU time : 0.12686400s
 
-########## END ITERATION NO.   4 ##########   Thu Aug  6 18:48:56 2015
+########## END ITERATION NO.   4 ##########   Fri Aug 21 16:05:45 2015
 
-It.    4    -15.05468373482      2.34D-03  8.02D-03  1.72D-02   DIIS   3    0.12903800s   LL SL SS       Thu Aug  6
+It.    4    -15.05468373482      2.34D-03  8.02D-03  1.72D-02   DIIS   3    0.12686400s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.   5 ##########   Thu Aug  6 18:48:57 2015
+########## START ITERATION NO.   5 ##########   Fri Aug 21 16:05:45 2015
 
     5 *** Differential density matrix. DCOVLP     = 1.0008
     5 *** Differential density matrix. DVOVLP( 1) = 0.9470
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.85%    0.00%    0.00%   0.00691101s
-SOfock:SL  1.00D-12    0.00%    4.97%    0.00%    0.00%   0.04045898s
-SOfock:SS  1.00D-12    0.00%   34.44%    0.00%    0.01%   0.07599503s
+SOfock:LL  1.00D-12    0.00%    1.85%    0.00%    0.00%   0.00669497s
+SOfock:SL  1.00D-12    0.00%    4.97%    0.00%    0.00%   0.03985196s
+SOfock:SS  1.00D-12    0.00%   34.44%    0.00%    0.01%   0.07407904s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.12843000s
+>>> Total CPU time : 0.12567200s
 
-########## END ITERATION NO.   5 ##########   Thu Aug  6 18:48:57 2015
+########## END ITERATION NO.   5 ##########   Fri Aug 21 16:05:45 2015
 
-It.    5    -15.05516602305      4.82D-04 -7.07D-03  6.99D-03   DIIS   4    0.12843000s   LL SL SS       Thu Aug  6
+It.    5    -15.05516602305      4.82D-04 -7.07D-03  6.99D-03   DIIS   4    0.12567200s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.   6 ##########   Thu Aug  6 18:48:57 2015
+########## START ITERATION NO.   6 ##########   Fri Aug 21 16:05:45 2015
 
     6 *** Differential density matrix. DCOVLP     = 0.9987
     6 *** Differential density matrix. DVOVLP( 1) = 0.9894
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.97%    0.00%    0.00%   0.00679696s
-SOfock:SL  1.00D-12    0.00%    5.57%    0.00%    0.00%   0.04058897s
-SOfock:SS  1.00D-12    0.00%   39.30%    0.01%    0.04%   0.07433605s
+SOfock:LL  1.00D-12    0.00%    1.97%    0.00%    0.00%   0.00652599s
+SOfock:SL  1.00D-12    0.00%    5.57%    0.00%    0.00%   0.03969300s
+SOfock:SS  1.00D-12    0.00%   39.30%    0.01%    0.04%   0.07352704s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.12699200s
+>>> Total CPU time : 0.12300800s
 
-########## END ITERATION NO.   6 ##########   Thu Aug  6 18:48:57 2015
+########## END ITERATION NO.   6 ##########   Fri Aug 21 16:05:45 2015
 
-It.    6    -15.05524748650      8.15D-05  3.66D-03  2.12D-03   DIIS   5    0.12699200s   LL SL SS       Thu Aug  6
+It.    6    -15.05524748650      8.15D-05  3.66D-03  2.12D-03   DIIS   5    0.12300800s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.   7 ##########   Thu Aug  6 18:48:57 2015
+########## START ITERATION NO.   7 ##########   Fri Aug 21 16:05:45 2015
 
     7 *** Differential density matrix. DCOVLP     = 0.9998
     7 *** Differential density matrix. DVOVLP( 1) = 0.9955
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.13%    0.00%    0.00%   0.00656700s
-SOfock:SL  1.00D-12    0.00%    6.47%    0.00%    0.00%   0.04000103s
-SOfock:SS  1.00D-12    0.00%   43.62%    0.02%    0.08%   0.07381999s
+SOfock:LL  1.00D-12    0.00%    2.13%    0.00%    0.00%   0.00653297s
+SOfock:SL  1.00D-12    0.00%    6.47%    0.00%    0.00%   0.03958297s
+SOfock:SS  1.00D-12    0.00%   43.62%    0.02%    0.08%   0.07233202s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.12545500s
+>>> Total CPU time : 0.12242800s
 
-########## END ITERATION NO.   7 ##########   Thu Aug  6 18:48:57 2015
+########## END ITERATION NO.   7 ##########   Fri Aug 21 16:05:45 2015
 
-It.    7    -15.05525760923      1.01D-05  1.21D-03  3.53D-04   DIIS   6    0.12545500s   LL SL SS       Thu Aug  6
+It.    7    -15.05525760923      1.01D-05  1.21D-03  3.53D-04   DIIS   6    0.12242800s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.   8 ##########   Thu Aug  6 18:48:57 2015
+########## START ITERATION NO.   8 ##########   Fri Aug 21 16:05:45 2015
 
     8 *** Differential density matrix. DCOVLP     = 0.9998
     8 *** Differential density matrix. DVOVLP( 1) = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.94%    0.00%    0.00%   0.00680596s
-SOfock:SL  1.00D-12    0.00%    8.93%    0.00%    0.00%   0.04042500s
-SOfock:SS  1.00D-12    0.00%   60.97%    0.17%    0.62%   0.07097995s
+SOfock:LL  1.00D-12    0.00%    2.94%    0.00%    0.00%   0.00653100s
+SOfock:SL  1.00D-12    0.00%    8.93%    0.00%    0.00%   0.03921300s
+SOfock:SS  1.00D-12    0.00%   60.97%    0.17%    0.62%   0.06923604s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.12434700s
+>>> Total CPU time : 0.11985900s
 
-########## END ITERATION NO.   8 ##########   Thu Aug  6 18:48:57 2015
+########## END ITERATION NO.   8 ##########   Fri Aug 21 16:05:45 2015
 
-It.    8    -15.05525781549      2.06D-07  1.27D-04  7.03D-05   DIIS   7    0.12434700s   LL SL SS       Thu Aug  6
+It.    8    -15.05525781549      2.06D-07  1.27D-04  7.03D-05   DIIS   7    0.11985900s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.   9 ##########   Thu Aug  6 18:48:57 2015
+########## START ITERATION NO.   9 ##########   Fri Aug 21 16:05:46 2015
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
     9 *** Differential density matrix. DVOVLP( 1) = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.14%    0.00%    0.00%   0.00664204s
-SOfock:SL  1.00D-12    0.00%   10.62%    0.00%    0.03%   0.04034996s
-SOfock:SS  1.00D-12    0.00%   75.03%    0.52%    1.10%   0.06955802s
+SOfock:LL  1.00D-12    0.00%    4.14%    0.00%    0.00%   0.00655401s
+SOfock:SL  1.00D-12    0.00%   10.62%    0.00%    0.03%   0.03909695s
+SOfock:SS  1.00D-12    0.00%   75.03%    0.52%    1.10%   0.06725907s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.12021200s
+>>> Total CPU time : 0.11695300s
 
-########## END ITERATION NO.   9 ##########   Thu Aug  6 18:48:57 2015
+########## END ITERATION NO.   9 ##########   Fri Aug 21 16:05:46 2015
 
-It.    9    -15.05525782784      1.24D-08  2.25D-05  1.59D-05   DIIS   8    0.12021200s   LL SL SS       Thu Aug  6
+It.    9    -15.05525782784      1.24D-08  2.25D-05  1.59D-05   DIIS   8    0.11695300s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.  10 ##########   Thu Aug  6 18:48:57 2015
+########## START ITERATION NO.  10 ##########   Fri Aug 21 16:05:46 2015
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.55%    0.00%    0.00%   0.00651300s
-SOfock:SL  1.00D-12    0.00%   13.21%    0.00%    0.07%   0.04002905s
-SOfock:SS  1.00D-12    0.01%   84.81%    1.16%    2.06%   0.06623793s
+SOfock:LL  1.00D-12    0.00%    5.55%    0.00%    0.00%   0.00652099s
+SOfock:SL  1.00D-12    0.00%   13.21%    0.00%    0.07%   0.03898406s
+SOfock:SS  1.00D-12    0.01%   84.81%    1.16%    2.06%   0.06499600s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.11894800s
+>>> Total CPU time : 0.11530400s
 
-########## END ITERATION NO.  10 ##########   Thu Aug  6 18:48:57 2015
+########## END ITERATION NO.  10 ##########   Fri Aug 21 16:05:46 2015
 
-It.   10    -15.05525782852      6.80D-10  1.15D-05  3.02D-06   DIIS   9    0.11894800s   LL SL SS       Thu Aug  6
+It.   10    -15.05525782852      6.79D-10  1.15D-05  3.02D-06   DIIS   9    0.11530400s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.  11 ##########   Thu Aug  6 18:48:57 2015
+########## START ITERATION NO.  11 ##########   Fri Aug 21 16:05:46 2015
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    8.82%    0.00%    0.00%   0.00643098s
-SOfock:SL  1.00D-12    0.00%   17.84%    0.00%    0.60%   0.03994095s
-SOfock:SS  1.00D-12    0.44%   94.06%    0.75%    1.14%   0.06269503s
+SOfock:LL  1.00D-12    0.00%    8.82%    0.00%    0.00%   0.00650203s
+SOfock:SL  1.00D-12    0.00%   17.84%    0.00%    0.60%   0.03868997s
+SOfock:SS  1.00D-12    0.44%   94.06%    0.75%    1.14%   0.06076002s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.11324900s
+>>> Total CPU time : 0.10918800s
 
-########## END ITERATION NO.  11 ##########   Thu Aug  6 18:48:57 2015
+########## END ITERATION NO.  11 ##########   Fri Aug 21 16:05:46 2015
 
-It.   11    -15.05525782854      2.15D-11  1.56D-06  7.40D-07   DIIS   9    0.11324900s   LL SL SS       Thu Aug  6
+It.   11    -15.05525782854      2.16D-11  1.56D-06  7.40D-07   DIIS   9    0.10918800s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.  12 ##########   Thu Aug  6 18:48:57 2015
+########## START ITERATION NO.  12 ##########   Fri Aug 21 16:05:46 2015
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   13.15%    0.00%    0.01%   0.00925899s
-SOfock:SL  1.00D-12    0.00%   24.34%    0.00%    3.94%   0.04863501s
-SOfock:SS  1.00D-12   25.44%   72.97%    7.71%    9.55%   0.04947901s
+SOfock:LL  1.00D-12    0.00%   13.15%    0.00%    0.01%   0.00648105s
+SOfock:SL  1.00D-12    0.00%   24.34%    0.00%    3.94%   0.03838491s
+SOfock:SS  1.00D-12   25.44%   72.97%    7.71%    9.55%   0.04544997s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.11316300s
+>>> Total CPU time : 0.09456900s
 
-########## END ITERATION NO.  12 ##########   Thu Aug  6 18:48:57 2015
+########## END ITERATION NO.  12 ##########   Fri Aug 21 16:05:46 2015
 
-It.   12    -15.05525782855      2.85D-12 -4.20D-07  4.54D-07   DIIS   9    0.11316300s   LL SL SS       Thu Aug  6
+It.   12    -15.05525782855      2.81D-12  4.20D-07  4.54D-07   DIIS   9    0.09456900s   LL SL SS       Fri Aug 21
 
-########## START ITERATION NO.  13 ##########   Thu Aug  6 18:48:58 2015
+########## START ITERATION NO.  13 ##########   Fri Aug 21 16:05:46 2015
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
    13 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   13.44%    0.00%    0.00%   0.00685692s
-SOfock:SL  1.00D-12    0.00%   24.87%    0.00%    4.39%   0.04019606s
-SOfock:SS  1.00D-12   21.91%   76.00%    8.69%    9.44%   0.05035198s
+SOfock:LL  1.00D-12    0.00%   13.44%    0.00%    0.00%   0.00627899s
+SOfock:SL  1.00D-12    0.00%   24.87%    0.00%    4.39%   0.03824699s
+SOfock:SS  1.00D-12   21.91%   76.00%    8.69%    9.44%   0.04516101s
 >>> Total wall time: 0.00000000s
->>> Total CPU time : 0.10135600s
+>>> Total CPU time : 0.09502500s
 
-########## END ITERATION NO.  13 ##########   Thu Aug  6 18:48:58 2015
+########## END ITERATION NO.  13 ##########   Fri Aug 21 16:05:46 2015
 
-It.   13    -15.05525782855      1.74D-12 -6.19D-07  5.41D-08   DIIS   9    0.10135600s   LL SL SS       Thu Aug  6
+It.   13    -15.05525782855      1.69D-12  6.19D-07  5.41D-08   DIIS   9    0.09502500s   LL SL SS       Fri Aug 21
 
 
                                    SCF - CYCLE
@@ -1233,19 +1066,19 @@ It.   13    -15.05525782855      1.74D-12 -6.19D-07  5.41D-08   DIIS   9    0.10
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -6.493580779584      0.00D+00  0.00D+00  0.00D+00               0.00597100s   Scr. nuclei    Thu Aug  6
-It.    2    -15.01400975105      8.52D+00  3.96D+00  5.17D-01               0.16092300s   LL SL SS       Thu Aug  6
-It.    3    -15.05234576536      3.83D-02 -2.04D-01  5.21D-02   DIIS   2    0.13503700s   LL SL SS       Thu Aug  6
-It.    4    -15.05468373482      2.34D-03  8.02D-03  1.72D-02   DIIS   3    0.12903800s   LL SL SS       Thu Aug  6
-It.    5    -15.05516602305      4.82D-04 -7.07D-03  6.99D-03   DIIS   4    0.12843000s   LL SL SS       Thu Aug  6
-It.    6    -15.05524748650      8.15D-05  3.66D-03  2.12D-03   DIIS   5    0.12699200s   LL SL SS       Thu Aug  6
-It.    7    -15.05525760923      1.01D-05  1.21D-03  3.53D-04   DIIS   6    0.12545500s   LL SL SS       Thu Aug  6
-It.    8    -15.05525781549      2.06D-07  1.27D-04  7.03D-05   DIIS   7    0.12434700s   LL SL SS       Thu Aug  6
-It.    9    -15.05525782784      1.24D-08  2.25D-05  1.59D-05   DIIS   8    0.12021200s   LL SL SS       Thu Aug  6
-It.   10    -15.05525782852      6.80D-10  1.15D-05  3.02D-06   DIIS   9    0.11894800s   LL SL SS       Thu Aug  6
-It.   11    -15.05525782854      2.15D-11  1.56D-06  7.40D-07   DIIS   9    0.11324900s   LL SL SS       Thu Aug  6
-It.   12    -15.05525782855      2.85D-12 -4.20D-07  4.54D-07   DIIS   9    0.11316300s   LL SL SS       Thu Aug  6
-It.   13    -15.05525782855      1.74D-12 -6.19D-07  5.41D-08   DIIS   9    0.10135600s   LL SL SS       Thu Aug  6
+It.    1    -6.493580779622      0.00D+00  0.00D+00  0.00D+00               0.01016800s   Scr. nuclei    Fri Aug 21
+It.    2    -15.01400975105      8.52D+00  3.96D+00  5.17D-01               0.19269400s   LL SL SS       Fri Aug 21
+It.    3    -15.05234576536      3.83D-02 -2.04D-01  5.21D-02   DIIS   2    0.12737100s   LL SL SS       Fri Aug 21
+It.    4    -15.05468373482      2.34D-03  8.02D-03  1.72D-02   DIIS   3    0.12686400s   LL SL SS       Fri Aug 21
+It.    5    -15.05516602305      4.82D-04 -7.07D-03  6.99D-03   DIIS   4    0.12567200s   LL SL SS       Fri Aug 21
+It.    6    -15.05524748650      8.15D-05  3.66D-03  2.12D-03   DIIS   5    0.12300800s   LL SL SS       Fri Aug 21
+It.    7    -15.05525760923      1.01D-05  1.21D-03  3.53D-04   DIIS   6    0.12242800s   LL SL SS       Fri Aug 21
+It.    8    -15.05525781549      2.06D-07  1.27D-04  7.03D-05   DIIS   7    0.11985900s   LL SL SS       Fri Aug 21
+It.    9    -15.05525782784      1.24D-08  2.25D-05  1.59D-05   DIIS   8    0.11695300s   LL SL SS       Fri Aug 21
+It.   10    -15.05525782852      6.79D-10  1.15D-05  3.02D-06   DIIS   9    0.11530400s   LL SL SS       Fri Aug 21
+It.   11    -15.05525782854      2.16D-11  1.56D-06  7.40D-07   DIIS   9    0.10918800s   LL SL SS       Fri Aug 21
+It.   12    -15.05525782855      2.81D-12  4.20D-07  4.54D-07   DIIS   9    0.09456900s   LL SL SS       Fri Aug 21
+It.   13    -15.05525782855      1.69D-12  6.19D-07  5.41D-08   DIIS   9    0.09502500s   LL SL SS       Fri Aug 21
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   13 iterations.
 * Average elapsed time per iteration: 
@@ -1256,13 +1089,13 @@ It.   13    -15.05525782855      1.74D-12 -6.19D-07  5.41D-08   DIIS   9    0.10
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -17.364060097770814
+   Electronic energy                        :    -17.364060097770803
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      2.308802269222841
 
    Sum of all contributions to the energy
-   Total energy                             :    -15.055257828547973
+   Total energy                             :    -15.055257828547962
 
 
                                    Eigenvalues
@@ -1271,16 +1104,16 @@ It.   13    -15.05525782855      1.74D-12 -6.19D-07  5.41D-08   DIIS   9    0.10
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -4.679468390310  ( 2)      -0.538243712606  ( 2)
+   -4.679468390286  ( 2)      -0.538243712620  ( 2)
   * Open shell #1, f = 0.5000
    -0.301637002322  ( 2)
   * Virtual eigenvalues, f = 0.0000
-    0.069973266871  ( 2)       0.069977657773  ( 2)       0.146585678154  ( 2)       0.290043275125  ( 2)       0.329894280238  ( 2)
-    0.329912038229  ( 2)       0.443382595544  ( 2)       0.636678737656  ( 2)       0.636680998628  ( 2)       0.656492041324  ( 2)
-    0.656497915822  ( 2)       0.675079405904  ( 2)       1.116750839322  ( 2)       1.366626070312  ( 2)       1.366714143766  ( 2)
-    1.477429633454  ( 2)       2.022794784756  ( 2)       2.022824824038  ( 2)       2.267117374363  ( 2)       3.573003594638  ( 2)
-    4.000999052034  ( 2)       7.165692842509  ( 2)       7.166842625386  ( 2)       7.349371971287  ( 2)      15.727399964456  ( 2)
-   22.596336568888  ( 2)      58.756173297417  ( 2)     219.560006354615  ( 2)     924.777802895507  ( 2)    4979.576710861562  ( 2)
+    0.069973266848  ( 2)       0.069977657769  ( 2)       0.146585678108  ( 2)       0.290043275112  ( 2)       0.329894280230  ( 2)
+    0.329912038218  ( 2)       0.443382595527  ( 2)       0.636678737656  ( 2)       0.636680998626  ( 2)       0.656492041321  ( 2)
+    0.656497915818  ( 2)       0.675079405887  ( 2)       1.116750839316  ( 2)       1.366626070294  ( 2)       1.366714143757  ( 2)
+    1.477429633438  ( 2)       2.022794784751  ( 2)       2.022824824044  ( 2)       2.267117374337  ( 2)       3.573003594627  ( 2)
+    4.000999052011  ( 2)       7.165692842504  ( 2)       7.166842625376  ( 2)       7.349371971295  ( 2)      15.727399964453  ( 2)
+   22.596336568888  ( 2)      58.756173297405  ( 2)     219.560006354601  ( 2)     924.777802895551  ( 2)    4979.576710861559  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.06997327 au (symmetry E1 )
@@ -1306,10 +1139,10 @@ It.   13    -15.05525782855      1.74D-12 -6.19D-07  5.41D-08   DIIS   9    0.10
      ************************************************************************
 
 
- Transformation started at : Thu Aug  6 18:48:58 2015
+ Transformation started at : Fri Aug 21 16:05:46 2015
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -15.0552578285462353
-* Heading :BeH                                               Thu Aug  6 18:48:58 2015
+* REACMO: Coefficients read from file DFCOEF - Total energy: -15.0552578285462708
+* Heading :BeH                                               Fri Aug 21 16:05:46 2015
 
 * Orbital ranges for 4-index transformation:
 
@@ -1352,7 +1185,7 @@ It.   13    -15.05525782855      1.74D-12 -6.19D-07  5.41D-08   DIIS   9    0.10
       **********************************************************************
 
 
- Transformation started at : Thu Aug  6 18:48:58 2015
+ Transformation started at : Fri Aug 21 16:05:46 2015
 
 
           SETDC2: Distribution of symmetry orbitals among fermion ircops
@@ -1361,8 +1194,8 @@ It.   13    -15.05525782855      1.74D-12 -6.19D-07  5.41D-08   DIIS   9    0.10
        Total Lbas Sbas
 E1       121   34   87
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -15.0552578285462353
-* Heading :BeH                                               Thu Aug  6 18:48:58 2015
+* REACMO: Coefficients read from file DFCOEF - Total energy: -15.0552578285462708
+* Heading :BeH                                               Fri Aug 21 16:05:46 2015
 
 
  * Fermion ircop E1 
@@ -1380,12 +1213,12 @@ E1       121   34   87
 
 
                Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1      -0.00097632     0.09424463     0.08185350    -0.00000602     0.00000000    -0.02550975
-       2       0.09424463    -1.55114831    -0.35036892     0.00008044    -0.00000000    -0.16968025
-       3       0.08185350    -0.35036892     1.49638104    -0.00012953     0.00000000     0.52711675
-       4      -0.00000602     0.00008044    -0.00012953    -0.01513409    -0.00000000    -0.00000633
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000    -0.01513274     0.00000000
-       6      -0.02550975    -0.16968025     0.52711675    -0.00000633     0.00000000    -1.88710887
+       1      -0.00097632    -0.09424463     0.08185350     0.00000602    -0.00000000    -0.02550975
+       2      -0.09424463    -1.55114831     0.35036892     0.00008044    -0.00000000     0.16968025
+       3       0.08185350     0.35036892     1.49638104     0.00012953    -0.00000000     0.52711675
+       4       0.00000602     0.00008044     0.00012953    -0.01513409    -0.00000000     0.00000633
+       5      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.01513274     0.00000000
+       6      -0.02550975     0.16968025     0.52711675     0.00000633     0.00000000    -1.88710887
     ==== End of matrix output ====
 
 Nonzero diagonal elements of Z-DIP    operator in Kramers paired molecular spinor basis:
@@ -1397,82 +1230,78 @@ Nonzero diagonal elements of Z-DIP    operator in Kramers paired molecular spino
      3        1.4963810434        0.0000000000
      4       -0.0151340897        0.0000000000
      5       -0.0151327382        0.0000000000
-     6       -1.8871088701        0.0000000000
+     6       -1.8871088700        0.0000000000
      7       -0.0009763183        0.0000000000
      8       -1.5511483073        0.0000000000
      9        1.4963810434        0.0000000000
     10       -0.0151340897        0.0000000000
     11       -0.0151327382        0.0000000000
-    12       -1.8871088701        0.0000000000
+    12       -1.8871088700        0.0000000000
  
 
 All nonzero property elements of Z-DIP    operator in Kramers paired molecular spinor basis:
 
     zero threshold=0.100D-10
     1    1     -0.0009763183        0.0000000000
-    1    2      0.0942446318        0.0000000000
+    1    2     -0.0942446318        0.0000000000
     1    3      0.0818535018        0.0000000000
-    1    4     -0.0000060230        0.0000000000
-    1    6     -0.0255097530        0.0000000000
-    2    1      0.0942446318        0.0000000000
+    1    4      0.0000060230        0.0000000000
+    1    6     -0.0255097529        0.0000000000
+    2    1     -0.0942446318        0.0000000000
     2    2     -1.5511483073        0.0000000000
-    2    3     -0.3503689175        0.0000000000
+    2    3      0.3503689175        0.0000000000
     2    4      0.0000804394        0.0000000000
-    2    5     -0.0000000001        0.0000000000
-    2    6     -0.1696802454        0.0000000000
+    2    5     -0.0000000000        0.0000000000
+    2    6      0.1696802454        0.0000000000
     3    1      0.0818535018        0.0000000000
-    3    2     -0.3503689175        0.0000000000
+    3    2      0.3503689175        0.0000000000
     3    3      1.4963810434        0.0000000000
-    3    4     -0.0001295286        0.0000000000
-    3    5      0.0000000001        0.0000000000
-    3    6      0.5271167536        0.0000000000
-    4    1     -0.0000060230        0.0000000000
+    3    4      0.0001295286        0.0000000000
+    3    6      0.5271167537        0.0000000000
+    4    1      0.0000060230        0.0000000000
     4    2      0.0000804394        0.0000000000
-    4    3     -0.0001295286        0.0000000000
+    4    3      0.0001295286        0.0000000000
     4    4     -0.0151340897        0.0000000000
-    4    6     -0.0000063267        0.0000000000
-    5    2     -0.0000000001        0.0000000000
-    5    3      0.0000000001        0.0000000000
+    4    6      0.0000063268        0.0000000000
+    5    2     -0.0000000000        0.0000000000
     5    5     -0.0151327382        0.0000000000
     5    6      0.0000000000        0.0000000000
-    6    1     -0.0255097530        0.0000000000
-    6    2     -0.1696802454        0.0000000000
-    6    3      0.5271167536        0.0000000000
-    6    4     -0.0000063267        0.0000000000
+    6    1     -0.0255097529        0.0000000000
+    6    2      0.1696802454        0.0000000000
+    6    3      0.5271167537        0.0000000000
+    6    4      0.0000063268        0.0000000000
     6    5      0.0000000000        0.0000000000
-    6    6     -1.8871088701        0.0000000000
+    6    6     -1.8871088700        0.0000000000
     7    7     -0.0009763183        0.0000000000
-    7    8      0.0942446318        0.0000000000
+    7    8     -0.0942446318        0.0000000000
     7    9      0.0818535018        0.0000000000
-    7   10     -0.0000060230        0.0000000000
-    7   12     -0.0255097530        0.0000000000
-    8    7      0.0942446318        0.0000000000
+    7   10      0.0000060230        0.0000000000
+    7   12     -0.0255097529        0.0000000000
+    8    7     -0.0942446318        0.0000000000
     8    8     -1.5511483073        0.0000000000
-    8    9     -0.3503689175        0.0000000000
+    8    9      0.3503689175        0.0000000000
     8   10      0.0000804394        0.0000000000
-    8   11     -0.0000000001        0.0000000000
-    8   12     -0.1696802454        0.0000000000
+    8   11     -0.0000000000        0.0000000000
+    8   12      0.1696802454        0.0000000000
     9    7      0.0818535018        0.0000000000
-    9    8     -0.3503689175        0.0000000000
+    9    8      0.3503689175        0.0000000000
     9    9      1.4963810434        0.0000000000
-    9   10     -0.0001295286        0.0000000000
-    9   11      0.0000000001        0.0000000000
-    9   12      0.5271167536        0.0000000000
-   10    7     -0.0000060230        0.0000000000
+    9   10      0.0001295286        0.0000000000
+    9   12      0.5271167537        0.0000000000
+   10    7      0.0000060230        0.0000000000
    10    8      0.0000804394        0.0000000000
-   10    9     -0.0001295286        0.0000000000
+   10    9      0.0001295286        0.0000000000
    10   10     -0.0151340897        0.0000000000
-   10   12     -0.0000063267        0.0000000000
-   11    8     -0.0000000001        0.0000000000
-   11    9      0.0000000001        0.0000000000
+   10   12      0.0000063268        0.0000000000
+   11    8     -0.0000000000        0.0000000000
    11   11     -0.0151327382        0.0000000000
    11   12      0.0000000000        0.0000000000
-   12    7     -0.0255097530        0.0000000000
-   12    8     -0.1696802454        0.0000000000
-   12    9      0.5271167536        0.0000000000
-   12   10     -0.0000063267        0.0000000000
+   12    7     -0.0255097529        0.0000000000
+   12    8      0.1696802454        0.0000000000
+   12    9      0.5271167537        0.0000000000
+   12   10      0.0000063268        0.0000000000
    12   11      0.0000000000        0.0000000000
-   12   12     -1.8871088701        0.0000000000
+   12   12     -1.8871088700        0.0000000000
  
 
    *** Property matrix :************************X1-HYP   ***
@@ -1482,12 +1311,12 @@ All nonzero property elements of Z-DIP    operator in Kramers paired molecular s
 
 
                Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.49990517     0.08148219    -0.05617847     0.00001248     0.00000667    -0.02385125
-       2       0.08148219     0.01280397    -0.00941693    -0.00093050     0.00051666    -0.00374125
-       3      -0.05617847    -0.00941693     0.00606223    -0.00090147     0.00049081     0.00273840
-       4       0.00001248    -0.00093050    -0.00090147    -0.00047280    -0.00007709     0.00019953
-       5       0.00000667     0.00051666     0.00049081    -0.00007709     0.00000000    -0.00011812
-       6      -0.02385125    -0.00374125     0.00273840     0.00019953    -0.00011812     0.00109431
+       1       0.49990517    -0.08148219    -0.05617847    -0.00001248     0.00000667    -0.02385125
+       2      -0.08148219     0.01280397     0.00941693    -0.00093050    -0.00051666     0.00374125
+       3      -0.05617847     0.00941693     0.00606223     0.00090147     0.00049081     0.00273840
+       4      -0.00001248    -0.00093050     0.00090147    -0.00047280     0.00007709    -0.00019953
+       5       0.00000667    -0.00051666     0.00049081     0.00007709    -0.00000000    -0.00011812
+       6      -0.02385125     0.00374125     0.00273840    -0.00019953    -0.00011812     0.00109431
     ==== End of matrix output ====
 
 Nonzero diagonal elements of X1-HYP   operator in Kramers paired molecular spinor basis:
@@ -1500,76 +1329,74 @@ All nonzero property elements of X1-HYP   operator in Kramers paired molecular s
 
     zero threshold=0.100D-10
     1    7      0.0000000000        0.4999051723
-    1    8      0.0000000000        0.0814821936
+    1    8      0.0000000000       -0.0814821936
     1    9      0.0000000000       -0.0561784654
-    1   10      0.0000000000        0.0000124792
-    1   11      0.0000000000        0.0000066727
+    1   10      0.0000000000       -0.0000124792
+    1   11      0.0000000000        0.0000066728
     1   12      0.0000000000       -0.0238512463
-    2    7      0.0000000000        0.0814821936
+    2    7      0.0000000000       -0.0814821936
     2    8      0.0000000000        0.0128039715
-    2    9      0.0000000000       -0.0094169256
-    2   10      0.0000000000       -0.0009305034
-    2   11      0.0000000000        0.0005166619
-    2   12      0.0000000000       -0.0037412490
+    2    9      0.0000000000        0.0094169256
+    2   10      0.0000000000       -0.0009305038
+    2   11      0.0000000000       -0.0005166612
+    2   12      0.0000000000        0.0037412490
     3    7      0.0000000000       -0.0561784654
-    3    8      0.0000000000       -0.0094169256
+    3    8      0.0000000000        0.0094169256
     3    9      0.0000000000        0.0060622303
-    3   10      0.0000000000       -0.0009014683
-    3   11      0.0000000000        0.0004908143
+    3   10      0.0000000000        0.0009014686
+    3   11      0.0000000000        0.0004908136
     3   12      0.0000000000        0.0027383973
-    4    7      0.0000000000        0.0000124792
-    4    8      0.0000000000       -0.0009305034
-    4    9      0.0000000000       -0.0009014683
-    4   10      0.0000000000       -0.0004728024
-    4   11      0.0000000000       -0.0000770856
-    4   12      0.0000000000        0.0001995282
-    5    7      0.0000000000        0.0000066727
-    5    8      0.0000000000        0.0005166619
-    5    9      0.0000000000        0.0004908143
-    5   10      0.0000000000       -0.0000770856
-    5   11      0.0000000000        0.0000000001
-    5   12      0.0000000000       -0.0001181181
+    4    7      0.0000000000       -0.0000124792
+    4    8      0.0000000000       -0.0009305038
+    4    9      0.0000000000        0.0009014686
+    4   10      0.0000000000       -0.0004728023
+    4   11      0.0000000000        0.0000770860
+    4   12      0.0000000000       -0.0001995282
+    5    7      0.0000000000        0.0000066728
+    5    8      0.0000000000       -0.0005166612
+    5    9      0.0000000000        0.0004908136
+    5   10      0.0000000000        0.0000770860
+    5   12      0.0000000000       -0.0001181179
     6    7      0.0000000000       -0.0238512463
-    6    8      0.0000000000       -0.0037412490
+    6    8      0.0000000000        0.0037412490
     6    9      0.0000000000        0.0027383973
-    6   10      0.0000000000        0.0001995282
-    6   11      0.0000000000       -0.0001181181
+    6   10      0.0000000000       -0.0001995282
+    6   11      0.0000000000       -0.0001181179
     6   12      0.0000000000        0.0010943077
     7    1      0.0000000000        0.4999051723
-    7    2      0.0000000000        0.0814821936
+    7    2      0.0000000000       -0.0814821936
     7    3      0.0000000000       -0.0561784654
-    7    4      0.0000000000        0.0000124792
-    7    5      0.0000000000        0.0000066727
+    7    4      0.0000000000       -0.0000124792
+    7    5      0.0000000000        0.0000066728
     7    6      0.0000000000       -0.0238512463
-    8    1      0.0000000000        0.0814821936
+    8    1      0.0000000000       -0.0814821936
     8    2      0.0000000000        0.0128039715
-    8    3      0.0000000000       -0.0094169256
-    8    4      0.0000000000       -0.0009305034
-    8    5      0.0000000000        0.0005166619
-    8    6      0.0000000000       -0.0037412490
+    8    3      0.0000000000        0.0094169256
+    8    4      0.0000000000       -0.0009305038
+    8    5      0.0000000000       -0.0005166612
+    8    6      0.0000000000        0.0037412490
     9    1      0.0000000000       -0.0561784654
-    9    2      0.0000000000       -0.0094169256
+    9    2      0.0000000000        0.0094169256
     9    3      0.0000000000        0.0060622303
-    9    4      0.0000000000       -0.0009014683
-    9    5      0.0000000000        0.0004908143
+    9    4      0.0000000000        0.0009014686
+    9    5      0.0000000000        0.0004908136
     9    6      0.0000000000        0.0027383973
-   10    1      0.0000000000        0.0000124792
-   10    2      0.0000000000       -0.0009305034
-   10    3      0.0000000000       -0.0009014683
-   10    4      0.0000000000       -0.0004728024
-   10    5      0.0000000000       -0.0000770856
-   10    6      0.0000000000        0.0001995282
-   11    1      0.0000000000        0.0000066727
-   11    2      0.0000000000        0.0005166619
-   11    3      0.0000000000        0.0004908143
-   11    4      0.0000000000       -0.0000770856
-   11    5      0.0000000000        0.0000000001
-   11    6      0.0000000000       -0.0001181181
+   10    1      0.0000000000       -0.0000124792
+   10    2      0.0000000000       -0.0009305038
+   10    3      0.0000000000        0.0009014686
+   10    4      0.0000000000       -0.0004728023
+   10    5      0.0000000000        0.0000770860
+   10    6      0.0000000000       -0.0001995282
+   11    1      0.0000000000        0.0000066728
+   11    2      0.0000000000       -0.0005166612
+   11    3      0.0000000000        0.0004908136
+   11    4      0.0000000000        0.0000770860
+   11    6      0.0000000000       -0.0001181179
    12    1      0.0000000000       -0.0238512463
-   12    2      0.0000000000       -0.0037412490
+   12    2      0.0000000000        0.0037412490
    12    3      0.0000000000        0.0027383973
-   12    4      0.0000000000        0.0001995282
-   12    5      0.0000000000       -0.0001181181
+   12    4      0.0000000000       -0.0001995282
+   12    5      0.0000000000       -0.0001181179
    12    6      0.0000000000        0.0010943077
  
 
@@ -1580,12 +1407,12 @@ All nonzero property elements of X1-HYP   operator in Kramers paired molecular s
 
 
                Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.49990517     0.08148219    -0.05617847     0.00001248    -0.00000667    -0.02385125
-       2       0.08148219     0.01280397    -0.00941693    -0.00093050    -0.00051666    -0.00374125
-       3      -0.05617847    -0.00941693     0.00606223    -0.00090147    -0.00049081     0.00273840
-       4       0.00001248    -0.00093050    -0.00090147    -0.00047280     0.00007709     0.00019953
-       5      -0.00000667    -0.00051666    -0.00049081     0.00007709    -0.00000000     0.00011812
-       6      -0.02385125    -0.00374125     0.00273840     0.00019953     0.00011812     0.00109431
+       1       0.49990517    -0.08148219    -0.05617847    -0.00001248    -0.00000667    -0.02385125
+       2      -0.08148219     0.01280397     0.00941693    -0.00093050     0.00051666     0.00374125
+       3      -0.05617847     0.00941693     0.00606223     0.00090147    -0.00049081     0.00273840
+       4      -0.00001248    -0.00093050     0.00090147    -0.00047280    -0.00007709    -0.00019953
+       5      -0.00000667     0.00051666    -0.00049081    -0.00007709     0.00000000     0.00011812
+       6      -0.02385125     0.00374125     0.00273840    -0.00019953     0.00011812     0.00109431
     ==== End of matrix output ====
 
 Nonzero diagonal elements of Y1-HYP   operator in Kramers paired molecular spinor basis:
@@ -1598,76 +1425,74 @@ All nonzero property elements of Y1-HYP   operator in Kramers paired molecular s
 
     zero threshold=0.100D-10
     1    7      0.4999051723        0.0000000000
-    1    8      0.0814821936        0.0000000000
+    1    8     -0.0814821936        0.0000000000
     1    9     -0.0561784654        0.0000000000
-    1   10      0.0000124792        0.0000000000
+    1   10     -0.0000124792        0.0000000000
     1   11     -0.0000066728        0.0000000000
     1   12     -0.0238512463        0.0000000000
-    2    7      0.0814821936        0.0000000000
+    2    7     -0.0814821936        0.0000000000
     2    8      0.0128039715        0.0000000000
-    2    9     -0.0094169256        0.0000000000
-    2   10     -0.0009305042        0.0000000000
-    2   11     -0.0005166606        0.0000000000
-    2   12     -0.0037412490        0.0000000000
+    2    9      0.0094169256        0.0000000000
+    2   10     -0.0009305038        0.0000000000
+    2   11      0.0005166612        0.0000000000
+    2   12      0.0037412490        0.0000000000
     3    7     -0.0561784654        0.0000000000
-    3    8     -0.0094169256        0.0000000000
+    3    8      0.0094169256        0.0000000000
     3    9      0.0060622303        0.0000000000
-    3   10     -0.0009014690        0.0000000000
-    3   11     -0.0004908129        0.0000000000
+    3   10      0.0009014686        0.0000000000
+    3   11     -0.0004908136        0.0000000000
     3   12      0.0027383973        0.0000000000
-    4    7      0.0000124792        0.0000000000
-    4    8     -0.0009305042        0.0000000000
-    4    9     -0.0009014690        0.0000000000
-    4   10     -0.0004728021        0.0000000000
-    4   11      0.0000770863        0.0000000000
-    4   12      0.0001995283        0.0000000000
+    4    7     -0.0000124792        0.0000000000
+    4    8     -0.0009305038        0.0000000000
+    4    9      0.0009014686        0.0000000000
+    4   10     -0.0004728023        0.0000000000
+    4   11     -0.0000770860        0.0000000000
+    4   12     -0.0001995282        0.0000000000
     5    7     -0.0000066728        0.0000000000
-    5    8     -0.0005166606        0.0000000000
-    5    9     -0.0004908129        0.0000000000
-    5   10      0.0000770863        0.0000000000
-    5   11     -0.0000000001        0.0000000000
-    5   12      0.0001181178        0.0000000000
+    5    8      0.0005166612        0.0000000000
+    5    9     -0.0004908136        0.0000000000
+    5   10     -0.0000770860        0.0000000000
+    5   12      0.0001181179        0.0000000000
     6    7     -0.0238512463        0.0000000000
-    6    8     -0.0037412490        0.0000000000
+    6    8      0.0037412490        0.0000000000
     6    9      0.0027383973        0.0000000000
-    6   10      0.0001995283        0.0000000000
-    6   11      0.0001181178        0.0000000000
+    6   10     -0.0001995282        0.0000000000
+    6   11      0.0001181179        0.0000000000
     6   12      0.0010943077        0.0000000000
     7    1     -0.4999051723        0.0000000000
-    7    2     -0.0814821936        0.0000000000
+    7    2      0.0814821936        0.0000000000
     7    3      0.0561784654        0.0000000000
-    7    4     -0.0000124792        0.0000000000
+    7    4      0.0000124792        0.0000000000
     7    5      0.0000066728        0.0000000000
     7    6      0.0238512463        0.0000000000
-    8    1     -0.0814821936        0.0000000000
+    8    1      0.0814821936        0.0000000000
     8    2     -0.0128039715        0.0000000000
-    8    3      0.0094169256        0.0000000000
-    8    4      0.0009305042        0.0000000000
-    8    5      0.0005166606        0.0000000000
-    8    6      0.0037412490        0.0000000000
+    8    3     -0.0094169256        0.0000000000
+    8    4      0.0009305038        0.0000000000
+    8    5     -0.0005166612        0.0000000000
+    8    6     -0.0037412490        0.0000000000
     9    1      0.0561784654        0.0000000000
-    9    2      0.0094169256        0.0000000000
+    9    2     -0.0094169256        0.0000000000
     9    3     -0.0060622303        0.0000000000
-    9    4      0.0009014690        0.0000000000
-    9    5      0.0004908129        0.0000000000
+    9    4     -0.0009014686        0.0000000000
+    9    5      0.0004908136        0.0000000000
     9    6     -0.0027383973        0.0000000000
-   10    1     -0.0000124792        0.0000000000
-   10    2      0.0009305042        0.0000000000
-   10    3      0.0009014690        0.0000000000
-   10    4      0.0004728021        0.0000000000
-   10    5     -0.0000770863        0.0000000000
-   10    6     -0.0001995283        0.0000000000
+   10    1      0.0000124792        0.0000000000
+   10    2      0.0009305038        0.0000000000
+   10    3     -0.0009014686        0.0000000000
+   10    4      0.0004728023        0.0000000000
+   10    5      0.0000770860        0.0000000000
+   10    6      0.0001995282        0.0000000000
    11    1      0.0000066728        0.0000000000
-   11    2      0.0005166606        0.0000000000
-   11    3      0.0004908129        0.0000000000
-   11    4     -0.0000770863        0.0000000000
-   11    5      0.0000000001        0.0000000000
-   11    6     -0.0001181178        0.0000000000
+   11    2     -0.0005166612        0.0000000000
+   11    3      0.0004908136        0.0000000000
+   11    4      0.0000770860        0.0000000000
+   11    6     -0.0001181179        0.0000000000
    12    1      0.0238512463        0.0000000000
-   12    2      0.0037412490        0.0000000000
+   12    2     -0.0037412490        0.0000000000
    12    3     -0.0027383973        0.0000000000
-   12    4     -0.0001995283        0.0000000000
-   12    5     -0.0001181178        0.0000000000
+   12    4      0.0001995282        0.0000000000
+   12    5     -0.0001181179        0.0000000000
    12    6     -0.0010943077        0.0000000000
  
 
@@ -1678,12 +1503,12 @@ All nonzero property elements of Y1-HYP   operator in Kramers paired molecular s
 
 
                Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.49992895     0.08108291    -0.05624113    -0.00001770     0.00000000    -0.02367841
-       2       0.08108291     0.01410504    -0.00860230     0.00041405    -0.00000000    -0.00413308
-       3      -0.05624113    -0.00860230     0.00682863     0.00041051    -0.00000000     0.00254795
-       4      -0.00001770     0.00041405     0.00041051     0.00094562    -0.00000000    -0.00008147
-       5       0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00063718     0.00000000
-       6      -0.02367841    -0.00413308     0.00254795    -0.00008147     0.00000000     0.00120880
+       1       0.49992895    -0.08108291    -0.05624113     0.00001770    -0.00000000    -0.02367841
+       2      -0.08108291     0.01410504     0.00860230     0.00041405    -0.00000000     0.00413308
+       3      -0.05624113     0.00860230     0.00682863    -0.00041051     0.00000000     0.00254795
+       4       0.00001770     0.00041405    -0.00041051     0.00094562    -0.00000000     0.00008147
+       5      -0.00000000    -0.00000000     0.00000000    -0.00000000    -0.00063718    -0.00000000
+       6      -0.02367841     0.00413308     0.00254795     0.00008147    -0.00000000     0.00120880
     ==== End of matrix output ====
 
 Nonzero diagonal elements of Z1-HYP   operator in Kramers paired molecular spinor basis:
@@ -1708,979 +1533,57 @@ All nonzero property elements of Z1-HYP   operator in Kramers paired molecular s
 
     zero threshold=0.100D-10
     1    1      0.0000000000        0.4999289525
-    1    2      0.0000000000        0.0810829069
+    1    2      0.0000000000       -0.0810829069
     1    3      0.0000000000       -0.0562411349
-    1    4      0.0000000000       -0.0000177032
-    1    5      0.0000000000        0.0000000000
+    1    4      0.0000000000        0.0000177032
     1    6      0.0000000000       -0.0236784085
-    2    1      0.0000000000        0.0810829069
+    2    1      0.0000000000       -0.0810829069
     2    2      0.0000000000        0.0141050368
-    2    3      0.0000000000       -0.0086022977
+    2    3      0.0000000000        0.0086022977
     2    4      0.0000000000        0.0004140548
-    2    5      0.0000000000       -0.0000000003
-    2    6      0.0000000000       -0.0041330768
+    2    6      0.0000000000        0.0041330768
     3    1      0.0000000000       -0.0562411349
-    3    2      0.0000000000       -0.0086022977
+    3    2      0.0000000000        0.0086022977
     3    3      0.0000000000        0.0068286267
-    3    4      0.0000000000        0.0004105113
-    3    5      0.0000000000       -0.0000000003
+    3    4      0.0000000000       -0.0004105113
     3    6      0.0000000000        0.0025479495
-    4    1      0.0000000000       -0.0000177032
+    4    1      0.0000000000        0.0000177032
     4    2      0.0000000000        0.0004140548
-    4    3      0.0000000000        0.0004105113
+    4    3      0.0000000000       -0.0004105113
     4    4      0.0000000000        0.0009456158
-    4    5      0.0000000000       -0.0000000011
-    4    6      0.0000000000       -0.0000814712
-    5    1      0.0000000000        0.0000000000
-    5    2      0.0000000000       -0.0000000003
-    5    3      0.0000000000       -0.0000000003
-    5    4      0.0000000000       -0.0000000011
+    4    6      0.0000000000        0.0000814712
     5    5      0.0000000000       -0.0006371826
-    5    6      0.0000000000        0.0000000001
     6    1      0.0000000000       -0.0236784085
-    6    2      0.0000000000       -0.0041330768
+    6    2      0.0000000000        0.0041330768
     6    3      0.0000000000        0.0025479495
-    6    4      0.0000000000       -0.0000814712
-    6    5      0.0000000000        0.0000000001
+    6    4      0.0000000000        0.0000814712
     6    6      0.0000000000        0.0012087974
     7    7      0.0000000000       -0.4999289525
-    7    8      0.0000000000       -0.0810829069
+    7    8      0.0000000000        0.0810829069
     7    9      0.0000000000        0.0562411349
-    7   10      0.0000000000        0.0000177032
-    7   11      0.0000000000       -0.0000000000
+    7   10      0.0000000000       -0.0000177032
     7   12      0.0000000000        0.0236784085
-    8    7      0.0000000000       -0.0810829069
+    8    7      0.0000000000        0.0810829069
     8    8      0.0000000000       -0.0141050368
-    8    9      0.0000000000        0.0086022977
+    8    9      0.0000000000       -0.0086022977
     8   10      0.0000000000       -0.0004140548
-    8   11      0.0000000000        0.0000000003
-    8   12      0.0000000000        0.0041330768
+    8   12      0.0000000000       -0.0041330768
     9    7      0.0000000000        0.0562411349
-    9    8      0.0000000000        0.0086022977
+    9    8      0.0000000000       -0.0086022977
     9    9      0.0000000000       -0.0068286267
-    9   10      0.0000000000       -0.0004105113
-    9   11      0.0000000000        0.0000000003
+    9   10      0.0000000000        0.0004105113
     9   12      0.0000000000       -0.0025479495
-   10    7      0.0000000000        0.0000177032
+   10    7      0.0000000000       -0.0000177032
    10    8      0.0000000000       -0.0004140548
-   10    9      0.0000000000       -0.0004105113
+   10    9      0.0000000000        0.0004105113
    10   10      0.0000000000       -0.0009456158
-   10   11      0.0000000000        0.0000000011
-   10   12      0.0000000000        0.0000814712
-   11    7      0.0000000000       -0.0000000000
-   11    8      0.0000000000        0.0000000003
-   11    9      0.0000000000        0.0000000003
-   11   10      0.0000000000        0.0000000011
+   10   12      0.0000000000       -0.0000814712
    11   11      0.0000000000        0.0006371826
-   11   12      0.0000000000       -0.0000000001
    12    7      0.0000000000        0.0236784085
-   12    8      0.0000000000        0.0041330768
+   12    8      0.0000000000       -0.0041330768
    12    9      0.0000000000       -0.0025479495
-   12   10      0.0000000000        0.0000814712
-   12   11      0.0000000000       -0.0000000001
+   12   10      0.0000000000       -0.0000814712
    12   12      0.0000000000       -0.0012087974
- 
-
-   *** Property matrix :************************X2-HYP   ***
-
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.00069233     0.00019730    -0.00001799     0.00045386    -0.00035869    -0.00005595
-       2       0.00019730    -0.00792244    -0.00197214    -0.00010532    -0.00011269     0.00237507
-       3      -0.00001799    -0.00197214    -0.00042812     0.00008573    -0.00005066     0.00059993
-       4       0.00045386    -0.00010532     0.00008573     0.00017799     0.00000807     0.00010409
-       5      -0.00035869    -0.00011269    -0.00005066     0.00000807    -0.00000000    -0.00003653
-       6      -0.00005595     0.00237507     0.00059993     0.00010409    -0.00003653    -0.00072366
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of X2-HYP   operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
- 
-
-All nonzero property elements of X2-HYP   operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    7      0.0000000000        0.0006923307
-    1    8      0.0000000000        0.0001972957
-    1    9      0.0000000000       -0.0000179861
-    1   10      0.0000000000        0.0004538618
-    1   11      0.0000000000       -0.0003586863
-    1   12      0.0000000000       -0.0000559516
-    2    7      0.0000000000        0.0001972957
-    2    8      0.0000000000       -0.0079224376
-    2    9      0.0000000000       -0.0019721417
-    2   10      0.0000000000       -0.0001053226
-    2   11      0.0000000000       -0.0001126899
-    2   12      0.0000000000        0.0023750680
-    3    7      0.0000000000       -0.0000179861
-    3    8      0.0000000000       -0.0019721417
-    3    9      0.0000000000       -0.0004281174
-    3   10      0.0000000000        0.0000857348
-    3   11      0.0000000000       -0.0000506644
-    3   12      0.0000000000        0.0005999319
-    4    7      0.0000000000        0.0004538618
-    4    8      0.0000000000       -0.0001053226
-    4    9      0.0000000000        0.0000857348
-    4   10      0.0000000000        0.0001779907
-    4   11      0.0000000000        0.0000080671
-    4   12      0.0000000000        0.0001040941
-    5    7      0.0000000000       -0.0003586863
-    5    8      0.0000000000       -0.0001126899
-    5    9      0.0000000000       -0.0000506644
-    5   10      0.0000000000        0.0000080671
-    5   11      0.0000000000       -0.0000000000
-    5   12      0.0000000000       -0.0000365293
-    6    7      0.0000000000       -0.0000559516
-    6    8      0.0000000000        0.0023750680
-    6    9      0.0000000000        0.0005999319
-    6   10      0.0000000000        0.0001040941
-    6   11      0.0000000000       -0.0000365293
-    6   12      0.0000000000       -0.0007236598
-    7    1      0.0000000000        0.0006923307
-    7    2      0.0000000000        0.0001972957
-    7    3      0.0000000000       -0.0000179861
-    7    4      0.0000000000        0.0004538618
-    7    5      0.0000000000       -0.0003586863
-    7    6      0.0000000000       -0.0000559516
-    8    1      0.0000000000        0.0001972957
-    8    2      0.0000000000       -0.0079224376
-    8    3      0.0000000000       -0.0019721417
-    8    4      0.0000000000       -0.0001053226
-    8    5      0.0000000000       -0.0001126899
-    8    6      0.0000000000        0.0023750680
-    9    1      0.0000000000       -0.0000179861
-    9    2      0.0000000000       -0.0019721417
-    9    3      0.0000000000       -0.0004281174
-    9    4      0.0000000000        0.0000857348
-    9    5      0.0000000000       -0.0000506644
-    9    6      0.0000000000        0.0005999319
-   10    1      0.0000000000        0.0004538618
-   10    2      0.0000000000       -0.0001053226
-   10    3      0.0000000000        0.0000857348
-   10    4      0.0000000000        0.0001779907
-   10    5      0.0000000000        0.0000080671
-   10    6      0.0000000000        0.0001040941
-   11    1      0.0000000000       -0.0003586863
-   11    2      0.0000000000       -0.0001126899
-   11    3      0.0000000000       -0.0000506644
-   11    4      0.0000000000        0.0000080671
-   11    5      0.0000000000       -0.0000000000
-   11    6      0.0000000000       -0.0000365293
-   12    1      0.0000000000       -0.0000559516
-   12    2      0.0000000000        0.0023750680
-   12    3      0.0000000000        0.0005999319
-   12    4      0.0000000000        0.0001040941
-   12    5      0.0000000000       -0.0000365293
-   12    6      0.0000000000       -0.0007236598
- 
-
-   *** Property matrix :************************Y2-HYP   ***
-
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.00069233     0.00019730    -0.00001799     0.00045386     0.00035869    -0.00005595
-       2       0.00019730    -0.00792244    -0.00197214    -0.00010532     0.00011269     0.00237507
-       3      -0.00001799    -0.00197214    -0.00042812     0.00008573     0.00005066     0.00059993
-       4       0.00045386    -0.00010532     0.00008573     0.00017799    -0.00000807     0.00010409
-       5       0.00035869     0.00011269     0.00005066    -0.00000807     0.00000000     0.00003653
-       6      -0.00005595     0.00237507     0.00059993     0.00010409     0.00003653    -0.00072366
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of Y2-HYP   operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
- 
-
-All nonzero property elements of Y2-HYP   operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    7      0.0006923307        0.0000000000
-    1    8      0.0001972957        0.0000000000
-    1    9     -0.0000179861        0.0000000000
-    1   10      0.0004538623        0.0000000000
-    1   11      0.0003586856        0.0000000000
-    1   12     -0.0000559516        0.0000000000
-    2    7      0.0001972957        0.0000000000
-    2    8     -0.0079224376        0.0000000000
-    2    9     -0.0019721417        0.0000000000
-    2   10     -0.0001053224        0.0000000000
-    2   11      0.0001126901        0.0000000000
-    2   12      0.0023750680        0.0000000000
-    3    7     -0.0000179861        0.0000000000
-    3    8     -0.0019721417        0.0000000000
-    3    9     -0.0004281174        0.0000000000
-    3   10      0.0000857349        0.0000000000
-    3   11      0.0000506642        0.0000000000
-    3   12      0.0005999319        0.0000000000
-    4    7      0.0004538623        0.0000000000
-    4    8     -0.0001053224        0.0000000000
-    4    9      0.0000857349        0.0000000000
-    4   10      0.0001779907        0.0000000000
-    4   11     -0.0000080674        0.0000000000
-    4   12      0.0001040941        0.0000000000
-    5    7      0.0003586856        0.0000000000
-    5    8      0.0001126901        0.0000000000
-    5    9      0.0000506642        0.0000000000
-    5   10     -0.0000080674        0.0000000000
-    5   11      0.0000000000        0.0000000000
-    5   12      0.0000365291        0.0000000000
-    6    7     -0.0000559516        0.0000000000
-    6    8      0.0023750680        0.0000000000
-    6    9      0.0005999319        0.0000000000
-    6   10      0.0001040941        0.0000000000
-    6   11      0.0000365291        0.0000000000
-    6   12     -0.0007236598        0.0000000000
-    7    1     -0.0006923307        0.0000000000
-    7    2     -0.0001972957        0.0000000000
-    7    3      0.0000179861        0.0000000000
-    7    4     -0.0004538623        0.0000000000
-    7    5     -0.0003586856        0.0000000000
-    7    6      0.0000559516        0.0000000000
-    8    1     -0.0001972957        0.0000000000
-    8    2      0.0079224376        0.0000000000
-    8    3      0.0019721417        0.0000000000
-    8    4      0.0001053224        0.0000000000
-    8    5     -0.0001126901        0.0000000000
-    8    6     -0.0023750680        0.0000000000
-    9    1      0.0000179861        0.0000000000
-    9    2      0.0019721417        0.0000000000
-    9    3      0.0004281174        0.0000000000
-    9    4     -0.0000857349        0.0000000000
-    9    5     -0.0000506642        0.0000000000
-    9    6     -0.0005999319        0.0000000000
-   10    1     -0.0004538623        0.0000000000
-   10    2      0.0001053224        0.0000000000
-   10    3     -0.0000857349        0.0000000000
-   10    4     -0.0001779907        0.0000000000
-   10    5      0.0000080674        0.0000000000
-   10    6     -0.0001040941        0.0000000000
-   11    1     -0.0003586856        0.0000000000
-   11    2     -0.0001126901        0.0000000000
-   11    3     -0.0000506642        0.0000000000
-   11    4      0.0000080674        0.0000000000
-   11    5     -0.0000000000        0.0000000000
-   11    6     -0.0000365291        0.0000000000
-   12    1      0.0000559516        0.0000000000
-   12    2     -0.0023750680        0.0000000000
-   12    3     -0.0005999319        0.0000000000
-   12    4     -0.0001040941        0.0000000000
-   12    5     -0.0000365291        0.0000000000
-   12    6      0.0007236598        0.0000000000
- 
-
-   *** Property matrix :************************Z2-HYP   ***
-
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1      -0.00141246     0.00041823     0.00024233    -0.00009519     0.00000000    -0.00013445
-       2       0.00041823    -0.00792094    -0.00208649     0.00021854    -0.00000000     0.00245298
-       3       0.00024233    -0.00208649    -0.00067413    -0.00003496     0.00000000     0.00062801
-       4      -0.00009519     0.00021854    -0.00003496    -0.00035603     0.00000000    -0.00006772
-       5       0.00000000    -0.00000000     0.00000000     0.00000000     0.00032379     0.00000000
-       6      -0.00013445     0.00245298     0.00062801    -0.00006772     0.00000000    -0.00073585
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of Z2-HYP   operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
-     1        0.0000000000       -0.0014124611
-     2        0.0000000000       -0.0079209363
-     3        0.0000000000       -0.0006741346
-     4        0.0000000000       -0.0003560336
-     5        0.0000000000        0.0003237881
-     6        0.0000000000       -0.0007358497
-     7        0.0000000000        0.0014124611
-     8        0.0000000000        0.0079209363
-     9        0.0000000000        0.0006741346
-    10        0.0000000000        0.0003560336
-    11        0.0000000000       -0.0003237881
-    12        0.0000000000        0.0007358497
- 
-
-All nonzero property elements of Z2-HYP   operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    1      0.0000000000       -0.0014124611
-    1    2      0.0000000000        0.0004182318
-    1    3      0.0000000000        0.0002423324
-    1    4      0.0000000000       -0.0000951939
-    1    5      0.0000000000        0.0000000001
-    1    6      0.0000000000       -0.0001344505
-    2    1      0.0000000000        0.0004182318
-    2    2      0.0000000000       -0.0079209363
-    2    3      0.0000000000       -0.0020864871
-    2    4      0.0000000000        0.0002185411
-    2    5      0.0000000000       -0.0000000002
-    2    6      0.0000000000        0.0024529759
-    3    1      0.0000000000        0.0002423324
-    3    2      0.0000000000       -0.0020864871
-    3    3      0.0000000000       -0.0006741346
-    3    4      0.0000000000       -0.0000349629
-    3    5      0.0000000000        0.0000000000
-    3    6      0.0000000000        0.0006280070
-    4    1      0.0000000000       -0.0000951939
-    4    2      0.0000000000        0.0002185411
-    4    3      0.0000000000       -0.0000349629
-    4    4      0.0000000000       -0.0003560336
-    4    5      0.0000000000        0.0000000005
-    4    6      0.0000000000       -0.0000677235
-    5    1      0.0000000000        0.0000000001
-    5    2      0.0000000000       -0.0000000002
-    5    3      0.0000000000        0.0000000000
-    5    4      0.0000000000        0.0000000005
-    5    5      0.0000000000        0.0003237881
-    5    6      0.0000000000        0.0000000000
-    6    1      0.0000000000       -0.0001344505
-    6    2      0.0000000000        0.0024529759
-    6    3      0.0000000000        0.0006280070
-    6    4      0.0000000000       -0.0000677235
-    6    5      0.0000000000        0.0000000000
-    6    6      0.0000000000       -0.0007358497
-    7    7      0.0000000000        0.0014124611
-    7    8      0.0000000000       -0.0004182318
-    7    9      0.0000000000       -0.0002423324
-    7   10      0.0000000000        0.0000951939
-    7   11      0.0000000000       -0.0000000001
-    7   12      0.0000000000        0.0001344505
-    8    7      0.0000000000       -0.0004182318
-    8    8      0.0000000000        0.0079209363
-    8    9      0.0000000000        0.0020864871
-    8   10      0.0000000000       -0.0002185411
-    8   11      0.0000000000        0.0000000002
-    8   12      0.0000000000       -0.0024529759
-    9    7      0.0000000000       -0.0002423324
-    9    8      0.0000000000        0.0020864871
-    9    9      0.0000000000        0.0006741346
-    9   10      0.0000000000        0.0000349629
-    9   11      0.0000000000       -0.0000000000
-    9   12      0.0000000000       -0.0006280070
-   10    7      0.0000000000        0.0000951939
-   10    8      0.0000000000       -0.0002185411
-   10    9      0.0000000000        0.0000349629
-   10   10      0.0000000000        0.0003560336
-   10   11      0.0000000000       -0.0000000005
-   10   12      0.0000000000        0.0000677235
-   11    7      0.0000000000       -0.0000000001
-   11    8      0.0000000000        0.0000000002
-   11    9      0.0000000000       -0.0000000000
-   11   10      0.0000000000       -0.0000000005
-   11   11      0.0000000000       -0.0003237881
-   11   12      0.0000000000       -0.0000000000
-   12    7      0.0000000000        0.0001344505
-   12    8      0.0000000000       -0.0024529759
-   12    9      0.0000000000       -0.0006280070
-   12   10      0.0000000000        0.0000677235
-   12   11      0.0000000000       -0.0000000000
-   12   12      0.0000000000        0.0007358497
- 
-
-   *** Property matrix :************************SZ-COMP  ***
-
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.49988007    -0.00002180     0.00001695     0.00000014    -0.00000000     0.00000596
-       2      -0.00002180     0.49998660     0.00000072    -0.00002194     0.00000000     0.00000530
-       3       0.00001695     0.00000072     0.49999344    -0.00006959     0.00000000    -0.00000032
-       4       0.00000014    -0.00002194    -0.00006959    -0.49999548    -0.00000000    -0.00002247
-       5      -0.00000000     0.00000000     0.00000000    -0.00000000    -0.49999549     0.00000000
-       6       0.00000596     0.00000530    -0.00000032    -0.00002247     0.00000000     0.49999592
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of SZ-COMP  operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
-     1        0.0000000000        0.4998800720
-     2        0.0000000000        0.4999866017
-     3        0.0000000000        0.4999934379
-     4        0.0000000000       -0.4999954819
-     5        0.0000000000       -0.4999954900
-     6        0.0000000000        0.4999959160
-     7        0.0000000000       -0.4998800720
-     8        0.0000000000       -0.4999866017
-     9        0.0000000000       -0.4999934379
-    10        0.0000000000        0.4999954819
-    11        0.0000000000        0.4999954900
-    12        0.0000000000       -0.4999959160
- 
-
-All nonzero property elements of SZ-COMP  operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    1      0.0000000000        0.4998800720
-    1    2      0.0000000000       -0.0000218001
-    1    3      0.0000000000        0.0000169542
-    1    4      0.0000000000        0.0000001392
-    1    6      0.0000000000        0.0000059635
-    2    1      0.0000000000       -0.0000218001
-    2    2      0.0000000000        0.4999866017
-    2    3      0.0000000000        0.0000007187
-    2    4      0.0000000000       -0.0000219416
-    2    5      0.0000000000        0.0000000000
-    2    6      0.0000000000        0.0000053023
-    3    1      0.0000000000        0.0000169542
-    3    2      0.0000000000        0.0000007187
-    3    3      0.0000000000        0.4999934379
-    3    4      0.0000000000       -0.0000695907
-    3    5      0.0000000000        0.0000000001
-    3    6      0.0000000000       -0.0000003222
-    4    1      0.0000000000        0.0000001392
-    4    2      0.0000000000       -0.0000219416
-    4    3      0.0000000000       -0.0000695907
-    4    4      0.0000000000       -0.4999954819
-    4    6      0.0000000000       -0.0000224654
-    5    2      0.0000000000        0.0000000000
-    5    3      0.0000000000        0.0000000001
-    5    5      0.0000000000       -0.4999954900
-    6    1      0.0000000000        0.0000059635
-    6    2      0.0000000000        0.0000053023
-    6    3      0.0000000000       -0.0000003222
-    6    4      0.0000000000       -0.0000224654
-    6    6      0.0000000000        0.4999959160
-    7    7      0.0000000000       -0.4998800720
-    7    8      0.0000000000        0.0000218001
-    7    9      0.0000000000       -0.0000169542
-    7   10      0.0000000000       -0.0000001392
-    7   12      0.0000000000       -0.0000059635
-    8    7      0.0000000000        0.0000218001
-    8    8      0.0000000000       -0.4999866017
-    8    9      0.0000000000       -0.0000007187
-    8   10      0.0000000000        0.0000219416
-    8   11      0.0000000000       -0.0000000000
-    8   12      0.0000000000       -0.0000053023
-    9    7      0.0000000000       -0.0000169542
-    9    8      0.0000000000       -0.0000007187
-    9    9      0.0000000000       -0.4999934379
-    9   10      0.0000000000        0.0000695907
-    9   11      0.0000000000       -0.0000000001
-    9   12      0.0000000000        0.0000003222
-   10    7      0.0000000000       -0.0000001392
-   10    8      0.0000000000        0.0000219416
-   10    9      0.0000000000        0.0000695907
-   10   10      0.0000000000        0.4999954819
-   10   12      0.0000000000        0.0000224654
-   11    8      0.0000000000       -0.0000000000
-   11    9      0.0000000000       -0.0000000001
-   11   11      0.0000000000        0.4999954900
-   12    7      0.0000000000       -0.0000059635
-   12    8      0.0000000000       -0.0000053023
-   12    9      0.0000000000        0.0000003222
-   12   10      0.0000000000        0.0000224654
-   12   12      0.0000000000       -0.4999959160
- 
-
-   *** Property matrix :************************LZ-COMP  ***
-
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.00011993     0.00002180    -0.00001695    -0.00000014     0.00000000    -0.00000596
-       2       0.00002180     0.00001340    -0.00000072     0.00002194    -0.00000000    -0.00000530
-       3      -0.00001695    -0.00000072     0.00000656     0.00006959    -0.00000000     0.00000032
-       4      -0.00000014     0.00002194     0.00006959     0.99999548    -0.00000145     0.00002247
-       5       0.00000000    -0.00000000    -0.00000000    -0.00000145    -1.00000451    -0.00000000
-       6      -0.00000596    -0.00000530     0.00000032     0.00002247    -0.00000000     0.00000408
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of LZ-COMP  operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
-     1        0.0000000000        0.0001199280
-     2        0.0000000000        0.0000133983
-     3        0.0000000000        0.0000065621
-     4        0.0000000000        0.9999954819
-     5        0.0000000000       -1.0000045100
-     6        0.0000000000        0.0000040840
-     7        0.0000000000       -0.0001199280
-     8        0.0000000000       -0.0000133983
-     9        0.0000000000       -0.0000065621
-    10        0.0000000000       -0.9999954819
-    11        0.0000000000        1.0000045100
-    12        0.0000000000       -0.0000040840
- 
-
-All nonzero property elements of LZ-COMP  operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    1      0.0000000000        0.0001199280
-    1    2      0.0000000000        0.0000218001
-    1    3      0.0000000000       -0.0000169542
-    1    4      0.0000000000       -0.0000001392
-    1    6      0.0000000000       -0.0000059635
-    2    1      0.0000000000        0.0000218001
-    2    2      0.0000000000        0.0000133983
-    2    3      0.0000000000       -0.0000007187
-    2    4      0.0000000000        0.0000219416
-    2    5      0.0000000000       -0.0000000000
-    2    6      0.0000000000       -0.0000053023
-    3    1      0.0000000000       -0.0000169542
-    3    2      0.0000000000       -0.0000007187
-    3    3      0.0000000000        0.0000065621
-    3    4      0.0000000000        0.0000695907
-    3    5      0.0000000000       -0.0000000000
-    3    6      0.0000000000        0.0000003222
-    4    1      0.0000000000       -0.0000001392
-    4    2      0.0000000000        0.0000219416
-    4    3      0.0000000000        0.0000695907
-    4    4      0.0000000000        0.9999954819
-    4    5      0.0000000000       -0.0000014477
-    4    6      0.0000000000        0.0000224654
-    5    2      0.0000000000       -0.0000000000
-    5    3      0.0000000000       -0.0000000000
-    5    4      0.0000000000       -0.0000014477
-    5    5      0.0000000000       -1.0000045100
-    5    6      0.0000000000       -0.0000000000
-    6    1      0.0000000000       -0.0000059635
-    6    2      0.0000000000       -0.0000053023
-    6    3      0.0000000000        0.0000003222
-    6    4      0.0000000000        0.0000224654
-    6    5      0.0000000000       -0.0000000000
-    6    6      0.0000000000        0.0000040840
-    7    7      0.0000000000       -0.0001199280
-    7    8      0.0000000000       -0.0000218001
-    7    9      0.0000000000        0.0000169542
-    7   10      0.0000000000        0.0000001392
-    7   12      0.0000000000        0.0000059635
-    8    7      0.0000000000       -0.0000218001
-    8    8      0.0000000000       -0.0000133983
-    8    9      0.0000000000        0.0000007187
-    8   10      0.0000000000       -0.0000219416
-    8   11      0.0000000000        0.0000000000
-    8   12      0.0000000000        0.0000053023
-    9    7      0.0000000000        0.0000169542
-    9    8      0.0000000000        0.0000007187
-    9    9      0.0000000000       -0.0000065621
-    9   10      0.0000000000       -0.0000695907
-    9   11      0.0000000000        0.0000000000
-    9   12      0.0000000000       -0.0000003222
-   10    7      0.0000000000        0.0000001392
-   10    8      0.0000000000       -0.0000219416
-   10    9      0.0000000000       -0.0000695907
-   10   10      0.0000000000       -0.9999954819
-   10   11      0.0000000000        0.0000014477
-   10   12      0.0000000000       -0.0000224654
-   11    8      0.0000000000        0.0000000000
-   11    9      0.0000000000        0.0000000000
-   11   10      0.0000000000        0.0000014477
-   11   11      0.0000000000        1.0000045100
-   11   12      0.0000000000        0.0000000000
-   12    7      0.0000000000        0.0000059635
-   12    8      0.0000000000        0.0000053023
-   12    9      0.0000000000       -0.0000003222
-   12   10      0.0000000000       -0.0000224654
-   12   11      0.0000000000        0.0000000000
-   12   12      0.0000000000       -0.0000040840
- 
-
-   *** Property matrix :************************SX-COMP  ***
-
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.49988022    -0.00002462     0.00001648    -0.00000004    -0.00000004     0.00000721
-       2      -0.00002462     0.49998431    -0.00000106    -0.00001257    -0.00001257     0.00000504
-       3       0.00001648    -0.00000106     0.49999122    -0.00003631    -0.00003631     0.00000003
-       4      -0.00000004    -0.00001257    -0.00003631    -0.00000297    -0.49999665    -0.00001111
-       5      -0.00000004    -0.00001257    -0.00003631    -0.49999665     0.00000072    -0.00001111
-       6       0.00000721     0.00000504     0.00000003    -0.00001111    -0.00001111     0.49999580
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of SX-COMP  operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
- 
-
-All nonzero property elements of SX-COMP  operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    7      0.0000000000        0.4998802213
-    1    8      0.0000000000       -0.0000246200
-    1    9      0.0000000000        0.0000164827
-    1   10      0.0000000000       -0.0000000369
-    1   11      0.0000000000       -0.0000000367
-    1   12      0.0000000000        0.0000072071
-    2    7      0.0000000000       -0.0000246200
-    2    8      0.0000000000        0.4999843073
-    2    9      0.0000000000       -0.0000010551
-    2   10      0.0000000000       -0.0000125730
-    2   11      0.0000000000       -0.0000125725
-    2   12      0.0000000000        0.0000050350
-    3    7      0.0000000000        0.0000164827
-    3    8      0.0000000000       -0.0000010551
-    3    9      0.0000000000        0.4999912186
-    3   10      0.0000000000       -0.0000363143
-    3   11      0.0000000000       -0.0000363130
-    3   12      0.0000000000        0.0000000344
-    4    7      0.0000000000       -0.0000000369
-    4    8      0.0000000000       -0.0000125730
-    4    9      0.0000000000       -0.0000363143
-    4   10      0.0000000000       -0.0000029748
-    4   11      0.0000000000       -0.4999966523
-    4   12      0.0000000000       -0.0000111110
-    5    7      0.0000000000       -0.0000000367
-    5    8      0.0000000000       -0.0000125725
-    5    9      0.0000000000       -0.0000363130
-    5   10      0.0000000000       -0.4999966523
-    5   11      0.0000000000        0.0000007238
-    5   12      0.0000000000       -0.0000111114
-    6    7      0.0000000000        0.0000072071
-    6    8      0.0000000000        0.0000050350
-    6    9      0.0000000000        0.0000000344
-    6   10      0.0000000000       -0.0000111110
-    6   11      0.0000000000       -0.0000111114
-    6   12      0.0000000000        0.4999958046
-    7    1      0.0000000000        0.4998802213
-    7    2      0.0000000000       -0.0000246200
-    7    3      0.0000000000        0.0000164827
-    7    4      0.0000000000       -0.0000000369
-    7    5      0.0000000000       -0.0000000367
-    7    6      0.0000000000        0.0000072071
-    8    1      0.0000000000       -0.0000246200
-    8    2      0.0000000000        0.4999843073
-    8    3      0.0000000000       -0.0000010551
-    8    4      0.0000000000       -0.0000125730
-    8    5      0.0000000000       -0.0000125725
-    8    6      0.0000000000        0.0000050350
-    9    1      0.0000000000        0.0000164827
-    9    2      0.0000000000       -0.0000010551
-    9    3      0.0000000000        0.4999912186
-    9    4      0.0000000000       -0.0000363143
-    9    5      0.0000000000       -0.0000363130
-    9    6      0.0000000000        0.0000000344
-   10    1      0.0000000000       -0.0000000369
-   10    2      0.0000000000       -0.0000125730
-   10    3      0.0000000000       -0.0000363143
-   10    4      0.0000000000       -0.0000029748
-   10    5      0.0000000000       -0.4999966523
-   10    6      0.0000000000       -0.0000111110
-   11    1      0.0000000000       -0.0000000367
-   11    2      0.0000000000       -0.0000125725
-   11    3      0.0000000000       -0.0000363130
-   11    4      0.0000000000       -0.4999966523
-   11    5      0.0000000000        0.0000007238
-   11    6      0.0000000000       -0.0000111114
-   12    1      0.0000000000        0.0000072071
-   12    2      0.0000000000        0.0000050350
-   12    3      0.0000000000        0.0000000344
-   12    4      0.0000000000       -0.0000111110
-   12    5      0.0000000000       -0.0000111114
-   12    6      0.0000000000        0.4999958046
- 
-
-   *** Property matrix :************************LX-COMP  ***
-
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.00011978     0.00002473    -0.00001626     0.00169544    -0.00169526    -0.00000722
-       2       0.00002473    -0.00001849    -0.00005459    -0.34586667     0.34585757    -0.00000430
-       3      -0.00001626    -0.00005459    -0.00007822    -0.45625480     0.45624884    -0.00001458
-       4       0.00169544    -0.34586667    -0.45625480     0.00011626    -0.00006035    -0.35022274
-       5      -0.00169526     0.34585757     0.45624884    -0.00006035     0.00000000     0.35023514
-       6      -0.00000722    -0.00000430    -0.00001458    -0.35022274     0.35023514    -0.00002792
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of LX-COMP  operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
- 
-
-All nonzero property elements of LX-COMP  operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    7      0.0000000000        0.0001197788
-    1    8      0.0000000000        0.0000247276
-    1    9      0.0000000000       -0.0000162599
-    1   10      0.0000000000        0.0016954431
-    1   11      0.0000000000       -0.0016952580
-    1   12      0.0000000000       -0.0000072234
-    2    7      0.0000000000        0.0000247276
-    2    8      0.0000000000       -0.0000184886
-    2    9      0.0000000000       -0.0000545946
-    2   10      0.0000000000       -0.3458666675
-    2   11      0.0000000000        0.3458575744
-    2   12      0.0000000000       -0.0000042957
-    3    7      0.0000000000       -0.0000162599
-    3    8      0.0000000000       -0.0000545946
-    3    9      0.0000000000       -0.0000782172
-    3   10      0.0000000000       -0.4562548038
-    3   11      0.0000000000        0.4562488419
-    3   12      0.0000000000       -0.0000145799
-    4    7      0.0000000000        0.0016954431
-    4    8      0.0000000000       -0.3458666675
-    4    9      0.0000000000       -0.4562548038
-    4   10      0.0000000000        0.0001162569
-    4   11      0.0000000000       -0.0000603517
-    4   12      0.0000000000       -0.3502227360
-    5    7      0.0000000000       -0.0016952580
-    5    8      0.0000000000        0.3458575744
-    5    9      0.0000000000        0.4562488419
-    5   10      0.0000000000       -0.0000603517
-    5   11      0.0000000000        0.0000000001
-    5   12      0.0000000000        0.3502351381
-    6    7      0.0000000000       -0.0000072234
-    6    8      0.0000000000       -0.0000042957
-    6    9      0.0000000000       -0.0000145799
-    6   10      0.0000000000       -0.3502227360
-    6   11      0.0000000000        0.3502351381
-    6   12      0.0000000000       -0.0000279166
-    7    1      0.0000000000        0.0001197788
-    7    2      0.0000000000        0.0000247276
-    7    3      0.0000000000       -0.0000162599
-    7    4      0.0000000000        0.0016954431
-    7    5      0.0000000000       -0.0016952580
-    7    6      0.0000000000       -0.0000072234
-    8    1      0.0000000000        0.0000247276
-    8    2      0.0000000000       -0.0000184886
-    8    3      0.0000000000       -0.0000545946
-    8    4      0.0000000000       -0.3458666675
-    8    5      0.0000000000        0.3458575744
-    8    6      0.0000000000       -0.0000042957
-    9    1      0.0000000000       -0.0000162599
-    9    2      0.0000000000       -0.0000545946
-    9    3      0.0000000000       -0.0000782172
-    9    4      0.0000000000       -0.4562548038
-    9    5      0.0000000000        0.4562488419
-    9    6      0.0000000000       -0.0000145799
-   10    1      0.0000000000        0.0016954431
-   10    2      0.0000000000       -0.3458666675
-   10    3      0.0000000000       -0.4562548038
-   10    4      0.0000000000        0.0001162569
-   10    5      0.0000000000       -0.0000603517
-   10    6      0.0000000000       -0.3502227360
-   11    1      0.0000000000       -0.0016952580
-   11    2      0.0000000000        0.3458575744
-   11    3      0.0000000000        0.4562488419
-   11    4      0.0000000000       -0.0000603517
-   11    5      0.0000000000        0.0000000001
-   11    6      0.0000000000        0.3502351381
-   12    1      0.0000000000       -0.0000072234
-   12    2      0.0000000000       -0.0000042957
-   12    3      0.0000000000       -0.0000145799
-   12    4      0.0000000000       -0.3502227360
-   12    5      0.0000000000        0.3502351381
-   12    6      0.0000000000       -0.0000279166
- 
-
-   *** Property matrix :************************SY-COMP  ***
-
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.49988022    -0.00002462     0.00001648    -0.00000004     0.00000004     0.00000721
-       2      -0.00002462     0.49998431    -0.00000106    -0.00001257     0.00001257     0.00000504
-       3       0.00001648    -0.00000106     0.49999122    -0.00003631     0.00003631     0.00000003
-       4      -0.00000004    -0.00001257    -0.00003631    -0.00000153     0.49999665    -0.00001111
-       5       0.00000004     0.00001257     0.00003631     0.49999665    -0.00000072     0.00001111
-       6       0.00000721     0.00000504     0.00000003    -0.00001111     0.00001111     0.49999580
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of SY-COMP  operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
- 
-
-All nonzero property elements of SY-COMP  operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    7      0.4998802213        0.0000000000
-    1    8     -0.0000246200        0.0000000000
-    1    9      0.0000164827        0.0000000000
-    1   10     -0.0000000369        0.0000000000
-    1   11      0.0000000367        0.0000000000
-    1   12      0.0000072071        0.0000000000
-    2    7     -0.0000246200        0.0000000000
-    2    8      0.4999843073        0.0000000000
-    2    9     -0.0000010551        0.0000000000
-    2   10     -0.0000125730        0.0000000000
-    2   11      0.0000125725        0.0000000000
-    2   12      0.0000050350        0.0000000000
-    3    7      0.0000164827        0.0000000000
-    3    8     -0.0000010551        0.0000000000
-    3    9      0.4999912186        0.0000000000
-    3   10     -0.0000363143        0.0000000000
-    3   11      0.0000363131        0.0000000000
-    3   12      0.0000000344        0.0000000000
-    4    7     -0.0000000369        0.0000000000
-    4    8     -0.0000125730        0.0000000000
-    4    9     -0.0000363143        0.0000000000
-    4   10     -0.0000015272        0.0000000000
-    4   11      0.4999966523        0.0000000000
-    4   12     -0.0000111110        0.0000000000
-    5    7      0.0000000367        0.0000000000
-    5    8      0.0000125725        0.0000000000
-    5    9      0.0000363131        0.0000000000
-    5   10      0.4999966523        0.0000000000
-    5   11     -0.0000007238        0.0000000000
-    5   12      0.0000111114        0.0000000000
-    6    7      0.0000072071        0.0000000000
-    6    8      0.0000050350        0.0000000000
-    6    9      0.0000000344        0.0000000000
-    6   10     -0.0000111110        0.0000000000
-    6   11      0.0000111114        0.0000000000
-    6   12      0.4999958046        0.0000000000
-    7    1     -0.4998802213        0.0000000000
-    7    2      0.0000246200        0.0000000000
-    7    3     -0.0000164827        0.0000000000
-    7    4      0.0000000369        0.0000000000
-    7    5     -0.0000000367        0.0000000000
-    7    6     -0.0000072071        0.0000000000
-    8    1      0.0000246200        0.0000000000
-    8    2     -0.4999843073        0.0000000000
-    8    3      0.0000010551        0.0000000000
-    8    4      0.0000125730        0.0000000000
-    8    5     -0.0000125725        0.0000000000
-    8    6     -0.0000050350        0.0000000000
-    9    1     -0.0000164827        0.0000000000
-    9    2      0.0000010551        0.0000000000
-    9    3     -0.4999912186        0.0000000000
-    9    4      0.0000363143        0.0000000000
-    9    5     -0.0000363131        0.0000000000
-    9    6     -0.0000000344        0.0000000000
-   10    1      0.0000000369        0.0000000000
-   10    2      0.0000125730        0.0000000000
-   10    3      0.0000363143        0.0000000000
-   10    4      0.0000015272        0.0000000000
-   10    5     -0.4999966523        0.0000000000
-   10    6      0.0000111110        0.0000000000
-   11    1     -0.0000000367        0.0000000000
-   11    2     -0.0000125725        0.0000000000
-   11    3     -0.0000363131        0.0000000000
-   11    4     -0.4999966523        0.0000000000
-   11    5      0.0000007238        0.0000000000
-   11    6     -0.0000111114        0.0000000000
-   12    1     -0.0000072071        0.0000000000
-   12    2     -0.0000050350        0.0000000000
-   12    3     -0.0000000344        0.0000000000
-   12    4      0.0000111110        0.0000000000
-   12    5     -0.0000111114        0.0000000000
-   12    6     -0.4999958046        0.0000000000
- 
-
-   *** Property matrix :************************LY-COMP  ***
-
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:   6   6   6   6
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
-       1       0.00011978     0.00002473    -0.00001626     0.00169545     0.00169526    -0.00000722
-       2       0.00002473    -0.00001849    -0.00005459    -0.34586717    -0.34585707    -0.00000430
-       3      -0.00001626    -0.00005459    -0.00007822    -0.45625546    -0.45624818    -0.00001458
-       4       0.00169545    -0.34586717    -0.45625546     0.00011626     0.00006035    -0.35022324
-       5       0.00169526    -0.34585707    -0.45624818     0.00006035    -0.00000000    -0.35023463
-       6      -0.00000722    -0.00000430    -0.00001458    -0.35022324    -0.35023463    -0.00002792
-    ==== End of matrix output ====
-
-Nonzero diagonal elements of LY-COMP  operator in Kramers paired molecular spinor basis:
-
-            Real part           Imaginary Part
-    zero threshold=0.100D-10
- 
-
-All nonzero property elements of LY-COMP  operator in Kramers paired molecular spinor basis:
-
-    zero threshold=0.100D-10
-    1    7      0.0001197788        0.0000000000
-    1    8      0.0000247276        0.0000000000
-    1    9     -0.0000162599        0.0000000000
-    1   10      0.0016954456        0.0000000000
-    1   11      0.0016952556        0.0000000000
-    1   12     -0.0000072234        0.0000000000
-    2    7      0.0000247276        0.0000000000
-    2    8     -0.0000184886        0.0000000000
-    2    9     -0.0000545946        0.0000000000
-    2   10     -0.3458671682        0.0000000000
-    2   11     -0.3458570737        0.0000000000
-    2   12     -0.0000042957        0.0000000000
-    3    7     -0.0000162599        0.0000000000
-    3    8     -0.0000545946        0.0000000000
-    3    9     -0.0000782172        0.0000000000
-    3   10     -0.4562554643        0.0000000000
-    3   11     -0.4562481814        0.0000000000
-    3   12     -0.0000145799        0.0000000000
-    4    7      0.0016954456        0.0000000000
-    4    8     -0.3458671682        0.0000000000
-    4    9     -0.4562554643        0.0000000000
-    4   10      0.0001162570        0.0000000000
-    4   11      0.0000603515        0.0000000000
-    4   12     -0.3502232430        0.0000000000
-    5    7      0.0016952556        0.0000000000
-    5    8     -0.3458570737        0.0000000000
-    5    9     -0.4562481814        0.0000000000
-    5   10      0.0000603515        0.0000000000
-    5   11     -0.0000000001        0.0000000000
-    5   12     -0.3502346311        0.0000000000
-    6    7     -0.0000072234        0.0000000000
-    6    8     -0.0000042957        0.0000000000
-    6    9     -0.0000145799        0.0000000000
-    6   10     -0.3502232430        0.0000000000
-    6   11     -0.3502346311        0.0000000000
-    6   12     -0.0000279166        0.0000000000
-    7    1     -0.0001197788        0.0000000000
-    7    2     -0.0000247276        0.0000000000
-    7    3      0.0000162599        0.0000000000
-    7    4     -0.0016954456        0.0000000000
-    7    5     -0.0016952556        0.0000000000
-    7    6      0.0000072234        0.0000000000
-    8    1     -0.0000247276        0.0000000000
-    8    2      0.0000184886        0.0000000000
-    8    3      0.0000545946        0.0000000000
-    8    4      0.3458671682        0.0000000000
-    8    5      0.3458570737        0.0000000000
-    8    6      0.0000042957        0.0000000000
-    9    1      0.0000162599        0.0000000000
-    9    2      0.0000545946        0.0000000000
-    9    3      0.0000782172        0.0000000000
-    9    4      0.4562554643        0.0000000000
-    9    5      0.4562481814        0.0000000000
-    9    6      0.0000145799        0.0000000000
-   10    1     -0.0016954456        0.0000000000
-   10    2      0.3458671682        0.0000000000
-   10    3      0.4562554643        0.0000000000
-   10    4     -0.0001162570        0.0000000000
-   10    5     -0.0000603515        0.0000000000
-   10    6      0.3502232430        0.0000000000
-   11    1     -0.0016952556        0.0000000000
-   11    2      0.3458570737        0.0000000000
-   11    3      0.4562481814        0.0000000000
-   11    4     -0.0000603515        0.0000000000
-   11    5      0.0000000001        0.0000000000
-   11    6      0.3502346311        0.0000000000
-   12    1      0.0000072234        0.0000000000
-   12    2      0.0000042957        0.0000000000
-   12    3      0.0000145799        0.0000000000
-   12    4      0.3502232430        0.0000000000
-   12    5      0.3502346311        0.0000000000
-   12    6      0.0000279166        0.0000000000
  
 
 
@@ -2700,13 +1603,13 @@ All nonzero property elements of LY-COMP  operator in Kramers paired molecular s
        ********************************************************************
 
 
- Transformation started at : Thu Aug  6 18:48:58 2015
+ Transformation started at : Fri Aug 21 16:05:46 2015
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -15.0552578285462353
-* Heading :BeH                                               Thu Aug  6 18:48:58 2015
+* REACMO: Coefficients read from file DFCOEF - Total energy: -15.0552578285462708
+* Heading :BeH                                               Fri Aug 21 16:05:46 2015
 
-* REAFCK: Fock matrix read from file /scratch/mknayak/DIRAC_BeH_BeH_19892/DFFCK1                 
-* Heading :BeH                                               Thu Aug  6 18:48:56 2015
+* REAFCK: Fock matrix read from file /scratch/mknayak/DIRAC_BeH_BeH_12264/DFFCK1                 
+* Heading :BeH                                               Fri Aug 21 16:05:45 2015
 
 
  Core energy (includes nuclear repulsion) :              2.3088022692
@@ -2732,7 +1635,7 @@ All nonzero property elements of LY-COMP  operator in Kramers paired molecular s
    - Beginning task  12 of  13 after      0. seconds and      0. CPU-seconds
    - Beginning task  13 of  13 after      0. seconds and      0. CPU-seconds
 
- Node    0 finished first half transformation          125297 HT integrals written ( 78.69%,      0.00 GB)
+ Node    0 finished first half transformation          124459 HT integrals written ( 78.16%,      0.00 GB)
   
  <<< Starting 2HT on node                      0
   
@@ -2748,14 +1651,14 @@ All nonzero property elements of LY-COMP  operator in Kramers paired molecular s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformation            0.321 seconds
+ Time in  First halftransformation            0.309 seconds
  Time in  Second halftransformation           0.021 seconds
 
 
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Thu Aug  6 18:48:58 2015
+ Transformation ended at : Fri Aug 21 16:05:46 2015
 
 
 
@@ -2764,7 +1667,7 @@ All nonzero property elements of LY-COMP  operator in Kramers paired molecular s
 
  Written by Luuk Visscher 
 
- This run started at  6 Aug 15  18:48:58
+ This run started at  21 Aug 15 16:05:46
 
 
  Information read from MRCONEE 
@@ -2780,33 +1683,33 @@ All nonzero property elements of LY-COMP  operator in Kramers paired molecular s
 
  Orbital Index     Representation        Orbital Energy
      1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
+     2       2        E  1E               -0.5382437126    
+     3       3        E  1E               -0.3016370023    
+     7       4        E  2E                -4.679468390    
+     8       5        E  2E               -0.5382437126    
+     4       6        E  1E                0.6997326685E-01
+     5       7        E  1E                0.6997765777E-01
+     6       8        E  1E                0.1465856781    
+     9       9        E  2E               -0.3016370023    
+    10      10        E  2E                0.6997326685E-01
+    11      11        E  2E                0.6997765777E-01
+    12      12        E  2E                0.1465856781    
 
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
+    3672 Unique Coulomb integrals read from MDCINT ( 21Aug15   16:05:46)
+    2546 Coulomb integrals written to MRCTWOE
 
  Real arithmetic will be used in EXPAND and TWOLIN
 
  Abelian Representation :   1E
  Number of reference determinants :       126
- Total number of determinants :       396
+ Total number of determinants :       126
  Number of roots to be optimized :  1
  Start vectors method :  1
  Overlap Selection : F
  Position in COSCI space :   1
  Maximum number of iterations :   30
  Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
+ Residue convergence required :   0.1E-06
  Maximum of CPU seconds to be used :        604800.0
  Restart calculation : F
  Printing contributions of important spinors : T
@@ -2816,79 +1719,75 @@ All nonzero property elements of LY-COMP  operator in Kramers paired molecular s
  Total number of active electrons :    5
  Number of active orbitals :   12
 
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
+ RAS1 :   5
+ RAS2 :   7
+ RAS3 :   0
 
  Allowed RAS configurations :
 
   RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
+     5     0     0           1
+     4     1     0          35
+     3     2     0         210
 
  1-electron excitations will be written to file
 
- Setup Routine completed in    0.001 SECONDS
+ Setup Routine completed in    0.003 SECONDS
 
 100.00 Percent of the Coupling Coefficients are stored.
 
  Start vectors are single determinants
 
- Root   1 is determinant   2 Exp. Value    -15.055257828548
+ Root   1 is determinant   1 Exp. Value    -15.055257828548
 
 
  Iter Root Isel             Energy       Correlation     Convergence   Residue
     1    1    1     -15.0552578285      0.00000000000      0.000     0.1921E-02
-    2    1    1     -15.0574292764     -.217144789317E-02 -.2171E-02 0.5548E-04
+    2    1    1     -15.0574292764     -.217144789345E-02 -.2171E-02 0.2838E-04
+    3    1    1     -15.0574952212     -.223739262546E-02 -.6594E-04 0.7541E-06
+    4    1    1     -15.0574960727     -.223824412311E-02 -.8515E-06 0.3636E-08
 
 
  End of iterations :                 Converged
 
  --- Root   1 ---
-@ CI Total Energy :                     -15.057429276441
-@ Relative to reference :                -0.002171447893
-@ 1 - Reference weight :                  0.003056940706
-@ Residue :                               0.000055481225
+@ CI Total Energy :                     -15.057496072671
+@ Relative to reference :                -0.002238244123
+@ 1 - Reference weight :                  0.003463929605
+@ Residue :                               0.000000003636
 
- Total CPU time :          1.929
+ Total CPU time :          1.919
 
- Vector #   1 read from MRCFINV; Eigenvalue     -15.057429276441
+ Vector #   1 read from MRCFINV; Eigenvalue     -15.057496072671
 
  Occupation numbers : 
 
  Orbital Representation   Root  1   Root
      1          1E       0.999999
-     2          2E       0.999996
-     3          1E       0.998869
-     4          1E       0.998097
-     5          1E       0.001267
-     6          1E       0.001266
-     7          2E       0.996967
-     8          2E       0.000229
-     9          2E       0.001267
-    10          2E       0.001266
-    11          1E       0.000502
-    12          2E       0.000275
+     2          1E       0.998849
+     3          1E       0.997913
+     4          2E       0.999996
+     5          2E       0.996543
+     6          1E       0.001358
+     7          1E       0.001357
+     8          1E       0.000524
+     9          2E       0.000368
+    10          2E       0.001358
+    11          2E       0.001357
+    12          2E       0.000378
 
 
  Contributions of start vectors to final CI vector   1
-  0.99694306    
+  0.99653607    
  
  
 Determinants with coefficient .GT. 0.1000
  
-Determinant(s) of root:    1 with eigenvalue:     -15.05742928
+Determinant(s) of root:    1 with eigenvalue:     -15.05749607
  
-Determinant        2 with square of coeff.       0.99694306
+Determinant        1 with square of coeff.       0.99653607
 Holes in RAS1: 
-Elec. in RAS2:    3(  1E)   4(  1E)   7(  2E)
+Elec. in RAS2: 
 Elec. in RAS3: 
 
 
@@ -2906,7 +1805,7 @@ Implemented by Malaya K. Nayak
 
  Written by Luuk Visscher 
 
- This run started at  6 Aug 15  18:48:58
+ This run started at  21 Aug 15 16:05:46
 
 
  Information read from MRCONEE 
@@ -2922,39 +1821,35 @@ Implemented by Malaya K. Nayak
 
  Orbital Index     Representation        Orbital Energy
      1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
+     2       2        E  1E               -0.5382437126    
+     3       3        E  1E               -0.3016370023    
+     7       4        E  2E                -4.679468390    
+     8       5        E  2E               -0.5382437126    
+     4       6        E  1E                0.6997326685E-01
+     5       7        E  1E                0.6997765777E-01
+     6       8        E  1E                0.1465856781    
+     9       9        E  2E               -0.3016370023    
+    10      10        E  2E                0.6997326685E-01
+    11      11        E  2E                0.6997765777E-01
+    12      12        E  2E                0.1465856781    
 
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
+    3672 Unique Coulomb integrals read from MDCINT ( 21Aug15   16:05:46)
+    2546 Coulomb integrals written to MRCTWOE
 
  Real arithmetic will be used in EXPAND and TWOLIN
 
- Read integral type SX-COMP  created ******** storage info : ********
- Diagonal and Off-diagonal blocks are exchanged
- Sign of the lower diagonal block is changed
-
- Property SX-COMP  scaled with phase factor     0.0000    1.0000
+ Read integral type Z-DIP    created ******** storage info : ********
 
  Abelian Representation :   1E
  Number of reference determinants :       126
- Total number of determinants :       396
+ Total number of determinants :       126
  Number of roots to be optimized :  1
  Start vectors method :  1
  Overlap Selection : F
  Position in COSCI space :   1
  Maximum number of iterations :   30
  Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
+ Residue convergence required :   0.1E-06
  Maximum of CPU seconds to be used :        604800.0
  Restart calculation : F
  Printing contributions of important spinors : T
@@ -2964,36 +1859,30 @@ Implemented by Malaya K. Nayak
  Total number of active electrons :    5
  Number of active orbitals :   12
 
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
+ RAS1 :   5
+ RAS2 :   7
+ RAS3 :   0
 
  Allowed RAS configurations :
 
   RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
+     5     0     0           1
+     4     1     0          35
+     3     2     0         210
 
  1-electron excitations will be written to file
 
- Setup Routine completed in    0.001 SECONDS
+ Setup Routine completed in    0.002 SECONDS
 
 100.00 Percent of the Coupling Coefficients are stored.
 
- UN-CORRELATED PROPERTY: SX-COMP               REAL              IMAGINARY
+ UN-CORRELATED PROPERTY: Z-DIP                 REAL              IMAGINARY
 
- Root   1 is determinant   2 Exp. Value:  0.499991218602      0.000000000000
+ Root   1 is determinant   1 Exp. Value: -1.607868207770      0.000000000000
 
- CORRELATED PROPERTY: SX-COMP                  REAL              IMAGINARY
+ CORRELATED PROPERTY: Z-DIP                    REAL              IMAGINARY
 
- State   1 is vector   1 Exp. Value:      0.499991117080      0.000000000000
+ State   1 is vector   1 Exp. Value:     -1.604237163279      0.000000000000
 
 
 ################################################################################
@@ -3001,7 +1890,7 @@ Implemented by Malaya K. Nayak
 
  Written by Luuk Visscher 
 
- This run started at  6 Aug 15  18:48:58
+ This run started at  21 Aug 15 16:05:46
 
 
  Information read from MRCONEE 
@@ -3017,485 +1906,20 @@ Implemented by Malaya K. Nayak
 
  Orbital Index     Representation        Orbital Energy
      1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
-
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
-
- Real arithmetic will be used in EXPAND and TWOLIN
-
- Read integral type LX-COMP  created ******** storage info : ********
- Diagonal and Off-diagonal blocks are exchanged
- Sign of the lower diagonal block is changed
-
- Property LX-COMP  scaled with phase factor     0.0000    1.0000
-
- Abelian Representation :   1E
- Number of reference determinants :       126
- Total number of determinants :       396
- Number of roots to be optimized :  1
- Start vectors method :  1
- Overlap Selection : F
- Position in COSCI space :   1
- Maximum number of iterations :   30
- Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
- Maximum of CPU seconds to be used :        604800.0
- Restart calculation : F
- Printing contributions of important spinors : T
- Contributions are printed for coefficients larger then :   0.1    
- Generate natural spinors after CI calculation : F
-
- Total number of active electrons :    5
- Number of active orbitals :   12
-
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
-
- Allowed RAS configurations :
-
-  RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
-
- 1-electron excitations will be written to file
-
- Setup Routine completed in    0.001 SECONDS
-
-100.00 Percent of the Coupling Coefficients are stored.
-
- UN-CORRELATED PROPERTY: LX-COMP               REAL              IMAGINARY
-
- Root   1 is determinant   2 Exp. Value: -0.000078217190      0.000000000000
-
- CORRELATED PROPERTY: LX-COMP                  REAL              IMAGINARY
-
- State   1 is vector   1 Exp. Value:     -0.000073234843      0.000000000000
-
-
-################################################################################
- DIRect Relativistic CI program version 2.0
-
- Written by Luuk Visscher 
-
- This run started at  6 Aug 15  18:48:58
-
-
- Information read from MRCONEE 
-
-
- Breit Interaction included :                    F
- Core Energy :                    2.308802269    
- Number of orbitals :                           12
-* List of allowed representations:
-     1E
-     2E
-
-
- Orbital Index     Representation        Orbital Energy
-     1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
-
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
-
- Real arithmetic will be used in EXPAND and TWOLIN
-
- Read integral type SY-COMP  created ******** storage info : ********
- Diagonal and Off-diagonal blocks are exchanged
-
- Abelian Representation :   1E
- Number of reference determinants :       126
- Total number of determinants :       396
- Number of roots to be optimized :  1
- Start vectors method :  1
- Overlap Selection : F
- Position in COSCI space :   1
- Maximum number of iterations :   30
- Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
- Maximum of CPU seconds to be used :        604800.0
- Restart calculation : F
- Printing contributions of important spinors : T
- Contributions are printed for coefficients larger then :   0.1    
- Generate natural spinors after CI calculation : F
-
- Total number of active electrons :    5
- Number of active orbitals :   12
-
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
-
- Allowed RAS configurations :
-
-  RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
-
- 1-electron excitations will be written to file
-
- Setup Routine completed in    0.001 SECONDS
-
-100.00 Percent of the Coupling Coefficients are stored.
-
- UN-CORRELATED PROPERTY: SY-COMP               REAL              IMAGINARY
-
- Root   1 is determinant   2 Exp. Value:  0.499991218602      0.000000000000
-
- CORRELATED PROPERTY: SY-COMP                  REAL              IMAGINARY
-
- State   1 is vector   1 Exp. Value:      0.499991117080      0.000000000000
-
-
-################################################################################
- DIRect Relativistic CI program version 2.0
-
- Written by Luuk Visscher 
-
- This run started at  6 Aug 15  18:48:58
-
-
- Information read from MRCONEE 
-
-
- Breit Interaction included :                    F
- Core Energy :                    2.308802269    
- Number of orbitals :                           12
-* List of allowed representations:
-     1E
-     2E
-
-
- Orbital Index     Representation        Orbital Energy
-     1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
-
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
-
- Real arithmetic will be used in EXPAND and TWOLIN
-
- Read integral type LY-COMP  created ******** storage info : ********
- Diagonal and Off-diagonal blocks are exchanged
-
- Abelian Representation :   1E
- Number of reference determinants :       126
- Total number of determinants :       396
- Number of roots to be optimized :  1
- Start vectors method :  1
- Overlap Selection : F
- Position in COSCI space :   1
- Maximum number of iterations :   30
- Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
- Maximum of CPU seconds to be used :        604800.0
- Restart calculation : F
- Printing contributions of important spinors : T
- Contributions are printed for coefficients larger then :   0.1    
- Generate natural spinors after CI calculation : F
-
- Total number of active electrons :    5
- Number of active orbitals :   12
-
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
-
- Allowed RAS configurations :
-
-  RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
-
- 1-electron excitations will be written to file
-
- Setup Routine completed in    0.001 SECONDS
-
-100.00 Percent of the Coupling Coefficients are stored.
-
- UN-CORRELATED PROPERTY: LY-COMP               REAL              IMAGINARY
-
- Root   1 is determinant   2 Exp. Value: -0.000078217189      0.000000000000
-
- CORRELATED PROPERTY: LY-COMP                  REAL              IMAGINARY
-
- State   1 is vector   1 Exp. Value:     -0.000073234844      0.000000000000
-
-
-################################################################################
- DIRect Relativistic CI program version 2.0
-
- Written by Luuk Visscher 
-
- This run started at  6 Aug 15  18:48:58
-
-
- Information read from MRCONEE 
-
-
- Breit Interaction included :                    F
- Core Energy :                    2.308802269    
- Number of orbitals :                           12
-* List of allowed representations:
-     1E
-     2E
-
-
- Orbital Index     Representation        Orbital Energy
-     1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
-
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
-
- Real arithmetic will be used in EXPAND and TWOLIN
-
- Read integral type SZ-COMP  created ******** storage info : ********
-
- Property SZ-COMP  scaled with phase factor     0.0000    1.0000
-
- Abelian Representation :   1E
- Number of reference determinants :       126
- Total number of determinants :       396
- Number of roots to be optimized :  1
- Start vectors method :  1
- Overlap Selection : F
- Position in COSCI space :   1
- Maximum number of iterations :   30
- Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
- Maximum of CPU seconds to be used :        604800.0
- Restart calculation : F
- Printing contributions of important spinors : T
- Contributions are printed for coefficients larger then :   0.1    
- Generate natural spinors after CI calculation : F
-
- Total number of active electrons :    5
- Number of active orbitals :   12
-
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
-
- Allowed RAS configurations :
-
-  RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
-
- 1-electron excitations will be written to file
-
- Setup Routine completed in    0.001 SECONDS
-
-100.00 Percent of the Coupling Coefficients are stored.
-
- UN-CORRELATED PROPERTY: SZ-COMP               REAL              IMAGINARY
-
- Root   1 is determinant   2 Exp. Value:  0.499993437936      0.000000000000
-
- CORRELATED PROPERTY: SZ-COMP                  REAL              IMAGINARY
-
- State   1 is vector   1 Exp. Value:      0.499993333574      0.000000000000
-
-
-################################################################################
- DIRect Relativistic CI program version 2.0
-
- Written by Luuk Visscher 
-
- This run started at  6 Aug 15  18:48:58
-
-
- Information read from MRCONEE 
-
-
- Breit Interaction included :                    F
- Core Energy :                    2.308802269    
- Number of orbitals :                           12
-* List of allowed representations:
-     1E
-     2E
-
-
- Orbital Index     Representation        Orbital Energy
-     1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
-
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
-
- Real arithmetic will be used in EXPAND and TWOLIN
-
- Read integral type LZ-COMP  created ******** storage info : ********
-
- Property LZ-COMP  scaled with phase factor     0.0000    1.0000
-
- Abelian Representation :   1E
- Number of reference determinants :       126
- Total number of determinants :       396
- Number of roots to be optimized :  1
- Start vectors method :  1
- Overlap Selection : F
- Position in COSCI space :   1
- Maximum number of iterations :   30
- Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
- Maximum of CPU seconds to be used :        604800.0
- Restart calculation : F
- Printing contributions of important spinors : T
- Contributions are printed for coefficients larger then :   0.1    
- Generate natural spinors after CI calculation : F
-
- Total number of active electrons :    5
- Number of active orbitals :   12
-
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
-
- Allowed RAS configurations :
-
-  RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
-
- 1-electron excitations will be written to file
-
- Setup Routine completed in    0.001 SECONDS
-
-100.00 Percent of the Coupling Coefficients are stored.
-
- UN-CORRELATED PROPERTY: LZ-COMP               REAL              IMAGINARY
-
- Root   1 is determinant   2 Exp. Value:  0.000006562064      0.000000000000
-
- CORRELATED PROPERTY: LZ-COMP                  REAL              IMAGINARY
-
- State   1 is vector   1 Exp. Value:      0.000006666426      0.000000000000
-
-
-################################################################################
- DIRect Relativistic CI program version 2.0
-
- Written by Luuk Visscher 
-
- This run started at  6 Aug 15  18:48:58
-
-
- Information read from MRCONEE 
-
-
- Breit Interaction included :                    F
- Core Energy :                    2.308802269    
- Number of orbitals :                           12
-* List of allowed representations:
-     1E
-     2E
-
-
- Orbital Index     Representation        Orbital Energy
-     1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
-
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
+     2       2        E  1E               -0.5382437126    
+     3       3        E  1E               -0.3016370023    
+     7       4        E  2E                -4.679468390    
+     8       5        E  2E               -0.5382437126    
+     4       6        E  1E                0.6997326685E-01
+     5       7        E  1E                0.6997765777E-01
+     6       8        E  1E                0.1465856781    
+     9       9        E  2E               -0.3016370023    
+    10      10        E  2E                0.6997326685E-01
+    11      11        E  2E                0.6997765777E-01
+    12      12        E  2E                0.1465856781    
+
+    3672 Unique Coulomb integrals read from MDCINT ( 21Aug15   16:05:46)
+    2546 Coulomb integrals written to MRCTWOE
 
  Real arithmetic will be used in EXPAND and TWOLIN
 
@@ -3507,14 +1931,14 @@ Implemented by Malaya K. Nayak
 
  Abelian Representation :   1E
  Number of reference determinants :       126
- Total number of determinants :       396
+ Total number of determinants :       126
  Number of roots to be optimized :  1
  Start vectors method :  1
  Overlap Selection : F
  Position in COSCI space :   1
  Maximum number of iterations :   30
  Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
+ Residue convergence required :   0.1E-06
  Maximum of CPU seconds to be used :        604800.0
  Restart calculation : F
  Printing contributions of important spinors : T
@@ -3524,36 +1948,30 @@ Implemented by Malaya K. Nayak
  Total number of active electrons :    5
  Number of active orbitals :   12
 
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
+ RAS1 :   5
+ RAS2 :   7
+ RAS3 :   0
 
  Allowed RAS configurations :
 
   RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
+     5     0     0           1
+     4     1     0          35
+     3     2     0         210
 
  1-electron excitations will be written to file
 
- Setup Routine completed in    0.001 SECONDS
+ Setup Routine completed in    0.002 SECONDS
 
 100.00 Percent of the Coupling Coefficients are stored.
 
  UN-CORRELATED PROPERTY: X1-HYP                REAL              IMAGINARY
 
- Root   1 is determinant   2 Exp. Value:  0.006062230325      0.000000000000
+ Root   1 is determinant   1 Exp. Value:  0.006062230324      0.000000000000
 
  CORRELATED PROPERTY: X1-HYP                   REAL              IMAGINARY
 
- State   1 is vector   1 Exp. Value:      0.006105082719      0.000000000000
+ State   1 is vector   1 Exp. Value:      0.005905563364      0.000000000000
 
 
 ################################################################################
@@ -3561,7 +1979,7 @@ Implemented by Malaya K. Nayak
 
  Written by Luuk Visscher 
 
- This run started at  6 Aug 15  18:48:58
+ This run started at  21 Aug 15 16:05:46
 
 
  Information read from MRCONEE 
@@ -3577,20 +1995,20 @@ Implemented by Malaya K. Nayak
 
  Orbital Index     Representation        Orbital Energy
      1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
+     2       2        E  1E               -0.5382437126    
+     3       3        E  1E               -0.3016370023    
+     7       4        E  2E                -4.679468390    
+     8       5        E  2E               -0.5382437126    
+     4       6        E  1E                0.6997326685E-01
+     5       7        E  1E                0.6997765777E-01
+     6       8        E  1E                0.1465856781    
+     9       9        E  2E               -0.3016370023    
+    10      10        E  2E                0.6997326685E-01
+    11      11        E  2E                0.6997765777E-01
+    12      12        E  2E                0.1465856781    
 
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
+    3672 Unique Coulomb integrals read from MDCINT ( 21Aug15   16:05:46)
+    2546 Coulomb integrals written to MRCTWOE
 
  Real arithmetic will be used in EXPAND and TWOLIN
 
@@ -3599,14 +2017,14 @@ Implemented by Malaya K. Nayak
 
  Abelian Representation :   1E
  Number of reference determinants :       126
- Total number of determinants :       396
+ Total number of determinants :       126
  Number of roots to be optimized :  1
  Start vectors method :  1
  Overlap Selection : F
  Position in COSCI space :   1
  Maximum number of iterations :   30
  Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
+ Residue convergence required :   0.1E-06
  Maximum of CPU seconds to be used :        604800.0
  Restart calculation : F
  Printing contributions of important spinors : T
@@ -3616,36 +2034,30 @@ Implemented by Malaya K. Nayak
  Total number of active electrons :    5
  Number of active orbitals :   12
 
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
+ RAS1 :   5
+ RAS2 :   7
+ RAS3 :   0
 
  Allowed RAS configurations :
 
   RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
+     5     0     0           1
+     4     1     0          35
+     3     2     0         210
 
  1-electron excitations will be written to file
 
- Setup Routine completed in    0.001 SECONDS
+ Setup Routine completed in    0.002 SECONDS
 
 100.00 Percent of the Coupling Coefficients are stored.
 
  UN-CORRELATED PROPERTY: Y1-HYP                REAL              IMAGINARY
 
- Root   1 is determinant   2 Exp. Value:  0.006062230325      0.000000000000
+ Root   1 is determinant   1 Exp. Value:  0.006062230324      0.000000000000
 
  CORRELATED PROPERTY: Y1-HYP                   REAL              IMAGINARY
 
- State   1 is vector   1 Exp. Value:      0.006105082719      0.000000000000
+ State   1 is vector   1 Exp. Value:      0.005905563364      0.000000000000
 
 
 ################################################################################
@@ -3653,7 +2065,7 @@ Implemented by Malaya K. Nayak
 
  Written by Luuk Visscher 
 
- This run started at  6 Aug 15  18:48:58
+ This run started at  21 Aug 15 16:05:46
 
 
  Information read from MRCONEE 
@@ -3669,20 +2081,20 @@ Implemented by Malaya K. Nayak
 
  Orbital Index     Representation        Orbital Energy
      1       1        E  1E                -4.679468390    
-     7       2        E  2E                -4.679468390    
-     2       3        E  1E               -0.5382437126    
-     3       4        E  1E               -0.3016370023    
-     4       5        E  1E                0.6997326687E-01
-     5       6        E  1E                0.6997765777E-01
-     8       7        E  2E               -0.5382437126    
-     9       8        E  2E               -0.3016370023    
-    10       9        E  2E                0.6997326687E-01
-    11      10        E  2E                0.6997765777E-01
-     6      11        E  1E                0.1465856782    
-    12      12        E  2E                0.1465856782    
+     2       2        E  1E               -0.5382437126    
+     3       3        E  1E               -0.3016370023    
+     7       4        E  2E                -4.679468390    
+     8       5        E  2E               -0.5382437126    
+     4       6        E  1E                0.6997326685E-01
+     5       7        E  1E                0.6997765777E-01
+     6       8        E  1E                0.1465856781    
+     9       9        E  2E               -0.3016370023    
+    10      10        E  2E                0.6997326685E-01
+    11      11        E  2E                0.6997765777E-01
+    12      12        E  2E                0.1465856781    
 
-    3808 Unique Coulomb integrals read from MDCINT (  6Aug15   18:48:58)
-    2690 Coulomb integrals written to MRCTWOE
+    3672 Unique Coulomb integrals read from MDCINT ( 21Aug15   16:05:46)
+    2546 Coulomb integrals written to MRCTWOE
 
  Real arithmetic will be used in EXPAND and TWOLIN
 
@@ -3692,14 +2104,14 @@ Implemented by Malaya K. Nayak
 
  Abelian Representation :   1E
  Number of reference determinants :       126
- Total number of determinants :       396
+ Total number of determinants :       126
  Number of roots to be optimized :  1
  Start vectors method :  1
  Overlap Selection : F
  Position in COSCI space :   1
  Maximum number of iterations :   30
  Energy convergence required :    0.1E-05
- Residue convergence required :   0.1E-03
+ Residue convergence required :   0.1E-06
  Maximum of CPU seconds to be used :        604800.0
  Restart calculation : F
  Printing contributions of important spinors : T
@@ -3709,36 +2121,30 @@ Implemented by Malaya K. Nayak
  Total number of active electrons :    5
  Number of active orbitals :   12
 
- RAS1 :   2
- RAS2 :   8
- RAS3 :   2
+ RAS1 :   5
+ RAS2 :   7
+ RAS3 :   0
 
  Allowed RAS configurations :
 
   RAS1  RAS2  RAS3  Determinants (All Representations)
-     2     3     0          56
-     2     2     1          56
-     2     1     2           8
-     1     4     0         140
-     1     3     1         224
-     1     2     2          56
-     0     5     0          56
-     0     4     1         140
-     0     3     2          56
+     5     0     0           1
+     4     1     0          35
+     3     2     0         210
 
  1-electron excitations will be written to file
 
- Setup Routine completed in    0.001 SECONDS
+ Setup Routine completed in    0.002 SECONDS
 
 100.00 Percent of the Coupling Coefficients are stored.
 
  UN-CORRELATED PROPERTY: Z1-HYP                REAL              IMAGINARY
 
- Root   1 is determinant   2 Exp. Value:  0.006828626688      0.000000000000
+ Root   1 is determinant   1 Exp. Value:  0.006828626688      0.000000000000
 
  CORRELATED PROPERTY: Z1-HYP                   REAL              IMAGINARY
 
- State   1 is vector   1 Exp. Value:      0.006881377989      0.000000000000
+ State   1 is vector   1 Exp. Value:      0.006701397478      0.000000000000
 
 
           -- Normal end of RASCI Property Module --
@@ -3749,26 +2155,26 @@ Implemented by Malaya K. Nayak
 
 
  
-     Date and time (Linux)  : Thu Aug  6 18:48:58 2015
+     Date and time (Linux)  : Fri Aug 21 16:05:46 2015
      Host name              : lpqlx148.ups-tlse.fr                    
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :      2810.87
+  Mean allocation size (Mb) :      2967.03
   
   Largest                    10  allocations
   
-    15258.79 Mb at subroutine pamcim_+0xac                               for CI work space in CIDIRR                   
-    15258.79 Mb at subroutine pamtra_+0x18f                              for WORK in PAMTRA                            
+    15258.79 Mb at subroutine pamcim_+0xa1                               for CI work space in CIDIRR                   
+    15258.79 Mb at subroutine pamtra_+0x185                              for WORK in PAMTRA                            
     15258.79 Mb at subroutine psiscf_+0xb4                               for WORK in PSISCF                            
-    15258.79 Mb at subroutine pamset_+0x1e7c                             for WORK in PAMSET - 2                        
-    15258.79 Mb at subroutine gmotra_+0x5afc                             for WORK in GMOTRA                            
-    15258.79 Mb at subroutine pamset_+0xbd                               for WORK in PAMSET - 1                        
-    15258.79 Mb at subroutine MAIN__+0x2a6                               for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine paminp_+0xaf                               for PAMINP WORK array                         
+    15258.79 Mb at subroutine pamset_+0x19f8                             for WORK in PAMSET - 2                        
+    15258.79 Mb at subroutine gmotra_+0x6394                             for WORK in GMOTRA                            
+    15258.79 Mb at subroutine pamset_+0xb1                               for WORK in PAMSET - 1                        
+    15258.79 Mb at subroutine MAIN__+0x2ae                               for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine paminp_+0xa4                               for PAMINP WORK array                         
         0.11 Mb at subroutine butobs_no_work_+0x9a                       for buf in butobs                             
-        0.06 Mb at subroutine gtovlx_+0x12e                              for unnamed variable                          
+        0.06 Mb at subroutine gtovlx_+0x167                              for unnamed variable                          
   
   Peak memory usage    (Mb) :     15259.00
        reached at subroutine : butobs_no_work_+0x9a                      
@@ -3777,5 +2183,5 @@ Implemented by Malaya K. Nayak
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 1, stime: 0, minflt: 59942, majflt: 0, nvcsw: 12, nivcsw: 23, maxrss: 51484
+>>>> Node 0, utime: 1, stime: 0, minflt: 59928, majflt: 102, nvcsw: 148, nivcsw: 21, maxrss: 53064
 >>>> Total WALL time used in DIRAC: 2s
