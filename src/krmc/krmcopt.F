@@ -1798,7 +1798,10 @@ C
 C
 C     Write to file KRMC FOCK
 C
-      IF (TOFILE) CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
+      IF (TOFILE) THEN
+         CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
+         IF( CWRTFO_MAT ) CALL WRTKRMC(LUKRM3,'ECORE_LR',ECORE_LR,1)
+      END IF
 C
       CALL MEMREL('rGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
@@ -4452,42 +4455,46 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmc_getfck */
-      SUBROUTINE KRMC_GETFCK(FMO,IPRINT,WORK,LWORK)
+      SUBROUTINE KRMC_GETFCK(FMO,IPRINT)
 C***********************************************************************
 C
 C     Read Fock matrix from file KRMC FOCK
 C
 C     Input:
+C        IPRINT - print level
+C        CRDFO_MAT (in dcbopt.h)
+C        
 C
 C     Output:
 C        FMO    - Fock matrix in MO basis
+C        ECORE_LR (in dcbopt.h, only if CRDFO_MAT is true)
 C
-C     Written by J. Thyssen - Nov 27 1998
+C     Written by J. Thyssen - Nov 27 1998; revised Aug 2015 hjaaj
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+C
+C dgroup.h : IPTQOQ
+C dcborb.h : NORBT,...
+C dcbopt.h : CRDFO_MAT, ECORE_LR
+C dcbgen.h : LUKRM3
 C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
 C
-      DIMENSION WORK(*),FMO(*)
+      REAL*8   FMO(*)
 C
-#include "memint.h"
-C
-      REWIND(LUKRM3)
       IF( CRDFO_MAT) THEN
-        CALL MOLLAB('FCMO    ',LUKRM3,LUPRI)
+        CALL REAKRMC(LUKRM3,'FCMO    ',FMO,N2ORBXQ)
+        CALL REAKRMC(LUKRM3,'ECORE_LR',ECORE_LR,1)
       ELSE
-        CALL MOLLAB('FC      ',LUKRM3,LUPRI)
+        CALL REAKRMC(LUKRM3,'FC      ',FMO,N2ORBXQ)
       END IF
-      CALL READT(LUKRM3,N2ORBXQ,FMO)
-      IF( CRDFO_MAT ) CALL READT(LUKRM3,1,ECORE_LR)
       IF (IPRINT .GE. 5) THEN
-         CALL HEADER('Output from KRMC_GETFCK',-1)
-         CALL HEADER('KRMC_GETFCK: FMO',-1)
+         CALL HEADER('FCMO from KRMC_GETFCK',-1)
          CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
