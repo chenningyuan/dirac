@@ -6418,7 +6418,7 @@ C                  ... exit if close and no floating and no point charge
 C
 #ifdef VAR_MPI
 !     print only from one process
-      if (mytid == 1) then
+      if (mytid == 0) then
 #endif
         IF (IPRINT .GE. 0) THEN
 
