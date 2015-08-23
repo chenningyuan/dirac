@@ -1477,7 +1477,7 @@ Options are also read from ~/.diracrc"""
                 return name[0]
             else:
                 return str(num)
-        signum_kill=2 # for killing, prepare the strongest ammo
+        signum_kill=signal.SIGKILL # for killing the process, use the most lethal ammo
         # interrupt dirac run
         if self.pgid is not None:
             if signum != signum_kill:
