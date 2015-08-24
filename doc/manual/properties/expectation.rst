@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(EXPECTATION VALUE)
 
 This section gives directives for the calculation of expectation values.

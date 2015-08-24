@@ -1,3 +1,4 @@
+:orphan:
 
 Keyword reference
 =================
@@ -6,6 +7,8 @@ Keyword reference
    - :doc:`*OPTIMIZE <optimize>` --- Geometry optimization directives
 
 * :doc:`**GENERAL <general>` --- General input
+
+* :doc:`**MOLECULE<molecule>` --- Specification of basis set information
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives

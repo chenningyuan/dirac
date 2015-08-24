@@ -1,14 +1,17 @@
+:orphan:
+ 
+
 .. _atomic_huckel_start:
 
-Extended Hückel start
+Extended Huckel start
 =====================
 
 Background
 ----------
 
-The basis theory is given here: `R. Hoffmann, J. Chem. Phys. 39 (1963) 1397 <http://dx.doi.org/10.1063/1.1734456>`_
+The basis theory is given here: :cite:`Hoffman1963`.
 
-The present development was further motivated by `P. Norman and H. J. Aa. Jensen, Chem. Phys. Lett. 531 (2012) 229 <http://dx.doi.org/10.1016/j.cplett.2012.02.012>`_
+The present development was further motivated by :cite:`Norman2012`.
 
 
 The particularity of the present approach is that it employs pre-calculated atomic fragments.
@@ -26,7 +29,7 @@ The Hamiltonian matrix is defined as
 
    H_{ij} = \left\{\begin{array}{lcl}\epsilon_i;&\quad&i=j\\KS_{ij};&\quad&i\ne j\end{array}\right.
 
-where :math:`K` is the Wolfsberg-Helmholtz constant. The default value is 1.75, but it can be changed with the keyword :ref:`.HUCPAR`.
+where :math:`K` is the Wolfsberg-Helmholtz constant. The default value is 1.75, but it can be changed with the keyword :ref:`SCF_.HUCPAR`.
 
 Example
 -------
@@ -53,7 +56,7 @@ reads
 
 .. literalinclude:: PBEhuc.inp
 
-In addition to the keyword :ref:`.AD HOC` file names for the Lu and F atomic types are given, followed 
+In addition to the keyword :ref:`SCF_.AD HOC` file names for the Lu and F atomic types are given, followed 
 by orbital strings specifying what atomic orbitals to select (see
 :ref:`orbital_strings` for the syntax).
 The calculation now converges in 20 iterations

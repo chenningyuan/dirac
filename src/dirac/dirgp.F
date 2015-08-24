@@ -2665,8 +2665,8 @@ C
 #include "dcbreo.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*)
       logical, intent(in) :: read_mcscf
-      logical             :: mcorb, mjava, boson_irrep_info
-      logical             :: fndlab, mcci_natorb
+      logical             :: mcorb, mcorb1, mcorb2, mjava
+      logical             :: fndlab, mcci_natorb, boson_irrep_info
 
 C     Get coefficients from KRMCSCF/DFCOEF
 C     ====================================
@@ -2674,11 +2674,13 @@ C     ====================================
 
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSTOR1')
         REWIND LUKRMC
-        MCORB = .not.FNDLAB('MCCINATO',LUKRMC)
+        MCORB1 = .not.FNDLAB('MCCINATO',LUKRMC)
         REWIND LUKRMC
-        MCORB = .not.FNDLAB('NEWNATOB',LUKRMC)
+        MCORB2 = .not.FNDLAB('NEWNATOB',LUKRMC)
         REWIND LUKRMC
         MJAVA = FNDLAB('MJVEC   ',LUKRMC)
+        mcorb = .false.
+        if(MCORB1 .and. MCORB2) mcorb = .true.
 
 !       read mj-values / boson irrep info
         IF(MJAVA)THEN

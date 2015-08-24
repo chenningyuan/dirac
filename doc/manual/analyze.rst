@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 starstar(ANALYZE)
 
@@ -16,9 +17,8 @@ Print vectors. Activates the :ref:`*PRIVEC` subsection.
 
 keyword(MULPOP)
 
-Perform Mulliken population analysis :cite:`Mulliken1955`
-Continues to :ref:`*MULPOP`
-subsection.
+Perform Mulliken population analysis :cite:`Mulliken1955`.
+Continues to :ref:`*MULPOP` subsection.
 
 
 keyword(PROJECTION)

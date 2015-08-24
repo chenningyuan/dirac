@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 Including external projects using Git submodules
 ================================================
@@ -170,4 +171,4 @@ the correct workflow to switch from one to the other is::
   $ git submodule sync
 
 The ``git submodule sync`` command synchronizes submodules' remote URL configuration setting 
-to the value specified in .gitmodules (taken from `here <https://www.kernel.org/pub/software/scm/git/docs/git-submodule.html>`_)
+to the value specified in .gitmodules (taken from `this page <https://www.kernel.org/pub/software/scm/git/docs/git-submodule.html>`_)

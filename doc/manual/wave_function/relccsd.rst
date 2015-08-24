@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 .. _relccsd:
 
@@ -10,8 +11,7 @@ starstar(RELCC)
 Specification of reference determinant, type of calculation, and general
 settings.
 
-.FOCKSP
--------
+keyword(FOCKSP)
 
 Activate the Fock space module. This option should be used for
 multireference calculations. See further :ref:`*CCFSPC`.
@@ -20,8 +20,7 @@ regular CCSD calculation, the latter calculation is switched off. If you
 do wish to perform also a regular CC calculation (e.g. to get the CCSD(T) energy)
 you need to activate this explicitly via .ENERGY (see below).
 
-.ENERGY
--------
+keword(ENERGY)
 
 Activate the energy calculation. This is the preferred option for
 calculations on closed shell or simple open shell systems and need not
@@ -35,8 +34,7 @@ to the FS calculation.
 
     Perform energy calculation..
 
-.GRADIENT
----------
+keyword(GRADIENT)
 
 Calculate the effective 1-particle density matrix (currently only for a
 closed shell MP2 wave function). This option can be used to calculate
@@ -48,8 +46,7 @@ molecular properties.
 
     No gradient calculation.
 
-.NELEC
-------
+keyword(NELEC)
 
 Number of active electrons. This variable determines the reference determinant to be used in the exponential expansion of the wave function. 
 Since the default values correspond to the information passed on by the MOLTRA code on basis of the Hartree-Fock occupations 
@@ -71,18 +68,15 @@ then add to these occupations the open shell electrons (see corresponding tutori
 
      Active electrons in these irreps (written by **MOLTRA).
 
-.NEL\_F1
---------
+keyword(NEL\_F1)
 
 Number of electrons in the *gerade* irreps of the Abelian symmetry group. See below for more information.
 
-.NEL\_F2
---------
+keyword(NEL\_F2)
 
 Number of electrons in the *ungerade* irreps of the Abelian symmetry group. 
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -93,8 +87,7 @@ Print level.
     .PRINT
      0
 
-.TIMING
--------
+keyword(TIMING)
 
 Print detailed timing information.
 
@@ -104,8 +97,7 @@ Print detailed timing information.
 
     Only limited timing information is printed.
 
-.DEBUG
-------
+keyword(DEBUG)
 
 Print debug information.
 
@@ -115,70 +107,57 @@ Print debug information.
 
     Debug information is not printed.
 
-\*CCENER
---------
+star(CCENER)
 
 Covers options related to energy.
 
-.NOMP2
-~~~~~~
+keyword(NOMP2)
+
 Deactivate MP2 calculation.
 
-.NOSD
-~~~~~
+keyword(NOSD)
+
 Deactivate CCSD calculation.
 
-.NODOUB
-~~~~~~~
-Deactivate contribution from doubles; corresponds to a CCS calculation.
-
-.NOSDT
-~~~~~~
+keyword(NOSDT)
 
 Deactivate the calculation of perturbative triples. This is potentially
 useful when running into memory problems for very big calculations and will also
 save some CPU time.
 
-.MAXIT
-~~~~~~
+keyword(MAXIT)
 
 Set maximum number of iterations allowed to solve the CC equations.
 
-.MAXDIM
-~~~~~~~
+keyword(MAXDIM)
 
 Set maximum number of amplitude vectors used in the DIIS extrapolation.
 
-.NTOL
-~~~~~
+keyword(NTOL)
 
 Specify requested convergence (10^-NTOL) in the amplitudes.
 
-.NOSING
-~~~~~~~
+keyword(NOSING)
 
 Eliminate T1 amplitudes in the calculation (only interesting for test
 purposes, this gives no computational speed-up).
 
-.NODOUB
-~~~~~~~
+keyword(NODOUB)
 
 Eliminate T2 amplitudes in the calculation (only interesting for test
 purposes, this gives no computational speed-up).
+Deactivate contribution from doubles; corresponds to a CCS calculation.
 
-\*CCFOPR
---------
+star(CCFOPR)
 
 Calculate first-order properties (expectation values) for the MP2 wave
 function.
 
-.NATORB
--------
+keyword(NATORB)
 
 Calculate natural orbitals (currently only for MP2 density matrix)
 
-.UNRELAXED
-----------
+keyword(UNRELAXED)
 
 Use unrelaxed density matrix (computationally cheaper but less accurate)
 
@@ -188,84 +167,70 @@ Perform a Fock space MRCC calculation in which a model space is
 correlated and then diagonalized to give CC energies for a set of
 states.
 
-.DOIH
------
+keyword(DOIH)
 
 Use the Intermediate Hamiltonian formalism in which an auxiliary space
 is used to prevent the "intruder state" problem. Default: IH formalism
 not used.
 
-.DOEA
------
+keyword(DOEA)
 
 Calculate electron affinities (add one electron to the reference state,
 allowing occupation of the active virtual orbitals)
 
-.DOIE
------
+keyword(DOIE)
 
 Calculate ionization energies (remove one electron from the reference
 state, allowing depletion of the active occupied orbitals)
 
-.DOEA2
-------
+keyword(DOEA2)
 
 Calculate second electron affinities (add two electrons to the reference
 state, allowing occupation of the active virtual orbitals)
 
-.DOIE2
-------
+keyword(DOIE2)
 
 Calculate second ionization energies (remove two electrons from the
 reference state, allowing depletion of the active occupied orbitals)
 
-.DOEXC
-------
+keyword(DOEXC)
 
 Calculate excitation energies (allow excitation from the set of active
 occupied orbitals to the set of active virtual orbitals)
 
-.NACTH
-------
+keyword(NACTH)
 
 Specification of the set of active hole orbitals (from which
 ionization/excitation takes place)
 
-.NACTP
-------
+keyword(NACTP)
 
 Specification of the set of active particle orbitals (to which electron
 attachment/excitation takes place)
 
-.MAXIT
-------
+keyword(MAXIT)
 
 Maximum number of iterations allowed to solve the FSCC equations
 
-.MAXDIM
--------
+keyword(MAXDIM)
 
 Set maximum number of amplitude vectors used in the DIIS extrapolation.
 
-.NTOL
------
+keyword(NTOL)
 
 Specify requested convergence (10^-NTOL) in the amplitudes.
 
-.GESTAT
--------
+keyword(GESTAT)
 
 Specify the state number in the last active sector to pick the energy 
 from (remember to account for degeneracies) for a state-specific FSCC 
 geometry optimization based on a numerical gradient. 
 
-\*CCIH
-------
+star(CCIH)
 
 Options for intermediate hamiltonian in FSCC.
 
-.EHMIN
-------
+keyword(EHMIN)
 
 Minimum orbital energy of occupied orbitals forming the auxiliary (Pi)
 space. Orbitals with energies lower than this energy are taken in the
@@ -276,8 +241,7 @@ orbitals, which constitute the secondary Pi space. Could be
 used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
 
 
-.EHMAX
-------
+keyword(EHMAX)
 
 Maximum orbital energy of occupied orbitals forming the auxiliary (Pi)
 space. Orbitals with energies higher than this energy are taken in the
@@ -288,8 +252,7 @@ active occupied orbitals, which constitute the secondary Pi space.
 Could be used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
  
 
-.EPMIN
-------
+keyword(EPMIN)
 
 Minimum orbital energy of virtual orbitals forming the auxiliary (Pi)
 space. Orbitals with energies lower than this energy are taken in the
@@ -300,8 +263,7 @@ orbitals, which constitute the secondary Pi space.
 Could be used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
  
 
-.EPMAX
-------
+keyword(EPMAX)
 
 Maximum orbital energy of virtual orbitals forming the auxiliary (Pi)
 space. Orbitals with energies higher than this energy are taken in the
@@ -311,16 +273,15 @@ This is the upper limit of one-electronic energies of active virtual
 orbitals, which constitute the secondary Pi space. Could be
 used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
  
-
-Other Intermediate Hamiltonian (IH) input parameters:
------------------------------------------------------
+====================================================
+Other Intermediate Hamiltonian (IH) input parameters
+====================================================
  
 For *experts* only.
 
 Following keyowrds belong to the CCIH namelist section.
  
-.IHSCHEME
----------
+keyword(IHSCHEME)
 
 Choose particular IH scheme. Arguments: Integer IHSCHEME =  1,  or 2.
  
@@ -352,51 +313,42 @@ Default: IHSCHEME = 2
  
 Next key options are used only in case of XIH (IHSCHEME = 1).
  
-.SHIFTH11  
----------
+keyword(SHIFTH11)
 
 Energy shift for the one-electronic excitations in (1,0) sector. Arguments: real.
 
-.SHIFTH12 
----------
+keyword(SHIFTH12)
 
 Energy shift for the two-electronic excitations in (1,0) sector. Arguments: real.
 
-.SHIFTH2     
---------
+keyword(SHIFTH2)
 
 Energy shift for the two-electronic excitations in (2,0) sector. Arguments: real.
 
-.SHIFTP11       
----------
+keyword(SHIFTP11)
 
 Energy shift for the one-electronic excitations in (0,1) sector. Arguments: real.
 
-.SHIFTP12  
----------
+keyword(SHIFTP12)
 
 Energy shift for the two-electronic excitations in (0,1) sector. Arguments: real.
 
-.SHIFTP2
---------
+keyword(SHIFTP2)
 
 Energy shift for the two-electronic excitations in (0,2) sector. Arguments: real.
 Usually we choose the approximate difference between the highest orbital energy belonging to Pi and the lowest
 orbital energy belonging to the Pm space. 
 Works only with the old style of RELCC input.
 
-.SHIFTHP    
---------
+keyword(SHIFTHP)
 
 Energy shift for the two-electronic excitations in (1,1) sector. Arguments: real
 
-.AIH
-----
+keyword(AIH)
 
 Compensation factor, used in expression (1). Arguments: real positive, not greater then 1.0.
  
-.NIH 
-----
+keyword(NIH)
 
 Compensation power, used in expression (1). Arguments: integer.
  
@@ -404,14 +356,12 @@ In the case of the limit: AIH=1.0 and NIH -> "infinity" ( NIH>100, in practice)
 we have so called "full compensation" method, corresponding to the
 extrapolation of the effective Hamiltonian from the intermediate one.
 
-\*CCSORT
---------
+star(CCSORT)
 
 Specialist options related to the sorting of two-electron integrals
 and the calculation of the reference Fock matrix.
 
-.NORECMP
---------
+keyword(NORECMP)
 
 Do not recompute the Fock matrix, but assume a diagonal matrix with the orbital energies 
 taken from the SCF program on the dioagonal. This is usually not recommended as the latter
@@ -419,8 +369,7 @@ correspond to a restricted open shell expression and RELCCSD uses an unrestricte
 For closed shell systems the two expressions are identical and this option merely suppresses
 a build-in check on the accuracy of transformed integrals.
 
-.USEOE
-------
+keyword(USEOE)
 
 Ignore recomputed Fock matrix and use orbital energies supplied by the SCF program. This option is
 sometimes useful for degenerate open shell cases in which case the perturbation theory for the unrestricted formalism

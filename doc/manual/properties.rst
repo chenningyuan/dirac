@@ -1,3 +1,5 @@
+:orphan:
+ 
 
 starstar(PROPERTIES)
 
@@ -24,8 +26,7 @@ By default no properties are calculated.
 General control statements
 ==========================
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -71,20 +72,20 @@ keyword(EFG)
 
 Evaluate electric field gradients (expectation values).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 keyword(NQCC)
 
 Evaluate nuclear quadrupole coupling constants (expectation values).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-keyword(.POLARIZABILITY)
+keyword(POLARIZABILITY)
 
 Evaluate the static electronic dipole polarizability tensor (linear
 response).
 
-keyword(.FIRST ORDER HYPERPOLARIZABILITY)
+keyword(FIRST ORDER HYPERPOLARIZABILITY)
 
 Evaluate static electronic dipole first-order hyperpolarizability tensor
 (quadratic response). Results are also given for the static electronic
@@ -101,7 +102,7 @@ frequencies of the quadratic response function thus become
 calculation cannot be specified in combination with other quadratic
 response calculations.
 
-The frequencies can be changed using :ref:`.B FREQ` in :ref:`*QUADRATIC RESPONSE`.
+The frequencies can be changed using :ref:`QUADRATIC_RESPONSE_.B FREQ` in :ref:`*QUADRATIC RESPONSE`.
 
 keyword(TWO-PHOTON)
 
@@ -125,16 +126,15 @@ keyword(NMR)
 Evaluate nuclear magnetic shieldings and indirect spin-spin couplings
 (linear response).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 keyword(SHIELDING)
 
-Evaluate nuclear magnetic shieldings (linear response). :ref:`.PRINT`
-2 gives tensor and longer output. :ref:`.PRINT` 4
-gives the raw values in symmetry coordinates as
-well.
+Evaluate nuclear magnetic shieldings (linear response). :ref:`PROPERTIES_.PRINT`
+2 gives tensor and longer output. The :ref:`PROPERTIES_.PRINT` 4
+gives the raw values in symmetry coordinates as well.
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 keyword(MAGNET)
 
@@ -145,21 +145,21 @@ keyword(SPIN-SPIN COUPLING)
 
 Evaluate indirect spin-spin couplings (linear response).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 keyword(DSO)
 
 Evaluate the diamagnetic contribution to indirect spin-spin couplings as
 an expectation value.
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 keyword(NSTDIAMAGNETIC)
 
 Evaluate the diamagnetic contribution to nuclear magnetic shieldings as
 an expectation value.
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 Other predefined properties
 ===========================
@@ -185,14 +185,12 @@ keyword(RHONUC)
 
 Calculate electronic density at the nucleus(nuclei).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 keyword(EFFDEN)
 
 Calculate effective electronic density at the
 nucleus(nuclei), :cite:`Knecht2011`.
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
-
-
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 

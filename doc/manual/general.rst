@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 starstar(GENERAL)
 
@@ -15,6 +16,10 @@ directly; 0 = do not evaluate directly)::
   .DIRECT
    1 1 1
 
+keyword(4INDEX)
+
+Activate the AO-to-MO transformation.
+By default, the transformation is called automatically when the correlation method is specified.
 
 keyword(SPHTRA)
 

@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(NMR)
 
 This section gives directives for the calculation of NMR parameters.
@@ -25,7 +28,7 @@ origin and dipole origin are changed in order to have consistency.
 
 keyword(GO ANG)
 
-Same as :ref:`.GAUGEO` but
+Same as :ref:`NMR_.GAUGEO` but
 reads coordinates in angstrom.
 
 keyword(USECM)
@@ -36,7 +39,7 @@ keyword(INTFLG)
 
 Specify what two-electron integrals to include in the two-electron
 London contributions to the magnetic field property gradient
-(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+(default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
 keyword(NOTWO)
 

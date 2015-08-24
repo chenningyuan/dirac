@@ -1,10 +1,13 @@
+:orphan:
+ 
+
 star(PCMSOL)
 
 PCMSolver module configuration directives.
 
 General information on the PCM can be found in :cite:`Tomasi2005`.
 Details on the module can be found `here <http://pcmsolver.github.io/pcmsolver-doc/>`_
-The module source code is freely available under the LGPLv3 license `here <https://github.com/PCMSolver/pcmsolver>`_
+The module source code is freely available under the LGPLv3 license `on this URL <https://github.com/PCMSolver/pcmsolver>`_
 
 There are two ways of providing input to the PCMSolver module:
 

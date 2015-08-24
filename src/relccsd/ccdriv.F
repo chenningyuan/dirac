@@ -2636,7 +2636,14 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW
+!     NBUF3 = (freemem - work_memsize) / RCW
+! hjaaj Aug. 2015: modified because this could give NBUF3 < 0
+      IF (MYPROC .NE. MASTER) THEN
+         NBUF3 = 0
+      ELSE
+         NBUF3 = freemem / RCW
+      END IF
+
 C
 C     Allocate now also this remaining work array
 C
@@ -2748,7 +2755,13 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW 
+!     NBUF3 = (freemem - work_memsize) / RCW
+! hjaaj Aug. 2015: modified because this could give NBUF3 < 0
+      IF (MYPROC .NE. MASTER) THEN
+         NBUF3 = 0
+      ELSE
+         NBUF3 = freemem / RCW
+      END IF
 C
 C     Allocate now also this remaining work array
 C

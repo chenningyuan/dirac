@@ -7433,6 +7433,7 @@ C
 #ifdef PRG_DIRAC
          use dirac_cfg
 #endif
+      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7461,6 +7462,8 @@ C
 #endif
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)
+      integer              :: i_symop
+#include "ibtfun.h"
 C
 #ifdef PRG_DIRAC
       IF (DOCCM) THEN
@@ -7551,18 +7554,42 @@ C        ADJUST FOR XYZ FILES
          INQUIRE(file='MOLECULE.MOL',exist=ex)
          IF (.NOT.(ex)) THEN
            INQUIRE(file='MOLECULE.XYZ', exist=ex)
-           IF (ex) WRITE(LUPRI,*) 'ERROR: abaopt.F PNCMOL not adjust 
-     &          for XYZ files.'
-           CALL QUIT('ERROR:abaopt(NUMGRD): MOLECULE FILE NOT FOUND.')
+           IF (.NOT.(ex)) THEN
+              CALL QUIT('ERROR:abaopt(NUMGRD): MOLECULE FILE NOT FOUND')
+           ELSE
+C        Write updated .xyz style geometry file
+            CALL GPOPEN(LUMOL,'MOLECULE.XYZ','OLD',' ','FORMATTED',
+     &                  IDUMMY,.FALSE.)
+            REWIND (LUMOL)
+            WRITE (LUMOL,'(I10)') NUCDEP
+            WRITE (LUMOL,'(A)') 'Generated during optimization'
+            do icent = 1, nucind
+               mulcnt = istbnu(icent)
+               if (mult(mulcnt) == 1) then
+                  write (lumol,'(A4,3F26.16)')  
+     &               namn(icent),(XTANG*coor(icart,icent),icart=1,3)
+               else
+                do i_symop = 0, maxopr
+                     if (ibtand(i_symop, mulcnt) == 0)
+     &                  write (lumol,'(A4,3F26.16)')  
+     &                     namn(icent),
+     *      pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)*xtang,
+     *      pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)*xtang,
+     *      pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)*xtang
+                end do
+               end if
+            end do
+           END IF
+         ELSE
+C        Write updated .mol style geometry file
+            CALL GPOPEN(LUMOL,'MOLECULE.MOL','OLD',' ','FORMATTED',
+     &                  IDUMMY,.FALSE.)
+            REWIND (LUMOL)
+            DO IMLINE = 1,NMLINE
+               WRITE (LUMOL,'(A)') MLINE(IMLINE)
+            END DO
          END IF
 
-
-         CALL GPOPEN(LUMOL,'MOLECULE.MOL','OLD',' ','FORMATTED',
-     &               IDUMMY,.FALSE.)
-         REWIND (LUMOL)
-         DO 200 IMLINE = 1,NMLINE
-            WRITE (LUMOL,'(A)') MLINE(IMLINE)
- 200     CONTINUE
          CALL GPCLOSE(LUMOL,'KEEP')
 C
          EXHER = .FALSE.

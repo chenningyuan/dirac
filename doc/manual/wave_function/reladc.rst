@@ -1,4 +1,7 @@
-.. _reladc:
+:orphan:
+ 
+
+.. _RELADC:
 
 RELADC & LANCZOS
 ================

@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ===================
 Projection analysis
 ===================
@@ -42,7 +45,7 @@ For projection analysis, arbitrary fragments can in principle be used. There is,
 in that DIRAC can only do analysis in terms of fragments complying to the molecular point group. For instance, 
 the two hydrogens in water are related by symmetry in the full :math:`C_{2v}` molecular point group. They then have 
 to be treated as a single fragment, or they can be separated by lowering the symmetry. Starting from DIRAC14 
-projection analysis can be carried out in terms of individual atoms using the :ref:`.ATOMS` keyword, as shown in 
+projection analysis can be carried out in terms of individual atoms using the :ref:`PROJECTION_.ATOMS` keyword, as shown in 
 the example below.
 
 ------------------
@@ -136,8 +139,8 @@ and then, most importantly, the gross population of the polarization contributio
 is small and perfectly acceptable. If it becomes too large the analysis looses meaning because it 
 impies that significant electron density has not been assigned to any fragment. In the case of
 significant polarization contribution one can either increase the number of atomic orbitals used
-in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`.POLREF` 
-keyword which activates `Intrinsic Atomic Orbitals (IAOs) <http://doi.org/10.1021/ct400687b>`_  , 
+in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`PROJECTION_.POLREF` 
+keyword which activates *Intrinsic Atomic Orbitals (IAOs)*, :cite:`Knizia2013`, 
 thus eliminating completely the polarization contribution. We then get::
 
   * Total gross contributions:
@@ -226,7 +229,7 @@ Introduction
 
 We next turn to a molecule with a heavy atom and a more complicated electronic structure, namely uranyl 
 :math:`UO_2^{2+}`. Here the two oxygens are related by symmetry, and so one would at first consider 
-running the projection analysis with lower (or no) symmetry or using the :ref:`.ATOMS` keyword, as 
+running the projection analysis with lower (or no) symmetry or using the :ref:`PROJECTION_.ATOMS` keyword, as 
 in the methane example above. However, we can reduce the symmetry from :math:`D_{\infty h}` to :math:`C_{\infty v}` 
 by introducing a ghost center. Our molecular input file then looks like
 
@@ -312,7 +315,7 @@ As in the methane case above we first look at the polarization contribution::
       AFO2XX               8.3098   E -     8.3098   P -     0.0000
       Polarization:     0.3169
 
-We see that it is more sizable than before. If we eliminate the polarization contribution using the :ref:`.POLREF` keyword, we obtain::
+We see that it is more sizable than before. If we eliminate the polarization contribution using the :ref:`PROJECTION_.POLREF` keyword, we obtain::
 
    * Total gross contributions:
       AFUXXX              89.1586   E -    89.1586   P -     0.0000

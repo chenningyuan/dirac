@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(QUADRATIC RESPONSE)
 
 This section gives directives for the calculation of quadratic response
@@ -66,7 +69,7 @@ Specify frequencies of operator B.
 
 keyword(C FREQ)
 
-Specify frequencies of operator C (see :ref:`.B FREQ`).
+Specify frequencies of operator C (see :ref:`QUADRATIC_RESPONSE_.B FREQ`).
 
 keyword(ALLCMB)
 
@@ -158,7 +161,7 @@ have an important effect on run time.
 keyword(INTFLG)
 
 Specify what two-electron integrals to include
-(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+(default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
 keyword(CNVINT)
 

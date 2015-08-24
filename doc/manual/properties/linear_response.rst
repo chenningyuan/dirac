@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(LINEAR RESPONSE)
 
 Linear Response module written by T. Saue and H. J. Aa. Jensen :cite:`Saue2003`.
@@ -176,7 +179,7 @@ have an important effect on run time.
 keyword(INTFLG)
 
 Specify what two-electron integrals to include
-(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+(default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
 keyword(CNVINT)
 

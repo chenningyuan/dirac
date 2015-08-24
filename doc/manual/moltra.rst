@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 starstar(MOLTRA)
 
@@ -9,9 +10,9 @@ molecular spinor basis. The algorithm is not yet described in detail but it may
 be helpful to read Ref. :cite:`Visscher2002` to find information about the double
 quaternion formalism that is used. This module is usually invoked by one of the
 correlation modules but can also be run as a stand-alone module by specifying
-:ref:`.4INDEX` in the :ref:`**DIRAC` section of input. The input serves to
+:ref:`GENERAL_.4INDEX` in the :ref:`**DIRAC` section of input. The input serves to
 change the default active space and to specify special wishes (e.g modification
-of :ref:`.INTFLG`).
+of :ref:`MOLTRA_.INTFLG`).
 
 Three separate transformations are considered:
 
@@ -21,13 +22,12 @@ Three separate transformations are considered:
 -  Transformation of integrals over general (one-electron) operators.
 
 The output is written to the files MDCINT, MRCONEE, and MDPROP, respectively,
-and can be read in by the :ref:`RELCCSD` and :ref:`DIRRCI` and programs to
+and can be read in by the :ref:`**RELCC` and :ref:`DIRRCI` and programs to
 perform correlated calculations and by the :ref:`RELADC` program to perform
 propagator calculations. Some common input needs to be specified both in this
 section and in the :ref:`DIRRCI` sections.
 
-.ACTIVE
--------
+keyword(ACTIVE)
 
 Specify the active set of spinors.
 
@@ -41,8 +41,7 @@ Specify the active set of spinors.
 
 **Advanced options**
 
-.THROUT
--------
+keyword(THROUT)
 
 Threshold value for writing transformed 2-electron integrals to file. A
 higher value will decrease the size of the MDCINT files but will
@@ -55,16 +54,14 @@ decrease the accuracy of the calculation.
     .THROUT
      1.0D-14
 
-.PRPTRA
--------
+keyword(PRPTRA)
 
 Perform transformation of property integrals. The type(s) of integrals
 that are to be transformed can be specified with the .OPERATOR keyword.
 
 *Default:* Do not transform property integrals.
 
-.SCHEME
--------
+keyword(SCHEME)
 
 Selects the integral transformation algorithm ("scheme"). Several
 schemes have been implemented, but users are to consider only "scheme 4"
@@ -160,29 +157,27 @@ I/O operations stems from the integrals being replicated for all MPI
 processes, so that doubling the number of MPI processes doubles the
 total disk usage but not the usage per MPI process.
 
-.INTFLG
--------
+keyword(INTFLG)
 
 Specify which classes of integrals should contribute to the transformed
 two-electron integrals and the effective (core) Hamiltonian. Default is
 to follow the definitions given in \*\*HAMILTONIAN. If you want
 different integral classes in the 2- and 4-index transformation, then
-use the :ref:`.INTFL2` and :ref:`.INTFL4` keywords below
-(default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).
+use the :ref:`MOLTRA_.INTFL2` and :ref:`MOLTRA_.INTFL4` keywords below
+(default: :ref:`HAMILTONIAN_.INTFLG` from :ref:`**HAMILTONIAN`).
 
 keyword(INTFL2)
 
 Specify what two-electron integrals to include in the 2-index
 transformation ,i.e., in the two-electron part of the Fock core matrix
-(default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).
+(default: :ref:`HAMILTONIAN_.INTFLG` from :ref:`**HAMILTONIAN`).
 
 keyword(INTFL4)
 
 Specify what two-electron integrals to include in the 4-index transformation
-(default: :ref:`.INTFLG` from :ref:`**HAMILTONIAN`).
+(default: :ref:`HAMILTONIAN_.INTFLG` from :ref:`**HAMILTONIAN`).
 
-.CORE
------
+keyword(CORE)
 
 Specify the frozen core spinors,
 
@@ -191,26 +186,22 @@ of active orbitals.
 
 *Default:* All occupied orbitals that are not active.
 
-.POSITRONS
-----------
+keyword(POSITRONS)
 
 Allow negative energy ("positronic") spinors in active set. If this
 keyword is not specified then only electronic spinors will be included
-and any positronic spinors specified with :ref:`.ACTIVE` are
+and any positronic spinors specified with :ref:`MOLTRA_.ACTIVE` are
 ignored.
 
-.NO2IND
--------
+keyword(NO2IND)
 
 Skip the 2-index transformation of the effective Fock matrix.
 
-.NO4IND
--------
+keyword(NO4IND)
 
 Skip the 4-index transformation.
 
-.SCREEN
--------
+keyword(SCREEN)
 
 Screening threshold in 4-index transformation (a negative value disables
 screening).
@@ -222,8 +213,7 @@ screening).
     .SCREEN
      1.0D-14
 
-.ASCII
-------
+keyword(ASCII)
 
 Write integrals to the ASCII file MO\_integrals.txt to facilitate
 interfaces with correlation codes. Warning: only meant for initial
@@ -231,8 +221,7 @@ interfacing as this format is very inefficient.
 
 *Default:* Do not write the ASCII file.
 
-.RCORBS
--------
+keyword(RCORBS)
 
 Recanonize orbitals before transforming.
 
@@ -240,8 +229,7 @@ Recanonize orbitals before transforming.
 
 **Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -252,45 +240,38 @@ Print level.
     .PRINT
      0
 
-.2INDEX
--------
+keyword(2INDEX)
 
 Ranges of active orbitals in 2-index transformation module specified for
 index 1 and 2 and fermion irrep 1 and 2.
 
-*Default:* Ranges set by :ref:`.ACTIVE`.
+*Default:* Ranges set by :ref:`MOLTRA_.ACTIVE`.
 
-.4INDEX
--------
+keyword(4INDEX)
 
 Ranges of active orbitals in 4-index transformation module specified for
 index 1 to 4 and fermion irrep 1 and 2.
 
-*Default:* Ranges set by :ref:`.ACTIVE`.
+*Default:* Ranges set by :ref:`MOLTRA_.ACTIVE`.
 
-.MDCINT
--------
+keyword(MDCINT)
 
 Write 4-index transformed integrals to file (default).
 
-.NOMDCI
--------
+keyword(NOMDCI)
 
 Skip writing 4-index transformed integrals to file. Instead, write file
 MDINFO, which contains infos used in the MCSCF program.
 
-.SCATTER
---------
+keyword(SCATTER)
 
 Scatter 4-index transformed integrals to all nodes (default).
 
-.NOSCAT
--------
+keyword(NOSCAT)
 
 Do not scatter 4-index transformed integrals to all nodes
 
-.PAR4BAS
---------
+keyword(PAR4BAS)
 
 Specify number of batches for each node in 4-index transformation. Only
 working for parallel distributions.
@@ -302,17 +283,18 @@ working for parallel distributions.
     .PAR4BAS
      -1
 
-\*PRPTRA -- Property integrals transformation
-=============================================
+star(PRPTRA)
+
+Property integrals transformation
+---------------------------------
 
 This section defines the property operators that should to be transformed. Such
-integrals are only used in an experimental section of :ref:`RELCCSD`, and this
+integrals are only used in an experimental section of :ref:`**RELCC`, and this
 subsection can thus usually be omitted.
 
 **Programmers options**
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -323,8 +305,7 @@ Print level.
     .PRINT
      0
 
-.OPERATOR
----------
+keyword(OPERATOR)
 
 Specification of general one-electron operators.
 

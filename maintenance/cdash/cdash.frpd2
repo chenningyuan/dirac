@@ -11,14 +11,14 @@ export DIRTIMEOUT="14m"
 # go to the local DIRAC directory
 cd $DIRAC
 
+# clean dir
+git clean -f -d -x
+
 git submodule update --init --recursive
 git submodule status
 
+
 BUILD_GNU=build_gnu_i8
-if [[ -d "$BUILD_GNU" ]]; then
-  echo "deleting previous build directory $BUILD_GNU"
-  /bin/rm -rf $BUILD_GNU
-fi
 ./pamadm -a --builddir=$BUILD_GNU
 # configure step
 ./setup --run-unit-tests  --int64  -D BUILDNAME="frpd2.gnu_i8-check" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_GNU 
@@ -31,10 +31,6 @@ ctest  -D ExperimentalSubmit     --track BoundsCheck
 
 cd $DIRAC
 BUILD_GNU1=build_gnu_i4
-if [[ -d "$BUILD_GNU1" ]]; then
-  echo "deleting previous build directory $BUILD_GNU1"
-  /bin/rm -rf $BUILD_GNU1
-fi
 ./pamadm -a --builddir=$BUILD_GNU1
 # configure step
 ./setup --run-unit-tests -D BUILDNAME="frpd2.gnu_i4" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_GNU1
@@ -51,14 +47,12 @@ if [[ -z $PROD_DIR ]]; then
 fi
 
 cd $DIRAC
-BUILD_INTEL=build_intelmkl_i8_nopcm
-if [[ -d "$BUILD_INTEL" ]]; then
-  echo "deleting previous build directory $BUILD_INTEL"
-  /bin/rm -rf $BUILD_INTEL
-fi
+#BUILD_INTEL=build_intelmkl_i8_nopcm
+BUILD_INTEL=build_intelmkl_i8
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8_nopcm" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
+#./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8_nopcm" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
+./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=ON -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
 cd $BUILD_INTEL
 export MKL_NUM_THREADS=3
 export MKL_DYNAMIC="FALSE"

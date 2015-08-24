@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ================
 The Wolfram atom
 ================
@@ -7,9 +10,9 @@ It is the open-shell system with four unpaired electrons in the *5d* shell::
 
  W: [Xe] 4f(14) 5d(4) 6s(2)
 
-In the following tutorial, for simplicity, we use the two-component Hamiltonian (:ref:`.X2C`) and the smallest 
+In the following tutorial, for simplicity, we use the two-component Hamiltonian (:ref:`HAMILTONIAN_.X2C`) and the smallest 
 available basis set by K.Dyall, *v2z*.
-Due to the covnergence problem of the standalone  AMFI atomic SCF code we keep the +4 charge (:ref:`.AMFICH`) of W for mean-field
+Due to the covnergence problem of the standalone  AMFI atomic SCF code we keep the +4 charge (:ref:`AMFI_.AMFICH`) of W for mean-field
 orbitals.
 
 ----------------------------

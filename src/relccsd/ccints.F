@@ -296,6 +296,8 @@ C  We may have already sorted these integrals when restarting, in that case jump
 C
       IF (IMSTAT(2).EQ.3) GOTO 450
 C
+      IF (.NOT.SRTALL) GOTO 600
+C
 C     Determine # of passes necessary for treating VOVV integrals
 C     on a specific node
 C
@@ -305,8 +307,6 @@ C
       WRITE (IW,1005) NPASS,'VOVV'
       WRITE(IW,*) 
       CALL FLSHFO (IW)
-C
-      IF (.NOT.SRTALL) GOTO 600
 C
 C   start of IPASS loop for the VOVV
 C ----------------------------

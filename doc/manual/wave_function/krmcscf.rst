@@ -1,9 +1,11 @@
+:orphan:
+ 
 
 star(KRMCSCF)
 
 *2- and 4-component relativistic KR-MCSCF module*
-
-Original implementation written
+=================================================
+The original implementation written
 by Joern Thyssen, Timo Fleig and Hans Joergen Aagaard Jensen,
 parallelization and continuous improvement by Stefan Knecht and Hans
 Joergen Aagaard Jensen. Linear symmetry adaptation by Stefan Knecht and Hans Joergen Aagaard Jensen.
@@ -194,7 +196,7 @@ maximum number of initial CI iterations. *default*:
 
 keyword(MXCIVE)
 
-maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`.CIROOTS`) to optimize on.
+maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`KRCI_.CIROOTS`) to optimize on.
 example:
 
 ::
