@@ -410,7 +410,8 @@
     if (permute_transpose == A(i)) then 
       save_index = i
       no_match = .FALSE.
-      trans ='C'  
+!      trans ='C'  
+       trans ='T'  
       exit
     endif
      i = i+1
@@ -608,21 +609,21 @@
 
    reorder_left = reorder_v 
 
-  if ((if_trans=='C').and.(sortType==31)) then
+  if ((if_trans=='T').and.(sortType==31)) then
 
    reorder_left(1)=reorder_v(4)
    reorder_left(2:4)=reorder_v(1:3)
 
   endif 
 
-  if ((if_trans=='C').and.(sortType==13)) then
+  if ((if_trans=='T').and.(sortType==13)) then
 
    reorder_left(4)=reorder_v(1)
    reorder_left(1:3)=reorder_v(2:4)
 
   endif 
 
-  if ((if_trans=='C').and.(sortType==22)) then
+  if ((if_trans=='T').and.(sortType==22)) then
 
    reorder_left(1:2)=reorder_v(3:4)
    reorder_left(3:4)=reorder_v(1:2)
@@ -737,7 +738,7 @@
 
      sort_type_dummy = sortType
 
-     if (if_trans == 'C') then
+     if (if_trans == 'T') then
        if (sortType == 31) sort_type_dummy = 13
        if (sortType == 13) sort_type_dummy = 31
      endif
@@ -1347,7 +1348,7 @@
   call align_array(array1,array2,array3,reorder_array)   
 
   if ((toDecimal(reorder_array)) == 21) then
-  trans_1b = 'C'
+  trans_1b = 'T'
   else
   trans_1b = 'N'
   endif

@@ -14,6 +14,7 @@
 
      external cntrct
      external srt1c1
+     external srt1c1n
 
   !!   integer,parameter :: maxdim = 10000000
 
@@ -64,10 +65,8 @@
    call cntrct (transA,transB,x_row,y_column,x_column,dia_factor*A1,leftTensor,rightTensor,A0,imTensor_temp,NREP) 
 
    allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
-   
-   imTensor_temp_temp = 0.0d0
 
-   call srt1c1 (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
+   call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
 
 !   deallocate (ImTensor_temp)
 
@@ -120,8 +119,8 @@
  
       transA = 'N'
       transB = 'N'
-      v_sort = 0.0d0
-      right_sorted = 0.0d0
+!!      v_sort = 0.0d0
+!!      right_sorted = 0.0d0
 
 ! 1) fetch 2-e integrals and sort them for BLAS.
 
@@ -167,9 +166,7 @@
 
    allocate (ImTensor_temp_temp(dot_product(x_row,y_column)*rcw))
 
-   imTensor_temp_temp = 0.0d0 
-
-   call srt1c1 (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
+   call srt1c1n (nrep,x_row,y_column,imTensor_temp,imTensor_temp_temp)
 
    deallocate (ImTensor_temp)
 
@@ -201,7 +198,8 @@
     character(1)   :: transA,transB
     integer        :: match_index,i 
     integer        :: asym_factor
-    integer        :: maxdim
+    integer        :: maxdim, lda
+    logical        :: array_equal
     real(8),allocatable        :: v_sort(:)
     real(8),allocatable        :: RightTensor_sort(:)
     character(2)   :: sorted_left(4),freeindx(2)
@@ -220,7 +218,7 @@
 
   allocate(v_sort(maxdim*rcw))  
 
-     v_sort = 0.0d0
+!!     v_sort = 0.0d0
 
      transA = 'N'
 
@@ -239,24 +237,39 @@
      endif
 
      call onebody_for_blas (right_order,sorted_left(3:4),im_order,transB,y_row,y_column) 
-    
 
-     if (transb=='C') then
+     array_equal = all((/sorted_left(1),sorted_left(2)/)==im_order)
 
-      allocate(rightTensor_sort(dot_product(y_row,y_column)*rcw))
+     write(*,*)'array_equal, always T eXpected',array_equal,transA
 
-      RightTensor_sort = 0.0d0
+         if (transA.eq.'n'.or.transA.eq.'N') then
+            lda = x_row(1)
+         else
+            lda = x_column(1)
+         endif
 
-      call srt1c1 (nrep,y_column,y_row,rightTensor,rightTensor_sort)
+     if (transB=='T') then
 
-      call xgemv (transA,x_row(1),x_column(1),asym_factor*dia_factor*A1,v_sort,x_row(1),rightTensor_sort, &
-      &            1,dia_sum_factor*A1,imTensor,1) 
+      allocate(rightTensor_sort(x_column(1)*rcw))
+
+      call srt1c1n (nrep,y_column,y_row,rightTensor,rightTensor_sort)
+
+!!      if (carith) call conjuga(x_column(1),rightTensor,1)
+
+      call xgemm (transA,'N',x_row(1),1,x_column(1),asym_factor*dia_factor*A1,v_sort, &
+      &       lda,rightTensor_sort,x_column(1),dia_sum_factor*A1,imTensor,x_row(1))
+
+!     call xgemv (transA,x_row(1),x_column(1),asym_factor*dia_factor*A1,v_sort,x_row(1),rightTensor_sort, &
+!     &            1,dia_sum_factor*A1,imTensor,1) 
 
       deallocate(rightTensor_sort)
      
       else
 
-      call xgemv (transA,x_row(1),x_column(1),asym_factor*dia_factor*A1,v_sort,x_row(1),rightTensor,1,dia_sum_factor*A1,imTensor,1) 
+      call xgemm (transA,'N',x_row(1),1,x_column(1),asym_factor*dia_factor*A1,v_sort, &
+      &       lda,rightTensor,x_column(1),dia_sum_factor*A1,imTensor,x_row(1))
+
+!      call xgemv (transA,x_row(1),x_column(1),asym_factor*dia_factor*A1,v_sort,x_row(1),rightTensor,1,dia_sum_factor*A1,imTensor,1) 
       endif
 
       deallocate(v_sort)
@@ -287,8 +300,11 @@
     integer        :: match_index,i 
     integer        :: asym_factor
     integer        :: maxdim
+    integer        :: ldb 
+    logical        :: array_equal
     real(8),allocatable        :: right_sort(:)
     real(8),allocatable        :: left_sort(:)
+    real(8),allocatable        :: im_temp(:)
 !---------------------------------------------------------------    
 #include "param.inc"
 #include "complex.inc"
@@ -297,7 +313,7 @@
 
    allocate(right_sort(maxdim*rcw))  
 
-     right_sort = 0.0d0
+!!     right_sort = 0.0d0
      transA = 'N'
      trans1A = 'N'
 
@@ -313,47 +329,76 @@
    call sorting_for_blas(match_index,.false.,transA,right_sort,y_row,y_column,if_totsym=.true.)
    endif
 
-
 !**  2> sort onebody integral properly to use in BLAS.
 
    call onebody_for_blas (left_order,im_order,sorted_oparray_right,trans1A,x_row,x_column)
 
-   allocate (left_sort(dot_product(x_row,x_column)*rcw))
+   allocate (left_sort(y_row(1)*rcw))
 
-     left_sort = 0.0d0
 
-   if (trans1A=='C') then
+   if (trans1A=='T') then
 
-   call srt1c1 (nrep,x_column,x_row,LeftTensor,left_sort)
+
+!!   call xcopy (y_row(1),LeftTensor,1,left_sort,1)  
+   
+
+!!   if (carith) call conjuga(y_row(1),left_sort,1)
+
+    call srt1c1n (nrep,x_column,x_row,LeftTensor,left_sort)
 
    else
     
-   call xcopy (dot_product(x_row,x_column),LeftTensor,1,left_sort,1)  
+   call xcopy (y_row(1),LeftTensor,1,left_sort,1)  
 
    endif
 
+     array_equal = all((/sorted_oparray_right(3),sorted_oparray_right(4)/)==im_order)
+     
+     write(*,*)'array_equal, always T eXpected',array_equal,transA
+
+         if (transA.eq.'N'.or.transA.eq.'n') then
+            ldb = y_row(1)
+         else
+            ldb = y_column(1)
+         endif
+
+   allocate(im_temp(y_column(1)*rcw))
+
+   im_temp =0.0d0
 !**  3>  to do B = XA  type operation with xgemv, we are doing B^T = A^T*X^T then transpose(B^T). that implies following modifications.   
+   call xgemm ('N',transA,1,y_column(1),y_row(1),asym_factor*dia_factor*A1,left_sort, &
+      &       1,right_sort,ldb,dia_sum_factor*A0,im_temp,1)
 
-  if (transA == 'N') then
-   transB = 'C'
-  else
-   transB = 'N'
-   if (carith) call conjuga(y_row(1)*y_column(1),right_sort,1)
-  endif
 
-  if (transB == 'N') then
-  if (carith) call conjuga(y_column(1),left_sort,1)
-  else
-  if (carith) call conjuga(y_row(1),left_sort,1)
-  endif
+!!!   if (carith) call conjuga(y_column(1),im_temp,1)
 
-   call xgemv (transB,y_row(1),y_column(1),asym_factor*dia_factor*A1,right_sort,y_row(1),left_sort,1,dia_sum_factor*A1,ImTensor,1) 
+   call xaxpy (y_column(1),A1,im_temp,1,imTensor,1)
 
-  if (transB == 'N') then
-  if (carith) call conjuga(y_row(1),ImTensor,1)
-  else
-  if (carith) call conjuga(y_column(1),ImTensor,1)
-  endif
+
+!!if (transA == 'N') then
+!! transB = 'C'
+!!else
+!! transB = 'N'
+!! if (carith) call conjuga(y_row(1)*y_column(1),right_sort,1)
+!!endif
+
+!!if (transB == 'N') then
+!!if (carith) call conjuga(y_column(1),left_sort,1)
+!!else
+!!if (carith) call conjuga(y_row(1),left_sort,1)
+!!endif
+
+!! call xgemv (transB,y_row(1),y_column(1),asym_factor*dia_factor*A1,right_sort,y_row(1),left_sort,1,dia_sum_factor*A0,im_temp,1) 
+
+!!if (transB == 'N') then
+!!if (carith) call conjuga(y_row(1),im_temp,1)
+!! call xaxpy (y_row(1),A1,im_temp,1,imTensor,1)
+!!else
+!!if (carith) call conjuga(y_column(1),im_temp,1)
+!! call xaxpy (y_column(1),A1,im_temp,1,imTensor,1)
+!!endif
+
+   deallocate(im_temp)
 
    deallocate (left_sort)
    deallocate (right_sort)
@@ -394,8 +439,8 @@
   allocate(v_sort(maxdim1*rcw))  
   allocate(right_sorted(maxdim2*rcw))  
 
-   v_sort       = 0.0d0
-   right_sorted = 0.0d0
+!!   v_sort       = 0.0d0
+!!   right_sorted = 0.0d0
    transA = 'N'
    transB = 'N'
 
@@ -432,20 +477,18 @@
 
    call cntrct (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp,NREP) 
 
-   v_sort = 0.0d0
+ !!  v_sort = 0.0d0
 
    transA = 'N'
 
    call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
                        & transA,save_index,asym_factor_R,.false.,sorted_opArray=sorted_opArray_right,inverse=.true.)
 
-   if (transA=='C') then
+   if (transA=='T') then
 
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
-   im_temp_temp= 0.0d0
-
-   call srt1c1 (nrep,x_row,y_column,im_temp,im_temp_temp)
+   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
 
    call sorting_for_blas(save_index,.true.,transA,v_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)
 
@@ -498,7 +541,7 @@
 
   allocate(v_sort(maxdim*rcw))  
 
-   v_sort = 0.0d0
+!!   v_sort = 0.0d0
    transA = 'N'
    transB = 'N'
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
@@ -531,7 +574,7 @@
   if (present(RightTensor)) call cntrct (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
    &                                      RightTensor,A0,im_temp,NREP) 
 
-   v_sort = 0.0d0
+!!   v_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the intermediate.
 
    transA = 'N'
@@ -540,13 +583,13 @@
            &                    asym_factor,.false.,inverse=.true.,sorted_opArray=sorted_opArray)
 
 !  write(*,*)'right array',(sorted_opArray(i),i=1,4)
-   if (transA=='C') then
+   if (transA=='T') then
 
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
-   im_temp_temp = 0.0d0
+   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
 
-   call srt1c1 (nrep,x_row,y_column,im_temp,im_temp_temp)
+!!      if (carith) call conjuga(dot_product(x_row,y_column),im_temp_temp,1)
 
    deallocate(im_temp)
 
@@ -596,7 +639,7 @@
 
   allocate(right_sort(maxdim*rcw))  
 
-   right_sort = 0.0d0
+!!   right_sort = 0.0d0
    transA = 'N'
    transB = 'N'
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
@@ -626,7 +669,7 @@
   if (present(LeftTensor)) call cntrct (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
   &        right_sort,A0,im_temp,nrep) 
 
-   right_sort = 0.0d0
+!!   right_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the imtermediate.
 
    transA = 'N'
@@ -637,11 +680,10 @@
 
 !!   write(*,*)'write sorted final',match_index,(sorted_oparray(i),i=1,4),transA
 
-   if (transA=='C') then
+   if (transA=='T') then
 
   allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
-   im_temp_temp = 0.0d0
-   call srt1c1 (nrep,x_row,y_column,im_temp,im_temp_temp)
+   call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
 
  deallocate(im_temp)
    call sorting_for_blas(match_index,.true.,transA,right_sort,x_row,x_column,im_temp_temp,if_TotSym=.false.)

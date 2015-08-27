@@ -17,11 +17,16 @@ Analytical first-order MP2 properties
 .EFN
 .NQCC
 .EFFDEN
+*LINEAR RESPONSE
+.SKIPEP
 **MOLTRA
 .SCHEME
 6
 .ACTIVE
-energy -15.0 100.0 1.0
+energy -21.0 100.0 1.0
 **RELCCSD
 .GRADIENT
+*CCFOPR
+.CCSDG
+.UNRELA
 *END OF

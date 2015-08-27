@@ -36,7 +36,7 @@
 
      contains
 
-   subroutine f_bar_mi(foo,fvo,t1,t2,ho,buf1,buf2,buf3)
+   subroutine f_bar_mi(foo,fvo,t1,t2,ho)
 
 #include "symm.inc"
 #include "param.inc"
@@ -44,8 +44,6 @@
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
      real(8), intent(in) :: foo(rcw*nfoo), fvo(rcw*nfvo)   ! Fock matrix elements
      real(8), intent(in) :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes
-     real(8), intent(in) :: buf1(*),buf2(*)  ! Amplitudes
-     real(8), intent(inout) :: buf3(*)
      real(8), intent(out):: ho(rcw*nfoo)                   ! Intermediate
 !+++++++++++++++Local variables++++++++++++++++++++++++++++++++++++++++
      real(8), allocatable :: tau(:) !, vooo(:),vooo_sorted(:),vvoo(:)
@@ -74,15 +72,15 @@
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
 !**************************************
    
-!   call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
+   call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
 
 
-   do i = 1, nfoo
-   if (abs(ho(i)) <= 1.0d-14) then  
-   write(*,*)'value of weird hoo', ho(i)
-   ho(i) = 0.0d0
-   endif
-   enddo
+!  do i = 1, nfoo*rcw
+!  if (abs(ho(i)) <= 1.0d-14) then  
+!  write(*,*)'value of weird hoo', ho(i)
+!  ho(i) = 0.0d0
+!  endif
+!  enddo
 
    end subroutine
 
@@ -119,14 +117,14 @@
   
    deallocate(tau) 
 
-    write(*,*)'wpp 1',ddot(nfvv,hv,1,hv,1)
+    write(*,*)'wpp 1',dot_product(hv(1:nfvv),hv(1:nfvv))
 !---------------------------------------------------------------
 !F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) -> V(ae,fm) * T1(fm) 
 !---------------------------------------------------------------
 
   call contraction_422 ((/"p1","o1","p2","p3"/),(/"p3","o1"/),(/"p1","p2"/),t1,hv,1.0d0,1.0d0,nrep)
  
-  write(*,*)'wpp 2',ddot(nfvv,hv,1,hv,1)
+  write(*,*)'wpp 2',dot_product(hv(1:nfvv*rcw),hv(1:nfvv*rcw))
 
 !-----------------------------------------------------------------
 !F_bar_ae = F_bar_ae + F(m,a) * T1(e,m)
@@ -139,6 +137,7 @@
 
    deallocate (fov)
 
+  write(*,*)'wpp 3',dot_product(hv(1:nfvv*rcw),hv(1:nfvv*rcw))
   end subroutine
 
   subroutine f_bar_me(fvo,t1,hov)
@@ -152,9 +151,9 @@
      real(8), intent(out):: hov(rcw,nfvo)                  ! Intermediate
 !+++++initialization of hov+++++++++++++
  
-! call srt1c1(nrep,nv,no,fvo,hov)
+  call srt1c1(nrep,nv,no,fvo,hov)
 
-  hov = fvo
+!  hov = fvo
 
 !+++++++++++++Term-1++++++++++++++++++++++
 ! F_bar_me = F_bar_me + V(mn,ef) * T1(f,n) 
@@ -198,11 +197,11 @@
    call contraction_424 ((/"o1","o2","p1","o4"/),(/"p1","o3"/),(/"o1","o2","o4","o3"/),w_oooo, &
            &      1.0d0,-1.0d0,nrep,RightTensor=t1)
 
-   do i = 1, nv1
-   if (abs(w_oooo(i)) <= 1.0d-14) then  
-   w_oooo(i) = 0.0d0
-   endif
-   enddo
+!! do i = 1, nv1
+!! if (abs(w_oooo(i)) <= 1.0d-14) then  
+!! w_oooo(i) = 0.0d0
+!! endif
+!! enddo
 
 !******************************************************
 ! w_oooo(ij,mn) = w_oooo(ij,mn) +  V(ij,ef) * Tau(ef,mn)
@@ -256,11 +255,6 @@
 
   allocate (tau(ndimt2*rcw))
 
-  tau = 0.0d0
-
-!  call gettau_approx (t1,t2,tau,'approximate')
-!  call gettau_approx (t1,t2,tau)
-
   call contraction_444 ((/"o3","o1","p3","p1"/),(/"p2","p3","o2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
    &      1.0d0,0.0d0,nrep,RightTensor=tau)
 
@@ -279,9 +273,9 @@
 !===========================================================================================================
 
  subroutine w_mbej(t1,t2,w_ovvo)
-
- external srt1l1
-
+  
+  external srt1l1
+  
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
@@ -301,8 +295,6 @@
 !--------------------
 ! initialize w_voov
 !--------------------
-
-  w_ovvo = 0.0d0
 
   allocate (w_vovo(nv4*rcw))
 
@@ -334,7 +326,7 @@
 ! deallocate (tau)
 
 !-------------------------------------------------------------------------------------
-!  w_ovvo(mb,ej) = w_ovvo(mb,ej) - V(mn,ef)*(T2(fb,jn)+T1(f,j)*T1(b,n))
+!  w_ovvo(mb,ej) = w_ovvo(mb,ej) - V(mn,ef)*(T2(bf,nj)+T1(f,j)*T1(b,n))
 !-------------------------------------------------------------------------------------
 
   call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),w_ovvo, &
@@ -361,12 +353,12 @@
              &      1.0d0,1.0d0,nrep,RightTensor=t1)
 
 
-   do i = 1, ivoov(nrep+1)
-   if (abs(w_ovvo(i)) <= 1.0d-14) then  
-!   write(*,*)'zero of mbej',w_ovvo(i)
-   w_ovvo(i) = 0.0d0
-   endif
-   enddo
+!! do i = 1, ivoov(nrep+1)
+!! if (abs(w_ovvo(i)) <= 1.0d-14) then  
+!!  write(*,*)'zero of mbej',w_ovvo(i)
+!! w_ovvo(i) = 0.0d0
+!! endif
+!! enddo
 
  end subroutine
 
@@ -440,6 +432,7 @@
 
  subroutine wbar_mbej(t2,wbar_ovvo)
 
+  external srt1l1
  !---------------Description--------------------------------------------
  !     Calculates w_voov intermediate
  !-----------------------------------------------------------------------
@@ -458,7 +451,6 @@
  !--------------------
  ! initialize wbar_ovvo
  !--------------------
-  wbar_ovvo = 0.0d0
 
   allocate (w_vovo(nv4*rcw))
 
@@ -492,7 +484,7 @@
    real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
    real*8, intent(in)  :: buf2(*),buf3(*)         
    real*8, intent(in)  :: wbar_ovvo(rcw*iovvo(nrep+1)),hov(nfvo*rcw)     ! Intermediate.
-   real*8, intent(out) :: w_vvvo(rcw,nv5)                ! Intermediate.
+   real*8, intent(out) :: w_vvvo(rcw*nv5)                ! Intermediate.
  !---------------Local Variables----------------------------------------
 
    real*8      :: ddot
@@ -505,7 +497,7 @@
 
    call getvvvo_incore(w_vvvo)
 
-       write(*,*)'w~efam: init',ddot(nv5,w_vvvo,1,w_vvvo,1)
+     write(*,*)'w~efam: init',dot_product(w_vvvo(1:nv5*rcw),w_vvvo(1:nv5*rcw))
 !-----------------------------------------------------------
 !   diagram1 : w_vvvo(ef,am)  = w_vvvo(ef,am) + p(ef) V(en,ag)*tau(fg,mn)  
 !-----------------------------------------------------------
@@ -534,7 +526,7 @@
 !!deallocate(array_temp)
 
 
-  write(*,*)'write me inside w~efam,dia2',ddot(nv5,w_vvvo,1,w_vvvo,1)
+  write(*,*)'write me inside w~efam,dia2',dot_product(w_vvvo(1:nv5*rcw),w_vvvo(1:nv5*rcw))
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 
 !------------------------------------------------------------
@@ -546,15 +538,14 @@
 
       allocate(huge_temp(kvvovt(nrep+1)*rcw))
 
-      huge_temp = 0.0d0
       call srt1t3 (nrep,multb,.false.,nvvt,no,no,nvvot,kvvoot,kkvvot, &
      &             t2,buf2)
   
       call xcopy(kvvovt(nrep+1),a0,0,buf3,1)
 
-      call cntrct ('c','c',nv,nvvot,no,a1,hov,buf2,a0,buf3,nrep)
+      call cntrct ('t','t',nv,nvvot,no,a1,hov,buf2,a0,buf3,nrep)
 
-      call srt1c1 (nrep,nv,nvvot,buf3,huge_temp)
+      call srt1c1n (nrep,nv,nvvot,buf3,huge_temp)
 
       call srt19 (nrep,multb,.true.,nvvt,nv,no,nvvot,kvvovt,kkvvot,huge_temp,buf3)
 
@@ -565,18 +556,22 @@
 !     call contraction_244 ((/"o2","p1"/),(/"p2","p3","o2","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
 !    &      -1.0d0,1.0d0,nrep,LeftTensor=hov,RightTensor=t2)
 
-  write(*,*)'write me inside w~efam,dia3',ddot(nv5,w_vvvo,1,w_vvvo,1)
+  write(*,*)'write me inside w~efam,dia3',dot_product(w_vvvo(1:nv5*rcw),w_vvvo(1:nv5*rcw))
 !---------------------------------------------------------------------------
 !  diagram4 : w_vvvo(ef,am) =  w_vvvo(ef,am) + 0.5d0 * V(no,am) * tau(ef,no) 
 !---------------------------------------------------------------------------
 
   allocate (tau(ndimt2*rcw))
   call gettau (t1,t2,tau)
-  call contraction_444 ((/"o2","o3","p1","o1"/),(/"p2","p3","o2","o3"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-             &      1.0d0,0.0d0,nrep,RightTensor=tau)
-  deallocate (tau)
+! call contraction_444 ((/"o2","o3","p1","o1"/),(/"p2","p3","o2","o3"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+! &      1.0d0,0.0d0,nrep,RightTensor=tau)
 
-   write(*,*)'w~efam: vhhph',ddot(nv5,w_vvvo,1,w_vvvo,1)
+  call contraction_444 ((/"p2","p3","o2","o3"/),(/"o2","o3","p1","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+&      1.0d0,1.0d0,nrep,LeftTensor=tau)
+
+deallocate (tau)
+
+   write(*,*)'w~efam: vhhph',dot_product(w_vvvo(1:nv5*rcw),w_vvvo(1:nv5*rcw))
 !---------------------------------------------------------------------------
 !  diagram5 : w_vvvo(ef,am) =  w_vvvo(ef,am) - w_bar_ovvo(nf,am) * t(e,n)
 !---------------------------------------------------------------------------
@@ -584,7 +579,7 @@
   call contraction_424 ((/"o2","p3","p1","o1"/),(/"p2","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
             &      -1.0d0,1.0d0,nrep,LeftTensor=wbar_ovvo,RightTensor=t1)
 
-      write(*,*)'w~efam: whpph',ddot(nv5,w_vvvo,1,w_vvvo,1)
+      write(*,*)'w~efam: whpph',dot_product(w_vvvo(1:nv5*rcw),w_vvvo(1:nv5*rcw))
 
  end subroutine
 
@@ -641,6 +636,8 @@
 
          call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
 
+         call putdz (irp,istart,nint,buf3)
+
          mint = nbuf3/nvo(irp)
 ! ** now start SORTING and contraction loop
 
@@ -666,6 +663,9 @@
                     ISTART = ISTART + NINT
                     IF(.NOT.DONE) THEN
                     call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
+
+                    write(*,*)'am i here?, counter'
+                    call putdz (irp,istart,nint,buf3)
                       CD = 1
                       CCO=ISTART
                     ELSE
@@ -1368,12 +1368,9 @@
 !        endif
    
 !----------------------------------------------
-! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU*(ef,mn)
+! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU(ef,mn)
+!          =  V(ef,ab) + TAU(ef,mn) * V'*(ab,mn)            
 !----------------------------------------------
-
-        allocate(w_vvvv_temp(nvvt(irp)*nint*rcw))  
-
-       w_vvvv_temp = 0.0d0
 
        call getvvoo (buf1)
        m = nvvt(irp)
@@ -1382,16 +1379,25 @@
        abkl = (ivvoott(irp)+istart)*rcw+1
        off1 = off1 + ivvoott(irp)*rcw  
 
-       if(carith) then
+!      if(carith) then
 
-        call conjuga(ndimt2,tau,1)
+!       call conjuga(ndimt2,tau,1)
 
-       endif
+!      endif
+
+!      call xgemm ('n','t',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
+!    &               a1,w_vvvv,m)
+
 
        call xgemm ('n','c',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
      &               a1,w_vvvv,m)
 
-       deallocate(w_vvvv_temp)
+
+
+!      if (carith) then
+!         call conjuga (nint*nvvt(irp),w_vvvv,1)
+!      endif
+
 
 !-----------------------------------------------------
 ! w(ef,ab) = w(ef,ab) - V(em,ab)*t(f,m)
@@ -1401,7 +1407,7 @@
 
       if (.not.done) off3 = off3+nint
 
-       allocate(w_v(kt3vvvot(nrep+1)*rcw))  
+       allocate(w_v(zt3vvvot(nrep+1)*rcw))  
 
        w_v = 0.0d0
 
@@ -1418,7 +1424,7 @@
 
        w_vvvv_temp_temp = 0.0d0
 
-       call cntrct ('N','C',mm,nv,no,-a1,w_v,t1,a0,w_vvvv_temp_temp,nrep)
+       call cntrct ('N','T',mm,nv,no,-a1,w_v,t1,a0,w_vvvv_temp_temp,nrep)
 
        deallocate(w_v)
 

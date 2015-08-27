@@ -1280,8 +1280,9 @@ C---------------Executable code--------------------------------------
 
       allocate(buf1(npair1(irp)*npair2(irp)*rcw))
 
-!     NVVVO = OFF(IRP+1)
-!     CALL XCOPY(NVVVO,A0,0,BUF2,1)
+       NVVVO = OFF(NREP+1)
+       buf2(1:NVVVO*rcw) = 0.0d0 
+!!       CALL XCOPY(NVVVO,A0,0,BUF2,1)
        KLREP = IRP
        IJREP = KLREP
        M = NPAIR1(IJREP)
@@ -1686,6 +1687,9 @@ C---------------Local variables--------------------------------------
 C
 C---------------Executable code--------------------------------------
 C
+
+      write(*,*)'WARNING!!! i am here'
+
       CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
 
       IJLKOFF = 0

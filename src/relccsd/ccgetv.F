@@ -679,26 +679,26 @@ C
       NINT = MIN0(MINT,NTOT-ISTART)
       JSTART = IDIST(5,1,IREP)
       JSTART = JSTART + (ISTART-IDIST(1,1,IREP)) * MTOT
-C
+
 C     JINT : Total number of integrals to be read
-C
+
       JINT = MTOT * NINT
-C
+
 C     The integrals may be complex, convert offset and length to real before reading
-C
+
       JINT = JINT * RCW
       JSTART = JSTART * RCW
-C
+
       CALL WAIO_REALIO (ITAPT+6,VVVVV,JINT,JSTART,.TRUE.)
-C
+
 C     Are we done with this IRREP ?
-C
+
       IF (ISTART+NINT.EQ.NTOT) DONE = .TRUE.
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PUTDZ (IREP,ISTART,NINT,DONE,DZ)
+      SUBROUTINE PUTDZ (IREP,ISTART,NINT,DZ)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -720,7 +720,6 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 DZ(*)
       INTEGER IREP,ISTART,NINT
-      LOGICAL DONE
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -728,16 +727,29 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
-C
+#include "ccpar.inc"
 C---------------Local variables--------------------------------------
-C
+       INTEGER*8 JSTART
 C---------------Executable code--------------------------------------
-C
-      CALL QUIT ("Entered part of unfinished Lambda-code")
+      MTOT = NVVT(IREP)
+      JSTART = IDIST(5,1,IREP)
+      JSTART = JSTART + (ISTART-IDIST(1,1,IREP)) * MTOT
+
+C     JINT : Total number of integrals to write
+
+      JINT = MTOT * NINT
+
+C     The integrals may be complex, convert offset and length to real before reading
+
+      JINT = JINT * RCW
+      JSTART = JSTART * RCW
+
+      CALL WAIO_REALIO (ITAPT+6,DZ,JINT,JSTART,.FALSE.)
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETDZ (IREP,ISTART,NINT,DONE,DZ)
+      SUBROUTINE GETDZ (IREP,ISTART,NINT,DONE,DZ,MINT)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -758,7 +770,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 DZ(*)
-      INTEGER IREP,ISTART,NINT
+      INTEGER IREP,ISTART,NINT,MINT
       LOGICAL DONE
 C
 C---------------Common Blocks--------------------------------------
@@ -766,14 +778,41 @@ C
 #include "files.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "eqns.inc"
+#include "waio.h"
+#include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
 C
+       INTEGER*8 JSTART
+C
 C---------------Executable code--------------------------------------
 C
-      CALL QUIT ("Entered part of unfinished Lambda-code")
+C     Calculate start address. The batches are distributed over the
+C     nodes for parallel runs. Take only the part that is on our node
 C
+      DONE = .FALSE.
+      MTOT = NVVT(IREP)
+      IF (IDIST(1,1,IREP).GT.ISTART) ISTART=IDIST(1,1,IREP)
+      NTOT = IDIST(2,1,IREP)
+      NINT = MIN0(MINT,NTOT-ISTART)
+      JSTART = IDIST(5,1,IREP)
+      JSTART = JSTART + (ISTART-IDIST(1,1,IREP)) * MTOT
+C
+C     JINT : Total number of integrals to be read
+C
+      JINT = MTOT * NINT
+C
+C     The integrals may be complex, convert offset and length to real before reading
+C
+      JINT = JINT * RCW
+      JSTART = JSTART * RCW
+C
+      CALL WAIO_REALIO (ITAPT+6,DZ,JINT,JSTART,.TRUE.)
+C
+C     Are we done with this IRREP ?
+C
+      IF (ISTART+NINT.EQ.NTOT) DONE = .TRUE.
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

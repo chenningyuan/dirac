@@ -35,13 +35,12 @@ C     for diis ...
       REAL*8 CC1(*)
       REAL*8 BB1(*),BB2(*)
 
-      REAL*8 RMS,CONV,RMS1,ddot,sum1,sum2
+      REAL*8 RMS,CONV,RMS1,ddot,sum1,sum2,zdotc
       REAL*8 DIAG
       INTEGER k,l
 
 C     for Fock space ...
 
-                                                     
 
 C---------------Common Blocks--------------------------------------
 
@@ -88,73 +87,59 @@ C     the timer because we want the overall timing at the end.
 
 C     Initialize the work arrays to zero.
 
-      CALL XCOPY (NDIMT2,A0,0,BUF1,1)
-      CALL XCOPY (NBUF2,A0,0,BUF2,1)
-      CALL XCOPY (NBUF3,A0,0,BUF3,1)
+       buf2(1:nbuf2*rcw) = 0.0d0
+       buf1(1:ndimt2*rcw) = 0.0d0
+
 
 !     Calculate fixed intermediaries for Lambda equations
 
     5   format(10f10.6)  
                         
-         call getampt (s1,s2)
+       call getampt (s1,s2)
 
        CALL ZCORE (S1,S2)
 
-       do i = 1, ndimt2
+!!!!!! do i = 1, ndimt2*rcw
 
-        if (abs(S2(i)) <= 1.0d-14) then
-        S2(i) = 0.0d0
-        endif
+!!!!!!  if (abs(S2(i)) <= 1.0d-14) then
+!!!!!!  S2(i) = 0.0d0
+!!!!!!  endif
 
-       enddo
+!!!!!! enddo
 
-       do i = 1, ndimt1
+!!!!!! do i = 1, ndimt1*rcw
 
-       if (abs(S1(i)) <= 1.0d-14) then
-       S1(i) = 0.0d0
-       endif
+!!!!!! if (abs(S1(i)) <= 1.0d-14) then
+!!!!!! S1(i) = 0.0d0
+!!!!!! endif
 
-       enddo
+!!!!!! enddo
 
-         call f_bar_mi(foo,fvo,s1,s2,ho,buf1,buf2,buf3)
+         call f_bar_mi(foo,fvo,s1,s2,ho)
 
-       write(*,*)'whh done',ddot(nfoo,ho,1,ho,1)
+       write(*,*)'whh done',dot_product(ho(1:nfoo*rcw),ho(1:nfoo*rcw))
 
-!       write(77,*)'f_bar_mi intermediate'
-!       write(77,*)'---------------------'
-!       write(*,5)(ho(i),i=1,nfoo)
 
          call w_ijmn(S1,S2,w_oooo)
 
-        write(*,*)'whhhh done',ddot(nv1,w_oooo,1,w_oooo,1)
-!       write(78,*)'w_ijmn intermediate'
-!       write(78,*)'---------------------'
-!       write(78,5)(w_oooo(i),i=1,nv1)
+        write(*,*)'whhhh done',
+     &   dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
 
          call f_bar_me(fvo,S1,hov)
 
-         write(*,*)'whp done',ddot(nfvo,hov,1,hov,1)
+       write(*,*)'whp done',dot_product(hov(1:nfvo*rcw),hov(1:nfvo*rcw))
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
 !        write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
-!        write(79,*)'f_bar_ae intermediate'
-!        write(79,*)'---------------------'
-!        write(79,5)(hv(i),i=1,nfvv)
 
 !        call w_ejmb(S1,S2,w_voov)
 
-! temp      write(*,*)'w_ejmb done',ddot(iovvo(nrep+1),w_voov,1,w_voov,1)
-!       write(80,*)'w_bar_ejmb intermediate'
-!       write(80,*)'---------------------'
-!       write(80,5)(w_voov(i),i=1,nv4)
-
           call wbar_mbej(S2,w_ovvo)
 
-        write(*,*)'w_mbej done',ddot(iovvo(nrep+1),w_ovvo,1,w_ovvo,1)
-!       write(81,*)'w_bar_mbej intermediate'
-!       write(81,*)'---------------------'
-!       write(81,5)(w_ovvo(i),i=1,nv4)
+        write(*,*)'w_mbej done',
+     &  dot_product(w_ovvo(1:iovvo(nrep+1)*rcw),
+     &     w_ovvo(1:iovvo(nrep+1)*rcw))
 
          call w_mbej(s1,s2,w_voov)
 
@@ -162,45 +147,28 @@ C     Initialize the work arrays to zero.
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
-         write(*,*)'w_iemn done',ddot(nv2,w_ovoo,1,w_ovoo,1)
-!        write(*,*)'w_bar_iemn intermediate'
-!        write(*,*)'---------------------'
-!        write(82,5)(w_ovoo(i),i=1,nv2)
+         write(*,*)'w_iemn done',
+     & dot_product(w_ovoo(1:nv2*rcw),w_ovoo(1:nv2*rcw))
 
          call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
 
          call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
 
-         write(*,*)'w_efam done',ddot(nv5,cz,1,cz,1)
-
-!        write(*,*)'w_bar_efam intermediate'
-!        write(*,*)'---------------------'
-!        write(83,5)(cz(i),i=1,nv5)
+        write(*,*)'w_efam done',dot_product(cz(1:nv5*rcw),cz(1:nv5*rcw))
 
 ! out-of-core section of the intemediates
 
 !        call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
 
-         write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
+         write(*,*)'wpp done',dot_product(hv(1:nfvv*rcw),hv(1:nfvv*rcw))
 !       call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_voov)
 
-!      write(*,*)'w_ejmb done',ddot(nv4,w_voov,1,w_voov,1)
-!      write(80,*)'w_bar_ejmb intermediate'
-!      write(80,*)'---------------------'
-!      write(80,5)(w_voov(i),i=1,nv4)
 
 !       call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
 
-!        write(*,*)'w_bar_iemn intermediate'
-!        write(*,*)'---------------------'
-!        write(82,5)(w_ovoo(i),i=1,nv2)
 
 !       call w_efam_out_of_core (s1,s2,hov,w_voov,w_ovvo,buf1,buf2,
 !    &              buf3,nbuf3,nbuf2,CZ)
-
-!         write(*,*)'w_bar_efam intermediate'
-!         write(*,*)'---------------------'
-!         write(83,5)(CZ(i),i=1,nv5)
 
 
 !-------Initialization Step for the Left Eigenvectors-----------
@@ -208,18 +176,11 @@ C     Initialize the work arrays to zero.
       call srt1c1 (nrep,nv,no,s1,l1) 
       call srt1c1 (nrep,nvvt,noot,s2,l2) 
 
-        write(88,*)'L2 Amplitudes:start'
-        write(88,*)'---------------------'
-        write(88,5)(l2(i),i=1,ndimt2)
-
-
       CALL ZCORE (L1,L2)
 
 !     Initialize the work arrays to zero.
 
-      call xcopy (ndimt2,A0,0,buf1,1)
-      call xcopy (nbuf2,A0,0,buf2,1)
-      call xcopy (nbuf3,A0,0,buf3,1)
+       buf1(1:ndimt2*rcw) = 0.0d0
 
 !---------before starting the iterative procedure, we need to initialize the DIIS-------------
       rms = 0.0d0
@@ -242,12 +203,8 @@ C     Initialize the work arrays to zero.
        allocate(resL2(ndimt2*rcw)) 
 
       do nit = 1, maxit 
-!     do nit = 1, 2 
 
 !     Making non-sequential G_ea, G_im intermediates for lambda equations
-
-!      allocate (G_vv(ivv(nrep+1)*rcw))
-!      allocate (G_oo(ioo(nrep+1)*rcw))
 
       allocate(G_vv(nfvv*rcw))
       allocate(G_oo(nfoo*rcw))
@@ -278,9 +235,9 @@ C
 
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
      &                            G_oo,G_vv,buf1,buf2,buf3,
-     &                            nbuf3,resL2,iprnt)
+     &                            nbuf3,resL2,iprnt,nit)
 
-      write(*,*)'RESL2 afetr all diagrams',ddot(ndimt2*rcw,resL2,1,
+      write(*,*)'RESL2 afetr all diagrams',ddot(ndimt2,resL2,1,
      &                                           resL2,1)
 
 
@@ -306,41 +263,30 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 !     calculation of RMS value 
 !------------------------------------
 
-!  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
+       rms = dot_product(resL1,resL1) + dot_product(resL2,resL2)
 
-       rms = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
-       rms = sqrt((rms)/(ndimt1+ndimt2))
-
-!      sum1 = ddot(ndimt1,resL1,1,resL1,1)+ddot(ndimt2,resL2,1,resL2,1)
-
-!      sum2  = sum(abs(resL1))+sum(abs(resL2))
-!      rms  = sum2/(ndimt1+ndimt2)
-
-!      sum2 = sum2*sum2
-       
-!      rms = sqrt(abs(sum1-sum2))/(ndimt1+ndimt2) 
+       rms = sqrt((rms)/(ndimt1+ndimt2)*rcw)
 
       write(*,*)'maximum value RESL1',maxval(abs(resl1))
       write(*,*)'maximum value RESL2',maxval(abs(resl2))
 
+
+!  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
+
        call denom_L (eps,resL1,resL2,resl1,resl2)
 
-!------------------------------------------------------------------------------------------------------------
-!      here i have summed the residues and old L amplitude values with a negative sign because the denominatior
-!      has opposite sign w.r.t. the T amplitudes, which has been used in the denom routine 
-!-------------------------------------------------------------------------------------------------------------
        call xaxpy (ndimt1,-a1,resL1,1,l1,1)
        call xaxpy (ndimt2,-a2,resL2,1,l2,1)
 
-       do i = 1, ndimt1
+!!!!!  do i = 1, ndimt1*rcw
 
-       if (abs(L1(i)) <= 1.0d-14) L1(i) = 0.0d0
+!!!!!  if (abs(L1(i)) <= 1.0d-14) L1(i) = 0.0d0
 
-       enddo
+!!!!!  enddo
 
-       do i = 1, ndimt2
-       if (abs(L2(i)) <= 1.0d-14) L2(i) = 0.0d0
-       enddo
+!!!!!  do i = 1, ndimt2*rcw
+!!!!!  if (abs(L2(i)) <= 1.0d-14) L2(i) = 0.0d0
+!!!!!  enddo
 
       CALL ZCORE (L1,L2)
 
@@ -365,14 +311,12 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
       deallocate(resL1) 
       deallocate(resL2) 
 
-
-
 !     Close and delete DIIS scratch files
 
       IT = -2
       call diisx(ndimt1,ndimt2,L1,L2,
      &           it,cc1,bb1,itc,bb2,rms)
-c
+
  111  FORMAT(A20,I4,2f25.15)
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)

@@ -104,9 +104,9 @@ C
 C----------------------------------------------------------------------
 C DVO(A,I) = L(A,I)
 C----------------------------------------------------------------------
-      CALL XCOPY (NDIMT1,S1,1,DVO,1)         
+!!      CALL XCOPY (NDIMT1,S1,1,DVO,1)         
 
-!!      call srt1c1(nrep,nv,no,S1,DVO)
+      call srt1c1(nrep,nv,no,S1,DVO)
 C----------------------------------------------------------------------
 C DOV(A,I) = T(A,I)
 C----------------------------------------------------------------------
@@ -140,6 +140,11 @@ C----------------------------------------------------------------------
       CALL CNTRCT ('N','C',NV,NV,NVOOT,-A1,BUF1,BUF2,A0,BUF3,NREP)
       CALL CNTRCT ('C','N',NV,NO,NV,A1,BUF3,T1,A1,DOV,NREP)
 
+      IF (CARITH) THEN
+         CALL CONJUGA (NFVO,DOV,1)
+         CALL CONJUGA (NFVO,DVO,1)
+      ENDIF
+
       CALL CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,DMO)
       RETURN
       END
@@ -154,7 +159,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !-------------------------calling variables-------------------------
        real*8, intent(in)  :: l1(ndimt1*rcw),l2(ndimt2*rcw),
      &                        t1(ndimt1*rcw),t2(ndimt2*rcw)
-       real*8, intent(out) :: doo(*),dvv(*),dmo(*) !norbt*
+       real*8, intent(out) :: doo(nfoo*rcw),dvv(nfvv*rcw),dmo(*) !norbt*
 !    &                        norbt*nz) 
        real*8, intent(out) :: buf1(*),buf2(*)
 !-------------------------------------------------------------------
@@ -182,7 +187,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
      &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
 
-       write(*,*)'dot product of doo',ddot(nfoo,doo,1,doo,1)
+       write(*,*)'dot product of doo',dot_product(doo,doo)
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
@@ -200,7 +205,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &              l1,t1,dvv,1.0d0,1.0d0,nrep)
 
 
-       write(*,*)'dot product of dvv',ddot(nfvv,dvv,1,dvv,1)
+       write(*,*)'dot product of dvv',dot_product(dvv,dvv)
 
        allocate(dvo(nfvo*rcw))
 
@@ -210,15 +215,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call xcopy (nfvo,t1,1,dvo,1)
 
-       write(*,*)'dot product of dvo:step1',ddot(nfvo,dvo,1,dvo,1)
+       write(*,*)'dot product of dvo:step1',dot_product(dvo,dvo)
 !--------------------------------------------------------------------------
 !     dvo(a,i) = dvo(a,i) + l1(m,e) * t(ae,im)
 !--------------------------------------------------------------------------
 
-      call contraction_242 ((/"o2","p2"/),(/"p1","p2","o1","o2"/), 
-     & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,RightTensor=t2)
+!     call contraction_242 ((/"o2","p2"/),(/"p1","p2","o1","o2"/), 
+!    & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,RightTensor=t2)
 
-       write(*,*)'dot product of dvo:step2',ddot(nfvo,dvo,1,dvo,1)
+
+      call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), 
+     & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=t2)
+
+
+       write(*,*)'dot product of dvo:step2',dot_product(dvo,dvo)
 
 !----------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l1(m,e) * t(e,i)*t(a,m)
@@ -237,7 +247,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       deallocate(woo_temp)
 
-       write(*,*)'dot product of dvo:step3',ddot(nfvo,dvo,1,dvo,1)
+       write(*,*)'dot product of dvo:step3',dot_product(dvo,dvo)
 !-------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t2(ef,in)*t1(a,m) 
 !-------------------------------------------------------------
@@ -255,7 +265,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       deallocate(woo_temp)
 
-       write(*,*)'dot product of dvo:step4',ddot(nfvo,dvo,1,dvo,1)
+       write(*,*)'dot product of dvo:step4',dot_product(dvo,dvo)
 
 !-----------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(e,i)*t2(af,mn)
@@ -274,7 +284,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       deallocate(wpp_temp)
 
-       write(*,*)'dot product of dvo:final',ddot(nfvo,dvo,1,dvo,1)
+       write(*,*)'dot product of dvo:final',dot_product(dvo,dvo)
 
 !----------------------------------------------------------
 !       dov(i,a) = l1(i,a)
@@ -284,8 +294,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call xcopy (nfvo,l1,1,dov,1)
 
-       write(*,*)'dot product of dov',ddot(nfvo,dov,1,dov,1)
+       write(*,*)'dot product of dov',dot_product(dov,dov)
 
+
+      if (carith) then
+         call conjuga (nfoo,doo,1)
+         call conjuga (nfvv,dvv,1)
+         call conjuga (nfvo,dvo,1)
+         call conjuga (nfvo,dov,1)
+      endif
 
       CALL CONVDM(BUF1,BUF2,DOO,DVV,DOV,DVO,DMO)
 
@@ -349,12 +366,19 @@ C                                           <---O+V---->
 C                                            unbar + bar
 C######################################################################
 C
-!     CALL XAXPY (NFVO,A1,DVO,1,DOV,1)
-
-!     CALL XSCAL (NFVO,AP5,DOV,1)
 
 
-      buf1(1:nfvo) = 0.0d0
+!!!   ALLOCATE(D_TRANS(NFVO*RCW))
+
+!!!   CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
+
+!!!   CALL XAXPY (NFVO,A1,D_TRANS,1,DOV,1)
+
+!!!   CALL XSCAL (NFVO,AP5,DOV,1)
+
+!!!   DEALLOCATE(D_TRANS)
+
+      buf1(1:nfvo*rcw) = 0.0d0
 
       AI = 0
       DO IREP = 1, NREP
@@ -385,17 +409,17 @@ C##############
 !!! symmetrize the whole array.
 
 
-      buf1(1:nfoo) = 0.0d0
+      buf1(1:nfoo*rcw) = 0.0d0
 
-!     ALLOCATE(DOO_TRANS(NFOO*RCW))
+!!!!  ALLOCATE(DOO_TRANS(NFOO*RCW))
 
-!     CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
+!!!!  CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
 
-!     CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
+!!!!  CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
 
-!     DEALLOCATE(DOO_TRANS)
+!!!!  DEALLOCATE(DOO_TRANS)
 
-!     CALL XSCAL (NFOO,AP5,DOO,1)
+!!!!  CALL XSCAL (NFOO,AP5,DOO,1)
 
 
       IJ = 0
@@ -429,14 +453,14 @@ C##############
 C     DVV
 C##############
 
-      buf1(1:nfvv) = 0.0d0
+      buf1(1:nfvv*rcw) = 0.0d0
 
-!     ALLOCATE(DVV_TRANS(NFVV*RCW))
-!     CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
-!     CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
-!     DEALLOCATE(DVV_TRANS)
+!!!!  ALLOCATE(DVV_TRANS(NFVV*RCW))
+!!!!  CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
+!!!!  CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
+!!!!  DEALLOCATE(DVV_TRANS)
 
-!     CALL XSCAL (NFVV,AP5,DVV,1)
+!!!!  CALL XSCAL (NFVV,AP5,DVV,1)
 
       AB = 0
       DO IREP = 1, NREP
@@ -472,13 +496,11 @@ C##############
 C     DVO
 C##############
 
-      buf1(1:nfvo) = 0.0d0
+      buf1(1:nfvo*rcw) = 0.0d0
 
 
 !     ALLOCATE(D_TRANS(NFVO*RCW))
 !     CALL SRT1C1 (NREP,NV,NO,DVO,D_TRANS)
-
-
 
 !     CALL XAXPY (NFVO,A1,DOV,1,DVO,1)
 

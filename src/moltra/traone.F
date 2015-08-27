@@ -1501,6 +1501,9 @@ C
 
       call Super_Symmetry(nrep,nv,idyu2g,'particle') 
 
+
+      write(*,*)'compare indices',(NAVIR(i),i=1,nfsym),(nv(i),i=1,nfsym)
+
       IF (nz.NE.4) THEN
 
          if(nfsym == 1)then
@@ -1553,8 +1556,10 @@ C
       IOFF3 = 0
       IOFF4 = 0
 
+
          IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
 
+        write(*,*)'should be here'
 
       DO IFSYM = 1, NFSYM
           IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
