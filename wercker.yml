@@ -25,7 +25,7 @@ build:
         code: |
           git submodule update --init --recursive
           python ./pamadm -a --builddir=build_wercker-ci
-          python ./setup --run-unit-tests -D BUILDNAME="wercker-ci.i8.gdb" -D ENABLE_BOUNDS_CHECK=ON --type=debug --int64 build_wercker-ci
+          python ./setup.py --run-unit-tests -D BUILDNAME="wercker-ci.i8.gdb" -D ENABLE_BOUNDS_CHECK=ON --type=debug --int64 build_wercker-ci
 
     - script:
         name: run ctest for configuration/buildup/test/submit
