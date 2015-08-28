@@ -296,7 +296,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
        write(*,*)'dot product of dov',dot_product(dov,dov)
 
-
       if (carith) then
          call conjuga (nfoo,doo,1)
          call conjuga (nfvv,dvv,1)

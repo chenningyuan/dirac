@@ -59,6 +59,7 @@
    external SRT1ST4
    external SRT36 
    external SRT22
+   external SRT32
    external SRT26
    external SRT20D
    external SRT1T3
@@ -202,9 +203,9 @@
 
   case(31)
 
-  allocate(A(4))
+  allocate(A(5))
 
-  A = (/1234,1243,1342,3421/)
+  A = (/1234,1243,1342,3421,4123/)
 
   case(13)
 
@@ -244,8 +245,8 @@
   A = (/1234,1432,1324/)
 
   case(31)
-  allocate(A(3))
-  A = (/1234,1342,1243/)
+  allocate(A(4))
+  A = (/1234,1342,1243,4123/)
 
   case(13)
   allocate(A(1))
@@ -329,9 +330,9 @@
 
   case(31)
 
-  allocate(A(4))
+  allocate(A(5))
 
-  A = (/1234,1243,1342,3421/)
+  A = (/1234,1243,1342,3421,4123/)
 
   case(13)
 
@@ -371,8 +372,8 @@
   A = (/1234,1432,1324/)
 
   case(31)
-  allocate(A(3))
-  A = (/1234,1342,1243/)
+  allocate(A(4))
+  A = (/1234,1342,1243,4123/)
 
   case(13)
   allocate(A(1))
@@ -688,6 +689,7 @@
        srt_31(1)%unrestricted => SRT19
        srt_31(2)%unrestricted => SRT6
        srt_31(3)%unrestricted => SRT9
+       srt_31(4)%unrestricted => SRT32
        srt_31(0)%restricted_ket => SRT1T3
        srt_31(1)%restricted_ket => SRT22
        srt_31(2)%restricted_ket => SRT6
@@ -698,6 +700,7 @@
        srt_31(0)%restricted_bra => SRT1S3
        srt_31(1)%restricted_bra => SRT7
        srt_31(2)%restricted_bra => SRT19
+       srt_31(3)%restricted_bra => SRT32
     
 !(2,2)->(1,3) type of sorting routines.
        srt_13(0)%unrestricted => SRT1S2
@@ -963,7 +966,6 @@
 
         elseif (save_index == 3) then 
 
-
        if (if_trans=='N') then
         column = c(d%l_reorder)%orbital_type
         row = m(d%ijk_reorder)%pqr%tuple_combInd  
@@ -1069,7 +1071,7 @@
 
         call input_index(c,d,m)
 
-       shift1 = 4 
+        shift1 = 4 
        
     if (save_index == 1) then
 
@@ -1078,13 +1080,29 @@
           column = c(d%l_reorder)%orbital_type  
        else
           row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
+          column = m(d%ijk_reorder)%qrs%tuple_combInd
        endif
 
       call srt_31(save_index)%restricted_bra(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%I)%orbital_type, &
         &  c(d%J)%orbital_type,m(d%ijk_reorder)%qrs%tuple_combInd, &
         &  array_tot(m(d%ijk_reorder)%qrs%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
         &  m(d%ijk_reorder)%qrs%tuple,B%integral,sorted,c(d%ket+shift1)%tuple_combInd)
+
+    elseif (save_index==3) then
+
+       if (if_trans=='N') then
+          row    = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
+          column = c(d%l_reorder)%orbital_type  
+       else
+          row    = c(d%l_reorder)%orbital_type  
+          column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
+       endif
+
+     call srt_31(save_index)%restricted_bra(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
+           & c(d%L)%orbital_type,m(d%ijk_reorder)%qrs%triangular%tuple_combInd, &
+           & array_tot(m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
+           & m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted)
+
     else
 
         if (if_trans=='N') then

@@ -3052,19 +3052,18 @@ C         this means that, for the time being, we can deallocate everything?
 
 
 !     Get amplitude part of density matrix
-!!!!    allocate(l1_sort(ndimt1*rcw))
-!!!!    allocate(l2_sort(ndimt2*rcw))
+!!      allocate(l1_sort(ndimt1*rcw))
+!!      allocate(l2_sort(ndimt2*rcw))
 
-!!!!     call srt1c1(nrep,no,nv,a_T1,l1_sort)
-!!!!     call srt1c1(nrep,noot,nvvt,a_T2,l2_sort)
+!!       call srt1c1(nrep,no,nv,a_T1,l1_sort)
+!!       call srt1c1(nrep,noot,nvvt,a_T2,l2_sort)
 
+!!       CALL CCDENSC (2, a_S1  , l1_sort  , a_S2, l2_sort,
+!!   &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
+!!   &                    a_DVV , a_DVO , a_DOV , a_DMO)
 
-!!!!     CALL CCDENSC (2, a_S1  , l1_sort  , a_S2, l2_sort,
-!!!! &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
-!!!! &                    a_DVV , a_DVO , a_DOV , a_DMO)
-
-!!!!    deallocate(l1_sort)
-!!!!    deallocate(l2_sort)
+!!      deallocate(l1_sort)
+!!      deallocate(l2_sort)
 
        call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2, 
      &                   a_dmo)

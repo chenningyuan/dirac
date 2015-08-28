@@ -336,7 +336,6 @@
        if (iprnt.ge.1) &
 
      & write(*,*)'RESL2 after term10',(ResL2(i),i=1,5)
-!     write(*,*)'RESL2 after term8',ddot(ndimt2,resL2,1,resL2,1)
 
 !     out-of-core terms
 !-----------------------------------------------------------------
@@ -751,13 +750,12 @@
 !     call contraction_242 ((/"o2","p2"/),(/"p2","o1","o2","p1"/),
 !    &   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,RightTensor=w_voov)
 
-!!!!! call contraction_242 ((/"o2","p2"/),(/"o1","p2","p1","o2"/), &
-!!!!!&   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,RightTensor=w_voov)
+      call contraction_242 ((/"o2","p2"/),(/"o1","p2","p1","o2"/), &
+     &   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,RightTensor=w_voov)
 
 
-      call contraction_422 ((/"o1","p2","p1","o2"/),(/"o2","p2"/), &
-     &   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,LeftTensor=w_voov)
-
+!!!!  call contraction_422 ((/"o1","p2","p1","o2"/),(/"o2","p2"/), &
+!!!! &   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,LeftTensor=w_voov)
 
        if (iprnt.ge.1) &
      & write(*,*)'RESL1 after term4',dot_product(resL1,resL1)
@@ -777,24 +775,10 @@
 !      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
 !-------------------------------------------------------
 
-   allocate (l2_sorted1(ndimt2*rcw))
 
-   call srt1c1n(nrep,noot,nvvt,L2,l2_sorted1)
+      call contraction_442((/"o1","o2","p2","p3"/),(/"p2","p3","p1","o2"/),(/"o1","p1"/),ResL1,1.0d0,1.0d0,nrep, &
+       &         LeftTensor=L2,RightTensor=w_vvvo)
 
-      call srt1t3 (nrep,multb,.false.,nvvt,no,no,nvvot,kvvoot,kkvvot, &
-     &           l2_sorted1,buf2)
-
-      deallocate (l2_sorted1)
-
-      call srt19 (nrep,multb,.false.,nvvt,nv,no,nvvot,kvvovt,kkvvot, &
-     &               w_vvvo,buf3)
-
-      call cntrct ('t','n',no,nv,nvvot,-a1,buf2,buf3,a1, &
-     &    ResL1,nrep)
-
-
-!!!!! call contraction_442((/"p2","p3","p1","o2"/),(/"o1","o2","p2","p3"/),(/"o1","p1"/),ResL1,1.0d0,1.0d0,nrep, &
-!!!!!  &         LeftTensor=w_vvvo,RightTensor=L2)
 
        if (iprnt.ge.1) &
      & write(*,*)'RESL1 after term6',dot_product(resL1,resL1)
@@ -847,17 +831,9 @@
 !    ResL1 = ResL1 - G(e,f) * V(ei,fa) !!wrong
 !-------------------------------------------------------
 
-!!!!! call contraction_422 ((/"p2","o1","p3","p1"/),(/"p2","p3"/), &
-!!!!!&  (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep,LeftTensor=w_v_temp)
-
-!right---      
       call contraction_242 ((/"p2","p3"/),(/"p2","o1","p3","p1"/), &
      &  (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep,RightTensor=w_v_temp)
-!right----
-!     call contraction_242 ((/"p3","p2"/),(/"p2","o1","p3","p1"/), &
-!    &  (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep,RightTensor=w_v_temp)
        deallocate(w_v_temp)
-
 
        if (iprnt.ge.1) &
      & write(*,*)'RESL1 after term8',dot_product(resL1,resL1)

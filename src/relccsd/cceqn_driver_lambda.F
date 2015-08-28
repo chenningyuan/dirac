@@ -119,7 +119,6 @@ C     Initialize the work arrays to zero.
 
        write(*,*)'whh done',dot_product(ho(1:nfoo*rcw),ho(1:nfoo*rcw))
 
-
          call w_ijmn(S1,S2,w_oooo)
 
         write(*,*)'whhhh done',
@@ -150,9 +149,13 @@ C     Initialize the work arrays to zero.
          write(*,*)'w_iemn done',
      & dot_product(w_ovoo(1:nv2*rcw),w_ovoo(1:nv2*rcw))
 
+      CALL XTIME(5,1,'-- "efam" Intermediate                     ')
+
          call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
 
          call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
+
+      CALL XTIME(5,2,'-- "efam" Intermediate                     ')
 
         write(*,*)'w_efam done',dot_product(cz(1:nv5*rcw),cz(1:nv5*rcw))
 
@@ -231,17 +234,14 @@ C     Initialize the work arrays to zero.
                                  
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
 C
-      CALL XTIME(5,1,'-- L2 EQNS                     ')
+      CALL XTIME(5,1,'-- L2 equations                     ')
 
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
      &                            G_oo,G_vv,buf1,buf2,buf3,
      &                            nbuf3,resL2,iprnt,nit)
 
-      write(*,*)'RESL2 afetr all diagrams',ddot(ndimt2,resL2,1,
-     &                                           resL2,1)
 
-
-      CALL XTIME(5,2,'- L2 equations                  ')
+      CALL XTIME(5,2,'-- L2 equations                     ')
 
 C     Read out timers for the most important contractions
 
@@ -307,6 +307,9 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
       if(rms.lt.conv) exit
 
       enddo  ! end of iteration loop
+
+      write(iw,6079) nit 
+
 
       deallocate(resL1) 
       deallocate(resL2) 

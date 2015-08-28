@@ -536,25 +536,25 @@
 !  diagram3 : w_vvvo(ef,am) =  w_vvvo(ef,am) + f_bar_me(na) * t(ef,nm)
 !-------------------------------------------------------------
 
-      allocate(huge_temp(kvvovt(nrep+1)*rcw))
+!!!!  allocate(huge_temp(kvvovt(nrep+1)*rcw))
 
-      call srt1t3 (nrep,multb,.false.,nvvt,no,no,nvvot,kvvoot,kkvvot, &
-     &             t2,buf2)
-  
-      call xcopy(kvvovt(nrep+1),a0,0,buf3,1)
+!!!!  call srt1t3 (nrep,multb,.false.,nvvt,no,no,nvvot,kvvoot,kkvvot, &
+!!!! &             t2,buf2)
+!!
+!!!!  call xcopy(kvvovt(nrep+1),a0,0,buf3,1)
 
-      call cntrct ('t','t',nv,nvvot,no,a1,hov,buf2,a0,buf3,nrep)
+!!!!  call cntrct ('t','t',nv,nvvot,no,a1,hov,buf2,a0,buf3,nrep)
 
-      call srt1c1n (nrep,nv,nvvot,buf3,huge_temp)
+!!!!  call srt1c1n (nrep,nv,nvvot,buf3,huge_temp)
 
-      call srt19 (nrep,multb,.true.,nvvt,nv,no,nvvot,kvvovt,kkvvot,huge_temp,buf3)
+!!!!  call srt19 (nrep,multb,.true.,nvvt,nv,no,nvvot,kvvovt,kkvvot,huge_temp,buf3)
 
-      call xaxpy (nv5,a1,buf3,1,w_vvvo,1)
+!!!!  call xaxpy (nv5,a1,buf3,1,w_vvvo,1)
 
-      deallocate(huge_temp)
+!!!!  deallocate(huge_temp)
 
-!     call contraction_244 ((/"o2","p1"/),(/"p2","p3","o2","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-!    &      -1.0d0,1.0d0,nrep,LeftTensor=hov,RightTensor=t2)
+      call contraction_244 ((/"o2","p1"/),(/"p2","p3","o2","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+     &      -1.0d0,1.0d0,nrep,LeftTensor=hov,RightTensor=t2)
 
   write(*,*)'write me inside w~efam,dia3',dot_product(w_vvvo(1:nv5*rcw),w_vvvo(1:nv5*rcw))
 !---------------------------------------------------------------------------

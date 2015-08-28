@@ -1156,6 +1156,67 @@ C
 C
       RETURN
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT32 (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,OFF,OFF1
+     &                  ,BUF1,BUF2)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Sort array BUF1(IJ,KL:KLREP) to array BUF2(L IJ,K:KREP)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author :Avijit Shee, from SRT22 routine by Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32)
+      LOGICAL DOINV
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "complex.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+      CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       IJREP = KLREP
+       N = NPAIR(KLREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        KOFF = OFF(KREP) + OFF1(LREP,IJREP)
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+            LIJK = (KOFF + (K-1) * NTRIPL(KREP) + L - 1) * RCW + 1 
+            IF (DOINV) THEN
+               CALL XCOPY (N,BUF1(LIJK),LFIE(LREP),BUF2(IJKL),1)
+            ELSE
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(LIJK),LFIE(LREP))
+            ENDIF  
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+C
+      RETURN
+      END
+
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT23 (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,NTRIPL,
      &                  OFF,OFF1,BUF1,BUF2,NBUF1)
