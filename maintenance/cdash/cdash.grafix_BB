@@ -37,7 +37,7 @@ git submodule status
 #./pamadm -a --hsfsdyn --hscc --auto --builddir=$BUILD_GNU
 # configure step
 #export DIRAC_NUM_MPI_PROCS=2
-#./setup --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK"  -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
+#./setup.py --fc=$OMPI/mpif90  --cc=$OMPI/mpicc  --cxx=$OMPI/mpiCC  --int64  -D BUILDNAME="grafix_BB.ompi_GNU_ilp64_CHECK"  -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BOUNDS_CHECK=ON $BUILD_GNU 
 #cd $BUILD_GNU
 #make Experimental
 
@@ -52,7 +52,7 @@ fi
 export MATH_ROOT=/opt/intel/mkl
 unset DIRAC_NUM_MPI_PROCS
 ./pamadm -a --builddir=$BUILD_INTEL
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_mkl_i8_CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
+./setup.py --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_mkl_i8_CHECK" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON $BUILD_INTEL
 cd $BUILD_INTEL
 ctest -D ExperimentalUpdate --track BoundsCheck
 ctest -D Experimental  --track BoundsCheck
@@ -68,7 +68,7 @@ fi
 export MATH_ROOT=/opt/intel/mkl
 unset DIRAC_NUM_MPI_PROCS
 ./pamadm -a --builddir=$BUILD_INTEL_STATIC
-./setup --fc=ifort --cc=icc --cxx=icpc --int64 --static -D BUILDNAME="grafix_BB.Intel_mkl_i8_static" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL_STATIC
+./setup.py --fc=ifort --cc=icc --cxx=icpc --int64 --static -D BUILDNAME="grafix_BB.Intel_mkl_i8_static" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL_STATIC
 cd $BUILD_INTEL_STATIC
 ctest -D ExperimentalUpdate  --track Grid
 ctest -D Experimental  --track Grid
@@ -89,7 +89,7 @@ git submodule update
 git submodule status
 ./pamadm  -a  --hsfsdyn  --hscc  --auto  # make buildup into the default "build" directory
 export MATH_ROOT=/opt/intel/mkl
-./setup --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_MKL_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF
+./setup.py --fc=ifort --cc=icc --cxx=icpc --int64  -D BUILDNAME="grafix_BB.Intel_MKL_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF
 cd build
 python binary_info.py
 make Nightly

@@ -110,7 +110,7 @@ fi
 ./pamadm -a --builddir=$BUILD_INTEL
 #export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
-./setup --fc=ifort  --cc=icc  --cxx=icpc  -D BUILDNAME="Marvin_intelmkl_i8" -D BLAS_TYPE=MKL -D LAPACK_TYPE=MKL -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
+./setup.py --fc=ifort  --cc=icc  --cxx=icpc  -D BUILDNAME="Marvin_intelmkl_i8" -D BLAS_TYPE=MKL -D LAPACK_TYPE=MKL -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF $BUILD_INTEL
 cd $BUILD_INTEL
 ctest -D ExperimentalUpdate  --track Miro
 ctest -D ExperimentalConfigure --track Miro
@@ -131,7 +131,7 @@ fi
 ./pamadm -a --builddir=$BUILD_PGI
 export MATH_ROOT=/data/programs/ctcp/pgi/linux86-64/2012/acml/5.1.0/libso
 # configure step
-./setup --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="Marvin_PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_PGI
+./setup.py --fc=pgf90  --cc=pgcc  --cxx=pgCC  -D BUILDNAME="Marvin_PGI_acml" -D BLAS_TYPE=ACML -D LAPACK_TYPE=ACML -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_PGI
 cd $BUILD_PGI
 ctest -D ExperimentalUpdate --track Miro 
 ctest -D ExperimentalConfigure --track Miro
@@ -150,7 +150,7 @@ fi
 #
 ./pamadm -a --builddir=$BUILD_GNU
 # configure step
-./setup --fc=gfortran  --cc=gcc  --cxx=g++  -D BUILDNAME="Marvin_gnu_i8_ownmath" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_GNU
+./setup.py --fc=gfortran  --cc=gcc  --cxx=g++  -D BUILDNAME="Marvin_gnu_i8_ownmath" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  $BUILD_GNU
 cd $BUILD_GNU
 ctest -D ExperimentalUpdate  --track Miro
 ctest -D ExperimentalConfigure  --track Miro
