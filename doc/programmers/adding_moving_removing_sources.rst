@@ -5,7 +5,8 @@ How to add/move/remove sources
 ------------------------------
 
 The ``pamadm`` script automatically
-assembles the list of sources.
+assembles the list of sources within ``vital_directories``
+(see ``pamadm``).
 Since ``pamadm`` is run every time you hit
 "make", you normally don't need to do anything
 special after adding or moving or removing
