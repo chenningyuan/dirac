@@ -7,30 +7,30 @@ Basic installation
 General
 -------
 
-DIRAC is configured using `CMake <http://www.cmake.org/>`_ , typically via the ``setup`` script,
+DIRAC is configured using `CMake <http://www.cmake.org/>`_ , typically via the ``setup.py`` script,
 and subsequently compiled using make (or gmake).
-The ``setup`` script is a useful front-end to CMake.
-You need python to run ``setup``. To see all options, run::
+The ``setup.py`` script is a useful front-end to CMake.
+You need python to run ``setup.py``. To see all options, run::
 
-  $ ./setup --help
+  $ ./setup.py --help
 
 Sequential build
 ----------------
 
 The default installation proceeds through three commands::
 
-  $ ./setup [--flags]
+  $ ./setup.py [--flags]
   $ cd build
   $ make
 
-The ``setup`` script creates the directory "build" and
+The ``setup.py`` script creates the directory "build" and
 calls CMake with appropriate environment variables and flags.
 By default CMake builds out of source. This means that all object files and the
 final binary are generated outside of the source directory. Typically the build
 directory is called "build", but you can change the name of the build directory
 (e.g. "build_gfortran")::
 
-  $ ./setup [--flags] build_gfortran
+  $ ./setup.py [--flags] build_gfortran
   $ cd build_gfortran
   $ make
 
@@ -50,7 +50,7 @@ Parallel build
 Building DIRAC for parallel runs using `MPI <http://www.mpi-forum.org/docs/docs.html>`_ 
 is in principle a very simple modification of the above procedure::
 
-  $ ./setup [--flags] --mpi
+  $ ./setup.py [--flags] --mpi
   $ cd build
   $ make
 
@@ -65,27 +65,27 @@ some typical configuration scenarios.
 Configure for parallel compilation using MPI (make sure to properly export MPI
 paths)::
 
-  $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx
+  $ ./setup.py --fc=mpif90 --cc=mpicc --cxx=mpicxx
 
 There is a shortcut for it::
 
-  $ ./setup --mpi
+  $ ./setup.py --mpi
 
 Configure for sequential compilation using ifort/icc/icpc and link against parallel mkl::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc --mkl=parallel
+  $ ./setup.py --fc=ifort --cc=icc --cxx=icpc --mkl=parallel
 
 Configure for sequential compilation using gfortran/gcc/g++::
 
-  $ ./setup --fc=gfortran --cc=gcc --cxx=g++
+  $ ./setup.py --fc=gfortran --cc=gcc --cxx=g++
 
 Parallel compilation on a Cray::
 
-  ./setup --fc=ftn --cc=cc --cxx=CC --cray --mpi
+  ./setup.py --fc=ftn --cc=cc --cxx=CC --cray --mpi
 
 Parallel compilation on a SGI using Intel compilers and MPT::
 
-  ./setup --fc=ifort --cc=icc --cxx=icpc --sgi-mpt
+  ./setup.py --fc=ifort --cc=icc --cxx=icpc --sgi-mpt
 
 You get the idea. The configuration is usually good at detecting math libraries
 automatically, provided you export the proper environment variable ``MATH_ROOT``,

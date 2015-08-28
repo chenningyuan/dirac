@@ -30,7 +30,7 @@ To properly set environmental variables for the Intel MKL math library  we follo
 
 Finally we configure and build the binary::
 
-  $ ./setup --fc=mpif90 --cc=mpicc
+  $ ./setup.py --fc=mpif90 --cc=mpicc
   $ cd build
   $ make
 

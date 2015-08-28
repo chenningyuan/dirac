@@ -23,7 +23,7 @@ Please report if the tarball generation is broken.
 
 Extract the generated tarball and install it::
 
-  $ ./setup [--fc=ifort --cc=icc --cxx=icpc]
+  $ ./setup.py [--fc=ifort --cc=icc --cxx=icpc]
 
 Please report problems. Pay attention whether math libraries are correctly
 detected.
@@ -59,7 +59,7 @@ so that other developers can see the actual status (before accepting code change
 You can also choose to run the test set, for instance, using the extracted tarball (see further up), 
 and with simpler command: ::
 
-  $ ./setup [--flags]
+  $ ./setup.py [--flags]
   $ cd build
   $ ctest -jN -D Experimental
 

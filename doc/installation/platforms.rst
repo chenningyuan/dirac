@@ -53,12 +53,12 @@ The module performs checks on the system to find an installation of Boost that h
 the suitable version. The search is directed towards conventional system directories.
 If the search fails, the module will build a copy of Boost on the spot.
 If your system has Boost installed in a nonstandard location, e.g. /boost/location, you have to direct the
-search by adding the following flags to the ``setup`` script::
+search by adding the following flags to the ``setup.py`` script::
 
-  $ ./setup -DBOOST_INCLUDEDIR=/boost/location/include -DBOOST_LIBRARYDIR=/boost/location/lib
+  $ ./setup.py -DBOOST_INCLUDEDIR=/boost/location/include -DBOOST_LIBRARYDIR=/boost/location/lib
 
 By default, compilation of the module is enabled. CMake will check that the additional
 dependencies are met. In case they are not, compilation of PCMSolver will be disabled.
 CMake will print out which dependencies were not satisfied.
-Passing the option ``-DENABLE_PCMSOLVER=OFF`` to the ``setup`` script will disable compilation
+Passing the option ``-DENABLE_PCMSOLVER=OFF`` to the ``setup.py`` script will disable compilation
 of the module and skip detection of additional dependencies.
