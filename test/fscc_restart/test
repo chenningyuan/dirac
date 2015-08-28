@@ -12,10 +12,7 @@ test = TestRun(__file__, sys.argv)
 # first part of the test is to redo the Mg fscc calculation in stepwise fashion, restarting along the way
 #
 
-if os.environ['DIRAC_TMPDIR'] != '' :
-   my_scratchdir = os.path.join(os.environ['DIRAC_TMPDIR'], 'fscc_restart')
-else :
-   sys.exit(-1)
+my_scratchdir = os.path.join(os.getcwd(), 'fscc_scratchdir')
 
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
@@ -64,10 +61,7 @@ os.rmdir(my_scratchdir)
 # for sector 10, and then amplitudes for the 20 sector are reoptimized
 #
 
-if os.environ['DIRAC_TMPDIR'] != '' :
-   my_scratchdir = os.path.join(os.environ['DIRAC_TMPDIR'], 'ihfscc_restart')
-else :
-   sys.exit(-1)
+my_scratchdir = os.path.join(os.getcwd(), 'ihfscc_scratchdir')
 
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
