@@ -54,7 +54,7 @@
 
 if(ENABLE_STATIC_LINKING)
    set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
-endif() 
+endif()
 
 #-------------------------------------------------------------------------------
 # SYSTEM_NATIVE
@@ -122,15 +122,18 @@ set(ATLAS_BLAS_LIBS   f77blas cblas atlas)
 set(ATLAS_LAPACK_LIBS atlas lapack)
 
 #-------------------------------------------------------------------------------
-# OPENBLAS (no LAPACK in OPENBLAS)
+# OPENBLAS (contains also LAPACK)
 
 set(OPENBLAS_BLAS_INCLUDE_PATH_SUFFIXES)
+set(OPENBLAS_LAPACK_INCLUDE_PATH_SUFFIXES)
 
 set(OPENBLAS_BLAS_HEADERS cblas_openblas.h openblas_config.h cblas.h f77blas.h)
 
 set(OPENBLAS_BLAS_LIBRARY_PATH_SUFFIXES openblas openblas-base)
+set(OPENBLAS_LAPACK_LIBRARY_PATH_SUFFIXES openblas openblas-base)
 
 set(OPENBLAS_BLAS_LIBS openblas)
+set(OPENBLAS_LAPACK_LIBS openblas)
 
 #-------------------------------------------------------------------------------
 # MKL
@@ -483,7 +486,7 @@ foreach(_service BLAS LAPACK)
     set(${_service}_FOUND ${${_service}_FOUND} CACHE BOOL "${_service} found")
 endforeach()
 
-#miro: first lapack, then blas as lapack might need blas routine
+# first lapack, then blas as lapack might need blas routine
 set(MATH_LIBS
     ${MATH_LIBS}
     ${LAPACK_LIBRARIES}
@@ -491,15 +494,15 @@ set(MATH_LIBS
     CACHE STRING "Math libraries"
     )
 
-#miro: further adaptation for the static linking
+# further adaptation for the static linking
 if (ENABLE_STATIC_LINKING)
     if (LAPACK_TYPE MATCHES ATLAS OR LAPACK_TYPE MATCHES SYSTEM_NATIVE OR BLAS_TYPE MATCHES ATLAS OR BLAS_TYPE MATCHES SYSTEM_NATIVE)
-        #miro: TODO: some compilers might need -lgfortran
-        set (MATH_LIBS ${MATH_LIBS} -Wl,--whole-archive -lpthread  -Wl,--no-whole-archive)
+        set(MATH_LIBS ${MATH_LIBS} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
     endif()
     if (LAPACK_TYPE MATCHES MKL OR BLAS_TYPE MATCHES MKL)
-        # miro: fix for MKL static linking (-lc not needed for PGI )
-        set (MATH_LIBS ${MATH_LIBS} -ldl -lc)
+        # fix for MKL static linking (-lc not needed for PGI)
+        # radovan: why is -lc added also for PGI? when exactly is it needed?
+        set(MATH_LIBS ${MATH_LIBS} -ldl -lc)
     endif()
 endif()
 

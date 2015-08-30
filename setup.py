@@ -24,6 +24,7 @@ Options:
   --extra-cc-flags=<EXTRA_CFLAGS>        Extra C compiler flags [default: ''].
   --cxx=<CXX>                            C++ compiler [default: g++].
   --extra-cxx-flags=<EXTRA_CXXFLAGS>     Extra C++ compiler flags [default: ''].
+  --python=<PYTHON_INTERPRETER>          The Python interpreter (development version) to use. [default: ''].
   --blas=<BLAS>                          Detect and link BLAS library (auto or off) [default: auto].
   --lapack=<LAPACK>                      Detect and link LAPACK library (auto or off) [default: auto].
   --mkl=<MKL>                            Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
@@ -54,6 +55,7 @@ def gen_cmake_command(options, arguments):
     command.append('-DEXTRA_FCFLAGS="%s"' % arguments['--extra-fc-flags'])
     command.append('-DEXTRA_CFLAGS="%s"' % arguments['--extra-cc-flags'])
     command.append('-DEXTRA_CXXFLAGS="%s"' % arguments['--extra-cxx-flags'])
+    command.append('-DPYTHON_INTERPRETER="%s"' % arguments['--python'])
     command.append('-DENABLE_BLAS=%s' % arguments['--blas'])
     command.append('-DENABLE_LAPACK=%s' % arguments['--lapack'])
     command.append('-DMKL_FLAG=%s' % arguments['--mkl'])
