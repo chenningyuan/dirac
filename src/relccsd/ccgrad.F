@@ -168,9 +168,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        real*8, allocatable :: woo_temp(:),wpp_temp(:)
 !-------------------------------------------------------------------
 
-
-      call xcopy (nfoo,a0,0,doo,1)
-      call xcopy (nfvv,a0,0,dvv,1)
+        doo(1:nfoo*rcw) = 0.0d0
+        dvv(1:nfvv*rcw) = 0.0d0
 
 !-------------------------------------------------------------------
 !   doo(j,i) = doo(j,i) - l2(jm,ef) * t2(ef,im)
@@ -180,6 +179,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep,
      &    LeftTensor=l2,RightTensor=t2)
 
+       write(*,*)'dot product of doo',dot_product(doo,doo)
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l1(j,e)*t1(e,i)
 !---------------------------------------------------------------------
@@ -196,6 +196,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_442 ((/"o1","o2","p1","p3"/),
      &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,
      &     LeftTensor=l2,RightTensor=t2 )
+
+
+       write(*,*)'dot product of dvv',dot_product(dvv,dvv)
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l1(m,a)*t1(b,m)
@@ -400,6 +403,7 @@ C
 
       CALL RELTODIR(DMO,BUF1,NFVO,RCW,NREP,NV,NO)
 
+       write(*,*)'pass this step1'
 
 C##############
 C     DOO
@@ -448,6 +452,10 @@ c     enddo
 C
 c     print*,'laat oo deel dmo op 0'
       CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
+
+
+       write(*,*)'pass this step2'
+
 C##############
 C     DVV
 C##############
@@ -489,7 +497,8 @@ c     enddo
 C
 c     print*,'laat vv deel dmo op 0'
       CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
-C
+
+       write(*,*)'pass this step3'
 
 C##############
 C     DVO
@@ -527,6 +536,8 @@ C##############
       ENDIF
 
         CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
+
+       write(*,*)'pass this step4'
 
       RETURN
       END

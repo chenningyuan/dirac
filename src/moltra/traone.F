@@ -1343,6 +1343,10 @@ C
 
       integer,allocatable :: idxu2g(:,:),idyu2g(:,:) 
 
+      if (spinfr) NZ = 1
+
+       write(*,*)'index check',spinfr,NZ
+
       CALL DZERO(XMO,NORBT*NORBT*NZ)
 
       allocate(idxu2g(norbt,nrep),idyu2g(norbt,nrep))
@@ -1502,8 +1506,6 @@ C
       call Super_Symmetry(nrep,nv,idyu2g,'particle') 
 
 
-      write(*,*)'compare indices',(NAVIR(i),i=1,nfsym),(nv(i),i=1,nfsym)
-
       IF (nz.NE.4) THEN
 
          if(nfsym == 1)then
@@ -1558,8 +1560,6 @@ C
 
 
          IF (NZ.GE.2.AND.(.NOT.SPINFR)) THEN
-
-        write(*,*)'should be here'
 
       DO IFSYM = 1, NFSYM
           IOFF1 = IOFF1 + NPSH(IFSYM) + NOCC(IFSYM)
@@ -1648,7 +1648,7 @@ C
 C
 C
 !!!!       CALL DZERO(DMO,NORBT*NORBT*NZ)
-      
+
       allocate(idxu2g(norbt,nrep))
       idxu2g(1:norbt,1:nrep) = 0
 
@@ -1716,7 +1716,7 @@ C
                ENDDO
             IOFF1 = IOFF1 - NPSH(IFSYM) - NDMOQC(2,IFSYM,1) +NORB(IFSYM)
             IOFF4 = IOFF4 + 1
-            IOFF2 = IOFF2 + 2*no(ifsym)*no(ifsym)  !Avijit. probably, it was a bug.
+            IOFF2 = IOFF2 + 2*no(ifsym)*no(ifsym) 
          ENDDO
          ENDIF
       ELSE

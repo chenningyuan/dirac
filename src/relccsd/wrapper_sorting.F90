@@ -979,7 +979,22 @@
            & array_tot(m(d%ijk_reorder)%pqr%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
            & m(d%ijk_reorder)%pqr%tuple,B%integral,sorted) 
 
-        else
+        elseif (save_index == 4) then
+
+       if (if_trans=='N') then
+          row    = m(d%ijk_reorder)%qrs%tuple_combInd
+          column = c(d%l_reorder)%orbital_type  
+       else
+          row    = c(d%l_reorder)%orbital_type  
+          column = m(d%ijk_reorder)%qrs%tuple_combInd
+       endif
+
+     call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra+shift1)%triangular%tuple_combInd,c(d%K)%orbital_type,&
+           & c(d%L)%orbital_type,m(d%ijk_reorder)%qrs%tuple_combInd, &
+           & array_tot(m(d%ijk_reorder)%qrs%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
+           & m(d%ijk_reorder)%qrs%tuple,B%integral,sorted)
+
+       else
 
        if (if_trans=='N') then
         column = c(d%l_reorder)%orbital_type
