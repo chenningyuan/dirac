@@ -37,7 +37,7 @@ Options:
   --generator=<STRING>                   Set the CMake build system generator [default: Unix Makefiles].
   --show                                 Show CMake command and exit.
   --cmake-executable=<CMAKE_EXECUTABLE>  Set the CMake executable [default: cmake].
-  --cmake-options=<OPTIONS>              Define options to CMake [default: None].
+  --cmake-options=<OPTIONS>              Define options to CMake [default: ''].
   <builddir>                             Build directory.
   -h --help                              Show this screen.
 """
@@ -69,7 +69,7 @@ def gen_cmake_command(options, arguments):
     command.append('-DENABLE_64BIT_INTEGERS=%s' % arguments['--int64'])
     command.append('-DCMAKE_BUILD_TYPE=%s' % arguments['--type'])
     command.append('-G "%s"' % arguments['--generator'])
-    if(arguments['--cmake-options']):
+    if arguments['--cmake-options'] != "''":
         command.append('%s' % arguments['--cmake-options'])
 
     return ' '.join(command)
