@@ -34,9 +34,8 @@ DIRAC=/home/ilias/Work/qch/software/trunk
 
 cd $DIRAC
 
-# submodule
-git submodule init
-git submodule update
+# submodule update
+git submodule update --recursive
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
@@ -51,17 +50,16 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
 fi
 # deactivate interest module !
 ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
-./setup.py --run-unit-tests  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static -D BUILDNAME="grid_savba_ompi_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_OMPI_INTEL
+python ./setup.py  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
  ctest -D ExperimentalBuild  --track Grid
- ctest  --track Grid  -D ExperimentalTest -R cosci_energy 
+ ctest  --track Grid  -D ExperimentalTest -R dft
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
  ldd $DIRAC/$BUILD_OMPI_INTEL/dirac.x
- python binary_info.py > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 1 - Intel-OpenMPI,MKL,i8,static - finished at $timestamp \n"
@@ -76,18 +74,17 @@ if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
   /bin/rm -rf $BUILD_SERIAL_INTEL
 fi
 
-./pamadm -a --builddir=$BUILD_SERIAL_INTEL
-./setup.py --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid_savba_intel_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL
+python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL
+python ./setup.py --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="-D BUILDNAME='grid_savba_intel_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
  ctest -D ExperimentalBuild    --track Grid
- ctest  --track Grid   -D ExperimentalTest -R cosci_energy  
+ ctest  --track Grid   -D ExperimentalTest -R cc
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
- python binary_info.py  > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2 - Intel,MKL,i8,serial,static - finished at $timestamp \n"
@@ -102,8 +99,8 @@ if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_INTEL1"
   /bin/rm -rf $BUILD_SERIAL_INTEL1
 fi
-./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
-./setup.py --fc=ifort --cc=icc --cxx=icpc  --blas=builtin  --lapack=builtin --static -D BUILDNAME="grid_savba_intel_ownmath_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_INTEL1
+python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
+python ./setup.py --fc=ifort --cc=icc --cxx=icpc  --blas=none  --lapack=none --int64 --static cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -113,7 +110,6 @@ fi
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
- python binary_info.py  > VERSION_cmake  2>&1  # get version
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
 
@@ -128,18 +124,17 @@ if [[ -d "$BUILD_SERIAL_GNU" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU"
   /bin/rm -rf $BUILD_SERIAL_GNU
 fi
-./pamadm -a --builddir=$BUILD_SERIAL_GNU
-./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static -D BUILDNAME="grid_savba_gnu_mkl_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU
+python ./pamadm -a --builddir=$BUILD_SERIAL_GNU
+python ./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static --int64 cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
  ctest -D ExperimentalUpdate      --track Grid
  ctest -D ExperimentalConfigure   --track Grid
  ctest -D ExperimentalBuild        --track Grid
- ctest --track Grid  -D ExperimentalTest -R cosci_energy  
+ ctest --track Grid  -D ExperimentalTest -R  fscc
  ctest -D ExperimentalSubmit  --track Grid
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU/dirac.x
- python binary_info.py  > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 3 - GNU,MKL,i8,serial,static - finished at $timestamp \n"
