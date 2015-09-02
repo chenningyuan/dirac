@@ -21,7 +21,7 @@ git submodule status
 BUILD_GNU=build_gnu_i8
 ./pamadm -a --builddir=$BUILD_GNU
 # configure step
-./setup.py --run-unit-tests  --int64  -D BUILDNAME="frpd2.gnu_i8-check" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_GNU 
+python ./setup.py  --int64  --cmake-options="-D BUILDNAME='frpd2.gnu_i8-check' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_GNU 
 cd $BUILD_GNU
 ctest  -D ExperimentalUpdate     --track BoundsCheck
 ctest  -D ExperimentalConfigure  --track BoundsCheck
@@ -33,7 +33,7 @@ cd $DIRAC
 BUILD_GNU1=build_gnu_i4
 ./pamadm -a --builddir=$BUILD_GNU1
 # configure step
-./setup.py --run-unit-tests -D BUILDNAME="frpd2.gnu_i4" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_GNU1
+python ./setup.py --cmake-options="-D BUILDNAME='frpd2.gnu_i4' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_GNU1
 cd $BUILD_GNU1
 ctest  -D ExperimentalUpdate --track Miro
 ctest -j3 -D Experimental -L short --track Miro
@@ -51,8 +51,7 @@ cd $DIRAC
 BUILD_INTEL=build_intelmkl_i8
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-#./setup.py --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8_nopcm" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
-./setup.py --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.intel_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=ON -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
+python ./setup.py --fc=ifort  --cc=icc  --cxx=g++  --int64 --cmake-options="-D BUILDNAME='frpd2.intel_g++_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=ON -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_INTEL
 cd $BUILD_INTEL
 export MKL_NUM_THREADS=3
 export MKL_DYNAMIC="FALSE"
@@ -76,7 +75,7 @@ git submodule update --init --recursive
 BUILD_INTEL=build_ifort_icc_g++_mkl_i8
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-./setup.py --run-unit-tests --fc=ifort  --cc=icc  --cxx=g++  --int64  -D BUILDNAME="frpd2.ifort_icc_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D PYTHON_EXECUTABLE=/usr/bin/python $BUILD_INTEL
+python ./setup.py --fc=ifort  --cc=icc  --cxx=g++  --int64  --cmake-options="-D BUILDNAME='frpd2.ifort_icc_g++_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_INTEL
 cd $BUILD_INTEL
 export MKL_NUM_THREADS=3
 export MKL_DYNAMIC="FALSE"

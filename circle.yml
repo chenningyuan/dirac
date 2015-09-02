@@ -63,7 +63,7 @@ test:
     override:
 # configure, build optimized code and run tests (Dirac 64-bit with OpenMPI and documentation)
         - python ./pamadm -a --builddir=build_circleci_mpi
-        - python ./setup.py -D BUILDNAME="open_mpi.gnu.i8.atlas-circle-ci" -D DART_TESTING_TIMEOUT=99999 --int64 --mpi --blas=/usr/lib/atlas-base/atlas/libblas.so.3gf --lapack=builtin build_circleci_mpi
+        - python ./setup.py --int64 --mpi --blas=/usr/lib/atlas-base/atlas/libblas.so.3gf --lapack=auto  --cmake-options="-D BUILDNAME='open_mpi.gnu.i8.atlas-circle-ci' -D DART_TESTING_TIMEOUT=99999" build_circleci_mpi
 # build with make, build with ctest makes impossible to submit more test commands into one entry on dashboard
         - make -j $N_PROC: { pwd: build_circleci_mpi }
 # ldd - show dirac.x dependencies

@@ -55,9 +55,9 @@ doxygen --version
 git submodule update --init --recursive
 
 # configure Dirac with Open MPI in 64-bit mode
-python ./pamadm -a --builddir=build
-python ./setup.py -D BUILDNAME="open_mpi.gnu.i8-codeship-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build
-cd build
+python ./pamadm -a --builddir=build_openmpi_i8
+python ./setup.py --int64 --mpi --cmake-options="-D BUILDNAME='open_mpi.gnu.i8-codeship-ci' -D DART_TESTING_TIMEOUT=99999" build_openmpi_i8
+cd build_openmpi_i8
 ctest -D ExperimentalConfigure
 # build
 ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) -D ExperimentalBuild
