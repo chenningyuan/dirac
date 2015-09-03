@@ -17,9 +17,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # directories which hold included cmake modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/custom)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/downloaded)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/custom/compiler_flags)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/custom)
 
 # included cmake modules
 include(autocmake_fc)
@@ -39,6 +39,7 @@ include(PGI.Fortran)
 include(XL.C)
 include(XL.CXX)
 include(XL.Fortran)
+include(autocmake_definitions)
 include(builtin_math)
 include(autocmake_python_interpreter)
 include(autocmake_math_libs)
