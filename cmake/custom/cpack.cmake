@@ -41,12 +41,11 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${PROJECT_SOURCE_DIR}/CHANGELOG.rst                ${EXPORT_DIR}
         COMMAND cp     ${PROJECT_SOURCE_DIR}/CTestConfig.cmake            ${EXPORT_DIR}
         COMMAND cp     ${PROJECT_SOURCE_DIR}/atomic-start-x2c-pam         ${EXPORT_DIR}
-        COMMAND cp -r  ${PROJECT_SOURCE_DIR}/config                       ${EXPORT_DIR}
-        COMMAND cp -r  ${PROJECT_SOURCE_DIR}/local                        ${EXPORT_DIR}
+        COMMAND cp -r  ${PROJECT_SOURCE_DIR}/cmake                        ${EXPORT_DIR}
         COMMAND cp -r  ${PROJECT_SOURCE_DIR}/external                     ${EXPORT_DIR}
         COMMAND rm -f  ${EXPORT_DIR}/external/pcmsolver/.git  # prevens "git init; git add ." inside tarball
         COMMAND rm -f  ${EXPORT_DIR}/external/unit-tests/.git # prevens "git init; git add ." inside tarball
-        COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/local
+        COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
         COMMAND cp -rL ${PROJECT_SOURCE_DIR}/doc                          ${EXPORT_DIR}
         COMMAND cp     ${PROJECT_SOURCE_DIR}/pam.in                       ${EXPORT_DIR}
         COMMAND cp     ${PROJECT_SOURCE_DIR}/setup.py                     ${EXPORT_DIR}
@@ -56,7 +55,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         COMMAND cp     ${PROJECT_SOURCE_DIR}/VERSION                      ${EXPORT_DIR}
         COMMAND cp     ${PROJECT_SOURCE_DIR}/.gitignore                   ${EXPORT_DIR}
         COMMAND ${PROJECT_SOURCE_DIR}/maintenance/remove_copyright_tags   ${EXPORT_DIR}
-        COMMAND echo "${GIT_COMMIT_HASH}"                                > ${EXPORT_DIR}/GIT_HASH
+        COMMAND echo "${GIT_COMMIT_HASH}"                                > ${EXPORT_DIR}/cmake/GIT_HASH
         COMMAND make package_source
         COMMENT "Packaging source files"
         VERBATIM

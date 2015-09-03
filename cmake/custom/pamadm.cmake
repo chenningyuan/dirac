@@ -59,5 +59,5 @@ endif()
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${PROJECT_BINARY_DIR}/pamadm-generated       # development code
-    ${PROJECT_SOURCE_DIR}/local/pamadm-generated # released code
+    ${PROJECT_SOURCE_DIR}/cmake/pamadm-generated # released code
     )
