@@ -45,7 +45,7 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/pamadm)
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         )
 
-    message("-- Packaging sources and tests using pamadm ${PAMADM_FLAGS} (to change flags, run pamadm manually with new flags)")
+    message(STATUS "Packaging sources and tests using pamadm ${PAMADM_FLAGS} (to change flags, run pamadm manually with new flags)")
 else()
     # pamadm does not exist
     # this must then be released code
