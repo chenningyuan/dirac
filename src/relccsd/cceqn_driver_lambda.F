@@ -132,7 +132,7 @@ C     Initialize the work arrays to zero.
 
 !        write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
 
-         call w_ejmb(S1,S2,w_voov)
+!!         call w_ejmb(S1,S2,w_voov)
 
           call wbar_mbej(S2,w_ovvo)
 
@@ -140,7 +140,7 @@ C     Initialize the work arrays to zero.
      &  dot_product(w_ovvo(1:iovvo(nrep+1)*rcw),
      &     w_ovvo(1:iovvo(nrep+1)*rcw))
 
-!!!!         call w_mbej(s1,s2,w_voov)
+         call w_mbej(s1,s2,w_voov)
 
 !       write(*,*)'starting w_iemn intermediate'
 

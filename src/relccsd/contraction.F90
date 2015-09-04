@@ -379,8 +379,6 @@
   allocate(v_sort(maxdim1*rcw))  
   allocate(right_sorted(maxdim2*rcw))  
 
-!!   v_sort       = 0.0d0
-!!   right_sorted = 0.0d0
    transA = 'N'
    transB = 'N'
 
@@ -416,8 +414,6 @@
    im_temp = 0.0d0
 
    call cntrct (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp,NREP) 
-
- !!  v_sort = 0.0d0
 
    transA = 'N'
 
@@ -512,7 +508,7 @@
    im_temp = 0.0d0
 
   if (present(RightTensor)) call cntrct (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
-   &                                      RightTensor,A0,im_temp,NREP) 
+   &                                      RightTensor,A0,im_temp,nrep) 
 
 !!   v_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the intermediate.

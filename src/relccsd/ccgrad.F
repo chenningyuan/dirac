@@ -163,7 +163,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !    &                        norbt*nz) 
        real*8, intent(out) :: buf1(*),buf2(*)
 !-------------------------------------------------------------------
-       real*8 :: ddot
        real*8, allocatable :: dvo(:),dov(:)
        real*8, allocatable :: woo_temp(:),wpp_temp(:)
 !-------------------------------------------------------------------
@@ -403,8 +402,6 @@ C
 
       CALL RELTODIR(DMO,BUF1,NFVO,RCW,NREP,NV,NO)
 
-       write(*,*)'pass this step1'
-
 C##############
 C     DOO
 C##############
@@ -453,9 +450,6 @@ C
 c     print*,'laat oo deel dmo op 0'
       CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
 
-
-       write(*,*)'pass this step2'
-
 C##############
 C     DVV
 C##############
@@ -498,8 +492,6 @@ C
 c     print*,'laat vv deel dmo op 0'
       CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
 
-       write(*,*)'pass this step3'
-
 C##############
 C     DVO
 C##############
@@ -536,8 +528,6 @@ C##############
       ENDIF
 
         CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
-
-       write(*,*)'pass this step4'
 
       RETURN
       END
