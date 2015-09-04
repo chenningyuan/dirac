@@ -40,6 +40,10 @@ add_library(
 add_dependencies(dirac run_pamadm)
 add_dependencies(dirac git_info)
 
+if(ENABLE_XCFUN)
+    add_dependencies(dirac xcfun_fortran_bindings)
+endif()
+
 if(ENABLE_PCMSOLVER)
     add_dependencies(dirac pcmsolver)
 endif()
