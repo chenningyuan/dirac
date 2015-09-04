@@ -27,6 +27,7 @@ rem test connection on native Windows
 
 rem go to the local DIRAC directory
 cd %DIRAC%
+git clean -f -d -x
 git submodule update --init --recursive
 set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
@@ -46,8 +47,8 @@ ctest      -D ExperimentalSubmit     --track Miro  1>>%LOG%  2>&1
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
 
-rem wait 1 minute
-timeout 60
+rem wait 20 seconds
+timeout 20
 
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
