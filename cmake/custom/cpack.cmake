@@ -18,10 +18,13 @@ SET(CPACK_SOURCE_INSTALLED_DIRECTORIES
     "${EXPORT_DIR};/"
     )
 
-include(CPack)
-include(IncludeFiles)
+if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    # radovan: for a strange reason this include fails on OSX Yosemite (?)
+    include(CPack)
+
+    include(IncludeFiles)
+
     add_custom_target(release
         COMMAND ${PROJECT_SOURCE_DIR}/maintenance/fetch_external_sources ${PROJECT_SOURCE_DIR}
         COMMAND mkdir -p ${EXPORT_DIR}
