@@ -13,8 +13,8 @@ Joergen Aagaard Jensen. Linear symmetry adaptation by Stefan Knecht and Hans Joe
 For more details on the theory and actual implementation see :cite:`Jensen1996`, :cite:`Thyssen2004` , :cite:`Thyssen2008`, :cite:`Knecht2009`.
 
 
-**Mandatory keywords**
-======================
+Mandatory keywords  under \*KRMCSCF
+===================================
 
 keyword(CI PROGRAM)
 
@@ -45,7 +45,9 @@ number of orbitals per fermion correp. See also the open-shell input in :ref:`*S
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
 virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
-pp. 27 for more details. example for a CASSCF run with 10 electrons in 10 orbitals also known as CAS(10,10):
+pp. 27 for more details. 
+
+Example for a CASSCF run with 10 electrons in 10 orbitals, also known as CAS(10,10):
 
 ::
 
@@ -77,7 +79,7 @@ All remaining orbitals above the inactive + active space are considered as secon
 in all determinants of the CI expansion. By default all orbital rotations between the inactive-active and active-secondary
 space are included. 
 
-optional keywords under \*KRMCSCF
+Optional keywords under \*KRMCSCF
 =================================
 
 keyword(THRESH)
@@ -164,6 +166,8 @@ value. *default*:
 
     .PRINT
      0
+
+star(OPTIMI)
 
 optional keywords under \*OPTIMI
 ================================
