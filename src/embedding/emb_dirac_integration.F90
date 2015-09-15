@@ -974,6 +974,7 @@ contains
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
+   print *, "nr points",fde_get_my_rank(),nr_points_on_this_proc
    do ipoint = 1, nr_points_on_this_proc
       
       time_ao_start = second()
@@ -999,8 +1000,13 @@ contains
 
       time_density = time_density + second() - time_density_start
 
+      print *, "check points",fde_get_my_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
+      print *, "check density ",fde_get_my_rank(),fde_cfg_tinydens,n_0(1),frozen_n(ipoint)
+
       if (n_0(1) > fde_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
+
+         print *,"inside ",fde_get_my_rank(),fde_cfg_tinydens,nr_points_used
 
          u%n  = 0.0d0
          u%gn = 0.0d0
@@ -1512,9 +1518,9 @@ contains
                 frozen_gny = gf_frozen%gn(2,:)
                 frozen_gnz = gf_frozen%gn(3,:)
                 frozen_elpot= gf_frozen%elpot
-                print *, "values at point 10 for master"
-                print *, "(x,y,z) = (",rx(10),",",rx(10),",",rz(10),")"
-                print *, "(n, gn, v) = (",frozen_n(10),",",frozen_gnx(10),",",frozen_gny(10),",",frozen_gnz(10),",",frozen_elpot(10),")"
+!               print *, "values at point 1 for master"
+!               print *, "(x,y,z, w) = (",rx(1),",",ry(1),",",rz(1),",",rw(1),")"
+!               print *, "(n, gn, v) = (",frozen_n(1),",",frozen_gnx(1),",",frozen_gny(1),",",frozen_gnz(1),",",frozen_elpot(1),")"
             end if
 
             ibatch = ibatch + 1
@@ -1522,23 +1528,24 @@ contains
             nr_points_on_this_proc = nr_points_batch
 
 #ifdef VAR_MPI
-         if (.not.fde_mpi_is_master()) then 
-                print *, "values at point 10 for slave ",fde_get_my_rank(),"before distributing"
-                print *, "(x,y,z) = (",rx(10),",",rx(10),",",rz(10),")"
-                print *, "(n, gn, v) = (",frozen_n(10),",",frozen_gnx(10),",",frozen_gny(10),",",frozen_gnz(10),",",frozen_elpot(10),")"
-         endif
+!        if (.not.fde_mpi_is_master()) then 
+!               print *, "values at point 1 for slave ",fde_get_my_rank(),"before distributing"
+!               print *, "(x,y,z, w) = (",rx(1),",",ry(1),",",rz(1),",",rw(1),")"
+!               print *, "(n, gn, v) = (",frozen_n(1),",",frozen_gnx(1),",",frozen_gny(1),",",frozen_gnz(1),",",frozen_elpot(1),")"
+!        endif
          if (parallel_fde) then
 !           redefines nr_points_on_this_proc
-            print *, "distributing points"
+!           print *, "distributing points"
             call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc) 
-            print *, "distributing frozen density, potential"
+!           print *, "distributing frozen density, potential"
             call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
          end if
-         if (.not.fde_mpi_is_master()) then 
-                print *, "values at point 10 for slave ",fde_get_my_rank()
-                print *, "(x,y,z) = (",rx(10),",",rx(10),",",rz(10),")"
-                print *, "(n, gn, v) = (",frozen_n(10),",",frozen_gnx(10),",",frozen_gny(10),",",frozen_gnz(10),",",frozen_elpot(10),")"
-         endif
+
+!        if (.not.fde_mpi_is_master()) then 
+                print *, "values at point 1 for process ",fde_get_my_rank()
+                print *, "#a",fde_get_my_rank(),rx(1),ry(1),rz(1),rw(1)
+                print *, "#b",fde_get_my_rank(),frozen_n(1),frozen_gnx(1),frozen_gny(1),frozen_gnz(1),frozen_elpot(1)
+!        endif
 #endif
 !        if (do_potential .or. (response_order_mo == 1)) then
 !            fde_use_blas3_scheme = .true.
