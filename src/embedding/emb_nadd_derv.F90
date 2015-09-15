@@ -185,9 +185,9 @@ module fde_nadd_derv
          subroutine fde_initialize_nadd_functionals
 !   ----------------------------------------------------------------------------
             integer :: i, order = 5
-            logical :: parallel_fde
+!           logical :: parallel_fde
 
-            parallel_fde = .false.
+!           parallel_fde = .false.
             
         if (.not.functionals_initialized) then
             functionals_initialized = .true.
@@ -199,10 +199,10 @@ module fde_nadd_derv
 
 
 !            ! we set them now so that we can verify whether or not they
-            call xcfun_set_functional(fde_xcf     , order, parallel_fde) 
-            call xcfun_set_functional(fde_kef,      order, parallel_fde)
-            call xcfun_set_functional(fde_xcf_alda, order, parallel_fde) 
-            call xcfun_set_functional(fde_kef_alda, order, parallel_fde)
+!           call xcfun_set_functional(fde_xcf     , order, parallel_fde) 
+!           call xcfun_set_functional(fde_kef,      order, parallel_fde)
+!           call xcfun_set_functional(fde_xcf_alda, order, parallel_fde) 
+!           call xcfun_set_functional(fde_kef_alda, order, parallel_fde)
         endif
         
          end subroutine fde_initialize_nadd_functionals

@@ -488,19 +488,27 @@ contains
 #ifdef VAR_MPI
       if (parallel_fde) then
 !        broadcast allocatables
+         print *, "before dmat_0 bcast for process ",fde_get_my_rank()
          call fde_mpi_bcast(dmat_0)
+         print *, "after dmat_0 bcast for process ",fde_get_my_rank()
          if (nr_fmat > 0) then
 !           never bcast fmat
 !           only master's fmat contains "HF" contribution
 !           otherwise it is multiplied
+         print *, "before fmat_pg_sym bcast for process ",fde_get_my_rank()
             call fde_mpi_bcast(fmat_pg_sym)
+         print *, "after fmat_pg_sym bcast for process ",fde_get_my_rank()
          end if
          if (nr_dmat > 0) then
+         print *, "before dmat bcast for process ",fde_get_my_rank()
             call fde_mpi_bcast(dmat)
+         print *, "before dmat_pg_sym bcast for process ",fde_get_my_rank()
             call fde_mpi_bcast(dmat_pg_sym)
+         print *, "before dmat_ih_sym bcast for process ",fde_get_my_rank()
             call fde_mpi_bcast(dmat_ih_sym)
          end if
       end if
+      print *, "after allocatables bcast for process ",fde_get_my_rank()
 #endif
 
 
@@ -556,11 +564,13 @@ contains
 
 
 
-
-
-
+#ifdef VAR_MPI
+      print *, "before loop_over_batches for process ",fde_get_my_rank()
+#endif
       call loop_over_batches()
-
+#ifdef VAR_MPI
+      print *, "before loop_over_batches for process ",fde_get_my_rank()
+#endif
 
 
 
@@ -1453,18 +1463,30 @@ contains
          integer :: i
          real(8), allocatable :: mpi_buffer(:)
 
+            print *, "debug, entering loop_over_batches()"
+#ifdef VAR_MPI
+            print *, "this is process ",fde_get_my_rank()
+#endif
+
          if (fde_mpi_is_master()) then
             nr_points_batch = fde_grid_im%npoints
          end if   
 #ifdef VAR_MPI
          if (parallel_fde) then
+            print *, "nr_ponts_batch #1 is ",nr_points_batch,"for is process ",fde_get_my_rank()
             call fde_mpi_bcast(nr_points_batch)
+            print *, "nr_ponts_batch #2 is ",nr_points_batch,"for is process ",fde_get_my_rank()
          end if
 #endif
          ibatch          = 0
+         nr_points_total = 0
+         nr_points_used  = 0
+
 
 !        loop over batches
          do
+            print *, "looping over batches, ibatch =",ibatch
+
             if (nr_points_batch < 0) exit
 
             allocate(rx(nr_points_batch))
@@ -1490,6 +1512,9 @@ contains
                 frozen_gny = gf_frozen%gn(2,:)
                 frozen_gnz = gf_frozen%gn(3,:)
                 frozen_elpot= gf_frozen%elpot
+                print *, "values at point 10 for master"
+                print *, "(x,y,z) = (",rx(10),",",rx(10),",",rz(10),")"
+                print *, "(n, gn, v) = (",frozen_n(10),",",frozen_gnx(10),",",frozen_gny(10),",",frozen_gnz(10),",",frozen_elpot(10),")"
             end if
 
             ibatch = ibatch + 1
@@ -1497,11 +1522,23 @@ contains
             nr_points_on_this_proc = nr_points_batch
 
 #ifdef VAR_MPI
+         if (.not.fde_mpi_is_master()) then 
+                print *, "values at point 10 for slave ",fde_get_my_rank(),"before distributing"
+                print *, "(x,y,z) = (",rx(10),",",rx(10),",",rz(10),")"
+                print *, "(n, gn, v) = (",frozen_n(10),",",frozen_gnx(10),",",frozen_gny(10),",",frozen_gnz(10),",",frozen_elpot(10),")"
+         endif
          if (parallel_fde) then
 !           redefines nr_points_on_this_proc
-            call fde_mpi_distribute_points(rx, ry, rz, rw,nr_points_batch, nr_points_on_this_proc) 
+            print *, "distributing points"
+            call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc) 
+            print *, "distributing frozen density, potential"
             call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
          end if
+         if (.not.fde_mpi_is_master()) then 
+                print *, "values at point 10 for slave ",fde_get_my_rank()
+                print *, "(x,y,z) = (",rx(10),",",rx(10),",",rz(10),")"
+                print *, "(n, gn, v) = (",frozen_n(10),",",frozen_gnx(10),",",frozen_gny(10),",",frozen_gnz(10),",",frozen_elpot(10),")"
+         endif
 #endif
 !        if (do_potential .or. (response_order_mo == 1)) then
 !            fde_use_blas3_scheme = .true.
@@ -1518,7 +1555,15 @@ contains
 !            fde_use_blas3_scheme = .false.
 !         end if
 
+            print *, "debug, before integrate()"
+#ifdef VAR_MPI
+            print *, "this is process ",fde_get_my_rank()
+#endif
             call integrate()
+            print *, "debug, after integrate()"
+#ifdef VAR_MPI
+            print *, "this is process ",fde_get_my_rank()
+#endif
 
             deallocate(rx)
             deallocate(ry)
@@ -1536,6 +1581,11 @@ contains
 !     end loop over batches
          end do
  999     continue
+         
+            print *, "debug, leaving loop_over_batches()"
+#ifdef VAR_MPI
+            print *, "this is process ",fde_get_my_rank()
+#endif
       end subroutine loop_over_batches
 
 

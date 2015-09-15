@@ -21,6 +21,7 @@ module fde_evaluators_dirac
    use interface_mo_specific
 
 ! these are the interfaces to the dirac-specific code
+   public fde_launch_slave_process
    public fde_calculate_elpot
    public fde_dirac_set_nz
    public fde_dirac_get_nz
@@ -486,6 +487,7 @@ module fde_evaluators_dirac
          real(kind=8), target, intent(in) :: dmat(*)
          real(kind=8), target  :: fmat(*)
 
+         print *, "debug, calling fde_dirac_emb_matrices_via_integration"
          call fde_dirac_emb_matrices_via_integration(      &
                                   fde_mat_dim   = mat_dim, &
                                   fde_nz        = nz,      &
@@ -494,10 +496,23 @@ module fde_evaluators_dirac
                                   fde_nr_fmat   = 1,       &
                                   fde_fmat      = fmat,    &
                                   fde_do_potential = .true.)
+         print *, "debug, leaving fde_dirac_embpot_via_integrator"
 
 !       call fde_dirac_emb_interaction_energy('DHF ')
 
       end subroutine fde_dirac_embpot_via_integrator
+
+
+      subroutine fde_launch_slave_process()
+         print *, "debug, calling fde_launch_slave_process"
+         call fde_dirac_emb_matrices_via_integration(        &
+                                  fde_mat_dim   = 1,         &
+                                  fde_nz        = 1,         &
+                                  fde_dmat_0    = (/0.0d0/), &
+                                  fde_nr_dmat   = 0,         &
+                                  fde_nr_fmat   = 0)
+         print *, "debug, leaving  fde_launch_slave_process"
+      end subroutine
 
 
       function fde_dirac_embpot_static_energy()
