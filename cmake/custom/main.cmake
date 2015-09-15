@@ -26,6 +26,9 @@ endif()
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 
+# Ivan Hrasko's determination of compiler versions 
+include(FindCompilerVersion)
+
 set(DIRAC_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
