@@ -59,7 +59,6 @@ module fde_dirac_matrices_integration
 
    real(8) :: nr_electrons_integrated
    real(8), save :: fde_energy
-   real(8), save :: fde_energy_density
    real(8), save :: fde_mat_energy
 
    logical :: use_gga_qr = .false. !quaternion real
@@ -234,7 +233,6 @@ contains
 
       nr_electrons_integrated = 0.0d0
       fde_energy    = 0.0d0
-      fde_energy_density = 0.0d0
 
       parallel_fde = (fde_mpi_get_nr_proc() > 1)
 
@@ -488,27 +486,19 @@ contains
 #ifdef VAR_MPI
       if (parallel_fde) then
 !        broadcast allocatables
-         print *, "before dmat_0 bcast for process ",fde_get_my_rank()
          call fde_mpi_bcast(dmat_0)
-         print *, "after dmat_0 bcast for process ",fde_get_my_rank()
          if (nr_fmat > 0) then
 !           never bcast fmat
 !           only master's fmat contains "HF" contribution
 !           otherwise it is multiplied
-         print *, "before fmat_pg_sym bcast for process ",fde_get_my_rank()
             call fde_mpi_bcast(fmat_pg_sym)
-         print *, "after fmat_pg_sym bcast for process ",fde_get_my_rank()
          end if
          if (nr_dmat > 0) then
-         print *, "before dmat bcast for process ",fde_get_my_rank()
             call fde_mpi_bcast(dmat)
-         print *, "before dmat_pg_sym bcast for process ",fde_get_my_rank()
             call fde_mpi_bcast(dmat_pg_sym)
-         print *, "before dmat_ih_sym bcast for process ",fde_get_my_rank()
             call fde_mpi_bcast(dmat_ih_sym)
          end if
       end if
-      print *, "after allocatables bcast for process ",fde_get_my_rank()
 #endif
 
 
@@ -564,13 +554,7 @@ contains
 
 
 
-#ifdef VAR_MPI
-!     print *, "before loop_over_batches for process ",fde_get_my_rank()
-#endif
       call loop_over_batches()
-#ifdef VAR_MPI
-!     print *, "before loop_over_batches for process ",fde_get_my_rank()
-#endif
 
 
 
@@ -593,7 +577,6 @@ contains
          call fde_mpi_reduce(nr_points_used)
          if (do_potential) then
             call fde_mpi_reduce(fde_energy)
-            call fde_mpi_reduce(fde_energy_density)
          end if
          if (nr_fmat > 0) then
             call fde_mpi_reduce(fmat)
@@ -953,7 +936,7 @@ contains
 !                                   max_fun_derv,             &
 !                                   rw(ipoint),               &
 !                                   nr_electrons_integrated,  &
-!                                   fde_energy_density        &
+!                                   fde_energy                &
 !                                  )
 
          deallocate(ao)
@@ -974,10 +957,8 @@ contains
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
-!  print *, "fde nr points",fde_get_my_rank(),nr_points_on_this_proc
    do ipoint = 1, nr_points_on_this_proc
       
-!     print *, "fde check points",ipoint,fde_get_my_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
       time_ao_start = second()
       call get_ao(1,    &
             rx(ipoint), &
@@ -986,9 +967,6 @@ contains
             ao,         &
             buffer)
       time_ao = time_ao + second() - time_ao_start
-
-!     print *, "fde check ao",ipoint,fde_get_my_rank(),ao
-!     print *, "fde check buffer",ipoint,fde_get_my_rank(),buffer
 
       time_density_start = second()
       if (need_ao_order(1, 0)) then
@@ -1004,12 +982,8 @@ contains
 
       time_density = time_density + second() - time_density_start
 
-!     print *, "fde check density ",ipoint,fde_get_my_rank(),fde_cfg_tinydens,n_0(1),frozen_n(ipoint)
-
       if (n_0(1) > fde_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
-
-!        print *,"inside ",fde_get_my_rank(),fde_cfg_tinydens,nr_points_used
 
          u%n  = 0.0d0
          u%gn = 0.0d0
@@ -1071,7 +1045,7 @@ contains
 !         energy will not be calcuated here but instead via
 !         call calc_fde_interaction_energy(energy,gf_active,gf_frozen)
 !         outside of the integration loop  
-            fde_energy_density = fde_energy_density + (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint)
+            fde_energy = fde_energy + (derv_total(1, d0000000) - derv_active(1, d0000000)) + w(1)*frozen_elpot(ipoint)*n_0(1)
 
             u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint) 
 
@@ -1472,30 +1446,20 @@ contains
          integer :: i
          real(8), allocatable :: mpi_buffer(:)
 
-!           print *, "debug, entering loop_over_batches()"
-#ifdef VAR_MPI
-!           print *, "this is process ",fde_get_my_rank()
-#endif
-
          if (fde_mpi_is_master()) then
             nr_points_batch = fde_grid_im%npoints
          end if   
 #ifdef VAR_MPI
          if (parallel_fde) then
-!           print *, "nr_ponts_batch #1 is ",nr_points_batch,"for is process ",fde_get_my_rank()
             call fde_mpi_bcast(nr_points_batch)
-!           print *, "nr_ponts_batch #2 is ",nr_points_batch,"for is process ",fde_get_my_rank()
          end if
 #endif
          ibatch          = 0
          nr_points_total = 0
          nr_points_used  = 0
 
-
 !        loop over batches
          do
-            print *, "looping over batches, ibatch =",ibatch
-
             if (nr_points_batch < 0) exit
 
             allocate(rx(nr_points_batch))
@@ -1521,9 +1485,6 @@ contains
                 frozen_gny = gf_frozen%gn(2,:)
                 frozen_gnz = gf_frozen%gn(3,:)
                 frozen_elpot= gf_frozen%elpot
-!               print *, "values at point 1 for master"
-!               print *, "(x,y,z, w) = (",rx(1),",",ry(1),",",rz(1),",",rw(1),")"
-!               print *, "(n, gn, v) = (",frozen_n(1),",",frozen_gnx(1),",",frozen_gny(1),",",frozen_gnz(1),",",frozen_elpot(1),")"
             end if
 
             ibatch = ibatch + 1
@@ -1531,24 +1492,10 @@ contains
             nr_points_on_this_proc = nr_points_batch
 
 #ifdef VAR_MPI
-!        if (.not.fde_mpi_is_master()) then 
-!               print *, "values at point 1 for slave ",fde_get_my_rank(),"before distributing"
-!               print *, "(x,y,z, w) = (",rx(1),",",ry(1),",",rz(1),",",rw(1),")"
-!               print *, "(n, gn, v) = (",frozen_n(1),",",frozen_gnx(1),",",frozen_gny(1),",",frozen_gnz(1),",",frozen_elpot(1),")"
-!        endif
          if (parallel_fde) then
-!           redefines nr_points_on_this_proc
-!           print *, "distributing points"
             call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc) 
-!           print *, "distributing frozen density, potential"
             call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
          end if
-
-!        if (.not.fde_mpi_is_master()) then 
-!               print *, "values at point 1 for process ",fde_get_my_rank()
-!               print *, "#a",fde_get_my_rank(),rx(1),ry(1),rz(1),rw(1)
-!               print *, "#b",fde_get_my_rank(),frozen_n(1),frozen_gnx(1),frozen_gny(1),frozen_gnz(1),frozen_elpot(1)
-!        endif
 #endif
 !        if (do_potential .or. (response_order_mo == 1)) then
 !            fde_use_blas3_scheme = .true.
@@ -1565,15 +1512,7 @@ contains
 !            fde_use_blas3_scheme = .false.
 !         end if
 
-!           print *, "debug, before integrate()"
-#ifdef VAR_MPI
-!           print *, "this is process ",fde_get_my_rank()
-#endif
             call integrate()
-!           print *, "debug, after integrate()"
-#ifdef VAR_MPI
-!           print *, "this is process ",fde_get_my_rank()
-#endif
 
             deallocate(rx)
             deallocate(ry)
@@ -1592,10 +1531,6 @@ contains
          end do
  999     continue
          
-!           print *, "debug, leaving loop_over_batches()"
-#ifdef VAR_MPI
-!           print *, "this is process ",fde_get_my_rank()
-#endif
       end subroutine loop_over_batches
 
 
@@ -1805,11 +1740,13 @@ contains
        do im = 1, nr_mat
           if (have_triplet_contrib(im)) have_triplet = .true.
        end do
-
-       if (have_triplet) then
-          write(*,*) 'Triplet contributions to FDE kernel included'
-       else
-          write(*,*) 'Triplet contributions to FDE kernel neglected'
+ 
+       if (fde_mpi_is_master()) then
+          if (have_triplet) then
+             write(*,*) 'Triplet contributions to FDE kernel included'
+          else
+             write(*,*) 'Triplet contributions to FDE kernel neglected'
+          endif
        endif
        print_triplet_contrib = .false.
     endif
