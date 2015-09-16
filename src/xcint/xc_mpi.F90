@@ -44,11 +44,15 @@ module xc_mpi
    public xc_mpi_bcast
    public xc_mpi_reduce
    public xc_mpi_distribute_points
+   public xc_mpi_get_rank
 #endif
 
    private
 
 #ifdef VAR_MPI
+   interface xc_mpi_get_rank
+      module procedure get_my_rank
+   end interface
    interface xc_mpi_bcast
       module procedure xc_mpi_bcast_i0
       module procedure xc_mpi_bcast_i1

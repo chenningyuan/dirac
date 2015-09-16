@@ -997,6 +997,7 @@ contains
 !  that does not change from point to point
    do ipoint = 1, nr_points_on_this_proc
    
+!     print *, "check points",ipoint,xc_mpi_get_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
       time_ao_start = second()
       call get_ao(1,          &
                   rx(ipoint), &
@@ -1004,6 +1005,8 @@ contains
                   rz(ipoint), &
                   ao,         &
                   buffer)
+!     print *, "dft check ao",ipoint,xc_mpi_get_rank(),ao
+!     print *, "dft check buffer",ipoint,xc_mpi_get_rank(),buffer
       time_ao = time_ao + second() - time_ao_start
 
       time_density_start = second()
@@ -1018,6 +1021,8 @@ contains
 !        call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
       end if
       time_density = time_density + second() - time_density_start
+
+!     print *, "check density ",ipoint,xc_mpi_get_rank(),dft_cfg_tinydens,n_0(1)
 
       if (n_0(1) > dft_cfg_tinydens) then
          nr_points_used = nr_points_used + 1

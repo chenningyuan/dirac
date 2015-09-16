@@ -465,7 +465,7 @@ contains
 
       call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
-                        .false.)
+                        .true.)
 
       if (fde_mpi_is_master()) then
 !        initial expectation value of the two-electron matrix
@@ -565,11 +565,11 @@ contains
 
 
 #ifdef VAR_MPI
-      print *, "before loop_over_batches for process ",fde_get_my_rank()
+!     print *, "before loop_over_batches for process ",fde_get_my_rank()
 #endif
       call loop_over_batches()
 #ifdef VAR_MPI
-      print *, "before loop_over_batches for process ",fde_get_my_rank()
+!     print *, "before loop_over_batches for process ",fde_get_my_rank()
 #endif
 
 
@@ -974,17 +974,21 @@ contains
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
-   print *, "nr points",fde_get_my_rank(),nr_points_on_this_proc
+!  print *, "fde nr points",fde_get_my_rank(),nr_points_on_this_proc
    do ipoint = 1, nr_points_on_this_proc
       
+!     print *, "fde check points",ipoint,fde_get_my_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
       time_ao_start = second()
-      call get_ao(1,          &
+      call get_ao(1,    &
             rx(ipoint), &
             ry(ipoint), &
             rz(ipoint), &
             ao,         &
             buffer)
       time_ao = time_ao + second() - time_ao_start
+
+!     print *, "fde check ao",ipoint,fde_get_my_rank(),ao
+!     print *, "fde check buffer",ipoint,fde_get_my_rank(),buffer
 
       time_density_start = second()
       if (need_ao_order(1, 0)) then
@@ -1000,13 +1004,12 @@ contains
 
       time_density = time_density + second() - time_density_start
 
-      print *, "check points",fde_get_my_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
-      print *, "check density ",fde_get_my_rank(),fde_cfg_tinydens,n_0(1),frozen_n(ipoint)
+!     print *, "fde check density ",ipoint,fde_get_my_rank(),fde_cfg_tinydens,n_0(1),frozen_n(ipoint)
 
       if (n_0(1) > fde_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
 
-         print *,"inside ",fde_get_my_rank(),fde_cfg_tinydens,nr_points_used
+!        print *,"inside ",fde_get_my_rank(),fde_cfg_tinydens,nr_points_used
 
          u%n  = 0.0d0
          u%gn = 0.0d0
@@ -1469,9 +1472,9 @@ contains
          integer :: i
          real(8), allocatable :: mpi_buffer(:)
 
-            print *, "debug, entering loop_over_batches()"
+!           print *, "debug, entering loop_over_batches()"
 #ifdef VAR_MPI
-            print *, "this is process ",fde_get_my_rank()
+!           print *, "this is process ",fde_get_my_rank()
 #endif
 
          if (fde_mpi_is_master()) then
@@ -1479,9 +1482,9 @@ contains
          end if   
 #ifdef VAR_MPI
          if (parallel_fde) then
-            print *, "nr_ponts_batch #1 is ",nr_points_batch,"for is process ",fde_get_my_rank()
+!           print *, "nr_ponts_batch #1 is ",nr_points_batch,"for is process ",fde_get_my_rank()
             call fde_mpi_bcast(nr_points_batch)
-            print *, "nr_ponts_batch #2 is ",nr_points_batch,"for is process ",fde_get_my_rank()
+!           print *, "nr_ponts_batch #2 is ",nr_points_batch,"for is process ",fde_get_my_rank()
          end if
 #endif
          ibatch          = 0
@@ -1542,9 +1545,9 @@ contains
          end if
 
 !        if (.not.fde_mpi_is_master()) then 
-                print *, "values at point 1 for process ",fde_get_my_rank()
-                print *, "#a",fde_get_my_rank(),rx(1),ry(1),rz(1),rw(1)
-                print *, "#b",fde_get_my_rank(),frozen_n(1),frozen_gnx(1),frozen_gny(1),frozen_gnz(1),frozen_elpot(1)
+!               print *, "values at point 1 for process ",fde_get_my_rank()
+!               print *, "#a",fde_get_my_rank(),rx(1),ry(1),rz(1),rw(1)
+!               print *, "#b",fde_get_my_rank(),frozen_n(1),frozen_gnx(1),frozen_gny(1),frozen_gnz(1),frozen_elpot(1)
 !        endif
 #endif
 !        if (do_potential .or. (response_order_mo == 1)) then
@@ -1562,14 +1565,14 @@ contains
 !            fde_use_blas3_scheme = .false.
 !         end if
 
-            print *, "debug, before integrate()"
+!           print *, "debug, before integrate()"
 #ifdef VAR_MPI
-            print *, "this is process ",fde_get_my_rank()
+!           print *, "this is process ",fde_get_my_rank()
 #endif
             call integrate()
-            print *, "debug, after integrate()"
+!           print *, "debug, after integrate()"
 #ifdef VAR_MPI
-            print *, "this is process ",fde_get_my_rank()
+!           print *, "this is process ",fde_get_my_rank()
 #endif
 
             deallocate(rx)
@@ -1589,9 +1592,9 @@ contains
          end do
  999     continue
          
-            print *, "debug, leaving loop_over_batches()"
+!           print *, "debug, leaving loop_over_batches()"
 #ifdef VAR_MPI
-            print *, "this is process ",fde_get_my_rank()
+!           print *, "this is process ",fde_get_my_rank()
 #endif
       end subroutine loop_over_batches
 

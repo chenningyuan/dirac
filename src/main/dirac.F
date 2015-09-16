@@ -1104,7 +1104,8 @@ C***********************************************************************
      &    only: initialize_interest_herd,                               &
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
-      use fde_evaluators_dirac, only : fde_launch_slave_process
+!     use fde_evaluators_dirac, only : fde_launch_slave_process
+      use fde_mod, only : fde_launch_slave_process
 #endif
       implicit none
 #include "dcbdhf.h"
