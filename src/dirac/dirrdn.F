@@ -4823,6 +4823,7 @@ C
       NOSMLV  = .FALSE.
       MDIRAC  = .FALSE.
       LEVYLE  = .FALSE.
+      NONREL  = .FALSE.
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
@@ -5349,6 +5350,7 @@ C&&& IOTC4: do IOTC in 4c-mode
   144     CONTINUE
 C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
+             NONREL = .TRUE.
              DOLVC   = .FALSE.
              GO TO 100
   145     CONTINUE
@@ -5994,11 +5996,6 @@ C aspg, 20070909
          ENDIF
 
       ENDIF
-
-C
-C     Reset MC if necessary
-CMI/Febr.2006 for BSS/TWOCOMP it is set up later
-      IF(LEVYLE) MC = 1
 C
 C     Remove integral classes not needed for this Hamiltonians
 C
@@ -6601,21 +6598,7 @@ C
       logical is_2c_rel_run
       type(fde_import) :: itmp
 
-      is_2c_rel_run = .false.
-      is_2c_rel_run = bss.or.x2c
-
       CALL QENTER('OP1INI')
-
-      IF (IPRHAM.GE.7) THEN
-       IF (TWOCOMP.AND..NOT.is_2c_rel_run) THEN
-        CALL HEADER(
-     &  'OP1INI: activating non-relativistic 1-el. integrals',-1)
-       ELSE
-        CALL HEADER(
-     &  'OP1INI: activating Dirac Hamiltonian 1-el. integrals',-1)
-       ENDIF
-      ENDIF
-
 CMI ... common for both nonrelativistic and Dirac Hamiltonians
 C
 C    Overlap integrals
@@ -6663,7 +6646,7 @@ C
       ENDIF
 
 
-      IF(TWOCOMP.AND..NOT.is_2c_rel_run)THEN
+      IF(NONREL.OR.ECPCALC)THEN
 CMI   nonrelativistic  kinetic energy integrals ...
       PNAME            = 'Nonrel. kinetic energy '
       IPTYP            = 1
