@@ -189,8 +189,7 @@
 !!!! &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),ResL2, &
 !!!! &    1.0d0,0.0d0,nrep,LeftTensor=L2)
 
-      call contraction_444((/"o1","o3","p1","p3"/), &
-     &    (/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
+      call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
      &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
 
        if (iprnt.ge.1) &

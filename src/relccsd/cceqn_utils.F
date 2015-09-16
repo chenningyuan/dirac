@@ -664,7 +664,6 @@ C
       END
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
 
-
       SUBROUTINE DENOM_L (EPS,T1,T2,CT1,CT2)
 C
       IMPLICIT INTEGER (A-Z)
@@ -811,9 +810,125 @@ C                 Check for small denominators, see comment above.
 C
       RETURN
       END
+
+c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      SUBROUTINE DENOM_N (EPS,DINV_ONE,DINV_TWO)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Collect the inverse of orbital energy differences in an array. 
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee
+C
+C---------------Calling variables--------------------------------------
+C
+
+      real*8,intent(in)    :: EPS(*)
+      real*8,intent(out) :: DINV_ONE(*),DINV_TWO(*)
+
+C---------------Common Blocks--------------------------------------
+
+#include "symm.inc"
+#include "complex.inc"
+#include "param.inc"
+
+C---------------Local variables--------------------------------------
+
+      REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,DHOLU,CONST
+
+C---------------Executable code--------------------------------------
+
+      DHOLU = 1.D-6
+      IA = 1
+      DO ARP = 1, NREP
+         AA = IO(NREP+1) + IV(ARP)
+      DO A = 1, NV(ARP)
+         AA = AA + 1
+         FAC1 = EPS(AA)
+         IOFF = IO(ARP)
+         DO I = 1, NO(ARP)
+             II = IOFF + I
+             FAC = FAC1 - EPS(II)
+
+             IF (FAC.GT.DHOLU) THEN
+                IF (CARITH) THEN
+                   CONST = AR1/FAC
+                   DINV_ONE(IA:IA+1) = CONST
+                ELSE
+                   DINV_ONE(IA) = AR1/FAC
+                ENDIF
+             ELSE
+                IF (CARITH) THEN
+                   DINV_ONE(IA:IA+1) = AR0
+                ELSE
+                   DINV_ONE(IA) = AR0
+                ENDIF
+             ENDIF
+             IA = IA + RCW
+         ENDDO
+      ENDDO
+      ENDDO
+
+      ABIJ = 1
+      DO ABRP = 1, NREP
+      DO 10 BRP = 1, NREP
+      BB = IV(BRP) + IO(NREP+1)
+      ARP = MULTB(BRP,ABRP+NREP,2)
+      IF (ARP.LT.BRP) GOTO 10
+      DO B = 1, NV(BRP)
+         BB = BB + 1
+         FAC1 = EPS(BB)
+            AOFF = IV(ARP) + IO(NREP+1)
+           AMIN = 1
+           IF (ARP.EQ.BRP) AMIN = B + 1
+         DO A = AMIN, NV(ARP)
+            AA = AOFF + A
+            FAC2 = EPS(AA) + FAC1
+            DO 20 JRP = 1, NREP
+            JJ = IO(JRP)
+            IRP = MULTB(JRP,ABRP+NREP,2)
+            IF (IRP.LT.JRP) GOTO 20
+            IOFF = IO(IRP)
+            DO J = 1, NO(JRP)
+               JJ = JJ + 1
+               FAC3 = FAC2 - EPS(JJ)
+               IMIN = 1
+               IF (IRP.EQ.JRP) IMIN = J + 1
+               DO I = IMIN, NO(IRP)
+                  II = IOFF + I
+                  FAC = FAC3 - EPS(II)
+                  IF (FAC.GT.DHOLU) THEN
+                     IF (CARITH) THEN
+                        CONST = AR1/FAC
+                        DINV_TWO(ABIJ:ABIJ+1) = CONST
+                     ELSE
+                        DINV_TWO(ABIJ) = AR1/FAC
+                     ENDIF
+                  ELSE
+                    IF (CARITH) THEN
+                    DINV_TWO(ABIJ:ABIJ+1) = AR0
+                    ELSE
+                    DINV_TWO(ABIJ) = AR0
+                    ENDIF
+                  ENDIF
+                  ABIJ = ABIJ + RCW
+               ENDDO
+            ENDDO
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+
+      RETURN
+      END
+
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
-
-
 
       SUBROUTINE PAIREN (T1,T2,FVO,BUF1,BUF2)
 C

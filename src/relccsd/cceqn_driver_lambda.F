@@ -12,13 +12,8 @@
 
 C---------------Description--------------------------------------------
 C
-C     Solves CCSD amplitude or lambda equations.
+C     Solve CCSD lambda equations.
 C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
@@ -38,8 +33,6 @@ C     for diis ...
       REAL*8 RMS,CONV,RMS1,ddot,sum1,sum2,zdotc
       REAL*8 DIAG
       INTEGER k,l
-
-C     for Fock space ...
 
 
 C---------------Common Blocks--------------------------------------
@@ -61,7 +54,7 @@ C---------------Local variables--------------------------------------
 
       REAL*8     :: CPU,CPU4V,CPUH1,CPUH2
       LOGICAL    :: FOCKSP,PRENE
-      real*8,allocatable :: resL1(:),resL2(:)
+      real*8,allocatable :: resL1(:),resL2(:),dinv_one(:),dinv_two(:)
       real*8,allocatable :: G_oo(:),G_vv(:)
       integer            :: i !remove
       real*8             :: val  
@@ -73,10 +66,6 @@ C     Get initial values of timers for the most important contractions
 C     This is important in Fock space calculations where we enter this
 C     routine more than once. We do it in this manner rather than resetting
 C     the timer because we want the overall timing at the end.
-
-      CALL XTIMRD (CPU4V,'-- BINTM                       ')
-      CALL XTIMRD (CPUH1,'--- HINTM: VVOO contribution   ')
-      CALL XTIMRD (CPUH2,'--- T2EQNS: HINTM*T2           ')
 
       IF (EQNS.EQ.'LAMBDA') THEN
          FOCKSP = .FALSE.
@@ -98,22 +87,6 @@ C     Initialize the work arrays to zero.
        call getampt (s1,s2)
 
        CALL ZCORE (S1,S2)
-
-!!!!!! do i = 1, ndimt2*rcw
-
-!!!!!!  if (abs(S2(i)) <= 1.0d-14) then
-!!!!!!  S2(i) = 0.0d0
-!!!!!!  endif
-
-!!!!!! enddo
-
-!!!!!! do i = 1, ndimt1*rcw
-
-!!!!!! if (abs(S1(i)) <= 1.0d-14) then
-!!!!!! S1(i) = 0.0d0
-!!!!!! endif
-
-!!!!!! enddo
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
@@ -204,6 +177,10 @@ C     Initialize the work arrays to zero.
 
        allocate(resL1(ndimt1*rcw)) 
        allocate(resL2(ndimt2*rcw)) 
+       allocate(dinv_one(ndimt1*rcw))
+       allocate(dinv_two(ndimt2*rcw))
+
+       call denom_n (eps,dinv_one,dinv_two)
 
       do nit = 1, maxit 
 
@@ -232,32 +209,17 @@ C     Initialize the work arrays to zero.
 
       CALL XTIME(5,2,'- L1 equations                  ')
                                  
-C  INTERMEDIATES FORMED --- START T2 EQUATIONS
-C
       CALL XTIME(5,1,'-- L2 equations                     ')
 
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
      &                            G_oo,G_vv,buf1,buf2,buf3,
      &                            nbuf3,resL2,iprnt,nit)
 
-
       CALL XTIME(5,2,'-- L2 equations                     ')
-
-C     Read out timers for the most important contractions
-
-      CALL XTIMRD (CPU,'-- BINTM                       ')
-      CPU4V = CPU - CPU4V
-      CALL XTIMRD (CPU,'--- HINTM: VVOO contribution   ')
-      CPUH1 = CPU - CPUH1
-      CALL XTIMRD (CPU,'--- T2EQNS: HINTM*T2           ')
-      CPUH2 = CPU - CPUH2
 
        deallocate (G_oo)
        deallocate (G_vv)
 
-C     Compute & print the performance in Mega/Giga/TeraFlops
-
-      IF (TIMING) CALL BFLOPS (CPU4V,CPUH1,CPUH2,NIT)
 
 !------------------------------------
 !     calculation of RMS value 
@@ -269,24 +231,12 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
 
       write(*,*)'maximum value RESL1',maxval(abs(resl1))
       write(*,*)'maximum value RESL2',maxval(abs(resl2))
-
+      
 
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
-       call denom_L (eps,resL1,resL2,resl1,resl2)
-
-       call xaxpy (ndimt1,-a1,resL1,1,l1,1)
-       call xaxpy (ndimt2,-a2,resL2,1,l2,1)
-
-!!!!!  do i = 1, ndimt1*rcw
-
-!!!!!  if (abs(L1(i)) <= 1.0d-14) L1(i) = 0.0d0
-
-!!!!!  enddo
-
-!!!!!  do i = 1, ndimt2*rcw
-!!!!!  if (abs(L2(i)) <= 1.0d-14) L2(i) = 0.0d0
-!!!!!  enddo
+       call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
+       call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
 
       CALL ZCORE (L1,L2)
 
@@ -294,12 +244,6 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
       call diisx(ndimt1,ndimt2,l1,l2,   
      &           it,cc1,bb1,itc,bb2,rms1)
       CALL XTIME(5,2,'- DIIS extrapolation            ')
-
-!  SYNCHRONIZE T1 AND T2 (PARALLEL RUNS)
-
-      CALL XTIME(4,1,'- synchronizing T1 & T2 amplitudes')
-      CALL PARTS (2,RMS,L1,L2,BUF1,BUF2)
-      CALL XTIME(4,2,'- synchronizing T1 & T2 amplitudes')
 
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS
       CALL FLSHFO(IW)
@@ -311,6 +255,8 @@ C     Compute & print the performance in Mega/Giga/TeraFlops
       write(iw,6079) nit 
 
 
+      deallocate(dinv_one)
+      deallocate(dinv_two)
       deallocate(resL1) 
       deallocate(resL2) 
 
