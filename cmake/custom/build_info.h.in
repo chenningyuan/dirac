@@ -1,0 +1,43 @@
+#ifndef BUILD_INFO_H_INCLUDED
+#define BUILD_INFO_H_INCLUDED
+
+#define USER_NAME                 "@_user_name@"
+#define HOST_NAME                 "@_host_name@"
+
+#define CONFIGURATION_TIME        "@_configuration_time@"
+#define PYTHON_VERSION            "@_python_version@"
+
+#define SYSTEM                    "@_system@"
+#define SYSTEM_NAME               "@_system_name@"
+#define CMAKE_VERSION             "@_cmake_version@"
+#define CMAKE_GENERATOR           "@_cmake_generator@"
+
+#define CMAKE_BUILD_TYPE          "@_cmake_build_type@"
+
+#define FORTRAN_COMPILER_ID       "@_fortran_compiler_id@"
+#define FORTRAN_COMPILER          "@_fortran_compiler@"
+#define FORTRAN_COMPILER_VERSION  "@_python_fortran_version@"
+#define FORTRAN_COMPILER_FLAGS    "@_fortran_compiler_flags@"
+
+#define C_COMPILER_ID             "@_c_compiler_id@"
+#define C_COMPILER                "@_c_compiler@"
+#define C_COMPILER_VERSION        "@_python_c_version@"
+#define C_COMPILER_FLAGS          "@_c_compiler_flags@"
+
+#define CXX_COMPILER_ID           "@_cxx_compiler_id@"
+#define CXX_COMPILER              "@_cxx_compiler@"
+#define CXX_COMPILER_VERSION      "@_python_cxx_version@"
+#define CXX_COMPILER_FLAGS        "@_cxx_compiler_flags@"
+
+#define STATIC_LINKING            "@_static_linking@"
+#define ENABLE_64BIT_INTEGERS     "@_enable_64bit_integers@"
+#define ENABLE_MPI                "@_enable_mpi@"
+
+#define MATH_LIBS                 "@_math_libs@"
+#define ENABLE_BUILTIN_BLAS       "@_enable_builtin_blas@"
+#define ENABLE_BUILTIN_LAPACK     "@_enable_builtin_lapack@"
+#define EXPLICIT_LIBS             "@_explicit_libs@"
+
+#define DEFINITIONS               "@_list_of_definitions@"
+
+#endif /* BUILD_INFO_H_INCLUDED */

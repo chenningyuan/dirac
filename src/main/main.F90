@@ -32,6 +32,8 @@ program dirac_program
   use machine_parameters
   use dirac_cfg
 
+use iso_c_binding
+
 #ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
@@ -42,13 +44,17 @@ program dirac_program
 #endif
 #endif
 
+interface
+!miro: long strings can be printed out only by C function
+  subroutine print_info() bind(c)
+  end subroutine
+end interface
+
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 
-! generated at build time
-#include "git_info.h"
 
   real(kind=8), allocatable :: memory(:)
 
@@ -143,15 +149,8 @@ program dirac_program
      call printlogo
      call printsubtitle
      call flush(lupri)
-
-     write(lupri, '(//a)') 'Git version information'
-     write(lupri, '(a/)')  '-----------------------'
-
-     write(lupri, *) 'Git commit hash: ', GIT_COMMIT_HASH
-     write(lupri, *) 'Git commit author: ', GIT_COMMIT_AUTHOR
-     write(lupri, *) 'Git commit date: ', GIT_COMMIT_DATE
-     write(lupri, *) 'Git branch: ', GIT_BRANCH
-
+     ! print out git_info & build_info by the executable
+     call print_info
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
 #ifndef NO_SELFTEST

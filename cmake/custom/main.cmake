@@ -28,6 +28,8 @@ endif()
 
 # Ivan Hrasko's determination of compiler versions 
 include(FindCompilerVersion)
+# Miro Ilias restrored CMake printout, associated with build_info.h generation
+include(build_info)
 
 set(DIRAC_SOURCES
     ${C_SOURCES}
