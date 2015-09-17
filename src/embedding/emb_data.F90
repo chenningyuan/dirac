@@ -45,12 +45,14 @@ module fde_data
 ! first, those related to the static embedding potential
 !  
    public fde_grid_sv
+   public gf_active_sv
    public fde_static_vemb
 
    integer, save :: fde_static_vemb_grid_np = 0
    logical, save :: static_data_is_initialized = .false.
 
    type(fde_grid), save :: fde_grid_sv
+   type(grid_function), save :: gf_active_sv
    real(kind=8), save, allocatable, target :: fde_static_vemb(:)
 !
 ! importing frozen density, so the active one is needed too
@@ -59,7 +61,6 @@ module fde_data
 !
    public gf_frozen
    public gf_active
-   public gf_active_adf
    public fde_grid_im
 
    integer, save :: fde_import_grid_np = 0
@@ -67,7 +68,6 @@ module fde_data
 
    type(grid_function), save :: gf_frozen
    type(grid_function), save :: gf_active
-   type(grid_function), save :: gf_active_adf
    type(fde_grid), save      :: fde_grid_im
 !
 ! export, using a different grid
@@ -221,7 +221,7 @@ module fde_data
          if (fde_static_vemb_grid_np > 0) then
 
             call new_fde_grid(fde_grid_sv,fde_static_vemb_grid_np)
-            call new_grid_function(gf_active,fde_static_vemb_grid_np)
+            call new_grid_function(gf_active_sv,fde_static_vemb_grid_np)
 
             if (.not.allocated(fde_static_vemb)) then
                allocate(fde_static_vemb(fde_static_vemb_grid_np))
@@ -242,7 +242,6 @@ module fde_data
             call new_fde_grid(fde_grid_im,fde_import_grid_np)
             call new_grid_function(gf_frozen,fde_import_grid_np)
             call new_grid_function(gf_active,fde_import_grid_np)
-            call new_grid_function(gf_active_adf,fde_import_grid_np)
          else
             call fde_quit('there are no grid points for fde import !')
          endif
@@ -256,14 +255,13 @@ module fde_data
 !   ----------------------------------------------------------------------------
       if (static_data_is_initialized) then
          deallocate(fde_static_vemb)
-         call del_grid_function(gf_active)
          call del_fde_grid(fde_grid_sv)
+         call del_grid_function(gf_active_sv)
       endif
 
       if (import_data_is_initialized) then
-         call del_grid_function(gf_active)
-         call del_grid_function(gf_active_adf)
          call del_grid_function(gf_frozen)
+         call del_grid_function(gf_active)
          call del_fde_grid(fde_grid_im)
       endif
 
@@ -271,6 +269,7 @@ module fde_data
          call del_grid_function(gf_export)
          call del_fde_grid(fde_grid_ex)
       endif
+
    end subroutine fde_cleanup_data
 
 

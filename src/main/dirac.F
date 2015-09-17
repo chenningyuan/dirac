@@ -216,14 +216,6 @@ C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
 
-C
-C***********************************************************************
-C ***** cleaning up data stored in fde calculations ********************
-C***********************************************************************
-C
-      if (dirac_cfg_fde)
-     &   call fde_cleanup_data()
-
 
  666  CONTINUE
       CALL QEXIT('PAMDRV')

@@ -7,24 +7,24 @@ module fde_types
    type fde_grid
       integer :: id
       integer :: npoints
-      real(kind=8), pointer :: r(:,:)
-      real(kind=8), pointer :: w(:) 
+      real(kind=8), pointer :: r(:,:)    => null()
+      real(kind=8), pointer :: w(:)      => null()
    end type
 
    type grid_function 
       integer :: id
       integer :: npoints
       integer :: nspin
-      real(kind=8), pointer :: n(:)
-      real(kind=8), pointer :: gn(:,:)
-      real(kind=8), pointer :: elpot(:)
-      real(kind=8), pointer :: nucpot(:)
-      real(kind=8), pointer :: hn(:,:)
+      real(kind=8), pointer :: n(:)      => null()
+      real(kind=8), pointer :: gn(:,:)   => null()
+      real(kind=8), pointer :: elpot(:)  => null()
+      real(kind=8), pointer :: nucpot(:) => null() 
+      real(kind=8), pointer :: hn(:,:)   => null()
    end type
 
    public new_fde_grid
    public del_fde_grid
-   public set_fde_grid_size
+   public set_fde_grid_nr_elements
 
    public new_grid_function
    public del_grid_function
@@ -33,17 +33,66 @@ module fde_types
    contains
 
 
-      subroutine new_grid_function(gf,size)
+      subroutine new_grid_function(gf,nr_elements)
          type(grid_function) :: gf
-         integer :: size
+         integer :: nr_elements, prior_nr_elements
 
-         gf%npoints = size
+         gf%npoints = nr_elements
          gf%nspin   = 1
-         allocate(gf%n(size))
-         allocate(gf%gn(3,size))
-         allocate(gf%hn(6,size))
-         allocate(gf%elpot(size))
-         allocate(gf%nucpot(size))
+         if (.not.associated(gf%n)) then 
+            allocate(gf%n(nr_elements))
+         else
+            prior_nr_elements = size(gf%n)
+            print *, 'Warning ! gf%n already allocated !'
+            if (prior_nr_elements .ne. nr_elements) then
+               print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+               stop
+            endif 
+         endif
+
+         if (.not.associated(gf%gn)) then
+            allocate(gf%gn(3,nr_elements))
+         else
+            prior_nr_elements = size(gf%gn,2)
+            print *, 'Warning ! gf%gn already allocated !'
+            if (prior_nr_elements .ne. nr_elements) then
+               print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+               stop
+            endif
+         endif
+
+         if (.not.associated(gf%hn)) then
+            allocate(gf%hn(6,nr_elements))
+         else
+            prior_nr_elements = size(gf%hn,2)
+            print *, 'Warning ! gf%hn already allocated !'
+            if (prior_nr_elements .ne. nr_elements) then
+               print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+               stop
+            endif
+         endif
+
+         if (.not.associated(gf%elpot)) then
+            allocate(gf%elpot(nr_elements))
+         else
+            prior_nr_elements = size(gf%elpot)
+            print *, 'Warning ! gf%elpot already allocated !'
+            if (prior_nr_elements .ne. nr_elements) then
+               print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+               stop
+            endif
+         endif
+
+         if (.not.associated(gf%nucpot)) then
+            allocate(gf%nucpot(nr_elements))
+         else
+            prior_nr_elements = size(gf%nucpot)
+            print *, 'Warning ! gf%nucpot already allocated !'
+            if (prior_nr_elements .ne. nr_elements) then
+               print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+               stop
+            endif
+         endif
          
          gf%n  = 0.0d0
          gf%gn = 0.0d0
@@ -55,14 +104,24 @@ module fde_types
 
       subroutine del_grid_function(gf)
          type(grid_function) :: gf
-         integer :: size
+         integer :: nr_elements
 
          gf%npoints = 0
-         deallocate(gf%n)
-         deallocate(gf%gn)
-         deallocate(gf%hn)
-         deallocate(gf%elpot)
-         deallocate(gf%nucpot)
+         if (associated(gf%n)) &
+            deallocate(gf%n)
+
+         if (associated(gf%gn)) &
+            deallocate(gf%gn)
+
+         if (associated(gf%hn)) &
+            deallocate(gf%hn)
+
+         if (associated(gf%elpot)) &
+            deallocate(gf%elpot)
+
+         if (associated(gf%nucpot)) &
+            deallocate(gf%nucpot)
+
       end subroutine del_grid_function
 
 
@@ -74,13 +133,34 @@ module fde_types
       end subroutine set_grid_function_nspin
       
 
-     subroutine new_fde_grid(g,size)
+     subroutine new_fde_grid(g,nr_elements)
        type(fde_grid) :: g
-       integer :: size
+       integer :: nr_elements
 
-       g%npoints = size
-       allocate(g%r(3,size))
-       allocate(g%w(size))
+       g%npoints = nr_elements
+
+       if (.not.associated(g%r)) then
+          allocate(g%r(3,nr_elements))
+       else
+          prior_nr_elements = size(g%r,2)
+          print *, 'Warning ! g%r already allocated !'
+          if (prior_nr_elements .ne. nr_elements) then
+             print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+             stop
+          endif
+       endif
+
+       if (.not.associated(g%w)) then
+          allocate(g%w(nr_elements))
+       else
+          prior_nr_elements = size(g%w)
+          print *, 'Warning ! gf%nucpot already allocated !'
+          if (prior_nr_elements .ne. nr_elements) then
+             print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+             stop
+          endif
+       endif
+
      end subroutine new_fde_grid
 
 
@@ -88,8 +168,12 @@ module fde_types
         type(fde_grid) :: g
 
         g%npoints = 0
-        deallocate(g%r)
-        deallocate(g%w)
+        if (associated(g%r)) &
+           deallocate(g%r)
+
+        if (associated(g%w)) &
+           deallocate(g%w)
+
      end subroutine del_fde_grid
 
 end

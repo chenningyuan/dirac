@@ -514,16 +514,16 @@ module fde_evaluators_dirac
          integer         :: i
 
 ! todo: generalize to other densities
-         call fde_dirac_get_density_from_dfcoef('DHF ',fde_grid_sv,gf_active)
+         call fde_dirac_get_density_from_dfcoef('DHF ',fde_grid_sv,gf_active_sv)
 
          fde_dirac_embpot_static_energy = 0.0d0
          print *, "debug: number of points ",fde_grid_sv%npoints
          do i = 1, fde_grid_sv%npoints
             fde_dirac_embpot_static_energy = fde_dirac_embpot_static_energy &
-                     + fde_grid_sv%w(i) * gf_active%n(i) * fde_static_vemb(i) 
+                     + fde_grid_sv%w(i) * gf_active_sv%n(i) * fde_static_vemb(i) 
             if ( i .eq. 5 ) then
                print *, "w: ",fde_grid_sv%w(i)
-               print *, "n: ",gf_active%n(i)
+               print *, "n: ",gf_active_sv%n(i)
                print *, "v: ",fde_static_vemb(i)
             endif
          end do
