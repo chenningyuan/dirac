@@ -5,6 +5,44 @@
 # build information variables to the executable program output.
 #
 
+#miro: major part this code is repeated in autocmake's git_info_sub.cmake
+# TODO: refeactor the code at autocmake's side
+include(FindGit)
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 --abbrev-commit HEAD
+        OUTPUT_VARIABLE _git_last_commit_hash
+        ERROR_QUIET
+        )
+    if(_git_last_commit_hash)
+        string(STRIP ${_git_last_commit_hash} _git_last_commit_hash)
+    endif()
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} log --max-count=1 HEAD
+        OUTPUT_VARIABLE _git_last_commit
+        ERROR_QUIET
+        )
+    if(_git_last_commit)
+        string(REGEX MATCH "Author:[ ]*(.+)<" temp "${_git_last_commit}")
+        set(_git_last_commit_author ${CMAKE_MATCH_1})
+        string(STRIP ${_git_last_commit_author} _git_last_commit_author)
+        string(REGEX MATCH "Date:[ ]*(.+(\\+|-)[0-9][0-9][0-9][0-9])" temp "${_git_last_commit}")
+        set(_git_last_commit_date ${CMAKE_MATCH_1})
+    endif()
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+        OUTPUT_VARIABLE _git_branch
+        ERROR_QUIET
+        )
+    string(STRIP ${_git_branch} _git_branch)
+# printout  
+    message("-- Git branch               : ${_git_branch}")
+    message("-- Git last commit hash     : ${_git_last_commit_hash}")
+    message("-- Git last commit date     : ${_git_last_commit_date}")
+    message("-- Git last commit author   : ${_git_last_commit_author}")
+    message("-------------------------------------------------------------")
+endif()
+
 set(_configuration_time     "unknown")
 # get configuration time in UTC
 execute_process(
