@@ -1297,6 +1297,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
       use interface_to_mpi
+      use fde_mod, only : fde_launch_slave_process
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1380,6 +1381,12 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+      ELSE IF (ITASK .EQ. 12) THEN
+C
+C        start FDE MPI calculation
+C
+         call fde_launch_slave_process()
+
       ELSE
 C
 C        Unknown task. Abort execution.

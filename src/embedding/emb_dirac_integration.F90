@@ -418,10 +418,10 @@ contains
 ! functionals are set
       call xcfun_set_functional(fde_xcf,       max_response_order_mo, parallel_fde)
       call xcfun_set_functional(fde_xcf_alda,  max_response_order_mo, parallel_fde)
-      call xcfun_set_functional(fde_xcf_xalda, max_response_order_mo, parallel_fde)
+!     call xcfun_set_functional(fde_xcf_xalda, max_response_order_mo, parallel_fde)
       call xcfun_set_functional(fde_kef,       max_response_order_mo, parallel_fde)
       call xcfun_set_functional(fde_kef_alda,  max_response_order_mo, parallel_fde)
-      call xcfun_set_functional(fde_kef_xalda, max_response_order_mo, parallel_fde)
+!     call xcfun_set_functional(fde_kef_xalda, max_response_order_mo, parallel_fde)
 
       use_gga_qr = (fun_is_gga(fde_xcf)) .or. (fun_is_gga(fde_kef))
       use_gga_qi = (fun_is_gga(fde_xcf)) .or. (fun_is_gga(fde_kef))

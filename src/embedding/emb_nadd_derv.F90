@@ -31,7 +31,7 @@ module fde_nadd_derv
 
       type(functional), save :: fde_kef,       fde_xcf
       type(functional), save :: fde_kef_alda,  fde_xcf_alda
-      type(functional), save :: fde_kef_xalda, fde_xcf_xalda
+!      type(functional), save :: fde_kef_xalda, fde_xcf_xalda
 
 ! the default (orbital-free) kinetic energy functional for now is the thomas-fermi one
       character(len=80), save :: kefun_fde='kin_tf'
