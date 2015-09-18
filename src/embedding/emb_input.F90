@@ -25,9 +25,10 @@ module fde_input
    use fde_cfg
    use fde_data
    use fde_nadd_derv
-   use fde_evaluators
+!gosia   use fde_evaluators
+   use fde_evaluators_dirac
    
-   private
+   implicit none
 
    public fde_input_init
    public fde_input_validate_and_postprocess
@@ -64,10 +65,13 @@ module fde_input
          type(fde_import)  :: itmp
          type(fde_files)   :: ftmp
          integer :: pl
+         integer :: lunit
 
       call fde_get_files_info(ftmp)
       call fde_get_export_info(etmp)
       call fde_get_import_info(itmp)
+
+      lunit = ftmp%logfile%unit
 
       if (.not.skip_all_imports) then
 
