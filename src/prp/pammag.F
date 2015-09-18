@@ -951,7 +951,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DSGN,
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DM1,
 !                    -----------------------------------
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
@@ -1017,7 +1017,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DSGN,
+          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DM1,
 !                    ---------------------------------------------- --
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
