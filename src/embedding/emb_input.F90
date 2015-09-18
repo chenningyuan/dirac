@@ -35,6 +35,16 @@ module fde_input
    public fde_input_show_setup
 
    public skip_all_imports
+
+!gosia: for a moment put all magnetic flags here
+   public fde_rsp_mag_lao
+   public fde_rsp_mag_lao_import
+   public fde_rsp_mag_lao_export
+   public fde_lao_direct_active_embpot
+   public fde_lao_direct_active_embker
+   public fde_lao_reorth_active_embker
+   public fde_lao_frozen_embker 
+
    
    logical, save :: skip_all_imports = .false.
 
@@ -91,6 +101,14 @@ module fde_input
          itmp%im_n        = .true.
          itmp%im_gn       = .true.
          itmp%im_coulomb  = .true.
+         if (fde_rsp_mag_lao_import) then
+            itmp%im_n_b      = .true.
+            itmp%im_gn_b     = .true.
+            if (.not. fde_rsp_mag_lao_no_s) then
+               itmp%im_s_b      = .true.
+               itmp%im_gs_b     = .true.
+            end if
+         end if
       endif
 
       endif ! .not.skip_all_imports
@@ -99,6 +117,14 @@ module fde_input
          etmp%ex_n        = .true.
          etmp%ex_coulomb  = .true.
          etmp%ex_gn       = .true.
+         if (fde_rsp_mag_lao_export) then
+            etmp%ex_n_b      = .true.
+            etmp%ex_gn_b     = .true.
+            if (.not. fde_rsp_mag_lao_no_s) then
+               etmp%ex_s_b      = .true.
+               etmp%ex_gs_b     = .true.
+            end if
+         end if
       endif
 
 #ifndef PRG_DIRAC
@@ -188,6 +214,9 @@ module fde_input
             'S. Hofener, A.S.P. Gomes and L. Visscher,',&
             ' J. Chem. Phys. 139 (2013) 104106.' 
             write(unit,*)
+            if (fde_rsp_mag_lao_import) then
+               write(unit, *) 'magnetic derivatives of density and density gradient also read from ', string
+            end if
          endif
 
          if (etmp%do_grid_out) then
@@ -206,6 +235,9 @@ module fde_input
                   etmp%ex_level = 'DHF'
                   
             end select
+            if (fde_rsp_mag_lao_export) then
+               write(unit, *) 'magnetic derivatives of density and density gradient also written to ', string
+            end if
          endif
                   
       end subroutine fde_input_show_setup
