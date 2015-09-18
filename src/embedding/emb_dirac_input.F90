@@ -24,6 +24,7 @@ module fde_input_dirac
 
    use fde_types
    use fde_cfg
+   use fde_mag_cfg
    use fde_data
    use fde_nadd_derv
    use fde_input
@@ -90,12 +91,6 @@ module fde_input_dirac
             CASE ('.UPDATE')
                itmp%im_update_vemb = .true.
 
-            CASE ('.NUCREP')
-               read(lucmd,*) fde_intersub_nucrep
-
-            CASE ('.ENER_B')
-               read(lucmd,*) fde_frozen_energy 
-
             CASE ('.SKIPK')
                call fde_set_skip_nadd_ke(.true.)
             CASE ('.SKIPX')
@@ -146,6 +141,42 @@ module fde_input_dirac
                skip_all_imports = .true.
                doprp = .true.
 
+! gosia: keywords for LAO-NMR shielding (see documentation)
+            CASE ('.LAODPT')
+!              Direct-LAO contribution to property gradient, involving embedding PoTential
+               fde_rsp_mag_lao = .true.
+               fde_lao_direct_active_embpot = .true.
+               doprp = .true.
+            CASE ('.LAODKR')
+!              Direct-LAO contribution to property gradient, involving embedding KeRnel (only if SDFT)
+               fde_rsp_mag_lao = .true.
+               fde_lao_direct_active_embker = .true.
+               doprp = .true.
+            CASE ('.LAORKR')
+!              Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
+               fde_rsp_mag_lao = .true.
+               fde_lao_reorth_active_embker = .true.
+               doprp = .true.
+            CASE ('.LAOFRZ')
+!              LAO contribution to property gradient from the FRoZen density (read from file)
+               fde_rsp_mag_lao = .true.
+               fde_lao_frozen_embker = .true.
+               doprp = .true.
+            CASE ('.FRZPER')
+!              import perturbed density (additional columns on 'GRIDOUT' file)
+               fde_rsp_mag_lao_import = .true.
+               doprp = .true.
+               itmp%im_frozen   = .true.
+            CASE ('.PERTOU')
+!              export perturbed density (additional columns on 'GRIDOUT' file)
+               dirac_cfg_fde_export = .true.
+               etmp%do_grid_out = .true.
+               doprp = .true.
+               fde_rsp_mag_lao_export = .true.
+            CASE ('.FRZNOS')
+!              only charge density contributions in perturbed density (on import or export) = no spin magnetization contributions
+               fde_rsp_mag_lao_no_s = .true.
+ 
 #endif /* MOD_UNRELEASED */ 
 
             CASE DEFAULT
