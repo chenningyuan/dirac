@@ -96,7 +96,7 @@ module fde_cfg
    logical, save      :: fde_cfg_alda_ha = .false.
 
    logical, save      :: fde_use_blas3_scheme = .false.
-   logical, save      :: fde_cfg_no_sdft = .true.
+   logical, save      :: fde_cfg_no_sdft = .false.
 
    type(fde_export), save :: fde_ex_control
    type(fde_import), save :: fde_im_control
