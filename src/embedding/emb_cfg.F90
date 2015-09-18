@@ -23,11 +23,17 @@ module fde_cfg
 ! this module holds all options for the embedding code, and routines to set/access
 ! this information
 
+implicit none
+
    type fde_export
       character(len=4) :: ex_level
       character(len=3) :: ex_format
       logical          :: ex_n
+      logical          :: ex_n_b
+      logical          :: ex_s_b
       logical          :: ex_gn
+      logical          :: ex_gn_b
+      logical          :: ex_gs_b
       logical          :: ex_coulomb
       logical          :: do_grid_out
    end type
@@ -36,7 +42,11 @@ module fde_cfg
       character(len=4) :: im_level
       character(len=3) :: im_format
       logical          :: im_n
+      logical          :: im_n_b
+      logical          :: im_s_b
       logical          :: im_gn
+      logical          :: im_gn_b
+      logical          :: im_gs_b
       logical          :: im_coulomb
       logical          :: im_vemb
       logical          :: im_frozen
@@ -73,10 +83,10 @@ module fde_cfg
    public fde_get_export_info
    public fde_get_files_info
    
-   public parallel_fde
+!gosia:unused   public parallel_fde
    public fde_cfg_screening
-   public fde_intersub_nucrep
-   public fde_frozen_energy 
+!   public fde_intersub_nucrep
+!   public fde_frozen_energy 
 
    private
 
@@ -88,8 +98,8 @@ module fde_cfg
    type(fde_import), save :: fde_im_control
    type(fde_files),  save :: fde_f
 
-   real(kind=8), save :: fde_intersub_nucrep  = 0.0d0
-   real(kind=8), save :: fde_frozen_energy    = 0.0d0
+!   real(kind=8), save :: fde_intersub_nucrep  = 0.0d0
+!   real(kind=8), save :: fde_frozen_energy    = 0.0d0
 
    contains
    
@@ -147,7 +157,11 @@ module fde_cfg
          ec%ex_level     = 'DHF'
          ec%ex_format    = 'XML'
          ec%ex_n         = .false.
+         ec%ex_n_b       = .false.
+         ec%ex_s_b       = .false.
          ec%ex_gn        = .false.
+         ec%ex_gn_b      = .false.
+         ec%ex_gs_b      = .false.
          ec%ex_coulomb   = .false.
          ec%do_grid_out  = .false.
       end subroutine fde_initialize_export
@@ -161,7 +175,11 @@ module fde_cfg
          ic%im_level     = 'DHF'
          ic%im_format    = 'TXT'
          ic%im_n         = .false.
+         ic%im_n_b       = .false.
+         ic%im_s_b       = .false.
          ic%im_gn        = .false.
+         ic%im_gn_b      = .false.
+         ic%im_gs_b      = .false.
          ic%im_coulomb   = .false.
          ic%im_vemb      = .false.
          ic%im_frozen    = .false.
@@ -177,7 +195,11 @@ module fde_cfg
          fde_ex_control%ex_level     = tmp%ex_level
          fde_ex_control%ex_format    = tmp%ex_format
          fde_ex_control%ex_n         = tmp%ex_n
+         fde_ex_control%ex_n_b       = tmp%ex_n_b
+         fde_ex_control%ex_s_b       = tmp%ex_s_b
          fde_ex_control%ex_gn        = tmp%ex_gn 
+         fde_ex_control%ex_gn_b      = tmp%ex_gn_b
+         fde_ex_control%ex_gs_b      = tmp%ex_gs_b
          fde_ex_control%ex_coulomb   = tmp%ex_coulomb
          fde_ex_control%do_grid_out  = tmp%do_grid_out
       end subroutine fde_set_export_info
@@ -191,7 +213,11 @@ module fde_cfg
          fde_im_control%im_level     = tmp%im_level
          fde_im_control%im_format    = tmp%im_format
          fde_im_control%im_n         = tmp%im_n
+         fde_im_control%im_n_b       = tmp%im_n_b
+         fde_im_control%im_s_b       = tmp%im_s_b
          fde_im_control%im_gn        = tmp%im_gn 
+         fde_im_control%im_gn_b      = tmp%im_gn_b
+         fde_im_control%im_gs_b      = tmp%im_gs_b
          fde_im_control%im_coulomb   = tmp%im_coulomb
          fde_im_control%im_vemb      = tmp%im_vemb
          fde_im_control%im_frozen    = tmp%im_frozen
@@ -229,7 +255,11 @@ module fde_cfg
          tmp%ex_level   = fde_ex_control%ex_level
          tmp%ex_format  = fde_ex_control%ex_format
          tmp%ex_n       = fde_ex_control%ex_n         
+         tmp%ex_n_b     = fde_ex_control%ex_n_b       
+         tmp%ex_s_b     = fde_ex_control%ex_s_b       
          tmp%ex_gn      = fde_ex_control%ex_gn           
+         tmp%ex_gn_b    = fde_ex_control%ex_gn_b         
+         tmp%ex_gs_b    = fde_ex_control%ex_gs_b         
          tmp%ex_coulomb = fde_ex_control%ex_coulomb
          tmp%do_grid_out= fde_ex_control%do_grid_out    
       end subroutine fde_get_export_info
@@ -243,7 +273,11 @@ module fde_cfg
          tmp%im_level       = fde_im_control%im_level       
          tmp%im_format      = fde_im_control%im_format      
          tmp%im_n           = fde_im_control%im_n           
+         tmp%im_n_b         = fde_im_control%im_n_b         
+         tmp%im_s_b         = fde_im_control%im_s_b         
          tmp%im_gn          = fde_im_control%im_gn           
+         tmp%im_gn_b        = fde_im_control%im_gn_b         
+         tmp%im_gs_b        = fde_im_control%im_gs_b         
          tmp%im_coulomb     = fde_im_control%im_coulomb     
          tmp%im_vemb        = fde_im_control%im_vemb        
          tmp%im_frozen      = fde_im_control%im_frozen      
