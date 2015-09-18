@@ -20,6 +20,8 @@ module fde_evaluators_dirac
    use interface_ao
    use interface_mo_specific
 
+   implicit none
+
 ! these are the interfaces to the dirac-specific code
    public fde_calculate_elpot
    public fde_dirac_set_nz
@@ -35,7 +37,7 @@ module fde_evaluators_dirac
       module procedure fde_dirac_get_density_from_dfcoef
    end interface
 
-   public fde_get_density_matrix
+!gosia unused   public fde_get_density_matrix
 
    public fde_qccode_data_interface
    interface fde_qccode_data_interface
@@ -94,6 +96,7 @@ module fde_evaluators_dirac
          logical                            :: printlocal
          type(fde_files)                    :: ftmp
          type(fde_import)                   :: itmp
+         integer :: logunit
 
          if (present(myprint)) then
             printlocal = myprint
@@ -103,6 +106,8 @@ module fde_evaluators_dirac
 
          call fde_get_files_info(ftmp)
          call fde_get_import_info(itmp)
+
+         logunit      = ftmp%logfile%unit 
 
          if (nr_boson_irreps > 1) then
             write (logunit,'(2X,A)') 'FDE electrostatic potential not available'
@@ -132,6 +137,7 @@ module fde_evaluators_dirac
          logical                            :: printlocal
          type(fde_files)                    :: ftmp
          type(fde_import)                   :: itmp
+         integer :: logunit
 
          if (present(myprint)) then
             printlocal = myprint
@@ -141,6 +147,8 @@ module fde_evaluators_dirac
 
          call fde_get_files_info(ftmp)
          call fde_get_import_info(itmp)
+
+         logunit      = ftmp%logfile%unit
 
          if (nr_boson_irreps > 1) then
             write (logunit,'(2X,A)') 'FDE electrostatic potential not available'
@@ -287,6 +295,7 @@ module fde_evaluators_dirac
 ! internal variables
       INTEGER :: ierr
       real(kind=8), allocatable :: cmo(:)
+      real(8) :: dummy
 
       if (present(myprint)) then
          printlocal = myprint
@@ -510,6 +519,7 @@ module fde_evaluators_dirac
          real(8)              :: df_interaction
          real(8)              :: el_interaction
          real(8)              :: el_interaction_a
+         real(8)              :: el_interaction_f
          real(8)              :: el_nuclearAtt_a 
          real(8)              :: el_nuclearAtt_f 
          real(8)              :: n_0_a(1), gnn_0_a(1)
@@ -517,6 +527,7 @@ module fde_evaluators_dirac
          real(8)              :: n_0_t(1), gnn_0_t(1)
          real(8)              :: threshold
          real(8)              :: internuclear 
+         real(8)              :: df_energy
          real(8), allocatable :: derv_active(:, :)
          real(8), allocatable :: derv_frozen(:, :)
          real(8), allocatable :: derv_total(:, :)
@@ -774,6 +785,7 @@ module fde_evaluators_dirac
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
+         integer :: mat_dim_quat_as_1d
 
          nba_orb = ntbas(0)
          nba = nba_orb
