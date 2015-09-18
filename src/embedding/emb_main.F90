@@ -27,8 +27,8 @@ module fde_mod
    use fde_data
    use fde_io
    use fde_export_data
-!gosia   use fde_evaluators
-   use fde_evaluators_dirac
+   use fde_evaluators
+!   use fde_evaluators_dirac
    use fde_input
 #ifdef PRG_DIRAC
    use fde_input_dirac

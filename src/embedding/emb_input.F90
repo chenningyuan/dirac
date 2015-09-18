@@ -25,8 +25,8 @@ module fde_input
    use fde_cfg
    use fde_data
    use fde_nadd_derv
-!gosia   use fde_evaluators
-   use fde_evaluators_dirac
+   use fde_evaluators
+!   use fde_evaluators_dirac
    
    implicit none
 
