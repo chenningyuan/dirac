@@ -29,8 +29,11 @@ module fde_export_data
    use xml_parser
    use xml_file
    use fde_evaluators
+   use fde_mag_cfg
 #endif
    
+   implicit none
+
    public fde_export_to_file
 
    private
@@ -239,12 +242,14 @@ module fde_export_data
          type(fde_files)  :: ftmp
          type(fde_export) :: etmp
 
-         integer :: i
-         integer :: nr_variables = 6
+         integer :: i, j, k, l
+         integer :: nr_variables
          real(kind=8) :: v_pc_array = 0.0d0
          integer :: export_unit, log_unit
          character(len=60)  :: export_name, log_name
        
+         nr_variables = 6
+
          if (.not.associated(grid%r)) &
             call fde_quit('grid not available in fde export')
 
@@ -259,6 +264,32 @@ module fde_export_data
          
          if (.not.associated(gf%elpot)) &
             call fde_quit('potential not available in fde export')
+
+!        lao contribs
+         if (fde_rsp_mag_lao_export) then
+            if (.not.associated(gf%n_b)) then
+               call fde_quit('n_b not available in fde export')
+            else
+               nr_variables = nr_variables + 3
+            end if
+            if (.not.associated(gf%gn_b)) then
+               call fde_quit('gn_b not available in fde export')
+            else
+               nr_variables = nr_variables + 9
+            end if
+            if (.not. fde_rsp_mag_lao_no_s) then
+               if (.not.associated(gf%s_b)) then
+                  call fde_quit('s_b not available in fde export')
+               else
+                  nr_variables = nr_variables + 9
+               end if
+               if (.not.associated(gf%gs_b)) then
+                  call fde_quit('gs_b not available in fde export')
+               else
+                  nr_variables = nr_variables + 27
+               end if
+            end if
+         end if
          
          call fde_get_files_info(ftmp)
          call fde_get_export_info(etmp)
@@ -277,12 +308,38 @@ module fde_export_data
          write (export_unit,'(2I8)') grid%npoints, nr_variables
 
          do i = 1, grid%npoints
-            write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
-                                            grid%w(i),             &
-                                            gf%elpot(i),           &
-                                            v_pc_array,            &
-                                            gf%n(i),               &
-                                            (gf%gn(j,i), j = 1,3)
+            if (fde_rsp_mag_lao_export.and..not.fde_rsp_mag_lao_no_s) then
+               !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
+               write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
+                                               grid%w(i),             &
+                                               gf%elpot(i),           &
+                                               v_pc_array,            &
+                                               gf%n(i),               &
+                                               (gf%gn(j,i), j = 1,3), &
+                                               (gf%n_b(j,i), j = 1,3),             &
+                                               ((gf%gn_b(j,k,i), j = 1,3), k=1,3), &
+                                               ((gf%s_b(j,k,i), j = 1,3), k=1,3),  &
+                                               (((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3)
+            else if (fde_rsp_mag_lao_export.and.fde_rsp_mag_lao_no_s) then
+               !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
+               write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
+                                               grid%w(i),             &
+                                               gf%elpot(i),           &
+                                               v_pc_array,            &
+                                               gf%n(i),               &
+                                               (gf%gn(j,i), j = 1,3), &
+                                               (gf%n_b(j,i), j = 1,3), &
+                                               ((gf%gn_b(j,k,i), j = 1,3), k=1,3)
+            else
+               !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
+               write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
+                                               grid%w(i),             &
+                                               gf%elpot(i),           &
+                                               v_pc_array,            &
+                                               gf%n(i),               &
+                                               (gf%gn(j,i), j = 1,3)
+            end if
+
          end do
 
          write(log_unit,*) 'done writing plaintext file'       
