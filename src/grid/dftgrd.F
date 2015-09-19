@@ -209,7 +209,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0)
 
-      LOGICAL SWITCH
+      LOGICAL SWITCH,TEST
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
 
       CHARACTER SPDCAR*1
@@ -242,6 +242,7 @@ C
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
       DIMENSION XPASC(20)
 #include "ibtfun.h"
+      TEST = num_grid_cfg_force_4c_grid.OR.(MC.GT.1.AND.(.NOT.LEVYLE))
 C
 C     Get estimates for atomic size ratios for use in the Becke
 C     partitioning scheme.
@@ -361,7 +362,8 @@ C        Grid spacing....
 !          radovan:
 !          if Levy-Leblond or X2C, ignore small component
 !          unless user forces 4-c grid
-           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+!           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+           if (TEST) then
              nbas = nbas + nucorb(ll, 2, iatom)
            end if
 
@@ -381,7 +383,8 @@ C...     Inner grid point
 !        radovan:
 !        if Levy-Leblond or X2C, ignore small component
 !        unless user forces 4-c grid
-         if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+!         if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+         if (TEST) then
            ah = max(ah, aa(1, 1, 2, iatom))
          end if
          ah = d2*ah
@@ -399,7 +402,8 @@ C...     Outer point
 !          radovan:
 !          if Levy-Leblond or X2C, ignore small component
 !          unless user forces 4-c grid
-           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+!           if (mc .gt. 1 .or. num_grid_cfg_force_4c_grid) then
+           if (TEST) then
              IF(NUCORB(LL,2,IATOM).GT.0) AL=MIN(AL,AA(2,LL,2,IATOM))
            end if
 
