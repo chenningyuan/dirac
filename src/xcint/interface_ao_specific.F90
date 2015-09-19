@@ -130,7 +130,7 @@ contains
       write(interface_file_unit, '(4x, i6)') nz
 
       use_only_large = .false.
-      if (mc == 1) then
+      if (NOSMLV) then
          use_only_large = .true.
       end if
       write(interface_file_unit, '(4x, a)') 'use_only_large'
