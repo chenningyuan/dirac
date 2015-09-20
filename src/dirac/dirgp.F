@@ -2106,8 +2106,6 @@ C***********************************************************************
 #include "priunit.h"
       DIMENSION CMO1(NBAS,NMO1,NZ),CMO2(NBAS,NMO2,NZ),IBUF(*)
 C
-CTROND
-      WRITE(6,*) 'TEST..acmou2 ',NZ
       DO IZ = 1,NZ
         DO J = 1,NMO2
           DO I = 1,NBAS
@@ -4661,24 +4659,36 @@ C
 C     NBSYM.EQ.1, implies C1 !!! Check how to handle that...
       ICAO  = 1+IOFF*NTBAS(0)
       ICSO  = 1
-      DO IFRP = 1,NFSYM
-      IF(NVEC(IFRP).GT.0) THEN
-        NCBF2 = NFBAS(IFRP,0)*NVEC(IFRP)*4
-        allocate(CBUF(NCBF2))
-        CALL QEXPAND(CBUF,CSO(ICSO),NVEC(IFRP),IFRP,NFBAS(IFRP,0))
-        IZOFF = ICAO
-        ISOFF = 1
-        DO IZ = 1,4
-          CALL WTSOAO_mod(CBUF(ISOFF),CAO(IZOFF),IFRP,
-     &                NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
-          IZOFF = IZOFF + NTBAS(0)*NTOT
-          ISOFF = ISOFF + NFBAS(IFRP,0)*NVEC(IFRP)
+      IF(NZC1.EQ.1) THEN 
+        DO IFRP = 1,NFSYM
+        IF(NVEC(IFRP).GT.0) THEN
+          IZOFF = ICAO
+          CALL WTSOAO_mod(CSO(ICSO),CAO(IZOFF),IFRP,
+     &                  NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
+          ICAO  = ICAO  + NTBAS(0)*NVEC(IFRP)
+          ICSO  = ICSO  + NFBAS(IFRP,0)*NVEC(IFRP)*NZ
+        ENDIF
         ENDDO
-        deallocate(CBUF)
-        ICAO  = ICAO  + NTBAS(0)*NVEC(IFRP)
-        ICSO  = ICSO  + NFBAS(IFRP,0)*NVEC(IFRP)*NZ
+      ELSE
+        DO IFRP = 1,NFSYM
+        IF(NVEC(IFRP).GT.0) THEN
+          NCBF2 = NFBAS(IFRP,0)*NVEC(IFRP)*NZC1
+          allocate(CBUF(NCBF2))
+          CALL QEXPAND(CBUF,CSO(ICSO),NVEC(IFRP),IFRP,NFBAS(IFRP,0))
+          IZOFF = ICAO
+          ISOFF = 1
+          DO IZ = 1,NZC1
+            CALL WTSOAO_mod(CBUF(ISOFF),CAO(IZOFF),IFRP,
+     &                  NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
+            IZOFF = IZOFF + NTBAS(0)*NTOT
+            ISOFF = ISOFF + NFBAS(IFRP,0)*NVEC(IFRP)
+          ENDDO
+          deallocate(CBUF)
+          ICAO  = ICAO  + NTBAS(0)*NVEC(IFRP)
+          ICSO  = ICSO  + NFBAS(IFRP,0)*NVEC(IFRP)*NZ
+        ENDIF
+        ENDDO
       ENDIF
-      ENDDO
       deallocate(IBUF)
 C
       RETURN
