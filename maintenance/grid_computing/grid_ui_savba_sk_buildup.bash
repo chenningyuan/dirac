@@ -33,9 +33,10 @@ echo "Running DIRAC cdash buildup at "$timestamp
 DIRAC=/home/ilias/Work/qch/software/trunk
 
 cd $DIRAC
+git clean -f -d -x
 
 # submodule update
-git submodule update --recursive
+git submodule update --init --recursive
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
@@ -100,7 +101,7 @@ if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
   /bin/rm -rf $BUILD_SERIAL_INTEL1
 fi
 python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
-python ./setup.py --fc=ifort --cc=icc --cxx=icpc  --blas=none  --lapack=none --int64 --static cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_INTEL1
+python ./setup.py --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -125,7 +126,7 @@ if [[ -d "$BUILD_SERIAL_GNU" ]]; then
   /bin/rm -rf $BUILD_SERIAL_GNU
 fi
 python ./pamadm -a --builddir=$BUILD_SERIAL_GNU
-python ./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static --int64 cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_GNU
+python ./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
  ctest -D ExperimentalUpdate      --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -151,7 +152,7 @@ if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
   /bin/rm -rf $BUILD_SERIAL_GNU1
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_GNU1
-./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=builtin --blas=builtin -D BUILDNAME="grid_savba_serial_gnu_ownmath_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU1
+./setup.py --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options=" -D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=OFF"  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
  ctest -D ExperimentalUpdate     --track Grid
  ctest -D ExperimentalConfigure   --track Grid
