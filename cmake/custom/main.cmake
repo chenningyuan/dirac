@@ -137,3 +137,9 @@ foreach(
 endforeach()
 
 unset(_list_of_executables)
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+    # remove -rdynamic flag offensive for PGI Fortran in static linking
+    list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
+    message(STATUS "-rdynamic removed from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS")
+endif()

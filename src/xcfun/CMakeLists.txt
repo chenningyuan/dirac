@@ -96,6 +96,12 @@ elseif (CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif ()
 endif ()
 
+if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+    # remove -rdynamic flag offensive for PGI Fortran in static linking
+    list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
+endif()
+
+
 include_directories(${PROJECT_BINARY_DIR})
 
 add_subdirectory(src)
