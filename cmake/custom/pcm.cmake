@@ -76,6 +76,7 @@ if(ENABLE_PCMSOLVER)
             set(EXTERNAL_LIBS
                 stdc++
                 pcm
+                stdc++
                 getkw
                 ${ZLIB_LIBRARIES}
                 ${EXTERNAL_LIBS})
