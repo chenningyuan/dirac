@@ -103,7 +103,7 @@ if(CMAKE_C_COMPILER_VERSION)
 	# if CMake variable is defined and not empty (CMake 3.0) then it must begins with version string from Python (so they are equal)   
     string(REGEX MATCH "^${PYTHON_C_VERSION}" CMAKE_C_VERSION "${CMAKE_C_COMPILER_VERSION}")
 	if(NOT (CMAKE_C_VERSION VERSION_EQUAL PYTHON_C_VERSION))
-		message(
+		message(STATUS
         "Versions from CMake variable (${CMAKE_C_COMPILER_VERSION}) and Python script (${PYTHON_C_VERSION}) for C compiler are not equal!")
 	endif()
 	
@@ -124,7 +124,7 @@ if(CMAKE_CXX_COMPILER_VERSION)
 	# if CMake variable is defined and not empty (CMake 3.0) then it must begins with version string from Python (so they are equal)   
     string(REGEX MATCH "^${PYTHON_CXX_VERSION}" CMAKE_CXX_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
 	if(NOT (CMAKE_CXX_VERSION VERSION_EQUAL PYTHON_CXX_VERSION))
-		message(
+		message(STATUS
         "Versions from CMake variable (${CMAKE_CXX_COMPILER_VERSION}) and Python script (${PYTHON_CXX_VERSION}) for C++ compiler are not equal!")
 	endif()
 	
