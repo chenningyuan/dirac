@@ -146,7 +146,7 @@ if(CMAKE_Fortran_COMPILER_VERSION)
 	# if CMake variable is defined and not empty (CMake 3.0) then it must begins with version string from Python (so they are equal)   
     string(REGEX MATCH "^${PYTHON_Fortran_VERSION}" CMAKE_Fortran_VERSION "${CMAKE_Fortran_COMPILER_VERSION}")
 	if(NOT (CMAKE_Fortran_VERSION VERSION_EQUAL PYTHON_Fortran_VERSION))
-		message(
+		message(STATUS
         "Versions from CMake variable (${CMAKE_Fortran_COMPILER_VERSION}) and Python script (${PYTHON_Fortran_VERSION}) for Fortran compiler are not equal!")
 	endif()
 	
