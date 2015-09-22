@@ -56,7 +56,7 @@ git submodule update --init --recursive
 
 # configure Dirac with Open MPI in 64-bit mode
 python ./pamadm -a --builddir=build_openmpi_i8
-python ./setup.py --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='open_mpi.gnu.i8-codeship-ci' -D DART_TESTING_TIMEOUT=99999" build_openmpi_i8
+python ./setup.py --fc=mpif90 --cc=mpicc --cxx=mpicxx --blas=off --lapack=off --int64 --mpi --cmake-options="-D BUILDNAME='open_mpi.i8-codeship-ci' -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON" build_openmpi_i8
 cd build_openmpi_i8
 ctest -D ExperimentalConfigure
 # build
