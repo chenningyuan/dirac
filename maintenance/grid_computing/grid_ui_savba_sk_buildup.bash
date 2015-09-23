@@ -51,7 +51,7 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
 fi
 # deactivate interest module !
 ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
-python ./setup.py  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999"  $BUILD_OMPI_INTEL
+python ./setup.py  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -76,7 +76,7 @@ if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
 fi
 
 python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL
-python ./setup.py --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="-D BUILDNAME='grid_savba_intel_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_INTEL
+python ./setup.py --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="-D BUILDNAME='grid_savba_intel_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF"  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -101,7 +101,7 @@ if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
   /bin/rm -rf $BUILD_SERIAL_INTEL1
 fi
 python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
-python ./setup.py --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_INTEL1
+python ./setup.py --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF"  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
  ctest -D ExperimentalUpdate   --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -126,7 +126,7 @@ if [[ -d "$BUILD_SERIAL_GNU" ]]; then
   /bin/rm -rf $BUILD_SERIAL_GNU
 fi
 python ./pamadm -a --builddir=$BUILD_SERIAL_GNU
-python ./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_GNU
+python ./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF"  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
  ctest -D ExperimentalUpdate      --track Grid
  ctest -D ExperimentalConfigure   --track Grid
@@ -152,7 +152,7 @@ if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
   /bin/rm -rf $BUILD_SERIAL_GNU1
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_GNU1
-./setup.py --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options=" -D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=OFF"  $BUILD_SERIAL_GNU1
+./setup.py --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options=" -D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=OFF -D ENABLE_PCMSOLVER=OFF"  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
  ctest -D ExperimentalUpdate     --track Grid
  ctest -D ExperimentalConfigure   --track Grid
