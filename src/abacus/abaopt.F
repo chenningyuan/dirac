@@ -1658,10 +1658,8 @@ C
             CALL DOBRKI(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
      &           EVEC,BMTINV,CSTEP,TEMP1,TEMP2,TEMP3)
          ELSE
-!              stefan - nov 2011: the final argument TEMP2 in the call does not exist 
-!                                 in the actual subroutine... - FIXME
             CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
-     &           EVEC,CSTEP,TEMP1,TEMP2)
+     &           EVEC,CSTEP,TEMP1)
          END IF
 CChj aug 99: now new basis, reset hermit/abacus print
          IPRUSR = IPRUS1
@@ -1898,10 +1896,8 @@ C
                CALL DOBRKI(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
      &              EVEC,BMTINV,CSTEP,TEMP1,TEMP2,TEMP3)
             ELSE
-!              stefan - nov 2011: the final argument TEMP2 in the call does not exist 
-!                                 in the actual subroutine... - FIXME
                CALL DOBRK(MXRCRD,MX2CRD,EXHER,EXSIR,EXABA,GEINFO,
-     &              EVEC,CSTEP,TEMP1,TEMP2)
+     &              EVEC,CSTEP,TEMP1)
             END IF
 Chj aug 99: now new basis, reset hermit/abacus print
             IPRUSR = IPRUS1
