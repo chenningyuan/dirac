@@ -474,7 +474,7 @@
 !
           CALL MULTI_BASIS(Q,IQM,JCO,NUC,NRC,SEG,                       &
      &         NFILES,BSFILES,ALPHA,CPRIM,CPRIMU,                       &
-     &         NBLOCK,KAOVEC,KANG,KPRIM,BASREF)
+     &         NBLOCK,ISGEN,KAOVEC,KANG,KPRIM,BASREF)
           
       CASE (6)
 !
