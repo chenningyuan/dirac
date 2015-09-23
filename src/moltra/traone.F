@@ -1435,6 +1435,7 @@ C
       integer, allocatable :: ibeig(:)
       integer, allocatable :: idxu2g(:,:)
       integer              :: nash_x(1:nfsym)
+      integer              :: orbc
 C
 C
       CALL DZERO(DMO,NORBT*NORBT*NZ)
@@ -1655,6 +1656,7 @@ C
       integer, allocatable :: ibeig(:)
       integer, allocatable :: idxu2g(:,:)
       integer              :: nash_x(1:nfsym)
+      integer              :: orbc
 C
 !     !> read ibeig (info array on boson irreps) from DFCOEF
       allocate(ibeig(norbt),idxu2g(norbt,nrep))
