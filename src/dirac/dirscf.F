@@ -3712,8 +3712,7 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
         ELSE
           WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'
           IF(ATHUCK) THEN
-            WRITE(LUPRI,'(A,2L20)')
-     &      ' Using atomic Huckel start. ATHUCK',ATHUCK,BARNUC
+            WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
           ELSEIF(BARNUC) THEN
             WRITE(LUPRI,'(A)')
      &    ' Using bare nucleus approximation for initial trial vectors.'
