@@ -136,10 +136,9 @@ foreach(
     endif()
 endforeach()
 
-unset(_list_of_executables)
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    # remove -rdynamic flag offensive for PGI Fortran in static linking
-    list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
-    message(STATUS "-rdynamic removed from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS")
+if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+    target_link_libraries(dirac.x -lstdc++)
+    message(STATUS "added -libstdc++ linking flag for dirac.x due to pgCC and xcfun")
 endif()
+
+unset(_list_of_executables)

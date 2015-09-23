@@ -98,7 +98,10 @@ endif ()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     # remove -rdynamic flag offensive for PGI Fortran in static linking
-    list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
+    if (CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS)
+        list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
+        message(STATUS "xcfun: removed -rdynamic flag due to pgf90")
+    endif()
 endif()
 
 
