@@ -83,6 +83,18 @@ C
          ENDIF
       ENDIF
 C
+C     This loop shows the use of MULTB(*,*,2):
+C     For instance, I have
+C       ket(k)*ket(l) = KLREP = ket(l)*ket(k)
+C     where the latter term comes from the Abelian nature of the point group
+C     In the two outermost loops I fix KLREP and LREP and I want to know the
+C     corresponding KREP.
+C     I obtain this by the operation
+C       bra(l)*KLREP = bra(l)*ket(l)*ket(k) = ket(k)
+C     which is exactly the information obtained by
+C       KREP = MULTB(LREP,KLREP+NREP,2)
+C     (the shift by NREP is due to the fact that KLREP is a boson irrep)
+C
       IJKL = 1
       DO KLREP = 1, NREP
        DO 10 LREP = 1, NREP
