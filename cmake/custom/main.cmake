@@ -134,11 +134,12 @@ foreach(
             target_link_libraries(${_executable} -ldl)
         endif()
     endif()
-endforeach()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
-    target_link_libraries(dirac.x -lstdc++)
-    message(STATUS "added -libstdc++ linking flag for dirac.x due to pgCC and xcfun")
-endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+    # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
+        target_link_libraries(${_executable}  -lstdc++)
+    endif()
+
+endforeach()
 
 unset(_list_of_executables)
