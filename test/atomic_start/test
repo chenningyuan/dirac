@@ -10,9 +10,19 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = ' Output from ERGCAL',
-      num_lines   = 6,
+# test energy in iteration 1: the energy based on the atomic start
+# do NOT test on energyis the following iterations, they depend on changes
+# in convergence algorithm
+f.add(string = 'It.    1 ',
+      rel_tolerance   = 1.0e-8,
+       mask        = [1, 2])
+# test final results OK
+f.add(from_string = ' TOTAL ENERGY',
+      num_lines   = 11,
       rel_tolerance   = 1.0e-8)
+f.add(from_string = ' Eigenvalues',
+      num_lines = 10,  # the different tests have different number of lines, this should be OK for all
+      abs_tolerance   = 1.0e-5)
 
 test.run(['H.inp'], ['H.mol'], args='--get=DFACMO')
 shutil.copy('DFACMO', 'DFHXXX')

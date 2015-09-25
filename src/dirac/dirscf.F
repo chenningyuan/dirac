@@ -1157,15 +1157,9 @@ C
       CALL DFDIAG (FMO,EIG,IBEIG,FAO,.TRUE.,WORK,KFREE,LFREE)
       TDDG = SECOND() - TDDG
 C
-C     If converged, do not select occupation or save orbitals
+C     sebastian+stefan: subtract level shift from orbital energies
 C
-      IF (DHFEXIT) GOTO 9999 
-C
-C
-C     Automatic occupation
-C     ====================
-C
-      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)
+      IF(DOLEV) CALL UNDOLEVSHI(EIG)
 C
 C     Overlap selection
 C     =================
@@ -1176,6 +1170,15 @@ C     Boson type selection
 C     ====================
 C
       IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
+C
+C     If converged, do not select occupation or save orbitals
+C
+      IF (DHFEXIT) GOTO 9999 
+C
+C     Automatic occupation
+C     ====================
+C
+      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)
 C
 C
 C     Backtransform all spinors (temporary storage in FMO)
@@ -1221,10 +1224,6 @@ CMI     ... Control printout ...
  40   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
 C
-C
-C     sebastian+stefan: subtract level shift from orbital energies
-      IF(DOLEV) CALL UNDOLEVSHI(EIG)
-C
 C     Print eigenvalues 
 C     (after backtransformation in case of frozen orbitals)
 C
@@ -1234,6 +1233,8 @@ C
         DO I = 1,NFSYM
            JHOMO = IORB(I)+NPSH(I)+NISH(I)
            JLUMO = JHOMO + NASH(I) + 1
+           IF (NISH(I) .EQ. 0) JHOMO = JHOMO + 1 ! e.g. fsym 2, oxygen atom
+           IF (NSSH(I) .EQ. 0) JLUMO = JLUMO - 1 ! very small test basis sets
            WRITE(LUPRI,'(A,I2,A,(T30,5(I5,F10.5)))')
      &     'E_HOMO...E_LUMO, symmetry',I,':',
      &     (J, EIG(J), J = JHOMO,JLUMO)
@@ -1408,7 +1409,7 @@ C
 #include "dcbreo.h"
 #include "densfit.h"
       real(8), allocatable :: aoo2esssoc(:)
-      LOGICAL   LBIT, tobe, DOLEVEL_save, DODIIS_save
+      LOGICAL   LBIT, tobe, DODIIS_save
       type(fde_import) :: itmp
       CHARACTER WALTID*12,CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
@@ -1438,7 +1439,6 @@ C     ***********************************
 C     ***** Perform SCF-iterations ******
 C     ***********************************
 C
-      DOLEVEL_save  = DOLEVEL
       OPEN_FAC_save = OPEN_FAC
       DODIIS_save   = DODIIS
 C
@@ -1830,19 +1830,19 @@ C          idea for convergence.)
            WRITE(LUPRI,'(///A/A)') ' * Converged. '//
      &        'Redoing orbital energy calculation with .OPENFAC 1.0D0'
            OPEN_FAC = 1.0D0
-           DOLEVEL = .FALSE. ! no level shift now, we are converged
 C          do continue even though converged :
            DHFEXIT = .FALSE.
            DODIIS  = .FALSE.
 C          restore density matrix and  total Fock matrices (have been destroyed in DFSOLV)
            CALL READNS(LUDENS,DMAT)
            CALL REAFCK(LUFCKT,FOCK,.FALSE.,NFMAT)
-           KEIG   = KFREE
-           KIBEIG = KEIG + NORBT
-           KFREE2 = KIBEIG + NORBT
-           LFREE2 = LWORK  - KFREE2
-           CALL DFSOLV(CMO,WORK(KEIG),WORK(KIBEIG),FOCK,DMAT,BMAT,
-     &                 ICHKCNV,OVLSEL,DOLEVEL,WORK(KFREE2),LFREE2)
+           CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
+     &                 ICHKCNV,OVLSEL ,DOLEVEL,WORK(KFREE),LFREE)
+C          Read CMO coefficients, but not orbital energies in EIG and IBEIG (code 2)
+C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
+           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2,
+     &                 WORK,KFREE,LFREE)
+           CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
            WRITE(LUPRI,'(/A/A/A/)')
      &' * Open-shell orbital energies recalculated with .OPENFAC 1.0,',
      &'   corresponding to interpretation as Ionization Potentials.',
@@ -1857,7 +1857,7 @@ C          restore density matrix and  total Fock matrices (have been destroyed 
               END IF
               WRITE(LUPRI,'(/A,I2,A/,8(I5,F10.5))')
      &        '   E_HOMO, E_OPEN..., E_LUMO in Hartree, symmetry',I,':',
-     &        (J, WORK(KEIG-1+J), J = JHOMO,JLUMO)
+     &        (J, EIG(J), J = JHOMO,JLUMO)
            END DO
            GOTO 30
 
@@ -1876,7 +1876,6 @@ C
       CALL FLSHFO(LUPRI)
 
       OPEN_FAC = OPEN_FAC_save
-      DOLEVEL  = DOLEVEL_save
       DODIIS   = DODIIS_save
 C
 C     Close necessary files
