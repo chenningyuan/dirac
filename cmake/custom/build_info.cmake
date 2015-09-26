@@ -40,7 +40,8 @@ if(GIT_FOUND)
     message(STATUS "Git branch               : ${_git_branch}")
     message(STATUS "Git last commit hash     : ${_git_last_commit_hash}")
     message(STATUS "Git last commit date     : ${_git_last_commit_date}")
-    message(STATUS "Git last commit author   : ${_git_last_commit_author}")
+  # some authors have characters with non-standard encoding which can make setup choke
+  # message(STATUS "Git last commit author   : ${_git_last_commit_author}")
     message(STATUS "-------------------------------------------------------------")
 endif()
 
