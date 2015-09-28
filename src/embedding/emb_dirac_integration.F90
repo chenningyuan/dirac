@@ -757,31 +757,31 @@ contains
                               u)
            end if
 
-!!       (3) direct-lao spin density contribution, 2nd functional derivatives
-!!       --------------------------------------------------------------------
-!
-!           if (do_london_rhs_direct_kern) then
-!
-!              call london_direct_kern(bllen,          &
-!                                      mat_dim,        &
-!                                      nz,             &
-!                                      ao,             &
-!                                      n_0,            &
-!                                      n_0_t,          &
-!                                      gn_0_pointwise, &
-!                                      z0tt,           &
-!                                      gnn_0,          &
-!                                      gnn_0_t,        &
-!                                      w,              &
-!                                      use_gga,        &
-!                                      dmat,           &
-!                                      buffer,         &
-!                                      derv_length,    &
-!                                      derv_active,    &
-!                                      derv_total,     &
-!                                      rx(ipoint), ry(ipoint), rz(ipoint), &
-!                                      u)
-!           end if
+!       (3) direct-lao spin density contribution, 2nd functional derivatives
+!       --------------------------------------------------------------------
+
+           if (do_london_rhs_direct_kern) then
+
+              call london_direct_kern(bllen,          &
+                                      mat_dim,        &
+                                      nz,             &
+                                      ao,             &
+                                      n_0,            &
+                                      n_0_t,          &
+                                      gn_0_pointwise, &
+                                      z0tt,           &
+                                      gnn_0,          &
+                                      gnn_0_t,        &
+                                      w,              &
+                                      use_gga,        &
+                                      dmat,           &
+                                      buffer,         &
+                                      derv_length,    &
+                                      derv_active,    &
+                                      derv_total,     &
+                                      rx(ipoint), ry(ipoint), rz(ipoint), &
+                                      u)
+           end if
 !
 !           !if (do_london_rhs_kern_coupling) then
 !           !   call london_kern_coupling(bllen,       &
@@ -1470,123 +1470,123 @@ contains
 
   end subroutine
 
-!  subroutine london_direct_kern(block_length,       &
-!                        mat_dim,            &
-!                        nz,                 &
-!                        ao,               &
-!                        n_0,                &
-!                        n_0_t,                &
-!                        gn_0_pointwise,     &
-!                        gn_0_t_pointwise,     &
-!                        gnn_0,              &
-!                        gnn_0_t,              &
-!                        w,                  &
-!                        is_gga,             &
-!                        dmat_full,            &
-!                        buffer,             &
-!                        n,                  &
-!                        derv_active,        &
-!                        derv_total,         &
-!                        rx, ry, rz,         &
-!                        u)
-!
-!!   ----------------------------------------------------------------------------
-!    integer, intent(in)    :: block_length
-!    integer, intent(in)    :: mat_dim
-!    integer, intent(in)    :: nz
-!    real(8), intent(in)    :: ao(*)
-!    real(8), intent(in)    :: n_0(*)
-!    real(8), intent(in)    :: n_0_t(*)
-!    real(8), intent(in)    :: gn_0_pointwise(*)
-!    real(8), intent(in)    :: gn_0_t_pointwise(*)
-!    real(8), intent(in)    :: gnn_0(*)
-!    real(8), intent(in)    :: gnn_0_t(*)
-!    real(8), intent(in)    :: w(*)
-!    logical, intent(in)    :: is_gga
-!    real(8), intent(in)    :: dmat_full(*)
-!    real(8), intent(in)    :: buffer(*)
-!    integer, intent(in)    :: n
-!    real(8), intent(in)    :: derv_active(max_block_length, 0:n)
-!    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
-!    real(8), intent(in)    :: rx, ry, rz
-!!   ----------------------------------------------------------------------------
-!    real(8)                ::  s_b_lao(3, 3)
-!    real(8)                ::  gs_b_lao(3, 3, 3)
-!    real(8)                ::  gsgn_b_lao(3, 3)
-!    real(8)                ::  gsgn_t_b_lao(3, 3)
-!    real(8)                ::  t_b,    ts_b(3)
-!
-!    real(8)                :: y_b(3, 3)
-!    real(8)                :: y_b_t(3, 3)
-!
-!    integer                :: k_start, k, a, im_off, j
-!    type(fde_omega_prefactor) :: u
-!    integer :: i
-!!   ----------------------------------------------------------------------------
-!
-!    s_b_lao    = 0.0d0
-!    gs_b_lao   = 0.0d0
-!    gsgn_b_lao   = 0.0d0
-!    gsgn_t_b_lao   = 0.0d0
-!
-!    k_start = 1
-!    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
-!
-!    if (is_gga) then
-!
-!! that is not optimal, but for the moment it works
-!      call get_gs_lao(s_b_lao,     &
-!                      gs_b_lao,    &
-!                      gsgn_b_lao,  &
-!                      gn_0_pointwise, &
-!                      (/1,1,1/),   &
-!                      mat_dim,     &
-!                      dmat_full,   &
-!                      ao,          &
-!                      rx, ry, rz)
-!
-!      call get_gs_lao(s_b_lao,     &
-!                      gs_b_lao,    &
-!                      gsgn_t_b_lao,  &
-!                      gn_0_t_pointwise, &
-!                      (/1,1,1/),   &
-!                      mat_dim,     &
-!                      dmat_full,   &
-!                      ao,          &
-!                      rx, ry, rz)
-!
-!    else
-!       call get_s_lao(s_b_lao,          &
-!                      (/0, 0, 0/),      &
-!                      mat_dim,          &
-!                      dmat_full,        &
-!                      ao,               &
-!                      rx, ry, rz)
-!    end if
-!
-!    do a = 1, 3     !B_{x,y,z}
-!       do k = k_start, 3  !Sigma_{x,y,z}
-!
-!          u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
-!                          + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b_lao(k, a)
-!         
-!          if (is_gga) then
-!         
-!             u%s_b_lao(k, a) = u%s_b_lao(k, a) + (derv_total(1, d0101000)*gsgn_t_b_lao(k, a) &
-!                                                - derv_active(1, d0101000)*gsgn_b_lao(k, a))
-!         
-!             u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)   &
-!                                                           - gn_0_pointwise(1:3)*s_b_lao(k, a)*derv_active(1, d0101000)    &
-!                                                           + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000)     &
-!                                                           - gn_0_pointwise(1:3)*gsgn_b_lao(k, a)*derv_active(1, d0002000)        &
-!                                                     + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)                   &
-!                                                     - 2.0d0*gs_b_lao(1:3, k, a)*derv_active(1, d0000100)
-!          end if
-!       end do
-!    end do
-!
-!
-!  end subroutine
+  subroutine london_direct_kern(block_length,       &
+                        mat_dim,            &
+                        nz,                 &
+                        ao,               &
+                        n_0,                &
+                        n_0_t,                &
+                        gn_0_pointwise,     &
+                        gn_0_t_pointwise,     &
+                        gnn_0,              &
+                        gnn_0_t,              &
+                        w,                  &
+                        is_gga,             &
+                        dmat_full,            &
+                        buffer,             &
+                        n,                  &
+                        derv_active,        &
+                        derv_total,         &
+                        rx, ry, rz,         &
+                        u)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: n_0(*)
+    real(8), intent(in)    :: n_0_t(*)
+    real(8), intent(in)    :: gn_0_pointwise(*)
+    real(8), intent(in)    :: gn_0_t_pointwise(*)
+    real(8), intent(in)    :: gnn_0(*)
+    real(8), intent(in)    :: gnn_0_t(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga
+    real(8), intent(in)    :: dmat_full(*)
+    real(8), intent(in)    :: buffer(*)
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv_active(max_block_length, 0:n)
+    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
+    real(8), intent(in)    :: rx, ry, rz
+!   ----------------------------------------------------------------------------
+    real(8)                ::  s_b_lao(3, 3)
+    real(8)                ::  gs_b_lao(3, 3, 3)
+    real(8)                ::  gsgn_b_lao(3, 3)
+    real(8)                ::  gsgn_t_b_lao(3, 3)
+    real(8)                ::  t_b,    ts_b(3)
+
+    real(8)                :: y_b(3, 3)
+    real(8)                :: y_b_t(3, 3)
+
+    integer                :: k_start, k, a, im_off, j
+    type(fde_omega_prefactor) :: u
+    integer :: i
+!   ----------------------------------------------------------------------------
+
+    s_b_lao    = 0.0d0
+    gs_b_lao   = 0.0d0
+    gsgn_b_lao   = 0.0d0
+    gsgn_t_b_lao   = 0.0d0
+
+    k_start = 1
+    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+    if (is_gga) then
+
+! that is not optimal, but for the moment it works
+      call get_gs_lao(s_b_lao,     &
+                      gs_b_lao,    &
+                      gsgn_b_lao,  &
+                      gn_0_pointwise, &
+                      (/1,1,1/),   &
+                      mat_dim,     &
+                      dmat_full,   &
+                      ao,          &
+                      rx, ry, rz)
+
+      call get_gs_lao(s_b_lao,     &
+                      gs_b_lao,    &
+                      gsgn_t_b_lao,  &
+                      gn_0_t_pointwise, &
+                      (/1,1,1/),   &
+                      mat_dim,     &
+                      dmat_full,   &
+                      ao,          &
+                      rx, ry, rz)
+
+    else
+       call get_s_lao(s_b_lao,          &
+                      (/0, 0, 0/),      &
+                      mat_dim,          &
+                      dmat_full,        &
+                      ao,               &
+                      rx, ry, rz)
+    end if
+
+    do a = 1, 3     !B_{x,y,z}
+       do k = k_start, 3  !Sigma_{x,y,z}
+
+          u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
+                          + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b_lao(k, a)
+         
+          if (is_gga) then
+         
+             u%s_b_lao(k, a) = u%s_b_lao(k, a) + (derv_total(1, d0101000)*gsgn_t_b_lao(k, a) &
+                                                - derv_active(1, d0101000)*gsgn_b_lao(k, a))
+         
+             u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)   &
+                                                           - gn_0_pointwise(1:3)*s_b_lao(k, a)*derv_active(1, d0101000)    &
+                                                           + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000)     &
+                                                           - gn_0_pointwise(1:3)*gsgn_b_lao(k, a)*derv_active(1, d0002000)        &
+                                                     + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)                   &
+                                                     - 2.0d0*gs_b_lao(1:3, k, a)*derv_active(1, d0000100)
+          end if
+       end do
+    end do
+
+
+  end subroutine
 
 !  subroutine london_kern_coupling(block_length,      &
 !                                  mat_dim,           &
