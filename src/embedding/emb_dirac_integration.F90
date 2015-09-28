@@ -917,51 +917,59 @@ contains
                 end if
              end if
 
-!!            london contributions to property gradient
-!
-!             us_b_lao_above_threshold = .false.
-!             if (maxval((/dabs(u%s_b_lao(1, im)), &
-!                          dabs(u%s_b_lao(2, im)), &
-!                          dabs(u%s_b_lao(3, im))/)) > tiny(0.0d0)) then
-!                us_b_lao_above_threshold = .true.
-!             end if
-!
-!             ugs_b_lao_above_threshold = .false.
-!             if (maxval((/dabs(u%gs_b_lao(1, 1, im)), &
-!                          dabs(u%gs_b_lao(1, 2, im)), &
-!                          dabs(u%gs_b_lao(1, 3, im)), &
-!                          dabs(u%gs_b_lao(2, 1, im)), &
-!                          dabs(u%gs_b_lao(2, 2, im)), &
-!                          dabs(u%gs_b_lao(2, 3, im)), &
-!                          dabs(u%gs_b_lao(3, 1, im)), &
-!                          dabs(u%gs_b_lao(3, 2, im)), &
-!                          dabs(u%gs_b_lao(3, 3, im))/)) > tiny(0.0d0)) then
-!                ugs_b_lao_above_threshold = .true.
-!             end if
-!
-!             if (ugs_b_lao_above_threshold) then
-!!               F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q
-!!                     + 2 u%gs_ij \chi_p* \Sigma_j \nabla_i \chi_q
-!                call nabla_omega_imag(fmat,                &
-!                                      im,                  &
-!                                      fmat_pg_sym(im) - 1, &
-!                                      mat_dim,             &
-!                                      nz,                  &
-!                                      u%s_b_lao(1, im),          &
-!                                      u%gs_b_lao(1, 1, im),      &
-!                                      ao)
-!             else
-!                if (us_b_lao_above_threshold) then
-!!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
-!                   call omega_imag(fmat,                &
-!                                   im,                  &
-!                                   fmat_pg_sym(im) - 1, &
-!                                   mat_dim,             &
-!                                   nz,                  &
-!                                   u%s_b_lao(1, im),          &
-!                                   ao)
-!                end if
-!             end if
+!            london contributions to property gradient
+!            gosia: this "if" should not be needed here
+!            nevertheless without that the test "fde_response_autodiff" brakes on gfortran
+!            for some misterious reason (this part should never be true!!)
+             if (do_london_rhs_direct_kern.or.do_london_rhs_kern_coupling) then
+
+               us_b_lao_above_threshold = .false.
+               if (maxval((/dabs(u%s_b_lao(1, im)), &
+                            dabs(u%s_b_lao(2, im)), &
+                            dabs(u%s_b_lao(3, im))/)) > tiny(0.0d0)) then
+                  us_b_lao_above_threshold = .true.
+               end if
+               
+               ugs_b_lao_above_threshold = .false.
+               if (maxval((/dabs(u%gs_b_lao(1, 1, im)), &
+                            dabs(u%gs_b_lao(1, 2, im)), &
+                            dabs(u%gs_b_lao(1, 3, im)), &
+                            dabs(u%gs_b_lao(2, 1, im)), &
+                            dabs(u%gs_b_lao(2, 2, im)), &
+                            dabs(u%gs_b_lao(2, 3, im)), &
+                            dabs(u%gs_b_lao(3, 1, im)), &
+                            dabs(u%gs_b_lao(3, 2, im)), &
+                            dabs(u%gs_b_lao(3, 3, im))/)) > tiny(0.0d0)) then
+                  ugs_b_lao_above_threshold = .true.
+               end if
+               
+               if (ugs_b_lao_above_threshold) then
+                  write(*, *) 'buba000'
+!                 F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q
+!                       + 2 u%gs_ij \chi_p* \Sigma_j \nabla_i \chi_q
+                  call nabla_omega_imag(fmat,                &
+                                        im,                  &
+                                        fmat_pg_sym(im) - 1, &
+                                        mat_dim,             &
+                                        nz,                  &
+                                        u%s_b_lao(1, im),          &
+                                        u%gs_b_lao(1, 1, im),      &
+                                        ao)
+               else
+                  if (us_b_lao_above_threshold) then
+                     write(*, *) 'buba111'
+!                    F_pq += u%s_j \chi_p* \Sigma_j \chi_q
+                     call omega_imag(fmat,                &
+                                     im,                  &
+                                     fmat_pg_sym(im) - 1, &
+                                     mat_dim,             &
+                                     nz,                  &
+                                     u%s_b_lao(1, im),          &
+                                     ao)
+                  end if
+               end if
+
+             end if !if (do_london_rhs_direct_kern.or.do_london_rhs_kern_coupling) then
 
           end do
 
