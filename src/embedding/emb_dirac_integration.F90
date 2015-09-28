@@ -782,22 +782,22 @@ contains
                                       rx(ipoint), ry(ipoint), rz(ipoint), &
                                       u)
            end if
-!
-!           !if (do_london_rhs_kern_coupling) then
-!           !   call london_kern_coupling(bllen,       &
-!           !                             mat_dim,     &
-!           !                             nz,          &
-!           !                             ao,          &
-!           !                             n_0_t,       &
-!           !                             z0tt,        &
-!           !                             gnn_0_t,     &
-!           !                             w,           &
-!           !                             use_gga,     &
-!           !                             derv_length, &
-!           !                             derv_total,  &
-!           !                             rx(ipoint), ry(ipoint), rz(ipoint), &
-!           !                             u)
-!           !end if
+
+           if (do_london_rhs_kern_coupling) then
+              call london_kern_coupling(bllen,       &
+                                        mat_dim,     &
+                                        nz,          &
+                                        ao,          &
+                                        n_0_t,       &
+                                        z0tt,        &
+                                        gnn_0_t,     &
+                                        w,           &
+                                        use_gga,     &
+                                        derv_length, &
+                                        derv_total,  &
+                                        rx(ipoint), ry(ipoint), rz(ipoint), &
+                                        u)
+           end if
 
 
 
@@ -1588,105 +1588,105 @@ contains
 
   end subroutine
 
-!  subroutine london_kern_coupling(block_length,      &
-!                                  mat_dim,           &
-!                                  nz,                &
-!                                  ao,                &
-!                                  n_0_t,             &
-!                                  gn_0_t_pointwise,  &
-!                                  gnn_0_t,           &
-!                                  w,                 &
-!                                  is_gga,            &
-!                                  n,                 &
-!                                  derv_total,        &
-!                                  rx, ry, rz,        &
-!                                  u)
-!
-!!   ----------------------------------------------------------------------------
-!    integer, intent(in)    :: block_length
-!    integer, intent(in)    :: mat_dim
-!    integer, intent(in)    :: nz
-!    real(8), intent(in)    :: ao(*)
-!    real(8), intent(in)    :: n_0_t(*)
-!    real(8), intent(in)    :: gn_0_t_pointwise(*)
-!    real(8), intent(in)    :: gnn_0_t(*)
-!    real(8), intent(in)    :: w(*)
-!    logical, intent(in)    :: is_gga
-!    integer, intent(in)    :: n
-!    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
-!    real(8), intent(in)    :: rx, ry, rz
-!!   ----------------------------------------------------------------------------
-!    real(8)                ::  z_b
-!    real(8)                ::  n_b_lao(3)
-!    real(8)                ::  gn_b_lao(3, 3)
-!    real(8)                ::  s_b_lao(3, 3)
-!    real(8)                ::  gs_b_lao(3, 3, 3)
-!    real(8)                ::  gsgn_t_b_lao(3, 3)
-!
-!    integer                :: k_start, k, a
-!    type(fde_omega_prefactor) :: u
-!!   ----------------------------------------------------------------------------
-!    n_b_lao    = 0.0d0
-!    gn_b_lao    = 0.0d0
-!    s_b_lao    = 0.0d0
-!    gs_b_lao   = 0.0d0
-!    gsgn_t_b_lao   = 0.0d0
-!
-!    k_start = 1
-!    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
-!
-!!   find n, gn, s, gs from the frozen pertden file
+  subroutine london_kern_coupling(block_length,      &
+                                  mat_dim,           &
+                                  nz,                &
+                                  ao,                &
+                                  n_0_t,             &
+                                  gn_0_t_pointwise,  &
+                                  gnn_0_t,           &
+                                  w,                 &
+                                  is_gga,            &
+                                  n,                 &
+                                  derv_total,        &
+                                  rx, ry, rz,        &
+                                  u)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: n_0_t(*)
+    real(8), intent(in)    :: gn_0_t_pointwise(*)
+    real(8), intent(in)    :: gnn_0_t(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
+    real(8), intent(in)    :: rx, ry, rz
+!   ----------------------------------------------------------------------------
+    real(8)                ::  z_b
+    real(8)                ::  n_b_lao(3)
+    real(8)                ::  gn_b_lao(3, 3)
+    real(8)                ::  s_b_lao(3, 3)
+    real(8)                ::  gs_b_lao(3, 3, 3)
+    real(8)                ::  gsgn_t_b_lao(3, 3)
+
+    integer                :: k_start, k, a
+    type(fde_omega_prefactor) :: u
+!   ----------------------------------------------------------------------------
+    n_b_lao    = 0.0d0
+    gn_b_lao    = 0.0d0
+    s_b_lao    = 0.0d0
+    gs_b_lao   = 0.0d0
+    gsgn_t_b_lao   = 0.0d0
+
+    k_start = 1
+    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+!   find n, gn, s, gs from the frozen pertden file
 !    call find_pertden(rx, ry, rz, w(1), &
 !                      n_b  = n_b_lao,   &
 !                      gn_b = gn_b_lao,  & 
 !                      s_b  = s_b_lao,   &
 !                      gs_b = gs_b_lao)
-!
-!!   charge density contributions
-!    do a = 1, 3     !B_{x,y,z}
-!       u%n(a) = u%n(a) + derv_total(1, d2000000)*n_b_lao(a)
-!
-!       if (is_gga) then
-!          z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
-!                     + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
-!                     + gn_0_t_pointwise(3)*gn_b_lao(3, a))
-!
-!          u%n(a) = u%n(a) + derv_total(1, d1010000)*z_b
-!
-!          u%gn(1:3, a) = u%gn(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
-!                                      + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
-!                                      + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
-!       end if
-!    end do
-!
-!!   spin density contributions
-!    if (.not. dft_cfg_no_sdft) then
-!       do a = 1, 3     !B_{x,y,z}
-!          do k = k_start, 3  !Sigma_{x,y,z}
-!       
-!             u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
-!                             + derv_total(1, d0200000)*s_b_lao(k, a)
-!            
-!             if (is_gga) then
-!            
-!                gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
-!                                   + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
-!                                   + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
-!       
-!                u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
-!            
-!                u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
-!                            + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
-!                            + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
-!                            + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
-!       
-!             end if
-!          end do
-!       end do
-!    end if
-!
-!
-!  end subroutine
+
+!   charge density contributions
+    do a = 1, 3     !B_{x,y,z}
+       u%n(a) = u%n(a) + derv_total(1, d2000000)*n_b_lao(a)
+
+       if (is_gga) then
+          z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
+                     + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
+                     + gn_0_t_pointwise(3)*gn_b_lao(3, a))
+
+          u%n(a) = u%n(a) + derv_total(1, d1010000)*z_b
+
+          u%gn(1:3, a) = u%gn(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
+                                      + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
+                                      + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
+       end if
+    end do
+
+!   spin density contributions
+    if (.not. dft_cfg_no_sdft) then
+       do a = 1, 3     !B_{x,y,z}
+          do k = k_start, 3  !Sigma_{x,y,z}
+       
+             u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
+                             + derv_total(1, d0200000)*s_b_lao(k, a)
+            
+             if (is_gga) then
+            
+                gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
+                                   + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
+                                   + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
+       
+                u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
+            
+                u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
+                            + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
+                            + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
+                            + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
+       
+             end if
+          end do
+       end do
+    end if
+
+
+  end subroutine
 
 
 
