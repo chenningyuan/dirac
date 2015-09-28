@@ -30,6 +30,8 @@ module fde_dirac_matrices_integration
       real(8), allocatable :: gn(:, :)
       real(8), allocatable :: s(:, :)
       real(8), allocatable :: gs(:, :, :)
+      !real(8), allocatable :: s_b_lao(:, :)
+      !real(8), allocatable :: gs_b_lao(:, :, :)
    end type
 
    integer, parameter :: bllen = 1 !later more, now slowdft
@@ -112,6 +114,8 @@ module fde_dirac_matrices_integration
    integer :: response_order_mo
    integer :: response_order_ao
    logical :: do_london_rhs_direct
+   logical :: do_london_rhs_direct_kern
+   logical :: do_london_rhs_kern_coupling
    logical :: do_london_rhs_ro
    logical :: do_geo
    logical :: do_geo_0
@@ -145,7 +149,11 @@ contains
                              fde_fmat_pg_sym,           &
                              fde_do_potential,          &
                              fde_response_order_mo,     &
-                             fde_response_order_ao)
+                             fde_response_order_ao,     &
+                             fde_do_london_rhs_direct,  &
+                             fde_do_london_rhs_direct_kern,   &
+                             fde_do_london_rhs_kern_coupling, &
+                             fde_do_london_rhs_ro)
 
 ! response_order_mo/_ao:  0 - do nothing (no response)
 !                         1 - ks lr
@@ -174,6 +182,10 @@ contains
       logical, optional,         intent(in)    :: fde_do_potential
       integer, optional,         intent(in)    :: fde_response_order_mo
       integer, optional,         intent(in)    :: fde_response_order_ao
+      logical, optional,         intent(in)    :: fde_do_london_rhs_direct
+      logical, optional,         intent(in)    :: fde_do_london_rhs_direct_kern
+      logical, optional,         intent(in)    :: fde_do_london_rhs_kern_coupling
+      logical, optional,         intent(in)    :: fde_do_london_rhs_ro
 !     --------------------------------------------------------------------------
       real(8), external :: ddot
       integer, parameter :: max_mat_number = 10
@@ -203,11 +215,19 @@ contains
       do_potential          = .false.
       response_order_mo     = 0
       response_order_ao     = 0
+      do_london_rhs_direct         = .false.
+      do_london_rhs_direct_kern    = .false.
+      do_london_rhs_kern_coupling  = .false.
+      do_london_rhs_ro             = .false.
 
 !        change defaults
          if (present(fde_do_potential))          do_potential          = fde_do_potential
          if (present(fde_response_order_mo))     response_order_mo     = fde_response_order_mo
          if (present(fde_response_order_ao))     response_order_ao     = fde_response_order_ao
+         if (present(fde_do_london_rhs_direct))  do_london_rhs_direct  = fde_do_london_rhs_direct
+         if (present(fde_do_london_rhs_direct_kern))  do_london_rhs_direct_kern  = fde_do_london_rhs_direct_kern
+         if (present(fde_do_london_rhs_kern_coupling))  do_london_rhs_kern_coupling  = fde_do_london_rhs_kern_coupling
+         if (present(fde_do_london_rhs_ro))  do_london_rhs_ro  = fde_do_london_rhs_ro
 
 !     nullify(tmat_1)
 !     nullify(tmat_2)
@@ -290,6 +310,10 @@ contains
       end if
      
       max_ao_m_order = 0
+      if (do_london_rhs_direct .or. do_london_rhs_direct_kern) then
+        max_ao_m_order = 1
+      end if
+
      
       call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
@@ -307,6 +331,11 @@ contains
 #ifdef PRG_DIRAC
          call scale_density_matrices(2.0d0)
 #endif
+
+         if (do_london_rhs_direct .or. do_london_rhs_ro) then
+            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+         end if
+
 
          call insert_half_phases()
 
@@ -476,8 +505,8 @@ contains
          logical :: ugs_above_threshold
          logical :: utn_above_threshold
          logical :: uts_above_threshold
-         logical :: us_lao_above_threshold
-         logical :: ugs_lao_above_threshold
+         !logical :: us_b_lao_above_threshold
+         !logical :: ugs_b_lao_above_threshold
 
          real(8), allocatable :: ao(:, :)
          real(8), allocatable :: buffer(:, :)
@@ -489,6 +518,9 @@ contains
          allocate(u%gn(   3, nr_fmat))
          allocate(u%s (   3, nr_fmat))
          allocate(u%gs(3, 3, nr_fmat))
+!         allocate(u%s_b_lao(3, 3)) 
+!         allocate(u%gs_b_lao(3, 3, 3))
+
 
 
 !   check what functional derivatives do we need
@@ -502,6 +534,22 @@ contains
          if (response_order_mo > 0) then
             max_fun_derv = response_order_mo + 1
          end if
+!gosia todo: check flags +  check sdft 
+!         if (do_london_rhs_direct) then
+!            max_fun_derv = 1
+!         end if
+!         if (do_london_rhs_direct_kern .and. .not.dft_cfg_no_sdft) then
+!            max_fun_derv = 2
+!         end if
+!         if (do_london_rhs_kern_coupling) then
+!            max_fun_derv = 2
+!         end if
+!         if (do_london_rhs_ro) then
+!            if (max_fun_derv < 2) then
+!               max_fun_derv = 2
+!            end if
+!         end if
+
 
          derv_length = nr_nonzero_derv
          allocate(derv_active(max_block_length, 0:derv_length))
@@ -558,6 +606,8 @@ contains
                u%gn = 0.0d0
                u%s  = 0.0d0
                u%gs = 0.0d0
+               !u%s_b_lao  = 0.0d0
+               !u%gs_b_lao = 0.0d0
 
                w(1) = rw(ipoint)
 
@@ -601,6 +651,17 @@ contains
                                       gnn_0,        &
                                       derv_active)
 
+!gosia: we don't need derv_active for the coupling-kernel term, so save time.
+!the missing Coulomb term is evaluated outside (see fde calls from prp/london_direct.F90)
+!               if (.not. do_london_rhs_kern_coupling) then
+!                 call get_xcke_fun_derv(max_fun_derv, & 
+!                                        bllen,        &
+!                                        w,            &
+!                                        n_0,          &
+!                                        gnn_0,        &
+!                                        derv_active)
+!               end if
+
                time_derv = time_derv + second() - time_derv_start
 
 
@@ -627,6 +688,117 @@ contains
            end if
 
          end if !exchange-correlation potential
+
+!       london contributions to differentiated Kohn-Sham matrix, 
+!       added to property gradient, closed-shell only
+
+!!       (1) direct-lao contributions, 1st functional derivatives
+!!       --------------------------------------------------------
+!         if (do_london_rhs_direct) then
+!             !if (use_potential) then
+!!            !   use external embedding potential
+!             !   call lda_london_distribute_r(vemb,                              &
+!             !                                fmat_pg_sym,                       &
+!             !                                mat_dim,                           &
+!             !                                nz,                                &
+!             !                                fmat,                              &
+!             !                                ao,                                &
+!             !                                rx(ipoint), ry(ipoint), rz(ipoint))
+!             !else
+!                u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*gf_frozen%elpot(ipoint)
+!                if (use_gga) then
+!                  u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
+!                
+!                  call gga_london_distribute_r(u%n(1),                            &
+!                                               1.0d0,                             &
+!                                               u%gn(1:3, 1),                      &
+!                                               fmat_pg_sym,                       &
+!                                               mat_dim,                           &
+!                                               nz,                                &
+!                                               fmat,                              &
+!                                               ao, &
+!                                               rx(ipoint), ry(ipoint), rz(ipoint))
+!                else
+!                  call lda_london_distribute_r(u%n(1),                            &
+!                                               fmat_pg_sym,                       &
+!                                               mat_dim,                           &
+!                                               nz,                                &
+!                                               fmat,                              &
+!                                               ao,                                &
+!                                               rx(ipoint), ry(ipoint), rz(ipoint))
+!                end if
+!
+!             !end if
+!         
+!         end if
+!
+!!       (2) london reorthogonalization contribution, 2nd functional derivatives
+!!       -----------------------------------------------------------------------
+!           if (do_london_rhs_ro) then
+!
+!              call lao_reorth(bllen,          &
+!                              mat_dim,        &
+!                              nz,             &
+!                              ao,             &
+!                              n_0,            &
+!                              n_0_t,          &
+!                              gn_0_pointwise, &
+!                              z0tt,           &
+!                              gnn_0,          &
+!                              gnn_0_t,        &
+!                              w,              &
+!                              use_gga,        &
+!                              dmat,           &
+!                              dmat_pg_sym,    &
+!                              buffer,         &
+!                              derv_length,    &
+!                              derv_active,    &
+!                              derv_total,     &
+!                              u)
+!           end if
+!
+!!       (3) direct-lao spin density contribution, 2nd functional derivatives
+!!       --------------------------------------------------------------------
+!
+!           if (do_london_rhs_direct_kern) then
+!
+!              call london_direct_kern(bllen,          &
+!                                      mat_dim,        &
+!                                      nz,             &
+!                                      ao,             &
+!                                      n_0,            &
+!                                      n_0_t,          &
+!                                      gn_0_pointwise, &
+!                                      z0tt,           &
+!                                      gnn_0,          &
+!                                      gnn_0_t,        &
+!                                      w,              &
+!                                      use_gga,        &
+!                                      dmat,           &
+!                                      buffer,         &
+!                                      derv_length,    &
+!                                      derv_active,    &
+!                                      derv_total,     &
+!                                      rx(ipoint), ry(ipoint), rz(ipoint), &
+!                                      u)
+!           end if
+!
+!           !if (do_london_rhs_kern_coupling) then
+!           !   call london_kern_coupling(bllen,       &
+!           !                             mat_dim,     &
+!           !                             nz,          &
+!           !                             ao,          &
+!           !                             n_0_t,       &
+!           !                             z0tt,        &
+!           !                             gnn_0_t,     &
+!           !                             w,           &
+!           !                             use_gga,     &
+!           !                             derv_length, &
+!           !                             derv_total,  &
+!           !                             rx(ipoint), ry(ipoint), rz(ipoint), &
+!           !                             u)
+!           !end if
+
 
 
 !       linear response
@@ -744,6 +916,54 @@ contains
                                    ao)
                 end if
              end if
+
+!!            london contributions to property gradient
+!
+!!            we do it for 3 fmat's - corresponding to Bx, By, Bz
+!             us_b_lao_above_threshold = .false.
+!             if (maxval((/dabs(u%s_b_lao(1, im)), &
+!                          dabs(u%s_b_lao(2, im)), &
+!                          dabs(u%s_b_lao(3, im))/)) > tiny(0.0d0)) then
+!                us_b_lao_above_threshold = .true.
+!             end if
+!
+!             ugs_b_lao_above_threshold = .false.
+!             if (maxval((/dabs(u%gs_b_lao(1, 1, im)), &
+!                          dabs(u%gs_b_lao(1, 2, im)), &
+!                          dabs(u%gs_b_lao(1, 3, im)), &
+!                          dabs(u%gs_b_lao(2, 1, im)), &
+!                          dabs(u%gs_b_lao(2, 2, im)), &
+!                          dabs(u%gs_b_lao(2, 3, im)), &
+!                          dabs(u%gs_b_lao(3, 1, im)), &
+!                          dabs(u%gs_b_lao(3, 2, im)), &
+!                          dabs(u%gs_b_lao(3, 3, im))/)) > tiny(0.0d0)) then
+!                ugs_b_lao_above_threshold = .true.
+!             end if
+!
+!             if (ugs_b_lao_above_threshold) then
+!!               F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q
+!!                     + 2 u%gs_ij \chi_p* \Sigma_j \nabla_i \chi_q
+!                call nabla_omega_imag(fmat,                &
+!                                      im,                  &
+!                                      fmat_pg_sym(im) - 1, &
+!                                      mat_dim,             &
+!                                      nz,                  &
+!                                      u%s_b_lao(1, im),          &
+!                                      u%gs_b_lao(1, 1, im),      &
+!                                      ao)
+!             else
+!                if (us_b_lao_above_threshold) then
+!!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
+!                   call omega_imag(fmat,                &
+!                                   im,                  &
+!                                   fmat_pg_sym(im) - 1, &
+!                                   mat_dim,             &
+!                                   nz,                  &
+!                                   u%s_b_lao(1, im),          &
+!                                   ao)
+!                end if
+!             end if
+
           end do
 
 ! end spin-density stuff
@@ -759,6 +979,10 @@ contains
 
     deallocate(u%n)
     deallocate(u%gn)
+    deallocate(u%s)
+    deallocate(u%gs)
+    !deallocate(u%s_b_lao)
+    !deallocate(u%gs_b_lao)
 
    end subroutine integrate
 
@@ -1078,5 +1302,385 @@ contains
 !
 
   end subroutine
+
+!  subroutine lao_reorth(block_length,       &
+!                        mat_dim,            &
+!                        nz,                 &
+!                        ao,                 &
+!                        n_0,                &
+!                        n_0_t,              &
+!                        gn_0_pointwise,     &
+!                        gn_0_t_pointwise,   &
+!                        gnn_0,              &
+!                        gnn_0_t,            &
+!                        w,                  &
+!                        is_gga,             &
+!                        tb_dmat,            &
+!                        isym,               &
+!                        buffer,             &
+!                        n,                  &
+!                        derv_active,        &
+!                        derv_total,         &
+!                        u)
+!
+!!   ----------------------------------------------------------------------------
+!    integer, intent(in)    :: block_length
+!    integer, intent(in)    :: mat_dim
+!    integer, intent(in)    :: nz
+!    real(8), intent(in)    :: ao(*)
+!    real(8), intent(in)    :: n_0(*)
+!    real(8), intent(in)    :: n_0_t(*)
+!    real(8), intent(in)    :: gn_0_pointwise(*)
+!    real(8), intent(in)    :: gn_0_t_pointwise(*)
+!    real(8), intent(in)    :: gnn_0(*)
+!    real(8), intent(in)    :: gnn_0_t(*)
+!    real(8), intent(in)    :: w(*)
+!    logical, intent(in)    :: is_gga
+!    real(8), intent(in)    :: tb_dmat(*)
+!    integer, intent(in)    :: isym(*)
+!    real(8), intent(in)    :: buffer(*)
+!    integer, intent(in)    :: n
+!    real(8), intent(in)    :: derv_active(max_block_length, 0:n)
+!    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
+!!   ----------------------------------------------------------------------------
+!    real(8)                ::  r_b,     s_b(3)
+!    real(8)                :: gr_b(3), gs_b(3, 3)
+!    real(8)                ::  t_b,    ts_b(3)
+!
+!    real(8)                :: z_b
+!    real(8)                :: z_b_t
+!    real(8)                :: y_b(3)
+!    real(8)                :: y_b_t(3)
+!
+!    integer                :: k_start, k, im, im_off, j
+!    type(fde_omega_prefactor) :: u
+!    integer :: i
+!!   ----------------------------------------------------------------------------
+!
+!    k_start = 1
+!    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+!
+!    do im = 1, nr_dmat
+!
+!       im_off = mat_dim*mat_dim*nz*(im - 1)
+!
+!!      charge density part
+!       if (is_gga) then
+!          call get_gn_nonhermitian(r_b,                      &
+!                                   gr_b,                     &
+!                                   isym(im) - 1,             &
+!                                   mat_dim,                  &
+!                                   tb_dmat(1 + im_off),      &
+!                                   buffer,                   &
+!                                   ao)
+!       else
+!          call get_n(r_b,                       &
+!                     isym(im) - 1,              &
+!                     mat_dim,                   &
+!                     tb_dmat(1 + im_off),       &
+!                     buffer,                    &
+!                     ao)
+!       end if
+!
+!       !if (use_potential) then
+!       !else
+!       !end if
+!
+!       u%n(im) = u%n(im) + (derv_total(1, d2000000) - derv_active(1, d2000000))*r_b
+!
+!       if (is_gga) then
+!          z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
+!                     + gn_0_pointwise(2)*gr_b(2) &
+!                     + gn_0_pointwise(3)*gr_b(3))
+!
+!          z_b_t = 2.0d0*(gn_0_t_pointwise(1)*gr_b(1) &
+!                       + gn_0_t_pointwise(2)*gr_b(2) &
+!                       + gn_0_t_pointwise(3)*gr_b(3))
+!
+!
+!          u%n(im) = u%n(im) + (derv_total(1, d1010000)*z_b_t - derv_active(1, d1010000)*z_b)
+!
+!          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_t_pointwise(1:3)*r_b*derv_total(1, d1010000)   &
+!                                        ! gosia: additional factor 2 is in definitions of z_b and z_b_t
+!                                        + 2.0d0*gn_0_t_pointwise(1:3)*z_b_t*derv_total(1, d0020000) &
+!                                        + 2.0d0*gr_b(1:3)*derv_total(1, d0010000)                   &
+!                                        - 2.0d0*gn_0_pointwise(1:3)*r_b*derv_active(1, d1010000)    &
+!                                        - 2.0d0*gn_0_pointwise(1:3)*z_b*derv_active(1, d0020000)    &
+!                                        - 2.0d0*gr_b(1:3)*derv_active(1, d0010000)
+!
+!       end if
+!
+!!      SDFT
+!       if (.not. dft_cfg_no_sdft) then
+!          if (is_gga) then
+!             call get_gs_nonhermitian(s_b,                       &
+!                                      gs_b,                      &
+!                                      isym(im) - 1,              &
+!                                      mat_dim,                   &
+!                                      tb_dmat(1 + im_off),       &
+!                                      buffer,                    &
+!                                      ao)
+!          else
+!             call get_s(s_b,                        &
+!                        isym(im) - 1,               &
+!                        mat_dim,                    &
+!                        tb_dmat(1 + im_off),        &
+!                        buffer,                     &
+!                        ao)
+!          end if
+!
+!          !if (use_potential) then
+!          !else
+!          !end if
+!
+!
+!          do k = k_start, 3
+!
+!             u%s(k, im) = u%s(k, im) + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b(k)
+!
+!             if (is_gga) then
+!                y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
+!                        + gn_0_pointwise(2)*gs_b(2, k) &
+!                        + gn_0_pointwise(3)*gs_b(3, k)
+!
+!                y_b_t(k) = gn_0_t_pointwise(1)*gs_b(1, k) &
+!                         + gn_0_t_pointwise(2)*gs_b(2, k) &
+!                         + gn_0_t_pointwise(3)*gs_b(3, k)
+!
+!                u%s(k, im) = u%s(k, im) + (derv_total(1, d0101000)*y_b_t(k) - derv_active(1, d0101000)*y_b(k))
+!
+!                u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_t_pointwise(1:3)*s_b(k)*derv_total(1, d0101000)   &
+!                                                    +       gn_0_t_pointwise(1:3)*y_b_t(k)*derv_total(1, d0002000) &
+!                                                    + 2.0d0*gs_b(1:3, k)*derv_total(1, d0000100)                   &
+!                                                    -       gn_0_pointwise(1:3)*s_b(k)*derv_active(1, d0101000)    &
+!                                                    -       gn_0_pointwise(1:3)*y_b(k)*derv_active(1, d0002000)    &
+!                                                    - 2.0d0*gs_b(1:3, k)*derv_active(1, d0000100)
+!             end if
+!          end do
+!
+!      end if
+!    end do
+!
+!  end subroutine
+
+!  subroutine london_direct_kern(block_length,       &
+!                        mat_dim,            &
+!                        nz,                 &
+!                        ao,               &
+!                        n_0,                &
+!                        n_0_t,                &
+!                        gn_0_pointwise,     &
+!                        gn_0_t_pointwise,     &
+!                        gnn_0,              &
+!                        gnn_0_t,              &
+!                        w,                  &
+!                        is_gga,             &
+!                        dmat_full,            &
+!                        buffer,             &
+!                        n,                  &
+!                        derv_active,        &
+!                        derv_total,         &
+!                        rx, ry, rz,         &
+!                        u)
+!
+!!   ----------------------------------------------------------------------------
+!    integer, intent(in)    :: block_length
+!    integer, intent(in)    :: mat_dim
+!    integer, intent(in)    :: nz
+!    real(8), intent(in)    :: ao(*)
+!    real(8), intent(in)    :: n_0(*)
+!    real(8), intent(in)    :: n_0_t(*)
+!    real(8), intent(in)    :: gn_0_pointwise(*)
+!    real(8), intent(in)    :: gn_0_t_pointwise(*)
+!    real(8), intent(in)    :: gnn_0(*)
+!    real(8), intent(in)    :: gnn_0_t(*)
+!    real(8), intent(in)    :: w(*)
+!    logical, intent(in)    :: is_gga
+!    real(8), intent(in)    :: dmat_full(*)
+!    real(8), intent(in)    :: buffer(*)
+!    integer, intent(in)    :: n
+!    real(8), intent(in)    :: derv_active(max_block_length, 0:n)
+!    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
+!    real(8), intent(in)    :: rx, ry, rz
+!!   ----------------------------------------------------------------------------
+!    real(8)                ::  s_b_lao(3, 3)
+!    real(8)                ::  gs_b_lao(3, 3, 3)
+!    real(8)                ::  gsgn_b_lao(3, 3)
+!    real(8)                ::  gsgn_t_b_lao(3, 3)
+!    real(8)                ::  t_b,    ts_b(3)
+!
+!    real(8)                :: y_b(3, 3)
+!    real(8)                :: y_b_t(3, 3)
+!
+!    integer                :: k_start, k, a, im_off, j
+!    type(fde_omega_prefactor) :: u
+!    integer :: i
+!!   ----------------------------------------------------------------------------
+!
+!    s_b_lao    = 0.0d0
+!    gs_b_lao   = 0.0d0
+!    gsgn_b_lao   = 0.0d0
+!    gsgn_t_b_lao   = 0.0d0
+!
+!    k_start = 1
+!    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+!
+!    if (is_gga) then
+!
+!! that is not optimal, but for the moment it works
+!      call get_gs_lao(s_b_lao,     &
+!                      gs_b_lao,    &
+!                      gsgn_b_lao,  &
+!                      gn_0_pointwise, &
+!                      (/1,1,1/),   &
+!                      mat_dim,     &
+!                      dmat_full,   &
+!                      ao,          &
+!                      rx, ry, rz)
+!
+!      call get_gs_lao(s_b_lao,     &
+!                      gs_b_lao,    &
+!                      gsgn_t_b_lao,  &
+!                      gn_0_t_pointwise, &
+!                      (/1,1,1/),   &
+!                      mat_dim,     &
+!                      dmat_full,   &
+!                      ao,          &
+!                      rx, ry, rz)
+!
+!    else
+!       call get_s_lao(s_b_lao,          &
+!                      (/0, 0, 0/),      &
+!                      mat_dim,          &
+!                      dmat_full,        &
+!                      ao,               &
+!                      rx, ry, rz)
+!    end if
+!
+!    do a = 1, 3     !B_{x,y,z}
+!       do k = k_start, 3  !Sigma_{x,y,z}
+!
+!          u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
+!                          + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b_lao(k, a)
+!         
+!          if (is_gga) then
+!         
+!             u%s_b_lao(k, a) = u%s_b_lao(k, a) + (derv_total(1, d0101000)*gsgn_t_b_lao(k, a) &
+!                                                - derv_active(1, d0101000)*gsgn_b_lao(k, a))
+!         
+!             u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)   &
+!                                                           - gn_0_pointwise(1:3)*s_b_lao(k, a)*derv_active(1, d0101000)    &
+!                                                           + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000)     &
+!                                                           - gn_0_pointwise(1:3)*gsgn_b_lao(k, a)*derv_active(1, d0002000)        &
+!                                                     + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)                   &
+!                                                     - 2.0d0*gs_b_lao(1:3, k, a)*derv_active(1, d0000100)
+!          end if
+!       end do
+!    end do
+!
+!
+!  end subroutine
+
+!  subroutine london_kern_coupling(block_length,      &
+!                                  mat_dim,           &
+!                                  nz,                &
+!                                  ao,                &
+!                                  n_0_t,             &
+!                                  gn_0_t_pointwise,  &
+!                                  gnn_0_t,           &
+!                                  w,                 &
+!                                  is_gga,            &
+!                                  n,                 &
+!                                  derv_total,        &
+!                                  rx, ry, rz,        &
+!                                  u)
+!
+!!   ----------------------------------------------------------------------------
+!    integer, intent(in)    :: block_length
+!    integer, intent(in)    :: mat_dim
+!    integer, intent(in)    :: nz
+!    real(8), intent(in)    :: ao(*)
+!    real(8), intent(in)    :: n_0_t(*)
+!    real(8), intent(in)    :: gn_0_t_pointwise(*)
+!    real(8), intent(in)    :: gnn_0_t(*)
+!    real(8), intent(in)    :: w(*)
+!    logical, intent(in)    :: is_gga
+!    integer, intent(in)    :: n
+!    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
+!    real(8), intent(in)    :: rx, ry, rz
+!!   ----------------------------------------------------------------------------
+!    real(8)                ::  z_b
+!    real(8)                ::  n_b_lao(3)
+!    real(8)                ::  gn_b_lao(3, 3)
+!    real(8)                ::  s_b_lao(3, 3)
+!    real(8)                ::  gs_b_lao(3, 3, 3)
+!    real(8)                ::  gsgn_t_b_lao(3, 3)
+!
+!    integer                :: k_start, k, a
+!    type(fde_omega_prefactor) :: u
+!!   ----------------------------------------------------------------------------
+!    n_b_lao    = 0.0d0
+!    gn_b_lao    = 0.0d0
+!    s_b_lao    = 0.0d0
+!    gs_b_lao   = 0.0d0
+!    gsgn_t_b_lao   = 0.0d0
+!
+!    k_start = 1
+!    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+!
+!!   find n, gn, s, gs from the frozen pertden file
+!    call find_pertden(rx, ry, rz, w(1), &
+!                      n_b  = n_b_lao,   &
+!                      gn_b = gn_b_lao,  & 
+!                      s_b  = s_b_lao,   &
+!                      gs_b = gs_b_lao)
+!
+!!   charge density contributions
+!    do a = 1, 3     !B_{x,y,z}
+!       u%n(a) = u%n(a) + derv_total(1, d2000000)*n_b_lao(a)
+!
+!       if (is_gga) then
+!          z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
+!                     + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
+!                     + gn_0_t_pointwise(3)*gn_b_lao(3, a))
+!
+!          u%n(a) = u%n(a) + derv_total(1, d1010000)*z_b
+!
+!          u%gn(1:3, a) = u%gn(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
+!                                      + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
+!                                      + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
+!       end if
+!    end do
+!
+!!   spin density contributions
+!    if (.not. dft_cfg_no_sdft) then
+!       do a = 1, 3     !B_{x,y,z}
+!          do k = k_start, 3  !Sigma_{x,y,z}
+!       
+!             u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
+!                             + derv_total(1, d0200000)*s_b_lao(k, a)
+!            
+!             if (is_gga) then
+!            
+!                gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
+!                                   + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
+!                                   + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
+!       
+!                u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
+!            
+!                u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
+!                            + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
+!                            + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
+!                            + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
+!       
+!             end if
+!          end do
+!       end do
+!    end if
+!
+!
+!  end subroutine
+
+
 
 end module fde_dirac_matrices_integration

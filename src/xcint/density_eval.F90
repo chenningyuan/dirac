@@ -50,6 +50,7 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_s_lao
+   public get_gs_lao
    public get_jblao
    public get_gjblao
    public get_jblao_ll
@@ -1294,16 +1295,15 @@ contains
    end subroutine
 
 
-   subroutine get_s_lao(s, isym, mat_dim, dmat, ao, cx, cy, cz, buffer)
+   subroutine get_s_lao(s, irep, mat_dim, dmat, ao, cx, cy, cz)
    
 !    ----------------------------------------------------------------------------
      real(8), intent(out) :: s(3, 3)
-     integer, intent(in)  :: isym(*)
+     integer, intent(in)  :: irep(*)
      integer, intent(in)  :: mat_dim
      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)  :: ao(*)
      real(8), intent(in)  :: cx, cy, cz
-     real(8), intent(in)  :: buffer(*)
 !    ----------------------------------------------------------------------------
      integer              :: nr1, nr2, st1, st2, iblock, jxyz
      integer              :: a, b, c, irp1, irp2, ii, jj
@@ -1336,19 +1336,19 @@ contains
     
            nr1 = ao_block_nr(iblock)
            st1 = ao_block_start(iblock)
-           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a) - 1))
-           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep(a)))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
     
            do ii = st1, st1 + nr1 - 1
              do jj = st2, st2 + nr2 - 1
     
-               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) &
-                   - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) &
-                   - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
 
-               s(jxyz, a) = s(jxyz, a) - dmat(jj, ii, iq(jxyz))*ff
+               s(jxyz, a) = s(jxyz, a) &
+                          + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
     
              end do
            end do
@@ -1359,6 +1359,117 @@ contains
      end do      ! do a = 1, 3
 
    end subroutine
+
+   subroutine get_gs_lao(s, gs, gsgn, gn_0, isym, mat_dim, dmat, ao, cx, cy, cz)
+
+!    ----------------------------------------------------------------------------
+     real(8), intent(out) :: s(3, 3)
+     real(8), intent(out) :: gs(3, 3, 3)
+     real(8), intent(out) :: gsgn(3, 3)
+     real(8), intent(in)  :: gn_0(3)
+     integer, intent(in)  :: isym(*)
+     integer, intent(in)  :: mat_dim
+     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)  :: ao(*)
+     real(8), intent(in)  :: cx, cy, cz
+!    ----------------------------------------------------------------------------
+     integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
+     integer              :: a, b, c, ii, jj
+     real(8)              :: r_co(3), ff, ff_gn
+     real(8), external    :: ddot
+     integer :: i, j, k
+!    ----------------------------------------------------------------------------
+
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
+     s = 0.0d0
+     gs = 0.0d0
+     gsgn = 0.0d0
+     ff= 0.0d0
+
+     do a = 1, 3   ! B_{x,y,z}
+       select case (a)
+         case (1)
+           b = 2; c = 3
+         case (2)
+           b = 3; c = 1
+         case (3)
+           b = 1; c = 2
+       end select
+
+       do jxyz = jxyz_start, 3  ! Sigma_{x,y,z}
+
+         do iblock = 1, nr_ao_blocks
+
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+           do ii = st1, st1 + nr1 - 1
+             do jj = st2, st2 + nr2 - 1
+
+!              lda term
+               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+
+               ff_gn = (gn_0(c)*ao(ao_off_g0_m1(0, b) + jj) - gn_0(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+                     - (gn_0(c)*ao(ao_off_g0_m1(0, b) + ii) - gn_0(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+
+               s(jxyz, a) = s(jxyz, a) &
+                          + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+               gsgn(jxyz, a) = gsgn(jxyz, a) &
+                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
+
+!              start gradient terms
+               ff_gn = 0.0d0
+               do ixyz = 1, 3 ! dR_{x,y,z}
+
+                  ff = (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + jj) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + jj))*ao(ii)  &
+                     - (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + ii) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + ii))*ao(jj)  &
+                     + (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ao_off_g1_m0(ixyz, 0) + ii)  &
+                     - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(ao_off_g1_m0(ixyz, 0) + jj)
+
+                  ff_gn = ff_gn + ff*gn_0(ixyz)
+
+                  gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                                    + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+                  if (ixyz .eq. b) then
+
+                     ff = -(ao(ao_off_g0_m1(0, c) + jj)*ao(ii) - ao(ao_off_g0_m1(0, c) + ii)*ao(jj))
+
+                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+                  else if (ixyz .eq. c) then
+
+                     ff = ao(ao_off_g0_m1(0, b) + jj)*ao(ii) - ao(ao_off_g0_m1(0, b) + ii)*ao(jj)
+
+                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+                  end if
+
+               end do ! do ixyz = 1, 3
+
+               gsgn(jxyz, a) = gsgn(jxyz, a) &
+                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
+
+             end do
+           end do
+
+         end do  ! do iblock = 1, nr_ao_blocks
+
+       end do    ! do jxyz = 1, jxyz_start, 3
+     end do      ! do a = 1, 3
+
+   end subroutine
+
 
    subroutine get_jblao(perturbation_component, cval, D_0, mat_dim, ao, r, j)
 

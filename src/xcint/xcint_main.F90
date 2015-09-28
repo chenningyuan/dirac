@@ -2047,87 +2047,87 @@ contains
   end subroutine
 
 
-  subroutine lr_sdft_lao_direct(block_length,       &
-                                mat_dim,            &
-                                nz,                 &
-                                ao,               &
-                                n_0,                &
-                                gn_0_pointwise,     &
-                                gnn_0,              &
-                                w,                  &
-                                is_gga_qi,          &
-                                buffer,             &
-                                n,                  &
-                                derv, u,            &
-                                px, py, pz)
-
-!   ----------------------------------------------------------------------------
-    integer, intent(in)    :: block_length
-    integer, intent(in)    :: mat_dim
-    integer, intent(in)    :: nz
-    real(8), intent(in)    :: ao(*)
-    real(8), intent(in)    :: n_0(*)
-    real(8), intent(in)    :: gn_0_pointwise(*)
-    real(8), intent(in)    :: gnn_0(*)
-    real(8), intent(in)    :: w(*)
-    logical, intent(in)    :: is_gga_qi
-    real(8), intent(in)    :: buffer(*)
-    integer, intent(in)    :: n
-    real(8), intent(in)    :: derv(max_block_length, 0:n)
-    real(8), intent(in)    :: px, py, pz
-!   ----------------------------------------------------------------------------
-    real(8)                ::  s_b_lao(3, 3), gs_b_lao(3, 3, 3)
-
-    real(8)                :: z_b
-    real(8)                :: y_b(3, 3)
-
-    integer                :: k_start, k, im, im_off, j
-    type(omega_prefactor) :: u
-    integer :: i
-!   ----------------------------------------------------------------------------
-
-    k_start = 1
-    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
-
-
-    if (is_gga_qi) then
-      print *, 'ERROR: get_gs_lao needs to be programmed'
-      stop
-    else
-      call get_s_lao(s_b_lao,                            &
-                     fmat_pg_sym,                        &
-                     mat_dim,                            &
-                     dmat_0,                             &
-                     ao, &
-                     px, py, pz,                         &
-                     buffer)
-
-    end if
-
-    do im = 1, nr_fmat
-        do k = k_start, 3
-
-           u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0200000)*s_b_lao(k, im)
-
-           if (is_gga_qi) then
-              y_b(k, im)  = gn_0_pointwise(1)*gs_b_lao(1, k, im) &
-                          + gn_0_pointwise(2)*gs_b_lao(2, k, im) &
-                          + gn_0_pointwise(3)*gs_b_lao(3, k, im)
-
-              u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0101000)*y_b(k, im)
-
-              u%gs_lao(1:3, k, im) = u%gs_lao(1:3, k, im)                               &
-                                   +(gn_0_pointwise(1)*s_b_lao(1, k)                    &
-                                   + gn_0_pointwise(2)*s_b_lao(2, k)                    &
-                                   + gn_0_pointwise(3)*s_b_lao(3, k))*derv(1, d0101000) &
-                                   + gn_0_pointwise(1:3)*y_b(k, im)*derv(1, d0002000)   &
-                                   + 2.0d0*gs_b_lao(1:3, k, im)*derv(1, d0000100)
-           end if
-        end do
-
-    end do
-
-  end subroutine
+!  subroutine lr_sdft_lao_direct(block_length,       &
+!                                mat_dim,            &
+!                                nz,                 &
+!                                ao,               &
+!                                n_0,                &
+!                                gn_0_pointwise,     &
+!                                gnn_0,              &
+!                                w,                  &
+!                                is_gga_qi,          &
+!                                buffer,             &
+!                                n,                  &
+!                                derv, u,            &
+!                                px, py, pz)
+!
+!!   ----------------------------------------------------------------------------
+!    integer, intent(in)    :: block_length
+!    integer, intent(in)    :: mat_dim
+!    integer, intent(in)    :: nz
+!    real(8), intent(in)    :: ao(*)
+!    real(8), intent(in)    :: n_0(*)
+!    real(8), intent(in)    :: gn_0_pointwise(*)
+!    real(8), intent(in)    :: gnn_0(*)
+!    real(8), intent(in)    :: w(*)
+!    logical, intent(in)    :: is_gga_qi
+!    real(8), intent(in)    :: buffer(*)
+!    integer, intent(in)    :: n
+!    real(8), intent(in)    :: derv(max_block_length, 0:n)
+!    real(8), intent(in)    :: px, py, pz
+!!   ----------------------------------------------------------------------------
+!    real(8)                ::  s_b_lao(3, 3), gs_b_lao(3, 3, 3)
+!
+!    real(8)                :: z_b
+!    real(8)                :: y_b(3, 3)
+!
+!    integer                :: k_start, k, im, im_off, j
+!    type(omega_prefactor) :: u
+!    integer :: i
+!!   ----------------------------------------------------------------------------
+!
+!    k_start = 1
+!    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+!
+!
+!    if (is_gga_qi) then
+!      print *, 'ERROR: get_gs_lao needs to be programmed'
+!      stop
+!    else
+!      call get_s_lao(s_b_lao,                            &
+!                     fmat_pg_sym,                        &
+!                     mat_dim,                            &
+!                     dmat_0,                             &
+!                     ao, &
+!                     px, py, pz,                         &
+!                     buffer)
+!
+!    end if
+!
+!    do im = 1, nr_fmat
+!        do k = k_start, 3
+!
+!           u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0200000)*s_b_lao(k, im)
+!
+!           if (is_gga_qi) then
+!              y_b(k, im)  = gn_0_pointwise(1)*gs_b_lao(1, k, im) &
+!                          + gn_0_pointwise(2)*gs_b_lao(2, k, im) &
+!                          + gn_0_pointwise(3)*gs_b_lao(3, k, im)
+!
+!              u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0101000)*y_b(k, im)
+!
+!              u%gs_lao(1:3, k, im) = u%gs_lao(1:3, k, im)                               &
+!                                   +(gn_0_pointwise(1)*s_b_lao(1, k)                    &
+!                                   + gn_0_pointwise(2)*s_b_lao(2, k)                    &
+!                                   + gn_0_pointwise(3)*s_b_lao(3, k))*derv(1, d0101000) &
+!                                   + gn_0_pointwise(1:3)*y_b(k, im)*derv(1, d0002000)   &
+!                                   + 2.0d0*gs_b_lao(1:3, k, im)*derv(1, d0000100)
+!           end if
+!        end do
+!
+!    end do
+!
+!  end subroutine
 
 
   subroutine lr_sdft_lao_reorth(block_length,       &
