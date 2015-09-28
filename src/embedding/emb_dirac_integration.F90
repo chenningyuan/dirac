@@ -731,32 +731,32 @@ contains
              !end if
          
          end if
-!
-!!       (2) london reorthogonalization contribution, 2nd functional derivatives
-!!       -----------------------------------------------------------------------
-!           if (do_london_rhs_ro) then
-!
-!              call lao_reorth(bllen,          &
-!                              mat_dim,        &
-!                              nz,             &
-!                              ao,             &
-!                              n_0,            &
-!                              n_0_t,          &
-!                              gn_0_pointwise, &
-!                              z0tt,           &
-!                              gnn_0,          &
-!                              gnn_0_t,        &
-!                              w,              &
-!                              use_gga,        &
-!                              dmat,           &
-!                              dmat_pg_sym,    &
-!                              buffer,         &
-!                              derv_length,    &
-!                              derv_active,    &
-!                              derv_total,     &
-!                              u)
-!           end if
-!
+
+!       (2) london reorthogonalization contribution, 2nd functional derivatives
+!       -----------------------------------------------------------------------
+           if (do_london_rhs_ro) then
+
+              call lao_reorth(bllen,          &
+                              mat_dim,        &
+                              nz,             &
+                              ao,             &
+                              n_0,            &
+                              n_0_t,          &
+                              gn_0_pointwise, &
+                              z0tt,           &
+                              gnn_0,          &
+                              gnn_0_t,        &
+                              w,              &
+                              use_gga,        &
+                              dmat,           &
+                              dmat_pg_sym,    &
+                              buffer,         &
+                              derv_length,    &
+                              derv_active,    &
+                              derv_total,     &
+                              u)
+           end if
+
 !!       (3) direct-lao spin density contribution, 2nd functional derivatives
 !!       --------------------------------------------------------------------
 !
@@ -1310,165 +1310,165 @@ contains
 
   end subroutine
 
-!  subroutine lao_reorth(block_length,       &
-!                        mat_dim,            &
-!                        nz,                 &
-!                        ao,                 &
-!                        n_0,                &
-!                        n_0_t,              &
-!                        gn_0_pointwise,     &
-!                        gn_0_t_pointwise,   &
-!                        gnn_0,              &
-!                        gnn_0_t,            &
-!                        w,                  &
-!                        is_gga,             &
-!                        tb_dmat,            &
-!                        isym,               &
-!                        buffer,             &
-!                        n,                  &
-!                        derv_active,        &
-!                        derv_total,         &
-!                        u)
-!
-!!   ----------------------------------------------------------------------------
-!    integer, intent(in)    :: block_length
-!    integer, intent(in)    :: mat_dim
-!    integer, intent(in)    :: nz
-!    real(8), intent(in)    :: ao(*)
-!    real(8), intent(in)    :: n_0(*)
-!    real(8), intent(in)    :: n_0_t(*)
-!    real(8), intent(in)    :: gn_0_pointwise(*)
-!    real(8), intent(in)    :: gn_0_t_pointwise(*)
-!    real(8), intent(in)    :: gnn_0(*)
-!    real(8), intent(in)    :: gnn_0_t(*)
-!    real(8), intent(in)    :: w(*)
-!    logical, intent(in)    :: is_gga
-!    real(8), intent(in)    :: tb_dmat(*)
-!    integer, intent(in)    :: isym(*)
-!    real(8), intent(in)    :: buffer(*)
-!    integer, intent(in)    :: n
-!    real(8), intent(in)    :: derv_active(max_block_length, 0:n)
-!    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
-!!   ----------------------------------------------------------------------------
-!    real(8)                ::  r_b,     s_b(3)
-!    real(8)                :: gr_b(3), gs_b(3, 3)
-!    real(8)                ::  t_b,    ts_b(3)
-!
-!    real(8)                :: z_b
-!    real(8)                :: z_b_t
-!    real(8)                :: y_b(3)
-!    real(8)                :: y_b_t(3)
-!
-!    integer                :: k_start, k, im, im_off, j
-!    type(fde_omega_prefactor) :: u
-!    integer :: i
-!!   ----------------------------------------------------------------------------
-!
-!    k_start = 1
-!    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
-!
-!    do im = 1, nr_dmat
-!
-!       im_off = mat_dim*mat_dim*nz*(im - 1)
-!
-!!      charge density part
-!       if (is_gga) then
-!          call get_gn_nonhermitian(r_b,                      &
-!                                   gr_b,                     &
-!                                   isym(im) - 1,             &
-!                                   mat_dim,                  &
-!                                   tb_dmat(1 + im_off),      &
-!                                   buffer,                   &
-!                                   ao)
-!       else
-!          call get_n(r_b,                       &
-!                     isym(im) - 1,              &
-!                     mat_dim,                   &
-!                     tb_dmat(1 + im_off),       &
-!                     buffer,                    &
-!                     ao)
-!       end if
-!
-!       !if (use_potential) then
-!       !else
-!       !end if
-!
-!       u%n(im) = u%n(im) + (derv_total(1, d2000000) - derv_active(1, d2000000))*r_b
-!
-!       if (is_gga) then
-!          z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
-!                     + gn_0_pointwise(2)*gr_b(2) &
-!                     + gn_0_pointwise(3)*gr_b(3))
-!
-!          z_b_t = 2.0d0*(gn_0_t_pointwise(1)*gr_b(1) &
-!                       + gn_0_t_pointwise(2)*gr_b(2) &
-!                       + gn_0_t_pointwise(3)*gr_b(3))
-!
-!
-!          u%n(im) = u%n(im) + (derv_total(1, d1010000)*z_b_t - derv_active(1, d1010000)*z_b)
-!
-!          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_t_pointwise(1:3)*r_b*derv_total(1, d1010000)   &
-!                                        ! gosia: additional factor 2 is in definitions of z_b and z_b_t
-!                                        + 2.0d0*gn_0_t_pointwise(1:3)*z_b_t*derv_total(1, d0020000) &
-!                                        + 2.0d0*gr_b(1:3)*derv_total(1, d0010000)                   &
-!                                        - 2.0d0*gn_0_pointwise(1:3)*r_b*derv_active(1, d1010000)    &
-!                                        - 2.0d0*gn_0_pointwise(1:3)*z_b*derv_active(1, d0020000)    &
-!                                        - 2.0d0*gr_b(1:3)*derv_active(1, d0010000)
-!
-!       end if
-!
-!!      SDFT
-!       if (.not. dft_cfg_no_sdft) then
-!          if (is_gga) then
-!             call get_gs_nonhermitian(s_b,                       &
-!                                      gs_b,                      &
-!                                      isym(im) - 1,              &
-!                                      mat_dim,                   &
-!                                      tb_dmat(1 + im_off),       &
-!                                      buffer,                    &
-!                                      ao)
-!          else
-!             call get_s(s_b,                        &
-!                        isym(im) - 1,               &
-!                        mat_dim,                    &
-!                        tb_dmat(1 + im_off),        &
-!                        buffer,                     &
-!                        ao)
-!          end if
-!
-!          !if (use_potential) then
-!          !else
-!          !end if
-!
-!
-!          do k = k_start, 3
-!
-!             u%s(k, im) = u%s(k, im) + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b(k)
-!
-!             if (is_gga) then
-!                y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
-!                        + gn_0_pointwise(2)*gs_b(2, k) &
-!                        + gn_0_pointwise(3)*gs_b(3, k)
-!
-!                y_b_t(k) = gn_0_t_pointwise(1)*gs_b(1, k) &
-!                         + gn_0_t_pointwise(2)*gs_b(2, k) &
-!                         + gn_0_t_pointwise(3)*gs_b(3, k)
-!
-!                u%s(k, im) = u%s(k, im) + (derv_total(1, d0101000)*y_b_t(k) - derv_active(1, d0101000)*y_b(k))
-!
-!                u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_t_pointwise(1:3)*s_b(k)*derv_total(1, d0101000)   &
-!                                                    +       gn_0_t_pointwise(1:3)*y_b_t(k)*derv_total(1, d0002000) &
-!                                                    + 2.0d0*gs_b(1:3, k)*derv_total(1, d0000100)                   &
-!                                                    -       gn_0_pointwise(1:3)*s_b(k)*derv_active(1, d0101000)    &
-!                                                    -       gn_0_pointwise(1:3)*y_b(k)*derv_active(1, d0002000)    &
-!                                                    - 2.0d0*gs_b(1:3, k)*derv_active(1, d0000100)
-!             end if
-!          end do
-!
-!      end if
-!    end do
-!
-!  end subroutine
+  subroutine lao_reorth(block_length,       &
+                        mat_dim,            &
+                        nz,                 &
+                        ao,                 &
+                        n_0,                &
+                        n_0_t,              &
+                        gn_0_pointwise,     &
+                        gn_0_t_pointwise,   &
+                        gnn_0,              &
+                        gnn_0_t,            &
+                        w,                  &
+                        is_gga,             &
+                        tb_dmat,            &
+                        isym,               &
+                        buffer,             &
+                        n,                  &
+                        derv_active,        &
+                        derv_total,         &
+                        u)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: n_0(*)
+    real(8), intent(in)    :: n_0_t(*)
+    real(8), intent(in)    :: gn_0_pointwise(*)
+    real(8), intent(in)    :: gn_0_t_pointwise(*)
+    real(8), intent(in)    :: gnn_0(*)
+    real(8), intent(in)    :: gnn_0_t(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga
+    real(8), intent(in)    :: tb_dmat(*)
+    integer, intent(in)    :: isym(*)
+    real(8), intent(in)    :: buffer(*)
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv_active(max_block_length, 0:n)
+    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
+!   ----------------------------------------------------------------------------
+    real(8)                ::  r_b,     s_b(3)
+    real(8)                :: gr_b(3), gs_b(3, 3)
+    real(8)                ::  t_b,    ts_b(3)
+
+    real(8)                :: z_b
+    real(8)                :: z_b_t
+    real(8)                :: y_b(3)
+    real(8)                :: y_b_t(3)
+
+    integer                :: k_start, k, im, im_off, j
+    type(fde_omega_prefactor) :: u
+    integer :: i
+!   ----------------------------------------------------------------------------
+
+    k_start = 1
+    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+    do im = 1, nr_dmat
+
+       im_off = mat_dim*mat_dim*nz*(im - 1)
+
+!      charge density part
+       if (is_gga) then
+          call get_gn_nonhermitian(r_b,                      &
+                                   gr_b,                     &
+                                   isym(im) - 1,             &
+                                   mat_dim,                  &
+                                   tb_dmat(1 + im_off),      &
+                                   buffer,                   &
+                                   ao)
+       else
+          call get_n(r_b,                       &
+                     isym(im) - 1,              &
+                     mat_dim,                   &
+                     tb_dmat(1 + im_off),       &
+                     buffer,                    &
+                     ao)
+       end if
+
+       !if (use_potential) then
+       !else
+       !end if
+
+       u%n(im) = u%n(im) + (derv_total(1, d2000000) - derv_active(1, d2000000))*r_b
+
+       if (is_gga) then
+          z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
+                     + gn_0_pointwise(2)*gr_b(2) &
+                     + gn_0_pointwise(3)*gr_b(3))
+
+          z_b_t = 2.0d0*(gn_0_t_pointwise(1)*gr_b(1) &
+                       + gn_0_t_pointwise(2)*gr_b(2) &
+                       + gn_0_t_pointwise(3)*gr_b(3))
+
+
+          u%n(im) = u%n(im) + (derv_total(1, d1010000)*z_b_t - derv_active(1, d1010000)*z_b)
+
+          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_t_pointwise(1:3)*r_b*derv_total(1, d1010000)   &
+                                        ! gosia: additional factor 2 is in definitions of z_b and z_b_t
+                                        + 2.0d0*gn_0_t_pointwise(1:3)*z_b_t*derv_total(1, d0020000) &
+                                        + 2.0d0*gr_b(1:3)*derv_total(1, d0010000)                   &
+                                        - 2.0d0*gn_0_pointwise(1:3)*r_b*derv_active(1, d1010000)    &
+                                        - 2.0d0*gn_0_pointwise(1:3)*z_b*derv_active(1, d0020000)    &
+                                        - 2.0d0*gr_b(1:3)*derv_active(1, d0010000)
+
+       end if
+
+!      SDFT
+       if (.not. dft_cfg_no_sdft) then
+          if (is_gga) then
+             call get_gs_nonhermitian(s_b,                       &
+                                      gs_b,                      &
+                                      isym(im) - 1,              &
+                                      mat_dim,                   &
+                                      tb_dmat(1 + im_off),       &
+                                      buffer,                    &
+                                      ao)
+          else
+             call get_s(s_b,                        &
+                        isym(im) - 1,               &
+                        mat_dim,                    &
+                        tb_dmat(1 + im_off),        &
+                        buffer,                     &
+                        ao)
+          end if
+
+          !if (use_potential) then
+          !else
+          !end if
+
+
+          do k = k_start, 3
+
+             u%s(k, im) = u%s(k, im) + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b(k)
+
+             if (is_gga) then
+                y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
+                        + gn_0_pointwise(2)*gs_b(2, k) &
+                        + gn_0_pointwise(3)*gs_b(3, k)
+
+                y_b_t(k) = gn_0_t_pointwise(1)*gs_b(1, k) &
+                         + gn_0_t_pointwise(2)*gs_b(2, k) &
+                         + gn_0_t_pointwise(3)*gs_b(3, k)
+
+                u%s(k, im) = u%s(k, im) + (derv_total(1, d0101000)*y_b_t(k) - derv_active(1, d0101000)*y_b(k))
+
+                u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_t_pointwise(1:3)*s_b(k)*derv_total(1, d0101000)   &
+                                                    +       gn_0_t_pointwise(1:3)*y_b_t(k)*derv_total(1, d0002000) &
+                                                    + 2.0d0*gs_b(1:3, k)*derv_total(1, d0000100)                   &
+                                                    -       gn_0_pointwise(1:3)*s_b(k)*derv_active(1, d0101000)    &
+                                                    -       gn_0_pointwise(1:3)*y_b(k)*derv_active(1, d0002000)    &
+                                                    - 2.0d0*gs_b(1:3, k)*derv_active(1, d0000100)
+             end if
+          end do
+
+      end if
+    end do
+
+  end subroutine
 
 !  subroutine london_direct_kern(block_length,       &
 !                        mat_dim,            &
