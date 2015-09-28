@@ -30,8 +30,8 @@ module fde_dirac_matrices_integration
       real(8), allocatable :: gn(:, :)
       real(8), allocatable :: s(:, :)
       real(8), allocatable :: gs(:, :, :)
-      !real(8), allocatable :: s_b_lao(:, :)
-      !real(8), allocatable :: gs_b_lao(:, :, :)
+      real(8), allocatable :: s_b_lao(:, :)
+      real(8), allocatable :: gs_b_lao(:, :, :)
    end type
 
    integer, parameter :: bllen = 1 !later more, now slowdft
@@ -505,8 +505,8 @@ contains
          logical :: ugs_above_threshold
          logical :: utn_above_threshold
          logical :: uts_above_threshold
-         !logical :: us_b_lao_above_threshold
-         !logical :: ugs_b_lao_above_threshold
+         logical :: us_b_lao_above_threshold
+         logical :: ugs_b_lao_above_threshold
 
          real(8), allocatable :: ao(:, :)
          real(8), allocatable :: buffer(:, :)
@@ -518,8 +518,8 @@ contains
          allocate(u%gn(   3, nr_fmat))
          allocate(u%s (   3, nr_fmat))
          allocate(u%gs(3, 3, nr_fmat))
-!         allocate(u%s_b_lao(3, 3)) 
-!         allocate(u%gs_b_lao(3, 3, 3))
+         allocate(u%s_b_lao(3, 3)) 
+         allocate(u%gs_b_lao(3, 3, 3))
 
 
 
@@ -606,8 +606,8 @@ contains
                u%gn = 0.0d0
                u%s  = 0.0d0
                u%gs = 0.0d0
-               !u%s_b_lao  = 0.0d0
-               !u%gs_b_lao = 0.0d0
+               u%s_b_lao  = 0.0d0
+               u%gs_b_lao = 0.0d0
 
                w(1) = rw(ipoint)
 
@@ -919,7 +919,6 @@ contains
 
 !!            london contributions to property gradient
 !
-!!            we do it for 3 fmat's - corresponding to Bx, By, Bz
 !             us_b_lao_above_threshold = .false.
 !             if (maxval((/dabs(u%s_b_lao(1, im)), &
 !                          dabs(u%s_b_lao(2, im)), &
@@ -981,8 +980,8 @@ contains
     deallocate(u%gn)
     deallocate(u%s)
     deallocate(u%gs)
-    !deallocate(u%s_b_lao)
-    !deallocate(u%gs_b_lao)
+    deallocate(u%s_b_lao)
+    deallocate(u%gs_b_lao)
 
    end subroutine integrate
 
