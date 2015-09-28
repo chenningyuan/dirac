@@ -535,20 +535,20 @@ contains
             max_fun_derv = response_order_mo + 1
          end if
 !gosia todo: check flags +  check sdft 
-!         if (do_london_rhs_direct) then
-!            max_fun_derv = 1
-!         end if
-!         if (do_london_rhs_direct_kern .and. .not.dft_cfg_no_sdft) then
-!            max_fun_derv = 2
-!         end if
-!         if (do_london_rhs_kern_coupling) then
-!            max_fun_derv = 2
-!         end if
-!         if (do_london_rhs_ro) then
-!            if (max_fun_derv < 2) then
-!               max_fun_derv = 2
-!            end if
-!         end if
+         if (do_london_rhs_direct) then
+            max_fun_derv = 1
+         end if
+         if (do_london_rhs_direct_kern .and. .not.dft_cfg_no_sdft) then
+            max_fun_derv = 2
+         end if
+         if (do_london_rhs_kern_coupling) then
+            max_fun_derv = 2
+         end if
+         if (do_london_rhs_ro) then
+            if (max_fun_derv < 2) then
+               max_fun_derv = 2
+            end if
+         end if
 
 
          derv_length = nr_nonzero_derv
@@ -692,45 +692,45 @@ contains
 !       london contributions to differentiated Kohn-Sham matrix, 
 !       added to property gradient, closed-shell only
 
-!!       (1) direct-lao contributions, 1st functional derivatives
-!!       --------------------------------------------------------
-!         if (do_london_rhs_direct) then
-!             !if (use_potential) then
-!!            !   use external embedding potential
-!             !   call lda_london_distribute_r(vemb,                              &
-!             !                                fmat_pg_sym,                       &
-!             !                                mat_dim,                           &
-!             !                                nz,                                &
-!             !                                fmat,                              &
-!             !                                ao,                                &
-!             !                                rx(ipoint), ry(ipoint), rz(ipoint))
-!             !else
-!                u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*gf_frozen%elpot(ipoint)
-!                if (use_gga) then
-!                  u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
-!                
-!                  call gga_london_distribute_r(u%n(1),                            &
-!                                               1.0d0,                             &
-!                                               u%gn(1:3, 1),                      &
-!                                               fmat_pg_sym,                       &
-!                                               mat_dim,                           &
-!                                               nz,                                &
-!                                               fmat,                              &
-!                                               ao, &
-!                                               rx(ipoint), ry(ipoint), rz(ipoint))
-!                else
-!                  call lda_london_distribute_r(u%n(1),                            &
-!                                               fmat_pg_sym,                       &
-!                                               mat_dim,                           &
-!                                               nz,                                &
-!                                               fmat,                              &
-!                                               ao,                                &
-!                                               rx(ipoint), ry(ipoint), rz(ipoint))
-!                end if
-!
-!             !end if
-!         
-!         end if
+!       (1) direct-lao contributions, 1st functional derivatives
+!       --------------------------------------------------------
+         if (do_london_rhs_direct) then
+             !if (use_potential) then
+!            !   use external embedding potential
+             !   call lda_london_distribute_r(vemb,                              &
+             !                                fmat_pg_sym,                       &
+             !                                mat_dim,                           &
+             !                                nz,                                &
+             !                                fmat,                              &
+             !                                ao,                                &
+             !                                rx(ipoint), ry(ipoint), rz(ipoint))
+             !else
+                u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*gf_frozen%elpot(ipoint)
+                if (use_gga) then
+                  u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
+                
+                  call gga_london_distribute_r(u%n(1),                            &
+                                               1.0d0,                             &
+                                               u%gn(1:3, 1),                      &
+                                               fmat_pg_sym,                       &
+                                               mat_dim,                           &
+                                               nz,                                &
+                                               fmat,                              &
+                                               ao, &
+                                               rx(ipoint), ry(ipoint), rz(ipoint))
+                else
+                  call lda_london_distribute_r(u%n(1),                            &
+                                               fmat_pg_sym,                       &
+                                               mat_dim,                           &
+                                               nz,                                &
+                                               fmat,                              &
+                                               ao,                                &
+                                               rx(ipoint), ry(ipoint), rz(ipoint))
+                end if
+
+             !end if
+         
+         end if
 !
 !!       (2) london reorthogonalization contribution, 2nd functional derivatives
 !!       -----------------------------------------------------------------------
