@@ -88,6 +88,8 @@ module fde_dirac_matrices_integration
    real(8), pointer             :: dmat_0(:, :)
    real(8), allocatable, target :: dmat_0_container(:, :)
 
+   real(8), pointer             :: pertden(:, :)
+
    real(8), allocatable         :: tmat_1(:, :)
    real(8), allocatable         :: tmat_2(:, :)
 
@@ -254,6 +256,15 @@ contains
             end if
       end if
 
+      nullify(pertden)
+      if (do_london_rhs_kern_coupling) then
+         call fde_read_pertden(pertden)
+         !write(*, *) 'buba buba pertden'
+         !do i = 1, fde_pertden_nrow
+         !   write(*, '(57d20.12)') (pertden(j,i), j=1, fde_pertden_ncol)
+         !end do
+      end if
+
       if (use_potential) then
          if (.not. allocated(fde_static_vemb)) then
             write(*,*) 'warning, fde_static_vemb not allocated, will be allocated here'
@@ -413,6 +424,84 @@ contains
    end subroutine
 
 
+   subroutine find_vemb_ipoint(x, y, z, w, vemb)
+      real(8), intent(in)  :: x, y, z, w
+      real(8), intent(out) :: vemb
+      integer :: i
+      integer :: nrow
+      logical :: found
+
+      do i = 1, fde_grid_sv%npoints
+         found = (fde_grid_sv%r(1,i)==x).and.(fde_grid_sv%r(2,i)==y).and.(fde_grid_sv%r(3,i)==z).and.(fde_grid_sv%w(i)==w)
+         if (found) then
+            nrow = i
+         end if
+      end do
+
+      vemb = fde_static_vemb(nrow)
+
+   end subroutine
+
+   subroutine find_pertden(x, y, z, w, n_b, gn_b, s_b, gs_b)
+      real(8), intent(in) :: x, y, z, w
+      real(8), intent(out), optional :: n_b(3)
+      real(8), intent(out), optional :: gn_b(3,3)
+      real(8), intent(out), optional :: s_b(3,3)
+      real(8), intent(out), optional :: gs_b(3,3,3)
+      integer :: i, j, k
+      integer :: nrow, ncol
+      logical :: found
+
+
+!     first find the corresponding line on pertden:
+      do i = 1, fde_pertden_nrow
+         found = (pertden(1,i)==x).and.(pertden(2,i)==y).and.(pertden(3,i)==z).and.(pertden(4,i)==w)
+         if (found) then
+            nrow = i
+         end if
+      end do
+
+!     gosia todo: add pointers indicating on which column of the file the given property starts
+!     for now: we always count from the last column
+!.....n_b:
+      if (present(n_b)) then
+         do i = 1, 3
+            n_b(i) = pertden(fde_pertden_ncol-48+i, nrow)
+         end do
+      end if
+!.....gn_b
+      if (present(gn_b)) then
+         do i = 1, 3
+            do j = 1, 3
+               ncol = (i-1)*3+j
+               gn_b(j, i) = pertden(fde_pertden_ncol-45+ncol, nrow)
+            end do
+         end do
+      end if
+!.....s_b:
+      if (present(s_b)) then
+         do i = 1, 3
+            do j = 1, 3
+               ncol = (i-1)*3+j
+               s_b(j, i) = pertden(fde_pertden_ncol-36+ncol, nrow)
+            end do
+         end do
+      end if
+!.....gs_b
+      if (present(gs_b)) then
+         do i = 1, 3
+            do j = 1, 3
+               do k = 1, 3
+                  ncol = (i-1)*9+(j-1)*3+k
+                  gs_b(k, j, i) = pertden(fde_pertden_ncol-27+ncol, nrow)
+               end do
+            end do
+         end do
+      end if
+
+   end subroutine
+
+
 !   ----------------------------------------------------------------------------
    subroutine nullify_and_release()
 !   ----------------------------------------------------------------------------
@@ -422,6 +511,9 @@ contains
       end if
       if (associated(fmat)) then
          nullify(fmat)
+      end if
+      if (associated(pertden)) then
+         nullify(pertden)
       end if
       if (associated(dmat_0)) then
          nullify(dmat_0)
@@ -1665,11 +1757,11 @@ contains
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
 !   find n, gn, s, gs from the frozen pertden file
-!    call find_pertden(rx, ry, rz, w(1), &
-!                      n_b  = n_b_lao,   &
-!                      gn_b = gn_b_lao,  & 
-!                      s_b  = s_b_lao,   &
-!                      gs_b = gs_b_lao)
+    call find_pertden(rx, ry, rz, w(1), &
+                      n_b  = n_b_lao,   &
+                      gn_b = gn_b_lao,  & 
+                      s_b  = s_b_lao,   &
+                      gs_b = gs_b_lao)
 
 !   charge density contributions
     do a = 1, 3     !B_{x,y,z}
@@ -1716,25 +1808,6 @@ contains
 
 
   end subroutine
-
-
-   subroutine find_vemb_ipoint(x, y, z, w, vemb)
-      real(8), intent(in)  :: x, y, z, w
-      real(8), intent(out) :: vemb
-      integer :: i
-      integer :: nrow
-      logical :: found
-
-      do i = 1, fde_grid_sv%npoints
-         found = (fde_grid_sv%r(1,i)==x).and.(fde_grid_sv%r(2,i)==y).and.(fde_grid_sv%r(3,i)==z).and.(fde_grid_sv%w(i)==w)
-         if (found) then
-            nrow = i
-         end if
-      end do
-
-      vemb = fde_static_vemb(nrow)
-
-   end subroutine
 
 
 end module fde_dirac_matrices_integration

@@ -39,6 +39,8 @@ module fde_data
    public fde_import_gridout
    public fde_import_static
    public fde_initialize_import_data
+
+   public fde_read_pertden
 !
 ! variables 
 !
@@ -406,6 +408,23 @@ module fde_data
       exp_int_vn = 0.0d0  
 
    end subroutine fde_test_export
+
+   subroutine fde_read_pertden(pertden)
+      real(8), pointer :: pertden(:, :)
+      integer :: file_unit
+      character(len=60) :: file_name
+      type(fde_files)  :: ftmp
+
+      call fde_get_files_info(ftmp)
+      
+      file_unit = ftmp%frozen%unit
+      file_name = ftmp%frozen%name
+
+      call fde_open_file(file_name,file_unit)
+      call read_grid_pertden(file_unit,pertden)
+      call fde_close_file(file_unit)
+
+   end subroutine
 
    
 end module fde_data
