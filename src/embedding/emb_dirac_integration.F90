@@ -110,7 +110,10 @@ module fde_dirac_matrices_integration
    real(8), pointer             :: property_gradient(:)
    real(8), allocatable, target :: property_gradient_container(:)
 
+   type(fde_import) :: itmp
+
    logical :: do_potential
+   logical :: use_potential
    integer :: response_order_mo
    integer :: response_order_ao
    logical :: do_london_rhs_direct
@@ -148,6 +151,7 @@ contains
                              fde_dmat_pg_sym,           &
                              fde_fmat_pg_sym,           &
                              fde_do_potential,          &
+                             fde_use_potential,          &
                              fde_response_order_mo,     &
                              fde_response_order_ao,     &
                              fde_do_london_rhs_direct,  &
@@ -180,6 +184,7 @@ contains
       integer, optional, target, intent(in)    :: fde_fmat_pg_sym(fde_nr_fmat)
 
       logical, optional,         intent(in)    :: fde_do_potential
+      logical, optional,         intent(in)    :: fde_use_potential
       integer, optional,         intent(in)    :: fde_response_order_mo
       integer, optional,         intent(in)    :: fde_response_order_ao
       logical, optional,         intent(in)    :: fde_do_london_rhs_direct
@@ -194,6 +199,11 @@ contains
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
       integer, parameter :: max_response_order_mo = 5
+      integer :: i, j
+       
+      call fde_get_import_info(itmp)
+
+
       
 !     start timer
       time_integration_start = second()
@@ -213,6 +223,7 @@ contains
 
 !     set defaults
       do_potential          = .false.
+      use_potential         = .false.
       response_order_mo     = 0
       response_order_ao     = 0
       do_london_rhs_direct         = .false.
@@ -222,6 +233,7 @@ contains
 
 !        change defaults
          if (present(fde_do_potential))          do_potential          = fde_do_potential
+         if (present(fde_use_potential))         use_potential         = fde_use_potential
          if (present(fde_response_order_mo))     response_order_mo     = fde_response_order_mo
          if (present(fde_response_order_ao))     response_order_ao     = fde_response_order_ao
          if (present(fde_do_london_rhs_direct))  do_london_rhs_direct  = fde_do_london_rhs_direct
@@ -240,6 +252,16 @@ contains
             if (present(fde_dmat)) then
                dmat => fde_dmat
             end if
+      end if
+
+      if (use_potential) then
+         if (.not. allocated(fde_static_vemb)) then
+            write(*,*) 'warning, fde_static_vemb not allocated, will be allocated here'
+            call fde_import_static
+            !do i = 1, fde_grid_sv%npoints
+            !   write(*, *) 'buba i, fde_static_vemb(i) =', i, fde_static_vemb(i)
+            !end do
+         end if
       end if
 
       nullify(fmat)
@@ -499,6 +521,8 @@ contains
          real(8) :: gnn_b(3)
          real(8) :: gn_b(3, 3)
 
+         real(8) :: vemb
+
          logical :: un_above_threshold
          logical :: us_above_threshold
          logical :: ugn_above_threshold
@@ -689,22 +713,27 @@ contains
 
          end if !exchange-correlation potential
 
+         if (use_potential) then
+            call find_vemb_ipoint(rx(ipoint), ry(ipoint), rz(ipoint), w(1), vemb)
+            vemb = vemb*w(1)
+         end if
+
 !       london contributions to differentiated Kohn-Sham matrix, 
 !       added to property gradient, closed-shell only
 
 !       (1) direct-lao contributions, 1st functional derivatives
 !       --------------------------------------------------------
          if (do_london_rhs_direct) then
-             !if (use_potential) then
-!            !   use external embedding potential
-             !   call lda_london_distribute_r(vemb,                              &
-             !                                fmat_pg_sym,                       &
-             !                                mat_dim,                           &
-             !                                nz,                                &
-             !                                fmat,                              &
-             !                                ao,                                &
-             !                                rx(ipoint), ry(ipoint), rz(ipoint))
-             !else
+             if (use_potential) then
+!               use external embedding potential
+                call lda_london_distribute_r(vemb,                              &
+                                             fmat_pg_sym,                       &
+                                             mat_dim,                           &
+                                             nz,                                &
+                                             fmat,                              &
+                                             ao,                                &
+                                             rx(ipoint), ry(ipoint), rz(ipoint))
+             else
                 u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*gf_frozen%elpot(ipoint)
                 if (use_gga) then
                   u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
@@ -728,7 +757,7 @@ contains
                                                rx(ipoint), ry(ipoint), rz(ipoint))
                 end if
 
-             !end if
+             end if
          
          end if
 
@@ -1688,6 +1717,24 @@ contains
 
   end subroutine
 
+
+   subroutine find_vemb_ipoint(x, y, z, w, vemb)
+      real(8), intent(in)  :: x, y, z, w
+      real(8), intent(out) :: vemb
+      integer :: i
+      integer :: nrow
+      logical :: found
+
+      do i = 1, fde_grid_sv%npoints
+         found = (fde_grid_sv%r(1,i)==x).and.(fde_grid_sv%r(2,i)==y).and.(fde_grid_sv%r(3,i)==z).and.(fde_grid_sv%w(i)==w)
+         if (found) then
+            nrow = i
+         end if
+      end do
+
+      vemb = fde_static_vemb(nrow)
+
+   end subroutine
 
 
 end module fde_dirac_matrices_integration

@@ -643,17 +643,17 @@ contains
 
      if (fde_lao_direct_active_embpot) then
         write(*, *) 'LAO-direct contribution to property gradient (embpot)'
-        !if (itmp%im_vemb) then
-        !   call fde_dirac_emb_matrices_via_integration(       &   
-        !                 fde_mat_dim            = ntbas(0),   &
-        !                 fde_nz                 = nz,         &
-        !                 fde_dmat_0             = dmat,       &
-        !                 fde_nr_dmat            = 0,          &
-        !                 fde_nr_fmat            = max_nr_xyz_comp,      &
-        !                 fde_fmat               = fmat,       &
-        !                 fde_use_potential      = .true.,     &
-        !                 fde_do_london_rhs_direct = .true.)
-        !else
+        if (itmp%im_vemb) then
+           call fde_dirac_emb_matrices_via_integration(       &   
+                         fde_mat_dim            = ntbas(0),   &
+                         fde_nz                 = nz,         &
+                         fde_dmat_0             = dmat,       &
+                         fde_nr_dmat            = 0,          &
+                         fde_nr_fmat            = max_nr_xyz_comp,      &
+                         fde_fmat               = fmat,       &
+                         fde_use_potential      = .true.,     &
+                         fde_do_london_rhs_direct = .true.)
+        else
            call fde_dirac_emb_matrices_via_integration(       &   
                          fde_mat_dim            = ntbas(0),   &
                          fde_nz                 = nz,         &
@@ -662,7 +662,7 @@ contains
                          fde_nr_fmat            = max_nr_xyz_comp,      &
                          fde_fmat               = fmat,       &
                          fde_do_london_rhs_direct = .true.)
-        !end if
+        end if
      end if
 
      if (fde_lao_direct_active_embker .and. .not. fde_rsp_mag_lao_no_s) then
