@@ -1135,6 +1135,10 @@ C
       ! NB! IFROZ is over spinors, we must therefore freeze both spinor no. i and its Kramers partner,
       ! spinor no. NSTRT(ifrp)+i.
          relcc_ifroz_input = .true.
+         IFROZ_set_in_input = .true.  ! IFROZ_set_in_input is used in
+                                      ! relccsd if frozen orbitals,
+                                      ! relcc_ifroz_input sets this true
+                                      ! but only when VAR_MPI
          IFROZ(:,:) = 0
          NFROZEN = 0
          do ifrp = 1, nfsym
