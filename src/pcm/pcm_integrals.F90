@@ -279,9 +279,8 @@ module pcm_integrals
       
       tols = thrs**2
       tolog = 2 * log(thrs)
-! mc is the number of components, as defined in include/dcbham.h
 ! Decide whether we loop on LL block only or not
-      if (mc == 1) then
+      if (nosmlv) then
 ! Looping only over LL block only
           idxmax = nlrgsh
       else if  (skipss_block) then
@@ -375,11 +374,11 @@ module pcm_integrals
        idena = idena + khkta * multa
       end do
 
-      if (skipss_block .and. (.not. do_matrix) .and. (mc /= 1)) then
+      if (skipss_block .and. (.not. do_matrix) .and. (.not.nosmlv)) then
 ! Simple Coulombic Correction for the MEP when skipss is selected.
 ! This must NOT be done when:
 ! 1. we want a Fock matrix contribution;
-! 2. MC == 1, i.e. the Hamiltonian specified does not make use of the SS-block
+! 2. NOSMLV, i.e. the Hamiltonian specified does not make use of the SS-block
           call get_scc_electronic_mep(nr_points, nr_points_irr, points, vector, iprint)
       end if
 
