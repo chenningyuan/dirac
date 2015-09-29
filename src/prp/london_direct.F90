@@ -495,21 +495,21 @@ contains
       call alloc(buffer, n2bbasxq)
       call dcopy(n2bbasxq, dmat, 1, buffer, 1)
 
-!      if (expped) then
-!!        additionally write s_b_lao and gs_b_lao to file
-!         call integrate_xc(xc_mat_dim              = ntbas(0),        &
-!                           xc_nz                   = nz,              &
-!                           xc_dmat_0               = dmat,            &
-!                           xc_nr_dmat              = 1,               &
-!                           xc_nr_fmat              = max_nr_xyz_comp, &
-!                           xc_dmat                 = buffer,          &
-!                           xc_fmat                 = fmat,            &
-!                           xc_fmat_pg_sym          = isym_2el_lao,    &
-!                           xc_dmat_pg_sym          = isym_2el_lao,    &
-!                           xc_dmat_ih_sym          = iherm_2el_lao,   &
-!                           xc_do_london_rhs_direct_der2 = .true.,     &
-!                           xc_london_direct_export = .true.)
-!      else
+      if (expped) then
+!        additionally write s_b_lao and gs_b_lao to file
+         call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                           xc_nz                   = nz,              &
+                           xc_dmat_0               = dmat,            &
+                           xc_nr_dmat              = 1,               &
+                           xc_nr_fmat              = max_nr_xyz_comp, &
+                           xc_dmat                 = buffer,          &
+                           xc_fmat                 = fmat,            &
+                           xc_fmat_pg_sym          = isym_2el_lao,    &
+                           xc_dmat_pg_sym          = isym_2el_lao,    &
+                           xc_dmat_ih_sym          = iherm_2el_lao,   &
+                           xc_do_london_rhs_direct_der2 = .true.,     &
+                           xc_london_direct_export = .true.)
+      else
          call integrate_xc(xc_mat_dim              = ntbas(0),        &
                            xc_nz                   = nz,              &
                            xc_dmat_0               = dmat,            &
@@ -521,7 +521,7 @@ contains
                            xc_dmat_pg_sym          = isym_2el_lao,    &
                            xc_dmat_ih_sym          = iherm_2el_lao,   &
                            xc_do_london_rhs_direct_der2 = .true.)
-!      end if
+      end if
       call dealloc(buffer)
       call dealloc(dmat)
     end if
@@ -704,7 +704,7 @@ contains
                      fde_do_london_rhs_kern_coupling = .true.)
 !      2. the Coulomb-like contribution:
        write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (Coulomb term)'
-       !call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
+       call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
      end if
 
 

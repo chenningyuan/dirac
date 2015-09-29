@@ -64,7 +64,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO ANG','.SEPTEP','.XXXXXX'   /
+     &            '.GO ANG','.SEPTEP','.EXPPED'   /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -100,6 +100,7 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       USECM  = .FALSE.
       RDSUSLLMOD = .FALSE.
       SEPTEP = .FALSE.
+      EXPPED = .FALSE.
 
 ! gosia: DOEPRN=true unless skipep is on
 !     if (XLR_SKIPEP) then
@@ -238,6 +239,12 @@ C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDS
                SEPTEP = .true.
                GO TO 100
    15          CONTINUE
+!              .EXPPED
+!              gosia: export contributions to perturbed density to files
+!              direct-LAO phase factor part write to pertden_direct_lao.FINAL
+!              reorthonormalization part write to pertden_reorth_lao.FINAL
+!              it is used further in embedding
+               EXPPED = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -397,6 +404,21 @@ C =========================================================================
      &  'INFO: Used  full relativistic form of the RDSUSLL operator.'
           ENDIF
       END IF
+
+!     export perturbed density
+      IF (EXPPED) THEN
+         IF (.NOT.LONDON) THEN
+            CALL QUIT( 
+     &    'export of perturbed density only for runs with .LONDON')
+         END IF
+         WRITE(LUPRI,'(1X,A)')
+     & 'perturbed LAO-density exported on file pertden_lao'
+      END IF
+!     if fde and london, then always export perturbed density
+      if (dirac_cfg_fde_response .and. london) then
+         EXPPED = .true.
+      end if
+
 
   999 CONTINUE
       CALL QEXIT('NMRINP')

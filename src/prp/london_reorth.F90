@@ -447,20 +447,20 @@ contains
 #endif
 
 !     tb_dmat has been antisymmetrized in getmdm, ih = -1
-!      if (expped) then
-!         call integrate_xc(xc_mat_dim          = ntbas(0),     &
-!                            xc_nz               = nz,          &
-!                            xc_dmat_0           = dmat,        &
-!                            xc_nr_dmat          = nr_xyz_comp, &
-!                            xc_nr_fmat          = nr_xyz_comp, &
-!                            xc_dmat             = tb_dmat,     &
-!                            xc_fmat             = fao,         &
-!                            xc_fmat_pg_sym      = isymop,      &
-!                            xc_dmat_pg_sym      = isymop,      &
-!                            xc_dmat_ih_sym      = ihrmop,      &
-!                            xc_do_london_rhs_ro = .true.,      &       
-!                            xc_london_reorth_export = .true.)       
-!      else
+      if (expped) then
+         call integrate_xc(xc_mat_dim          = ntbas(0),     &
+                            xc_nz               = nz,          &
+                            xc_dmat_0           = dmat,        &
+                            xc_nr_dmat          = nr_xyz_comp, &
+                            xc_nr_fmat          = nr_xyz_comp, &
+                            xc_dmat             = tb_dmat,     &
+                            xc_fmat             = fao,         &
+                            xc_fmat_pg_sym      = isymop,      &
+                            xc_dmat_pg_sym      = isymop,      &
+                            xc_dmat_ih_sym      = ihrmop,      &
+                            xc_do_london_rhs_ro = .true.,      &       
+                            xc_london_reorth_export = .true.)       
+      else
          call integrate_xc(xc_mat_dim          = ntbas(0),     &
                             xc_nz               = nz,          &
                             xc_dmat_0           = dmat,        &
@@ -472,7 +472,7 @@ contains
                             xc_dmat_pg_sym      = isymop,      &
                             xc_dmat_ih_sym      = ihrmop,      &
                             xc_do_london_rhs_ro = .true.)       
-!      end if
+      end if
 
       call dealloc(dmat)
 

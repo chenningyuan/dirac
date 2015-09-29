@@ -131,6 +131,8 @@ module xcint_main
    logical :: do_london_rhs_direct_der1
    logical :: do_london_rhs_direct_der2
    logical :: do_london_rhs_ro
+   logical :: london_direct_export
+   logical :: london_reorth_export
    logical :: do_geo
    logical :: do_geo_0
    logical :: do_geo_1
@@ -160,6 +162,8 @@ contains
                             xc_do_potential,          &
                             xc_do_london_rhs_direct_der1,  &
                             xc_do_london_rhs_direct_der2,  &
+                            xc_london_direct_export,       &
+                            xc_london_reorth_export,       &
                             xc_do_london_rhs_ro,      &
                             xc_do_geo_0,              &
                             xc_do_geo_1,              &
@@ -200,6 +204,8 @@ contains
       logical, optional,         intent(in)    :: xc_do_potential
       logical, optional,         intent(in)    :: xc_do_london_rhs_direct_der1
       logical, optional,         intent(in)    :: xc_do_london_rhs_direct_der2
+      logical, optional,         intent(in)    :: xc_london_direct_export
+      logical, optional,         intent(in)    :: xc_london_reorth_export
       logical, optional,         intent(in)    :: xc_do_london_rhs_ro
       logical, optional,         intent(in)    :: xc_do_geo_0
       logical, optional,         intent(in)    :: xc_do_geo_1
@@ -267,6 +273,8 @@ contains
       response_order_ao     = 0
       do_london_rhs_direct_der1  = .false.
       do_london_rhs_direct_der2  = .false.
+      london_direct_export  = .false.
+      london_reorth_export  = .false.
       do_london_rhs_ro      = .false.
       do_geo_0              = .false.
       do_geo_1              = .false.
@@ -283,6 +291,8 @@ contains
          if (present(xc_response_order_ao))     response_order_ao     = xc_response_order_ao
          if (present(xc_do_london_rhs_direct_der1))  do_london_rhs_direct_der1  = xc_do_london_rhs_direct_der1
          if (present(xc_do_london_rhs_direct_der2))  do_london_rhs_direct_der2  = xc_do_london_rhs_direct_der2
+         if (present(xc_london_direct_export))  london_direct_export  = xc_london_direct_export
+         if (present(xc_london_reorth_export))  london_reorth_export  = xc_london_reorth_export
          if (present(xc_do_london_rhs_ro))      do_london_rhs_ro      = xc_do_london_rhs_ro
          if (present(xc_do_geo_0))              do_geo_0              = xc_do_geo_0
          if (present(xc_do_geo_1))              do_geo_1              = xc_do_geo_1
@@ -304,6 +314,8 @@ contains
          call xc_mpi_bcast(do_potential)
          call xc_mpi_bcast(do_london_rhs_direct_der1)
          call xc_mpi_bcast(do_london_rhs_direct_der2)
+         call xc_mpi_bcast(london_direct_export)
+         call xc_mpi_bcast(london_reorth_export)
          call xc_mpi_bcast(do_london_rhs_ro)
          call xc_mpi_bcast(response_order_mo)
          call xc_mpi_bcast(response_order_ao)
@@ -581,7 +593,21 @@ contains
       end if
 #endif
 
+      if (london_direct_export .or. london_reorth_export) then
+         call london_export_initialize(london_direct_export, london_reorth_export)
+         call london_export_open_files(london_direct_export, london_reorth_export)
+      end if
+
       call loop_over_batches()
+
+      if (london_direct_export.or.london_reorth_export) then
+         call london_export_close_files()
+#ifdef VAR_MPI
+         if (parallel_xc) then
+            call london_export_data_collect(london_direct_export, london_reorth_export)
+         end if
+#endif
+      end if
 
 #ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
@@ -821,7 +847,7 @@ contains
 !     --------------------------------------------------------------------------
       integer :: id, m
       integer :: ii, ji
-      real(8) :: temp
+      real(8) :: temp, temp2(51)
       real(8) :: block_threshold
       real(8) :: rho13, rho_outer, rho_resp, f
     integer :: ipoint
@@ -1633,6 +1659,16 @@ contains
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
+!gosia: if perturbed density export, then in points where the density is lower than threshold, put put the perturbed density to 0
+      else if (n_0(1) <= dft_cfg_tinydens) then
+         temp2 = 0.0d0
+         if (london_direct_export .or. london_reorth_export) then
+            call london_export_write_data_to_files((/rx(ipoint),ry(ipoint),rz(ipoint), &
+                                          !temp2(1:pertden_nr_components)/),    &
+                                          temp2(1:48)/),    &
+                                       (/london_direct_export,london_reorth_export/))
+         end if
+
       end if !if (n_0(1) > dft_cfg_tinydens) then
     end do !do ipoint = 1, nr_points_on_this_proc
 
@@ -1734,6 +1770,435 @@ contains
       real(8) :: get_xc_mat_energy
       get_xc_mat_energy = xc_mat_energy
    end function
+
+   subroutine london_export_write_data_to_files(d, f)
+      real(8), intent(in) :: d(*)
+      logical, intent(in) :: f(2)
+      integer :: file_unit
+
+!     where:
+!     f(lao_direct, lao_reorth)
+!     decides where to write to
+#ifdef VAR_MPI
+      if (parallel_xc) then
+         if (f(1)) file_unit = pertden_direct_lao_par_file_unit
+         if (f(2)) file_unit = pertden_reorth_lao_par_file_unit
+      else
+         if (f(1)) file_unit = pertden_direct_lao_file_unit
+         if (f(2)) file_unit = pertden_reorth_lao_file_unit
+      end if
+#else
+      if (f(1)) file_unit = pertden_direct_lao_file_unit
+      if (f(2)) file_unit = pertden_reorth_lao_file_unit
+#endif
+
+!     now we can write...
+      write(file_unit, pertden_file_format) d(1:pertden_nr_columns)
+
+   end subroutine
+
+
+   subroutine london_export_copy_data_from_files(hfile_in, hfile_out, f)
+!     where:
+!     f(lao_direct, lao_reorth)
+!
+      integer, intent(in) :: hfile_in, hfile_out
+      logical, intent(in) :: f(2)
+      real(8) :: d(pertden_nr_columns)
+      integer :: ierr, i
+
+!     loop over all lines in the file
+      i = 0
+      do
+         read(hfile_in, pertden_file_format, iostat=ierr) &
+                        d(1:pertden_nr_columns)
+         i = i+1
+         if (ierr .eq. -1) then
+            write(*, *) 'london_export_copy_data_from_files exit, i = ', i
+            exit
+         end if
+         if (ierr .ne. 0) write(*, *) &
+              'error reading file, london_export_copy_data_from_files, ierr = ', ierr 
+         write(hfile_out, pertden_file_format) &
+                        d(1:pertden_nr_columns)
+      end do
+
+   end subroutine
+
+   subroutine compare_files(file_new)
+      integer, intent(in) :: file_new
+      integer :: i, j, k, ierr
+      integer :: iline, iline_grid
+      character*80 :: file_format, line, lines(nr_points_total)
+      character*80 :: lines_grid(nr_points_total)
+      real(8) :: line_new(3)
+
+      write(*, *) 'compare_files, nr_points_total =', nr_points_total
+
+      file_format = "(3d20.12)"
+      rewind(file_new)
+      i = 0
+      do
+         !read(file_new, file_format, iostat=ierr) line_new
+         read(file_new, '(80a)', iostat=ierr) line
+         if (ierr .eq. -1) exit
+         if (ierr .ne. 0) write(*, *) &
+              'error reading file, compare_files (new), ierr = ', ierr
+         i = i + 1
+         lines(i) = line
+      end do
+      iline = i
+
+!     read numerical_grid file
+      open(interface_file_unit,       &
+          file   = 'numerical_grid', &
+           status = 'unknown',        &
+           form   = 'formatted',      &
+           access = 'sequential')
+      rewind(interface_file_unit)
+
+      i = 0
+      do
+ 103     continue
+         read(interface_file_unit, '(80a)', iostat=ierr) line
+         if (ierr .eq. -1) exit
+         if (ierr .ne. 0) write(*, *) &
+              'error reading file, compare_files (grid), ierr = ', ierr
+         if (line(1:7) == '       ') go to 103
+         i = i + 1
+         lines_grid(i) = line
+      end do
+      !close(interface_file_unit, status='keep')
+      iline_grid = i
+      write(*, *) 'compare files iline_grid = ', iline_grid
+      write(*, *) 'compare files lines_grid = ', lines_grid
+
+      k = 0
+      do i = 1, nr_points_total
+         do j = 1, nr_points_total
+            if (lines(i) .eq. lines_grid(j)) k = k+1
+         end do
+      end do
+      write(*, *) 'compare files k =', k
+      if (k == nr_points_total) write(*,*) 'files the same'
+
+   end subroutine
+
+
+   subroutine london_export_initialize(lao_direct, lao_reorth)
+      logical, intent(in) :: lao_direct, lao_reorth
+
+!     pertden files always have the same number of columns (51)
+!     the order of columns is:
+!     1  2  3  |     4-6      |         7-15           |       16-24           |       25-51
+!     rx ry rz | n_b(B=x,y,z) | gn_b(r=x,y,z; B=x,y,z) | s_b(s=x,y,z; B=x,y,z) | gs_b(r=x,y,z; s=x,y,z; B=x,y,z)
+
+      if (lao_direct.and..not.dft_cfg_no_sdft) then
+         if (use_gga) then 
+            pertden_nr_components = 36
+         else
+            pertden_nr_components = 9
+         end if
+      end if
+
+      if (lao_reorth) then
+         if (.not. dft_cfg_no_sdft) then
+!           sdft
+            if (use_gga) then
+               pertden_nr_components = 48
+            else
+               pertden_nr_components = 12
+            end if
+         else
+!           nosdft
+            if (use_gga) then
+               pertden_nr_components = 12
+            else
+               pertden_nr_components = 3
+            end if
+         end if
+      end if
+
+#ifdef VAR_MPI
+      if (parallel_xc) then
+         call xc_mpi_bcast(pertden_nr_components)
+         call xc_mpi_bcast(pertden_nr_columns)
+         !call xc_mpi_bcast(pertden_file_format)
+
+!        also bcast file-related info
+!         if (lao_direct) then
+!            !call xc_mpi_bcast(pertden_direct_lao_par_file_name)
+!            call xc_mpi_bcast(pertden_direct_lao_par_file_unit)
+!            call xc_mpi_bcast(pertden_direct_lao_par_file_exists)
+!            call xc_mpi_bcast(pertden_direct_lao_par_file_open)
+!         end if
+!         if (lao_reorth) then
+!            !call xc_mpi_bcast(pertden_reorth_lao_par_file_name)
+!            call xc_mpi_bcast(pertden_reorth_lao_par_file_unit)
+!            call xc_mpi_bcast(pertden_reorth_lao_par_file_exists)
+!            call xc_mpi_bcast(pertden_reorth_lao_par_file_open)
+!         end if
+
+      end if
+#endif
+
+   end subroutine
+
+
+   subroutine london_export_open_files(lao_direct, lao_reorth)
+      logical, intent(in) :: lao_direct, lao_reorth
+      integer :: numproc, myproc
+      integer :: file_name_length, file_unit
+      character :: file_name*18, file_name_full*24
+      logical :: file_exists
+
+#ifdef VAR_MPI
+      if (parallel_xc) then
+
+         if (lao_direct) then
+            file_name = pertden_direct_lao_par_file_name !"pertden_direct_lao"
+            file_unit = pertden_direct_lao_par_file_unit
+         end if
+         if (lao_reorth) then
+            file_name = pertden_reorth_lao_par_file_name !"pertden_reorth_lao"
+            file_unit = pertden_reorth_lao_par_file_unit
+         end if
+         !call xc_mpi_bcast(file_name)
+         call xc_mpi_bcast(file_unit)
+
+!        get the number of all proc involved (including master)
+         numproc = xc_mpi_get_nr_proc()
+!        get the task id (0=master)
+         myproc = get_my_rank()
+
+!        create a file name on each proc         
+         if (myproc .lt. 10) then    ! mpi id has one digit
+            write (file_name_full,'(a18,a1,i1)') file_name,'.',myproc
+            file_name_length=20
+         else if (myproc .lt. 100) then  ! mpi id has two digits
+            write (file_name_full,'(a18,a1,i2)') file_name,'.',myproc
+            file_name_length=21
+         else if (myproc .lt. 1000) then  ! mpi id has three digits
+            write (file_name_full,'(a18,a1,i3)') file_name,'.',myproc
+            file_name_length=22
+         else
+            call quit("error in london_export_open_files parallel run")
+         endif
+         call xc_mpi_bcast(file_name_length)
+
+      else
+!        if serial run, then write directly to the *FINAL file
+         if (xc_mpi_is_master()) then
+            if (lao_direct) then
+               file_name_full = pertden_direct_lao_file_name !"pertden_direct_lao.FINAL"
+               file_name_length = 24
+               file_unit = pertden_direct_lao_file_unit
+            end if
+            if (lao_reorth) then
+               file_name_full = pertden_reorth_lao_file_name !"pertden_reorth_lao.FINAL"
+               file_name_length = 24
+               file_unit = pertden_reorth_lao_file_unit
+            end if
+         end if
+      end if
+#else
+      if (xc_mpi_is_master()) then
+         if (lao_direct) then
+            file_name_full = pertden_direct_lao_file_name !"pertden_direct_lao.FINAL"
+            file_name_length = 24
+            file_unit = pertden_direct_lao_file_unit
+            pertden_direct_lao_file_open = .false.
+         end if
+         if (lao_reorth) then
+            file_name_full = pertden_reorth_lao_file_name !"pertden_reorth_lao.FINAL"
+            file_name_length = 24
+            file_unit = pertden_reorth_lao_file_unit
+            pertden_reorth_lao_file_open = .false.
+         end if
+      end if
+#endif
+
+      inquire(file=file_name_full(1:file_name_length), exist=file_exists)
+      if (.not.file_exists) then
+         open(file_unit, &
+              file = file_name_full(1:file_name_length), &
+              status = 'new',        &
+              form   = 'formatted',  &
+              access = 'sequential')
+         rewind(file_unit)
+
+#ifdef VAR_MPI
+         if (parallel_xc) then
+            if (lao_direct) pertden_direct_lao_par_file_open = .true.
+            if (lao_reorth) pertden_reorth_lao_par_file_open = .true.
+            call xc_mpi_bcast(pertden_direct_lao_par_file_open)
+            call xc_mpi_bcast(pertden_reorth_lao_par_file_open)
+         else
+            if (lao_direct) pertden_direct_lao_file_open = .true.
+            if (lao_reorth) pertden_reorth_lao_file_open = .true.
+         end if
+#else
+         if (lao_direct) pertden_direct_lao_file_open = .true.
+         if (lao_reorth) pertden_reorth_lao_file_open = .true.
+#endif
+      end if
+
+   end subroutine
+
+
+   subroutine london_export_close_files()
+
+!     close proc-unique files
+      if (pertden_direct_lao_par_file_open) then
+         close(pertden_direct_lao_par_file_unit, status='keep')
+         pertden_direct_lao_par_file_open = .false.
+      end if
+      if (pertden_reorth_lao_par_file_open) then
+         close(pertden_reorth_lao_par_file_unit, status='keep')
+         pertden_reorth_lao_par_file_open = .false.
+      end if
+
+!     and the final file (was opened if serial run)
+      if (pertden_direct_lao_file_open) then
+         close(pertden_direct_lao_file_unit, status='keep')
+         pertden_direct_lao_file_open = .false.
+      end if
+      if (pertden_reorth_lao_file_open) then
+         close(pertden_reorth_lao_file_unit, status='keep')
+         pertden_reorth_lao_file_open = .false.
+      end if
+
+   end subroutine
+
+#ifdef VAR_MPI
+   subroutine london_export_data_collect(lao_direct, lao_reorth)
+!     this is called only in parallel run
+!     here: data from all the files created for each process
+!     is copied to one "final" file
+      logical, intent(in) :: lao_direct, lao_reorth
+      integer :: numproc, myproc
+      integer :: ieof
+      integer :: file_unit_par, file_unit_final, file_name_length
+      character :: file_name_final*24, file_name_full*22, file_name_par*18
+      logical :: file_exists, file_is_open
+      integer :: i
+     
+      numproc = xc_mpi_get_nr_proc()
+      myproc = get_my_rank()
+      file_is_open = .false.
+
+      if (lao_direct) then
+         file_name_par   = pertden_direct_lao_par_file_name  !"pertden_direct_lao"
+         file_unit_par   = pertden_direct_lao_par_file_unit
+         file_name_final = pertden_direct_lao_file_name      !"pertden_direct_lao.FINAL"
+         file_unit_final = pertden_direct_lao_file_unit
+      end if
+      if (lao_reorth) then
+         file_name_par   = pertden_reorth_lao_par_file_name  !"pertden_reorth_lao"
+         file_unit_par   = pertden_reorth_lao_par_file_unit
+         file_name_final = pertden_reorth_lao_file_name      !"pertden_reorth_lao.FINAL"
+         file_unit_final = pertden_reorth_lao_file_unit
+      end if
+
+      if (xc_mpi_is_master()) then
+
+         inquire(file=file_name_final, exist=file_exists)
+         if (.not. file_exists) then
+
+            if (lao_direct) file_is_open = pertden_direct_lao_file_open
+            if (lao_reorth) file_is_open = pertden_reorth_lao_file_open
+
+            if (.not. file_is_open) then
+
+               open(file_unit_final, &
+                    file = file_name_final, &
+                    status = 'new',        &
+                    form   = 'formatted',  &
+                    access = 'sequential', &
+                    position = 'append')
+
+               file_is_open = .true.
+               if (lao_direct) pertden_direct_lao_file_open = file_is_open
+               if (lao_reorth) pertden_reorth_lao_file_open = file_is_open
+
+            end if
+          
+            do i = 0, numproc - 1
+               if (i .lt. 10) then
+                  write (file_name_full,'(a18,a1,i1)') file_name_par,'.',i
+                  file_name_length=20
+               else if (i .lt. 100) then
+                  write (file_name_full,'(a18,a1,i2)') file_name_par,'.',i
+                  file_name_length=21
+               else if (i .lt. 1000) then
+                  write (file_name_full,'(a18,a1,i3)') file_name_par,'.',i
+                  file_name_length=22
+               else
+                  call quit("error in london.*collect parallel run")
+               endif
+          
+               inquire(file=file_name_full(1:file_name_length), exist=file_exists)
+               if (file_exists) then
+
+                  if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
+                  if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
+
+                  if (.not.file_is_open) then
+
+                     open(file_unit_par,  &
+                          file = file_name_full(1:file_name_length), &
+                          status = 'old',        &
+                          form   = 'formatted',  &
+                          access = 'sequential')
+
+                     file_is_open = .true.
+                     if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
+                     if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
+
+                  end if
+
+                  rewind(file_unit_par)
+
+                  call london_export_copy_data_from_files(file_unit_par,  &
+                                                          file_unit_final, &
+                                                        (/london_direct_export, &
+                                                          london_reorth_export/))
+                  
+                  if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
+                  if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
+
+                  if (file_is_open) then
+                     close(file_unit_par, status='delete')
+                     file_is_open = .false.
+                     if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
+                     if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
+                  end if
+               end if
+          
+            end do ! do i = 0, numproc - 1
+
+            !test grid points - leave it for debugging
+            !call compare_files(file_unit_final)
+           
+           
+            if (pertden_direct_lao_file_open) then
+               close(file_unit_final, status = 'keep')
+               pertden_direct_lao_file_open = .false.
+            end if
+            if (pertden_reorth_lao_file_open) then
+               close(file_unit_final, status = 'keep')
+               pertden_reorth_lao_file_open = .false.
+            end if
+
+         end if
+      end if
+
+   end subroutine
+
+#endif
+
+
+
 
    subroutine loop_over_batches()
     real(8) :: dummy
@@ -2094,7 +2559,7 @@ contains
     integer                :: k_start, k, im, im_off, j, ioff, i
     type(omega_prefactor) :: u
 
-    !real(8) :: temp(pertden_nr_columns)
+    real(8) :: temp(pertden_nr_columns)
 !   ----------------------------------------------------------------------------
 
 !   gs_b_lao(R_{x,y,z}, Sigma_{x,y,z}, B_{x,y,z})
@@ -2160,31 +2625,31 @@ contains
         end do
     end do
 
-!    if (london_direct_export) then
-!       temp = 0.0d0
-!       temp(1) = px
-!       temp(2) = py
-!       temp(3) = pz
-!       do i = 1, 3
-!          do j = 1, 3
-!             ioff = (i-1)*3+j
-!             temp(15+ioff) = s_b_lao(j, i) !16-24
-!          end do
-!       end do
-!       if (is_gga) then
-!          do i = 1, 3
-!             do j = 1, 3
-!                do k = 1, 3
-!                   ioff = (i-1)*9+(j-1)*3+k 
-!                   temp(24+ioff) = gs_b_lao(k, j, i) !25-51
-!                end do
-!             end do
-!          end do
-!       end if
-!       call london_export_write_data_to_files( &
-!                    (/temp(1:pertden_nr_columns)/), &
-!                    (/.true., .false./))
-!    end if
+    if (london_direct_export) then
+       temp = 0.0d0
+       temp(1) = px
+       temp(2) = py
+       temp(3) = pz
+       do i = 1, 3
+          do j = 1, 3
+             ioff = (i-1)*3+j
+             temp(15+ioff) = s_b_lao(j, i) !16-24
+          end do
+       end do
+       if (is_gga) then
+          do i = 1, 3
+             do j = 1, 3
+                do k = 1, 3
+                   ioff = (i-1)*9+(j-1)*3+k 
+                   temp(24+ioff) = gs_b_lao(k, j, i) !25-51
+                end do
+             end do
+          end do
+       end if
+       call london_export_write_data_to_files( &
+                    (/temp(1:pertden_nr_columns)/), &
+                    (/.true., .false./))
+    end if
 
   end subroutine
 
@@ -2234,6 +2699,8 @@ contains
 
     integer                :: k_start, k, im, im_off, j, ioff, i
     type(omega_prefactor) :: u
+
+    real(8) :: temp(pertden_nr_columns)
 !   ----------------------------------------------------------------------------
 
     k_start = 1
@@ -2245,6 +2712,7 @@ contains
 
        im_off = mat_dim*mat_dim*nz*(im - 1)
 
+!      only charge density part
        if (is_gga) then
           call get_gn_nonhermitian(r_b(im),             &
                                    gr_b(1:3,im),        &
@@ -2324,6 +2792,50 @@ contains
 
       end if
     end do
+
+    if (london_reorth_export) then
+       temp = 0.0d0
+       temp(1) = px
+       temp(2) = py
+       temp(3) = pz
+!      nosdft
+       do i = 1, 3
+          temp(3+i) = r_b(i) !4:6
+       end do
+       if (is_gga) then
+          do i = 1, 3
+             do j = 1, 3
+                ioff = (i-1)*3+j
+                temp(6+ioff) = gr_b(j, i) !7:15
+             end do
+          end do
+       end if
+!      sdft
+       if (.not. dft_cfg_no_sdft) then
+          do i = 1, 3
+             do j = 1, 3
+                ioff = (i-1)*3+j
+                temp(15+ioff) = s_b(j, i) !16-24
+             end do
+          end do
+          if (is_gga) then
+             do i = 1, 3
+                do j = 1, 3
+                   do k = 1, 3
+                      ioff = (i-1)*9+(j-1)*3+k
+                      temp(24+ioff) = gs_b(k, j, i) !25:51
+                   end do
+                end do
+             end do
+          end if
+       end if
+
+       call london_export_write_data_to_files( &
+               (/temp(1:pertden_nr_columns)/), &
+               (/.false., .true./))
+
+    end if
+
 
   end subroutine
 
