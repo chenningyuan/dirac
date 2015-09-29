@@ -5,6 +5,8 @@ module electrostatic_potential
    implicit none 
    
    public get_esp
+!gosia: temporarily:
+   public get_electronic_mep
 
    private
 
