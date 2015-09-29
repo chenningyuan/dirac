@@ -57,6 +57,8 @@ sudo pip install sphinxcontrib-bibtex
 sudo pip install sphinx_rtd_theme
 sudo pip install hieroglyph
 
+# CDash project name 
+  CTEST_PROJECT_NAME="DIRACext"
 # set for parallel buildup
   DIRAC_MPI_COMMAND="mpirun -np 2"
 # determine number of processors

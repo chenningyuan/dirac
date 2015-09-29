@@ -24,6 +24,8 @@
 # export DIRAC_MPI_COMMAND
 export DIRAC_MPI_COMMAND="mpirun -np 2"
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # show system info (processors, disks, memory)
 lscpu
 df -h

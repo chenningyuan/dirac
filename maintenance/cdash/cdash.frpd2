@@ -8,6 +8,8 @@ export LC_ALL=en_US.UTF-8
 
 export DIRTIMEOUT="14m"
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # go to the local DIRAC directory
 cd $DIRAC
 

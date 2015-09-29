@@ -26,6 +26,8 @@ echo -e "pgf90=\c";which pgf90; pgf90 -V
 echo -e "pgcc=\c";which pgcc; pgcc -V
 echo -e "pgCC=\c";which pgCC; pgCC -V
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # my cmake stuff
 export PATH=/shared/home/ilias/bin/cmake/bin:$PATH
 echo "My own CMake is in PATH."

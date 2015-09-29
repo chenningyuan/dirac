@@ -32,6 +32,9 @@
 # export number of processors as environment variable N_PROC
 export N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)
 
+# export CDash project name
+export CTEST_PROJECT_NAME=DIRACext
+
 # show number of processors to be used
 echo "Number of available processors is $N_PROC"
 

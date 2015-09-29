@@ -15,6 +15,8 @@ echo "Portlang Group compilers activated ! PGI=$PGI"
 ##  my most recent python 2.7.1  ##
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # set scratch directory on the main node
 export DIRAC_TMPDIR=/home/milias/my_scratch
 
