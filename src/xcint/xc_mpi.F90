@@ -44,6 +44,8 @@ module xc_mpi
    public xc_mpi_bcast
    public xc_mpi_reduce
    public xc_mpi_distribute_points
+!gosia: make it public:
+   public get_my_rank
 #endif
 
    private
