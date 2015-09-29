@@ -158,8 +158,10 @@ module fde_data
       integer :: i
       real(kind=8), pointer :: fde_frozen_prp(:,:), gridp(:,:)
       type(fde_files)  :: ftmp
+      type(fde_import)  :: itmp
 
       call fde_get_files_info(ftmp)
+      call fde_get_import_info(itmp)
       
       file_unit = ftmp%frozen%unit
       file_name = ftmp%frozen%name
@@ -181,13 +183,80 @@ module fde_data
          gf_frozen%gn(2,i)   = fde_frozen_prp(5,i)
          gf_frozen%gn(3,i)   = fde_frozen_prp(6,i)
          
+!gosia: add here frozen perturbed magnetic densities...
+!        ... first n
+         if (itmp%im_n_b) then
+!           (Bxyz, i)
+            gf_frozen%n_b(1,i)      = fde_frozen_prp(7,i)
+            gf_frozen%n_b(2,i)      = fde_frozen_prp(8,i)
+            gf_frozen%n_b(3,i)      = fde_frozen_prp(9,i)
+         end if
+!        ... and gn
+         if (itmp%im_gn_b) then
+!           (Rxyz, Bxyz, i)
+            gf_frozen%gn_b(1,1,i)   = fde_frozen_prp(10,i)
+            gf_frozen%gn_b(2,1,i)   = fde_frozen_prp(11,i)
+            gf_frozen%gn_b(3,1,i)   = fde_frozen_prp(12,i)
+            gf_frozen%gn_b(1,2,i)   = fde_frozen_prp(13,i)
+            gf_frozen%gn_b(2,2,i)   = fde_frozen_prp(14,i)
+            gf_frozen%gn_b(3,2,i)   = fde_frozen_prp(15,i)
+            gf_frozen%gn_b(1,3,i)   = fde_frozen_prp(16,i)
+            gf_frozen%gn_b(2,3,i)   = fde_frozen_prp(17,i)
+            gf_frozen%gn_b(3,3,i)   = fde_frozen_prp(18,i)
+         end if
+!        ... then s
+         if (itmp%im_s_b) then
+!           (Sigma_xyz, Bxyz, i)
+            gf_frozen%s_b(1,1,i)    = fde_frozen_prp(19,i)
+            gf_frozen%s_b(2,1,i)    = fde_frozen_prp(20,i)
+            gf_frozen%s_b(3,1,i)    = fde_frozen_prp(21,i)
+            gf_frozen%s_b(1,2,i)    = fde_frozen_prp(22,i)
+            gf_frozen%s_b(2,2,i)    = fde_frozen_prp(23,i)
+            gf_frozen%s_b(3,2,i)    = fde_frozen_prp(24,i)
+            gf_frozen%s_b(1,3,i)    = fde_frozen_prp(25,i)
+            gf_frozen%s_b(2,3,i)    = fde_frozen_prp(26,i)
+            gf_frozen%s_b(3,3,i)    = fde_frozen_prp(27,i)
+         end if
+!        ... and gs
+         if (itmp%im_gs_b) then
+!           (Rxyz, Sigma_xyz, Bxyz, i)
+            gf_frozen%gs_b(1,1,1,i) = fde_frozen_prp(28,i)
+            gf_frozen%gs_b(2,1,1,i) = fde_frozen_prp(29,i)
+            gf_frozen%gs_b(3,1,1,i) = fde_frozen_prp(30,i)
+            gf_frozen%gs_b(1,2,1,i) = fde_frozen_prp(31,i)
+            gf_frozen%gs_b(2,2,1,i) = fde_frozen_prp(32,i)
+            gf_frozen%gs_b(3,2,1,i) = fde_frozen_prp(33,i)
+            gf_frozen%gs_b(1,3,1,i) = fde_frozen_prp(34,i)
+            gf_frozen%gs_b(2,3,1,i) = fde_frozen_prp(35,i)
+            gf_frozen%gs_b(3,3,1,i) = fde_frozen_prp(36,i)
+            gf_frozen%gs_b(1,1,2,i) = fde_frozen_prp(37,i)
+            gf_frozen%gs_b(2,1,2,i) = fde_frozen_prp(38,i)
+            gf_frozen%gs_b(3,1,2,i) = fde_frozen_prp(39,i)
+            gf_frozen%gs_b(1,2,2,i) = fde_frozen_prp(40,i)
+            gf_frozen%gs_b(2,2,2,i) = fde_frozen_prp(41,i)
+            gf_frozen%gs_b(3,2,2,i) = fde_frozen_prp(42,i)
+            gf_frozen%gs_b(1,3,2,i) = fde_frozen_prp(43,i)
+            gf_frozen%gs_b(2,3,2,i) = fde_frozen_prp(44,i)
+            gf_frozen%gs_b(3,3,2,i) = fde_frozen_prp(45,i)
+            gf_frozen%gs_b(1,1,3,i) = fde_frozen_prp(46,i)
+            gf_frozen%gs_b(2,1,3,i) = fde_frozen_prp(47,i)
+            gf_frozen%gs_b(3,1,3,i) = fde_frozen_prp(48,i)
+            gf_frozen%gs_b(1,2,3,i) = fde_frozen_prp(49,i)
+            gf_frozen%gs_b(2,2,3,i) = fde_frozen_prp(50,i)
+            gf_frozen%gs_b(3,2,3,i) = fde_frozen_prp(51,i)
+            gf_frozen%gs_b(1,3,3,i) = fde_frozen_prp(52,i)
+            gf_frozen%gs_b(2,3,3,i) = fde_frozen_prp(53,i)
+            gf_frozen%gs_b(3,3,3,i) = fde_frozen_prp(54,i)
+         end if
+
          fde_grid_im%r(1,i)  = gridp(1,i)
          fde_grid_im%r(2,i)  = gridp(2,i)
          fde_grid_im%r(3,i)  = gridp(3,i)
          fde_grid_im%w(i)    = gridp(4,i)
       enddo
 
-      deallocate(fde_frozen_prp)
+!gosia comment: these two are allocated inside read_grid...
+      deallocate(fde_frozen_prp) 
       deallocate(gridp)
    end subroutine fde_import_frozen
 

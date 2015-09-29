@@ -77,7 +77,7 @@ contains
     real(8), intent(inout) :: mat(mat_dim, mat_dim, nz, nr_mat)
     integer, intent(in)    :: isym(nr_mat)
 !   ----------------------------------------------------------------------------
-    integer                :: irep, iblock, imat, iz
+    integer                :: irep, iblock, imat, iz, jxyz
     integer                :: i, j, ii, jj
     integer, parameter     :: h(4) = (/-1, 1, 1, 1/)
     integer                :: st1, st2, nr1, nr2
@@ -88,27 +88,30 @@ contains
 
        irep = isym(imat) - 1
 
-       do iz = 1, nz
+       !do iz = 1, nz
+       do jxyz = 0, 3
           do iblock = 1, nr_ao_blocks
              nr1 = ao_block_nr(iblock)
              st1 = ao_block_start(iblock)
-             nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
-             st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+             nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+             st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
              if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
-             do i = 1, nr1
-                do j = 1, nr2
-                   ii = st1 + i - 1
-                   jj = st2 + j - 1
-
-                   average = mat(ii, jj, iz, imat) &
-                           + h(iz)*mat(jj, ii, iz, imat)
-                   average = 0.5d0*average
-
-                   mat(ii, jj, iz, imat) = average
-                   mat(jj, ii, iz, imat) = h(iz)*average
+             if (.not. (st2 > st1)) then
+                do i = 1, nr1
+                   do j = 1, nr2
+                      ii = st1 + i - 1
+                      jj = st2 + j - 1
+                
+                      average = mat(ii, jj, iq(jxyz), imat) &
+                              + h(iq(jxyz))*mat(jj, ii, iq(jxyz), imat)
+                      average = 0.5d0*average
+                
+                      mat(ii, jj, iq(jxyz), imat) = average
+                      mat(jj, ii, iq(jxyz), imat) = h(iq(jxyz))*average
+                   end do
                 end do
-             end do
+             end if
           end do
        end do
     end do
