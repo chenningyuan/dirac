@@ -340,6 +340,11 @@ contains
 
   subroutine get_gtb(fao, tb_dmat, cmo, ibeig)
     use xcint_main
+    use fde_cfg
+    use fde_mod
+    use fde_mag_cfg
+    use fde_dirac_matrices_integration
+
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: fao(*)
     real(8), intent(in)    :: tb_dmat(*)
@@ -415,8 +420,7 @@ contains
 !       construct kohn-sham contribution
 !       ================================
 !   in dft Bx/By/Bz contributions are added on top of each other!
-    if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
-    !if (dirac_cfg_dft_calculation) then
+    if (dirac_cfg_dft_calculation) then
 
       debug_me = .false.
       if (debug_me) then
@@ -441,17 +445,34 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call integrate_xc(xc_mat_dim          = ntbas(0), &
-                         xc_nz               = nz,       &
-                         xc_dmat_0           = dmat,        &
-                         xc_nr_dmat          = nr_xyz_comp, &
-                         xc_nr_fmat          = nr_xyz_comp, &
-                         xc_dmat             = tb_dmat,     &
-                         xc_fmat             = fao,         &
-                         xc_fmat_pg_sym      = isymop,      &
-                         xc_dmat_pg_sym      = isymop,      &
-                         xc_dmat_ih_sym      = ihrmop,      &
-                         xc_do_london_rhs_ro = .true.)       
+
+!     tb_dmat has been antisymmetrized in getmdm, ih = -1
+!      if (expped) then
+!         call integrate_xc(xc_mat_dim          = ntbas(0),     &
+!                            xc_nz               = nz,          &
+!                            xc_dmat_0           = dmat,        &
+!                            xc_nr_dmat          = nr_xyz_comp, &
+!                            xc_nr_fmat          = nr_xyz_comp, &
+!                            xc_dmat             = tb_dmat,     &
+!                            xc_fmat             = fao,         &
+!                            xc_fmat_pg_sym      = isymop,      &
+!                            xc_dmat_pg_sym      = isymop,      &
+!                            xc_dmat_ih_sym      = ihrmop,      &
+!                            xc_do_london_rhs_ro = .true.,      &       
+!                            xc_london_reorth_export = .true.)       
+!      else
+         call integrate_xc(xc_mat_dim          = ntbas(0),     &
+                            xc_nz               = nz,          &
+                            xc_dmat_0           = dmat,        &
+                            xc_nr_dmat          = nr_xyz_comp, &
+                            xc_nr_fmat          = nr_xyz_comp, &
+                            xc_dmat             = tb_dmat,     &
+                            xc_fmat             = fao,         &
+                            xc_fmat_pg_sym      = isymop,      &
+                            xc_dmat_pg_sym      = isymop,      &
+                            xc_dmat_ih_sym      = ihrmop,      &
+                            xc_do_london_rhs_ro = .true.)       
+!      end if
 
       call dealloc(dmat)
 
@@ -466,6 +487,30 @@ contains
       end if
 
     end if
+
+
+!   construct fde contribution to property gradient if needed
+    if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
+       if (.not. fde_lao_reorth_active_embker) then
+          write(*, *) 'no LAO-reorth contributions to FDE property gradient (embker)'
+       else
+          call alloc(dmat, n2bbasxq)
+          dmat = 0.0d0
+          call genden(dmat, cmo, 1, iprprp)
+          
+          call fde_dirac_emb_matrices_via_integration(fde_mat_dim = ntbas(0), &
+                            fde_nz               = nz,          &
+                            fde_dmat_0           = dmat,        &
+                            fde_nr_dmat          = nr_xyz_comp, &
+                            fde_nr_fmat          = nr_xyz_comp, &
+                            fde_dmat             = tb_dmat,     &
+                            fde_fmat             = fao,         &
+                            fde_do_london_rhs_ro = .true.)       
+          
+          call dealloc(dmat)
+       end if
+    end if
+
 
   end subroutine get_gtb
 
