@@ -18,6 +18,7 @@ general:
 machine:
     environment:
 # set environment variables to make MPI and tests work
+        CTEST_PROJECT_NAME: "DIRACext"
         DIRAC_MPI_COMMAND: "mpirun -np 2"
         PATH: $HOME/open_mpi/bin:$PATH
         LD_LIBRARY_PATH: $HOME/open_mpi/lib:$LD_LIBRARY_PATH
