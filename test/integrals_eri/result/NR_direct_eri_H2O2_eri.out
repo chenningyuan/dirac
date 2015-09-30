@@ -889,20 +889,11 @@ It.   14    -150.7774268822     -3.13D-13  4.16D-08  4.89D-08   DIIS   9    0.56
    233.07612406731  ( 2)      879.25039786952  ( 2)      879.36517880755  ( 2)     3791.80634627692  ( 2)     3791.90638199383  ( 2)
  22771.25448984154  ( 2)    22771.33699150817  ( 2)
 
-* Boson symmetry C1 
-  * No eigenvalues.
-
-* Boson symmetry C1 
-  * No eigenvalues.
-
-* Boson symmetry C1 
-  * No eigenvalues.
-
 * Occupation of subblocks
-                       E1 :  A    C1   C1   C1                                                              
-  closed shells (f=1.0000):    9    0    0    0
- virtual shells (f=0.0000):   57    0    0    0
-tot.num. of pos.erg shells:   66    0    0    0
+                       E1 :  A                                                                              
+  closed shells (f=1.0000):    9
+ virtual shells (f=0.0000):   57
+tot.num. of pos.erg shells:   66
 
 
 * HOMO - LUMO gap:
