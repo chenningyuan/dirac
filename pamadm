@@ -214,7 +214,9 @@ def main():
     add_test('cosci_energy', 'short;ci')
     add_test('krci_energy_q_corrections', 'medium;krci;qcorr;ci')
     add_test('lucita_q_corrections', 'short;qcorr;ci')
-    add_test('x2c-SCF_to_4c-SCF', 'short;x2c;;4c;scf')
+    add_test('x2c-SCF_to_4c-SCF', 'short;x2c;;4c;scf')  
+    # extra test about reading all basis set files
+    add_test('read_all_basis_sets', 'long')  
     # benchmarks, not run as part of standard test set
     add_test('benchmark_cc', 'benchmark;cc')
     add_test('benchmark_cc_linear', 'benchmark;cc')
@@ -643,6 +645,13 @@ def main():
     f.write('if(ENABLE_PCMSOLVER)\n')
     for test in list_of_tests:
         if 'pcm' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
+    # one long test: read (almost) all basis set files in DIRAC
+    f.write('if(ENABLE_BASIS_SETS_CHECK)\n')
+    for test in list_of_tests:
+        if 'read_all_basis_sets' in test[1]:
             f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
     f.write('endif()\n')
 
