@@ -283,6 +283,9 @@ C          Hermitian operator
               endif
 
 !             call fde_set_nz(nz)
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(12)
+#endif
               call fde_calculate_emb_pot_mat(ntbas(0),fao,fmo)
 
               write (*,*) 'FDE Fock contributions (re)calculated'

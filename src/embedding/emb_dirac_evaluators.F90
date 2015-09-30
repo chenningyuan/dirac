@@ -27,7 +27,9 @@ module fde_evaluators_dirac
    implicit none
 
 ! these are the interfaces to the dirac-specific code
+   public fde_launch_slave_process
    public fde_calculate_elpot
+   public fde_calculate_nucpot
    public fde_dirac_set_nz
    public fde_dirac_get_nz
    public fde_dirac_get_isymop
@@ -71,6 +73,8 @@ module fde_evaluators_dirac
    interface fde_calculate_interaction_energy
       module procedure fde_dirac_emb_interaction_energy
    end interface
+
+   public fde_dirac_embpot_static_energy
 
    public fde_get_embpot_energy
    interface fde_get_embpot_energy
@@ -125,7 +129,13 @@ module fde_evaluators_dirac
          call fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint=printlocal)
 ! we calculate both the nuclear and electrostatic potentials in one call
 ! if needed, we can split this up later 
-         call fde_dirac_calculate_elpot(dmat,grid%r,gf%elpot,gf%nucpot,myprint=printlocal)
+         call fde_dirac_calculate_elpot(dmat,grid%r,gf%elpot,myprint=printlocal)
+         call fde_dirac_calculate_nucpot(dmat,grid%r,gf%nucpot)
+
+! alternatively, we can do things separately 
+!        call fde_dirac_calculate_hartree(dmat,grid%r,gf%elpot,myprint=printlocal)
+!        call fde_dirac_calculate_nucpot(dmat,grid%r,gf%nucpot,myprint=printlocal)
+!        gf%elpot = gf%elpot + gf%nucpot        
 
          deallocate(dmat)
 
@@ -153,22 +163,7 @@ module fde_evaluators_dirac
 
          call fde_get_files_info(ftmp)
          call fde_get_import_info(itmp)
-
-         logunit      = ftmp%logfile%unit
-
-         if (nr_boson_irreps > 1) then
-            write (logunit,'(2X,A)') 'FDE electrostatic potential not available'
-            write (logunit,'(3X,A)') '    (only C(1) symmetry currently supported)'
-            return
-         endif
-
-! dmat is allocated and set in the routine below
-         call fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint=printlocal)
-! we calculate both the nuclear and electrostatic potentials in one call
-! if needed, we can split this up later 
          call fde_dirac_calculate_nucpot(dmat,grid%r,gf%nucpot,myprint=printlocal)
-
-         deallocate(dmat)
 
       end subroutine fde_calculate_nucpot
 
@@ -184,8 +179,8 @@ module fde_evaluators_dirac
          integer :: i
          integer :: np
          integer :: irrep = 1
-         logical :: nuc_part = .true.
-         logical :: ele_part = .false.
+         logical :: nuc_part 
+         logical :: ele_part 
 
 
          if (present(myprint)) then
@@ -213,21 +208,21 @@ module fde_evaluators_dirac
 
       end subroutine fde_dirac_calculate_nucpot
 
+
 !   ----------------------------------------------------------------------------
-      subroutine fde_dirac_calculate_elpot(dmat,r,vc,vnuc,myprint)
+      subroutine fde_dirac_calculate_hartree(dmat,r,vc,myprint)
 !   ----------------------------------------------------------------------------
          real(kind=8), intent(in)  :: dmat(:)
          real(kind=8), intent(in)  :: r(:,:)
          real(kind=8), intent(out) :: vc(:)
-         real(kind=8), intent(out) :: vnuc(:)
          logical, intent(in), optional :: myprint
          logical :: printlocal
          integer :: i
          integer :: np
          integer :: irrep = 1
-         logical :: nuc_part = .false.    
-         logical :: ele_part = .true.    
-         
+         logical :: nuc_part
+         logical :: ele_part
+
 
          if (present(myprint)) then
             printlocal = myprint
@@ -246,35 +241,62 @@ module fde_evaluators_dirac
 !                 that is not scaled wih the occupation numbers
 !                 (so like what one would get from calling DENMAT).
 !                 
-         nuc_part = .false.    
-         ele_part = .true.    
+         nuc_part = .false.
+         ele_part = .true.
          call get_esp(np,            &
                       vc,            &
-                      irrep,         & 
-                      size(dmat, 1), & 
+                      irrep,         &
+                      size(dmat, 1), &
                       dmat,          &
                       r,             &
                       nuc_part,      &
                       ele_part)
-!
-! now the nuclear potential
-!
-         if (printlocal) write (*,*) 'Generating the nuclear potential over the grid'
 
-         nuc_part = .true.    
-         ele_part = .false.    
+      end subroutine fde_dirac_calculate_hartree
+
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_dirac_calculate_elpot(dmat,r,vc,myprint)
+!   ----------------------------------------------------------------------------
+         real(kind=8), intent(in)  :: dmat(:)
+         real(kind=8), intent(in)  :: r(:,:)
+         real(kind=8), intent(out) :: vc(:)
+         logical, intent(in), optional :: myprint
+         logical :: printlocal
+         integer :: i
+         integer :: np
+         integer :: irrep = 1
+         logical :: nuc_part 
+         logical :: ele_part 
+         
+
+         if (present(myprint)) then
+            printlocal = myprint
+         else
+            printlocal = .True.
+         endif
+
+         np = size(r,2)
+!
+! calculating the hartree potential first
+! 
+         if (printlocal) write (*,*) 'Generating the Electrostatic potential over the grid'
+!
+! aspg, 11/10/2012
+! important here: get_esp expects to get a density matrix
+!                 that is not scaled wih the occupation numbers
+!                 (so like what one would get from calling DENMAT).
+!                 
+         nuc_part = .true.     
+         ele_part = .true.     
          call get_esp(np,            &
-                      vnuc,          &
-                      irrep,         & 
-                      size(dmat, 1), & 
+                      vc,            &
+                      irrep,         &  
+                      size(dmat, 1), &
                       dmat,          &
                       r,             &
                       nuc_part,      &
                       ele_part)
-!
-! assemble the final electrostatic potential
-!
-         vc   =  vnuc + vc 
 
       end subroutine fde_dirac_calculate_elpot
       
@@ -580,7 +602,6 @@ module fde_evaluators_dirac
          end subroutine fde_dirac_embpot_via_aoproper
 
 !   ----------------------------------------------------------------------------
-!     subroutine fde_dirac_embpot_via_integrator(mat_dim,dmat,fmat,in_nz)
       subroutine fde_dirac_embpot_via_integrator(mat_dim,dmat,fmat)
 !   ----------------------------------------------------------------------------
          integer, intent(in) :: mat_dim
@@ -595,11 +616,42 @@ module fde_evaluators_dirac
                                   fde_nr_fmat   = 1,       &
                                   fde_fmat      = fmat,    &
                                   fde_do_potential = .true.)
-
 !       call fde_dirac_emb_interaction_energy('DHF ')
 
       end subroutine fde_dirac_embpot_via_integrator
 
+
+      subroutine fde_launch_slave_process()
+         call fde_dirac_emb_matrices_via_integration(        &
+                                  fde_mat_dim   = 1,         &
+                                  fde_nz        = 1,         &
+                                  fde_dmat_0    = (/0.0d0/), &
+                                  fde_nr_dmat   = 0,         &
+                                  fde_nr_fmat   = 0)
+      end subroutine
+
+
+      function fde_dirac_embpot_static_energy()
+         real(8)         :: fde_dirac_embpot_static_energy
+         integer         :: i
+
+! todo: generalize to other densities
+         call fde_dirac_get_density_from_dfcoef('DHF ',fde_grid_sv,gf_active_sv)
+
+         fde_dirac_embpot_static_energy = 0.0d0
+         print *, "debug: number of points ",fde_grid_sv%npoints
+         do i = 1, fde_grid_sv%npoints
+            fde_dirac_embpot_static_energy = fde_dirac_embpot_static_energy &
+                     + fde_grid_sv%w(i) * gf_active_sv%n(i) * fde_static_vemb(i) 
+            if ( i .eq. 5 ) then
+               print *, "w: ",fde_grid_sv%w(i)
+               print *, "n: ",gf_active_sv%n(i)
+               print *, "v: ",fde_static_vemb(i)
+            endif
+         end do
+         print *, "embpot energy: ",fde_dirac_embpot_static_energy
+
+      end function
 
 
       subroutine fde_dirac_emb_interaction_energy(fde_active_energy,level,myprint)

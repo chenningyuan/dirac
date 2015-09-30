@@ -312,7 +312,9 @@ module fde_export_data
                !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
-                                               gf%elpot(i),           &
+! aspg 29/09/2015
+! the sign here is to align the notation to adf
+                                               -gf%elpot(i),          &
                                                v_pc_array,            &
                                                gf%n(i),               &
                                                (gf%gn(j,i), j = 1,3), &
@@ -324,7 +326,9 @@ module fde_export_data
                !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
-                                               gf%elpot(i),           &
+! aspg 29/09/2015
+! the sign here is to align the notation to adf
+                                               -gf%elpot(i),          &
                                                v_pc_array,            &
                                                gf%n(i),               &
                                                (gf%gn(j,i), j = 1,3), &
@@ -334,7 +338,9 @@ module fde_export_data
                !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
-                                               gf%elpot(i),           &
+! aspg 29/09/2015
+! the sign here is to align the notation to adf
+                                               -gf%elpot(i),          &
                                                v_pc_array,            &
                                                gf%n(i),               &
                                                (gf%gn(j,i), j = 1,3)

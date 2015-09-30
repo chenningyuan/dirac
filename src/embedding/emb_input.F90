@@ -127,16 +127,9 @@ module fde_input
          end if
       endif
 
-#ifndef PRG_DIRAC
-! in dirac this is redundant, since we go for reading
-! the static potential right at the construction of
-! its matrix representation and subsequent saving into aoproper;
-! but for other codes it is nevertheless interesting to do it
-!
       if (itmp%im_vemb) then
          call fde_import_static      
       endif
-#endif
 
       if (itmp%im_frozen) then
          call fde_import_frozen

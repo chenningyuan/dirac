@@ -638,6 +638,9 @@ C
               tdfde = SECOND()
               call interface_mo_write()
               call fde_dirac_set_nz(nz)
+#ifdef VAR_MPI
+           if (parcal) call dirac_parctl(12)
+#endif
               call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
               tdfde =  second() - tdfde
            endif
@@ -1515,6 +1518,9 @@ C
               tdfde= second()
               call interface_mo_write()
               call fde_dirac_set_nz(nz)
+#ifdef VAR_MPI
+           if (parcal) call dirac_parctl(12)
+#endif
               call fde_calculate_emb_pot_mat(ntbas(0),dmat,fock)
               tdfde = second() - tdfde
            endif
@@ -1906,6 +1912,8 @@ C
          call fde_get_import_info(itmp)
          if (itmp%im_update_vemb) then
              elergy = elergy - fde_get_embpot_energy()
+         else
+             elergy = elergy - fde_dirac_embpot_static_energy()
          end if
       end if
 

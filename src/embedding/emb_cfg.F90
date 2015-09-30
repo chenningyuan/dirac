@@ -72,7 +72,8 @@ implicit none
    public fde_files
 
    public fde_initialize_cfg
-   
+   public sync_fde_cfg   
+
    public fde_set_print_level
    public fde_set_import_info
    public fde_set_export_info
@@ -85,6 +86,12 @@ implicit none
    
 !gosia:unused   public parallel_fde
    public fde_cfg_screening
+   public fde_cfg_tinydens
+   public fde_cfg_alda_hs
+   public fde_cfg_alda_ha
+   public fde_cfg_no_sdft
+
+   public fde_use_blas3_scheme
    public fde_intersub_nucrep
    public fde_frozen_energy 
 
@@ -92,7 +99,14 @@ implicit none
 
    integer, save      :: fde_print_level   = 0
    real(kind=8), save :: fde_cfg_screening = 1.0d-9
-   logical, save      :: fde_is_parallel   = .false.
+   real(kind=8), save :: fde_cfg_tinydens  = 1.0d-14
+   logical, save      :: parallel_fde   = .false.
+
+   logical, save      :: fde_cfg_alda_hs = .false.
+   logical, save      :: fde_cfg_alda_ha = .false.
+
+   logical, save      :: fde_use_blas3_scheme = .false.
+   logical, save      :: fde_cfg_no_sdft = .false.
 
    type(fde_export), save :: fde_ex_control
    type(fde_import), save :: fde_im_control
@@ -306,5 +320,31 @@ implicit none
          tmp%logfile%unit = fde_f%logfile%unit         
       end subroutine fde_get_files_info
       
+
+   subroutine sync_fde_cfg()
+
+#ifdef VAR_MPI
+      use fde_mpi
+
+      call fde_mpi_bcast(fde_print_level)
+
+      call fde_mpi_bcast(fde_cfg_screening)
+      call fde_mpi_bcast(fde_cfg_tinydens)
+      call fde_mpi_bcast(fde_cfg_alda_ha)
+      call fde_mpi_bcast(fde_cfg_alda_hs)
+      call fde_mpi_bcast(fde_use_blas3_scheme)
+      call fde_mpi_bcast(fde_cfg_no_sdft)
+      
+      call fde_mpi_bcast(parallel_fde)
+
+!     call fde_mpi_bcast(fde_ex_control)
+!     call fde_mpi_bcast(fde_im_control)
+!     call fde_mpi_bcast(fde_f)
+      call fde_mpi_bcast(fde_intersub_nucrep)
+      call fde_mpi_bcast(fde_frozen_energy)
+#endif /* ifdef VAR_MPI */
+
+   end subroutine
+
 
 end module fde_cfg

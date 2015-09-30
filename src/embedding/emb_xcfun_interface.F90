@@ -23,6 +23,7 @@
 module fde_xcfun_interface
 
    use xcfun_1_0
+   use fde_mpi
    use fde_max_block_length
 
    implicit none
@@ -596,6 +597,13 @@ contains
 !     --------------------------------------------------------------------------
 
       if (.not. f%xcfun_id_is_set) then
+#ifdef VAR_MPI
+         if (parallel_xc) then
+            call fde_mpi_bcast(f%w)
+            call fde_mpi_bcast(f%id)
+            call fde_mpi_bcast(f%xcfun_id_is_set)
+         end if
+#endif
          f%id = xc_new_functional()
          call xc_set_mode(f%id, XC_VARS_NS)
 
