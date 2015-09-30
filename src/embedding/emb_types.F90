@@ -32,10 +32,7 @@ module fde_types
 
    public new_fde_grid
    public del_fde_grid
-!gosia: unused   public set_fde_grid_size
-
-   public set_fde_grid_nr_elements
-
+!gosia unused:   public set_fde_grid_nr_elements
 
    public new_grid_function
    public del_grid_function
@@ -213,7 +210,7 @@ module fde_types
 
      subroutine new_fde_grid(g,nr_elements)
        type(fde_grid) :: g
-       integer :: nr_elements
+       integer :: nr_elements, prior_nr_elements
 
        g%npoints = nr_elements
 

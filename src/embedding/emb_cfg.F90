@@ -84,7 +84,7 @@ implicit none
    public fde_get_export_info
    public fde_get_files_info
    
-!gosia:unused   public parallel_fde
+   public parallel_fde
    public fde_cfg_screening
    public fde_cfg_tinydens
    public fde_cfg_alda_hs

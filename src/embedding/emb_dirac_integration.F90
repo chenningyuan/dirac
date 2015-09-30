@@ -13,6 +13,7 @@ module fde_dirac_matrices_integration
    use interface_ao
    use interface_mo
    use interface_file_io
+   use dft_cfg
    use interface_grid
    use dirac_ao_eval
    use density_eval
@@ -227,13 +228,10 @@ contains
       real(8)             :: save_ddot1, save_ddot2, h
 !     --------------------------------------------------------------------------
       integer, parameter :: max_response_order_mo = 5
-      integer :: i, j
+      integer :: i, j, iz, imat
        
       call fde_get_import_info(itmp)
 
-
-      
-      integer            :: i, j, iz, imat
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
