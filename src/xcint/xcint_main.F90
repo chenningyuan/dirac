@@ -1974,7 +1974,7 @@ contains
 !        get the number of all proc involved (including master)
          numproc = xc_mpi_get_nr_proc()
 !        get the task id (0=master)
-         myproc = get_my_rank()
+         myproc = xc_mpi_get_rank()
 
 !        create a file name on each proc         
          if (myproc .lt. 10) then    ! mpi id has one digit
@@ -2089,7 +2089,7 @@ contains
       integer :: i
      
       numproc = xc_mpi_get_nr_proc()
-      myproc = get_my_rank()
+      myproc = xc_mpi_get_rank()
       file_is_open = .false.
 
       if (lao_direct) then
