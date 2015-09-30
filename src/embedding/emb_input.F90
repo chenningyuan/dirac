@@ -25,7 +25,7 @@ module fde_input
    use fde_cfg
    use fde_data
    use fde_nadd_derv
-   use fde_evaluators
+   use fde_evaluators_dirac
    
    private
 

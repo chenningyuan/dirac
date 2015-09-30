@@ -28,7 +28,7 @@ module fde_export_data
    use fde_io
    use xml_parser
    use xml_file
-   use fde_evaluators
+   use fde_evaluators_dirac
 #endif
    
    public fde_export_to_file
@@ -59,6 +59,9 @@ module fde_export_data
          if (etmp%do_grid_out .and. (level.eq.etmp%ex_level)) then
             write (*,*) 'Preparing FDE data for export'
             call fde_prepare_export(level,fde_grid_ex,gf_export)
+! aspg 29/09/2015
+! the sign here is to align the notation to adf
+            gf_export%elpot = -gf_export%elpot
          
             call fde_get_export_info(etmp) 
             if (etmp%ex_format.eq.'XML') then
@@ -279,9 +282,7 @@ module fde_export_data
          do i = 1, grid%npoints
             write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                                             grid%w(i),             &
-! aspg 29/09/2015
-! the sign here is to align the notation to adf
-                                            -gf%elpot(i),          &
+                                            gf%elpot(i),           &
                                             v_pc_array,            &
                                             gf%n(i),               &
                                             (gf%gn(j,i), j = 1,3)
