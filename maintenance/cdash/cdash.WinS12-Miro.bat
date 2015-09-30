@@ -2,7 +2,8 @@
 cls
 
 rem set number of threads for OpenBLAS
-set OPENBLAS_NUM_THREADS=2
+rem 24GB RAM,8 CPU
+set OPENBLAS_NUM_THREADS=4
 
 rem source files directories
 set DIRAC=C:\Users\milias\Documents\work\software\dirac\trunk
