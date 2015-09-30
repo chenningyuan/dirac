@@ -1927,10 +1927,8 @@ C
 C        Do wave function analysis and properties
 C        at converged geometry.
 C
-         call alloc(WORK,LWORK,id='WORK in RUNOPT7')
-         CALL MINANA(WORK,LWORK)
-         CALL MINPRP(WORK,LWORK)
-         call dealloc(WORK)
+         CALL MINANA()
+         CALL MINPRP()
 C
 C     Single point energy is calculated if requested.
 C
