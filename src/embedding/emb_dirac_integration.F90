@@ -1179,7 +1179,7 @@ contains
                                              ao,                                &
                                              rx(ipoint), ry(ipoint), rz(ipoint))
              else
-                u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*gf_frozen%elpot(ipoint)
+                u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint)
                 if (use_gga) then
                   u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
                 
