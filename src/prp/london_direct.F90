@@ -640,6 +640,10 @@ contains
      dmat = 0.0d0
      call genden(dmat, cmo, 1, iprprp)
 
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
+
 
      if (fde_lao_direct_active_embpot) then
         write(*, *) 'LAO-direct contribution to property gradient (embpot)'

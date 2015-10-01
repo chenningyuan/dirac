@@ -47,6 +47,8 @@ module fde_xcfun_interface
       real(8), allocatable :: output(:, :)
    end type
 
+   logical, public :: fde_fun_is_automatic
+
    integer, parameter, public :: d0000000 =  0
    integer, parameter, public :: d1000000 =  1
    integer, parameter, public :: d0010000 =  2

@@ -147,6 +147,10 @@ module fde_input_dirac
                fde_rsp_mag_lao = .true.
                fde_lao_direct_active_embpot = .true.
                doprp = .true.
+!
+               itmp%im_frozen = .true.
+               dirac_cfg_fde_response = .true.
+
             CASE ('.LAODKR')
 !              Direct-LAO contribution to property gradient, involving embedding KeRnel (only if SDFT)
                fde_rsp_mag_lao = .true.

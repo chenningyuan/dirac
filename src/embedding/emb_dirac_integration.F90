@@ -230,7 +230,7 @@ contains
       integer, parameter :: max_response_order_mo = 5
       integer :: i, j, iz, imat
        
-      call fde_get_import_info(itmp)
+!g      call fde_get_import_info(itmp)
 
 
 !#define DEBUG_XC
@@ -466,6 +466,8 @@ contains
           stop 'response_order_mo > max_response_order_mo'
       end if
 
+      write(*, *) 'buba 1 before xcfun_set_functional'
+
 ! functionals are set
       call xcfun_set_functional(fde_xcf,       max_response_order_mo, parallel_fde)
       call xcfun_set_functional(fde_xcf_alda,  max_response_order_mo, parallel_fde)
@@ -473,6 +475,7 @@ contains
       call xcfun_set_functional(fde_kef,       max_response_order_mo, parallel_fde)
       call xcfun_set_functional(fde_kef_alda,  max_response_order_mo, parallel_fde)
 !     call xcfun_set_functional(fde_kef_xalda, max_response_order_mo, parallel_fde)
+
 
       use_gga_qr = (fun_is_gga(fde_xcf)) .or. (fun_is_gga(fde_kef))
       use_gga_qi = (fun_is_gga(fde_xcf)) .or. (fun_is_gga(fde_kef))
@@ -512,9 +515,11 @@ contains
         max_ao_m_order = 1
       end if
 
+            write(*, *) 'buba before ao init'
       call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
                         .true.)
+            write(*, *) 'buba after ao init'
 
       if (fde_mpi_is_master()) then
 !        initial expectation value of the two-electron matrix
@@ -530,9 +535,9 @@ contains
          call scale_density_matrices(2.0d0)
 #endif
 
-         if (do_london_rhs_direct .or. do_london_rhs_ro) then
-            call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
-         end if
+         !if (do_london_rhs_direct .or. do_london_rhs_ro) then
+         !   call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+         !end if
 
 
          call insert_half_phases()
@@ -558,73 +563,16 @@ contains
 #endif
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #ifdef DEBUG_XC
       write(*, *) 'debug: XC potential matrix zeroed out prior to integration'
       fmat = 0.0d0
 #endif
 
-
-
+      write(*, *) 'buba 2 before loop_over_batches'
 
       call loop_over_batches()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+      write(*, *) 'buba 2 after loop_over_batches'
 
 #ifdef VAR_MPI
       if (parallel_fde) then
@@ -644,8 +592,6 @@ contains
 #endif
 
 
-
-
       if (fde_mpi_is_master()) then
 #ifdef PRG_DIRAC
          call scale_density_matrices(0.5d0)
@@ -657,6 +603,7 @@ contains
 !        symmetrize matrices
          if (fde_use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct &
+                                   .and. .not. do_london_rhs_ro &
                                    .and. .not. do_london_ks         &
                                    .and. .not. do_geo)) then
             if (nr_dmat > 0) then
@@ -666,7 +613,7 @@ contains
             end if
          end if
 
-         if (do_london_rhs_direct) then
+         if (do_london_rhs_direct .or. do_london_rhs_ro) then
             call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
@@ -1097,6 +1044,8 @@ contains
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
    do ipoint = 1, nr_points_on_this_proc
+
+            write(*, *) 'buba 6 first inside loop over points'
       
       time_ao_start = second()
       call get_ao(1,    &
@@ -1754,20 +1703,30 @@ contains
          integer :: i
          real(8), allocatable :: mpi_buffer(:)
 
-         if (fde_mpi_is_master()) then
-            nr_points_batch = fde_grid_im%npoints
-         end if   
-#ifdef VAR_MPI
-         if (parallel_fde) then
-            call fde_mpi_bcast(nr_points_batch)
-         end if
-#endif
+!         if (fde_mpi_is_master()) then
+!            nr_points_batch = fde_grid_im%npoints
+!         end if   
+!#ifdef VAR_MPI
+!         if (parallel_fde) then
+!            call fde_mpi_bcast(nr_points_batch)
+!         end if
+!#endif
          ibatch          = 0
          nr_points_total = 0
          nr_points_used  = 0
 
 !        loop over batches
          do
+            write(*, *) 'buba 3 inside do loop_over_batches'
+         if (fde_mpi_is_master()) then
+            nr_points_batch = fde_grid_im%npoints
+         end if   
+            write(*, *) 'buba 3 nr_points_batch = ', nr_points_batch
+#ifdef VAR_MPI
+         if (parallel_fde) then
+            call fde_mpi_bcast(nr_points_batch)
+         end if
+#endif
             if (nr_points_batch < 0) exit
 
             allocate(rx(nr_points_batch))
@@ -1783,16 +1742,18 @@ contains
 
 !radovan: grid stuff will be moved outside this module
             if (fde_mpi_is_master()) then
-                rx = fde_grid_im%r(1,:)
-                ry = fde_grid_im%r(2,:)
-                rz = fde_grid_im%r(3,:)
-                rw = fde_grid_im%w
+                do i = 1, nr_points_batch
+                 rx(i) = fde_grid_im%r(1,i)
+                 ry(i) = fde_grid_im%r(2,i)
+                 rz(i) = fde_grid_im%r(3,i)
+                 rw(i) = fde_grid_im%w(i)
  
-                frozen_n   = gf_frozen%n
-                frozen_gnx = gf_frozen%gn(1,:)
-                frozen_gny = gf_frozen%gn(2,:)
-                frozen_gnz = gf_frozen%gn(3,:)
-                frozen_elpot= gf_frozen%elpot
+                 frozen_n(i)   = gf_frozen%n(i)
+                 frozen_gnx(i) = gf_frozen%gn(1,i)
+                 frozen_gny(i) = gf_frozen%gn(2,i)
+                 frozen_gnz(i) = gf_frozen%gn(3,i)
+                 frozen_elpot(i)= gf_frozen%elpot(i)
+                end do
             end if
 
             ibatch = ibatch + 1
@@ -1800,10 +1761,13 @@ contains
             nr_points_on_this_proc = nr_points_batch
 
 #ifdef VAR_MPI
+            write(*, *) 'buba 4 before mpi distribute'
          if (parallel_fde) then
             call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc) 
+            write(*, *) 'buba 4 in before mpi distribute frozen'
             call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
          end if
+            write(*, *) 'buba 4 after mpi distribute'
 #endif
 !        if (do_potential .or. (response_order_mo == 1)) then
 !            fde_use_blas3_scheme = .true.
@@ -1820,7 +1784,9 @@ contains
 !            fde_use_blas3_scheme = .false.
 !         end if
 
+            write(*, *) 'buba 5 before integrate'
             call integrate()
+            write(*, *) 'buba 5 after integrate'
 
             deallocate(rx)
             deallocate(ry)
