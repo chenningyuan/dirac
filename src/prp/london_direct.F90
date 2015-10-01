@@ -641,7 +641,7 @@ contains
      call genden(dmat, cmo, 1, iprprp)
 
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(4)
+            if (parcal) call dirac_parctl(12)
 #endif
 
 
