@@ -76,11 +76,11 @@ git submodule update --init --recursive
 python ./pamadm -a --builddir=build_semaphore-ci_i8
 python ./setup.py --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --blas=off --lapack=off --cmake-options="-D BUILDNAME='mpich-gnu-i8_semaphore' -D DART_TESTING_TIMEOUT=9999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON"  build_semaphore-ci_i8
 cd build_semaphore-ci_i8
-ctest --track master -D ExperimentalConfigure
-ctest -j $N_PROC --track master -D ExperimentalBuild
+ctest -D ExperimentalConfigure
+ctest -j $N_PROC -D ExperimentalBuild
 #echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j $TEST_N_PROC --track master -D ExperimentalTest)"
-ctest --track master -D ExperimentalSubmit 
+echo "$(ctest -j $TEST_N_PROC -D ExperimentalTest)"
+ctest -D ExperimentalSubmit 
 
 # finally do the quick documentation buildup in the build_semaphore-ci_i8 directory
 make html
