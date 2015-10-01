@@ -590,7 +590,7 @@ module fde_evaluators_dirac
 
          logunit      = ftmp%logfile%unit
 
-         threshold    = 1.0e-16
+         threshold    = 1.0e-28
          max_fun_derv = 1
          bllen        = 1 
          derv_length  = nr_nonzero_derv
