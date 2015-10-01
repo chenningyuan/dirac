@@ -32,8 +32,8 @@ module file_units
 
 !  nr of columns for exported density
    integer                , public :: pertden_nr_components   = 0
-   integer                , public :: pertden_nr_columns      = 51
-   character(*),parameter , public :: pertden_file_format     = '(51d20.12)'
+   integer                , public :: pertden_nr_columns      = 52
+   character(*),parameter , public :: pertden_file_format     = '(52d20.12)'
 
    private
 

@@ -847,7 +847,7 @@ contains
 !     --------------------------------------------------------------------------
       integer :: id, m
       integer :: ii, ji
-      real(8) :: temp, temp2(51)
+      real(8) :: temp, temp2(52)
       real(8) :: block_threshold
       real(8) :: rho13, rho_outer, rho_resp, f
     integer :: ipoint
@@ -1229,7 +1229,7 @@ contains
                                    n_0,            &
                                    gn_0_pointwise, &
                                    gnn_0,          &
-                                   w,              &
+                                   w(1),           &
                                    use_gga,        &
                                    dmat,           &
                                    dmat_pg_sym,    &
@@ -1251,7 +1251,7 @@ contains
                                       n_0,            &
                                       gn_0_pointwise, &
                                       gnn_0,          &
-                                      w,              &
+                                      w(1),           &
                                       use_gga,        &
                                       dmat,           &
                                       buffer,         &
@@ -1668,8 +1668,7 @@ contains
       else if (n_0(1) <= dft_cfg_tinydens) then
          temp2 = 0.0d0
          if (london_direct_export .or. london_reorth_export) then
-            call london_export_write_data_to_files((/rx(ipoint),ry(ipoint),rz(ipoint), &
-                                          !temp2(1:pertden_nr_components)/),    &
+            call london_export_write_data_to_files((/rx(ipoint),ry(ipoint),rz(ipoint), rw(ipoint), &
                                           temp2(1:48)/),    &
                                        (/london_direct_export,london_reorth_export/))
          end if
@@ -1893,10 +1892,10 @@ contains
    subroutine london_export_initialize(lao_direct, lao_reorth)
       logical, intent(in) :: lao_direct, lao_reorth
 
-!     pertden files always have the same number of columns (51)
+!     pertden files always have the same number of columns (52)
 !     the order of columns is:
-!     1  2  3  |     4-6      |         7-15           |       16-24           |       25-51
-!     rx ry rz | n_b(B=x,y,z) | gn_b(r=x,y,z; B=x,y,z) | s_b(s=x,y,z; B=x,y,z) | gs_b(r=x,y,z; s=x,y,z; B=x,y,z)
+!     1  2  3  4  |     5-7      |         8-16           |       17-25           |       26-52
+!     rx ry rz w  | n_b(B=x,y,z) | gn_b(r=x,y,z; B=x,y,z) | s_b(s=x,y,z; B=x,y,z) | gs_b(r=x,y,z; s=x,y,z; B=x,y,z)
 
       if (lao_direct.and..not.dft_cfg_no_sdft) then
          if (use_gga) then 
@@ -2547,7 +2546,7 @@ contains
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
     real(8), intent(in)    :: gnn_0(*)
-    real(8), intent(in)    :: w(*)
+    real(8), intent(in)    :: w
     logical, intent(in)    :: is_gga
     real(8), intent(in)    :: dmat(*)
     real(8), intent(in)    :: buffer(*)
@@ -2635,10 +2634,11 @@ contains
        temp(1) = px
        temp(2) = py
        temp(3) = pz
+       temp(4) = w
        do i = 1, 3
           do j = 1, 3
              ioff = (i-1)*3+j
-             temp(15+ioff) = s_b_lao(j, i) !16-24
+             temp(16+ioff) = s_b_lao(j, i) !17-25
           end do
        end do
        if (is_gga) then
@@ -2646,7 +2646,7 @@ contains
              do j = 1, 3
                 do k = 1, 3
                    ioff = (i-1)*9+(j-1)*3+k 
-                   temp(24+ioff) = gs_b_lao(k, j, i) !25-51
+                   temp(25+ioff) = gs_b_lao(k, j, i) !26-52
                 end do
              end do
           end do
@@ -2687,7 +2687,7 @@ contains
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
     real(8), intent(in)    :: gnn_0(*)
-    real(8), intent(in)    :: w(*)
+    real(8), intent(in)    :: w
     logical, intent(in)    :: is_gga
     real(8), intent(in)    :: tb_dmat(*)
     integer, intent(in)    :: isym(*)
@@ -2803,15 +2803,16 @@ contains
        temp(1) = px
        temp(2) = py
        temp(3) = pz
+       temp(4) = w
 !      nosdft
        do i = 1, 3
-          temp(3+i) = r_b(i) !4:6
+          temp(4+i) = r_b(i) !5:7
        end do
        if (is_gga) then
           do i = 1, 3
              do j = 1, 3
                 ioff = (i-1)*3+j
-                temp(6+ioff) = gr_b(j, i) !7:15
+                temp(7+ioff) = gr_b(j, i) !8:16
              end do
           end do
        end if
@@ -2820,7 +2821,7 @@ contains
           do i = 1, 3
              do j = 1, 3
                 ioff = (i-1)*3+j
-                temp(15+ioff) = s_b(j, i) !16-24
+                temp(16+ioff) = s_b(j, i) !17-25
              end do
           end do
           if (is_gga) then
@@ -2828,7 +2829,7 @@ contains
                 do j = 1, 3
                    do k = 1, 3
                       ioff = (i-1)*9+(j-1)*3+k
-                      temp(24+ioff) = gs_b(k, j, i) !25:51
+                      temp(25+ioff) = gs_b(k, j, i) !26:52
                    end do
                 end do
              end do
