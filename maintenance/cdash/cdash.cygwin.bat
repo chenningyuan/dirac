@@ -13,7 +13,7 @@ rem unset PUTTYs environment variable (it makes problems to Cygwin git)
 set GIT_SSH=
 
 rem set CDash project
-set CTEST_PROJECT_NAME="DIRACext"
+set CTEST_PROJECT_NAME=DIRACext
 
 rem delete old /home/milias/cdash-testing.log
 C:\cygwin64\bin\sh --login -c "rm -f /home/milias/cdash-testing.log"

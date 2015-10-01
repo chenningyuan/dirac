@@ -13,7 +13,7 @@ rem set LOG file and testing timeout
 set LOG=%DIRAC%\buildup.log
 set DIRTIMEOUT="12m"
 
-set CTEST_PROJECT_NAME="DIRACext"
+set CTEST_PROJECT_NAME=DIRACext
 
 rem REMOVE THIS LINES?
 rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
