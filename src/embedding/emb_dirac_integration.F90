@@ -325,6 +325,14 @@ contains
       end if
 #endif
 
+!gosia to be reomoved
+      write(*, *) 'fde do_london_rhs_direct = ', do_london_rhs_direct
+      write(*, *) 'fde do_london_rhs_direct_kern = ', do_london_rhs_direct_kern
+      write(*, *) 'fde do_london_rhs_kern_coupling = ', do_london_rhs_kern_coupling
+      write(*, *) 'fde do_london_rhs_ro =  ', do_london_rhs_ro
+      write(*, *) 'fde use_potential = ', use_potential
+!end
+
 !     nullify(tmat_1)
 !     nullify(tmat_2)
       if (do_geo_1) then

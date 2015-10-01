@@ -53,7 +53,7 @@ C*****************************************************************************
 #include "dcbxlr.h"
 C
 
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 16)
       LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
       LOGICAL :: DOEPRN_SET, INTNMR_SET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -64,7 +64,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO ANG','.SEPTEP','.EXPPED'   /
+     &            '.GO ANG','.SEPTEP','.EXPPED','.XXXXXX'  /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -134,7 +134,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -246,6 +246,7 @@ C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDS
 !              it is used further in embedding
                EXPPED = .true.
                GO TO 100
+   16          CONTINUE
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -415,9 +416,10 @@ C =========================================================================
      & 'perturbed LAO-density exported on file pertden_lao'
       END IF
 !     if fde and london, then always export perturbed density
-      if (dirac_cfg_fde_response .and. london) then
-         EXPPED = .true.
-      end if
+! gosia: activate it if freeze&thaw with response...
+!      if (dirac_cfg_fde_response .and. london) then
+!         EXPPED = .true.
+!      end if
 
 
   999 CONTINUE
