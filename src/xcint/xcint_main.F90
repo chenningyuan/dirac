@@ -328,14 +328,6 @@ contains
       end if
 #endif
 
-!gosia to be reomoved
-      write(*, *) 'xcint london_direct_export = ', london_direct_export 
-      write(*, *) 'xcint london_reorth_export = ', london_reorth_export 
-      write(*, *) 'xcint do_london_rhs_direct_der1 = ', do_london_rhs_direct_der1
-      write(*, *) 'xcint do_london_rhs_direct_der2 = ', do_london_rhs_direct_der2
-      write(*, *) 'xcint do_london_rhs_ro =  ', do_london_rhs_ro
-!end
-
 !     nullify(tmat_1)
 !     nullify(tmat_2)
       if (do_geo_1) then

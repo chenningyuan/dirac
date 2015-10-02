@@ -325,14 +325,6 @@ contains
       end if
 #endif
 
-!gosia to be reomoved
-      write(*, *) 'fde do_london_rhs_direct = ', do_london_rhs_direct
-      write(*, *) 'fde do_london_rhs_direct_kern = ', do_london_rhs_direct_kern
-      write(*, *) 'fde do_london_rhs_kern_coupling = ', do_london_rhs_kern_coupling
-      write(*, *) 'fde do_london_rhs_ro =  ', do_london_rhs_ro
-      write(*, *) 'fde use_potential = ', use_potential
-!end
-
 !     nullify(tmat_1)
 !     nullify(tmat_2)
       if (do_geo_1) then
@@ -466,8 +458,6 @@ contains
           stop 'response_order_mo > max_response_order_mo'
       end if
 
-      write(*, *) 'buba 1 before xcfun_set_functional'
-
 ! functionals are set
       call xcfun_set_functional(fde_xcf,       max_response_order_mo, parallel_fde)
       call xcfun_set_functional(fde_xcf_alda,  max_response_order_mo, parallel_fde)
@@ -515,11 +505,9 @@ contains
         max_ao_m_order = 1
       end if
 
-            write(*, *) 'buba before ao init'
       call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
                         .true.)
-            write(*, *) 'buba after ao init'
 
       if (fde_mpi_is_master()) then
 !        initial expectation value of the two-electron matrix
@@ -568,11 +556,7 @@ contains
       fmat = 0.0d0
 #endif
 
-      write(*, *) 'buba 2 before loop_over_batches'
-
       call loop_over_batches()
-
-      write(*, *) 'buba 2 after loop_over_batches'
 
 #ifdef VAR_MPI
       if (parallel_fde) then
@@ -1045,8 +1029,6 @@ contains
 !  that does not change from point to point
    do ipoint = 1, nr_points_on_this_proc
 
-            write(*, *) 'buba 6 first inside loop over points'
-      
       time_ao_start = second()
       call get_ao(1,    &
             rx(ipoint), &
@@ -1596,7 +1578,6 @@ contains
                end if
                
                if (ugs_b_lao_above_threshold) then
-                  write(*, *) 'buba000'
 !                 F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q
 !                       + 2 u%gs_ij \chi_p* \Sigma_j \nabla_i \chi_q
                   call nabla_omega_imag(fmat,                &
@@ -1609,7 +1590,6 @@ contains
                                         ao)
                else
                   if (us_b_lao_above_threshold) then
-                     write(*, *) 'buba111'
 !                    F_pq += u%s_j \chi_p* \Sigma_j \chi_q
                      call omega_imag(fmat,                &
                                      im,                  &
@@ -1717,11 +1697,9 @@ contains
 
 !        loop over batches
          do
-            write(*, *) 'buba 3 inside do loop_over_batches'
          if (fde_mpi_is_master()) then
             nr_points_batch = fde_grid_im%npoints
          end if   
-            write(*, *) 'buba 3 nr_points_batch = ', nr_points_batch
 #ifdef VAR_MPI
          if (parallel_fde) then
             call fde_mpi_bcast(nr_points_batch)
@@ -1761,13 +1739,10 @@ contains
             nr_points_on_this_proc = nr_points_batch
 
 #ifdef VAR_MPI
-            write(*, *) 'buba 4 before mpi distribute'
          if (parallel_fde) then
             call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc) 
-            write(*, *) 'buba 4 in before mpi distribute frozen'
             call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
          end if
-            write(*, *) 'buba 4 after mpi distribute'
 #endif
 !        if (do_potential .or. (response_order_mo == 1)) then
 !            fde_use_blas3_scheme = .true.
@@ -1784,9 +1759,7 @@ contains
 !            fde_use_blas3_scheme = .false.
 !         end if
 
-            write(*, *) 'buba 5 before integrate'
             call integrate()
-            write(*, *) 'buba 5 after integrate'
 
             deallocate(rx)
             deallocate(ry)
