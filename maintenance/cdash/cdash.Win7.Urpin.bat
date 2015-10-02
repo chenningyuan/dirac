@@ -45,7 +45,7 @@ rem C:\Git\bin\git.exe log -3
 rem remove previously generated build-directory, if exists
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD%
-python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin-Win7-MinGW64-ILP64-release13"   --generator="MinGW Makefiles" --int64 %BUILD%
+python setup.py -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin-Win7-MinGW64-ILP64-release13"   --generator="MinGW Makefiles" --int64 %BUILD%
 cd %BUILD%
 rem mingw32-make -j4 Experimental
 ctest -j4 -D Experimental
@@ -55,7 +55,7 @@ if exist %WRK% rmdir /S /Q %WRK%
 
 rem return to the top of the DIRAC directory
 rem cd %DIRAC%
-rem python setup -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-debug-release" --debug  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD_DBG%
+rem python setup.py -D GIT_EXECUTABLE="C:\Git\bin\git.exe"  -D BUILDNAME="Urpin_Win7-MinGW64-ILP64-debug-release" --debug  -D DART_TESTING_TIMEOUT=99999  -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON --generator="MinGW Makefiles" --int64=on --force %BUILD_DBG%
 rem cd %BUILD_DBG%
 rem mingw32-make Experimental
 
@@ -63,7 +63,7 @@ rem mingw32-make Experimental
 rem C:\Git\bin\git.exe pull
 rem return to the top of the DIRAC directory
 rem cd %DIRAC%
-rem python setup --check -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-check_master" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64_CHECK%
+rem python setup.py --check -D GIT_EXECUTABLE="C:\Git\bin\git.exe" -D BUILDNAME="Urpin_Win7-MinGW64-I32LP64-check_master" -D DART_TESTING_TIMEOUT=99999 -D RUNTEST_TIMEOUT="00:18:00" -D VERBOSE_OUTPUT=ON  --generator="MinGW Makefiles" --int64=off --force %BUILD_I32LP64_CHECK%
 rem cd %BUILD_I32LP64_CHECK%
 rem cmake ..
 rem mingw32-make clean

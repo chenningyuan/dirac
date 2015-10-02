@@ -4130,7 +4130,25 @@ C
        ENDDO
       ENDIF
 C
-C     Make inverse of multiplication table
+C     A complication using fermion irreps is that 
+C     characters are generally complex and that
+C     the complex conjugate of an irrep may be another fermion irrep.
+C     Only the product of an irrep with its complex conjugate gives 
+C     the totally symmetric irrep.
+C     
+C     Table elements like
+C       MULTB(IREP,JREP,1) = KREP
+C     provides the symmetry of product functions in either bra of ket positions
+C       ket(irep)*ket(jrep) = ket(krep)  OR
+C       bra(irep)*bra(jrep) = bra(krep)
+C
+C     To find the irrep of a product function mixing functions in bra and ket positions
+C     we effectively make the inverse of the multiplication table
+C     We note that 
+C       bra(irep)*ket(irep) = 1 (totally symmetric)
+C     This gives
+C       bra(irep)*ket(irep)*ket(jrep) = ket(jrep) = bra(irep)*ket(krep)
+C       ket(irep)*bra(irep)*bra(jrep) = bra(jrep) = ket(irep)*bra(krep) 
 C
       DO JREP = 1, 2*NREP
          DO IREP = 1, 2*NREP

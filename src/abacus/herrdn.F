@@ -4833,7 +4833,7 @@ C     ***** Cartesian Coordinates *****
 C     *********************************
 C
       IF (IPREAD .GT. 0) THEN
-         CALL HEADER('Cartesian Coordinates',1)
+         CALL HEADER('Cartesian Coordinates (bohr)',1)
          WRITE (LUPRI,'(A,I3//)')'  Total number of coordinates:',NCOOR
          ICRX = 1
          ICRY = 2
@@ -4876,7 +4876,8 @@ C
 
 !     print also coordinates in xyz format for easy copy-paste-ability
       if (ipread > 0) then
-         call header('Cartesian coordinates xyz format (angstrom)', 1)
+         call header('Cartesian coordinates in XYZ format (angstrom)',
+     &   1)
          write(lupri, '(i5)') nucdep
          write(lupri, *)
          do icent = 1, nucind

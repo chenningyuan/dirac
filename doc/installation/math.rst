@@ -20,7 +20,7 @@ Atlas.
 
 By default the CMake configuration script will automatically detect these libraries::
 
-  $ ./setup --blas=auto --lapack=auto          # this is the default
+  $ ./setup.py --blas=auto --lapack=auto          # this is the default
 
 if you define MATH_ROOT, for instance::
 
@@ -35,7 +35,7 @@ MKL libraries that you want to use reside in
 
 Then::
 
-  $ ./setup [--flags]
+  $ ./setup.py [--flags]
   $ cd build
   $ make
 
@@ -50,11 +50,11 @@ You have to specify whether you want to use the sequential or parallel
 (threaded) MKL version. For a parallel DIRAC runs you should probably link to
 the sequential MKL::
 
-  $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --mkl=sequential
+  $ ./setup.py --fc=mpif90 --cc=mpicc --cxx=mpicxx --mkl=sequential
 
 For a sequential compilation you may want to link to the parallel MKL::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc --mkl=parallel
+  $ ./setup.py --fc=ifort --cc=icc --cxx=icpc --mkl=parallel
 
 The more general solution is to link to the parallel MKL and control the number
 of threads using MKL environment variables.
@@ -66,7 +66,7 @@ Cray
 Cray typically provides own optimized BLAS/LAPACK wrappers.
 For this use the option --cray to disable automatic BLAS/LAPACK detection::
 
-  $ ./setup --fc=ftn --cc=cc --cxx=CC --cray
+  $ ./setup.py --fc=ftn --cc=cc --cxx=CC --cray
 
 
 Explicitly specifying BLAS and LAPACK libraries
@@ -75,12 +75,12 @@ Explicitly specifying BLAS and LAPACK libraries
 If automatic detection of math libraries fails for whatever reason, you can
 always call the libraries explicitly like here::
 
-  $ ./setup --blas=/usr/lib/libblas.so --lapack=/usr/lib/liblapack.so
+  $ ./setup.py --blas=/usr/lib/libblas.so --lapack=/usr/lib/liblapack.so
 
 Alternatively you can use the --explicit-libs option. But in this case you should
 disable BLAS/LAPACK detection::
 
-  $ ./setup --blas=none --lapack=none --explicit-libs="-L/usr/lib -lblas -llapack"
+  $ ./setup.py --blas=none --lapack=none --explicit-libs="-L/usr/lib -lblas -llapack"
 
 
 Builtin BLAS and LAPACK implementation
@@ -90,7 +90,7 @@ If no external BLAS and LAPACK libraries are available, you can use the (slow) b
 BLAS/LAPACK implementation. However note that these are not optimized and you will sacrifice
 performance. This should be the last resort if nothing else is available::
 
-  $ ./setup --blas=builtin --lapack=builtin
+  $ ./setup.py --blas=builtin --lapack=builtin
 
 
 Linking to Atlas libraries on SUSE or Fedora

@@ -9,7 +9,7 @@ Please contribute to the
 You don't need to install anything extra except CMake.
 It is as easy as typing::
 
-  $ ./setup [--flags]
+  $ ./setup.py [--flags]
   $ cd build
   $ make -jN -D Nightly [--track master|--track release-14]
 

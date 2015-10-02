@@ -16,7 +16,7 @@ that not all CE are equipped with appropriate python version. So we resort to th
 Making dirac.x static
 ---------------------
 
-Don't forget to include "--static" to your setup flags.
+Don't forget to include "--static" to your setup.py flags.
 
 Making Python static
 --------------------

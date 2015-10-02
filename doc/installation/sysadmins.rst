@@ -7,7 +7,7 @@ Installation instructions for system administrators
 Please read the other installation sections for details
 but the installation procedure is typically this::
 
-  $ ./setup --mpi --mkl=parallel --prefix=/full/install/path/
+  $ ./setup.py --mpi --mkl=parallel --prefix=/full/install/path/
   $ cd build
   $ make [-jN]
   $ export DIRAC_TMPDIR=/full/path/scratch

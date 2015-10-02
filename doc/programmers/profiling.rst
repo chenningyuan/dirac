@@ -90,10 +90,10 @@ Profiling DIRAC with gprof
 --------------------------
 
 In contrast with VTune using ``gprof`` to profile DIRAC is rather straightforward.
-The only thing you will need to do is to link the profiling library. Thus if using the ``setup`` script
+The only thing you will need to do is to link the profiling library. Thus if using the ``setup.py`` script
 you will type::
 
-	./setup --fc=... --cc=... --cxx=... --profiling --release
+	./setup.py --fc=... --cc=... --cxx=... --profiling --release
 
 we recommend to build in release mode if you want to have your collected profiling data to be 
 really significant.

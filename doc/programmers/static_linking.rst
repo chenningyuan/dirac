@@ -100,7 +100,7 @@ because placing the sole "-lpthread" keyword elsewhere generates wrong executabl
 
 ::
 
-  ./setup  --debug  -D VERBOSE_OUTPUT=ON --build=build_static  --static --internal-math  --int64
+  ./setup.py  --type=debug  -D VERBOSE_OUTPUT=ON --build=build_static  --static --internal-math  --int64
   /opt/intel/fce/10.1.015/bin/ifort (ifort (IFORT) 10.1 20080312); /usr/bin/gcc - gcc (GCC) 4.1.2 20080704 (Red Hat 4.1.2-51)
 
 * 194.160.34.207, Miro's old PC Desktop with updated Ubuntu
@@ -122,7 +122,7 @@ For instance, failures are happening in input readings of DFTINPUT, CI/RELCCSD.
 
   Linux-2.6.26-2-xen-amd64;ilp64,MKL ilp64 static math, ifort (IFORT) 12.0.2 20110112, gcc (Debian 4.3.2-1.1) 4.3.2
   export MATH_ROOT='/home/chemia/ucitelia/milias/bin/intel_stuff/intel/mkl'
-  setup --static -D VERBOSE_OUTPUT=ON --int64
+  setup.py --static -D VERBOSE_OUTPUT=ON --int64
 
 * pd.uniza.sk:
 

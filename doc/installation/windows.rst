@@ -43,7 +43,7 @@ Dependencies
    
    [g] if CMake will have problems to find zlib libraries you can use this (available since CMake 2.8.7): ::
      
-     python setup -DZLIB_ROOT=[path to zlib folder]
+     python setup.py -DZLIB_ROOT=[path to zlib folder]
     
    For 64-bit Windows (if you place zlib libraries at the same place as we do then CMake should find them automatically):
 
@@ -57,7 +57,7 @@ Dependencies
    
    [e] if CMake will have problems to find zlib libraries you can use this (available since CMake 2.8.7): ::
      
-     python setup -DZLIB_ROOT=[path to zlib folder]
+     python setup.py -DZLIB_ROOT=[path to zlib folder]
     
 5. Boost (http://www.boost.org/). Download Boost in archive file from http://sourceforge.net/projects/boost/files/boost/
    Then follow this instructions (if you place Boost libraries at the same place as we do then CMake should find them automatically):
@@ -76,7 +76,7 @@ Dependencies
    
    [e] if CMake will have problems to find your Boost libraries yo can use: ::
    
-     python setup -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
+     python setup.py -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
  
 6. To speed-up your calculations you can download OpenBLAS (it includes BLAS and LAPACK implementation) library from http://www.openblas.net/. 
    There are available prebuilt binaries for 32/64 bit Windows for Intel NEHALEM architecture with threading capability. You can specify number of threads with *"OPENBLAS_NUM_THREADS"* environment variable. On 64-bit Windows you can choose from *"Win64-int32"* and *"Win64-int64"* versions. Use *"Win64-int32"* version 

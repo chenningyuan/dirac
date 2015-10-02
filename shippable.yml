@@ -14,6 +14,9 @@ branches:
 # environment variable for Dirac MPI command
 env:
     - DIRAC_MPI_COMMAND="mpirun -np 2"
+
+env:
+    - CTEST_PROJECT_NAME="DIRACext"
     
 # language settings - prepare Python environment
 language: python
@@ -45,7 +48,7 @@ before_script:
 script:
     - git submodule update --init --recursive
     - python ./pamadm -a --builddir=build_shippableci_mpi
-    - python ./setup --run-unit-tests -D BUILDNAME="mpich2.gnu.i8-shippable-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build_shippableci_mpi
+    - python ./setup.py --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='mpich2.gnu.i8-shippable-ci' -D DART_TESTING_TIMEOUT=99999" build_shippableci_mpi
     - cd build_shippableci_mpi
     - ctest --track Miro -D ExperimentalConfigure
     - ctest -j $(nproc) --track Miro -D ExperimentalBuild

@@ -32,6 +32,9 @@
 # export number of processors as environment variable N_PROC
 export N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)
 
+# export CDash project name
+export CTEST_PROJECT_NAME=DIRACext
+
 # show number of processors to be used
 echo "Number of available processors is $N_PROC"
 
@@ -65,7 +68,7 @@ git submodule update --init --recursive
 
 # 32-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i4
-python ./setup -D BUILDNAME="gnu.i4-codeship-ci" --run-unit-tests build_codeship_i4
+python ./setup.py --cmake-options="-D BUILDNAME='gnu.i4-codeship-ci'" build_codeship_i4
 cd build_codeship_i4
 ctest --track Miro -D ExperimentalConfigure
 ctest -j $N_PROC --track Miro -D ExperimentalBuild
@@ -78,7 +81,7 @@ cd ..
 
 # 64-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i8
-python ./setup -D BUILDNAME="gnu.i8-codeship-ci" --run-unit-tests --int64 build_codeship_i8
+python ./setup.py --int64 --blas=off --lapack=off --cmake-options="-D BUILDNAME='gnu.i8-codeship-ci' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON" build_codeship_i8
 cd build_codeship_i8
 ctest --track Miro -D ExperimentalConfigure
 ctest -j $N_PROC --track Miro -D ExperimentalBuild

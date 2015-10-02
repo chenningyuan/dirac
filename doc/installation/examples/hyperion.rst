@@ -58,7 +58,7 @@ For maximum performance we will add hardware-specific optimization flags::
 
 Finally we configure and build the binary::
 
-  $ ./setup --fc=ifort --cc=icc --cxx=icpc --int64 --sgi-mpt
+  $ ./setup.py --fc=ifort --cc=icc --cxx=icpc --int64 --sgi-mpt
   $ cd build
   $ make
 
