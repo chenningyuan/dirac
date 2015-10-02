@@ -487,13 +487,12 @@ contains
       dmat = 0.0d0
       call genden(dmat, cmo, 1, iprprp)
       call generate_num_grid(dmat)
+      call alloc(buffer, n2bbasxq)
+      call dcopy(n2bbasxq, dmat, 1, buffer, 1)
 
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
-
-      call alloc(buffer, n2bbasxq)
-      call dcopy(n2bbasxq, dmat, 1, buffer, 1)
 
       if (expped) then
 !        additionally write s_b_lao and gs_b_lao to file
@@ -640,13 +639,13 @@ contains
      dmat = 0.0d0
      call genden(dmat, cmo, 1, iprprp)
 
-#ifdef VAR_MPI
-            if (parcal) call dirac_parctl(12)
-#endif
-
-
      if (fde_lao_direct_active_embpot) then
         write(*, *) 'LAO-direct contribution to property gradient (embpot)'
+
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(12)
+#endif
+
         if (itmp%im_vemb) then
            call fde_dirac_emb_matrices_via_integration(       &   
                          fde_mat_dim            = ntbas(0),   &
@@ -669,16 +668,17 @@ contains
         end if
      end if
 
-#ifdef VAR_MPI
-            if (parcal) call dirac_parctl(12)
-#endif
-
      if (fde_lao_direct_active_embker .and. .not. fde_rsp_mag_lao_no_s) then
+
+        write(*, *) 'LAO-direct contribution to property gradient (embker)'
 
         call alloc(buffer, n2bbasxq)
         call dcopy(n2bbasxq, dmat, 1, buffer, 1)
 
-        write(*, *) 'LAO-direct contribution to property gradient (embker)'
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(12)
+#endif
+
         call fde_dirac_emb_matrices_via_integration(       &   
                       fde_mat_dim            = ntbas(0),   &
                       fde_nz                 = nz,         &
@@ -698,12 +698,13 @@ contains
 !    fde coupling-kernel-like contributions to the property gradient
 !    ---------------------------------------------------------------
 !    1. the nonadditive exchange-correlation contribution:
+     if (fde_lao_frozen_embker) then
+       write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (no Coulomb)'
+
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(12)
 #endif
 
-     if (fde_lao_frozen_embker) then
-       write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (no Coulomb)'
        call fde_dirac_emb_matrices_via_integration(       &   
                      fde_mat_dim            = ntbas(0),   &
                      fde_nz                 = nz,         &

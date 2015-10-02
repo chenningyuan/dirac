@@ -1231,7 +1231,6 @@ contains
                                       w,              &
                                       use_gga,        &
                                       dmat,           &
-                                      buffer,         &
                                       derv_length,    &
                                       derv_active,    &
                                       derv_total,     &
@@ -2174,7 +2173,6 @@ contains
                         w,                  &
                         is_gga,             &
                         dmat_full,            &
-                        buffer,             &
                         n,                  &
                         derv_active,        &
                         derv_total,         &
@@ -2195,7 +2193,6 @@ contains
     real(8), intent(in)    :: w(*)
     logical, intent(in)    :: is_gga
     real(8), intent(in)    :: dmat_full(*)
-    real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
     real(8), intent(in)    :: derv_active(max_block_length, 0:n)
     real(8), intent(in)    :: derv_total(max_block_length, 0:n)
