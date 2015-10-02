@@ -669,6 +669,10 @@ contains
         end if
      end if
 
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(12)
+#endif
+
      if (fde_lao_direct_active_embker .and. .not. fde_rsp_mag_lao_no_s) then
 
         call alloc(buffer, n2bbasxq)
@@ -694,6 +698,10 @@ contains
 !    fde coupling-kernel-like contributions to the property gradient
 !    ---------------------------------------------------------------
 !    1. the nonadditive exchange-correlation contribution:
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(12)
+#endif
+
      if (fde_lao_frozen_embker) then
        write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (no Coulomb)'
        call fde_dirac_emb_matrices_via_integration(       &   
