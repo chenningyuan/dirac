@@ -1897,28 +1897,30 @@ contains
 !     1  2  3  4  |     5-7      |         8-16           |       17-25           |       26-52
 !     rx ry rz w  | n_b(B=x,y,z) | gn_b(r=x,y,z; B=x,y,z) | s_b(s=x,y,z; B=x,y,z) | gs_b(r=x,y,z; s=x,y,z; B=x,y,z)
 
-      if (lao_direct.and..not.dft_cfg_no_sdft) then
-         if (use_gga) then 
-            pertden_nr_components = 36
-         else
-            pertden_nr_components = 9
-         end if
-      end if
-
-      if (lao_reorth) then
-         if (.not. dft_cfg_no_sdft) then
-!           sdft
-            if (use_gga) then
-               pertden_nr_components = 48
+      if (xc_mpi_is_master()) then 
+         if (lao_direct.and..not.dft_cfg_no_sdft) then
+            if (use_gga) then 
+               pertden_nr_components = 36
             else
-               pertden_nr_components = 12
+               pertden_nr_components = 9
             end if
-         else
-!           nosdft
-            if (use_gga) then
-               pertden_nr_components = 12
+         end if
+         
+         if (lao_reorth) then
+            if (.not. dft_cfg_no_sdft) then
+!              sdft
+               if (use_gga) then
+                  pertden_nr_components = 48
+               else
+                  pertden_nr_components = 12
+               end if
             else
-               pertden_nr_components = 3
+!              nosdft
+               if (use_gga) then
+                  pertden_nr_components = 12
+               else
+                  pertden_nr_components = 3
+               end if
             end if
          end if
       end if
