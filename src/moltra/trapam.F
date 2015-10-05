@@ -3488,8 +3488,7 @@ C
            CALL DZERO(FAO(1+IFMO(I)),NFMO2*NZ)
            NBO = NFMO(1,I)
            CALL RSJACO(NBO,NBO,NBO,FMO(IFMO(I)+1),
-     &                 WORK(KE(I)),1,1,0,FAO(IFMO(I)+1),
-     &                 WORK(KFREE),LFREE)
+     &                 WORK(KE(I)),1,1,0,FAO(IFMO(I)+1))
            CALL MEMGET2('INTE','IBEIG2',KIBEIG2,NBO,WORK,KFREE,LFREE)
            CALL IDBOS (NBO,WORK(KIBE(I)),WORK(KIBEIG2),FAO(IFMO(I)+1))
            CALL MEMREL('VIRCA1',WORK,KIBEIG2,KIBEIG2,KFREE,LFREE)
