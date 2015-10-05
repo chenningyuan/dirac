@@ -536,7 +536,7 @@ C
       IOFF2 = 1
       DO I = 1,NFSYM
         NR(I) = 1
-        CALL MEMGET2('INTE','VEC',KVEC(I),NESH(I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC_i',KVEC(I),NESH(I),WORK,KFREE,LFREE)
         CALL NUMLS4(VECNOSEL(I),WORK(KVEC(I)),NESH(I),NR(I),
      &              NESH(I),NR(I),WORK(KOCC_NAT+IOFF2-1))
         IF( NR(I) .eq. 0 ) THEN
@@ -617,6 +617,15 @@ C
       CALL QENTER('DENMP2NO')
 #include "memint.h"
       KFRSAV = KFREE
+
+      NFROT_DHF = NFRO_DHF(1) + NFRO_DHF(2)
+      if (NFROT_DHF .gt. 0) then
+          write(lupri,'(/A,I3,A/A)')
+     &   ' ERROR: MP2NO does not work with',NFROT_DHF,
+     &   ' frozen DHF orbitals (*SCF .FROZEN keyword)',
+     &   ' ERROR: Use instead .ACTIVE under *MP2 NO to exclude orbitals'
+          call quit('MP2NO does not work with .FROZEN in DHF')
+      end if
 C
 C
 C     set default values
@@ -669,7 +678,7 @@ C
 !           MP2 density matrix. /July 2015, hjaaj
 
       KREL = KFREE
-      CALL MEMGET2('INTE','VEC',KVEC_all,NESHT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','VEC_all',KVEC_all,NESHT,WORK,KFREE,LFREE)
       DO IFRP = 1,NFSYM
          NSTR_I = -1
          CALL NUMLST(VECMP2NO(IFRP),WORK(KVEC_all),
@@ -705,7 +714,8 @@ C
           ELSE ! only occupied active orbitals
              TEMP_TRA4_INDSTR = VECMP2NO_occ(IFRP)
           END IF
-          CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','VEC4 tmp',KVEC(IFRP,I),NR(IFRP),
+     &       WORK,KFREE,LFREE)
           NSTR(IFRP,0,I) = - 1
           CALL  NUMLST(TEMP_TRA4_INDSTR, WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -716,14 +726,9 @@ C
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('MP2DEN.1',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
-          CALL MEMGET2('INTE','VEC',KVEC(IFRP,I),NSTR(IFRP,0,I),
+          CALL MEMGET2('INTE','VEC4',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
-      ENDDO
-      WRITE(LUPRI,'(/A)') '* Orbital ranges for 4-index transformation:'
-      DO I = 1, NFSYM
-         CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
-     &                   WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
       ENDDO
 C
 
@@ -795,7 +800,7 @@ C
          IF (ISAME(I).EQ.I) THEN
 C           new coefficient matrix
 c           IF (I.NE.1) CALL QUIT ('All ranges should be equal')
-            CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','KQ_4',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
          ELSE
 C           same coefficient matrix as before
             KQ(1,I) = KQ(1,ISAME(I))
@@ -904,7 +909,7 @@ C
          WRITE(LUPRI,'(/A)') 'Info: RCORBS set, calling VIRCAN'
          CALL FLSHFO(LUPRI)
 C        Overdimension KCMO because it is used as Focksize scratch space
-         CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
          CALL VIRCAN(WORK,KFREE,LFREE,IPRTRA,KQ(1,1),KE(1,1),
      &               KIBE(1,1),NDMOQR(1,1,1),ICMOQR(1,1),
      &               WORK(KCMO))
@@ -922,7 +927,8 @@ C
       ENDDO
 C
       DO IFRP = 1,NFSYM
-         CALL MEMGET('INTE',KVEC(IFRP,5),NR(IFRP),WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','VEC 5 tmp',KVEC(IFRP,5),NR(IFRP),
+     &      WORK,KFREE,LFREE)
          NSPC(IFRP,0) = - 1
 C
 C        If the user did not specify the core index range explictly we
@@ -944,7 +950,7 @@ C
          ENDIF
          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
          CALL MEMREL('MP2DEN.4',WORK,KFRSAV,KVEC(IFRP,5),KFREE,LFREE)
-         CALL MEMGET('INTE',KVEC(IFRP,5),NSPC(IFRP,0),
+         CALL MEMGET2('INTE','VEC 5',KVEC(IFRP,5),NSPC(IFRP,0),
      &               WORK,KFREE,LFREE)
          NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
          NDMOQC(2,IFRP,1) = NSPC(IFRP,0)
@@ -1032,14 +1038,14 @@ C
 C
 C     Allocate the memory for the coefficients
 C
-      CALL MEMGET('REAL',KQC(1),NQT(1),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KQC',KQC(1),NQT(1),WORK,KFREE,LFREE)
       KQC(2) = KQC(1) + NQ(1,1)
 C
 C     Get all coefficients
 C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KCMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KEIG',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
          WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
@@ -1064,31 +1070,48 @@ C
       CALL MEMREL('MP2DEN.5',WORK,KFRSAV,KCMO,KFREE,LFREE)
 C
       CALL FLSHFO(LUPRI)
+
 C
 C     skip integral transformation if MDCINT/MRCONEE are present
 C     ----------------------------------------------------------
+C
       IF( SKIP_ITRAFO ) GOTO 20
+
+C     Exclude open-shell orbitals from the MP2 calculation brute force
+C     by making all the MO coefficients for these orbitals zero.
+      IF (NOPEN .gt. 0) THEN
+         do ifrp = 1, nfsym
+            nocc_ifrp = nish_dhf(ifrp)+nash_dhf(ifrp)
+            do j = nish_dhf(ifrp)+1,nocc_ifrp
+               j_active = j - nspc(ifrp,1)
+               do i = 1,4
+                  CALL ZERO_MO(j_active,WORK(KQ(IFRP,i)),
+     &               NFBAS(ifrp,0),NSTR(ifrp,0,i),NZ)
+               end do
+            end do
+         end do
+      END IF
 
       IF (.NOT.NO2IND) THEN
          CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR_ONE,NSTRT_ONE,NSPC,
      &               KQ,KQC,KE_ONE,KIBE_ONE)
       END IF
-C
+
       CALL FLSHFO(LUPRI)
-C
+
 C     Call driver for 4-index transformation
 C     --------------------------------------
-C
+
       IF (.NOT.NO4IND)
      &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
      &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
      &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
-C
+
 C      Print timing information
-C
+
       CALL GETTIM(CPU2,WALL2)
       WALL   = WALL2 - WALL1
-C
+
       IMINS  = INT(WALL)/60
       IHOURS = IMINS/60
       IMINS  = IMINS - 60*IHOURS
@@ -1128,44 +1151,12 @@ C
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
 
-      IF (NOPEN .gt. 0) THEN
-      ! tell RELCC to freeze the open orbitals
-      ! NB! note that core orbitals (in NSPC()) in the integral transformation are not counted !!!
-      ! (The NELEC() used in RELCCSD is from MRCONEE from moltra/traone.F)
-      ! NB! IFROZ is over spinors, we must therefore freeze both spinor no. i and its Kramers partner,
-      ! spinor no. NSTRT(ifrp)+i.
-         relcc_ifroz_input = .true.
-         IFROZ_set_in_input = .true.  ! IFROZ_set_in_input is used in
-                                      ! relccsd if frozen orbitals,
-                                      ! relcc_ifroz_input sets this true
-                                      ! but only when VAR_MPI
-         IFROZ(:,:) = 0
-         NFROZEN = 0
-         do ifrp = 1, nfsym
-            nocc_ifrp = nish_dhf(ifrp)+nash_dhf(ifrp)
-            do i = 1,nfro_dhf(ifrp)
-               NFROZEN = NFROZEN + 1
-               IFROZ(i,ifrp) = NFROZEN
-               NFROZEN = NFROZEN + 1
-               IFROZ(NSTRT(1)+i,ifrp) = NFROZEN
-            end do
-            do i = nish_dhf(ifrp)+1,nocc_ifrp
-               NFROZEN = NFROZEN + 1
-               i_active = i - nspc(ifrp,1)
-               IFROZ(i_active,ifrp) = NFROZEN
-               i_active = i_active + NSTRT(1) ! the Kramers partner
-               IFROZ(i_active,ifrp) = NFROZEN
-            end do
-            write (lupri,'(/A,I2)') 'DENMP2NO: '//
-     &      ' Frozen occupied orbitals, ifrp =',ifrp
-            write (lupri,'(/,4(5X,5I5))') (IFROZ(i,ifrp),i=1,nocc_ifrp)
-            write (lupri,'(/,4(5X,5I5))')
-     &         (IFROZ(NSTRT(1)+i,ifrp),i=1,nocc_ifrp)
-         end do
-      ELSE
-         relcc_ifroz_input = .false.
-         NFROZEN = 0
-      END IF
+!     no frozen orbitals in MP2
+      relcc_ifroz_input  = .false.
+      IFROZ_set_in_input = .false.  ! IFROZ_set_in_input is used in
+                                    ! relccsd if frozen orbitals,
+                                    ! relcc_ifroz_input sets this true
+                                    ! but only when VAR_MPI
 C
       CALL PAMCCM()
 C
@@ -1239,7 +1230,7 @@ C
 C     Transform orbitals
 C     ------------------
 C
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KCMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KCMO),NCMOTQ)
       CALL DCOPY(NCMOTQ,CMO,1,WORK(KCMO),1)
 

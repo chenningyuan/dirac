@@ -4353,8 +4353,7 @@ C
 
           IF(DOJACO) THEN
             CALL RSJACO(NTMO(I),NTMO(I),NTMO(I),FMO(I2TMOT(I)+1),
-     &                  EIG(IORB(I)+1),1,1,0,FAO(I2TMOT(I)+1),
-     &                  WORK(KFREE),LFREE)
+     &                  EIG(IORB(I)+1),1,1,0,FAO(I2TMOT(I)+1))
           ELSE
             CALL QDIAG(NZ,NTMO(I),FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                 EIG(IORB(I)+1),1,FAO(I2TMOT(I)+1),NTMO(I),
@@ -4459,8 +4458,7 @@ C
 #endif
             IF (DOJACO) THEN
               CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
-     &                    EIG(IEIG),1,1,0,FAO(IMAT),
-     &                    WORK(KFREE),LFREE)
+     &                    EIG(IEIG),1,1,0,FAO(IMAT))
             ELSE
               CALL QDIAG(1,NBO,FMO(IMAT),NTMO(I),NTMO(I),
      &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
