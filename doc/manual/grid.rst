@@ -24,7 +24,7 @@ The  **radial integration** employs an exponential grid
 
 and is specified in terms of step size :math:`h`, the inner point :math:`r_1` 
 and the outermost point :math:`r_k_H`, chosen to provide the required relative 
-precision :mat:`R` (equal to the discretization error :math:`R_D`. 
+precision :math:`R` (equal to the discretization error :math:`R_D`. 
 
 keyword(RADINT)
 
