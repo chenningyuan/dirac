@@ -375,7 +375,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
      &       WORK(KLTTSIU),WORK(KLIABU),
      &       WORK(KLBLUT),
      &       ICISTR,IDC,NSMST,
-     &       LBLK,IAMPACK,ITTSS_ORD)
+     &       LBLK,IAMPACK)
 *
       END DO
 *

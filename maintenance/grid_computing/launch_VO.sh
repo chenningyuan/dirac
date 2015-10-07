@@ -95,7 +95,7 @@ benchmark_subset='cc_benchmark cc_linear fscc_intensities gaunt mcscf_energy mol
 #unset DO_CMAKE
 DO_CMAKE=1
 if [[ -n $DO_CMAKE ]]; then
-  echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static mpirun,dirac.x ===== \n"
+  echo -e "\n\n===== Performing false configuration setup.py in order to enable tests running with static mpirun,dirac.x ===== \n"
   cd $BUILD
   echo -e "\n I am in build-directory  $PWD \n"
   #echo -e "--- Directory $BUILD content ---:"; ls -lt
@@ -124,7 +124,7 @@ fi
 
 
 if [[ -n $DO_CMAKE ]]; then
-  echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static Intel, serial dirac.x ===== \n"
+  echo -e "\n\n===== Performing false configuration setup.py in order to enable tests running with static Intel, serial dirac.x ===== \n"
 ### Again, do the buildup using serial standalone executable ###
 # http://software.intel.com/en-us/articles/recommended-settings-for-calling-intelr-mkl-routines-from-multi-threaded-applications/
 # set MKL threads
@@ -154,7 +154,7 @@ fi
 
 ### Again, do the buildup using serial standalone executable ###
 if [[ -n $DO_CMAKE ]]; then
-  echo -e "\n\n===== Performing false configuration setup in order to enable tests running with static, GNU, serial dirac.x ===== \n"
+  echo -e "\n\n===== Performing false configuration setup.py in order to enable tests running with static, GNU, serial dirac.x ===== \n"
   cd $BUILD_GNU_SERIAL
   echo -e "\n I am in build-directory $PWD \n"
   echo -e "--- Directory $BUILD_GNU_SERIAL content ---:"; ls -lt
@@ -314,19 +314,19 @@ fi
 
  if [[ -n $FC  && -n $CC  && -n $CXX ]]; then
     echo "buildup with selected FC=$FC, CC=$CC and CXX=$CXX :"
-    python ./setup --fc=$FC --cc=$CC --cxx=$CXX -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
+    python ./setup.py --fc=$FC --cc=$CC --cxx=$CXX -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  elif [[ -n $FC  && -n $CC ]]; then
     echo "buildup with selected FC=$FC and CC=$CC :"
-    python ./setup --fc=$FC --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
+    python ./setup.py --fc=$FC --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  elif [[ -n $FC  && -z $CC ]]; then
     echo "buildup with selected FC=$FC :"
-    python ./setup --fc=$FC  -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
+    python ./setup.py --fc=$FC  -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  elif [[ -z $FC  && -n $CC ]]; then
     echo "buildup with selected CC=$CC :"
-    python ./setup --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
+    python ./setup.py --cc=$CC -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  elif [[ -z $FC  && -z $CC ]]; then
     echo "buildup with cmake automatic selection of compilers :"
-    python ./setup -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
+    python ./setup.py -D VERBOSE_OUTPUT=ON --int64=on --mpi=off -D BUILDNAME=$BUILD_NAME -D RUNTEST_TIMEOUT="00:40:00" -D DART_TESTING_TIMEOUT=99999 
  fi
 
  unset BUILD_LOCAL

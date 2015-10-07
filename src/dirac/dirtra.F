@@ -3453,7 +3453,7 @@ C
      &         NORB(I),NFBAS(I,0),NZ)
 C
             IF ( IPRINT .GE. 10 ) THEN
-               CALL HEADER('PREDHF: Left index transf. overlap'//
+               CALL HEADER('MKSMOAO: Left index transf. overlap'//
      &            ' matrix Smoao',-1)
                CALL PRQMAT(SMOAO(IOFF),NORB(I),NFBAS(I,0),
      &            NORB(I),NFBAS(I,0),NZ,IPQTOQ(1,0),LUPRI)
@@ -3463,7 +3463,7 @@ C
       IOFF = IOFF + NZ*NORB(I)*NFBAS(I,0)
       END DO
 C
-      CALL MEMREL('SMOAO',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('MKSMOAO',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('MKSMOAO')
       RETURN

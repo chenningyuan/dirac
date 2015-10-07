@@ -1707,6 +1707,7 @@ C
       DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION  hcore(2*NASHT,2*NASHT,*)
       real(8), intent(in) :: ecore
+      real(8), parameter  :: THR_VMUUUU = 1.d-15
       DIMENSION  KR(-300:300)
       integer :: LUFCID = -1
       character(len=30) :: form1
@@ -1890,6 +1891,10 @@ C
          DO K = 1,2*NASHT
             DO J = 1,2*NASHT
                DO I = 1,2*NASHT
+
+                  if (abs(VMUUUU(I,J,K,L,1))<=THR_VMUUUU) CYCLE
+                  if (nz > 1 .and. abs(VMUUUU(I,J,K,L,2))<= THR_VMUUUU)
+     &            CYCLE
 
 !     only real groups needed for now ==> only even number of bars: 0, 2, 4
 

@@ -27,7 +27,7 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 pamadm -a --builddir=$BUILD
-./setup --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="miro_pd_uniza.intelmkl_i8" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
+./setup.py --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="miro_pd_uniza.intelmkl_i8" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
 cd $BUILD
 make ExperimentalUpdate
 make ExperimentalConfigure

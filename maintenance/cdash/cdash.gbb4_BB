@@ -42,7 +42,7 @@ cd $DIRAC
 
 ./pamadm -a 
 
-###  return back to the main directory and rerun setup ###
+###  return back to the main directory and rerun setup.py ###
 #cd $DIRAC
 
 ###  MKL ILP64 libraries  ###
@@ -52,7 +52,7 @@ BUILD=build_ompi_ifort_gcc_mkl_ILP64_cdash
 export DIRAC_NUM_MPI_PROCS=4
 export DIRTIMEOUT="12m"
 
-./setup --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cxx=$OMPI/mpiCC -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" --int64 --check -D DART_TESTING_TIMEOUT=99999  $BUILD
+./setup.py --fc=$OMPI/mpif90 --cc=$OMPI/mpicc --cxx=$OMPI/mpiCC -D BUILDNAME="linux.gbb4_BanskaBystrica.ompi_ifort_gcc_mkl" --int64 --check -D DART_TESTING_TIMEOUT=99999  $BUILD
 cd $BUILD
 make Experimental
 

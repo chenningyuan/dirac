@@ -15,6 +15,8 @@ echo "Portlang Group compilers activated ! PGI=$PGI"
 ##  my most recent python 2.7.1  ##
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # set scratch directory on the main node
 export DIRAC_TMPDIR=/home/milias/my_scratch
 
@@ -46,9 +48,8 @@ export DIRTIMEOUT="12m"
 ###############################################
 BUILD_SERIAL=build_intelmkl_i8
 cd $DIRAC
-git clean -f
-git submodule update
-git submodule status
+git clean -f -d -x
+git submodule update --recursive
 echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
 #
 if [[ -d "$BUILD_SERIAL" ]]; then
@@ -56,9 +57,9 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   /bin/rm -rf $BUILD_SERIAL
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-UMB_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
+python ./setup.py --int64 --fc=ifort --cc=icc --cxx=icpc  --cmake-options="-D BUILDNAME='sivvp-UMB_Intel_mkl_i8'  -D DART_TESTING_TIMEOUT=99999" $BUILD_SERIAL
 cd $BUILD_SERIAL
-python binary_info.py
+#python binary_info.py
 ctest -D ExperimentalUpdate  --track Miro
 ctest -D ExperimentalConfigure    --track Miro
 ctest -j2 -D ExperimentalBuild    --track Miro
@@ -76,9 +77,8 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_STATIC
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
+python ./setup.py --int64 --fc=ifort --cc=icc --cxx=icpc --static  --cmake-options="-D BUILDNAME='sivvp-UMB_Intel_mkl_i8_static'  -D DART_TESTING_TIMEOUT=99999" $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
-python binary_info.py
 ctest --track Grid   -D ExperimentalUpdate
 ctest --track Grid   -D ExperimentalConfigure
 ctest --track Grid   -D ExperimentalBuild
@@ -97,9 +97,8 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+python ./setup.py --int64 --fc=gfortran --cc=gcc --cxx=g++  --cmake-options="-D BUILDNAME='sivvp-UMB_GNU_mkl_i8'  -D DART_TESTING_TIMEOUT=99999"  $BUILD_GNU
 cd $BUILD_GNU
-python binary_info.py
 ctest -D ExperimentalUpdate    --track Miro
 ctest -D ExperimentalConfigure    --track Miro
 ctest -j2 -D ExperimentalBuild    --track Miro
@@ -117,9 +116,8 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8-static"  --static -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+python ./setup.py --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --cmake-options="-D BUILDNAME='sivvp-UMB_GNU_mkl_i8-static' -D DART_TESTING_TIMEOUT=99999"  $BUILD_GNU
 cd $BUILD_GNU
-python binary_info.py
 ctest --track Grid  -D ExperimentalUpdate
 ctest  --track Grid  -D ExperimentalConfigure
 ctest -j2  --track Grid  -D ExperimentalBuild
@@ -137,9 +135,8 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_ownmath_i8" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+python ./setup.py --int64 --fc=gfortran --cc=gcc --cxx=g++  --blas=off --lapack=off --cmake-options="-D BUILDNAME='sivvp-UMB_GNU_ownmath_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON"  $BUILD_GNU
 cd $BUILD_GNU
-python binary_info.py
 ctest -D ExperimentalUpdate    --track Miro
 ctest -D ExperimentalConfigure    --track Miro
 ctest -j2 -D ExperimentalBuild    --track Miro
@@ -158,9 +155,8 @@ if [[ -d "$BUILD_PGI" ]]; then
   /bin/rm -rf $BUILD_PGI
 fi
 ./pamadm -a --builddir=$BUILD_PGI
-./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+python ./setup.py --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --cmake-options="-D BUILDNAME='UMB_nopcm_PGI_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF" $BUILD_PGI
 cd $BUILD_PGI
-python binary_info.py
 ctest -D ExperimentalUpdate    --track Miro
 ctest -D ExperimentalConfigure    --track Miro
 ctest -j2 -D ExperimentalBuild    --track Miro
@@ -180,9 +176,8 @@ if [[ -d "$BUILD_PGI" ]]; then
   /bin/rm -rf $BUILD_PGI
 fi
 ./pamadm -a --builddir=$BUILD_PGI
-./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8_static" --static -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+python ./setup.py --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --static --cmake-options="-D BUILDNAME='UMB_nopcm_PGI_mkl_i8_static' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF" --add-definitions="-D GFORTRAN_ALLOCATOR_WORKAROUND" $BUILD_PGI
 cd $BUILD_PGI
-python binary_info.py
 ctest --track Grid  -D ExperimentalUpdate
 ctest --track Grid  -D ExperimentalConfigure
 ctest --track Grid  -j2 -D ExperimentalBuild

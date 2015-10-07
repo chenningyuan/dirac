@@ -959,7 +959,7 @@ C
 C     Distinguish between the two branches
 C
       NA = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       IF (INDEX(A(1:NA),'energy') .EQ. 0) THEN
          call alloc(itm, IRNGE2-IRNGE1+1)
          CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,ITM)
@@ -980,7 +980,7 @@ C           orbital common block is set (this info is currently needed
 C           to correctly process the orbital energy list), this is
 C           why we check for I_DCBORB_SET as well.
 C
-C           miro(14.3.'13): changed EIG in the NUMLS2 parameter list, which is of zero lenght, 
+C           miro(14.3.'13): changed EIG in the NUMLS2 parameter list, which is of zero length, 
 C           to DUMMY to satisfy run with runtime check flags
 C
             IP = - 666
@@ -1127,7 +1127,7 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER (MAXLB = 90)
+      PARAMETER (MAXLB = 400)
 C
       CHARACTER A*(*),B*(MAXLB)
       CHARACTER*1 TEGN
@@ -1140,7 +1140,7 @@ C
       NUM2 = 0
       INO  = 0
       NA   = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       IF(NA.GE.3) THEN
         IF( INDEX(A(1:NA),'all') .GT. 0) THEN
           IC = 0
@@ -1333,9 +1333,9 @@ C
       CALL QUIT('NUMLS1: Out of Range in ITMPAR') 
  940  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
-     &     'NUMLS1: Character string beyond 72.',
+     &     'NUMLS1: Character string beyond MAXLB.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLS1: Character string beyond 72') 
+      CALL QUIT('NUMLS1: Character string beyond MAXLB') 
  950  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
      &     'NUMLS1: oo must be two consecutive characters.',
@@ -1374,7 +1374,7 @@ C     Determine begin and end of the part of the string that contains
 C     the energy values
 C
       NA = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       MA = INDEX(A(1:NA),'energy') + 6
 C     
       READ (A(MA:NA),*,END=900,ERR=900) ELOW,EHIGH,EGAP
@@ -1511,7 +1511,7 @@ C     Determine begin and end of the part of the string that contains
 C     the energy values
 C
       NA = LEN(A)
-      IF (NA.GT.80) NA = 80
+!     IF (NA.GT.80) NA = 80
       MA = INDEX(A(1:NA),'NO-occ') + 6
 C     
       READ (A(MA:NA),*,END=900,ERR=900) OHIGH,OLOW,OGAP
@@ -2103,8 +2103,6 @@ C***********************************************************************
 #include "priunit.h"
       DIMENSION CMO1(NBAS,NMO1,NZ),CMO2(NBAS,NMO2,NZ),IBUF(*)
 C
-CTROND
-      WRITE(6,*) 'TEST..acmou2 ',NZ
       DO IZ = 1,NZ
         DO J = 1,NMO2
           DO I = 1,NBAS
@@ -2279,7 +2277,7 @@ C*****************************************************************************
 #include "priunit.h"
 C
 C
-      PARAMETER (MAXLB = 72)
+      PARAMETER (MAXLB = 400)
 C
       CHARACTER A*(*),B*(MAXLB)
       CHARACTER*1 TEGN
@@ -2450,9 +2448,9 @@ C           ... single number
       CALL QUIT('NUMLS3: Out of Range in ITMPAR') 
  940  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
-     &     'NUMLS3: Character string beyond 72.',
+     &     'NUMLS3: Character string beyond MAXLB.',
      &     'String: "',B(1:NB),'"',(' ',J=1,I-1),'^'
-      CALL QUIT('NUMLS3: Character string beyond 72') 
+      CALL QUIT('NUMLS3: Character string beyond MAXLB') 
  950  CONTINUE
       WRITE(LUPRI,'(/A//3A/9X,200A1)')
      &     'NUMLS3: oo must be two consecutive characters.',
@@ -2665,8 +2663,8 @@ C
 #include "dcbreo.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*)
       logical, intent(in) :: read_mcscf
-      logical             :: mcorb, mjava, boson_irrep_info
-      logical             :: fndlab, mcci_natorb
+      logical             :: mcorb, mcorb1, mcorb2, mjava
+      logical             :: fndlab, mcci_natorb, boson_irrep_info
 
 C     Get coefficients from KRMCSCF/DFCOEF
 C     ====================================
@@ -2674,11 +2672,13 @@ C     ====================================
 
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PSTOR1')
         REWIND LUKRMC
-        MCORB = .not.FNDLAB('MCCINATO',LUKRMC)
+        MCORB1 = .not.FNDLAB('MCCINATO',LUKRMC)
         REWIND LUKRMC
-        MCORB = .not.FNDLAB('NEWNATOB',LUKRMC)
+        MCORB2 = .not.FNDLAB('NEWNATOB',LUKRMC)
         REWIND LUKRMC
         MJAVA = FNDLAB('MJVEC   ',LUKRMC)
+        mcorb = .false.
+        if(MCORB1 .and. MCORB2) mcorb = .true.
 
 !       read mj-values / boson irrep info
         IF(MJAVA)THEN
@@ -4658,24 +4658,36 @@ C
 C     NBSYM.EQ.1, implies C1 !!! Check how to handle that...
       ICAO  = 1+IOFF*NTBAS(0)
       ICSO  = 1
-      DO IFRP = 1,NFSYM
-      IF(NVEC(IFRP).GT.0) THEN
-        NCBF2 = NFBAS(IFRP,0)*NVEC(IFRP)*4
-        allocate(CBUF(NCBF2))
-        CALL QEXPAND(CBUF,CSO(ICSO),NVEC(IFRP),IFRP,NFBAS(IFRP,0))
-        IZOFF = ICAO
-        ISOFF = 1
-        DO IZ = 1,4
-          CALL WTSOAO_mod(CBUF(ISOFF),CAO(IZOFF),IFRP,
-     &                NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
-          IZOFF = IZOFF + NTBAS(0)*NTOT
-          ISOFF = ISOFF + NFBAS(IFRP,0)*NVEC(IFRP)
+      IF(NZC1.EQ.1) THEN 
+        DO IFRP = 1,NFSYM
+        IF(NVEC(IFRP).GT.0) THEN
+          IZOFF = ICAO
+          CALL WTSOAO_mod(CSO(ICSO),CAO(IZOFF),IFRP,
+     &                  NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
+          ICAO  = ICAO  + NTBAS(0)*NVEC(IFRP)
+          ICSO  = ICSO  + NFBAS(IFRP,0)*NVEC(IFRP)*NZ
+        ENDIF
         ENDDO
-        deallocate(CBUF)
-        ICAO  = ICAO  + NTBAS(0)*NVEC(IFRP)
-        ICSO  = ICSO  + NFBAS(IFRP,0)*NVEC(IFRP)*NZ
+      ELSE
+        DO IFRP = 1,NFSYM
+        IF(NVEC(IFRP).GT.0) THEN
+          NCBF2 = NFBAS(IFRP,0)*NVEC(IFRP)*NZC1
+          allocate(CBUF(NCBF2))
+          CALL QEXPAND(CBUF,CSO(ICSO),NVEC(IFRP),IFRP,NFBAS(IFRP,0))
+          IZOFF = ICAO
+          ISOFF = 1
+          DO IZ = 1,NZC1
+            CALL WTSOAO_mod(CBUF(ISOFF),CAO(IZOFF),IFRP,
+     &                  NFBAS(IFRP,0),NTBAS(0),NVEC(IFRP),IBUF,0)
+            IZOFF = IZOFF + NTBAS(0)*NTOT
+            ISOFF = ISOFF + NFBAS(IFRP,0)*NVEC(IFRP)
+          ENDDO
+          deallocate(CBUF)
+          ICAO  = ICAO  + NTBAS(0)*NVEC(IFRP)
+          ICSO  = ICSO  + NFBAS(IFRP,0)*NVEC(IFRP)*NZ
+        ENDIF
+        ENDDO
       ENDIF
-      ENDDO
       deallocate(IBUF)
 C
       RETURN
@@ -4716,4 +4728,21 @@ C
 C
       RETURN
       END
+      SUBROUTINE ZERO_MO(j,CMOBUF,NBAST,NMOT,NZ)
+C
+C     1-Oct-2015 Hans Jørgen Aa. Jensen
+C     Zero MO no. j in CMOBUF
+C     (CMOBUF all of CMO, or a subset generated with SELCFS, or?)
+C     In fact, this routine can zero column j in any quaternion matrix.
+C
+      integer j, nbast, nmot, nz
+      real*8  cmobuf(nbast,nmot,nz)
+      integer iz
 
+      do iz = 1, nz
+         CMOBUF(:,j,iz) = 0.0d0
+      end do
+      
+      return
+      end
+! -- end of dirgp.F --

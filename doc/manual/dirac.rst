@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 starstar(DIRAC)
 
@@ -45,8 +46,8 @@ keyword(4INDEX)
 Explicitly activates the transformation of integrals to molecular orbital
 basis.  This activates the reading of the :ref:`**MOLTRA` section.
 
-These transformed integrals are currently only used by the :ref:`RELCCSD`,
-:ref:`RELADC`, :ref:`DIRRCI`, and :ref:`LUCITA` modules, and if one of these
+These transformed integrals are currently only used by the :ref:`**RELCC`,
+:ref:`RELADC`, :ref:`DIRRCI`, and :ref:`*LUCITA` modules, and if one of these
 three modules are requested under :ref:`**WAVE FUNCTION`, then this flag is
 automatically activated unless .NO4INDEX is specified in this input module.
 
@@ -58,10 +59,10 @@ keyword(NO4INDEX)
 
 Do not automatically activate integral transformation to molecular
 orbital basis if any of
-:ref:`RELCCSD`,
+:ref:`**RELCC`,
 :ref:`RELADC`,
 :ref:`DIRRCI`, and
-:ref:`LUCITA`
+:ref:`*LUCITA`
 modules
 are requested under :ref:`**WAVE FUNCTION`.
 
@@ -106,4 +107,4 @@ keyword(MINIMI)
 
 keyword(XMLOUT)
 
-.. warning:: documentation missing
+Create the output xml-file containing selected data (in development).

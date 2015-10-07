@@ -69,7 +69,7 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 ./pamadm -a --builddir=$BUILD
-./setup --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD
+./setup.py --fc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi_1.6.4_ilp64_intel_static/bin/mpiCC --static --mpi -D BUILDNAME="grid3_savba_ompi_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD
  cd $BUILD
  ctest -D ExperimentalUpdate  --track Grid
  ctest -D ExperimentalConfigure  --track Grid
@@ -91,7 +91,7 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   /bin/rm -rf $BUILD_SERIAL
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
-./setup --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD_SERIAL
+./setup.py --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="grid3_savba_serial_intel_mkl_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD_SERIAL
  cd $BUILD_SERIAL
  ctest -D ExperimentalUpdate  --track Grid
  ctest -D ExperimentalConfigure  --track Grid
@@ -115,7 +115,7 @@ echo -e "\n build 2 - Intel,MKL,serial,static - finished at $timestamp \n"
   /bin/rm -rf $BUILD_GNU_SERIAL
  fi
 ./pamadm -a --builddir=$BUILD_GNU_SERIAL
-./setup --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD_GNU_SERIAL
+./setup.py --fc=gfortran44 --cc=gcc44 --cxx=g++44 --static -D BUILDNAME="grid3_savba_serial_GNU_ilp64_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_OLD_LINKER=ON $BUILD_GNU_SERIAL
  cd $BUILD_GNU_SERIAL
  ctest -D ExperimentalUpdate  --track Grid
  ctest -D ExperimentalConfigure  --track Grid
@@ -149,7 +149,7 @@ cp -R  /home/ilias/bin/openmpi_i32lp64_intel_static/etc               $DIRAC/$BU
 /bin/rm -r test/*/compare
 
 echo -e "\n\n packing fat DIRAC suite for grid computations..."
-tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam  setup VERSION  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid  /home/ilias/bin/cmakestatic
+tar czf dirac_grid_suite.tgz   CMakeLists.txt CTestConfig.cmake pamadm  pam  setup.py VERSION  test  basis  basis_dalton basis_ecp  cmake $BUILD $BUILD_SERIAL $BUILD_GNU_SERIAL doc src utils COPYING maintenance/grid_computing/diracrc_grid maintenance/grid_computing/diracrc_build_grid  /home/ilias/bin/cmakestatic
 echo -e "\n packing done, we have tar-ball dirac_grid_suite.tgz file ready for grid-computing : "
 ls -lt dirac_grid_suite.tgz
 

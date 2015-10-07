@@ -1,9 +1,10 @@
+:orphan:
 
 
 Selecting a two-component Hamiltonian other than X2C
 ====================================================
 
-There are several two-component Hamiltonians besides the X2C Hamiltonian (see :ref:`.X2C`) implemented 
+There are several two-component Hamiltonians besides the X2C Hamiltonian (see :ref:`HAMILTONIAN_.X2C`) implemented 
 in DIRAC arising from the decoupling transformation of the one-electron DIRAC Hamiltonian. 
 Likewise spin-orbit interaction terms can be left out and calculations can be performed
 in the spin-free mode (i.e. in boson symmetry).
@@ -101,7 +102,7 @@ This mimics the Dirac-Coulomb-Gaunt Hamiltonian, as the spin-other-orbit comes
 from the Gaunt interaction term.
 
 DIRAC allows to switch off AMFI spin-orbit contributions from various centers.
-See the keyword :ref:`.NOAMFC`.
+See the keyword :ref:`AMFI_.NOAMFC`.
 
 Infinite order scalar terms "from the beginning", (one-electron) spin orbit
 (SO1) and the mean-field spin-same-orbit (MFSSO2) terms exclusively from AMFI::

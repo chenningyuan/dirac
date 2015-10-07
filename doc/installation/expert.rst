@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 Expert options
 ==============
@@ -17,7 +18,7 @@ How can I change optimization flags?
 
 You can turn optimization off (debug mode) like this::
 
-  $ ./setup --type=debug [other flags]
+  $ ./setup.py --type=debug [other flags]
   $ cd build
   $ make
 

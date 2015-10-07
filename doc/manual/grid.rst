@@ -1,8 +1,7 @@
+:orphan:
+ 
 
-
-========
-\*\*GRID
-========
+starstar(GRID)
 
 The numerical integration scheme uses the Becke partitioning :cite:`Becke1988a`
 of the molecular volume
@@ -13,12 +12,21 @@ while the angular integration is handled by a set of highly accurate
 Lebedev grids. Note that the Becke partitioning scheme generally uses
 Slater-Bragg radii for atomic size adjustments. For the heavier
 elements, with their more variable oxidation states, this can lead to
-errors. If the user invokes the :ref:`.ATSIZE` keyword, DIRAC
+errors. If the user invokes the :ref:`GRID_.ATSIZE` keyword, DIRAC
 tries to deduce relative atomic sizes from available densities, if it
 can find coefficients.
 
-.RADINT
--------
+The  **radial integration** employs an exponential grid
+
+.. math::
+
+   r_k=e^{kh};\quad w_k = r_k;\quad S=\sym_{k=-\infty}^{\infty}=w_kf\left(r_k\right)
+
+and is specified in terms of step size :math:`h`, the inner point :math:`r_1` 
+and the outermost point :math:`r_k_H`, chosen to provide the required relative 
+precision :mat:`R` (equal to the discretization error :math:`R_D`. 
+
+keyword(RADINT)
 
 Specify the maximum error in the radial integration.
 
@@ -29,8 +37,7 @@ Specify the maximum error in the radial integration.
     .RADINT
      1.0D-13
 
-.ANGINT
--------
+keyword(ANGINT)
 
 Specify the precision of the Lebedev angular grid. The angular
 integration of spherical harmonics will be exact to the L-value given by
@@ -44,13 +51,11 @@ value is 64.
     .ANGINT
      41
 
-.NOPRUN
--------
+keyword(NOPRUN)
 
 Turn off the pruning of the angular grid.
 
-.ANGMIN
--------
+keyword(ANGMIN)
 
 Specify the minimum precision of the Lebedev angular grid after pruning.
 
@@ -60,9 +65,9 @@ Specify the minimum precision of the Lebedev angular grid after pruning.
      LEBMIN
 
 Close to the nucleus, the precision of the angular grid will be less
-than L-value given by :ref:`.ANGINT`, but it will not be less
+than L-value given by :ref:`GRID_.ANGINT`, but it will not be less
 than the integer LEBMIN. Note that giving a LEBMIN value greater than or
-equal to the L-value given by :ref:`.ANGINT` is equivalent to
+equal to the L-value given by :ref:`GRID_.ANGINT` is equivalent to
 turning the pruning off.
 
 *Default:*
@@ -72,16 +77,14 @@ turning the pruning off.
     .ANGMIN
      15
 
-.ATSIZE
--------
+keyword(ATSIZE)
 
 Generate new estimates for atomic size ratios for use in the Becke
 partitioning scheme. Relative sizes for a pair of atoms A and B are
 calculated from their contribution to the large component density along
 the line connecting A and B.
 
-.IMPORT
--------
+keyword(IMPORT)
 
 ::
 
@@ -109,16 +112,14 @@ integer. Works also in parallel.
 You can export the DIRAC grid simply by copying back the file
 "numerical\_grid" from the scratch directory.
 
-.NOZIP
-------
+keyword(NOZIP)
 
 DIRAC will try to remove redundant grid points when symmetry is present.
 Each reflection plane reduces the number of grid points by a factor of
 two. With this keyword you can turn this default symmetry grid
 compression off.
 
-.4CGRID
--------
+keyword(4CGRID)
 
 Include the small component basis in the generation of the DFT grid even
 if you run a 1- or 2-component calculation.
@@ -129,8 +130,7 @@ using the identical integration grid.
 By default the small component is ignored in the grid generation when
 running 1- or 2-component DFT calculations.
 
-.DEBUG
-------
+keyword(DEBUG)
 
 Very poor grid - corresponds to
 
@@ -141,8 +141,7 @@ Very poor grid - corresponds to
     .ANGINT
      10
 
-.COARSE
--------
+keyword(COARSE)
 
 Coarse grid - corresponds to
 
@@ -153,8 +152,7 @@ Coarse grid - corresponds to
     .ANGINT
      35
 
-.ULTRAFINE
-----------
+keyword(ULTRAFINE)
 
 A better grid than default - corresponds to
 
@@ -165,8 +163,7 @@ A better grid than default - corresponds to
     .ANGINT
      64
 
-.INTCHK
--------
+keyword(INTCHK)
 
 Test the performance of the grid by computing the overlap matrix
 numerically and analyzing the errors. In addition, the error matrix can

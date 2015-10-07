@@ -40,7 +40,7 @@ fi
 # configure step
 export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
 ./pamadm -a --builddir=$BUILD
-./setup -D BUILDNAME="prasiva.ifort_icc_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON --fc=ifort  --cc=icc  --cxx=g++  --int64  $BUILD
+./setup.py -D BUILDNAME="prasiva.ifort_icc_g++_mkl_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON --fc=ifort  --cc=icc  --cxx=g++  --int64  $BUILD
 cd $BUILD
 ctest  -D ExperimentalUpdate      --track Miro
 ctest  -D ExperimentalConfigure   --track Miro
@@ -59,7 +59,7 @@ fi
 # configure step
 export MATH_ROOT=/opt/intel/Compiler/11.0/084/mkl
 ./pamadm -a --builddir=$BUILD
-./setup -D BUILDNAME="prasiva.gnumkl_i8" -D DART_TESTING_TIMEOUT=99999  -D ENABLE_PCMSOLVER=ON --fc=gfortran  --cc=gcc  --cxx=g++  --int64  $BUILD
+./setup.py -D BUILDNAME="prasiva.gnumkl_i8" -D DART_TESTING_TIMEOUT=99999  -D ENABLE_PCMSOLVER=ON --fc=gfortran  --cc=gcc  --cxx=g++  --int64  $BUILD
 cd $BUILD
 ctest  -D ExperimentalUpdate --track Miro
 ctest  -D Experimental -L short --track Miro

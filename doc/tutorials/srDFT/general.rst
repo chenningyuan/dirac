@@ -1,3 +1,5 @@
+:orphan:
+
 Long-range WFT/short-range DFT
 ==============================
 

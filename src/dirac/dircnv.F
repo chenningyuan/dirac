@@ -57,6 +57,8 @@ C
       DIMENSION ERGOLD(N_OLD), EVCOLD(N_OLD)
       SAVE      ERGOLD, EVCOLD
       DATA      ERGOLD/N_OLD*1.0D20/, EVCOLD/N_OLD*1.0D20/
+
+      CALL QENTER('DHFCNV')
 C
 C     Calculate error vector for this iteration
 C     =========================================
@@ -66,7 +68,7 @@ C             DMAT  - Density matrix in AO-basis (DCao and DVao)
 C             TMAT  - MO-transformation matrix
 C             TINV  - Right index transformed overlap matrix;
 C             correponds to the inverse of the transformation matrix
-C             FBUF  - work area
+C             FBUF  - work area .ge. NFMAT*N2BBASXQ
 C
       IF (ICHKCNV .NE. 0)
      &   CALL DIISER(EVEC,FMO,FAO,DMAT,TINV,FBUF,TMAT,WORK,LWORK)
@@ -117,7 +119,7 @@ c     DEBUG PRINT AFTER write Fock Matrix to file (PBS+MI)
 C
       ERGVAL = ERGBUF - DHFERG
 C
-      IF (ICHKCNV .EQ. 0) RETURN
+      IF (ICHKCNV .EQ. 0) GOTO 9999
 C
 C     Check convergence
 C     =================
@@ -147,7 +149,7 @@ C
       ELSE
 C       no check on convergence possible this time
 C       (must be called from PREDHF)
-        IF (.NOT.OLDFMO) RETURN
+        IF (.NOT.OLDFMO) GOTO 9999
         CALL QUIT('DHFCNV ERROR: no DHF convergence criterium defined!')
       ENDIF
 c     ... check if One-center app. should be turned off     /jkp
@@ -187,7 +189,7 @@ C     IF  (not old FMO matrix) exit,
 C     because then neither DIIS nor DAMP possible
 C     (OLDFMO can be false when called from PREDHF)
 C
-      IF ( DHFEXIT .OR. .NOT. OLDFMO) RETURN
+      IF ( DHFEXIT .OR. .NOT. OLDFMO) GOTO 9999
 C
 C
 C     Convergence acceleration
@@ -322,7 +324,9 @@ C.....Do not turn on damping with atomic Huckel before DIIS gets activated
         CALL WRTDAC(LUFOCK,N2TMOTQ,FMO,IREC)
 c
       ENDIF
+ 9999 CONTINUE
       CALL FLSHFO(LUPRI)
+      CALL QEXIT('DHFCNV')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

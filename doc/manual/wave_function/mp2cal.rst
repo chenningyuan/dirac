@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(MP2CAL)
 
 **Introduction**
@@ -9,26 +12,29 @@ calculation. The default algorithm is described
 `here <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_ and
 is a modification of the original algorithm published in Ref. :cite:`Laerdahl1997`.
 
+*Note* that default is to include all positive-energy (electronic) orbitals in the MP2 calculation.
+You specify .OCCUPIED and .VIRTUAL if you want to do the MP2 calculation with a subset of these orbitals.
+
 **Basic keywords**
 ==================
 
 keyword(OCCUPIED)
 
-Active, doubly occupied, electronic solutions.
+Specify the active subset of the doubly occupied positive-energy (electronic) orbitals from the SCF.
 
 For each fermion irrep, give an :ref:`orbital_strings`
-of active orbitals.
+of active occupied orbitals.
 
-*Default:* The occupied electronic solutions.
+*Default:* All the occupied electronic orbitals.
 
 keyword(VIRTUAL)
 
-Active virtual solutions.
+Specify the active subset of the empty virtual orbitals from the SCF.
 
-For each fermion irrep, give an `orbital_strings`
-of active orbitals.
+For each fermion irrep, give an :ref:`orbital_strings`
+of active virtual orbitals.
 
-*Default:* All the unoccupied virtual solutions.
+*Default:* All the unoccupied virtual orbitals.
 
 
 **Advanced options**
@@ -37,7 +43,7 @@ of active orbitals.
 keyword(INTFLG)
 
 Specify what two-electron integrals to include in the direct MP2
-calculation (default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+calculation (default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
 
 keyword(SCREEN)
@@ -111,5 +117,4 @@ Use original alorithm as described in Ref. :cite:`Laerdahl1997`.
 
 *Default:* Use `new
 algorithm <http://folk.uio.no/vebjornb/usit/dirac-mp2/dirac-mp2.php>`_.
-
 

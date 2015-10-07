@@ -43,6 +43,7 @@ module relcc_cfg
   logical, public :: relcc_debug                   = .false.
   logical, public :: relcc_timing                  = .false.
   logical, public :: relcc_do_sort                 = .true.
+  logical, public :: relcc_do_restart              = .false.
   logical, public :: relcc_do_energy               = .true.
   logical, public :: relcc_do_gradient             = .false.
   logical, public :: relcc_do_hessian              = .false. ! this currently only relates to the old Hartree-Fock MO response code 
@@ -53,6 +54,7 @@ module relcc_cfg
   integer, public :: relcc_max_iterations          = 30
   integer, public :: relcc_desired_convergence     = 12
  
+
 ! Information relevant for the integral sorting and setup stage
   logical, public :: relcc_breit                    = .false.
   logical, public :: relcc_add_finite_field         = .false.
@@ -63,6 +65,14 @@ module relcc_cfg
   character(10), public :: relcc_integral_interface = 'DIRAC6    '
   character( 8), public :: relcc_ff_property_names
 
+! Information relevant to restarts
+  logical, public, dimension(1:6)  :: relcc_restart_skipsect     = .false. 
+  logical, public, dimension(1:6)  :: relcc_restart_redosect     = .false. 
+  logical, public                  :: relcc_restart_unconverged  = .false.
+  logical, public                  :: relcc_restart_ignore_check = .false.
+  logical, public                  :: relcc_restart_redo_sorting = .false.
+  logical, public                  :: relcc_restart_redo_ccsd    = .false.
+
 ! Information relevant for the energy calculation
   logical, public :: relcc_do_mp2                  = .true. 
   logical, public :: relcc_no_singles              = .false.
@@ -72,6 +82,10 @@ module relcc_cfg
   integer, public :: relcc_ccener_max_dimension_diis      = 8
   integer, public :: relcc_ccener_max_iterations          = 30
   integer, public :: relcc_ccener_desired_convergence     = 12
+
+! Information relevant for RelCC convergence (miro,luuk)
+  real*8 , public :: relcc_ccener_dholu_limit     =  1.0d-6 
+  logical, public :: relcc_ccener_dholu_limit_set = .false.
 
 ! Information relevant for the gradient calculation
   logical, public :: relcc_do_mp2gradient          = .false.
@@ -146,6 +160,7 @@ contains
   call interface_mpi_bcast_l0(relcc_debug              ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_timing             ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_sort            ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_restart         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_energy          ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_gradient        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_hessian         ,1,0,global_communicator)
@@ -164,6 +179,14 @@ contains
   call interface_mpi_bcast(relcc_memory_in_mw        ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_integral_interface, 10,0,global_communicator)
   call interface_mpi_bcast(relcc_ff_property_names,   8,0,global_communicator)
+
+! Information relevant to restarts
+  call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_redosect,    6,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_unconverged, 1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_ignore_check,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_redo_sorting,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_restart_redo_ccsd,   1,0,global_communicator)
 
 ! Information relevant for the energy calculation
   call interface_mpi_bcast_l0(relcc_do_mp2                    ,1,0,global_communicator)

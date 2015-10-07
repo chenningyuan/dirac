@@ -90,6 +90,12 @@ module fde_input_dirac
             CASE ('.UPDATE')
                itmp%im_update_vemb = .true.
 
+            CASE ('.NUCREP')
+               read(lucmd,*) fde_intersub_nucrep
+
+            CASE ('.ENER_B')
+               read(lucmd,*) fde_frozen_energy 
+
             CASE ('.SKIPK')
                call fde_set_skip_nadd_ke(.true.)
             CASE ('.SKIPX')

@@ -207,23 +207,22 @@ C
  8001    CALL QENTER('MEMGET2 ')
          IF (KFREE .GT. 1) THEN
             LENIDS = LENID
-            WRITE (LUWMEM,1010) DATA_TYPE,LREAL+LENIDS,LFREE
-
-            CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
-            CALL MEMCHK('MEMGET ERROR (insuff. memory)',WORK,1)
-
          ELSE
             LENIDS = 2*LENID
-            WRITE (LUWMEM,1010) DATA_TYPE,LREAL+LENIDS,LFREE
-            CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
          END IF
+         WRITE (LUWMEM,1010) DATA_TYPE,LREAL+LENIDS,LFREE
+         CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
+         WRITE (LUWMEM,'(/2A/2A/A,I10)')
+     &      ' MEMGET2 INFO, type  : ',DATA_TYPE,
+     &      ' MEMGET2 INFO, ident : ',IDENT,
+     &      ' MEMGET2 INFO, length: ',LENGTH
+         IF (KFREE.GT.1)
+     &      CALL MEMCHK('MEMGET ERROR (insuff. memory)',WORK,1)
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,1010) DATA_TYPE,LREAL+LENIDS,LFREE
             CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
-
             CALL QTRACE(LUEMEM)
-
          END IF
          CALL QUIT('MEMGET ERROR, insufficient work space in memory')
  1010 FORMAT(
@@ -249,15 +248,19 @@ C
 C        warning branch for non-zero length for WORK(KFREE):
 C
  8003    NWNMEM = NWNMEM + 1
+         CALL QENTER('MEMGET2 ')
          WRITE (LUWMEM,'(/A/A,I10,/A,I25)')
-     *      ' MEMGET WARNING, nonzero allocation work(kfree)',
+     *      ' MEMGET2 WARNING, nonzero allocation work(kfree)',
      *      ' KFREE =',KFREE,
      *      ' found memory allocation :',MEMCK
-         CALL QENTER('MEMGET2 ')
+         WRITE (LUWMEM,'(/2A/2A/A,I10)')
+     &      ' MEMGET2 INFO, type  : ',DATA_TYPE,
+     &      ' MEMGET2 INFO, ident : ',IDENT,
+     &      ' MEMGET2 INFO, length: ',LENGTH
          CALL QTRACE(LUWMEM)
          IF (LUEMEM.NE.LUWMEM) THEN
             WRITE (LUEMEM,'(/A/A)')
-     *      ' MEMGET WARNING, nonzero allocation work(kfree)',
+     *      ' MEMGET2 WARNING, nonzero allocation work(kfree)',
      *      ' ---> see output file'
             CALL QTRACE(LUEMEM)
          END IF
@@ -501,6 +504,63 @@ C
      &             'allocation has negative length.')
 C
 C     end of MEMCHK
+C
+      END
+C  /* Deck memdump */
+      SUBROUTINE MEMDUMP(TEXT,WORK,KFIRST)
+C
+C June 2015, based on MEMCHK (Hans Joergen Aa. Jensen)
+C
+C Check if memory allocation from WORK(KFIRST) is intact
+C (check if anything has been out of bounds).
+C
+#include "implicit.h"
+      DIMENSION     WORK(*)
+      CHARACTER*(*) TEXT
+C
+#include "memcb1.h"
+C
+Chj1  CALL QENTER('MEMDUMP ')
+C
+      KALLOC = KFIRST
+      IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
+C
+      IALLOC = 0
+  100 CONTINUE
+         IALLOC = IALLOC + 1
+#ifdef DBG_LENID
+         do i = 2,lenid-1
+            WMEMCK = WORK(KALLOC-LENID+i)
+            IF (MEMCK .NE. MEMID) GO TO 8001
+         end do
+#else
+         WMEMCK = WORK(KALLOC-1)
+         IF (MEMCK .NE. MEMID) CALL MEMCHK(TEXT,WORK,KFIRST)
+#endif
+         WLREAL = WORK(KALLOC-LENID+1)
+         IF (LREAL .GE. 0) THEN
+            KALLOC = KALLOC + LENID + LREAL
+            GO TO 100
+         END IF
+         IF (LREAL .NE. LZERO) CALL MEMCHK(TEXT,WORK,KFIRST)
+C
+         WRITE (LUWMEM,'(/A/2A//A)')
+     &      ' *** Dump of memory allocations ***',
+     &      '     Text from calling routine: ',TEXT,
+     &      ' IALLOC #    IDENT     KBASE         Length'
+         KALLOC = KFIRST
+         IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
+         DO I = 1, IALLOC
+            WRITE (IDENT8,'(A8)') WORK(KALLOC-LENID)
+            WLREAL = WORK(KALLOC-LENID+1)
+            WRITE (LUWMEM,'(I5,2X,A8,2I15)') I,IDENT8,KALLOC,LREAL
+            KALLOC = KALLOC + LENID + LREAL
+         END DO
+
+Chj1  CALL QEXIT('MEMDUMP ')
+      RETURN
+C
+C     end of MEMDUMP
 C
       END
 C  /* Deck memopt */

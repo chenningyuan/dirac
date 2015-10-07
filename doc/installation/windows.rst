@@ -1,4 +1,5 @@
-﻿
+:orphan:
+
 .. _windows_users:
 
 
@@ -13,8 +14,8 @@ Dependencies
    Example of path to add: *"C:\\cmake-3.0.2-win32-x86\\bin"*
 
 2. Fortran, C and C++ compilers. We recommend to use compilers from http://mingw-w64.sourceforge.net/ for both 32/64 bit Windows.
-   You can download 32-bit version from `here <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/>`_ 
-   And 64-bit version from `here <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/>`_ 
+   You can download 32-bit version from `this URL <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win32/Personal%20Builds/mingw-builds/>`_ 
+   And 64-bit version from `this page <http://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/>`_ 
    In both cases we recommend to download archive file instead of installer and then just unpack it somewhere.
    Add path to compilers into your PATH environment variable. Example of path to add: *"C:\\mingw64\\bin"*
 
@@ -42,7 +43,7 @@ Dependencies
    
    [g] if CMake will have problems to find zlib libraries you can use this (available since CMake 2.8.7): ::
      
-     python setup -DZLIB_ROOT=[path to zlib folder]
+     python setup.py -DZLIB_ROOT=[path to zlib folder]
     
    For 64-bit Windows (if you place zlib libraries at the same place as we do then CMake should find them automatically):
 
@@ -56,7 +57,7 @@ Dependencies
    
    [e] if CMake will have problems to find zlib libraries you can use this (available since CMake 2.8.7): ::
      
-     python setup -DZLIB_ROOT=[path to zlib folder]
+     python setup.py -DZLIB_ROOT=[path to zlib folder]
     
 5. Boost (http://www.boost.org/). Download Boost in archive file from http://sourceforge.net/projects/boost/files/boost/
    Then follow this instructions (if you place Boost libraries at the same place as we do then CMake should find them automatically):
@@ -75,7 +76,7 @@ Dependencies
    
    [e] if CMake will have problems to find your Boost libraries yo can use: ::
    
-     python setup -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
+     python setup.py -DBOOST_INCLUDEDIR=[path]\include -DBOOST_LIBRARYDIR=[path]\lib
  
 6. To speed-up your calculations you can download OpenBLAS (it includes BLAS and LAPACK implementation) library from http://www.openblas.net/. 
    There are available prebuilt binaries for 32/64 bit Windows for Intel NEHALEM architecture with threading capability. You can specify number of threads with *"OPENBLAS_NUM_THREADS"* environment variable. On 64-bit Windows you can choose from *"Win64-int32"* and *"Win64-int64"* versions. Use *"Win64-int32"* version 
@@ -143,7 +144,7 @@ should envelope them into inverted commas, "...". In *".diracrc"* you can use ba
   --basis="C:\Dirac\my-dirac\basis;C:\Dirac\my-dirac\basis_dalton;C:\Dirac\my-dirac\basis_ecp"
   --scratch="D:\dirac\tmp"
 
-.. note:: If you want to use *".diracrc"* configuration file it must be placed in your user's home directory, for example: *"C:\\Users\\User\\.diracrc"*
+.. note:: If you want to use *".diracrc"* configuration file it must be placed in your user's home directory, for example: *"C:\\Users\\User\\.diracrc"*.
   
 If you want to specify *"setup"* options (*"--fc"*, *"--cc"*, *"--cxx"*, *"--blas"*, *"--lapack"* and others) you have to use slash sign in paths like in Linux,
 if you want to specify -D options you have to use backslash sign in paths. See example below.
@@ -165,6 +166,48 @@ Run your selected test set together with uploading results onto the CDash web::
   C:\Dirac\my-dirac\build> ctest -D ExperimentalTest -L short -D ExperimentalSubmit -j 4
 
 
+Intel (not available yet)
+-------------------------
+
+We tried to test Dirac with *Intel Parallel Studio XE 2015 Update 3 Cluster Edition* (https://software.intel.com/en-us/intel-parallel-studio-xe) which contains
+Intel C/C++ and Fortran compilers, Intel MKL and Intel MPI libraries in virtual machine with *Microsoft Windows Server 2012 R2* running on AMD Athlon II 64-bit processor.
+
+Our installation steps:
+
+1. Install *Visual Studio Professional 2013 with Update 3* (https://www.visualstudio.com/)
+2. Install *Intel Parallel Studio XE 2015 Update 3 Cluster Edition*
+3. Initialize the Cluster edition tools:
+
+::
+
+  cd C:\Program Files (x86)\Intel\Parallel Studio XE 2015
+  psxevars.bat intel64
+
+4. Add *"C:\\Intel\\Composer XE 2015\\bin\\intel64_mic;C:\\Program Files (x86)\\Intel\\Composer XE\\bin\\intel64"* into PATH environment variable.
+5. Make own *cmd.exe* shortcut, open its properties and put into *"Target"* field (then you can use Intel compilers from this custom command line):
+
+::
+
+  %comspec% /k ""C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" amd64 && "C:\Program Files (x86)\Intel\Composer XE 2015\bin\compilervars.bat" intel64 vs2013"
+
+Intel compiler names:
+
+C/C++ compiler: *icl*
+Fortran compiler: *ifort*
+CMake Generator: NMake Makefiles
+MPI compilers for C/C++ and Fortran (*.bat* wrappers): *mpicc*, *mpicxx*, *mpif90*
+MPI execution program: *mpiexec* (when first time run after Windows start/user login it asks for user password)
+
+We have used this setup command: ::
+
+  python setup --cc=icl --cxx=icl --fc=ifort --type=debug --int64 --generator="NMake Makefiles" -D ENABLE_PCMSOLVER=OFF
+
+and then this command for building: ::
+
+  cd build
+  nmake
+
+
 Cygwin
 ------
 
@@ -174,18 +217,25 @@ because the Cygwin layer ensures full Linux workplace on the top of the ground W
 
 In order to build Dirac on Cygwin you have to install these packages:
 
-1. compilers: *gcc-core*, *gcc-fortran*, *gcc-g++*
-2. *make* and *cmake*
+1. compilers: *gcc-core*, *gcc-fortran*, *gcc-g++* (also these we need to get all header files: *gcc-ada*, *gcc-objc*, *gcc-objc++*)
+2. *make* and *cmake* (it includes *ctest*..)
 3. *python* interpreter
 4. *zlib0*, *zlib-devel*
 5. *git* version control system
-6. optionally you can install *Blas* and *Lapack* libraries (Netlib), *OpenBLAS* (libopenblas) - this is faster than from Netlib, build *ATLAS*
+6. optionally you can install *OpenBLAS* (*libopenblas*) - recommended for 32 and 64 integer builds or *BLAS* and *LAPACK* (together in *liblapack0* package) - but these are only 32-bit versions
 
-.. note:: OpenBLAS library is placed in *"/usr/bin/cygblas-0.dll"*.
-.. note:: You have to explicit specify to use OpenBLAS library with *"--blas"* and *"--lapack"* setup options.
-.. note:: To run OpenBLAS in parallel export OPENBLAS_NUM_THREADS environment variable.
+.. note:: *OpenBLAS* library is placed in *"/usr/bin/cygblas-0.dll"*.
+.. note:: You have to explicitly specify to use *OpenBLAS* library with *"--blas"* setup option.
+.. note:: With 64 bit integers enabled use builtin *LAPACK* with *OpenBLAS* (*OpenBLAS* on Cygwin does not contain *LAPACK*). 
+.. note:: To run *OpenBLAS* in parallel export OPENBLAS_NUM_THREADS environment variable.
+.. note:: *BLAS* and *LAPACK* libraries from *liblapack0* package are placed in *"/usr/lib/lapack"* (*"cygblas-0.dll"* and *"cyglapack-0.dll"*).
 
 7. optionally you can install *Open MPI*
+
+.. note::
+
+  If you want to use Open MPI you have to run Cygserver as an administrator, see https://cygwin.com/cygwin-ug-net/using-cygserver.html.
+
 8. to be able to build documentation (*make html*, *make doxygen* - problematic, *make slides*) install also:
    *pkg-config*, *ghostscript*, *libfreetype-devel*, *libpng-devel*, *python-gtk2.0*, *libgtk2.0-devel*, *doxygen* 
    (why so many see http://blogs.bu.edu/mhirsch/2014/06/matplotlib-in-cygwin-64-bit/)
@@ -195,10 +245,12 @@ In order to build Dirac on Cygwin you have to install these packages:
 
   pip install sphinx python-dateutil pyparsing sphinxcontrib-bibtex sphinx_rtd_theme numpy matplotlib hieroglyph
 
+.. note:: Previous pip install command usually does not work if you have installed *libopenblas*. You should remove it, install *liblapack0* and try again.
+  
 Always check if you are using Cygwin programs and libraries (placed in for example: *"/usr/bin"*, *"/usr/include"*, *"usr/lib"*, *"/usr/share"*)
 instead of programs/libraries from Windows (those are placed in *"/cygdrive/.."*) for example by this commands: ::
 
-  which gcc g++ gfortran make cmake ar ranlib python git doxygen
+  which gcc g++ gfortran make cmake ctest ar ranlib python git doxygen
   whereis zlib cygblas-0.dll
 
 Installation of packages can be done by running Cygwin installer (there is nothing like *sudo apt-get*). You can use Cygwin installer also to update
@@ -206,6 +258,7 @@ installed packages. Sometimes new version of installer is released and then you 
 but there is no need to completely reinstall your Cygwin installation.
 
 .. note:: Ask your administrator to install Cygwin packages, *"pip"* and other software into Cygwin environment.
+.. note:: You can have also your own Cygwin installation and then you do not need to ask anybody.
 
 
 Cygwin Troubleshooting
@@ -218,6 +271,17 @@ temporarily move folders with those libraries to some another place which is not
 change their names (then if you want to build from Windows you can return everything back or see :ref:`windows_users` 
 how to learn setup where to look for *zlib* and *Boost*). Also you should check environment variables.
 
+Example how to point to correct *Boost* and *zlib* libraries: ::
+
+  python setup -DBOOST_INCLUDEDIR=[install_prefix]/include -DBOOST_LIBRARYDIR=[install_prefix]/lib -DZLIB_ROOT=/usr/lib
+
+.. note:: Boost libraries which can be installed from Cygwin installation are not recognized by Dirac setup.
+
+You can try to compile your own (download from http://sourceforge.net/projects/boost/files/boost/): ::
+
+  bootstrap.sh gcc --prefix=[install_prefix]
+  b2 --with-system --with-filesystem --with-test --with-chrono --with-timer toolset=gcc install
+
 To more clearly see (in case when problems occur) what happens it is possible to run Dirac configuration directly by CMake when
 you create a build directory in Dirac top directory then move into it and run: ::
 
@@ -226,4 +290,4 @@ you create a build directory in Dirac top directory then move into it and run: :
 If there is need to remove Cygwin in an environment with multiple users then all users must delete their own home directories
 and then administrator can delete whole Cygwin installation/folder.
 
-Sometimes you can get errors like *os.fork()* is not available. In that case try to rebase Cygwin: http://cygwin.wikia.com/wiki/Rebaseall
+Sometimes you can get errors like *os.fork()* is not available. In that case try to rebase Cygwin: http://cygwin.wikia.com/wiki/Rebaseall.

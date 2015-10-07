@@ -32,6 +32,8 @@ program dirac_program
   use machine_parameters
   use dirac_cfg
 
+use iso_c_binding
+
 #ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
@@ -42,10 +44,17 @@ program dirac_program
 #endif
 #endif
 
+interface
+!miro: long strings can be printed out only by C function
+  subroutine print_info() bind(c)
+  end subroutine
+end interface
+
 #include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
+
 
   real(kind=8), allocatable :: memory(:)
 
@@ -111,6 +120,7 @@ program dirac_program
 
   call allocator_init()
   call allocator_set_max(maxsize)
+  call allocator_get_max_words(maxsize)
 
 #ifdef VAR_MPI
   if (parcal) then
@@ -139,12 +149,8 @@ program dirac_program
      call printlogo
      call printsubtitle
      call flush(lupri)
-
-     write(lupri, '(//a)') 'Binary information'
-     write(lupri, '(a/)')  '------------------'
-
-     call print_binary_info(lupri)
-
+     ! print out git_info & build_info by the executable
+     call print_info
      call flush(lupri)
 ! miro: do the selftest after printing dirac system info
 #ifndef NO_SELFTEST

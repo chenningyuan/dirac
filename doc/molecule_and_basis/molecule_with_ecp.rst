@@ -1,3 +1,4 @@
+:orphan:
 
 .. _ecp_input:
 
@@ -187,7 +188,9 @@ Note: coefficients in the spin-orbit block are sometimes defined differently by 
 
    U_{l}^{SO,DIRAC} = \frac{2}{2l+1}\Delta U_{l}^{SOREP}
 
-For example, factors (2/2l+1) are already multiplied in SO parameters in `[Stuttgart RECP webpage] <http://www.theochem.uni-stuttgart.de/pseudopotentials/clickpse.en.html>`_.
+For example, factors (2/2l+1) are already multiplied in SO parameters
+at the `Stuttgart RECP webpage <http://www.tc.uni-koeln.de/PP/index.en.html>`_.
 One can use it directly without the modification.
-There are two kinds of SO factors in `[RECPs of Christiansen and coworkers] <http://people.clarkson.edu/~pchristi/reps.html>`_. 
-SO factor in DIRAC is same as the ones defined for Columbus program.
+There are two kinds of SO factors in 
+the `RECPs of Christiansen and coworkers <http://people.clarkson.edu/~pchristi/reps.html>`_. 
+The SO factor in DIRAC is same as the ones defined for Columbus program.

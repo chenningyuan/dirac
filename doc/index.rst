@@ -1,5 +1,4 @@
 
-
 Setting up DIRAC
 ================
 
@@ -41,6 +40,7 @@ Updates and patches
  :doc:`ChangeLog <patches/CHANGELOG>` |
  :doc:`Known problems <patches/KNOWN-PROBLEMS>`
 
+.. _FirstSteps:
 
 First steps in DIRAC territory
 ==============================
@@ -128,6 +128,9 @@ Tutorials and walkthrus
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
 
+* **High-spin open-shell Coupled-Cluster:**
+  :doc:`The oxygen molecule <tutorials/highspin_cc/O2>`
+
 * **Case studies:**
   :doc:`W atom <tutorials/case_studies/W>` |
   :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
@@ -164,8 +167,7 @@ Tutorials and walkthrus
   :doc:`LUCITA <tutorials/dusty_attic/lucita>` |
   :doc:`MOLTRA <tutorials/dusty_attic/moltra>` |
   :doc:`MP2 <tutorials/dusty_attic/mp2>` |
-  :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
-  :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
+  :doc:`Open shells <tutorials/dusty_attic/open_shells>`
 
 
 Exercises
@@ -188,6 +190,7 @@ Developers
 * **Programming:**
   :doc:`Rules <programmers/rules>` |
   :doc:`How to add new tests <programmers/testing>` |
+  :doc:`How to add/move/remove sources <programmers/adding_moving_removing_sources>` |
   `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
   :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
