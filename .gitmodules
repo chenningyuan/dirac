@@ -1,9 +1,6 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
 	url = git://repo.ctcc.no/gen1int.git
-[submodule "external/stieltjes"]
-	path = external/stieltjes
-	url = elke@cluster-pci.urz.uni-heidelberg.de:/home/elke/pub/stieltjes
 [submodule "external/unit-tests"]
 	path = external/unit-tests
 	url = https://gitlab.com/dirac/unit-tests.git
@@ -11,3 +8,6 @@
 	path = external/pcmsolver
 	url = https://github.com/PCMSolver/pcmsolver.git
 	branch = release
+[submodule "external/stieltjes"]
+	path = external/stieltjes
+	url = https://gitlab.com/stieltjes/stieltjes.git
