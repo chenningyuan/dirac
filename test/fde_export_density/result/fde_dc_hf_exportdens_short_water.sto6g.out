@@ -1,9 +1,25 @@
-DIRAC pam run in /Users/gomes/devel/git/fde_tests_embed/test/fde_export_density
-DIRAC serial starts by allocating 80000000 words (610 MB) of memory
-             out of the allowed maximum of 160000000 words (1220 MB)
+DIRAC pam run in /home/gomes/devel/gitlab/gitlab.org/dirac/impi-4.1.0.024_intel13.0.1_lp64_fde_static/test/fde_export_density
+  ** interface to 32-bit integer MPI enabled **
 
-Note: maximum allocatable memory for serial run can be set by pam --aw
-
+DIRAC master    (phlam-s-sakura.univ-lille1.fr) starts by allocating             80000000 words (           610 MB) of memory
+DIRAC node    1 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    2 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    3 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    4 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    5 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    6 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC master    (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
+ 
+Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
+ 
+DIRAC node    1 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
+DIRAC node    7 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    2 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
+DIRAC node    3 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
+DIRAC node    4 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
+DIRAC node    5 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
+DIRAC node    6 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
+DIRAC node    7 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -82,8 +98,8 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    Written by:                                                              *
  *                                                                             *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
- *    Radovan Bast             Universite P. Sabatier, Toulouse  France        *
- *    Trond Saue               Universite P. Sabatier, Toulouse  France        *
+ *    Radovan Bast             KTH/PDC Stockholm                 Sweden        *
+ *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           VU University Amsterdam           Netherlands   *
  *                                                                             *
  *    with contributions from:                                                 *
@@ -94,31 +110,33 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Timo Fleig               Universite P. Sabatier, Toulouse  France        *
- *    Olav Fossgaard           University of Tromsoe             Norway        *
- *    Andre S. P. Gomes        CNRS/Universite Lille 1           France        *
+ *    Elke Fasshauer           UiT  The  Artic  University  of   Norway        *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT  The  Arctic  University  of  Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Trygve Helgaker          University of Oslo                Norway        *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
- *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany       *
- *    Stefan Knecht            University of Southern Denmark    Denmark       *
- *    Stanislav Komorovsky     University of Tromsoe             Norway        *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     UiT  The  Arctic  University  of  Norway        *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
- *    Kenneth Ruud             University of Tromsoe             Norway        *
+ *    Roberto Di Remigio       UiT  The  Arctic  University  of  Norway        *
+ *    Kenneth Ruud             UiT  The  Arctic  University  of  Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
- *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany       *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
- *    Andreas J. Thorvaldsen   University of Tromsoe             Norway        *
+ *    Andreas J. Thorvaldsen   UiT  The  Arctic  University  of  Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
  *    Joost van Stralen        VU University Amsterdam           Netherlands   *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
@@ -140,17 +158,17 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC12 (2012),                                                  *
- *    written by H. J. Aa. Jensen, R. Bast, T. Saue, and L. Visscher,          *
+ *    Release DIRAC14 (2014),                                                  *
+ *    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *
  *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,            *
- *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, Y. S. Lee, J. Henriksson,   *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
- *    C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak, J. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, K. Ruud, P. Salek,          *
- *    B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen,           *
- *    J. van Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto      *
- *    (see http://www.diracprogram.org).                                       *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, Y. S. Lee,    *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
+ *    O. Kullie, C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak,        *
+ *    J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,    *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,          *
+ *    and S. Yamamoto (see http://www.diracprogram.org).                       *
  *                                                                             *
  *******************************************************************************
 
@@ -158,36 +176,54 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
 
- Who compiled             | gomes@fpcmtaspg.univ-lille1.fr
- System                   | Darwin-10.8.0
+ Who compiled             | gomes
+ Host                     | phlam-s-sakura.univ-lille1.fr
+ System name              | Linux
+ System                   | Linux-2.6.32-504.16.2.el6.x86_64
+ CMake version            | 2.8.12.1
  CMake generator          | Unix Makefiles
- Processor                | i386
+ Python version           | 2.6.6
+ Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /opt/gnu/gcc-4.6.2/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.6.2 20111019 (prerelease)
- Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
-                          | _MFDS -fno-range-check -O3 -funroll-all-loops -w
- C compiler               | /opt/gnu/gcc-4.6.2/bin/gcc
- C compiler version       | i686-apple-darwin10-gcc-4.2.1 (GCC) 4.2.1 (Apple I
-                          | nc. build 5666) (dot 3)
- C flags                  | -g -O2 -Wno-unused
- C++ compiler             | /opt/gnu/gcc-4.6.2/bin/g++
- C++ compiler version     | i686-apple-darwin10-g++-4.2.1 (GCC) 4.2.1 (Apple I
-                          | nc. build 5666) (dot 3)
- C++ flags                | -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -W
-                          | overloaded-virtual -Wwrite-strings -Wno-unused -Of
-                          | ast -march=native -DNDEBUG -Wno-unused
- Explicit libs            | -framework vecLib
+ MPI                      | ON
+ Fortran compiler         | /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiif
+                          | ort
+ Fortran compiler version | Intel 13.0
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -mkl
+                          | =parallel  -O3 -ip
+ C compiler               | /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiic
+                          | c
+ C compiler version       | Intel 13.0
+ C flags                  | -g -wd981 -wd279 -wd383 -wd1572 -wd177 -mkl=parall
+                          | el -O2
+ C++ compiler             | /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiic
+                          | pc
+ C++ compiler version     | Intel 13.0
+ C++ flags                | -Wno-unknown-pragmas -debug -O3 -DNDEBUG
+ Definitions              | SYS_LINUX;HAVE_IEEE_ISNAN;HAVE_MKL_BLAS;HAVE_MKL_L
+                          | APACK;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;HAS_PCMSOLV
+                          | ER;MOD_XML;MOD_OPENRSP;MOD_OOF;MOD_ESR;MOD_KRCC;MO
+                          | D_LAO_REARRANGED;MOD_CAP;MOD_SRDFT;MOD_AOOSOC;MOD_
+                          | MCSCF_spinfree;MOD_UNRELEASED;MOD_INTEREST;MOD_QCO
+                          | RR;MOD_ERI;MOD_DNF;PRG_DIRAC;INSTALL_WRKMEM=640000
+                          | 00
+ BLAS                     | none
+ LAPACK                   | none
+ Libraries                | pcm;getkw;/usr/lib64/libz.so;xcfun;-mkl=parallel
+ Explicit libs            | none
  Static linking           | OFF
- Last Git revision        | 81bdd29faf6fbc48a029b2760030f41242755a5c
- Configuration time       | 2013-04-19 15:43:41.434826
-
+ Git branch               | fde-static-energy
+ Last Git revision        | b2af3db
+ Last commit author       | Andre Gomes 
+ Last commit date         | Thu Oct 1 16:39:04 2015 +0200
+ Configuration time       | 2015-10-08 15:29:45.810954 UTC
 
 Execution time and host
 -----------------------
 
  
+     Date and time (Linux)  : Thu Oct  8 17:36:57 2015
+     Host name              : phlam-s-sakura.univ-lille1.fr           
 
 
 Contents of the input file
@@ -260,6 +296,7 @@ FINISH
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
  * Running in four-component mode
+ * Parallel run with 7 slaves.
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -366,9 +403,6 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  QM-QM nuclear repulsion energy :      8.980370229500
-
-
 
   Atoms and basis sets
   --------------------
@@ -429,7 +463,7 @@ Point group: C1
   -------------------------------------------
 
     3
-
+ 
 O      0.0000000000   0.0000000000  -0.2619247262
 H      0.0000000000   0.7716276844   0.3426163129
 H      0.0000000000  -0.7716276844   0.3426163129
@@ -542,17 +576,19 @@ H      0.0000000000  -0.7716276844   0.3426163129
  * Default RKB projection:
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+ debug, size:        8884
+ debug, static vemb: -0.209228320271754     
   
 ===========================================================================
   
   Frozen Density Embedding (FDE) Calculation setup
-
+ 
  * Print level                  :     0
  * FDE Potential read from file : vemb.grid                                                   
-
+ 
    Enviroment effects included via the fixed potential method described in:
    A.S.P. Gomes, C. R. Jacob and L. Visscher, PCCP 10 (2008) 5353-5362.
-
+ 
  * FDE Gridfile with updated density written to:GRIDOUT                                                     
  Outputted density will be taken from: DHF
 ===========================================================================
@@ -563,7 +599,10 @@ H      0.0000000000  -0.7716276844   0.3426163129
     ************************** Wave function module **************************
     **************************************************************************
 
- Jobs in this run (in execution order):
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
  * Hartree-Fock calculation
 
  * Initial Automatic occupation based on:
@@ -571,14 +610,16 @@ H      0.0000000000  -0.7716276844   0.3426163129
    Charge of molecule    =   0
    i.e. no. of electrons =  10
 ===========================================================================
- SCFINP: Set-up for Hartree-Fock calculation:
+ *SCF: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with    10 electrons in    5 orbitals.
  * Bare nucleus screening correction used for start guess
  * General print level   :   0
+
  ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
+
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
    Desired convergence:1.000D-07
@@ -606,15 +647,14 @@ H      0.0000000000  -0.7716276844   0.3426163129
    ***************************** Property module *****************************
    ***************************************************************************
 
- * Print level:  0
- * Input label:**PROPE
- * Properties calculated for the following wave functions: 
+ * Print level:   0
+ * Input label: **PROPE
+ * Properties calculated for the following wave functions:
      1: DHF 
  These initial settings of center and origins might be changed later:
  * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
  * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
  * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
- * do NOT perform the picture change transformation of the four-component property operators
 ===========================================================================
    Magnetic properties:
 ===========================================================================
@@ -650,14 +690,15 @@ H      0.0000000000  -0.7716276844   0.3426163129
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
-   S   A     * Deleted:          6(Proj:          6, Lindep:          0)
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.36E+00
+   S   A     * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.18E-04
 
 
                                 Output from MODHAM
                                 ------------------
 
-* Applied strict kinetic balance !
+ * Applied strict kinetic balance !
+ SLSORT branch 1...
 
 
       **********************************************************************
@@ -667,7 +708,7 @@ H      0.0000000000  -0.7716276844   0.3426163129
 No. of positive energy orbitals (NESH):     7
 No. of negative energy orbitals (NPSH):     7
 Total no. of orbitals           (NORB):    14
- >>> Time used in PAMSET is   0.45 seconds
+ >>> Time used in PAMSET is   0.18 seconds
 
 
    ****************************************************************************
@@ -675,120 +716,180 @@ Total no. of orbitals           (NORB):    14
    ****************************************************************************
 
 
-*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+*** INFO *** No trial vectors found.
+ Using bare nucleus approximation for initial trial vectors.
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########                           
+########## START ITERATION NO.   1 ##########   Thu Oct  8 17:36:58 2015
 
 
 => Calculating sum of orbital energies
-It.    1    -32.44183980237      0.00D+00  0.00D+00  0.00D+00               0.01363403s   Scr. nuclei              
+It.    1    -32.44183980236      0.00D+00  0.00D+00  0.00D+00               0.00899900s   Scr. nuclei    Thu Oct  8
 
-########## START ITERATION NO.   2 ##########                           
+########## START ITERATION NO.   2 ##########   Thu Oct  8 17:36:58 2015
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01212299s
-SOfock:SL  1.00D-12    0.00%   50.69%    0.00%    0.21%   0.09106398s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.25234401s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
 
-########## END ITERATION NO.   2 ##########                           
+  QM-QM nuclear repulsion energy :      8.980370229500
 
-It.    2    -75.66673191311      4.32D+01  4.61D+00  4.26D-01               0.25234401s   LL SL                    
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.03125000s
+SOfock:SL  1.00D-12    0.00%   50.66%    0.00%    0.24%   0.01562500s
+ Reading DFCOEF
+ Calculating the density and its derivatives.
+ debug: number of points         8884
+ w:   1.306454732014609E-002
+ n:   1.180108754416106E-004
+ v:   0.213107347085289     
+ embpot energy:   3.087127526746693E-003
+>>> Total wall time: 1.09375000s
+>>> Total CPU time : 1.08483500s
 
-########## START ITERATION NO.   3 ##########                           
+########## END ITERATION NO.   2 ##########   Thu Oct  8 17:36:58 2015
+
+It.    2    -75.66981904064      4.32D+01  4.61D+00  4.26D-01               1.08483500s   LL SL          Thu Oct  8
+
+########## START ITERATION NO.   3 ##########   Thu Oct  8 17:36:59 2015
 
     3 *** Differential density matrix. DCOVLP     = 0.9929
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01199001s
-SOfock:SL  1.00D-12    0.00%   50.91%    0.00%    0.21%   0.08839500s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.18493199s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   50.88%    0.00%    0.24%   0.01562500s
+ Reading DFCOEF
+ Calculating the density and its derivatives.
+ debug: number of points         8884
+ w:   1.306454732014609E-002
+ n:   1.951953541467401E-004
+ v:   0.213107347085289     
+ embpot energy:   5.032367132704582E-003
+>>> Total wall time: 1.01562500s
+>>> Total CPU time : 1.02884400s
 
-########## END ITERATION NO.   3 ##########                           
+########## END ITERATION NO.   3 ##########   Thu Oct  8 17:36:59 2015
 
-It.    3    -75.72658966933      5.99D-02 -3.26D-01  3.93D-02   DIIS   2    0.18493199s   LL SL                    
+It.    3    -75.73162203646      6.18D-02 -3.26D-01  3.93D-02   DIIS   2    1.02884400s   LL SL          Thu Oct  8
 
-########## START ITERATION NO.   4 ##########                           
+########## START ITERATION NO.   4 ##########   Thu Oct  8 17:37:00 2015
 
     4 *** Differential density matrix. DCOVLP     = 0.9995
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01217198s
-SOfock:SL  1.00D-12    0.00%   51.33%    0.00%    0.21%   0.08899206s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.18484700s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   51.29%    0.00%    0.24%   0.01562500s
+ Reading DFCOEF
+ Calculating the density and its derivatives.
+ debug: number of points         8884
+ w:   1.306454732014609E-002
+ n:   1.886727580485355E-004
+ v:   0.213107347085289     
+ embpot energy:   4.867146793312568E-003
+>>> Total wall time: 1.04687500s
+>>> Total CPU time : 1.02684300s
 
-########## END ITERATION NO.   4 ##########                           
+########## END ITERATION NO.   4 ##########   Thu Oct  8 17:37:00 2015
 
-It.    4    -75.72707552851      4.86D-04  2.66D-02  2.61D-03   DIIS   3    0.18484700s   LL SL                    
+It.    4    -75.73194267530      3.21D-04  2.66D-02  2.61D-03   DIIS   3    1.02684300s   LL SL          Thu Oct  8
 
-########## START ITERATION NO.   5 ##########                           
+########## START ITERATION NO.   5 ##########   Thu Oct  8 17:37:01 2015
 
     5 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01210105s
-SOfock:SL  1.00D-12    0.00%   51.83%    0.00%    0.21%   0.08872902s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.18551588s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   51.80%    0.00%    0.24%   0.01562500s
+ Reading DFCOEF
+ Calculating the density and its derivatives.
+ debug: number of points         8884
+ w:   1.306454732014609E-002
+ n:   1.887350180995872E-004
+ v:   0.213107347085289     
+ embpot energy:   4.868074489957791E-003
+>>> Total wall time: 1.01562500s
+>>> Total CPU time : 1.02584500s
 
-########## END ITERATION NO.   5 ##########                           
+########## END ITERATION NO.   5 ##########   Thu Oct  8 17:37:01 2015
 
-It.    5    -75.72707945845      3.93D-06 -4.04D-04  4.95D-04   DIIS   4    0.18551588s   LL SL                    
+It.    5    -75.73194753294      4.86D-06 -4.04D-04  4.95D-04   DIIS   4    1.02584500s   LL SL          Thu Oct  8
 
-########## START ITERATION NO.   6 ##########                           
+########## START ITERATION NO.   6 ##########   Thu Oct  8 17:37:02 2015
 
     6 *** Differential density matrix. DCOVLP     = 0.9999
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01209593s
-SOfock:SL  1.00D-12    0.00%   52.15%    0.00%    0.23%   0.08895195s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.18571997s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01562500s
+SOfock:SL  1.00D-12    0.00%   52.11%    0.00%    0.26%   0.01562500s
+ Reading DFCOEF
+ Calculating the density and its derivatives.
+ debug: number of points         8884
+ w:   1.306454732014609E-002
+ n:   1.887140383522957E-004
+ v:   0.213107347085289     
+ embpot energy:   4.867423092836982E-003
+>>> Total wall time: 1.04687500s
+>>> Total CPU time : 1.02584400s
 
-########## END ITERATION NO.   6 ##########                           
+########## END ITERATION NO.   6 ##########   Thu Oct  8 17:37:02 2015
 
-It.    6    -75.72707964865      1.90D-07 -8.74D-05  1.19D-04   DIIS   5    0.18571997s   LL SL                    
+It.    6    -75.73194707174     -4.61D-07 -8.74D-05  1.19D-04   DIIS   5    1.02584400s   LL SL          Thu Oct  8
 
-########## START ITERATION NO.   7 ##########                           
+########## START ITERATION NO.   7 ##########   Thu Oct  8 17:37:03 2015
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01225793s
-SOfock:SL  1.00D-12    0.00%   52.84%    0.00%    0.25%   0.09036303s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.18683696s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   52.80%    0.00%    0.28%   0.01562500s
+ Reading DFCOEF
+ Calculating the density and its derivatives.
+ debug: number of points         8884
+ w:   1.306454732014609E-002
+ n:   1.887088291634984E-004
+ v:   0.213107347085289     
+ embpot energy:   4.867266482653844E-003
+>>> Total wall time: 1.01562500s
+>>> Total CPU time : 1.02484400s
 
-########## END ITERATION NO.   7 ##########                           
+########## END ITERATION NO.   7 ##########   Thu Oct  8 17:37:03 2015
 
-It.    7    -75.72707965866      1.00D-08  2.28D-05  1.84D-06   DIIS   6    0.18683696s   LL SL                    
+It.    7    -75.73194692514     -1.47D-07  2.28D-05  1.84D-06   DIIS   6    1.02484400s   LL SL          Thu Oct  8
 
-########## START ITERATION NO.   8 ##########                           
+########## START ITERATION NO.   8 ##########   Thu Oct  8 17:37:04 2015
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01212597s
-SOfock:SL  1.00D-12    0.00%   55.76%    0.00%    0.76%   0.08853209s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.18547595s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   55.71%    0.00%    0.78%   0.01562500s
+ Reading DFCOEF
+ Calculating the density and its derivatives.
+ debug: number of points         8884
+ w:   1.306454732014609E-002
+ n:   1.887088344903176E-004
+ v:   0.213107347085289     
+ embpot energy:   4.867266694549116E-003
+>>> Total wall time: 1.03125000s
+>>> Total CPU time : 1.02584400s
 
-########## END ITERATION NO.   8 ##########                           
+########## END ITERATION NO.   8 ##########   Thu Oct  8 17:37:04 2015
 
-It.    8    -75.72707965866      3.69D-12 -4.39D-07  9.08D-07   DIIS   7    0.18547595s   LL SL                    
+It.    8    -75.73194692536      2.15D-10 -4.39D-07  9.08D-07   DIIS   7    1.02584400s   LL SL          Thu Oct  8
 
-########## START ITERATION NO.   9 ##########                           
+########## START ITERATION NO.   9 ##########   Thu Oct  8 17:37:05 2015
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.01205802s
-SOfock:SL  1.00D-12    0.00%   56.31%    0.00%    1.23%   0.08866596s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.18513298s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    9.87%   0.00000000s
+SOfock:SL  1.00D-12    0.00%   56.27%    0.00%    1.25%   0.01562500s
+ Reading DFCOEF
+ Calculating the density and its derivatives.
+ debug: number of points         8884
+ w:   1.306454732014609E-002
+ n:   1.887088346447380E-004
+ v:   0.213107347085289     
+ embpot energy:   4.867266699139968E-003
+>>> Total wall time: 1.01562500s
+>>> Total CPU time : 1.02484400s
 
-########## END ITERATION NO.   9 ##########                           
+########## END ITERATION NO.   9 ##########   Thu Oct  8 17:37:05 2015
 
-It.    9    -75.72707965866     -4.32D-12 -4.52D-07  3.03D-08   DIIS   7    0.18513298s   LL SL                    
+It.    9    -75.73194692536      5.03D-12  4.52D-07  3.03D-08   DIIS   7    1.02484400s   LL SL          Thu Oct  8
 
 
                                    SCF - CYCLE
@@ -804,33 +905,37 @@ It.    9    -75.72707965866     -4.32D-12 -4.52D-07  3.03D-08   DIIS   7    0.18
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -32.44183980237      0.00D+00  0.00D+00  0.00D+00               0.01363403s   Scr. nuclei              
-It.    2    -75.66673191311      4.32D+01  4.61D+00  4.26D-01               0.25234401s   LL SL                    
-It.    3    -75.72658966933      5.99D-02 -3.26D-01  3.93D-02   DIIS   2    0.18493199s   LL SL                    
-It.    4    -75.72707552851      4.86D-04  2.66D-02  2.61D-03   DIIS   3    0.18484700s   LL SL                    
-It.    5    -75.72707945845      3.93D-06 -4.04D-04  4.95D-04   DIIS   4    0.18551588s   LL SL                    
-It.    6    -75.72707964865      1.90D-07 -8.74D-05  1.19D-04   DIIS   5    0.18571997s   LL SL                    
-It.    7    -75.72707965866      1.00D-08  2.28D-05  1.84D-06   DIIS   6    0.18683696s   LL SL                    
-It.    8    -75.72707965866      3.69D-12 -4.39D-07  9.08D-07   DIIS   7    0.18547595s   LL SL                    
-It.    9    -75.72707965866     -4.32D-12 -4.52D-07  3.03D-08   DIIS   7    0.18513298s   LL SL                    
+It.    1    -32.44183980236      0.00D+00  0.00D+00  0.00D+00               0.00899900s   Scr. nuclei    Thu Oct  8
+It.    2    -75.66981904064      4.32D+01  4.61D+00  4.26D-01               1.08483500s   LL SL          Thu Oct  8
+It.    3    -75.73162203646      6.18D-02 -3.26D-01  3.93D-02   DIIS   2    1.02884400s   LL SL          Thu Oct  8
+It.    4    -75.73194267530      3.21D-04  2.66D-02  2.61D-03   DIIS   3    1.02684300s   LL SL          Thu Oct  8
+It.    5    -75.73194753294      4.86D-06 -4.04D-04  4.95D-04   DIIS   4    1.02584500s   LL SL          Thu Oct  8
+It.    6    -75.73194707174     -4.61D-07 -8.74D-05  1.19D-04   DIIS   5    1.02584400s   LL SL          Thu Oct  8
+It.    7    -75.73194692514     -1.47D-07  2.28D-05  1.84D-06   DIIS   6    1.02484400s   LL SL          Thu Oct  8
+It.    8    -75.73194692536      2.15D-10 -4.39D-07  9.08D-07   DIIS   7    1.02584400s   LL SL          Thu Oct  8
+It.    9    -75.73194692536      5.03D-12  4.52D-07  3.03D-08   DIIS   7    1.02484400s   LL SL          Thu Oct  8
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    9 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00000000s
-      LL SL        :    0.00000000s
+      No 2-ints    :    0.01562500s
+      LL SL        :    1.03515625s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -84.707449916287430
+
+  FDE active subsystem contributions
+
+   Electronic energy                        :    -84.712317182991825
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      8.980370229500169
    SS Coulombic correction                  :      0.000000028129738
 
    Sum of all contributions to the energy
-   Total energy (active subsystem)          :    -75.727079658657516
+   Total energy                             :    -75.731946925361910
+  FDE interaction energy contributions not available for static potential
 
 
                                    Eigenvalues
@@ -839,9 +944,9 @@ It.    9    -75.72707965866     -4.32D-12 -4.52D-07  3.03D-08   DIIS   7    0.18
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--20.52426137426813  ( 2)    -1.26567104793797  ( 2)    -0.60561177052497  ( 2)    -0.45587852902071  ( 2)    -0.39423379117092  ( 2)
+-20.52426137425648  ( 2)    -1.26567104795244  ( 2)    -0.60561177053499  ( 2)    -0.45587852902259  ( 2)    -0.39423379113731  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.58055972065704  ( 2)     0.70711842714389  ( 2)
+  0.58055972064806  ( 2)     0.70711842713412  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.58055972 au (symmetry E1 )
@@ -895,9 +1000,9 @@ It.    9    -75.72707965866     -4.32D-12 -4.52D-07  3.03D-08   DIIS   7    0.18
 
                                                    s0 t0
 ----------------------------------------------------------------------------
-    Dipole length: X :     0.39322507D-12 a.u.      F   F
-    Dipole length: Y :     0.35274697D-09 a.u.      F   F
-    Dipole length: Z :     3.356199936878 a.u.      F   F
+    Dipole length: X :     0.39301428E-12 a.u.      F   F
+    Dipole length: Y :     0.35266900E-09 a.u.      F   F
+    Dipole length: Z :     3.356199936897 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -919,13 +1024,13 @@ z         3.35619994 a.u.         -2.66482600 a.u.          0.69137394 a.u.
  1 a.u =   2.54177000 Debye
 
 
-        *****************************************************************
-        ****************** Output FDE data to XML file ******************
-        *****************************************************************
+          *************************************************************
+          ****************** Output FDE data to file ******************
+          *************************************************************
 
  Preparing FDE data for export
  Reading DFCOEF
- Generating the Hartree potential over the grid
+ Generating the Electrostatic potential over the grid
  Generating the nuclear potential over the grid
  Reading DFCOEF
  Calculating the density and its derivatives.
@@ -933,12 +1038,13 @@ z         3.35619994 a.u.         -2.66482600 a.u.          0.69137394 a.u.
   
  Exported quantities (over         8884 grid points) integrate to:
  - electron density    :         0.014790 electrons
- - Hartree      energy :         0.019112 a.u.
+ - Hartree      energy :         0.019938 a.u.
  - n.-el. attr. energy :        -0.039050 a.u.
- writing xml file
+ done writing xml file
  closing xml file
  Deleting children
  Deleting documents
+  FDE interaction energy contributions not available for static potential
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -946,31 +1052,40 @@ z         3.35619994 a.u.         -2.66482600 a.u.          0.69137394 a.u.
 
 
  
+     Date and time (Linux)  : Thu Oct  8 17:37:09 2015
+     Host name              : phlam-s-sakura.univ-lille1.fr           
 
->>>> Node 0, utime: 6, stime: 0, minflt: 13427, majflt: 0, nvcsw: 8, nivcsw: 434, maxrss: 46133248
->>>> Total WALL time used in DIRAC: 7s
+>>>> Node 0, utime: 11, stime: 0, minflt: 21499, majflt: 0, nvcsw: 138, nivcsw: 29, maxrss: 133220
+>>>> Total WALL time used in DIRAC: 12s
+  
+  
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        90.78
+  Mean allocation size (Mb) :       158.30
   
   Largest          10  allocations
   
-      610.35 Mb at subroutine unknown                                    for WORK in PAMPRP_1                          
-      610.35 Mb at subroutine unknown                                    for WORK in PSIDHF                            
-      610.35 Mb at subroutine unknown                                    for WORK in PAMSET                            
-      610.35 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
-        7.63 Mb at subroutine unknown                                    for WORK in READIN                            
-        0.76 Mb at subroutine unknown                                    for PAMINP WORK array                         
-        0.27 Mb at subroutine unknown                                    for unnamed variable                          
-        0.11 Mb at subroutine unknown                                    for buf in butobs                             
-        0.11 Mb at subroutine unknown                                    for unnamed variable                          
-        0.07 Mb at subroutine unknown                                    for unnamed variable                          
+      610.35 Mb at subroutine electrostatic_potential_mp_get_esp_+0x1f2  for temporary work array in electrostatic pote
+      610.35 Mb at subroutine pamprp_+0x316                              for WORK in PAMPRP_1                          
+      610.35 Mb at subroutine psiscf_+0xb0                               for WORK in PSISCF                            
+      610.35 Mb at subroutine pamset_+0x1b9e                             for WORK in PAMSET - 2                        
+      610.35 Mb at subroutine gmotra_+0x6424                             for WORK in GMOTRA                            
+      610.35 Mb at subroutine pamset_+0xab                               for WORK in PAMSET - 1                        
+      610.35 Mb at subroutine MAIN__+0x573                               for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine paminp_+0xa3                               for PAMINP WORK array                         
+        0.27 Mb at subroutine numoper_integrals_mp_numoper_oneelop_setma for unnamed variable                          
+        0.11 Mb at subroutine butobs_no_work_+0x94                       for buf in butobs                             
   
-  Peak memory usage    (Mb) :       611.00
-       reached at subroutine : unknown                                   
-              for variable   : unnamed variable                          
+  Peak memory usage    (Mb) :      1221.00
+       reached at subroutine : electrostatic_potential_mp_get_esp_+0x1f2 
+              for variable   : temporary work array in electrostatic pote
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+  
+  
+  
+  
+  
