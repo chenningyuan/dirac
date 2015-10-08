@@ -10,6 +10,7 @@ module fde_evaluators_dirac
    use fde_nadd_derv
    use fde_xcfun_interface
    use fde_max_block_length
+   use fde_mpi
 
 ! dirac-specific modules
    use numoper_integrals
@@ -558,14 +559,14 @@ module fde_evaluators_dirac
          logical, intent(in), optional :: myprint
          real(8), intent(in)  :: fde_active_energy 
          logical              :: printlocal
-         integer              :: derv_length, max_fun_derv, bllen, i
+         logical              :: parallel_fde 
+         integer              :: derv_length, max_fun_derv, bllen, i, order
          integer              :: logunit
          real(8)              :: w(1), energy, interaction
-         real(8)              :: df_interaction
-         real(8)              :: el_interaction
-         real(8)              :: el_interaction_a
+         real(8)              :: non_additive
+         real(8)              :: electrostatic 
+         real(8)              :: el_coulomb_f
          real(8)              :: el_nuclearAtt_a 
-         real(8)              :: el_nuclearAtt_f 
          real(8)              :: n_0_a(1), gnn_0_a(1)
          real(8)              :: n_0_f(1), gnn_0_f(1)
          real(8)              :: n_0_t(1), gnn_0_t(1)
@@ -593,14 +594,18 @@ module fde_evaluators_dirac
          threshold    = 1.0e-28
          max_fun_derv = 1
          bllen        = 1 
+         order        = 1
+!        parallel_fde = (fde_mpi_get_nr_proc() > 1) 
+         parallel_fde = .false.
          derv_length  = nr_nonzero_derv
          internuclear = fde_intersub_nucrep
 
-         if (nr_boson_irreps > 1) then
-            write (logunit,'(2X,A)') 'FDE interaction energy contributions not available'
-            write (logunit,'(3X,A)') '    (only C(1) symmetry currently supported)'
+         if (itmp%im_vemb) then 
+            write (logunit,'(2X,A)') 'FDE interaction energy contributions not available for static potential'
             return
-         else if (.not.itmp%im_frozen) then 
+         endif
+
+         if (.not.itmp%im_frozen) then 
             write (logunit,'(2X,A)') 'FDE interaction energy contributions not available'
             write (logunit,'(3X,A)') '    (frozen density not available)'
             return
@@ -610,35 +615,23 @@ module fde_evaluators_dirac
          allocate(derv_frozen(max_block_length, 0:derv_length))
          allocate(derv_total(max_block_length,  0:derv_length))
 
-! we don't need the complete electrostatic potential for the active system, when we import the
-! one for the frozen system
-!
-!        call fde_calculate_elpot(level,fde_grid_im,gf_active,myprint=printlocal)
+! aspg: todo for static potential
+! problem here is that if using a static potential we don't go over the
+! integrator and when broadcasting the functionals there won't be a process
+! listening... it's
+!         call fde_set_nadd_functionals(order,parallel_fde)
 
          call fde_dirac_get_density_from_dfcoef(level,fde_grid_im,gf_active)
          call fde_calculate_nucpot(level,fde_grid_im,gf_active,myprint=printlocal)
 
-         el_interaction = 0.0d0
-         el_interaction_a = 0.0d0
-         el_interaction_f = 0.0d0
-
+         el_coulomb_f = 0.0d0
          el_nuclearAtt_a = 0.0d0
-         el_nuclearAtt_f = 0.0d0
-
-         df_interaction = 0.0d0
-         interaction = 0.0d0
+         non_additive = 0.0d0
 
          derv_active = 0.0d0 
          derv_frozen = 0.0d0 
          derv_total  = 0.0d0 
 
-!
-! debug: read the active subsystem density obtained from adf
-!
-
-!
-! debug: read the active subsystem density obtained from adf
-!
          do i = 1, fde_grid_im%npoints
 
             w(1) = 1.0
@@ -697,34 +690,30 @@ module fde_evaluators_dirac
                derv_total  = 0.0d0
             endif
            df_energy = derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000)
-           df_interaction   = df_interaction + fde_grid_im%w(i)*df_energy
 
-           el_interaction_f = el_interaction_f + fde_grid_im%w(i)*gf_frozen%elpot(i)*n_0_a(1)
-           el_nuclearAtt_a  = el_nuclearAtt_a  - fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
-
-           interaction    = el_interaction_f + el_nuclearAtt_a + df_interaction
+           non_additive     = non_additive    + fde_grid_im%w(i)*df_energy
+           el_coulomb_f     = el_coulomb_f    + fde_grid_im%w(i)*gf_frozen%elpot(i)*n_0_a(1)
+           el_nuclearAtt_a  = el_nuclearAtt_a - fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
          end do
+         electrostatic = el_coulomb_f + el_nuclearAtt_a + internuclear 
+         interaction   = electrostatic + non_additive
 
          WRITE(logunit,'(A)') ''
          write(logunit,'(2X,A)') 'FDE frozen subsystem contributions'
-         write(logunit,'(/3X,A,F22.15)') 'Total energy                            : ',fde_frozen_energy
+         write(logunit,'(/3X,A,F22.15)') 'Total energy                             : ',fde_frozen_energy
 
          write (logunit,'(/,2X,A,/)')    'FDE interaction energy contributions'
-         write (logunit,'(4X,A,F22.15)') '1. Non-additive  contributions          : ',df_interaction
-         write (logunit,'(4X,A)')        '2. Electrostatic contributions'
-         write (logunit,'(4X,A,F22.15)') '   \int dr [v^B_nuc(r)+v^B_H(r)]rho_A(r): ',el_interaction_f
-         write (logunit,'(4X,A,F22.15)') '              \int dr v^A_nuc(r)rho_B(r): ',el_nuclearAtt_a
+         write (logunit,'(3X,A,F22.15)') '1. Non-additive  contributions           : ',non_additive
+         write (logunit,'(/3X,A)')       '2. Electrostatic contributions'
+         write (logunit,'(4X,A,F22.15)') ' a.\int dr [v^B_nuc(r)+v^B_H(r)]rho_A(r): ',el_coulomb_f
+         write (logunit,'(4X,A,F22.15)') ' b.           \int dr v^A_nuc(r)rho_B(r): ',el_nuclearAtt_a
          if (internuclear.gt.0.0d0) then
-            write (logunit,'(4X,A,F22.15)') '3. Intersubsystem nuclear repulsion     : ',internuclear
+            write (logunit,'(4X,A,F22.15)') ' c. Intersubsystem nuclear repulsion    : ',internuclear
          else
-            write (logunit,'(3X,A)') ' 3. Intersubsystem nuclear repulsion     :      n/a'
+            write (logunit,'(4X,A)')     ' c. Intersubsystem nuclear repulsion    :   not given'
          endif
-         if (internuclear.gt.0.0d0) then
-            interaction = interaction + internuclear
-            write (logunit,'(/3X,A,F22.15)') 'Interaction energy (1+2+3)               : ',interaction
-         else
-            write (logunit,'(/3X,A,F22.15)') 'Interaction energy (1+2)                 : ',interaction
-         endif
+         write (logunit,'(4X,A,F22.15)') '                                  Total : ',electrostatic
+         write (logunit,'(/3X,A,F22.15)') 'Interaction energy (1+2)                 : ',interaction
 
          if ((internuclear.ne.0.0d0).and.(fde_frozen_energy.ne.0.0d0)) then
             total_system_energy = interaction + fde_frozen_energy + fde_active_energy

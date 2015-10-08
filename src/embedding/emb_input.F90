@@ -97,13 +97,14 @@ module fde_input
          etmp%ex_gn       = .true.
       endif
 
+      call fde_initialize_nadd_functionals         
+
       if (itmp%im_vemb) then
          call fde_import_static      
       endif
 
       if (itmp%im_frozen) then
          call fde_import_frozen
-         call fde_initialize_nadd_functionals         
       endif
 
       if (etmp%do_grid_out) then

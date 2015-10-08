@@ -416,12 +416,10 @@ contains
       end if
 
 ! functionals are set
-      call xcfun_set_functional(fde_xcf,       max_response_order_mo, parallel_fde)
-      call xcfun_set_functional(fde_xcf_alda,  max_response_order_mo, parallel_fde)
-!     call xcfun_set_functional(fde_xcf_xalda, max_response_order_mo, parallel_fde)
-      call xcfun_set_functional(fde_kef,       max_response_order_mo, parallel_fde)
-      call xcfun_set_functional(fde_kef_alda,  max_response_order_mo, parallel_fde)
-!     call xcfun_set_functional(fde_kef_xalda, max_response_order_mo, parallel_fde)
+      call fde_set_nadd_functionals(max_response_order_mo,parallel_fde) 
+
+!     print *,'info, at process',fde_get_my_rank(),'fde_xcf is gga?',fun_is_gga(fde_xcf)
+!     print *,'info, at process',fde_get_my_rank(),'fde_kef is gga?',fun_is_gga(fde_kef)
 
       use_gga_qr = (fun_is_gga(fde_xcf)) .or. (fun_is_gga(fde_kef))
       use_gga_qi = (fun_is_gga(fde_xcf)) .or. (fun_is_gga(fde_kef))
@@ -1583,9 +1581,9 @@ contains
     real(8), intent(in)    :: derv_total(max_block_length, 0:n)
 !   ----------------------------------------------------------------------------
     logical                :: calculate_qr, calculate_qi
-    logical, save          :: have_triplet_contrib(100) = .false.
-    logical, save          :: have_triplet = .false.
-    logical, save          :: print_triplet_contrib = .true.
+    logical, save          :: have_sdft_contrib(100) = .false.
+    logical, save          :: have_sdft = .false.
+    logical, save          :: print_sdft_contrib = .true.
 
 
     real(8)                ::  r_b,     s_b(3)
@@ -1620,7 +1618,7 @@ contains
         calculate_qi = .false.
       end if
 
-      if (calculate_qi) have_triplet_contrib(im) = .true.
+      if (calculate_qi) have_sdft_contrib(im) = .true.
 
       im_off = mat_dim*mat_dim*nz*(im - 1)
 
@@ -1736,19 +1734,19 @@ contains
     end do
 
 ! now for some output
-    if (print_triplet_contrib) then
+    if (print_sdft_contrib) then
        do im = 1, nr_mat
-          if (have_triplet_contrib(im)) have_triplet = .true.
+          if (have_sdft_contrib(im)) have_sdft = .true.
        end do
  
        if (fde_mpi_is_master()) then
-          if (have_triplet) then
-             write(*,*) 'Triplet contributions to FDE kernel included'
+          if (have_sdft) then
+             write(*,*) 'SDFT contributions to FDE kernel included'
           else
-             write(*,*) 'Triplet contributions to FDE kernel neglected'
+             write(*,*) 'SDFT contributions to FDE kernel neglected'
           endif
        endif
-       print_triplet_contrib = .false.
+       print_sdft_contrib = .false.
     endif
 !
 
