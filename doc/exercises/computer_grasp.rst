@@ -39,7 +39,7 @@ You find more information about these models `at this URL <http://www.few.vu.nl/
 the electron charge to give the electron-nucleus interaction).
 
 We will start with calculations on a one-electron system for each of the four nuclear models.
-The corresponding downloadable Grasp input file for is :download:`grasp_1el_atom.inp <exercises/grasp_1el_atom.inp>`.
+The corresponding downloadable Grasp input file for is :download:`grasp_1el_atom.inp <grasp_1el_atom.inp>`.
 
 This is how you change the nucleus model:
 * point nucleus::
@@ -75,7 +75,7 @@ Atomic numerical calculations
 -----------------------------
 
 In order to get started on "real" atoms we calculate the average level structure of two possible ground state configurations of coinage-metals (Cu, Ag, Au, Rg), using GRASP.
-The input file for download is :download:`grasp_Cu.inp <exercises/grasp_Cu.inp>`.
+The input file for download is :download:`grasp_Cu.inp <grasp_Cu.inp>`.
 
 Run all atoms of the coinage-metal series::
 
@@ -178,7 +178,7 @@ then summing up these numbers. You can then plot the effective occupation number
 Speed of light and the non-relativistic limit
 ---------------------------------------------
 
-* Run an average-of-configuration SCF calculation on the gold atom; downloadable input  :download:`grasp_Au.inp <exercises/grasp_Au.inp>`.
+* Run an average-of-configuration SCF calculation on the gold atom; downloadable input  :download:`grasp_Au.inp <grasp_Au.inp>`.
 
 * GRASP allows you to vary the speed of light, *c*, between *Z* < *c* < :math:`\infty`::
 
@@ -215,7 +215,7 @@ so the radial density is
 
    n(r)=\left(\left\{R^L\right)^2+\left(R^S\right)^2\right\}r^2=\left(P^2+Q^2\right).
 
-The input file for download is :download:`grasp_Cu_aver.inp <exercises/grasp_Cu_aver.inp>`.
+The input file for download is :download:`grasp_Cu_aver.inp <grasp_Cu_aver.inp>`.
 
 The line ORBOUT specifies that the radial functions :math:`P` and :math:`Q` (and other information) is printed to file. This file will have unit number 11, as specified by the final number following the MCDF line.
 
@@ -309,10 +309,10 @@ Using a non-relativistic or relativistically optimized basis set for heavy atoms
 ---------------------------------------------------------------------------------
 
 * run the Thallium atom with a non-relativistic double-:math:`\zeta`  basis set 
-(download the input file :download:`grasp_Tl_dz_nonrel.inp <exercises/grasp_Tl_dz_nonrel.inp>`):
+  (download the input file :download:`grasp_Tl_dz_nonrel.inp <grasp_Tl_dz_nonrel.inp>`)
 
 * run the Thallium atom with a relativistic double-:math:`\zeta`  basis set:
-(download the input file :download:`grasp_Tl_dz_rel.inp <exercises/grasp_Tl_dz_rel.inp>`):
+  (download the input file :download:`grasp_Tl_dz_rel.inp <grasp_Tl_dz_rel.inp>`)
 
 **Questions**:
 
@@ -327,18 +327,18 @@ Basis set quality
 -----------------
 
 * run the Bi atom numerically (if not already done in `Radial densities for the d-/p block`_)
-(input file for download, :download:`grasp_Bi.inp <exercises/grasp_Bi.inp>`):
+  (input file for download, :download:`grasp_Bi.inp <grasp_Bi.inp>`):
 
 * repeat the calculation using Ken Dyall's
 
- i) double-:math:`\zeta` basis set
-(input file for download, :download:`grasp_Bi_dz.inp <exercises/grasp_Bi_dz.inp>`):
+  * double-:math:`\zeta` basis set
+    (input file for download, :download:`grasp_Bi_dz.inp <grasp_Bi_dz.inp>`)
 
- ii) triple-:math:`\zeta` basis set
-(input file for download, :download:`grasp_Bi_tz.inp <exercises/grasp_Bi_tz.inp>`):
+  * triple-:math:`\zeta` basis set
+    (input file for download, :download:`grasp_Bi_tz.inp <grasp_Bi_tz.inp>`)
 
- iii) quadruple-:math:`\zeta` basis set
-(input file for download, :download:`grasp_Bi_qz.inp <exercises/grasp_Bi_qz.inp>`):
+  * quadruple-:math:`\zeta` basis set
+    (input file for download, :download:`grasp_Bi_qz.inp <grasp_Bi_qz.inp>`)
 
 **Questions**:
 
@@ -352,10 +352,10 @@ Using *j*- or *l*-optimized basis sets ?
 ----------------------------------------
 
 * use a *j*-optimized basis set to calculate the spin-orbit spliiting of the ground state of element 113.
-(input file for download, :download:`grasp_113_j-dz.inp <exercises/grasp_113_j-dz.inp>`):
+  (input file for download, :download:`grasp_113_j-dz.inp <grasp_113_j-dz.inp>`)
 
 * use an *l*-optimized double-:math:`\zeta`  basis set to calculate the spin-orbit spliiting of the ground state of element 113.
-(input file for download, :download:`grasp_113_l-dz.inp <exercises/grasp_113_l-dz.inp>`):
+  (input file for download, :download:`grasp_113_l-dz.inp <grasp_113_l-dz.inp>`)
 
 **Questions**:
 
