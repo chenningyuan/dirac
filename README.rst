@@ -40,9 +40,3 @@ The CI workers build status badges
 
 .. image:: https://semaphoreci.com/api/v1/projects/b5752e42-3309-4871-a7ef-d96be17c439d/379656/badge.svg
     :target: https://semaphoreci.com/miro_ilias/my-dirac
-
-
-Deployment summary
-~~~~~~~~~~~~~~~~~~
-
-`Documentation deployments summary <http://dirac.umb.sk/doc/doc-deployments>`_
