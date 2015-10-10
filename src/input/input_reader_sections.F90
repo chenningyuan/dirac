@@ -55,13 +55,13 @@
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
 
-#ifdef HAS_PCMSOLVER           
+#ifdef HAS_PCMSOLVER
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
-        
+
         case ('*PCMSOL')
            call read_input_pcmsolver(word, kw_section)
-#endif           
+#endif
 
         case ('**RELAD')
            call read_input_reladc(word, kw_section)
@@ -1014,14 +1014,14 @@
 !     --------------------------------------------------------------------------
       integer                          :: i
       integer                          :: j
-      integer                          :: nsect 
+      integer                          :: nsect
       character(2)                     :: ifss(6)
       character(2)                     :: read_sect(6)
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
 
-!     forces results from unconverged iterative procedures to be taken as converged 
+!     forces results from unconverged iterative procedures to be taken as converged
       if (kw_matches(word, '.UNCONV')) then
          relcc_restart_unconverged = .true.
       end if
@@ -1034,7 +1034,7 @@
             read_sect(i) = '  '
          enddo
 
-         read(get_file_unit(), *) nsect 
+         read(get_file_unit(), *) nsect
          read(get_file_unit(), *) (read_sect(i), i = 1, nsect)
 
          ifss(1) = '00'
@@ -1044,11 +1044,11 @@
          ifss(5) = '02'
          ifss(6) = '20'
 
-         do i = 1, nsect 
+         do i = 1, nsect
             do j = 1, 6
                if (read_sect(i).eq.IFSS(j)) then
                   relcc_restart_skipsect(j) = .true.
-               endif 
+               endif
             enddo
          enddo
       end if
@@ -1719,7 +1719,7 @@
           call upcase(input_line)
 
 !         print *, 'ref input line is',input_line
- 
+
           islash = index(input_line,'/')
           ibar   = index(input_line,'|')
           if(islash <= 1)then
@@ -1741,7 +1741,7 @@
 
 !         alpha string
           read(input_line(1:ibar-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,1)
- 
+
           if(ios /= 0)then
             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
                   i,'/',nref_qcorr,'- the defining input line does not contain an alpha string',                &
@@ -1753,7 +1753,7 @@
 
 !         beta string
           read(input_line(ibar+1:islash-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,2)
- 
+
           if(ios /= 0)then
             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
                   i,'/',nref_qcorr,'- the defining input line does not contain a beta string',                  &
@@ -1776,12 +1776,12 @@
           end if
 
         end do
- 
+
         open(1234,file='refvec.luci',status='replace',form='unformatted',    &
         access='sequential',action="readwrite",position='rewind')
 
         write(1234) nref_qcorr, nash_qcorr(1:nfsym)
-        write(1234) nref_e_qcorr 
+        write(1234) nref_e_qcorr
         write(1234) reference_energy_qcorr(1:nref_e_qcorr)
 !       write # reference configurations
         do i = 1, nref_qcorr
@@ -1842,9 +1842,9 @@
 !         Split potentials and polarization charges in nuclear and electronic
          pcmmod_separate = .true.
       end if
-      
+
       if (kw_matches(word, '.DOSPF ')) then
-!        Perform elimination of spin-orbit dependent terms in the PCM operator 
+!        Perform elimination of spin-orbit dependent terms in the PCM operator
          pcmmod_dospf = .true.
       end if
 
@@ -1861,7 +1861,7 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
-   
+
    subroutine read_input_pcmsolver(word, kw_section)
 
       use pcmmod_cfg
@@ -1881,27 +1881,27 @@
       if (kw_matches(word, '.CAVTYP')) then
          call kw_read(word, pcmmod_cavity_type)
       end if
-      
+
       if (kw_matches(word, '.PATCHL')) then
          call kw_read(word, pcmmod_patch_level)
       end if
-      
+
       if (kw_matches(word, '.COARSI')) then
          call kw_read(word, pcmmod_coarsity)
       end if
-      
+
       if (kw_matches(word, '.AREATS')) then
          call kw_read(word, pcmmod_cavity_area)
       end if
-      
+
       if (kw_matches(word, '.MINDIS')) then
          call kw_read(word, pcmmod_min_distance)
       end if
-      
+
       if (kw_matches(word, '.DERORD')) then
          call kw_read(word, pcmmod_der_order)
       end if
-      
+
       if (kw_matches(word, '.NOSCAL')) then
               pcmmod_scaling = .false.
       end if
@@ -1909,7 +1909,7 @@
       if (kw_matches(word, '.RADIIS')) then
          call kw_read(word, pcmmod_radii_set)
       end if
-      
+
       if (kw_matches(word, '.RESTAR')) then
          call kw_read(word, pcmmod_restart_name)
       end if
@@ -1917,11 +1917,11 @@
       if (kw_matches(word, '.MINRAD')) then
          call kw_read(word, pcmmod_min_radius)
       end if
-      
+
       if (kw_matches(word, '.SOLVER')) then
          call kw_read(word, pcmmod_solver_type)
       end if
-      
+
       if (kw_matches(word, '.SOLVNT')) then
          call kw_read(word, pcmmod_solvent)
       end if
@@ -1941,7 +1941,7 @@
       if (kw_matches(word, '.GINSID')) then
          call kw_read(word, pcmmod_inside_type)
       end if
-      
+
       if (kw_matches(word, '.GOUTSI')) then
          call kw_read(word, pcmmod_outside_type)
       end if
