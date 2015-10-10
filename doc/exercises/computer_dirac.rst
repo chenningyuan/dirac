@@ -15,7 +15,7 @@ DIRAC can handle two formats but for convenience we here focus on the standard *
 named for example :file:`molecule.xyz`.
 The run-command inside your cluster run script looks then as follows::
 
-  $ pam --inp=dirac.inp --mol=molecule.xyz
+  $ pam --noarch --inp=dirac.inp --mol=molecule.xyz
 
 where the DIRAC output is re-directed to the file :file:`dirac_molecule.out`. 
 Make sure that you rename the output file with a proper name
@@ -38,7 +38,7 @@ model, varying the actual speed of light as well as going to the non-relativisti
    the contender: Pb atom
 
 
-A general :file:`.xyz` file for an atom reads (replace here XX with Pb)::
+A general :file:`.xyz` file (see :ref:`molecule_using_xyz`) for an atom reads (replace here XX with Pb)::
 
   1
   XX atom
@@ -48,38 +48,12 @@ A general :file:`.xyz` file for an atom reads (replace here XX with Pb)::
 Atomic basis set calculations
 =============================
 
-In order to get started we calculate the ground state configuration and lowest excited states within the p :math:`^2` manifold ( :math:`^3` P, :math:`^1` D, :math:`^1` S) of the Pb 6p block atom, using DIRAC and a double-:math:`\zeta` basis set.
+In order to get started we calculate the ground state configuration and lowest excited states 
+within the p :math:`^2` manifold ( :math:`^3` P, :math:`^1` D, :math:`^1` S) of the Pb 6p block atom, 
+using DIRAC and a double-:math:`\zeta` basis set.
 
-::
-
-   **DIRAC
-   .TITLE
-    xx atom
-   .WAVE FUNCTION
-   **GENERAL
-   **INTEGRALS
-   *READIN
-   .UNCONTRACTED
-   **HAMILTONIAN
-   .DOSSSS
-   **WAVE FUNCTION
-   .SCF
-   .RESOLVE
-   *SCF
-   .CLOSED SHELL
-   42 38
-   .OPEN SHELL
-   1
-   2/0,6
-   .EVCCNV
-   1.0d-05
-   **MOLECULE
-   *BASIS
-   .DEFAULT
-    dyall.v2z
-   **END OF
-
-   &GOSCIP IPRNT=5 &END
+The corresponding DIRAC input file (for downloading :download:`Pb.dirac.inp <Pb.dirac.inp>`) is:
+.. literalinclude:: Pb.dirac.inp
 
 .. note:: We explicitly give the electronic occupation (.CLOSED SHELL / .OPEN SHELL) which will active the average-of-configuration SCF. DIRAC has an automatic occupation mode but one should always carefully check the output for correctness.
 
@@ -308,44 +282,11 @@ free notation) :math:`(\pi^*)^2` manifold: :math:`^3\Sigma^-_g`,  :math:`^1\Delt
 
 1. Draw a molecular orbital diagram for the valence part of the Se :math:`_2` molecule. Hint: the valence configuration of Se is p :math:`^4`.
 
-The molecular input file looks as follows::
+The xyz-molecular input file looks as follows (:download:`Se2.xyz  <Se2.xyz>`):
+.. literalinclude:: Se2.xyz
 
-  2
-  Se=Se
-  Se 0.0 0.0 0.0
-  Se 0.0 0.0 2.166
-
-The SCF input reads as
-
-::
-
-  **DIRAC
-  .TITLE
-   Se=Se
-  .WAVE FUNCTION
-  **GENERAL
-  **INTEGRALS
-  *READIN
-  .UNCONTRACTED
-  **HAMILTONIAN
-  **WAVE FUNCTION
-  .SCF
-  .RESOLVE
-  *SCF
-  .CLOSED SHELL
-  32 34
-  .OPEN SHELL
-  1
-  2/4,0
-  .EVCCNV
-  1.0d-05
-  **MOLECULE
-  *BASIS
-  .DEFAULT
-   dyall.v2z
-  **END OF
-
-  &GOSCIP IPRNT=5 &END
+The SCF input reads as (:download:`Se2.dirac.inp  <Se2.dirac.inp>`)
+.. literalinclude:: Se2.dirac.inp
 
 Repeat the calculation with the "X2C", "X2C+Gaunt" and "Gaunt molecular-mean-field" Hamiltonian.
 
@@ -363,133 +304,33 @@ In our final part of the computer exercises we will look at some property calcul
 NMR shieldings
 --------------
 
-The first part concerns the calculation of NMR shieldings at the DFT level using the recently implemented simple magnetic balance scheme and the use of London
+The first part concerns the calculation of NMR shieldings at the DFT level using the recently implemented 
+simple magnetic balance scheme and the use of London
 orbitals in comparison with RKB and URKB calculations.
 
-An illustrative tutorial including a brief introduction to the theory and a guideline for the exercise can be found on the DIRAC tutorial web page:
-http://wiki.chem.vu.nl/dirac/index.php/Calculation_of_NMR_shieldings_using_simple_magnetic_balance
+An illustrative tutorial including a brief introduction to the theory and a guideline for the exercise 
+can be found on the DIRAC tutorial web page, :ref:`NMRShieldSimpleMagBal`.
 
 Density at the nucleus and the effective density
 ------------------------------------------------
 
-.. note:: inputs are available online: http://wiki.chem.vu.nl/dirac/index.php/GRASP_and_DIRAC_inputs
-
 The second part illustrates the calculation of the density at the nucleus in comparison with the effective density
-(average density over the finite nucleus). We will look at the molecule HI.
+(average density over the finite nucleus). We will look at the molecule HI (:download:`HI.xyz <HI.xyz>`)
+.. literalinclude:: HI.xyz
 
-::
 
-  2
-  HI
-  H 0.0 0.0 1.60916
-  I 0.0 0.0 0.0
+The dirac input for the density at the nucleus then reads as (:download:`HI.dc.dirac.inp <HI.dc.dirac.inp>`)
+.. literalinclude:: HI.dc.dirac.inp
 
-The dirac input for the density at the nucleus then reads as
+Let's repeat this exercise with the X2C Hamiltonian, including AMFI corrections (:download:`HI.x2c.dirac.inp <HI.x2c.dirac.inp>`)
+.. literalinclude:: HI.x2c.dirac.inp
 
-::
-
-  **DIRAC
-  .TITLE
-   HI - densities at the nucleus
-  .WAVE FUNCTION
-  .PROPERTIES
-  **PROPERTIES
-  .DIPOLE
-  .RHONUC
-  .EFFDEN
-  *EXPECTATION VALUE
-  .ORBANA
-  **INTEGRALS
-  *READIN
-  .UNCONTRACTED
-  **HAMILTONIAN
-  **WAVE FUNCTION
-  .SCF
-  *SCF
-  .CLOSED SHELL
-  54
-  .EVCCNV
-  1.0d-06
-  **MOLECULE
-  *BASIS
-  .DEFAULT
-   dyall.v2z
-  .SPECIAL
-   H BASIS cc-pVDZ
-  **END OF
-
-Let's repeat the exercise with the X2C Hamiltonian (including AMFI corrections)
-
-::
-
-  **DIRAC
-  .TITLE
-   HI - densities at the nucleus
-  .WAVE FUNCTION
-  .PROPERTIES
-  **PROPERTIES
-  .DIPOLE
-  .RHONUC
-  .EFFDEN
-  *EXPECTATION VALUE
-  .ORBANA
-  **INTEGRALS
-  *READIN
-  .UNCONTRACTED
-  **HAMILTONIAN
-  .X2C
-  **WAVE FUNCTION
-  .SCF
-  *SCF
-  .CLOSED SHELL
-  54
-  .EVCCNV
-  1.0d-06
-  **MOLECULE
-  *BASIS
-  .DEFAULT
-   dyall.v2z
-  .SPECIAL
-   H BASIS cc-pVDZ
-  **END OF
-
-As last exercise in this course we will look at picture change errors when transforming from a 4-component to a
-2-component formalism. This illustrates the importance of transforming your property operator when you change the
+As the last exercise in this course we will look at picture change errors when transforming from a 4-component to a
+2-component formalism. This illustrates the importance of transforming the property operator when you change the
 "picture" you are working in! In DIRAC we have the option to **NOT** transform the property operators when doing an X2C
 calculation. The keyword is ".NOPCTR" under "**PROPERTIES**".
-
-::
-
-  **DIRAC
-  .TITLE
-   HI - densities at the nucleus
-  .WAVE FUNCTION
-  .PROPERTIES
-  **PROPERTIES
-  .DIPOLE
-  .RHONUC
-  .NOPCTR
-  *EXPECTATION VALUE
-  .ORBANA
-  **INTEGRALS
-  *READIN
-  .UNCONTRACTED
-  **HAMILTONIAN
-  .X2C
-  **WAVE FUNCTION
-  .SCF
-  *SCF
-  .CLOSED SHELL
-  54
-  .EVCCNV
-  1.0d-06
-  **MOLECULE
-  *BASIS
-  .DEFAULT
-   dyall.v2z
-  .SPECIAL
-   H BASIS cc-pVDZ
-  **END OF
+The input file is (to download, :download:`HI.x2c.nopctr.dirac.inp <HI.x2c.nopctr.dirac.inp>`):
+.. literalinclude:: HI.x2c.nopctr.dirac.inp
 
 **Questions**:
 
@@ -498,5 +339,4 @@ calculation. The keyword is ".NOPCTR" under "**PROPERTIES**".
 2. Picture-change errors: are they large for both, iodine and hydrogen?
 
 3. Picture-change errors: is there a difference in order of magnitude of the effects for the dipole moment compared with the densities, and if so why?
-
 
