@@ -65,11 +65,11 @@ fi
 python ./setup.py --int64 --fc=ifort --cc=icc --cxx=icpc  --cmake-options="-D BUILDNAME='sivvp-UMB_Intel_mkl_i8'  -D DART_TESTING_TIMEOUT=99999" $BUILD_SERIAL
 cd $BUILD_SERIAL
 #python binary_info.py
-ctest -D ExperimentalUpdate  --track Miro
-ctest -D ExperimentalConfigure    --track Miro
-ctest -j2 -D ExperimentalBuild    --track Miro
-ctest -j2 -D ExperimentalTest -R cosci_energy pcm   --track Miro 
-ctest -D ExperimentalSubmit    --track Miro
+ctest -D ExperimentalUpdate  
+ctest -D ExperimentalConfigure    
+ctest -j2 -D ExperimentalBuild  
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm 
+ctest -D ExperimentalSubmit  
 
 ##############################################################################
 #          serial,static DIRAC buildup with Intel+MKL

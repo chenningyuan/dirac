@@ -31,7 +31,7 @@ build:
         name: run ctest for configuration/buildup/test/submit
         code: |
           cd build_wercker-ci
-          ## ctest --track Miro -D ExperimentalUpdate
+          ## ctest -D ExperimentalUpdate
           ctest  -D ExperimentalConfigure
           ## we have only 30 minutes for the whole buildup !
           ctest -j 8  -D ExperimentalBuild

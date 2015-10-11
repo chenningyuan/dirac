@@ -12,7 +12,7 @@
 # **Note**
 # In the following command: 
 #
-# echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
+# echo "$(ctest -j 8  -D ExperimentalTest -L short)"
 #
 # the command "echo" makes possible to continue after one of Dirac tests fails
 # because otherwise server stops and do not submit to dashboard.
@@ -78,7 +78,6 @@ python ./setup.py --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --blas=off -
 cd build_semaphore-ci_i8
 ctest -D ExperimentalConfigure
 ctest -j $N_PROC -D ExperimentalBuild
-#echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
 echo "$(ctest -j $TEST_N_PROC -D ExperimentalTest -L short)"
 ctest -D ExperimentalSubmit 
 
