@@ -58,7 +58,7 @@ sudo pip install sphinx_rtd_theme
 sudo pip install hieroglyph
 
 # CDash project name 
-  CTEST_PROJECT_NAME="DIRACext"
+  export CTEST_PROJECT_NAME="DIRACext"
 # set for parallel buildup
   DIRAC_MPI_COMMAND="mpirun -np 2"
 # determine number of processors
@@ -79,7 +79,7 @@ cd build_semaphore-ci_i8
 ctest -D ExperimentalConfigure
 ctest -j $N_PROC -D ExperimentalBuild
 #echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j $TEST_N_PROC -D ExperimentalTest)"
+echo "$(ctest -j $TEST_N_PROC -D ExperimentalTest -L short)"
 ctest -D ExperimentalSubmit 
 
 # finally do the quick documentation buildup in the build_semaphore-ci_i8 directory
