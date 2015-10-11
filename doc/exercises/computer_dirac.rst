@@ -53,6 +53,7 @@ within the p :math:`^2` manifold ( :math:`^3` P, :math:`^1` D, :math:`^1` S) of 
 using DIRAC and a double-:math:`\zeta` basis set.
 
 The corresponding DIRAC input file (for downloading :download:`Pb.dirac.inp <Pb.dirac.inp>`) is:
+
 .. literalinclude:: Pb.dirac.inp
 
 .. note:: We explicitly give the electronic occupation (.CLOSED SHELL / .OPEN SHELL) which will active the average-of-configuration SCF. DIRAC has an automatic occupation mode but one should always carefully check the output for correctness.
@@ -283,9 +284,11 @@ free notation) :math:`(\pi^*)^2` manifold: :math:`^3\Sigma^-_g`,  :math:`^1\Delt
 1. Draw a molecular orbital diagram for the valence part of the Se :math:`_2` molecule. Hint: the valence configuration of Se is p :math:`^4`.
 
 The xyz-molecular input file looks as follows (:download:`Se2.xyz  <Se2.xyz>`):
+
 .. literalinclude:: Se2.xyz
 
 The SCF input reads as (:download:`Se2.dirac.inp  <Se2.dirac.inp>`)
+
 .. literalinclude:: Se2.dirac.inp
 
 Repeat the calculation with the "X2C", "X2C+Gaunt" and "Gaunt molecular-mean-field" Hamiltonian.
@@ -316,20 +319,24 @@ Density at the nucleus and the effective density
 
 The second part illustrates the calculation of the density at the nucleus in comparison with the effective density
 (average density over the finite nucleus). We will look at the molecule HI (:download:`HI.xyz <HI.xyz>`)
+
 .. literalinclude:: HI.xyz
 
 
 The dirac input for the density at the nucleus then reads as (:download:`HI.dc.dirac.inp <HI.dc.dirac.inp>`)
+
 .. literalinclude:: HI.dc.dirac.inp
 
 Let's repeat this exercise with the X2C Hamiltonian, including AMFI corrections (:download:`HI.x2c.dirac.inp <HI.x2c.dirac.inp>`)
+
 .. literalinclude:: HI.x2c.dirac.inp
 
 As the last exercise in this course we will look at picture change errors when transforming from a 4-component to a
 2-component formalism. This illustrates the importance of transforming the property operator when you change the
 "picture" you are working in! In DIRAC we have the option to **NOT** transform the property operators when doing an X2C
 calculation. The keyword is ".NOPCTR" under "**PROPERTIES**".
-The input file is (to download, :download:`HI.x2c.nopctr.dirac.inp <HI.x2c.nopctr.dirac.inp>`):
+The input file is (for download, :download:`HI.x2c.nopctr.dirac.inp <HI.x2c.nopctr.dirac.inp>`):
+
 .. literalinclude:: HI.x2c.nopctr.dirac.inp
 
 **Questions**:

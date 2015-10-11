@@ -108,7 +108,7 @@ Spin-orbit mixing within a group
 --------------------------------
 
 In this exercise we shall investigate how spin-orbit mixing evolves as we descend a column of the periodic table. 
-We will consider group 14, that is, the carbon group. A sample input, for silicium is given `grasp_Si.inp <exercises/grasp_Si.inp>`.
+We will consider group 14, that is, the carbon group. A sample input, for silicium is given :download:`grasp_Si.inp <grasp_Si.inp>`.
 
 The :math:`3p^2` electron configuration of silicium gives rise the three LS-states: :math:`^3P`, :math:`^1D` and :math:`^1S`. 
 With the introduction of spin-orbit coupling they are split into :math:`^3P_2`, :math:`^3P_1`, :math:`^3P_0`, :math:`^1D_2` and :math:`^1S_0` (verify this !) 
