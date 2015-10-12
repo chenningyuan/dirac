@@ -4,7 +4,7 @@
 .. _RELADC:
 
 RELADC, FANOADC and LANCZOS
-================
+===========================
 
 This section lists the available keywords for RELADC, FanoADC and the closely connected
 iterative LANCZOS diagonalizer in the new input format maintained in DIRAC.

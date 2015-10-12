@@ -35,7 +35,7 @@ git submodule update --init --recursive
 set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD% 1>>%LOG% 2>&1
-python setup.py --int64  --blas=off --lapack=off ^
+python setup --int64  --blas=off --lapack=off ^
  --explicit-libs="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
  --cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON" ^
  --generator="MinGW Makefiles" %BUILD% 1>>%LOG% 2>&1
@@ -65,8 +65,8 @@ git submodule update --init --recursive
 set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD% 1>>%LOG% 2>&1
-rem split setup.py command line
-python setup.py --int64 --blas=off --lapack=off ^
+rem split setup command line
+python setup --int64 --blas=off --lapack=off ^
  --explicit-libs="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
  --cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel_cloned' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON" ^
  --generator="MinGW Makefiles" %BUILD% 1>>%LOG% 2>&1
