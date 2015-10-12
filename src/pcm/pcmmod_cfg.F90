@@ -20,7 +20,7 @@
 !dirac_copyright_end
 
 module pcmmod_cfg
-        
+
 use, intrinsic :: iso_c_binding, only: c_bool, c_char, c_double, c_int, c_null_char
 
 implicit none
@@ -63,9 +63,9 @@ contains
 
 ! Performs syntactic checks on PCMSolver input and fills the data structures
 ! holding input data
-function pcmsolver_input() result(host_input) 
+function pcmsolver_input() result(host_input)
 
-  use pcmsolver, only: PCMInput 
+  use pcmsolver, only: PCMInput
 
   type(PCMInput) :: host_input
 
@@ -95,11 +95,11 @@ function pcmsolver_input() result(host_input)
   host_input%min_distance = pcmmod_min_distance
   host_input%der_order    = int(pcmmod_der_order, kind=c_int)
   host_input%scaling      = pcmmod_scaling
-  host_input%radii_set    = radii_set 
+  host_input%radii_set    = radii_set
   host_input%restart_name = restart_name
   host_input%min_radius   = pcmmod_min_radius
 
-  host_input%solver_type   = solver_type 
+  host_input%solver_type   = solver_type
   host_input%solvent       = solvent
   host_input%equation_type = equation_type
   host_input%correction    = pcmmod_correction
@@ -119,13 +119,16 @@ pure subroutine tokenize_string(s, l, t)
   integer :: i
 
   ! Transfer
-  do i = 1, size(t) 
+  do i = 1, size(t)
     t(i) = s(i:i)
   end do
   ! Remove c_null_char at the end
   ! This should be a clean-up of sorts...
-  do while (t(i) /= c_null_char)
-    t(i) = t(i)
+  i = 1
+  do
+      if (t(i) == c_null_char) exit
+      t(i) = t(i)
+      i = i + 1
   end do
   ! Re-add c_null_char
   t = t//c_null_char
