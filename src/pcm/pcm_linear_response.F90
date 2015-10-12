@@ -207,7 +207,7 @@ contains
         asc = 0.0d0
         ! The irreducible representation, for the moment the totally
         ! symmetric one
-        irrep = 0
+        irrep = 0_c_int
 
         if (.not.(pcmmod_separate)) then
             potName = 'TotMEP'//c_null_char
@@ -333,7 +333,7 @@ contains
         chgName = 'ASC_OIT'//c_null_char
         ! The irreducible representation, for the moment the totally
         ! symmetric one
-        irrep = 0
+        irrep = 0_c_int
         ! Compute electronic MEP @tesserae centers
         do i = 1, nr_density_matrices
             call get_electronic_mep(nr_points, nr_points_irr, perturbed_density_matrix(i), tess_cent, &

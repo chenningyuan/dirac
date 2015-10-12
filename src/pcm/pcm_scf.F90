@@ -296,7 +296,7 @@ contains
         allocate(asc(nr_points))
         asc = 0.0d0
         ! Ask for the totally symmetric irrep
-        irrep = 0
+        irrep = 0_c_int
 
         ! Zero out timing variables
         start_mep = 0.0d0
