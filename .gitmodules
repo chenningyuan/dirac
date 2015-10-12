@@ -10,4 +10,4 @@
 	branch = release
 [submodule "external/stieltjes"]
 	path = external/stieltjes
-	url = git@gitlab.com:stieltjes/stieltjes.git
+	url = https://gitlab.com:stieltjes/stieltjes.git
