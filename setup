@@ -15,8 +15,8 @@ import docopt
 
 options = """
 Usage:
-  ./setup.py [options] [<builddir>]
-  ./setup.py (-h | --help)
+  ./setup [options] [<builddir>]
+  ./setup (-h | --help)
 
 Options:
   --fc=<FC>                              Fortran compiler [default: gfortran].
@@ -50,13 +50,13 @@ def gen_cmake_command(options, arguments):
     Generate CMake command based on options and arguments.
     """
     command = []
-    command.append('FC=%s' % arguments['--fc'])
-    command.append('CC=%s' % arguments['--cc'])
-    command.append('CXX=%s' % arguments['--cxx'])
+    command.append('FC="{0}"'.format(arguments['--fc']))
+    command.append('CC="{0}"'.format(arguments['--cc']))
+    command.append('CXX="{0}"'.format(arguments['--cxx']))
     command.append('%s' % arguments['--cmake-executable'])
-    command.append('-DEXTRA_FCFLAGS="%s"' % arguments['--extra-fc-flags'])
-    command.append('-DEXTRA_CFLAGS="%s"' % arguments['--extra-cc-flags'])
-    command.append('-DEXTRA_CXXFLAGS="%s"' % arguments['--extra-cxx-flags'])
+    command.append('-DEXTRA_FCFLAGS="{0}"'.format(arguments['--extra-fc-flags']))
+    command.append('-DEXTRA_CFLAGS="{0}"'.format(arguments['--extra-cc-flags']))
+    command.append('-DEXTRA_CXXFLAGS="{0}"'.format(arguments['--extra-cxx-flags']))
     command.append('-DPREPROCESSOR_DEFINITIONS="%s"' % arguments['--add-definitions'])
     command.append('-DPYTHON_INTERPRETER="%s"' % arguments['--python'])
     command.append('-DENABLE_BLAS=%s' % arguments['--blas'])

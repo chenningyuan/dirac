@@ -10,7 +10,7 @@ Clone the repository::
 Build the code::
 
   $ cd dirac
-  $ ./setup.py [--help]
+  $ ./setup [--help]
   $ cd build
   $ make -j
 

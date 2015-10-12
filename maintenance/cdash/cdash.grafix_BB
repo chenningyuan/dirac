@@ -39,7 +39,7 @@ fi
 export MATH_ROOT=/opt/intel/mkl
 unset DIRAC_NUM_MPI_PROCS
 ./pamadm -a --builddir=$BUILD_INTEL_STATIC
-./setup.py --fc=ifort --cc=icc --cxx=icpc --int64 --static --cmake-options='-D BUILDNAME="grafix_BB.Intel_mkl_i8_static" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF' $BUILD_INTEL_STATIC
+./setup --fc=ifort --cc=icc --cxx=icpc --int64 --static --cmake-options='-D BUILDNAME="grafix_BB.Intel_mkl_i8_static" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF' $BUILD_INTEL_STATIC
 cd $BUILD_INTEL_STATIC
 ctest -D ExperimentalUpdate
 ctest -D Experimental  
@@ -58,7 +58,7 @@ git clone --recursive git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
 ./pamadm  -a  --hsfsdyn  --hscc  --auto  # make buildup into the default "build" directory
 export MATH_ROOT=/opt/intel/mkl
-./setup.py --fc=ifort --cc=icc --cxx=icpc --int64  --cmake-options='-D BUILDNAME="grafix_BB.Intel_MKL_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_TUTORIALS=ON -D ENABLE_BOUNDS_CHECK=OFF'
+./setup --fc=ifort --cc=icc --cxx=icpc --int64  --cmake-options='-D BUILDNAME="grafix_BB.Intel_MKL_i8" -D DART_TESTING_TIMEOUT=99999 -D ENABLE_TUTORIALS=ON -D ENABLE_BOUNDS_CHECK=OFF'
 cd build
 python binary_info.py
 make Nightly
