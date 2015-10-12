@@ -2,7 +2,7 @@ def contains_flag(sys_argv, flag):
     return (any(x for x in sys_argv if x.startswith('--{0}='.format(flag))))
 
 
-def validate_setup_args(sys_argv, arguments):
+def postprocess_args(sys_argv, arguments):
 
     # if --mpi is selected and compilers are not selected
     # then compilers default to mpif90, mpicc, and mpicxx

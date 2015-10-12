@@ -6,9 +6,9 @@
 import os
 import sys
 
-sys.path.append('cmake')
-sys.path.append('cmake/lib')
-sys.path.append('cmake/lib/docopt')
+sys.path.insert(0, 'cmake')
+sys.path.insert(0, 'cmake/lib')
+sys.path.insert(0, 'cmake/lib/docopt')
 import config
 import docopt
 
@@ -87,10 +87,10 @@ except docopt.DocoptExit:
     sys.exit(-1)
 
 
-# we run the arguments through the validate_setup_args function if it exists
-if config.module_exists('validate'):
-    import validate
-    arguments = validate.validate_setup_args(sys.argv, arguments)
+# use extensions to validate/post-process args
+if config.module_exists('extensions'):
+    import extensions
+    arguments = extensions.postprocess_args(sys.argv, arguments)
 
 
 root_directory = os.path.dirname(os.path.realpath(__file__))
