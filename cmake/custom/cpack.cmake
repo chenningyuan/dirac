@@ -51,7 +51,7 @@ if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows" AND NOT ${CMAKE_SYSTEM_NAME} MATCH
         COMMAND cp -r  ${PROJECT_BINARY_DIR}/pamadm-generated           ${EXPORT_DIR}/cmake
         COMMAND cp -rL ${PROJECT_SOURCE_DIR}/doc                          ${EXPORT_DIR}
         COMMAND cp     ${PROJECT_SOURCE_DIR}/pam.in                       ${EXPORT_DIR}
-        COMMAND cp     ${PROJECT_SOURCE_DIR}/setup.py                     ${EXPORT_DIR}
+        COMMAND cp     ${PROJECT_SOURCE_DIR}/setup                     ${EXPORT_DIR}
         COMMAND cp -r  ${PROJECT_SOURCE_DIR}/utils                        ${EXPORT_DIR}
         COMMAND cp -r  ${PROJECT_SOURCE_DIR}/src/xcfun                    ${EXPORT_DIR}/src
         COMMAND cp     ${PROJECT_SOURCE_DIR}/src/main/main.F90            ${EXPORT_DIR}/src/main

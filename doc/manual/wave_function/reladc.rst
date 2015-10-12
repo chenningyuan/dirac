@@ -10,7 +10,7 @@ This section lists the available keywords for RELADC, FanoADC and the closely co
 iterative LANCZOS diagonalizer in the new input format maintained in DIRAC.
 
 If you want to perform RELADC/LANCZOS calculations for the one- and two-particle
-propagator or a FanoADC claculation you invoke all of them by setting the
+propagator or a FanoADC calculation you invoke all of them by setting the
 .RELADC keyword in the \*\*WAVE FUNCTION
 Section.
 
@@ -183,7 +183,7 @@ keyword(FANO)
 This keyword activates the FanoADC module. It requires the specification of the
 initial and final states to be investigated. By running the default calculation
 settings, specified ionization spectra are calculated as well. This can be turned
-off by using the keyword FANOONLY.
+off by using the keyword .FANOONLY.
 
 *Default:*
 
@@ -191,7 +191,7 @@ off by using the keyword FANOONLY.
 
     False
 
-For an Fano calculation it is crucial to use a proper (and normally large)
+For a Fano calculation it is crucial to use a proper (and normally large)
 basis set. It has been shown, that it is beneficial to add KBJ exponents to the
 atoms themselves or to ghost atoms surrounding the system in order to span a basis
 for the interaction region of the final state and the outgoing electron.
@@ -251,10 +251,7 @@ For every channel a maximum 4 letter shortcut has to be specified followed
 by the two-hole configurations of describing the final state. They have
 to be pairs of absolute spinor numbers.
 
-*Take care: The number of 2-hole-configurations of a channel has to be the
-            same as you specified in the upper part
-            The 4 letter shortcut has to start at the beginning of the line.
-            Do not include a space.*
+*Take care: The number of 2-hole-configurations of a channel has to be the same as you specified in the upper part. The 4 letter shortcut has to start at the beginning of the line. Do not include a space.*
 
 This part is at the moment no black box method and the user
 is required to think carefully about the selection of these final states and not
@@ -266,39 +263,39 @@ Again the Neon atom as example:
 ::
 
     .FANOCHNL
- 3       # number of channels N
- 1,12,15 # number of hole configurations of the different channels
-s2       # descriptor of 2s-2 final state
- 2 4     # two-hole configuration of 2s-2 final state
-sp
- 2 5
- 2 6
- 2 7
- 2 8
- 2 9
- 2 10
- 4 5
- 4 6
- 4 7
- 4 8
- 4 9
- 4 10
-p2
- 5 6
- 5 7
- 5 8
- 5 9
- 5 10
- 6 7
- 6 8
- 6 9
- 6 10
- 7 8
- 7 9
- 7 10
- 8 9
- 8 10
- 9 10
+     3       # number of channels N
+     1,12,15 # number of hole configurations of the different channels
+    s2       # descriptor of 2s-2 final state
+     2 4     # two-hole configuration of 2s-2 final state
+    sp
+     2 5
+     2 6
+     2 7
+     2 8
+     2 9
+     2 10
+     4 5
+     4 6
+     4 7
+     4 8
+     4 9
+     4 10
+    p2
+     5 6
+     5 7
+     5 8
+     5 9
+     5 10
+     6 7
+     6 8
+     6 9
+     6 10
+     7 8
+     7 9
+     7 10
+     8 9
+     8 10
+     9 10
 
 If you change the Hamiltonian you will have to change the channel specification
 as well!
