@@ -29,13 +29,14 @@ contains
     subroutine pcm_linear_response_initialize(print_unit)
 
         use pcmsolver, only: PCMSOLVER_READER_HOST, PCMSOLVER_READER_OWN, &
+                             PCMInput, &
                              pcmsolver_new, &
                              pcmsolver_is_compatible_library, &
                              pcmsolver_get_cavity_size,      &
                              pcmsolver_get_irreducible_cavity_size, &
                              pcmsolver_get_centers
         use pcm_gp, only: collect_nctot, collect_atoms, collect_symmetry_info
-        use pcmmod_cfg, only: pcmmod_host_provides_input
+        use pcmmod_cfg
 
         integer, intent(in) :: print_unit
 
@@ -43,7 +44,7 @@ contains
         real(c_double), allocatable :: charges(:)
         real(c_double), allocatable :: centers(:)
         integer(c_int) :: symmetry_info(4)
-        !integer(c_int) :: input_reading
+        type(PCMInput) :: host_input
 
         global_print_unit = print_unit
 
@@ -51,12 +52,6 @@ contains
             write(global_print_unit, *) 'Error: incompatible version of PCMSolver library'
             stop 1
         end if
-
-        !if (pcmmod_host_provides_input) then
-        !    input_reading = PCMSOLVER_READER_HOST
-        !else
-        !    input_reading = PCMSOLVER_READER_OWN
-        !end if
 
         nr_nuclei = collect_nctot()
         allocate(charges(nr_nuclei))
@@ -66,11 +61,12 @@ contains
         call collect_atoms(charges, centers)
         call collect_symmetry_info(symmetry_info)
 
-        !context_ = pcmsolver_new(input_reading, nr_nuclei, charges, centers, symmetry_info)
+        ! In the else-branch the host_input object will be just rubbish...
+        host_input = pcmsolver_input()
         if (pcmmod_host_provides_input) then
-            context_ = pcmsolver_new(PCMSOLVER_READER_HOST, nr_nuclei, charges, centers, symmetry_info)
+            context_ = pcmsolver_new(PCMSOLVER_READER_HOST, nr_nuclei, charges, centers, symmetry_info, host_input)
         else
-            context_ = pcmsolver_new(PCMSOLVER_READER_OWN, nr_nuclei, charges, centers, symmetry_info)
+            context_ = pcmsolver_new(PCMSOLVER_READER_OWN, nr_nuclei, charges, centers, symmetry_info, host_input)
         end if
 
         deallocate(charges)
@@ -202,7 +198,8 @@ contains
         real(c_double), allocatable :: ele_pot(:), ele_pol_chg(:)
         character(7)                :: potName, chgName
         character(7)                :: potName1, chgName1, potName2, chgName2
-        integer                     :: i, irrep
+        integer                     :: i
+        integer(c_int)              :: irrep
 
         allocate(mep(nr_points))
         mep = 0.0d0
@@ -323,7 +320,8 @@ contains
         real(c_double), allocatable :: mep_oit(:), asc_oit(:)
         character(8)                :: potName, chgName
         real(8)                     :: average
-        integer                     :: i, j, irrep
+        integer                     :: i, j
+        integer(c_int)              :: irrep
 
         call check_if_interface_is_initialized
 
