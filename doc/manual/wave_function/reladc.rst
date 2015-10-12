@@ -263,39 +263,39 @@ Again the Neon atom as example:
 ::
 
     .FANOCHNL
- 3       # number of channels N
- 1,12,15 # number of hole configurations of the different channels
-s2       # descriptor of 2s-2 final state
- 2 4     # two-hole configuration of 2s-2 final state
-sp
- 2 5
- 2 6
- 2 7
- 2 8
- 2 9
- 2 10
- 4 5
- 4 6
- 4 7
- 4 8
- 4 9
- 4 10
-p2
- 5 6
- 5 7
- 5 8
- 5 9
- 5 10
- 6 7
- 6 8
- 6 9
- 6 10
- 7 8
- 7 9
- 7 10
- 8 9
- 8 10
- 9 10
+     3       # number of channels N
+     1,12,15 # number of hole configurations of the different channels
+    s2       # descriptor of 2s-2 final state
+     2 4     # two-hole configuration of 2s-2 final state
+    sp
+     2 5
+     2 6
+     2 7
+     2 8
+     2 9
+     2 10
+     4 5
+     4 6
+     4 7
+     4 8
+     4 9
+     4 10
+    p2
+     5 6
+     5 7
+     5 8
+     5 9
+     5 10
+     6 7
+     6 8
+     6 9
+     6 10
+     7 8
+     7 9
+     7 10
+     8 9
+     8 10
+     9 10
 
 If you change the Hamiltonian you will have to change the channel specification
 as well!
