@@ -26,6 +26,7 @@ use, intrinsic :: iso_c_binding, only: c_bool, c_char, c_double, c_int, c_null_c
 implicit none
 
 public pcmsolver_input
+public pcmsolver_empty_input
 
 ! logical block
 logical, public, save :: pcmmod_host_provides_input = .false.
@@ -110,6 +111,44 @@ function pcmsolver_input() result(host_input)
   host_input%outside_type    = outside_type
 
 end function pcmsolver_input
+
+function pcmsolver_empty_input() result(host_input)
+
+  use pcmsolver, only: PCMInput
+
+  type(PCMInput) :: host_input
+
+  character(kind=c_char, len=1) :: cavity_type(8)
+  character(kind=c_char, len=1) :: radii_set(8)
+  character(kind=c_char, len=1) :: restart_name(20)
+  character(kind=c_char, len=1) :: solver_type(7)
+  character(kind=c_char, len=1) :: solvent(16)
+  character(kind=c_char, len=1) :: equation_type(11)
+  character(kind=c_char, len=1) :: inside_type(7)
+  character(kind=c_char, len=1) :: outside_type(22)
+
+  host_input%cavity_type  = ' '//c_null_char
+  host_input%patch_level  = 0_c_int
+  host_input%coarsity     = 0.0_c_double
+  host_input%area         = 0.0_c_double
+  host_input%min_distance = 0.0_c_double
+  host_input%der_order    = 0_c_int
+  host_input%scaling      = .false.
+  host_input%radii_set    = ' '//c_null_char
+  host_input%restart_name = ' '//c_null_char
+  host_input%min_radius   = 0.0_c_double
+
+  host_input%solver_type   = ' '//c_null_char
+  host_input%solvent       = ' '//c_null_char
+  host_input%equation_type = ' '//c_null_char
+  host_input%correction    = 0.0_c_double
+  host_input%probe_radius  = 0.0_c_double
+
+  host_input%inside_type     = ' '//c_null_char
+  host_input%outside_epsilon = 0.0_c_double
+  host_input%outside_type    = ' '//c_null_char
+
+end function pcmsolver_empty_input
 
 pure subroutine tokenize_string(s, l, t)
 
