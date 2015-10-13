@@ -51,7 +51,7 @@ rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
 
 rem wait 20 seconds
-timeout 20
+rem timeout 20
 
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
@@ -94,7 +94,7 @@ rem restart PC
 rem shutdown /r
 
 rem wait 1 minute
-timeout 60 
+rem timeout 60 
 
 rem close this cmd window
 exit
