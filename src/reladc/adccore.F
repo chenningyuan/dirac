@@ -1477,10 +1477,9 @@ C
      &            INTBUF,LADC,IOI,IOJ,
      &            KREP,NBUFS,IBUFPOS,ITAPADC+5)
           ENDIF
-        ENDIF
 
-          WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
-          WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
+            WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
+            WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
 C
 C  ...   ************  start 2h-1p/2h-1p block  ********************
 C
@@ -1493,7 +1492,7 @@ C
 C
 C  create K_akl array and lookup tables.
 C
-        CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
+          CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
 c
 c  compute the off-diagonal entries if required
 !  BKC: C_aij,a'i'j' = |><|<|,<||>|>
@@ -1501,35 +1500,36 @@ c  ATT: the computed ones have complex conjugate BKC due to
 c  the Schirmer,Trofimov formula. Therefore all calculated
 c  entries will be CC is the routine, if complex case!
 c
-        IF(ADCLEVEL.EQ.1) THEN
-          IF(CARITH) THEN
-            CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,CDUMMY,
-     &                    CDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
-     &                    KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+          IF(ADCLEVEL.EQ.1) THEN
+            IF(CARITH) THEN
+              CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,CDUMMY,
+     &                      CDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
+     &                      KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                      ITAPADC+4,ITAPADC+5)
+            ELSE
+              CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,RDUMMY,
+     &                      RDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
+     &                      KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                      ITAPADC+4,ITAPADC+5)
+            ENDIF
+          ELSE IF(ADCLEVEL.EQ.2 .or. ADCLEVEL.EQ.3) THEN
+            IF(CARITH) THEN
+           CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
+     &                    BUF9A,IOI,IOJ,ICRA,OOLT,
+     &                    LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
      &                    ITAPADC+4,ITAPADC+5)
-          ELSE
-            CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,RDUMMY,
-     &                    RDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
-     &                    KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+            ELSE
+             CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
+     &                    BUF9A,IOI,IOJ,ICRA,OOLT,
+     &                    LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
      &                    ITAPADC+4,ITAPADC+5)
+            ENDIF
           ENDIF
-        ELSE IF(ADCLEVEL.EQ.2 .or. ADCLEVEL.EQ.3) THEN
-          IF(CARITH) THEN
-         CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
-     &                  BUF9A,IOI,IOJ,ICRA,OOLT,
-     &                  LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                  ITAPADC+4,ITAPADC+5)
-          ELSE
-           CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
-     &                  BUF9A,IOI,IOJ,ICRA,OOLT,
-     &                  LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                  ITAPADC+4,ITAPADC+5)
-          ENDIF
-        ENDIF
 
 C
 C  ... close files in this symmetry and enter diagonalizer
 C
+        END IF
         CLOSE(ITAPADC+4)
         CLOSE(ITAPADC+5)
 
