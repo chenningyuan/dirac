@@ -8,6 +8,7 @@ module fde_dirac_matrices_integration
    use fde_nadd_derv
    use fde_xcfun_interface
    use fde_max_block_length
+   use electrostatic_potential
 
 ! dirac-specific modules
    use interface_ao
@@ -60,6 +61,9 @@ module fde_dirac_matrices_integration
    real(8) :: nr_electrons_integrated
    real(8), save :: fde_energy
    real(8), save :: fde_mat_energy
+   real(8), save :: non_additive_interaction
+   real(8), save :: electrostatic_b_rho_a_interaction 
+   real(8), save :: electrostatic_a_rho_b_interaction 
 
    logical :: use_gga_qr = .false. !quaternion real
    logical :: use_gga_qi = .false. !quaternion imaginary
@@ -119,6 +123,7 @@ module fde_dirac_matrices_integration
    real(8), allocatable, target :: property_gradient_container(:)
 
    logical :: do_potential
+   logical :: do_interaction_energy
    integer :: response_order_mo
    integer :: response_order_ao
    logical :: do_london_rhs_direct
@@ -160,6 +165,7 @@ contains
                              fde_nr_atoms,              &
                              fde_property_gradient,     &
                              fde_do_potential,          &
+                             fde_do_interaction_energy, &
                              fde_do_london_rhs_direct,  &
                              fde_do_london_rhs_ro,      &
                              fde_do_geo_0,              &
@@ -175,7 +181,8 @@ contains
 !                         2 - ks qr
 !                         *_mo - old code, *_ao - openrsp code
 !
-! do_potential            = .true.  - do energy and xc potential
+! do_potential            = .true.  - do embedding potential
+! do_interaction_energy   = .true.  - do contributions to interaction energy involving the active density and frozen potential
 !
 ! contributions to differentiated kohn-sham matrix:
 ! do_london_rhs_direct       = .true.  - xc contributions that require mag dervs of ao-s, "direct" (if london)
@@ -198,6 +205,7 @@ contains
       real(8), optional, target, intent(inout) :: fde_property_gradient(*)
 
       logical, optional,         intent(in)    :: fde_do_potential
+      logical, optional,         intent(in)    :: fde_do_interaction_energy
       logical, optional,         intent(in)    :: fde_do_london_rhs_direct
       logical, optional,         intent(in)    :: fde_do_london_rhs_ro
       logical, optional,         intent(in)    :: fde_do_geo_0
@@ -234,6 +242,10 @@ contains
       nr_electrons_integrated = 0.0d0
       fde_energy    = 0.0d0
 
+      non_additive_interaction = 0.0d0
+      electrostatic_b_rho_a_interaction = 0.0d0
+      electrostatic_a_rho_b_interaction = 0.0d0
+
       parallel_fde = (fde_mpi_get_nr_proc() > 1)
 
 #ifdef VAR_MPI
@@ -251,6 +263,7 @@ contains
 
 !     set defaults
       do_potential          = .false.
+      do_interaction_energy = .false.
       response_order_mo     = 0
       response_order_ao     = 0
       do_london_rhs_direct  = .false.
@@ -266,6 +279,7 @@ contains
      if (fde_mpi_is_master()) then      
 !        change defaults
          if (present(fde_do_potential))          do_potential          = fde_do_potential
+         if (present(fde_do_interaction_energy)) do_interaction_energy = fde_do_interaction_energy
          if (present(fde_response_order_mo))     response_order_mo     = fde_response_order_mo
          if (present(fde_response_order_ao))     response_order_ao     = fde_response_order_ao
          if (present(fde_do_london_rhs_direct)) do_london_rhs_direct  = fde_do_london_rhs_direct
@@ -276,6 +290,10 @@ contains
          if (present(fde_do_london_ks))          do_london_ks          = fde_do_london_ks
          if (present(fde_do_london_lr))          do_london_lr          = fde_do_london_lr
          if (present(fde_nr_atoms))              nr_atoms              = fde_nr_atoms
+
+         if (do_potential) then
+            do_interaction_energy = .true.
+         endif
 
       end if
 
@@ -288,6 +306,7 @@ contains
          call fde_mpi_bcast(nr_fmat)
          call fde_mpi_bcast(nr_atoms)
          call fde_mpi_bcast(do_potential)
+         call fde_mpi_bcast(do_interaction_energy)
          call fde_mpi_bcast(do_london_rhs_direct)
          call fde_mpi_bcast(do_london_rhs_ro)
          call fde_mpi_bcast(response_order_mo)
@@ -576,6 +595,11 @@ contains
          if (do_potential) then
             call fde_mpi_reduce(fde_energy)
          end if
+         if (do_interaction_energy) then
+            call fde_mpi_reduce(non_additive_interaction)
+            call fde_mpi_reduce(electrostatic_b_rho_a_interaction)
+            call fde_mpi_reduce(electrostatic_a_rho_b_interaction)
+         end if
          if (nr_fmat > 0) then
             call fde_mpi_reduce(fmat)
          end if
@@ -782,6 +806,9 @@ contains
    real(8) :: gnn_0(max_block_length)
    real(8) :: n_0_t(max_block_length)
    real(8) :: gnn_0_t(max_block_length)
+!        --------------------------------------------------------------------------
+   real(8) :: n_0_f(max_block_length)
+   real(8) :: gnn_0_f(max_block_length)
    real(8) :: w(max_block_length)
 !        --------------------------------------------------------------------------
 !     geometric business
@@ -802,6 +829,7 @@ contains
    real(8) :: VT(3)
    integer              :: derv_length, im, i
    real(8), allocatable :: derv_active(:, :)
+   real(8), allocatable :: derv_frozen(:, :)
    real(8), allocatable :: derv_total(:, :)
 
    logical :: print_data_at_point
@@ -818,6 +846,12 @@ contains
    logical :: uts_above_threshold
    logical :: us_lao_above_threshold
    logical :: ugs_lao_above_threshold
+
+   logical :: nuc_part
+   logical :: ele_part
+   real(8), allocatable :: active_nucpot(:)
+   integer :: np_esp
+   integer :: irrep_esp
 
    real(8), allocatable :: ao(:, :)
    real(8), allocatable :: buffer(:, :)
@@ -845,6 +879,9 @@ contains
 
    if (do_potential) then
       max_fun_derv = 1
+   end if
+   if (do_interaction_energy.and..not.do_potential) then
+      max_fun_derv = 0
    end if
    if (response_order_mo > 0) then
       max_fun_derv = response_order_mo + 1
@@ -887,6 +924,11 @@ contains
 !  better safe than sorry
    derv_active = 0.0d0
    derv_total  = 0.0d0
+
+   if (do_interaction_energy) then
+      allocate(derv_frozen(max_block_length, 0:derv_length))
+      derv_frozen = 0.0d0
+   end if
 
 !  set it to zero, otherwise it is undefined with lda
    gnn_0 = 0.0d0
@@ -952,6 +994,11 @@ contains
 
          print_data_at_point = .true.
 
+         np_esp = 1
+         irrep_esp = 1
+         allocate(active_nucpot(np_esp))
+
+
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
@@ -1003,9 +1050,16 @@ contains
 
             gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
 
+            n_0_f(1)   = frozen_n(ipoint)
+            gnn_0_f(1) = frozen_gnx(ipoint)*frozen_gnx(ipoint) &
+                       + frozen_gny(ipoint)*frozen_gny(ipoint) &
+                       + frozen_gnz(ipoint)*frozen_gnz(ipoint) 
          else
             n_0_t(1)   = n_0(1)
             gnn_0_t(1) = gnn_0(1)
+
+            n_0_f(1)   = 0.0d0
+            gnn_0_f(1) = 0.0d0
          endif
 !       number of electrons
          nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
@@ -1035,15 +1089,39 @@ contains
 
          time_matrix_dist_start = second()
 
+!       interaction energy components
+!       ==============================
+        if (do_interaction_energy) then
+            
+            call get_xcke_fun_derv(max_fun_derv, & 
+                                   bllen,        &
+                                   w,            &
+                                   n_0_f,        &
+                                   gnn_0_f,      &
+                                   derv_frozen)
+
+            nuc_part = .true.
+            ele_part = .false.
+            np_esp = 1
+            irrep_esp = 1
+            call get_esp(np_esp,        &
+                         active_nucpot, &
+                         irrep_esp,     &
+                         size(dmat, 1), &
+                         dmat,          &
+                         (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
+                         nuc_part,      &
+                         ele_part)
+
+            non_additive_interaction = non_additive_interaction + (derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000))
+            electrostatic_b_rho_a_interaction = electrostatic_b_rho_a_interaction + w(1)*frozen_elpot(ipoint)*n_0(1)
+            electrostatic_a_rho_b_interaction = electrostatic_a_rho_b_interaction + w(1)*active_nucpot(1)*n_0_f(1)
+
+        end if ! interaction energy components
+
 !       exchange-correlation potential
 !       ==============================
-
          if (do_potential) then
-
-!         energy will not be calcuated here but instead via
-!         call calc_fde_interaction_energy(energy,gf_active,gf_frozen)
-!         outside of the integration loop  
-            fde_energy = fde_energy + (derv_total(1, d0000000) - derv_active(1, d0000000)) + w(1)*frozen_elpot(ipoint)*n_0(1)
 
             u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint) 
 
@@ -1376,6 +1454,7 @@ contains
 
     deallocate(ao)
     deallocate(buffer)
+    deallocate(active_nucpot)
     deallocate(derv_total)
     deallocate(derv_active)
 
@@ -1411,12 +1490,14 @@ contains
             'number of electrons from numerical integration = ', &
             nr_electrons_integrated
 
-!     if (do_potential) then
-!        write(file_unit, '(3x, a, f26.16)')                        &
-!              'excess subsystem energy:               = ', &
-!              fde_mat_energy
-!     end if
-
+      if (do_interaction_energy) then
+         write(file_unit, *)
+         write(file_unit, *) 'FDE interaction energy contributions'
+         write(file_unit, *)
+         write(file_unit,'(3x, a, f26.16)'), 'non-additive:',non_additive_interaction
+         write(file_unit,'(3x, a, f26.16)'), 'E_el^B[nA]  :',electrostatic_b_rho_a_interaction
+         write(file_unit,'(3x, a, f26.16)'), 'E_nuc^A[nB] :',electrostatic_a_rho_b_interaction
+      endif 
       write(file_unit, *)
 
 !     timing
