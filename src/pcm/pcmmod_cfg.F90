@@ -21,113 +21,118 @@
 
 module pcmmod_cfg
 
-    use, intrinsic :: iso_c_binding, only: c_bool, c_char, c_double, c_int, c_null_char
+use, intrinsic :: iso_c_binding, only: c_bool, c_char, c_double, c_int, c_null_char
 
-    implicit none
+implicit none
 
-    public host_input
+public pcmsolver_input
 
-    ! logical block
-    logical, public, save :: pcmmod_host_provides_input = .false.
-    logical, public, save :: pcmmod_skipss   =  .false.
-    logical, public, save :: pcmmod_separate =  .false.
-    logical, public, save :: pcmmod_dospf    =  .false.
-    logical, public, save :: pcmmod_skipoit  =  .false.
-    ! printlevel
-    integer, public, save :: pcmmod_print    = 0
-    ! *PCMSOL section
-    ! cavity specification *PCMSOL section
-    character(kind=c_char, len=8), public, save :: pcmmod_cavity_type = 'gepol  '//c_null_char
-    integer(c_int), public, save  :: pcmmod_patch_level = 2
-    real(c_double), public, save  :: pcmmod_coarsity = 0.5
-    real(c_double), public, save  :: pcmmod_cavity_area = 0.3
-    real(c_double), public, save  :: pcmmod_min_distance = 0.1
-    integer(c_int), public, save  :: pcmmod_der_order = 4
-    logical(c_bool), public, save :: pcmmod_scaling = .true.
-    character(kind=c_char, len=8), public, save :: pcmmod_radii_set = 'bondi  '//c_null_char
-    character(kind=c_char, len=20), public, save :: pcmmod_restart_name = 'cavity.npz         '//c_null_char
-    real(c_double), public, save  :: pcmmod_min_radius = 100.0
-    ! solver specification *PCMSOL section
-    character(kind=c_char, len=7), public, save :: pcmmod_solver_type = 'iefpcm'//c_null_char
-    character(kind=c_char, len=16), public, save :: pcmmod_solvent = '               '//c_null_char
-    character(kind=c_char, len=11), public, save :: pcmmod_equation_type = 'secondkind'//c_null_char
-    real(c_double), public, save  :: pcmmod_correction = 0.0
-    real(c_double), public, save  :: pcmmod_probe_radius = 1.0
-    ! green specification *PCMSOL section
-    character(kind=c_char, len=7), public, save :: pcmmod_inside_type = 'vacuum'//c_null_char
-    character(kind=c_char, len=22), public, save :: pcmmod_outside_type = 'uniformdielectric    '//c_null_char
-    real(c_double), public, save :: pcmmod_outside_epsilon = 1.0
+! logical block
+logical, public, save :: pcmmod_host_provides_input = .false.
+logical, public, save :: pcmmod_skipss   =  .false.
+logical, public, save :: pcmmod_separate =  .false.
+logical, public, save :: pcmmod_dospf    =  .false.
+logical, public, save :: pcmmod_skipoit  =  .false.
+! printlevel
+integer, public, save :: pcmmod_print    = 0
+
+! *PCMSOL section
+! cavity specification *PCMSOL section
+character(kind=c_char, len=8), public, save :: pcmmod_cavity_type = 'gepol  '//c_null_char
+integer, public, save  :: pcmmod_patch_level = 2
+real(c_double), public, save  :: pcmmod_coarsity = 0.5
+real(c_double), public, save  :: pcmmod_cavity_area = 0.3
+real(c_double), public, save  :: pcmmod_min_distance = 0.1
+integer, public, save  :: pcmmod_der_order = 4
+logical(c_bool), public, save :: pcmmod_scaling = .true.
+character(kind=c_char, len=8), public, save :: pcmmod_radii_set = 'bondi  '//c_null_char
+character(kind=c_char, len=20), public, save :: pcmmod_restart_name = 'cavity.npz         '//c_null_char
+real(c_double), public, save  :: pcmmod_min_radius = 100.0
+! solver specification *PCMSOL section
+character(kind=c_char, len=7), public, save :: pcmmod_solver_type = 'iefpcm'//c_null_char
+character(kind=c_char, len=16), public, save :: pcmmod_solvent = '               '//c_null_char
+character(kind=c_char, len=11), public, save :: pcmmod_equation_type = 'secondkind'//c_null_char
+real(c_double), public, save  :: pcmmod_correction = 0.0
+real(c_double), public, save  :: pcmmod_probe_radius = 1.0
+! green specification *PCMSOL section
+character(kind=c_char, len=7), public, save :: pcmmod_inside_type = 'vacuum'//c_null_char
+character(kind=c_char, len=22), public, save :: pcmmod_outside_type = 'uniformdielectric    '//c_null_char
+real(c_double), public, save :: pcmmod_outside_epsilon = 1.0
 
 contains
 
-    ! Performs syntactic checks on PCMSolver input and fills the data structures
-    ! holding input data
-    subroutine host_input(cavity, solver, green) bind(c, name='host_input')
+! Performs syntactic checks on PCMSolver input and fills the data structures
+! holding input data
+function pcmsolver_input() result(host_input)
 
-        use pcmsolver, only: cavityInput, solverInput, greenInput
+  use pcmsolver, only: PCMInput
 
-        type(cavityInput) :: cavity
-        type(solverInput) :: solver
-        type(greenInput)  :: green
+  type(PCMInput) :: host_input
 
-        character(kind=c_char, len=1) :: cavity_type(8), &
-                                         restart_name(20), &
-                                         radii_set(8)
-        character(kind=c_char, len=1) :: solver_type(7), &
-                                         solvent(16), &
-                                         equation_type(11)
-        character(kind=c_char, len=1) :: inside_type(7), &
-                                         outside_type(22)
-        integer :: i
+  character(kind=c_char, len=1) :: cavity_type(8)
+  character(kind=c_char, len=1) :: radii_set(8)
+  character(kind=c_char, len=1) :: restart_name(20)
+  character(kind=c_char, len=1) :: solver_type(7)
+  character(kind=c_char, len=1) :: solvent(16)
+  character(kind=c_char, len=1) :: equation_type(11)
+  character(kind=c_char, len=1) :: inside_type(7)
+  character(kind=c_char, len=1) :: outside_type(22)
 
-        do i = 1, size(cavity_type)
-            cavity_type(i) = pcmmod_cavity_type(i:i)
-        end do
-        do i = 1, size(restart_name)
-            restart_name(i) = pcmmod_restart_name(i:i)
-        end do
-        do i = 1, size(radii_set)
-            radii_set(i) = pcmmod_radii_set(i:i)
-        end do
+  ! "Tokenize" strings and add c_null_char
+  call tokenize_string(pcmmod_cavity_type, 8_c_int, cavity_type)
+  call tokenize_string(pcmmod_radii_set, 8_c_int, radii_set)
+  call tokenize_string(pcmmod_restart_name, 20_c_int, restart_name)
+  call tokenize_string(pcmmod_solver_type, 7_c_int, solver_type)
+  call tokenize_string(pcmmod_solvent, 16_c_int, solvent)
+  call tokenize_string(pcmmod_equation_type, 11_c_int, equation_type)
+  call tokenize_string(pcmmod_inside_type, 7_c_int, inside_type)
+  call tokenize_string(pcmmod_outside_type, 22_c_int, outside_type)
 
-        cavity%patch_level  = pcmmod_patch_level
-        cavity%cavity_type  = cavity_type//c_null_char
-        cavity%coarsity     = pcmmod_coarsity
-        cavity%area         = pcmmod_cavity_area
-        cavity%min_distance = pcmmod_min_distance
-        cavity%der_order    = pcmmod_der_order
-        cavity%scaling      = pcmmod_scaling
-        cavity%restart_name = restart_name//c_null_char
-        cavity%radii_set    = radii_set//c_null_char
-        cavity%min_radius   = pcmmod_min_radius
+  host_input%cavity_type  = cavity_type
+  host_input%patch_level  = int(pcmmod_patch_level, kind=c_int)
+  host_input%coarsity     = pcmmod_coarsity
+  host_input%area         = pcmmod_cavity_area
+  host_input%min_distance = pcmmod_min_distance
+  host_input%der_order    = int(pcmmod_der_order, kind=c_int)
+  host_input%scaling      = pcmmod_scaling
+  host_input%radii_set    = radii_set
+  host_input%restart_name = restart_name
+  host_input%min_radius   = pcmmod_min_radius
 
-        do i = 1, size(solver_type)
-            solver_type(i) = pcmmod_solver_type(i:i)
-        end do
-        do i = 1, size(solvent)
-            solvent(i) = pcmmod_solvent(i:i)
-        end do
-        do i = 1, size(equation_type)
-            equation_type(i) = pcmmod_equation_type(i:i)
-        end do
+  host_input%solver_type   = solver_type
+  host_input%solvent       = solvent
+  host_input%equation_type = equation_type
+  host_input%correction    = pcmmod_correction
+  host_input%probe_radius  = pcmmod_probe_radius
 
-        solver%solver_type   = solver_type//c_null_char
-        solver%equation_type = equation_type//c_null_char
-        solver%solvent       = solvent//c_null_char
-        solver%probe_radius  = pcmmod_probe_radius
-        solver%correction    = pcmmod_correction
+  host_input%inside_type     = inside_type
+  host_input%outside_epsilon = pcmmod_outside_epsilon
+  host_input%outside_type    = outside_type
 
-        do i = 1, size(inside_type)
-            inside_type(i) = pcmmod_inside_type(i:i)
-        end do
-        do i = 1, size(outside_type)
-            outside_type(i) = pcmmod_outside_type(i:i)
-        end do
+end function pcmsolver_input
 
-        green%inside_type     = inside_type//c_null_char
-        green%outside_epsilon = pcmmod_outside_epsilon
-        green%outside_type    = outside_type//c_null_char
+pure subroutine tokenize_string(s, l, t)
 
-    end subroutine host_input
+  integer(c_int), intent(in)         :: l
+  character(kind=c_char, len=*), intent(in)  :: s
+  character(kind=c_char, len=1), intent(out) :: t(l)
+  integer :: i
+
+  ! Transfer
+  do i = 1, size(t)
+    t(i) = s(i:i)
+  end do
+  ! Remove c_null_char at the end
+  ! This should be a clean-up of sorts...
+  i = 1
+  do
+      if (t(i) == c_null_char) exit
+      t(i) = t(i)
+      i = i + 1
+  end do
+  ! Re-add c_null_char
+  t = t//c_null_char
+
+end subroutine tokenize_string
 
 end module

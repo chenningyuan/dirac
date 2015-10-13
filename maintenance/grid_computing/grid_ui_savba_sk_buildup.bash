@@ -53,7 +53,7 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
 # deactivate interest module !
-./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
+python ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
 python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate   
@@ -154,8 +154,8 @@ if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU1"
   /bin/rm -rf $BUILD_SERIAL_GNU1
 fi
-./pamadm -a --builddir=$BUILD_SERIAL_GNU1
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options=" -D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=OFF -D ENABLE_PCMSOLVER=OFF"  $BUILD_SERIAL_GNU1
+python ./pamadm -a --builddir=$BUILD_SERIAL_GNU1
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options=" -D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=OFF -D ENABLE_PCMSOLVER=OFF"  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
  ctest -D ExperimentalUpdate     
  ctest -D ExperimentalConfigure  
