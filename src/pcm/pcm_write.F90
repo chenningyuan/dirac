@@ -187,17 +187,20 @@ module pcm_write
 
    end subroutine
 
-   subroutine host_writer(message) bind(c, name='host_writer')
+   subroutine host_writer(message, message_length) bind(c, name='host_writer')
 
-      use, intrinsic :: iso_c_binding, only: c_char
-      use pcm_gp, only: C_to_Fortran_string
+      use, intrinsic :: iso_c_binding, only: c_char, c_size_t
 
       character(kind=c_char) :: message(*)
+      integer(c_size_t), intent(in), value :: message_length
 
+      character(len=message_length) :: f_message
+
+      call pcmsolver_c2f_string(message, f_message, message_length)
       if (global_print_unit .eq. -1) then
-        write(*, '(1000A)') C_to_Fortran_string(message)
+        write(*, '(1000A)') f_message
       else
-        write(global_print_unit, '(1000A)') C_to_Fortran_string(message)
+        write(global_print_unit, '(1000A)') f_message
       end if
 
    end subroutine host_writer

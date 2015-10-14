@@ -6,7 +6,6 @@ module pcm_gp
    public collect_atoms
    public collect_symmetry_info
    public timing
-   public C_to_Fortran_string
 
    private
 
@@ -79,24 +78,5 @@ module pcm_gp
 #endif
 
       end function timing
-
-      pure function C_to_Fortran_string(f_string) result(c_string)
-
-          use, intrinsic :: iso_c_binding, only: c_char, c_null_char
-          character(kind=c_char, len=1), intent(in) :: f_string(*)
-          character(kind=c_char, len=:), allocatable :: c_string
-          integer :: i, nchars
-
-          i = 1
-          do
-              if (f_string(i) == c_null_char) exit
-              i = i + 1
-          end do
-
-          nchars = i - 1  ! Exclude null character from Fortran string
-          allocate(character(len=nchars) :: c_string)
-          c_string = transfer(f_string(1:nchars), c_string)
-
-      end function C_to_Fortran_string
 
 end module pcm_gp
