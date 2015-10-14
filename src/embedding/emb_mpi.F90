@@ -77,6 +77,11 @@ module fde_mpi
       module procedure fde_mpi_reduce_r2
       module procedure fde_mpi_reduce_r4
    end interface
+
+!   interface fde_mpi_gather
+!      module procedure fde_mpi_gather_i
+!      module procedure fde_mpi_gather_r
+!   end interface
 #endif
 
 #ifdef VAR_MPI_32BIT_INT
@@ -122,6 +127,16 @@ contains
    end function
 
 #ifdef VAR_MPI
+!   subroutine fde_mpi_gather_i(x)
+!      integer :: x(:)
+!      call interface_mpi_gather(x, size(x),  irank_master, global_communicator)
+!   end subroutine
+!
+!   subroutine fde_mpi_gather_r(x)
+!      real(8) :: x(:)
+!      call interface_mpi_gather(x, size(x),  irank_master, global_communicator)
+!   end subroutine
+
    subroutine fde_mpi_bcast_i0(x)
       integer :: x
       call interface_mpi_bcast(x, 1, irank_master, global_communicator)

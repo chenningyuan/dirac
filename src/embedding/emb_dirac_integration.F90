@@ -24,6 +24,10 @@ module fde_dirac_matrices_integration
    public fde_dirac_emb_matrices_via_integration
    public fde_dirac_emb_pot_energy
 
+   public fde_dirac_interaction_nadd
+   public fde_dirac_interaction_el_b_rho_a
+   public fde_dirac_interaction_nuc_a_rho_b
+
    private
 
    type fde_omega_prefactor
@@ -124,6 +128,7 @@ module fde_dirac_matrices_integration
 
    logical :: do_potential
    logical :: do_interaction_energy
+   logical :: do_electrostatic_pot
    integer :: response_order_mo
    integer :: response_order_ao
    logical :: do_london_rhs_direct
@@ -138,16 +143,34 @@ module fde_dirac_matrices_integration
    logical :: do_fde_update_vemb
    logical :: do_fde_response
 
+   type(fde_grid) :: active_grid
+   real(8), allocatable :: elpot(:)
+
    integer, allocatable, target :: default_fmat_pg_sym(:)
    integer, allocatable, target :: default_dmat_pg_sym(:)
    integer, allocatable, target :: default_dmat_ih_sym(:)
 
 contains
 
-    function fde_dirac_emb_pot_energy()
-       real(8) :: fde_dirac_emb_pot_energy 
-       fde_dirac_emb_pot_energy = fde_mat_energy
-    end function
+   function fde_dirac_emb_pot_energy()
+      real(8) :: fde_dirac_emb_pot_energy 
+      fde_dirac_emb_pot_energy = fde_mat_energy
+   end function
+
+   function fde_dirac_interaction_nadd()
+      real(8) :: fde_dirac_interaction_nadd
+      fde_dirac_interaction_nadd = non_additive_interaction
+   end function 
+
+   function fde_dirac_interaction_el_b_rho_a()
+      real(8) :: fde_dirac_interaction_el_b_rho_a
+      fde_dirac_interaction_el_b_rho_a = electrostatic_b_rho_a_interaction
+   end function 
+
+   function fde_dirac_interaction_nuc_a_rho_b()
+      real(8) :: fde_dirac_interaction_nuc_a_rho_b
+      fde_dirac_interaction_nuc_a_rho_b = electrostatic_a_rho_b_interaction
+   end function 
 
 
 !   ----------------------------------------------------------------------------
@@ -166,6 +189,7 @@ contains
                              fde_property_gradient,     &
                              fde_do_potential,          &
                              fde_do_interaction_energy, &
+                             fde_do_electrostatic_pot,  &
                              fde_do_london_rhs_direct,  &
                              fde_do_london_rhs_ro,      &
                              fde_do_geo_0,              &
@@ -174,7 +198,8 @@ contains
                              fde_do_london_ks,          &
                              fde_do_london_lr,          &
                              fde_response_order_mo,     &
-                             fde_response_order_ao)
+                             fde_response_order_ao,     &
+                             fde_active_grid)
 
 ! response_order_mo/_ao:  0 - do nothing (no response)
 !                         1 - ks lr
@@ -206,6 +231,8 @@ contains
 
       logical, optional,         intent(in)    :: fde_do_potential
       logical, optional,         intent(in)    :: fde_do_interaction_energy
+      logical, optional,         intent(in)    :: fde_do_electrostatic_pot
+
       logical, optional,         intent(in)    :: fde_do_london_rhs_direct
       logical, optional,         intent(in)    :: fde_do_london_rhs_ro
       logical, optional,         intent(in)    :: fde_do_geo_0
@@ -217,11 +244,15 @@ contains
       integer, optional,         intent(in)    :: fde_response_order_mo
       integer, optional,         intent(in)    :: fde_response_order_ao
 !     --------------------------------------------------------------------------
+      type(fde_grid), optional,  intent(in)    :: fde_active_grid
+!     --------------------------------------------------------------------------
       real(8), external :: ddot
       integer, parameter :: max_mat_number = 10
       integer, target    :: default_pg_sym(max_mat_number)
       integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
+!     --------------------------------------------------------------------------
+      real(8), allocatable :: electrostatic_potential_a(:)
 !     --------------------------------------------------------------------------
       integer, parameter :: max_response_order_mo = 5
       integer            :: i, j, iz, imat
@@ -280,6 +311,7 @@ contains
 !        change defaults
          if (present(fde_do_potential))          do_potential          = fde_do_potential
          if (present(fde_do_interaction_energy)) do_interaction_energy = fde_do_interaction_energy
+         if (present(fde_do_electrostatic_pot))  do_electrostatic_pot  = fde_do_electrostatic_pot
          if (present(fde_response_order_mo))     response_order_mo     = fde_response_order_mo
          if (present(fde_response_order_ao))     response_order_ao     = fde_response_order_ao
          if (present(fde_do_london_rhs_direct)) do_london_rhs_direct  = fde_do_london_rhs_direct
@@ -290,10 +322,15 @@ contains
          if (present(fde_do_london_ks))          do_london_ks          = fde_do_london_ks
          if (present(fde_do_london_lr))          do_london_lr          = fde_do_london_lr
          if (present(fde_nr_atoms))              nr_atoms              = fde_nr_atoms
+         if (present(fde_active_grid)) then
+            active_grid = fde_active_grid
+         else
+            active_grid = fde_grid_im
+         end if
 
          if (do_potential) then
             do_interaction_energy = .true.
-         endif
+         end if
 
       end if
 
@@ -307,6 +344,7 @@ contains
          call fde_mpi_bcast(nr_atoms)
          call fde_mpi_bcast(do_potential)
          call fde_mpi_bcast(do_interaction_energy)
+         call fde_mpi_bcast(do_electrostatic_pot)
          call fde_mpi_bcast(do_london_rhs_direct)
          call fde_mpi_bcast(do_london_rhs_ro)
          call fde_mpi_bcast(response_order_mo)
@@ -316,12 +354,17 @@ contains
          call fde_mpi_bcast(do_geo_2)
          call fde_mpi_bcast(do_london_ks)
          call fde_mpi_bcast(do_london_lr)
-
+! we don't broadcast the grid, we only keep it in master
       end if
 #endif
 
 !     nullify(tmat_1)
 !     nullify(tmat_2)
+      if (do_electrostatic_pot) then
+          allocate(electrostatic_potential_a(active_grid%npoints))
+          electrostatic_potential_a = 0.0d0
+      end if
+
       if (do_geo_1) then
          allocate(tmat_1(mat_dim, mat_dim))
          tmat_1(:, :) = fde_dmat(:, :, 1, 1)
@@ -600,6 +643,10 @@ contains
             call fde_mpi_reduce(electrostatic_b_rho_a_interaction)
             call fde_mpi_reduce(electrostatic_a_rho_b_interaction)
          end if
+         if (do_electrostatic_pot) then
+! we want to send the points in the nodes to a final vector in master
+!           call fde_mpi_gather(elpot)
+         end if
          if (nr_fmat > 0) then
             call fde_mpi_reduce(fmat)
          end if
@@ -850,6 +897,7 @@ contains
    logical :: nuc_part
    logical :: ele_part
    real(8), allocatable :: active_nucpot(:)
+   real(8), allocatable :: active_elpot(:)
    integer :: np_esp
    integer :: irrep_esp
 
@@ -996,8 +1044,14 @@ contains
 
          np_esp = 1
          irrep_esp = 1
-         allocate(active_nucpot(np_esp))
-
+         if (do_interaction_energy) then
+            allocate(active_nucpot(np_esp))
+            active_nucpot = 0.0d0
+         end if
+         if (do_electrostatic_pot) then
+            allocate(active_elpot(nr_points_on_this_proc))
+            active_elpot = 0.0d0
+         end if
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
@@ -1102,8 +1156,6 @@ contains
 
             nuc_part = .true.
             ele_part = .false.
-            np_esp = 1
-            irrep_esp = 1
             call get_esp(np_esp,        &
                          active_nucpot, &
                          irrep_esp,     &
@@ -1115,9 +1167,25 @@ contains
 
             non_additive_interaction = non_additive_interaction + (derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000))
             electrostatic_b_rho_a_interaction = electrostatic_b_rho_a_interaction + w(1)*frozen_elpot(ipoint)*n_0(1)
-            electrostatic_a_rho_b_interaction = electrostatic_a_rho_b_interaction + w(1)*active_nucpot(1)*n_0_f(1)
+            electrostatic_a_rho_b_interaction = electrostatic_a_rho_b_interaction - w(1)*active_nucpot(1)*n_0_f(1)
 
         end if ! interaction energy components
+
+!       if (do_electrostatic_pot) then
+!
+!           nuc_part = .true.
+!           ele_part = .true.
+!           call get_esp(np_esp,        &
+!                        active_elpot(ipoint), &
+!                        irrep_esp,     &
+!                        size(dmat, 1), &
+!                        dmat,          &
+!                        (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
+!                        nuc_part,      &
+!                        ele_part)
+!
+!       end if ! electrostatic potential
+
 
 !       exchange-correlation potential
 !       ==============================
@@ -1454,9 +1522,12 @@ contains
 
     deallocate(ao)
     deallocate(buffer)
-    deallocate(active_nucpot)
     deallocate(derv_total)
     deallocate(derv_active)
+
+    if (allocated(derv_frozen)) deallocate(derv_frozen)
+    if (allocated(active_elpot)) deallocate(active_elpot)
+    if (allocated(active_nucpot)) deallocate(active_nucpot)
 
     deallocate(u%n)
     deallocate(u%gn)
@@ -1492,11 +1563,11 @@ contains
 
       if (do_interaction_energy) then
          write(file_unit, *)
-         write(file_unit, *) 'FDE interaction energy contributions'
+         write(file_unit, '(3x, a)') 'FDE interaction energy contributions'
          write(file_unit, *)
-         write(file_unit,'(3x, a, f26.16)'), 'non-additive:',non_additive_interaction
-         write(file_unit,'(3x, a, f26.16)'), 'E_el^B[nA]  :',electrostatic_b_rho_a_interaction
-         write(file_unit,'(3x, a, f26.16)'), 'E_nuc^A[nB] :',electrostatic_a_rho_b_interaction
+         write(file_unit,'(6x, a, f26.16)'), 'non-additive:',non_additive_interaction
+         write(file_unit,'(6x, a, f26.16)'), 'E_el^B[nA]  :',electrostatic_b_rho_a_interaction
+         write(file_unit,'(6x, a, f26.16)'), 'E_nuc^A[nB] :',electrostatic_a_rho_b_interaction
       endif 
       write(file_unit, *)
 
@@ -1526,7 +1597,7 @@ contains
          real(8), allocatable :: mpi_buffer(:)
 
          if (fde_mpi_is_master()) then
-            nr_points_batch = fde_grid_im%npoints
+            nr_points_batch = active_grid%npoints
          end if   
 #ifdef VAR_MPI
          if (parallel_fde) then
@@ -1554,10 +1625,10 @@ contains
 
 !radovan: grid stuff will be moved outside this module
             if (fde_mpi_is_master()) then
-                rx = fde_grid_im%r(1,:)
-                ry = fde_grid_im%r(2,:)
-                rz = fde_grid_im%r(3,:)
-                rw = fde_grid_im%w
+                rx = active_grid%r(1,:)
+                ry = active_grid%r(2,:)
+                rz = active_grid%r(3,:)
+                rw = active_grid%w
  
                 frozen_n   = gf_frozen%n
                 frozen_gnx = gf_frozen%gn(1,:)

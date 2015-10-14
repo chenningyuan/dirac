@@ -554,11 +554,123 @@ module fde_evaluators_dirac
       end function
 
 
-      subroutine fde_dirac_emb_interaction_energy(fde_active_energy,level,myprint)
+      subroutine fde_dirac_interaction_components(level,verbose,threshold, non_additive,el_coulomb_f,el_nuclearAtt_a)
+         logical, intent(in)  :: verbose
+         character(len=4), intent(in)  :: level
+         integer              :: derv_length, max_fun_derv, bllen, i, order
+         real(8)              :: threshold
+         real(8), allocatable :: derv_active(:, :)
+         real(8), allocatable :: derv_frozen(:, :)
+         real(8), allocatable :: derv_total(:, :)
+         real(8), intent(out) :: non_additive
+         real(8), intent(out) :: el_coulomb_f
+         real(8), intent(out) :: el_nuclearAtt_a
+         real(8)              :: w(1) 
+         real(8)              :: n_0_a(1), gnn_0_a(1)
+         real(8)              :: n_0_f(1), gnn_0_f(1)
+         real(8)              :: n_0_t(1), gnn_0_t(1)
+
+         threshold    = 1.0e-28
+         max_fun_derv = 1
+         bllen        = 1
+         order        = 1
+!        parallel_fde = (fde_mpi_get_nr_proc() > 1) 
+         parallel_fde = .false.
+         derv_length  = nr_nonzero_derv
+
+         allocate(derv_active(max_block_length, 0:derv_length))
+         allocate(derv_frozen(max_block_length, 0:derv_length))
+         allocate(derv_total(max_block_length,  0:derv_length))
+
+! aspg: todo for static potential
+! problem here is that if using a static potential we don't go over the
+! integrator and when broadcasting the functionals there won't be a process
+! listening... it's
+!         call fde_set_nadd_functionals(order,parallel_fde)
+
+         call fde_dirac_get_density_from_dfcoef(level,fde_grid_im,gf_active)
+         call fde_calculate_nucpot(level,fde_grid_im,gf_active,myprint=verbose)
+
+         el_coulomb_f = 0.0d0
+         el_nuclearAtt_a = 0.0d0
+         non_additive = 0.0d0
+
+         derv_active = 0.0d0
+         derv_frozen = 0.0d0
+         derv_total  = 0.0d0
+
+         do i = 1, fde_grid_im%npoints
+
+            w(1) = 1.0
+
+            n_0_a(1)   = gf_active%n(i)
+            if ( n_0_a(1) .gt. threshold) then
+               gnn_0_a(1) = gf_active%gn(1,i) * gf_active%gn(1,i) &
+                          + gf_active%gn(2,i) * gf_active%gn(2,i) &
+                          + gf_active%gn(3,i) * gf_active%gn(3,i)
+
+               call get_xcke_fun_derv(max_fun_derv, &
+                                      bllen,        &
+                                      w,            &
+                                      n_0_a,        &
+                                      gnn_0_a,      &
+                                      derv_active)
+            else
+               n_0_a(1)    = 0.0d0
+               gnn_0_a(1)  = 0.0d0
+               derv_active = 0.0d0
+            endif
+
+            n_0_f(1)   = gf_frozen%n(i)
+            if ( n_0_f(1) .gt. threshold) then
+               gnn_0_f(1) = gf_frozen%gn(1,i) * gf_frozen%gn(1,i) &
+                          + gf_frozen%gn(2,i) * gf_frozen%gn(2,i) &
+                          + gf_frozen%gn(3,i) * gf_frozen%gn(3,i)
+
+               call get_xcke_fun_derv(max_fun_derv, &
+                                      bllen,        &
+                                      w,            &
+                                      n_0_f,        &
+                                      gnn_0_f,      &
+                                      derv_frozen)
+            else
+               n_0_f(1)    = 0.0d0
+               gnn_0_f(1)  = 0.0d0
+               derv_frozen = 0.0d0
+            endif
+
+            n_0_t(1)   = gf_active%n(i)    + gf_frozen%n(i)
+            if ( n_0_t(1) .gt. threshold) then
+               gnn_0_t(1) = ((gf_active%gn(1,i) + gf_frozen%gn(1,i))*(gf_active%gn(1,i) + gf_frozen%gn(1,i))) &
+                          + ((gf_active%gn(2,i) + gf_frozen%gn(2,i))*(gf_active%gn(2,i) + gf_frozen%gn(2,i))) &
+                          + ((gf_active%gn(3,i) + gf_frozen%gn(3,i))*(gf_active%gn(3,i) + gf_frozen%gn(3,i)))
+
+               call get_xcke_fun_derv(max_fun_derv, &
+                                      bllen,        &
+                                      w,            &
+                                      n_0_t,        &
+                                      gnn_0_t,      &
+                                      derv_total)
+            else
+               n_0_t(1)    = 0.0d0
+               gnn_0_t(1)  = 0.0d0
+               derv_total  = 0.0d0
+            endif
+           df_energy = derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000)
+           non_additive     = non_additive    + fde_grid_im%w(i)*df_energy
+           el_coulomb_f     = el_coulomb_f    + fde_grid_im%w(i)*gf_frozen%elpot(i)*n_0_a(1)
+           el_nuclearAtt_a  = el_nuclearAtt_a - fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
+         end do
+
+      end subroutine
+
+      subroutine fde_dirac_emb_interaction_energy(fde_active_energy,level,myprint,recalculate)
          character(len=4), intent(in)  :: level
          logical, intent(in), optional :: myprint
+         logical, intent(in), optional :: recalculate
          real(8), intent(in)  :: fde_active_energy 
          logical              :: printlocal
+         logical              :: recalculate_local
          logical              :: parallel_fde 
          integer              :: derv_length, max_fun_derv, bllen, i, order
          integer              :: logunit
@@ -579,11 +691,16 @@ module fde_evaluators_dirac
          type(fde_import)     :: itmp
          real(8) :: total_system_energy
 
-
          if (present(myprint)) then
             printlocal = myprint
          else
             printlocal = .True.
+         endif
+
+         if (present(recalculate)) then
+            recalculate_local = recalculate 
+         else
+            recalculate_local = .False.
          endif
 
          call fde_get_files_info(ftmp)
@@ -611,95 +728,19 @@ module fde_evaluators_dirac
             return
          endif
 
-         allocate(derv_active(max_block_length, 0:derv_length))
-         allocate(derv_frozen(max_block_length, 0:derv_length))
-         allocate(derv_total(max_block_length,  0:derv_length))
+         if (recalculate_local) then
+            call fde_dirac_interaction_components(level,printlocal,threshold, non_additive,el_coulomb_f,el_nuclearAtt_a)
+         else
+            non_additive     = fde_dirac_interaction_nadd()
+            el_coulomb_f     = fde_dirac_interaction_el_b_rho_a()
+            el_nuclearAtt_a  = fde_dirac_interaction_nuc_a_rho_b()
+         endif
 
-! aspg: todo for static potential
-! problem here is that if using a static potential we don't go over the
-! integrator and when broadcasting the functionals there won't be a process
-! listening... it's
-!         call fde_set_nadd_functionals(order,parallel_fde)
-
-         call fde_dirac_get_density_from_dfcoef(level,fde_grid_im,gf_active)
-         call fde_calculate_nucpot(level,fde_grid_im,gf_active,myprint=printlocal)
-
-         el_coulomb_f = 0.0d0
-         el_nuclearAtt_a = 0.0d0
-         non_additive = 0.0d0
-
-         derv_active = 0.0d0 
-         derv_frozen = 0.0d0 
-         derv_total  = 0.0d0 
-
-         do i = 1, fde_grid_im%npoints
-
-            w(1) = 1.0
-
-            n_0_a(1)   = gf_active%n(i)
-            if ( n_0_a(1) .gt. threshold) then
-               gnn_0_a(1) = gf_active%gn(1,i) * gf_active%gn(1,i) & 
-                          + gf_active%gn(2,i) * gf_active%gn(2,i) &
-                          + gf_active%gn(3,i) * gf_active%gn(3,i) 
-
-               call get_xcke_fun_derv(max_fun_derv, &
-                                      bllen,        &
-                                      w,            &
-                                      n_0_a,        &
-                                      gnn_0_a,      &
-                                      derv_active)
-            else
-               n_0_a(1)    = 0.0d0
-               gnn_0_a(1)  = 0.0d0
-               derv_active = 0.0d0 
-            endif
-
-            n_0_f(1)   = gf_frozen%n(i)
-            if ( n_0_f(1) .gt. threshold) then
-               gnn_0_f(1) = gf_frozen%gn(1,i) * gf_frozen%gn(1,i) & 
-                          + gf_frozen%gn(2,i) * gf_frozen%gn(2,i) &
-                          + gf_frozen%gn(3,i) * gf_frozen%gn(3,i) 
-
-               call get_xcke_fun_derv(max_fun_derv, &
-                                      bllen,        &
-                                      w,            &
-                                      n_0_f,        &
-                                      gnn_0_f,      &
-                                      derv_frozen)
-            else
-               n_0_f(1)    = 0.0d0
-               gnn_0_f(1)  = 0.0d0
-               derv_frozen = 0.0d0
-            endif
-
-            n_0_t(1)   = gf_active%n(i)    + gf_frozen%n(i)
-            if ( n_0_t(1) .gt. threshold) then
-               gnn_0_t(1) = ((gf_active%gn(1,i) + gf_frozen%gn(1,i))*(gf_active%gn(1,i) + gf_frozen%gn(1,i))) &
-                          + ((gf_active%gn(2,i) + gf_frozen%gn(2,i))*(gf_active%gn(2,i) + gf_frozen%gn(2,i))) &
-                          + ((gf_active%gn(3,i) + gf_frozen%gn(3,i))*(gf_active%gn(3,i) + gf_frozen%gn(3,i))) 
-
-               call get_xcke_fun_derv(max_fun_derv, &
-                                      bllen,        &
-                                      w,            &
-                                      n_0_t,        &
-                                      gnn_0_t,      &
-                                      derv_total)
-            else
-               n_0_t(1)    = 0.0d0
-               gnn_0_t(1)  = 0.0d0
-               derv_total  = 0.0d0
-            endif
-           df_energy = derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000)
-
-           non_additive     = non_additive    + fde_grid_im%w(i)*df_energy
-           el_coulomb_f     = el_coulomb_f    + fde_grid_im%w(i)*gf_frozen%elpot(i)*n_0_a(1)
-           el_nuclearAtt_a  = el_nuclearAtt_a - fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
-         end do
          electrostatic = el_coulomb_f + el_nuclearAtt_a + internuclear 
          interaction   = electrostatic + non_additive
 
          WRITE(logunit,'(A)') ''
-         write(logunit,'(2X,A)') 'FDE frozen subsystem contributions'
+         write(logunit,'(2X,A)') 'FDE frozen subsystem contributions ('//level(1:4)//' active density)'
          write(logunit,'(/3X,A,F22.15)') 'Total energy                             : ',fde_frozen_energy
 
          write (logunit,'(/,2X,A,/)')    'FDE interaction energy contributions'
