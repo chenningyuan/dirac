@@ -1165,9 +1165,18 @@ contains
                          nuc_part,      &
                          ele_part)
 
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+
+            active_nucpot(1) = -active_nucpot(1)
+!
             non_additive_interaction = non_additive_interaction + (derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000))
             electrostatic_b_rho_a_interaction = electrostatic_b_rho_a_interaction + w(1)*frozen_elpot(ipoint)*n_0(1)
-            electrostatic_a_rho_b_interaction = electrostatic_a_rho_b_interaction - w(1)*active_nucpot(1)*n_0_f(1)
+            electrostatic_a_rho_b_interaction = electrostatic_a_rho_b_interaction + w(1)*active_nucpot(1)*n_0_f(1)
 
         end if ! interaction energy components
 
@@ -1184,11 +1193,19 @@ contains
 !                        nuc_part,      &
 !                        ele_part)
 !
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+!
+!           active_elpot(ipoint) = -active_elpot(ipoint)
+!
 !       end if ! electrostatic potential
 
-
-!       exchange-correlation potential
-!       ==============================
+!       embedding potential
+!       ===================
          if (do_potential) then
 
             u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint) 
@@ -1201,8 +1218,9 @@ contains
            u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
          end if
 
-         end if !exchange-correlation potential
+         end if !embedding potential
 
+         
 
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================

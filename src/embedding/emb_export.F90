@@ -58,11 +58,15 @@ module fde_export_data
          
          if (etmp%do_grid_out .and. (level.eq.etmp%ex_level)) then
             write (*,*) 'Preparing FDE data for export'
+
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
             call fde_prepare_export(level,fde_grid_ex,gf_export)
-! aspg 29/09/2015
-! the sign here is to align the notation to adf
-            gf_export%elpot = -gf_export%elpot
-         
+
             call fde_get_export_info(etmp) 
             if (etmp%ex_format.eq.'XML') then
                call fde_export_data_as_xml(fde_grid_ex,gf_export)
@@ -284,6 +288,7 @@ module fde_export_data
                                             grid%w(i),             &
                                             gf%elpot(i),           &
                                             v_pc_array,            &
+!                                           gf%nucpot(i),          &
                                             gf%n(i),               &
                                             (gf%gn(j,i), j = 1,3)
          end do
