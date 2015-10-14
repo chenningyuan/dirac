@@ -26,7 +26,6 @@ use, intrinsic :: iso_c_binding, only: c_bool, c_char, c_double, c_int, c_null_c
 implicit none
 
 public pcmsolver_input
-public pcmsolver_empty_input
 
 ! logical block
 logical, public, save :: pcmmod_host_provides_input = .false.
@@ -79,16 +78,7 @@ function pcmsolver_input() result(host_input)
   character(kind=c_char, len=1) :: inside_type(7)
   character(kind=c_char, len=1) :: outside_type(22)
 
-  ! "Tokenize" strings and add c_null_char
-  call tokenize_string(pcmmod_cavity_type, 8_c_int, cavity_type)
-  call tokenize_string(pcmmod_radii_set, 8_c_int, radii_set)
-  call tokenize_string(pcmmod_restart_name, 20_c_int, restart_name)
-  call tokenize_string(pcmmod_solver_type, 7_c_int, solver_type)
-  call tokenize_string(pcmmod_solvent, 16_c_int, solvent)
-  call tokenize_string(pcmmod_equation_type, 11_c_int, equation_type)
-  call tokenize_string(pcmmod_inside_type, 7_c_int, inside_type)
-  call tokenize_string(pcmmod_outside_type, 22_c_int, outside_type)
-
+  call pcmsolver_f2c_string(pcmmod_cavity_type, cavity_type, 8_c_int)
   host_input%cavity_type  = cavity_type
   host_input%patch_level  = int(pcmmod_patch_level, kind=c_int)
   host_input%coarsity     = pcmmod_coarsity
@@ -96,82 +86,27 @@ function pcmsolver_input() result(host_input)
   host_input%min_distance = pcmmod_min_distance
   host_input%der_order    = int(pcmmod_der_order, kind=c_int)
   host_input%scaling      = pcmmod_scaling
+  call pcmsolver_f2c_string(pcmmod_radii_set, radii_set, 8_c_int)
   host_input%radii_set    = radii_set
+  call pcmsolver_f2c_string(pcmmod_restart_name, restart_name, 20_c_int)
   host_input%restart_name = restart_name
   host_input%min_radius   = pcmmod_min_radius
 
+  call pcmsolver_f2c_string(pcmmod_solver_type, solver_type, 7_c_int)
   host_input%solver_type   = solver_type
+  call pcmsolver_f2c_string(pcmmod_solvent, solvent, 16_c_int)
   host_input%solvent       = solvent
+  call pcmsolver_f2c_string(pcmmod_equation_type, equation_type, 11_c_int)
   host_input%equation_type = equation_type
   host_input%correction    = pcmmod_correction
   host_input%probe_radius  = pcmmod_probe_radius
 
+  call pcmsolver_f2c_string(pcmmod_inside_type, inside_type, 7_c_int)
   host_input%inside_type     = inside_type
   host_input%outside_epsilon = pcmmod_outside_epsilon
+  call pcmsolver_f2c_string(pcmmod_outside_type, outside_type, 7_c_int)
   host_input%outside_type    = outside_type
 
 end function pcmsolver_input
-
-function pcmsolver_empty_input() result(host_input)
-
-  use pcmsolver, only: PCMInput
-
-  type(PCMInput) :: host_input
-
-  character(kind=c_char, len=1) :: cavity_type(8)
-  character(kind=c_char, len=1) :: radii_set(8)
-  character(kind=c_char, len=1) :: restart_name(20)
-  character(kind=c_char, len=1) :: solver_type(7)
-  character(kind=c_char, len=1) :: solvent(16)
-  character(kind=c_char, len=1) :: equation_type(11)
-  character(kind=c_char, len=1) :: inside_type(7)
-  character(kind=c_char, len=1) :: outside_type(22)
-
-  host_input%cavity_type  = ' '//c_null_char
-  host_input%patch_level  = 0_c_int
-  host_input%coarsity     = 0.0_c_double
-  host_input%area         = 0.0_c_double
-  host_input%min_distance = 0.0_c_double
-  host_input%der_order    = 0_c_int
-  host_input%scaling      = .false.
-  host_input%radii_set    = ' '//c_null_char
-  host_input%restart_name = ' '//c_null_char
-  host_input%min_radius   = 0.0_c_double
-
-  host_input%solver_type   = ' '//c_null_char
-  host_input%solvent       = ' '//c_null_char
-  host_input%equation_type = ' '//c_null_char
-  host_input%correction    = 0.0_c_double
-  host_input%probe_radius  = 0.0_c_double
-
-  host_input%inside_type     = ' '//c_null_char
-  host_input%outside_epsilon = 0.0_c_double
-  host_input%outside_type    = ' '//c_null_char
-
-end function pcmsolver_empty_input
-
-pure subroutine tokenize_string(s, l, t)
-
-  integer(c_int), intent(in)         :: l
-  character(kind=c_char, len=*), intent(in)  :: s
-  character(kind=c_char, len=1), intent(out) :: t(l)
-  integer :: i
-
-  ! Transfer
-  do i = 1, size(t)
-    t(i) = s(i:i)
-  end do
-  ! Remove c_null_char at the end
-  ! This should be a clean-up of sorts...
-  i = 1
-  do
-      if (t(i) == c_null_char) exit
-      t(i) = t(i)
-      i = i + 1
-  end do
-  ! Re-add c_null_char
-  t = t//c_null_char
-
-end subroutine tokenize_string
 
 end module

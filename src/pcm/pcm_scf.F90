@@ -77,6 +77,7 @@ contains
     subroutine pcm_scf_initialize(print_unit)
 
         use pcmsolver, only: PCMSOLVER_READER_HOST, PCMSOLVER_READER_OWN, &
+                             PCMInput, &
                              pcmsolver_new, &
                              pcmsolver_is_compatible_library, &
                              pcmsolver_get_cavity_size,      &
@@ -92,6 +93,7 @@ contains
         real(c_double), allocatable :: charges(:)
         real(c_double), allocatable :: centers(:)
         integer(c_int) :: symmetry_info(4)
+        type(PCMInput) :: host_input
 
         global_print_unit = print_unit
 
@@ -109,9 +111,10 @@ contains
         call collect_symmetry_info(symmetry_info)
 
         if (pcmmod_host_provides_input) then
-            context_ = pcmsolver_new(PCMSOLVER_READER_HOST, nr_nuclei, charges, centers, symmetry_info, pcmsolver_input())
+            host_input = pcmsolver_input()
+            context_ = pcmsolver_new(PCMSOLVER_READER_HOST, nr_nuclei, charges, centers, symmetry_info, host_input)
         else
-            context_ = pcmsolver_new(PCMSOLVER_READER_OWN, nr_nuclei, charges, centers, symmetry_info, pcmsolver_empty_input())
+            context_ = pcmsolver_new(PCMSOLVER_READER_OWN, nr_nuclei, charges, centers, symmetry_info, host_input)
         end if
 
         deallocate(charges)
