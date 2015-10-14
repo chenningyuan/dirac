@@ -316,7 +316,7 @@ module fde_evaluators_dirac
       if (present(myprint)) then
          printlocal = myprint
       else
-         printlocal = .True.
+         printlocal = .False.
       endif
 
       allocate(dmat(n2bbasxq))
@@ -394,7 +394,7 @@ module fde_evaluators_dirac
       NCNT = 0.0
       GAB1 = 0.0
 
-      WRITE(*,*) 'Calculating the density and its derivatives.'
+!     WRITE(*,*) 'Calculating the density and its derivatives.'
       
       do i = 1, size(grid%r,2)
 
@@ -539,17 +539,17 @@ module fde_evaluators_dirac
          call fde_dirac_get_density_from_dfcoef('DHF ',fde_grid_sv,gf_active_sv)
 
          fde_dirac_embpot_static_energy = 0.0d0
-         print *, "debug: number of points ",fde_grid_sv%npoints
+!        print *, "debug: number of points ",fde_grid_sv%npoints
          do i = 1, fde_grid_sv%npoints
             fde_dirac_embpot_static_energy = fde_dirac_embpot_static_energy &
                      + fde_grid_sv%w(i) * gf_active_sv%n(i) * fde_static_vemb(i) 
-            if ( i .eq. 5 ) then
-               print *, "w: ",fde_grid_sv%w(i)
-               print *, "n: ",gf_active_sv%n(i)
-               print *, "v: ",fde_static_vemb(i)
-            endif
+!           if ( i .eq. 5 ) then
+!              print *, "w: ",fde_grid_sv%w(i)
+!              print *, "n: ",gf_active_sv%n(i)
+!              print *, "v: ",fde_static_vemb(i)
+!           endif
          end do
-         print *, "embpot energy: ",fde_dirac_embpot_static_energy
+         print *, "debug, embpot energy: ",fde_dirac_embpot_static_energy
 
       end function
 
