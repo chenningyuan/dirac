@@ -58,9 +58,9 @@ if(ENABLE_PCMSOLVER)
 
             link_directories(${PROJECT_BINARY_DIR}/external/lib)
             set(EXTERNAL_LIBS
-                stdc++
+                ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES}
                 pcm
-                stdc++
+                ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES}
                 getkw
                 ${ZLIB_LIBRARIES}
                 ${EXTERNAL_LIBS})
