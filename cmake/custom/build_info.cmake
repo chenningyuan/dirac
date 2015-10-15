@@ -34,7 +34,9 @@ if(GIT_FOUND)
         OUTPUT_VARIABLE _git_branch
         ERROR_QUIET
         )
-    string(STRIP ${_git_branch} _git_branch)
+    if(_git_branch)
+        string(STRIP ${_git_branch} _git_branch)
+    endif()
 # printout  
     message(STATUS "-------------------------------------------------------------")
     message(STATUS "Git branch               : ${_git_branch}")
