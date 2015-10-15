@@ -28,8 +28,8 @@ module fde_export_data
    use fde_io
    use xml_parser
    use xml_file
-   use fde_evaluators
    use fde_mag_cfg
+   use fde_evaluators_dirac
 #endif
    
    implicit none
@@ -61,8 +61,15 @@ module fde_export_data
          
          if (etmp%do_grid_out .and. (level.eq.etmp%ex_level)) then
             write (*,*) 'Preparing FDE data for export'
+
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
             call fde_prepare_export(level,fde_grid_ex,gf_export)
-         
+
             call fde_get_export_info(etmp) 
             if (etmp%ex_format.eq.'XML') then
                call fde_export_data_as_xml(fde_grid_ex,gf_export)
@@ -309,12 +316,9 @@ module fde_export_data
 
          do i = 1, grid%npoints
             if (fde_rsp_mag_lao_export.and..not.fde_rsp_mag_lao_no_s) then
-               !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
-! aspg 29/09/2015
-! the sign here is to align the notation to adf
-                                               -gf%elpot(i),          &
+                                               gf%elpot(i),          &
                                                v_pc_array,            &
                                                gf%n(i),               &
                                                (gf%gn(j,i), j = 1,3), &
@@ -323,24 +327,18 @@ module fde_export_data
                                                ((gf%s_b(j,k,i), j = 1,3), k=1,3),  &
                                                (((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3)
             else if (fde_rsp_mag_lao_export.and.fde_rsp_mag_lao_no_s) then
-               !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
-! aspg 29/09/2015
-! the sign here is to align the notation to adf
-                                               -gf%elpot(i),          &
+                                               gf%elpot(i),          &
                                                v_pc_array,            &
                                                gf%n(i),               &
                                                (gf%gn(j,i), j = 1,3), &
                                                (gf%n_b(j,i), j = 1,3), &
                                                ((gf%gn_b(j,k,i), j = 1,3), k=1,3)
             else
-               !write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
                write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
-! aspg 29/09/2015
-! the sign here is to align the notation to adf
-                                               -gf%elpot(i),          &
+                                               gf%elpot(i),          &
                                                v_pc_array,            &
                                                gf%n(i),               &
                                                (gf%gn(j,i), j = 1,3)

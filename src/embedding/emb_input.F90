@@ -25,8 +25,7 @@ module fde_input
    use fde_cfg
    use fde_data
    use fde_nadd_derv
-   use fde_evaluators
-!   use fde_evaluators_dirac
+   use fde_evaluators_dirac
    
    implicit none
 
@@ -127,13 +126,14 @@ module fde_input
          end if
       endif
 
+      call fde_initialize_nadd_functionals         
+
       if (itmp%im_vemb) then
          call fde_import_static      
       endif
 
       if (itmp%im_frozen) then
          call fde_import_frozen
-         call fde_initialize_nadd_functionals         
       endif
 
       if (etmp%do_grid_out) then

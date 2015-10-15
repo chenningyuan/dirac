@@ -10,6 +10,7 @@ module fde_evaluators_dirac
    use fde_nadd_derv
    use fde_xcfun_interface
    use fde_max_block_length
+   use fde_mpi
 
 ! dirac-specific modules
    use numoper_integrals
@@ -127,8 +128,7 @@ module fde_evaluators_dirac
 
 ! dmat is allocated and set in the routine below
          call fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint=printlocal)
-! we calculate both the nuclear and electrostatic potentials in one call
-! if needed, we can split this up later 
+
          call fde_dirac_calculate_elpot(dmat,grid%r,gf%elpot,myprint=printlocal)
          call fde_dirac_calculate_nucpot(dmat,grid%r,gf%nucpot)
 
@@ -206,6 +206,15 @@ module fde_evaluators_dirac
                       nuc_part,      &
                       ele_part)
 
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+
+        vnuc = -vnuc
+
       end subroutine fde_dirac_calculate_nucpot
 
 
@@ -252,6 +261,15 @@ module fde_evaluators_dirac
                       nuc_part,      &
                       ele_part)
 
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+
+        vc = -vc
+
       end subroutine fde_dirac_calculate_hartree
 
 
@@ -297,6 +315,16 @@ module fde_evaluators_dirac
                       r,             &
                       nuc_part,      &
                       ele_part)
+
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac
+!       have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+
+        vc = -vc
 
       end subroutine fde_dirac_calculate_elpot
       
@@ -416,7 +444,7 @@ module fde_evaluators_dirac
       if (present(myprint)) then
          printlocal = myprint
       else
-         printlocal = .True.
+         printlocal = .False.
       endif
 
       allocate(dmat(n2bbasxq))
@@ -494,7 +522,7 @@ module fde_evaluators_dirac
       NCNT = 0.0
       GAB1 = 0.0
 
-      WRITE(*,*) 'Calculating the density and its derivatives.'
+!     WRITE(*,*) 'Calculating the density and its derivatives.'
       
       do i = 1, size(grid%r,2)
 
@@ -639,118 +667,76 @@ module fde_evaluators_dirac
          call fde_dirac_get_density_from_dfcoef('DHF ',fde_grid_sv,gf_active_sv)
 
          fde_dirac_embpot_static_energy = 0.0d0
-         print *, "debug: number of points ",fde_grid_sv%npoints
+!        print *, "debug: number of points ",fde_grid_sv%npoints
          do i = 1, fde_grid_sv%npoints
             fde_dirac_embpot_static_energy = fde_dirac_embpot_static_energy &
                      + fde_grid_sv%w(i) * gf_active_sv%n(i) * fde_static_vemb(i) 
-            if ( i .eq. 5 ) then
-               print *, "w: ",fde_grid_sv%w(i)
-               print *, "n: ",gf_active_sv%n(i)
-               print *, "v: ",fde_static_vemb(i)
-            endif
+!           if ( i .eq. 5 ) then
+!              print *, "w: ",fde_grid_sv%w(i)
+!              print *, "n: ",gf_active_sv%n(i)
+!              print *, "v: ",fde_static_vemb(i)
+!           endif
          end do
-         print *, "embpot energy: ",fde_dirac_embpot_static_energy
+         print *, "debug, embpot energy: ",fde_dirac_embpot_static_energy
 
       end function
 
 
-      subroutine fde_dirac_emb_interaction_energy(fde_active_energy,level,myprint)
+      subroutine fde_dirac_interaction_components(level,verbose,non_additive,el_coulomb_f,el_nuclearAtt_a)
+         logical, intent(in)  :: verbose
          character(len=4), intent(in)  :: level
-         logical, intent(in), optional :: myprint
-         real(8), intent(in)  :: fde_active_energy 
-         logical              :: printlocal
-         integer              :: derv_length, max_fun_derv, bllen, i
-         integer              :: logunit
-         real(8)              :: w(1), energy, interaction
-         real(8)              :: df_interaction
-         real(8)              :: el_interaction
-         real(8)              :: el_interaction_a
-         real(8)              :: el_interaction_f
-         real(8)              :: el_nuclearAtt_a 
-         real(8)              :: el_nuclearAtt_f 
-         real(8)              :: n_0_a(1), gnn_0_a(1)
-         real(8)              :: n_0_f(1), gnn_0_f(1)
-         real(8)              :: n_0_t(1), gnn_0_t(1)
+         integer              :: derv_length, max_fun_derv, bllen, i, order
          real(8)              :: threshold
-         real(8)              :: internuclear 
          real(8)              :: df_energy
          real(8), allocatable :: derv_active(:, :)
          real(8), allocatable :: derv_frozen(:, :)
          real(8), allocatable :: derv_total(:, :)
-         type(fde_files)      :: ftmp
-         type(fde_import)     :: itmp
-         real(8) :: total_system_energy
+         real(8), intent(out) :: non_additive
+         real(8), intent(out) :: el_coulomb_f
+         real(8), intent(out) :: el_nuclearAtt_a
+         real(8)              :: w(1) 
+         real(8)              :: n_0_a(1), gnn_0_a(1)
+         real(8)              :: n_0_f(1), gnn_0_f(1)
+         real(8)              :: n_0_t(1), gnn_0_t(1)
 
-
-         if (present(myprint)) then
-            printlocal = myprint
-         else
-            printlocal = .True.
-         endif
-
-         call fde_get_files_info(ftmp)
-         call fde_get_import_info(itmp)
-
-         logunit      = ftmp%logfile%unit
-
-         threshold    = 1.0e-16
+         threshold    = 1.0e-28
          max_fun_derv = 1
-         bllen        = 1 
+         bllen        = 1
+         order        = 1
+!        parallel_fde = (fde_mpi_get_nr_proc() > 1) 
+         parallel_fde = .false.
          derv_length  = nr_nonzero_derv
-         internuclear = fde_intersub_nucrep
-
-         if (nr_boson_irreps > 1) then
-            write (logunit,'(2X,A)') 'FDE interaction energy contributions not available'
-            write (logunit,'(3X,A)') '    (only C(1) symmetry currently supported)'
-            return
-         else if (.not.itmp%im_frozen) then 
-            write (logunit,'(2X,A)') 'FDE interaction energy contributions not available'
-            write (logunit,'(3X,A)') '    (frozen density not available)'
-            return
-         endif
 
          allocate(derv_active(max_block_length, 0:derv_length))
          allocate(derv_frozen(max_block_length, 0:derv_length))
          allocate(derv_total(max_block_length,  0:derv_length))
 
-! we don't need the complete electrostatic potential for the active system, when we import the
-! one for the frozen system
-!
-!        call fde_calculate_elpot(level,fde_grid_im,gf_active,myprint=printlocal)
+! aspg: todo for static potential
+! problem here is that if using a static potential we don't go over the
+! integrator and when broadcasting the functionals there won't be a process
+! listening... it's
+!         call fde_set_nadd_functionals(order,parallel_fde)
 
          call fde_dirac_get_density_from_dfcoef(level,fde_grid_im,gf_active)
-         call fde_calculate_nucpot(level,fde_grid_im,gf_active,myprint=printlocal)
+         call fde_calculate_nucpot(level,fde_grid_im,gf_active,myprint=verbose)
 
-         el_interaction = 0.0d0
-         el_interaction_a = 0.0d0
-         el_interaction_f = 0.0d0
-
+         el_coulomb_f = 0.0d0
          el_nuclearAtt_a = 0.0d0
-         el_nuclearAtt_f = 0.0d0
+         non_additive = 0.0d0
 
-         df_interaction = 0.0d0
-         interaction = 0.0d0
+         derv_active = 0.0d0
+         derv_frozen = 0.0d0
+         derv_total  = 0.0d0
 
-         derv_active = 0.0d0 
-         derv_frozen = 0.0d0 
-         derv_total  = 0.0d0 
-
-!
-! debug: read the active subsystem density obtained from adf
-!
-
-!
-! debug: read the active subsystem density obtained from adf
-!
          do i = 1, fde_grid_im%npoints
 
             w(1) = 1.0
 
             n_0_a(1)   = gf_active%n(i)
             if ( n_0_a(1) .gt. threshold) then
-               gnn_0_a(1) = gf_active%gn(1,i) * gf_active%gn(1,i) & 
+               gnn_0_a(1) = gf_active%gn(1,i) * gf_active%gn(1,i) &
                           + gf_active%gn(2,i) * gf_active%gn(2,i) &
-                          + gf_active%gn(3,i) * gf_active%gn(3,i) 
+                          + gf_active%gn(3,i) * gf_active%gn(3,i)
 
                call get_xcke_fun_derv(max_fun_derv, &
                                       bllen,        &
@@ -761,14 +747,14 @@ module fde_evaluators_dirac
             else
                n_0_a(1)    = 0.0d0
                gnn_0_a(1)  = 0.0d0
-               derv_active = 0.0d0 
+               derv_active = 0.0d0
             endif
 
             n_0_f(1)   = gf_frozen%n(i)
             if ( n_0_f(1) .gt. threshold) then
-               gnn_0_f(1) = gf_frozen%gn(1,i) * gf_frozen%gn(1,i) & 
+               gnn_0_f(1) = gf_frozen%gn(1,i) * gf_frozen%gn(1,i) &
                           + gf_frozen%gn(2,i) * gf_frozen%gn(2,i) &
-                          + gf_frozen%gn(3,i) * gf_frozen%gn(3,i) 
+                          + gf_frozen%gn(3,i) * gf_frozen%gn(3,i)
 
                call get_xcke_fun_derv(max_fun_derv, &
                                       bllen,        &
@@ -786,7 +772,7 @@ module fde_evaluators_dirac
             if ( n_0_t(1) .gt. threshold) then
                gnn_0_t(1) = ((gf_active%gn(1,i) + gf_frozen%gn(1,i))*(gf_active%gn(1,i) + gf_frozen%gn(1,i))) &
                           + ((gf_active%gn(2,i) + gf_frozen%gn(2,i))*(gf_active%gn(2,i) + gf_frozen%gn(2,i))) &
-                          + ((gf_active%gn(3,i) + gf_frozen%gn(3,i))*(gf_active%gn(3,i) + gf_frozen%gn(3,i))) 
+                          + ((gf_active%gn(3,i) + gf_frozen%gn(3,i))*(gf_active%gn(3,i) + gf_frozen%gn(3,i)))
 
                call get_xcke_fun_derv(max_fun_derv, &
                                       bllen,        &
@@ -800,44 +786,102 @@ module fde_evaluators_dirac
                derv_total  = 0.0d0
             endif
            df_energy = derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000)
-           df_interaction   = df_interaction + fde_grid_im%w(i)*df_energy
-
-           el_interaction_f = el_interaction_f + fde_grid_im%w(i)*gf_frozen%elpot(i)*n_0_a(1)
-           el_nuclearAtt_a  = el_nuclearAtt_a  - fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
-
-           interaction    = el_interaction_f + el_nuclearAtt_a + df_interaction
+           non_additive     = non_additive    + fde_grid_im%w(i)*df_energy
+           el_coulomb_f     = el_coulomb_f    + fde_grid_im%w(i)*gf_frozen%elpot(i)*n_0_a(1)
+           el_nuclearAtt_a  = el_nuclearAtt_a - fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
          end do
 
-         WRITE(logunit,'(A)') ''
-         write(logunit,'(2X,A)') 'FDE frozen subsystem contributions'
-         write(logunit,'(/3X,A,F22.15)') 'Total energy                            : ',fde_frozen_energy
+         if (allocated(derv_active)) deallocate(derv_active)
+         if (allocated(derv_frozen)) deallocate(derv_frozen)
+         if (allocated(derv_total))  deallocate(derv_total)
 
-         write (logunit,'(/,2X,A,/)')    'FDE interaction energy contributions'
-         write (logunit,'(4X,A,F22.15)') '1. Non-additive  contributions          : ',df_interaction
-         write (logunit,'(4X,A)')        '2. Electrostatic contributions'
-         write (logunit,'(4X,A,F22.15)') '   \int dr [v^B_nuc(r)+v^B_H(r)]rho_A(r): ',el_interaction_f
-         write (logunit,'(4X,A,F22.15)') '              \int dr v^A_nuc(r)rho_B(r): ',el_nuclearAtt_a
-         if (internuclear.gt.0.0d0) then
-            write (logunit,'(4X,A,F22.15)') '3. Intersubsystem nuclear repulsion     : ',internuclear
+      end subroutine
+
+      subroutine fde_dirac_emb_interaction_energy(fde_active_energy,level,myprint,recalculate)
+         character(len=4), intent(in)  :: level
+         logical, intent(in), optional :: myprint
+         logical, intent(in), optional :: recalculate
+         real(8), intent(in)  :: fde_active_energy 
+         logical              :: printlocal
+         logical              :: recalculate_local
+         integer              :: logunit
+         real(8)              :: energy, interaction
+         real(8)              :: non_additive
+         real(8)              :: electrostatic 
+         real(8)              :: el_coulomb_f
+         real(8)              :: el_nuclearAtt_a 
+         real(8)              :: internuclear 
+         type(fde_files)      :: ftmp
+         type(fde_import)     :: itmp
+         real(8)              :: total_system_energy
+
+         if (present(myprint)) then
+            printlocal = myprint
          else
-            write (logunit,'(3X,A)') ' 3. Intersubsystem nuclear repulsion     :      n/a'
+            printlocal = .True.
          endif
-         if (internuclear.gt.0.0d0) then
-            interaction = interaction + internuclear
-            write (logunit,'(/3X,A,F22.15)') 'Interaction energy (1+2+3)               : ',interaction
+
+         if (present(recalculate)) then
+            recalculate_local = recalculate 
          else
-            write (logunit,'(/3X,A,F22.15)') 'Interaction energy (1+2)                 : ',interaction
+            recalculate_local = .False.
          endif
+
+         call fde_get_files_info(ftmp)
+         call fde_get_import_info(itmp)
+
+         logunit      = ftmp%logfile%unit
+
+         internuclear = fde_intersub_nucrep
+
+         if (itmp%im_vemb) then 
+            WRITE (logunit,'(A)') ''
+            write (logunit,'(2X,A)') 'FDE interaction energy contributions not available for static potential'
+            WRITE (logunit,'(A)') ''
+            return
+         endif
+
+         if (.not.itmp%im_frozen) then 
+            WRITE (logunit,'(A)') ''
+            write (logunit,'(2X,A)') 'FDE interaction energy contributions not available'
+            write (logunit,'(3X,A)') '    (frozen density not available)'
+            WRITE (logunit,'(A)') ''
+            return
+         endif
+
+         if (recalculate_local) then
+            call fde_dirac_interaction_components(level,printlocal,non_additive,el_coulomb_f,el_nuclearAtt_a)
+         else
+            non_additive     = fde_dirac_interaction_nadd()
+            el_coulomb_f     = fde_dirac_interaction_el_b_rho_a()
+            el_nuclearAtt_a  = fde_dirac_interaction_nuc_a_rho_b()
+         endif
+
+         electrostatic = el_coulomb_f + el_nuclearAtt_a + internuclear 
+         interaction   = electrostatic + non_additive
+
+         WRITE(logunit,'(A)') ''
+         write(logunit,'(2X,A)') 'FDE frozen subsystem contributions (imported)'
+         write(logunit,'(/3X,A,F22.15)') 'Total energy                             : ',fde_frozen_energy
+
+         write (logunit,'(/,2X,A,/)')    'FDE interaction energy contributions ('//level(1:4)//' active density)'
+         write (logunit,'(3X,A,F22.15)') '1. Non-additive  contributions           : ',non_additive
+         write (logunit,'(/3X,A)')       '2. Electrostatic contributions'
+         write (logunit,'(4X,A,F22.15)') ' a.\int dr [v^B_nuc(r)+v^B_H(r)]rho_A(r): ',el_coulomb_f
+         write (logunit,'(4X,A,F22.15)') ' b.           \int dr v^A_nuc(r)rho_B(r): ',el_nuclearAtt_a
+         if (internuclear.gt.0.0d0) then
+            write (logunit,'(4X,A,F22.15)') ' c. Intersubsystem nuclear repulsion    : ',internuclear
+         else
+            write (logunit,'(4X,A)')     ' c. Intersubsystem nuclear repulsion    :   not given'
+         endif
+         write (logunit,'(4X,A,F22.15)') '                                  Total : ',electrostatic
+         write (logunit,'(/3X,A,F22.15)') 'Interaction energy (1+2)                 : ',interaction
 
          if ((internuclear.ne.0.0d0).and.(fde_frozen_energy.ne.0.0d0)) then
             total_system_energy = interaction + fde_frozen_energy + fde_active_energy
             write(logunit,'(A)') ''
             write (logunit,'(3X,A,F22.15)') 'Total system energy                      : ',total_system_energy
          end if
-
-         if (allocated(derv_active)) deallocate(derv_active)
-         if (allocated(derv_frozen)) deallocate(derv_frozen)
-         if (allocated(derv_total))  deallocate(derv_total)
 
      end subroutine fde_dirac_emb_interaction_energy
 

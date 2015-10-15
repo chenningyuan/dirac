@@ -98,8 +98,8 @@ implicit none
    private
 
    integer, save      :: fde_print_level   = 0
-   real(kind=8), save :: fde_cfg_screening = 1.0d-9
-   real(kind=8), save :: fde_cfg_tinydens  = 1.0d-14
+   real(kind=8), save :: fde_cfg_screening = 1.0d-10
+   real(kind=8), save :: fde_cfg_tinydens  = 1.0d-22
    logical, save      :: parallel_fde   = .false.
 
    logical, save      :: fde_cfg_alda_hs = .false.
