@@ -46,6 +46,7 @@ module fde_mpi
    public fde_mpi_distribute_points
    public fde_mpi_distribute_frozen
    public fde_get_my_rank
+   public fde_mpi_gather
 #endif
 
    private
@@ -136,6 +137,11 @@ contains
 !      real(8) :: x(:)
 !      call interface_mpi_gather(x, size(x),  irank_master, global_communicator)
 !   end subroutine
+
+    subroutine fde_mpi_gather(x)
+       real(8) :: x(:)
+       call mpi_gather(x, size(x), mpi_double_precision, x, size(x), mpi_double_precision, 0, global_communicator, ierr)
+    end subroutine
 
    subroutine fde_mpi_bcast_i0(x)
       integer :: x
