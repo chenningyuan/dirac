@@ -1309,9 +1309,9 @@ contains
          end if !embedding potential
 
          if (use_potential) then
-            !call find_vemb_ipoint(rx(ipoint), ry(ipoint), rz(ipoint), w(1), vemb)
             vemb = use_vemb(ipoint)*w(1)
-            call find_vemb_ipoint(rx(ipoint), ry(ipoint), rz(ipoint), w(1), use_vemb(ipoint))
+!left for debugging, normally the order of embedding potential should follow the order of grid points, so this is not necessary...
+!            call find_vemb_ipoint(rx(ipoint), ry(ipoint), rz(ipoint), w(1), use_vemb(ipoint))
          end if
 
 !       london contributions to differentiated Kohn-Sham matrix, 
@@ -2264,10 +2264,6 @@ contains
                      ao)
        end if
 
-       !if (use_potential) then
-       !else
-       !end if
-
        u%n(im) = u%n(im) + (derv_total(1, d2000000) - derv_active(1, d2000000))*r_b
 
        if (is_gga) then
@@ -2310,11 +2306,6 @@ contains
                         buffer,                     &
                         ao)
           end if
-
-          !if (use_potential) then
-          !else
-          !end if
-
 
           do k = k_start, 3
 
