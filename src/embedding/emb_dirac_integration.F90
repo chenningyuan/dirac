@@ -59,6 +59,8 @@ module fde_dirac_matrices_integration
    real(8), allocatable :: frozen_gny(:)
    real(8), allocatable :: frozen_gnz(:)
    real(8), allocatable :: frozen_elpot(:)
+
+   real(8), allocatable :: use_vemb(:)
    
    real(8), allocatable :: dmat_sorted(:, :)
 
@@ -431,13 +433,14 @@ contains
       end if
 
       if (use_potential) then
-         if (.not. allocated(fde_static_vemb)) then
-            write(*,*) 'warning, fde_static_vemb not allocated, will be allocated here'
-            call fde_import_static
+! gosia: here fde_static_vemb seems not to be allocated, even if run with *EMBPOT in the input,
+! so i have to read it in again:
+         if (fde_mpi_is_master()) then
+           call fde_import_static
+         end if
             !do i = 1, fde_grid_sv%npoints
             !   write(*, *) 'buba i, fde_static_vemb(i) =', i, fde_static_vemb(i)
             !end do
-         end if
       end if
 
       nullify(fmat)
@@ -715,7 +718,8 @@ contains
 
    subroutine find_vemb_ipoint(x, y, z, w, vemb)
       real(8), intent(in)  :: x, y, z, w
-      real(8), intent(out) :: vemb
+      !real(8), intent(out) :: vemb
+      real(8), intent(in) :: vemb
       integer :: i
       integer :: nrow
       logical :: found
@@ -724,10 +728,13 @@ contains
          found = (fde_grid_sv%r(1,i)==x).and.(fde_grid_sv%r(2,i)==y).and.(fde_grid_sv%r(3,i)==z).and.(fde_grid_sv%w(i)==w)
          if (found) then
             nrow = i
+            if (vemb .ne. fde_static_vemb(nrow)) then
+               write(*, *) 'wrong vemb'
+            end if
          end if
       end do
 
-      vemb = fde_static_vemb(nrow)
+!      vemb = fde_static_vemb(nrow)
 
    end subroutine
 
@@ -1291,19 +1298,20 @@ contains
 
             u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint) 
 
-         if (use_gga) then
-!           this factor has nothing to do
-!           with symmetrization later
-!           it comes from the fact that derivative of z
-!           yields two identical terms (one left, one right)
-           u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
-         end if
+            if (use_gga) then
+!              this factor has nothing to do
+!              with symmetrization later
+!              it comes from the fact that derivative of z
+!              yields two identical terms (one left, one right)
+              u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
+            end if
 
          end if !embedding potential
 
          if (use_potential) then
-            call find_vemb_ipoint(rx(ipoint), ry(ipoint), rz(ipoint), w(1), vemb)
-            vemb = vemb*w(1)
+            !call find_vemb_ipoint(rx(ipoint), ry(ipoint), rz(ipoint), w(1), vemb)
+            vemb = use_vemb(ipoint)*w(1)
+            call find_vemb_ipoint(rx(ipoint), ry(ipoint), rz(ipoint), w(1), use_vemb(ipoint))
          end if
 
 !       london contributions to differentiated Kohn-Sham matrix, 
@@ -1884,6 +1892,10 @@ contains
             allocate(frozen_gnz(nr_points_batch))
             allocate(frozen_elpot(nr_points_batch))
 
+            if (use_potential) then
+               allocate(use_vemb(nr_points_batch))
+            end if
+
 !radovan: grid stuff will be moved outside this module
             if (fde_mpi_is_master()) then
                 rx = active_grid%r(1,:)
@@ -1896,6 +1908,10 @@ contains
                 frozen_gny(:) = gf_frozen%gn(2,:)
                 frozen_gnz(:) = gf_frozen%gn(3,:)
                 frozen_elpot(:)= gf_frozen%elpot(:)
+
+                if (use_potential) then
+                   use_vemb(:) = fde_static_vemb(:)
+                end if
             end if
 
             ibatch = ibatch + 1
@@ -1906,6 +1922,9 @@ contains
          if (parallel_fde) then
             call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc) 
             call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
+            if (use_potential) then
+              call fde_mpi_distribute_vemb(use_vemb, nr_points_batch, nr_points_on_this_proc)
+            end if
          end if
 #endif
 !        if (do_potential .or. (response_order_mo == 1)) then
@@ -1934,6 +1953,7 @@ contains
             deallocate(frozen_gny)
             deallocate(frozen_gnz)
             deallocate(frozen_elpot)
+            if (allocated(use_vemb)) deallocate(use_vemb)
 
 !          don't try to read another batch
            goto 999

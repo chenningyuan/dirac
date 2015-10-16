@@ -45,6 +45,7 @@ module fde_mpi
    public fde_mpi_reduce
    public fde_mpi_distribute_points
    public fde_mpi_distribute_frozen
+   public fde_mpi_distribute_vemb
    public fde_get_my_rank
 #endif
 
@@ -419,6 +420,64 @@ contains
          end if
       end if
    end subroutine
+
+
+   subroutine fde_mpi_distribute_vemb(vemb, nr_points_batch, nr_points_on_this_proc)
+      real(8)              :: vemb(*)
+      integer              :: nr_points_batch
+      integer              :: nr_points_on_this_proc
+      real(8), allocatable :: buffer(:)
+      integer              :: nr_points_rest
+      integer              :: i
+      integer, allocatable :: dist_overview(:)
+      integer              :: isum
+
+      nr_points_on_this_proc = nr_points_batch/fde_mpi_get_nr_proc()
+      if (fde_mpi_is_master()) then
+         allocate(buffer(nr_points_on_this_proc))
+         call interface_mpi_scatter_r1_work_f77(vemb, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         deallocate(buffer)
+      else
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, vemb, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+      end if
+
+!     if there is a rest of points, send them to the last proc
+      nr_points_rest = mod(nr_points_batch, fde_mpi_get_nr_proc())
+      if (nr_points_rest > 0) then
+         if (fde_mpi_is_master()) then
+            i = nr_points_batch - nr_points_rest + 1
+            call interface_mpi_send(vemb(i), nr_points_rest, fde_mpi_get_nr_proc()-1, 90, global_communicator)
+         end if
+         if (get_my_rank() == (fde_mpi_get_nr_proc()-1)) then
+            i = nr_points_on_this_proc + 1
+            call interface_mpi_recv(vemb(i), nr_points_rest, irank_master,  90, global_communicator)
+            nr_points_on_this_proc = nr_points_on_this_proc + nr_points_rest
+         end if
+      end if
+
+      allocate(dist_overview(0:fde_mpi_get_nr_proc()-1))
+      dist_overview = 0
+      dist_overview(get_my_rank()) = nr_points_on_this_proc
+      call fde_mpi_reduce(dist_overview)
+      if (fde_mpi_is_master()) then
+         do i = 0, fde_mpi_get_nr_proc()-1
+!           write(*, *) 'proc', i+1, 'will calculate', dist_overview(i), 'points'
+         end do
+      end if
+      deallocate(dist_overview)
+
+!     verify that sum matches nr_points_batch
+      isum = nr_points_on_this_proc
+      call fde_mpi_reduce(isum)
+      if (fde_mpi_is_master()) then
+         if (isum /= nr_points_batch) then
+            call quit('programming error in distribution of points in parallel FDE')
+         end if
+      end if
+   end subroutine
+
 #endif /* ifdef VAR_MPI */
 
 end module
