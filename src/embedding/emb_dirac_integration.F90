@@ -62,6 +62,21 @@ module fde_dirac_matrices_integration
 
    real(8), allocatable :: use_vemb(:)
    
+! -------------------------------------------
+! for electrostatic, density calculation 
+   real(8), allocatable :: active_elpot(:)
+   real(8), allocatable :: active_n(:)   
+   real(8), allocatable :: active_gnx(:) 
+   real(8), allocatable :: active_gny(:) 
+   real(8), allocatable :: active_gnz(:) 
+   real(8), allocatable :: active_hnxx(:)
+   real(8), allocatable :: active_hnxy(:)
+   real(8), allocatable :: active_hnxz(:)
+   real(8), allocatable :: active_hnyy(:)
+   real(8), allocatable :: active_hnyz(:)
+   real(8), allocatable :: active_hnzz(:)
+! -------------------------------------------
+
    real(8), allocatable :: dmat_sorted(:, :)
 
    real(8) :: nr_electrons_integrated
@@ -153,6 +168,8 @@ module fde_dirac_matrices_integration
    logical :: do_fde_response
 
    type(fde_grid) :: active_grid
+   type(grid_function):: active_gridfunction
+
    real(8), allocatable :: elpot(:)
 
    integer, allocatable, target :: default_fmat_pg_sym(:)
@@ -211,7 +228,8 @@ contains
                              fde_do_london_rhs_direct_kern,   &
                              fde_do_london_rhs_kern_coupling, &
                              fde_do_london_rhs_ro,      &
-                             fde_active_grid)
+                             fde_active_grid,           &
+                             fde_active_gridfunction)
 
 ! response_order_mo/_ao:  0 - do nothing (no response)
 !                         1 - ks lr
@@ -257,15 +275,14 @@ contains
       logical, optional,         intent(in)    :: fde_do_london_rhs_kern_coupling
       logical, optional,         intent(in)    :: fde_do_london_rhs_ro
 !     --------------------------------------------------------------------------
-      type(fde_grid), optional,  intent(in)    :: fde_active_grid
+      type(fde_grid),      optional, intent(in):: fde_active_grid
+      type(grid_function), optional, intent(in):: fde_active_gridfunction
 !     --------------------------------------------------------------------------
       real(8), external :: ddot
       integer, parameter :: max_mat_number = 10
       integer, target    :: default_pg_sym(max_mat_number)
       integer, target    :: default_ih_sym(max_mat_number)
       real(8)             :: save_ddot1, save_ddot2, h
-!     --------------------------------------------------------------------------
-      real(8), allocatable :: electrostatic_potential_a(:)
 !     --------------------------------------------------------------------------
       integer, parameter :: max_response_order_mo = 5
       integer :: i, j, iz, imat
@@ -345,11 +362,32 @@ contains
          if (present(fde_do_london_ks))          do_london_ks          = fde_do_london_ks
          if (present(fde_do_london_lr))          do_london_lr          = fde_do_london_lr
          if (present(fde_nr_atoms))              nr_atoms              = fde_nr_atoms
+
+! aspg, 16/10/2015
+!
+! the defaults for the fde grid and gridfunction are, respectively, the grid and
+! gridfunction variables containing the data for the frozen subsystem.
+!
+! these defaults should be applicable to all actions having to do with adding
+! contributions to (perturbed) fock matrices, such as calculating embedding
+! potential, kernel and higher-order contributions, shieldings etc.
+!
+! one can also give the grid and gridfunctions for the export of density and
+! electrostatic potential
+!
+!  
          if (present(fde_active_grid)) then
             active_grid = fde_active_grid
          else
             active_grid = fde_grid_im
          end if
+
+         if (present(fde_active_gridfunction)) then
+            active_gridfunction = fde_active_gridfunction
+         else
+            active_gridfunction = gf_frozen
+         end if
+
 
          if (do_potential) then
             do_interaction_energy = .true.
@@ -386,11 +424,6 @@ contains
 
 !     nullify(tmat_1)
 !     nullify(tmat_2)
-      if (do_electrostatic_pot) then
-          allocate(electrostatic_potential_a(active_grid%npoints))
-          electrostatic_potential_a = 0.0d0
-      end if
-
       if (do_geo_1) then
          allocate(tmat_1(mat_dim, mat_dim))
          tmat_1(:, :) = fde_dmat(:, :, 1, 1)
@@ -619,7 +652,11 @@ contains
       fmat = 0.0d0
 #endif
 
-      call loop_over_batches()
+      if (do_electrostatic_pot) then
+         call loop_over_batches_elpot()
+      else
+         call loop_over_batches()
+      end if
 
 #ifdef VAR_MPI
       if (parallel_fde) then
@@ -636,7 +673,47 @@ contains
          end if
          if (do_electrostatic_pot) then
 ! we want to send the points in the nodes to a final vector in master
-!           call fde_mpi_gather(elpot)
+            call fde_mpi_gather(active_elpot)
+            call fde_mpi_gather(active_n)
+            call fde_mpi_gather(active_gnx)
+            call fde_mpi_gather(active_gny)
+            call fde_mpi_gather(active_gnz)
+            call fde_mpi_gather(active_hnxx)
+            call fde_mpi_gather(active_hnxy)
+            call fde_mpi_gather(active_hnxz)
+            call fde_mpi_gather(active_hnyy)
+            call fde_mpi_gather(active_hnyz)
+            call fde_mpi_gather(active_hnzz)
+
+            if (fde_mpi_is_master()) then
+               active_gridfunction%elpot(:) = active_elpot(:)
+
+               active_gridfunction%n(:)     = active_n(:)
+
+               active_gridfunction%gn(:,1)  = active_gnx(:)
+               active_gridfunction%gn(:,2)  = active_gny(:)
+               active_gridfunction%gn(:,3)  = active_gnz(:)
+               
+               active_gridfunction%hn(:,1)  = active_hnxx(:)
+               active_gridfunction%hn(:,2)  = active_hnxy(:)
+               active_gridfunction%hn(:,3)  = active_hnxz(:)
+               active_gridfunction%hn(:,4)  = active_hnyy(:)
+               active_gridfunction%hn(:,5)  = active_hnyz(:)
+               active_gridfunction%hn(:,6)  = active_hnzz(:)
+            endif
+
+            deallocate(active_elpot)
+            deallocate(active_n)
+            deallocate(active_gnx)
+            deallocate(active_gny)
+            deallocate(active_gnz)
+            deallocate(active_hnxx)
+            deallocate(active_hnxy)
+            deallocate(active_hnxz)
+            deallocate(active_hnyy)
+            deallocate(active_hnyz)
+            deallocate(active_hnzz)
+
          end if
          if (nr_fmat > 0) then
             call fde_mpi_reduce(fmat)
@@ -974,7 +1051,6 @@ contains
    logical :: nuc_part
    logical :: ele_part
    real(8), allocatable :: active_nucpot(:)
-   real(8), allocatable :: active_elpot(:)
    integer :: np_esp
    integer :: irrep_esp
 
@@ -1125,10 +1201,6 @@ contains
             allocate(active_nucpot(np_esp))
             active_nucpot = 0.0d0
          end if
-         if (do_electrostatic_pot) then
-            allocate(active_elpot(nr_points_on_this_proc))
-            active_elpot = 0.0d0
-         end if
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
@@ -1267,30 +1339,6 @@ contains
             electrostatic_a_rho_b_interaction = electrostatic_a_rho_b_interaction + w(1)*active_nucpot(1)*n_0_f(1)
 
         end if ! interaction energy components
-
-!       if (do_electrostatic_pot) then
-!
-!           nuc_part = .true.
-!           ele_part = .true.
-!           call get_esp(np_esp,        &
-!                        active_elpot(ipoint), &
-!                        irrep_esp,     &
-!                        size(dmat, 1), &
-!                        dmat,          &
-!                        (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
-!                        nuc_part,      &
-!                        ele_part)
-!
-! aspg, 14/10/2015
-!       note that the electrostatic, hartree and nuclear potentials in dirac have
-!       been multiplied by -1 when exported so that we don't have to multipy the 
-!       product potential * density by the electron charge when calculating the
-!       energy. with this, the potentials will be in line with those obtained
-!       e.g. with adf 
-!
-!           active_elpot(ipoint) = -active_elpot(ipoint)
-!
-!       end if ! electrostatic potential
 
 !       embedding potential
 !       ===================
@@ -1786,7 +1834,6 @@ contains
     deallocate(derv_active)
 
     if (allocated(derv_frozen)) deallocate(derv_frozen)
-    if (allocated(active_elpot)) deallocate(active_elpot)
     if (allocated(active_nucpot)) deallocate(active_nucpot)
 
     deallocate(u%n)
@@ -1903,15 +1950,16 @@ contains
                 rz = active_grid%r(3,:)
                 rw = active_grid%w
  
-                frozen_n(:)   = gf_frozen%n(:)
-                frozen_gnx(:) = gf_frozen%gn(1,:)
-                frozen_gny(:) = gf_frozen%gn(2,:)
-                frozen_gnz(:) = gf_frozen%gn(3,:)
-                frozen_elpot(:)= gf_frozen%elpot(:)
-
                 if (use_potential) then
                    use_vemb(:) = fde_static_vemb(:)
                 end if
+
+                frozen_n     = active_gridfunction%n
+                frozen_gnx   = active_gridfunction%gn(1,:)
+                frozen_gny   = active_gridfunction%gn(2,:)
+                frozen_gnz   = active_gridfunction%gn(3,:)
+                frozen_elpot = active_gridfunction%elpot
+
             end if
 
             ibatch = ibatch + 1
@@ -2552,5 +2600,208 @@ contains
 
   end subroutine
 
+
+
+
+! ----------------------------------------------------------------------------
+   subroutine loop_over_batches_elpot()
+! ----------------------------------------------------------------------------
+     real(8) :: dummy
+     integer :: idummy
+     integer :: ibatch
+     integer :: i
+     real(8), allocatable :: mpi_buffer(:)
+
+     if (fde_mpi_is_master()) then
+        nr_points_batch = active_grid%npoints
+     end if
+#ifdef VAR_MPI
+     if (parallel_fde) then
+        call fde_mpi_bcast(nr_points_batch)
+     end if
+#endif
+     ibatch          = 0
+     nr_points_total = 0
+     nr_points_used  = 0
+
+!    loop over batches
+     do
+        if (nr_points_batch < 0) exit
+
+        allocate(rx(nr_points_batch))
+        allocate(ry(nr_points_batch))
+        allocate(rz(nr_points_batch))
+        allocate(rw(nr_points_batch))
+
+        allocate(active_elpot(nr_points_batch))
+        allocate(active_n(nr_points_batch))
+        allocate(active_gnx(nr_points_batch))
+        allocate(active_gny(nr_points_batch))
+        allocate(active_gnz(nr_points_batch))
+        allocate(active_hnxx(nr_points_batch))
+        allocate(active_hnxy(nr_points_batch))
+        allocate(active_hnxz(nr_points_batch))
+        allocate(active_hnyy(nr_points_batch))
+        allocate(active_hnyz(nr_points_batch))
+        allocate(active_hnzz(nr_points_batch))
+
+        if (fde_mpi_is_master()) then
+           rx = active_grid%r(1,:)
+           ry = active_grid%r(2,:)
+           rz = active_grid%r(3,:)
+           rw = active_grid%w
+        end if
+
+        ibatch = ibatch + 1
+        nr_points_total = nr_points_total + nr_points_batch
+        nr_points_on_this_proc = nr_points_batch
+
+#ifdef VAR_MPI
+        if (parallel_fde) then
+           call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc)
+        end if
+#endif
+        call get_electrostatic_potential_and_density()
+
+        deallocate(rx)
+        deallocate(ry)
+        deallocate(rz)
+        deallocate(rw)
+
+! don't try to read another batch
+        goto 999
+
+!     end loop over batches
+     end do
+ 999 continue
+
+     end subroutine loop_over_batches_elpot
+
+! ------------------------------------------------------------------------------
+   subroutine get_electrostatic_potential_and_density()
+! ------------------------------------------------------------------------------
+!        unperturbed density
+   real(8) :: n_0(max_block_length)
+!        unperturbed density gradient
+   real(8) :: gn_0_pointwise(3)
+   real(8) :: hn_0_pointwise(6)
+!     --------------------------------------------------------------------------
+   real(8) :: temp
+   real(8) :: block_threshold
+   integer :: ipoint
+   integer :: k
+   integer :: i
+   logical :: print_data_at_point
+   logical :: nuc_part
+   logical :: ele_part
+   integer :: np_esp
+   integer :: irrep_esp
+
+   real(8), allocatable :: ao(:, :)
+   real(8), allocatable :: buffer(:, :)
+
+   if (.not. fde_use_blas3_scheme) then
+
+      allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
+      ao = 0.0d0
+      allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
+      buffer = 0.0d0
+
+      print_data_at_point = .true.
+
+      np_esp    = 1
+      irrep_esp = 1
+
+      nuc_part = .true.
+      ele_part = .true.
+
+      active_elpot = 0.0d0
+      active_n     = 0.0d0
+      active_gnx   = 0.0d0
+      active_gny   = 0.0d0
+      active_gnz   = 0.0d0
+      active_hnxx  = 0.0d0
+      active_hnxy  = 0.0d0
+      active_hnxz  = 0.0d0
+      active_hnyy  = 0.0d0
+      active_hnyz  = 0.0d0
+      active_hnzz  = 0.0d0
+
+
+!  here starts the expensive loop over points
+!  do not evaluate anything inside this loop
+!  that does not change from point to point
+      do ipoint = 1, nr_points_on_this_proc
+      
+         time_ao_start = second()
+         call get_ao(1,    &
+               rx(ipoint), &
+               ry(ipoint), &
+               rz(ipoint), &
+               ao,         &
+               buffer)
+!        time_ao = time_ao + second() - time_ao_start
+
+!        time_density_start = second()
+
+         gn_0_pointwise(1) = 0.0d0 
+         gn_0_pointwise(2) = 0.0d0 
+         gn_0_pointwise(3) = 0.0d0
+
+         hn_0_pointwise(1) = 0.0d0 
+         hn_0_pointwise(2) = 0.0d0 
+         hn_0_pointwise(3) = 0.0d0
+         hn_0_pointwise(4) = 0.0d0 
+         hn_0_pointwise(5) = 0.0d0 
+         hn_0_pointwise(6) = 0.0d0
+
+         if (need_ao_order(1, 0)) then
+!           density and density gradient
+            call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
+         else
+!           density
+            call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
+         endif
+
+         active_n(ipoint)   = n_0(1)
+
+         active_gnx(ipoint) = gn_0_pointwise(1)
+         active_gny(ipoint) = gn_0_pointwise(2)
+         active_gnz(ipoint) = gn_0_pointwise(3)
+
+         active_hnxx(ipoint)= hn_0_pointwise(1)
+         active_hnxy(ipoint)= hn_0_pointwise(2)
+         active_hnxz(ipoint)= hn_0_pointwise(3)
+         active_hnyy(ipoint)= hn_0_pointwise(4)
+         active_hnyz(ipoint)= hn_0_pointwise(5)
+         active_hnzz(ipoint)= hn_0_pointwise(6)
+
+!        time_density = time_density + second() - time_density_start
+
+         call get_esp(np_esp,        &
+                   active_elpot(ipoint), &
+                   irrep_esp,     &
+                   size(dmat, 1), &
+                   dmat,          &
+                   (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
+                   nuc_part,      &
+                   ele_part)
+!
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+!
+      active_elpot(ipoint) = -active_elpot(ipoint)
+!
+    end do !do ipoint = 1, nr_points_on_this_proc
+    end if
+
+    deallocate(ao)
+    deallocate(buffer)
+
+   end subroutine 
 
 end module fde_dirac_matrices_integration
