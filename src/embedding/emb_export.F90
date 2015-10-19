@@ -89,8 +89,8 @@ module fde_export_data
          type(fde_grid), intent(in)         :: grid
          character(len=4)                   :: level
 
-        call fde_calculate_elpot(level,grid,gf)
-        call fde_get_density(level,grid,gf)
+        call fde_calculate_elpot(level,grid,gf,old_scheme=.true.)
+!       call fde_get_density(level,grid,gf)
 
       end subroutine fde_prepare_export
 

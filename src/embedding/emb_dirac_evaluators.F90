@@ -56,7 +56,6 @@ module fde_evaluators_dirac
       module procedure fde_dirac_embpot_via_aoproper
    end interface
 
-
    public fde_calculate_emb_linrsp_mat
    interface fde_calculate_emb_linrsp_mat
       module procedure fde_dirac_linrsp_via_integrator
@@ -89,7 +88,42 @@ module fde_evaluators_dirac
    contains
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_calculate_elpot(level,grid,gf,myprint)
+      subroutine fde_calculate_elpot(level,grid,gf,myprint,old_scheme)
+!   ----------------------------------------------------------------------------
+         type(grid_function), intent(inout) :: gf
+         type(fde_grid), intent(in)         :: grid
+         character(len=4)                   :: level
+         real(kind=8), allocatable          :: dmat(:)
+         logical, intent(in), optional      :: myprint
+         logical, intent(in), optional      :: old_scheme
+         logical                            :: printlocal
+         logical                            :: old_scheme_local
+         type(fde_files)                    :: ftmp
+         type(fde_import)                   :: itmp
+
+         if (present(myprint)) then
+            printlocal = myprint
+         else
+            printlocal = .True.
+         end if
+
+         if (present(old_scheme)) then
+            old_scheme_local = old_scheme
+         else
+            old_scheme_local = .False.
+         end if
+
+         if (old_scheme_local) then
+            call fde_calculate_elpot_via_esp(level,grid,gf,myprint)
+            call fde_get_density(level,grid,gf)
+         else
+            call fde_calculate_elpot_via_integrator(level,grid,gf,myprint)
+         endif
+
+      end subroutine fde_calculate_elpot
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_calculate_elpot_via_esp(level,grid,gf,myprint)
 !   ----------------------------------------------------------------------------
          type(grid_function), intent(inout) :: gf
          type(fde_grid), intent(in)         :: grid
@@ -110,8 +144,10 @@ module fde_evaluators_dirac
          call fde_get_import_info(itmp)
 
          if (nr_boson_irreps > 1) then
+            write (logunit,*) ''
             write (logunit,'(2X,A)') 'FDE electrostatic potential not available'
             write (logunit,'(3X,A)') '    (only C(1) symmetry currently supported)'
+            write (logunit,*) ''
             return
          endif
 
@@ -128,7 +164,60 @@ module fde_evaluators_dirac
 
          deallocate(dmat)
 
-      end subroutine fde_calculate_elpot
+      end subroutine fde_calculate_elpot_via_esp
+
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_calculate_elpot_via_integrator(level,grid,gf,myprint)
+!   ----------------------------------------------------------------------------
+         type(grid_function), intent(inout) :: gf
+         type(fde_grid), intent(in)         :: grid
+         character(len=4)                   :: level
+         real(kind=8), allocatable          :: dmat(:)
+         logical, intent(in), optional      :: myprint
+         logical                            :: printlocal
+         type(fde_files)                    :: ftmp
+         type(fde_import)                   :: itmp
+
+         if (present(myprint)) then
+            printlocal = myprint
+         else
+            printlocal = .True.
+         endif
+
+         call fde_get_files_info(ftmp)
+         call fde_get_import_info(itmp)
+
+         if (nr_boson_irreps > 1) then
+            write (logunit,*) ''
+            write (logunit,'(2X,A)') 'FDE electrostatic potential not available'
+            write (logunit,'(3X,A)') '    (only C(1) symmetry currently supported)'
+            write (logunit,*) ''
+            return
+         endif
+
+! dmat is allocated and set in the routine below
+         call fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint=printlocal)
+
+         call fde_dirac_set_isymop(isymop)
+         call fde_dirac_set_ihrmop(ihrmop)
+#ifdef VAR_MPI
+         if (fde_mpi_get_nr_proc() > 1) then
+            call dirac_parctl(12)
+         end if 
+#endif
+         call fde_dirac_emb_matrices_via_integration(         &
+                          fde_mat_dim              = nba_orb, &
+                          fde_nz                   = nz,      &
+                          fde_dmat_0               = dmat,    &
+                          fde_nr_dmat              = 0,       &
+                          fde_nr_fmat              = 0,       &
+                          fde_do_electrostatic_pot = .true.,  &
+                          fde_active_grid          = grid,    &
+                          fde_active_gridfunction  = gf)    
+
+
+      end subroutine fde_calculate_elpot_via_integrator
 
 
 !   ----------------------------------------------------------------------------
