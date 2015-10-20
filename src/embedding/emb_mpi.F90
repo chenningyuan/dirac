@@ -124,11 +124,25 @@ contains
    end function
 
 #ifdef VAR_MPI
-    subroutine fde_mpi_collect_at_master(x, nr_elements)
-       real(8) :: x(:)
-       integer :: nr_elements
+!    subroutine fde_mpi_collect_at_master(src, src_count, dst, offsets)
+!       real(8) :: src(:)
+!       integer :: src_count
+!       real(8) :: dst(:)
+!!       integer :: dst_count(:)
+!       integer :: offsets(:)
+!       integer :: i
+!
+!       if (fde_mpi_is_master()) then
+!          allocate(offsets(nr_proc))
+!          do i = 1, nr_proc
+!            offsets() 
+!          end do 
+!       end if
+!        
+!       call mpi_gather(src, src_count, mpi_double_precision, dst, dst_count, offsets, mpi_double_precision, irank_master, global_communicator, ierr)
+!
+!    end subroutine
 
-    end subroutine
 
     subroutine fde_mpi_gather(x,y)
        real(8) :: x(:), y(:)
@@ -136,7 +150,13 @@ contains
 
        nel = size(x)/fde_mpi_get_nr_proc() 
 
+!      print *,'debug',get_my_rank(),' x before gather:',x
+!      print *,'debug',get_my_rank(),' y before gather:',y
+
        call mpi_gather(x, nel, mpi_double_precision, y, nel, mpi_double_precision, irank_master, global_communicator, ierr)
+
+!      print *,'debug',get_my_rank(),' x after gather:',x
+!      print *,'debug',get_my_rank(),' y after gather:',y
     end subroutine
 
    subroutine fde_mpi_bcast_i0(x)

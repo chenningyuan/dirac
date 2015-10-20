@@ -575,15 +575,15 @@ contains
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) &
             call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
-#ifdef PRG_DIRAC
          if (.not. do_electrostatic_pot) then
+#ifdef PRG_DIRAC
             call scale_density_matrices(2.0d0)
-         end if
 #endif
 
          call insert_half_phases()
+         end if ! do_electrostatic_pot
 
-      end if
+      end if ! fde_mpi_is_master
 
 #ifdef VAR_MPI
       if (parallel_fde) then
@@ -688,27 +688,6 @@ contains
             call fde_mpi_reduce(electrostatic_b_rho_a_interaction)
             call fde_mpi_reduce(electrostatic_a_rho_b_interaction)
          end if
-         if (do_electrostatic_pot) then
-! we want to send the points in the nodes to a final vector in master
-            call fde_mpi_gather(active_elpot, active_gridfunction%elpot)
-            call fde_mpi_gather(active_nucpot, active_gridfunction%nucpot)
-            call fde_mpi_gather(active_n, active_gridfunction%n)
-!           call fde_mpi_gather(active_gnx, active_gridfunction%gn(1,:))
-!           call fde_mpi_gather(active_gny, active_gridfunction%gn(2,:))
-!           call fde_mpi_gather(active_gnz, active_gridfunction%gn(3,:))
-!           call fde_mpi_gather(active_elpot)
-!           call fde_mpi_gather(active_nucpot)
-!           call fde_mpi_gather(active_n)
-!           call fde_mpi_gather(active_gnx)
-!           call fde_mpi_gather(active_gny)
-!           call fde_mpi_gather(active_gnz)
-!           call fde_mpi_gather(active_hnxx)
-!           call fde_mpi_gather(active_hnxy)
-!           call fde_mpi_gather(active_hnxz)
-!           call fde_mpi_gather(active_hnyy)
-!           call fde_mpi_gather(active_hnyz)
-!           call fde_mpi_gather(active_hnzz)
-         end if
          if (nr_fmat > 0) then
             call fde_mpi_reduce(fmat)
          end if
@@ -717,46 +696,6 @@ contains
          end if
       end if
 #endif
-
-      if (do_electrostatic_pot) then
-         if (fde_mpi_is_master()) then
-
-! aspg, 19/10/2015
-! here we scale the density, density gradient etc since for the
-! calculation of the electrostatic potential we needed the unscaled 
-! density matrix
- 
-!           active_gridfunction%elpot(:) = active_elpot(:)
-!           active_gridfunction%nucpot(:)= active_nucpot(:)
-
-            active_gridfunction%n(:)     = 2.0d0 * active_gridfunction%n(:) !active_n(:)
-
-!           active_gridfunction%gn(1,:)  = 2.0d0 * active_gnx(:)
-!           active_gridfunction%gn(2,:)  = 2.0d0 * active_gny(:)
-!           active_gridfunction%gn(3,:)  = 2.0d0 * active_gnz(:)
-
-!           active_gridfunction%hn(1,:)  = 2.0d0 * active_hnxx(:)
-!           active_gridfunction%hn(2,:)  = 2.0d0 * active_hnxy(:)
-!           active_gridfunction%hn(3,:)  = 2.0d0 * active_hnxz(:)
-!           active_gridfunction%hn(4,:)  = 2.0d0 * active_hnyy(:)
-!           active_gridfunction%hn(5,:)  = 2.0d0 * active_hnyz(:)
-!           active_gridfunction%hn(6,:)  = 2.0d0 * active_hnzz(:)
-         endif
-         deallocate(active_elpot)
-         deallocate(active_nucpot)
-         deallocate(active_n)
-         deallocate(active_gnx)
-         deallocate(active_gny)
-         deallocate(active_gnz)
-         deallocate(active_hnxx)
-         deallocate(active_hnxy)
-         deallocate(active_hnxz)
-         deallocate(active_hnyy)
-         deallocate(active_hnyz)
-         deallocate(active_hnzz)
-      end if
-
-
 
 
       if (fde_mpi_is_master()) then
@@ -2063,6 +2002,54 @@ contains
         deallocate(rz)
         deallocate(rw)
 
+! here we'd set the array for gatherv indicating the offsets of each process
+!
+! 
+! we want to send the points in the nodes to a final vector in master
+!       print *,'process',fde_get_my_rank(),'size gf',active_gridfunction%npoints
+!       print *,'process',fde_get_my_rank(),'size on proc',nr_points_on_this_proc
+
+        call fde_mpi_gather(active_elpot, active_gridfunction%elpot)
+        call fde_mpi_gather(active_nucpot, active_gridfunction%nucpot)
+        call fde_mpi_gather(active_n, active_gridfunction%n)
+        call fde_mpi_gather(active_gnx, active_gridfunction%gn(1,:))
+        call fde_mpi_gather(active_gny, active_gridfunction%gn(2,:))
+        call fde_mpi_gather(active_gnz, active_gridfunction%gn(3,:))
+
+        if (fde_mpi_is_master()) then
+
+! aspg, 19/10/2015
+! here we scale the density, density gradient etc since for the
+! calculation of the electrostatic potential we needed the unscaled 
+! density matrix
+
+            active_gridfunction%n(:)    = 2.0d0 * active_gridfunction%n(:)
+
+            active_gridfunction%gn(1,:) = 2.0d0 * active_gridfunction%gn(1,:)
+            active_gridfunction%gn(2,:) = 2.0d0 * active_gridfunction%gn(2,:)
+            active_gridfunction%gn(3,:) = 2.0d0 * active_gridfunction%gn(3,:)
+
+            active_gridfunction%hn(1,:) = 2.0d0 * active_gridfunction%hn(1,:)
+            active_gridfunction%hn(2,:) = 2.0d0 * active_gridfunction%hn(2,:)
+            active_gridfunction%hn(3,:) = 2.0d0 * active_gridfunction%hn(3,:)
+            active_gridfunction%hn(4,:) = 2.0d0 * active_gridfunction%hn(4,:)
+            active_gridfunction%hn(5,:) = 2.0d0 * active_gridfunction%hn(5,:)
+            active_gridfunction%hn(6,:) = 2.0d0 * active_gridfunction%hn(6,:)
+         endif
+         deallocate(active_elpot)
+         deallocate(active_nucpot)
+         deallocate(active_n)
+         deallocate(active_gnx)
+         deallocate(active_gny)
+         deallocate(active_gnz)
+         deallocate(active_hnxx)
+         deallocate(active_hnxy)
+         deallocate(active_hnxz)
+         deallocate(active_hnyy)
+         deallocate(active_hnyz)
+         deallocate(active_hnzz)
+
+
 ! don't try to read another batch
         goto 999
 
@@ -2094,7 +2081,6 @@ contains
 
    real(8), allocatable :: ao(:, :)
    real(8), allocatable :: buffer(:, :)
-   real(8) :: r(1, 3)
 
    if (.not. fde_use_blas3_scheme) then
 
@@ -2130,10 +2116,6 @@ contains
 !  that does not change from point to point
       do ipoint = 1, nr_points_on_this_proc
       
-         r(1,1) = rx(ipoint)
-         r(1,2) = ry(ipoint)
-         r(1,3) = rz(ipoint)
-
          time_ao_start = second()
          call get_ao(1,    &
                rx(ipoint), &
@@ -2186,8 +2168,7 @@ contains
                    irrep_esp,       &
                    size(dmat_0, 1), &
                    dmat_0,          &
-                   r, &
-!                  (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
+                   (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
                    nuc_part,      &
                    ele_part)
 !
@@ -2207,8 +2188,7 @@ contains
                    irrep_esp,       &
                    size(dmat_0, 1), &
                    dmat_0,          &
-                   r, &
-!                  (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
+                   (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
                    nuc_part,      &
                    ele_part)
 
