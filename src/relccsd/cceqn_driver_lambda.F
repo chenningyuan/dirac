@@ -52,7 +52,6 @@ C---------------Common Blocks--------------------------------------
 
 C---------------Local variables--------------------------------------
 
-      REAL*8     :: CPU,CPU4V,CPUH1,CPUH2
       LOGICAL    :: FOCKSP,PRENE
       real*8,allocatable :: resL1(:),resL2(:),dinv_one(:),dinv_two(:)
       real*8,allocatable :: G_oo(:),G_vv(:)
@@ -86,7 +85,7 @@ C     Initialize the work arrays to zero.
                         
        call getampt (s1,s2)
 
-       CALL ZCORE (S1,S2)
+!!       CALL ZCORE (S1,S2)
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
@@ -107,7 +106,7 @@ C     Initialize the work arrays to zero.
 
 !!         call w_ejmb(S1,S2,w_voov)
 
-          call wbar_mbej(S2,w_ovvo)
+          call wbar_mbej(S2,w_ovvo,buf2,buf3)
 
         write(*,*)'w_mbej done',
      &  dot_product(w_ovvo(1:iovvo(nrep+1)*rcw),
@@ -152,7 +151,7 @@ C     Initialize the work arrays to zero.
       call srt1c1 (nrep,nv,no,s1,l1) 
       call srt1c1 (nrep,nvvt,noot,s2,l2) 
 
-      CALL ZCORE (L1,L2)
+!!      CALL ZCORE (L1,L2)
 
 !     Initialize the work arrays to zero.
 
@@ -229,16 +228,25 @@ C     Initialize the work arrays to zero.
 
        rms = sqrt((rms)/(ndimt1+ndimt2)*rcw)
 
-      write(*,*)'maximum value RESL1',maxval(abs(resl1))
-      write(*,*)'maximum value RESL2',maxval(abs(resl2))
+      write(iw,*)'maximum value RESL1',maxval(abs(resl1))
+      write(iw,*)'maximum value RESL2',maxval(abs(resl2))
       
 
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
-       call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
-       call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
 
-      CALL ZCORE (L1,L2)
+
+      CALL DENOM_L (EPS,RESL1,RESL2,RESL1,RESL2)
+
+
+       call xaxpy (ndimt1,-a1,resL1,1,l1,1)
+       call xaxpy (ndimt2,-a2,resL2,1,l2,1)
+
+
+!      call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
+!      call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
+
+!!      CALL ZCORE (L1,L2)
 
       CALL XTIME(5,1,'- DIIS extrapolation            ')
       call diisx(ndimt1,ndimt2,l1,l2,   

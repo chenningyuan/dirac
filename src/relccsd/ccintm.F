@@ -386,6 +386,7 @@ C                   ---------------------------------------
  15        CONTINUE
  20      CONTINUE
  30    CONTINUE
+
 C------------------------------------------------------------------
 C Now sort H(AK,CI) to H(AI,CK)  is to be done in any case !!
 C The H buffer is not changed any more up to the final XGEMM !
@@ -1699,6 +1700,95 @@ C
 C
       RETURN
       END
+
+!###############################################################################
+
+      SUBROUTINE CNTRCT_SP (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
+     &                   BETA,C)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Generalization of XGEMM to contract symmetry packed matrices
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+#include "symm.inc"
+      REAL*8 A(*),B(*),C(*)
+      COMPLEX*16 ALPHA,BETA
+      INTEGER MDIM(NREP),NDIM(NREP),KDIM(NREP)
+      CHARACTER*1 TRANSA,TRANSB
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+      INTEGER :: OFFXX(NREP+1),OFFYY(NREP+1),OFFZZ(NREP+1),IRP,JRP
+C---------------Executable code--------------------------------------
+C
+
+       OFFXX(1) = 0
+       OFFYY(1) = 0
+       OFFZZ(1) = 0
+
+      DO IRP = 1, NREP
+         JRP = MULTB(IRP+NREP,1+NREP,2)
+         OFFXX(IRP+1) = OFFXX(IRP) + MDIM(IRP)*KDIM(JRP) 
+         if (TRANSB.EQ.'N'.OR.TRANSB.EQ.'n') then
+          OFFYY(IRP+1) = OFFYY(IRP) + KDIM(IRP)*NDIM(JRP)
+         else
+          OFFYY(IRP+1) = OFFYY(IRP) + NDIM(IRP)*KDIM(JRP)
+         endif
+         OFFZZ(IRP+1) = OFFZZ(IRP) + MDIM(IRP)*NDIM(IRP) 
+      ENDDO
+
+      DO IRP = 1, NREP
+
+         JRP = MULTB(IRP+NREP,1+NREP,2)
+
+         OFF1 = 1 + OFFXX(JRP) * RCW
+         OFF2 = 1 + OFFYY(IRP) * RCW
+         OFF3 = 1 + OFFZZ(IRP) * RCW
+
+         M = MDIM(IRP)
+         N = NDIM(IRP)
+         K = KDIM(JRP)
+         IF (TRANSA.EQ.'N'.OR.TRANSA.EQ.'n') THEN
+            LDA = M
+         ELSE
+            LDA = K
+         ENDIF
+         IF (TRANSB.EQ.'N'.OR.TRANSB.EQ.'n') THEN
+            LDB = K
+         ELSE
+            LDB = N
+         ENDIF
+         LDC = M
+         IF (K.EQ.0) THEN
+            CALL XSCAL (M*N,BETA,C(OFF3),1)
+         ELSE
+            CALL XGEMM (TRANSA,TRANSB,M,N,K,ALPHA,A(OFF1),LDA,
+     &                  B(OFF2),LDB,BETA,C(OFF3),LDC)
+         ENDIF
+
+          OFF1 = OFF1 + M*K
+
+      ENDDO
+C
+      RETURN
+      END
+
+!###############################################################################
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DINTM1(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C

@@ -46,7 +46,7 @@ CHARACTER*14 REPNT(16)
       integer, parameter :: MXREP=32, MAXSP=1000
 !--------------------------------------------------------
 character*4 REPN(16), REPNA(MXREP*2)
-integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,2)
+integer :: IREPSP(MAXSP*4),MULTB(MXREP*2,MXREP*2,3)
 real*8 EPS1(MAXSP) ! orbital energies ...
 LOGICAL BREIT,SPFR,CARITH ! Breit interaction, spin-free, complex-arithmetic
 CHARACTER*10 NEXTFIL, INTERFACE

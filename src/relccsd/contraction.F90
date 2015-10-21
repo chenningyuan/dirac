@@ -359,7 +359,7 @@
 !--------------------------------------------------------------
    integer        :: x_row(nrep),x_column(nrep),y_row(nrep),y_column(nrep)
    character(1)   :: transA, transB
-   integer        :: save_index,i
+   integer        :: save_index_l,save_index_r,save_index,i
    character(2)   :: sorted_opArray_left(4),sorted_opArray_right(4)
    real(8),allocatable  :: v_sort(:)
    real(8),allocatable  :: right_sorted(:)
@@ -384,25 +384,25 @@
 
 !  1) fetch the array which is flexible in terms of indices. this array is also suitable for BLAS. we are also getting row and column indices for this array here.
 
-    call decide_sorting_routine(22,left_order,right_order,im_order,transA,save_index,asym_factor_L,.true., &
+    call decide_sorting_routine(22,left_order,right_order,im_order,transA,save_index_l,asym_factor_L,.true., &
     &  sorted_opArray=sorted_opArray_left)
 
     if (present(LeftTensor)) then 
-    call sorting_for_blas(save_index,.false.,transA,v_sort,x_row,x_column, presorted=LeftTensor,if_TotSym=.false.)
+    call sorting_for_blas(save_index_l,.false.,transA,v_sort,x_row,x_column, presorted=LeftTensor,if_TotSym=.false.)
     else
-    call sorting_for_blas(save_index,.false.,transA,v_sort,x_row,x_column,if_TotSym=.false.)
+    call sorting_for_blas(save_index_l,.false.,transA,v_sort,x_row,x_column,if_TotSym=.false.)
     endif
 
 !  2) properly sort the fixed array to contract with BLAS. row and colum indices for this array are also extracted here.
 
 
-    call decide_sorting_routine(22,right_order,im_order,sorted_opArray_left,transB,save_index,asym_factor_R,&
+    call decide_sorting_routine(22,right_order,im_order,sorted_opArray_left,transB,save_index_r,asym_factor_R,&
     &          .false.,sorted_opArray=sorted_opArray_right)
 
     if (present(RightTensor)) then 
-    call sorting_for_blas(save_index,.false.,transB,right_sorted,y_row,y_column, presorted=RightTensor,if_TotSym=.false.)
+    call sorting_for_blas(save_index_r,.false.,transB,right_sorted,y_row,y_column, presorted=RightTensor,if_TotSym=.false.)
     else
-    call sorting_for_blas(save_index,.false.,transB,right_sorted,y_row,y_column,rightTensor,if_TotSym=.false.)
+    call sorting_for_blas(save_index_r,.false.,transB,right_sorted,y_row,y_column,if_TotSym=.false.)
     endif
 
 !  3) matrix-matrix multiplication routine runs for each irreps.
@@ -413,15 +413,20 @@
 
    im_temp = 0.0d0
 
-   call cntrct (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp,NREP) 
-
+  !if ((save_index_l==3).or.(save_index_r==3)) then  
+   call cntrct_sp (transA,transB,x_row,y_column,y_row,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp) 
+  ! else 
+!!   call cntrct (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp,nrep) 
+  ! endif
    transA = 'N'
+
+   v_sort = 0.0d0
 
    call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
                        & transA,save_index,asym_factor_R,.false.,sorted_opArray=sorted_opArray_right,inverse=.true.)
 
    if (transA=='T') then
-
+    write(*,*)'possibility of mistake'
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
    call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
@@ -635,12 +640,12 @@
 
   end subroutine
 
- integer function dotprod_symmpack(row,column) 
+  function array_tot(row,column) 
 
 #include "symm.inc"
 
   integer, intent(in) :: row(nrep),column(nrep)
-  integer             :: array_tot(nrep)
+  integer             :: array_tot(nrep+1)
   integer             :: irep,jrep 
 
    do irep = 1, nrep
@@ -650,7 +655,7 @@
        
    enddo
       
-       dotprod_symmpack = array_tot(nrep+1) 
+!!       dotprod_symmpack = array_tot(nrep+1) 
 
  end function
 

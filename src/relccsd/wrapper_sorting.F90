@@ -728,13 +728,7 @@
 
 
      if (present(presorted)) then
-!     allocate (v%presorted(size(presorted)),stat=AllocateStatus) 
 
-!     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
-!     v%presorted = 0.0d0
-
-!     call dcopy(size(presorted),presorted,1,v%presorted,1) 
       B%integral => presorted(1:size(presorted)) 
 
      endif
@@ -791,13 +785,19 @@
      &         c(d%L)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%braket)%totsym%full_array,c(d%ket_reorder+shift1)%tuple, &
      &         B%integral,sorted) 
 
+      elseif (save_index==2) then
+
+      call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
+     &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+    
       else
 
       call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
      &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
-     
-       
+
+
        endif
 
          case('restricted_braket') 
@@ -821,9 +821,21 @@
         row     = c(d%ket_reorder)%tuple_combInd     
        endif
        endif
+
+      
+      if (save_index==2) then
+
+      call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+      &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array, &
+      &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+
+      else
+
       call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+
+      endif
 
          case('restricted_bra')
 
@@ -875,9 +887,20 @@
        endif
        endif
 
+      if (save_index==2) then
+
+      call srt_22(save_index)%restricted_ket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,  &
+     &             c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array,&
+     &             c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+
+
+      else
+
       call srt_22(save_index)%restricted_ket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,  &
      &             c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array,&
      &             c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+
+      endif
        end select
      else
       write(*,*)'====sorting is not needed===='

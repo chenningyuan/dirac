@@ -1019,6 +1019,12 @@ C
          MOV(IREP) = 0
          MVO(IREP) = 0
          MVV(IREP) = 0
+
+         POO(IREP) = 0
+         POV(IREP) = 0
+         PVO(IREP) = 0
+         PVV(IREP) = 0
+
          NOO(IREP) = 0
          NOV(IREP) = 0
          NVO(IREP) = 0
@@ -1411,6 +1417,25 @@ C
          ENDDO
       ENDDO
 C
+
+
+      DO JREP = 1, NREP
+         DO IREP = 1, NREP
+            IJREP = MULTB(IREP,JREP,3)
+            KKOO(IREP,JREP) = POO(IJREP)
+            KKOV(IREP,JREP) = POV(IJREP)
+            KKVO(IREP,JREP) = PVO(IJREP)
+            KKVV(IREP,JREP) = PVV(IJREP)
+            POO(IJREP) = POO(IJREP) + NO(IREP)*NO(JREP)
+            POV(IJREP) = POV(IJREP) + NO(IREP)*NV(JREP)
+            PVO(IJREP) = PVO(IJREP) + NV(IREP)*NO(JREP)
+            PVV(IJREP) = PVV(IJREP) + NV(IREP)*NV(JREP)
+         ENDDO
+      ENDDO
+C
+
+
+
       DO JREP = 1, NREP
          IJREP = MULTB(JREP,JREP,1)
          IIOOT(JREP,JREP) = NOOT(IJREP)
@@ -3052,18 +3077,18 @@ C         this means that, for the time being, we can deallocate everything?
 
 
 !     Get amplitude part of density matrix
-!!      allocate(l1_sort(ndimt1*rcw))
-!!      allocate(l2_sort(ndimt2*rcw))
+!!!     allocate(l1_sort(ndimt1*rcw))
+!!!     allocate(l2_sort(ndimt2*rcw))
 
-!!       call srt1c1(nrep,no,nv,a_T1,l1_sort)
-!!       call srt1c1(nrep,noot,nvvt,a_T2,l2_sort)
+!!!      call srt1c1n(nrep,no,nv,a_T1,l1_sort)
+!!!      call srt1c1n(nrep,noot,nvvt,a_T2,l2_sort)
 
-!!       CALL CCDENSC (2, a_S1  , l1_sort  , a_S2, l2_sort,
-!!   &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
-!!   &                    a_DVV , a_DVO , a_DOV , a_DMO)
+!!!      CALL CCDENSC (2, a_S1  , l1_sort  , a_S2, l2_sort,
+!!!  &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
+!!!  &                    a_DVV , a_DVO , a_DOV , a_DMO)
 
-!!      deallocate(l1_sort)
-!!      deallocate(l2_sort)
+!!!     deallocate(l1_sort)
+!!!     deallocate(l2_sort)
 
        call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2, 
      &                   a_dmo)
@@ -4409,6 +4434,7 @@ C
          ENDDO
       ENDDO
        write(*,*) (REPNA(IREP),IREP=1,2*NREP)
+
 !     write(*,*)
 !     write(*,*) '--------------------------------------------'
 !     write(*,*) '---  multiplication table  -----------------'
@@ -4442,6 +4468,12 @@ C
          ENDDO
       ENDDO
 
+      DO JREP = 1, 2*NREP
+         DO IREP = 1, 2*NREP
+            MULTB(IREP,JREP,3) =  MULTB(JREP,IREP,2)
+         ENDDO
+      ENDDO
+ 
 c     write(*,*)
 c     write(*,*) '--------------------------------------------'
 c     write(*,*) '---  multiplication table (no offset) ------'
@@ -4456,8 +4488,18 @@ c     write(*,*) '---  inverse multiplication table (no offset) -----'
 c     write(*,*) '---------------------------------------------------'
 c     write(*,*)
 c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
 c     ENDDO
+
+c     write(*,*)
+c     write(*,*) '-------------------------------------- ------------'
+c     write(*,*) '---  forward multiplication table (no offset) -----'
+c     write(*,*) '---------------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*NREP)
+c     ENDDO
+
 C
 C     Distribute the information read from MRCONEE
 C

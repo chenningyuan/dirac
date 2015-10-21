@@ -856,19 +856,12 @@ C---------------Executable code--------------------------------------
              FAC = FAC1 - EPS(II)
 
              IF (FAC.GT.DHOLU) THEN
-                IF (CARITH) THEN
                    CONST = AR1/FAC
-                   DINV_ONE(IA:IA+1) = CONST
-                ELSE
-                   DINV_ONE(IA) = AR1/FAC
-                ENDIF
+                   DINV_ONE(IA:IA+(RCW-1)) = CONST
              ELSE
-                IF (CARITH) THEN
-                   DINV_ONE(IA:IA+1) = AR0
-                ELSE
-                   DINV_ONE(IA) = AR0
-                ENDIF
+                   DINV_ONE(IA:IA+(RCW-1)) = AR0
              ENDIF
+
              IA = IA + RCW
          ENDDO
       ENDDO
@@ -903,18 +896,10 @@ C---------------Executable code--------------------------------------
                   II = IOFF + I
                   FAC = FAC3 - EPS(II)
                   IF (FAC.GT.DHOLU) THEN
-                     IF (CARITH) THEN
                         CONST = AR1/FAC
-                        DINV_TWO(ABIJ:ABIJ+1) = CONST
-                     ELSE
-                        DINV_TWO(ABIJ) = AR1/FAC
-                     ENDIF
+                        DINV_TWO(ABIJ:ABIJ+(RCW-1)) = CONST
                   ELSE
-                    IF (CARITH) THEN
-                    DINV_TWO(ABIJ:ABIJ+1) = AR0
-                    ELSE
-                    DINV_TWO(ABIJ) = AR0
-                    ENDIF
+                    DINV_TWO(ABIJ:ABIJ+(RCW-1)) = AR0
                   ENDIF
                   ABIJ = ABIJ + RCW
                ENDDO

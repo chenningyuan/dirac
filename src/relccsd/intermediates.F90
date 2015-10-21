@@ -179,8 +179,6 @@
   real(8), intent(out) :: w_oooo(rcw*nv1)                ! Intermediate.
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
-  real*8      :: ddot
-  integer     :: i
 !--------------------------------------------------
 
 !--------------------
@@ -196,11 +194,6 @@
    call contraction_424 ((/"o1","o2","p1","o4"/),(/"p1","o3"/),(/"o1","o2","o4","o3"/),w_oooo, &
            &      1.0d0,-1.0d0,nrep,RightTensor=t1)
 
-!! do i = 1, nv1
-!! if (abs(w_oooo(i)) <= 1.0d-14) then  
-!! w_oooo(i) = 0.0d0
-!! endif
-!! enddo
 
 !******************************************************
 ! w_oooo(ij,mn) = w_oooo(ij,mn) +  V(ij,ef) * Tau(ef,mn)
@@ -319,8 +312,8 @@
 !  w_ovvo(mb,ej) = w_ovvo(mb,ej) - V(mn,ef)*(T2(bf,nj)+T1(f,j)*T1(b,n))
 !-------------------------------------------------------------------------------------
 
-  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),w_ovvo, &
-             &      -1.0d0,0.0d0,nrep,RightTensor=t2)
+  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+             &      1.0d0,0.0d0,nrep,RightTensor=t2)
 
 
   allocate(array_temp(nv2*rcw))
@@ -391,6 +384,7 @@
   call contraction_444 ((/"o1","o4","o2","p2"/),(/"p1","p2","o3","o4"/),(/"o1","p1","o2","o3"/),w_ovoo, &
              &      1.0d0,0.0d0,nrep,RightTensor=t2)
 
+  write(*,*)'dot product iemn:dia1',dot_product(w_ovoo,w_ovoo)
 !-------------------------------------------
 !   w_ovoo(ie,mn) = w_ovoo(ie,mn) +  w_bar_mbej(ie,fn)*T1(fm)
 !--------------------------------------------
@@ -457,126 +451,169 @@
 !   wbar_ovvo(mb,ej) = wbar_ovvo(mb,ej) - V(mn,ef) * T2(bf,nj)
 !------------------------------------------------------------
 
-! call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),wbar_ovvo, &
-!            &      -1.0d0,0.0d0,nrep,RightTensor=t2)
+  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),wbar_ovvo, &
+             &      1.0d0,0.0d0,nrep,RightTensor=t2)
 
 
-! call contraction_444 ((/"p1","p3","o3","o1"/),(/"o2","o3","p2","p3"/),(/"o2","p1","p2","o1"/),wbar_ovvo, &
-!            &      -1.0d0,0.0d0,nrep,LeftTensor=t2)
+!     X2OVVO(1) = 0
 
+!     DO IREP = 1, NREP
 
-      X2OVVO(1) = 0
+!        JREP = MULTB(IREP+NREP,1+NREP,2)
 
-      DO IREP = 1, NREP
+!        X2OVVO(IREP+1) = X2OVVO(IREP) + MOV(IREP)*PVO(JREP)
 
-         JREP = MULTB(IREP+NREP,1+NREP,2)
+!     ENDDO
 
-         X2OVVO(IREP+1) = X2OVVO(IREP) + MOV(IREP)*PVO(JREP)
+!     allocate(temp(nv3*rcw))
 
-      ENDDO
+!     call getoovv(temp)
 
-      allocate(temp(nv3*rcw))
-
-      call getoovv(temp)
-
-      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVOV,JJOV,JJVO, &
-     &              temp,buf3)
+!     CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,JOVVO,JJOV,JJVO, &
+!    &              temp,buf3)
 
 !!!   CALL SRT1TT4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVOV,JJOV,JJOV, &
 !!!  &              temp,buf3)
 
+!   do k =1, nrep
+!    do fn = 1, MVO(k)
+!     do me = 1, MOV(k) 
 
-      deallocate(temp)
+!         mefn = jovvo(k) + (fn-1)*mov(k) + me
+!!         write(*,*)mefn, buf3(mefn)
 
-      CALL SRT1TT4 (NREP,MULTB,.FALSE.,.FALSE.,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO, &
-     &              T2,buf2)
+!       enddo
+!      enddo
+!   enddo
 
-!!!   CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NV,NV,NO,NO,MVO,J2VOOV,JJVO,JJOV, &
-!!!  &              T2,buf2)
+!     deallocate(temp)
 
-     allocate(temp(J2OVVO(nrep+1)*rcw))
+!     CALL SRT1TT4 (NREP,MULTB,.FALSE.,.FALSE.,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO, &
+!    &              T2,buf2)
 
-     temp=0.0d0
+!!!!  CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NV,NV,NO,NO,MVO,J2VOOV,JJVO,JJOV, &
+!!!! &              T2,buf2)
 
-
-
-!!!    off1 = 0
-!!!    off2 = 0
-
-!!!   do k = 1, nrep
-!!!      J = MULTB(K+NREP,1+NREP,2)
-!!!    do bj = 1, MVO(k)   
-!!!     do me = 1, MOV(k) 
-!!!      do fn = 1, MOV(j)
-
-!!!       mefn = off1+(fn-1)*mov(k) + me
-!!!       bjfn = j2voov(k)+(fn-1)*mvo(j) + bj
-!!!       mebj = jovvo(k)+(bj-1)*mov(k) + me 
-
-!!!       temp(mebj) = temp(mebj) + buf3(mefn) * buf2(bjfn)            
-!!!      if (abs(buf3(mefn) * buf2(bjfn)) > 1.0D-6) &
-!!!    &  write(*,*)k,j,mebj,mefn,bjfn,buf3(mefn),buf2(bjfn) 
-!!!      enddo 
-!!!     enddo
-!!!    enddo
-
-!!!       off1 = off1 + mov(j)*mov(k)
-!!!       off2 = off2 + mov(j)*mvo(k)
-
-!!!   enddo 
-
-       off1 = 0
-       off2 = 0
-       off3 = 0
-
-      do k = 1, nrep
-         J = MULTB(K+NREP,1+NREP,2)
-       do bj = 1, MVO(j)   
-        do me = 1, MOV(j) 
-         do fn = 1, MVO(k)
-
-          mefn = j2ovvo(k) + (fn-1)*mov(j) + me
-          bjfn = j2vovo(j) +(fn-1)*mvo(j) + bj
-          mebj = jovvo(j) + (bj-1)*mov(j) + me 
-
-          temp(mebj) = temp(mebj) + buf3(mefn) * buf2(bjfn)            
-!!!      if (abs(buf3(mefn) * buf2(bjfn)) > 1.0D-6) &
-!!!    &  write(*,*)k,j,mebj,mefn,bjfn,buf3(mefn),buf2(bjfn) 
-         enddo 
-        enddo
-       enddo
-          off1 = off1 + mov(j)*mvo(k)
-          off2 = off2 + mvo(j)*mvo(k)
-          off3 = off3 + mov(j)*mvo(j)
-      enddo 
+!    allocate(temp(JOVVO(nrep+1)*rcw))
 
 
-      write(*,*)'dot product before sorting',dot_product(temp,temp),dot_product(wbar_ovvo,wbar_ovvo)
+!    temp=0.0d0
 
-!!      CALL CNTRCT ('N','T',MOV,MVO,MVO,A1,buf3,buf2,A1,temp,NREP)
+!!!!   off1 = 0
+!!!!   off2 = 0
 
-!!      write(57,*) (temp(k),k=1,JOVVO(nrep+1)*rcw)
+!!!!  do k = 1, nrep
+!!!!     J = MULTB(K+NREP,1+NREP,2)
+!!!!   do bj = 1, MVO(k)   
+!!!!    do me = 1, MOV(k) 
+!!!!     do fn = 1, MOV(j)
+
+!!!!      mefn = j2ovov(j)+(fn-1)*mov(k) + me
+!!!!      bjfn = j2voov(k)+(fn-1)*mvo(k) + bj
+!!!!      mebj = jovvo(k)+(bj-1)*mov(k) + me 
+
+!!!!      temp(mebj) = temp(mebj) + buf3(mefn) * buf2(bjfn)            
+!!!!     if (abs(buf3(mefn) * buf2(bjfn)) > 1.0D-6) &
+!!!!   &  write(*,*)k,j,mebj,mefn,bjfn,buf3(mefn),buf2(bjfn) 
+!!!!     enddo 
+!!!!    enddo
+!!!!   enddo
+
+!!!!      off1 = off1 + mov(j)*mov(k)
+!!!!      off2 = off2 + mov(j)*mvo(k)
+
+!!!!  enddo 
 
 
-      allocate(xxx(J2OVVO(nrep+1)*rcw)) 
+!!!!  do k = 1, nrep
+!!!!     J = MULTB(K+NREP,1+NREP,2)
+!!!!   do bj = 1, MVO(j)   
+!!!!    do me = 1, MOV(k) 
+!!!!     do fn = 1, MVO(k)
 
-      xxx = 0.0d0
+!!!!      mefn = jovvo(k) + (fn-1)*mov(k) + me
+!!!!      bjfn = j2vovo(j) +(fn-1)*mvo(j) + bj
+!!!!      mebj = j2ovvo(k) + (bj-1)*mov(k) + me 
 
-      CALL SRT1SS4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NV,NV,NO,MOV,JOVVO,JJOV,JJVO, &
-     &              temp,xxx)
+!!!!      temp(mebj) = temp(mebj) + buf3(mefn) * buf2(bjfn)            
 
-       deallocate(temp)
-    
-      do k = 1, jovvo(nrep+1)
+!!!!     enddo 
+!!!!    enddo
+!!!!   enddo
+!!!!  enddo 
+
+
+!!     off1 = 1
+!!     off2 = 1
+!!     off3 = 1
+!!    do x = 1, nrep
+!!       J = MULTB(x+NREP,1+NREP,2)
+
+!!        M = mov(x)
+!!        N = mvo(x)
+!!        K = mov(j)
+
+!!        off1 = 1 + j2ovov(j)*rcw  
+!!        off2 = 1 + j2ovvo(x)*rcw  
+!!        off3 = 1 + jovvo(x)*rcw  
+
+
+!!           write(*,*)'M,N,K,off123:explicit', M,N,K,off1,off2,off3
+
+!!          CALL XGEMM ('N','T',M,N,K,1.0d0,buf3(OFF1),M, &
+!!   &                  buf2(OFF2),N,0.0d0,temp(OFF3),M)
+
+!!    enddo
+
+
+!      off1 = 1
+!      off2 = 1
+!      off3 = 1
+!     do x = 1, nrep
+!        J = MULTB(x+NREP,1+NREP,2)
+
+!         M = mov(x)
+!         N = mvo(x)
+!         K = mvo(j)
+
+!         off1 = 1 + j2ovvo(j)*rcw  
+!         off2 = 1 + j2vovo(x)*rcw  
+!         off3 = 1 + j2ovvo(x)*rcw  
+
+
+!          write(*,*)'M,N,K,off123:explicit', M,N,K,off1,off2,off3
+
+!           CALL XGEMM ('N','T',M,N,K,A1,buf3(OFF1),M, &
+!    &                  buf2(OFF2),N,A0,temp(OFF3),M)
+
+!     enddo
+
+
+!     CALL CNTRCT_SP ('N','T',mov,mvo,mvo,A1,buf3,buf2, &
+!    &                   A0,temp)
+
+
+!     write(*,*)'dot product before sorting',dot_product(temp,temp),dot_product(wbar_ovvo,wbar_ovvo)
+
+!     allocate(xxx(JOVVO(nrep+1)*rcw)) 
+
+!     xxx = 0.0d0
+
+!     CALL SRT1SS4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NV,NV,NO,MOV,JOVVO,JJOV,JJVO, &
+!    &              temp,xxx)
+
+!      deallocate(temp)
+
+!     do k = 1, jovvo(nrep+1)
 
 !!!      if (abs(wbar_ovvo(k)+xxx(k))> 1.0D-6) &
 !!!  &      write(*,*) k, wbar_ovvo(k), xxx(k), (wbar_ovvo(k)+xxx(k))
 
-      enddo
+!     enddo
 
-       CALL XAXPY (jovvo(nrep+1),A1,xxx,1,wbar_ovvo,1)
+!    CALL XAXPY (iovvo(nrep+1),A1,xxx,1,wbar_ovvo,1)
 
-      deallocate(xxx) 
+!     deallocate(xxx) 
 
  end subroutine
 
@@ -598,25 +635,68 @@
    real*8, intent(out) :: w_vvvo(rcw*nv5)                ! Intermediate.
 !---------------Local Variables----------------------------------------
 
-   real*8,allocatable  :: tau(:)                ! Intermediate.
-
+   real*8, allocatable  :: tau(:)                
+   real*8, allocatable  :: vovv1(:),temp(:)                
+   integer :: m,n,k,off1,off2,off3,irep,jrep 
 !----------------------------------------------------------
 !        Initialize
 !----------------------------------------------------------
 
    call getvvvo_incore(w_vvvo)
 
+
 !-----------------------------------------------------------
-!   diagram1 : w_vvvo(ef,am)  = w_vvvo(ef,am) + p(ef) V(en,ag)*tau(fg,mn)  
+!   diagram1 : w_vvvo(ef,am)  = w_vvvo(ef,am) + p(ef) V(en,ag)*t2(fg,mn)  
 !-----------------------------------------------------------
 
-  allocate (tau(ndimt2*rcw))
-  call gettau (t1,t2,tau)
 
-  call contraction_444 ((/"o2","o3","p1","o1"/),(/"p2","p3","o2","o3"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-  &      1.0d0,0.0d0,nrep,RightTensor=tau)
+! call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+!            &      -1.0d0,0.0d0,nrep,RightTensor=t2)
 
-  deallocate (tau)
+      allocate(vovv1(nv5*rcw)) 
+
+      call getvovv_incore(vovv1)
+
+      CALL SRT26 (NREP,MULTB,.false.,.false.,NV,NO,NV,NV,MVV,JVVVOI4, &
+     &            JJVV,JJVO,VOVV1,buf3)
+
+
+      deallocate(vovv1) 
+
+      CALL SRT1TT4 (NREP,MULTB,.false.,.false.,NV,NV,NO,NO, &
+     &              MVO,J2VOVO,JJVO,JJVO,T2,buf2)
+
+
+      allocate(temp(jvvvoI4(nrep+1)*rcw)) 
+
+       temp =0.0d0
+
+       OFF1 = 1
+       OFF3 = 1
+       OFF2 = 1
+
+      DO IREP = 1, NREP
+         JREP = MULTB(IREP+NREP,1+NREP,2)
+         M = MVV(IREP)
+         N = MVO(IREP)
+         K = MVO(JREP)
+
+         off2 = 1 + j2vovo(jrep)*rcw  
+
+        CALL XGEMM ('N','T',M,N,K,-A1,buf3(OFF1),M,buf2(OFF2),N, &
+    &               A0,temp(OFF3),M)
+
+       OFF1 = OFF1 + M*K*rcw 
+       OFF3 = OFF3 + M*N*rcw
+
+      ENDDO
+
+      CALL SRT1TS4 (NREP,MULTB,.false.,.true.,NV,NV,NV,NO,MVV,JVVVOI4, &
+     &              JJVV,JJVO,temp,buf3)
+
+       deallocate(temp)
+
+       call xaxpy (nv5,A1,buf3,1,w_vvvo,1)
 
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 
@@ -631,18 +711,23 @@
      &      -1.0d0,1.0d0,nrep,LeftTensor=hov,RightTensor=t2)
 
 !-----------------------------------------------------------
-!   diagram4 : w_vvvo(ef,am) =  w_vvvo(ef,am) + V(no,am) * t2(ef,no) 
+!   diagram4 : w_vvvo(ef,am) =  w_vvvo(ef,am) + V(no,am) * tau(ef,no) 
 !-----------------------------------------------------------
 
-  call contraction_444 ((/"p2","o2","p1","p4"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-             &      1.0d0,0.0d0,nrep,RightTensor=t2)
+  allocate (tau(ndimt2*rcw))
+  call gettau (t1,t2,tau)
+
+  call contraction_444 ((/"p2","p3","o2","o3"/),(/"o2","o3","p1","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+  &      1.0d0,1.0d0,nrep,LeftTensor=tau)
+
+  deallocate (tau)
 
 !---------------------------------------------------------------------------
 !  diagram5 : w_vvvo(ef,am) =  w_vvvo(ef,am) - w_bar_ovvo(nf,am) * t(e,n)
 !---------------------------------------------------------------------------
 
-  call contraction_424 ((/"o2","p3","p1","o1"/),(/"p2","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-            &      -1.0d0,1.0d0,nrep,LeftTensor=wbar_ovvo,RightTensor=t1)
+  call contraction_244 ((/"p2","o2"/),(/"o2","p3","p1","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+            &      -1.0d0,1.0d0,nrep,RightTensor=wbar_ovvo,LeftTensor=t1)
 
  end subroutine
 
@@ -664,7 +749,7 @@
                                                                     
       real*8  :: t1val(2)                                                
       logical :: done
-      integer :: cd,cco,istart,nint,akcd,ci,akci,t1di,di,akdi,t1ci,cmin,c,d,i
+      integer :: cd,cco,istart,nint,akcd,ci,akci,t1di,di,akdi,t1ci,cmin,c,d,i,j
       integer :: crep,drep,irp,mint
       real*8,allocatable  :: tau (:)
       real*8,allocatable  :: array_temp(:) !huge
@@ -681,6 +766,7 @@
      call gettau (t1,t2,tau)
 
       if(myproc.eq.master) then
+
         call xcopy(nv5,w_vvvo,1,array_temp,1)
       else 
         call xcopy(nv5,a0,0,array_temp,1)
@@ -698,11 +784,11 @@
 ! ** actually read integrals from this batch and is a pure output parameter !
 ! ** We therefore have to count upwards in case of ISTART.NE.0 !!
 
+
          call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
 
          call putdz (irp,istart,nint,buf3)
 
-         mint = nbuf3/nvo(irp)
 ! ** now start SORTING and contraction loop
 
          CD = 0
@@ -738,7 +824,7 @@
                  AKCD = (CD-1)*NVVT(IRP)*RCW+1
                  DO I = 1, NO(DREP)
                     CI = IIVO(CREP,DREP)+(I-1)*NV(CREP)+C
-                    AKCI = (IOVVVT(IRP)+(CI-1)*NVVT(IRP))*RCW+1
+                    AKCI = (IVOVVT(IRP)+(CI-1)*NVVT(IRP))*RCW+1
                     T1DI = (IVO(DREP)+(I-1)*NV(DREP)+D-1) * RCW + 1
                     T1VAL(1) =  T1(T1DI)
                     IF (CARITH) T1VAL(2) =  T1(T1DI+1)
@@ -746,7 +832,7 @@
                  ENDDO
                  DO I = 1, NO(CREP)
                     DI = IIVO(DREP,CREP)+(I-1)*NV(DREP)+D
-                    AKDI = (IOVVVT(IRP)+(DI-1)*NVVT(IRP))*RCW+1
+                    AKDI = (IVOVVT(IRP)+(DI-1)*NVVT(IRP))*RCW+1
                     T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
                     T1VAL(1) = -T1(T1CI)
                     IF (CARITH) T1VAL(2) = -T1(T1CI+1)
@@ -756,6 +842,7 @@
  15        CONTINUE
  20      CONTINUE
  30    CONTINUE
+
 
    deallocate (tau)
 
@@ -1404,7 +1491,7 @@
 #include "ccpar.inc"                                                  
 
 !--------------------calling variables-------------
-   real(8), intent(in)    :: tau(:),t1(ndimt1*rcw)  ! Amplitudes.
+   real(8), intent(in)    :: tau(ndimt2*rcw),t1(ndimt1*rcw)  ! Amplitudes.
    real(8), intent(out)   :: w_vvvv(*)              ! Intermediate.
    real(8), intent(in)    :: buf1(*)                ! buffer arrays
    integer, intent(in)    :: nbuf3,irp,istart
@@ -1528,8 +1615,8 @@
 !    G_ea(e,a)  = -1/2 l2(mn,af) * t2(ef,mn)
 !----------------------------------------------
 
-  call contraction_442 ((/"o1","o2","p1","p3"/),(/"p2","p3","o1","o2"/),(/"p2","p1"/),G_vv,-1.0d0,1.0d0,nrep,&
-                        &  LeftTensor=l2,RightTensor=t2 )
+  call contraction_442 ((/"p2","p3","o1","o2"/),(/"o1","o2","p1","p3"/),(/"p2","p1"/),G_vv,-1.0d0,1.0d0,nrep,&
+                        &  LeftTensor=t2,RightTensor=l2 )
 
 !---------------------------------------------
 !     G_im(i,m) = 1/2 l2(in,ef) * t2(ef,mn)
