@@ -48,6 +48,7 @@ if(ENABLE_PCMSOLVER)
             -DENABLE_TIMER=OFF
             -DBUILD_STANDALONE=OFF
             -DENABLE_FORTRAN_API=ON
+            -DBoost_NO_BOOST_CMAKE=ON
             )
 
             if(PCMSOLVER_TESTS)
