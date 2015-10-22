@@ -518,24 +518,12 @@ contains
          end if
       end if
 
-      nullify(pertden)
-      if (do_london_rhs_kern_coupling) then
-         call fde_read_pertden(pertden)
-         !write(*, *) 'buba buba pertden'
-         !do i = 1, fde_pertden_nrow
-         !   write(*, '(57d20.12)') (pertden(j,i), j=1, fde_pertden_ncol)
-         !end do
-      end if
-
       if (use_potential) then
 ! gosia: here fde_static_vemb seems not to be allocated, even if run with *EMBPOT in the input,
 ! so i have to read it in again:
          if (fde_mpi_is_master()) then
            call fde_import_static
          end if
-            !do i = 1, fde_grid_sv%npoints
-            !   write(*, *) 'buba i, fde_static_vemb(i) =', i, fde_static_vemb(i)
-            !end do
       end if
 
       nullify(fmat)
@@ -659,7 +647,7 @@ contains
       end if
      
       max_ao_m_order = 0
-      if (do_london_rhs_direct .or. do_london_rhs_direct_kern) then
+      if (do_london_rhs_direct .or. do_london_rhs_direct_kern .or. do_export_pertden_direct) then
         max_ao_m_order = 1
       end if
 
@@ -1556,7 +1544,8 @@ contains
 
             active_nucpot(1) = -active_nucpot(1)
 !
-            non_additive_interaction = non_additive_interaction + (derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000))
+            non_additive_interaction = non_additive_interaction &
+                              + (derv_total(1, d0000000) - derv_active(1, d0000000) - derv_frozen(1, d0000000))
             electrostatic_b_rho_a_interaction = electrostatic_b_rho_a_interaction + w(1)*frozen_elpot(ipoint)*n_0(1)
             electrostatic_a_rho_b_interaction = electrostatic_a_rho_b_interaction + w(1)*active_nucpot(1)*n_0_f(1)
 
@@ -3168,6 +3157,11 @@ contains
    real(8), allocatable :: ao(:, :)
    real(8), allocatable :: buffer(:, :)
 
+   real(8) :: z0tt(3)
+   real(8) :: gnn_0(max_block_length)
+   real(8) :: n_0_t(max_block_length)
+   real(8) :: gnn_0_t(max_block_length)
+   real(8) :: w(max_block_length)
 
    if (.not. fde_use_blas3_scheme) then
 
@@ -3237,52 +3231,75 @@ contains
 !  that does not change from point to point
       do ipoint = 1, nr_points_on_this_proc
    
-      time_ao_start = second()
+         time_ao_start = second()
+         
+         call get_ao(1,    &
+               rx(ipoint), &
+               ry(ipoint), &
+               rz(ipoint), &
+               ao,         &
+               buffer)
+!        time_ao = time_ao + second() - time_ao_start
 
-      call get_ao(1,    &
-            rx(ipoint), &
-            ry(ipoint), &
-            rz(ipoint), &
-            ao,         &
-            buffer)
+!        time_density_start = second()
 
-      if (need_ao_order(1, 0)) then
-!        density and density gradient
-         call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
-      else
-!        density
-         call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
-      endif
+         gn_0_pointwise(1) = 0.0d0 
+         gn_0_pointwise(2) = 0.0d0 
+         gn_0_pointwise(3) = 0.0d0
 
-!      if (n_0(1) > fde_cfg_tinydens) then
-!         nr_points_used = nr_points_used + 1
-!         w(1) = rw(ipoint)
-!         if ( frozen_n(ipoint) > 0.0d0 ) then
-!            n_0_t(1) = n_0(1)            + frozen_n(ipoint)
-!            z0tt(1)  = gn_0_pointwise(1) + frozen_gnx(ipoint)
-!            z0tt(2)  = gn_0_pointwise(2) + frozen_gny(ipoint)
-!            z0tt(3)  = gn_0_pointwise(3) + frozen_gnz(ipoint)
-!
-!            gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
-!
-!            n_0_f(1)   = frozen_n(ipoint)
-!            gnn_0_f(1) = frozen_gnx(ipoint)*frozen_gnx(ipoint) &
-!                       + frozen_gny(ipoint)*frozen_gny(ipoint) &
-!                       + frozen_gnz(ipoint)*frozen_gnz(ipoint) 
-!         else
-!            n_0_t(1)   = n_0(1)
-!            gnn_0_t(1) = gnn_0(1)
-!
-!            n_0_f(1)   = 0.0d0
-!            gnn_0_f(1) = 0.0d0
-!         endif
-!!       number of electrons
-!         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
-!
-!!        lao_reorth
-!!        lao_direct
-!
-!      end if !if (n_0(1) > fde_cfg_tinydens) then
+         if (need_ao_order(1, 0)) then
+!           density and density gradient
+            call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
+         else
+!           density
+            call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
+         endif
+
+         active_n(ipoint)   = n_0(1)
+
+         active_gnx(ipoint) = gn_0_pointwise(1)
+         active_gny(ipoint) = gn_0_pointwise(2)
+         active_gnz(ipoint) = gn_0_pointwise(3)
+
+!        time_density = time_density + second() - time_density_start
+
+         if (n_0(1) > fde_cfg_tinydens) then
+            nr_points_used = nr_points_used + 1
+            w(1) = rw(ipoint)
+            if ( frozen_n(ipoint) > 0.0d0 ) then
+               n_0_t(1) = n_0(1)            + frozen_n(ipoint)
+               z0tt(1)  = gn_0_pointwise(1) + frozen_gnx(ipoint)
+               z0tt(2)  = gn_0_pointwise(2) + frozen_gny(ipoint)
+               z0tt(3)  = gn_0_pointwise(3) + frozen_gnz(ipoint)
+         
+               gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
+         
+            else
+               n_0_t(1)   = n_0(1)
+               gnn_0_t(1) = gnn_0(1)
+         
+            endif
+         
+!           lao_reorth
+            call get_pertden_reorth(ipoint,  &
+                                    mat_dim, &
+                                    nz,      &
+                                    ao,      &
+                                    n_0,     &
+                                    n_0_t,   &
+                                    gn_0_pointwise, &
+                                    z0tt,    &
+                                    gnn_0,   &
+                                    gnn_0_t, &
+                                    w,       &
+                                    use_gga, &
+                                    dmat,    &
+                                    dmat_pg_sym,    &
+                                    buffer)
+!           lao_direct
+            !call get_pertden_direct()
+         
+         end if !if (n_0(1) > fde_cfg_tinydens) then
    end do !do ipoint = 1, nr_points_on_this_proc
    end if
 
@@ -3291,5 +3308,153 @@ contains
 
 
    end subroutine
+
+
+  subroutine get_pertden_reorth(ipoint,     &
+                        mat_dim,            &
+                        nz,                 &
+                        ao,                 &
+                        n_0,                &
+                        n_0_t,              &
+                        gn_0_pointwise,     &
+                        gn_0_t_pointwise,   &
+                        gnn_0,              &
+                        gnn_0_t,            &
+                        w,                  &
+                        is_gga,             &
+                        tb_dmat,            &
+                        isym,               &
+                        buffer)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: ipoint
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: n_0(*)
+    real(8), intent(in)    :: n_0_t(*)
+    real(8), intent(in)    :: gn_0_pointwise(*)
+    real(8), intent(in)    :: gn_0_t_pointwise(*)
+    real(8), intent(in)    :: gnn_0(*)
+    real(8), intent(in)    :: gnn_0_t(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga
+    real(8), intent(in)    :: tb_dmat(*)
+    integer, intent(in)    :: isym(*)
+    real(8), intent(in)    :: buffer(*)
+!   ----------------------------------------------------------------------------
+    real(8)                ::  r_b(3),     s_b(3,3)
+    real(8)                :: gr_b(3,3), gs_b(3,3,3)
+    real(8)                ::  t_b,    ts_b(3)
+
+    real(8)                :: z_b
+    real(8)                :: z_b_t
+    real(8)                :: y_b(3)
+    real(8)                :: y_b_t(3)
+
+    integer                :: k_start, k, im, im_off, j
+    integer :: i
+!   ----------------------------------------------------------------------------
+
+    k_start = 1
+    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+    do im = 1, nr_dmat
+
+       im_off = mat_dim*mat_dim*nz*(im - 1)
+
+!      charge density part
+       if (is_gga) then
+          call get_gn_nonhermitian(r_b(im),                  &
+                                   gr_b(:,im),               &
+                                   isym(im) - 1,             &
+                                   mat_dim,                  &
+                                   tb_dmat(1 + im_off),      &
+                                   buffer,                   &
+                                   ao)
+       else
+          call get_n(r_b(im),                       &
+                     isym(im) - 1,              &
+                     mat_dim,                   &
+                     tb_dmat(1 + im_off),       &
+                     buffer,                    &
+                     ao)
+       end if
+
+!      SDFT
+       if (.not. dft_cfg_no_sdft) then
+          if (is_gga) then
+             call get_gs_nonhermitian(s_b(:,im),                       &
+                                      gs_b(:,:,im),                      &
+                                      isym(im) - 1,              &
+                                      mat_dim,                   &
+                                      tb_dmat(1 + im_off),       &
+                                      buffer,                    &
+                                      ao)
+          else
+             call get_s(s_b,                        &
+                        isym(im) - 1,               &
+                        mat_dim,                    &
+                        tb_dmat(1 + im_off),        &
+                        buffer,                     &
+                        ao)
+          end if
+
+      end if
+    end do
+
+    active_n_bx(ipoint) = r_b(1)
+    active_n_by(ipoint) = r_b(2)
+    active_n_bz(ipoint) = r_b(3)
+    active_gxn_bx(ipoint) = gr_b(1,1)
+    active_gxn_by(ipoint) = gr_b(1,2)
+    active_gxn_bz(ipoint) = gr_b(1,3)
+    active_gyn_bx(ipoint) = gr_b(2,1)
+    active_gyn_by(ipoint) = gr_b(2,2)
+    active_gyn_bz(ipoint) = gr_b(2,3)
+    active_gzn_bx(ipoint) = gr_b(3,1)
+    active_gzn_by(ipoint) = gr_b(3,2)
+    active_gzn_bz(ipoint) = gr_b(3,3)
+    active_sx_bx(ipoint) = s_b(1,1)
+    active_sx_by(ipoint) = s_b(1,2)
+    active_sx_bz(ipoint) = s_b(1,3)
+    active_sy_bx(ipoint) = s_b(2,1)
+    active_sy_by(ipoint) = s_b(2,2)
+    active_sy_bz(ipoint) = s_b(2,3)
+    active_sz_bx(ipoint) = s_b(3,1)
+    active_sz_by(ipoint) = s_b(3,2)
+    active_sz_bz(ipoint) = s_b(3,3)
+    active_gxsx_bx(ipoint) = gs_b(1,1,1)
+    active_gxsx_by(ipoint) = gs_b(1,1,2)
+    active_gxsx_bz(ipoint) = gs_b(1,1,3)
+    active_gxsy_bx(ipoint) = gs_b(1,2,1)
+    active_gxsy_by(ipoint) = gs_b(1,2,2)
+    active_gxsy_bz(ipoint) = gs_b(1,2,3)
+    active_gxsz_bx(ipoint) = gs_b(1,3,1)
+    active_gxsz_by(ipoint) = gs_b(1,3,2)
+    active_gxsz_bz(ipoint) = gs_b(1,3,3)
+    active_gysx_bx(ipoint) = gs_b(2,1,1)
+    active_gysx_by(ipoint) = gs_b(2,1,2)
+    active_gysx_bz(ipoint) = gs_b(2,1,3)
+    active_gysy_bx(ipoint) = gs_b(2,2,1)
+    active_gysy_by(ipoint) = gs_b(2,2,2)
+    active_gysy_bz(ipoint) = gs_b(2,2,3)
+    active_gysz_bx(ipoint) = gs_b(2,3,1)
+    active_gysz_by(ipoint) = gs_b(2,3,2)
+    active_gysz_bz(ipoint) = gs_b(2,3,3)
+    active_gzsx_bx(ipoint) = gs_b(3,1,1)
+    active_gzsx_by(ipoint) = gs_b(3,1,2)
+    active_gzsx_bz(ipoint) = gs_b(3,1,3)
+    active_gzsy_bx(ipoint) = gs_b(3,2,1)
+    active_gzsy_by(ipoint) = gs_b(3,2,2)
+    active_gzsy_bz(ipoint) = gs_b(3,2,3)
+    active_gzsz_bx(ipoint) = gs_b(3,3,1)
+    active_gzsz_by(ipoint) = gs_b(3,3,2)
+    active_gzsz_bz(ipoint) = gs_b(3,3,3)
+
+
+  end subroutine
+
+
 
 end module fde_dirac_matrices_integration

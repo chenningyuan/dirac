@@ -607,45 +607,43 @@ module fde_evaluators_dirac
          end do
       end if
 
-!     now calculate the perturbed density
-!     which consists of the reorthonormalization part (for which we need tbdmat)
-!     end the direct-LAO part:
-
+!     get coefficients from DFCOEF...
       call alloc(cmo,   ncmotq)
       cmo = 0.0d0
       call alloc(ibeig, ndim)
       ibeig = 0
 
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ONELON')
-      IF (SPINFR) THEN
-       CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,DUM,IBEIG, &
-                  TOTERG,10)
-      ELSE
-       CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,DUM,IDUM, &
-                  TOTERG,2)
+      call opnfil(lucoef,'DFCOEF','old','fde_get_pertden')
+      if (spinfr) then
+         call reacmo_no_work(lucoef,'DFCOEF',cmo,dum,ibeig,toterg,10)
+      else
+         call reacmo_no_work(lucoef,'DFCOEF',cmo,dum,idum,toterg,2)
+      endif
+      close(lucoef,status='keep')
 
-      ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
-
-
+!     ...to construct the density matrix
       call alloc(dmat, ndim*ndim, nz)
       dmat = 0.0d0
       call genden(dmat, cmo, 1, 0)
 
-
+!     then calculate the perturbed density
+!     for the moment both contributions to perturbed density (direct and reorthonormalization)
+!     have to be done in one go
       call fde_dirac_emb_matrices_via_integration(      &
                                fde_mat_dim   = ndim,    &
                                fde_nz        = nz,      &
                                fde_dmat_0    = dmat,    &
-                               fde_dmat      = tbdmat,  &
                                fde_nr_dmat   = 3,       &
                                fde_nr_fmat   = 0,       &
+                               fde_dmat      = tbdmat,  &
                                fde_do_export_pertden_reorth = .true., &
                                fde_do_export_pertden_direct = .true.)
 
 
       call dealloc(tbdmat)
       call dealloc(dmat)
+      call dealloc(cmo)
+      call dealloc(ibeig)
 
 
       end subroutine fde_get_pertden
