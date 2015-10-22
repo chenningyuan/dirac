@@ -2080,6 +2080,7 @@ contains
    real(8), allocatable :: ao(:, :)
    real(8), allocatable :: buffer(:, :)
    real(8), allocatable :: dmat_local(:, :, :)
+   real(8), allocatable :: r(:, :)
 
    if (.not. fde_use_blas3_scheme) then
 
@@ -2087,6 +2088,9 @@ contains
       ao = 0.0d0
       allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
       buffer = 0.0d0
+
+      allocate(r(3,nr_points_on_this_proc))
+      r = 0.0d0
 
 !     allocate(dmat_local(mat_dim,mat_dim,nz))
 !     dmat_local = 0.0d0
@@ -2158,16 +2162,23 @@ contains
          active_hnyz(ipoint)= hn_0_pointwise(5)
          active_hnzz(ipoint)= hn_0_pointwise(6)
 
-!        time_density = time_density + second() - time_density_start
-         call get_esp(np_esp,                                &
-                   active_elpot(ipoint),                     &
-                   irrep_esp,                                &
-                   mat_dim,                                  &
-!                  dmat_local,                               &
-                   dmat_0,                                   &
-                   (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
-                   include_nuc_part=.true.,                  &
-                   include_el_part=.true.)
+         r(1,ipoint) = rx(ipoint)
+         r(2,ipoint) = ry(ipoint)
+         r(3,ipoint) = rz(ipoint)
+
+    end do !do ipoint = 1, nr_points_on_this_proc
+    end if
+
+!   time_density = time_density + second() - time_density_start
+    call get_esp(nr_points_on_this_proc,&
+              active_elpot,             &
+              irrep_esp,                &
+              mat_dim,                  &
+!             dmat_local,               &
+              dmat_0,                   &
+              r,                        &
+              include_nuc_part=.true.,  &
+              include_el_part=.true.)
 
 ! aspg, 14/10/2015
 !       note that the electrostatic, hartree and nuclear potentials in dirac have
@@ -2176,26 +2187,25 @@ contains
 !       energy. with this, the potentials will be in line with those obtained
 !       e.g. with adf 
 !
-         active_elpot(ipoint) = -active_elpot(ipoint)
+    active_elpot = -active_elpot
 
-         call get_esp(np_esp,                                &
-                   active_nucpot(ipoint),                    &
-                   irrep_esp,                                &
-                   mat_dim,                                  &
-!                  dmat_local,                               &
-                   dmat_0,                                   &
-                   (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
-                   include_nuc_part=.true.,                  &
-                   include_el_part=.false.)
+    call get_esp(nr_points_on_this_proc,&
+              active_nucpot,            &
+              irrep_esp,                &
+              mat_dim,                  &
+!             dmat_local,               &
+              dmat_0,                   &
+              r,                        &
+              include_nuc_part=.true.,  &
+              include_el_part=.false.)
 
-         active_nucpot(ipoint)= -active_nucpot(ipoint)
+    active_nucpot = -active_nucpot
 !
-    end do !do ipoint = 1, nr_points_on_this_proc
-    end if
 
     deallocate(ao)
     deallocate(buffer)
 !   deallocate(dmat_local)
+    deallocate(r)
 
    end subroutine 
 
