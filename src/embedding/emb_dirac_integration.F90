@@ -77,6 +77,7 @@ module fde_dirac_matrices_integration
    real(8), allocatable :: active_hnzz(:)
 ! -------------------------------------------
 ! for perturbed density export
+!  n_b and gn_b can come only from reorthonormalization part
    real(8), allocatable :: active_n_bx(:)
    real(8), allocatable :: active_n_by(:)
    real(8), allocatable :: active_n_bz(:)
@@ -89,42 +90,81 @@ module fde_dirac_matrices_integration
    real(8), allocatable :: active_gzn_bx(:)
    real(8), allocatable :: active_gzn_by(:)
    real(8), allocatable :: active_gzn_bz(:)
-   real(8), allocatable :: active_sx_bx(:)
-   real(8), allocatable :: active_sx_by(:)
-   real(8), allocatable :: active_sx_bz(:)
-   real(8), allocatable :: active_sy_bx(:)
-   real(8), allocatable :: active_sy_by(:)
-   real(8), allocatable :: active_sy_bz(:)
-   real(8), allocatable :: active_sz_bx(:)
-   real(8), allocatable :: active_sz_by(:)
-   real(8), allocatable :: active_sz_bz(:)
-   real(8), allocatable :: active_gxsx_bx(:)
-   real(8), allocatable :: active_gxsx_by(:)
-   real(8), allocatable :: active_gxsx_bz(:)
-   real(8), allocatable :: active_gxsy_bx(:)
-   real(8), allocatable :: active_gxsy_by(:)
-   real(8), allocatable :: active_gxsy_bz(:)
-   real(8), allocatable :: active_gxsz_bx(:)
-   real(8), allocatable :: active_gxsz_by(:)
-   real(8), allocatable :: active_gxsz_bz(:)
-   real(8), allocatable :: active_gysx_bx(:)
-   real(8), allocatable :: active_gysx_by(:)
-   real(8), allocatable :: active_gysx_bz(:)
-   real(8), allocatable :: active_gysy_bx(:)
-   real(8), allocatable :: active_gysy_by(:)
-   real(8), allocatable :: active_gysy_bz(:)
-   real(8), allocatable :: active_gysz_bx(:)
-   real(8), allocatable :: active_gysz_by(:)
-   real(8), allocatable :: active_gysz_bz(:)
-   real(8), allocatable :: active_gzsx_bx(:)
-   real(8), allocatable :: active_gzsx_by(:)
-   real(8), allocatable :: active_gzsx_bz(:)
-   real(8), allocatable :: active_gzsy_bx(:)
-   real(8), allocatable :: active_gzsy_by(:)
-   real(8), allocatable :: active_gzsy_bz(:)
-   real(8), allocatable :: active_gzsz_bx(:)
-   real(8), allocatable :: active_gzsz_by(:)
-   real(8), allocatable :: active_gzsz_bz(:)
+!  s_b and gs_b can come from both: reorthonormalization and direct-LAO parts
+!  reorth
+   real(8), allocatable :: active_reorth_sx_bx(:)
+   real(8), allocatable :: active_reorth_sx_by(:)
+   real(8), allocatable :: active_reorth_sx_bz(:)
+   real(8), allocatable :: active_reorth_sy_bx(:)
+   real(8), allocatable :: active_reorth_sy_by(:)
+   real(8), allocatable :: active_reorth_sy_bz(:)
+   real(8), allocatable :: active_reorth_sz_bx(:)
+   real(8), allocatable :: active_reorth_sz_by(:)
+   real(8), allocatable :: active_reorth_sz_bz(:)
+   real(8), allocatable :: active_reorth_gxsx_bx(:)
+   real(8), allocatable :: active_reorth_gxsx_by(:)
+   real(8), allocatable :: active_reorth_gxsx_bz(:)
+   real(8), allocatable :: active_reorth_gxsy_bx(:)
+   real(8), allocatable :: active_reorth_gxsy_by(:)
+   real(8), allocatable :: active_reorth_gxsy_bz(:)
+   real(8), allocatable :: active_reorth_gxsz_bx(:)
+   real(8), allocatable :: active_reorth_gxsz_by(:)
+   real(8), allocatable :: active_reorth_gxsz_bz(:)
+   real(8), allocatable :: active_reorth_gysx_bx(:)
+   real(8), allocatable :: active_reorth_gysx_by(:)
+   real(8), allocatable :: active_reorth_gysx_bz(:)
+   real(8), allocatable :: active_reorth_gysy_bx(:)
+   real(8), allocatable :: active_reorth_gysy_by(:)
+   real(8), allocatable :: active_reorth_gysy_bz(:)
+   real(8), allocatable :: active_reorth_gysz_bx(:)
+   real(8), allocatable :: active_reorth_gysz_by(:)
+   real(8), allocatable :: active_reorth_gysz_bz(:)
+   real(8), allocatable :: active_reorth_gzsx_bx(:)
+   real(8), allocatable :: active_reorth_gzsx_by(:)
+   real(8), allocatable :: active_reorth_gzsx_bz(:)
+   real(8), allocatable :: active_reorth_gzsy_bx(:)
+   real(8), allocatable :: active_reorth_gzsy_by(:)
+   real(8), allocatable :: active_reorth_gzsy_bz(:)
+   real(8), allocatable :: active_reorth_gzsz_bx(:)
+   real(8), allocatable :: active_reorth_gzsz_by(:)
+   real(8), allocatable :: active_reorth_gzsz_bz(:)
+! direct
+   real(8), allocatable :: active_direct_sx_bx(:)
+   real(8), allocatable :: active_direct_sx_by(:)
+   real(8), allocatable :: active_direct_sx_bz(:)
+   real(8), allocatable :: active_direct_sy_bx(:)
+   real(8), allocatable :: active_direct_sy_by(:)
+   real(8), allocatable :: active_direct_sy_bz(:)
+   real(8), allocatable :: active_direct_sz_bx(:)
+   real(8), allocatable :: active_direct_sz_by(:)
+   real(8), allocatable :: active_direct_sz_bz(:)
+   real(8), allocatable :: active_direct_gxsx_bx(:)
+   real(8), allocatable :: active_direct_gxsx_by(:)
+   real(8), allocatable :: active_direct_gxsx_bz(:)
+   real(8), allocatable :: active_direct_gxsy_bx(:)
+   real(8), allocatable :: active_direct_gxsy_by(:)
+   real(8), allocatable :: active_direct_gxsy_bz(:)
+   real(8), allocatable :: active_direct_gxsz_bx(:)
+   real(8), allocatable :: active_direct_gxsz_by(:)
+   real(8), allocatable :: active_direct_gxsz_bz(:)
+   real(8), allocatable :: active_direct_gysx_bx(:)
+   real(8), allocatable :: active_direct_gysx_by(:)
+   real(8), allocatable :: active_direct_gysx_bz(:)
+   real(8), allocatable :: active_direct_gysy_bx(:)
+   real(8), allocatable :: active_direct_gysy_by(:)
+   real(8), allocatable :: active_direct_gysy_bz(:)
+   real(8), allocatable :: active_direct_gysz_bx(:)
+   real(8), allocatable :: active_direct_gysz_by(:)
+   real(8), allocatable :: active_direct_gysz_bz(:)
+   real(8), allocatable :: active_direct_gzsx_bx(:)
+   real(8), allocatable :: active_direct_gzsx_by(:)
+   real(8), allocatable :: active_direct_gzsx_bz(:)
+   real(8), allocatable :: active_direct_gzsy_bx(:)
+   real(8), allocatable :: active_direct_gzsy_by(:)
+   real(8), allocatable :: active_direct_gzsy_bz(:)
+   real(8), allocatable :: active_direct_gzsz_bx(:)
+   real(8), allocatable :: active_direct_gzsz_by(:)
+   real(8), allocatable :: active_direct_gzsz_bz(:)
 ! -------------------------------------------
 
    real(8), allocatable :: dmat_sorted(:, :)
@@ -783,43 +823,78 @@ contains
             call fde_mpi_gather(active_gzn_bx(:))
             call fde_mpi_gather(active_gzn_by(:))
             call fde_mpi_gather(active_gzn_bz(:))
-            call fde_mpi_gather(active_sx_bx(:))
-            call fde_mpi_gather(active_sx_by(:))
-            call fde_mpi_gather(active_sx_bz(:))
-            call fde_mpi_gather(active_sy_bx(:))
-            call fde_mpi_gather(active_sy_by(:))
-            call fde_mpi_gather(active_sy_bz(:))
-            call fde_mpi_gather(active_sz_bx(:))
-            call fde_mpi_gather(active_sz_by(:))
-            call fde_mpi_gather(active_sz_bz(:))
-            call fde_mpi_gather(active_gxsx_bx(:))
-            call fde_mpi_gather(active_gxsx_by(:))
-            call fde_mpi_gather(active_gxsx_bz(:))
-            call fde_mpi_gather(active_gxsy_bx(:))
-            call fde_mpi_gather(active_gxsy_by(:))
-            call fde_mpi_gather(active_gxsy_bz(:))
-            call fde_mpi_gather(active_gxsz_bx(:))
-            call fde_mpi_gather(active_gxsz_by(:))
-            call fde_mpi_gather(active_gxsz_bz(:))
-            call fde_mpi_gather(active_gysx_bx(:))
-            call fde_mpi_gather(active_gysx_by(:))
-            call fde_mpi_gather(active_gysx_bz(:))
-            call fde_mpi_gather(active_gysy_bx(:))
-            call fde_mpi_gather(active_gysy_by(:))
-            call fde_mpi_gather(active_gysy_bz(:))
-            call fde_mpi_gather(active_gysz_bx(:))
-            call fde_mpi_gather(active_gysz_by(:))
-            call fde_mpi_gather(active_gysz_bz(:))
-            call fde_mpi_gather(active_gzsx_bx(:))
-            call fde_mpi_gather(active_gzsx_by(:))
-            call fde_mpi_gather(active_gzsx_bz(:))
-            call fde_mpi_gather(active_gzsy_bx(:))
-            call fde_mpi_gather(active_gzsy_by(:))
-            call fde_mpi_gather(active_gzsy_bz(:))
-            call fde_mpi_gather(active_gzsz_bx(:))
-            call fde_mpi_gather(active_gzsz_by(:))
-            call fde_mpi_gather(active_gzsz_bz(:))
-
+            call fde_mpi_gather(active_reorth_sx_bx(:))
+            call fde_mpi_gather(active_reorth_sx_by(:))
+            call fde_mpi_gather(active_reorth_sx_bz(:))
+            call fde_mpi_gather(active_reorth_sy_bx(:))
+            call fde_mpi_gather(active_reorth_sy_by(:))
+            call fde_mpi_gather(active_reorth_sy_bz(:))
+            call fde_mpi_gather(active_reorth_sz_bx(:))
+            call fde_mpi_gather(active_reorth_sz_by(:))
+            call fde_mpi_gather(active_reorth_sz_bz(:))
+            call fde_mpi_gather(active_reorth_gxsx_bx(:))
+            call fde_mpi_gather(active_reorth_gxsx_by(:))
+            call fde_mpi_gather(active_reorth_gxsx_bz(:))
+            call fde_mpi_gather(active_reorth_gxsy_bx(:))
+            call fde_mpi_gather(active_reorth_gxsy_by(:))
+            call fde_mpi_gather(active_reorth_gxsy_bz(:))
+            call fde_mpi_gather(active_reorth_gxsz_bx(:))
+            call fde_mpi_gather(active_reorth_gxsz_by(:))
+            call fde_mpi_gather(active_reorth_gxsz_bz(:))
+            call fde_mpi_gather(active_reorth_gysx_bx(:))
+            call fde_mpi_gather(active_reorth_gysx_by(:))
+            call fde_mpi_gather(active_reorth_gysx_bz(:))
+            call fde_mpi_gather(active_reorth_gysy_bx(:))
+            call fde_mpi_gather(active_reorth_gysy_by(:))
+            call fde_mpi_gather(active_reorth_gysy_bz(:))
+            call fde_mpi_gather(active_reorth_gysz_bx(:))
+            call fde_mpi_gather(active_reorth_gysz_by(:))
+            call fde_mpi_gather(active_reorth_gysz_bz(:))
+            call fde_mpi_gather(active_reorth_gzsx_bx(:))
+            call fde_mpi_gather(active_reorth_gzsx_by(:))
+            call fde_mpi_gather(active_reorth_gzsx_bz(:))
+            call fde_mpi_gather(active_reorth_gzsy_bx(:))
+            call fde_mpi_gather(active_reorth_gzsy_by(:))
+            call fde_mpi_gather(active_reorth_gzsy_bz(:))
+            call fde_mpi_gather(active_reorth_gzsz_bx(:))
+            call fde_mpi_gather(active_reorth_gzsz_by(:))
+            call fde_mpi_gather(active_reorth_gzsz_bz(:))
+            call fde_mpi_gather(active_direct_sx_bx(:))
+            call fde_mpi_gather(active_direct_sx_by(:))
+            call fde_mpi_gather(active_direct_sx_bz(:))
+            call fde_mpi_gather(active_direct_sy_bx(:))
+            call fde_mpi_gather(active_direct_sy_by(:))
+            call fde_mpi_gather(active_direct_sy_bz(:))
+            call fde_mpi_gather(active_direct_sz_bx(:))
+            call fde_mpi_gather(active_direct_sz_by(:))
+            call fde_mpi_gather(active_direct_sz_bz(:))
+            call fde_mpi_gather(active_direct_gxsx_bx(:))
+            call fde_mpi_gather(active_direct_gxsx_by(:))
+            call fde_mpi_gather(active_direct_gxsx_bz(:))
+            call fde_mpi_gather(active_direct_gxsy_bx(:))
+            call fde_mpi_gather(active_direct_gxsy_by(:))
+            call fde_mpi_gather(active_direct_gxsy_bz(:))
+            call fde_mpi_gather(active_direct_gxsz_bx(:))
+            call fde_mpi_gather(active_direct_gxsz_by(:))
+            call fde_mpi_gather(active_direct_gxsz_bz(:))
+            call fde_mpi_gather(active_direct_gysx_bx(:))
+            call fde_mpi_gather(active_direct_gysx_by(:))
+            call fde_mpi_gather(active_direct_gysx_bz(:))
+            call fde_mpi_gather(active_direct_gysy_bx(:))
+            call fde_mpi_gather(active_direct_gysy_by(:))
+            call fde_mpi_gather(active_direct_gysy_bz(:))
+            call fde_mpi_gather(active_direct_gysz_bx(:))
+            call fde_mpi_gather(active_direct_gysz_by(:))
+            call fde_mpi_gather(active_direct_gysz_bz(:))
+            call fde_mpi_gather(active_direct_gzsx_bx(:))
+            call fde_mpi_gather(active_direct_gzsx_by(:))
+            call fde_mpi_gather(active_direct_gzsx_bz(:))
+            call fde_mpi_gather(active_direct_gzsy_bx(:))
+            call fde_mpi_gather(active_direct_gzsy_by(:))
+            call fde_mpi_gather(active_direct_gzsy_bz(:))
+            call fde_mpi_gather(active_direct_gzsz_bx(:))
+            call fde_mpi_gather(active_direct_gzsz_by(:))
+            call fde_mpi_gather(active_direct_gzsz_bz(:))
 
             if (fde_mpi_is_master()) then
 
@@ -835,42 +910,43 @@ contains
                active_gridfunction%gn_b(3,1,:) = active_gzn_bx(:)
                active_gridfunction%gn_b(3,2,:) = active_gzn_by(:)
                active_gridfunction%gn_b(3,3,:) = active_gzn_bz(:)
-               active_gridfunction%s_b(1,1,:) = active_sx_bx(:)
-               active_gridfunction%s_b(1,2,:) = active_sx_by(:)
-               active_gridfunction%s_b(1,3,:) = active_sx_bz(:)
-               active_gridfunction%s_b(2,1,:) = active_sy_bx(:)
-               active_gridfunction%s_b(2,2,:) = active_sy_by(:)
-               active_gridfunction%s_b(2,3,:) = active_sy_bz(:)
-               active_gridfunction%s_b(3,1,:) = active_sz_bx(:)
-               active_gridfunction%s_b(3,2,:) = active_sz_by(:)
-               active_gridfunction%s_b(3,3,:) = active_sz_bz(:)
-               active_gridfunction%gs_b(1,1,1,:) = active_gxsx_bx(:)
-               active_gridfunction%gs_b(1,1,2,:) = active_gxsx_by(:)
-               active_gridfunction%gs_b(1,1,3,:) = active_gxsx_bz(:)
-               active_gridfunction%gs_b(1,2,1,:) = active_gxsy_bx(:)
-               active_gridfunction%gs_b(1,2,2,:) = active_gxsy_by(:)
-               active_gridfunction%gs_b(1,2,3,:) = active_gxsy_bz(:)
-               active_gridfunction%gs_b(1,3,1,:) = active_gxsz_bx(:)
-               active_gridfunction%gs_b(1,3,2,:) = active_gxsz_by(:)
-               active_gridfunction%gs_b(1,3,3,:) = active_gxsz_bz(:)
-               active_gridfunction%gs_b(2,1,1,:) = active_gysx_bx(:)
-               active_gridfunction%gs_b(2,1,2,:) = active_gysx_by(:)
-               active_gridfunction%gs_b(2,1,3,:) = active_gysx_bz(:)
-               active_gridfunction%gs_b(2,2,1,:) = active_gysy_bx(:)
-               active_gridfunction%gs_b(2,2,2,:) = active_gysy_by(:)
-               active_gridfunction%gs_b(2,2,3,:) = active_gysy_bz(:)
-               active_gridfunction%gs_b(2,3,1,:) = active_gysz_bx(:)
-               active_gridfunction%gs_b(2,3,2,:) = active_gysz_by(:)
-               active_gridfunction%gs_b(2,3,3,:) = active_gysz_bz(:)
-               active_gridfunction%gs_b(3,1,1,:) = active_gzsx_bx(:)
-               active_gridfunction%gs_b(3,1,2,:) = active_gzsx_by(:)
-               active_gridfunction%gs_b(3,1,3,:) = active_gzsx_bz(:)
-               active_gridfunction%gs_b(3,2,1,:) = active_gzsy_bx(:)
-               active_gridfunction%gs_b(3,2,2,:) = active_gzsy_by(:)
-               active_gridfunction%gs_b(3,2,3,:) = active_gzsy_bz(:)
-               active_gridfunction%gs_b(3,3,1,:) = active_gzsz_bx(:)
-               active_gridfunction%gs_b(3,3,2,:) = active_gzsz_by(:)
-               active_gridfunction%gs_b(3,3,3,:) = active_gzsz_bz(:)
+! gosia: check this:
+               active_gridfunction%s_b(1,1,:) = active_direct_sx_bx(:) + active_reorth_sx_bx(:)
+               active_gridfunction%s_b(1,2,:) = active_direct_sx_by(:) + active_reorth_sx_by(:)
+               active_gridfunction%s_b(1,3,:) = active_direct_sx_bz(:) + active_reorth_sx_bz(:)
+               active_gridfunction%s_b(2,1,:) = active_direct_sy_bx(:) + active_reorth_sy_bx(:)
+               active_gridfunction%s_b(2,2,:) = active_direct_sy_by(:) + active_reorth_sy_by(:)
+               active_gridfunction%s_b(2,3,:) = active_direct_sy_bz(:) + active_reorth_sy_bz(:)
+               active_gridfunction%s_b(3,1,:) = active_direct_sz_bx(:) + active_reorth_sz_bx(:)
+               active_gridfunction%s_b(3,2,:) = active_direct_sz_by(:) + active_reorth_sz_by(:)
+               active_gridfunction%s_b(3,3,:) = active_direct_sz_bz(:) + active_reorth_sz_bz(:)
+               active_gridfunction%gs_b(1,1,1,:) = active_direct_gxsx_bx(:) + active_reorth_gxsx_bx(:)
+               active_gridfunction%gs_b(1,1,2,:) = active_direct_gxsx_by(:) + active_reorth_gxsx_by(:)
+               active_gridfunction%gs_b(1,1,3,:) = active_direct_gxsx_bz(:) + active_reorth_gxsx_bz(:)
+               active_gridfunction%gs_b(1,2,1,:) = active_direct_gxsy_bx(:) + active_reorth_gxsy_bx(:)
+               active_gridfunction%gs_b(1,2,2,:) = active_direct_gxsy_by(:) + active_reorth_gxsy_by(:)
+               active_gridfunction%gs_b(1,2,3,:) = active_direct_gxsy_bz(:) + active_reorth_gxsy_bz(:)
+               active_gridfunction%gs_b(1,3,1,:) = active_direct_gxsz_bx(:) + active_reorth_gxsz_bx(:)
+               active_gridfunction%gs_b(1,3,2,:) = active_direct_gxsz_by(:) + active_reorth_gxsz_by(:)
+               active_gridfunction%gs_b(1,3,3,:) = active_direct_gxsz_bz(:) + active_reorth_gxsz_bz(:)
+               active_gridfunction%gs_b(2,1,1,:) = active_direct_gysx_bx(:) + active_reorth_gysx_bx(:)
+               active_gridfunction%gs_b(2,1,2,:) = active_direct_gysx_by(:) + active_reorth_gysx_by(:)
+               active_gridfunction%gs_b(2,1,3,:) = active_direct_gysx_bz(:) + active_reorth_gysx_bz(:)
+               active_gridfunction%gs_b(2,2,1,:) = active_direct_gysy_bx(:) + active_reorth_gysy_bx(:)
+               active_gridfunction%gs_b(2,2,2,:) = active_direct_gysy_by(:) + active_reorth_gysy_by(:)
+               active_gridfunction%gs_b(2,2,3,:) = active_direct_gysy_bz(:) + active_reorth_gysy_bz(:)
+               active_gridfunction%gs_b(2,3,1,:) = active_direct_gysz_bx(:) + active_reorth_gysz_bx(:)
+               active_gridfunction%gs_b(2,3,2,:) = active_direct_gysz_by(:) + active_reorth_gysz_by(:)
+               active_gridfunction%gs_b(2,3,3,:) = active_direct_gysz_bz(:) + active_reorth_gysz_bz(:)
+               active_gridfunction%gs_b(3,1,1,:) = active_direct_gzsx_bx(:) + active_reorth_gzsx_bx(:)
+               active_gridfunction%gs_b(3,1,2,:) = active_direct_gzsx_by(:) + active_reorth_gzsx_by(:)
+               active_gridfunction%gs_b(3,1,3,:) = active_direct_gzsx_bz(:) + active_reorth_gzsx_bz(:)
+               active_gridfunction%gs_b(3,2,1,:) = active_direct_gzsy_bx(:) + active_reorth_gzsy_bx(:)
+               active_gridfunction%gs_b(3,2,2,:) = active_direct_gzsy_by(:) + active_reorth_gzsy_by(:)
+               active_gridfunction%gs_b(3,2,3,:) = active_direct_gzsy_bz(:) + active_reorth_gzsy_bz(:)
+               active_gridfunction%gs_b(3,3,1,:) = active_direct_gzsz_bx(:) + active_reorth_gzsz_bx(:)
+               active_gridfunction%gs_b(3,3,2,:) = active_direct_gzsz_by(:) + active_reorth_gzsz_by(:)
+               active_gridfunction%gs_b(3,3,3,:) = active_direct_gzsz_bz(:) + active_reorth_gzsz_bz(:)
 
             endif
 
@@ -886,42 +962,79 @@ contains
             deallocate(active_gzn_bx)
             deallocate(active_gzn_by)
             deallocate(active_gzn_bz)
-            deallocate(active_sx_bx)
-            deallocate(active_sx_by)
-            deallocate(active_sx_bz)
-            deallocate(active_sy_bx)
-            deallocate(active_sy_by)
-            deallocate(active_sy_bz)
-            deallocate(active_sz_bx)
-            deallocate(active_sz_by)
-            deallocate(active_sz_bz)
-            deallocate(active_gxsx_bx)
-            deallocate(active_gxsx_by)
-            deallocate(active_gxsx_bz)
-            deallocate(active_gxsy_bx)
-            deallocate(active_gxsy_by)
-            deallocate(active_gxsy_bz)
-            deallocate(active_gxsz_bx)
-            deallocate(active_gxsz_by)
-            deallocate(active_gxsz_bz)
-            deallocate(active_gysx_bx)
-            deallocate(active_gysx_by)
-            deallocate(active_gysx_bz)
-            deallocate(active_gysy_bx)
-            deallocate(active_gysy_by)
-            deallocate(active_gysy_bz)
-            deallocate(active_gysz_bx)
-            deallocate(active_gysz_by)
-            deallocate(active_gysz_bz)
-            deallocate(active_gzsx_bx)
-            deallocate(active_gzsx_by)
-            deallocate(active_gzsx_bz)
-            deallocate(active_gzsy_bx)
-            deallocate(active_gzsy_by)
-            deallocate(active_gzsy_bz)
-            deallocate(active_gzsz_bx)
-            deallocate(active_gzsz_by)
-            deallocate(active_gzsz_bz)
+            deallocate(active_reorth_sx_bx)
+            deallocate(active_reorth_sx_by)
+            deallocate(active_reorth_sx_bz)
+            deallocate(active_reorth_sy_bx)
+            deallocate(active_reorth_sy_by)
+            deallocate(active_reorth_sy_bz)
+            deallocate(active_reorth_sz_bx)
+            deallocate(active_reorth_sz_by)
+            deallocate(active_reorth_sz_bz)
+            deallocate(active_reorth_gxsx_bx)
+            deallocate(active_reorth_gxsx_by)
+            deallocate(active_reorth_gxsx_bz)
+            deallocate(active_reorth_gxsy_bx)
+            deallocate(active_reorth_gxsy_by)
+            deallocate(active_reorth_gxsy_bz)
+            deallocate(active_reorth_gxsz_bx)
+            deallocate(active_reorth_gxsz_by)
+            deallocate(active_reorth_gxsz_bz)
+            deallocate(active_reorth_gysx_bx)
+            deallocate(active_reorth_gysx_by)
+            deallocate(active_reorth_gysx_bz)
+            deallocate(active_reorth_gysy_bx)
+            deallocate(active_reorth_gysy_by)
+            deallocate(active_reorth_gysy_bz)
+            deallocate(active_reorth_gysz_bx)
+            deallocate(active_reorth_gysz_by)
+            deallocate(active_reorth_gysz_bz)
+            deallocate(active_reorth_gzsx_bx)
+            deallocate(active_reorth_gzsx_by)
+            deallocate(active_reorth_gzsx_bz)
+            deallocate(active_reorth_gzsy_bx)
+            deallocate(active_reorth_gzsy_by)
+            deallocate(active_reorth_gzsy_bz)
+            deallocate(active_reorth_gzsz_bx)
+            deallocate(active_reorth_gzsz_by)
+            deallocate(active_reorth_gzsz_bz)
+            deallocate(active_direct_sx_bx)
+            deallocate(active_direct_sx_by)
+            deallocate(active_direct_sx_bz)
+            deallocate(active_direct_sy_bx)
+            deallocate(active_direct_sy_by)
+            deallocate(active_direct_sy_bz)
+            deallocate(active_direct_sz_bx)
+            deallocate(active_direct_sz_by)
+            deallocate(active_direct_sz_bz)
+            deallocate(active_direct_gxsx_bx)
+            deallocate(active_direct_gxsx_by)
+            deallocate(active_direct_gxsx_bz)
+            deallocate(active_direct_gxsy_bx)
+            deallocate(active_direct_gxsy_by)
+            deallocate(active_direct_gxsy_bz)
+            deallocate(active_direct_gxsz_bx)
+            deallocate(active_direct_gxsz_by)
+            deallocate(active_direct_gxsz_bz)
+            deallocate(active_direct_gysx_bx)
+            deallocate(active_direct_gysx_by)
+            deallocate(active_direct_gysx_bz)
+            deallocate(active_direct_gysy_bx)
+            deallocate(active_direct_gysy_by)
+            deallocate(active_direct_gysy_bz)
+            deallocate(active_direct_gysz_bx)
+            deallocate(active_direct_gysz_by)
+            deallocate(active_direct_gysz_bz)
+            deallocate(active_direct_gzsx_bx)
+            deallocate(active_direct_gzsx_by)
+            deallocate(active_direct_gzsx_bz)
+            deallocate(active_direct_gzsy_bx)
+            deallocate(active_direct_gzsy_by)
+            deallocate(active_direct_gzsy_bz)
+            deallocate(active_direct_gzsz_bx)
+            deallocate(active_direct_gzsz_by)
+            deallocate(active_direct_gzsz_bz)
+
 
          end if
 
@@ -2934,43 +3047,79 @@ contains
            allocate(active_gzn_bz(nr_points_batch))
         end if
         if (.not. fde_rsp_mag_lao_no_s) then
-           allocate(active_sx_bx(nr_points_batch))
-           allocate(active_sx_by(nr_points_batch))
-           allocate(active_sx_bz(nr_points_batch))
-           allocate(active_sy_bx(nr_points_batch))
-           allocate(active_sy_by(nr_points_batch))
-           allocate(active_sy_bz(nr_points_batch))
-           allocate(active_sz_bx(nr_points_batch))
-           allocate(active_sz_by(nr_points_batch))
-           allocate(active_sz_bz(nr_points_batch))
+           allocate(active_reorth_sx_bx(nr_points_batch))
+           allocate(active_reorth_sx_by(nr_points_batch))
+           allocate(active_reorth_sx_bz(nr_points_batch))
+           allocate(active_reorth_sy_bx(nr_points_batch))
+           allocate(active_reorth_sy_by(nr_points_batch))
+           allocate(active_reorth_sy_bz(nr_points_batch))
+           allocate(active_reorth_sz_bx(nr_points_batch))
+           allocate(active_reorth_sz_by(nr_points_batch))
+           allocate(active_reorth_sz_bz(nr_points_batch))
+           allocate(active_direct_sx_bx(nr_points_batch))
+           allocate(active_direct_sx_by(nr_points_batch))
+           allocate(active_direct_sx_bz(nr_points_batch))
+           allocate(active_direct_sy_bx(nr_points_batch))
+           allocate(active_direct_sy_by(nr_points_batch))
+           allocate(active_direct_sy_bz(nr_points_batch))
+           allocate(active_direct_sz_bx(nr_points_batch))
+           allocate(active_direct_sz_by(nr_points_batch))
+           allocate(active_direct_sz_bz(nr_points_batch))
            if (use_gga) then
-              allocate(active_gxsx_bx(nr_points_batch))
-              allocate(active_gxsx_by(nr_points_batch))
-              allocate(active_gxsx_bz(nr_points_batch))
-              allocate(active_gxsy_bx(nr_points_batch))
-              allocate(active_gxsy_by(nr_points_batch))
-              allocate(active_gxsy_bz(nr_points_batch))
-              allocate(active_gxsz_bx(nr_points_batch))
-              allocate(active_gxsz_by(nr_points_batch))
-              allocate(active_gxsz_bz(nr_points_batch))
-              allocate(active_gysx_bx(nr_points_batch))
-              allocate(active_gysx_by(nr_points_batch))
-              allocate(active_gysx_bz(nr_points_batch))
-              allocate(active_gysy_bx(nr_points_batch))
-              allocate(active_gysy_by(nr_points_batch))
-              allocate(active_gysy_bz(nr_points_batch))
-              allocate(active_gysz_bx(nr_points_batch))
-              allocate(active_gysz_by(nr_points_batch))
-              allocate(active_gysz_bz(nr_points_batch))
-              allocate(active_gzsx_bx(nr_points_batch))
-              allocate(active_gzsx_by(nr_points_batch))
-              allocate(active_gzsx_bz(nr_points_batch))
-              allocate(active_gzsy_bx(nr_points_batch))
-              allocate(active_gzsy_by(nr_points_batch))
-              allocate(active_gzsy_bz(nr_points_batch))
-              allocate(active_gzsz_bx(nr_points_batch))
-              allocate(active_gzsz_by(nr_points_batch))
-              allocate(active_gzsz_bz(nr_points_batch))
+              allocate(active_reorth_gxsx_bx(nr_points_batch))
+              allocate(active_reorth_gxsx_by(nr_points_batch))
+              allocate(active_reorth_gxsx_bz(nr_points_batch))
+              allocate(active_reorth_gxsy_bx(nr_points_batch))
+              allocate(active_reorth_gxsy_by(nr_points_batch))
+              allocate(active_reorth_gxsy_bz(nr_points_batch))
+              allocate(active_reorth_gxsz_bx(nr_points_batch))
+              allocate(active_reorth_gxsz_by(nr_points_batch))
+              allocate(active_reorth_gxsz_bz(nr_points_batch))
+              allocate(active_reorth_gysx_bx(nr_points_batch))
+              allocate(active_reorth_gysx_by(nr_points_batch))
+              allocate(active_reorth_gysx_bz(nr_points_batch))
+              allocate(active_reorth_gysy_bx(nr_points_batch))
+              allocate(active_reorth_gysy_by(nr_points_batch))
+              allocate(active_reorth_gysy_bz(nr_points_batch))
+              allocate(active_reorth_gysz_bx(nr_points_batch))
+              allocate(active_reorth_gysz_by(nr_points_batch))
+              allocate(active_reorth_gysz_bz(nr_points_batch))
+              allocate(active_reorth_gzsx_bx(nr_points_batch))
+              allocate(active_reorth_gzsx_by(nr_points_batch))
+              allocate(active_reorth_gzsx_bz(nr_points_batch))
+              allocate(active_reorth_gzsy_bx(nr_points_batch))
+              allocate(active_reorth_gzsy_by(nr_points_batch))
+              allocate(active_reorth_gzsy_bz(nr_points_batch))
+              allocate(active_reorth_gzsz_bx(nr_points_batch))
+              allocate(active_reorth_gzsz_by(nr_points_batch))
+              allocate(active_reorth_gzsz_bz(nr_points_batch))
+              allocate(active_direct_gxsx_bx(nr_points_batch))
+              allocate(active_direct_gxsx_by(nr_points_batch))
+              allocate(active_direct_gxsx_bz(nr_points_batch))
+              allocate(active_direct_gxsy_bx(nr_points_batch))
+              allocate(active_direct_gxsy_by(nr_points_batch))
+              allocate(active_direct_gxsy_bz(nr_points_batch))
+              allocate(active_direct_gxsz_bx(nr_points_batch))
+              allocate(active_direct_gxsz_by(nr_points_batch))
+              allocate(active_direct_gxsz_bz(nr_points_batch))
+              allocate(active_direct_gysx_bx(nr_points_batch))
+              allocate(active_direct_gysx_by(nr_points_batch))
+              allocate(active_direct_gysx_bz(nr_points_batch))
+              allocate(active_direct_gysy_bx(nr_points_batch))
+              allocate(active_direct_gysy_by(nr_points_batch))
+              allocate(active_direct_gysy_bz(nr_points_batch))
+              allocate(active_direct_gysz_bx(nr_points_batch))
+              allocate(active_direct_gysz_by(nr_points_batch))
+              allocate(active_direct_gysz_bz(nr_points_batch))
+              allocate(active_direct_gzsx_bx(nr_points_batch))
+              allocate(active_direct_gzsx_by(nr_points_batch))
+              allocate(active_direct_gzsx_bz(nr_points_batch))
+              allocate(active_direct_gzsy_bx(nr_points_batch))
+              allocate(active_direct_gzsy_by(nr_points_batch))
+              allocate(active_direct_gzsy_bz(nr_points_batch))
+              allocate(active_direct_gzsz_bx(nr_points_batch))
+              allocate(active_direct_gzsz_by(nr_points_batch))
+              allocate(active_direct_gzsz_bz(nr_points_batch))
            end if
         end if
 
@@ -3186,43 +3335,79 @@ contains
          active_gzn_bz = 0.0d0
       end if
       if (.not. fde_rsp_mag_lao_no_s) then
-         active_sx_bx = 0.0d0
-         active_sx_by = 0.0d0
-         active_sx_bz = 0.0d0
-         active_sy_bx = 0.0d0
-         active_sy_by = 0.0d0
-         active_sy_bz = 0.0d0
-         active_sz_bx = 0.0d0
-         active_sz_by = 0.0d0
-         active_sz_bz = 0.0d0
+         active_reorth_sx_bx = 0.0d0
+         active_reorth_sx_by = 0.0d0
+         active_reorth_sx_bz = 0.0d0
+         active_reorth_sy_bx = 0.0d0
+         active_reorth_sy_by = 0.0d0
+         active_reorth_sy_bz = 0.0d0
+         active_reorth_sz_bx = 0.0d0
+         active_reorth_sz_by = 0.0d0
+         active_reorth_sz_bz = 0.0d0
+         active_direct_sx_bx = 0.0d0
+         active_direct_sx_by = 0.0d0
+         active_direct_sx_bz = 0.0d0
+         active_direct_sy_bx = 0.0d0
+         active_direct_sy_by = 0.0d0
+         active_direct_sy_bz = 0.0d0
+         active_direct_sz_bx = 0.0d0
+         active_direct_sz_by = 0.0d0
+         active_direct_sz_bz = 0.0d0
          if (use_gga) then
-            active_gxsx_bx = 0.0d0
-            active_gxsx_by = 0.0d0
-            active_gxsx_bz = 0.0d0
-            active_gxsy_bx = 0.0d0
-            active_gxsy_by = 0.0d0
-            active_gxsy_bz = 0.0d0
-            active_gxsz_bx = 0.0d0
-            active_gxsz_by = 0.0d0
-            active_gxsz_bz = 0.0d0
-            active_gysx_bx = 0.0d0
-            active_gysx_by = 0.0d0
-            active_gysx_bz = 0.0d0
-            active_gysy_bx = 0.0d0
-            active_gysy_by = 0.0d0
-            active_gysy_bz = 0.0d0
-            active_gysz_bx = 0.0d0
-            active_gysz_by = 0.0d0
-            active_gysz_bz = 0.0d0
-            active_gzsx_bx = 0.0d0
-            active_gzsx_by = 0.0d0
-            active_gzsx_bz = 0.0d0
-            active_gzsy_bx = 0.0d0
-            active_gzsy_by = 0.0d0
-            active_gzsy_bz = 0.0d0
-            active_gzsz_bx = 0.0d0
-            active_gzsz_by = 0.0d0
-            active_gzsz_bz = 0.0d0
+            active_reorth_gxsx_bx = 0.0d0
+            active_reorth_gxsx_by = 0.0d0
+            active_reorth_gxsx_bz = 0.0d0
+            active_reorth_gxsy_bx = 0.0d0
+            active_reorth_gxsy_by = 0.0d0
+            active_reorth_gxsy_bz = 0.0d0
+            active_reorth_gxsz_bx = 0.0d0
+            active_reorth_gxsz_by = 0.0d0
+            active_reorth_gxsz_bz = 0.0d0
+            active_reorth_gysx_bx = 0.0d0
+            active_reorth_gysx_by = 0.0d0
+            active_reorth_gysx_bz = 0.0d0
+            active_reorth_gysy_bx = 0.0d0
+            active_reorth_gysy_by = 0.0d0
+            active_reorth_gysy_bz = 0.0d0
+            active_reorth_gysz_bx = 0.0d0
+            active_reorth_gysz_by = 0.0d0
+            active_reorth_gysz_bz = 0.0d0
+            active_reorth_gzsx_bx = 0.0d0
+            active_reorth_gzsx_by = 0.0d0
+            active_reorth_gzsx_bz = 0.0d0
+            active_reorth_gzsy_bx = 0.0d0
+            active_reorth_gzsy_by = 0.0d0
+            active_reorth_gzsy_bz = 0.0d0
+            active_reorth_gzsz_bx = 0.0d0
+            active_reorth_gzsz_by = 0.0d0
+            active_reorth_gzsz_bz = 0.0d0
+            active_direct_gxsx_bx = 0.0d0
+            active_direct_gxsx_by = 0.0d0
+            active_direct_gxsx_bz = 0.0d0
+            active_direct_gxsy_bx = 0.0d0
+            active_direct_gxsy_by = 0.0d0
+            active_direct_gxsy_bz = 0.0d0
+            active_direct_gxsz_bx = 0.0d0
+            active_direct_gxsz_by = 0.0d0
+            active_direct_gxsz_bz = 0.0d0
+            active_direct_gysx_bx = 0.0d0
+            active_direct_gysx_by = 0.0d0
+            active_direct_gysx_bz = 0.0d0
+            active_direct_gysy_bx = 0.0d0
+            active_direct_gysy_by = 0.0d0
+            active_direct_gysy_bz = 0.0d0
+            active_direct_gysz_bx = 0.0d0
+            active_direct_gysz_by = 0.0d0
+            active_direct_gysz_bz = 0.0d0
+            active_direct_gzsx_bx = 0.0d0
+            active_direct_gzsx_by = 0.0d0
+            active_direct_gzsx_bz = 0.0d0
+            active_direct_gzsy_bx = 0.0d0
+            active_direct_gzsy_by = 0.0d0
+            active_direct_gzsy_bz = 0.0d0
+            active_direct_gzsz_bx = 0.0d0
+            active_direct_gzsz_by = 0.0d0
+            active_direct_gzsz_bz = 0.0d0
          end if
       end if
 
@@ -3415,42 +3600,42 @@ contains
     active_gzn_bx(ipoint) = gr_b(3,1)
     active_gzn_by(ipoint) = gr_b(3,2)
     active_gzn_bz(ipoint) = gr_b(3,3)
-    active_sx_bx(ipoint) = s_b(1,1)
-    active_sx_by(ipoint) = s_b(1,2)
-    active_sx_bz(ipoint) = s_b(1,3)
-    active_sy_bx(ipoint) = s_b(2,1)
-    active_sy_by(ipoint) = s_b(2,2)
-    active_sy_bz(ipoint) = s_b(2,3)
-    active_sz_bx(ipoint) = s_b(3,1)
-    active_sz_by(ipoint) = s_b(3,2)
-    active_sz_bz(ipoint) = s_b(3,3)
-    active_gxsx_bx(ipoint) = gs_b(1,1,1)
-    active_gxsx_by(ipoint) = gs_b(1,1,2)
-    active_gxsx_bz(ipoint) = gs_b(1,1,3)
-    active_gxsy_bx(ipoint) = gs_b(1,2,1)
-    active_gxsy_by(ipoint) = gs_b(1,2,2)
-    active_gxsy_bz(ipoint) = gs_b(1,2,3)
-    active_gxsz_bx(ipoint) = gs_b(1,3,1)
-    active_gxsz_by(ipoint) = gs_b(1,3,2)
-    active_gxsz_bz(ipoint) = gs_b(1,3,3)
-    active_gysx_bx(ipoint) = gs_b(2,1,1)
-    active_gysx_by(ipoint) = gs_b(2,1,2)
-    active_gysx_bz(ipoint) = gs_b(2,1,3)
-    active_gysy_bx(ipoint) = gs_b(2,2,1)
-    active_gysy_by(ipoint) = gs_b(2,2,2)
-    active_gysy_bz(ipoint) = gs_b(2,2,3)
-    active_gysz_bx(ipoint) = gs_b(2,3,1)
-    active_gysz_by(ipoint) = gs_b(2,3,2)
-    active_gysz_bz(ipoint) = gs_b(2,3,3)
-    active_gzsx_bx(ipoint) = gs_b(3,1,1)
-    active_gzsx_by(ipoint) = gs_b(3,1,2)
-    active_gzsx_bz(ipoint) = gs_b(3,1,3)
-    active_gzsy_bx(ipoint) = gs_b(3,2,1)
-    active_gzsy_by(ipoint) = gs_b(3,2,2)
-    active_gzsy_bz(ipoint) = gs_b(3,2,3)
-    active_gzsz_bx(ipoint) = gs_b(3,3,1)
-    active_gzsz_by(ipoint) = gs_b(3,3,2)
-    active_gzsz_bz(ipoint) = gs_b(3,3,3)
+    active_reorth_sx_bx(ipoint) = s_b(1,1)
+    active_reorth_sx_by(ipoint) = s_b(1,2)
+    active_reorth_sx_bz(ipoint) = s_b(1,3)
+    active_reorth_sy_bx(ipoint) = s_b(2,1)
+    active_reorth_sy_by(ipoint) = s_b(2,2)
+    active_reorth_sy_bz(ipoint) = s_b(2,3)
+    active_reorth_sz_bx(ipoint) = s_b(3,1)
+    active_reorth_sz_by(ipoint) = s_b(3,2)
+    active_reorth_sz_bz(ipoint) = s_b(3,3)
+    active_reorth_gxsx_bx(ipoint) = gs_b(1,1,1)
+    active_reorth_gxsx_by(ipoint) = gs_b(1,1,2)
+    active_reorth_gxsx_bz(ipoint) = gs_b(1,1,3)
+    active_reorth_gxsy_bx(ipoint) = gs_b(1,2,1)
+    active_reorth_gxsy_by(ipoint) = gs_b(1,2,2)
+    active_reorth_gxsy_bz(ipoint) = gs_b(1,2,3)
+    active_reorth_gxsz_bx(ipoint) = gs_b(1,3,1)
+    active_reorth_gxsz_by(ipoint) = gs_b(1,3,2)
+    active_reorth_gxsz_bz(ipoint) = gs_b(1,3,3)
+    active_reorth_gysx_bx(ipoint) = gs_b(2,1,1)
+    active_reorth_gysx_by(ipoint) = gs_b(2,1,2)
+    active_reorth_gysx_bz(ipoint) = gs_b(2,1,3)
+    active_reorth_gysy_bx(ipoint) = gs_b(2,2,1)
+    active_reorth_gysy_by(ipoint) = gs_b(2,2,2)
+    active_reorth_gysy_bz(ipoint) = gs_b(2,2,3)
+    active_reorth_gysz_bx(ipoint) = gs_b(2,3,1)
+    active_reorth_gysz_by(ipoint) = gs_b(2,3,2)
+    active_reorth_gysz_bz(ipoint) = gs_b(2,3,3)
+    active_reorth_gzsx_bx(ipoint) = gs_b(3,1,1)
+    active_reorth_gzsx_by(ipoint) = gs_b(3,1,2)
+    active_reorth_gzsx_bz(ipoint) = gs_b(3,1,3)
+    active_reorth_gzsy_bx(ipoint) = gs_b(3,2,1)
+    active_reorth_gzsy_by(ipoint) = gs_b(3,2,2)
+    active_reorth_gzsy_bz(ipoint) = gs_b(3,2,3)
+    active_reorth_gzsz_bx(ipoint) = gs_b(3,3,1)
+    active_reorth_gzsz_by(ipoint) = gs_b(3,3,2)
+    active_reorth_gzsz_bz(ipoint) = gs_b(3,3,3)
 
 
   end subroutine

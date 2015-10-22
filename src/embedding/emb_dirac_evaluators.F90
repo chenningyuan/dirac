@@ -562,6 +562,7 @@ module fde_evaluators_dirac
 
       real(8), allocatable :: tbdmat(:,:)
       real(8), allocatable :: dmat(:,:)
+      real(8), allocatable :: buffer(:,:)
       real(8), allocatable :: cmo(:)
       integer, allocatable :: ibeig(:)
 
@@ -626,20 +627,42 @@ module fde_evaluators_dirac
       dmat = 0.0d0
       call genden(dmat, cmo, 1, 0)
 
+         
 !     then calculate the perturbed density
 !     for the moment both contributions to perturbed density (direct and reorthonormalization)
 !     have to be done in one go
-      call fde_dirac_emb_matrices_via_integration(      &
-                               fde_mat_dim   = ndim,    &
-                               fde_nz        = nz,      &
-                               fde_dmat_0    = dmat,    &
-                               fde_nr_dmat   = 3,       &
-                               fde_nr_fmat   = 0,       &
-                               fde_dmat      = tbdmat,  &
-                               fde_do_export_pertden_reorth = .true., &
-                               fde_do_export_pertden_direct = .true.)
+      if (.not. fde_rsp_mag_lao_no_s) then
+         call alloc(buffer, ndim*ndim, nz)
+         call dcopy(ndim*ndim*nz, dmat, 1, buffer, 1)
 
+#ifdef VAR_MPI
+         if (parcal) call dirac_parctl(12)
+#endif
+         call fde_dirac_emb_matrices_via_integration(      &
+                                  fde_mat_dim   = ndim,    &
+                                  fde_nz        = nz,      &
+                                  fde_dmat_0    = dmat,    & !only real part of dmat
+                                  fde_nr_dmat   = 3,       &
+                                  fde_nr_fmat   = 0,       &
+                                  fde_dmat      = tbdmat,  &
+                                  fde_do_export_pertden_reorth = .true., &
+                                  fde_do_export_pertden_direct = .true.)
+         call dealloc(buffer)
 
+      else
+#ifdef VAR_MPI
+         if (parcal) call dirac_parctl(12)
+#endif
+         call fde_dirac_emb_matrices_via_integration(      &
+                                  fde_mat_dim   = ndim,    &
+                                  fde_nz        = nz,      &
+                                  fde_dmat_0    = dmat,    & !only real part of dmat
+                                  fde_nr_dmat   = 3,       &
+                                  fde_nr_fmat   = 0,       &
+                                  fde_dmat      = tbdmat,  &
+                                  fde_do_export_pertden_reorth = .true.)
+
+      end if
       call dealloc(tbdmat)
       call dealloc(dmat)
       call dealloc(cmo)
