@@ -95,6 +95,10 @@ module fde_export_data
         call fde_calculate_elpot(level,grid,gf)
         call fde_get_density(level,grid,gf)
 
+        if (fde_rsp_mag_lao_export) then
+           call fde_get_pertden(level,grid,gf)
+        end if
+
       end subroutine fde_prepare_export
 
 

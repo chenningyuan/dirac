@@ -70,6 +70,7 @@ module london_reorth_hb
 
   integer, parameter :: file_unit = 137
   integer, parameter :: tbmo_unit = 71
+  integer, parameter :: tbdmat_file_unit = 81
   logical            :: debug_me
 
 contains
@@ -138,6 +139,7 @@ contains
     call dealloc(fmo)
 
   end subroutine
+
 
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
@@ -514,6 +516,28 @@ contains
           
           call dealloc(dmat)
        end if
+
+!    else if (fde_rsp_mag_lao_export) then
+!!   we don't calculate the actual contribution, we only export the perturbed density
+!
+!       call alloc(dmat, n2bbasxq)
+!       dmat = 0.0d0
+!       call genden(dmat, cmo, 1, iprprp)
+!
+!#ifdef VAR_MPI
+!       if (parcal) call dirac_parctl(12)
+!#endif
+!          
+!       call fde_dirac_emb_matrices_via_integration(fde_mat_dim = ntbas(0), &
+!                         fde_nz               = nz,          &
+!                         fde_dmat_0           = dmat,        &
+!                         fde_nr_dmat          = nr_xyz_comp, &
+!                         fde_nr_fmat          = nr_xyz_comp, &
+!                         fde_dmat             = tb_dmat,     &
+!                         fde_fmat             = fao,         &
+!                         fde_do_export_pertden_reorth = .true.)       
+!       
+!       call dealloc(dmat)
     end if
 
 
@@ -615,6 +639,9 @@ contains
 
 
   subroutine get_tb_dmat(tb_dmat, cmo, ibeig)
+#ifdef MOD_UNRELEASED
+  use fde_mod
+#endif
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: tb_dmat(n2bbasxq, *)
     real(8), intent(in)    :: cmo(*)
@@ -627,7 +654,21 @@ contains
     integer                :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
     integer                :: irep(nr_xyz_comp)
     integer                :: indxpr, icomp
+
 !-----------------------------------------------------------------------
+
+    if (fde_rsp_mag_lao_export) then
+!      write modified density matrix on file
+
+       open(tbdmat_file_unit,        &
+            file = 'TBDMAT',         &
+            form   = 'unformatted',  &
+            access = 'direct',   &
+            recl = 8*n2bbasxq,  &
+            action = 'write',        &
+            status = 'unknown')
+
+    end if
 
     call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_tb_dmat')
 
@@ -696,7 +737,16 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
+      if (fde_rsp_mag_lao_export) then
+         call wrtdac(tbdmat_file_unit, n2bbasxq,   &
+                  tb_dmat(1, icomp), icomp)
+      end if
+
     end do
+
+    if (fde_rsp_mag_lao_export) then
+       close(tbdmat_file_unit, status='keep')
+    end if
 
     close(lu1int)
     call dealloc(tb)

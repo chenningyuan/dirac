@@ -39,6 +39,7 @@ module fde_evaluators_dirac
    public fde_dirac_set_ihrmop
 
    public fde_get_elpot_pertden
+   public fde_get_pertden
 
 ! below we have the routines that actually calculate
    public fde_get_density
@@ -546,6 +547,108 @@ module fde_evaluators_dirac
       deallocate (dmat)
 
       end subroutine fde_dirac_get_density_from_dfcoef
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_get_pertden(level,grid,gf)
+  use memory_allocator 
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+!   ----------------------------------------------------------------------------
+      type(grid_function), intent(inout) :: gf
+      type(fde_grid), intent(in)         :: grid
+      character(len=4), intent(in)       :: level
+
+      real(8), allocatable :: tbdmat(:,:)
+      real(8), allocatable :: dmat(:,:)
+      real(8), allocatable :: cmo(:)
+      integer, allocatable :: ibeig(:)
+
+      integer :: tbdmat_file_unit
+      integer :: i, icomp, ndim
+      logical :: debug_me
+      real(8) :: dum, toterg
+      integer :: idum
+
+!     for reorthonormalization part we need the connection matrices
+!     there's no easy way to get them, i can either call old subroutines or to use TBMO file
+!     it requires that before the shielding calculations are run and this file is saved
+!     but it is simpler than anything else.
+      
+!     read T^B density matrix from TBDMAT file
+!     ----------------------------------------
+      ndim = nba_orb
+      call alloc(tbdmat,  ndim*ndim*nz, 3)
+      tbdmat = 0.0d0
+
+      tbdmat_file_unit = 81
+
+      open(tbdmat_file_unit,          &
+           file   = 'TBDMAT',         &
+           status = 'old',            &
+           form   = 'unformatted',    &
+           access = 'direct',         &
+           recl = 8*ndim*ndim*nz,     &
+           action = 'read')
+
+      do i = 1, 3 ! 3 components of B-field
+         call readac(tbdmat_file_unit,ndim*ndim*nz,tbdmat(:,i),i)
+      end do
+
+      close(tbdmat_file_unit, status='keep')
+
+      debug_me = .false.
+      if (debug_me) then
+         do i = 1, 3
+           write(*, *) 'tbdmat read test, i =', i
+           call prqmat(tbdmat(:,i), ndim, ndim, ndim, ndim, nz,  &
+                       (/1,2,3,4/), lupri)
+         end do
+      end if
+
+!     now calculate the perturbed density
+!     which consists of the reorthonormalization part (for which we need tbdmat)
+!     end the direct-LAO part:
+
+      call alloc(cmo,   ncmotq)
+      cmo = 0.0d0
+      call alloc(ibeig, ndim)
+      ibeig = 0
+
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ONELON')
+      IF (SPINFR) THEN
+       CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,DUM,IBEIG, &
+                  TOTERG,10)
+      ELSE
+       CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,DUM,IDUM, &
+                  TOTERG,2)
+
+      ENDIF
+      CLOSE(LUCOEF,STATUS='KEEP')
+
+
+      call alloc(dmat, ndim*ndim, nz)
+      dmat = 0.0d0
+      call genden(dmat, cmo, 1, 0)
+
+
+      call fde_dirac_emb_matrices_via_integration(      &
+                               fde_mat_dim   = ndim,    &
+                               fde_nz        = nz,      &
+                               fde_dmat_0    = dmat,    &
+                               fde_dmat      = tbdmat,  &
+                               fde_nr_dmat   = 3,       &
+                               fde_nr_fmat   = 0,       &
+                               fde_do_export_pertden_reorth = .true., &
+                               fde_do_export_pertden_direct = .true.)
+
+
+      call dealloc(tbdmat)
+      call dealloc(dmat)
+
+
+      end subroutine fde_get_pertden
 
 
 

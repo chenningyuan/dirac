@@ -172,12 +172,12 @@ module fde_input_dirac
                fde_rsp_mag_lao = .true.
                fde_lao_frozen_embker = .true.
                doprp = .true.
-            CASE ('.FRZPER')
+            CASE ('.PERTIM')
 !              import perturbed density (additional columns on 'GRIDOUT' file)
                fde_rsp_mag_lao_import = .true.
                doprp = .true.
                itmp%im_frozen   = .true.
-            CASE ('.PERTOU')
+            CASE ('.PERTEX')
 !              export perturbed density (additional columns on 'GRIDOUT' file)
                dirac_cfg_fde_export = .true.
                etmp%do_grid_out = .true.

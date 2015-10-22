@@ -76,6 +76,56 @@ module fde_dirac_matrices_integration
    real(8), allocatable :: active_hnyz(:)
    real(8), allocatable :: active_hnzz(:)
 ! -------------------------------------------
+! for perturbed density export
+   real(8), allocatable :: active_n_bx(:)
+   real(8), allocatable :: active_n_by(:)
+   real(8), allocatable :: active_n_bz(:)
+   real(8), allocatable :: active_gxn_bx(:)
+   real(8), allocatable :: active_gxn_by(:)
+   real(8), allocatable :: active_gxn_bz(:)
+   real(8), allocatable :: active_gyn_bx(:)
+   real(8), allocatable :: active_gyn_by(:)
+   real(8), allocatable :: active_gyn_bz(:)
+   real(8), allocatable :: active_gzn_bx(:)
+   real(8), allocatable :: active_gzn_by(:)
+   real(8), allocatable :: active_gzn_bz(:)
+   real(8), allocatable :: active_sx_bx(:)
+   real(8), allocatable :: active_sx_by(:)
+   real(8), allocatable :: active_sx_bz(:)
+   real(8), allocatable :: active_sy_bx(:)
+   real(8), allocatable :: active_sy_by(:)
+   real(8), allocatable :: active_sy_bz(:)
+   real(8), allocatable :: active_sz_bx(:)
+   real(8), allocatable :: active_sz_by(:)
+   real(8), allocatable :: active_sz_bz(:)
+   real(8), allocatable :: active_gxsx_bx(:)
+   real(8), allocatable :: active_gxsx_by(:)
+   real(8), allocatable :: active_gxsx_bz(:)
+   real(8), allocatable :: active_gxsy_bx(:)
+   real(8), allocatable :: active_gxsy_by(:)
+   real(8), allocatable :: active_gxsy_bz(:)
+   real(8), allocatable :: active_gxsz_bx(:)
+   real(8), allocatable :: active_gxsz_by(:)
+   real(8), allocatable :: active_gxsz_bz(:)
+   real(8), allocatable :: active_gysx_bx(:)
+   real(8), allocatable :: active_gysx_by(:)
+   real(8), allocatable :: active_gysx_bz(:)
+   real(8), allocatable :: active_gysy_bx(:)
+   real(8), allocatable :: active_gysy_by(:)
+   real(8), allocatable :: active_gysy_bz(:)
+   real(8), allocatable :: active_gysz_bx(:)
+   real(8), allocatable :: active_gysz_by(:)
+   real(8), allocatable :: active_gysz_bz(:)
+   real(8), allocatable :: active_gzsx_bx(:)
+   real(8), allocatable :: active_gzsx_by(:)
+   real(8), allocatable :: active_gzsx_bz(:)
+   real(8), allocatable :: active_gzsy_bx(:)
+   real(8), allocatable :: active_gzsy_by(:)
+   real(8), allocatable :: active_gzsy_bz(:)
+   real(8), allocatable :: active_gzsz_bx(:)
+   real(8), allocatable :: active_gzsz_by(:)
+   real(8), allocatable :: active_gzsz_bz(:)
+! -------------------------------------------
 
    real(8), allocatable :: dmat_sorted(:, :)
 
@@ -166,6 +216,8 @@ module fde_dirac_matrices_integration
    logical :: do_overlap_diagnostic
    logical :: do_fde_update_vemb
    logical :: do_fde_response
+   logical :: do_export_pertden_reorth
+   logical :: do_export_pertden_direct
 
    type(fde_grid) :: active_grid
    type(grid_function):: active_gridfunction
@@ -228,6 +280,8 @@ contains
                              fde_do_london_rhs_direct_kern,   &
                              fde_do_london_rhs_kern_coupling, &
                              fde_do_london_rhs_ro,      &
+                             fde_do_export_pertden_reorth,     &
+                             fde_do_export_pertden_direct,     &
                              fde_active_grid,           &
                              fde_active_gridfunction)
 
@@ -274,6 +328,8 @@ contains
       logical, optional,         intent(in)    :: fde_do_london_rhs_direct_kern
       logical, optional,         intent(in)    :: fde_do_london_rhs_kern_coupling
       logical, optional,         intent(in)    :: fde_do_london_rhs_ro
+      logical, optional,         intent(in)    :: fde_do_export_pertden_reorth
+      logical, optional,         intent(in)    :: fde_do_export_pertden_direct
 !     --------------------------------------------------------------------------
       type(fde_grid),      optional, intent(in):: fde_active_grid
       type(grid_function), optional, intent(in):: fde_active_gridfunction
@@ -341,6 +397,8 @@ contains
       do_geo_2              = .false.
       do_london_ks          = .false.
       do_london_lr          = .false.
+      do_export_pertden_reorth     = .false.
+      do_export_pertden_direct     = .false.
 
       nr_atoms              = 0
 
@@ -356,6 +414,8 @@ contains
          if (present(fde_do_london_rhs_direct_kern))    do_london_rhs_direct_kern    = fde_do_london_rhs_direct_kern
          if (present(fde_do_london_rhs_kern_coupling))  do_london_rhs_kern_coupling  = fde_do_london_rhs_kern_coupling
          if (present(fde_do_london_rhs_ro))             do_london_rhs_ro             = fde_do_london_rhs_ro
+         if (present(fde_do_export_pertden_reorth))     do_export_pertden_reorth     = fde_do_export_pertden_reorth
+         if (present(fde_do_export_pertden_direct))     do_export_pertden_direct     = fde_do_export_pertden_direct
          if (present(fde_do_geo_0))              do_geo_0              = fde_do_geo_0
          if (present(fde_do_geo_1))              do_geo_1              = fde_do_geo_1
          if (present(fde_do_geo_2))              do_geo_2              = fde_do_geo_2
@@ -411,6 +471,8 @@ contains
          call fde_mpi_bcast(do_london_rhs_direct_kern)
          call fde_mpi_bcast(do_london_rhs_kern_coupling)
          call fde_mpi_bcast(do_london_rhs_ro)
+         call fde_mpi_bcast(do_export_pertden_reorth)
+         call fde_mpi_bcast(do_export_pertden_direct)
          call fde_mpi_bcast(response_order_mo)
          call fde_mpi_bcast(response_order_ao)
          call fde_mpi_bcast(do_geo_0)
@@ -654,6 +716,8 @@ contains
 
       if (do_electrostatic_pot) then
          call loop_over_batches_elpot()
+      else if (do_export_pertden_reorth .or. do_export_pertden_direct) then
+         call loop_over_batches_pertden()
       else
          call loop_over_batches()
       end if
@@ -690,6 +754,8 @@ contains
 
                active_gridfunction%n(:)     = active_n(:)
 
+!gosia todo: check with export
+! should be (1,:) etc., npoints is a second index
                active_gridfunction%gn(:,1)  = active_gnx(:)
                active_gridfunction%gn(:,2)  = active_gny(:)
                active_gridfunction%gn(:,3)  = active_gnz(:)
@@ -715,6 +781,162 @@ contains
             deallocate(active_hnzz)
 
          end if
+
+         if (do_export_pertden_reorth .or. do_export_pertden_direct) then
+            call fde_mpi_gather(active_n_bx(:))
+            call fde_mpi_gather(active_n_by(:))
+            call fde_mpi_gather(active_n_bz(:))
+            call fde_mpi_gather(active_gxn_bx(:))
+            call fde_mpi_gather(active_gxn_by(:))
+            call fde_mpi_gather(active_gxn_bz(:))
+            call fde_mpi_gather(active_gyn_bx(:))
+            call fde_mpi_gather(active_gyn_by(:))
+            call fde_mpi_gather(active_gyn_bz(:))
+            call fde_mpi_gather(active_gzn_bx(:))
+            call fde_mpi_gather(active_gzn_by(:))
+            call fde_mpi_gather(active_gzn_bz(:))
+            call fde_mpi_gather(active_sx_bx(:))
+            call fde_mpi_gather(active_sx_by(:))
+            call fde_mpi_gather(active_sx_bz(:))
+            call fde_mpi_gather(active_sy_bx(:))
+            call fde_mpi_gather(active_sy_by(:))
+            call fde_mpi_gather(active_sy_bz(:))
+            call fde_mpi_gather(active_sz_bx(:))
+            call fde_mpi_gather(active_sz_by(:))
+            call fde_mpi_gather(active_sz_bz(:))
+            call fde_mpi_gather(active_gxsx_bx(:))
+            call fde_mpi_gather(active_gxsx_by(:))
+            call fde_mpi_gather(active_gxsx_bz(:))
+            call fde_mpi_gather(active_gxsy_bx(:))
+            call fde_mpi_gather(active_gxsy_by(:))
+            call fde_mpi_gather(active_gxsy_bz(:))
+            call fde_mpi_gather(active_gxsz_bx(:))
+            call fde_mpi_gather(active_gxsz_by(:))
+            call fde_mpi_gather(active_gxsz_bz(:))
+            call fde_mpi_gather(active_gysx_bx(:))
+            call fde_mpi_gather(active_gysx_by(:))
+            call fde_mpi_gather(active_gysx_bz(:))
+            call fde_mpi_gather(active_gysy_bx(:))
+            call fde_mpi_gather(active_gysy_by(:))
+            call fde_mpi_gather(active_gysy_bz(:))
+            call fde_mpi_gather(active_gysz_bx(:))
+            call fde_mpi_gather(active_gysz_by(:))
+            call fde_mpi_gather(active_gysz_bz(:))
+            call fde_mpi_gather(active_gzsx_bx(:))
+            call fde_mpi_gather(active_gzsx_by(:))
+            call fde_mpi_gather(active_gzsx_bz(:))
+            call fde_mpi_gather(active_gzsy_bx(:))
+            call fde_mpi_gather(active_gzsy_by(:))
+            call fde_mpi_gather(active_gzsy_bz(:))
+            call fde_mpi_gather(active_gzsz_bx(:))
+            call fde_mpi_gather(active_gzsz_by(:))
+            call fde_mpi_gather(active_gzsz_bz(:))
+
+
+            if (fde_mpi_is_master()) then
+
+               active_gridfunction%n_b(1,:) = active_n_bx(:)
+               active_gridfunction%n_b(2,:) = active_n_by(:)
+               active_gridfunction%n_b(3,:) = active_n_bz(:)
+               active_gridfunction%gn_b(1,1,:) = active_gxn_bx(:)
+               active_gridfunction%gn_b(1,2,:) = active_gxn_by(:)
+               active_gridfunction%gn_b(1,3,:) = active_gxn_bz(:)
+               active_gridfunction%gn_b(2,1,:) = active_gyn_bx(:)
+               active_gridfunction%gn_b(2,2,:) = active_gyn_by(:)
+               active_gridfunction%gn_b(2,3,:) = active_gyn_bz(:)
+               active_gridfunction%gn_b(3,1,:) = active_gzn_bx(:)
+               active_gridfunction%gn_b(3,2,:) = active_gzn_by(:)
+               active_gridfunction%gn_b(3,3,:) = active_gzn_bz(:)
+               active_gridfunction%s_b(1,1,:) = active_sx_bx(:)
+               active_gridfunction%s_b(1,2,:) = active_sx_by(:)
+               active_gridfunction%s_b(1,3,:) = active_sx_bz(:)
+               active_gridfunction%s_b(2,1,:) = active_sy_bx(:)
+               active_gridfunction%s_b(2,2,:) = active_sy_by(:)
+               active_gridfunction%s_b(2,3,:) = active_sy_bz(:)
+               active_gridfunction%s_b(3,1,:) = active_sz_bx(:)
+               active_gridfunction%s_b(3,2,:) = active_sz_by(:)
+               active_gridfunction%s_b(3,3,:) = active_sz_bz(:)
+               active_gridfunction%gs_b(1,1,1,:) = active_gxsx_bx(:)
+               active_gridfunction%gs_b(1,1,2,:) = active_gxsx_by(:)
+               active_gridfunction%gs_b(1,1,3,:) = active_gxsx_bz(:)
+               active_gridfunction%gs_b(1,2,1,:) = active_gxsy_bx(:)
+               active_gridfunction%gs_b(1,2,2,:) = active_gxsy_by(:)
+               active_gridfunction%gs_b(1,2,3,:) = active_gxsy_bz(:)
+               active_gridfunction%gs_b(1,3,1,:) = active_gxsz_bx(:)
+               active_gridfunction%gs_b(1,3,2,:) = active_gxsz_by(:)
+               active_gridfunction%gs_b(1,3,3,:) = active_gxsz_bz(:)
+               active_gridfunction%gs_b(2,1,1,:) = active_gysx_bx(:)
+               active_gridfunction%gs_b(2,1,2,:) = active_gysx_by(:)
+               active_gridfunction%gs_b(2,1,3,:) = active_gysx_bz(:)
+               active_gridfunction%gs_b(2,2,1,:) = active_gysy_bx(:)
+               active_gridfunction%gs_b(2,2,2,:) = active_gysy_by(:)
+               active_gridfunction%gs_b(2,2,3,:) = active_gysy_bz(:)
+               active_gridfunction%gs_b(2,3,1,:) = active_gysz_bx(:)
+               active_gridfunction%gs_b(2,3,2,:) = active_gysz_by(:)
+               active_gridfunction%gs_b(2,3,3,:) = active_gysz_bz(:)
+               active_gridfunction%gs_b(3,1,1,:) = active_gzsx_bx(:)
+               active_gridfunction%gs_b(3,1,2,:) = active_gzsx_by(:)
+               active_gridfunction%gs_b(3,1,3,:) = active_gzsx_bz(:)
+               active_gridfunction%gs_b(3,2,1,:) = active_gzsy_bx(:)
+               active_gridfunction%gs_b(3,2,2,:) = active_gzsy_by(:)
+               active_gridfunction%gs_b(3,2,3,:) = active_gzsy_bz(:)
+               active_gridfunction%gs_b(3,3,1,:) = active_gzsz_bx(:)
+               active_gridfunction%gs_b(3,3,2,:) = active_gzsz_by(:)
+               active_gridfunction%gs_b(3,3,3,:) = active_gzsz_bz(:)
+
+            endif
+
+            deallocate(active_n_bx)
+            deallocate(active_n_by)
+            deallocate(active_n_bz)
+            deallocate(active_gxn_bx)
+            deallocate(active_gxn_by)
+            deallocate(active_gxn_bz)
+            deallocate(active_gyn_bx)
+            deallocate(active_gyn_by)
+            deallocate(active_gyn_bz)
+            deallocate(active_gzn_bx)
+            deallocate(active_gzn_by)
+            deallocate(active_gzn_bz)
+            deallocate(active_sx_bx)
+            deallocate(active_sx_by)
+            deallocate(active_sx_bz)
+            deallocate(active_sy_bx)
+            deallocate(active_sy_by)
+            deallocate(active_sy_bz)
+            deallocate(active_sz_bx)
+            deallocate(active_sz_by)
+            deallocate(active_sz_bz)
+            deallocate(active_gxsx_bx)
+            deallocate(active_gxsx_by)
+            deallocate(active_gxsx_bz)
+            deallocate(active_gxsy_bx)
+            deallocate(active_gxsy_by)
+            deallocate(active_gxsy_bz)
+            deallocate(active_gxsz_bx)
+            deallocate(active_gxsz_by)
+            deallocate(active_gxsz_bz)
+            deallocate(active_gysx_bx)
+            deallocate(active_gysx_by)
+            deallocate(active_gysx_bz)
+            deallocate(active_gysy_bx)
+            deallocate(active_gysy_by)
+            deallocate(active_gysy_bz)
+            deallocate(active_gysz_bx)
+            deallocate(active_gysz_by)
+            deallocate(active_gysz_bz)
+            deallocate(active_gzsx_bx)
+            deallocate(active_gzsx_by)
+            deallocate(active_gzsx_bz)
+            deallocate(active_gzsy_bx)
+            deallocate(active_gzsy_by)
+            deallocate(active_gzsy_bz)
+            deallocate(active_gzsz_bx)
+            deallocate(active_gzsz_by)
+            deallocate(active_gzsz_bz)
+
+         end if
+
          if (nr_fmat > 0) then
             call fde_mpi_reduce(fmat)
          end if
@@ -2677,6 +2899,125 @@ contains
 
      end subroutine loop_over_batches_elpot
 
+
+! ----------------------------------------------------------------------------
+   subroutine loop_over_batches_pertden()
+! ----------------------------------------------------------------------------
+     real(8) :: dummy
+     integer :: idummy
+     integer :: ibatch
+     integer :: i
+     real(8), allocatable :: mpi_buffer(:)
+
+     if (fde_mpi_is_master()) then
+        nr_points_batch = active_grid%npoints
+     end if
+#ifdef VAR_MPI
+     if (parallel_fde) then
+        call fde_mpi_bcast(nr_points_batch)
+     end if
+#endif
+     ibatch          = 0
+     nr_points_total = 0
+     nr_points_used  = 0
+
+!    loop over batches
+     do
+        if (nr_points_batch < 0) exit
+
+        allocate(rx(nr_points_batch))
+        allocate(ry(nr_points_batch))
+        allocate(rz(nr_points_batch))
+        allocate(rw(nr_points_batch))
+
+        allocate(active_n_bx(nr_points_batch))
+        allocate(active_n_by(nr_points_batch))
+        allocate(active_n_bz(nr_points_batch))
+        if (use_gga) then
+           allocate(active_gxn_bx(nr_points_batch))
+           allocate(active_gxn_by(nr_points_batch))
+           allocate(active_gxn_bz(nr_points_batch))
+           allocate(active_gyn_bx(nr_points_batch))
+           allocate(active_gyn_by(nr_points_batch))
+           allocate(active_gyn_bz(nr_points_batch))
+           allocate(active_gzn_bx(nr_points_batch))
+           allocate(active_gzn_by(nr_points_batch))
+           allocate(active_gzn_bz(nr_points_batch))
+        end if
+        if (.not. fde_rsp_mag_lao_no_s) then
+           allocate(active_sx_bx(nr_points_batch))
+           allocate(active_sx_by(nr_points_batch))
+           allocate(active_sx_bz(nr_points_batch))
+           allocate(active_sy_bx(nr_points_batch))
+           allocate(active_sy_by(nr_points_batch))
+           allocate(active_sy_bz(nr_points_batch))
+           allocate(active_sz_bx(nr_points_batch))
+           allocate(active_sz_by(nr_points_batch))
+           allocate(active_sz_bz(nr_points_batch))
+           if (use_gga) then
+              allocate(active_gxsx_bx(nr_points_batch))
+              allocate(active_gxsx_by(nr_points_batch))
+              allocate(active_gxsx_bz(nr_points_batch))
+              allocate(active_gxsy_bx(nr_points_batch))
+              allocate(active_gxsy_by(nr_points_batch))
+              allocate(active_gxsy_bz(nr_points_batch))
+              allocate(active_gxsz_bx(nr_points_batch))
+              allocate(active_gxsz_by(nr_points_batch))
+              allocate(active_gxsz_bz(nr_points_batch))
+              allocate(active_gysx_bx(nr_points_batch))
+              allocate(active_gysx_by(nr_points_batch))
+              allocate(active_gysx_bz(nr_points_batch))
+              allocate(active_gysy_bx(nr_points_batch))
+              allocate(active_gysy_by(nr_points_batch))
+              allocate(active_gysy_bz(nr_points_batch))
+              allocate(active_gysz_bx(nr_points_batch))
+              allocate(active_gysz_by(nr_points_batch))
+              allocate(active_gysz_bz(nr_points_batch))
+              allocate(active_gzsx_bx(nr_points_batch))
+              allocate(active_gzsx_by(nr_points_batch))
+              allocate(active_gzsx_bz(nr_points_batch))
+              allocate(active_gzsy_bx(nr_points_batch))
+              allocate(active_gzsy_by(nr_points_batch))
+              allocate(active_gzsy_bz(nr_points_batch))
+              allocate(active_gzsz_bx(nr_points_batch))
+              allocate(active_gzsz_by(nr_points_batch))
+              allocate(active_gzsz_bz(nr_points_batch))
+           end if
+        end if
+
+        if (fde_mpi_is_master()) then
+           rx = active_grid%r(1,:)
+           ry = active_grid%r(2,:)
+           rz = active_grid%r(3,:)
+           rw = active_grid%w
+        end if
+
+        ibatch = ibatch + 1
+        nr_points_total = nr_points_total + nr_points_batch
+        nr_points_on_this_proc = nr_points_batch
+
+#ifdef VAR_MPI
+        if (parallel_fde) then
+           call fde_mpi_distribute_points(rx, ry, rz, rw, nr_points_batch, nr_points_on_this_proc)
+        end if
+#endif
+
+        call get_perturbed_density()
+
+        deallocate(rx)
+        deallocate(ry)
+        deallocate(rz)
+        deallocate(rw)
+
+! don't try to read another batch
+        goto 999
+
+!     end loop over batches
+     end do
+ 999 continue
+
+     end subroutine loop_over_batches_pertden
+
 ! ------------------------------------------------------------------------------
    subroutine get_electrostatic_potential_and_density()
 ! ------------------------------------------------------------------------------
@@ -2803,5 +3144,152 @@ contains
     deallocate(buffer)
 
    end subroutine 
+
+! ------------------------------------------------------------------------------
+   subroutine get_perturbed_density()
+! ------------------------------------------------------------------------------
+!        unperturbed density
+   real(8) :: n_0(max_block_length)
+!        unperturbed density gradient
+   real(8) :: gn_0_pointwise(3)
+   real(8) :: hn_0_pointwise(6)
+!     --------------------------------------------------------------------------
+   real(8) :: temp
+   real(8) :: block_threshold
+   integer :: ipoint
+   integer :: k
+   integer :: i
+   logical :: print_data_at_point
+   logical :: nuc_part
+   logical :: ele_part
+   integer :: np_esp
+   integer :: irrep_esp
+
+   real(8), allocatable :: ao(:, :)
+   real(8), allocatable :: buffer(:, :)
+
+
+   if (.not. fde_use_blas3_scheme) then
+
+      allocate(ao(1,     nr_ao_slices*nr_ao_cartesian))
+      ao = 0.0d0
+      allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
+      buffer = 0.0d0
+
+
+      active_n_bx = 0.0d0
+      active_n_by = 0.0d0
+      active_n_bz = 0.0d0
+      if (use_gga) then
+         active_gxn_bx = 0.0d0
+         active_gxn_by = 0.0d0
+         active_gxn_bz = 0.0d0
+         active_gyn_bx = 0.0d0
+         active_gyn_by = 0.0d0
+         active_gyn_bz = 0.0d0
+         active_gzn_bx = 0.0d0
+         active_gzn_by = 0.0d0
+         active_gzn_bz = 0.0d0
+      end if
+      if (.not. fde_rsp_mag_lao_no_s) then
+         active_sx_bx = 0.0d0
+         active_sx_by = 0.0d0
+         active_sx_bz = 0.0d0
+         active_sy_bx = 0.0d0
+         active_sy_by = 0.0d0
+         active_sy_bz = 0.0d0
+         active_sz_bx = 0.0d0
+         active_sz_by = 0.0d0
+         active_sz_bz = 0.0d0
+         if (use_gga) then
+            active_gxsx_bx = 0.0d0
+            active_gxsx_by = 0.0d0
+            active_gxsx_bz = 0.0d0
+            active_gxsy_bx = 0.0d0
+            active_gxsy_by = 0.0d0
+            active_gxsy_bz = 0.0d0
+            active_gxsz_bx = 0.0d0
+            active_gxsz_by = 0.0d0
+            active_gxsz_bz = 0.0d0
+            active_gysx_bx = 0.0d0
+            active_gysx_by = 0.0d0
+            active_gysx_bz = 0.0d0
+            active_gysy_bx = 0.0d0
+            active_gysy_by = 0.0d0
+            active_gysy_bz = 0.0d0
+            active_gysz_bx = 0.0d0
+            active_gysz_by = 0.0d0
+            active_gysz_bz = 0.0d0
+            active_gzsx_bx = 0.0d0
+            active_gzsx_by = 0.0d0
+            active_gzsx_bz = 0.0d0
+            active_gzsy_bx = 0.0d0
+            active_gzsy_by = 0.0d0
+            active_gzsy_bz = 0.0d0
+            active_gzsz_bx = 0.0d0
+            active_gzsz_by = 0.0d0
+            active_gzsz_bz = 0.0d0
+         end if
+      end if
+
+!  here starts the expensive loop over points
+!  do not evaluate anything inside this loop
+!  that does not change from point to point
+      do ipoint = 1, nr_points_on_this_proc
+   
+      time_ao_start = second()
+
+      call get_ao(1,    &
+            rx(ipoint), &
+            ry(ipoint), &
+            rz(ipoint), &
+            ao,         &
+            buffer)
+
+      if (need_ao_order(1, 0)) then
+!        density and density gradient
+         call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
+      else
+!        density
+         call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
+      endif
+
+!      if (n_0(1) > fde_cfg_tinydens) then
+!         nr_points_used = nr_points_used + 1
+!         w(1) = rw(ipoint)
+!         if ( frozen_n(ipoint) > 0.0d0 ) then
+!            n_0_t(1) = n_0(1)            + frozen_n(ipoint)
+!            z0tt(1)  = gn_0_pointwise(1) + frozen_gnx(ipoint)
+!            z0tt(2)  = gn_0_pointwise(2) + frozen_gny(ipoint)
+!            z0tt(3)  = gn_0_pointwise(3) + frozen_gnz(ipoint)
+!
+!            gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
+!
+!            n_0_f(1)   = frozen_n(ipoint)
+!            gnn_0_f(1) = frozen_gnx(ipoint)*frozen_gnx(ipoint) &
+!                       + frozen_gny(ipoint)*frozen_gny(ipoint) &
+!                       + frozen_gnz(ipoint)*frozen_gnz(ipoint) 
+!         else
+!            n_0_t(1)   = n_0(1)
+!            gnn_0_t(1) = gnn_0(1)
+!
+!            n_0_f(1)   = 0.0d0
+!            gnn_0_f(1) = 0.0d0
+!         endif
+!!       number of electrons
+!         nr_electrons_integrated = nr_electrons_integrated + w(1)*n_0(1)
+!
+!!        lao_reorth
+!!        lao_direct
+!
+!      end if !if (n_0(1) > fde_cfg_tinydens) then
+   end do !do ipoint = 1, nr_points_on_this_proc
+   end if
+
+    deallocate(ao)
+    deallocate(buffer)
+
+
+   end subroutine
 
 end module fde_dirac_matrices_integration
