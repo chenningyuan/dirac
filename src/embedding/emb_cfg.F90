@@ -75,6 +75,7 @@ module fde_cfg
    public fde_get_files_info
    
    public parallel_fde
+   public fde_export_old_esp 
    public fde_cfg_screening
    public fde_cfg_tinydens
    public fde_cfg_alda_hs
@@ -91,6 +92,7 @@ module fde_cfg
    real(kind=8), save :: fde_cfg_screening = 1.0d-10
    real(kind=8), save :: fde_cfg_tinydens  = 1.0d-22
    logical, save      :: parallel_fde   = .false.
+   logical, save      :: fde_export_old_esp = .false.
 
    logical, save      :: fde_cfg_alda_hs = .false.
    logical, save      :: fde_cfg_alda_ha = .false.

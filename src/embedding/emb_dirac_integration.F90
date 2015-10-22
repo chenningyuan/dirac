@@ -2074,13 +2074,12 @@ contains
    integer :: k
    integer :: i
    logical :: print_data_at_point
-   logical :: nuc_part
-   logical :: ele_part
    integer :: np_esp
    integer :: irrep_esp
 
    real(8), allocatable :: ao(:, :)
    real(8), allocatable :: buffer(:, :)
+   real(8), allocatable :: dmat_local(:, :, :)
 
    if (.not. fde_use_blas3_scheme) then
 
@@ -2089,13 +2088,14 @@ contains
       allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
       buffer = 0.0d0
 
+!     allocate(dmat_local(mat_dim,mat_dim,nz))
+!     dmat_local = 0.0d0
+!     dmat_local(:,:,1) = dmat_0(:,:)
+
       print_data_at_point = .true.
 
       np_esp    = 1
       irrep_esp = 1
-
-      nuc_part = .true.
-      ele_part = .true.
 
       active_elpot = 0.0d0
       active_nucpot= 0.0d0
@@ -2109,7 +2109,6 @@ contains
       active_hnyy  = 0.0d0
       active_hnyz  = 0.0d0
       active_hnzz  = 0.0d0
-
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
@@ -2159,19 +2158,17 @@ contains
          active_hnyz(ipoint)= hn_0_pointwise(5)
          active_hnzz(ipoint)= hn_0_pointwise(6)
 
-         nuc_part = .true.
-         ele_part = .true.
-
 !        time_density = time_density + second() - time_density_start
-         call get_esp(np_esp,        &
-                   active_elpot(ipoint), &
-                   irrep_esp,       &
-                   size(dmat_0, 1), &
-                   dmat_0,          &
+         call get_esp(np_esp,                                &
+                   active_elpot(ipoint),                     &
+                   irrep_esp,                                &
+                   mat_dim,                                  &
+!                  dmat_local,                               &
+                   dmat_0,                                   &
                    (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
-                   nuc_part,      &
-                   ele_part)
-!
+                   include_nuc_part=.true.,                  &
+                   include_el_part=.true.)
+
 ! aspg, 14/10/2015
 !       note that the electrostatic, hartree and nuclear potentials in dirac have
 !       been multiplied by -1 when exported so that we don't have to multipy the 
@@ -2181,16 +2178,15 @@ contains
 !
          active_elpot(ipoint) = -active_elpot(ipoint)
 
-         nuc_part = .true.
-         ele_part = .false.
-         call get_esp(np_esp,        &
-                   active_nucpot(ipoint), &
-                   irrep_esp,       &
-                   size(dmat_0, 1), &
-                   dmat_0,          &
+         call get_esp(np_esp,                                &
+                   active_nucpot(ipoint),                    &
+                   irrep_esp,                                &
+                   mat_dim,                                  &
+!                  dmat_local,                               &
+                   dmat_0,                                   &
                    (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
-                   nuc_part,      &
-                   ele_part)
+                   include_nuc_part=.true.,                  &
+                   include_el_part=.false.)
 
          active_nucpot(ipoint)= -active_nucpot(ipoint)
 !
@@ -2199,6 +2195,7 @@ contains
 
     deallocate(ao)
     deallocate(buffer)
+!   deallocate(dmat_local)
 
    end subroutine 
 

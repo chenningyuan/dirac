@@ -114,6 +114,7 @@ module fde_evaluators_dirac
          end if
 
          if (old_scheme_local) then
+            print *,"NOTE: Using serial code to calculate electrostatic potential"
             call fde_calculate_elpot_via_esp(level,grid,gf,myprint)
             call fde_get_density(level,grid,gf)
          else
@@ -256,9 +257,6 @@ module fde_evaluators_dirac
          integer :: i
          integer :: np
          integer :: irrep = 1
-         logical :: nuc_part 
-         logical :: ele_part 
-
 
          if (present(myprint)) then
             printlocal = myprint
@@ -272,16 +270,14 @@ module fde_evaluators_dirac
 !
          if (printlocal) write (*,*) 'Generating the nuclear potential over the grid'
 
-         nuc_part = .true.
-         ele_part = .false.
-         call get_esp(np,            &
-                      vnuc,          &
-                      irrep,         &
-                      size(dmat, 1), &
-                      dmat,          &
-                      r,             &
-                      nuc_part,      &
-                      ele_part)
+         call get_esp(np,                      &
+                      vnuc,                    &
+                      irrep,                   &
+                      nba_orb,                 &
+                      dmat,                    &
+                      r,                       &
+                      include_nuc_part=.true., &
+                      include_el_part=.false.)
 
 ! aspg, 14/10/2015
 !       note that the electrostatic, hartree and nuclear potentials in dirac have
@@ -306,9 +302,6 @@ module fde_evaluators_dirac
          integer :: i
          integer :: np
          integer :: irrep = 1
-         logical :: nuc_part
-         logical :: ele_part
-
 
          if (present(myprint)) then
             printlocal = myprint
@@ -327,16 +320,14 @@ module fde_evaluators_dirac
 !                 that is not scaled wih the occupation numbers
 !                 (so like what one would get from calling DENMAT).
 !                 
-         nuc_part = .false.
-         ele_part = .true.
-         call get_esp(np,            &
-                      vc,            &
-                      irrep,         &
-                      size(dmat, 1), &
-                      dmat,          &
-                      r,             &
-                      nuc_part,      &
-                      ele_part)
+         call get_esp(np,                      &
+                      vc,                      &
+                      irrep,                   &
+                      nba_orb,                 &
+                      dmat,                    &
+                      r,                       &
+                      include_nuc_part=.false.,&
+                      include_el_part=.true.)
 
 ! aspg, 14/10/2015
 !       note that the electrostatic, hartree and nuclear potentials in dirac have
@@ -361,10 +352,7 @@ module fde_evaluators_dirac
          integer :: i
          integer :: np
          integer :: irrep = 1
-         logical :: nuc_part 
-         logical :: ele_part 
          
-
          if (present(myprint)) then
             printlocal = myprint
          else
@@ -382,16 +370,14 @@ module fde_evaluators_dirac
 !                 that is not scaled wih the occupation numbers
 !                 (so like what one would get from calling DENMAT).
 !                 
-         nuc_part = .true.     
-         ele_part = .true.     
-         call get_esp(np,            &
-                      vc,            &
-                      irrep,         &  
-                      size(dmat, 1), &
-                      dmat,          &
-                      r,             &
-                      nuc_part,      &
-                      ele_part)
+         call get_esp(np,                     &
+                      vc,                     &
+                      irrep,                  &  
+                      nba_orb,                 &
+                      dmat,                   &
+                      r,                      &
+                      include_nuc_part=.true.,&
+                      include_el_part=.true.)
 
 ! aspg, 14/10/2015
 !       note that the electrostatic, hartree and nuclear potentials in dirac

@@ -128,7 +128,6 @@ contains
 !       real(8) :: src(:)
 !       integer :: src_count
 !       real(8) :: dst(:)
-!!       integer :: dst_count(:)
 !       integer :: offsets(:)
 !       integer :: i
 !
@@ -139,7 +138,7 @@ contains
 !          end do 
 !       end if
 !        
-!       call mpi_gather(src, src_count, mpi_double_precision, dst, dst_count, offsets, mpi_double_precision, irank_master, global_communicator, ierr)
+!       call mpi_gatherv(src, src_count, mpi_double_precision, dst, dst_count, offsets, mpi_double_precision, irank_master, global_communicator, ierr)
 !
 !    end subroutine
 

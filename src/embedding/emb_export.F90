@@ -89,8 +89,7 @@ module fde_export_data
          type(fde_grid), intent(in)         :: grid
          character(len=4)                   :: level
 
-!       call fde_calculate_elpot(level,grid,gf,old_scheme=.true.)
-        call fde_calculate_elpot(level,grid,gf,old_scheme=.false.)
+        call fde_calculate_elpot(level,grid,gf,old_scheme=fde_export_old_esp)
 
       end subroutine fde_prepare_export
 

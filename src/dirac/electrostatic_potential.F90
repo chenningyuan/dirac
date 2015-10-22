@@ -49,7 +49,7 @@ module electrostatic_potential
       call legacy_lwork_get(lwork)
       call alloc(work, lwork, id='temporary work array in electrostatic potential')
 ! Never neglect SS-block for visualization purposes
-      call get_electronic_mep(nr_points, dmat, r, esp, work, lwork, 0, .false., .false.)
+      call get_electronic_mep(nr_points, dmat, mat_dim, r, esp, work, lwork, 0, .false., .false.)
       call dealloc(work)
    end if
 
@@ -172,7 +172,7 @@ module electrostatic_potential
 
    end subroutine
 
-   subroutine get_electronic_mep(nr_points, matrix, points, vector,    &
+   subroutine get_electronic_mep(nr_points, matrix, mat_dim, points, vector,    &
                         work, lwork, iprint, get_matrix, skipss_block)
 !      
 ! Driver routine for the calculation of the electronic part of the molecular 
@@ -223,7 +223,8 @@ module electrostatic_potential
 
 ! Passed variables
       integer, intent(in) :: nr_points
-      real(8)             :: matrix(ntbas(0), ntbas(0), nz)
+      integer, intent(in) :: mat_dim 
+      real(8)             :: matrix(mat_dim,mat_dim, nz)
 ! Triggers whether we want PCM Fock matrix contribution or just the
 ! potential.      
       logical, optional   :: get_matrix 

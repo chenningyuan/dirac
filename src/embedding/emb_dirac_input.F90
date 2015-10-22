@@ -96,6 +96,9 @@ module fde_input_dirac
             CASE ('.ENER_B')
                read(lucmd,*) fde_frozen_energy 
 
+            CASE ('.OLDESP')
+               fde_export_old_esp = .true. 
+
             CASE ('.SKIPK')
                call fde_set_skip_nadd_ke(.true.)
             CASE ('.SKIPX')
