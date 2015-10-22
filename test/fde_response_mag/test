@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(from_string = '@            isotropic shielding',
+      num_lines   = 7,
+      rel_tolerance   = 0.002)
+
+
+# no freeze-thaw
+# --------------
+# take grid and frozen density and embedding potential from ADF
+shutil.copy('FROZEN.adf', 'FROZEN')
+shutil.copy('EMBPOT.adf', 'EMBPOT')
+shutil.copy('numerical_grid.adf', 'numerical_grid')
+#test.run(['ll_lda_usevemb_shield_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+#test.run(['ll_lda_usevemb_shield_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+#test.run(['ll_lda_usevemb_shield_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+
+# take grid and frozen density from ADF, update embedding potential
+#test.run(['ll_lda_updatevemb_shield_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+#
+# take grid from ADF, first generate frozen density (run on mol2), then use it for mol1
+shutil.copy('numerical_grid.adf', 'FILEEX')
+shutil.copy('numerical_grid.adf', 'GRIDOUT')
+test.run(['ll_lda_getfrozen.inp'], ['h2o-2.xyz'], f, args='--put="numerical_grid FILEEX GRIDOUT" --get="GRIDOUT"')
+shutil.copy('GRIDOUT', 'FROZEN')
+test.run(['ll_lda_updatevemb_shield_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+#test.run(['ll_lda_updatevemb_shield_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+#test.run(['ll_lda_updatevemb_shield_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+#
+#os.unlink('DFCOEF')
+#os.unlink('FROZEN')
+#os.unlink('GRIDOUT')
+#os.unlink('EMBPOT')
+
+# do freeze-thaw in DIRAC
+# -----------------------
+
+sys.exit(test.return_code)
