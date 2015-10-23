@@ -1,5 +1,6 @@
 !
-! This test calculates the HF energy of
+! This test calculates the total energy 
+! and the dipole moment of
 ! employing valence-only Hamitonian
 ! for relativistic effective-core-potentials.
 !
@@ -7,6 +8,7 @@
 .TITLE
 HI molecule with RECP
 .WAVE F
+.PROPERTIES
 **HAMILTONIAN 
 .ECP
 **WAVE FUNCTIONS
@@ -14,5 +16,6 @@ HI molecule with RECP
 *SCF
 .CLOSED SHELL
 8
+**PROPERTIES
+.DIPOLE
 *END OF DIRAC
-

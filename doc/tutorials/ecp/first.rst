@@ -3,27 +3,30 @@
 ECP calculation
 ===============
 
-In DIRAC12, effective core potential (ECP) is implemented and various corrleation methods are availiable within the two-component or one-component effective Hamiltonian. 
-From the inclusion (exclusion) of spin-orbit potential parameters in input file, molecular spinors (orbitals) are obtained and this is the starting point of several ground and excited state calculation with ECP. 
+In DIRAC, the effective core potential (ECP) method is implemented and various subsequent correlation methods are available 
+within the two-component or one-component effective Hamiltonian. 
 
-The first example is the SCF calculation of hydrogen iodide. 
+From the inclusion (exclusion) of spin-orbit potential parameters in the input file, molecular spinors (orbitals) are obtained and this is the starting point of several ground and excited state calculation with the ECP method. 
+
+The first example is the SCF calculation of Hydrogen Iodide. 
 
 
 SOREP calculation
 -----------------
 
-The simplest input file (HF.inp) for ECP calculation is 
+The simplest input file (:download:`HF.inp <../../../../test/ecp/HF.inp>`) for ECP calculation is 
 
-.. literalinclude:: HF.inp
+.. literalinclude:: ../../../../test/ecp/HF.inp
 
-together with the molecular input (HI_SOREP.mol)
+together with the molecular input (:download:`HI_sorep.mol <../../../../test/ecp/HI_sorep.mol>`)
 
-.. literalinclude:: HI_SOREP.mol
+.. literalinclude:: ../../../../test/ecp/HI_sorep.mol
 
 This is the two-component spin-orbit relativistic effective core potential (SOREP) calulation. 
 (For the detail of input, see :ref:`ecp_input`)
 
-In the final output, the two-component molecular spinors are obtained ::
+In the calculation output, the two-component molecular spinors (see also the :download:`full output <../../../../test/ecp/result/HF_HI_sorep.out>`) 
+are listed as ::
 
   * Fermion symmetry E1
     * Closed shell, f = 1.0000
@@ -43,23 +46,24 @@ In the final output, the two-component molecular spinors are obtained ::
     4.03197238122657  ( 2)     4.26133522183310  ( 2)     4.26149442194385  ( 2)     4.35237329819399  ( 2)     4.68664685801378  ( 2)
     6.91601218905285  ( 2)     7.39252180916936  ( 2)     7.61998005503501  ( 2)    21.10496588735050  ( 2)
 
-In the final output, the molecular spinors are generated from the inclusion of spin-orbit coupling in SCF step.
-The orbital degeneracies showing AREP calculation are broken in SOREP. (See AREP calculation below)
+In this output, the molecular spinors are generated with the inclusion of spin-orbit coupling in the SCF step.
+The orbital degeneracies showing up in AREP calculation are broken with SOREP (for comparison, see AREP calculation results below).
 
-Note: Compared to all-electron calculation, only small number of occupied molecular spinors are listed in the above example.  
+Note: Compared to all-electron calculations, only small number of occupied molecular spinors are listed in the above example.  
 Here, only four occupied molecular spinors are shown. 
-Because only eight electrons (7 electrons in iodine and 1 electron in hydorgen) are described.
-46 electrons in iodine are omitted and substituted as core potentials.
+This is because only eight (upper) electrons are described - seven electrons on the iodine atom and one electron on the hydrogen atom.
+Remaining forty-six electrons in iodine are omitted and are substituted by relativistic effective core potentials.
 
 AREP calculation
 ----------------
 
-One-component scalar relativistic effective core potential (AREP) calculation is obtained
-from the omitting of the SO parameters in SOREP. (HI_AREP.mol)
+We set the one-component scalar relativistic effective core potential (AREP) calculation 
+by omitting the SO parameters in SOREP (:download:`HI_arep.mol <../../../../test/ecp/HI_arep.mol>`).
 
-.. literalinclude:: HI_AREP.mol 
+.. literalinclude:: ../../../../test/ecp/HI_arep.mol 
 
-After SCF step, the following molecular orbitals are obtained ::
+After the SCF step, the following molecular orbitals (:download:`full output <../../../../test/ecp/result/HF_HI_arep.out>`)
+ are obtained ::
 
   * Fermion symmetry E1
     * Closed shell, f = 1.0000
@@ -75,6 +79,17 @@ After SCF step, the following molecular orbitals are obtained ::
     4.03098540560673  ( 4)     4.26054689341582  ( 4)     4.35208715121292  ( 2)     4.68579647949884  ( 2)     7.21075466518969  ( 4)
     7.50571888682965  ( 2)    21.10478953048176  ( 2)
 
-Compared to molecular spinors from SOREP calculation, spin-orbit coupling neglected in AREP molecular orbitals.
-As a result, some degenercies in molecular orbitals appear in spin-free (AREP) calculation. 
+Compared to molecular spinors from the SOREP calculation, the spin-orbit coupling is neglected in AREP molecular orbitals.
+As a result, some degeneracies in molecular orbitals appear in the spin-free (AREP) calculation. 
+
+Exercise
+--------
+
+1. Compute the dipole moment of the HI molecule with (SOREP) and without (AREP) spin-orbital relativistic effects.
+How do spin-orbital effects influence this property ? Compare obtained results with the available literature.
+
+2. Optimize (numerically, see :ref:`*OPTIMIZE`) the internuclear distance with (SOREP) and without (AREP) spin-orbital interaction.
+   What is effect of spin-orbital coupling on the bond distance ? Compare with other works.
+
+
 
