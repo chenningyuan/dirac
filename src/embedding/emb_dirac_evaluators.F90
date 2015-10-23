@@ -614,7 +614,7 @@ module fde_evaluators_dirac
       call alloc(ibeig, ndim)
       ibeig = 0
 
-      call opnfil(lucoef,'DFCOEF','old','fde_get_pertden')
+      call opnfil(lucoef,'DFCOEF','OLD','fde_get_pertden')
       if (spinfr) then
          call reacmo_no_work(lucoef,'DFCOEF',cmo,dum,ibeig,toterg,10)
       else
@@ -627,42 +627,59 @@ module fde_evaluators_dirac
       dmat = 0.0d0
       call genden(dmat, cmo, 1, 0)
 
-         
+        
 !     then calculate the perturbed density
 !     for the moment both contributions to perturbed density (direct and reorthonormalization)
 !     have to be done in one go
-      if (.not. fde_rsp_mag_lao_no_s) then
          call alloc(buffer, ndim*ndim, nz)
          call dcopy(ndim*ndim*nz, dmat, 1, buffer, 1)
 
-#ifdef VAR_MPI
-         if (parcal) call dirac_parctl(12)
-#endif
-         call fde_dirac_emb_matrices_via_integration(      &
+          call fde_dirac_emb_matrices_via_integration(      &
                                   fde_mat_dim   = ndim,    &
                                   fde_nz        = nz,      &
                                   fde_dmat_0    = dmat,    & !only real part of dmat
-                                  fde_nr_dmat   = 3,       &
+                                  fde_nr_dmat   = 1,       &
                                   fde_nr_fmat   = 0,       &
-                                  fde_dmat      = tbdmat,  &
+                                  fde_dmat      = buffer,  &
                                   fde_do_export_pertden_reorth = .true., &
-                                  fde_do_export_pertden_direct = .true.)
+                                  fde_active_grid = grid, &
+                                  fde_active_gridfunction = gf)
          call dealloc(buffer)
 
-      else
-#ifdef VAR_MPI
-         if (parcal) call dirac_parctl(12)
-#endif
-         call fde_dirac_emb_matrices_via_integration(      &
-                                  fde_mat_dim   = ndim,    &
-                                  fde_nz        = nz,      &
-                                  fde_dmat_0    = dmat,    & !only real part of dmat
-                                  fde_nr_dmat   = 3,       &
-                                  fde_nr_fmat   = 0,       &
-                                  fde_dmat      = tbdmat,  &
-                                  fde_do_export_pertden_reorth = .true.)
-
-      end if
+!      if (.not. fde_rsp_mag_lao_no_s) then
+!         call alloc(buffer, ndim*ndim, nz)
+!         call dcopy(ndim*ndim*nz, dmat, 1, buffer, 1)
+!
+!#ifdef VAR_MPI
+!         if (parcal) call dirac_parctl(12)
+!#endif
+!         call fde_dirac_emb_matrices_via_integration(      &
+!                                  fde_mat_dim   = ndim,    &
+!                                  fde_nz        = nz,      &
+!                                  fde_dmat_0    = dmat,    & !only real part of dmat
+!                                  fde_nr_dmat   = 3,       &
+!                                  fde_nr_fmat   = 0,       &
+!                                  fde_dmat      = tbdmat,  &
+!                                  fde_do_export_pertden_reorth = .true., &
+!                                  fde_do_export_pertden_direct = .true., &
+!                                  fde_active_grid = grid, &
+!                                  fde_active_gridfunction = gf)
+!         call dealloc(buffer)
+!
+!      else
+!#ifdef VAR_MPI
+!         if (parcal) call dirac_parctl(12)
+!#endif
+!         call fde_dirac_emb_matrices_via_integration(      &
+!                                  fde_mat_dim   = ndim,    &
+!                                  fde_nz        = nz,      &
+!                                  fde_dmat_0    = dmat,    & !only real part of dmat
+!                                  fde_nr_dmat   = 3,       &
+!                                  fde_nr_fmat   = 0,       &
+!                                  fde_dmat      = tbdmat,  &
+!                                  fde_do_export_pertden_reorth = .true.)
+!
+!      end if
       call dealloc(tbdmat)
       call dealloc(dmat)
       call dealloc(cmo)
