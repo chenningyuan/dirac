@@ -81,21 +81,10 @@ of the individual atomic orbitals (including :math:`m_j` quantum number). We acc
    pam --inp=H  --mol=H --get "DFACMO=ac.H"
    pam --inp=C  --mol=C --get "DFACMO=ac.C"
 
-with corresponding input files ``H.inp``, 
-
-.. literalinclude:: H.inp 
-
-``H.mol``, 
-
-.. literalinclude:: H.mol
-
-``C.inp``
-
-.. literalinclude:: C.inp 
-
-and ``C.mol``
-
-.. literalinclude:: C.mol
+with corresponding input files ``H.inp`` (:download:`download <H.inp>`),
+``H.mol`` (:download:`download <H.mol>`), 
+``C.inp`` (:download:`download <C.inp>`),
+and ``C.mol`` (:download:`download <C.mol>`).
 
 As a final preparation we make symbolic links to the needed coefficient files::
 
@@ -106,7 +95,7 @@ As a final preparation we make symbolic links to the needed coefficient files::
 Running the analysis
 --------------------
 
-We are now ready for the projection analysis itself. We prepare the input file ``prj.inp``
+We are now ready for the projection analysis itself. We prepare the input file ``prj.inp`` (:download:`download <prj.inp>`)
 
 .. literalinclude:: prj.inp
 
