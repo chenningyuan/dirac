@@ -180,6 +180,12 @@ module fde_dirac_matrices_integration
    real(8), pointer             :: dmat(:, :, :, :)
    real(8), allocatable, target :: dmat_container(:, :, :, :)
 
+   real(8), pointer             :: dmat_pertden_direct(:, :, :)
+   real(8), allocatable, target :: dmat_pertden_direct_container(:, :, :)
+
+   real(8), pointer             :: dmat_pertden_reorth(:, :, :, :)
+   real(8), allocatable, target :: dmat_pertden_reorth_container(:, :, :, :)
+
    integer                      :: nr_fmat
    real(8), pointer             :: fmat(:, :, :, :)
    real(8), allocatable, target :: fmat_container(:, :, :, :)
@@ -259,6 +265,8 @@ contains
                              fde_nr_dmat,               &
                              fde_nr_fmat,               &
                              fde_dmat,                  &
+                             fde_dmat_pertden_direct,   &
+                             fde_dmat_pertden_reorth,   &
                              fde_fmat,                  &
                              fde_dmat_ih_sym,           &
                              fde_dmat_pg_sym,           &
@@ -304,6 +312,8 @@ contains
       integer,                   intent(in)    :: fde_nr_dmat
       integer,                   intent(in)    :: fde_nr_fmat
       real(8), optional, target, intent(in)    :: fde_dmat(fde_mat_dim, fde_mat_dim, fde_nz, fde_nr_dmat)
+      real(8), optional, target, intent(in)    :: fde_dmat_pertden_direct(fde_mat_dim, fde_mat_dim, fde_nz)
+      real(8), optional, target, intent(in)    :: fde_dmat_pertden_reorth(fde_mat_dim, fde_mat_dim, fde_nz, 3)
 !     real(8), optional, target, intent(inout) :: fde_fmat(fde_mat_dim, fde_mat_dim, fde_nz, fde_nr_fmat)
       real(8), optional, target                :: fde_fmat(fde_mat_dim, fde_mat_dim, fde_nz, fde_nr_fmat)
       integer, optional, target, intent(in)    :: fde_dmat_ih_sym(fde_nr_dmat)
@@ -518,6 +528,26 @@ contains
          end if
       end if
 
+      nullify(dmat_pertden_direct)
+      if (present(fde_dmat_pertden_direct) .and. fde_do_export_pertden_direct) then
+         if (.not. fde_mpi_is_master()) then
+            allocate(dmat_pertden_direct_container(mat_dim, mat_dim, nz))
+            dmat_pertden_direct => dmat_pertden_direct_container
+         else
+            dmat_pertden_direct => fde_dmat_pertden_direct
+         end if
+      end if
+
+      nullify(dmat_pertden_reorth)
+      if (present(fde_dmat_pertden_reorth) .and. fde_do_export_pertden_reorth) then
+         if (.not. fde_mpi_is_master()) then
+            allocate(dmat_pertden_reorth_container(mat_dim, mat_dim, nz, 3))
+            dmat_pertden_reorth => dmat_pertden_reorth_container
+         else
+            dmat_pertden_reorth => fde_dmat_pertden_reorth
+         end if
+      end if
+
       if (use_potential) then
 ! gosia: here fde_static_vemb seems not to be allocated, even if run with *EMBPOT in the input,
 ! so i have to read it in again:
@@ -693,6 +723,12 @@ contains
             call fde_mpi_bcast(dmat)
             call fde_mpi_bcast(dmat_pg_sym)
             call fde_mpi_bcast(dmat_ih_sym)
+         end if
+         if (fde_do_export_pertden_reorth) then
+            call fde_mpi_bcast(dmat_pertden_reorth)
+         end if
+         if (fde_do_export_pertden_direct) then
+            call fde_mpi_bcast(dmat_pertden_direct)
          end if
       end if
 #endif
@@ -934,8 +970,14 @@ contains
    subroutine nullify_and_release()
 !   ----------------------------------------------------------------------------
 
-  if (associated(dmat)) then
+      if (associated(dmat)) then
          nullify(dmat)
+      end if
+      if (associated(dmat_pertden_direct)) then
+         nullify(dmat_pertden_direct)
+      end if
+      if (associated(dmat_pertden_reorth)) then
+         nullify(dmat_pertden_reorth)
       end if
       if (associated(fmat)) then
          nullify(fmat)
@@ -975,6 +1017,12 @@ contains
       if (.not. fde_mpi_is_master()) then
          if (allocated(dmat_container)) then
             deallocate(dmat_container)
+         end if
+         if (allocated(dmat_pertden_direct_container)) then
+            deallocate(dmat_pertden_direct_container)
+         end if
+         if (allocated(dmat_pertden_reorth_container)) then
+            deallocate(dmat_pertden_reorth_container)
          end if
          if (allocated(fmat_container)) then
             deallocate(fmat_container)
@@ -3294,7 +3342,7 @@ contains
                                        gnn_0_t, &
                                        w,       &
                                        use_gga, &
-                                       dmat,    &
+                                       dmat_pertden_reorth,    &
                                        dmat_pg_sym,    &
                                        buffer)
             end if
@@ -3311,7 +3359,7 @@ contains
                                       gnn_0_t,        &
                                       w,              &
                                       use_gga,        &
-                                      dmat,           &
+                                      dmat_pertden_direct,           &
                                       dmat_pg_sym,    &
                                       rx(ipoint), ry(ipoint), rz(ipoint))
             end if
@@ -3399,43 +3447,44 @@ contains
                       px, py, pz)
     end if
 
-    active_sx_bx(ipoint) = s_b(1,1)
-    active_sx_by(ipoint) = s_b(1,2)
-    active_sx_bz(ipoint) = s_b(1,3)
-    active_sy_bx(ipoint) = s_b(2,1)
-    active_sy_by(ipoint) = s_b(2,2)
-    active_sy_bz(ipoint) = s_b(2,3)
-    active_sz_bx(ipoint) = s_b(3,1)
-    active_sz_by(ipoint) = s_b(3,2)
-    active_sz_bz(ipoint) = s_b(3,3)
+!gosia: check if it is correctly added!
+    active_sx_bx(ipoint) = active_sx_bx(ipoint) + s_b(1,1)
+    active_sx_by(ipoint) = active_sx_by(ipoint) + s_b(1,2)
+    active_sx_bz(ipoint) = active_sx_bz(ipoint) + s_b(1,3)
+    active_sy_bx(ipoint) = active_sy_bx(ipoint) + s_b(2,1)
+    active_sy_by(ipoint) = active_sy_by(ipoint) + s_b(2,2)
+    active_sy_bz(ipoint) = active_sy_bz(ipoint) + s_b(2,3)
+    active_sz_bx(ipoint) = active_sz_bx(ipoint) + s_b(3,1)
+    active_sz_by(ipoint) = active_sz_by(ipoint) + s_b(3,2)
+    active_sz_bz(ipoint) = active_sz_bz(ipoint) + s_b(3,3)
     if (is_gga) then
-       active_gxsx_bx(ipoint) = gs_b(1,1,1)
-       active_gxsx_by(ipoint) = gs_b(1,1,2)
-       active_gxsx_bz(ipoint) = gs_b(1,1,3)
-       active_gxsy_bx(ipoint) = gs_b(1,2,1)
-       active_gxsy_by(ipoint) = gs_b(1,2,2)
-       active_gxsy_bz(ipoint) = gs_b(1,2,3)
-       active_gxsz_bx(ipoint) = gs_b(1,3,1)
-       active_gxsz_by(ipoint) = gs_b(1,3,2)
-       active_gxsz_bz(ipoint) = gs_b(1,3,3)
-       active_gysx_bx(ipoint) = gs_b(2,1,1)
-       active_gysx_by(ipoint) = gs_b(2,1,2)
-       active_gysx_bz(ipoint) = gs_b(2,1,3)
-       active_gysy_bx(ipoint) = gs_b(2,2,1)
-       active_gysy_by(ipoint) = gs_b(2,2,2)
-       active_gysy_bz(ipoint) = gs_b(2,2,3)
-       active_gysz_bx(ipoint) = gs_b(2,3,1)
-       active_gysz_by(ipoint) = gs_b(2,3,2)
-       active_gysz_bz(ipoint) = gs_b(2,3,3)
-       active_gzsx_bx(ipoint) = gs_b(3,1,1)
-       active_gzsx_by(ipoint) = gs_b(3,1,2)
-       active_gzsx_bz(ipoint) = gs_b(3,1,3)
-       active_gzsy_bx(ipoint) = gs_b(3,2,1)
-       active_gzsy_by(ipoint) = gs_b(3,2,2)
-       active_gzsy_bz(ipoint) = gs_b(3,2,3)
-       active_gzsz_bx(ipoint) = gs_b(3,3,1)
-       active_gzsz_by(ipoint) = gs_b(3,3,2)
-       active_gzsz_bz(ipoint) = gs_b(3,3,3)
+       active_gxsx_bx(ipoint) = active_gxsx_bx(ipoint) + gs_b(1,1,1)
+       active_gxsx_by(ipoint) = active_gxsx_by(ipoint) + gs_b(1,1,2)
+       active_gxsx_bz(ipoint) = active_gxsx_bz(ipoint) + gs_b(1,1,3)
+       active_gxsy_bx(ipoint) = active_gxsy_bx(ipoint) + gs_b(1,2,1)
+       active_gxsy_by(ipoint) = active_gxsy_by(ipoint) + gs_b(1,2,2)
+       active_gxsy_bz(ipoint) = active_gxsy_bz(ipoint) + gs_b(1,2,3)
+       active_gxsz_bx(ipoint) = active_gxsz_bx(ipoint) + gs_b(1,3,1)
+       active_gxsz_by(ipoint) = active_gxsz_by(ipoint) + gs_b(1,3,2)
+       active_gxsz_bz(ipoint) = active_gxsz_bz(ipoint) + gs_b(1,3,3)
+       active_gysx_bx(ipoint) = active_gysx_bx(ipoint) + gs_b(2,1,1)
+       active_gysx_by(ipoint) = active_gysx_by(ipoint) + gs_b(2,1,2)
+       active_gysx_bz(ipoint) = active_gysx_bz(ipoint) + gs_b(2,1,3)
+       active_gysy_bx(ipoint) = active_gysy_bx(ipoint) + gs_b(2,2,1)
+       active_gysy_by(ipoint) = active_gysy_by(ipoint) + gs_b(2,2,2)
+       active_gysy_bz(ipoint) = active_gysy_bz(ipoint) + gs_b(2,2,3)
+       active_gysz_bx(ipoint) = active_gysz_bx(ipoint) + gs_b(2,3,1)
+       active_gysz_by(ipoint) = active_gysz_by(ipoint) + gs_b(2,3,2)
+       active_gysz_bz(ipoint) = active_gysz_bz(ipoint) + gs_b(2,3,3)
+       active_gzsx_bx(ipoint) = active_gzsx_bx(ipoint) + gs_b(3,1,1)
+       active_gzsx_by(ipoint) = active_gzsx_by(ipoint) + gs_b(3,1,2)
+       active_gzsx_bz(ipoint) = active_gzsx_bz(ipoint) + gs_b(3,1,3)
+       active_gzsy_bx(ipoint) = active_gzsy_bx(ipoint) + gs_b(3,2,1)
+       active_gzsy_by(ipoint) = active_gzsy_by(ipoint) + gs_b(3,2,2)
+       active_gzsy_bz(ipoint) = active_gzsy_bz(ipoint) + gs_b(3,2,3)
+       active_gzsz_bx(ipoint) = active_gzsz_bx(ipoint) + gs_b(3,3,1)
+       active_gzsz_by(ipoint) = active_gzsz_by(ipoint) + gs_b(3,3,2)
+       active_gzsz_bz(ipoint) = active_gzsz_bz(ipoint) + gs_b(3,3,3)
     end if
  
 

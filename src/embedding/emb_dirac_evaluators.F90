@@ -653,12 +653,11 @@ module fde_evaluators_dirac
                                   fde_mat_dim   = ndim,    &
                                   fde_nz        = nz,      &
                                   fde_dmat_0    = dmat,    & !only real part of dmat
-                                  fde_nr_dmat   = 1,       &
-                                  !fde_nr_dmat   = 3,       &
+                                  fde_nr_dmat   = 0,       &
                                   fde_nr_fmat   = 0,       &
-                                  fde_dmat      = buffer,  &
-                                  !fde_dmat      = tbdmat,  &
-                                  !fde_do_export_pertden_reorth = .true., &
+                                  fde_dmat_pertden_direct      = buffer,  &
+                                  fde_dmat_pertden_reorth      = tbdmat,  &
+                                  fde_do_export_pertden_reorth = .true., &
                                   fde_do_export_pertden_direct = .true., &
                                   fde_active_grid = grid, &
                                   fde_active_gridfunction = gf)
