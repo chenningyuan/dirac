@@ -452,7 +452,7 @@
 !   wbar_ovvo(mb,ej) = wbar_ovvo(mb,ej) - V(mn,ef) * T2(bf,nj)
 !------------------------------------------------------------
 
-     testluuk = .true.
+     testluuk = .false.
  if(.not.testluuk) then
 
   call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),wbar_ovvo, &
