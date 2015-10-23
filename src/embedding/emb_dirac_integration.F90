@@ -724,10 +724,10 @@ contains
             call fde_mpi_bcast(dmat_pg_sym)
             call fde_mpi_bcast(dmat_ih_sym)
          end if
-         if (fde_do_export_pertden_reorth) then
+         if (do_export_pertden_reorth) then
             call fde_mpi_bcast(dmat_pertden_reorth)
          end if
-         if (fde_do_export_pertden_direct) then
+         if (do_export_pertden_direct) then
             call fde_mpi_bcast(dmat_pertden_direct)
          end if
       end if
