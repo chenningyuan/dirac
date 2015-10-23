@@ -89,7 +89,8 @@ Exercise
 How do spin-orbital effects influence this property ? Compare obtained results with the available literature.
 
 2. Optimize (numerically, see :ref:`*OPTIMIZE`) the internuclear distance with (SOREP) and without (AREP) spin-orbital interaction.
-   What is effect of spin-orbital coupling on the bond distance ? Compare with other works.
+   What is effect of spin-orbital coupling on the bond distance ? Compare with other published works. 
+   Help - the input file, :download:`geopt_HF.inp <geopt_HF.inp>`.
 
 
 
