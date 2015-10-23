@@ -599,7 +599,7 @@ module fde_evaluators_dirac
 
       close(tbdmat_file_unit, status='keep')
 
-      debug_me = .false.
+      debug_me = .true.
       if (debug_me) then
          do i = 1, 3
            write(*, *) 'tbdmat read test, i =', i
@@ -634,13 +634,28 @@ module fde_evaluators_dirac
          call alloc(buffer, ndim*ndim, nz)
          call dcopy(ndim*ndim*nz, dmat, 1, buffer, 1)
 
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat(             1 :   ndim*ndim, 1), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((  ndim*ndim+1):(2*ndim*ndim),1), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((2*ndim*ndim+1):(3*ndim*ndim),1), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((3*ndim*ndim+1):(4*ndim*ndim),1), 1)
+
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat(             1 :   ndim*ndim, 2), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((  ndim*ndim+1):(2*ndim*ndim),2), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((2*ndim*ndim+1):(3*ndim*ndim),2), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((3*ndim*ndim+1):(4*ndim*ndim),2), 1)
+
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat(             1 :   ndim*ndim, 3), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((  ndim*ndim+1):(2*ndim*ndim),3), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((2*ndim*ndim+1):(3*ndim*ndim),3), 1)
+         !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((3*ndim*ndim+1):(4*ndim*ndim),3), 1)
+
           call fde_dirac_emb_matrices_via_integration(      &
                                   fde_mat_dim   = ndim,    &
                                   fde_nz        = nz,      &
                                   fde_dmat_0    = dmat,    & !only real part of dmat
-                                  fde_nr_dmat   = 1,       &
+                                  fde_nr_dmat   = 3,       &
                                   fde_nr_fmat   = 0,       &
-                                  fde_dmat      = buffer,  &
+                                  fde_dmat      = tbdmat,  &
                                   fde_do_export_pertden_reorth = .true., &
                                   fde_active_grid = grid, &
                                   fde_active_gridfunction = gf)
