@@ -42,7 +42,20 @@ test.run(['ll_lda_updatevemb_shield_g0_v.inp'],          ['h2o-1.xyz'], f, args=
 test.run(['ll_lda_updatevemb_shield_g1_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 test.run(['ll_lda_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 test.run(['ll_lda_updatevemb_shield_g1_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-#test.run(['ll_lda_usevemb_shield_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+#test.run(['ll_lda_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+#test.run(['ll_lda_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+
+shutil.copy('DFCOEF.dc', 'DFCOEF')
+#test.run(['dc_lda_updatevemb_scf.inp'],                  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --outcmo')
+test.run(['dc_lda_updatevemb_shield_g0_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+test.run(['dc_lda_updatevemb_shield_g1_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+test.run(['dc_lda_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+test.run(['dc_lda_updatevemb_shield_g1_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+#test.run(['dc_lda_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+#test.run(['dc_lda_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+
+
+
 
 os.unlink('FROZEN')
 os.unlink('numerical_grid')
