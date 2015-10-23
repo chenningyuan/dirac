@@ -677,6 +677,12 @@ C
 !           will not calculated the virtual part of the
 !           MP2 density matrix. /July 2015, hjaaj
 
+
+! The above procedure is WRONG as RELCCSD uses complex conjugation symmetry to generate the
+! full set of integrals. Having two different index ranges leads to errors that are difficult
+! to detect and unpredictable results. Changed this to (G G | G G) to make the procedure work
+! (but more expensive).
+
       KREL = KFREE
       CALL MEMGET2('INTE','VEC_all',KVEC_all,NESHT,WORK,KFREE,LFREE)
       DO IFRP = 1,NFSYM
@@ -709,11 +715,13 @@ C
       DO I = 1,4
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
-          IF (I .EQ. 1 .OR. I .EQ. 3) THEN ! all active orbitals
+cluuk     IF (I .EQ. 1 .OR. I .EQ. 3) THEN ! all active orbitals
              TEMP_TRA4_INDSTR = VECMP2NO(IFRP)
-          ELSE ! only occupied active orbitals
-             TEMP_TRA4_INDSTR = VECMP2NO_occ(IFRP)
-          END IF
+cluuk     ELSE ! only occupied active orbitals
+cluuk        TEMP_TRA4_INDSTR = VECMP2NO_occ(IFRP)
+cluuk     END IF
+! see above: activate HJs scheme only if you know what you are doing, this requires
+! non-trivial changes in the RELCCSD integral reader
           CALL MEMGET2('INTE','VEC4 tmp',KVEC(IFRP,I),NR(IFRP),
      &       WORK,KFREE,LFREE)
           NSTR(IFRP,0,I) = - 1
@@ -799,7 +807,7 @@ C
 C
          IF (ISAME(I).EQ.I) THEN
 C           new coefficient matrix
-c           IF (I.NE.1) CALL QUIT ('All ranges should be equal')
+            IF (I.NE.1) CALL QUIT ('All ranges should be equal')
             CALL MEMGET2('REAL','KQ_4',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
          ELSE
 C           same coefficient matrix as before

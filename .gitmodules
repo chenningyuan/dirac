@@ -8,3 +8,6 @@
 	path = external/pcmsolver
 	url = https://github.com/PCMSolver/pcmsolver.git
 	branch = release
+[submodule "external/stieltjes"]
+	path = external/stieltjes
+	url = https://gitlab.com/stieltjes/stieltjes.git

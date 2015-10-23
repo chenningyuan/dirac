@@ -16,17 +16,8 @@ if(ENABLE_PCMSOLVER)
     else()
         add_definitions(-DHAS_PCMSOLVER)
         message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-        set(PCMSOLVER_TESTS ON)
+        set(PCMSOLVER_TESTS OFF)
         get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
-
-        if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-            set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/external)
-            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-        else()
-            set(EXTERNAL_PROJECT_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/external)
-            set(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT ${CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT} CACHE INTERNAL "")
-        endif()
 
         # PCMSolver does not know profile
         if(CMAKE_BUILD_TYPE MATCHES "profile")
@@ -36,34 +27,28 @@ if(ENABLE_PCMSOLVER)
         endif()
 
         set(ExternalProjectCMakeArgs
-            # PCMSolver does not know profile
-            if(CMAKE_BUILD_TYPE MATCHES "profile")
-                set(CMAKE_BUILD_TYPE "release")
-                endif
-                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-                -DCMAKE_INSTALL_PREFIX=${EXTERNAL_PROJECT_INSTALL_PREFIX} #${PROJECT_BINARY_DIR}/external
-                -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-                -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
-                -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-                -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
-                -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-                -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
-                -DENABLE_CXX11_SUPPORT=OFF
-                -DPARENT_INCLUDE_DIR=${PROJECT_BINARY_DIR}/external/include
-                -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-                -DEIGEN3_ROOT=${EIGEN3_ROOT}
-                -DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-                -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-                -DPARENT_BINARY_DIR=${PROJECT_BINARY_DIR}
-                -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
-                -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-                -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-                -DENABLE_TESTS=${PCMSOLVER_TESTS}
-                -DZLIB_ROOT=${ZLIB_ROOT}
-                -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-                -DENABLE_LOGGER=OFF
-                -DENABLE_TIMER=OFF
-                )
+            -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
+            -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+            -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+            -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
+            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
+            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+            -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
+            -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
+            -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
+            -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
+            -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+            -DENABLE_TESTS=${PCMSOLVER_TESTS}
+            -DZLIB_ROOT=${ZLIB_ROOT}
+            -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+            -DSUBMODULES_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+            -DENABLE_CXX11_SUPPORT=OFF
+            -DENABLE_LOGGER=OFF
+            -DENABLE_TIMER=OFF
+            -DBUILD_STANDALONE=OFF
+            -DENABLE_FORTRAN_API=ON
+            )
 
             if(PCMSOLVER_TESTS)
                 add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
@@ -71,17 +56,17 @@ if(ENABLE_PCMSOLVER)
                 add_external(pcmsolver)
             endif()
 
-            link_directories(${EXTERNAL_PROJECT_INSTALL_PREFIX}/lib
-                ${EXTERNAL_PROJECT_INSTALL_PREFIX})
+            link_directories(${PROJECT_BINARY_DIR}/external/lib)
             set(EXTERNAL_LIBS
-                stdc++
+                ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES}
                 pcm
-                stdc++
+                ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES}
                 getkw
                 ${ZLIB_LIBRARIES}
                 ${EXTERNAL_LIBS})
     endif()
-    set(PCMSOLVER_PARSE_DIR ${EXTERNAL_PROJECT_INSTALL_PREFIX}/bin)
+    set(PCMSOLVER_PARSE_DIR ${PROJECT_BINARY_DIR}/external/bin)
+    include_directories(${PROJECT_BINARY_DIR}/external/pcmsolver-build/modules)
 else()
     message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
 endif()
