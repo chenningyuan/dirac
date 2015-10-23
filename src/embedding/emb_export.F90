@@ -320,8 +320,11 @@ module fde_export_data
 
          do i = 1, grid%npoints
             !if (fde_rsp_mag_lao_export) then
-               write (export_unit,'(6ES24.14E3)') (grid%r(j,i), j = 1,3), &
-                                               (gf%n_b(j,i), j = 1,3)
+               write (export_unit,'(3ES24.14E3)') &
+                                                 gf%gn_b(1,1,i), &
+                                                 gf%gn_b(2,1,i), &
+                                                 gf%gn_b(3,1,i)
+
             !end if
            ! if (fde_rsp_mag_lao_export.and..not.fde_rsp_mag_lao_no_s) then
            !    write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &

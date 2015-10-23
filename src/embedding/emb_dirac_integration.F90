@@ -80,6 +80,15 @@ module fde_dirac_matrices_integration
    real(8), allocatable :: active_n_bx(:)
    real(8), allocatable :: active_n_by(:)
    real(8), allocatable :: active_n_bz(:)
+   real(8), allocatable :: active_gxn_bx(:)
+   real(8), allocatable :: active_gxn_by(:)
+   real(8), allocatable :: active_gxn_bz(:)
+   real(8), allocatable :: active_gyn_bx(:)
+   real(8), allocatable :: active_gyn_by(:)
+   real(8), allocatable :: active_gyn_bz(:)
+   real(8), allocatable :: active_gzn_bx(:)
+   real(8), allocatable :: active_gzn_by(:)
+   real(8), allocatable :: active_gzn_bz(:)
 ! -------------------------------------------
 
    real(8), allocatable :: dmat_sorted(:, :)
@@ -577,6 +586,7 @@ contains
       if (use_gga_qr .or. use_gga_qi) then
          use_gga = .true.
       end if
+     write(*, *) 'print buba 0 use_gga =', use_gga
 !     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
 !     therefore i quit here if the user wants qr
@@ -2722,6 +2732,19 @@ contains
         allocate(active_n_by(nr_points_batch))
         allocate(active_n_bz(nr_points_batch))
 
+        if (use_gga) then
+           write(*, *) 'buba 1 use_gga'
+           allocate(active_gxn_bx(nr_points_batch))
+           allocate(active_gxn_by(nr_points_batch))
+           allocate(active_gxn_bz(nr_points_batch))
+           allocate(active_gyn_bx(nr_points_batch))
+           allocate(active_gyn_by(nr_points_batch))
+           allocate(active_gyn_bz(nr_points_batch))
+           allocate(active_gzn_bx(nr_points_batch))
+           allocate(active_gzn_by(nr_points_batch))
+           allocate(active_gzn_bz(nr_points_batch))
+        end if
+
         if (fde_mpi_is_master()) then
            rx = active_grid%r(1,:)
            ry = active_grid%r(2,:)
@@ -2746,16 +2769,60 @@ contains
         deallocate(rz)
         deallocate(rw)
 
-            if (fde_mpi_is_master()) then
-               active_gridfunction%n_b(1,:) = active_n_bx(:)
-               active_gridfunction%n_b(2,:) = active_n_by(:)
-               active_gridfunction%n_b(3,:) = active_n_bz(:)
-            endif
+#ifdef VAR_MPI
+        if (parallel_fde) then
+              call fde_mpi_gather(active_n_bx)
+              call fde_mpi_gather(active_n_by)
+              call fde_mpi_gather(active_n_bz)
+
+              if (use_gga) then
+           write(*, *) 'buba 2 use_gga'
+                 call fde_mpi_gather(active_gxn_bx)
+                 call fde_mpi_gather(active_gxn_by)
+                 call fde_mpi_gather(active_gxn_bz)
+                 call fde_mpi_gather(active_gyn_bx)
+                 call fde_mpi_gather(active_gyn_by)
+                 call fde_mpi_gather(active_gyn_bz)
+                 call fde_mpi_gather(active_gzn_bx)
+                 call fde_mpi_gather(active_gzn_by)
+                 call fde_mpi_gather(active_gzn_bz)
+              end if
+        end if
+#endif
+        if (fde_mpi_is_master()) then
+           active_gridfunction%n_b(1,:) = active_n_bx(:)
+           active_gridfunction%n_b(2,:) = active_n_by(:)
+           active_gridfunction%n_b(3,:) = active_n_bz(:)
+           if (use_gga) then
+           write(*, *) 'buba 3 use_gga'
+              active_gridfunction%gn_b(1,1,:) = active_gxn_bx(:)
+              active_gridfunction%gn_b(1,2,:) = active_gxn_by(:)
+              active_gridfunction%gn_b(1,3,:) = active_gxn_bz(:)
+              active_gridfunction%gn_b(2,1,:) = active_gyn_bx(:)
+              active_gridfunction%gn_b(2,2,:) = active_gyn_by(:)
+              active_gridfunction%gn_b(2,3,:) = active_gyn_bz(:)
+              active_gridfunction%gn_b(3,1,:) = active_gzn_bx(:)
+              active_gridfunction%gn_b(3,2,:) = active_gzn_by(:)
+              active_gridfunction%gn_b(3,3,:) = active_gzn_bz(:)
+           endif
+        endif
 
 
         deallocate(active_n_bx)
         deallocate(active_n_by)
         deallocate(active_n_bz)
+        if (use_gga) then
+           write(*, *) 'buba 4 use_gga'
+           deallocate(active_gxn_bx)
+           deallocate(active_gxn_by)
+           deallocate(active_gxn_bz)
+           deallocate(active_gyn_bx)
+           deallocate(active_gyn_by)
+           deallocate(active_gyn_bz)
+           deallocate(active_gzn_bx)
+           deallocate(active_gzn_by)
+           deallocate(active_gzn_bz)
+        end if
 
 ! don't try to read another batch
         goto 999
@@ -2932,6 +2999,18 @@ contains
       active_n_bx = 0.0d0
       active_n_by = 0.0d0
       active_n_bz = 0.0d0
+      if (use_gga) then
+           write(*, *) 'buba 5 use_gga'
+         active_gxn_bx = 0.0d0
+         active_gxn_by = 0.0d0
+         active_gxn_bz = 0.0d0
+         active_gyn_bx = 0.0d0
+         active_gyn_by = 0.0d0
+         active_gyn_bz = 0.0d0
+         active_gzn_bx = 0.0d0
+         active_gzn_by = 0.0d0
+         active_gzn_bz = 0.0d0
+      end if
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
@@ -2946,17 +3025,25 @@ contains
                rz(ipoint), &
                ao,         &
                buffer)
-!        time_ao = time_ao + second() - time_ao_start
 
-!        time_density_start = second()
+         if (need_ao_order(1, 0)) then
+!           density and density gradient
+            call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao)
+            gnn_0(1) = gn_0_pointwise(1)*gn_0_pointwise(1) &
+                     + gn_0_pointwise(2)*gn_0_pointwise(2) &
+                     + gn_0_pointwise(3)*gn_0_pointwise(3)
+         else
+!           density
+            call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
+         endif 
 
-         call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
 
          if (n_0(1) > fde_cfg_tinydens) then
             nr_points_used = nr_points_used + 1
             w(1) = rw(ipoint)
 
-               n_0_t(1)   = n_0(1)
+            n_0_t(1)   = n_0(1)
+            gnn_0_t(1) = gnn_0(1)
          
 !           lao_reorth
             call get_pertden_reorth(ipoint,  &
@@ -2965,6 +3052,9 @@ contains
                                     ao,      &
                                     n_0,     &
                                     n_0_t,   &
+                                    gn_0_pointwise, &
+                                    gnn_0,   &
+                                    gnn_0_t, &
                                     w,       &
                                     use_gga, &
                                     dmat,    &
@@ -2990,6 +3080,9 @@ contains
                         ao,                 &
                         n_0,                &
                         n_0_t,              &
+                        gn_0_pointwise,     &
+                        gnn_0,              &
+                        gnn_0_t,            &
                         w,                  &
                         is_gga,             &
                         tb_dmat,            &
@@ -3003,6 +3096,9 @@ contains
     real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: n_0_t(*)
+    real(8), intent(in)    :: gn_0_pointwise(*)
+    real(8), intent(in)    :: gnn_0(*)
+    real(8), intent(in)    :: gnn_0_t(*)
     real(8), intent(in)    :: w(*)
     logical, intent(in)    :: is_gga
     real(8), intent(in)    :: tb_dmat(*)
@@ -3029,18 +3125,47 @@ contains
 
        im_off = mat_dim*mat_dim*nz*(im - 1)
 
+!      charge density
+       if (is_gga) then
+          call get_gn_nonhermitian(r_b(im),                 &
+                                   gr_b(:,im),              &
+                                   isym(im) - 1,            &
+                                   mat_dim,                 &
+                                   tb_dmat(1 + im_off),     &
+                                   buffer,                  &
+                                   ao)
+       else
           call get_n(r_b(im),                       &
                      isym(im) - 1,              &
                      mat_dim,                   &
                      tb_dmat(1 + im_off),       &
                      buffer,                    &
                      ao)
+       end if
 
+!      spin density
+       if (.not. fde_rsp_mag_lao_no_s) then
+       end if
     end do
 
     active_n_bx(ipoint) = r_b(1)
     active_n_by(ipoint) = r_b(2)
     active_n_bz(ipoint) = r_b(3)
+
+    if (use_gga) then
+           write(*, *) 'buba 6 use_gga'
+       active_gxn_bx(ipoint) = gr_b(1,1)
+       active_gxn_by(ipoint) = gr_b(1,2)
+       active_gxn_bz(ipoint) = gr_b(1,3)
+       active_gyn_bx(ipoint) = gr_b(2,1)
+       active_gyn_by(ipoint) = gr_b(2,2)
+       active_gyn_bz(ipoint) = gr_b(2,3)
+       active_gzn_bx(ipoint) = gr_b(3,1)
+       active_gzn_by(ipoint) = gr_b(3,2)
+       active_gzn_bz(ipoint) = gr_b(3,3)
+    end if
+
+
 
   end subroutine
 
