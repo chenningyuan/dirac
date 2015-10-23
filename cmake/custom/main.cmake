@@ -3,7 +3,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
-include(Definitions)
+include(pamadm_definitions)
 include(Sources)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
