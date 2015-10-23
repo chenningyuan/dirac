@@ -3282,22 +3282,39 @@ contains
             gnn_0_t(1) = gnn_0(1)
          
 !           lao_reorth
-            call get_pertden_reorth(ipoint,  &
-                                    mat_dim, &
-                                    nz,      &
-                                    ao,      &
-                                    n_0,     &
-                                    n_0_t,   &
-                                    gn_0_pointwise, &
-                                    gnn_0,   &
-                                    gnn_0_t, &
-                                    w,       &
-                                    use_gga, &
-                                    dmat,    &
-                                    dmat_pg_sym,    &
-                                    buffer)
+            if (do_export_pertden_reorth) then
+               call get_pertden_reorth(ipoint,  &
+                                       mat_dim, &
+                                       nz,      &
+                                       ao,      &
+                                       n_0,     &
+                                       n_0_t,   &
+                                       gn_0_pointwise, &
+                                       gnn_0,   &
+                                       gnn_0_t, &
+                                       w,       &
+                                       use_gga, &
+                                       dmat,    &
+                                       dmat_pg_sym,    &
+                                       buffer)
+            end if
 !           lao_direct
-            !call get_pertden_direct()
+            if (do_export_pertden_direct .and. .not. fde_rsp_mag_lao_no_s) then
+               call get_pertden_direct(ipoint,         &
+                                      mat_dim,        &
+                                      nz,             &
+                                      ao,             &
+                                      n_0,            &
+                                      n_0_t,          &
+                                      gn_0_pointwise, &
+                                      gnn_0,          &
+                                      gnn_0_t,        &
+                                      w,              &
+                                      use_gga,        &
+                                      dmat,           &
+                                      dmat_pg_sym,    &
+                                      rx(ipoint), ry(ipoint), rz(ipoint))
+            end if
          
          end if !if (n_0(1) > fde_cfg_tinydens) then
    end do !do ipoint = 1, nr_points_on_this_proc
@@ -3309,6 +3326,120 @@ contains
 
    end subroutine
 
+   subroutine get_pertden_direct(ipoint,         &
+                                 mat_dim,        &
+                                 nz,             &
+                                 ao,             &
+                                 n_0,            &
+                                 n_0_t,          &
+                                 gn_0_pointwise, &
+                                 gnn_0,          &
+                                 gnn_0_t,        &
+                                 w,              &
+                                 is_gga,         &
+                                 dmat_full,      &
+                                 isym,           &
+                                 px, py, pz)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: ipoint
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: n_0(*)
+    real(8), intent(in)    :: n_0_t(*)
+    real(8), intent(in)    :: gn_0_pointwise(*)
+    real(8), intent(in)    :: gnn_0(*)
+    real(8), intent(in)    :: gnn_0_t(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga
+    real(8), intent(in)    :: dmat_full(*)
+    integer, intent(in)    :: isym(*)
+    real(8), intent(in)    :: px, py, pz
+!   ----------------------------------------------------------------------------
+    real(8)                ::  s_b(3, 3)
+    real(8)                ::  gs_b(3, 3, 3)
+    real(8)                ::  gsgn_b(3, 3)
+    real(8)                ::  t_b,    ts_b(3)
+
+    real(8)                :: y_b(3, 3)
+    real(8)                :: y_b_t(3, 3)
+
+    integer                :: k_start, k, a, im_off, j
+    type(fde_omega_prefactor) :: u
+    integer :: i
+!   ----------------------------------------------------------------------------
+
+    s_b    = 0.0d0
+    gs_b   = 0.0d0
+    gsgn_b   = 0.0d0
+
+    k_start = 1
+    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+    if (is_gga) then
+
+! that is not optimal, but for the moment it works
+      call get_gs_lao(s_b,         &
+                      gs_b,        &
+                      gsgn_b,      &
+                      gn_0_pointwise, &
+                      (/1,1,1/),   &
+                      mat_dim,     &
+                      dmat_full,   &
+                      ao,          &
+                      px, py, pz)
+
+    else
+       call get_s_lao(s_b,              &
+                      (/0, 0, 0/),      &
+                      mat_dim,          &
+                      dmat_full,        &
+                      ao,               &
+                      px, py, pz)
+    end if
+
+    active_sx_bx(ipoint) = s_b(1,1)
+    active_sx_by(ipoint) = s_b(1,2)
+    active_sx_bz(ipoint) = s_b(1,3)
+    active_sy_bx(ipoint) = s_b(2,1)
+    active_sy_by(ipoint) = s_b(2,2)
+    active_sy_bz(ipoint) = s_b(2,3)
+    active_sz_bx(ipoint) = s_b(3,1)
+    active_sz_by(ipoint) = s_b(3,2)
+    active_sz_bz(ipoint) = s_b(3,3)
+    if (is_gga) then
+       active_gxsx_bx(ipoint) = gs_b(1,1,1)
+       active_gxsx_by(ipoint) = gs_b(1,1,2)
+       active_gxsx_bz(ipoint) = gs_b(1,1,3)
+       active_gxsy_bx(ipoint) = gs_b(1,2,1)
+       active_gxsy_by(ipoint) = gs_b(1,2,2)
+       active_gxsy_bz(ipoint) = gs_b(1,2,3)
+       active_gxsz_bx(ipoint) = gs_b(1,3,1)
+       active_gxsz_by(ipoint) = gs_b(1,3,2)
+       active_gxsz_bz(ipoint) = gs_b(1,3,3)
+       active_gysx_bx(ipoint) = gs_b(2,1,1)
+       active_gysx_by(ipoint) = gs_b(2,1,2)
+       active_gysx_bz(ipoint) = gs_b(2,1,3)
+       active_gysy_bx(ipoint) = gs_b(2,2,1)
+       active_gysy_by(ipoint) = gs_b(2,2,2)
+       active_gysy_bz(ipoint) = gs_b(2,2,3)
+       active_gysz_bx(ipoint) = gs_b(2,3,1)
+       active_gysz_by(ipoint) = gs_b(2,3,2)
+       active_gysz_bz(ipoint) = gs_b(2,3,3)
+       active_gzsx_bx(ipoint) = gs_b(3,1,1)
+       active_gzsx_by(ipoint) = gs_b(3,1,2)
+       active_gzsx_bz(ipoint) = gs_b(3,1,3)
+       active_gzsy_bx(ipoint) = gs_b(3,2,1)
+       active_gzsy_by(ipoint) = gs_b(3,2,2)
+       active_gzsy_bz(ipoint) = gs_b(3,2,3)
+       active_gzsz_bx(ipoint) = gs_b(3,3,1)
+       active_gzsz_by(ipoint) = gs_b(3,3,2)
+       active_gzsz_bz(ipoint) = gs_b(3,3,3)
+    end if
+ 
+
+   end subroutine
 
   subroutine get_pertden_reorth(ipoint,     &
                         mat_dim,            &
