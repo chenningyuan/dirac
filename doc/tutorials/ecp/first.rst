@@ -62,8 +62,8 @@ by omitting the SO parameters in SOREP (:download:`HI_arep.mol <../../../../test
 
 .. literalinclude:: ../../../../test/ecp/HI_arep.mol 
 
-After the SCF step, the following molecular orbitals (:download:`full output <../../../../test/ecp/result/HF_HI_arep.out>`)
- are obtained ::
+After the SCF step, the following molecular orbitals are generated
+(see also the :download:`full output <../../../../test/ecp/result/HF_HI_arep.out>`) ::
 
   * Fermion symmetry E1
     * Closed shell, f = 1.0000
@@ -79,18 +79,20 @@ After the SCF step, the following molecular orbitals (:download:`full output <..
     4.03098540560673  ( 4)     4.26054689341582  ( 4)     4.35208715121292  ( 2)     4.68579647949884  ( 2)     7.21075466518969  ( 4)
     7.50571888682965  ( 2)    21.10478953048176  ( 2)
 
-Compared to molecular spinors from the SOREP calculation, the spin-orbit coupling is neglected in AREP molecular orbitals.
-As a result, some degeneracies in molecular orbitals appear in the spin-free (AREP) calculation. 
+Compared to molecular spinors from the SOREP calculation above, the spin-orbit coupling is neglected in AREP-based molecular orbitals.
+As a result, some degeneracies in molecular orbitals appear in the scalar relativistic (spin-free AREP) calculation. 
+Detailed comparison of molecular orbitals can be done using the :ref:`**ANALYZE` functionality.
 
-Exercise
---------
+Exercises
+---------
 
-1. Compute the dipole moment of the HI molecule with (SOREP) and without (AREP) spin-orbital relativistic effects.
-How do spin-orbital effects influence this property ? Compare obtained results with the available literature.
+1. Analyze and compare HOMO obtained without (AREP) and with (SOREP) spin-orbital relativistic effects.
 
-2. Optimize (numerically, see :ref:`*OPTIMIZE`) the internuclear distance with (SOREP) and without (AREP) spin-orbital interaction.
+2. Compute the dipole moment of the HI molecule with (SOREP) and without (AREP) spin-orbital relativistic effects.
+   How do spin-orbital effects influence this property ? Compare obtained results with the available literature.
+
+3. Optimize (numerically, see :ref:`*OPTIMIZE`) the internuclear distance with (SOREP) and without (AREP) spin-orbital interaction.
    What is effect of spin-orbital coupling on the bond distance ? Compare with other published works. 
    Help - the input file, :download:`geopt_HF.inp <geopt_HF.inp>`.
-
 
 

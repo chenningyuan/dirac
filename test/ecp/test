@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(string = 'Total energy                             :',
       rel_tolerance = 1.0e-5)
-f.add(from_string = '* Dipole moment:', num_lines   = 6,
+f.add(from_string = '* Dipole moment:', num_lines   = 8,
       rel_tolerance = 1.0e-5)
 
 test.run(['HF.inp'], ['HI_arep.mol', 'HI_sorep.mol', 'HI_ecplib.mol'], f)
