@@ -1,6 +1,7 @@
 option(ENABLE_UNIT_TESTS "Enable unit tests" OFF)
 
 if(ENABLE_UNIT_TESTS)
+    message(STATUS "Unit control tests ENABLED")
     execute_process(
         COMMAND python ${PROJECT_SOURCE_DIR}/local/body/unit-test-gather.py ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR}/generated_by_cmake/unit_tests.cmake
         )
@@ -50,4 +51,6 @@ if(ENABLE_UNIT_TESTS)
     endmacro()
 
     include(unit_tests)
+else()
+    message(STATUS "Unit control tests DISABLED")
 endif()
