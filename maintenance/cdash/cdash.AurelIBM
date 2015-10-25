@@ -27,16 +27,32 @@ git --version
 export CTEST_PROJECT_NAME="DIRACext"
 export DIRTIMEOUT="12m"
 
-BUILD=build_xlf90_xlc_xlC_essl_dbg_nopcm_noxcfun
+git pull origin master
+git submodule update --init --recursive
+
+BUILD=build_xlf90_xlc_xlC_essl_dbg_nopcm_nostie
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
 python ./pamadm -a --builddir=$BUILD
-python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --cmake-options="-D BUILDNAME='Aurel-IBM_XL_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999" $BUILD
+python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --cmake-options="-D BUILDNAME='Aurel-IBM_XL_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
-ctest -j4 -D ExperimentalBuild
+ctest -j8 -D ExperimentalBuild
 ctest -D ExperimentalSubmit 
+
+BUILD=build_xlf90_xlc_g++_essl_dbg_nopcm_nostiel
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+python ./pamadm -a --builddir=$BUILD
+python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=g++ --cmake-options="-D BUILDNAME='Aurel-IBM_XL_g++_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON" $BUILD
+cd $BUILD
+ctest  -D ExperimentalConfigure
+ctest -j8 -D ExperimentalBuild
+ctest -D ExperimentalSubmit 
+
 
 exit
