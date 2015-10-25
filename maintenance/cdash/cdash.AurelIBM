@@ -36,7 +36,7 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 python ./pamadm -a --builddir=$BUILD
-python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --cmake-options="-D BUILDNAME='Aurel-IBM_XL_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON" $BUILD
+python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --lapack=off --cmake-options="-D BUILDNAME='Aurel-IBM_XL_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
@@ -48,7 +48,7 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 python ./pamadm -a --builddir=$BUILD
-python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=g++ --cmake-options="-D BUILDNAME='Aurel-IBM_XL_g++_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON" $BUILD
+python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=g++ --lapack=off --cmake-options="-D BUILDNAME='Aurel-IBM_XL_g++_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
