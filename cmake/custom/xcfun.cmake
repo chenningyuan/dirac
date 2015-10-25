@@ -1,6 +1,7 @@
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 
 if(ENABLE_XCFUN)
+    message(STATUS "The XCFun submodule ENABLED")
     include(ExternalProject)
 
     set(ExternalProjectCMakeArgs
@@ -36,5 +37,6 @@ if(ENABLE_XCFUN)
 
     include_directories(${PROJECT_BINARY_DIR}/external/xcfun-build/fortran)
 else()
+    message(STATUS "The XCFun submodule DISABLED")
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
