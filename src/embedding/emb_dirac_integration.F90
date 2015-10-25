@@ -59,7 +59,13 @@ module fde_dirac_matrices_integration
    real(8), allocatable :: frozen_gny(:)
    real(8), allocatable :: frozen_gnz(:)
    real(8), allocatable :: frozen_elpot(:)
-
+! -------------------------------------------
+! for perturbed density import
+   real(8), allocatable :: frozen_n_bx(:)
+   real(8), allocatable :: frozen_n_by(:)
+   real(8), allocatable :: frozen_n_bz(:)
+! -------------------------------------------
+ 
    real(8), allocatable :: use_vemb(:)
    
 ! -------------------------------------------
@@ -1560,7 +1566,8 @@ contains
            end if
 
            if (do_london_rhs_kern_coupling) then
-              call london_kern_coupling(bllen,       &
+              call london_kern_coupling(ipoint,      &
+                                        bllen,       &
                                         mat_dim,     &
                                         nz,          &
                                         ao,          &
@@ -2066,6 +2073,14 @@ contains
 
             end if
 
+            if (do_london_rhs_kern_coupling) then
+               if (fde_mpi_is_master()) then
+                  frozen_n_bx  = active_gridfunction%n_b(1,:)
+                  frozen_n_by  = active_gridfunction%n_b(2,:)
+                  frozen_n_bz  = active_gridfunction%n_b(3,:)
+               end if
+            end if
+
             ibatch = ibatch + 1
             nr_points_total = nr_points_total + nr_points_batch
             nr_points_on_this_proc = nr_points_batch
@@ -2076,6 +2091,9 @@ contains
             call fde_mpi_distribute_frozen(frozen_n, frozen_gnx, frozen_gny, frozen_gnz, frozen_elpot,nr_points_batch, nr_points_on_this_proc) 
             if (use_potential) then
               call fde_mpi_distribute_vemb(use_vemb, nr_points_batch, nr_points_on_this_proc)
+            end if
+            if (do_london_rhs_kern_coupling) then
+              call fde_mpi_distribute_frozen_pertden(frozen_n_bx, frozen_n_by, frozen_n_bz, nr_points_batch, nr_points_on_this_proc)
             end if
          end if
 #endif
@@ -2106,6 +2124,9 @@ contains
             deallocate(frozen_gnz)
             deallocate(frozen_elpot)
             if (allocated(use_vemb)) deallocate(use_vemb)
+            if (allocated(frozen_n_bx)) deallocate(frozen_n_bx)
+            if (allocated(frozen_n_by)) deallocate(frozen_n_by)
+            if (allocated(frozen_n_bz)) deallocate(frozen_n_bz)
 
 !          don't try to read another batch
            goto 999
@@ -2604,7 +2625,8 @@ contains
 
   end subroutine
 
-  subroutine london_kern_coupling(block_length,      &
+  subroutine london_kern_coupling(ipoint,            &
+                                  block_length,      &
                                   mat_dim,           &
                                   nz,                &
                                   ao,                &
@@ -2619,6 +2641,7 @@ contains
                                   u)
 
 !   ----------------------------------------------------------------------------
+    integer, intent(in)    :: ipoint
     integer, intent(in)    :: block_length
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
@@ -2652,54 +2675,57 @@ contains
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
 !   find n, gn, s, gs from the frozen pertden file
-    call find_pertden(rx, ry, rz, w(1), &
-                      n_b  = n_b_lao,   &
-                      gn_b = gn_b_lao,  & 
-                      s_b  = s_b_lao,   &
-                      gs_b = gs_b_lao)
+    !call find_pertden(rx, ry, rz, w(1), &
+    !                  n_b  = n_b_lao,   &
+    !                  gn_b = gn_b_lao,  & 
+    !                  s_b  = s_b_lao,   &
+    !                  gs_b = gs_b_lao)
 
+    n_b_lao(1) = frozen_n_bx(ipoint)
+    n_b_lao(2) = frozen_n_by(ipoint)
+    n_b_lao(3) = frozen_n_bz(ipoint)
 !   charge density contributions
     do a = 1, 3     !B_{x,y,z}
        u%n(a) = u%n(a) + derv_total(1, d2000000)*n_b_lao(a)
 
-       if (is_gga) then
-          z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
-                     + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
-                     + gn_0_t_pointwise(3)*gn_b_lao(3, a))
+       !if (is_gga) then
+       !   z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
+       !              + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
+       !              + gn_0_t_pointwise(3)*gn_b_lao(3, a))
 
-          u%n(a) = u%n(a) + derv_total(1, d1010000)*z_b
+       !   u%n(a) = u%n(a) + derv_total(1, d1010000)*z_b
 
-          u%gn(1:3, a) = u%gn(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
-                                      + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
-                                      + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
-       end if
+       !   u%gn(1:3, a) = u%gn(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
+       !                               + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
+       !                               + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
+       !end if
     end do
 
 !   spin density contributions
-    if (.not. dft_cfg_no_sdft) then
-       do a = 1, 3     !B_{x,y,z}
-          do k = k_start, 3  !Sigma_{x,y,z}
-       
-             u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
-                             + derv_total(1, d0200000)*s_b_lao(k, a)
-            
-             if (is_gga) then
-            
-                gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
-                                   + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
-                                   + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
-       
-                u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
-            
-                u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
-                            + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
-                            + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
-                            + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
-       
-             end if
-          end do
-       end do
-    end if
+    !if (.not. dft_cfg_no_sdft) then
+    !   do a = 1, 3     !B_{x,y,z}
+    !      do k = k_start, 3  !Sigma_{x,y,z}
+    !   
+    !         u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
+    !                         + derv_total(1, d0200000)*s_b_lao(k, a)
+    !        
+    !         if (is_gga) then
+    !        
+    !            gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
+    !                               + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
+    !                               + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
+    !   
+    !            u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
+    !        
+    !            u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
+    !                        + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
+    !                        + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
+    !                        + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
+    !   
+    !         end if
+    !      end do
+    !   end do
+    !end if
 
 
   end subroutine

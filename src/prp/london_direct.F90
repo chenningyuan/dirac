@@ -698,7 +698,8 @@ contains
 !    fde coupling-kernel-like contributions to the property gradient
 !    ---------------------------------------------------------------
 !    1. the nonadditive exchange-correlation contribution:
-     if (fde_lao_frozen_embker) then
+     !if (fde_lao_frozen_embker) then
+     if (fde_lao_frozen_embker.and.fde_rsp_mag_lao_import) then
        write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (no Coulomb)'
 
 #ifdef VAR_MPI
@@ -716,8 +717,8 @@ contains
                      fde_fmat               = fmat,       &
                      fde_do_london_rhs_kern_coupling = .true.)
 !      2. the Coulomb-like contribution:
-       write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (Coulomb term)'
-       call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
+       !write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (Coulomb term)'
+       !call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
      end if
 
 
