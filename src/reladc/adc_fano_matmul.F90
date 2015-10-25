@@ -14,7 +14,9 @@ CONTAINS
     use memory_allocator
     use codata
     use adc_cfg
+#ifdef HAS_STIELTJES
     use stieltjesmod
+#endif
 
     IMPLICIT NONE
 
@@ -189,8 +191,12 @@ CONTAINS
       WRITE(iw,*) 'Calling Stieltjes.'
       !e_init = in_energy(1,i)
       e_init = 0.0
+#ifdef HAS_STIELTJES
       CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_stieltjes,&
                      gammae,2004,0)
+#else
+      call quit('stieltjes not supported in this version')
+#endif
 !
 ! printflag 1 for no external output(dirac.out), 2 for output
 !
@@ -329,8 +335,12 @@ CONTAINS
           WRITE(iw,*)
           !e_init = in_energy(1,i)
           e_init = 0.0
+#ifdef HAS_STIELTJES
           CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_stieltjes,&
                          gammae,1000+channel,0)
+#else
+      call quit('stieltjes not supported in this version')
+#endif
 !
 ! printflag 1 for no external output(dirac.out), 2 for output
 !
@@ -420,7 +430,9 @@ CONTAINS
     use memory_allocator
     use codata
     use adc_cfg
+#ifdef HAS_STIELTJES
     use stieltjesmod
+#endif
 
     IMPLICIT NONE
 
@@ -593,8 +605,12 @@ CONTAINS
       WRITE(iw,*) 'Calling Stieltjes.'                                    
       !e_init = in_energy(1,i)                                            
       e_init = 0.0                                                        
+#ifdef HAS_STIELTJES
       CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_stieltjes,&            
                      gammae,2004,0)                                       
+#else
+      call quit('stieltjes not supported in this version')
+#endif
 !                                                                         
 ! printflag 1 for no external output(dirac.out), 2 for output             
 !                                                                         
@@ -725,8 +741,12 @@ CONTAINS
           WRITE(iw,*)                                                     
           !e_init = in_energy(1,i)                                        
           e_init = 0.0                                                    
+#ifdef HAS_STIELTJES
           CALL stieltjes(counter,e2h1p,t_mom,e_init,fn_stieltjes,&        
                          gammae,1000+channel,0)                           
+#else
+      call quit('stieltjes not supported in this version')
+#endif
 !                                                                         
 ! printflag 1 for no external output(dirac.out), 2 for output             
 !                                                                         

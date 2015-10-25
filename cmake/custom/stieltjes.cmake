@@ -3,6 +3,7 @@ option(ENABLE_STIELTJES "Enable stieltjes library" ON)
 if(ENABLE_STIELTJES)
     message(STATUS "Stieltjes external module ENABLED")
     include_directories (${PROJECT_BINARY_DIR}/external/stieltjes-build)
+    add_definitions(-DHAS_STIELTJES)
 
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
