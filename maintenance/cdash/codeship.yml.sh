@@ -81,7 +81,7 @@ cd ..
 
 # 64-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i8
-python ./setup --int64 --blas=off --lapack=off --cmake-options="-D BUILDNAME='gnu.i8-codeship-ci' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON" build_codeship_i8
+python ./setup --int64 --blas=off --lapack=off --cmake-options="-D BUILDNAME='gnu.i8-codeship-ci' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_codeship_i8
 cd build_codeship_i8
 ctest -D ExperimentalConfigure
 ctest -j $N_PROC -D ExperimentalBuild
