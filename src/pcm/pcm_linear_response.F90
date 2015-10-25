@@ -1,5 +1,6 @@
 module pcm_linear_response
 
+#ifdef HAS_PCMSOLVER
     use, intrinsic :: iso_c_binding
 
     implicit none
@@ -360,5 +361,6 @@ contains
         LR_iteration_counter = LR_iteration_counter + 1
 
     end subroutine
+#endif /* HAS_PCMSOLVER */
 
 end module pcm_linear_response

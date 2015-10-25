@@ -47,6 +47,7 @@
 
 module pcm_scf
 
+#ifdef HAS_PCMSOLVER
     use, intrinsic :: iso_c_binding
 
     implicit none
@@ -414,5 +415,6 @@ contains
         deallocate(asc)
 
     end subroutine compute_mep_asc
+#endif /* HAS_PCMSOLVER */
 
 end module pcm_scf
