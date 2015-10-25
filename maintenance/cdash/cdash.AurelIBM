@@ -24,15 +24,19 @@ which gfortran
 which git
 git --version
 
+export CTEST_PROJECT_NAME="DIRACext"
+export DIRTIMEOUT="12m"
+
 BUILD=build_xlf90_xlc_xlC_essl_dbg_nopcm_noxcfun
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-./pamadm -a --builddir=$BUILD
-./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC -D ENABLE_PCMSOLVER=OFF -D ENABLE_XCFUN=OFF $BUILD
+python ./pamadm -a --builddir=$BUILD
+python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --cmake-options="-D BUILDNAME='Aurel-IBM_XL_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999" $BUILD
 cd $BUILD
-make -j4
-ctest -D ExperimentalSubmit --track Miro
+ctest  -D ExperimentalConfigure
+ctest -j4 -D ExperimentalBuild
+ctest -D ExperimentalSubmit 
 
 exit
