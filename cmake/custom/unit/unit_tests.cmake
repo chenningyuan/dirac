@@ -48,7 +48,7 @@ if(ENABLE_UNIT_TESTS)
             )
         add_test(
             ${_name}
-            python ${PROJECT_SOURCE_DIR}/cmake/custom/unit-test-wrap.py --build-dir=${PROJECT_BINARY_DIR} --name=${_name}
+            python ${PROJECT_SOURCE_DIR}/cmake/custom/unit/wrap.py --build-dir=${PROJECT_BINARY_DIR} --name=${_name}
             )
     endmacro()
 
