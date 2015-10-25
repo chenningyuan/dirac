@@ -2,11 +2,6 @@ option(ENABLE_STIELTJES "Enable stieltjes library" ON)
 
 if(ENABLE_STIELTJES)
     message(STATUS "Stieltjes external module ENABLED")
-    # we will be using f90 modules
- #  set(CMAKE_Fortran_MODULE_DIRECTORY
- #      ${PROJECT_BINARY_DIR}/external/stieltjes-build
- #      ${CMAKE_Fortran_MODULE_DIRECTORY}
- #      )
     include_directories (${PROJECT_BINARY_DIR}/external/stieltjes-build)
 
     set(ExternalProjectCMakeArgs
