@@ -2,12 +2,14 @@ option(ENABLE_UNIT_TESTS "Enable unit tests" OFF)
 
 if(ENABLE_UNIT_TESTS)
     message(STATUS "Unit control tests ENABLED")
-    execute_process(
-        COMMAND python ${PROJECT_SOURCE_DIR}/local/body/unit-test-gather.py ${PROJECT_SOURCE_DIR} ${PROJECT_BINARY_DIR}/generated_by_cmake/unit_tests.cmake
-        )
 
-    execute_process(COMMAND mkdir -p ${PROJECT_BINARY_DIR}/unit-tests)
-    execute_process(COMMAND cp ${PROJECT_SOURCE_DIR}/local/body/unit-test-wrap.py ${PROJECT_BINARY_DIR}/unit-tests)
+    execute_process(COMMAND mkdir -p ${PROJECT_BINARY_DIR}/unit)
+    execute_process(
+        COMMAND python ${PROJECT_SOURCE_DIR}/cmake/custom/unit/gather.py
+                       ${PROJECT_SOURCE_DIR}/external/unit-tests
+                       ${PROJECT_BINARY_DIR}/unit/list_of_unit_tests.cmake
+        )
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_BINARY_DIR}/unit)
 
     # set unit test libs
     set(UNIT_TEST_LIBS
@@ -46,11 +48,11 @@ if(ENABLE_UNIT_TESTS)
             )
         add_test(
             ${_name}
-            python ${PROJECT_BINARY_DIR}/unit-tests/unit-test-wrap.py --build-dir=${PROJECT_BINARY_DIR} --name=${_name}
+            python ${PROJECT_SOURCE_DIR}/cmake/custom/unit-test-wrap.py --build-dir=${PROJECT_BINARY_DIR} --name=${_name}
             )
     endmacro()
 
-    include(unit_tests)
+    include(list_of_unit_tests)
 else()
     message(STATUS "Unit control tests DISABLED")
 endif()
