@@ -812,17 +812,6 @@ contains
                active_gridfunction%hn(:,5)  = active_hnyz(:)
                active_gridfunction%hn(:,6)  = active_hnzz(:)
             endif
-!gosia: debug:
-            if (do_export_pertden_reorth) then
-               call fde_mpi_gather(active_n_bx)
-               call fde_mpi_gather(active_n_by)
-               call fde_mpi_gather(active_n_bz)
-               if (fde_mpi_is_master()) then
-                  active_gridfunction%n_b(:,1)     = active_n_bx(:)
-                  active_gridfunction%n_b(:,2)     = active_n_by(:)
-                  active_gridfunction%n_b(:,3)     = active_n_bz(:)
-               end if
-            end if
 
             deallocate(active_elpot)
             deallocate(active_n)
@@ -835,10 +824,6 @@ contains
             deallocate(active_hnyy)
             deallocate(active_hnyz)
             deallocate(active_hnzz)
-!gosia debug:
-            deallocate(active_n_bx)
-            deallocate(active_n_by)
-            deallocate(active_n_bz)
 
          end if
 
@@ -2951,183 +2936,182 @@ contains
         deallocate(rz)
         deallocate(rw)
 
-!#ifdef VAR_MPI
-!        if (parallel_fde) then
-!           call fde_mpi_gather(active_n_bx)
-!           call fde_mpi_gather(active_n_by)
-!           call fde_mpi_gather(active_n_bz)
-!
-!           if (use_gga) then
-!              call fde_mpi_gather(active_gxn_bx)
-!              call fde_mpi_gather(active_gxn_by)
-!              call fde_mpi_gather(active_gxn_bz)
-!              call fde_mpi_gather(active_gyn_bx)
-!              call fde_mpi_gather(active_gyn_by)
-!              call fde_mpi_gather(active_gyn_bz)
-!              call fde_mpi_gather(active_gzn_bx)
-!              call fde_mpi_gather(active_gzn_by)
-!              call fde_mpi_gather(active_gzn_bz)
-!           end if
-!           if (.not. fde_rsp_mag_lao_no_s) then
-!              call fde_mpi_gather(active_sx_bx)
-!              call fde_mpi_gather(active_sx_by)
-!              call fde_mpi_gather(active_sx_bz)
-!              call fde_mpi_gather(active_sy_bx)
-!              call fde_mpi_gather(active_sy_by)
-!              call fde_mpi_gather(active_sy_bz)
-!              call fde_mpi_gather(active_sz_bx)
-!              call fde_mpi_gather(active_sz_by)
-!              call fde_mpi_gather(active_sz_bz)
-!              if (use_gga) then
-!                 call fde_mpi_gather(active_gxsx_bx)
-!                 call fde_mpi_gather(active_gxsx_by)
-!                 call fde_mpi_gather(active_gxsx_bz)
-!                 call fde_mpi_gather(active_gxsy_bx)
-!                 call fde_mpi_gather(active_gxsy_by)
-!                 call fde_mpi_gather(active_gxsy_bz)
-!                 call fde_mpi_gather(active_gxsz_bx)
-!                 call fde_mpi_gather(active_gxsz_by)
-!                 call fde_mpi_gather(active_gxsz_bz)
-!                 call fde_mpi_gather(active_gysx_bx)
-!                 call fde_mpi_gather(active_gysx_by)
-!                 call fde_mpi_gather(active_gysx_bz)
-!                 call fde_mpi_gather(active_gysy_bx)
-!                 call fde_mpi_gather(active_gysy_by)
-!                 call fde_mpi_gather(active_gysy_bz)
-!                 call fde_mpi_gather(active_gysz_bx)
-!                 call fde_mpi_gather(active_gysz_by)
-!                 call fde_mpi_gather(active_gysz_bz)
-!                 call fde_mpi_gather(active_gzsx_bx)
-!                 call fde_mpi_gather(active_gzsx_by)
-!                 call fde_mpi_gather(active_gzsx_bz)
-!                 call fde_mpi_gather(active_gzsy_bx)
-!                 call fde_mpi_gather(active_gzsy_by)
-!                 call fde_mpi_gather(active_gzsy_bz)
-!                 call fde_mpi_gather(active_gzsz_bx)
-!                 call fde_mpi_gather(active_gzsz_by)
-!                 call fde_mpi_gather(active_gzsz_bz)
-!              end if
-!           end if
-!        end if
-!#endif
-!        !if (fde_mpi_is_master()) then
-!           active_gridfunction%n_b(1,:) = active_n_bx(:)
-!           active_gridfunction%n_b(2,:) = active_n_by(:)
-!           active_gridfunction%n_b(3,:) = active_n_bz(:)
-!           do i = 1, nr_points_batch
-!         write(*, *) 'ale buba w gf, r_b =', &
-!        active_gridfunction%n_b(1,i), active_gridfunction%n_b(2,i), active_gridfunction%n_b(3,i)
-!            end do
-!           if (use_gga) then
-!           write(*, *) 'buba 3 use_gga'
-!              active_gridfunction%gn_b(1,1,:) = active_gxn_bx(:)
-!              active_gridfunction%gn_b(1,2,:) = active_gxn_by(:)
-!              active_gridfunction%gn_b(1,3,:) = active_gxn_bz(:)
-!              active_gridfunction%gn_b(2,1,:) = active_gyn_bx(:)
-!              active_gridfunction%gn_b(2,2,:) = active_gyn_by(:)
-!              active_gridfunction%gn_b(2,3,:) = active_gyn_bz(:)
-!              active_gridfunction%gn_b(3,1,:) = active_gzn_bx(:)
-!              active_gridfunction%gn_b(3,2,:) = active_gzn_by(:)
-!              active_gridfunction%gn_b(3,3,:) = active_gzn_bz(:)
-!           endif
-!           if (.not. fde_rsp_mag_lao_no_s) then
-!              active_gridfunction%s_b(1,1,:) = active_sx_bx(:)
-!              active_gridfunction%s_b(1,2,:) = active_sx_by(:)
-!              active_gridfunction%s_b(1,3,:) = active_sx_bz(:)
-!              active_gridfunction%s_b(2,1,:) = active_sx_bx(:)
-!              active_gridfunction%s_b(2,2,:) = active_sx_by(:)
-!              active_gridfunction%s_b(2,3,:) = active_sx_bz(:)
-!              active_gridfunction%s_b(3,1,:) = active_sx_bx(:)
-!              active_gridfunction%s_b(3,2,:) = active_sx_by(:)
-!              active_gridfunction%s_b(3,3,:) = active_sx_bz(:)
-!              if (use_gga) then
-!                 active_gridfunction%gs_b(1,1,1,:) = active_gxsx_bx(:)
-!                 active_gridfunction%gs_b(1,1,2,:) = active_gxsx_by(:)
-!                 active_gridfunction%gs_b(1,1,3,:) = active_gxsx_bz(:)
-!                 active_gridfunction%gs_b(1,2,1,:) = active_gxsy_bx(:)
-!                 active_gridfunction%gs_b(1,2,2,:) = active_gxsy_by(:)
-!                 active_gridfunction%gs_b(1,2,3,:) = active_gxsy_bz(:)
-!                 active_gridfunction%gs_b(1,3,1,:) = active_gxsz_bx(:)
-!                 active_gridfunction%gs_b(1,3,2,:) = active_gxsz_by(:)
-!                 active_gridfunction%gs_b(1,3,3,:) = active_gxsz_bz(:)
-!                 active_gridfunction%gs_b(2,1,1,:) = active_gysx_bx(:)
-!                 active_gridfunction%gs_b(2,1,2,:) = active_gysx_by(:)
-!                 active_gridfunction%gs_b(2,1,3,:) = active_gysx_bz(:)
-!                 active_gridfunction%gs_b(2,2,1,:) = active_gysy_bx(:)
-!                 active_gridfunction%gs_b(2,2,2,:) = active_gysy_by(:)
-!                 active_gridfunction%gs_b(2,2,3,:) = active_gysy_bz(:)
-!                 active_gridfunction%gs_b(2,3,1,:) = active_gysz_bx(:)
-!                 active_gridfunction%gs_b(2,3,2,:) = active_gysz_by(:)
-!                 active_gridfunction%gs_b(2,3,3,:) = active_gysz_bz(:)
-!                 active_gridfunction%gs_b(3,1,1,:) = active_gzsx_bx(:)
-!                 active_gridfunction%gs_b(3,1,2,:) = active_gzsx_by(:)
-!                 active_gridfunction%gs_b(3,1,3,:) = active_gzsx_bz(:)
-!                 active_gridfunction%gs_b(3,2,1,:) = active_gzsy_bx(:)
-!                 active_gridfunction%gs_b(3,2,2,:) = active_gzsy_by(:)
-!                 active_gridfunction%gs_b(3,2,3,:) = active_gzsy_bz(:)
-!                 active_gridfunction%gs_b(3,3,1,:) = active_gzsz_bx(:)
-!                 active_gridfunction%gs_b(3,3,2,:) = active_gzsz_by(:)
-!                 active_gridfunction%gs_b(3,3,3,:) = active_gzsz_bz(:)
-!              end if
-!           end if
-!        !endif
-!
-!
-!        deallocate(active_n_bx)
-!        deallocate(active_n_by)
-!        deallocate(active_n_bz)
-!        if (use_gga) then
-!           write(*, *) 'buba 4 use_gga'
-!           deallocate(active_gxn_bx)
-!           deallocate(active_gxn_by)
-!           deallocate(active_gxn_bz)
-!           deallocate(active_gyn_bx)
-!           deallocate(active_gyn_by)
-!           deallocate(active_gyn_bz)
-!           deallocate(active_gzn_bx)
-!           deallocate(active_gzn_by)
-!           deallocate(active_gzn_bz)
-!        end if
-!        if (.not. fde_rsp_mag_lao_no_s) then
-!           deallocate(active_sx_bx)
-!           deallocate(active_sx_by)
-!           deallocate(active_sx_bz)
-!           deallocate(active_sy_bx)
-!           deallocate(active_sy_by)
-!           deallocate(active_sy_bz)
-!           deallocate(active_sz_bx)
-!           deallocate(active_sz_by)
-!           deallocate(active_sz_bz)
-!           if (use_gga) then
-!              deallocate(active_gxsx_bx)
-!              deallocate(active_gxsx_by)
-!              deallocate(active_gxsx_bz)
-!              deallocate(active_gxsy_bx)
-!              deallocate(active_gxsy_by)
-!              deallocate(active_gxsy_bz)
-!              deallocate(active_gxsz_bx)
-!              deallocate(active_gxsz_by)
-!              deallocate(active_gxsz_bz)
-!              deallocate(active_gysx_bx)
-!              deallocate(active_gysx_by)
-!              deallocate(active_gysx_bz)
-!              deallocate(active_gysy_bx)
-!              deallocate(active_gysy_by)
-!              deallocate(active_gysy_bz)
-!              deallocate(active_gysz_bx)
-!              deallocate(active_gysz_by)
-!              deallocate(active_gysz_bz)
-!              deallocate(active_gzsx_bx)
-!              deallocate(active_gzsx_by)
-!              deallocate(active_gzsx_bz)
-!              deallocate(active_gzsy_bx)
-!              deallocate(active_gzsy_by)
-!              deallocate(active_gzsy_bz)
-!              deallocate(active_gzsz_bx)
-!              deallocate(active_gzsz_by)
-!              deallocate(active_gzsz_bz)
-!           end if
-!        end if
+#ifdef VAR_MPI
+        if (parallel_fde) then
+           call fde_mpi_gather(active_n_bx)
+           call fde_mpi_gather(active_n_by)
+           call fde_mpi_gather(active_n_bz)
+
+           if (use_gga) then
+              call fde_mpi_gather(active_gxn_bx)
+              call fde_mpi_gather(active_gxn_by)
+              call fde_mpi_gather(active_gxn_bz)
+              call fde_mpi_gather(active_gyn_bx)
+              call fde_mpi_gather(active_gyn_by)
+              call fde_mpi_gather(active_gyn_bz)
+              call fde_mpi_gather(active_gzn_bx)
+              call fde_mpi_gather(active_gzn_by)
+              call fde_mpi_gather(active_gzn_bz)
+           end if
+           if (.not. fde_rsp_mag_lao_no_s) then
+              call fde_mpi_gather(active_sx_bx)
+              call fde_mpi_gather(active_sx_by)
+              call fde_mpi_gather(active_sx_bz)
+              call fde_mpi_gather(active_sy_bx)
+              call fde_mpi_gather(active_sy_by)
+              call fde_mpi_gather(active_sy_bz)
+              call fde_mpi_gather(active_sz_bx)
+              call fde_mpi_gather(active_sz_by)
+              call fde_mpi_gather(active_sz_bz)
+              if (use_gga) then
+                 call fde_mpi_gather(active_gxsx_bx)
+                 call fde_mpi_gather(active_gxsx_by)
+                 call fde_mpi_gather(active_gxsx_bz)
+                 call fde_mpi_gather(active_gxsy_bx)
+                 call fde_mpi_gather(active_gxsy_by)
+                 call fde_mpi_gather(active_gxsy_bz)
+                 call fde_mpi_gather(active_gxsz_bx)
+                 call fde_mpi_gather(active_gxsz_by)
+                 call fde_mpi_gather(active_gxsz_bz)
+                 call fde_mpi_gather(active_gysx_bx)
+                 call fde_mpi_gather(active_gysx_by)
+                 call fde_mpi_gather(active_gysx_bz)
+                 call fde_mpi_gather(active_gysy_bx)
+                 call fde_mpi_gather(active_gysy_by)
+                 call fde_mpi_gather(active_gysy_bz)
+                 call fde_mpi_gather(active_gysz_bx)
+                 call fde_mpi_gather(active_gysz_by)
+                 call fde_mpi_gather(active_gysz_bz)
+                 call fde_mpi_gather(active_gzsx_bx)
+                 call fde_mpi_gather(active_gzsx_by)
+                 call fde_mpi_gather(active_gzsx_bz)
+                 call fde_mpi_gather(active_gzsy_bx)
+                 call fde_mpi_gather(active_gzsy_by)
+                 call fde_mpi_gather(active_gzsy_bz)
+                 call fde_mpi_gather(active_gzsz_bx)
+                 call fde_mpi_gather(active_gzsz_by)
+                 call fde_mpi_gather(active_gzsz_bz)
+              end if
+           end if
+        end if
+#endif
+        if (fde_mpi_is_master()) then
+           active_gridfunction%n_b(1,:) = active_n_bx(:)
+           active_gridfunction%n_b(2,:) = active_n_by(:)
+           active_gridfunction%n_b(3,:) = active_n_bz(:)
+           do i = 1, nr_points_batch
+         write(*, *) 'ale buba w gf, r_b =', &
+        active_gridfunction%n_b(1,i), active_gridfunction%n_b(2,i), active_gridfunction%n_b(3,i)
+            end do
+           if (use_gga) then
+           write(*, *) 'buba 3 use_gga'
+              active_gridfunction%gn_b(1,1,:) = active_gxn_bx(:)
+              active_gridfunction%gn_b(1,2,:) = active_gxn_by(:)
+              active_gridfunction%gn_b(1,3,:) = active_gxn_bz(:)
+              active_gridfunction%gn_b(2,1,:) = active_gyn_bx(:)
+              active_gridfunction%gn_b(2,2,:) = active_gyn_by(:)
+              active_gridfunction%gn_b(2,3,:) = active_gyn_bz(:)
+              active_gridfunction%gn_b(3,1,:) = active_gzn_bx(:)
+              active_gridfunction%gn_b(3,2,:) = active_gzn_by(:)
+              active_gridfunction%gn_b(3,3,:) = active_gzn_bz(:)
+           endif
+           if (.not. fde_rsp_mag_lao_no_s) then
+              active_gridfunction%s_b(1,1,:) = active_sx_bx(:)
+              active_gridfunction%s_b(1,2,:) = active_sx_by(:)
+              active_gridfunction%s_b(1,3,:) = active_sx_bz(:)
+              active_gridfunction%s_b(2,1,:) = active_sx_bx(:)
+              active_gridfunction%s_b(2,2,:) = active_sx_by(:)
+              active_gridfunction%s_b(2,3,:) = active_sx_bz(:)
+              active_gridfunction%s_b(3,1,:) = active_sx_bx(:)
+              active_gridfunction%s_b(3,2,:) = active_sx_by(:)
+              active_gridfunction%s_b(3,3,:) = active_sx_bz(:)
+              if (use_gga) then
+                 active_gridfunction%gs_b(1,1,1,:) = active_gxsx_bx(:)
+                 active_gridfunction%gs_b(1,1,2,:) = active_gxsx_by(:)
+                 active_gridfunction%gs_b(1,1,3,:) = active_gxsx_bz(:)
+                 active_gridfunction%gs_b(1,2,1,:) = active_gxsy_bx(:)
+                 active_gridfunction%gs_b(1,2,2,:) = active_gxsy_by(:)
+                 active_gridfunction%gs_b(1,2,3,:) = active_gxsy_bz(:)
+                 active_gridfunction%gs_b(1,3,1,:) = active_gxsz_bx(:)
+                 active_gridfunction%gs_b(1,3,2,:) = active_gxsz_by(:)
+                 active_gridfunction%gs_b(1,3,3,:) = active_gxsz_bz(:)
+                 active_gridfunction%gs_b(2,1,1,:) = active_gysx_bx(:)
+                 active_gridfunction%gs_b(2,1,2,:) = active_gysx_by(:)
+                 active_gridfunction%gs_b(2,1,3,:) = active_gysx_bz(:)
+                 active_gridfunction%gs_b(2,2,1,:) = active_gysy_bx(:)
+                 active_gridfunction%gs_b(2,2,2,:) = active_gysy_by(:)
+                 active_gridfunction%gs_b(2,2,3,:) = active_gysy_bz(:)
+                 active_gridfunction%gs_b(2,3,1,:) = active_gysz_bx(:)
+                 active_gridfunction%gs_b(2,3,2,:) = active_gysz_by(:)
+                 active_gridfunction%gs_b(2,3,3,:) = active_gysz_bz(:)
+                 active_gridfunction%gs_b(3,1,1,:) = active_gzsx_bx(:)
+                 active_gridfunction%gs_b(3,1,2,:) = active_gzsx_by(:)
+                 active_gridfunction%gs_b(3,1,3,:) = active_gzsx_bz(:)
+                 active_gridfunction%gs_b(3,2,1,:) = active_gzsy_bx(:)
+                 active_gridfunction%gs_b(3,2,2,:) = active_gzsy_by(:)
+                 active_gridfunction%gs_b(3,2,3,:) = active_gzsy_bz(:)
+                 active_gridfunction%gs_b(3,3,1,:) = active_gzsz_bx(:)
+                 active_gridfunction%gs_b(3,3,2,:) = active_gzsz_by(:)
+                 active_gridfunction%gs_b(3,3,3,:) = active_gzsz_bz(:)
+              end if
+           end if
+        endif
+
+        deallocate(active_n_bx)
+        deallocate(active_n_by)
+        deallocate(active_n_bz)
+        if (use_gga) then
+           write(*, *) 'buba 4 use_gga'
+           deallocate(active_gxn_bx)
+           deallocate(active_gxn_by)
+           deallocate(active_gxn_bz)
+           deallocate(active_gyn_bx)
+           deallocate(active_gyn_by)
+           deallocate(active_gyn_bz)
+           deallocate(active_gzn_bx)
+           deallocate(active_gzn_by)
+           deallocate(active_gzn_bz)
+        end if
+        if (.not. fde_rsp_mag_lao_no_s) then
+           deallocate(active_sx_bx)
+           deallocate(active_sx_by)
+           deallocate(active_sx_bz)
+           deallocate(active_sy_bx)
+           deallocate(active_sy_by)
+           deallocate(active_sy_bz)
+           deallocate(active_sz_bx)
+           deallocate(active_sz_by)
+           deallocate(active_sz_bz)
+           if (use_gga) then
+              deallocate(active_gxsx_bx)
+              deallocate(active_gxsx_by)
+              deallocate(active_gxsx_bz)
+              deallocate(active_gxsy_bx)
+              deallocate(active_gxsy_by)
+              deallocate(active_gxsy_bz)
+              deallocate(active_gxsz_bx)
+              deallocate(active_gxsz_by)
+              deallocate(active_gxsz_bz)
+              deallocate(active_gysx_bx)
+              deallocate(active_gysx_by)
+              deallocate(active_gysx_bz)
+              deallocate(active_gysy_bx)
+              deallocate(active_gysy_by)
+              deallocate(active_gysy_bz)
+              deallocate(active_gysz_bx)
+              deallocate(active_gysz_by)
+              deallocate(active_gysz_bz)
+              deallocate(active_gzsx_bx)
+              deallocate(active_gzsx_by)
+              deallocate(active_gzsx_bz)
+              deallocate(active_gzsy_bx)
+              deallocate(active_gzsy_by)
+              deallocate(active_gzsy_bz)
+              deallocate(active_gzsz_bx)
+              deallocate(active_gzsz_by)
+              deallocate(active_gzsz_bz)
+           end if
+        end if
 
 ! don't try to read another batch
         goto 999
