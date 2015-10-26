@@ -673,7 +673,6 @@ contains
       if (use_gga_qr .or. use_gga_qi) then
          use_gga = .true.
       end if
-     write(*, *) 'print buba 0 use_gga =', use_gga
 !     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
 !     therefore i quit here if the user wants qr
@@ -800,7 +799,7 @@ contains
                active_gridfunction%n(:)     = active_n(:)
 
 !gosia todo: check with export
-! should be (1,:) etc., npoints is a second index
+! shouldn't it be %gn(1,:) etc., npoints is a second index of gn in emb_export.F90 (fde_export_data_as_txt subroutine)
                active_gridfunction%gn(:,1)  = active_gnx(:)
                active_gridfunction%gn(:,2)  = active_gny(:)
                active_gridfunction%gn(:,3)  = active_gnz(:)
@@ -2860,7 +2859,6 @@ contains
         allocate(active_n_bz(nr_points_batch))
 
         if (use_gga) then
-           write(*, *) 'buba 1 use_gga'
            allocate(active_gxn_bx(nr_points_batch))
            allocate(active_gxn_by(nr_points_batch))
            allocate(active_gxn_bz(nr_points_batch))
@@ -2999,12 +2997,12 @@ contains
            active_gridfunction%n_b(1,:) = active_n_bx(:)
            active_gridfunction%n_b(2,:) = active_n_by(:)
            active_gridfunction%n_b(3,:) = active_n_bz(:)
-           do i = 1, nr_points_batch
-         write(*, *) 'ale buba w gf, r_b =', &
-        active_gridfunction%n_b(1,i), active_gridfunction%n_b(2,i), active_gridfunction%n_b(3,i)
-            end do
+!debug print
+        !   do i = 1, nr_points_batch
+        ! write(*, '(3ES30.20E3)') 'ale buba w gf =', &
+        ! active_gridfunction%n_b(1,i), active_gridfunction%n_b(2,i), active_gridfunction%n_b(3,i)
+        !    end do
            if (use_gga) then
-           write(*, *) 'buba 3 use_gga'
               active_gridfunction%gn_b(1,1,:) = active_gxn_bx(:)
               active_gridfunction%gn_b(1,2,:) = active_gxn_by(:)
               active_gridfunction%gn_b(1,3,:) = active_gxn_bz(:)
@@ -3061,7 +3059,6 @@ contains
         deallocate(active_n_by)
         deallocate(active_n_bz)
         if (use_gga) then
-           write(*, *) 'buba 4 use_gga'
            deallocate(active_gxn_bx)
            deallocate(active_gxn_by)
            deallocate(active_gxn_bz)
@@ -3289,7 +3286,6 @@ contains
       active_n_by = 0.0d0
       active_n_bz = 0.0d0
       if (use_gga) then
-           write(*, *) 'buba 5 use_gga'
          active_gxn_bx = 0.0d0
          active_gxn_by = 0.0d0
          active_gxn_bz = 0.0d0
@@ -3396,25 +3392,26 @@ contains
                                        use_gga, &
                                        dmat_pertden_reorth,    &
                                        dmat_pg_sym,    &
-                                       buffer)
+                                       buffer,  &
+                       rx(ipoint), ry(ipoint), rz(ipoint))
             end if
 !           lao_direct
-            !if (do_export_pertden_direct .and. .not. fde_rsp_mag_lao_no_s) then
-            !   call get_pertden_direct(ipoint,         &
-            !                          mat_dim,        &
-            !                          nz,             &
-            !                          ao,             &
-            !                          n_0,            &
-            !                          n_0_t,          &
-            !                          gn_0_pointwise, &
-            !                          gnn_0,          &
-            !                          gnn_0_t,        &
-            !                          w,              &
-            !                          use_gga,        &
-            !                          dmat_pertden_direct,           &
-            !                          dmat_pg_sym,    &
-            !                          rx(ipoint), ry(ipoint), rz(ipoint))
-            !end if
+            if (do_export_pertden_direct .and. .not. fde_rsp_mag_lao_no_s) then
+               call get_pertden_direct(ipoint,         &
+                                      mat_dim,        &
+                                      nz,             &
+                                      ao,             &
+                                      n_0,            &
+                                      n_0_t,          &
+                                      gn_0_pointwise, &
+                                      gnn_0,          &
+                                      gnn_0_t,        &
+                                      w,              &
+                                      use_gga,        &
+                                      dmat_pertden_direct,           &
+                                      dmat_pg_sym,    &
+                                      rx(ipoint), ry(ipoint), rz(ipoint))
+            end if
          
          end if !if (n_0(1) > fde_cfg_tinydens) then
    end do !do ipoint = 1, nr_points_on_this_proc
@@ -3555,7 +3552,8 @@ contains
                         is_gga,             &
                         tb_dmat,            &
                         isym,               &
-                        buffer)
+                        buffer,             &
+                        px, py, pz)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ipoint
@@ -3572,6 +3570,7 @@ contains
     real(8), intent(in)    :: tb_dmat(*)
     integer, intent(in)    :: isym(*)
     real(8), intent(in)    :: buffer(*)
+    real(8), intent(in)    :: px, py, pz
 !   ----------------------------------------------------------------------------
     real(8)                ::  r_b(3),     s_b(3,3)
     real(8)                :: gr_b(3,3), gs_b(3,3,3)
@@ -3585,14 +3584,6 @@ contains
     integer                :: k_start, k, im, im_off, j
     integer :: i
 !   ----------------------------------------------------------------------------
-
-    !if (all(tb_dmat(1:mat_dim*mat_dim*nz*3) .eq. 0.0d0)) call quit('buba')
-
-         !do i = 1, 3
-         !  write(*, *) 'tbdmat read test, i =', i
-         !  call prqmat(dmat_pertden_reorth(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
-         !              (/1,2,3,4/), 6)
-         !end do
 
 
     r_b = 0.0d0
@@ -3622,34 +3613,33 @@ contains
        end if
 
 !      spin density
-       !if (.not. fde_rsp_mag_lao_no_s) then
-       !   if (is_gga) then
-       !      call get_gs_nonhermitian(s_b(:,im),                 &
-       !                               gs_b(:,:,im),              &
-       !                               isym(im) - 1,              &
-       !                               mat_dim,                   &
-       !                               tb_dmat(1 + im_off),       &
-       !                               buffer,                    &
-       !                               ao)
-       !   else
-       !      write(*, *) 'ale buba'
-       !      call get_s(s_b(:,im),                  &
-       !                 isym(im) - 1,               &
-       !                 mat_dim,                    &
-       !                 tb_dmat(1 + im_off),        &
-       !                 buffer,                     &
-       !                 ao)
-       !   end if
-       !end if
+       if (.not. fde_rsp_mag_lao_no_s) then
+          if (is_gga) then
+             call get_gs_nonhermitian(s_b(:,im),                 &
+                                      gs_b(:,:,im),              &
+                                      isym(im) - 1,              &
+                                      mat_dim,                   &
+                                      tb_dmat(1 + im_off),       &
+                                      buffer,                    &
+                                      ao)
+          else
+             call get_s(s_b(1:3,im),                  &
+                        0,               &
+                        mat_dim,                    &
+                        tb_dmat(1 + im_off),        &
+                        buffer,                     &
+                        ao)
+          end if
+       end if
     end do
 
-    write(*, *) 'ale buba w get_pertden_reorth, r_b =', r_b(1), r_b(2), r_b(3)
+    write(*, '(6ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+                px, py, pz, r_b(1), r_b(2), r_b(3)
     active_n_bx(ipoint) = r_b(1)
     active_n_by(ipoint) = r_b(2)
     active_n_bz(ipoint) = r_b(3)
 
     if (use_gga) then
-           write(*, *) 'buba 6 use_gga'
        active_gxn_bx(ipoint) = gr_b(1,1)
        active_gxn_by(ipoint) = gr_b(1,2)
        active_gxn_bz(ipoint) = gr_b(1,3)

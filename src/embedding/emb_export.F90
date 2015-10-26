@@ -320,7 +320,6 @@ module fde_export_data
 
          do i = 1, grid%npoints
             if (fde_rsp_mag_lao_export.and..not.fde_rsp_mag_lao_no_s) then                   ! order of columns:
-              !write(*, *) 'buba buba buba 3'
                write (export_unit,'(58ES30.20E3)') (grid%r(j,i), j = 1,3), &                 !1-3,   x-y-z
                                                grid%w(i),             &                      !4
                                                gf%elpot(i),          &                       !5
@@ -332,7 +331,6 @@ module fde_export_data
                                                ((gf%s_b(j,k,i), j = 1,3), k=1,3),  &         !23-31, sxbx-sybx-szbx - sxby-syby-szby - szbx-szby-szbz
                                                (((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3) !32-58, gxsxbx-gysxbx-gzsxbx - gxsybx-gysybx-gzsybx - etc.
             else if (fde_rsp_mag_lao_export.and.fde_rsp_mag_lao_no_s) then
-              !write(*, *) 'buba buba buba 2'
                write (export_unit,'(22ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
                                                gf%elpot(i),          &
@@ -342,7 +340,6 @@ module fde_export_data
                                                (gf%n_b(j,i), j = 1,3), &
                                                ((gf%gn_b(j,k,i), j = 1,3), k=1,3)
             else
-              !write(*, *) 'buba buba buba 1'
                write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
                                                gf%elpot(i),          &

@@ -2753,7 +2753,7 @@ contains
        end if
 
     end do !do im = 1, nr_fmat
-    write(*, *) 'ale buba r_b = ', r_b(1), r_b(2), r_b(3)
+    !write(*, '(6F16.8)') 'ale buba r_b = ', px, py, pz, r_b(1), r_b(2), r_b(3)
 
 
 !      SDFT
