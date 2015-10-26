@@ -539,36 +539,35 @@ contains
          end if
       end if
 
+     ! if (do_export_pertden_direct .and. .not. present(fde_dmat_pertden_direct)) then
+     !    call quit('export_pertden_direct error')
+     ! end if
       nullify(dmat_pertden_direct)
-      if (present(fde_dmat_pertden_direct) .and. fde_do_export_pertden_direct) then
+      if (do_export_pertden_direct) then
          if (.not. fde_mpi_is_master()) then
             allocate(dmat_pertden_direct_container(mat_dim, mat_dim, nz))
             dmat_pertden_direct => dmat_pertden_direct_container
          else
-            dmat_pertden_direct => fde_dmat_pertden_direct
+            !if (present(fde_dmat_pertden_direct)) then
+               dmat_pertden_direct => fde_dmat_pertden_direct
+            !end if
          end if
       end if
 
+     ! if (do_export_pertden_reorth .and. .not. present(fde_dmat_pertden_reorth)) then
+     !    call quit('export_pertden_reorth error')
+     ! end if
       nullify(dmat_pertden_reorth)
       if (do_export_pertden_reorth) then
          if (.not. fde_mpi_is_master()) then
             allocate(dmat_pertden_reorth_container(mat_dim, mat_dim, nz, 3))
             dmat_pertden_reorth => dmat_pertden_reorth_container
          else
-            if (present(fde_dmat_pertden_reorth)) then
+            !if (present(fde_dmat_pertden_reorth)) then
                dmat_pertden_reorth => fde_dmat_pertden_reorth
-            end if
+            !end if
          end if
       end if
-!debug
-      !if (present(fde_dmat_pertden_reorth) .and. fde_do_export_pertden_reorth) then
-      !   if (.not. fde_mpi_is_master()) then
-      !      allocate(dmat_pertden_reorth_container(mat_dim, mat_dim, nz, 3))
-      !      dmat_pertden_reorth => dmat_pertden_reorth_container
-      !   else
-      !      dmat_pertden_reorth => fde_dmat_pertden_reorth
-      !   end if
-      !end if
 
       if (use_potential) then
 ! gosia: here fde_static_vemb seems not to be allocated, even if run with *EMBPOT in the input,
