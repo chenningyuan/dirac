@@ -599,7 +599,7 @@ module fde_evaluators_dirac
 
       close(tbdmat_file_unit, status='keep')
 
-      debug_me = .true.
+      debug_me = .false.
       if (debug_me) then
          do i = 1, 3
            write(*, *) 'tbdmat read test, i =', i
@@ -649,16 +649,20 @@ module fde_evaluators_dirac
          !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((2*ndim*ndim+1):(3*ndim*ndim),3), 1)
          !call dcopy(ndim*ndim, dmat(1,:), 1, tbdmat((3*ndim*ndim+1):(4*ndim*ndim),3), 1)
 
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(12)
+#endif
+
           call fde_dirac_emb_matrices_via_integration(      &
                                   fde_mat_dim   = ndim,    &
                                   fde_nz        = nz,      &
                                   fde_dmat_0    = dmat,    & !only real part of dmat
                                   fde_nr_dmat   = 0,       &
                                   fde_nr_fmat   = 0,       &
-                                  fde_dmat_pertden_direct      = buffer,  &
+                                  !fde_dmat_pertden_direct      = buffer,  &
                                   fde_dmat_pertden_reorth      = tbdmat,  &
                                   fde_do_export_pertden_reorth = .true., &
-                                  fde_do_export_pertden_direct = .true., &
+                                  !fde_do_export_pertden_direct = .true., &
                                   fde_active_grid = grid, &
                                   fde_active_gridfunction = gf)
          call dealloc(buffer)

@@ -2703,6 +2703,7 @@ contains
 
     real(8)                :: z_b
     real(8)                :: y_b(3)
+    real(8)                :: testme(3)
 
     integer                :: k_start, k, im, im_off, j, ioff, i
     type(omega_prefactor) :: u
@@ -2752,6 +2753,7 @@ contains
        end if
 
     end do !do im = 1, nr_fmat
+    write(*, *) 'ale buba r_b = ', r_b(1), r_b(2), r_b(3)
 
 
 !      SDFT

@@ -423,7 +423,7 @@ contains
       call fde_mpi_reduce(isum)
       if (fde_mpi_is_master()) then
          if (isum /= nr_points_batch) then
-            call quit('programming error in distribution of points in parallel FDE')
+            call quit('programming error in distribution of frozen in parallel FDE')
          end if
       end if
    end subroutine
@@ -494,7 +494,7 @@ contains
       call fde_mpi_reduce(isum)
       if (fde_mpi_is_master()) then
          if (isum /= nr_points_batch) then
-            call quit('programming error in distribution of points in parallel FDE')
+            call quit('programming error in distribution of pertden in parallel FDE')
          end if
       end if
    end subroutine
@@ -551,7 +551,7 @@ contains
       call fde_mpi_reduce(isum)
       if (fde_mpi_is_master()) then
          if (isum /= nr_points_batch) then
-            call quit('programming error in distribution of points in parallel FDE')
+            call quit('programming error in distribution of vemb in parallel FDE')
          end if
       end if
    end subroutine

@@ -383,7 +383,6 @@ contains
       electrostatic_a_rho_b_interaction = 0.0d0
 
       parallel_fde = (fde_mpi_get_nr_proc() > 1)
-
 #ifdef VAR_MPI
       if (parallel_fde) then
          call sync_fde_cfg()
@@ -470,6 +469,12 @@ contains
          end if
 
       end if
+
+!gosia debug
+      if (do_export_pertden_reorth) then
+        write(*, *) 'BLE parallel_fde = ', parallel_fde
+      end if
+
 
 #ifdef VAR_MPI
       if (parallel_fde) then
@@ -2816,21 +2821,21 @@ contains
      integer :: ibatch
      integer :: i
      real(8), allocatable :: mpi_buffer(:)
-
-     if (fde_mpi_is_master()) then
-        nr_points_batch = active_grid%npoints
-     end if
-#ifdef VAR_MPI
-     if (parallel_fde) then
-        call fde_mpi_bcast(nr_points_batch)
-     end if
-#endif
      ibatch          = 0
      nr_points_total = 0
      nr_points_used  = 0
 
 !    loop over batches
      do
+
+        if (fde_mpi_is_master()) then
+           nr_points_batch = active_grid%npoints
+        end if
+#ifdef VAR_MPI
+        if (parallel_fde) then
+          call fde_mpi_bcast(nr_points_batch)
+        end if
+#endif
         if (nr_points_batch < 0) exit
 
         allocate(rx(nr_points_batch))
@@ -2921,22 +2926,21 @@ contains
 
 #ifdef VAR_MPI
         if (parallel_fde) then
-              call fde_mpi_gather(active_n_bx)
-              call fde_mpi_gather(active_n_by)
-              call fde_mpi_gather(active_n_bz)
+           call fde_mpi_gather(active_n_bx)
+           call fde_mpi_gather(active_n_by)
+           call fde_mpi_gather(active_n_bz)
 
-              if (use_gga) then
-           write(*, *) 'buba 2 use_gga'
-                 call fde_mpi_gather(active_gxn_bx)
-                 call fde_mpi_gather(active_gxn_by)
-                 call fde_mpi_gather(active_gxn_bz)
-                 call fde_mpi_gather(active_gyn_bx)
-                 call fde_mpi_gather(active_gyn_by)
-                 call fde_mpi_gather(active_gyn_bz)
-                 call fde_mpi_gather(active_gzn_bx)
-                 call fde_mpi_gather(active_gzn_by)
-                 call fde_mpi_gather(active_gzn_bz)
-              end if
+           if (use_gga) then
+              call fde_mpi_gather(active_gxn_bx)
+              call fde_mpi_gather(active_gxn_by)
+              call fde_mpi_gather(active_gxn_bz)
+              call fde_mpi_gather(active_gyn_bx)
+              call fde_mpi_gather(active_gyn_by)
+              call fde_mpi_gather(active_gyn_bz)
+              call fde_mpi_gather(active_gzn_bx)
+              call fde_mpi_gather(active_gzn_by)
+              call fde_mpi_gather(active_gzn_bz)
+           end if
            if (.not. fde_rsp_mag_lao_no_s) then
               call fde_mpi_gather(active_sx_bx)
               call fde_mpi_gather(active_sx_by)
@@ -2979,10 +2983,14 @@ contains
            end if
         end if
 #endif
-        if (fde_mpi_is_master()) then
+        !if (fde_mpi_is_master()) then
            active_gridfunction%n_b(1,:) = active_n_bx(:)
            active_gridfunction%n_b(2,:) = active_n_by(:)
            active_gridfunction%n_b(3,:) = active_n_bz(:)
+           do i = 1, nr_points_batch
+         write(*, *) 'ale buba w gf, r_b =', &
+        active_gridfunction%n_b(1,i), active_gridfunction%n_b(2,i), active_gridfunction%n_b(3,i)
+            end do
            if (use_gga) then
            write(*, *) 'buba 3 use_gga'
               active_gridfunction%gn_b(1,1,:) = active_gxn_bx(:)
@@ -3035,7 +3043,7 @@ contains
                  active_gridfunction%gs_b(3,3,3,:) = active_gzsz_bz(:)
               end if
            end if
-        endif
+        !endif
 
 
         deallocate(active_n_bx)
@@ -3357,6 +3365,13 @@ contains
          
 !           lao_reorth
             if (do_export_pertden_reorth) then
+
+         !do i = 1, 3
+         !  write(*, *) 'tbdmat read test, i =', i
+         !  call prqmat(dmat_pertden_reorth(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
+         !              (/1,2,3,4/), 6)
+         !end do
+
                call get_pertden_reorth(ipoint,  &
                                        mat_dim, &
                                        nz,      &
@@ -3373,22 +3388,22 @@ contains
                                        buffer)
             end if
 !           lao_direct
-            if (do_export_pertden_direct .and. .not. fde_rsp_mag_lao_no_s) then
-               call get_pertden_direct(ipoint,         &
-                                      mat_dim,        &
-                                      nz,             &
-                                      ao,             &
-                                      n_0,            &
-                                      n_0_t,          &
-                                      gn_0_pointwise, &
-                                      gnn_0,          &
-                                      gnn_0_t,        &
-                                      w,              &
-                                      use_gga,        &
-                                      dmat_pertden_direct,           &
-                                      dmat_pg_sym,    &
-                                      rx(ipoint), ry(ipoint), rz(ipoint))
-            end if
+            !if (do_export_pertden_direct .and. .not. fde_rsp_mag_lao_no_s) then
+            !   call get_pertden_direct(ipoint,         &
+            !                          mat_dim,        &
+            !                          nz,             &
+            !                          ao,             &
+            !                          n_0,            &
+            !                          n_0_t,          &
+            !                          gn_0_pointwise, &
+            !                          gnn_0,          &
+            !                          gnn_0_t,        &
+            !                          w,              &
+            !                          use_gga,        &
+            !                          dmat_pertden_direct,           &
+            !                          dmat_pg_sym,    &
+            !                          rx(ipoint), ry(ipoint), rz(ipoint))
+            !end if
          
          end if !if (n_0(1) > fde_cfg_tinydens) then
    end do !do ipoint = 1, nr_points_on_this_proc
@@ -3560,17 +3575,27 @@ contains
     integer :: i
 !   ----------------------------------------------------------------------------
 
+    !if (all(tb_dmat(1:mat_dim*mat_dim*nz*3) .eq. 0.0d0)) call quit('buba')
+
+         !do i = 1, 3
+         !  write(*, *) 'tbdmat read test, i =', i
+         !  call prqmat(dmat_pertden_reorth(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
+         !              (/1,2,3,4/), 6)
+         !end do
+
+
+    r_b = 0.0d0
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
-    do im = 1, nr_dmat
+    do im = 1, 3
 
        im_off = mat_dim*mat_dim*nz*(im - 1)
 
 !      charge density
        if (is_gga) then
           call get_gn_nonhermitian(r_b(im),                 &
-                                   gr_b(:,im),              &
+                                   gr_b(1:3,im),            &
                                    isym(im) - 1,            &
                                    mat_dim,                 &
                                    tb_dmat(1 + im_off),     &
@@ -3578,7 +3603,7 @@ contains
                                    ao)
        else
           call get_n(r_b(im),                       &
-                     isym(im) - 1,              &
+                     0,              &
                      mat_dim,                   &
                      tb_dmat(1 + im_off),       &
                      buffer,                    &
@@ -3586,27 +3611,28 @@ contains
        end if
 
 !      spin density
-       if (.not. fde_rsp_mag_lao_no_s) then
-          if (is_gga) then
-             call get_gs_nonhermitian(s_b(:,im),                 &
-                                      gs_b(:,:,im),              &
-                                      isym(im) - 1,              &
-                                      mat_dim,                   &
-                                      tb_dmat(1 + im_off),       &
-                                      buffer,                    &
-                                      ao)
-          else
-             write(*, *) 'ale buba'
-             call get_s(s_b(:,im),                  &
-                        isym(im) - 1,               &
-                        mat_dim,                    &
-                        tb_dmat(1 + im_off),        &
-                        buffer,                     &
-                        ao)
-          end if
-       end if
+       !if (.not. fde_rsp_mag_lao_no_s) then
+       !   if (is_gga) then
+       !      call get_gs_nonhermitian(s_b(:,im),                 &
+       !                               gs_b(:,:,im),              &
+       !                               isym(im) - 1,              &
+       !                               mat_dim,                   &
+       !                               tb_dmat(1 + im_off),       &
+       !                               buffer,                    &
+       !                               ao)
+       !   else
+       !      write(*, *) 'ale buba'
+       !      call get_s(s_b(:,im),                  &
+       !                 isym(im) - 1,               &
+       !                 mat_dim,                    &
+       !                 tb_dmat(1 + im_off),        &
+       !                 buffer,                     &
+       !                 ao)
+       !   end if
+       !end if
     end do
 
+    write(*, *) 'ale buba w get_pertden_reorth, r_b =', r_b(1), r_b(2), r_b(3)
     active_n_bx(ipoint) = r_b(1)
     active_n_by(ipoint) = r_b(2)
     active_n_bz(ipoint) = r_b(3)
