@@ -550,14 +550,25 @@ contains
       end if
 
       nullify(dmat_pertden_reorth)
-      if (present(fde_dmat_pertden_reorth) .and. fde_do_export_pertden_reorth) then
+      if (do_export_pertden_reorth) then
          if (.not. fde_mpi_is_master()) then
             allocate(dmat_pertden_reorth_container(mat_dim, mat_dim, nz, 3))
             dmat_pertden_reorth => dmat_pertden_reorth_container
          else
-            dmat_pertden_reorth => fde_dmat_pertden_reorth
+            if (present(fde_dmat_pertden_reorth)) then
+               dmat_pertden_reorth => fde_dmat_pertden_reorth
+            end if
          end if
       end if
+!debug
+      !if (present(fde_dmat_pertden_reorth) .and. fde_do_export_pertden_reorth) then
+      !   if (.not. fde_mpi_is_master()) then
+      !      allocate(dmat_pertden_reorth_container(mat_dim, mat_dim, nz, 3))
+      !      dmat_pertden_reorth => dmat_pertden_reorth_container
+      !   else
+      !      dmat_pertden_reorth => fde_dmat_pertden_reorth
+      !   end if
+      !end if
 
       if (use_potential) then
 ! gosia: here fde_static_vemb seems not to be allocated, even if run with *EMBPOT in the input,
