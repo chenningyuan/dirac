@@ -572,6 +572,7 @@ module fde_evaluators_dirac
       real(8) :: dum, toterg
       integer :: idum
 
+      write(*, *) 'ble in fde_get_pertden, grid%npoints= ', grid%npoints
 !     for reorthonormalization part we need the connection matrices
 !     there's no easy way to get them, i can either call old subroutines or to use TBMO file
 !     it requires that before the shielding calculations are run and this file is saved
