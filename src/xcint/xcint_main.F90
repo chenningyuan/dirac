@@ -2616,6 +2616,11 @@ contains
                      px, py, pz)
     end if
 
+    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba dft s_b = ', px, py, pz, &
+                                      s_b_lao(1,1), s_b_lao(2,1), s_b_lao(3,1), &
+                                      s_b_lao(1,2), s_b_lao(2,2), s_b_lao(3,2), &
+                                      s_b_lao(1,3), s_b_lao(2,3), s_b_lao(3,3)
+
      do im = 1, nr_fmat         ! B_{x,y,z}
         do k = k_start, 3       ! Sigma_{x,y,z}
 
@@ -2711,6 +2716,8 @@ contains
     real(8) :: temp(pertden_nr_columns)
 !   ----------------------------------------------------------------------------
 
+    r_b = 0.0d0
+
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
@@ -2731,7 +2738,8 @@ contains
                                    ao)
        else
           call get_n(r_b(im),             &
-                     isym(im) - 1,        &
+                     0,        &
+                     !isym(im) - 1,        &
                      mat_dim,             &
                      tb_dmat(1 + im_off), &
                      buffer,              &
@@ -2753,7 +2761,7 @@ contains
        end if
 
     end do !do im = 1, nr_fmat
-    !write(*, '(6F16.8)') 'ale buba r_b = ', px, py, pz, r_b(1), r_b(2), r_b(3)
+    write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba dft r_b = ', px, py, pz, r_b(1), r_b(2), r_b(3)
 
 
 !      SDFT

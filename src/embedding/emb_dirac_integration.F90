@@ -1086,6 +1086,16 @@ contains
       if (nr_dmat > 0) then
         call dscal(mat_dim*mat_dim*nz*nr_dmat, f, dmat, 1)
       end if
+!gosia todo: check if these matrices should be scaled too
+! (now they are made to agree with dft)
+! insert_half_phases should be then adapted as well
+      if (do_export_pertden_reorth) then
+        call dscal(mat_dim*mat_dim*nz*3, f, dmat_pertden_reorth, 1)
+      end if
+      if (do_export_pertden_direct) then
+        call dscal(mat_dim*mat_dim*nz, f, dmat_pertden_direct, 1)
+      end if
+
 
    end subroutine
 
@@ -1112,6 +1122,22 @@ contains
                end do
             end do
          end if
+!gosia try:
+         if (do_export_pertden_reorth) then
+            do iz = 1, nz
+               do im = 1, 3
+                  iq = pq_to_uq(iz, dmat_pg_sym(im) - 1)
+                  call my_q2bphase('D', iq, 1, dmat_pertden_reorth(1, 1, iz, im))
+               end do
+            end do
+         end if
+         if (do_export_pertden_direct) then
+            do iz = 1, nz
+               iq = pq_to_uq(iz, dmat_pg_sym(1) - 1)
+               call my_q2bphase('D', iq, 1, dmat_pertden_direct(1, 1, iz))
+            end do
+         end if
+
       end if
 
    end subroutine
@@ -3496,6 +3522,9 @@ contains
                       px, py, pz)
     end if
 
+    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_direct= ', &
+                px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), s_b(1,2), s_b(2,2), s_b(3,2), s_b(1,3), s_b(2,3), s_b(3,3)
+
 !gosia: check if it is correctly added!
     active_sx_bx(ipoint) = active_sx_bx(ipoint) + s_b(1,1)
     active_sx_by(ipoint) = active_sx_by(ipoint) + s_b(1,2)
@@ -3587,6 +3616,7 @@ contains
 
 
     r_b = 0.0d0
+
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
@@ -3633,7 +3663,7 @@ contains
        end if
     end do
 
-    write(*, '(6ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+    write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
                 px, py, pz, r_b(1), r_b(2), r_b(3)
     active_n_bx(ipoint) = r_b(1)
     active_n_by(ipoint) = r_b(2)

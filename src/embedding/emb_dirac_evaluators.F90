@@ -645,8 +645,8 @@ module fde_evaluators_dirac
                                   fde_nr_dmat   = 0,       &
                                   fde_nr_fmat   = 0,       &
                                   fde_dmat_pertden_direct      = buffer,  &  !full dmat
-                                  fde_dmat_pertden_reorth      = tbdmat,  &
-                                  fde_do_export_pertden_reorth = .true.,  &
+                                  !fde_dmat_pertden_reorth      = tbdmat,  &
+                                  !fde_do_export_pertden_reorth = .true.,  &
                                   fde_do_export_pertden_direct = .true.,  &
                                   fde_active_grid = grid,                 &
                                   fde_active_gridfunction = gf)

@@ -325,7 +325,7 @@ module fde_export_data
                                                gf%elpot(i),          &                       !5
                                                v_pc_array,            &                      !6
                                                gf%n(i),               &                      !7
-                                               (gf%gn(j,i), j = 1,3), &                      !8-10,  gx-y-gz
+                                               (gf%gn(j,i), j = 1,3), &                      !8-10,  gx-gy-gz
                                                (gf%n_b(j,i), j = 1,3),             &         !11-13, bx-by-bz
                                                ((gf%gn_b(j,k,i), j = 1,3), k=1,3), &         !14-22, gxbx-gybx-gzbx - gxby-gyby-gzby - gzbx-gzby-gzbz
                                                ((gf%s_b(j,k,i), j = 1,3), k=1,3),  &         !23-31, sxbx-sybx-szbx - sxby-syby-szby - szbx-szby-szbz
