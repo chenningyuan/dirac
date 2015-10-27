@@ -698,7 +698,8 @@ contains
       end if
      
       max_ao_m_order = 0
-      if (do_london_rhs_direct .or. do_london_rhs_direct_kern .or. do_export_pertden_direct) then
+      !if (do_london_rhs_direct .or. do_london_rhs_direct_kern .or. do_export_pertden_direct) then
+      if (do_london_rhs_direct .or. do_london_rhs_direct_kern) then
         max_ao_m_order = 1
       end if
 
@@ -3366,6 +3367,12 @@ contains
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
+         do i = 1, 3
+           write(*, *) 'dmat_pertden_reorth read test, i =', i
+           call prqmat(dmat_pertden_reorth(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
+                       (/1,2,3,4/), 6)
+         end do
+
       do ipoint = 1, nr_points_on_this_proc
    
          time_ao_start = second()
@@ -3376,6 +3383,11 @@ contains
                rz(ipoint), &
                ao,         &
                buffer)
+
+         write(*, *) 'ao dft nr_ao_slices, nr_ao_cartesian = ', nr_ao_slices, nr_ao_cartesian
+         do i = 1, nr_ao_slices*nr_ao_cartesian
+           write(*, '(A,3E16.8,ES30.20E3)') 'ao in point ', rx(ipoint), ry(ipoint), rz(ipoint), ao(1,i)
+         end do
 
          if (need_ao_order(1, 0)) then
 !           density and density gradient
@@ -3399,12 +3411,7 @@ contains
 !           lao_reorth
             if (do_export_pertden_reorth) then
 
-         !do i = 1, 3
-         !  write(*, *) 'tbdmat read test, i =', i
-         !  call prqmat(dmat_pertden_reorth(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
-         !              (/1,2,3,4/), 6)
-         !end do
-
+      buffer = 0.0d0
                call get_pertden_reorth(ipoint,  &
                                        mat_dim, &
                                        nz,      &
@@ -3423,6 +3430,7 @@ contains
             end if
 !           lao_direct
             if (do_export_pertden_direct .and. .not. fde_rsp_mag_lao_no_s) then
+      buffer = 0.0d0
                call get_pertden_direct(ipoint,         &
                                       mat_dim,        &
                                       nz,             &
@@ -3522,8 +3530,8 @@ contains
                       px, py, pz)
     end if
 
-    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_direct= ', &
-                px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), s_b(1,2), s_b(2,2), s_b(3,2), s_b(1,3), s_b(2,3), s_b(3,3)
+    !write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_direct= ', &
+    !            px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), s_b(1,2), s_b(2,2), s_b(3,2), s_b(1,3), s_b(2,3), s_b(3,3)
 
 ! gosia: s_b and gs_b contributions can also come from reorthonormalization part
 ! which is calculated earlier
@@ -3642,6 +3650,9 @@ contains
                      tb_dmat(1 + im_off),       &
                      buffer,                    &
                      ao)
+    write(*, '(A,3F16.8,I,I,ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+                px, py, pz, im, im_off, r_b(im)
+
        end if
 
 !      spin density
@@ -3668,10 +3679,10 @@ contains
 !    write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
 !                px, py, pz, r_b(1), r_b(2), r_b(3)
 
-    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
-                px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), &
-                            s_b(1,2), s_b(2,2), s_b(3,2), &
-                            s_b(1,3), s_b(2,3), s_b(3,3)
+!    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+!                px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), &
+!                            s_b(1,2), s_b(2,2), s_b(3,2), &
+!                            s_b(1,3), s_b(2,3), s_b(3,3)
 
     active_n_bx(ipoint) = r_b(1)
     active_n_by(ipoint) = r_b(2)

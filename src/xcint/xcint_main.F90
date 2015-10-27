@@ -1027,6 +1027,14 @@ contains
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
+!gosia debug:
+  if (do_london_rhs_ro) then
+   do i =1, 3
+     write(*, *) 'dmat reorth dft read test, i =', i
+     call prqmat(dmat(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
+      (/1,2,3,4/), 6)
+   end do
+  end if
    do ipoint = 1, nr_points_on_this_proc
    
 !     print *, "check points",ipoint,xc_mpi_get_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
@@ -1037,6 +1045,14 @@ contains
                   rz(ipoint), &
                   ao,         &
                   buffer)
+
+!gosia debug:
+      if (do_london_rhs_ro) then
+         write(*, *) 'ao dft nr_ao_slices, nr_ao_cartesian = ', nr_ao_slices, nr_ao_cartesian
+         do i = 1, nr_ao_slices*nr_ao_cartesian 
+           write(*, '(A,3E16.8,ES30.20E3)') 'ao in point ', rx(ipoint), ry(ipoint), rz(ipoint), ao(1,i)
+         end do
+      end if
 !     print *, "dft check ao",ipoint,xc_mpi_get_rank(),ao
 !     print *, "dft check buffer",ipoint,xc_mpi_get_rank(),buffer
       time_ao = time_ao + second() - time_ao_start
@@ -2616,10 +2632,10 @@ contains
                      px, py, pz)
     end if
 
-    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba dft s_b = ', px, py, pz, &
-                                      s_b_lao(1,1), s_b_lao(2,1), s_b_lao(3,1), &
-                                      s_b_lao(1,2), s_b_lao(2,2), s_b_lao(3,2), &
-                                      s_b_lao(1,3), s_b_lao(2,3), s_b_lao(3,3)
+!    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba dft s_b = ', px, py, pz, &
+!                                      s_b_lao(1,1), s_b_lao(2,1), s_b_lao(3,1), &
+!                                      s_b_lao(1,2), s_b_lao(2,2), s_b_lao(3,2), &
+!                                      s_b_lao(1,3), s_b_lao(2,3), s_b_lao(3,3)
 
      do im = 1, nr_fmat         ! B_{x,y,z}
         do k = k_start, 3       ! Sigma_{x,y,z}
@@ -2710,7 +2726,7 @@ contains
     real(8)                :: y_b(3)
     real(8)                :: testme(3)
 
-    integer                :: k_start, k, im, im_off, j, ioff, i
+    integer                :: k_start, k, im, im_off, ioff, j, i
     type(omega_prefactor) :: u
 
     real(8) :: temp(pertden_nr_columns)
@@ -2721,7 +2737,6 @@ contains
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
-    ioff = 0
 
     do im = 1, nr_fmat
 
@@ -2744,6 +2759,7 @@ contains
                      tb_dmat(1 + im_off), &
                      buffer,              &
                      ao)
+    write(*, '(A,3F16.8,I,I,ES30.20E3)') 'buba dft reorth:r, im, im_off, r_b = ', px, py, pz, im, im_off, r_b(im)
        end if
 
        u%n(im) = u%n(im) + derv(1, d2000000)*r_b(im)
@@ -2761,7 +2777,8 @@ contains
        end if
 
     end do !do im = 1, nr_fmat
-    write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba dft r_b = ', px, py, pz, r_b(1), r_b(2), r_b(3)
+
+    !write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba dft reorth r_b = ', px, py, pz, r_b(1), r_b(2), r_b(3)
 
 
 !      SDFT
@@ -2810,6 +2827,7 @@ contains
       end if
     end do
 
+    ioff = 0
     if (london_reorth_export) then
        temp = 0.0d0
        temp(1) = px
