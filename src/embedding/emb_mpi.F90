@@ -47,6 +47,7 @@ module fde_mpi
    public fde_mpi_distribute_frozen
    public fde_get_my_rank
    public fde_mpi_gather
+   public fde_mpi_gatherv
 #endif
 
    private
@@ -143,19 +144,130 @@ contains
 !    end subroutine
 
 
+    subroutine fde_mpi_gatherv(x, y, n)
+       real(8) :: x(:), y(:)
+       integer, intent(in) :: n
+       integer :: i, j
+       real(8) :: dummy = 0.0d0
+       logical :: debug = .true.
+       integer, allocatable :: rcounts(:)
+       integer, allocatable :: displs(:)
+       integer, allocatable :: rcounts_node(:)
+       integer :: nproc
+
+! set ncouts and displs arrays
+!
+       nproc = fde_mpi_get_nr_proc()
+
+       allocate(rcounts_node(nproc))
+       allocate(rcounts(nproc))
+       allocate(displs(nproc))
+
+       rcounts_node = 0
+       rcounts = 0
+       rcounts_node(1) = n
+
+       if (debug) then
+          write (*,*) ''
+          do i = 1, size(rcounts)
+             write (*,'(3X,A,I4,A,I4,I4)') 'debug gatherv, (rcounts_node) for process',get_my_rank(),':',i,rcounts_node(i)
+             if (fde_mpi_is_master()) then
+                write (*,'(3X,A,I4,A,I4,I4)') 'debug gatherv, (rcounts) for process',get_my_rank(),':',i,rcounts(i)
+             end if
+          end do
+
+          write (*,*) ''
+          do i = 1, n 
+             write (*,'(3X,A,I4,A,I4,e20.8)') 'debug gatherv, (x) for process',get_my_rank(),':',i,x(i)
+          end do
+       end if
+
+       call mpi_gather(rcounts_node, 1, mpi_integer, rcounts, 1, mpi_integer, irank_master, global_communicator, ierr)
+
+       displs(1) = 0
+       do i = 2, nproc
+             displs(i) = displs(i-1) + rcounts(i-1)
+       end do
+
+       if (debug) then
+          write (*,*) ''
+          do i = 1, nproc
+             write (*,'(3X,A,I4,A,I4,I4)') 'debug gatherv, (rcounts_node) for process',get_my_rank(),':',i,rcounts_node(i)
+             if (fde_mpi_is_master()) then
+                write (*,'(3X,A,I4,A,I4,I4)') 'debug gatherv, (rcounts) for process',get_my_rank(),':',i,rcounts(i)
+             end if
+          end do
+
+          write (*,*) ''
+          do i = 1, n
+             write (*,'(3X,A,I4,A,I4,e20.8)') 'debug gatherv, (x) for process',get_my_rank(),':',i,x(i)
+          end do
+       end if
+
+!      call fde_quit('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+
+       call mpi_gatherv(x, n, mpi_double_precision, y, rcounts, displs, mpi_double_precision, irank_master, global_communicator, ierr)
+
+       if (debug) then
+       write (*,*) ''
+       do i = 1, n
+          write (*,'(3X,A,I4,A,I4,e20.8)') 'debug gatherv, (x) for process',get_my_rank(),':',i,x(i)
+       end do
+
+       write (*,*) ''
+       if (fde_mpi_is_master()) then
+          do i = 1, size(y)
+             write (*,'(3X,A,I4,e20.8)') 'debug gatherv, (y) for master:',i, y(i)
+          end do
+       end if
+       end if
+
+       call fde_quit('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+
+       if (fde_mpi_is_master()) then
+          deallocate(rcounts)
+          deallocate(displs)
+       end if
+
+    end subroutine
+
+
     subroutine fde_mpi_gather(x,y)
        real(8) :: x(:), y(:)
        integer :: nel
+       integer :: i
+       real(8) :: dummy = 0.0d0
+       logical :: debug = .false.
 
        nel = size(x)/fde_mpi_get_nr_proc() 
 
-!      print *,'debug',get_my_rank(),' x before gather:',x
-!      print *,'debug',get_my_rank(),' y before gather:',y
+!      if (fde_mpi_is_master()) then
+!         do i = 1, nel
+!            write (*,'(5X,A,I4,2F14.9)') 'debug, (x, y) before gather:',i, x(i), y(i) 
+!         end do
+!      else
+!         do i = 1, nel
+!            write (*,'(5X,A,I4,2F14.9)') 'debug, (x, y) before gather:',i,x(i),dummy
+!         end do
+!      end if 
+!      write (*,*) ''
 
        call mpi_gather(x, nel, mpi_double_precision, y, nel, mpi_double_precision, irank_master, global_communicator, ierr)
 
-!      print *,'debug',get_my_rank(),' x after gather:',x
-!      print *,'debug',get_my_rank(),' y after gather:',y
+       if (debug) then
+       write (*,*) ''
+       do i = 1, nel
+          write (*,'(3X,A,I4,A,I4,e20.8)') 'debug gather, (x) for process',get_my_rank(),':',i,x(i)
+       end do
+       
+       write (*,*) ''
+       if (fde_mpi_is_master()) then
+          do i = 1, size(y) 
+             write (*,'(3X,A,I4,e20.8)') 'debug gather, (y) for master:',i, y(i) 
+          end do
+       end if 
+       end if
+
     end subroutine
 
    subroutine fde_mpi_bcast_i0(x)

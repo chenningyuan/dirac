@@ -241,6 +241,8 @@ module electrostatic_potential
       integer :: multa, multb, nhktab, kab
       integer :: ipoint, idxmax
       logical :: do_matrix
+      real(8) :: debug_dij , debug_vij,  debug_prod , debug_sum
+      integer :: idxa, idxb
 
       if (nbsym > 1) then
          call quit('ESP calculation cannot handle symmetry!')
@@ -271,6 +273,14 @@ module electrostatic_potential
           idxmax = kmax
       end if
 ! Loop over bras <mu|      
+
+!!!!
+!! aspg, 23/10/2015
+!! debug printouts
+!     print *,'debug: mc, skipss_block, idxmax, kmax, nlrgsh:',mc,skipss_block,idxmax,kmax,nlrgsh
+!
+!!!
+
       idena = 0
       do ishela = 1, idxmax
         ica   = lclass(ishela)
@@ -335,6 +345,14 @@ module electrostatic_potential
 !        enddo
 !     enddo 
               do ipoint = 1, nr_points
+!!!!
+!! aspg, 23/10/2015
+!! debug printouts
+!             debug_sum = 0.0d0
+!             print *, " debug -- at point:",ipoint
+!             write (*, '(A,6I4)') "khkta, khktb, multa, multb, idena, idenb:", khkta, khktb, multa, multb,idena, idenb
+!             print *, "      i, j, Dij, Vij, DV, sum"
+!!!!
               if (do_matrix) then
                  do ib = 1, kcktb
                    do ia = 1, kckta 
@@ -346,6 +364,22 @@ module electrostatic_potential
                vector(ipoint) = vector(ipoint) + 2.0d0                    * &
                     sum(matrix(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
                             ader(ipoint, 1:kckta, 1:kcktb))
+                
+                   do ib = 1, kcktb
+                   do ia = 1, kckta 
+                      idxa = idena+ia
+                      idxb = idenb+ia
+!!!!
+!! aspg, 23/10/2015
+!! debug printouts
+!                     debug_dij  = matrix(idxa,idxb,1)
+!                     debug_vij  = ader(ipoint, ia, ib)
+!                     debug_prod = debug_dij * debug_vij 
+!                     debug_sum  = debug_sum + debug_prod 
+!                     write (*,'(5x,2i4,e20.8,2i4,e20.8,2e20.8)') idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
+!!!!
+                   end do
+                   end do
                 end if
               end do 
               deallocate(ader)

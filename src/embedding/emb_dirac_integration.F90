@@ -2009,11 +2009,17 @@ contains
 !       print *,'process',fde_get_my_rank(),'size gf',active_gridfunction%npoints
 !       print *,'process',fde_get_my_rank(),'size on proc',nr_points_on_this_proc
 
-        call fde_mpi_gather(active_elpot, active_gridfunction%elpot)
+        print *,'debug, gather for elpot'
+        call fde_mpi_gatherv(active_elpot, active_gridfunction%elpot, nr_points_on_this_proc)
+        print *,'debug, gather for nucpot'
         call fde_mpi_gather(active_nucpot, active_gridfunction%nucpot)
+        print *,'debug, gather for n'
         call fde_mpi_gather(active_n, active_gridfunction%n)
+        print *,'debug, gather for gnx'
         call fde_mpi_gather(active_gnx, active_gridfunction%gn(1,:))
+        print *,'debug, gather for gny'
         call fde_mpi_gather(active_gny, active_gridfunction%gn(2,:))
+        print *,'debug, gather for gnz'
         call fde_mpi_gather(active_gnz, active_gridfunction%gn(3,:))
 
         if (fde_mpi_is_master()) then
