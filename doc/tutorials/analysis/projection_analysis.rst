@@ -56,7 +56,7 @@ Introduction
 ------------
 
 As a first simple example we shall consider the methane molecule.
-The molecular input file ``CH4.xyz`` is
+The molecular input file ``CH4.xyz`` (:download:`download <CH4.xyz>`) is
 
 .. literalinclude:: CH4.xyz
 
@@ -64,7 +64,7 @@ Suppose that we have run a DFT(PBE) calculation using::
 
    pam --inp=PBE  --mol=CH4.xyz --outcmo
 
-where we keep the coefficients and the menu file ``PBE.inp`` is
+where we keep the coefficients and the menu file ``PBE.inp`` (:download:`download <PBE.inp>`) is
 
 .. literalinclude:: PBE.inp
 
@@ -208,6 +208,20 @@ This is the real number reported under the heading ``Total``. Under the heading
 and analogously for Kramers partner 2, from which we get the detailed decomposition of the molecular
 orbital. We find that this molecular orbital is composed of the carbon :math:`2p_{1/2}` orbital and
 the hydrogen :math:`1s` orbitals.
+
+
+Exercises
+---------
+
+1. What is the effect of increasing the C-H bond distance on the atomic configurations of the C,H atoms in the methane molecule and 
+   on atomic charges of the constituent atoms ?
+
+2. What is the effect of increasing the basis sets on the atomic configurations of the C,H atoms in the methane molecule and 
+   on atomic charges of the same constituent atoms ?
+
+3. What is the effect of various DFT functionals (see :ref:`*DFT`) on the atomic configurations of the C and H atoms 
+   in the methane molecule and on atomic charges of these constituent atoms ?
+
 
 -----------------
 Example 2: Uranyl
