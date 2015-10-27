@@ -42,5 +42,6 @@ void print_info(void)
     printf("       Modules definitions : %s\n",DEFINITIONS);
     printf("       Configuration time :  %s\n",CONFIGURATION_TIME);
     printf("-----------------------------------------------------------------\n");
+    fflush(stdout);
 }
 
