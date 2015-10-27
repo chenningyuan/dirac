@@ -1838,9 +1838,10 @@ C          restore density matrix and  total Fock matrices (have been destroyed 
            CALL REAFCK(LUFCKT,FOCK,.FALSE.,NFMAT)
            CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
      &                 ICHKCNV,OVLSEL ,DOLEVEL,WORK(KFREE),LFREE)
-C          Read CMO coefficients, but not orbital energies in EIG and IBEIG (code 2)
+C          Read CMO coefficients and bosos identification, but not orbital energies in EIG (code 10)
 C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
-           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2,
+
+           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10,
      &                 WORK,KFREE,LFREE)
            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
            WRITE(LUPRI,'(/A/A/A/)')
