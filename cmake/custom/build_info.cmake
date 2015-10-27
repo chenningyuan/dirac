@@ -231,6 +231,13 @@ message(STATUS "Definitions              : ${_list_of_definitions}")
 message(STATUS "Configuration time       : ${_configuration_time}")
 
 # generate the build_info.h include file with defined set of variables
+# note: cmake 2.8.2 has undefined variable CMAKE_CURRENT_LIST_DIR, 
+#     see https://public.kitware.com/Bug/print_bug_page.php?bug_id=11675
+# workaround from Google : create CMAKE_CURRENT_LIST_DIR if it doesn't exist 
+if(NOT DEFINED CMAKE_CURRENT_LIST_DIR)
+    message(STATUS "The CMAKE_CURRENT_LIST_DIR variable defined in workaround")
+    get_filename_component(CMAKE_CURRENT_LIST_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
+endif(NOT DEFINED CMAKE_CURRENT_LIST_DIR)
 configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/build_info.h.in
     ${PROJECT_BINARY_DIR}/build_info.h
