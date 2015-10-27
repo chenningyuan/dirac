@@ -3025,7 +3025,7 @@ contains
            active_gridfunction%n_b(3,:) = active_n_bz(:)
 !debug print
         !   do i = 1, nr_points_batch
-        ! write(*, '(3ES30.20E3)') 'ale buba w gf =', &
+        ! write(*, '(A,3ES30.20E3)') 'ale buba w gf =', &
         ! active_gridfunction%n_b(1,i), active_gridfunction%n_b(2,i), active_gridfunction%n_b(3,i)
         !    end do
            if (use_gga) then
@@ -3525,26 +3525,18 @@ contains
     write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_direct= ', &
                 px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), s_b(1,2), s_b(2,2), s_b(3,2), s_b(1,3), s_b(2,3), s_b(3,3)
 
-!gosia: check if it is correctly added!
-    active_sx_bx(ipoint) =  s_b(1,1)
-    active_sx_by(ipoint) =  s_b(1,2)
-    active_sx_bz(ipoint) =  s_b(1,3)
-    active_sy_bx(ipoint) =  s_b(2,1)
-    active_sy_by(ipoint) =  s_b(2,2)
-    active_sy_bz(ipoint) =  s_b(2,3)
-    active_sz_bx(ipoint) =  s_b(3,1)
-    active_sz_by(ipoint) =  s_b(3,2)
-    active_sz_bz(ipoint) =  s_b(3,3)
-
-!    active_sx_bx(ipoint) = active_sx_bx(ipoint) + s_b(1,1)
-!    active_sx_by(ipoint) = active_sx_by(ipoint) + s_b(1,2)
-!    active_sx_bz(ipoint) = active_sx_bz(ipoint) + s_b(1,3)
-!    active_sy_bx(ipoint) = active_sy_bx(ipoint) + s_b(2,1)
-!    active_sy_by(ipoint) = active_sy_by(ipoint) + s_b(2,2)
-!    active_sy_bz(ipoint) = active_sy_bz(ipoint) + s_b(2,3)
-!    active_sz_bx(ipoint) = active_sz_bx(ipoint) + s_b(3,1)
-!    active_sz_by(ipoint) = active_sz_by(ipoint) + s_b(3,2)
-!    active_sz_bz(ipoint) = active_sz_bz(ipoint) + s_b(3,3)
+! gosia: s_b and gs_b contributions can also come from reorthonormalization part
+! which is calculated earlier
+! that is why here we sum all up to *active* variables
+    active_sx_bx(ipoint) = active_sx_bx(ipoint) + s_b(1,1)
+    active_sx_by(ipoint) = active_sx_by(ipoint) + s_b(1,2)
+    active_sx_bz(ipoint) = active_sx_bz(ipoint) + s_b(1,3)
+    active_sy_bx(ipoint) = active_sy_bx(ipoint) + s_b(2,1)
+    active_sy_by(ipoint) = active_sy_by(ipoint) + s_b(2,2)
+    active_sy_bz(ipoint) = active_sy_bz(ipoint) + s_b(2,3)
+    active_sz_bx(ipoint) = active_sz_bx(ipoint) + s_b(3,1)
+    active_sz_by(ipoint) = active_sz_by(ipoint) + s_b(3,2)
+    active_sz_bz(ipoint) = active_sz_bz(ipoint) + s_b(3,3)
     if (is_gga) then
        active_gxsx_bx(ipoint) = active_gxsx_bx(ipoint) + gs_b(1,1,1)
        active_gxsx_by(ipoint) = active_gxsx_by(ipoint) + gs_b(1,1,2)
@@ -3673,8 +3665,14 @@ contains
        end if
     end do
 
-    write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
-                px, py, pz, r_b(1), r_b(2), r_b(3)
+!    write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+!                px, py, pz, r_b(1), r_b(2), r_b(3)
+
+    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+                px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), &
+                            s_b(1,2), s_b(2,2), s_b(3,2), &
+                            s_b(1,3), s_b(2,3), s_b(3,3)
+
     active_n_bx(ipoint) = r_b(1)
     active_n_by(ipoint) = r_b(2)
     active_n_bz(ipoint) = r_b(3)
