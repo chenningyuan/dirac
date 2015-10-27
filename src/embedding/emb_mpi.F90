@@ -149,7 +149,7 @@ contains
        integer, intent(in) :: n
        integer :: i, j
        real(8) :: dummy = 0.0d0
-       logical :: debug = .true.
+       logical :: debug = .false.
        integer, allocatable :: rcounts(:)
        integer, allocatable :: displs(:)
        integer, allocatable :: rcounts_node(:)
@@ -222,12 +222,11 @@ contains
        end if
        end if
 
-       call fde_quit('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+!      call fde_quit('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
 
-       if (fde_mpi_is_master()) then
-          deallocate(rcounts)
-          deallocate(displs)
-       end if
+       deallocate(rcounts_node)
+       deallocate(rcounts)
+       deallocate(displs)
 
     end subroutine
 
