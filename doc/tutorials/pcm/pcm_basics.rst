@@ -15,8 +15,9 @@ The solute is accomodated inside a molecular cavity, built as a set of interlock
 centered on the atoms constituting the molecule under investigation.
 The current implementation in DIRAC is limited to an SCF description of the solute.
 For a more in-depth presentation of the PCM, please refer to :cite:`Tomasi2005`, :cite:`Mennucci2007` and references
-therein. For a presentation of the details of the implementation in DIRAC, please refer to
-:cite:`DiRemigio2014`
+therein. 
+For a presentation of the details of the implementation in DIRAC, please refer to 
+:cite:`DiRemigio2015`.
 
 Basic Theory
 ------------
