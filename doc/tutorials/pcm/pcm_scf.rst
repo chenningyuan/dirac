@@ -1,9 +1,11 @@
+:orphan:
+
 Hartree-Fock and DFT calculations in solution with the polarizable continuum model
 ==================================================================================
 
 This tutorial will cover the set up of an Hartree-Fock and a DFT calculation using the
 polarizable continuum model (PCM) to include solvent effects. The implementation
-of the PCM-SCF algorithm in DIRAC is documented in the recent paper :cite:`DiRemigio2014`,
+of the PCM-SCF algorithm in DIRAC is documented in the recent paper :cite:`DiRemigio2015`,
 to which the reader is referred for further technical details.
 The current implementation makes use of an external module for the PCM-related
 tasks. The module needs some input information to run properly.
@@ -334,7 +336,7 @@ The specification of custom cavities is **only** possible with the three file in
 A Dirac-Coulomb, Hartree-Fock, PCM-SCC calculation
 --------------------------------------------------
 
-As explained in :cite:`DiRemigio2014`, the calculation of the molecular electrostatic potential integrals:
+As explained in :cite:`DiRemigio2015`, the calculation of the molecular electrostatic potential integrals:
 
 .. math::
 

@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(RHO1)
 
 For each unique pair (A,B) of centers a formatted file is created, containing

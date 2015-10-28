@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ==========================================
 Getting excited states of :math:`Ir^{16+}`
 ==========================================
@@ -13,8 +16,8 @@ The electronic configurations of these states are
  (^2P_3/2) : [Xe] 4f(14) 5s(0) 5p1/2(0)  5p3/2(1) 
 
 
-For simplicity, we will work with the wo-component Hamiltonian (:ref:`.X2C`) and employ the smallest *v2z* decontracted basis set by K.Dyall.
-Due to the convergence problem of the standalone  AMFI atomic SCF code we keep the +2 charge (:ref:`.AMFICH`) for mean-field orbitals.
+For simplicity, we will work with the wo-component Hamiltonian (:ref:`HAMILTONIAN_.X2C`) and employ the smallest  *v2z* decontracted basis set by K.Dyall.
+Due to the convergence problem of the standalone  AMFI atomic SCF code we keep the +2 charge (:ref:`AMFI_.AMFICH`) for mean-field orbitals.
 
 
 There are two ways to obtain excited states -  (i) from the converged SCF state, and, (ii) only at the correlated level from the 2P_aver SCF state.
@@ -62,7 +65,7 @@ Corresponding output files are
 :download:`Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out <../../../../test/tutorial_Ir_16plus/result/Z61.x2c.2P12.scf_cc33e_oe.2fs_Ir.dyall_v2z.lsym.out>`.
 
 How to obtain the :math:`^{2}P_{3/2}` second excited state at the SCF level, and, consequently, at the CC level ? 
-For that, we utilize the :ref:`.REORDER MO` keyword with reading of the  *DFCOEF.v2z.2P12* file from the previous run.
+For that, we utilize the :ref:`WAVE_FUNCTION_.REORDER MO` keyword with reading of the  *DFCOEF.v2z.2P12* file from the previous run.
 Likewise one uses overlap selection in the SCF step:
 ::
 

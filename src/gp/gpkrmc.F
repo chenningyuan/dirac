@@ -420,9 +420,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "iratdef.h"
-#include "dcbopt.h"
-C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
 C
@@ -432,8 +429,11 @@ C
 C
 C     Write vector
 C
-      WRITE(LUNIT) VECTOR
-      IF( CWRTFO_MAT ) WRITE(LUNIT) ECORE_LR
+      IF (ISIZE .GE. 4) THEN
+         WRITE(LUNIT) VECTOR
+      ELSE ! minimum record length of 32 bytes (for label searches)
+         WRITE(LUNIT) VECTOR(1:ISIZE),(DUMMY,I=1,4)
+      END IF
       CALL NEWLAB('EOFLABEL',LUNIT,LUPRI)
 C
       REWIND LUNIT
@@ -686,8 +686,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "iratdef.h"
-C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
       LOGICAL   FNDLAB
@@ -727,8 +725,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "iratdef.h"
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -772,7 +768,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8

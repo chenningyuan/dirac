@@ -1,4 +1,6 @@
+:orphan:
 
+.. _NMRShieldSimpleMagBal:
 
 ===========================================================
 Calculation of NMR shieldings using simple magnetic balance

@@ -298,12 +298,16 @@ C for backward compatibility the old notation is retained
      &              'augmentation level'
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF
-         ELSE IF (BASNAM(1:3) .EQ. 'ano') THEN
+         ELSE IF (BASNAM(1:4) .EQ. 'ano-') THEN
+            !ano-1, ano-2, ano-3, ano-4 from MOLCAS
             ANO = .TRUE.
             BASTMP(1:5) = BASNAM(1:5)
             ISTART = 6
-            !ISTART = 1
          ELSE IF (BASNAM(1:7) .EQ. 'ANO-RCC') THEN
+            ANO = .FALSE. ! ANO-RCC is not written in MOLCAS format
+            BASTMP(1:7) = BASNAM(1:7)
+            ISTART = 8
+         ELSE IF (BASNAM(1:7) .EQ. 'ANO-DK3') THEN
             ANO = .TRUE.
             BASTMP(1:7) = BASNAM(1:7)
             ISTART = 8

@@ -1,6 +1,6 @@
-DIRAC pam run in /Users/hjj/prog/gitDirac_repo14/build_master_g4.8/test/esr
+DIRAC pam run in /people/disk2/mnp/prog/dirac-git/dirac_esr/build_mp2_int64/test/esr
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
-DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+             out of the allowed maximum of 5000000000 words (38146 MB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw
 
@@ -83,7 +83,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *                                                                             *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             KTH/PDC Stockholm                 Sweden        *
- *    Trond Saue               Universite P. Sabatier, Toulouse  France        *
+ *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           VU University Amsterdam           Netherlands   *
  *                                                                             *
  *    with contributions from:                                                 *
@@ -94,32 +94,33 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           University of Heidelberg          Germany       *
- *    Timo Fleig               Universite P. Sabatier, Toulouse  France        *
- *    Olav Fossgaard           University of Tromsoe             Norway        *
- *    Andre S. P. Gomes        CNRS/Universite Lille 1           France        *
+ *    Elke Fasshauer           UiT  The  Artic  University  of   Norway        *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT  The  Arctic  University  of  Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Trygve Helgaker          University of Oslo                Norway        *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
- *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany       *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
  *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     University of Tromsoe             Norway        *
+ *    Stanislav Komorovsky     UiT  The  Arctic  University  of  Norway        *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
- *    Kenneth Ruud             University of Tromsoe             Norway        *
+ *    Roberto Di Remigio       UiT  The  Arctic  University  of  Norway        *
+ *    Kenneth Ruud             UiT  The  Arctic  University  of  Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
- *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany       *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
- *    Andreas J. Thorvaldsen   University of Tromsoe             Norway        *
+ *    Andreas J. Thorvaldsen   UiT  The  Arctic  University  of  Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
  *    Joost van Stralen        VU University Amsterdam           Netherlands   *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
@@ -141,17 +142,17 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC13 (2013),                                                  *
- *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
+ *    Release DIRAC14 (2014),                                                  *
+ *    written by T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,          *
  *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
  *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
  *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, Y. S. Lee,    *
  *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
  *    O. Kullie, C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak,        *
- *    J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner, K. Ruud,          *
- *    P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen, *
- *    J. van Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto      *
- *    (see http://www.diracprogram.org).                                       *
+ *    J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio,    *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,    *
+ *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,          *
+ *    and S. Yamamoto (see http://www.diracprogram.org).                       *
  *                                                                             *
  *******************************************************************************
 
@@ -159,32 +160,69 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Binary information
 ------------------
 
- Who compiled             | hjj
- Host                     | nat-100219.local
- System                   | Darwin-13.1.0
+ Who compiled             | mnp
+ Host                     | fe8
+ System name              | Linux
+ System                   | Linux-2.6.32-279.el6.x86_64
+ CMake version            | 2.8.12.1
  CMake generator          | Unix Makefiles
- Processor                | i386
- 64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /opt/local/bin/gfortran
- Fortran compiler version | GNU Fortran (MacPorts gcc48 4.8.2_0) 4.8.2
- C compiler               | /opt/local/bin/gcc
- C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
- C++ compiler             | /opt/local/bin/g++
- C++ compiler version     | g++ (MacPorts gcc48 4.8.2_0) 4.8.2
- BLAS                     | /opt/local/lib/libf77blas.a;/usr/lib/libcblas.dyli
-                          | b;/opt/local/lib/libatlas.a
- LAPACK                   | /opt/local/lib/libatlas.a;/usr/lib/liblapack.dylib
+ Python version           | 2.6.6
+ Processor                | x86_64
+ 64-bit integers          | ON
+ MPI                      | ON
+ Fortran compiler         | /people/disk2/magnus/Programs/openmpi-intel-int64/
+                          | bin/mpif90
+ Fortran compiler version | Intel 13.1
+ Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -i8 
+                          |  -O3 -ip
+ C compiler               | /people/disk2/magnus/Programs/openmpi-intel-int64/
+                          | bin/mpicc
+ C compiler version       | Intel 13.1
+ C flags                  | -g -wd981 -wd279 -wd383 -wd1572 -wd177 -O2
+ C++ compiler             | /people/disk2/magnus/Programs/openmpi-intel-int64/
+                          | bin/mpicxx
+ C++ compiler version     | Intel 13.1
+ C++ flags                | -Wno-unknown-pragmas -debug -O3 -DNDEBUG
+ Definitions              | SYS_LINUX;HAVE_IEEE_ISNAN;HAVE_MKL_BLAS;HAVE_MKL_L
+                          | APACK;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_XML;MOD
+                          | _OPENRSP;MOD_OOF;MOD_ESR;MOD_KRCC;MOD_LAO_REARRANG
+                          | ED;MOD_CAP;MOD_SRDFT;MOD_AOOSOC;MOD_MCSCF_spinfree
+                          | ;MOD_UNRELEASED;MOD_INTEREST;MOD_QCORR;MOD_ERI;MOD
+                          | _DNF;PRG_DIRAC;INSTALL_WRKMEM=64000000;INT_STAR8
+ BLAS                     | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_intel_ilp64.so;/people/disk2/mag
+                          | nus/intel/mkl/lib/intel64/libmkl_intel_thread.so;/
+                          | people/disk2/magnus/intel/mkl/lib/intel64/libmkl_c
+                          | ore.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so
+                          | ;-openmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/people/disk2/magnus/intel/mkl/l
+                          | ib/intel64/libmkl_lapack95_ilp64.a;/people/disk2/m
+                          | agnus/intel/mkl/lib/intel64/libmkl_intel_ilp64.so;
+                          | -openmp;-Wl,--end-group
+ Libraries                | xcfun;-Wl,--start-group;/people/disk2/magnus/intel
+                          | /mkl/lib/intel64/libmkl_intel_ilp64.so;/people/dis
+                          | k2/magnus/intel/mkl/lib/intel64/libmkl_intel_threa
+                          | d.so;/people/disk2/magnus/intel/mkl/lib/intel64/li
+                          | bmkl_core.so;/usr/lib64/libpthread.so;/usr/lib64/l
+                          | ibm.so;-openmp;-Wl,--end-group;-Wl,--start-group;/
+                          | people/disk2/magnus/intel/mkl/lib/intel64/libmkl_l
+                          | apack95_ilp64.a;/people/disk2/magnus/intel/mkl/lib
+                          | /intel64/libmkl_intel_ilp64.so;-openmp;-Wl,--end-g
+                          | roup
+ Explicit libs            | none
  Static linking           | OFF
- Last Git revision        | 3d687fcc8682cebe00da448d24038976cc48204d
- Git branch               | master
- Configuration time       | 2014-05-22 16:08:35.537278
-
+ Git branch               | new-mp2no
+ Last Git revision        | 302fb42
+ Last commit author       | Morten Noerby 
+ Last commit date         | Tue Jul 28 13:26:37 2015 +0200
+ Configuration time       | 2015-07-30 11:58:23.416145 UTC
 
 Execution time and host
 -----------------------
 
  
+     Date and time (Linux)  : Thu Jul 30 13:58:47 2015
+     Host name              : fe8                                     
 
 
 Contents of the input file
@@ -409,9 +447,6 @@ Point group: C2v
     B1   j
     A2   i
 
-  QM-QM nuclear repulsion energy :     18.915270424340
-
-
 
   Atoms and basis sets
   --------------------
@@ -471,7 +506,7 @@ Point group: C2v
   -------------------------------------------
 
     2
-
+ 
 C      0.0000000000   0.0000000000  -0.6300000000
 N      0.0000000000   0.0000000000   0.5450000000
 
@@ -690,7 +725,7 @@ N      0.0000000000   0.0000000000   0.5450000000
  Wave function jobs in execution order (expanded):
  * Hartree-Fock calculation
 ===========================================================================
- SCFINP: Set-up for Hartree-Fock calculation:
+ *SCF: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
  * Open shell SCF calculation using Average-of-Configuration
@@ -850,14 +885,14 @@ N      0.0000000000   0.0000000000   0.5450000000
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A1    * Deleted:          2(Proj:          2, Lindep:          0)
-   L   B2    * Deleted:          0(Proj:          0, Lindep:          0)
-   L   B1    * Deleted:          0(Proj:          0, Lindep:          0)
-   L   A2    * Deleted:          0(Proj:          0, Lindep:          0)
-   S   A1    * Deleted:         10(Proj:         10, Lindep:          0)
-   S   B2    * Deleted:          2(Proj:          2, Lindep:          0)
-   S   B1    * Deleted:          2(Proj:          2, Lindep:          0)
-   S   A2    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   A1    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.71E-02
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.14E+00
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.14E+00
+   L   A2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.82E+00
+   S   A1    * Deleted:         10(Proj:         10, Lindep:          0) Smin: 0.26E-02
+   S   B2    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.91E-02
+   S   B1    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.91E-02
+   S   A2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.21E+00
 
 
                                 Output from MODHAM
@@ -881,211 +916,212 @@ Total no. of orbitals           (NORB):   104
    ****************************************************************************
 
 
-*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+*** INFO *** No trial vectors found.
+ Using bare nucleus approximation for initial trial vectors.
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########                           
+########## START ITERATION NO.   1 ##########   Thu Jul 30 13:58:47 2015
 
 
 => Calculating sum of orbital energies
-It.    1    -34.37862882887      0.00D+00  0.00D+00  0.00D+00               0.01908400s   Scr. nuclei              
+It.    1    -34.37862882882      0.00D+00  0.00D+00  0.00D+00               0.02999500s   Scr. nuclei    Thu Jul 30
 
-########## START ITERATION NO.   2 ##########                           
+########## START ITERATION NO.   2 ##########   Thu Jul 30 13:58:48 2015
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    8.04%    0.00%    0.00%   0.03578900s
-SOfock:SL  1.00D-11    0.00%   14.46%    0.00%    0.00%   0.25876001s
->>> Total wall time: 0.43750000s
->>> Total CPU time : 0.40545700s
+SOfock:LL  1.00D-11    0.00%    8.04%    0.00%    0.00%   0.02699600s
+SOfock:SL  1.00D-11    0.00%   14.46%    0.00%    0.00%   0.19397001s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.29795500s
 
-########## END ITERATION NO.   2 ##########                           
+########## END ITERATION NO.   2 ##########   Thu Jul 30 13:58:48 2015
 
-It.    2    -91.91747418653      5.75D+01  7.95D+00  2.01D+00               0.40545700s   LL SL                    
+It.    2    -91.91747418654      5.75D+01  7.95D+00  2.01D+00               0.29795500s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.   3 ##########                           
+########## START ITERATION NO.   3 ##########   Thu Jul 30 13:58:48 2015
 
     3 *** Differential density matrix. DCOVLP     = 0.9489
     3 *** Differential density matrix. DVOVLP( 1) = 0.7913
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    8.95%    0.00%    0.00%   0.03700799s
-SOfock:SL  1.00D-11    0.00%   15.81%    0.00%    0.00%   0.25886899s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.30969000s
+SOfock:LL  1.00D-11    0.00%    8.95%    0.00%    0.00%   0.02599600s
+SOfock:SL  1.00D-11    0.00%   15.81%    0.00%    0.00%   0.19497004s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.23396400s
 
-########## END ITERATION NO.   3 ##########                           
+########## END ITERATION NO.   3 ##########   Thu Jul 30 13:58:48 2015
 
-It.    3    -92.17294899811      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.30969000s   LL SL                    
+It.    3    -92.17294899813      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.23396400s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.   4 ##########                           
+########## START ITERATION NO.   4 ##########   Thu Jul 30 13:58:48 2015
 
     4 *** Differential density matrix. DCOVLP     = 0.9872
     4 *** Differential density matrix. DVOVLP( 1) = 0.9914
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    9.15%    0.00%    0.00%   0.03675497s
-SOfock:SL  1.00D-11    0.00%   16.33%    0.00%    0.00%   0.25884402s
->>> Total wall time: 0.37500000s
->>> Total CPU time : 0.30924100s
+SOfock:LL  1.00D-11    0.00%    9.15%    0.00%    0.00%   0.02699500s
+SOfock:SL  1.00D-11    0.00%   16.33%    0.00%    0.00%   0.19297099s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.23196500s
 
-########## END ITERATION NO.   4 ##########                           
+########## END ITERATION NO.   4 ##########   Thu Jul 30 13:58:48 2015
 
-It.    4    -92.19545250645      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.30924100s   LL SL                    
+It.    4    -92.19545250646      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.23196500s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.   5 ##########                           
+########## START ITERATION NO.   5 ##########   Thu Jul 30 13:58:48 2015
 
     5 *** Differential density matrix. DCOVLP     = 0.9964
     5 *** Differential density matrix. DVOVLP( 1) = 0.8981
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%    9.89%    0.00%    0.00%   0.03688490s
-SOfock:SL  1.00D-11    0.00%   17.53%    0.00%    0.00%   0.26261795s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.31308300s
+SOfock:LL  1.00D-11    0.00%    9.89%    0.00%    0.00%   0.02699596s
+SOfock:SL  1.00D-11    0.00%   17.53%    0.00%    0.00%   0.19397002s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.23096500s
 
-########## END ITERATION NO.   5 ##########                           
+########## END ITERATION NO.   5 ##########   Thu Jul 30 13:58:48 2015
 
-It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.31308300s   LL SL                    
+It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.23096500s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.   6 ##########                           
+########## START ITERATION NO.   6 ##########   Thu Jul 30 13:58:49 2015
 
     6 *** Differential density matrix. DCOVLP     = 0.9973
     6 *** Differential density matrix. DVOVLP( 1) = 0.9997
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   11.82%    0.00%    0.00%   0.03665996s
-SOfock:SL  1.00D-11    0.00%   19.55%    0.00%    0.00%   0.26765001s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.31983000s
+SOfock:LL  1.00D-11    0.00%   11.82%    0.00%    0.00%   0.02799594s
+SOfock:SL  1.00D-11    0.00%   19.55%    0.00%    0.00%   0.19297099s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.23496300s
 
-########## END ITERATION NO.   6 ##########                           
+########## END ITERATION NO.   6 ##########   Thu Jul 30 13:58:49 2015
 
-It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.31983000s   LL SL                    
+It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.23496300s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.   7 ##########                           
+########## START ITERATION NO.   7 ##########   Thu Jul 30 13:58:49 2015
 
     7 *** Differential density matrix. DCOVLP     = 0.9977
     7 *** Differential density matrix. DVOVLP( 1) = 0.9975
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   12.61%    0.00%    0.00%   0.03639507s
-SOfock:SL  1.00D-11    0.00%   20.73%    0.00%    0.00%   0.25522506s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.30525600s
+SOfock:LL  1.00D-11    0.00%   12.61%    0.00%    0.00%   0.02699590s
+SOfock:SL  1.00D-11    0.00%   20.73%    0.00%    0.00%   0.19197106s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.23196600s
 
-########## END ITERATION NO.   7 ##########                           
+########## END ITERATION NO.   7 ##########   Thu Jul 30 13:58:49 2015
 
-It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.30525600s   LL SL                    
+It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.23196600s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.   8 ##########                           
+########## START ITERATION NO.   8 ##########   Thu Jul 30 13:58:49 2015
 
     8 *** Differential density matrix. DCOVLP     = 0.9971
     8 *** Differential density matrix. DVOVLP( 1) = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   12.96%    0.00%    0.00%   0.03636312s
-SOfock:SL  1.00D-11    0.00%   21.50%    0.00%    0.00%   0.25458312s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.30477700s
+SOfock:LL  1.00D-11    0.00%   12.96%    0.00%    0.00%   0.02799606s
+SOfock:SL  1.00D-11    0.00%   21.50%    0.00%    0.00%   0.19197094s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.23396400s
 
-########## END ITERATION NO.   8 ##########                           
+########## END ITERATION NO.   8 ##########   Thu Jul 30 13:58:49 2015
 
-It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.30477700s   LL SL                    
+It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.23396400s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.   9 ##########                           
+########## START ITERATION NO.   9 ##########   Thu Jul 30 13:58:49 2015
 
     9 *** Differential density matrix. DCOVLP     = 0.9993
     9 *** Differential density matrix. DVOVLP( 1) = 1.0011
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   15.97%    0.00%    0.00%   0.03612018s
-SOfock:SL  1.00D-11    0.00%   25.68%    0.00%    0.00%   0.25189090s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.31005300s
+SOfock:LL  1.00D-11    0.00%   15.97%    0.00%    0.00%   0.02699494s
+SOfock:SL  1.00D-11    0.00%   25.68%    0.00%    0.00%   0.18897200s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.22996500s
 
-########## END ITERATION NO.   9 ##########                           
+########## END ITERATION NO.   9 ##########   Thu Jul 30 13:58:49 2015
 
-It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.31005300s   LL SL                    
+It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.22996500s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.  10 ##########                           
+########## START ITERATION NO.  10 ##########   Thu Jul 30 13:58:49 2015
 
    10 *** Differential density matrix. DCOVLP     = 0.9998
    10 *** Differential density matrix. DVOVLP( 1) = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   18.57%    0.00%    0.00%   0.03655005s
-SOfock:SL  1.00D-11    0.00%   28.84%    0.00%    0.00%   0.25231314s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.30377200s
+SOfock:LL  1.00D-11    0.00%   18.57%    0.00%    0.00%   0.02699614s
+SOfock:SL  1.00D-11    0.00%   28.84%    0.00%    0.00%   0.18797088s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.22896500s
 
-########## END ITERATION NO.  10 ##########                           
+########## END ITERATION NO.  10 ##########   Thu Jul 30 13:58:49 2015
 
-It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.30377200s   LL SL                    
+It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.22896500s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.  11 ##########                           
+########## START ITERATION NO.  11 ##########   Thu Jul 30 13:58:50 2015
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   23.42%    0.00%    0.00%   0.03623080s
-SOfock:SL  1.00D-11    0.00%   34.06%    0.00%    0.01%   0.25055099s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.30064000s
+SOfock:LL  1.00D-11    0.00%   23.42%    0.00%    0.00%   0.02699614s
+SOfock:SL  1.00D-11    0.00%   34.06%    0.00%    0.01%   0.18897080s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.22796500s
 
-########## END ITERATION NO.  11 ##########                           
+########## END ITERATION NO.  11 ##########   Thu Jul 30 13:58:50 2015
 
-It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.30064000s   LL SL                    
+It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.22796500s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.  12 ##########                           
+########## START ITERATION NO.  12 ##########   Thu Jul 30 13:58:50 2015
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   28.56%    0.00%    0.00%   0.03557992s
-SOfock:SL  1.00D-11    0.00%   39.61%    0.00%    0.15%   0.24527001s
->>> Total wall time: 0.37500000s
->>> Total CPU time : 0.29462100s
+SOfock:LL  1.00D-11    0.00%   28.56%    0.00%    0.00%   0.02599597s
+SOfock:SL  1.00D-11    0.00%   39.61%    0.00%    0.15%   0.18397212s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.22396700s
 
-########## END ITERATION NO.  12 ##########                           
+########## END ITERATION NO.  12 ##########   Thu Jul 30 13:58:50 2015
 
-It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.29462100s   LL SL                    
+It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.22396700s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.  13 ##########                           
+########## START ITERATION NO.  13 ##########   Thu Jul 30 13:58:50 2015
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
    13 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   28.10%    0.00%    0.00%   0.03565097s
-SOfock:SL  1.00D-11    0.00%   39.42%    0.00%    0.12%   0.24531603s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.29470800s
+SOfock:LL  1.00D-11    0.00%   28.10%    0.00%    0.00%   0.02599597s
+SOfock:SL  1.00D-11    0.00%   39.42%    0.00%    0.12%   0.18397188s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.22396600s
 
-########## END ITERATION NO.  13 ##########                           
+########## END ITERATION NO.  13 ##########   Thu Jul 30 13:58:50 2015
 
-It.   13    -92.24439369236      1.29D-09 -7.80D-06  7.47D-06   DIIS   9    0.29470800s   LL SL                    
+It.   13    -92.24439369236      1.29D-09  7.80D-06  7.47D-06   DIIS   9    0.22396600s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.  14 ##########                           
+########## START ITERATION NO.  14 ##########   Thu Jul 30 13:58:50 2015
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
    14 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   30.70%    0.00%    0.00%   0.03546810s
-SOfock:SL  1.00D-11    0.00%   42.49%    0.00%    0.30%   0.24335814s
->>> Total wall time: 0.31250000s
->>> Total CPU time : 0.29267400s
+SOfock:LL  1.00D-11    0.00%   30.70%    0.00%    0.00%   0.02599597s
+SOfock:SL  1.00D-11    0.00%   42.49%    0.00%    0.30%   0.18197298s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.22096600s
 
-########## END ITERATION NO.  14 ##########                           
+########## END ITERATION NO.  14 ##########   Thu Jul 30 13:58:50 2015
 
-It.   14    -92.24439369252      1.66D-10  3.61D-06  2.27D-06   DIIS   9    0.29267400s   LL SL                    
+It.   14    -92.24439369252      1.65D-10  3.61D-06  2.27D-06   DIIS   9    0.22096600s   LL SL          Thu Jul 30
 
-########## START ITERATION NO.  15 ##########                           
+########## START ITERATION NO.  15 ##########   Thu Jul 30 13:58:51 2015
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
    15 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   38.59%    0.00%    0.00%   0.03522921s
-SOfock:SL  1.00D-11    0.00%   51.86%    0.00%    3.36%   0.23750496s
->>> Total wall time: 0.25000000s
->>> Total CPU time : 0.28250900s
+SOfock:LL  1.00D-11    0.00%   38.59%    0.00%    0.00%   0.02599621s
+SOfock:SL  1.00D-11    0.00%   51.86%    0.00%    3.36%   0.17797279s
+>>> Total wall time: 0.00000000s
+>>> Total CPU time : 0.21196800s
 
-########## END ITERATION NO.  15 ##########                           
+########## END ITERATION NO.  15 ##########   Thu Jul 30 13:58:51 2015
 
-It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.28250900s   LL SL                    
+It.   15    -92.24439369251     -1.20D-11 -1.21D-06  8.92D-08   DIIS   9    0.21196800s   LL SL          Thu Jul 30
 
 
                                    SCF - CYCLE
@@ -1101,39 +1137,39 @@ It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.28
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -34.37862882887      0.00D+00  0.00D+00  0.00D+00               0.01908400s   Scr. nuclei              
-It.    2    -91.91747418653      5.75D+01  7.95D+00  2.01D+00               0.40545700s   LL SL                    
-It.    3    -92.17294899811      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.30969000s   LL SL                    
-It.    4    -92.19545250645      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.30924100s   LL SL                    
-It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.31308300s   LL SL                    
-It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.31983000s   LL SL                    
-It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.30525600s   LL SL                    
-It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.30477700s   LL SL                    
-It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.31005300s   LL SL                    
-It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.30377200s   LL SL                    
-It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.30064000s   LL SL                    
-It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.29462100s   LL SL                    
-It.   13    -92.24439369236      1.29D-09 -7.80D-06  7.47D-06   DIIS   9    0.29470800s   LL SL                    
-It.   14    -92.24439369252      1.66D-10  3.61D-06  2.27D-06   DIIS   9    0.29267400s   LL SL                    
-It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.28250900s   LL SL                    
+It.    1    -34.37862882882      0.00D+00  0.00D+00  0.00D+00               0.02999500s   Scr. nuclei    Thu Jul 30
+It.    2    -91.91747418654      5.75D+01  7.95D+00  2.01D+00               0.29795500s   LL SL          Thu Jul 30
+It.    3    -92.17294899813      2.55D-01 -1.24D+00  5.35D-01   DIIS   2    0.23396400s   LL SL          Thu Jul 30
+It.    4    -92.19545250646      2.25D-02  7.20D-01  4.62D-01   DIIS   3    0.23196500s   LL SL          Thu Jul 30
+It.    5    -92.24268009888      4.72D-02 -2.91D-01  2.96D-02   DIIS   4    0.23096500s   LL SL          Thu Jul 30
+It.    6    -92.24379880408      1.12D-03 -1.63D-02  2.28D-02   DIIS   5    0.23496300s   LL SL          Thu Jul 30
+It.    7    -92.24424841528      4.50D-04  6.70D-03  9.93D-03   DIIS   6    0.23196600s   LL SL          Thu Jul 30
+It.    8    -92.24438750411      1.39D-04 -3.59D-03  2.35D-03   DIIS   7    0.23396400s   LL SL          Thu Jul 30
+It.    9    -92.24439334229      5.84D-06 -5.71D-04  4.94D-04   DIIS   8    0.22996500s   LL SL          Thu Jul 30
+It.   10    -92.24439367447      3.32D-07  1.85D-04  1.43D-04   DIIS   9    0.22896500s   LL SL          Thu Jul 30
+It.   11    -92.24439368924      1.48D-08  5.51D-05  3.38D-05   DIIS   9    0.22796500s   LL SL          Thu Jul 30
+It.   12    -92.24439369106      1.83D-09  1.09D-05  2.11D-05   DIIS   9    0.22396700s   LL SL          Thu Jul 30
+It.   13    -92.24439369236      1.29D-09  7.80D-06  7.47D-06   DIIS   9    0.22396600s   LL SL          Thu Jul 30
+It.   14    -92.24439369252      1.65D-10  3.61D-06  2.27D-06   DIIS   9    0.22096600s   LL SL          Thu Jul 30
+It.   15    -92.24439369251     -1.20D-11 -1.21D-06  8.92D-08   DIIS   9    0.21196800s   LL SL          Thu Jul 30
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   15 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.06250000s
-      LL SL        :    0.32589286s
+      No 2-ints    :    0.00000000s
+      LL SL        :    0.00000000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -111.15966474735973
+   Electronic energy                        :    -111.15966474735940
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      18.91527042434043
    SS Coulombic correction                  :       0.00000063050901
 
    Sum of all contributions to the energy
-   Total energy                             :     -92.24439369251029
+   Total energy                             :     -92.24439369250996
 
 
                                    Eigenvalues
@@ -1142,20 +1178,20 @@ It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.28
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -15.64345482529  ( 2)      -11.36225662549  ( 2)       -1.24755885830  ( 2)       -0.62714954925  ( 2)       -0.50780888324  ( 2)
+   -15.64345482528  ( 2)      -11.36225662549  ( 2)       -1.24755885832  ( 2)       -0.62714954925  ( 2)       -0.50780888323  ( 2)
     -0.50747219013  ( 2)
   * Open shell #1, f = 0.5000
-    -0.33775469134  ( 2)
+    -0.33775469133  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.17588256186  ( 2)        0.17613334504  ( 2)        0.38056871805  ( 2)        0.60775930600  ( 2)        0.60788229186  ( 2)
-     0.63543873595  ( 2)        0.80194855542  ( 2)        0.97845556645  ( 2)        0.97888784995  ( 2)        1.03883885892  ( 2)
-     1.31367728648  ( 2)        1.31368446484  ( 2)        1.40438162224  ( 2)        1.49313040966  ( 2)        1.49320805240  ( 2)
-     2.09787791702  ( 2)        2.16005977143  ( 2)        2.16021920039  ( 2)        2.66372710067  ( 2)        2.66388213306  ( 2)
-     2.97629784414  ( 2)        3.38302568022  ( 2)        3.38378975093  ( 2)        3.67834487595  ( 2)        4.86270395454  ( 2)
-     4.86454355767  ( 2)        5.48444093887  ( 2)        7.68375534952  ( 2)       10.47506615248  ( 2)       18.03840377208  ( 2)
-    18.04683468734  ( 2)       18.24996646409  ( 2)       25.86234640397  ( 2)       25.87981567763  ( 2)       26.32809988018  ( 2)
-    35.48648404136  ( 2)       47.95099396762  ( 2)      132.77788655250  ( 2)      179.10354728002  ( 2)      493.00343231505  ( 2)
-   663.36630410873  ( 2)     2025.94416299690  ( 2)     2691.36596639832  ( 2)     9969.49595247328  ( 2)    12697.13015795271  ( 2)
+     0.17588256186  ( 2)        0.17613334505  ( 2)        0.38056871804  ( 2)        0.60775930603  ( 2)        0.60788229187  ( 2)
+     0.63543873595  ( 2)        0.80194855542  ( 2)        0.97845556646  ( 2)        0.97888784996  ( 2)        1.03883885892  ( 2)
+     1.31367728648  ( 2)        1.31368446485  ( 2)        1.40438162224  ( 2)        1.49313040968  ( 2)        1.49320805242  ( 2)
+     2.09787791702  ( 2)        2.16005977142  ( 2)        2.16021920039  ( 2)        2.66372710069  ( 2)        2.66388213307  ( 2)
+     2.97629784415  ( 2)        3.38302568023  ( 2)        3.38378975094  ( 2)        3.67834487596  ( 2)        4.86270395454  ( 2)
+     4.86454355766  ( 2)        5.48444093886  ( 2)        7.68375534953  ( 2)       10.47506615249  ( 2)       18.03840377211  ( 2)
+    18.04683468732  ( 2)       18.24996646408  ( 2)       25.86234640396  ( 2)       25.87981567764  ( 2)       26.32809988017  ( 2)
+    35.48648404137  ( 2)       47.95099396762  ( 2)      132.77788655253  ( 2)      179.10354728008  ( 2)      493.00343231481  ( 2)
+   663.36630410879  ( 2)     2025.94416299688  ( 2)     2691.36596639837  ( 2)     9969.49595247325  ( 2)    12697.13015795285  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.17588256 au (symmetry E1 )
@@ -1229,7 +1265,9 @@ It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.28
 
  (RSETCI) Number of determinants:          588 (dimension          588)
 
- CPU (Wall) time for generation of determinants:  0.00070000s( 0.00000000s)
+ CPU (Wall) time for generation of determinants:  0.00000000s( 0.00000000s)
+
+ (ESR)  molecular orbitals read from file DFCOEF
 
  (ESR_RESOLVE) Integrals for CI: LL SL    
 
@@ -1250,46 +1288,48 @@ It.   15    -92.24439369251     -1.15D-11 -1.21D-06  8.92D-08   DIIS   9    0.28
    - Beginning task   5 of   6 after      0. seconds and      0. CPU-seconds
    - Beginning task   6 of   6 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   7 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task   8 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task   9 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task  10 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task  11 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task  12 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task  13 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task  14 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task  15 of  16 after      1. seconds and      1. CPU-seconds
-   - Beginning task  16 of  16 after      1. seconds and      1. CPU-seconds
+   - Beginning task   7 of  16 after      0. seconds and      0. CPU-seconds
+   - Beginning task   8 of  16 after      0. seconds and      0. CPU-seconds
+   - Beginning task   9 of  16 after      0. seconds and      0. CPU-seconds
+   - Beginning task  10 of  16 after      0. seconds and      0. CPU-seconds
+   - Beginning task  11 of  16 after      0. seconds and      1. CPU-seconds
+   - Beginning task  12 of  16 after      0. seconds and      1. CPU-seconds
+   - Beginning task  13 of  16 after      0. seconds and      1. CPU-seconds
+   - Beginning task  14 of  16 after      0. seconds and      1. CPU-seconds
+   - Beginning task  15 of  16 after      0. seconds and      1. CPU-seconds
+   - Beginning task  16 of  16 after      0. seconds and      1. CPU-seconds
 
- - Starting symmetrization after           1.62 seconds
- - Finished symmetrization after           1.62 seconds
+ - Starting symmetrization after           0.00 seconds
+ - Finished symmetrization after           0.00 seconds
 
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
  Time in  Initializing MS4IND file            0.004 seconds
- Time in  Computing+transform. integral       1.518 seconds
- Time in  Symmetrizing MO integrals           0.000 seconds
+ Time in  Computing+transform. integral       0.956 seconds
 
- (RTRACTL1) Total CPU (wall) time used :   00:00:02 (   00:00:02)
-            Transformation ended                         
+------ End of timing report ------
 
-* REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :CN molecule (S=1/2)                                                       
+
+ (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:00)
+            Transformation ended Thu Jul 30 13:58:52 2015
+
+* REAFCK: Fock matrix read from file /scratch/mnp/DIRAC_esr_CN_46558/DFFCK1                      
+* Heading :CN molecule (S=1/2)                               Thu Jul 30 13:58:47 2015
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-11    0.00%   13.71%    0.00%    0.00%   0.03389120s
-SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.23174810s
+SOfock:LL  1.00D-11    0.00%   13.71%    0.00%    0.00%   0.02499723s
+SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.17297316s
 
- (rGETFC) 1-electron core energy:       -96.480446363805044
+ (rGETFC) 1-electron core energy:       -96.480446363804305
 
- (rGETFC) 2-electron core energy:         9.438360094113195
+ (rGETFC) 2-electron core energy:         9.438360094112699
 
  (rGETFC) Nuclear repulsion     :        18.915270424340427
 
- (rGETFC) Total core energy     :       -68.126815845351416
+ (rGETFC) Total core energy     :       -68.126815845351189
 
  Reading from file : 4INDINFO 
- (RGETH21) Time and date read from 4INDINFO: 16:10:03 22May14 
+ (RGETH21) Time and date read from 4INDINFO: 13:58:52 30Jul15 
  Reading from file : 4IND1XXXX0
 
 
@@ -1297,13 +1337,13 @@ SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.23174810s
  DODIA, DOSIG, DODEN :         T         F         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
-    6 start vectors based on lowest diagonal element of H_CI
-        69          -92.244394
+    6 start vectors based on lowest diagonal elements of H_CI
        295          -92.244394
-       155          -92.168314
+        69          -92.244394
        296          -92.168314
-       190          -92.167920
+       155          -92.168314
        314          -92.167920
+       190          -92.167920
 
 
  (GASCIP_RCISTD) CI microiteration no.   1
@@ -1338,6 +1378,17 @@ SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.23174810s
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382
+    ==== End of matrix output ====
+
  (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 0.000D+00 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
@@ -1354,25 +1405,25 @@ SOfock:SL  1.00D-11    0.00%   25.76%    0.00%    0.00%   0.23174810s
          1         1.00625D-01
          2         1.00625D-01
 
- (RCINORM) CI vector renormalized with factor       0.990593626220
+ (RCINORM) CI vector renormalized with factor       0.990596327387
 
- (RCINORM) CI vector renormalized with factor       0.990593626220
+ (RCINORM) CI vector renormalized with factor       0.990596327387
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     233 elements in new CI trial vector no.   1; zeroes, left :       295        60
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     233 elements in new CI trial vector no.   2; zeroes, left :       295        60
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    1:  0.04838900s( 0.06250000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    1:  0.05599200s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   2
@@ -1387,7 +1438,20 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 6.946D-17 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 2.781D-17 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1401,25 +1465,25 @@ Threshold for removing element in trial vectors  1.00D-03
          1         2.43449D-02
          2         2.43449D-02
 
- (RCINORM) CI vector renormalized with factor      31.358467037641
+ (RCINORM) CI vector renormalized with factor      31.358467041613
 
- (RCINORM) CI vector renormalized with factor      31.358467037641
+ (RCINORM) CI vector renormalized with factor      31.358467041612
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     207 elements in new CI trial vector no.   1; zeroes, left :       295        86
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     207 elements in new CI trial vector no.   2; zeroes, left :       295        86
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    2:  0.01599300s( 0.00000000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    2:  0.01899700s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   3
@@ -1434,7 +1498,32 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.799D-15 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+
+               Column   9     Column  10
+       1       0.00876477     0.00000000
+       2       0.00000000     0.00876477
+       5      -0.00111534     0.00000000
+       6       0.00000000    -0.00111534
+       7      -0.18731846     0.00000000
+       8       0.00000000    -0.18731846
+       9     -23.42866294     0.00000000
+      10       0.00000000   -23.42866294
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 2.034D-15 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1451,25 +1540,25 @@ Threshold for removing element in trial vectors  1.00D-03
          1         9.73785D-03
          2         9.73785D-03
 
- (RCINORM) CI vector renormalized with factor      77.046594820463
+ (RCINORM) CI vector renormalized with factor      77.046594817754
 
- (RCINORM) CI vector renormalized with factor      77.046594820472
+ (RCINORM) CI vector renormalized with factor      77.046594817748
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     187 elements in new CI trial vector no.   1; zeroes, left :       295       106
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     187 elements in new CI trial vector no.   2; zeroes, left :       295       106
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    3:  0.01595500s( 0.00000000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    3:  0.01899700s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   4
@@ -1484,7 +1573,36 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.713D-14 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+      11       0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879     0.00000000
+      12       0.00000000     0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879
+
+               Column   9     Column  10     Column  11     Column  12
+       1       0.00876477     0.00000000     0.00598896     0.00000000
+       2       0.00000000     0.00876477     0.00000000     0.00598896
+       5      -0.00111534     0.00000000    -0.00239709     0.00000000
+       6       0.00000000    -0.00111534     0.00000000    -0.00239709
+       7      -0.18731846     0.00000000    -0.08184879     0.00000000
+       8       0.00000000    -0.18731846     0.00000000    -0.08184879
+       9     -23.42866294     0.00000000    -0.02787305     0.00000000
+      10       0.00000000   -23.42866294     0.00000000    -0.02787305
+      11      -0.02787305     0.00000000   -23.13447496     0.00000000
+      12       0.00000000    -0.02787305     0.00000000   -23.13447496
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 8.705D-15 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1501,25 +1619,25 @@ Threshold for removing element in trial vectors  1.00D-03
          1         3.28847D-03
          2         3.28847D-03
 
- (RCINORM) CI vector renormalized with factor     250.474412511330
+ (RCINORM) CI vector renormalized with factor     250.474412361744
 
- (RCINORM) CI vector renormalized with factor     250.474412511198
+ (RCINORM) CI vector renormalized with factor     250.474412361703
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     168 elements in new CI trial vector no.   1; zeroes, left :       296       124
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     168 elements in new CI trial vector no.   2; zeroes, left :       296       124
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    4:  0.01609400s( 0.06250000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    4:  0.01799700s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   5
@@ -1534,7 +1652,40 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 4.417D-14 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+      11       0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879     0.00000000
+      12       0.00000000     0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879
+      13       0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346     0.00000000
+      14       0.00000000     0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14
+       1       0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000
+       2       0.00000000     0.00876477     0.00000000     0.00598896     0.00000000     0.01433219
+       5      -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000
+       6       0.00000000    -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943
+       7      -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000
+       8       0.00000000    -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346
+       9     -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000
+      10       0.00000000   -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149
+      11      -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000
+      12       0.00000000    -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396
+      13      -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000
+      14       0.00000000    -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 2.153D-14 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1551,25 +1702,25 @@ Threshold for removing element in trial vectors  1.00D-03
          1         1.04749D-03
          2         1.04749D-03
 
- (RCINORM) CI vector renormalized with factor     653.068569678749
+ (RCINORM) CI vector renormalized with factor     653.068569205833
 
- (RCINORM) CI vector renormalized with factor     653.068569678860
+ (RCINORM) CI vector renormalized with factor     653.068569205304
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     187 elements in new CI trial vector no.   1; zeroes, left :       296       105
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     187 elements in new CI trial vector no.   2; zeroes, left :       296       105
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    5:  0.01602300s( 0.00000000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    5:  0.01899800s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   6
@@ -1584,7 +1735,44 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 6.272D-14 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+      11       0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879     0.00000000
+      12       0.00000000     0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879
+      13       0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346     0.00000000
+      14       0.00000000     0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346
+      15      -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685     0.00000000
+      16       0.00000000    -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1       0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077     0.00000000
+       2       0.00000000     0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077
+       5      -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456     0.00000000
+       6       0.00000000    -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456
+       7      -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685     0.00000000
+       8       0.00000000    -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685
+       9     -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814     0.00000000
+      10       0.00000000   -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814
+      11      -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621     0.00000000
+      12       0.00000000    -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621
+      13      -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557     0.00000000
+      14       0.00000000    -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557
+      15      -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369     0.00000000
+      16       0.00000000    -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 3.421D-14 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1601,25 +1789,25 @@ Threshold for removing element in trial vectors  1.00D-03
          1         4.55622D-04
          2         4.55622D-04
 
- (RCINORM) CI vector renormalized with factor    1366.241038333580
+ (RCINORM) CI vector renormalized with factor    1366.241037539074
 
- (RCINORM) CI vector renormalized with factor    1366.241038333255
+ (RCINORM) CI vector renormalized with factor    1366.241037537184
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     172 elements in new CI trial vector no.   1; zeroes, left :       296       120
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     172 elements in new CI trial vector no.   2; zeroes, left :       296       120
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    6:  0.01602400s( 0.00000000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    6:  0.01899700s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   7
@@ -1634,7 +1822,66 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 9.456D-14 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+      11       0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879     0.00000000
+      12       0.00000000     0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879
+      13       0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346     0.00000000
+      14       0.00000000     0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346
+      15      -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685     0.00000000
+      16       0.00000000    -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685
+      17      -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871     0.00000000
+      18       0.00000000    -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1       0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077     0.00000000
+       2       0.00000000     0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077
+       5      -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456     0.00000000
+       6       0.00000000    -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456
+       7      -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685     0.00000000
+       8       0.00000000    -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685
+       9     -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814     0.00000000
+      10       0.00000000   -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814
+      11      -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621     0.00000000
+      12       0.00000000    -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621
+      13      -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557     0.00000000
+      14       0.00000000    -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557
+      15      -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369     0.00000000
+      16       0.00000000    -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369
+      17       0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330     0.00000000
+      18       0.00000000     0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330
+
+               Column  17     Column  18
+       1      -0.03564959     0.00000000
+       2       0.00000000    -0.03564959
+       5      -0.00054545     0.00000000
+       6       0.00000000    -0.00054545
+       7       0.22000871     0.00000000
+       8       0.00000000     0.22000871
+       9       0.04001448     0.00000000
+      10       0.00000000     0.04001448
+      11      -0.12123723     0.00000000
+      12       0.00000000    -0.12123723
+      13      -0.33017023     0.00000000
+      14       0.00000000    -0.33017023
+      15      -0.10084330     0.00000000
+      16       0.00000000    -0.10084330
+      17     -23.31427164     0.00000000
+      18       0.00000000   -23.31427164
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 5.343D-14 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1654,25 +1901,25 @@ Threshold for removing element in trial vectors  1.00D-03
          1         1.27964D-04
          2         1.27964D-04
 
- (RCINORM) CI vector renormalized with factor    9050.504118317585
+ (RCINORM) CI vector renormalized with factor    9050.504111459411
 
- (RCINORM) CI vector renormalized with factor    9050.504118215937
+ (RCINORM) CI vector renormalized with factor    9050.504111240351
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     162 elements in new CI trial vector no.   1; zeroes, left :       296       130
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     162 elements in new CI trial vector no.   2; zeroes, left :       296       130
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    7:  0.01603000s( 0.00000000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    7:  0.01899700s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   8
@@ -1687,7 +1934,72 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.156D-13 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+      11       0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879     0.00000000
+      12       0.00000000     0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879
+      13       0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346     0.00000000
+      14       0.00000000     0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346
+      15      -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685     0.00000000
+      16       0.00000000    -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685
+      17      -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871     0.00000000
+      18       0.00000000    -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871
+      19       0.01887405     0.00000000    -0.00000000     0.00000000     0.00343132     0.00000000    -0.14851786     0.00000000
+      20       0.00000000     0.01887405     0.00000000    -0.00000000     0.00000000     0.00343132     0.00000000    -0.14851786
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1       0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077     0.00000000
+       2       0.00000000     0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077
+       5      -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456     0.00000000
+       6       0.00000000    -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456
+       7      -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685     0.00000000
+       8       0.00000000    -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685
+       9     -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814     0.00000000
+      10       0.00000000   -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814
+      11      -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621     0.00000000
+      12       0.00000000    -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621
+      13      -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557     0.00000000
+      14       0.00000000    -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557
+      15      -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369     0.00000000
+      16       0.00000000    -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369
+      17       0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330     0.00000000
+      18       0.00000000     0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330
+      19       0.18581336     0.00000000     0.04337858     0.00000000    -0.19496582     0.00000000     0.01489186     0.00000000
+      20       0.00000000     0.18581336     0.00000000     0.04337858     0.00000000    -0.19496582     0.00000000     0.01489186
+
+               Column  17     Column  18     Column  19     Column  20
+       1      -0.03564959     0.00000000     0.01887405     0.00000000
+       2       0.00000000    -0.03564959     0.00000000     0.01887405
+       5      -0.00054545     0.00000000     0.00343132     0.00000000
+       6       0.00000000    -0.00054545     0.00000000     0.00343132
+       7       0.22000871     0.00000000    -0.14851786     0.00000000
+       8       0.00000000     0.22000871     0.00000000    -0.14851786
+       9       0.04001448     0.00000000     0.18581336     0.00000000
+      10       0.00000000     0.04001448     0.00000000     0.18581336
+      11      -0.12123723     0.00000000     0.04337858     0.00000000
+      12       0.00000000    -0.12123723     0.00000000     0.04337858
+      13      -0.33017023     0.00000000    -0.19496582     0.00000000
+      14       0.00000000    -0.33017023     0.00000000    -0.19496582
+      15      -0.10084330     0.00000000     0.01489186     0.00000000
+      16       0.00000000    -0.10084330     0.00000000     0.01489186
+      17     -23.31427164     0.00000000    -0.14606498     0.00000000
+      18       0.00000000   -23.31427164     0.00000000    -0.14606498
+      19      -0.14606498     0.00000000   -22.97800502     0.00000000
+      20       0.00000000    -0.14606498     0.00000000   -22.97800502
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 7.126D-14 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1707,25 +2019,29 @@ Threshold for removing element in trial vectors  1.00D-03
          1         2.04015D-05
          2         2.04015D-05
 
+ (RCINORM) CI vector renormalized with factor   51793.084291927757
+
  (RCINORM) CI vector renormalized with factor       1.000000000000
+
+ (RCINORM) CI vector renormalized with factor   51793.084289362530
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     160 elements in new CI trial vector no.   1; zeroes, left :       296       132
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     160 elements in new CI trial vector no.   2; zeroes, left :       296       132
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    8:  0.01608100s( 0.06250000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    8:  0.01999700s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.   9
@@ -1740,7 +2056,78 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.519D-13 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+      11       0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879     0.00000000
+      12       0.00000000     0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879
+      13       0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346     0.00000000
+      14       0.00000000     0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346
+      15      -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685     0.00000000
+      16       0.00000000    -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685
+      17      -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871     0.00000000
+      18       0.00000000    -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871
+      19       0.01887405     0.00000000    -0.00000000     0.00000000     0.00343132     0.00000000    -0.14851786     0.00000000
+      20       0.00000000     0.01887405     0.00000000    -0.00000000     0.00000000     0.00343132     0.00000000    -0.14851786
+      21       0.00000000     0.01080444     0.00000000    -0.00000000     0.00000000     0.01084573     0.00000000    -0.08266914
+      22       0.01080444     0.00000000    -0.00000000     0.00000000     0.01084573     0.00000000    -0.08266914     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1       0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077     0.00000000
+       2       0.00000000     0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077
+       5      -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456     0.00000000
+       6       0.00000000    -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456
+       7      -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685     0.00000000
+       8       0.00000000    -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685
+       9     -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814     0.00000000
+      10       0.00000000   -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814
+      11      -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621     0.00000000
+      12       0.00000000    -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621
+      13      -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557     0.00000000
+      14       0.00000000    -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557
+      15      -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369     0.00000000
+      16       0.00000000    -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369
+      17       0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330     0.00000000
+      18       0.00000000     0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330
+      19       0.18581336     0.00000000     0.04337858     0.00000000    -0.19496582     0.00000000     0.01489186     0.00000000
+      20       0.00000000     0.18581336     0.00000000     0.04337858     0.00000000    -0.19496582     0.00000000     0.01489186
+      21       0.00000000     0.10779559     0.00000000    -0.09668843     0.00000000     0.00558483     0.00000000     0.21392280
+      22       0.10779559     0.00000000    -0.09668843     0.00000000     0.00558483     0.00000000     0.21392280     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22
+       1      -0.03564959     0.00000000     0.01887405     0.00000000     0.00000000     0.01080444
+       2       0.00000000    -0.03564959     0.00000000     0.01887405     0.01080444     0.00000000
+       5      -0.00054545     0.00000000     0.00343132     0.00000000     0.00000000     0.01084573
+       6       0.00000000    -0.00054545     0.00000000     0.00343132     0.01084573     0.00000000
+       7       0.22000871     0.00000000    -0.14851786     0.00000000     0.00000000    -0.08266914
+       8       0.00000000     0.22000871     0.00000000    -0.14851786    -0.08266914     0.00000000
+       9       0.04001448     0.00000000     0.18581336     0.00000000     0.00000000     0.10779559
+      10       0.00000000     0.04001448     0.00000000     0.18581336     0.10779559     0.00000000
+      11      -0.12123723     0.00000000     0.04337858     0.00000000     0.00000000    -0.09668843
+      12       0.00000000    -0.12123723     0.00000000     0.04337858    -0.09668843     0.00000000
+      13      -0.33017023     0.00000000    -0.19496582     0.00000000     0.00000000     0.00558483
+      14       0.00000000    -0.33017023     0.00000000    -0.19496582     0.00558483     0.00000000
+      15      -0.10084330     0.00000000     0.01489186     0.00000000     0.00000000     0.21392280
+      16       0.00000000    -0.10084330     0.00000000     0.01489186     0.21392280     0.00000000
+      17     -23.31427164     0.00000000    -0.14606498     0.00000000     0.00000000    -0.26389258
+      18       0.00000000   -23.31427164     0.00000000    -0.14606498    -0.26389258     0.00000000
+      19      -0.14606498     0.00000000   -22.97800502     0.00000000     0.00000000    -0.27176075
+      20       0.00000000    -0.14606498     0.00000000   -22.97800502    -0.27176075     0.00000000
+      21       0.00000000    -0.26389258     0.00000000    -0.27176075   -22.86003183     0.00000000
+      22      -0.26389258     0.00000000    -0.27176075     0.00000000     0.00000000   -22.86003183
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 9.438D-14 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1760,25 +2147,29 @@ Threshold for removing element in trial vectors  1.00D-03
          1         4.62105D-06
          2         4.62105D-06
 
+ (RCINORM) CI vector renormalized with factor  181990.787965602969
+
  (RCINORM) CI vector renormalized with factor       1.000000000000
+
+ (RCINORM) CI vector renormalized with factor  181990.787912465399
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     156 elements in new CI trial vector no.   1; zeroes, left :       296       136
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     156 elements in new CI trial vector no.   2; zeroes, left :       296       136
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration    9:  0.01611600s( 0.00000000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration    9:  0.01899700s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.  10
@@ -1793,7 +2184,84 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.749D-13 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+      11       0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879     0.00000000
+      12       0.00000000     0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879
+      13       0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346     0.00000000
+      14       0.00000000     0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346
+      15      -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685     0.00000000
+      16       0.00000000    -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685
+      17      -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871     0.00000000
+      18       0.00000000    -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871
+      19       0.01887405     0.00000000    -0.00000000     0.00000000     0.00343132     0.00000000    -0.14851786     0.00000000
+      20       0.00000000     0.01887405     0.00000000    -0.00000000     0.00000000     0.00343132     0.00000000    -0.14851786
+      21       0.00000000     0.01080444     0.00000000    -0.00000000     0.00000000     0.01084573     0.00000000    -0.08266914
+      22       0.01080444     0.00000000    -0.00000000     0.00000000     0.01084573     0.00000000    -0.08266914     0.00000000
+      23       0.03044798     0.00000000    -0.00000000     0.00000000     0.01617215     0.00000000    -0.23201166     0.00000000
+      24       0.00000000     0.03044798     0.00000000    -0.00000000     0.00000000     0.01617215     0.00000000    -0.23201166
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1       0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077     0.00000000
+       2       0.00000000     0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077
+       5      -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456     0.00000000
+       6       0.00000000    -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456
+       7      -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685     0.00000000
+       8       0.00000000    -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685
+       9     -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814     0.00000000
+      10       0.00000000   -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814
+      11      -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621     0.00000000
+      12       0.00000000    -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621
+      13      -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557     0.00000000
+      14       0.00000000    -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557
+      15      -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369     0.00000000
+      16       0.00000000    -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369
+      17       0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330     0.00000000
+      18       0.00000000     0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330
+      19       0.18581336     0.00000000     0.04337858     0.00000000    -0.19496582     0.00000000     0.01489186     0.00000000
+      20       0.00000000     0.18581336     0.00000000     0.04337858     0.00000000    -0.19496582     0.00000000     0.01489186
+      21       0.00000000     0.10779559     0.00000000    -0.09668843     0.00000000     0.00558483     0.00000000     0.21392280
+      22       0.10779559     0.00000000    -0.09668843     0.00000000     0.00558483     0.00000000     0.21392280     0.00000000
+      23       0.24145911     0.00000000     0.04882636     0.00000000    -0.10644702     0.00000000     0.01737489     0.00000000
+      24       0.00000000     0.24145911     0.00000000     0.04882636     0.00000000    -0.10644702     0.00000000     0.01737489
+
+               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
+       1      -0.03564959     0.00000000     0.01887405     0.00000000     0.00000000     0.01080444     0.03044798     0.00000000
+       2       0.00000000    -0.03564959     0.00000000     0.01887405     0.01080444     0.00000000     0.00000000     0.03044798
+       5      -0.00054545     0.00000000     0.00343132     0.00000000     0.00000000     0.01084573     0.01617215     0.00000000
+       6       0.00000000    -0.00054545     0.00000000     0.00343132     0.01084573     0.00000000     0.00000000     0.01617215
+       7       0.22000871     0.00000000    -0.14851786     0.00000000     0.00000000    -0.08266914    -0.23201166     0.00000000
+       8       0.00000000     0.22000871     0.00000000    -0.14851786    -0.08266914     0.00000000     0.00000000    -0.23201166
+       9       0.04001448     0.00000000     0.18581336     0.00000000     0.00000000     0.10779559     0.24145911     0.00000000
+      10       0.00000000     0.04001448     0.00000000     0.18581336     0.10779559     0.00000000     0.00000000     0.24145911
+      11      -0.12123723     0.00000000     0.04337858     0.00000000     0.00000000    -0.09668843     0.04882636     0.00000000
+      12       0.00000000    -0.12123723     0.00000000     0.04337858    -0.09668843     0.00000000     0.00000000     0.04882636
+      13      -0.33017023     0.00000000    -0.19496582     0.00000000     0.00000000     0.00558483    -0.10644702     0.00000000
+      14       0.00000000    -0.33017023     0.00000000    -0.19496582     0.00558483     0.00000000     0.00000000    -0.10644702
+      15      -0.10084330     0.00000000     0.01489186     0.00000000     0.00000000     0.21392280     0.01737489     0.00000000
+      16       0.00000000    -0.10084330     0.00000000     0.01489186     0.21392280     0.00000000     0.00000000     0.01737489
+      17     -23.31427164     0.00000000    -0.14606498     0.00000000     0.00000000    -0.26389258    -0.03435789     0.00000000
+      18       0.00000000   -23.31427164     0.00000000    -0.14606498    -0.26389258     0.00000000     0.00000000    -0.03435789
+      19      -0.14606498     0.00000000   -22.97800502     0.00000000     0.00000000    -0.27176075     0.00899265     0.00000000
+      20       0.00000000    -0.14606498     0.00000000   -22.97800502    -0.27176075     0.00000000     0.00000000     0.00899265
+      21       0.00000000    -0.26389258     0.00000000    -0.27176075   -22.86003183     0.00000000     0.00000000    -0.42225975
+      22      -0.26389258     0.00000000    -0.27176075     0.00000000     0.00000000   -22.86003183    -0.42225975     0.00000000
+      23      -0.03435789     0.00000000     0.00899265     0.00000000     0.00000000    -0.42225975   -23.04456878     0.00000000
+      24       0.00000000    -0.03435789     0.00000000     0.00899265    -0.42225975     0.00000000     0.00000000   -23.04456878
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.170D-13 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1813,25 +2281,29 @@ Threshold for removing element in trial vectors  1.00D-03
          1         1.69911D-06
          2         1.69911D-06
 
+ (RCINORM) CI vector renormalized with factor  539366.641747293761
+
  (RCINORM) CI vector renormalized with factor       1.000000000000
+
+ (RCINORM) CI vector renormalized with factor  539366.641591306310
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     158 elements in new CI trial vector no.   1; zeroes, left :       296       134
- IROUND           1  for vector           1
+ IROUND                     1  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           1
+ IROUND                     0  for vector                     1
 
 Threshold for removing element in trial vectors  1.00D-03
 Removed     158 elements in new CI trial vector no.   2; zeroes, left :       296       134
- IROUND           1  for vector           2
+ IROUND                     1  for vector                     2
 
 Threshold for removing element in trial vectors  1.00D-03
- IROUND           0  for vector           2
+ IROUND                     0  for vector                     2
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration   10:  0.01622800s( 0.00000000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration   10:  0.01899700s( 0.00000000s)
 
 
  (GASCIP_RCISTD) CI microiteration no.  11
@@ -1846,7 +2318,116 @@ Threshold for removing element in trial vectors  1.00D-03
  DODIA, DOSIG, DODEN :         F         T         F
  DO2EL, IHRM,  IPRINT:         T         1         5
 
- (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 2.038D-13 0.000D+00
+ (GASCIP_RCISTD) Reduced Hamiltonian, real part
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
+       1     -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249     0.00000000
+       2       0.00000000   -24.11757848     0.00000000     0.00000000     0.00000000     0.00000001     0.00000000    -0.07817249
+       3       0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000   -24.04149835     0.00000000    -0.00000000     0.00000000    -0.00000000
+       5       0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210     0.00000000
+       6       0.00000000     0.00000001     0.00000000    -0.00000000     0.00000000   -24.04110382     0.00000000     0.00010210
+       7      -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034     0.00000000
+       8       0.00000000    -0.07817249     0.00000000    -0.00000000     0.00000000     0.00010210     0.00000000   -23.61687034
+       9       0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846     0.00000000
+      10       0.00000000     0.00876477     0.00000000     0.00000000     0.00000000    -0.00111534     0.00000000    -0.18731846
+      11       0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879     0.00000000
+      12       0.00000000     0.00598896     0.00000000     0.00000000     0.00000000    -0.00239709     0.00000000    -0.08184879
+      13       0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346     0.00000000
+      14       0.00000000     0.01433219     0.00000000     0.00000000     0.00000000    -0.00395943     0.00000000    -0.07599346
+      15      -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685     0.00000000
+      16       0.00000000    -0.00537077     0.00000000    -0.00000000     0.00000000    -0.00297456     0.00000000     0.08351685
+      17      -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871     0.00000000
+      18       0.00000000    -0.03564959     0.00000000     0.00000000     0.00000000    -0.00054545     0.00000000     0.22000871
+      19       0.01887405     0.00000000    -0.00000000     0.00000000     0.00343132     0.00000000    -0.14851786     0.00000000
+      20       0.00000000     0.01887405     0.00000000    -0.00000000     0.00000000     0.00343132     0.00000000    -0.14851786
+      21       0.00000000     0.01080444     0.00000000    -0.00000000     0.00000000     0.01084573     0.00000000    -0.08266914
+      22       0.01080444     0.00000000    -0.00000000     0.00000000     0.01084573     0.00000000    -0.08266914     0.00000000
+      23       0.03044798     0.00000000    -0.00000000     0.00000000     0.01617215     0.00000000    -0.23201166     0.00000000
+      24       0.00000000     0.03044798     0.00000000    -0.00000000     0.00000000     0.01617215     0.00000000    -0.23201166
+      25       0.00000000     0.00213769     0.00000000    -0.00000000     0.00000000     0.00270947     0.00000000    -0.03937519
+      26       0.00213769     0.00000000    -0.00000000     0.00000000     0.00270947     0.00000000    -0.03937519     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
+       1       0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077     0.00000000
+       2       0.00000000     0.00876477     0.00000000     0.00598896     0.00000000     0.01433219     0.00000000    -0.00537077
+       5      -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456     0.00000000
+       6       0.00000000    -0.00111534     0.00000000    -0.00239709     0.00000000    -0.00395943     0.00000000    -0.00297456
+       7      -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685     0.00000000
+       8       0.00000000    -0.18731846     0.00000000    -0.08184879     0.00000000    -0.07599346     0.00000000     0.08351685
+       9     -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814     0.00000000
+      10       0.00000000   -23.42866294     0.00000000    -0.02787305     0.00000000    -0.13237149     0.00000000    -0.16325814
+      11      -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621     0.00000000
+      12       0.00000000    -0.02787305     0.00000000   -23.13447496     0.00000000    -0.04777396     0.00000000    -0.33655621
+      13      -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557     0.00000000
+      14       0.00000000    -0.13237149     0.00000000    -0.04777396     0.00000000   -23.22368082     0.00000000    -0.34045557
+      15      -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369     0.00000000
+      16       0.00000000    -0.16325814     0.00000000    -0.33655621     0.00000000    -0.34045557     0.00000000   -23.23307369
+      17       0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330     0.00000000
+      18       0.00000000     0.04001448     0.00000000    -0.12123723     0.00000000    -0.33017023     0.00000000    -0.10084330
+      19       0.18581336     0.00000000     0.04337858     0.00000000    -0.19496582     0.00000000     0.01489186     0.00000000
+      20       0.00000000     0.18581336     0.00000000     0.04337858     0.00000000    -0.19496582     0.00000000     0.01489186
+      21       0.00000000     0.10779559     0.00000000    -0.09668843     0.00000000     0.00558483     0.00000000     0.21392280
+      22       0.10779559     0.00000000    -0.09668843     0.00000000     0.00558483     0.00000000     0.21392280     0.00000000
+      23       0.24145911     0.00000000     0.04882636     0.00000000    -0.10644702     0.00000000     0.01737489     0.00000000
+      24       0.00000000     0.24145911     0.00000000     0.04882636     0.00000000    -0.10644702     0.00000000     0.01737489
+      25       0.00000000     0.16054094     0.00000000    -0.08884261     0.00000000    -0.04180925     0.00000000     0.02635493
+      26       0.16054094     0.00000000    -0.08884261     0.00000000    -0.04180925     0.00000000     0.02635493     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
+       1      -0.03564959     0.00000000     0.01887405     0.00000000     0.00000000     0.01080444     0.03044798     0.00000000
+       2       0.00000000    -0.03564959     0.00000000     0.01887405     0.01080444     0.00000000     0.00000000     0.03044798
+       5      -0.00054545     0.00000000     0.00343132     0.00000000     0.00000000     0.01084573     0.01617215     0.00000000
+       6       0.00000000    -0.00054545     0.00000000     0.00343132     0.01084573     0.00000000     0.00000000     0.01617215
+       7       0.22000871     0.00000000    -0.14851786     0.00000000     0.00000000    -0.08266914    -0.23201166     0.00000000
+       8       0.00000000     0.22000871     0.00000000    -0.14851786    -0.08266914     0.00000000     0.00000000    -0.23201166
+       9       0.04001448     0.00000000     0.18581336     0.00000000     0.00000000     0.10779559     0.24145911     0.00000000
+      10       0.00000000     0.04001448     0.00000000     0.18581336     0.10779559     0.00000000     0.00000000     0.24145911
+      11      -0.12123723     0.00000000     0.04337858     0.00000000     0.00000000    -0.09668843     0.04882636     0.00000000
+      12       0.00000000    -0.12123723     0.00000000     0.04337858    -0.09668843     0.00000000     0.00000000     0.04882636
+      13      -0.33017023     0.00000000    -0.19496582     0.00000000     0.00000000     0.00558483    -0.10644702     0.00000000
+      14       0.00000000    -0.33017023     0.00000000    -0.19496582     0.00558483     0.00000000     0.00000000    -0.10644702
+      15      -0.10084330     0.00000000     0.01489186     0.00000000     0.00000000     0.21392280     0.01737489     0.00000000
+      16       0.00000000    -0.10084330     0.00000000     0.01489186     0.21392280     0.00000000     0.00000000     0.01737489
+      17     -23.31427164     0.00000000    -0.14606498     0.00000000     0.00000000    -0.26389258    -0.03435789     0.00000000
+      18       0.00000000   -23.31427164     0.00000000    -0.14606498    -0.26389258     0.00000000     0.00000000    -0.03435789
+      19      -0.14606498     0.00000000   -22.97800502     0.00000000     0.00000000    -0.27176075     0.00899265     0.00000000
+      20       0.00000000    -0.14606498     0.00000000   -22.97800502    -0.27176075     0.00000000     0.00000000     0.00899265
+      21       0.00000000    -0.26389258     0.00000000    -0.27176075   -22.86003183     0.00000000     0.00000000    -0.42225975
+      22      -0.26389258     0.00000000    -0.27176075     0.00000000     0.00000000   -22.86003183    -0.42225975     0.00000000
+      23      -0.03435789     0.00000000     0.00899265     0.00000000     0.00000000    -0.42225975   -23.04456878     0.00000000
+      24       0.00000000    -0.03435789     0.00000000     0.00899265    -0.42225975     0.00000000     0.00000000   -23.04456878
+      25       0.00000000    -0.00406719     0.00000000     0.15277493    -0.15235674     0.00000000     0.00000000    -0.21232142
+      26      -0.00406719     0.00000000     0.15277493     0.00000000     0.00000000    -0.15235674    -0.21232142     0.00000000
+
+               Column  25     Column  26
+       1       0.00000000     0.00213769
+       2       0.00213769     0.00000000
+       5       0.00000000     0.00270947
+       6       0.00270947     0.00000000
+       7       0.00000000    -0.03937519
+       8      -0.03937519     0.00000000
+       9       0.00000000     0.16054094
+      10       0.16054094     0.00000000
+      11       0.00000000    -0.08884261
+      12      -0.08884261     0.00000000
+      13       0.00000000    -0.04180925
+      14      -0.04180925     0.00000000
+      15       0.00000000     0.02635493
+      16       0.02635493     0.00000000
+      17       0.00000000    -0.00406719
+      18      -0.00406719     0.00000000
+      19       0.00000000     0.15277493
+      20       0.15277493     0.00000000
+      21      -0.15235674     0.00000000
+      22       0.00000000    -0.15235674
+      23       0.00000000    -0.21232142
+      24      -0.21232142     0.00000000
+      25     -22.98800147     0.00000000
+      26       0.00000000   -22.98800147
+    ==== End of matrix output ====
+
+ (GASCIP_RCISTD) Anti-hermiticity of reduced Hamiltonian (real,imag) 1.442D-13 0.000D+00
 
  (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian
 
@@ -1866,14 +2447,14 @@ Threshold for removing element in trial vectors  1.00D-03
                  Lowering of energy =          0.00000000          0.00000000
 
  (GASCIP_RCISTD) Norm of CI residuals (thr = 1.00D-06)
-         1         2.28325D-07
-         2         2.28325D-07
+         1         2.28351D-07
+         2         2.28351D-07
 
  *** All requested CI roots are converged. ***
 
- (GASCIP_RCISTD) CPU (Wall) time for iteration  11:  0.01675500s( 0.06250000s)
+ (GASCIP_RCISTD) CPU (Wall) time for iteration  11:  0.01899700s( 0.00000000s)
 
- (GASCIP_RCISTD) Total CPU (Wall) time for microiterations:  0.20977800s ( 0.25000000s)
+ (GASCIP_RCISTD) Total CPU (Wall) time for microiterations:  0.24596300s ( 0.00000000s)
 
 
  (GASCIP_RCISTD) Micro iterations converged.
@@ -1889,81 +2470,26 @@ Threshold for removing element in trial vectors  1.00D-03
 
  (RCINORM) CI vector renormalized with factor       1.000000000000
 
- Print of CI coefficients in range 1.0D-01 to 1.0D+00 :
-
-   Determinant no.       69 coeff.         0.9858935861; weight 0.97198616
-     P-string     :    1   2   3   4
-     P(bar)-string:    1   2   3   4   5
-
- Print of CI coefficients in range 1.0D-02 to 1.0D-01 :
-
-   No CI coefficients in this range.
-
-
- Print of CI coefficients in range 1.0D-03 to 1.0D-02 :
-
-   Determinant no.       88 coeff.        -0.0402873983; weight 0.00162307
-     P-string     :    1   2   3   4
-     P(bar)-string:    1   2   3   5   7
-   Determinant no.      104 coeff.         0.0403083193; weight 0.00162476
-     P-string     :    1   2   3   4
-     P(bar)-string:    1   2   4   5   6
-   Determinant no.      174 coeff.        -0.0449038140; weight 0.00201635
-     P-string     :    1   2   3   7
-     P(bar)-string:    1   2   3   4   5
-   Determinant no.      208 coeff.         0.0448620870; weight 0.00201261
-     P-string     :    1   2   4   6
-     P(bar)-string:    1   2   3   4   5
-   Determinant no.      235 coeff.         0.0325691281; weight 0.00106075
-     P-string     :    1   3   4   5
-     P(bar)-string:    1   2   3   4  15
-   Determinant no.      521 coeff.        -0.0853172187; weight 0.00727903
-     P-string     :    1   2   3   4   5   6
-     P(bar)-string:    1   2   3
-   Determinant no.      526 coeff.         0.0850444880; weight 0.00723256
-     P-string     :    1   2   3   4   5   7
-     P(bar)-string:    1   2   4
-
-
- Distribution of determinants wrt. MK
- ------------------------------------------------
-      MK              #dets      #non-zero
- ------------------------------------------------
-    -3/2                 68              0
-    -1/2                226            118
-     1/2                226              0
-     3/2                 68             28
- ------------------------------------------------
-     all                588            146
- ------------------------------------------------
-
-
- ============================================
- (GASCIP_RCISTD) CI solution vector  2 of   2
- ============================================
-
- (RCINORM) CI vector renormalized with factor       1.000000000000
-
- Print of CI coefficients in range 1.0D-01 to 1.0D+00 :
+ Print of CI coefficients with weight in range 1.0D-01 to 1.0D+00 :
 
    Determinant no.      295 coeff.         0.9858935861; weight 0.97198616
      P-string     :    1   2   3   4   5
      P(bar)-string:    1   2   3   4
 
- Print of CI coefficients in range 1.0D-02 to 1.0D-01 :
+ Print of CI coefficients with weight in range 1.0D-02 to 1.0D-01 :
 
    No CI coefficients in this range.
 
 
- Print of CI coefficients in range 1.0D-03 to 1.0D-02 :
+ Print of CI coefficients with weight in range 1.0D-03 to 1.0D-02 :
 
-   Determinant no.        1 coeff.        -0.0853172187; weight 0.00727903
+   Determinant no.        1 coeff.         0.0853172187; weight 0.00727903
      P-string     :    1   2   3
      P(bar)-string:    1   2   3   4   5   6
    Determinant no.       19 coeff.         0.0850444880; weight 0.00723256
      P-string     :    1   2   4
      P(bar)-string:    1   2   3   4   5   7
-   Determinant no.      298 coeff.        -0.0449038140; weight 0.00201635
+   Determinant no.      298 coeff.         0.0449038140; weight 0.00201635
      P-string     :    1   2   3   4   5
      P(bar)-string:    1   2   3   7
    Determinant no.      315 coeff.         0.0448620870; weight 0.00201261
@@ -1972,7 +2498,7 @@ Threshold for removing element in trial vectors  1.00D-03
    Determinant no.      416 coeff.         0.0325691281; weight 0.00106075
      P-string     :    1   2   3   4  15
      P(bar)-string:    1   3   4   5
-   Determinant no.      454 coeff.        -0.0402873983; weight 0.00162307
+   Determinant no.      454 coeff.         0.0402873983; weight 0.00162307
      P-string     :    1   2   3   5   7
      P(bar)-string:    1   2   3   4
    Determinant no.      470 coeff.         0.0403083193; weight 0.00162476
@@ -1992,7 +2518,62 @@ Threshold for removing element in trial vectors  1.00D-03
      all                588            146
  ------------------------------------------------
 
- (GASCIP_RCISTD) Total CPU (Wall) time for routine:  0.55147800s ( 0.56250000s)
+
+ ============================================
+ (GASCIP_RCISTD) CI solution vector  2 of   2
+ ============================================
+
+ (RCINORM) CI vector renormalized with factor       1.000000000000
+
+ Print of CI coefficients with weight in range 1.0D-01 to 1.0D+00 :
+
+   Determinant no.       69 coeff.         0.9858935861; weight 0.97198616
+     P-string     :    1   2   3   4
+     P(bar)-string:    1   2   3   4   5
+
+ Print of CI coefficients with weight in range 1.0D-02 to 1.0D-01 :
+
+   No CI coefficients in this range.
+
+
+ Print of CI coefficients with weight in range 1.0D-03 to 1.0D-02 :
+
+   Determinant no.       88 coeff.         0.0402873983; weight 0.00162307
+     P-string     :    1   2   3   4
+     P(bar)-string:    1   2   3   5   7
+   Determinant no.      104 coeff.         0.0403083193; weight 0.00162476
+     P-string     :    1   2   3   4
+     P(bar)-string:    1   2   4   5   6
+   Determinant no.      174 coeff.         0.0449038140; weight 0.00201635
+     P-string     :    1   2   3   7
+     P(bar)-string:    1   2   3   4   5
+   Determinant no.      208 coeff.         0.0448620870; weight 0.00201261
+     P-string     :    1   2   4   6
+     P(bar)-string:    1   2   3   4   5
+   Determinant no.      235 coeff.         0.0325691281; weight 0.00106075
+     P-string     :    1   3   4   5
+     P(bar)-string:    1   2   3   4  15
+   Determinant no.      521 coeff.         0.0853172187; weight 0.00727903
+     P-string     :    1   2   3   4   5   6
+     P(bar)-string:    1   2   3
+   Determinant no.      526 coeff.         0.0850444880; weight 0.00723256
+     P-string     :    1   2   3   4   5   7
+     P(bar)-string:    1   2   4
+
+
+ Distribution of determinants wrt. MK
+ ------------------------------------------------
+      MK              #dets      #non-zero
+ ------------------------------------------------
+    -3/2                 68              0
+    -1/2                226            118
+     1/2                226              0
+     3/2                 68             28
+ ------------------------------------------------
+     all                588            146
+ ------------------------------------------------
+
+ (GASCIP_RCISTD) Total CPU (Wall) time for routine:  0.48392600s ( 0.00000000s)
 ---------------------------------------------------------------------------
 * ESRTRANS: calculating property  : z-spin          
   Boson symmetry, g/u symmetry, time reversal :    4    1   -1
@@ -2021,8 +2602,8 @@ FIRST = T and IC(1 or 2): 1
  (GASCIP_MAKE_P1MAT) CI property matrix - real part
 
                Column   1     Column   2
-       1      -0.49997536     0.00000000
-       2       0.00000000     0.49997536
+       1       0.49997536     0.00000000
+       2       0.00000000    -0.49997536
     ==== End of matrix output ====
 
 
@@ -2042,8 +2623,8 @@ FIRST = T and IC(1 or 2): 1
 
 
                Column   1     Column   2
-       1      -0.49997536     0.00000000
-       2       0.00000000     0.49997536
+       1       0.49997536     0.00000000
+       2       0.00000000    -0.49997536
     ==== End of matrix output ====
 
 *** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -2068,8 +2649,8 @@ FIRST = T and IC(1 or 2): 1
 
 
                Column   1     Column   2
-       1       1.00000000     0.00000000
-       2       0.00000000     1.00000000
+       1       0.00000000     1.00000000
+       2       1.00000000     0.00000000
     ==== End of matrix output ====
   H_CI matrix after transform. to S_z basis
 
@@ -2292,7 +2873,7 @@ FIRST = T and IC(1 or 2): 1
  J,JM1,<J|S_+|JM1>  :    2    1   0.9999332215 + i   0.0000000000
 
  J,JM1,<J|S_x|JM1'> :    2    1   0.9999332215 + i   0.0000000000
- CPLUS / 2   0.50000000000000000     
+ CPLUS / 2   0.500000000000000     
 
  J,JM1,<J|S_x|JM1'> :    2    1   1.0000000000 + i   0.0000000000; PHASE_J_NORM   0.9999332215   0.4999332215
 
@@ -2305,8 +2886,8 @@ FIRST = T and IC(1 or 2): 1
 
 
                Column   1     Column   2
-       1       0.74990858    -0.00000000
-       2      -0.00000000     0.74990858
+       1       0.74990858     0.00000000
+       2       0.00000000     0.74990858
     ==== End of matrix output ====
 
 *** A imag part ***; NROW,NCOL,LRQ,LCQ:   2   2   2   2
@@ -3764,9 +4345,9 @@ FIRST = T and IC(1 or 2): 1
 
 * The g-tensor for H(Zeeman) = 1/2c B g Seff :
 
-             1.99705931       -0.00000000        0.00000000
+             1.99705931        0.00000000        0.00000000
              0.00000000        1.99705931        0.00000000
-             0.00000000       -0.00000000        1.99986985
+             0.00000000        0.00000000        1.99986985
 
   The G-matrix = g * g^T :
 
@@ -3802,9 +4383,9 @@ FIRST = T and IC(1 or 2): 1
 
 * The g_1 corrected g-tensor for H(Zeeman) = 1/2c B g Seff :
 
-             1.99937856       -0.00000000        0.00000000
+             1.99937856        0.00000000        0.00000000
              0.00000000        1.99937856        0.00000000
-             0.00000000       -0.00000000        2.00218903
+             0.00000000        0.00000000        2.00218903
 
   The G-matrix = g * g^T :
 
@@ -3881,31 +4462,33 @@ FIRST = T and IC(1 or 2): 1
 
 
  
+     Date and time (Linux)  : Thu Jul 30 13:58:52 2015
+     Host name              : fe8                                     
 
->>>> Node 0, utime: 6, stime: 0, minflt: 20358, majflt: 35, nvcsw: 26, nivcsw: 39, maxrss: 75374592
->>>> Total WALL time used in DIRAC: 7s
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :       101.07
+  Mean allocation size (Mb) :       101.10
   
-  Largest          10  allocations
+  Largest                    10  allocations
   
-      488.28 Mb at subroutine unknown                                    for WORK in PAMPRP_1                          
-      488.28 Mb at subroutine unknown                                    for WORK in PSIDHF                            
-      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA                            
-      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine unknown                                    for PAMINP WORK array                         
-        0.28 Mb at subroutine unknown                                    for buf in butobs                             
-        0.14 Mb at subroutine unknown                                    for unnamed variable                          
-        0.08 Mb at subroutine unknown                                    for idxb34_reod_geth2                         
+      488.28 Mb at subroutine pamprp_+0x32f                              for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine psiscf_+0xb4                               for WORK in PSISCF                            
+      488.28 Mb at subroutine pamset_+0x182a                             for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x5f6d                             for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0xb1                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0x590                               for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine paminp_+0xa4                               for PAMINP WORK array                         
+        0.28 Mb at subroutine butobs_no_work_+0x93                       for buf in butobs                             
+        0.17 Mb at subroutine rgeth2_+0xc4a                              for idxb34_reod_geth2                         
+        0.14 Mb at subroutine gtovlx_+0x16a                              for unnamed variable                          
   
   Peak memory usage    (Mb) :       489.00
-       reached at subroutine : unknown                                   
+       reached at subroutine : butobs_no_work_+0x93                      
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+>>>> Node 0, utime: 4, stime: 0, minflt: 19003, majflt: 0, nvcsw: 91, nivcsw: 615, maxrss: 125460
+>>>> Total WALL time used in DIRAC: 5s

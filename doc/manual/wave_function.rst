@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 starstar(WAVE FUNCTION)
 
@@ -8,7 +9,7 @@ starstar(WAVE FUNCTION)
 
 This section allows the specification of which wave function module(s)
 to activate. By default no modules are activated. To activate any of
-these modules you must also specify :ref:`.WAVE FUNCTION`
+these modules you must also specify :ref:`DIRAC_.WAVE FUNCTION`
 under :ref:`**DIRAC`,
 otherwise this input is not read.
 
@@ -22,7 +23,7 @@ Activates the Hartree-Fock/Kohn-Sham module.
 
 Specification of the SCF module can be given in the :ref:`*SCF` subsection.
 
-If :ref:`.DFT` has been specified
+If :ref:`HAMILTONIAN_.DFT` has been specified
 under :ref:`**HAMILTONIAN`, then a
 Kohn-Sham calculation will be performed, otherwise a Hartree-Fock
 calculation will be performed.
@@ -51,7 +52,7 @@ Activates the :ref:`*MP2 NO` module to calculate MP2 natural orbitals.
 
 keyword(RELCCSD)
 
-Activates the  :ref:`RELCCSD`
+Activates the  :ref:`**RELCC`
 (and the :ref:`**MOLTRA`
 module to get 4-index
 transformed integrals).
@@ -156,7 +157,4 @@ keyword(KRMCSCF)
 Activates the :ref:`*KRMCSCF`
 module for the optimization of ground and excited states (in other than the ground state symmetry) 
 at the relativistic MCSCF level.
-
-
-.. _resolve:
 

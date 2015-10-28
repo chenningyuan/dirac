@@ -36,6 +36,6 @@ f.add(from_string = '* Dipole moment:',
 f.add(re          = 'density integrates to',
       rel_tolerance   = 1.0e-7)
 
-test.run(['cc_pbe+pw91k_vemb-update_short.inp'],           ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS" --aw=90')
+test.run(['mp2_pbe+pw91k_vemb-update_short.inp'],           ['water.sto6g.c2v.mol'], f, args='--put="FRZDNS"        ')
 
 sys.exit(test.return_code)
