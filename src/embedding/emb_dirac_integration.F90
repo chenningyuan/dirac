@@ -471,9 +471,9 @@ contains
       end if
 
 !gosia debug
-      if (do_export_pertden_reorth) then
-        write(*, *) 'BLE parallel_fde = ', parallel_fde
-      end if
+!      if (do_export_pertden_reorth) then
+!        write(*, *) 'BLE parallel_fde = ', parallel_fde
+!      end if
 
 
 #ifdef VAR_MPI
@@ -3367,11 +3367,11 @@ contains
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
-         do i = 1, 3
-           write(*, *) 'dmat_pertden_reorth read test, i =', i
-           call prqmat(dmat_pertden_reorth(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
-                       (/1,2,3,4/), 6)
-         end do
+         !do i = 1, 3
+         !  write(*, *) 'dmat_pertden_reorth read test, i =', i
+         !  call prqmat(dmat_pertden_reorth(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
+         !              (/1,2,3,4/), 6)
+         !end do
 
       do ipoint = 1, nr_points_on_this_proc
    
@@ -3384,10 +3384,10 @@ contains
                ao,         &
                buffer)
 
-         write(*, *) 'ao dft nr_ao_slices, nr_ao_cartesian = ', nr_ao_slices, nr_ao_cartesian
-         do i = 1, nr_ao_slices*nr_ao_cartesian
-           write(*, '(A,3E16.8,ES30.20E3)') 'ao in point ', rx(ipoint), ry(ipoint), rz(ipoint), ao(1,i)
-         end do
+         !write(*, *) 'ao dft nr_ao_slices, nr_ao_cartesian = ', nr_ao_slices, nr_ao_cartesian
+         !do i = 1, nr_ao_slices*nr_ao_cartesian
+         !  write(*, '(A,3E16.8,ES30.20E3)') 'ao in point ', rx(ipoint), ry(ipoint), rz(ipoint), ao(1,i)
+         !end do
 
          if (need_ao_order(1, 0)) then
 !           density and density gradient
@@ -3411,7 +3411,6 @@ contains
 !           lao_reorth
             if (do_export_pertden_reorth) then
 
-      buffer = 0.0d0
                call get_pertden_reorth(ipoint,  &
                                        mat_dim, &
                                        nz,      &
@@ -3430,7 +3429,6 @@ contains
             end if
 !           lao_direct
             if (do_export_pertden_direct .and. .not. fde_rsp_mag_lao_no_s) then
-      buffer = 0.0d0
                call get_pertden_direct(ipoint,         &
                                       mat_dim,        &
                                       nz,             &
@@ -3644,14 +3642,15 @@ contains
                                    buffer,                  &
                                    ao)
        else
+!     write(*, *) 'call get_n in get_pertden_reorth, im, im_off = ', im, im_off
           call get_n(r_b(im),                       &
                      0,              &
                      mat_dim,                   &
                      tb_dmat(1 + im_off),       &
                      buffer,                    &
                      ao)
-    write(*, '(A,3F16.8,I,I,ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
-                px, py, pz, im, im_off, r_b(im)
+!    write(*, '(A,3F16.8,I,I,ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+!                px, py, pz, im, im_off, r_b(im)
 
        end if
 

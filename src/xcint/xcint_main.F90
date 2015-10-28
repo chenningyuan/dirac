@@ -1028,13 +1028,13 @@ contains
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
 !gosia debug:
-  if (do_london_rhs_ro) then
-   do i =1, 3
-     write(*, *) 'dmat reorth dft read test, i =', i
-     call prqmat(dmat(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
-      (/1,2,3,4/), 6)
-   end do
-  end if
+!  if (do_london_rhs_ro) then
+!   do i =1, 3
+!     write(*, *) 'dmat reorth dft read test, i =', i
+!     call prqmat(dmat(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
+!      (/1,2,3,4/), 6)
+!   end do
+!  end if
    do ipoint = 1, nr_points_on_this_proc
    
 !     print *, "check points",ipoint,xc_mpi_get_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
@@ -1047,12 +1047,13 @@ contains
                   buffer)
 
 !gosia debug:
-      if (do_london_rhs_ro) then
-         write(*, *) 'ao dft nr_ao_slices, nr_ao_cartesian = ', nr_ao_slices, nr_ao_cartesian
-         do i = 1, nr_ao_slices*nr_ao_cartesian 
-           write(*, '(A,3E16.8,ES30.20E3)') 'ao in point ', rx(ipoint), ry(ipoint), rz(ipoint), ao(1,i)
-         end do
-      end if
+!      if (do_london_rhs_ro) then
+!         write(*, *) 'ao dft nr_ao_slices, nr_ao_cartesian = ', nr_ao_slices, nr_ao_cartesian
+!         do i = 1, nr_ao_slices*nr_ao_cartesian 
+!           write(*, '(A,3E16.8,ES30.20E3)') 'ao in point ', rx(ipoint), ry(ipoint), rz(ipoint), ao(1,i)
+!         end do
+!      end if
+
 !     print *, "dft check ao",ipoint,xc_mpi_get_rank(),ao
 !     print *, "dft check buffer",ipoint,xc_mpi_get_rank(),buffer
       time_ao = time_ao + second() - time_ao_start
@@ -2752,14 +2753,14 @@ contains
                                    buffer,              &
                                    ao)
        else
+   ! write(*, *) 'call get_n in dft_reorth, im, im_off = ', im, im_off
           call get_n(r_b(im),             &
-                     0,        &
-                     !isym(im) - 1,        &
+                     isym(im) - 1,        &
                      mat_dim,             &
                      tb_dmat(1 + im_off), &
                      buffer,              &
                      ao)
-    write(*, '(A,3F16.8,I,I,ES30.20E3)') 'buba dft reorth:r, im, im_off, r_b = ', px, py, pz, im, im_off, r_b(im)
+   ! write(*, '(A,3F16.8,I,I,ES30.20E3)') 'buba dft reorth:r, im, im_off, r_b = ', px, py, pz, im, im_off, r_b(im)
        end if
 
        u%n(im) = u%n(im) + derv(1, d2000000)*r_b(im)

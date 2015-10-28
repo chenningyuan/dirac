@@ -663,8 +663,8 @@ contains
        open(tbdmat_file_unit,        &
             file = 'TBDMAT',         &
             form   = 'unformatted',  &
-            access = 'direct',   &
-            recl = 8*n2bbasxq,  &
+            access = 'direct',       &
+            recl = 8*n2bbasxq,       &
             action = 'write',        &
             status = 'unknown')
 
