@@ -2002,47 +2002,72 @@ contains
         deallocate(rz)
         deallocate(rw)
 
+#ifdef VAR_MPI
 ! we send the points in the nodes to a final vector in master
+        if (parallel_fde) then
+           call fde_mpi_gatherv(active_elpot,  active_gridfunction%elpot,   nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_nucpot, active_gridfunction%nucpot,  nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_n,      active_gridfunction%n,       nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_gnx,    active_gridfunction%gn(1,:), nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_gny,    active_gridfunction%gn(2,:), nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_gnz,    active_gridfunction%gn(3,:), nr_points_on_this_proc)
 
-        call fde_mpi_gatherv(active_elpot,  active_gridfunction%elpot,   nr_points_on_this_proc)
-        call fde_mpi_gatherv(active_nucpot, active_gridfunction%nucpot,  nr_points_on_this_proc)
-        call fde_mpi_gatherv(active_n,      active_gridfunction%n,       nr_points_on_this_proc)
-        call fde_mpi_gatherv(active_gnx,    active_gridfunction%gn(1,:), nr_points_on_this_proc)
-        call fde_mpi_gatherv(active_gny,    active_gridfunction%gn(2,:), nr_points_on_this_proc)
-        call fde_mpi_gatherv(active_gnz,    active_gridfunction%gn(3,:), nr_points_on_this_proc)
-
-        if (fde_mpi_is_master()) then
+           if (fde_mpi_is_master()) then
 
 ! aspg, 19/10/2015
 ! here we scale the density, density gradient etc since for the
 ! calculation of the electrostatic potential we needed the unscaled 
 ! density matrix
 
-            active_gridfunction%n(:)    = 2.0d0 * active_gridfunction%n(:)
+               active_gridfunction%n(:)    = 2.0d0 * active_gridfunction%n(:)
 
-            active_gridfunction%gn(1,:) = 2.0d0 * active_gridfunction%gn(1,:)
-            active_gridfunction%gn(2,:) = 2.0d0 * active_gridfunction%gn(2,:)
-            active_gridfunction%gn(3,:) = 2.0d0 * active_gridfunction%gn(3,:)
+               active_gridfunction%gn(1,:) = 2.0d0 * active_gridfunction%gn(1,:)
+               active_gridfunction%gn(2,:) = 2.0d0 * active_gridfunction%gn(2,:)
+               active_gridfunction%gn(3,:) = 2.0d0 * active_gridfunction%gn(3,:)
 
-            active_gridfunction%hn(1,:) = 2.0d0 * active_gridfunction%hn(1,:)
-            active_gridfunction%hn(2,:) = 2.0d0 * active_gridfunction%hn(2,:)
-            active_gridfunction%hn(3,:) = 2.0d0 * active_gridfunction%hn(3,:)
-            active_gridfunction%hn(4,:) = 2.0d0 * active_gridfunction%hn(4,:)
-            active_gridfunction%hn(5,:) = 2.0d0 * active_gridfunction%hn(5,:)
-            active_gridfunction%hn(6,:) = 2.0d0 * active_gridfunction%hn(6,:)
-         endif
-         deallocate(active_elpot)
-         deallocate(active_nucpot)
-         deallocate(active_n)
-         deallocate(active_gnx)
-         deallocate(active_gny)
-         deallocate(active_gnz)
-         deallocate(active_hnxx)
-         deallocate(active_hnxy)
-         deallocate(active_hnxz)
-         deallocate(active_hnyy)
-         deallocate(active_hnyz)
-         deallocate(active_hnzz)
+               active_gridfunction%hn(1,:) = 2.0d0 * active_gridfunction%hn(1,:)
+               active_gridfunction%hn(2,:) = 2.0d0 * active_gridfunction%hn(2,:)
+               active_gridfunction%hn(3,:) = 2.0d0 * active_gridfunction%hn(3,:)
+               active_gridfunction%hn(4,:) = 2.0d0 * active_gridfunction%hn(4,:)
+               active_gridfunction%hn(5,:) = 2.0d0 * active_gridfunction%hn(5,:)
+               active_gridfunction%hn(6,:) = 2.0d0 * active_gridfunction%hn(6,:)
+            end if
+        else ! parallel_fde
+#endif
+!
+! in the serial version, just update the gridfunction with the contents of
+! the arrays 
+         active_gridfunction%elpot(:)  = active_elpot(:)
+         active_gridfunction%nucpot(:) = active_nucpot(:)
+
+         active_gridfunction%n(:)    = 2.0d0 * active_n(:)
+
+         active_gridfunction%gn(1,:) = 2.0d0 * active_gnx(:)
+         active_gridfunction%gn(2,:) = 2.0d0 * active_gny(:)
+         active_gridfunction%gn(3,:) = 2.0d0 * active_gnz(:)
+
+         active_gridfunction%hn(1,:) = 2.0d0 * active_hnxx(:)
+         active_gridfunction%hn(2,:) = 2.0d0 * active_hnxy(:)
+         active_gridfunction%hn(3,:) = 2.0d0 * active_hnxz(:)
+         active_gridfunction%hn(4,:) = 2.0d0 * active_hnyy(:)
+         active_gridfunction%hn(5,:) = 2.0d0 * active_hnyz(:)
+         active_gridfunction%hn(6,:) = 2.0d0 * active_hnzz(:)
+ 
+#ifdef VAR_MPI
+        end if ! parallel_fde
+#endif
+        deallocate(active_elpot)
+        deallocate(active_nucpot)
+        deallocate(active_n)
+        deallocate(active_gnx)
+        deallocate(active_gny)
+        deallocate(active_gnz)
+        deallocate(active_hnxx)
+        deallocate(active_hnxy)
+        deallocate(active_hnxz)
+        deallocate(active_hnyy)
+        deallocate(active_hnyz)
+        deallocate(active_hnzz)
 
 
 ! don't try to read another batch
