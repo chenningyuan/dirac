@@ -577,6 +577,12 @@ contains
          end if
       end if
 
+      if (do_london_rhs_kern_coupling) then
+         if (fde_mpi_is_master()) then
+            call fde_import_frozen
+         end if
+      end if
+
       nullify(fmat)
       if (nr_fmat > 0) then
          if (.not. fde_mpi_is_master()) then
@@ -2115,10 +2121,14 @@ contains
             end if
 
             if (do_london_rhs_kern_coupling) then
+               allocate(frozen_n_bx(nr_points_batch))
+               allocate(frozen_n_by(nr_points_batch))
+               allocate(frozen_n_bz(nr_points_batch))
                if (fde_mpi_is_master()) then
                   frozen_n_bx  = active_gridfunction%n_b(1,:)
                   frozen_n_by  = active_gridfunction%n_b(2,:)
                   frozen_n_bz  = active_gridfunction%n_b(3,:)
+                  write(*, '(A,3ES30.20E3)') 'buba import frozen = ', frozen_n_bx, frozen_n_by, frozen_n_bz
                end if
             end if
 
