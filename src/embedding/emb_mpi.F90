@@ -45,7 +45,10 @@ module fde_mpi
    public fde_mpi_reduce
    public fde_mpi_distribute_points
    public fde_mpi_distribute_frozen
-   public fde_mpi_distribute_frozen_pertden
+   public fde_mpi_distribute_frozen_pertden_n
+   public fde_mpi_distribute_frozen_pertden_gn
+   public fde_mpi_distribute_frozen_pertden_s
+   public fde_mpi_distribute_frozen_pertden_gs
    public fde_mpi_distribute_vemb
    public fde_get_my_rank
    public fde_mpi_gather
@@ -429,7 +432,7 @@ contains
    end subroutine
 
 
-   subroutine fde_mpi_distribute_frozen_pertden(n_bx, n_by, n_bz, nr_points_batch, nr_points_on_this_proc)
+   subroutine fde_mpi_distribute_frozen_pertden_n(n_bx, n_by, n_bz, nr_points_batch, nr_points_on_this_proc)
       real(8)              :: n_bx(*)
       real(8)              :: n_by(*)
       real(8)              :: n_bz(*)
@@ -494,7 +497,484 @@ contains
       call fde_mpi_reduce(isum)
       if (fde_mpi_is_master()) then
          if (isum /= nr_points_batch) then
-            call quit('programming error in distribution of pertden in parallel FDE')
+            call quit('programming error in distribution of pertden n in parallel FDE')
+         end if
+      end if
+   end subroutine
+
+   subroutine fde_mpi_distribute_frozen_pertden_gn(gxn_bx, gxn_by, gxn_bz, &
+                                                   gyn_bx, gyn_by, gyn_bz, &
+                                                   gzn_bx, gzn_by, gzn_bz, &
+                                                   nr_points_batch, nr_points_on_this_proc)
+      real(8)              :: gxn_bx(*)
+      real(8)              :: gxn_by(*)
+      real(8)              :: gxn_bz(*)
+      real(8)              :: gyn_bx(*)
+      real(8)              :: gyn_by(*)
+      real(8)              :: gyn_bz(*)
+      real(8)              :: gzn_bx(*)
+      real(8)              :: gzn_by(*)
+      real(8)              :: gzn_bz(*)
+      integer              :: nr_points_batch
+      integer              :: nr_points_on_this_proc
+      real(8), allocatable :: buffer(:)
+      integer              :: nr_points_rest
+      integer              :: i
+      integer, allocatable :: dist_overview(:)
+      integer              :: isum
+
+      nr_points_on_this_proc = nr_points_batch/fde_mpi_get_nr_proc()
+      if (fde_mpi_is_master()) then
+         allocate(buffer(nr_points_on_this_proc))
+         call interface_mpi_scatter_r1_work_f77(gxn_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxn_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxn_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gyn_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gyn_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gyn_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzn_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzn_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzn_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         deallocate(buffer)
+      else
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxn_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxn_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxn_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gyn_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gyn_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gyn_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzn_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzn_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzn_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+      end if
+
+!     if there is a rest of points, send them to the last proc
+      nr_points_rest = mod(nr_points_batch, fde_mpi_get_nr_proc())
+      if (nr_points_rest > 0) then
+         if (fde_mpi_is_master()) then
+            i = nr_points_batch - nr_points_rest + 1
+            call interface_mpi_send(gxn_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,101, global_communicator)
+            call interface_mpi_send(gxn_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,102, global_communicator)
+            call interface_mpi_send(gxn_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,103, global_communicator)
+            call interface_mpi_send(gyn_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,104, global_communicator)
+            call interface_mpi_send(gyn_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,105, global_communicator)
+            call interface_mpi_send(gyn_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,106, global_communicator)
+            call interface_mpi_send(gzn_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,107, global_communicator)
+            call interface_mpi_send(gzn_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,108, global_communicator)
+            call interface_mpi_send(gzn_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,109, global_communicator)
+         end if
+         if (get_my_rank() == (fde_mpi_get_nr_proc()-1)) then
+            i = nr_points_on_this_proc + 1
+            call interface_mpi_recv(gxn_bx(i), nr_points_rest, irank_master, 101, global_communicator)
+            call interface_mpi_recv(gxn_by(i), nr_points_rest, irank_master, 102, global_communicator)
+            call interface_mpi_recv(gxn_bz(i), nr_points_rest, irank_master, 103, global_communicator)
+            call interface_mpi_recv(gyn_bx(i), nr_points_rest, irank_master, 104, global_communicator)
+            call interface_mpi_recv(gyn_by(i), nr_points_rest, irank_master, 105, global_communicator)
+            call interface_mpi_recv(gyn_bz(i), nr_points_rest, irank_master, 106, global_communicator)
+            call interface_mpi_recv(gzn_bx(i), nr_points_rest, irank_master, 107, global_communicator)
+            call interface_mpi_recv(gzn_by(i), nr_points_rest, irank_master, 108, global_communicator)
+            call interface_mpi_recv(gzn_bz(i), nr_points_rest, irank_master, 109, global_communicator)
+            nr_points_on_this_proc = nr_points_on_this_proc + nr_points_rest
+         end if
+      end if
+
+      allocate(dist_overview(0:fde_mpi_get_nr_proc()-1))
+      dist_overview = 0
+      dist_overview(get_my_rank()) = nr_points_on_this_proc
+      call fde_mpi_reduce(dist_overview)
+      if (fde_mpi_is_master()) then
+         do i = 0, fde_mpi_get_nr_proc()-1
+!           write(*, *) 'proc', i+1, 'will calculate', dist_overview(i), 'points'
+         end do
+      end if
+      deallocate(dist_overview)
+
+!     verify that sum matches nr_points_batch
+      isum = nr_points_on_this_proc
+      call fde_mpi_reduce(isum)
+      if (fde_mpi_is_master()) then
+         if (isum /= nr_points_batch) then
+            call quit('programming error in distribution of pertden gn in parallel FDE')
+         end if
+      end if
+   end subroutine
+
+   subroutine fde_mpi_distribute_frozen_pertden_s(sx_bx, sx_by, sx_bz, &
+                                                  sy_bx, sy_by, sy_bz, &
+                                                  sz_bx, sz_by, sz_bz, &
+                                                  nr_points_batch, nr_points_on_this_proc)
+      real(8)              :: sx_bx(*)
+      real(8)              :: sx_by(*)
+      real(8)              :: sx_bz(*)
+      real(8)              :: sy_bx(*)
+      real(8)              :: sy_by(*)
+      real(8)              :: sy_bz(*)
+      real(8)              :: sz_bx(*)
+      real(8)              :: sz_by(*)
+      real(8)              :: sz_bz(*)
+      integer              :: nr_points_batch
+      integer              :: nr_points_on_this_proc
+      real(8), allocatable :: buffer(:)
+      integer              :: nr_points_rest
+      integer              :: i
+      integer, allocatable :: dist_overview(:)
+      integer              :: isum
+
+      nr_points_on_this_proc = nr_points_batch/fde_mpi_get_nr_proc()
+      if (fde_mpi_is_master()) then
+         allocate(buffer(nr_points_on_this_proc))
+         call interface_mpi_scatter_r1_work_f77(sx_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(sx_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(sx_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(sy_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(sy_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(sy_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(sz_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(sz_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(sz_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         deallocate(buffer)
+      else
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sx_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sx_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sx_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sy_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sy_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sy_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sz_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sz_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, sz_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+      end if
+
+!     if there is a rest of points, send them to the last proc
+      nr_points_rest = mod(nr_points_batch, fde_mpi_get_nr_proc())
+      if (nr_points_rest > 0) then
+         if (fde_mpi_is_master()) then
+            i = nr_points_batch - nr_points_rest + 1
+            call interface_mpi_send(sx_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,110, global_communicator)
+            call interface_mpi_send(sx_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,111, global_communicator)
+            call interface_mpi_send(sx_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,112, global_communicator)
+            call interface_mpi_send(sy_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,113, global_communicator)
+            call interface_mpi_send(sy_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,114, global_communicator)
+            call interface_mpi_send(sy_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,115, global_communicator)
+            call interface_mpi_send(sz_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,116, global_communicator)
+            call interface_mpi_send(sz_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,117, global_communicator)
+            call interface_mpi_send(sz_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,118, global_communicator)
+         end if
+         if (get_my_rank() == (fde_mpi_get_nr_proc()-1)) then
+            i = nr_points_on_this_proc + 1
+            call interface_mpi_recv(sx_bx(i), nr_points_rest, irank_master, 110, global_communicator)
+            call interface_mpi_recv(sx_by(i), nr_points_rest, irank_master, 111, global_communicator)
+            call interface_mpi_recv(sx_bz(i), nr_points_rest, irank_master, 112, global_communicator)
+            call interface_mpi_recv(sy_bx(i), nr_points_rest, irank_master, 113, global_communicator)
+            call interface_mpi_recv(sy_by(i), nr_points_rest, irank_master, 114, global_communicator)
+            call interface_mpi_recv(sy_bz(i), nr_points_rest, irank_master, 115, global_communicator)
+            call interface_mpi_recv(sz_bx(i), nr_points_rest, irank_master, 116, global_communicator)
+            call interface_mpi_recv(sz_by(i), nr_points_rest, irank_master, 117, global_communicator)
+            call interface_mpi_recv(sz_bz(i), nr_points_rest, irank_master, 118, global_communicator)
+            nr_points_on_this_proc = nr_points_on_this_proc + nr_points_rest
+         end if
+      end if
+
+      allocate(dist_overview(0:fde_mpi_get_nr_proc()-1))
+      dist_overview = 0
+      dist_overview(get_my_rank()) = nr_points_on_this_proc
+      call fde_mpi_reduce(dist_overview)
+      if (fde_mpi_is_master()) then
+         do i = 0, fde_mpi_get_nr_proc()-1
+!           write(*, *) 'proc', i+1, 'will calculate', dist_overview(i), 'points'
+         end do
+      end if
+      deallocate(dist_overview)
+
+!     verify that sum matches nr_points_batch
+      isum = nr_points_on_this_proc
+      call fde_mpi_reduce(isum)
+      if (fde_mpi_is_master()) then
+         if (isum /= nr_points_batch) then
+            call quit('programming error in distribution of pertden s in parallel FDE')
+         end if
+      end if
+   end subroutine
+
+   subroutine fde_mpi_distribute_frozen_pertden_gs(gxsx_bx, gxsx_by, gxsx_bz, &
+                                                   gxsy_bx, gxsy_by, gxsy_bz, &
+                                                   gxsz_bx, gxsz_by, gxsz_bz, &
+                                                   gysx_bx, gysx_by, gysx_bz, &
+                                                   gysy_bx, gysy_by, gysy_bz, &
+                                                   gysz_bx, gysz_by, gysz_bz, &
+                                                   gzsx_bx, gzsx_by, gzsx_bz, &
+                                                   gzsy_bx, gzsy_by, gzsy_bz, &
+                                                   gzsz_bx, gzsz_by, gzsz_bz, &
+                                                   nr_points_batch, nr_points_on_this_proc)
+      real(8)              :: gxsx_bx(*)
+      real(8)              :: gxsx_by(*)
+      real(8)              :: gxsx_bz(*)
+      real(8)              :: gxsy_bx(*)
+      real(8)              :: gxsy_by(*)
+      real(8)              :: gxsy_bz(*)
+      real(8)              :: gxsz_bx(*)
+      real(8)              :: gxsz_by(*)
+      real(8)              :: gxsz_bz(*)
+      real(8)              :: gysx_bx(*)
+      real(8)              :: gysx_by(*)
+      real(8)              :: gysx_bz(*)
+      real(8)              :: gysy_bx(*)
+      real(8)              :: gysy_by(*)
+      real(8)              :: gysy_bz(*)
+      real(8)              :: gysz_bx(*)
+      real(8)              :: gysz_by(*)
+      real(8)              :: gysz_bz(*)
+      real(8)              :: gzsx_bx(*)
+      real(8)              :: gzsx_by(*)
+      real(8)              :: gzsx_bz(*)
+      real(8)              :: gzsy_bx(*)
+      real(8)              :: gzsy_by(*)
+      real(8)              :: gzsy_bz(*)
+      real(8)              :: gzsz_bx(*)
+      real(8)              :: gzsz_by(*)
+      real(8)              :: gzsz_bz(*)
+      integer              :: nr_points_batch
+      integer              :: nr_points_on_this_proc
+      real(8), allocatable :: buffer(:)
+      integer              :: nr_points_rest
+      integer              :: i
+      integer, allocatable :: dist_overview(:)
+      integer              :: isum
+
+      nr_points_on_this_proc = nr_points_batch/fde_mpi_get_nr_proc()
+      if (fde_mpi_is_master()) then
+         allocate(buffer(nr_points_on_this_proc))
+         call interface_mpi_scatter_r1_work_f77(gxsx_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxsx_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxsx_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxsy_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxsy_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxsy_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxsz_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxsz_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gxsz_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysx_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysx_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysx_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysy_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysy_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysy_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysz_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysz_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gysz_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsx_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsx_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsx_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsy_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsy_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsy_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsz_bx, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsz_by, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         call interface_mpi_scatter_r1_work_f77(gzsz_bz, nr_points_on_this_proc, buffer, &
+              nr_points_on_this_proc, irank_master, global_communicator)
+         deallocate(buffer)
+      else
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsx_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsx_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsx_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsy_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsy_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsy_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsz_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsz_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gxsz_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysx_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysx_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysx_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysy_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysy_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysy_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysz_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysz_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gysz_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsx_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsx_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsx_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsy_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsy_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsy_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsz_bx, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsz_by, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+         call interface_mpi_scatter_r1_work_f77((/0.0d0/), 0, gzsz_bz, nr_points_on_this_proc, irank_master, &
+                          global_communicator)
+      end if
+
+!     if there is a rest of points, send them to the last proc
+      nr_points_rest = mod(nr_points_batch, fde_mpi_get_nr_proc())
+      if (nr_points_rest > 0) then
+         if (fde_mpi_is_master()) then
+            i = nr_points_batch - nr_points_rest + 1
+            call interface_mpi_send(gxsx_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,120, global_communicator)
+            call interface_mpi_send(gxsx_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,121, global_communicator)
+            call interface_mpi_send(gxsx_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,122, global_communicator)
+            call interface_mpi_send(gxsy_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,123, global_communicator)
+            call interface_mpi_send(gxsy_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,124, global_communicator)
+            call interface_mpi_send(gxsy_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,125, global_communicator)
+            call interface_mpi_send(gxsz_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,126, global_communicator)
+            call interface_mpi_send(gxsz_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,127, global_communicator)
+            call interface_mpi_send(gxsz_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,128, global_communicator)
+            call interface_mpi_send(gysx_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,130, global_communicator)
+            call interface_mpi_send(gysx_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,131, global_communicator)
+            call interface_mpi_send(gysx_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,132, global_communicator)
+            call interface_mpi_send(gysy_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,133, global_communicator)
+            call interface_mpi_send(gysy_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,134, global_communicator)
+            call interface_mpi_send(gysy_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,135, global_communicator)
+            call interface_mpi_send(gysz_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,136, global_communicator)
+            call interface_mpi_send(gysz_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,137, global_communicator)
+            call interface_mpi_send(gysz_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,138, global_communicator)
+            call interface_mpi_send(gzsx_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,140, global_communicator)
+            call interface_mpi_send(gzsx_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,141, global_communicator)
+            call interface_mpi_send(gzsx_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,142, global_communicator)
+            call interface_mpi_send(gzsy_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,143, global_communicator)
+            call interface_mpi_send(gzsy_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,144, global_communicator)
+            call interface_mpi_send(gzsy_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,145, global_communicator)
+            call interface_mpi_send(gzsz_bx(i), nr_points_rest, fde_mpi_get_nr_proc()-1,146, global_communicator)
+            call interface_mpi_send(gzsz_by(i), nr_points_rest, fde_mpi_get_nr_proc()-1,147, global_communicator)
+            call interface_mpi_send(gzsz_bz(i), nr_points_rest, fde_mpi_get_nr_proc()-1,148, global_communicator)
+         end if
+         if (get_my_rank() == (fde_mpi_get_nr_proc()-1)) then
+            i = nr_points_on_this_proc + 1
+            call interface_mpi_recv(gxsx_bx(i), nr_points_rest, irank_master, 120, global_communicator)
+            call interface_mpi_recv(gxsx_by(i), nr_points_rest, irank_master, 121, global_communicator)
+            call interface_mpi_recv(gxsx_bz(i), nr_points_rest, irank_master, 122, global_communicator)
+            call interface_mpi_recv(gxsy_bx(i), nr_points_rest, irank_master, 123, global_communicator)
+            call interface_mpi_recv(gxsy_by(i), nr_points_rest, irank_master, 124, global_communicator)
+            call interface_mpi_recv(gxsy_bz(i), nr_points_rest, irank_master, 125, global_communicator)
+            call interface_mpi_recv(gxsz_bx(i), nr_points_rest, irank_master, 126, global_communicator)
+            call interface_mpi_recv(gxsz_by(i), nr_points_rest, irank_master, 127, global_communicator)
+            call interface_mpi_recv(gxsz_bz(i), nr_points_rest, irank_master, 128, global_communicator)
+            call interface_mpi_recv(gysx_bx(i), nr_points_rest, irank_master, 130, global_communicator)
+            call interface_mpi_recv(gysx_by(i), nr_points_rest, irank_master, 131, global_communicator)
+            call interface_mpi_recv(gysx_bz(i), nr_points_rest, irank_master, 132, global_communicator)
+            call interface_mpi_recv(gysy_bx(i), nr_points_rest, irank_master, 133, global_communicator)
+            call interface_mpi_recv(gysy_by(i), nr_points_rest, irank_master, 134, global_communicator)
+            call interface_mpi_recv(gysy_bz(i), nr_points_rest, irank_master, 135, global_communicator)
+            call interface_mpi_recv(gysz_bx(i), nr_points_rest, irank_master, 136, global_communicator)
+            call interface_mpi_recv(gysz_by(i), nr_points_rest, irank_master, 137, global_communicator)
+            call interface_mpi_recv(gysz_bz(i), nr_points_rest, irank_master, 138, global_communicator)
+            call interface_mpi_recv(gzsx_bx(i), nr_points_rest, irank_master, 140, global_communicator)
+            call interface_mpi_recv(gzsx_by(i), nr_points_rest, irank_master, 141, global_communicator)
+            call interface_mpi_recv(gzsx_bz(i), nr_points_rest, irank_master, 142, global_communicator)
+            call interface_mpi_recv(gzsy_bx(i), nr_points_rest, irank_master, 143, global_communicator)
+            call interface_mpi_recv(gzsy_by(i), nr_points_rest, irank_master, 144, global_communicator)
+            call interface_mpi_recv(gzsy_bz(i), nr_points_rest, irank_master, 145, global_communicator)
+            call interface_mpi_recv(gzsz_bx(i), nr_points_rest, irank_master, 146, global_communicator)
+            call interface_mpi_recv(gzsz_by(i), nr_points_rest, irank_master, 147, global_communicator)
+            call interface_mpi_recv(gzsz_bz(i), nr_points_rest, irank_master, 148, global_communicator)
+            nr_points_on_this_proc = nr_points_on_this_proc + nr_points_rest
+         end if
+      end if
+
+      allocate(dist_overview(0:fde_mpi_get_nr_proc()-1))
+      dist_overview = 0
+      dist_overview(get_my_rank()) = nr_points_on_this_proc
+      call fde_mpi_reduce(dist_overview)
+      if (fde_mpi_is_master()) then
+         do i = 0, fde_mpi_get_nr_proc()-1
+!           write(*, *) 'proc', i+1, 'will calculate', dist_overview(i), 'points'
+         end do
+      end if
+      deallocate(dist_overview)
+
+!     verify that sum matches nr_points_batch
+      isum = nr_points_on_this_proc
+      call fde_mpi_reduce(isum)
+      if (fde_mpi_is_master()) then
+         if (isum /= nr_points_batch) then
+            call quit('programming error in distribution of pertden gs in parallel FDE')
          end if
       end if
    end subroutine
