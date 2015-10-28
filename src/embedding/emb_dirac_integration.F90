@@ -36,6 +36,8 @@ module fde_dirac_matrices_integration
       real(8), allocatable :: gn(:, :)
       real(8), allocatable :: s(:, :)
       real(8), allocatable :: gs(:, :, :)
+      real(8), allocatable :: n_b_lao(:)
+      real(8), allocatable :: gn_b_lao(:, :)
       real(8), allocatable :: s_b_lao(:, :)
       real(8), allocatable :: gs_b_lao(:, :, :)
       real(8), allocatable :: tn(:)
@@ -1246,6 +1248,8 @@ contains
    logical :: ugs_above_threshold
    logical :: utn_above_threshold
    logical :: uts_above_threshold
+   logical :: un_b_lao_above_threshold
+   logical :: ugn_b_lao_above_threshold
    logical :: us_b_lao_above_threshold
    logical :: ugs_b_lao_above_threshold
 
@@ -1265,6 +1269,8 @@ contains
    allocate(u%gn(   3, nr_fmat))
    allocate(u%s (   3, nr_fmat))
    allocate(u%gs(3, 3, nr_fmat))
+   allocate(u%n_b_lao(3)) 
+   allocate(u%gn_b_lao(3, 3)) 
    allocate(u%s_b_lao(3, 3)) 
    allocate(u%gs_b_lao(3, 3, 3))
    allocate(u%tn(      nr_fmat))
@@ -1440,6 +1446,8 @@ contains
          u%gs = 0.0d0
          u%tn = 0.0d0
          u%ts = 0.0d0
+         u%n_b_lao  = 0.0d0
+         u%gn_b_lao  = 0.0d0
          u%s_b_lao  = 0.0d0
          u%gs_b_lao  = 0.0d0
 
@@ -1973,7 +1981,7 @@ contains
 !            london contributions to property gradient
 !            gosia: this "if" should not be needed here
 !            nevertheless without that the test "fde_response_autodiff" brakes on gfortran
-!            for some misterious reason (this part should never be true!!)
+!            for some misterious reason
              if (do_london_rhs_direct_kern.or.do_london_rhs_kern_coupling) then
 
                us_b_lao_above_threshold = .false.
@@ -2009,6 +2017,7 @@ contains
                                         ao)
                else
                   if (us_b_lao_above_threshold) then
+                 write(*, *) 'buba us_b_lao_above_threshold!'
 !                    F_pq += u%s_j \chi_p* \Sigma_j \chi_q
                      call omega_imag(fmat,                &
                                      im,                  &
@@ -2021,6 +2030,50 @@ contains
                end if
 
              end if !if (do_london_rhs_direct_kern.or.do_london_rhs_kern_coupling) then
+
+             if (do_london_rhs_kern_coupling) then
+
+               un_b_lao_above_threshold = .false.
+               if (maxval((/dabs(u%n_b_lao(im)), &
+                            dabs(u%n_b_lao(im)), &
+                            dabs(u%n_b_lao(im))/)) > tiny(0.0d0)) then
+                  un_b_lao_above_threshold = .true.
+               end if
+               
+               ugn_b_lao_above_threshold = .false.
+               if (maxval((/dabs(u%gn_b_lao(1, im)), &
+                            dabs(u%gn_b_lao(2, im)), &
+                            dabs(u%gn_b_lao(3, im))/)) > tiny(0.0d0)) then
+                  ugn_b_lao_above_threshold = .true.
+               end if
+               
+               if (ugn_b_lao_above_threshold) then
+!                 F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q
+!                       + 2 u%gs_ij \chi_p* \Sigma_j \nabla_i \chi_q
+                  call nabla_omega_real(fmat,                &
+                                        im,                  &
+                                        fmat_pg_sym(im) - 1, &
+                                        mat_dim,             &
+                                        nz,                  &
+                                        u%n_b_lao(im),          &
+                                        u%gn_b_lao(1, im),      &
+                                        ao)
+               else
+                  if (un_b_lao_above_threshold) then
+                 write(*, *) 'buba un_b_lao_above_threshold!'
+!                    F_pq += u%s_j \chi_p* \Sigma_j \chi_q
+                     call omega_real(fmat,                &
+                                     im,                  &
+                                     fmat_pg_sym(im) - 1, &
+                                     mat_dim,             &
+                                     nz,                  &
+                                     u%n_b_lao(im),          &
+                                     ao)
+                  end if
+               end if
+
+             end if !if (do_london_rhs_direct_kern.or.do_london_rhs_kern_coupling) then
+
 
           end do
 
@@ -2303,7 +2356,21 @@ contains
                                                         nr_points_batch, nr_points_on_this_proc)
               end if
               if (.not. fde_rsp_mag_lao_no_s) then
+                 call fde_mpi_distribute_frozen_pertden_s(frozen_sx_bx, frozen_sx_by, frozen_sx_bz, &
+                                                          frozen_sy_bx, frozen_sy_by, frozen_sy_bz, &
+                                                          frozen_sz_bx, frozen_sz_by, frozen_sz_bz, &
+                                                          nr_points_batch, nr_points_on_this_proc)
                  if (use_gga) then
+                    call fde_mpi_distribute_frozen_pertden_gs(frozen_gxsx_bx, frozen_gxsx_by, frozen_gxsx_bz, &
+                                                              frozen_gxsy_bx, frozen_gxsy_by, frozen_gxsy_bz, &
+                                                              frozen_gxsz_bx, frozen_gxsz_by, frozen_gxsz_bz, &
+                                                              frozen_gysx_bx, frozen_gysx_by, frozen_gysx_bz, &
+                                                              frozen_gysy_bx, frozen_gysy_by, frozen_gysy_bz, &
+                                                              frozen_gysz_bx, frozen_gysz_by, frozen_gysz_bz, &
+                                                              frozen_gzsx_bx, frozen_gzsx_by, frozen_gzsx_bz, &
+                                                              frozen_gzsy_bx, frozen_gzsy_by, frozen_gzsy_bz, &
+                                                              frozen_gzsz_bx, frozen_gzsz_by, frozen_gzsz_bz, &
+                                                              nr_points_batch, nr_points_on_this_proc)
                  end if
               end if
             end if
@@ -2932,19 +2999,13 @@ contains
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
-!   find n, gn, s, gs from the frozen pertden file
-    !call find_pertden(rx, ry, rz, w(1), &
-    !                  n_b  = n_b_lao,   &
-    !                  gn_b = gn_b_lao,  & 
-    !                  s_b  = s_b_lao,   &
-    !                  gs_b = gs_b_lao)
-
     n_b_lao(1) = frozen_n_bx(ipoint)
     n_b_lao(2) = frozen_n_by(ipoint)
     n_b_lao(3) = frozen_n_bz(ipoint)
+
 !   charge density contributions
     do a = 1, 3     !B_{x,y,z}
-       u%n(a) = u%n(a) + derv_total(1, d2000000)*n_b_lao(a)
+       u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d2000000)*n_b_lao(a)
 
        !if (is_gga) then
        !   z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
@@ -2960,30 +3021,39 @@ contains
     end do
 
 !   spin density contributions
-    !if (.not. dft_cfg_no_sdft) then
-    !   do a = 1, 3     !B_{x,y,z}
-    !      do k = k_start, 3  !Sigma_{x,y,z}
-    !   
-    !         u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
-    !                         + derv_total(1, d0200000)*s_b_lao(k, a)
-    !        
-    !         if (is_gga) then
-    !        
-    !            gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
-    !                               + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
-    !                               + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
-    !   
-    !            u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
-    !        
-    !            u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
-    !                        + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
-    !                        + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
-    !                        + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
-    !   
-    !         end if
-    !      end do
-    !   end do
-    !end if
+    s_b_lao(1,1) = frozen_sx_bx(ipoint)
+    s_b_lao(1,2) = frozen_sx_by(ipoint)
+    s_b_lao(1,3) = frozen_sx_bz(ipoint)
+    s_b_lao(2,1) = frozen_sy_bx(ipoint)
+    s_b_lao(2,2) = frozen_sy_by(ipoint)
+    s_b_lao(2,3) = frozen_sy_bz(ipoint)
+    s_b_lao(3,1) = frozen_sz_bx(ipoint)
+    s_b_lao(3,2) = frozen_sz_by(ipoint)
+    s_b_lao(3,3) = frozen_sz_bz(ipoint)
+    if (.not. fde_rsp_mag_lao_no_s) then
+       do a = 1, 3     !B_{x,y,z}
+          do k = k_start, 3  !Sigma_{x,y,z}
+       
+             u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
+                             + derv_total(1, d0200000)*s_b_lao(k, a)
+            
+             !if (is_gga) then
+            
+             !   gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
+             !                      + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
+             !                      + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
+       
+             !   u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
+            
+             !   u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
+             !               + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
+             !               + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
+             !               + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
+       
+             !end if
+          end do
+       end do
+    end if
 
 
   end subroutine
