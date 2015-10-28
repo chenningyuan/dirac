@@ -2072,7 +2072,7 @@ contains
                   end if
                end if
 
-             end if !if (do_london_rhs_direct_kern.or.do_london_rhs_kern_coupling) then
+             end if !if (do_london_rhs_kern_coupling) then
 
 
           end do
@@ -2999,58 +2999,99 @@ contains
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
+!   charge density contributions
     n_b_lao(1) = frozen_n_bx(ipoint)
     n_b_lao(2) = frozen_n_by(ipoint)
     n_b_lao(3) = frozen_n_bz(ipoint)
+    if (is_gga) then
+       gn_b_lao(1,1) = frozen_gxn_bx(ipoint)
+       gn_b_lao(1,2) = frozen_gxn_bx(ipoint)
+       gn_b_lao(1,3) = frozen_gxn_bx(ipoint)
+       gn_b_lao(2,1) = frozen_gyn_bx(ipoint)
+       gn_b_lao(2,2) = frozen_gyn_by(ipoint)
+       gn_b_lao(2,3) = frozen_gyn_bz(ipoint)
+       gn_b_lao(3,1) = frozen_gzn_bx(ipoint)
+       gn_b_lao(3,2) = frozen_gzn_by(ipoint)
+       gn_b_lao(3,3) = frozen_gzn_bz(ipoint)
+    end if
 
-!   charge density contributions
     do a = 1, 3     !B_{x,y,z}
        u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d2000000)*n_b_lao(a)
 
-       !if (is_gga) then
-       !   z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
-       !              + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
-       !              + gn_0_t_pointwise(3)*gn_b_lao(3, a))
+       if (is_gga) then
+          z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
+                     + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
+                     + gn_0_t_pointwise(3)*gn_b_lao(3, a))
 
-       !   u%n(a) = u%n(a) + derv_total(1, d1010000)*z_b
+          u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d1010000)*z_b
 
-       !   u%gn(1:3, a) = u%gn(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
-       !                               + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
-       !                               + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
-       !end if
+          u%gn_b_lao(1:3, a) = u%gn_b_lao(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
+                                      + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
+                                      + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
+       end if
     end do
 
 !   spin density contributions
-    s_b_lao(1,1) = frozen_sx_bx(ipoint)
-    s_b_lao(1,2) = frozen_sx_by(ipoint)
-    s_b_lao(1,3) = frozen_sx_bz(ipoint)
-    s_b_lao(2,1) = frozen_sy_bx(ipoint)
-    s_b_lao(2,2) = frozen_sy_by(ipoint)
-    s_b_lao(2,3) = frozen_sy_bz(ipoint)
-    s_b_lao(3,1) = frozen_sz_bx(ipoint)
-    s_b_lao(3,2) = frozen_sz_by(ipoint)
-    s_b_lao(3,3) = frozen_sz_bz(ipoint)
+
     if (.not. fde_rsp_mag_lao_no_s) then
+       s_b_lao(1,1) = frozen_sx_bx(ipoint)
+       s_b_lao(1,2) = frozen_sx_by(ipoint)
+       s_b_lao(1,3) = frozen_sx_bz(ipoint)
+       s_b_lao(2,1) = frozen_sy_bx(ipoint)
+       s_b_lao(2,2) = frozen_sy_by(ipoint)
+       s_b_lao(2,3) = frozen_sy_bz(ipoint)
+       s_b_lao(3,1) = frozen_sz_bx(ipoint)
+       s_b_lao(3,2) = frozen_sz_by(ipoint)
+       s_b_lao(3,3) = frozen_sz_bz(ipoint)
+       if (is_gga) then
+          gs_b_lao(1,1,1) = frozen_gxsx_bx(ipoint)
+          gs_b_lao(1,1,2) = frozen_gxsx_by(ipoint)
+          gs_b_lao(1,1,3) = frozen_gxsx_bz(ipoint)
+          gs_b_lao(1,2,1) = frozen_gxsy_bx(ipoint)
+          gs_b_lao(1,2,2) = frozen_gxsy_by(ipoint)
+          gs_b_lao(1,2,3) = frozen_gxsy_bz(ipoint)
+          gs_b_lao(1,3,1) = frozen_gxsz_bx(ipoint)
+          gs_b_lao(1,3,2) = frozen_gxsz_by(ipoint)
+          gs_b_lao(1,3,3) = frozen_gxsz_bz(ipoint)
+          gs_b_lao(2,1,1) = frozen_gysx_bx(ipoint)
+          gs_b_lao(2,1,2) = frozen_gysx_by(ipoint)
+          gs_b_lao(2,1,3) = frozen_gysx_bz(ipoint)
+          gs_b_lao(2,2,1) = frozen_gysy_bx(ipoint)
+          gs_b_lao(2,2,2) = frozen_gysy_by(ipoint)
+          gs_b_lao(2,2,3) = frozen_gysy_bz(ipoint)
+          gs_b_lao(2,3,1) = frozen_gysz_bx(ipoint)
+          gs_b_lao(2,3,2) = frozen_gysz_by(ipoint)
+          gs_b_lao(2,3,3) = frozen_gysz_bz(ipoint)
+          gs_b_lao(3,1,1) = frozen_gzsx_bx(ipoint)
+          gs_b_lao(3,1,2) = frozen_gzsx_by(ipoint)
+          gs_b_lao(3,1,3) = frozen_gzsx_bz(ipoint)
+          gs_b_lao(3,2,1) = frozen_gzsy_bx(ipoint)
+          gs_b_lao(3,2,2) = frozen_gzsy_by(ipoint)
+          gs_b_lao(3,2,3) = frozen_gzsy_bz(ipoint)
+          gs_b_lao(3,3,1) = frozen_gzsz_bx(ipoint)
+          gs_b_lao(3,3,2) = frozen_gzsz_by(ipoint)
+          gs_b_lao(3,3,3) = frozen_gzsz_bz(ipoint)
+       end if
        do a = 1, 3     !B_{x,y,z}
           do k = k_start, 3  !Sigma_{x,y,z}
        
              u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
                              + derv_total(1, d0200000)*s_b_lao(k, a)
             
-             !if (is_gga) then
+             if (is_gga) then
             
-             !   gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
-             !                      + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
-             !                      + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
+                gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
+                                   + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
+                                   + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
        
-             !   u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
-            
-             !   u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
-             !               + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
-             !               + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
-             !               + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
+                u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
+           
+                u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
+                            + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
+                            + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
+                            + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
        
-             !end if
+             end if
           end do
        end do
     end if
