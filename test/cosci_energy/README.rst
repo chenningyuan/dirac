@@ -3,11 +3,15 @@
 Spin-orbit states from the COSCI method
 ---------------------------------------
 
-This tutorial's part demonstrates the importance of the effective mean-field spin-orbit scrrening
-on spin-orbit states of the open-shell system.
+This tutorial demonstrates the importance of the effective mean-field spin-orbit scrrening
+on spin-orbit states of open-shell systems.
 
-In the DIRAC test we calculate the spin-orbit components of the :math:`^{2}P` state of Fluorine,
-using a COSCI wavefunction and with several different Hamiltonians.
+Spin-orbit states of the F atom
+-------------------------------
+
+In the DIRAC test we calculate the energy difference between spin-orbit components of the :math:`^{2}P` state of Fluorine,
+using the COSCI wavefunction and with several different Hamiltonians. Files for download are :download:`ci.inp <ci.inp>` and
+:download:`F.mol <F.mol>`
 
 +-------------------+-------------------+
 | Hamiltonian       |   Splitting/cm-1  |
@@ -45,15 +49,19 @@ using a COSCI wavefunction and with several different Hamiltonians.
 | DC2BSS_RKB(DF)    |     585.906861    |
 +-------------------+-------------------+
 
-The closest results to those with the four-component Dirac-Coulomb (DC) Hamiltonian are
-with the infinite-order two-component Hamiltonian containing mean-field spin-orbit screening (those with +MFSSO),
-see for example, Refs. [Ilias2001]_, [Ilias2007]_.
+Calculated values can be devided into two categories: those with the mean-field spin-orbit term (MFSSO)
+and those without.
+Results matching the four-component Dirac-Coulomb (DC) Hamiltonian are those
+containing the MFSSO screening term.
+
+For more information, see Refs. [Ilias2001]_, [Ilias2007]_.
 
 Spin-orbit states of the :math:`Rn^{77+}` cation
 -------------------------------------------------
 
-Let us proceed to the isoelectronic, simple heavy system:  Fluorine-like (9 electrons), highly charged :math:`Rn^{77+}` cation (Z=86).
-Its calculated :math:`^{2}P` splittings are in the following table:
+Let us proceed with the isoelectronic, but heavier system:  the Fluorine-like (9 electrons), highly charged :math:`Rn^{77+}` cation (Z=86).
+(for download, :download:`Z86_Flike.mol <Z86_Flike.mol>`).
+Its calculated :math:`^{2}P` shell splittings are in the following table:
 
 +-------------------+-------------------+
 | Hamiltonian       |   Splitting/eV    |
@@ -77,10 +85,21 @@ Its calculated :math:`^{2}P` splittings are in the following table:
 | DKH2sfBSO1        |   4056.349        |
 +-------------------+-------------------+
 
-Again, the two-component infinite order Hamiltonian with the AMFI screening (BSS+MFSSO), together with
-the screened second-order Douglas-Kroll-Hess operator (DKH2+MFSSO) are reproducing four-component
-DC results.
-"Naked" (non-screened) two-component Hamiltonians (BSS, DKH2) are not preforming so well with respect to
-the screened ones.
-Likewise the one-electron spin-orbit terms must be at least of order two (starting from the DKH2 Hamiltonian).
+
+Excercises
+----------
+
+1. Why is the MFSSO term more important for the ligher element (F) than for heavy element (:math:`Rn^{77+}`) ? 
+
+2. The one-electron spin-orbit term, SO1, is sufficient for spin-orbit splitting description of the Flourine atom,
+   but not of the `Rn^{77+}` cation. Why ?
+
+3. For the Flourine atom, increase the speed of light (:ref:`GENERAL_.CVALUE`) in four-component calculations to emulate non-relativistic description.
+   What is the effect on the spin-orbit splitting ?
+
+4. To "increase" relativistic effects in Flourine, decrease the speed of light in four-component calculations.
+   How does it affect the spin-orbit splitting ?
+
+5. Change the symmetry from D2h to linear in the F mol file and add molecular spinors analysis (:ref:`**ANALYZE`).
+   What quantum number is used for symmetry characterization of resulting spinors ?
 
