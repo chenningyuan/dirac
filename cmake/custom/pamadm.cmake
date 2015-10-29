@@ -1,7 +1,7 @@
 if(EXISTS ${PROJECT_SOURCE_DIR}/pamadm)
     # check whether all pamadm-generated files exist
     if(EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/Sources.cmake"      AND
-       EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/Definitions.cmake"  AND
+       EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/pamadm_definitions.cmake"  AND
        EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/IncludeFiles.cmake" AND
        EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/Tests.cmake"        AND
        EXISTS "${PROJECT_BINARY_DIR}/pamadm-generated/pamadm-flags")

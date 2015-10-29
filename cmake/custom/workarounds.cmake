@@ -15,7 +15,10 @@ foreach(_lang C CXX)
     endif()
 endforeach()
 
-# add stdc++ library to satisfy pgi compilers
-if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
-    list(APPEND CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "stdc++")
+if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+    # remove -rdynamic flag offensive for PGI Fortran in static linking
+    if (CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS)
+        list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
+        message(STATUS "pgf90 flag -rdynamic fremoved from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS")
+    endif()
 endif()

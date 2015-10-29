@@ -18,7 +18,7 @@ How can I change optimization flags?
 
 You can turn optimization off (debug mode) like this::
 
-  $ ./setup.py --type=debug [other flags]
+  $ ./setup --type=debug [other flags]
   $ cd build
   $ make
 

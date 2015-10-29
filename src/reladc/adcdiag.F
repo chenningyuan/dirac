@@ -30,6 +30,7 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FULLDIAR(IOUNIT, FILEN4, FILEN5, INTBUF, LADC, KREP)
+
       implicit none
 
       INTEGER                       :: IOUNIT,INTBUF,LADC,KREP
@@ -74,6 +75,7 @@
       LUN_DIA=IOUNIT
       LUN_OFF=IOUNIT+1
       LUN_OUT=IOUNIT+2
+
 
 
 
@@ -160,6 +162,7 @@
       enddo
       write(lun_out,'(A)') '     end of output'
       close(lun_out)
+
 !
 !  release all memory
 !
@@ -336,6 +339,11 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FULLDIAR2(IOUNIT, FILEN5, INTBUF, NBUFS, LADC, KREP)
+
+      use memory_allocator
+      use adc_fano_exchange
+      use adc_mat
+
       implicit none
 
       INTEGER                       :: IOUNIT,INTBUF,NBUFS,LADC,KREP
@@ -372,10 +380,18 @@
       CALL PST('Entering (new format) REAL FULL diagonalizer+')
       write(*,*) 'Number of buffers to read:',nbufs
 
-      IF(LADC.gt.5000) THEN
+      IF (reladc_md_isfano) THEN
+        IF(LADC.gt.8000) THEN
         write(*,*) 'Matrix dimension too large for direct'
         write(*,*) 'diagonalization! Exiting from this...'
-        return
+        CALL QUIT('No full diagonalization of final states.')
+        END IF
+      ELSE
+        IF(LADC.gt.5000) THEN
+          write(*,*) 'Matrix dimension too large for direct'
+          write(*,*) 'diagonalization! Exiting from this...'
+          return
+        END IF
       ENDIF
 
       LUN_OFF=IOUNIT
@@ -431,6 +447,7 @@
 !|
 !|________________________ end reading section
 
+
 !
 !  call symmetric diagonalizer
 !  calculate eigenvectors being placed in A
@@ -465,6 +482,18 @@
       write(lun_out,'(A)') '     end of output'
       close(lun_out)
 !
+!  in case of a Fano run, write eigenvectors to array
+!
+      IF(reladc_md_isfano) THEN
+        CALL alloc(fin_evecs,ladc,ladc,id='array of Fano final states')
+        CALL alloc(fin_energies,ladc,id='2h1p energies of final states')
+        WRITE(*,*) 'Saving final state vectors and energies to arrays'
+        
+        fin_energies(1:ladc)     = evl(1:ladc)
+        fin_evecs(1:ladc,1:ladc) = a(1:ladc,1:ladc)
+
+      END IF
+!
 !  release all memory
 !
       deallocate(a)
@@ -483,6 +512,11 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FULLDIAC2(IOUNIT, FILEN5, INTBUF, NBUFS, LADC, KREP)
+
+      use memory_allocator
+      use adc_fano_exchange
+      use adc_mat
+
       implicit none
 
       INTEGER                       :: IOUNIT,INTBUF,NBUFS,LADC,KREP
@@ -520,10 +554,18 @@
       CALL PST('Entering (new format) FULL complex diagonalizer+')
       write(*,*) 'Number of buffers to read:',nbufs
 
-      IF(LADC.gt.5000) THEN
-        write(*,*) 'Matrix dimension too large for direct'
-        write(*,*) 'diagonalization! Exiting from this ...'
-        return
+      IF (reladc_md_isfano) THEN                             
+        IF(LADC.gt.8000) THEN                                
+        write(*,*) 'Matrix dimension too large for direct'   
+        write(*,*) 'diagonalization! Exiting from this...'   
+        CALL QUIT('No full diagonalization of final states.')
+        END IF                                               
+      ELSE
+        IF(LADC.gt.5000) THEN                                
+          write(*,*) 'Matrix dimension too large for direct' 
+          write(*,*) 'diagonalization! Exiting from this...' 
+          return                                             
+        END IF                                               
       ENDIF
 
       LUN_OFF=IOUNIT
@@ -613,6 +655,18 @@
       enddo
       write(lun_out,'(A)') '     end of output'
       close(lun_out)
+!
+!  in case of a Fano run, write eigenvectors to array
+!
+      IF(reladc_md_isfano) THEN
+        CALL alloc(cfin_evecs,ladc,ladc,id='array of Fano final states')
+        CALL alloc(fin_energies,ladc,id='2h1p energies of final states')
+        WRITE(*,*) 'Saving final state vectors and energies to arrays'
+        
+        fin_energies(1:ladc)     = evl(1:ladc)
+        cfin_evecs(1:ladc,1:ladc) = a(1:ladc,1:ladc)
+
+      END IF
 !
 !  release all memory
 !
@@ -716,10 +770,8 @@ c
 c  transfer required parameters from matrix descriptor module
 c  to actual modules.
 c
-      IONIZLEVEL = reladc_md_ionizl
-      IF(IONIZLEVEL.eq.3) THEN
-        INTBUF = reladc_md_intbuf
-      ENDIF
+      IONIZLEVEL   =  reladc_md_ionizl
+      INTBUF       =  reladc_md_intbuf
       INFOHANDLE   =  reladc_md_iobase
       KREP         =  reladc_md_desrep
       RCW          =  reladc_md_rcw
@@ -2823,6 +2875,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,RWORK)
 C
       use adc_mat
+      use memory_allocator
+      use adc_fano_diag
 
       IMPLICIT INTEGER (A-Z)
 
@@ -2858,6 +2912,7 @@ C
       CHARACTER*1 JOBZ,UPLO
       REAL*8 Y
       REAL*8 AUEV
+      INTEGER                            :: counter
 
       INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
       INTEGER                            :: nr_vecs
@@ -2885,6 +2940,8 @@ C N is the dimension of the band matrix (not the number of sidebands!)
 
       CALL DSBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           RWORK, INFO)
+
+      WRITE(iw,*) 'info = ', info
 
       IF(INFO.NE.0) THEN
         CALL QUIT('Error in DSBEV')
@@ -2915,35 +2972,57 @@ c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
 
-      allocate(positions(N))
-      nr_vecs = 0
+      IF (reladc_md_isfano) THEN
+        CALL alloc(positions,N,id="array of position numbers fano Lanc")
+        CALL fano_find_in_vec(N,EVL,Z,positions,nr_vecs,iw)
 
-      upper = reladc_md_eeigv_upper
-      lower = reladc_md_eeigv_lower
+        NEIGENV = nr_vecs
+        OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors
+        WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+        DO counter=1, nr_vecs
+          j = positions(counter)
+          WRITE(IOUNIT) EVL(J) ! eigenvalue
+          WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+        ENDDO
+        CLOSE(IOUNIT)
+      
+        WRITE(*,*) 'Fano set of Lanczos eigenvectors saved to TMATEVC'
 
-      DO j = 1, N
-        IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
-          nr_vecs = nr_vecs + 1
-          positions(nr_vecs) = j
-        END IF
-      END DO
+        CALL dealloc(positions)
 
-      NEIGENV = nr_vecs
+      ELSE
+        CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+        nr_vecs = 0
 
-      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
-      WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO k = 1, nr_vecs
-        j = positions(k)
-        WRITE(IOUNIT) EVL(J) ! eigenvalue
-        WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
-      END DO
-      CLOSE(IOUNIT)
+        upper = reladc_md_eeigv_upper
+        lower = reladc_md_eeigv_lower
+        WRITE(IW,*) 'lower = ', lower, ' upper = ', upper
+
+        DO j = 1, N
+          IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
+            nr_vecs = nr_vecs + 1
+            positions(nr_vecs) = j
+          END IF
+        END DO
+
+        NEIGENV = nr_vecs
+
+        OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
+        WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+        DO k = 1, nr_vecs
+          j = positions(k)
+          WRITE(IOUNIT) EVL(J) ! eigenvalue
+          WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+        END DO
+        CLOSE(IOUNIT)
     
-      WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
-      WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
+        WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
+        WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
 
-      deallocate(positions)
+        CALL dealloc(positions)
+      END IF
 
       RETURN
       END
@@ -2951,6 +3030,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,WORK,RWORK)
 C
       use adc_mat
+      use memory_allocator
+      use adc_fano_diag
 !
       IMPLICIT INTEGER (A-Z)
 
@@ -2978,8 +3059,10 @@ C
       CHARACTER*1 JOBZ,UPLO
       COMPLEX*16 Y
       REAL*8 AUEV
+
+      INTEGER                            :: nr_vecs            
+      INTEGER                            :: counter
       INTEGER, ALLOCATABLE, DIMENSION(:) :: positions
-      INTEGER                            :: nr_vecs
       INTEGER                            :: j, k
       REAL                               :: upper, lower
 
@@ -3024,39 +3107,62 @@ C
 
  111  FORMAT(I5,2x,2F12.6,3x,'mean-res',2x,F10.4)
 c
-c eigenvectors of the Lanczos matrix are ready. Save them *all* to disk
+c eigenvectors of the Lanczos matrix are ready. Save the chosen to disk
 c Since each final state symmetry is treated immediately after
 c calculation, TMATVEC does not get an individual symmetry label.
 c
-      allocate(positions(N))
-      nr_vecs = 0
+                                                                  
+      IF (reladc_md_isfano) THEN                                  
+        CALL alloc(positions,N,id="array of position numbers fano Lanc")
+        CALL cfano_find_in_vec(N,EVL,Z,positions,nr_vecs,iw)    
+                                                                  
+        NEIGENV = nr_vecs                                      
+        OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors
+        WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+        DO counter=1, nr_vecs                                  
+          j = positions(counter)                                  
+          WRITE(IOUNIT) EVL(J) ! eigenvalue                       
+          WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+        ENDDO                                                     
+        CLOSE(IOUNIT)                                             
+                                                                  
+        WRITE(*,*) 'Fano set of Lanczos eigenvectors saved to TMATEVC'
+                                                                  
+        CALL dealloc(positions)                                   
+                                                                  
+      ELSE                                                        
+        CALL alloc(positions,N,id='chosen eigenvectors for analysis')
+        nr_vecs = 0
 
-      upper = reladc_md_eeigv_upper
-      lower = reladc_md_eeigv_lower
+        upper = reladc_md_eeigv_upper
+        lower = reladc_md_eeigv_lower
 
-      DO j = 1, N
-        IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
-          nr_vecs = nr_vecs + 1
-          positions(nr_vecs) = j
-        END IF
-      END DO
+        DO j = 1, N
+          IF ((EVL(j).GE.lower).AND.(EVL(j).LE.upper)) THEN
+            nr_vecs = nr_vecs + 1
+            positions(nr_vecs) = j
+          END IF
+        END DO
 
-      NEIGENV = nr_vecs
+        NEIGENV = nr_vecs
 
-      OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
-      WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
-      WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
-      DO k = 1, nr_vecs
-        j = positions(k)
-        WRITE(IOUNIT) EVL(J) ! eigenvalue
-        WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
-      END DO
-      CLOSE(IOUNIT)
+        OPEN(IOUNIT,FILE='TMATEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        WRITE(IOUNIT) nr_vecs   ! number of computed eigenvectors (all!)
+        WRITE(IOUNIT) N   ! length of eigenvectors (= matrix dimension)
+        DO k = 1, nr_vecs
+          j = positions(k)
+          WRITE(IOUNIT) EVL(J) ! eigenvalue
+          WRITE(IOUNIT) (Z(IX,J),IX=1,N)  !corresponding eigenvector
+        END DO
+        CLOSE(IOUNIT)
     
-      WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
-      WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
+        WRITE(iw,*) NEIGENV, 'Lanczos eigenvectors saved to TMATEVC'
+        WRITE(iw,*) 'Energy range in a.u.: ', lower, '--', upper
 
-      deallocate(positions)
+        CALL dealloc(positions)
+
+      END IF
 
       RETURN
       END

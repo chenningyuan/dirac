@@ -3,7 +3,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
-include(Definitions)
+include(pamadm_definitions)
 include(Sources)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -26,6 +26,11 @@ endif()
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 
+# Ivan Hrasko's determination of compiler versions 
+include(FindCompilerVersion)
+# Miro Ilias restrored CMake printout, associated with build_info.h generation
+include(build_info)
+
 set(DIRAC_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
@@ -46,6 +51,10 @@ endif()
 
 if(ENABLE_PCMSOLVER)
     add_dependencies(dirac pcmsolver)
+endif()
+
+if(ENABLE_STIELTJES)
+    add_dependencies(dirac stieltjes)
 endif()
 
 set(_list_of_executables)
@@ -129,6 +138,12 @@ foreach(
             target_link_libraries(${_executable} -ldl)
         endif()
     endif()
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+    # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
+        target_link_libraries(${_executable}  -lstdc++)
+    endif()
+
 endforeach()
 
 unset(_list_of_executables)

@@ -805,6 +805,10 @@ C
 C     Loop over the shells
 C     
       DO ISHLB = IBSTRT, IBEND
+         IF (IPRINT .GT. 10) THEN
+            write(lupri,*) 'TR6DRV: ISHLA, ISHLB',ISHLA,ISHLB
+            call flshfo(lupri)
+         END IF
 C
 C
             KFRSAV3 = KFREE
@@ -826,9 +830,10 @@ C
      &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
 C
             LDXAB = 5*NINSHA*NINSHB
-            CALL MEMGET('INTE',KDXAB,LDXAB,WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIJPASS,8*NPASS,WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIAB,NUMDIS,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','DXAB',KDXAB,LDXAB,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','IJPASS',KIJPASS,8*NPASS,
+     &         WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','IAB',KIAB,NUMDIS,WORK,KFREE,LFREE)
 C
 C           Set INDXAB, INDPASS and IABIND
 C
@@ -860,10 +865,12 @@ C           Allocate the buffer arrays in WORK and set KGMAT to the
 C           start of this allocation section. We now only need to
 C           send down GMAT into HERMIT to find this section.
 C
-            CALL MEMGET('INTE',KALGREC,NPASS,WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KALGBUF,NPASS,WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KAIGBUF,NPASS*NGBFSZ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KARGBUF,NPASS*NGBFSZ,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','ALGREC',KALGREC,NPASS,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','ALGBUF',KALGBUF,NPASS,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','AIGBUF',KAIGBUF,NPASS*NGBFSZ,
+     &         WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','ARGBUF',KARGBUF,NPASS*NGBFSZ,
+     &         WORK,KFREE,LFREE)
 C
 C           As we refer to the places inside the section we need
 C           to subtract KGMAT.
@@ -877,7 +884,7 @@ C
 C
 C           Write directly into the array GMAT
 C           
-            CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','GMAT',KGMAT,NSIZG,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KGMAT),NSIZG)
             KLGBUF = 1
             KALGREC = KFREE
@@ -898,7 +905,7 @@ C        De-allocate buffers and allocate GMAT if we had multiple passes.
 C           
          IF (NPASS.GT.1) THEN
             CALL MEMREL('TRDRV6.1',WORK,1,KALGBUF,KFREE,LFREE)
-            CALL MEMGET('REAL',KGMAT,NSIZG,WORK,KFREE,LFREE) 
+            CALL MEMGET2('REAL','GMAT',KGMAT,NSIZG,WORK,KFREE,LFREE) 
             CALL DZERO(WORK(KGMAT),NSIZG)
          ENDIF
 C
@@ -1106,6 +1113,10 @@ C
 C                    Do the transformation.
 C
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
+                     IF (IPRINT .GE. 11) THEN
+                        WRITE(LUPRI,*)
+     &                  'AO to MO 2-el. transformation, IRS=',IRS
+                     END IF
                      IF (NFSYM.GT.1) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
      &                    GMAT(IOFF),NP,NQ,1,IPQTOQ(1,0),

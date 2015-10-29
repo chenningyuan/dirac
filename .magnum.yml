@@ -24,13 +24,14 @@ script:
     - lscpu
 # update submodule, configure and build
     - git submodule update --init --recursive
+    - export CTEST_PROJECT_NAME=DIRACext
     - python ./pamadm -a --builddir=build_magnum-ci
-    - python ./setup.py --int64  --cmake-options="-D BUILDNAME='magnum-ci.i8.check' -D ENABLE_BOUNDS_CHECK=ON" build_magnum-ci
+    - python ./setup --cmake-options="-D BUILDNAME='magnum-ci.gnu.i4' " build_magnum-ci
     - cd build_magnum-ci
-    - ctest --track Miro -D ExperimentalConfigure
-    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalBuild
+    - ctest -D ExperimentalConfigure
+    - ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) -D ExperimentalBuild
 # when ctest fails (some of tests fail) inside of echo then buildup continues - otherwise magnum stops
-    - echo "$(ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) --track Miro -D ExperimentalTest -L short)"
+    - echo "$(ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) -D ExperimentalTest -L short)"
 # submit to dashboard only for master branch
-    - if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+    - if [ "$CI_BRANCH" == "master" ]; then ctest -D ExperimentalSubmit; fi
 # documentation is built during deploy step

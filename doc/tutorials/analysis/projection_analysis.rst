@@ -56,7 +56,7 @@ Introduction
 ------------
 
 As a first simple example we shall consider the methane molecule.
-The molecular input file ``CH4.xyz`` is
+The molecular input file ``CH4.xyz`` (:download:`download <CH4.xyz>`) is
 
 .. literalinclude:: CH4.xyz
 
@@ -64,7 +64,7 @@ Suppose that we have run a DFT(PBE) calculation using::
 
    pam --inp=PBE  --mol=CH4.xyz --outcmo
 
-where we keep the coefficients and the menu file ``PBE.inp`` is
+where we keep the coefficients and the menu file ``PBE.inp`` (:download:`download <PBE.inp>`) is
 
 .. literalinclude:: PBE.inp
 
@@ -81,21 +81,10 @@ of the individual atomic orbitals (including :math:`m_j` quantum number). We acc
    pam --inp=H  --mol=H --get "DFACMO=ac.H"
    pam --inp=C  --mol=C --get "DFACMO=ac.C"
 
-with corresponding input files ``H.inp``, 
-
-.. literalinclude:: H.inp 
-
-``H.mol``, 
-
-.. literalinclude:: H.mol
-
-``C.inp``
-
-.. literalinclude:: C.inp 
-
-and ``C.mol``
-
-.. literalinclude:: C.mol
+with corresponding input files ``H.inp`` (:download:`download <H.inp>`),
+``H.mol`` (:download:`download <H.mol>`), 
+``C.inp`` (:download:`download <C.inp>`),
+and ``C.mol`` (:download:`download <C.mol>`).
 
 As a final preparation we make symbolic links to the needed coefficient files::
 
@@ -106,7 +95,7 @@ As a final preparation we make symbolic links to the needed coefficient files::
 Running the analysis
 --------------------
 
-We are now ready for the projection analysis itself. We prepare the input file ``prj.inp``
+We are now ready for the projection analysis itself. We prepare the input file ``prj.inp`` (:download:`download <prj.inp>`)
 
 .. literalinclude:: prj.inp
 
@@ -219,6 +208,20 @@ This is the real number reported under the heading ``Total``. Under the heading
 and analogously for Kramers partner 2, from which we get the detailed decomposition of the molecular
 orbital. We find that this molecular orbital is composed of the carbon :math:`2p_{1/2}` orbital and
 the hydrogen :math:`1s` orbitals.
+
+
+Exercises
+---------
+
+1. What is the effect of increasing the C-H bond distance on the atomic configurations of the C,H atoms in the methane molecule and 
+   on atomic charges of the constituent atoms ?
+
+2. What is the effect of increasing the basis sets on the atomic configurations of the C,H atoms in the methane molecule and 
+   on atomic charges of the same constituent atoms ?
+
+3. What is the effect of various DFT functionals (see :ref:`*DFT`) on the atomic configurations of the C and H atoms 
+   in the methane molecule and on atomic charges of these constituent atoms ?
+
 
 -----------------
 Example 2: Uranyl

@@ -118,6 +118,7 @@ module fde_dirac_matrices_integration
 ! -------------------------------------------
 ! for electrostatic, density calculation 
    real(8), allocatable :: active_elpot(:)
+   real(8), allocatable :: active_nucpot(:)
    real(8), allocatable :: active_n(:)   
    real(8), allocatable :: active_gnx(:) 
    real(8), allocatable :: active_gny(:) 
@@ -726,6 +727,11 @@ contains
       if (use_gga_qr .or. use_gga_qi) then
          use_gga = .true.
       end if
+
+      if (do_electrostatic_pot) then
+         use_gga = .true.
+      end if
+
 !     in qr it is not so easy to separate h+ and h-
 !     contributions since they may mix
 !     therefore i quit here if the user wants qr
@@ -770,8 +776,9 @@ contains
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) &
             call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
+         if (.not. do_electrostatic_pot) then
 #ifdef PRG_DIRAC
-         call scale_density_matrices(2.0d0)
+            call scale_density_matrices(2.0d0)
 #endif
 
          !if (do_london_rhs_direct .or. do_london_rhs_ro) then
@@ -780,8 +787,9 @@ contains
 
 
          call insert_half_phases()
+         end if ! do_electrostatic_pot
 
-      end if
+      end if ! fde_mpi_is_master
 
 #ifdef VAR_MPI
       if (parallel_fde) then
@@ -833,53 +841,6 @@ contains
             call fde_mpi_reduce(electrostatic_b_rho_a_interaction)
             call fde_mpi_reduce(electrostatic_a_rho_b_interaction)
          end if
-         if (do_electrostatic_pot) then
-! we want to send the points in the nodes to a final vector in master
-            call fde_mpi_gather(active_elpot)
-            call fde_mpi_gather(active_n)
-            call fde_mpi_gather(active_gnx)
-            call fde_mpi_gather(active_gny)
-            call fde_mpi_gather(active_gnz)
-            call fde_mpi_gather(active_hnxx)
-            call fde_mpi_gather(active_hnxy)
-            call fde_mpi_gather(active_hnxz)
-            call fde_mpi_gather(active_hnyy)
-            call fde_mpi_gather(active_hnyz)
-            call fde_mpi_gather(active_hnzz)
-
-            if (fde_mpi_is_master()) then
-               active_gridfunction%elpot(:) = active_elpot(:)
-
-               active_gridfunction%n(:)     = active_n(:)
-
-!gosia todo: check with export
-! shouldn't it be %gn(1,:) etc., npoints is a second index of gn in emb_export.F90 (fde_export_data_as_txt subroutine)
-               active_gridfunction%gn(:,1)  = active_gnx(:)
-               active_gridfunction%gn(:,2)  = active_gny(:)
-               active_gridfunction%gn(:,3)  = active_gnz(:)
-               
-               active_gridfunction%hn(:,1)  = active_hnxx(:)
-               active_gridfunction%hn(:,2)  = active_hnxy(:)
-               active_gridfunction%hn(:,3)  = active_hnxz(:)
-               active_gridfunction%hn(:,4)  = active_hnyy(:)
-               active_gridfunction%hn(:,5)  = active_hnyz(:)
-               active_gridfunction%hn(:,6)  = active_hnzz(:)
-            endif
-
-            deallocate(active_elpot)
-            deallocate(active_n)
-            deallocate(active_gnx)
-            deallocate(active_gny)
-            deallocate(active_gnz)
-            deallocate(active_hnxx)
-            deallocate(active_hnxy)
-            deallocate(active_hnxz)
-            deallocate(active_hnyy)
-            deallocate(active_hnyz)
-            deallocate(active_hnzz)
-
-         end if
-
          if (nr_fmat > 0) then
             call fde_mpi_reduce(fmat)
          end if
@@ -891,6 +852,7 @@ contains
 
 
       if (fde_mpi_is_master()) then
+       if (.not. do_electrostatic_pot) then
 #ifdef PRG_DIRAC
          call scale_density_matrices(0.5d0)
 #endif
@@ -931,6 +893,7 @@ contains
          end if
 
          call report()
+       end if ! not do_electrostatic_pot
       end if
 
       call nullify_and_release()
@@ -3140,6 +3103,7 @@ contains
         allocate(rw(nr_points_batch))
 
         allocate(active_elpot(nr_points_batch))
+        allocate(active_nucpot(nr_points_batch))
         allocate(active_n(nr_points_batch))
         allocate(active_gnx(nr_points_batch))
         allocate(active_gny(nr_points_batch))
@@ -3173,6 +3137,74 @@ contains
         deallocate(ry)
         deallocate(rz)
         deallocate(rw)
+
+#ifdef VAR_MPI
+! we send the points in the nodes to a final vector in master
+        if (parallel_fde) then
+           call fde_mpi_gatherv(active_elpot,  active_gridfunction%elpot,   nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_nucpot, active_gridfunction%nucpot,  nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_n,      active_gridfunction%n,       nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_gnx,    active_gridfunction%gn(1,:), nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_gny,    active_gridfunction%gn(2,:), nr_points_on_this_proc)
+           call fde_mpi_gatherv(active_gnz,    active_gridfunction%gn(3,:), nr_points_on_this_proc)
+
+           if (fde_mpi_is_master()) then
+
+! aspg, 19/10/2015
+! here we scale the density, density gradient etc since for the
+! calculation of the electrostatic potential we needed the unscaled 
+! density matrix
+
+               active_gridfunction%n(:)    = 2.0d0 * active_gridfunction%n(:)
+
+               active_gridfunction%gn(1,:) = 2.0d0 * active_gridfunction%gn(1,:)
+               active_gridfunction%gn(2,:) = 2.0d0 * active_gridfunction%gn(2,:)
+               active_gridfunction%gn(3,:) = 2.0d0 * active_gridfunction%gn(3,:)
+
+               active_gridfunction%hn(1,:) = 2.0d0 * active_gridfunction%hn(1,:)
+               active_gridfunction%hn(2,:) = 2.0d0 * active_gridfunction%hn(2,:)
+               active_gridfunction%hn(3,:) = 2.0d0 * active_gridfunction%hn(3,:)
+               active_gridfunction%hn(4,:) = 2.0d0 * active_gridfunction%hn(4,:)
+               active_gridfunction%hn(5,:) = 2.0d0 * active_gridfunction%hn(5,:)
+               active_gridfunction%hn(6,:) = 2.0d0 * active_gridfunction%hn(6,:)
+            end if
+        else ! parallel_fde
+#endif
+!
+! in the serial version, just update the gridfunction with the contents of
+! the arrays 
+         active_gridfunction%elpot(:)  = active_elpot(:)
+         active_gridfunction%nucpot(:) = active_nucpot(:)
+
+         active_gridfunction%n(:)    = 2.0d0 * active_n(:)
+
+         active_gridfunction%gn(1,:) = 2.0d0 * active_gnx(:)
+         active_gridfunction%gn(2,:) = 2.0d0 * active_gny(:)
+         active_gridfunction%gn(3,:) = 2.0d0 * active_gnz(:)
+
+         active_gridfunction%hn(1,:) = 2.0d0 * active_hnxx(:)
+         active_gridfunction%hn(2,:) = 2.0d0 * active_hnxy(:)
+         active_gridfunction%hn(3,:) = 2.0d0 * active_hnxz(:)
+         active_gridfunction%hn(4,:) = 2.0d0 * active_hnyy(:)
+         active_gridfunction%hn(5,:) = 2.0d0 * active_hnyz(:)
+         active_gridfunction%hn(6,:) = 2.0d0 * active_hnzz(:)
+ 
+#ifdef VAR_MPI
+        end if ! parallel_fde
+#endif
+        deallocate(active_elpot)
+        deallocate(active_nucpot)
+        deallocate(active_n)
+        deallocate(active_gnx)
+        deallocate(active_gny)
+        deallocate(active_gnz)
+        deallocate(active_hnxx)
+        deallocate(active_hnxy)
+        deallocate(active_hnxz)
+        deallocate(active_hnyy)
+        deallocate(active_hnyz)
+        deallocate(active_hnzz)
+
 
 ! don't try to read another batch
         goto 999
@@ -3496,13 +3528,13 @@ contains
    integer :: k
    integer :: i
    logical :: print_data_at_point
-   logical :: nuc_part
-   logical :: ele_part
    integer :: np_esp
    integer :: irrep_esp
 
    real(8), allocatable :: ao(:, :)
    real(8), allocatable :: buffer(:, :)
+   real(8), allocatable :: dmat_local(:, :, :)
+   real(8), allocatable :: r(:, :)
 
    if (.not. fde_use_blas3_scheme) then
 
@@ -3511,15 +3543,20 @@ contains
       allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
       buffer = 0.0d0
 
+      allocate(r(3,nr_points_on_this_proc))
+      r = 0.0d0
+
+!     allocate(dmat_local(mat_dim,mat_dim,nz))
+!     dmat_local = 0.0d0
+!     dmat_local(:,:,1) = dmat_0(:,:)
+
       print_data_at_point = .true.
 
       np_esp    = 1
       irrep_esp = 1
 
-      nuc_part = .true.
-      ele_part = .true.
-
       active_elpot = 0.0d0
+      active_nucpot= 0.0d0
       active_n     = 0.0d0
       active_gnx   = 0.0d0
       active_gny   = 0.0d0
@@ -3530,7 +3567,6 @@ contains
       active_hnyy  = 0.0d0
       active_hnyz  = 0.0d0
       active_hnzz  = 0.0d0
-
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
@@ -3567,7 +3603,7 @@ contains
             call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
          endif
 
-         active_n(ipoint)   = n_0(1)
+         active_n(ipoint)   = n_0(1) 
 
          active_gnx(ipoint) = gn_0_pointwise(1)
          active_gny(ipoint) = gn_0_pointwise(2)
@@ -3580,17 +3616,24 @@ contains
          active_hnyz(ipoint)= hn_0_pointwise(5)
          active_hnzz(ipoint)= hn_0_pointwise(6)
 
-!        time_density = time_density + second() - time_density_start
+         r(1,ipoint) = rx(ipoint)
+         r(2,ipoint) = ry(ipoint)
+         r(3,ipoint) = rz(ipoint)
 
-         call get_esp(np_esp,        &
-                   active_elpot(ipoint), &
-                   irrep_esp,     &
-                   size(dmat, 1), &
-                   dmat,          &
-                   (/ rx(ipoint), ry(ipoint), rz(ipoint) /), &
-                   nuc_part,      &
-                   ele_part)
-!
+    end do !do ipoint = 1, nr_points_on_this_proc
+    end if
+
+!   time_density = time_density + second() - time_density_start
+    call get_esp(nr_points_on_this_proc,&
+              active_elpot,             &
+              irrep_esp,                &
+              mat_dim,                  &
+!             dmat_local,               &
+              dmat_0,                   &
+              r,                        &
+              include_nuc_part=.true.,  &
+              include_el_part=.true.)
+
 ! aspg, 14/10/2015
 !       note that the electrostatic, hartree and nuclear potentials in dirac have
 !       been multiplied by -1 when exported so that we don't have to multipy the 
@@ -3598,13 +3641,25 @@ contains
 !       energy. with this, the potentials will be in line with those obtained
 !       e.g. with adf 
 !
-      active_elpot(ipoint) = -active_elpot(ipoint)
+    active_elpot = -active_elpot
+
+    call get_esp(nr_points_on_this_proc,&
+              active_nucpot,            &
+              irrep_esp,                &
+              mat_dim,                  &
+!             dmat_local,               &
+              dmat_0,                   &
+              r,                        &
+              include_nuc_part=.true.,  &
+              include_el_part=.false.)
+
+    active_nucpot = -active_nucpot
 !
-    end do !do ipoint = 1, nr_points_on_this_proc
-    end if
 
     deallocate(ao)
     deallocate(buffer)
+!   deallocate(dmat_local)
+    deallocate(r)
 
    end subroutine 
 

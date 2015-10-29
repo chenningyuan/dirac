@@ -92,8 +92,7 @@ module fde_export_data
          type(fde_grid), intent(in)         :: grid
          character(len=4)                   :: level
 
-        call fde_calculate_elpot(level,grid,gf)
-        call fde_get_density(level,grid,gf)
+        call fde_calculate_elpot(level,grid,gf,old_scheme=fde_export_old_esp)
 
         if (fde_rsp_mag_lao_export) then
            call fde_get_pertden(level,grid,gf)

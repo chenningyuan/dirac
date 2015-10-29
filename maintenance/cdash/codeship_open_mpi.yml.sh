@@ -24,6 +24,8 @@
 # export DIRAC_MPI_COMMAND
 export DIRAC_MPI_COMMAND="mpirun -np 2"
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # show system info (processors, disks, memory)
 lscpu
 df -h
@@ -56,7 +58,7 @@ git submodule update --init --recursive
 
 # configure Dirac with Open MPI in 64-bit mode
 python ./pamadm -a --builddir=build_openmpi_i8
-python ./setup.py --int64 --mpi --cmake-options="-D BUILDNAME='open_mpi.gnu.i8-codeship-ci' -D DART_TESTING_TIMEOUT=99999" build_openmpi_i8
+python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --blas=off --lapack=off --int64 --mpi --cmake-options="-D BUILDNAME='open_mpi.i8-codeship-ci' -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_openmpi_i8
 cd build_openmpi_i8
 ctest -D ExperimentalConfigure
 # build

@@ -23,6 +23,9 @@ export LD_LIBRARY_PATH=$LIBDIR:$LD_LIBRARY_PATH
 export LD_RUN_PATH=$LIBDIR:$LD_RUN_PATH
 export PATH=/home/ilias/bin/binutils-gold/binutils-master/gold:$PATH
 
+# select my "private" CDash 
+export CTEST_PROJECT_NAME=DIRACext
+
 echo "My PATH=$PATH"
 #echo "which make:"; which make
 echo -e "\n set:"; set
@@ -33,9 +36,10 @@ echo "Running DIRAC cdash buildup at "$timestamp
 DIRAC=/home/ilias/Work/qch/software/trunk
 
 cd $DIRAC
+git clean -f -d -x
 
 # submodule update
-git submodule update --recursive
+git submodule update --init --recursive
 
 export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
@@ -49,14 +53,14 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
 # deactivate interest module !
-./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
-python ./setup.py  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999"  $BUILD_OMPI_INTEL
+python ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
+python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
- ctest -D ExperimentalUpdate   --track Grid
- ctest -D ExperimentalConfigure   --track Grid
- ctest -D ExperimentalBuild  --track Grid
- ctest  --track Grid  -D ExperimentalTest -R dft
- ctest -D ExperimentalSubmit  --track Grid
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure 
+ ctest -D ExperimentalBuild  
+ ctest   -D ExperimentalTest -R dft
+ ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
  ldd $DIRAC/$BUILD_OMPI_INTEL/dirac.x
@@ -75,13 +79,13 @@ if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
 fi
 
 python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL
-python ./setup.py --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="-D BUILDNAME='grid_savba_intel_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_INTEL
+python ./setup --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="-D BUILDNAME='grid_savba_intel_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
- ctest -D ExperimentalUpdate   --track Grid
- ctest -D ExperimentalConfigure   --track Grid
- ctest -D ExperimentalBuild    --track Grid
- ctest  --track Grid   -D ExperimentalTest -R cc
- ctest -D ExperimentalSubmit  --track Grid
+ ctest -D ExperimentalUpdate  
+ ctest -D ExperimentalConfigure 
+ ctest -D ExperimentalBuild   
+ ctest -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
@@ -100,13 +104,13 @@ if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
   /bin/rm -rf $BUILD_SERIAL_INTEL1
 fi
 python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
-python ./setup.py --fc=ifort --cc=icc --cxx=icpc  --blas=none  --lapack=none --int64 --static cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_INTEL1
+python ./setup --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
- ctest -D ExperimentalUpdate   --track Grid
- ctest -D ExperimentalConfigure   --track Grid
- ctest -D ExperimentalBuild    --track Grid
- ctest  --track Grid  -D ExperimentalTest -R cosci_energy  
- ctest -D ExperimentalSubmit  --track Grid
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure  
+ ctest -D ExperimentalBuild   
+ ctest -D ExperimentalTest -R cosci_energy  
+ ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
@@ -125,13 +129,13 @@ if [[ -d "$BUILD_SERIAL_GNU" ]]; then
   /bin/rm -rf $BUILD_SERIAL_GNU
 fi
 python ./pamadm -a --builddir=$BUILD_SERIAL_GNU
-python ./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static --int64 cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999"  $BUILD_SERIAL_GNU
+python ./setup --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
- ctest -D ExperimentalUpdate      --track Grid
- ctest -D ExperimentalConfigure   --track Grid
- ctest -D ExperimentalBuild        --track Grid
- ctest --track Grid  -D ExperimentalTest -R  fscc
- ctest -D ExperimentalSubmit  --track Grid
+ ctest -D ExperimentalUpdate     
+ ctest -D ExperimentalConfigure   
+ ctest -D ExperimentalBuild    
+ ctest -D ExperimentalTest -R  fscc
+ ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU/dirac.x
@@ -150,14 +154,14 @@ if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU1"
   /bin/rm -rf $BUILD_SERIAL_GNU1
 fi
-./pamadm -a --builddir=$BUILD_SERIAL_GNU1
-./setup.py --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=builtin --blas=builtin -D BUILDNAME="grid_savba_serial_gnu_ownmath_i8_STATIC" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_SERIAL_GNU1
+python ./pamadm -a --builddir=$BUILD_SERIAL_GNU1
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
- ctest -D ExperimentalUpdate     --track Grid
- ctest -D ExperimentalConfigure   --track Grid
- ctest -D ExperimentalBuild   --track Grid
- ctest -D ExperimentalTest -R cosci_energy    --track Grid
- ctest -D ExperimentalSubmit  --track Grid    --track Grid
+ ctest -D ExperimentalUpdate     
+ ctest -D ExperimentalConfigure  
+ ctest -D ExperimentalBuild  
+ ctest -D ExperimentalTest -R cosci_energy    
+ ctest -D ExperimentalSubmit  
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU1/dirac.x

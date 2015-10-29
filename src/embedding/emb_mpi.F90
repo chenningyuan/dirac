@@ -52,6 +52,7 @@ module fde_mpi
    public fde_mpi_distribute_vemb
    public fde_get_my_rank
    public fde_mpi_gather
+   public fde_mpi_gatherv
 #endif
 
    private
@@ -84,10 +85,6 @@ module fde_mpi
       module procedure fde_mpi_reduce_r4
    end interface
 
-!   interface fde_mpi_gather
-!      module procedure fde_mpi_gather_i
-!      module procedure fde_mpi_gather_r
-!   end interface
 #endif
 
 #ifdef VAR_MPI_32BIT_INT
@@ -133,19 +130,53 @@ contains
    end function
 
 #ifdef VAR_MPI
-!   subroutine fde_mpi_gather_i(x)
-!      integer :: x(:)
-!      call interface_mpi_gather(x, size(x),  irank_master, global_communicator)
-!   end subroutine
-!
-!   subroutine fde_mpi_gather_r(x)
-!      real(8) :: x(:)
-!      call interface_mpi_gather(x, size(x),  irank_master, global_communicator)
-!   end subroutine
 
-    subroutine fde_mpi_gather(x)
-       real(8) :: x(:)
-       call mpi_gather(x, size(x), mpi_double_precision, x, size(x), mpi_double_precision, 0, global_communicator, ierr)
+    subroutine fde_mpi_gatherv(x, y, n)
+       real(8) :: x(:), y(:)
+       integer, intent(in) :: n
+       integer :: i
+       integer, allocatable :: rcounts(:)
+       integer, allocatable :: displs(:)
+       integer, allocatable :: rcounts_node(:)
+       integer :: nproc
+
+! set ncouts and displs arrays
+!
+       nproc = fde_mpi_get_nr_proc()
+
+       allocate(rcounts_node(nproc))
+       allocate(rcounts(nproc))
+       allocate(displs(nproc))
+
+       rcounts_node = 0
+       rcounts = 0
+       rcounts_node(1) = n
+
+       call mpi_gather(rcounts_node, 1, mpi_integer, rcounts, 1, mpi_integer, irank_master, global_communicator, ierr)
+
+       displs(1) = 0
+       do i = 2, nproc
+             displs(i) = displs(i-1) + rcounts(i-1)
+       end do
+
+       call mpi_gatherv(x, n, mpi_double_precision, y, rcounts, displs, mpi_double_precision, irank_master, global_communicator, ierr)
+
+       deallocate(rcounts_node)
+       deallocate(rcounts)
+       deallocate(displs)
+
+    end subroutine
+
+
+    subroutine fde_mpi_gather(x,y)
+       real(8) :: x(:), y(:)
+       integer :: n
+       integer :: i
+
+       n = size(x)/fde_mpi_get_nr_proc() 
+
+       call mpi_gather(x, n, mpi_double_precision, y, n, mpi_double_precision, irank_master, global_communicator, ierr)
+
     end subroutine
 
    subroutine fde_mpi_bcast_i0(x)

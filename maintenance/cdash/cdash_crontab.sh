@@ -71,7 +71,7 @@ if [ $INT64 -eq 1 ]; then
     SETUP_FLAGS="$SETUP_FLAGS --int64"
 fi
 
-./setup.py $SETUP_FLAGS --cmake-options="-DBUILDNAME=$BUILDNAME"
+./setup $SETUP_FLAGS --cmake-options="-DBUILDNAME=$BUILDNAME"
 
 cd build
 make -j$NUM_CORES
