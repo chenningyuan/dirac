@@ -902,8 +902,13 @@ contains
          if (fde_use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct &
                                    .and. .not. do_london_rhs_ro &
+                                   .and. .not. do_london_rhs_direct_kern &
+                                   .and. .not. do_london_rhs_kern_coupling &
                                    .and. .not. do_london_ks         &
+                                   .and. .not. do_export_pertden_reorth &
+                                   .and. .not. do_export_pertden_direct &
                                    .and. .not. do_geo)) then
+!gosia: this check should be for nr_fmat, shouldn't it?
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
             else
@@ -911,7 +916,9 @@ contains
             end if
          end if
 
-         if (do_london_rhs_direct .or. do_london_rhs_ro) then
+         !if (do_london_rhs_direct .or. do_london_rhs_ro) then
+         if (do_london_rhs_direct .or. do_london_rhs_ro .or. &
+             do_london_rhs_direct_kern .or. do_london_rhs_kern_coupling) then
             call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
@@ -3952,6 +3959,10 @@ contains
 
 
     r_b = 0.0d0
+    gr_b = 0.0d0
+    s_b = 0.0d0
+    gs_b = 0.0d0
+
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
@@ -3964,7 +3975,8 @@ contains
        if (is_gga) then
           call get_gn_nonhermitian(r_b(im),                 &
                                    gr_b(1:3,im),            &
-                                   isym(im) - 1,            &
+                                   !isym(im) - 1,            &
+                                   0,                       &
                                    mat_dim,                 &
                                    tb_dmat(1 + im_off),     &
                                    buffer,                  &
@@ -3985,9 +3997,10 @@ contains
 !      spin density
        if (.not. fde_rsp_mag_lao_no_s) then
           if (is_gga) then
-             call get_gs_nonhermitian(s_b(:,im),                 &
-                                      gs_b(:,:,im),              &
-                                      isym(im) - 1,              &
+             call get_gs_nonhermitian(s_b(1:3,im),                 &
+                                      gs_b(1:3,1:3,im),              &
+                                      !isym(im) - 1,              &
+                                      0,                         &
                                       mat_dim,                   &
                                       tb_dmat(1 + im_off),       &
                                       buffer,                    &
