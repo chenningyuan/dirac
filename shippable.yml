@@ -55,7 +55,7 @@ script:
 # ldd : show dependencies
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
-    - ctest -j $(nproc)  -D ExperimentalTest || true
+    - ctest -j $(nproc)  -D ExperimentalTest -L short || true
     - ctest -D ExperimentalSubmit
 
 # turn off email notifications
