@@ -93,6 +93,7 @@ Tutorials and walkthrus
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
   :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` |
   :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>`
+  :doc:`Case study <tutorials/two_component_hamiltonians/example>` 
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`
