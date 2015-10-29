@@ -63,7 +63,7 @@ ctest -D Experimental
 ############################################
 ### Now run Nightly buildup with cloning ###
 ############################################
-export CTEST_PROJECT_NAME="DIRACext"
+export CTEST_PROJECT_NAME="DIRAC"
 TMP_DIR=/tmp/ilias/DIRAC_build
 if [[ -d "$TMP_DIR" ]]; then
   /bin/rm -rf $TMP_DIR
