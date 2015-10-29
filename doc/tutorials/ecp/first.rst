@@ -14,7 +14,7 @@ The first example is the SCF calculation of Hydrogen Iodide.
 SOREP calculation
 -----------------
 
-The simplest input file (:download:`HF.inp <../../../../test/ecp/HF.inp>`) for ECP calculation is 
+The simplest SCF input file (:download:`HF.inp <../../../../test/ecp/HF.inp>`) for ECP calculation is 
 
 .. literalinclude:: ../../../../test/ecp/HF.inp
 
@@ -80,7 +80,7 @@ After the SCF step, the following molecular orbitals are generated
     7.50571888682965  ( 2)    21.10478953048176  ( 2)
 
 Compared to molecular spinors from the SOREP calculation above, the spin-orbit coupling is neglected in AREP-based molecular orbitals.
-As a result, some degeneracies in molecular orbitals appear in the scalar relativistic (spin-free AREP) calculation. 
+As a result, some degeneracies in molecular orbitals appear in the relativistic scalar (spin-free, AREP) only treatment.
 Detailed comparison of molecular orbitals can be done using the :ref:`**ANALYZE` functionality.
 
 Exercises
@@ -89,7 +89,7 @@ Exercises
 1. Analyze and compare HOMO obtained without (AREP) and with (SOREP) spin-orbital relativistic effects.
 
 2. Compute the dipole moment of the HI molecule with (SOREP) and without (AREP) spin-orbital relativistic effects.
-   How do spin-orbital effects influence this property ? Compare obtained results with the available literature.
+   How do spin-orbital effects influence this property ? Compare obtained results with the available literature data.
 
 3. Optimize (numerically, see :ref:`*OPTIMIZE`) the internuclear distance with (SOREP) and without (AREP) spin-orbital interaction.
    What is effect of spin-orbital coupling on the bond distance ? Compare with other published works. 
