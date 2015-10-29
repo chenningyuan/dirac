@@ -3,6 +3,12 @@
 
 .. _relccsd:
 
+Kramers unrestricted Coupled-Cluster methods
+============================================
+
+See :cite:`Visscher1996` for initial CCSD(T) implementation. The Fock-space CC 
+implementation is described in :cite:`Visscher2001`.
+
 The old namelist style input used up to DIRAC10 is now no longer supported.
 The input below follows the regular DIRAC style conventions.
 
