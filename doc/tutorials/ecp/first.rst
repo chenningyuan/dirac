@@ -88,11 +88,19 @@ Exercises
 
 1. Analyze and compare HOMO obtained without (AREP) and with (SOREP) spin-orbital relativistic effects.
 
-2. Compute the dipole moment of the HI molecule with (SOREP) and without (AREP) spin-orbital relativistic effects.
-   How do spin-orbital effects influence this property ? Compare obtained results with the available literature data.
-
-3. Optimize (numerically, see :ref:`*OPTIMIZE`) the internuclear distance with (SOREP) and without (AREP) spin-orbital interaction.
-   What is effect of spin-orbital coupling on the bond distance ? Compare with other published works. 
+2. Optimize (numerically, see :ref:`*OPTIMIZE`) the internuclear distance with (SOREP) and without (AREP) spin-orbital interaction.
+   What is effect of spin-orbital coupling on the bond distance ? Compare with other published works ()
    Help - the input file, :download:`geopt_HF.inp <geopt_HF.inp>`.
+
+3. Compute the dipole moment, electric polarizability and first hyperpolarizability of the HI molecule 
+   with (SOREP) and without (AREP) spin-orbital relativistic effects.
+   How do spin-orbital effects influence this property ? Compare with X2C all electron calculations 
+  (input files :download:`HI.acv2z.mol <HI.acv2z.mol>`, 
+               :download:`x2c.scf_prop.inp <x2c.scf_prop.inp>`, :download:`x2c_sf.scf_prop.inp <x2c_sf.scf_prop.inp>`).
+
+4. At the X2c-level evaluate the effect of the picture change for the dipole moment, electric polarizability and the first hyperpolarizability
+   (input file :download:`x2c.scf_prop_nopctr.inp <x2c.scf_prop_nopctr.inp>`). Is the picture change effect affecting these properties ?
+   Apply the findings to the previous ECP property calculations.
+   
 
 
