@@ -86,21 +86,27 @@ Detailed comparison of molecular orbitals can be done using the :ref:`**ANALYZE`
 Exercises
 ---------
 
-1. Analyze and compare HOMO obtained without (AREP) and with (SOREP) spin-orbital relativistic effects.
+1. Identify and compare few occupied and virtual orbitals (including HOMO and LUMO) obtained 
+   without (AREP) and with (SOREP) spin-orbital relativistic effects.
 
 2. Optimize (numerically, see :ref:`*OPTIMIZE`) the internuclear distance with (SOREP) and without (AREP) spin-orbital interaction.
-   What is effect of spin-orbital coupling on the bond distance ? Compare with other published works ()
+   What is effect of spin-orbital coupling on the bond distance ? Compare against other published works (cite:`Park2012`).
    Help - the input file, :download:`geopt_HF.inp <geopt_HF.inp>`.
 
 3. Compute the dipole moment, electric polarizability and first hyperpolarizability of the HI molecule 
    with (SOREP) and without (AREP) spin-orbital relativistic effects.
-   How do spin-orbital effects influence this property ? Compare with X2C all electron calculations 
-  (input files :download:`HI.acv2z.mol <HI.acv2z.mol>`, 
-               :download:`x2c.scf_prop.inp <x2c.scf_prop.inp>`, :download:`x2c_sf.scf_prop.inp <x2c_sf.scf_prop.inp>`).
+   How do spin-orbital effects influence this property ? Compare with two-component (X2C) all electron calculations.
+   Input files :download:`HI.acv2z.mol <HI.acv2z.mol>`, :download:`x2c.scf_prop.inp <x2c.scf_prop.inp>` and
+   :download:`x2c_sf.scf_prop.inp <x2c_sf.scf_prop.inp>`.
 
 4. At the X2c-level evaluate the effect of the picture change for the dipole moment, electric polarizability and the first hyperpolarizability
-   (input file :download:`x2c.scf_prop_nopctr.inp <x2c.scf_prop_nopctr.inp>`). Is the picture change effect affecting these properties ?
-   Apply the findings to the previous ECP property calculations.
+   (input file :download:`x2c.scf_prop_nopctr.inp <x2c.scf_prop_nopctr.inp>`). 
+   What is the size of the picture change effect affecting the properties ?
+   Apply these findings to the previous ECP property calculations.
+
+5. To evaluate the size of spin-orbital effects on properties, you might use (in addition to the X2C approach of point 3.)
+   the four-component Dirac-Coulomb Hamiltonian.
+
    
 
 

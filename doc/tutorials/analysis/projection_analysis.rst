@@ -214,13 +214,13 @@ Exercises
 ---------
 
 1. What is the effect of increasing the C-H bond distance on the atomic configurations of the C,H atoms in the methane molecule and 
-   on atomic charges of the constituent atoms ?
+   on the atomic charges of the constituent atoms ? Collect calculated data in a table.
 
-2. What is the effect of increasing the basis sets on the atomic configurations of the C,H atoms in the methane molecule and 
-   on atomic charges of the same constituent atoms ?
+2. How different basis sets affect the atomic configurations of the C,H atoms in the methane molecule and 
+   the atomic charges of the same constituent atoms ?
 
-3. What is the effect of various DFT functionals (see :ref:`*DFT`) on the atomic configurations of the C and H atoms 
-   in the methane molecule and on atomic charges of these constituent atoms ?
+3. Investigate the effect of various DFT functionals (see :ref:`*DFT`) on the atomic configurations of the C and H atoms 
+   in the methane molecule and on atomic charges of these constituent atoms.
 
 
 -----------------

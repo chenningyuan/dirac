@@ -9,10 +9,11 @@ on spin-orbit states of open-shell systems. Several two-component Hamiltonians a
 Spin-orbit states of the F atom
 -------------------------------
 
-In the DIRAC test we calculate the energy difference between spin-orbit components of the :math:`^{2}P` state of Fluorine,
+In the DIRAC test we calculate the energy difference between spin-orbit splitted states of the :math:`^{2}P` state of Fluorine,
 using the COSCI wavefunction and with several different Hamiltonians. 
-Files for download are :download:`ci.inp <../../../../test/cosci_energy/ci.inp>` and
-:download:`F.mol <../../../../test/cosci_energy/F.mol>`
+All input files for download (together with output files) are in the corresponding test directory of DIRAC, :file:`test/cosci_energy`.
+
+The following table shows the energy difference betweem :math:`X ^{2}P_{3/2}` and :math:`A ^{2}P_{1/2}` states:
 
 +-------------------+-------------------+
 | Hamiltonian       |   Splitting/cm-1  |
@@ -64,8 +65,9 @@ Spin-orbit states of the :math:`Rn^{77+}` cation
 -------------------------------------------------
 
 Let us proceed with the isoelectronic, but heavier system:  the Fluorine-like (9 electrons), highly charged :math:`Rn^{77+}` cation (Z=86).
-(for download, :download:`Z86_Flike.mol <../../../../test/cosci_energy/Z86_Flike.mol>`).
-Calculated splittings between :math:`^{2}P` states are in the following table:
+All input files for download (together with output files) are in the corresponding test directory of DIRAC, :file:`test/cosci_energy`.
+Calculated energy differences between the ground, :math:`X ^{2}P_{3/2}`, and the first excited state, :math:`A ^{2}P_{1/2}`,
+are in the following table:
 
 +-------------------+-------------------+
 | Hamiltonian       |   Splitting/eV    |
@@ -107,6 +109,7 @@ Excercises
 4. To "increase" relativistic effects in Flourine, decrease the speed of light in four-component calculations.
    How does it affect the spin-orbit splitting ?
 
-5. Change the symmetry from D2h to linear in the F mol file and add molecular spinors analysis (:ref:`**ANALYZE`).
-   What quantum number is used for symmetry characterization of molecular spinors ?
+5. Change the symmetry from D2h to automatic symmetry detection in the F mol file and
+   add molecular spinors analysis to the input file (:ref:`**ANALYZE`).
+   Identify molecular spinors (orbitals) of Flourine according to the extra quantum number in linear symmetry.
 
