@@ -248,13 +248,12 @@ def main():
     files_never_compiled.append('src/cc_external/hsfscc/hsfs_main.F90')
     files_never_compiled.append('src/main/main.F90')
     files_never_compiled.append('src/dirrci/cimain.F')
-    files_never_compiled.append('src/interest/selftest/module_interest_selftest.f90')
-    files_never_compiled.append('src/interest/selftest/main_interest_selftest.f90')
 
     directories_never_compiled = []
     directories_never_compiled.append('utils')
     directories_never_compiled.append('cmake')
     directories_never_compiled.append('src/xcfun')  # is part of xcfun.cmake
+    directories_never_compiled.append('src/interest')  # is part of interest.cmake
 
     for directory in directories_never_compiled:
         for f in glob.glob('%s/*.F90' % directory):
@@ -311,7 +310,7 @@ def main():
     this_module = 'interest'
     dirac_modules[this_module] = dirac_module('interest', 'Interest module')
     dirac_modules[this_module].add_cppflag('MOD_INTEREST')
-    dirac_modules[this_module].add_directory('src/interest')
+    dirac_modules[this_module].add_directory('src/interest-interface')
     dirac_modules[this_module].add_test('mdirac_closed-shell_dft')
     dirac_modules[this_module].take_out_of_release()
 
