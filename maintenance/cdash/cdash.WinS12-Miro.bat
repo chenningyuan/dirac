@@ -2,7 +2,8 @@
 cls
 
 rem set number of threads for OpenBLAS
-set OPENBLAS_NUM_THREADS=2
+rem 24GB RAM,8 CPU
+set OPENBLAS_NUM_THREADS=4
 
 rem source files directories
 set DIRAC=C:\Users\milias\Documents\work\software\dirac\trunk
@@ -11,6 +12,8 @@ set TMP=C:\Users\milias\Documents\work\software\dirac
 rem set LOG file and testing timeout
 set LOG=%DIRAC%\buildup.log
 set DIRTIMEOUT="12m"
+
+set CTEST_PROJECT_NAME=DIRACext
 
 rem REMOVE THIS LINES?
 rem "C:\Program Files (x86)\PuTTY\pageant.exe" "C:\Users\milias\Documents\milias_private_key.ppk"
@@ -32,23 +35,23 @@ git submodule update --init --recursive
 set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD% 1>>%LOG% 2>&1
-python setup.py --int64  --blas=off --lapack=off ^
---explicit_libs="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
---cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON" ^
---generator="MinGW Makefiles" %BUILD% 1>>%LOG% 2>&1
+python setup --int64  --blas=off --lapack=off ^
+ --explicit-libs="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
+ --cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON -D ENABLE_UNIT_TESTS=ON -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF" ^
+ --generator="MinGW Makefiles" %BUILD% 1>>%LOG% 2>&1
 cd %BUILD%
-ctest      -D ExperimentalUpdate     --track Miro  1>>%LOG%  2>&1
-ctest      -D ExperimentalConfigure  --track Miro  1>>%LOG%  2>&1
-ctest -j 2 -D ExperimentalBuild      --track Miro  1>>%LOG%  2>&1
+ctest      -D ExperimentalUpdate       1>>%LOG%  2>&1
+ctest      -D ExperimentalConfigure    1>>%LOG%  2>&1
+ctest -j 2 -D ExperimentalBuild        1>>%LOG%  2>&1
 rem no tests here ! do only the compilation, tests are running in following buildup
 rem ctest -j 2 -D ExperimentalTest       --track Miro  1>>%LOG%  2>&1
-ctest      -D ExperimentalSubmit     --track Miro  1>>%LOG%  2>&1
+ctest      -D ExperimentalSubmit       1>>%LOG%  2>&1
 
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
 
 rem wait 20 seconds
-timeout 20
+rem timeout 20
 
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
@@ -62,18 +65,18 @@ git submodule update --init --recursive
 set BUILD=build_mingw64_i8_tests
 if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD% 1>>%LOG% 2>&1
-rem split setup.py command line
-python setup.py --int64 --blas="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
---lapack="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
---cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel_cloned' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON" ^
---generator="MinGW Makefiles" %BUILD% 1>>%LOG% 2>&1
+rem split setup command line
+python setup --int64 --blas=off --lapack=off ^
+ --explicit-libs="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
+ --cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel_cloned' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON -D ENABLE_UNIT_TESTS=ON -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF" ^
+ --generator="MinGW Makefiles" %BUILD% 1>>%LOG% 2>&1
 cd %BUILD%
 rem ctest      -D ExperimentalConfigure  --track Miro  1>>%LOG%  2>&1
 rem ctest -j 2 -D ExperimentalBuild      --track Miro  1>>%LOG%  2>&1
 rem ctest -j 2 -D ExperimentalTest       --track Miro  1>>%LOG%  2>&1
 rem ctest      -D ExperimentalSubmit     --track Miro  1>>%LOG%  2>&1
 rem use one compact command
-ctest -j 2 -D Experimental  --track Miro  1>>%LOG%  2>&1
+ctest -j 2 -D Experimental  1>>%LOG%  2>&1
 
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
@@ -91,7 +94,7 @@ rem restart PC
 rem shutdown /r
 
 rem wait 1 minute
-timeout 60 
+rem timeout 60 
 
 rem close this cmd window
 exit

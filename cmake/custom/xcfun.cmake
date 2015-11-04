@@ -1,12 +1,14 @@
 option(ENABLE_XCFUN "Enable XCFun library" ON)
 
 if(ENABLE_XCFUN)
+    message(STATUS "The XCFun submodule ENABLED")
     include(ExternalProject)
 
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
         -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         )
@@ -36,5 +38,6 @@ if(ENABLE_XCFUN)
 
     include_directories(${PROJECT_BINARY_DIR}/external/xcfun-build/fortran)
 else()
+    message(STATUS "The XCFun submodule DISABLED")
     add_definitions(-DEXCLUDE_XCFUN)
 endif()

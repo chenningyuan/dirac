@@ -98,7 +98,7 @@ and spin-other-orbit (MFSO2) from AMFI::
   .BSS
    3999
 
-This mimics the Dirac-Coulomb-Gaunt Hamiltonian, as the spin-other-orbit comes
+This mimics the Dirac-Coulomb-Gaunt Hamiltonian, as the spin-other-orbit (SOO) term comes
 from the Gaunt interaction term.
 
 DIRAC allows to switch off AMFI spin-orbit contributions from various centers.
@@ -141,10 +141,9 @@ Rough first order, DKH1 (not recommended for practical calculations)::
   .BSS
    111
 
-For comparison purposes only between BSS-SO1 and AMFI-SO1 atomic one-center
+For comparison purposes between BSS-SO1 and AMFI-SO1 atomic one-center
 integrals (point nucleus only) use::
 
   .BSS
    001
 
-.. include:: ../../../../test/cosci_energy/README.rst

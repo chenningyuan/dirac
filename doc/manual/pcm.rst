@@ -6,7 +6,7 @@ star(PCM)
 Polarizable continuum model (PCM) directives. 
 
 General information on the PCM can be found in :cite:`Tomasi2005`, whereas details 
-concerning the Dirac implementation are found in :cite:`DiRemigio2014`.
+concerning the Dirac implementation are found in :cite:`DiRemigio2015`.
 
 .. warning:: Calculations with the polarizable continuum model **cannot** exploit molecular point group symmetry and/or 2-component Hamiltonians.
 

@@ -1,12 +1,11 @@
 INTGRL
-HI MOLECULE
-I:Christiansen RECP, H:Aug-cc-pVTZ
+ HI MOLECULE
+ Dyall v2z basis                        
 C   2    2 Y  Z    A
        53.    1
 I     1.59900000           0.00000000        0.00000000
-LARGE BASIS ECPCE46_TZ
-ECPLIB ECPCE46SO
+LARGE BASIS dyall.acv2z
         1.    1
 H     0.00000000           0.00000000        0.00000000
-LARGE BASIS aug-cc-pVTZ 
+LARGE BASIS dyall.acv2z
 FINISH

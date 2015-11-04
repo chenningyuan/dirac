@@ -57,6 +57,13 @@ simple way to generated restricted magnetic balance for the calculation
 of NMR shieldings. This option works in the general SO case, but not in
 the spinfree case since spinfree calculations are not possible with UKB.
 
+keyword(NOPCTR)
+
+In two-component infinite-order relativistic calculations (with :ref:`HAMILTONIAN_.X2C`) take only LL block
+of four-component property operators to avoid the picture change transformation.
+Experimental option, use with care.
+
+
 Predefined electric properties
 ==============================
 
@@ -168,7 +175,9 @@ keyword(MOLGRD)
 
 Evaluate the molecular gradient, i.e.
 
-..|{\\frac{{\\partial E}}{{\\partial X\_A}}}|
+.. math::
+
+  |{\\frac{{\\partial E}}{{\\partial X\_A}}}|
 
 where *X*\ :sub:`*A*`\  are the coordinates of the nuclei. This
 is an expectation value of one- and two-electron operators. Normally the

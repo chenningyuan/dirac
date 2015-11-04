@@ -6798,7 +6798,7 @@ CMI ... evaluate memmory for SL,SS integrals only if not beeing in two-component
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MINANA */
-      SUBROUTINE MINANA(WORK,LWORK)
+      SUBROUTINE MINANA()
 C***********************************************************************
 C
 C     Readin analysis input for the final geometry
@@ -6807,19 +6807,24 @@ C
 C     Written by J. Thyssen, Nov 13 1997
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbgen.h"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
+
 C
       CALL QENTER('MINANA')
 C
       IF(DOANA) THEN
+         call legacy_lwork_get(LWORK)
+         call alloc(WORK,LWORK,id='WORK in MINPRP')
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL ANWINP('**ANA F',WORK,LWORK)
          CLOSE(LUCMD)
+         call dealloc(WORK)
 C
 C***********************************************************************
 C*****  A N A L Y S I S    M O D U L E  ********************************

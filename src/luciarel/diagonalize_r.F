@@ -777,8 +777,7 @@ C
             IORDER = 1
             IPACK  = 0
             CALL RSJACO(MAX_HRED,N_CRED,N_CRED,WORK(KHRED),WORK(KEIGVL),
-     &                  IJOB,IORDER,IPACK,WORK(KEIGVC),
-     &                  WORK(KFREE),LFREE)
+     &                  IJOB,IORDER,IPACK,WORK(KEIGVC))
 !        ELSE
 !           IF (IPRINT.GT.5) write(lupri,*) 'calling QDIAG'
 !           MATZ = 1

@@ -3,7 +3,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
-include(Definitions)
+include(pamadm_definitions)
 include(Sources)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -51,6 +51,14 @@ endif()
 
 if(ENABLE_PCMSOLVER)
     add_dependencies(dirac pcmsolver)
+endif()
+
+if(ENABLE_INTEREST)
+    add_dependencies(dirac interest)
+endif()
+
+if(ENABLE_STIELTJES)
+    add_dependencies(dirac stieltjes)
 endif()
 
 set(_list_of_executables)
