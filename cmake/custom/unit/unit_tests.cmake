@@ -17,11 +17,10 @@ if(ENABLE_UNIT_TESTS)
         )
 
     macro(add_unit_test _path _name)
+        file(GLOB COPIED_FILES "${_path}/*")
+        file(COPY ${COPIED_FILES} DESTINATION ${PROJECT_BINARY_DIR}/unit-tests/${_name})
         add_custom_target(
-            ${_name}_files_copied
-            COMMAND cp ${_path}/* ${PROJECT_BINARY_DIR}/unit-tests/${_name}
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-            )
+            ${_name}_files_copied WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} )
         add_executable(
             ${_name}.x
             ${_path}/test.F90
