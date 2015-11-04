@@ -7,8 +7,8 @@ import sys
 def listdirs(folder):
   result = []
   for d in os.listdir(folder):
-    if os.path.isdir(os.path.join(folder, d)): result.append(os.path.join(folder, d))
-  result.sort()
+    if os.path.isdir(os.path.join(folder, d)): result.append(os.path.join(folder, d).replace("\\","/"))
+    result.sort()
   return result
 
 # set location of unit tests
