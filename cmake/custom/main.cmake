@@ -53,6 +53,10 @@ if(ENABLE_PCMSOLVER)
     add_dependencies(dirac pcmsolver)
 endif()
 
+if(ENABLE_INTEREST)
+    add_dependencies(dirac interest)
+endif()
+
 if(ENABLE_STIELTJES)
     add_dependencies(dirac stieltjes)
 endif()
