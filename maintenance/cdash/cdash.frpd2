@@ -27,11 +27,11 @@ git status
 BUILD_GNU=build_gnu_i8
 ./pamadm -a --builddir=$BUILD_GNU
 # configure step
-python ./setup  --int64  --cmake-options="-D BUILDNAME='frpd2.gnu_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON -D PYTHON_EXECUTABLE=/usr/bin/python -D ENABLE_UNIT_TESTS=ON" $BUILD_GNU 
+python ./setup  --int64 --blas=off --lapack=off  --cmake-options="-D BUILDNAME='gnu_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON -D PYTHON_EXECUTABLE=/usr/bin/python -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD_GNU 
 cd $BUILD_GNU
 ctest  -D ExperimentalConfigure  
 ctest -j3 -D ExperimentalBuild  
-ctest -j3 -D ExperimentalTest    
+ctest -j3 -D ExperimentalTest  -L short
 ctest  -D ExperimentalSubmit    
 
 cd $DIRAC
@@ -44,20 +44,20 @@ ctest -j3 -D Experimental -L short
 
 
 ####  server's Intel compilers  ####
-if [[ -z $PROD_DIR ]]; then
-  source /home/ilias/intel/bin/compilervars.sh intel64
-  echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
-  export MATH_ROOT=/home/ilias/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
-fi
-cd $DIRAC
-BUILD_INTEL=build_intelmkl_i8
-./pamadm -a --builddir=$BUILD_INTEL
+#if [[ -z $PROD_DIR ]]; then
+#  source /home/ilias/intel/bin/compilervars.sh intel64
+#  echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+#  export MATH_ROOT=/home/ilias/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+#fi
+#cd $DIRAC
+#BUILD_INTEL=build_intelmkl_i8
+#./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-python ./setup --fc=ifort  --cc=icc  --cxx=g++  --int64 --cmake-options="-D BUILDNAME='frpd2.intel_g++_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=ON   -D ENABLE_UNIT_TESTS=ON -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_INTEL
-cd $BUILD_INTEL
-export MKL_NUM_THREADS=3
-export MKL_DYNAMIC="FALSE"
-ctest -D Experimental
+#python ./setup --fc=ifort  --cc=icc  --cxx=g++  --int64 --cmake-options="-D BUILDNAME='intel_g++_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=ON   -D ENABLE_UNIT_TESTS=ON -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_INTEL
+#cd $BUILD_INTEL
+#export MKL_NUM_THREADS=3
+#export MKL_DYNAMIC="FALSE"
+#ctest -D Experimental
 
 
 ############################################
@@ -77,7 +77,7 @@ git submodule update --init --recursive
 BUILD_INTEL=build_ifort_icc_g++_mkl_i8
 ./pamadm -a --builddir=$BUILD_INTEL
 # configure step
-python ./setup --fc=ifort  --cc=icc  --cxx=g++  --int64  --cmake-options="-D BUILDNAME='frpd2.ifort_icc_g++_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  -D ENABLE_UNIT_TESTS=ON -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_INTEL
+python ./setup --fc=ifort  --cc=icc  --cxx=g++  --int64  --cmake-options="-D BUILDNAME='ifort_icc_g++_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  -D ENABLE_UNIT_TESTS=ON -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_INTEL
 cd $BUILD_INTEL
 export MKL_NUM_THREADS=3
 export MKL_DYNAMIC="FALSE"
