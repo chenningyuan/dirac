@@ -19,7 +19,11 @@ parser.add_option('--name',
 test_dir = '%s/unit-tests/%s' % (options.build_dir, options.name)
 
 # run test
-command = 'cd %s; ./%s.x' % (test_dir, options.name)
+
+if sys.platform == 'win32':
+  command = 'cd %s  & %s.x.exe' % (test_dir, options.name)
+else:
+  command = 'cd %s; ./%s.x' % (test_dir, options.name)
 p = subprocess.Popen(command, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 (out, err) = p.communicate()
 
@@ -28,6 +32,10 @@ f = open('%s/%s.log' % (test_dir, options.name), 'w')
 f.write(out)
 f.close()
 f = open('%s/%s.err' % (test_dir, options.name), 'w')
+#miro: need more debug info for MS Windows, please keep it
+f.write("problem: \n")
+f.write(command); f.write("\n")
+f.write(out); f.write("\n")
 f.write(err)
 f.close()
 
