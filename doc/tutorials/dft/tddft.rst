@@ -303,18 +303,40 @@ The general definition of an oscillator strenght is
    f_{0n} = \frac{2m}{e^2\hbar\omega_{0n}}\left|T_{0n}\right|^2
 
 where :math:`\hbar\omega_{0n}` and :math:`T_{0n}` are the corresponding excitation energy and transition moment, respectively.
+The transition moment is in the relativistic domain defined as
+
+.. math::
+
+   T_{0n}=\left<0\left|ec\left(\boldsymbol{\alpha}\cdot\mathbf{n}\right)e^{i\mathbf{k}\cdot\mathbf{r}}\right|n\right>
+
+where :math:`\mathbf{k}` and :math:`\mathbf{n}` is the wave and polarization vector, respectively.
 The calculation of oscillator strengths is invoked through::
 
    .INTENS
    0
 
 which means that we ask for oscillator strengths to order zero in the wave vector. So far only the zeroth-order, corresponding to 
-the electric dipole approximation, has been implemented in DIRAC. The isotropic dipole length-dipole length oscillator strenghts 
-are given as
+the electric dipole approximation, has been implemented in DIRAC. The transition moment then reduces to
 
 .. math::
 
-   f^{(0)iso}_{0n} = \frac{2m}{3e^2\hbar}\omega_{0n}\left|\mu_{0n}\right|^2
+   T^{[0]}_{0n}=\left<0\left|ec\left(\boldsymbol{\alpha}\cdot \mathbf{n}\right)\right|n\right>
+
+We may go from dipole velocity to the dipole length representation using
+
+.. math::
+
+   i\hbar c\boldsymbol{\alpha} = \left[\mathbf{r},\hat{h}_D\right]\quad\Rightarrow\quad 
+   T^{[0]}_{0n}=-i\omega_{0n}\mathbf{n}\cdot\left<0\left|-e\mathbf{r}\right|n\right>=
+   -i\omega_{0n}\mathbf{n}\cdot\boldsymbol{\mu}_{0n}
+
+where appears transition electric dipole moments :math:`\boldsymbol{\mu}_{0n}`.
+The isotropic dipole length-dipole length oscillator strenghts 
+are given by
+
+.. math::
+
+   f^{(0)iso}_{0n} = \frac{2m}{3e^2\hbar}\omega_{0n}\left(\left|\mu_{x;0n}\right|^2+\left|\mu_{y;0n}\right|^2+\left|\mu_{z;0n}\right|^2\right)
 
 and are found to be
 
