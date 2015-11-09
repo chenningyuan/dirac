@@ -68,3 +68,5 @@ add_custom_command (
 	COMMAND ${CMAKE_COMMAND} -E make_directory 
 		${CMAKE_CURRENT_BINARY_DIR}/fortran
 	)
+
+install(TARGETS xcfun ARCHIVE DESTINATION lib)

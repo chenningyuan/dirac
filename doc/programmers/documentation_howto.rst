@@ -259,12 +259,12 @@ of the codebase and get valuable early feedback on our changes. There are some f
 
 Currently supported free CI services:
 
-* MagnumCI
-* Semaphore
-* Shippable
-* wercker
-* CircleCI
-* Codeship
+* `MagnumCI <https://magnum-ci.com>`_ 
+* `Semaphore <https://magnum-ci.com>`_ 
+* `Shippable <https://app.shippable.com>`_
+* `Wercker <http://wercker.com/>`_
+* `CircleCI <https://circleci.com/>`_
+* `Codeship <https://codeship.com/>`_
 
 Most of the CI services also offer ability to deploy built code. We use this feature to deploy the documentation after successful builds.
 To deploy the code we use simple python script which wraps ``rsync`` command and adds some additional metadata to each deployed HTML. After
@@ -361,3 +361,13 @@ After keyword arguments you have to provide two positional arguments.
 
 Every operation on the remote server will be executed under the given user. If the ``post_script`` option is passed it will be executed after the rsync operation finishes. Example
 post deploy script can be found in ``maintenance/post_deploy.py``. It used to generate nice overview of last documentation builds on the `main documentation site <http://dirac.umb.sk/doc/doc-deployments/>`_.
+
+Summary 
+-------
+
+We give complete list of packages to be installed for compiling the DIRAC documentation:
+::
+
+    sudo apt-get install python-sphinx python-matplotlib
+    pip install sphinx_rtd_theme hieroglyph sphinxcontrib-bibtex
+

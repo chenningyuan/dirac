@@ -34,6 +34,7 @@ Keyword reference
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`MULPOP <analyze/mulpop>` --- Mulliken population analysis
+   - :doc:`PRIVEC <analyze/privec>` --- Print coefficients
    - :doc:`PROJECTION <analyze/prjana>` --- Projection analysis
    - :doc:`LOCALIZATION <analyze/localization>` --- Localization 
    - :doc:`DENSITY <analyze/density>` --- Density

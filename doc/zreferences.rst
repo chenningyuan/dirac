@@ -18,9 +18,10 @@ The best web-link is the DOI web identity, used almost for all peer-reviewed pap
 For books we recommend to resort to semi-permanent links, like the publisher's web-site,
 or popular Google-Books web-space.
 
-.. note::
 
-    All references are also available for download as one file in the :download:`BibTex <references.bib>` format.
+References availability
+-----------------------
+All references are also available for :download:`download <references.bib>` as one (big) file in the popular BibTex format.
 
 .. bibliography:: references.bib
   :enumtype: upperroman

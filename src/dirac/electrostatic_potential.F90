@@ -258,9 +258,8 @@ module electrostatic_potential
       
       tols = thrs**2
       tolog = 2 * log(thrs)
-! mc is the number of components, as defined in include/dcbham.h
 ! Decide whether we loop on LL block only or not
-      if (mc == 1) then
+      if (nosmlv) then
 ! Looping only over LL block only
           idxmax = nlrgsh
       else if  (skipss_block) then
@@ -354,7 +353,7 @@ module electrostatic_potential
        idena = idena + khkta * multa
       end do
 
-      if (skipss_block .and. (.not. do_matrix) .and. (mc /= 1)) then
+      if (skipss_block .and. (.not. do_matrix) .and. (.not.nosmlv)) then
 ! Simple Coulombic Correction for the MEP when skipss is selected.
 ! This must NOT be done when:
 ! 1. we want a Fock matrix contribution;

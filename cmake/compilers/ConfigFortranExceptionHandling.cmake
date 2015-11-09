@@ -25,13 +25,13 @@ if(CMAKE_Fortran_COMPILER_WORKS)
 
     # depending on result set XHOST_FLAG_AVAILABLE
     if(_ieee_binary_output MATCHES "ieee_arithmetic supported by compiler")
-        message("-- IEEE Exception Handling module supported by Fotran compiler")
+        message(STATUS "-- IEEE Exception Handling module supported by Fotran compiler")
         add_definitions(-DHAVE_IEEE_ISNAN)
     elseif(_intrinsic_binary_output  MATCHES "isnan intrinsic supported by compiler")
-        message("-- IEEE Exception Handling module no supported by Fotran compiler, but intrinsic ISNAN exists")
+        message(STATUS "-- IEEE Exception Handling module no supported by Fotran compiler, but intrinsic ISNAN exists")
         add_definitions(-DHAVE_INTRINSIC_ISNAN)
     else()
-        message("-- IEEE Exception Handling AND intrisic ISNAN module not supported by Fotran compiler")
+        message(STATUS "-- IEEE Exception Handling AND intrisic ISNAN module not supported by Fotran compiler")
     endif()
 
 endif()

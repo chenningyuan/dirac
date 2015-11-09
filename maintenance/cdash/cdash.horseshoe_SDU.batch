@@ -32,9 +32,12 @@ git --version
 DIRAC=/people/disk2/ilias/QCH_Work/qch_progs/dirac_git/trunk
 #
 export DIRTIMEOUT="12m"
+export CTEST_PROJECT_NAME="DIRACext"
 
 cd $DIRAC
 
+#git clean -f -d -x
+git pull origin master
 git submodule update --init --recursive
 #
 # reset back to the launching directory and rerun setup command with new parameters
@@ -46,13 +49,12 @@ if [[ -d "$BUILD_INTEL" ]]; then
 fi
 #./pamadm -a --hscc --hsfsdyn --auto --builddir=$BUILD
 ./pamadm -a --builddir=$BUILD_INTEL
-./setup --run-unit-tests --fc=ifort  --cc=icc  --cxx=icpc -D BUILDNAME="fe8_Odense.intel_mkl_i8-batch" --int64 -D DART_TESTING_TIMEOUT=99999  $BUILD_INTEL
+./setup --fc=ifort  --cc=icc  --cxx=icpc --int64 --cmake-options='-D BUILDNAME="fe8_Odense.intel_mkl_i8-batch" -D DART_TESTING_TIMEOUT=99999'  $BUILD_INTEL
 cd $BUILD_INTEL
-ctest -D ExperimentalUpdate  --track Miro
-ctest -D ExperimentalConfigure  --track Miro
-ctest -D ExperimentalBuild  --track Miro
-ctest -D ExperimentalTest -R cosci_energy pcm  --track Miro
-ctest -D ExperimentalSubmit  --track Miro
+ctest -D ExperimentalConfigure
+ctest -D ExperimentalBuild  
+ctest -D ExperimentalTest -R dft mp2
+ctest -D ExperimentalSubmit  
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "buildup finished at "$timestamp

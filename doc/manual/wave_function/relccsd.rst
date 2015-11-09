@@ -3,6 +3,12 @@
 
 .. _relccsd:
 
+Kramers unrestricted Coupled-Cluster methods
+============================================
+
+See :cite:`Visscher1996` for initial CCSD(T) implementation. The Fock-space CC 
+implementation is described in :cite:`Visscher2001`.
+
 The old namelist style input used up to DIRAC10 is now no longer supported.
 The input below follows the regular DIRAC style conventions.
 
@@ -20,7 +26,7 @@ regular CCSD calculation, the latter calculation is switched off. If you
 do wish to perform also a regular CC calculation (e.g. to get the CCSD(T) energy)
 you need to activate this explicitly via .ENERGY (see below).
 
-keword(ENERGY)
+keyword(ENERGY)
 
 Activate the energy calculation. This is the preferred option for
 calculations on closed shell or simple open shell systems and need not
@@ -38,7 +44,7 @@ keyword(GRADIENT)
 
 Calculate the effective 1-particle density matrix (currently only for a
 closed shell MP2 wave function). This option can be used to calculate
-molecular properties.
+molecular properties. See :cite:`vanStralen2005`.
 
 *Default:*
 
