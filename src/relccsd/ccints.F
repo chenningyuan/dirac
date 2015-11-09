@@ -943,7 +943,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER KR(-NSP:NSP),INDK(*),INDL(*)
-      REAL*8 CBUF(RCW,*)
+      REAL*8 CBUF(*)
       INTEGER IBUF(7,*)
       INTEGER INDEX(NSP,NSP,4,*)
 C
@@ -981,58 +981,20 @@ C
    1  CONTINUE
       IF (MYPROC.EQ.MREADER) THEN
 C
-C     A number of different formats are possible. 
-      IF (CARITH) THEN 
-       IF (NZ.EQ.1) THEN
-         READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
-     &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
-     &        (CBUF(1,INZ),INZ=1,NONZR) 
-CMI      ... NONZR is read before from MDINT file !
-CMI      ... zero imaginary part of two-el. integrals
-         if(rcw > 1)then
-           DO INZ=1,NONZR
-            CBUF(2,INZ) = 0.0D0
-           END DO
-         end if
-       ELSE
-C     For complex groups we read the real and imaginary part.
-         IF (LEVYLE) THEN
-          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
-     &         (INDK(INZ),INDL(INZ),INZ=1,NONZR),
-     &         (CBUF(1,INZ),INZ=1,NONZR) 
-         ELSE
-          READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
-     &         (INDK(INZ),INDL(INZ),INZ=1,NONZR),
-     &         (CBUF(1,INZ),CBUF(2,INZ),INZ=1,NONZR) 
-         ENDIF
-       ENDIF
-
-      ELSEIF (INTERFACE(1:7).NE.'MOLFDIR') THEN
-C     For real groups we read only the real part in DIRAC format.
-         READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
-     &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
-     &        (CBUF(1,INZ),INZ=1,NONZR) 
-      ELSEIF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
-C     For real groups we skip the zero imaginary part in MOLFDIR format.
-         READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
-     &        (INDK(INZ),INDL(INZ),INZ=1,NONZR),
-     &        (CBUF(1,INZ),RDUM,INZ=1,NONZR) 
-      ENDIF
-
-
-      IF (IKR.EQ.0) THEN
-         IF (JKR.EQ.0) THEN
+        READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
+     &       (INDK(INZ),INDL(INZ),INZ=1,NONZR),
+     &       (CBUF(INZ),INZ=1,NONZR*RCW) 
+        IF (IKR.EQ.0) THEN
+          IF (JKR.EQ.0) THEN
             NONZR = -1
-         ELSE
+          ELSE
             READ (MDINT) NEXTFIL
             CLOSE (MDINT,STATUS='KEEP')
             OPEN(MDINT,FILE=NEXTFIL,FORM='UNFORMATTED')
             GOTO 1
-         ENDIF
+          ENDIF
+        ENDIF
       ENDIF
-      ENDIF
-
-
 #if defined (VAR_MPI)
       IF (NMPROC.GT.1 ) THEN
         call interface_mpi_BCAST(IKR,  1,MREADER,global_communicator)
@@ -1053,9 +1015,15 @@ C     For real groups we skip the zero imaginary part in MOLFDIR format.
       IF (CHECK_INTS) THEN
         write(6,*) 'IKR,JKR,NONZR:',IKR,JKR,NONZR
         write(6,*) ' ... INDK,INDL,CBUF: '
-        do i=1,NONZR
-          write(6,*) INDK(I),INDL(I),CBUF(1,I),myproc
-        enddo
+        IF(RCW.EQ.1) THEN
+          do i=1,NONZR
+            write(6,*) INDK(I),INDL(I),CBUF(I),myproc
+          enddo
+        ELSEIF(RCW.EQ.1) THEN
+          DO I = 1,NONZR*2,2
+            write(6,*) INDK(I),INDL(I),CBUF(I),CBUF(I+1),myproc
+          ENDDO
+        ENDIF
       ENDIF
 
       IF (CHECK_INTS) THEN
