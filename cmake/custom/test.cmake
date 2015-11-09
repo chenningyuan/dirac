@@ -21,13 +21,11 @@ else()
     message(STATUS "Specialized benchmark tests DISABLED")
 endif()
 
-
 if(ENABLE_BASIS_SETS_CHECK)
     message(STATUS "Reading of almost all basis sets input files in extra test ENABLED")
 else()
     message(STATUS "Reading of almost all basis sets input files in extra test DISABLED")
 endif()
-
 
 if(NOT ENABLE_BENCHMARKS AND NOT ENABLE_TUTORIALS AND NOT ENABLE_BASIS_SETS_CHECK)
     # set ctest own timeout
@@ -38,7 +36,7 @@ if(NOT ENABLE_BENCHMARKS AND NOT ENABLE_TUTORIALS AND NOT ENABLE_BASIS_SETS_CHEC
         )
 endif()
 
-message(STATUS "Set timeout for every single test set to ${DART_TESTING_TIMEOUT} seconds.")
+message(STATUS "Set CDash timeout for every single test set to ${DART_TESTING_TIMEOUT} seconds. Owerwritten by pam timeout setting.")
 
 macro(dirac_test _name _label)
     add_test(${_name} ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
