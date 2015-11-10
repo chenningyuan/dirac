@@ -35,7 +35,7 @@ Options:
   --explicit-libs=<LIBS>                 Explicit linker specification for extra libraries passed directly to the linker [default: off].
   --static                               Enable static linking [default: False].
   --prof                                 Enable profiling [default: False]
-  --check                                Enable runtime checking flags [default: False]
+  --check                                Enable runtime checking of compiled executables [default: False]
   --int64                                Enable 64bit integers [default: False].
   --type=<TYPE>                          Set the CMake build type (debug, release, or relwithdeb) [default: release].
   --generator=<STRING>                   Set the CMake build system generator [default: Unix Makefiles].
