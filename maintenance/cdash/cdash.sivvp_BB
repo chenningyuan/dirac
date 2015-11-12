@@ -46,7 +46,6 @@ export DIRTIMEOUT="12m"
 ###############################################
 #      serial DIRAC buildup, Intel MKL        #
 ###############################################
-BUILD_SERIAL=build_intelmkl_i8
 cd $DIRAC
 
 git clean -f -d -x
@@ -54,9 +53,8 @@ git clean -f -d -x
 # take care of submodules
 git submodule update --init --recursive
 
-
+BUILD_SERIAL=build_intelmkl_i8
 echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
-#
 if [[ -d "$BUILD_SERIAL" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL"
   /bin/rm -rf $BUILD_SERIAL
@@ -64,10 +62,28 @@ fi
 ./pamadm -a --builddir=$BUILD_SERIAL
 python ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --cmake-options="-D BUILDNAME='UMB_Intel_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF" $BUILD_SERIAL
 cd $BUILD_SERIAL
-#python binary_info.py
 ctest -D ExperimentalUpdate  
 ctest -D ExperimentalConfigure    
 ctest -j2 -D ExperimentalBuild  
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm 
+ctest -D ExperimentalSubmit  
+
+# parallel OpenMPI + Intel-MKL
+export PATH=/home/milias/bin/openmpi-1.8.4-intel/bin:$PATH
+export LD_LIBRARY_PATH=/home/milias/bin/openmpi-1.8.4-intel/lib:$LD_LIBRARY_PATH
+BUILD=build_ompi_intelmkl_i8
+echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD"
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+export DIRAC_MPI_COMMAND="mpirun -np 2"
+./pamadm -a --builddir=$BUILD
+python ./setup --mpi --int64 --fc=mpif90 --cc=mpicc --cxx=mpicxx --cmake-options="-D BUILDNAME='UMB_OpenMPI-Intel_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF" $BUILD
+cd $BUILD
+ctest -D ExperimentalUpdate 
+ctest -D ExperimentalConfigure 
+ctest -j2 -D ExperimentalBuild 
 ctest -j2 -D ExperimentalTest -R cosci_energy pcm 
 ctest -D ExperimentalSubmit  
 
