@@ -1,4 +1,4 @@
-option(ENABLE_INTEREST "Enable Interest" OFF)
+option(ENABLE_INTEREST "Enable Interest" ON)
 
 if(ENABLE_INTEREST)
     message(STATUS "Interest library enabled")
