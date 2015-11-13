@@ -1,14 +1,17 @@
+:orphan:
+ 
+
 GOSCIP
 ======
 
-Let us remind first that DIRAC
-uses the so-called averaged SCF scheme, which means that all  
-the configurations belonging to the reference space receive the same  
+Let us remind first that DIRAC
+uses the so-called averaged SCF scheme, which means that all
+the configurations belonging to the reference space receive the same
 weight. 
 
-In the case when one (or few) of the states from the reference  
-space is (or are) more important then others, than the large open-shell space can lead to  
-dis-balanced treatment and therefore to higher SCF energies than those obtained with a smaller  
+In the case when one (or few) of the states from the reference
+space is (or are) more important then others, than the large open-shell space can lead to
+dis-balanced treatment and therefore to higher SCF energies than those obtained with a smaller
 reference space.
 
 The "better" SCF configuration is that one giving the lowest total energy.
@@ -25,7 +28,7 @@ fluorine atom using a COSCI wavefunction. This will represent the
 individual determinants in this simple case. 
 
 The same calculation can
-also be done automatically by specifying :ref:`.RESOLVE`
+also be done automatically by specifying :ref:`WAVE_FUNCTION_.RESOLVE`
 in the :ref:`**WAVE FUNCTION` section of the input.
 
 The full calculation is given as input example of the  *cosci_energy*  test:
@@ -41,5 +44,4 @@ The full calculation is given as input example of the  *cosci_energy*  test:
 
      &GOSCIP NELACT=5, IPRNT=1 &END
      &POPANA THRESH=1.0D-4, DEGEN=1.0D-12, SELPOP=50.0 &END
-
 

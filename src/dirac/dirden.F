@@ -351,8 +351,6 @@ C
 C
       CALL QENTER('ACTDEN')
 C
-CTROND
-CTROND      CALL DZERO(DMAT,N2BBASXQ)
       DO 20 ISYM = 1,NFSYM
          ITEST  = NACSH(ISYM,IOPEN)
          ISTART = NPSH(ISYM)+NISH(ISYM)+1
@@ -415,8 +413,6 @@ C
      &            NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
         ENDDO
       ENDIF
-
-CMI ... entering DMAT array must be allocated before with N2BBASXQ*NFMAT 
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
 
       IDEN = 1

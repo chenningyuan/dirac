@@ -1,4 +1,6 @@
+:orphan:
 
+.. _mmf_X2C: 
 
 Molecular mean-field X2C
 ========================

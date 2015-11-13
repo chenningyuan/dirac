@@ -3261,7 +3261,7 @@ C
 C     Diagonalize symmetric part to determine principal axis system
 C     IZ(1) is largest absolute eigenvalue, IY(3) smallest, IX
 C
-      CALL RSJACO(3,3,3,SYM,PVAL,1,-2,0,AXES,WORK(KFREE),LFREE)
+      CALL RSJACO(3,3,3,SYM,PVAL,1,-2,0,AXES)
 C
       SPNPAR(2) = PVAL(1) - (PVAL(2) + PVAL(3))/D2
       IF (PVAL(1) .EQ. 0) THEN
