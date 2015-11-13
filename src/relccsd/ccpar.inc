@@ -20,8 +20,8 @@
 !     Second index : integral type (VOVV,VVVV)
 !     Third index : irrep
 !
-      INTEGER*8 NV6PAR,NV5PAR,IDIST
-      COMMON/CCPARV/ NV6PAR,NV5PAR,IDIST(6,10,32)
+      INTEGER*8 NV6PAR,NV5PAR,IDIST(6,10,32)
+      COMMON/CCPARV/ NV6PAR,NV5PAR,IDIST
 !
 ! DIRAC-specific preprocessor statement to solve 32/64 bit compatibility problems 
 !
