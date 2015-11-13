@@ -73,6 +73,7 @@ export PATH=/home/milias/bin/openmpi-1.8.4-intel/bin:$PATH
 export LD_LIBRARY_PATH=/home/milias/bin/openmpi-1.8.4-intel/lib:$LD_LIBRARY_PATH
 BUILD=build_ompi_intelmkl_i8
 echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD"
+cd $DIRAC
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
