@@ -55,7 +55,7 @@ A CDash script can in principle be as brief as this::
 
   $ ./setup [--flags]
   $ cd build
-  $ make -jN -D Nightly [--track master|--track release-15]
+  $ ctest -jN -D Nightly [--track master|--track release-15]
 
 The result of appears automatically on the
 `DIRAC Dashboard <https://testboard.org/cdash/index.php?project=DIRAC>`__.
