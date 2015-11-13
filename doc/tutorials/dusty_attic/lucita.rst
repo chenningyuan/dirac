@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 LUCITA:Sample inputs
 ====================
 
@@ -45,13 +48,14 @@ Perform GASCI calculations:
      13 13
     *END OF
 
-In addition, for we provide three LUCITA input templates with increasing complexity:
+In addition, for we provide three LUCITA input templates with increasing complexity
+(lucita.novice,lucita.expert,lucita.wizard)
 
--  :download:`novice <lucita_templates/lucita.novice>`
+.. -  :download:`novice <lucita_templates/lucita.novice>`
 
--  :download:`expert <lucita_templates/lucita.expert>`
+.. -  :download:`expert <lucita_templates/lucita.expert>`
 
--  :download:`wizard <lucita_templates/lucita.wizard>`
+.. -  :download:`wizard <lucita_templates/lucita.wizard>`
 
 The user can download and modify them according to his needs.
 

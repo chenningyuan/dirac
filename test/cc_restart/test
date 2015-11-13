@@ -8,10 +8,7 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-if os.environ['DIRAC_TMPDIR'] != '' :
-   my_scratchdir = os.path.join(os.environ['DIRAC_TMPDIR'], 'cc_restart')
-else :
-   sys.exit(-1)
+my_scratchdir = os.path.join(os.getcwd(), 'cc_scratchdir')
 
 f = Filter()
 

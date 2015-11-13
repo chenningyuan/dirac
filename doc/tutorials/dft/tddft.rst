@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ================================
 A TDDFT study of carbon monoxide
 ================================
@@ -6,7 +9,7 @@ Introduction
 ============
 
 To illustrate the TDDFT capabilities of DIRAC we will consider excited states of the carbon monoxide molecule. 
-The experimental spectrum can be found `here <http://webbook.nist.gov/cgi/cbook.cgi?Formula=CO&NoIon=on&Units=SI&cDI=on>`_ .
+The experimental spectrum can be found `at this page <http://webbook.nist.gov/cgi/cbook.cgi?Formula=CO&NoIon=on&Units=SI&cDI=on>`_ .
 Note that this source gives only adiabatic excitation energies :math:`T_e`, that is, the energy difference between the 
 minima of the potential curve of the ground and excited state, whereas the TDDFT calculations give vertical excitation
 energies :math:`T_v`. The experimental adiabatic excitation energies has been converted to vertical ones by :cite:`Nielsen_JCP1980`.
@@ -326,7 +329,7 @@ DIRAC will also list the corresponding rate of spontaneous emission
 
 and lifetime. This is a spin-orbit free calculation and so we only see oscillator strength to 
 singlet states (clearly dominated by :math:`C\ ^{1}\Sigma^{+}`). Things change is we 
-activate spin-orbit interaction (that is, remove the :ref:`.SPINFREE` keyword). 
+activate spin-orbit interaction (that is, remove the :ref:`HAMILTONIAN_.SPINFREE` keyword). 
 We see that the energy levels split up
 
 .. literalinclude:: TDDFT_CO_exc

@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(DENSITY)
 
 The density can be dumped to formatted file in `CUBE file

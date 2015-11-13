@@ -308,11 +308,9 @@ CTEMP     ISM2(3,5) = 1
 *           String occupations added, Feb. 98
 *
 *
-*´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 * Modified for relativistic CI calculations
 *
 *        Timo Fleig, Feb. 2000
-*´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 *
       use memory_allocator
       use symmetry_setup_krci
@@ -485,7 +483,7 @@ CTEMP     ISM2(3,5) = 1
      &                     NELFSPGP,
      &                     NOCCLS,NGAS,occupation_class,
      &                     IASPGPTP,IBSPGPTP,
-     &                     ICISTR,NTOOB,mj_statistics,inv_symbol,
+     &                     ICISTR,mj_statistics,inv_symbol,
      &                     IPRWFC)
 *
 
@@ -540,7 +538,7 @@ CTEMP     ISM2(3,5) = 1
      &                       NCPMT,WCPMT,NELFSPGP,NOCCLS,
      &                       NGAS,IOCCLS,
      &                       IASPGPTP,IBSPGPTP,
-     &                       ICISTR,NTOOB,mj_statistics,inv_symbol,
+     &                       ICISTR,mj_statistics,inv_symbol,
      &                       IPRNT)
 *
 * Analyze CI vector :
@@ -558,11 +556,9 @@ CTEMP     ISM2(3,5) = 1
 *               Aug 1995 : GAS version
 *               May 1997 : BLOCK driven
 *
-*´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 * Modified for relativistic CI calculations
 *
 *        Timo Fleig, Feb. 2000
-*´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 *
 *
       use mospinor_info

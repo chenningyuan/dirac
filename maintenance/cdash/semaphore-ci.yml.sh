@@ -12,7 +12,7 @@
 # **Note**
 # In the following command: 
 #
-# echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
+# echo "$(ctest -j 8  -D ExperimentalTest -L short)"
 #
 # the command "echo" makes possible to continue after one of Dirac tests fails
 # because otherwise server stops and do not submit to dashboard.
@@ -57,6 +57,8 @@ sudo pip install sphinxcontrib-bibtex
 sudo pip install sphinx_rtd_theme
 sudo pip install hieroglyph
 
+# CDash project name 
+  export CTEST_PROJECT_NAME="DIRACext"
 # set for parallel buildup
   DIRAC_MPI_COMMAND="mpirun -np 2"
 # determine number of processors
@@ -72,13 +74,12 @@ git submodule update --init --recursive
 
 # 64-bit Integer, MPICH parallel build
 python ./pamadm -a --builddir=build_semaphore-ci_i8
-python ./setup -D BUILDNAME="mpich-gnu-i8_semaphore" --int64 --mpi -D DART_TESTING_TIMEOUT=9999  build_semaphore-ci_i8
+python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --blas=off --lapack=off --cmake-options="-D BUILDNAME='mpich-gnu-i8_semaphore' -D DART_TESTING_TIMEOUT=9999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON"  build_semaphore-ci_i8
 cd build_semaphore-ci_i8
-ctest --track master -D ExperimentalConfigure
-ctest -j $N_PROC --track master -D ExperimentalBuild
-#echo "$(ctest -j 8 --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j $TEST_N_PROC --track master -D ExperimentalTest)"
-ctest --track master -D ExperimentalSubmit 
+ctest -D ExperimentalConfigure
+ctest -j $N_PROC -D ExperimentalBuild
+echo "$(ctest -j $TEST_N_PROC -D ExperimentalTest -L short)"
+ctest -D ExperimentalSubmit 
 
 # finally do the quick documentation buildup in the build_semaphore-ci_i8 directory
 make html
