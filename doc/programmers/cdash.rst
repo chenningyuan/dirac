@@ -78,9 +78,9 @@ Edit your crontab with::
 Here is an example::
 
   # m  h  dom mon dow command
-    00 04 *   *   *   /home/user/nightly/dirac/maintenance/cdash/cdash_crontab.sh -b 'master'     -p '--adm'     -j 12      -c 'Intel' -n 'Intel-15.0.2' -t 'master'     -k /home/user/.ssh/nightly_rsa
+    00 04 *   *   *   /home/user/nightly/cdash_crontab.sh -b 'master'     -p '--adm'     -j 12      -c 'Intel' -n 'Intel-15.0.2' -t 'master'     -k /home/user/.ssh/nightly_rsa
     55 04 *   *   *   killall -9 dirac.x
-    00 05 *   *   *   /home/user/nightly/dirac/maintenance/cdash/cdash_crontab.sh -b 'release-15' -p '--release' -j 12 -r 1 -c 'Intel' -n 'Intel-15.0.2' -t 'release-15' -k /home/user/.ssh/nightly_rsa
+    00 05 *   *   *   /home/user/nightly/cdash_crontab.sh -b 'release-15' -p '--release' -j 12 -r 1 -c 'Intel' -n 'Intel-15.0.2' -t 'release-15' -k /home/user/.ssh/nightly_rsa
     55 05 *   *   *   killall -9 dirac.x
 
 
