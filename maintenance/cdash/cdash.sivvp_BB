@@ -85,8 +85,9 @@ cd $BUILD
 ctest -D ExperimentalUpdate 
 ctest -D ExperimentalConfigure 
 ctest -j2 -D ExperimentalBuild 
-ctest -j2 -D ExperimentalTest -R cosci_energy pcm 
+ctest -j2 -D ExperimentalTest -R cosci_energy 
 ctest -D ExperimentalSubmit  
+unset DIRAC_MPI_COMMAND
 
 ##############################################################################
 #          serial,static DIRAC buildup with Intel+MKL
