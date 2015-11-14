@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 CFREAD
 ======
 
@@ -19,6 +22,4 @@ symmetries. Usage is straightforward, for instance::
 
 Note that the electronic energy is calculated before diagonalization, so that coefficients from iteration *n* 
 refer to electronic energy from iteration *n-1*. At convergence this should not matter.
-
-
 

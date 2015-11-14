@@ -1,4 +1,7 @@
-.. _dirrci:
+:orphan:
+ 
+
+.. _DIRRCI:
 
 ==========================
 DIRRCI -- Direct CI module

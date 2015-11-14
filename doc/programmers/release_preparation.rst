@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 Release preparation
 ===================
@@ -102,8 +103,7 @@ directories. If your pamadm module is not part of pamadm --release, then the cod
 will be automatically removed by the release script. In the above example, the
 script would remove the actual MOD_KRMC code and what would be left is::
 
-              CALL QUIT(
-       &  'Second order KMCSCF optimization not included in this version')
+  CALL QUIT('Second order KMCSCF optimization not included in this version')
 
 If you want to protect code from being released which is not part of any pamadm
 module, you can use MOD_UNRELEASED::
@@ -113,7 +113,7 @@ module, you can use MOD_UNRELEASED::
   #endif
 
 To summarize, you can remove code using either existing CPP filters or using
-MOD_UNRELEASED. Do this on the release branch and merge to master::
+MOD_UNRELEASED. Do this on the release branch and merge to the master.
 
 
 How to "remove" tests?
@@ -136,8 +136,7 @@ release code of others without asking.
 
 1. Verify copyright headers.
 2. Verify logo (list of authors).
-3. Bump the version (the version number is kept in file VERSION; but also git grep -i for "orphaned" version
-numbers in the source code).
+3. Bump the version (the version number is kept in file VERSION; but also git grep -i for "orphaned" version numbers in the source code).
 
 As a final step create the tarball::
 

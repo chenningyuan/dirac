@@ -44,7 +44,7 @@ C
 #include "dcborb.h"
 #include "orgcom.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 16)
       LOGICAL SET, NEWDEF, RESET, GORG_BY_USER
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
@@ -53,7 +53,7 @@ C
       DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
      &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
      &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI',
-     &            '.COREHO','.MY CI ','.THRPCI'/
+     &            '.COREHO','.MY CI ','.THRPCI','.KR-CON'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -79,7 +79,7 @@ C
       MULTIPESR = 0
       N_CIESR   = -1
       MAX_CIESR_IT = 0
-      THR_CVEC_ESR = 1.0D-3
+      THR_CVEC_ESR = 1.0D-4
       THRPCI_ESR   = 1.0D-3
       THR_CIESR    = 1.0D-6 ! based on 1 ppm = 10**(-6)
 C     variables for spin polarization in CI
@@ -87,6 +87,7 @@ C     variables for spin polarization in CI
       NVSH_ESR(:)  = -1
       NSSH_ESR(:)  = -1
       LVL_CIESR(:) = 0
+      USE_KRAMERS_CONJ = .FALSE.
 C
 C     Initialize orgcom.h
 C     ===================
@@ -113,7 +114,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -201,6 +202,10 @@ C&&&& flexible input of the CI you want
 C&&&& limit for printing CI coefficients in output
    15          CONTINUE ! .THRPCI
                   READ(LUCMD,*) THRPCI_ESR
+               GO TO 100
+C&&&& use Kramers conjugation on CI vector
+   16          CONTINUE ! .KR_CON
+                  USE_KRAMERS_CONJ = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -404,7 +409,7 @@ C
 C     Make CI Hamiltonian matrix (diagonal now, but it may be made
 C     non-diagonal in ESRPHASE)
 C
-      CALL MEMGET2('REAL','HCI',KHCI,
+      CALL MEMGET2('REAL','H_CI',KHCI,
      &   MZ*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHCI),MZ*MULTIPESR*MULTIPESR)
       DO I = 1, MULTIPESR
@@ -412,8 +417,8 @@ C
          WORK(II) = WORK(KEIGVL-1 + I)
       END DO
 
-      IF (IPRESR .GT. 25) THEN
-         WRITE(lupri,*) 'DEBUG: WORK(KHCI) AFTER DIAGONAL'
+      IF (IPRESR .GT. 3) THEN
+         WRITE(lupri,*) 'H_CI after ESR_RESOLVE:'
          CALL OUTPUT(WORK(KHCI),1,MULTIPESR,1,MULTIPESR,
      &               MULTIPESR,MULTIPESR,-1,LUPRI)
       END IF

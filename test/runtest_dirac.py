@@ -34,7 +34,7 @@ class TestRun(runtest.TestRun):
         runtest.TestRun.__init__(self, _file, argv)
         self.return_code = 0
 
-    def run(self, inp_files, mol_files, f=None, args='', accepted_errors=[]):
+    def run(self, inp_files, mol_files, f=None, args='', accepted_errors=[], print_args=False):
 
         launch_script = os.path.normpath(os.path.join(self.binary_dir, 'pam'))
         if self.skip_run:
@@ -58,8 +58,11 @@ class TestRun(runtest.TestRun):
             for mol in mol_files:
                 mol_no_suffix = os.path.splitext(mol)[0]
                 out = '%s_%s.out' % (inp_no_suffix, mol_no_suffix)
-                sys.stdout.write('\nrunning test: %s %s\n' % (inp_no_suffix, mol_no_suffix))
-
+                if print_args:
+                    sys.stdout.write('\nrunning test: %s %s with arguments=%s\n' % (inp_no_suffix, mol_no_suffix, args))
+                else:
+                    sys.stdout.write('\nrunning test: %s %s\n' % (inp_no_suffix, mol_no_suffix))
+                
                 command = launcher + ' --inp=%s --mol=%s' % (inp, mol)
                 try:
                     runtest.TestRun.execute(self,

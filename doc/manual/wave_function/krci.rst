@@ -1,9 +1,13 @@
+:orphan:
+ 
 
 star(KRCI)
 
-or (deprecated) star(KRCICALC)
+or the (deprecated) \*KRCICALC.
 
-*2- and 4-component relativistic GASCI module* written by Timo Fleig
+*2- and 4-component relativistic GASCI module*
+==============================================
+Written by Timo Fleig, 
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht and Hans Joergen Aagaard Jensen.
 
 The KRCI module is a string-based Hamiltonian-direct configuration
@@ -154,7 +158,7 @@ maximum number of CI iterations. *default*:
 
 keyword(MXCIVE)
 
-maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`.CIROOTS`) to optimize on.
+maximum size of Davidson subspace. *default*: 3 times the number of eigenstates (see :ref:`KRCI_.CIROOTS`) to optimize on.
 example:
 
 ::
@@ -260,7 +264,7 @@ d. for systems with an ungerade number of e- and an inversion center:
 keyword(CHECKP)
 
 enables a check point write of the current solution vectors to the file
-KRCI\_CVECS.x (see above in :ref:`.CIROOTS` for an explanation of how **x** is
+KRCI\_CVECS.x (see above in :ref:`KRCI_.CIROOTS` for an explanation of how **x** is
 supposed to be replaced) during the Davidson iterations. A checkpoint
 file will be written roughly every 6th iteration. *default*: do not write check points.
 
@@ -274,7 +278,7 @@ enables the storage of the resorted two-electron integrals on file
 IJKL\_REOD which can then be read-in in a restart. This avoids a
 multiple reading from the 4IND\* files and subsequent resorting. The
 keyword has to be present also in the restart to enable the potential
-read-in procedure. Hint: This keyword may be combined with :ref:`.MAX CI` == 0
+read-in procedure. Hint: This keyword may be combined with :ref:`KRCI_.MAX CI` == 0
 in a precedent step in order to save memory for the actual production
 run. This is due to the fact that the resorting step itself requires the
 in-core storage of the unsorted and sorted integrals. *default*: do not write the resorted integrals to file IJKL_REOD.
@@ -283,7 +287,8 @@ keyword(IJKLSP)
 
 enables the splitting of the resorted integrals among the co-workers
 according to their needs in the computation of the sigma vector. It can
-only be used in combination with :ref:`.IJKLRO`. *default*: do no split the resorted integrals among the co-workers.
+only be used in combination with :ref:`KRCI_.IJKLRO`. 
+*default*: do no split the resorted integrals among the co-workers.
 
 **KRCI properties**
 ===================

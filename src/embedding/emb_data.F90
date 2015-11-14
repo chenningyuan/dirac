@@ -310,31 +310,41 @@ module fde_data
 !   ----------------------------------------------------------------------------
    subroutine fde_test_export
 !   ----------------------------------------------------------------------------
-      integer      :: i
-      real(kind=8) :: exp_int_n 
-      real(kind=8) :: exp_int_vc 
-      real(kind=8) :: exp_int_vn 
+       integer      :: i
+       real(kind=8) :: exp_int_n
+       real(kind=8) :: exp_int_ve 
+       real(kind=8) :: exp_int_vn
+       real(kind=8) :: exp_int_vh 
 
-      exp_int_n  = 0.0d0
-      exp_int_vc = 0.0d0  
-      exp_int_vn = 0.0d0  
+       exp_int_n  = 0.0d0
+       exp_int_ve = 0.0d0  
+       exp_int_vn = 0.0d0
+       exp_int_vh = 0.0d0  
+ 
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+       do i = 1, fde_grid_ex%npoints
+          exp_int_n  = exp_int_n  +       fde_grid_ex%w(i)*gf_export%n(i)
+          exp_int_ve = exp_int_ve +       fde_grid_ex%w(i)*gf_export%n(i)*gf_export%elpot(i)
+          exp_int_vn = exp_int_vn +       fde_grid_ex%w(i)*gf_export%n(i)*gf_export%nucpot(i) 
+       end do
+       exp_int_vh = 0.5d0*(exp_int_ve - exp_int_vn)
 
-      
-      do i = 1, fde_grid_ex%npoints
-         exp_int_n  = exp_int_n  +       fde_grid_ex%w(i)*gf_export%n(i) 
-         exp_int_vc = exp_int_vc - 0.5d0*fde_grid_ex%w(i)*gf_export%n(i)*(gf_export%elpot(i)-gf_export%nucpot(i)) 
-         exp_int_vn = exp_int_vn -       fde_grid_ex%w(i)*gf_export%n(i)*gf_export%nucpot(i) 
-      end do
-      
-      write (*,*) ' '
-      write (*,'(A,I12,A)') ' Exported quantities (over ',fde_grid_ex%npoints,' grid points) integrate to:'
-      write (*,'(A,F16.6,A)') ' - electron density    : ',exp_int_n,' electrons'
-      write (*,'(A,F16.6,A)') ' - Hartree      energy : ',exp_int_vc,' a.u.'
-      write (*,'(A,F16.6,A)') ' - n.-el. attr. energy : ',exp_int_vn,' a.u.'
+       write (*,*) ' '
+       write (*,'(A,I12,A)') ' Exported quantities (over ',fde_grid_ex%npoints,' grid points) integrate to:'
+       write (*,'(A,F16.6,A)') ' - electron density    : ',exp_int_n,' electrons'
+       write (*,'(A,F16.6,A)') ' - electrostatic energy: ',exp_int_ve,' a.u.'
+       write (*,'(A,F16.6,A)') ' - n.-el. attr. energy : ',exp_int_vn,' a.u.'
+       write (*,'(A,F16.6,A)') ' - Hartree      energy : ',exp_int_vh,' a.u.'
 
-      exp_int_n  = 0.0d0
-      exp_int_vc = 0.0d0  
-      exp_int_vn = 0.0d0  
+       exp_int_n  = 0.0d0
+       exp_int_ve = 0.0d0  
+       exp_int_vn = 0.0d0
+       exp_int_vh = 0.0d0  
 
    end subroutine fde_test_export
 

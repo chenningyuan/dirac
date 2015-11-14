@@ -2432,10 +2432,10 @@ C
       ENDIF
 C
       call dealloc(a_FVO , id="fvo")
-      call dealloc(a_FOO , id="fvo")
-      call dealloc(a_FVV , id="fvo")
-      call dealloc(a_T1  , id="fvo")
-      call dealloc(a_T2  , id="fvo")
+      call dealloc(a_FOO , id="foo")
+      call dealloc(a_FVV , id="fvv")
+      call dealloc(a_T1  , id="t1")
+      call dealloc(a_T2  , id="t2")
       call dealloc(a_S1  , id="s1")
       call dealloc(a_S2  , id="s2")
 C
@@ -2636,7 +2636,14 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW
+!     NBUF3 = (freemem - work_memsize) / RCW
+! hjaaj Aug. 2015: modified because this could give NBUF3 < 0
+      IF (MYPROC .NE. MASTER) THEN
+         NBUF3 = 0
+      ELSE
+         NBUF3 = freemem / RCW
+      END IF
+
 C
 C     Allocate now also this remaining work array
 C
@@ -2748,7 +2755,13 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW 
+!     NBUF3 = (freemem - work_memsize) / RCW
+! hjaaj Aug. 2015: modified because this could give NBUF3 < 0
+      IF (MYPROC .NE. MASTER) THEN
+         NBUF3 = 0
+      ELSE
+         NBUF3 = freemem / RCW
+      END IF
 C
 C     Allocate now also this remaining work array
 C
@@ -4117,7 +4130,25 @@ C
        ENDDO
       ENDIF
 C
-C     Make inverse of multiplication table
+C     A complication using fermion irreps is that 
+C     characters are generally complex and that
+C     the complex conjugate of an irrep may be another fermion irrep.
+C     Only the product of an irrep with its complex conjugate gives 
+C     the totally symmetric irrep.
+C     
+C     Table elements like
+C       MULTB(IREP,JREP,1) = KREP
+C     provides the symmetry of product functions in either bra of ket positions
+C       ket(irep)*ket(jrep) = ket(krep)  OR
+C       bra(irep)*bra(jrep) = bra(krep)
+C
+C     To find the irrep of a product function mixing functions in bra and ket positions
+C     we effectively make the inverse of the multiplication table
+C     We note that 
+C       bra(irep)*ket(irep) = 1 (totally symmetric)
+C     This gives
+C       bra(irep)*ket(irep)*ket(jrep) = ket(jrep) = bra(irep)*ket(krep)
+C       ket(irep)*bra(irep)*bra(jrep) = bra(jrep) = ket(irep)*bra(krep) 
 C
       DO JREP = 1, 2*NREP
          DO IREP = 1, 2*NREP

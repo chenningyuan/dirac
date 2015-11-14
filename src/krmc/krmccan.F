@@ -185,7 +185,7 @@ C     --------------------------
             IORDER = 0
             IPACK = 0
             CALL RSJACO(NASHT,NASHT,NASHT,WORK(KDV),WORK(KEIG),
-     &           IJOB,IORDER,IPACK,UNO,WORK(KFREE),LFREE)
+     &           IJOB,IORDER,IPACK,UNO)
          ELSE
             MATZ = 1
             IF( NATOLCR ) MATZ = 0
@@ -1177,7 +1177,7 @@ C        check for other errors ... /feb 2004
             IORDER = 0
             IPACK = 0
             CALL RSJACO(NORBT,NORBT,NORBT,WORK(KDV),WORK(KEIG),
-     &           IJOB,IORDER,IPACK,WORK(KEIGVC),WORK(KFREE),LFREE)
+     &           IJOB,IORDER,IPACK,WORK(KEIGVC))
          ELSE
             MATZ = 1
             CALL QDIAG(NZ,NORBT,WORK(KDV),NORBT,NORBT,
@@ -1583,7 +1583,7 @@ C
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
       INTEGER IND_DIP(3), IND_PRP(12)
       CHARACTER XLABEL*16
-      LOGICAL PRINT_EV, domhyp_krci
+      LOGICAL PRINT_EV
 !     dynamic memory allocation
       integer, allocatable :: indx(:)
       integer, intent(in)  :: mz

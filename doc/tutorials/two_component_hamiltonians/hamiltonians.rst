@@ -1,9 +1,10 @@
+:orphan:
 
 
 Selecting a two-component Hamiltonian other than X2C
 ====================================================
 
-There are several two-component Hamiltonians besides the X2C Hamiltonian (see :ref:`.X2C`) implemented 
+There are several two-component Hamiltonians besides the X2C Hamiltonian (see :ref:`HAMILTONIAN_.X2C`) implemented 
 in DIRAC arising from the decoupling transformation of the one-electron DIRAC Hamiltonian. 
 Likewise spin-orbit interaction terms can be left out and calculations can be performed
 in the spin-free mode (i.e. in boson symmetry).
@@ -97,11 +98,11 @@ and spin-other-orbit (MFSO2) from AMFI::
   .BSS
    3999
 
-This mimics the Dirac-Coulomb-Gaunt Hamiltonian, as the spin-other-orbit comes
+This mimics the Dirac-Coulomb-Gaunt Hamiltonian, as the spin-other-orbit (SOO) term comes
 from the Gaunt interaction term.
 
 DIRAC allows to switch off AMFI spin-orbit contributions from various centers.
-See the keyword :ref:`.NOAMFC`.
+See the keyword :ref:`AMFI_.NOAMFC`.
 
 Infinite order scalar terms "from the beginning", (one-electron) spin orbit
 (SO1) and the mean-field spin-same-orbit (MFSSO2) terms exclusively from AMFI::
@@ -140,10 +141,9 @@ Rough first order, DKH1 (not recommended for practical calculations)::
   .BSS
    111
 
-For comparison purposes only between BSS-SO1 and AMFI-SO1 atomic one-center
+For comparison purposes between BSS-SO1 and AMFI-SO1 atomic one-center
 integrals (point nucleus only) use::
 
   .BSS
    001
 
-.. include:: ../../../../test/cosci_energy/README.rst
