@@ -81,6 +81,6 @@ python ./setup --fc=ifort  --cc=icc  --cxx=g++  --int64  --cmake-options="-D BUI
 cd $BUILD_INTEL
 export MKL_NUM_THREADS=3
 export MKL_DYNAMIC="FALSE"
-ctest -D Nightly
+ctest -D Nightly --track master
 
 exit 0
