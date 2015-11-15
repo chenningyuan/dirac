@@ -2,27 +2,21 @@
 
 DIRAC=/gpfs/home/ilias/work/qch/software/dirac/trunk
 
-export PATH=/usr/vacpp/bin:/opt/freeware/bin/:/gpfs/home/utils/cmake/bin:$PATH
+module load git/git-2.6.3.368
+module load python-2.7.10
+
+export PATH=/usr/vacpp/bin:/opt/freeware/bin/:/gpfs/home/utils/cmake/bin/opt/IBM/xlf/15.1.0/bin/:/opt/IBM/xlc/13.1.0/bin/:/opt/IBM/xlC/13.1.0/bin:$PATH
 echo $PATH
 
 cd $DIRAC
 pwd
-
-/opt/freeware/bin/git --version
-/opt/freeware/bin/git status
-/opt/freeware/bin/git pull
-
-ls -l /opt/freeware/bin/
-
-
-/opt/freeware/bin/python -V
-/opt/freeware/bin/python ./setup --help
 
 which xlf90
 which python
 which gfortran
 which git
 git --version
+python -V
 
 export CTEST_PROJECT_NAME="DIRACext"
 export DIRTIMEOUT="12m"
@@ -53,6 +47,5 @@ cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -D ExperimentalSubmit 
-
 
 exit

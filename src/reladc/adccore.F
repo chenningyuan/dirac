@@ -7105,11 +7105,10 @@ c
 
       return
       end
-c     
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-c     
 
-
+#ifdef HAVE_MKL_BLAS
+!radovan: workaround for strange crash when using MKL zdotc
+!miro: restricted by preprocessor for IBM XL
       DOUBLE COMPLEX FUNCTION z_dot_c(N,ZX,INCX,ZY,INCY)
 *     .. Scalar Arguments ..
       INTEGER INCX,INCY,N
@@ -7166,3 +7165,4 @@ c
       ZDOTC = ZTEMP
       RETURN
       END
+#endif
