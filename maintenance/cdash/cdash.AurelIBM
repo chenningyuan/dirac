@@ -2,11 +2,11 @@
 
 DIRAC=/gpfs/home/ilias/work/qch/software/dirac/trunk
 
-module load git/git-2.6.3.368
-module load python-2.7.10
+#module load git/git-2.6.3.368
+#module load python-2.7.10
 
 echo "default PATH=$PATH"
-export PATH=/usr/vacpp/bin:/opt/freeware/bin/:/gpfs/home/utils/cmake/bin:/opt/IBM/xlf/15.1.0/bin/:/opt/IBM/xlc/13.1.0/bin/:/opt/IBM/xlC/13.1.0/bin:$PATH
+export PATH=/gpfs/home/utils/python-2.7.10/bin:/gpfs/home/utils/git/git-2.6.3.368/bin:/usr/vacpp/bin:/opt/freeware/bin/:/gpfs/home/utils/cmake/bin:/opt/IBM/xlf/15.1.0/bin/:/opt/IBM/xlc/13.1.0/bin/:/opt/IBM/xlC/13.1.0/bin:$PATH
 echo "extended PATH=$PATH"
 
 xlf90 -V; xlc -V; xlC -V
@@ -39,6 +39,7 @@ ctest -j4 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit 
 
 
+cd $DIRAC
 BUILD=build_xlf90_xlc_xlC_ownmath_dbg_nopcm_nostie
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
@@ -53,6 +54,7 @@ ctest -j4 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit 
 
 
+cd $DIRAC
 BUILD=build_xlf90_xlc_g++_essl_dbg_nopcm_nostiel
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
@@ -67,6 +69,7 @@ ctest -j4 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit 
 
 
+cd $DIRAC
 BUILD=build_xlf90_xlc_g++_essl_i8_dbg_nopcm_nostiel
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
@@ -80,6 +83,8 @@ ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit 
 
+
+cd $DIRAC
 BUILD=build_xlf90_xlc_xlC_essl_i8_dbg_nopcm_nostie
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
@@ -93,6 +98,8 @@ ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit 
 
+
+cd $DIRAC
 BUILD=build_xlf90_xlc_xlC_ownmath_i8_dbg_nopcm_nostie
 if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
