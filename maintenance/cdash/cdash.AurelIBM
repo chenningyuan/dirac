@@ -9,7 +9,7 @@ echo "default PATH=$PATH"
 export PATH=/gpfs/home/utils/python-2.7.10/bin:/gpfs/home/utils/git/git-2.6.3.368/bin:/usr/vacpp/bin:/opt/freeware/bin/:/gpfs/home/utils/cmake/bin:/opt/IBM/xlf/15.1.0/bin/:/opt/IBM/xlc/13.1.0/bin/:/opt/IBM/xlC/13.1.0/bin:$PATH
 echo "extended PATH=$PATH"
 
-xlf90 -V; xlc -V; xlC -V
+#xlf90 -V; xlc -V; xlC -V
 gfortran --version; gcc --version; g++ --version
 git --version
 python -V
@@ -112,6 +112,21 @@ ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit 
+
+cd $DIRAC
+BUILD=build_nopcm_nostiel_gnu_ownmath_i8_dbg
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+python ./pamadm -a --builddir=$BUILD
+python ./setup --type=debug --int64 --lapack=off --blas=off  --cmake-options="-D BUILDNAME='Aurel-IBM_gnu_ownmath_i8_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_BUILTIN_BLAS=ON" $BUILD
+cd $BUILD
+ctest  -D ExperimentalConfigure
+ctest -j8 -D ExperimentalBuild
+ctest -j4 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit 
+
 
 date
 
