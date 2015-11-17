@@ -24,6 +24,11 @@ if(ENABLE_XCFUN)
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
 
+    if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
+        SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
+        message(STATUS "For libxcfun_fortran_bindings.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+    endif()
+
     add_library(
         xcfun_fortran_bindings
         ${PROJECT_SOURCE_DIR}/src/xcfun/fortran/xcfun_autogen.F90
