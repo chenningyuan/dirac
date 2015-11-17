@@ -4,6 +4,7 @@ if(ENABLE_XCFUN)
     message(STATUS "The XCFun submodule ENABLED")
     include(ExternalProject)
 
+    # miro: pass carefully all necessary arguments !
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -13,6 +14,7 @@ if(ENABLE_XCFUN)
         -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
         )
 
     ExternalProject_Add(xcfun
