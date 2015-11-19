@@ -83,6 +83,14 @@ Here is an example::
     00 05 *   *   *   /home/user/nightly/cdash_crontab.sh -b 'release-15' -p '--release' -j 12 -r 1 -c 'Intel' -n 'Intel-15.0.2' -t 'release-15' -k /home/user/.ssh/nightly_rsa
     55 05 *   *   *   killall -9 dirac.x
 
+You can verify your crontab file changes by ::
+
+  $ crontab -l
+
+You can also verify that a crontab file with your username exists by::
+
+  $ sudo  ls -l /var/spool/cron/crontabs
+
 
 CDash tracks
 ------------
