@@ -77,7 +77,7 @@ rem ctest -j 8 -D NightlyBuild      --track Miro  1>>%LOG%  2>&1
 rem ctest -j 4 -D NightlyTest       --track Miro  1>>%LOG%  2>&1
 rem ctest      -D NightlySubmit     --track Miro  1>>%LOG%  2>&1
 rem use one compact command
-ctest -j 4 -D Nightly  1>>%LOG%  2>&1
+ctest -j 4 -D Nightly  --track master  1>>%LOG%  2>&1
 
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1

@@ -10,7 +10,7 @@ TRACK='Nightly'
 DEPLOY_KEY='undefined'
 NUM_JOBS=1
 
-while getopts b:p:m:r:c:n:i:t:k:j: opt; do
+while getopts b:p:r:c:n:i:t:k:j: opt; do
   case $opt in
   b)
       BRANCH=$OPTARG
