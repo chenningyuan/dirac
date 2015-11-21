@@ -39,7 +39,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
  program alloc_test
    call andre_alloc_test
+#if defined INT_STAR8
    call test_xcopy_with_big_array
+#endif
  end program alloc_test
 
  subroutine andre_alloc_test
@@ -305,6 +307,7 @@
          write (*,*) 'and we are done'
       end subroutine foo
      
+#if defined INT_STAR8
 subroutine test_xcopy_with_big_array
 !-------------------------------------------------------
 ! Miro Ilias routine for testing some alloc stuff
@@ -365,4 +368,5 @@ implicit none
 
  return
  end subroutine my_rdints
+#endif
  

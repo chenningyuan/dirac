@@ -1,3 +1,15 @@
+#
+# Miro: We must list here all external arguments passed from the principal DIRAC CMake module !
+#
+#  CMAKE_<Lang>_CIOMPILER_ID
+#  CMAKE_<Lang>_Flags
+#  ENABLE_64BIT_INTEGERS
+#  .
+#  .
+#  .
+#
+#
+
 cmake_minimum_required(VERSION 2.6)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -103,7 +115,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
         message(STATUS "xcfun: removed -rdynamic flag due to pgf90")
     endif()
 endif()
-
 
 include_directories(${PROJECT_BINARY_DIR})
 
