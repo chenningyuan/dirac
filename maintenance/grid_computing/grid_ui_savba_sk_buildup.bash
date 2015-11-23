@@ -119,6 +119,27 @@ echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp 
 
 sleep 30
 
+
+######################
+# PGI + MKL - static #
+######################
+cd $DIRAC
+BUILD=build_pgi_mkl_i8_static
+if [[ -d "$BUILD" ]]; then
+   echo "removing previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+module load pgi
+python ./pamadm -a --builddir=$BUILD
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_pgi_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=OFF -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD
+ cd $BUILD_SERIAL
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure  
+ ctest -D ExperimentalBuild   
+ ctest -D ExperimentalTest -R cosci_energy  
+ ctest -D ExperimentalSubmit 
+
+
 #####################
 ##  GNU+MKL STATIC ##
 #####################
