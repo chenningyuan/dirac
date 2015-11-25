@@ -18,10 +18,10 @@ export PATH=/home/ilias/bin/cmakestatic/bin:$PATH
 echo "My own static CMake is in PATH."
 
 # my own binutils-gold
-export LIBDIR=/home/ilias/bin/binutils-gold/lib:$LIBDIR
-export LD_LIBRARY_PATH=$LIBDIR:$LD_LIBRARY_PATH
-export LD_RUN_PATH=$LIBDIR:$LD_RUN_PATH
-export PATH=/home/ilias/bin/binutils-gold/binutils-master/gold:$PATH
+#export LIBDIR=/home/ilias/bin/binutils-gold/lib:$LIBDIR
+#export LD_LIBRARY_PATH=$LIBDIR:$LD_LIBRARY_PATH
+#export LD_RUN_PATH=$LIBDIR:$LD_RUN_PATH
+#export PATH=/home/ilias/bin/binutils-gold/binutils-master/gold:$PATH
 
 # select my "private" CDash 
 export CTEST_PROJECT_NAME=DIRACext
