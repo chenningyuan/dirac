@@ -635,6 +635,7 @@
    real*8, intent(out) :: w_vvvo(rcw*nv5)                ! Intermediate.
 !---------------Local Variables----------------------------------------
 
+   integer :: AllocateStatus 
    real*8, allocatable  :: tau(:)                
    real*8, allocatable  :: vovv1(:),temp(:)                
    integer :: m,n,k,off1,off2,off3,irep,jrep 
@@ -653,7 +654,9 @@
 ! call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
 !            &      -1.0d0,0.0d0,nrep,RightTensor=t2)
 
-      allocate(vovv1(nv5*rcw)) 
+      allocate(vovv1(nv5*rcw),stat = AllocateStatus) 
+
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
       call getvovv_incore(vovv1)
 
@@ -667,7 +670,9 @@
      &              MVO,J2VOVO,JJVO,JJVO,T2,buf2)
 
 
-      allocate(temp(jvvvoI4(nrep+1)*rcw)) 
+      allocate(temp(jvvvoI4(nrep+1)*rcw),stat=AllocateStatus) 
+
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
        temp =0.0d0
 
@@ -717,7 +722,7 @@
   allocate (tau(ndimt2*rcw))
   call gettau (t1,t2,tau)
 
-  call contraction_444 ((/"p2","p3","o2","o3"/),(/"o2","o3","p1","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+   call contraction_444 ((/"p2","p3","o2","o3"/),(/"o2","o3","p1","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
   &      1.0d0,1.0d0,nrep,LeftTensor=tau)
 
   deallocate (tau)

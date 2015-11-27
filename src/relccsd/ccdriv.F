@@ -260,8 +260,6 @@ C     Switch on evaluation of property output if necessary
 
 !     following section is for switching on coupled cluster property evaluation. 
       IF (DOCCSDG) THEN
-!        IF (SPFR) 
-!    &   CALL QUIT('CCSD density matrix not available in spinfree mode')
           DOEXP = .TRUE.
           IPRP_WF = 0
           DO I = 1, NPRP_WF
@@ -2692,7 +2690,7 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-         WRITE (IW,*) ' CCSD gradient is being implemented,'
+         WRITE (IW,*) 'Calculate CCSD gradient'
          doccsdg = .true.
       endif
 
@@ -3001,9 +2999,21 @@ C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
       NBUF3 = (freemem - work_memsize) / RCW
 
+         NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
+         NV6IRP = 1
+         DO IRP = 1, NREP
+            NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
+         ENDDO
+C
+         NVIRP = MAX(NV5IRP,NV6IRP)
+         NBUF3 = MIN(NVIRP,INT(NBUF3,8))
+C
+C        Check the minimum size for the general use of this array
+C
+         NBUF3 = MAX(NBUF1,NBUF3)
 
 C     Allocate now also this remaining work array
-      call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+        call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
@@ -3045,8 +3055,6 @@ C         this means that, for the time being, we can deallocate everything?
              goto 451
           ENDIF
 #endif
-
-
 
 !--------------------------------------------------
 **ashee
