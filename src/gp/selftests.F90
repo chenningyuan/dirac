@@ -213,11 +213,11 @@ subroutine selftest_fortran_c_cxx_interoperability()
    allocate(int_c_long_array(arr_size)); allocate(int_c_long_array_saved(arr_size))
    int_c_long_array(1)=+9223372036854775807
    int_c_long_array(2)=-9223372036854775807
-   int_c_long_array(1)=+9223372036854775807
-   int_c_long_array(3)=-35
+   int_c_long_array(3)=+9223372036854775807
 
    do i=1,arr_size
-     real_c_double_array_saved(i)=real_c_double_array(i); int_c_long_array_saved(i)=int_c_long_array(i)
+     real_c_double_array_saved(i)=real_c_double_array(i)
+     int_c_long_array_saved(i)=int_c_long_array(i)
    enddo
 
    string_c_char="Hello! 12345678+-@^/"
