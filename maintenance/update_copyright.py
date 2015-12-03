@@ -28,7 +28,7 @@ copyright = {}
 
 copyright[('dirac', 'c')] = '''
 /*
- *     Copyright (c) 2014 by the authors of DIRAC.
+ *     Copyright (c) 2015 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
