@@ -231,7 +231,7 @@ subroutine selftest_fortran_c_cxx_interoperability()
    real_c_double_ptr = c_loc(real_c_double)
 
    call selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, c_loc(int_c_long_array), & 
-    real_c_double, c_loc(real_c_double_array), c_loc(string_c_char), string_len, int_c_long_ptr,real_c_double_ptr)
+    real_c_double, c_loc(real_c_double_array), c_loc(string_c_char(1:1)), string_len, int_c_long_ptr,real_c_double_ptr)
 
 
    ! verify that data are intact after returning from C routine
