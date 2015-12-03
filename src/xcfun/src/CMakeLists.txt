@@ -55,9 +55,9 @@ set(FUNCTIONAL_SRCS
     )
 
 #miro: these variables are passed from DIRAC CMake to xcfun submodule
-if (${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_CXX_COMPILER_ID MATCHES XL AND ENABLE_64BIT_INTEGERS)
+if (${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL AND ENABLE_64BIT_INTEGERS)
     SET(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    message(STATUS "For libxcfun.a submodule library, objects mode set to 64 bit on IBM AIX with XL CXX compiler")
+    message(STATUS "For libxcfun.a submodule library, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
 endif()
 
 add_library(xcfun
