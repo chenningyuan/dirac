@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 .. _molecule_using_mol:
 
 How to specify the molecule and basis set using the traditional mol files

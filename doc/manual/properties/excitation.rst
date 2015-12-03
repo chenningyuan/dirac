@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(EXCITATION ENERGIES)
 
 Calculate excitation energies using time dependent Hartree-Fock or DFT.
@@ -42,6 +45,7 @@ keyword(MPOLE)
 
 Specification of magnetic Cartesian multipole operators of order L 
 for the calculation of transition moments. Specify order.
+
 *Example:* Magnetic dipole operators
 
 ::
@@ -52,6 +56,17 @@ keyword(ANALYZE)
 
 Analyze solution vectors and show the most important excitations at the
 orbital level.
+
+keyword(INTENS)
+
+Invoke calculation of oscillator strengths. Followed by oscillator strengths to order k in the wave vector, which must be zero.
+
+*Example:* 
+
+::
+
+     .INTENS
+     0
 
 Control variational parameters
 ==============================
@@ -135,7 +150,7 @@ have an important effect on run time.
 keyword(INTFLG)
 
 Specify what two-electron integrals to include
-(default: :ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+(default: :ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
 keyword(CNVINT)
 

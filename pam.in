@@ -31,7 +31,6 @@
              DIRPAR          - controls parallel run (1) or sequential run (0)
              DIRNOD          - maximum work space for Fortran 77 "WORK" allocations for MPI workers, only used in MPI run
              GLBSCR          - global scratch disk (1) or local scratch disk (0), only used in MPI run (radovan: why this cryptic 6-character name?)
-             XLFRTEOPTS      - put there some specific string for IBM architecture  (radovan: what is this for?)
 """
 
 import os
@@ -1252,10 +1251,6 @@ Options are also read from ~/.diracrc"""
         else:
             os.putenv('DIRPAR', '0')
 
-    # Next line is for IBM only but will not hurt other systems
-
-        os.putenv('XLFRTEOPTS', "'namelist=old'")
-
     # check the timeout environment variable, check if the timeout variable did not enter already through the pam flag --timeout
 
         timeout_env=os.getenv('DIRTIMEOUT')
@@ -1477,7 +1472,7 @@ Options are also read from ~/.diracrc"""
                 return name[0]
             else:
                 return str(num)
-        signum_kill=2 # for killing, prepare the strongest ammo
+        signum_kill=signal.SIGKILL # for killing the process, use the most lethal ammo
         # interrupt dirac run
         if self.pgid is not None:
             if signum != signum_kill:

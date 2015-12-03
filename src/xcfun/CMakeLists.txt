@@ -1,3 +1,15 @@
+#
+# Miro: We must list here all external arguments passed from the principal DIRAC CMake module !
+#
+#  CMAKE_<Lang>_CIOMPILER_ID
+#  CMAKE_<Lang>_Flags
+#  ENABLE_64BIT_INTEGERS
+#  .
+#  .
+#  .
+#
+#
+
 cmake_minimum_required(VERSION 2.6)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -16,7 +28,12 @@ option(XCFUN_NO_STDC++ "Disable libsrdc++" OFF)
 option(XCFUN_ENABLE_TESTS "Enable tests" ON)
 
 if (CMAKE_COMPILER_IS_GNUCXX)
-	set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -Wno-sign-compare -fno-rtti -fno-exceptions ")
+       if (${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL AND ENABLE_64BIT_INTEGERS)
+          set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -Wno-sign-compare -fno-rtti -fno-exceptions -maix64 ")
+          message(STATUS "Added g++ -maix64 flag for xcfun due to IBM AIX XL Fortran and integer*8")
+        else()
+	  set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -Wno-sign-compare -fno-rtti -fno-exceptions ")
+        endif()
 	set (CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -DDEBUG")
 	set (CMAKE_CXX_FLAGS_RELEASE "-g -O3 -DNDEBUG -Wno-unused")
 
@@ -42,9 +59,14 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
 endif ()
 
 if (CMAKE_COMPILER_IS_GNUC)
-	set (CMAKE_C_FLAGS "-Wall")
-	set (CMAKE_C_FLAGS_DEBUG "-O0 -g3 -DDEBUG")
-	set (CMAKE_C_FLAGS_RELEASE "-g -O2 -DNDEBUG -Wno-unused")
+      if (${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL AND ENABLE_64BIT_INTEGERS)
+          set (CMAKE_C_FLAGS "-Wall -maix64")
+          message(STATUS "Added gcc -maix64 flag for xcfun due to IBM AIX XL Fortran and integer*8")
+       else()
+      set (CMAKE_C_FLAGS "-Wall")
+        endif()
+      set (CMAKE_C_FLAGS_DEBUG "-O0 -g3 -DDEBUG")
+      set (CMAKE_C_FLAGS_RELEASE "-g -O2 -DNDEBUG -Wno-unused")
 elseif (CMAKE_C_COMPILER_ID MATCHES Intel)
     # Intel has special flags on Windows
     # ihrasko: here I tried to translate all flags from Linux to Windows flags
@@ -95,6 +117,14 @@ elseif (CMAKE_Fortran_COMPILER_ID MATCHES Intel)
         endif()
     endif ()
 endif ()
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+    # remove -rdynamic flag offensive for PGI Fortran in static linking
+    if (CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS)
+        list(REMOVE_ITEM CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS "-rdynamic")
+        message(STATUS "xcfun: removed -rdynamic flag due to pgf90")
+    endif()
+endif()
 
 include_directories(${PROJECT_BINARY_DIR})
 

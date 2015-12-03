@@ -1,7 +1,6 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsjaco */
-      SUBROUTINE RSJACO(LDM,NDIM,NROWE,AMAT,EIG,IJOB,IORDER,IPACK,EVEC,
-     &                  WORK,LWORK)
+      SUBROUTINE RSJACO(LDM,NDIM,NROWE,AMAT,EIG,IJOB,IORDER,IPACK,EVEC)
 C***********************************************************************
 C
 C     Diagonalize real symmetric matrix by the Jacobi method
@@ -33,14 +32,15 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION AMAT(*),EIG(NDIM),EVEC(LDM,NDIM),
-     &          WORK(LWORK)
+      DIMENSION AMAT(*),EIG(NDIM),EVEC(LDM,NDIM)
+      real(8), allocatable :: buf(:),atri(:)
+      integer, allocatable :: ibuf(:)
 C
       CALL QENTER('RSDIAG')
 #include "memint.h"
 C
-      CALL MEMGET('REAL',KBUF ,NDIM ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KIBUF,NDIM ,WORK,KFREE,LFREE)            
+      allocate (buf(ndim))
+      allocate (ibuf(ndim))
 C
 C     Determine job
 C     =============
@@ -64,17 +64,17 @@ C
 C       Pack lower triangle of AMAT into ATRI
 C
         NNDIM = (NDIM*(NDIM+1))/2
-        CALL MEMGET('REAL',KATRI,NNDIM,WORK,KFREE,LFREE)
-        CALL DAMATR(NDIM,AMAT,LDM,WORK(KATRI))
+        allocate (atri(nndim))
+        CALL DAMATR(NDIM,AMAT,LDM,ATRI)
 C
 C       Diagonalize ATRI
 C
-        CALL JACO2(WORK(KATRI),EVEC,NDIM,NDIM,NEVEC,NROWE,LDM,
-     &            WORK(KBUF),WORK(KIBUF))
+        CALL JACO2(ATRI,EVEC,NDIM,NDIM,NEVEC,NROWE,LDM,BUF,IBUF)
 C
 C       Extract eigenvalues from ATRI
 C
-        CALL XTRCDI(WORK(KATRI),EIG,NDIM,1)
+        CALL XTRCDI(ATRI,EIG,NDIM,1)
+        deallocate (atri)
 C
       ELSEIF(IPACK.EQ.1) THEN
 C
@@ -83,8 +83,7 @@ C       ============================================
 C
 C       Diagonalize AMAT
 C
-        CALL JACO(AMAT,EVEC,NDIM,NDIM,NEVEC,
-     &            WORK(KBUF),WORK(KIBUF))
+        CALL JACO(AMAT,EVEC,NDIM,NDIM,NEVEC,BUF,IBUF)
 C
 C       Extract eigenvalues from AMAT
 C
@@ -99,7 +98,8 @@ C
         CALL ORDER3(EVEC,EIG,LDM,NDIM,NEVEC,IORDER)
       ENDIF
 C
-      CALL MEMREL('RSJACO',WORK,KWORK,KWORK,KFREE,LFREE)
+      deallocate (buf)
+      deallocate (ibuf)
       CALL QEXIT('RSDIAG')
       RETURN
       END

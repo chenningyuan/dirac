@@ -1,4 +1,5 @@
-﻿
+:orphan:
+
 Static linking
 ==============
 
@@ -99,7 +100,7 @@ because placing the sole "-lpthread" keyword elsewhere generates wrong executabl
 
 ::
 
-  ./setup  --debug  -D VERBOSE_OUTPUT=ON --build=build_static  --static --internal-math  --int64
+  ./setup  --type=debug  -D VERBOSE_OUTPUT=ON --build=build_static  --static --internal-math  --int64
   /opt/intel/fce/10.1.015/bin/ifort (ifort (IFORT) 10.1 20080312); /usr/bin/gcc - gcc (GCC) 4.1.2 20080704 (Red Hat 4.1.2-51)
 
 * 194.160.34.207, Miro's old PC Desktop with updated Ubuntu

@@ -1,7 +1,8 @@
-
+:orphan:
+ 
 
 Installation on `Hyperion <http://www.calmip.cict.fr/spip/spip.php?rubrique90>`_ (Toulouse)
-===================================
+===========================================================================================
 
 We will use SGI Message Passing Toolkit (MPT) parallelization.
 

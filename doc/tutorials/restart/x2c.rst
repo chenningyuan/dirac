@@ -1,3 +1,4 @@
+:orphan:
 
 
 Restarting X2C calculations
@@ -83,3 +84,31 @@ Hamiltonian from file is done automatically once the files are present. We
 therefore restart the calculation using::
 
   pam --inp=property_x2c.inp --mol=br2.xyz --put="X2CMAT AOMOMAT DFCOEF"
+
+
+Restart files
+-------------
+
+AOMOMAT and X2CMAT never change during the SCF iterations, hence you can use
+them for an SCF restart at the same geometry.  If you however change the
+geometry and restart from those files, all results will be wrong.
+
+AOMOMAT contains amongst other things the S^{+/-1/2} overlap matrix which is
+needed to transform the Fock operator from AO to orthonormal MO basis before
+diagonalization. X2CMAT contains the transformed two-component one-electron
+operator with possible two-electron spin-orbit corrects added as well as all
+property operators (in AO basis) in proper two-component form. All these
+quantities are independent of the current solution in an SCF iteration.
+
+Shen X2C is restarted with just::
+
+  pam --put="DFCOEF"
+
+(i.e. not putting AOMOMAT and X2CMAT), the X2C code will recompute AOMOMAT and
+X2CMAT automatically, which takes just a few extra seconds. The subsequent SCF
+iterations or property evaluations deliver the same results as if AOMOMAT and
+X2CMAT had been put to the scratch directory.
+
+An X2C calculation currently cannot be restarted by::
+
+  pam --fullrestart="ARCHIVE.tgz"

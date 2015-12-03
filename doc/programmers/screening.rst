@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 Notes on screening
 ==================
 
@@ -8,6 +11,7 @@ as
 ..figure:: /dirac/images/math/6/c/8/6c86ef3df163c5e325edbc447abb31d9.png
    :align: center
    :alt: D\_k = \\Delta D + \\sum\_{i=1}^N c\_i D\_{k-i},
+
    D\_k = \\Delta D + \\sum\_{i=1}^N c\_i D\_{k-i}, 
 
 where Δ*D* will be sent to ``TWOFCK`` and should give efficient
@@ -27,7 +31,9 @@ Therefore we can imagine to introduce a metric matrix *M*, so that
 ..figure:: /dirac/images/math/8/7/7/877cd0b8aba2f7fcefddaa52ff414fdd.png
    :align: center
    :alt: (A,B) = \\sum\_{ij} A^\*\_{ij}M\_{ij}B\_{ij},
+
    (A,B) = \\sum\_{ij} A^\*\_{ij}M\_{ij}B\_{ij},
+
 
 and set *M* to emphasize the elements that have a chance of being made
 small. In practice one could imagine

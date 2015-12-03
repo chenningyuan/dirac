@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 I am about to install DIRAC on a 64-bit machine, should I compile using 64-bit integers or 32-bit integers?
 -----------------------------------------------------------------------------------------------------------

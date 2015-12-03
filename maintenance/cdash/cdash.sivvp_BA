@@ -26,6 +26,8 @@ echo -e "pgf90=\c";which pgf90; pgf90 -V
 echo -e "pgcc=\c";which pgcc; pgcc -V
 echo -e "pgCC=\c";which pgCC; pgCC -V
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # my cmake stuff
 export PATH=/shared/home/ilias/bin/cmake/bin:$PATH
 echo "My own CMake is in PATH."
@@ -63,10 +65,9 @@ export MATH_ROOT=/opt/intel/mkl
 BUILD_SERIAL=build_intelmkl_i8
 cd $DIRAC
 
-git clean -f
+git clean -f -d -x
+git submodule update --init --recursive
 
-git submodule update
-git submodule status
 
 echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
 #
@@ -75,14 +76,13 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   /bin/rm -rf $BUILD_SERIAL
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-BA_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
+python ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --cmake-options="-D BUILDNAME='sivvp-BA_Intel_mkl_i8'  -D DART_TESTING_TIMEOUT=99999" $BUILD_SERIAL
 cd $BUILD_SERIAL
-python binary_info.py
-ctest -D ExperimentalUpdate  --track Miro
-ctest -D ExperimentalConfigure --track Miro
-ctest -j2 -D ExperimentalBuild  --track Miro
-ctest -j2 -D ExperimentalTest -R cosci_energy pcm --track Miro
-ctest -D ExperimentalSubmit --track Miro
+ctest -D ExperimentalUpdate  
+ctest -D ExperimentalConfigure 
+ctest -j2 -D ExperimentalBuild  
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm 
+ctest -D ExperimentalSubmit 
 
 ##############################################################################
 #          serial,static DIRAC buildup with Intel+MKL
@@ -95,14 +95,13 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
 ./pamadm -a --builddir=$BUILD_SERIAL_STATIC
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-BA_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
+python ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static --cmake-options="-D BUILDNAME='sivvp-BA_Intel_mkl_i8_static'  -D DART_TESTING_TIMEOUT=99999" $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
-python binary_info.py
-ctest --track Grid  -D ExperimentalUpdate  --track   Grid
-ctest --track Grid  -D ExperimentalConfigure  --track   Grid
-ctest -j2 --track Grid  -D ExperimentalBuild  --track  Grid
-ctest -j2 --track Grid  -D ExperimentalTest -R cosci_energy  pcm --track Grid
-ctest -D ExperimentalSubmit --track Grid
+ctest   -D ExperimentalUpdate  
+ctest   -D ExperimentalConfigure 
+ctest -j2  -D ExperimentalBuild  
+ctest -j2  -D ExperimentalTest -R cosci_energy  pcm 
+ctest -D ExperimentalSubmit 
 
 
 #####################################################
@@ -116,14 +115,13 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-BA_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --cmake-options="-D BUILDNAME='sivvp-BA_GNU_mkl_i8' -D DART_TESTING_TIMEOUT=99999"  $BUILD_GNU
 cd $BUILD_GNU
-python binary_info.py
-ctest -D ExperimentalUpdate  --track Miro
-ctest -D ExperimentalConfigure  --track Miro
-ctest -j2 -D ExperimentalBuild  --track Miro
-ctest -j2 -D ExperimentalTest -R cosci_energy  pcm --track Miro
-ctest -D ExperimentalSubmit  --track Miro
+ctest -D ExperimentalUpdate  
+ctest -D ExperimentalConfigure 
+ctest -j2 -D ExperimentalBuild  
+ctest -j2 -D ExperimentalTest -R cosci_energy  pcm 
+ctest -D ExperimentalSubmit  
 
 #####################################################
 #        serial DIRAC buildup with GNU+ownmath
@@ -136,14 +134,13 @@ if [[ -d "$BUILD_GNU" ]]; then
   /bin/rm -rf $BUILD_GNU
 fi
 ./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-BA_GNU_ownmath_i8" --blas=builtin --lapack=builtin  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --blas=off --lapack=off --cmake-options="-D BUILDNAME='sivvp-BA_GNU_ownmath_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON"  $BUILD_GNU
 cd $BUILD_GNU
-python binary_info.py
-ctest -D ExperimentalUpdate  --track Miro
-ctest -D ExperimentalConfigure  --track Miro
-ctest -j2 -D ExperimentalBuild  --track Miro
-ctest -j2 -D ExperimentalTest -R cosci_energy pcm --track Miro 
-ctest -D ExperimentalSubmit  --track Miro
+ctest -D ExperimentalUpdate  
+ctest -D ExperimentalConfigure  
+ctest -j2 -D ExperimentalBuild  
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm 
+ctest -D ExperimentalSubmit  
 
 #####################################################
 #        serial DIRAC buildup with PGI+mkl
@@ -156,14 +153,13 @@ if [[ -d "$BUILD_PGI" ]]; then
   /bin/rm -rf $BUILD_PGI
 fi
 ./pamadm -a --builddir=$BUILD_PGI
-./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-BA_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --cmake-options="-D BUILDNAME='sivvp-BA_PGI_mkl_i8' -D DART_TESTING_TIMEOUT=99999" $BUILD_PGI
 cd $BUILD_PGI
-python binary_info.py
-ctest -D ExperimentalUpdate  --track Miro
-ctest -D ExperimentalConfigure  --track Miro
-ctest -j2 -D ExperimentalBuild  --track Miro
-ctest -j2 -D ExperimentalTest -R cosci_energy pcm --track Miro
-ctest -D ExperimentalSubmit  --track Miro
+ctest -D ExperimentalUpdate 
+ctest -D ExperimentalConfigure  
+ctest -j2 -D ExperimentalBuild 
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm 
+ctest -D ExperimentalSubmit 
  
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp

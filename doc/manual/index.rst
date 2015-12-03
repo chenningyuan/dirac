@@ -1,3 +1,4 @@
+:orphan:
 
 Keyword reference
 =================
@@ -6,6 +7,8 @@ Keyword reference
    - :doc:`*OPTIMIZE <optimize>` --- Geometry optimization directives
 
 * :doc:`**GENERAL <general>` --- General input
+
+* :doc:`**MOLECULE<molecule>` --- Specification of basis set information
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
@@ -31,6 +34,7 @@ Keyword reference
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`MULPOP <analyze/mulpop>` --- Mulliken population analysis
+   - :doc:`PRIVEC <analyze/privec>` --- Print coefficients
    - :doc:`PROJECTION <analyze/prjana>` --- Projection analysis
    - :doc:`LOCALIZATION <analyze/localization>` --- Localization 
    - :doc:`DENSITY <analyze/density>` --- Density
