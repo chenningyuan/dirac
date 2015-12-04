@@ -83,7 +83,7 @@ for lang in ['fortran', 'c']:
 
 for path, _, _files in os.walk(os.getcwd()):
     for f in _files:
-        if f.endswith('.F90') or f.endswith('.f90' or f.endswith('.F')):
+        if f.endswith('.F90') or f.endswith('.f90') or f.endswith('.F'):
             files['fortran'].append(os.path.join(path, f))
         if f.endswith('.c'):
             files['c'].append(os.path.join(path, f))
