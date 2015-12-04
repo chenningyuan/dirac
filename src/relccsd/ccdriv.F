@@ -3010,19 +3010,20 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW
+       NBUF3 = freemem / RCW
 
          NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
          NV6IRP = 1
          DO IRP = 1, NREP
             NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
          ENDDO
-C
-         NVIRP = MAX(NV5IRP,NV6IRP)
-         NBUF3 = MIN(NVIRP,INT(NBUF3,8))
-C
+
+
 C        Check the minimum size for the general use of this array
-C
+
+         NVIRP = MAX(NV5IRP,NV6IRP)
+
+         NBUF3 = MIN(NVIRP,INT(NBUF3,8))
          NBUF3 = MAX(NBUF1,NBUF3)
 
 C     Allocate now also this remaining work array
