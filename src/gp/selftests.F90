@@ -167,6 +167,14 @@ subroutine selftest_fortran_c_cxx_interoperability()
   character(len=20), target :: string_c_char,string_c_char_saved
   logical :: verify_int_long_double, verify_arrays, verify_chars, verify_sizeofs
 
+
+#if !defined (INT_STAR8) && defined (VAR_XLF)
+! miro: tweak for IBM XLF Fortran compiler - without -i8 flag it can not accept explicit integer*8
+  integer(kind=8) :: big_i8_integer=+2147483647 !  the biggest signed integer*4 number, 2^31-1
+#else
+  integer(kind=8) :: big_i8_integer=+9223372036854775807 ! the biggest signed integer*8 number, 2^63-1
+#endif
+
   interface
      subroutine selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, int_c_long_array_ptr, & 
                             real_c_double, real_c_double_array_ptr,string_c_char_c_ptr, string_len, & 
@@ -190,7 +198,7 @@ subroutine selftest_fortran_c_cxx_interoperability()
 ! It's programmer's responsibility to ensure proper Fortran-to-C/C++ integer passing
 ! depending on the Fortran integer size (integer*4 or integer*8) !
 #if defined (INT_STAR8)
-   fortran_integer=+9223372036854775807 ! the biggest signed integer*8 number, 2^63-1
+   fortran_integer=+big_i8_integer
 ! we have Fortran integer*8 of the same length as int_c_long
    int_c_long=fortran_integer
    verify_sizeofs = sizeof(fortran_integer) == sizeof(int_c_long)
@@ -200,7 +208,7 @@ subroutine selftest_fortran_c_cxx_interoperability()
 ! we have Fortran integer*4 of the same length as int_c_int
    int_c_int=fortran_integer
    verify_sizeofs = sizeof(fortran_integer) == sizeof(int_c_int)
-   int_c_long=+9223372036854775807 ! the biggest signed integer*8 number, 2^63-1
+   int_c_long=+big_i8_integer
 #endif
    int_c_int_saved=int_c_int
    int_c_long_saved=int_c_long
@@ -211,9 +219,9 @@ subroutine selftest_fortran_c_cxx_interoperability()
    real_c_double_array(3)=-1.797693D-308
 
    allocate(int_c_long_array(arr_size)); allocate(int_c_long_array_saved(arr_size))
-   int_c_long_array(1)=+9223372036854775807
-   int_c_long_array(2)=-9223372036854775807
-   int_c_long_array(3)=+9223372036854775807
+   int_c_long_array(1)=+big_i8_integer
+   int_c_long_array(2)=-big_i8_integer
+   int_c_long_array(3)=+big_i8_integer
 
    do i=1,arr_size
      real_c_double_array_saved(i)=real_c_double_array(i)
