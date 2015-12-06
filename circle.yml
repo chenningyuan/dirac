@@ -58,9 +58,9 @@ test:
         - lscpu
     override:
 # configure, build optimized code and run tests (Dirac 64-bit with OpenMPI and documentation)
-        - git clone git@gitlab.com:dirac/unit-tests.git     external/unit-tests
-        - git clone git@github.com:PCMSolver/pcmsolver.git  external/pcmsolver
-        - git clone git@gitlab.com:stieltjes/stieltjes.git  external/stieltjes
+        #- git clone git@gitlab.com:dirac/unit-tests.git     external/unit-tests
+        #- git clone git@github.com:PCMSolver/pcmsolver.git  external/pcmsolver
+        #- git clone git@gitlab.com:stieltjes/stieltjes.git  external/stieltjes
         - python ./pamadm -a --builddir=build_circleci_mpi
         - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --blas=off --lapack=off  --cmake-options="-D BUILDNAME='open_mpi.i8-circle-ci' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_circleci_mpi
 # build with make, build with ctest makes impossible to submit more test commands into one entry on dashboard
