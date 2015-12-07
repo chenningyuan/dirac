@@ -104,7 +104,7 @@ print *, '*                                                                     
 print *, '*                                                                             *'
 print *, '*    Written by:                                                              *'
 print *, '*                                                                             *'
-print *, '*    Radovan Bast             KTH/PDC Stockholm                 Sweden        *'
+print *, '*    Radovan Bast             UiT The Arctic University of      Norway        *'
 print *, '*    Trond Saue               Universite Toulouse III           France        *'
 print *, '*    Lucas Visscher           VU University Amsterdam           Netherlands   *'
 print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *'
