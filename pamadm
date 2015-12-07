@@ -130,10 +130,10 @@ def main():
     add_test('electrostatic_potential', 'long')
     add_test('acmoin', 'short')
     add_test('atomic_start', 'short')
-    add_test('basis_automatic_augmentation', 'short')
-    add_test('basis_contraction', 'short')
-    add_test('basis_input', 'short')
-    add_test('bsse', 'short')
+    add_test('basis_automatic_augmentation', 'basis;short')
+    add_test('basis_contraction', 'basis;short')
+    add_test('basis_input', 'basis;short')
+    add_test('bsse', 'basis;short')
     add_test('bss_energy', 'short')
     add_test('cc_energy_and_mp2_dipole','cc')
     add_test('cc_linear', 'short;cc')
@@ -216,7 +216,11 @@ def main():
     add_test('cc_gradient')
     add_test('krci_energy_q_corrections', 'medium;krci;qcorr;ci')
     add_test('lucita_q_corrections', 'short;qcorr;ci')
-    add_test('x2c-SCF_to_4c-SCF', 'short;x2c;;4c;scf')
+    add_test('x2c-SCF_to_4c-SCF', 'short;x2c;4c;scf')  
+
+    # extra testt - reading all basis set file, not run as part of standard test set
+    add_test('read_all_basis_sets', 'read;basis')
+
     # benchmarks, not run as part of standard test set
     add_test('benchmark_cc', 'benchmark;cc')
     add_test('benchmark_cc_linear', 'benchmark;cc')
@@ -228,6 +232,9 @@ def main():
     add_test('tutorial_W', 'tutorial;W;open-shell;scf')
     add_test('tutorial_MnO6', 'tutorial;MnO6;scf')
     add_test('tutorial_Ir_16plus', 'tutorial;cc')
+
+    # dirrci_property module tests added to the test directory
+    add_test('dirrci_property','ci')
 
     # list of directories and files
     # that are never compiled as part of the "dirac" library
@@ -250,13 +257,12 @@ def main():
     files_never_compiled.append('src/cc_external/hsfscc/hsfs_main.F90')
     files_never_compiled.append('src/main/main.F90')
     files_never_compiled.append('src/dirrci/cimain.F')
-    files_never_compiled.append('src/interest/selftest/module_interest_selftest.f90')
-    files_never_compiled.append('src/interest/selftest/main_interest_selftest.f90')
 
     directories_never_compiled = []
     directories_never_compiled.append('utils')
     directories_never_compiled.append('cmake')
     directories_never_compiled.append('src/xcfun')  # is part of xcfun.cmake
+    directories_never_compiled.append('src/interest')  # is part of interest.cmake
 
     for directory in directories_never_compiled:
         for f in glob.glob('%s/*.F90' % directory):
@@ -313,7 +319,7 @@ def main():
     this_module = 'interest'
     dirac_modules[this_module] = dirac_module('interest', 'Interest module')
     dirac_modules[this_module].add_cppflag('MOD_INTEREST')
-    dirac_modules[this_module].add_directory('src/interest')
+    dirac_modules[this_module].add_directory('src/interest-interface')
     dirac_modules[this_module].add_test('mdirac_closed-shell_dft')
     dirac_modules[this_module].take_out_of_release()
 
@@ -494,13 +500,13 @@ def main():
 
     #  there are no modules
     if (len(sys.argv) == 1):
-       print 'only core functionality selected'
+       print('only core functionality selected')
     else:
-       print 'Active modules:'
+       print('Active modules:')
 
     for module in dirac_modules:
         if dirac_modules[module].is_included:
-           print '       ' + dirac_modules[module].message
+           print('       ' + dirac_modules[module].message)
     print
 
     if not os.path.exists(options.builddir):
@@ -527,22 +533,22 @@ def main():
     list_of_include_files         = []
     for directory in directories_with_sources:
         for source in glob.glob('%s/*.F' % directory):
-            source = string.replace(source, '\\', '/')
+            source = source.replace('\\', '/')
             list_of_fixed_fortran_sources.append(source)
         for source in glob.glob('%s/*.F90' % directory):
-            source = string.replace(source, '\\', '/')
+            source = source.replace('\\', '/')
             list_of_free_fortran_sources.append(source)
         for source in glob.glob('%s/*.f90' % directory):
-            source = string.replace(source, '\\', '/')
+            source = source.replace('\\', '/')
             list_of_free_fortran_sources.append(source)
         for source in glob.glob('%s/*.c' % directory):
-            source = string.replace(source, '\\', '/')
+            source = source.replace('\\', '/')
             list_of_c_sources.append(source)
         for source in glob.glob('%s/*.h' % directory):
-            source = string.replace(source, '\\', '/')
+            source = source.replace('\\', '/')
             list_of_include_files.append(source)
         for source in glob.glob('%s/*.inc' % directory):
-            source = string.replace(source, '\\', '/')
+            source = source.replace('\\', '/')
             list_of_include_files.append(source)
 
     list_of_c_sources = set(list_of_c_sources)
@@ -587,7 +593,7 @@ def main():
             for cppflag in dirac_modules[module].cppflags:
                 s += '-D%s ' % cppflag
 
-    f = open(os.path.join(options.builddir, 'pamadm-generated', 'Definitions.cmake'), 'w')
+    f = open(os.path.join(options.builddir, 'pamadm-generated', 'pamadm_definitions.cmake'), 'w')
     f.write('# file generated by the minions of DIRAC - DO NOT EDIT!\n')
     f.write('add_definitions(%s)' % s)
     f.close()
@@ -613,6 +619,7 @@ def main():
            not 'benchmark' in test[1] and \
            not 'tutorial' in test[1] and \
            not 'openrsp' in test[1] and \
+           not 'read' in test[1] and \
            not 'pcm' in test[1]:
             f.write('dirac_test(%s "%s")\n' % (test[0], test[1]))
     # short tests
@@ -649,6 +656,13 @@ def main():
             f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
     f.write('endif()\n')
 
+    # one long test: read (almost) all basis set files in DIRAC
+    f.write('if(ENABLE_BASIS_SETS_CHECK)\n')
+    for test in list_of_tests:
+        if 'read' in test[1]:
+            f.write('    dirac_test(%s "%s")\n' % (test[0], test[1]))
+    f.write('endif()\n')
+
     f.close()
 
     # create list of tests, this is needed for "make release"
@@ -659,7 +673,7 @@ def main():
 
     # write pamadm flags to file
     f = open(os.path.join(options.builddir, 'pamadm-generated', 'pamadm-flags'), 'w')
-    f.write(string.join(sys.argv[1:]))
+    f.write(' '.join(sys.argv[1:]))
     f.close()
 
     # get delete flags (used by make release)
@@ -673,7 +687,7 @@ def main():
     for module in dirac_modules:
         if dirac_modules[module].is_included:
            for cppflag in dirac_modules[module].cppflags:
-               delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
+               delete_flags = delete_flags.replace('-U%s' % cppflag, '')
     f = open(os.path.join(options.builddir, 'pamadm-generated', 'delete_flags'), 'w')
     f.write(delete_flags)
     f.close()

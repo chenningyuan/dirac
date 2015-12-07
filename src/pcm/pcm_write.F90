@@ -1,5 +1,6 @@
 module pcm_write
 
+#ifdef HAS_PCMSOLVER
    use, intrinsic :: iso_c_binding, only: c_char, c_size_t
 
    implicit none
@@ -204,5 +205,6 @@ module pcm_write
       end if
 
    end subroutine host_writer
+#endif /* HAS_PCMSOLVER */
 
 end module

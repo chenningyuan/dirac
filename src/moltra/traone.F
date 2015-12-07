@@ -1779,6 +1779,8 @@ C
       integer, allocatable :: idxu2g(:,:)
 
       allocate(idxu2g(norbt,nrep))
+
+
       idxu2g(1:norbt,1:nrep) = 0
 
       call Super_Symmetry(nrep,nv,idxu2g,'particle') 

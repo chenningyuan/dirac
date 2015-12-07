@@ -5,8 +5,29 @@ set(BUILDNAME
     "Name of build on the dashboard"
     )
 
+option(ENABLE_TUTORIALS "Enable tutorials within the test suite" OFF)
+option(ENABLE_BASIS_SETS_CHECK "Enable check reading of almost all basis sets input files" OFF)
 option(ENABLE_BENCHMARKS "Enable benchmarks within the test suite" OFF)
-if(NOT ENABLE_BENCHMARKS)
+
+if (ENABLE_TUTORIALS)
+    message(STATUS "Specialized tutorial tests ENABLED")
+else()
+    message(STATUS "Specialized tutorial tests DISABLED")
+endif()
+
+if (ENABLE_BENCHMARKS)
+    message(STATUS "Specialized benchmark tests ENABLED")
+else()
+    message(STATUS "Specialized benchmark tests DISABLED")
+endif()
+
+if(ENABLE_BASIS_SETS_CHECK)
+    message(STATUS "Reading of almost all basis sets input files in extra test ENABLED")
+else()
+    message(STATUS "Reading of almost all basis sets input files in extra test DISABLED")
+endif()
+
+if(NOT ENABLE_BENCHMARKS AND NOT ENABLE_TUTORIALS AND NOT ENABLE_BASIS_SETS_CHECK)
     # set ctest own timeout
     set(DART_TESTING_TIMEOUT
         "1500"
@@ -15,14 +36,14 @@ if(NOT ENABLE_BENCHMARKS)
         )
 endif()
 
+message(STATUS "Set CDash timeout for every single test set to ${DART_TESTING_TIMEOUT} seconds. Owerwritten by pam timeout setting.")
+
 macro(dirac_test _name _label)
     add_test(${_name} ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
     if(NOT "${_label}" STREQUAL "")
         set_tests_properties(${_name} PROPERTIES LABELS "${_label}")
     endif()
 endmacro()
-
-option(ENABLE_TUTORIALS "Enable tutorials within the test suite" OFF)
 
 # activate ctest
 include(CTest)

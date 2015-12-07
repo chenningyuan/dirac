@@ -152,9 +152,10 @@ end interface
      ! print out git_info & build_info by the executable
      call print_info
      call flush(lupri)
-! miro: do the selftest after printing dirac system info
+! miro: do the self-tests after printing dirac system info
 #ifndef NO_SELFTEST
      call selftest_lapack()
+     call selftest_fortran_c_cxx_interoperability()
 #ifdef VAR_MPI
 !    MASTER checks MPI library compatibility (now done at compile time)
      if ( parcal ) call selftest_mpi()

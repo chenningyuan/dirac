@@ -21,6 +21,7 @@
 
 module pcmmod_cfg
 
+#ifdef HAS_PCMSOLVER
 use, intrinsic :: iso_c_binding, only: c_bool, c_char, c_double, c_int, c_null_char
 
 implicit none
@@ -108,5 +109,6 @@ function pcmsolver_input() result(host_input)
   host_input%outside_type    = outside_type
 
 end function pcmsolver_input
+#endif /* HAS_PCMSOLVER */
 
 end module

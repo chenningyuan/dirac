@@ -3,7 +3,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
-include(Definitions)
+include(pamadm_definitions)
 include(Sources)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -37,6 +37,11 @@ set(DIRAC_SOURCES
     ${FIXED_FORTRAN_SOURCES}
     )
 
+if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
+    SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    message(STATUS "For libdirac.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+endif()
+
 add_library(
     dirac
     ${DIRAC_SOURCES}
@@ -51,6 +56,10 @@ endif()
 
 if(ENABLE_PCMSOLVER)
     add_dependencies(dirac pcmsolver)
+endif()
+
+if(ENABLE_INTEREST)
+    add_dependencies(dirac interest)
 endif()
 
 if(ENABLE_STIELTJES)

@@ -3,7 +3,7 @@ cls
 
 rem set number of threads for OpenBLAS
 rem 24GB RAM,8 CPU
-set OPENBLAS_NUM_THREADS=4
+set OPENBLAS_NUM_THREADS=2
 
 rem source files directories
 set DIRAC=C:\Users\milias\Documents\work\software\dirac\trunk
@@ -37,14 +37,14 @@ if exist %BUILD% rmdir /S /Q %BUILD%
 python pamadm -a --builddir=%BUILD% 1>>%LOG% 2>&1
 python setup --int64  --blas=off --lapack=off ^
  --explicit-libs="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
- --cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON" ^
+ --cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON -D ENABLE_UNIT_TESTS=ON -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_BUILTIN_LAPACK=ON" ^
  --generator="MinGW Makefiles" %BUILD% 1>>%LOG% 2>&1
 cd %BUILD%
 ctest      -D ExperimentalUpdate       1>>%LOG%  2>&1
 ctest      -D ExperimentalConfigure    1>>%LOG%  2>&1
-ctest -j 2 -D ExperimentalBuild        1>>%LOG%  2>&1
+ctest -j 8 -D ExperimentalBuild        1>>%LOG%  2>&1
 rem no tests here ! do only the compilation, tests are running in following buildup
-rem ctest -j 2 -D ExperimentalTest       --track Miro  1>>%LOG%  2>&1
+ctest -j 4 -D ExperimentalTest  -R cosci_energy dft   1>>%LOG%  2>&1
 ctest      -D ExperimentalSubmit       1>>%LOG%  2>&1
 
 rem write timestamp
@@ -57,6 +57,7 @@ rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1
 
 cd %TMP%
+set CTEST_PROJECT_NAME=DIRAC
 set CLONED=trunk_cloned
 if exist %CLONED% rmdir /S /Q %CLONED% 1>>%LOG% 2>&1
 git clone --recursive git@gitlab.com:dirac/dirac.git %CLONED% 1>>%LOG% 2>&1
@@ -68,15 +69,15 @@ python pamadm -a --builddir=%BUILD% 1>>%LOG% 2>&1
 rem split setup command line
 python setup --int64 --blas=off --lapack=off ^
  --explicit-libs="C:/libraries/OpenBLAS/OpenBLAS-v0.2.14-Win64-int64/bin/libopenblas.dll" ^
- --cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel_cloned' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON" ^
+ --cmake-options="-D ZLIB_ROOT='C:\libraries\zlib' -D BOOST_INCLUDEDIR='C:\libraries\Boost\include' -D BOOST_LIBRARYDIR='C:\libraries\Boost\lib' -D BUILDNAME='WinS12_MinGW64_i8_OpenBLAS_parallel_cloned' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON -D ENABLE_UNIT_TESTS=ON -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_BUILTIN_LAPACK=ON" ^
  --generator="MinGW Makefiles" %BUILD% 1>>%LOG% 2>&1
 cd %BUILD%
-rem ctest      -D ExperimentalConfigure  --track Miro  1>>%LOG%  2>&1
-rem ctest -j 2 -D ExperimentalBuild      --track Miro  1>>%LOG%  2>&1
-rem ctest -j 2 -D ExperimentalTest       --track Miro  1>>%LOG%  2>&1
-rem ctest      -D ExperimentalSubmit     --track Miro  1>>%LOG%  2>&1
+rem ctest      -D NightlyConfigure  --track Miro  1>>%LOG%  2>&1
+rem ctest -j 8 -D NightlyBuild      --track Miro  1>>%LOG%  2>&1
+rem ctest -j 4 -D NightlyTest       --track Miro  1>>%LOG%  2>&1
+rem ctest      -D NightlySubmit     --track Miro  1>>%LOG%  2>&1
 rem use one compact command
-ctest -j 2 -D Experimental  1>>%LOG%  2>&1
+ctest -j 4 -D Nightly  --track master  1>>%LOG%  2>&1
 
 rem write timestamp
 echo %DATE% %TIME% 1>>%LOG% 2>&1

@@ -212,7 +212,8 @@
          J = MULTB(i+NREP,1+NREP,2)
 
           M = mov(i)
-          N = mov(j)
+!          N = mov(j)
+          N = mov(i)
           K = mvo(j)
 
           ND = mov(i)

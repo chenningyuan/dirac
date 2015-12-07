@@ -1,12 +1,9 @@
 option(ENABLE_STIELTJES "Enable stieltjes library" ON)
 
 if(ENABLE_STIELTJES)
-    # we will be using f90 modules
- #  set(CMAKE_Fortran_MODULE_DIRECTORY
- #      ${PROJECT_BINARY_DIR}/external/stieltjes-build
- #      ${CMAKE_Fortran_MODULE_DIRECTORY}
- #      )
+    message(STATUS "Stieltjes external module ENABLED")
     include_directories (${PROJECT_BINARY_DIR}/external/stieltjes-build)
+    add_definitions(-DHAS_STIELTJES)
 
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -21,6 +18,7 @@ if(ENABLE_STIELTJES)
 
     set(EXTERNAL_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libstieltjes.a
-        ${EXTERNAL_LIBS}
-        )
+        ${EXTERNAL_LIBS})
+else()
+    message(STATUS "Stieltjes external module DISABLED")
 endif()

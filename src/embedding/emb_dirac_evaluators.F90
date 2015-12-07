@@ -197,6 +197,15 @@ module fde_evaluators_dirac
                       nuc_part,      &
                       ele_part)
 
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+
+        vnuc = -vnuc
+
       end subroutine fde_dirac_calculate_nucpot
 
 !   ----------------------------------------------------------------------------
@@ -260,7 +269,16 @@ module fde_evaluators_dirac
 !
 ! assemble the final electrostatic potential
 !
-         vc   =  vnuc + vc 
+! aspg, 14/10/2015
+!       note that the electrostatic, hartree and nuclear potentials in dirac have
+!       been multiplied by -1 when exported so that we don't have to multipy the 
+!       product potential * density by the electron charge when calculating the
+!       energy. with this, the potentials will be in line with those obtained
+!       e.g. with adf 
+
+         vc   = -vc
+         vnuc = -vnuc
+         vc   = (vnuc + vc) 
 
       end subroutine fde_dirac_calculate_elpot
       
@@ -646,7 +664,7 @@ module fde_evaluators_dirac
            df_interaction   = df_interaction + fde_grid_im%w(i)*df_energy
 
            el_interaction_f = el_interaction_f + fde_grid_im%w(i)*gf_frozen%elpot(i)*n_0_a(1)
-           el_nuclearAtt_a  = el_nuclearAtt_a  - fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
+           el_nuclearAtt_a  = el_nuclearAtt_a  + fde_grid_im%w(i)*gf_active%nucpot(i)*n_0_f(1)
 
            interaction    = el_interaction_f + el_nuclearAtt_a + df_interaction
          end do
