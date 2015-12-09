@@ -54,7 +54,7 @@ C---------------Local variables--------------------------------------
 
       LOGICAL    :: FOCKSP,PRENE
       real*8,allocatable :: resL1(:),resL2(:),dinv_one(:),dinv_two(:)
-      real*8,allocatable :: G_oo(:),G_vv(:)
+      real*8,allocatable :: G_oo(:),G_vv(:),int_wooop(:),w_v_temp(:)
       integer            :: i !remove
       real*8             :: val  
 
@@ -131,6 +131,15 @@ C     Initialize the work arrays to zero.
 
         write(*,*)'w_efam done',dot_product(cz(1:nv5*rcw),cz(1:nv5*rcw))
 
+        
+      allocate (int_wooop(iovoot(nrep+1)*rcw))
+
+         call w_mnie(s1,int_wooop)
+
+      allocate (w_v_temp(nv5*rcw))
+
+         call w_amef(s1,w_v_temp)
+
 ! out-of-core section of the intemediates
 
 !        call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
@@ -201,8 +210,8 @@ C     Initialize the work arrays to zero.
 
        call xcopy (ndimt1,hov,1,ResL1,1)
        CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_voov,w_ovoo,
-     &                         cz,G_oo,G_vv,buf1,buf2,buf3,
-     &                         nbuf2,nbuf3,resL1,iprnt)
+     &               cz,w_v_temp,int_wooop,G_oo,G_vv,buf1,buf2,buf3,
+     &               nbuf2,nbuf3,resL1,iprnt)
 
       endif
 
@@ -211,8 +220,8 @@ C     Initialize the work arrays to zero.
       CALL XTIME(5,1,'-- L2 equations                     ')
 
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
-     &                            G_oo,G_vv,buf1,buf2,buf3,
-     &                            nbuf3,resL2,iprnt,nit)
+     &                      int_wooop,G_oo,G_vv,buf1,buf2,buf3,
+     &                      nbuf3,resL2,iprnt,nit)
 
       CALL XTIME(5,2,'-- L2 equations                     ')
 
@@ -267,6 +276,8 @@ C     Initialize the work arrays to zero.
       deallocate(dinv_two)
       deallocate(resL1) 
       deallocate(resL2) 
+      deallocate (int_wooop)
+      deallocate(w_v_temp)
 
 !     Close and delete DIIS scratch files
 

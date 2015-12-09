@@ -16,6 +16,8 @@
     public w_mbej
     public w_iemn
     public w_efam
+    public w_amef
+    public w_mnie
     public wbar_mbej
     public w_ejmb_out_of_core
     public f_bar_ae_out_of_core
@@ -490,14 +492,13 @@
           K = mvo(j)
 
           off1 = 1 + j2ovvo(j)*rcw  
+          off2 = 1 + j2vovo(x)*rcw  
+          off3 = 1 + jovvo(x)*rcw  
 
 
             CALL XGEMM ('N','T',M,N,K,A1,buf3(OFF1),M, &
      &                  buf2(OFF2),N,A0,temp(OFF3),M)
 
-
-          off2 = off2 + N*K
-          off3 = off3 + M*N
 
       enddo
 
@@ -519,6 +520,63 @@
       deallocate(xxx) 
 
   endif
+
+ end subroutine
+
+
+ subroutine w_mnie(t1,int_wooop)
+
+!---------------Description--------------------------------------------
+!     Calculates w_mnie intermediate
+!-----------------------------------------------------------------------
+
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+
+!---------------Calling variables----------------------------
+  real(8), intent(in)  :: t1(rcw*ndimt1)                                    ! Amplitudes.
+  real(8), intent(out) :: int_wooop(:)                                      ! Intermediate.
+!------------------------------------------------------------
+! initialize int_wooop
+!------------------------------------------------------------
+
+  call getooov(int_wooop)
+
+!----------------------------------------------------------------------------
+!     w(mn,ie) = V(mn,ie) + t(f,i) * V(mn,fe)
+!----------------------------------------------------------------------------
+
+  call contraction_424 ((/"o1","o2","p2","p3"/),(/"p3","o3"/), &
+ &        (/"o1","o2","o3","p2"/),int_wooop,-1.0d0,1.0d0,nrep,RightTensor=t1)
+
+ end subroutine
+
+ subroutine w_amef(t1,w_v_temp)
+
+!---------------Description--------------------------------------------
+!     Calculates w_amef intermediate
+!-----------------------------------------------------------------------
+
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+
+!---------------Calling variables----------------------------
+  real(8), intent(in)  :: t1(rcw*ndimt1)                                    ! Amplitudes.
+  real(8), intent(out) :: w_v_temp(:)                                      ! Intermediate.
+!--------------------------------------------------
+! initialize w_v_temp
+!--------------------------------------------------
+
+    call getvovv_incore(w_v_temp)
+
+!---------------------------------------------------
+! w_amef(am,ef) = w_amef(am,ef) - V(nm,ef) * t(a,n) 
+!---------------------------------------------------
+    call contraction_424 ((/"o2","o1","p3","p1"/),(/"p2","o2"/), &
+   &    (/"p2","o1","p3","p1"/),w_v_temp,-1.0d0, &
+   &    1.0d0,nrep,RightTensor=t1)
 
  end subroutine
 

@@ -167,6 +167,9 @@ subroutine selftest_fortran_c_cxx_interoperability()
   character(len=20), target :: string_c_char,string_c_char_saved
   logical :: verify_int_long_double, verify_arrays, verify_chars, verify_sizeofs
 
+  integer(kind=4) :: big_i4_integer=+2147483647_4 !  the biggest signed integer*4 number, 2^31-1
+  integer(kind=8) :: big_i8_integer=+9223372036854775807_8 ! the biggest signed integer*8 number, 2^63-1
+
   interface
      subroutine selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, int_c_long_array_ptr, & 
                             real_c_double, real_c_double_array_ptr,string_c_char_c_ptr, string_len, & 
@@ -184,76 +187,76 @@ subroutine selftest_fortran_c_cxx_interoperability()
 
 ! assign numbers you are sending to C/C++ routine and bringing them back
 !
-   real_c_double=-1.797693D+308 
-   real_c_double_saved=real_c_double
+  real_c_double=-1.797693D+308 
+  real_c_double_saved=real_c_double
 
 ! It's programmer's responsibility to ensure proper Fortran-to-C/C++ integer passing
 ! depending on the Fortran integer size (integer*4 or integer*8) !
 #if defined (INT_STAR8)
-   fortran_integer=+9223372036854775807 ! the biggest signed integer*8 number, 2^63-1
+  fortran_integer=+big_i8_integer
 ! we have Fortran integer*8 of the same length as int_c_long
-   int_c_long=fortran_integer
-   verify_sizeofs = sizeof(fortran_integer) == sizeof(int_c_long)
-   int_c_int = +2147483647 !  the biggest signed integer*4 number, 2^31-1
+  int_c_long=fortran_integer
+  verify_sizeofs = sizeof(fortran_integer) == sizeof(int_c_long)
+  int_c_int = +big_i4_integer
 #else
-   fortran_integer=+2147483647 !  the biggest integer*4 number, 2^31-1
+  fortran_integer=+big_i4_integer
 ! we have Fortran integer*4 of the same length as int_c_int
-   int_c_int=fortran_integer
-   verify_sizeofs = sizeof(fortran_integer) == sizeof(int_c_int)
-   int_c_long=+9223372036854775807 ! the biggest signed integer*8 number, 2^63-1
+  int_c_int=fortran_integer
+  verify_sizeofs = sizeof(fortran_integer) == sizeof(int_c_int)
+  int_c_long=+big_i8_integer
 #endif
-   int_c_int_saved=int_c_int
-   int_c_long_saved=int_c_long
+  int_c_int_saved=int_c_int
+  int_c_long_saved=int_c_long
 
-   allocate(real_c_double_array(arr_size)); allocate(real_c_double_array_saved(arr_size))
-   real_c_double_array(1)=-1.797693D+308
-   real_c_double_array(2)=+1.797693D+308
-   real_c_double_array(3)=-1.797693D-308
+  allocate(real_c_double_array(arr_size)); allocate(real_c_double_array_saved(arr_size))
+  real_c_double_array(1)=-real_c_double
+  real_c_double_array(2)=+real_c_double
+  real_c_double_array(3)=-real_c_double
 
-   allocate(int_c_long_array(arr_size)); allocate(int_c_long_array_saved(arr_size))
-   int_c_long_array(1)=+9223372036854775807
-   int_c_long_array(2)=-9223372036854775807
-   int_c_long_array(3)=+9223372036854775807
+  allocate(int_c_long_array(arr_size)); allocate(int_c_long_array_saved(arr_size))
+  int_c_long_array(1)=+big_i8_integer
+  int_c_long_array(2)=-big_i8_integer
+  int_c_long_array(3)=+big_i8_integer
 
-   do i=1,arr_size
-     real_c_double_array_saved(i)=real_c_double_array(i)
-     int_c_long_array_saved(i)=int_c_long_array(i)
-   enddo
+  do i=1,arr_size
+    real_c_double_array_saved(i)=real_c_double_array(i)
+    int_c_long_array_saved(i)=int_c_long_array(i)
+  enddo
 
-   string_c_char="Hello! 12345678+-@^/"
-   string_len=len(string_c_char)
-   do i=1,string_len
+  string_c_char="Hello! 12345678+-@^/"
+  string_len=len(string_c_char)
+  do i=1,string_len
      string_c_char_saved(i:i)=string_c_char(i:i)
-   enddo
+  enddo
 
-   int_c_long_target=int_c_long
-   int_c_long_ptr = c_loc(int_c_long_target)
-   real_c_double_ptr = c_loc(real_c_double)
+  int_c_long_target=int_c_long
+  int_c_long_ptr = c_loc(int_c_long_target)
+  real_c_double_ptr = c_loc(real_c_double)
 
-   call selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, c_loc(int_c_long_array), & 
-    real_c_double, c_loc(real_c_double_array), c_loc(string_c_char(1:1)), string_len, int_c_long_ptr,real_c_double_ptr)
+  call selftest_fortran_c_interoperability(arr_size, int_c_int, int_c_long, c_loc(int_c_long_array), & 
+  real_c_double, c_loc(real_c_double_array), c_loc(string_c_char(1:1)), string_len, int_c_long_ptr,real_c_double_ptr)
 
 
-   ! verify that data are intact after returning from C routine
-   verify_int_long_double = (int_c_int==int_c_int_saved) .and. (int_c_long==int_c_long_saved) .and. & 
+  ! verify that data are intact after returning from C routine
+  verify_int_long_double = (int_c_int==int_c_int_saved) .and. (int_c_long==int_c_long_saved) .and. & 
                             ( real_c_double==real_c_double_saved ) .and. verify_sizeofs
-   verify_arrays=.true.
-   do i=1,arr_size
+  verify_arrays=.true.
+  do i=1,arr_size
      if (.not.(real_c_double_array_saved(i)==real_c_double_array(i) .and. & 
                int_c_long_array_saved(i)==int_c_long_array(i))) verify_arrays=.false.
-   enddo
-   verify_chars=.true.
-   do i=1, len(string_c_char)
+  enddo
+  verify_chars=.true.
+  do i=1, len(string_c_char)
       if (.not.(string_c_char(i:i) == string_c_char_saved(i:i) )) verify_chars=.false.
-   enddo
+  enddo
 
-   if (.not.(verify_int_long_double .and. verify_arrays .and. verify_chars)) then 
+  if (.not.(verify_int_long_double .and. verify_arrays .and. verify_chars)) then 
      print *,"int_c_int,int_c_int_saved:",int_c_int,int_c_int_saved
      print *,"int_c_long,int_c_long_saved:",int_c_long,int_c_long_saved
      print *,"real_c_double,real_c_double_saved:",real_c_double,real_c_double_saved
      print *,"WARNING: Selftest of ISO_C_BINDING Fortran - C/C++ interoperability FAILED !"
-   else
+  else
      print *,"Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED"
-   endif
+  endif
 
 end subroutine
