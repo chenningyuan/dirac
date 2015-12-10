@@ -177,9 +177,9 @@ Evaluate the molecular gradient, i.e.
 
 .. math::
 
-  |{\\frac{{\\partial E}}{{\\partial X\_A}}}|
+  \frac{\partial E}{\partial \mathbf{X}_A}
 
-where *X*\ :sub:`*A*`\  are the coordinates of the nuclei. This
+where :math:`\mathbf{X}_{A}` are the coordinates of the nuclei. This
 is an expectation value of one- and two-electron operators. Normally the
 molecular gradient evaluation is not invoked explicitly with this
 keyword but rather implicitly in the geometry optimization module.

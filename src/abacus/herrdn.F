@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -310,7 +310,7 @@ C     JHS
 #include "aosotr.h"
 #include "infpar.h"
 
-      integer, parameter   :: LWORK = 10000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      integer, parameter   :: LWORK = 15000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)         ! and we do not need that much memory in READIN
 C
 C     A SET variable has been replaced by RDINPC. This allows external control

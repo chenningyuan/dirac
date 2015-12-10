@@ -36,6 +36,7 @@ if(ENABLE_PCMSOLVER)
             -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
             -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
             -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
+            -DBoost_NO_BOOST_CMAKE=ON
             -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
             -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
             -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
@@ -64,6 +65,10 @@ if(ENABLE_PCMSOLVER)
                 getkw
                 ${ZLIB_LIBRARIES}
                 ${EXTERNAL_LIBS})
+            if (ENABLE_STATIC_LINKING)
+                list(REMOVE_ITEM EXTERNAL_LIBS "c")
+                message(STATUS "PCM accompanying libs cleared of 'libc' due to static linking")
+            endif()
     endif()
     set(PCMSOLVER_PARSE_DIR ${PROJECT_BINARY_DIR}/external/bin)
     include_directories(${PROJECT_BINARY_DIR}/external/pcmsolver-build/modules)

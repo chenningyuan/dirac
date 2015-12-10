@@ -60,15 +60,6 @@ The more general solution is to link to the parallel MKL and control the number
 of threads using MKL environment variables.
 
 
-Cray
-----
-
-Cray typically provides own optimized BLAS/LAPACK wrappers.
-For this use the option --cray to disable automatic BLAS/LAPACK detection::
-
-  $ ./setup --fc=ftn --cc=cc --cxx=CC --cray
-
-
 Explicitly specifying BLAS and LAPACK libraries
 -----------------------------------------------
 
