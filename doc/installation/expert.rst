@@ -18,11 +18,11 @@ How can I change optimization flags?
 
 You can turn optimization off (debug mode) like this::
 
-  $ ./setup.py --type=debug [other flags]
+  $ ./setup --type=debug [other flags]
   $ cd build
   $ make
 
-You can edit compiler flags in cmake/compilers/{FortranFlags.cmake, CFlags.cmake, CXXFlags.cmake}.
+You can edit compiler flags under the path ``cmake/custom/compiler_flags``-
 
 Alternatively you can edit compiler flags through ccmake::
 

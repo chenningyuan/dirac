@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -5351,6 +5351,7 @@ C&&& IOTC4: do IOTC in 4c-mode
 C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
              NONREL = .TRUE.
+             SPINFR = .TRUE.
              DOLVC   = .FALSE.
              GO TO 100
   145     CONTINUE
@@ -5639,12 +5640,6 @@ C ...   DIRCON(1) means contracted L component basis set !
           CALL QUIT(
      &    'HAMINP: Conflicting options ZORA & BSS/X2C !')
         ENDIF
-CTROND        IF (DIRCON(1)) THEN
-CTROND          CALL QUIT(
-CTROND     &   'HAMINP: Can not use the contracted basis set for'//
-CTROND     &   ' the BSS Hamiltonian !')
-CMI  &'  HAMINP: Conflicting options ZORA/PROJEC & BSS !')
-CTROND        ENDIF
 
 CMI  ... check not combining .IOTC, .DKH1, .DKH2
         IF ((IOTC.AND.DKH1).OR.(IOTC.AND.DKH2).OR.(DKH2.AND.DKH1)) THEN
@@ -5751,20 +5746,9 @@ C
         IGTINT = 1
       ENDIF
 C
-C     NZ=1 always equal to one
-C     for 2-component non-relatvistic calculations
 C     NZC1 is the NZ value in C1 symmetry
 C
       NZC1 = 4
-      IF (TWOCOMP) THEN
-        IF(BSS.or.x2c) THEN
-          NZC1 = 4
-        ELSE IF (.NOT. ECPCALC) THEN
-          NZC1 = 1
-          NZ   = 1
-          SPINFR = .TRUE.
-        ENDIF
-      ENDIF
 C.....Check RKBIMP
       IF (DORKBIMP) THEN
         IF (.NOT.URKBAL) THEN
@@ -5900,9 +5884,8 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       ELSE IF (ECPCALC) THEN
         WRITE(LUPRI,'(1X,A)')
      &   '  employing effective-core-potentials (ECP)'
-      ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
-        WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian',
-     &       '   - parameter NZ set to one'
+      ELSE IF (NONREL) THEN
+        WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian'
       ELSE IF(MDIRAC) THEN
         WRITE(LUPRI,'(A)') ' * Modified Dirac-Coulomb Hamiltonian'
         WRITE(LUPRI,'(A)') 
@@ -5923,7 +5906,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         ENDIF
         IF(POSVAC) THEN
           WRITE(LUPRI,'(6X,A)')
-     &      '- using posittronic vacuum.'
+     &      '- using positronic vacuum.'
         ENDIF
         IF(.NOT.VACREF) THEN
           WRITE(LUPRI,'(6X,A)')
@@ -8235,7 +8218,10 @@ C............variable telling that this is a 2-component relativistic calculatio
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
          ENDIF
-         IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE.
+         IF (WORD.EQ.'.NONREL') THEN
+            TWOCOMP=.TRUE.
+            NONREL =.TRUE.
+         ENDIF
          IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
          IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.

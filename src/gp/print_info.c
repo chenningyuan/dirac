@@ -7,7 +7,13 @@
  * Printing of long string is available in C, not in Fortran, therefore whole C routine must be employed.
  *
  * */
-void print_info(void) 
+
+#if defined VAR_XLF
+/* Miro: xlf90 linker requires underscore */
+void print_info_(void)
+#else
+void print_info(void)
+#endif
 {
     printf("\n ---  Git version information  ---\n");
     printf("                Git branch : %s\n",GIT_BRANCH);
@@ -42,5 +48,6 @@ void print_info(void)
     printf("       Modules definitions : %s\n",DEFINITIONS);
     printf("       Configuration time :  %s\n",CONFIGURATION_TIME);
     printf("-----------------------------------------------------------------\n");
+    fflush(stdout);
 }
 

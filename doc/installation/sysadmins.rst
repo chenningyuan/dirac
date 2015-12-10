@@ -7,9 +7,9 @@ Installation instructions for system administrators
 Please read the other installation sections for details
 but the installation procedure is typically this::
 
-  $ ./setup.py --mpi --mkl=parallel --prefix=/full/install/path/
+  $ ./setup --mpi --mkl=parallel --prefix=/full/install/path/
   $ cd build
-  $ make [-jN]
+  $ make [-j]
   $ export DIRAC_TMPDIR=/full/path/scratch
   $ export DIRAC_MPI_COMMAND="mpirun -np 8" # make test will run with MPI using 8 processes
   $ make test

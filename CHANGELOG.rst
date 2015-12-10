@@ -1,5 +1,7 @@
-15.x
-____
+
+
+15.0 (2015-12-12)
+-----------------
 
 - Better convergence for open-shell calculations, using .OPENFAC 0.5 as default.
   Final orbital energies are recalculated with .OPENFAC 1.0, for IP interpretation.
@@ -7,10 +9,6 @@ ____
 - Geometry optimization with xyz input.
 - Performance improvements for determinant generation in GASCIP
 - Use Kramers conjugation on CI vectors (cuts time for CI in half for ESR doublets)
-
-14.2 (20XX-XX-XX)
------------------
-
 - ANO-RCC basis: Fixed Carbon basis set (wrong contraction coefficients, see [MOLCAS ANO-RCC](http://www.molcas.org/ANO/).
 - ANO-RCC basis: Modified the 3 Th h-functions by replacing them with the 3 Ac h-functions to Th.
                  (A mistake was made in the original work when the 3 Th h-functions were made,

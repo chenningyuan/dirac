@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2432,10 +2432,10 @@ C
       ENDIF
 C
       call dealloc(a_FVO , id="fvo")
-      call dealloc(a_FOO , id="fvo")
-      call dealloc(a_FVV , id="fvo")
-      call dealloc(a_T1  , id="fvo")
-      call dealloc(a_T2  , id="fvo")
+      call dealloc(a_FOO , id="foo")
+      call dealloc(a_FVV , id="fvv")
+      call dealloc(a_T1  , id="t1")
+      call dealloc(a_T2  , id="t2")
       call dealloc(a_S1  , id="s1")
       call dealloc(a_S2  , id="s2")
 C

@@ -1,6 +1,6 @@
 #define not_GASCIP_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1049,7 +1049,7 @@ C
          IORDER = 1
          IPACK  = 0
          CALL RSJACO(NDET,NDET,NDET,WORK(KHR),EIGVAL,
-     &        IJOB,IORDER,IPACK,EIGVEC,WORK(KFREE),LFREE)
+     &        IJOB,IORDER,IPACK,EIGVEC)
       ELSE
          MATZ = 1
          CALL QDIAG(2,NDET,WORK(KHR),NDET,NDET,
@@ -2656,7 +2656,7 @@ C
             IORDER = 1
             IPACK  = 0
             CALL RSJACO(MAX_HRED,N_CRED,N_CRED,WORK(KHRED),WORK(KEIGVL),
-     &        IJOB,IORDER,IPACK,WORK(KEIGVC),WORK(KFREE),LFREE)
+     &        IJOB,IORDER,IPACK,WORK(KEIGVC))
          ELSE
             IF (IPRINT.GT.5) write(lupri,*) 'calling QDIAG'
             MATZ = 1

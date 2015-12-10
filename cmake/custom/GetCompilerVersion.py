@@ -44,7 +44,7 @@ def get_compiler_version(compiler,version_flag,pattern):
         output_compiler = subprocess.Popen([compiler,version_flag], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()[0]
     except:
         output_compiler = ''
-    match_compiler = re.search(pattern, output_compiler)
+    match_compiler = re.search(pattern, output_compiler.decode('utf-8'))
     if match_compiler:
         compiler_version = match_compiler.group()
     else:
@@ -105,4 +105,4 @@ else:
     Fortran_COMPILER_VERSION = '0.0'
 
 #! this is the standard output for CMake (must be in this order and with ;)
-print C_COMPILER_VERSION + ';' + CXX_COMPILER_VERSION + ';' + Fortran_COMPILER_VERSION
+print(C_COMPILER_VERSION + ';' + CXX_COMPILER_VERSION + ';' + Fortran_COMPILER_VERSION)

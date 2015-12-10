@@ -16,7 +16,7 @@
 # **Note**
 # In the following command: 
 #
-#           echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
+#           echo "$(ctest -j $N_PROC -D ExperimentalTest -L short)"
 #
 # command "echo" makes possible to continue after one of Dirac tests fails because otherwise 
 # codeship can stop and do not submit results to dashboard.
@@ -68,26 +68,26 @@ git submodule update --init --recursive
 
 # 32-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i4
-python ./setup.py --cmake-options="-D BUILDNAME='gnu.i4-codeship-ci'" build_codeship_i4
+python ./setup --cmake-options="-D BUILDNAME='gnu.i4-codeship-ci'" build_codeship_i4
 cd build_codeship_i4
-ctest --track Miro -D ExperimentalConfigure
-ctest -j $N_PROC --track Miro -D ExperimentalBuild
-#echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest)"
-if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+ctest -D ExperimentalConfigure
+ctest -j $N_PROC -D ExperimentalBuild
+#echo "$(ctest -j $N_PROC  -D ExperimentalTest -L short)"
+echo "$(ctest -j $N_PROC -D ExperimentalTest)"
+if [ "$CI_BRANCH" == "master" ]; then ctest -D ExperimentalSubmit; fi
 
 # Back to source dir
 cd .. 
 
 # 64-bit Integer build
 python ./pamadm -a --builddir=build_codeship_i8
-python ./setup.py --int64 --blas=off --lapack=off --cmake-options="-D BUILDNAME='gnu.i8-codeship-ci' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON" build_codeship_i8
+python ./setup --int64 --blas=off --lapack=off --cmake-options="-D BUILDNAME='gnu.i8-codeship-ci' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_codeship_i8
 cd build_codeship_i8
-ctest --track Miro -D ExperimentalConfigure
-ctest -j $N_PROC --track Miro -D ExperimentalBuild
-#echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest)"
-if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+ctest -D ExperimentalConfigure
+ctest -j $N_PROC -D ExperimentalBuild
+#echo "$(ctest -j $N_PROC -D ExperimentalTest -L short)"
+echo "$(ctest -j $N_PROC -D ExperimentalTest)"
+if [ "$CI_BRANCH" == "master" ]; then ctest -D ExperimentalSubmit; fi
 
 # finally do the documentation buildup in the build_codeship_i8 directory
 make html

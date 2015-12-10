@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3940,7 +3940,7 @@ C
       IF (.NOT.DOQJACO) THEN
 #endif
          IF (LOWJACO) THEN
-            CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
+            CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT)
          ELSE
             CALL QDIAG(1,NS,SMAT,LDM,NS,EIG,1,VMAT,LDM,NS,WORK,LWORK
      $           ,IERR)
@@ -5967,7 +5967,7 @@ C
 #endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
-     &                  WORK(KVLL),WORK(KFREE),LFREE)
+     &                  WORK(KVLL))
             ELSE
               CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
      &                EIG(IEIGE),1,
@@ -6042,7 +6042,7 @@ C
 #endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
-     &                  WORK(KVSS),WORK(KFREE),LFREE)
+     &                  WORK(KVSS))
             ELSE
               CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
      &                EIG(IEIGP),1,

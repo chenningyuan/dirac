@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -749,7 +749,10 @@ C
 
       call legacy_lwork_get(LWORK)
 #include "memint.h"
-      call alloc(WORK,LWORK-norbt**2*nz,id='WORK in GMOTRA')
+!      Allocating just the amount we need to avoid memory problems
+! miro: guys, you miscalculted the exact amount, this artificial increase by 100 is needed to pass tests ;)
+      lwork = norbt + nz*nasht**2 + 100
+      call alloc(WORK,LWORK,id='WORK in MP2_NATORB')
       KFRSAV = KFREE
 
       IF ( NOPRNT .ge. 5 )THEN
@@ -794,7 +797,7 @@ C
 
       !> diagonalize
       CALL DIAG_piv2fock('A',dv,occ,cmo_nat,
-     &                   idxu2g,ibeig,work(kfree),lwork)
+     &                   idxu2g,ibeig,work,lwork)
 
 !     insert new matrix block into transformation matrix
       do indx_loop = 1, max_loop

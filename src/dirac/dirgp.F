@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4728,4 +4728,21 @@ C
 C
       RETURN
       END
+      SUBROUTINE ZERO_MO(j,CMOBUF,NBAST,NMOT,NZ)
+C
+C     1-Oct-2015 Hans Jørgen Aa. Jensen
+C     Zero MO no. j in CMOBUF
+C     (CMOBUF all of CMO, or a subset generated with SELCFS, or?)
+C     In fact, this routine can zero column j in any quaternion matrix.
+C
+      integer j, nbast, nmot, nz
+      real*8  cmobuf(nbast,nmot,nz)
+      integer iz
 
+      do iz = 1, nz
+         CMOBUF(:,j,iz) = 0.0d0
+      end do
+      
+      return
+      end
+! -- end of dirgp.F --

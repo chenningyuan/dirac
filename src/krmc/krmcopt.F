@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -6317,7 +6317,7 @@ C
          IORDER = 0
          IPACK = 0
          CALL RSJACO(NC,NC,NC,WORK(KVEC),WORK(KEIG),
-     &        IJOB,IORDER,IPACK,U,WORK(KFREE),LFREE)
+     &        IJOB,IORDER,IPACK,U)
       ELSE
          MATZ = 1
          CALL QDIAG(NZ,NC,WORK(KVEC),NC,NC,
@@ -6433,7 +6433,7 @@ C
          IORDER = 0
          IPACK = 0
          CALL RSJACO(NDIM,NDIM,NDIM,WORK(KFD),WORK(KEIG),
-     &        IJOB,IORDER,IPACK,U,WORK(KFREE),LFREE)
+     &        IJOB,IORDER,IPACK,U)
       ELSE
          MATZ = 1
          CALL QDIAG(NZ,NDIM,WORK(KFD),NDIM,NDIM,

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1838,9 +1838,10 @@ C          restore density matrix and  total Fock matrices (have been destroyed 
            CALL REAFCK(LUFCKT,FOCK,.FALSE.,NFMAT)
            CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
      &                 ICHKCNV,OVLSEL ,DOLEVEL,WORK(KFREE),LFREE)
-C          Read CMO coefficients, but not orbital energies in EIG and IBEIG (code 2)
+C          Read CMO coefficients and bosos identification, but not orbital energies in EIG (code 10)
 C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
-           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,2,
+
+           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10,
      &                 WORK,KFREE,LFREE)
            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
            WRITE(LUPRI,'(/A/A/A/)')
@@ -4353,8 +4354,7 @@ C
 
           IF(DOJACO) THEN
             CALL RSJACO(NTMO(I),NTMO(I),NTMO(I),FMO(I2TMOT(I)+1),
-     &                  EIG(IORB(I)+1),1,1,0,FAO(I2TMOT(I)+1),
-     &                  WORK(KFREE),LFREE)
+     &                  EIG(IORB(I)+1),1,1,0,FAO(I2TMOT(I)+1))
           ELSE
             CALL QDIAG(NZ,NTMO(I),FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                 EIG(IORB(I)+1),1,FAO(I2TMOT(I)+1),NTMO(I),
@@ -4459,8 +4459,7 @@ C
 #endif
             IF (DOJACO) THEN
               CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
-     &                    EIG(IEIG),1,1,0,FAO(IMAT),
-     &                    WORK(KFREE),LFREE)
+     &                    EIG(IEIG),1,1,0,FAO(IMAT))
             ELSE
               CALL QDIAG(1,NBO,FMO(IMAT),NTMO(I),NTMO(I),
      &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
