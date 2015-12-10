@@ -132,6 +132,7 @@ print *, '*    Ossama Kullie            University of Kassel              German
 print *, '*    Christoffer V. Larsen    University of Southern Denmark    Denmark       *'
 print *, '*    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *'
 print *, '*    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *'
+print *, '*    Malaya Kumar Nayak       xxx                               India         *'
 print *, '*    Patrick Norman           Linkoeping University             Sweden        *'
 print *, '*    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *'
 print *, '*    Jeppe Olsen              Aarhus University                 Denmark       *'
