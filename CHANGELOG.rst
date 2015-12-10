@@ -24,6 +24,7 @@
 - Update PCMSolver module to its [1.0.4 version](https://github.com/PCMSolver/pcmsolver/releases).
 - Do not write Hartree-Fock in output if it is a DFT calculation, write DFT.
 - Fix a bunch of problems where the number of arguments of the call does not match the subroutine definition (submitted by Martin Siegert).
+- Fixed plotting of the electrostatic potential (electronic part was factor 2 too large).
 
 
 14.1 (2015-07-20)
