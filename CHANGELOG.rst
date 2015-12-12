@@ -3,6 +3,7 @@
 15.0 (2015-12-12)
 -----------------
 
+- FanoADC-Stieltjes: Calculation of decay widths of electronic decay processes.
 - Better convergence for open-shell calculations, using .OPENFAC 0.5 as default.
   Final orbital energies are recalculated with .OPENFAC 1.0, for IP interpretation.
 - Performance improvement for MP2 NO: only transform (G O|G O) integrals instead of (G G|G G).
@@ -25,6 +26,7 @@
 - Do not write Hartree-Fock in output if it is a DFT calculation, write DFT.
 - Fix a bunch of problems where the number of arguments of the call does not match the subroutine definition (submitted by Martin Siegert).
 - Fixed plotting of the electrostatic potential (electronic part was factor 2 too large).
+- Configuration framework uses [Autocmake](http://autocmake.org).
 
 
 14.1 (2015-07-20)
