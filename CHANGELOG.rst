@@ -3,6 +3,7 @@
 15.0 (2015-12-12)
 -----------------
 
+- FanoADC-Stieltjes: Calculation of decay widths of electronic decay processes.
 - Better convergence for open-shell calculations, using .OPENFAC 0.5 as default.
   Final orbital energies are recalculated with .OPENFAC 1.0, for IP interpretation.
 - Performance improvement for MP2 NO: only transform (G O|G O) integrals instead of (G G|G G).
