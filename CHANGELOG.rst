@@ -26,6 +26,7 @@
 - Do not write Hartree-Fock in output if it is a DFT calculation, write DFT.
 - Fix a bunch of problems where the number of arguments of the call does not match the subroutine definition (submitted by Martin Siegert).
 - Fixed plotting of the electrostatic potential (electronic part was factor 2 too large).
+- Configuration framework uses [Autocmake](http://autocmake.org).
 
 
 14.1 (2015-07-20)
