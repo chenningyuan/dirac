@@ -20,7 +20,7 @@ export DIRTIMEOUT="12m"
 cd $DIRAC
 pwd; date
 
-git clean -f -d -x
+#git clean -f -d -x
 
 git pull origin master
 git submodule update --init --recursive
