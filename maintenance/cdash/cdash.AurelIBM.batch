@@ -18,7 +18,9 @@ project=$LOADL_JOB_NAME
 home=$PWD
 #CMD=/gpfs/home/freeware/sources/nwchem-6.1.1-src/bin/LAPI64/nwchem
 
-export PATH=/gpfs/home/utils/python-2.7.10/bin:/gpfs/home/utils/git/git-2.6.3.368/bin:/gpfs/home/utils/cmake/bin:/opt/freeware/bin/:/opt/IBM/xlf/15.1.0/bin/:/opt/IBM/xlc/13.1.0/bin/:/opt/IBM/xlC/13.1.0/bin/:$PATH
+export PATH="/gpfs/home/utils/python-2.7.10/bin:/gpfs/home/utils/git/git-2.6.3.368/bin:/gpfs/home/utils/cmake/bin:/opt/freeware/bin/:/opt/IBM/xlf/15.1.0/bin/:/opt/IBM/xlc/13.1.0/bin/:/opt/IBM/xlC/13.1.0/bin":$PATH
+
+echo "PATH=$PATH"
 
 which xlf90
 which xlc
