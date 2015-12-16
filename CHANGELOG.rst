@@ -1,6 +1,6 @@
 
 
-15.0 (2015-12-12)
+15.0 (2015-12-16)
 -----------------
 
 - FanoADC-Stieltjes: Calculation of decay widths of electronic decay processes.
