@@ -16,6 +16,11 @@ if(ENABLE_UNIT_TESTS)
         ${EXTERNAL_LIBS}
         )
 
+    if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+    #   add -lC linking flag for each unit test executable to satisfy missing objects sqrtf,logf
+        set(UNIT_TEST_LIBS "${UNIT_TEST_LIBS} -lC")
+    endif()
+
     macro(add_unit_test _path _name)
         file(GLOB COPIED_FILES "${_path}/*")
         file(COPY ${COPIED_FILES} DESTINATION ${PROJECT_BINARY_DIR}/unit-tests/${_name})
