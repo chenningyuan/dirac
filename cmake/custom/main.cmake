@@ -150,7 +150,12 @@ foreach(
 
     if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
     # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
-        target_link_libraries(${_executable}  -lstdc++)
+        target_link_libraries(${_executable} -lstdc++)
+    endif()
+
+    if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+    # add -lC linking flag for each ${_executable} to satisfy missing objects sqrtf,logf 
+        target_link_libraries(${_executable} -lC)
     endif()
 
 endforeach()
