@@ -35,7 +35,7 @@ python ./setup --fc=xlf90 --cc=xlc --cxx=xlC --lapack=off --cmake-options="-D BU
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j18 -D ExperimentalTest -L short
+ctest -j4 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit 
 
 
@@ -51,7 +51,6 @@ cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 
@@ -67,7 +66,6 @@ cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 
@@ -83,7 +81,6 @@ cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 cd $DIRAC
@@ -97,8 +94,8 @@ python ./setup --type=debug --fc=xlf90 --cc=gcc --cxx=g++ --int64 --lapack=off -
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
+ctest -j4  -D ExperimentalTest  -R cosci_energy
+#ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 
@@ -113,8 +110,7 @@ python ./setup --type=debug --fc=xlf90 --cc=gcc --cxx=g++ --lapack=off --cmake-o
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
+ctest -j4 -R cosci_energy
 ctest -D ExperimentalSubmit 
 
 
@@ -129,7 +125,7 @@ python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --lapack=off --int64 -
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j4 -D ExperimentalTest -R cosci_energy
+ctest -j4 -R cosci_energy
 ctest -D ExperimentalSubmit 
 
 
@@ -144,7 +140,7 @@ python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --blas=off --lapack=of
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j4 -D ExperimentalTest -R cosci_energy
+ctest -j4 -R cosci_energy
 #ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
@@ -159,8 +155,7 @@ python ./setup --fc=gfortran --cc=gcc --cxx=g++ --type=debug --int64 --lapack=of
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j4 -D ExperimentalTest -R cosci_energy
-#ctest -j12 -D ExperimentalTest -R dft
+ctest -j4 -R cosci_energy
 ctest -D ExperimentalSubmit 
 
 
@@ -175,9 +170,24 @@ python ./setup --fc=gfortran --cc=gcc --cxx=g++ --type=debug --int64  --cmake-op
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j4 -D ExperimentalTest -R cosci_energy
-#ctest -j12 -D ExperimentalTest -R dft
+ctest -j4 -R cosci_energy
 ctest -D ExperimentalSubmit 
+
+
+cd $DIRAC
+BUILD=build_nopcm_nostiel_gnu_essl_dbg
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+python ./pamadm -a --builddir=$BUILD
+python ./setup --fc=gfortran --cc=gcc --cxx=g++ --type=debug --cmake-options="-D BUILDNAME='Aurel-IBM_gnu_essl_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=OFF -D ENABLE_BUILTIN_BLAS=OFF" $BUILD
+cd $BUILD
+ctest     -D ExperimentalConfigure
+ctest -j8 -D ExperimentalBuild
+ctest -j4 -R cosci_energy
+ctest -D ExperimentalSubmit 
+
 
 cd $DIRAC
 BUILD=build_nopcm_nostiel_gnu_ownmath_dbg
@@ -190,11 +200,8 @@ python ./setup  --fc=gfortran --cc=gcc --cxx=g++  --type=debug --lapack=off --bl
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j4 -D ExperimentalTest -R cosci_energy
-#ctest -j12 -D ExperimentalTest -R dft
+ctest -j4 -R cosci_energy
 ctest -D ExperimentalSubmit 
-
-
 
 
 date
