@@ -32,6 +32,7 @@
 #define STATIC_LINKING            "@_static_linking@"
 #define ENABLE_64BIT_INTEGERS     "@_enable_64bit_integers@"
 #define ENABLE_MPI                "@_enable_mpi@"
+#define MPI_LAUNCHER              "@_mpi_launcher@"
 
 #define MATH_LIBS                 "@_math_libs@"
 #define ENABLE_BUILTIN_BLAS       "@_enable_builtin_blas@"

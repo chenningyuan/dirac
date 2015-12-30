@@ -30,6 +30,7 @@ void print_info(void)
     printf("           CMake generator : %s\n",CMAKE_GENERATOR);
     printf("          CMake build type : %s\n",CMAKE_BUILD_TYPE);
     printf("       MPI parallelization : %s\n",ENABLE_MPI);
+    printf("              MPI launcher : %s\n",MPI_LAUNCHER);
     printf("           64-bit integers : %s\n",ENABLE_64BIT_INTEGERS);
     printf("          Fortran compiler : %s\n",FORTRAN_COMPILER);
     printf("  Fortran compiler version : %s\n",FORTRAN_COMPILER_VERSION);
