@@ -8,11 +8,26 @@
 ##################################################
 # fill the PATH to be the same as in online mode
 ##################################################
-source $HOME/intel/bin/compilervars.sh intel64
-echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+
+# Intel compilers
+#source $HOME/intel/bin/compilervars.sh intel64
+module unload intel/2015
+module load intel/2015
+echo "Intel Fortran/C/C++ commercial compilers with MKL library activated."
+
+# PGI compilers
+module unload pgi/13.10
+module load pgi/13.10
+echo "PGI commercial compilers activated."
+
+#
 # My own OpenMPI Intel static
-export PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/bin:$PATH
-export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/lib:$LD_LIBRARY_PATH
+# 
+#export PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/bin:$PATH
+#export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/lib:$LD_LIBRARY_PATH
+export PATH=/home/ilias/bin/openmpi-1.10.1_intel_static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.10.1_intel_static/lib:$LD_LIBRARY_PATH
+
 # my STATIC cmake stuff
 export PATH=/home/ilias/bin/cmakestatic/bin:$PATH
 echo "My own static CMake is in PATH."
@@ -47,7 +62,7 @@ export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 #echo -e "\n updating the local $DIRAC"
 #git pull
 
-BUILD_OMPI_INTEL=build_intelmkl_openmpi_i8_static
+BUILD_OMPI_INTEL=build_intelmkl_openmpi-1.10.1_i8_static
 if [[ -d "$BUILD_OMPI_INTEL" ]]; then
    echo "removing previous build directory $BUILD_OMPI_INTEL"
   /bin/rm -rf $BUILD_OMPI_INTEL
@@ -124,19 +139,19 @@ sleep 30
 # PGI + MKL - static #
 ######################
 cd $DIRAC
-BUILD=build_pgi_mkl_i8_static
-if [[ -d "$BUILD" ]]; then
-   echo "removing previous build directory $BUILD"
-  /bin/rm -rf $BUILD
+BUILD_PGI=build_pgi_mkl_i8_static
+if [[ -d "$BUILD_PGI" ]]; then
+   echo "removing previous build directory $BUILD_PGI"
+  /bin/rm -rf $BUILD_PGI
 fi
 module load pgi
-python ./pamadm -a --builddir=$BUILD
-python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_pgi_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=OFF -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD
- cd $BUILD_SERIAL
+python ./pamadm -a --builddir=$BUILD_PGI
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_pgi_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=OFF -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI
+ cd $BUILD_PGI
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
  ctest -D ExperimentalBuild   
- ctest -D ExperimentalTest -R cosci_energy  
+ ctest -D ExperimentalTest -R cc
  ctest -D ExperimentalSubmit 
 
 
@@ -186,7 +201,7 @@ python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
- python binary_info.py  > VERSION_cmake  2>&1  # get version
+# python binary_info.py  > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 4 - GNU,ownmath,i8,serial,static - finished at $timestamp \n"
@@ -201,11 +216,11 @@ sleep 30
 cd $DIRAC
 
 # copy there the mpirun static with related directories & files
-cp    /home/ilias/bin/openmpi_intel_stat/bin/mpirun                         $DIRAC/$BUILD_OMPI_INTEL/.
+cp    /home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpirun            $DIRAC/$BUILD_OMPI_INTEL/.
 /bin/rm -rf $BUILD_OMPI_INTEL/share
 mkdir $BUILD_OMPI_INTEL/share
-cp -R -P  /home/ilias/bin/openmpi_intel_stat/share/openmpi                  $DIRAC/$BUILD_OMPI_INTEL/share/.
-cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIRAC/$BUILD_OMPI_INTEL/.
+cp -R -P  /home/ilias/bin/openmpi-1.10.1_intel_static/share/openmpi     $DIRAC/$BUILD_OMPI_INTEL/share/.
+cp -R     /home/ilias/bin/openmpi-1.10.1_intel_static/etc               $DIRAC/$BUILD_OMPI_INTEL/.
 # don't forget export OPAL_PREFIX=$PWD/$BUILD 
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
@@ -213,14 +228,24 @@ cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIR
 /bin/rm -r test/*/compare
 
 packed_dirac=DIRAC_grid_suite.tgz
-echo -e "\n\n packing (slim, with tests) DIRAC suite for grid computations..."
-tar czf $packed_dirac  pam  VERSION test  basis  basis_dalton  basis_ecp \
-$BUILD_OMPI_INTEL/dirac.x $BUILD_OMPI_INTEL/VERSION_cmake $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
-$BUILD_SERIAL_INTEL/dirac.x $BUILD_SERIAL_INTEL/VERSION_cmake \
-$BUILD_SERIAL_INTEL1/dirac.x $BUILD_SERIAL_INTEL1/VERSION_cmake \
-$BUILD_SERIAL_GNU/dirac.x $BUILD_SERIAL_GNU/VERSION_cmake \
-$BUILD_SERIAL_GNU1/dirac.x $BUILD_SERIAL_GNU1/VERSION_cmake \
+echo -e "\n\n packing slim DIRAC suite (with tests) for grid computations..."
+    #     
+tar czf $packed_dirac  test  basis  basis_dalton  basis_ecp \
+    # pack OpenMPI 1.10.1 + Intel + MKL + i8 static 
+$BUILD_OMPI_INTEL/dirac.x  $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
+    # pack Intel + MKL + i8 static
+$BUILD_SERIAL_INTEL/dirac.x  \
+    # pack Intel + ownmath + i8 static
+$BUILD_SERIAL_INTEL1/dirac.x  \
+    # pack GNU + MKL + i8 static
+$BUILD_SERIAL_GNU/dirac.x  \
+    # pack GNU + ownath + i8 static
+$BUILD_SERIAL_GNU1/dirac.x  \
+    # pack PGI + MKL + i8 static
+$BUILD_SERIAL_PGI/dirac.x  \
+    # pack cmake static
 /home/ilias/bin/cmakestatic \
+    # pack diracrc_grid
 maintenance/grid_computing/diracrc_grid 
 
 echo -e "\n packing done, we have tar-ball file ready to be placed on SE for grid-computing : "
