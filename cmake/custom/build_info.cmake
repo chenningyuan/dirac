@@ -118,13 +118,18 @@ endif()
 set(_enable_mpi ${ENABLE_MPI})
 message(STATUS "MPI parallelization      : ${ENABLE_MPI}")
 
+set(_mpi_launcher             "unknown")
+if (MPI_FOUND)
+    message(STATUS "MPI launcher             : ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} <np>")
+    set(_mpi_launcher "${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} <np>")
+endif()
+
 set(_enable_64bit_integers ${ENABLE_64BIT_INTEGERS})
 message(STATUS "64-bit integers          : ${ENABLE_64BIT_INTEGERS}")
 
 set(_fortran_compiler_id       "unknown")
 if (CMAKE_Fortran_COMPILER_ID)
     set(_fortran_compiler_id ${CMAKE_Fortran_COMPILER_ID})
-    #message("-- Fortran compiler ID      : ${CMAKE_Fortran_COMPILER_ID}")
 endif()
 
 set(_fortran_compiler       "unknown")

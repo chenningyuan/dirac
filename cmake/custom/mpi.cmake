@@ -1,3 +1,4 @@
+# depends on CMake's default module FindMPI (on Ubuntu, /usr/share/cmake-2.8/Modules/FindMPI.cmake)
 if(MPI_FOUND)
     include(CheckFortranSourceCompiles)
 
