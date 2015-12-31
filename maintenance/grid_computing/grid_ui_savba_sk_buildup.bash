@@ -22,11 +22,6 @@ echo "PGI commercial compilers activated."
 
 #
 # My own OpenMPI Intel static
-# 
-#export PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/bin:$PATH
-#export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/lib:$LD_LIBRARY_PATH
-export PATH=/home/ilias/bin/openmpi-1.10.1_intel_static/bin:$PATH
-export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.10.1_intel_static/lib:$LD_LIBRARY_PATH
 
 # my STATIC cmake stuff
 export PATH=/home/ilias/bin/cmakestatic/bin:$PATH
@@ -56,12 +51,48 @@ git clean -f -d -x
 # submodule update
 git submodule update --init --recursive
 
-export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+#export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 # update the local trunk...
 #echo -e "\n updating the local $DIRAC"
 #git pull
 
+###################################################################################
+cd $DIRAC
+# My own MPICH Intel static
+export PATH=/home/ilias/bin/mpich-3.2-intel-static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/mpich-3.2-intel-static/lib:$LD_LIBRARY_PATH
+#
+BUILD_MPICH_INTEL=build_intelmkl_mpich_static
+if [[ -d "$BUILD_MPICH_INTEL" ]]; then
+   echo "removing previous build directory $BUILD_MPICH_INTEL"
+  /bin/rm -rf $BUILD_MPICH_INTEL
+fi
+# deactivate interest module !
+python ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
+#python ./pamadm -a  --builddir=$BUILD_MPICH_INTEL
+python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_mpich_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_MPICH_INTEL
+ cd $BUILD_MPICH_INTEL
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure 
+ ctest -j4 -D ExperimentalBuild  
+ export DIRAC_MPI_COMMAND="mpirun -np 2"
+ ctest -j2 -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_MPICH_INTEL/dirac.x
+ ldd $DIRAC/$BUILD_MPICH_INTEL/dirac.x
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build 1 - Intel-MPICH,MKL,i8,static - finished at $timestamp \n"
+
+
+###################################################################################
+cd $DIRAC
+# My own OpenMPI Intel static
+export PATH=/home/ilias/bin/openmpi-1.10.1_intel_static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.10.1_intel_static/lib:$LD_LIBRARY_PATH
+#
 BUILD_OMPI_INTEL=build_intelmkl_openmpi-1.10.1_i8_static
 if [[ -d "$BUILD_OMPI_INTEL" ]]; then
    echo "removing previous build directory $BUILD_OMPI_INTEL"
@@ -69,12 +100,14 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
 fi
 # deactivate interest module !
 python ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
+#python ./pamadm -a  --builddir=$BUILD_OMPI_INTEL
 python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure 
- ctest -D ExperimentalBuild  
- ctest   -D ExperimentalTest -R dft
+ ctest -j4 -D ExperimentalBuild  
+ export DIRAC_MPI_COMMAND="mpirun -np 2"
+ ctest -j2 -D ExperimentalTest -R dft
  ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
@@ -98,8 +131,8 @@ python ./setup --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="
  cd $BUILD_SERIAL_INTEL
  ctest -D ExperimentalUpdate  
  ctest -D ExperimentalConfigure 
- ctest -D ExperimentalBuild   
- ctest -D ExperimentalTest -R cc
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
  ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
@@ -123,8 +156,8 @@ python ./setup --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 
  cd $BUILD_SERIAL_INTEL1
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
- ctest -D ExperimentalBuild   
- ctest -D ExperimentalTest -R cosci_energy  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cosci_energy  
  ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
@@ -150,8 +183,8 @@ python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options
  cd $BUILD_PGI
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
- ctest -D ExperimentalBuild   
- ctest -D ExperimentalTest -R cc
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
  ctest -D ExperimentalSubmit 
 
 
@@ -169,8 +202,8 @@ python ./setup --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options
  cd $BUILD_SERIAL_GNU
  ctest -D ExperimentalUpdate     
  ctest -D ExperimentalConfigure   
- ctest -D ExperimentalBuild    
- ctest -D ExperimentalTest -R  fscc
+ ctest -j4 -D ExperimentalBuild    
+ ctest -j4 -D ExperimentalTest -R  cc
  ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
@@ -195,8 +228,8 @@ python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --
  cd $BUILD_SERIAL_GNU1
  ctest -D ExperimentalUpdate     
  ctest -D ExperimentalConfigure  
- ctest -D ExperimentalBuild  
- ctest -D ExperimentalTest -R cosci_energy    
+ ctest -j4 -D ExperimentalBuild  
+ ctest -j4 -D ExperimentalTest -R cosci_energy    
  ctest -D ExperimentalSubmit  
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
