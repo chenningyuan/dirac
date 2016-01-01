@@ -8,6 +8,10 @@
 ##################################################
 # fill the PATH to be the same as in online mode
 ##################################################
+export PATH=/usr/lib64/qt-3.3/bin:/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+source /usr/share/Modules/init/bash
+
+module avail
 
 # Intel compilers
 #source $HOME/intel/bin/compilervars.sh intel64
@@ -19,6 +23,7 @@ echo "Intel Fortran/C/C++ commercial compilers with MKL library activated."
 module unload pgi/13.10
 module load pgi/13.10
 echo "PGI commercial compilers activated."
+module list
 
 #
 # My own OpenMPI Intel static
