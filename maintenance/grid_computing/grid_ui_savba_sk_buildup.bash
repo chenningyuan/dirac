@@ -118,7 +118,9 @@ echo -e "\n build 1 - Intel-OpenMPI,MKL,i8,static - finished at $timestamp \n"
 
 sleep 30
 
-###################################################################################
+##
+##  Intel + MKL + i8 + static
+##
 cd $DIRAC
 BUILD_SERIAL_INTEL=build_intelmkl_i8_static
 if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
@@ -141,10 +143,11 @@ python ./setup --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2 - Intel,MKL,i8,serial,static - finished at $timestamp \n"
 
+sleep 10
 
-sleep 30
-
-###################################################################################
+##
+## Intel + ownmath + i8 + static
+##
 cd $DIRAC
 BUILD_SERIAL_INTEL1=build_intel_ownmath_i8_static
 if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
@@ -165,7 +168,7 @@ python ./setup --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
 
-sleep 30
+sleep 10
 
 
 ######################
@@ -177,15 +180,48 @@ if [[ -d "$BUILD_PGI" ]]; then
    echo "removing previous build directory $BUILD_PGI"
   /bin/rm -rf $BUILD_PGI
 fi
-module load pgi
+#module load pgi
 python ./pamadm -a --builddir=$BUILD_PGI
-python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_pgi_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=OFF -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_pgi_mkl_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=OFF -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI
  cd $BUILD_PGI
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
  ctest -j4 -D ExperimentalBuild   
  ctest -j4 -D ExperimentalTest -R cc
  ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_PGI/dirac.x
+ ldd $DIRAC/$BUILD_PGI/dirac.x
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
+
+sleep 10
+
+
+#
+# PGI + OWNMATH - static 
+#
+cd $DIRAC
+BUILD_PGI1=build_pgi_ownnath_i8_static
+if [[ -d "$BUILD_PGI1" ]]; then
+   echo "removing previous build directory $BUILD_PGI1"
+  /bin/rm -rf $BUILD_PGI1
+fi
+python ./pamadm -a --builddir=$BUILD_PGI1
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --blas=off --lapack=off --cmake-options="-D BUILDNAME='grid_savba_pgi_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI1
+ cd $BUILD_PGI1
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_PGI1/dirac.x
+ ldd $DIRAC/$BUILD_PGI1/dirac.x
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
+
+sleep 10
 
 
 #####################
@@ -212,7 +248,7 @@ python ./setup --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 3 - GNU,MKL,i8,serial,static - finished at $timestamp \n"
 
-sleep 30
+sleep 10
 
 #########################
 ##  GNU+OWNMATH STATIC ##
@@ -239,7 +275,7 @@ python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n build 4 - GNU,ownmath,i8,serial,static - finished at $timestamp \n"
 
-sleep 30
+sleep 10
 
 #################################################
 ### continue with the packing for grid servers ##
@@ -275,7 +311,9 @@ $BUILD_SERIAL_GNU/dirac.x  \
     # pack GNU + ownath + i8 static
 $BUILD_SERIAL_GNU1/dirac.x  \
     # pack PGI + MKL + i8 static
-$BUILD_SERIAL_PGI/dirac.x  \
+$BUILD_PGI/dirac.x  \
+    # pack PGI + OWNMATH + i8 static
+$BUILD_PGI1/dirac.x  \
     # pack cmake static
 /home/ilias/bin/cmakestatic \
     # pack diracrc_grid
