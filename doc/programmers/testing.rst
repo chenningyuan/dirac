@@ -9,10 +9,11 @@ this functionality will break sooner or later and we have no automatic
 mechanism to detect it. Committing new code without tests is bad karma.
 
 
-When you add a new test always add it to pamadm
------------------------------------------------
+When you add a new test always add it to CMake
+----------------------------------------------
 
 Otherwise the test will never be run as part of the default test suite.
+``git grep`` for an existing test to see where tests are defined.
 
 
 Strive for portability
@@ -74,4 +75,6 @@ since it gives you the framework to run DIRAC jobs and
 to filter numbers with numerical tolerance.  But you don't have to. You have
 full liberty to test whatever you want in whatever way you want. Important is
 that you return an exit code. If the exit code is 0, the test was successful,
-if non-0, then the test has failed. Add the test to pamadm also.
+if non-0, then the test has failed. Add the test also to CMake
+otherwise the test will never be run as part of the default test suite.
+``git grep`` for an existing test to see where tests are defined.

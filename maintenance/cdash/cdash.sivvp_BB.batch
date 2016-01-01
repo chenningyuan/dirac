@@ -78,7 +78,6 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL"
   /bin/rm -rf $BUILD_SERIAL
 fi
-./pamadm -a --builddir=$BUILD_SERIAL
 python ./setup  --int64 --fc=ifort --cc=icc --cxx=icpc --cmake-options="-D BUILDNAME='sivvp-UMB_Intel_mkl_i8-batch'  -D DART_TESTING_TIMEOUT=99999" $BUILD_SERIAL
 cd $BUILD_SERIAL
 ctest  --track Miro  -D ExperimentalUpdate 
@@ -97,7 +96,6 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL_STATIC"
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
-./pamadm -a --builddir=$BUILD_SERIAL_STATIC
 python ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static --cmake-options="-D BUILDNAME='sivvp-UMB_Intel_mkl_i8_static-batch'  -D DART_TESTING_TIMEOUT=99999" $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 ctest --track Grid  -D ExperimentalUpdate
@@ -117,7 +115,6 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
 python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++  --cmake-options="-D BUILDNAME='sivvp-UMB_GNU_mkl_i8-batch'  -D DART_TESTING_TIMEOUT=99999"  $BUILD_GNU
 cd $BUILD_GNU
 ctest --track Miro  -D ExperimentalUpdate
@@ -136,7 +133,6 @@ if [[ -d "$BUILD_PGI" ]]; then
   echo "deleting previous build directory $BUILD_PGI"
   /bin/rm -rf $BUILD_PGI
 fi
-./pamadm -a --builddir=$BUILD_PGI
 python ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --cmake-options="-D BUILDNAME='sivvp-UMB_PGI_mkl_i8-batch'  -D DART_TESTING_TIMEOUT=99999" $BUILD_PGI
 cd $BUILD_PGI
 ctest --track Miro  -D ExperimentalUpdate  

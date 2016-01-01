@@ -69,8 +69,6 @@ if [[ -d "$BUILD_MPICH_INTEL" ]]; then
   /bin/rm -rf $BUILD_MPICH_INTEL
 fi
 # deactivate interest module !
-python ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
-#python ./pamadm -a  --builddir=$BUILD_MPICH_INTEL
 python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_mpich_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_MPICH_INTEL
  cd $BUILD_MPICH_INTEL
  ctest -D ExperimentalUpdate   
@@ -99,8 +97,6 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
 # deactivate interest module !
-python ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
-#python ./pamadm -a  --builddir=$BUILD_OMPI_INTEL
 python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate   
@@ -128,7 +124,6 @@ if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
   /bin/rm -rf $BUILD_SERIAL_INTEL
 fi
 
-python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL
 python ./setup --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="-D BUILDNAME='grid_savba_intel_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
  ctest -D ExperimentalUpdate  
@@ -154,7 +149,6 @@ if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_INTEL1"
   /bin/rm -rf $BUILD_SERIAL_INTEL1
 fi
-python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
 python ./setup --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
  ctest -D ExperimentalUpdate   
@@ -181,7 +175,6 @@ if [[ -d "$BUILD_PGI" ]]; then
   /bin/rm -rf $BUILD_PGI
 fi
 #module load pgi
-python ./pamadm -a --builddir=$BUILD_PGI
 python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_pgi_mkl_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=OFF -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI
  cd $BUILD_PGI
  ctest -D ExperimentalUpdate   
@@ -207,7 +200,6 @@ if [[ -d "$BUILD_PGI1" ]]; then
    echo "removing previous build directory $BUILD_PGI1"
   /bin/rm -rf $BUILD_PGI1
 fi
-python ./pamadm -a --builddir=$BUILD_PGI1
 python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --blas=off --lapack=off --cmake-options="-D BUILDNAME='grid_savba_pgi_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI1
  cd $BUILD_PGI1
  ctest -D ExperimentalUpdate   
@@ -233,7 +225,6 @@ if [[ -d "$BUILD_SERIAL_GNU" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU"
   /bin/rm -rf $BUILD_SERIAL_GNU
 fi
-python ./pamadm -a --builddir=$BUILD_SERIAL_GNU
 python ./setup --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
  ctest -D ExperimentalUpdate     
@@ -259,7 +250,6 @@ if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU1"
   /bin/rm -rf $BUILD_SERIAL_GNU1
 fi
-python ./pamadm -a --builddir=$BUILD_SERIAL_GNU1
 python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
  ctest -D ExperimentalUpdate     
