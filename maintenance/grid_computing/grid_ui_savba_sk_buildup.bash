@@ -74,12 +74,12 @@ if [[ -d "$BUILD_MPICH_INTEL" ]]; then
   /bin/rm -rf $BUILD_MPICH_INTEL
 fi
 # deactivate interest module !
-python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_mpich_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_MPICH_INTEL
+python ./setup  --fc=/home/ilias/bin/mpich-3.2-intel-static/bin/mpif90 --cc=/home/ilias/bin/mpich-3.2-intel-static/bin/mpicc --cxx=/home/ilias/bin/mpich-3.2-intel-static/bin/mpicxx --static --int64 --cmake-options="-D BUILDNAME='grid_savba_mpich_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_MPICH_INTEL
  cd $BUILD_MPICH_INTEL
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure 
  ctest -j4 -D ExperimentalBuild  
- export DIRAC_MPI_COMMAND="mpirun -np 2"
+ export DIRAC_MPI_COMMAND="/home/ilias/bin/mpich-3.2-intel-static/bin/mpirun -np 2"
  ctest -j2 -D ExperimentalTest -R cc
  ctest -D ExperimentalSubmit 
 
@@ -102,12 +102,12 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
 # deactivate interest module !
-python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
+python ./setup  --fc=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpicxx --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure 
  ctest -j4 -D ExperimentalBuild  
- export DIRAC_MPI_COMMAND="mpirun -np 2"
+ export DIRAC_MPI_COMMAND="/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpirun -np 2"
  ctest -j2 -D ExperimentalTest -R dft
  ctest -D ExperimentalSubmit 
 
@@ -154,7 +154,7 @@ if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_INTEL1"
   /bin/rm -rf $BUILD_SERIAL_INTEL1
 fi
-python ./setup --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL1
+python ./setup --fc=ifort --cc=icc --cxx=icpc  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
@@ -179,7 +179,7 @@ if [[ -d "$BUILD_SERIAL_INTEL2" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_INTEL2"
   /bin/rm -rf $BUILD_SERIAL_INTEL2
 fi
-python ./setup --static --fc=ifort --cc=icc --cxx=icpc --type=debug --blas=off --lapack=off --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_intel_openblas_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL2
+python ./setup --static --fc=ifort --cc=icc --cxx=icpc --int64  --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_intel_openblas_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL2
  cd $BUILD_SERIAL_INTEL2
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
@@ -230,7 +230,7 @@ if [[ -d "$BUILD_PGI1" ]]; then
    echo "removing previous build directory $BUILD_PGI1"
   /bin/rm -rf $BUILD_PGI1
 fi
-python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --blas=off --lapack=off --cmake-options="-D BUILDNAME='grid_savba_pgi_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI1
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static  --cmake-options="-D BUILDNAME='grid_savba_pgi_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI1
  cd $BUILD_PGI1
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
@@ -249,12 +249,12 @@ sleep 10
 # PGI + OpenBLAS - static 
 #
 cd $DIRAC
-BUILD_PGI2=build_pgi_openblas_i8_static
+BUILD_PGI2=build_pgi_openblas_static
 if [[ -d "$BUILD_PGI2" ]]; then
    echo "removing previous build directory $BUILD_PGI2"
   /bin/rm -rf $BUILD_PGI2
 fi
-python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --blas=off --lapack=off --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_pgi_openblas_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI2
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --static --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_pgi_openblas_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI2
  cd $BUILD_PGI2
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
@@ -265,7 +265,7 @@ python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --blas=off --la
  ls -lt $DIRAC/$BUILD_PGI2/dirac.x
  ldd $DIRAC/$BUILD_PGI2/dirac.x
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build  - PGI,openblas,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build  - PGI,openblas,serial,static - finished at $timestamp \n"
 
 sleep 10
 
@@ -304,7 +304,7 @@ if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU1"
   /bin/rm -rf $BUILD_SERIAL_GNU1
 fi
-python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU1
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
  ctest -D ExperimentalUpdate     
  ctest -D ExperimentalConfigure  
@@ -330,7 +330,7 @@ if [[ -d "$BUILD_SERIAL_GNU2" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU2"
   /bin/rm -rf $BUILD_SERIAL_GNU2
 fi
-python ./setup  --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_openblas_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU2
+python ./setup  --fc=gfortran --cc=gcc --cxx=g++ --static --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_openblas_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU2
  cd $BUILD_SERIAL_GNU2
  ctest -D ExperimentalUpdate     
  ctest -D ExperimentalConfigure  
