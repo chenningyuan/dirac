@@ -87,7 +87,7 @@ python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-opti
  ldd $DIRAC/$BUILD_MPICH_INTEL/dirac.x
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 1 - Intel-MPICH,MKL,i8,static - finished at $timestamp \n"
+echo -e "\n build - Intel-MPICH,MKL,i8,static - finished at $timestamp \n"
 
 
 ###################################################################################
@@ -115,7 +115,7 @@ python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-opti
  ldd $DIRAC/$BUILD_OMPI_INTEL/dirac.x
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 1 - Intel-OpenMPI,MKL,i8,static - finished at $timestamp \n"
+echo -e "\n build - Intel-OpenMPI_1.10.1,MKL,i8,static - finished at $timestamp \n"
 
 sleep 30
 
@@ -141,7 +141,7 @@ python ./setup --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="
  ldd $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 2 - Intel,MKL,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build- Intel,MKL,i8,serial,static - finished at $timestamp \n"
 
 sleep 10
 
@@ -165,7 +165,32 @@ python ./setup --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
+
+sleep 10
+
+
+##
+## Intel + OpenBLAS + i8 + static
+##
+cd $DIRAC
+BUILD_SERIAL_INTEL2=build_intel_openblas_i8_static
+if [[ -d "$BUILD_SERIAL_INTEL2" ]]; then
+   echo "removing previous build directory $BUILD_SERIAL_INTEL2"
+  /bin/rm -rf $BUILD_SERIAL_INTEL2
+fi
+python ./setup --static --fc=ifort --cc=icc --cxx=icpc --type=debug --blas=off --lapack=off --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_intel_openblas_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL2
+ cd $BUILD_SERIAL_INTEL2
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_SERIAL_INTEL2/dirac.x
+ ldd $DIRAC/$BUILD_SERIAL_INTEL2/dirac.x
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build - Intel,OpenBLAS,i8,serial,static - finished at $timestamp \n"
 
 sleep 10
 
@@ -191,7 +216,7 @@ python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options
  ls -lt $DIRAC/$BUILD_PGI/dirac.x
  ldd $DIRAC/$BUILD_PGI/dirac.x
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build - PGI,MKL,i8,serial,static - finished at $timestamp \n"
 
 sleep 10
 
@@ -216,7 +241,31 @@ python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --blas=off --la
  ls -lt $DIRAC/$BUILD_PGI1/dirac.x
  ldd $DIRAC/$BUILD_PGI1/dirac.x
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build  - PGI,ownmath,i8,serial,static - finished at $timestamp \n"
+
+sleep 10
+
+#
+# PGI + OpenBLAS - static 
+#
+cd $DIRAC
+BUILD_PGI2=build_pgi_openblas_i8_static
+if [[ -d "$BUILD_PGI2" ]]; then
+   echo "removing previous build directory $BUILD_PGI2"
+  /bin/rm -rf $BUILD_PGI2
+fi
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --blas=off --lapack=off --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_pgi_openblas_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI2
+ cd $BUILD_PGI2
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_PGI2/dirac.x
+ ldd $DIRAC/$BUILD_PGI2/dirac.x
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build  - PGI,openblas,i8,serial,static - finished at $timestamp \n"
 
 sleep 10
 
@@ -242,7 +291,7 @@ python ./setup --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options
  ldd $DIRAC/$BUILD_SERIAL_GNU/dirac.x
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 3 - GNU,MKL,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build - GNU,MKL,i8,serial,static - finished at $timestamp \n"
 
 sleep 10
 
@@ -268,9 +317,35 @@ python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --
 # python binary_info.py  > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 4 - GNU,ownmath,i8,serial,static - finished at $timestamp \n"
-
+echo -e "\n build - GNU,ownmath,i8,serial,static - finished at $timestamp \n"
 sleep 10
+
+
+##########################
+##  GNU+OPENBLAS STATIC ##
+##########################
+cd $DIRAC
+BUILD_SERIAL_GNU2=build_gnu_openblas_static
+if [[ -d "$BUILD_SERIAL_GNU2" ]]; then
+   echo "removing previous build directory $BUILD_SERIAL_GNU2"
+  /bin/rm -rf $BUILD_SERIAL_GNU2
+fi
+python ./setup  --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_openblas_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU2
+ cd $BUILD_SERIAL_GNU2
+ ctest -D ExperimentalUpdate     
+ ctest -D ExperimentalConfigure  
+ ctest -j4 -D ExperimentalBuild  
+ ctest -j4 -D ExperimentalTest -R cosci_energy    
+ ctest -D ExperimentalSubmit  
+
+ ls -lt $DIRAC/$BUILD_SERIAL_GNU2/dirac.x
+ ldd $DIRAC/$BUILD_SERIAL_GNU2/dirac.x
+# python binary_info.py  > VERSION_cmake  2>&1  # get version
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build - GNU,OpenBLAS,serial,static - finished at $timestamp \n"
+sleep 10
+
 
 #################################################
 ### continue with the packing for grid servers ##
@@ -301,14 +376,20 @@ $BUILD_OMPI_INTEL/dirac.x  $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_
 $BUILD_SERIAL_INTEL/dirac.x  \
     # pack Intel + ownmath + i8 static
 $BUILD_SERIAL_INTEL1/dirac.x  \
+    # pack Intel + OpenBLAS + i8 static
+$BUILD_SERIAL_INTEL2/dirac.x  \
     # pack GNU + MKL + i8 static
 $BUILD_SERIAL_GNU/dirac.x  \
-    # pack GNU + ownath + i8 static
+    # pack GNU + ownmath + i8 static
 $BUILD_SERIAL_GNU1/dirac.x  \
+    # pack GNU + OpenBLAS  static
+$BUILD_SERIAL_GNU2/dirac.x  \
     # pack PGI + MKL + i8 static
 $BUILD_PGI/dirac.x  \
     # pack PGI + OWNMATH + i8 static
 $BUILD_PGI1/dirac.x  \
+    # pack PGI + OpenBLAS + i8 static
+$BUILD_PGI2/dirac.x  \
     # pack cmake static
 /home/ilias/bin/cmakestatic \
     # pack diracrc_grid
