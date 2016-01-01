@@ -3,8 +3,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
-include(pamadm_definitions)
-include(Sources)
+include(autocmake_CMakeDependentOption)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -47,7 +46,6 @@ add_library(
     ${DIRAC_SOURCES}
     )
 
-add_dependencies(dirac run_pamadm)
 add_dependencies(dirac git_info)
 
 if(ENABLE_XCFUN)

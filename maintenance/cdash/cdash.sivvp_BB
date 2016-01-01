@@ -59,7 +59,6 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL"
   /bin/rm -rf $BUILD_SERIAL
 fi
-./pamadm -a --builddir=$BUILD_SERIAL
 python ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --cmake-options="-D BUILDNAME='UMB_Intel_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF" $BUILD_SERIAL
 cd $BUILD_SERIAL
 ctest -D ExperimentalUpdate  
@@ -79,7 +78,6 @@ if [[ -d "$BUILD" ]]; then
   /bin/rm -rf $BUILD
 fi
 export DIRAC_MPI_COMMAND="mpirun -np 2"
-./pamadm -a --builddir=$BUILD
 python ./setup --mpi --int64 --fc=mpif90 --cc=mpicc --cxx=mpicxx --cmake-options="-D BUILDNAME='UMB_OpenMPI-Intel_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF" $BUILD
 cd $BUILD
 ctest -D ExperimentalUpdate 
@@ -99,7 +97,6 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL_STATIC"
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
-./pamadm -a --builddir=$BUILD_SERIAL_STATIC
 python ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static  --cmake-options="-D BUILDNAME='UMB_Intel_mkl_i8_static'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF" $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 ctest    -D ExperimentalUpdate
@@ -119,7 +116,6 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
 python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++  --cmake-options="-D BUILDNAME='UMB_GNU_mkl_i8'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_GNU
 cd $BUILD_GNU
 ctest -D ExperimentalUpdate    
@@ -138,7 +134,6 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
 python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --cmake-options="-D BUILDNAME='UMB_GNU_mkl_i8-static' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_GNU
 cd $BUILD_GNU
 ctest   -D ExperimentalUpdate
@@ -157,7 +152,6 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
 python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++  --blas=off --lapack=off --cmake-options="-D BUILDNAME='UMB_GNU_ownmath_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_GNU
 cd $BUILD_GNU
 ctest -D ExperimentalUpdate 
@@ -177,7 +171,6 @@ if [[ -d "$BUILD_PGI" ]]; then
   echo "deleting previous build directory $BUILD_PGI"
   /bin/rm -rf $BUILD_PGI
 fi
-./pamadm -a --builddir=$BUILD_PGI
 python ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --cmake-options="-D BUILDNAME='UMB_nopcm_PGI_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF" $BUILD_PGI
 cd $BUILD_PGI
 ctest -D ExperimentalUpdate  
@@ -198,7 +191,6 @@ if [[ -d "$BUILD_PGI" ]]; then
   echo "deleting previous build directory $BUILD_PGI"
   /bin/rm -rf $BUILD_PGI
 fi
-./pamadm -a --builddir=$BUILD_PGI
 python ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --static --cmake-options="-D BUILDNAME='UMB_nopcm_PGI_mkl_i8_static' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF" --add-definitions="-D GFORTRAN_ALLOCATOR_WORKAROUND" $BUILD_PGI
 cd $BUILD_PGI
 ctest   -D ExperimentalUpdate

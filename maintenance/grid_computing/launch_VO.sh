@@ -67,16 +67,9 @@ echo -e "own ctest in PATH ? \c"; which ctest; ctest --version
 echo -e "own mpirun in PATH ?\c"; which mpirun; mpirun --version
 
 #
-# Perform pamadm steps in order to equip buildXYZ directories with proper cmake sources
 #
-echo -e "\nGoing to perform:  pamadm -a --builddir=$PWD/$BUILD"
-python ./pamadm -a --builddir=$PWD/$BUILD
 
-echo -e "\nGoing to perform:  pamadm -a --builddir=$PWD/$BUILD_SERIAL"
-python ./pamadm -a --builddir=$PWD/$BUILD_SERIAL
 
-echo -e "\nGoing to perform:  pamadm -a --builddir=$PWD/$BUILD_GNU_SERIAL"
-python ./pamadm -a --builddir=$PWD/$BUILD_GNU_SERIAL
 
 echo -e "\n\n === Job started at : \c"; date
 

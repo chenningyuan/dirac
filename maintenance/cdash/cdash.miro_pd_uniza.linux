@@ -26,7 +26,6 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-pamadm -a --builddir=$BUILD
 ./setup --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="miro_pd_uniza.intelmkl_i8" --int64 -D DART_TESTING_TIMEOUT=99999 $BUILD
 cd $BUILD
 make ExperimentalUpdate
