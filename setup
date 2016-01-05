@@ -42,6 +42,7 @@ Options:
   --show                                 Show CMake command and exit.
   --cmake-executable=<CMAKE_EXECUTABLE>  Set the CMake executable [default: cmake].
   --cmake-options=<STRING>               Define options to CMake [default: ''].
+  --prefix=<PATH>                        Set the install path for make install.
   <builddir>                             Build directory.
   -h --help                              Show this screen.
 """
@@ -78,6 +79,8 @@ def gen_cmake_command(options, arguments):
     command.append('-G "%s"' % arguments['--generator'])
     if arguments['--cmake-options'] != "''":
         command.append('%s' % arguments['--cmake-options'])
+    if arguments['--prefix']:
+        command.append('-DCMAKE_INSTALL_PREFIX="{0}"'.format(arguments['--prefix']))
 
     return ' '.join(command)
 

@@ -20,7 +20,7 @@ export DIRTIMEOUT="12m"
 cd $DIRAC
 pwd; date
 
-git clean -f -d -x
+#git clean -f -d -x
 
 git pull origin master
 git submodule update --init --recursive
@@ -30,12 +30,11 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
 python ./setup --fc=xlf90 --cc=xlc --cxx=xlC --lapack=off --cmake-options="-D BUILDNAME='Aurel-IBM_XL_essl_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j18 -D ExperimentalTest -L short
+ctest -j4 -D ExperimentalTest -R cosci_energy
 ctest -D ExperimentalSubmit 
 
 
@@ -45,13 +44,11 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
 python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --blas=off --lapack=off --cmake-options="-D BUILDNAME='Aurel-IBM_XL_ownmath_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_BUILTIN_BLAS=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 
@@ -61,13 +58,11 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
 python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=g++ --lapack=off --cmake-options="-D BUILDNAME='Aurel-IBM_XL_g++_essl_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 
@@ -77,13 +72,11 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
 python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=g++ --int64 --lapack=off --cmake-options="-D BUILDNAME='Aurel-IBM_XL_g++_i8_essl_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 cd $DIRAC
@@ -92,13 +85,12 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
 python ./setup --type=debug --fc=xlf90 --cc=gcc --cxx=g++ --int64 --lapack=off --cmake-options="-D BUILDNAME='Aurel-IBM_xlf90_gcc_g++_i8_essl_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
-ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
+ctest -j4  -D ExperimentalTest  -R cosci_energy
+#ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 
@@ -108,13 +100,11 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
 python ./setup --type=debug --fc=xlf90 --cc=gcc --cxx=g++ --lapack=off --cmake-options="-D BUILDNAME='Aurel-IBM_xlf90_gcc_g++_essl_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 
@@ -124,7 +114,6 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
 python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --lapack=off --int64 --cmake-options="-D BUILDNAME='Aurel-IBM_XL_essl_i8_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
@@ -139,13 +128,12 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
 python ./setup --type=debug --fc=xlf90 --cc=xlc --cxx=xlC --blas=off --lapack=off --int64 --cmake-options="-D BUILDNAME='Aurel-IBM_XL_ownmath_i8_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_BUILTIN_BLAS=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
+#ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
 
 cd $DIRAC
@@ -154,14 +142,41 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
-python ./setup --type=debug --int64 --lapack=off --blas=off  --cmake-options="-D BUILDNAME='Aurel-IBM_gnu_ownmath_i8_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_BUILTIN_BLAS=ON" $BUILD
+python ./setup --fc=gfortran --cc=gcc --cxx=g++ --type=debug --int64 --lapack=off --blas=off  --cmake-options="-D BUILDNAME='Aurel-IBM_gnu_ownmath_i8_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_BUILTIN_BLAS=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
+
+
+cd $DIRAC
+BUILD=build_nopcm_nostiel_gnu_essl_i8_dbg
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+python ./setup --fc=gfortran --cc=gcc --cxx=g++ --type=debug --int64  --cmake-options="-D BUILDNAME='Aurel-IBM_gnu_essl_i8_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=OFF -D ENABLE_BUILTIN_BLAS=OFF" $BUILD
+cd $BUILD
+ctest  -D ExperimentalConfigure
+ctest -j8 -D ExperimentalBuild
+ctest -j4 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit 
+
+
+cd $DIRAC
+BUILD=build_nopcm_nostiel_gnu_essl_dbg
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+python ./setup --fc=gfortran --cc=gcc --cxx=g++  --type=debug  --lapack=on  --cmake-options="-D BUILDNAME='Aurel-IBM_gnu_essl_ownlapack_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_BUILTIN_BLAS=OFF" $BUILD
+cd $BUILD
+ctest     -D ExperimentalConfigure
+ctest -j8 -D ExperimentalBuild
+ctest -j4 -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit 
+
 
 cd $DIRAC
 BUILD=build_nopcm_nostiel_gnu_ownmath_dbg
@@ -169,16 +184,12 @@ if [[ -d "$BUILD" ]]; then
   echo "deleting previous build directory $BUILD"
   /bin/rm -rf $BUILD
 fi
-python ./pamadm -a --builddir=$BUILD
-python ./setup --type=debug --lapack=off --blas=off  --cmake-options="-D BUILDNAME='Aurel-IBM_gnu_ownmath_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_BUILTIN_BLAS=ON" $BUILD
+python ./setup  --fc=gfortran --cc=gcc --cxx=g++  --type=debug --lapack=off --blas=off  --cmake-options="-D BUILDNAME='Aurel-IBM_gnu_ownmath_nopcm_nostiel' -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF -D ENABLE_XCFUN=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_BUILTIN_BLAS=ON" $BUILD
 cd $BUILD
 ctest  -D ExperimentalConfigure
 ctest -j8 -D ExperimentalBuild
 ctest -j4 -D ExperimentalTest -R cosci_energy
-ctest -j12 -D ExperimentalTest -R dft
 ctest -D ExperimentalSubmit 
-
-
 
 
 date

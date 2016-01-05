@@ -2,7 +2,6 @@
 
 BRANCH='master'
 COMPILER='GNU'
-PAMADM_FLAGS='--adm'
 MAKE_RELEASE=0
 BUILDNAME='undefined'
 INT64=0
@@ -10,13 +9,10 @@ TRACK='Nightly'
 DEPLOY_KEY='undefined'
 NUM_JOBS=1
 
-while getopts b:p:r:c:n:i:t:k:j: opt; do
+while getopts b:r:c:n:i:t:k:j: opt; do
   case $opt in
   b)
       BRANCH=$OPTARG
-      ;;
-  p)
-      PAMADM_FLAGS=$OPTARG
       ;;
   r)
       MAKE_RELEASE=$OPTARG
@@ -52,7 +48,6 @@ export DIRAC_TMPDIR=$CTEST_TEMP_DIR/run
 ssh-agent bash -c "ssh-add ${DEPLOY_KEY}; git clone --recursive -b $BRANCH git@gitlab.com:dirac/dirac.git $CTEST_TEMP_DIR/compile"
 
 cd $CTEST_TEMP_DIR/compile
-./pamadm $PAMADM_FLAGS
 
 if [ $MAKE_RELEASE -eq 1 ]; then
     mkdir -p build

@@ -80,7 +80,7 @@ How to exclude code from being released
 
 You as the developer are responsible for removing your code from the
 release branch that you do not wish to be released. This is *not* done by
-actually removing the code but by using pamadm in combination with CPP
+actually removing the code but by using CMake in combination with CPP
 statements. So again, *do not actually delete* code lines, use CPP statements
 as demonstrated below:
 
@@ -97,16 +97,14 @@ parts of code by preprocessor statements, e.g.::
        &  'Second order KMCSCF optimization not included in this version')
   #endif
 
-This means that the calls are included only if MOD_KRMC is defined.  Look in
-pamadm for existing modules and how they define their CPP flags and
-directories. If your pamadm module is not part of pamadm --release, then the code
-will be automatically removed by the release script. In the above example, the
+This means that the calls are included only if MOD_KRMC is defined.
+In the above example, the
 script would remove the actual MOD_KRMC code and what would be left is::
 
   CALL QUIT('Second order KMCSCF optimization not included in this version')
 
-If you want to protect code from being released which is not part of any pamadm
-module, you can use MOD_UNRELEASED::
+If you want to protect code from being released which is not part of any CMake
+option, you can use MOD_UNRELEASED::
 
   #ifdef MOD_UNRELEASED
   !      secret code; this will not end up in the release tarball
@@ -119,13 +117,8 @@ MOD_UNRELEASED. Do this on the release branch and merge to the master.
 How to "remove" tests?
 ----------------------
 
-Look in pamadm and search for "unreleased". All the tests
-listed there will be removed by the release preparation script.
-All tests listed under modules which are not part of::
-
-  ./pamadm --release
-
-are removed as well.
+Currently you cannot. If you really want to remove it, list it explicitly
+in ``cmake/custom/cpack.cmake``.
 
 
 How to release or export the code
@@ -140,9 +133,9 @@ release code of others without asking.
 
 As a final step create the tarball::
 
-  $ ./pamadm --release
+  $ mkdir build
   $ cd build
-  $ cmake ..
+  $ cmake -DENABLE_UNRELEASED=OFF ..
   $ make release
 
 

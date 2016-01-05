@@ -3,8 +3,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/cfun
     )
 
-include(pamadm_definitions)
-include(Sources)
+include(autocmake_CMakeDependentOption)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -47,7 +46,6 @@ add_library(
     ${DIRAC_SOURCES}
     )
 
-add_dependencies(dirac run_pamadm)
 add_dependencies(dirac git_info)
 
 if(ENABLE_XCFUN)
@@ -150,7 +148,12 @@ foreach(
 
     if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
     # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
-        target_link_libraries(${_executable}  -lstdc++)
+        target_link_libraries(${_executable} -lstdc++)
+    endif()
+
+    if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+    # add -lC linking flag for each ${_executable} to satisfy missing objects sqrtf,logf 
+        target_link_libraries(${_executable} -lC)
     endif()
 
 endforeach()

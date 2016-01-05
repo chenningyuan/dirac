@@ -8,11 +8,26 @@
 ##################################################
 # fill the PATH to be the same as in online mode
 ##################################################
-source $HOME/intel/bin/compilervars.sh intel64
-echo "Intel Fortran/C/C++ noncommercial compilers with MKL library activated."
+export PATH=/usr/lib64/qt-3.3/bin:/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+source /usr/share/Modules/init/bash
+
+module avail
+
+# Intel compilers
+#source $HOME/intel/bin/compilervars.sh intel64
+module unload intel/2015
+module load intel/2015
+echo "Intel Fortran/C/C++ commercial compilers with MKL library activated."
+
+# PGI compilers
+module unload pgi/13.10
+module load pgi/13.10
+echo "PGI commercial compilers activated."
+module list
+
+#
 # My own OpenMPI Intel static
-export PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/bin:$PATH
-export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.8.3_intel_static/lib:$LD_LIBRARY_PATH
+
 # my STATIC cmake stuff
 export PATH=/home/ilias/bin/cmakestatic/bin:$PATH
 echo "My own static CMake is in PATH."
@@ -41,36 +56,72 @@ git clean -f -d -x
 # submodule update
 git submodule update --init --recursive
 
-export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
+#export MATH_ROOT=$HOME/intel/mkl; echo "Activated MATH_ROOT=$MATH_ROOT"
 
 # update the local trunk...
 #echo -e "\n updating the local $DIRAC"
 #git pull
 
-BUILD_OMPI_INTEL=build_intelmkl_openmpi_i8_static
+###################################################################################
+cd $DIRAC
+# My own MPICH Intel static
+export PATH=/home/ilias/bin/mpich-3.2-intel-static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/mpich-3.2-intel-static/lib:$LD_LIBRARY_PATH
+#
+BUILD_MPICH_INTEL=build_intelmkl_mpich_static
+if [[ -d "$BUILD_MPICH_INTEL" ]]; then
+   echo "removing previous build directory $BUILD_MPICH_INTEL"
+  /bin/rm -rf $BUILD_MPICH_INTEL
+fi
+# deactivate interest module !
+python ./setup  --fc=/home/ilias/bin/mpich-3.2-intel-static/bin/mpif90 --cc=/home/ilias/bin/mpich-3.2-intel-static/bin/mpicc --cxx=/home/ilias/bin/mpich-3.2-intel-static/bin/mpicxx --static --int64 --cmake-options="-D BUILDNAME='grid_savba_mpich_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_MPICH_INTEL
+ cd $BUILD_MPICH_INTEL
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure 
+ ctest -j4 -D ExperimentalBuild  
+ export DIRAC_MPI_COMMAND="/home/ilias/bin/mpich-3.2-intel-static/bin/mpirun -np 2"
+ ctest -j2 -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_MPICH_INTEL/dirac.x
+ ldd $DIRAC/$BUILD_MPICH_INTEL/dirac.x
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build - Intel-MPICH,MKL,i8,static - finished at $timestamp \n"
+
+
+###################################################################################
+cd $DIRAC
+# My own OpenMPI Intel static
+export PATH=/home/ilias/bin/openmpi-1.10.1_intel_static/bin:$PATH
+export LD_LIBRARY_PATH=/home/ilias/bin/openmpi-1.10.1_intel_static/lib:$LD_LIBRARY_PATH
+#
+BUILD_OMPI_INTEL=build_intelmkl_openmpi-1.10.1_i8_static
 if [[ -d "$BUILD_OMPI_INTEL" ]]; then
    echo "removing previous build directory $BUILD_OMPI_INTEL"
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
 # deactivate interest module !
-python ./pamadm -a --minus --interest --builddir=$BUILD_OMPI_INTEL
-python ./setup  --fc=mpif90 --cc=mpicc --cxx=mpiCC --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
+python ./setup  --fc=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpicxx --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure 
- ctest -D ExperimentalBuild  
- ctest   -D ExperimentalTest -R dft
+ ctest -j4 -D ExperimentalBuild  
+ export DIRAC_MPI_COMMAND="/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpirun -np 2"
+ ctest -j2 -D ExperimentalTest -R dft
  ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_OMPI_INTEL/dirac.x
  ldd $DIRAC/$BUILD_OMPI_INTEL/dirac.x
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 1 - Intel-OpenMPI,MKL,i8,static - finished at $timestamp \n"
+echo -e "\n build - Intel-OpenMPI_1.10.1,MKL,i8,static - finished at $timestamp \n"
 
 sleep 30
 
-###################################################################################
+##
+##  Intel + MKL + i8 + static
+##
 cd $DIRAC
 BUILD_SERIAL_INTEL=build_intelmkl_i8_static
 if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
@@ -78,66 +129,145 @@ if [[ -d "$BUILD_SERIAL_INTEL" ]]; then
   /bin/rm -rf $BUILD_SERIAL_INTEL
 fi
 
-python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL
 python ./setup --fc=ifort --cc=icc --cxx=icpc --static --int64 --cmake-options="-D BUILDNAME='grid_savba_intel_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL
  cd $BUILD_SERIAL_INTEL
  ctest -D ExperimentalUpdate  
  ctest -D ExperimentalConfigure 
- ctest -D ExperimentalBuild   
- ctest -D ExperimentalTest -R cc
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
  ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL/dirac.x
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 2 - Intel,MKL,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build- Intel,MKL,i8,serial,static - finished at $timestamp \n"
 
+sleep 10
 
-sleep 30
-
-###################################################################################
+##
+## Intel + ownmath + i8 + static
+##
 cd $DIRAC
 BUILD_SERIAL_INTEL1=build_intel_ownmath_i8_static
 if [[ -d "$BUILD_SERIAL_INTEL1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_INTEL1"
   /bin/rm -rf $BUILD_SERIAL_INTEL1
 fi
-python ./pamadm -a --builddir=$BUILD_SERIAL_INTEL1
-python ./setup --fc=ifort --cc=icc --cxx=icpc  --blas=off  --lapack=off --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL1
+python ./setup --fc=ifort --cc=icc --cxx=icpc  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_intel_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL1
  cd $BUILD_SERIAL_INTEL1
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
- ctest -D ExperimentalBuild   
- ctest -D ExperimentalTest -R cosci_energy  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cosci_energy  
  ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_INTEL1/dirac.x
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 2.1 - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build - Intel,ownmath,i8,serial,static - finished at $timestamp \n"
 
-sleep 30
+sleep 10
+
+
+##
+## Intel + OpenBLAS + i8 + static
+##
+cd $DIRAC
+BUILD_SERIAL_INTEL2=build_intel_openblas_i8_static
+if [[ -d "$BUILD_SERIAL_INTEL2" ]]; then
+   echo "removing previous build directory $BUILD_SERIAL_INTEL2"
+  /bin/rm -rf $BUILD_SERIAL_INTEL2
+fi
+python ./setup --static --fc=ifort --cc=icc --cxx=icpc --int64  --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_intel_openblas_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_INTEL2
+ cd $BUILD_SERIAL_INTEL2
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_SERIAL_INTEL2/dirac.x
+ ldd $DIRAC/$BUILD_SERIAL_INTEL2/dirac.x
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build - Intel,OpenBLAS,i8,serial,static - finished at $timestamp \n"
+
+sleep 10
 
 
 ######################
 # PGI + MKL - static #
 ######################
 cd $DIRAC
-BUILD=build_pgi_mkl_i8_static
-if [[ -d "$BUILD" ]]; then
-   echo "removing previous build directory $BUILD"
-  /bin/rm -rf $BUILD
+BUILD_PGI=build_pgi_mkl_i8_static
+if [[ -d "$BUILD_PGI" ]]; then
+   echo "removing previous build directory $BUILD_PGI"
+  /bin/rm -rf $BUILD_PGI
 fi
-module load pgi
-python ./pamadm -a --builddir=$BUILD
-python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_pgi_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=OFF -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD
- cd $BUILD_SERIAL
+#module load pgi
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static --cmake-options="-D BUILDNAME='grid_savba_pgi_mkl_i8_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=OFF -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI
+ cd $BUILD_PGI
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure  
- ctest -D ExperimentalBuild   
- ctest -D ExperimentalTest -R cosci_energy  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
  ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_PGI/dirac.x
+ ldd $DIRAC/$BUILD_PGI/dirac.x
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build - PGI,MKL,i8,serial,static - finished at $timestamp \n"
+
+sleep 10
+
+
+#
+# PGI + OWNMATH - static 
+#
+cd $DIRAC
+BUILD_PGI1=build_pgi_ownnath_i8_static
+if [[ -d "$BUILD_PGI1" ]]; then
+   echo "removing previous build directory $BUILD_PGI1"
+  /bin/rm -rf $BUILD_PGI1
+fi
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --int64 --static  --cmake-options="-D BUILDNAME='grid_savba_pgi_ownmath_i8_STATIC' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI1
+ cd $BUILD_PGI1
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_PGI1/dirac.x
+ ldd $DIRAC/$BUILD_PGI1/dirac.x
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build  - PGI,ownmath,i8,serial,static - finished at $timestamp \n"
+
+sleep 10
+
+#
+# PGI + OpenBLAS - static 
+#
+cd $DIRAC
+BUILD_PGI2=build_pgi_openblas_static
+if [[ -d "$BUILD_PGI2" ]]; then
+   echo "removing previous build directory $BUILD_PGI2"
+  /bin/rm -rf $BUILD_PGI2
+fi
+python ./setup --fc=pgf90 --cc=pgcc --cxx=pgCC  --static --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_pgi_openblas_STATIC' -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF"  $BUILD_PGI2
+ cd $BUILD_PGI2
+ ctest -D ExperimentalUpdate   
+ ctest -D ExperimentalConfigure  
+ ctest -j4 -D ExperimentalBuild   
+ ctest -j4 -D ExperimentalTest -R cc
+ ctest -D ExperimentalSubmit 
+
+ ls -lt $DIRAC/$BUILD_PGI2/dirac.x
+ ldd $DIRAC/$BUILD_PGI2/dirac.x
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build  - PGI,openblas,serial,static - finished at $timestamp \n"
+
+sleep 10
 
 
 #####################
@@ -149,22 +279,21 @@ if [[ -d "$BUILD_SERIAL_GNU" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU"
   /bin/rm -rf $BUILD_SERIAL_GNU
 fi
-python ./pamadm -a --builddir=$BUILD_SERIAL_GNU
 python ./setup --fc=gfortran --cc=gcc --cxx=g++ --static --int64 --cmake-options="-D BUILDNAME='grid_savba_gnu_mkl_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU
  cd $BUILD_SERIAL_GNU
  ctest -D ExperimentalUpdate     
  ctest -D ExperimentalConfigure   
- ctest -D ExperimentalBuild    
- ctest -D ExperimentalTest -R  fscc
+ ctest -j4 -D ExperimentalBuild    
+ ctest -j4 -D ExperimentalTest -R  cc
  ctest -D ExperimentalSubmit 
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU/dirac.x
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 3 - GNU,MKL,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build - GNU,MKL,i8,serial,static - finished at $timestamp \n"
 
-sleep 30
+sleep 10
 
 #########################
 ##  GNU+OWNMATH STATIC ##
@@ -175,23 +304,48 @@ if [[ -d "$BUILD_SERIAL_GNU1" ]]; then
    echo "removing previous build directory $BUILD_SERIAL_GNU1"
   /bin/rm -rf $BUILD_SERIAL_GNU1
 fi
-python ./pamadm -a --builddir=$BUILD_SERIAL_GNU1
-python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --lapack=off --blas=off --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU1
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_ownmath_i8_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU1
  cd $BUILD_SERIAL_GNU1
  ctest -D ExperimentalUpdate     
  ctest -D ExperimentalConfigure  
- ctest -D ExperimentalBuild  
- ctest -D ExperimentalTest -R cosci_energy    
+ ctest -j4 -D ExperimentalBuild  
+ ctest -j4 -D ExperimentalTest -R cosci_energy    
  ctest -D ExperimentalSubmit  
 
  ls -lt $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
  ldd $DIRAC/$BUILD_SERIAL_GNU1/dirac.x
- python binary_info.py  > VERSION_cmake  2>&1  # get version
+# python binary_info.py  > VERSION_cmake  2>&1  # get version
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
-echo -e "\n build 4 - GNU,ownmath,i8,serial,static - finished at $timestamp \n"
+echo -e "\n build - GNU,ownmath,i8,serial,static - finished at $timestamp \n"
+sleep 10
 
-sleep 30
+
+##########################
+##  GNU+OPENBLAS STATIC ##
+##########################
+cd $DIRAC
+BUILD_SERIAL_GNU2=build_gnu_openblas_static
+if [[ -d "$BUILD_SERIAL_GNU2" ]]; then
+   echo "removing previous build directory $BUILD_SERIAL_GNU2"
+  /bin/rm -rf $BUILD_SERIAL_GNU2
+fi
+python ./setup  --fc=gfortran --cc=gcc --cxx=g++ --static --explicit-libs="/usr/lib64/libopenblas.a" --cmake-options="-D BUILDNAME='grid_savba_serial_gnu_openblas_STATIC' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=OFF -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_SERIAL_GNU2
+ cd $BUILD_SERIAL_GNU2
+ ctest -D ExperimentalUpdate     
+ ctest -D ExperimentalConfigure  
+ ctest -j4 -D ExperimentalBuild  
+ ctest -j4 -D ExperimentalTest -R cosci_energy    
+ ctest -D ExperimentalSubmit  
+
+ ls -lt $DIRAC/$BUILD_SERIAL_GNU2/dirac.x
+ ldd $DIRAC/$BUILD_SERIAL_GNU2/dirac.x
+# python binary_info.py  > VERSION_cmake  2>&1  # get version
+
+timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
+echo -e "\n build - GNU,OpenBLAS,serial,static - finished at $timestamp \n"
+sleep 10
+
 
 #################################################
 ### continue with the packing for grid servers ##
@@ -201,11 +355,11 @@ sleep 30
 cd $DIRAC
 
 # copy there the mpirun static with related directories & files
-cp    /home/ilias/bin/openmpi_intel_stat/bin/mpirun                         $DIRAC/$BUILD_OMPI_INTEL/.
+cp    /home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpirun            $DIRAC/$BUILD_OMPI_INTEL/.
 /bin/rm -rf $BUILD_OMPI_INTEL/share
 mkdir $BUILD_OMPI_INTEL/share
-cp -R -P  /home/ilias/bin/openmpi_intel_stat/share/openmpi                  $DIRAC/$BUILD_OMPI_INTEL/share/.
-cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIRAC/$BUILD_OMPI_INTEL/.
+cp -R -P  /home/ilias/bin/openmpi-1.10.1_intel_static/share/openmpi     $DIRAC/$BUILD_OMPI_INTEL/share/.
+cp -R     /home/ilias/bin/openmpi-1.10.1_intel_static/etc               $DIRAC/$BUILD_OMPI_INTEL/.
 # don't forget export OPAL_PREFIX=$PWD/$BUILD 
 
 # problems with "--exclude test/*/*.out"  - so remove them as such
@@ -213,14 +367,32 @@ cp -R     /home/ilias/bin/openmpi_intel_stat/etc                            $DIR
 /bin/rm -r test/*/compare
 
 packed_dirac=DIRAC_grid_suite.tgz
-echo -e "\n\n packing (slim, with tests) DIRAC suite for grid computations..."
-tar czf $packed_dirac  pam  VERSION test  basis  basis_dalton  basis_ecp \
-$BUILD_OMPI_INTEL/dirac.x $BUILD_OMPI_INTEL/VERSION_cmake $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
-$BUILD_SERIAL_INTEL/dirac.x $BUILD_SERIAL_INTEL/VERSION_cmake \
-$BUILD_SERIAL_INTEL1/dirac.x $BUILD_SERIAL_INTEL1/VERSION_cmake \
-$BUILD_SERIAL_GNU/dirac.x $BUILD_SERIAL_GNU/VERSION_cmake \
-$BUILD_SERIAL_GNU1/dirac.x $BUILD_SERIAL_GNU1/VERSION_cmake \
+echo -e "\n\n packing slim DIRAC suite (with tests) for grid computations..."
+    #     
+tar czf $packed_dirac  test  basis  basis_dalton  basis_ecp \
+    # pack OpenMPI 1.10.1 + Intel + MKL + i8 static 
+$BUILD_OMPI_INTEL/dirac.x  $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
+    # pack Intel + MKL + i8 static
+$BUILD_SERIAL_INTEL/dirac.x  \
+    # pack Intel + ownmath + i8 static
+$BUILD_SERIAL_INTEL1/dirac.x  \
+    # pack Intel + OpenBLAS + i8 static
+$BUILD_SERIAL_INTEL2/dirac.x  \
+    # pack GNU + MKL + i8 static
+$BUILD_SERIAL_GNU/dirac.x  \
+    # pack GNU + ownmath + i8 static
+$BUILD_SERIAL_GNU1/dirac.x  \
+    # pack GNU + OpenBLAS  static
+$BUILD_SERIAL_GNU2/dirac.x  \
+    # pack PGI + MKL + i8 static
+$BUILD_PGI/dirac.x  \
+    # pack PGI + OWNMATH + i8 static
+$BUILD_PGI1/dirac.x  \
+    # pack PGI + OpenBLAS + i8 static
+$BUILD_PGI2/dirac.x  \
+    # pack cmake static
 /home/ilias/bin/cmakestatic \
+    # pack diracrc_grid
 maintenance/grid_computing/diracrc_grid 
 
 echo -e "\n packing done, we have tar-ball file ready to be placed on SE for grid-computing : "

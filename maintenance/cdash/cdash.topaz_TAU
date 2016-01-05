@@ -46,7 +46,6 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL"
   /bin/rm -rf $BUILD_SERIAL
 fi
-./pamadm -a --builddir=$BUILD_SERIAL
 ./setup --run-unit-tests  --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="topaz-TAU_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
@@ -67,7 +66,6 @@ if [[ -d "$BUILD_INTEL_STATIC" ]]; then
   echo "deleting previous build directory $BUILD_INTEL_STATIC"
   /bin/rm -rf $BUILD_INTEL_STATIC
 fi
-./pamadm -a --builddir=$BUILD_INTEL_STATIC
 ./setup --run-unit-tests --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="topaz-TAU_Intel_mkl_i8_static" --static -D DART_TESTING_TIMEOUT=99999 $BUILD_INTEL_STATIC
 cd $BUILD_INTEL_STATIC
 python binary_info.py
@@ -88,7 +86,6 @@ if [[ -d "$BUILD_GNU_MKL" ]]; then
   echo "deleting previous build directory $BUILD_GNU_MKL"
   /bin/rm -rf $BUILD_GNU_MKL
 fi
-./pamadm -a --builddir=$BUILD_GNU_MKL
 ./setup --run-unit-tests --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="topaz-TAU_gnu_mkl_i8" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU_MKL
 cd $BUILD_GNU_MKL
 python binary_info.py
@@ -110,7 +107,6 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
 ./setup --run-unit-tests --int64 --fc=gfortran --cc=gcc --cxx=g++ --blas=builtin --lapack=builtin -D BUILDNAME="topaz-TAU_gnu_ownmath_i8" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
@@ -131,7 +127,6 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
 ./setup --run-unit-tests --int64 --fc=gfortran --cc=gcc --cxx=g++ --blas=builtin --lapack=builtin --static -D BUILDNAME="topaz-TAU_gnu_ownmath_i8_static" -D DART_TESTING_TIMEOUT=99999 $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py

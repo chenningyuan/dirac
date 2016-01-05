@@ -71,7 +71,6 @@ if [[ -d "$BUILD_SERIAL" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL"
   /bin/rm -rf $BUILD_SERIAL
 fi
-./pamadm -a --builddir=$BUILD_SERIAL
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="bugaboo_intelmkl_i8-batch"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
 cd $BUILD_SERIAL
 python binary_info.py
@@ -91,7 +90,6 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL_STATIC"
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
-./pamadm -a --builddir=$BUILD_SERIAL_STATIC
 ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="bugaboo_intelmkl_i8_static-batch"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
 python binary_info.py
@@ -112,7 +110,6 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
 ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="bugaboo_GNU_mkl_i8-batch"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
 cd $BUILD_GNU
 python binary_info.py
