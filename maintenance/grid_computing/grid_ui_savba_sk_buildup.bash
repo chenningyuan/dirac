@@ -9,6 +9,10 @@
 # fill the PATH to be the same as in online mode
 ##################################################
 export PATH=/usr/lib64/qt-3.3/bin:/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin
+
+#MiroD advice
+source $HOME/.bash_profile
+
 source /usr/share/Modules/init/bash
 
 module avail
@@ -44,6 +48,9 @@ export CTEST_PROJECT_NAME=DIRACext
 echo "My PATH=$PATH"
 #echo "which make:"; which make
 echo -e "\n set:"; set
+
+# very important - set running time for tests !
+export DIRTIMEOUT="8m"
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo "Running DIRAC cdash buildup at "$timestamp
