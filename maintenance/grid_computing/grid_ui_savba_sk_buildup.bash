@@ -81,7 +81,7 @@ if [[ -d "$BUILD_MPICH_INTEL" ]]; then
   /bin/rm -rf $BUILD_MPICH_INTEL
 fi
 # deactivate interest module !
-python ./setup  --fc=/home/ilias/bin/mpich-3.2-intel-static/bin/mpif90 --cc=/home/ilias/bin/mpich-3.2-intel-static/bin/mpicc --cxx=/home/ilias/bin/mpich-3.2-intel-static/bin/mpicxx --static --int64 --cmake-options="-D BUILDNAME='grid_savba_mpich_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_MPICH_INTEL
+python ./setup --mpi  --fc=/home/ilias/bin/mpich-3.2-intel-static/bin/mpif90 --cc=/home/ilias/bin/mpich-3.2-intel-static/bin/mpicc --cxx=/home/ilias/bin/mpich-3.2-intel-static/bin/mpicxx --static --int64 --cmake-options="-D BUILDNAME='grid_savba_mpich_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_MPICH_INTEL
  cd $BUILD_MPICH_INTEL
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure 
@@ -109,7 +109,7 @@ if [[ -d "$BUILD_OMPI_INTEL" ]]; then
   /bin/rm -rf $BUILD_OMPI_INTEL
 fi
 # deactivate interest module !
-python ./setup  --fc=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpicxx --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
+python ./setup --mpi  --fc=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpif90 --cc=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpicc --cxx=/home/ilias/bin/openmpi-1.10.1_intel_static/bin/mpicxx --static --int64 --cmake-options="-D BUILDNAME='grid_savba_ompi_intel_mkl_i8_STATIC'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_OMPI_INTEL
  cd $BUILD_OMPI_INTEL
  ctest -D ExperimentalUpdate   
  ctest -D ExperimentalConfigure 
@@ -374,32 +374,20 @@ cp -R     /home/ilias/bin/openmpi-1.10.1_intel_static/etc               $DIRAC/$
 /bin/rm -r test/*/compare
 
 packed_dirac=DIRAC_grid_suite.tgz
-echo -e "\n\n packing slim DIRAC suite (with tests) for grid computations..."
-    #     
+echo -e "\n\n Packing slim DIRAC suite (executables,basis sets and tests) for grid computations ! \n"
+#     
 tar czf $packed_dirac  test  basis  basis_dalton  basis_ecp \
-    # pack OpenMPI 1.10.1 + Intel + MKL + i8 static 
 $BUILD_OMPI_INTEL/dirac.x  $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
-    # pack Intel + MKL + i8 static
 $BUILD_SERIAL_INTEL/dirac.x  \
-    # pack Intel + ownmath + i8 static
 $BUILD_SERIAL_INTEL1/dirac.x  \
-    # pack Intel + OpenBLAS + i8 static
 $BUILD_SERIAL_INTEL2/dirac.x  \
-    # pack GNU + MKL + i8 static
 $BUILD_SERIAL_GNU/dirac.x  \
-    # pack GNU + ownmath + i8 static
 $BUILD_SERIAL_GNU1/dirac.x  \
-    # pack GNU + OpenBLAS  static
 $BUILD_SERIAL_GNU2/dirac.x  \
-    # pack PGI + MKL + i8 static
 $BUILD_PGI/dirac.x  \
-    # pack PGI + OWNMATH + i8 static
 $BUILD_PGI1/dirac.x  \
-    # pack PGI + OpenBLAS + i8 static
 $BUILD_PGI2/dirac.x  \
-    # pack cmake static
 /home/ilias/bin/cmakestatic \
-    # pack diracrc_grid
 maintenance/grid_computing/diracrc_grid 
 
 echo -e "\n packing done, we have tar-ball file ready to be placed on SE for grid-computing : "
