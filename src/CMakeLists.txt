@@ -87,6 +87,7 @@ set(FIXED_FORTRAN_SOURCES
     src/dirrci/cigosc.F
     src/dirrci/cimain.F
     src/ecp/recp1.F
+    src/ecp/recp_lnk.F
     src/embedding/emb_quit.F
     src/embedding/get_vemb_mat.F
     src/gp/finesort_scheme6.F
@@ -257,7 +258,6 @@ set(FREE_FORTRAN_SOURCES
     src/ecp/recp_inp_print.F90
     src/ecp/recp_inp_read.F90
     src/ecp/recp_ipt.F90
-    src/ecp/recp_lnk.F
     src/ecp/recp_ntr.F90
     src/ecp/recp_one.F90
     src/ecp/recp_one_stvcz.F90

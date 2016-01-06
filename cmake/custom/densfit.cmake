@@ -5,12 +5,17 @@ if(ENABLE_DENSFIT)
     add_definitions(-DMOD_DNF)
     set(FIXED_FORTRAN_SOURCES
         ${FIXED_FORTRAN_SOURCES}
-        src/densfit/df_dofit.F90
         src/densfit/df_vxc.F
         src/densfit/df_utils.F
         src/densfit/df_fck3.F
         src/densfit/df_dirac.F
         )
+
+    set(FREE_FORTRAN_SOURCES
+        ${FREE_FORTRAN_SOURCES}
+        src/densfit/df_dofit.F90
+        )
+
     dirac_test(integrals_densfit "")
     dirac_test(integrals_jengine "")
 else()
