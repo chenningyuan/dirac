@@ -410,6 +410,9 @@ set(FREE_FORTRAN_SOURCES
     src/xcint/xc_mpi.F90
     src/xcint/xc_response.F90
     src/xcint/xcint_main.F90
+    src/gp/xml/xml_file.F90
+    src/gp/xml/xml_structure.F90
+    src/gp/xml/xml_parser.F90
     PARENT_SCOPE
     )
 
