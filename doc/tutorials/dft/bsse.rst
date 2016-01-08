@@ -1,10 +1,11 @@
 :orphan:
  
 
-Basis set superposition error
-=============================
+Basis set superposition error in the DFT
+========================================
 
-The basis set superposition error (BSSE, also known as counterpoise correction) can be estimated by performing
+The basis set superposition error (BSSE, also known as counterpoise correction, see :cite:`Boys:1970`) 
+can be estimated by performing
 subsystem calculations using ghost atoms which carry basis sets of the full system.
 
 This tutorial describes how to use ghost atoms in DIRAC and how to avoid
