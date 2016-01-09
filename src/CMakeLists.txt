@@ -216,21 +216,6 @@ set(FIXED_FORTRAN_SOURCES
     src/reladc/adcdiag.F
     src/reladc/adcexci.F
     src/reladc/adcsort.F
-    src/relccsd/ccdriv.F
-    src/relccsd/cceqns.F
-    src/relccsd/ccfspc.F
-    src/relccsd/ccgenp.F
-    src/relccsd/ccgetv.F
-    src/relccsd/ccgrad.F
-    src/relccsd/ccintm.F
-    src/relccsd/ccints.F
-    src/relccsd/ccmain.F
-    src/relccsd/ccpam.F
-    src/relccsd/ccrpa.F
-    src/relccsd/ccsort.F
-    src/relccsd/ccxblas.F
-    src/relccsd/quit.F
-    src/relccsd/waio.F
     PARENT_SCOPE
     )
 
@@ -362,7 +347,6 @@ set(FREE_FORTRAN_SOURCES
     src/reladc/adc_fano_routines.F90
     src/reladc/adc_mat.F90
     src/reladc/adcutil.F90
-    src/relccsd/relcc_cfg.F90
     src/visual/integration.F90
     src/visual/visual.F90
     src/visual/visual_cfg.F90
@@ -427,7 +411,6 @@ set(C_SOURCES
     src/gp/trace.c
     src/krmc/gendet.c
     src/lucita/flush_stdout.c
-    src/relccsd/ccunix.c
     src/cfun/emb-functional.c
     src/cfun/fun-becke.c
     src/cfun/fun-cam.c

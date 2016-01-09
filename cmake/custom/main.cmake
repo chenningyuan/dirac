@@ -64,7 +64,7 @@ if(ENABLE_STIELTJES)
     add_dependencies(dirac stieltjes)
 endif()
 
-set(_list_of_executables)
+set(_lisd_of_executables)
 macro(compile_standalone _executable _source _list_of_executables)
     add_executable(
         ${_executable}
@@ -92,9 +92,15 @@ if(ENABLE_UTILITIES)
     compile_standalone(test_allocator.x utils/test_allocator.F90 "${_list_of_executables}")
 endif()
 
-option(ENABLE_RELCCSD_STANDALONE "Enable compilation of standalone relccsd" OFF)
+#miro: hack for intel/i8/mkl to supress missing object SUM_ from blas library
+target_link_libraries(test_allocator.x relccsd)
+
 if(ENABLE_RELCCSD_STANDALONE)
+    if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
+        set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
+    endif()
     compile_standalone(relccsd.x src/relccsd/ccmain.F "${_list_of_executables}")
+    target_link_libraries(relccsd.x relccsd)
 endif()
 
 option(ENABLE_HSCC "Enable compilation of the standalone hsmrcc.x" OFF)
