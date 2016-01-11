@@ -377,17 +377,16 @@ packed_dirac=DIRAC_grid_suite.tgz
 echo -e "\n\n Packing slim DIRAC suite (executables,basis sets and tests) for grid computations ! \n"
 #     
 tar czf $packed_dirac  test  basis  basis_dalton  basis_ecp \
-$BUILD_OMPI_INTEL/dirac.x  $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
-$BUILD_SERIAL_INTEL/dirac.x  \
-$BUILD_SERIAL_INTEL1/dirac.x  \
-$BUILD_SERIAL_INTEL2/dirac.x  \
-$BUILD_SERIAL_GNU/dirac.x  \
-$BUILD_SERIAL_GNU1/dirac.x  \
-$BUILD_SERIAL_GNU2/dirac.x  \
-$BUILD_PGI/dirac.x  \
-$BUILD_PGI1/dirac.x  \
-$BUILD_PGI2/dirac.x  \
-/home/ilias/bin/cmakestatic \
+$BUILD_OMPI_INTEL/dirac.x $BUILD_OMPI_INTEL/pam $BUILD_OMPI_INTEL/etc $BUILD_OMPI_INTEL/share $BUILD_OMPI_INTEL/mpirun  \
+$BUILD_SERIAL_INTEL/dirac.x $BUILD_SERIAL_INTEL/pam  \
+$BUILD_SERIAL_INTEL1/dirac.x $BUILD_SERIAL_INTEL1/pam  \
+$BUILD_SERIAL_INTEL2/dirac.x $BUILD_SERIAL_INTEL2/pam  \
+$BUILD_SERIAL_GNU/dirac.x $BUILD_SERIAL_GNU/pam  \
+$BUILD_SERIAL_GNU1/dirac.x $BUILD_SERIAL_GNU1/pam  \
+$BUILD_SERIAL_GNU2/dirac.x $BUILD_SERIAL_GNU2/pam  \
+$BUILD_PGI/dirac.x $BUILD_PGI/pam \
+$BUILD_PGI1/dirac.x $BUILD_PGI1/pam \
+$BUILD_PGI2/dirac.x $BUILD_PGI2/pam \
 maintenance/grid_computing/diracrc_grid 
 
 echo -e "\n packing done, we have tar-ball file ready to be placed on SE for grid-computing : "
