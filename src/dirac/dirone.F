@@ -2419,6 +2419,8 @@ C         2) do picture change transformation of integrals on AOPROPER
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
+          !> stknecht: take care of 2c-mmf-sf for a linear molecule
+          if(spinfr .and. linear) linear = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2509,6 +2511,8 @@ C
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
+          !> stknecht: take care of 2c-mmf-sf for a linear molecule
+          if(spinfr .and. linear) linear = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2808,6 +2812,8 @@ C
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
+          !> stknecht: take care of 2c-mmf-sf for a linear molecule
+          if(spinfr .and. linear) linear = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
