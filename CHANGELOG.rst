@@ -1,5 +1,11 @@
 :orphan:
 
+15.1 (2016-xx-xx)
+-----------------
+
+- BUGfix for spinfree X2Cmmf and linear symmetry.
+
+
 15.0 (2015-12-16)
 -----------------
 
