@@ -64,6 +64,8 @@ if(ENABLE_STIELTJES)
     add_dependencies(dirac stieltjes)
 endif()
 
+add_dependencies(dirac relccsd)
+
 set(_lisd_of_executables)
 macro(compile_standalone _executable _source _list_of_executables)
     add_executable(
