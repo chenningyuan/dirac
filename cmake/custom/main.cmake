@@ -94,6 +94,10 @@ if(ENABLE_UTILITIES)
     compile_standalone(test_allocator.x utils/test_allocator.F90 "${_list_of_executables}")
 endif()
 
+#miro: hack for to supress for ccxblas.o missing object SUM_ from the blas library
+target_link_libraries(test_allocator.x ${EXTERNAL_LIBS})
+
+
 if(ENABLE_RELCCSD_STANDALONE)
     if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
