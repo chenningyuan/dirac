@@ -8222,13 +8222,13 @@ C         if reading input from a terminal
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 930
-      ELSEIF(PROMPT.EQ.'.') THEN
+      ELSE IF(PROMPT.EQ.'.') THEN
 C
 C        Look for 2-component Hamiltonians
 C
          IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   '.OR.
      &       WORD.EQ.'.X2C   '.OR.WORD.EQ.'.X2COLD'.OR.
-     &       WORD.EQ.'.X2Cmmf') THEN
+     &       WORD.EQ.'.X2CMMF') THEN
 C............active 2-component modus
            TWOCOMP=.TRUE.
 C............variable telling that this is a 2-component relativistic calculation
@@ -8345,20 +8345,25 @@ C
 C     Position menu file at the specified keyword
 C
 C     Written by L. Visscher, october 2006
+C     Revsision Jan. 2016 hjaaj: Comparison is now case insensitive.
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL KEY_FOUND
-      CHARACTER LINE*80,KEYWORD*(*)
+      CHARACTER LINE*80, KEYWORD*(*), KEYWORD_UPCASE*80
 C
       KEY_FOUND = .FALSE.
       REWIND (LUCMD,IOSTAT=IOS)
 C
-      LEN_KEYWORD = LEN(KEYWORD)
+      LEN_KEYWORD = MIN(LEN(KEYWORD),80)
+      KEYWORD_UPCASE(1:LEN_KEYWORD) = KEYWORD(1:LEN_KEYWORD)
+      CALL UPCASE(KEYWORD_UPCASE(1:LEN_KEYWORD))
+
   200 READ (LUCMD,'(A80)',END=220,ERR=210) LINE
 Caspg write (6,*) 'line:',line
-      CALL BLANKR (80,LINE)
+      CALL UPCASE(LINE)
+      CALL BLANKR(80,LINE)
 C
 Caspg write (6,*) 'test1',LINE(1:LEN_KEYWORD),':'
 Caspg write (6,*) 'test2',KEYWORD(1:LEN_KEYWORD),':'

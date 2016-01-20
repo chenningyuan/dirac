@@ -1,6 +1,7 @@
 15.1 (2016-xx-xx)
 -----------------
 
+- made keyword .X2Cmmf case insensitive
 - BUGfix for spinfree X2Cmmf and linear symmetry.
 
 
