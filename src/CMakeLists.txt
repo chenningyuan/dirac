@@ -437,7 +437,6 @@ set(C_SOURCES
     src/cfun/fun-slater.c
     src/cfun/fun-srpbec.c
     src/cfun/fun-srvwn5.c
-    src/cfun/fun-tester.c
     src/cfun/fun-vwn.c
     src/cfun/functionals.c
     src/cfun/general.c
