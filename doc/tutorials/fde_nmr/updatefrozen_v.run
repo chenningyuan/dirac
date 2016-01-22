@@ -1,0 +1,2 @@
+cp GRIDOUT FROZEN
+pam --inp=updatefrozen_v.inp --mol=h2se.mol --put="numerical_grid FROZEN GRIDOUT"
