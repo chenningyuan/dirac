@@ -28,7 +28,7 @@ fi
 
 print_CE_info
 querry_CE_attributes $VO
-check_file_on_SE $VO
+check_file_on_SE $VO "DIRAC_grid_suite.tgz"
 # download & unpack tar-file onto CE - MUST be successfull or exit
 download_from_SE $VO "DIRAC_grid_suite.tgz"
 
@@ -42,7 +42,7 @@ echo -e "\n Number of #CPU obtained from the function: $nprocs \n"
 ##########################################
 #      set build dirs and paths          #
 ##########################################
-# directory with all static executables - dirac.x, cmake, ctest, mpirun - and related directories
+# directory with all static executables - dirac.x, mpirun - and related directories
 export BUILD=build_intelmkl_openmpi-1.10.1_i8_static
 export BUILD_SERIAL=build_intelmkl_i8_static
 
@@ -55,19 +55,22 @@ echo -e "Modified PATH=$PATH"
 echo -e "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
 
 #############################################################
-#           check own static cmake, mpirun stuff
+#           check own static mpirun stuff
 #############################################################
 echo -e "\n\n"
-echo -e "own cmake in PATH ? \c"; which cmake; cmake --version
-echo -e "own ctest in PATH ? \c"; which ctest; ctest --version
 echo -e "own mpirun in PATH ?\c"; which mpirun; mpirun --version
 
 
-unpack_DIRAC
+unpack_DIRAC "DIRAC_grid_suite.tgz"
 #RETVAL=$?; [ $RETVAL -ne 0 ] && exit 6
 
+# specify scratch space for DIRAC runs #
+echo "--scratch=\$PWD/DIRAC_scratch" >  ~/.diracrc
+echo -e "\n\n The ~/.diracrc file was created, containing: "; cat ~/.diracrc
+
+
 #############################################################
-#           check own static cmake, mpirun stuff
+#              check own static mpirun stuff
 #############################################################
 echo -e "\n\n"
 echo -e "own mpirun in PATH ?\c"; which mpirun; mpirun --version
@@ -80,13 +83,11 @@ python ./pam --inp=test/fscc/fsccsd_IH.inp --mol=test/fscc/Mg.mol  --mw=92 --out
 #####################################################################
 
   echo -e "\n\n --- Going to launch parallel runtest - OpenMPI+Intel+MKL - with short tests suite  --- \n "; date 
-  cd $BUILD
+
   export DIRAC_MPI_COMMAND="mpirun -np 2"
-  ctest -j 2 -L short
 
   echo -e "\n\n --- Going to launching selected serial runtest - Intel+MKL - with short test suite --- \n "; date 
   cd $BUILD_SERIAL
-  ctest -j 4 -L short
 
 
 ##############################################################
@@ -98,17 +99,17 @@ echo -e "\n --------------------------------- \n ";
 # delete old tar-ball first
 ls -lt DIRAC_grid_suite.tgz
 echo -e "\n deleting the old DIRAC_grid_suite.tgz..."
-rm dirac_grid_suite.tgz
+#rm dirac_grid_suite.tgz
 echo "check files..."
 ls -lt
-echo -e "\n --- Packing all wanted stuff back from the grid CE  --- "; 
-tar --version
-echo -e "\n we have to pack (ls -lt) :"
-ls -lt
-echo " "
 
-tar czf DIRAC_grid_suite_back.tgz test *.out
-echo -e "\n selected directories/files of the DIRAC suite packed back, ls -lt DIRAC_grid_suite_back.tgz:";ls -lt DIRAC_grid_suite_back.tgz
+#echo -e "\n --- Packing all wanted stuff back from the grid CE  --- "; 
+#tar --version
+#echo -e "\n we have to pack (ls -lt) :"
+#ls -lt
+#echo " "
+#tar czf DIRAC_grid_suite_back.tgz test *.out
+#echo -e "\n selected directories/files of the DIRAC suite packed back, ls -lt DIRAC_grid_suite_back.tgz:";ls -lt DIRAC_grid_suite_back.tgz
 
 # upload final tarball onto SE so that you can dowload it later
 # upload_to_SE $VO
@@ -119,4 +120,3 @@ echo -e "\n selected directories/files of the DIRAC suite packed back, ls -lt DI
 final_message
 
 exit 0
-

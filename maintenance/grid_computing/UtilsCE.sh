@@ -171,6 +171,7 @@ function upload_to_SE()
 function check_file_on_SE()
 { # parametric call with name of VO
 local VO=$1
+local DIRACpack=$2
 echo -e "\n\n On the host CE, checking variable LFC_HOST=$LFC_HOST"
 if [[ -z $LFC_HOST ]];  then
   echo -e "The LFC_HOST environmental variable is not defined !"
@@ -180,34 +181,35 @@ fi
 echo -e  "\n Files in my vo=$VO SE space, lcg-ls -l lfn://grid/$VO/ilias:"
 lcg-ls -l lfn://grid/$VO/ilias || { echo -e "...previous command failed, once again... "; lcg-ls -l lfn://grid/$VO/ilias; }
 echo -e "\n File attributes lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz:"
-lcg-lr lfn://grid/$VO/ilias/dirac_grid_suite.tgz || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/dirac_grid_suite.tgz; }
+lcg-lr lfn://grid/$VO/ilias/$DIRACpack || { echo -e "...previous command failed, once again... "; lcg-lr  lfn://grid/$VO/ilias/$DIRACpack; }
 echo " ------------------------------------------------------------------------- "
 # for these commands we need the LFC_HOST variable
 echo -e "\n check users's LFC-directory, lfc-getacl /grid/$VO/ilias:"
 lfc-getacl  /grid/$VO/ilias
-echo -e "\n check user's LFC-file, lfc-getacl /grid/$VO/ilias/dirac_grid_suite.tgz:"
-lfc-getacl  /grid/$VO/ilias/dirac_grid_suite.tgz
+echo -e "\n check user's LFC-file, lfc-getacl /grid/$VO/ilias/$DIRACpack:"
+lfc-getacl  /grid/$VO/ilias/$DIRACpack
 echo -e "-----------------------------------------------------------\n"
 return 0
 }
 
 #
-# unpack and check the freshly downloaded DIRAC tarball
+# Simply unpack and check the freshly downloaded DIRAC tarball
 #
 function unpack_DIRAC()
 { 
+local DIRACpack=$1
 echo -e "\n\n ---- Unpacking dowloaded DIRAC suite, tar program  : \c "
 which tar;  tar --version
-echo -e "performing tar xfz dirac_grid_suite.tgz ...\c"
-tar xfz dirac_grid_suite.tgz || { echo "some problems with tarball unpacking, error exit !"; exit 113; }
-echo -e "\n unpacking done; see the content of $PWD :"; ls -lt 
-echo -e "\n content of buildXYZ directories: "; ls -lt build*
-# created diracrc file with pam defaults:
-cp maintenance/grid_computing/diracrc_grid  ~/.diracrc
-echo -e "\n\n  ~/.diracrc created, containing: "; cat ~/.diracrc
+echo -e "Performing tar xfz $DIRACpack ...\c"
+tar xfz $DIRACpack || { echo "some problems with tarball unpacking, error exit !"; exit 113; }
+echo -e "\n Unpacking done; see the content of $PWD :"; ls -lt 
+echo -e "\n Content of build* directories: "; ls -lt build*
 return 0
 }
 
+#
+# Print final message ...
+#
 function final_message()
 { 
 echo -e "\n\n --------------------------------------------------------------------------------"
