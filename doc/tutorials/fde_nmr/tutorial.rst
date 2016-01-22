@@ -78,6 +78,16 @@ After this calculation, the ``GRIDOUT`` file will be updated: additional columns
 correspond to the electrostatic potential and the density of subsystem II
 calculated in each of grid points on that file.
 
+Often, in FDE calculations, one uses the numerical grid which was generated for the supermolecular system.
+If the numerical grid was generated in the DIRAC software, then it will be divided into batches of points.
+However, FDE module is able to read only the continuous list of grid points, therefore such numerical grid has
+to be reformatted. This can be done by the script, which can be found in ``utils`` directory of DIRAC:
+``dft_to_fde_grid_convert.py``, which should be used on a ``numerical_grid`` file exported from DIRAC:
+
+.. literalinclude:: grid_convert
+
+The original grid file is saved as ``numerical_grid.ORIG``
+
 Step 2: SCF and response calculation on the subsystem I
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

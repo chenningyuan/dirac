@@ -29,4 +29,7 @@ g.write('-1')
 
 g.close()
 
+# now rename, to avoid confusion:
+os.rename('numerical_grid', 'numerical_grid.ORIG')
+os.rename('numerical_grid_cont', 'numerical_grid')
 
