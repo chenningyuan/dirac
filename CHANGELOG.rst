@@ -14,6 +14,7 @@ the lines below should only be changed on the release branch.)
 15.1 (2016-xx-xx)
 -----------------
 
+- added OPENBLAS in search list for blas and lapack libraries
 - made keyword .X2Cmmf case insensitive
 - BUGfix for spinfree X2Cmmf and linear symmetry.
 

@@ -1297,9 +1297,7 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
 ! with '*' format  (Ex: '   BARE NUC' became 'BARE       ' in LINE !)
 !              READ (LUCMD,*) LINE
                READ (LUCMD,'(A)') LINE
-               ! write (lupri,*) 'hjaaj: .MOSTAR line 1 ',line
                CALL UPCASE(LINE)
-               ! write (lupri,*) 'hjaaj: .MOSTAR line 2 ',line
                IF (INDEX(LINE,'HUCKEL').ne.0 .OR.
      &             INDEX(LINE,'EHT').ne.0) THEN
                   DOHUCKEL = .TRUE.
@@ -8347,13 +8345,10 @@ C
       CALL UPCASE(KEYWORD_UPCASE(1:LEN_KEYWORD))
 
   200 READ (LUCMD,'(A80)',END=220,ERR=210) LINE
-Caspg write (6,*) 'line:',line
-      CALL UPCASE(LINE)
-      CALL BLANKR(80,LINE)
+      CALL UPCASE(LINE)     ! change any lower case characters to upper case
+      CALL BLANKR(80,LINE)  ! move any text all the way to the left of LINE
 C
-Caspg write (6,*) 'test1',LINE(1:LEN_KEYWORD),':'
-Caspg write (6,*) 'test2',KEYWORD(1:LEN_KEYWORD),':'
-      IF (LINE(1:LEN_KEYWORD) .EQ. KEYWORD(1:LEN_KEYWORD)) THEN
+      IF (LINE(1:LEN_KEYWORD) .EQ. KEYWORD_UPCASE(1:LEN_KEYWORD)) THEN
          KEY_FOUND = .TRUE.
          GO TO 220
       ENDIF
