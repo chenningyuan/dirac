@@ -11,7 +11,7 @@ if(ENABLE_AOOSOC)
         src/aoosoc/atomic_oo_order_so_correction_utils.F90
         src/aoosoc/module_aoosoc_init.F90
         )
-    dirac_test(atomic_x2c_2esoc_models_energy "medium")
+    dirac_test(atomic_x2c_2esoc_models_energy "short")
     dirac_test(atomic_x2c_spinfree_energy "medium")
 else()
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_AOOSOC)
