@@ -1,3 +1,5 @@
+:orphan:
+ 
 
 .. _linking_to_math:
 
@@ -56,15 +58,6 @@ For a sequential compilation you may want to link to the parallel MKL::
 
 The more general solution is to link to the parallel MKL and control the number
 of threads using MKL environment variables.
-
-
-Cray
-----
-
-Cray typically provides own optimized BLAS/LAPACK wrappers.
-For this use the option --cray to disable automatic BLAS/LAPACK detection::
-
-  $ ./setup --fc=ftn --cc=cc --cxx=CC --cray
 
 
 Explicitly specifying BLAS and LAPACK libraries
@@ -154,7 +147,7 @@ Linking to Atlas libraries on Linux Mint
 ----------------------------------------
 
 DIRAC may not be able to detect Atlas BLAS/Lapack
-libraries on Linux Mint because of nonstandard (?) suffix::
+libraries on Linux Mint because of some nonstandard (?) suffix.
 
 After having installed them::
 
@@ -171,7 +164,7 @@ and this::
   $ cd /usr/lib
   $ sudo ln -s liblapack.so.3 liblapack.so
 
-With this the automatic detection of math libraries worked.
+With this the automatic detection of math libraries works.
 
 
 Linking to the ACML library

@@ -1,3 +1,5 @@
+:orphan:
+
 .. _atomic_start_guess:
 
 Atomic start guess

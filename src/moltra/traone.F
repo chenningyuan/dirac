@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -421,6 +421,7 @@ C
 C
       IF (NSTRT(1).NE.NSTRT(2)) THEN
          WRITE (LUPRI,*) ' Ranges for bra and ket are different'
+         WRITE (LUPRI,*) ' NSTRT bra and ket: ',NSTRT(1),NSTRT(2)
          WRITE (LUPRI,*) ' MRCONEE file is not written !!!'
          RETURN
       ENDIF
@@ -1435,6 +1436,7 @@ C
       integer, allocatable :: ibeig(:)
       integer, allocatable :: idxu2g(:,:)
       integer              :: nash_x(1:nfsym)
+      integer              :: orbc
 C
 C
       CALL DZERO(DMO,NORBT*NORBT*NZ)
@@ -1655,6 +1657,7 @@ C
       integer, allocatable :: ibeig(:)
       integer, allocatable :: idxu2g(:,:)
       integer              :: nash_x(1:nfsym)
+      integer              :: orbc
 C
 !     !> read ibeig (info array on boson irreps) from DFCOEF
       allocate(ibeig(norbt),idxu2g(norbt,nrep))

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -51,6 +51,7 @@ module adc_mat
   character*6, public              ::  reladc_md_filediag = ''  !file name of diagonal of matrix, ioldnew=1
   character*6, public              ::  reladc_md_filecnf  = ''  !file name of configuration file
   character*5, public              ::  reladc_md_nmspec   = ''  !file name of spectral output file
+  logical                          ::  reladc_md_isfano   = .false. !is this a fano run or not
 
   real, public, dimension(32,2)    ::  reladc_md_sip_eeigv= 0.0 !upper bound to eigenvalue for analysis
   real, public, dimension(32,2)    ::  reladc_md_dip_eeigv= 0.0 !upper bound to eigenvalue for analysis

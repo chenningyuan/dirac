@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -375,7 +375,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
      &       WORK(KLTTSIU),WORK(KLIABU),
      &       WORK(KLBLUT),
      &       ICISTR,IDC,NSMST,
-     &       LBLK,IAMPACK,ITTSS_ORD)
+     &       LBLK,IAMPACK)
 *
       END DO
 *

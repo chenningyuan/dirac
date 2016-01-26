@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 The scratch directory is the place where DIRAC will write temporary files. At
 the beginning of the run, DIRAC copies input files and the binary into the

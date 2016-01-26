@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -310,7 +310,7 @@ C     JHS
 #include "aosotr.h"
 #include "infpar.h"
 
-      integer, parameter   :: LWORK = 10000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      integer, parameter   :: LWORK = 15000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)         ! and we do not need that much memory in READIN
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
@@ -4834,7 +4834,7 @@ C     ***** Cartesian Coordinates *****
 C     *********************************
 C
       IF (IPREAD .GT. 0) THEN
-         CALL HEADER('Cartesian Coordinates',1)
+         CALL HEADER('Cartesian Coordinates (bohr)',1)
          WRITE (LUPRI,'(A,I3//)')'  Total number of coordinates:',NCOOR
          ICRX = 1
          ICRY = 2
@@ -4877,7 +4877,8 @@ C
 
 !     print also coordinates in xyz format for easy copy-paste-ability
       if (ipread > 0) then
-         call header('Cartesian coordinates xyz format (angstrom)', 1)
+         call header('Cartesian coordinates in XYZ format (angstrom)',
+     &   1)
          write(lupri, '(i5)') nucdep
          write(lupri, *)
          do icent = 1, nucind
@@ -6420,7 +6421,7 @@ C                  ... exit if close and no floating and no point charge
 C
 #ifdef VAR_MPI
 !     print only from one process
-      if (mytid == 1) then
+      if (mytid == 0) then
 #endif
         IF (IPRINT .GE. 0) THEN
 

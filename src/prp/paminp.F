@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2930,20 +2930,23 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck minprp */
-      SUBROUTINE MINPRP(WORK,LWORK)
+      SUBROUTINE MINPRP()
 C***********************************************************************
 C     Calculate specified properties at final, converged geometry
 C     (called when .OPTIMIZE specified if geometry converges)
 C
+      use memory_allocator
 #include "implicit.h"
 #include "dcbxpr.h"
 #include "priunit.h"
 #include "dcbgen.h"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
       LOGICAL FOPEN
 C
       CALL QENTER('MINPRP')
+
+
 C
       NPRPS = 0
 C
@@ -2957,11 +2960,14 @@ C
      &         FILE='AOPROPER')
          END IF
 C
+         call legacy_lwork_get(LWORK)
+         call alloc(WORK,LWORK,id='WORK in MINPRP')
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PRPINP('**PRP F',WORK,LWORK)
          CLOSE(LUCMD)
 C
          CALL ONEGEN(WORK,LWORK)
+         call dealloc(WORK)
 C
 C        Close AOPROPER if it was closed on entry to
 C        MINPRP.

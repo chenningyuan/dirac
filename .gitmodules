@@ -1,9 +1,9 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
-	url = git://repo.ctcc.no/gen1int.git
+	url = https://gitlab.com/bingao/gen1int.git
 [submodule "external/pelib"]
-	path = external/pelib
-	url = git@repo.ctcc.no:pelib.git
+        path = external/pelib
+                url = https://gitlab.com/pe-software/pelib-public.git                
 [submodule "external/unit-tests"]
 	path = external/unit-tests
 	url = https://gitlab.com/dirac/unit-tests.git
@@ -11,3 +11,6 @@
 	path = external/pcmsolver
 	url = https://github.com/PCMSolver/pcmsolver.git
 	branch = release
+[submodule "external/stieltjes"]
+	path = external/stieltjes
+	url = https://gitlab.com/stieltjes/stieltjes.git

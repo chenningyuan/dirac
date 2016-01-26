@@ -15,6 +15,8 @@ echo "Portlang Group compilers activated ! PGI=$PGI"
 ##  my most recent python 2.7.1  ##
 #export PATH=/people/disk2/ilias/bin/python/Python-2.7.1:$PATH
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # set scratch directory on the main node
 export DIRAC_TMPDIR=/home/milias/my_scratch
 
@@ -44,26 +46,46 @@ export DIRTIMEOUT="12m"
 ###############################################
 #      serial DIRAC buildup, Intel MKL        #
 ###############################################
-BUILD_SERIAL=build_intelmkl_i8
 cd $DIRAC
-git clean -f
-git submodule update
-git submodule status
+
+git clean -f -d -x
+
+# take care of submodules
+git submodule update --init --recursive
+
+BUILD_SERIAL=build_intelmkl_i8
 echo -e "\n\n Running serial, dynamic DIRAC buildup in $BUILD_SERIAL"
-#
 if [[ -d "$BUILD_SERIAL" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL"
   /bin/rm -rf $BUILD_SERIAL
 fi
-./pamadm -a --builddir=$BUILD_SERIAL
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc -D BUILDNAME="sivvp-UMB_Intel_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL
+python ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --cmake-options="-D BUILDNAME='UMB_Intel_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF" $BUILD_SERIAL
 cd $BUILD_SERIAL
-python binary_info.py
-ctest -D ExperimentalUpdate  --track Miro
-ctest -D ExperimentalConfigure    --track Miro
-ctest -j2 -D ExperimentalBuild    --track Miro
-ctest -j2 -D ExperimentalTest -R cosci_energy pcm   --track Miro 
-ctest -D ExperimentalSubmit    --track Miro
+ctest -D ExperimentalUpdate  
+ctest -D ExperimentalConfigure    
+ctest -j2 -D ExperimentalBuild  
+ctest -j2 -D ExperimentalTest -R cosci_energy pcm 
+ctest -D ExperimentalSubmit  
+
+# parallel OpenMPI + Intel-MKL
+export PATH=/home/milias/bin/openmpi-1.8.4-intel/bin:$PATH
+export LD_LIBRARY_PATH=/home/milias/bin/openmpi-1.8.4-intel/lib:$LD_LIBRARY_PATH
+BUILD=build_ompi_intelmkl_i8
+echo -e "\n\n Running parallel, dynamic DIRAC buildup in $BUILD"
+cd $DIRAC
+if [[ -d "$BUILD" ]]; then
+  echo "deleting previous build directory $BUILD"
+  /bin/rm -rf $BUILD
+fi
+export DIRAC_MPI_COMMAND="mpirun -np 2"
+python ./setup --mpi --int64 --fc=mpif90 --cc=mpicc --cxx=mpicxx --cmake-options="-D BUILDNAME='UMB_OpenMPI-Intel_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF" $BUILD
+cd $BUILD
+ctest -D ExperimentalUpdate 
+ctest -D ExperimentalConfigure 
+ctest -j2 -D ExperimentalBuild 
+ctest -j2 -D ExperimentalTest -R cosci_energy 
+ctest -D ExperimentalSubmit  
+unset DIRAC_MPI_COMMAND
 
 ##############################################################################
 #          serial,static DIRAC buildup with Intel+MKL
@@ -75,16 +97,14 @@ if [[ -d "$BUILD_SERIAL_STATIC" ]]; then
   echo "deleting previous build directory $BUILD_SERIAL_STATIC"
   /bin/rm -rf $BUILD_SERIAL_STATIC
 fi
-./pamadm -a --builddir=$BUILD_SERIAL_STATIC
-./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static -D BUILDNAME="sivvp-UMB_Intel_mkl_i8_static"  -D DART_TESTING_TIMEOUT=99999 $BUILD_SERIAL_STATIC
+python ./setup --int64 --fc=ifort --cc=icc --cxx=icpc --static  --cmake-options="-D BUILDNAME='UMB_Intel_mkl_i8_static'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF" $BUILD_SERIAL_STATIC
 cd $BUILD_SERIAL_STATIC
-python binary_info.py
-ctest --track Grid   -D ExperimentalUpdate
-ctest --track Grid   -D ExperimentalConfigure
-ctest --track Grid   -D ExperimentalBuild
-ctest  --track Grid  -j2 -D ExperimentalTest -R cosci_energy 
+ctest    -D ExperimentalUpdate
+ctest    -D ExperimentalConfigure
+ctest    -D ExperimentalBuild
+ctest    -j2 -D ExperimentalTest -R cosci_energy 
 #ctest -D ExperimentalTest -R cosci_energy dft
-ctest -D ExperimentalSubmit  --track Grid
+ctest -D ExperimentalSubmit  
 
 #####################################################
 #        serial DIRAC buildup with GNU+mkl
@@ -96,15 +116,13 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8"  -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++  --cmake-options="-D BUILDNAME='UMB_GNU_mkl_i8'  -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_GNU
 cd $BUILD_GNU
-python binary_info.py
-ctest -D ExperimentalUpdate    --track Miro
-ctest -D ExperimentalConfigure    --track Miro
-ctest -j2 -D ExperimentalBuild    --track Miro
-ctest -j2 -D ExperimentalTest -R pcm   --track Miro
-ctest -D ExperimentalSubmit    --track Miro
+ctest -D ExperimentalUpdate    
+ctest -D ExperimentalConfigure   
+ctest -j2 -D ExperimentalBuild   
+ctest -j2 -D ExperimentalTest -R pcm  mp2
+ctest -D ExperimentalSubmit  
 
 #####################################################
 #    serial DIRAC buildup with GNU+mkl-STATIC
@@ -116,15 +134,13 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_mkl_i8-static"  --static -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ --static --cmake-options="-D BUILDNAME='UMB_GNU_mkl_i8-static' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_GNU
 cd $BUILD_GNU
-python binary_info.py
-ctest --track Grid  -D ExperimentalUpdate
-ctest  --track Grid  -D ExperimentalConfigure
-ctest -j2  --track Grid  -D ExperimentalBuild
-ctest -j2  --track Grid  -D ExperimentalTest -R cosci_energy 
-ctest -D ExperimentalSubmit  --track Grid
+ctest   -D ExperimentalUpdate
+ctest   -D ExperimentalConfigure
+ctest -j2   -D ExperimentalBuild
+ctest -j2   -D ExperimentalTest -R cosci_energy
+ctest -D ExperimentalSubmit  
 
 #####################################################
 #        serial DIRAC buildup with GNU
@@ -136,15 +152,13 @@ if [[ -d "$BUILD_GNU" ]]; then
   echo "deleting previous build directory $BUILD_GNU"
   /bin/rm -rf $BUILD_GNU
 fi
-./pamadm -a --builddir=$BUILD_GNU
-./setup --int64 --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME="sivvp-UMB_GNU_ownmath_i8" --blas=builtin --lapack=builtin -D DART_TESTING_TIMEOUT=99999  $BUILD_GNU
+python ./setup --int64 --fc=gfortran --cc=gcc --cxx=g++  --blas=off --lapack=off --cmake-options="-D BUILDNAME='UMB_GNU_ownmath_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_PCMSOLVER=ON -D ENABLE_STIELTJES=OFF"  $BUILD_GNU
 cd $BUILD_GNU
-python binary_info.py
-ctest -D ExperimentalUpdate    --track Miro
-ctest -D ExperimentalConfigure    --track Miro
-ctest -j2 -D ExperimentalBuild    --track Miro
-ctest -j2 -D ExperimentalTest -R cosci_energy --track Miro
-ctest -D ExperimentalSubmit     --track Miro
+ctest -D ExperimentalUpdate 
+ctest -D ExperimentalConfigure 
+ctest -j2 -D ExperimentalBuild
+ctest -j2 -D ExperimentalTest -R mp2
+ctest -D ExperimentalSubmit   
 
 
 #####################################################
@@ -157,16 +171,14 @@ if [[ -d "$BUILD_PGI" ]]; then
   echo "deleting previous build directory $BUILD_PGI"
   /bin/rm -rf $BUILD_PGI
 fi
-./pamadm -a --builddir=$BUILD_PGI
-./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8"  -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+python ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --cmake-options="-D BUILDNAME='UMB_nopcm_PGI_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF" $BUILD_PGI
 cd $BUILD_PGI
-python binary_info.py
-ctest -D ExperimentalUpdate    --track Miro
-ctest -D ExperimentalConfigure    --track Miro
-ctest -j2 -D ExperimentalBuild    --track Miro
+ctest -D ExperimentalUpdate  
+ctest -D ExperimentalConfigure  
+ctest -j2 -D ExperimentalBuild   
 #ctest -D ExperimentalTest -R cosci_energy dft
-ctest -j2 -D ExperimentalTest -R cosci_energy  --track Miro
-ctest -D ExperimentalSubmit    --track Miro
+ctest -j2 -D ExperimentalTest -R cosci_energy  
+ctest -D ExperimentalSubmit   
 
 
 #####################################################
@@ -179,16 +191,13 @@ if [[ -d "$BUILD_PGI" ]]; then
   echo "deleting previous build directory $BUILD_PGI"
   /bin/rm -rf $BUILD_PGI
 fi
-./pamadm -a --builddir=$BUILD_PGI
-./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC -D BUILDNAME="sivvp-UMB_PGI_mkl_i8_static" --static -D DART_TESTING_TIMEOUT=99999 $BUILD_PGI
+python ./setup --int64 --fc=pgf90 --cc=pgcc --cxx=pgCC --static --cmake-options="-D BUILDNAME='UMB_nopcm_PGI_mkl_i8_static' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_PCMSOLVER=OFF -D ENABLE_STIELTJES=OFF" --add-definitions="-D GFORTRAN_ALLOCATOR_WORKAROUND" $BUILD_PGI
 cd $BUILD_PGI
-python binary_info.py
-ctest --track Grid  -D ExperimentalUpdate
-ctest --track Grid  -D ExperimentalConfigure
-ctest --track Grid  -j2 -D ExperimentalBuild
-#ctest -D ExperimentalTest -R cosci_energy dft
-ctest -j2 --track Grid  -D ExperimentalTest -R cosci_energy
-ctest --track Grid  -D ExperimentalSubmit
+ctest   -D ExperimentalUpdate
+ctest   -D ExperimentalConfigure
+ctest   -j2 -D ExperimentalBuild
+ctest -j2  -D ExperimentalTest -R cosci_energy
+ctest  -D ExperimentalSubmit
 
 timestamp1=`date +\%F_\%k-\%M-\%S`; timestamp=${timestamp1// /};
 echo -e "\n\n All buildups finished at "$timestamp

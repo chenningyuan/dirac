@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2014 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 
 ! FILE : krmc/krci_ctl.F
 !
@@ -42,6 +40,7 @@ C                    Added CI keyword RDFOCK. Stefan Knecht October 2007
 C                    Added CI keyword WRTFCK. Stefan Knecht
 C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht 20.11.2007
 C                    Added CI/KRMC keyword IJKLRO. Stefan Knecht
+C                    Added CI keyword MHYP. Malaya Nayak, Timo Fleig 28.08.2013/09.05.2015
 C
 C     Major revision by S. Knecht: Aug 2008
 C
@@ -58,7 +57,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
-      PARAMETER (NTABLE = 45)
+      PARAMETER (NTABLE = 46)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, RESET, LBIT
@@ -92,7 +91,8 @@ C
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
-     &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX'/
+     &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
+     &            '.MHYP  '/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: symmetry_str1
@@ -220,6 +220,7 @@ C     ... in "krciprop.h"
       DODIPMOM_KRCI = .FALSE.
       DOMCANA_KRCI  = .FALSE.
       RUNXPROP      = .FALSE.
+      DOMHYP_KRCI   = .FALSE.
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
@@ -259,7 +260,6 @@ C
         WORD1 = WORD
   100   CONTINUE
             READ (LUCMD, '(A7)') WORD
-            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -271,7 +271,7 @@ C
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41,42,43,44,45)
+     &                     41,42,43,44,45,46)
      &                     , I
                   END IF
   200          CONTINUE
@@ -831,6 +831,12 @@ C&&& .SVRONX  -- save reordered NOs rather than the original NOs + active orbita
                save_reordered_nos_krci = .true.
                READ(LUCMD,*) (IKRCI_SVRONO(I),I=1,NFSYM)
                GO TO 100
+   46          CONTINUE
+C&&&  MHYP  : calculate magnetic hyperfine structure constants
+C           : alpha X electric field matrix elements
+               doprop_krci   = .true.
+               domhyp_krci = .true.
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1204,6 +1210,7 @@ C       subgroup notation
      &     ' one-electron operators: '
         if(dooscillst.or.dodipmom_krci)call def_oscill(0)
         if(dojzexp)                    call def_omegaquant(0)
+        if(domhyp_krci)                call def_mhyp(work,lwork,NTEST)
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0
@@ -1221,6 +1228,10 @@ C
         write(lupri,'(/a)') ' * Calculation of permanent dipole'//
      &                     'moments of electronic states'
       end if
+      if(domhyp_krci)then
+         write(lupri,'(/a)') ' * Calculation of Hyperfine Constants'//
+     &                     ' Hyperfine Constants matrix elements'
+       end if
       IF(DOJZEXP) THEN
         WRITE(LUPRI,'(/A)') ' * Determine Omega quantum number for'//
      &                      ' electronic eigenstates'
@@ -1837,11 +1848,7 @@ C     remove potential "garbage" from imaginary part...
 
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
 
-#ifdef MOD_UNRELEASED
-      call write_fcidump_file(WORK(KMUUUU),WORK(KFCACM),ECORE)
-#else
       call quit('DMRG interface not available in this Dirac version')
-#endif
 C
       CALL MEMREL('fcidump_driver',WORK,1,KFRSAV,KFREE,LFREE)
 C

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2564,7 +2564,7 @@ C      CALL GASDIAT(VECIN,ISSM,ISSPC,LUSC3,ECOREX,ICISTR,I12)
 C?      WRITE(6,*) ' HINTV : MXITLE = ',MXITLE
         CALL MINGCG(MV8,LUX,LUSC34,LUSC35,LUSC3,VECIN,VECOUT,
      &              MXIT_LOC,CONVER,TEST,SHIFT,ERROR,NDIM,
-     &              LUPROJ,LUPROJ2,ILNPRT)
+     &              LUPROJ,ILNPRT)
         CALL REWINE(LUX,-1)
         CALL FRMDSC(VECOUT,NDIM,-1,LUX,IMZERO,IAMPACK)
 *

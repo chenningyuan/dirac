@@ -18,6 +18,7 @@ general:
 machine:
     environment:
 # set environment variables to make MPI and tests work
+        CTEST_PROJECT_NAME: "DIRACext"
         DIRAC_MPI_COMMAND: "mpirun -np 2"
         PATH: $HOME/open_mpi/bin:$PATH
         LD_LIBRARY_PATH: $HOME/open_mpi/lib:$LD_LIBRARY_PATH
@@ -44,11 +45,6 @@ dependencies:
 # check if integer size is correct - should be 8
         - echo "Fortran MPI Integer size is $(ompi_info -a | grep 'Fort integer size') - should be equal to 8"
         
-# update submodules
-checkout:
-    post:
-        - git submodule update --init --recursive
-
 test:
     pre:
 # check our environment variables
@@ -62,8 +58,12 @@ test:
         - lscpu
     override:
 # configure, build optimized code and run tests (Dirac 64-bit with OpenMPI and documentation)
-        - python ./pamadm -a --builddir=build_circleci_mpi
-        - python ./setup -D BUILDNAME="open_mpi.gnu.i8.atlas-circle-ci" -D DART_TESTING_TIMEOUT=99999 --int64 --mpi --blas=/usr/lib/atlas-base/atlas/libblas.so.3gf --lapack=builtin build_circleci_mpi
+        #- git clone git@gitlab.com:dirac/unit-tests.git     external/unit-tests
+        #- git clone https://gitlab.com/dirac/unit-tests.git external/unit-tests # Woorks !
+        #- git clone git@github.com:PCMSolver/pcmsolver.git  external/pcmsolver # Woorks !
+        #- git clone git@gitlab.com:stieltjes/stieltjes.git  external/stieltjes  # does not work !
+        - git submodule update --init --recursive
+        - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --blas=off --lapack=off  --cmake-options="-D BUILDNAME='open_mpi.i8-circle-ci' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_circleci_mpi
 # build with make, build with ctest makes impossible to submit more test commands into one entry on dashboard
         - make -j $N_PROC: { pwd: build_circleci_mpi }
 # ldd - show dirac.x dependencies

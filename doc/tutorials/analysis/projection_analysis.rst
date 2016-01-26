@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ===================
 Projection analysis
 ===================
@@ -42,7 +45,7 @@ For projection analysis, arbitrary fragments can in principle be used. There is,
 in that DIRAC can only do analysis in terms of fragments complying to the molecular point group. For instance, 
 the two hydrogens in water are related by symmetry in the full :math:`C_{2v}` molecular point group. They then have 
 to be treated as a single fragment, or they can be separated by lowering the symmetry. Starting from DIRAC14 
-projection analysis can be carried out in terms of individual atoms using the :ref:`.ATOMS` keyword, as shown in 
+projection analysis can be carried out in terms of individual atoms using the :ref:`PROJECTION_.ATOMS` keyword, as shown in 
 the example below.
 
 ------------------
@@ -53,7 +56,7 @@ Introduction
 ------------
 
 As a first simple example we shall consider the methane molecule.
-The molecular input file ``CH4.xyz`` is
+The molecular input file ``CH4.xyz`` (:download:`download <CH4.xyz>`) is
 
 .. literalinclude:: CH4.xyz
 
@@ -61,7 +64,7 @@ Suppose that we have run a DFT(PBE) calculation using::
 
    pam --inp=PBE  --mol=CH4.xyz --outcmo
 
-where we keep the coefficients and the menu file ``PBE.inp`` is
+where we keep the coefficients and the menu file ``PBE.inp`` (:download:`download <PBE.inp>`) is
 
 .. literalinclude:: PBE.inp
 
@@ -78,21 +81,10 @@ of the individual atomic orbitals (including :math:`m_j` quantum number). We acc
    pam --inp=H  --mol=H --get "DFACMO=ac.H"
    pam --inp=C  --mol=C --get "DFACMO=ac.C"
 
-with corresponding input files ``H.inp``, 
-
-.. literalinclude:: H.inp 
-
-``H.mol``, 
-
-.. literalinclude:: H.mol
-
-``C.inp``
-
-.. literalinclude:: C.inp 
-
-and ``C.mol``
-
-.. literalinclude:: C.mol
+with corresponding input files ``H.inp`` (:download:`download <H.inp>`),
+``H.mol`` (:download:`download <H.mol>`), 
+``C.inp`` (:download:`download <C.inp>`),
+and ``C.mol`` (:download:`download <C.mol>`).
 
 As a final preparation we make symbolic links to the needed coefficient files::
 
@@ -103,7 +95,7 @@ As a final preparation we make symbolic links to the needed coefficient files::
 Running the analysis
 --------------------
 
-We are now ready for the projection analysis itself. We prepare the input file ``prj.inp``
+We are now ready for the projection analysis itself. We prepare the input file ``prj.inp`` (:download:`download <prj.inp>`)
 
 .. literalinclude:: prj.inp
 
@@ -136,8 +128,8 @@ and then, most importantly, the gross population of the polarization contributio
 is small and perfectly acceptable. If it becomes too large the analysis looses meaning because it 
 impies that significant electron density has not been assigned to any fragment. In the case of
 significant polarization contribution one can either increase the number of atomic orbitals used
-in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`.POLREF` 
-keyword which activates `Intrinsic Atomic Orbitals (IAOs) <http://doi.org/10.1021/ct400687b>`_  , 
+in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`PROJECTION_.POLREF` 
+keyword which activates *Intrinsic Atomic Orbitals (IAOs)*, :cite:`Knizia2013`, 
 thus eliminating completely the polarization contribution. We then get::
 
   * Total gross contributions:
@@ -217,6 +209,20 @@ and analogously for Kramers partner 2, from which we get the detailed decomposit
 orbital. We find that this molecular orbital is composed of the carbon :math:`2p_{1/2}` orbital and
 the hydrogen :math:`1s` orbitals.
 
+
+Exercises
+---------
+
+1. What is the effect of increasing the C-H bond distance on the atomic configurations of the C,H atoms in the methane molecule and 
+   on the atomic charges of the constituent atoms ? Collect calculated data in a table.
+
+2. How different basis sets affect the atomic configurations of the C,H atoms in the methane molecule and 
+   the atomic charges of the same constituent atoms ?
+
+3. Investigate the effect of various DFT functionals (see :ref:`*DFT`) on the atomic configurations of the C and H atoms 
+   in the methane molecule and on atomic charges of these constituent atoms.
+
+
 -----------------
 Example 2: Uranyl
 -----------------
@@ -226,7 +232,7 @@ Introduction
 
 We next turn to a molecule with a heavy atom and a more complicated electronic structure, namely uranyl 
 :math:`UO_2^{2+}`. Here the two oxygens are related by symmetry, and so one would at first consider 
-running the projection analysis with lower (or no) symmetry or using the :ref:`.ATOMS` keyword, as 
+running the projection analysis with lower (or no) symmetry or using the :ref:`PROJECTION_.ATOMS` keyword, as 
 in the methane example above. However, we can reduce the symmetry from :math:`D_{\infty h}` to :math:`C_{\infty v}` 
 by introducing a ghost center. Our molecular input file then looks like
 
@@ -312,7 +318,7 @@ As in the methane case above we first look at the polarization contribution::
       AFO2XX               8.3098   E -     8.3098   P -     0.0000
       Polarization:     0.3169
 
-We see that it is more sizable than before. If we eliminate the polarization contribution using the :ref:`.POLREF` keyword, we obtain::
+We see that it is more sizable than before. If we eliminate the polarization contribution using the :ref:`PROJECTION_.POLREF` keyword, we obtain::
 
    * Total gross contributions:
       AFUXXX              89.1586   E -    89.1586   P -     0.0000

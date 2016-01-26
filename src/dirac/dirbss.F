@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -5521,8 +5521,7 @@ C      ... diagonalize the H2c in MO(ee) basis !
        IF (DOJACO) THEN
 !        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
-     &                  EIG(IEIG),1,1,0,TBUF(IH2MO),
-     &                  WORK(KFREE),LFREE)
+     &                  EIG(IEIG),1,1,0,TBUF(IH2MO))
        ELSE
         CALL QDIAG(NZ,NESH(I),TMAT(IH2MO),NESH(I),NESH(I), 
      &             EIG(IEIG),1,          

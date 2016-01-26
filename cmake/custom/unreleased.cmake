@@ -1,0 +1,16 @@
+cmake_dependent_option(ENABLE_UNRELEASED "Enable unreleased functionality" ON
+                       "NOT IS_EXPORTED_TARBALL" OFF)
+
+if(ENABLE_UNRELEASED)
+    add_definitions(-DMOD_UNRELEASED)
+    dirac_test(blockd_twocomp "")
+    dirac_test(cosci_energy_blockd "")
+    dirac_test(fde_export_density "")
+    dirac_test(fde_interaction_energy "")
+    dirac_test(weak_interactions "")
+    dirac_test(fscc_intensities "")
+    dirac_test(dft_overlap_diagnostic "")
+    dirac_test(dft_minnesota "")
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_UNRELEASED)
+endif()

@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 MP2 sample inputs
 =================
 
