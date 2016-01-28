@@ -39,7 +39,10 @@ A sample calculation of NMR shielding tensor within FDE
 =======================================================
 
 We will consider a simple system of SeH\ :sub:`2`\ - H\ :sub:`2`\ O, in which SeH\ :sub:`2`\ 
-constitutes an active subsystem (subsystem I) and H\ :sub:`2`\ O\ is an environment (subsystem II). 
+constitutes an active subsystem (subsystem I) and H\ :sub:`2`\ O\ is an environment (subsystem II):
+
+.. image:: h2se_h2o.jpg
+ 
 The computational protocol is different depending on whether the coupling between two
 subsystems is included or not (through the term dependent on :math:`w_{emb}^{I,II}`).
 To avoid confusion, we will describe these two protocols separately.
@@ -56,6 +59,19 @@ Calculations without the FDE coupling terms
 -------------------------------------------
 
 We will show how to include only the first two terms in the property gradient.
+
+Before launching any calculations, one should think of the numerical grid that will be used
+for the system. In this tutorial, we use a coarse grid generated in DIRAC in preceeding calculations
+on SeH\ :sub:`2`\ - H\ :sub:`2`\ O supermolecule.
+In this case, the numerical grid was exported on a ``numerical_grid`` file which is divided into 
+batches of points. However, FDE module is able to read only the continuous list of grid points,
+therefore such ``numerical_grid`` file has to be reformatted.
+This can be done by the script, which can be found in ``utils`` directory of DIRAC:
+``dft_to_fde_grid_convert.py``, which should be used on a ``numerical_grid`` file exported from DIRAC:
+
+.. literalinclude:: grid_convert
+
+The original grid file is saved as ``numerical_grid.ORIG``
 
 Step 1: SCF calculation on the subsystem II
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,16 +93,6 @@ which are copies of a numerical grid file
 After this calculation, the ``GRIDOUT`` file will be updated: additional columns on that file
 correspond to the electrostatic potential and the density of subsystem II
 calculated in each of grid points on that file.
-
-Often, in FDE calculations, one uses the numerical grid which was generated for the supermolecular system.
-If the numerical grid was generated in the DIRAC software, then it will be divided into batches of points.
-However, FDE module is able to read only the continuous list of grid points, therefore such numerical grid has
-to be reformatted. This can be done by the script, which can be found in ``utils`` directory of DIRAC:
-``dft_to_fde_grid_convert.py``, which should be used on a ``numerical_grid`` file exported from DIRAC:
-
-.. literalinclude:: grid_convert
-
-The original grid file is saved as ``numerical_grid.ORIG``
 
 Step 2: SCF and response calculation on the subsystem I
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,63 +142,76 @@ The menu file ``getfrozenpert.inp`` reads:
 ...TODO gosia
 
 
-A sample calculation of magnetically-induced current density within FDE
-=======================================================================
 
-Here we will demonstrate how to calculate and visualize the first-order current density induced by magnetic field (see :cite:`Bast2009vis`):
 
-.. math::
+Magnetically-induced current density and property densities within FDE
+======================================================================
 
-    j^{B} = -ec \sum_i \left\(\psi_i^B \alpha \psi_i  + \psi_i \alpha \psi_i^B\right)
+The tutorial on visualization methods in DIRAC is available on this website (add link).
+Therefore here we will only show how to apply these mehods to an analysis of the magnetically-induced current
+density and the NMR shielding density (theory described in :cite:`Bast2009vis`) calculated within FDE.
 
-with the first-order perturbed molecular orbitals defined as (see :cite:`Ilias2009`):
-
-.. math::
-
-    \psi_i^{B} = c_{\mu i}\omega_{\mu}^B + \psi_p T_{pi}^B -\psi_{a}\kappa_{ai}^B
-
-We will also show how to visualize the NMR shielding density:
-
-.. math::
-
-    \sigma^K = -\frac{1}{c^2} \int dr \frac{1}{r_K^3} (r_K \times j^B)
-
-with the use of the magnetically-induced current density.
-We will focus on these properties for subsystem I.
-
-In order to get an access to these properties, we should perform SCF and response calculations,
-in steps as described above. The only change is to retrieve appropriate files from the final response 
-calculations on subsystem I: ``PAMXVC``, ``TBMO`` and ``DFCOEF`` files.
-The ``pam`` command should be following:
+As described in the visualization tutorial, in order to calculate and visualize the magnetically induced current
+density and related properties, one should start with SCF and response calculations (in steps presented above).
+The only change is to retrieve appropriate files from the final response 
+calculations on an active subsystem: ``PAMXVC``, ``TBMO`` and ``DFCOEF``.
+The ``pam`` command used in response calculations should then be following:
 
 .. literalinclude:: response_vis.run
 
-First, we should identify the response vectors on the ``PAMXVC`` file, by using the following command:
+Next step is choosing one component of magnetic field as a perturbation and identifying the corresponding response vectors
+on the ``PAMXVC`` file, by using the following command:
 
 .. literalinclude:: pamxvc_cmd
 
-where ``rspread.x`` can be found in the DIRAC's ``build`` directory.
-An example output could be analogous to this one:
+where ``rspread.x`` executable can be found in the DIRAC's ``build`` directory.
 
-..TODO
-
-The input which allows to calculate and plot the magnetically-induced current density can be as follows:
+Below we will show an examplary input prepared to calculate the perturbed current density induced by the ``y``-component 
+of an external magnetic field, with London atomic orbitals:
 
 .. literalinclude:: vis_j.inp
 
-where the perturbed current density will be calculated in a plane of SeH2 molecule (for full list of possibilities see :ref:`**VISUAL` and the VISUAL - tutorial).
+where the perturbed current density will be plotted in a plane of SeH2 molecule
+(for full list of possibilities see :ref:`**VISUAL` and the VISUAL - tutorial).
 And the corresponding ``pam`` command:
 
 .. literalinclude:: vis_j.run
 
 From this calculation, we retrieve files ``plot.*``, which can be visualized in any plotting software.
-In order to see the effect of the use of FDE, one may substract the plot calculated for SeH2 with environment accounted
-for by FDE scheme from the plot calculated for an isolated SeH2 molecule.
-As a result we get:
 
-..TODO
+Analogously, plots of the NMR shielding density can be done. For instance, in order to plot the ``xx``-component
+of the NMR shielding tensor of Se atom, one could use the following input:
+
+.. literalinclude:: vis_shield_xx_se.inp
+
+with the corresponding ``pam`` command:
+
+.. literalinclude:: vis_shield_xx_se.run
+
+The files ``plot.*`` should be saved for plotting.
+
+These plots can be used in analysis of FDE contributions. For example, one can calculate the plot of an active subsystem
+in three different settings: as an isolated system, with environment accounted for by FDE method and with environment
+accounted for in a supermolecular way.
+The scripts available in the DIRAC ``utils`` directory can be used to add and substract two plots.
+
+Below, we show an examplary plots of a property in an isolated subsystem and two differential plots, calculated as
+fde-isolated and supermolecule-isolated...
+For a magnetically induced current density in SeH2 plane:
+
+And for a NMR shielding density of Se atom:
 
 
+The NMR shielding density integrated over all space equals to the value of the corresponding component of the NMR shielding
+tensor. It is also possible to determine its value in any point in space, what is useful when calculating NICS values.
+We may for instant try to determine the value of the ``xx``-component of the NMR shielding tensor of Se atom in place
+of H atom from H2O molecule
+
+
+Tips:
+-----
+- The grid for 3d plot is generated specifically for a molecular system. Therefore in order to add or substract two plots, the
+ user should pay attention to do so on the same grids. For example, in order to do the differential plot of a property density between the supermolecule and the isolated subsystem, the easiest is to add ghost atoms to the latter corresponding to an environment, which is present in a supermolecular case.
 
 
 
