@@ -490,20 +490,40 @@ contains
                   end if
                end if
 
-               rx = px - cord(1, visual_cfg_ref_nucleus(imat))
-               ry = py - cord(2, visual_cfg_ref_nucleus(imat))
-               rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
-
-               f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
-
-               if (visual_cfg_property(imat) == iq_ndipx) then
-                  result(0) = result(0) + f*(ry*v(3) - rz*v(2))
-               end if
-               if (visual_cfg_property(imat) == iq_ndipy) then
-                  result(0) = result(0) + f*(rz*v(1) - rx*v(3))
-               end if
-               if (visual_cfg_property(imat) == iq_ndipz) then
-                  result(0) = result(0) + f*(rx*v(2) - ry*v(1))
+!              we either calculate the NMR shielding of a given nucleus
+!              or a NICS value in a given point
+               if (visual_cfg_nics) then
+                  rx = px - cord(1, visual_cfg_nics_origin(imat))
+                  ry = py - cord(2, visual_cfg_nics_origin(imat))
+                  rz = pz - cord(3, visual_cfg_nics_origin(imat))
+                  
+                  f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
+                  
+                  if (visual_cfg_property(imat) == iq_ndipx) then
+                     result(0) = result(0) + f*(ry*v(3) - rz*v(2))
+                  end if
+                  if (visual_cfg_property(imat) == iq_ndipy) then
+                     result(0) = result(0) + f*(rz*v(1) - rx*v(3))
+                  end if
+                  if (visual_cfg_property(imat) == iq_ndipz) then
+                     result(0) = result(0) + f*(rx*v(2) - ry*v(1))
+                  end if
+               else
+                  rx = px - cord(1, visual_cfg_ref_nucleus(imat))
+                  ry = py - cord(2, visual_cfg_ref_nucleus(imat))
+                  rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
+                  
+                  f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
+                  
+                  if (visual_cfg_property(imat) == iq_ndipx) then
+                     result(0) = result(0) + f*(ry*v(3) - rz*v(2))
+                  end if
+                  if (visual_cfg_property(imat) == iq_ndipy) then
+                     result(0) = result(0) + f*(rz*v(1) - rx*v(3))
+                  end if
+                  if (visual_cfg_property(imat) == iq_ndipz) then
+                     result(0) = result(0) + f*(rx*v(2) - ry*v(1))
+                  end if
                end if
             end if
 

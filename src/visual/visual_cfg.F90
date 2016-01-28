@@ -116,6 +116,9 @@ module visual_cfg
    logical,       public :: visual_cfg_radial             = .false.
    logical,       public :: visual_cfg_force_small_ao     = .false.
 
+   logical,       public :: visual_cfg_nics              = .false.
+   real(8),       public :: visual_cfg_nics_origin(3)    = 0.0d0
+
    logical,      public :: visual_cfg_london               = .false.
    logical,      public :: visual_cfg_london_skip_kappa    = .false.
    logical,      public :: visual_cfg_london_skip_direct   = .false.

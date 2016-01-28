@@ -412,6 +412,13 @@
                             visual_cfg_gauge_origin(3))
       end if
 
+      if (kw_matches(word, '.NICS  ')) then
+         visual_cfg_nics = .true.
+         call kw_read(word, visual_cfg_nics_origin(1), &
+                            visual_cfg_nics_origin(2), &
+                            visual_cfg_nics_origin(3))
+      end if
+
       if (kw_matches(word, '.RADIAL')) then
          visual_cfg_radial = .true.
       end if
