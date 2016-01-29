@@ -210,6 +210,32 @@ keyword(ESPNRHO)
 Compute the nuclear part of the electrostatic potential times density.
 
 
+keyword(NDIPX)
+
+Compute the NMR shielding density, with the "X"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NDIPY)
+
+Compute the NMR shielding density, with the "Y"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NDIPZ)
+
+Compute the NMR shielding density, with the "Z"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NICS )
+
+Compute the NMR shielding density in a selected point in space. Is used to calculate NICS.
+Example::
+
+  .NICS
+   1.2 -1.0 2.0
+
+will calculate the NMR shielding in point (1.2, -1.0, 2.0). This keyword can be used only with one of: NDIPX, NDIPY, NDIPZ keywords.
+
+
 keyword(GAUGE)
 
 Specify gauge origin. Example::
