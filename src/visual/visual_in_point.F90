@@ -491,7 +491,8 @@ contains
                end if
 
 !              we either calculate the NMR shielding of a given nucleus
-!              or a NICS value in a given point
+!              or a "NICS" value in a given point
+!              (for a true NICS value multiply by "-1")
                if (visual_cfg_nics) then
                   rx = px - cord(1, visual_cfg_nics_origin(imat))
                   ry = py - cord(2, visual_cfg_nics_origin(imat))
