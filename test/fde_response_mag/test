@@ -9,20 +9,22 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-f = Filter()
-
-f.add(from_string = '@            isotropic shielding',
-      num_lines   = 7,
-      rel_tolerance   = 0.002)
-
-
-# no freeze-thaw
-# --------------
-
 # import frozen density and update embedding potential
 # ----------------------------------------------------
 shutil.copy('FROZEN.save', 'FROZEN')
 shutil.copy('numerical_grid.save', 'numerical_grid')
+
+f = Filter()
+f.add(from_string = '  FDE active subsystem contributions',
+      num_lines   = 15,
+      rel_tolerance   = 1.0e-5)
+
+test.run(['dc_lda_updatevemb_scf.inp'],                  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --outcmo')
+
+f = Filter()
+f.add(from_string = '@            isotropic shielding',
+      num_lines   = 7,
+      rel_tolerance   = 0.002)
 
 # only embedding potential (v)
 test.run(['ll_lda_updatevemb_shield_g0_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
@@ -34,7 +36,7 @@ test.run(['ll_lda_updatevemb_shield_g1_v_w11.inp'],      ['h2o-1.xyz'], f, args=
 #test.run(['ll_lda_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
 #test.run(['ll_lda_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
 
-shutil.copy('DFCOEF.dc', 'DFCOEF')
+#shutil.copy('DFCOEF.dc', 'DFCOEF')
 #test.run(['dc_lda_updatevemb_scf.inp'],                  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --outcmo')
 test.run(['dc_lda_updatevemb_shield_g0_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_updatevemb_shield_g1_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
