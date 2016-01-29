@@ -261,6 +261,11 @@ Another example (nitrogen atom)::
 keyword(LONDON)
 
 Activate LAO contribution.
+This keyword is followed by a letter "X", "Y" or "Z" indicating the component of an external perturbing magnetic field.
+For example::
+
+  .LONDON
+   X
 
 
 keyword(NONE)
