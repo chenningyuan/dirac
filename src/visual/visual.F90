@@ -141,6 +141,7 @@ contains
     end if
 
     write(LUPRI,'(/,2x,a)') '*** Visualisation module ***'
+    call write_visual_cfg()
 
 !   get coefficients
 
@@ -506,7 +507,7 @@ contains
       real(8)              :: vx(3), vx_norm
       real(8)              :: vy(3), vy_norm
       real(8)              :: vz(3), vz_norm
-      real(8)              :: r(3), v(3), s
+      real(8)              :: r(3), v(3), w(0:3), s
       integer              :: lunit_2d_scalar
       integer              :: lunit_2d_vector
       integer              :: lunit_2d_flow
@@ -516,6 +517,7 @@ contains
       integer              :: lunit_3d_vector_vtk
       integer              :: lunit_line_scalar
       integer              :: lunit_line_vector
+      integer              :: lunit_3d_gridimp
       real(8), allocatable :: temp(:, :)
       real(8), allocatable :: temp2(:, :, :, :)
       real(8), allocatable :: res(:)
@@ -540,6 +542,7 @@ contains
       lunit_3d_vector_vtk = 20
       lunit_line_scalar   = 21
       lunit_line_vector   = 22
+      lunit_3d_gridimp    = 23
 
       if (visual_cfg_2d) then
          open(lunit_2d_scalar,           &
@@ -559,7 +562,8 @@ contains
               form   = 'formatted')
       end if
 
-      if (visual_cfg_3d .or. visual_cfg_3d_fast) then
+      if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp) then
+!gosia: if visual_cfg_3d_gridimp then *cube file makes sense only for uniform grids
          open(lunit_3d_cube,           &
               file   = 'plot.3d.cube', &
               status = 'new',          &
@@ -716,6 +720,43 @@ contains
 
             end do
          end do
+      end if
+
+      if (visual_cfg_3d_gridimp) then
+!        read points from visual_cfg_3d_gridfil file
+         open(lunit_3d_gridimp,               &
+              file   = visual_cfg_3d_gridfil, &
+              status = 'old',                 &
+              form   = 'formatted',           &
+              access = 'sequential')
+         rewind(lunit_3d_gridimp)
+
+         do 
+            read(lunit_3d_gridimp, *, end=99) r(1), r(2), r(3)
+            
+
+            call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                       D,                  &
+                                       D_0,                &
+                                       r(1),               &
+                                       r(2),               &
+                                       r(3),               &
+                                       ao,                 &
+                                       buffer,             &
+                                       w)
+
+            write(lunit_3d_vector, '(6e13.5)') &
+               r(1:3),                         &
+               w(1:3)
+            write(lunit_3d_scalar, '(4e13.5)') &
+               r(1:3),                         &
+               w(0)
+
+         end do
+ 99      continue
+
+         close(lunit_3d_gridimp, status='keep')
+
       end if
 
       if (visual_cfg_3d .or. visual_cfg_3d_fast) then
@@ -1184,6 +1225,34 @@ contains
                          - f*h*response_vector(is, iz)
       end do
     end do
+
+  end subroutine
+
+  subroutine write_visual_cfg()
+
+     write(lupri, *)    '--------------------------------------------------------------------------------------'
+
+     if (visual_cfg_3d) then
+        write(lupri, *) 'Visualization in 3d done with the following setiings:'
+        write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
+                                                                   visual_cfg_ncube(2), &
+                                                                   visual_cfg_ncube(3) 
+        write(lupri, *) 'Space around the cube file is ', visual_cfg_add_3d
+     end if
+     if (visual_cfg_3d_fast) then 
+        write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential, &
+                         done with the following setiings:'
+        write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
+                                                                   visual_cfg_ncube(2), &
+                                                                   visual_cfg_ncube(3) 
+        write(lupri, *) 'Space around the cube file is ', visual_cfg_add_3d
+     end if
+
+     if (visual_cfg_3d_gridimp) then
+        write(lupri, *) 'Visualization in 3d done on the grid imported from file ', visual_cfg_3d_gridfil
+     end if
+
+     write(lupri, *)    '--------------------------------------------------------------------------------------'
 
   end subroutine
 
