@@ -562,8 +562,7 @@ contains
               form   = 'formatted')
       end if
 
-      if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp) then
-!gosia: if visual_cfg_3d_gridimp then *cube file makes sense only for uniform grids
+      if (visual_cfg_3d .or. visual_cfg_3d_fast) then
          open(lunit_3d_cube,           &
               file   = 'plot.3d.cube', &
               status = 'new',          &
@@ -578,6 +577,22 @@ contains
               file   = 'plot.3d.vector.vtk', &
               status = 'new',                &
               access = 'sequential',         &
+              form   = 'formatted')
+         open(lunit_3d_scalar,           &
+              file   = 'plot.3d.scalar', &
+              status = 'new',            &
+              access = 'sequential',     &
+              form   = 'formatted')
+      end if
+
+      if (visual_cfg_3d_gridimp) then
+!        gosia: if we import grid on which we plot, then don't do *cube or *vtk files
+!        as this grid is not necessarily uniform.
+!        If it is uniform, then use the script lines_to_vtk.py or lines_to_cube.py in DIRAC's utils directory 
+         open(lunit_3d_vector,           &
+              file   = 'plot.3d.vector', &
+              status = 'new',            &
+              access = 'sequential',     &
               form   = 'formatted')
          open(lunit_3d_scalar,           &
               file   = 'plot.3d.scalar', &
@@ -733,7 +748,6 @@ contains
 
          do 
             read(lunit_3d_gridimp, *, end=99) r(1), r(2), r(3)
-            
 
             call get_quantity_in_point(visual_cfg_nr_dmat, &
                                        D,                  &
@@ -989,8 +1003,10 @@ contains
       if (visual_cfg_2d) close(lunit_2d_flow,   status = 'keep')
 
       if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_cube,       status = 'keep')
-      if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_scalar,     status = 'keep')
-      if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_vector,     status = 'keep')
+      if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp) &
+                                                 close(lunit_3d_scalar,     status = 'keep')
+      if (visual_cfg_3d .or. visual_cfg_3d_fast .or. visual_cfg_3d_gridimp) &
+                                                 close(lunit_3d_vector,     status = 'keep')
       if (visual_cfg_3d .or. visual_cfg_3d_fast) close(lunit_3d_vector_vtk, status = 'keep')
 
       deallocate(q)
