@@ -1,3 +1,22 @@
+:orphan:
+
+16.0 (scheduled for 016-12-12 ?)
+---------------------------------
+
+- calculation of dipole intensities together with the excitation energies in Fock space CC.
+
+(Do not change anything below this text on the master branch,
+the lines below should only be changed on the release branch.)
+
+-------------------------------------------------------------------------------------------------------
+
+
+15.1 (2016-xx-xx)
+-----------------
+
+- added OPENBLAS in search list for blas and lapack libraries
+- made keyword .X2Cmmf case insensitive
+- BUGfix for spinfree X2Cmmf and linear symmetry.
 
 
 15.0 (2015-12-16)

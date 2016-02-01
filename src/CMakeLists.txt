@@ -87,6 +87,7 @@ set(FIXED_FORTRAN_SOURCES
     src/dirrci/cigosc.F
     src/dirrci/cimain.F
     src/ecp/recp1.F
+    src/ecp/recp_lnk.F
     src/embedding/emb_quit.F
     src/embedding/get_vemb_mat.F
     src/gp/finesort_scheme6.F
@@ -215,21 +216,6 @@ set(FIXED_FORTRAN_SOURCES
     src/reladc/adcdiag.F
     src/reladc/adcexci.F
     src/reladc/adcsort.F
-    src/relccsd/ccdriv.F
-    src/relccsd/cceqns.F
-    src/relccsd/ccfspc.F
-    src/relccsd/ccgenp.F
-    src/relccsd/ccgetv.F
-    src/relccsd/ccgrad.F
-    src/relccsd/ccintm.F
-    src/relccsd/ccints.F
-    src/relccsd/ccmain.F
-    src/relccsd/ccpam.F
-    src/relccsd/ccrpa.F
-    src/relccsd/ccsort.F
-    src/relccsd/ccxblas.F
-    src/relccsd/quit.F
-    src/relccsd/waio.F
     PARENT_SCOPE
     )
 
@@ -257,7 +243,6 @@ set(FREE_FORTRAN_SOURCES
     src/ecp/recp_inp_print.F90
     src/ecp/recp_inp_read.F90
     src/ecp/recp_ipt.F90
-    src/ecp/recp_lnk.F
     src/ecp/recp_ntr.F90
     src/ecp/recp_one.F90
     src/ecp/recp_one_stvcz.F90
@@ -362,7 +347,6 @@ set(FREE_FORTRAN_SOURCES
     src/reladc/adc_fano_routines.F90
     src/reladc/adc_mat.F90
     src/reladc/adcutil.F90
-    src/relccsd/relcc_cfg.F90
     src/visual/integration.F90
     src/visual/visual.F90
     src/visual/visual_cfg.F90
@@ -410,6 +394,9 @@ set(FREE_FORTRAN_SOURCES
     src/xcint/xc_mpi.F90
     src/xcint/xc_response.F90
     src/xcint/xcint_main.F90
+    src/gp/xml/xml_file.F90
+    src/gp/xml/xml_structure.F90
+    src/gp/xml/xml_parser.F90
     PARENT_SCOPE
     )
 
@@ -424,7 +411,6 @@ set(C_SOURCES
     src/gp/trace.c
     src/krmc/gendet.c
     src/lucita/flush_stdout.c
-    src/relccsd/ccunix.c
     src/cfun/emb-functional.c
     src/cfun/fun-becke.c
     src/cfun/fun-cam.c
@@ -451,7 +437,6 @@ set(C_SOURCES
     src/cfun/fun-slater.c
     src/cfun/fun-srpbec.c
     src/cfun/fun-srvwn5.c
-    src/cfun/fun-tester.c
     src/cfun/fun-vwn.c
     src/cfun/functionals.c
     src/cfun/general.c
