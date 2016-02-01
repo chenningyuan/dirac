@@ -8,7 +8,6 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(DIRAC)
 
 # do not rebuild if rules (compiler flags) change
-# edh: In this branch GEN1INT is ON!
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # if CMAKE_BUILD_TYPE undefined, we set it to Debug
@@ -71,6 +70,7 @@ include(workarounds)
 include(external)
 include(xcfun)
 include(pcm)
+include(gen1int)
 include(pelib)
 include(interest)
 include(relccsd)
