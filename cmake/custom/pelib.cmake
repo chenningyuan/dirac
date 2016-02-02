@@ -59,7 +59,7 @@
 #    endif()
 #   set(EXTERNAL_LIBS ${PROJECT_BINARY_DIR}/external/lib/libpelib.a ${EXTERNAL_LIBS})
 #endif()
-=======
+#=======
 option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
 
 if(ENABLE_PELIB)
