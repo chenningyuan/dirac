@@ -192,6 +192,7 @@ set(FIXED_FORTRAN_SOURCES
     src/pdpack/gpblas.F
     src/pdpack/linextra.F
     src/pdpack/printpkg.F
+    src/peqm/pe_dirac_interfaces.F
     src/prp/excprp.F
     src/prp/help.F
     src/prp/mp2lag.F
