@@ -56,6 +56,10 @@ if(ENABLE_PCMSOLVER)
     add_dependencies(dirac pcmsolver)
 endif()
 
+if(ENABLE_GEN1INT)
+    add_dependencies(dirac gen1int)
+endif()
+
 if(ENABLE_PELIB)
     add_dependencies(dirac pelib)
 endif()
