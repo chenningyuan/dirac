@@ -4,6 +4,19 @@
 - added OPENBLAS in search list for blas and lapack libraries
 - made keyword .X2Cmmf case insensitive
 - BUGfix for spinfree X2Cmmf and linear symmetry.
+- Error corrections and updates in isotope properties for the following atoms:
+      Br isotope 2: quadrupole moment  .2620 ->  .2615
+      Ag isotope 2: magnetic moment    .130563 -> -.130691 (note sign change)
+      In isotope 2: quadrupole moment   .790 ->  .799
+      Nd magnetic moments of isotopes 4 and 5 were interchanged: -0.065 -> -1.065 and -1.065 -> -0.065
+      Gd: quadrupole meoments of isotopes 4 and 5 updated: 1.36 -> 1.35 and 1.30 -> 1.27
+      Ho isotope 1: quadrupole moment updated 3.49 -> 3.58
+      Lu isotope 2: quadrupole moment updtaed 4.92 -> 4.97
+      Hf isotope 1: mass was real*4, not real*8, thus 7 digits instead of 179.9465457D0 (i.e. approx 179.9465)
+      Ta isotope 1: quadrupole moment added 0.00 -> 3,17
+      Tl isotope 1: nuclear moment 1.63831461D0 -> 1.63821461D0 (typo, error 1.d-4)
+      Pb isotope 3: nuclear moment 0.582583D0 -> 0.592583D0 (typo, error 1.d-2)
+      Po isotope 1: nuclear moment added: 0.000 -> 0.688
 
 
 15.0 (2015-12-16)
