@@ -6866,14 +6866,16 @@ C  /* Deck wlkdin */
 C***********************************************************************
 C
 C     Input:
-C        COR - nuclear coordinates
-C        TMASS - nuclear masses
+C        COR    - nuclear coordinates
+C        TMASS  - nuclear masses
+C        N      - number of nuclei
 C        ANGMOM - total nuclear angular momentum L_N
 C     Output:
 C        TINERT - tensor of inertia
-C        OMEGA - nuclear angular velocity
+C        OMEGA  - nuclear angular velocity
 C        If(DOCOPY): CEPVAL - inverse eigenvalues
 C                    CEPVEC - eigenvectors
+C************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, TSTLIN = 1.D-4)
@@ -6916,7 +6918,7 @@ C
 C
       CALL DUNIT(EIGVEC,3)
       CALL JACO(AMAT,EIGVEC,3,3,3,AWRK,IWRK)
-!     In output, AMAT contains the elements of the diagolalized TINERT
+!     In output, AMAT contains the elements of the diagonalized TINERT
 !                EIGVEC contains the eigenvectors of the non-diagonalized matrix
 C
       IF (IPRINT.GE.9) THEN
@@ -6927,23 +6929,24 @@ C
       EIGVAL(1) = AMAT(1)
       EIGVAL(2) = AMAT(3)
       EIGVAL(3) = AMAT(6)
+C.....Order eigenvalues and corresponding eigenvectors in ascending order E(1) < E(2) < E(3)
       CALL ORDER(EIGVEC,EIGVAL,3,3)
 C
-      IF ( ABS(EIGVAL(3)-EIGVAL(2)-EIGVAL(1)) .LT. TSTLIN) THEN
+      IF (ABS(EIGVAL(3)-(EIGVAL(2)+EIGVAL(1))) .LT. TSTLIN) THEN
          PLANAR = .TRUE.
       ELSE
          PLANAR = .FALSE.
       END IF
       IF (EIGVAL(1) .LT. TSTLIN) THEN
-         LINEAR = .TRUE.
-         PLANAR = .FALSE.
+         LINEAR    = .TRUE.
+         PLANAR    = .FALSE.
          EIGVAL(1) = D0
       ELSE
-         LINEAR = .FALSE.
+         LINEAR    = .FALSE.
          EIGVAL(1) = D1/EIGVAL(1)
       END IF
-      EIGVAL(2) = D1/EIGVAL(2)
-      EIGVAL(3) = D1/EIGVAL(3)
+      EIGVAL(2)    = D1/EIGVAL(2)
+      EIGVAL(3)    = D1/EIGVAL(3)
 C
 C     Inverse moments of inertia
 C
