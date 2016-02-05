@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -75,6 +75,7 @@ C
             CALL TKRMCORB
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'MP2 ') THEN
+            IF (DOESR) cycle
             CALL SETDC2(0)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP *** ' //
@@ -1520,7 +1521,11 @@ C
 C
 C     NMR shielding
 C
+#ifdef MOD_LAO_REARRANGED
+      IF(SHIELD.or.shielding_rearrange) THEN
+#else
       IF(SHIELD) THEN
+#endif
         CALL PRP_SHIELD(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
 C
@@ -2073,7 +2078,7 @@ C
       dimension average(maxflr)
 C
       CALL AROUND('Electric dipole polarizability')
-      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(/A,F12.8,A/)') ' 1 a.u = ',DFAC,' angstrom**3'
 C
 C
 C     print header
@@ -2186,7 +2191,8 @@ C
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A3,A8,F17.8,A12)') '@  ',
      &              'average', average(ifreq)*DFAC, 'angstrom**3'
-        WRITE(LUPRI,'(A)') '@'
+        WRITE(LUPRI,'(A3,A11,F9.3,A17)') '@  ',
+     &              'anisotropy', anisotropy*DFAC, 'angstrom**3'
         WRITE(LUPRI,*)
 C
         IF(.NOT.(IFREQ.EQ.NBFREQ)) THEN
@@ -3190,6 +3196,7 @@ CTROND  Insert dimensions !!
         ENDDO
         CALL PRSYMB(LUPRI,'-',100,0)
 !radovan: print out reduced SSCC in SI units
+        FACTOR = AUTOHZ/3.85000804D-1
         CALL AROUND('Final reduced spin-spin-couplings K (SI)')
         WRITE(LUPRI,'(2A15,5(2X,A12))')
      &  'At1  #  iso  : ','At2  #  iso  : ',
@@ -3212,7 +3219,6 @@ CTROND  Insert dimensions !!
                 J3END = JISO
               ENDIF
               DO J3 = 1,J3END
-                FACTOR = AUTOHZ/3.85000804D-1
                 WRITE(LUPRI,'(2(A6,I5,2X,A1,1X),5(2X,F12.4))')
      &                NAMDEP(IATOM1),I3,':',NAMDEP(IATOM2),J3,':',
      &                FACTOR*SPNPAR(1,IATIJ),
@@ -3269,7 +3275,7 @@ C
 C     Diagonalize symmetric part to determine principal axis system
 C     IZ(1) is largest absolute eigenvalue, IY(3) smallest, IX
 C
-      CALL RSJACO(3,3,3,SYM,PVAL,1,-2,0,AXES,WORK(KFREE),LFREE)
+      CALL RSJACO(3,3,3,SYM,PVAL,1,-2,0,AXES)
 C
       SPNPAR(2) = PVAL(1) - (PVAL(2) + PVAL(3))/D2
       IF (PVAL(1) .EQ. 0) THEN
@@ -4375,6 +4381,141 @@ C     define s_z and l_z as j_z = s_z + l_z
          CALL OP1IND('KRCI PROPOME',LUCIINDTRP,LPROP_KRCI,
      &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
       END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_MHYP */
+      SUBROUTINE DEF_MHYP(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for magnetic hyperfine constants
+C
+C     Written by Malaya K. Nayak August 30 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-29)
+      CALL DEF_MHYP1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_MHYP',WORK,KWORK,KWORK,KFREE,LFREE)
+C      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_MHYP1 */
+      SUBROUTINE DEF_MHYP1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for magnetic hyperfine constants
+C
+C     Written by Malaya K. Nayak Aug 30 2013
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "krciprop.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrxyz.h"
+#include "dcbxlr.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+      LOGICAL DOATOM(NUCIND),SAME
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION WORK(LWORK),PFAC(2),IOP(3)
+#include "chrnos.h"
+#include "ibtfun.h"
+C
+C     XAVECTOR
+      IOP(1) = 5
+C     YAVECTOR
+      IOP(2) = 6
+C     ZAVECTOR
+      IOP(3) = 7
+      PFAC(1)  = 1.0D0
+      PFAC(2)  = 1.0D0
+      NPCOMP   = 2
+C
+C     Irreps
+C
+      DO 100 IREPO = 0, MAXREP
+C
+C       Atoms
+C
+C       Define the Hyperfine operators
+C
+        DO 200 IATOM = 1, NUCIND
+        IF(DOATOM(IATOM)) THEN
+C
+C         Cartesian directions
+C
+          DO 300 ICOOR = 1, 3
+            ISCOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREPO,2)
+            IF (ISCOR .GE. 1000) THEN
+              CALL QUIT(
+     &'DEF_MHYP1: Max 1000 coords in this implementation !')
+            ENDIF
+            IF (ISCOR .GT. 0) THEN
+              IFIRST = ISCOR/100
+              ISECND = MOD(ISCOR,100)/10
+              ITHIRD = MOD(MOD(ISCOR,100),10)
+              PNAME    = CHRXYZ(ICOOR)//CHRNOS(IATOM)//'-HYP'
+C              PNAME    = 'HYP'//CHRNOS(IFIRST)
+C     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
+C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
+              IPTYP    = IOP(ICOOR)
+              IC1      = MOD(ICOOR+1,3) + 1
+              IC2      = MOD(ICOOR  ,3) + 1
+              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IS1      = IPTCNT(3*(IATOM - 1) + IC1,IREP1,1)
+              IS2      = IPTCNT(3*(IATOM - 1) + IC2,IREP2,1)
+              IF((IS1.LE.0).OR.(IS2.LE.0))
+     &          WRITE(LUPRI,'(A,5I5)')
+     &          'DEF_MHYP1: sym. error !',IATOM,ICOOR,IC1,IC2
+              IFIRST = IS1/100
+              ISECND = MOD(IS1,100)/10
+              ITHIRD = MOD(MOD(IS1,100),10)
+              PLABEL(1)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+              IFIRST = IS2/100
+              ISECND = MOD(IS2,100)/10
+              ITHIRD = MOD(MOD(IS2,100),10)
+              PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
+     &                     //CHRNOS(ITHIRD)//' '
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+       CALL OP1IND('KRCI PROPHYP',LUCIINDTRP,LPROP_KRCI,
+     &           NPROP_KRCI,INDXPR,MXPROP_KRCI)
+       IF (IPRINT.GE.1) THEN
+        write(6,*)'Hyperfine DEF Testing',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
+       END IF
+            ENDIF
+  300     CONTINUE
+        END IF
+  200   CONTINUE
+  100 CONTINUE
+C      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */

@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 star(OPTIMIZE)
 
@@ -50,7 +51,7 @@ Include LL, SL, and SS integral contributions to the gradient
 
 keyword(BAKER)
 
-Baker's convergence criteria [Baker1993]_ will be
+Baker's convergence criteria :cite:`Baker1993` will be
 used.
 
 

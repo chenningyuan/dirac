@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -45,6 +45,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)',IOSTAT=IOS) WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -309,7 +310,7 @@ C     JHS
 #include "aosotr.h"
 #include "infpar.h"
 
-      integer, parameter   :: LWORK = 10000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      integer, parameter   :: LWORK = 15000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)         ! and we do not need that much memory in READIN
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
@@ -667,7 +668,7 @@ C        In 4-component mode Cartesian Gaussians are always used.
       ALLOCATE(BASREF(10,MXCENT,MXBSETS))
       ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
       ALLOCATE(CPRIM(KPRIM,KPRIM,KBLOCK,KSETS))
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
 C     ... avoid crash on IBM systems where allocatable 
 C     memory is handled quite strict. SK - Aug 08
       LCPRIMU = KPRIM*KPRIM*KBLOCK*KSETS
@@ -690,7 +691,7 @@ C
 C
       CALL BASINP(LUINFO,WORK,LWORK,
      &            IQM,NBLCK,JCO,BASREF,
-#if defined (SYS_AIX) || defined (SYS_IBM) 
+#if defined (SYS_AIX)
      &            NUC,NRC,SEG,ALPHA,CPRIM,WORK(KCPRIMU),ISGEN,
 #else
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
@@ -721,7 +722,7 @@ C     ***** Process orbital and geometry input data *****
 C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,
-#if defined (SYS_AIX) || defined (SYS_IBM) 
+#if defined (SYS_AIX)
      &            SEG,ALPHA,CPRIM,WORK(KCPRIMU),KATOM,KANG,KSETS,
      &            KBLOCK,KPRIM,
 #else
@@ -743,7 +744,7 @@ C     ***** Print orbital and geometry input data *****
 C     *************************************************
 C
       CALL BASOUT(WORK,LWORK,IQM,NBLCK,JCO,BASREF,
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
      &            NUC,NRC,SEG,ALPHA,CPRIM,WORK(KCPRIMU),KATOM,
      &            KANG,KSETS,
 #else
@@ -753,7 +754,7 @@ C
 C
       IF (ALLOCATED(ALPHA)) DEALLOCATE(ALPHA)
       IF (ALLOCATED(CPRIM)) DEALLOCATE(CPRIM)
-#if defined (SYS_AIX) || defined (SYS_IBM)
+#if defined (SYS_AIX)
 C     ... release memory
       CALL MEMREL('READ_MOL',WORK,KWORK,KWORK,KFREE,LFREE)
 #else
@@ -4832,7 +4833,7 @@ C     ***** Cartesian Coordinates *****
 C     *********************************
 C
       IF (IPREAD .GT. 0) THEN
-         CALL HEADER('Cartesian Coordinates',1)
+         CALL HEADER('Cartesian Coordinates (bohr)',1)
          WRITE (LUPRI,'(A,I3//)')'  Total number of coordinates:',NCOOR
          ICRX = 1
          ICRY = 2
@@ -4875,7 +4876,8 @@ C
 
 !     print also coordinates in xyz format for easy copy-paste-ability
       if (ipread > 0) then
-         call header('Cartesian coordinates xyz format (angstrom)', 1)
+         call header('Cartesian coordinates in XYZ format (angstrom)',
+     &   1)
          write(lupri, '(i5)') nucdep
          write(lupri, *)
          do icent = 1, nucind
@@ -5620,10 +5622,11 @@ C
      &    'ERROR(subroutine RDLINE): Error in reading molecule.MOL. '
      &    //'NODE=',MYTID
           WRITE(LUPRI,*) 'IOS=',IOS 
-          WRITE(LUPRI,*) 'Line no:', NMLINE
+          WRITE(LUPRI,*) 'NMLINE, line no:', NMLINE
           WRITE(LUPRI,*) 'NMLN_LASTREAD',NMLN_LASTREAD
-          WRITE(LUPRI,*) 'MLINE(NMLINE)=',MLINE(NMLINE)
-          WRITE(LUPRI,*) 'NMLINE_STORED:',
+          WRITE(LUPRI,*) 'read MLINE(NMLINE)=',MLINE(NMLINE)
+		  WRITE(LUPRI,*) 'LEN(MLINE(NMLINE))=',LEN(MLINE(NMLINE))
+          WRITE(LUPRI,*) 'NMLINE_STORED(1),(2):',
      &    NMLINE_STORED(1),NMLINE_STORED(2)
           IF (NMLINE>1) THEN
             WRITE(LUPRI,*) 'Previous line:',MLINE(NMLINE-1)
@@ -6416,7 +6419,7 @@ C                  ... exit if close and no floating and no point charge
 C
 #ifdef VAR_MPI
 !     print only from one process
-      if (mytid == 1) then
+      if (mytid == 0) then
 #endif
         IF (IPRINT .GE. 0) THEN
 

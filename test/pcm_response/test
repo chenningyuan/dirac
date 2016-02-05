@@ -40,13 +40,13 @@ os.unlink('DFCOEF')
 
 test.run(['pcm-scf-dc.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --outcmo')
 os.unlink('pcm-scf-dc_CH4.out')
-test.run(['pcm-dc.inp'], ['CH4.mol'], args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-dc.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp --incmo')
 test.run(['pcm-dc-skipoit.inp'], ['CH4.mol'], f, args='--put @pcmsolver.inp --incmo')
 os.unlink('DFCOEF')
 
 test.run(['pcm-scf-dc.inp'], ['H2O.mol'], args='--put @pcmsolver.inp --outcmo')
 os.unlink('pcm-scf-dc_H2O.out')
-test.run(['pcm-dc.inp'], ['H2O.mol'], args='--put @pcmsolver.inp --incmo')
+test.run(['pcm-dc.inp'], ['H2O.mol'], f, args='--put @pcmsolver.inp --incmo')
 test.run(['pcm-dc-skipoit.inp'], ['H2O.mol'], f, args='--put @pcmsolver.inp --incmo')
 os.unlink('DFCOEF')
 

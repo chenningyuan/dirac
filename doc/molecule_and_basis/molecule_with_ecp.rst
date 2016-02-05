@@ -1,24 +1,27 @@
+:orphan:
 
 .. _ecp_input:
 
 How to specify ECP parameters in mol files
 ==========================================
 
-Effective core potential (ECP) is efficient method in many quantum mechanical calculations.
-This reduces basis set demands in heavy elements by replacing core electrons with effective potential. For the account of spin-orbit and other relativistic effects, many ECP parameters developed recently are based on atomic Dirac-Fock calculations, and sometimes called the relativistic effective core potential (RECP).
+Effective core potential (ECP) is an efficient method in many quantum mechanical calculations.
+It reduces basis set demands in heavy elements by replacing core electrons with effective potential. 
+For the account of spin-orbital and other relativistic effects, many ECP parameters developed recently are based
+on atomic Dirac-Fock calculations, and are sometimes called the relativistic effective core potentials (RECP).
 
 
 Theory
 ------
 
-Originally, the spin-orbit term is included in the RECP (SOREP) as following [Lee1977]_,
+Originally, the spin-orbit term is included in the RECP (SOREP) as following :cite:`Lee1977`,
 
 .. math::
 
   U^{SOREP} = U_{LJ}^{SOREP}(r) + \sum_{l=0}^{L-1}\sum_{j=|l-1/2|}^{l+1/2}\sum_{m=-j}^{j}
              [U_{ij}^{SOREP}(r)- U_{LJ}^{SOREP}(r)]|ljm\rangle \langle ljm| 
 
-The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`) [Ermler1981]_
+The SOREP is divided into two types of potential - averaged relativistic effective core potential (AREP) and spin-orbit potential. (:math:`U^{SOREP} = U^{AREP} + U^{SO}`) :cite:`Ermler1981`
 
 .. math::
 
@@ -47,25 +50,13 @@ with
   \Delta U_{l}^{SOREP(r)} = U_{l,l+1/2}^{SOREP(r)} - U_{l,l-1/2}^{SOREP(r)}
 
 
-
 ECP parameters from the library
 -------------------------------
 
-::
+See the simple example file fro the ecp test (:download:`HI_ecplib.mol <../../../test/ecp/HI_ecplib.mol>`) :
 
- INTGRL
- HI MOLECULE
- I:Christiansen RECP, H:Aug-cc-pVTZ
- C   2    2 Y  Z    A
-        53.    1
- I     1.59900000           0.00000000        0.00000000
- LARGE BASIS ECPCE46_TZ
- ECPLIB ECPCE46SO
-         1.    1
- H     0.00000000           0.00000000        0.00000000
- LARGE BASIS aug-cc-pVTZ
- FINISH
-
+.. literalinclude:: ../../../test/ecp/HI_ecplib.mol
+ 
 1. Basis set library for ECP (line 7):
 The format is same as the large component basis set. (see large component basis set) 
 However, one should use the basis set parameters corresponding to the RECP.
@@ -163,17 +154,17 @@ Explicitly typed ECP
  LARGE BASIS aug-cc-pVTZ
  FINISH
 
-For the explicitly typed ECP, ECP keyword is used. Three numbers after the ECP keyword denote the following.
+For the explicitly typed ECP, the ECP keyword is used. Three numbers after the ECP keyword denote the following:
 
-1.Number of core electrons: This number of core electrons is substituted by RECP. In this case, 46 core electrons in iodine atom are omitted and 7 electrons in the valence are described.
+1. Number of core electrons: This number of core electrons is substituted by RECP. In this case, 46 core electrons in iodine atom are omitted and 7 electrons in the valence are described.
 
-2.Number of AREP blocks: The numbers of AREP blocks to be read.
+2. Number of AREP blocks: The numbers of AREP blocks to be read.
 
-3.Number of SO blocks: The numbers of SOREP blocks to be read. In the case of AREP (spin-free) calculation, the number of SOREP blocks is set to 0.
+3. Number of SO blocks: The numbers of SOREP blocks to be read. In the case of AREP (spin-free) calculation, the number of SOREP blocks is set to 0.
 
 After reading block numbers, AREP (and SOREP) blocks are read.
 
-1.AREP blocks: Three parameters in each line in AREP blocks are :math:`n_{li}`, :math:`\alpha_{li}`, and :math:`C_{li}` respectively in the following equation.
+1. AREP blocks: Three parameters in each line in AREP blocks are :math:`n_{li}`, :math:`\alpha_{li}`, and :math:`C_{li}` respectively in the following equation.
 
 .. math::
 
@@ -181,13 +172,15 @@ After reading block numbers, AREP (and SOREP) blocks are read.
 
 2.SO blocks: Three parameters in each line in SO blocks are same as in AREP blocks.
 
-Note: coefficients in the spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as [Park2012]_,
+Note: coefficients in the spin-orbit block are sometimes defined differently by RECP developing groups. Spin-orbit potential in DIRAC is defined as :cite:`Park2012`,
 
 .. math::
 
    U_{l}^{SO,DIRAC} = \frac{2}{2l+1}\Delta U_{l}^{SOREP}
 
-For example, factors (2/2l+1) are already multiplied in SO parameters in `[Stuttgart RECP webpage] <http://www.theochem.uni-stuttgart.de/pseudopotentials/clickpse.en.html>`_.
+For example, factors (2/2l+1) are already multiplied in SO parameters
+at the `Stuttgart RECP webpage <http://www.tc.uni-koeln.de/PP/index.en.html>`_.
 One can use it directly without the modification.
-There are two kinds of SO factors in `[RECPs of Christiansen and coworkers] <http://people.clarkson.edu/~pchristi/reps.html>`_. 
-SO factor in DIRAC is same as the ones defined for Columbus program.
+There are two kinds of SO factors in 
+the `RECPs of Christiansen and coworkers <http://people.clarkson.edu/~pchristi/reps.html>`_. 
+The SO factor in DIRAC is the same as the ones defined for Columbus program.

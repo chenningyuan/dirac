@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ========================
 The :math:`UF_6` anion
 ========================
@@ -30,10 +33,10 @@ The neutral molecule is a simple closed shell molecule and using the menu file
 .. literalinclude:: UF6neutral.inp
 
 the SCF converges nicely in 26 iterations. Before proceeding we investigate the electronic structure
-of this species using projection analysis, see [Dubillard2006]_ and 
+of this species using projection analysis, see :cite:`Dubillard2006` and 
 `this tutorial <../../analysis/projection_analysis.html>`_. 
 Looking at the input file above, one may note that we already prepared for
-this by invoking the keyword :ref:`.ACMOUT` in order to recover the :math:`C_1` MO coefficients::
+this by invoking the keyword :ref:`GENERAL_.ACMOUT` in order to recover the :math:`C_1` MO coefficients::
 
    pam --inp=UF6  --mol=UF6 --outcmo --get "DFACMO=ac.UF6"
 
@@ -132,7 +135,7 @@ and the command::
 Note that we activate static overlap selection to keep occupied orbitals in place. 
 However, this calculation does not converge. Also, in the Mulliken population analysis
 we activate the ``SHELL`` keyword to simplify identification of atomic orbitals, see
-`here <../../../manual/analyze/mulpop.html#label>`_.
+:ref:`MULPOP_.LABEL`
 
 Looking at the open-shell orbitals 
 we find that they are essentially f orbitals. However, we also note that the 

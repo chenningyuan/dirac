@@ -11,7 +11,7 @@
 #endif
 
 #if defined(__CVERSION__)
-#define MAXNOD 200
+#define MAXNOD 60000
 #define MAXCL2 10000
 #define nodtot numnod
 extern struct common_diracinfpar {
@@ -32,7 +32,7 @@ extern struct common_diracinfpar {
 !        NODTOT = NUMNOD = number of slaves = number of nodes - 1 (from MPI_Comm_rank)
 !        MYTID  = mpi ID of this process (from MPI_Comm_rank)
       INTEGER MAXNOD, MAXCL2
-      PARAMETER (MAXNOD = 200, MAXCL2 = 10000)
+      PARAMETER (MAXNOD = 60000, MAXCL2 = 10000)
       REAL*8 TOTWAL
       INTEGER IPRPAR, NTASK, NCODE, NDEGDI, MYNUM, MYTID, NODTOT
       INTEGER NUMNOD, ICOUNT,MTIDS(0:MAXNOD), MPARID,NODE,NODES,IPAREX

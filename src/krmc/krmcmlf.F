@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1675,6 +1675,7 @@ C
 #endif
 !***********************************************************************
 
+#ifdef MOD_UNRELEASED
       subroutine write_fcidump_file(vmuuuu,hcore,ecore)
 !***********************************************************************
 !
@@ -1706,6 +1707,7 @@ C
       DIMENSION  VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
       DIMENSION  hcore(2*NASHT,2*NASHT,*)
       real(8), intent(in) :: ecore
+      real(8), parameter  :: THR_VMUUUU = 1.d-15
       DIMENSION  KR(-300:300)
       integer :: LUFCID = -1
       character(len=30) :: form1
@@ -1890,6 +1892,10 @@ C
             DO J = 1,2*NASHT
                DO I = 1,2*NASHT
 
+                  if (abs(VMUUUU(I,J,K,L,1))<=THR_VMUUUU) CYCLE
+                  if (nz > 1 .and. abs(VMUUUU(I,J,K,L,2))<= THR_VMUUUU)
+     &            CYCLE
+
 !     only real groups needed for now ==> only even number of bars: 0, 2, 4
 
 !     linear symmetry case: To determine the MJ value we need to know the classes :
@@ -2011,3 +2017,4 @@ C
       call symmetry_setup_delete()
 C
       END
+#endif

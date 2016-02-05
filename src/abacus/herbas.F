@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -70,6 +70,7 @@ C
 #ifndef USE_MPI_MOD_F90
 #include "mpif.h"
 #endif
+#include "infpar.h"
 #endif
 #include "priunit.h"
       LOGICAL   SEG, READNU_CALLED
@@ -109,7 +110,7 @@ C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
       LOGICAL SPLIT,TEST
-      integer :: icount = 0
+      integer :: jcount = 0
 #endif /* PRG_DIRAC */
 C
       CALL QENTER('BASLIB')
@@ -297,12 +298,16 @@ C for backward compatibility the old notation is retained
      &              'augmentation level'
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF
-         ELSE IF (BASNAM(1:3) .EQ. 'ano') THEN
+         ELSE IF (BASNAM(1:4) .EQ. 'ano-') THEN
+            !ano-1, ano-2, ano-3, ano-4 from MOLCAS
             ANO = .TRUE.
             BASTMP(1:5) = BASNAM(1:5)
             ISTART = 6
-            !ISTART = 1
          ELSE IF (BASNAM(1:7) .EQ. 'ANO-RCC') THEN
+            ANO = .FALSE. ! ANO-RCC is not written in MOLCAS format
+            BASTMP(1:7) = BASNAM(1:7)
+            ISTART = 8
+         ELSE IF (BASNAM(1:7) .EQ. 'ANO-DK3') THEN
             ANO = .TRUE.
             BASTMP(1:7) = BASNAM(1:7)
             ISTART = 8
@@ -470,7 +475,7 @@ C
 
 !#define PRINT_GAUSSIAN_INP
 #ifdef PRINT_GAUSSIAN_INP
-            CALL print_gaussian_inp(icount, iqm, ALPHA(1,NBLOCK),
+            CALL print_gaussian_inp(jcount, iqm, ALPHA(1,NBLOCK),
      &                  CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
      &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
 #endif
@@ -1065,11 +1070,16 @@ C*     STRING - A character variable that helps bullet-  *
 C*              proofing the subroutine.                 *
 C*     EXST - Logical variable that helps inquire if     *
 C*            there exists a file with that name.        *
+C*     SLASH - Variable for slash in paths (/ or \\)     *
+C*     WIN - Check if we work on Linux or on Windows     *
 C*********************************************************
       CHARACTER*(*) BASNAM
-      CHARACTER*200 STRING  ! long because contains the full directory path
+C     long because contains the full directory path
+      CHARACTER*200 STRING
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
+      CHARACTER SLASH
+      LOGICAL WIN
 #include "inftap.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
@@ -1077,9 +1087,19 @@ C*********************************************************
 #else
 #include "gnrinf.h"
 #endif
+#if defined (SYS_WINDOWS)
+      WIN = .TRUE.
+#else
+      WIN = .FALSE.
+#endif
 C
+C     Linux:
 C     The environment variable is a : separated string, e.g.:
 C     /programs/Dirac/basis:/programs/Dalton/basis:.
+C
+C     Windows:
+C     The environment variable is a ; separated string, e.g.:
+C     C:\programs\Dirac\basis;C:\programs\Dalton\basis;.
 C
 C     We loop over these directories in search for the basis set and
 c     element given.
@@ -1097,20 +1117,28 @@ C       If string is empty add current directory
       ELSE
         ISTOP=ISTOP-1
       ENDIF
-C     
+C
  10   CONTINUE
 C     
-C     Find next colon in BASDIR
+C     Find next colon (: or ;) in BASDIR
+      IF ( .NOT. WIN ) THEN
+          ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
+      ELSE
+          ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ';' )
+      END IF
 C     
-      ICOLON = ISTART - 1 + INDEX (BASDIR(ISTART:ISTOP), ':' )
-C     
-C     In there are no colons, we are the last directory in BASDIR
-C     
+C     In there are no colons (: or ;), we are the last directory in BASDIR
       IF ( ICOLON .EQ. ISTART - 1 ) ICOLON = ISTOP + 1
       IEND = ICOLON - 1
       STRING = BASDIR(ISTART:IEND)//' '
 C
 C     Add trailing slash if not present.
+C     / for Linux and \\ for Windows
+      IF ( .NOT. WIN ) THEN
+          SLASH = '/'
+      ELSE
+          SLASH = '\\'
+      END IF
 C
       IEND = INDEX ( STRING(1:), ' ') - 1
 !     stefan: make check with idb indicates a possible access penalty if
@@ -1120,9 +1148,9 @@ C
      &        'variable BASDIR is not set'
         call quit('*** error in FINDEL: BASDIR is not set') 
       end if
-      IF ( STRING(IEND:IEND) .NE. '/' ) THEN
+      IF ( STRING(IEND:IEND) .NE. SLASH ) THEN
          IEND = IEND + 1
-         STRING(IEND:IEND) = '/'
+         STRING(IEND:IEND) = SLASH
       END IF
       STRING = STRING(1:IEND)//BASNAM
       IEND = INDEX(STRING(1:),' ') - 1

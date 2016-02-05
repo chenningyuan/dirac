@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -184,6 +184,19 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL DOCCSETI
       REAL*8 CPU0,CPU1,CPU2,CPU3
+!      integer :: verbose        = 0
+!      integer :: ncore_elec_adc = 0
+!      integer(kind=klongint) :: maxcor
+!      integer(kind=klongint) :: mxcorr
+!      integer(kind=klongint) :: mxcorr1
+!      integer(kind=klongint) :: mword_limit
+!      real(kind=kreal)       :: total_mem_new = 0
+!      real(kind=kreal)       :: new_mword_limit = 0
+!      integer                :: n,i,ntotsymm
+
+      real(8), allocatable :: CC(:)
+      real(8), allocatable :: testoooo(:)
+
       integer :: ncore_elec_adc = 0  ! new argument for RDSYMI, needed in RELCCSD, not in ADC.
 
       integer           :: maxcor,mxcorr,mxcorr1,mword_limit
@@ -198,6 +211,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       maxcore_infc = (/'SETI','SIPS','DIPS','EXCI'/)
 
       call legacy_lwork_get(MAXCORE)
+
 
 !
 !---------------Executable code--------------------------------------
@@ -418,6 +432,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         ICALC = 2
         CALL CCSETI (ICALC,maxcore_info(1),EPS,NSP,IREPSP,IREPSPI)
       ENDIF
+! Elke
+!      WRITE(iw,*) 'after ccseti'
 
       IF(DOSIPS) THEN
         ICALC = 2
@@ -434,9 +450,58 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ENDIF
 
       IF(DOEXCI) THEN
+!<<<<<<< HEAD
+!        WRITE(IW,*) 'Memory for excitation calculations is',
+!     &              ' dynamically allocated.'
+!      ENDIF
+!!
+!! MXCORR is a cumulative maximum of individual memory requirements
+!! ===> if any subroutine would need more core than MAXCORE we quit.
+!!
+!      IF (MXCORR.GT.MAXCOR) THEN
+!         WRITE (IW,1002) MXCORR
+!1002     FORMAT (" Not enough core, increase to at least",I20,
+!     &        " Words")
+!         CALL QUIT("Insufficient memory")
+!      ENDIF
+!      WRITE (IW,1001) MXCORR
+!1001  FORMAT (" Memory used for active modules :",
+!     &        T50,I10," 8-byte words")
+!!
+!!  We have sufficient memory. Now start the calculations
+!!  Again, all modules are independent, resetting of mem. pointers
+!!
+!      ICALC = 2
+!      ALLOC_ME = .TRUE.
+!      KFREE = 1
+!      LFREE = MXCORR
+!!
+!      write(*,*) 'Providing ',MXCORR,' to the act. modules.'
+!      IF(DOSORT) THEN
+!        CALL CCSETI (ICALC,MXCORR,EPS,NSP,IREPSP,IREPSPI)
+!      ENDIF
+!
+!      write(*,*) 'MXCORR after allocated CCSETI:',MXCORR
+!      write(*,*) 'We give the FULL memory to the ADC modules.'
+!
+!      LFREE = MAXCOR
+!
+!
+!      IF(DOSIPS) THEN
+!        CALL ADCSNGL_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
+!      ENDIF
+!
+!      IF(DODIPS) THEN
+!        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
+!      ENDIF
+!
+!      IF(DOEXCI) THEN
+!        CALL ADCEXC_MAIN (IW,ITAPADC,EPS)
+!=======
         CALL ADCEXC_MAIN (IW,maxcore_info(4),ITAPADC,EPS)
         WRITE(IW,*) 'Memory requirements of ',
      &               maxcore_infc(4),maxcore_info(4)
+!>>>>>>> master
       ENDIF
 !
 !     return after closing low-level I/O files
@@ -467,8 +532,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Modules------------------------------------------------
 !
-      use adc_mat
       use adc_cfg
+      use adc_fano
+      use memory_allocator
+      use adc_mat
 C
       IMPLICIT INTEGER(A-Z)
 C
@@ -527,7 +594,7 @@ C
       logical done
       complex*16 zdotc
 
-      integer*8 :: ivmax
+      integer(8) :: ivmax
 
 C ***********************************************************************
 C ************* Local arrays to be allocated dynamically  ***************
@@ -1247,11 +1314,6 @@ C  Write the ADC files into the corresponding files.
 C  Each symmetry is diagonalized immediately.
 C
 
-        WRITE(IW,*) 'ADC diagonal elements written to  ',FILEN4
-        WRITE(IW,*) 'Packed ADC matrix written to      ',FILEN5
-
-        OPEN(ITAPADC+4,FILE=FILEN4,FORM='UNFORMATTED',STATUS='UNKNOWN')
-        OPEN(ITAPADC+5,FILE=FILEN5,FORM='UNFORMATTED',STATUS='UNKNOWN')
 C
 C  set start number of written buffers and initial buffer pointer
 C
@@ -1273,6 +1335,10 @@ C
 C  ***************************  start h/h block  ****************************
 C  ... BKC:  |><|
 C
+!! Elke:
+!!        WRITE(iw,*) 'ckks'
+!!        WRITE(iw,'(1X,ES14.5)') (cc(ixx), ixx=ckks,ckks+no(krep)-1)
+!
         CALL MAKE_HH2(CKKS,BUF1A,BUF1B,EPS,BUF4,KREP)
 C
 C  If ADC(3) is activated: compute C(3) and add Sigma(inf).
@@ -1335,19 +1401,85 @@ C  there are more diagonal elements to be calculated in MAKEHPHP !
 C  diagonal is written out in MAKEHPHP
 C  all other elements are finished and can be written out.
 C
+        WRITE(iw,*) 'CARITH = ', CARITH
 
-        IF(CARITH) THEN
-          CALL CWRITE_HHP(CKKS,BUFY1,ADCL,BUFIO,
-     &             INTBUF,LADC,IOI,IOJ,
-     &             KREP,NBUFS,IBUFPOS,ITAPADC+5)
-        ELSE
-          CALL WRITE_HHP(CKKS,BUFY1,ADCL,BUFIO,
-     &          INTBUF,LADC,IOI,IOJ,
-     &          KREP,NBUFS,IBUFPOS,ITAPADC+5)
-        ENDIF
+!
+! This is the big Fano-IF-clause introduced by Elke
+!
+        IF (reladc_dofano.AND.krep.EQ.reladc_fano_inrep) THEN
+          WRITE(iw,*)
+          WRITE(iw,*) '**************************************'
+          WRITE(iw,*) '*                                    *'
+          WRITE(iw,*) '* You selected a FanoADC run         *'
+          WRITE(iw,*) '*                                    *'
+          WRITE(iw,*) '**************************************'
 
-        WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
-        WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
+          CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
+          WRITE(iw,*) 'CARITH = ', CARITH
+          IF (CARITH) THEN
+            CALL QUIT ('FanoADC does not run with complex algebra yet')
+            IF (ADCLEVEL.EQ. 1) THEN
+              CALL fanoadcc(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
+     &                     EAJL,RDUMMY,RDUMMY,MXNO
+     &                     )
+            ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
+              CALL fanoadcc(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
+     &                     EAJL,BUFO1,BUF9A,MXNO
+     &                     )
+            END IF
+
+          ELSE
+            IF (ADCLEVEL.EQ. 1) THEN
+              CALL fanoadcr(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
+     &                     EAJL,RDUMMY,RDUMMY,MXNO
+     &                     )
+            ELSE IF (ADCLEVEL.EQ. 2 .OR. ADCLEVEL.EQ. 3) THEN
+              CALL fanoadcr(CKKS,BUFY1,LADC,KREP,ITAPADC,IW,
+     &                     EAJL,BUFO1,BUF9A,MXNO
+     &                     )
+            END IF
+          END IF
+          !CALL MEMREL('Fano-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+        END IF
+!
+! Do normal ADC calculation
+!
+        IF (reladc_fanoonly.eqv..false.) THEN
+          WRITE(iw,*)
+          WRITE(iw,*) '**************************************'
+          WRITE(iw,*) '*                                    *'
+          WRITE(iw,*) '* Start of normal ADC run            *'
+          WRITE(iw,*) '* in symmetry: ', krep, '*'
+          WRITE(iw,*) '*                                    *'
+          WRITE(iw,*) '**************************************'
+          WRITE(iw,*)
+          WRITE(IW,*) 'ADC diagonal elements written to  ',FILEN4
+          WRITE(IW,*) 'Packed ADC matrix written to      ',FILEN5
+  
+          OPEN(ITAPADC+4,FILE=FILEN4,FORM='UNFORMATTED',
+     &         STATUS='UNKNOWN')
+          OPEN(ITAPADC+5,FILE=FILEN5,FORM='UNFORMATTED',
+     &         STATUS='UNKNOWN')
+
+C
+C  write the off-diagonal h/h 
+C  and the h/2hp buffer to disk but NOT the diagonal entries since
+C  there are more diagonal elements to be calculated in MAKEHPHP !
+C  diagonal is written out in MAKEHPHP
+C  all other elements are finished and can be written out.
+C
+          IF(CARITH) THEN
+            CALL CWRITE_HHP(CKKS,BUFY1,ADCL,BUFIO,
+     &               INTBUF,LADC,IOI,IOJ,
+     &               KREP,NBUFS,IBUFPOS,ITAPADC+5)
+          ELSE
+            CALL WRITE_HHP(CKKS,BUFY1,ADCL,BUFIO,
+     &            INTBUF,LADC,IOI,IOJ,
+     &            KREP,NBUFS,IBUFPOS,ITAPADC+5)
+          ENDIF
+
+            WRITE(IW,*) 'Number of buffers after 1h/2h-1p:',NBUFS
+            WRITE(IW,*) 'Buffer pointer after 1h/2h-1p:   ',IBUFPOS
 C
 C  ...   ************  start 2h-1p/2h-1p block  ********************
 C
@@ -1360,55 +1492,56 @@ C
 C
 C  create K_akl array and lookup tables.
 C
-        CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
+          CALL MAKEEKVOO(EAJL,EPS,KREP,ICRA)
 c
 c  compute the off-diagonal entries if required
-c  BKC: C_aij,a'i'j' = |><|<|,<||>|>
+!  BKC: C_aij,a'i'j' = |><|<|,<||>|>
 c  ATT: the computed ones have complex conjugate BKC due to
 c  the Schirmer,Trofimov formula. Therefore all calculated
 c  entries will be CC is the routine, if complex case!
 c
-        IF(ADCLEVEL.EQ.1) THEN
-          IF(CARITH) THEN
-            CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,CDUMMY,
-     &                    CDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
-     &                    KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+          IF(ADCLEVEL.EQ.1) THEN
+            IF(CARITH) THEN
+              CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,CDUMMY,
+     &                      CDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
+     &                      KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                      ITAPADC+4,ITAPADC+5)
+            ELSE
+              CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,RDUMMY,
+     &                      RDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
+     &                      KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+     &                      ITAPADC+4,ITAPADC+5)
+            ENDIF
+          ELSE IF(ADCLEVEL.EQ.2 .or. ADCLEVEL.EQ.3) THEN
+            IF(CARITH) THEN
+           CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
+     &                    BUF9A,IOI,IOJ,ICRA,OOLT,
+     &                    LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
      &                    ITAPADC+4,ITAPADC+5)
-          ELSE
-            CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,RDUMMY,
-     &                    RDUMMY,IOI,IOJ,ICRA,IDUMMY,LADC,
-     &                    KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
+            ELSE
+             CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
+     &                    BUF9A,IOI,IOJ,ICRA,OOLT,
+     &                    LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
      &                    ITAPADC+4,ITAPADC+5)
+            ENDIF
           ENDIF
-        ELSE IF(ADCLEVEL.EQ.2 .or. ADCLEVEL.EQ.3) THEN
-          IF(CARITH) THEN
-         CALL CMAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
-     &                  BUF9A,IOI,IOJ,ICRA,OOLT,
-     &                  LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                  ITAPADC+4,ITAPADC+5)
-          ELSE
-           CALL MAKEHPHP(CKKS,DIAG,BUFIO,EAJL,BUFO1,
-     &                  BUF9A,IOI,IOJ,ICRA,OOLT,
-     &                  LADC,KREP,MXNO,NBUFS,IBUFPOS,INTBUF,ADCLEVEL,
-     &                  ITAPADC+4,ITAPADC+5)
-          ENDIF
-        ELSE
-          CALL QUIT('Illegal ADCLEVEL value in the C_aij,akl block')
-        ENDIF
+
 C
 C  ... close files in this symmetry and enter diagonalizer
 C
+        END IF
         CLOSE(ITAPADC+4)
         CLOSE(ITAPADC+5)
+
 
 C
 C  call configuration creator for 1h/2h1p configurations
 C  File handle ITAPADC+2 is available. closed after sub call!
 C
-        WRITE(IW,*) 'ADC hole space configurations written to ',FILEN2
-        WRITE(IW,*) 'Number of chunks in ADC matfile:         ',NBUFS
-        CALL WCONDAT_S(ITAPADC+2,FILEN2,IRECL,KREP,LADC)
-        WRITE(IW,*) 'Record length determined by WCONDAT_S:     ',IRECL
+          WRITE(IW,*) 'ADC hole space configurations written to ',FILEN2
+          WRITE(IW,*) 'Number of chunks in ADC matfile:         ',NBUFS
+          CALL WCONDAT_S(ITAPADC+2,FILEN2,IRECL,KREP,LADC)
+          WRITE(IW,*) 'Record length determined by WCONDAT_S:    ',IRECL
 C
 C -------------------------------------------------------------
 C ---- from here ADC matrix construction has terminated   -----
@@ -1421,7 +1554,7 @@ C -------------------------------------------------------------
 !        this if construct will become obsolete as soon as the
 !        call to the diagonalizer is moved to a separate subroutine
 !
-        IF (reladc_dodiag) THEN
+          IF (reladc_dodiag) THEN
 
 c
 c  Do a full diagonalization of the ADC matrix (for debugging
@@ -1433,49 +1566,58 @@ c  analysis. Due to simplicity FULLDIAR is wirtten in F90 and
 c  retrievable in the separate module adcanal.F90 with dynamic
 c  allocation of workspace.
 c
-          IF(DOFULL) THEN
-            IF(CARITH) THEN
-              CALL FULLDIAC(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
-            ELSE
-              CALL FULLDIAR(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
+            IF(DOFULL) THEN
+              IF(CARITH) THEN
+                CALL FULLDIAC(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
+              ELSE
+                CALL FULLDIAR(ITAPADC+4,FILEN4,FILEN5,INTBUF,LADC,KREP)
+              ENDIF
             ENDIF
-          ENDIF
 C
 C  remember IRPLOOP counts through the input columns and is not equal to
 C  the requested irrep. Therefore SIPEIGV also refers to the number of
 C  eigenvectors requested for the KREP entered at the position IRPLOOP!
 C
-          reladc_md_iobase      = ITAPADC
-          reladc_md_ionizl      = IONIZLEVEL
-          reladc_md_ioldnew     = 1
-          reladc_md_intbuf      = INTBUF
-          reladc_md_desrep      = KREP
-          reladc_md_rcw         = RCW
-          reladc_md_lnzitr      = SIPITER
-          reladc_md_matdim      = LADC
-          reladc_md_irecl       = IRECL
-          reladc_md_nmain       = NO(KREP)
-          reladc_md_nbufs       = NBUFS
-          reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1) /autoev
-          reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2) /autoev
-          reladc_md_fileadc     = FILEN5
-          reladc_md_filediag    = FILEN4 
-          reladc_md_filecnf     = FILEN2
-          reladc_md_nmspec      = NMSPECF
+            reladc_md_iobase      = ITAPADC
+            reladc_md_ionizl      = IONIZLEVEL
+            reladc_md_ioldnew     = 1
+            reladc_md_intbuf      = INTBUF
+            reladc_md_desrep      = KREP
+            reladc_md_rcw         = RCW
+            reladc_md_lnzitr      = SIPITER
+            reladc_md_matdim      = LADC
+            reladc_md_irecl       = IRECL
+            reladc_md_nmain       = NO(KREP)
+            reladc_md_nbufs       = NBUFS
+           reladc_md_eeigv_lower = reladc_md_sip_eeigv(IRPLOOP,1)/autoev
+           reladc_md_eeigv_upper = reladc_md_sip_eeigv(IRPLOOP,2)/autoev
+            reladc_md_fileadc     = FILEN5
+            reladc_md_filediag    = FILEN4 
+            reladc_md_filecnf     = FILEN2
+            reladc_md_nmspec      = NMSPECF
 c
 c  call Lanczos diagonalizer. 
 c
-          CALL DIAG_LANC(IW,DOINCORE)
+            CALL DIAG_LANC(IW,DOINCORE)
 c
-          WRITE(IW,*)
-          WRITE(IW,*) '       ------------------------------'
-          WRITE(IW,*) '       Finished SIP calculation'
-          WRITE(IW,*) '       In symmetry',KREP
-          WRITE(IW,*) '       ------------------------------'
-          WRITE(IW,*)
-          WRITE(IW,*)
+            WRITE(IW,*)
+            WRITE(IW,*) '       ------------------------------'
+            WRITE(IW,*) '       Finished SIP calculation'
+            WRITE(IW,*) '       In symmetry',KREP
+            WRITE(IW,*) '       ------------------------------'
+            WRITE(IW,*)
+            WRITE(IW,*)
 
-        END IF 
+          ELSE
+            WRITE(IW,*)
+            WRITE(IW,*) 'ADC matrix will not be diagonalized.'
+            WRITE(IW,*)
+
+          END IF 
+!
+! Not only Fano requested
+!
+
 
  900  CONTINUE
 
@@ -4610,6 +4752,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 S,KCOCC
       INTEGER JDUMMY
+      INTEGER zeros
 C
 C---------------Executable Code --------------------------------------
 C
@@ -4618,6 +4761,7 @@ C
       JDUMMY = 0
       NOK=NO(CREP)
       NAJL=NVOOT(CREP)
+
 C
 C  fill in the diagonal of the h/h block ...
 C
@@ -4655,13 +4799,18 @@ C
             DO I=J+1,NO(IREP)
               OOLT(I,J,IREP)=IOFF
               IOFF=IOFF+1
+!              WRITE(iw,'(1X,4(A7,I4))') 'OOLT = ',ioff-1,'IREP = ',IREP,
+!     &                                  'j = ', j, 'i = ', i
             ENDDO
           ENDDO
         ENDDO
+
+!        WRITE(iw,*) 'size of oolt = ', SIZE(oolt)
 C
 C  loop over matrix entries and write to buffer immediately
 C
 
+        zeros = 0
         DO J=1,NVOOT(CREP)
           DO I=J,NVOOT(CREP)
   
@@ -4669,6 +4818,10 @@ C
             ICOL=NOK+J
 
             S=KCOCC(I,J,OOOO,VOVO,ICRA,OOLT,MXNO)
+            !write(iw,'(1X,A4,ES15.4)') 's = ', S
+            IF (S.EQ. 0.0D0) THEN
+              zeros = zeros + 1
+            END IF
 C
 C  store matrix element either in the array for diagonal elements
 C  or in the write buffer  but then as the negative value ! all diagonal
@@ -4696,6 +4849,8 @@ C
           ENDDO
         ENDDO
 
+        WRITE(iw,*) 'Number of zeros = ', zeros
+
       ENDIF
 C
 C  write out remaining elements in matrix buffer
@@ -4712,6 +4867,8 @@ C
 C  write out !negative! diagonal in specific file
 C  and the number of records in the off-diagonal file.
 C
+!      WRITE(iw,*) 'ADC diag' !Elke
+!      WRITE(iw,'(1X,ES14.5)') (diag(ixx),ixx=1,ladc)
       WRITE(ITAPE1) (-DIAG(IXX),IXX=1,LADC),NBUFS
       WRITE(IW,1000) INTBUF,NBUFS
 C
@@ -4928,6 +5085,7 @@ C
       KREP  = ICRA(4,IROW)
       L     = ICRA(5,IROW)
       LREP  = ICRA(6,IROW)
+
 
       S=0.0D0
 
@@ -5990,6 +6148,7 @@ C
 C
 C  loop over irrep structure and form energy array & lookup table
 C
+      !WRITE(iw,'(1X,3A14)') 'epsa', 'epsk', 'epsl'
       OFF=1
       DO 60 KLREP=1,NREP
         AREP=MULTB(AKLREP,KLREP+NREP,2)
@@ -6015,6 +6174,7 @@ C
                ICRA(4,OFF)=KREP
                ICRA(5,OFF)=L
                ICRA(6,OFF)=LREP
+               !WRITE(iw,'(1X,3ES14.5)') epsa, epsk, epsl
                OFF=OFF+1
              ENDDO
            ENDDO
@@ -6345,6 +6505,7 @@ C
         CALL XCOPY(NOK,CKKS(OFF1),1,COL(OFF2),1)
         OFF2 = OFF2 + NOK
         CALL XCOPY(NAJL,BUFHP(OFF3),1,COL(OFF2),1)
+
 C
 C  one column is ready. we write out =>> its negative <<= and
 C  only THE LOWER TRIANGLE !! 
@@ -6944,11 +7105,10 @@ c
 
       return
       end
-c     
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-c     
 
-
+#ifdef HAVE_MKL_BLAS
+!radovan: workaround for strange crash when using MKL zdotc
+!miro: restricted by preprocessor for IBM XL
       DOUBLE COMPLEX FUNCTION z_dot_c(N,ZX,INCX,ZY,INCY)
 *     .. Scalar Arguments ..
       INTEGER INCX,INCY,N
@@ -7005,3 +7165,4 @@ c
       ZDOTC = ZTEMP
       RETURN
       END
+#endif

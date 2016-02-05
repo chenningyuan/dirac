@@ -5,9 +5,6 @@ module electrostatic_potential
    implicit none 
    
    public get_esp
-   public get_mep
-   public get_nuclear_mep
-   public get_electronic_mep  
 
    private
 
@@ -55,36 +52,6 @@ module electrostatic_potential
       call get_electronic_mep(nr_points, dmat, r, esp, work, lwork, 0, .false., .false.)
       call dealloc(work)
    end if
-
-   end subroutine
-
-   subroutine get_mep(nr_points, points, mep, dmat, work, lwork, iprint, skipss)
-
-#include "dcbbas.h"
-#include "dgroup.h"
-
-! Passed variables
-      integer, intent(in)  :: nr_points
-      real(8), intent(in)  :: points(3, nr_points)
-      real(8), intent(in)  :: dmat(ntbas(0), ntbas(0), nz)
-      real(8), intent(out) :: mep(nr_points)     
-      real(8)              :: work(*)
-      integer              :: iprint, lwork
-      logical, optional    :: skipss
-! Local variables
-      logical              :: skipss_block
- 
-! Skip SS block?      
-      skipss_block = .false. 
-      if (present(skipss)) then
-        if (skipss) then
-            skipss_block = .true.
-        end if
-      end if
-
-! Get nuclear and electronic contribution.
-      call get_nuclear_mep(nr_points, points, mep, iprint)
-      call get_electronic_mep(nr_points, dmat, points, mep, work, lwork, iprint, .false., skipss_block)
 
    end subroutine
 
@@ -291,9 +258,8 @@ module electrostatic_potential
       
       tols = thrs**2
       tolog = 2 * log(thrs)
-! mc is the number of components, as defined in include/dcbham.h
 ! Decide whether we loop on LL block only or not
-      if (mc == 1) then
+      if (nosmlv) then
 ! Looping only over LL block only
           idxmax = nlrgsh
       else if  (skipss_block) then
@@ -387,7 +353,7 @@ module electrostatic_potential
        idena = idena + khkta * multa
       end do
 
-      if (skipss_block .and. (.not. do_matrix) .and. (mc /= 1)) then
+      if (skipss_block .and. (.not. do_matrix) .and. (.not.nosmlv)) then
 ! Simple Coulombic Correction for the MEP when skipss is selected.
 ! This must NOT be done when:
 ! 1. we want a Fock matrix contribution;

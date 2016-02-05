@@ -1,3 +1,4 @@
+:orphan:
 
 Keyword reference
 =================
@@ -7,11 +8,15 @@ Keyword reference
 
 * :doc:`**GENERAL <general>` --- General input
 
+* :doc:`**MOLECULE<molecule>` --- Specification of basis set information
+
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
    - :doc:`*AMFI <amfi>` --- AMFI directives
    - :doc:`*X2C <x2c>` --- X2C directives
    - :doc:`*FDE <fde>` --- Frozen Density Embedding directives
+   - :doc:`*PCM <pcm>` --- Polarizable Continuum Model directives
+   - :doc:`*PCMSOL <pcmsolver>` --- PCMSolver module directives
 
 * :doc:`**WAVE FUNCTION <wave_function>` --- Method specification
    - :doc:`SCF <wave_function/scf>` --- SCF module (Hartree-Fock/Kohn-Sham)
@@ -29,6 +34,7 @@ Keyword reference
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`MULPOP <analyze/mulpop>` --- Mulliken population analysis
+   - :doc:`PRIVEC <analyze/privec>` --- Print coefficients
    - :doc:`PROJECTION <analyze/prjana>` --- Projection analysis
    - :doc:`LOCALIZATION <analyze/localization>` --- Localization 
    - :doc:`DENSITY <analyze/density>` --- Density

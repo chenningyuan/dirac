@@ -14,28 +14,28 @@
 !
 !************************************************************************ 
 
+#ifdef MOD_UNRELEASED
 module time
   implicit none
   character*10 start_date, end_date ! format of date: "dd_mmm_yy "
   character*8  start_time, end_time ! format of time: "hh:mm:ss"
 end module time
+#endif /* MOD_UNRELEASED */
 
 Program Test_DIRAC_Diagonalization_Routines
-  use diagmod
+#ifdef MOD_UNRELEASED
+ use diagmod
 #include "priunit.h"
- 
-   write(LUPRI,'(/,2x,a,/)') "**** Welcome to the testing program of DIRAC diagonalization routines ! ****"
-
+  write(LUPRI,'(/,2x,a,/)') "**** Welcome to the testing program of DIRAC diagonalization routines ! ****"
   call DBLGRP !> initialize include file variable for printing matrices (PRQMAT)
-
   call read_input_file
-
   call read_matrix
-
   if (do_rs)      call test_dirac_rs
   if (do_dsyevr)  call test_lapack_dsyevr
   if (do_dsyevr_ulf)  call test_lapack_dsyevr_ulf
   if (do_qjaco)   call QJACOBITEST
   if (do_householder_psb) call test_PSB_householder
-
+#else
+ call quit('program not in release version!')
+#endif /* MOD_UNRELEASED */
 End Program Test_DIRAC_Diagonalization_Routines

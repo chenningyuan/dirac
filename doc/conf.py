@@ -27,16 +27,46 @@ extensions = ['matplotlib.sphinxext.mathmpl',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'sphinx.ext.autodoc',
-              'sphinx.ext.doctest']
+              'sphinx.ext.doctest',]
 
 #miro: try to add conditionally the extension in order not to hurt the doc compilation
 # older machines might lack it
 
 try:
     import sphinx.ext.mathjax
-    extensions.append('sphinx.ext.mathjax')
+    #extensions.append('sphinx.ext.mathjax')
 except ImportError:
     print('sphinx.ext.mathjax extension not found => math will not be properly rendered')
+
+# port of mathjax which supports downloading of math formulas as latex
+extensions.append('mathjaxplus')
+
+# adds info about pages from git log
+extensions.append('gitlog')
+
+# be safe about adding new extensions
+try:
+    import sphinxcontrib.bibtex
+    extensions.append('sphinxcontrib.bibtex')
+except ImportError:
+    print('sphinxcontrib.bibtex extension not found => skipping references generation')
+else:
+    # bibtex dirac custom style
+    from pybtex.plugin import register_plugin
+    from pybtex.style.formatting.plain import Style
+    from pybtex.style.labels.alpha import LabelStyle
+
+
+    class DiracLabelStyle(LabelStyle):
+        def format_label(self, entry):
+            return entry.key
+
+
+    class DiracStyle(Style):
+        default_label_style = 'dirac'
+
+    register_plugin('pybtex.style.labels', 'dirac', DiracLabelStyle)
+    register_plugin('pybtex.style.formatting', 'diracstyle', DiracStyle)
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -83,7 +113,7 @@ today_fmt = '%d %B %Y - %H:%M:%S'
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = ['_build']
+exclude_trees = ['_build','workshop-slides']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -108,9 +138,24 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
+try:
+    import sphinx_rtd_theme
+    html_theme = 'sphinx_rtd_theme'
+    html_theme_path = ['_themes', sphinx_rtd_theme.get_html_theme_path()]
+    html_static_path = ['_static']
+    html_context = {
+        # custom theme css file, put your styles here
+        'css_files': ['_static/theme-custom.css'],
+        # google analytics account id
+        'google_analytics_account': 'UA-61958338-1',
+    }
+except ImportError:
+    html_theme = 'dirac'
+    html_theme_path = ['_themes']
+
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'dirac'
+# html_theme = 'dirac'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -118,7 +163,7 @@ html_theme = 'dirac'
 #html_theme_options = {}
 
 # Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = ['_themes']
+# html_theme_path = ['_themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -143,7 +188,7 @@ html_logo = '_themes/logo.png'
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-#html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = '%d %b %Y, %H:%M:%S'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -154,7 +199,9 @@ html_logo = '_themes/logo.png'
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-#html_additional_pages = {}
+html_additional_pages = {
+    'gsearch': 'gsearch.html',
+}
 
 # If false, no module index is generated.
 #html_use_modindex = True
@@ -211,3 +258,12 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+# mathjax config
+mathjax_generate_latex = True
+mathjax_latex_style = 'font-size:14px;text-align:right;'
+mathjax_latex_title = 'Save as Latex'
+
+# gitlog config
+gitlog_source_path = 'doc'
+gitlog_date_format = '%d %b %Y, %H:%M:%S'

@@ -1,3 +1,5 @@
+:orphan:
+
 =============================================
 Magnetizabilities with London Atomic Orbitals
 =============================================
@@ -6,7 +8,7 @@ Introduction
 ------------
 
 In this tutorial we will look at the calculation of (static) magnetizabilities with DIRAC.
-For more details about the method, see [Ilias2013]_.
+For more details about the method, see :cite:`Ilias2013`.
 
 The component :math:`\zeta_{\alpha\beta}` of the static :math:`3\times 3` magnetizability tensor describes
 connects component :math:`\alpha` of first-order induced magnetic dipole to component :math:`\beta` of the
@@ -60,11 +62,11 @@ We first calculate the magnetizability using the input file `cgo.inp`
 
 .. literalinclude:: cgo.inp
 
-where the (common) gauge origin has been set to the center of mass using the :ref:`.USECM` keyword.
-Notice that we use :ref:`.RKBIMP` to convert our molecular coefficients from restricted
+where the (common) gauge origin has been set to the center of mass using the :ref:`NMR_.USECM` keyword.
+Notice that we use :ref:`GENERAL_.RKBIMP` (? :ref:`PROPERTIES_.RKBIMP` ) to convert our molecular coefficients from restricted
 to unrestricted kinetic balance (RKB :math:`\rightarrow` UKB), the former employed for the
 generation of orbitals, and the latter employed for the response calculations, indicated by
-:ref:`.URKBAL`. This corresponds to the use of `simple magnetic balance <../simple_magnetic_balance/tutorial.html>`_.
+:ref:`HAMILTONIAN_.URKBAL`. This corresponds to the use of `simple magnetic balance <../simple_magnetic_balance/tutorial.html>`_.
 The calculation is run using::
 
    pam --inp=cgo --mol=NF3 --incmo
@@ -87,7 +89,7 @@ which gives the total magnetizability tensor
 .. literalinclude:: lao_NF3_total
 
 which is markedly different from the CGO. The question now is: Which result is 'best' ?
-From microwave spectroscopy (see [Stone1969]_) the magnetizability anisotropy, defined as
+From microwave spectroscopy (see :cite:`Stone1969`) the magnetizability anisotropy, defined as
 
 .. math::
 
@@ -124,7 +126,7 @@ removes the gauge dependence in the finite basis approximation.
 Basis-set convergence
 ~~~~~~~~~~~~~~~~~~~~~
 
-The basis set convergence is illustrated by the following table, taken from  [Ilias2013]_, showing CGO(LAO) 
+The basis set convergence is illustrated by the following table, taken from  :cite:`Ilias2013`, showing CGO(LAO) 
 magnetizabilities (in :math:`e^2a_0^2/m_e`) for a wide range of basis sets. 
 
 +----------+---------------------------+-----------------------+---------------------+---------------------+

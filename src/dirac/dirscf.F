@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,11 +20,11 @@
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck psidhf */
-      SUBROUTINE PSIDHF(WFCONV)
+C  /* Deck psiscf */
+      SUBROUTINE PSISCF(WFCONV)
 C***********************************************************************
 C
-C     Solve DHF - equations; print results
+C     Solve SCF - equations (HF/KS); print results
 C
 C     This routine is called from:  PAMPSI (main/dirac.F)
 C
@@ -56,10 +56,10 @@ C
      &          EVCCNV_SAVE, FCKCNV_SAVE 
       real(8), allocatable :: WORK(:)
 C
-      CALL QENTER('PSIDHF')
+      CALL QENTER('PSISCF')
       call legacy_lwork_get(LWORK)
 #include "memint.h"
-      call alloc(WORK,LWORK,id='WORK in PSIDHF')
+      call alloc(WORK,LWORK,id='WORK in PSISCF')
 C
       WFCONV = .FALSE.
       if (doxml) then
@@ -137,9 +137,15 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
 
       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &            WORK(KFREE),LFREE)
+
+      !> in the hypothetical case that we run a property calculation for a one-electron system 
+      !> it is useful to define some 2e-common blocks... strange but it is a 'bug' in the post-SCF module setup
+      !> which basically always assumes 2e-ints to be present.
+  
+      if(onesys) call paovec(work(kfree),lfree,0,0)
 C
 C     Memory deallocation of the Fock matrix only...
-      CALL MEMREL('PSIDHF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
+      CALL MEMREL('PSISCF.DHFSCF',WORK,KWORK,KFOCK,KFREE,LFREE)
 C
 C     Output section
 C
@@ -156,7 +162,7 @@ CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
 C
 C     Memory deallocation of the rest..
 C
-      CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
       call dealloc(work)
 
@@ -164,27 +170,44 @@ C=============================================================
 CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
       IF (DO2C4C) THEN
-        INTDEF = INTDEF_SAVE
-        INTGEN = INTDEF 
-        MC = 2
-        SSMTRC = SSMTRC_SAVE
+        INTDEF    = INTGEN_SAVE
+        INTGEN    = INTDEF 
+        MC        = 2
+        SSMTRC    = SSMTRC_SAVE
+        !> set integral flags
+        ILLINT    = IAND(INTGEN,1)
+        ISLINT    = IAND(INTGEN/2,1)
+        ISSINT    = IAND(INTGEN/4,1)
+        IGTINT    = IAND(INTGEN/8,1)
 
-        BSS = .FALSE.
-        CALL GMOTRA(.FALSE.)
-CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
+        print *, 'intdef, ssmtrc ==> ',intdef, ssmtrc
+
+
+        BSS        = .FALSE.
+        twocomp    = .false.
+        x2cmod_mmf = .false.
+        x2c        = .false.
+
+        CALL SETDC1(0)
         CALL SETDC2(0)
 
-        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 2')
+        CALL GMOTRA(.FALSE.)
+CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
+
+        call alloc(WORK,LWORK,id='WORK in PSISCF - part 2')
+#include "memint.h"
 
         IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
 CMI      ... prepare the starting 4c Fock MO matrix
-        CALL MEMGET('REAL',K1,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K2,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K3,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K1',K1,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K2',K2,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K3',K3,N2BBASXQ,    WORK,KFREE,LFREE)
+        CALL MEMCHK('FDTR4C 0.0.0',WORK,1)
+
         CALL FDTR4C(WORK(K1),WORK(K2),WORK(K3),WORK(KFREE),LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K3,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K2,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K1,KFREE,LFREE)
+
+        CALL MEMREL('FDTR4C.PSISCF',WORK,KWORK,KWORK,KFREE,LFREE)
+
         ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
 C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KCMO,N2BBASXQ,    WORK,KFREE,LFREE)
@@ -208,28 +231,28 @@ C         .... prepare the DFCOEF file with staring MOs
           CALL SYSTEM('/bin/rm DFDIIS')
 #endif
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFDIIS file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFDIIS file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFFOCK',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFFOCK')
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFFOCK file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFFOCK file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFEVEC',EXIST=EX)
         IF (EX) THEN
           CALL SYSTEM('/bin/rm DFEVEC')
           IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSIDHF: DFEVEC file from previous SCF cycle was deleted.'
+     &    'PSISCF: DFEVEC file from previous SCF cycle was deleted.'
         ENDIF
 
         INQUIRE(FILE='DFCOEF',EXIST=EX)
         IF (EX.AND.(INI2C.NE.3.AND.INI2C.NE.4)) THEN
          CALL SYSTEM('/bin/rm DFCOEF')
          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &   'PSIDHF: DFCOEF file from previous SCF cycle was deleted.'
+     &   'PSISCF: DFCOEF file from previous SCF cycle was deleted.'
         ENDIF
 
         DHFCONV(1)=.FALSE.
@@ -252,8 +275,11 @@ C         .... prepare the DFCOEF file with staring MOs
         CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
         CALL SETDHF(IPRSCF)
-CMI    ... TODO: it would be good to generalize the title printout (DFT or SCF)
-        CALL TITLER('Hartree-Fock calculation','*',125)
+        IF(dirac_cfg_dft_calculation) THEN
+           CALL TITLER('Kohn-Shame DFT calculation','*',125)
+        ELSE
+           CALL TITLER('Hartree-Fock calculation','*',125)
+        END IF
 
 CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
         IF (MAXITR.GT.0) THEN
@@ -266,7 +292,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
          DHFCONV(1)=.TRUE.
         ENDIF
 
-        CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
 
         call dealloc(work)
 
@@ -281,8 +307,8 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
         else 
           BSS      = .TRUE.
           CMPEIG   = .TRUE. ! this flag is needed for preparing transformed data
-          write(lupri,'(/A)')
-     &    '     *** PSIDHF: Descending to two-component'// 
+          WRITE(lupri,'(/A)')
+     &    '     *** PSISCF: Descending to two-component'// 
      &    ' mode after previous four-component SCF cycles. ***'
         end if
         TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
@@ -294,7 +320,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 !       call the x2c/bss transformation module (branch 2 inside gmotra)
         CALL GMOTRA(.FALSE.)
 
-        call alloc(WORK,LWORK,id='WORK in PSIDHF - part 3')
+        call alloc(WORK,LWORK,id='WORK in PSISCF - part 3')
 
         IF(.NOT.CONT2C) THEN
 CMI ... consider TRMO4C2C ...???
@@ -334,7 +360,7 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
           CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &              LFREE,IPRSCF)
 
-          CALL MEMREL('PSIDHF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+          CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
         END IF ! continue in 2c-mode switch
         call dealloc(work)
       END IF ! 4c --> 2c switch
@@ -349,7 +375,7 @@ C
          call xml_end('task')
       endif
       if(allocated(work)) call dealloc(WORK)
-      CALL QEXIT('PSIDHF')
+      CALL QEXIT('PSISCF')
       RETURN
 C
       END
@@ -390,7 +416,7 @@ C*****************************************************************************
       use fde_mod
       use num_grid_gen
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -420,7 +446,7 @@ C
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
 
-#if defined (PCM_MODULE)
+#ifdef HAS_PCMSOLVER
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
 
@@ -478,11 +504,15 @@ C     ========================================
       DOSEL = .FALSE.
 C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
+      IF(ATHUCK) THEN
+        DHF_INTTYP='Atom. Huckel'
+        CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
+        GOTO 100
 C
-C     1) - atomic start
+C     2) - atomic start
 C     -------------------------
-C
-      IF(ATOMST) THEN
+      ELSEIF(ATOMST) THEN
 C.......In the open-shell case use fractional occupation in first iteration; reset at the end
         AOCBUF   = AOC
         AOC      = .FALSE.
@@ -695,14 +725,14 @@ C
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
         if (dirac_cfg_pcm) then
            do ifock = 1, n2bbasxq
               if (fock(ifock) /= fock(ifock)) then
                  call quit('NaN found in Fock matrix')
               end if 
            end do
-           write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
+           WRITE(lupri,'(a)') '* Calling pcm_oper_ao_driver'
            allocate(fock_pcm(ntbas(0), ntbas(0), nz))
            fock_pcm = 0.0d0
 ! fock is the 2-el Fock matrix
@@ -814,6 +844,7 @@ CMI        ... MAXITER is what does the SCF procedure end !!
         ENDIF
       ENDIF
 C
+ 100  CONTINUE
       CALL GETTIM(CTIDEND,WTIDEND)
       CTIDTOT = CTIDEND - CTIDSTR
       WTIDTOT = WTIDEND - WTIDSTR
@@ -826,6 +857,7 @@ C
         IF(NZ.EQ.4) WRITE(LUPRI,'(3X,A,A12)')
      &      '* Quaternion diagonalization(CPU):',CPUTID
       ENDIF
+C
       IF(ONESYS) THEN
         IF(PHCOEF) THEN
           DO I = 1,NFSYM
@@ -853,7 +885,7 @@ C
           ENDIF
           if (dirac_cfg_fde) then
              cputid = sectid(tdfde)
-             write(lupri,'(3X,A,A12)')
+             WRITE(lupri,'(3X,A,A12)')
      &      '* FDE Fock matrix           (CPU):',CPUTID
           endif
         ENDIF
@@ -890,33 +922,29 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dfsolv */
-      SUBROUTINE DFSOLV(FMO,EIG,IBEIG,FAO,DMAT,BMAT,ICHKCNV,DOSEL,
-     &                  DOLEV,WORK,LWORK)
+C  /* Deck DF_FMO */
+      SUBROUTINE DF_FMO(FMO,FAO,DAO,TMAT,SAOMO,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
-C     Solve the (Dirac)-Hartree-Fock eigenvalue equation
+C     Construct the Fock matrix in the reference MO basis
 C
 C     On input:
 C    ===========
-C       FMO - MO-coefficients from previous iteration
-C       FAO - Fock-matrix in AO-basis
-C       IBEIG - boson specification of molecular spinors
-C       DMAT
+C       FAO   - Fock-matrix in AO basis
+C       DAO   - Density matrix in AO-basis
+C
+C       FAO and DAO are generally destroyed !
 C
 C     On output:
 C    ============
-C       FMO - MO-coefficients from current iteration
-C       EIG - eigenvalues
-C       DMAT is generally destroyed !
+C       FMO    - Fock-matrix in reference MO basis
+C       TMAT   - AO -> reference MO transformation matrix
+C       SAOMO  - < AO | ref MO > overlap matrix
 C
-C     Callef from: PREDHF
-C                  SCFCY1
+C     Called from: DFSOLV
+C                  SCFCYC_1
 C
-C     Written by T.Saue Mar 09 1995
-C
-C     Last revisions: Mar 09 1995
-C                    Nov. 2005 - MI
+C     Extracted from DFSOLV Feb. 2015 hjaaj
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -929,58 +957,50 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
-     &            DM1 = -1.00D00, D2 = 2.00D00)
-      LOGICAL DOSEL,DOLEV,FNDLAB,TEST
-      DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
-     &          WORK(LWORK)
+      REAL*8    FMO(*),FAO(*),DAO(*),TMAT(*),SAOMO(*),WORK(*)
+      LOGICAL   FNDLAB
 C
-#include "memint.h"
-
-      CALL QENTER('DFSOLV')
+      CALL QENTER('DF_FMO')
 C
 C
 C     Transform AO Fock matrix to reference MO basis
 C     ============================================== 
 C
-      CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','DFSOLV')
-CMI   ... read AO2MO transformation matrixe into WORK(KTMAT)...
-      CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','DF_FMO')
+C         read AO2MO transformation matrix TMAT
+      CALL READT(LUTMAT,N2TMT,TMAT)
+C         read LUTMAT rec#2 with SAOMO
+      CALL READT(LUTMAT,N2TMT,SAOMO)
+      CLOSE(LUTMAT,STATUS='KEEP')
 
 CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF from BSS-SCF
       IF (.NOT.RESTFCK) THEN
-        IF ((NASHT.GT.0.AND.AOC).OR.DIISAO) THEN
-          CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KDEVEC,N2BBASXQ      ,WORK,KFREE,LFREE)
-C         read LUTMAT rec#2 with SAOMO
-C         NZT is the NZ value for the transformation matrix
-          CALL MEMGET('REAL',KSAOMO,N2TMT,WORK,KFREE,LFREE)
-          CALL READT(LUTMAT,N2TMT,WORK(KSAOMO))
-        ELSE
-          KDTEMP = KFREE
-          KDEVEC = KFREE
-          KSAOMO = KFREE
-        ENDIF
 
-        IF (((NASHT.GT.0).AND.AOC).AND.TRIVEC) THEN
-          CALL MEMGET('REAL',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
-          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),EIG,IBEIG,TOTERG,6,
-     &              WORK,KFREE,LFREE)
-        ELSE
-          KCMOSAV = KFREE
-        END IF
         IF (NASHT.GT.0.AND.AOC) THEN
-          CALL MKMOFK(FMO,FAO,DMAT,WORK(KTMAT),WORK(KCMOSAV),
-     &                WORK(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),
+        IF (TRIVEC) THEN
+          CALL MEMGET2('REAL','CMOSAV',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','EIG   ',KEIG   ,NORBT ,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IBEIG ',KIBEIG ,NORBT ,WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),
+     &              WORK(KEIG),WORK(IBKEIG),TOTERG,6,WORK,KFREE,LFREE)
+        ELSE
+          CALL MEMGET2('REAL','CMOSAV',KCMOSAV,0     ,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','EIG   ',KEIG   ,0     ,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','IBEIG ',KIBEIG ,0     ,WORK,KFREE,LFREE)
+        END IF
+          CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ*NFMAT,
+     &                  WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ,
+     &                  WORK,KFREE,LFREE)
+          CALL MKMOFK(FMO,FAO,DAO,TMAT,WORK(KCMOSAV),
+     &                SAOMO,WORK(KDTEMP),WORK(KDEVEC),
      &                WORK(KFREE),LFREE)
         ELSE
-          CALL MKMOFK(FMO,FAO,DUMMY,WORK(KTMAT),DUMMY,
-     &              DUMMY,DUMMY,DUMMY,WORK(KFREE),LFREE)
+          CALL MKMOFK(FMO,FAO,DUMMY,TMAT,DUMMY,
+     &                DUMMY,DUMMY,DUMMY,WORK(KFREE),LFREE)
         END IF
 
-      END IF ! OF .NOT.RESTFCK
-      CLOSE(LUTMAT,STATUS='KEEP')
+      ELSE ! IF  .NOT.RESTFCK  ELSE, i.e. RESTFCK true 
 
 CMI ==================================================================
 CMI  ... read the 2comp. Fock-Dirac matrix in Lowdin
@@ -988,8 +1008,7 @@ CMI        MO basis (from pctra DC-SCF) to START 2c BSS-SCF ...
 CMI  ... or the 4comp STARTING Fock-Dirac matrix (from rev.pctra BSS-SCF+H2cPP)
 CMI     in RKB_MO basis to restart DC-SCF
 CMI ==================================================================
-      IF (RESTFCK) THEN
-       CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
+       CALL OPNFIL(LUBSS,'BSSMAT','OLD','DF_FMO')
        IF (DO4C2C) THEN
 C ...    read the FD_2c in Lowdin MO basis from the BSSMAT to 
 C       provide starting for the postDHF-BSS-SCF procedure
@@ -999,10 +1018,10 @@ C       provide starting for the postDHF-BSS-SCF procedure
           IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
           CALL READT(LUBSS,ISIZE,FMO)
           IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)') 
-     &  'DFSOLV: FD_2c elements in Lowdin MO basis were read'// 
+     &  'DF_FMO: FD_2c elements in Lowdin MO basis were read'// 
      &  ' from the BSSMAT file(FD2C_LMO)-starting guess for BSS-SCF.'
          ELSE
-           CALL QUIT('DFSOLV: FD2C_LMO label in BSSMAT not found !') 
+           CALL QUIT('DF_FMO: FD2C_LMO label in BSSMAT not found !') 
          END IF
       ELSE  ! RESTFCK=.false., continuing with four-component DC-SCF
          IF (FNDLAB('FD4C_RKB',LUBSS)) THEN
@@ -1010,10 +1029,10 @@ C       provide starting for the postDHF-BSS-SCF procedure
           IF (NFSYM.EQ.2) ISIZE=ISIZE+(NORB(2)*NORB(2)*NZ)
           CALL READT(LUBSS,ISIZE,FMO)
           IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')
-     &    'DFSOLV: FD_4c elements in RKB MO basis were read'// 
+     &    'DF_FMO: FD_4c elements in RKB MO basis were read'// 
      &    ' from the BSSMAT file(FD4C_RKB)-starting guess for DC-SCF.'
          ELSE
-           CALL QUIT('DFSOLV: FD4C_RKB  not found in BSSMAT !') 
+           CALL QUIT('DF_FMO: FD4C_RKB  not found in BSSMAT !') 
          END IF
        END IF
         CLOSE(LUBSS,STATUS='KEEP')
@@ -1029,6 +1048,68 @@ C
          ENDIF
          CALL FMO_FREEZE(FMO)
       ENDIF
+      CALL QEXIT('DF_FMO')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck dfsolv */
+      SUBROUTINE DFSOLV(FMO,EIG,IBEIG,FAO,DMAT,BMAT,ICHKCNV,
+     &                  DOSEL,DOLEV,WORK,LWORK)
+C*****************************************************************************
+C
+C     Solve the (Dirac)-Hartree-Fock eigenvalue equation
+C
+C     On input:
+C    ===========
+C       FAO   - Fock-matrix in AO-basis
+C       IBEIG - boson specification of molecular spinors
+C       DMAT  - Density matrix in AO-basis
+C
+C     On output:
+C    ============
+C       FMO - MO-coefficients from current iteration
+C       EIG - orbital eigenvalues
+C       DMAT and FAO are generally destroyed !
+C
+C     Callef from: PREDHF
+C                  SCFCYC_1
+C
+C     Written by T.Saue Mar 09 1995
+C
+C     Last revisions: Mar 09 1995
+C                     Nov. 2005 - MI
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+C
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
+     &            DM1 = -1.00D00, D2 = 2.00D00)
+      LOGICAL DOSEL,DOLEV,FNDLAB
+      DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),DMAT(*),BMAT(*),
+     &          WORK(LWORK)
+C
+#include "memint.h"
+
+      CALL QENTER('DFSOLV')
+C
+C
+C     Transform AO Fock matrix to reference MO basis
+C     ============================================== 
+C
+C     And modify open-shell diagonal blocks for open-shell calculations
+C
+      CALL MEMGET2('REAL','TMAT' ,KTMAT ,N2TMT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SAOMO',KSAOMO,N2TMT,WORK,KFREE,LFREE)
+      CALL DF_FMO(FMO,FAO,DMAT,WORK(KTMAT),WORK(KSAOMO),
+     &     WORK,KFREE,LFREE)
 C
 C     Convergence control/acceleration
 C     ================================
@@ -1036,11 +1117,16 @@ C
 !     Level shift, PSB+MI/Aug2014: move the level shift before calling the
 !     convergence acceleration because one needs the full matrix
 !     for the convergence accelerations
+
       IF (DOLEV) CALL LEVSHI(FMO,FAO)
 
       IF(DOCCNV) THEN
         IF(DIISAO) THEN
-          CALL DHFCNV(FMO,FAO,DMAT,WORK(KDEVEC),WORK(KDTEMP),
+          CALL MEMGET2('REAL','EVEC',KEVEC,N2BBASXQ      ,
+     &       WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','FBUF',KFBUF,N2BBASXQ*NFMAT,
+     &       WORK,KFREE,LFREE)
+          CALL DHFCNV(FMO,FAO,DMAT,WORK(KEVEC),WORK(KFBUF),
      &                WORK(KTMAT),BMAT,ICHKCNV,WORK(KSAOMO),
      &                WORK(KFREE),LFREE)
         ELSE
@@ -1048,10 +1134,11 @@ C
      &                DUMMY,WORK(KFREE),LFREE)
         ENDIF
       ENDIF
-      IF (DHFEXIT) THEN
-C        ... extract diagonal FMO elements to EIG
-       IF (IPRSCF.GE.6) THEN
-         DO IFSYM = 1,NFSYM
+C
+C     If converged, then DHFEXIT is .true. now
+C
+      IF (DHFEXIT .AND. IPRSCF.GE.6) THEN
+        DO IFSYM = 1,NFSYM
 C        ... before extracting of EIG print the Fock matrix
            CALL HEADER(
      &    'DFSOLV: The converged Fock matrix, FMO, in MO basis ',-1)
@@ -1060,10 +1147,8 @@ C        ... before extracting of EIG print the Fock matrix
            CALL PRQMAT(FMO(I2TMOT(IFSYM)+1),NTMO(IFSYM),NTMO(IFSYM),
      &          NTMO(IFSYM),NTMO(IFSYM),NZ,IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
-         ENDDO
-       ENDIF
-       GOTO 9999
-      END IF
+        ENDDO
+      ENDIF
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -1072,11 +1157,9 @@ C
       CALL DFDIAG (FMO,EIG,IBEIG,FAO,.TRUE.,WORK,KFREE,LFREE)
       TDDG = SECOND() - TDDG
 C
+C     sebastian+stefan: subtract level shift from orbital energies
 C
-C     Automatic occupation
-C     ====================
-C
-      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)
+      IF(DOLEV) CALL UNDOLEVSHI(EIG)
 C
 C     Overlap selection
 C     =================
@@ -1088,9 +1171,19 @@ C     ====================
 C
       IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
 C
+C     If converged, do not select occupation or save orbitals
+C
+      IF (DHFEXIT) GOTO 9999 
+C
+C     Automatic occupation
+C     ====================
+C
+      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)
+C
 C
 C     Backtransform all spinors (temporary storage in FMO)
 C     ====================================================
+C     NZT is the NZ value for the transformation matrix
 C
       IF(NFROT.GT.0) CALL OPNFIL(LUTMAT,'DFFROZ','OLD','DFSOLV')
       DO 40 I = 1,NFSYM
@@ -1131,15 +1224,21 @@ CMI     ... Control printout ...
  40   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
 C
-C
-C     sebastian+stefan: subtract level shift from orbital energies
-      IF(DOLEV) CALL UNDOLEVSHI(EIG)
-C
 C     Print eigenvalues 
 C     (after backtransformation in case of frozen orbitals)
 C
       IF (IPRSCF.GE.2) THEN
         CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
+      ELSE IF (IPRSCF.GE.0) THEN
+        DO I = 1,NFSYM
+           JHOMO = IORB(I)+NPSH(I)+NISH(I)
+           JLUMO = JHOMO + NASH(I) + 1
+           IF (NISH(I) .EQ. 0) JHOMO = JHOMO + 1 ! e.g. fsym 2, oxygen atom
+           IF (NSSH(I) .EQ. 0) JLUMO = JLUMO - 1 ! very small test basis sets
+           WRITE(LUPRI,'(A,I2,A,(T30,5(I5,F10.5)))')
+     &     'E_HOMO...E_LUMO, symmetry',I,':',
+     &     (J, EIG(J), J = JHOMO,JLUMO)
+        END DO
       ENDIF
 C
 C     Write coefficients to file
@@ -1152,15 +1251,16 @@ C     Write transformed coefficients
       CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
 C
 C
-C     Dynamic update of overlap selection matrix
+C     Dynamic update of overlap selection matrix, if not converged
 C     (note that DMAT is destroyed)
 C
       IF (DYNSEL) THEN
         CALL SMOGEN(FAO,DMAT)
       ENDIF
 C
+ 9999 CONTINUE
+      CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
- 9999 CALL MEMREL('DFSOLV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('DFSOLV')
       RETURN
 C
@@ -1174,7 +1274,7 @@ C
 C    Solve SCF
 C
 C
-C   Called from PSIDHF
+C   Called from PSISCF
 C
 C*****************************************************************************
 
@@ -1216,6 +1316,7 @@ C
 C     Solve one-electron system ...
 C     =============================
 C
+        OPEN_FAC = 1.0D0
         CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUMMY,DUMMY,IDUMMY,WORK,LWORK)
         DHFCONV(1) = .TRUE.
         DHFCONV(2) = .TRUE.
@@ -1265,15 +1366,15 @@ C
 C
 C     Initiate/restart SCF-cycle
 C
-      CALL SCFCY1(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),WORK(KBMAT),
+      CALL SCFCYC_1(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),WORK(KBMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
-      CALL MEMREL('SCFCYC.SCFCY1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('SCFCYC.SCFCYC_1',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT ('SCFCYC')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck scfcy1 */
-      SUBROUTINE SCFCY1(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
+C  /* Deck SCFCYC_1 */
+      SUBROUTINE SCFCYC_1(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C*****************************************************************************
 C
 C     Perform Dirac-Fock SCF-cycle
@@ -1288,7 +1389,7 @@ C*****************************************************************************
       use num_grid_gen
       use interface_mo_specific
       use xmlout
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -1308,18 +1409,19 @@ C
 #include "dcbreo.h"
 #include "densfit.h"
       real(8), allocatable :: aoo2esssoc(:)
-      LOGICAL   LBIT, tobe
+      LOGICAL   LBIT, tobe, DODIIS_save
       type(fde_import) :: itmp
-      CHARACTER CPUTID*12,SECTID*12,DAYTID*24
+      CHARACTER WALTID*12,CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
-#ifdef PCM_MODULE
-      real(8) :: time_pcm_fock
-      character(12) :: pcm_cputid
+
+#ifdef HAS_PCMSOLVER
+      real(8)              :: time_pcm_fock
+      character(12)        :: pcm_cputid
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
-      CALL QENTER('SCFCY1')
+      CALL QENTER('SCFCYC_1')
 #include "memint.h"
 C
 #ifdef MOD_DNF
@@ -1327,9 +1429,9 @@ C
          IF (DODSCF) THEN
             using_diffdens = .true.
             CALL DF_FitXC_InitFilesDD(NBASISAUX,WORK,LWORK)
-          ELSE
-             using_diffdens = .false.
-          endif
+         ELSE
+            using_diffdens = .false.
+         ENDIF
       ENDIF
 #endif
 C
@@ -1337,23 +1439,26 @@ C     ***********************************
 C     ***** Perform SCF-iterations ******
 C     ***********************************
 C
+      OPEN_FAC_save = OPEN_FAC
+      DODIIS_save   = DODIIS
+C
 C     Initiate/restart SCF cycle
 C
       DHFEXIT = .FALSE.
+      OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
+      OPEN_FAC = OPEN_FAC_save
       IF(DHFEXIT) GOTO 30
 C
 C     Start cycle
 C
-      CALL FLSHFO(LUPRI)
 
       DO 10 ITER = 2,MAXITR
          NITER  = NITER + 1
-         KITER  = KITER + 1
+         KITER  = ITER   ! transfer ITER via COMMON to SUBROUTINE DHFCNV
          CALL GTINFO(DAYTID)
          CALL GETTIM(CTIDSTR,WTIDSTR)
-         CALL TIMER('START ',TIMSTR,TIMEND)
          WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
      +     '########## START ITERATION NO.',NITER,' ##########',
      &     DAYTID
@@ -1548,8 +1653,9 @@ C        ======================
            deallocate(aoo2esssoc)
          end if
 C
+         ! here F1 is in CMO and F2 is in FOCK
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
            time_pcm_fock = second()
@@ -1565,7 +1671,7 @@ C
            deallocate(fock_pcm)
            time_pcm_fock = second() - time_pcm_fock
          endif 
-#endif
+#endif         
 
 C
 C        Add one-electron Fock matrix to two-electron matrix
@@ -1593,14 +1699,14 @@ C
          IF(IPRSCF.GE.5) THEN
            IF (NISHT .GT. 0) THEN
             CALL HEADER(
-     &      'SCFCY1: Total FD matrix in SA-AO basis',-1)
+     &      'SCFCYC_1: Total FD matrix in SA-AO basis',-1)
             CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                  NZ,IPQTOQ(1,0),LUPRI)
            END IF
            IF(AOC) THEN
             DO IOPEN = 1,NOPEN
              CALL HEADER(
-     &       'SCFCY1: Total FV matrix in SA-AO basis',-1)
+     &       'SCFCYC_1: Total FV matrix in SA-AO basis',-1)
              WRITE(LUPRI,'(5X,A,I1,A,I1)')
      &       'matrix number ',IOPEN,'/',NOPEN
              CALL PRQMAT(FOCK(1+N2BBASXQ*IOPEN),NTBAS(0),NTBAS(0),
@@ -1616,8 +1722,12 @@ C                DMAT - Density matrix
 C                BMAT - DIIS matrix
 C        Output: CMO  - MO-coefficients for current iteration
 C
-CMI    ... we may get the DHFEXIT  
-         ICHKCNV = 1
+         IF(ATHUCK.AND.(NITER.EQ.2)) THEN
+           ICHKCNV = 0
+         ELSE
+           ICHKCNV = 1
+         ENDIF
+
          CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,ICHKCNV,
      &               OVLSEL,DOLEVEL,WORK(KFREE),LFREE)
 
@@ -1625,7 +1735,7 @@ CMI    ... we may get the DHFEXIT
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            pcm_cputid = sectid(time_pcm_fock) 
            write(lupri,'(3X,A,A12)')
@@ -1645,12 +1755,12 @@ CMI    ... we may get the DHFEXIT
         WTIDTOT = WTIDEND - WTIDSTR
         ITRSCF(INTFLG) = ITRSCF(INTFLG) + 1
         SCFTID(INTFLG) = SCFTID(INTFLG) + WTIDTOT
-        CPUTID = SECTID(WTIDTOT)
-        WRITE(LUPRI,'(A,A12)')
-     &    '>>> Total wall time:',CPUTID
+        WALTID = SECTID(WTIDTOT)
         CPUTID = SECTID(CTIDTOT)
-        WRITE(LUPRI,'(A,A12)')
-     &    '>>> Total CPU time :',CPUTID
+        WRITE(LUPRI,'(A,A12,A,A12)')
+     &    '>>> Total wall time:',WALTID,
+     &    ', and total CPU time :',CPUTID
+        CALL GTINFO(DAYTID)
         WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
      +    '########## END ITERATION NO.',NITER,' ##########',
      &    DAYTID
@@ -1681,8 +1791,80 @@ C          reset intbuf so no old Fock matrices are used :
            INTBUF = INTFLG
         END IF
 C
-        IF(DHFEXIT) GOTO 30
- 10   CONTINUE
+        IF (DHFEXIT) THEN
+
+C          Comments on open shell convergence. Feb. 2013 hjaaj.
+C          ====================================================
+C          Some authors have put forward that OPEN_FAC = 1.0D0 is the best choice,
+C          for interpretation of results as ionization potentials.
+C          In Odense, we have often observed divergence in our EPR work with OPEN_FAC = 1.0D0
+C          As a compromise so that we not many times get non-convergence and then remember
+C          "Oh, now we again forgot .OPENFAC 0.0D0 in input" I this week implemented
+C          optimization with OPEN_FAC < 1.0D0, and then at the end we recalculate
+C          orbital energies with OPEN_FAC = 1.0D0.
+C
+C          I ended up with only printing for information and not changing the MOs.
+C          Reason:
+C          I used a simple molecule as H2O+ as test. Non-convergence with OPEN_FAC=1.0D0,
+C          convergence in 13 iterations with OPEN_FAC=0.0D0. My new code to redo orbitals with
+C          OPEN_FAC=1.0D0 revealed that changing from 0.0 to 1.0 SWITCHED HOMO and SOMO:
+C          with OPEN_FAC = 0.0D0: E_HOMO=-1.06615, E_SOMO=-0.69465, E_LUMO=-0.13895
+C          with OPEN_FAC = 1.0D0: E_HOMO=-1.06615, E_SOMO=-1.11543, E_LUMO=-0.13895
+C          And with energy selection, HOMO and SOMO switched places. No wonder there
+C          is non-convergence for OPEN_FAC=1.0D0. I have therefore disabled this again
+C          concluding that in spite of all good arguments, OPEN_FAC=1.0 is not a good
+C          default. I have now implemented OPEN_FAC = 0.5D0 as a compromise default ;-)
+C          In fact, with 0.5 H2O+ converged in 12 iterations. Nice.
+C
+C          (By the way, we know from TM chemistry that high spin can have lower
+C          energy than low spin, and this is indeed also what happens for H2O++,
+C          in agreement with the interpretration of the OPEN_FAC = 1.0 eigenvalues
+C          as IPs, i.e. the triplet state from ionizing from HOMO and HOMO-1 for
+C          neutral water has lower energy than the singlet energy from ionizing both
+C          electrons from HOMO. This was tested with MCSCF calculations with DALTON.
+C          This gives a physical explanation why OPEN_FAC = 1.0 often is a bad
+C          idea for convergence.)
+
+           IF (NOPEN .eq. 0 .OR. OPEN_FAC .eq. 1.0D0) GOTO 30
+
+           WRITE(LUPRI,'(///A/A)') ' * Converged. '//
+     &        'Redoing orbital energy calculation with .OPENFAC 1.0D0'
+           OPEN_FAC = 1.0D0
+C          do continue even though converged :
+           DHFEXIT = .FALSE.
+           DODIIS  = .FALSE.
+C          restore density matrix and  total Fock matrices (have been destroyed in DFSOLV)
+           CALL READNS(LUDENS,DMAT)
+           CALL REAFCK(LUFCKT,FOCK,.FALSE.,NFMAT)
+           CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
+     &                 ICHKCNV,OVLSEL ,DOLEVEL,WORK(KFREE),LFREE)
+C          Read CMO coefficients and bosos identification, but not orbital energies in EIG (code 10)
+C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
+
+           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10,
+     &                 WORK,KFREE,LFREE)
+           CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
+           WRITE(LUPRI,'(/A/A/A/)')
+     &' * Open-shell orbital energies recalculated with .OPENFAC 1.0,',
+     &'   corresponding to interpretation as Ionization Potentials.',
+     &'   NB! Only for information, orbitals are not modified.'
+           DO I = 1,NFSYM
+              IF (NISH(I) .EQ. 0) THEN
+                 JHOMO = IORB(I)+NPSH(I)+1
+                 JLUMO = JHOMO + NASH(I)
+              ELSE
+                 JHOMO = IORB(I)+NPSH(I)+NISH(I)
+                 JLUMO = JHOMO + NASH(I) + 1
+              END IF
+              WRITE(LUPRI,'(/A,I2,A/,8(I5,F10.5))')
+     &        '   E_HOMO, E_OPEN..., E_LUMO in Hartree, symmetry',I,':',
+     &        (J, EIG(J), J = JHOMO,JLUMO)
+           END DO
+           GOTO 30
+
+        END IF    ! if (DHFEXIT) THEN
+ 10   CONTINUE    ! DO 10 ITER = 2,MAXITR
+
       WRITE(LUPRI,'(/A)')
      &' ** Exit SCF because maximum number of iterations reached.'
 C
@@ -1691,6 +1873,11 @@ C     ***** End of SCF-iterations ******
 C     **********************************
 C
  30   CONTINUE
+
+      CALL FLSHFO(LUPRI)
+
+      OPEN_FAC = OPEN_FAC_save
+      DODIIS   = DODIIS_save
 C
 C     Close necessary files
 C
@@ -1704,7 +1891,7 @@ C
       CLOSE(LUCYCL,STATUS='KEEP')
       CLOSE(LUEVEC,STATUS='KEEP')
 
-      CALL QEXIT('SCFCY1')
+      CALL QEXIT('SCFCYC_1')
       RETURN
  1010 FORMAT('It. ',I4,1P,G23.13,3D10.2,3X,A8,3X,A12,3X,A12,3X,A10)
 C
@@ -1732,7 +1919,8 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-#ifdef PCM_MODULE
+      use fde_mod
+#ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
 
@@ -1761,9 +1949,10 @@ C
 c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
+      type(fde_import) :: itmp
       data besterg /1.0D100/
       save besterg
 C
@@ -1841,7 +2030,7 @@ C
         DHFERG = DHFERG + ERGSOL
       ENDIF
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
 ! Add polarization energy to dhferg 
         call pcm_energy_driver(dmat, pcm_energy, work, lwork)
@@ -1862,6 +2051,14 @@ C
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + xcint_get_xc_energy()
       end if
+
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+         if (itmp%im_update_vemb) then
+             elergy = elergy - fde_get_embpot_energy()
+         end if
+      end if
+
 
       DHFERG = DHFERG + ELERGY
 C
@@ -1898,7 +2095,7 @@ CMI      ... print out matrixes ...
      +       'SS Coulombic correction            :  ',CORRLV
          IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Solvent energy                     :  ',ERGSOL
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
          IF(dirac_cfg_pcm) WRITE(LUPRI,'(A,'//FMT//')')
      +       'Polarization energy                :  ',get_pcm_energy()
 #endif
@@ -2660,7 +2857,7 @@ C
         ENDIF
         IF(IPRSCF.GE.10 ) THEN
           WRITE(CTMP,'(I1)') I
-          CALL HEADER('DFSOLV: D Fock matrix in MO-basis'//
+          CALL HEADER('MKMOFK2: D Fock matrix in MO-basis'//
      &                ', corep '//CTMP,-1)
           CALL PRQMAT(FMO(1+I2TMOT(I)),NTMO(I),NTMO(I),
      &                NTMO(I),NTMO(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -3182,7 +3379,7 @@ C
 #include "dgroup.h"
 #include "dcbmvo.h"
 #include "dcbham.h"
-      LOGICAL TOBE
+      LOGICAL   TOBE
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),NPOS(*),WORK(*)
       DIMENSION IC(2),IE(2),ID(2)
       CHARACTER CTMP*1
@@ -3438,7 +3635,7 @@ C***********************************************************************
 #include "dcbham.h"
 C
       DIMENSION BMAT(MXDIIS*MXDIIS)
-      LOGICAL TOBE,OLDFMO,DSCFON
+      LOGICAL   TOBE,OLDFMO,DSCFON
 
 C     CALL QENTER('DHFTST')
 C
@@ -3513,12 +3710,16 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
           BARNUC = .FALSE.
           DOHUCKEL = .FALSE.
         ELSE
-          WRITE(LUPRI,'(/A)')
-     &    '*** INFO *** No trial vectors found.'//
+          WRITE(LUPRI,'(/A)') '*** INFO *** No trial vectors found.'
+          IF(ATHUCK) THEN
+            WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
+          ELSEIF(BARNUC) THEN
+            WRITE(LUPRI,'(A)')
      &    ' Using bare nucleus approximation for initial trial vectors.'
-          IF (BNCRON) WRITE(LUPRI,'(A/)')
+            IF (BNCRON) WRITE(LUPRI,'(A/)')
      &    "             Improved by an "//
      &    "estimate of the electronic screening (Slater's rules)."
+          ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case
           num_grid_cfg_estimate_radii = .false.
@@ -3542,7 +3743,7 @@ CMI   ... do always utilize DFCYCL when continuing with BSS-SCF after DC-SCF
      &              CACC,CPUTID,DHF_INTTYP,DAYTID
         GOTO 10
  20     CONTINUE
-#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS)
+#if defined (VAR_MFDS)
 C        backspace on multifile systems for correct positioning
 C        at the end of the file
         BACKSPACE LUCYCL
@@ -4104,7 +4305,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
-      LOGICAL SPECIAL,DODBG
+      LOGICAL   SPECIAL,DODBG
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
       character*100 :: hfile_format,hfile_name
 
@@ -4153,8 +4354,7 @@ C
 
           IF(DOJACO) THEN
             CALL RSJACO(NTMO(I),NTMO(I),NTMO(I),FMO(I2TMOT(I)+1),
-     &                  EIG(IORB(I)+1),1,1,0,FAO(I2TMOT(I)+1),
-     &                  WORK(KFREE),LFREE)
+     &                  EIG(IORB(I)+1),1,1,0,FAO(I2TMOT(I)+1))
           ELSE
             CALL QDIAG(NZ,NTMO(I),FMO(I2TMOT(I)+1),NTMO(I),NTMO(I),
      &                 EIG(IORB(I)+1),1,FAO(I2TMOT(I)+1),NTMO(I),
@@ -4196,6 +4396,7 @@ C
 C       2 : Subblock diagonalization (e.g. Levy-Leblond, spinfree, linear symmetry)
 C           use matrix as supplied by dfsolv but diagonalize blockwise
 C
+!       IF (.NOT.SPECIAL) THEN
         ELSEIF (.NOT.ZORA) THEN
 C
 C         Spinfree calculations can use the boson blocking of the
@@ -4258,8 +4459,7 @@ C
 #endif
             IF (DOJACO) THEN
               CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
-     &                    EIG(IEIG),1,1,0,FAO(IMAT),
-     &                    WORK(KFREE),LFREE)
+     &                    EIG(IEIG),1,1,0,FAO(IMAT))
             ELSE
               CALL QDIAG(1,NBO,FMO(IMAT),NTMO(I),NTMO(I),
      &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
@@ -4341,6 +4541,8 @@ C
 C
 C       3 : ZORA; diagonalize modified LL block
 C
+!       IF (.NOT.SPECIAL) THEN
+!       ELSEIF (.NOT.ZORA) THEN
         ELSEIF (ZORA.AND.(.NOT.SUB_BL)) THEN
           NL = NESH(I)
           NS = NPSH(I)
@@ -4352,6 +4554,9 @@ C
 C
 C       4 : Spinfree ZORA : Make modified matrix but do it block by block
 C
+!       IF (.NOT.SPECIAL) THEN
+!       ELSEIF (.NOT.ZORA) THEN
+!       ELSEIF (ZORA.AND.(.NOT.SUB_BL)) THEN
         ELSEIF (ZORA.AND.SPINFR) THEN
           NT = NORB(I)
           IEIGP = IORB(I) + 1
@@ -4381,7 +4586,7 @@ C
 C
 C       End of different diagonalization cases
 C
-        ENDIF
+        ENDIF    !  IF (.NOT.SPECIAL) THEN ...
 C
 C       Check if any positronic eigenvalues are below -2mc^2
 C
@@ -4784,6 +4989,7 @@ C     Written by T. Saue July 4 2006
 C
 C  MI July 6,2006: Requires DFCOEF with written MO's
 !
+!     April 2013
 !     sknecht: attempt to change level shift for closed-shell cases: i do not understand 
 !              the old implementation below but apparently it is ok. 
 !              my "intuitive solution" via shift_virtuals that is according
@@ -5118,8 +5324,11 @@ C
 C
 C     Solve one-electron system with vacuum polarisation added.
 C
+      OPEN_FAC_save = OPEN_FAC
+      OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),DUM,WORK(KPOS),
      &            WORK(KFREE),LFREE)
+      OPEN_FAC = OPEN_FAC_save
 C
 C     Reset variables
 C
@@ -5550,5 +5759,235 @@ C.......transform atomic start to actual symmetry
       CALL MEMREL('ATOMIC_START',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Atomic Huckel start
+C     The basic theory is given here
+C       R. Hoffmann, J. Chem. Phys. 39 (1963) 1397
+C     This work was further motivated by 
+C       P. Norman and H. J. Aa. Jensen, Chem. Phys. Lett. 531 (2012) 229
+C     The particularity of the present approach is to employ 
+C     pre-calculated atomic fragments
+C
+C     Written by Trond Saue June 5 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
+#include "mxcent.h"
+C
+#include "nuclei.h"
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbhoc.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      CHARACTER TEXT*74
+      DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
+     &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
+      KFRSAV = KFREE
+      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,'(A)') '** Output from ADHOC (atomic Huckel start)'
+      ENDIF
+C
+C     Find total number of reference orbitals
+C     =======================================
+C     ININD runs over symmetry independent centers
+C     INDEP runs over symmetry dependent centers
+      NVECS=0
+      INDEP=1
+      ININD=1
+      LUHOC=137
+      DO ITYP = 1,NONTYP
+C.......Find the total number of basis functions for this atom type
+        CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
+C.......Read information from coefficient file
+        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')        
+        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
+     &        NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
+C.............NPSH............NESH............NBAS...........TOTERG
+        CLOSE(LUHOC,STATUS='KEEP')
+        IF(NAO(ITYP).NE.MBAS) THEN
+           WRITE(LUPRI,'(A/A,I6/A,A6,A,I6)') 
+     &     '* Atomic Huckel start: ',
+     &     '  Wrong number of basis function for atomic type ', ITYP,
+     &     '  Number read from                     ',
+     &     HOCFIL(ITYP),' : '  ,NAO(ITYP),
+     &     '  Expected                             ',MBAS
+           CALL QUIT
+     &     ('ADHOC: Wrong number of basis functions !')
+        ENDIF
+C.......Count the number of orbitals to read
+        NCATOM(0,ITYP)=0
+        NDIM=NCATOM(2,ITYP)+NCATOM(1,ITYP)+1
+        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+        CALL NUMLS1(VECHOC(ITYP),IDUM,IDUM,
+     &       -NCATOM(2,ITYP),NCATOM(1,ITYP),
+     &       NCATOM(0,ITYP),WORK(KITMP))
+        CALL MEMREL('ADHOC.ref',WORK,1,KITMP,KFREE,LFREE)
+        CALL MEMGET('INTE',KCATOM(ITYP),NCATOM(0,ITYP),
+     &              WORK,KFREE,LFREE)
+        NN = INDEP
+        DO J = 0,NONT(ITYP)-1
+          INDEP = INDEP + NUCDEG(ININD+J)
+        ENDDO
+        NATDEG(ITYP) = INDEP - NN
+        NVECS = NVECS + NATDEG(ITYP)*NCATOM(0,ITYP)
+        ININD = ININD+NONT(ITYP)
+      ENDDO
+C
+C     Calculate dimension of arrays
+C     =============================
+C
+      CALL MEMGET('REAL',KE,NVECS,WORK,KFREE,LFREE)
+      NQ = NTBAS(0)*NVECS*NZC1
+      CALL MEMGET('REAL',KQ,NQ      ,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KQ),NQ)
+C
+C     Select atomic coefficients
+C     ==========================
+C
+      JVEC = 1
+      ININD= 1
+      DO ITYP = 1,NONTYP
+C.......Read C1 coefficients and orbitalenergies
+        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
+        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
+     &        NNEG,NPOS,NAO(ITYP),DUM
+        NTOT = NNEG+NPOS
+        NQA  = NAO(ITYP)*NTOT*NZC1
+        CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
+        CALL READT(LUHOC,NQA ,WORK(KQA))
+        CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
+        CALL READT(LUHOC,NTOT,WORK(KEA))
+        CLOSE(LUHOC,STATUS='KEEP')
+C.......Make pointer array to selected reference orbitals
+        NDIM = NTOT+1
+        CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+        CALL NUMLS1(VECHOC(ITYP),WORK(KCATOM(ITYP)),NCATOM(0,ITYP),
+     &       -NNEG,NPOS,NCATOM(0,ITYP),WORK(KITMP))
+        CALL MEMREL('ADHOC.refsel',WORK,1,KITMP,KFREE,LFREE)
+        CALL ORBCNT(WORK(KCATOM(ITYP)),NCATOM(0,ITYP),NNEG,NPOS,
+     &             NCATOM(2,ITYP),NCATOM(1,ITYP))
+C.....Extract coefficients and orbital energies (JVEC updated inside)
+        CALL SELATOM(WORK(KQ),WORK(KE),NTBAS(0),NVECS,NZC1,
+     &               WORK(KQA),WORK(KEA),NAO(ITYP),NTOT,NNEG,NPOS,
+     &               ININD,NONT(ITYP),NUCDEG(ININD),
+     &               WORK(KCATOM(ITYP)),NCATOM(1,ITYP),
+     &               NCATOM(2,ITYP),JVEC,WORK,KFREE,LFREE)
+        CALL MEMREL('ADHOC.atom',WORK,1,KQA,KFREE,LFREE)
+        ININD = ININD+NONT(ITYP)
+      ENDDO
+      IF(IPRINT.GE.6) THEN
+        WRITE(6,*) 'ADHOC: Selected coefficients:'
+        CALL PRQMAT(WORK(KQ),NTBAS(0),NVECS,NTBAS(0),NVECS,NZC1,
+     &                IQDEF,LUPRI)
+        WRITE(6,*) 'ADHOC: Selected eigenvalues:'
+        CALL OUTPUT(WORK(KE),1,NVECS,1,1,NVECS,1,-1,LUPRI)
+      ENDIF
+C
+C     Get overlap matrix in fragment basis
+C     ====================================
+C
+      CALL MEMGET('REAL',KAMAT,NVECS*NVECS*NZC1,WORK,KFREE,LFREE)
+      CALL OVLFRAG(WORK(KAMAT),NVECS,NONTYP,HOCFIL,NCATOM,NATDEG,
+     &             WORK(KQ),NTBAS(0),IPRINT,WORK,KFREE,LFREE)
+C
+C     Do extended Huckel
+C
+      CALL EHUCKEL(WORK(KAMAT),WORK(KE),HUCPAR,NVECS,NEFF,NZC1,IQDEF,
+     &             NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
+C     Construct extended Huckel molecular orbitals (C1 for now)
+      IFRP=1
+CTROND
+      CALL DZERO(CMO,NCMOQ(IFRP))
+      IOFF=NPSH(IFRP)*NFBAS(IFRP,0)+1
+      CALL QGEMM(NTBAS(0),NEFF,NVECS,D1,
+     &       'N','N',IQDEF,WORK(KQ),NTBAS(0),NVECS,NZC1,
+     &       'N','N',IQDEF,WORK(KAMAT),NVECS,NEFF,NZC1,
+     &            D0,IQDEF,CMO(IOFF),NFBAS(IFRP,0),NORB(IFRP),NZC1)
+      CALL DCOPY(NEFF,WORK(KE),1,EIG(NPSH(IFRP)+1),1)
+C     Write coefficients to file
+      EIGSUM=D2*DSUM(NVECS,WORK(KE),1)
+ 137  CONTINUE
+      CALL MEMREL('ADHOC',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+ 10   CONTINUE
+      CALL QUIT('ADHOC: END OF FILE reading TEXT')
+ 20   CONTINUE
+      CALL QUIT('ADHOC: ERROR reading TEXT')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck ehuckel */
+      SUBROUTINE EHUCKEL(HMAT,EIG,HUCPAR,NVECS,NEFF,NZ,IPQ,
+     &           NONTYP,HOCFIL,NCATOM,NATDEG,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Extended Huckel module
+C     INPUT:
+C       HMAT - overlap matrix in fragment basis
+C     OUTPUT:
+C       HMAT - eigenvectors of extended Huckel problem
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DP5=0.5D0)
+      CHARACTER*6 HOCFIL(NONTYP)
+      DIMENSION HMAT(NVECS,NVECS,NZ),EIG(NVECS),IPQ(NZ),
+     &          NCATOM(0:2,NONTYP),NATDEG(NONTYP),WORK(*)
+      KFRSAV=KFREE
+      N2DIM=NVECS*NVECS*NZ
+      CALL MEMGET('REAL',KSMAT,N2DIM,WORK,KFREE,LFREE)
+      CALL DCOPY(N2DIM,HMAT,1,WORK(KSMAT),1)
+C.....Construct extended Huckel Hamiltonian; hermiticity not exploited
+      JAT = 0
+      JOF = 0
+      DO J = 1,NONTYP
+      DO JJ = 1,NATDEG(J)
+        JAT = JAT + 1
+        IAT = 0
+        IOF = 0
+        DO I = 1,NONTYP
+        DO II = 1,NATDEG(I)
+          IAT = IAT + 1
+          IF(IAT.EQ.JAT) THEN
+            DO K = 1,NCATOM(0,I)
+              HMAT(IOF+K,IOF+K,1) = EIG(IOF+K)
+            ENDDO
+          ELSE
+            DO L = 1,NCATOM(0,J)
+              DO K = 1,NCATOM(0,I)
+                FAC = DP5*HUCPAR*(EIG(IOF+K)+EIG(JOF+L))
+                DO IZ = 1,NZ
+                  HMAT(IOF+K,JOF+L,IZ) = FAC*HMAT(IOF+K,JOF+L,IZ)
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDIF
+          IOF = IOF + NCATOM(0,I)
+        ENDDO
+        ENDDO
+        JOF = JOF + NCATOM(0,J)
+      ENDDO
+      ENDDO
+C
+      IF(IPRINT.GE.2) THEN
+        WRITE(6,*) 'EHUCKEL: Total extended Huckel matrix'
+        CALL PRQMAT(HMAT,NVECS,NVECS,NVECS,NVECS,NZ,IPQ,LUPRI)
+      ENDIF
+C     Solve general eigenvalue problem; coefficients stored in SMAT
+      CALL GEIGSOLV(HMAT,WORK(KSMAT),EIG,NVECS,NEFF,NVECS,NVECS,NZ,IPQ,
+     &              IPRINT,WORK,KFREE,LFREE)
+      CALL DCOPY(N2DIM,WORK(KSMAT),1,HMAT,1)
+C
+      CALL MEMREL('EHUCKEL',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
 C --- end of dirac/dirscf.F ---
+

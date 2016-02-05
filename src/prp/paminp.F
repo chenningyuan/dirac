@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -63,6 +63,7 @@ C
 C
 #include "orgcom.h"
 #include "dcbprp.h"
+#include "dcborb.h"
 #include "dgroup.h"
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
@@ -165,6 +166,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF (WORD .EQ. WRDSRC) THEN
          GO TO 930
       ELSE
@@ -189,6 +191,7 @@ C     ==================================
 C
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -603,6 +606,12 @@ C .... check the change of the gauge origin ....
             call quit('ERROR: response with .NONREL not possible')
          end if
       end if
+! do not do shielding with open-shells
+      if (shield) then
+       if (NASHT.GT.0) then
+        call quit('ERROR: NMR shielding with open shells not possible')
+       end if
+      end if
 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')
@@ -675,6 +684,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -2805,6 +2815,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -2925,20 +2936,23 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck minprp */
-      SUBROUTINE MINPRP(WORK,LWORK)
+      SUBROUTINE MINPRP()
 C***********************************************************************
 C     Calculate specified properties at final, converged geometry
 C     (called when .OPTIMIZE specified if geometry converges)
 C
+      use memory_allocator
 #include "implicit.h"
 #include "dcbxpr.h"
 #include "priunit.h"
 #include "dcbgen.h"
 C
-      DIMENSION WORK(LWORK)
+      real(8), allocatable :: WORK(:)
       LOGICAL FOPEN
 C
       CALL QENTER('MINPRP')
+
+
 C
       NPRPS = 0
 C
@@ -2948,20 +2962,18 @@ C
       IF (DOPRP) THEN
          INQUIRE(FILE='AOPROPER',OPENED=FOPEN)
          IF (.NOT. FOPEN) THEN
-#if defined (SYS_IBM)
-            OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
             OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
          END IF
 C
+         call legacy_lwork_get(LWORK)
+         call alloc(WORK,LWORK,id='WORK in MINPRP')
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PRPINP('**PRP F',WORK,LWORK)
          CLOSE(LUCMD)
 C
          CALL ONEGEN(WORK,LWORK)
+         call dealloc(WORK)
 C
 C        Close AOPROPER if it was closed on entry to
 C        MINPRP.

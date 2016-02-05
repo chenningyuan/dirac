@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -259,16 +259,29 @@ C***********************************************************************
 C
 C	Open sequential, unformatted file.
 C	Based on OPENDX
-C	T.Saue, University of Tromsoe, Norway, Feb.-94
+C       T.Saue, University of Tromsoe, Norway, Feb.-94
+C       Revised Aug. 2015 hjaaj to find IUNIT if not OK number in input
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*(*) NAME,STATUS,SUB
+      LOGICAL       IUNIT_USED
+
+      IF (IUNIT .LE. 0) THEN
+         IUNIT = 21
+    5    CONTINUE
+            INQUIRE( UNIT=IUNIT, OPENED=IUNIT_USED )
+            IF (IUNIT_USED) THEN
+               IUNIT = IUNIT + 1
+               GO TO 5
+            END IF
+      END IF
+C
       IF (STATUS .EQ. 'NEW') GO TO 10
       IF (STATUS .NE. 'OLD' .AND. STATUS .NE. 'UNKNOWN') GO TO 100
 C
-C	Open old file
+C      Open old file
 C
       OPEN(IUNIT,FILE=NAME,STATUS='OLD',FORM='UNFORMATTED',
      +     ACCESS='SEQUENTIAL',ERR=10)
@@ -279,14 +292,14 @@ C     Just in case....
    10 CONTINUE
       IF(STATUS.EQ.'OLD') GOTO 110
 C
-C	Open new file
+C      Open new file
 C
       OPEN(IUNIT,FILE=NAME,STATUS='NEW',FORM='UNFORMATTED',
      +     ACCESS='SEQUENTIAL')
    20 CONTINUE
       RETURN
 C
-C	Error messages
+C      Error messages
 C
   100 CONTINUE
       WRITE(LUPRI,'(6A,I2,A)') SUB,': Invalid STATUS keyword ',STATUS,
@@ -1638,27 +1651,12 @@ C
 #include "implicit.h"
       CHARACTER TEXT*(*)
 C
-#if defined (SYS_IBM)
-      CHARACTER DAOFWK*9
-#endif
-#if defined (SYS_UNIX) || defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_DEC) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SX) || defined (SYS_LINUX)
-      CHARACTER*(24) FDATE
-#endif
-C
-      TEXT = '                        '
-#if defined (SYS_VAX)
-      CALL DATE(TEXT(1))
-      CALL TIME(TEXT(12))
-#endif
-#if defined (SYS_IBM)
-      CALL DATE(DAOFWK,TEXT(1))
-      CALL TIME(TEXT(12))
-#endif
 #if defined (SYS_CRAY) || defined (SYS_T3D)
+      TEXT = ' '
       WRITE(TEXT(1:8),'(A8)') DATE()
       WRITE(TEXT(12:19),'(A8)') CLOCK()
-#endif
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_PARAGON) || defined (SYS_SX) || defined (SYS_LINUX)
+#else
+      CHARACTER*(24) FDATE
       TEXT = FDATE()
 #endif
 C
@@ -4221,3 +4219,17 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck iicopy */
+      SUBROUTINE IICOPY(NDIM,IA,IA1,IASTEP,IB,IBSTEP,IB1)
+C***********************************************************************
+C
+C     WRapper routine allowing use of ICOPY for WORK
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in) :: IA(*),NDIM,IA1,IASTEP,IBSTEP,IB1
+      integer, intent(out):: IB(*)
+      CALL ICOPY(NDIM,IA(IA1),IASTEP,IB(IB1),IBSTEP)
+      RETURN
+      END

@@ -1,3 +1,4 @@
+! include/inftap.h (from Dalton, needed for ABACUS routines)
       INTEGER LUINP, LUINTA, LUINTM, LUINTR, LUSUPM, LUONEL, LUIT1,     &
      &        LUTEMP, LUDA, LUINDX, LUPROP, LUINFO, LUSOL, LUSIFC,      &
      &        LBINTM
@@ -8,11 +9,6 @@
       INTEGER LUHALF
       EQUIVALENCE (LUTEMP, LUHALF)
 
-#if defined (SYS_IBM)
-      CHARACTER*7 FNONEL, FNSOL, FNSUPM, FNSIFC
-#endif
-#if !defined (SYS_IBM)
-      CHARACTER*8 FNONEL, FNSOL, FNSUPM, FNSIFC
-#endif
-      CHARACTER*8 LBSIFC
+      CHARACTER*8     FNONEL, FNSOL, FNSUPM, FNSIFC, LBSIFC
       COMMON /CHRTAP/ FNONEL, FNSOL, FNSUPM, FNSIFC, LBSIFC
+! end of include/inftap.h

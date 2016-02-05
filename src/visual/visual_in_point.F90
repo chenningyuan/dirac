@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -81,7 +81,7 @@ contains
       real(8)              :: matrix_33(3, 3)
       real(8)              :: temp_33(3, 3)
       real(8)              :: elf_chi, tau
-      real(8)              :: density, esp(1)
+      real(8)              :: density, esp(1), esp_e(1), esp_n(1)
       real(8)              :: density_gradient(3)
       real(8)              :: density_gradient_squared
       real(8)              :: b, f, distance_to_origin
@@ -148,35 +148,47 @@ contains
 !           electrostatic potential - total
             if ((visual_cfg_property(imat) == iq_esp) .or. &
                 (visual_cfg_property(imat) == iq_esprho)) then
-               call get_esp(1, esp,          &
-                            D(imat)%irep, &
-                            D(imat)%nrow, &
-                            D(imat)%elms, &
-                            (/px, py, pz/))
-            end if
-
-!           electrostatic potential - electronic part
-            if ((visual_cfg_property(imat) == iq_espe) .or. &
-                (visual_cfg_property(imat) == iq_esperho)) then
-               call get_esp(1, esp,          &
+               call get_esp(1, esp_e,     &
                             D(imat)%irep, &
                             D(imat)%nrow, &
                             D(imat)%elms, &
                             (/px, py, pz/), &
                             include_nuc_part=.false., &
                             include_el_part=.true.)
-            end if
-
-!           electrostatic potential - nuclear part
-            if ((visual_cfg_property(imat) == iq_espn) .or. &
-                (visual_cfg_property(imat) == iq_espnrho)) then
-               call get_esp(1, esp,          &
+               call get_esp(1, esp_n,     &
                             D(imat)%irep, &
                             D(imat)%nrow, &
                             D(imat)%elms, &
                             (/px, py, pz/), &
                             include_nuc_part=.true., &
                             include_el_part=.false.)
+               esp = esp_e*0.5d0 + esp_n
+            end if
+
+!           electrostatic potential - electronic part
+            if ((visual_cfg_property(imat) == iq_espe) .or. &
+                (visual_cfg_property(imat) == iq_esperho)) then
+               call get_esp(1, esp_e,     &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            (/px, py, pz/), &
+                            include_nuc_part=.false., &
+                            include_el_part=.true.)
+               esp = esp_e*0.5d0
+            end if
+
+!           electrostatic potential - nuclear part
+            if ((visual_cfg_property(imat) == iq_espn) .or. &
+                (visual_cfg_property(imat) == iq_espnrho)) then
+               call get_esp(1, esp_n,     &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            (/px, py, pz/), &
+                            include_nuc_part=.true., &
+                            include_el_part=.false.)
+               esp = esp_n
             end if
 
             if ((visual_cfg_property(imat) == iq_esprho)  .or. &
@@ -462,7 +474,7 @@ contains
                               D(imat)%elms, &
                               buffer,       &
                               ao)
-                  v = 0.5d0*v
+                  v = -0.5d0*v
                else
                   call get_j(v,            &
                              cval,         &
@@ -479,14 +491,15 @@ contains
                                        ao, &
                                        (/px, py, pz/),                &
                                        v2)
+                     v = v2 - v
                   else
                      call get_jblao(visual_cfg_london_component,cval,D_0%elms,                      &
                                     ntbas(0),                      &
                                     ao, &
                                     (/px, py, pz/),                &
                                     v2)
+                     v = v2 + v
                   end if
-                  v = v + v2
                end if
 
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))

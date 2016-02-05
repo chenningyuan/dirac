@@ -1,5 +1,4 @@
 
-
 Setting up DIRAC
 ================
 
@@ -26,7 +25,6 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
 
 * **pam script:**
@@ -37,9 +35,11 @@ Setting up DIRAC
 
 Updates and patches
 ===================
-    
- :doc:`ChangeLog <patches/CHANGELOG>`
 
+ :doc:`ChangeLog <patches/CHANGELOG>` |
+ :doc:`Known problems <patches/KNOWN-PROBLEMS>`
+
+.. _FirstSteps:
 
 First steps in DIRAC territory
 ==============================
@@ -55,7 +55,7 @@ First steps in DIRAC territory
 
 * **Basis sets:**
   :doc:`General information <molecule_and_basis/basis>` |
-  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>` 
+  :doc:`Howto uncontract basis sets <molecule_and_basis/howto_uncontract>`
 
 * **Troubleshooting:**
   :doc:`Known problems <getting_help/known_problems>` |
@@ -77,8 +77,9 @@ Tutorials and walkthrus
   :doc:`Basis sets for relativistic calculations <tutorials/relbas>` |
   :doc:`Augmenting basis sets <tutorials/augmentation>`
 
-* **SCF convergence:**
-  :doc:`Atomic start <tutorials/atomic_start/tutorial>`
+* **SCF start guess :**
+  :doc:`Atomic start <tutorials/start_guess/atomic_start>` |
+  :doc:`Extended Hückel start <tutorials/start_guess/atomic_huckel>` |
 
 * **Restarting and multi-step jobs:**
   :doc:`SCF <tutorials/restart/scf>` |
@@ -89,8 +90,9 @@ Tutorials and walkthrus
 
 * **2-component Hamiltonians:**
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
-  :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` | 
-  :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>`
+  :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` |
+  :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>` |
+  :doc:`Case study <tutorials/two_component_hamiltonians/example>` 
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`
@@ -118,12 +120,16 @@ Tutorials and walkthrus
 * **Visualization:**
   :doc:`General overview <tutorials/visual/general/tutorial>` |
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
-  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>`
+  :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
+  :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
   :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
   :doc:`Np atom <tutorials/open_shell_scf/np>`
+
+* **High-spin open-shell Coupled-Cluster:**
+  :doc:`The oxygen molecule <tutorials/highspin_cc/O2>`
 
 * **Case studies:**
   :doc:`W atom <tutorials/case_studies/W>` |
@@ -131,7 +137,7 @@ Tutorials and walkthrus
   :doc:`MnO6 system <tutorials/case_studies/MnO6>`  |
   :doc:`UF6(-) anion <tutorials/case_studies/UF6_anion/UF6_anion>`  |
   :doc:`UO6(-6) anion <tutorials/case_studies/UO6_6minus/UO6_6minus>`  |
-  :doc:`LuF3 system <tutorials/case_studies/LuF3/LuF3>`  
+  :doc:`LuF3 system <tutorials/case_studies/LuF3/LuF3>`
 
 * **ADC:**
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |
@@ -139,10 +145,15 @@ Tutorials and walkthrus
 
 * **ECP:**
   :doc:`First calculation <tutorials/ecp/first>` |
-  :doc:`Correlation calculations <tutorials/ecp/combine>`  
+  :doc:`Correlation calculations <tutorials/ecp/combine>`
 
-* **DMRG interface:**
-  :doc:`Generate an integral file for an external relativistic DMRG calculation <tutorials/dmrg/integral_generation>` |
+* **Polarizable continuum model:**
+  :doc:`Basics <tutorials/pcm/pcm_basics>` |
+  :doc:`Hartree-Fock and DFT calculations in solution with the polarizable continuum model <tutorials/pcm/pcm_scf>` |
+  :doc:`Calculation of polarizabilities in solution: response theory approach <tutorials/pcm/pcm_response>`
+
+* **Davidson corrections for relCI (LUCITA and KRCI):**
+  :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
 * **Utility programs:**
   :doc:`TWOFIT <tutorials/utils/twofit>` |
@@ -156,8 +167,7 @@ Tutorials and walkthrus
   :doc:`LUCITA <tutorials/dusty_attic/lucita>` |
   :doc:`MOLTRA <tutorials/dusty_attic/moltra>` |
   :doc:`MP2 <tutorials/dusty_attic/mp2>` |
-  :doc:`Open shells <tutorials/dusty_attic/open_shells>` |
-  :doc:`RELCCSD <tutorials/dusty_attic/relccsd>`
+  :doc:`Open shells <tutorials/dusty_attic/open_shells>`
 
 
 Exercises
@@ -180,8 +190,8 @@ Developers
 * **Programming:**
   :doc:`Rules <programmers/rules>` |
   :doc:`How to add new tests <programmers/testing>` |
+  :doc:`How to add/move/remove sources <programmers/adding_moving_removing_sources>` |
   `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
-  :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |
@@ -193,10 +203,14 @@ Developers
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
 
+* **Moving code between machines:**
+  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
+
 * **Notes:**
   :doc:`DFCOEF <programmers/dfcoef>` |
   :doc:`Screening <programmers/screening>` |
   :doc:`64bit integers <programmers/int8>` |
+  :doc:`Numerical constants <programmers/num_constants>` |
   :doc:`XML <programmers/xml>` |
   :doc:`Static linking <programmers/static_linking>` |
   :doc:`Problems with lapack's DSYEVR <programmers/diag>` |
@@ -206,7 +220,4 @@ Developers
 Bibliography
 ============
 
-* :doc:`References <references>`
-
-
-Documentation generated on |today|.
+* :doc:`References <zreferences>`

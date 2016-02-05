@@ -1,3 +1,5 @@
+:orphan:
+
 .. _computer_exercises_overview:
 
 ##################################

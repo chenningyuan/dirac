@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -308,11 +308,9 @@ CTEMP     ISM2(3,5) = 1
 *           String occupations added, Feb. 98
 *
 *
-*´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 * Modified for relativistic CI calculations
 *
 *        Timo Fleig, Feb. 2000
-*´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 *
       use memory_allocator
       use symmetry_setup_krci
@@ -472,8 +470,8 @@ CTEMP     ISM2(3,5) = 1
           CALL OCCLS_REL(IWAY,NOCCLS,occupation_class,NEL,NGAS,
      &                   IGSOCC(1,1),IGSOCC(1,2))
 *
-*
 *. Occupation of strings of given sym and supergroup
+
           CALL GASANAS_REL(C,LUSCR,NBL_C,WORK(KNSTSO(IACTP)),
      &                     WORK(KNSTSO2(IBCTP)),
      &                     NOCTPA,NOCTPB,MXPNGAS,IOCTPA,IOCTPB,
@@ -485,9 +483,10 @@ CTEMP     ISM2(3,5) = 1
      &                     NELFSPGP,
      &                     NOCCLS,NGAS,occupation_class,
      &                     IASPGPTP,IBSPGPTP,
-     &                     ICISTR,NTOOB,mj_statistics,inv_symbol,
+     &                     ICISTR,mj_statistics,inv_symbol,
      &                     IPRWFC)
 *
+
           call dealloc(mat2)
           call dealloc(mat1)
 !         NAEL/NBEL may be zero and therefore no allocation of string arrays...
@@ -539,7 +538,7 @@ CTEMP     ISM2(3,5) = 1
      &                       NCPMT,WCPMT,NELFSPGP,NOCCLS,
      &                       NGAS,IOCCLS,
      &                       IASPGPTP,IBSPGPTP,
-     &                       ICISTR,NTOOB,mj_statistics,inv_symbol,
+     &                       ICISTR,mj_statistics,inv_symbol,
      &                       IPRNT)
 *
 * Analyze CI vector :
@@ -557,11 +556,9 @@ CTEMP     ISM2(3,5) = 1
 *               Aug 1995 : GAS version
 *               May 1997 : BLOCK driven
 *
-*´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 * Modified for relativistic CI calculations
 *
 *        Timo Fleig, Feb. 2000
-*´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´´
 *
 *
       use mospinor_info
@@ -870,6 +867,7 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
      &                      C(IDET),
      &                  '  Corresponding alpha- and beta-strings'
                        if(linear)then
+
                          do IEL = 1, NAEL
                            write(stringa(iel),'(I4,a1,a4,a1)') 
      &                     imosp_luci2dirac1(ireots(iastr(iel,ia))),
@@ -877,6 +875,8 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
                          end do
                          WRITE(6,'("  alpha",20(a))')
      &                       (stringa(iel), IEL = 1, NAEL )
+
+
                          do IEL = 1, NbEL
                            write(stringb(iel),'(I4,a1,a4,a1)') 
      &                     imosp_luci2dirac2(ireots2(ibstr(iel,ib))),
@@ -903,6 +903,8 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
                        WRITE(6,'("  alpha",20I4)')
      &                      (imosp_luci2dirac1(ireots (iastr(iel,ia))),
      &                       IEL = 1, NAEL )
+
+
                        WRITE(6,'("   beta",20I4)')
      &                      (imosp_luci2dirac2(ireots2(ibstr(iel,ib))),
      &                       IEL = 1, NBEL )
@@ -922,6 +924,8 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 *
       WRITE(6,'(/A,E15.8/)')
      &     '  Norm of printed CI vector .. ', CNORM
+
+
 *
 *.Size of CI coefficients
 *
@@ -1233,6 +1237,7 @@ C
       IDUM = 0
       call memmar(KDUM,IDUM,'FLUSM ',KDUM,'GET_3B')
 C
+      IF(CIRUN /= 'REFVEC')THEN
       WRITE(LUWRT,'(/3X,A)') 
      & '=============================================================='
       WRITE(LUWRT,'(3X,A)') 
@@ -1246,6 +1251,7 @@ C
      & 'allocate resolution vector of length:         ',LCJRES_SAVE
       WRITE(LUWRT,'(3X,A/)') 
      & '=============================================================='
+      END IF
 C
 C     static allocation
       call memmar(KVEC1,LBLOCK,'ADDS  ',2,'VEC1  ')

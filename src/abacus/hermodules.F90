@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -442,8 +442,9 @@
           CHARACTER(LEN=namelen)             :: name, prevname
           REAL(KIND=8)                       :: charge, bascharge, nucexp
           LOGICAL                            :: CONT=.FALSE.
+          LOGICAL                            :: first_call=.TRUE.
           CHARACTER(LEN=9) :: symtxt
-
+          SAVE first_call
 
 !     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)
@@ -479,14 +480,6 @@
 !           We only need to do something if we are reading a **MOLECULE block.
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
-
-              ! sanity check: stop all .OPTIMIZATION runs with xyz
-              ! format, it works sometimes but fails with symmetry
-              if (optimi) then
-                  print *, 'ERROR: .OPTIMIZE not supported with xyz'
-                  print *, '       use mol format instead'
-                  call quit('.OPTIMIZE not supported with xyz format')
-              end if
 
 !            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
               IF (section(2)=='*SYMMETRY'.AND.                          &
@@ -660,6 +653,12 @@
                     call Quit ("error reading units in .UNITS")
                   end if
                 END SELECT
+                IF (.NOT.first_call) THEN
+!               In geometry optimizations this routine will be called multiple times,
+!               and since we will write new XYZ files in Angstroms we overrule the initial unit choice here
+                  UNIT_CONVERSION = ONE / XTANG
+                  unitname='angstrom'
+                END IF
 
 !             End of processing of the **MOLECULE BLOCK
               END IF
@@ -687,6 +686,8 @@
               mol=>mol%next
             END DO
           END IF
+
+        first_call = .FALSE.
 
         END SUBROUTINE READ_BASIS
 
@@ -765,9 +766,9 @@
 !     WRITE COMMONBLOCKS
           NAMN(natom)=mol%name
           CORD(:,natom)=mol%x
-          NAMEX(3*natom)=TRIM(mol%name)//' z'
-          NAMEX(3*natom-1)=TRIM(mol%name)//' y'
-          NAMEX(3*natom-2)=TRIM(mol%name)//' x'
+          NAMEX(3*natom)=NAMN(natom)//' z'
+          NAMEX(3*natom-1)=NAMN(natom)//' y'
+          NAMEX(3*natom-2)=NAMN(natom)//' x'
           CHARGE(natom)=mol%charge
           GNUEXP(natom)=mol%nucexp
           if (natom .gt. 1) then
@@ -801,13 +802,28 @@
           character(len=linelen) :: tmp_name
           INTEGER                :: ios
 
-          REWIND(infile)
+          REWIND(infile,iostat=ios)
+! miro: insert this check
+          if (ios.ne.0) then
+       write(lupri,*) 'POS_FILE: error in rewind command ! ios=',ios
+       write(lupri,*) 'POS_FILE: infile(in)=',infile
+       write(lupri,*) 'POS_FILE: linelen(in)=',linelen
+       write(lupri,*) 'POS_FILE: section(in)=',section
+       write(lupri,*) 'POS_FILE: subsection(in)=',subsection
+       write(lupri,*) 'POS_FILE: name(in)=',name
+           call quit('POS_FILE: error in rewind command !')
+          endif
           DO            
             read(infile,*,iostat=ios) str
             IF (ios.ne.0) THEN
-              WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
-              WRITE(lupri,*) section,subsection,name
-              CALL QUIT('*** ERROR KEY NOT FOUND. ***')
+             WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
+       write(lupri,*) 'POS_FILE: error in read command ! ios=',ios
+            write(lupri,*) 'infile(in)=',infile
+             WRITE(lupri,*) "section=",section
+             WRITE(lupri,*) "subsection=",subsection
+             WRITE(lupri,*) "name=",name
+             WRITE(lupri,*) "linelen=",linelen
+             CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
               pressect=str              
             ELSE IF (str(1:1)=='*') THEN
