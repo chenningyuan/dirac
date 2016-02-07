@@ -530,6 +530,11 @@ C       I. Mills, T. Cvitas, K. Homann, N. Kallay, and K. Kuchitsu
 C       Quantities, Units and Symbols in Physical Chemistry
 C       (IUPAC, Blackwell Scientific, Oxford, 1988)
 C
+C 07 Febr 2016 Miro Ilias: added nuclear mass for the Tc atom to enable automatic symmetry detection
+C (otherwise was getting NaNs), based on
+C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
+C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
+C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -958,7 +963,7 @@ C
 C
 C     Tc:
 C
-     &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
+     & 97.907216D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
