@@ -9453,8 +9453,8 @@ C
       NCMAT =  NUCDEP*9
       allocate(DOATOM(NUCIND))
       allocate(TMAT(3,3,NUCDEP))
-      allocate(PMATL(3,3,NUCDEP,2)) ! refears to L part of NSR for ee and ep contributions.
-      allocate(PMATS(3,3,NUCDEP,2)) ! refears to S part of NSR for ee and ep contributions.
+      allocate(PMATL(3,3,NUCDEP,2)) ! L part of NSR for ee and ep contributions.
+      allocate(PMATS(3,3,NUCDEP,2)) ! S part of NSR for ee and ep contributions.
       allocate(CSTRA(NUCDEP*NUCDEP*9))
       allocate(SCTRA(NUCDEP*NUCDEP*9))
       allocate(ELFLD(3,NUCDEP))
@@ -9942,8 +9942,9 @@ C     Analyze routine for nuclear spin-rotation constants
 C     This routine is modelled after SPRRES (Prof K. Ruud) in DALTON
 C
 C   INPUT:
-C     DMAT          - expectation value term of NSR
-C     PMAT (L & S)  - linear response term (L and S contribution) of NSR
+C     DMAT  - expectation value term of NSR
+C     PMATL - contribution from orbital angular moment to linear response term 
+C     PMATS - contribution from spin to linear response term
 C
 C     Agustín Aucar and Trond Saue
 C     June 2014
@@ -10017,41 +10018,57 @@ C
      &                         + PMATS(I,J,IATOM,2)
      &                         + SPRNUC(I,J,IATOM)
  200        CONTINUE
+CTROND: some test statements..to be removed later
+         CALL HEADER('Raw data for  '//
+     &                          NAMDEP(IATOM),-1)
+         CALL HEADER('DMAT in spinrot',-1)
+         CALL OUTPUT(DMAT(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+         CALL HEADER('PMATL1 in spinrot',-1)
+         CALL OUTPUT(PMATL(1,1,IATOM,1),1,3,1,3,3,3,1,LUPRI)
+         CALL HEADER('PMATL2 in spinrot',-1)
+         CALL OUTPUT(PMATL(1,1,IATOM,2),1,3,1,3,3,3,1,LUPRI)
+         CALL HEADER('PMATS1 in spinrot',-1)
+         CALL OUTPUT(PMATS(1,1,IATOM,1),1,3,1,3,3,3,1,LUPRI)
+         CALL HEADER('PMATS2 in spinrot',-1)
+         CALL OUTPUT(PMATS(1,1,IATOM,2),1,3,1,3,3,3,1,LUPRI)
+         CALL HEADER('SPRNUC in spinrot',-1)
+         CALL OUTPUT(SPRNUC(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+         CALL HEADER('TOTSPR in spinrot',-1)
+         CALL OUTPUT(TOTSPR(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
+
+
  99   CONTINUE
+
 C
 C     Determine principal moments of inertia
+C     ======================================
 C
-      JATOM = 1
+C     Set up coordinates (relative to center of mass), g-values and masses of all nuclei
+      JATOM = 0
       DO 100 IATOM = 1, NUCIND
          NATTYP = NINT(CHARGE(IATOM))
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
-               GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
-               IF (IPRINT.GE.9) THEN
-                write(lupri,*) 'NATTYP,NUMIS,DISOTP=',NATTYP,NUMIS,
-     &          DISOTP(NATTYP,NUMIS,'MASS')
-                write(lupri,*)
-     &          'AMASS(',JATOM,')=',AMASS(JATOM) 
-               ENDIF
-               DO 120 ICOOR = 1, 3
-                 GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-     &                               *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
-                  if (IPRINT.GE.8) THEN
-                    write(lupri,*)
-     &              'geom(',JATOM,';',ICOOR,')=',
-     &              GEOM(JATOM,ICOOR)
-                  endif
- 120           CONTINUE
-               JATOM = JATOM + 1
-            END IF
+         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+           JATOM = JATOM + 1
+           AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
+           GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
+           DO 120 ICOOR = 1, 3
+             GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+     &                          *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
+ 120       CONTINUE
+         END IF
  110     CONTINUE
  100  CONTINUE
-c
+C
       CALL WLKDIN(GEOM,AMASS,KATOM,ANGUMOM,TINERT,OMEGA,EIGVAL,EIGVEC,
      &            .TRUE.,PLANAR,LINMOL,IPRINT)  
-C     LINMOL is true if at least one eigenvalue of the inertia tensor is zero.
+C     On output 
+C        TINERT - inertia tensor
+C        EIGVAL - inverse eigenvalues in descending order
+C        EIGVEC - corresponding eigenvectors
+C        PLANAR=T : planar molecule
+C        LINMOL=T : linear molecule (EIGVAL(1) = 0.0)
 C
 C     Transform each spin-rotation constant to principal axis system,
 C     and multiply by inverse moment of inertia and various constants
@@ -10092,12 +10109,12 @@ C
 C  
               NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
 C  
-              IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+              IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,E16.4,/))')
      &         ' Total spin-rotation constant            :',NSRTOT,
      &         ' Nuclear part of spin-rotation           :',NSRNUC,
      &         ' Expectation value part of spin-rotation :',NSREXV,
      &         ' Linear response part of spin-rotation   :',NSRLR
-              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,E16.4,/))')
      &         ' ee part of L operator LR contribution   :',NSRLRLEE,
      &         ' ee part of S operator LR contribution   :',NSRLRSEE,
      &         ' ep part of L operator LR contribution   :',NSRLRLEP,
