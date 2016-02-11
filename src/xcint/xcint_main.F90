@@ -1819,12 +1819,8 @@ contains
    end subroutine
 
 
-   subroutine london_export_copy_data_from_files(hfile_in, hfile_out, f)
-!     where:
-!     f(lao_direct, lao_reorth)
-!
+   subroutine london_export_copy_data_from_files(hfile_in, hfile_out)
       integer, intent(in) :: hfile_in, hfile_out
-      logical, intent(in) :: f(2)
       real(8) :: d(pertden_nr_columns)
       integer :: ierr, i
 
@@ -1834,14 +1830,18 @@ contains
          read(hfile_in, pertden_file_format, iostat=ierr) &
                         d(1:pertden_nr_columns)
          i = i+1
-         if (ierr .eq. -1) then
-            write(*, *) 'london_export_copy_data_from_files exit, i = ', i
+         if (ierr > 0) then
+            write(*, *) 'london_export_copy_data_from_files error, i = ', i
             exit
+         else if (ierr < 0) then
+            !write(*, *) 'london_export_copy_data_from_files end of file, i = ', i
+            exit
+         else
+            write(hfile_out, pertden_file_format) &
+                           d(1:pertden_nr_columns)
          end if
-         if (ierr .ne. 0) write(*, *) &
-              'error reading file, london_export_copy_data_from_files, ierr = ', ierr 
-         write(hfile_out, pertden_file_format) &
-                        d(1:pertden_nr_columns)
+
+
       end do
 
    end subroutine
@@ -2072,14 +2072,18 @@ contains
    subroutine london_export_close_files()
 
 !     close proc-unique files
-      if (pertden_direct_lao_par_file_open) then
-         close(pertden_direct_lao_par_file_unit, status='keep')
-         pertden_direct_lao_par_file_open = .false.
+#ifdef VAR_MPI
+      if (parallel_xc) then
+         if (pertden_direct_lao_par_file_open) then
+            close(pertden_direct_lao_par_file_unit, status='keep')
+            pertden_direct_lao_par_file_open = .false.
+         end if
+         if (pertden_reorth_lao_par_file_open) then
+            close(pertden_reorth_lao_par_file_unit, status='keep')
+            pertden_reorth_lao_par_file_open = .false.
+         end if
       end if
-      if (pertden_reorth_lao_par_file_open) then
-         close(pertden_reorth_lao_par_file_unit, status='keep')
-         pertden_reorth_lao_par_file_open = .false.
-      end if
+#endif
 
 !     and the final file (was opened if serial run)
       if (pertden_direct_lao_file_open) then
@@ -2183,9 +2187,7 @@ contains
                   rewind(file_unit_par)
 
                   call london_export_copy_data_from_files(file_unit_par,  &
-                                                          file_unit_final, &
-                                                        (/london_direct_export, &
-                                                          london_reorth_export/))
+                                                          file_unit_final)
                   
                   if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
                   if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
