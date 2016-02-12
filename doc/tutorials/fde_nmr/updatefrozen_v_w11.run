@@ -1,2 +1,3 @@
 cp GRIDOUT FROZEN
-pam --inp=updatefrozen_v_w11.inp --mol=h2se.mol --put="numerical_grid FROZEN GRIDOUT"
+pam --inp=updatefrozen_v_w11.inp --mol=h2se.mol --put="numerical_grid FROZEN GRIDOUT" --outcmo
+cp DFCOEF DFCOEF.scf.I

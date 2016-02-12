@@ -130,17 +130,38 @@ We will show how to include the coupling between two subsystems in the property 
 Step 1: SCF and response calculation on the subsystem II
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The first step is the calculation on subsystem II, the aim of which is
+As in example above without the coupling term, the first step is the calculation on subsystem II, the aim of which is
 to get its density and electrostatic potential written on a text file.
-In addition, we will export the perturbed density of subsystem II
+In addition, we will export the perturbed density of subsystem II. We will need the DFCOEF file of subsystem II, which can be taken from ``getfrozen.inp`` run with the following input:
 
-The menu file ``getfrozenpert.inp`` reads:
+.. literalinclude:: getfrozen.inp
+
+with the ``pam`` command:
+
+.. literalinclude:: getfrozen.run
+
+The menu file ``getfrozenpert.inp`` which is used after this step reads:
 
 .. literalinclude:: getfrozenpert.inp
 
+This input allows to calculate the NMR shielding of the subsystem II and the only difference from the standard shielding calculations is the keyword keyword(EXPPED) under keyword(NMR) section. From these calculations we save ``pertden*`` files: 
 
-...TODO gosia
+.. literalinclude:: getfrozenpert.run
 
+There are two files: ``pertden_reorth_lao.FINAL`` and ``pertden_direct_lao.FINAL``. Now we want to add their content as
+additional columns on ``FROZEN`` file. This can be done by using the script ``add_pertden_to_frozen.py`` in utils directory of DIRAC:
+
+.. literalinclude:: add_pertden_to_frozen.run
+
+We may look into the ``FROZEN.result`` file to see that there are now additional columns added to every grid point, which correspond to the perturbed frozen density.
+
+In the next step, we may calculate the FDE contributions to the NMR shielding tensor of an active subsystem (H2Se) which depend on the embedding kernel including the coupling terms between two subsystems. This can be done with the following input:
+
+.. literalinclude:: shield_v_w11_w12_nocoulomb.inp
+
+and with the following ``pam`` command:
+
+.. literalinclude:: shield_v_w11_w12_nocoulomb.run
 
 
 

@@ -1,0 +1,3 @@
+cp DFCOEF.scf.I DFCOEF
+cp FROZEN.result FROZEN
+pam --inp=shield_v_w11_w12_nocoulomb.inp  --mol=h2se.mol --put="numerical_grid FROZEN" --incmo
