@@ -2015,7 +2015,7 @@ C
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER ( D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
-     &            BIGMAS = 1.0D20 )
+     &            BIGMAS = 1.0D20, XTANG    = 0.5291772108D0 )
 C
       DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3,NATOMS), ORIGIN(3)
 C
@@ -2052,8 +2052,8 @@ C
         WRITE (LUPRI,'(/A,3F12.6)')
      &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3)
       END IF
-      IF (IPRINT .GE. 2) WRITE(LUPRI,'(//A,3F12.6)')
-     &     ' Center-of-mass coordinates (A):',(ORIGIN(K),K=1,3)
+      IF (IPRINT .GE. 2) WRITE(LUPRI,'(//A,3X,3F12.6)')
+     &     ' Center-of-mass coordinates (A):',(ORIGIN(K)*XTANG,K=1,3)
       RETURN
       END
       SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)

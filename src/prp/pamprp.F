@@ -9153,7 +9153,7 @@ C     Here we set up the operators needed for the linear reponse part
 C
 C     Define right-hand operators
 C
-      IF (LINEAR) THEN
+      IF (LINEAR) THEN  ! linear molecule detected using symmetry
 C
 C.....Orbital angular momentum
 C
@@ -9468,11 +9468,12 @@ C
 
       CALL QENTER('PRP_SPINRO')
 
-      CALL TITLER('DIRAC  - NUCLEAR SPIN-ROTATION TENSOR','*',116)
+      CALL TITLER('NUCLEAR SPIN-ROTATION TENSOR','*',116)
       WRITE(LUPRI,'(13X,A)')
      & 'According to I. A. Aucar et al, JCP 136 (2012) p.204119'
       CALL PRSYMB(LUPRI,'-',81,0)
       WRITE(LUPRI,*) ''
+C
 C
       CALL SETATM(DOATOM,NATOM,-29)
 C--------------------------------------------------------------------
@@ -9678,7 +9679,7 @@ C...        then extract the e-p contribution
      &         TMPMATL(JB1,JA,2) = ABLRF(IFREQ,KA,KB1,IABLRF_EP)
           ENDDO
         ENDDO
-
+C
         DO IB2 = 1,NB2
           JB2 = IBUFB2(IB2)
           KB2 = IPSPINRO(MXCOOR+NMAX+JB2)
@@ -9697,7 +9698,7 @@ C
         CALL DZERO(PMATL,2*NCMAT)
         CALL DZERO(PMATS,2*NCMAT)
         CALL DZERO(TMAT,NCMAT)
-c
+C
         IF (.NOT. XLR_SKIPEE) THEN
           IF(LINEAR) THEN
             PMATL(1,1,1,1)=TMPMATL(1,3,1)
@@ -10092,7 +10093,7 @@ C
 C     NSR constants are defined only for nuclei with non-zero gvalue
            IF (GVAL(IATOM) .NE. 0.0D0) THEN
               IF (IPRINT .GE. 0) THEN
-                CALL HEADER('Spin-rotation constants (kHz) for  '//
+                CALL HEADER('Spin-rotation constants (kHz) for '//
      &                          NAMDEP(IATOM),-1)
                 WRITE (LUPRI,'(2X,A18,F6.2,/)')
      &                   'Nuclear g-value  :',GVAL(IATOM)
@@ -10109,12 +10110,12 @@ C
 C  
               NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
 C  
-              IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,E16.4,/))')
+              IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
      &         ' Total spin-rotation constant            :',NSRTOT,
      &         ' Nuclear part of spin-rotation           :',NSRNUC,
      &         ' Expectation value part of spin-rotation :',NSREXV,
      &         ' Linear response part of spin-rotation   :',NSRLR
-              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,E16.4,/))')
+              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
      &         ' ee part of L operator LR contribution   :',NSRLRLEE,
      &         ' ee part of S operator LR contribution   :',NSRLRSEE,
      &         ' ep part of L operator LR contribution   :',NSRLRLEP,
