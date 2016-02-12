@@ -1824,23 +1824,17 @@ contains
       real(8) :: d(pertden_nr_columns)
       integer :: ierr, i
 
-!     loop over all lines in the file
       i = 0
       do
          read(hfile_in, pertden_file_format, iostat=ierr) &
                         d(1:pertden_nr_columns)
          i = i+1
-         if (ierr > 0) then
-            write(*, *) 'london_export_copy_data_from_files error, i = ', i
+         if (ierr .ne. 0) then
+            write(*, *) 'buba i, ierr = ', i, ierr
             exit
-         else if (ierr < 0) then
-            !write(*, *) 'london_export_copy_data_from_files end of file, i = ', i
-            exit
-         else
-            write(hfile_out, pertden_file_format) &
-                           d(1:pertden_nr_columns)
          end if
-
+         write(hfile_out, pertden_file_format) &
+                        d(1:pertden_nr_columns)
 
       end do
 
