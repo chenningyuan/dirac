@@ -626,6 +626,7 @@ contains
       end if
 
       if (do_london_rhs_kern_coupling) then
+!gosia: i don't know why it is not called before (while it seems it should be), so i call it again
          if (fde_mpi_is_master()) then
             call fde_import_frozen
          end if
@@ -2247,6 +2248,11 @@ contains
                   frozen_n_bx  = active_gridfunction%n_b(1,:)
                   frozen_n_by  = active_gridfunction%n_b(2,:)
                   frozen_n_bz  = active_gridfunction%n_b(3,:)
+!debug print
+                  do i = 1, nr_points_batch
+                    write(*, '(A,3ES30.20E3)') 'buba import frozen n = ', &
+                                frozen_n_bx(i), frozen_n_by(i), frozen_n_bz(i)
+                  end do
                   if (use_gga) then
                      frozen_gxn_bx(:)  = active_gridfunction%gn_b(1,1,:)
                      frozen_gxn_by(:)  = active_gridfunction%gn_b(1,2,:)
@@ -2257,6 +2263,13 @@ contains
                      frozen_gzn_bx(:)  = active_gridfunction%gn_b(3,1,:)
                      frozen_gzn_by(:)  = active_gridfunction%gn_b(3,2,:)
                      frozen_gzn_bz(:)  = active_gridfunction%gn_b(3,3,:)
+!debug print
+                     do i = 1, nr_points_batch
+                        write(*, '(A,9ES30.20E3)') 'buba import frozen gn = ', &
+                                    frozen_gxn_bx, frozen_gxn_by, frozen_gxn_bz, &
+                                    frozen_gyn_bx, frozen_gyn_by, frozen_gyn_bz, &
+                                    frozen_gzn_bx, frozen_gzn_by, frozen_gzn_bz
+                     end do
                   end if
                   if (.not. fde_rsp_mag_lao_no_s) then
                      frozen_sx_bx(:)  = active_gridfunction%s_b(1,1,:)
@@ -2268,6 +2281,13 @@ contains
                      frozen_sz_bx(:)  = active_gridfunction%s_b(3,1,:)
                      frozen_sz_by(:)  = active_gridfunction%s_b(3,2,:)
                      frozen_sz_bz(:)  = active_gridfunction%s_b(3,3,:)
+!debug print
+                     do i = 1, nr_points_batch
+                        write(*, '(A,9ES30.20E3)') 'buba import frozen s = ', &
+                                    frozen_sx_bx, frozen_sx_by, frozen_sx_bz, &
+                                    frozen_sy_bx, frozen_sy_by, frozen_sy_bz, &
+                                    frozen_sz_bx, frozen_sz_by, frozen_sz_bz
+                     end do
                      if (use_gga) then
                         frozen_gxsx_bx(:)  = active_gridfunction%gs_b(1,1,1,:)
                         frozen_gxsx_by(:)  = active_gridfunction%gs_b(1,1,2,:)
@@ -2296,13 +2316,21 @@ contains
                         frozen_gzsz_bx(:)  = active_gridfunction%gs_b(3,3,1,:)
                         frozen_gzsz_by(:)  = active_gridfunction%gs_b(3,3,2,:)
                         frozen_gzsz_bz(:)  = active_gridfunction%gs_b(3,3,3,:)
+!debug print
+                     do i = 1, nr_points_batch
+                        write(*, '(A,27ES30.20E3)') 'buba import frozen gs = ', &
+                                    frozen_gxsx_bx, frozen_gxsx_by, frozen_gxsx_bz, &
+                                    frozen_gxsy_bx, frozen_gxsy_by, frozen_gxsy_bz, &
+                                    frozen_gxsz_bx, frozen_gxsz_by, frozen_gxsz_bz, &
+                                    frozen_gysx_bx, frozen_gysx_by, frozen_gysx_bz, &
+                                    frozen_gysy_bx, frozen_gysy_by, frozen_gysy_bz, &
+                                    frozen_gysz_bx, frozen_gysz_by, frozen_gysz_bz, &
+                                    frozen_gzsx_bx, frozen_gzsx_by, frozen_gzsx_bz, &
+                                    frozen_gzsy_bx, frozen_gzsy_by, frozen_gzsy_bz, &
+                                    frozen_gzsz_bx, frozen_gzsz_by, frozen_gzsz_bz
+                     end do
                      end if
                   end if
-!debug prints
-                  write(*, '(A,3ES30.20E3)') 'buba import frozen n = ', frozen_n_bx, frozen_n_by, frozen_n_bz
-                  write(*, '(A,9ES30.20E3)') 'buba import frozen s = ', frozen_sx_bx, frozen_sx_by, frozen_sx_bz, &
-                                                                        frozen_sy_bx, frozen_sy_by, frozen_sy_bz, &
-                                                                        frozen_sz_bx, frozen_sz_by, frozen_sz_bz
                end if
             end if
 
