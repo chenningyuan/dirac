@@ -172,8 +172,14 @@ module fde_input_dirac
                doprp = .true.
             CASE ('.LAOFRZ')
 !              LAO contribution to property gradient from the FRoZen density (read from file)
+!              it depends on embedding kernel and does NOT include the Coulomb term...
                fde_rsp_mag_lao = .true.
                fde_lao_frozen_embker = .true.
+               doprp = .true.
+            CASE ('.LFCOUL')
+!              ...this is the additional Coulomb term that contributes to the coupling-kernel-like term (.LAOFRZ)
+               fde_rsp_mag_lao = .true.
+               fde_lao_frozen_embker_coulomb = .true.
                doprp = .true.
             CASE ('.PERTIM')
 !              import perturbed density (additional columns on 'GRIDOUT' file)

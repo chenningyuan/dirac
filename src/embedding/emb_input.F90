@@ -35,15 +35,6 @@ module fde_input
 
    public skip_all_imports
 
-!gosia: for a moment put all magnetic flags here
-   public fde_rsp_mag_lao
-   public fde_rsp_mag_lao_import
-   public fde_rsp_mag_lao_export
-   public fde_lao_direct_active_embpot
-   public fde_lao_direct_active_embker
-   public fde_lao_reorth_active_embker
-   public fde_lao_frozen_embker 
-
    
    logical, save :: skip_all_imports = .false.
 

@@ -10,6 +10,7 @@ module fde_mag_cfg
    public fde_lao_direct_active_embker
    public fde_lao_reorth_active_embker
    public fde_lao_frozen_embker
+   public fde_lao_frozen_embker_coulomb
    public fde_rsp_mag_lao_no_s
 
    logical, save :: fde_rsp_mag_lao               = .false.
@@ -19,6 +20,7 @@ module fde_mag_cfg
    logical, save :: fde_lao_direct_active_embker  = .false.
    logical, save :: fde_lao_reorth_active_embker  = .false.
    logical, save :: fde_lao_frozen_embker         = .false.
+   logical, save :: fde_lao_frozen_embker_coulomb = .false.
    logical, save :: fde_rsp_mag_lao_no_s          = .false.
 
 

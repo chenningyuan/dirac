@@ -170,15 +170,12 @@ module fde_io
     allocate(pertden(fde_pertden_ncol,fde_pertden_nrow))
     pertden = 0.0d0
 
-    if (fde_pertden_ncol .ne. 57) then
-       write(*, *) 'WARNING! nr of columns different from 57, change formatting'
+    if (fde_pertden_ncol .ne. 58) then
+       write(*, *) 'WARNING! nr of columns different from 58, change formatting'
     end if
 
     do i=1, fde_pertden_nrow
-!gosia todo: change the format so that it is correct for any number of columns
-! so far we will always have 57 columns on pertden file
-       !read(file,'(57d20.12)') pertden(:,i)
-       read(file,'(57d20.12)') (pertden(j,i), j = 1, fde_pertden_ncol)
+       read(file,'(58d20.12)') (pertden(j,i), j = 1, fde_pertden_ncol)
     end do
 
   end subroutine

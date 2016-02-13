@@ -38,7 +38,7 @@ module fde_evaluators_dirac
    public fde_dirac_get_ihrmop
    public fde_dirac_set_ihrmop
 
-!   public fde_get_elpot_pertden
+   public fde_get_elpot_pertden
    public fde_get_pertden
 
 ! below we have the routines that actually calculate
@@ -405,92 +405,95 @@ module fde_evaluators_dirac
 
       end subroutine fde_dirac_calculate_elpot
       
-!!   ----------------------------------------------------------------------------
-!      subroutine fde_get_elpot_pertden(ndim, nz, ncomp, fmat)
-!!   ----------------------------------------------------------------------------
-!         integer                :: ndim
-!         integer                :: nz
-!         integer                :: ncomp
-!         real(8), intent(inout) :: fmat(ndim,ndim,nz,ncomp)
-!         real(8), pointer       :: pertden(:, :)
-!         type(grid_function)    :: gf
-!         type(fde_grid)         :: grid
-!         type(fde_files)        :: ftmp
-!         type(fde_import)       :: itmp
-!         integer                :: icomp, icol
-!         integer                :: np
-!         integer                :: irrep = 1
-!         integer                :: lwork
-!         real(8), allocatable   :: work(:)
-!         integer :: iz, i, j
-!         real(8) :: average
-!         real(8), allocatable :: buffer(:,:,:)
-!
-!
-!         call fde_get_files_info(ftmp)
-!         call fde_get_import_info(itmp)
-!
-!         nullify(pertden)
-!         call fde_read_pertden(pertden)
-!
-!         np = size(fde_grid_im%r,2)
-!
-!         call legacy_lwork_get(lwork)
-!         allocate(work(lwork))
-!
-!         do icomp = 1, ncomp
-!            icol = fde_pertden_ncol - 48 + icomp
-!
-!            write(*, *) 'fde_get_elpot_pertden, fmat before, icomp =', icomp
-!            call prqmat(fmat(1,1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
-!
-!            allocate(buffer(ndim,ndim,nz))
-!            call get_electronic_mep(np,                &
-!                                    buffer,            &
-!                                    fde_grid_im%r(1:3,1:np),     & 
-!                                    !pertden(icol,1:np),&
-!                                    pertden(icol,1:np)*fde_grid_im%w(1:np), &
-!                                    work, lwork,       &
-!                                    0,                 &
-!                                    .true.,            &
-!                                    .false.)
-!
-!            !write(*, *) 'fde_get_elpot_pertden, buffer after, icomp =', icomp
-!            !call prqmat(buffer, ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
-!
-!            do iz = 1, nz
-!               do i = 1, ndim
-!                  do j = 1, i
-!                     if (iz ==1) then
-!!                       fmat ^B is antisymmetric
-!                        average = 0.5d0*(buffer(i,j,iz) - buffer(j,i,iz))
-!                        buffer(i,j,iz) = average
-!                        buffer(j,i,iz) =-average
-!                     else
-!                        average = 0.5d0*(buffer(i,j,iz) + buffer(j,i,iz))
-!                        buffer(i,j,iz) = average
-!                        buffer(j,i,iz) = average
-!                     end if
-!                  end do
-!               end do
-!            end do
-!
-!            call daxpy(ndim*ndim*nz, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
-!
-!            deallocate(buffer)
-!
-!            write(*, *) 'fde_get_elpot_pertden, fmat after, icomp =', icomp
-!            call prqmat(fmat(1, 1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
-!
-!         end do
-!
-!         deallocate(work)
-!
-!         if (associated(pertden)) then
-!            nullify(pertden)
-!         end if
-!
-!      end subroutine fde_get_elpot_pertden
+!   ----------------------------------------------------------------------------
+      subroutine fde_get_elpot_pertden(ndim, nz, ncomp, fmat)
+!     gosia: this subroutine calculates the Coulomb kernel-like coupling contribution
+!     to the property gradient
+!   ----------------------------------------------------------------------------
+         integer                :: ndim
+         integer                :: nz
+         integer                :: ncomp
+         real(8), intent(inout) :: fmat(ndim,ndim,nz,ncomp)
+         real(8), pointer       :: pertden(:, :)
+         type(grid_function)    :: gf
+         type(fde_grid)         :: grid
+         type(fde_files)        :: ftmp
+         type(fde_import)       :: itmp
+         integer                :: icomp, icol
+         integer                :: np
+         integer                :: irrep = 1
+         integer                :: lwork
+         real(8), allocatable   :: work(:)
+         integer :: iz, i, j
+         real(8) :: average
+         real(8), allocatable :: buffer(:,:,:)
+
+
+         call fde_get_files_info(ftmp)
+         call fde_get_import_info(itmp)
+
+         nullify(pertden)
+         call fde_read_pertden(pertden)
+
+         np = size(fde_grid_im%r,2)
+
+         call legacy_lwork_get(lwork)
+         allocate(work(lwork))
+
+         do icomp = 1, ncomp
+            icol = fde_pertden_ncol - 48 + icomp
+
+            write(*, *) 'fde_get_elpot_pertden, fmat before, icomp =', icomp
+            call prqmat(fmat(1,1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
+
+            allocate(buffer(ndim,ndim,nz))
+            call get_electronic_mep(np,                &
+                                    buffer,            &
+                                    ndim,              &
+                                    fde_grid_im%r(1:3,1:np),     & 
+                                    !pertden(icol,1:np),&
+                                    pertden(icol,1:np)*fde_grid_im%w(1:np), &
+                                    work, lwork,       &
+                                    0,                 &
+                                    .true.,            &
+                                    .false.)
+
+            !write(*, *) 'fde_get_elpot_pertden, buffer after, icomp =', icomp
+            !call prqmat(buffer, ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
+
+            do iz = 1, nz
+               do i = 1, ndim
+                  do j = 1, i
+                     if (iz ==1) then
+!                       fmat ^B is antisymmetric
+                        average = 0.5d0*(buffer(i,j,iz) - buffer(j,i,iz))
+                        buffer(i,j,iz) = average
+                        buffer(j,i,iz) =-average
+                     else
+                        average = 0.5d0*(buffer(i,j,iz) + buffer(j,i,iz))
+                        buffer(i,j,iz) = average
+                        buffer(j,i,iz) = average
+                     end if
+                  end do
+               end do
+            end do
+
+            call daxpy(ndim*ndim*nz, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
+
+            deallocate(buffer)
+
+            write(*, *) 'fde_get_elpot_pertden, fmat after, icomp =', icomp
+            call prqmat(fmat(1, 1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
+
+         end do
+
+         deallocate(work)
+
+         if (associated(pertden)) then
+            nullify(pertden)
+         end if
+
+      end subroutine fde_get_elpot_pertden
  
 
 !   ----------------------------------------------------------------------------

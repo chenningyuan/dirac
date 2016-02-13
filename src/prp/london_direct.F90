@@ -147,7 +147,7 @@ contains
 !   and, if requested, LAO contribution from the perturbed density
     if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
        if (fde_lao_direct_active_embpot .or. fde_lao_direct_active_embker &
-                                        .or. fde_lao_frozen_embker) then
+      .or. fde_lao_frozen_embker .or. fde_lao_frozen_embker_coulomb) then
           call fde_direct_contribs(cmo, fmat)
        else
           write(*, *) 'no LAO-direct contributions to FDE property gradient'
@@ -698,7 +698,6 @@ contains
 !    fde coupling-kernel-like contributions to the property gradient
 !    ---------------------------------------------------------------
 !    1. the nonadditive exchange-correlation contribution:
-     !if (fde_lao_frozen_embker) then
      if (fde_lao_frozen_embker.and.fde_rsp_mag_lao_import) then
        write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (no Coulomb)'
 
@@ -716,9 +715,10 @@ contains
                      fde_nr_fmat            = max_nr_xyz_comp,      &
                      fde_fmat               = fmat,       &
                      fde_do_london_rhs_kern_coupling = .true.)
-!      2. the Coulomb-like contribution:
-       !write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (Coulomb term)'
-       !call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
+     end if
+     if (fde_lao_frozen_embker_coulomb.and.fde_rsp_mag_lao_import) then
+       write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (Coulomb term)'
+       call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
      end if
 
 
