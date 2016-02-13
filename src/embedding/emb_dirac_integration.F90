@@ -1988,7 +1988,6 @@ contains
                                         ao)
                else
                   if (us_b_lao_above_threshold) then
-                 write(*, *) 'buba us_b_lao_above_threshold!'
 !                    F_pq += u%s_j \chi_p* \Sigma_j \chi_q
                      call omega_imag(fmat,                &
                                      im,                  &
@@ -2031,7 +2030,6 @@ contains
                                         ao)
                else
                   if (un_b_lao_above_threshold) then
-                 write(*, *) 'buba un_b_lao_above_threshold!'
 !                    F_pq += u%s_j \chi_p* \Sigma_j \chi_q
                      call omega_real(fmat,                &
                                      im,                  &
@@ -2255,80 +2253,80 @@ contains
                   end do
                   if (use_gga) then
                      frozen_gxn_bx(:)  = active_gridfunction%gn_b(1,1,:)
-                     frozen_gxn_by(:)  = active_gridfunction%gn_b(1,2,:)
-                     frozen_gxn_bz(:)  = active_gridfunction%gn_b(1,3,:)
                      frozen_gyn_bx(:)  = active_gridfunction%gn_b(2,1,:)
-                     frozen_gyn_by(:)  = active_gridfunction%gn_b(2,2,:)
-                     frozen_gyn_bz(:)  = active_gridfunction%gn_b(2,3,:)
                      frozen_gzn_bx(:)  = active_gridfunction%gn_b(3,1,:)
+                     frozen_gxn_by(:)  = active_gridfunction%gn_b(1,2,:)
+                     frozen_gyn_by(:)  = active_gridfunction%gn_b(2,2,:)
                      frozen_gzn_by(:)  = active_gridfunction%gn_b(3,2,:)
+                     frozen_gxn_bz(:)  = active_gridfunction%gn_b(1,3,:)
+                     frozen_gyn_bz(:)  = active_gridfunction%gn_b(2,3,:)
                      frozen_gzn_bz(:)  = active_gridfunction%gn_b(3,3,:)
 !debug print
-                     do i = 1, nr_points_batch
-                        write(*, '(A,9ES30.20E3)') 'buba import frozen gn = ', &
-                                    frozen_gxn_bx, frozen_gxn_by, frozen_gxn_bz, &
-                                    frozen_gyn_bx, frozen_gyn_by, frozen_gyn_bz, &
-                                    frozen_gzn_bx, frozen_gzn_by, frozen_gzn_bz
-                     end do
+                     !do i = 1, nr_points_batch
+                     !   write(*, '(A,9ES30.20E3)') 'buba import frozen gn = ', &
+                     !               frozen_gxn_bx(i), frozen_gyn_bx(i), frozen_gzn_bx(i), &
+                     !               frozen_gxn_by(i), frozen_gyn_by(i), frozen_gzn_by(i), &
+                     !               frozen_gxn_bz(i), frozen_gyn_bz(i), frozen_gzn_bz(i)
+                     !end do
                   end if
                   if (.not. fde_rsp_mag_lao_no_s) then
                      frozen_sx_bx(:)  = active_gridfunction%s_b(1,1,:)
-                     frozen_sx_by(:)  = active_gridfunction%s_b(1,2,:)
-                     frozen_sx_bz(:)  = active_gridfunction%s_b(1,3,:)
                      frozen_sy_bx(:)  = active_gridfunction%s_b(2,1,:)
-                     frozen_sy_by(:)  = active_gridfunction%s_b(2,2,:)
-                     frozen_sy_bz(:)  = active_gridfunction%s_b(2,3,:)
                      frozen_sz_bx(:)  = active_gridfunction%s_b(3,1,:)
+                     frozen_sx_by(:)  = active_gridfunction%s_b(1,2,:)
+                     frozen_sy_by(:)  = active_gridfunction%s_b(2,2,:)
                      frozen_sz_by(:)  = active_gridfunction%s_b(3,2,:)
+                     frozen_sx_bz(:)  = active_gridfunction%s_b(1,3,:)
+                     frozen_sy_bz(:)  = active_gridfunction%s_b(2,3,:)
                      frozen_sz_bz(:)  = active_gridfunction%s_b(3,3,:)
 !debug print
                      do i = 1, nr_points_batch
                         write(*, '(A,9ES30.20E3)') 'buba import frozen s = ', &
-                                    frozen_sx_bx, frozen_sx_by, frozen_sx_bz, &
-                                    frozen_sy_bx, frozen_sy_by, frozen_sy_bz, &
-                                    frozen_sz_bx, frozen_sz_by, frozen_sz_bz
+                                    frozen_sx_bx(i), frozen_sy_bx(i), frozen_sz_bx(i), &
+                                    frozen_sx_by(i), frozen_sy_by(i), frozen_sz_by(i), &
+                                    frozen_sx_bz(i), frozen_sy_bz(i), frozen_sz_bz(i)
                      end do
                      if (use_gga) then
                         frozen_gxsx_bx(:)  = active_gridfunction%gs_b(1,1,1,:)
-                        frozen_gxsx_by(:)  = active_gridfunction%gs_b(1,1,2,:)
-                        frozen_gxsx_bz(:)  = active_gridfunction%gs_b(1,1,3,:)
-                        frozen_gxsy_bx(:)  = active_gridfunction%gs_b(1,2,1,:)
-                        frozen_gxsy_by(:)  = active_gridfunction%gs_b(1,2,2,:)
-                        frozen_gxsy_bz(:)  = active_gridfunction%gs_b(1,2,3,:)
-                        frozen_gxsz_bx(:)  = active_gridfunction%gs_b(1,3,1,:)
-                        frozen_gxsz_by(:)  = active_gridfunction%gs_b(1,3,2,:)
-                        frozen_gxsz_bz(:)  = active_gridfunction%gs_b(1,3,3,:)
                         frozen_gysx_bx(:)  = active_gridfunction%gs_b(2,1,1,:)
-                        frozen_gysx_by(:)  = active_gridfunction%gs_b(2,1,2,:)
-                        frozen_gysx_bz(:)  = active_gridfunction%gs_b(2,1,3,:)
-                        frozen_gysy_bx(:)  = active_gridfunction%gs_b(2,2,1,:)
-                        frozen_gysy_by(:)  = active_gridfunction%gs_b(2,2,2,:)
-                        frozen_gysy_bz(:)  = active_gridfunction%gs_b(2,2,3,:)
-                        frozen_gysz_bx(:)  = active_gridfunction%gs_b(2,3,1,:)
-                        frozen_gysz_by(:)  = active_gridfunction%gs_b(2,3,2,:)
-                        frozen_gysz_bz(:)  = active_gridfunction%gs_b(2,3,3,:)
                         frozen_gzsx_bx(:)  = active_gridfunction%gs_b(3,1,1,:)
-                        frozen_gzsx_by(:)  = active_gridfunction%gs_b(3,1,2,:)
-                        frozen_gzsx_bz(:)  = active_gridfunction%gs_b(3,1,3,:)
+                        frozen_gxsy_bx(:)  = active_gridfunction%gs_b(1,2,1,:)
+                        frozen_gysy_bx(:)  = active_gridfunction%gs_b(2,2,1,:)
                         frozen_gzsy_bx(:)  = active_gridfunction%gs_b(3,2,1,:)
-                        frozen_gzsy_by(:)  = active_gridfunction%gs_b(3,2,2,:)
-                        frozen_gzsy_bz(:)  = active_gridfunction%gs_b(3,2,3,:)
+                        frozen_gxsz_bx(:)  = active_gridfunction%gs_b(1,3,1,:)
+                        frozen_gysz_bx(:)  = active_gridfunction%gs_b(2,3,1,:)
                         frozen_gzsz_bx(:)  = active_gridfunction%gs_b(3,3,1,:)
+                        frozen_gxsx_by(:)  = active_gridfunction%gs_b(1,1,2,:)
+                        frozen_gysx_by(:)  = active_gridfunction%gs_b(2,1,2,:)
+                        frozen_gzsx_by(:)  = active_gridfunction%gs_b(3,1,2,:)
+                        frozen_gxsy_by(:)  = active_gridfunction%gs_b(1,2,2,:)
+                        frozen_gysy_by(:)  = active_gridfunction%gs_b(2,2,2,:)
+                        frozen_gzsy_by(:)  = active_gridfunction%gs_b(3,2,2,:)
+                        frozen_gxsz_by(:)  = active_gridfunction%gs_b(1,3,2,:)
+                        frozen_gysz_by(:)  = active_gridfunction%gs_b(2,3,2,:)
                         frozen_gzsz_by(:)  = active_gridfunction%gs_b(3,3,2,:)
+                        frozen_gxsx_bz(:)  = active_gridfunction%gs_b(1,1,3,:)
+                        frozen_gysx_bz(:)  = active_gridfunction%gs_b(2,1,3,:)
+                        frozen_gzsx_bz(:)  = active_gridfunction%gs_b(3,1,3,:)
+                        frozen_gxsy_bz(:)  = active_gridfunction%gs_b(1,2,3,:)
+                        frozen_gysy_bz(:)  = active_gridfunction%gs_b(2,2,3,:)
+                        frozen_gzsy_bz(:)  = active_gridfunction%gs_b(3,2,3,:)
+                        frozen_gxsz_bz(:)  = active_gridfunction%gs_b(1,3,3,:)
+                        frozen_gysz_bz(:)  = active_gridfunction%gs_b(2,3,3,:)
                         frozen_gzsz_bz(:)  = active_gridfunction%gs_b(3,3,3,:)
 !debug print
-                     do i = 1, nr_points_batch
-                        write(*, '(A,27ES30.20E3)') 'buba import frozen gs = ', &
-                                    frozen_gxsx_bx, frozen_gxsx_by, frozen_gxsx_bz, &
-                                    frozen_gxsy_bx, frozen_gxsy_by, frozen_gxsy_bz, &
-                                    frozen_gxsz_bx, frozen_gxsz_by, frozen_gxsz_bz, &
-                                    frozen_gysx_bx, frozen_gysx_by, frozen_gysx_bz, &
-                                    frozen_gysy_bx, frozen_gysy_by, frozen_gysy_bz, &
-                                    frozen_gysz_bx, frozen_gysz_by, frozen_gysz_bz, &
-                                    frozen_gzsx_bx, frozen_gzsx_by, frozen_gzsx_bz, &
-                                    frozen_gzsy_bx, frozen_gzsy_by, frozen_gzsy_bz, &
-                                    frozen_gzsz_bx, frozen_gzsz_by, frozen_gzsz_bz
-                     end do
+                     !do i = 1, nr_points_batch
+                     !   write(*, '(A,27ES30.20E3)') 'buba import frozen gs = ', &
+                     !               frozen_gxsx_bx(i), frozen_gysx_bx(i), frozen_gzsx_bx(i), &
+                     !               frozen_gxsy_bx(i), frozen_gysy_bx(i), frozen_gzsy_bx(i), &
+                     !               frozen_gxsz_bx(i), frozen_gysz_bx(i), frozen_gzsz_bx(i), &
+                     !               frozen_gxsx_by(i), frozen_gysx_by(i), frozen_gzsx_by(i), &
+                     !               frozen_gxsy_by(i), frozen_gysy_by(i), frozen_gzsy_by(i), &
+                     !               frozen_gxsz_by(i), frozen_gysz_by(i), frozen_gzsz_by(i), &
+                     !               frozen_gxsx_bz(i), frozen_gysx_bz(i), frozen_gzsx_bz(i), &
+                     !               frozen_gxsy_bz(i), frozen_gysy_bz(i), frozen_gzsy_bz(i), &
+                     !               frozen_gxsz_bz(i), frozen_gysz_bz(i), frozen_gzsz_bz(i)
+                     !end do
                      end if
                   end if
                end if

@@ -199,59 +199,59 @@ module fde_data
 !        ... and gn
          if (itmp%im_gn_b) then
 !           (Rxyz, Bxyz, i)
-            gf_frozen%gn_b(1,1,i)   = fde_frozen_prp(10,i)
-            gf_frozen%gn_b(1,2,i)   = fde_frozen_prp(11,i)
-            gf_frozen%gn_b(1,3,i)   = fde_frozen_prp(12,i)
-            gf_frozen%gn_b(2,1,i)   = fde_frozen_prp(13,i)
-            gf_frozen%gn_b(2,2,i)   = fde_frozen_prp(14,i)
-            gf_frozen%gn_b(2,3,i)   = fde_frozen_prp(15,i)
-            gf_frozen%gn_b(3,1,i)   = fde_frozen_prp(16,i)
-            gf_frozen%gn_b(3,2,i)   = fde_frozen_prp(17,i)
-            gf_frozen%gn_b(3,3,i)   = fde_frozen_prp(18,i)
+            gf_frozen%gn_b(1,1,i)   = fde_frozen_prp(10,i) ! dxBx
+            gf_frozen%gn_b(2,1,i)   = fde_frozen_prp(11,i) ! dyBx
+            gf_frozen%gn_b(3,1,i)   = fde_frozen_prp(12,i) ! dzBx
+            gf_frozen%gn_b(1,2,i)   = fde_frozen_prp(13,i) ! dxBy
+            gf_frozen%gn_b(2,2,i)   = fde_frozen_prp(14,i) ! dyBy
+            gf_frozen%gn_b(3,2,i)   = fde_frozen_prp(15,i) ! dzBy
+            gf_frozen%gn_b(1,3,i)   = fde_frozen_prp(16,i) ! dxBz
+            gf_frozen%gn_b(2,3,i)   = fde_frozen_prp(17,i) ! dyBz
+            gf_frozen%gn_b(3,3,i)   = fde_frozen_prp(18,i) ! dzBz
          end if
 !        ... then s
          if (itmp%im_s_b) then
 !           (Sigma_xyz, Bxyz, i)
-            gf_frozen%s_b(1,1,i)    = fde_frozen_prp(19,i)
-            gf_frozen%s_b(1,2,i)    = fde_frozen_prp(20,i)
-            gf_frozen%s_b(1,3,i)    = fde_frozen_prp(21,i)
-            gf_frozen%s_b(2,1,i)    = fde_frozen_prp(22,i)
-            gf_frozen%s_b(2,2,i)    = fde_frozen_prp(23,i)
-            gf_frozen%s_b(2,3,i)    = fde_frozen_prp(24,i)
-            gf_frozen%s_b(3,1,i)    = fde_frozen_prp(25,i)
-            gf_frozen%s_b(3,2,i)    = fde_frozen_prp(26,i)
-            gf_frozen%s_b(3,3,i)    = fde_frozen_prp(27,i)
+            gf_frozen%s_b(1,1,i)    = fde_frozen_prp(19,i) ! sxBx
+            gf_frozen%s_b(2,1,i)    = fde_frozen_prp(20,i) ! syBx
+            gf_frozen%s_b(3,1,i)    = fde_frozen_prp(21,i) ! szBx
+            gf_frozen%s_b(1,2,i)    = fde_frozen_prp(22,i) ! sxBy
+            gf_frozen%s_b(2,2,i)    = fde_frozen_prp(23,i) ! syBy
+            gf_frozen%s_b(3,2,i)    = fde_frozen_prp(24,i) ! szBy
+            gf_frozen%s_b(1,3,i)    = fde_frozen_prp(25,i) ! sxBz
+            gf_frozen%s_b(2,3,i)    = fde_frozen_prp(26,i) ! syBz
+            gf_frozen%s_b(3,3,i)    = fde_frozen_prp(27,i) ! szBz
          end if
 !        ... and gs
          if (itmp%im_gs_b) then
 !           (Rxyz, Sigma_xyz, Bxyz, i)
-            gf_frozen%gs_b(1,1,1,i) = fde_frozen_prp(28,i)
-            gf_frozen%gs_b(1,1,2,i) = fde_frozen_prp(29,i)
-            gf_frozen%gs_b(1,1,3,i) = fde_frozen_prp(30,i)
-            gf_frozen%gs_b(1,2,1,i) = fde_frozen_prp(31,i)
-            gf_frozen%gs_b(1,2,2,i) = fde_frozen_prp(32,i)
-            gf_frozen%gs_b(1,2,3,i) = fde_frozen_prp(33,i)
-            gf_frozen%gs_b(1,3,1,i) = fde_frozen_prp(34,i)
-            gf_frozen%gs_b(1,3,2,i) = fde_frozen_prp(35,i)
-            gf_frozen%gs_b(1,3,3,i) = fde_frozen_prp(36,i)
-            gf_frozen%gs_b(2,1,1,i) = fde_frozen_prp(37,i)
-            gf_frozen%gs_b(2,1,2,i) = fde_frozen_prp(38,i)
-            gf_frozen%gs_b(2,1,3,i) = fde_frozen_prp(39,i)
-            gf_frozen%gs_b(2,2,1,i) = fde_frozen_prp(40,i)
-            gf_frozen%gs_b(2,2,2,i) = fde_frozen_prp(41,i)
-            gf_frozen%gs_b(2,2,3,i) = fde_frozen_prp(42,i)
-            gf_frozen%gs_b(2,3,1,i) = fde_frozen_prp(43,i)
-            gf_frozen%gs_b(2,3,2,i) = fde_frozen_prp(44,i)
-            gf_frozen%gs_b(2,3,3,i) = fde_frozen_prp(45,i)
-            gf_frozen%gs_b(3,1,1,i) = fde_frozen_prp(46,i)
-            gf_frozen%gs_b(3,1,2,i) = fde_frozen_prp(47,i)
-            gf_frozen%gs_b(3,1,3,i) = fde_frozen_prp(48,i)
-            gf_frozen%gs_b(3,2,1,i) = fde_frozen_prp(49,i)
-            gf_frozen%gs_b(3,2,2,i) = fde_frozen_prp(50,i)
-            gf_frozen%gs_b(3,2,3,i) = fde_frozen_prp(51,i)
-            gf_frozen%gs_b(3,3,1,i) = fde_frozen_prp(52,i)
-            gf_frozen%gs_b(3,3,2,i) = fde_frozen_prp(53,i)
-            gf_frozen%gs_b(3,3,3,i) = fde_frozen_prp(54,i)
+            gf_frozen%gs_b(1,1,1,i) = fde_frozen_prp(28,i) ! dxsxBx
+            gf_frozen%gs_b(2,1,1,i) = fde_frozen_prp(29,i) ! dysxBx
+            gf_frozen%gs_b(3,1,1,i) = fde_frozen_prp(30,i) ! dzsxBx
+            gf_frozen%gs_b(1,2,1,i) = fde_frozen_prp(31,i) ! dxsyBx
+            gf_frozen%gs_b(2,2,1,i) = fde_frozen_prp(32,i) ! dysyBx
+            gf_frozen%gs_b(3,2,1,i) = fde_frozen_prp(33,i) ! dzsyBx
+            gf_frozen%gs_b(1,3,1,i) = fde_frozen_prp(34,i) ! dxszBx
+            gf_frozen%gs_b(2,3,1,i) = fde_frozen_prp(35,i) ! dyszBx
+            gf_frozen%gs_b(3,3,1,i) = fde_frozen_prp(36,i) ! dzszBx
+            gf_frozen%gs_b(1,1,2,i) = fde_frozen_prp(37,i) ! dxsxBy
+            gf_frozen%gs_b(2,1,2,i) = fde_frozen_prp(38,i) ! dysxBy
+            gf_frozen%gs_b(3,1,2,i) = fde_frozen_prp(39,i) ! dzsxBy
+            gf_frozen%gs_b(1,2,2,i) = fde_frozen_prp(40,i) ! dxsyBy
+            gf_frozen%gs_b(2,2,2,i) = fde_frozen_prp(41,i) ! dysyBy
+            gf_frozen%gs_b(3,2,2,i) = fde_frozen_prp(42,i) ! dzsyBy
+            gf_frozen%gs_b(1,3,2,i) = fde_frozen_prp(43,i) ! dxszBy
+            gf_frozen%gs_b(2,3,2,i) = fde_frozen_prp(44,i) ! dyszBy
+            gf_frozen%gs_b(3,3,2,i) = fde_frozen_prp(45,i) ! dzszBy
+            gf_frozen%gs_b(1,1,3,i) = fde_frozen_prp(46,i) ! dxsxBz
+            gf_frozen%gs_b(2,1,3,i) = fde_frozen_prp(47,i) ! dysxBz
+            gf_frozen%gs_b(3,1,3,i) = fde_frozen_prp(48,i) ! dzsxBz
+            gf_frozen%gs_b(1,2,3,i) = fde_frozen_prp(49,i) ! dxsyBz
+            gf_frozen%gs_b(2,2,3,i) = fde_frozen_prp(50,i) ! dysyBz
+            gf_frozen%gs_b(3,2,3,i) = fde_frozen_prp(51,i) ! dzsyBz
+            gf_frozen%gs_b(1,3,3,i) = fde_frozen_prp(52,i) ! dxszBz
+            gf_frozen%gs_b(2,3,3,i) = fde_frozen_prp(53,i) ! dyszBz
+            gf_frozen%gs_b(3,3,3,i) = fde_frozen_prp(54,i) ! dzszBz
          end if
 
          fde_grid_im%r(1,i)  = gridp(1,i)
