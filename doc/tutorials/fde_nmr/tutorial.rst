@@ -155,13 +155,25 @@ additional columns on ``FROZEN`` file. This can be done by using the script ``ad
 
 We may look into the ``FROZEN.result`` file to see that there are now additional columns added to every grid point, which correspond to the perturbed frozen density.
 
+
+Step 2: Response calculation on the subsystem I
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 In the next step, we may calculate the FDE contributions to the NMR shielding tensor of an active subsystem (H2Se) which depend on the embedding kernel including the coupling terms between two subsystems. This can be done with the following input:
 
 .. literalinclude:: shield_v_w11_w12_nocoulomb.inp
 
-and with the following ``pam`` command:
+with two new keywords: keyword(LAOFRZ) and keyword(PERTIM). It can be run with the following ``pam`` command:
 
 .. literalinclude:: shield_v_w11_w12_nocoulomb.run
+
+This input does not include the (computationally expensive) Coulomb term in the embedding kernel. If the Coulomb term is to be calculated then it requires additional keyword(LFCOUL):
+
+.. literalinclude:: shield_v_w11_w12.inp
+
+with an analogous ``pam`` command:
+
+.. literalinclude:: shield_v_w11_w12.run
 
 
 
