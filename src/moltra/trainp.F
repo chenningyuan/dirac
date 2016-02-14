@@ -505,7 +505,7 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
       NO2IND = .FALSE.
       NO4IND = .FALSE.
       NOPAIR = .TRUE.
-      PRPTRA = .FALSE.
+      PRPTRA = .TRUE.
       RCORBS = .FALSE.
       NOMDCINT = .FALSE.
       MDCSCAT = .FALSE.

@@ -98,7 +98,7 @@ C     Initialize /CBIPRP/
 C     ===================
 C
       IPRPRP       = 0
-      DOEXP        = .FALSE.
+      DOEXP        = .TRUE.
       DOESR        = .FALSE.
       DOXLR        = .FALSE.
       DOXPP        = .FALSE.
@@ -107,7 +107,7 @@ C
       DOVER        = .FALSE.
       DOEXCPRP     = .FALSE.
       EXCPRPTYP    = 0
-      DIPOLE       = .FALSE.
+      DIPOLE       = .TRUE.
       QUADRU       = .FALSE.
       EPOLAR       = .FALSE.
       DOVDW        = .FALSE.
@@ -177,7 +177,7 @@ C        (**PROPE or **PRP F or ?)
          WRITE(LUPRI,'(/3A/A)')
      &   ' * INFORMATION: No property input "',WRDSRC,
      &   '" found in input file.',
-     &   ' - No properties calculated.'
+     &   ' - Only dipole moment is calculated.'
          CALL QEXIT('PRPINP')
          RETURN
   920 CONTINUE
