@@ -30,6 +30,7 @@ where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution,
     \Omega_{pq}^{B} = \frac{i}{2} (R_{MN} \times r) \Omega_{pq} + (T_{pt}^{B*} \Omega_{tq} + \Omega_{pt}T_{tq}^B)
 
 "direct" LAO term (the first term) and "reorthonormalization" term (two last terms in brackets).
+The :math:`v_{emb}^I` is the embedding potential of subsystem I, :math:`w_{emb}^{I,I}` is the embedding kernel involving subsystem I and :math:`w_{emb}^{I,II}` is the embedding kernel coupling subsystem I and subsystem II.
 
 In this tutorial we will show how to include each of the contributions to the property gradient in the
 calculations of the NMR shielding tensor. We will also present how to calculate and plot the first-order
@@ -54,6 +55,9 @@ We will need two molecular input files. File ``h2se.mol``, corresponding to an a
 and file ``h2o.mol``, standing for an environment subsystem II:
 
 .. literalinclude:: h2o.mol
+
+In this example we will use the four-component relativistic DC Hamiltonian and DFT/LDA with small grid and small basis sets.
+
 
 Calculations without the FDE coupling terms
 -------------------------------------------
@@ -86,7 +90,7 @@ The menu file ``getfrozen.inp`` reads:
 and we make sure to recover the text file related to the :ref:`GRIDOU` keyword, which we name ``GRIDOUT``.
 We should also remember to supply two files, 
 related to keywords :ref:`GRIDOU` (``GRIDOUT``) and :ref:`EXONLY` (``FILEEX``),
-which are copies of a numerical grid file
+which are copies of a numerical grid file, then to run the calculation as:
 
 .. literalinclude:: getfrozen.run
 
@@ -102,24 +106,48 @@ the embedding potential, :math:`v_{emb}^{I}`, and embedding kernel, :math:`w_{em
 In order to do that, we use the ``GRIDOUT`` file saved from Step 1 and copy it to a ``FROZEN`` file,
 given as an argument to the :ref:`FRDENS` keyword.
 
-To simplify this tutorial, we will do the SCF step and response calculations in one run, by using the following input file:
+We use the following input file for the SCF step:
 
-.. literalinclude:: updatefrozen_v.inp
+.. literalinclude:: updatefrozen.inp
 
 and the ``pam`` command is:
 
-.. literalinclude:: updatefrozen_v.run
+.. literalinclude:: updatefrozen.run
 
-As we used the keyword :ref:`LAODPT`, the property gradient will contain the contribution
-from the embedding potential, :math:`v_{emb}^{I}`.
-In order to include also contributions from the embedding kernel, :math:`w_{emb}^{I,I}`, 
-we should use two additional keywords in the :ref:`*FDE` Section:
+From this step, we save the ``DFCOEF`` file, what is important in order to calculate the NMR shielding
+tensor with the simple magnetic balance (smb). In order to do this, we use the following input file:
 
-.. literalinclude:: updatefrozen_v_w11.inp
+.. literalinclude:: shield_v.inp
 
-with the ``pam`` command:
+in which the keyword :ref:`LAODPT` denotes that the property gradient will contain the contribution
+from the embedding potential, :math:`v_{emb}^{I}`. The corresponding ``pam`` command is then:
 
-.. literalinclude:: updatefrozen_v_w11.inp
+.. literalinclude:: shield_v.run
+
+If we want to include the contribution from the embedding kernel, :math:`w_{emb}^{I,I}`, to the property gradient,
+the input and ``pam`` command are analogous, there are only two additional keywords in the :ref:`*FDE` section:
+
+.. literalinclude:: shield_v_w11.inp
+
+And the ``pam`` command:
+
+.. literalinclude:: shield_v_w11.run
+
+Additionally, we may want to save the ``PAMXVC`` and ``TBMO`` files, if we are interested in
+visualization of the NMR shielding density and/or magnetically-induced current density.
+The calculation on our test molecule give the following results for the isotropic part of the shielding tensor of Se atom:
+
+    ===================================  =========
+    terms included in property gradient    value
+    ===================================  =========
+    None                                 2501.3724
+    v                                    2409.1864
+    v+w11                                2409.2205      
+    ===================================  =========
+
+Without these additional contributions in the property gradient, the result is dependent on the choice of the gauge origin.
+``None`` in the table represents a value calculated without any of presented contributions for the gauge origin in the center of mass of SeH2.
+
 
 Calculations with the FDE coupling terms
 ----------------------------------------
@@ -140,16 +168,21 @@ with the ``pam`` command:
 
 .. literalinclude:: getfrozen.run
 
+exactly as done in calculations without the FDE coupling terms. From this step, we saved the ``GRIDOUT.h2o`` file.
 The menu file ``getfrozenpert.inp`` which is used after this step reads:
 
 .. literalinclude:: getfrozenpert.inp
 
-This input allows to calculate the NMR shielding of the subsystem II and the only difference from the standard shielding calculations is the keyword keyword(EXPPED) under keyword(NMR) section. From these calculations we save ``pertden*`` files: 
+This input allows to calculate the NMR shielding of the subsystem II and the only difference 
+from the standard shielding calculations is the keyword :ref:`EXPPED` under :ref:`NMR` section. 
+From these calculations we save ``pertden*`` files: 
 
 .. literalinclude:: getfrozenpert.run
 
+NOTE: This step has to be run in serial mode for the moment.
 There are two files: ``pertden_reorth_lao.FINAL`` and ``pertden_direct_lao.FINAL``. Now we want to add their content as
-additional columns on ``FROZEN`` file. This can be done by using the script ``add_pertden_to_frozen.py`` in utils directory of DIRAC:
+additional columns on ``FROZEN`` file, which is a copy of ``GRIDOUT.h2o`` file. 
+This can be done by using the script ``add_pertden_to_frozen.py`` in utils directory of DIRAC:
 
 .. literalinclude:: add_pertden_to_frozen.run
 
@@ -159,21 +192,47 @@ We may look into the ``FROZEN.result`` file to see that there are now additional
 Step 2: Response calculation on the subsystem I
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the next step, we may calculate the FDE contributions to the NMR shielding tensor of an active subsystem (H2Se) which depend on the embedding kernel including the coupling terms between two subsystems. This can be done with the following input:
+In the next step, we may calculate the FDE contributions to the NMR shielding tensor of an active subsystem (H2Se) 
+which depend on the embedding kernel including the coupling terms between two subsystems. 
+If the SCF step on an active subsystem was not done before, we should run the following input:
+
+.. literalinclude:: updatefrozen.inp
+
+with the ``pam`` command:
+
+.. literalinclude:: updatefrozen.run
+
+which saves the ``DFCOEF`` file.
+The response input is then the following:
 
 .. literalinclude:: shield_v_w11_w12_nocoulomb.inp
 
-with two new keywords: keyword(LAOFRZ) and keyword(PERTIM). It can be run with the following ``pam`` command:
+with two new keywords: :ref:`LAOFRZ` and :ref:`PERTIM`. The corresponding ``pam`` command is:
 
 .. literalinclude:: shield_v_w11_w12_nocoulomb.run
 
-This input does not include the (computationally expensive) Coulomb term in the embedding kernel. If the Coulomb term is to be calculated then it requires additional keyword(LFCOUL):
+This input does not include the (computationally expensive) Coulomb term in the embedding kernel, only the nonadditive
+exchange-correlation and kinetic kernels. 
+If the Coulomb term is to be calculated then it requires additional keyword, :ref:`LFCOUL`:
 
 .. literalinclude:: shield_v_w11_w12.inp
 
 with an analogous ``pam`` command:
 
 .. literalinclude:: shield_v_w11_w12.run
+
+This input contains all the necessary contributions to the property gradient.
+Additionally, we may want to save the ``PAMXVC`` and ``TBMO`` files, if we are interested in
+visualization of the NMR shielding density and/or magnetically-induced current density.
+With this setup the calculations on the test system gave the following results:
+
+
+    ===================================  =========
+    terms included in property gradient    value
+    ===================================  =========
+    v+w11+w12, no Coulomb                
+    v+w11+w12, ALL terms                 
+    ===================================  =========
 
 
 
