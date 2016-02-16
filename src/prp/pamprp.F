@@ -10167,7 +10167,7 @@ C
  60               CONTINUE
  50            CONTINUE
                IF (IPRINT .GE. 0) THEN
-                 CALL HEADER('Spin rotation constants (kHz) for '//
+                 CALL HEADER('Spin-rotation constants (kHz) for '//
      &                      NAMDEP(IATOM),-1)
                  WRITE (LUPRI,'(2X,A18,F6.2,/)')
      &                 'Nuclear g-value  :',GVAL(IATOM)
@@ -10218,7 +10218,7 @@ C
      &                    'A', (GTRANP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANP(I,3,IATOM),I = 1,3)
-                      CALL HEADER('Total spin rotation constants',-1)
+                      CALL HEADER('Total spin-rotation constants',-1)
                     END IF
                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
