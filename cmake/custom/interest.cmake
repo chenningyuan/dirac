@@ -4,7 +4,8 @@ cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON
 if(ENABLE_INTEREST)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
     add_definitions(-DMOD_INTEREST)
-    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} interest)
+#miro: interest library might need some math routines from "${EXTERNAL_LIBS}"
+    set(EXTERNAL_LIBS interest ${EXTERNAL_LIBS})
     set(FREE_FORTRAN_SOURCES
         ${FREE_FORTRAN_SOURCES}
         src/interest-interface/module_interest_interface.F90
