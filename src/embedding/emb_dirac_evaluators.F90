@@ -441,6 +441,7 @@ module fde_evaluators_dirac
          allocate(work(lwork))
 
          do icomp = 1, ncomp
+! gosia: this takes care of the real part of fmat only(= we use only n_b columns of pertden)
             icol = fde_pertden_ncol - 48 + icomp
 
             !write(*, *) 'fde_get_elpot_pertden, fmat before, icomp =', icomp
