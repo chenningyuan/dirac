@@ -251,6 +251,7 @@ The ``pam`` command used in response calculations should then be following:
 
 .. literalinclude:: response_vis.run
 
+here used for instance with the ``shield_v.inp`` input file, which includes only the embedding potential in the property gradient.
 Next step is choosing one component of magnetic field as a perturbation and identifying the corresponding response vectors
 on the ``PAMXVC`` file, by using the following command:
 
