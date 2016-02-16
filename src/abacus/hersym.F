@@ -20,7 +20,6 @@
 !dirac_copyright_end
 
 C FILE    : hersym.F
-#include "single.h"
 C
 #ifdef OLD_LOG
 ===========================================================================

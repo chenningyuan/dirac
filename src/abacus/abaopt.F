@@ -19,9 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C$Id$
 C
-C#include "single.h"
 C
 C FILE: abaopt.F
 C

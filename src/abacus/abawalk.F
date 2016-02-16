@@ -21,7 +21,6 @@
 
 C
 #ifndef PRG_DIRAC
-#include "single.h"
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
 #include "implicit.h"

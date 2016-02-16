@@ -22,7 +22,6 @@
 !dalton_copyright_end
 
 #ifndef PRG_DIRAC
-#include "single.h"
 C
 #ifdef REV_LOG
 c970923-vb
