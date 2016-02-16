@@ -2247,10 +2247,10 @@ contains
                   frozen_n_by  = active_gridfunction%n_b(2,:)
                   frozen_n_bz  = active_gridfunction%n_b(3,:)
 !debug print
-                  do i = 1, nr_points_batch
-                    write(*, '(A,3ES30.20E3)') 'buba import frozen n = ', &
-                                frozen_n_bx(i), frozen_n_by(i), frozen_n_bz(i)
-                  end do
+                  !do i = 1, nr_points_batch
+                  !  write(*, '(A,3ES30.20E3)') 'buba import frozen n = ', &
+                  !              frozen_n_bx(i), frozen_n_by(i), frozen_n_bz(i)
+                  !end do
                   if (use_gga) then
                      frozen_gxn_bx(:)  = active_gridfunction%gn_b(1,1,:)
                      frozen_gyn_bx(:)  = active_gridfunction%gn_b(2,1,:)
@@ -2280,12 +2280,12 @@ contains
                      frozen_sy_bz(:)  = active_gridfunction%s_b(2,3,:)
                      frozen_sz_bz(:)  = active_gridfunction%s_b(3,3,:)
 !debug print
-                     do i = 1, nr_points_batch
-                        write(*, '(A,9ES30.20E3)') 'buba import frozen s = ', &
-                                    frozen_sx_bx(i), frozen_sy_bx(i), frozen_sz_bx(i), &
-                                    frozen_sx_by(i), frozen_sy_by(i), frozen_sz_by(i), &
-                                    frozen_sx_bz(i), frozen_sy_bz(i), frozen_sz_bz(i)
-                     end do
+                     !do i = 1, nr_points_batch
+                     !   write(*, '(A,9ES30.20E3)') 'buba import frozen s = ', &
+                     !               frozen_sx_bx(i), frozen_sy_bx(i), frozen_sz_bx(i), &
+                     !               frozen_sx_by(i), frozen_sy_by(i), frozen_sz_by(i), &
+                     !               frozen_sx_bz(i), frozen_sy_bz(i), frozen_sz_bz(i)
+                     !end do
                      if (use_gga) then
                         frozen_gxsx_bx(:)  = active_gridfunction%gs_b(1,1,1,:)
                         frozen_gysx_bx(:)  = active_gridfunction%gs_b(2,1,1,:)
