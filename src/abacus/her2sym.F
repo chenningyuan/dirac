@@ -57,34 +57,22 @@ C
       IF (SOP000) THEN
          DO 100 I = 1, NINTX
             IAO = IPNTAO(I)
-#if defined (SYS_AIX)
             ITMPR  = IBTAND(ISYMR, IPNTOP(1,I))
             ITMPT  = IBTAND(ISYMT, IPNTOP(2,I))
             ITMPTS = IBTAND(ISYMTS,IPNTOP(3,I))
             ITMP1  = IBTXOR(ITMPT,ITMPTS)
             FAC    = FACTOR*PT(IBTXOR(ITMPR,ITMP1))
-#else
-            FAC = FACTOR*PT(IBTXOR((IBTAND(ISYMR, IPNTOP(1,I))),
-     &                     (IBTXOR (IBTAND(ISYMT, IPNTOP(2,I)),
-     &                              IBTAND(ISYMTS,IPNTOP(3,I))))))
-#endif
             CALL DCOPY(NOABCD,AO(1,IAO),1,SO(1,I),1)
             CALL DSCAL(NOABCD,FAC,SO(1,I),1)
   100    CONTINUE
       ELSE
          DO 200 I = 1, NINTX
             IAO = IPNTAO(I)
-#if defined (SYS_AIX)
             ITMPR  = IBTAND(ISYMR, IPNTOP(1,I))
             ITMPT  = IBTAND(ISYMT, IPNTOP(2,I))
             ITMPTS = IBTAND(ISYMTS,IPNTOP(3,I))
             ITMP1  = IBTXOR(ITMPT,ITMPTS)
             FAC    = FACTOR*PT(IBTXOR(ITMPR,ITMP1))
-#else
-            FAC = FACTOR*PT(IBTXOR((IBTAND(ISYMR, IPNTOP(1,I))),
-     &                     (IBTXOR (IBTAND(ISYMT, IPNTOP(2,I)),
-     &                              IBTAND(ISYMTS,IPNTOP(3,I))))))
-#endif
             CALL DAXPY(NOABCD,FAC,AO(1,IAO),1,SO(1,I),1) 
   200    CONTINUE
       END IF
