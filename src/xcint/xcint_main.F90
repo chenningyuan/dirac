@@ -1830,7 +1830,7 @@ contains
                         d(1:pertden_nr_columns)
          i = i+1
          if (ierr .ne. 0) then
-            write(*, *) 'buba i, ierr = ', i, ierr
+            !write(*, *) 'buba i, ierr = ', i, ierr
             exit
          end if
          write(hfile_out, pertden_file_format) &

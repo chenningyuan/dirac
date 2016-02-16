@@ -443,8 +443,8 @@ module fde_evaluators_dirac
          do icomp = 1, ncomp
             icol = fde_pertden_ncol - 48 + icomp
 
-            write(*, *) 'fde_get_elpot_pertden, fmat before, icomp =', icomp
-            call prqmat(fmat(1,1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
+            !write(*, *) 'fde_get_elpot_pertden, fmat before, icomp =', icomp
+            !call prqmat(fmat(1,1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
 
             allocate(buffer(ndim,ndim,nz))
             call get_electronic_mep(np,                &
@@ -482,8 +482,8 @@ module fde_evaluators_dirac
 
             deallocate(buffer)
 
-            write(*, *) 'fde_get_elpot_pertden, fmat after, icomp =', icomp
-            call prqmat(fmat(1, 1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
+            !write(*, *) 'fde_get_elpot_pertden, fmat after, icomp =', icomp
+            !call prqmat(fmat(1, 1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
 
          end do
 
