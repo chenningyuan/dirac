@@ -230,8 +230,8 @@ With this setup the calculations on the test system gave the following results:
     ===================================  =========
     terms included in property gradient    value
     ===================================  =========
-    v+w11+w12, no Coulomb                
-    v+w11+w12, ALL terms                 
+    v+w11+w12, no Coulomb                2409.2270
+    v+w11+w12, ALL terms                 2409.2270
     ===================================  =========
 
 
