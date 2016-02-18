@@ -131,11 +131,23 @@ if (nrp_frozen != nrp_direct):
 for i in range(nrp_direct):
     all_ok = ((gridp_direct[0]==gridp_reorth[0]) and (gridp_direct[1]==gridp_reorth[1]) and (gridp_direct[2]==gridp_reorth[2]) and (gridp_direct[3]==gridp_reorth[3]))
     if not all_ok:
+        print "grid direct :",gridp_direct
+        print "grid reorth :",gridp_reorth
         sys.exit("different grid points or points in different order on pertden_direct and pertden_reorth files")
 
+threshold = 1.0e-16
 for i in range(nrp_direct):
-    all_ok = ((gridp_direct[0]==gridp_frozen[0]) and (gridp_direct[1]==gridp_frozen[1]) and (gridp_direct[2]==gridp_frozen[2]) and (gridp_direct[3]==gridp_frozen[3]))
+    delta_x = abs(gridp_direct[0][i] - gridp_frozen[0][i])
+    delta_y = abs(gridp_direct[1][i] - gridp_frozen[1][i])
+    delta_z = abs(gridp_direct[2][i] - gridp_frozen[2][i])
+    delta_w = abs(gridp_direct[3][i] - gridp_frozen[3][i])
+    all_ok = ((delta_x <= threshold) and (delta_y <= threshold) and (delta_z <= threshold) and (delta_w<= threshold)) 
+#   all_ok = ((gridp_direct[0][i]==gridp_frozen[0][i]) and (gridp_direct[1][i]==gridp_frozen[1][i]) and (gridp_direct[2][i]==gridp_frozen[2][i]) and (gridp_direct[3][i]==gridp_frozen[3][i]))
     if not all_ok:
+        print "at point : ",i
+        print "grid direct :",gridp_direct[0][i], gridp_direct[1][i], gridp_direct[2][i], gridp_direct[3][i]
+        print "grid frozen :",gridp_frozen[0][i], gridp_frozen[1][i], gridp_frozen[2][i], gridp_frozen[3][i]
+        print "deltas  : ",delta_x, delta_y, delta_z, delta_w
         sys.exit("different grid points or points in different order on pertden and frozen files")
 
 
