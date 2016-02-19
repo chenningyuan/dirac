@@ -643,7 +643,8 @@ C***********************************************************************
 C
       DIMENSION DMO(NORBT,NORBT,NZ)
       LOGICAL NOZG
-      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:), ibeig(:)
+      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:)
+      integer, allocatable :: ibeig(:)
 C
 C---------------Local variables--------------------------------------
 C
