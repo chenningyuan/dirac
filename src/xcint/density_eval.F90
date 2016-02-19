@@ -50,9 +50,15 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_s_lao
+   public get_gs_lao
+   public get_n2_lao
    public get_jblao
    public get_gjblao
    public get_jblao_ll
+   public lda_london_sus2el_der1
+   public gga_london_sus2el_der1
+   public lda_london_sus2el_der2
+   public gga_london_sus2el_der2
 
    private
 
@@ -76,7 +82,7 @@ contains
     real(8), intent(inout) :: mat(mat_dim, mat_dim, nz, nr_mat)
     integer, intent(in)    :: isym(nr_mat)
 !   ----------------------------------------------------------------------------
-    integer                :: irep, iblock, imat, iz
+    integer                :: irep, iblock, imat, iz, jxyz
     integer                :: i, j, ii, jj
     integer, parameter     :: h(4) = (/-1, 1, 1, 1/)
     integer                :: st1, st2, nr1, nr2
@@ -87,27 +93,29 @@ contains
 
        irep = isym(imat) - 1
 
-       do iz = 1, nz
+       do jxyz = 0, 3
           do iblock = 1, nr_ao_blocks
              nr1 = ao_block_nr(iblock)
              st1 = ao_block_start(iblock)
-             nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
-             st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+             nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+             st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
              if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
-             do i = 1, nr1
-                do j = 1, nr2
-                   ii = st1 + i - 1
-                   jj = st2 + j - 1
+             if (.not. (st2 > st1)) then
+                do i = 1, nr1
+                   do j = 1, nr2
+                      ii = st1 + i - 1
+                      jj = st2 + j - 1
 
-                   average = mat(ii, jj, iz, imat) &
-                           + h(iz)*mat(jj, ii, iz, imat)
-                   average = 0.5d0*average
+                      average = mat(ii, jj, iq(jxyz), imat) &
+                              + h(iq(jxyz))*mat(jj, ii, iq(jxyz), imat)
+                      average = 0.5d0*average
 
-                   mat(ii, jj, iz, imat) = average
-                   mat(jj, ii, iz, imat) = h(iz)*average
+                      mat(ii, jj, iq(jxyz), imat) = average
+                      mat(jj, ii, iq(jxyz), imat) = h(iq(jxyz))*average
+                   end do
                 end do
-             end do
+             end if
           end do
        end do
     end do
@@ -1293,17 +1301,15 @@ contains
    
    end subroutine
 
+   subroutine get_n2_lao(n, isym, mat_dim, dmat, ao, cx, cy, cz)
 
-   subroutine get_s_lao(s, isym, mat_dim, dmat, ao, cx, cy, cz, buffer)
-   
 !    ----------------------------------------------------------------------------
-     real(8), intent(out) :: s(3, 3)
+     real(8), intent(out) :: n(3, 3)
      integer, intent(in)  :: isym(*)
      integer, intent(in)  :: mat_dim
      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)  :: ao(*)
      real(8), intent(in)  :: cx, cy, cz
-     real(8), intent(in)  :: buffer(*)
 !    ----------------------------------------------------------------------------
      integer              :: nr1, nr2, st1, st2, iblock, jxyz
      integer              :: a, b, c, irp1, irp2, ii, jj
@@ -1311,11 +1317,75 @@ contains
      real(8), external    :: ddot
      integer :: i, j, k
 !    ----------------------------------------------------------------------------
-   
+
      r_co(1) = cx
      r_co(2) = cy
      r_co(3) = cz
-   
+
+     n = 0.0d0
+     f = 0.0d0
+     ff= 0.0d0
+
+     do a = 1, 3   ! Bx, By, Bz
+       select case (a)
+         case (1)
+           b = 2; c = 3
+         case (2)
+           b = 3; c = 1
+         case (3)
+           b = 1; c = 2
+       end select
+       do jxyz = jxyz_start, 3
+
+         do iblock = 1, nr_ao_blocks
+
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+           do ii = st1, st1 + nr1 - 1
+             do jj = st2, st2 + nr2 - 1
+
+               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) &
+                   - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) &
+                   - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+
+               n(jxyz, a) = n(jxyz, a) - dmat(jj, ii, iq(jxyz))*ff
+
+             end do
+           end do
+
+         end do  ! do iblock = 1, nr_ao_blocks
+
+       end do    ! do jxyz = 1, jxyz_start, 3
+     end do      ! do a = 1, 3
+
+   end subroutine
+
+   subroutine get_s_lao(s, irep, mat_dim, dmat, ao, cx, cy, cz)
+
+!    ----------------------------------------------------------------------------
+     real(8), intent(out) :: s(3, 3)
+     integer, intent(in)  :: irep(*)
+     integer, intent(in)  :: mat_dim
+     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)  :: ao(*)
+     real(8), intent(in)  :: cx, cy, cz
+!    ----------------------------------------------------------------------------
+     integer              :: nr1, nr2, st1, st2, iblock, jxyz
+     integer              :: a, b, c, irp1, irp2, ii, jj
+     real(8)              :: r_co(3), f(mat_dim), ff
+     real(8), external    :: ddot
+     integer :: i, j, k
+!    ----------------------------------------------------------------------------
+
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
      s = 0.0d0
      f = 0.0d0
      ff= 0.0d0
@@ -1329,27 +1399,26 @@ contains
          case (3)
            b = 1; c = 2
        end select
-    
+
        do jxyz = jxyz_start, 3
-    
+
          do iblock = 1, nr_ao_blocks
-    
+
            nr1 = ao_block_nr(iblock)
            st1 = ao_block_start(iblock)
-           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a) - 1))
-           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep(a)))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
-    
+
            do ii = st1, st1 + nr1 - 1
              do jj = st2, st2 + nr2 - 1
-    
-               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) &
-                   - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) &
-                   - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
 
-               s(jxyz, a) = s(jxyz, a) - dmat(jj, ii, iq(jxyz))*ff
-    
+               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+
+               s(jxyz, a) = s(jxyz, a) &
+                          + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
              end do
            end do
 
@@ -1359,6 +1428,117 @@ contains
      end do      ! do a = 1, 3
 
    end subroutine
+
+   subroutine get_gs_lao(s, gs, gsgn, gn_0, isym, mat_dim, dmat, ao, cx, cy, cz)
+
+!    ----------------------------------------------------------------------------
+     real(8), intent(out) :: s(3, 3)
+     real(8), intent(out) :: gs(3, 3, 3)
+     real(8), intent(out) :: gsgn(3, 3)
+     real(8), intent(in)  :: gn_0(3)
+     integer, intent(in)  :: isym(*)
+     integer, intent(in)  :: mat_dim
+     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)  :: ao(*)
+     real(8), intent(in)  :: cx, cy, cz
+!    ----------------------------------------------------------------------------
+     integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
+     integer              :: a, b, c, ii, jj
+     real(8)              :: r_co(3), ff, ff_gn
+     real(8), external    :: ddot
+     integer :: i, j, k
+!    ----------------------------------------------------------------------------
+
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
+     s = 0.0d0
+     gs = 0.0d0
+     gsgn = 0.0d0
+     ff= 0.0d0
+
+     do a = 1, 3   ! B_{x,y,z}
+       select case (a)
+         case (1)
+           b = 2; c = 3
+         case (2)
+           b = 3; c = 1
+         case (3)
+           b = 1; c = 2
+       end select
+
+       do jxyz = jxyz_start, 3  ! Sigma_{x,y,z}
+
+         do iblock = 1, nr_ao_blocks
+
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+           do ii = st1, st1 + nr1 - 1
+             do jj = st2, st2 + nr2 - 1
+
+!              lda term
+               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+
+               ff_gn = (gn_0(c)*ao(ao_off_g0_m1(0, b) + jj) - gn_0(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+                     - (gn_0(c)*ao(ao_off_g0_m1(0, b) + ii) - gn_0(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+
+               s(jxyz, a) = s(jxyz, a) &
+                          + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+               gsgn(jxyz, a) = gsgn(jxyz, a) &
+                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
+
+!              start gradient terms
+               ff_gn = 0.0d0
+               do ixyz = 1, 3 ! dR_{x,y,z}
+
+                  ff = (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + jj) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + jj))*ao(ii)  &
+                     - (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + ii) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + ii))*ao(jj)  &
+                     + (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ao_off_g1_m0(ixyz, 0) + ii)  &
+                     - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(ao_off_g1_m0(ixyz, 0) + jj)
+
+                  ff_gn = ff_gn + ff*gn_0(ixyz)
+
+                  gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                                    + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+                  if (ixyz .eq. b) then
+
+                     ff = -(ao(ao_off_g0_m1(0, c) + jj)*ao(ii) - ao(ao_off_g0_m1(0, c) + ii)*ao(jj))
+
+                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+                  else if (ixyz .eq. c) then
+
+                     ff = ao(ao_off_g0_m1(0, b) + jj)*ao(ii) - ao(ao_off_g0_m1(0, b) + ii)*ao(jj)
+
+                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+                  end if
+
+               end do ! do ixyz = 1, 3
+
+               gsgn(jxyz, a) = gsgn(jxyz, a) &
+                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
+
+             end do
+           end do
+
+         end do  ! do iblock = 1, nr_ao_blocks
+       end do    ! do jxyz = 1, jxyz_start, 3
+     end do      ! do a = 1, 3
+
+   end subroutine
+
+
 
    subroutine get_jblao(perturbation_component, cval, D_0, mat_dim, ao, r, j)
 
@@ -1543,5 +1723,410 @@ contains
       j = -0.5d0*j
 
    end subroutine
+
+   subroutine lda_london_sus2el_der1(s, isym, mat_dim, nz, dmat, ao, cx, cy, cz, n_bb)
+
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: s
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: nr1, nr2, st1, st2, iblock, ii, jj
+     integer                :: a1, a2, b1, b2, c1, c2
+     integer                :: ind(3, 3)
+     real(8)                :: f1i, f2i, f3i, f4i, f1j, f2j, f3j, f4j
+     real(8)                :: f_1, f_2
+     real(8)                :: r_co(3)
+!    ----------------------------------------------------------------------------
+
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
+     ind(1,1) = 1 ! xx
+     ind(1,2) = 2 ! xy
+     ind(2,1) = 2 ! yx
+     ind(1,3) = 3 ! xz
+     ind(3,1) = 3 ! zx
+     ind(2,2) = 4 ! yy
+     ind(2,3) = 5 ! yz
+     ind(3,2) = 5 ! zy
+     ind(3,3) = 6 ! zz
+
+     do a1 = 1, 3
+!      B_'alpha'
+       select case (a1)
+         case (1)
+           b1 = 2; c1 = 3
+         case (2)
+           b1 = 3; c1 = 1
+         case (3)
+           b1 = 1; c1 = 2
+       end select
+
+       do a2 = 1, 3
+!        B_'beta'
+         select case (a2)
+           case (1)
+             b2 = 2; c2 = 3
+           case (2)
+             b2 = 3; c2 = 1
+           case (3)
+             b2 = 1; c2 = 2
+         end select
+
+         do iblock = 1, nr_ao_blocks
+
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, 0, 0))
+           st2 = ao_block_start(llss_block_partner(iblock, 0, 0))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+           do ii = st1, st1 + nr1 - 1
+             do jj = st2, st2 + nr2 - 1
+
+!              first calculate contributions involving first-order derivs of LAOs
+               f_1 = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
+                   * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj))  &
+                   + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
+                   * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj))
+
+!              contributions involving second-order derivs of LAOs
+               f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+               f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
+               f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+               f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+
+               f1j = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
+               f2j = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + jj)
+               f3j = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
+               f4j = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
+
+               f_2 = (f1i - f2i - f3i + f4i)*ao(jj) + (f1j - f2j - f3j + f4j)*ao(ii)
+
+               n_bb(a2, a1) = n_bb(a2, a1) + dmat(jj, ii, iq(0))*(f_1 - f_2)
+
+             end do
+           end do
+         end do
+       end do
+     end do
+
+    n_bb = s*n_bb
+
+   end subroutine
+
+
+   subroutine gga_london_sus2el_der1(d_r, d_z, n_g, isym, mat_dim, nz, dmat, ao, cx, cy, cz, n_bb)
+
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_r
+     real(8), intent(in)    :: d_z
+     real(8), intent(in)    :: n_g(3)
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: nr1, nr2, st1, st2, iblock, ii, jj, ixyz
+     integer                :: a1, a2, b1, b2, c1, c2
+     integer                :: ind(3, 3)
+     real(8)                :: f_1_lda, f_1_gga1, f_1_gga2
+     real(8)                :: f_2_lda, f_2_gga1, f_2_gga2, f_2_gga3a, f_2_gga3b
+     real(8)                :: f1i, f2i, f3i, f4i, f1j, f2j, f3j, f4j
+     real(8)                :: fg1i, fg2i, fg3i, fg4i, fg1j, fg2j, fg3j, fg4j
+     real(8)                :: r_co(3)
+!    ----------------------------------------------------------------------------
+
+     n_bb = 0.0d0
+
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
+     ind(1,1) = 1 ! xx
+     ind(1,2) = 2 ! xy
+     ind(2,1) = 2 ! yx
+     ind(1,3) = 3 ! xz
+     ind(3,1) = 3 ! zx
+     ind(2,2) = 4 ! yy
+     ind(2,3) = 5 ! yz
+     ind(3,2) = 5 ! zy
+     ind(3,3) = 6 ! zz
+
+     do a1 = 1, 3
+!      B_'alpha'
+       select case (a1)
+         case (1)
+           b1 = 2; c1 = 3
+         case (2)
+           b1 = 3; c1 = 1
+         case (3)
+           b1 = 1; c1 = 2
+       end select
+
+       do a2 = 1, 3
+!        B_'beta'
+         select case (a2)
+           case (1)
+             b2 = 2; c2 = 3
+           case (2)
+             b2 = 3; c2 = 1
+           case (3)
+             b2 = 1; c2 = 2
+         end select
+
+         do iblock = 1, nr_ao_blocks
+
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, 0, 0))
+           st2 = ao_block_start(llss_block_partner(iblock, 0, 0))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+           do ii = st1, st1 + nr1 - 1
+             do jj = st2, st2 + nr2 - 1
+
+!              --------------------------------------------------
+!              contributions involving first-order derivs of LAOs
+!              --------------------------------------------------
+!              lda-type contribution:
+               f_1_lda = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
+                       * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj))  &
+                       + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
+                       * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj))
+
+!              gradient terms:
+               f_1_gga1 =   &
+!                   {grad (R_M times r)_a1} chi^M (R_N times r)_a2 chi^N
+                  + (n_g(c1)*ao(ao_off_g0_m1(0, b1) + ii) - n_g(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
+                  * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)- r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj)) &
+!                   {grad (R_M times r)_a2} chi^M (R_N times r)_a1 chi^N
+                  + (n_g(c2)*ao(ao_off_g0_m1(0, b2) + ii) - n_g(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
+                  * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)- r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj)) &
+!                   (R_M times r)_a1 chi^M {grad (R_N times r)_a2} chi^N
+                  + (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
+                  * (n_g(c2)*ao(ao_off_g0_m1(0, b2) + jj)-n_g(b2)*ao(ao_off_g0_m1(0, c2) + jj))    &
+!                   (R_M times r)_a2 chi^M {grad (R_N times r)_a1} chi^N
+                  + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
+                  * (n_g(c1)*ao(ao_off_g0_m1(0, b1) + jj)-n_g(b1)*ao(ao_off_g0_m1(0, c1) + jj))
+
+               f_1_gga2 = 0.0d0
+               do ixyz = 1, 3
+                  f_1_gga2 = f_1_gga2 &
+!                      (R_M times r)_a1 {grad chi^M} (R_N times r)_a2 chi^N
+                     +((r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + ii) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + ii)) &
+                     * (r_co(c2)*ao(ao_off_g0_m1(0, b2)    + jj) - r_co(b2)*ao(ao_off_g0_m1(0, c2)    + jj)) &
+!                      (R_M times r)_a2 {grad chi^M} (R_N times r)_a1 chi^N
+                     + (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + ii) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + ii)) &
+                     * (r_co(c1)*ao(ao_off_g0_m1(0, b1)    + jj) - r_co(b1)*ao(ao_off_g0_m1(0, c1)    + jj)) &
+!                      (R_M times r)_a1 chi^M (R_N times r)_a2 {grad chi^N}
+                     + (r_co(c1)*ao(ao_off_g0_m1(0, b1)    + ii) - r_co(b1)*ao(ao_off_g0_m1(0, c1)    + ii)) &
+                     * (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + jj) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + jj)) &
+!                      (R_M times r)_a2 chi^M (R_N times r)_a1 {grad chi^N}
+                     + (r_co(c2)*ao(ao_off_g0_m1(0, b2)    + ii) - r_co(b2)*ao(ao_off_g0_m1(0, c2)    + ii)) &
+                     * (r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + jj) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + jj)))*n_g(ixyz)
+
+               end do
+
+!              ---------------------------------------------------
+!              contributions involving second-order derivs of LAOs
+!              ---------------------------------------------------
+!              lda-type contribution:
+               f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+               f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
+               f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+               f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+
+               f1j = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
+               f2j = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + jj)
+               f3j = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
+               f4j = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
+
+               f_2_lda = (f1i - f2i - f3i + f4i)*ao(jj) + (f1j - f2j - f3j + f4j)*ao(ii)
+
+!              gradient terms:
+               f_2_gga1 = 0.0d0
+               f_2_gga2 = 0.0d0
+               do ixyz = 1, 3
+!                 (1) (R_M times r)_a1 (R_M times r )_a2 chi^M grad(chi^N) + (R_N times r)_a1 (R_N times r )_a2 chi^N grad(chi^M)
+!                 ---------------------------------------------------------------------------------------------------------------
+                  f_2_gga1 = f_2_gga1 &
+                           +((f1i - f2i - f3i + f4i)*ao(ao_off_g1_m0(ixyz, 0) + jj) &
+                           + (f1j - f2j + f3j + f4j)*ao(ao_off_g1_m0(ixyz, 0) + ii))*n_g(ixyz)
+
+!                 (2) (R_M times r)_a1 (R_M times r )_a2 grad{chi^M} chi^N + (R_N times r)_a1 (R_N times r )_a2 grad{chi^N} chi^M
+!                 ---------------------------------------------------------------------------------------------------------------
+                  fg1i = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + ii)
+                  fg2i = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + ii)
+                  fg3i = r_co(b2)*r_co(c1)*ao(ao_off_g1_m2(ixyz, ind(b1,c2)) + ii)
+                  fg4i = r_co(b1)*r_co(b2)*ao(ao_off_g1_m2(ixyz, ind(c1,c2)) + ii)
+
+                  fg1j = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + jj)
+                  fg2j = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + jj)
+                  fg3j = r_co(b2)*r_co(c1)*ao(ao_off_g1_m2(ixyz, ind(b1,c2)) + jj)
+                  fg4j = r_co(b1)*r_co(b2)*ao(ao_off_g1_m2(ixyz, ind(c1,c2)) + jj)
+!
+                  f_2_gga2 = f_2_gga2 &
+                           +((fg1i - fg2i - fg3i + fg4i)*ao(jj) &
+                           + (fg1j - fg2j - fg3j + fg4j)*ao(ii))*n_g(ixyz)
+
+               end do
+
+!              (3) grad{ (R_M times r)_a1 (R_M times r )_a2} chi^M chi^N + grad{ (R_N times r)_a1 (R_N times r )_a2} chi^M chi^N
+!              -----------------------------------------------------------------------------------------------------------------
+!              ...{grad (R_M times r)_a1}  (R_M times r )_a2 chi^M chi^N
+               fg1i = n_g(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+               fg2i = n_g(c1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+               fg3i = n_g(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
+               fg4i = n_g(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+
+!              ...{grad (R_N times r)_a1}  (R_N times r )_a2 chi^M chi^N
+               fg1j = n_g(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
+               fg2j = n_g(c1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
+               fg3j = n_g(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b2,c1)) + jj)
+               fg4j = n_g(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
+
+               f_2_gga3a = (fg1i - fg2i - fg3i + fg4i)*ao(jj) + (fg1j - fg2j - fg3j + fg4j)*ao(ii)
+
+!              ...(R_M times r)_a1 {grad (R_M times r )_a2} chi^M chi^N
+               fg1i = n_g(c2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+               fg2i = n_g(c2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
+               fg3i = n_g(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+               fg4i = n_g(b2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+
+!              ...(R_N times r)_a1 {grad (R_N times r )_a2} chi^M chi^N
+               fg1j = n_g(c2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
+               fg2j = n_g(c2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(b2,c1)) + jj)
+               fg3j = n_g(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
+               fg4j = n_g(b2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
+
+               f_2_gga3b = (fg1i - fg2i - fg3i + fg4i)*ao(jj) + (fg1j - fg2j - fg3j + fg4j)*ao(ii)
+
+
+               n_bb(a2, a1) = n_bb(a2, a1)              &
+                            + dmat(jj, ii, iq(0))       &
+                            *(d_r*(f_1_lda - f_2_lda)   &
+                            + d_z*(f_1_gga1 + f_1_gga2 - f_2_gga1 - f_2_gga2 - f_2_gga3a - f_2_gga3b))
+
+
+
+             end do
+           end do
+         end do
+       end do
+     end do
+
+   end subroutine
+
+
+   subroutine lda_london_sus2el_der2(s, isym, mat_dim, nz, dmat, ao, cx, cy, cz, n_bb)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: s
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: nr1, nr2, st1, st2, iblock
+     integer                :: i, ii, jj, a, b, c, a1, a2, jxyz
+     real(8)                :: ff, f1, n_1(3)
+     real(8)                :: r_co(3), s_b_lao(3,3)
+     integer                :: nr3, nr4, st3, st4, kk, ll, irep(3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+     call get_s_lao(s_b_lao, irep, mat_dim, dmat, ao, cx, cy, cz)
+
+!    s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
+     do jxyz = 1, 3
+        do a1 = 1, 3
+          do a2 = 1, 3
+!           "-" sign comes from "i*i", from London derivatives (not included in get_s_lao)
+            !n_bb(a2, a1) = n_bb(a2, a1) - s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2)
+            n_bb(a2, a1) = n_bb(a2, a1) + s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2)
+          end do
+        end do
+     end do
+
+   end subroutine
+
+
+   subroutine gga_london_sus2el_der2(d_s, d_sns, d_nsns, d_ss, n_g, &
+                                     isym, mat_dim, nz, dmat, ao, cx, cy, cz, n_bb)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_s, d_sns, d_nsns, d_ss
+     real(8), intent(in)    :: n_g(3)
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: nr1, nr2, st1, st2, iblock
+     integer                :: i, ii, jj, a, a1, a2, jxyz, ixyz
+     real(8)                :: ff, f1, n_1(3)
+     real(8)                :: r_co(3)
+     integer                :: nr3, nr4, st3, st4, kk, ll
+     real(8)                :: fg, fg1, fg2, fg3, gn_1(3, 3), gn_2(3), ggn_2(3,3)
+     real(8)                :: s(3, 3), gs(3, 3, 3), n_sum
+     real(8)                :: dummy(3, 3)
+!    ----------------------------------------------------------------------------
+
+     s = 0.0d0
+     gs = 0.0d0
+     n_1 = 0.0d0
+     gn_2 = 0.0d0
+
+     dummy = 0.0d0
+
+!    get s and gs in LAO basis:
+!    --------------------------
+!    s(Sigma_{x,y,z}, B_{x,y,z})
+!    gs(dR_{x,y,z}, Sigma_{x,y,z}, B_{x,y,z})
+     call get_gs_lao(s, gs, dummy, n_g, isym, mat_dim, dmat, ao, cx, cy, cz)
+
+!    sums:
+     n_sum = n_g(1) + n_g(2) + n_g(3)
+     do a = 1, 3             ! B_{x,y,z}
+        do ixyz = 1, 3       ! Sigma_{x,y,z}
+           n_1(a) = n_1(a) + s(ixyz, a)
+           do jxyz = 1, 3    !dR_{x,y,z}
+              gn_2(a) = gn_2(a) + gs(jxyz, ixyz, a)
+           end do
+        end do
+     end do
+     do a1 = 1, 3
+       do a2 = 1, 3
+         n_bb(a2, a1) = n_bb(a2, a1) &
+!                     lda
+                      + d_s*n_1(a1)*n_1(a2) &
+!                     gradient terms
+                      + d_sns*(n_sum*gn_2(a1)*n_1(a2) + n_sum*gn_2(a2)*n_1(a1)) &
+                      + d_nsns*n_sum*n_sum*gn_2(a1)*gn_2(a2) &
+                      + d_ss*gn_2(a1)*gn_2(a2)
+       end do
+     end do
+     n_bb = -1.0d0*n_bb
+
+   end subroutine
+
+
 
 end module
