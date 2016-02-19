@@ -14,8 +14,8 @@ the lines below should only be changed on the release branch.)
 15.1 (2016-xx-xx)
 -----------------
 
-- added OPENBLAS in search list for blas and lapack libraries
-- made keyword .X2Cmmf case insensitive
+- Added OPENBLAS in search list for blas and lapack libraries.
+- Made keyword .X2Cmmf case insensitive.
 - BUGfix for spinfree X2Cmmf and linear symmetry.
 - Error corrections and updates in isotope properties for the following atoms:
       Br isotope 2: quadrupole moment  .2620 ->  .2615
@@ -30,6 +30,7 @@ the lines below should only be changed on the release branch.)
       Tl isotope 1: nuclear moment 1.63831461D0 -> 1.63821461D0 (typo, error 1.d-4)
       Pb isotope 3: nuclear moment 0.582583D0 -> 0.592583D0 (typo, error 1.d-2)
       Po isotope 1: nuclear moment added: 0.000 -> 0.688
+- Restored "make install" target.
 
 
 15.0 (2015-12-16)
