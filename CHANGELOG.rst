@@ -1,8 +1,8 @@
 15.1 (2016-xx-xx)
 -----------------
 
-- added OPENBLAS in search list for blas and lapack libraries
-- made keyword .X2Cmmf case insensitive
+- Added OPENBLAS in search list for blas and lapack libraries.
+- Made keyword .X2Cmmf case insensitive.
 - BUGfix for spinfree X2Cmmf and linear symmetry.
 - Error corrections and updates in isotope properties for the following atoms:
       Br isotope 2: quadrupole moment  .2620 ->  .2615
