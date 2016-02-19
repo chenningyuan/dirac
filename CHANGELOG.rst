@@ -17,6 +17,7 @@
       Tl isotope 1: nuclear moment 1.63831461D0 -> 1.63821461D0 (typo, error 1.d-4)
       Pb isotope 3: nuclear moment 0.582583D0 -> 0.592583D0 (typo, error 1.d-2)
       Po isotope 1: nuclear moment added: 0.000 -> 0.688
+- Restored "make install" target.
 
 
 15.0 (2015-12-16)
