@@ -75,7 +75,6 @@ contains
     read(file_unit) nr_xyz_comp
     read(file_unit) which_icomp
     read(file_unit) D_con_mo%irep
-    read(file_unit) sum_ep_rn
     read(file_unit) D_con_mo%elms
 
     if (nr_xyz_comp > 1) then

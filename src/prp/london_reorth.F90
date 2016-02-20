@@ -234,6 +234,18 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
+!CTROND
+!            IF(FULMAT) THEN
+!              CALL FULMAT2('S',NORBT,NORBT,tb)
+!            ENDIF
+!            WRITE(*,*) &
+!            'get_ftb: Get MO matrix of property:', &
+!              icomp,PRPNAM(INDXPR),IREP(icomp)
+!            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
+!                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
+!CTROND
+
+
 !!!TEST
 !      call test_new_routines(tb)
 
@@ -247,8 +259,6 @@ contains
       write(tbmo_unit) (isym(icomp) - 1)
 ! *) time-reversal symmetry:
 !      write(tbmo_unit) 
-! *) reorthonormalization over both (p+e) shells or only over e shells:
-      write(tbmo_unit) doeprn 
 ! *) T^B_icomp matrix in MO basis:
       write(tbmo_unit) tb
 
@@ -266,7 +276,7 @@ contains
       if (lao_lr_rearrange) then
         ee = .true.
         ep = .true.
-        if (xlr_skipep .or. .not. doeprn) ep = .false.
+        if (xlr_skipep) ep = .false.
         if (xlr_skipee) ee = .false.
         call get_m_ai(tb, ee, ep)
       end if
@@ -279,13 +289,9 @@ contains
 !     it is = 1, because unperturbed Fock matrix is symmetric (its real part)
 !     it is set in getfck
       isymh = 1
-!     ah = .true. because T is antihermitian
-      ah = .true.
 
 !     do 1-index transformation
-      call ttra(doeprn,          &
-                ah,              &
-                isym(icomp),     &
+      call ttra(isym(icomp),     &
                 isymh,           &
                 tb,              &
                 fmo,             &
@@ -415,8 +421,7 @@ contains
 !       construct kohn-sham contribution
 !       ================================
 !   in dft Bx/By/Bz contributions are added on top of each other!
-    if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
-    !if (dirac_cfg_dft_calculation) then
+    if (dirac_cfg_dft_calculation) then
 
       debug_me = .false.
       if (debug_me) then
@@ -613,6 +618,18 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
+!CTROND
+!            IF(FULMAT) THEN
+!              CALL FULMAT2('S',NORBT,NORBT,tb)
+!            ENDIF
+!            WRITE(*,*) &
+!            'get_tb_dmat: Get MO matrix of property:', &
+!              icomp,PRPNAM(INDXPR),IREP(icomp)
+!            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
+!                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
+!CTROND
+
+
 #ifdef MOD_LAO_REARRANGED
       if (lao_lr_rearrange) then
 !       we only need occ-occ block of S^B matrix, so zero-out the rest:
@@ -633,8 +650,7 @@ contains
       kfree = 1
       call di_select_wrk(work, lwork)
 
-      call getmdm(doeprn,            &
-                  isym(icomp),       &
+      call getmdm(isym(icomp),       &
                   tb_dmat(1, icomp), &
                   cmo,               &
                   ibeig,             &

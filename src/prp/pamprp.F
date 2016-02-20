@@ -6141,6 +6141,8 @@ C
       IJ = 1
       DO 300 I = 1, 3
          DO 310 J = 1, I
+!gosia: todo check if these "magnetizability outputs 1/2/3" have sense with LAOs 
+!            (diasusc=0 for some keyword combination)
             PVAL1(IJ) = DIASUSC(I,J)
             PVAL2(IJ) = PARSUS(I,J)
             PVAL (IJ) = SUSTOT(I,J)
@@ -6526,7 +6528,7 @@ C--------------------------------------------------------------------
            CALL DAXPY(NCMAT,D1,PMAT,1,DMATREE,1)
 
          end if
-         if (DOEPRN .and. .not. XLR_SKIPEP) then
+         if (EPREORTH) then
 ! p-occ:
            ee = .false.
            ep = .true.
