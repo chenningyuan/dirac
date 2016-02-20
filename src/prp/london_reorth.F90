@@ -235,14 +235,14 @@ contains
       call di_deselect_wrk(work, lwork)
 
 !CTROND
-!            IF(FULMAT) THEN
-!              CALL FULMAT2('S',NORBT,NORBT,tb)
-!            ENDIF
-!            WRITE(*,*) &
-!            'get_ftb: Get MO matrix of property:', &
-!              icomp,PRPNAM(INDXPR),IREP(icomp)
-!            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
-!                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
+            IF(FULMAT) THEN
+              CALL FULMAT2('S',NORBT,NORBT,tb)
+            ENDIF
+            WRITE(*,*) &
+            'get_ftb: Get MO matrix of property:', &
+              icomp,PRPNAM(INDXPR),IREP(icomp)
+            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
+                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
 !CTROND
 
 
