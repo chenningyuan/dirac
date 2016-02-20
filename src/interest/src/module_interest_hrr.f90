@@ -11,7 +11,7 @@
 ! Contains:     
 !
 ! Licensing:    dirac_copyright_start
-!                     Copyright (c) 2010 by the authors of DIRAC.
+!                     Copyright (c) 2016 by the authors of DIRAC.
 !                     All Rights Reserved.
 !                     
 !                     This source code is part of the DIRAC program package.
@@ -33,7 +33,7 @@
 !
 ! Author:       Michal Repisky (michal.repisky@uit.no)
 !
-! Logs:         
+! Revision:     2.0   
 !
 ! Comments:     
 !                            
@@ -48,59 +48,76 @@ module module_interest_hrr
 
   private                                                                                                       
 
-  integer :: i,j
-  integer :: ij,m
-  real(8) :: a2,b2
-  real(8) :: rx,ry,rz
-  real(8) :: xx,yx,zx,xy,yy,zy,xz,yz,zz
+  integer :: i,j,ij,m
+  !$OMP threadprivate(i,j,ij,m)
+  real(8) :: a2,b2,rx,ry,rz,xx,yx,zx,xy,yy,zy,xz,yz,zz
+  !$OMP threadprivate(a2,b2,rx,ry,rz,xx,yx,zx,xy,yy,zy,xz,yz,zz)
 
 
   !-- 2205 --!
   real(8) :: waux(5,441)  !up to l=6(=h)
+  !$OMP threadprivate(waux)
+
 
   !-- 680 --!
   real(8) :: ss(1:1,1),ps(2:4,1),ds(5:10,1),fs(11:20,1),gs(21:35,1),hs(36:56,1),is(57:84,1)
   real(8) :: js(85:120,1),ks(121:165,1),ls(166:220,1),ms(221:286,1),ns(287:364,1),os(365:455,1)
   real(8) :: qs(456:560,1),rs(561:680,1)
+  !$OMP threadprivate(ss,ps,ds,fs,gs,hs,is,js,ks,ls,ms,ns,os,qs,rs)
   !-- 1092 --!
   real(8) :: sp(1,2:4),pp(2:4,2:4),dp(5:10,2:4),fp(11:20,2:4),gp(21:35,2:4),hp(36:56,2:4)
   real(8) :: ip(57:84,2:4),jp(85:120,2:4),kp(121:165,2:4),lp(166:220,2:4),mp(221:286,2:4),np(287:364,2:4)
   real(8) :: op(365:455,2:4),qp(456:560,2:4)
+  !$OMP threadprivate(sp,pp,dp,fp,gp,hp,ip,jp,kp,lp,mp,np,op,qp)
   !-- 1716 --!
   real(8) :: sd(1,5:10),pd(2:4,5:10),dd(5:10,5:10),fd(11:20,5:10),gd(21:35,5:10),hd(36:56,5:10)
   real(8) :: id(57:84,5:10),jd(85:120,5:10),kd(121:165,5:10),ld(166:220,5:10),md(221:286,5:10)
   real(8) :: nd(287:364,5:10),od(365:455,5:10) 
+  !$OMP threadprivate(sd,pd,dd,fd,gd,hd,id,jd,kd,ld,md,nd,od)
   !-- 2190 --!
   real(8) :: pf(2:4,11:20),df(5:10,11:20),ff(11:20,11:20),gf(21:35,11:20)
   real(8) :: hf(36:56,11:20),if(57:84,11:20),jf(85:120,11:20),kf(121:165,11:20),lf(166:220,11:20)
   real(8) :: mf(221:286,11:20),nf(287:364,11:20) 
+  !$OMP threadprivate(pf,df,ff,gf,hf,if,jf,kf,lf,mf,nf)
   !-- 2415 --!
   real(8) :: dg(5:10,21:35),fg(11:20,21:35),gg(21:35,21:35)
   real(8) :: hg(36:56,21:35),ig(57:84,21:35),jg(85:120,21:35),kg(121:165,21:35)
   real(8) :: lg(166:220,21:35),mg(221:286,21:35)
+  !$OMP threadprivate(dg,fg,gg,hg,ig,jg,kg,lg,mg)
   !-- 2310 --!
   real(8) :: fh(11:20,36:56),gh(21:35,36:56),hh(36:56,36:56),ih(57:84,36:56),jh(85:120,36:56)
   real(8) :: kh(121:165,36:56),lh(166:220,36:56)
+  !$OMP threadprivate(fh,gh,hh,ih,jh,kh,lh)
   !-- 1204 --!
   real(8) :: gi(21:35,57:84),hi(36:56,57:84),ii(57:84,57:84),ji(85:120,57:84),ki(121:165,57:84)
+  !$OMP threadprivate(gi,hi,ii,ji,ki)
   !-- fixme --!
   real(8) :: jj(85:120,85:120)
+  !$OMP threadprivate(jj)
   !-- 15792 -!
+
 
   !-- 168  --!
   real(8) :: ss_10(3,1:1,1),ps_10(3,2:4,1),ds_10(3,5:10,1),fs_10(3,11:20,1),gs_10(3,21:35,1),hs_10(3,36:56,1)
+  !$OMP threadprivate(ss_10,ps_10,ds_10,fs_10,gs_10,hs_10)
   !-- 504  --!
   real(8) :: sp_10(3,1:1,2:4),pp_10(3,2:4,2:4),dp_10(3,5:10,2:4),fp_10(3,11:20,2:4),gp_10(3,21:35,2:4),hp_10(3,36:56,2:4)
+  !$OMP threadprivate(sp_10,pp_10,dp_10,fp_10,gp_10,hp_10)
   !-- 990  --!
   real(8) :: pd_10(3,2:4,5:10),dd_10(3,5:10,5:10),fd_10(3,11:20,5:10),gd_10(3,21:35,5:10),hd_10(3,36:56,5:10)
+  !$OMP threadprivate(pd_10,dd_10,fd_10,gd_10,hd_10)
   !-- 1560 --!
   real(8) :: df_10(3,5:10,11:20),ff_10(3,11:20,11:20),gf_10(3,21:35,11:20),hf_10(3,36:56,11:20)
+  !$OMP threadprivate(df_10,ff_10,gf_10,hf_10)
   !-- 2070 --!
   real(8) :: fg_10(3,11:20,21:35),gg_10(3,21:35,21:35),hg_10(3,36:56,21:35)
+  !$OMP threadprivate(fg_10,gg_10,hg_10)
   !-- 2268 --!
   real(8) :: gh_10(3,21:35,36:56),hh_10(3,36:56,36:56)
+  !$OMP threadprivate(gh_10,hh_10)
   !-- 1764 --!
   real(8) :: hi_10(3,36:56,57:84)
+  !$OMP threadprivate(hi_10)
   !-- 9324  -!
 
 contains

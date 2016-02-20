@@ -11,7 +11,7 @@
 ! Contains:     
 !
 ! Licensing:    dirac_copyright_start
-!                     Copyright (c) 2010 by the authors of DIRAC.
+!                     Copyright (c) 2016 by the authors of DIRAC.
 !                     All Rights Reserved.
 !                     
 !                     This source code is part of the DIRAC program package.
@@ -33,10 +33,8 @@
 !
 ! Author:       Michal Repisky (michal.repisky@uit.no)
 !
-! Logs:         
+! Revision:     2.0   
 !
-! Comments:     
-!                            
 ! ------------------------------------------------------------------------------------
   subroutine interest_initialize( info )
 
