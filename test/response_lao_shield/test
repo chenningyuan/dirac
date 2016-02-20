@@ -14,15 +14,23 @@ f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
       rel_tolerance   = 0.002)
 
-inp_files = []
-inp_files.append('LiH.levyle.shield_lao_go=cm.inp')
-inp_files.append('LiH.dc_ukb.shield_lao_go=cm.inp')
-inp_files.append('LiH.dc_rkb.shield_lao_go=cm.inp')
-inp_files.append('LiH.dc_sf.shield_lao_go=cm.inp')
-inp_files.append('LiH.bss.shield_lao_go=cm.inp')
-inp_files.append('LiH.bss+mfsso.shield_lao_go=cm.inp')
-inp_files.append('LiH.bss_sfB.shield_lao_go=cm.inp')
+test.run(['dc_scf.inp'], ['hf.xyz'], args='--outcmo')
 
-test.run(inp_files, ['LiH.lsym.dir.mol'], f)
+test.run(['dc_shield_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_scre_g0.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_scre_g1.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_ncre_g0.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_ncre_g1.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_re_g0.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_re_g1.inp'], ['hf.xyz'], f, args='--incmo')
+
+#test.run(['dc_shield_nc_g0_skipep.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_shield_sc_g0_skipep.inp'], ['hf.xyz'], f, args='--incmo')
+
+os.unlink('DFCOEF')
+
 
 sys.exit(test.return_code)

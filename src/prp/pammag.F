@@ -3619,6 +3619,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
       CALL QEXIT('TTRA3P')
       RETURN
       END
+#endif
 
 C*****************************************************************************
       SUBROUTINE TTRA4(ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
@@ -3849,5 +3850,4 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
       RETURN
       END
 
-#endif
 
