@@ -10102,28 +10102,7 @@ C     NSR constants are defined only for nuclei with non-zero gvalue
               END IF
               FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
 C
-              NSRTOT = TOTSPR(1,1,IATOM)*FACTOT
-              NSRNUC = SPRNUC(1,1,IATOM)*FACTOT
-              NSREXV = DMAT(1,1,IATOM)*FACTOT
-              NSRLRLEE = PMATL(1,1,IATOM,1)*FACTOT
-              NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOT
-              NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOT
-              NSRLRSEP = PMATS(1,1,IATOM,2)*FACTOT
-C
-              NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
-C
-              IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &         ' Total spin-rotation constant            :',NSRTOT,
-     &         ' Nuclear part of spin-rotation           :',NSRNUC,
-     &         ' Expectation value part of spin-rotation :',NSREXV,
-     &         ' Linear response part of spin-rotation   :',NSRLR
-              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &         ' ee part of L operator LR contribution   :',NSRLRLEE,
-     &         ' ee part of S operator LR contribution   :',NSRLRSEE,
-     &         ' ep part of L operator LR contribution   :',NSRLRLEP,
-     &         ' ep part of S operator LR contribution   :',NSRLRSEP
-C
-           ELSE ! if GVAL = 0
+           ELSE   ! if GVAL = 0
               IF (IPRINT .GE. 0) THEN
           CALL HEADER('Artificial spin-rotation constants (kHz) for '//
      &                     NAMDEP(IATOM),-1)
@@ -10134,6 +10113,7 @@ C
      &  'Nuclear g-value is artificially seted equal to 1'
               END IF
               FACTOT = EIGVAL(3)*FAC  ! GVAL(IATOM) = 1
+           END IF  ! GVAL.NE.0
 C
               NSRTOT = TOTSPR(1,1,IATOM)*FACTOT
               NSRNUC = SPRNUC(1,1,IATOM)*FACTOT
@@ -10155,7 +10135,7 @@ C
      &         ' ee part of S operator LR contribution   :',NSRLRSEE,
      &         ' ep part of L operator LR contribution   :',NSRLRLEP,
      &         ' ep part of S operator LR contribution   :',NSRLRSEP
-           END IF
+C
  98      CONTINUE
 C
 !     If linear symmetry is not detected:
@@ -10163,6 +10143,25 @@ C
          DO 45 IATOM = 1, NUCDEP
             IF (GVAL(IATOM) .NE. 0.0D0) THEN
                FACTOT = GVAL(IATOM)*FAC
+               IF (IPRINT .GE. 0) THEN
+                 CALL HEADER('Spin-rotation constants (kHz) for '//
+     &                      NAMDEP(IATOM),-1)
+                 WRITE (LUPRI,'(2X,A18,F6.2,/)')
+     &                 'Nuclear g-value  :',GVAL(IATOM)
+               END IF
+            ELSE   !   if GVAL = 0
+               FACTOT = FAC
+               IF (IPRINT .GE. 0) THEN
+          CALL HEADER('Artificial spin-rotation constants (kHz) for '//
+     &                     NAMDEP(IATOM),-1)
+               WRITE (LUPRI,'(2X,A,F8.3)')
+     &  'WARNING: Nuclear g-value NOT available for isotope of mass ',
+     &  AMASS(IATOM)
+               WRITE (LUPRI,'(2X,A,/)')
+     &  'Nuclear g-value is artificially seted equal to 1'
+               END IF
+             END IF
+C
                CALL DZERO(GTRANN,9*NUCDEP)
                CALL DZERO(GTRAND,9*NUCDEP)
                CALL DZERO(GTRANP,9*NUCDEP)
@@ -10201,11 +10200,6 @@ C
      &                       + GTRANPSEP(I,J,IATOM)
  60               CONTINUE
  50            CONTINUE
-               IF (IPRINT .GE. 0) THEN
-                 CALL HEADER('Spin-rotation constants (kHz) for '//
-     &                      NAMDEP(IATOM),-1)
-                 WRITE (LUPRI,'(2X,A18,F6.2,/)')
-     &                 'Nuclear g-value  :',GVAL(IATOM)
 ! If there is at least one inertia tensor eigenvalue equal to zero (linear molecule):
 C
                  IF(LINMOL) THEN
@@ -10260,8 +10254,6 @@ C
      &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
      &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
                  END IF
-               END IF
-            END IF
  45      CONTINUE
       END IF
       RETURN
