@@ -39,7 +39,7 @@ dependencies:
         - sudo apt-get remove mpich2 openmpi-bin libopenmpi-dev
 # download, build and install OpenMPI to $HOME/open_mpi
         - mkdir $HOME/open_mpi
-        - wget http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
+        - wget --no-check-certificate http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.gz
         - tar xzf openmpi-1.8.4.tar.gz
         - cd openmpi-1.8.4 && ./configure --prefix=$HOME/open_mpi && make -j $N_PROC && make install
 # check if integer size is correct - should be 8

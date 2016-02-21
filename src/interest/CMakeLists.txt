@@ -5,10 +5,9 @@ endif()
 
 add_library(
     interest
-    git_revision_info.f90
-    module_interest_eri.f90
-    module_interest_hrr.f90
-    module_interest_one.f90
-    module_interest_osr.f90
-    module_interest_peri.f90
+    src/git_revision_info.f90
+    src/module_interest_eri.f90
+    src/module_interest_hrr.f90
+    src/module_interest_one.f90
+    src/module_interest_osr.f90
     )

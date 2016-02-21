@@ -11,7 +11,7 @@
 ! Contains:     
 !
 ! Licensing:    dirac_copyright_start
-!                     Copyright (c) 2010 by the authors of DIRAC.
+!                     Copyright (c) 2016 by the authors of DIRAC.
 !                     All Rights Reserved.
 !                     
 !                     This source code is part of the DIRAC program package.
@@ -33,7 +33,7 @@
 !
 ! Author:       Michal Repisky (michal.repisky@uit.no)
 !
-! Logs:         
+! Revision:     2.0   
 !
 ! Comments:     
 !                            
@@ -498,7 +498,7 @@ CONTAINS
   END SUBROUTINE
 
 ! -------------------------------------------------------------------------
-  SUBROUTINE interest_eri_4c_new(factor,fint_inp,                                &
+  SUBROUTINE interest_eri_4c_new(class,factor,fint_inp,                          &
                                  la_inp,alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp,&
                                  lb_inp,beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp,&
                                  lc_inp,gamma_inp,cx_inp,cy_inp,cz_inp,cnorm_inp,&
@@ -506,13 +506,14 @@ CONTAINS
 
     !> output
     real(8), intent(out) :: fint_inp(*)
-    !> input
-    real(8), intent(in) :: factor 
-    integer, intent(in) :: la_inp,lb_inp,lc_inp,ld_inp
-    real(8), intent(in) :: alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp
-    real(8), intent(in) :: beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp
-    real(8), intent(in) :: gamma_inp,cx_inp,cy_inp,cz_inp,cnorm_inp
-    real(8), intent(in) :: delta_inp,dx_inp,dy_inp,dz_inp,dnorm_inp
+    !> input      
+    character(len=4), intent(in) :: class
+    real(8),          intent(in) :: factor 
+    integer,          intent(in) :: la_inp,lb_inp,lc_inp,ld_inp
+    real(8),          intent(in) :: alpha_inp,ax_inp,ay_inp,az_inp,anorm_inp
+    real(8),          intent(in) :: beta_inp, bx_inp,by_inp,bz_inp,bnorm_inp
+    real(8),          intent(in) :: gamma_inp,cx_inp,cy_inp,cz_inp,cnorm_inp
+    real(8),          intent(in) :: delta_inp,dx_inp,dy_inp,dz_inp,dnorm_inp
     !> local
     integer :: nint,index
     integer :: la,lb,lc,ld
@@ -676,22 +677,29 @@ CONTAINS
     rywq  = ( pexp*py + qexp*qy )/psq - qy
     rzwq  = ( pexp*pz + qexp*qz )/psq - qz
 
+
     nab  = ncc(la)*ncc(lb)
     ncd  = ncc(lc)*ncc(ld)
     nint = nab*ncd 
-    call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                      &
-                                    la,(la+lb-1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
-                                    lc,(lc+ld-1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
-    call interest_hrr_ket(fint,ncd,nab,la,lb,rxab,ryab,rzab,n2)
-    call interest_hrr_bra(fint,ncd,nab,lc,ld,rxcd,rycd,rzcd) 
-    select case( index )
-      case( 1234 ); fint_inp(1:nint)=fint(1:nint) 
-      case( 2134 ); call transpose_ab( fint, fint_inp, ncc(la), ncc(lb), ncd ) 
-      case( 1243 ); call transpose_cd( fint, fint_inp, ncc(lc), ncc(ld), nab ) 
-      case( 2143 ); fint_inp(1:nint)=fint(1:nint)
-                    call transpose_ab( fint_inp, fint,     ncc(la), ncc(lb), ncd )
-                    call transpose_cd( fint,     fint_inp, ncc(lc), ncc(ld), nab )
-    end select 
+
+    select case(class)
+      case('llll')
+          call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                      &
+                                          la,(la+lb-1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+                                          lc,(lc+ld-1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
+          call interest_hrr_ket(fint,ncd,nab,la,lb,rxab,ryab,rzab,n2)
+          call interest_hrr_bra(fint,ncd,nab,lc,ld,rxcd,rycd,rzcd) 
+          select case( index )
+            case( 1234 ); fint_inp(1:nint)=fint(1:nint) 
+            case( 2134 ); call transpose_ab( fint, fint_inp, ncc(la), ncc(lb), ncd ) 
+            case( 1243 ); call transpose_cd( fint, fint_inp, ncc(lc), ncc(ld), nab ) 
+            case( 2143 ); fint_inp(1:nint)=fint(1:nint)
+                          call transpose_ab( fint_inp, fint,     ncc(la), ncc(lb), ncd )
+                          call transpose_cd( fint,     fint_inp, ncc(lc), ncc(ld), nab )
+          end select 
+      case default
+          write(6,*)'Error: unknown eri class => stop'; stop 
+    end select
 
     CONTAINS
 

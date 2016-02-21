@@ -7,9 +7,9 @@ if(ENABLE_INTEREST)
 #miro: interest library might need some math routines from "${EXTERNAL_LIBS}"
     set(EXTERNAL_LIBS interest ${EXTERNAL_LIBS})
     set(FREE_FORTRAN_SOURCES
-        ${FREE_FORTRAN_SOURCES}
-        src/interest-interface/module_interest_interface.F90
-        )
+       ${FREE_FORTRAN_SOURCES}
+       src/interest/module_interest_interface.F90
+       )
     dirac_test(mdirac_closed-shell_dft "interest")
 else()
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)

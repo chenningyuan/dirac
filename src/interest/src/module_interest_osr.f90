@@ -11,7 +11,7 @@
 ! Contains:     
 !
 ! Licensing:    dirac_copyright_start
-!                     Copyright (c) 2010 by the authors of DIRAC.
+!                     Copyright (c) 2016 by the authors of DIRAC.
 !                     All Rights Reserved.
 !                     
 !                     This source code is part of the DIRAC program package.
@@ -33,10 +33,8 @@
 !
 ! Author:       Michal Repisky (michal.repisky@uit.no)
 !
-! Logs:         
+! Revision:     2.0   
 !
-! Comments:     
-!                            
 ! ------------------------------------------------------------------------------------
 module module_interest_osr
   implicit none
@@ -49,6 +47,7 @@ module module_interest_osr
   integer, public, parameter :: lmx1 = 8 
   integer, public, parameter :: lmx2 = 15                  !2*lmx1-1 
   integer, public, parameter :: lmx4 = 29                  !4*lmx1-3 
+  integer, public, parameter :: ncc1 = 120                 !(lmx1*(lmx1+1)*(lmx1+2))/6 
   integer, public, parameter :: ncc2 = 680                 !(lmx2*(lmx2+1)*(lmx2+2))/6 
   integer, public, parameter :: nccx = 2205                !max( ncc(lmx1-2)*ncc(lmx-2)*5, ncc(lmx1)*ncc(lmx1) )
   real(8), public, parameter :: pi   = 3.141592653589793d0 !4.0d0*datan(1.0d0)
@@ -56,25 +55,37 @@ module module_interest_osr
   integer, public, parameter :: nsc(lmx1) = (/1,3,5, 7, 9,11,13,15/)
 
   logical, public, save :: is_interest_initialized = .false.
+  !$OMP threadprivate(is_interest_initialized)
 
 
   private
 
   integer, parameter :: lmxx = lmx4+6
-  real(8), parameter :: tf   = 92.0d0  !!dfloat(2*(4*(lmx1-1)+8)+36)
+  real(8), parameter :: tf   = 92.0d0        !!dfloat(2*(4*(lmx1-1)+8)+36)
 
-  integer :: mo(6,ncc2)                !fixme: dynamic allocation
+  integer, save :: mo(6,ncc2)                !fixme: dynamic allocation
+  !$OMP threadprivate(mo)
 
-  real(8) :: f(13)
-  real(8) :: fnx(lmx4)
-  real(8) :: gama(0:lmx2-1)
-  real(8) :: fnxtab(121*lmxx)          !fixme: dynamic allocation
-  real(8) :: vaux(ncc2,lmx4)           !fixme: dynamic allocation
-  real(8) :: waux(ncc2,ncc2,lmx2)      !fixme: dynamic allocation + size???
+  real(8), save :: f(13)
+  real(8), save :: fnx(lmx4)
+  real(8), save :: gama(0:lmx2-1)
+  !$OMP threadprivate(f,fnx,gama)
+
+! real(8),         save :: fnxtab(121*lmxx)  !fixme: dynamic allocation
+  real(8), public, save :: fnxtab(121*lmxx)  !fixme: dynamic allocation
+  !$OMP threadprivate(fnxtab)
+
+  real(8), save :: vaux(ncc2,lmx4)           !fixme: dynamic allocation
+  real(8), save :: waux(ncc2,ncc2,lmx2)      !fixme: dynamic allocation + size???
+  !$OMP threadprivate(vaux,waux)
   
-  real(8) :: c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14
-  real(8) :: c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27
-  real(8) :: c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40
+  real(8), save :: c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14
+  real(8), save :: c15,c16,c17,c18,c19,c20,c21,c22,c23,c24,c25,c26,c27
+  real(8), save :: c28,c29,c30,c31,c32,c33,c34,c35,c36,c37,c38,c39,c40
+  !$OMP threadprivate( c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, &
+  !$OMP                c11,c12,c13,c14,c15,c16,c17,c18,c19,c20, &
+  !$OMP                c21,c22,c23,c24,c25,c26,c27,c28,c29,c30, &
+  !$OMP                c31,c32,c33,c34,c35,c36,c37,c38,c39,c40  ) 
 contains
 
 ! ---------------------------------------------------------------------------------------
@@ -85,16 +96,14 @@ contains
 !note: na vystupe, 1-elektronove integraly: [la...lab|0]
 ! ---------------------------------------------------------------------------------------
   subroutine interest_osr_class_overlap(li1,fint,cosr,la,lab,pexp,rxpa,rypa,rzpa)
-    !-- output --!
-    integer, intent(out) :: li1
-    real(8), intent(out) :: fint(*)
-
-    !-- input --!
+    !> input
     integer, intent(in) :: la,lab
     real(8), intent(in) :: cosr
     real(8), intent(in) :: pexp,rxpa,rypa,rzpa
-
-    !-- local --!
+    !> output
+    integer, intent(out) :: li1
+    real(8), intent(out) :: fint(*)
+    !> local
     integer :: n,l,ll,lm,ln,lx,ly
     real(8) :: sint(3,lmx2)
     real(8) :: o2p,pexp2
@@ -145,19 +154,17 @@ contains
 ! ---------------------------------------------------------------------------------------
   subroutine interest_osr_class_dipole(li1,fintx,finty,fintz,cosr,la,lab,pexp,&
                                        rxpa,rypa,rzpa,rxpc,rypc,rzpc)
-    !-- output --!
-    integer, intent(out) :: li1
-    real(8), intent(out) :: fintx(*)
-    real(8), intent(out) :: finty(*)
-    real(8), intent(out) :: fintz(*)
-
-    !-- input --!
+    !> input
     integer, intent(in) :: la,lab
     real(8), intent(in) :: cosr,pexp
     real(8), intent(in) :: rxpa,rypa,rzpa
     real(8), intent(in) :: rxpc,rypc,rzpc
-
-    !-- local --!
+    !> output
+    integer, intent(out) :: li1
+    real(8), intent(out) :: fintx(*)
+    real(8), intent(out) :: finty(*)
+    real(8), intent(out) :: fintz(*)
+    !> local
     integer :: n,l,ll,lm,ln,lx,ly
     real(8) :: sint(3,lmx2)
     real(8) :: dipi(3,lmx2)
@@ -234,18 +241,16 @@ contains
   subroutine interest_osr_class_nuclear(li1,li2,fint,cosr,t,                                 &
                                         la,lab,lf1,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
                                         lc,lcd,lf2,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
-    !-- output --!
-    integer, intent(out) :: li1,li2 
-    real(8), intent(out) :: fint(*)
-
-    !-- input --!
+    !> input
     real(8), intent(in) :: cosr,t
     integer, intent(in) :: la,lab,lf1
     integer, intent(in) :: lc,lcd,lf2
     real(8), intent(in) :: fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp
     real(8), intent(in) :: fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq 
-
-    !-- local --!
+    !> output
+    integer, intent(out) :: li1,li2 
+    real(8), intent(out) :: fint(*)
+    !> local
     integer :: iadr
     real(8) :: tdif
     integer :: m,mmax,nmin 
@@ -1488,18 +1493,15 @@ contains
 ! ---------------------------------------------------------------------------------------
   subroutine nuclear_ket(li1,li2,fint,lf2,mmax,nmin,nmax,lc,lcd,  &
                          fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq)
-
-    !-- output --!
-    integer, intent(out) :: li1,li2 
-    real(8), intent(out) :: fint(*)
-
-    !-- input --!
+    !> input
     integer             :: mmax
     integer, intent(in) :: nmin,nmax
     integer, intent(in) :: lc,lcd,lf2
     real(8), intent(in) :: fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq 
-
-    !-- local --!
+    !> output
+    integer, intent(out) :: li1,li2 
+    real(8), intent(out) :: fint(*)
+    !> local
     integer :: m,n,mmin
     integer :: mox,moy,moz 
     real(8) :: xmo,ymo,zmo 
@@ -2683,10 +2685,10 @@ contains
 ! downward recursion: x < 12.0
 ! ---------------------------------------------------------------------------------------
   subroutine nuclear_boysxina(nval,xval,xdif,fnx,fnxtab)  
+    !> local -> fixme
     integer :: nval, k, nmax
     real(8) :: xval, xdif, fnx(*),fnxtab(*)
     real(8) :: expx, xval2, sum, fact, denom 
-
 
     expx  = dexp(-xval)
     xval2 = xval + xval
@@ -2711,6 +2713,7 @@ contains
 ! upward recursion: near asymptotic region
 ! ---------------------------------------------------------------------------------------
   subroutine nuclear_boysxinb(nval,xval,fnx)  
+    !> local -> fixme
     integer :: nval, n
     real(8) :: xval, fnx(*)
     real(8) :: rxval2, expx, gval, fact, denom
@@ -2736,6 +2739,7 @@ contains
 ! asymptotic region (54)
 ! ---------------------------------------------------------------------------------------
   subroutine nuclear_boysxinc(nval,xval,fnx) 
+    !> local -> fixme
     integer :: nval, n
     real(8) :: rxval2, denom
     real(8) :: xval, fnx(*)
@@ -2754,6 +2758,7 @@ contains
 ! accumulate bra results 
 ! ---------------------------------------------------------------------------------------
   subroutine nuclear_getbra(iini,iend,a,b,li1,li2)
+    !> local -> fixme
     integer :: i,iini,iend,li1,li2
     real(8) :: a(*),b(*)
  
@@ -2769,6 +2774,7 @@ contains
 ! accumulate ket results 
 ! ---------------------------------------------------------------------------------------
   subroutine nuclear_getket(jini,jend,iini,iend,a,b,ldb)
+    !> local -> fixme
     integer :: ldb
     integer :: i,ii,iini,iend
     integer :: j,jj,jini,jend
@@ -2794,6 +2800,7 @@ contains
 ! module initialization 
 ! ---------------------------------------------------------------------------------------
   subroutine interest_osr_initialize
+    !> local -> fixme
     integer :: istart, istop, i, j, ii, m1, m2
     integer :: ier, l, lx, ly, lval, mval, nval, madr
     real(8) :: denom, dmax, rdmax, xval, xval2, term, sum, expx
