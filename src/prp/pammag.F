@@ -713,10 +713,10 @@ CTROND
             IF(FULMAT) THEN
               CALL FULMAT2('S',NORBT,NORBT,WORK(KTMAT))
             ENDIF
-            WRITE(LUPRI,'(2A,I5)')
-     &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR2),IREP2
-            CALL PRQMAT(WORK(KTMAT),NORBT,NORBT,NORBT,
-     &              NORBT,NZ,IPQTOQ(1,IREP2),LUPRI )
+!            WRITE(LUPRI,'(2A,I5)')
+!     &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR2),IREP2
+!            CALL PRQMAT(WORK(KTMAT),NORBT,NORBT,NORBT,
+!     &              NORBT,NZ,IPQTOQ(1,IREP2),LUPRI )
 CTROND
 #ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)

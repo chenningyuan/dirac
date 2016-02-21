@@ -238,11 +238,11 @@ contains
             IF(FULMAT) THEN
               CALL FULMAT2('S',NORBT,NORBT,tb)
             ENDIF
-            WRITE(*,*) &
-            'get_ftb: Get MO matrix of property:', &
-              icomp,PRPNAM(INDXPR),IREP(icomp)
-            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
-                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
+!            WRITE(*,*) &
+!            'get_ftb: Get MO matrix of property:', &
+!              icomp,PRPNAM(INDXPR),IREP(icomp)
+!            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
+!                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
 !CTROND
 
 
