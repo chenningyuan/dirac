@@ -9497,7 +9497,7 @@ C
         NISO = 0
         DO ISO = 1,5
           GVALUE = DISOTP(IZ,ISO,'GVAL')
-          IF(GVALUE.NE.0) THEN
+!iaa          IF(GVALUE.NE.0) THEN
             ABND = DISOTP(IZ,ISO,'ABUNDANCE')
             IF(ABND.GT.ABUND.OR.(.NOT.TEST)) THEN
               TEST = .TRUE.
@@ -9506,7 +9506,7 @@ C
               RATINF(2,NISO,NSPEC+1) = ABND
               RATINF(3,NISO,NSPEC+1) = GVALUE
             ENDIF
-          ENDIF
+!          ENDIF
         ENDDO
         IF(NISO.GT.0) THEN
           IATINF(1,NSPEC+1) = IDEP + 1
@@ -9605,9 +9605,11 @@ C     NUCLEAR PART OF NSR TENSOR
 C
       CALL DZERO(SPRNUC,NCMAT)
 C
+c**** iaa: Only most abundant isotopes are considered
       DO I = 1, MXCENT
             ISOTOP(I) = 1
       END DO
+c****
 C
       CALL CMMASS(GEOM,MASS,NAT,ISOTOP,IPRPRP)
       CALL DCOPY(3,CMXYZ,1,GAGORG,1)
@@ -9990,7 +9992,7 @@ C
       PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       LOGICAL PLANAR, LINMOL
 C
-c**** iaa: to define for all isotopes
+c**** iaa: Only most abundant isotopes are considered
       DO I = 1, MXCENT
             ISOTOP(I) = 1
       END DO
@@ -10107,9 +10109,42 @@ C
               NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOT
               NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOT
               NSRLRSEP = PMATS(1,1,IATOM,2)*FACTOT
-C  
+C
               NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
-C  
+C
+              IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+     &         ' Total spin-rotation constant            :',NSRTOT,
+     &         ' Nuclear part of spin-rotation           :',NSRNUC,
+     &         ' Expectation value part of spin-rotation :',NSREXV,
+     &         ' Linear response part of spin-rotation   :',NSRLR
+              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+     &         ' ee part of L operator LR contribution   :',NSRLRLEE,
+     &         ' ee part of S operator LR contribution   :',NSRLRSEE,
+     &         ' ep part of L operator LR contribution   :',NSRLRLEP,
+     &         ' ep part of S operator LR contribution   :',NSRLRSEP
+C
+           ELSE ! if GVAL = 0
+              IF (IPRINT .GE. 0) THEN
+          CALL HEADER('Artificial spin-rotation constants (kHz) for '//
+     &                     NAMDEP(IATOM),-1)
+               WRITE (LUPRI,'(2X,A,F8.3)')
+     &  'WARNING: Nuclear g-value NOT available for isotope of mass ',
+     &  AMASS(IATOM)
+               WRITE (LUPRI,'(2X,A,/)')
+     &  'Nuclear g-value is artificially seted equal to 1'
+              END IF
+              FACTOT = EIGVAL(3)*FAC  ! GVAL(IATOM) = 1
+C
+              NSRTOT = TOTSPR(1,1,IATOM)*FACTOT
+              NSRNUC = SPRNUC(1,1,IATOM)*FACTOT
+              NSREXV = DMAT(1,1,IATOM)*FACTOT
+              NSRLRLEE = PMATL(1,1,IATOM,1)*FACTOT
+              NSRLRLEP = PMATL(1,1,IATOM,2)*FACTOT
+              NSRLRSEE = PMATS(1,1,IATOM,1)*FACTOT
+              NSRLRSEP = PMATS(1,1,IATOM,2)*FACTOT
+C
+              NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
+C
               IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
      &         ' Total spin-rotation constant            :',NSRTOT,
      &         ' Nuclear part of spin-rotation           :',NSRNUC,
