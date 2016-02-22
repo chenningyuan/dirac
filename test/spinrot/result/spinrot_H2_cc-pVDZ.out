@@ -1950,7 +1950,7 @@ SOfock:SL  1.16D-10   34.09%   51.79%    0.00%   17.99%   0.01206398s
   Results are valid only for equilibrium geometry.
 
 
-                       Spin rotation constants (kHz) for H
+                       Spin-rotation constants (kHz) for H
                        -----------------------------------
 
   Nuclear g-value  :  5.59
@@ -1967,7 +1967,7 @@ SOfock:SL  1.16D-10   34.09%   51.79%    0.00%   17.99%   0.01206398s
 
 
 
-                       Spin rotation constants (kHz) for H
+                       Spin-rotation constants (kHz) for H
                        -----------------------------------
 
   Nuclear g-value  :  5.59
