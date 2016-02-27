@@ -25,9 +25,6 @@ include(FindCompilerVersion)
 # Miro Ilias restrored CMake printout, associated with build_info.h generation
 include(build_info)
 
-
-#message("cmake/custom/core.cmake: from src/CMake... obtained EXTERNAL_LIBS=${EXTERNAL_LIBS}")
-
 set(_lisd_of_executables)
 macro(compile_standalone _executable _source _list_of_executables)
     add_executable(
