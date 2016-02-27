@@ -11,12 +11,12 @@ set(FIXED_PCM_DIRAC_FORTRAN_SOURCES
 )
 
 set(FREE_PCM_DIRAC_FORTRAN_SOURCES
+    pcmmod_cfg.F90
     pcm_gp.F90
     pcm_integrals.F90
     pcm_linear_response.F90
     pcm_scf.F90
     pcm_write.F90
-    pcmmod_cfg.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

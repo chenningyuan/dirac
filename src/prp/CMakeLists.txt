@@ -40,9 +40,9 @@ set(FIXED_PRP_FORTRAN_SOURCES
 
 set(FREE_PRP_FORTRAN_SOURCES
    conf_parameters.F90
+   london_helper.F90
    london_utils.F90
    london_direct.F90
-   london_helper.F90
    london_reorth.F90
    pamxqr.F90
 )
