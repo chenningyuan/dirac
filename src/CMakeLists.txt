@@ -53,11 +53,18 @@ if(ENABLE_SRDFT)
     add_definitions(-DMOD_SRDFT)
 endif()
 
-#----------------------------------------------------------------------------------------------------------
-# WARNING:  Order of the functionality modules is crucial for the proper linking of all DIRAC executables !
+#--------------------------------------------------------------------------------------------------------------
+# WARNING: The order of the functionality modules is crucial for the proper linking of all DIRAC executables !
 #
-# The first module here (pdpack) is the last in the linking command due to filling the ${EXTERNAL_LIBS}
+# The first module here (pdpack) is the last in the linking command due way of filling the ${EXTERNAL_LIBS}
 # variable.
+#
+# The resulting ${EXTERNAL_LIBS} variable contains localized source libraries of all functionality modules
+# of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
+#
+# Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
+# to keep source files (modules) as localized and with minimal interdependencies.
+#
 #----------------------------------------------------------------------------------------------------------
 
 # make the EXTERNAL_LIBS variable visible to the scope up !

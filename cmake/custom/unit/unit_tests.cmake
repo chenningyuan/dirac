@@ -10,10 +10,10 @@ if(ENABLE_UNIT_TESTS)
         )
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_BINARY_DIR}/unit)
 
-    # set unit test libs
+    #miro: simple workaround to satisfy linking dependencies of localization on dirac
     set(UNIT_TEST_LIBS
-        dirac
-        ${EXTERNAL_LIBS}
+        localization
+        ${EXTERNAL_LIBS} 
         )
 
     if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
