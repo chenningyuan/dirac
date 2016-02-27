@@ -5,11 +5,6 @@ include_directories(
 
 include(autocmake_CMakeDependentOption)
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set_source_files_properties(${FREE_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
-    set_source_files_properties(${FIXED_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
-endif()
-
 # fix for Windows with 64bit integers on and build type release
 # when using GNU (gfortran) compilers
 # there is one source file for which -O3/-O2 is not good
@@ -30,41 +25,8 @@ include(FindCompilerVersion)
 # Miro Ilias restrored CMake printout, associated with build_info.h generation
 include(build_info)
 
-set(DIRAC_SOURCES
-    ${C_SOURCES}
-    ${FREE_FORTRAN_SOURCES}
-    ${FIXED_FORTRAN_SOURCES}
-    )
 
-if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    message(STATUS "For libdirac.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
-endif()
-
-add_library(
-    dirac
-    ${DIRAC_SOURCES}
-    )
-
-add_dependencies(dirac git_info)
-
-add_dependencies(dirac relccsd)
-
-if(ENABLE_XCFUN)
-    add_dependencies(dirac xcfun_fortran_bindings)
-endif()
-
-if(ENABLE_PCMSOLVER)
-    add_dependencies(dirac pcmsolver)
-endif()
-
-if(ENABLE_INTEREST)
-    add_dependencies(dirac interest)
-endif()
-
-if(ENABLE_STIELTJES)
-    add_dependencies(dirac stieltjes)
-endif()
+#message("cmake/custom/core.cmake: from src/CMake... obtained EXTERNAL_LIBS=${EXTERNAL_LIBS}")
 
 set(_lisd_of_executables)
 macro(compile_standalone _executable _source _list_of_executables)
@@ -82,26 +44,23 @@ compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
 
 option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
-    compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90 "${_list_of_executables}")
-    compile_standalone(rspread.x utils/rspread.F90 "${_list_of_executables}")
-    compile_standalone(labread.x utils/labread.F90 "${_list_of_executables}")
-    compile_standalone(twofit.x utils/twofit.F90 "${_list_of_executables}")
-    compile_standalone(cfread.x utils/cfread.F90 "${_list_of_executables}")
-    compile_standalone(vibcal.x utils/vibcal.F90 "${_list_of_executables}")
-    compile_standalone(polfit.x utils/polfit.F90 "${_list_of_executables}")
-    compile_standalone(mx2fit.x utils/mx2fit.F90 "${_list_of_executables}")
-    compile_standalone(diag.x utils/diag.F90 "${_list_of_executables}")
-    compile_standalone(test_allocator.x utils/test_allocator.F90 "${_list_of_executables}")
+    compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90   "${_list_of_executables}")
+    compile_standalone(rspread.x                 utils/rspread.F90                   "${_list_of_executables}")
+    compile_standalone(labread.x                 utils/labread.F90                   "${_list_of_executables}")
+    compile_standalone(twofit.x                  utils/twofit.F90                    "${_list_of_executables}")
+    compile_standalone(cfread.x                  utils/cfread.F90                    "${_list_of_executables}")
+    compile_standalone(vibcal.x                  utils/vibcal.F90                    "${_list_of_executables}")
+    compile_standalone(polfit.x                  utils/polfit.F90                    "${_list_of_executables}")
+    compile_standalone(mx2fit.x                  utils/mx2fit.F90                    "${_list_of_executables}")
+    compile_standalone(diag.x                    utils/diag.F90                      "${_list_of_executables}")
+    compile_standalone(test_allocator.x          utils/test_allocator.F90            "${_list_of_executables}")
 endif()
-
-#miro: hack for to supress for ccxblas.o missing object SUM_ from the blas library
-target_link_libraries(test_allocator.x ${EXTERNAL_LIBS})
 
 if(ENABLE_RELCCSD_STANDALONE)
     if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
     endif()
-    compile_standalone(relccsd.x src/relccsd/ccmain.F "${_list_of_executables}")
+    compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
     target_link_libraries(relccsd.x relccsd)
 endif()
 
@@ -128,7 +87,6 @@ foreach(
     endif()
     target_link_libraries(
         ${_executable}
-        dirac
         ${EXTERNAL_LIBS}
         )
     if(ENABLE_STATIC_LINKING)

@@ -1,10 +1,10 @@
 !************************************************************************ 
+!
 ! Standalone program for comprehensive testing of all diagonalization
 ! routines used by DIRAC. 
 !
 ! These are Householder, RSJACOBI, QJACOBI and
 ! DSYEVR.
-!
 !
 ! The program either reads the matrix file, or generates a random matrix.
 !
@@ -39,3 +39,22 @@ Program Test_DIRAC_Diagonalization_Routines
  call quit('program not in release version!')
 #endif /* MOD_UNRELEASED */
 End Program Test_DIRAC_Diagonalization_Routines
+
+!--------------------------------------------------------------
+! placed this routine here as it depends on src/input module
+! can not be in src/gp module !
+!--------------------------------------------------------------
+subroutine read_input_file
+  implicit none
+! reads the text input file "DIAGONALIZE_TESTS.INP"
+  character*21 :: inpfile="DIAGONALIZE_TESTS.INP"
+  logical :: input_found
+#include "priunit.h"
+    inquire(file=inpfile, exist=input_found)
+    if (.not.input_found) then
+      write(LUPRI,"(2x,a,a)") "read_input_file: the input file not found ! input_file=",inpfile
+      call quit("read_input_file: the input file not found !")
+    endif
+    call read_menu_input(inpfile, lucmd, 'ALL', input_found)
+end subroutine read_input_file
+

@@ -23,31 +23,13 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
     ccxblas.F
     waio.F
     ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
-    ${PROJECT_SOURCE_DIR}/src/gp/gpsaue.F
+    ${PROJECT_SOURCE_DIR}/src/main/dirac.F
+# needs fix missing object pamgeo
+   ${PROJECT_SOURCE_DIR}/src/dirac/dirgeo.F
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
     relcc_cfg.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/machine_parameters.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_allocator.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_control.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_errorhandler.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_internal_ada_1d.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_internal_ada_2d.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_internal_ada_3d.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_internal_ada_4d.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_internal_init.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_legacy_dirac.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_parameters.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_track_if.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/memory_tracker.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/xmlout.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/exception_handling.F90
-    ${PROJECT_SOURCE_DIR}/src/gp/quaternion_algebra.F90
-    ${PROJECT_SOURCE_DIR}/src/dirac/codata.F90
-    ${PROJECT_SOURCE_DIR}/src/interface_mpi/integer_kind_mpilib.F90
-    ${PROJECT_SOURCE_DIR}/src/interface_mpi/integer_model.F90
-    ${PROJECT_SOURCE_DIR}/src/interface_mpi/interface_to_mpi.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -56,7 +38,6 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
 endif()
 
 #miro: all these manually picked up sources are necessary for building up the relccsd library, "make relccsd"
-# -  the standalone executable, relccsd.x, however, depends on the huge libdirac.a library
 # - the quit.F file is not listed due to replacement by DIRAC QUIT routine
 # - the ccunix.c is not included
 add_library(
@@ -64,3 +45,8 @@ add_library(
     ${FIXED_RELCCSD_FORTRAN_SOURCES}
     ${FREE_RELCCSD_FORTRAN_SOURCES}
 )
+
+# add intermodule dependencies
+add_dependencies(relccsd gp)
+add_dependencies(relccsd dirac)
+add_dependencies(relccsd main)

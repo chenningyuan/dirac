@@ -19,13 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-      SUBROUTINE DFTSETCAM(W,BETA)
-#include "implicit.h"
-#include "dcbham.h"
-      HFXMU = W
-      HFXATT = BETA
-      END
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GTDOAV(mat_dim,
      &                  nz,
