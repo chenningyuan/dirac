@@ -55,6 +55,9 @@ endif()
 
 #----------------------------------------------------------------------------------------------------------
 # WARNING:  Order of the functionality modules is crucial for the proper linking of all DIRAC executables !
+#
+# The first module here (pdpack) is the last in the linking command due to filling the ${EXTERNAL_LIBS}
+# variable.
 #----------------------------------------------------------------------------------------------------------
 
 # make the EXTERNAL_LIBS variable visible to the scope up !
@@ -63,6 +66,10 @@ set(EXTERNAL_LIBS PARENT_SCOPE)
 # pdpack as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/pdpack)
 set(EXTERNAL_LIBS pdpack ${EXTERNAL_LIBS})
+
+# Making interface_mpi as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
+set(EXTERNAL_LIBS interface_mpi ${EXTERNAL_LIBS})
 
 # gp as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/gp)
@@ -91,10 +98,6 @@ set(EXTERNAL_LIBS x2c ${EXTERNAL_LIBS})
 # Making localization  as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/localization)
 set(EXTERNAL_LIBS localization ${EXTERNAL_LIBS})
-
-# Making interface_mpi as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
-set(EXTERNAL_LIBS interface_mpi ${EXTERNAL_LIBS})
 
 # cfun as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/cfun)

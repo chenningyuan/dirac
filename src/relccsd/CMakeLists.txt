@@ -30,6 +30,8 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
     relcc_cfg.F90
+    # needs dependency
+    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -50,3 +52,4 @@ add_library(
 add_dependencies(relccsd gp)
 add_dependencies(relccsd dirac)
 add_dependencies(relccsd main)
+add_dependencies(relccsd interface_mpi)
