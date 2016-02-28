@@ -62,6 +62,7 @@ add_library(
 add_dependencies(prp  gp)
 add_dependencies(prp  dirac)
 add_dependencies(prp  main)
+add_dependencies(prp  krmc)
 if (ENABLE_ESR)
     add_dependencies(prp  esr)
 endif()
