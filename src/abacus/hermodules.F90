@@ -389,22 +389,22 @@
 
         END SUBROUTINE MAKE_ATOMTYPES
 
-        REAL FUNCTION FIND_CHARGE(atomname,LUPRI)
+        INTEGER FUNCTION FIND_CHARGE(atomname,LUPRI)
 !     JHS050707 For a given atomname the corresponding charge is searched for in nucdata.h
           CHARACTER(LEN=*),INTENT(IN) :: atomname
           INTEGER,OPTIONAL,INTENT(IN) :: LUPRI
           INTEGER :: i
 #include "nucdata.h"
           
-          find_charge=0.0
+          find_charge=0
           DO i=1,SIZE(NUCLABEL)
             IF (atomname==NUCLABEL(i)) THEN
-              find_charge=REAL(i)
+              find_charge=i
               RETURN
             END IF
           END DO
-          IF (PRESENT(LUPRI)) WRITE(LUPRI,*) 'WARING:                   & 
-     &         No charge found for element: ', atomname
+          IF (PRESENT(LUPRI)) WRITE(LUPRI,*)                            &
+     &         'WARNING: No charge found for element: ', atomname
 
         END FUNCTION
 
@@ -540,7 +540,7 @@
                     end if
                   CASE('INTGRL','EXPLICIT')
 !     FIRST read rest of the line and then read the explicit coefficients.
-!     TMP We read the coefficients in in the old way in write commonblock
+!     TMP We read the coefficients in in the old way in write common block
                     read(tmp_file,*,iostat=ios) iqm
                     if ( ios.ne.0 .or. iqm.eq.0) then
                       write(lupri,*) "ERROR(readbasis) :",           &
@@ -705,13 +705,12 @@
 #include "aovec.h"
 #include "maxaqn.h"
 
-!     COMMONBLOCKS
-#include "clsfmm.h"
+!     COMMON BLOCKS
 #include "cbirea.h"
 
       INTEGER, INTENT(IN)             :: lupri
 
-      INTEGER :: ncent,natom,natom_type
+      INTEGER :: ncent,natom,natom_type,nq
       TYPE(atom), POINTER             :: mol
 
 #include "molinp.h"
@@ -747,23 +746,19 @@
 !     If we didn't read the nuclear model somewhere read the nuclear radius.
 
 !    WRITE NUCLEAR SHAPE. TMP To be changed, now always D0 is taken
-          IF (GAUNUC.AND.NINT(mol%charge).NE.0) THEN
+          nq = NINT(mol%charge)
+          IF (GAUNUC.AND.nq.GT.0) THEN
                
             IF (mol%nucexp.EQ.D0) THEN
-              CALL NUCSIZ(mol%charge,mol%nucexp)
+              CALL NUCSIZ(nq,mol%nucexp)
             END IF
-            IF (mol%nucexp .LE. 1.0D8) THEN
-              WRITE(lupri,*) 'WARNING!!!'
-              WRITE(lupri,*) 'WARNING!!!'
-              WRITE(lupri,*) 'WARNING!!!'
-              WRITE(lupri,*) 'Nuclear gaussian exponent small: ',       &
-     &                         mol%nucexp
-            END IF
+            IF (mol%nucexp .LE. 1.0D8) WRITE(lupri,*)                   &
+     &         'WARNING!!! Nuclear gaussian exponent small: ',mol%nucexp
           ELSE
             mol%nucexp=D0
           END IF
 
-!     WRITE COMMONBLOCKS
+!     WRITE COMMON BLOCKS
           NAMN(natom)=mol%name
           CORD(:,natom)=mol%x
           NAMEX(3*natom)=NAMN(natom)//' z'
@@ -781,6 +776,8 @@
              end if
           end if
           IATOMTYP(natom)=natom_type
+          IZATOM(natom)  = nq ! number of protons in nucleus
+          ISOTOP(natom)  = 1  ! assume most abundant isotope
 
           mol=>mol%next
         END IF
@@ -836,10 +833,10 @@
 
         SUBROUTINE WRITE_ATOMTYPES(infile,lupri,WORK,LWORK,                 &
      &                  KANG,KSETS,KBLOCK,KPRIM,HERMIT)
-!     JHS050707 Writes the contained in the basisset list to the commonblocks.
+!     JHS050707 Writes the contained in the basisset list to the common blocks.
 !               Note the routine is higly similar tot the subroutine READI1 for
 !               .MOL files, the main difference is the split between reading the files
-!               and writing them to the commonblocks
+!               and writing them to the common blocks
 
       use codata
       use RECP_NTR
@@ -852,7 +849,9 @@
 #include "maxaqn.h"
 #include "symmet.h"
 
-!     COMMONBLOCKS
+!     COMMON BLOCKS
+! clsfmm.h : THRCLS
+! cbirea.h : IPREAD,TOL_SYMADD, ...
 #include "clsfmm.h"
 #include "cbirea.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
@@ -1194,7 +1193,8 @@
       LINEAR = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
-         CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,CLASS,.false.)
+         CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,                     &
+     &               CLASS,TOL_SYMADD,IPREAD,.false.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
 !
@@ -1416,23 +1416,23 @@
         IF (natoms_given .NE. count_atoms(firstatom)) THEN
           WRITE(LUPRI,*) " Read ",count_atoms(firstatom)," atoms",      &
      &                   " but expected ",natoms_given," atoms"
-          CALL QUIT(' *** ERROR (READXYZ) wrong number of atoms')
+          CALL QUIT(' *** ERROR (READ_XYZ) wrong number of atoms')
         END IF
 
 !       Read the basis set information from DIRAC.INP
         inpfile=OPEN_FILE('DIRAC.INP',cmdfile,'FORMATTED',LUPRI)
         IF (.NOT.(inpfile>0)) THEN
-          WRITE(LUPRI, '(a)') 'ERROR, could not open DIRAC.INP'
-          CALL QUIT(' *** ERROR (READXYZ) unable to open DIRAC.INP')
+          WRITE(LUPRI, '(//a)') 'ERROR, could not open DIRAC.INP'
+          CALL QUIT(' *** ERROR (READ_XYZ) unable to open DIRAC.INP')
         END IF
         CALL READ_BASIS(inpfile, linelen,lupri)
 
 !       Define the list of atomtypes
         CALL MAKE_ATOMTYPES(lupri)
 
-!       Write the coordinates to the commonblocks
+!       Write the coordinates to the common blocks
         CALL WRITE_ATOMS(LUPRI)
-!       Write the basisset data to the commonblocks
+!       Write the basisset data to the common blocks
         CALL WRITE_ATOMTYPES(inpfile, LUPRI,WORK,LWORK,                 &
      &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 
@@ -1444,4 +1444,4 @@
 
 
       END MODULE READ_XYZFILE
-
+!  -- End of abacus/hermodules.F90 --
