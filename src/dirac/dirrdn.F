@@ -4610,7 +4610,7 @@ C
       NUCVAC   = .FALSE.
       DOPSI    = .FALSE.
       DOANA    = .FALSE.
-      DOPRP    = .TRUE. ! Calculate always the dipole moment, takes negligible amount of time and is always useful
+      DOPRP    = .FALSE.
       DOHRM    = .FALSE.
       DOJACO   = .FALSE.
       DOPUT    = .FALSE.

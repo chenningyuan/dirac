@@ -2346,6 +2346,8 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #include "dcbxpr.h"
+#include "dcbham.h"
+! The dcbham common block is needed temporarily to check for spinfree (transformation of dipole integrals not debugged yet for spinfree)
 c
 c---------------Calling Variables-----------------------------------
 c 
@@ -2366,6 +2368,7 @@ c---------------Executable code-------------------------------------------------
 c
 
       IF (ICURFSS.EQ.0) RETURN ! No intensities if we only have the ground state
+      IF (SPINFR)       RETURN ! Transformed dipole moment integrals not yet available
 
       ALLOCATE(PROP(RCW,NSP,NSP),STAT=IERR)
       ALLOCATE(INTENSITY(NDT_TOT),STAT=IERR)
