@@ -2346,6 +2346,8 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #include "dcbxpr.h"
+#include "dcbham.h"
+! The dcbham common block is needed temporarily to check for spinfree (transformation of dipole integrals not debugged yet for spinfree)
 c
 c---------------Calling Variables-----------------------------------
 c 
@@ -2364,6 +2366,9 @@ c
 c
 c---------------Executable code--------------------------------------------------
 c
+
+      IF (ICURFSS.EQ.0) RETURN ! No intensities if we only have the ground state
+      IF (SPINFR)       RETURN ! Transformed dipole moment integrals not yet available
 
       ALLOCATE(PROP(RCW,NSP,NSP),STAT=IERR)
       ALLOCATE(INTENSITY(NDT_TOT),STAT=IERR)
@@ -2386,8 +2391,9 @@ c  Transition dipole moments for (0,1) or (1,0) sector
 c
       IF ((ICURFSS.EQ.2).OR.(ICURFSS.EQ.3)) THEN 
   
-       CALL TRANSITION_EA_IP (ICURFSS,EOPER,PROP,TRANS_DIPOLE,
+       CALL TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
      &                        EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+       CYCLE  ! Transition dipoles are only written to xml output, as there are too many to print in human-readable form
 c
 c  Transition dipole moments for (1,1) sector
 c 
@@ -2527,31 +2533,40 @@ c
             NDTL = NFS_HE(IREP,ICURFSS) 
             IF (NDTL.EQ.0) CYCLE
 
-!              Get temporary array to store | dipole | rhs >
-               ALLOCATE (DIP_RHS(RCW,NDTL,NDTR))
 
 !              Get the subset of dipole matrix elements for this symmetry combination
                ALLOCATE (DIP_SUB (RCW,NDTL,NDTR))
-               ALLOCATE (TDIP_SUB(RCW,NDTL,NDTR))
 
-!              Routine to be written, takes symmetry sub block out of full matrix
-!              CALL PROP_SUB(PROP,IREP,JREP,DIP_SUB,NDTL,NDTR,IREPSPI,NSP)
+!              Takes symmetry sub block out of full matrix
+               CALL PROP_SUB(ICURFSS,PROP,IREP,JREP,DIP_SUB,NDTL,NDTR,
+     &                       IREPSPI,NSP)
+
+!              Check for zero's no need to process symmetry zeroes
+               IF (DDOT(RCW*NDTR*NDTL,DIP_SUB,1,DIP_SUB,1)
+     &             .LT.1.E-16) THEN
+                  DEALLOCATE (DIP_SUB)
+                  CYCLE
+               END IF
+
+!              Get temporary array to store | dipole | rhs >
+               ALLOCATE (DIP_RHS(RCW,NDTL,NDTR))
+               ALLOCATE (TDIP_SUB(RCW,NDTL,NDTR))
 
 !              Form | dipole | rhs > for the symmetry pair (irep,jrep)
                CALL XGEMM ('N','N',NDTL,NDTR,NDTR,A1,DIP_SUB,NDTL,
-     &              EIGENVECTORS(1,IFS_HE2(JREP,ICURFSS)),NDTR,
+     &              EIGENVECTORS(1,IFS_HE2(JREP,ICURFSS)+1),NDTR,
      &              A0,DIP_RHS,NDTL)
 
 !              Form < lhs | dipole | rhs > for the symmetry pair (irep,jrep)
                CALL XGEMM ('N','N',NDTL,NDTR,NDTL,A1,
-     &              EIGENVECTORS(1,IFS_HE2(IREP,ICURFSS)),NDTL,
+     &              EIGENVECTORS(1,IFS_HE2(IREP,ICURFSS)+1),NDTL,
      &              DIP_RHS,NDTL,A0,TDIP_SUB,NDTL)
 
 !              Write output (wll be xml after the testing phase is done)
-               WRITE (*,*) "Symmetry combination ",IREP,JREP
+               Print*, "Transition dipoles for ",eoper,irep,jrep
                DO J = 1, NDTR
                   DO I = 1, NDTL
-                     WRITE (*,*) I,J,(TDIP_SUB(IRCW,I,J),IRCW=1,RCW)
+                  WRITE (*,*) ,I,J,(TDIP_SUB(IRCW,I,J),IRCW=1,RCW)
                   ENDDO
                ENDDO
                
@@ -2559,9 +2574,7 @@ c
                DEALLOCATE (DIP_RHS)
                DEALLOCATE (TDIP_SUB)
              
-               IFULL = IFULL + NDTL * NDTL ! Move the pointer to the next irrep
          ENDDO !irreps in lhs
-         JFULL = JFULL + NDTR * NDTR  ! Move the pointer to the next irrep
        enddo ! irreps on rhs
 
       RETURN
@@ -2747,6 +2760,57 @@ C consistency check
         ENDDO
       ENDDO
       ENDIF !CARITH
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PROP_SUB(ICURFSS,PROP,IREP,JREP,DIP_SUB,NDTL,NDTR,
+     &                    IREPSPI,NSP)
+
+      IMPLICIT INTEGER (A-Z)
+c
+c Takes out symmetry block as needed in subroutine Transition_EA_IP
+c                                                      
+c----------------Common Blocks-----------------------------------------
+c 
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dcbxpr.h"
+c
+c----------------Calling variables---------------------------------------------
+c
+      INTEGER NDTR, NDTL,IJREP,ICURFSS
+      DIMENSION IREPSPI(NSP,MXREP,2)
+      REAL*8 PROP(RCW,NSP,NSP),DIP_SUB(RCW,NDTL,NDTR)
+
+c
+c  Distinguish between the two possible cases and get the symmetry block
+c 
+      IF (ICURFSS.EQ.2) THEN ! We need active virtuals for the (0,1) sector
+         DO J = 1, NAV(JREP)
+            DO I = 1, NAV(IREP)
+               II = IREPSPI(i,irep,2) 
+               JJ = IREPSPI(j,jrep,2)
+               DIP_SUB(1,I,J) = PROP(1,II,JJ)
+               IF (RCW.EQ.2) DIP_SUB(2,I,J) = PROP(2,II,JJ)
+            END DO
+         END DO
+      ELSEIF (ICURFSS.EQ.3) THEN ! We need active occupied for the (1,0) sector
+         DO J = 1, NAO(JREP)
+            DO I = 1, NAO(IREP)
+               II = IREPSPI(nio(irep)+i,irep,1) ! the active occupied come after the inactive occupied, hence the offset
+               JJ = IREPSPI(nio(jrep)+j,jrep,1)
+               DIP_SUB(1,I,J) = PROP(1,II,JJ)
+               IF (RCW.EQ.2) DIP_SUB(2,I,J) = PROP(2,II,JJ)
+            END DO
+         END DO
+      ELSE ! This should not happen, stop with an error message
+         CALL QUIT ('Error in PROP_SUB')
+      ENDIF
 
       RETURN
       END
