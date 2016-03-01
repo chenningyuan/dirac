@@ -6,54 +6,74 @@
 #
 #################################################################################
 
-#important: set all definitions first so they can be used for the all source subdirectories below !
+#----------------------------------------------------------------------------------
+# Set all module options and definitions first 
+# so they can be DEFINED for all source subdirectories below 
+#----------------------------------------------------------------------------------
+option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" ON)
+option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(NOT ENABLE_XCFUN)
     add_definitions(-DEXCLUDE_XCFUN)
 endif()
+option(ENABLE_QCORR "Davidson-type +Q corrections for (MR)CISD" ON)
 if(ENABLE_QCORR)
     add_definitions(-DMOD_QCORR)
 endif()
+option(ENABLE_PCMSOLVER "Enable Polarizable Continuum Model through PCMSolver" ON)
 if(ENABLE_PCMSOLVER)
     find_package(ZLIB)
     if(ZLIB_FOUND)
         add_definitions(-DHAS_PCMSOLVER)
     endif()
 endif()
+option(ENABLE_STIELTJES "Enable stieltjes library" ON)
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
+# interest as separate library
+cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
 if(ENABLE_INTEREST)
     add_definitions(-DMOD_INTEREST)
 endif()
+option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
 if(ENABLE_OPENRSP)
     add_definitions(-DMOD_OPENRSP)
 endif()
+cmake_dependent_option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON "ENABLE_UNRELEASED" OFF)
 if(ENABLE_LAO_REARRANGED)
     add_definitions(-DMOD_LAO_REARRANGED)
 endif()
+cmake_dependent_option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON "ENABLE_UNRELEASED" OFF)
 if(ENABLE_MCSCF_spinfree)
     add_definitions(-DMOD_MCSCF_spinfree)
 endif()
+cmake_dependent_option(ENABLE_AOOSOC "Atomic oo-order spin-orbit correction module" ON "ENABLE_UNRELEASED" OFF)
 if(ENABLE_AOOSOC)
     add_definitions(-DMOD_AOOSOC)
 endif()
+cmake_dependent_option(ENABLE_ERI "ERI integral routines" ON "ENABLE_UNRELEASED" OFF)
 if(ENABLE_ERI)
     add_definitions(-DMOD_ERI)
 endif()
+cmake_dependent_option(ENABLE_DENSFIT "Density fitting module" ON "ENABLE_UNRELEASED" OFF)
 if(ENABLE_DENSFIT)
     add_definitions(-DMOD_DNF)
 endif()
+cmake_dependent_option(ENABLE_ESR "ESR property module" ON "ENABLE_UNRELEASED" OFF)
 if(ENABLE_ESR)
     add_definitions(-DMOD_ESR)
 endif()
+cmake_dependent_option(ENABLE_KRCC "KRCC module" ON "ENABLE_UNRELEASED" OFF)
 if(ENABLE_KRCC)
     add_definitions(-DMOD_KRCC)
 endif()
+cmake_dependent_option(ENABLE_SRDFT "srDFT module" ON  "ENABLE_UNRELEASED" OFF)
 if(ENABLE_SRDFT)
     add_definitions(-DMOD_SRDFT)
 endif()
 
 #--------------------------------------------------------------------------------------------------------------
+#
 # WARNING: The order of the functionality modules is crucial for the proper linking of all DIRAC executables !
 #
 # The first module here (pdpack) is the last in the linking command due way of filling the ${EXTERNAL_LIBS}
@@ -63,7 +83,7 @@ endif()
 # of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
 #
 # Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
-# to keep source files (modules) as localized and with minimal interdependencies.
+# to keep source files (modules) as localized as possible and with minimal interdependencie on other modules.
 #
 #----------------------------------------------------------------------------------------------------------
 
@@ -111,7 +131,6 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/cfun)
 set(EXTERNAL_LIBS cfun ${EXTERNAL_LIBS})
 
 # xcfun as external separate library
-option(ENABLE_XCFUN "Enable XCFun library" ON)
 if(ENABLE_XCFUN)
     message(STATUS "The XCFun submodule ENABLED")
     include(ExternalProject)
@@ -155,7 +174,6 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/xcint)
 set(EXTERNAL_LIBS xcint ${EXTERNAL_LIBS})
 
-option(ENABLE_QCORR "Davidson-type +Q corrections for (MR)CISD" ON)
 if(ENABLE_QCORR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
     set(EXTERNAL_LIBS qcorr ${EXTERNAL_LIBS})
@@ -177,8 +195,6 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/krmc)
 set(EXTERNAL_LIBS krmc ${EXTERNAL_LIBS})
 
 #     esr as separate library
-cmake_dependent_option(ENABLE_ESR "ESR property module" ON
-                       "ENABLE_UNRELEASED" OFF)
 if(ENABLE_ESR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
     set(EXTERNAL_LIBS esr ${EXTERNAL_LIBS})
@@ -213,7 +229,6 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/grid)
 set(EXTERNAL_LIBS grid ${EXTERNAL_LIBS})
 
 # pcmsolver as separate external library
-option(ENABLE_PCMSOLVER "Enable Polarizable Continuum Model through PCMSolver" ON)
 if(ENABLE_PCMSOLVER)
     find_package(ZLIB)
     if(NOT ZLIB_FOUND)
@@ -298,7 +313,6 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp)
 set(EXTERNAL_LIBS prp ${EXTERNAL_LIBS})
 
 #  stieltjes as separate external library
-option(ENABLE_STIELTJES "Enable stieltjes library" ON)
 if(ENABLE_STIELTJES)
     message(STATUS "Stieltjes external module ENABLED")
     include_directories (${PROJECT_BINARY_DIR}/external/stieltjes-build)
@@ -318,8 +332,6 @@ else()
 endif()
 
 # interest as separate library
-cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON
-                       "ENABLE_UNRELEASED" OFF)
 if(ENABLE_INTEREST)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
     set(EXTERNAL_LIBS interest ${EXTERNAL_LIBS})
@@ -330,8 +342,6 @@ endif()
 message(STATUS "Interest library: ${ENABLE_INTEREST}")
 
 #   krcc as separate library
-cmake_dependent_option(ENABLE_KRCC "KRCC module" ON
-                       "ENABLE_UNRELEASED" OFF)
 if(ENABLE_KRCC)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/krcc)
     set(EXTERNAL_LIBS krcc ${EXTERNAL_LIBS})
@@ -341,13 +351,12 @@ endif()
 message(STATUS "KRCC module: ${ENABLE_KRCC}")
 
 # Making relccsd as separate library
-option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" ON)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
 set(EXTERNAL_LIBS relccsd ${EXTERNAL_LIBS})
+#  relccsd.x as standalone executable by default
 message(STATUS "Enable compilation of standalone relccsd.x: ${ENABLE_RELCCSD_STANDALONE}")
 
 #  openrsp as separate library
-option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
 if(ENABLE_OPENRSP)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/openrsp)
     set(EXTERNAL_LIBS openrsp ${EXTERNAL_LIBS})
@@ -369,9 +378,7 @@ else()
 endif()
 message(STATUS "OpenRSP library: ${ENABLE_OPENRSP}")
 
-#       lao_rearranged as separate library
-cmake_dependent_option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON
-                       "ENABLE_UNRELEASED" OFF)
+#    lao_rearranged as separate library
 if(ENABLE_LAO_REARRANGED)
     dirac_test(lao_shield_rearranged "")
 else()
@@ -379,17 +386,13 @@ else()
 endif()
 message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRANGED}")
 
-## mcscf_sf as separate library
-cmake_dependent_option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON
-                       "ENABLE_UNRELEASED" OFF)
+#  mcscf_sf as separate library
 if(NOT ENABLE_MCSCF_spinfree)
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_MCSCF_spinfree)
 endif()
 message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
 
 # aoosoc as separate library
-cmake_dependent_option(ENABLE_AOOSOC "Atomic oo-order spin-orbit correction module" ON
-                       "ENABLE_UNRELEASED" OFF)
 if(ENABLE_AOOSOC)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/aoosoc)
     set(EXTERNAL_LIBS aoosoc ${EXTERNAL_LIBS})
@@ -400,9 +403,7 @@ else()
 endif()
 message(STATUS "Atomic oo-order spin-orbit correction module: ${ENABLE_AOOSOC}")
 
-#   eri as separate library
-cmake_dependent_option(ENABLE_ERI "ERI integral routines" ON
-                       "ENABLE_UNRELEASED" OFF)
+#  eri as separate library
 if(ENABLE_ERI)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/eri)
     set(EXTERNAL_LIBS eri ${EXTERNAL_LIBS})
@@ -412,9 +413,7 @@ else()
 endif()
 message(STATUS "ERI integral routines: ${ENABLE_ERI}")
 
-#   densfit as separate library
-cmake_dependent_option(ENABLE_DENSFIT "Density fitting module" ON
-                       "ENABLE_UNRELEASED" OFF)
+#  densfit as separate library
 if(ENABLE_DENSFIT)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/densfit)
     set(EXTERNAL_LIBS densfit ${EXTERNAL_LIBS})
@@ -425,9 +424,7 @@ else()
 endif()
 message(STATUS "Density fitting module: ${ENABLE_DENSFIT}")
 
-#  srdft as separate library
-cmake_dependent_option(ENABLE_SRDFT "srDFT module" ON
-                       "ENABLE_UNRELEASED" OFF)
+#  srdft module as separate library
 if(ENABLE_SRDFT)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/srdft)
     set(EXTERNAL_LIBS srdft ${EXTERNAL_LIBS})
@@ -440,11 +437,11 @@ message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
 set(EXTERNAL_LIBS dirac ${EXTERNAL_LIBS})
 
-#  input as separate library
+#  input reader directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/input)
 set(EXTERNAL_LIBS input ${EXTERNAL_LIBS})
 
-# main as separate library
+# main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
 set(EXTERNAL_LIBS main ${EXTERNAL_LIBS})
 
