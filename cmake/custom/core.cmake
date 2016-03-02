@@ -114,7 +114,7 @@ foreach(
     endif()
 
     if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-    # add -lC linking flag for each ${_executable} to satisfy missing objects sqrtf,logf 
+    # add -lC linking flag for each ${_executable} to satisfy missing objects - sqrtf,logf,cosf,powf 
         target_link_libraries(${_executable} -lC)
     endif()
 
