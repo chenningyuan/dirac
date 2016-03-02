@@ -2566,7 +2566,7 @@ c
                Print*, "Transition dipoles for ",eoper,irep,jrep
                DO J = 1, NDTR
                   DO I = 1, NDTL
-                  WRITE (*,*) ,I,J,(TDIP_SUB(IRCW,I,J),IRCW=1,RCW)
+                  WRITE (*,*) I,J,(TDIP_SUB(IRCW,I,J),IRCW=1,RCW)
                   ENDDO
                ENDDO
                
