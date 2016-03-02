@@ -33,10 +33,11 @@ if(ENABLE_UNIT_TESTS)
             )
 
         if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-        # add -lC linking flag for each unit test executable to satisfy missing objects sqrtf,logf...
+        # add -lC linking flag for each unit test executable to satisfy missing objects sqrtf,logf...\
+        # add -Wl,-bbigtoc flag to deal with TOC overflow
             target_link_libraries(
                 ${_name}.x
-                ${UNIT_TEST_LIBS} -lC
+                ${UNIT_TEST_LIBS} -lC -Wl,-bbigtoc
                 )
         else()
             target_link_libraries(
