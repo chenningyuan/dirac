@@ -53,7 +53,7 @@ C*****************************************************************************
 #include "dcbxlr.h"
 C
 
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 16)
       LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
       LOGICAL :: DOEPRN_SET, INTNMR_SET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -64,7 +64,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO ANG','.SEPTEP','.XXXXXX'   /
+     &            '.GO ANG','.SEPTEP','.EXPPED','.XXXXXX'  /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -100,6 +100,7 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       USECM  = .FALSE.
       RDSUSLLMOD = .FALSE.
       SEPTEP = .FALSE.
+      EXPPED = .FALSE.
 
 ! gosia: DOEPRN=true unless skipep is on
 !     if (XLR_SKIPEP) then
@@ -133,7 +134,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -238,7 +239,14 @@ C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDS
                SEPTEP = .true.
                GO TO 100
    15          CONTINUE
+!              .EXPPED
+!              gosia: export contributions to perturbed density to files
+!              direct-LAO phase factor part write to pertden_direct_lao.FINAL
+!              reorthonormalization part write to pertden_reorth_lao.FINAL
+!              it is used further in embedding
+               EXPPED = .true.
                GO TO 100
+   16          CONTINUE
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -397,6 +405,22 @@ C =========================================================================
      &  'INFO: Used  full relativistic form of the RDSUSLL operator.'
           ENDIF
       END IF
+
+!     export perturbed density
+      IF (EXPPED) THEN
+         IF (.NOT.LONDON) THEN
+            CALL QUIT( 
+     &    'export of perturbed density only for runs with .LONDON')
+         END IF
+         WRITE(LUPRI,'(1X,A)')
+     & 'perturbed LAO-density exported on file pertden_lao'
+      END IF
+!     if fde and london, then always export perturbed density
+! gosia: activate it if freeze&thaw with response...
+!      if (dirac_cfg_fde_response .and. london) then
+!         EXPPED = .true.
+!      end if
+
 
   999 CONTINUE
       CALL QEXIT('NMRINP')
@@ -951,7 +975,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DSGN,
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DM1,
 !                    -----------------------------------
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
@@ -1017,7 +1041,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DSGN,
+          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DM1,
 !                    ---------------------------------------------- --
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),

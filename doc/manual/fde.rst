@@ -171,6 +171,64 @@ keyword(EXONLY)
 This option forces the program to skip the calculation of any FDE contributions, and proceed to
 exporting the 
 
+.. warning:: Development version only. 
+
+**Magnetic properties with London atomic orbitals**
+===================================================
+
+In calculations of magnetic properties with London atomic orbitals (LAOs), additional contributions
+from FDE to the active subsystem should be added in the property gradient. 
+
+.. math::
+
+    E_{[1],emb}^{[B]} = - \int v_{emb}^I \Omega_{ia}^{B,I} - \iint w_{emb}^{I,I} \Omega_{ia}^{I} \Omega_{jj}^{I} - \iint w_{emb}^{I,II} \Omega_{ia}^{I} \Omega_{jj}^{II}
+
+where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution, which in a basis of London orbitals consists of two terms
+
+.. math::
+
+    \Omega_{pq}^{B} = \frac{i}{2} (R_{MN} \times r) \Omega_{pq} + (T_{pt}^{B*} \Omega_{tq} + \Omega_{pt}T_{tq}^B)
+
+"direct" LAO term (the first term) and "reorthonormalization" term (two last terms in brackets).
+
+FDE contributions to property gradient can be included by the keywords presented below.
+
+keyword(LAODPT)
+
+This keyword corresponds to the term dependent on the embedding potential (:math:`v_{emb}^I`).
+
+keyword(LAODKR)
+
+This keyword corresponds to the term dependent on the embedding kernel, which involves only the
+"direct" LAO term and which does not describe the coupling between subsystem (:math:`w_{emb}^{I,I}`).
+
+keyword(LAORKR)
+
+This keyword corresponds to the term dependent on the embedding kernel, which involves only the
+"reorthonormalization" contribution and which does not describe the coupling between subsystem (:math:`w_{emb}^{I,I}`)
+
+keyword(LAOFRZ)
+
+This keyword adds the term dependent on the embedding kernel, which involves the coupling between 
+two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
+the :ref:`.GRIDOU` keyword with a name of the file, which contains contributions from the perturbed 
+density of a subsystem II and with the keyword :ref:`PERTIM`. Additional contributions from the perturbed density can be written on
+the :ref:`GRIDOU`-corresponding file in the preceeding run on the subsystem II, by using the keyword :ref:`PERTEX` (below).
+
+keyword(PERTIM)
+
+This keyword should be used whenever :ref:`LAOFRZ` keyword is present.
+
+keyword(PERTEX)
+
+This keyword should be used in calculations on subsystem II and it implies that the perturbed density of this
+subsystem is added to the :ref:`GRIDOU`-corresponding file. This file can be used in a consecutive run on subsystem I,
+together with :ref:`LAOFRZ` and :ref:`PERTIM` keywords.
+
+keyword(FRZNOS)
+
+This keyword means that no spin-density contributions to the perturbed density will be used in calculations.
+
 **Debug/expert options**
 ========================
 

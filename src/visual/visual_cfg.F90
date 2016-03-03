@@ -96,6 +96,8 @@ module visual_cfg
    logical, public :: visual_cfg_3d_fast    = .false.
    integer, public :: visual_cfg_ncube(1:3) = 0
    real(8), public :: visual_cfg_add_3d     = 4.0d0
+   logical, public :: visual_cfg_3d_gridimp = .false.
+   character(80), public :: visual_cfg_3d_gridfil
 
 !                     integration in 3d
    logical, public :: visual_cfg_3d_integration = .false.
@@ -115,6 +117,9 @@ module visual_cfg
    real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0
    logical,       public :: visual_cfg_radial             = .false.
    logical,       public :: visual_cfg_force_small_ao     = .false.
+
+   logical,       public :: visual_cfg_nics              = .false.
+   real(8),       public :: visual_cfg_nics_origin(3)    = 0.0d0
 
    logical,      public :: visual_cfg_london               = .false.
    logical,      public :: visual_cfg_london_skip_kappa    = .false.

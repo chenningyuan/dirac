@@ -1,0 +1,3 @@
+cp GRIDOUT.h2o FROZEN
+
+add_pertden_to_frozen.py --pertden_direct=pertden_direct_lao.FINAL --pertden_reorth=pertden_reorth_lao.FINAL --frozen=FROZEN --result=FROZEN.result

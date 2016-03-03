@@ -74,6 +74,9 @@ module london_direct_hb
 contains
 
   subroutine london_twoel_hb(cmo, ibeig, work, lwork)
+  use dirac_cfg
+  use fde_input
+  use fde_mag_cfg
 
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
@@ -139,6 +142,19 @@ contains
     if (dirac_cfg_dft_calculation) then
        call xc_contrib_2el_lao(cmo, fmat)
     end if
+
+!   calculate fde direct-LAO contributions to the gradient
+!   and, if requested, LAO contribution from the perturbed density
+    if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
+       if (fde_lao_direct_active_embpot .or. fde_lao_direct_active_embker &
+      .or. fde_lao_frozen_embker .or. fde_lao_frozen_embker_coulomb) then
+          call fde_direct_contribs(cmo, fmat)
+       else
+          write(*, *) 'no LAO-direct contributions to FDE property gradient'
+          write(*, *) 'no LAO contributions to FDE property gradient from perturbed density'
+       end if
+    end if
+
 
 !   transform from ao to mo basis
     call ao_to_mo_2el_lao(cmo, ibeig, fmat)
@@ -431,10 +447,10 @@ contains
 !   --------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
     real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
-    real(8), allocatable   :: dmat(:, :)
+    real(8), allocatable   :: dmat(:, :), buffer(:)
 
     integer :: icomp
-    logical :: debug_me
+    logical :: debug_me, parcal_temp
 !   --------------------------------------------------------------------
 
     call alloc(dmat, n2bbasx, nz)
@@ -449,16 +465,75 @@ contains
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(4)
 #endif
-    call integrate_xc(xc_mat_dim              = ntbas(0),     &
-                       xc_nz                   = nz,           &
-                       xc_dmat_0               = dmat,            &
-                       xc_nr_dmat              = 0,               &
-                       xc_nr_fmat              = max_nr_xyz_comp, &
-                       xc_fmat                 = fmat,            &
-                       xc_fmat_pg_sym          = isym_2el_lao,    &
-                       xc_do_london_rhs_direct = .true.)
+
+    call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                      xc_nz                   = nz,              &
+                      xc_dmat_0               = dmat,            &
+                      xc_nr_dmat              = 0,               &
+                      xc_nr_fmat              = max_nr_xyz_comp, &
+                      xc_fmat                 = fmat,            &
+                      xc_fmat_pg_sym          = isym_2el_lao,    &
+                      xc_do_london_rhs_direct_der1 = .true.)
 
     call dealloc(dmat)
+
+!gosia: if sdft direct contributions are calculated, then i need a full density matrix
+! now inside integrate_xc subroutine, xc_dmat_0 only contains the real part of dmat
+! that's why here i copy full dmat to buffer and pass it through xc_dmat
+! it's not efficient, but won't mess up with other calls to integrate_xc
+    if (.not. dft_cfg_no_sdft) then
+
+      call alloc(dmat, n2bbasx, nz)
+      dmat = 0.0d0
+      call genden(dmat, cmo, 1, iprprp)
+      call generate_num_grid(dmat)
+      call alloc(buffer, n2bbasxq)
+      call dcopy(n2bbasxq, dmat, 1, buffer, 1)
+
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(4)
+#endif
+
+      if (expped) then
+!        additionally write s_b_lao and gs_b_lao to file
+         call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                           xc_nz                   = nz,              &
+                           xc_dmat_0               = dmat,            &
+                           xc_nr_dmat              = 1,               &
+                           xc_nr_fmat              = max_nr_xyz_comp, &
+                           xc_dmat                 = buffer,          &
+                           xc_fmat                 = fmat,            &
+                           xc_fmat_pg_sym          = isym_2el_lao,    &
+                           xc_dmat_pg_sym          = isym_2el_lao,    &
+                           xc_dmat_ih_sym          = iherm_2el_lao,   &
+                           xc_do_london_rhs_direct_der2 = .true.,     &
+                           xc_london_direct_export = .true.)
+      else
+         call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                           xc_nz                   = nz,              &
+                           xc_dmat_0               = dmat,            &
+                           xc_nr_dmat              = 1,               &
+                           xc_nr_fmat              = max_nr_xyz_comp, &
+                           xc_dmat                 = buffer,          &
+                           xc_fmat                 = fmat,            &
+                           xc_fmat_pg_sym          = isym_2el_lao,    &
+                           xc_dmat_pg_sym          = isym_2el_lao,    &
+                           xc_dmat_ih_sym          = iherm_2el_lao,   &
+                           xc_do_london_rhs_direct_der2 = .true.)
+      end if
+      call dealloc(buffer)
+      call dealloc(dmat)
+    end if
+
+    debug_me = .false.
+    if (debug_me) then
+        write(*, *) 'fmat after integrate_xc, london_direct'
+        call prqmat(fmat, &
+                    ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                    nz, ipqtoq(1, 0), lupri)
+    end if
+
+
 
   end subroutine
 
@@ -540,5 +615,117 @@ contains
     call dealloc(gmat)
 
   end subroutine
+
+  subroutine fde_direct_contribs(cmo, fmat)
+
+    use fde_mag_cfg
+    use fde_mod
+    use fde_data
+    use fde_dirac_matrices_integration
+    use fde_evaluators_dirac
+!   --------------------------------------------------------------------
+    real(8), intent(in)    :: cmo(*)
+    real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
+    real(8), allocatable   :: dmat(:, :), buffer(:)
+
+    integer :: icomp
+    logical :: debug_me
+    type(fde_import) :: itmp
+!   --------------------------------------------------------------------
+
+     call fde_get_import_info(itmp)
+
+     call alloc(dmat, n2bbasx, nz)
+     dmat = 0.0d0
+     call genden(dmat, cmo, 1, iprprp)
+
+     if (fde_lao_direct_active_embpot) then
+        write(*, *) 'LAO-direct contribution to property gradient (embpot)'
+
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(12)
+#endif
+
+        if (itmp%im_vemb) then
+           call fde_dirac_emb_matrices_via_integration(       &   
+                         fde_mat_dim            = ntbas(0),   &
+                         fde_nz                 = nz,         &
+                         fde_dmat_0             = dmat,       &
+                         fde_nr_dmat            = 0,          &
+                         fde_nr_fmat            = max_nr_xyz_comp,      &
+                         fde_fmat               = fmat,       &
+                         fde_use_potential      = .true.,     &
+                         fde_do_london_rhs_direct = .true.)
+        else
+           call fde_dirac_emb_matrices_via_integration(       &   
+                         fde_mat_dim            = ntbas(0),   &
+                         fde_nz                 = nz,         &
+                         fde_dmat_0             = dmat,       &
+                         fde_nr_dmat            = 0,          &
+                         fde_nr_fmat            = max_nr_xyz_comp,      &
+                         fde_fmat               = fmat,       &
+                         fde_do_london_rhs_direct = .true.)
+        end if
+     end if
+
+     if (fde_lao_direct_active_embker .and. .not. fde_rsp_mag_lao_no_s) then
+
+        write(*, *) 'LAO-direct contribution to property gradient (embker)'
+
+        call alloc(buffer, n2bbasxq)
+        call dcopy(n2bbasxq, dmat, 1, buffer, 1)
+
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(12)
+#endif
+
+        call fde_dirac_emb_matrices_via_integration(       &   
+                      fde_mat_dim            = ntbas(0),   &
+                      fde_nz                 = nz,         &
+                      fde_dmat_0             = dmat,       &
+!                     gosia: this is because only the real part of dmat_0 is read in fde_dirac_emb_matrices_via_integration
+!                     while for SDFT-kernel-like contribution we need the imaginary parts as well..
+                      fde_dmat               = buffer,     &
+                      fde_nr_dmat            = 1,          &
+                      fde_nr_fmat            = max_nr_xyz_comp, &
+                      fde_fmat               = fmat,       &
+                      fde_do_london_rhs_direct_kern = .true.)
+
+        call dealloc(buffer)
+     end if
+
+
+!    fde coupling-kernel-like contributions to the property gradient
+!    ---------------------------------------------------------------
+!    1. the nonadditive exchange-correlation contribution:
+     if (fde_lao_frozen_embker.and.fde_rsp_mag_lao_import) then
+       write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (no Coulomb)'
+
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl(12)
+#endif
+
+       call fde_dirac_emb_matrices_via_integration(       &   
+                     fde_mat_dim            = ntbas(0),   &
+                     fde_nz                 = nz,         &
+                     fde_dmat_0             = dmat,       &
+!                    the perturbed density includes BOTH direct and reorthonormalization parts
+!                    this is why it is called only once
+                     fde_nr_dmat            = 0,          &
+                     fde_nr_fmat            = max_nr_xyz_comp,      &
+                     fde_fmat               = fmat,       &
+                     fde_do_london_rhs_kern_coupling = .true.)
+     end if
+     if (fde_lao_frozen_embker_coulomb.and.fde_rsp_mag_lao_import) then
+       write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (Coulomb term)'
+       call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
+     end if
+
+
+     call dealloc(dmat)
+
+  end subroutine fde_direct_contribs
+  
+
 
 end module

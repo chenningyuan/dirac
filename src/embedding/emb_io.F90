@@ -23,11 +23,14 @@ module fde_io
 
    use fde_cfg
       
-   private
+   implicit none
 
    public fde_open_file
    public fde_close_file
    public read_grid
+   public read_grid_dim_only
+   public read_grid_pertden
+
 
    interface read_grid
       module procedure read_grid_onecol
@@ -35,6 +38,10 @@ module fde_io
    end interface read_grid
 
    real(kind=8) :: threshold = 1.0d-18
+
+!  pertden info
+   integer, public :: fde_pertden_ncol
+   integer, public :: fde_pertden_nrow
 
    contains
 
@@ -138,5 +145,40 @@ module fde_io
 
   END SUBROUTINE READ_GRID_manycol
   
+  subroutine read_grid_dim_only(file,nr_points, nr_cols)
+    integer    :: nr_points, nr_cols
+    integer    :: file
+
+    rewind(file)
+    read(file,*) nr_points, nr_cols
+
+  end subroutine
+
+  subroutine read_grid_pertden(file,pertden)
+    integer  :: ncol, nrow
+    real(8), pointer :: pertden(:, :)
+    integer, intent(in)  :: file
+    integer :: i,j
+
+    rewind(file)
+    read(file,*) nrow, ncol
+
+    fde_pertden_ncol = ncol + 4
+    fde_pertden_nrow = nrow
+
+    if (associated(pertden)) nullify(pertden)
+    allocate(pertden(fde_pertden_ncol,fde_pertden_nrow))
+    pertden = 0.0d0
+
+    if (fde_pertden_ncol .ne. 58) then
+       write(*, *) 'WARNING! nr of columns different from 58, change formatting'
+    end if
+
+    do i=1, fde_pertden_nrow
+       read(file,'(58d20.12)') (pertden(j,i), j = 1, fde_pertden_ncol)
+    end do
+
+  end subroutine
+
 
 end module fde_io

@@ -39,18 +39,22 @@ module fde_data
    public fde_import_gridout
    public fde_import_static
    public fde_initialize_import_data
+
+   public fde_read_pertden
 !
 ! variables 
 !
 ! first, those related to the static embedding potential
 !  
    public fde_grid_sv
+   public gf_active_sv
    public fde_static_vemb
 
    integer, save :: fde_static_vemb_grid_np = 0
    logical, save :: static_data_is_initialized = .false.
 
    type(fde_grid), save :: fde_grid_sv
+   type(grid_function), save :: gf_active_sv
    real(kind=8), save, allocatable, target :: fde_static_vemb(:)
 !
 ! importing frozen density, so the active one is needed too
@@ -59,7 +63,6 @@ module fde_data
 !
    public gf_frozen
    public gf_active
-   public gf_active_adf
    public fde_grid_im
 
    integer, save :: fde_import_grid_np = 0
@@ -67,7 +70,6 @@ module fde_data
 
    type(grid_function), save :: gf_frozen
    type(grid_function), save :: gf_active
-   type(grid_function), save :: gf_active_adf
    type(fde_grid), save      :: fde_grid_im
 !
 ! export, using a different grid
@@ -114,6 +116,9 @@ module fde_data
          fde_grid_sv%w(i)   = gridp(4,i)
       enddo
 
+      write(6,*) "debug, size:",fde_grid_sv%npoints
+      write(6,*) "debug, static vemb:",fde_static_vemb(fde_grid_sv%npoints)
+
       deallocate(fde_vtmp)
       deallocate(gridp)
    end subroutine fde_import_static
@@ -158,8 +163,10 @@ module fde_data
       integer :: i
       real(kind=8), pointer :: fde_frozen_prp(:,:), gridp(:,:)
       type(fde_files)  :: ftmp
+      type(fde_import)  :: itmp
 
       call fde_get_files_info(ftmp)
+      call fde_get_import_info(itmp)
       
       file_unit = ftmp%frozen%unit
       file_name = ftmp%frozen%name
@@ -181,13 +188,80 @@ module fde_data
          gf_frozen%gn(2,i)   = fde_frozen_prp(5,i)
          gf_frozen%gn(3,i)   = fde_frozen_prp(6,i)
          
+!gosia: add here frozen perturbed magnetic densities...
+!        ... first n
+         if (itmp%im_n_b) then
+!           (Bxyz, i)
+            gf_frozen%n_b(1,i)      = fde_frozen_prp(7,i)
+            gf_frozen%n_b(2,i)      = fde_frozen_prp(8,i)
+            gf_frozen%n_b(3,i)      = fde_frozen_prp(9,i)
+         end if
+!        ... and gn
+         if (itmp%im_gn_b) then
+!           (Rxyz, Bxyz, i)
+            gf_frozen%gn_b(1,1,i)   = fde_frozen_prp(10,i) ! dxBx
+            gf_frozen%gn_b(2,1,i)   = fde_frozen_prp(11,i) ! dyBx
+            gf_frozen%gn_b(3,1,i)   = fde_frozen_prp(12,i) ! dzBx
+            gf_frozen%gn_b(1,2,i)   = fde_frozen_prp(13,i) ! dxBy
+            gf_frozen%gn_b(2,2,i)   = fde_frozen_prp(14,i) ! dyBy
+            gf_frozen%gn_b(3,2,i)   = fde_frozen_prp(15,i) ! dzBy
+            gf_frozen%gn_b(1,3,i)   = fde_frozen_prp(16,i) ! dxBz
+            gf_frozen%gn_b(2,3,i)   = fde_frozen_prp(17,i) ! dyBz
+            gf_frozen%gn_b(3,3,i)   = fde_frozen_prp(18,i) ! dzBz
+         end if
+!        ... then s
+         if (itmp%im_s_b) then
+!           (Sigma_xyz, Bxyz, i)
+            gf_frozen%s_b(1,1,i)    = fde_frozen_prp(19,i) ! sxBx
+            gf_frozen%s_b(2,1,i)    = fde_frozen_prp(20,i) ! syBx
+            gf_frozen%s_b(3,1,i)    = fde_frozen_prp(21,i) ! szBx
+            gf_frozen%s_b(1,2,i)    = fde_frozen_prp(22,i) ! sxBy
+            gf_frozen%s_b(2,2,i)    = fde_frozen_prp(23,i) ! syBy
+            gf_frozen%s_b(3,2,i)    = fde_frozen_prp(24,i) ! szBy
+            gf_frozen%s_b(1,3,i)    = fde_frozen_prp(25,i) ! sxBz
+            gf_frozen%s_b(2,3,i)    = fde_frozen_prp(26,i) ! syBz
+            gf_frozen%s_b(3,3,i)    = fde_frozen_prp(27,i) ! szBz
+         end if
+!        ... and gs
+         if (itmp%im_gs_b) then
+!           (Rxyz, Sigma_xyz, Bxyz, i)
+            gf_frozen%gs_b(1,1,1,i) = fde_frozen_prp(28,i) ! dxsxBx
+            gf_frozen%gs_b(2,1,1,i) = fde_frozen_prp(29,i) ! dysxBx
+            gf_frozen%gs_b(3,1,1,i) = fde_frozen_prp(30,i) ! dzsxBx
+            gf_frozen%gs_b(1,2,1,i) = fde_frozen_prp(31,i) ! dxsyBx
+            gf_frozen%gs_b(2,2,1,i) = fde_frozen_prp(32,i) ! dysyBx
+            gf_frozen%gs_b(3,2,1,i) = fde_frozen_prp(33,i) ! dzsyBx
+            gf_frozen%gs_b(1,3,1,i) = fde_frozen_prp(34,i) ! dxszBx
+            gf_frozen%gs_b(2,3,1,i) = fde_frozen_prp(35,i) ! dyszBx
+            gf_frozen%gs_b(3,3,1,i) = fde_frozen_prp(36,i) ! dzszBx
+            gf_frozen%gs_b(1,1,2,i) = fde_frozen_prp(37,i) ! dxsxBy
+            gf_frozen%gs_b(2,1,2,i) = fde_frozen_prp(38,i) ! dysxBy
+            gf_frozen%gs_b(3,1,2,i) = fde_frozen_prp(39,i) ! dzsxBy
+            gf_frozen%gs_b(1,2,2,i) = fde_frozen_prp(40,i) ! dxsyBy
+            gf_frozen%gs_b(2,2,2,i) = fde_frozen_prp(41,i) ! dysyBy
+            gf_frozen%gs_b(3,2,2,i) = fde_frozen_prp(42,i) ! dzsyBy
+            gf_frozen%gs_b(1,3,2,i) = fde_frozen_prp(43,i) ! dxszBy
+            gf_frozen%gs_b(2,3,2,i) = fde_frozen_prp(44,i) ! dyszBy
+            gf_frozen%gs_b(3,3,2,i) = fde_frozen_prp(45,i) ! dzszBy
+            gf_frozen%gs_b(1,1,3,i) = fde_frozen_prp(46,i) ! dxsxBz
+            gf_frozen%gs_b(2,1,3,i) = fde_frozen_prp(47,i) ! dysxBz
+            gf_frozen%gs_b(3,1,3,i) = fde_frozen_prp(48,i) ! dzsxBz
+            gf_frozen%gs_b(1,2,3,i) = fde_frozen_prp(49,i) ! dxsyBz
+            gf_frozen%gs_b(2,2,3,i) = fde_frozen_prp(50,i) ! dysyBz
+            gf_frozen%gs_b(3,2,3,i) = fde_frozen_prp(51,i) ! dzsyBz
+            gf_frozen%gs_b(1,3,3,i) = fde_frozen_prp(52,i) ! dxszBz
+            gf_frozen%gs_b(2,3,3,i) = fde_frozen_prp(53,i) ! dyszBz
+            gf_frozen%gs_b(3,3,3,i) = fde_frozen_prp(54,i) ! dzszBz
+         end if
+
          fde_grid_im%r(1,i)  = gridp(1,i)
          fde_grid_im%r(2,i)  = gridp(2,i)
          fde_grid_im%r(3,i)  = gridp(3,i)
          fde_grid_im%w(i)    = gridp(4,i)
       enddo
 
-      deallocate(fde_frozen_prp)
+!gosia comment: these two are allocated inside read_grid...
+      deallocate(fde_frozen_prp) 
       deallocate(gridp)
    end subroutine fde_import_frozen
 
@@ -218,6 +292,7 @@ module fde_data
          if (fde_static_vemb_grid_np > 0) then
 
             call new_fde_grid(fde_grid_sv,fde_static_vemb_grid_np)
+            call new_grid_function(gf_active_sv,fde_static_vemb_grid_np)
 
             if (.not.allocated(fde_static_vemb)) then
                allocate(fde_static_vemb(fde_static_vemb_grid_np))
@@ -238,7 +313,6 @@ module fde_data
             call new_fde_grid(fde_grid_im,fde_import_grid_np)
             call new_grid_function(gf_frozen,fde_import_grid_np)
             call new_grid_function(gf_active,fde_import_grid_np)
-            call new_grid_function(gf_active_adf,fde_import_grid_np)
          else
             call fde_quit('there are no grid points for fde import !')
          endif
@@ -253,12 +327,12 @@ module fde_data
       if (static_data_is_initialized) then
          deallocate(fde_static_vemb)
          call del_fde_grid(fde_grid_sv)
+         call del_grid_function(gf_active_sv)
       endif
 
       if (import_data_is_initialized) then
-         call del_grid_function(gf_active)
-         call del_grid_function(gf_active_adf)
          call del_grid_function(gf_frozen)
+         call del_grid_function(gf_active)
          call del_fde_grid(fde_grid_im)
       endif
 
@@ -266,6 +340,7 @@ module fde_data
          call del_grid_function(gf_export)
          call del_fde_grid(fde_grid_ex)
       endif
+
    end subroutine fde_cleanup_data
 
 
@@ -310,43 +385,60 @@ module fde_data
 !   ----------------------------------------------------------------------------
    subroutine fde_test_export
 !   ----------------------------------------------------------------------------
-       integer      :: i
-       real(kind=8) :: exp_int_n
-       real(kind=8) :: exp_int_ve 
-       real(kind=8) :: exp_int_vn
-       real(kind=8) :: exp_int_vh 
+      integer      :: i
+      real(kind=8) :: exp_int_n 
+      real(kind=8) :: exp_int_ve 
+      real(kind=8) :: exp_int_vn 
+      real(kind=8) :: exp_int_vh 
 
-       exp_int_n  = 0.0d0
-       exp_int_ve = 0.0d0  
-       exp_int_vn = 0.0d0
-       exp_int_vh = 0.0d0  
- 
+      exp_int_n  = 0.0d0
+      exp_int_ve = 0.0d0  
+      exp_int_vn = 0.0d0  
+      exp_int_vh = 0.0d0  
+
 ! aspg, 14/10/2015
 !       note that the electrostatic, hartree and nuclear potentials in dirac have
 !       been multiplied by -1 when exported so that we don't have to multipy the 
 !       product potential * density by the electron charge when calculating the
 !       energy. with this, the potentials will be in line with those obtained
 !       e.g. with adf 
-       do i = 1, fde_grid_ex%npoints
-          exp_int_n  = exp_int_n  +       fde_grid_ex%w(i)*gf_export%n(i)
-          exp_int_ve = exp_int_ve +       fde_grid_ex%w(i)*gf_export%n(i)*gf_export%elpot(i)
-          exp_int_vn = exp_int_vn +       fde_grid_ex%w(i)*gf_export%n(i)*gf_export%nucpot(i) 
-       end do
-       exp_int_vh = 0.5d0*(exp_int_ve - exp_int_vn)
+      do i = 1, fde_grid_ex%npoints
+         exp_int_n  = exp_int_n  +       fde_grid_ex%w(i)*gf_export%n(i) 
+         exp_int_ve = exp_int_ve +       fde_grid_ex%w(i)*gf_export%n(i)*gf_export%elpot(i)
+         exp_int_vn = exp_int_vn +       fde_grid_ex%w(i)*gf_export%n(i)*gf_export%nucpot(i) 
+      end do
+      exp_int_vh = 0.5d0*(exp_int_ve - exp_int_vn)
+      
+      write (*,*) ' '
+      write (*,'(A,I12,A)') ' Exported quantities (over ',fde_grid_ex%npoints,' grid points) integrate to:'
+      write (*,'(A,F16.6,A)') ' - electron density    : ',exp_int_n,' electrons'
+      write (*,'(A,F16.6,A)') ' - electrostatic energy: ',exp_int_ve,' a.u.'
+      write (*,'(A,F16.6,A)') ' - n.-el. attr. energy : ',exp_int_vn,' a.u.'
+      write (*,'(A,F16.6,A)') ' - Hartree      energy : ',exp_int_vh,' a.u.'
 
-       write (*,*) ' '
-       write (*,'(A,I12,A)') ' Exported quantities (over ',fde_grid_ex%npoints,' grid points) integrate to:'
-       write (*,'(A,F16.6,A)') ' - electron density    : ',exp_int_n,' electrons'
-       write (*,'(A,F16.6,A)') ' - electrostatic energy: ',exp_int_ve,' a.u.'
-       write (*,'(A,F16.6,A)') ' - n.-el. attr. energy : ',exp_int_vn,' a.u.'
-       write (*,'(A,F16.6,A)') ' - Hartree      energy : ',exp_int_vh,' a.u.'
-
-       exp_int_n  = 0.0d0
-       exp_int_ve = 0.0d0  
-       exp_int_vn = 0.0d0
-       exp_int_vh = 0.0d0  
+      exp_int_n  = 0.0d0
+      exp_int_ve = 0.0d0  
+      exp_int_vn = 0.0d0  
+      exp_int_vh = 0.0d0  
 
    end subroutine fde_test_export
+
+   subroutine fde_read_pertden(pertden)
+      real(8), pointer :: pertden(:, :)
+      integer :: file_unit
+      character(len=60) :: file_name
+      type(fde_files)  :: ftmp
+
+      call fde_get_files_info(ftmp)
+      
+      file_unit = ftmp%frozen%unit
+      file_name = ftmp%frozen%name
+
+      call fde_open_file(file_name,file_unit)
+      call read_grid_pertden(file_unit,pertden)
+      call fde_close_file(file_unit)
+
+   end subroutine
 
    
 end module fde_data
