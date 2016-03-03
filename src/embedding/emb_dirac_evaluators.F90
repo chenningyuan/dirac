@@ -424,9 +424,9 @@ module fde_evaluators_dirac
          integer                :: irrep = 1
          integer                :: lwork
          real(8), allocatable   :: work(:)
-         integer :: iz, i, j
+         integer :: iz, i, j, ixyz, ip
          real(8) :: average
-         real(8), allocatable :: buffer(:,:,:)
+         real(8), allocatable :: buffer(:,:,:),vector(:,:)
 
 
          call fde_get_files_info(ftmp)
@@ -442,18 +442,33 @@ module fde_evaluators_dirac
 
          do icomp = 1, ncomp
 ! gosia: this takes care of the real part of fmat only(= we use only n_b columns of pertden)
-            icol = fde_pertden_ncol - 48 + icomp
+            allocate(vector(np,nz))
+            do ip = 1, np
+!             sigma_0
+              vector(ip,1) = pertden(fde_pertden_ncol - 48 + icomp, ip)         &
+                           * fde_grid_im%w(ip)
+!             sigma_x
+              vector(ip,2) = pertden(fde_pertden_ncol - 36 + 3*(icomp-1)+1, ip) &
+                           * fde_grid_im%w(ip)
+!             sigma_y
+              vector(ip,3) = pertden(fde_pertden_ncol - 36 + 3*(icomp-1)+2, ip) &
+                           * fde_grid_im%w(ip)
+!             sigma_z
+              vector(ip,4) = pertden(fde_pertden_ncol - 36 + 3*(icomp-1)+3, ip) &
+                           * fde_grid_im%w(ip)
+            
+            end do
 
             !write(*, *) 'fde_get_elpot_pertden, fmat before, icomp =', icomp
             !call prqmat(fmat(1,1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
 
             allocate(buffer(ndim,ndim,nz))
-            call get_electronic_mep(np,                &
+            call get_electronic_mep_cp(np,                &
                                     buffer,            &
                                     ndim,              &
                                     fde_grid_im%r(1:3,1:np),     & 
-                                    !pertden(icol,1:np),&
-                                    pertden(icol,1:np)*fde_grid_im%w(1:np), &
+                                    !pertden(icol,1:np)*fde_grid_im%w(1:np), &
+                                    vector, &
                                     work, lwork,       &
                                     0,                 &
                                     .true.,            &
@@ -461,6 +476,7 @@ module fde_evaluators_dirac
 
             !write(*, *) 'fde_get_elpot_pertden, buffer after, icomp =', icomp
             !call prqmat(buffer, ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
+            deallocate(vector)
 
             do iz = 1, nz
                do i = 1, ndim
@@ -480,11 +496,7 @@ module fde_evaluators_dirac
             end do
 
             call daxpy(ndim*ndim*nz, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
-
             deallocate(buffer)
-
-            !write(*, *) 'fde_get_elpot_pertden, fmat after, icomp =', icomp
-            !call prqmat(fmat(1, 1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
 
          end do
 

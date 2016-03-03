@@ -6,7 +6,7 @@ module electrostatic_potential
    
    public get_esp
 !gosia: temporarily:
-   public get_electronic_mep
+   public get_electronic_mep_cp
 
    private
 
@@ -782,5 +782,205 @@ module electrostatic_potential
       end do      
 
    end subroutine
+
+   subroutine get_electronic_mep_cp(nr_points, matrix, mat_dim, points, vector, &
+                        work, lwork, iprint, get_matrix, skipss_block)
+!      
+!gosia: as get_electronic_mep but with full quaternion matrix and vector
+!                        
+
+#include "pi.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "aovec.h"
+#include "maxorb.h"
+#ifdef prg_dirac
+#include "dcbgrd.h"
+#endif
+#include "ccom.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbham.h"
+#include "cbisol.h"
+#include "shells.h"
+#include "onecom.h"
+#include "primit.h"
+#include "symind.h"
+#include "symmet.h"
+#include "lmns.h"
+#include "nuclei.h"
+
+! Passed variables
+      integer, intent(in) :: nr_points
+      integer, intent(in) :: mat_dim 
+      real(8)             :: matrix(mat_dim,mat_dim, nz)
+! Triggers whether we want PCM Fock matrix contribution or just the
+! potential.      
+      logical, optional   :: get_matrix 
+      real(8)             :: vector(nr_points, nz)
+      real(8), intent(in) :: points(3, nr_points)
+      real(8)             :: work(*)
+      integer             :: iprint, lwork
+      logical             :: skipss_block
+
+! Local variables
+      real(8), allocatable :: ader(:, :, :)
+      real(8) :: tolog, tols, factor = 1.0d0
+      integer :: ishela, ishelb, ica, icb, ia, ib, iz
+      integer :: multa, multb, nhktab, kab
+      integer :: ipoint, idxmax
+      logical :: do_matrix
+      real(8) :: debug_dij , debug_vij,  debug_prod , debug_sum
+      integer :: idxa, idxb
+
+      if (nbsym > 1) then
+         call quit('ESP calculation cannot handle symmetry!')
+      end if
+      if (BSS.or.x2c) then
+         call quit('ESP calculation not working with X2C Hamiltonian!')
+      end if
+
+! Fock matrix contribution or potential calculation?      
+      do_matrix = .false. 
+      if (present(get_matrix)) then
+        if (get_matrix) then
+            do_matrix = .true.
+        end if
+      end if
+      
+      tols = thrs**2
+      tolog = 2 * log(thrs)
+! Decide whether we loop on LL block only or not
+      if (nosmlv) then
+! Looping only over LL block only
+          idxmax = nlrgsh
+      else if  (skipss_block) then
+! Looping only over LL block only
+          idxmax = nlrgsh
+      else 
+          idxmax = kmax
+      end if
+! Loop over bras <mu|      
+
+!!!!
+!! aspg, 23/10/2015
+!! debug printouts
+!     print *,'debug: mc, skipss_block, idxmax, kmax, nlrgsh:',mc,skipss_block,idxmax,kmax,nlrgsh
+!
+!!!
+
+      idena = 0
+      do ishela = 1, idxmax
+        ica   = lclass(ishela)
+        nhkta = nhkt(ishela)
+        khkta = khkt(ishela)
+        kckta = kckt(ishela)
+        call lmnval(nhkta, kckta, lvalua, mvalua, nvalua)
+        ncenta = ncent(ishela)
+        icenta = nucnum(ncenta, 1)
+        mula   = istbao(ishela)
+        multa  = mult(mula)
+        nuca   = nuco(ishela)
+        numcfa = numcf(ishela)
+        jsta   = jstrt(ishela)
+        corax  = cent(ishela, 1, 1)
+        coray  = cent(ishela, 2, 1)
+        coraz  = cent(ishela, 3, 1)
+! Loop over kets |nu>
+        idenb = 0        
+        do ishelb = 1, ishela
+          icb   = lclass(ishelb)
+          ldiag = ishela .eq. ishelb
+          nhktb = nhkt(ishelb)
+          khktb = khkt(ishelb)
+          kcktb = kckt(ishelb)
+          call lmnval(nhktb, kcktb, lvalub, mvalub, nvalub)
+          ncentb = ncent(ishelb)
+          nhktab = nhkta + nhktb
+          mulb   = istbao(ishelb)
+          multb  = mult(mulb)
+          nucb   = nuco(ishelb)
+          numcfb = numcf(ishelb)
+          jstb   = jstrt(ishelb)
+          corbx  = cent(ishelb, 1, 1)
+          corby  = cent(ishelb, 2, 1)
+          corbz  = cent(ishelb, 3, 1)
+          khktab = khkta * khktb
+          kcktab = kckta * kcktb
+          mab    = ior(mula, mulb)
+          kab    = iand(mula ,mulb)
+          hkab   = fmult(kab)
+! Calculate -<mu|1/|r-r_i||nu> integrals for each shell pair mu, nu and point r_i,
+! then contract with the density matrix. The minus sign accounts for the
+! charge of the electron.
+          if (ica == icb) then 
+              allocate(ader(nr_points, kckta, kcktb))
+              ader = 0.0d0
+              call vc_shell(nr_points, ader, tolog, tols,               &
+                    points, iprint, work, lwork)
+              if (ishela /= ishelb) then 
+                  ader = 2.0d0 * ader
+              end if
+! We multiply by +2.0d0. The D matrix refers to the alpha part only.
+!     do ipoint = 1, nr_points
+!        print *, "ELECTROSTATIC_POTENTIAL_MATRIX @point", ipoint
+!        do ib = 1, kcktb
+!          do ia = 1, kckta
+!             print *, "ELEMENT", ia, ib
+!             print *, ader(ipoint, ia, ib)
+!        call output(ader(ipoint,:,:),1,kckta,1,kcktb,kckta,kcktb,2,6)
+!          enddo
+!        enddo
+!     enddo 
+              do ipoint = 1, nr_points
+!!!!
+!! aspg, 23/10/2015
+!! debug printouts
+!             debug_sum = 0.0d0
+!             print *, " debug -- at point:",ipoint
+!             write (*, '(A,6I4)') "khkta, khktb, multa, multb, idena, idenb:", khkta, khktb, multa, multb,idena, idenb
+!             print *, "      i, j, Dij, Vij, DV, sum"
+!!!!
+              if (do_matrix) then
+                 do iz = 1, nz
+                   do ib = 1, kcktb
+                     do ia = 1, kckta 
+                 matrix(idena+ia,idenb+ib, iz) = matrix(idena+ia,idenb+ib, iz) &
+                      - ader(ipoint, ia, ib) * vector(ipoint, iz)
+                     end do
+                   end do
+                 end do
+                end if
+              end do 
+              deallocate(ader)
+          end if  
+        idenb = idenb + khktb * multb
+       end do
+       idena = idena + khkta * multa
+      end do
+
+      if (skipss_block .and. (.not. do_matrix) .and. (.not.nosmlv)) then
+! Simple Coulombic Correction for the MEP when skipss is selected.
+! This must NOT be done when:
+! 1. we want a Fock matrix contribution;
+! 2. MC == 1, i.e. the Hamiltonian specified does not make use of the SS-block
+          call get_scc_electronic_mep(nr_points, points, vector, iprint)
+      end if
+
+!          do ipoint = 1, nr_points
+!            print *, "Electronic ESP @point", ipoint, vector(ipoint)
+!          end do
+      if (iprint > 5) then
+        do iz = 1, nz
+          do ipoint = 1, nr_points
+            print *, "Electronic ESP @point", ipoint, vector(ipoint,iz)
+          end do
+        end do
+      end if
+
+   end subroutine 
+
+
 
 end module
