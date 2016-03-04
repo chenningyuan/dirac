@@ -232,7 +232,8 @@ if (MKL_FLAG)
     message(STATUS "Intel MKL math libraries : ${MKL_FLAG}")
 endif()
 
-get_directory_property(_list_of_definitions DIRECTORY ${PROJECT_SOURCE_DIR} COMPILE_DEFINITIONS)
+#miro: this command does not always print all definitions from src/CMakeFiles.txt on the screen (#159)
+get_directory_property(_list_of_definitions DIRECTORY ${PROJECT_SOURCE_DIR}/src COMPILE_DEFINITIONS)
 message(STATUS "Definitions              : ${_list_of_definitions}")
 
 message(STATUS "Configuration time       : ${_configuration_time}")
