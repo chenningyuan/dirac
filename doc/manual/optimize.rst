@@ -332,7 +332,8 @@ Not implemented in DIRAC.
 
 keyword(QUADSD)
 
-missing in Dalton
+Use the 2nd order quadratic steepest descent method 
+(missing in Dalton manual).
 
 
 keyword(SCHLEG)
@@ -512,9 +513,9 @@ combinations of the redundant internal coordinates. Performance is more or less 
 same as for the redundant internals, but the transformation of displacements (step)
 is slightly less stable.
 
-keyword(ODIHE)
+keyword(NODIHE)
 
-missing in Dalton
+No dihedral angles will be used as coordinates (just bonds and angles).
 
 
 keyword(VR-COR)
@@ -585,12 +586,13 @@ is numerically unstable.
 
 keyword(LINDH)
 
-missing in Dalton
+Use original Roland Lindh r_ref with .MODHES
+(missing in Dalton manual).
 
 
-keyword(NO SKI)
+keyword(NO SKIP)
 
-missing in Dalton
+Don't skip SSLL or SSSS gradient contributions when small.
 
 
 keyword(GRD IN)
@@ -601,9 +603,14 @@ should only be used when it?s difficult to obtain a good approximation to the mo
 Hessian during optimization. Only applies to first-order methods.
 
 
-keyword(GRD SC)
+keyword(GRD SCREEN)
 
-missing in Dalton
+::
+
+ READ (LUCMD,*) SCRGRD
+
+Read the screening threshold for gradient calculations
+(missing in Dalton manual).
 
 
 keyword(NOAUX)
@@ -624,5 +631,5 @@ schemes in the same fashion as Bofill's update. Only suitable for minimizations.
 
 keyword(IPRGRD)
 
-missing in Dalton
+Print level for DIRAC molecular gradient evaluation (missing in Dalton manual).
 
