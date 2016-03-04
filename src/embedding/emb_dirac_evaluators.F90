@@ -302,15 +302,6 @@ module fde_evaluators_dirac
 
         vnuc = -vnuc
 
-! aspg, 14/10/2015
-!       note that the electrostatic, hartree and nuclear potentials in dirac have
-!       been multiplied by -1 when exported so that we don't have to multipy the 
-!       product potential * density by the electron charge when calculating the
-!       energy. with this, the potentials will be in line with those obtained
-!       e.g. with adf 
-
-        vnuc = -vnuc
-
       end subroutine fde_dirac_calculate_nucpot
 
 
