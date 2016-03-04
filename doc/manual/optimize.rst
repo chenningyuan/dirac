@@ -54,9 +54,9 @@ keyword(BAKER)
 Baker's convergence criteria :cite:`Baker1993` will be used.
 The minimum is then said to be
 found when the largest element of the gradient vector (in Cartesian or redundant
-internal coordinates) falls below 0.0003 and either the energy change from the last
-iteration is less than 0.000001 or the largest element of the predicted step vector is
-less 0.0003.
+internal coordinates) falls below 3.0D-4  and either the energy change from the last
+iteration is less than 1.0D-6 or the largest element of the predicted step vector is
+less 3.0D-4.
 
 
 keyword(GRADIENT)
@@ -82,7 +82,7 @@ value is 0, any value higher than 12 gives debugging level output.
 
 keyword(MAX IT)
 
-Read the maximum number of geometry iterations. Default value is 25.
+Read the maximum number of geometry iterations. The default value is 25.
 
 
 keyword(TRUSTR)
@@ -147,8 +147,8 @@ Set the number of convergence criteria that should be fulfilled before convergen
 occurs. There are three different convergence thresholds, one for the energy, one for
 the gradient norm and one for the step norm. The possible values for this variable
 is therefore between 1 and 3. Default is 2. The three convergence thresholds can be
-adjusted with the keywords :ref:`OPTIMIZE_.ENERGY`, :ref:`OPTIMIZE_.GRADIE` and 
-:ref:`OPTIMIZE_.STEP T`.
+adjusted with the keywords :ref:`OPTIMIZE_.ENERGY`, :ref:`OPTIMIZE_.GRADIENT` and 
+:ref:`OPTIMIZE_.STEP THRESHOLD`.
 
 
 keyword(NOBREA)
@@ -187,8 +187,8 @@ in the molecule input file.
 
 keyword(VISUAL)
 
-Specifies that the molecule should be visualized, writing a VRML file of the molec-
-ular geometry. No optimization will be performed when this keyword is given. See also
+Specifies that the molecule should be visualized, writing a VRML file of the molecular
+geometry. No optimization will be performed when this keyword is given. See also
 related keywords .VR-BON, .VR-COR, .VR-EIG and .VR-VIB.
 
 
@@ -326,25 +326,25 @@ keyword(NEWTON)
 Specifies that a second-order Newton method should be used for optimization?
 that is, the analytical molecular Hessian will be calculated at every geometry. By
 default the level-shifted trust region method will be used, but it is possible to override
-this by using one of the two keywords .RF or .GDIIS.
+this by using one of the two keywords :ref:`OPTIMIZE_.RF` or :ref:`OPTIMIZE_.GDIIS`.
 
 
 keyword(QUADSD)
 
-add
+missing in Dalton
 
 
 keyword(SCHLEG)
 
-Specifies that a first-order method with Schlegel?s updating scheme [152] should
+Specifies that a first-order method with Schlegel's updating scheme [dalton ref 152] should
 be used. This makes use of all previous displacements and gradients, not just the last,
 to update the molecular Hessian.
 
 
 keyword(HELLMA)
 
-Use gradients and Hessians calculated using the Hellmann-Feynman approxima-
-tion. Currently not working properly
+Use gradients and Hessians calculated using the Hellmann-Feynman approximation.
+Currently not working properly.
 
 
 keyword(M-BFGS)
@@ -383,7 +383,7 @@ keyword(1STORD)
 Use default first-order method. This means that the BFGS update will be used,
 and that the optimization is carried out in redundant internal coordinates. Same
 effect as the combination of the two keywords :ref:`OPTIMIZE_.BFGS` and :ref:`OPTIMIZE_.REDINT`.
-Since the .BFGS method ensures a positive definite Hessian,
+Since the BFGS method ensures a positive definite Hessian,
 the :ref:`OPTIMIZE_.BOFILL` optimization method is used
 by default in case of searches for transition states.
 
@@ -405,6 +405,7 @@ Hessian during optimization. Only applies to first-order methods.
 keyword(DISPLA)
 
 ::
+
  READ (LUCMD,*) DISPLA
 
 Read one more line containing the norm of the displacement vector to be used during
@@ -477,8 +478,8 @@ the numbers of individual primitive internal coordinates are needed.
 
 keyword(CMBMOD)
 
-Uses a combination of the BFGS update and the model molecular Hessian (di-
-agonal in redundant internal coordinates). The two have equal weight in the first
+Uses a combination of the BFGS update and the model molecular Hessian 
+(diagonal in redundant internal coordinates). The two have equal weight in the first
 iteration of the geometry optimization, then for each subsequent iteration the weight
 of the model Hessian is halved. Only suitable for minimizations.
 
@@ -488,7 +489,7 @@ keyword(RF)
 Use the rational function method [dalton ref.12] instead of level-shifted Newton which is the
 default. The RF method is often slightly faster than the level-shifted Newton, but
 also slightly less robust.
-For saddle point optimizations there?s a special partitioned rational function method
+For saddle point optimizations there's a special partitioned rational function method
 (used automatically when both .RF and .SADDLE are set). However, this method is
 both slower and less stable than the default trust-region level-shifted image method
 (which is the default).
@@ -496,7 +497,7 @@ both slower and less stable than the default trust-region level-shifted image me
 
 keyword(GDIIS)
 
-Use the Geometrical DIIS[151] algorithm to control the step. Works in much the
+Use the Geometrical DIIS[dalton ref 151] algorithm to control the step. Works in much the
 same way as DIIS for wave functions. However, the rational function and level-shifted
 Newton methods are generally more robust and more efficient. Can only be used for
 minimizations.
@@ -511,7 +512,7 @@ is slightly less stable.
 
 keyword(ODIHE)
 
-add
+missing in Dalton
 
 
 keyword(VR-COR)
@@ -550,11 +551,11 @@ keyword(SADDLE)
 
 Indicates that a saddle point optimization should be performed rather than a
 minimization. The default method is to calculate the molecular Hessian analytically
-at the initial geometry, then update it using Bofill?s update. The optimization is
+at the initial geometry, then update it using Bofill's update. The optimization is
 performed in redundant internal coordinates and using the trust-region level-shifted
 image method to control the step. That is by default all the keywords .INITHE,
-.FILL and .REDINT are already set, but this can of course be overridden by speci-
-fying other keywords. If locating the desired transition state is difficult, and provided
+.FILL and .REDINT are already set, but this can of course be overridden by specifying
+other keywords. If locating the desired transition state is difficult, and provided
 analytical molecular Hessians are available, it may sometimes be necessary to use the
 .NEWTON keyword so that molecular Hessians are calculated at every geometry.
 
@@ -582,12 +583,12 @@ is numerically unstable.
 
 keyword(LINDH)
 
-add
+missing in Dalton
 
 
 keyword(NO SKI)
 
-add
+missing in Dalton
 
 
 keyword(GRD IN)
@@ -600,13 +601,13 @@ Hessian during optimization. Only applies to first-order methods.
 
 keyword(GRD SC)
 
-add
+missing in Dalton
 
 
 keyword(NOAUX)
 
-Only has effect when using redundant internal coordinates. The default for mini-
-mizations is to add auxiliary bonds between atoms that are up to two and half times
+Only has effect when using redundant internal coordinates. The default for minimizations
+is to add auxiliary bonds between atoms that are up to two and half times
 further apart then regular (chemical) bonds. This increases the redundancy of the
 coordinate system, but usually speeds up the geometry optimization slightly. .NOAUX
 turns this off. For saddle point optimizations and constrained geometry optimization
@@ -621,5 +622,5 @@ schemes in the same fashion as Bofill's update. Only suitable for minimizations.
 
 keyword(IPRGRD)
 
-add
+missing in Dalton
 
