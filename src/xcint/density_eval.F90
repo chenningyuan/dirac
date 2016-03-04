@@ -1342,8 +1342,8 @@ contains
 
            nr1 = ao_block_nr(iblock)
            st1 = ao_block_start(iblock)
-           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep(a)))
-           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a)))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a)))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
            do ii = st1, st1 + nr1 - 1
