@@ -229,7 +229,7 @@ C
       DOMP2GOLD = relcc_do_oldmp2gradient 
       DOCCSDG   = relcc_do_ccsdgradient 
       DOCCSDTG  = relcc_do_ccsdtgradient
-      NOZG      = relcc_do_unrelaxed
+      NOZG      = .not.relcc_do_relaxed
       DONATORB  = relcc_do_naturalorbitals
       NEOPER    = 3
       NAMEE(1)  = 'XDIPLEN '
