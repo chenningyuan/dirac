@@ -14,21 +14,32 @@ f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
       rel_tolerance   = 0.002)
 
+# LL
+test.run(['ll_shield_sc_g0.inp'], ['hf.xyz'], f)
+test.run(['ll_shield_sc_g1.inp'], ['hf.xyz'], f)
+
+# SF
+test.run(['sf_shield_sc_g0.inp'], ['hf.xyz'], f)
+test.run(['sf_shield_sc_g1.inp'], ['hf.xyz'], f)
+
+# bss
+test.run(['bss_shield_sc_g0.inp'], ['hf.xyz'], f)
+test.run(['bss_shield_sc_g1.inp'], ['hf.xyz'], f)
+
+# bss_sfb
+test.run(['bss_sfb_shield_sc_g0.inp'], ['hf.xyz'], f)
+test.run(['bss_sfb_shield_sc_g1.inp'], ['hf.xyz'], f)
+
+# bss_mfsso
+test.run(['bss_mfsso_shield_sc_g0.inp'], ['hf.xyz'], f)
+test.run(['bss_mfsso_shield_sc_g1.inp'], ['hf.xyz'], f)
+
+# DC
 test.run(['dc_scf.inp'], ['hf.xyz'], args='--outcmo')
-
-test.run(['dc_shield_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_scre_g0.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_scre_g1.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_ncre_g0.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_ncre_g1.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_re_g0.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_re_g1.inp'], ['hf.xyz'], f, args='--incmo')
-
-#test.run(['dc_shield_nc_g0_skipep.inp'], ['hf.xyz'], f, args='--incmo')
-#test.run(['dc_shield_sc_g0_skipep.inp'], ['hf.xyz'], f, args='--incmo')
+test.run(['dc_shield_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
+test.run(['dc_shield_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
+##test.run(['dc_shield_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
+##test.run(['dc_shield_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
 
 os.unlink('DFCOEF')
 
