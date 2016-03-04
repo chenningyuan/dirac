@@ -3143,7 +3143,6 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
-      iprint = 12
 C
 C     ***** STPSYM *****
 C
