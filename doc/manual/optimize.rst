@@ -51,13 +51,12 @@ Include LL, SL, and SS integral contributions to the gradient
 
 keyword(BAKER)
 
-Baker's convergence criteria :cite:`Baker1993` will be
-used.
-
-
-keyword(1STORD)
-
-Default 1st order method will be used: BFGS update.
+Baker's convergence criteria :cite:`Baker1993` will be used.
+The minimum is then said to be
+found when the largest element of the gradient vector (in Cartesian or redundant
+internal coordinates) falls below 0.0003 and either the energy change from the last
+iteration is less than 0.000001 or the largest element of the predicted step vector is
+less 0.0003.
 
 
 keyword(GRADIENT)
@@ -73,6 +72,7 @@ Convergence threshold for the energy. The default is 1.0D-6.
 keyword(STEP THRESHOLD)
 
 Convergence threshold for the step. The default is 1.0D-5.
+
 
 keyword(PRINT)
 
@@ -94,14 +94,20 @@ ratio between predicted and actual energy change. The default trust radius is 0.
 
 keyword(TR FAC)
 
-READ(LUCMD,*) TRSTIN, TRSTDE
+::
+
+ READ(LUCMD,*) TRSTIN, TRSTDE
+
 Read two factors that will be used for increasing and decreasing the trust radius
 respectively. Default values are 1.2 and 0.7.
 
 
 keyword(TR LIM)
 
-READ(LUCMD,*) RTENBD, RTENGD, RTRJMN, RTRJMX
+::
+
+ READ(LUCMD,*) RTENBD, RTENGD, RTRJMN, RTRJMX
+
 Read four limits for the ratio between the actual and predicted energies. This ratio
 indicates how good the step is?that is, how accurately the quadratic model describes
 the true energy surface. If the ratio is below RTRJMN or above RTRJMX, the step is
@@ -116,7 +122,10 @@ RTENGD, RTRJMN and RTRJMX are 0.4, 0.8, -0.1 and 3.0 respectively.
 
 keyword(MAX RE)
 
-READ(LUCMD,*) MAXREJ
+::
+
+ READ(LUCMD,*) MAXREJ
+
 Read maximum number of rejected steps in each iterations, default is 3.
 
 
@@ -130,12 +139,16 @@ the actual/predicted energy ratio.
 
 keyword(CONDIT)
 
-READ (LUCMD,*) ICONDI
+::
+
+ READ (LUCMD,*) ICONDI
+
 Set the number of convergence criteria that should be fulfilled before convergence
 occurs. There are three different convergence thresholds, one for the energy, one for
 the gradient norm and one for the step norm. The possible values for this variable
 is therefore between 1 and 3. Default is 2. The three convergence thresholds can be
-adjusted with the keywords .ENERGY, .GRADIE and .STEP T.
+adjusted with the keywords :ref:`OPTIMIZE_.ENERGY`, :ref:`OPTIMIZE_.GRADIE` and 
+:ref:`OPTIMIZE_.STEP T`.
 
 
 keyword(NOBREA)
@@ -148,17 +161,23 @@ zero. This option only has effect when second-order methods are used.
 
 keyword(SP BAS)
 
-READ(LUCMD,*) SPBSTX
+::
+
+ READ(LUCMD,*) SPBSTX
+
 Read a string containing the name of a basis set. When the geometry has converged,
 a single-point energy will be calculated using this basis set.
 
 
 keyword(PREOPT)
 
-READ (LUCMD,*) NUMPRE
-DO I = 1, NUMPRE
-READ (LUCMD,*) PREBTX(I)
-END DO
+::
+
+ READ (LUCMD,*) NUMPRE
+ DO I = 1, NUMPRE
+ READ (LUCMD,*) PREBTX(I)
+ END DO
+
 First we read the number of basis sets that should be used for preoptimization, then
 we read those basis set names as strings. These sets will be used for optimization in
 the order they appear in the input. One should therefore place the smaller basis at
@@ -183,7 +202,10 @@ See also related keywords .VR-BON, .VR-COR, .VR-EIG and .VR-VIB.
 
 keyword(SYMTHR)
 
-READ(LUCMD,*) THRSYM
+::
+
+ READ(LUCMD,*) THRSYM
+
 Determines the gradient threshold (in a.u.) for breaking of the symmetry. That is,
 if the index of the molecular molecular Hessian is non-zero when the gradient norm
 drops below this value, the symmetry is broken to avoid unnecessary iterations within
@@ -195,7 +217,7 @@ keyword(TRSTRG)
 
 Specifies that the level-shifted trust region method should be used to control
 the step. This is the default, so the keyword is actually redundant at the moment.
-Alternative step control methods are .RF and .GDIIS.
+Alternative step control methods are :ref:`OPTIMIZE_.RF` and :ref:`OPTIMIZE_.GDIIS`.
 
 
 keyword(VR-BON)
@@ -226,8 +248,12 @@ and .INIRED. It has no effect when .HESFIL has been specified.
 
 keyword(INITEV)
 
-READ(LUCMD,*) EVLINI The default initial molecular Hessian for first-order mini-
-mizations is the identity matrix when Cartesian coordinates are used, and a diagonal
+::
+
+ READ(LUCMD,*) EVLINI 
+
+The default initial molecular Hessian for first-order minimizations
+is the identity matrix when Cartesian coordinates are used, and a diagonal
 matrix when redundant internal coordinates are used. If .INITEV is used, all the diag-
 onal elements (and therefore the eigenvalues) are set equal to the value EVLINI. This
 option only has effect when first-order methods are used and .INITHE and .HESFIL
@@ -307,6 +333,7 @@ keyword(QUADSD)
 
 add
 
+
 keyword(SCHLEG)
 
 Specifies that a first-order method with Schlegel?s updating scheme [152] should
@@ -318,15 +345,6 @@ keyword(HELLMA)
 
 Use gradients and Hessians calculated using the Hellmann-Feynman approxima-
 tion. Currently not working properly
-
-
-keyword(BAKER)
-
-Activates the convergence criteria of Baker [19]. The minimum is then said to be
-found when the largest element of the gradient vector (in Cartesian or redundant
-internal coordinates) falls below 0.0003 and either the energy change from the last
-iteration is less than 0.000001 or the largest element of the predicted step vector is
-less 0.0003.
 
 
 keyword(M-BFGS)
@@ -353,7 +371,7 @@ This is the default for first-order methods.
 
 keyword(INIRED)
 
-Use a simple model Hessian [18] diagonal in redundant internal coordinates as the
+Use a simple model Hessian [dalton ref 18] diagonal in redundant internal coordinates as the
 initial Hessian. All diagonal elements are determined based on an extremely simplified
 molecular mechanics model, yet this model provides Hessians that are good starting
 points for most systems, thus avoiding any calculation of the exact Hessian. This is
@@ -364,8 +382,9 @@ keyword(1STORD)
 
 Use default first-order method. This means that the BFGS update will be used,
 and that the optimization is carried out in redundant internal coordinates. Same
-effect as the combination of the two keywords .BFGS and .REDINT. Since the .BFGS
-method ensures a positive definite Hessian, the .BOFILL optimization method is used
+effect as the combination of the two keywords :ref:`OPTIMIZE_.BFGS` and :ref:`OPTIMIZE_.REDINT`.
+Since the .BFGS method ensures a positive definite Hessian,
+the :ref:`OPTIMIZE_.BOFILL` optimization method is used
 by default in case of searches for transition states.
 
 
@@ -373,7 +392,7 @@ keyword(2NDORD)
 
 Use default second-order method. Molecular Hessians will be calculated at ev-
 ery geometry. The level-shifted Newton method and Cartesian coordinates are used.
-Identical to specifying the keywords .NEWTON and .CARTES.
+Identical to specifying the keywords :ref:`OPTIMIZE_.NEWTON` and :ref:`OPTIMIZE_.CARTES`.
 
 
 keyword(GRDINI)
@@ -385,7 +404,9 @@ Hessian during optimization. Only applies to first-order methods.
 
 keyword(DISPLA)
 
-READ (LUCMD,*) DISPLA
+::
+ READ (LUCMD,*) DISPLA
+
 Read one more line containing the norm of the displacement vector to be used during
 numerical evaluation of the molecular gradient, as is needed when doing geometry
 optimizations with CI or MP2 wave functions. Default is 0.001 a.u.
@@ -393,16 +414,18 @@ optimizations with CI or MP2 wave functions. Default is 0.001 a.u.
 
 keyword(CONSTR)
 
-READ (LUCMD, *) NCON
-DO I = 1, NCON
-READ(LUCMD,*) ICON
-ICNSTR(ICON) = 1
-END DO
+::
+
+ READ (LUCMD, *) NCON
+ DO I = 1, NCON
+ READ(LUCMD,*) ICON
+ ICNSTR(ICON) = 1
+ END DO
 
 Request a constrained geometry optimization. Only works when using redundant
 internal coordinates. The number of primitive coordinates that should be frozen has
 to be specified (NCON), then a list follows with the individual coordinate numbers.
-The coordinate numbers can be found by first running Dalton with the .FINDRE
+The coordinate numbers can be found by first running Dalton(DIRAC?) with the .FINDRE
 keyword. Any number of bonds, angles and dihedral angles may be frozen. NOTE:
 Symmetry takes precedence over constraints, if you e.g. want to freeze just one of
 several symmetric bonds, symmetry must be lowered or switched off.
@@ -418,11 +441,14 @@ to the analytical molecular Hessian.
 
 keyword(REMOVE)
 
-READ (LUCMD, *) NREM
-DO I = 1, NREM
-READ(LUCMD,*) IREM
-ICNSTR(IREM) = 2
-END DO
+::
+
+ READ (LUCMD, *) NREM
+ DO I = 1, NREM
+ READ(LUCMD,*) IREM
+ ICNSTR(IREM) = 2
+ END DO
+
 Only has effect when using redundant internal coordinates. Specifies internal coor-
 dinates that should be removed. The input is identical to the one for .CONSTRAINT,
 that is one has to specify the number of coordinates that should be removed, then
@@ -459,7 +485,7 @@ of the model Hessian is halved. Only suitable for minimizations.
 
 keyword(RF)
 
-Use the rational function method [12] instead of level-shifted Newton which is the
+Use the rational function method [dalton ref.12] instead of level-shifted Newton which is the
 default. The RF method is often slightly faster than the level-shifted Newton, but
 also slightly less robust.
 For saddle point optimizations there?s a special partitioned rational function method
@@ -486,6 +512,7 @@ is slightly less stable.
 keyword(ODIHE)
 
 add
+
 
 keyword(VR-COR)
 
@@ -534,7 +561,10 @@ analytical molecular Hessians are available, it may sometimes be necessary to us
 
 keyword(MODE)
 
-READ(LUCMD,*) NSPMOD
+::
+
+ READ(LUCMD,*) NSPMOD
+
 Only has effect when doing saddle point optimizations. Determines which molecular
 Hessian eigenmode should be maximized (inverted in the image method). By default
 this is the mode corresponding to the lowest eigenvalue, i.e. mode 1. If an optimization
@@ -545,7 +575,7 @@ modes (only the lower ones are usually interesting).
 keyword(BOFILL)
 
 Bofill's update[20] is the default updating scheme for transition state optimiza-
-tions. It?s a linear combination of the symmetric rank one and the PSB updating
+tions. It's a linear combination of the symmetric rank one and the PSB updating
 schemes, automatically giving more weight to PSB whenever the rank one potentially
 is numerically unstable.
 
@@ -572,6 +602,7 @@ keyword(GRD SC)
 
 add
 
+
 keyword(NOAUX)
 
 Only has effect when using redundant internal coordinates. The default for mini-
@@ -585,7 +616,7 @@ this is off by default (cannot be switched on).
 keyword(BFGSR1)
 
 Use a linear combination of the BFGS and the symmetric rank one updating
-schemes in the same fashion as Bofill?s update. Only suitable for minimizations.
+schemes in the same fashion as Bofill's update. Only suitable for minimizations.
 
 
 keyword(IPRGRD)
