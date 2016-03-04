@@ -216,14 +216,6 @@ C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
 
-C
-C***********************************************************************
-C ***** cleaning up data stored in fde calculations ********************
-C***********************************************************************
-C
-      if (dirac_cfg_fde)
-     &   call fde_cleanup_data()
-
 
  666  CONTINUE
       CALL QEXIT('PAMDRV')
@@ -1104,6 +1096,8 @@ C***********************************************************************
      &    only: initialize_interest_herd,                               &
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
+!     use fde_evaluators_dirac, only : fde_launch_slave_process
+      use fde_mod, only : fde_launch_slave_process
 #endif
       implicit none
 #include "dcbdhf.h"
@@ -1272,6 +1266,11 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+      ELSE IF (ITASK .EQ. 12) THEN
+C
+C        start FDE MPI calculation
+C
+         call fde_launch_slave_process()
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -1298,6 +1297,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
       use interface_to_mpi
+      use fde_mod, only : fde_launch_slave_process
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1381,6 +1381,12 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+      ELSE IF (ITASK .EQ. 12) THEN
+C
+C        start FDE MPI calculation
+C
+         call fde_launch_slave_process()
+
       ELSE
 C
 C        Unknown task. Abort execution.

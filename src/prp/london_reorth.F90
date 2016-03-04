@@ -70,6 +70,7 @@ module london_reorth_hb
 
   integer, parameter :: file_unit = 137
   integer, parameter :: tbmo_unit = 71
+  integer, parameter :: tbdmat_file_unit = 81
   logical            :: debug_me
 
 contains
@@ -138,6 +139,7 @@ contains
     call dealloc(fmo)
 
   end subroutine
+
 
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
@@ -346,6 +348,11 @@ contains
 
   subroutine get_gtb(fao, tb_dmat, cmo, ibeig)
     use xcint_main
+    use fde_cfg
+    use fde_mod
+    use fde_mag_cfg
+    use fde_dirac_matrices_integration
+
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: fao(*)
     real(8), intent(in)    :: tb_dmat(*)
@@ -446,17 +453,34 @@ contains
 #ifdef VAR_MPI
       if (parcal) call dirac_parctl(4)
 #endif
-      call integrate_xc(xc_mat_dim          = ntbas(0), &
-                         xc_nz               = nz,       &
-                         xc_dmat_0           = dmat,        &
-                         xc_nr_dmat          = nr_xyz_comp, &
-                         xc_nr_fmat          = nr_xyz_comp, &
-                         xc_dmat             = tb_dmat,     &
-                         xc_fmat             = fao,         &
-                         xc_fmat_pg_sym      = isymop,      &
-                         xc_dmat_pg_sym      = isymop,      &
-                         xc_dmat_ih_sym      = ihrmop,      &
-                         xc_do_london_rhs_ro = .true.)       
+
+!     tb_dmat has been antisymmetrized in getmdm, ih = -1
+      if (expped) then
+         call integrate_xc(xc_mat_dim          = ntbas(0),     &
+                            xc_nz               = nz,          &
+                            xc_dmat_0           = dmat,        &
+                            xc_nr_dmat          = nr_xyz_comp, &
+                            xc_nr_fmat          = nr_xyz_comp, &
+                            xc_dmat             = tb_dmat,     &
+                            xc_fmat             = fao,         &
+                            xc_fmat_pg_sym      = isymop,      &
+                            xc_dmat_pg_sym      = isymop,      &
+                            xc_dmat_ih_sym      = ihrmop,      &
+                            xc_do_london_rhs_ro = .true.,      &       
+                            xc_london_reorth_export = .true.)       
+      else
+         call integrate_xc(xc_mat_dim          = ntbas(0),     &
+                            xc_nz               = nz,          &
+                            xc_dmat_0           = dmat,        &
+                            xc_nr_dmat          = nr_xyz_comp, &
+                            xc_nr_fmat          = nr_xyz_comp, &
+                            xc_dmat             = tb_dmat,     &
+                            xc_fmat             = fao,         &
+                            xc_fmat_pg_sym      = isymop,      &
+                            xc_dmat_pg_sym      = isymop,      &
+                            xc_dmat_ih_sym      = ihrmop,      &
+                            xc_do_london_rhs_ro = .true.)       
+      end if
 
       call dealloc(dmat)
 
@@ -471,6 +495,57 @@ contains
       end if
 
     end if
+
+
+!   construct fde contribution to property gradient if needed
+    if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
+       if (.not. fde_lao_reorth_active_embker) then
+          write(*, *) 'no LAO-reorth contributions to FDE property gradient (embker)'
+       else
+          call alloc(dmat, n2bbasxq)
+          dmat = 0.0d0
+          call genden(dmat, cmo, 1, iprprp)
+
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(12)
+#endif
+
+          
+          call fde_dirac_emb_matrices_via_integration(fde_mat_dim = ntbas(0), &
+                            fde_nz               = nz,          &
+                            fde_dmat_0           = dmat,        &
+                            fde_nr_dmat          = nr_xyz_comp, &
+                            fde_nr_fmat          = nr_xyz_comp, &
+                            fde_dmat             = tb_dmat,     &
+                            fde_fmat             = fao,         &
+                            fde_do_london_rhs_ro = .true.)       
+          
+          call dealloc(dmat)
+       end if
+
+!    else if (fde_rsp_mag_lao_export) then
+!!   we don't calculate the actual contribution, we only export the perturbed density
+!
+!       call alloc(dmat, n2bbasxq)
+!       dmat = 0.0d0
+!       call genden(dmat, cmo, 1, iprprp)
+!
+!#ifdef VAR_MPI
+!       if (parcal) call dirac_parctl(12)
+!#endif
+!          
+!       call fde_dirac_emb_matrices_via_integration(fde_mat_dim = ntbas(0), &
+!                         fde_nz               = nz,          &
+!                         fde_dmat_0           = dmat,        &
+!                         fde_nr_dmat          = nr_xyz_comp, &
+!                         fde_nr_fmat          = nr_xyz_comp, &
+!                         fde_dmat             = tb_dmat,     &
+!                         fde_fmat             = fao,         &
+!                         fde_do_export_pertden_reorth = .true.)       
+!       
+!       call dealloc(dmat)
+    end if
+
 
   end subroutine get_gtb
 
@@ -570,6 +645,9 @@ contains
 
 
   subroutine get_tb_dmat(tb_dmat, cmo, ibeig)
+#ifdef MOD_UNRELEASED
+  use fde_mod
+#endif
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: tb_dmat(n2bbasxq, *)
     real(8), intent(in)    :: cmo(*)
@@ -582,7 +660,21 @@ contains
     integer                :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
     integer                :: irep(nr_xyz_comp)
     integer                :: indxpr, icomp
+
 !-----------------------------------------------------------------------
+
+    if (fde_rsp_mag_lao_export) then
+!      write modified density matrix on file
+
+       open(tbdmat_file_unit,        &
+            file = 'TBDMAT',         &
+            form   = 'unformatted',  &
+            access = 'direct',       &
+            recl = 8*n2bbasxq,       &
+            action = 'write',        &
+            status = 'unknown')
+
+    end if
 
     call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_tb_dmat')
 
@@ -662,7 +754,16 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
+      if (fde_rsp_mag_lao_export) then
+         call wrtdac(tbdmat_file_unit, n2bbasxq,   &
+                  tb_dmat(1, icomp), icomp)
+      end if
+
     end do
+
+    if (fde_rsp_mag_lao_export) then
+       close(tbdmat_file_unit, status='keep')
+    end if
 
     close(lu1int)
     call dealloc(tb)

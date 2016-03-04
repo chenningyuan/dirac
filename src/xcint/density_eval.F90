@@ -106,11 +106,11 @@ contains
                    do j = 1, nr2
                       ii = st1 + i - 1
                       jj = st2 + j - 1
-
+                
                       average = mat(ii, jj, iq(jxyz), imat) &
                               + h(iq(jxyz))*mat(jj, ii, iq(jxyz), imat)
                       average = 0.5d0*average
-
+                
                       mat(ii, jj, iq(jxyz), imat) = average
                       mat(jj, ii, iq(jxyz), imat) = h(iq(jxyz))*average
                    end do
@@ -223,6 +223,8 @@ contains
                     1)
     
          n = n + ddot(nr1, ao(st1), 1, buffer, 1)
+     !    write(*, '(A,I7,I7,I7,I7,3ES30.20E3)') 'in get_n st1, st2, nr1, nr2, ao, dmat, n = ', &
+     !                          st1, st2, nr1, nr2, ao(st2), dmat(st1, st2, iq(0)), n
       end do
    
    end subroutine
@@ -1302,7 +1304,6 @@ contains
    end subroutine
 
    subroutine get_n2_lao(n, isym, mat_dim, dmat, ao, cx, cy, cz)
-
 !    ----------------------------------------------------------------------------
      real(8), intent(out) :: n(3, 3)
      integer, intent(in)  :: isym(*)
@@ -1341,8 +1342,8 @@ contains
 
            nr1 = ao_block_nr(iblock)
            st1 = ao_block_start(iblock)
-           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a) - 1))
-           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep(a)))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
            do ii = st1, st1 + nr1 - 1
@@ -1537,7 +1538,6 @@ contains
      end do      ! do a = 1, 3
 
    end subroutine
-
 
 
    subroutine get_jblao(perturbation_component, cval, D_0, mat_dim, ao, r, j)
