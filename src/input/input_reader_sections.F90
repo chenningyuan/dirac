@@ -835,7 +835,7 @@
 
       if (kw_matches(word, '.GRADIE')) then
          relcc_do_gradient = .true.
-!!!         relcc_do_mp2gradient = .true.
+         relcc_do_mp2gradient = .true.
       end if
 
       if (kw_matches(word, '.HESSIA')) then
@@ -949,8 +949,8 @@
          relcc_do_naturalorbitals = .true.
       end if
 
-      if (kw_matches(word, '.UNRELAXED')) then
-         relcc_do_unrelaxed = .true.
+      if (kw_matches(word, '.RELAXED')) then
+         relcc_do_relaxed = .true.
       end if
 
       if (kw_matches(word, '.NEOPER')) then

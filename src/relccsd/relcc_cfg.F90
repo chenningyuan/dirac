@@ -93,7 +93,7 @@ module relcc_cfg
   logical, public :: relcc_do_ccsdgradient         = .false.
   logical, public :: relcc_do_ccsdtgradient        = .false.
   logical, public :: relcc_do_naturalorbitals      = .false.
-  logical, public :: relcc_do_unrelaxed            = .false.
+  logical, public :: relcc_do_relaxed              = .false.
   logical, public :: relcc_ifroz_input             = .false.
   integer, public :: relcc_ne_oper                 = 1
   integer, public :: relcc_fopr_max_dimension_diis = 8
@@ -204,7 +204,7 @@ contains
   call interface_mpi_bcast_l0(relcc_do_ccsdgradient      ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_ccsdtgradient     ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_naturalorbitals   ,1,0,global_communicator)
-  call interface_mpi_bcast_l0(relcc_do_unrelaxed         ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_relaxed           ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_ifroz_input          ,1,0,global_communicator)
   if (relcc_ifroz_input) then  ! transfer IFROZ array in freeze.inc
      IFROZ_set_in_input = .true.
