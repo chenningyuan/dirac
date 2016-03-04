@@ -238,9 +238,9 @@ to the files eigv_###.wrl.
 
 keyword(INITHE)
 
-Specifies that the initial molecular Hessian should be calculated (analytical molec-
-ular Hessian), thus yielding a first step that is identical to that of second-order meth-
-ods. This provides an excellent starting point for first-order methods, but should only
+Specifies that the initial molecular Hessian should be calculated (analytical 
+molecular Hessian), thus yielding a first step that is identical to that of second-order 
+methods. This provides an excellent starting point for first-order methods, but should only
 be used when the molecular Hessian can be calculated within a reasonable amount of
 time. It has only effect for first-order methods and overrides the keywords .INITEV
 and .INIRED. It has no effect when .HESFIL has been specified.
@@ -254,8 +254,8 @@ keyword(INITEV)
 
 The default initial molecular Hessian for first-order minimizations
 is the identity matrix when Cartesian coordinates are used, and a diagonal
-matrix when redundant internal coordinates are used. If .INITEV is used, all the diag-
-onal elements (and therefore the eigenvalues) are set equal to the value EVLINI. This
+matrix when redundant internal coordinates are used. If .INITEV is used, all the 
+diagonal elements (and therefore the eigenvalues) are set equal to the value EVLINI. This
 option only has effect when first-order methods are used and .INITHE and .HESFIL
 are non-present.
 
@@ -265,10 +265,10 @@ keyword(HESFIL)
 Specifies that the initial molecular Hessian should be read from the file DALTON.HES(?).
 This applies to first-order methods, and the Hessian in the file must have the correct
 dimensions. This option overrides other options for the initial Hessian.
-Each time a Hessian is calculated or updated, it?s written to this file (in Cartesian co-
-ordinates). If an optimization is interrupted, it can be restarted with the last geometry
-and the molecular Hessian in DALTON.HES, minimizing the loss of information. An-
-other useful possibility is to transfer the molecular Hessian from a calculation on the
+Each time a Hessian is calculated or updated, it?s written to this file (in Cartesian
+coordinates). If an optimization is interrupted, it can be restarted with the last geometry
+and the molecular Hessian in DALTON.HES, minimizing the loss of information. 
+Another useful possibility is to transfer the molecular Hessian from a calculation on the
 same molecule with another (smaller) basis and/or a cheaper wave function. Finally,
 one can go in and edit the file directly to set up a specific force field.
 
@@ -323,10 +323,11 @@ eigenvalue is sought).
 
 keyword(NEWTON)
 
-Specifies that a second-order Newton method should be used for optimization?
+Specifies that a second-order Newton method should be used for optimization
 that is, the analytical molecular Hessian will be calculated at every geometry. By
 default the level-shifted trust region method will be used, but it is possible to override
 this by using one of the two keywords :ref:`OPTIMIZE_.RF` or :ref:`OPTIMIZE_.GDIIS`.
+Not implemented in DIRAC.
 
 
 keyword(QUADSD)
@@ -390,9 +391,10 @@ by default in case of searches for transition states.
 
 keyword(2NDORD)
 
-Use default second-order method. Molecular Hessians will be calculated at ev-
-ery geometry. The level-shifted Newton method and Cartesian coordinates are used.
+Use default second-order method. Molecular Hessians will be calculated at every
+geometry. The level-shifted Newton method and Cartesian coordinates are used.
 Identical to specifying the keywords :ref:`OPTIMIZE_.NEWTON` and :ref:`OPTIMIZE_.CARTES`.
+Not implemented in DIRAC.
 
 
 keyword(GRDINI)
@@ -434,8 +436,8 @@ several symmetric bonds, symmetry must be lowered or switched off.
 
 keyword(MODHES)
 
-Determine a new model molecular Hessian (see .INIMOD) at every geometry with-
-out doing any updating. The model is thus used in much the same manner as an
+Determine a new model molecular Hessian (see .INIMOD) at every geometry without
+doing any updating. The model is thus used in much the same manner as an
 exact molecular Hessian, though it is obviously only a relatively crude approximation
 to the analytical molecular Hessian.
 
@@ -450,14 +452,14 @@ keyword(REMOVE)
  ICNSTR(IREM) = 2
  END DO
 
-Only has effect when using redundant internal coordinates. Specifies internal coor-
-dinates that should be removed. The input is identical to the one for .CONSTRAINT,
+Only has effect when using redundant internal coordinates. Specifies internal 
+coordinates that should be removed. The input is identical to the one for .CONSTRAINT,
 that is one has to specify the number of coordinates that should be removed, then
 the number of each of those internal coordinates. The coordinate numbers can first
 be determined by running with .FINDRE set.
 Removing certain coordinates can sometimes be useful in speeding up constrained
-geometry optimization, as certain coordinates sometimes ?struggle? against the con-
-straints. See also .NODIHE.
+geometry optimization, as certain coordinates sometimes "struggle" against the 
+constraints. See also .NODIHE.
 
 
 keyword(INIMOD)
@@ -523,8 +525,8 @@ one is struggling to build a reasonable geometry by adjusting coordinates manual
 
 keyword(VR-VIB)
 
-Similar to .VR-EIG, but more useful as it draws the actual normal mode vec-
-tors (the mass-weighted eigenvectors). These are written to the files norm_###.wrl.
+Similar to .VR-EIG, but more useful as it draws the actual normal mode vectors
+(the mass-weighted eigenvectors). These are written to the files norm_###.wrl.
 Keyword only has effect when a vibrational analysis has been requested.
 
 
@@ -575,8 +577,8 @@ modes (only the lower ones are usually interesting).
 
 keyword(BOFILL)
 
-Bofill's update[20] is the default updating scheme for transition state optimiza-
-tions. It's a linear combination of the symmetric rank one and the PSB updating
+Bofill's update [dalton ref 20] is the default updating scheme for transition state optimizations.
+It's a linear combination of the symmetric rank one and the PSB updating
 schemes, automatically giving more weight to PSB whenever the rank one potentially
 is numerically unstable.
 
