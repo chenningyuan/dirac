@@ -1373,17 +1373,30 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      CHARACTER*8 LABEL
+      CHARACTER*8 LABEL,EOFLABEL
+      SAVE    INIT
+      LOGICAL INIT=.FALSE.
 C---------------Executable code--------------------------------------
  
       WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
       LABEL = WF//'DENS'
+      EOFLABEL = 'EOFLABEL'
 
 C     Write the correlated density to file
+C     Code should be replaced by proper storage routine, this just adds to the end of a file 
+C     without being able to do a replace or check for old data.
 
       CALL OPNFIL(MCCDENS,'CCDENS','UNKNOWN','STORE_')
+      IF (.NOT.INIT) THEN
+          CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
+          INIT = .TRUE.
+      END IF
+      REWIND (MCCDENS)
+      CALL FNDLAB(EOFLABEL,MCCDENS)
+      BACKSPACE MCCDENS
       CALL NEWLAB(LABEL,MCCDENS,LUPRI)
       CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
+      CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
       END
