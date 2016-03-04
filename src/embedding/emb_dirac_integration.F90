@@ -20,6 +20,8 @@ module fde_dirac_matrices_integration
    use density_eval
    use fde_mpi
 
+   use xc_london_c1
+
    implicit none
 
    public fde_dirac_emb_matrices_via_integration
@@ -28,6 +30,8 @@ module fde_dirac_matrices_integration
    public fde_dirac_interaction_nadd
    public fde_dirac_interaction_el_b_rho_a
    public fde_dirac_interaction_nuc_a_rho_b
+
+   public fde_susc2el_integrated
 
    private
 
@@ -190,6 +194,9 @@ module fde_dirac_matrices_integration
    real(8), save :: electrostatic_b_rho_a_interaction 
    real(8), save :: electrostatic_a_rho_b_interaction 
 
+   real(8) :: susc2el_fde_integrated(3, 3)
+   real(8) :: susc2el_fde_integrated_sdft(3, 3)
+
    logical :: use_gga_qr = .false. !quaternion real
    logical :: use_gga_qi = .false. !quaternion imaginary
    logical :: use_gga    = .false.
@@ -267,6 +274,7 @@ module fde_dirac_matrices_integration
    logical :: do_london_rhs_direct_kern
    logical :: do_london_rhs_kern_coupling
    logical :: do_london_rhs_ro
+   logical :: do_london_susc2el
    logical :: do_geo
    logical :: do_geo_0
    logical :: do_geo_1
@@ -310,6 +318,28 @@ contains
       fde_dirac_interaction_nuc_a_rho_b = electrostatic_a_rho_b_interaction
    end function 
 
+   function fde_susc2el_integrated() result(r)
+      real(8) :: r(3, 3)
+      integer :: i, j
+      write(*, *) 'FDE contributions - details:'
+      do i = 1, 3
+        do j = 1, 3
+          write(*, *) 'j, i, susc2el_fde_integrated     ', j, i, susc2el_fde_integrated(j,i)
+          if (.not. fde_cfg_no_sdft) then
+            write(*, *) 'j, i, susc2el_fde_integrated_sdft', j, i, susc2el_fde_integrated_sdft(j,i)
+          end if
+        end do
+      end do
+      r = 0.0d0
+      do i = 1,3
+        do j = 1,3
+          r(j, i) = r(j, i) + susc2el_fde_integrated(j, i)
+          if (.not. fde_cfg_no_sdft) then
+            r(j, i) = r(j, i) + susc2el_fde_integrated_sdft(j, i)
+          end if
+        end do
+      end do
+   end function
 
 !   ----------------------------------------------------------------------------
     subroutine fde_dirac_emb_matrices_via_integration(  &
@@ -342,6 +372,7 @@ contains
                              fde_do_london_rhs_direct_kern,   &
                              fde_do_london_rhs_kern_coupling, &
                              fde_do_london_rhs_ro,      &
+                             fde_do_london_susc2el,     &
                              fde_do_export_pertden_reorth,     &
                              fde_do_export_pertden_direct,     &
                              fde_active_grid,           &
@@ -392,6 +423,7 @@ contains
       logical, optional,         intent(in)    :: fde_do_london_rhs_direct_kern
       logical, optional,         intent(in)    :: fde_do_london_rhs_kern_coupling
       logical, optional,         intent(in)    :: fde_do_london_rhs_ro
+      logical, optional,         intent(in)    :: fde_do_london_susc2el
       logical, optional,         intent(in)    :: fde_do_export_pertden_reorth
       logical, optional,         intent(in)    :: fde_do_export_pertden_direct
 !     --------------------------------------------------------------------------
@@ -430,6 +462,9 @@ contains
       electrostatic_b_rho_a_interaction = 0.0d0
       electrostatic_a_rho_b_interaction = 0.0d0
 
+      susc2el_fde_integrated = 0.0d0
+      susc2el_fde_integrated_sdft = 0.0d0
+
       parallel_fde = (fde_mpi_get_nr_proc() > 1)
 #ifdef VAR_MPI
       if (parallel_fde) then
@@ -455,6 +490,7 @@ contains
       do_london_rhs_direct_kern    = .false.
       do_london_rhs_kern_coupling  = .false.
       do_london_rhs_ro             = .false.
+      do_london_susc2el            = .false.
       do_geo_0              = .false.
       do_geo_1              = .false.
       do_geo_2              = .false.
@@ -477,6 +513,7 @@ contains
          if (present(fde_do_london_rhs_direct_kern))    do_london_rhs_direct_kern    = fde_do_london_rhs_direct_kern
          if (present(fde_do_london_rhs_kern_coupling))  do_london_rhs_kern_coupling  = fde_do_london_rhs_kern_coupling
          if (present(fde_do_london_rhs_ro))             do_london_rhs_ro             = fde_do_london_rhs_ro
+         if (present(fde_do_london_susc2el))            do_london_susc2el            = fde_do_london_susc2el
          if (present(fde_do_export_pertden_reorth))     do_export_pertden_reorth     = fde_do_export_pertden_reorth
          if (present(fde_do_export_pertden_direct))     do_export_pertden_direct     = fde_do_export_pertden_direct
          if (present(fde_do_geo_0))              do_geo_0              = fde_do_geo_0
@@ -540,6 +577,7 @@ contains
          call fde_mpi_bcast(do_london_rhs_direct_kern)
          call fde_mpi_bcast(do_london_rhs_kern_coupling)
          call fde_mpi_bcast(do_london_rhs_ro)
+         call fde_mpi_bcast(do_london_susc2el)
          call fde_mpi_bcast(do_export_pertden_reorth)
          call fde_mpi_bcast(do_export_pertden_direct)
          call fde_mpi_bcast(response_order_mo)
@@ -762,6 +800,9 @@ contains
       if (do_london_rhs_direct .or. do_london_rhs_direct_kern) then
         max_ao_m_order = 1
       end if
+      if (do_london_susc2el) then
+        max_ao_m_order = 2
+      end if
 
       call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
@@ -848,6 +889,10 @@ contains
          if (do_geo) then
             call fde_mpi_reduce(property_gradient)
          end if
+         if (do_london_susc2el) then
+            call fde_mpi_reduce(susc2el_fde_integrated)
+            call fde_mpi_reduce(susc2el_fde_integrated_sdft)
+         end if
       end if
 #endif
 
@@ -868,6 +913,7 @@ contains
                                    .and. .not. do_london_rhs_direct_kern &
                                    .and. .not. do_london_rhs_kern_coupling &
                                    .and. .not. do_london_ks         &
+                                   .and. .not. do_london_susc2el        &
                                    .and. .not. do_export_pertden_reorth &
                                    .and. .not. do_export_pertden_direct &
                                    .and. .not. do_geo)) then
@@ -1210,6 +1256,7 @@ contains
    real(8) :: n_b(3)
    real(8) :: gnn_b(3)
    real(8) :: gn_b(3, 3)
+    real(8) :: n_bb(3, 3)
 
    real(8) :: vemb
 
@@ -1229,6 +1276,7 @@ contains
    real(8), allocatable :: active_nucpot(:)
    integer :: np_esp
    integer :: irrep_esp
+   integer :: ixyz, jxyz
 
    real(8), allocatable :: ao(:, :)
    real(8), allocatable :: buffer(:, :)
@@ -1269,7 +1317,10 @@ contains
    if (do_london_rhs_direct) then
       max_fun_derv = 1
    end if
-   if (do_london_rhs_direct_kern .and. .not.dft_cfg_no_sdft) then
+    if (do_london_susc2el) then
+       max_fun_derv = 2
+    end if
+   if (do_london_rhs_direct_kern .and. .not.fde_cfg_no_sdft) then
       max_fun_derv = 2
    end if
    if (do_london_rhs_kern_coupling) then
@@ -2049,6 +2100,104 @@ contains
 ! end spin-density stuff
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
+!         fde contributions to expectation value part of magnetizability
+!         ==============================================================
+!         gosia: closed-shell only, called from pammag.F (susc2el subroutine)
+!         these are 'pure-direct' terms
+!         now works only in C1 symmetry, because isymop in pammag is hardcoded to 1
+
+          if (do_london_susc2el) then
+            n_bb = 0.0d0
+!           here no SDFT contributions (first-order functional derivatives)
+            u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint)
+            if (use_gga) then
+              u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
+            !  call gga_london_sus2el_der1(derv(1, d1000000),        &
+            !                              2.0d0*derv(1, d0010000),  &
+            !                              gn_0_pointwise,           &
+            !                              (/1,1,1/),                &
+            !                              mat_dim,                  &
+            !                              nz,                       &
+            !                              dmat_0,                   &
+            !                              ao,                       &
+            !                              rx(ipoint), ry(ipoint), rz(ipoint), &
+            !                              n_bb)
+               call xc_london_c1_susc_gga_der1(u%n(1),   &
+                                           1.0d0,        &
+                                           u%gn(1:3, 1), &
+                                           mat_dim,             &
+                                           nz,                  &
+                                           dmat_0,                &
+                                           ao,                  &
+                                           (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+                                           n_bb)
+
+            else
+             ! call lda_london_sus2el_der1(derv(1, d1000000),   &
+             !                             (/1,1,1/),           &
+             !                             mat_dim,             &
+             !                             nz,                  &
+             !                             dmat_0,              &
+             !                             ao,                  &
+             !                             rx(ipoint), ry(ipoint), rz(ipoint), &
+             !                             n_bb)
+               call xc_london_c1_susc_der1(u%n(1),   &
+                                           mat_dim,             &
+                                           nz,                  &
+                                           dmat_0,                &
+                                           ao,                  &
+                                           (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+                                           n_bb)
+
+            end if
+!           test c1, use overlap derivatives and not AO derivs (leave it to compare directly with dalton):
+!           sum to susc2el_fde_integrated
+            do ixyz = 1, 3
+              do jxyz = 1, 3
+                susc2el_fde_integrated(jxyz, ixyz) = susc2el_fde_integrated(jxyz, ixyz) &
+                                                  + n_bb(jxyz, ixyz)
+              end do
+            end do
+!          ! here only sdft contributions (second-order functional derivatives)
+           ! if (.not. fde_cfg_no_sdft) then
+           !   n_bb = 0.0d0
+           !   if (use_gga) then
+           !     call gga_london_sus2el_der2(derv(1, d0200000),   &
+           !                                 derv(1, d0101000),   &
+           !                                 derv(1, d0002000),   &
+           !                                 2.0d0*derv(1, d0000100),   &
+           !                                 gn_0_pointwise,      &
+           !                                 (/1,1,1/),           &
+           !                                 mat_dim,             &
+           !                                 nz,                  &
+           !                                 dmat,                &
+           !                                 ao,                  &
+           !                                 rx(ipoint), ry(ipoint), rz(ipoint), &
+           !                                 n_bb)
+           !   else
+           !     call lda_london_sus2el_der2(derv(1, d0200000),   &
+           !                                 (/1,1,1/),           &
+           !                                 mat_dim,             &
+           !                                 nz,                  &
+           !                                 dmat,                &
+           !                                 ao,                  &
+           !                                 rx(ipoint), ry(ipoint), rz(ipoint), &
+           !                                 n_bb)
+
+           !   end if
+
+!          !   sum to susc2el_fde_integrated_sdft
+           !   do ixyz = 1, 3
+           !     do jxyz = 1, 3
+           !       susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
+           !                                         + n_bb(jxyz, ixyz)
+           !     end do
+           !   end do
+
+           ! end if
+
+          end if !do_london_susc2el
+
       end if !if (n_0(1) > fde_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc
     end if
@@ -2783,7 +2932,7 @@ contains
        end if
 
 !      SDFT
-       if (.not. dft_cfg_no_sdft) then
+       if (.not. fde_cfg_no_sdft) then
           if (is_gga) then
              call get_gs_nonhermitian(s_b,                       &
                                       gs_b,                      &

@@ -1906,6 +1906,13 @@ C*****************************************************************************
       use xcint_main
       use memory_allocator
       use num_grid_gen
+      use fde_input
+      use fde_mag_cfg
+!
+      use fde_mod
+      use fde_data
+      use fde_dirac_matrices_integration
+      use fde_evaluators_dirac
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
@@ -1934,7 +1941,10 @@ C
       LOGICAL   LBIT,NODV,NOPV,NOCONT,RETUR,
      &          FCKDDR,DDFOCK,FIRST,SUSCEP
       real(8), allocatable :: dmat_0(:)
-      real(8) :: sus2el_xc(3, 3)
+      real(8) :: sus2el_xc(3, 3), sus2el_fde(3, 3)
+!
+      real(8), allocatable   :: dmat(:, :), buffer(:)
+      type(fde_import) :: itmp
 
       CALL QENTER('SUSC2EL')
       KFRSAV=KFREE
@@ -2054,7 +2064,6 @@ C
 
         call dealloc(dmat_0)
 
-
         if (iprprp .ge. 1) then
 !         sus2el before adding dft contributions:
           CALL HEADER('Two-electron expectation values, ' //
@@ -2090,6 +2099,38 @@ C
         end if
 
       end if
+
+
+!     gosia: add fde contributions:
+!     =============================
+!
+      if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
+        call fde_get_import_info(itmp)
+
+        call alloc(dmat_0, n2bbasx*nz)
+        call dzero(dmat_0, n2bbasx*nz)
+        call genden(dmat_0, cmo, 1, iprprp)
+
+        call generate_num_grid(dmat_0)
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(12)
+#endif
+
+        if (fde_lao_direct_active_embpot) then
+          write(*, *) 'FDE contribution to expectation value (embpot)'
+
+          call fde_dirac_emb_matrices_via_integration(
+     &                    fde_mat_dim            = ntbas(0),
+     &                    fde_nz                 = nz,
+     &                    fde_dmat_0             = dmat_0,
+     &                    fde_nr_dmat            = 0,
+     &                    fde_nr_fmat            = 0,
+     &                    fde_do_london_susc2el  = .true.)
+        end if
+        sus2el_fde = fde_susc2el_integrated()
+
+        call dealloc(dmat_0)
+      end if !if(dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
 
       CALL GETTIM(CPU2,WALL2)
 C
