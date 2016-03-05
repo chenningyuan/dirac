@@ -1967,7 +1967,6 @@ C*****************************************************************************
 #endif
 #include "cbirea.h"
 C
-      LOGICAL ANG
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -1976,8 +1975,11 @@ C
 #include "dcbham.h"
 #include "argoscom.h"
 C
-      NQ = NINT(Q)
+      CHARACTER*(LEN_MLINE) TMP_LINE
+      LOGICAL ANG
 C
+      NQ = NINT(Q)
+
       IF (GAUNUC .AND. NQ.GT.0) THEN
         IF(QEXP.EQ.D0) THEN
            CALL NUCSIZ(NQ,GEXP)
@@ -2035,11 +2037,13 @@ C           e.g. IRIX free format read of char. var. is not defined).
          CALL QUIT('ERROR reading atomic coordinates in MOLECULE input')
   104   CONTINUE
 
-        IPOS = INDEX(MLINE(NMLINE),'Isotope=')
+        TMP_LINE = MLINE(NMLINE)
+        CALL UPCASE(TMP_LINE)
+        IPOS = INDEX(TMP_LINE,'ISOTOPE=')
         IF (IPOS .NE. 0) THEN
           IPOS = IPOS + 8
           READ (MLINE(NMLINE)(IPOS:),'(I3)') MASSNM
-          ISOTOP(NUCIND) = ISOMAS(NQ,MASSNM)
+          ISOTOP(NUCIND) = MASS2ISOTOP(NQ,MASSNM)
         ELSE
           ISOTOP(NUCIND) = 1
         END IF
@@ -6628,8 +6632,8 @@ C
       CALL QEXIT('FREFRM')
       RETURN
       END
-C  /* Deck isomas */
-      FUNCTION ISOMAS(ICHARG,MASSNM)
+C  /* Deck MASS2ISOTOP */
+      INTEGER FUNCTION MASS2ISOTOP(ICHARG,MASSNM)
 C
 C     Function to switch from mass number to isotope number sorted
 C     according to abundance, K.Ruud-02
@@ -6637,7 +6641,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      CALL QENTER('ISOMAS')
+      CALL QENTER('MASS2ISOTOP')
       IORD = 0
       DO I = 1, 5
          MASS_I = NINT( DISOTP(ICHARG,I,'MASS') )
@@ -6648,9 +6652,9 @@ C
      &        MASSNM,' for atom with charge',ICHARG
          CALL QUIT('Unknown isotope mass for chosen atomic charge')
       ELSE
-         ISOMAS = IORD
+         MASS2ISOTOP = IORD
       END IF
-      CALL QEXIT('ISOMAS')
+      CALL QEXIT('MASS2ISOTOP')
       RETURN
       END
 C  /* Deck genfamily */
