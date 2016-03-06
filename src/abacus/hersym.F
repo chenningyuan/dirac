@@ -201,6 +201,7 @@ C
      &         ' rotated as requested in input.'
          END IF
          IF (IPRSYM .GE. MIN(IPRTHR,1)) THEN
+         IF (.NOT. LINMOL(MXCENT, ATMARR)) THEN
             IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
                WRITE(LUPRI,'(/A)') ' No rotational axes were found.'
             ELSE
@@ -223,6 +224,7 @@ C
                CALL PRNARR('Mirror planes: 2=h, 1=v, 0=other',
      &            MAXMIR, DMRPLN)
             END IF
+         END IF
          END IF
          CALL SYM_REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM,
      &      internal_file)
