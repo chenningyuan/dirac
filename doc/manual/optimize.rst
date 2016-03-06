@@ -23,6 +23,7 @@ thresholds may be automatically adjusted.
 
 keyword(NO SKIP)
 
+Don't skip SSLL or SSSS gradient contributions when small.
 This keyword forces the LS and SS two-electron gradient to always be evaluated
 in all geometry iterations (depending on the integral flag).
 
@@ -588,11 +589,6 @@ keyword(LINDH)
 
 Use original Roland Lindh r_ref with .MODHES
 (missing in Dalton manual).
-
-
-keyword(NO SKIP)
-
-Don't skip SSLL or SSSS gradient contributions when small.
 
 
 keyword(GRD IN)
