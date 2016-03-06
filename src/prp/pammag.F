@@ -375,10 +375,10 @@ C ... call the routine in abacus/hergp.F
       ELSE   !  (LONDON)
 C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
-          WRITE(LUPRI,'(A/A/A)')
-     &'  Used conventional atomic orbitals, not London orbitals !',
+          WRITE(LUPRI,'(A/A/A,3F12.6)')
+     &'  Using conventional atomic orbitals, not London orbitals !',
      &'  WARNING: Calculated magnetic properties are dependent'//
-     &  ' on the choice of the gauge origin!'   ,
+     &  ' on the choice of the gauge origin!',
      &'  NMRINP: The gauge & dipole origin :', (GAGORG(I), I = 1, 3)
        END IF
       END IF  !  (LONDON)
