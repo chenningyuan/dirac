@@ -31,7 +31,7 @@ for s in sectors:
          rel_tolerance   = 1.0e-9)
    f.add(from_string = 'CCSD results',
          to_string   = 'T1 diagnostic',
-         rel_tolerance   = 1.0e-9)
+         rel_tolerance   = 5.0e-9)
 
    test.run(['fsccsd_restart_s'+s+'_a.inp'], ['Mg.mol'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 
@@ -42,7 +42,7 @@ for s in sectors:
    if s == '00':
       f.add(from_string = 'CCSD results',
             to_string   = 'T1 diagnostic',
-            rel_tolerance   = 1.0e-9)
+            rel_tolerance   = 5.0e-9)
    else:
       f.add(from_string = ' Energy eigenvalues in atomic units',
             to_re       = 'Relative real eigenvalues in other units;',
@@ -69,7 +69,7 @@ f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'CCSD results',
       to_string   = 'T1 diagnostic',
-      rel_tolerance   = 1.0e-9)
+      rel_tolerance   = 5.0e-9)
 f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = 'Relative real eigenvalues in other units;',
       rel_tolerance = 1.0e-5)
