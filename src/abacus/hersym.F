@@ -19,11 +19,13 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C FILE    : hersym.F
+! FILE    : hersym.F
+
+! ::: HERSYM_DEBUG - Debug print if > 0 + IPRSYM set to HERSYM_DEBUG
 #define HERSYM_DEBUG -1
-C ::: IPRTHR - Print level threshold for verbose output. :::
+! ::: IPRTHR - Print level threshold for verbose output
 #define IPRTHR 3
-C
+!
 !========================================================================
 !950208-Vebjoern Bakken
 !SYMADD: Completely new module to determine molecular symmetry, find the
@@ -121,7 +123,7 @@ C ***********************************************************
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
       DIMENSION TMPARR(7,0:LENTMP), WORK(*)
       DIMENSION TMP2AR(6,0:MXCENT)
-      LOGICAL   VRML_SYM
+      LOGICAL   VRML_SYM, LINMOL
       LOGICAL :: internal_file
       INTEGER, ALLOCATABLE :: IBUF(:)
       PARAMETER (D0 = 0.0D0)
@@ -248,16 +250,15 @@ C ::: If there is any Aangstroem mark, it is removed. :::
            WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
          end if
          IF( MYTID .eq. MPARID ) THEN
-             IF (NSYMOP .EQ. 0) THEN
-                WRITE(LUPRI, '(/A)')
-     &             ' No symmetry elements were found.'
-             ELSE IF (NSYMOP .EQ. 1) THEN
-                WRITE(LUPRI, '(/2A)')
-     &             ' The following element was found:   ',SYMM
-             ELSE
-                WRITE(LUPRI, '(/2A)')
-     &             ' The following elements were found: ',SYMM
-             END IF
+            IF (NSYMOP .EQ. 0) THEN
+               WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
+            ELSE IF (NSYMOP .EQ. 1) THEN
+               WRITE(LUPRI, '(/2A)')
+     &            ' The following element was found:   ',SYMM
+            ELSE
+               WRITE(LUPRI, '(/2A)')
+     &            ' The following elements were found: ',SYMM
+            END IF
          END IF
 C ::: The reduced coordinates are moved back. :::
          CALL SRTOLD(MXCENT, ATMARR)
@@ -355,6 +356,11 @@ C           CORD(3,NUCIND) = D0
 C           CHARGE(NUCIND) = D0
 C        END IF
       NUCIND = NCTOT
+      IF (.NOT. NOMOVE .AND. NSYMOP.EQ.0) THEN
+      !  rotate molecule without symmetry so principle axes of symmetry
+      !  follow the coordinate axes
+         CALL PRINCIPLE_AXIS_MOLECULE(ATMARR)
+      END IF
       RETURN
       END
 C  /* Deck prnarr */
@@ -702,14 +708,9 @@ C ::       Centres molecule in space       ::
 C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
 C
-C   Revision Aug 2011 HJAaJ (merged some of my old code from 2002):
-C    - rotate to axes corresponding to
-C      principal moment of mass inertia
-C    - do it twice to minimize round-off errors
-C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION ATMARR(6,0:*), SUM(3)
+      DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
       N_ATOMS = NINT(ATMARR(1,0))
@@ -724,12 +725,96 @@ C
          ATMARR(1,1) = 0.0D0
          ATMARR(2,1) = 0.0D0
          ATMARR(3,1) = 0.0D0
+         RETURN
+      END IF
+
+      CMXYZ(1:3) = 0.0D0
+C ::: Finds the three coordinates of the center of mass,
+C ::: then we calculate the inertia tensor around the center of mass,
+C ::: then the molecule is moved so that the center of mass coincides with the origin
+C ::: and the molecule is rotated such that the principal moment of inertia axes
+C ::: are along the coordinate axes.
+      TOTMAS = 0.0D0
+      DO I = 1,N_ATOMS
+         IZ = NINT(ATMARR(4,I))
+      IF (IZ .LE. 0) CYCLE
+C... hjaaj exclude point charges, MM atoms and floating orbitals
+C       in the centering of the molecule.
+         AMASS  = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
+         TOTMAS = TOTMAS + AMASS
+         CMXYZ(1) = CMXYZ(1) + ATMARR(1,I)*AMASS
+         CMXYZ(2) = CMXYZ(2) + ATMARR(2,I)*AMASS
+         CMXYZ(3) = CMXYZ(3) + ATMARR(3,I)*AMASS
+      END DO
+      CMXYZ(1) = CMXYZ(1)/TOTMAS
+      CMXYZ(2) = CMXYZ(2)/TOTMAS
+      CMXYZ(3) = CMXYZ(3)/TOTMAS
+C     CMXYZ(1:3) now contains center-of-mass coordinates
+
+#if HERSYM_DEBUG > 0
+      write(lupri,*) 'Total mass ',TOTMAS
+      write(lupri,*) 'Center of mass',CMXYZ(1:3)
+#endif
+
+C
+C     Now we are ready to center molecule:
+C
+      DO I=1,N_ATOMS
+         ATMARR(1,I) = ATMARR(1,I) - CMXYZ(1)
+         ATMARR(2,I) = ATMARR(2,I) - CMXYZ(2)
+         ATMARR(3,I) = ATMARR(3,I) - CMXYZ(3)
+      END DO
+
+#if HERSYM_DEBUG > 0
+      write (lupri,*) 'CENTER_MOLECULE: transformed coord.s'
+      CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
+#endif
+
+      WRITE(LUPRI,'(/A)')
+     &   '    The molecule has been centered at center of mass'
+#if HERSYM_DEBUG > 0
+      CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
+#endif
+      RETURN
+      END ! subroutine CENTER_MOLECULE
+C ---
+      SUBROUTINE PRINCIPLE_AXIS_MOLECULE(ATMARR)
+C :::::::::::::::::::::::::::::::::::::::::::
+C ::                                       ::
+C ::  Rotate molecule to principle axes    ::
+C ::  of inertia                           ::
+C ::                                       ::
+C :::::::::::::::::::::::::::::::::::::::::::
+C
+C   Revision Aug 2011 HJAaJ (merged some of my old code from 2002):
+C    - rotate to axes corresponding to
+C      principal moment of mass inertia
+C    - do it twice to minimize round-off errors
+C
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION ATMARR(6,0:*), CMXYZ(3)
+      DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
+
+      N_ATOMS = NINT(ATMARR(1,0))
+
+#if HERSYM_DEBUG > 0
+         WRITE (LUPRI,*) 'PRINCIPLE_AXIS_MOLECULE: initial coord.s etc.'
+         CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
+         CALL PRNARR('PRINCIPLE_AXIS_MOLECULE: ATMARR start',
+     &      N_ATOMS, ATMARR)
+#endif
+
+      IF (N_ATOMS .EQ. 1) THEN ! atom, just move to (0,0,0)
+         ATMARR(1,1) = 0.0D0
+         ATMARR(2,1) = 0.0D0
+         ATMARR(3,1) = 0.0D0
          GO TO 100
       END IF
 
       ITURN = 0
   10  ITURN = ITURN + 1
-         SUM(1:3) = 0.0D0
+         CMXYZ(1:3) = 0.0D0
 C ::: Finds the three coordinates of the center of mass,
 C ::: then we calculate the inertia tensor around the center of mass,
 C ::: then the molecule is moved so that the center of mass coincides with the origin
@@ -743,18 +828,18 @@ C... hjaaj exclude point charges, MM atoms and floating orbitals
 C          in the centering of the molecule.
             AMASS  = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
             TOTMAS = TOTMAS + AMASS
-            SUM(1) = SUM(1) + ATMARR(1,I)*AMASS
-            SUM(2) = SUM(2) + ATMARR(2,I)*AMASS
-            SUM(3) = SUM(3) + ATMARR(3,I)*AMASS
+            CMXYZ(1) = CMXYZ(1) + ATMARR(1,I)*AMASS
+            CMXYZ(2) = CMXYZ(2) + ATMARR(2,I)*AMASS
+            CMXYZ(3) = CMXYZ(3) + ATMARR(3,I)*AMASS
          END DO
-         SUM(1) = SUM(1)/TOTMAS
-         SUM(2) = SUM(2)/TOTMAS
-         SUM(3) = SUM(3)/TOTMAS
-C        SUM(1:3) now contains center-of-mass coordinates
+         CMXYZ(1) = CMXYZ(1)/TOTMAS
+         CMXYZ(2) = CMXYZ(2)/TOTMAS
+         CMXYZ(3) = CMXYZ(3)/TOTMAS
+C        CMXYZ(1:3) now contains center-of-mass coordinates
 
 #if HERSYM_DEBUG > 0
          write(lupri,*) 'Total mass ',TOTMAS
-         write(lupri,*) 'Center of mass',SUM(1:3)
+         write(lupri,*) 'Center of mass',CMXYZ(1:3)
 #endif
 
          CINRTP(1:6) = 0.0D0
@@ -762,9 +847,9 @@ C        SUM(1:3) now contains center-of-mass coordinates
             IZ = NINT(ATMARR(4,I))
          IF (IZ .LE. 0) CYCLE
             AMASS  = DISOTP(IZ,NINT(ATMARR(6,I)),'MASS')
-            XI = ATMARR(1,I) - SUM(1)
-            YI = ATMARR(2,I) - SUM(2)
-            ZI = ATMARR(3,I) - SUM(3)
+            XI = ATMARR(1,I) - CMXYZ(1)
+            YI = ATMARR(2,I) - CMXYZ(2)
+            ZI = ATMARR(3,I) - CMXYZ(3)
             CINRTP(1) = CINRTP(1) + AMASS*(YI*YI + ZI*ZI)
             CINRTP(2) = CINRTP(2) - AMASS* XI*YI
             CINRTP(3) = CINRTP(3) + AMASS*(XI*XI + ZI*ZI)
@@ -784,7 +869,7 @@ C        SUM(1:3) now contains center-of-mass coordinates
          CINRTP(2) = CINRTP(3)
          CINRTP(3) = CINRTP(6)
          IF (CINRTP(1) - CINRTP(3) .LT. TOLLRN) THEN
-         ! hjaaj Feb 16: do not rotate input coordinates for T(d), O(h) and other
+         ! hjaaj Feb 2016: do not rotate input coordinates for T(d), O(h) and other
          ! high symmetry point groups where small changes can give big rotations
          ! because of (near-)degeneracy
             CALL DUNIT(VPCMOM,3)
@@ -843,16 +928,16 @@ C               thus molecule should be rotated with VPCMOM(inverse)
 C               which is same as VPC(transposed)
 C
          DO I=1,N_ATOMS
-            XI = ATMARR(1,I) - SUM(1)
-            YI = ATMARR(2,I) - SUM(2)
-            ZI = ATMARR(3,I) - SUM(3)
+            XI = ATMARR(1,I) - CMXYZ(1)
+            YI = ATMARR(2,I) - CMXYZ(2)
+            ZI = ATMARR(3,I) - CMXYZ(3)
             ATMARR(1,I) = XI*VPCMOM(1,1)+YI*VPCMOM(2,1)+ZI*VPCMOM(3,1)
             ATMARR(2,I) = XI*VPCMOM(1,2)+YI*VPCMOM(2,2)+ZI*VPCMOM(3,2)
             ATMARR(3,I) = XI*VPCMOM(1,3)+YI*VPCMOM(2,3)+ZI*VPCMOM(3,3)
          END DO
 
 #if HERSYM_DEBUG > 0
-         write (lupri,*) 'CENTER_MOLECULE: transformed coord.s'
+         write (lupri,*) 'PRINCIPLE_AXIS_MOLECULE: transformed coord.s'
          CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
 #endif
 
@@ -863,10 +948,11 @@ C
      &   '    rotated so principal axes of inertia are along'//
      &      ' the coordinate axes.'
 #if HERSYM_DEBUG > 0
-      CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
+      CALL PRNARR('PRINCIPLE_AXIS_MOLECULE: coord.s now',
+     &   N_ATOMS, ATMARR)
 #endif
       RETURN
-      END ! subroutine CENTER_MOLECULE
+      END ! subroutine PRINCIPLE_AXIS_MOLECULE
 C  /* Deck rotmol */
       SUBROUTINE ROTMOL(MXM, ATMARR, AXVEC, DEG)
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -944,6 +1030,11 @@ C
       N_ROTAXS = NINT(DRTAXS(1,0))
       N_MIRROR = NINT(DMRPLN(1,0))
       N_ATOMS  = NINT(ATMARR(1,0))
+
+      IF (IPRSYM .GT. IPRTHR+1) THEN
+         WRITE(LUPRI,*) 'TURN_MOLECULE: N_ROTAXS, N_MIRROR, N_ATOMS =',
+     &      N_ROTAXS, N_MIRROR, N_ATOMS
+      END IF
 
       IF (N_ROTAXS .LE. 0) GOTO 9000 ! RETURN, no turning if no rotation axes (C1, Cs, or Ci symmetry)
 C
@@ -1516,7 +1607,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          ! hjaaj Feb 2016: ! for improper rotations order 2 is inversion
          ! for _any_ rotation axes, so MINORD=2 would add a very
          ! big number of different S_2 axes, which would not be deleted
-         ! by DLDPAX (and are redundant because inversion S_2 has 
+         ! by DLDPAX (and are redundant because inversion S_2 has
          ! already been detected elsewhere).
          ! Old code had MINORD = 1 corresponding to minimum S_2, but:
          ! IORD=1 (S_1) are reflection planes, they are found in FIND_MIR.
@@ -1524,43 +1615,40 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       END IF
       VSTORE(1:3) = 0.0D0
       IUSED(1:N_ATOMS) = 0
+#if HERSYM_DEBUG > 10
+      write(lupri,*) 'FINDAX entry: PROPER,MINORD',PROPER,MINORD
+#endif
       I = 1
  100  CONTINUE
       IF (I .LE. N_ATOMS) THEN
 C ::: "I" will be the lowest index in a set of equivalent atoms. :::
 C ::: We need to find the rest
-         J = I
-C ::: We have to make sure we get all the equivalent atoms. :::
- 105     CONTINUE
-         IF ((J .GT. 1) .AND.
-     &        (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J - 1))) .AND. ! same charge
-     &        (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J - 1)))) THEN ! same isotope
-            J = J - 1
-            GOTO 105
-         END IF
-         IORD = 0
+         J = I+1
+         IORD = 1
          V1(1) = ATMARR(1,I)
          V1(2) = ATMARR(2,I)
          V1(3) = ATMARR(3,I)
          V1NRM2 = V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)
+         TOLLDS = 2.0D0*TOLLRN*SQRT (V1NRM2)
+C ::: The number of equivalent atoms is counted in IORD. :::
+ 110  CONTINUE
+      IF (J .LE. N_ATOMS) THEN
          V2(1) = ATMARR(1,J)
          V2(2) = ATMARR(2,J)
          V2(3) = ATMARR(3,J)
          V2NRM2 = V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3)
-C ::: The number of equivalent atoms is counted in IORD. :::
- 110     CONTINUE
-         IF ((J .LE. N_ATOMS) .AND.
-     &     (NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND. ! same charge
-     &     (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) .AND. ! same isotope
-     &     (ABS( V1NRM2 - V2NRM2) .LT. TOLLRN_2) ) THEN  ! same distance to origo
+         IF ((NINT(ATMARR(4,I)) .EQ. NINT(ATMARR(4,J))) .AND. ! same charge
+     &       (NINT(ATMARR(6,I)) .EQ. NINT(ATMARR(6,J))) .AND. ! same isotope
+     &       (ABS( V1NRM2 - V2NRM2 ) .LT. TOLLDS )) THEN      ! same distance to origo
             IORD = IORD + 1
             J = J + 1
-            V2(1) = ATMARR(1,J)
-            V2(2) = ATMARR(2,J)
-            V2(3) = ATMARR(3,J)
-            V2NRM2 = V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3)
             GOTO 110
          END IF
+      END IF
+#if HERSYM_DEBUG > 10
+         write(lupri,*) 'FINDAX: atom I, IORD',I,IORD
+         write(lupri,*) 'FINDAX: K range',J-IORD,J-1
+#endif
 C ::: Number of equivalent atoms must be two or higher to be of interest. :::
          IF (IORD .GT. 1) THEN
 C ::: We "add" all equivalent atoms to yield a vector. If this vector is :::
@@ -1571,21 +1659,23 @@ C ::: symmetrical around origo).                                         :::
             V1(1) = 0.0D0
             V1(2) = 0.0D0
             V1(3) = 0.0D0
-            DO 120 K=J-IORD,J-1
+            DO 120 K=I,I+IORD-1
                V1(1) = V1(1) + ATMARR(1,K)
                V1(2) = V1(2) + ATMARR(2,K)
                V1(3) = V1(3) + ATMARR(3,K)
  120        CONTINUE
             V1NRM2 = V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)
+            ! write(lupri,*) 'FINDAX: V1, V1NRM2',V1,V1NRM2
             IF (V1NRM2 .LT. TOLLRN_2) THEN
 C ::: All but the linear case has order higher than two. :::
                IF (IORD .GT. 2) THEN
-                  V1(1) = ATMARR(1,I)
-                  V1(2) = ATMARR(2,I)
-                  V1(3) = ATMARR(3,I)
+                  DO 133 J=I,I+IORD-1
+                     V1(1) = ATMARR(1,J)
+                     V1(2) = ATMARR(2,J)
+                     V1(3) = ATMARR(3,J)
 C ::: We let each possible pair of atoms define a plane, and examine :::
 C ::: the normal vector of this plane as a possible rotational axis. :::
-                  DO 130 K=J-IORD, J-1
+                  DO 130 K=J,I+IORD-1 ! only check each pair once
                      V2(1)= ATMARR(1,K)
                      V2(2)= ATMARR(2,K)
                      V2(3)= ATMARR(3,K)
@@ -1597,6 +1687,7 @@ C ::: the normal vector of this plane as a possible rotational axis. :::
                         DO L=IORD,MINORD,-1
                            IF (ROTAXS(MXM,ATMARR,TMPARR,L,V3,PROPER))
      &                     THEN
+                              ! write(lupri,*) 'FINDAX-a found axis',V3,L
                               CALL ADD2AR(MAXAXS, DRTAXS, L, V3)
                               CALL DLDPAX(MAXAXS, DRTAXS)
                            END IF
@@ -1610,11 +1701,13 @@ C ::: We also examine all axes defined by ONE atom. :::
      &               .GT. TOLLRN_2) THEN
                      DO L = IORD - 1, MINORD, -1
                      IF (ROTAXS(MXM,ATMARR,TMPARR,L,V1,PROPER)) THEN
+                        ! write(lupri,*) 'FINDAX-b found axis',V1,L
                         CALL ADD2AR(MAXAXS, DRTAXS, L, V1)
                         CALL DLDPAX(MAXAXS, DRTAXS)
                      END IF
                      END DO
                   END IF
+ 133              CONTINUE
 C ::: If the order is even, and the symmetry high, we might have missed    :::
 C ::: axes lying between the atoms. We therefore test all possibilities.   :::
 C ::: These tests are so thorough, they only have to be performed once.    :::
@@ -1634,7 +1727,7 @@ C                       DO WHILE (ICNT(K) .LE. IORD)
                            V2(2) = V1(2)
                            V2(3) = V1(3)
                            DO L = 1, K
-                              M = J-IORD-1+ICNT(L)
+                              M = I-1+ICNT(L)
                               V2(1) = V2(1) + ATMARR(1,M)
                               V2(2) = V2(2) + ATMARR(2,M)
                               V2(3) = V2(3) + ATMARR(3,M)
@@ -1645,6 +1738,7 @@ C ::: We check for all possible orders of rotation from Ord/2 and down :::
                               DO M = IORD/2, MINORD, -1
                               IF (ROTAXS(MXM,ATMARR,TMPARR,M,V2,PROPER))
      &                        THEN
+                              ! write(lupri,*) 'FINDAX-c found axis',V2,M
                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V2)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
                               END IF
@@ -1671,7 +1765,7 @@ C ::: products between themselves.                                      :::
                         V3(1) = 0.0D0
                         V3(2) = 0.0D0
                         V3(3) = 0.0D0
-                        DO L = J-IORD, J-1
+                        DO L = I, I+IORD-1
                            V2(1) = ATMARR(1,L)
                            V2(2) = ATMARR(2,L)
                            V2(3) = ATMARR(3,L)
@@ -1687,6 +1781,7 @@ C ::: products between themselves.                                      :::
                            DO M = IORD/2, MINORD, -1
                               IF (ROTAXS(MXM,ATMARR,TMPARR,M,V3,PROPER))
      &                           THEN
+                              ! write(lupri,*) 'FINDAX-d found axis',V3,M
                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
                               END IF
@@ -1723,11 +1818,13 @@ C ::: as well. Maximum order is the highest order among the axes.      :::
                              DO M = MXORDR, MINORD, -1
                               IF (ROTAXS(MXM,ATMARR,TMPARR,M,V2,PROPER))
      &                           THEN
+                              ! write(lupri,*) 'FINDAX-e found axis',V2,M
                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V2)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
                               END IF
                               IF (ROTAXS(MXM,ATMARR,TMPARR,M,V3,PROPER))
      &                           THEN
+                              ! write(lupri,*) 'FINDAX-f found axis',V3,M
                                  CALL ADD2AR(MAXAXS, DRTAXS, M, V3)
                                  CALL DLDPAX(MAXAXS, DRTAXS)
                               END IF
@@ -1747,12 +1844,13 @@ C ::: as well. Maximum order is the highest order among the axes.      :::
                         END IF
                      END IF
 C ::: Finally the atoms are marked as used. :::
-                     DO 180 M = J-IORD, J-1
+                     DO 180 M = I, I+IORD-1
                         IUSED(M) = 1
  180                 CONTINUE
                   END IF
 C ::: Then we move on to the linear case :::
                ELSE
+                  ! write(lupri,*) 'FINDAX: linear case'
                   V1(1) = ATMARR(1,I)
                   V1(2) = ATMARR(2,I)
                   V1(3) = ATMARR(3,I)
@@ -1797,12 +1895,14 @@ C ::: The easiest case is when the atoms define the only possible axis. :::
             ELSE
                IF (ROTAXS(MXM, ATMARR, TMPARR, IORD, V1, PROPER))
      &            THEN
+                  ! write(lupri,*) 'FINDAX-g found axis',V1,IORD
                   CALL ADD2AR(MAXAXS, DRTAXS, IORD, V1)
                   CALL DLDPAX(MAXAXS, DRTAXS)
                END IF
             END IF
          END IF
-         I = I + 1
+CRf   Set I to first atom not in this equivalent set and repeat
+         I = I + IORD
          GOTO 100
       END IF
       CALL DLDPAX(MAXAXS, DRTAXS)
@@ -1925,7 +2025,7 @@ C ::: the atoms.                                                       :::
                ELSE
 C ::: The linear case calls for another vector to specify a plane. :::
                   IF ((VSTORE(1)*VSTORE(1)+VSTORE(2)*VSTORE(2)+
-     &                  VSTORE(3)*VSTORE(3)) .LT. TOLLRN_2) THEN
+     &                 VSTORE(3)*VSTORE(3)) .LT. TOLLRN_2) THEN
                      VSTORE(1) = V1(1)
                      VSTORE(2) = V1(2)
                      VSTORE(3) = V1(3)
@@ -2181,7 +2281,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
          DIMENSION ARR(7, 0:MXM), TARR(6, 0:MXM)
          DIMENSION TMPARR(6, 0:2), VEC(3)
-         LOGICAL GENELM, MIRMOL, ROTAXS, INVMOL
+         LOGICAL   GENELM, MIRMOL, ROTAXS, INVMOL
          GENELM = .FALSE.
          TMPARR(1,0) = 2.0D0
          DO 100 I = 1,6
@@ -2394,7 +2494,7 @@ C
 #include "priunit.h"
 C
         PARAMETER (THRS = 1.0D-10)
-        LOGICAL ONAXS, HAVAXS
+        LOGICAL   ONAXS, HAVAXS
         CHARACTER*(*) SYMELM
         CHARACTER*2 ROTAXIS(3)
 C
