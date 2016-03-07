@@ -903,7 +903,7 @@
       endif
        end select
      else
-      write(*,*)'====sorting is not needed===='
+!!      write(*,*)'====sorting is not needed===='
 
      if (present(presorted)) then
 

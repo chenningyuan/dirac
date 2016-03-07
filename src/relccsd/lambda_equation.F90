@@ -228,7 +228,8 @@
 
       CALL XAXPY (ndimt2,A1,buf2,1,resl2,1)
 
-     write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
+       if (iprnt.ge.1) &
+   &  write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
 !      if (iprnt.ge.1) &
 !    & write(*,*)'RESL2 after term4',(ResL2(i),i=1,5)
 !-----------------------------------------------------------

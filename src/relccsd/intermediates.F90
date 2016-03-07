@@ -77,14 +77,6 @@
    
    call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
 
-
-!  do i = 1, nfoo*rcw
-!  if (abs(ho(i)) <= 1.0d-14) then  
-!  write(*,*)'value of weird hoo', ho(i)
-!  ho(i) = 0.0d0
-!  endif
-!  enddo
-
    end subroutine
 
    subroutine f_bar_ae(fvv,fvo,t1,t2,hv)
@@ -118,14 +110,11 @@
   
    deallocate(tau) 
 
-    write(*,*)'wpp 1',dot_product(hv,hv)
 !---------------------------------------------------------------
 !F_bar_ae = F_bar_ae + V(am, ef) * T1(f,m) -> V(ae,fm) * T1(fm) 
 !---------------------------------------------------------------
 
   call contraction_422 ((/"p1","o1","p2","p3"/),(/"p3","o1"/),(/"p1","p2"/),t1,hv,1.0d0,1.0d0,nrep)
- 
-  write(*,*)'wpp 2',dot_product(hv,hv)
 
 !-----------------------------------------------------------------
 !F_bar_ae = F_bar_ae + F(m,a) * T1(e,m)
@@ -138,7 +127,6 @@
 
    deallocate (fov)
 
-  write(*,*)'wpp 3',dot_product(hv(1:nfvv*rcw),hv(1:nfvv*rcw))
   end subroutine
 
   subroutine f_bar_me(fvo,t1,hov)
@@ -249,7 +237,6 @@
    &      1.0d0,0.0d0,nrep,RightTensor=t2)
 
 
-
   allocate(array_temp(iovoot(nrep+1)*rcw))
 
    array_temp = 0.0d0
@@ -339,13 +326,6 @@
              &      1.0d0,1.0d0,nrep,RightTensor=t1)
 
 
-!! do i = 1, ivoov(nrep+1)
-!! if (abs(w_ovvo(i)) <= 1.0d-14) then  
-!!  write(*,*)'zero of mbej',w_ovvo(i)
-!! w_ovvo(i) = 0.0d0
-!! endif
-!! enddo
-
  end subroutine
 
 !-----=========================--------------
@@ -386,7 +366,6 @@
   call contraction_444 ((/"o1","o4","o2","p2"/),(/"p1","p2","o3","o4"/),(/"o1","p1","o2","o3"/),w_ovoo, &
              &      1.0d0,0.0d0,nrep,RightTensor=t2)
 
-  write(*,*)'dot product iemn:dia1',dot_product(w_ovoo,w_ovoo)
 !-------------------------------------------
 !   w_ovoo(ie,mn) = w_ovoo(ie,mn) +  w_bar_mbej(ie,fn)*T1(fm)
 !--------------------------------------------

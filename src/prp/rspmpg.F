@@ -90,7 +90,7 @@ C
       ALLCMB    = .FALSE.       !generate all operator combinations
       XLR_SKIPEP= .FALSE.       !do include e-p orbital rotations
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj)
+      if(nonrel.or.x2c.or.bss.or.levyle.or.freepj.or.vextpj)
      &  XLR_SKIPEP = .TRUE.
       XLR_SKIPEE= .FALSE.       !do include e-e orbital rotations
 c     qedrun    = .TRUE.        !not implemented
@@ -128,7 +128,7 @@ C
          xlr_indstr(1,I)='1..'//tmp(1)
          xlr_indstr(2,I)='0'
 CMI      if(levyle)then
-         if(levyle.or.bss.or.x2c) then
+         if(levyle.or.bss.or.x2c.or.nonrel) then
             xlr_indstr(3,I)=tmp(3)//'..'//tmp(4)
          else
             xlr_indstr(3,I)='-'//tmp(2)//'..-1,'//tmp(3)//'..'//tmp(4)

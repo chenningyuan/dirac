@@ -89,16 +89,9 @@ C     Initialize the work arrays to zero.
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
-       write(*,*)'whh done',dot_product(ho(1:nfoo*rcw),ho(1:nfoo*rcw))
-
          call w_ijmn(S1,S2,w_oooo)
 
-        write(*,*)'whhhh done',
-     &   dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
-
          call f_bar_me(fvo,S1,hov)
-
-       write(*,*)'whp done',dot_product(hov(1:nfvo*rcw),hov(1:nfvo*rcw))
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
@@ -108,18 +101,12 @@ C     Initialize the work arrays to zero.
 
           call wbar_mbej(S2,w_ovvo,buf2,buf3)
 
-        write(*,*)'w_mbej done',
-     &  dot_product(w_ovvo(1:iovvo(nrep+1)*rcw),
-     &     w_ovvo(1:iovvo(nrep+1)*rcw))
-
          call w_mbej(s1,s2,w_voov)
 
 !       write(*,*)'starting w_iemn intermediate'
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
-         write(*,*)'w_iemn done',
-     & dot_product(w_ovoo(1:nv2*rcw),w_ovoo(1:nv2*rcw))
 
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
@@ -128,8 +115,6 @@ C     Initialize the work arrays to zero.
          call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
 
       CALL XTIME(5,2,'-- "efam" Intermediate                     ')
-
-        write(*,*)'w_efam done',dot_product(cz(1:nv5*rcw),cz(1:nv5*rcw))
 
         
       allocate (int_wooop(iovoot(nrep+1)*rcw))
@@ -144,7 +129,6 @@ C     Initialize the work arrays to zero.
 
 !        call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
 
-         write(*,*)'wpp done',dot_product(hv(1:nfvv*rcw),hv(1:nfvv*rcw))
 !       call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_voov)
 
 
@@ -154,6 +138,9 @@ C     Initialize the work arrays to zero.
 !       call w_efam_out_of_core (s1,s2,hov,w_voov,w_ovvo,buf1,buf2,
 !    &              buf3,nbuf3,nbuf2,CZ)
 
+
+
+       CALL TITLER('Solving Left Eigenvector Equation','*',123)
 
 !-------Initialization Step for the Left Eigenvectors-----------
 
@@ -237,8 +224,10 @@ C     Initialize the work arrays to zero.
 
        rms = sqrt((rms)/(ndimt1+ndimt2)*rcw)
 
-      write(iw,*)'maximum value RESL1',maxval(abs(resl1))
-      write(iw,*)'maximum value RESL2',maxval(abs(resl2))
+      if (iprnt.ge.1) then
+       write(iw,*)'maximum value RESL1',maxval(abs(resl1))
+       write(iw,*)'maximum value RESL2',maxval(abs(resl2))
+      endif
       
 
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
@@ -301,6 +290,6 @@ C     Initialize the work arrays to zero.
  6076 FORMAT(' Total CCSD energy :',T40,F25.15)
  6077 FORMAT(' T1 diagnostic :',T40,F25.15)
  6078 FORMAT(' Convergence :',T40,F25.15)
- 6079 FORMAT(' Number or iterations used :',T60,I5)
+ 6079 FORMAT(' Number of iterations used :',T60,I5)
       RETURN
       END
