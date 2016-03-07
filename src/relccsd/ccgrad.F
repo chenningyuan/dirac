@@ -1361,9 +1361,9 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      CHARACTER*8 LABEL,EOFLABEL
-      SAVE    INIT
-      LOGICAL INIT=.FALSE.
+      CHARACTER*8 :: LABEL,EOFLABEL
+      LOGICAL, SAVE :: INIT=.FALSE.
+      LOGICAL :: FNDLAB
 C---------------Executable code--------------------------------------
  
       WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
@@ -1380,8 +1380,8 @@ C     without being able to do a replace or check for old data.
           INIT = .TRUE.
       END IF
       REWIND (MCCDENS)
-      CALL FNDLAB(EOFLABEL,MCCDENS)
-      BACKSPACE MCCDENS
+      IF (FNDLAB(EOFLABEL,MCCDENS))
+     & BACKSPACE MCCDENS
       CALL NEWLAB(LABEL,MCCDENS,LUPRI)
       CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
