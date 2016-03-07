@@ -40,7 +40,6 @@ C                    Added CI keyword RDFOCK. Stefan Knecht October 2007
 C                    Added CI keyword WRTFCK. Stefan Knecht
 C                    Added CI/KRMC keyword SHMEMO. Stefan Knecht 20.11.2007
 C                    Added CI/KRMC keyword IJKLRO. Stefan Knecht
-C                    Added CI keyword MHYP. Malaya Nayak, Timo Fleig 28.08.2013/09.05.2015
 C
 C     Major revision by S. Knecht: Aug 2008
 C
@@ -48,6 +47,14 @@ C                    All CI-related keywords have been moved to this new
 C                    input section *KRCICALC.
 C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input and start-up --> "modularize"
+C
+C                    Added CI keyword EEDM   Timo Fleig     30.04.2012
+C                    Added CI keyword MHYP   Malaya Nayak   28.08.2013
+C                    Added CI keyword ENSPS   Malaya Nayak  27.02.2014
+C                    Added CI keyword NANAM   Malaya Nayak  29.09.2014
+C                    Added CI keywords NMQM,GTENSR  Malaya Nayak  2015
+C
+C                    Merge with eEDM branch    Timo Fleig     04.03.2016
 C
 C***********************************************************************
       use symmetry_setup_krci
@@ -57,7 +64,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
-      PARAMETER (NTABLE = 46)
+      PARAMETER (NTABLE = 51)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, RESET, LBIT
@@ -92,7 +99,8 @@ C
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
-     &            '.MHYP  '/
+     &            '.EEDM  ','.MHYP  ','.ENSPS ','.NANAM ','.NMQM  ',
+     &            '.GTENSR'/
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
       character (len= 4)              :: symmetry_str1
@@ -220,7 +228,13 @@ C     ... in "krciprop.h"
       DODIPMOM_KRCI = .FALSE.
       DOMCANA_KRCI  = .FALSE.
       RUNXPROP      = .FALSE.
+      DOGENP_KRCI   = .FALSE.
+      DOEEDM_KRCI   = .FALSE.
       DOMHYP_KRCI   = .FALSE.
+      DOENSPS_KRCI  = .FALSE.
+      DONANAM_KRCI  = .FALSE.
+      DONMQM_KRCI   = .FALSE.
+      DOGTENSR_KRCI = .FALSE.
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
@@ -245,11 +259,12 @@ C
       NEWDEF = (WORD .EQ. '*KRCICA' .OR. WORD .EQ. '*KRCI  ')
       ICHANG = 0
       IF (NEWDEF) THEN
-
+C
 !       initialize symmetry information irreps required for input
-!       processing. note, we assume
-!       the # double group irreps here to be 128. FIXME: make it general in
-!       Dirac for higher linear symmetry double groups. "global Dirac post-HF symmetry module".
+!       processing. note, we assume the # double group irreps here to be 128. 
+!  FIXME: make it general in Dirac for higher linear symmetry double groups. 
+!         "global Dirac post-HF symmetry module".
+C
         if(linear)then
           double_group = 11
           if(nfsym .eq. 1) double_group = 10
@@ -271,7 +286,8 @@ C
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41,42,43,44,45,46)
+     &                     41,42,43,44,45,46,47,48,49,50,
+     &                     51)
      &                     , I
                   END IF
   200          CONTINUE
@@ -291,10 +307,11 @@ C&&& .MAX CI ITER...: maximum number of initial CI iterations.
 C&&& .OPERATOR: define one-electron operator to use in
 C               CI property calculation
                   CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
-     &                        IPROPPRINT)
+     &                        WORK,LWORK,IPRKRCI)
                   CALL OP1IND('KRCIPR',LUCIINDTRP,LPROP_KRCI,
-     &                        NPROP_KRCI,INDXPR,MXLUCIPRP)
+     &                        NPROP_KRCI,INDXPR,MXPROP_KRCI)
                   DOPROP_KRCI = .TRUE.
+                  DOGENP_KRCI = .TRUE.
                GO TO 100
     3          CONTINUE
 C&&& .RSTRCI: Restart CI from vector on file (1) or not (0)
@@ -832,11 +849,45 @@ C&&& .SVRONX  -- save reordered NOs rather than the original NOs + active orbita
                READ(LUCMD,*) (IKRCI_SVRONO(I),I=1,NFSYM)
                GO TO 100
    46          CONTINUE
+C&&&  EEDM  :  calculate electron EDM effective electric field
+               doprop_krci   = .true.
+               doeedm_krci = .true.
+               GO TO 100
+   47          CONTINUE
 C&&&  MHYP  : calculate magnetic hyperfine structure constants
 C           : alpha X electric field matrix elements
                doprop_krci   = .true.
                domhyp_krci = .true.
                GO TO 100
+CMKN The mHYP is newly implemented following eEDM
+   48          CONTINUE
+C&&&  ENSPS : calculate electron-Nucleus scalar-pseudoscalar P,T-odd
+C           : interection constant i x gamma^0 gamma^5 \rho_N(r_e)
+               doprop_krci   = .true.
+               doensps_krci = .true.
+               GO TO 100
+CMKN The eNSPS is newly implemented following eEDM
+   49          CONTINUE
+C&&&  NANAM : calculate nuclear Anapole Moment P-odd
+C           : interection constant \alpha \rho_N(r_e)
+               doprop_krci   = .true.
+               donanam_krci = .true.
+               GO TO 100
+CMKN The nANAM is newly implemented following eEDM
+   50          CONTINUE
+C&&&  NMQM : calculate nuclear Magnetic Quadruple Moment interaction constant
+C      :  (\alpha X r)_z.(r_z) (i.e. \alpha X Electric Field Gradient)
+               doprop_krci   = .true.
+               donmqm_krci = .true.
+               GO TO 100
+CMKN The nMQM is newly implemented following mHYP
+   51          CONTINUE
+C&&& GTENSR : calculate the G-tensor components
+C           : L_z + gS_z (g=2.00231930436182)
+               doprop_krci   = .true.
+               dogtensr_krci = .true.
+               GO TO 100
+CMKN The g-tensor is newly implemented following nMQM
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1210,7 +1261,12 @@ C       subgroup notation
      &     ' one-electron operators: '
         if(dooscillst.or.dodipmom_krci)call def_oscill(0)
         if(dojzexp)                    call def_omegaquant(0)
+        if(doeedm_krci)                call def_eedm(work,lwork,NTEST)
         if(domhyp_krci)                call def_mhyp(work,lwork,NTEST)
+        if(doensps_krci)               call def_ensps(work,lwork,NTEST)
+        if(donanam_krci)               call def_nanam(work,lwork,NTEST)
+        if(donmqm_krci)                call def_nmqm(work,lwork,NTEST)
+        if(dogtensr_krci)              call def_gtensr(work,lwork,NTEST)
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0
@@ -1228,10 +1284,30 @@ C
         write(lupri,'(/a)') ' * Calculation of permanent dipole'//
      &                     'moments of electronic states'
       end if
+      if(doeedm_krci)then
+        write(lupri,'(/a)') ' * Calculation of electron EDM'//
+     &                     ' electric-field matrix elements'
+      end if
       if(domhyp_krci)then
-         write(lupri,'(/a)') ' * Calculation of Hyperfine Constants'//
-     &                     ' Hyperfine Constants matrix elements'
-       end if
+        write(lupri,'(/a)') ' * Calculation of Hyperfine Constants'//
+     &                     ' Hyperfine Constants  matrix elements'
+      end if
+      if(doensps_krci)then
+        write(lupri,'(/a)') ' * Calculation of electron-Nucleus'//
+     &                     ' Scalar-Pseudoscalar matrix elements'
+      end if
+      if(donanam_krci)then
+        write(lupri,'(/a)') ' * Calculation of the Nuclear Anapole'//
+     &                     ' Moment P-odd interaction matrix elements'
+      end if
+      if(donmqm_krci)then
+        write(lupri,'(/a)') ' * Calculation of the Nuclear MQM'//
+     &                     ' P,T-odd interaction matrix elements'
+      end if
+      if(dogtensr_krci)then
+        write(lupri,'(/a)') ' * Calculation of g-tensor'//
+     &                      ' g_z = L_z + g_sS_z'
+      end if
       IF(DOJZEXP) THEN
         WRITE(LUPRI,'(/A)') ' * Determine Omega quantum number for'//
      &                      ' electronic eigenstates'

@@ -4370,6 +4370,69 @@ C     define s_z and l_z as j_z = s_z + l_z
       END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_EEDM */
+      SUBROUTINE DEF_EEDM(WORK,LWORK,NTEST)
+C***********************************************************************
+C
+C     Define operator for electron EDM calculation
+C
+C     Written by T. Fleig, May 2012
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "krciprop.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+C
+      CHARACTER PNAME(1)*16, PLABEL(1)*8
+      DIMENSION WORK(LWORK),PFAC(1),IOP(1)
+C
+      NTEST = 0
+      if (NTEST.ge.1) then
+        write(6,*)
+        write(6,*) ' (DEF_EEDM) testing '
+        write(6,*)
+      end if
+C
+C     define operator type, factor, name and label
+C
+      NPCOMP = 1
+      PFAC(1)  = 4.0D0*CVAL
+C     
+C     4*ic gamma^0 gamma^5 p^2/2m
+C     
+      PNAME(1) = 'P2-EDM'
+CTF   Since we are working with the p^2 form of the EDM operator, there
+CTF   is no explicit reference to Atom1 or Atom2 (etc.). We evaluate
+CTF   over EDM integrals in the molecular spinor basis. 
+C
+      IOP(1)   = 21
+      PLABEL(1) = 'KINENERG'
+      CALL XPRIND(PNAME(1),IOP(1),NPCOMP,PFAC(1),PLABEL(1),
+     &            INDXPR,ISYXPR,ITRXPR,NTEST)
+C      SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+C     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
+      if (NTEST.ge.1) then
+        print*,'ISYXPR,ITRXPR,IPTYP,NPCOMP',ISYXPR,ITRXPR,IPTYP,NPCOMP
+      end if
+C The output should be
+C   ISYXPR= 4  ITRXPR=-1  IPTYP=21  NPCOMP= 1
+      CALL OP1IND('KRCI PROPEDM',LUCIINDTRP,LPROP_KRCI,
+     &            NPROP_KRCI,INDXPR,MXPROP_KRCI)
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_MHYP */
       SUBROUTINE DEF_MHYP(WORK,LWORK,IPRINT)
 C***********************************************************************
@@ -4389,7 +4452,7 @@ C
 C
 #include "memint.h"
       CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
+C     MHYP: INTTYP = 29 (electric field at individual nuclei)
 C     (-29: accept .SELECT specification)
       CALL SETATM(WORK(KDATOM),NATOM,-29)
       CALL DEF_MHYP1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
@@ -4465,10 +4528,10 @@ C
               IFIRST = ISCOR/100
               ISECND = MOD(ISCOR,100)/10
               ITHIRD = MOD(MOD(ISCOR,100),10)
-              PNAME    = CHRXYZ(ICOOR)//CHRNOS(IATOM)//'-HYP'
 C              PNAME    = 'HYP'//CHRNOS(IFIRST)
 C     &                   //CHRNOS(ISECND)//CHRNOS(ITHIRD)
 C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
+              PNAME    = CHRXYZ(ICOOR)//CHRNOS(IATOM)//'-HYP'
               IPTYP    = IOP(ICOOR)
               IC1      = MOD(ICOOR+1,3) + 1
               IC2      = MOD(ICOOR  ,3) + 1
@@ -4503,6 +4566,399 @@ C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
   200   CONTINUE
   100 CONTINUE
 C      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_ENSPS */
+      SUBROUTINE DEF_ENSPS(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for electron-Nucleus Scalar-Pseudoscalar
+C     P,T-odd interaction constant determining parameter
+C
+C     Written by Malaya K. Nayak Feb 26 2014
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     ENSPS: INTTYP = 62 (nuclear charge density normalised)
+C     (-62: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-62)
+      CALL DEF_ENSPS1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_ENSPS',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_ENSPS1 */
+      SUBROUTINE DEF_ENSPS1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for electron-Nucleus Scalar-Pseudoscalar
+C     P,T-odd interaction constant determining parameter
+C
+C     Written by Malaya K. Nayak Feb 26 2014
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+#include "gfac.h"
+#include "pi.h"
+C
+#include "consts.h"
+#include "maxash.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "krciprop.h"
+#include "dgroup.h"
+#include "pgroup.h"
+      PARAMETER (D3 = 3.0D0)
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+      LOGICAL   DOATOM(NUCIND)
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+C
+      IPTYP     = 21
+      NPCOMP    = 1
+      IF(GAUNUC) THEN
+        PFAC(1) = D1
+      ELSE
+        PFAC(1) = D3/(D4*GFAC*PI)
+      ENDIF
+      DO 100 IATOM = 1, NUCIND
+         IF (DOATOM(IATOM)) THEN
+            DO 200 IREP = 0, MAXREP
+               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+C                  PNAME = 'SPS: '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+C     &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+C     &                    CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  PNAME = 'A'//CHRNOS(IATOM)//'-SPS'
+C....             Gaussian nucleus
+                  IF(GAUNUC) THEN
+                    PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+C....             Point charge
+                  ELSE
+                    PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  ENDIF
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                  CALL OP1IND('KRCI PROPENSPS',LUCIINDTRP,LPROP_KRCI,
+     &           NPROP_KRCI,INDXPR,MXPROP_KRCI)
+       IF (IPRINT.GE.1) THEN
+        write(6,*)'e-N P,T-odd DEF Testing',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
+       END IF
+               END IF
+  200       CONTINUE
+         END IF
+  100 CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_NANAM */
+      SUBROUTINE DEF_NANAM(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for electron-Nucleus Scalar-Pseudoscalar
+C     P,T-odd interaction constant determining parameter
+C
+C     Written by Malaya K. Nayak Oct 13 2014
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     ENSPS: INTTYP = 62 (nuclear charge density normalised)
+C     (-62: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-62)
+      CALL DEF_NANAM1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_NANAM',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_NANAM1 */
+      SUBROUTINE DEF_NANAM1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for electron-Nucleus Scalar-Pseudoscalar
+C     P,T-odd interaction constant determining parameter
+C
+C     Written by Malaya K. Nayak Feb 26 2014
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+C-----------------------------------------------------------------------
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "gfac.h"
+#include "pi.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbesr.h"
+#include "dcbxlr.h"
+#include "dcbexp.h"
+#include "dcbnmr.h"
+#include "chrxyz.h"
+#include "krciprop.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbxpr.h"
+C
+      LOGICAL   DOATOM(NUCIND)
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK), PFAC(3), IOP(3)
+C
+#include "chrnos.h"
+#include "ibtfun.h"
+C
+C     xalpha
+      IOP(1) = 2
+      PFAC(1) = D1
+C     yalpha
+      IOP(2) = 3
+      PFAC(2) = D1
+C     zalpha
+      IOP(3) = 4
+      PFAC(3) = D1
+C
+C
+      IF(.NOT.GAUNUC) THEN !point nucleus
+        DO IXYZ = 1,3
+          PFAC(IXYZ) = PFAC(IXYZ)*D3/(D4*GFAC*PI)
+        ENDDO
+      ENDIF
+C
+      DO IATOM = 1,NUCDEP
+        IF(DOATOM(IATOM)) THEN
+          DO IREP = 0,MAXREP
+            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+C
+              IF(GAUNUC) THEN !gaussian model
+                PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              ELSE !point nucleus
+                PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                           //CHRNOS(IPTNUC(IATOM,IREP)/10)
+     &                           //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+              ENDIF
+C              PNAME = 'PVCa '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+C     &                       //CHRNOS(IPTNUC(IATOM,IREP)/10)
+C     &                       //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+C
+              DO IXYZ = 1,3
+C
+                IPTYP = IOP(IXYZ)
+                PNAME = CHRXYZ(IXYZ)//CHRNOS(IATOM)//'-ANA'
+                CALL XPRIND(PNAME,IPTYP,1,PFAC,PLABEL,
+     &                      INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                CALL OP1IND('KRCI PROPNANAM',LUCIINDTRP,LPROP_KRCI,
+     &                      NPROP_KRCI,INDXPR,MXPROP_KRCI)
+                ISCOOR = IPTCNT(3*(IATOM-1)+IXYZ,IREP,2)
+                IF(ISCOOR.GT.0) THEN
+              CALL QUIT(
+     &'DEF_NANAM1: Max 1000 coords in this implementation !')
+                ENDIF
+       IF (IPRINT.GE.1) THEN
+        write(6,*)'Nuclear Anapole DEF Testing',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
+       END IF
+              ENDDO
+            ENDIF
+          ENDDO
+        ENDIF
+      ENDDO
+C
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_NMQM */
+      SUBROUTINE DEF_NMQM(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for nuclear magnetic quadruple moment constant
+C
+C     Written by Malaya K. Nayak March 20 2015
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "mxcent.h"
+#include "nuclei.h"
+      CHARACTER PNAME*16, PLABEL(3)*8
+      DIMENSION WORK(LWORK),PFAC(3)
+C
+#include "memint.h"
+      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(WORK(KDATOM),NATOM,-30)
+      CALL DEF_NMQM1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
+      CALL MEMREL('DEF_NMQM',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck def_nmqm1 */
+      SUBROUTINE DEF_NMQM1(DOATOM,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define nuclear quadruple moment interaction constant
+C
+C     Written by Malaya K. Nayak - March 20 2015
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "maxorb.h"
+      PARAMETER(D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
+      CHARACTER PNAME*16, PLABEL(2)*8
+      DIMENSION WORK(LWORK),PFAC(2)
+      LOGICAL   DOATOM(NUCIND)
+#include "dcbxpr.h"
+#include "dcbexp.h"
+C
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+#include "ibtfun.h"
+#include "krciprop.h"
+C
+      ITYP = 0
+C     ZAVECTOR
+      IPTYP     = 7
+      NPCOMP    = 2
+      PFAC(1)   = -D3INV
+      PFAC(2)   = -D3INV
+CTF  Sign included, see Eq. (19) of reference on TaN P,T-odd properties.
+      DO 100 IATOM = 1, NUCIND
+         IF (.NOT. DOATOM(IATOM)) GOTO 100
+                ICOOR1 = 2
+                ICOOR2 = 3
+            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            IOFF = 0
+            DO 300 IREPC = 0, MAXREP
+               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IOFF = IOFF + 1
+                  ITYP = ITYP + 1
+C                  PNAME        = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
+C     *                 //CHRNOS(IATOM/10)
+C     &                 //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PNAME    = CHRXYZ(ICOOR2)//CHRNOS(IATOM)//'-MQM'
+                  PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  PLABEL(2) = CHRXYZ(ICOOR1-1)//CHRXYZ(ICOOR2)//'EFG'//
+     &                 CHRNOS(IATOM/10)//
+     &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+                  CALL OP1IND('KRCI PROPNMQM',LUCIINDTRP,LPROP_KRCI,
+     &                 NPROP_KRCI,INDXPR,MXPROP_KRCI)
+C                  CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'
+C     *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
+      IF(IPRINT.GE.1) THEN
+        write(6,*)'NMQM DEF Testing',LPROP_KRCI(NPROP_KRCI),
+     &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
+      ENDIF
+               END IF
+ 300        CONTINUE
+ 200     CONTINUE
+ 100  CONTINUE
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck DEF_GTENSR */
+      SUBROUTINE DEF_GTENSR(WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Define operator for determination of of the g-tensor
+C
+C     Written by Malaya K Nayak on 12 July 2005
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "consts.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
+#include "krciprop.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "pgroup.h"
+C
+      CHARACTER PNAME(2)*16, PLABEL(2)*8
+      DIMENSION WORK(LWORK),PFAC(2),IOP(2)
+C
+C     define operator type, factor, name and label
+C
+      NPCOMP = 1
+      ELGFAC = 2.00231930436182
+CTF  NIST: http://physics.nist.gov/cgi-bin/cuu/Value?gem|search_for=all!
+      PFAC(1)  = DP5*ELGFAC
+      PFAC(2)  = -D1
+C     define s_z and l_z as j_z = s_z + l_z
+      PNAME(1) = 'SZ-COMP'
+      PNAME(2) = 'LZ-COMP'
+      IOP(1)   = 12
+      IOP(2)   = 1
+      PLABEL(1) = 'OVERLAP'
+      PLABEL(2) = 'ZANGMOM'
+      DO II = 1, 2
+         CALL XPRIND(PNAME(II),IOP(II),NPCOMP,PFAC(II),PLABEL(II),
+     &              INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         CALL OP1IND('KRCI PROPGTENSR',LUCIINDTRP,LPROP_KRCI,
+     &               NPROP_KRCI,INDXPR,MXPROP_KRCI)
+
+      END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck DEFINE_PVC_SHIELD */

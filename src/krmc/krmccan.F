@@ -1278,17 +1278,24 @@ C
      &     3X,'Written by: ',/,
      &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen ',//,
      &     3X,'With contributions from: ',/,
-     &     3X,'  Malaya K. Nayak and Timo Fleig ',
-     &     3X,'       (Magnetic hyperfine interaction) ',//,
+     &     3X,'  Malaya K. Nayak and Timo Fleig ')
+      CALL TITLER(
+     &'(P-odd, P,T-odd properties and magnetic hyperfine interaction)',
+     & ' ',199)
+      WRITE(LUPRI,9005)
+ 9005 FORMAT(
      &     1X,79('*'))
 !
-      WRITE(LUPRI,9001)
- 9001 FORMAT(/3X,'Proper citations:',//,
+      WRITE(LUPRI,9006)
+ 9006 FORMAT(/3X,'Proper citations:',//,
      & 4X,'S.R. Knecht, PhD thesis, University of Duesseldorf, 2009.',/,
 C    & 4X,'    Parallel Relativistic Multiconfiguration Methods:',/,
 C    & 8X,'New Powerful Tools for Heavy-Element
 C    & Electronic-Structure Studies,',
-     & 4X,'T. Fleig, M.K. Nayak, J. Mol. Spectrosc 300 (2014) 16',/,
+     & 4X,'T. Fleig, M.K. Nayak, Phys. Rev. A  88 (2013) 032514',/,
+     & 4X,'T. Fleig, M.K. Nayak, J. Mol. Spectrosc.  300 (2014) 16',/,
+     & 4X,'M. Denis et al., New J. Phys.  7 (2015) 043005',/,
+     & 4X,'T. Fleig et al., Phys. Rev. A  93 (2016) 012505',/,
      &     //,
      & 1X,79('*'),/)
 
@@ -1556,7 +1563,8 @@ C     Input: property matrix XPROPMAT
 C
 C     Written by S. Knecht - Nov 2008
 C
-C     Last revision :
+C     Last revision : T. Fleig - Mar 2016
+C                     Introduced all properties programmed by MKN and TF
 C
 C***********************************************************************
       use codata
@@ -1580,6 +1588,7 @@ C
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
      &                   NPROP_KRCI,MZ)
+      DIMENSION GTENSOR(NPROP_ROOTS_KRCI),GTENSORNORM(NPROP_ROOTS_KRCI)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
       INTEGER IND_DIP(3), IND_PRP(12)
       CHARACTER XLABEL*16
@@ -1590,6 +1599,12 @@ C
 C
 #include "memint.h"
       CALL QENTER('XKRCIPRPANA')
+C
+CTF   Initialize
+      do IL = 1,NPROP_ROOTS_KRCI,1
+        GTENSOR(IL) = 0.
+        GTENSORNORM(IL) = 0.
+      end do
 C
 C     print the list of states if available otherwise skip it.
       PRINT_EV = .FALSE.
@@ -1944,19 +1959,69 @@ C       release memory
         CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
 !
-!     4. Magnetic hyperfine interaction constants
-!     ===========================================
-!
-      if (domhyp_krci) then
-C       CALL FLIP_BLOCK(WORK(KRPRPMOACM),FILELAB,IPRINT)
-
+C
+C     =======================================================
+C     4. electron electric dipole moment
+C        (effective electric field)
+C     =======================================================
+      if(doeedm_krci)then
+C
+C       print title
         write(lupri,*)
         write(lupri,'(/28x,a/28x,a/28x,a)')
+     & ' ********************************************************',
+     & ' ********* electron Electric Dipole Moment **************',
+     & ' ********************************************************'
+C
+         XLABEL = 'P2-EDM'
+         IND_EDM = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print eEDM expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '  <state| ',XLABEL,'  2*ic gamma0 gamma5 p^2 | state >  '//
+     & '    Eff. Electric Field [a.u.]     Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+        do IVEC = 1,NPROP_ROOTS_KRCI,1
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_EDM,1),
+     &                    XPROPMAT(INIST,JFLST,IND_EDM,2))
+          EDMNORM = sqrt(EDMMOM**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EDMMOM,EDMNORM
+        end do
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+      end if
+C
+C     =======================================================
+C     5. Magnetic Hyperfine Structure Constants
+C     Written by Malaya K. Nayak, Sept 13, 2013
+C     =======================================================
+      if (domhyp_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
      & ' ********************************************************',
      & ' *********  Hyperfine Structure Constants  **************',
      & ' ********************************************************'
 C
-       DO I = 1, NPROP_KRCI
+      DO I = 1, NPROP_KRCI
          INDXPR  = LPROP_KRCI(I)
          XLABEL = PRPNAM(INDXPR)(1:8)
          IF (XLABEL(4:6).EQ.'HYP') THEN
@@ -1994,7 +2059,258 @@ C
      & '_______'
          END IF
        END DO
+C
       end if
+C     =======================================================
+C     6. electron-Nucleus scalar-pseudoscalar interaction
+C     Written by Malaya K. Nayak, Feb 28, 2014
+C     =======================================================
+      if (doensps_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
+     & ' ********************************************************',
+     & ' *********  e-N S-PS interaction Parameter  *************',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+         INDXPR = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'SPS') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print eNSPS expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '  <state| ',XLABEL,' i[beta gamma5]rho_N |state>'//
+     & '    e-N S-PS Parameter [a.u.]        Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+          EDMNORM = SQRT(EDMMOM**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EDMMOM,EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+C
+      end if
+C     =======================================================
+C     7. Nuclear Anapole Moment Interaction Constant
+C     Written by Malaya K. Nayak, Oct 13, 2014
+C     =======================================================
+      if (donanam_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
+     & ' ********************************************************',
+     & ' *********  Nuclear Anapole Moment Constant  ************',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+         INDXPR = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'ANA') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print nANAM expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '    < state | ',XLABEL,' [alpha.rho_N] | state >  '//
+     & '     Anapole Constant [a.u.]       Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+          EDMNORM = SQRT(EDMMOM**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EDMMOM,EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+C
+      end if
+C     =======================================================
+C     8. Nuclear Magnetic Quadrupole Moment Interaction 
+C     Written by Malaya K. Nayak, Mar 23, 2015
+C     =======================================================
+      if (donmqm_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
+     & ' ********************************************************',
+     & ' *********  Nuclear Magnetic Quadrupole Moment  *********',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+         INDXPR = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'MQM') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print nMQM expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '    < state | ',XLABEL,' [alpha X EFG] | state >  '//
+     & '    Nuc. MQM Constant [a.u.]       Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+          EDMNORM = SQRT(EDMMOM**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EDMMOM,EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+C
+      end if
+C     =======================================================
+C     9. Components of g-tensor L_z + g_sS_z 
+C     Written by Malaya K. Nayak, July 15, 2015
+C     =======================================================
+      if (dogtensr_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
+     & ' ********************************************************',
+     & ' *************  The components of g-tensor  *************',
+     & ' ********************************************************'
+C
+        DO I = 1, NPROP_KRCI
+          INDXPR = LPROP_KRCI(I)
+          XLABEL = PRPNAM(INDXPR)(1:8)
+          IF (XLABEL(4:7).EQ.'COMP') THEN
+            IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C           ----------------------------
+C           print g-tensor components
+C           ----------------------------
+C
+            IF (XLABEL(1:2).EQ.'SZ') THEN
+              write(lupri,'(/a,A6,a/a)')
+     & '    < state | ',XLABEL,' [ g_s x S_z ] | state >  '//
+     & '   g-tensor S_z comp [a.u.]        Norm [a.u.]'
+            ELSE IF (XLABEL(1:2).EQ.'LZ') THEN
+              write(lupri,'(/a,A6,a/a)')
+     & '    < state | ',XLABEL,' [    L_z    ] | state >  '//
+     & '   g-tensor L_z comp [a.u.]        Norm [a.u.]'
+            END IF
+C
+            write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+            DO IVEC  = 1,NPROP_ROOTS_KRCI
+              JVEC  = IVEC
+              INIST = IVEC
+              JFLST = JVEC
+              ISYMST_IN = ISYMEIG_KRCI(INIST)
+              ISYMST_FL = ISYMEIG_KRCI(JFLST)
+              EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                        XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+              EDMNORM = SQRT(EDMMOM**2)
+CTF           print*,' GTENSOR(',IVEC,') = ',GTENSOR(IVEC)
+              GTENSOR(IVEC) = GTENSOR(IVEC) + EDMMOM
+CTF           print*,' GTENSOR(',IVEC,') = ',GTENSOR(IVEC)
+              GTENSORNORM(IVEC) = GTENSORNORM(IVEC) + EDMNORM
+C
+              write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &           JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &           EDMMOM,EDMNORM
+            END DO
+            write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+          END IF
+        END DO
+        write(lupri,'(/a,A4,a/a)')
+     & '    < state | ','G_Z ',' [L_z + g_sxS_z] | state >  '//
+     & '   g-tensor G_z comp [a.u.]       Norm [a.u.]'
+        write(lupri,'(a)')
+C
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+        DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      GTENSOR(IVEC),GTENSORNORM(IVEC)
+        END DO
+C
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+      end if
+C     =======================================================
 C
 C     release dynamically allocated memory
       if(print_ev) call dealloc(INDX)
