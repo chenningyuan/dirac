@@ -14,7 +14,10 @@ test = TestRun(__file__, sys.argv)
 
 my_scratchdir = os.path.join(os.getcwd(), 'fscc_scratchdir')
 if os.path.lexists(my_scratchdir):
-    os.rmdir(my_scratchdir)
+   files_to_delete = os.listdir(my_scratchdir)
+   for f in files_to_delete:
+      os.unlink(os.path.join(my_scratchdir,f))
+   os.rmdir(my_scratchdir)
 
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
@@ -65,7 +68,10 @@ os.rmdir(my_scratchdir)
 
 my_scratchdir = os.path.join(os.getcwd(), 'ihfscc_scratchdir')
 if os.path.lexists(my_scratchdir):
-    os.rmdir(my_scratchdir)
+   files_to_delete = os.listdir(my_scratchdir)
+   for f in files_to_delete:
+      os.unlink(os.path.join(my_scratchdir,f))
+   os.rmdir(my_scratchdir)
 
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
