@@ -25,7 +25,6 @@ git submodule status
 git status
 
 BUILD_GNU=build_gnu_i8
-./pamadm -a --builddir=$BUILD_GNU
 # configure step
 python ./setup  --int64 --blas=off --lapack=off  --cmake-options="-D BUILDNAME='gnu_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=ON -D PYTHON_EXECUTABLE=/usr/bin/python -D ENABLE_UNIT_TESTS=ON -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON" $BUILD_GNU 
 cd $BUILD_GNU
@@ -36,7 +35,6 @@ ctest  -D ExperimentalSubmit
 
 cd $DIRAC
 BUILD_GNU1=build_gnu_i4
-./pamadm -a --builddir=$BUILD_GNU1
 # configure step
 python ./setup --cmake-options="-D BUILDNAME='frpd2.gnu_i4' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D PYTHON_EXECUTABLE=/usr/bin/python  -D ENABLE_UNIT_TESTS=ON" $BUILD_GNU1
 cd $BUILD_GNU1
@@ -51,7 +49,6 @@ ctest -j3 -D Experimental -L short
 #fi
 #cd $DIRAC
 #BUILD_INTEL=build_intelmkl_i8
-#./pamadm -a --builddir=$BUILD_INTEL
 # configure step
 #python ./setup --fc=ifort  --cc=icc  --cxx=g++  --int64 --cmake-options="-D BUILDNAME='intel_g++_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF -D ENABLE_PCMSOLVER=ON   -D ENABLE_UNIT_TESTS=ON -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_INTEL
 #cd $BUILD_INTEL
@@ -75,7 +72,6 @@ git clone --recursive git@repo.ctcc.no:dirac.git  $TMP_DIR
 cd $TMP_DIR
 git submodule update --init --recursive
 BUILD_INTEL=build_ifort_icc_g++_mkl_i8
-./pamadm -a --builddir=$BUILD_INTEL
 # configure step
 python ./setup --fc=ifort  --cc=icc  --cxx=g++  --int64  --cmake-options="-D BUILDNAME='ifort_icc_g++_mkl_i8' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BOUNDS_CHECK=OFF  -D ENABLE_UNIT_TESTS=ON -D PYTHON_EXECUTABLE=/usr/bin/python" $BUILD_INTEL
 cd $BUILD_INTEL

@@ -25,7 +25,6 @@ script:
 # update submodule, configure and build
     - git submodule update --init --recursive
     - export CTEST_PROJECT_NAME=DIRACext
-    - python ./pamadm -a --builddir=build_magnum-ci
     - python ./setup --cmake-options="-D BUILDNAME='magnum-ci.gnu.i4' " build_magnum-ci
     - cd build_magnum-ci
     - ctest -D ExperimentalConfigure

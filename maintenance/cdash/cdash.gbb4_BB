@@ -40,7 +40,6 @@ OMPI_VG=/home/chemia/ucitelia/milias/bin/open_mpi_ifort_ILP64_valgrind/bin
 
 cd $DIRAC
 
-./pamadm -a 
 
 ###  return back to the main directory and rerun setup ###
 #cd $DIRAC

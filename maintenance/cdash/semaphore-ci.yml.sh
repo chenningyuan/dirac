@@ -73,7 +73,6 @@ echo "Number of processors/jobs for test step is $TEST_N_PROC"
 git submodule update --init --recursive
 
 # 64-bit Integer, MPICH parallel build
-python ./pamadm -a --builddir=build_semaphore-ci_i8
 python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --blas=off --lapack=off --cmake-options="-D BUILDNAME='mpich-gnu-i8_semaphore' -D DART_TESTING_TIMEOUT=9999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON"  build_semaphore-ci_i8
 cd build_semaphore-ci_i8
 ctest -D ExperimentalConfigure

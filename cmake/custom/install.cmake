@@ -4,7 +4,7 @@ file(COPY ${PROJECT_SOURCE_DIR}/basis_ecp    DESTINATION ${PROJECT_BINARY_DIR})
 
 foreach(
     EXECUTABLE
-    ${LIST_OF_EXECUTABLES}
+    ${_list_of_executables}
     )
     install(
         TARGETS ${EXECUTABLE}
@@ -43,19 +43,10 @@ install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL
 install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_INSTALL_PREFIX}/share/dirac/pam ${CMAKE_INSTALL_PREFIX}/bin/pam-dirac)")
 
 # write git hash to build dir
-file(WRITE ${PROJECT_BINARY_DIR}/GIT_HASH "${GIT_COMMIT_HASH}")
+file(WRITE ${PROJECT_BINARY_DIR}/GIT_HASH "${_git_last_commit_hash}")
 # copy version info to install dir
 install(
     FILES ${PROJECT_BINARY_DIR}/GIT_HASH ${PROJECT_SOURCE_DIR}/VERSION
-    DESTINATION share/dirac
-    PERMISSIONS
-    OWNER_READ OWNER_WRITE
-    GROUP_READ
-    WORLD_READ
-    )
-
-install(
-    FILES ${PROJECT_SOURCE_DIR}/utils/wrapper.py
     DESTINATION share/dirac
     PERMISSIONS
     OWNER_READ OWNER_WRITE

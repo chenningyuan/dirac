@@ -30,10 +30,10 @@ if(GIT_FOUND)
         )
 
     if(_git_last_commit)
-        string(REGEX MATCH "Author:[ ]*(.+)<" temp "${_git_last_commit}")
+	string(REGEX MATCH "Author: +([^<]*) <" temp "${_git_last_commit}")
         set(_git_last_commit_author ${CMAKE_MATCH_1})
         string(STRIP ${_git_last_commit_author} _git_last_commit_author)
-        string(REGEX MATCH "Date:[ ]*(.+(\\+|-)[0-9][0-9][0-9][0-9])" temp "${_git_last_commit}")
+        string(REGEX MATCH "Date: +(.+[0-9][0-9][0-9][0-9] [+-][0-9][0-9][0-9][0-9])" temp "${_git_last_commit}")
         set(_git_last_commit_date ${CMAKE_MATCH_1})
     endif()
 
@@ -42,7 +42,10 @@ if(GIT_FOUND)
         OUTPUT_VARIABLE _git_branch
         ERROR_QUIET
         )
-    string(STRIP ${_git_branch} _git_branch)
+
+    if(_git_branch)
+        string(STRIP ${_git_branch} _git_branch)
+    endif()
 endif()
 
 # CMAKE_CURRENT_LIST_DIR is undefined in CMake 2.8.2

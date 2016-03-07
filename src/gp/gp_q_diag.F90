@@ -2547,19 +2547,6 @@ module diagmod
   
 contains
 
-  subroutine read_input_file
-! reads the text input file "DIAGONALIZE_TESTS.INP"
-  implicit none
-#include "priunit.h"
-    logical :: input_found
-    inquire(file=inpfile, exist=input_found)
-    if (.not.input_found) then
-      write(LUPRI,"(2x,a,a)") "read_input_file: the input file not found ! input_file=",inpfile
-      call quit("read_input_file: the input file not found !")
-    endif
-    call read_menu_input(inpfile, lucmd, 'ALL', input_found)
-  end  subroutine read_input_file
-
   subroutine read_matrix
   ! allocates space and reads the matrix for the diagonalization testing from the file
   use include_dgroup_h, only: get_IPQTOQ

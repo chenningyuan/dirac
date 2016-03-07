@@ -1297,9 +1297,7 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
 ! with '*' format  (Ex: '   BARE NUC' became 'BARE       ' in LINE !)
 !              READ (LUCMD,*) LINE
                READ (LUCMD,'(A)') LINE
-               ! write (lupri,*) 'hjaaj: .MOSTAR line 1 ',line
                CALL UPCASE(LINE)
-               ! write (lupri,*) 'hjaaj: .MOSTAR line 2 ',line
                IF (INDEX(LINE,'HUCKEL').ne.0 .OR.
      &             INDEX(LINE,'EHT').ne.0) THEN
                   DOHUCKEL = .TRUE.
@@ -5351,6 +5349,7 @@ C&&& IOTC4: do IOTC in 4c-mode
 C&&& NONREL: do 2-component non-relativistic calculation
              TWOCOMP = .TRUE.
              NONREL = .TRUE.
+             SPINFR = .TRUE.
              DOLVC   = .FALSE.
              GO TO 100
   145     CONTINUE
@@ -5639,12 +5638,6 @@ C ...   DIRCON(1) means contracted L component basis set !
           CALL QUIT(
      &    'HAMINP: Conflicting options ZORA & BSS/X2C !')
         ENDIF
-CTROND        IF (DIRCON(1)) THEN
-CTROND          CALL QUIT(
-CTROND     &   'HAMINP: Can not use the contracted basis set for'//
-CTROND     &   ' the BSS Hamiltonian !')
-CMI  &'  HAMINP: Conflicting options ZORA/PROJEC & BSS !')
-CTROND        ENDIF
 
 CMI  ... check not combining .IOTC, .DKH1, .DKH2
         IF ((IOTC.AND.DKH1).OR.(IOTC.AND.DKH2).OR.(DKH2.AND.DKH1)) THEN
@@ -5751,20 +5744,9 @@ C
         IGTINT = 1
       ENDIF
 C
-C     NZ=1 always equal to one
-C     for 2-component non-relatvistic calculations
 C     NZC1 is the NZ value in C1 symmetry
 C
       NZC1 = 4
-      IF (TWOCOMP) THEN
-        IF(BSS.or.x2c) THEN
-          NZC1 = 4
-        ELSE IF (.NOT. ECPCALC) THEN
-          NZC1 = 1
-          NZ   = 1
-          SPINFR = .TRUE.
-        ENDIF
-      ENDIF
 C.....Check RKBIMP
       IF (DORKBIMP) THEN
         IF (.NOT.URKBAL) THEN
@@ -5900,9 +5882,8 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       ELSE IF (ECPCALC) THEN
         WRITE(LUPRI,'(1X,A)')
      &   '  employing effective-core-potentials (ECP)'
-      ELSE IF (TWOCOMP.AND..NOT.BSS) THEN
-        WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian',
-     &       '   - parameter NZ set to one'
+      ELSE IF (NONREL) THEN
+        WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian'
       ELSE IF(MDIRAC) THEN
         WRITE(LUPRI,'(A)') ' * Modified Dirac-Coulomb Hamiltonian'
         WRITE(LUPRI,'(A)') 
@@ -5923,7 +5904,7 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
         ENDIF
         IF(POSVAC) THEN
           WRITE(LUPRI,'(6X,A)')
-     &      '- using posittronic vacuum.'
+     &      '- using positronic vacuum.'
         ENDIF
         IF(.NOT.VACREF) THEN
           WRITE(LUPRI,'(6X,A)')
@@ -8222,20 +8203,23 @@ C         if reading input from a terminal
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 930
-      ELSEIF(PROMPT.EQ.'.') THEN
+      ELSE IF(PROMPT.EQ.'.') THEN
 C
 C        Look for 2-component Hamiltonians
 C
          IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   '.OR.
      &       WORD.EQ.'.X2C   '.OR.WORD.EQ.'.X2COLD'.OR.
-     &       WORD.EQ.'.X2Cmmf') THEN
+     &       WORD.EQ.'.X2CMMF') THEN
 C............active 2-component modus
            TWOCOMP=.TRUE.
 C............variable telling that this is a 2-component relativistic calculation
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
          ENDIF
-         IF (WORD.EQ.'.NONREL') TWOCOMP=.TRUE.
+         IF (WORD.EQ.'.NONREL') THEN
+            TWOCOMP=.TRUE.
+            NONREL =.TRUE.
+         ENDIF
          IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
          IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
@@ -8345,24 +8329,26 @@ C
 C     Position menu file at the specified keyword
 C
 C     Written by L. Visscher, october 2006
+C     Revsision Jan. 2016 hjaaj: Comparison is now case insensitive.
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL KEY_FOUND
-      CHARACTER LINE*80,KEYWORD*(*)
+      CHARACTER LINE*80, KEYWORD*(*), KEYWORD_UPCASE*80
 C
       KEY_FOUND = .FALSE.
       REWIND (LUCMD,IOSTAT=IOS)
 C
-      LEN_KEYWORD = LEN(KEYWORD)
+      LEN_KEYWORD = MIN(LEN(KEYWORD),80)
+      KEYWORD_UPCASE(1:LEN_KEYWORD) = KEYWORD(1:LEN_KEYWORD)
+      CALL UPCASE(KEYWORD_UPCASE(1:LEN_KEYWORD))
+
   200 READ (LUCMD,'(A80)',END=220,ERR=210) LINE
-Caspg write (6,*) 'line:',line
-      CALL BLANKR (80,LINE)
+      CALL UPCASE(LINE)     ! change any lower case characters to upper case
+      CALL BLANKR(80,LINE)  ! move any text all the way to the left of LINE
 C
-Caspg write (6,*) 'test1',LINE(1:LEN_KEYWORD),':'
-Caspg write (6,*) 'test2',KEYWORD(1:LEN_KEYWORD),':'
-      IF (LINE(1:LEN_KEYWORD) .EQ. KEYWORD(1:LEN_KEYWORD)) THEN
+      IF (LINE(1:LEN_KEYWORD) .EQ. KEYWORD_UPCASE(1:LEN_KEYWORD)) THEN
          KEY_FOUND = .TRUE.
          GO TO 220
       ENDIF
@@ -8704,7 +8690,7 @@ C
      &   (SYA_ACTIV(I),I=1,NFSYM)
 !
       WRITE(LUPRI,'(A,I4)')
-     &   ' * # fermi+boson irreps : ', NREP
+     &   ' * # fermi+boson irreps : ', SYA_NREP
 !
       WRITE(LUPRI,'(A,I4)')
      &   ' * Number of gas shells : ', SYA_NOPEN

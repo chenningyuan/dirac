@@ -178,15 +178,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep,
      &    LeftTensor=l2,RightTensor=t2)
 
-       write(*,*)'dot product of doo',dot_product(doo,doo)
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l1(j,e)*t1(e,i)
 !---------------------------------------------------------------------
 
        call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
      &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
-
-       write(*,*)'dot product of doo',dot_product(doo,doo)
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
@@ -197,8 +194,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &     LeftTensor=l2,RightTensor=t2 )
 
 
-       write(*,*)'dot product of dvv',dot_product(dvv,dvv)
-
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l1(m,a)*t1(b,m)
 !----------------------------------------------------------------------
@@ -206,8 +201,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
      &              l1,t1,dvv,1.0d0,1.0d0,nrep)
 
-
-       write(*,*)'dot product of dvv',dot_product(dvv,dvv)
 
        allocate(dvo(nfvo*rcw))
 
@@ -217,7 +210,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call xcopy (nfvo,t1,1,dvo,1)
 
-       write(*,*)'dot product of dvo:step1',dot_product(dvo,dvo)
 !--------------------------------------------------------------------------
 !     dvo(a,i) = dvo(a,i) + l1(m,e) * t(ae,im)
 !--------------------------------------------------------------------------
@@ -229,8 +221,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), 
      & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=t2)
 
-
-       write(*,*)'dot product of dvo:step2',dot_product(dvo,dvo)
 
 !----------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l1(m,e) * t(e,i)*t(a,m)
@@ -249,7 +239,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       deallocate(woo_temp)
 
-       write(*,*)'dot product of dvo:step3',dot_product(dvo,dvo)
 !-------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t2(ef,in)*t1(a,m) 
 !-------------------------------------------------------------
@@ -266,8 +255,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
 
       deallocate(woo_temp)
-
-       write(*,*)'dot product of dvo:step4',dot_product(dvo,dvo)
 
 !-----------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(e,i)*t2(af,mn)
@@ -286,8 +273,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       deallocate(wpp_temp)
 
-       write(*,*)'dot product of dvo:final',dot_product(dvo,dvo)
-
 !----------------------------------------------------------
 !       dov(i,a) = l1(i,a)
 !----------------------------------------------------------
@@ -295,8 +280,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        allocate(dov(nfvo*rcw))
 
       call xcopy (nfvo,l1,1,dov,1)
-
-       write(*,*)'dot product of dov',dot_product(dov,dov)
 
       if (carith) then
          call conjuga (nfoo,doo,1)
@@ -378,6 +361,9 @@ C
 !!!   CALL XSCAL (NFVO,AP5,DOV,1)
 
 !!!   DEALLOCATE(D_TRANS)
+
+
+      CALL DZERO(DMO,NORBT*NORBT*NZ)
 
       buf1(1:nfvo*rcw) = 0.0d0
 
@@ -836,6 +822,7 @@ C       +--------+--------+--------+--------+
 C        P  O  V
 C######################################################################
 C
+      CALL DZERO(XMO,NORBT*NORBT*NZ)
       CALL RELTODIR(XMO,BUF1,NFVO,RCW,NREP,NV,NO)
       RETURN
       END
@@ -929,7 +916,8 @@ C***********************************************************************
 C
       DIMENSION DMO(NORBT,NORBT,NZ)
       LOGICAL NOZG
-      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:), ibeig(:)
+      real(8), allocatable :: CMO_NAT(:), OCC_NAT(:)
+      integer, allocatable :: ibeig(:)
 C
 C---------------Local variables--------------------------------------
 C

@@ -1345,10 +1345,6 @@ C
 
       if (spinfr) NZ = 1
 
-       write(*,*)'index check',spinfr,NZ
-
-      CALL DZERO(XMO,NORBT*NORBT*NZ)
-
       allocate(idxu2g(norbt,nrep),idyu2g(norbt,nrep))
 
       idxu2g(1:norbt,1:nrep) = 0
@@ -1779,7 +1775,6 @@ C
       integer, allocatable :: idxu2g(:,:)
 
       allocate(idxu2g(norbt,nrep))
-
 
       idxu2g(1:norbt,1:nrep) = 0
 

@@ -14,6 +14,7 @@ You need python to run ``setup``. To see all options, run::
 
   $ ./setup --help
 
+
 Sequential build
 ----------------
 
@@ -34,15 +35,16 @@ directory is called "build", but you can change the name of the build directory
   $ cd build_gfortran
   $ make
 
-You can compile the code on several cores::
+You can compile the code on all available cores::
 
-  $ make -j4
+  $ make -j
 
-We *strongly* recommend that the installation is followed by testing your installation::
+We strongly recommend that the installation is followed by testing your installation::
 
   make test
 
 For more information about testing, see `here <testing.html>`_.
+
 
 Parallel build
 --------------
@@ -55,6 +57,7 @@ is in principle a very simple modification of the above procedure::
   $ make
 
 Once again we recommend `testing the code <testing.html>`_ afterwards.
+
 
 Typical examples
 ----------------
@@ -78,14 +81,6 @@ Configure for sequential compilation using ifort/icc/icpc and link against paral
 Configure for sequential compilation using gfortran/gcc/g++::
 
   $ ./setup --fc=gfortran --cc=gcc --cxx=g++
-
-Parallel compilation on a Cray::
-
-  ./setup --fc=ftn --cc=cc --cxx=CC --cray --mpi
-
-Parallel compilation on a SGI using Intel compilers and MPT::
-
-  ./setup --fc=ifort --cc=icc --cxx=icpc --sgi-mpt
 
 You get the idea. The configuration is usually good at detecting math libraries
 automatically, provided you export the proper environment variable ``MATH_ROOT``,
