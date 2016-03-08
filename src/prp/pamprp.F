@@ -6101,7 +6101,9 @@ C        ... copy e-e "paramagnetic" into SUSREL and e-p "diamagnetic" into SUSD
           ELSE
 C          ... case with London atomic orbitals...
 C          ... copy the e-e "diamagnetic" contribution into SUSCOM
-C           CALL DCOPY(9,SUSREL_EP(1,1,2),1,SUSCOM,1)
+!gosia: line before was commented out, but then the diamagnetic contribution with LAO
+!is always printed as 0
+           CALL DCOPY(9,SUSREL_EP(1,1,2),1,SUSCOM,1)
           ENDIF
          ENDIF
       ENDDO
