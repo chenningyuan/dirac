@@ -195,6 +195,25 @@ module fde_input_dirac
             CASE ('.FRZNOS')
 !              only charge density contributions in perturbed density (on import or export) = no spin magnetization contributions
                fde_rsp_mag_lao_no_s = .true.
+!           now keywords related to expectation value of magnetizability:
+            CASE ('.EMAFDE')
+!              Expectation value contribution to MAgnetizability - FDE (all terms, excluding terms by keywords below)
+               fde_magn_expval_lao = .true.
+               doprp = .true.
+            CASE ('.MNOPOT')
+!              Magnetizability NO embedding POTential
+               fde_lao_magn_expval_no_embpot = .true.
+            CASE ('.MNOUKE')
+!              Magnetizability NO Uncoupled KErnel
+               fde_lao_magn_expval_no_uncoup_embker = .true.
+            CASE ('.MNONKE')
+!              Magnetizability NO coupled Nonadditive KErnel
+               fde_lao_magn_expval_no_coupl_nonadd_embker = .true.
+!              it has to be called with PERTIM which imports perturbed density
+            CASE ('.MNOCKE')
+!              Magnetizability NO coupled Coulomb KErnel
+               fde_lao_magn_expval_no_coupl_coulomb_embker = .true.
+!              it has to be called with PERTIM which imports perturbed density
  
 #endif /* MOD_UNRELEASED */ 
 

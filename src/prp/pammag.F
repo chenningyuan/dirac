@@ -2104,7 +2104,7 @@ C
 !     gosia: add fde contributions:
 !     =============================
 !
-      if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
+      if (fde_magn_expval_lao) then
         call fde_get_import_info(itmp)
 
         call alloc(dmat_0, n2bbasx*nz)
@@ -2113,7 +2113,7 @@ C
 
 !       embedding potential contribution
 !       --------------------------------
-        if (fde_lao_direct_active_embpot) then
+        if (.not. fde_lao_magn_expval_no_embpot) then
           write(*, *) 'FDE contribution to expectation value (embpot)'
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl(12)
@@ -2131,7 +2131,7 @@ C
 
 !       embedding kernel contribution (no coupling)
 !       -------------------------------------------
-        if (fde_lao_direct_active_embker .and. 
+        if (.not.fde_lao_magn_expval_no_uncoup_embker .and. 
      &                   .not. fde_cfg_no_sdft) then
           write(*, *) 'FDE kernel contribution to expectation value,'//
      &                ' no coupling'
@@ -2152,24 +2152,24 @@ C
 !       embedding coupling-kernel contribution
 !       --------------------------------------
 !       1. no Coulomb
-!        if (fde_lao_frozen_embker .and. 
-!     &                   fde_rsp_mag_lao_import) then
-!          write(*, *) 'FDE kernel-coupling contrib. to exp. val.'
-!#ifdef VAR_MPI
-!          if (parcal) call dirac_parctl(12)
-!#endif
-!          call fde_dirac_emb_matrices_via_integration(
-!     &                    fde_mat_dim            = ntbas(0),
-!     &                    fde_nz                 = nz,
-!     &                    fde_dmat_0             = dmat_0,
-!     &                    fde_dmat               = work(kdmat),
-!     &                    fde_nr_dmat            = 1,
-!     &                    fde_nr_fmat            = 0,
-!     &                    fde_do_london_susc2el  = .true.)
-!          sus2el_fde = sus2el_fde + fde_susc2el_integrated()
-!        end if
+        if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker .and. 
+     &                   fde_rsp_mag_lao_import) then
+          write(*, *) 'FDE kernel-coupling contrib. to exp. val.'
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl(12)
+#endif
+          call fde_dirac_emb_matrices_via_integration(
+     &                    fde_mat_dim            = ntbas(0),
+     &                    fde_nz                 = nz,
+     &                    fde_dmat_0             = dmat_0,
+     &                    fde_dmat               = work(kdmat),
+     &                    fde_nr_dmat            = 1,
+     &                    fde_nr_fmat            = 0,
+     &                    fde_do_london_susc2el  = .true.)
+          sus2el_fde = sus2el_fde + fde_susc2el_integrated()
+        end if
 !       2. coulomb:
-!        if (fde_lao_frozen_embker_coulomb .and.
+!        if (.not.fde_lao_magn_expval_no_coupl_coulomb_embker .and.
 !     &      fde_rsp_mag_lao_import .and.
 !     &      .not. fde_cfg_no_sdft) then
 !              write(*, *) 'LAO kernel-like contribution to exp.val.'//
