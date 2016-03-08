@@ -2229,56 +2229,25 @@ contains
             end if
           end if !do_london_susc2el
 
-          !if (do_london_susc2el_coupling) then
-          !  if (.not. fde_cfg_no_sdft) then
-          !    n_bb = 0.0d0
-          !    call london_susc2el_coupling(ipoint, &
-          !                              bllen,       &
-          !                              mat_dim,     &
-          !                              nz,          &
-          !                              ao,          &
-          !                              n_0_t,       &
-          !                              z0tt,        &
-          !                              gnn_0_t,     &
-          !                              w,           &
-          !                              use_gga,     &    
-          !                              derv_length, &
-          !                              derv_total,  &
-          !                              rx(ipoint), ry(ipoint), rz(ipoint),
-          !                              n_bb)
-
-          !    if (use_gga) then
-          !      call gga_london_sus2el_der2(derv_total(1, d0200000),   &
-          !                                  derv_total(1, d0101000),   &
-          !                                  derv_total(1, d0002000),   &
-          !                                  2.0d0*derv_total(1, d0000100),   &
-          !                                  z0tt, &
-          !                                  (/1,1,1/),           &
-          !                                  mat_dim,             &
-          !                                  nz,                  &
-          !                                  dmat,                &
-          !                                  ao,                  &
-          !                                  rx(ipoint), ry(ipoint), rz(ipoint), &
-          !                                  n_bb)
-          !    else
-          !      call lda_london_sus2el_der2(derv_total(1, d0200000),   &
-          !                                  (/1,1,1/),           &
-          !                                  mat_dim,             &
-          !                                  nz,                  &
-          !                                  dmat,                &
-          !                                  ao,                  &
-          !                                  rx(ipoint), ry(ipoint), rz(ipoint), &
-          !                                  n_bb)
-          !    end if
-!         !    sum to susc2el_xc_integrated_sdft
-          !    do ixyz = 1, 3
-          !      do jxyz = 1, 3
-          !        susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
-          !                                          + n_bb(jxyz, ixyz)
-          !      end do
-          !    end do
-          !  end if
-          !end if !do_london_susc2el_coupling
+          if (do_london_susc2el_coupling) then
+            if (.not. fde_cfg_no_sdft) then
+              n_bb = 0.0d0
+              call london_susc2el_coupling(ipoint,   &
+                                        bllen,       &
+                                        mat_dim,     &
+                                        nz,          &
+                                        ao,          &
+                                        n_0_t,       &
+                                        z0tt,        &
+                                        gnn_0_t,     &
+                                        w,           &
+                                        use_gga,     &    
+                                        derv_length, &
+                                        derv_total,  &
+                                        rx(ipoint), ry(ipoint), rz(ipoint),&
+                                        n_bb)
+            end if
+          end if !do_london_susc2el_coupling
 
       end if !if (n_0(1) > fde_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc
@@ -3327,154 +3296,137 @@ contains
   end subroutine
 
 
-!  subroutine london_susc2el_coupling(ipoint,            &
-!                                     block_length,      &
-!                                     mat_dim,           &
-!                                     nz,                &
-!                                     ao,                &
-!                                     n_0_t,             &
-!                                     gn_0_t_pointwise,  &
-!                                     gnn_0_t,           &
-!                                     w,                 &
-!                                     is_gga,            &
-!                                     n,                 &
-!                                     derv_total,        &
-!                                     rx, ry, rz,        &
-!                                     n)
-!
-!!   ----------------------------------------------------------------------------
-!    integer, intent(in)    :: ipoint
-!    integer, intent(in)    :: block_length
-!    integer, intent(in)    :: mat_dim
-!    integer, intent(in)    :: nz
-!    real(8), intent(in)    :: ao(*)
-!    real(8), intent(in)    :: n_0_t(*)
-!    real(8), intent(in)    :: gn_0_t_pointwise(*)
-!    real(8), intent(in)    :: gnn_0_t(*)
-!    real(8), intent(in)    :: w(*)
-!    logical, intent(in)    :: is_gga
-!    integer, intent(in)    :: n
-!    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
-!    real(8), intent(in)    :: rx, ry, rz
-!    real(8), intent(inout) :: n
-!!   ----------------------------------------------------------------------------
-!    real(8)                ::  z_b
-!    real(8)                ::  n_b_lao(3)
-!    real(8)                ::  gn_b_lao(3, 3)
-!    real(8)                ::  s_b_lao(3, 3)
-!    real(8)                ::  gs_b_lao(3, 3, 3)
-!    real(8)                ::  gsgn_t_b_lao(3, 3)
-!
-!    integer                :: k_start, k, a
-!!   ----------------------------------------------------------------------------
-!    n_b_lao    = 0.0d0
-!    gn_b_lao    = 0.0d0
-!    s_b_lao    = 0.0d0
-!    gs_b_lao   = 0.0d0
-!    gsgn_t_b_lao   = 0.0d0
-!
-!    k_start = 1
-!    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
-!
-!!   charge density contributions
-!    n_b_lao(1) = frozen_n_bx(ipoint)
-!    n_b_lao(2) = frozen_n_by(ipoint)
-!    n_b_lao(3) = frozen_n_bz(ipoint)
-!    if (is_gga) then
-!       gn_b_lao(1,1) = frozen_gxn_bx(ipoint)
-!       gn_b_lao(1,2) = frozen_gxn_bx(ipoint)
-!       gn_b_lao(1,3) = frozen_gxn_bx(ipoint)
-!       gn_b_lao(2,1) = frozen_gyn_bx(ipoint)
-!       gn_b_lao(2,2) = frozen_gyn_by(ipoint)
-!       gn_b_lao(2,3) = frozen_gyn_bz(ipoint)
-!       gn_b_lao(3,1) = frozen_gzn_bx(ipoint)
-!       gn_b_lao(3,2) = frozen_gzn_by(ipoint)
-!       gn_b_lao(3,3) = frozen_gzn_bz(ipoint)
-!    end if
-!
-!    do a = 1, 3     !B_{x,y,z}
-!       u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d2000000)*n_b_lao(a)
-!
-!       if (is_gga) then
-!          z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
-!                     + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
-!                     + gn_0_t_pointwise(3)*gn_b_lao(3, a))
-!
-!          u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d1010000)*z_b
-!
-!          u%gn_b_lao(1:3, a) = u%gn_b_lao(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
-!                                      + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
-!                                      + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
-!       end if
-!    end do
-!
-!!   spin density contributions
-!
-!    if (.not. fde_rsp_mag_lao_no_s) then
-!       s_b_lao(1,1) = frozen_sx_bx(ipoint)
-!       s_b_lao(1,2) = frozen_sx_by(ipoint)
-!       s_b_lao(1,3) = frozen_sx_bz(ipoint)
-!       s_b_lao(2,1) = frozen_sy_bx(ipoint)
-!       s_b_lao(2,2) = frozen_sy_by(ipoint)
-!       s_b_lao(2,3) = frozen_sy_bz(ipoint)
-!       s_b_lao(3,1) = frozen_sz_bx(ipoint)
-!       s_b_lao(3,2) = frozen_sz_by(ipoint)
-!       s_b_lao(3,3) = frozen_sz_bz(ipoint)
-!       if (is_gga) then
-!          gs_b_lao(1,1,1) = frozen_gxsx_bx(ipoint)
-!          gs_b_lao(1,1,2) = frozen_gxsx_by(ipoint)
-!          gs_b_lao(1,1,3) = frozen_gxsx_bz(ipoint)
-!          gs_b_lao(1,2,1) = frozen_gxsy_bx(ipoint)
-!          gs_b_lao(1,2,2) = frozen_gxsy_by(ipoint)
-!          gs_b_lao(1,2,3) = frozen_gxsy_bz(ipoint)
-!          gs_b_lao(1,3,1) = frozen_gxsz_bx(ipoint)
-!          gs_b_lao(1,3,2) = frozen_gxsz_by(ipoint)
-!          gs_b_lao(1,3,3) = frozen_gxsz_bz(ipoint)
-!          gs_b_lao(2,1,1) = frozen_gysx_bx(ipoint)
-!          gs_b_lao(2,1,2) = frozen_gysx_by(ipoint)
-!          gs_b_lao(2,1,3) = frozen_gysx_bz(ipoint)
-!          gs_b_lao(2,2,1) = frozen_gysy_bx(ipoint)
-!          gs_b_lao(2,2,2) = frozen_gysy_by(ipoint)
-!          gs_b_lao(2,2,3) = frozen_gysy_bz(ipoint)
-!          gs_b_lao(2,3,1) = frozen_gysz_bx(ipoint)
-!          gs_b_lao(2,3,2) = frozen_gysz_by(ipoint)
-!          gs_b_lao(2,3,3) = frozen_gysz_bz(ipoint)
-!          gs_b_lao(3,1,1) = frozen_gzsx_bx(ipoint)
-!          gs_b_lao(3,1,2) = frozen_gzsx_by(ipoint)
-!          gs_b_lao(3,1,3) = frozen_gzsx_bz(ipoint)
-!          gs_b_lao(3,2,1) = frozen_gzsy_bx(ipoint)
-!          gs_b_lao(3,2,2) = frozen_gzsy_by(ipoint)
-!          gs_b_lao(3,2,3) = frozen_gzsy_bz(ipoint)
-!          gs_b_lao(3,3,1) = frozen_gzsz_bx(ipoint)
-!          gs_b_lao(3,3,2) = frozen_gzsz_by(ipoint)
-!          gs_b_lao(3,3,3) = frozen_gzsz_bz(ipoint)
-!       end if
-!       do a = 1, 3     !B_{x,y,z}
-!          do k = k_start, 3  !Sigma_{x,y,z}
-!       
-!             u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
-!                             + derv_total(1, d0200000)*s_b_lao(k, a)
-!            
-!             if (is_gga) then
-!            
-!                gsgn_t_b_lao(k, a) = gs_b_lao(1,k,a)*gn_0_t_pointwise(1) &
-!                                   + gs_b_lao(2,k,a)*gn_0_t_pointwise(2) &
-!                                   + gs_b_lao(3,k,a)*gn_0_t_pointwise(3)
-!       
-!                u%s_b_lao(k, a) = u%s_b_lao(k, a) + derv_total(1, d0101000)*gsgn_t_b_lao(k, a)
-!           
-!                u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) &
-!                            + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)      &
-!                            + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000) &
-!                            + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)
-!       
-!             end if
-!          end do
-!       end do
-!    end if
-!
-!
-!  end subroutine
+  subroutine london_susc2el_coupling(ipoint,            &
+                                     block_length,      &
+                                     mat_dim,           &
+                                     nz,                &
+                                     ao,                &
+                                     n_0_t,             &
+                                     gn_0_t_pointwise,  &
+                                     gnn_0_t,           &
+                                     w,                 &
+                                     is_gga,            &
+                                     n,                 &
+                                     derv_total,        &
+                                     rx, ry, rz,        &
+                                     n_bb)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: ipoint
+    integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: n_0_t(*)
+    real(8), intent(in)    :: gn_0_t_pointwise(*)
+    real(8), intent(in)    :: gnn_0_t(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
+    real(8), intent(in)    :: rx, ry, rz
+    real(8), intent(inout) :: n_bb(3,3)
+!   ----------------------------------------------------------------------------
+    real(8)                ::  s_b_lao(3, 3)
+    real(8)                ::  gs_b_lao(3, 3, 3)
+    real(8)                ::  s, d_s, d_sns, d_nsns, d_ss, n_sum
+    real(8)                ::  s_1(3), gs_2(3)
+
+    integer                :: k_start, k, a
+    integer                :: ixyz, jxyz, a1, a2
+!   ----------------------------------------------------------------------------
+    s_b_lao    = 0.0d0
+    gs_b_lao   = 0.0d0
+
+    k_start = 1
+    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+    s_b_lao(1,1) = frozen_sx_bx(ipoint)
+    s_b_lao(1,2) = frozen_sx_by(ipoint)
+    s_b_lao(1,3) = frozen_sx_bz(ipoint)
+    s_b_lao(2,1) = frozen_sy_bx(ipoint)
+    s_b_lao(2,2) = frozen_sy_by(ipoint)
+    s_b_lao(2,3) = frozen_sy_bz(ipoint)
+    s_b_lao(3,1) = frozen_sz_bx(ipoint)
+    s_b_lao(3,2) = frozen_sz_by(ipoint)
+    s_b_lao(3,3) = frozen_sz_bz(ipoint)
+    if (is_gga) then
+       gs_b_lao(1,1,1) = frozen_gxsx_bx(ipoint)
+       gs_b_lao(1,1,2) = frozen_gxsx_by(ipoint)
+       gs_b_lao(1,1,3) = frozen_gxsx_bz(ipoint)
+       gs_b_lao(1,2,1) = frozen_gxsy_bx(ipoint)
+       gs_b_lao(1,2,2) = frozen_gxsy_by(ipoint)
+       gs_b_lao(1,2,3) = frozen_gxsy_bz(ipoint)
+       gs_b_lao(1,3,1) = frozen_gxsz_bx(ipoint)
+       gs_b_lao(1,3,2) = frozen_gxsz_by(ipoint)
+       gs_b_lao(1,3,3) = frozen_gxsz_bz(ipoint)
+       gs_b_lao(2,1,1) = frozen_gysx_bx(ipoint)
+       gs_b_lao(2,1,2) = frozen_gysx_by(ipoint)
+       gs_b_lao(2,1,3) = frozen_gysx_bz(ipoint)
+       gs_b_lao(2,2,1) = frozen_gysy_bx(ipoint)
+       gs_b_lao(2,2,2) = frozen_gysy_by(ipoint)
+       gs_b_lao(2,2,3) = frozen_gysy_bz(ipoint)
+       gs_b_lao(2,3,1) = frozen_gysz_bx(ipoint)
+       gs_b_lao(2,3,2) = frozen_gysz_by(ipoint)
+       gs_b_lao(2,3,3) = frozen_gysz_bz(ipoint)
+       gs_b_lao(3,1,1) = frozen_gzsx_bx(ipoint)
+       gs_b_lao(3,1,2) = frozen_gzsx_by(ipoint)
+       gs_b_lao(3,1,3) = frozen_gzsx_bz(ipoint)
+       gs_b_lao(3,2,1) = frozen_gzsy_bx(ipoint)
+       gs_b_lao(3,2,2) = frozen_gzsy_by(ipoint)
+       gs_b_lao(3,2,3) = frozen_gzsy_bz(ipoint)
+       gs_b_lao(3,3,1) = frozen_gzsz_bx(ipoint)
+       gs_b_lao(3,3,2) = frozen_gzsz_by(ipoint)
+       gs_b_lao(3,3,3) = frozen_gzsz_bz(ipoint)
+    end if
+
+    if (is_gga) then
+      d_s    = derv_total(1, d0200000)
+      d_sns  = derv_total(1, d0101000)
+      d_nsns = derv_total(1, d0002000)
+      d_ss   = derv_total(1, d0000100)*2.0d0
+
+      n_sum = gn_0_t_pointwise(1) + gn_0_t_pointwise(2) + gn_0_t_pointwise(3)
+      do a = 1, 3             ! B_{x,y,z}
+         do ixyz = 1, 3       ! Sigma_{x,y,z}
+            s_1(a) = s_1(a) + s_b_lao(ixyz, a)
+            do jxyz = 1, 3    !dR_{x,y,z}
+               gs_2(a) = gs_2(a) + gs_b_lao(jxyz, ixyz, a)
+            end do
+         end do
+      end do
+      do a1 = 1, 3
+        do a2 = 1, 3
+          n_bb(a2, a1) = n_bb(a2, a1) &
+!                      lda
+                       + d_s*s_1(a1)*s_1(a2) &
+!                      gradient terms
+                       + d_sns*(n_sum*gs_2(a1)*s_1(a2) + n_sum*gs_2(a2)*s_1(a1)) &
+                       + d_nsns*n_sum*n_sum*gs_2(a1)*gs_2(a2) &
+                       + d_ss*gs_2(a1)*gs_2(a2)
+        end do
+      end do
+      n_bb = -1.0d0*n_bb
+    else
+      s = derv_total(1, d0200000)
+      do jxyz = 1, 3
+         do a1 = 1, 3
+           do a2 = 1, 3
+             n_bb(a2, a1) = n_bb(a2, a1) + s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2)
+           end do
+         end do
+      end do
+    end if
+
+!   sum to susc2el_xc_integrated_sdft
+    do ixyz = 1, 3
+      do jxyz = 1, 3
+        susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
+                                          + n_bb(jxyz, ixyz)
+      end do
+    end do
+
+  end subroutine
 
 
 
