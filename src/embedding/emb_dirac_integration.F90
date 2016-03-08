@@ -1256,7 +1256,8 @@ contains
    real(8) :: n_b(3)
    real(8) :: gnn_b(3)
    real(8) :: gn_b(3, 3)
-    real(8) :: n_bb(3, 3)
+   real(8) :: n_bb(3, 3)
+   real(8) :: t
 
    real(8) :: vemb
 
@@ -1284,17 +1285,21 @@ contains
    type(fde_omega_prefactor) :: u
 
 
-   allocate(u%n (      nr_fmat))
-   allocate(u%gn(   3, nr_fmat))
-   allocate(u%s (   3, nr_fmat))
-   allocate(u%gs(3, 3, nr_fmat))
-   allocate(u%n_b_lao(3)) 
-   allocate(u%gn_b_lao(3, 3)) 
-   allocate(u%s_b_lao(3, 3)) 
-   allocate(u%gs_b_lao(3, 3, 3))
-   allocate(u%tn(      nr_fmat))
-   allocate(u%ts(   3, nr_fmat))
-
+   if (nr_fmat > 0) then
+      allocate(u%n (      nr_fmat))
+      allocate(u%gn(   3, nr_fmat))
+      allocate(u%s (   3, nr_fmat))
+      allocate(u%gs(3, 3, nr_fmat))
+      allocate(u%n_b_lao(3)) 
+      allocate(u%gn_b_lao(3, 3)) 
+      allocate(u%s_b_lao(3, 3)) 
+      allocate(u%gs_b_lao(3, 3, 3))
+      allocate(u%tn(      nr_fmat))
+      allocate(u%ts(   3, nr_fmat))
+   else
+!     gosia: when we calculate contribution for magnetizability, then nr_fmat = 0
+!     it is funny that in xcint it works without problems..
+   end if
 !  if (fde_use_blas3_scheme) then
 !      block_threshold = get_block_threshold(fde_cfg_tinydens, mat_dim, dmat_0)
 !   end if
@@ -2095,7 +2100,7 @@ contains
              end if !if (do_london_rhs_kern_coupling) then
 
 
-          end do
+          end do ! distribute over Fock matrices
 
 ! end spin-density stuff
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
@@ -2109,47 +2114,22 @@ contains
           if (do_london_susc2el) then
             n_bb = 0.0d0
 !           here no SDFT contributions (first-order functional derivatives)
-            u%n(1) = (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint)
-            if (use_gga) then
-              u%gn(:, 1) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
-            !  call gga_london_sus2el_der1(derv(1, d1000000),        &
-            !                              2.0d0*derv(1, d0010000),  &
-            !                              gn_0_pointwise,           &
-            !                              (/1,1,1/),                &
-            !                              mat_dim,                  &
-            !                              nz,                       &
-            !                              dmat_0,                   &
-            !                              ao,                       &
-            !                              rx(ipoint), ry(ipoint), rz(ipoint), &
-            !                              n_bb)
-               call xc_london_c1_susc_gga_der1(u%n(1),   &
-                                           1.0d0,        &
-                                           u%gn(1:3, 1), &
-                                           mat_dim,             &
-                                           nz,                  &
-                                           dmat_0,                &
-                                           ao,                  &
-                                           (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
-                                           n_bb)
-
-            else
-             ! call lda_london_sus2el_der1(derv(1, d1000000),   &
-             !                             (/1,1,1/),           &
-             !                             mat_dim,             &
-             !                             nz,                  &
-             !                             dmat_0,              &
-             !                             ao,                  &
-             !                             rx(ipoint), ry(ipoint), rz(ipoint), &
-             !                             n_bb)
-               call xc_london_c1_susc_der1(u%n(1),   &
-                                           mat_dim,             &
-                                           nz,                  &
-                                           dmat_0,                &
-                                           ao,                  &
-                                           (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
-                                           n_bb)
-
-            end if
+            !write(*, *) "--------------------------------------------------------------------"
+            !write(*, *) "buba ipoint, derv_total(1, d1000000) = ", ipoint, derv_total(1, d1000000)
+            !write(*, *) "buba ipoint, derv_active(1, d1000000) = ", ipoint, derv_active(1, d1000000)
+            !write(*, *) "buba ipoint, w(1) = ", ipoint, w(1)
+            !write(*, *) "buba ipoint, frozen_elpot(ipoint) = ", ipoint, frozen_elpot(ipoint)
+            t= (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint)
+         !   write(*, *) "buba ipoint, u%n(1) = ", ipoint, u%n(1) 
+            !u%n(1) = 1.0d0
+              call lda_london_sus2el_der1(t,   &
+                                          (/1,1,1/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat_0,              &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          n_bb)
 !           test c1, use overlap derivatives and not AO derivs (leave it to compare directly with dalton):
 !           sum to susc2el_fde_integrated
             do ixyz = 1, 3
@@ -2158,44 +2138,6 @@ contains
                                                   + n_bb(jxyz, ixyz)
               end do
             end do
-!          ! here only sdft contributions (second-order functional derivatives)
-           ! if (.not. fde_cfg_no_sdft) then
-           !   n_bb = 0.0d0
-           !   if (use_gga) then
-           !     call gga_london_sus2el_der2(derv(1, d0200000),   &
-           !                                 derv(1, d0101000),   &
-           !                                 derv(1, d0002000),   &
-           !                                 2.0d0*derv(1, d0000100),   &
-           !                                 gn_0_pointwise,      &
-           !                                 (/1,1,1/),           &
-           !                                 mat_dim,             &
-           !                                 nz,                  &
-           !                                 dmat,                &
-           !                                 ao,                  &
-           !                                 rx(ipoint), ry(ipoint), rz(ipoint), &
-           !                                 n_bb)
-           !   else
-           !     call lda_london_sus2el_der2(derv(1, d0200000),   &
-           !                                 (/1,1,1/),           &
-           !                                 mat_dim,             &
-           !                                 nz,                  &
-           !                                 dmat,                &
-           !                                 ao,                  &
-           !                                 rx(ipoint), ry(ipoint), rz(ipoint), &
-           !                                 n_bb)
-
-           !   end if
-
-!          !   sum to susc2el_fde_integrated_sdft
-           !   do ixyz = 1, 3
-           !     do jxyz = 1, 3
-           !       susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
-           !                                         + n_bb(jxyz, ixyz)
-           !     end do
-           !   end do
-
-           ! end if
-
           end if !do_london_susc2el
 
       end if !if (n_0(1) > fde_cfg_small_density_threshold) then
@@ -2210,14 +2152,14 @@ contains
     if (allocated(derv_frozen)) deallocate(derv_frozen)
     if (allocated(active_nucpot)) deallocate(active_nucpot)
 
-    deallocate(u%n)
-    deallocate(u%gn)
-    deallocate(u%s)
-    deallocate(u%gs)
-    deallocate(u%s_b_lao)
-    deallocate(u%gs_b_lao)
-    deallocate(u%tn)
-    deallocate(u%ts)
+    if(allocated(u%n)) deallocate(u%n)
+    if(allocated(u%gn)) deallocate(u%gn)
+    if(allocated(u%s)) deallocate(u%s)
+    if(allocated(u%gs)) deallocate(u%gs)
+    if(allocated(u%s_b_lao)) deallocate(u%s_b_lao)
+    if(allocated(u%gs_b_lao)) deallocate(u%gs_b_lao)
+    if(allocated(u%tn)) deallocate(u%tn)
+    if(allocated(u%ts)) deallocate(u%ts)
 
    end subroutine integrate
 

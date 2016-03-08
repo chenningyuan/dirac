@@ -2111,25 +2111,64 @@ C
         call dzero(dmat_0, n2bbasx*nz)
         call genden(dmat_0, cmo, 1, iprprp)
 
-        call generate_num_grid(dmat_0)
+        !call generate_num_grid(dmat_0)
+        if (fde_lao_direct_active_embpot) then
 #ifdef VAR_MPI
-        if (parcal) call dirac_parctl(12)
+          if (parcal) call dirac_parctl(12)
 #endif
 
-        if (fde_lao_direct_active_embpot) then
           write(*, *) 'FDE contribution to expectation value (embpot)'
 
-          call fde_dirac_emb_matrices_via_integration(
-     &                    fde_mat_dim            = ntbas(0),
-     &                    fde_nz                 = nz,
-     &                    fde_dmat_0             = dmat_0,
-     &                    fde_nr_dmat            = 0,
-     &                    fde_nr_fmat            = 0,
-     &                    fde_do_london_susc2el  = .true.)
+!          if (.not. fde_cfg_no_sdft) then
+!            call fde_dirac_emb_matrices_via_integration(
+!     &                      fde_mat_dim            = ntbas(0),
+!     &                      fde_nz                 = nz,
+!     &                      fde_dmat_0             = dmat_0,
+!     &                      fde_dmat               = work(kdmat),
+!     &                      fde_nr_dmat            = 1,
+!     &                      fde_nr_fmat            = 0,
+!     &                      fde_do_london_susc2el  = .true.)
+!          else
+            call fde_dirac_emb_matrices_via_integration(
+     &                      fde_mat_dim            = ntbas(0),
+     &                      fde_nz                 = nz,
+     &                      fde_dmat_0             = dmat_0,
+     &                      fde_nr_dmat            = 0,
+     &                      fde_nr_fmat            = 0,
+     &                      fde_do_london_susc2el  = .true.)
+!          end if
         end if
         sus2el_fde = fde_susc2el_integrated()
 
         call dealloc(dmat_0)
+
+        if (iprprp .ge. 1) then
+!         sus2el - fde contributions only:
+          CALL HEADER('FDE contribs to two-electron '//
+     &                ' expectation values',-1)
+          CALL POLPRI(sus2el_fde,'   ',-2)
+          AVERAG = (sus2el_fde(1,1) + sus2el_fde(2,2)
+     &            + sus2el_fde(3,3))/3.0d0
+          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+
+        end if
+
+!       Calculate total value of sus2el:
+        do i = 1, 3
+           do j = 1, 3
+              sus2el(j, i) = sus2el(j, i) + sus2el_fde(j, i)
+           end do
+        end do
+
+        if (iprprp .ge. 1) then
+
+!         total sus2el:
+          CALL HEADER('Two-electron expectation values (total)',-1)
+          CALL POLPRI(SUS2EL,'   ',-2)
+          AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/3.0d0
+          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        end if
+
       end if !if(dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
 
       CALL GETTIM(CPU2,WALL2)
