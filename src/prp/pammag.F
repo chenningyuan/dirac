@@ -2111,34 +2111,72 @@ C
         call dzero(dmat_0, n2bbasx*nz)
         call genden(dmat_0, cmo, 1, iprprp)
 
-        !call generate_num_grid(dmat_0)
+!       embedding potential contribution
+!       --------------------------------
         if (fde_lao_direct_active_embpot) then
+          write(*, *) 'FDE contribution to expectation value (embpot)'
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl(12)
 #endif
-
-          write(*, *) 'FDE contribution to expectation value (embpot)'
-
-          if (.not. fde_cfg_no_sdft) then
-            call fde_dirac_emb_matrices_via_integration(
-     &                      fde_mat_dim            = ntbas(0),
-     &                      fde_nz                 = nz,
-     &                      fde_dmat_0             = dmat_0,
-     &                      fde_dmat               = work(kdmat),
-     &                      fde_nr_dmat            = 1,
-     &                      fde_nr_fmat            = 0,
-     &                      fde_do_london_susc2el  = .true.)
-          else
-            call fde_dirac_emb_matrices_via_integration(
-     &                      fde_mat_dim            = ntbas(0),
-     &                      fde_nz                 = nz,
-     &                      fde_dmat_0             = dmat_0,
-     &                      fde_nr_dmat            = 0,
-     &                      fde_nr_fmat            = 0,
-     &                      fde_do_london_susc2el  = .true.)
-          end if
+          call fde_dirac_emb_matrices_via_integration(
+     &                    fde_mat_dim            = ntbas(0),
+     &                    fde_nz                 = nz,
+     &                    fde_dmat_0             = dmat_0,
+     &                    fde_nr_dmat            = 0,
+     &                    fde_nr_fmat            = 0,
+     &                    fde_do_london_susc2el  = .true.)
+          sus2el_fde = fde_susc2el_integrated()
         end if
-        sus2el_fde = fde_susc2el_integrated()
+
+
+!       embedding kernel contribution (no coupling)
+!       -------------------------------------------
+        if (fde_lao_direct_active_embker .and. 
+     &                   .not. fde_cfg_no_sdft) then
+          write(*, *) 'FDE kernel contribution to expectation value,'//
+     &                ' no coupling'
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl(12)
+#endif
+          call fde_dirac_emb_matrices_via_integration(
+     &                    fde_mat_dim            = ntbas(0),
+     &                    fde_nz                 = nz,
+     &                    fde_dmat_0             = dmat_0,
+     &                    fde_dmat               = work(kdmat),
+     &                    fde_nr_dmat            = 1,
+     &                    fde_nr_fmat            = 0,
+     &                    fde_do_london_susc2el  = .true.)
+          sus2el_fde = sus2el_fde + fde_susc2el_integrated()
+        end if
+
+!       embedding coupling-kernel contribution
+!       --------------------------------------
+!       1. no Coulomb
+!        if (fde_lao_frozen_embker .and. 
+!     &                   fde_rsp_mag_lao_import) then
+!          write(*, *) 'FDE kernel-coupling contrib. to exp. val.'
+!#ifdef VAR_MPI
+!          if (parcal) call dirac_parctl(12)
+!#endif
+!          call fde_dirac_emb_matrices_via_integration(
+!     &                    fde_mat_dim            = ntbas(0),
+!     &                    fde_nz                 = nz,
+!     &                    fde_dmat_0             = dmat_0,
+!     &                    fde_dmat               = work(kdmat),
+!     &                    fde_nr_dmat            = 1,
+!     &                    fde_nr_fmat            = 0,
+!     &                    fde_do_london_susc2el  = .true.)
+!          sus2el_fde = sus2el_fde + fde_susc2el_integrated()
+!        end if
+!       2. coulomb:
+!        if (fde_lao_frozen_embker_coulomb .and.
+!     &      fde_rsp_mag_lao_import .and.
+!     &      .not. fde_cfg_no_sdft) then
+!              write(*, *) 'LAO kernel-like contribution to exp.val.'//
+!     &                 ' from frozen perturbed density (Coulomb term)'
+!        call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
+!        end if
+
 
         call dealloc(dmat_0)
 
