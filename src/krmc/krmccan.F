@@ -2223,6 +2223,7 @@ C
 C     =======================================================
 C     9. Components of g-tensor L_z + g_sS_z 
 C     Written by Malaya K. Nayak, July 15, 2015
+C        bugfix by Timo Fleig for multi-root calculations
 C     =======================================================
       if (dogtensr_krci) then
 C
