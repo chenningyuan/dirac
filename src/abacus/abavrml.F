@@ -19,9 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C$Id$
 C
-C#include "single.h"
 #ifdef UNDEF
 C Principal author of this module: Vebjoern Bakken
 C (960319-vebjornb: New module for visualization with VRML models.)

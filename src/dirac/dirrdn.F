@@ -8690,7 +8690,7 @@ C
      &   (SYA_ACTIV(I),I=1,NFSYM)
 !
       WRITE(LUPRI,'(A,I4)')
-     &   ' * # fermi+boson irreps : ', NREP
+     &   ' * # fermi+boson irreps : ', SYA_NREP
 !
       WRITE(LUPRI,'(A,I4)')
      &   ' * Number of gas shells : ', SYA_NOPEN

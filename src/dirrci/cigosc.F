@@ -1641,6 +1641,11 @@ C
      &            /1X,'by the cosci input data: ',I2)") 
      &                 NGAS
 !
+        IF (NREP .NE. SYA_NREP) THEN
+           WRITE(6,*) 'NREP from CIGOSC .ne. .NREP from *COSCI input',
+     &     NREP, SYA_NREP
+           CALL QUIT('NREP from CIGOSC .ne. .NREP from *COSCI input')
+        END IF
         DO I = 1, SYA_NOPEN
           DO J = 1, NREP
             NGASO(J,I) = SYA_GASO(J,I)

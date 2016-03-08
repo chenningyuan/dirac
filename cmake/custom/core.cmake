@@ -5,18 +5,6 @@ include_directories(
 
 include(autocmake_CMakeDependentOption)
 
-# fix for Windows with 64bit integers on and build type release
-# when using GNU (gfortran) compilers
-# there is one source file for which -O3/-O2 is not good
-if((CMAKE_SYSTEM_NAME MATCHES "Windows") AND (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-    AND (ENABLE_64BIT_INTEGERS)
-    AND (CMAKE_BUILD_TYPE MATCHES "release"))
-    set_source_files_properties(
-        ${PROJECT_SOURCE_DIR}/src/abacus/hermodules.F90
-        PROPERTIES COMPILE_FLAGS "-O1"
-        )
-endif()
-
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 

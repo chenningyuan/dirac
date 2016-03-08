@@ -3,10 +3,11 @@
 
 .. _relccsd:
 
+============================================
 Kramers unrestricted Coupled-Cluster methods
 ============================================
 
-See :cite:`Visscher1996` for initial CCSD(T) implementation. The Fock-space CC 
+See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space CC 
 implementation is described in :cite:`Visscher2001`.
 
 The old namelist style input used up to DIRAC10 is now no longer supported.
@@ -24,7 +25,7 @@ multireference calculations. See further :ref:`*CCFSPC`.
 Because the first sector of Fock space gives the same result as a 
 regular CCSD calculation, the latter calculation is switched off. If you
 do wish to perform also a regular CC calculation (e.g. to get the CCSD(T) energy)
-you need to activate this explicitly via .ENERGY (see below).
+you need to activate this explicitly via :ref:`RELCC_.ENERGY` (see below).
 
 keyword(ENERGY)
 
@@ -38,7 +39,7 @@ to the FS calculation.
 
 ::
 
-    Perform energy calculation..
+    Perform energy calculation.
 
 keyword(GRADIENT)
 
@@ -74,11 +75,11 @@ then add to these occupations the open shell electrons (see corresponding tutori
 
      Active electrons in these irreps (written by **MOLTRA).
 
-keyword(NEL\_F1)
+keyword(NEL_F1)
 
 Number of electrons in the *gerade* irreps of the Abelian symmetry group. See below for more information.
 
-keyword(NEL\_F2)
+keyword(NEL_F2)
 
 Number of electrons in the *ungerade* irreps of the Abelian symmetry group. 
 
@@ -246,7 +247,6 @@ low limit of orbital energies of active occupied
 orbitals, which constitute the secondary Pi space. Could be
 used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
 
-
 keyword(EHMAX)
 
 Maximum orbital energy of occupied orbitals forming the auxiliary (Pi)
@@ -256,7 +256,6 @@ primary (Pm) space.
 This is upper limit of one-electronic energies of
 active occupied orbitals, which constitute the secondary Pi space.
 Could be used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
- 
 
 keyword(EPMIN)
 
@@ -267,7 +266,6 @@ primary (Pm) space.
 This is the low limit of orbital energies of active virtual
 orbitals, which constitute the secondary Pi space.
 Could be used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
- 
 
 keyword(EPMAX)
 
@@ -279,7 +277,6 @@ This is the upper limit of one-electronic energies of active virtual
 orbitals, which constitute the secondary Pi space. Could be
 used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
  
-====================================================
 Other Intermediate Hamiltonian (IH) input parameters
 ====================================================
  

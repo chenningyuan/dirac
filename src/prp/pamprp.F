@@ -2827,7 +2827,7 @@ C
           NATOM =  NATOM + 1
           DMPV(NATOM) = TEMP(IATOM)
           ICHARGE = NINT(CHARGE(IATOM))
-          IMASS = NINT(DISOTP(ICHARGE,1,'MASS'))
+          IMASS = NINT(DISOTP(ICHARGE,ISOTOP(IATOM),'MASS'))
           NPROTON  = ICHARGE
           NNEUTRON = IMASS - ICHARGE
           IS(NATOM) = IMASS
@@ -2846,7 +2846,7 @@ C
       CALL PRSYMB(LUPRI,'-',76,0)
 C
       WRITE(LUPRI,9000)
-     &   'Nucleus','Isotop','integral    ','factor  ','contrib.    '
+     &   'Nucleus','Isotope','integral    ','factor  ','contrib.    '
       WRITE(LUPRI,9000) ' ',' ','MPV(n)/au    ','QW(n)    '
       NATOM  = 0
       IATOMD = 0
@@ -2865,7 +2865,7 @@ C
  120  CONTINUE
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,9020) 'Total EPV = ',DTOT
- 9000 FORMAT(4X,A8,'  ',A6,'  ',A20,'  ',A10,'  ',A20)
+ 9000 FORMAT(4X,A8,'  ',A7,' ',A20,'  ',A10,'  ',A20)
  9010 FORMAT(4X,A8,'   ',I4,'   ',1P,E20.12,'  ',0P,F11.5,'  ',
      &       1P,E20.12)
  9020 FORMAT(4X,A12,41X,1P,E20.12)
@@ -8266,10 +8266,6 @@ C
       CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
 
-
-      DO I = 1, MXCENT
-            ISOTOP(I) = 1
-      END DO
       CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,
      &            IPRPRP)
 
@@ -8292,9 +8288,6 @@ CMI      IF (KLAST .GT. LWORK) CALL
 
         CALL MEMCHK('prp_rotg 0.1',WORK,1)
 
-      DO I = 1, MXCENT
-            ISOTOP(I) = 1
-      END DO
       CALL MGFRES(WORK(KGEOM),WORK(KAMASS),JATOM,IPRPRP)
 
 
@@ -8413,10 +8406,6 @@ C
       CALL QENTER('MGFRES')
 
 C     CALL MEMCHK('MGFRES 0.9',WORK,1)
-
-      DO I = 1, MXCENT
-          ISOTOP(I) = 1
-      END DO
 
       NOLOND = .TRUE.
 
