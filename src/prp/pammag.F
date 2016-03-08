@@ -285,9 +285,6 @@ CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
       ELSE
        IF (LONDON.OR.USECM) THEN
 C ... make the center of mass the gauge origin (default in dalton)
-         DO I = 1, MXCENT
-            ISOTOP(I) = 1
-         END DO
          CALL MEMGET('REAL',KGEOM  ,3*NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
