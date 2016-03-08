@@ -20,13 +20,15 @@ f.add(from_string = '  Magnetizabilities                    au          SI      
 
 
 # only embedding potential (v)
-test.run(['ll_lda_updatevemb_magn_g0_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-test.run(['ll_lda_updatevemb_magn_g1_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_lda_updatevemb_magn_g0_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_lda_updatevemb_magn_g1_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_pbe_updatevemb_magn_g1_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_pbe_updatevemb_magn_g0_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 
 #test.run(['dc_lda_updatevemb_scf.inp'],                  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --outcmo')
 
 os.unlink('FROZEN')
-os.unlink('DFCOEF')
+#os.unlink('DFCOEF')
 os.unlink('numerical_grid')
 
 

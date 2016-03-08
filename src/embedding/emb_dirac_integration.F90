@@ -1257,7 +1257,7 @@ contains
    real(8) :: gnn_b(3)
    real(8) :: gn_b(3, 3)
    real(8) :: n_bb(3, 3)
-   real(8) :: t
+   real(8) :: t, gt(3)
 
    real(8) :: vemb
 
@@ -2114,14 +2114,38 @@ contains
           if (do_london_susc2el) then
             n_bb = 0.0d0
 !           here no SDFT contributions (first-order functional derivatives)
-            !write(*, *) "--------------------------------------------------------------------"
-            !write(*, *) "buba ipoint, derv_total(1, d1000000) = ", ipoint, derv_total(1, d1000000)
-            !write(*, *) "buba ipoint, derv_active(1, d1000000) = ", ipoint, derv_active(1, d1000000)
-            !write(*, *) "buba ipoint, w(1) = ", ipoint, w(1)
-            !write(*, *) "buba ipoint, frozen_elpot(ipoint) = ", ipoint, frozen_elpot(ipoint)
             t= (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint)
-         !   write(*, *) "buba ipoint, u%n(1) = ", ipoint, u%n(1) 
-            !u%n(1) = 1.0d0
+            if (use_gga) then
+              gt(:) = 2.0d0*( derv_total(1, d0010000)*z0tt - derv_active(1, d0010000)*gn_0_pointwise)
+              call gga_london_sus2el_der1(t,        &
+                                          1.0d0,    &
+                                          gt,           &
+                                          (/1,1,1/),                &
+                                          mat_dim,                  &
+                                          nz,                       &
+                                          dmat_0,                   &
+                                          ao,                       &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          n_bb)
+            !   call xc_london_c1_susc_gga_der1(derv(1, d1000000),   &
+            !                               2.0d0*derv(1, d0010000),  &
+            !                               gn_0_pointwise,           &
+            !                               mat_dim,             &
+            !                               nz,                  &
+            !                               dmat_0,                &
+            !                               ao,                  &
+            !                               (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+            !                               n_bb)
+
+            else
+             ! call lda_london_sus2el_der1(derv(1, d1000000),   &
+             !                             (/1,1,1/),           &
+             !                             mat_dim,             &
+             !                             nz,                  &
+             !                             dmat_0,              &
+             !                             ao,                  &
+             !                             rx(ipoint), ry(ipoint), rz(ipoint), &
+             !                             n_bb)
               call lda_london_sus2el_der1(t,   &
                                           (/1,1,1/),           &
                                           mat_dim,             &
@@ -2130,6 +2154,7 @@ contains
                                           ao,                  &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
                                           n_bb)
+            end if
 !           test c1, use overlap derivatives and not AO derivs (leave it to compare directly with dalton):
 !           sum to susc2el_fde_integrated
             do ixyz = 1, 3

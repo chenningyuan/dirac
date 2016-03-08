@@ -2119,16 +2119,16 @@ C
 
           write(*, *) 'FDE contribution to expectation value (embpot)'
 
-!          if (.not. fde_cfg_no_sdft) then
-!            call fde_dirac_emb_matrices_via_integration(
-!     &                      fde_mat_dim            = ntbas(0),
-!     &                      fde_nz                 = nz,
-!     &                      fde_dmat_0             = dmat_0,
-!     &                      fde_dmat               = work(kdmat),
-!     &                      fde_nr_dmat            = 1,
-!     &                      fde_nr_fmat            = 0,
-!     &                      fde_do_london_susc2el  = .true.)
-!          else
+          if (.not. fde_cfg_no_sdft) then
+            call fde_dirac_emb_matrices_via_integration(
+     &                      fde_mat_dim            = ntbas(0),
+     &                      fde_nz                 = nz,
+     &                      fde_dmat_0             = dmat_0,
+     &                      fde_dmat               = work(kdmat),
+     &                      fde_nr_dmat            = 1,
+     &                      fde_nr_fmat            = 0,
+     &                      fde_do_london_susc2el  = .true.)
+          else
             call fde_dirac_emb_matrices_via_integration(
      &                      fde_mat_dim            = ntbas(0),
      &                      fde_nz                 = nz,
@@ -2136,7 +2136,7 @@ C
      &                      fde_nr_dmat            = 0,
      &                      fde_nr_fmat            = 0,
      &                      fde_do_london_susc2el  = .true.)
-!          end if
+          end if
         end if
         sus2el_fde = fde_susc2el_integrated()
 
