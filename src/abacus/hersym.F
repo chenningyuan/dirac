@@ -47,8 +47,12 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "mxsymm.h"
-#include "optinf.h"
+
+! infpar.h : MYNUM, MASTER
+! optinf.h : VRML_SYM
 #include "infpar.h"
+#include "optinf.h"
+
       DIMENSION WORK(LWORK)
       CHARACTER KASYM(3,3)*1, POINT_GROUP*15
       LOGICAL :: internal_file
@@ -170,148 +174,164 @@ C           with principal axes of inertia along coordinate axes
 C     Sort atoms after atom number and distance from origo
 CRF      We have to sort the atoms AFTER we center the molecule
 C        Else errors occur when non-standard isotopes are used
-         CALL SRTATM(MXCENT, ATMARR, .TRUE.)
-         IF ( MYTID .eq. MPARID .and. IPRSYM .gt. IPRTHR) THEN
-            TEXT = 'Coordinates after sort'
-            CALL PRNARR(TEXT, MXCENT, ATMARR)
-         END IF
-C        Determine molecular point group
-         CALL FIND_PGROUP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
-     &                    TMPARR, POINT_GROUP)
-C ::: If requested, a VRML representation of :::
-C ::: the symmetry elements is constructed.  :::
-         IF (VRML_SYM) CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
-     &                             DMRPLN,MAXMIR,WORK(KFREE),LFREE)
+      CALL SRTATM(MXCENT, ATMARR, .TRUE.)
+      IF ( MYTID .eq. MPARID .and. IPRSYM .gt. IPRTHR) THEN
+         TEXT = 'Coordinates after sort'
+         CALL PRNARR(TEXT, MXCENT, ATMARR)
+      END IF
+
+C     Determine molecular point group
+      CALL FIND_PGROUP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,
+     &                 TMPARR, POINT_GROUP)
+
+      IF (POINT_GROUP(1:4).EQ.'C(1)') THEN
+         !  if moving allowed, rotate molecule without symmetry so
+         !  principle axes of inertia follow the coordinate axes
+         IF (.NOT. NOMOVE) CALL PRINCIPLE_AXIS_MOLECULE(ATMARR)
+
+         IF (VRML_SYM) WRITE(LUPRI,'(/A)')
+     &   ' INFO: VRML file with symmetry info not created'//
+     &   ' because molecule has C(1) symmetry.'
+
+      ELSE IF (VRML_SYM) THEN
+C        ::: If requested, a VRML representation of :::
+C        ::: the symmetry elements is constructed.  :::
+         CALL MKVRSY(ATMARR,DRTAXS,MAXAXS,
+     &               DMRPLN,MAXMIR,WORK(KFREE),LFREE)
+      END IF
 C
-         IF ( MYTID .eq. MPARID ) WRITE(LUPRI,'(/2A)')
+      IF ( MYTID .eq. MPARID ) WRITE(LUPRI,'(/2A)')
      &      ' Symmetry point group found: ', POINT_GROUP
-         LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
-         IF (.NOT. NOMOVE) THEN
-            CALL TURN_MOLECULE(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,
-     &                         TMPARR,LENTMP)
-            IF (MYTID .eq. MPARID .and. iprsym .gt. iprthr) then
-               TEXT = 'Centered and Rotated in original atom order'
-               KWORK = KFREE
-               allocate(IBUF(N_ATOMS))
-               CALL DCOPY(N_ATOMS,ATMARR(5,1),MXCENT+1,TMPARR,1) ! atmarr(5,1) has original atom order
-               CALL INDEXX(N_ATOMS,TMPARR,IBUF)
-               CALL PRNARR2(text, mxcent, atmarr, ibuf) ! prints atoms in original order
-               deallocate(IBUF)
-            END IF
+      LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
+      IF (.NOT. NOMOVE) THEN
+         CALL TURN_MOLECULE(MXCENT,ATMARR,DRTAXS,DIRAXS,DMRPLN,
+     &                      TMPARR,LENTMP)
+         IF (MYTID .eq. MPARID .and. iprsym .gt. iprthr) then
+            TEXT = 'Centered and Rotated in original atom order'
+            KWORK = KFREE
+            allocate(IBUF(N_ATOMS))
+            CALL DCOPY(N_ATOMS,ATMARR(5,1),MXCENT+1,TMPARR,1) ! atmarr(5,1) has original atom order
+            CALL INDEXX(N_ATOMS,TMPARR,IBUF)
+            CALL PRNARR2(text, mxcent, atmarr, ibuf) ! prints atoms in original order
+            deallocate(IBUF)
+         END IF
+      ELSE
+         WRITE (LUPRI,'(/A/)') ' Molecule was not centered nor'//
+     &      ' rotated as requested in input.'
+      END IF
+      IF (IPRSYM .GE. MIN(IPRTHR,1)) THEN
+      IF (.NOT. LINMOL(MXCENT, ATMARR)) THEN
+         IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
+            WRITE(LUPRI,'(/A)') ' No rotational axes were found.'
          ELSE
-            WRITE (LUPRI,'(/A/)') ' Molecule was not centered nor'//
-     &         ' rotated as requested in input.'
+           TEXT = 'Rotational Axes'
+           CALL PRNARR(TEXT, MAXAXS, DRTAXS)
          END IF
-         IF (IPRSYM .GE. MIN(IPRTHR,1)) THEN
-         IF (.NOT. LINMOL(MXCENT, ATMARR)) THEN
-            IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
-               WRITE(LUPRI,'(/A)') ' No rotational axes were found.'
-            ELSE
-              TEXT = 'Rotational Axes'
-              CALL PRNARR(TEXT, MAXAXS, DRTAXS)
-            END IF
-            IF (NINT(DIRAXS(1,0)) .LT. 0) THEN
-               WRITE(LUPRI,'(/A)') ' Due to number of improper '
-     &           // 'rotational axes, they were not determined.'
-            ELSE IF (NINT(DIRAXS(1,0)) .EQ. 0) THEN
-               WRITE(LUPRI,'(/A)')
-     &           ' No unique improper rotational axes were found.'
-            ELSE
-               TEXT = 'Improper Rotational Axes'
-               CALL PRNARR(TEXT, MAXAXS, DIRAXS)
-            END IF
-            IF (NINT(DMRPLN(1,0)) .EQ. 0) THEN
-               WRITE(LUPRI,'(/A)') ' No mirror planes were found.'
-            ELSE
-               CALL PRNARR('Mirror planes: 2=h, 1=v, 0=other',
-     &            MAXMIR, DMRPLN)
-            END IF
+         IF (NINT(DIRAXS(1,0)) .LT. 0) THEN
+            WRITE(LUPRI,'(/A)') ' Due to number of improper '
+     &        // 'rotational axes, they were not determined.'
+         ELSE IF (NINT(DIRAXS(1,0)) .EQ. 0) THEN
+            WRITE(LUPRI,'(/A)')
+     &        ' No unique improper rotational axes were found.'
+         ELSE
+            TEXT = 'Improper Rotational Axes'
+            CALL PRNARR(TEXT, MAXAXS, DIRAXS)
          END IF
+         IF (NINT(DMRPLN(1,0)) .EQ. 0) THEN
+            WRITE(LUPRI,'(/A)') ' No mirror planes were found.'
+         ELSE
+            CALL PRNARR('Mirror planes: 2=h, 1=v, 0=other',
+     &         MAXMIR, DMRPLN)
          END IF
-         CALL SYM_REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM,
+      END IF
+      END IF
+
+      CALL SYM_REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM,
      &      internal_file)
-         IF (IPRSYM .GE. MIN(3,IPRTHR)) THEN
-            TEXT = 'Symmetry Independent Centres'
-            CALL PRNARR(TEXT, MXCENT, ATMARR)
-         END IF
+      IF (IPRSYM .GE. MIN(3,IPRTHR)) THEN
+         TEXT = 'Symmetry Independent Centres'
+         CALL PRNARR(TEXT, MXCENT, ATMARR)
+      END IF
+
 C ::: The new symmetry is added. :::
-         NSYMOP = 0
-         DO 200 I = 1, 3
-            DO 210 J = 1, 3
-               KASYM(J,I) = SYMM((I-1)*3+J:(I-1)*3+J)
- 210        CONTINUE
-            IF (SYMM((I-1)*3+1:(I-1)*3+3) .NE. '   ') NSYMOP=NSYMOP+1
- 200     CONTINUE
+      NSYMOP = 0
+      DO 200 I = 1, 3
+         DO 210 J = 1, 3
+            KASYM(J,I) = SYMM((I-1)*3+J:(I-1)*3+J)
+ 210     CONTINUE
+         IF (SYMM((I-1)*3+1:(I-1)*3+3) .NE. '   ') NSYMOP=NSYMOP+1
+ 200  CONTINUE
 C ::: The input file is modified to include symmetry. :::
 C ::: If there is any Aangstroem mark, it is removed. :::
-         if (internal_file) then
-           TMPLN = MLINE(NMLAU)
-           WRITE(TMPLN(10:10), '(I1)') NSYMOP
-           WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
-         end if
-         IF( MYTID .eq. MPARID ) THEN
-            IF (NSYMOP .EQ. 0) THEN
-               WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
-            ELSE IF (NSYMOP .EQ. 1) THEN
-               WRITE(LUPRI, '(/2A)')
-     &            ' The following element was found:   ',SYMM
-            ELSE
-               WRITE(LUPRI, '(/2A)')
-     &            ' The following elements were found: ',SYMM
-            END IF
+      if (internal_file) then
+        TMPLN = MLINE(NMLAU)
+        WRITE(TMPLN(10:10), '(I1)') NSYMOP
+        WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
+      end if
+      IF( MYTID .eq. MPARID ) THEN
+         IF (NSYMOP .EQ. 0) THEN
+            WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
+         ELSE IF (NSYMOP .EQ. 1) THEN
+            WRITE(LUPRI, '(/2A)')
+     &         ' The following element was found:   ',SYMM
+         ELSE
+            WRITE(LUPRI, '(/2A)')
+     &         ' The following elements were found: ',SYMM
          END IF
+      END IF
+
 C ::: The reduced coordinates are moved back. :::
-         CALL SRTOLD(MXCENT, ATMARR)
-         IF (IPRSYM .GE. IPRTHR) THEN
-            CALL PRNARR('Symmetry Independent Centres in original order'
-     &         ,MXCENT, ATMARR)
-         END IF
-         NCTOT = NINT(ATMARR(1,0))
-         IF (NCTOT .LE. 0) CALL QUIT ('No atoms defined')
+      CALL SRTOLD(MXCENT, ATMARR)
+      IF (IPRSYM .GE. IPRTHR) THEN
+         CALL PRNARR('Symmetry Independent Centres in original order',
+     &      MXCENT, ATMARR)
+      END IF
+      NCTOT = NINT(ATMARR(1,0))
+      IF (NCTOT .LE. 0) CALL QUIT ('No atoms defined')
 
-         DO 250 I = 1, NCTOT
-            CORD(1:3,I) = ATMARR(1:3,I)
-            IOLD = NINT(ATMARR(5,I))
-C           ... IOLD .ge. I after CALL SRTOLD
-            IATOMTYP(I) = IATOMTYP(IOLD)
-            CHARGE(I) = CHARGE(IOLD)
-            IZATOM(I) = IZATOM(IOLD)
-            ISOTOP(I) = ISOTOP(IOLD)
-            GNUEXP(I) = GNUEXP(IOLD)
+      DO 250 I = 1, NCTOT
+         CORD(1:3,I) = ATMARR(1:3,I)
+         IOLD = NINT(ATMARR(5,I))
+C        ... IOLD .ge. I after CALL SRTOLD
+         IATOMTYP(I) = IATOMTYP(IOLD)
+         CHARGE(I) = CHARGE(IOLD)
+         IZATOM(I) = IZATOM(IOLD)
+         ISOTOP(I) = ISOTOP(IOLD)
+         GNUEXP(I) = GNUEXP(IOLD)
 #ifndef PRG_DIRAC
-            MULBSI(I) = MULBSI(IOLD)
+         RSPH(I)   = RSPH(IOLD)
+         IDXSPH(I) = IDXSPH(IOLD)
+         MULBSI(I) = MULBSI(IOLD)
 #endif
-            NCLINE(I) = NCLINE(IOLD)
-            NAMN(I)   = NAMN(IOLD)
-            NAMEX(3*I)   = NAMN(I)//'z'
-            NAMEX(3*I-1) = NAMN(I)//'y'
-            NAMEX(3*I-2) = NAMN(I)//'x'
- 250     CONTINUE
+         NCLINE(I) = NCLINE(IOLD)
+         NAMN(I)   = NAMN(IOLD)
+         NAMEX(3*I)   = NAMN(I)//' z'
+         NAMEX(3*I-1) = NAMN(I)//' y'
+         NAMEX(3*I-2) = NAMN(I)//' x'
+ 250  CONTINUE
 C ::: Then the different elements are counted, and arrays updated. :::
-         NONT(1:KATOM) = 0
-         NONTYP = 1
-         NONT(NONTYP) = 1
-         DO I = 2, NCTOT
-            IF (IATOMTYP(I) .NE. IATOMTYP(I-1)) THEN
-               NONTYP = NONTYP + 1
-            END IF
-            NONT(NONTYP) = NONT(NONTYP) + 1
-         END DO
+      NONT(1:KATOM) = 0
+      NONTYP = 1
+      NONT(NONTYP) = 1
+      DO I = 2, NCTOT
+         IF (IATOMTYP(I) .NE. IATOMTYP(I-1)) THEN
+            NONTYP = NONTYP + 1
+         END IF
+         NONT(NONTYP) = NONT(NONTYP) + 1
+      END DO
 
-         DO 300 I = NCTOT + 1, KATOM
-            NAMN(I) = '    '
-            NAMEX(3*I)   = '      '
-            NAMEX(3*I-1) = '      '
-            NAMEX(3*I-2) = '      '
-            CORD(1,I) = D0
-            CORD(2,I) = D0
-            CORD(3,I) = D0
-            CHARGE(I) = D0
-            IZATOM(I) = 0
-            ISOTOP(I) = 1
- 300     CONTINUE
+      DO I = NCTOT + 1, KATOM
+         NAMN(I) = '    '
+         NAMEX(3*I)   = '      '
+         NAMEX(3*I-1) = '      '
+         NAMEX(3*I-2) = '      '
+         CORD(1:3,I) = D0
+         CHARGE(I) = D0
+         IZATOM(I) = 0
+         ISOTOP(I) = 1
+      END DO
 C ::: We update the coordinates of the input file :::
-         if (internal_file) then
+      if (internal_file) then
          DO 400 I = 1, NCTOT
             NCI   = NCLINE(I)
             TMPLN = MLINE(NCI)
@@ -341,34 +361,29 @@ C ::: Finally the number of atoms are updated. :::
                WRITE(MLINE(NCI)(12:15),'(I4)') NONT(K)
             I = I + NONT(K)
          END DO
-         end if ! internal_file
-C        IF (SOLVNT .OR. DORLM) THEN
-C           NUCIND = NUCIND + 1
-C           NCNTCV = NUCIND
-C           NAMN(NUCIND) = 'cav '
-C           NCLINE(NUCIND) = 0
-C           NAMEX(3*NUCIND)     = NAMN(NUCIND)//' z'
-C           NAMEX(3*NUCIND - 1) = NAMN(NUCIND)//' y'
-C           NAMEX(3*NUCIND - 2) = NAMN(NUCIND)//' x'
-C           CORD(1,NUCIND) = D0
-C           CORD(2,NUCIND) = D0
-C           CORD(3,NUCIND) = D0
-C           CHARGE(NUCIND) = D0
-C        END IF
+      end if ! internal_file
+C     IF (SOLVNT .OR. DORLM) THEN
+C        NUCIND = NUCIND + 1
+C        NCNTCV = NUCIND
+C        NAMN(NUCIND) = 'cav '
+C        NCLINE(NUCIND) = 0
+C        NAMEX(3*NUCIND)     = NAMN(NUCIND)//' z'
+C        NAMEX(3*NUCIND - 1) = NAMN(NUCIND)//' y'
+C        NAMEX(3*NUCIND - 2) = NAMN(NUCIND)//' x'
+C        CORD(1,NUCIND) = D0
+C        CORD(2,NUCIND) = D0
+C        CORD(3,NUCIND) = D0
+C        CHARGE(NUCIND) = D0
+C     END IF
       NUCIND = NCTOT
-      IF (.NOT. NOMOVE .AND. NSYMOP.EQ.0) THEN
-      !  rotate molecule without symmetry so principle axes of symmetry
-      !  follow the coordinate axes
-         CALL PRINCIPLE_AXIS_MOLECULE(ATMARR)
-      END IF
       RETURN
-      END
+      END  ! subroutine FIND_SYMMETRY
 C  /* Deck prnarr */
       SUBROUTINE PRNARR(TEXT, MXM, ARR)
 C ::::::::::::::::::::::::::::::::::::::::::::::
 C ::                                          ::
 C ::       Prints all elements of array       ::
-C ::                                          ::
+C ::(VB, part of hersym.F)                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
 #include "priunit.h"
@@ -1056,10 +1071,11 @@ chj Nov 2007: include both even and odd orders
       DO I = 1, N_ROTAXS
       IF (ABS(MOD(DRTAXS(4,I),XXX)) .LT. 1.0D-8) THEN
          NTOT = NTOT + 1
-         DO K = 1, 3
+         DO K = 1, 4
             TMPARR(K,NTOT) = DRTAXS(K,I)
          END DO
-         TMPARR(4,NTOT) = 1.0D0
+chj      TMPARR(4,NTOT) = 1.0D0
+chj: no, we want to save the order to find highest rotation axis for z-direction
       END IF
       END DO
 C 2) mirror planes
@@ -1465,6 +1481,7 @@ C ::: to multiply the order by a factor of two.               :::
          IORDR=2*IORDER
       END IF
       CON2PO = 2.0D0*PI/DBLE(IORDR)
+      TOLDEG = MAX(TOLLRN,1.D-4)
 
 C ::: The original matrix is copied because we modify ATMARR below in ROTMOL. :::
       N_ATOMS = NINT(ORGARR(1,0))
@@ -1528,6 +1545,7 @@ C ::: We take the XY-component. :::
          V1(3) = 0.0D0
          V1NRM2 = V1(1)*V1(1)+V1(2)*V1(2)
          IORD = 0 ! IORD counts how many atoms related by the proper/improper rotation to atom I
+         TOLLDS = 2.0D0*TOLLRN*SQRT(V1NRM2) + TOLLRN_2
          DO J = I + 1, N_ATOMS
             IF (IUSED(J) .EQ. 1) CYCLE
 
@@ -1542,13 +1560,13 @@ C ::: Check that atoms I and J are equivalent; i.e. same charge and same isotope
 
 C ::: Check that the two atoms have same distance to z-axis :::
             V2NRM2 = V2(1)*V2(1)+V2(2)*V2(2)
-            IF ( ABS(V1NRM2-V2NRM2) .GT. TOLLRN_2) CYCLE
+            IF ( ABS(V1NRM2-V2NRM2) .GT. TOLLDS) CYCLE   ! | r^2 - (r+d)^2 | = | 2*d*r + d^2 |, thus TOLLDS
 
 C ::: Check that the angle between them is correct based on the rotational order :::
             DEG = VECANG(V1, V2)
             IJ_ORD = NINT(DEG/CON2PO)
             DEG = DEG - IJ_ORD*CON2PO
-            IF ( ABS(DEG) .GT. TOLLRN ) CYCLE
+            IF ( ABS(DEG) .GT. TOLDEG ) CYCLE
 
 C ::: Finally check if the two atoms have matching Z-coordinates  :::
 C ::: (This test is last because we need to know IJ_ORD)          :::
@@ -1629,7 +1647,7 @@ C ::: We need to find the rest
          V1(2) = ATMARR(2,I)
          V1(3) = ATMARR(3,I)
          V1NRM2 = V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3)
-         TOLLDS = 2.0D0*TOLLRN*SQRT (V1NRM2)
+         TOLLDS = 2.0D0*TOLLRN*SQRT(V1NRM2) + TOLLRN_2   ! | r^2 - (r+d)^2 | = | 2*d*r + d^2 |, thus TOLLDS
 C ::: The number of equivalent atoms is counted in IORD. :::
  110  CONTINUE
       IF (J .LE. N_ATOMS) THEN
@@ -1843,10 +1861,6 @@ C ::: as well. Maximum order is the highest order among the axes.      :::
                            GOTO 175
                         END IF
                      END IF
-C ::: Finally the atoms are marked as used. :::
-                     DO 180 M = I, I+IORD-1
-                        IUSED(M) = 1
- 180                 CONTINUE
                   END IF
 C ::: Then we move on to the linear case :::
                ELSE
@@ -1900,8 +1914,12 @@ C ::: The easiest case is when the atoms define the only possible axis. :::
                   CALL DLDPAX(MAXAXS, DRTAXS)
                END IF
             END IF
-         END IF
-CRf   Set I to first atom not in this equivalent set and repeat
+         END IF ! IORD .GT. 1
+C ::: Finally the atoms are marked as used. :::
+         DO M = I, I+IORD-1
+            IUSED(M) = 1
+         END DO
+CRF   Set I to first atom not in this equivalent set and repeat
          I = I + IORD
          GOTO 100
       END IF
@@ -2100,8 +2118,8 @@ C ::: First the horizontal. :::
      &                                    .LT. TOLLRN_2) THEN
                   DMRPLN(4,I) = 2.0D0
 C ::: Then the vertical. :::
-               ELSE IF (ABS(V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3)) .LT.
-     &               TOLLRN) THEN
+               ELSE IF (ABS(V1(1)*V2(1)+V1(2)*V2(2)+V1(3)*V2(3))
+     &               .LT. TOLLRN) THEN
                   DMRPLN(4,I) = 1.0D0
 C ::: The rest must be diagonal/undecided. :::
                ELSE
@@ -2123,153 +2141,162 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
 #include "mxsymm.h"
 #include "priunit.h"
-         DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
-         DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
-         DIMENSION TMPARR(7,0:MXM)
-         DIMENSION V1(3), V2(3)
-         CHARACTER*15 POINT_GROUP
-         LOGICAL   LINMOL, INVMOL
- 111     FORMAT(I1)
- 222     FORMAT(I2)
+      DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
+      DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
+      DIMENSION TMPARR(7,0:MXM)
+      DIMENSION V1(3), V2(3)
+      CHARACTER*15 POINT_GROUP
+      LOGICAL   LINMOL, INVMOL
+ 111  FORMAT(I1)
+ 222  FORMAT(I2)
 C
 C ::: Find proper rotation axes
          CALL FINDAX(MXM, ATMARR, DRTAXS, TMPARR, .TRUE.)
 C ::: If the number of rotational axes exceeds 10, the number :::
 C ::: of improper rotational axes is likely to be very high   :::
 C ::: and we choose to skip their determination.              :::
-         IF (NINT(DRTAXS(1,0)) .LE. 10) THEN
-            CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
+      IF (NINT(DRTAXS(1,0)) .LE. 10) THEN
+         CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
+      ELSE
+         DIRAXS(1,0) = -1.0D0
+      END IF
+      CALL FIND_MIR(MXM, ATMARR, DMRPLN, DRTAXS, TMPARR)
+      IF (LINMOL(MXM, ATMARR)) THEN
+         IF (INVMOL(MXM, ATMARR)) THEN
+            POINT_GROUP = 'D(oo,h)'
          ELSE
-            DIRAXS(1,0) = -1.0D0
+            POINT_GROUP = 'C(oo,v)'
          END IF
-         CALL FIND_MIR(MXM, ATMARR, DMRPLN, DRTAXS, TMPARR)
-         IF (LINMOL(MXM, ATMARR)) THEN
-            IF (INVMOL(MXM, ATMARR)) THEN
-               POINT_GROUP = 'D(oo,h)'
-            ELSE
-               POINT_GROUP = 'C(oo,v)'
-            END IF
-         ELSE
+      ELSE ! not linear
 C ::: We count rotational axes with order > 2 :::
-            ITEMP = 0
-            DO 100 I = 1, NINT(DRTAXS(1,0))
-               IF (NINT(DRTAXS(4,I)) .GT. 2) ITEMP = ITEMP + 1
- 100        CONTINUE
-            IF (ITEMP .GE. 2) THEN
-               IF (.NOT. INVMOL(MXM, ATMARR)) THEN
-                  POINT_GROUP = 'T(d)'
-               ELSE IF (NINT(DRTAXS(4,1)) .EQ. 5) THEN
-                  POINT_GROUP = 'I(h)'
-               ELSE
-                  POINT_GROUP = 'O(h)'
-               END IF
-            ELSE IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
-               IF (NINT(DMRPLN(1,0)) .GT. 0) THEN
-                  POINT_GROUP = 'C(s)'
-               ELSE IF (INVMOL(MXM, ATMARR)) THEN
-                  POINT_GROUP = 'C(i)'
-               ELSE
-                  POINT_GROUP = 'C(1)'
-               END IF
+         ITEMP = 0
+         DO 100 I = 1, NINT(DRTAXS(1,0))
+            IF (NINT(DRTAXS(4,I)) .GT. 2) ITEMP = ITEMP + 1
+ 100     CONTINUE
+         IF (ITEMP .GE. 2) THEN
+            IF (.NOT. INVMOL(MXM, ATMARR)) THEN
+               POINT_GROUP = 'T(d)'
+            ELSE IF (NINT(DRTAXS(4,1)) .EQ. 5) THEN
+               POINT_GROUP = 'I(h)'
             ELSE
-               V1(1) = DRTAXS(1,1)
-               V1(2) = DRTAXS(2,1)
-               V1(3) = DRTAXS(3,1)
+               POINT_GROUP = 'O(h)'
+            END IF
+         ELSE IF (NINT(DRTAXS(1,0)) .EQ. 0) THEN
+            ! no rotation axis
+            IF (NINT(DMRPLN(1,0)) .GT. 0) THEN
+               POINT_GROUP = 'C(s)'
+            ELSE IF (INVMOL(MXM, ATMARR)) THEN
+               POINT_GROUP = 'C(i)'
+            ELSE
+               POINT_GROUP = 'C(1)'
+            END IF
+         ELSE ! we have at least one rotation axis
+            V1(1) = DRTAXS(1,1)
+            V1(2) = DRTAXS(2,1)
+            V1(3) = DRTAXS(3,1)
 C ::: Number of perpendicular C2 axes is counted. :::
-               ITEMP = 0
-               DO 200 I = 2, NINT(DRTAXS(1,0))
-                  V2(1) = DRTAXS(1,I)
-                  V2(2) = DRTAXS(2,I)
-                  V2(3) = DRTAXS(3,I)
-                  IF ((NINT(DRTAXS(4,I)).EQ.2) .AND. (ABS(V1(1)*V2(1)+
-     &              V1(2)*V2(2)+V1(3)*V2(3)).LT.TOLLRN)) ITEMP = ITEMP+1
- 200           CONTINUE
-               IF (ITEMP .GE. NINT(DRTAXS(4,1))) THEN
-                  IF ((NINT(DMRPLN(1,0)) .GE. 0) .AND.
-     &                (NINT(DMRPLN(4,1)) .EQ. 2)) THEN
-                     IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
-                        POINT_GROUP = 'D(nh)'
-                        WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
-                     ELSE
-                        POINT_GROUP = 'D(nnh)'
-                        WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
-                     END IF
-                  ELSE
-C ::: Number of perpendicular mirror planes is counted. :::
-                     ITEMP = 0
-                     DO 300 I = 1, NINT(DMRPLN(1,0))
-                        IF (NINT(DMRPLN(4,I)) .EQ. 1) ITEMP = ITEMP + 1
- 300                 CONTINUE
-                     IF (ITEMP .GE. NINT(DRTAXS(4,1))) THEN
-                        IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
-                           POINT_GROUP = 'D(nd)'
-                           WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
-                        ELSE
-                           POINT_GROUP = 'D(nnd)'
-                           WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
-                        END IF
-                     ELSE
-                        IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
-                           POINT_GROUP = 'D(n)'
-                           WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
-                        ELSE
-                           POINT_GROUP = 'D(nn)'
-                           WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
-                        END IF
-                     END IF
-                  END IF
-               ELSE
-                IF((NINT(DMRPLN(1,0)) .GE. 0) .AND.
+            ITEMP = 0
+            DO 200 I = 2, NINT(DRTAXS(1,0))
+               V2(1) = DRTAXS(1,I)
+               V2(2) = DRTAXS(2,I)
+               V2(3) = DRTAXS(3,I)
+               IF ((NINT(DRTAXS(4,I)).EQ.2) .AND. (ABS(V1(1)*V2(1)+
+     &           V1(2)*V2(2)+V1(3)*V2(3)).LT.TOLLRN)) ITEMP = ITEMP+1
+ 200        CONTINUE
+            IF (ITEMP .GE. NINT(DRTAXS(4,1))) THEN
+               ! perpendicular C2 axes found
+C              ... any horizontal mirror plane is first in DMRPLN
+               IF ((NINT(DMRPLN(1,0)) .GT. 0) .AND.
      &             (NINT(DMRPLN(4,1)) .EQ. 2)) THEN
                   IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
-                     POINT_GROUP = 'C(nh)'
+                     POINT_GROUP = 'D(nh)'
                      WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
                   ELSE
-                     POINT_GROUP = 'C(nnh)'
+                     POINT_GROUP = 'D(nnh)'
                      WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
                   END IF
-                ELSE
+               ELSE
 C ::: Number of perpendicular mirror planes is counted. :::
                   ITEMP = 0
-                  DO 400 I = 1, NINT(DMRPLN(1,0))
+                  DO 300 I = 1, NINT(DMRPLN(1,0))
                      IF (NINT(DMRPLN(4,I)) .EQ. 1) ITEMP = ITEMP + 1
- 400              CONTINUE
-                  IF (ITEMP .GE. NINT(DRTAXS(1,0))) THEN
+ 300              CONTINUE
+                  IF (ITEMP .GE. NINT(DRTAXS(4,1))) THEN
                      IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
-                        POINT_GROUP = 'C(nv)'
+                        POINT_GROUP = 'D(nd)'
                         WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
                      ELSE
-                        POINT_GROUP = 'C(nnv)'
+                        POINT_GROUP = 'D(nnd)'
                         WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
                      END IF
                   ELSE
-                     IF (NINT(DIRAXS(1,0)) .LT. 0)
-     &                  CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
-                     IF ((NINT(DIRAXS(1,0)) .GE. 1) .AND.
-     &                   (NINT(DIRAXS(4,1)).GE.2*NINT(DRTAXS(4,1))))THEN
-                        ITEMP = 2*NINT(DRTAXS(4,1))
-                        IF (ITEMP .LT. 10) THEN
-                           POINT_GROUP = 'S(n)'
-                           WRITE(POINT_GROUP(3:3),111) ITEMP
-                        ELSE
-                           POINT_GROUP = 'S(nn)'
-                           WRITE(POINT_GROUP(3:4),222) ITEMP
-                        END IF
+                     IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+                        POINT_GROUP = 'D(n)'
+                        WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
                      ELSE
-                        IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
-                           POINT_GROUP = 'C(n)'
-                           WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
-                        ELSE
-                           POINT_GROUP = 'C(nn)'
-                           WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
-                        END IF
+                        POINT_GROUP = 'D(nn)'
+                        WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
                      END IF
                   END IF
-                END IF
                END IF
-            END IF
+            ELSE IF (NINT(DMRPLN(1,0)) .GT. 0) THEN
+             ! no perpendicular C2 axes, but we have mirror planes
+             IF (NINT(DMRPLN(4,1)) .EQ. 2) THEN
+               ! we have a horizontal mirror plane
+               IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+                  POINT_GROUP = 'C(nh)'
+                  WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
+               ELSE
+                  POINT_GROUP = 'C(nnh)'
+                  WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
+               END IF
+             ELSE ! only vertical mirror planes
+C ::: Number of perpendicular mirror planes is counted. :::
+               ITEMP = 0
+               DO 400 I = 1, NINT(DMRPLN(1,0))
+                  IF (NINT(DMRPLN(4,I)) .EQ. 1) ITEMP = ITEMP + 1
+ 400           CONTINUE
+               IF (ITEMP .GE. NINT(DRTAXS(1,0))) THEN
+                  IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+                     POINT_GROUP = 'C(nv)'
+                     WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
+                  ELSE
+                     POINT_GROUP = 'C(nnv)'
+                     WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
+                  END IF
+               ELSE
+                  WRITE(LUPRI,'(//A)')
+     &               'FIND_PGROUP ERROR, cannot find point group'
+                  CALL QUIT(
+     &               'FIND_PGROUP ERROR, cannot find point group')
+               END IF
+             END IF
+            ELSE ! no mirror planes
+               IF (NINT(DIRAXS(1,0)) .LT. 0)
+     &            CALL FNDIMA(MXM, ATMARR, DIRAXS, DRTAXS, TMPARR)
+               IF ((NINT(DIRAXS(1,0)) .GE. 1) .AND.
+     &             (NINT(DIRAXS(4,1)).GE.2*NINT(DRTAXS(4,1))))THEN
+                  ITEMP = 2*NINT(DRTAXS(4,1))
+                  IF (ITEMP .LT. 10) THEN
+                     POINT_GROUP = 'S(n)'
+                     WRITE(POINT_GROUP(3:3),111) ITEMP
+                  ELSE
+                     POINT_GROUP = 'S(nn)'
+                     WRITE(POINT_GROUP(3:4),222) ITEMP
+                  END IF
+               ELSE
+                  IF (NINT(DRTAXS(4,1)) .LT. 10) THEN
+                     POINT_GROUP = 'C(n)'
+                     WRITE(POINT_GROUP(3:3),111) NINT(DRTAXS(4,1))
+                  ELSE
+                     POINT_GROUP = 'C(nn)'
+                     WRITE(POINT_GROUP(3:4),222) NINT(DRTAXS(4,1))
+                  END IF
+               END IF
+            END IF ! if perpendicular C2 - else if mirror planes
          END IF
-         RETURN
+      END IF
+      RETURN
       END
 C  /* Deck tstpar */
       SUBROUTINE TSTPAR(MXM,ARR,TARR,IATNO1,IATNO2,ICODE,VEC,GENELM)
