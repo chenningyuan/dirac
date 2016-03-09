@@ -1475,10 +1475,11 @@ C
      &          NATTYP(*), WRK(*)
       LOGICAL   LINDEP(6)
 C
+#include "nuclei.h"
 #include "taymol.h"
 #include "cbisol.h"
 #include "hotfccom.h"
-      AMASS(I) = DISOTP(NATTYP(I),1,'MASS')
+      AMASS(I) = DISOTP(NATTYP(I),ISOTOP(I),'MASS')
 C
 C     Construct 6 vectors that span the translational and rotational
 C     vector space

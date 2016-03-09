@@ -1070,9 +1070,6 @@ C
 #endif
       CALL SETDCH
       IF (DORLM .AND. .NOT. CAVUSR) THEN
-         DO 234 I = 1, MXCENT
-            ISOTOP(I) = 1
- 234     CONTINUE
          KGEOM = 1
          KMASS = KGEOM + 3*NATOMS
          KNAT  = KMASS + NATOMS
