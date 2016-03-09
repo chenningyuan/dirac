@@ -857,9 +857,9 @@ C---------------Executable code--------------------------------------
 
              IF (FAC.GT.DHOLU) THEN
                    CONST = AR1/FAC
-                   DINV_ONE(IA:IA+(RCW-1)) = CONST
+                   DINV_ONE(IA:(IA+(RCW-1))) = CONST
              ELSE
-                   DINV_ONE(IA:IA+(RCW-1)) = AR0
+                   DINV_ONE(IA:(IA+(RCW-1))) = AR0
              ENDIF
 
              IA = IA + RCW
@@ -897,9 +897,9 @@ C---------------Executable code--------------------------------------
                   FAC = FAC3 - EPS(II)
                   IF (FAC.GT.DHOLU) THEN
                         CONST = AR1/FAC
-                        DINV_TWO(ABIJ:ABIJ+(RCW-1)) = CONST
+                        DINV_TWO(ABIJ:(ABIJ+(RCW-1))) = CONST
                   ELSE
-                    DINV_TWO(ABIJ:ABIJ+(RCW-1)) = AR0
+                    DINV_TWO(ABIJ:(ABIJ+(RCW-1))) = AR0
                   ENDIF
                   ABIJ = ABIJ + RCW
                ENDDO

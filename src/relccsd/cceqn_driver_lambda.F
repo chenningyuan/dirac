@@ -233,16 +233,15 @@ C     Initialize the work arrays to zero.
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
 
-
-      CALL DENOM_L (EPS,RESL1,RESL2,RESL1,RESL2)
-
-
-       call xaxpy (ndimt1,-a1,resL1,1,l1,1)
-       call xaxpy (ndimt2,-a2,resL2,1,l2,1)
+!     CALL DENOM_L (EPS,RESL1,RESL2,RESL1,RESL2)
 
 
-!      call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
-!      call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
+!      call xaxpy (ndimt1,-a1,resL1,1,l1,1)
+!      call xaxpy (ndimt2,-a2,resL2,1,l2,1)
+
+
+       call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
+       call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
 
 !!      CALL ZCORE (L1,L2)
 
