@@ -5859,6 +5859,7 @@ C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3,
 C   IPDSUSC(19-27)...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSUSCGO
 C
         CALL DZERO(SUSDIA,9)
+!gosia: here take care of ipdsusc(1) - ipdsusc(18):
         IJ = 0
         NEXPVALTERMS=3 ! RM2H1 + RM2H2 + RM2H3: second magnetic derivatives of the Dirac Hamiltonian
         DO K = 1, NEXPVALTERMS
@@ -5866,13 +5867,14 @@ C
         DO J = I, 3 
           IJ = IJ + 1
           IJX = IPDSUSC(IJ) 
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
+          SUSDIA(IPTAX(J,2),IPTAX(I,2)) =-EXPVAL(IJX) +
      &    SUSDIA(IPTAX(J,2),IPTAX(I,2))  
           SUSDIA(IPTAX(I,2),IPTAX(J,2)) = SUSDIA(IPTAX(J,2),IPTAX(I,2))
         ENDDO
         ENDDO
         ENDDO
 
+!gosia: here take care of ipdsusc(19) - ipdsusc(27):
 C -------------------------------------------------------
 C     RDSUSLL - first magnetic derivative of London magnetic dipole operator
 C     These are 9 tensor terms, of which nondiagonal
@@ -5930,7 +5932,7 @@ C    ... control print-out of both symmetrized and nosymmetrized RDSUSLL terms
         DO J = 1, 3 
          IJ = IJ + 1
          IJX = IPDSUSC(IJ) 
-         SUSDIA(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX) +
+         SUSDIA(IPTAX(I,2),IPTAX(J,2)) =-EXPVAL(IJX) +
      &   SUSDIA(IPTAX(I,2),IPTAX(J,2)) 
         ENDDO
         ENDDO
@@ -5943,7 +5945,7 @@ C ------------------------------------------------------------------------------
           DO J = I, 3 
            IJ = IJ + 1
            IJX = IPDSUSC(IJ) 
-           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
+           SUSDIA(IPTAX(J,2),IPTAX(I,2)) =  EXPVAL(IJX) +
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2)) 
            SUSDIA(IPTAX(I,2),IPTAX(J,2)) =  
      &     SUSDIA(IPTAX(J,2),IPTAX(I,2))
