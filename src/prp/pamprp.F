@@ -5867,7 +5867,7 @@ C
         DO J = I, 3 
           IJ = IJ + 1
           IJX = IPDSUSC(IJ) 
-          SUSDIA(IPTAX(J,2),IPTAX(I,2)) =-EXPVAL(IJX) +
+          SUSDIA(IPTAX(J,2),IPTAX(I,2)) = EXPVAL(IJX) +
      &    SUSDIA(IPTAX(J,2),IPTAX(I,2))  
           SUSDIA(IPTAX(I,2),IPTAX(J,2)) = SUSDIA(IPTAX(J,2),IPTAX(I,2))
         ENDDO
@@ -5932,7 +5932,7 @@ C    ... control print-out of both symmetrized and nosymmetrized RDSUSLL terms
         DO J = 1, 3 
          IJ = IJ + 1
          IJX = IPDSUSC(IJ) 
-         SUSDIA(IPTAX(I,2),IPTAX(J,2)) =-EXPVAL(IJX) +
+         SUSDIA(IPTAX(I,2),IPTAX(J,2)) = EXPVAL(IJX) +
      &   SUSDIA(IPTAX(I,2),IPTAX(J,2)) 
         ENDDO
         ENDDO
@@ -5958,6 +5958,7 @@ C          ... save them only when e-p rotations are active!
          ENDDO
 
 C ... This is needed for compatibility with Dalton 
+!gosia: but suscom is not used in following print of one-electron exp.value!
          DO I = 1, 3
          DO J = I, 3 
           IJ = IJ + 1
