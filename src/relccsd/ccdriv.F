@@ -272,7 +272,6 @@ C     Switch on evaluation of property output if necessary
                 NPRP_WF = NPRP_WF + 1
                 IPRP_WF = NPRP_WF
              END IF
-             write(*,*)'value of IPRP_WF',IPRP_WF 
              PRP_WF(IPRP_WF) = 'CCSD'
           END IF
       END IF
@@ -2690,8 +2689,12 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-         WRITE (IW,*) 'Calculate CCSD gradient'
-         doccsdg = .true.
+        if (nmproc.gt.1) then
+          call quit('CC-Gradient is not parallelized')
+        else
+          WRITE (IW,*) 'Calculate CCSD gradient'
+          doccsdg = .true.
+        endif
       endif
 
       if (domp2g) then
