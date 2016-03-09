@@ -13,7 +13,7 @@ f.add(from_string = '  Magnetizabilities                    au          SI      
       num_lines   = 9,
       rel_tolerance   = 0.0002)
 
-#test.run(['ll_lda_magn_sc_g0.inp'], ['hf.xyz'], f)
+test.run(['ll_lda_magn_sc_g0.inp'], ['hf.xyz'], f)
 #test.run(['ll_lda_magn_sc_g1.inp'], ['hf.xyz'], f)
 #test.run(['ll_pbe_magn_sc_g0.inp'], ['hf.xyz'], f)
 #test.run(['ll_pbe_magn_sc_g1.inp'], ['hf.xyz'], f)
@@ -25,10 +25,10 @@ f.add(from_string = '  Magnetizabilities                    au          SI      
 
 #os.unlink('DFCOEF')
 
-test.run(['dc_pbe.inp'], ['hf.xyz'], args='--outcmo')
+#test.run(['dc_pbe.inp'], ['hf.xyz'], args='--outcmo')
 #test.run(['dc_pbe_magn_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
-test.run(['dc_pbe_magn_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_pbe_magn_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
 
-os.unlink('DFCOEF')
+#os.unlink('DFCOEF')
 
 sys.exit(test.return_code)
