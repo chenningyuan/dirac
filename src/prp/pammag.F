@@ -1941,7 +1941,10 @@ C
       LOGICAL   LBIT,NODV,NOPV,NOCONT,RETUR,
      &          FCKDDR,DDFOCK,FIRST,SUSCEP
       real(8), allocatable :: dmat_0(:)
-      real(8) :: sus2el_xc(3, 3), sus2el_fde(3, 3)
+      real(8) :: sus2el_xc(3, 3)
+      real(8) :: sus2el_fde(3, 3)
+      real(8) :: sus2el_fde_1(3, 3), sus2el_fde_2(3,3)
+      real(8) :: sus2el_fde_3(3, 3), sus2el_fde_4(3,3)
 !
       real(8), allocatable   :: dmat(:, :), buffer(:)
       type(fde_import) :: itmp
@@ -2044,7 +2047,7 @@ C
         if (.not. dft_cfg_no_sdft) then
 !         in integrate_xc, dmat_0 is read in as (ntbas(0), ntbas(0)), so only its real part is taken;
 !         so for sdft the (full) dmat has to be passed as additional xc_dmat...
-!         i take work(dmat) as it's already allocated...
+!         work(dmat) has full dmat and is already allocated:
           call integrate_xc(xc_mat_dim   = ntbas(0),
      &                      xc_nz        = nz,
      &                      xc_dmat_0    = dmat_0,
@@ -2118,6 +2121,7 @@ C
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl(12)
 #endif
+          sus2el_fde_1 = 0.0d0
           call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
      &                    fde_nz                 = nz,
@@ -2125,7 +2129,15 @@ C
      &                    fde_nr_dmat            = 0,
      &                    fde_nr_fmat            = 0,
      &                    fde_do_london_susc2el  = .true.)
-          sus2el_fde = fde_susc2el_integrated()
+          sus2el_fde_1 = fde_susc2el_integrated()
+          if (iprprp .ge. 1) then
+            CALL HEADER('sus2el_fde_1 (embpot)', -1)
+            CALL POLPRI(sus2el_fde_1,'   ',-2)
+            AVERAG = (sus2el_fde_1(1,1) + sus2el_fde_1(2,2)
+     &              + sus2el_fde_1(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+          end if
+
         end if
 
 
@@ -2138,6 +2150,7 @@ C
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl(12)
 #endif
+          sus2el_fde_2 = 0.0d0
           call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
      &                    fde_nz                 = nz,
@@ -2146,7 +2159,14 @@ C
      &                    fde_nr_dmat            = 1,
      &                    fde_nr_fmat            = 0,
      &                    fde_do_london_susc2el  = .true.)
-          sus2el_fde = sus2el_fde + fde_susc2el_integrated()
+          sus2el_fde_2 = fde_susc2el_integrated()
+          if (iprprp .ge. 1) then
+            CALL HEADER('sus2el_fde_2 (embker, uncoupl)', -1)
+            CALL POLPRI(sus2el_fde_2,'   ',-2)
+            AVERAG = (sus2el_fde_2(1,1) + sus2el_fde_2(2,2)
+     &              + sus2el_fde_2(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+          end if
         end if
 
 !       embedding coupling-kernel contribution
@@ -2158,6 +2178,7 @@ C
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl(12)
 #endif
+          sus2el_fde_3 = 0.0d0
           call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
      &                    fde_nz                 = nz,
@@ -2166,22 +2187,42 @@ C
      &                    fde_nr_dmat            = 1,
      &                    fde_nr_fmat            = 0,
      &                    fde_do_london_susc2el  = .true.)
-          sus2el_fde = sus2el_fde + fde_susc2el_integrated()
+          sus2el_fde_3 = fde_susc2el_integrated()
+          if (iprprp .ge. 1) then
+            CALL HEADER('sus2el_fde_3 (embker, coupl, noCoul)', -1)
+            CALL POLPRI(sus2el_fde_3,'   ',-2)
+            AVERAG = (sus2el_fde_3(1,1) + sus2el_fde_3(2,2)
+     &              + sus2el_fde_3(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+          end if
         end if
 !       2. coulomb:
-!        if (.not.fde_lao_magn_expval_no_coupl_coulomb_embker .and.
-!     &      fde_rsp_mag_lao_import .and.
-!     &      .not. fde_cfg_no_sdft) then
+        if (.not.fde_lao_magn_expval_no_coupl_coulomb_embker .and.
+     &      fde_rsp_mag_lao_import .and.
+     &      .not. fde_cfg_no_sdft) then
+          sus2el_fde_4 = 0.0d0
 !              write(*, *) 'LAO kernel-like contribution to exp.val.'//
 !     &                 ' from frozen perturbed density (Coulomb term)'
 !        call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
-!        end if
+!          sus2el_fde_4 = sus2el_fde_4 + fde_susc2el_integrated()
+        end if
 
 
         call dealloc(dmat_0)
 
+!       Calculate total value of sus2el_fde:
+        do i = 1, 3
+           do j = 1, 3
+              sus2el_fde(j, i) = sus2el_fde(j, i) 
+     &                         + sus2el_fde_1(j, i)
+     &                         + sus2el_fde_2(j, i)
+     &                         + sus2el_fde_3(j, i)
+     &                         + sus2el_fde_4(j, i)
+           end do
+        end do
+
         if (iprprp .ge. 1) then
-!         sus2el - fde contributions only:
+!         sus2el - fde contributions:
           CALL HEADER('FDE contribs to two-electron '//
      &                ' expectation values',-1)
           CALL POLPRI(sus2el_fde,'   ',-2)
