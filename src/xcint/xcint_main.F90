@@ -676,7 +676,6 @@ contains
                                    .and. .not. do_london_rhs_direct_der1  &
                                    .and. .not. do_london_rhs_ro           &
                                    .and. .not. do_london_ks         &
-                                   .and. .not. do_london_susc2el    &
                                    .and. .not. do_geo)) then
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
@@ -1717,43 +1716,42 @@ contains
             n_bb = 0.0d0
 !           here no SDFT contributions (first-order functional derivatives)
             if (use_gga) then
-            !  call gga_london_sus2el_der1(derv(1, d1000000),        &
-            !                              2.0d0*derv(1, d0010000),  &
-            !                              gn_0_pointwise,           &
-            !                              (/1,1,1/),                &
-            !                              mat_dim,                  &
-            !                              nz,                       &
-            !                              dmat_0,                   &
-            !                              ao,                       &
-            !                              rx(ipoint), ry(ipoint), rz(ipoint), &
-            !                              n_bb)
-               call xc_london_c1_susc_gga_der1(derv(1, d1000000),   &
-                                           2.0d0*derv(1, d0010000),  &
-                                           gn_0_pointwise,           &
-                                           mat_dim,             &
-                                           nz,                  &
-                                           dmat_0,                &
-                                           ao,                  &
-                                           (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
-                                           n_bb)
+              call gga_london_sus2el_der1(derv(1, d1000000),        &
+                                          2.0d0*derv(1, d0010000),  &
+                                          gn_0_pointwise,           &
+                                          (/1,1,1/),                &
+                                          mat_dim,                  &
+                                          nz,                       &
+                                          dmat_0,                   &
+                                          ao,                       &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          n_bb)
+            !   call xc_london_c1_susc_gga_der1(derv(1, d1000000),   &
+            !                               2.0d0*derv(1, d0010000),  &
+            !                               gn_0_pointwise,           &
+            !                               mat_dim,             &
+            !                               nz,                  &
+            !                               dmat_0,                &
+            !                               ao,                  &
+            !                               (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+            !                               n_bb)
 
             else
-             ! call lda_london_sus2el_der1(derv(1, d1000000),   &
-             !                             (/1,1,1/),           &
-             !                             mat_dim,             &
-             !                             nz,                  &
-             !                             dmat_0,              &
-             !                             ao,                  &
-             !                             rx(ipoint), ry(ipoint), rz(ipoint), &
-             !                             n_bb)
-               call xc_london_c1_susc_der1(derv(1, d1000000),   &
-                                           mat_dim,             &
-                                           nz,                  &
-                                           dmat_0,                &
-                                           ao,                  &
-                                           (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
-                                           n_bb)
-
+              call lda_london_sus2el_der1(derv(1, d1000000),   &
+                                          (/1,1,1/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat_0,              &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          n_bb)
+             !  call xc_london_c1_susc_der1(derv(1, d1000000),   &
+             !                              mat_dim,             &
+             !                              nz,                  &
+             !                              dmat_0,                &
+             !                              ao,                  &
+             !                              (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+             !                              n_bb)
             end if
 !           test c1, use overlap derivatives and not AO derivs (leave it to compare directly with dalton):
 !           sum to susc2el_xc_integrated
