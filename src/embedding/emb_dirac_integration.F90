@@ -277,7 +277,8 @@ module fde_dirac_matrices_integration
    logical :: do_london_rhs_direct_kern
    logical :: do_london_rhs_kern_coupling
    logical :: do_london_rhs_ro
-   logical :: do_london_susc2el
+   logical :: do_london_susc2el_der1
+   logical :: do_london_susc2el_der2
    logical :: do_london_susc2el_coupling
    logical :: do_geo
    logical :: do_geo_0
@@ -376,7 +377,8 @@ contains
                              fde_do_london_rhs_direct_kern,   &
                              fde_do_london_rhs_kern_coupling, &
                              fde_do_london_rhs_ro,      &
-                             fde_do_london_susc2el,     &
+                             fde_do_london_susc2el_der1,     &
+                             fde_do_london_susc2el_der2,     &
                              fde_do_london_susc2el_coupling,   &
                              fde_do_export_pertden_reorth,     &
                              fde_do_export_pertden_direct,     &
@@ -428,7 +430,8 @@ contains
       logical, optional,         intent(in)    :: fde_do_london_rhs_direct_kern
       logical, optional,         intent(in)    :: fde_do_london_rhs_kern_coupling
       logical, optional,         intent(in)    :: fde_do_london_rhs_ro
-      logical, optional,         intent(in)    :: fde_do_london_susc2el
+      logical, optional,         intent(in)    :: fde_do_london_susc2el_der1
+      logical, optional,         intent(in)    :: fde_do_london_susc2el_der2
       logical, optional,         intent(in)    :: fde_do_london_susc2el_coupling
       logical, optional,         intent(in)    :: fde_do_export_pertden_reorth
       logical, optional,         intent(in)    :: fde_do_export_pertden_direct
@@ -496,7 +499,8 @@ contains
       do_london_rhs_direct_kern    = .false.
       do_london_rhs_kern_coupling  = .false.
       do_london_rhs_ro             = .false.
-      do_london_susc2el            = .false.
+      do_london_susc2el_der1       = .false.
+      do_london_susc2el_der2       = .false.
       do_london_susc2el_coupling   = .false.
       do_geo_0              = .false.
       do_geo_1              = .false.
@@ -520,7 +524,8 @@ contains
          if (present(fde_do_london_rhs_direct_kern))    do_london_rhs_direct_kern    = fde_do_london_rhs_direct_kern
          if (present(fde_do_london_rhs_kern_coupling))  do_london_rhs_kern_coupling  = fde_do_london_rhs_kern_coupling
          if (present(fde_do_london_rhs_ro))             do_london_rhs_ro             = fde_do_london_rhs_ro
-         if (present(fde_do_london_susc2el))            do_london_susc2el            = fde_do_london_susc2el
+         if (present(fde_do_london_susc2el_der1))       do_london_susc2el_der1       = fde_do_london_susc2el_der1
+         if (present(fde_do_london_susc2el_der2))       do_london_susc2el_der2       = fde_do_london_susc2el_der2
          if (present(fde_do_london_susc2el_coupling))   do_london_susc2el_coupling   = fde_do_london_susc2el_coupling
          if (present(fde_do_export_pertden_reorth))     do_export_pertden_reorth     = fde_do_export_pertden_reorth
          if (present(fde_do_export_pertden_direct))     do_export_pertden_direct     = fde_do_export_pertden_direct
@@ -585,7 +590,8 @@ contains
          call fde_mpi_bcast(do_london_rhs_direct_kern)
          call fde_mpi_bcast(do_london_rhs_kern_coupling)
          call fde_mpi_bcast(do_london_rhs_ro)
-         call fde_mpi_bcast(do_london_susc2el)
+         call fde_mpi_bcast(do_london_susc2el_der1)
+         call fde_mpi_bcast(do_london_susc2el_der2)
          call fde_mpi_bcast(do_london_susc2el_coupling)
          call fde_mpi_bcast(do_export_pertden_reorth)
          call fde_mpi_bcast(do_export_pertden_direct)
@@ -809,7 +815,10 @@ contains
       if (do_london_rhs_direct .or. do_london_rhs_direct_kern) then
         max_ao_m_order = 1
       end if
-      if (do_london_susc2el .or. do_london_susc2el_coupling) then
+      if (do_london_susc2el_der2 .or. do_london_susc2el_coupling) then
+        max_ao_m_order = 1
+      end if
+      if (do_london_susc2el_der1) then
         max_ao_m_order = 2
       end if
 
@@ -898,7 +907,7 @@ contains
          if (do_geo) then
             call fde_mpi_reduce(property_gradient)
          end if
-         if (do_london_susc2el .or. do_london_susc2el_coupling) then
+         if (do_london_susc2el_der1 .or. do_london_susc2el_der2 .or. do_london_susc2el_coupling) then
             call fde_mpi_reduce(susc2el_fde_integrated)
             call fde_mpi_reduce(susc2el_fde_integrated_sdft)
          end if
@@ -922,8 +931,6 @@ contains
                                    .and. .not. do_london_rhs_direct_kern &
                                    .and. .not. do_london_rhs_kern_coupling &
                                    .and. .not. do_london_ks         &
-                                   .and. .not. do_london_susc2el        &
-                                   .and. .not. do_london_susc2el_coupling  &
                                    .and. .not. do_export_pertden_reorth &
                                    .and. .not. do_export_pertden_direct &
                                    .and. .not. do_geo)) then
@@ -1333,9 +1340,12 @@ contains
    if (do_london_rhs_direct) then
       max_fun_derv = 1
    end if
-    if (do_london_susc2el .or. do_london_susc2el_coupling) then
-       max_fun_derv = 2
-    end if
+   if (do_london_susc2el_der1) then
+      max_fun_derv = 1
+   end if
+   if (do_london_susc2el_der2 .or. do_london_susc2el_coupling) then
+      max_fun_derv = 2
+   end if
    if (do_london_rhs_direct_kern .and. .not.fde_cfg_no_sdft) then
       max_fun_derv = 2
    end if
@@ -2124,7 +2134,7 @@ contains
 !         *c18 subroutines use overlap derivatives and not AO derivs 
 !         (please leave it to compare directly with dalton)
 
-          if (do_london_susc2el) then
+          if (do_london_susc2el_der1) then
             n_bb = 0.0d0
 !           embpot-dependent term, no SDFT contributions
             t= (derv_total(1, d1000000) - derv_active(1, d1000000)) + w(1)*frozen_elpot(ipoint)
@@ -2172,62 +2182,61 @@ contains
                                                   + n_bb(jxyz, ixyz)
               end do
             end do
+          end if
 
-!           embker-dependent term, only when SDFT contributions
-            if (fde_lao_direct_active_embker .and. .not. fde_cfg_no_sdft) then
-            !if (.not. fde_cfg_no_sdft) then
-              n_bb = 0.0d0
-              t = derv_total(1, d0200000) - derv_active(1, d0200000)
-              if (use_gga) then
-                call gga_london_sus2el_der2(derv_total(1, d0200000),   &
-                                            derv_total(1, d0101000),   &
-                                            derv_total(1, d0002000),   &
-                                            2.0d0*derv_total(1, d0000100),   &
-                                            z0tt, &
-                                            (/1,1,1/),           &
-                                            mat_dim,             &
-                                            nz,                  &
-                                            dmat,                &
-                                            ao,                  &
-                                            rx(ipoint), ry(ipoint), rz(ipoint), &
-                                            n_bb_total)
+!         embker-dependent term, only when SDFT contributions
+          if (do_london_susc2el_der2) then
+            n_bb = 0.0d0
+            t = derv_total(1, d0200000) - derv_active(1, d0200000)
+            if (use_gga) then
+              call gga_london_sus2el_der2(derv_total(1, d0200000),   &
+                                          derv_total(1, d0101000),   &
+                                          derv_total(1, d0002000),   &
+                                          2.0d0*derv_total(1, d0000100),   &
+                                          z0tt, &
+                                          (/1,1,1/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat,                &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          n_bb_total)
 
-                call gga_london_sus2el_der2(derv_active(1, d0200000),   &
-                                            derv_active(1, d0101000),   &
-                                            derv_active(1, d0002000),   &
-                                            2.0d0*derv_active(1, d0000100),   &
-                                            gn_0_pointwise, &
-                                            (/1,1,1/),           &
-                                            mat_dim,             &
-                                            nz,                  &
-                                            dmat,                &
-                                            ao,                  &
-                                            rx(ipoint), ry(ipoint), rz(ipoint), &
-                                            n_bb_active)
-                do ixyz = 1, 3
-                  do jxyz = 1, 3
-                    susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
-                                                   + n_bb_total(jxyz, ixyz) - n_bb_active(jxyz, ixyz)
-                  end do
+              call gga_london_sus2el_der2(derv_active(1, d0200000),   &
+                                          derv_active(1, d0101000),   &
+                                          derv_active(1, d0002000),   &
+                                          2.0d0*derv_active(1, d0000100),   &
+                                          gn_0_pointwise, &
+                                          (/1,1,1/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat,                &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          n_bb_active)
+              do ixyz = 1, 3
+                do jxyz = 1, 3
+                  susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
+                                                 + n_bb_total(jxyz, ixyz) - n_bb_active(jxyz, ixyz)
                 end do
-              else
-                call lda_london_sus2el_der2(t,         &
-                                            (/1,1,1/), &
-                                            mat_dim,   &
-                                            nz,        &
-                                            dmat,      &
-                                            ao,        &
-                                            rx(ipoint), ry(ipoint), rz(ipoint), &
-                                            n_bb)
-                do ixyz = 1, 3
-                  do jxyz = 1, 3
-                    susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
-                                                      + n_bb(jxyz, ixyz)
-                  end do
+              end do
+            else
+              call lda_london_sus2el_der2(t,         &
+                                          (/1,1,1/), &
+                                          mat_dim,   &
+                                          nz,        &
+                                          dmat,      &
+                                          ao,        &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          n_bb)
+              do ixyz = 1, 3
+                do jxyz = 1, 3
+                  susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
+                                                    + n_bb(jxyz, ixyz)
                 end do
-              end if
+              end do
             end if
-          end if !do_london_susc2el
+          end if
 
           if (do_london_susc2el_coupling) then
             if (.not. fde_cfg_no_sdft) then

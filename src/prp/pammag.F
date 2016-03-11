@@ -2128,7 +2128,7 @@ C
      &                    fde_dmat_0             = dmat_0,
      &                    fde_nr_dmat            = 0,
      &                    fde_nr_fmat            = 0,
-     &                    fde_do_london_susc2el  = .true.)
+     &                    fde_do_london_susc2el_der1  = .true.)
           sus2el_fde_1 = fde_susc2el_integrated()
           if (iprprp .ge. 1) then
             CALL HEADER('sus2el_fde_1 (embpot)', -1)
@@ -2143,8 +2143,8 @@ C
 
 !       embedding kernel contribution (no coupling)
 !       -------------------------------------------
-        if (.not.fde_lao_magn_expval_no_uncoup_embker .and. 
-     &                   .not. fde_cfg_no_sdft) then
+        if (.not.fde_lao_magn_expval_no_uncoup_embker) then
+          if(.not. fde_cfg_no_sdft) then
           write(*, *) 'FDE kernel contribution to expectation value,'//
      &                ' no coupling'
 #ifdef VAR_MPI
@@ -2158,7 +2158,7 @@ C
      &                    fde_dmat               = work(kdmat),
      &                    fde_nr_dmat            = 1,
      &                    fde_nr_fmat            = 0,
-     &                    fde_do_london_susc2el  = .true.)
+     &                    fde_do_london_susc2el_der2  = .true.)
           sus2el_fde_2 = fde_susc2el_integrated()
           if (iprprp .ge. 1) then
             CALL HEADER('sus2el_fde_2 (embker, uncoupl)', -1)
@@ -2167,6 +2167,7 @@ C
      &              + sus2el_fde_2(3,3))/3.0d0
             WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
           end if
+        end if
         end if
 
 !       embedding coupling-kernel contribution
@@ -2186,7 +2187,7 @@ C
      &                    fde_dmat               = work(kdmat),
      &                    fde_nr_dmat            = 1,
      &                    fde_nr_fmat            = 0,
-     &                    fde_do_london_susc2el  = .true.)
+     &                    fde_do_london_susc2el_coupling  = .true.)
           sus2el_fde_3 = fde_susc2el_integrated()
           if (iprprp .ge. 1) then
             CALL HEADER('sus2el_fde_3 (embker, coupl, noCoul)', -1)
