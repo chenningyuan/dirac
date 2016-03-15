@@ -667,7 +667,9 @@ contains
         end if
      end if
 
-     if (fde_lao_direct_active_embker .and. .not. fde_rsp_mag_lao_no_s) then
+     if (fde_lao_direct_active_embker &
+         .and. .not. fde_cfg_no_sdft &
+         .and. .not. fde_rsp_mag_lao_no_s) then
 
         write(*, *) 'LAO-direct contribution to property gradient (embker)'
 
