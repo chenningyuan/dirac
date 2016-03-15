@@ -35,7 +35,7 @@ use mercod
 interface cphase
    module procedure phase_c81, phase_c82, phase_r8
 end interface
-   integer (kind=K_I4), private, dimension (1) :: j2
+   integer , private, dimension (1) :: j2
 contains
 subroutine phase_r8(a,m,n)
 !
@@ -59,12 +59,12 @@ subroutine phase_r8(a,m,n)
 !
 !     ----- arguments -----
 !
-   integer (kind=K_I4), intent(in) :: m,n
+   integer , intent(in) :: m,n
    double precision, intent(inout), dimension (:,:) :: a
 !
 !     ----- local variables -----
 !
-   integer (kind=K_I4) :: j,i,jmax
+   integer  :: j,i,jmax
    double precision :: val
 !
 !     +++++
@@ -102,12 +102,12 @@ subroutine phase_c81(a,m,n)
 !
 !     ----- arguments -----
 !
-  integer (kind=K_I4), intent(in) :: m,n
+  integer , intent(in) :: m,n
   complex (kind=K_C8), intent(inout), dimension (:,:) :: a
 !
 !     ----- local variables -----
 !
-   integer (kind=K_I4) :: j
+   integer  :: j
    complex (kind=K_C8) :: cval
 !
 !     +++++
@@ -148,15 +148,15 @@ subroutine phase_c82(vr,vi,m,n)
 !
 !     ----- arguments -----
 !
-  integer (kind=K_I4), intent(in) :: m,n
+  integer , intent(in) :: m,n
   double precision, intent(inout), dimension (:,:) :: vr,vi
 !
 !     ----- local variables -----
 !
-   integer (kind=K_I4) :: i,j,ios,nth,ith,irval,jmax
-   integer (kind=K_I4), dimension (1) :: j2
+   integer  :: i,j,ios,nth,ith,irval,jmax
+   integer , dimension (1) :: j2
    double precision :: crval,cival,ar,ai,dum
-   integer (kind=K_I4), allocatable, dimension (:,:) :: tmp
+   integer , allocatable, dimension (:,:) :: tmp
 !
 !     +++++
 !     start
