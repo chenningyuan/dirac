@@ -3018,12 +3018,20 @@ C       limitations elsewhere. 20120720
             NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
          ENDDO
 
-
 C        Check the minimum size for the general use of this array
 
          NVIRP = MAX(NV5IRP,NV6IRP)
 
          NBUF3 = MIN(NVIRP,INT(NBUF3,8))
+
+         IF (NV5IRP.GT.NBUF3) THEN
+
+           write(iw,*) 'The calculation may Fail because of very high
+     &                  memory requirement. Increase mw'
+           NBUF3 = NV5IRP
+         
+         ENDIF
+
          NBUF3 = MAX(NBUF1,NBUF3)
 
 C     Allocate now also this remaining work array
