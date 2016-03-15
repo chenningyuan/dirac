@@ -20,6 +20,7 @@ module cdavidson_lille
    use mdebug
    use mercod
    use matpri
+   use davidson_trf
    use davidson_vhv_symmetric
    use davidson_schmidt
    use dummy_sigmavec
@@ -200,7 +201,6 @@ contains
       use chkprm_mod
       use fragh_mod
 !     use savvso_mod
-      use trf_mod
       use fiflsh_mod
       implicit none
 !
@@ -789,8 +789,8 @@ contains
          write(6,9989) info
          stop
       endif   
-      call ctrf(cv,vc,n,mvec,cwork)
-      call ctrf(cv,hvc,n,mvec,cwork)
+      call trf(cv,vc,n,mvec,cwork)
+      call trf(cv,hvc,n,mvec,cwork)
 !
 !    ------------------------------
 !    ----- loop over segments -----
@@ -870,8 +870,8 @@ contains
                stop
             endif
             per = chkprm(cv,eso,ndiag,mvec)
-            call ctrf(cv,vc,n,ndiag,cwork)
-            call ctrf(cv,hvc,n,ndiag,cwork)
+            call trf(cv,vc,n,ndiag,cwork)
+            call trf(cv,hvc,n,ndiag,cwork)
             if(ndiag+nseg.gt.mvm) then
                reset = '*'
                ndiag = mvec
@@ -990,8 +990,8 @@ contains
                stop
             endif
             per = chkprm(cv,eso,mvec,mvec)
-            call ctrf(cv,vc,n,mvec,cwork)
-            call ctrf(cv,hvc,n,mvec,cwork)
+            call trf(cv,vc,n,mvec,cwork)
+            call trf(cv,hvc,n,mvec,cwork)
             vhv(1:mvec*(mvec+1)/2) = CZERO
             do i=1,mvec
                vhv(i*(i+1)/2) = cmplx(eso(i),ZERO,kind=K_C8)
@@ -1018,50 +1018,5 @@ contains
 #endif
       return
    end subroutine cdeigen
-   subroutine ctrf(c,v,ndet,nvec,wc)
-!
-!*******************************************************************************
-!     ----- Develop the eigenvectors on the basis of determinants -----
-!===============================================================================
-!      C (R8) = vectors in the small basis (INPUT)
-!      V (R8) = vectors in the large basis (INPUT/OUTPUT)
-!   NDET (i4) = dimension of the large basis (INPUT)
-!   NVEC (I4) = number of eigenvectors (INPUT)
-!     WC (R8) = working array of same shape as VC (SCRATCH)
-!-------------------------------------------------------------------------------
-!     written by: J. P. Flament
-!                 PhLAM
-!                 Bat. P5
-!                 Universite de Lille-1
-!                 F-59655 Villeneuve d'Ascq Cedex
-!*******************************************************************************
-!
-      use blas95, only: gemm
-      implicit none
-!
-!     ----- parameters -----
-!
-!     ----- arguments -----
-!
-      integer , intent(in) :: ndet,nvec
-      complex (kind=K_C8), intent(in), dimension (:,:) :: c
-      complex (kind=K_C8), intent(inout), dimension (:,:) :: v,wc
-!
-!     ----- local variables -----
-!
-!     +++++
-!     start
-!     +++++
-!
-#ifdef _MYDEBUG_
-      call subent('CTRF')
-#endif
-      call gemm(v(1:ndet,1:nvec),c(1:nvec,1:nvec),wc(1:ndet,1:nvec),  &
-                   'N','N',CONE,CZERO)
-      v(1:ndet,1:nvec) = wc(1:ndet,1:nvec)
-#ifdef _MYDEBUG_
-      call subret('CTRF',1)
-#endif
-      return
-   end subroutine ctrf
+
 end module cdavidson_lille

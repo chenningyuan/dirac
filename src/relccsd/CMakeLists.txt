@@ -132,7 +132,7 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
 #   davidson_lille/include/hred_mod.F90
 #   davidson_lille/include/savvls_mod.F90
 #   davidson_lille/include/savvso_mod.F90
-    davidson_lille/include/trf_mod.F90
+#   davidson_lille/include/trf_mod.F90
     davidson_lille/tools90/caps.F90
 #   davidson_lille/tools90/incord.F90
     davidson_lille/tools90/jpsort.F90
@@ -175,7 +175,7 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
 #   davidson_lille/fullguess.F90
 #   davidson_lille/hred.F90
 #   davidson_lille/schmor.F90
-#    davidson_lille/trf.F90
+    davidson_lille/trf.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

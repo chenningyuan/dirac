@@ -12,6 +12,7 @@ public calvhv_symmetric
 interface calvhv_symmetric
    module procedure calvhv_c
    module procedure calvhv_vrvi
+   module procedure calvhv_c_fullmatrix
 end interface calvhv_symmetric
 
 contains
@@ -133,5 +134,47 @@ end subroutine calvhv_vrvi
         vhv(ij) = dotc(vc(1:ndet,j),hvc(1:ndet,nvec))
      enddo
    end subroutine calvhv_c
+
+   subroutine calvhv_c_fullmatrix(vhv_full,hvc,vc,ndet,nvec)
+!
+!*******************************************************************************
+!     ----- compute the <v|H|v> matrix -----
+!===============================================================================
+!       VHV (C8) = full matrix <v|H|v> for reduced problem (OUTPUT)
+!        HV (C8) = sigma vectors (H*|v matrix) (INPUT)
+!         V (C8) = vectors v(ndet,ndet) (INPUT)
+!        NP (I4) = dimension of hvr, hvi, vr, vi (INPUT)
+!      NDET (I4) = dimension of the original space (INPUT)
+!      NVEC (I4) = number of vectors |v> (INPUT)
+!-------------------------------------------------------------------------------
+!     written by: Andre Gomes 
+!                 PhLAM
+!                 Bat. P5
+!                 Universite de Lille-1
+!                 F-59655 Villeneuve d'Ascq Cedex
+!*******************************************************************************
+!
+     use blas95, only: dotc
+     implicit none
+!
+!     ----- parameters -----
+!
+!     ----- arguments -----
+!
+     integer, intent(in) :: ndet,nvec
+     complex (kind=K_C8), intent(inout), dimension (:,:) :: vhv_full
+     complex (kind=K_C8), intent(in), dimension (:,:) :: hvc,vc
+!
+!     ----- local variables -----
+!
+     integer :: i, j
+!
+     do i = 1, nvec
+         do j = 1, nvec
+            vhv_full(i,j) = dotc(vc(1:ndet,j),hvc(1:ndet,nvec))
+         enddo
+     enddo
+
+   end subroutine calvhv_c_fullmatrix
 
 end module
