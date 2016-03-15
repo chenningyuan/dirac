@@ -16,7 +16,6 @@ module fde_mag_cfg
    public fde_lao_magn_expval_no_embpot
    public fde_lao_magn_expval_no_uncoup_embker
    public fde_lao_magn_expval_no_coupl_nonadd_embker
-   public fde_lao_magn_expval_no_coupl_coulomb_embker
 
 
    logical, save :: fde_rsp_mag_lao_no_s          = .false.
@@ -38,7 +37,6 @@ module fde_mag_cfg
    logical, save :: fde_lao_magn_expval_no_embpot = .false.
    logical, save :: fde_lao_magn_expval_no_uncoup_embker = .false.
    logical, save :: fde_lao_magn_expval_no_coupl_nonadd_embker = .false.
-   logical, save :: fde_lao_magn_expval_no_coupl_coulomb_embker = .false.
 
 
 end module fde_mag_cfg

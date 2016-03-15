@@ -210,10 +210,6 @@ module fde_input_dirac
 !              Magnetizability NO coupled Nonadditive KErnel
                fde_lao_magn_expval_no_coupl_nonadd_embker = .true.
 !              it has to be called with PERTIM which imports perturbed density
-            CASE ('.MNOCKE')
-!              Magnetizability NO coupled Coulomb KErnel
-               fde_lao_magn_expval_no_coupl_coulomb_embker = .true.
-!              it has to be called with PERTIM which imports perturbed density
  
 #endif /* MOD_UNRELEASED */ 
 
