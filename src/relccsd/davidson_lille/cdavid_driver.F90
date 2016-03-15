@@ -20,6 +20,7 @@ module cdavidson_lille
    use mdebug
    use mercod
    use matpri
+   use davidson_vhv_symmetric
    use davidson_schmidt
    use dummy_sigmavec
    use f95_precision, only: wp => dp
@@ -196,7 +197,6 @@ contains
 !
 !     ----- interfaces -----
 !
-      use calvhv_mod
       use chkprm_mod
       use fragh_mod
 !     use savvso_mod
@@ -277,7 +277,7 @@ contains
       call dav_schmi(vr,vi,n,ivec,ni,stol)
       call davhv(hvr,hvi,vr,vi,n,mvec)
       do ivec=1,mvec
-         call calvhv(vhv,hvr,hvi,vr,vi,n,ivec)
+         call calvhv_symmetric(vhv,hvr,hvi,vr,vi,n,ivec)
       enddo
       where(abs(vhv(1:mvec*(mvec+1)/2)).lt.TENM10) vhv(1:mvec*(mvec+1)/2) = CZERO
       call hpev(vhv(1:mvec*(mvec+1)/2),eso,'U',cv,info)
@@ -373,7 +373,7 @@ contains
             ni = nprev
             do ivec=1,ncor
                ni = nprev+ivec
-               call calvhv(vhv,hvr,hvi,vr(1:n,1:ni),vi(1:n,1:ni),n,ni)
+               call calvhv_symmetric(vhv,hvr,hvi,vr(1:n,1:ni),vi(1:n,1:ni),n,ni)
             enddo
             where(abs(vhv(1:ndiag*(ndiag+1)/2)).lt.TENM10)  &
                       vhv(1:ndiag*(ndiag+1)/2) = CZERO
@@ -483,7 +483,7 @@ contains
             call davhv(hvr(1:n,1:mvec),hvi(1:n,1:mvec),  &
                         vr(1:n,1:mvec),vi(1:n,1:mvec),n,mvec)
             do ivec=1,mvec
-               call calvhv(vhv,hvr,hvi,vr,vi,n,ivec)
+               call calvhv_symmetric(vhv,hvr,hvi,vr,vi,n,ivec)
             enddo
             call hpev(vhv(1:mvec*(mvec+1)/2),eso,'U',cv,info)
             if(info.lt.0) then
@@ -540,60 +540,7 @@ contains
 #endif
       return
    end subroutine eiprmn
-   subroutine calvhv1(vhv,hvc,vc,ndet,nvec)
-!
-!*******************************************************************************
-!     ----- compute the <v|H|v> matrix -----
-!===============================================================================
-!       VHV (R8) = lower triangle <v|H|v> (OUTPUT)
-!        HV (R8) = H*|v matrix (INPUT)
-!         V (R8) = vectors v(ndet,ndet) (INPUT)
-!        NP (I4) = dimension of hvr, hvi, vr, vi (INPUT)
-!      NDET (I4) = dimension of the original space (INPUT)
-!      NVEC (I4) = number of vectors |v> (INPUT)
-!-------------------------------------------------------------------------------
-!     written by: J. P. Flament
-!                 PhLAM
-!                 Bat. P5
-!                 Universite de Lille-1
-!                 F-59655 Villeneuve d'Ascq Cedex
-!*******************************************************************************
-!
-     use blas95, only: dotc
-     implicit none
-!
-!     ----- parameters -----
-!
-!     ----- arguments -----
-!
-     integer, intent(in) :: ndet,nvec
-     complex (kind=K_C8), intent(inout), dimension (:) :: vhv
-     complex (kind=K_C8), intent(in), dimension (:,:) :: hvc,vc
-!
-!     ----- local variables -----
-!
-     integer :: j,ij
-!
-!     ----- statement functions -----
-!
-!
-!     +++++
-!     start
-!     +++++
-!
-!     ----- ATTENTION -----
-!     ----- we have |HV> = H|v>, but we compute -----
-!     ----- <v|H|w> = <HV|w> (for ZHPEV)        -----
-!     ----- ZHPEV uses the upper triangle of vhv -----
-!     ----- vhv(j,nvec) = vhv(j + (nvec*(nvec-1))/2)
-!
-     ij = nvec*(nvec-1)/2
-     do j=1,nvec
-        ij = ij+1
-        vhv(ij) = dotc(vc(1:ndet,j),hvc(1:ndet,nvec))
-     enddo
-     return
-   end subroutine calvhv1
+
 
    subroutine cdavini1(np,nvec)
 !
@@ -828,7 +775,7 @@ contains
       call davhv(hvc,vc,n,mvec)
       ITS = 0
       do ivec=1,mvec
-         call calvhv1(vhv,hvc,vc,n,ivec)
+         call calvhv_symmetric(vhv,hvc,vc,n,ivec)
       enddo
       where(abs(vhv(1:mvec*(mvec+1)/2)).lt.TENM10)  &
                 vhv(1:mvec*(mvec+1)/2) = CZERO
@@ -909,7 +856,7 @@ contains
             ni = nprev
             do ivec=1,ncor
                ni = nprev+ivec
-               call calvhv1(vhv,hvc,vc(:,1:ni),n,ni)
+               call calvhv_symmetric(vhv,hvc,vc(:,1:ni),n,ni)
             enddo
             eold(1:nprev) = eso(1:nprev)
             call hpev(vhv(1:(ndiag*(ndiag+1))/2),eso,'U',cv,info)
@@ -1030,7 +977,7 @@ contains
          if(ifrag.lt.nfrag) then
             call davhv(hvc(:,1:mvec),vc(:,1:mvec),n,mvec)
             do ivec=1,mvec
-               call calvhv1(vhv,hvc,vc,n,ivec)
+               call calvhv_symmetric(vhv,hvc,vc,n,ivec)
             enddo
             call hpev(vhv(1:(mvec*(mvec+1))/2),eso,'U',cv,info)
             if(info.lt.0) then

@@ -161,7 +161,7 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
 ####    davidson_lille/david_driver.F90
     davidson_lille/cdavid_driver.F90
 ##  davidson_lille/calchv.F90
-#   davidson_lille/calvhv.F90
+    davidson_lille/calvhv.F90
     davidson_lille/chkdei.F90
     davidson_lille/chkprm.F90
 #   davidson_lille/cschmi.F90

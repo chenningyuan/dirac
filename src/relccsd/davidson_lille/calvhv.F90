@@ -1,4 +1,21 @@
-subroutine calvhv(vhv,hvr,hvi,vr,vi,ndet,nvec)
+module davidson_vhv_symmetric 
+
+use kindvar
+use mconst
+
+implicit none
+
+private
+
+public calvhv_symmetric
+
+interface calvhv_symmetric
+   module procedure calvhv_c
+   module procedure calvhv_vrvi
+end interface calvhv_symmetric
+
+contains
+subroutine calvhv_vrvi(vhv,hvr,hvi,vr,vi,ndet,nvec)
 !
 !***********************************************************************
 !     ----- compute the <v|H|v> matrix -----
@@ -17,14 +34,11 @@ subroutine calvhv(vhv,hvr,hvi,vr,vi,ndet,nvec)
 !                 F-59655 Villeneuve d'Ascq Cedex
 !***********************************************************************
 !
-   use kindvar
-   use mconst
 #ifdef _MYDEBUG_
    use mdebug
 #endif
    use f95_precision, only: wp => dp
    use blas95, only: dot
-   implicit none
 !
 !     ----- parameters -----
 !
@@ -64,5 +78,60 @@ subroutine calvhv(vhv,hvr,hvi,vr,vi,ndet,nvec)
 #ifdef _MYDEBUG_
    call subret('CALVHV',1)
 #endif
-   return
-end subroutine calvhv
+end subroutine calvhv_vrvi
+
+   subroutine calvhv_c(vhv,hvc,vc,ndet,nvec)
+!
+!*******************************************************************************
+!     ----- compute the <v|H|v> matrix -----
+!===============================================================================
+!       VHV (R8) = lower triangle <v|H|v> (OUTPUT)
+!        HV (R8) = H*|v matrix (INPUT)
+!         V (R8) = vectors v(ndet,ndet) (INPUT)
+!        NP (I4) = dimension of hvr, hvi, vr, vi (INPUT)
+!      NDET (I4) = dimension of the original space (INPUT)
+!      NVEC (I4) = number of vectors |v> (INPUT)
+!-------------------------------------------------------------------------------
+!     written by: J. P. Flament
+!                 PhLAM
+!                 Bat. P5
+!                 Universite de Lille-1
+!                 F-59655 Villeneuve d'Ascq Cedex
+!*******************************************************************************
+!
+     use blas95, only: dotc
+     implicit none
+!
+!     ----- parameters -----
+!
+!     ----- arguments -----
+!
+     integer, intent(in) :: ndet,nvec
+     complex (kind=K_C8), intent(inout), dimension (:) :: vhv
+     complex (kind=K_C8), intent(in), dimension (:,:) :: hvc,vc
+!
+!     ----- local variables -----
+!
+     integer :: j,ij
+!
+!     ----- statement functions -----
+!
+!
+!     +++++
+!     start
+!     +++++
+!
+!     ----- ATTENTION -----
+!     ----- we have |HV> = H|v>, but we compute -----
+!     ----- <v|H|w> = <HV|w> (for ZHPEV)        -----
+!     ----- ZHPEV uses the upper triangle of vhv -----
+!     ----- vhv(j,nvec) = vhv(j + (nvec*(nvec-1))/2)
+!
+     ij = nvec*(nvec-1)/2
+     do j=1,nvec
+        ij = ij+1
+        vhv(ij) = dotc(vc(1:ndet,j),hvc(1:ndet,nvec))
+     enddo
+   end subroutine calvhv_c
+
+end module

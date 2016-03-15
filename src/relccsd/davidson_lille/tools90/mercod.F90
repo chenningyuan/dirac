@@ -12,7 +12,6 @@ module mercod
 !                 F-59655 Villeneuve d'Ascq Cedex
 !*******************************************************************************
 !
-   use mparam
 #ifdef _MYDEBUG_
    use mdebug
 #endif
