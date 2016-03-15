@@ -1944,7 +1944,7 @@ C
       real(8) :: sus2el_xc(3, 3)
       real(8) :: sus2el_fde(3, 3)
       real(8) :: sus2el_fde_1(3, 3), sus2el_fde_2(3,3)
-      real(8) :: sus2el_fde_3(3, 3), sus2el_fde_4(3,3)
+      real(8) :: sus2el_fde_3(3, 3)
 !
       real(8), allocatable   :: dmat(:, :), buffer(:)
       type(fde_import) :: itmp
@@ -2208,7 +2208,6 @@ C
      &                         + sus2el_fde_1(j, i)
      &                         + sus2el_fde_2(j, i)
      &                         + sus2el_fde_3(j, i)
-     &                         + sus2el_fde_4(j, i)
            end do
         end do
 
