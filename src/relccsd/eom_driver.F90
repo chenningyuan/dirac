@@ -1,4 +1,4 @@
-  module sigma_eom
+  module eom_driver
 
 !this module calculates the sigma vectors for IP(2h-1p), EA(1h-2p) and EE(2h-2p)  
 
@@ -13,8 +13,17 @@
 
    contains
 
-   subroutine eom_ee()
+   subroutine eom_driver()
 
-  end subroutine
+
+    call getampt(t1,t2)
+
+    call IM_container()
+   
+    call davidson 
+
+
+   end subroutine
+
 
    end module 
