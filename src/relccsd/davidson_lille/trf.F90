@@ -13,6 +13,7 @@ public trf
 interface trf
    module procedure ctrf_vrvi
    module procedure ctrf
+   module procedure dtrf
 end interface 
 
 contains
@@ -92,6 +93,47 @@ contains
                    'N','N',CONE,CZERO)
       v(1:ndet,1:nvec) = wc(1:ndet,1:nvec)
    end subroutine ctrf
+
+   subroutine dtrf(c,v,ndet,nvec,wc)
+!
+!***********************************************************************
+!     ----- Expand the eigenvectors on the basis of determinants -----
+!=======================================================================
+!     CV = vectors in the small basis (INPUT)
+!      P = vectors in the big basis (INPUT/OUTPUT)
+!     NP = dimension of pr
+!    NCF = dimension in the big basis (INPUT)
+!   NVEC = number of vectors |v>  (INPUT)
+!      W = working array (dimension nvec)
+!-----------------------------------------------------------------------
+!     written by: J. P. Flament
+!                 PhLAM
+!                 Bat. P5
+!                 Universite de Lille-1
+!                 F-59655 Villeneuve d'Ascq Cedex
+!***********************************************************************
+!
+      use f95_precision, only: wp => dp
+!
+!     ----- parameters -----
+!
+!     ----- arguments -----
+!
+      integer , intent(in) :: ndet,nvec
+      double precision, intent(in), dimension (:,:) :: c
+      double precision, intent(inout), dimension (:,:) :: v,wc
+!
+!     ----- local variables -----
+!
+!     +++++
+!     start
+!     +++++
+!
+      call gemm(v(1:ndet,1:nvec),c(1:nvec,1:nvec),wc(1:ndet,1:nvec),  &
+                   'N','N',ONE,ZERO)
+      v(1:ndet,1:nvec) = wc(1:ndet,1:nvec)
+   end subroutine dtrf
+
 
 end module davidson_trf
 

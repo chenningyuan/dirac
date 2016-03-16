@@ -158,7 +158,7 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
 #   davidson_lille/tools90/timing.F90
     davidson_lille/david_schmidt.F90
     davidson_lille/dummy_sigma.F90
-####    davidson_lille/david_driver.F90
+    davidson_lille/david_driver.F90
     davidson_lille/cdavid_driver.F90
 ##  davidson_lille/calchv.F90
     davidson_lille/calvhv.F90
@@ -171,7 +171,7 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
 ####    davidson_lille/dtrf.F90
 ##    davidson_lille/eiprmn.F90
 ##    davidson_lille/fdeigen.F90
-#   davidson_lille/fragh.F90
+    davidson_lille/fragh.F90
 #   davidson_lille/fullguess.F90
 #   davidson_lille/hred.F90
 #   davidson_lille/schmor.F90

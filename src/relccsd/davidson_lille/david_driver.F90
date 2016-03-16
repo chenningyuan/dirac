@@ -20,10 +20,19 @@ module davidson_lille
    use mconst
    use mdebug
    use mercod
+   use davidson_trf
+   use davidson_vhv_symmetric
    use davidson_schmidt
-   use dummy_csigmavec
+   use dummy_sigmavec
    USE MATPRI
+
    implicit none
+
+   public davidson_solver
+
+   interface davidson_solver
+      module procedure fdeigen
+   end interface
 
    private
 !
@@ -216,10 +225,10 @@ contains
 !
 !     ----- interfaces -----
 !
-   use dclvhv_mod
+!  use dclvhv_mod
    use chkdei_mod
    use fragh_mod
-   use dtrf_mod
+!  use trf_mod
 !  use savvls_mod
    use fiflsh_mod
    implicit none
@@ -314,8 +323,8 @@ contains
          stop
       endif
       wkdim = size(work,1)
-      call dtrf(cv,vr,n,mvec,work)
-      call dtrf(cv,hvr,n,mvec,work)
+      call trf(cv,vr,n,mvec,work)
+      call trf(cv,hvr,n,mvec,work)
 !     DO IVEC=1,2
 !        CALL DBGPRT('TRF: IVEC=',IVEC)
 !        CALL DBGPRT('V')
@@ -401,8 +410,8 @@ contains
                stop
             endif
             per = chkdei(cv,e,ndiag,mvec)
-            call dtrf(cv,vr,n,ndiag,work)
-            call dtrf(cv,hvr,n,ndiag,work)
+            call trf(cv,vr,n,ndiag,work)
+            call trf(cv,hvr,n,ndiag,work)
             if(ndiag+nseg.gt.mvm) then
                reset = '*'
                ndiag = mvec
@@ -489,8 +498,8 @@ contains
                stop
             endif
             per = chkdei(cv,e,mvec,mvec)
-            call dtrf(cv,vr,n,mvec,work)
-            call dtrf(cv,hvr,n,mvec,work)
+            call trf(cv,vr,n,mvec,work)
+            call trf(cv,hvr,n,mvec,work)
             vhv(1:mvec*(mvec+1)/2) = ZERO
             do i=1,mvec
                vhv(i*(i+1)/2) = e(i)

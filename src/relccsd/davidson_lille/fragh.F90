@@ -1,3 +1,16 @@
+module fragh_mod
+
+  use kindvar
+  use mparam
+#ifdef _MYDEBUG_
+  use mdebug
+#endif
+  implicit none
+
+   public fragh
+
+contains
+
 subroutine fragh(e,mvec,mvmax,nseg,nfrag)
 !
 !***********************************************************************
@@ -17,13 +30,6 @@ subroutine fragh(e,mvec,mvmax,nseg,nfrag)
 !                 Universite de Lille-1
 !                 F-59655 Villeneuve d'Ascq Cedex
 !***********************************************************************
-!
-  use kindvar
-  use mparam
-#ifdef _MYDEBUG_
-  use mdebug
-#endif
-  implicit none
 !
 !     ----- parameters -----
 !
@@ -124,3 +130,5 @@ subroutine fragh(e,mvec,mvmax,nseg,nfrag)
 #endif
   return
 end subroutine fragh
+
+end module fragh_mod

@@ -27,7 +27,13 @@ module cdavidson_lille
    use f95_precision, only: wp => dp
    implicit none
 
-!  private
+   public davidson_solver
+
+   interface davidson_solver
+      module procedure cdeigen
+   end interface
+
+   private
 !
 !     ----- parameters -----
 !
