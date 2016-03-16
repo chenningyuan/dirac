@@ -207,7 +207,7 @@ C     Initialize the work arrays to zero.
       CALL XTIME(5,1,'-- L2 equations                     ')
 
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
-     &                      int_wooop,G_oo,G_vv,buf1,buf2,buf3,
+     &                      int_wooop,w_v_temp,G_oo,G_vv,buf1,buf2,buf3,
      &                      nbuf3,resL2,iprnt,nit)
 
       CALL XTIME(5,2,'-- L2 equations                     ')
