@@ -23,6 +23,7 @@ module davidson_lille
    use davidson_trf
    use davidson_vhv_symmetric
    use davidson_schmidt
+   use davidson_trial_vectors_utils
    use dummy_sigmavec
    USE MATPRI
 
@@ -226,9 +227,6 @@ contains
 !     ----- interfaces -----
 !
 !  use dclvhv_mod
-   use chkdei_mod
-   use fragh_mod
-!  use trf_mod
 !  use savvls_mod
    use fiflsh_mod
    implicit none
@@ -344,7 +342,7 @@ contains
 !    ----- loop over segments -----
 !    ------------------------------
 !
-      call fragh(e,mvec,mvm,mseg,nfrag)
+      call find_trial_vectors_fragmentation(e,mvec,mvm,mseg,nfrag)
       vhv(1:mvec*(mvec+1)/2) = ZERO
       do ivec=1,mvec
          vhv(ivec*(ivec+1)/2) = e(ivec)
@@ -409,7 +407,7 @@ contains
                write(6,9996) mv,ndiag
                stop
             endif
-            per = chkdei(cv,e,ndiag,mvec)
+            per = check_trial_vectors(cv,e,ndiag,mvec)
             call trf(cv,vr,n,ndiag,work)
             call trf(cv,hvr,n,ndiag,work)
             if(ndiag+nseg.gt.mvm) then
@@ -497,7 +495,7 @@ contains
                write(6,9996) mv,mvec
                stop
             endif
-            per = chkdei(cv,e,mvec,mvec)
+            per = check_trial_vectors(cv,e,mvec,mvec)
             call trf(cv,vr,n,mvec,work)
             call trf(cv,hvr,n,mvec,work)
             vhv(1:mvec*(mvec+1)/2) = ZERO

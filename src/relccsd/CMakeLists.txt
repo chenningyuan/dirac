@@ -118,63 +118,43 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
     davidson_lille/mathlib/interfaces/lapack95/zgetrf_mkl95.F90
     davidson_lille/mathlib/interfaces/lapack95/zgetri_mkl95.F90
     davidson_lille/mathlib/interfaces/lapack95/zhpev_mkl95.F90
-##  davidson_lille/include/calchv_mod.F90
-####    davidson_lille/include/calvhv_mod.F90
-    davidson_lille/include/chkdei_mod.F90
-    davidson_lille/include/chkprm_mod.F90
 #   davidson_lille/include/cschmi_mod.F90
 #   davidson_lille/include/dclchv_mod.F90
 #   davidson_lille/include/dclvhv_mod.F90
 #   davidson_lille/include/dschmi_mod.F90
-####    davidson_lille/include/dtrf_mod.F90
-    davidson_lille/include/fiflsh_mod.F90
-    davidson_lille/include/fragh_mod.F90
 #   davidson_lille/include/hred_mod.F90
 #   davidson_lille/include/savvls_mod.F90
 #   davidson_lille/include/savvso_mod.F90
-#   davidson_lille/include/trf_mod.F90
-    davidson_lille/tools90/caps.F90
 #   davidson_lille/tools90/incord.F90
-    davidson_lille/tools90/jpsort.F90
-    davidson_lille/tools90/kindvar.F90
 #   davidson_lille/tools90/lectur.F90
 #   davidson_lille/tools90/macro9.F90
-    davidson_lille/tools90/matpri.F90
-    davidson_lille/tools90/mconst.F90
 #   davidson_lille/tools90/mdavi.F90
 #   davidson_lille/tools90/mdbg.F90
-    davidson_lille/tools90/mdebug.F90
 #   davidson_lille/tools90/mdterm.F90
-    davidson_lille/tools90/mercod.F90
 #   davidson_lille/tools90/mfacto.F90
 #   davidson_lille/tools90/mgenrl.F90
 #   davidson_lille/tools90/mmulsy.F90
 ##  davidson_lille/tools90/mparam.F90
-    davidson_lille/tools90/mphase.F90
 #   davidson_lille/tools90/mr3vec.F90
 #   davidson_lille/tools90/mtrace.F90
 #   davidson_lille/tools90/parmfil.F90
 #   davidson_lille/tools90/rdmfil.F90
 #   davidson_lille/tools90/timing.F90
+    davidson_lille/include/fiflsh_mod.F90
+    davidson_lille/tools90/caps.F90
+    davidson_lille/tools90/jpsort.F90
+    davidson_lille/tools90/kindvar.F90
+    davidson_lille/tools90/matpri.F90
+    davidson_lille/tools90/mconst.F90
+    davidson_lille/tools90/mdebug.F90
+    davidson_lille/tools90/mercod.F90
+    davidson_lille/tools90/mphase.F90
     davidson_lille/david_schmidt.F90
     davidson_lille/dummy_sigma.F90
     davidson_lille/david_driver.F90
     davidson_lille/cdavid_driver.F90
-##  davidson_lille/calchv.F90
     davidson_lille/calvhv.F90
-    davidson_lille/chkdei.F90
-    davidson_lille/chkprm.F90
-#   davidson_lille/cschmi.F90
-##   davidson_lille/dclchv.F90
-##    davidson_lille/dclvhv.F90
-##    davidson_lille/dschmi.F90
-####    davidson_lille/dtrf.F90
-##    davidson_lille/eiprmn.F90
-##    davidson_lille/fdeigen.F90
-    davidson_lille/fragh.F90
-#   davidson_lille/fullguess.F90
-#   davidson_lille/hred.F90
-#   davidson_lille/schmor.F90
+    davidson_lille/david_trial_vectors_utils.F90
     davidson_lille/trf.F90
 )
 

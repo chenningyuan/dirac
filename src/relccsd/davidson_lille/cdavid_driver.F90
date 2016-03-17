@@ -23,8 +23,10 @@ module cdavidson_lille
    use davidson_trf
    use davidson_vhv_symmetric
    use davidson_schmidt
+   use davidson_trial_vectors_utils
    use dummy_sigmavec
-   use f95_precision, only: wp => dp
+!  use f95_precision, only: wp => dp
+
    implicit none
 
    public davidson_solver
@@ -201,11 +203,10 @@ contains
       use mphase
       use mercod
       use lapack95, only: hpev
+      use f95_precision, only: wp => dp
 !
 !     ----- interfaces -----
 !
-      use chkprm_mod
-      use fragh_mod
 !     use savvso_mod
       use fiflsh_mod
       implicit none
@@ -314,7 +315,7 @@ contains
 !    ----- loop over segments -----
 !    ------------------------------
 !
-      call fragh(eso,mvec,mvm,mseg,nfrag)
+      call find_trial_vectors_fragmentation(eso,mvec,mvm,mseg,nfrag)
       vhv(1:mvec*(mvec+1)/2) = CZERO
       do ivec=1,mvec
          vhv(ivec*(ivec+1)/2) = cmplx(eso(ivec),ZERO,kind=K_C8)
@@ -394,7 +395,7 @@ contains
                write(6,9989) info
                stop
             endif
-            per = chkprm(cv,eso,ndiag,mvec)
+            per = check_trial_vectors(cv,eso,ndiag,mvec)
             wkdim = 4*hbuf/ndiag
             if(wkdim.eq.0) then
                write(6,9995)
@@ -501,7 +502,7 @@ contains
                write(6,9989) info
                stop
             endif
-            per = chkprm(cv,eso,mvec,mvec)
+            per = check_trial_vectors(cv,eso,mvec,mvec)
             wkdim = 4*hbuf/mvec
             if(wkdim.eq.0) then
                write(6,9995)
@@ -695,8 +696,6 @@ contains
 !     ----- interfaces -----
 !
 !     use jpferr_mod
-      use chkprm_mod
-      use fragh_mod
 !     use savvso_mod
       use fiflsh_mod
       implicit none
@@ -802,7 +801,7 @@ contains
 !    ----- loop over segments -----
 !    ------------------------------
 !
-      call fragh(eso,mvec,mvm,mseg,nfrag)
+      call find_trial_vectors_fragmentation(eso,mvec,mvm,mseg,nfrag)
       vhv(1:mvec*(mvec+1)/2) = CZERO
       do ivec=1,mvec
          vhv(ivec*(ivec+1)/2) = cmplx(eso(ivec),ZERO,kind=K_C8)
@@ -875,7 +874,7 @@ contains
                write(6,9989) info
                stop
             endif
-            per = chkprm(cv,eso,ndiag,mvec)
+            per = check_trial_vectors(cv,eso,ndiag,mvec)
             call trf(cv,vc,n,ndiag,cwork)
             call trf(cv,hvc,n,ndiag,cwork)
             if(ndiag+nseg.gt.mvm) then
@@ -995,7 +994,7 @@ contains
                write(6,9989) info
                stop
             endif
-            per = chkprm(cv,eso,mvec,mvec)
+            per = check_trial_vectors(cv,eso,mvec,mvec)
             call trf(cv,vc,n,mvec,cwork)
             call trf(cv,hvc,n,mvec,cwork)
             vhv(1:mvec*(mvec+1)/2) = CZERO
