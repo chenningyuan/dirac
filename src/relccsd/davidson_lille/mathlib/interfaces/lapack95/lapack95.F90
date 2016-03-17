@@ -136,6 +136,24 @@ interface hpevd
    end subroutine zhpevd_mkl95
 end interface hpevd
 
+interface syev
+   subroutine ssyev_f95(a,w,jobz,uplo,info)
+      integer, parameter :: WP=kind(1.0E+00)
+      character(len=1), intent(in), optional :: jobz
+      character(len=1), intent(in), optional :: uplo
+      integer, intent(out), optional :: info
+      real(WP), intent(out), dimension (:) :: w
+      real(WP), intent(inout), dimension (:,:) :: a
+   end subroutine ssyev_f95 
+   subroutine dsyev_f95(a,w,jobz,uplo,info)
+      integer, parameter :: WP=kind(1.0D+00)
+      character(len=1), intent(in), optional :: uplo
+      integer, intent(out), optional :: info
+      real(WP), intent(out), dimension (:) :: w
+      real(WP), intent(inout), dimension (:, :) :: a
+   end subroutine dsyev_f95
+end interface syev
+
 
 interface spev
    subroutine dspev_mkl95(a,w,uplo,z,info)
