@@ -5,7 +5,7 @@ use mconst
 !use mdebug
 !use mercod
 !use matpri
-use f95_precision, only: wp => dp
+!use f95_precision, only: wp => dp
 implicit none
 
 public dav_schmi
