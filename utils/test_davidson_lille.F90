@@ -62,7 +62,7 @@ program test_davidson_lille
    evec_complex_l = cmplx(0.0d0, 0.0d0)
    evec_complex_r = cmplx(0.0d0, 0.0d0)
 
-! symmetric / hermitian matrices
+! reference diagonalization for real symmetric packed storage matrix
 
    allocate(m_real_symmetric_packed(mdim*(mdim+1)/2))
    call setup_real_symmetric_matrix_packed(m_real_symmetric_packed, mdim)
@@ -70,9 +70,10 @@ program test_davidson_lille
    call print_real_matrix_packed(m_real_symmetric_packed, mdim)
    if (diagonalize_real_symm_packed) then
       call diagonalize_real_symmetric_matrix_packed(m_real_symmetric_packed,eval_real,evec_real)
-      print *, "eigenvalues of matrix real symmetric matrix (packed)"
       call print_real_eigenvalues_eigenvectors(eval_real, evec_real, evec_real, mdim)
    endif
+
+! reference diagonalization for real symmetric full storage matrix
 
    allocate(m_real_symmetric_full(mdim,mdim))
    call setup_real_symmetric_matrix_full(m_real_symmetric_full, mdim)
@@ -84,7 +85,7 @@ program test_davidson_lille
       call print_real_eigenvalues_eigenvectors(eval_r, evec_real_l, evec_real_r, mdim)
    endif
 
-! non-symmetric matrix
+! reference diagonalization for real nonsymmetric full storage matrix
 
    allocate(m_real_nonsymmetric_full(mdim,mdim))
    call setup_real_nonsymmetric_matrix_full(m_real_nonsymmetric_full, mdim)
@@ -95,11 +96,7 @@ program test_davidson_lille
       call print_real_eigenvalues_eigenvectors(eval_r, evec_real_l, evec_real_r, mdim)
    endif
 
-
-!  call diagonalize_real_symmetric_matrix(m_real_nonsymmetric_full,mdim)
-   
-
-! complex matrices
+! reference diagonalization for complex hermitian packed storage matrix
 
    allocate(m_complex_hermitian_packed(mdim*(mdim+1)/2))
    call setup_complex_hermitian_matrix_packed(m_complex_hermitian_packed, mdim)
@@ -110,6 +107,7 @@ program test_davidson_lille
       call print_real_eigenvalues_complex_eigenvectors(eval_real,evec_complex_r,evec_complex_r,mdim)
    endif
 
+! reference diagonalization for complex hermitian full storage matrix
 
    allocate(m_complex_hermitian_full(mdim,mdim))
    call setup_complex_hermitian_matrix_full(m_complex_hermitian_full, mdim)
@@ -120,6 +118,7 @@ program test_davidson_lille
       call print_complex_eigenvalues_eigenvectors(eval_complex,evec_complex_l,evec_complex_r,mdim)
    endif
 
+! reference diagonalization for complex nonsymmetric full storage matrix
 
    allocate(m_complex_nonsymmetric_full(mdim,mdim))
    call setup_complex_nonsymmetric_matrix_full(m_complex_nonsymmetric_full, mdim)
@@ -129,7 +128,6 @@ program test_davidson_lille
       call diagonalize_complex_general_matrix_full(m_complex_nonsymmetric_full,eval_complex,evec_complex_r,evec_complex_l)
       call print_complex_eigenvalues_eigenvectors(eval_complex,evec_complex_l,evec_complex_r,mdim)
    endif
-
 
 contains
 
@@ -564,7 +562,13 @@ contains
       double precision, intent(inout) :: m(:)
       double precision, allocatable :: trial_vectors(:,:)
 
-!     call cdeigen(eso,hd,trial_vectors,mdim,mvec,ier,vecfil) 
+      integer , intent(in) :: n,mvec
+      integer , intent(out) :: ier
+      integer , intent(in), optional :: vecfil
+      double precision, intent(out), dimension (:) :: eso
+      double precision, intent(in), dimension (:) :: hd
+
+      call cdeigen(eso,hd,trial_vectors,mdim,mvec,ier,vecfil) 
 
    end subroutine
 
