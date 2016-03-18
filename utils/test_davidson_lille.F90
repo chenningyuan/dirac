@@ -22,14 +22,15 @@ program test_davidson_lille
    double precision, allocatable :: m_real_symmetric_full(:,:)
    double precision, allocatable :: m_real_nonsymmetric_full(:,:)
 
+   complex (kind=8), allocatable :: m_complex_hermitian_packed(:)
    complex (kind=8), allocatable :: m_complex_hermitian_full(:,:)
    complex (kind=8), allocatable :: m_complex_nonsymmetric_full(:,:)
 !
-   logical :: diagonalize_real_symm_packed  = .true.
-   logical :: diagonalize_hermitian_symm_packed  = .false.
-   logical :: diagonalize_real_symm_full    = .true.
-   logical :: diagonalize_complex_herm_full = .true.
-   logical :: diagonalize_real_nonsymm_full = .true.
+   logical :: diagonalize_real_symm_packed     = .true.
+   logical :: diagonalize_complex_herm_packed  = .true.
+   logical :: diagonalize_real_symm_full       = .true.
+   logical :: diagonalize_complex_herm_full    = .true.
+   logical :: diagonalize_real_nonsymm_full    = .true.
    logical :: diagonalize_complex_nonsymm_full = .true.
 !
    integer :: mdim
@@ -64,11 +65,9 @@ program test_davidson_lille
 ! symmetric / hermitian matrices
 
    allocate(m_real_symmetric_packed(mdim*(mdim+1)/2))
-
    call setup_real_symmetric_matrix_packed(m_real_symmetric_packed, mdim)
    print *, "test, packed storage real (symmetric) matrix"
    call print_real_matrix_packed(m_real_symmetric_packed, mdim)
-
    if (diagonalize_real_symm_packed) then
       call diagonalize_real_symmetric_matrix_packed(m_real_symmetric_packed,eval_real,evec_real)
       print *, "eigenvalues of matrix real symmetric matrix (packed)"
@@ -101,6 +100,16 @@ program test_davidson_lille
    
 
 ! complex matrices
+
+   allocate(m_complex_hermitian_packed(mdim*(mdim+1)/2))
+   call setup_complex_hermitian_matrix_packed(m_complex_hermitian_packed, mdim)
+   print *, "test, packed storage complex hermitian matrix"
+   call print_complex_matrix_packed(m_complex_hermitian_packed, mdim)
+   if (diagonalize_complex_herm_packed) then
+      call diagonalize_complex_hermitian_matrix_packed(m_complex_hermitian_packed,eval_real,evec_complex_r)
+      call print_real_eigenvalues_complex_eigenvectors(eval_real,evec_complex_r,evec_complex_r,mdim)
+   endif
+
 
    allocate(m_complex_hermitian_full(mdim,mdim))
    call setup_complex_hermitian_matrix_full(m_complex_hermitian_full, mdim)
@@ -213,19 +222,36 @@ contains
             jj = j - 1
 
             ij=i+(j*(j-1)/2)
-            print *, "i = ",i, " j = ",j, " ij = ",ij
             m(ij) = ii*delta_real(ii,jj) + (ii - jj - k*k)
          enddo
       enddo
-
-!     do i = 1, mdim
-!        do j = i, mdim
-!           ij = (i-1)*mdim + j 
-!           m(ij) = i*delta_real(i,j) + (i - j - k*k)
-!           print *, i, j, ij, m(ij)
-!        enddo
-!     enddo
    end subroutine
+
+   subroutine setup_complex_hermitian_matrix_packed(m, mdim)
+      integer :: i, j, k, ij
+      integer :: ii, jj
+      integer, intent(in) :: mdim
+      complex (kind=8), intent(inout) :: m(:)
+      real (kind=8) :: real_part, imag_part
+
+      k = mdim/2
+
+      ij = 0
+      m = cmplx(0.0d0, 0.0d0)
+      do i = 1, mdim
+         ii = i - 1
+         do j = i, mdim
+            jj = j - 1
+
+            ij=i+(j*(j-1)/2)
+            real_part = ii*delta_real(i,j) + (ii - jj - k*k)
+!           imag_part = (ii*delta_real(i,j) + (ii - jj))/mdim
+            imag_part = 0.0d0
+            m(ij) = cmplx(real_part, imag_part)
+         enddo
+      enddo
+   end subroutine
+
        
    subroutine setup_real_symmetric_matrix_full(m, mdim)
       integer :: i, j, k
@@ -263,10 +289,10 @@ contains
             jj = j - 1
 
             real_part = ii*delta_real(i,j) + (ii - jj - k*k)
-            imag_part = (ii*delta_real(i,j) + (ii - jj))/mdim
-!           imag_part = 0.0d0
+!           imag_part = (ii*delta_real(i,j) + (ii - jj))/mdim
+            imag_part = 0.0d0
             m(i,j) = cmplx(real_part, imag_part)
-            m(j,i) = conjg(m(i,j))
+            if (j .gt. i) m(j,i) = conjg(m(i,j))
          enddo
       enddo
    end subroutine
@@ -310,12 +336,12 @@ contains
 
             if (jj .le. k) then
                real_part = ii*delta_real(i,j) - (ii - jj - k*k)
-!              imag_part = ii*delta_real(i,j) - (ii - jj)
+!              imag_part = (ii*delta_real(i,j) - (ii - jj))/mdim
                imag_part = 0.0d0
                m(i,j) = cmplx(real_part, imag_part)
             else if ((jj .le. mdim).and.(jj .ge. (k+1))) then
-               real_part = i*delta_real(i,j) + (ii - jj - k*k)
-!              imag_part = i*delta_real(i,j) - (ii - jj)
+               real_part = ii*delta_real(i,j) + (ii - jj - k*k)
+!              imag_part = (ii*delta_real(i,j) - (ii - jj))/mdim
                imag_part = 0.0d0
                m(i,j) = cmplx(real_part, imag_part)
             endif
@@ -342,6 +368,40 @@ contains
          print *, ""
       enddo
    end subroutine
+
+   subroutine print_complex_matrix_packed(m, mdim)
+      integer :: i, j, ij
+      integer, intent(in) :: mdim
+      complex (kind=8), intent(inout) :: m(:)
+      complex (kind=8) :: value
+      character(4) :: imag_sign = "   +"
+
+      do i = 1, mdim
+         do j = 1, mdim
+            if (i .le. j) then
+               ij = i + j*(j-1)/2
+
+               if (aimag(m(ij)) .ge. 0.0d0) then
+                imag_sign = "   +"
+               else
+                imag_sign = "   -"
+               endif
+               print "(4x,1f14.6,a,1f14.6,a,\)", real(m(ij)),imag_sign,abs(aimag(m(ij)))," i"
+            else
+               ij = j + i*(i-1)/2
+               value = conjg(m(ij))
+               if (aimag(value) .ge. 0.0d0) then
+                imag_sign = "   +"
+               else
+                imag_sign = "   -"
+               endif
+               print "(4x,1f14.6,a,1f14.6,a,\)", real(value),imag_sign,abs(aimag(value))," i"
+            endif
+         enddo
+         print *, ""
+      enddo
+   end subroutine
+
 
    subroutine print_real_matrix_full(m, mdim)
       integer :: i, j
@@ -403,7 +463,6 @@ contains
       enddo
 
    end subroutine
-
 
    subroutine diagonalize_real_symmetric_matrix_packed(m,eval,evec)
 
@@ -477,7 +536,6 @@ contains
       endif
 
    end subroutine
-
 
    subroutine diagonalize_complex_hermitian_matrix_packed(m,eval,evec)
 
