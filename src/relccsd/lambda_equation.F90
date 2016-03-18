@@ -1,7 +1,8 @@
   module lambda_equation
 
-!this module consists of subroutines of lambda-equations at different level of theory.
+!this module consists of subroutines for lambda-equations at different level of theory.
 
+  use interface_to_mpi
   use contraction
   use intermediates_1b_2b
 
@@ -129,10 +130,11 @@
       real*8,allocatable :: int_vv(:)
       real*8,allocatable :: int_oo(:),w_vvvv(:),w_intm(:),int_wooop(:)
       real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
+      integer, allocatable :: counter(:), displ(:)
       integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
       integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1 
       integer     :: jabrep,x(nrep,nrep),y(nrep) 
-      integer     :: off3,nd 
+      integer     :: off3,nd,totsize 
       
       interface
          subroutine gettau(t1,t2,tau)
@@ -148,7 +150,7 @@
        call getoovv (ResL2) 
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL2 after initialization',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after initialization',dot_product(ResL2,ResL2)
 !-------------------------------------------------
 !   term1 : ResL2 = ResL2 + P(ab) L2 (ij,ae)*f_bar_ae(e,b) 
 !-------------------------------------------------
@@ -159,7 +161,7 @@
 
        if (iprnt.ge.1) &
 
-     & write(*,*)'RESL2 after term1',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term1',dot_product(ResL2,ResL2)
 !----------------------------------------------
 !   term2 : ResL2 = ResL2 - P(ij) L2 (im,ab)*f_bar_im (j,m)   
 !----------------------------------------------
@@ -170,7 +172,7 @@
 
        if (iprnt.ge.1) &
 
-     & write(*,*)'RESL2 after term2',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term2',dot_product(ResL2,ResL2)
 !--------------------------------------------------------
 !   term3 : ResL2 = ResL2 + L2(mn,ab) * W_ijmn(ij,mn)
 !--------------------------------------------------------
@@ -180,7 +182,7 @@
      &    1.0d0,1.0d0,nrep,RightTensor=L2,LeftTensor=w_oooo)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL2 after term3', dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term3', dot_product(ResL2,ResL2)
 !--------------------------------------------------------
 !   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_ejmb(ej,mb)
 !   second : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_bmej(je,bm)
@@ -195,7 +197,7 @@
 
 
 
-      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVVO,JJOV,JJVO, &
+      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,JOVVO,JJOV,JJVO, &
      &              L2,buf2)
 
 
@@ -233,7 +235,7 @@
 
       CALL XAXPY (ndimt2,A1,buf2,1,resl2,1)
 
-     write(*,*)'RESL2 after term4',dot_product(ResL2,ResL2)
+     write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
 !      if (iprnt.ge.1) &
 !    & write(*,*)'RESL2 after term4',(ResL2(i),i=1,5)
 !-----------------------------------------------------------
@@ -245,7 +247,7 @@
 
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL2 after term5',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term5',dot_product(ResL2,ResL2)
 
 !----------------------------------------------------------------------------
 !     w(mn,ie) = V(mn,ie) + t(f,i) * V(mn,fe)
@@ -277,7 +279,7 @@
       deallocate (int_wooop)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL2 after term7',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term7',dot_product(ResL2,ResL2)
 !--------------------------------------------------------------------
 !    term6 : ResL2 = ResL2 - P(ij) V(im,ab)*(G_oo(j,m)+L1(j,e)*t(e,m)) 
 !--------------------------------------------------------------------
@@ -288,7 +290,7 @@
 
     if (iprnt.ge.1) &
 
-    & write(*,*)'RESL2 after term8',dot_product(ResL2,ResL2)
+    & write(iw,*)'RESL2 after term8',dot_product(ResL2,ResL2)
 
 !      allocate(int_oo(nfoo*rcw))
       allocate(int_oo(IOO(NREP+1)*rcw))
@@ -310,7 +312,7 @@
     &  (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L1)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL2 after term9',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term9',dot_product(ResL2,ResL2)
 !-------------------------------------------------------------------------
 !   term 8 : ResL2 = ResL2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b) 
 !-------------------------------------------------------------------------
@@ -318,16 +320,21 @@
       call lambda2_disconnected(l1,hov,ResL2)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL2 after term10',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term10',dot_product(ResL2,ResL2)
 
 !--------------------------------------------------------
 !    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab) 
 !--------------------------------------------------------
-
       
 !        if (niter<=1) then 
 !        call waio_open(itapt+7)
 !        endif
+
+       allocate(counter(0:nmproc-1))
+       allocate(displ(0:nmproc-1))
+
+       counter = 0
+       displ = 0 
 
       done = .false.
       allocate(tau(ndimt2*rcw))
@@ -336,6 +343,7 @@
       off1 = 1
       do irp = 1, nrep
          istart = 0
+         totsize = 0
          if (nvvt(irp).eq.0) cycle
          mint = nbuf3/nvvt(irp)         
  10      kstart = istart
@@ -353,17 +361,46 @@
 
 !!         else
          
-         call getdz (irp,istart,nint,done,w_vvvv,nbuf3)
+         call getdz (irp,istart,nint,done,w_vvvv,mint)
 
 !!         endif
 
          n = nvvt(irp)
          m = noot(irp)
          k = nint
-         call xgemm ('n','n',m,k,n,A1,l2(off1),m, &
-     &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
 
+#if defined (VAR_MPI)
+       call interface_mpi_allgather(NINT,1, &
+     &   counter,1,global_communicator)
+
+      do i = 0, nmproc-1
+
+       counter(i) = counter(i)*noot(irp)*rcw            
+
+      enddo
+
+         displ(0) = 0
+         do i = 1, nmproc-1 
+             displ(i) = displ(i-1) + counter(i-1)
+         enddo
+
+       allocate(ResL2_temp(counter(myproc)*rcw))
+
+       ResL2_temp = 0.0d0    
+
+      call xgemm ('n','n',m,k,n,A1,l2(off1),m, &
+     &           w_vvvv,n,a1,ResL2_temp,m)
+
+      call interface_mpi_allgatherv(ResL2_temp,counter(myproc), &
+     &    buf2(off2+totsize),counter,displ,global_communicator)
+
+       deallocate(ResL2_temp)
+#else
+      call xgemm ('n','n',m,k,n,A1,l2(off1),m, &
+     &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
+#endif
          deallocate(w_vvvv) 
+         totsize = totsize + sum(counter)
          if (.not.done) then
             istart = istart + nint
             goto 10
@@ -374,8 +411,12 @@
 
        deallocate(tau)
 
+#if defined (VAR_MPI)
+          call xaxpy (ndimt2,A1,buf2,1,ResL2,1)
+#endif
+
        if (iprnt.ge.1) &
-     & write(*,*)'RESL2 after term11',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term11',dot_product(ResL2,ResL2)
 
 !-----------------------------------------------------------------------
 !     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
@@ -539,7 +580,6 @@
 
       END SUBROUTINE
 
-
       subroutine symm_index_outofcore_sorter(istart,x)
 
 #include "symm.inc"
@@ -596,6 +636,7 @@
 #include "symm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
+#include "files.inc"
 
 !       calling variables
 !       -----------------
@@ -627,7 +668,7 @@
       call xcopy (ndimt1,hov,1,ResL1,1)
 
      if (iprnt.ge.1) &
-     &   write(*,*)'RESL1: init',dot_product(resL1,resL1)
+     &   write(iw,*)'RESL1: init',dot_product(resL1,resL1)
 !---------------------------------
 !    ResL1 = ResL1 + L(i,e) * f_bar_ae(e,a)
 !---------------------------------
@@ -636,7 +677,7 @@
      &    L1,hv,ResL1,1.0d0,1.0d0,nrep)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL1: dia1',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1: dia1',dot_product(resL1,resL1)
 !----------------------------------------
 !    ResL1 = ResL1 - L(m,a)*f_bar_mi(i,m)
 !----------------------------------------
@@ -645,7 +686,7 @@
      &    L1,ho,ResL1,-1.0d0,1.0d0,nrep)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL1: dia2',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1: dia2',dot_product(resL1,resL1)
 !----------------------------------------------
 !      ResL1 = ResL1 - G(m,n) * V(mi,na)  
 !----------------------------------------------
@@ -668,7 +709,7 @@
       deallocate(w_o_temp) 
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL1: dia3',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1: dia3',dot_product(resL1,resL1)
 !-------------------------------------------------
 !      ResL1 = ResL1 + L1(m,e) * W(ei,ma) 
 !second      ResL1 = ResL1 + L1(m,e) * W(ie,am) 
@@ -682,7 +723,7 @@
 
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL1 after term4',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1 after term4',dot_product(resL1,resL1)
 !-----------------------------------------------------
 !       ResL1 = ResL1 -  L2(mn,ae)*W(ie,mn) 
 !-----------------------------------------------------
@@ -692,7 +733,7 @@
      &          RightTensor=w_ovoo)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL1 after term5',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1 after term5',dot_product(resL1,resL1)
 
 !-------------------------------------------------------
 !      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
@@ -702,7 +743,7 @@
        &         LeftTensor=L2,RightTensor=w_vvvo)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL1 after term6',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1 after term6',dot_product(resL1,resL1)
 
 !-----------------------------------------------------------
 !      int_temp(e,m) = (G(e,f) * t(f,m) - G(n,m)*t(e,n)) ! corrected from stanton and Gauss 
@@ -753,7 +794,7 @@
        deallocate(w_v_temp)
 
        if (iprnt.ge.1) &
-     & write(*,*)'RESL1 after term8',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1 after term8',dot_product(resL1,resL1)
            
       end subroutine 
      

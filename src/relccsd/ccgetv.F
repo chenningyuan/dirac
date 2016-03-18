@@ -514,44 +514,6 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-      SUBROUTINE GETVOVV_incore (VVOVV)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Get VOVO part of two-electron integrals
-C
-C---------------Routines called----------------------------------------
-C
-
-
-
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 VVOVV(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "files.inc"
-#include "complex.inc"
-#include "symm.inc"
-#include "eqns.inc"
-C
-C---------------Local variables--------------------------------------
-C
-C---------------Executable code--------------------------------------
-C
-      CALL RREAD(ITAPT+5,VVOVV,NV5*IRW*RCW,1)
-C
-      RETURN
-      END
-
-
       SUBROUTINE GETVVVO_incore (VVVVO)
 C
       IMPLICIT INTEGER (A-Z)
@@ -580,7 +542,7 @@ C
 
       ALLOCATE(VVOVV(NV5*IRW*RCW))
 
-      CALL RREAD(ITAPT+5,VVOVV,NV5*IRW*RCW,1)
+      CALL GETVOVV_incore (VVOVV)
 
       CALL SRT1C1 (NREP,NVO,NVVT,VVOVV,VVVVO) 
 
@@ -589,6 +551,123 @@ C
       RETURN
       END
 
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      SUBROUTINE GETVOVV_incore (VVOVV)
+
+      use interface_to_mpi
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Get VOVV part of two-electron integrals in core.
+C     We first read the VOVV integrals on different nodes.
+C     Then synchronize all of them to the master 
+C
+C---------------Routines called----------------------------------------
+
+
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 VVOVV(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "ccpar.inc"
+#if defined (VAR_MPI)
+     DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+#endif
+C
+C---------------Local variables--------------------------------------
+      REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
+      INTEGER, ALLOCATABLE :: counter(:), displ(:)
+      LOGICAL :: DONE
+      INTEGER :: totsize
+C---------------Executable code--------------------------------------
+C
+       allocate(counter(0:nmproc-1))
+       allocate(displ(0:nmproc-1))
+
+         counter = 0
+
+       OFF1 = 1
+       DO  30 IRP = 1, NREP
+
+         check = IRP
+         totsize = 0
+         IF (NVO(IRP).EQ.0) GOTO 30
+         ALLOCATE(VOVV_TEMP(NVO(IRP)*NVVT(IRP)*RCW))
+
+         VOVV_TEMP = 0.0d0
+
+         DONE = .FALSE.
+         ISTART = 0
+         MINT = NVVT(IRP)  ! max. # of NVO batches that fit in mem.
+  10     CONTINUE
+         CALL GETVOVV (IRP,ISTART,NINT,DONE,VOVV_TEMP,MINT)
+
+#if defined (VAR_MPI)
+       call interface_mpi_allgather(NINT,1,
+     &   counter,1,global_communicator)
+#endif
+
+      do i = 0, nmproc-1
+       counter(i) = counter(i)*nvo(irp)*rcw            
+      enddo
+
+         displ(0) = 0
+         do i = 1, nmproc-1 
+             displ(i) = displ(i-1) + counter(i-1)
+         enddo
+
+#if defined (VAR_MPI)
+      IF (nmproc .GT. 1) THEN
+
+      CALL XTIME(4,1,'-- combining VOVV via MPI_GATHER')
+
+      call interface_mpi_allgatherv(vovv_temp(1),counter(myproc),
+     &    VVOVV(totsize+off1),counter,displ,global_communicator)
+
+      CALL XTIME(4,2,'-- combining VOVV via MPI_GATHER')
+
+        IF(IERR.GT.0) THEN
+           CALL QUIT('MPI_GATHER ERROR in collecting VOVV Integrals !')
+        ENDIF
+
+      ELSE
+       call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
+      ENDIF
+#else
+      call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
+#endif
+
+         totsize = totsize + sum(counter)
+
+         if (.not.done) then
+            istart = istart + nint
+            goto 10
+         endif
+         off1 = off1+nvo(irp)*nvvt(irp)*rcw
+
+         deallocate(vovv_temp)
+
+ 30    continue
+
+       deallocate(counter)
+       deallocate(displ)
+
+      RETURN
+      END
 
       SUBROUTINE GETOVVV_incore (VOVVV)
 C
@@ -618,7 +697,7 @@ C
 
       ALLOCATE(VVOVV(NV5*IRW*RCW))
 
-      CALL RREAD(ITAPT+5,VVOVV,NV5*IRW*RCW,1)
+      CALL GETVOVV_incore (VVOVV)
 
       CALL SRT1L1(NREP,MULTB,.FALSE.,NVO,NV,NO,NVVT,IOVVVT,IIOV,
      &             VVOVV,VOVVV)
@@ -714,7 +793,7 @@ C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Avijit Shee
 C
 C---------------Calling variables--------------------------------------
 C
@@ -765,7 +844,7 @@ C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Avijit Shee
 C
 C---------------Calling variables--------------------------------------
 C
@@ -948,4 +1027,3 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-

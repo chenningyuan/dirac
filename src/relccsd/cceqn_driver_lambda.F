@@ -81,7 +81,7 @@ C     Initialize the work arrays to zero.
 
 !     Calculate fixed intermediaries for Lambda equations
 
-    5   format(10f10.6)  
+    5   format(1f10.6)  
                         
        call getampt (s1,s2)
 
@@ -89,58 +89,75 @@ C     Initialize the work arrays to zero.
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
-       write(*,*)'whh done',dot_product(ho(1:nfoo*rcw),ho(1:nfoo*rcw))
+       write(iw,*)'whh done',dot_product(ho(1:nfoo*rcw),ho(1:nfoo*rcw))
 
          call w_ijmn(S1,S2,w_oooo)
 
-        write(*,*)'whhhh done',
+        write(iw,*)'whhhh done',
      &   dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
 
          call f_bar_me(fvo,S1,hov)
 
-       write(*,*)'whp done',dot_product(hov(1:nfvo*rcw),hov(1:nfvo*rcw))
+      write(iw,*)'whp done',dot_product(hov(1:nfvo*rcw),hov(1:nfvo*rcw))
+
+        call wbar_mbej(S2,w_ovvo,buf2,buf3)
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
-!        write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
-
-!!         call w_ejmb(S1,S2,w_voov)
-
-          call wbar_mbej(S2,w_ovvo,buf2,buf3)
-
-        write(*,*)'w_mbej done',
-     &  dot_product(w_ovvo(1:iovvo(nrep+1)*rcw),
-     &     w_ovvo(1:iovvo(nrep+1)*rcw))
-
          call w_mbej(s1,s2,w_voov)
-
-!       write(*,*)'starting w_iemn intermediate'
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
-         write(*,*)'w_iemn done',
+         write(iw,*)'w_iemn done',
      & dot_product(w_ovoo(1:nv2*rcw),w_ovoo(1:nv2*rcw))
 
+
+        write(iw,*)'wbar_mbej done',
+     &  dot_product(w_ovvo(1:iovvo(nrep+1)*rcw),
+     &     w_ovvo(1:iovvo(nrep+1)*rcw))
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
-         call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
+        call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3,nbuf3)
 
-         call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
+        if (myproc.gt.0) then
+          cz(1:nv5*rcw) = 0.0d0
+        endif
 
       CALL XTIME(5,2,'-- "efam" Intermediate                     ')
 
-        write(*,*)'w_efam done',dot_product(cz(1:nv5*rcw),cz(1:nv5*rcw))
+         call w_efam_diagram2 (s1,s2,buf2,buf3,nbuf3,cz)
+
+!   synchronize all the w_efam contributions from different nodes to the master 
+
+#if defined (VAR_MPI)
+      if (nmproc .gt. 1) then
+
+!        call xtime(4,1,'-- combining w_efam via mpi_reduce')
+        call xcopy (nv5,a0,0,buf3,1)
+        ierr = 0
+
+        call interface_mpi_allreduce_r1_work_f77(cz,buf3(1),
+     &       rcw*ivovvt(nrep+1),
+     &       op_mpi_sum,global_communicator)
+
+        if(ierr.gt.0) then
+           call quit('mpi_reduce error in collecting w_efam !')
+        endif
+        call xcopy(ivovvt(nrep+1),buf3,1,cz,1)
+!        call xtime(4,2,'-- combining w_efam via mpi_reduce')
+
+      endif
+#endif
+
+       write(iw,*)'w_efam done',dot_product(cz(1:nv5*rcw),cz(1:nv5*rcw))
 
 ! out-of-core section of the intemediates
 
-!        call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
+!      call f_bar_ae_out_of_core (s1,buf2,nbuf2,hv)
 
-         write(*,*)'wpp done',dot_product(hv(1:nfvv*rcw),hv(1:nfvv*rcw))
 !       call w_ejmb_out_of_core (s1,s2,buf1,buf2,buf3,nbuf3,w_voov)
 
-
 !       call w_iemn_out_of_core (s1,s2,buf1,buf2,nbuf3,w_ovoo)
-
 
 !       call w_efam_out_of_core (s1,s2,hov,w_voov,w_ovvo,buf1,buf2,
 !    &              buf3,nbuf3,nbuf2,CZ)
@@ -150,8 +167,6 @@ C     Initialize the work arrays to zero.
 
       call srt1c1 (nrep,nv,no,s1,l1) 
       call srt1c1 (nrep,nvvt,noot,s2,l2) 
-
-!!      CALL ZCORE (L1,L2)
 
 !     Initialize the work arrays to zero.
 
@@ -252,6 +267,10 @@ C     Initialize the work arrays to zero.
       call diisx(ndimt1,ndimt2,l1,l2,   
      &           it,cc1,bb1,itc,bb2,rms1)
       CALL XTIME(5,2,'- DIIS extrapolation            ')
+
+
+      CALL PARTS (2,RMS,L1,L2,BUF1,BUF2)
+
 
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS
       CALL FLSHFO(IW)
