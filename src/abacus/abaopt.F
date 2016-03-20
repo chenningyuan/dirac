@@ -7467,8 +7467,10 @@ C
 #include "maxorb.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
-      LOGICAL EXHER, EXSIR, EXABA, BIG, ex
+      LOGICAL   EXHER, EXSIR, EXABA, BIG, ex, NOMOVE_bkp
       CHARACTER*4 NAME
+C
+C numder.h : NOMOVE
 C
 #include "molinp.h"
 #include "taymol.h"
@@ -7476,6 +7478,7 @@ C
 #include "nuclei.h"
 #include "optinf.h"
 #include "infopt.h"
+#include "numder.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -7489,6 +7492,7 @@ C
       integer              :: i_symop
 #include "ibtfun.h"
 C
+      NOMOVE_bkp = NOMOVE
 #ifdef PRG_DIRAC
       IF (DOCCM) THEN
          ECORR = RGETCCSD()
@@ -7525,6 +7529,8 @@ C     Start loop over displaced geometries
 C
       DO IPOINT = 0, 2*NCART
          IF (IPOINT .NE. 0) THEN
+            NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
+                            ! during numerical differentiation, otherwise wrong results!
 C     
 C     Do numerical differentiation
 C
@@ -7558,8 +7564,8 @@ C
             CRY = COOR(2,N)
             CRZ = COOR(3,N)
             BIG = (ABS(CRX) .GT. D100 .OR.
-     *           ABS(CRY) .GT. D100 .OR.
-     *           ABS(CRZ) .GT. D100)
+     &             ABS(CRY) .GT. D100 .OR.
+     &             ABS(CRZ) .GT. D100)
             NC = NCLINE(N)
             IF (NC .NE. 0) THEN
                READ  (MLINE(NC),9100) NAME
@@ -7651,6 +7657,7 @@ CTROND      deallocate(STPSYM)
 CTROND      deallocate(STPCAR)
       deallocate(COOR)
 
+      NOMOVE = NOMOVE_bkp
       RETURN
       END
 
