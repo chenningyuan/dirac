@@ -7373,10 +7373,16 @@ C
       IF (ISCL .GE. 2) ELMMX = ELMMX/SCLVEC(1)
       DO 10 I = 2, IDIM
          ELM = ABS(VEC(I))
+
+         ! this is a workaround for a problem that zero elm
+         ! is divided by zero SCLVEC(I)
+         if (elm < tiny(0.0d0)) cycle
+
          IF (ISCL .GE. 1) ELM = ELM/SCLVEC(I)
          IF (ISCL .GE. 2) ELM = ELM/SCLVEC(I)
          IF (ELM .GT. ELMMX) ELMMX = ELM
  10   CONTINUE
+
       RETURN
       END
 
@@ -7409,20 +7415,21 @@ C
       WSTPLN = SQRT(STEP) - RTRUST
       RETURN
       END
+
 C  /* Deck numgrd */
       SUBROUTINE NUMGRD
 C
-C     Performs a numerical differentiation in order to get an 
+C     Performs a numerical differentiation in order to get an
 C     finite-difference molecular gradient for use in geometry optimization
-C     of MP2, CI or CC wave functions for which there does not exist 
-C     analytical implementations
+C     of MP2, CI or CC wave functions for which there does not exist
+C     analytical implementations, K.Ruud, Feb.-6 1997
+C
 C     (DFT added Jun. 2003 /jkp)
 C
 C     If I have understood WLKINC correctly, it will do a totally symmetric
 C     gradient estimation (thus all we need for a geometry optimization, and
 C     no need to run without symmetry).
 C
-C     K.Ruud, Feb.-6 1997
 C
 #ifdef PRG_DIRAC
          use dirac_cfg
@@ -7437,8 +7444,10 @@ C
 #include "maxorb.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
-      LOGICAL EXHER, EXSIR, EXABA, BIG, ex
+      LOGICAL   EXHER, EXSIR, EXABA, BIG, ex, NOMOVE_bkp
       CHARACTER*4 NAME
+C
+C numder.h : NOMOVE
 C
 #include "molinp.h"
 #include "taymol.h"
@@ -7446,6 +7455,7 @@ C
 #include "nuclei.h"
 #include "optinf.h"
 #include "infopt.h"
+#include "numder.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -7459,6 +7469,7 @@ C
       integer              :: i_symop
 #include "ibtfun.h"
 C
+      NOMOVE_bkp = NOMOVE
 #ifdef PRG_DIRAC
       IF (DOCCM) THEN
          ECORR = RGETCCSD()
@@ -7486,7 +7497,7 @@ C
      &        'of the accuracy of the numerical gradients'
          WRITE (LUPRI,'(A)') ' WARNING>>>> thresholds for convergence'
      &        //' of geometry optimization has been reset'
-         WRITE (LUPRI,'(/A,/,3(/,20X,A,F10.8))') ' New thresholds:',
+         WRITE (LUPRI,'(/A,/,3(/,20X,A,F11.8))') ' New thresholds:',
      &        'Gradient norm  ',GRDTHR,'Step norm      ',THRSTP,
      &        'Energy change  ',THRERG
       END IF
@@ -7495,6 +7506,8 @@ C     Start loop over displaced geometries
 C
       DO IPOINT = 0, 2*NCART
          IF (IPOINT .NE. 0) THEN
+            NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
+                            ! during numerical differentiation, otherwise wrong results!
 C     
 C     Do numerical differentiation
 C
@@ -7528,8 +7541,8 @@ C
             CRY = COOR(2,N)
             CRZ = COOR(3,N)
             BIG = (ABS(CRX) .GT. D100 .OR.
-     *           ABS(CRY) .GT. D100 .OR.
-     *           ABS(CRZ) .GT. D100)
+     &             ABS(CRY) .GT. D100 .OR.
+     &             ABS(CRZ) .GT. D100)
             NC = NCLINE(N)
             IF (NC .NE. 0) THEN
                READ  (MLINE(NC),9100) NAME
@@ -7621,6 +7634,7 @@ CTROND      deallocate(STPSYM)
 CTROND      deallocate(STPCAR)
       deallocate(COOR)
 
+      NOMOVE = NOMOVE_bkp
       RETURN
       END
 

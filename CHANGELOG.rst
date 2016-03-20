@@ -1,6 +1,8 @@
 15.1 (2016-xx-xx)
 -----------------
 
+- Bugfix for numerical gradient when automatic symmetry detection: do no move or rotate molecule
+  for finding highest possible symmetry because then the numerical gradient will not be correct
 - Added OPENBLAS in search list for blas and lapack libraries.
 - Made keyword .X2Cmmf case insensitive.
 - BUGfix for spinfree X2Cmmf and linear symmetry.
