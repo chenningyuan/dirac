@@ -2658,6 +2658,7 @@ C
       REAL*8 TOL
       COMPLEX*16 EPHASE,CEXPA
       LOGICAL ALLOC_ME
+      INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
 C
       real(kind=kreal), allocatable, target :: a_FOO(:), a_FVO(:), 
@@ -3015,7 +3016,7 @@ C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
        NBUF3 = freemem / RCW
 
-         NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
+         NV5IRP = MAX(INT(JVOVV(NREP+1),8),INT(JOVVV(NREP+1),8))
          NV6IRP = 1
          DO IRP = 1, NREP
             NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
