@@ -516,8 +516,12 @@ C
 C
       RETURN
       END
+
+
+c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE DENOM (EPS,T1,T2,CT1,CT2)
 C
+      use relcc_cfg, only: relcc_ccener_dholu_limit
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -546,11 +550,12 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,DHOLU
+      REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,ABS,DHOLU
 C
 C---------------Executable code--------------------------------------
 C
-      DHOLU = 1.D-6
+      DHOLU = relcc_ccener_dholu_limit
+
       II = 0
       AI = 0
       DO IRP = 1, NREP
@@ -563,11 +568,11 @@ C
              FAC = FAC1 - EPS(AA)
              AI = AI + 1
 C
-C            Check for small denominators. All denominators should be
-C            larger than the minimum HOMO-LUMO gap DHOLU to avoid
+C            Check for small denominators. All denominators should be 
+C            larger than the minimum HOMO-LUMO gap DHOLU to avoid 
 C            convergence problems. An exception is the case in which
 C            the numerator is zero (e.g. by symmetry), then we allow
-C            execution to be continued.
+C            execution to be continued. 
 C
              IF (-FAC.GT.DHOLU) THEN
                 IF (CARITH) THEN
@@ -582,9 +587,12 @@ C
                    ATVAL = ABS(T1(AI))
                 ENDIF
                 IF (ATVAL.GT.DHOLU) THEN
-                  WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),
-     &                        NV(IRP)
-                  WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
+                  WRITE(*,*) '1.IRP,NOcc(IRP),NVirt(IRP)=',
+     &                        IRP,NO(IRP),NV(IRP)
+                  WRITE(*,*) 'II=',II,' AA=',AA,' AI=',AI
+                  WRITE(*,*) 'eps_II=',EPS(II),' eps_AA=',EPS(AA)
+                  WRITE(*,*) 'EPS(II)-EPS(AA)=FAC=',FAC,
+     &          ' ABS(T1(AI)/FAC)=',ATVAL,' DHOLU=',DHOLU
                   CALL QUIT ('Zero or negative HOMO-LUMO gap')
                 ELSE
                   IF (CARITH) THEN
@@ -604,7 +612,7 @@ C
       JJ = IO(JRP)
       IRP = MULTB(JRP,IJRP+NREP,2)
       IF (IRP.LT.JRP) GOTO 10
-      IOFF = IO(IRP)
+      IOFF = IO(IRP) 
       DO J = 1, NO(JRP)
          JJ = JJ + 1
          FAC1 = EPS(JJ)
@@ -641,8 +649,11 @@ C                 Check for small denominators, see comment above.
                         ATVAL = ABS(T2(ABIJ))
                      ENDIF
                      IF (ATVAL.GT.DHOLU) THEN
-             WRITE(IW,*) 'IRP,NOcc(IRP),NVirt(IRP)=',IRP,NO(IRP),NV(IRP)
-             WRITE(IW,*) 'I,eps_I=',I,EPS(II),' A,eps_A=',A,EPS(AA)
+                       WRITE(*,*) 'II,JJ,AA,BB=',II,JJ,AA,BB
+                       WRITE(*,*) 'eps_II=',EPS(II),'eps_JJ=',EPS(JJ),
+     &                             'eps_AA=',EPS(AA),'eps_BB=',EPS(BB)
+                       WRITE(*,*) 'eII+eJJ-eAA-eBB=',FAC,' ATVAL=',
+     &                 ATVAL,' DHOLU=',DHOLU
                         CALL QUIT ('Zero or negative HOMO-LUMO gap')
                      ELSE
                        IF (CARITH) THEN
@@ -662,10 +673,12 @@ C                 Check for small denominators, see comment above.
 C
       RETURN
       END
+
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
 
       SUBROUTINE DENOM_L (EPS,T1,T2,CT1,CT2)
 C
+      use relcc_cfg, only: relcc_ccener_dholu_limit
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -698,7 +711,8 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      DHOLU = 1.D-6
+
+      DHOLU = relcc_ccener_dholu_limit
       IA = 0
       DO ARP = 1, NREP
          AA = IO(NREP+1) + IV(ARP)
@@ -815,6 +829,8 @@ c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       SUBROUTINE DENOM_N (EPS,DINV_ONE,DINV_TWO)
 C
+      use relcc_cfg, only: relcc_ccener_dholu_limit
+
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -843,7 +859,8 @@ C---------------Local variables--------------------------------------
 
 C---------------Executable code--------------------------------------
 
-      DHOLU = 1.D-6
+
+      DHOLU = relcc_ccener_dholu_limit
       IA = 1
       DO ARP = 1, NREP
          AA = IO(NREP+1) + IV(ARP)
@@ -857,9 +874,9 @@ C---------------Executable code--------------------------------------
 
              IF (FAC.GT.DHOLU) THEN
                    CONST = AR1/FAC
-                   DINV_ONE(IA:IA+(RCW-1)) = CONST
+                   DINV_ONE(IA:(IA+(RCW-1))) = CONST
              ELSE
-                   DINV_ONE(IA:IA+(RCW-1)) = AR0
+                   DINV_ONE(IA:(IA+(RCW-1))) = AR0
              ENDIF
 
              IA = IA + RCW
@@ -897,9 +914,9 @@ C---------------Executable code--------------------------------------
                   FAC = FAC3 - EPS(II)
                   IF (FAC.GT.DHOLU) THEN
                         CONST = AR1/FAC
-                        DINV_TWO(ABIJ:ABIJ+(RCW-1)) = CONST
+                        DINV_TWO(ABIJ:(ABIJ+(RCW-1))) = CONST
                   ELSE
-                    DINV_TWO(ABIJ:ABIJ+(RCW-1)) = AR0
+                    DINV_TWO(ABIJ:(ABIJ+(RCW-1))) = AR0
                   ENDIF
                   ABIJ = ABIJ + RCW
                ENDDO

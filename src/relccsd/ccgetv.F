@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -645,10 +645,10 @@ C
         ENDIF
 
       ELSE
-       call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
-      ENDIF
-#else
       call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
+      ENDIF
+!#else
+!      call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
 #endif
 
          totsize = totsize + sum(counter)

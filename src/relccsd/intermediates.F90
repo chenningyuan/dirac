@@ -17,6 +17,8 @@
     public w_mbej
     public w_iemn
     public w_efam
+    public w_amef
+    public w_mnie
     public wbar_mbej
     public w_ejmb_out_of_core
     public f_bar_ae_out_of_core
@@ -76,14 +78,6 @@
    
    call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
 
-
-!  do i = 1, nfoo*rcw
-!  if (abs(ho(i)) <= 1.0d-14) then  
-!  write(*,*)'value of weird hoo', ho(i)
-!  ho(i) = 0.0d0
-!  endif
-!  enddo
-
    end subroutine
 
    subroutine f_bar_ae(fvv,fvo,t1,t2,hv)
@@ -122,7 +116,6 @@
 !---------------------------------------------------------------
 
   call contraction_422 ((/"p1","o1","p2","p3"/),(/"p3","o1"/),(/"p1","p2"/),t1,hv,1.0d0,1.0d0,nrep)
- 
 
 !-----------------------------------------------------------------
 !F_bar_ae = F_bar_ae + F(m,a) * T1(e,m)
@@ -135,7 +128,6 @@
 
    deallocate (fov)
 
-  write(*,*)'wpp 3',dot_product(hv(1:nfvv*rcw),hv(1:nfvv*rcw))
   end subroutine
 
   subroutine f_bar_me(fvo,t1,hov)
@@ -246,7 +238,6 @@
    &      1.0d0,0.0d0,nrep,RightTensor=t2)
 
 
-
   allocate(array_temp(iovoot(nrep+1)*rcw))
 
    array_temp = 0.0d0
@@ -336,13 +327,6 @@
              &      1.0d0,1.0d0,nrep,RightTensor=t1)
 
 
-!! do i = 1, ivoov(nrep+1)
-!! if (abs(w_ovvo(i)) <= 1.0d-14) then  
-!!  write(*,*)'zero of mbej',w_ovvo(i)
-!! w_ovvo(i) = 0.0d0
-!! endif
-!! enddo
-
  end subroutine
 
 !-----=========================--------------
@@ -383,7 +367,6 @@
   call contraction_444 ((/"o1","o4","o2","p2"/),(/"p1","p2","o3","o4"/),(/"o1","p1","o2","o3"/),w_ovoo, &
              &      1.0d0,0.0d0,nrep,RightTensor=t2)
 
-  write(*,*)'dot product iemn:dia1',dot_product(w_ovoo,w_ovoo)
 !-------------------------------------------
 !   w_ovoo(ie,mn) = w_ovoo(ie,mn) +  w_bar_mbej(ie,fn)*T1(fm)
 !--------------------------------------------
@@ -486,7 +469,7 @@
           N = mvo(j)
           K = mvo(j)
 
-          off1 = 1 + jovvo(x)*rcw  
+          off1 = 1 + j2ovvo(j)*rcw  
           off2 = 1 + j2vovo(x)*rcw  
           off3 = 1 + jovvo(x)*rcw  
 
@@ -518,7 +501,63 @@
 
  end subroutine
 
- subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo,buf2,buf3,nbuf3)
+ subroutine w_mnie(t1,int_wooop)
+
+!---------------Description--------------------------------------------
+!     Calculates w_mnie intermediate
+!-----------------------------------------------------------------------
+
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+
+!---------------Calling variables----------------------------
+  real(8), intent(in)  :: t1(rcw*ndimt1)                                    ! Amplitudes.
+  real(8), intent(out) :: int_wooop(:)                                      ! Intermediate.
+!------------------------------------------------------------
+! initialize int_wooop
+!------------------------------------------------------------
+
+  call getooov(int_wooop)
+
+!----------------------------------------------------------------------------
+!     w(mn,ie) = V(mn,ie) + t(f,i) * V(mn,fe)
+!----------------------------------------------------------------------------
+
+  call contraction_424 ((/"o1","o2","p2","p3"/),(/"p3","o3"/), &
+ &        (/"o1","o2","o3","p2"/),int_wooop,-1.0d0,1.0d0,nrep,RightTensor=t1)
+
+ end subroutine
+
+ subroutine w_amef(t1,w_v_temp)
+
+!---------------Description--------------------------------------------
+!     Calculates w_amef intermediate
+!-----------------------------------------------------------------------
+
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+
+!---------------Calling variables----------------------------
+  real(8), intent(in)  :: t1(rcw*ndimt1)                                    ! Amplitudes.
+  real(8), intent(out) :: w_v_temp(:)                                      ! Intermediate.
+!--------------------------------------------------
+! initialize w_v_temp
+!--------------------------------------------------
+
+    call getvovv_incore(w_v_temp)
+
+!---------------------------------------------------
+! w_amef(am,ef) = w_amef(am,ef) - V(nm,ef) * t(a,n) 
+!---------------------------------------------------
+    call contraction_424 ((/"o2","o1","p3","p1"/),(/"p2","o2"/), &
+   &    (/"p2","o1","p3","p1"/),w_v_temp,-1.0d0, &
+   &    1.0d0,nrep,RightTensor=t1)
+
+ end subroutine
+
+ subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo,buf2,buf3)
 
 !--------------------DESCRIPTION---------------------------
 !        calculates vvvo type intermediate in-core fashion.      
@@ -535,9 +574,9 @@
    real*8, intent(in)  :: buf2(*),buf3(*)         
    real*8, intent(in)  :: wbar_ovvo(rcw*iovvo(nrep+1)),hov(nfvo*rcw)     ! Intermediate.
    real*8, intent(out) :: w_vvvo(rcw*nv5)                ! Intermediate.
-   integer, intent(in) :: nbuf3                          ! Intermediate.
 !---------------Local Variables----------------------------------------
 
+   integer :: AllocateStatus 
    real*8, allocatable  :: tau(:)                
    real*8, allocatable  :: vovv1(:),temp(:)                
    integer :: m,n,k,off1,off2,off3,irep,jrep 
@@ -556,7 +595,9 @@
 ! call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
 !            &      -1.0d0,0.0d0,nrep,RightTensor=t2)
 
-      allocate(vovv1(nv5*rcw)) 
+      allocate(vovv1(nv5*rcw),stat = AllocateStatus) 
+
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
       call getvovv_incore(vovv1)
 
@@ -570,7 +611,9 @@
      &              MVO,J2VOVO,JJVO,JJVO,T2,buf2)
 
 
-      allocate(temp(jvvvoI4(nrep+1)*rcw)) 
+      allocate(temp(jvvvoI4(nrep+1)*rcw),stat=AllocateStatus) 
+
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
        temp =0.0d0
 
@@ -622,7 +665,7 @@
   allocate (tau(ndimt2*rcw))
   call gettau (t1,t2,tau)
 
-  call contraction_444 ((/"p2","p3","o2","o3"/),(/"o2","o3","p1","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+   call contraction_444 ((/"p2","p3","o2","o3"/),(/"o2","o3","p1","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
   &      1.0d0,1.0d0,nrep,LeftTensor=tau)
 
   deallocate (tau)
@@ -680,9 +723,6 @@
 ! ** actually read integrals from this batch and is a pure output parameter !
 ! ** We therefore have to count upwards in case of ISTART.NE.0 !!
 
-!          mint = nbuf3/nvvt(irp)
-!          call getvvvv (irp,istart,nint,done,buf3,mint)
-
          call w_efab_out_of_core (irp,istart,done,tau,buf2,t1,nbuf3,buf3,nint)
 
          call putdz (irp,istart,nint,buf3)
@@ -711,7 +751,6 @@
                     ISTART = ISTART + NINT
                     IF(.NOT.DONE) THEN
 
-!                    call getvvvv (irp,istart,nint,done,buf3,mint)
                     call w_efab_out_of_core (irp,istart,done,tau,buf2,t1,nbuf3,buf3,nint)
                      
                     call putdz (irp,istart,nint,buf3)
@@ -1413,9 +1452,6 @@
        counter = 0
        displ = 0 
 
-!        w_vvvv(1:ivvvvtt(irp+1)) = 0.0d0
-
-!!         if (nvvt(irp) > 0) then
          mint = nbuf3/nvvt(irp)
          call getvvvv (irp,istart,nint,done,w_vvvv,mint)
 
@@ -1449,18 +1485,10 @@
        n = nint
        k = noot(irp)
        abmn = (ivvoott(irp)+displ(myproc))*rcw+1
-!       abmn = (ivvoott(irp)+istart)*rcw+1
        off1 = off1 + ivvoott(irp)*rcw  
-
-!!       write(*,*)'the value of abmn,istart',abmn,istart,displ(myproc)
 
         call xgemm ('n','n',m,n,k,a1,tau(off1),nvvt(irp),buf1(abmn),k, &
       &               a1,w_vvvv,m)
-
-!       call xgemm ('n','c',m,n,k,a1,tau(off1),nvvt(irp),buf1(abmn),m, &
-!     &               a1,w_vvvv,m)
-
-!!       endif
 
 !-----------------------------------------------------
 ! w(ef,ab) = w(ef,ab) - V(em,ab)*t(f,m)

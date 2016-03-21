@@ -38,7 +38,6 @@ if [[ -d "$BUILD" ]]; then
 fi
 #
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
-./pamadm -a --builddir=$BUILD
 ./setup --fc=ifort -D BUILDNAME="ifort_gnu_mkl.i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD
 #
 cd $BUILD
@@ -54,7 +53,6 @@ if [[ -d "$BUILD_STATIC" ]]; then
 fi
 #
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
-./pamadm -a --builddir=$BUILD_STATIC
 ./setup --fc=ifort -D BUILDNAME="ifort_gnu_mkl_i8_static" --static -D ENABLE_OLD_LINKER=ON --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD_STATIC
 #
 cd $BUILD_STATIC
@@ -70,7 +68,6 @@ if [[ -d "$BUILD_STATIC" ]]; then
 fi
 #
 export MATH_ROOT=/opt/intel/mkl/10.0.3.020
-./pamadm -a --builddir=$BUILD_STATIC
 ./setup --fc=ifort -D BUILDNAME="ifort_gnu_mkl_i8_nopcm_static" --static -D ENABLE_OLD_LINKER=ON -D ENABLE_PCMSOLVER=OFF --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON  $BUILD_STATIC
 #
 cd $BUILD_STATIC

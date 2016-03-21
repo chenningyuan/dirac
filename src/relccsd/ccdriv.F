@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -229,7 +229,7 @@ C
       DOMP2GOLD = relcc_do_oldmp2gradient
       DOCCSDG   = relcc_do_ccsdgradient
       DOCCSDTG  = relcc_do_ccsdtgradient
-      NOZG      = relcc_do_unrelaxed
+      NOZG      = .not.relcc_do_relaxed
       DONATORB  = relcc_do_naturalorbitals
       NEOPER    = 3
       NAMEE(1)  = 'XDIPLEN '
@@ -240,8 +240,8 @@ C
       NTOL      = relcc_fopr_desired_convergence
 C     Switch on evaluation of property output if necessary
       IF (DOMP2G) THEN
-         IF (SPFR)
-     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
+!         IF (SPFR) 
+!     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
           IPRP_WF = 0
           DO I = 1, NPRP_WF
@@ -2561,10 +2561,10 @@ C
       ENDIF
 C
       call dealloc(a_FVO , id="fvo")
-      call dealloc(a_FOO , id="fvo")
-      call dealloc(a_FVV , id="fvo")
-      call dealloc(a_T1  , id="fvo")
-      call dealloc(a_T2  , id="fvo")
+      call dealloc(a_FOO , id="foo")
+      call dealloc(a_FVV , id="fvv")
+      call dealloc(a_T1  , id="t1")
+      call dealloc(a_T2  , id="t2")
       call dealloc(a_S1  , id="s1")
       call dealloc(a_S2  , id="s2")
 C
@@ -2670,7 +2670,7 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-         WRITE (IW,*) ' CCSD gradient is being implemented,'
+         WRITE (IW,*) 'Calculate CCSD gradient'
          doccsdg = .true.
       endif
 
@@ -2769,7 +2769,14 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW
+!     NBUF3 = (freemem - work_memsize) / RCW
+! hjaaj Aug. 2015: modified because this could give NBUF3 < 0
+      IF (MYPROC .NE. MASTER) THEN
+         NBUF3 = 0
+      ELSE
+         NBUF3 = freemem / RCW
+      END IF
+
 C
 C     Allocate now also this remaining work array
 C
@@ -2881,7 +2888,13 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW
+!     NBUF3 = (freemem - work_memsize) / RCW
+! hjaaj Aug. 2015: modified because this could give NBUF3 < 0
+      IF (MYPROC .NE. MASTER) THEN
+         NBUF3 = 0
+      ELSE
+         NBUF3 = freemem / RCW
+      END IF
 C
 C     Allocate now also this remaining work array
 C
@@ -2977,11 +2990,32 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW
+       NBUF3 = freemem / RCW
 
+         NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
+         NV6IRP = 1
+         DO IRP = 1, NREP
+            NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
+         ENDDO
+
+C        Check the minimum size for the general use of this array
+
+         NVIRP = MAX(NV5IRP,NV6IRP)
+
+         NBUF3 = MIN(NVIRP,INT(NBUF3,8))
+
+         IF (NV5IRP.GT.NBUF3) THEN
+
+           write(iw,*) 'The calculation may Fail because of very high
+     &                  memory requirement. Increase mw'
+           NBUF3 = NV5IRP
+         
+         ENDIF
+
+         NBUF3 = MAX(NBUF1,NBUF3)
 
 C     Allocate now also this remaining work array
-      call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+        call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
@@ -3022,8 +3056,6 @@ C         this means that, for the time being, we can deallocate everything?
 !            IF (ICALC.EQ.2) CALL DIRNOD2()
 !         ENDIF
 !#endif
-
-
 
 !--------------------------------------------------
 **ashee
@@ -4388,7 +4420,25 @@ C
        ENDDO
       ENDIF
 C
-C     Make inverse of multiplication table
+C     A complication using fermion irreps is that 
+C     characters are generally complex and that
+C     the complex conjugate of an irrep may be another fermion irrep.
+C     Only the product of an irrep with its complex conjugate gives 
+C     the totally symmetric irrep.
+C     
+C     Table elements like
+C       MULTB(IREP,JREP,1) = KREP
+C     provides the symmetry of product functions in either bra of ket positions
+C       ket(irep)*ket(jrep) = ket(krep)  OR
+C       bra(irep)*bra(jrep) = bra(krep)
+C
+C     To find the irrep of a product function mixing functions in bra and ket positions
+C     we effectively make the inverse of the multiplication table
+C     We note that 
+C       bra(irep)*ket(irep) = 1 (totally symmetric)
+C     This gives
+C       bra(irep)*ket(irep)*ket(jrep) = ket(jrep) = bra(irep)*ket(krep)
+C       ket(irep)*bra(irep)*bra(jrep) = bra(jrep) = ket(irep)*bra(krep) 
 C
       DO JREP = 1, 2*NREP
          DO IREP = 1, 2*NREP

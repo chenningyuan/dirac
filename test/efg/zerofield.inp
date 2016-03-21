@@ -6,13 +6,6 @@
 .4INDEX
 **HAMILTONIAN
 .LVCORR
-# 'EFG H'
-# DIAGONAL
-# 'H EFG ZZ'
-# 'EFG F'
-# DIAGONAL
-# 'ZZEFG011'
-# COMFACTOR 0.001
 **WAVE FUNCTIONS
 .SCF
 .RELCCSD
@@ -27,4 +20,7 @@
 2..36
 **RELCCSD
 .GRADIENT
+*CCFOPR
+.MP2G
+.RELAXED
 *END OF                                                                         

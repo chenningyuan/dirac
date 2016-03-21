@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -519,6 +519,7 @@ contains
       real(8), allocatable :: temp(:, :)
       real(8), allocatable :: temp2(:, :, :, :)
       real(8), allocatable :: res(:)
+      real(8), allocatable :: res_temp(:)
       real(8), allocatable :: xyz(:, :)
       real(8), allocatable :: xyzk(:, :)
 !     --------------------------------------------------------------------------
@@ -847,6 +848,7 @@ contains
                stop 1
             end if
             allocate(res(visual_cfg_ncube(3)))
+            allocate(res_temp(visual_cfg_ncube(3)))
             allocate(xyz(3, visual_cfg_ncube(3)))
             allocate(xyzk(visual_cfg_ncube(3), 3))
          end if
@@ -877,12 +879,24 @@ contains
                               xyzk(1, 3),           &
                               ao,                  &
                               buffer)
-                  call get_esp(visual_cfg_ncube(3), &
-                               res,                 &
-                               D(1)%irep,           &
-                               D(1)%nrow,           &
-                               D(1)%elms,           &
-                               xyz)
+                  call get_esp(visual_cfg_ncube(3),      &
+                               res_temp,                 &
+                               D(1)%irep,                &
+                               D(1)%nrow,                &
+                               D(1)%elms,                &
+                               xyz,                      &
+                               include_nuc_part=.false., &
+                               include_el_part=.true.)
+                  res = res_temp*0.5d0
+                  call get_esp(visual_cfg_ncube(3),     &
+                               res_temp,                &
+                               D(1)%irep,               &
+                               D(1)%nrow,               &
+                               D(1)%elms,               &
+                               xyz,                     &
+                               include_nuc_part=.true., &
+                               include_el_part=.false.)
+                  res = res + res_temp
                   do kcube = 1, visual_cfg_ncube(3)
                      q(0, kcube) = res(kcube)
                   end do
@@ -925,6 +939,7 @@ contains
 
          if (visual_cfg_3d_fast) then
             deallocate(res)
+            deallocate(res_temp)
             deallocate(xyz)
             deallocate(xyzk)
          end if

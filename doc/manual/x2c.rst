@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(X2C)
 
 Feature and debug options for the Exact 2-Component

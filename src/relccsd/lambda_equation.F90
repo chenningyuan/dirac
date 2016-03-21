@@ -6,9 +6,9 @@
   use contraction
   use intermediates_1b_2b
 
-    public lambda_equation_mp2 
-    public lambda_equation_L2 
-    public lambda_equation_L1 
+    public lambda_equation_mp2
+    public lambda_equation_L2
+    public lambda_equation_L1
 
 
      private
@@ -25,9 +25,9 @@
 
 
       subroutine lambda_equation_mp2 (eps,fvo,t1,s1,t2,s2)
- 
+
       IMPLICIT INTEGER (A-Z)
- 
+
 !---------------Description--------------------------------------------
 !
 !     Solves MP2 amplitude or lambda equations.
@@ -72,12 +72,12 @@
 
          CALL XCOPY (NDIMT1,T1,1,S1,1)
          CALL XCOPY (NDIMT2,T2,1,S2,1)
- 6071 FORMAT(//,'  MP2 results',/)                      
+ 6071 FORMAT(//,'  MP2 results',/)
  6072 FORMAT(' SCF energy :',T40,F25.15)
  6073 FORMAT(' MP2 correlation energy :',T40,F25.15)
  6075 FORMAT(' Total MP2 energy :',T40,F25.15)
  6077 FORMAT(' T1 diagnostic :',T40,F25.15)
- 7000 FORMAT(//' Timing of routine MP2EQN :'      &      
+ 7000 FORMAT(//' Timing of routine MP2EQN :'      &
      &/' Before MP2EQN :',T30,F12.3,' seconds'    &
      &/' Energy, T1-Diag :',T30,F12.3,' seconds'  &
      &/' Untimed parts :',T30,F12.3,' seconds'    &
@@ -86,7 +86,7 @@
 
 
       subroutine lambda_equation_L2 (t1,t2,l1,l2,ho,hv,hov, &
-     &             w_voov,w_oooo,G_oo,G_vv,buf1,buf2, &
+     &             w_voov,w_oooo,int_wooop,w_v_temp,G_oo,G_vv,buf1,buf2, &
      &             buf3,nbuf3,resL2,iprnt,niter)
 
       use contraction
@@ -112,23 +112,23 @@
 !       -----------------
 
       integer,intent(in) :: nbuf3,iprnt,niter
-      real(8),intent(in) :: ho(rcw*nfoo),hv(rcw*nfvv),hov(nfvo*rcw)     ! one body intermediates
-      real(8),intent(in) :: w_voov(ivoov(nrep+1)*rcw),w_oooo(nv1*rcw)! two body intermediates 
-      real(8),intent(in) :: G_vv(nfvv*rcw), &
-     &                         G_oo(nfoo*rcw)            ! G-intermediates  
+      real(8),intent(in) :: ho(rcw*nfoo),hv(rcw*nfvv),hov(nfvo*rcw)  ! one body intermediates
+      real(8),intent(in) :: w_voov(ivoov(nrep+1)*rcw),w_oooo(nv1*rcw)! two body intermediates
+      real(8),intent(in) :: w_v_temp(:),int_wooop(:)                 ! two body intermediates
+      real(8),intent(in) :: G_vv(nfvv*rcw),G_oo(nfoo*rcw)            ! G-intermediates
       real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)! converged T1 amplitude
       real(8),intent(in) :: L1(ndimt1*rcw),L2(ndimt2*rcw)! L1 and L2 amplitudes from last iteration.
-      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)      ! buffer arrays 
-      real*8,intent(out) :: ResL2(ndimt2*rcw)            ! residue for L2 amplitude  
+      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)      ! buffer arrays
+      real*8,intent(out) :: ResL2(ndimt2*rcw)            ! residue for L2 amplitude
 
 
-!     Local variables                                      
+!     Local variables
 !     ---------------
 
       logical          :: done,teq
       real*8           :: t1val(2)
       real*8,allocatable :: int_vv(:)
-      real*8,allocatable :: int_oo(:),w_vvvv(:),w_intm(:),int_wooop(:)
+      real*8,allocatable :: int_oo(:),w_vvvv(:),w_intm(:)
       real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
       integer, allocatable :: counter(:), displ(:)
       integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
@@ -145,30 +145,30 @@
 
 !---------------Executable code--------------------------------------
 
-    5   format(10f10.6)  
+    5   format(10f10.6)
 
-       call getoovv (ResL2) 
+       call getoovv (ResL2)
 
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after initialization',dot_product(ResL2,ResL2)
 !-------------------------------------------------
-!   term1 : ResL2 = ResL2 + P(ab) L2 (ij,ae)*f_bar_ae(e,b) 
+!   term1 : ResL2 = ResL2 + P(ab) L2 (ij,ae)*f_bar_ae(e,b)
 !-------------------------------------------------
 
        call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/), &
      &    (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L2, &
-     &    RightTensor=hv) 
+     &    RightTensor=hv)
 
        if (iprnt.ge.1) &
 
      & write(iw,*)'RESL2 after term1',dot_product(ResL2,ResL2)
 !----------------------------------------------
-!   term2 : ResL2 = ResL2 - P(ij) L2 (im,ab)*f_bar_im (j,m)   
+!   term2 : ResL2 = ResL2 - P(ij) L2 (im,ab)*f_bar_im (j,m)
 !----------------------------------------------
 
        call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/), &
      &    (/"o1","o2","p1","p2"/),ResL2,-1.0d0,1.0d0,nrep, &
-     &    LeftTensor=L2,RightTensor=ho) 
+     &    LeftTensor=L2,RightTensor=ho)
 
        if (iprnt.ge.1) &
 
@@ -184,26 +184,19 @@
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term3', dot_product(ResL2,ResL2)
 !--------------------------------------------------------
-!   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_ejmb(ej,mb)
-!   second : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_bmej(je,bm)
+!   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_bmej(je,bm)
 
-
-!     call contraction_444((/"o1","o3","p1","p3"/), &
-!    &    (/"p3","o2","o3","p2"/), (/"o1","o2","p1","p2"/),ResL2, &
-!    &    1.0d0,0.0d0,nrep,LeftTensor=L2)
+!   The following calls should be able to replace the hand coding below, but
+!   did not give the correct result. To be debugged before activating
 
 !     call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
 !    &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
 
-
-
-      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,JOVVO,JJOV,JJVO, &
+      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVVO,JJOV,JJVO, &
      &              L2,buf2)
-
 
       CALL SRT1SS4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NV,NV,NO,MOV,J2OVVO,JJOV,JJVO, &
      &              w_voov,buf3)
-
 
       allocate (ResL2_temp(j2ovov(nrep+1)*rcw))
 
@@ -214,13 +207,14 @@
          J = MULTB(i+NREP,1+NREP,2)
 
           M = mov(i)
-          N = mov(j)
+!          N = mov(j)
+          N = mov(i)
           K = mvo(j)
 
           ND = mov(i)
-          off1 = 1 + j2ovvo(i)*rcw  
-          off2 = 1 + j2ovvo(i)*rcw  
-          off3 = 1 + j2ovov(i)*rcw  
+          off1 = 1 + j2ovvo(i)*rcw
+          off2 = 1 + j2ovvo(i)*rcw
+          off3 = 1 + j2ovov(i)*rcw
 
 
             CALL XGEMM ('N','T',M,N,K,A1,buf2(OFF1),M, &
@@ -235,9 +229,8 @@
 
       CALL XAXPY (ndimt2,A1,buf2,1,resl2,1)
 
-     write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
-!      if (iprnt.ge.1) &
-!    & write(*,*)'RESL2 after term4',(ResL2(i),i=1,5)
+      if (iprnt.ge.1) &
+     &  write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
 !-----------------------------------------------------------
 !   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*G_vv(b,e)
 !-----------------------------------------------------------
@@ -249,86 +242,49 @@
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term5',dot_product(ResL2,ResL2)
 
-!----------------------------------------------------------------------------
-!     w(mn,ie) = V(mn,ie) + t(f,i) * V(mn,fe)
-!----------------------------------------------------------------------------
-
-      allocate (int_wooop(iovoot(nrep+1)*rcw))
-     
-       int_wooop = 0.0d0
-
-      call getooov(int_wooop)
-
-      call contraction_424 ((/"o1","o2","p2","p3"/),(/"p3","o3"/), &
-     &        (/"o1","o2","o3","p2"/),int_wooop,-1.0d0, &
-     &        1.0d0,nrep,RightTensor=t1)
-
-
 !---------------------------------------------------------------------------
-!     L2(ij,ab) = L2(ij,ab) + L1(m,a) * W(ij,mb) 
+!     term6: L2(ij,ab) = L2(ij,ab) + L1(m,a) * w_mnie(ij,mb)
 !---------------------------------------------------------------------------
-!     call contraction_244 ((/"o3","p1"/),(/"o1","o2","o3","p2"/), &
-!    &   (/"o1","o2","p2","p1"/),ResL2,-1.0d0,-1.0d0,nrep,LeftTensor=L1, &
-!    &   RightTensor=int_wooop)
-
 
       call contraction_424 ((/"o1","o2","o3","p2"/),(/"o3","p1"/), &
      &   (/"o1","o2","p2","p1"/),ResL2,-1.0d0,-1.0d0,nrep,RightTensor=L1, &
      &   LeftTensor=int_wooop)
 
-      deallocate (int_wooop)
-
        if (iprnt.ge.1) &
-     & write(iw,*)'RESL2 after term7',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term6',dot_product(ResL2,ResL2)
 !--------------------------------------------------------------------
-!    term6 : ResL2 = ResL2 - P(ij) V(im,ab)*(G_oo(j,m)+L1(j,e)*t(e,m)) 
+!    term7 : ResL2 = ResL2 - P(ij) V(im,ab)*G_oo(j,m)
 !--------------------------------------------------------------------
 
       call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/), &
      &        (/"o1","o2","p1","p2"/),ResL2,-1.0d0, &
-     &        1.0d0,nrep,RightTensor=G_oo)    
-
-    if (iprnt.ge.1) &
-
-    & write(iw,*)'RESL2 after term8',dot_product(ResL2,ResL2)
-
-!      allocate(int_oo(nfoo*rcw))
-      allocate(int_oo(IOO(NREP+1)*rcw))
-
-      int_oo = 0.0d0
-
-!!      call xcopy (nfoo,G_oo,1,int_oo,1)
-
-      call contraction_222((/"o1","p3"/),(/"p3","o3"/),(/"o1","o3"/),L1, &
-     &        t1,int_oo,1.0d0,1.0d0,nrep)
-
-      call contraction_424 ((/"o3","o2","p1","p2"/),(/"o1","o3"/), &
-     &        (/"o1","o2","p1","p2"/),ResL2,-1.0d0, &
-     &        1.0d0,nrep,RightTensor=int_oo)
-
-      deallocate(int_oo) 
-
-     call contraction_244 ((/"o1","p3"/),(/"p3","o2","p1","p2"/), &
-    &  (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L1)
+     &        1.0d0,nrep,RightTensor=G_oo)
 
        if (iprnt.ge.1) &
-     & write(iw,*)'RESL2 after term9',dot_product(ResL2,ResL2)
+      & write(iw,*)'RESL2 after term7',dot_product(ResL2,ResL2)
+
 !-------------------------------------------------------------------------
-!   term 8 : ResL2 = ResL2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b) 
+!   term 8 : ResL2 = ResL2 + P(ij)L1(i,e)*W(ej,ab)
+!-------------------------------------------------------------------------
+
+     call contraction_244 ((/"o1","p3"/),(/"p3","o2","p1","p2"/), &
+    &  (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L1, &
+    &   RightTensor=w_v_temp)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'RESL2 after term8',dot_product(ResL2,ResL2)
+!-------------------------------------------------------------------------
+!   term 9 : ResL2 = ResL2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b)
 !-------------------------------------------------------------------------
 
       call lambda2_disconnected(l1,hov,ResL2)
 
        if (iprnt.ge.1) &
-     & write(iw,*)'RESL2 after term10',dot_product(ResL2,ResL2)
+     & write(iw,*)'RESL2 after term9',dot_product(ResL2,ResL2)
 
 !--------------------------------------------------------
-!    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab) 
+!    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab)
 !--------------------------------------------------------
-      
-!        if (niter<=1) then 
-!        call waio_open(itapt+7)
-!        endif
 
        allocate(counter(0:nmproc-1))
        allocate(displ(0:nmproc-1))
@@ -345,25 +301,15 @@
          istart = 0
          totsize = 0
          if (nvvt(irp).eq.0) cycle
-         mint = nbuf3/nvvt(irp)         
+         mint = nbuf3/nvvt(irp)
  10      kstart = istart
          if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
          ntot = idist(2,1,irp)
          nint = min0(mint,ntot-kstart)
- 
+
          allocate(w_vvvv(nvvt(irp)*nint*rcw))
 
-!!         if (niter<=1) then 
-!!         call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3, &
-!!     &           w_vvvv,nint)
-
-!!         call putdz (irp,istart,nint,w_vvvv)
-
-!!         else
-         
-         call getdz (irp,istart,nint,done,w_vvvv,mint)
-
-!!         endif
+         call getdz (irp,istart,nint,done,w_vvvv,nbuf3)
 
          n = nvvt(irp)
          m = noot(irp)
@@ -399,8 +345,8 @@
       call xgemm ('n','n',m,k,n,A1,l2(off1),m, &
      &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
 #endif
-         deallocate(w_vvvv) 
          totsize = totsize + sum(counter)
+         deallocate(w_vvvv) 
          if (.not.done) then
             istart = istart + nint
             goto 10
@@ -416,81 +362,12 @@
 #endif
 
        if (iprnt.ge.1) &
-     & write(iw,*)'RESL2 after term11',dot_product(ResL2,ResL2)
-
-!-----------------------------------------------------------------------
-!     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
-!-----------------------------------------------------------------------
-       
-!     done = .false.
-!     allocate (L2_temp(loovvt(nrep+1)*rcw))
-!     off2 = 1
-!     do abrep = 1, nrep
-!        if (nov(abrep).eq.0.or.nvvt(abrep).eq.0) cycle
-!        mint = nbuf3/nvvt(abrep)
-!        istart = 0
-!110     call getvovv (abrep,istart,nint,done,buf1,mint)
-
-!!   sort V(ej,ab) -> V'(e,jab)
-!         ij = 1
-!         ijkl = 0
-!         do jrep = 1, nrep
-!           
-!          irep = multb(jrep,abrep+nrep,2)           
-
-!          jklrep = irep
-
-!           call symm_index_outofcore_sorter(istart,x)
-!           jkloff = (x(jrep,abrep)*nv(irep)) * rcw
-
-!           write(*,*)'jkloff',jkloff,nint,nv(irep) 
-!           jkloff = 0
-!          m2 = nv(irep) * no(jrep)
-!          do j = 1, no(jrep)
-!           do i = 1, nv(irep)
-!            ijkl1 = jkloff + ((j-1) * nv(irep) + i - 1) * rcw + 1
-!               call xcopy(nint,buf1(ijkl+ij),nvo(abrep),buf2(ijkl1),m2)
-!               ij = ij + rcw
-!           enddo
-!          enddo
-
-
-!!   do the contraction: L1(i,e)*V'(e,jab) -> L2'(i,jab)
-
-!        call xgemm ('n','n',no(irep),nint*no(jrep),nv(irep),a1,L1,
-!    &                no(irep),buf2,nv(irep),a1,
-!    &                L2_temp(off2+istart*m2*rcw),no(irep)) 
-
-!         enddo
-!        if (.not.done) then
-!        istart = istart + nint
-!        goto 110
-!        endif
-!        off2 = off2 + no(irep)*novvt(jklrep)*rcw ! doubtful 
-!     enddo
-
-!!   sorting L2'(i,jab) -> L2(i>j,a>b) 
-
-!     allocate(ResL2_temp(ndimt2)) 
-
-!     call srt1t2 (nrep,multb,ltr,noot,no,no,nvvt,loovvt,llovvt,
-!    &             L2_temp,ResL2_temp)
-
-!     deallocate(L2_temp)
-
-!     call xaxpy (ndimt2,a1,ResL2_temp,1,ResL2,1)
-
-!     deallocate(ResL2_temp)
-
-!     write(*,*)'RESL2 after term9',ddot(ndimt2,resL2,1,resL2,1)
-
-
-!     term9 : ResL2 = ResL2 + P(ij) L1(i,e) * V(ej,ab)  
+     & write(iw,*)'RESL2 after term10',dot_product(ResL2,ResL2)
 
       end subroutine
 
       subroutine lambda2_disconnected(l1,f_bar,ResL2)
- 
+
 !---------------Description--------------------------------------------
 
 !     Calculating the contribution from the disconnected piece in lambda2 residue
@@ -502,17 +379,17 @@
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
 
-      real*8, intent(in)    :: l1(ndimt1*rcw),f_bar(nfvo*rcw) 
+      real*8, intent(in)    :: l1(ndimt1*rcw),f_bar(nfvo*rcw)
       real*8, intent(inout) :: ResL2(ndimt2*rcw)
- 
+
 !---------------Local variables--------------------------------------
 
       integer :: ijaboff,abrep,arep,brep,a,b,amin,imin,i,j,ij,jb,ia,ja, &
-     &           ib,ni,irep,jrep  
+     &           ib,ni,irep,jrep
       real*8  :: T1MIN(2)
 !---------------Executable code--------------------------------------
 
-      t1min=(/0.0d0,0.0d0/) 
+      t1min=(/0.0d0,0.0d0/)
 
       ijaboff = 0
       DO ABREP = 1, NREP
@@ -594,10 +471,10 @@
 
             y = 0
 
-          do ijrep = 1,nrep 
+          do ijrep = 1,nrep
             do krep = 1,nrep
 
-            ijkrep = multb(krep,ijrep+nrep,2) 
+            ijkrep = multb(krep,ijrep+nrep,2)
             x(krep,ijrep) = y(ijkrep)
             y(ijkrep) =  y(ijkrep) + (istart+1)*no(krep)
 
@@ -608,12 +485,12 @@
 
 
       subroutine lambda_equation_L1(t1,t2,l1,l2,ho,hv,hov,w_voov,w_ovoo, &
-     &                               w_vvvo,G_oo,G_vv,buf1,buf2,buf3, &
-     &                               nbuf2,nbuf3,ResL1,iprnt)
+     &               w_vvvo,w_v_temp,int_wooop,G_oo,G_vv,buf1,buf2,buf3, &
+     &               nbuf2,nbuf3,ResL1,iprnt)
 
        implicit none
 
-!       Description                                            
+!       Description
 !       -----------
 !     Evaluate       Lambda1 equations
 !     Here we have to take care of the fact that certain integral classes
@@ -625,9 +502,9 @@
 !     all direct VOVV/VVVV contributions and VOVV/VVVV contributions stemming
 !     from intermediates have to be calculated on EACH node.
 
-!     intermediates required for L1 equation             
+!     intermediates required for L1 equation
 !     ---------------------------------------
-!     f_bar_mi,f_bar_me,f_bar_ae,w_iemn,w_ejmb,G_ea,G_im        
+!     f_bar_mi,f_bar_me,f_bar_ae,w_iemn,w_ejmb,G_ea,G_im
 
 
 !   common blocks
@@ -643,27 +520,28 @@
 
       integer,intent(in) :: nbuf2,nbuf3,iprnt
       real(8),intent(in) :: ho(nfoo*rcw),hv(nfvv*rcw),hov(nfvo*rcw)    ! one body intermediates
-      real(8),intent(in) :: w_voov(ivoov(nrep+1)*rcw), &
-     &                      w_ovoo(iovoot(nrep+1)*rcw),w_vvvo(nv5*rcw) ! two body intermediates 
-      real(8),intent(in) :: G_vv(nfvv*rcw), G_oo(nfoo*rcw)             ! G-intermediates  
+      real(8),intent(in) :: w_voov(ivoov(nrep+1)*rcw),w_v_temp(:), &
+     &                      w_ovoo(iovoot(nrep+1)*rcw),w_vvvo(nv5*rcw)&! two body intermediates
+     &                      ,int_wooop(:)
+      real(8),intent(in) :: G_vv(nfvv*rcw), G_oo(nfoo*rcw)             ! G-intermediates
       real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)              ! converged T1 amplitude
       real(8),intent(in) :: L1(ndimt1*rcw),L2(ndimt2*rcw)              ! L1 and L2 amplitudes from last iteration.
-      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)                    ! buffer arrays 
-      real*8,intent(inout) :: ResL1(ndimt1*rcw)                        ! residue for L1 amplitude  
+      real(8),intent(in) :: buf1(*),buf2(*),buf3(*)                    ! buffer arrays
+      real*8,intent(inout) :: ResL1(ndimt1*rcw)                        ! residue for L1 amplitude
 
 
-!     Local variables                                      
+!     Local variables
 !     ---------------
       logical            :: done,teq,usedz,right
       real*8,allocatable :: int_temp(:), l2_sorted1(:)
-      real*8,allocatable :: w_v_temp(:), w_o_temp(:)
-      real*8             :: ddot 
+      real*8,allocatable :: w_o_temp(:)
+      real*8             :: ddot
       integer            :: i,j,ij
 !-------------------
 ! Initialize residue
 !-------------------
 
-    5   format(10f10.6)  
+    5   format(10f10.6)
 
       call xcopy (ndimt1,hov,1,ResL1,1)
 
@@ -677,7 +555,7 @@
      &    L1,hv,ResL1,1.0d0,1.0d0,nrep)
 
        if (iprnt.ge.1) &
-     & write(iw,*)'RESL1: dia1',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1: after term1',dot_product(resL1,resL1)
 !----------------------------------------
 !    ResL1 = ResL1 - L(m,a)*f_bar_mi(i,m)
 !----------------------------------------
@@ -686,46 +564,28 @@
      &    L1,ho,ResL1,-1.0d0,1.0d0,nrep)
 
        if (iprnt.ge.1) &
-     & write(iw,*)'RESL1: dia2',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1: after term2',dot_product(resL1,resL1)
 !----------------------------------------------
-!      ResL1 = ResL1 - G(m,n) * V(mi,na)  
+!      ResL1 = ResL1 - G(m,n) * W(mi,na)
+!      w_mina(mi,na) = w_mina(mi,na) + V(mi,fa)*t(f,n)
 !----------------------------------------------
-
-! second way:
-
-!   w_mnie(mn,ie) = w_mnie(mn,ie) + V(mn,fe)*t(f,i)
-
-      allocate(w_o_temp(iovoot(nrep+1)*rcw)) 
-
-      call getooov(w_o_temp)
-
-      call contraction_424 ((/"o2","o3","p1","p2"/),(/"p2","o1"/), &
-     &        (/"o2","o3","o1","p1"/),w_o_temp,-1.0d0, &
-     &        1.0d0,nrep,RightTensor=t1)
 
       call contraction_242 ((/"o3","o2"/),(/"o2","o1","o3","p1"/), &
-     & (/"o1","p1"/),G_oo,ResL1,-1.0d0,1.0d0,nrep,RightTensor=w_o_temp)
-
-      deallocate(w_o_temp) 
+     & (/"o1","p1"/),G_oo,ResL1,-1.0d0,1.0d0,nrep,RightTensor=int_wooop)
 
        if (iprnt.ge.1) &
-     & write(iw,*)'RESL1: dia3',dot_product(resL1,resL1)
+     & write(iw,*)'RESL1: after term3',dot_product(resL1,resL1)
 !-------------------------------------------------
-!      ResL1 = ResL1 + L1(m,e) * W(ei,ma) 
-!second      ResL1 = ResL1 + L1(m,e) * W(ie,am) 
+!      ResL1 = ResL1 + L1(m,e) * W(ie,am)
 !-------------------------------------------------
-
-!!!!! call contraction_242 ((/"o2","p2"/),(/"p2","o1","o2","p1"/), &
-!!!!!&   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,RightTensor=w_voov)
 
       call contraction_242 ((/"o2","p2"/),(/"o1","p2","p1","o2"/), &
      &   (/"o1","p1"/),L1,ResL1,1.0d0,1.0d0,nrep,RightTensor=w_voov)
 
-
        if (iprnt.ge.1) &
      & write(iw,*)'RESL1 after term4',dot_product(resL1,resL1)
 !-----------------------------------------------------
-!       ResL1 = ResL1 -  L2(mn,ae)*W(ie,mn) 
+!       ResL1 = ResL1 -  L2(mn,ae)*W(ie,mn)
 !-----------------------------------------------------
 
       call contraction_442((/"o2","o3","p1","p2"/),(/"o1","p2","o2","o3" &
@@ -736,7 +596,7 @@
      & write(iw,*)'RESL1 after term5',dot_product(resL1,resL1)
 
 !-------------------------------------------------------
-!      ResL1    = ResL1 + L2(im,ef) * W(ef,am) 
+!      ResL1    = ResL1 + L2(im,ef) * W(ef,am)
 !-------------------------------------------------------
 
       call contraction_442((/"o1","o2","p2","p3"/),(/"p2","p3","p1","o2"/),(/"o1","p1"/),ResL1,1.0d0,1.0d0,nrep, &
@@ -745,57 +605,16 @@
        if (iprnt.ge.1) &
      & write(iw,*)'RESL1 after term6',dot_product(resL1,resL1)
 
-!-----------------------------------------------------------
-!      int_temp(e,m) = (G(e,f) * t(f,m) - G(n,m)*t(e,n)) ! corrected from stanton and Gauss 
-!      ResL1    = ResL1 + int_temp(e,m) * V(im,ae) 
-!------------------------------------------------------------
-
-      allocate(int_temp(nfvo*rcw))
-
-      int_temp = 0.0d0
-
-!     call contraction_222 ((/"p2","p3"/),(/"p3","o2"/),(/"p2","o2"/),
-!    &    G_vv,t1,int_temp,1.0d0,1.0d0,nrep)
-
-!     call contraction_222 ((/"o3","o2"/),(/"p2","o3"/),(/"p2","o2"/),
-!    &    G_oo,t1,int_temp,-1.0d0,1.0d0,nrep)
-
-!------------------------------------------------------------
-
-!     call contraction_242 ((/"p2","o2"/),(/"o1","o2","p1","p2"/),
-!    &   (/"o1","p1"/),int_temp,ResL1,1.0d0,1.0d0,nrep)
-
-      deallocate(int_temp)
-
-!---------------------------------------------------------------------------
-
-!second way.
-
-! w_amef(am,ef) = w_amef(am,ef) - V(nm,ef) * t(a,n) 
-
-      allocate (w_v_temp(nv5*rcw))
-
-      call getvovv_incore(w_v_temp)
-       
-      call contraction_424 ((/"o2","o1","p3","p1"/),(/"p2","o2"/), &
-     &    (/"p2","o1","p3","p1"/),w_v_temp,-1.0d0, &
-     &    1.0d0,nrep,RightTensor=t1)
-
-
 !-------------------------------------------------------
-!  out-of-core term....
-!    ResL1 = ResL1 - G(e,f) * V(ei,fa) 
+!    ResL1 = ResL1 - G(e,f) * V(ei,fa)
 !-------------------------------------------------------
 
       call contraction_242 ((/"p3","p2"/),(/"p2","o1","p3","p1"/), &
      &  (/"o1","p1"/),G_vv,ResL1,-1.0d0,1.0d0,nrep,RightTensor=w_v_temp)
 
-
-       deallocate(w_v_temp)
-
        if (iprnt.ge.1) &
-     & write(iw,*)'RESL1 after term8',dot_product(resL1,resL1)
-           
-      end subroutine 
-     
+     & write(iw,*)'RESL1 after term7',dot_product(resL1,resL1)
+
+      end subroutine
+
      end module

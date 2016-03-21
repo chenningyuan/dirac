@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1345,10 +1345,6 @@ C
 
       if (spinfr) NZ = 1
 
-       write(*,*)'index check',spinfr,NZ
-
-      CALL DZERO(XMO,NORBT*NORBT*NZ)
-
       allocate(idxu2g(norbt,nrep),idyu2g(norbt,nrep))
 
       idxu2g(1:norbt,1:nrep) = 0
@@ -1779,6 +1775,7 @@ C
       integer, allocatable :: idxu2g(:,:)
 
       allocate(idxu2g(norbt,nrep))
+
       idxu2g(1:norbt,1:nrep) = 0
 
       call Super_Symmetry(nrep,nv,idxu2g,'particle') 

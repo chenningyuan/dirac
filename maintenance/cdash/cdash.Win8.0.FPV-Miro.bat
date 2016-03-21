@@ -37,7 +37,6 @@ git submodule status  1>>  %LOG%  2>&1
 
 set BUILD=build_mingw64_i4
 if exist %BUILD% rmdir /S /Q %BUILD%
-python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
 python setup -D BUILDNAME="Win8.0_MinGW64_i4" -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
 ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1
@@ -65,7 +64,6 @@ rem echo Exit Code is %errorlevel%
 
 set BUILD=build_mingw64_i8_check
 if exist %BUILD% rmdir /S /Q %BUILD%
-python pamadm -a --builddir=%BUILD%   1>>  %LOG%  2>&1
 python setup -D BUILDNAME="Win8.0_MinGW64_i8_check" --check --int64 -D DART_TESTING_TIMEOUT=99999 --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
 rem --track BoundsCheck does not work, use track Miro
@@ -92,7 +90,6 @@ rem go to the local DIRAC directory
 cd %DIRAC%
 set BUILD=build_mingw64_i8
 if exist %BUILD% rmdir /S /Q %BUILD%
-python pamadm -a --builddir=%BUILD%  1>>  %LOG%  2>&1
 python setup -D BUILDNAME="Win8.0_MinGW64_i8" --int64 -D DART_TESTING_TIMEOUT=99999 -D ENABLE_BENCHMARKS=OFF -D ENABLE_TUTORIALS=ON --generator="MinGW Makefiles" %BUILD%  1>>  %LOG%  2>&1
 cd %BUILD%
 ctest     -D ExperimentalUpdate     --track Miro  1>>  %LOG%  2>&1

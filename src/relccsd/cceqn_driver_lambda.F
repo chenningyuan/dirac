@@ -54,7 +54,7 @@ C---------------Local variables--------------------------------------
 
       LOGICAL    :: FOCKSP,PRENE
       real*8,allocatable :: resL1(:),resL2(:),dinv_one(:),dinv_two(:)
-      real*8,allocatable :: G_oo(:),G_vv(:)
+      real*8,allocatable :: G_oo(:),G_vv(:),int_wooop(:),w_v_temp(:)
       integer            :: i !remove
       real*8             :: val  
 
@@ -83,24 +83,19 @@ C     Initialize the work arrays to zero.
 
     5   format(1f10.6)  
                         
-       call getampt (s1,s2)
-
-!!       CALL ZCORE (S1,S2)
+        call getampt (s1,s2)
 
          call f_bar_mi(foo,fvo,s1,s2,ho)
 
-       write(iw,*)'whh done',dot_product(ho(1:nfoo*rcw),ho(1:nfoo*rcw))
-
          call w_ijmn(S1,S2,w_oooo)
-
-        write(iw,*)'whhhh done',
-     &   dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
 
          call f_bar_me(fvo,S1,hov)
 
-      write(iw,*)'whp done',dot_product(hov(1:nfvo*rcw),hov(1:nfvo*rcw))
+         call wbar_mbej(S2,w_ovvo,buf2,buf3)
 
-        call wbar_mbej(S2,w_ovvo,buf2,buf3)
+         call w_ijmn(S1,S2,w_oooo)
+
+         call f_bar_me(fvo,S1,hov)
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
@@ -108,16 +103,10 @@ C     Initialize the work arrays to zero.
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
-         write(iw,*)'w_iemn done',
-     & dot_product(w_ovoo(1:nv2*rcw),w_ovoo(1:nv2*rcw))
 
-
-        write(iw,*)'wbar_mbej done',
-     &  dot_product(w_ovvo(1:iovvo(nrep+1)*rcw),
-     &     w_ovvo(1:iovvo(nrep+1)*rcw))
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
-        call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3,nbuf3)
+        call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
 
         if (myproc.gt.0) then
           cz(1:nv5*rcw) = 0.0d0
@@ -148,8 +137,14 @@ C     Initialize the work arrays to zero.
 
       endif
 #endif
+        
+      allocate (int_wooop(iovoot(nrep+1)*rcw))
 
-       write(iw,*)'w_efam done',dot_product(cz(1:nv5*rcw),cz(1:nv5*rcw))
+         call w_mnie(s1,int_wooop)
+
+      allocate (w_v_temp(nv5*rcw))
+
+         call w_amef(s1,w_v_temp)
 
 ! out-of-core section of the intemediates
 
@@ -162,6 +157,9 @@ C     Initialize the work arrays to zero.
 !       call w_efam_out_of_core (s1,s2,hov,w_voov,w_ovvo,buf1,buf2,
 !    &              buf3,nbuf3,nbuf2,CZ)
 
+
+
+       CALL TITLER('Solving Left Eigenvector Equation','*',123)
 
 !-------Initialization Step for the Left Eigenvectors-----------
 
@@ -216,8 +214,8 @@ C     Initialize the work arrays to zero.
 
        call xcopy (ndimt1,hov,1,ResL1,1)
        CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_voov,w_ovoo,
-     &                         cz,G_oo,G_vv,buf1,buf2,buf3,
-     &                         nbuf2,nbuf3,resL1,iprnt)
+     &               cz,w_v_temp,int_wooop,G_oo,G_vv,buf1,buf2,buf3,
+     &               nbuf2,nbuf3,resL1,iprnt)
 
       endif
 
@@ -226,8 +224,8 @@ C     Initialize the work arrays to zero.
       CALL XTIME(5,1,'-- L2 equations                     ')
 
        CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
-     &                            G_oo,G_vv,buf1,buf2,buf3,
-     &                            nbuf3,resL2,iprnt,nit)
+     &                      int_wooop,w_v_temp,G_oo,G_vv,buf1,buf2,buf3,
+     &                      nbuf3,resL2,iprnt,nit)
 
       CALL XTIME(5,2,'-- L2 equations                     ')
 
@@ -243,23 +241,24 @@ C     Initialize the work arrays to zero.
 
        rms = sqrt((rms)/(ndimt1+ndimt2)*rcw)
 
-      write(iw,*)'maximum value RESL1',maxval(abs(resl1))
-      write(iw,*)'maximum value RESL2',maxval(abs(resl2))
+      if (iprnt.ge.1) then
+       write(iw,*)'maximum value RESL1',maxval(abs(resl1))
+       write(iw,*)'maximum value RESL2',maxval(abs(resl2))
+      endif
       
 
 !  Make new L1s and L2s by dividing ResL1s and ResL2 by eigenvalues
 
 
-
-      CALL DENOM_L (EPS,RESL1,RESL2,RESL1,RESL2)
-
-
-       call xaxpy (ndimt1,-a1,resL1,1,l1,1)
-       call xaxpy (ndimt2,-a2,resL2,1,l2,1)
+!     CALL DENOM_L (EPS,RESL1,RESL2,RESL1,RESL2)
 
 
-!      call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
-!      call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
+!      call xaxpy (ndimt1,-a1,resL1,1,l1,1)
+!      call xaxpy (ndimt2,-a2,resL2,1,l2,1)
+
+
+       call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
+       call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
 
 !!      CALL ZCORE (L1,L2)
 
@@ -286,6 +285,8 @@ C     Initialize the work arrays to zero.
       deallocate(dinv_two)
       deallocate(resL1) 
       deallocate(resL2) 
+      deallocate (int_wooop)
+      deallocate(w_v_temp)
 
 !     Close and delete DIIS scratch files
 
@@ -309,6 +310,6 @@ C     Initialize the work arrays to zero.
  6076 FORMAT(' Total CCSD energy :',T40,F25.15)
  6077 FORMAT(' T1 diagnostic :',T40,F25.15)
  6078 FORMAT(' Convergence :',T40,F25.15)
- 6079 FORMAT(' Number or iterations used :',T60,I5)
+ 6079 FORMAT(' Number of iterations used :',T60,I5)
       RETURN
       END

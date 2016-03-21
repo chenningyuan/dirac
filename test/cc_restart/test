@@ -8,10 +8,12 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-if os.environ['DIRAC_TMPDIR'] != '' :
-   my_scratchdir = os.path.join(os.environ['DIRAC_TMPDIR'], 'cc_restart')
-else :
-   sys.exit(-1)
+my_scratchdir = os.path.join(os.getcwd(), 'cc_scratchdir')
+if os.path.lexists(my_scratchdir):
+   files_to_delete = os.listdir(my_scratchdir)
+   for f in files_to_delete:
+      os.unlink(os.path.join(my_scratchdir,f))
+   os.rmdir(my_scratchdir)
 
 f = Filter()
 

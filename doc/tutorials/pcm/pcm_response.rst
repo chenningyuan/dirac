@@ -1,3 +1,5 @@
+:orphan:
+
 Calculation of electric properties in solution: dipole moments and polarizabilities
 ===================================================================================
 
@@ -229,7 +231,7 @@ or run this in a loop::
     done
 
 This will produce a different output file for every different solvent in the array. One can collect the results for dipole moments and isotropic
-polarizabilities and plot them against the relative permittivities. This was done in :cite:`DiRemigio2014` for the :math:`\mathrm{H}_2\mathrm{Po}`
+polarizabilities and plot them against the relative permittivities. This was done in :cite:`DiRemigio2015` for the :math:`\mathrm{H}_2\mathrm{Po}`
 molecule:
 
 .. image:: H2Po_prop.png 

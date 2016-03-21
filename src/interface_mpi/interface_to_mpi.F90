@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -56,7 +56,6 @@ module interface_to_mpi
   public interface_mpi_reduce
   public interface_mpi_allreduce
   public interface_mpi_gather
-  public interface_mpi_gather_r1
   public interface_mpi_gatherv
   public interface_mpi_allgatherv
   public interface_mpi_allgather
@@ -1842,39 +1841,6 @@ contains
 
   end subroutine
 !-------------------------------------------------------------------------------
-
-  subroutine interface_mpi_gather_r1(x,ndim,y,disp,root_proc,communicator)
-
-!-------------------------------------------------------------------------------
-    real(8)                    :: x(:)
-    real(8)                    :: y(:)
-    integer(kind=integer_kind) :: ndim
-    integer(kind=integer_kind) :: disp
-    integer(kind=integer_kind) :: root_proc
-    integer(kind=integer_kind) :: communicator
-    integer(kind=integer_kind) :: ierr
-!-------------------------------------------------------------------------------
-#ifdef VAR_MPI_32BIT_INT
-    integer(kind=4)            :: ndim_i4
-    integer(kind=4)            :: disp_i4
-    integer(kind=4)            :: root_proc_i4
-    integer(kind=4)            :: communicator_i4
-    integer(kind=4)            :: ierr_i4
-!-------------------------------------------------------------------------------
-    ndim_i4         = ndim
-    disp_i4         = disp
-    root_proc_i4    = root_proc
-    communicator_i4 = communicator
-    if (.not. MPI_INIT_called) return
-    call mpi_gather(x, ndim_i4, MPI_REAL8, y, disp_i4, MPI_REAL8, root_proc_i4, communicator_i4, ierr_i4)
-#else
-    if (.not. MPI_INIT_called) return
-    call mpi_gather(x, ndim   , MPI_REAL8, y, disp   , MPI_REAL8, root_proc   , communicator   , ierr   )
-#endif
-
-  end subroutine
-!-------------------------------------------------------------------------------
-
 
     subroutine interface_mpi_gatherv(x,ndim,y,counter,disp,root_proc,communicator)
 
