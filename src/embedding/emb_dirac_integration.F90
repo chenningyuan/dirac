@@ -280,6 +280,7 @@ module fde_dirac_matrices_integration
    logical :: do_london_susc2el_der1
    logical :: do_london_susc2el_der2
    logical :: do_london_susc2el_coupling
+   logical :: do_london_suscreo
    logical :: do_geo
    logical :: do_geo_0
    logical :: do_geo_1
@@ -380,6 +381,7 @@ contains
                              fde_do_london_susc2el_der1,     &
                              fde_do_london_susc2el_der2,     &
                              fde_do_london_susc2el_coupling,   &
+                             fde_do_london_suscreo,           &
                              fde_do_export_pertden_reorth,     &
                              fde_do_export_pertden_direct,     &
                              fde_active_grid,           &
@@ -433,6 +435,7 @@ contains
       logical, optional,         intent(in)    :: fde_do_london_susc2el_der1
       logical, optional,         intent(in)    :: fde_do_london_susc2el_der2
       logical, optional,         intent(in)    :: fde_do_london_susc2el_coupling
+      logical, optional,         intent(in)    :: fde_do_london_suscreo
       logical, optional,         intent(in)    :: fde_do_export_pertden_reorth
       logical, optional,         intent(in)    :: fde_do_export_pertden_direct
 !     --------------------------------------------------------------------------
@@ -502,6 +505,7 @@ contains
       do_london_susc2el_der1       = .false.
       do_london_susc2el_der2       = .false.
       do_london_susc2el_coupling   = .false.
+      do_london_suscreo            = .false.
       do_geo_0              = .false.
       do_geo_1              = .false.
       do_geo_2              = .false.
@@ -527,6 +531,7 @@ contains
          if (present(fde_do_london_susc2el_der1))       do_london_susc2el_der1       = fde_do_london_susc2el_der1
          if (present(fde_do_london_susc2el_der2))       do_london_susc2el_der2       = fde_do_london_susc2el_der2
          if (present(fde_do_london_susc2el_coupling))   do_london_susc2el_coupling   = fde_do_london_susc2el_coupling
+         if (present(fde_do_london_suscreo))            do_london_suscreo            = fde_do_london_suscreo
          if (present(fde_do_export_pertden_reorth))     do_export_pertden_reorth     = fde_do_export_pertden_reorth
          if (present(fde_do_export_pertden_direct))     do_export_pertden_direct     = fde_do_export_pertden_direct
          if (present(fde_do_geo_0))              do_geo_0              = fde_do_geo_0
@@ -593,6 +598,7 @@ contains
          call fde_mpi_bcast(do_london_susc2el_der1)
          call fde_mpi_bcast(do_london_susc2el_der2)
          call fde_mpi_bcast(do_london_susc2el_coupling)
+         call fde_mpi_bcast(do_london_suscreo)
          call fde_mpi_bcast(do_export_pertden_reorth)
          call fde_mpi_bcast(do_export_pertden_direct)
          call fde_mpi_bcast(response_order_mo)
@@ -907,7 +913,8 @@ contains
          if (do_geo) then
             call fde_mpi_reduce(property_gradient)
          end if
-         if (do_london_susc2el_der1 .or. do_london_susc2el_der2 .or. do_london_susc2el_coupling) then
+         if (do_london_susc2el_der1 .or. do_london_susc2el_der2 &
+        .or. do_london_susc2el_coupling .or. do_london_suscreo) then
             call fde_mpi_reduce(susc2el_fde_integrated)
             call fde_mpi_reduce(susc2el_fde_integrated_sdft)
          end if
@@ -1343,7 +1350,7 @@ contains
    if (do_london_susc2el_der1) then
       max_fun_derv = 1
    end if
-   if (do_london_susc2el_der2 .or. do_london_susc2el_coupling) then
+   if (do_london_susc2el_der2 .or. do_london_susc2el_coupling .or. do_london_suscreo) then
       max_fun_derv = 2
    end if
    if (do_london_rhs_direct_kern .and. .not.fde_cfg_no_sdft) then
@@ -2257,6 +2264,52 @@ contains
                                         n_bb)
             end if
           end if !do_london_susc2el_coupling
+
+          if (do_london_suscreo) then
+            n_bb = 0.0d0
+            t = derv_total(1, d2000000) - derv_active(1, d2000000)
+            if (use_gga) then
+            else
+              call lda_london_susreo_der2_r(t,                   &
+                                            (/1,1,1/),           &
+                                            mat_dim,             &
+                                            nz,                  &
+                                            dmat,                &
+                                            ao,                  &
+                                            n_bb,                &
+                                            buffer)
+
+              do ixyz = 1, 3
+                do jxyz = 1, 3
+                  susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
+                                                 + n_bb_total(jxyz, ixyz) - n_bb_active(jxyz, ixyz)
+                end do
+              end do
+            end if
+
+            if (.not. fde_cfg_no_sdft) then
+              n_bb = 0.0d0
+              t = derv_total(1, d0200000) - derv_active(1, d0200000)
+              if (use_gga) then
+              else
+                call lda_london_susreo_der2_i(t,                   &
+                                              (/1,1,1/),           &
+                                              mat_dim,             &
+                                              nz,                  &
+                                              dmat,                &
+                                              ao,                  &
+                                              n_bb,                &
+                                              buffer)
+              end if
+              do ixyz = 1, 3
+                do jxyz = 1, 3
+                  susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
+                                                    + n_bb(jxyz, ixyz)
+                end do
+              end do
+            end if
+
+          end if !do_london_suscreo
 
       end if !if (n_0(1) > fde_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc

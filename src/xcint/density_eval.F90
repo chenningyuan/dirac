@@ -59,6 +59,11 @@ module density_eval
    public gga_london_sus2el_der1
    public lda_london_sus2el_der2
    public gga_london_sus2el_der2
+   public lda_london_susreo_der2_r
+   public lda_london_susreo_der2_i
+   public gga_london_susreo_der2_r
+   public gga_london_susreo_der2_i
+
 
    private
 
@@ -2062,6 +2067,192 @@ contains
           end do
         end do
      end do
+
+   end subroutine
+
+   subroutine lda_london_susreo_der2_r(f, isym, mat_dim, nz, dmat, ao, &
+                                       n_bb, buffer)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: f
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim*mat_dim, nz, 3)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, a1, a2, irep(3)
+     real(8)                :: n(3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+
+!    real part
+     do a1 = 1, 3
+       call get_n(n(a1), irep(a1), mat_dim, dmat(1,1,a1), buffer, ao)
+     end do
+     do a1 = 1, 3
+       do a2 = 1, 3
+         n_bb(a2, a1) = n_bb(a2, a1) + f*n(a1)*n(a2)
+       end do
+     end do
+
+   end subroutine
+
+   subroutine lda_london_susreo_der2_i(f, isym, mat_dim, nz, dmat, ao, &
+                                       n_bb, buffer)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: f
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim*mat_dim, nz, 3)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, a1, a2, jxyz, irep(3)
+     real(8)                :: s(3, 3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+ 
+!    imaginary part
+     do a1 = 1, 3
+       call get_s(s(1:3,a1), irep(a1), mat_dim, dmat(1,1,a1), buffer, ao)
+     end do
+     do jxyz = 1, 3
+        do a1 = 1, 3
+          do a2 = 1, 3
+            n_bb(a2, a1) = n_bb(a2, a1) + f*s(jxyz,a1)*s(jxyz,a2)
+          end do
+        end do
+     end do
+
+   end subroutine
+
+   subroutine gga_london_susreo_der2_r(d_n1, d_n2, d_n3, d_n4, n_g,  &
+                                       isym, mat_dim, nz, dmat, ao,  &
+                                       n_bb, buffer)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_n1, d_n2, d_n3, d_n4
+     real(8), intent(in)    :: n_g(3)
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim*mat_dim, nz, 3)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, a1, a2, irep(3)
+     real(8)                :: n(3), gn(3,3), n_g_gn(3), gn_gn(3,3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+
+!    get density and density gradient; dmat is modified by T_Bx/y/z matrices
+     do a1 = 1, 3 ! B_x/y/z
+       call get_gn(n(a1), gn(1:3,a1),irep(a1), mat_dim, dmat(1,1,a1), buffer, ao)
+     end do
+
+     do a1 = 1, 3
+       n_g_gn(a1) = n_g(1)*gn(1,a1) &
+                  + n_g(2)*gn(2,a1) &
+                  + n_g(3)*gn(3,a1)
+       do a2 = 1, 3
+         gn_gn(a2, a1)  = gn(1,a2)*gn(1,a1) &
+                        + gn(2,a2)*gn(2,a1) &
+                        + gn(3,a2)*gn(3,a1)
+       end do
+     end do
+
+     do a1 = 1, 3
+       do a2 = 1, 3
+         n_bb(a2, a1) = n_bb(a2, a1)       &
+!                     lda
+                      +       d_n1*n(a1)*n(a2)              &
+                      + 2.0d0*d_n2*n_g_gn(a1)*n(a2)         &
+!                     gradient terms
+                      + 2.0d0*d_n2*n_g_gn(a2)*n(a1)         &
+                      + 4.0d0*d_n3*n_g_gn(a1)*n_g_gn(a2)    &
+                      + 2.0d0*d_n4*gn_gn(a2, a1)
+       end do
+     end do
+
+
+   end subroutine
+
+   subroutine gga_london_susreo_der2_i(d_s1, d_s2, d_s3, d_s4, n_g,  &
+                                       isym, mat_dim, nz, dmat, ao,  &
+                                       n_bb, buffer)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_s1, d_s2, d_s3, d_s4
+     real(8), intent(in)    :: n_g(3)
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim*mat_dim, nz, 3)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, k, a1, a2, irep(3)
+     real(8)                :: s(3,3), gs(3,3,3), n_g_gs(3,3), gs_gs(3,3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+
+!    get density and density gradient; dmat is modified by T_Bx/y/z matrices
+     do a1 = 1, 3 ! B_x/y/z
+       call get_gs(s(1:3,a1),       &
+                   gs(1:3,1:3,a1),  &
+                   irep(a1), mat_dim, dmat(1,1,a1), buffer, ao)
+     end do
+
+     do k = 1, 3
+       do a1 = 1, 3
+         n_g_gs(k, a1) = n_g(1)*gs(1,k,a1) &
+                       + n_g(2)*gs(2,k,a1) &
+                       + n_g(3)*gs(3,k,a1)
+         do a2 = 1, 3
+           gs_gs(a2, a1)  = gs(1,k,a2)*gs(1,k,a1) &
+                          + gs(2,k,a2)*gs(2,k,a1) &
+                          + gs(3,k,a2)*gs(3,k,a1)
+         end do
+       end do
+     end do
+
+     do a1 = 1, 3
+       do a2 = 1, 3
+         n_bb(a2, a1) = n_bb(a2, a1)  &
+!                     lda
+                      + d_s1*(s(1,a1)*s(1,a2)       &
+                      +       s(2,a1)*s(2,a2)       &
+                      +       s(3,a1)*s(3,a2))      &
+                      + d_s2*(n_g_gs(1,a1)*s(1,a2)     &
+                      +       n_g_gs(2,a1)*s(2,a2)     &
+                      +       n_g_gs(3,a1)*s(3,a2))    &
+!                     gradient terms
+                      + d_s2*(n_g_gs(1,a2)*s(1,a1)     &
+                      +       n_g_gs(2,a2)*s(2,a1)     &
+                      +       n_g_gs(3,a2)*s(3,a1))    &
+                      + d_s3*(n_g_gs(1,a1)*n_g_gs(1,a2)    &
+                      +       n_g_gs(2,a1)*n_g_gs(2,a2)    &
+                      +       n_g_gs(3,a1)*n_g_gs(3,a2))   &
+                      + 2.0d0*d_s4*gs_gs(a2, a1)
+       end do
+     end do
+
 
    end subroutine
 

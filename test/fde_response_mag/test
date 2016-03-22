@@ -29,7 +29,7 @@ test.run(['dc_lda_updatevemb_scf.inp'], ['h2o-1.xyz'],    args='--put="numerical
 #test.run(['dc_lda_magn_g0_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 #test.run(['dc_lda_magn_g1_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_magn_g0_v_vw11.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-test.run(['dc_lda_magn_g1_v_vw11.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+#test.run(['dc_lda_magn_g1_v_vw11.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
 os.unlink('FROZEN')
 os.unlink('DFCOEF')

@@ -2448,6 +2448,18 @@ C
 !gosia: both GETFCK and GETDHB contain XC contributions, so no additional
 ! programming for DFT-LAO needed here...
 C*****************************************************************************
+      use dirac_cfg
+      use dft_cfg
+      use xcint_main
+      use memory_allocator
+      use num_grid_gen
+      use fde_input
+      use fde_mag_cfg
+!
+      use fde_mod
+      use fde_data
+      use fde_dirac_matrices_integration
+      use fde_evaluators_dirac
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2466,6 +2478,9 @@ C*****************************************************************************
 
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       LOGICAL HERM,AH,DOPCTRA_SAVE
+      real(8), allocatable :: tb_dmat(:,:), tb(:), dmat_0(:)
+      real(8) :: susfsy_xc(3,3), susfsy_fde_1(3,3)
+      type(fde_import) :: itmp
 #include "ibtfun.h"
 
       CALL QENTER('LORDRNT')
@@ -2688,6 +2703,7 @@ C ... call TTRA for {W(1)/S(1),F(1)} .. get all into KSWMAT
      &                 NORBT,NZ,IPQTOQ(1,IREP12),LUPRI )
           ENDIF
 
+!
 C  ... save the expectation values for the lower order rn term
 C      into SUSFSY(3,3)
 
@@ -2829,6 +2845,166 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
 
       ENDDO
       ENDDO
+
+!gosia: now the term \Omega^T * \Omega^T * xc_kernel
+      if (dirac_cfg_dft_calculation) then
+        call alloc(dmat_0, n2bbasx*nz)
+        call dzero(dmat_0, n2bbasx*nz)
+        call genden(dmat_0, cmo, 1, iprprp)
+        call generate_num_grid(dmat_0)
+
+!       get T(1) matrices from AOPROPER
+        call alloc(tb_dmat, n2bbasxq, 3)
+        tb_dmat = 0.0d0
+        call alloc(tb, n2orbxq)
+        tb = 0.0d0
+
+        do icomp = 1, 3
+          indxpr1 = ipcon(icomp)
+          isym1   = iprpsym(indxpr)
+          irep1   = isym1 - 1
+          iopsy1  = jbtof(irep1, 1)
+        
+          call prpmat(indxpr1,iopsy1,tb,cmo,ibeig,icmoq,norb,
+     &                work,kfree,lfree, irpint)
+
+          call getmdm(isym1,tb_dmat(1, icomp),cmo,ibeig,tb,
+     &                work,kfree,lfree,irpint)
+
+        end do ! do icomp = 1, nr_xyz_comp
+
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(4)
+#endif
+          call integrate_xc(xc_mat_dim   = ntbas(0),
+     &                      xc_nz        = nz,
+     &                      xc_dmat_0    = dmat_0,
+     &                      xc_dmat      = tb_dmat,
+     &                      xc_nr_dmat   = 3,
+     &                      xc_nr_fmat   = 0,
+     &                      xc_do_london_suscreo = .true.)
+
+        susfsy_xc = get_susc2el_integrated()
+
+        call dealloc(dmat_0)
+        call dealloc(tb_dmat)
+        call dealloc(tb)
+
+        if (iprprp .ge. 1) then
+!         susfsy before adding dft contributions:
+          CALL HEADER('Reorthonormalization expectation values, ' //
+     &                'before adding XC terms',-1)
+          CALL POLPRI(SUSFSY,'   ',-2)
+          AVERAG = (SUSFSY(1,1) + SUSFSY(2,2) + SUSFSY(3,3))/3.0d0
+          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+
+!         susfsy - dft contributions only:
+          CALL HEADER('Reorthonormalization expectation values, ' //
+     &                ' - xc terms',-1)
+          CALL POLPRI(susfsy_xc,'   ',-2)
+          AVERAG = (susfsy_xc(1,1) + susfsy_xc(2,2)
+     &            + susfsy_xc(3,3))/3.0d0
+          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+
+        end if
+
+!       Calculate total value of susfsy:
+        do i = 1, 3
+           do j = 1, 3
+              susfsy(j, i) = susfsy(j, i) + susfsy_xc(j, i)
+           end do
+        end do
+
+        if (iprprp .ge. 1) then
+
+!         total sus2el:
+          CALL HEADER('Reorth expectation values (total)',-1)
+          CALL POLPRI(SUSFSY,'   ',-2)
+          AVERAG = (SUSFSY(1,1) + SUSFSY(2,2) + SUSFSY(3,3))/3.0d0
+          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        end if
+
+      end if  !end xc contrib
+
+!fde
+      if (fde_magn_expval_lao) then
+!       embedding kernel contribution (no coupling)
+!       -------------------------------------------
+        if (.not.fde_lao_magn_expval_no_uncoup_embker) then
+          write(*, *) 'FDE kernel contribution to expectation value,'//
+     &                ' no coupling'
+
+          call fde_get_import_info(itmp)
+        
+          call alloc(dmat_0, n2bbasx*nz)
+          call dzero(dmat_0, n2bbasx*nz)
+          call genden(dmat_0, cmo, 1, iprprp)
+          call generate_num_grid(dmat_0)
+
+!         get T(1) matrices from AOPROPER
+          call alloc(tb_dmat, n2bbasxq, 3)
+          tb_dmat = 0.0d0
+          call alloc(tb, n2orbxq)
+          tb = 0.0d0
+          
+          do icomp = 1, 3
+            tb = 0.0d0
+            indxpr1 = ipcon(icomp)
+            isym1   = iprpsym(indxpr)
+            irep1   = isym1 - 1
+            iopsy1  = jbtof(irep1, 1)
+          
+!            write(*,*) 'bu1,isym1,icomp,indxpr1,iopsy1=',
+!     &                      isym1,icomp,indxpr1,iopsy1
+            call prpmat(indxpr1,iopsy1,tb,cmo,ibeig,icmoq,norb,
+     &                  work,kfree,lfree, irpint)
+          
+!            write(*,*) 'bu1,isym1,icomp,indxpr1,iopsy1=',
+!     &                      isym1,icomp,indxpr1,iopsy1
+            call getmdm(isym1,tb_dmat(1, icomp),cmo,ibeig,tb,
+     &                  work,kfree,lfree,irpint)
+!            write(*,*) 'bu2'
+          
+          end do ! do icomp = 1, nr_xyz_comp
+
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl(12)
+#endif     
+          susfsy_fde_1 = 0.0d0
+          call fde_dirac_emb_matrices_via_integration(
+     &                    fde_mat_dim            = ntbas(0),
+     &                    fde_nz                 = nz,
+     &                    fde_dmat_0             = dmat_0,
+     &                    fde_dmat               = tb_dmat,
+     &                    fde_nr_dmat            = 3,
+     &                    fde_nr_fmat            = 0,
+     &                    fde_do_london_suscreo  = .true.)
+
+          susfsy_fde_1 = fde_susc2el_integrated()
+
+          call dealloc(dmat_0)
+          call dealloc(tb_dmat)
+          call dealloc(tb)
+
+          if (iprprp .ge. 1) then
+            CALL HEADER('susfsy_fde_1 (embker, uncoupl)', -1)
+            CALL POLPRI(susfsy_fde_1,'   ',-2)
+            AVERAG = (susfsy_fde_1(1,1) + susfsy_fde_1(2,2)
+     &              + susfsy_fde_1(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+
+          end if
+        end if
+
+!       Calculate total value of susfsy:
+        do i = 1, 3
+           do j = 1, 3
+              susfsy(j, i) = susfsy(j, i) + susfsy_fde_1(j, i)
+           end do
+        end do
+
+      end if !if (fde_magn_expval_lao)
+
 
 C Symmetrize the off-diagonal terms of SUSFSY !!
 
