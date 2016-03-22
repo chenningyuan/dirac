@@ -23,4 +23,6 @@ molecule2       C(4v)       C2v
 molecule3       C(2v)       C2v
 molecule4       D(oo,h)     D2h
 molecule5       O(h)        D2h
+molecule6       D(2d)       C1   <--- this is wrong !
+molecule7       C(3v)       Cs
 

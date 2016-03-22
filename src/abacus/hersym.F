@@ -290,9 +290,15 @@ C ::: The reduced coordinates are moved back. :::
       IF (NCTOT .LE. 0) CALL QUIT ('No atoms defined')
 
       DO 250 I = 1, NCTOT
-         CORD(1:3,I) = ATMARR(1:3,I)
-         IOLD = NINT(ATMARR(5,I))
+CMI    I don't know why is there this assignement but do this
+CMI    only if no moving of coordinates required
+         IF (.NOT.NOMOVE) THEN
+           CORD(1:3,I) = ATMARR(1:3,I)
 C        ... IOLD .ge. I after CALL SRTOLD
+           IOLD = NINT(ATMARR(5,I))
+         ELSE
+           IOLD = I
+         ENDIF
          IATOMTYP(I) = IATOMTYP(IOLD)
          CHARGE(I) = CHARGE(IOLD)
          IZATOM(I) = IZATOM(IOLD)
