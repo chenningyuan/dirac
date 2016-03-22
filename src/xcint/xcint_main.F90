@@ -136,7 +136,6 @@ module xcint_main
    logical :: do_london_rhs_direct_der2
    logical :: do_london_rhs_ro
    logical :: do_london_susc2el
-   logical :: do_london_suscreo
    logical :: london_direct_export
    logical :: london_reorth_export
    logical :: do_geo
@@ -172,7 +171,6 @@ contains
                             xc_london_reorth_export,       &
                             xc_do_london_rhs_ro,      &
                             xc_do_london_susc2el,     &
-                            xc_do_london_suscreo,     &
                             xc_do_geo_0,              &
                             xc_do_geo_1,              &
                             xc_do_geo_2,              &
@@ -216,7 +214,6 @@ contains
       logical, optional,         intent(in)    :: xc_london_reorth_export
       logical, optional,         intent(in)    :: xc_do_london_rhs_ro
       logical, optional,         intent(in)    :: xc_do_london_susc2el
-      logical, optional,         intent(in)    :: xc_do_london_suscreo
       logical, optional,         intent(in)    :: xc_do_geo_0
       logical, optional,         intent(in)    :: xc_do_geo_1
       logical, optional,         intent(in)    :: xc_do_geo_2
@@ -290,7 +287,6 @@ contains
       london_reorth_export  = .false.
       do_london_rhs_ro      = .false.
       do_london_susc2el     = .false.
-      do_london_suscreo     = .false.
       do_geo_0              = .false.
       do_geo_1              = .false.
       do_geo_2              = .false.
@@ -310,7 +306,6 @@ contains
          if (present(xc_london_reorth_export))  london_reorth_export  = xc_london_reorth_export
          if (present(xc_do_london_rhs_ro))      do_london_rhs_ro      = xc_do_london_rhs_ro
          if (present(xc_do_london_susc2el))     do_london_susc2el     = xc_do_london_susc2el
-         if (present(xc_do_london_suscreo))     do_london_suscreo     = xc_do_london_suscreo
          if (present(xc_do_geo_0))              do_geo_0              = xc_do_geo_0
          if (present(xc_do_geo_1))              do_geo_1              = xc_do_geo_1
          if (present(xc_do_geo_2))              do_geo_2              = xc_do_geo_2
@@ -335,7 +330,6 @@ contains
          call xc_mpi_bcast(london_reorth_export)
          call xc_mpi_bcast(do_london_rhs_ro)
          call xc_mpi_bcast(do_london_susc2el)
-         call xc_mpi_bcast(do_london_suscreo)
          call xc_mpi_bcast(response_order_mo)
          call xc_mpi_bcast(response_order_ao)
          call xc_mpi_bcast(do_geo_0)
@@ -658,7 +652,7 @@ contains
          if (do_geo) then
             call xc_mpi_reduce(property_gradient)
          end if
-         if (do_london_susc2el .or. do_london_suscreo) then
+         if (do_london_susc2el) then
             call xc_mpi_reduce(susc2el_xc_integrated)
             call xc_mpi_reduce(susc2el_xc_integrated_sdft)
          end if
@@ -942,7 +936,7 @@ contains
     if (do_london_rhs_direct_der2 .and. .not. dft_cfg_no_sdft) then
        max_fun_derv = 2
     end if
-    if (do_london_susc2el .or. do_london_suscreo) then
+    if (do_london_susc2el) then
        max_fun_derv = 2
     end if
     if (do_geo_0) then
@@ -1806,76 +1800,6 @@ contains
 
             end if
           end if !do_london_susc2el
-
-          if (do_london_suscreo) then
-            n_bb = 0.0d0
-
-            if (use_gga) then
-              call gga_london_susreo_der2_r(derv(1, d2000000),   &
-                                            derv(1, d1010000),   &
-                                            derv(1, d0020000),   &
-                                            derv(1, d0010000),   &
-                                            gn_0_pointwise,      &
-                                            (/1,1,1/),           &
-                                            mat_dim,             &
-                                            nz,                  &
-                                            dmat,                &
-                                            ao,                  &
-                                            n_bb,                &
-                                            buffer)
-            else
-              call lda_london_susreo_der2_r(derv(1, d2000000),   &
-                                            (/1,1,1/),           &
-                                            mat_dim,             &
-                                            nz,                  &
-                                            dmat,                &
-                                            ao,                  &
-                                            n_bb,                &
-                                            buffer)
-
-            end if
-            do ixyz = 1, 3
-              do jxyz = 1, 3
-                susc2el_xc_integrated(jxyz, ixyz) = susc2el_xc_integrated(jxyz, ixyz) &
-                                                  + n_bb(jxyz, ixyz)
-              end do
-            end do
-
-
-            if (.not. dft_cfg_no_sdft) then
-              n_bb = 0.0d0
-              if (use_gga) then
-                call gga_london_susreo_der2_i(derv(1, d0200000),   &
-                                              derv(1, d0101000),   &
-                                              derv(1, d0002000),   &
-                                              derv(1, d0000100),   &
-                                              gn_0_pointwise,      &
-                                              (/1,1,1/),           &
-                                              mat_dim,             &
-                                              nz,                  &
-                                              dmat,                &
-                                              ao,                  &
-                                              n_bb,                &
-                                              buffer)
-              else
-                call lda_london_susreo_der2_i(derv(1, d0200000),   &
-                                              (/1,1,1/),           &
-                                              mat_dim,             &
-                                              nz,                  &
-                                              dmat,                &
-                                              ao,                  &
-                                              n_bb,                &
-                                              buffer)
-              end if
-              do ixyz = 1, 3
-                do jxyz = 1, 3
-                  susc2el_xc_integrated_sdft(jxyz, ixyz) = susc2el_xc_integrated_sdft(jxyz, ixyz) &
-                                                    + n_bb(jxyz, ixyz)
-                end do
-              end do
-            end if !if (.not. dft_cfg_no_sdft) then
-
-          end if !do_london_suscreo
 
 !gosia: if perturbed density export, then in points where the density is lower than threshold, put put the perturbed density to 0
       else if (n_0(1) <= dft_cfg_tinydens) then
