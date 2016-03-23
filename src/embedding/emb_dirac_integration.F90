@@ -280,7 +280,7 @@ module fde_dirac_matrices_integration
    logical :: do_london_susc2el_der1
    logical :: do_london_susc2el_der2
    logical :: do_london_susc2el_coupling
-   logical :: do_london_suscreo
+   logical :: do_london_suscreo_coupling
    logical :: do_geo
    logical :: do_geo_0
    logical :: do_geo_1
@@ -381,7 +381,7 @@ contains
                              fde_do_london_susc2el_der1,     &
                              fde_do_london_susc2el_der2,     &
                              fde_do_london_susc2el_coupling,   &
-                             fde_do_london_suscreo,           &
+                             fde_do_london_suscreo_coupling,   &
                              fde_do_export_pertden_reorth,     &
                              fde_do_export_pertden_direct,     &
                              fde_active_grid,           &
@@ -435,7 +435,7 @@ contains
       logical, optional,         intent(in)    :: fde_do_london_susc2el_der1
       logical, optional,         intent(in)    :: fde_do_london_susc2el_der2
       logical, optional,         intent(in)    :: fde_do_london_susc2el_coupling
-      logical, optional,         intent(in)    :: fde_do_london_suscreo
+      logical, optional,         intent(in)    :: fde_do_london_suscreo_coupling
       logical, optional,         intent(in)    :: fde_do_export_pertden_reorth
       logical, optional,         intent(in)    :: fde_do_export_pertden_direct
 !     --------------------------------------------------------------------------
@@ -505,7 +505,7 @@ contains
       do_london_susc2el_der1       = .false.
       do_london_susc2el_der2       = .false.
       do_london_susc2el_coupling   = .false.
-      do_london_suscreo            = .false.
+      do_london_suscreo_coupling   = .false.
       do_geo_0              = .false.
       do_geo_1              = .false.
       do_geo_2              = .false.
@@ -531,7 +531,7 @@ contains
          if (present(fde_do_london_susc2el_der1))       do_london_susc2el_der1       = fde_do_london_susc2el_der1
          if (present(fde_do_london_susc2el_der2))       do_london_susc2el_der2       = fde_do_london_susc2el_der2
          if (present(fde_do_london_susc2el_coupling))   do_london_susc2el_coupling   = fde_do_london_susc2el_coupling
-         if (present(fde_do_london_suscreo))            do_london_suscreo            = fde_do_london_suscreo
+         if (present(fde_do_london_suscreo_coupling))   do_london_suscreo_coupling   = fde_do_london_suscreo_coupling
          if (present(fde_do_export_pertden_reorth))     do_export_pertden_reorth     = fde_do_export_pertden_reorth
          if (present(fde_do_export_pertden_direct))     do_export_pertden_direct     = fde_do_export_pertden_direct
          if (present(fde_do_geo_0))              do_geo_0              = fde_do_geo_0
@@ -598,7 +598,7 @@ contains
          call fde_mpi_bcast(do_london_susc2el_der1)
          call fde_mpi_bcast(do_london_susc2el_der2)
          call fde_mpi_bcast(do_london_susc2el_coupling)
-         call fde_mpi_bcast(do_london_suscreo)
+         call fde_mpi_bcast(do_london_suscreo_coupling)
          call fde_mpi_bcast(do_export_pertden_reorth)
          call fde_mpi_bcast(do_export_pertden_direct)
          call fde_mpi_bcast(response_order_mo)
@@ -914,7 +914,7 @@ contains
             call fde_mpi_reduce(property_gradient)
          end if
          if (do_london_susc2el_der1 .or. do_london_susc2el_der2 &
-        .or. do_london_susc2el_coupling .or. do_london_suscreo) then
+        .or. do_london_susc2el_coupling .or. do_london_suscreo_coupling) then
             call fde_mpi_reduce(susc2el_fde_integrated)
             call fde_mpi_reduce(susc2el_fde_integrated_sdft)
          end if
@@ -1350,7 +1350,7 @@ contains
    if (do_london_susc2el_der1) then
       max_fun_derv = 1
    end if
-   if (do_london_susc2el_der2 .or. do_london_susc2el_coupling .or. do_london_suscreo) then
+   if (do_london_susc2el_der2 .or. do_london_susc2el_coupling .or. do_london_suscreo_coupling) then
       max_fun_derv = 2
    end if
    if (do_london_rhs_direct_kern .and. .not.fde_cfg_no_sdft) then
@@ -2265,51 +2265,26 @@ contains
             end if
           end if !do_london_susc2el_coupling
 
-          if (do_london_suscreo) then
+          if (do_london_suscreo_coupling) then
             n_bb = 0.0d0
-            t = derv_total(1, d2000000) - derv_active(1, d2000000)
-            if (use_gga) then
-            else
-              call lda_london_susreo_der2_r(t,                   &
-                                            (/1,1,1/),           &
-                                            mat_dim,             &
-                                            nz,                  &
-                                            dmat,                &
-                                            ao,                  &
-                                            n_bb,                &
-                                            buffer)
 
-              do ixyz = 1, 3
-                do jxyz = 1, 3
-                  susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
-                                                 + n_bb_total(jxyz, ixyz) - n_bb_active(jxyz, ixyz)
-                end do
-              end do
-            end if
+            call london_suscreo_coupling(ipoint,   &
+                                      bllen,       &
+                                      mat_dim,     &
+                                      nz,          &
+                                      dmat,        &
+                                      ao,          &
+                                      n_0_t,       &
+                                      z0tt,        &
+                                      w,           &
+                                      use_gga,     &    
+                                      derv_length, &
+                                      derv_total,  &
+                                      rx(ipoint), ry(ipoint), rz(ipoint),&
+                                      n_bb,        &
+                                      buffer)
 
-            if (.not. fde_cfg_no_sdft) then
-              n_bb = 0.0d0
-              t = derv_total(1, d0200000) - derv_active(1, d0200000)
-              if (use_gga) then
-              else
-                call lda_london_susreo_der2_i(t,                   &
-                                              (/1,1,1/),           &
-                                              mat_dim,             &
-                                              nz,                  &
-                                              dmat,                &
-                                              ao,                  &
-                                              n_bb,                &
-                                              buffer)
-              end if
-              do ixyz = 1, 3
-                do jxyz = 1, 3
-                  susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
-                                                    + n_bb(jxyz, ixyz)
-                end do
-              end do
-            end if
-
-          end if !do_london_suscreo
+          end if !do_london_suscreo_coupling
 
       end if !if (n_0(1) > fde_cfg_small_density_threshold) then
     end do !do ipoint = 1, nr_points_on_this_proc
@@ -3357,7 +3332,6 @@ contains
 
   end subroutine
 
-
   subroutine london_susc2el_coupling(ipoint,            &
                                      block_length,      &
                                      mat_dim,           &
@@ -3487,6 +3461,319 @@ contains
                                           + n_bb(jxyz, ixyz)
       end do
     end do
+
+  end subroutine
+
+
+  subroutine london_suscreo_coupling(ipoint,            &
+                                     block_length,      &
+                                     mat_dim,           &
+                                     nz,                &
+                                     dmat_T,            &
+                                     ao,                &
+                                     n_0,             &
+                                     gn_0_pointwise,  &
+                                     w,                 &
+                                     is_gga,            &
+                                     n,                 &
+                                     derv_total,        &
+                                     rx, ry, rz,        &
+                                     n_bb,buffer)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: ipoint
+    integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(in)    :: dmat_T(*)
+    real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: n_0(*)
+    real(8), intent(in)    :: gn_0_pointwise(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv_total(max_block_length, 0:n)
+    real(8), intent(in)    :: rx, ry, rz
+    real(8), intent(inout) :: n_bb(3,3)
+    real(8), intent(in)    :: buffer(*)
+!   ----------------------------------------------------------------------------
+    real(8)                ::  d_1, d_2, d_3, d_4
+
+    real(8)                ::  n_b_lao(3)
+    real(8)                ::  gn_b_lao(3, 3)
+    real(8)                ::  n_active(3), gn_active(3,3)
+    real(8)                ::  gngn_active(3), gngn_frozen(3)
+    real(8)                ::  gngn_active_frozen(3,3)
+
+    real(8)                ::  s_b_lao(3, 3)
+    real(8)                ::  gs_b_lao(3, 3, 3)
+    real(8)                ::  s1(3,3),gs1(3,3,3),gsgn_b_lao(3,3),s2(3,3),gs2(3,3,3)
+    real(8)                ::  s_active(3,3)
+    real(8)                ::  gngs_active(3,3), gngs_frozen(3,3)
+    real(8)                ::  gsgs_active_frozen(3,3)
+
+    integer                :: k_start, k, a, ioff
+    integer                :: ixyz, jxyz, a1, a2
+!   ----------------------------------------------------------------------------
+    n_b_lao  = 0.0d0
+    gn_b_lao = 0.0d0
+    s_b_lao    = 0.0d0
+    gs_b_lao   = 0.0d0
+
+!   frozen_* variables read from file correspond to the sum
+!   of direct (London phase) and reorthonormalization contributions
+!   (LAO + T)^alpha
+    n_b_lao(1) = frozen_n_bx(ipoint)
+    n_b_lao(2) = frozen_n_by(ipoint)
+    n_b_lao(3) = frozen_n_bz(ipoint)
+    if (is_gga) then
+      gn_b_lao(1, 1) = frozen_gxn_bx(ipoint)
+      gn_b_lao(1, 2) = frozen_gxn_by(ipoint)
+      gn_b_lao(1, 3) = frozen_gxn_bz(ipoint)
+      gn_b_lao(2, 1) = frozen_gyn_bx(ipoint)
+      gn_b_lao(2, 2) = frozen_gyn_by(ipoint)
+      gn_b_lao(2, 3) = frozen_gyn_bz(ipoint)
+      gn_b_lao(3, 1) = frozen_gzn_bx(ipoint)
+      gn_b_lao(3, 2) = frozen_gzn_by(ipoint)
+      gn_b_lao(3, 3) = frozen_gzn_bz(ipoint)
+    end if
+
+!   then we need active densities also to correspond to (LAO+T)^beta
+!   the real part of LAO-density is 0, so take only the T-density
+    if (is_gga) then
+       do a1 = 1,3
+         ioff = (mat_dim*mat_dim*nz)*(a1-1) + 1
+         call get_gn_nonhermitian(n_active(a1),      &
+                                  gn_active(1:3,a1), &
+                                  0,                 &
+                                  mat_dim,           &
+                                  dmat_T(ioff),      &
+                                  buffer,            &
+                                  ao)
+      end do
+    else
+      do a1 = 1,3
+        ioff = (mat_dim*mat_dim*nz)*(a1-1) + 1
+        call get_n(n_active(a1),    &
+                   0,               &
+                   mat_dim,         &
+                   dmat_T(ioff),    &
+                   buffer,          &
+                   ao)
+      end do
+    end if
+
+!   combine all together:
+!   =====================
+!   lda
+    d_1    = derv_total(1, d2000000)
+    do a1 = 1, 3
+      do a2 = 1, 3
+        n_bb(a2, a1) = n_bb(a2, a1) &
+                     + d_1*n_active(a1)*n_b_lao(a2)
+      end do
+    end do
+
+!   gga
+    if (is_gga) then
+      d_2    = derv_total(1, d1010000)
+      d_3    = derv_total(1, d0020000)
+      d_4    = derv_total(1, d0010000)*2.0d0
+    
+      do a1 = 1, 3! B_{x,y,z}
+        gngn_active(a1) = gn_0_pointwise(1)*gn_active(1, a1) &
+                        + gn_0_pointwise(2)*gn_active(2, a1) &
+                        + gn_0_pointwise(3)*gn_active(3, a1)
+
+        gngn_frozen(a1) = gn_0_pointwise(1)*gn_b_lao(1, a1)  &
+                        + gn_0_pointwise(2)*gn_b_lao(2, a1)  &
+                        + gn_0_pointwise(3)*gn_b_lao(3, a1)
+
+        do a2 = 1, 3! B_{x,y,z}
+          gngn_active_frozen(a2, a1) = gn_active(1, a2)*gn_b_lao(1, a1)  &
+                                     + gn_active(2, a2)*gn_b_lao(2, a1)  &
+                                     + gn_active(3, a2)*gn_b_lao(3, a1)
+        end do
+      end do
+
+      do a1 = 1, 3
+        do a2 = 1, 3
+          n_bb(a2, a1) = n_bb(a2, a1) &
+                       + 2.0d0*d_2*(gngn_active(a1)*n_b_lao(a2)+ gngn_frozen(a1)*n_active(a2)) &
+                       + 4.0d0*d_3*gngn_active(a1)*gngn_frozen(a1) &
+                       + 2.0d0*d_4*gngn_active_frozen(a2, a1)
+        end do
+      end do
+    end if
+      
+!   sum to susc2el_xc_integrated
+    do ixyz = 1, 3
+      do jxyz = 1, 3
+        susc2el_fde_integrated(jxyz, ixyz) = susc2el_fde_integrated(jxyz, ixyz) &
+                                          + n_bb(jxyz, ixyz)
+      end do
+    end do
+
+
+!   sdft
+    if (.not.fde_cfg_no_sdft) then
+     
+      k_start = 1
+      if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+      
+      s_b_lao(1,1) = frozen_sx_bx(ipoint)
+      s_b_lao(1,2) = frozen_sx_by(ipoint)
+      s_b_lao(1,3) = frozen_sx_bz(ipoint)
+      s_b_lao(2,1) = frozen_sy_bx(ipoint)
+      s_b_lao(2,2) = frozen_sy_by(ipoint)
+      s_b_lao(2,3) = frozen_sy_bz(ipoint)
+      s_b_lao(3,1) = frozen_sz_bx(ipoint)
+      s_b_lao(3,2) = frozen_sz_by(ipoint)
+      s_b_lao(3,3) = frozen_sz_bz(ipoint)
+      if (is_gga) then
+         gs_b_lao(1,1,1) = frozen_gxsx_bx(ipoint)
+         gs_b_lao(1,1,2) = frozen_gxsx_by(ipoint)
+         gs_b_lao(1,1,3) = frozen_gxsx_bz(ipoint)
+         gs_b_lao(1,2,1) = frozen_gxsy_bx(ipoint)
+         gs_b_lao(1,2,2) = frozen_gxsy_by(ipoint)
+         gs_b_lao(1,2,3) = frozen_gxsy_bz(ipoint)
+         gs_b_lao(1,3,1) = frozen_gxsz_bx(ipoint)
+         gs_b_lao(1,3,2) = frozen_gxsz_by(ipoint)
+         gs_b_lao(1,3,3) = frozen_gxsz_bz(ipoint)
+         gs_b_lao(2,1,1) = frozen_gysx_bx(ipoint)
+         gs_b_lao(2,1,2) = frozen_gysx_by(ipoint)
+         gs_b_lao(2,1,3) = frozen_gysx_bz(ipoint)
+         gs_b_lao(2,2,1) = frozen_gysy_bx(ipoint)
+         gs_b_lao(2,2,2) = frozen_gysy_by(ipoint)
+         gs_b_lao(2,2,3) = frozen_gysy_bz(ipoint)
+         gs_b_lao(2,3,1) = frozen_gysz_bx(ipoint)
+         gs_b_lao(2,3,2) = frozen_gysz_by(ipoint)
+         gs_b_lao(2,3,3) = frozen_gysz_bz(ipoint)
+         gs_b_lao(3,1,1) = frozen_gzsx_bx(ipoint)
+         gs_b_lao(3,1,2) = frozen_gzsx_by(ipoint)
+         gs_b_lao(3,1,3) = frozen_gzsx_bz(ipoint)
+         gs_b_lao(3,2,1) = frozen_gzsy_bx(ipoint)
+         gs_b_lao(3,2,2) = frozen_gzsy_by(ipoint)
+         gs_b_lao(3,2,3) = frozen_gzsy_bz(ipoint)
+         gs_b_lao(3,3,1) = frozen_gzsz_bx(ipoint)
+         gs_b_lao(3,3,2) = frozen_gzsz_by(ipoint)
+         gs_b_lao(3,3,3) = frozen_gzsz_bz(ipoint)
+      end if
+      
+
+!     then we need active densities also to correspond to (LAO+T)^beta
+!     first get s_lao and gs_lao:
+      if (is_gga) then
+        call get_gs_lao(s1,     &
+                        gs1,    &
+                        gsgn_b_lao,  &
+                        gn_0_pointwise, &
+                        (/1,1,1/),   &
+                        mat_dim,     &
+                        dmat_0,      &
+                        ao,          &
+                        rx, ry, rz)
+      else
+         call get_s_lao(s1,          &
+                        (/0, 0, 0/),      &
+                        mat_dim,          &
+                        dmat_0,           &
+                        ao,               &
+                        rx, ry, rz)
+      end if
+      
+!     then get s_T, gs_T:
+      if (is_gga) then
+        do a1 = 1, 3
+          call get_gs_nonhermitian(s2(1:3,a1),          &
+                                   gs2(1:3,1:3,a1),     &
+                                   0,                   &
+                                   mat_dim,             &
+                                   dmat(1,1,1,a1),      &
+                                   buffer,              &
+                                   ao)
+        end do
+      else
+        do a1 = 1, 3
+          call get_s(s2(1:3,a1),     &
+                     0,              &
+                     mat_dim,        &
+                     dmat(1,1,1,a1), &
+                     buffer,         &
+                     ao)
+        end do
+      end if
+
+!     rename & sum
+      do a1 = 1, 3
+        do a2 = 1, 3
+          s_active(a2, a1) = s1(a2, a1) + s2(a2, a1)  !s_active(Sigma, B)
+          do k = 1, 3
+            gs_active(k, a2, a1) = gs1(k, a2, a1) + gs2(k, a2, a1) !gs_active(dR, Sigma, B)
+          end do
+        end do
+      end do
+      
+!     combine all together:
+!     =====================
+!     lda
+      d_1    = derv_total(1, d0200000)
+      do a1 = 1, 3
+        do a2 = 1, 3
+          do k = 1, 3
+            n_bb(a2, a1) = n_bb(a2, a1) &
+                         + d_1*s_active(k, a1)*s_b_lao(k, a2)
+          end do
+        end do
+      end do
+      
+!     gga
+      if (is_gga) then
+        d_2    = derv_total(1, d0101000)
+        d_3    = derv_total(1, d0002000)
+        d_4    = derv_total(1, d0000100)*2.0d0
+      
+        do a1 = 1, 3! B_{x,y,z}
+          do k = 1, 3! Sigma
+            gngs_active(k, a1) = gn_0_pointwise(1)*gs_active(1, k, a1) &
+                               + gn_0_pointwise(2)*gs_active(2, k, a1) &
+                               + gn_0_pointwise(3)*gs_active(3, k, a1)
+            
+            gngs_frozen(k, a1) = gn_0_pointwise(1)*gs_b_lao(1, k, a1)  &
+                               + gn_0_pointwise(2)*gs_b_lao(2, k, a1)  &
+                               + gn_0_pointwise(3)*gs_b_lao(3, k, a1)
+            
+            do a2 = 1, 3! B_{x,y,z}
+              gsgs_active_frozen(a2, a1) = gs_active(1, k, a2)*gs_b_lao(1, k, a1)  &
+                                         + gs_active(2, k, a2)*gs_b_lao(2, k, a1)  &
+                                         + gs_active(3, k, a2)*gs_b_lao(3, k, a1)
+            end do
+          end do
+        end do
+
+        do a1 = 1, 3
+          do a2 = 1, 3
+            n_bb(a2, a1) = n_bb(a2, a1) &
+                         + 2.0d0*d_4*gsgs_active_frozen(a2, a1)
+            do k = 1, 3
+              n_bb(a2, a1) = n_bb(a2, a1) &
+                           + d_2*(gngs_active(k,a1)*s_b_lao(k,a2)+ gngs_frozen(k,a1)*s_active(k,a2)) &
+                           + d_3*gngs_active(k,a1)*gngs_frozen(k,a1)
+            end do
+          end do
+        end do
+     
+      end if
+
+!     sum to susc2el_xc_integrated_sdft
+      do ixyz = 1, 3
+        do jxyz = 1, 3
+          susc2el_fde_integrated_sdft(jxyz, ixyz) = susc2el_fde_integrated_sdft(jxyz, ixyz) &
+                                            + n_bb(jxyz, ixyz)
+        end do
+      end do
+
+    end if ! sdft
 
   end subroutine
 

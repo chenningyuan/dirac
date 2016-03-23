@@ -2092,15 +2092,6 @@ C
            end do
         end do
 
-        if (iprprp .ge. 1) then
-
-!         total sus2el:
-          CALL HEADER('Two-electron expectation values (total)',-1)
-          CALL POLPRI(SUS2EL,'   ',-2)
-          AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/3.0d0
-          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
-        end if
-
       end if
 
 
@@ -2117,7 +2108,8 @@ C
 !       embedding potential contribution
 !       --------------------------------
         if (.not. fde_lao_magn_expval_no_embpot) then
-          write(*, *) 'FDE contribution to expectation value (embpot)'
+          write(*, *) 'FDE 2-el contribution to expectation value ' //
+     &                'dependent on embedding potential included'
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl(12)
 #endif
@@ -2130,8 +2122,10 @@ C
      &                    fde_nr_fmat            = 0,
      &                    fde_do_london_susc2el_der1  = .true.)
           sus2el_fde_1 = fde_susc2el_integrated()
+
           if (iprprp .ge. 1) then
-            CALL HEADER('sus2el_fde_1 (embpot)', -1)
+            CALL HEADER('FDE 2-el contribution dependent on ' //
+     &                  'embedding potential', -1)
             CALL POLPRI(sus2el_fde_1,'   ',-2)
             AVERAG = (sus2el_fde_1(1,1) + sus2el_fde_1(2,2)
      &              + sus2el_fde_1(3,3))/3.0d0
@@ -2140,13 +2134,12 @@ C
 
         end if
 
-
 !       embedding kernel contribution (no coupling)
 !       -------------------------------------------
         if (.not.fde_lao_magn_expval_no_uncoup_embker) then
           if(.not. fde_cfg_no_sdft) then
-            write(*, *) 'FDE kernel contribution to expectation value,'//
-     &                  ' no coupling'
+          write(*, *) 'FDE 2-el contribution to expectation value ' //
+     &       'dependent on embedding kernel included (uncoupled)'
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(12)
 #endif     
@@ -2160,22 +2153,30 @@ C
      &                      fde_nr_fmat            = 0,
      &                      fde_do_london_susc2el_der2  = .true.)
             sus2el_fde_2 = fde_susc2el_integrated()
+
             if (iprprp .ge. 1) then
-              CALL HEADER('sus2el_fde_2 (embker, uncoupl)', -1)
+              CALL HEADER('FDE 2-el contribution dependent on ' //
+     &                  'embedding kernel (uncoupled)', -1)
               CALL POLPRI(sus2el_fde_2,'   ',-2)
               AVERAG = (sus2el_fde_2(1,1) + sus2el_fde_2(2,2)
      &                + sus2el_fde_2(3,3))/3.0d0
               WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
             end if
+
           end if
         end if
 
 !       embedding coupling-kernel contribution
 !       --------------------------------------
+!       this is the coupling-kernel contribution
+!       which involves the nonadditive xc and kinetic energy functionals
+!       There is no contribution from the Coulomb term
         if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker) then
           if (fde_rsp_mag_lao_import 
      &        .and. .not. fde_cfg_no_sdft) then
-            write(*, *) 'FDE kernel-coupling contrib. to exp. val.'
+          write(*, *) 'FDE 2-el contribution to expectation value ' //
+     &       'dependent on embedding kernel and coupling '          //
+     &       'two subsystems included'
 #ifdef VAR_MPI
             if (parcal) call dirac_parctl(12)
 #endif    
@@ -2189,13 +2190,16 @@ C
      &                      fde_nr_fmat            = 0,
      &                      fde_do_london_susc2el_coupling  = .true.)
             sus2el_fde_3 = fde_susc2el_integrated()
+
             if (iprprp .ge. 1) then
-              CALL HEADER('sus2el_fde_3 (embker, coupl, noCoul)', -1)
+              CALL HEADER('FDE 2-el contribution dependent on ' //
+     &                'embedding kernel, coupling two subsystems', -1)
               CALL POLPRI(sus2el_fde_3,'   ',-2)
               AVERAG = (sus2el_fde_3(1,1) + sus2el_fde_3(2,2)
      &                + sus2el_fde_3(3,3))/3.0d0
               WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
             end if
+
           end if
         end if
 
@@ -2213,8 +2217,8 @@ C
 
         if (iprprp .ge. 1) then
 !         sus2el - fde contributions:
-          CALL HEADER('FDE contribs to two-electron '//
-     &                ' expectation values',-1)
+          CALL HEADER('Sum of FDE contribs to two-electron '//
+     &                ' expectation value',-1)
           CALL POLPRI(sus2el_fde,'   ',-2)
           AVERAG = (sus2el_fde(1,1) + sus2el_fde(2,2)
      &            + sus2el_fde(3,3))/3.0d0
@@ -2229,16 +2233,15 @@ C
            end do
         end do
 
-        if (iprprp .ge. 1) then
+      end if !if(fde_magn_expval_lao)
 
-!         total sus2el:
-          CALL HEADER('Two-electron expectation values (total)',-1)
-          CALL POLPRI(SUS2EL,'   ',-2)
-          AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/3.0d0
-          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
-        end if
-
-      end if !if(dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
+!     print total sus2el:
+      if (iprprp .ge. 1) then
+        CALL HEADER('Two-electron expectation values (total)',-1)
+        CALL POLPRI(SUS2EL,'   ',-2)
+        AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/3.0d0
+        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+      end if
 
       CALL GETTIM(CPU2,WALL2)
 C
@@ -2449,13 +2452,10 @@ C
 ! programming for DFT-LAO needed here...
 C*****************************************************************************
       use dirac_cfg
-      use dft_cfg
-      use xcint_main
       use memory_allocator
       use num_grid_gen
       use fde_input
       use fde_mag_cfg
-!
       use fde_mod
       use fde_data
       use fde_dirac_matrices_integration
@@ -2846,14 +2846,16 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
       ENDDO
       ENDDO
 
-!gosia: now the term \Omega^T * \Omega^T * xc_kernel
-!fde-coupling
+!gosia: uncoupled FDE contributions are already present (either through GETFCK or GETDHB subroutines)
+!but we need additional code for fde coupling-kernel contributions
       if (fde_magn_expval_lao) then
-!       embedding kernel contribution (no coupling)
-!       -------------------------------------------
-        if (.not.fde_lao_magn_expval_no_uncoup_embker) then
-          write(*, *) 'FDE kernel contribution to expectation value,'//
-     &                ' no coupling'
+        if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker .and. 
+     &           fde_rsp_mag_lao_import) then
+
+          write(*, *) 'FDE reorthonormalization contribution '      //
+     &       'to expectation value ' //
+     &       'dependent on embedding kernel and coupling '          //
+     &       'two subsystems included'
 
           call fde_get_import_info(itmp)
         
@@ -2875,22 +2877,24 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
             irep1   = isym1 - 1
             iopsy1  = jbtof(irep1, 1)
           
-!            write(*,*) 'bu1,isym1,icomp,indxpr1,iopsy1=',
-!     &                      isym1,icomp,indxpr1,iopsy1
             call prpmat(indxpr1,iopsy1,tb,cmo,ibeig,icmoq,norb,
      &                  work,kfree,lfree, irpint)
           
-!            write(*,*) 'bu1,isym1,icomp,indxpr1,iopsy1=',
-!     &                      isym1,icomp,indxpr1,iopsy1
             call getmdm(isym1,tb_dmat(1, icomp),cmo,ibeig,tb,
      &                  work,kfree,lfree,irpint)
-!            write(*,*) 'bu2'
           
-          end do ! do icomp = 1, nr_xyz_comp
+          end do
 
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl(12)
 #endif     
+!         inside fde_dirac_emb_matrices_via_integration subroutine
+!         we will calculate two coupling contributions
+!         - one is Omega^T(I)*Omega^T(II)
+!         - second is (R \times r)Omega(I)*Omega^T(II) + (R \times r)Omega(II)*Omega^T(I)
+!         with:
+!         Omega^T = MO(a)*MO(b)*(cTc + c.c.) with first-order connection matrix T
+!         (R \times r)Omega - LAO phase factor
           susfsy_fde_1 = 0.0d0
           call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
@@ -2899,7 +2903,7 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
      &                    fde_dmat               = tb_dmat,
      &                    fde_nr_dmat            = 3,
      &                    fde_nr_fmat            = 0,
-     &                    fde_do_london_suscreo  = .true.)
+     &                    fde_do_london_suscreo_coupling  = .true.)
 
           susfsy_fde_1 = fde_susc2el_integrated()
 
@@ -2908,7 +2912,9 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
           call dealloc(tb)
 
           if (iprprp .ge. 1) then
-            CALL HEADER('susfsy_fde_1 (embker, uncoupl)', -1)
+              CALL HEADER('FDE reorthonormalization contribution ' //
+     &                'dependent on ' //
+     &                'embedding kernel, coupling two subsystems', -1)
             CALL POLPRI(susfsy_fde_1,'   ',-2)
             AVERAG = (susfsy_fde_1(1,1) + susfsy_fde_1(2,2)
      &              + susfsy_fde_1(3,3))/3.0d0
