@@ -232,8 +232,8 @@ module fde_dirac_matrices_integration
    integer                      :: mat_dim
    integer                      :: nz
 
-   real(8), pointer             :: dmat_0(:, :)
-   real(8), allocatable, target :: dmat_0_container(:, :)
+   real(8), pointer             :: dmat_0(:, :, :)
+   real(8), allocatable, target :: dmat_0_container(:, :, :)
 
    real(8), pointer             :: pertden(:, :)
 
@@ -402,7 +402,7 @@ contains
 !     --------------------------------------------------------------------------
       integer,                   intent(in)    :: fde_mat_dim
       integer,                   intent(in)    :: fde_nz
-      real(8),           target, intent(in)    :: fde_dmat_0(fde_mat_dim, fde_mat_dim)
+      real(8),           target, intent(in)    :: fde_dmat_0(fde_mat_dim, fde_mat_dim, fde_nz)
       integer,                   intent(in)    :: fde_nr_dmat
       integer,                   intent(in)    :: fde_nr_fmat
       real(8), optional, target, intent(in)    :: fde_dmat(fde_mat_dim, fde_mat_dim, fde_nz, fde_nr_dmat)
@@ -628,7 +628,7 @@ contains
 
      nullify(dmat_0)
       if (.not. fde_mpi_is_master()) then
-         allocate(dmat_0_container(mat_dim, mat_dim))
+         allocate(dmat_0_container(mat_dim, mat_dim, nz))
          dmat_0 => dmat_0_container
       else
          dmat_0 => fde_dmat_0
@@ -1177,7 +1177,7 @@ contains
       real(8) :: f
 !     --------------------------------------------------------------------------
 
-      call dscal(mat_dim*mat_dim, f, dmat_0, 1)
+      call dscal(mat_dim*mat_dim*nz, f, dmat_0, 1)
       if (nr_dmat > 0) then
         call dscal(mat_dim*mat_dim*nz*nr_dmat, f, dmat, 1)
       end if
@@ -3508,7 +3508,7 @@ contains
     real(8)                ::  s_b_lao(3, 3)
     real(8)                ::  gs_b_lao(3, 3, 3)
     real(8)                ::  s1(3,3),gs1(3,3,3),gsgn_b_lao(3,3),s2(3,3),gs2(3,3,3)
-    real(8)                ::  s_active(3,3)
+    real(8)                ::  s_active(3,3), gs_active(3,3,3)
     real(8)                ::  gngs_active(3,3), gngs_frozen(3,3)
     real(8)                ::  gsgs_active_frozen(3,3)
 
@@ -3685,20 +3685,22 @@ contains
 !     then get s_T, gs_T:
       if (is_gga) then
         do a1 = 1, 3
+          ioff = mat_dim*mat_dim*nz*(a1-1)+1
           call get_gs_nonhermitian(s2(1:3,a1),          &
                                    gs2(1:3,1:3,a1),     &
                                    0,                   &
                                    mat_dim,             &
-                                   dmat(1,1,1,a1),      &
+                                   dmat_T(ioff),        &
                                    buffer,              &
                                    ao)
         end do
       else
         do a1 = 1, 3
+          ioff = mat_dim*mat_dim*nz*(a1-1)+1
           call get_s(s2(1:3,a1),     &
                      0,              &
                      mat_dim,        &
-                     dmat(1,1,1,a1), &
+                     dmat_T(ioff),   &
                      buffer,         &
                      ao)
         end do
