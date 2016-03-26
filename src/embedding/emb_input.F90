@@ -94,7 +94,7 @@ module fde_input
          if (fde_rsp_mag_lao_import) then
             itmp%im_n_b      = .true.
             itmp%im_gn_b     = .true.
-            if (.not. fde_rsp_mag_lao_no_s) then
+            if (.not. fde_cfg_no_sdft) then
                itmp%im_s_b      = .true.
                itmp%im_gs_b     = .true.
             end if
@@ -110,7 +110,7 @@ module fde_input
          if (fde_rsp_mag_lao_export) then
             etmp%ex_n_b      = .true.
             etmp%ex_gn_b     = .true.
-            if (.not. fde_rsp_mag_lao_no_s) then
+            if (.not. fde_cfg_no_sdft) then
                etmp%ex_s_b      = .true.
                etmp%ex_gs_b     = .true.
             end if

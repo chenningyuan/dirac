@@ -3,6 +3,7 @@
 module fde_types
 
    use fde_mag_cfg
+   use fde_cfg, only: fde_cfg_no_sdft
 
    implicit none
 
@@ -123,7 +124,7 @@ module fde_types
                   stop
                endif
             end if
-            if (.not. fde_rsp_mag_lao_no_s) then
+            if (.not. fde_cfg_no_sdft) then
                if (.not. associated(gf%s_b)) then
                   allocate(gf%s_b(3,3,nr_elements))
                else
@@ -156,7 +157,7 @@ module fde_types
          if (fde_rsp_mag_lao_import .or. fde_rsp_mag_lao_export) then
             gf%n_b  = 0.0d0
             gf%gn_b = 0.0d0
-            if (.not. fde_rsp_mag_lao_no_s) then
+            if (.not. fde_cfg_no_sdft) then
                gf%s_b  = 0.0d0
                gf%gs_b = 0.0d0
             end if

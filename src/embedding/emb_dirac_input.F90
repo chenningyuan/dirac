@@ -150,16 +150,19 @@ module fde_input_dirac
                skip_all_imports = .true.
                doprp = .true.
 
-! gosia: keywords for LAO-NMR shielding (see documentation)
+            CASE ('.NOSDFT')
+!              no spin density contributions
+               fde_cfg_no_sdft = .true.
+! gosia: below keywords to be used in LAO basis sets:
+!           embedding contributions to property gradient:
+!           ---------------------------------------------
             CASE ('.LAODPT')
 !              Direct-LAO contribution to property gradient, involving embedding PoTential
                fde_rsp_mag_lao = .true.
                fde_lao_direct_active_embpot = .true.
                doprp = .true.
-!
                itmp%im_frozen = .true.
                dirac_cfg_fde_response = .true.
-
             CASE ('.LAODKR')
 !              Direct-LAO contribution to property gradient, involving embedding KeRnel (only if SDFT)
                fde_rsp_mag_lao = .true.
@@ -181,6 +184,8 @@ module fde_input_dirac
                fde_rsp_mag_lao = .true.
                fde_lao_frozen_embker_coulomb = .true.
                doprp = .true.
+!           import/export of perturbed density:
+!           -----------------------------------
             CASE ('.PERTIM')
 !              import perturbed density (additional columns on 'GRIDOUT' file)
                fde_rsp_mag_lao_import = .true.
@@ -192,10 +197,8 @@ module fde_input_dirac
                etmp%do_grid_out = .true.
                doprp = .true.
                fde_rsp_mag_lao_export = .true.
-            CASE ('.FRZNOS')
-!              only charge density contributions in perturbed density (on import or export) = no spin magnetization contributions
-               fde_rsp_mag_lao_no_s = .true.
-!           now keywords related to expectation value of magnetizability:
+!           embedding contributions to expectation value of magnetizability:
+!           ----------------------------------------------------------------
             CASE ('.EMAFDE')
 !              Expectation value contribution to MAgnetizability - FDE (all terms, excluding terms by keywords below)
                fde_magn_expval_lao = .true.

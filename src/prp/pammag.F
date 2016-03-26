@@ -2114,13 +2114,24 @@ C
           if (parcal) call dirac_parctl(12)
 #endif
           sus2el_fde_1 = 0.0d0
-          call fde_dirac_emb_matrices_via_integration(
+          if (itmp%im_vemb) then
+            call fde_dirac_emb_matrices_via_integration(
      &                    fde_mat_dim            = ntbas(0),
      &                    fde_nz                 = nz,
      &                    fde_dmat_0             = dmat_0,
      &                    fde_nr_dmat            = 0,
      &                    fde_nr_fmat            = 0,
-     &                    fde_do_london_susc2el_der1  = .true.)
+     &                    fde_use_potential      = .true.,
+     &                    fde_do_london_susc2el_der1 = .true.)
+          else
+            call fde_dirac_emb_matrices_via_integration(
+     &                      fde_mat_dim            = ntbas(0),
+     &                      fde_nz                 = nz,
+     &                      fde_dmat_0             = dmat_0,
+     &                      fde_nr_dmat            = 0,
+     &                      fde_nr_fmat            = 0,
+     &                      fde_do_london_susc2el_der1  = .true.)
+          end if
           sus2el_fde_1 = fde_susc2el_integrated()
 
           if (iprprp .ge. 1) then
@@ -2136,34 +2147,32 @@ C
 
 !       embedding kernel contribution (no coupling)
 !       -------------------------------------------
-        if (.not.fde_lao_magn_expval_no_uncoup_embker) then
-          if(.not. fde_cfg_no_sdft) then
+        if (.not.fde_lao_magn_expval_no_uncoup_embker
+     &    .and..not. fde_cfg_no_sdft) then
           write(*, *) 'FDE 2-el contribution to expectation value ' //
      &       'dependent on embedding kernel included (uncoupled)'
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(12)
+          if (parcal) call dirac_parctl(12)
 #endif     
-            sus2el_fde_2 = 0.0d0
-            call fde_dirac_emb_matrices_via_integration(
-     &                      fde_mat_dim            = ntbas(0),
-     &                      fde_nz                 = nz,
-     &                      fde_dmat_0             = dmat_0,
-     &                      fde_dmat               = work(kdmat),
-     &                      fde_nr_dmat            = 1,
-     &                      fde_nr_fmat            = 0,
-     &                      fde_do_london_susc2el_der2  = .true.)
-            sus2el_fde_2 = fde_susc2el_integrated()
+          sus2el_fde_2 = 0.0d0
+          call fde_dirac_emb_matrices_via_integration(
+     &                    fde_mat_dim            = ntbas(0),
+     &                    fde_nz                 = nz,
+     &                    fde_dmat_0             = dmat_0,
+     &                    fde_nr_dmat            = 0,
+     &                    fde_nr_fmat            = 0,
+     &                    fde_do_london_susc2el_der2  = .true.)
+          sus2el_fde_2 = fde_susc2el_integrated()
 
-            if (iprprp .ge. 1) then
-              CALL HEADER('FDE 2-el contribution dependent on ' //
-     &                  'embedding kernel (uncoupled)', -1)
-              CALL POLPRI(sus2el_fde_2,'   ',-2)
-              AVERAG = (sus2el_fde_2(1,1) + sus2el_fde_2(2,2)
-     &                + sus2el_fde_2(3,3))/3.0d0
-              WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
-            end if
-
+          if (iprprp .ge. 1) then
+            CALL HEADER('FDE 2-el contribution dependent on ' //
+     &                'embedding kernel (uncoupled)', -1)
+            CALL POLPRI(sus2el_fde_2,'   ',-2)
+            AVERAG = (sus2el_fde_2(1,1) + sus2el_fde_2(2,2)
+     &              + sus2el_fde_2(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
           end if
+
         end if
 
 !       embedding coupling-kernel contribution
@@ -2171,10 +2180,10 @@ C
 !       this is the coupling-kernel contribution
 !       which involves the nonadditive xc and kinetic energy functionals
 !       There is no contribution from the Coulomb term
-        if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker) then
-          if (fde_rsp_mag_lao_import 
+        if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker
      &        .and. .not. fde_cfg_no_sdft) then
-          write(*, *) 'FDE 2-el contribution to expectation value ' //
+          if (fde_rsp_mag_lao_import) then
+            write(*, *) 'FDE 2-el contribution to expectation value ' //
      &       'dependent on embedding kernel and coupling '          //
      &       'two subsystems included'
 #ifdef VAR_MPI
@@ -2200,6 +2209,10 @@ C
               WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
             end if
 
+          else ! not fde_rsp_mag_lao_import
+!           put this quit before, now it is already after costly response equations
+            call quit('You asked for coupling kernel term without '//
+     &                'importing perturbed density') 
           end if
         end if
 

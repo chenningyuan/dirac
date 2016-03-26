@@ -287,7 +287,7 @@ module fde_export_data
             else
                nr_variables = nr_variables + 9
             end if
-            if (.not. fde_rsp_mag_lao_no_s) then
+            if (.not. fde_cfg_no_sdft) then
                if (.not.associated(gf%s_b)) then
                   call fde_quit('s_b not available in fde export')
                else
@@ -323,7 +323,7 @@ module fde_export_data
                !                                !((gf%s_b(j,k,i), j = 1,3), k=1,3)
                !                                !(((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3)
 
-             if (fde_rsp_mag_lao_export.and..not.fde_rsp_mag_lao_no_s) then                   ! order of columns:
+             if (fde_rsp_mag_lao_export.and..not.fde_cfg_no_sdft) then                   ! order of columns:
                write (export_unit,'(58ES30.20E3)') (grid%r(j,i), j = 1,3), &                 !1-3,   x-y-z
                                                grid%w(i),             &                      !4
                                                gf%elpot(i),          &                       !5
@@ -334,7 +334,7 @@ module fde_export_data
                                                ((gf%gn_b(j,k,i), j = 1,3), k=1,3), &         !14-22, gxbx-gybx-gzbx - gxby-gyby-gzby - gzbx-gzby-gzbz
                                                ((gf%s_b(j,k,i), j = 1,3), k=1,3),  &         !23-31, sxbx-sybx-szbx - sxby-syby-szby - szbx-szby-szbz
                                                (((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3) !32-58, gxsxbx-gysxbx-gzsxbx - gxsybx-gysybx-gzsybx - etc.
-             else if (fde_rsp_mag_lao_export.and.fde_rsp_mag_lao_no_s) then
+             else if (fde_rsp_mag_lao_export.and.fde_cfg_no_sdft) then
                write (export_unit,'(22ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
                                                gf%elpot(i),          &

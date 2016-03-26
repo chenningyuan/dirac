@@ -686,7 +686,9 @@ contains
 
       if (do_london_rhs_kern_coupling .or. do_london_susc2el_coupling &
        .or. do_london_suscreo_coupling) then
-!gosia: i don't know why it is not called before (while it seems it should be), so i call it again
+!gosia: i don't know why the frozen* variables are not recognized here
+! while it seems they should be, as fde_import_frozen is called in emb_input.F90
+! so i call it again here
          if (fde_mpi_is_master()) then
             call fde_import_frozen
          end if
@@ -1355,7 +1357,7 @@ contains
    if (do_london_susc2el_der2 .or. do_london_susc2el_coupling .or. do_london_suscreo_coupling) then
       max_fun_derv = 2
    end if
-   if (do_london_rhs_direct_kern .and. .not.fde_cfg_no_sdft) then
+   if (do_london_rhs_direct_kern .and. .not. fde_cfg_no_sdft) then
       max_fun_derv = 2
    end if
    if (do_london_rhs_kern_coupling) then
@@ -2207,7 +2209,7 @@ contains
                                           (/1,1,1/),           &
                                           mat_dim,             &
                                           nz,                  &
-                                          dmat,                &
+                                          dmat_0,              &
                                           ao,                  &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
                                           n_bb_total)
@@ -2220,7 +2222,7 @@ contains
                                           (/1,1,1/),           &
                                           mat_dim,             &
                                           nz,                  &
-                                          dmat,                &
+                                          dmat_0,              &
                                           ao,                  &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
                                           n_bb_active)
@@ -2235,7 +2237,7 @@ contains
                                           (/1,1,1/), &
                                           mat_dim,   &
                                           nz,        &
-                                          dmat,      &
+                                          dmat_0,    &
                                           ao,        &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
                                           n_bb)
@@ -2442,7 +2444,7 @@ contains
                   allocate(frozen_gzn_by(nr_points_batch))
                   allocate(frozen_gzn_bz(nr_points_batch))
                end if
-               if (.not. fde_rsp_mag_lao_no_s) then
+               if (.not. fde_cfg_no_sdft) then
                   allocate(frozen_sx_bx(nr_points_batch))
                   allocate(frozen_sx_by(nr_points_batch))
                   allocate(frozen_sx_bz(nr_points_batch))
@@ -2509,7 +2511,7 @@ contains
                      !               frozen_gxn_bz(i), frozen_gyn_bz(i), frozen_gzn_bz(i)
                      !end do
                   end if
-                  if (.not. fde_rsp_mag_lao_no_s) then
+                  if (.not. fde_cfg_no_sdft) then
                      frozen_sx_bx(:)  = active_gridfunction%s_b(1,1,:)
                      frozen_sy_bx(:)  = active_gridfunction%s_b(2,1,:)
                      frozen_sz_bx(:)  = active_gridfunction%s_b(3,1,:)
@@ -2591,7 +2593,7 @@ contains
                                                         frozen_gzn_bx, frozen_gzn_by, frozen_gzn_bz, &
                                                         nr_points_batch, nr_points_on_this_proc)
               end if
-              if (.not. fde_rsp_mag_lao_no_s) then
+              if (.not. fde_cfg_no_sdft) then
                  call fde_mpi_distribute_frozen_pertden_s(frozen_sx_bx, frozen_sx_by, frozen_sx_bz, &
                                                           frozen_sy_bx, frozen_sy_by, frozen_sy_bz, &
                                                           frozen_sz_bx, frozen_sz_by, frozen_sz_bz, &
@@ -3269,7 +3271,7 @@ contains
 
 !   spin density contributions
 
-    if (.not. fde_rsp_mag_lao_no_s) then
+    if (.not. fde_cfg_no_sdft) then
        s_b_lao(1,1) = frozen_sx_bx(ipoint)
        s_b_lao(1,2) = frozen_sx_by(ipoint)
        s_b_lao(1,3) = frozen_sx_bz(ipoint)
@@ -3975,7 +3977,7 @@ contains
            allocate(active_gzn_by(nr_points_batch))
            allocate(active_gzn_bz(nr_points_batch))
         end if
-        if (.not. fde_rsp_mag_lao_no_s) then
+        if (.not. fde_cfg_no_sdft) then
            allocate(active_sx_bx(nr_points_batch))
            allocate(active_sx_by(nr_points_batch))
            allocate(active_sx_bz(nr_points_batch))
@@ -4057,7 +4059,7 @@ contains
               call fde_mpi_gatherv(active_gzn_by, active_gridfunction%gn_b(3,2,:), nr_points_on_this_proc)
               call fde_mpi_gatherv(active_gzn_bz, active_gridfunction%gn_b(3,3,:), nr_points_on_this_proc)
            end if
-           if (.not. fde_rsp_mag_lao_no_s) then
+           if (.not. fde_cfg_no_sdft) then
               call fde_mpi_gatherv(active_sx_bx, active_gridfunction%s_b(1,1,:), nr_points_on_this_proc)
               call fde_mpi_gatherv(active_sx_by, active_gridfunction%s_b(1,2,:), nr_points_on_this_proc)
               call fde_mpi_gatherv(active_sx_bz, active_gridfunction%s_b(1,3,:), nr_points_on_this_proc)
@@ -4119,7 +4121,7 @@ contains
               active_gridfunction%gn_b(3,2,:) = active_gzn_by(:)
               active_gridfunction%gn_b(3,3,:) = active_gzn_bz(:)
            endif
-           if (.not. fde_rsp_mag_lao_no_s) then
+           if (.not. fde_cfg_no_sdft) then
               active_gridfunction%s_b(1,1,:) = active_sx_bx(:)
               active_gridfunction%s_b(1,2,:) = active_sx_by(:)
               active_gridfunction%s_b(1,3,:) = active_sx_bz(:)
@@ -4175,7 +4177,7 @@ contains
            deallocate(active_gzn_by)
            deallocate(active_gzn_bz)
         end if
-        if (.not. fde_rsp_mag_lao_no_s) then
+        if (.not. fde_cfg_no_sdft) then
            deallocate(active_sx_bx)
            deallocate(active_sx_by)
            deallocate(active_sx_bz)
@@ -4425,7 +4427,7 @@ contains
          active_gzn_by = 0.0d0
          active_gzn_bz = 0.0d0
       end if
-      if (.not. fde_rsp_mag_lao_no_s) then
+      if (.not. fde_cfg_no_sdft) then
          active_sx_bx = 0.0d0
          active_sx_by = 0.0d0
          active_sx_bz = 0.0d0
@@ -4530,7 +4532,7 @@ contains
                        rx(ipoint), ry(ipoint), rz(ipoint))
             end if
 !           lao_direct
-            if (do_export_pertden_direct .and. .not. fde_rsp_mag_lao_no_s) then
+            if (do_export_pertden_direct .and. .not. fde_cfg_no_sdft) then
                call get_pertden_direct(ipoint,         &
                                       mat_dim,        &
                                       nz,             &
@@ -4762,7 +4764,7 @@ contains
        end if
 
 !      spin density
-       if (.not. fde_rsp_mag_lao_no_s) then
+       if (.not. fde_cfg_no_sdft) then
           if (is_gga) then
              call get_gs_nonhermitian(s_b(1:3,im),                 &
                                       gs_b(1:3,1:3,im),              &
@@ -4806,7 +4808,7 @@ contains
        active_gzn_by(ipoint) = gr_b(3,2)
        active_gzn_bz(ipoint) = gr_b(3,3)
     end if
-    if (.not. fde_rsp_mag_lao_no_s) then
+    if (.not. fde_cfg_no_sdft) then
        active_sx_bx(ipoint) = s_b(1,1)
        active_sx_by(ipoint) = s_b(1,2)
        active_sx_bz(ipoint) = s_b(1,3)

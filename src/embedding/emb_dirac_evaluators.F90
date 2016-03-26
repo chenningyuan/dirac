@@ -743,7 +743,7 @@ module fde_evaluators_dirac
                                   fde_active_gridfunction = gf)
          call dealloc(buffer)
 
-!      if (.not. fde_rsp_mag_lao_no_s) then
+!      if (.not. fde_cfg_no_sdft) then
 !         call alloc(buffer, ndim*ndim, nz)
 !         call dcopy(ndim*ndim*nz, dmat, 1, buffer, 1)
 !
