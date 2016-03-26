@@ -20,8 +20,8 @@ f.add(from_string = '  Magnetizabilities                    au          SI      
 
 
 # only embedding potential (v) in property gradient and embedding potential (v) in expectation value
-#test.run(['ll_lda_magn_g0_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-#test.run(['ll_lda_magn_g1_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_lda_magn_g0_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_lda_magn_g1_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 #test.run(['ll_pbe_magn_g0_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 #test.run(['ll_pbe_magn_g1_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 

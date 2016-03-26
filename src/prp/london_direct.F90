@@ -684,10 +684,7 @@ contains
                       fde_mat_dim            = ntbas(0),   &
                       fde_nz                 = nz,         &
                       fde_dmat_0             = dmat,       &
-!                     gosia: this is because only the real part of dmat_0 is read in fde_dirac_emb_matrices_via_integration
-!                     while for SDFT-kernel-like contribution we need the imaginary parts as well..
-                      fde_dmat               = buffer,     &
-                      fde_nr_dmat            = 1,          &
+                      fde_nr_dmat            = 0,          &
                       fde_nr_fmat            = max_nr_xyz_comp, &
                       fde_fmat               = fmat,       &
                       fde_do_london_rhs_direct_kern = .true.)

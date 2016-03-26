@@ -496,8 +496,9 @@ contains
 
     end if
 
-
-!   construct fde contribution to property gradient if needed
+!   construct fde contribution to property gradient
+!   this is the term dependent on embedding kernel
+!   no coupling here - all coupling terms are done in london_direct.F90
     if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
        if (.not. fde_lao_reorth_active_embker) then
           write(*, *) 'no LAO-reorth contributions to FDE property gradient (embker)'
@@ -507,11 +508,11 @@ contains
           call genden(dmat, cmo, 1, iprprp)
 
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(12)
+          if (parcal) call dirac_parctl(12)
 #endif
 
-          
-          call fde_dirac_emb_matrices_via_integration(fde_mat_dim = ntbas(0), &
+          call fde_dirac_emb_matrices_via_integration(          &
+                            fde_mat_dim          = ntbas(0),    &
                             fde_nz               = nz,          &
                             fde_dmat_0           = dmat,        &
                             fde_nr_dmat          = nr_xyz_comp, &
@@ -522,30 +523,7 @@ contains
           
           call dealloc(dmat)
        end if
-
-!    else if (fde_rsp_mag_lao_export) then
-!!   we don't calculate the actual contribution, we only export the perturbed density
-!
-!       call alloc(dmat, n2bbasxq)
-!       dmat = 0.0d0
-!       call genden(dmat, cmo, 1, iprprp)
-!
-!#ifdef VAR_MPI
-!       if (parcal) call dirac_parctl(12)
-!#endif
-!          
-!       call fde_dirac_emb_matrices_via_integration(fde_mat_dim = ntbas(0), &
-!                         fde_nz               = nz,          &
-!                         fde_dmat_0           = dmat,        &
-!                         fde_nr_dmat          = nr_xyz_comp, &
-!                         fde_nr_fmat          = nr_xyz_comp, &
-!                         fde_dmat             = tb_dmat,     &
-!                         fde_fmat             = fao,         &
-!                         fde_do_export_pertden_reorth = .true.)       
-!       
-!       call dealloc(dmat)
     end if
-
 
   end subroutine get_gtb
 

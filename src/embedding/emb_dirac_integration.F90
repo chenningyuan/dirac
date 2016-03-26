@@ -684,7 +684,8 @@ contains
          end if
       end if
 
-      if (do_london_rhs_kern_coupling .or. do_london_susc2el_coupling) then
+      if (do_london_rhs_kern_coupling .or. do_london_susc2el_coupling &
+       .or. do_london_suscreo_coupling) then
 !gosia: i don't know why it is not called before (while it seems it should be), so i call it again
          if (fde_mpi_is_master()) then
             call fde_import_frozen
@@ -821,7 +822,8 @@ contains
       if (do_london_rhs_direct .or. do_london_rhs_direct_kern) then
         max_ao_m_order = 1
       end if
-      if (do_london_susc2el_der2 .or. do_london_susc2el_coupling) then
+      if (do_london_susc2el_der2 .or. do_london_susc2el_coupling &
+       .or. do_london_suscreo_coupling) then
         max_ao_m_order = 1
       end if
       if (do_london_susc2el_der1) then
@@ -1712,7 +1714,8 @@ contains
                                       gnn_0_t,        &
                                       w,              &
                                       use_gga,        &
-                                      dmat,           &
+!                                     dmat_0 = dmat_0(mat_dim, mat_dim, nz)
+                                      dmat_0,         &
                                       derv_length,    &
                                       derv_active,    &
                                       derv_total,     &

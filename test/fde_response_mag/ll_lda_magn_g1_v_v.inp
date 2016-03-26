@@ -19,9 +19,8 @@ FROZEN
 .RSP
 .LAODPT
 .EMAFDE
-#.MNOUKE
+.MNOUKE
 .MNONKE
-.MNOCKE
 **GRID
 .IMPORT
 numerical_grid
@@ -51,8 +50,5 @@ numerical_grid
 2
 .THRESH
 1.0D-08
-*EXPVAL
-.PRINT
-2
 *END OF
 
