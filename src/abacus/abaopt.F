@@ -1295,6 +1295,7 @@ C
       IPRUSR = IPRSAV
       HRINPC = .FALSE.
       WORK(1) = WRKDLM
+      NENECALCS = 0 ! MI: counter for energy calculations
 C
       IF (FINDRE .OR. DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
          KATARR = 2
@@ -2006,7 +2007,7 @@ C     No single point energy has been calculated.
          CALL TITLER('Optimization Control Center','<',120)
          CALL PRI_GEOINF(GEINFO)
          DOSPE = TMPLOG
-         WRITE(LUPRI,'(/A/A,I3,A/A/)')
+         WRITE(LUPRI,'(/A/A,I3,A/A/A/)')
      &      '  WARNING: Geometry has NOT converged!',
      &      '  Maximum number of iterations (', ITRMAX,
      &         ') has been reached and',
@@ -2015,6 +2016,8 @@ C     No single point energy has been calculated.
          IF (DOSPE) WRITE(LUPRI,'(A/)')
      &      '  Therefore, no single point energy has been calculated.'
       END IF
+      WRITE(LUPRI,'(/,A,I5)') 
+     & 'Total number of energy calculation steps ',NENECALCS
       deallocate(EGRAD)
       deallocate(CSTEP)
       deallocate(SCLVEC)
@@ -2352,6 +2355,7 @@ C
          EXSIR = .TRUE.
       END IF
       NEWGEO = .TRUE.
+      NENECALCS = NENECALCS + 1
 C
 C
 C     In Dirac THRGRD is called SCFCNV if EVCCNV is .true.
@@ -7510,7 +7514,6 @@ C
       allocate(STPSYM1(NCART))
       allocate(STPCAR1(NCRIND))
       allocate(COOR(3,NUCIND))
-      IPRINT = 0
       IF (.NOT. CHGRDT) THEN
          GRDTHR = 1.0D-4
          THRSTP = GRDTHR

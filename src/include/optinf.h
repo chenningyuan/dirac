@@ -15,7 +15,7 @@
      &        ICNSTR(8*MXCENT), IAUXRD, ITOTRJ, KEPTIT, NSPMOD, NCNSTP, &
      &        INDTOT, ITRNMR, ITRMAX, MAXREJ, IPRINT, NCRTOT, NCART,    &
      &        NPROJ, NTMAT, IINTCR, IREDIC, ICRTCR, ICONDI, ITRBRK,     &
-     &        NUMPRE, IPRE
+     &        NUMPRE, IPRE, NENECALCS
       LOGICAL GECONV, NOTRST, NOBRKS, BRKSYM, NWSYMM, DOSPE, DOPRE,     &
      &        FINPRE, VRML, VRBOND, VREIGV, VRCORD, VRVIBA, VRML_SYM,   &
      &        VISUAL, BOFILL, INITHS, HSFILE, BFGSR1, STEEPD, RANKON,   &
@@ -33,7 +33,7 @@
      &                KEPTIT, NSPMOD, NCNSTP, INDTOT, ITRNMR, ITRMAX,   &
      &                MAXREJ, IPRINT, NCRTOT, NCART, NPROJ, NTMAT,      &
      &                IINTCR, IREDIC, ICRTCR, ICONDI, ITRBRK, NUMPRE,   &
-     &                IPRE,                                             &
+     &                IPRE, NENECALCS,                                  &
      &                GECONV, NOTRST, NOBRKS,                           & ! first line with logical variables
      &                BRKSYM, NWSYMM, DOSPE, DOPRE, FINPRE, VRML,       &
      &                VRBOND, VREIGV, VRCORD, VRVIBA, VRML_SYM, VISUAL, &
