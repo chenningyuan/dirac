@@ -13,13 +13,15 @@ CH4
 ---
 
 Has the T(d) point group symmetry.
-Sets Cs computational symmetry.
+Sets the D2 computational symmetry.
+For getting  the converged geometry, one has to apply the .NORTSD keyword.
+
 
 NH3
 ---
 
 Has the C(3v) point group symmetry.
-Sets Cs computational symmetry.
+Sets the Cs computational symmetry.
 
 Allene
 ------
@@ -33,13 +35,12 @@ SF5Cl
 -----
 
 Has the C(4v) point group symmetry.
-The symmetry detection (C2v) ends with error - Nuclei too close.
+Sets the C2v computational symmetry.
 
 
 SF6
 -----
 
 Has the O(h) point group symmetry.
-Symmetry detection ends with error - Nuclei too close.
-
+Sets the D2h computational symmetry.
 
