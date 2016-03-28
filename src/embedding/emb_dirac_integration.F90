@@ -2429,7 +2429,9 @@ contains
 
             end if
 
-            if (do_london_rhs_kern_coupling) then
+            if (do_london_rhs_kern_coupling &
+              .or. do_london_susc2el_coupling &
+              .or. do_london_suscreo_coupling) then
                allocate(frozen_n_bx(nr_points_batch))
                allocate(frozen_n_by(nr_points_batch))
                allocate(frozen_n_bz(nr_points_batch))
@@ -2585,7 +2587,9 @@ contains
             if (use_potential) then
               call fde_mpi_distribute_vemb(use_vemb, nr_points_batch, nr_points_on_this_proc)
             end if
-            if (do_london_rhs_kern_coupling) then
+            if (do_london_rhs_kern_coupling &
+              .or. do_london_susc2el_coupling &
+              .or. do_london_suscreo_coupling) then
               call fde_mpi_distribute_frozen_pertden_n(frozen_n_bx, frozen_n_by, frozen_n_bz, nr_points_batch, nr_points_on_this_proc)
               if (use_gga) then
               call fde_mpi_distribute_frozen_pertden_gn(frozen_gxn_bx, frozen_gxn_by, frozen_gxn_bz, &

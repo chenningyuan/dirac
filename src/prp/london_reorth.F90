@@ -352,6 +352,8 @@ contains
     use fde_mod
     use fde_mag_cfg
     use fde_dirac_matrices_integration
+    use fde_evaluators_dirac
+    use fde_data
 
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: fao(*)
@@ -371,6 +373,7 @@ contains
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, ioff
+    type(fde_import) :: itmp
 !-----------------------------------------------------------------------
 #include "dcbgen.h"
 
@@ -496,13 +499,15 @@ contains
 
     end if
 
-!   construct fde contribution to property gradient
-!   this is the term dependent on embedding kernel
-!   no coupling here - all coupling terms are done in london_direct.F90
+!   fde contributions to property gradient
+!   --------------------------------------
     if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
-       if (.not. fde_lao_reorth_active_embker) then
-          write(*, *) 'no LAO-reorth contributions to FDE property gradient (embker)'
-       else
+       call fde_get_import_info(itmp)
+!      no coupling:
+!      ------------
+       if (fde_lao_reorth_active_embker) then
+          write(*, *) 'LAO kernel-like contribution to property gradient '// &
+                      'reorthonormalization contributions, no coupling'
           call alloc(dmat, n2bbasxq)
           dmat = 0.0d0
           call genden(dmat, cmo, 1, iprprp)
@@ -522,6 +527,41 @@ contains
                             fde_do_london_rhs_ro = .true.)       
           
           call dealloc(dmat)
+       end if
+
+!      coupling (non-additive xc and kinetic energy):
+!      ----------------------------------------------
+       if (fde_lao_frozen_embker.and.fde_rsp_mag_lao_import) then
+         write(*, *) 'LAO kernel-like contribution to property gradient '// &
+                     'from frozen perturbed density (non-additive xc and kin terms)'
+         call alloc(dmat, n2bbasxq)
+         dmat = 0.0d0
+         call genden(dmat, cmo, 1, iprprp)
+
+#ifdef VAR_MPI
+         if (parcal) call dirac_parctl(12)
+#endif
+
+       call fde_dirac_emb_matrices_via_integration(       &   
+                     fde_mat_dim            = ntbas(0),   &
+                     fde_nz                 = nz,         &
+                     fde_dmat_0             = dmat,       &
+!                    the perturbed density includes BOTH direct and reorthonormalization parts
+!                    this is why it is called only once
+!                    here and not in london_direct.F90
+!                    as then it can be reused for magnetizability
+                     fde_nr_dmat            = 0,          &
+                     fde_nr_fmat            = nr_xyz_comp,      &
+                     fde_fmat               = fao,        &
+                     fde_do_london_rhs_kern_coupling = .true.)
+
+       end if
+!      coupling (Coulomb term):
+!      ------------------------
+       if (fde_lao_frozen_embker_coulomb.and.fde_rsp_mag_lao_import) then
+         write(*, *) 'LAO kernel-like contribution to property gradient ' // &
+                     'from frozen perturbed density (Coulomb term)'
+         call fde_get_elpot_pertden(ntbas(0), nz, nr_xyz_comp, fao)
        end if
     end if
 

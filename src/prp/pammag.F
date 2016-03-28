@@ -2194,8 +2194,7 @@ C
      &                      fde_mat_dim            = ntbas(0),
      &                      fde_nz                 = nz,
      &                      fde_dmat_0             = dmat_0,
-     &                      fde_dmat               = work(kdmat),
-     &                      fde_nr_dmat            = 1,
+     &                      fde_nr_dmat            = 0,
      &                      fde_nr_fmat            = 0,
      &                      fde_do_london_susc2el_coupling  = .true.)
             sus2el_fde_3 = fde_susc2el_integrated()
@@ -2687,6 +2686,7 @@ C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ENDIF
 C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
+!gosia: if fde - then all contributions are on TWOLON file
         DO IH1 = 1, 3 ! Components of H(1)
           IB = 3 ! 0011 ... get ONELON + TWOLON
           INDXPR1 = IPLONDON(1,IH1) ! RM1H1_comp
@@ -2795,6 +2795,8 @@ C    --- Get the S(1) connection matrix in MO basis into WORK(KSMAT) ---
 
         DO I2  =  1, 3
 C ...  get FCKLON_icomp(I2) into WORK(KWMAT)
+!gosia: if fde - then all contributions are on FCKLON file,
+!including coupling terms
          INDXPR2 = IPLONDON(1,I2) ! Get index of RM1H1_comp
          ISYM2   = IPRPSYM(INDXPR2)
          IREP2   = ISYM2 - 1 ! 0-7
@@ -2859,91 +2861,135 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
       ENDDO
       ENDDO
 
-!gosia: uncoupled FDE contributions are already present (either through GETFCK or GETDHB subroutines)
-!but we need additional code for fde coupling-kernel contributions
-      if (fde_magn_expval_lao) then
-        if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker .and. 
-     &           fde_rsp_mag_lao_import) then
-
-          write(*, *) 'FDE reorthonormalization contribution '      //
-     &       'to expectation value ' //
-     &       'dependent on embedding kernel and coupling '          //
-     &       'two subsystems included'
-
-          call fde_get_import_info(itmp)
-        
-          call alloc(dmat_0, n2bbasx*nz)
-          call dzero(dmat_0, n2bbasx*nz)
-          call genden(dmat_0, cmo, 1, iprprp)
-          call generate_num_grid(dmat_0)
-
-!         get T(1) matrices from AOPROPER
-          call alloc(tb_dmat, n2bbasxq, 3)
-          tb_dmat = 0.0d0
-          call alloc(tb, n2orbxq)
-          tb = 0.0d0
-          
-          do icomp = 1, 3
-            tb = 0.0d0
-            indxpr1 = ipcon(icomp)
-            isym1   = iprpsym(indxpr)
-            irep1   = isym1 - 1
-            iopsy1  = jbtof(irep1, 1)
-          
-            call prpmat(indxpr1,iopsy1,tb,cmo,ibeig,icmoq,norb,
-     &                  work,kfree,lfree, irpint)
-          
-            call getmdm(isym1,tb_dmat(1, icomp),cmo,ibeig,tb,
-     &                  work,kfree,lfree,irpint)
-          
-          end do
-
-#ifdef VAR_MPI
-          if (parcal) call dirac_parctl(12)
-#endif     
-!         inside fde_dirac_emb_matrices_via_integration subroutine
-!         we will calculate two coupling contributions
-!         - one is Omega^T(I)*Omega^T(II)
-!         - second is (R \times r)Omega(I)*Omega^T(II) + (R \times r)Omega(II)*Omega^T(I)
-!         with:
-!         Omega^T = MO(a)*MO(b)*(cTc + c.c.) with first-order connection matrix T
-!         (R \times r)Omega - LAO phase factor
-          susfsy_fde_1 = 0.0d0
-          call fde_dirac_emb_matrices_via_integration(
-     &                    fde_mat_dim            = ntbas(0),
-     &                    fde_nz                 = nz,
-     &                    fde_dmat_0             = dmat_0,
-     &                    fde_dmat               = tb_dmat,
-     &                    fde_nr_dmat            = 3,
-     &                    fde_nr_fmat            = 0,
-     &                    fde_do_london_suscreo_coupling  = .true.)
-
-          susfsy_fde_1 = fde_susc2el_integrated()
-
-          call dealloc(dmat_0)
-          call dealloc(tb_dmat)
-          call dealloc(tb)
-
-          if (iprprp .ge. 1) then
-              CALL HEADER('FDE reorthonormalization contribution ' //
-     &                'dependent on ' //
-     &                'embedding kernel, coupling two subsystems', -1)
-            CALL POLPRI(susfsy_fde_1,'   ',-2)
-            AVERAG = (susfsy_fde_1(1,1) + susfsy_fde_1(2,2)
-     &              + susfsy_fde_1(3,3))/3.0d0
-            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
-
-          end if
-        end if
-
-!       Calculate total value of susfsy:
-        do i = 1, 3
-           do j = 1, 3
-              susfsy(j, i) = susfsy(j, i) + susfsy_fde_1(j, i)
-           end do
-        end do
-
-      end if !if (fde_magn_expval_lao)
+! !gosia: uncoupled FDE contributions are already present (either through GETFCK or GETDHB subroutines)
+! !but we need additional code for fde coupling-kernel contributions
+!       if (fde_magn_expval_lao) then
+!         if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker .and. 
+!      &           fde_rsp_mag_lao_import) then
+! 
+!           write(*, *) 'FDE reorthonormalization contribution '      //
+!      &       'to expectation value ' //
+!      &       'dependent on embedding kernel and coupling '          //
+!      &       'two subsystems included'
+! 
+!           call fde_get_import_info(itmp)
+!         
+!           call alloc(dmat_0, n2bbasx*nz)
+!           call dzero(dmat_0, n2bbasx*nz)
+!           call genden(dmat_0, cmo, 1, iprprp)
+!           call generate_num_grid(dmat_0)
+! 
+! !         get T(1) matrices from AOPROPER
+!           call alloc(tb_dmat, n2bbasxq, 3)
+!           tb_dmat = 0.0d0
+!           call alloc(tb, n2orbxq)
+!           tb = 0.0d0
+!           
+!           do icomp = 1, 3
+!             tb = 0.0d0
+!             indxpr1 = ipcon(icomp)
+!             isym1   = iprpsym(indxpr1)
+!             irep1   = isym1 - 1
+!             iopsy1  = jbtof(irep1, 1)
+!           
+!             call prpmat(indxpr1,iopsy1,tb,cmo,ibeig,icmoq,norb,
+!      &                  work,kfree,lfree, iprint)
+!           
+!             call getmdm(isym1,tb_dmat(1, icomp),cmo,ibeig,tb,
+!      &                  work,kfree,lfree,iprint)
+!           
+!           end do
+! 
+! #ifdef VAR_MPI
+!           if (parcal) call dirac_parctl(12)
+! #endif     
+! !         inside fde_dirac_emb_matrices_via_integration subroutine
+! !         we will calculate two coupling contributions
+! !         - one is Omega^T(I)*Omega^T(II)
+! !         - second is (R \times r)Omega(I)*Omega^T(II) + (R \times r)Omega(II)*Omega^T(I)
+! !         with:
+! !         Omega^T = MO(a)*MO(b)*(cTc + c.c.) with first-order connection matrix T
+! !         (R \times r)Omega - LAO phase factor
+!           susfsy_fde_1 = 0.0d0
+!           call fde_dirac_emb_matrices_via_integration(
+!      &                    fde_mat_dim            = ntbas(0),
+!      &                    fde_nz                 = nz,
+!      &                    fde_dmat_0             = dmat_0,
+!      &                    fde_dmat               = tb_dmat,
+!      &                    fde_nr_dmat            = 3,
+!      &                    fde_nr_fmat            = 0,
+!      &                    fde_do_london_suscreo_coupling  = .true.)
+! 
+!           susfsy_fde_1 = fde_susc2el_integrated()
+! 
+!           call dealloc(dmat_0)
+!           call dealloc(tb_dmat)
+!           call dealloc(tb)
+! 
+!           if (iprprp .ge. 1) then
+!               CALL HEADER('FDE reorthonormalization contribution ' //
+!      &                'dependent on ' //
+!      &                'embedding kernel, coupling two subsystems', -1)
+!             CALL POLPRI(susfsy_fde_1,'   ',-2)
+!             AVERAG = (susfsy_fde_1(1,1) + susfsy_fde_1(2,2)
+!      &              + susfsy_fde_1(3,3))/3.0d0
+!             WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+! 
+!           end if
+!         end if
+! 
+! 
+! !n        if (.not.fde_lao_magn_expval_no_coupl_coulomb_embker .and. 
+! !n     &           fde_rsp_mag_lao_import) then
+! !n
+! !n          write(*, *) 'FDE contribution '      //
+! !n     &       'to expectation value ' //
+! !n     &       'dependent on Coulomb term in kernel and coupling '    //
+! !n     &       'two subsystems included'
+! !n
+! !n          call fde_get_import_info(itmp)
+! !n        
+! !n          call alloc(dmat_0, n2bbasx*nz)
+! !n          call dzero(dmat_0, n2bbasx*nz)
+! !n          call genden(dmat_0, cmo, 1, iprprp)
+! !n          call generate_num_grid(dmat_0)
+! !n
+! !n!         get T(1) matrices from AOPROPER
+! !n          call alloc(tb_dmat, n2bbasxq, 3)
+! !n          tb_dmat = 0.0d0
+! !n          call alloc(tb, n2orbxq)
+! !n          tb = 0.0d0
+! !n          
+! !n          do icomp = 1, 3
+! !n            tb = 0.0d0
+! !n            indxpr1 = ipcon(icomp)
+! !n            isym1   = iprpsym(indxpr1)
+! !n            irep1   = isym1 - 1
+! !n            iopsy1  = jbtof(irep1, 1)
+! !n          
+! !n            call prpmat(indxpr1,iopsy1,tb,cmo,ibeig,icmoq,norb,
+! !n     &                  work,kfree,lfree, iprint)
+! !n          
+! !n            call getmdm(isym1,tb_dmat(1, icomp),cmo,ibeig,tb,
+! !n     &                  work,kfree,lfree,iprint)
+! !n          
+! !n          end do
+! !n
+! !n          call fde_magn_coulomb(ntbas(0), nz, 3, dmat)
+! !n
+! !n          call dealloc(dmat_0)
+! !n          call dealloc(tb_dmat)
+! !n          call dealloc(tb)
+! !n        end if
+! 
+! !       Calculate total value of susfsy:
+!         do i = 1, 3
+!            do j = 1, 3
+!               susfsy(j, i) = susfsy(j, i) + susfsy_fde_1(j, i)
+!            end do
+!         end do
+! 
+!       end if !if (fde_magn_expval_lao)
 
 
 C Symmetrize the off-diagonal terms of SUSFSY !!

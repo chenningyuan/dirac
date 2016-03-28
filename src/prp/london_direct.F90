@@ -146,12 +146,10 @@ contains
 !   calculate fde direct-LAO contributions to the gradient
 !   and, if requested, LAO contribution from the perturbed density
     if (dirac_cfg_fde_response .and. fde_rsp_mag_lao) then
-       if (fde_lao_direct_active_embpot .or. fde_lao_direct_active_embker &
-      .or. fde_lao_frozen_embker .or. fde_lao_frozen_embker_coulomb) then
+       if (fde_lao_direct_active_embpot .or. fde_lao_direct_active_embker) then
           call fde_direct_contribs(cmo, fmat)
        else
           write(*, *) 'no LAO-direct contributions to FDE property gradient'
-          write(*, *) 'no LAO contributions to FDE property gradient from perturbed density'
        end if
     end if
 
@@ -691,35 +689,9 @@ contains
         call dealloc(buffer)
      end if
 
-
-!    fde coupling-kernel-like contributions to the property gradient
-!    ---------------------------------------------------------------
-!    1. the nonadditive exchange-correlation contribution:
-     if (fde_lao_frozen_embker.and.fde_rsp_mag_lao_import) then
-       write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (no Coulomb)'
-
-#ifdef VAR_MPI
-            if (parcal) call dirac_parctl(12)
-#endif
-
-       call fde_dirac_emb_matrices_via_integration(       &   
-                     fde_mat_dim            = ntbas(0),   &
-                     fde_nz                 = nz,         &
-                     fde_dmat_0             = dmat,       &
-!                    the perturbed density includes BOTH direct and reorthonormalization parts
-!                    this is why it is called only once
-                     fde_nr_dmat            = 0,          &
-                     fde_nr_fmat            = max_nr_xyz_comp,      &
-                     fde_fmat               = fmat,       &
-                     fde_do_london_rhs_kern_coupling = .true.)
-     end if
-     if (fde_lao_frozen_embker_coulomb.and.fde_rsp_mag_lao_import) then
-       write(*, *) 'LAO kernel-like contribution to property gradient from frozen perturbed density (Coulomb term)'
-       call fde_get_elpot_pertden(ntbas(0), nz, max_nr_xyz_comp, fmat)
-     end if
-
-
      call dealloc(dmat)
+
+! all coupling terms are in london_reorth.F90
 
   end subroutine fde_direct_contribs
   

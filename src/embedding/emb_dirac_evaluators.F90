@@ -425,7 +425,7 @@ module fde_evaluators_dirac
          real(8), allocatable   :: work(:)
          integer :: iz, i, j, ixyz, ip
          real(8) :: average
-         real(8), allocatable :: buffer(:,:,:),vector(:,:)
+         real(8), allocatable :: buffer(:,:)
 
 
          call fde_get_files_info(ftmp)
@@ -440,61 +440,28 @@ module fde_evaluators_dirac
          allocate(work(lwork))
 
          do icomp = 1, ncomp
-! gosia: this takes care of the real part of fmat only(= we use only n_b columns of pertden)
-            allocate(vector(np,nz))
-            do ip = 1, np
-!             sigma_0
-              vector(ip,1) = pertden(fde_pertden_ncol - 48 + icomp, ip)         &
-                           * fde_grid_im%w(ip)
-!             sigma_x
-              vector(ip,2) = pertden(fde_pertden_ncol - 36 + 3*(icomp-1)+1, ip) &
-                           * fde_grid_im%w(ip)
-!             sigma_y
-              vector(ip,3) = pertden(fde_pertden_ncol - 36 + 3*(icomp-1)+2, ip) &
-                           * fde_grid_im%w(ip)
-!             sigma_z
-              vector(ip,4) = pertden(fde_pertden_ncol - 36 + 3*(icomp-1)+3, ip) &
-                           * fde_grid_im%w(ip)
-            
-            end do
-
-            !write(*, *) 'fde_get_elpot_pertden, fmat before, icomp =', icomp
-            !call prqmat(fmat(1,1,1,icomp), ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
-
-            allocate(buffer(ndim,ndim,nz))
-            call get_electronic_mep_cp(np,                &
+            allocate(buffer(ndim,ndim))
+            icol = fde_pertden_ncol - 48 + icomp
+            call get_electronic_mep(np,                &
                                     buffer,            &
                                     ndim,              &
                                     fde_grid_im%r(1:3,1:np),     & 
-                                    !pertden(icol,1:np)*fde_grid_im%w(1:np), &
-                                    vector, &
+                                    pertden(icol,1:np)*fde_grid_im%w(1:np), &
                                     work, lwork,       &
                                     0,                 &
                                     .true.,            &
                                     .false.)
 
-            !write(*, *) 'fde_get_elpot_pertden, buffer after, icomp =', icomp
-            !call prqmat(buffer, ndim, ndim, ndim, ndim, nz, (/1,2,3,4/), 6)
-            deallocate(vector)
-
-            do iz = 1, nz
                do i = 1, ndim
                   do j = 1, i
-                     if (iz ==1) then
 !                       fmat ^B is antisymmetric
-                        average = 0.5d0*(buffer(i,j,iz) - buffer(j,i,iz))
-                        buffer(i,j,iz) = average
-                        buffer(j,i,iz) =-average
-                     else
-                        average = 0.5d0*(buffer(i,j,iz) + buffer(j,i,iz))
-                        buffer(i,j,iz) = average
-                        buffer(j,i,iz) = average
-                     end if
+                        average = 0.5d0*(buffer(i,j) - buffer(j,i))
+                        buffer(i,j) = average
+                        buffer(j,i) =-average
                   end do
                end do
-            end do
 
-            call daxpy(ndim*ndim*nz, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
+            call daxpy(ndim*ndim, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
             deallocate(buffer)
 
          end do
@@ -507,7 +474,6 @@ module fde_evaluators_dirac
 
       end subroutine fde_get_elpot_pertden
  
-
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint)
 ! the outgoing dmat is not scaled with occupation numbers
@@ -888,6 +854,8 @@ module fde_evaluators_dirac
 
 
       subroutine fde_launch_slave_process()
+         use fde_dirac_matrices_integration
+         implicit none
          call fde_dirac_emb_matrices_via_integration(        &
                                   fde_mat_dim   = 1,         &
                                   fde_nz        = 1,         &

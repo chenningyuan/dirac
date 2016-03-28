@@ -58,6 +58,7 @@ module fde_io
                  FORM   = 'FORMATTED',   &
                  STATUS = 'UNKNOWN',     &
                  ACCESS = 'SEQUENTIAL',  &
+                 POSITION = 'REWIND',    &
                  FILE   =  name)
          else
             write (errmsg,'(a60)') "FDE-related file: "//name(1:10)//" not found. Stopping now!"
