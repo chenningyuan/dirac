@@ -1620,7 +1620,7 @@ C
 C
 C     Determine value of the various coordinates
 C
-      IF (REDINT .AND. (IPRINT .GE. 1)) THEN
+      IF (REDINT .AND. (IPRINT .GE. 2)) THEN
          CALL ATMINI(TEMP1,IATOM,.TRUE.)
          CALL GETINT(IATOM,MXRCRD,TEMP1,CRDINT)
          CALL HEADER('New internal coordinates',-1) 
@@ -1788,7 +1788,7 @@ C
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
          CALL PRIALL(CSTEP,TEMP1)
          CALL ATMINI(TEMP1,IATOM,.TRUE.)
-         IF (REDINT .AND. (IPRINT .GE. 1)) THEN
+         IF (REDINT .AND. (IPRINT .GE. 2)) THEN
             CALL GETINT(IATOM,MXRCRD,TEMP1,CRDINT)
             CALL HEADER('New internal coordinates',-1) 
             CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
