@@ -941,6 +941,9 @@ contains
                                    .and. .not. do_london_rhs_ro &
                                    .and. .not. do_london_rhs_direct_kern &
                                    .and. .not. do_london_rhs_kern_coupling &
+                                   .and. .not. do_london_susc2el_der1 &
+                                   .and. .not. do_london_susc2el_der2 &
+                                   .and. .not. do_london_susc2el_coupling &
                                    .and. .not. do_london_ks         &
                                    .and. .not. do_export_pertden_reorth &
                                    .and. .not. do_export_pertden_direct &
@@ -3376,6 +3379,7 @@ contains
     real(8)                ::  gs_b_lao(3, 3, 3)
     real(8)                ::  s, d_s, d_sns, d_nsns, d_ss, n_sum
     real(8)                ::  s_1(3), gs_2(3)
+    real(8)                ::  gngs(3, 3), gsgs(3, 3, 3)
 
     integer                :: k_start, k, a
     integer                :: ixyz, jxyz, a1, a2
@@ -3431,27 +3435,38 @@ contains
       d_nsns = derv_total(1, d0002000)
       d_ss   = derv_total(1, d0000100)*2.0d0
 
-      n_sum = gn_0_t_pointwise(1) + gn_0_t_pointwise(2) + gn_0_t_pointwise(3)
-      do a = 1, 3             ! B_{x,y,z}
-         do ixyz = 1, 3       ! Sigma_{x,y,z}
-            s_1(a) = s_1(a) + s_b_lao(ixyz, a)
-            do jxyz = 1, 3    !dR_{x,y,z}
-               gs_2(a) = gs_2(a) + gs_b_lao(jxyz, ixyz, a)
-            end do
-         end do
-      end do
-      do a1 = 1, 3
-        do a2 = 1, 3
-          n_bb(a2, a1) = n_bb(a2, a1) &
-!                      lda
-                       + d_s*s_1(a1)*s_1(a2) &
-!                      gradient terms
-                       + d_sns*(n_sum*gs_2(a1)*s_1(a2) + n_sum*gs_2(a2)*s_1(a1)) &
-                       + d_nsns*n_sum*n_sum*gs_2(a1)*gs_2(a2) &
-                       + d_ss*gs_2(a1)*gs_2(a2)
+      gngs = 0.0d0
+      gsgs = 0.0d0
+      do jxyz = 1, 3
+        do a1 = 1, 3
+          gngs(jxyz, a1) = gngs(jxyz, a1) &
+                         + gn_0_t_pointwise(1)*gs_b_lao(1, jxyz, a1) &
+                         + gn_0_t_pointwise(2)*gs_b_lao(2, jxyz, a1) &
+                         + gn_0_t_pointwise(3)*gs_b_lao(3, jxyz, a1) 
+      
+          do a2 = 1, 3
+            gsgs(jxyz, a1, a2) = gsgs(jxyz, a1, a2) &
+                               + gs_b_lao(1, jxyz, a1)*gs_b_lao(1, jxyz, a2) &
+                               + gs_b_lao(2, jxyz, a1)*gs_b_lao(2, jxyz, a2) &
+                               + gs_b_lao(3, jxyz, a1)*gs_b_lao(3, jxyz, a2)
+          end do
         end do
       end do
-      n_bb = -1.0d0*n_bb
+
+      do jxyz = 1, 3
+        do a1 = 1, 3
+          do a2 = 1, 3
+            n_bb(a2, a1) = n_bb(a2, a1) &
+!                          lda
+                         + d_s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2) &
+!                          gradient terms
+                         + d_sns*(gngs(jxyz,a1)*s_b_lao(jxyz,a2) + gngs(jxyz,a2)*s_b_lao(jxyz,a1)) &
+                         + d_nsns*(gngs(jxyz,a1)*gngs(jxyz,a2)) &
+                         + d_ss*gsgs(jxyz, a1, a2)
+          end do
+        end do
+      end do
+
     else
       s = derv_total(1, d0200000)
       do jxyz = 1, 3

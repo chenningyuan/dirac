@@ -9,7 +9,6 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-shutil.copy('FROZEN.save', 'FROZEN')
 shutil.copy('numerical_grid.save', 'numerical_grid')
 
 
@@ -27,16 +26,34 @@ f.add(from_string = '  Magnetizabilities                    au          SI      
 #test.run(['ll_pbe_magn_g0_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 #test.run(['ll_pbe_magn_g1_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 
-test.run(['dc_lda_updatevemb_scf.inp'], ['h2o-1.xyz'],    args='--put="numerical_grid FROZEN" --outcmo')
-#test.run(['dc_lda_magn_g0_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-#test.run(['dc_lda_magn_g1_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-#test.run(['dc_lda_magn_g0_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-#test.run(['dc_lda_magn_g1_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+# DC/lda
+# ------
+#shutil.copy('FROZEN.dc_lda', 'FROZEN')
+#test.run(['dc_lda_updatevemb_scf.inp'], ['h2o-1.xyz'],    args='--put="numerical_grid FROZEN" --outcmo')
+##test.run(['dc_lda_magn_g0_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+##test.run(['dc_lda_magn_g1_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+##test.run(['dc_lda_magn_g0_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+##test.run(['dc_lda_magn_g1_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+#os.unlink('FROZEN')
+#
+#shutil.copy('FROZEN.pert.dc_lda', 'FROZEN')
+#test.run(['dc_lda_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+#test.run(['dc_lda_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+#
+os.unlink('FROZEN')
+os.unlink('DFCOEF')
+
+# DC/gga
+# ------
+shutil.copy('FROZEN.dc_pbe', 'FROZEN')
+test.run(['dc_pbe_updatevemb_scf.inp'], ['h2o-1.xyz'],    args='--put="numerical_grid FROZEN" --outcmo')
 os.unlink('FROZEN')
 
-shutil.copy('FROZEN.pert.dc_lda', 'FROZEN')
-test.run(['dc_lda_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-test.run(['dc_lda_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+shutil.copy('FROZEN.pert.dc_pbe', 'FROZEN')
+test.run(['dc_pbe_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+test.run(['dc_pbe_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+
+
 
 os.unlink('FROZEN')
 os.unlink('DFCOEF')
