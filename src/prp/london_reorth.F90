@@ -542,19 +542,20 @@ contains
          if (parcal) call dirac_parctl(12)
 #endif
 
-       call fde_dirac_emb_matrices_via_integration(       &   
-                     fde_mat_dim            = ntbas(0),   &
-                     fde_nz                 = nz,         &
-                     fde_dmat_0             = dmat,       &
-!                    the perturbed density includes BOTH direct and reorthonormalization parts
-!                    this is why it is called only once
-!                    here and not in london_direct.F90
-!                    as then it can be reused for magnetizability
-                     fde_nr_dmat            = 0,          &
-                     fde_nr_fmat            = nr_xyz_comp,      &
-                     fde_fmat               = fao,        &
-                     fde_do_london_rhs_kern_coupling = .true.)
+         call fde_dirac_emb_matrices_via_integration(       &   
+                       fde_mat_dim            = ntbas(0),   &
+                       fde_nz                 = nz,         &
+                       fde_dmat_0             = dmat,       &
+!                      the perturbed density includes BOTH direct and reorthonormalization parts
+!                      this is why it is called only once
+!                      here and not in london_direct.F90
+!                      as then it can be reused for magnetizability
+                       fde_nr_dmat            = 0,          &
+                       fde_nr_fmat            = nr_xyz_comp,      &
+                       fde_fmat               = fao,        &
+                       fde_do_london_rhs_kern_coupling = .true.)
 
+         call dealloc(dmat)
        end if
 !      coupling (Coulomb term):
 !      ------------------------
