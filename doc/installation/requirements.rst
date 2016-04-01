@@ -22,12 +22,12 @@ Minimum requirements
 Supported, but optional dependencies
 ------------------------------------
 
-Intel 13.0 - 15.0.6 (alternative to GNU compilers)
-OpenMPI 1.6.2 - 1.8.5 (MPI parallelization)
-IntelMPI 4.1 - 5.0 (MPI parallelization)
-Boost 1.54.0 - 1.60.0 (PCMSolver; installed along DIRAC if below 1.54.0)
-HDF5 1.8.14 - 1.8.16 (DMRG code)
-Alps 2.2 (DMRG code)
+* Intel 13.0 - 15.0.6 (alternative to GNU compilers)
+* OpenMPI 1.6.2 - 1.8.5 (MPI parallelization)
+* IntelMPI 4.1 - 5.0 (MPI parallelization)
+* Boost 1.54.0 - 1.60.0 (PCMSolver; installed along DIRAC if below 1.54.0)
+* HDF5 1.8.14 - 1.8.16 (DMRG code)
+* Alps 2.2 (DMRG code)
 
 
 Additional dependencies due to PCMSolver
