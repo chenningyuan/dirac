@@ -16,13 +16,12 @@ Minimum requirements
 
 * CMake 3.0 - 3.4
 * Python 2.6 - 2.7
-* GNU 4.9 - 5.2
+* GFortran/GCC/G++ 4.9 - 5.2 or Intel compilers 13.0 - 15.0.6
 
 
 Supported, but optional dependencies
 ------------------------------------
 
-* Intel 13.0 - 15.0.6 (alternative to GNU compilers)
 * OpenMPI 1.6.2 - 1.8.5 (MPI parallelization)
 * IntelMPI 4.1 - 5.0 (MPI parallelization)
 * Boost 1.54.0 - 1.60.0 (PCMSolver; installed along DIRAC if below 1.54.0)
