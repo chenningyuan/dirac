@@ -1,21 +1,41 @@
 :orphan:
- 
 
-Supported platforms and compilers
-=================================
 
-DIRAC requires Fortran 90, C, and C++ compilers.  The program is designed to
+Requirements
+============
+
+DIRAC requires Fortran 90, C, and C++ compilers and a Python environment
+for the setup and run scripts. The program is designed to
 run on a unix-like operating system, and uses MPI for parallel calculations.
 Optionally DIRAC can (and should) be linked to platform specific BLAS and
 LAPACK libraries.
 
 
+Minimum requirements
+--------------------
+
+* Cmake 3.0 - 3.4
+* Python 2.6 - 2.7
+* GNU 4.9 - 5.2
+
+
+Supported, but optional dependencies
+------------------------------------
+
+Intel 13.0 - 15.0.6 (alternative to GNU compilers)
+OpenMPI 1.6.2 - 1.8.5 (MPI parallelization)
+IntelMPI 4.1 - 5.0 (MPI parallelization)
+Boost 1.54.0 - 1.60.0 (PCMSolver; installed along DIRAC if below 1.54.0)
+HDF5 1.8.14 - 1.8.16 (DMRG code)
+Alps 2.2 (DMRG code)
+
+
 Additional dependencies due to PCMSolver
 ----------------------------------------
 
-It is optionally possible to enable the polarizable continuum model functionality. 
-The functionality is provided using the external module 
-`PCMSolver <http://pcmsolver.github.io/pcmsolver-doc/>`_. The module requires additional 
+It is optionally possible to enable the polarizable continuum model functionality.
+The functionality is provided using the external module
+`PCMSolver <http://pcmsolver.github.io/pcmsolver-doc/>`_. The module requires additional
 dependencies:
 
 * the zlib compression library, version 1.2 or higher;
