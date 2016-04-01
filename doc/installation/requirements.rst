@@ -14,7 +14,7 @@ LAPACK libraries.
 Minimum requirements
 --------------------
 
-* Cmake 3.0 - 3.4
+* CMake 3.0 - 3.4
 * Python 2.6 - 2.7
 * GNU 4.9 - 5.2
 
