@@ -6000,13 +6000,9 @@ C     &               'Index in SHLINT: ', OPIREP(IOPER)+1
             IF (IOPER<5) THEN !add to real operator
                SHLINT(:,OPIREP(IOPER)+1) =     
      &            SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)   
-C               SHLINT(:,NSYM+OPIREP(IOPER)+1) =     
-C     &            SHLINT(:,NSYM+OPIREP(IOPER)+1) + TMPARR(:,IOPER)   
             ELSE !add to imag operator
                SHLINT(:,NSYM+OPIREP(IOPER)+1) = 
      &            SHLINT(:,NSYM+OPIREP(IOPER)+1) + TMPARR(:,IOPER)
-C               SHLINT(:,OPIREP(IOPER)+1) = SHLINT(:,OPIREP(IOPER)+1)+
-C     &                      TMPARR(:,IOPER)        
             END IF
          END IF
       END DO
