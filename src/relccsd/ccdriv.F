@@ -523,6 +523,7 @@ c
       use interface_to_mpi
       use relcc_cfg
       use xmlout
+      use eom_driver
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -757,6 +758,16 @@ C
          CALL CCFSPC(ICALC,MXCORR1,EPS1,EPS,NSP,IREPSP,IREPSPI)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+
+!! Activate EOMCC calculation 
+
+
+      IF (relcc_do_eomcc) THEN
+         MXCORR1 = 0
+         CALL eom_ee(ICALC,MXCORR1)
+         MXCORR = MAX(MXCORR,MXCORR1)
+      ENDIF
+
 C
 C excitation energy code (e.g. rpa) is disabled
 C     IF (DOEXCIT) THEN
@@ -827,7 +838,15 @@ C
       WALLFS = WALLFS + CPU2 - CPU1
       WALL1 = WALL2
       CALL FLSHFO (IW)
-C
+
+      IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR)
+      CALL GETTIM(CPU2,WALL2)
+      CPUFS = CPUFS + CPU2 - CPU1
+      CPU1 = CPU2
+      WALLFS = WALLFS + CPU2 - CPU1
+      WALL1 = WALL2
+      CALL FLSHFO (IW)
+
 C  FINISHED; RETURN AFTER CLOSING FILES
 C
       JCODE = 3

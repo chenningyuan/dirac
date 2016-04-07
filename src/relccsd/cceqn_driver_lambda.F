@@ -99,7 +99,7 @@ C     Initialize the work arrays to zero.
 
 !!         call w_ejmb(S1,S2,w_voov)
 
-          call wbar_mbej(S2,w_ovvo,buf2,buf3)
+         call wbar_mbej(S2,w_ovvo)
 
          call w_mbej(s1,s2,w_voov)
 

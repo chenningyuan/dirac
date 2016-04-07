@@ -396,7 +396,7 @@
 
   end subroutine
 
- subroutine wbar_mbej(t2,wbar_ovvo,buf2,buf3)
+ subroutine wbar_mbej(t2,wbar_ovvo)
 
   external srt1l1
  !---------------Description--------------------------------------------
@@ -408,15 +408,10 @@
 #include "complex.inc"
 
  !---------------Calling variables--------------------------------------
-   real(8), intent(in)  :: t2(rcw*ndimt2),buf2(*),buf3(*)                    ! Amplitudes.
+   real(8), intent(in)  :: t2(rcw*ndimt2)                              ! Amplitudes.
    real(8), intent(out) :: wbar_ovvo(rcw*iovvo(nrep+1))                ! Intermediate.
  !---------------Local Variables----------------------------------------
-  real*8, allocatable   :: w_vovo(:),temp(:) 
-  real*8,allocatable   :: xxx(:),yyy(:,:),zzz(:,:) 
-  integer :: X2OVVO(NREP+1),irep,jrep
-  integer :: me,fn,bj,k,x,y,z,mefn,bjfn,mebj
-  integer :: m,n,j,krep,off1,off2,off3
-  logical :: testluuk
+  real*8, allocatable   :: w_vovo(:) 
  !--------------------
  ! initialize wbar_ovvo
  !--------------------
@@ -433,72 +428,8 @@
 !   wbar_ovvo(mb,ej) = wbar_ovvo(mb,ej) - V(mn,ef) * T2(bf,nj)
 !------------------------------------------------------------
 
-     testluuk = .false.
- if(.not.testluuk) then
-
   call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),wbar_ovvo, &
              &      1.0d0,0.0d0,nrep,RightTensor=t2)
-
-  else
-
-      allocate(temp(nv3*rcw))
-
-      call getoovv(temp)
-
-      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVVO,JJOV,JJVO, &
-     &              temp,buf3)
-
-
-      deallocate(temp)
-
-      CALL SRT1TT4 (NREP,MULTB,.FALSE.,.FALSE.,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO, &
-     &              T2,buf2)
-
-
-     allocate(temp(JOVVO(nrep+1)*rcw))
-
-    temp=0.0d0
-
-
-       off1 = 1
-       off2 = 1
-       off3 = 1
-      do x = 1, nrep
-         J = MULTB(x+NREP,1+NREP,2)
-
-          M = mov(x)
-          N = mvo(x)
-          K = mvo(j)
-
-          off1 = 1 + j2ovvo(j)*rcw  
-          off2 = 1 + j2vovo(x)*rcw  
-          off3 = 1 + jovvo(x)*rcw  
-
-
-            CALL XGEMM ('N','T',M,N,K,A1,buf3(OFF1),M, &
-     &                  buf2(OFF2),N,A0,temp(OFF3),M)
-
-
-      enddo
-
-
-!    write(*,*)'dot product before sorting',dot_product(temp,temp),dot_product(wbar_ovvo,wbar_ovvo)
-
-      allocate(xxx(J2OVVO(nrep+1)*rcw)) 
-
-      xxx = 0.0d0
-
-      CALL SRT1SS4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NV,NV,NO,MOV,J2OVVO,JJOV,JJVO, &
-     &              temp,xxx)
-
-       deallocate(temp)
-
-
-     CALL XAXPY (iovvo(nrep+1),A1,xxx,1,wbar_ovvo,1)
-
-      deallocate(xxx) 
-
-  endif
 
  end subroutine
 

@@ -37,6 +37,8 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    relcc_cfg.F90
    waio.F
    wrapper_sorting.F90 
+   sigma_eom.F90
+   eom_driver.F90
    ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
    ${PROJECT_SOURCE_DIR}/src/main/dirac.F
 # needs fix missing object pamgeo
@@ -140,23 +142,24 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
 #   davidson_lille/tools90/parmfil.F90
 #   davidson_lille/tools90/rdmfil.F90
 #   davidson_lille/tools90/timing.F90
-    davidson_lille/include/fiflsh_mod.F90
-    davidson_lille/tools90/caps.F90
-    davidson_lille/tools90/jpsort.F90
-    davidson_lille/tools90/kindvar.F90
-    davidson_lille/tools90/matpri.F90
-    davidson_lille/tools90/mconst.F90
-    davidson_lille/tools90/mdebug.F90
-    davidson_lille/tools90/mercod.F90
-    davidson_lille/tools90/mphase.F90
-    davidson_lille/tools90/mparam.F90
-    davidson_lille/david_schmidt.F90
-    davidson_lille/dummy_sigma.F90
-    davidson_lille/david_driver.F90
-    davidson_lille/cdavid_driver.F90
-    davidson_lille/calvhv.F90
-    davidson_lille/david_trial_vectors_utils.F90
-    davidson_lille/trf.F90
+
+#   davidson_lille/include/fiflsh_mod.F90
+#   davidson_lille/tools90/caps.F90
+#   davidson_lille/tools90/jpsort.F90
+#   davidson_lille/tools90/kindvar.F90
+#   davidson_lille/tools90/matpri.F90
+#   davidson_lille/tools90/mconst.F90
+#   davidson_lille/tools90/mdebug.F90
+#   davidson_lille/tools90/mercod.F90
+#   davidson_lille/tools90/mphase.F90
+#   davidson_lille/tools90/mparam.F90
+#   davidson_lille/david_schmidt.F90
+#   davidson_lille/dummy_sigma.F90
+#   davidson_lille/david_driver.F90
+#   davidson_lille/cdavid_driver.F90
+#   davidson_lille/calvhv.F90
+#   davidson_lille/david_trial_vectors_utils.F90
+#   davidson_lille/trf.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

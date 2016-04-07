@@ -55,6 +55,9 @@
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
 
+        case ('*EOMCC')
+           call read_input_cceom(word, kw_section)
+
 #ifdef HAS_PCMSOLVER
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
@@ -842,6 +845,10 @@
          relcc_do_hessian  = .true.
       end if
 
+      if (kw_matches(word, '.EOMCC ')) then
+         relcc_do_eomcc  = .true.
+      end if
+
       if (kw_matches(word, '.FOCKSP')) then
          relcc_do_fspc     = .true.
          if (.not. explicitly_set_energy) relcc_do_energy = .false.
@@ -972,6 +979,35 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+
+
+   subroutine read_input_cceom(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+!      integer                          :: nr_roots(2) ! number of roots in each symmetry 
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.EE    ')) then
+         relcc_do_eomee=.true.
+         call kw_read(word,  nr_roots)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
+
 
    subroutine read_input_ccsort(word, kw_section)
 

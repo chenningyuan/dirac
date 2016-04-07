@@ -7,20 +7,24 @@
 
 !    public eom_ip  
 !    public eom_ea
-    public eom_ee
+    public sigma_ee_1h1p
+    public IM_container
 
     private
+    public intermediates
     type intermediates
-      real(8), dimension(:) :: Fbar_mi, Fbar_me, Fbar_ae                                         ! all 1-b intermediates 
-      real(8), dimension(:) :: W_ijmn, W_ejmb, W_mbej, W_iemn, W_efam, W_amef, W_mnie, Wbar_mbej ! all 2-b intermediates   
+      real(8),allocatable,dimension(:) :: Fbar_mi, Fbar_me, Fbar_ae                                         ! all 1-b intermediates 
+      real(8),allocatable,dimension(:) :: W_ijmn, W_ejmb, W_mbej, W_iemn, W_efam, W_amef, W_mnie, Wbar_mbej ! all 2-b intermediates   
     endtype intermediates
 
 
    contains
 
 
-   subroutine IM_container(eomtype,t1,t2,A)
+   subroutine IM_container(eomtype,t1,t2,A,buf1,buf2,buf3)
 
+#include "symm.inc"
+#include "complex.inc"
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific
 !  problem (IP/EA/EE). 
@@ -33,12 +37,19 @@
 character(8), intent (in) :: eomtype  
 type(intermediates), intent(out) :: A
 real(8), intent(in) :: t1(:), t2(:)
+real(8), intent(in) :: buf1(*),buf2(*)
+real(8), intent(inout) :: buf3(*)
 
 !Local Variables
 !----------------
 real(8), allocatable :: foo(:),fvo(:),fvv(:) 
 
 !-----------------------------------------------------------------------------
+
+     allocate (foo(nfoo*rcw))
+     allocate (fvo(nfvo*rcw))
+     allocate (fvv(nfvv*rcw))
+
 
      call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
 
@@ -72,9 +83,14 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
      endif 
 
+   deallocate(foo)
+   deallocate(fvo)
+   deallocate(fVV)
+
+
    end subroutine
 
-   subroutine sigma_ee_1h1p(r1,r2,t1,t2,B,sigma1,sigma2)
+   subroutine sigma_ee_1h1p(r1,r2,t1,t2,B,sigma1,sigma2,buf2,buf3)
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -84,13 +100,25 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !-----------------------------------------------------------------------
 
 !---------------Calling variables--------------------------------------
-  real(8), intent(in)  :: r1(:), r2(:)           ! R-Amplitudes
-  real(8), intent(in)  :: t1(:), t2(:)           ! T-Amplitudes
+  real(8), intent(in),target   :: r1(:,:), r2(:,:)           ! R-Amplitudes
+  real(8), intent(in)   :: t1(:),t2(:)           ! R-Amplitudes
+  real(8), intent(in)  :: buf2(*),buf3(*)           ! T-Amplitudes
   type(intermediates), intent(in)  :: B          ! T-Amplitudes
-  real(8), intent(out)  :: sigma1(:), sigma2(:)  ! sigma-vectors
+  real(8), intent(out),target  :: sigma1(:,:), sigma2(:,:)  ! sigma-vectors
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
+  real(8), pointer :: r1_ptr(:),r2_ptr(:),sigma1_ptr(:),sigma2_ptr(:)
+
+  real(8), allocatable :: int_1b(:),sigma2_temp(:) 
+  integer :: off1,off2,irp,istart,mint,m,n,k
+  logical :: done 
 !--------------------------------------------------
+
+  r1_ptr(1:ndimt1*rcw)     => r1(1:ndimt1*rcw,1)
+  r2_ptr(1:ndimt2*rcw)     => r2(1:ndimt2*rcw,1)
+  sigma1_ptr(1:ndimt1*rcw) => sigma1(1:ndimt1*rcw,1)
+  sigma2_ptr(1:ndimt2*rcw) => sigma2(1:ndimt2*rcw,1)
+
 
 ! class : (HBar_SS*R)(a,i)
 !=========================
@@ -98,7 +126,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !S_ai = S_ai +  F^a_e*R^e_i   
 !---------------------------
    
-    call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep)
+    call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1_ptr,sigma1_ptr,1.0d0,1.0d0,nrep)
 
 !S_ai = S_ai - f_bar_mi(m,i)*r1(a,m) 
 !------------------------------------
@@ -108,7 +136,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
 !------------------------------------ 
 
-    call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),B%W_mbej,r1,sigma1,1.0d0,1.0d0,nrep)
+    call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej)
 
 
 ! class : [HBar_SD*R](a,i)
@@ -118,20 +146,20 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !--------------------------------------
 
     call contraction_242 ((/"o2","p2"/),(/"p1","p2","o1","o2"/), &
-   &   (/"p1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2)
+   &   (/"p1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
 !S_ai = S_ai + w_amef(am,ef) * r2(ef,im)
 !----------------------------------------
  
     call contraction_442((/"p1","o2","p2","p3"/),(/"p2","p3","o1","o2"/),(/"p1","o1"/),sigma1,1.0d0,1.0d0,nrep, &
-   &         LeftTensor=B%W_amef,RightTensor=r2)
+   &         LeftTensor=B%W_amef,RightTensor=r2_ptr)
 
 
 !S_ai = S_ai - W_mnie(mn,ie)*r2(ae,mn)
 !---------------------------------------
 
     call contraction_442((/"o2","o3","o1","p2"/),(/"p1","p2","o2","o3"/),(/"p1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
-   &         LeftTensor=B%W_mnie,RightTensor=r2)
+   &         LeftTensor=B%W_mnie,RightTensor=r2_ptr)
 
 
 ! class : [HBar_DS*R](ab,ij)
@@ -142,37 +170,46 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
     call contraction_424 ((/"o2","p1","o1","o2"/),(/"p2","o2"/), &
    &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%W_iemn, &
-   &    RightTensor=r1) 
+   &    RightTensor=r1_ptr) 
 
 !S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
 !--------------------------------------------------
 
     call contraction_424 ((/"p1","p2","p3","o2"/),(/"p3","o1"/), &
-   &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=A%W_efam, &
-   &    RightTensor=r1) 
+   &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%W_efam, &
+   &    RightTensor=r1_ptr) 
 
 !int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
 !S(ab,ij) = S(ab,ij) + P(ab) int_1b(b,f)*t2(af,ij)
 !---------------------------------------------------
 
+    allocate(int_1b(nfvv*rcw))
+
+
     int_1b = 0.0d0
 
-    call contraction_422 ((/"p2","o3","p4","p3"/),(/"p3","o3"/),(/"p2","p4"/),B%W_amef,r1,int_1b,1.0d0,1.0d0,nrep)
+    call contraction_422 ((/"p2","o3","p4","p3"/),(/"p3","o3"/),(/"p2","p4"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,B%W_amef)
 
     call contraction_244 ((/"p2","p4"/),(/"p1","p4","o1","o2"/), &
-    &
-(/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+
+    deallocate(int_1b)
+
 
 !int_1b(n,j) = int_1b(n,j) + w_mnie(nm,je)*r1(e,m)
 !S(ab,ij) = S(ab,ij) + int_1b(n,j) * t2(ab,in)
 !---------------------------------------------------
 
+    allocate(int_1b(nfoo*rcw))
+
     int_1b = 0.0d0
 
-    call contraction_422 ((/"o4","o3","o2","p3"/),(/"p3","o3"/),(/"o4","o2"/),LeftTensor=B%W_mnie,r1,int_1b,1.0d0,1.0d0,nrep)
+    call contraction_422 ((/"o4","o3","o2","p3"/),(/"p3","o3"/),(/"o4","o2"/),r1,int_1b,1.0d0,1.0d0,nrep,LeftTensor=B%W_mnie)
 
     call contraction_244 ((/"o4","o2"/),(/"p1","p2","o1","o4"/), &
    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+
+    deallocate(int_1b)
 
 ! class : [HBar_DD*R](ab,ij) 
 !===========================
@@ -181,13 +218,13 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !-------------------------------------------------------
 
     call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
-   & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2)
+   & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2_ptr)
      
 ! S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
 !-----------------------------------------------------
 
     call contraction_244 ((/"o3","o2"/),(/"p1","p2","o1","o3"/), &
-   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2)
+   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
 
 ! S(ab,ij) = S(ab,ij) + w_vvvv(ab,ef)*r2(ef,ij)
 !------------------------------------------------
@@ -202,8 +239,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
          m = nvvt(irp)
          n = noot(irp)
          k = nint
-         call xgemm ('n','n',m,n,k,a1,buf3,m,r2(off1+istart*rcw),m, &
-     &               a1,sigma2(off2),m)
+         call xgemm ('n','n',m,n,k,a1,buf3,m,r2_ptr(off1+istart*rcw),m, &
+     &               a1,sigma2_ptr(off2),m)
          if (.not.done) then
             istart = istart + nint
             goto 10
@@ -216,7 +253,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !--------------------------------------------------
 
       call contraction_444((/"o3","o4","o1","o2"/),(/"p1","p2","o1","o2"/), &
-     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=r2,LeftTensor=B%W_ijmn)
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ijmn)
 
 ! S(ab,ij) = S(ab,ij) + P(ab)P(ij) w_mbej(mb,ej)*r2(ae,im)
 !----------------------------------------------------------
@@ -226,7 +263,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
 
       call srt1ss4 (nrep,multb,.false.,.false.,no,nv,nv,no,mov,j2ovvo,jjov,jjvo, &
-     &              A%W_mbej,buf3)
+     &              B%W_mbej,buf3)
 
 
       allocate (sigma2_temp(j2vovo(nrep+1)*rcw))
@@ -265,7 +302,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !-----------------------------------------------
     int_1b = 0.0d0
 
-    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p3","p1","o3","o4"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2)
+    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p3","p1","o3","o4"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
     call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
     & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
@@ -276,7 +313,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
     int_1b = 0.0d0
 
-    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o1","o4"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2)
+    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o1","o4"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
     call contraction_244 ((/"o1","o4"/),(/"p1","p2","o2","o4"/), &
     & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)

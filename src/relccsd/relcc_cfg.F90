@@ -46,6 +46,7 @@ module relcc_cfg
   logical, public :: relcc_do_restart              = .false.
   logical, public :: relcc_do_energy               = .true.
   logical, public :: relcc_do_gradient             = .false.
+  logical, public :: relcc_do_eomcc                = .false.
   logical, public :: relcc_do_hessian              = .false. ! this currently only relates to the old Hartree-Fock MO response code 
   logical, public :: relcc_do_fspc                 = .false.
   logical, public :: relcc_carith                  = .false.
@@ -99,6 +100,12 @@ module relcc_cfg
   integer, public :: relcc_fopr_max_dimension_diis = 8
   integer, public :: relcc_fopr_max_iterations     = 30
   integer, public :: relcc_fopr_desired_convergence= 12
+
+! Information relevant for the EOMCC calculation
+  logical, public :: relcc_do_eomip = .false.
+  logical, public :: relcc_do_eomea = .false.
+  logical, public :: relcc_do_eomee = .false.
+  integer, public :: nr_roots(2) ! Ashee: I will soon change this input for a better one.
 
 ! Information relevant for the (Intermediate Hamiltonian) Fock space calculations
   logical, public :: relcc_fs_do_ea                   = .false.
@@ -163,6 +170,7 @@ contains
   call interface_mpi_bcast_l0(relcc_do_restart         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_energy          ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_gradient        ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eomcc           ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_hessian         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_fspc            ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_carith             ,1,0,global_communicator)
@@ -179,6 +187,13 @@ contains
   call interface_mpi_bcast(relcc_memory_in_mw        ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_integral_interface, 10,0,global_communicator)
   call interface_mpi_bcast(relcc_ff_property_names,   8,0,global_communicator)
+
+! Information relevant to EOMCC module
+
+! call interface_mpi_bcast(relcc_do_eomee        ,1,0,global_communicator)
+! call interface_mpi_bcast(relcc_do_eomea        ,1,0,global_communicator)
+! call interface_mpi_bcast(relcc_do_eomip        ,1,0,global_communicator)
+! call interface_mpi_bcast(nr_roots        ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)
