@@ -283,7 +283,7 @@ C
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
-     &          EFDIR*1
+     &          EFDIR*1,TMPSTR*1
       DIMENSION INTREP(*), INTADR(*)
 C
 #include "shells.h"
@@ -2248,12 +2248,29 @@ C
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of expikr integrals'
          INTTYP = 106 
-         IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR.
-     &                           GROUP == 'D2h') THEN
+         IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR. GROUP =='D2h') THEN
            NOPTYP = NSYM
          ELSE
            NOPTYP = 2*NSYM
          END IF
+         DO ISYM = 1, NSYM
+           WRITE(TMPSTR,'(I1)') ISYM
+         IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR. 
+     &       GROUP =='D2h') THEN
+             IF (REP(ISYM-1)(2:2) == 'g' .OR.
+     &           REP(ISYM-1)(3:3) == 'g') THEN
+               LABINT(ISYM) = 'CEXPR'//TMPSTR//'  '
+             ELSE
+               LABINT(ISYM) = 'CEXPI'//TMPSTR//'  '
+             END IF
+             INTREP(ISYM) = ISYM - 1
+           ELSE
+             LABINT(NSYM+ISYM) = 'CEXPI'//TMPSTR//'  '
+             LABINT(ISYM) = 'CEXPR'//TMPSTR//'  '
+             INTREP(ISYM) = ISYM - 1
+             INTREP(NSYM+ISYM) = ISYM - 1
+           END IF
+         END DO
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
          ANTI = .FALSE.
