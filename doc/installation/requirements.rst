@@ -4,25 +4,30 @@
 Requirements
 ============
 
-DIRAC requires Fortran 90, C, and C++ compilers and a Python environment
-for the setup and run scripts. The program is designed to
-run on a unix-like operating system, and uses MPI for parallel calculations.
-Optionally DIRAC can (and should) be linked to platform specific BLAS and
-LAPACK libraries.
+DIRAC requires CMake, Fortran 90, C, and C++ compilers and a Python environment
+for the setup and run scripts. The program is designed to run on a unix-like
+operating system, and uses MPI for parallel calculations.  Optionally DIRAC can
+(and should) be linked to platform specific BLAS and LAPACK libraries.
 
 
 Minimum requirements
 --------------------
 
-* Cmake 3.0 - 3.4
+* CMake 3.0 - 3.4
 * Python 2.6 - 2.7
-* GNU 4.9 - 5.2
+* GFortran/GCC/G++ 4.9 - 5.2 or Intel compilers 13.0 - 15.0.6
+
+If your distribution does not provide a recent CMake, you can install it
+without root permissions within few minutes. Download the binary distribution
+from https://cmake.org/download/, extract it, and set the environment variables
+PATH and LD_LIBRARY_PATH to point to the bin/ and lib/ subdirectories of the
+extracted path, respectively. Verify that your new CMake is recognized with
+``cmake --version``.
 
 
 Supported, but optional dependencies
 ------------------------------------
 
-* Intel 13.0 - 15.0.6 (alternative to GNU compilers)
 * OpenMPI 1.6.2 - 1.8.5 (MPI parallelization)
 * IntelMPI 4.1 - 5.0 (MPI parallelization)
 * Boost 1.54.0 - 1.60.0 (PCMSolver; installed along DIRAC if below 1.54.0)
