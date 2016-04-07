@@ -279,7 +279,7 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 96)
+      PARAMETER (NTABLE = 97)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -338,7 +338,9 @@ C
 !                  89         90         91         92
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
 !                  93         94         95         96
-     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx'/
+     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx',
+!                  97
+     &            'CEXPIKR'/
 C
 #include "ibtfun.h"
 C
@@ -376,8 +378,8 @@ C
      &              81, 82, 83, 84,
      &              85, 86, 87, 88,
      &              89, 90, 91, 92,
-     &              93, 94, 95, 96
-     &            ), I
+     &              93, 94, 95, 96,
+     &              97), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2235,6 +2237,27 @@ C
       GOTO 200
 
  96   continue
+C
+C     EXPIKR integrals CEXPIKR
+C     -------------------------
+C     NOTE: The labels and symmetries for these integrals
+C           need to be defined OUTSIDE this routine in contrast to 
+C           the other integrals. 
+C
+  97  CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of expikr integrals'
+         INTTYP = 106 
+         IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR.
+     &                           GROUP == 'D2h') THEN
+           NOPTYP = NSYM
+         ELSE
+           NOPTYP = 2*NSYM
+         END IF
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         ANTI = .FALSE.
+         SQUARE = .FALSE. !.TRUE. CHECK THIS
       go to 200
 
   200 CONTINUE

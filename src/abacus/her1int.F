@@ -1891,6 +1891,13 @@ C
      &                          shlint)
            end if
 
+!     CEXPIKR: expikr integrals for interaction with electromagnetic field
+!     radiation
+!     ===========================================================
+
+         ELSE IF (INTTYP == 106) THEN
+            CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
 
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
@@ -5854,6 +5861,158 @@ C
   100 CONTINUE
       RETURN
       END
+C  /* Deck gosgint */
+      SUBROUTINE CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
+C
+C     nhl 2016 -- calculates integrals over exp(ikr)
+C                 based on GOSINT routine.
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+      PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0, NIREP = 24)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &   SHLINT(KCKTAB,NOPTYP),ORIGIN(3),DIPORG(3),TMPARR(KCKTAB,NIREP)
+      INTEGER OPIREP(NIREP),NOPTYP
+      INTEGER T, U, V
+#include "onecom.h" !contains KCKTAB, which is N^2, where N is the number of basis functs.
+#include "lmns.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "pgroup.h"
+C
+      OPIREP(1) = 0 
+      OPIREP(2) = IEOR(ISYMAX(2,1),ISYMAX(3,1)) 
+      OPIREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1)) 
+      OPIREP(4) = IEOR(ISYMAX(1,1),ISYMAX(2,1)) 
+      OPIREP(5) = ISYMAX(3,1)
+      OPIREP(6) = ISYMAX(2,1)
+      OPIREP(7) = ISYMAX(1,1) 
+      OPIREP(8) = IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
+C
+      CALL DZERO(TMPARR,KCKTAB*NIREP)
+C
+      DKX = ORIGIN(1)
+      DKY = ORIGIN(2)
+      DKZ = ORIGIN(3)
+      FACX = SHGTF/EXP(DP25*EXPPI*DKX**2)
+      FACY = SHGTF/EXP(DP25*EXPPI*DKY**2)
+      FACZ = SHGTF/EXP(DP25*EXPPI*DKZ**2)
+      COSX = COS(CORPX*DKX)*FACX
+      COSY = COS(CORPY*DKY)*FACY
+      COSZ = COS(CORPZ*DKZ)*FACZ
+      SINX = SIN(CORPX*DKX)*FACX
+      SINY = SIN(CORPY*DKY)*FACY
+      SINZ = SIN(CORPZ*DKZ)*FACZ
+C
+      INT = 0
+C      write(lupri,*) 'KCKTA', KCKTA
+C      write(lupri,*) 'KCKTB', KCKTB
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA) !power of x factor in basis a
+         MVALA = MVALUA(ICOMPA) !power of y factor in basis a
+         NVALA = NVALUA(ICOMPA) !power of z factor in basis a
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB) !power of x factor in basis b
+         MVALB = MVALUB(ICOMPB) !power of y factor in basis b
+         NVALB = NVALUB(ICOMPB) !power of z factor in basis b
+C
+         CX    = D0
+         CXDX  = D0
+         SX    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKX = D1
+         DO 200 T = 0, LVALA + LVALB
+            IF (MOD(T,2) .EQ. 0) THEN
+               CX = CX + SGNC*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
+               SX = SX + SGNS*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
+               SGNC = - SGNC
+            ELSE
+               CX = CX + SGNC*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
+               SX = SX + SGNS*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
+               SGNS = - SGNS
+            END IF
+            FACKX = FACKX*DKX
+  200    CONTINUE
+         CY    = D0
+         CYDY  = D0
+         SY    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKY = D1
+         DO 300 U = 0, MVALA + MVALB
+            IF (MOD(U,2) .EQ. 0) THEN
+               CY = CY + SGNC*FACKY*COSY*ODC(MVALA,MVALB,U,0,0,2)
+               SY = SY + SGNS*FACKY*SINY*ODC(MVALA,MVALB,U,0,0,2)
+               SGNC = - SGNC
+            ELSE
+               CY = CY + SGNC*FACKY*SINY*ODC(MVALA,MVALB,U,0,0,2)
+               SY = SY + SGNS*FACKY*COSY*ODC(MVALA,MVALB,U,0,0,2)
+               SGNS = - SGNS
+            END IF
+            FACKY = FACKY*DKY
+  300    CONTINUE
+C
+         CZ    = D0
+         CZDZ  = D0
+         SZ    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKZ = D1
+         DO 400 V = 0, NVALA + NVALB
+            IF (MOD(V,2) .EQ. 0) THEN
+               CZ = CZ + SGNC*FACKZ*COSZ*ODC(NVALA,NVALB,V,0,0,3)
+               SZ = SZ + SGNS*FACKZ*SINZ*ODC(NVALA,NVALB,V,0,0,3)
+               SGNC = - SGNC
+            ELSE
+               CZ = CZ + SGNC*FACKZ*SINZ*ODC(NVALA,NVALB,V,0,0,3)
+               SZ = SZ + SGNS*FACKZ*COSZ*ODC(NVALA,NVALB,V,0,0,3)
+               SGNS = - SGNS
+            END IF
+            FACKZ = FACKZ*DKZ
+  400    CONTINUE
+C
+         INT = INT + 1
+        TMPARR(INT,1) = TMPARR(INT,1) + CX*CY*CZ 
+        TMPARR(INT,2) = TMPARR(INT,2) - CX*SY*SZ 
+        TMPARR(INT,3) = TMPARR(INT,3) - SX*CY*SZ 
+        TMPARR(INT,4) = TMPARR(INT,4) - SX*SY*CZ 
+        TMPARR(INT,5) = TMPARR(INT,5) + CX*CY*SZ 
+        TMPARR(INT,6) = TMPARR(INT,6) + CX*SY*CZ 
+        TMPARR(INT,7) = TMPARR(INT,7) + SX*CY*CZ 
+        TMPARR(INT,8) = TMPARR(INT,8) - SX*SY*SZ 
+  100 CONTINUE
+      DO IOPER = 1, NIREP
+C         WRITE(LUPRI,'(/A,I2,A,I1)') 'NSYM: ', NSYM
+C         WRITE(LUPRI,'(/A,I2,A,I1)') 'TMPARR for IOPER: ', IOPER,
+C     &              ' of symmetry: ', OPIREP(IOPER)
+         IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR. 
+     &                           GROUP == 'D2h') THEN
+C              WRITE(LUPRI,*) 'INVERSION',
+C     &               'Index in SHLINT: ', OPIREP(IOPER)+1
+              SHLINT(:,OPIREP(IOPER)+1) = 
+     &        SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)        
+         ELSE
+            IF (IOPER<5) THEN !add to real operator
+               SHLINT(:,OPIREP(IOPER)+1) =     
+     &            SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)   
+C               SHLINT(:,NSYM+OPIREP(IOPER)+1) =     
+C     &            SHLINT(:,NSYM+OPIREP(IOPER)+1) + TMPARR(:,IOPER)   
+            ELSE !add to imag operator
+               SHLINT(:,NSYM+OPIREP(IOPER)+1) = 
+     &            SHLINT(:,NSYM+OPIREP(IOPER)+1) + TMPARR(:,IOPER)
+C               SHLINT(:,OPIREP(IOPER)+1) = SHLINT(:,OPIREP(IOPER)+1)+
+C     &                      TMPARR(:,IOPER)        
+            END IF
+         END IF
+      END DO
+      RETURN
+      END
+
 C  /* Deck sl1int */
       SUBROUTINE SL1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,DIFABX,DIFABY,DIFABZ,EXPPI,
