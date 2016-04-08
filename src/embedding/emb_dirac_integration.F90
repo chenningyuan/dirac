@@ -1502,16 +1502,16 @@ contains
       if (n_0(1) > fde_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
 
-         u%n  = 0.0d0
-         u%gn = 0.0d0
-         u%s  = 0.0d0
-         u%gs = 0.0d0
-         u%tn = 0.0d0
-         u%ts = 0.0d0
-         u%n_b_lao  = 0.0d0
-         u%gn_b_lao  = 0.0d0
-         u%s_b_lao  = 0.0d0
-         u%gs_b_lao  = 0.0d0
+         if (allocated(u%n)) u%n  = 0.0d0
+         if (allocated(u%gn)) u%gn = 0.0d0
+         if (allocated(u%s)) u%s  = 0.0d0
+         if (allocated(u%gs)) u%gs = 0.0d0
+         if (allocated(u%tn)) u%tn = 0.0d0
+         if (allocated(u%ts)) u%ts = 0.0d0
+         if (allocated(u%n_b_lao)) u%n_b_lao  = 0.0d0
+         if (allocated(u%gn_b_lao)) u%gn_b_lao  = 0.0d0
+         if (allocated(u%s_b_lao)) u%s_b_lao  = 0.0d0
+         if (allocated(u%gs_b_lao)) u%gs_b_lao  = 0.0d0
 
          w(1) = rw(ipoint)
 
