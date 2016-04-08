@@ -50,7 +50,7 @@ contains
 
     real(8), allocatable    :: D_ai(:, :, :), D_ji(:, :, :)
     integer                 :: file_unit, icomp
-    logical                 :: debug_me
+    logical                 :: debug_me, dummy
 
 !   gosia, note for me:
 !   if natural connection - T^B matrix was built from 'd|S>/dB' integrals
@@ -75,6 +75,8 @@ contains
     read(file_unit) nr_xyz_comp
     read(file_unit) which_icomp
     read(file_unit) D_con_mo%irep
+!gosia: dummy will be removed; now it is left to do visualization with TBMO files calculated before doeprn was removed
+    read(file_unit) dummy
     read(file_unit) D_con_mo%elms
 
     if (nr_xyz_comp > 1) then
