@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1000,7 +1000,7 @@ C
 C
 C         read FCmo from file LUKRM3
 C
-          CALL KRMC_GETFCK(WORK(KFC),IPROPT,WORK(KFREE),LFREE)
+          CALL KRMC_GETFCK(WORK(KFC),IPROPT)
 C
           ECORE = ECORE_LR
 C
@@ -1184,7 +1184,7 @@ C
 C
 C         read FCmo from file LUKRM3
 C
-          CALL KRMC_GETFCK(WORK(KFC),IPROPT,WORK(KFREE),LFREE)
+          CALL KRMC_GETFCK(WORK(KFC),IPROPT)
 C
           ECORE = ECORE_LR
 C
@@ -1359,7 +1359,7 @@ C
 C
 C       read FCmo from file LUKRM3
 C
-        CALL KRMC_GETFCK(WORK(KFC),IPROPT,WORK(KFREE),LFREE)
+        CALL KRMC_GETFCK(WORK(KFC),IPROPT)
 C
         ECORE = ECORE_LR
 C

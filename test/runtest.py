@@ -1,22 +1,7 @@
+# Copyright 2015 Radovan Bast.
 
-"""
-    runtest - Numerically tolerant test library
-
-    Author:
-        Radovan Bast
-
-    License:
-        BSD-3
-        https://github.com/bast/runtest/blob/master/LICENSE
-
-    Documentation:
-        http://runtest.readthedocs.org
-
-    Source:
-        https://github.com/bast/runtest
-
-    Issue tracking:
-        https://github.com/bast/runtest/issues
+"""runtest - Numerically tolerant test library for scientific codes which
+produce and test numerical results.
 """
 
 import re
@@ -29,7 +14,9 @@ import string
 from optparse import OptionParser
 
 
-__version__ = '1.3.6'  # http://semver.org
+__version__ = '1.3.11'
+
+__author__ = ('Radovan Bast <radovan.bast@uit.no>')
 
 
 class FilterKeywordError(Exception):
@@ -67,6 +54,16 @@ def is_int(n):
 
 
 def tuple_matches(f, tup):
+    """
+    Checks if tuple matches based on f.
+
+    Input:
+        f   -- filter task
+        tup -- tuple
+
+    Returns:
+        (tuple_matches, error_message)
+    """
 
     x, x_ref = tup
 
@@ -76,42 +73,35 @@ def tuple_matches(f, tup):
         x_ref = abs(x_ref)
 
     if is_int(x) and is_int(x_ref):
-        return x == x_ref
+        if x == x_ref:
+            return (True, None)
+        else:
+            return (False, "expected: %s" % x_ref)
 
     if abs(x_ref) < f.ignore_below:
-        return True
+        return (True, None)
 
     if abs(x_ref) > f.ignore_above:
-        return True
+        return (True, None)
 
     error = x - x_ref
     if f.tolerance_is_relative:
         error /= x_ref
-    return abs(error) <= f.tolerance
-
-# ------------------------------------------------------------------------------
-
-
-def compare_lists(f, l1, l2):
-    """
-    Input:
-        - f -- filter task
-        - l1 -- list of numbers
-        - l2 -- another list of numbers
-
-    Returns:
-        - res -- list that contains ones (pass) or zeros (failures)
-                 l1, l2, and res have same length
-
-    Raises:
-        - FilterKeywordError
-    """
-
-    # FIXME this will move up once the caller is unit-tested
-    # if we have any float in there then tolerance must be set
-    if not f.tolerance_is_set and (any(map(is_float, l1)) or any(map(is_float, l2))):
-        raise FilterKeywordError('ERROR: for floats you have to specify either rel_tolerance or abs_tolerance\n')
-    return map(lambda t: tuple_matches(f, t), zip(l1, l2))
+        if abs(error) <= f.tolerance:
+            return (True, None)
+        else:
+            if f.ignore_sign:
+                return (False, "expected: %s (rel diff: %6.2e ignoring signs)" % (x_ref, abs(1.0 - abs(x) / abs(x_ref))))
+            else:
+                return (False, "expected: %s (rel diff: %6.2e)" % (x_ref, abs(1.0 - x / x_ref)))
+    else:
+        if abs(error) <= f.tolerance:
+            return (True, None)
+        else:
+            if f.ignore_sign:
+                return (False, "expected: %s (abs diff: %6.2e ignoring signs)" % (x_ref, abs(abs(x) - abs(x_ref))))
+            else:
+                return (False, "expected: %s (abs diff: %6.2e)" % (x_ref, abs(x - x_ref)))
 
 # ------------------------------------------------------------------------------
 
@@ -233,42 +223,6 @@ def copy_path(root_src_dir, root_dst_dir, exclude_files=[]):
 # ------------------------------------------------------------------------------
 
 
-def underline(f, start_char, length, reference, number, is_integer):
-    """
-    Input:
-        - f -- filter task
-        - start_char -- position of start character
-        - length -- underline length
-        - reference -- reference number
-        - number -- obtained (calculated) number
-        - is_integer -- whether reference number is integer
-
-    Returns:
-        - s -- underline string with info about reference and tolerance
-    """
-
-    s = ''
-    for i in range(start_char):
-        s += ' '
-    for i in range(length):
-        s += '#'
-    s += ' expected: %s' % reference
-
-    if not is_integer:
-        if f.tolerance_is_set:
-            if f.tolerance_is_relative:
-                s += ' (rel diff: %6.2e)' % abs(1.0 - number / reference)
-            else:
-                if f.ignore_sign:
-                    s += ' (abs diff: %6.2e ignoring signs)' % abs(abs(number) - abs(reference))
-                else:
-                    s += ' (abs diff: %6.2e)' % abs(number - reference)
-
-    return s + '\n'
-
-# ------------------------------------------------------------------------------
-
-
 def filter_file(f, file_name, output):
     """
     Input:
@@ -318,54 +272,95 @@ def filter_file(f, file_name, output):
 # ------------------------------------------------------------------------------
 
 
-def check_for_unrecognized_kw(kwargs):
+def _check(filter_list, out_name, ref_name, verbose=False):
+    """
+    Compares output (work_dir/out_name) with reference (work_dir/ref_name)
+    applying all filters tasks from the list of filters.
 
-    recognized_keywords = ['from_re',
-                           'to_re',
-                           're',
-                           'from_string',
-                           'to_string',
-                           'string',
-                           'ignore_below',
-                           'ignore_above',
-                           'ignore_sign',
-                           'mask',
-                           'num_lines',
-                           'rel_tolerance',
-                           'abs_tolerance']
+    Input:
+        - work_dir -- working directory
+        - out_name -- actual output file name
+        - ref_name -- reference output file name
+        - verbose  -- give verbose output upon failure
 
-    # check for unrecognized keywords
-    for key in kwargs.keys():
-        if key not in recognized_keywords:
-            available_keywords = (', ').join(recognized_keywords)
-            message = 'ERROR: keyword "%s" not recognized\n       ' % key
-            message += 'available keywords: %s\n' % available_keywords
-            raise FilterKeywordError(message)
+    Returns:
+        - nothing
 
-# ------------------------------------------------------------------------------
+    Generates the following files in work_dir:
+        - out_name.filtered  -- numbers extracted from output
+        - out_name.reference -- numbers extracted from reference
+        - out_name.diff      -- difference between the two above
 
+    Raises:
+        - TestFailedError
+    """
 
-def check_for_incompatible_kw(kwargs):
+    log_out = open('%s.filtered' % out_name, 'w')
+    log_ref = open('%s.reference' % out_name, 'w')
+    log_diff = open('%s.diff' % out_name, 'w')
 
-    incompatible_pairs = [('from_re', 'from_string'),
-                          ('to_re', 'to_string'),
-                          ('to_string', 'num_lines'),
-                          ('to_re', 'num_lines'),
-                          ('string', 'from_string'),
-                          ('string', 'to_string'),
-                          ('string', 'from_re'),
-                          ('string', 'to_re'),
-                          ('string', 'num_lines'),
-                          ('re', 'from_string'),
-                          ('re', 'to_string'),
-                          ('re', 'from_re'),
-                          ('re', 'to_re'),
-                          ('re', 'num_lines'),
-                          ('rel_tolerance', 'abs_tolerance')]
+    for f in filter_list:
 
-    for (kw1, kw2) in incompatible_pairs:
-        if kw1 in kwargs.keys() and kw2 in kwargs.keys():
-            raise FilterKeywordError('ERROR: incompatible keywords: "%s" and "%s"\n' % (kw1, kw2))
+        out_filtered = filter_file(f, out_name, open(out_name).readlines())
+        log_out.write(''.join(out_filtered))
+        out_numbers, out_locations = extract_numbers(f, out_filtered)
+        if f.use_mask and out_numbers == []:
+            raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
+
+        ref_filtered = filter_file(f, ref_name, open(ref_name).readlines())
+        log_ref.write(''.join(ref_filtered))
+        ref_numbers, ref_locations = extract_numbers(f, ref_filtered)
+        if f.use_mask and ref_numbers == []:
+            raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
+
+        if out_numbers == [] and ref_numbers == []:
+            # no numbers are extracted
+            if out_filtered != ref_filtered:
+                log_diff.write('ERROR: extracted strings do not match\n')
+                log_diff.write('own gave:\n')
+                log_diff.write(''.join(out_filtered) + '\n')
+                log_diff.write('reference gave:\n')
+                log_diff.write(''.join(ref_filtered) + '\n')
+
+        # we need to check for len(out_numbers) > 0
+        # for pure strings len(out_numbers) is 0
+        # TODO need to consider what to do with pure strings in future versions
+        if len(out_numbers) == len(ref_numbers) and len(out_numbers) > 0:
+            if not f.tolerance_is_set and (any(map(is_float, out_numbers)) or any(map(is_float, ref_numbers))):
+                raise FilterKeywordError('ERROR: for floats you have to specify either rel_tolerance or abs_tolerance\n')
+            l = map(lambda t: tuple_matches(f, t), zip(out_numbers, ref_numbers))
+            matching, errors = zip(*l)  # unzip tuples to two lists
+            if not all(matching):
+                log_diff.write('\n')
+                for k, line in enumerate(out_filtered):
+                    log_diff.write('.       %s' % line)
+                    for i, num in enumerate(out_numbers):
+                        (line_num, start_char, length) = out_locations[i]
+                        if line_num == k:
+                            if errors[i]:
+                                log_diff.write('ERROR   %s%s %s\n' % (' ' * start_char, '#' * length, errors[i]))
+
+        if len(out_numbers) != len(ref_numbers):
+            log_diff.write('ERROR: extracted sizes do not match\n')
+            log_diff.write('own gave %i numbers:\n' % len(out_numbers))
+            log_diff.write(''.join(out_filtered) + '\n')
+            log_diff.write('reference gave %i numbers:\n' % len(ref_numbers))
+            log_diff.write(''.join(ref_filtered) + '\n')
+
+    log_out.close()
+    log_ref.close()
+    log_diff.close()
+
+    if os.path.getsize('%s.diff' % out_name) > 0:
+        log_diff = open('%s.diff' % out_name, 'r')
+        diff = ''
+        for line in log_diff.readlines():
+            diff += line
+        log_diff.close()
+        message = "ERROR: test %s failed\n" % out_name
+        if verbose:
+            message += diff
+        raise TestFailedError(message)
 
 # ------------------------------------------------------------------------------
 
@@ -436,8 +431,43 @@ class _SingleFilter:
 
     def __init__(self, **kwargs):
 
-        check_for_unrecognized_kw(kwargs)
-        check_for_incompatible_kw(kwargs)
+        recognized_kw = ['from_re',
+                         'to_re',
+                         're',
+                         'from_string',
+                         'to_string',
+                         'string',
+                         'ignore_below',
+                         'ignore_above',
+                         'ignore_sign',
+                         'mask',
+                         'num_lines',
+                         'rel_tolerance',
+                         'abs_tolerance']
+
+        unrecoginzed_kw = [kw for kw in kwargs.keys() if kw not in recognized_kw]
+        if unrecoginzed_kw != []:
+            raise FilterKeywordError('ERROR: keyword(s) (%s) not recognized\n       available keywords: (%s)\n' % ((', ').join(unrecoginzed_kw),
+                                                                                                                   (', ').join(recognized_kw)))
+        incompatible_pairs = [('from_re', 'from_string'),
+                              ('to_re', 'to_string'),
+                              ('to_string', 'num_lines'),
+                              ('to_re', 'num_lines'),
+                              ('string', 'from_string'),
+                              ('string', 'to_string'),
+                              ('string', 'from_re'),
+                              ('string', 'to_re'),
+                              ('string', 'num_lines'),
+                              ('re', 'from_string'),
+                              ('re', 'to_string'),
+                              ('re', 'from_re'),
+                              ('re', 'to_re'),
+                              ('re', 'num_lines'),
+                              ('rel_tolerance', 'abs_tolerance')]
+
+        incompatible_kw = [(kw1, kw2) for (kw1, kw2) in incompatible_pairs if kw1 in kwargs.keys() and kw2 in kwargs.keys()]
+        if incompatible_kw != []:
+            raise FilterKeywordError('ERROR: incompatible keyword pairs: %s\n' % incompatible_kw)
 
         # now continue with keywords
         self.from_string = kwargs.get('from_string', '')
@@ -505,87 +535,6 @@ class Filter:
         """
         self.filter_list.append(_SingleFilter(*args, **kwargs))
 
+    # FIXME work_dir is not used
     def check(self, work_dir, out_name, ref_name, verbose=False):
-        """
-        Compares output (work_dir/out_name) with reference (work_dir/ref_name)
-        applying all filters tasks from the list of filters.
-
-        Input:
-            - work_dir -- working directory
-            - out_name -- actual output file name
-            - ref_name -- reference output file name
-            - verbose  -- give verbose output upon failure
-
-        Returns:
-            - nothing
-
-        Generates the following files in work_dir:
-            - out_name.filtered  -- numbers extracted from output
-            - out_name.reference -- numbers extracted from reference
-            - out_name.diff      -- difference between the two above
-
-        Raises:
-            - TestFailedError
-        """
-
-        log_out = open('%s.filtered' % out_name, 'w')
-        log_ref = open('%s.reference' % out_name, 'w')
-        log_diff = open('%s.diff' % out_name, 'w')
-
-        for f in self.filter_list:
-
-            out_filtered = filter_file(f, out_name, open(out_name).readlines())
-            log_out.write(''.join(out_filtered))
-            out_numbers, out_locations = extract_numbers(f, out_filtered)
-            if f.use_mask and out_numbers == []:
-                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
-
-            ref_filtered = filter_file(f, ref_name, open(ref_name).readlines())
-            log_ref.write(''.join(ref_filtered))
-            ref_numbers, ref_locations = extract_numbers(f, ref_filtered)
-            if f.use_mask and ref_numbers == []:
-                raise FilterKeywordError('ERROR: mask %s did not extract any numbers\n' % f.mask)
-
-            if out_numbers == [] and ref_numbers == []:
-                # no numbers are extracted
-                if out_filtered != ref_filtered:
-                    log_diff.write('ERROR: extracted strings do not match\n')
-                    log_diff.write('own gave:\n')
-                    log_diff.write(''.join(out_filtered) + '\n')
-                    log_diff.write('reference gave:\n')
-                    log_diff.write(''.join(ref_filtered) + '\n')
-
-            if len(out_numbers) == len(ref_numbers):
-                l = compare_lists(f, out_numbers, ref_numbers)
-                if not all(l):
-                    log_diff.write('\n')
-                    for k, line in enumerate(out_filtered):
-                        log_diff.write('.       %s' % line)
-                        for i, num in enumerate(out_numbers):
-                            (line_num, start_char, length) = out_locations[i]
-                            if line_num == k:
-                                if not l[i]:
-                                    is_integer = isinstance(num, int)  # FIXME use is_int()
-                                    log_diff.write('ERROR   %s' % underline(f, start_char, length, ref_numbers[i], out_numbers[i], is_integer))
-
-            if len(out_numbers) != len(ref_numbers):
-                log_diff.write('ERROR: extracted sizes do not match\n')
-                log_diff.write('own gave %i numbers:\n' % len(out_numbers))
-                log_diff.write(''.join(out_filtered) + '\n')
-                log_diff.write('reference gave %i numbers:\n' % len(ref_numbers))
-                log_diff.write(''.join(ref_filtered) + '\n')
-
-        log_out.close()
-        log_ref.close()
-        log_diff.close()
-
-        if os.path.getsize('%s.diff' % out_name) > 0:
-            log_diff = open('%s.diff' % out_name, 'r')
-            diff = ''
-            for line in log_diff.readlines():
-                diff += line
-            log_diff.close()
-            message = "ERROR: test %s failed\n" % out_name
-            if verbose:
-                message += diff
-            raise TestFailedError(message)
+        _check(self.filter_list, out_name, ref_name, verbose)

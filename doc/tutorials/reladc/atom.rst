@@ -1,6 +1,8 @@
-Now we turn to the cadmium atom in :math:`D_{2h}` with the :ref:`.SPINFREE`
+:orphan:
+
+Now we turn to the cadmium atom in :math:`D_{2h}` with the :ref:`HAMILTONIAN_.SPINFREE`
 Hamiltonian. The :math:`D_{2h}` double group has two fermionic IRREPS (g and u)
-leading to XREPS=1,2. By using the :ref:`.SPINFREE` option a real calculation
+leading to XREPS=1,2. By using the :ref:`HAMILTONIAN_.SPINFREE` option a real calculation
 in the ordinary :math:`D_{2h}` point group is performed in DIRAC leading to
 eight symmetries as known from the character table. Therefore we set
 XREPS=1,2,3,4,5,6,7,8 if we need all symmetries. The relation of the irrep name

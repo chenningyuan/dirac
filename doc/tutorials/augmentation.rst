@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 Basis sets augmentation
 =======================
 
@@ -35,6 +38,7 @@ with the nonrelativistic basis set.
 +---------------------+--------------------------------+--------------------+---------------+-------------+
 | d-aug-dyall.v2z     | Br     [17s13p9d3f|17s13p9d3f] | (H [4s1p|2s1p])    | -2572.6425365 | -0.76521484 |
 +---------------------+--------------------------------+--------------------+---------------+-------------+
+
 (H-atom in parenthesis has cc-pVDZ basis sets.)
 
 Note that the nonrelativistic Hamiltonian with contracted basis sets was used in all these examples.

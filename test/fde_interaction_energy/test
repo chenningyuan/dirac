@@ -16,6 +16,11 @@ f.add(from_string = 'TOTAL ENERGY',
       to_re       = 'Eigenvalues',
       rel_tolerance   = 1.0e-5)
 
+test.run(['fde_nr_pbe_update.inp'],        ['h2o.mol'], f, args='--put="FRZDNS" ')
 test.run(['fde_ll_pbe_update.inp'],        ['h2o.mol'], f, args='--put="FRZDNS" ')
+test.run(['fde_x2c-sf_pbe_update.inp'],    ['h2o.mol'], f, args='--put="FRZDNS" ')
+test.run(['fde_sfdc_pbe_update.inp'],      ['h2o.mol'], f, args='--put="FRZDNS" ')
+test.run(['fde_x2c_pbe_update.inp'],       ['h2o.mol'], f, args='--put="FRZDNS" ')
+test.run(['fde_dc_pbe_update.inp'],        ['h2o.mol'], f, args='--put="FRZDNS" ')
 
 sys.exit(test.return_code)

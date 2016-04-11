@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -310,7 +310,7 @@ SUBROUTINE RECP_1ESUB_H2WRITE(ic1,ic0,INDEX1,ilxyz,nst,ijsf,ij,ndxb,icx,nopir, &
            if(chsign) VAL=-VAL
 
 !          * print values
-           IF (RECP_DBG.GE.1) WRITE(6,'(A,L,F15.7,2(A,I2))') & 
+           IF (RECP_DBG.GE.1) WRITE(6,'(A,L1,F15.7,2(A,I2))') & 
               STR0,chsign,VAL,' iop=',iop,' ist=',ist
            VAL=fnfct*VAL
 

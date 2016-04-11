@@ -1,16 +1,20 @@
+:orphan:
+ 
+
 .. _goscip:
 
 ======================
 GOSCIP -- COSCI module
 ======================
 
-General Open Shell CI Program written by Olivier Visser
+General Open Shell CI Program written by Olivier Visser,  Ref. :cite:`Visser1992`.
 
-This module allows for small full configuration interaction calculations. It is invoked from within DIRRCI if the namelist GOSCIP is present in the input, or if .RESOLVE is specified when doing open shell HF calculations.
+This module allows for small full configuration interaction calculations. 
+It is invoked from within :ref:`DIRRCI` if the namelist GOSCIP is present in the input, or if :ref:`*RESOLVE` is specified when doing open shell HF calculations.
 
-The input should be given in namelist form.
+The input is given in namelist form.
 
-Historical note: This program was originally written for :cite:`MOLFDIR` and was later also included in DIRAC.
+Historical note: This program was originally written for the :cite:`MOLFDIR` suite and was later also included in DIRAC.
 
 
 &GOSCIP

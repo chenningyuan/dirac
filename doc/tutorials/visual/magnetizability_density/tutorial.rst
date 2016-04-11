@@ -1,4 +1,4 @@
-
+:orphan:
 
 Magnetizability density
 =======================
@@ -24,7 +24,7 @@ Together with a simple job input (magnetizability.inp):
 
 We can get the wave function with the following run script:
 
-.. literalinclude:: magetizability.run
+.. literalinclude:: magnetizability.run
 
 After running the script you should see the files DFCOEF and PAMXVC in your
 submit directory.

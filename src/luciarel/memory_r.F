@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -536,8 +536,8 @@ C
           write(LUWRT,*) ' NS has value  ',NS
           WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
      &    ' to at least ',MAXLVL+1
-          Call quit(' *** error in memmar_i8: too many memory access'//
-     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+          Call quit(' *** ERROR in memmar_i8: too many memory access'//
+     & ' pointers. Increase MAXLVL in luciarel/memory_r.inc and'//
      & ' re-compile. ***')
         END IF
         IIDENT(NS) = IDENT
@@ -588,8 +588,8 @@ C
           WRITE(LUWRT,*) ' Too many levels in MEMMAR '
           WRITE(LUWRT,*) ' Increase MAXLVL from ', MAXLVL, 
      &    ' to at least ',MAXLVL+1
-          Call quit(' *** error in memmar_i8: too many memory access'//
-     & ' pointers. increase MAXLVL in luciarel/memory_r.inc and'//
+          Call quit(' *** ERROR in memmar_i8: too many memory access'//
+     & ' pointers. Increase MAXLVL in luciarel/memory_r.inc and'//
      & ' re-compile. ***')
         END IF
         IIDENT(NS+NL) = IDENT
@@ -606,7 +606,7 @@ C
       ELSE
         WRITE(LUWRT,*) ' MEMMAR_I8 : Unknown task parameter ',TASK
         WRITE(LUWRT,*) ' Too confused to continue  '
-        call quit('*** error in MEMMAR_I8: unknown task parameter.***')
+        call quit('*** ERROR in MEMMAR_I8: unknown task parameter.***')
       END IF
 C
 C     Check paddings

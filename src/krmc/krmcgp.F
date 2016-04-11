@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1726,7 +1726,7 @@ C          ... no sorting
            IORDER = 0
            IPACK  = 0
            CALL RSJACO(NDIM,NDIMI,NDIM,AM,EIG,IJOB,IORDER,IPACK,
-     &                 EIGVEC,WORK(KFREE),LFREE)
+     &                 EIGVEC)
         ELSE
            MATZ = 1
            CALL   QDIAG(NZ,NDIMI,AM,NDIM,NDIM,EIG,MATZ,EIGVEC,
@@ -1866,7 +1866,7 @@ C
 !            step 1: diagonalize
              CALL RSJACO(NDIMI,NDIMI,NDIMI,am,
      &                   EIG(JOFF_eig),IJOB,IORDER,IPACK,
-     &                   work(kvectm),WORK(KFREE),LFREE)
+     &                   work(kvectm))
 
 #ifdef MCSCF_debug
              CALL HEADER('DIAG_piv2fock: eigenvalues:',-1)
@@ -1904,9 +1904,8 @@ C
           ELSE
 C            ... calculate eigenvalues and eigenvectors
              MATZ = 1
-             CALL QDIAG(NZ,NDIMI,AM,NDIMI,NDIMI,
-     &                  EIG(JOFF_eig),MATZ,work(kvectm),NDIMI,NDIMI,
-     &                  WORK(KFREE),LFREE,IERR)
+             CALL QDIAG90(NZ,NDIMI,AM,NDIMI,NDIMI,
+     &       EIG(JOFF_eig),MATZ,work(kvectm),NDIMI,NDIMI,IERR)
              IF( IERR .ne. 0 ) THEN
                     WRITE(LUPRI,'(/,1X,4A,I4)')
      &                   '*** ERROR in  DIAG_piv2fock ***: ',

@@ -1,0 +1,44 @@
+include_directories(
+    ${PROJECT_SOURCE_DIR}/src/include
+    )
+
+if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
+    SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    message(STATUS "For libmoltra.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+endif()
+
+set(FIXED_MOLTRA_FORTRAN_SOURCES
+   tradr1.F
+   tradr2.F
+   tradr3.F
+   tradr4.F
+   tradr5.F
+   tradr6.F
+   trainp.F
+   traone.F
+   traout.F
+   trapam.F
+   traprp.F
+   # traone.F depends on spfao
+   ${PROJECT_SOURCE_DIR}/src/dirac/dirspf.F
+)
+
+set(FREE_MOLTRA_FORTRAN_SOURCES
+    moltra_mocoefficients.F90
+)
+
+if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
+    set_source_files_properties(${FREE_MOLTRA_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
+    set_source_files_properties(${FIXED_MOLTRA_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+endif()
+
+add_library(
+    moltra
+    ${FIXED_MOLTRA_FORTRAN_SOURCES}
+    ${FREE_MOLTRA_FORTRAN_SOURCES}
+)
+
+# deal with intermodule dependencies
+add_dependencies(moltra main)
+add_dependencies(moltra dirac)
+add_dependencies(moltra dirrci)

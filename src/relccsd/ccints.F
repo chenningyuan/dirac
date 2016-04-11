@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -296,6 +296,8 @@ C  We may have already sorted these integrals when restarting, in that case jump
 C
       IF (IMSTAT(2).EQ.3) GOTO 450
 C
+      IF (.NOT.SRTALL) GOTO 600
+C
 C     Determine # of passes necessary for treating VOVV integrals
 C     on a specific node
 C
@@ -305,8 +307,6 @@ C
       WRITE (IW,1005) NPASS,'VOVV'
       WRITE(IW,*) 
       CALL FLSHFO (IW)
-C
-      IF (.NOT.SRTALL) GOTO 600
 C
 C   start of IPASS loop for the VOVV
 C ----------------------------
@@ -812,7 +812,6 @@ C
       OPEN (MDPROP,FILE='MDPROP',FORM='UNFORMATTED')
       INOP = 0
     1 READ (MDPROP,ERR=10,END=11) ACHAR
-       print *,'ACHAR=',ACHAR
       IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.NAMEA) GOTO 1
       IF (IPRNT.GE.1) WRITE (IW,1000) NAMEA,ACHAR(9:16),ACHAR(17:24)
       READ (MDPROP) PROP
@@ -1718,7 +1717,7 @@ C---------------------------------------------------------------------
       ENDDO
 C
       CALL GETVOOO (BUF1)
-      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+      CALL SRT1ST4 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
      &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP
@@ -1733,7 +1732,7 @@ C---------------------------------------------------------------------
       ENDDO
 C
       CALL GETVOVO (BUF1)
-      CALL SRT1SS4 (NREP,MULTB,NV,NO,NV,NO,MVV,JVVOO,JJVV,JJOO,
+      CALL SRT1SS4 (NREP,MULTB,LTR,LFA,NV,NO,NV,NO,MVV,JVVOO,JJVV,JJOO,
      &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP
@@ -1783,6 +1782,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+! Type of index pair (oo,vo,ov or vv)
       DO J = 1, NSP
          IF (IREPSP(J,3).GT.0) THEN
             JJ = 0 
@@ -1801,7 +1801,7 @@ C
             INDEX(I,J,4) = 0
          ENDDO
       ENDDO
-C
+! Position in Fock matrix: oo part
       IJ = 0
       DO IREP = 1, NREP
          DO JJ = 1, NO(IREP)
@@ -1813,7 +1813,7 @@ C
             ENDDO
          ENDDO
       ENDDO
-C
+! Position in Fock matrix: vo part
       IJ = 0
       DO IREP = 1, NREP
          DO JJ = 1, NO(IREP)
@@ -1825,7 +1825,7 @@ C
             ENDDO
          ENDDO
       ENDDO
-C
+! Position in Fock matrix: ov part
       IJ = 0
       DO IREP = 1, NREP
          DO JJ = 1, NV(IREP)
@@ -1837,7 +1837,7 @@ C
             ENDDO
          ENDDO
       ENDDO
-C
+! Position in Fock matrix: vv part
       IJ = 0
       DO IREP = 1, NREP
          DO JJ = 1, NV(IREP)
@@ -1849,7 +1849,7 @@ C
             ENDDO
          ENDDO
       ENDDO
-C
+! Position in |i,j> or <i,j| triangular lists: oo part
       DO IJREP = 1, NREP
          IJ = 0
          DO JREP = 1, NREP
@@ -1869,7 +1869,7 @@ C
  10         CONTINUE
          ENDDO
       ENDDO
-C
+! Position in |i,j> or <i,j| triangular lists: vo part
       DO IJREP = 1, NREP
          IJ = 0
          DO JREP = 1, NREP
@@ -1887,7 +1887,7 @@ C
  20         CONTINUE
          ENDDO
       ENDDO
-C
+! Position in |i,j> or <i,j| triangular lists: vv part
       DO IJREP = 1, NREP
          IJ = 0
          DO JREP = 1, NREP

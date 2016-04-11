@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 Expert options
 ==============
@@ -21,7 +22,7 @@ You can turn optimization off (debug mode) like this::
   $ cd build
   $ make
 
-You can edit compiler flags in cmake/compilers/{FortranFlags.cmake, CFlags.cmake, CXXFlags.cmake}.
+You can edit compiler flags under the path ``cmake/custom/compiler_flags``-
 
 Alternatively you can edit compiler flags through ccmake::
 

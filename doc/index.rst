@@ -1,10 +1,9 @@
 
-
 Setting up DIRAC
 ================
 
 * **Installation:**
-  :doc:`Supported platforms <installation/platforms>` |
+  :doc:`Requirements <installation/requirements>` |
   :doc:`Linux, Unix, Mac <installation/general>` |
   :doc:`Windows <installation/windows>` |
   :doc:`Expert options <installation/expert>` |
@@ -26,7 +25,6 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`Hyperion (SGI Altix ICE 8200; Toulouse) <installation/examples/hyperion>` |
   :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
 
 * **pam script:**
@@ -93,7 +91,8 @@ Tutorials and walkthrus
 * **2-component Hamiltonians:**
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
   :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` |
-  :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>`
+  :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>` |
+  :doc:`Case study <tutorials/two_component_hamiltonians/example>` 
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`
@@ -191,8 +190,8 @@ Developers
 * **Programming:**
   :doc:`Rules <programmers/rules>` |
   :doc:`How to add new tests <programmers/testing>` |
+  :doc:`How to add/move/remove sources <programmers/adding_moving_removing_sources>` |
   `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
-  :doc:`The pamadm script <programmers/pamadm>` |
   :doc:`Input parsing <programmers/input_reading>` |
   :doc:`Git submodules <programmers/external_projects>` |
   :doc:`Nightly tests <programmers/cdash>` |

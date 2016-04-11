@@ -1,16 +1,21 @@
+!
+!     File: cbirea.h - common block for reading of MOLECULE.INP (herrdn.F)
+!     MAXPRD = default value for MAXPRI
+      INTEGER MAXPRD
+      INTEGER CBIREALAST, CBIREA_CLAST, CMMBASLAST
+      PARAMETER ( MAXPRD = 35 )
+!     MAXFAMEXP = maximum number of exponents in family basis sets
       INTEGER MXFAMEXP
       PARAMETER (MXFAMEXP = 100)
-!C     MAXPRD = default value for MAXPRI
-      INTEGER MAXPRD
-      PARAMETER ( MAXPRD = 35 )
 
-      LOGICAL BIGVC, GENCON, INPTST, DIRAC, BASIS, PRIBAS, ATOMBA,      &
-     &        UNCONT, OLDNRM, ATOMDF, CNTMAT
-      REAL*8 ZCMVAL
+      REAL*8  ZCMVAL, TOL_SYMADD
       INTEGER IPREAD, MAXPRI, LUMLCL, LCMMAX, NCMSTR, NCMEND
-      COMMON /CBIREA/ ZCMVAL, INPTST, IPREAD, MAXPRI, BIGVC, GENCON,    &
-     &                LUMLCL, DIRAC, PRIBAS, BASIS, LCMMAX, NCMSTR,     &
-     &                NCMEND, ATOMBA, UNCONT, OLDNRM, ATOMDF, CNTMAT
+      LOGICAL BIGVC,  GENCON, INPTST, DIRAC,  BASIS,  PRIBAS, ATOMBA,   &
+     &        UNCONT, OLDNRM, ATOMDF, CNTMAT
+      COMMON /CBIREA/ ZCMVAL, TOL_SYMADD,                               &
+     &        IPREAD, MAXPRI, LUMLCL, LCMMAX, NCMSTR, NCMEND,           &
+     &        BIGVC,  GENCON, INPTST, DIRAC,  BASIS,  PRIBAS, ATOMBA,   &
+     &        UNCONT, OLDNRM, ATOMDF, CNTMAT
 
       CHARACTER*80 BASNAM
       COMMON /CBIRET/ BASNAM
