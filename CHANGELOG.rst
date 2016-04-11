@@ -20,6 +20,7 @@
       Pb isotope 3: nuclear moment 0.582583D0 -> 0.592583D0 (typo, error 1.d-2)
       Po isotope 1: nuclear moment added: 0.000 -> 0.688
 - Restored "make install" target.
+- Cache compiler flags.
 
 
 15.0 (2015-12-16)
