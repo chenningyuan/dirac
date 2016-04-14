@@ -75,8 +75,8 @@ def gen_cmake_command(options, arguments):
     command.append('-DENABLE_PROFILING={0}'.format(arguments['--check']))
     command.append('-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check']))
     command.append('-DENABLE_64BIT_INTEGERS=%s' % arguments['--int64'])
-    command.append('-DCMAKE_BUILD_TYPE={}'.format(arguments['--type']))
-    command.append('-G "{}"'.format(arguments['--generator']))
+    command.append('-DCMAKE_BUILD_TYPE={0}'.format(arguments['--type']))
+    command.append('-G "{0}"'.format(arguments['--generator']))
     if arguments['--cmake-options'] != "''":
         command.append(arguments['--cmake-options'])
     if arguments['--prefix']:
@@ -89,7 +89,7 @@ def gen_cmake_command(options, arguments):
 try:
     arguments = docopt.docopt(options, argv=None)
 except docopt.DocoptExit:
-    sys.stderr.write('ERROR: bad input to {}\n'.format(sys.argv[0]))
+    sys.stderr.write('ERROR: bad input to {0}\n'.format(sys.argv[0]))
     sys.stderr.write(options)
     sys.exit(-1)
 
