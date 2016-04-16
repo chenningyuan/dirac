@@ -2698,7 +2698,6 @@ contains
             if (allocated(frozen_gzsz_by)) deallocate(frozen_gzsz_by)
             if (allocated(frozen_gzsz_bz)) deallocate(frozen_gzsz_bz)
             if (allocated(use_vemb))       deallocate(use_vemb)
-            end if
 
 
 
