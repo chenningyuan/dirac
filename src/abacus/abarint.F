@@ -19,9 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C$Id$
 C
-C#include "single.h"
 #ifdef UNDEF
 /* Comdeck log */
 960818-vebjornb: New module taking care of redundant internal
@@ -78,7 +76,6 @@ C
 #include "priunit.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
       PARAMETER (D0 = 0.0D0)
-CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 
 C
@@ -97,7 +94,7 @@ C     First we initialize the ATMARR array.
 C
       CALL ATMINI(ATMARR,IATOM,.FALSE.)
       IF (IPRINT .GE. IPRMIN) THEN
-         CALL HEADER('Expanded array of atoms (Aangstrom)',-1)
+         CALL HEADER('FNDRED: Expanded array of atoms (Aangstrom)',-1)
          CALL OUTPUT(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
       END IF
       ICRTCR = 3*IATOM
@@ -126,9 +123,9 @@ C     Output
 C
       IF (IPRINT .GE. IPRMIN) CALL PRNRED(IINTCR,CRDIN1)
       IF (IINTCR .GT. 8*MXCENT) 
-     &     CALL QUIT('Too many internal ccordinates!')
+     &     CALL QUIT('FNDRED: Too many internal coordinates!')
       IF ((RATFUN .OR. GDIIS) .AND. (IINTCR+1 .GT. 8*MXCENT)) 
-     &     CALL QUIT('Too many internal ccordinates!')
+     &     CALL QUIT('FNDRED: Too many internal coordinates!')
       IC = 1
  20   CONTINUE
       IF (IC .LE. IINTCR) THEN
@@ -164,7 +161,7 @@ C
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
 C
-      CALL HEADER('Redundant internal coordinates',-1)
+      CALL HEADER('PRNRED: Redundant internal coordinates',-1)
       EMPTXT = '        '
       REMCRD = .FALSE.
       DO 10 I = 1, ICRD
@@ -964,7 +961,6 @@ C
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3), VEC6(3)
       CHARACTER TXT*32
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       PARAMETER (DEG175 = 175D0*PI/180D0)
 C
@@ -978,7 +974,7 @@ C     First we initialize the ATMARR array.
 C
       CALL ATMINI(ATMARR,IATOM,.TRUE.)
       IF (IPRINT .GE. IPRMAX) THEN
-         CALL HEADER('Expanded array of atoms (Bohr)',-1)
+         CALL HEADER('GETWIL: Expanded array of atoms (Bohr)',-1)
          CALL OUTPUT(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
       END IF
       ICRTCR = 3*IATOM
@@ -1010,7 +1006,7 @@ C
                VEC1(3) = ATMARR(INTCRD(IC,2),4) - ATMARR(INTCRD(IC,3),4)
                BNDL1 = SQRT(DDOT(3,VEC1,1,VEC1,1))
                WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
+               WRITE(LUPRI,*) 'Numerical results, cart.coords-bonds :'
                WRITE(LUPRI,*)
                DO 27 II = 1, IATOM
                   DO 28 JJ = 1, 3
@@ -1096,7 +1092,7 @@ C
                IF ((INTCRD(IC,1) .EQ. 12) .OR. (INTCRD(IC+1,1) .EQ. 12))
      &              ANGLE = VECANG(VEC1,VEC4) + VECANG(VEC4,VEC2)
                WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
+               WRITE(LUPRI,*) 'Numerical results, cart.coords-angles:'
                WRITE(LUPRI,*)
                DO 47 II = 1, IATOM
                   DO 48 JJ = 1, 3
@@ -1202,7 +1198,8 @@ C
                VEC6(2) = VEC3(2)
                VEC6(3) = VEC3(3)
                WRITE(LUPRI,*)
-               WRITE(LUPRI,*) 'Numerical results:'
+               WRITE(LUPRI,*)
+     &  'Numerical results, cartes.coords-dihedr.angles:'
                WRITE(LUPRI,*)
                FAC = -D1
                DO 97 II = 1, IATOM
@@ -1280,7 +1277,7 @@ C
          CALL OUTPUT(WILBMT,1,NRIC,1,ICRTCR,MXRCRD,MXCOOR,1,LUPRI)
       END IF
 C
-C     If we're using delocalized internal coordinates, we make
+C     If we are using delocalized internal coordinates, we make
 C     the transformation to the active space.
 C
       IF (DELINT .AND. (IREDIC .GT. 0)) THEN
@@ -1334,7 +1331,7 @@ C     First we initialize the ATMARR array.
 C
       CALL ATMINI(ATMARR,IATOM,.TRUE.)
       IF (IPRINT .GE. IPRMAX) THEN
-         CALL HEADER('Expanded array of atoms (Bohr)',-1)
+         CALL HEADER('GETDWL:Expanded array of atoms (Bohr)',-1)
          CALL OUTPUT(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
       END IF
       ICRTCR = 3*IATOM
@@ -1394,7 +1391,8 @@ C
                      DWILBM(JJ,II) = DWILBM(II,JJ)
  58               CONTINUE
  56            CONTINUE
-               CALL HEADER('Numerically diff. Wilson B matrix',-1)
+               CALL HEADER(
+     &   'GETDWL:Numerically diff. Wilson B matrix',-1)
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1403,7 +1401,8 @@ C     Analytically:
 C
             CALL GTDWLM(MXRCRD,IC,DWILBM,ATMARR,WILBMT)
             IF (IPRINT .GE. IPRMAX) THEN
-               CALL HEADER('Analytically diff. Wilson B matrix',-1)
+               CALL HEADER(
+     & 'GETDWL: Analytically diff. Wilson B matrix',-1)
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1497,7 +1496,8 @@ C
                      DWILBM(JJ,II) = DWILBM(II,JJ)
  98               CONTINUE
  96            CONTINUE
-               CALL HEADER('Numerically diff. Wilson B matrix',-1)
+               CALL HEADER(
+     &    'GETDWL: Numerically diff. Wilson B matrix',-1)
                CALL OUTPUT(DWILBM,1,ICRTCR,1,ICRTCR,MXCOOR,
      &              MXCOOR,1,LUPRI)
             END IF
@@ -1971,10 +1971,10 @@ C
 C  /* Deck gtbinv */
       SUBROUTINE GTBINV(MXRCRD,UMAT,WMAT,VMAT,VAL,WILBMT,BMTRAN,
      &     BMTINV,PJINMT)
-C
-C     Decomposes the transpose of Wilson's B matrix, then one can
-C     construct the inverse of the rectangulat matrix.
-C
+!
+!     Decomposes the transpose of Wilson's B matrix, then one can
+!     construct the inverse of the rectangulat matrix.
+!
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
@@ -1984,7 +1984,7 @@ C
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), PJINMT(MXRCRD,MXRCRD)
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
+      PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
 C
       IF (IPRINT .GE. IPRMED) CALL TITLER('Output from GTBINV','*',103)
       IDIM1 = ICRTCR
@@ -2002,11 +2002,11 @@ C
          CALL HEADER('V matrix in GTBINV',-1)
          CALL OUTPUT(VMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
       END IF
-C
-C     Based on the singular value decomposition of the B matrix,
-C     we can construct a non-redundant B matrix mixing the various
-C     internal primitives. The eigenvectors is stored in BMTRAN.
-C
+!
+!     Based on the singular value decomposition of the B matrix,
+!     we can construct a non-redundant B matrix mixing the various
+!     internal primitives. The eigenvectors is stored in BMTRAN.
+!
       IF (DELINT .AND. (IREDIC .LT. 0)) THEN
 C
 C     The redundant B matrix is copied to BMTRAN.
@@ -2063,10 +2063,10 @@ C
                WRITE(LUPRI,'(A,I4,F24.6)') '        ',IPRIM,WG
  600        CONTINUE
          END IF
-C
-C     We construct the B matrix for the delocalized
-C     internal coordinates.
-C
+!
+!     We construct the B matrix for the delocalized
+!     internal coordinates.
+!
          CALL DZERO(WILBMT,MXRCRD*MXCOOR)
          DO 620 I = 1, IDIM3
             DO 622 J = 1, IDIM1
@@ -2188,9 +2188,9 @@ C
 C  /* Deck decomp */
       SUBROUTINE DECOMP(MXRCRD,IDIM1,IDIM2,UMAT,WMAT,VMAT,VAL,
      &     WILBMT,BMTINV,PJINMT)
-C
-C     Decomposes the transpose of Wilson's B matrix.
-C
+!
+!     Decomposes the transpose of Wilson's B matrix.
+!
 #include "implicit.h"
 #include "mxcent.h"
 #include "optinf.h"
@@ -2214,11 +2214,11 @@ C
             UMAT(J,I) = WILBMT(I,J)
  12      CONTINUE
  10   CONTINUE
-C
-C     The transpose of Wilsons B matrix is decomposed to:
-C
-C           B^t = U W V^t  ;   U,V orthogonal, W diagonal
-C
+!
+!     The transpose of Wilsons B matrix is decomposed to:
+!
+!           B^t = U W V^t  ;   U,V orthogonal, W diagonal
+!
 
 !radovan: this routine is numerically very unstable
 !         if checks with .eq. d0,

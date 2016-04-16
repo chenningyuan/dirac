@@ -277,9 +277,6 @@ CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
       ELSE
        IF (LONDON.OR.USECM) THEN
 C ... make the center of mass the gauge origin (default in dalton)
-         DO I = 1, MXCENT
-            ISOTOP(I) = 1
-         END DO
          CALL MEMGET('REAL',KGEOM  ,3*NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
@@ -351,10 +348,10 @@ C ... call the routine in abacus/hergp.F
       ELSE   !  (LONDON)
 C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
-          WRITE(LUPRI,'(A/A/A)')
-     &'  Used conventional atomic orbitals, not London orbitals !',
+          WRITE(LUPRI,'(A/A/A,3F12.6)')
+     &'  Using conventional atomic orbitals, not London orbitals !',
      &'  WARNING: Calculated magnetic properties are dependent'//
-     &  ' on the choice of the gauge origin!'   ,
+     &  ' on the choice of the gauge origin!',
      &'  NMRINP: The gauge & dipole origin :', (GAGORG(I), I = 1, 3)
        END IF
       END IF  !  (LONDON)

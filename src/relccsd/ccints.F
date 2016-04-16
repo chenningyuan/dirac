@@ -1717,7 +1717,7 @@ C---------------------------------------------------------------------
       ENDDO
 C
       CALL GETVOOO (BUF1)
-      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+      CALL SRT1ST4 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
      &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP
@@ -1732,7 +1732,7 @@ C---------------------------------------------------------------------
       ENDDO
 C
       CALL GETVOVO (BUF1)
-      CALL SRT1SS4 (NREP,MULTB,NV,NO,NV,NO,MVV,JVVOO,JJVV,JJOO,
+      CALL SRT1SS4 (NREP,MULTB,LTR,LFA,NV,NO,NV,NO,MVV,JVVOO,JJVV,JJOO,
      &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP

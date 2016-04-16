@@ -8,30 +8,44 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_RELCCSD_FORTRAN_SOURCES
-    ccdriv.F
-    cceqns.F
-    ccfspc.F
-    ccgenp.F
-    ccgetv.F
-    ccgrad.F
-    ccintm.F
-    ccints.F
-    ccmain.F
-    ccpam.F
-    ccrpa.F
-    ccsort.F
-    ccxblas.F
-    waio.F
-    ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
-    ${PROJECT_SOURCE_DIR}/src/main/dirac.F
+   ccdriv.F
+   cceqn_diis.F
+   cceqn_driver_amplitudes.F
+   cceqn_driver_initialization.F
+   cceqn_driver_lambda.F
+   cceqn_mp2_amplitudes.F
+   cceqn_t1_amplitudes.F
+   cceqn_t1_utils.F
+   cceqn_t2_amplitudes.F
+   cceqn_t3_energy_correction.F
+   cceqn_utils.F
+   ccfspc.F
+   ccgenp.F
+   ccgetv.F
+   ccgrad.F
+   ccintm.F
+   ccints.F
+   ccmain.F
+   ccpam.F
+   ccrpa.F
+   ccsort.F
+   ccxblas.F
+   waio.F
+   ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
+   ${PROJECT_SOURCE_DIR}/src/main/dirac.F
 # needs fix missing object pamgeo
    ${PROJECT_SOURCE_DIR}/src/dirac/dirgeo.F
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
-    relcc_cfg.F90
-    # needs dependency
-    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
+   relcc_cfg.F90
+   contraction.F90
+   intermediates.F90
+   lambda_equation.F90
+   relcc_cfg.F90
+   wrapper_sorting.F90 
+   # needs dependency
+   ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

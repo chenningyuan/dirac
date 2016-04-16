@@ -799,7 +799,7 @@ c
 c  read VOOO integrals and sort to VOO,O:  (I K>L, J)
 c
       CALL GETVOOO(VOOO1)
-      CALL SRT6 (NREP,MULTB,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
+      CALL SRT6 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
      &           VOOO1,VOOO2)
 c
 C *****************************************************
@@ -1178,7 +1178,7 @@ c
 c  read VOOO integrals and sort to VOO,O:  (I K>L, J)
 c
       CALL GETVOOO(VOOO1)
-      CALL SRT6 (NREP,MULTB,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
+      CALL SRT6 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,NVOOT,LOVOOT,LLVOOT,
      &           VOOO1,VOOO2)
 C
 C *****************************************************

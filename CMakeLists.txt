@@ -2,7 +2,7 @@
 # Copyright (c) 2015-2016 by Radovan Bast and Jonas Juselius
 
 # set minimum cmake version
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 # project name
 project(DIRAC)
@@ -79,3 +79,5 @@ include(sphinx)
 include(install)
 include(cpack)
 include(pam)
+include(test)
+include(autocmake_save_flags)

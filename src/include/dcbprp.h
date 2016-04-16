@@ -64,5 +64,5 @@
       CHARACTER*4 PRP_WF(MXPRP_WF)
       COMMON /CBCPRP/ PRP_WF
 
-#include <cbiher.h>
+#include "cbiher.h"
 ! end of dcbprp.h

@@ -14,6 +14,8 @@ the lines below should only be changed on the release branch.)
 15.1 (2016-xx-xx)
 -----------------
 
+- Bugfix for numerical gradient when automatic symmetry detection: do no move or rotate molecule
+  for finding highest possible symmetry because then the numerical gradient will not be correct
 - Added OPENBLAS in search list for blas and lapack libraries.
 - Made keyword .X2Cmmf case insensitive.
 - BUGfix for spinfree X2Cmmf and linear symmetry.
@@ -31,6 +33,7 @@ the lines below should only be changed on the release branch.)
       Pb isotope 3: nuclear moment 0.582583D0 -> 0.592583D0 (typo, error 1.d-2)
       Po isotope 1: nuclear moment added: 0.000 -> 0.688
 - Restored "make install" target.
+- Cache compiler flags.
 
 
 15.0 (2015-12-16)
