@@ -681,6 +681,7 @@ contains
 ! so i have to read it in again:
          if (fde_mpi_is_master()) then
            call fde_import_static
+           write(*, *) 'static potential imported'
          end if
       end if
 
@@ -2696,6 +2697,9 @@ contains
             if (allocated(frozen_gzsz_bx)) deallocate(frozen_gzsz_bx)
             if (allocated(frozen_gzsz_by)) deallocate(frozen_gzsz_by)
             if (allocated(frozen_gzsz_bz)) deallocate(frozen_gzsz_bz)
+            if (allocated(use_vemb))       deallocate(use_vemb)
+            end if
+
 
 
 !          don't try to read another batch
