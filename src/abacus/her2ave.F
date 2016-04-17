@@ -624,8 +624,8 @@ CMI/HJ (TEC) implementation of two-electron part of magnet. susceptibilities
                               end if
 
                               pval1 = dmat(a, b, 1)*dmat(c, d, 1) 
-     &                              - dp25*(ttcadb + ttdacb)
-                              pval2 = dp25*(ttcadb - ttdacb)
+     &                              - dp25*hfxfac*(ttcadb + ttdacb)
+                              pval2 = dp25*hfxfac*(ttcadb - ttdacb)
 
                             end if
 
@@ -1717,7 +1717,7 @@ C
          END IF
   200    CONTINUE
   100 CONTINUE
-      IF (IPRINT .GT. 05) THEN
+!gosia      IF (IPRINT .GT. 05) THEN
          WRITE (LUPRI, 1000)
          WRITE (LUPRI, 4000) (DERIV(I),I = 1, 27)
          WRITE(LUPRI,'(/A)') ' Unfinished two-electron susceptibilities'
@@ -1730,7 +1730,7 @@ C
             WRITE (LUPRI,'(/A)') ' G12 '
             CALL OUTPUT(G12,1,3,1,3,3,3,1,LUPRI)
          END IF
-      END IF
+!gosia      END IF
       RETURN
  1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDOUT >>>>>>>>',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
