@@ -1718,7 +1718,7 @@ C
          END IF
   200    CONTINUE
   100 CONTINUE
-!gosia      IF (IPRINT .GT. 05) THEN
+      IF (IPRINT .GT. 05) THEN
          WRITE (LUPRI, 1000)
          WRITE (LUPRI, 4000) (DERIV(I),I = 1, 27)
          WRITE(LUPRI,'(/A)') ' Unfinished two-electron susceptibilities'
@@ -1731,7 +1731,7 @@ C
             WRITE (LUPRI,'(/A)') ' G12 '
             CALL OUTPUT(G12,1,3,1,3,3,3,1,LUPRI)
          END IF
-!gosia      END IF
+      END IF
       RETURN
  1000 FORMAT (//,1X,' <<<<<<<<<< Subroutine LNDOUT >>>>>>>>',/)
  4000 FORMAT (2X,'DERIV        ',4E15.6,/(15X,4E15.6))
