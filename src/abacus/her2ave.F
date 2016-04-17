@@ -767,8 +767,9 @@ CMI/HJ (TEC) implementation of two-electron part of magnet. susceptibilities
      &                                + dmat(d, b, 4)*dmat(c, a, 8)
                               end if
 
-                              pval1 = pval1_x
-                              pval1 = d2*pval1_c - pval1_x
+!gosia: hfxfac here untested
+                              pval1 = hfxfac*pval1_x
+                              pval1 = d2*pval1_c - hfxfac*pval1_x
                               pval2 = pval1
 
                             end if
