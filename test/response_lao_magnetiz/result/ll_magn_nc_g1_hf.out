@@ -1,4 +1,4 @@
-DIRAC pam run in /home/gosia/programs/dirac/build-gosia-magnetizability/test/response_lao_magnetiz
+DIRAC pam run in /home/gosia/programs/dirac/build-gosia-magnetic-all/test/response_lao_magnetiz
   ** interface to 32-bit integer MPI enabled **
 
 DIRAC master    (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
@@ -8,12 +8,12 @@ DIRAC node    3 (phlam-s-sakura.univ-lille1.fr) starts by allocating            
 DIRAC node    4 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
 DIRAC node    5 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
 DIRAC node    6 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
+DIRAC node    7 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
 DIRAC master    (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
  
 DIRAC node    1 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
-DIRAC node    7 (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 words (           488 MB) of memory
 DIRAC node    2 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
 DIRAC node    3 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
 DIRAC node    4 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 words (         16384 MB) of memory
@@ -174,17 +174,17 @@ DIRAC node    7 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2
  *******************************************************************************
 
  ---  Git version information  ---
-                Git branch : gosia-magnetizability
-      Last git commit hash : 92d9125
-    Last git commit author : Radovan Bast
-      Last git commit date : Fri Feb 19 12:47:40 2016 +0100
+                Git branch : gosia-magnetic-all
+      Last git commit hash : 0b6ebb7
+    Last git commit author : gosia olejniczak
+      Last git commit date : Tue Mar 29 18:57:53 2016 +0200
 
 ---  Configuration and build info  ---
               Who compiled : gosia
         Compiled on server : phlam-s-sakura.univ-lille1.fr
           Operating system : Linux-2.6.32-504.16.2.el6.x86_64
             Python version : 2.6.6
-             CMake version : 2.8.12.1
+             CMake version : 3.5.1
            CMake generator : Unix Makefiles
           CMake build type : debug
        MPI parallelization : True
@@ -192,20 +192,20 @@ DIRAC node    7 (phlam-s-sakura.univ-lille1.fr) to allocate at most            2
            64-bit integers : False
           Fortran compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiifort
   Fortran compiler version : 13.0
-    Fortran compiler flags :   -w -assume byterecl -g -traceback -DVAR_IFORT 
+    Fortran compiler flags :   -w -assume byterecl -g -traceback -DVAR_IFORT   -w -assume byterecl -g -traceback -DVAR_IFORT 
                 C compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiicc
         C compiler version : 13.0
-          C compiler flags :   -g -wd981 -wd279 -wd383 -wd1572 -wd177 
+          C compiler flags :   -g -wd981 -wd279 -wd383 -wd1572 -wd177   -g -wd981 -wd279 -wd383 -wd1572 -wd177 
               C++ compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiicpc
       C++ compiler version : 13.0.1
-        C++ compiler flags :   -Wno-unknown-pragmas 
+        C++ compiler flags :   -Wno-unknown-pragmas   -Wno-unknown-pragmas 
             Static linking : False
       Builtin BLAS library : OFF
     Builtin LAPACK library : OFF
     Mathematical libraries : unknown
         Explicit libraries : unknown
-       Modules definitions : HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_INTEREST;MOD_QCORR;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ERI;MOD_DNF;MOD_ESR;MOD_KRCC;MOD_SRDFT
-       Configuration time :  2016-02-20 20:36:45.207617
+       Modules definitions : HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ERI;MOD_DNF;MOD_ESR;MOD_KRCC;MOD_SRDFT
+       Configuration time :  2016-04-17 19:22:06.231040
 -----------------------------------------------------------------
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
@@ -213,7 +213,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Sat Feb 20 22:16:11 2016
+     Date and time (Linux)  : Sun Apr 17 21:59:40 2016
      Host name              : phlam-s-sakura.univ-lille1.fr           
 
 
@@ -244,8 +244,8 @@ Contents of the input file
 .MAGNETIZ                                                                                           
 .MSTDIA                                                                                             
 *NMR                                                                                                
+.MLLSUS                                                                                             
 .LONDON                                                                                             
-#.FULMAT                                                                                            
 .GAUGEO                                                                                             
 10.0 2.5 -5.8                                                                                       
 *LINEAR RESPONSE                                                                                    
@@ -320,7 +320,7 @@ F         0.000000    0.000000    0.917000
 
 
 
- Changes of defaults for READIN:
+ Changes of defaults for *READIN
  -------------------------------
 
 
@@ -328,28 +328,27 @@ F         0.000000    0.000000    0.917000
 
 
 
-    *************************************************************************
-    ****************** Output from READIN input processing ******************
-    *************************************************************************
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
 
 
 
-                      SYMADD: Requested addition of symmetry
-                      --------------------------------------
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
 
- Symmetry threshold:  0.50E-05
+ Symmetry test threshold:  5.00E-06
 
- Original Coordinates                    
- --------------------                    
-    1         0.00000000     0.00000000     0.00000000       1
-    9         0.00000000     0.00000000     1.73287886       1
+    The molecule has been centered at center of mass
 
- Symmetry class found: C(oo,v)
+ Symmetry point group found: C(oo,v)        
 
- Centered and Rotated                    
- --------------------                    
+ Centered and Rotated in original atom order
+ -------------------------------------------
     1         0.00000000     0.00000000    -1.64558412       1
     9         0.00000000     0.00000000     0.08729475       1
+
+ The following elements were found: X  Y     
 
 
   Symmetry Operations
@@ -436,7 +435,7 @@ Represented as: C2v
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    2
 
   label    atoms   charge   prim    cont     basis   
@@ -487,7 +486,7 @@ Represented as: C2v
 
 
 
-  Cartesian coordinates in XYZ format (angstrom)
+  Cartesian coordinates in XYZ format (Angstrom)
   ----------------------------------------------
 
     2
@@ -499,25 +498,25 @@ F      0.0000000000   0.0000000000   0.0461943913
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   2  2  2  0
+  Number of coordinates in each symmetry:     2    2    2    0
 
 
   Symmetry 1
 
-   1   H     z    3
-   2   F     z    6
+    1   H     z    3
+    2   F     z    6
 
 
   Symmetry 2
 
-   3   H     x    1
-   4   F     x    4
+    3   H     x    1
+    4   F     x    4
 
 
   Symmetry 3
 
-   5   H     y    2
-   6   F     y    5
+    5   H     y    2
+    6   F     y    5
 
 
    Interatomic separations (in Angstroms):
@@ -539,7 +538,8 @@ F      0.0000000000   0.0000000000   0.0461943913
   bond distance:    F          H                              0.917000
 
 
-  Nuclear repulsion energy :    5.193669438059
+
+   Nuclear repulsion energy :    5.193669438059 Hartree
 
 
                                 GETLAB: AO-labels
@@ -742,7 +742,7 @@ F      0.0000000000   0.0000000000   0.0461943913
  : Include London magnet.prop.grad.contributions from the following two-electron integrals:
       - LL-integrals
   --> These are default values from the Hamiltonian input.
- INFO: Used  full relativistic form of the RDSUSLL operator.
+ WARNING: Used the LS block of the RDSUSLL operator with factor -2 to achieve the Dalton nonrelativistic limit of the magnetizability !
 ===========================================================================
  XLRINP: Electronic linear reponse properties
 ===========================================================================
@@ -1224,8 +1224,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    19  LAO-XXRDSUSLL        A1      T+
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
-      Labels and factors     : XXRDSULZ 0++0    -137.03599980944 (complex)  
-                               XXRDSULY 0++0    -137.03599980944 (complex)  
+      Labels and factors     : XXRDSULZ 00+0    -274.07199961888 (complex)  
+                               XXRDSULY 00+0    -274.07199961888 (complex)  
 ...........................................................................
 ...........................................................................
     Component no. 20:   LAO-XYRDSUSLL   
@@ -1233,8 +1233,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    20  LAO-XYRDSUSLL        A2      T+
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
-      Labels and factors     : XYRDSULX 0++0    -137.03599980944 (complex)  
-                               XYRDSULZ 0++0    -137.03599980944 (complex)  
+      Labels and factors     : XYRDSULX 00+0    -274.07199961888 (complex)  
+                               XYRDSULZ 00+0    -274.07199961888 (complex)  
 ...........................................................................
 ...........................................................................
     Component no. 21:   LAO-XZRDSUSLL   
@@ -1242,8 +1242,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    21  LAO-XZRDSUSLL        B1      T+
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
-      Labels and factors     : XZRDSULY 0++0    -137.03599980944 (complex)  
-                               XZRDSULX 0++0    -137.03599980944 (complex)  
+      Labels and factors     : XZRDSULY 00+0    -274.07199961888 (complex)  
+                               XZRDSULX 00+0    -274.07199961888 (complex)  
 ...........................................................................
 ...........................................................................
     Component no. 22:   LAO-YXRDSUSLL   
@@ -1251,8 +1251,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    22  LAO-YXRDSUSLL        A2      T+
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
-      Labels and factors     : YXRDSULZ 0++0    -137.03599980944 (complex)  
-                               YXRDSULY 0++0    -137.03599980944 (complex)  
+      Labels and factors     : YXRDSULZ 00+0    -274.07199961888 (complex)  
+                               YXRDSULY 00+0    -274.07199961888 (complex)  
 ...........................................................................
 ...........................................................................
     Component no. 23:   LAO-YYRDSUSLL   
@@ -1260,8 +1260,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    23  LAO-YYRDSUSLL        A1      T+
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
-      Labels and factors     : YYRDSULX 0++0    -137.03599980944 (complex)  
-                               YYRDSULZ 0++0    -137.03599980944 (complex)  
+      Labels and factors     : YYRDSULX 00+0    -274.07199961888 (complex)  
+                               YYRDSULZ 00+0    -274.07199961888 (complex)  
 ...........................................................................
 ...........................................................................
     Component no. 24:   LAO-YZRDSUSLL   
@@ -1269,8 +1269,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    24  LAO-YZRDSUSLL        B2      T+
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
-      Labels and factors     : YZRDSULY 0++0    -137.03599980944 (complex)  
-                               YZRDSULX 0++0    -137.03599980944 (complex)  
+      Labels and factors     : YZRDSULY 00+0    -274.07199961888 (complex)  
+                               YZRDSULX 00+0    -274.07199961888 (complex)  
 ...........................................................................
 ...........................................................................
     Component no. 25:   LAO-ZXRDSUSLL   
@@ -1278,8 +1278,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    25  LAO-ZXRDSUSLL        B1      T+
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
-      Labels and factors     : ZXRDSULZ 0++0    -137.03599980944 (complex)  
-                               ZXRDSULY 0++0    -137.03599980944 (complex)  
+      Labels and factors     : ZXRDSULZ 00+0    -274.07199961888 (complex)  
+                               ZXRDSULY 00+0    -274.07199961888 (complex)  
 ...........................................................................
 ...........................................................................
     Component no. 26:   LAO-ZYRDSUSLL   
@@ -1287,8 +1287,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    26  LAO-ZYRDSUSLL        B2      T+
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
-      Labels and factors     : ZYRDSULX 0++0    -137.03599980944 (complex)  
-                               ZYRDSULZ 0++0    -137.03599980944 (complex)  
+      Labels and factors     : ZYRDSULX 00+0    -274.07199961888 (complex)  
+                               ZYRDSULZ 00+0    -274.07199961888 (complex)  
 ...........................................................................
 ...........................................................................
     Component no. 27:   LAO-ZZRDSUSLL   
@@ -1296,8 +1296,8 @@ F      0.0000000000   0.0000000000   0.0461943913
    27  LAO-ZZRDSUSLL        A1      T+
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
-      Labels and factors     : ZZRDSULY 0++0    -137.03599980944 (complex)  
-                               ZZRDSULX 0++0    -137.03599980944 (complex)  
+      Labels and factors     : ZZRDSULY 00+0    -274.07199961888 (complex)  
+                               ZZRDSULX 00+0    -274.07199961888 (complex)  
 ...........................................................................
   *** Aucars diamagnetic terms for magnetizabilities with LAO ***
 ...........................................................................
@@ -1453,7 +1453,7 @@ F      0.0000000000   0.0000000000   0.0461943913
 No. of positive energy orbitals (NESH):    33
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    33
- >>> Time used in PAMSET is   0.29 seconds
+ >>> Time used in PAMSET is   0.28 seconds
 
 
        *******************************************************************
@@ -1500,45 +1500,45 @@ Total no. of orbitals           (NORB):    33
 
                                                    s0 t0
 ----------------------------------------------------------------------------
-    LAO-XXRM2H1      :     0.265620419912 a.u.      F   F
+    LAO-XXRM2H1      :     0.265620389675 a.u.      F   F
     LAO-XYRM2H1      :     0.00000000E+00 a.u.      T   F
     LAO-XZRM2H1      :     0.00000000E+00 a.u.      T   F
-    LAO-YYRM2H1      :     0.265620419912 a.u.      F   F
+    LAO-YYRM2H1      :     0.265620389675 a.u.      F   F
     LAO-YZRM2H1      :     0.00000000E+00 a.u.      T   F
     LAO-ZZRM2H1      :     0.00000000E+00 a.u.      F   F
-    LAO-XXRM2H2      :     1.202565804718 a.u.      F   F
+    LAO-XXRM2H2      :     1.202565418987 a.u.      F   F
     LAO-XYRM2H2      :     0.00000000E+00 a.u.      T   F
     LAO-XZRM2H2      :     0.00000000E+00 a.u.      T   F
-    LAO-YYRM2H2      :     1.202565804718 a.u.      F   F
+    LAO-YYRM2H2      :     1.202565418987 a.u.      F   F
     LAO-YZRM2H2      :     0.00000000E+00 a.u.      T   F
     LAO-ZZRM2H2      :     0.00000000E+00 a.u.      F   F
-    LAO-XXRM2H3      :    -0.297112691272 a.u.      F   F
+    LAO-XXRM2H3      :    -0.297112679350 a.u.      F   F
     LAO-XYRM2H3      :     0.00000000E+00 a.u.      T   F
     LAO-XZRM2H3      :     0.00000000E+00 a.u.      T   F
-    LAO-YYRM2H3      :    -0.297112691272 a.u.      F   F
+    LAO-YYRM2H3      :    -0.297112679350 a.u.      F   F
     LAO-YZRM2H3      :     0.00000000E+00 a.u.      T   F
     LAO-ZZRM2H3      :     0.00000000E+00 a.u.      F   F
-    LAO-XXRDSUSLL    :     0.79316658E-01 a.u.      F   F
+    LAO-XXRDSUSLL    :    -0.154811525563 a.u.      F   F
     LAO-XYRDSUSLL    :     0.00000000E+00 a.u.      T   F
     LAO-XZRDSUSLL    :     0.00000000E+00 a.u.      T   F
     LAO-YXRDSUSLL    :     0.00000000E+00 a.u.      T   F
-    LAO-YYRDSUSLL    :     0.79316658E-01 a.u.      F   F
+    LAO-YYRDSUSLL    :    -0.154811525563 a.u.      F   F
     LAO-YZRDSUSLL    :     0.00000000E+00 a.u.      T   F
     LAO-ZXRDSUSLL    :     0.00000000E+00 a.u.      T   F
     LAO-ZYRDSUSLL    :     0.00000000E+00 a.u.      T   F
     LAO-ZZRDSUSLL    :     0.00000000E+00 a.u.      F   F
-    LAO-XXRDSUSNL    :     1.951998718691 a.u.      F   F
+    LAO-XXRDSUSNL    :     1.951998616010 a.u.      F   F
     LAO-XYRDSUSNL    :     0.00000000E+00 a.u.      T   F
     LAO-XZRDSUSNL    :     0.00000000E+00 a.u.      T   F
-    LAO-YYRDSUSNL    :     1.951998718691 a.u.      F   F
+    LAO-YYRDSUSNL    :     1.951998616010 a.u.      F   F
     LAO-YZRDSUSNL    :     0.00000000E+00 a.u.      T   F
-    LAO-ZZRDSUSNL    :     2.008927977336 a.u.      F   F
-    DSUSC_CGO-XX     :    -101.7851628375 a.u.      F   F
+    LAO-ZZRDSUSNL    :     2.008927955237 a.u.      F   F
+    DSUSC_CGO-XX     :    -101.7851620350 a.u.      F   F
     DSUSC_CGO-XY     :     0.00000000E+00 a.u.      T   F
     DSUSC_CGO-XZ     :     0.00000000E+00 a.u.      T   F
-    DSUSC_CGO-YY     :    -336.1601628375 a.u.      F   F
+    DSUSC_CGO-YY     :    -336.1601620350 a.u.      F   F
     DSUSC_CGO-YZ     :     0.00000000E+00 a.u.      T   F
-    DSUSC_CGO-ZZ     :    -267.6339279773 a.u.      F   F
+    DSUSC_CGO-ZZ     :    -267.6339279552 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1549,8 +1549,8 @@ Total no. of orbitals           (NORB):    33
     - Active orbitals    : No electrons
     - Secondary orbitals :      6..    33                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -100.021679579406737
-* Heading :DIRAC: No title specified !!!                     Sat Feb 20 22:16:11 2016
+* REACMO: Coefficients read from file DFCOEF - Total energy: -100.021702204775835
+* Heading :DIRAC: No title specified !!!                     Sun Apr 17 21:59:39 2016
 
 
                                 Output from SETFCK
@@ -1581,7 +1581,21 @@ Matrix symmetry:  A2   A1   B2   B1
     3(j)   12   S      0       1      B2 
     4(k)   12   S      0       1      B1 
 
-cpu time:       1.3988 wall time:       1.3984 used in call to twoint(in get_ao_fock_2el_lao).
+    The molecule has been centered at center of mass
+
+    The molecule has been centered at center of mass
+
+    The molecule has been centered at center of mass
+
+    The molecule has been centered at center of mass
+
+    The molecule has been centered at center of mass
+
+    The molecule has been centered at center of mass
+
+    The molecule has been centered at center of mass
+
+cpu time:       0.0670 wall time:       0.0781 used in call to twoint(in get_ao_fock_2el_lao).
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -1612,8 +1626,8 @@ Eff.   packing :   1    1    1    1
     Mat.  IFC  SYM  Coulomb Exchange Irrep
     1(i)   32   M      0       1      A2 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    2.71%    2.45%    0.00%   31.64%   0.00585938s
->>>> Total wall time used in HER_PARDRV so far   : 0.00585938s
+SOfock:LL  1.00D-12    2.71%    2.45%    0.00%   31.64%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.00000000s
 
 *** WARNING *** GETFCK: No 2-Fock found. Regenerating with .INTFLG = 1 0 0 0
 
@@ -1631,287 +1645,10 @@ Eff.   packing :   1    1    1    1
     Mat.  IFC  SYM  Coulomb Exchange Irrep
     1(1)   33   M      1       1      A1 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%    3.38%    0.00%    0.00%   1.24414062s
->>>> Total wall time used in HER_PARDRV so far   : 1.25000000s
+SOfock:LL  1.00D-12    0.00%    3.38%    0.00%    0.00%   0.01562500s
+>>>> Total wall time used in HER_PARDRV so far   : 0.01562500s
 
 *** WARNING *** GETFCK: No 1-Fock found. Regenerating.
- get_ftb: Get MO matrix of property:           1 d|S>/dBX                   2
-
-*** B imag part ***; NROW,NCOL,LRQ,LCQ:  33  33  33  33
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1       0.00000000     0.00000000     0.00000000     0.00000000    -0.15880869     0.00000000     0.00000000     0.00000000
-       2       0.00000000     0.00000000     0.00000000     0.00000000     1.70143491     0.00000000     0.00000000     0.00000000
-       3       0.00000000     0.00000000     0.00000000     0.00000000     0.27763780     0.00000000     0.00000000     0.00000000
-       5       0.15857367    -1.66779768    -0.38343648     0.00000000     0.00000000    -0.03232396     0.66782361     0.60775682
-       6       0.00000000     0.00000000     0.00000000     0.00000000     0.60084837     0.00000000     0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.00000000    -0.59828973     0.00000000     0.00000000     0.00000000
-       8       0.00000000     0.00000000     0.00000000     0.00000000    -0.07375739     0.00000000     0.00000000     0.00000000
-       9      -0.13580472    -0.56967547     0.22462098     0.00000000     0.00000000    -1.00266804     0.53426897     0.35498402
-      11      -0.02939309    -0.00030750    -1.14581756     0.00000000     0.00000000    -0.08706134     0.58142836    -1.14455768
-      13       0.00000000     0.00000000     0.00000000     0.00000000    -1.08946597     0.00000000     0.00000000     0.00000000
-      14       0.00000000     0.00000000     0.00000000     0.00000000    -0.29123939     0.00000000     0.00000000     0.00000000
-      15       0.00000000     0.00000000     0.00000000     0.00000000     0.01416954     0.00000000     0.00000000     0.00000000
-      16       0.00000000     0.00000000     0.00000000     0.00000000    -1.15837018     0.00000000     0.00000000     0.00000000
-      17       0.00000000     0.00000000     0.00000000    -1.15837018     0.00000000     0.00000000     0.00000000     0.00000000
-      18      -0.00503921    -0.06706535     0.65851189     0.00000000     0.00000000     0.42791102     0.74015940    -0.19883434
-      20       0.00000000     0.00000000     0.00000000     0.00000000     0.26531008     0.00000000     0.00000000     0.00000000
-      21      -0.22113534    -0.37711857    -0.14681048     0.00000000     0.00000000     0.54225676    -0.10033467     0.21301152
-      23       0.00000000     0.00000000     0.00000000     0.00000000    -0.03574815     0.00000000     0.00000000     0.00000000
-      24       0.00000000     0.00000000     0.00000000     0.00000000     0.03950495     0.00000000     0.00000000     0.00000000
-      25       0.00000000     0.00000000     0.00000000     0.00000000     0.00971983     0.00000000     0.00000000     0.00000000
-      26       0.16047212     0.06360107     0.00640866     0.00000000     0.00000000     0.11672895    -0.06476026     0.01479249
-      28       0.00000000     0.00000000     0.00000000     0.00000000    -0.01904834     0.00000000     0.00000000     0.00000000
-      29       0.00000000     0.00000000     0.00000000     0.00000000     0.04465737     0.00000000     0.00000000     0.00000000
-      30       0.00000000     0.00000000     0.00000000     0.00000000     0.01999543     0.00000000     0.00000000     0.00000000
-      31       0.00000000     0.00000000     0.00000000     0.00000000     0.00999610     0.00000000     0.00000000     0.00000000
-      32       0.00000000     0.00000000     0.00000000     0.00000000     0.00445790     0.00000000     0.00000000     0.00000000
-      33       0.00000000     0.00000000     0.00000000     0.00000000     0.00165208     0.00000000     0.00000000     0.00000000
-
-               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
-       1       0.13621403     0.00000000     0.02613097     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2       0.54366076     0.00000000     0.23967842     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3      -0.28039704     0.00000000     0.95846336     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.64572511     0.90999272     0.69881071     1.16123636
-       6       1.70024581     0.00000000     0.33072698     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.51242518     0.00000000    -1.07904811     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8       0.20755640     0.00000000     0.55131717     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     0.00000000     2.48844553     0.31019772     0.37332772    -0.10306530
-      11       0.00000000     0.00000000     0.00000000     0.00000000     0.68082797     0.02582169     0.60219674     0.10442617
-      13      -1.84666546     0.00000000    -1.16496125     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      14       0.11247948     0.00000000    -0.17043767     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      15       0.10583376     0.00000000    -0.97078777     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      16       0.12582361     0.00000000    -0.19218709     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      17       0.00000000     0.12582361     0.00000000    -0.19218709     0.00000000     0.00000000     0.00000000     0.00000000
-      18       0.00000000     0.00000000     0.00000000     0.00000000     0.26555135     0.32874089     0.38351883     0.02652838
-      20      -0.51818339     0.00000000    -0.26475382     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      21       0.00000000     0.00000000     0.00000000     0.00000000    -0.06023402     0.19665107    -0.00893729     0.65002584
-      23      -0.16027845     0.00000000    -0.21756859     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      24       0.60313700     0.00000000     0.24879299     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      25       0.01029678     0.00000000     0.07201766     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      26       0.00000000     0.00000000     0.00000000     0.00000000     0.18630765    -0.01048153    -0.03707279     0.09696093
-      28      -0.03441546     0.00000000    -0.06360626     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      29       0.20011586     0.00000000     0.09212104     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      30       0.09654570     0.00000000     0.04425680     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      31       0.04656289     0.00000000     0.02141482     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      32       0.02103953     0.00000000     0.00966370     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      33       0.00780330     0.00000000     0.00358369     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-       1       0.00000000     0.00378059     0.00000000     0.00000000     0.22123644     0.00000000     0.00000000     0.00000000
-       2       0.00000000     0.17664480     0.00000000     0.00000000     0.37559144     0.00000000     0.00000000     0.00000000
-       3       0.00000000    -0.77445674     0.00000000     0.00000000     0.15154565     0.00000000     0.00000000     0.00000000
-       4       1.16123636     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.37169707     0.00000000     0.00000000     0.31026457    -0.10708515
-       6       0.00000000    -0.34342261     0.00000000     0.00000000    -0.69069571     0.00000000     0.00000000     0.00000000
-       7       0.00000000    -0.72304225     0.00000000     0.00000000     0.19450038     0.00000000     0.00000000     0.00000000
-       8       0.00000000     0.20393386     0.00000000     0.00000000    -0.18936770     0.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     1.07294444     0.00000000     0.00000000     0.33872986    -0.71532037
-      10      -0.10306530     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      11       0.00000000     0.00000000     0.00000000    -0.21978374     0.00000000     0.00000000     0.10479289    -0.18092852
-      12       0.10442617     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      13       0.00000000    -0.28416432     0.00000000     0.00000000     0.03558384     0.00000000     0.00000000     0.00000000
-      14       0.00000000    -0.06282493     0.00000000     0.00000000    -0.11980528     0.00000000     0.00000000     0.00000000
-      15       0.00000000    -0.08929762     0.00000000     0.00000000     0.12908874     0.00000000     0.00000000     0.00000000
-      16       0.00000000    -0.05985008     0.00000000     0.00000000    -0.64939657     0.00000000     0.00000000     0.00000000
-      17       0.00000000     0.00000000    -0.05985008     0.00000000     0.00000000    -0.64939657     0.00000000     0.00000000
-      18       0.00000000     0.00000000     0.00000000     0.14932443     0.00000000     0.00000000     0.86235243    -0.01138109
-      19       0.02652838     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      20       0.00000000    -0.00414973     0.00000000     0.00000000     0.38463420     0.00000000     0.00000000     0.00000000
-      21       0.00000000     0.00000000     0.00000000    -0.32233715     0.00000000     0.00000000    -0.07901292     0.95921239
-      22       0.65002584     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      23       0.00000000    -0.73934444     0.00000000     0.00000000     0.12534293     0.00000000     0.00000000     0.00000000
-      24       0.00000000     0.04141615     0.00000000     0.00000000    -0.93890454     0.00000000     0.00000000     0.00000000
-      25       0.00000000    -0.06792209     0.00000000     0.00000000    -0.03702108     0.00000000     0.00000000     0.00000000
-      26       0.00000000     0.00000000     0.00000000    -0.03698914     0.00000000     0.00000000    -0.02356064     0.28881935
-      27       0.09696093     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      28       0.00000000    -0.13140893     0.00000000     0.00000000     0.01920284     0.00000000     0.00000000     0.00000000
-      29       0.00000000     0.01617355     0.00000000     0.00000000    -0.29829367     0.00000000     0.00000000     0.00000000
-      30       0.00000000     0.00824063     0.00000000     0.00000000    -0.12681682     0.00000000     0.00000000     0.00000000
-      31       0.00000000     0.00401702     0.00000000     0.00000000    -0.06253810     0.00000000     0.00000000     0.00000000
-      32       0.00000000     0.00181602     0.00000000     0.00000000    -0.02816452     0.00000000     0.00000000     0.00000000
-      33       0.00000000     0.00067371     0.00000000     0.00000000    -0.01045515     0.00000000     0.00000000     0.00000000
-
-               Column  25     Column  26     Column  27     Column  28     Column  29     Column  30     Column  31     Column  32
-       1       0.00000000    -0.16043762     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2       0.00000000    -0.06485356     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.00000000    -0.00296261     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       5      -0.05270617     0.00000000     0.00000000     0.08345390    -0.07440949    -0.03440931    -0.01699180    -0.00761071
-       6       0.00000000    -0.16876413     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7       0.00000000     0.09038400     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8       0.00000000    -0.01973710     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       9      -0.02567613     0.00000000     0.00000000     0.07241898    -0.24695148    -0.11907247    -0.05747334    -0.02595329
-      11      -0.04746225     0.00000000     0.00000000     0.04118552    -0.06425670    -0.03083704    -0.01489799    -0.00672570
-      13       0.00000000    -0.20465246     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      14       0.00000000     0.01590282     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      15       0.00000000     0.05212314     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      16       0.00000000    -0.09677688     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      17       0.00000000     0.00000000    -0.09677688     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      18       0.05651642     0.00000000     0.00000000     0.16423402    -0.00494469    -0.00296162    -0.00147427    -0.00067281
-      20       0.00000000     0.03978268     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      21       0.02495333     0.00000000     0.00000000    -0.00672268     0.30618230     0.13055678     0.06433991     0.02897453
-      23       0.00000000     0.02945363     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      24       0.00000000    -0.28216164     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      25       0.00000000    -0.01195539     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      26       0.01056354     0.00000000     0.00000000    -0.00412902     0.40571451     0.07770181     0.03756079     0.01799352
-      28       0.00000000     0.00593265     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      29       0.00000000    -0.40303391     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      30       0.00000000    -0.07642507     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      31       0.00000000    -0.03694470     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      32       0.00000000    -0.01771640     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      33       0.00000000    -0.00663416     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  33
-       5      -0.00282107
-       9      -0.00962486
-      11      -0.00249417
-      18      -0.00025011
-      21       0.01075526
-      26       0.00673685
-    ==== End of matrix output ====
- get_ftb: Get MO matrix of property:           2 d|S>/dBY                   1
-
-*** B real part ***; NROW,NCOL,LRQ,LCQ:  33  33  33  33
-
-
-               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1       0.00000000     0.00000000     0.00000000     0.15880869     0.00000000     0.00000000     0.00000000     0.00000000
-       2       0.00000000     0.00000000     0.00000000    -1.70143491     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.00000000     0.00000000     0.00000000    -0.27763780     0.00000000     0.00000000     0.00000000     0.00000000
-       4      -0.15857367     1.66779768     0.38343648     0.00000000     0.00000000     0.03232396    -0.66782361    -0.60775682
-       6       0.00000000     0.00000000     0.00000000    -0.60084837     0.00000000     0.00000000     0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.00000000     0.59828973     0.00000000     0.00000000     0.00000000     0.00000000
-       8       0.00000000     0.00000000     0.00000000     0.07375739     0.00000000     0.00000000     0.00000000     0.00000000
-      10       0.13580472     0.56967547    -0.22462098     0.00000000     0.00000000     1.00266804    -0.53426897    -0.35498402
-      12       0.02939309     0.00030750     1.14581756     0.00000000     0.00000000     0.08706134    -0.58142836     1.14455768
-      13       0.00000000     0.00000000     0.00000000     1.08946597     0.00000000     0.00000000     0.00000000     0.00000000
-      14       0.00000000     0.00000000     0.00000000     0.29123939     0.00000000     0.00000000     0.00000000     0.00000000
-      15       0.00000000     0.00000000     0.00000000    -0.01416954     0.00000000     0.00000000     0.00000000     0.00000000
-      16       0.00000000     0.00000000     0.00000000    -1.15837018     0.00000000     0.00000000     0.00000000     0.00000000
-      17       0.00000000     0.00000000     0.00000000     0.00000000    -1.15837018     0.00000000     0.00000000     0.00000000
-      19       0.00503921     0.06706535    -0.65851189     0.00000000     0.00000000    -0.42791102    -0.74015940     0.19883434
-      20       0.00000000     0.00000000     0.00000000    -0.26531008     0.00000000     0.00000000     0.00000000     0.00000000
-      22       0.22113534     0.37711857     0.14681048     0.00000000     0.00000000    -0.54225676     0.10033467    -0.21301152
-      23       0.00000000     0.00000000     0.00000000     0.03574815     0.00000000     0.00000000     0.00000000     0.00000000
-      24       0.00000000     0.00000000     0.00000000    -0.03950495     0.00000000     0.00000000     0.00000000     0.00000000
-      25       0.00000000     0.00000000     0.00000000    -0.00971983     0.00000000     0.00000000     0.00000000     0.00000000
-      27      -0.16047212    -0.06360107    -0.00640866     0.00000000     0.00000000    -0.11672895     0.06476026    -0.01479249
-      28       0.00000000     0.00000000     0.00000000     0.01904834     0.00000000     0.00000000     0.00000000     0.00000000
-      29       0.00000000     0.00000000     0.00000000    -0.04465737     0.00000000     0.00000000     0.00000000     0.00000000
-      30       0.00000000     0.00000000     0.00000000    -0.01999543     0.00000000     0.00000000     0.00000000     0.00000000
-      31       0.00000000     0.00000000     0.00000000    -0.00999610     0.00000000     0.00000000     0.00000000     0.00000000
-      32       0.00000000     0.00000000     0.00000000    -0.00445790     0.00000000     0.00000000     0.00000000     0.00000000
-      33       0.00000000     0.00000000     0.00000000    -0.00165208     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column   9     Column  10     Column  11     Column  12     Column  13     Column  14     Column  15     Column  16
-       1       0.00000000    -0.13621403     0.00000000    -0.02613097     0.00000000     0.00000000     0.00000000     0.00000000
-       2       0.00000000    -0.54366076     0.00000000    -0.23967842     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.00000000     0.28039704     0.00000000    -0.95846336     0.00000000     0.00000000     0.00000000     0.00000000
-       4       0.00000000     0.00000000     0.00000000     0.00000000    -1.64572511    -0.90999272    -0.69881071     1.16123636
-       6       0.00000000    -1.70024581     0.00000000    -0.33072698     0.00000000     0.00000000     0.00000000     0.00000000
-       7       0.00000000     0.51242518     0.00000000     1.07904811     0.00000000     0.00000000     0.00000000     0.00000000
-       8       0.00000000    -0.20755640     0.00000000    -0.55131717     0.00000000     0.00000000     0.00000000     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000    -2.48844553    -0.31019772    -0.37332772    -0.10306530
-      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.68082797    -0.02582169    -0.60219674     0.10442617
-      13       0.00000000     1.84666546     0.00000000     1.16496125     0.00000000     0.00000000     0.00000000     0.00000000
-      14       0.00000000    -0.11247948     0.00000000     0.17043767     0.00000000     0.00000000     0.00000000     0.00000000
-      15       0.00000000    -0.10583376     0.00000000     0.97078777     0.00000000     0.00000000     0.00000000     0.00000000
-      16       0.00000000     0.12582361     0.00000000    -0.19218709     0.00000000     0.00000000     0.00000000     0.00000000
-      17       0.12582361     0.00000000    -0.19218709     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      19       0.00000000     0.00000000     0.00000000     0.00000000    -0.26555135    -0.32874089    -0.38351883     0.02652838
-      20       0.00000000     0.51818339     0.00000000     0.26475382     0.00000000     0.00000000     0.00000000     0.00000000
-      22       0.00000000     0.00000000     0.00000000     0.00000000     0.06023402    -0.19665107     0.00893729     0.65002584
-      23       0.00000000     0.16027845     0.00000000     0.21756859     0.00000000     0.00000000     0.00000000     0.00000000
-      24       0.00000000    -0.60313700     0.00000000    -0.24879299     0.00000000     0.00000000     0.00000000     0.00000000
-      25       0.00000000    -0.01029678     0.00000000    -0.07201766     0.00000000     0.00000000     0.00000000     0.00000000
-      27       0.00000000     0.00000000     0.00000000     0.00000000    -0.18630765     0.01048153     0.03707279     0.09696093
-      28       0.00000000     0.03441546     0.00000000     0.06360626     0.00000000     0.00000000     0.00000000     0.00000000
-      29       0.00000000    -0.20011586     0.00000000    -0.09212104     0.00000000     0.00000000     0.00000000     0.00000000
-      30       0.00000000    -0.09654570     0.00000000    -0.04425680     0.00000000     0.00000000     0.00000000     0.00000000
-      31       0.00000000    -0.04656289     0.00000000    -0.02141482     0.00000000     0.00000000     0.00000000     0.00000000
-      32       0.00000000    -0.02103953     0.00000000    -0.00966370     0.00000000     0.00000000     0.00000000     0.00000000
-      33       0.00000000    -0.00780330     0.00000000    -0.00358369     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  17     Column  18     Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
-       1       0.00000000     0.00000000    -0.00378059     0.00000000     0.00000000    -0.22123644     0.00000000     0.00000000
-       2       0.00000000     0.00000000    -0.17664480     0.00000000     0.00000000    -0.37559144     0.00000000     0.00000000
-       3       0.00000000     0.00000000     0.77445674     0.00000000     0.00000000    -0.15154565     0.00000000     0.00000000
-       4       0.00000000     0.00000000     0.00000000    -0.37169707     0.00000000     0.00000000    -0.31026457     0.10708515
-       5       1.16123636     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       6       0.00000000     0.00000000     0.34342261     0.00000000     0.00000000     0.69069571     0.00000000     0.00000000
-       7       0.00000000     0.00000000     0.72304225     0.00000000     0.00000000    -0.19450038     0.00000000     0.00000000
-       8       0.00000000     0.00000000    -0.20393386     0.00000000     0.00000000     0.18936770     0.00000000     0.00000000
-       9      -0.10306530     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      10       0.00000000     0.00000000     0.00000000    -1.07294444     0.00000000     0.00000000    -0.33872986     0.71532037
-      11       0.10442617     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      12       0.00000000     0.00000000     0.00000000     0.21978374     0.00000000     0.00000000    -0.10479289     0.18092852
-      13       0.00000000     0.00000000     0.28416432     0.00000000     0.00000000    -0.03558384     0.00000000     0.00000000
-      14       0.00000000     0.00000000     0.06282493     0.00000000     0.00000000     0.11980528     0.00000000     0.00000000
-      15       0.00000000     0.00000000     0.08929762     0.00000000     0.00000000    -0.12908874     0.00000000     0.00000000
-      16       0.00000000     0.00000000    -0.05985008     0.00000000     0.00000000    -0.64939657     0.00000000     0.00000000
-      17       0.00000000    -0.05985008     0.00000000     0.00000000    -0.64939657     0.00000000     0.00000000     0.00000000
-      18       0.02652838     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      19       0.00000000     0.00000000     0.00000000    -0.14932443     0.00000000     0.00000000    -0.86235243     0.01138109
-      20       0.00000000     0.00000000     0.00414973     0.00000000     0.00000000    -0.38463420     0.00000000     0.00000000
-      21       0.65002584     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      22       0.00000000     0.00000000     0.00000000     0.32233715     0.00000000     0.00000000     0.07901292    -0.95921239
-      23       0.00000000     0.00000000     0.73934444     0.00000000     0.00000000    -0.12534293     0.00000000     0.00000000
-      24       0.00000000     0.00000000    -0.04141615     0.00000000     0.00000000     0.93890454     0.00000000     0.00000000
-      25       0.00000000     0.00000000     0.06792209     0.00000000     0.00000000     0.03702108     0.00000000     0.00000000
-      26       0.09696093     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      27       0.00000000     0.00000000     0.00000000     0.03698914     0.00000000     0.00000000     0.02356064    -0.28881935
-      28       0.00000000     0.00000000     0.13140893     0.00000000     0.00000000    -0.01920284     0.00000000     0.00000000
-      29       0.00000000     0.00000000    -0.01617355     0.00000000     0.00000000     0.29829367     0.00000000     0.00000000
-      30       0.00000000     0.00000000    -0.00824063     0.00000000     0.00000000     0.12681682     0.00000000     0.00000000
-      31       0.00000000     0.00000000    -0.00401702     0.00000000     0.00000000     0.06253810     0.00000000     0.00000000
-      32       0.00000000     0.00000000    -0.00181602     0.00000000     0.00000000     0.02816452     0.00000000     0.00000000
-      33       0.00000000     0.00000000    -0.00067371     0.00000000     0.00000000     0.01045515     0.00000000     0.00000000
-
-               Column  25     Column  26     Column  27     Column  28     Column  29     Column  30     Column  31     Column  32
-       1       0.00000000     0.00000000     0.16043762     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       2       0.00000000     0.00000000     0.06485356     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       3       0.00000000     0.00000000     0.00296261     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       4       0.05270617     0.00000000     0.00000000    -0.08345390     0.07440949     0.03440931     0.01699180     0.00761071
-       6       0.00000000     0.00000000     0.16876413     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       7       0.00000000     0.00000000    -0.09038400     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-       8       0.00000000     0.00000000     0.01973710     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      10       0.02567613     0.00000000     0.00000000    -0.07241898     0.24695148     0.11907247     0.05747334     0.02595329
-      12       0.04746225     0.00000000     0.00000000    -0.04118552     0.06425670     0.03083704     0.01489799     0.00672570
-      13       0.00000000     0.00000000     0.20465246     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      14       0.00000000     0.00000000    -0.01590282     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      15       0.00000000     0.00000000    -0.05212314     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      16       0.00000000     0.00000000    -0.09677688     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      17       0.00000000    -0.09677688     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      19      -0.05651642     0.00000000     0.00000000    -0.16423402     0.00494469     0.00296162     0.00147427     0.00067281
-      20       0.00000000     0.00000000    -0.03978268     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      22      -0.02495333     0.00000000     0.00000000     0.00672268    -0.30618230    -0.13055678    -0.06433991    -0.02897453
-      23       0.00000000     0.00000000    -0.02945363     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      24       0.00000000     0.00000000     0.28216164     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      25       0.00000000     0.00000000     0.01195539     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      27      -0.01056354     0.00000000     0.00000000     0.00412902    -0.40571451    -0.07770181    -0.03756079    -0.01799352
-      28       0.00000000     0.00000000    -0.00593265     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      29       0.00000000     0.00000000     0.40303391     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      30       0.00000000     0.00000000     0.07642507     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      31       0.00000000     0.00000000     0.03694470     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      32       0.00000000     0.00000000     0.01771640     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-      33       0.00000000     0.00000000     0.00663416     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
-
-               Column  33
-       4       0.00282107
-      10       0.00962486
-      12       0.00249417
-      19       0.00025011
-      22      -0.01075526
-      27      -0.00673685
-    ==== End of matrix output ====
- get_ftb: Get MO matrix of property:           3 d|S>/dBZ                   3
-
-*** A imag part ***; NROW,NCOL,LRQ,LCQ:  33  33  33  33
-
-
-     Zero matrix.
-    ==== End of matrix output ====
 
 
                                 Output from SETXEE
@@ -1932,17 +1669,17 @@ E(-)-vector no.  1 accepted. Norm :  2.22295D+02
 * Screening threshold in LR solver scaled with norm of property vector:  1.1115D+02
   and changed to:  1.5749D-10
 
-########## START MICROITERATION NO.   1 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   1 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    2.78%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.25488281s
+SOfock:LL  1.57D-10    2.71%    2.78%    0.00%    0.00%   0.01562500s
+>>>> Total wall time used in HER_PARDRV so far   : 0.03125000s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    1/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    1
 --------------------------------------------
-   Freq.:     0.00000000         96.28733993
+   Freq.:     0.00000000         96.28734689
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -1951,21 +1688,21 @@ SOfock:LL  1.57D-10    2.71%    2.78%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  2.23E+01  2.23E+01
-E(-)-vector no.  1 accepted. Norm :  4.46050D+01
+E(-)-vector no.  1 accepted. Norm :  4.46054D+01
 
-* End of microiteration no.    1 after  0.00999808s
+* End of microiteration no.    1 after  0.00899902s
 
-########## START MICROITERATION NO.   2 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   2 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    3.25%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.25976562s
+SOfock:LL  1.57D-10    2.71%    3.25%    0.00%    0.00%   0.01562500s
+>>>> Total wall time used in HER_PARDRV so far   : 0.04687500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    2/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    2
 --------------------------------------------
-   Freq.:     0.00000000         96.98328257
+   Freq.:     0.00000000         96.98328895
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -1974,21 +1711,21 @@ SOfock:LL  1.57D-10    2.71%    3.25%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  3.65E+00  3.65E+00
-E(-)-vector no.  1 accepted. Norm :  7.30861D+00
+E(-)-vector no.  1 accepted. Norm :  7.30860D+00
 
-* End of microiteration no.    2 after  0.00899887s
+* End of microiteration no.    2 after  0.00999796s
 
-########## START MICROITERATION NO.   3 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   3 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    3.89%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.26464844s
+SOfock:LL  1.57D-10    2.71%    3.89%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.04687500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    3/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    3
 --------------------------------------------
-   Freq.:     0.00000000         96.99667548
+   Freq.:     0.00000000         96.99668182
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -1997,21 +1734,21 @@ SOfock:LL  1.57D-10    2.71%    3.89%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  5.24E-01  5.24E-01
-E(-)-vector no.  1 accepted. Norm :  1.04771D+00
+E(-)-vector no.  1 accepted. Norm :  1.04770D+00
 
-* End of microiteration no.    3 after  0.00999808s
+* End of microiteration no.    3 after  0.00999904s
 
-########## START MICROITERATION NO.   4 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   4 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    4.68%    0.00%    0.00%   0.00683594s
->>>> Total wall time used in HER_PARDRV so far   : 1.27148438s
+SOfock:LL  1.57D-10    2.71%    4.68%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.04687500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    4/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    4
 --------------------------------------------
-   Freq.:     0.00000000         96.99684062
+   Freq.:     0.00000000         96.99684696
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2020,21 +1757,21 @@ SOfock:LL  1.57D-10    2.71%    4.68%    0.00%    0.00%   0.00683594s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  8.20E-02  8.20E-02
-E(-)-vector no.  1 accepted. Norm :  1.63905D-01
+E(-)-vector no.  1 accepted. Norm :  1.63903D-01
 
-* End of microiteration no.    4 after  0.01099896s
+* End of microiteration no.    4 after  0.00899798s
 
-########## START MICROITERATION NO.   5 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   5 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    5.44%    0.00%    0.00%   0.00390625s
->>>> Total wall time used in HER_PARDRV so far   : 1.27539062s
+SOfock:LL  1.57D-10    2.71%    5.44%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.04687500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    5/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    5
 --------------------------------------------
-   Freq.:     0.00000000         96.99685160
+   Freq.:     0.00000000         96.99685795
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2043,21 +1780,21 @@ SOfock:LL  1.57D-10    2.71%    5.44%    0.00%    0.00%   0.00390625s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  1.63E-02  1.63E-02
-E(-)-vector no.  1 accepted. Norm :  3.25608D-02
+E(-)-vector no.  1 accepted. Norm :  3.25610D-02
 
-* End of microiteration no.    5 after  0.00799918s
+* End of microiteration no.    5 after  0.00999904s
 
-########## START MICROITERATION NO.   6 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   6 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    6.48%    0.00%    0.00%   0.00585938s
->>>> Total wall time used in HER_PARDRV so far   : 1.28125000s
+SOfock:LL  1.57D-10    2.71%    6.48%    0.00%    0.00%   0.01562500s
+>>>> Total wall time used in HER_PARDRV so far   : 0.06250000s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    6/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    6
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2066,21 +1803,21 @@ SOfock:LL  1.57D-10    2.71%    6.48%    0.00%    0.00%   0.00585938s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  1.61E-03  1.61E-03
-E(-)-vector no.  1 accepted. Norm :  3.21184D-03
+E(-)-vector no.  1 accepted. Norm :  3.21188D-03
 
-* End of microiteration no.    6 after  0.00899792s
+* End of microiteration no.    6 after  0.00899899s
 
-########## START MICROITERATION NO.   7 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   7 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%   10.23%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.28613281s
+SOfock:LL  1.57D-10    2.71%   10.23%    0.00%    0.00%   0.01562500s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07812500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    7/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    7
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2089,21 +1826,21 @@ SOfock:LL  1.57D-10    2.71%   10.23%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  2.36E-04  2.36E-04
-E(-)-vector no.  1 accepted. Norm :  4.71497D-04
+E(-)-vector no.  1 accepted. Norm :  4.71507D-04
 
-* End of microiteration no.    7 after  0.00999904s
+* End of microiteration no.    7 after  0.00899798s
 
-########## START MICROITERATION NO.   8 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   8 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%   14.09%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.29101562s
+SOfock:LL  1.57D-10    2.71%   14.09%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07812500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    8/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    8
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2112,21 +1849,21 @@ SOfock:LL  1.57D-10    2.71%   14.09%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  1.71E-05  1.71E-05
-E(-)-vector no.  1 accepted. Norm :  3.41849D-05
+E(-)-vector no.  1 accepted. Norm :  3.41858D-05
 
-* End of microiteration no.    8 after  0.01099801s
+* End of microiteration no.    8 after  0.00999898s
 
-########## START MICROITERATION NO.   9 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   9 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%   21.50%    0.00%    0.00%   0.00585938s
->>>> Total wall time used in HER_PARDRV so far   : 1.29687500s
+SOfock:LL  1.57D-10    2.71%   21.50%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07812500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    9/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    9
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2135,21 +1872,21 @@ SOfock:LL  1.57D-10    2.71%   21.50%    0.00%    0.00%   0.00585938s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  8.47E-07  8.47E-07
-E(-)-vector no.  1 accepted. Norm :  1.69470D-06
+E(-)-vector no.  1 accepted. Norm :  1.69464D-06
 
-* End of microiteration no.    9 after  0.00799894s
+* End of microiteration no.    9 after  0.00899804s
 
-########## START MICROITERATION NO.  10 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.  10 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.30175781s
+SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07812500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (   10/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:   10
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2159,7 +1896,7 @@ SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00488281s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  8.27E-08  8.27E-08
 
-* End of microiteration no.   10 after  0.00899792s
+* End of microiteration no.   10 after  0.00899899s
 
 
                              Final output from XRSCTL
@@ -2170,43 +1907,43 @@ SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00488281s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.00999808s  (LL       )     [  1]
+* It.  1   0.00899902s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.23D+01 |   2.23D+01
 ==============================================
-* It.  2   0.00899887s  (LL       )     [  1]
+* It.  2   0.00999796s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   3.65D+00 |   3.65D+00
 ==============================================
-* It.  3   0.00999808s  (LL       )     [  1]
+* It.  3   0.00999904s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.24D-01 |   5.24D-01
 ==============================================
-* It.  4   0.01099896s  (LL       )     [  1]
+* It.  4   0.00899798s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   8.20D-02 |   8.20D-02
 ==============================================
-* It.  5   0.00799918s  (LL       )     [  1]
+* It.  5   0.00999904s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.63D-02 |   1.63D-02
 ==============================================
-* It.  6   0.00899792s  (LL       )     [  1]
+* It.  6   0.00899899s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.61D-03 |   1.61D-03
 ==============================================
-* It.  7   0.00999904s  (LL       )     [  1]
+* It.  7   0.00899798s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.36D-04 |   2.36D-04
 ==============================================
-* It.  8   0.01099801s  (LL       )     [  1]
+* It.  8   0.00999898s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.71D-05 |   1.71D-05
 ==============================================
-* It.  9   0.00799894s  (LL       )     [  1]
+* It.  9   0.00899804s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   8.47D-07 |   8.47D-07
 ==============================================
-* It. 10   0.00899792s  (LL       )     [  1]
+* It. 10   0.00899899s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   8.27D-08 |   8.27D-08
 ==============================================
@@ -2216,7 +1953,7 @@ SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00488281s
                                 ------------------
 
 
-<< 2, 2>>: -0.96996852E+02 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 2, 2>>: -0.96996858E+02 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 
                                 Output from SETXEE
@@ -2237,17 +1974,17 @@ E(-)-vector no.  1 accepted. Norm :  2.22295D+02
 * Screening threshold in LR solver scaled with norm of property vector:  1.1115D+02
   and changed to:  1.5749D-10
 
-########## START MICROITERATION NO.   1 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   1 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    2.78%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.30664062s
+SOfock:LL  1.57D-10    2.71%    2.78%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07812500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    1/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    1
 --------------------------------------------
-   Freq.:     0.00000000         96.28733993
+   Freq.:     0.00000000         96.28734689
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2256,21 +1993,21 @@ SOfock:LL  1.57D-10    2.71%    2.78%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  2.23E+01  2.23E+01
-E(-)-vector no.  1 accepted. Norm :  4.46050D+01
+E(-)-vector no.  1 accepted. Norm :  4.46054D+01
 
-* End of microiteration no.    1 after  0.00999808s
+* End of microiteration no.    1 after  0.01099795s
 
-########## START MICROITERATION NO.   2 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   2 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    3.25%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.31152344s
+SOfock:LL  1.57D-10    2.71%    3.25%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07812500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    2/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    2
 --------------------------------------------
-   Freq.:     0.00000000         96.98328257
+   Freq.:     0.00000000         96.98328895
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2279,21 +2016,21 @@ SOfock:LL  1.57D-10    2.71%    3.25%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  3.65E+00  3.65E+00
-E(-)-vector no.  1 accepted. Norm :  7.30861D+00
+E(-)-vector no.  1 accepted. Norm :  7.30860D+00
 
-* End of microiteration no.    2 after  0.00999904s
+* End of microiteration no.    2 after  0.00899905s
 
-########## START MICROITERATION NO.   3 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   3 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    3.89%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.31640625s
+SOfock:LL  1.57D-10    2.71%    3.89%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07812500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    3/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    3
 --------------------------------------------
-   Freq.:     0.00000000         96.99667548
+   Freq.:     0.00000000         96.99668182
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2302,21 +2039,21 @@ SOfock:LL  1.57D-10    2.71%    3.89%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  5.24E-01  5.24E-01
-E(-)-vector no.  1 accepted. Norm :  1.04771D+00
+E(-)-vector no.  1 accepted. Norm :  1.04770D+00
 
-* End of microiteration no.    3 after  0.00799894s
+* End of microiteration no.    3 after  0.01099795s
 
-########## START MICROITERATION NO.   4 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   4 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    4.68%    0.00%    0.00%   0.00585938s
->>>> Total wall time used in HER_PARDRV so far   : 1.32226562s
+SOfock:LL  1.57D-10    2.71%    4.68%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.07812500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    4/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    4
 --------------------------------------------
-   Freq.:     0.00000000         96.99684062
+   Freq.:     0.00000000         96.99684696
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2325,21 +2062,21 @@ SOfock:LL  1.57D-10    2.71%    4.68%    0.00%    0.00%   0.00585938s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  8.20E-02  8.20E-02
-E(-)-vector no.  1 accepted. Norm :  1.63905D-01
+E(-)-vector no.  1 accepted. Norm :  1.63903D-01
 
-* End of microiteration no.    4 after  0.00899816s
+* End of microiteration no.    4 after  0.00899905s
 
-########## START MICROITERATION NO.   5 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   5 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    5.44%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.32714844s
+SOfock:LL  1.57D-10    2.71%    5.44%    0.00%    0.00%   0.01562500s
+>>>> Total wall time used in HER_PARDRV so far   : 0.09375000s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    5/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    5
 --------------------------------------------
-   Freq.:     0.00000000         96.99685160
+   Freq.:     0.00000000         96.99685795
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2348,21 +2085,21 @@ SOfock:LL  1.57D-10    2.71%    5.44%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  1.63E-02  1.63E-02
-E(-)-vector no.  1 accepted. Norm :  3.25608D-02
+E(-)-vector no.  1 accepted. Norm :  3.25610D-02
 
-* End of microiteration no.    5 after  0.00899887s
+* End of microiteration no.    5 after  0.00899899s
 
-########## START MICROITERATION NO.   6 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   6 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%    6.48%    0.00%    0.00%   0.00585938s
->>>> Total wall time used in HER_PARDRV so far   : 1.33300781s
+SOfock:LL  1.57D-10    2.71%    6.48%    0.00%    0.00%   0.01562500s
+>>>> Total wall time used in HER_PARDRV so far   : 0.10937500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    6/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    6
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2371,21 +2108,21 @@ SOfock:LL  1.57D-10    2.71%    6.48%    0.00%    0.00%   0.00585938s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  1.61E-03  1.61E-03
-E(-)-vector no.  1 accepted. Norm :  3.21184D-03
+E(-)-vector no.  1 accepted. Norm :  3.21188D-03
 
-* End of microiteration no.    6 after  0.00999808s
+* End of microiteration no.    6 after  0.00899798s
 
-########## START MICROITERATION NO.   7 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   7 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%   10.23%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.33789062s
+SOfock:LL  1.57D-10    2.71%   10.23%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.10937500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    7/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    7
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2394,21 +2131,21 @@ SOfock:LL  1.57D-10    2.71%   10.23%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  2.36E-04  2.36E-04
-E(-)-vector no.  1 accepted. Norm :  4.71497D-04
+E(-)-vector no.  1 accepted. Norm :  4.71507D-04
 
-* End of microiteration no.    7 after  0.00799894s
+* End of microiteration no.    7 after  0.01099902s
 
-########## START MICROITERATION NO.   8 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   8 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%   14.09%    0.00%    0.00%   0.00390625s
->>>> Total wall time used in HER_PARDRV so far   : 1.34179688s
+SOfock:LL  1.57D-10    2.71%   14.09%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.10937500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    8/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    8
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2417,21 +2154,21 @@ SOfock:LL  1.57D-10    2.71%   14.09%    0.00%    0.00%   0.00390625s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  1.71E-05  1.71E-05
-E(-)-vector no.  1 accepted. Norm :  3.41849D-05
+E(-)-vector no.  1 accepted. Norm :  3.41858D-05
 
-* End of microiteration no.    8 after  0.00899911s
+* End of microiteration no.    8 after  0.00999796s
 
-########## START MICROITERATION NO.   9 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.   9 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%   21.50%    0.00%    0.00%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.34667969s
+SOfock:LL  1.57D-10    2.71%   21.50%    0.00%    0.00%   0.00000000s
+>>>> Total wall time used in HER_PARDRV so far   : 0.10937500s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (    9/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:    9
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2440,21 +2177,21 @@ SOfock:LL  1.57D-10    2.71%   21.50%    0.00%    0.00%   0.00488281s
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  8.47E-07  8.47E-07
-E(-)-vector no.  1 accepted. Norm :  1.69470D-06
+E(-)-vector no.  1 accepted. Norm :  1.69464D-06
 
-* End of microiteration no.    9 after  0.00999784s
+* End of microiteration no.    9 after  0.00899899s
 
-########## START MICROITERATION NO.  10 ##########   Sat Feb 20 22:16:15 2016
+########## START MICROITERATION NO.  10 ##########   Sun Apr 17 21:59:41 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00488281s
->>>> Total wall time used in HER_PARDRV so far   : 1.35156250s
+SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.01562500s
+>>>> Total wall time used in HER_PARDRV so far   : 0.12500000s
 * Trial vectors in this micro iteration:  E-:  1
    * Reduced Hessian: Number of positive/zero/negative eigenvalues : (   10/    0/    0);   +- (ep) trial vectors:    0
 
 <<B;B>> at iteration:   10
 --------------------------------------------
-   Freq.:     0.00000000         96.99685212
+   Freq.:     0.00000000         96.99685846
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part 
@@ -2464,7 +2201,7 @@ SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00488281s
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-09  8.27E-08  8.27E-08
 
-* End of microiteration no.   10 after  0.00999904s
+* End of microiteration no.   10 after  0.00999802s
 
 
                              Final output from XRSCTL
@@ -2475,43 +2212,43 @@ SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00488281s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.00999808s  (LL       )     [  1]
+* It.  1   0.01099795s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.23D+01 |   2.23D+01
 ==============================================
-* It.  2   0.00999904s  (LL       )     [  1]
+* It.  2   0.00899905s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   3.65D+00 |   3.65D+00
 ==============================================
-* It.  3   0.00799894s  (LL       )     [  1]
+* It.  3   0.01099795s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.24D-01 |   5.24D-01
 ==============================================
-* It.  4   0.00899816s  (LL       )     [  1]
+* It.  4   0.00899905s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   8.20D-02 |   8.20D-02
 ==============================================
-* It.  5   0.00899887s  (LL       )     [  1]
+* It.  5   0.00899899s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.63D-02 |   1.63D-02
 ==============================================
-* It.  6   0.00999808s  (LL       )     [  1]
+* It.  6   0.00899798s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.61D-03 |   1.61D-03
 ==============================================
-* It.  7   0.00799894s  (LL       )     [  1]
+* It.  7   0.01099902s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.36D-04 |   2.36D-04
 ==============================================
-* It.  8   0.00899911s  (LL       )     [  1]
+* It.  8   0.00999796s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.71D-05 |   1.71D-05
 ==============================================
-* It.  9   0.00999784s  (LL       )     [  1]
+* It.  9   0.00899899s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   8.47D-07 |   8.47D-07
 ==============================================
-* It. 10   0.00999904s  (LL       )     [  1]
+* It. 10   0.00999802s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   8.27D-08 |   8.27D-08
 ==============================================
@@ -2521,7 +2258,7 @@ SOfock:LL  1.57D-10    2.71%   36.70%    0.00%    0.02%   0.00488281s
                                 ------------------
 
 
-<< 1, 1>>: -0.96996852E+02 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 1, 1>>: -0.96996858E+02 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 
                                 Output from SETXEE
@@ -2551,7 +2288,7 @@ WARNING: Skipping B property LAO-ZRM1H1
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -96.99685211939 a.u.                       7.44E-10   (converged)
+  0.00000000 a.u.   -96.99685846240 a.u.                       7.44E-10   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 1)>> - linear response function (real):
@@ -2561,7 +2298,7 @@ WARNING: Skipping B property LAO-ZRM1H1
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -96.99685211939 a.u.                       7.44E-10   (converged)
+  0.00000000 a.u.   -96.99685846240 a.u.                       7.44E-10   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 3)>> - linear response function (real):
@@ -2625,7 +2362,22 @@ Matrix symmetry:  A1   A2   B1   B2
     3(j)   22   A      0       1      B1 
     4(k)   22   A      0       1      B2 
 
-Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
+
+                     Two-electron expectation values (total)
+                     ---------------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -0.987836920702      0.000000000000      0.000000000000
+            By         0.000000000000     -0.987836920702      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000000000
+
+
+
+       Average value:   -0.658558
+
+Cpu time       0.1040Wall time       0.1094in call to TWOINT(SUSC2EL).
 
 
 
@@ -2641,13 +2393,13 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx         3.202388910485      0.000000000000      0.000000000000
-            By         0.000000000000      3.202388910485      0.000000000000
-            Bz         0.000000000000      0.000000000000      2.008927977336
+            Bx         2.968260219758      0.000000000000      0.000000000000
+            By         0.000000000000      2.968260219758      0.000000000000
+            Bz         0.000000000000      0.000000000000      2.008927955237
 
 
 
-       Average value:    2.804569
+       Average value:    2.648483
 
 
                          Two-electron expectation values
@@ -2656,8 +2408,8 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        -0.987837210964      0.000000000000      0.000000000000
-            By         0.000000000000     -0.987837210964      0.000000000000
+            Bx        -0.987836920702      0.000000000000      0.000000000000
+            By         0.000000000000     -0.987836920702      0.000000000000
             Bz         0.000000000000      0.000000000000      0.000000000000
 
 
@@ -2671,8 +2423,8 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        -0.226410675054      0.000000000000      0.000000000000
-            By         0.000000000000     -0.226410675054      0.000000000000
+            Bx        -0.226410438243      0.000000000000      0.000000000000
+            By         0.000000000000     -0.226410438243      0.000000000000
             Bz         0.000000000000      0.000000000000      0.000000000000
 
 
@@ -2686,9 +2438,9 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        97.363795785834      0.000000000000      0.000000000000
-            By         0.000000000000     97.363795785834     -0.000000000000
-            Bz         0.000000000000     -0.000000000000      0.000000000000
+            Bx        97.363794912619     -0.000000000000      0.000000000000
+            By        -0.000000000000     97.363794912619      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000000000
 
 
 
@@ -2702,13 +2454,13 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx       -96.996852119395      0.000000000000      0.000000000000
-            By         0.000000000000    -96.996852119395      0.000000000000
+            Bx       -96.996858462398      0.000000000000      0.000000000000
+            By         0.000000000000    -96.996858462398      0.000000000000
             Bz         0.000000000000      0.000000000000      0.000000000000
 
 
 
-       Average value:  -64.664568
+       Average value:  -64.664572
 
   Units:  JT**(-2)/(10**(-30))   (SI) 
           ppm cm**(3) mol**(-1)  (cgs)
@@ -2722,12 +2474,12 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
   Magnetizabilities                    au          SI         cgs
   ---------------------------------------------------------------
 
-  Isotropic magnetizability:      -2.2397   -176.7355    -10.6433
+  Isotropic magnetizability:      -2.0836   -164.4183     -9.9015
   Diamagnetic contribution:     -235.1931 -18559.1719  -1117.6597
-  Paramagnetic contribution:     232.9534  18382.4365   1107.0164
+  Paramagnetic contribution:     233.1095  18394.7536   1107.7582
   Parallel component:             -2.0089   -158.5252     -9.5466
-  Perpendicular component:        -2.3551   -185.8406    -11.1916
-  Anisotropy:                      0.3462     27.3154      1.6450
+  Perpendicular component:        -2.1209   -167.3649    -10.0790
+  Anisotropy:                      0.1120      8.8396      0.5323
 
   Magnetizability is cylindrical.
 
@@ -2736,8 +2488,8 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
   --------------------------------------------
 
   khi_aa      -2.0089   -158.5252     -9.5466      0.0000    0.0000    1.0000
-  khi_bb      -2.3551   -185.8406    -11.1916      0.0000    1.0000    0.0000
-  khi_cc      -2.3551   -185.8406    -11.1916      1.0000    0.0000    0.0000
+  khi_bb      -2.1209   -167.3649    -10.0790      0.0000    1.0000    0.0000
+  khi_cc      -2.1209   -167.3649    -10.0790      1.0000    0.0000    0.0000
 
 
                         Total magnetizability tensor (au)
@@ -2746,9 +2498,9 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        -2.355084690907     -0.000000000000     -0.000000000000
-            By        -0.000000000000     -2.355084690907      0.000000000000
-            Bz        -0.000000000000      0.000000000000     -2.008927977336
+            Bx        -2.120949311035      0.000000000000     -0.000000000000
+            By         0.000000000000     -2.120949311035     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000     -2.008927955237
 
 
 
@@ -2759,9 +2511,9 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx      -101.785162837534      0.000000000000      0.000000000000
-            By         0.000000000000   -336.160162837534      0.000000000000
-            Bz         0.000000000000      0.000000000000   -267.633927977336
+            Bx      -101.785162035014      0.000000000000      0.000000000000
+            By         0.000000000000   -336.160162035014      0.000000000000
+            Bz         0.000000000000      0.000000000000   -267.633927955237
 
 
 
@@ -2772,9 +2524,9 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        99.430078146627     -0.000000000000     -0.000000000000
-            By        -0.000000000000    333.805078146627      0.000000000000
-            Bz        -0.000000000000      0.000000000000    265.625000000000
+            Bx        99.664212723979      0.000000000000     -0.000000000000
+            By         0.000000000000    334.039212723979     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000    265.625000000000
 
 
 
@@ -2784,13 +2536,11 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
 
 
  
-     Date and time (Linux)  : Sat Feb 20 22:16:16 2016
+     Date and time (Linux)  : Sun Apr 17 21:59:41 2016
      Host name              : phlam-s-sakura.univ-lille1.fr           
 
->>>> Node 0, utime: 3, stime: 1, minflt: 8904, majflt: 0, nvcsw: 79, nivcsw: 19, maxrss: 31084
->>>> Total WALL time used in DIRAC: 5s
-  
-  
+>>>> Node 0, utime: 0, stime: 0, minflt: 6463, majflt: 0, nvcsw: 163, nivcsw: 12, maxrss: 81944
+>>>> Total WALL time used in DIRAC: 1s
   
   
   
@@ -2820,4 +2570,6 @@ Cpu time       0.1070Wall time       0.1064in call to TWOINT(SUSC2EL).
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+  
+  
   

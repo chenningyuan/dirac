@@ -4,11 +4,9 @@
 **MOLECULE
 *BASIS
 .DEFAULT
- aug-cc-pVTZ
+ cc-pVDZ
 **HAMILTONIAN
 .LEVY-LEBLOND
-.INTFLG
- 1 0 0
 .DFT
  LDA
 *DFT
@@ -42,9 +40,3 @@
 .MAXITR
 100
 *END OF
-
-
-
-
-
-

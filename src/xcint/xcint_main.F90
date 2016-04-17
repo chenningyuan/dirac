@@ -674,6 +674,7 @@ contains
 !        symmetrize matrices
          if (use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct_der1  &
+                                   .and. .not. do_london_susc2el    &
                                    .and. .not. do_london_rhs_ro           &
                                    .and. .not. do_london_ks         &
                                    .and. .not. do_geo)) then
