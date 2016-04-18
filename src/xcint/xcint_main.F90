@@ -654,7 +654,9 @@ contains
          end if
          if (do_london_susc2el) then
             call xc_mpi_reduce(susc2el_xc_integrated)
-            call xc_mpi_reduce(susc2el_xc_integrated_sdft)
+            if (.not. dft_cfg_no_sdft) then
+               call xc_mpi_reduce(susc2el_xc_integrated_sdft)
+            end if
          end if
       end if
 #endif
