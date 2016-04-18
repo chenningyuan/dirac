@@ -328,60 +328,34 @@ contains
 !   -------------------------------
     call gettim(cpu1,wall1)
 
-
     do i2typ = 1, 3
       if (btest(intnmr, (i2typ - 1))) then
 
-
+        lwork = len_f77_work
+        call di_select_wrk(work, lwork)
 #ifdef VAR_MPI
         if (parcal) then
-
            call alloc(npos, mtottk(i2typ))
            npos = 0
            call dirac_parctl(1)
-
-           lwork = len_f77_work
-           call di_select_wrk(work, lwork)
-
            call her_pardrv(work,lwork,fmat,dmat,nr_mat,irepdm,                   &
                            ifock_type,itype,max_deriv,iatom,nodv,nopv,nocont,   &
                            tktime,.false.,first, npos,mtottk(i2typ),          &
                            i2typ,(/0/),(/0.0d0/),(/0.0d0/),(/0.0d0/),(/0.0d0/),(/0.0d0/))
 
-           call di_deselect_wrk(work, lwork)
            call dealloc(npos)
-
         else
-
-          lwork = len_f77_work
-          call di_select_wrk(work, lwork)
-
+#endif 
           call twoint(work, lwork, fmat, dmat, nr_mat, irepdm, ifock_type, &
                       (/0.0d0/), (/0/), (/0/), itype, max_deriv, iatom,   &
                       nodv, nopv, nocont, tktime, iprprp, iprnta, &
                       iprntb, iprntc, iprntd, retur, (/0/), i2typ,  &
                       (/0/), (/0.0d0/), (/0.0d0/), (/0.0d0/), (/0.0d0/),  &
                       (/0.0d0/), relcal, .false., (/0/), (/0.0d0/))
-
-          call di_deselect_wrk(work, lwork)
-
+#ifdef VAR_MPI
         end if
-
-#else
-
-          lwork = len_f77_work
-          call di_select_wrk(work, lwork)
-
-          call twoint(work, lwork, fmat, dmat, nr_mat, irepdm, ifock_type, &
-                      (/0.0d0/), (/0/), (/0/), itype, max_deriv, iatom,   &
-                      nodv, nopv, nocont, tktime, iprprp, iprnta, &
-                      iprntb, iprntc, iprntd, retur, (/0/), i2typ,  &
-                      (/0/), (/0.0d0/), (/0.0d0/), (/0.0d0/), (/0.0d0/),  &
-                      (/0.0d0/), relcal, .false., (/0/), (/0.0d0/))
-
-          call di_deselect_wrk(work, lwork)
-
 #endif
+        call di_deselect_wrk(work, lwork)
 
       end if
     end do
@@ -391,10 +365,6 @@ contains
     wlltot = wall2 - wall1
     write(lupri,'(/a,f13.4,a,f13.4,a/)') 'cpu time:',cputot,' wall time:',wlltot, &
                                            ' used in call to twoint(in get_ao_fock_2el_lao).'
-
-    if (allocated(npos)) then
-      call dealloc(npos)
-    end if
 
   end subroutine
 
@@ -409,10 +379,10 @@ contains
     integer                :: iz, irep, ipari, irepd, iq, ipq, ioff
 !   --------------------------------------------------------------------
 
-    call alloc(dmat, ntbas(0)*ntbas(0), nz)
+    call alloc(dmat, n2bbasx, nz)
     dmat = 0.0d0
     call genden(dmat, cmo, 1, iprprp)
-    call dscal(ntbas(0)*ntbas(0)*nz, 2.0d0, dmat, 1)
+    call dscal(n2bbasxq, 2.0d0, dmat, 1)
     call bstobu_no_work(dmat, nz)
 
     isymop(1) = 1
@@ -445,7 +415,7 @@ contains
 !   --------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
     real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
-    real(8), allocatable   :: dmat(:, :), buffer(:)
+    real(8), allocatable   :: dmat(:, :), buffer(:,:)
 
     integer :: icomp
     logical :: debug_me, parcal_temp
@@ -461,7 +431,7 @@ contains
 
     call generate_num_grid(dmat)
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(4)
+    if (parcal) call dirac_parctl(4)
 #endif
 
     call integrate_xc(xc_mat_dim              = ntbas(0),        &
@@ -473,23 +443,17 @@ contains
                       xc_fmat_pg_sym          = isym_2el_lao,    &
                       xc_do_london_rhs_direct_der1 = .true.)
 
-    call dealloc(dmat)
-
 !gosia: if sdft direct contributions are calculated, then i need a full density matrix
 ! now inside integrate_xc subroutine, xc_dmat_0 only contains the real part of dmat
 ! that's why here i copy full dmat to buffer and pass it through xc_dmat
 ! it's not efficient, but won't mess up with other calls to integrate_xc
     if (.not. dft_cfg_no_sdft) then
 
-      call alloc(dmat, n2bbasx, nz)
-      dmat = 0.0d0
-      call genden(dmat, cmo, 1, iprprp)
-      call generate_num_grid(dmat)
-      call alloc(buffer, n2bbasxq)
+      call alloc(buffer, n2bbasx, nz)
       call dcopy(n2bbasxq, dmat, 1, buffer, 1)
 
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl(4)
 #endif
 
       if (expped) then
@@ -520,8 +484,9 @@ contains
                            xc_do_london_rhs_direct_der2 = .true.)
       end if
       call dealloc(buffer)
-      call dealloc(dmat)
     end if
+
+    call dealloc(dmat)
 
     debug_me = .false.
     if (debug_me) then
