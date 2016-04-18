@@ -43,19 +43,19 @@
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
-!++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
-     real(8), intent(in) :: foo(rcw*nfoo), fvo(rcw*nfvo)   ! Fock matrix elements
+!--------------Calling variables---------------------------------------
+     real(8), intent(in) :: foo(nfoo*rcw), fvo(rcw*nfvo)   ! Fock matrix elements
      real(8), intent(in) :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes
-     real(8), intent(out):: ho(rcw*nfoo)                   ! Intermediate
-!+++++++++++++++Local variables++++++++++++++++++++++++++++++++++++++++
+     real(8), intent(inout):: ho(nfoo*rcw)                   ! Intermediate
+!---------------Local variables----------------------------------------
      real(8), allocatable :: tau(:) !, vooo(:),vooo_sorted(:),vvoo(:)
 
 !    Initialize  f_bar_mi with oo block of Fock matrix
-       ho = foo
+       ho(1:nfoo*rcw) = foo(1:nfoo*rcw)
 
-!+++++++++++++Term-1++++++++++++++++++++++
+!-------------Term-1----------------------
 ! F_bar_mi = F_bar_mi - V(nm,ef) * T(ef,in) 
-!+++++++++++++++++++++++++++++++++++++++++
+!-----------------------------------------
 
    allocate(tau(ndimt2*rcw))
 
@@ -65,18 +65,20 @@
 
    deallocate(tau) 
 
-!++++++++++++++++++++++++TERM-2+++++++++++++++++++++
+
+!------------------------TERM-2---------------------
 !F_bar_mi(m,i) = F_bar_mi(m,i) - V(mn, ei) * T1(e,n) 
-!+++++++++++++++++++++++++++++++++++++++++++++++++++
+!---------------------------------------------------
 
     call contraction_422 ((/"o2","o3","p1","o1"/),(/"p1","o3"/),(/"o2","o1"/),t1,ho,-1.0d0,1.0d0,nrep)
 
-!***********************TERM-3*********
+!-----------------------TERM-3---------
 !F_bar_mi = F_bar_mi + F(m,e) * T1(e,i)
-!**************************************
+!--------------------------------------
    
    call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
 
+   write(*,*)'value of ho', dot_product(ho,ho)
    end subroutine
 
    subroutine f_bar_ae(fvv,fvo,t1,t2,hv)

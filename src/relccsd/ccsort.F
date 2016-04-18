@@ -807,13 +807,16 @@ C
 C
 C---------------Description--------------------------------------------
 C
-C     Sort array BUF1(I,J;KL:KLREP) to array -BUF2*(KL J,I:IREP)
+C     Sort array BUF1(I,J;KL:KLREP) to array BUF2(KL J,I:IREP)
 C
 C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Luuk Visscher ; modified by Avijit Shee, so that now 
+C                              it can do only the sorting, c.c. and
+C                              anti-symmetrization should be done
+C                              later if needed, that is a separate task.
 C
 C---------------Calling variables--------------------------------------
 C
@@ -858,9 +861,6 @@ C
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
-      CALL XSCAL (OFF(NREP+1),-A1,BUF2,1)
-      IF (CARITH) CALL CONJUGA (OFF(NREP+1),BUF2,1)
-C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

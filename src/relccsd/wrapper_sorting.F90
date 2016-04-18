@@ -135,7 +135,6 @@
     call permutate(shifted_array(1:3),P)
 
     do i = 1, size(P,1)
-!    write(*,*)P(i,:)
     a%num = toDecimal((/P(i,:),temp/))
     a%trans = toDecimal((/P(i,:),temp/),.true.)    
 
@@ -1216,8 +1215,8 @@
         column = m(d%ijk_reorder)%pqr%triangular%tuple_combInd  
        endif
        
-        call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type, &
-           & c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%ijk_reorder)%pqr%tuple_combInd,&
+        call srt_31(save_index)%restricted_ket(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type, &
+           & c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd,m(d%ijk_reorder)%pqr%triangular%tuple_combInd,&
            & array_tot(m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
            & m(d%ijk_reorder)%pqr%triangular%tuple,B%integral,sorted) 
 
@@ -1383,9 +1382,7 @@
   subroutine onebody_for_blas (array1,array2,array3,trans_1b,row,column,FreeIndx) 
 
 !--------purpose-------------
-
 !    arrange onebody routine for blas. get the indices for matrix multiplication as well as the end tensor.
-
 !----------------------------
 
 

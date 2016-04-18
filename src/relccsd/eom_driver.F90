@@ -11,9 +11,16 @@
     private
 
     character(8) :: eomtype
-    integer      :: nroot,iarep
+    integer :: nroot,iarep
 
    contains
+
+  subroutine read_input()
+
+    iarep = nr_roots(1)
+    nroot = nr_roots(2)
+
+  end subroutine
 
    subroutine input_processor(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2)
 
@@ -34,13 +41,13 @@
 !Local Variables
 !==============
 
-   integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iarep,iroot,nroot,k(1)
+   integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1)
    real*8  :: fac1
    real*8,allocatable  :: H_II(:)
    real*8  :: eps((iv(nrep+1)+io(nrep+1))) 
 
-    iarep = nr_roots(1)
-    nroot = nr_roots(2)
+!   iarep = nr_roots(1)
+!   nroot = nr_roots(2)
 
     if (relcc_do_eomip) eomtype = 'IP'
     if (relcc_do_eomea) eomtype = 'EA'
@@ -63,26 +70,22 @@
      i = 1
      ii = 1
      do irep = 1, nrep
-        do j = 1, no(irep)
-           eps(i) = Fbar_HH(ii)
-           i = i + 1
-           ii = ii + (no(irep) + 1) * rcw
-        enddo
-        ii = ii - no(irep) * rcw
+        call dcopy (no(irep),Fbar_HH(ii),((no(irep)+1)*rcw),eps(i),1)
+        i  =  i + no(irep)
+        ii =  ii + NO(irep)* no(irep) * rcw
      enddo
 
      ii = 1
      do irep = 1, nrep
-        do j = 1, nv(irep)
-           eps(i) = Fbar_pp(ii)
-           i = i + 1
-           ii = ii + (nv(irep) + 1) * rcw
-        enddo
-        ii = ii - nv(irep) * rcw
+        call dcopy (nv(irep),Fbar_PP(ii),((nv(irep)+1)*rcw),eps(i),1)
+        i  =  i + nv(irep)
+        ii =  ii + NV(irep)* nv(irep) * rcw
      enddo
 
      allocate(H_II(nfvo*rcw))
 
+    ai = 1
+    ii = 0
     do irep = 1, nrep
        arep = multb (irep,iarep+nrep,2)
         do i = 1, no(irep)
@@ -91,8 +94,9 @@
          aoff = io(nrep+1) + iv(arep)
           do a = 1, nv(arep)
              aa = aoff + a
-             iaai = iovvo(iarep) + (jjvo(arep,irep)+ai-1)*nfvo + jjov(irep,arep)+ (a-1)*no(irep) + i
-             H_II(ai) = fac1 - eps(aa) + vbar_ss (iaai)
+             iaai = iovvo(iarep) + (jjvo(arep,irep)+((i-1)*nv(arep)+a)-1)*nov(iarep) + &
+       &    jjov(irep,arep) + (a-1)*no(irep) + i
+             H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
              ai = ai + 1
           enddo
         enddo
@@ -100,7 +104,8 @@
 
     do iroot = 1, nroot
      k = minloc(H_II) 
-     eps(k) = 0.0d0
+     i = k(1)
+     H_II(i) = 8000.0d0
      R1(k,iroot) = 1.0d0
     enddo
 
@@ -126,9 +131,11 @@
    real*8, allocatable :: t1(:),t2(:) 
    real*8, allocatable :: sigma1(:,:), sigma2(:,:) 
    real*8, allocatable :: R1(:,:), R2(:,:) 
+   real*8, allocatable :: ev(:), evec(:,:) 
    real*8, allocatable :: buf1(:),buf2(:),buf3(:) ! may be all of them are not necessary. 
-   real*8 :: sub_H(nroot,nroot)
+   real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
    integer :: irp,iroot,jroot,i,j
+
 
 
 !memory allocation
@@ -145,8 +152,9 @@
     nbuf1 = max(joooo(nrep+1),jvooo(nrep+1),jvvoo(nrep+1),jvovo(nrep+1))
     nbuf2 = nbuf1
 
-     call alloc( buf1  , nbuf1*rcw             , id="buf1" )
-     call alloc( buf2  , nbuf2*rcw             , id="buf2" )
+!     call alloc( buf1  , nbuf1*rcw             , id="buf1" )
+!     call alloc( buf2  , nbuf2*rcw             , id="buf2" )
+
 
     call allocator_get_words_inuse(start_mem_use)
     call legacy_lwork_get(work_memsize)
@@ -170,6 +178,8 @@
 
 !     Allocate now also this remaining work array
         allocate(buf3(nbuf3*rcw))
+        allocate(buf1(nbuf1*rcw))
+        allocate(buf2(nbuf2*rcw))
 
 !!        call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
 
@@ -193,15 +203,18 @@
        
 ! allocate the amplitudes
 
+
+      call read_input()
+
+
       allocate (t1(ndimt1*rcw))
       allocate (t2(ndimt2*rcw))
 
-      allocate (r1(ndimt1*rcw,nroot))
-      allocate (r2(ndimt2*rcw,nroot))
+      allocate (r1(ndimt1*rcw,nr_roots(2)))
+      allocate (r2(ndimt2*rcw,nr_roots(2)))
 
-      allocate (sigma1(ndimt1*rcw,nroot))
-      allocate (sigma2(ndimt2*rcw,nroot))
-
+      allocate (sigma1(ndimt1*rcw,nr_roots(2)))
+      allocate (sigma2(ndimt2*rcw,nr_roots(2)))
 
 
       call allocator_get_words_inuse(current_mem_use)
@@ -212,39 +225,55 @@
          goto 451
       endif
 
+    call ccdump
 
     call getampt(t1,t2)
 
-    call IM_container(eomtype,t1,t2,B,buf1,buf2,buf3)
-   
+    call IM_container(eomtype,t1,t2,B,buf1,buf2,buf3,int(nbuf3,4))
+
      deallocate(B%Wbar_mbej) 
 
     call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
 
 
-    do iroot = 1, nroot
+    do iroot = 1, nr_roots(2)
+      sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
+      sigma2(1:ndimt2*rcw,iroot:iroot) = 0.0d0 
+
       call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot),r2(1:ndimt2*rcw,iroot:iroot),t1,t2,B, &
-     &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3)
+     &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3,int(nbuf3,4))
     enddo
 
-    do jroot = 1, nroot
-     do iroot = 1, nroot   
+    sub_H(1:nr_roots(2),1:nr_roots(2)) = 0.0d0
+
+    do jroot = 1, nr_roots(2)
+     do iroot = 1, nr_roots(2)
       sub_H(iroot,jroot) = dot_product(r1(:,iroot),sigma1(:,jroot)) + dot_product(r2(:,iroot),sigma2(:,jroot)) 
       enddo
      enddo
 
-     write(*,*)((sub_H(i,j),i=1,nroot),j=1,nroot)
+     allocate (ev(nr_roots(2)))
+     allocate (evec(nr_roots(2),nr_roots(2)))
 
+    call solve_cg(nr_roots(2),sub_H,evec,ev)
+
+     write(*,*)'eigenvalues', (ev(i),i=1,nr_roots(2))
+     write(*,*)'eigenvectors', ((evec(i,j),i=1,nr_roots(2)),j=1,nr_roots(2))
+
+     deallocate(ev)
+     deallocate(evec)
 
 !    call davidson 
 
  451  continue
 
 
-     call dealloc(buf1)  
-     call dealloc(buf2)  
+!    call dealloc(buf1)  
+!    call dealloc(buf2)  
  !    call dealloc(buf3)  
      deallocate(buf3)
+     deallocate(buf1)
+     deallocate(buf2)
 
 
      deallocate(t1,t2,sigma1,sigma2,r1,r2)

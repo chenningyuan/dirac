@@ -19,8 +19,8 @@ C---------------Calling variables--------------------------------------
 C
 C     Intermediaries etc.
 
-      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),L1(*),S1(*),L2(*),S2(*)
-      REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
+      REAL*8 EPS(*),FOO(:),FVO(*),FVV(*),L1(*),S1(*),L2(*),S2(*)
+      REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(:),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
       INTEGER NBUF2,NBUF3 

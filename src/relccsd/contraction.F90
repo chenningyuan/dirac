@@ -118,7 +118,6 @@
     call decide_sorting_routine(13,left_order,right_order,im_order,transA,match_index,asym_factor_L, &
     &   .true.,sorted_opArray=sorted_oparray_left)
 
-!    write(*,*)'left array',(sorted_opArray_left(i),i=1,4),match_index,transA
 
      if (present(LeftTensor)) then 
       call sorting_for_blas(match_index,.false.,transA,v_sort,x_row,x_column,LeftTensor)
@@ -131,7 +130,6 @@
      call decide_sorting_routine(31,right_order,im_order,sorted_oparray_left,transB,match_index,asym_factor_R, &
     &         .false.,sorted_opArray=sorted_oparray_right)
 
-!    write(*,*)'right array',(sorted_opArray_right(i),i=1,4)
 
      array_equal = all((/sorted_oparray_left(1),sorted_oparray_right(4)/)==im_order)
 

@@ -17,11 +17,9 @@
       real(8),allocatable,dimension(:) :: W_ijmn, W_ejmb, W_mbej, W_iemn, W_efam, W_amef, W_mnie, Wbar_mbej ! all 2-b intermediates   
     endtype intermediates
 
-
    contains
 
-
-   subroutine IM_container(eomtype,t1,t2,A,buf1,buf2,buf3)
+   subroutine IM_container(eomtype,t1,t2,A,buf1,buf2,buf3,nbuf3)
 
 #include "symm.inc"
 #include "complex.inc"
@@ -35,10 +33,11 @@
 !Calling Variables
 !----------------- 
 character(8), intent (in) :: eomtype  
-type(intermediates), intent(out) :: A
+type(intermediates), intent(inout) :: A
 real(8), intent(in) :: t1(:), t2(:)
 real(8), intent(in) :: buf1(*),buf2(*)
 real(8), intent(inout) :: buf3(*)
+integer, intent(in) :: nbuf3
 
 !Local Variables
 !----------------
@@ -90,7 +89,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
    end subroutine
 
-   subroutine sigma_ee_1h1p(r1,r2,t1,t2,B,sigma1,sigma2,buf2,buf3)
+   subroutine sigma_ee_1h1p(r1,r2,t1,t2,B,sigma1,sigma2,buf2,buf3,nbuf3)
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -101,24 +100,22 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
 !---------------Calling variables--------------------------------------
   real(8), intent(in),target   :: r1(:,:), r2(:,:)           ! R-Amplitudes
-  real(8), intent(in)   :: t1(:),t2(:)           ! R-Amplitudes
-  real(8), intent(in)  :: buf2(*),buf3(*)           ! T-Amplitudes
-  type(intermediates), intent(in)  :: B          ! T-Amplitudes
-  real(8), intent(out),target  :: sigma1(:,:), sigma2(:,:)  ! sigma-vectors
+  real(8), intent(in)     :: t1(:),t2(:)           ! t-Amplitudes
+  integer, intent(in)     :: nbuf3    
+  real(8), intent(in)     :: buf2(*)           
+  real(8), intent(inout)  :: buf3(*)           
+  type(intermediates), intent(in)  :: B      
+  real(8), intent(inout)           :: sigma1(:,:), sigma2(:,:)  ! sigma-vectors
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
-  real(8), pointer :: r1_ptr(:),r2_ptr(:),sigma1_ptr(:),sigma2_ptr(:)
-
+  real(8), pointer :: r1_ptr(:),r2_ptr(:)
   real(8), allocatable :: int_1b(:),sigma2_temp(:) 
-  integer :: off1,off2,irp,istart,mint,m,n,k
+  integer :: off1,off2,irp,istart,mint,m,n,k,nint
   logical :: done 
 !--------------------------------------------------
 
   r1_ptr(1:ndimt1*rcw)     => r1(1:ndimt1*rcw,1)
   r2_ptr(1:ndimt2*rcw)     => r2(1:ndimt2*rcw,1)
-  sigma1_ptr(1:ndimt1*rcw) => sigma1(1:ndimt1*rcw,1)
-  sigma2_ptr(1:ndimt2*rcw) => sigma2(1:ndimt2*rcw,1)
-
 
 ! class : (HBar_SS*R)(a,i)
 !=========================
@@ -126,18 +123,25 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !S_ai = S_ai +  F^a_e*R^e_i   
 !---------------------------
    
-    call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1_ptr,sigma1_ptr,1.0d0,1.0d0,nrep)
+    call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep)
+
+    write(*,*)'inside sigma 1', dot_product(sigma1(ndimt1*rcw,:),sigma1(ndimt1*rcw,:))
 
 !S_ai = S_ai - f_bar_mi(m,i)*r1(a,m) 
 !------------------------------------
 
+    write(*,*)'dot product fbar_pp', dot_product(B%Fbar_mi(1:nfoo),B%Fbar_mi(1:nfoo))
     call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),B%Fbar_mi,r1,sigma1,-1.0d0,1.0d0,nrep)
+
+    write(*,*)'inside sigma 2', dot_product(sigma1(ndimt1*rcw,:),sigma1(ndimt1*rcw,:))
 
 !S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
 !------------------------------------ 
 
     call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej)
 
+
+    write(*,*)'inside sigma 3', dot_product(sigma1(ndimt1*rcw,:),sigma1(ndimt1*rcw,:))
 
 ! class : [HBar_SD*R](a,i)
 !=========================
@@ -148,6 +152,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_242 ((/"o2","p2"/),(/"p1","p2","o1","o2"/), &
    &   (/"p1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
+    write(*,*)'inside sigma 4', dot_product(sigma1(ndimt1*rcw,:),sigma1(ndimt1*rcw,:))
+
 !S_ai = S_ai + w_amef(am,ef) * r2(ef,im)
 !----------------------------------------
  
@@ -155,12 +161,14 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
    &         LeftTensor=B%W_amef,RightTensor=r2_ptr)
 
 
+    write(*,*)'inside sigma 5', dot_product(sigma1(ndimt1*rcw,:),sigma1(ndimt1*rcw,:))
 !S_ai = S_ai - W_mnie(mn,ie)*r2(ae,mn)
 !---------------------------------------
 
     call contraction_442((/"o2","o3","o1","p2"/),(/"p1","p2","o2","o3"/),(/"p1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
    &         LeftTensor=B%W_mnie,RightTensor=r2_ptr)
 
+    write(*,*)'inside sigma 6', dot_product(sigma1(ndimt1*rcw,:),sigma1(ndimt1*rcw,:))
 
 ! class : [HBar_DS*R](ab,ij)
 !===========================
@@ -168,9 +176,12 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !S(ab,ij) = S(ab,ij) + P(ab) w_iemn(ma,ij)*r1(b,m)
 !--------------------------------------------------
 
-    call contraction_424 ((/"o2","p1","o1","o2"/),(/"p2","o2"/), &
+    call contraction_424 ((/"o3","p1","o1","o2"/),(/"p2","o3"/), &
    &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%W_iemn, &
    &    RightTensor=r1_ptr) 
+
+
+    write(*,*)'inside sigma 7', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
 
 !S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
 !--------------------------------------------------
@@ -178,6 +189,9 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_424 ((/"p1","p2","p3","o2"/),(/"p3","o1"/), &
    &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%W_efam, &
    &    RightTensor=r1_ptr) 
+
+
+    write(*,*)'inside sigma 8', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
 
 !int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
 !S(ab,ij) = S(ab,ij) + P(ab) int_1b(b,f)*t2(af,ij)
@@ -190,12 +204,13 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
     call contraction_422 ((/"p2","o3","p4","p3"/),(/"p3","o3"/),(/"p2","p4"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,B%W_amef)
 
-    call contraction_244 ((/"p2","p4"/),(/"p1","p4","o1","o2"/), &
-    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+    call contraction_244 ((/"p2","p4"/),(/"p1","p4","o1","o2"/),(/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0, &
+   &                       nrep,LeftTensor=int_1b,RightTensor=t2)
 
     deallocate(int_1b)
 
 
+    write(*,*)'inside sigma 8', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
 !int_1b(n,j) = int_1b(n,j) + w_mnie(nm,je)*r1(e,m)
 !S(ab,ij) = S(ab,ij) + int_1b(n,j) * t2(ab,in)
 !---------------------------------------------------
@@ -210,6 +225,10 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
 
     deallocate(int_1b)
+
+
+    write(*,*)'inside sigma 9', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
+
 
 ! class : [HBar_DD*R](ab,ij) 
 !===========================
@@ -226,21 +245,27 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_244 ((/"o3","o2"/),(/"p1","p2","o1","o3"/), &
    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
 
+
+    write(*,*)'inside sigma 10', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
+
 ! S(ab,ij) = S(ab,ij) + w_vvvv(ab,ef)*r2(ef,ij)
 !------------------------------------------------
 
+     allocate(int_1b(ndimt2*rcw))
+
+     call gettau (t1,t2,int_1b)
       off1 = 1
       off2 = 1
       do irp = 1, nrep
          istart = 0
+         done =.false.
          if (nvvt(irp).eq.0) cycle
-         mint = nbuf3/nvvt(irp)
-  10     call getdz (irp,istart,nint,done,buf3,mint)
+   10    call w_efab_out_of_core (irp,istart,done,int_1b,buf2,t1,nbuf3,buf3,nint)
          m = nvvt(irp)
          n = noot(irp)
          k = nint
          call xgemm ('n','n',m,n,k,a1,buf3,m,r2_ptr(off1+istart*rcw),m, &
-     &               a1,sigma2_ptr(off2),m)
+     &               a1,sigma2(off2,1),m)
          if (.not.done) then
             istart = istart + nint
             goto 10
@@ -249,11 +274,14 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
          off2 = off2 + m * n * rcw
       enddo
 
+      deallocate(int_1b)
+
 ! S(ab,ij) = S(ab,ij) + w_ijmn(mn,ij) * r2(ab,mn)
 !--------------------------------------------------
 
-      call contraction_444((/"o3","o4","o1","o2"/),(/"p1","p2","o1","o2"/), &
+      call contraction_444((/"o3","o4","o1","o2"/),(/"p1","p2","o3","o4"/), &
      &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ijmn)
+
 
 ! S(ab,ij) = S(ab,ij) + P(ab)P(ij) w_mbej(mb,ej)*r2(ae,im)
 !----------------------------------------------------------
@@ -300,6 +328,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !int_1b(a,f) = int_1b(a,f) - V(nm,fe)*r2(ea,mn)  
 !S(ab,ij) = S(ab,ij) + int_1b(a,f)*t2(fb,ij)  
 !-----------------------------------------------
+
+    allocate(int_1b(nfvv*rcw))
     int_1b = 0.0d0
 
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"p3","p1","o3","o4"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
@@ -307,10 +337,15 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
     & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
 
+    deallocate(int_1b)
+
+    write(*,*)'inside sigma 12', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
+
 !int_1b(i,n) = int_1b(i,n) + V(nm,fe)*r2(fe,im)
 !S(ab,ij) = S(ab,ij) - int_1b(i,n)*t(ab,jn)
 !------------------------------------------------
 
+    allocate(int_1b(nfoo*rcw))
     int_1b = 0.0d0
 
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o1","o4"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
@@ -318,6 +353,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_244 ((/"o1","o4"/),(/"p1","p2","o2","o4"/), &
     & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
 
+    deallocate(int_1b)
+    write(*,*)'inside sigma 13', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
 
   end subroutine
 
