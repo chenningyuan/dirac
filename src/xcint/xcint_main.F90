@@ -132,8 +132,7 @@ module xcint_main
    logical :: do_potential
    integer :: response_order_mo
    integer :: response_order_ao
-   logical :: do_london_rhs_direct_der1
-   logical :: do_london_rhs_direct_der2
+   logical :: do_london_rhs_direct
    logical :: do_london_rhs_ro
    logical :: do_london_susc2el
    logical :: london_direct_export
@@ -165,8 +164,7 @@ contains
                             xc_nr_atoms,              &
                             xc_property_gradient,     &
                             xc_do_potential,          &
-                            xc_do_london_rhs_direct_der1,  &
-                            xc_do_london_rhs_direct_der2,  &
+                            xc_do_london_rhs_direct,  &
                             xc_london_direct_export,       &
                             xc_london_reorth_export,       &
                             xc_do_london_rhs_ro,      &
@@ -208,8 +206,7 @@ contains
       real(8), optional, target, intent(inout) :: xc_property_gradient(*)
 
       logical, optional,         intent(in)    :: xc_do_potential
-      logical, optional,         intent(in)    :: xc_do_london_rhs_direct_der1
-      logical, optional,         intent(in)    :: xc_do_london_rhs_direct_der2
+      logical, optional,         intent(in)    :: xc_do_london_rhs_direct
       logical, optional,         intent(in)    :: xc_london_direct_export
       logical, optional,         intent(in)    :: xc_london_reorth_export
       logical, optional,         intent(in)    :: xc_do_london_rhs_ro
@@ -281,8 +278,7 @@ contains
       do_potential          = .false.
       response_order_mo     = 0
       response_order_ao     = 0
-      do_london_rhs_direct_der1  = .false.
-      do_london_rhs_direct_der2  = .false.
+      do_london_rhs_direct  = .false.
       london_direct_export  = .false.
       london_reorth_export  = .false.
       do_london_rhs_ro      = .false.
@@ -300,8 +296,7 @@ contains
          if (present(xc_do_potential))          do_potential          = xc_do_potential
          if (present(xc_response_order_mo))     response_order_mo     = xc_response_order_mo
          if (present(xc_response_order_ao))     response_order_ao     = xc_response_order_ao
-         if (present(xc_do_london_rhs_direct_der1))  do_london_rhs_direct_der1  = xc_do_london_rhs_direct_der1
-         if (present(xc_do_london_rhs_direct_der2))  do_london_rhs_direct_der2  = xc_do_london_rhs_direct_der2
+         if (present(xc_do_london_rhs_direct))  do_london_rhs_direct  = xc_do_london_rhs_direct
          if (present(xc_london_direct_export))  london_direct_export  = xc_london_direct_export
          if (present(xc_london_reorth_export))  london_reorth_export  = xc_london_reorth_export
          if (present(xc_do_london_rhs_ro))      do_london_rhs_ro      = xc_do_london_rhs_ro
@@ -324,8 +319,7 @@ contains
          call xc_mpi_bcast(nr_fmat)
          call xc_mpi_bcast(nr_atoms)
          call xc_mpi_bcast(do_potential)
-         call xc_mpi_bcast(do_london_rhs_direct_der1)
-         call xc_mpi_bcast(do_london_rhs_direct_der2)
+         call xc_mpi_bcast(do_london_rhs_direct)
          call xc_mpi_bcast(london_direct_export)
          call xc_mpi_bcast(london_reorth_export)
          call xc_mpi_bcast(do_london_rhs_ro)
@@ -507,7 +501,7 @@ contains
       end if
      
       max_ao_m_order = 0
-      if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2) then
+      if (do_london_rhs_direct) then
         max_ao_m_order = 1
       end if
       if (do_london_susc2el) then
@@ -675,7 +669,7 @@ contains
 
 !        symmetrize matrices
          if (use_blas3_scheme .or. (use_gga                         &
-                                   .and. .not. do_london_rhs_direct_der1  &
+                                   .and. .not. do_london_rhs_direct &
                                    .and. .not. do_london_susc2el    &
                                    .and. .not. do_london_rhs_ro           &
                                    .and. .not. do_london_ks         &
@@ -687,7 +681,7 @@ contains
             end if
          end if
 
-         if (do_london_rhs_direct_der1 .or. do_london_rhs_ro) then
+         if (do_london_rhs_direct .or. do_london_rhs_ro) then
             call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
@@ -934,11 +928,11 @@ contains
     if (response_order_mo > 0) then
        max_fun_derv = response_order_mo + 1
     end if
-    if (do_london_rhs_direct_der1) then
+    if (do_london_rhs_direct) then
        max_fun_derv = 1
-    end if
-    if (do_london_rhs_direct_der2 .and. .not. dft_cfg_no_sdft) then
-       max_fun_derv = 2
+       if (.not. dft_cfg_no_sdft) then
+          max_fun_derv = 2
+       end if
     end if
     if (do_london_susc2el) then
        max_fun_derv = 2
@@ -1210,7 +1204,7 @@ contains
         end if !exchange-correlation potential
 
 !fix for lao shieldings with saop:
-        if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2 .or. do_london_rhs_ro) then
+        if (do_london_rhs_direct .or. do_london_rhs_ro) then
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
             call get_n(rho_outer,       &
@@ -1239,7 +1233,7 @@ contains
 
 !       (1) direct-lao contributions, 1st functional derivatives
 !       --------------------------------------------------------
-        if (do_london_rhs_direct_der1) then
+        if (do_london_rhs_direct) then
 
             if (use_gga) then
               call gga_london_distribute_r(derv(1, d1000000),                 &
@@ -1288,7 +1282,7 @@ contains
 !       (3) direct-lao spin density contribution, 2nd functional derivatives
 !       --------------------------------------------------------------------
 
-        if (do_london_rhs_direct_der2 .and. .not. dft_cfg_no_sdft) then
+        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
               call lr_sdft_lao_direct(ipoint,         &
                                       bllen,          &
                                       mat_dim,        &
@@ -1299,7 +1293,6 @@ contains
                                       gnn_0,          &
                                       w(1),           &
                                       use_gga,        &
-                                      dmat,           &
                                       buffer,         &
                                       derv_length,    &
                                       derv, u,        &
@@ -2696,7 +2689,6 @@ contains
                                 gnn_0,              &
                                 w,                  &
                                 is_gga,             &
-                                dmat,               &
                                 buffer,             &
                                 n,                  &
                                 derv, u,            &
@@ -2713,7 +2705,6 @@ contains
     real(8), intent(in)    :: gnn_0(*)
     real(8), intent(in)    :: w
     logical, intent(in)    :: is_gga
-    real(8), intent(in)    :: dmat(*)
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
     real(8), intent(in)    :: derv(max_block_length, 0:n)
@@ -2759,7 +2750,7 @@ contains
                      gn_0_pointwise, &
                      fmat_pg_sym, &
                      mat_dim,     &
-                     dmat,        &
+                     dmat_0,      &
                      ao,          &
                      px, py, pz)
     else
@@ -2774,7 +2765,7 @@ contains
       call get_s_lao(s_b_lao,      &
                      fmat_pg_sym-1,  &
                      mat_dim,      &
-                     dmat,         &
+                     dmat_0,       &
                      ao,           & 
                      px, py, pz)
     end if

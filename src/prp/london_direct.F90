@@ -434,57 +434,28 @@ contains
     if (parcal) call dirac_parctl(4)
 #endif
 
-    call integrate_xc(xc_mat_dim              = ntbas(0),        &
-                      xc_nz                   = nz,              &
-                      xc_dmat_0               = dmat,            &
-                      xc_nr_dmat              = 0,               &
-                      xc_nr_fmat              = max_nr_xyz_comp, &
-                      xc_fmat                 = fmat,            &
-                      xc_fmat_pg_sym          = isym_2el_lao,    &
-                      xc_do_london_rhs_direct_der1 = .true.)
-
-!gosia: if sdft direct contributions are calculated, then i need a full density matrix
-! now inside integrate_xc subroutine, xc_dmat_0 only contains the real part of dmat
-! that's why here i copy full dmat to buffer and pass it through xc_dmat
-! it's not efficient, but won't mess up with other calls to integrate_xc
-    if (.not. dft_cfg_no_sdft) then
-
-      call alloc(buffer, n2bbasx, nz)
-      call dcopy(n2bbasxq, dmat, 1, buffer, 1)
-
-#ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
-#endif
-
+!     sdft and no_sdft contributions separated inside integrate_xc
       if (expped) then
 !        additionally write s_b_lao and gs_b_lao to file
          call integrate_xc(xc_mat_dim              = ntbas(0),        &
                            xc_nz                   = nz,              &
                            xc_dmat_0               = dmat,            &
-                           xc_nr_dmat              = 1,               &
+                           xc_nr_dmat              = 0,               &
                            xc_nr_fmat              = max_nr_xyz_comp, &
-                           xc_dmat                 = buffer,          &
                            xc_fmat                 = fmat,            &
                            xc_fmat_pg_sym          = isym_2el_lao,    &
-                           xc_dmat_pg_sym          = isym_2el_lao,    &
-                           xc_dmat_ih_sym          = iherm_2el_lao,   &
-                           xc_do_london_rhs_direct_der2 = .true.,     &
+                           xc_do_london_rhs_direct = .true.,     &
                            xc_london_direct_export = .true.)
       else
          call integrate_xc(xc_mat_dim              = ntbas(0),        &
                            xc_nz                   = nz,              &
                            xc_dmat_0               = dmat,            &
-                           xc_nr_dmat              = 1,               &
+                           xc_nr_dmat              = 0,               &
                            xc_nr_fmat              = max_nr_xyz_comp, &
-                           xc_dmat                 = buffer,          &
                            xc_fmat                 = fmat,            &
                            xc_fmat_pg_sym          = isym_2el_lao,    &
-                           xc_dmat_pg_sym          = isym_2el_lao,    &
-                           xc_dmat_ih_sym          = iherm_2el_lao,   &
-                           xc_do_london_rhs_direct_der2 = .true.)
+                           xc_do_london_rhs_direct = .true.)
       end if
-      call dealloc(buffer)
-    end if
 
     call dealloc(dmat)
 
