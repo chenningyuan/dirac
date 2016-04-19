@@ -1716,6 +1716,7 @@ contains
 !         now works only in C1 symmetry, because isymop in pammag is hardcoded to 1
 
           if (do_london_susc2el) then
+            write(*, *) 'do_london_susc2el ', xc_mpi_get_rank() 
             n_bb = 0.0d0
 !           here no SDFT contributions (first-order functional derivatives)
             if (use_gga) then
