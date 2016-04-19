@@ -903,15 +903,16 @@ contains
 
     type(omega_prefactor) :: u
 
-    allocate(u%n (      nr_fmat))
-    allocate(u%s (   3, nr_fmat))
-    allocate(u%gn(   3, nr_fmat))
-    allocate(u%gs(3, 3, nr_fmat))
-    allocate(u%tn(      nr_fmat))
-    allocate(u%ts(   3, nr_fmat))
-    allocate(u%s_lao(3, nr_fmat))
-    allocate(u%gs_lao(3, 3, nr_fmat))
-
+    if (nr_fmat > 0) then
+      allocate(u%n (      nr_fmat))
+      allocate(u%s (   3, nr_fmat))
+      allocate(u%gn(   3, nr_fmat))
+      allocate(u%gs(3, 3, nr_fmat))
+      allocate(u%tn(      nr_fmat))
+      allocate(u%ts(   3, nr_fmat))
+      allocate(u%s_lao(3, nr_fmat))
+      allocate(u%gs_lao(3, 3, nr_fmat))
+    end if
 
 
 
@@ -1105,14 +1106,14 @@ contains
       if (n_0(1) > dft_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
 
-         u%n  = 0.0d0
-         u%s  = 0.0d0
-         u%gn = 0.0d0
-         u%gs = 0.0d0
-         u%tn = 0.0d0
-         u%ts = 0.0d0
-         u%s_lao  = 0.0d0
-         u%gs_lao  = 0.0d0
+         if (allocated(u%n)) u%n  = 0.0d0
+         if (allocated(u%s)) u%s  = 0.0d0
+         if (allocated(u%gn)) u%gn = 0.0d0
+         if (allocated(u%gs)) u%gs = 0.0d0
+         if (allocated(u%tn)) u%tn = 0.0d0
+         if (allocated(u%ts)) u%ts = 0.0d0
+         if (allocated(u%s_lao)) u%s_lao  = 0.0d0
+         if (allocated(u%gs_lao)) u%gs_lao  = 0.0d0
 
          w(1) = rw(ipoint)
 
@@ -1825,14 +1826,14 @@ contains
     deallocate(derv)
     deallocate(derv_nadd)
 
-    deallocate(u%n)
-    deallocate(u%s)
-    deallocate(u%gn)
-    deallocate(u%gs)
-    deallocate(u%tn)
-    deallocate(u%ts)
-    deallocate(u%s_lao)
-    deallocate(u%gs_lao)
+    if (allocated(u%n)) deallocate(u%n)
+    if (allocated(u%s)) deallocate(u%s)
+    if (allocated(u%gn)) deallocate(u%gn)
+    if (allocated(u%gs)) deallocate(u%gs)
+    if (allocated(u%tn)) deallocate(u%tn)
+    if (allocated(u%ts)) deallocate(u%ts)
+    if (allocated(u%s_lao)) deallocate(u%s_lao)
+    if (allocated(u%gs_lao)) deallocate(u%gs_lao)
 
    end subroutine
 
