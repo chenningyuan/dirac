@@ -2198,6 +2198,12 @@ C
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
       real*8    ECI(MAX_ROOTS)
       LOGICAL   PAR_GASCIP
+
+C     for QGEMM etc with complex matrices:
+      PARAMETER (NZCMPLX = 2)
+      DIMENSION IQINDX(NZCMPLX)
+      SAVE IQINDX
+      DATA IQINDX /1,2/
 C
 #include "memint.h"
 C
@@ -2332,7 +2338,7 @@ C          DOSIG,SVEC,BVEC,HCORE,VMUUUU,
 C          DODEN,CL,CR,DV,PV,
 C          DO2EL,NDET,IDET,IHRM,IPRINT)
 C
-      IF (IPRINT .GE. 10) THEN
+      IF (IPRINT .GT. 10) THEN
          WRITE(LUPRI,'(/A)')
      &      ' (GASCIP_RCISTD) Diagonal of CI Hamiltonian'
          CALL OUTPUT(WORK(KHDIAG),1,1,1,NDET,1,NDET,-1,LUPRI)
@@ -2386,11 +2392,18 @@ C
 C
       LHRED = MAX_HRED*MAX_HRED*NZ_in_CI
       CALL MEMGET2('REAL','HRED',KHRED,LHRED,WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','ERED',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','VRED',KEIGVC,LHRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HEIGVL',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HEIGVC',KEIGVC,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
       KHREDI = KHRED + MAX_HRED*MAX_HRED
       KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED
+
+      CALL MEMGET2('REAL','SRED' ,KSRED,LHRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SEIGVL',KSEIGVL,MAX_HRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','S_MHLF',KS_MHLF,LHRED,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KSRED),LHRED)
+      KSREDI = KSRED + MAX_HRED*MAX_HRED
+      KS_MHLFI = KS_MHLF + MAX_HRED*MAX_HRED
 C
 C     Assume we can have all sigma and trial vectors in memory.
 C     This could get a little expensive for large CI's.
@@ -2530,10 +2543,11 @@ C
          WALL_st = WALL_end
       END IF
 C
-C        Extend reduced Hamiltonian:
-C        ---------------------------
+C        Extend reduced Hamiltonian and reduced metric:
+C        ----------------------------------------------
 C
 C        HRED(I,J) = BCVEC(I)^+ * SCVEC(J)
+C        SRED(I,J) = BCVEC(I)^+ * BCVEC(J)
 C
 C        (Old + New) sigma vectors * New trial vectors
 C
@@ -2552,12 +2566,20 @@ C
                WORK(KHRED+(J-1)*MAX_HRED+(I-1)) =
      &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
      &                         WORK(KSCVEC+(J-1)*NDETQ),1)
+               WORK(KSRED+(J-1)*MAX_HRED+(I-1)) =
+     &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &                         WORK(KBCVEC+(J-1)*NDETQ),1)
                IF (NZ_in_CI .GT. 1) THEN
                   WORK(KHREDI+(J-1)*MAX_HRED+(I-1)) =
      &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
      &                        WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
      &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
      &                        WORK(KSCVEC+(J-1)*NDETQ),1)
+                  WORK(KSREDI+(J-1)*MAX_HRED+(I-1)) =
+     &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &                        WORK(KBCVEC+(J-1)*NDETQ+NDET),1)
+     &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
+     &                        WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
             END DO
          END DO
@@ -2566,15 +2588,24 @@ C        New sigma vectors * Old trial vectors
 C
          DO J = N_CRED_OLD+1, N_CRED  ! New sigma vectors
             DO I = 1, N_CRED_OLD   ! Old trial vectors
+            
                WORK(KHRED+(J-1)*MAX_HRED+(I-1)) =
      &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
      &                         WORK(KSCVEC+(J-1)*NDETQ),1)
+               WORK(KSRED+(J-1)*MAX_HRED+(I-1)) =
+     &              DDOT(NDETQ,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &                         WORK(KBCVEC+(J-1)*NDETQ),1)
                IF (NZ_in_CI .GT. 1) THEN
                   WORK(KHREDI+(J-1)*MAX_HRED+(I-1)) =
      &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
      &                        WORK(KSCVEC+(J-1)*NDETQ+NDET),1)
      &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
      &                        WORK(KSCVEC+(J-1)*NDETQ),1)
+                  WORK(KSREDI+(J-1)*MAX_HRED+(I-1)) =
+     &              DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ),1,
+     &                        WORK(KBCVEC+(J-1)*NDETQ+NDET),1)
+     &            - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,
+     &                        WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
             END DO
          END DO
@@ -2582,23 +2613,23 @@ C
 C        Check for inconsistencies:
 C
 chj      1.0D-10 can give problems with 1.0D-10 screening in GASCIP
-C        THRDAS = 1.0D-10
-         THRDAS = MAX(1.0D-09,THRSCR*100.0D0)
-         DASR = 0.0D0
-         DASI = 0.0D0
+C        THRDHS = 1.0D-10
+         THRDHS = MAX(1.0D-09,THRSCR*100.0D0)
+         DHSR = 0.0D0
+         DHSI = 0.0D0
          DO I = 1, N_CRED
             DO J = 1, I - 1
-               DASR = DASR +
+               DHSR = DHSR +
      &            ABS( WORK(KHRED + (J-1) + (I-1)*MAX_HRED) -
      &                 WORK(KHRED + (I-1) + (J-1)*MAX_HRED) )
-               IF (NZ_in_CI .GT. 1) DASI = DASI +
+               IF (NZ_in_CI .GT. 1) DHSI = DHSI +
      &            ABS( WORK(KHREDI + (J-1) + (I-1)*MAX_HRED) +
      &                 WORK(KHREDI + (I-1) + (J-1)*MAX_HRED) )
             END DO
          END DO
-         DAS = DASR + DASI
+         DHS = DHSR + DHSI
 
-         IF (IPRINT .GE. 5 .OR. DAS .GT. THRDAS) THEN
+         IF (IPRINT .GE. 5 .OR. DHS .GT. THRDHS) THEN
 
             WRITE(LUPRI,'(/A)')
      &           ' (GASCIP_RCISTD) Reduced Hamiltonian, real part'
@@ -2610,25 +2641,36 @@ C        THRDAS = 1.0D-10
                CALL OUTPUT(WORK(KHREDI),1,N_CRED,1,N_CRED,
      &                  MAX_HRED,MAX_HRED,-1,LUPRI)
            END IF
+
+            WRITE(LUPRI,'(/A)')
+     &           ' (GASCIP_RCISTD) Reduced metric, real part'
+            CALL OUTPUT(WORK(KSRED),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+           IF (NZ_in_CI .GT. 1) THEN
+               WRITE(LUPRI,'(/A)')
+     &           ' (GASCIP_RCISTD) Reduced metric, imaginary part'
+               CALL OUTPUT(WORK(KSREDI),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+           END IF
          END IF
-         IF (IPRINT .GE. 5 .OR. DAS .GT. 0.01D0*THRDAS) THEN
+         IF (IPRINT .GE. 5 .OR. DHS .GT. 0.01D0*THRDHS) THEN
             WRITE(LUPRI,'(/A,1P,2D10.3)') ' (GASCIP_RCISTD) '//
      &         'Anti-hermiticity of reduced Hamiltonian (real,imag)',
-     &         DASR, DASI
-            IF (DAS .GT. THRDAS) THEN
+     &         DHSR, DHSI
+            IF (DHS .GT. THRDHS) THEN
                WRITE(LUPRI,'(/A,1P,D10.3)')
-     &          ' FATAL ERROR, this is greater than threshold',THRDAS
+     &          ' FATAL ERROR, this is greater than threshold',THRDHS
                DO I = 1, N_CRED
                   DO J = 1, I
-                     DASR = WORK(KHRED + (J-1) + (I-1)*MAX_HRED)
+                     DHSR = WORK(KHRED + (J-1) + (I-1)*MAX_HRED)
      &                    - WORK(KHRED + (I-1) + (J-1)*MAX_HRED)
-                     WORK(KHRED + (J-1) + (I-1)*MAX_HRED) = DASR*0.5D0
-                     WORK(KHRED + (I-1) + (J-1)*MAX_HRED) = DASR*0.5D0
+                     WORK(KHRED + (J-1) + (I-1)*MAX_HRED) = DHSR*0.5D0
+                     WORK(KHRED + (I-1) + (J-1)*MAX_HRED) = DHSR*0.5D0
                   IF (NZ_in_CI .GT. 1) THEN
-                     DASI = WORK(KHREDI + (J-1) + (I-1)*MAX_HRED)
+                     DHSI = WORK(KHREDI + (J-1) + (I-1)*MAX_HRED)
      &                    + WORK(KHREDI + (I-1) + (J-1)*MAX_HRED)
-                     WORK(KHREDI + (J-1) + (I-1)*MAX_HRED) = DASI*0.5D0
-                     WORK(KHREDI + (I-1) + (J-1)*MAX_HRED) = DASI*0.5D0
+                     WORK(KHREDI + (J-1) + (I-1)*MAX_HRED) = DHSI*0.5D0
+                     WORK(KHREDI + (I-1) + (J-1)*MAX_HRED) = DHSI*0.5D0
                   END IF
                   END DO
                END DO
@@ -2650,37 +2692,144 @@ C
 C        Diagonalize reduced Hamiltonian
 C        -------------------------------
 C
+         CALL MEMGET2('REAL','TMPRED',KTMPRED,LHRED,WORK,KFREE,LFREE)
+         KTMPREDI = KTMPRED + MAX_HRED*MAX_HRED
+
+         ! first diagonalize metric matrix
          IF (NZ_in_CI.EQ.1) THEN
-            IF (IPRINT.GT.5) write(lupri,*) 'calling RSJACO'
+            IF (IPRINT.GT.5) write(lupri,*) 'calling RSJACO for SRED'
             IJOB   = 1
             IORDER = 1
             IPACK  = 0
-            CALL RSJACO(MAX_HRED,N_CRED,N_CRED,WORK(KHRED),WORK(KEIGVL),
-     &        IJOB,IORDER,IPACK,WORK(KEIGVC))
+            CALL RSJACO(MAX_HRED,N_CRED,N_CRED,WORK(KSRED),
+     &        WORK(KSEIGVL),IJOB,IORDER,IPACK,WORK(KEIGVC))
          ELSE
-            IF (IPRINT.GT.5) write(lupri,*) 'calling QDIAG'
+            IF (IPRINT.GT.5) write(lupri,*) 'calling QDIAG for SRED'
             MATZ = 1
-            CALL MEMGET2('REAL','HREDCP',KHREDCP,LHRED,WORK,KFREE,LFREE)
-            CALL DCOPY(LHRED,WORK(KHRED),1,WORK(KHREDCP),1)
-            CALL QDIAG(2,N_CRED,WORK(KHREDCP),MAX_HRED,MAX_HRED,
-     &        WORK(KEIGVL),MATZ,WORK(KEIGVC),MAX_HRED,MAX_HRED,
+            CALL DCOPY(LHRED,WORK(KSRED),1,WORK(KTMPRED),1)
+            CALL QDIAG(2,N_CRED,WORK(KTMPRED),MAX_HRED,MAX_HRED,
+     &        WORK(KSEIGVL),MATZ,WORK(KEIGVC),MAX_HRED,MAX_HRED,
      &        WORK(KFREE),LFREE,IERR)
             IF (IERR .NE. 0) THEN
                WRITE(LUPRI,'(/2A,I4)')
      &           ' *** ERROR in GASCIP_RCISTD ***: ',
-     &           'QDIAG failed with error code ',IERR
+     &           'QDIAG(SRED) failed with error code ',IERR
                CALL QUIT('*** ERROR in GASCIP_RCISTD *** QDIAG failed')
             END IF
-            CALL MEMREL('GASCIP_RCISTD.QDIAG',
-     &         WORK,KWORK,KHREDCP,KFREE,LFREE)
          END IF
-C
+
          IF (IPRINT .GE. 5) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (GASCIP_RCISTD) Eigenvalues of reduced metric'
+            CALL OUTPUT(WORK(KSEIGVL),1,1,1,N_CRED,1,MAX_HRED,-1,LUPRI)
+         END IF
+
+         ! calculate S**(-0.5) in WORK(KS_MHLF:)
+         CALL DCOPY(LHRED,WORK(KEIGVC),1,WORK(KTMPRED),1)
+         DO I = 1, N_CRED
+            FAC = 1.0D0 / SQRT(WORK(KSEIGVL-1+I))
+            CALL DSCAL(N_CRED,FAC,WORK(KTMPRED+(I-1)*MAX_HRED),1)
+            IF (NZ_in_CI .GT. 1) THEN
+               CALL DSCAL(N_CRED,FAC,WORK(KTMPREDI+(I-1)*MAX_HRED),1)
+            END IF
+         END DO
+         CALL QGEMM(N_CRED,N_CRED,N_CRED,1.0D0,
+     &           'N','N',IQINDX,
+     &           WORK(KTMPRED),MAX_HRED,MAX_HRED,NZ_in_CI,
+     &           'H','N',IQINDX,
+     &           WORK(KEIGVC),MAX_HRED,MAX_HRED,NZ_in_CI,
+     &           0.0D0,IQINDX, WORK(KS_MHLF),MAX_HRED,MAX_HRED,NZ_in_CI)
+
+         ! then transform H_tilde S**(-0.5) H S**(-0.5)
+         CALL QGEMM(N_CRED,N_CRED,N_CRED,1.0D0,
+     &           'N','N',IQINDX,
+     &           WORK(KS_MHLF),MAX_HRED,MAX_HRED,NZ_in_CI,
+     &           'N','N',IQINDX,
+     &           WORK(KHRED),MAX_HRED,MAX_HRED,NZ_in_CI,
+     &           0.0D0,IQINDX, WORK(KTMPRED),MAX_HRED,MAX_HRED,NZ_in_CI)
+         KH_TILDE = KEIGVC ! reuse memory
+         CALL QGEMM(N_CRED,N_CRED,N_CRED,1.0D0,
+     &           'N','N',IQINDX,
+     &           WORK(KTMPRED),MAX_HRED,MAX_HRED,NZ_in_CI,
+     &           'N','N',IQINDX,
+     &           WORK(KS_MHLF),MAX_HRED,MAX_HRED,NZ_in_CI,
+     &           0.0D0,IQINDX,WORK(KH_TILDE),MAX_HRED,MAX_HRED,NZ_in_CI)
+
+         IF (IPRINT .GE. 5) THEN
+            WRITE(LUPRI,'(/A)')
+     &           ' (GASCIP_RCISTD) S**(-0.5) matrix'
+            CALL OUTPUT(WORK(KS_MHLF),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+            IF (NZ_in_CI .GT. 1) THEN
+               WRITE(LUPRI,'(/A)')
+     &           ' (GASCIP_RCISTD) S**(-0.5) matrix, imaginary part'
+               CALL OUTPUT(WORK(KS_MHLFI),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+            END IF
+
+            WRITE(LUPRI,'(/A)')
+     &           ' (GASCIP_RCISTD) HRED  matrix'
+            CALL OUTPUT(WORK(KHRED),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+
+            WRITE(LUPRI,'(/A)')
+     &           ' (GASCIP_RCISTD) S**(-1/2) H  matrix'
+            CALL OUTPUT(WORK(KTMPRED),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+
+            WRITE(LUPRI,'(/A)')
+     &           ' (GASCIP_RCISTD) H_TILDE matrix'
+            CALL OUTPUT(WORK(KH_TILDE),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+            IF (NZ_in_CI .GT. 1) THEN
+               KH_TILDEI = KHTILDE + MAX_HRED*MAX_HRED
+               WRITE(LUPRI,'(/A)')
+     &           ' (GASCIP_RCISTD) H_TILDE matrix, imaginary part'
+               CALL OUTPUT(WORK(KH_TILDEI),1,N_CRED,1,N_CRED,
+     &                  MAX_HRED,MAX_HRED,-1,LUPRI)
+            END IF
+         END IF
+
+         ! calculate eigenvalues and eigenvectors of H_tilde
+         IF (NZ_in_CI.EQ.1) THEN
+            IF (IPRINT.GT.5) write(lupri,*) 'calling RSJACO for HRED'
+            IJOB   = 1
+            IORDER = 1
+            IPACK  = 0
+            CALL RSJACO(MAX_HRED,N_CRED,N_CRED,WORK(KH_TILDE),
+     &        WORK(KEIGVL),IJOB,IORDER,IPACK,WORK(KTMPRED))
+         ELSE
+            IF (IPRINT.GT.5) write(lupri,*) 'calling QDIAG for HRED'
+            MATZ = 1
+            CALL QDIAG(2,N_CRED,WORK(KH_TILDE),MAX_HRED,MAX_HRED,
+     &        WORK(KEIGVL),MATZ,WORK(KTMPRED),MAX_HRED,MAX_HRED,
+     &        WORK(KFREE),LFREE,IERR)
+            IF (IERR .NE. 0) THEN
+               WRITE(LUPRI,'(/2A,I4)')
+     &           ' *** ERROR in GASCIP_RCISTD ***: ',
+     &           'QDIAG(HRED) failed with error code ',IERR
+               CALL QUIT('*** ERROR in GASCIP_RCISTD *** QDIAG failed')
+            END IF
+         END IF
+
+         ! generate eigenvectors of H c = S c E, i.e. c = S**(-0.5) c_tilde
+         CALL QGEMM(N_CRED,N_CRED,N_CRED,1.0D0,
+     &           'N','N',IQINDX,
+     &           WORK(KS_MHLF),MAX_HRED,MAX_HRED,NZ_in_CI,
+     &           'N','N',IQINDX,
+     &           WORK(KTMPRED),MAX_HRED,MAX_HRED,NZ_in_CI,
+     &           0.0D0,IQINDX, WORK(KEIGVC),MAX_HRED,MAX_HRED,NZ_in_CI)
+
+         CALL MEMREL('GASCIP_RCISTD.DIAG',
+     &         WORK,KWORK,KTMPRED,KFREE,LFREE)
+
+C
+         IF (IPRINT .GE. 4) THEN
             WRITE(LUPRI,'(/A)')
      &         ' (GASCIP_RCISTD) Eigenvalues of reduced Hamiltonian'
             CALL OUTPUT(WORK(KEIGVL),1,1,1,N_CRED,1,MAX_HRED,-1,LUPRI)
          END IF
-         IF (IPRINT .GE. 6) THEN
+         IF (IPRINT .GE. 5) THEN
             WRITE(LUPRI,'(/A)') ' (GASCIP_RCISTD)'//
      &      ' Eigenvectors of reduced Hamiltonian, real part'
             CALL OUTPUT(WORK(KEIGVC),1,N_CRED,1,N_CRED,
@@ -2917,16 +3066,20 @@ C              screen away insignificant elements here ...
                END DO
                IF (I_REMOVED .GT. 0) THEN
                   IF (IPRINT .GE. 3)
-     &            WRITE (LUPRI,'(A,I8,A,I4,A,2I10)')
+     &            WRITE (LUPRI,'(A,I10,A,I4,A,2I10)')
      &            'Removed',I_REMOVED,
      &            ' elements in new CI trial vector no.',J-N_CRED,
      &            '; zeroes, left :', I_ZERO,NDETQ-I_REMOVED-I_ZERO
-                  IROUND = IROUND + 1 ! need a 2. round because some elements has been removed
+                  ! renormalize - we allow it to be non-orthogonal
+                  DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(J-1)*NDETQ),1)
+                  write(lupri,*) 'DNAFT now', DNAFT
+                  DNAFT = 1.0D0 / DNAFT
+                  CALL DSCAL(NDETQ,DNAFT,WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
 
             ELSE
                IF (DNAFT .LE. 1.0D-4) THEN
-                  IROUND = IROUND + 1 ! need a 2. round for numerical precision
+                  IROUND = IROUND + 1 ! need one more round for numerical precision
                ELSE
                   IROUND = 0
                END IF
@@ -4973,7 +5126,7 @@ C     master: 1) send bc-vectors to all slaves
 !     (1: currently fixed to 5 times number of slaves, hope this
 !      will give OK load balancing)
 !!    (2: could still be better, now set length to 2000 instead,
-!!     independent of numer of nodes)
+!!     independent of number of nodes)
 !!    N_TASKS = 5 * NODTOT
 !!    LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
 !!    IF (LEN_SCVEC_PER_TASK .LT. 2000) THEN
