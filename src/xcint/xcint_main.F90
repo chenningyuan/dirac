@@ -104,8 +104,8 @@ module xcint_main
    integer                      :: mat_dim
    integer                      :: nz
 
-   real(8), pointer             :: dmat_0(:, :)
-   real(8), allocatable, target :: dmat_0_container(:, :)
+   real(8), pointer             :: dmat_0(:, :, :)
+   real(8), allocatable, target :: dmat_0_container(:, :, :)
 
    real(8), allocatable         :: tmat_1(:, :)
    real(8), allocatable         :: tmat_2(:, :)
@@ -194,7 +194,7 @@ contains
 !     --------------------------------------------------------------------------
       integer,                   intent(in)    :: xc_mat_dim
       integer,                   intent(in)    :: xc_nz
-      real(8),           target, intent(in)    :: xc_dmat_0(xc_mat_dim, xc_mat_dim)
+      real(8),           target, intent(in)    :: xc_dmat_0(xc_mat_dim, xc_mat_dim, xc_nz)
       integer,                   intent(in)    :: xc_nr_dmat
       integer,                   intent(in)    :: xc_nr_fmat
       real(8), optional, target, intent(in)    :: xc_dmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_dmat)
@@ -233,7 +233,7 @@ contains
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
-      call matrix_to_file('xc_dmat0', xc_mat_dim*xc_mat_dim, xc_dmat_0)
+      call matrix_to_file('xc_dmat0', xc_mat_dim*xc_mat_dim, xc_dmat_0(1,1,1))
 #endif
 
 !     start timer
@@ -357,7 +357,7 @@ contains
 
       nullify(dmat_0)
       if (.not. xc_mpi_is_master()) then
-         allocate(dmat_0_container(mat_dim, mat_dim))
+         allocate(dmat_0_container(mat_dim, mat_dim, nz))
          dmat_0 => dmat_0_container
       else
          dmat_0 => xc_dmat_0
@@ -519,7 +519,7 @@ contains
                         .true.)
 
       if (xc_mpi_is_master()) then
-!        initial expectation value of the two-electron matrix
+!        initial expectation value of the two-electron matrix (real part)
          if (do_potential) then
             save_ddot1 = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
          end if
@@ -696,7 +696,7 @@ contains
 
 !        final expectation value of the two-electron matrix
          if (do_potential) then
-            save_ddot2    = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
+            save_ddot2    = ddot(mat_dim*mat_dim, dmat_0(1,1,1), 1, fmat, 1)
             xc_mat_energy = save_ddot2 - save_ddot1
          end if
 
@@ -813,7 +813,7 @@ contains
       real(8) :: f
 !     --------------------------------------------------------------------------
 
-      call dscal(mat_dim*mat_dim, f, dmat_0, 1)
+      call dscal(mat_dim*mat_dim, f, dmat_0(1,1,1), 1)
       if (nr_dmat > 0) then
         call dscal(mat_dim*mat_dim*nz*nr_dmat, f, dmat, 1)
       end if
