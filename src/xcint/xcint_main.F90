@@ -1779,7 +1779,7 @@ contains
                                             (/1,1,1/),           &
                                             mat_dim,             &
                                             nz,                  &
-                                            dmat,                &
+                                            dmat_0,              &
                                             ao,                  &
                                             rx(ipoint), ry(ipoint), rz(ipoint), &
                                             n_bb)
@@ -1788,7 +1788,7 @@ contains
                                             (/1,1,1/),           &
                                             mat_dim,             &
                                             nz,                  &
-                                            dmat,                &
+                                            dmat_0,              &
                                             ao,                  &
                                             rx(ipoint), ry(ipoint), rz(ipoint), &
                                             n_bb)

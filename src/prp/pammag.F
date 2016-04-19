@@ -2037,29 +2037,13 @@ C
         if (parcal) call dirac_parctl(4)
 #endif
 
-!       gosia: we call integrate_xc() and get_susc2el_integrated() separately
-!       There is no other easy way to get sus2el_xc from integrate_xc.
-!       *) dmat_0 is unperturbed density matrix
-!       *) xc_do_london_susc2el - directive to calculate sus2el_xc
-        if (.not. dft_cfg_no_sdft) then
-!         in integrate_xc, dmat_0 is read in as (ntbas(0), ntbas(0)), so only its real part is taken;
-!         so for sdft the (full) dmat has to be passed as additional xc_dmat...
-!         work(dmat) has full dmat and is already allocated:
-          call integrate_xc(xc_mat_dim   = ntbas(0),
-     &                      xc_nz        = nz,
-     &                      xc_dmat_0    = dmat_0,
-     &                      xc_dmat      = work(kdmat),
-     &                      xc_nr_dmat   = 1,
-     &                      xc_nr_fmat   = 0,
-     &                      xc_do_london_susc2el = .true.)
-        else
-          call integrate_xc(xc_mat_dim   = ntbas(0),
-     &                      xc_nz        = nz,
-     &                      xc_dmat_0    = dmat_0,
-     &                      xc_nr_dmat   = 0,
-     &                      xc_nr_fmat   = 0,
-     &                      xc_do_london_susc2el = .true.)
-        end if
+! gosia: differentiation between sdft and no_sdft moved inside integrate_xc
+        call integrate_xc(xc_mat_dim   = ntbas(0),
+     &                    xc_nz        = nz,
+     &                    xc_dmat_0    = dmat_0,
+     &                    xc_nr_dmat   = 0,
+     &                    xc_nr_fmat   = 0,
+     &                    xc_do_london_susc2el = .true.)
         sus2el_xc = get_susc2el_integrated()
 
         call dealloc(dmat_0)
