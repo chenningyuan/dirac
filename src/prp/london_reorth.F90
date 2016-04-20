@@ -393,8 +393,10 @@ contains
 !
 ! miro: getting ill value of npos ! Debugger shows npos = 140735783936152
 !
+    if (npos > 0) then
     call alloc(npos_array, npos)
     npos_array(1:npos) = 0
+    end if
 
     lwork = len_f77_work
     call di_select_wrk(work, lwork)
@@ -583,6 +585,7 @@ contains
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
+
       end subroutine
 
 
