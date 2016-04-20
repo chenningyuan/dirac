@@ -1923,6 +1923,13 @@ contains
      real(8)                :: f1i, f2i, f3i, f4i, f1j, f2j, f3j, f4j
      real(8)                :: fg1i, fg2i, fg3i, fg4i, fg1j, fg2j, fg3j, fg4j
      real(8)                :: r_co(3)
+     real(8) :: s
+     real(8) ::  f1a(mat_dim), f1b(mat_dim), f2(mat_dim)
+     real(8) ::  f1a_gga_ng(mat_dim), f1a_gga_r(mat_dim), f1a_gga_rg1m1(mat_dim)
+     real(8) ::  f1b_gga_ng(mat_dim), f1b_gga_r(mat_dim), f1b_gga_rg1m1(mat_dim)
+     real(8) ::  f1a_gga_rg0m1(mat_dim), f2_gga_g1m2(mat_dim), f2a_gga_g0m2(mat_dim)
+     real(8) ::  f1b_gga_rg0m1(mat_dim), f2_gga_g1m0(mat_dim), f2b_gga_g0m2(mat_dim)
+     real(8), external    :: ddot
 !    ----------------------------------------------------------------------------
 
      n_bb = 0.0d0
@@ -1971,135 +1978,468 @@ contains
            st2 = ao_block_start(llss_block_partner(iblock, 0, 0))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
-           do ii = st1, st1 + nr1 - 1
-             do jj = st2, st2 + nr2 - 1
-
-!              --------------------------------------------------
-!              contributions involving first-order derivs of LAOs
-!              --------------------------------------------------
-!              lda-type contribution:
-               f_1_lda = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
-                       * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj))  &
-                       + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
-                       * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj))
-
-!              gradient terms:
-               f_1_gga1 =   &
-!                   {grad (R_M times r)_a1} chi^M (R_N times r)_a2 chi^N
-                  + (n_g(c1)*ao(ao_off_g0_m1(0, b1) + ii) - n_g(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
-                  * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)- r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj)) &
-!                   {grad (R_M times r)_a2} chi^M (R_N times r)_a1 chi^N
-                  + (n_g(c2)*ao(ao_off_g0_m1(0, b2) + ii) - n_g(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
-                  * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)- r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj)) &
-!                   (R_M times r)_a1 chi^M {grad (R_N times r)_a2} chi^N
-                  + (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
-                  * (n_g(c2)*ao(ao_off_g0_m1(0, b2) + jj)-n_g(b2)*ao(ao_off_g0_m1(0, c2) + jj))    &
-!                   (R_M times r)_a2 chi^M {grad (R_N times r)_a1} chi^N
-                  + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
-                  * (n_g(c1)*ao(ao_off_g0_m1(0, b1) + jj)-n_g(b1)*ao(ao_off_g0_m1(0, c1) + jj))
-
-               f_1_gga2 = 0.0d0
-               do ixyz = 1, 3
-                  f_1_gga2 = f_1_gga2 &
-!                      (R_M times r)_a1 {grad chi^M} (R_N times r)_a2 chi^N
-                     +((r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + ii) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + ii)) &
-                     * (r_co(c2)*ao(ao_off_g0_m1(0, b2)    + jj) - r_co(b2)*ao(ao_off_g0_m1(0, c2)    + jj)) &
-!                      (R_M times r)_a2 {grad chi^M} (R_N times r)_a1 chi^N
-                     + (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + ii) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + ii)) &
-                     * (r_co(c1)*ao(ao_off_g0_m1(0, b1)    + jj) - r_co(b1)*ao(ao_off_g0_m1(0, c1)    + jj)) &
-!                      (R_M times r)_a1 chi^M (R_N times r)_a2 {grad chi^N}
-                     + (r_co(c1)*ao(ao_off_g0_m1(0, b1)    + ii) - r_co(b1)*ao(ao_off_g0_m1(0, c1)    + ii)) &
-                     * (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + jj) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + jj)) &
-!                      (R_M times r)_a2 chi^M (R_N times r)_a1 {grad chi^N}
-                     + (r_co(c2)*ao(ao_off_g0_m1(0, b2)    + ii) - r_co(b2)*ao(ao_off_g0_m1(0, c2)    + ii)) &
-                     * (r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + jj) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + jj)))*n_g(ixyz)
-
-               end do
-
-!              ---------------------------------------------------
-!              contributions involving second-order derivs of LAOs
-!              ---------------------------------------------------
-!              lda-type contribution:
-               f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
-               f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
-               f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
-               f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
-
-               f1j = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
-               f2j = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + jj)
-               f3j = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
-               f4j = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
-
-               f_2_lda = (f1i - f2i - f3i + f4i)*ao(jj) + (f1j - f2j - f3j + f4j)*ao(ii)
-
-!              gradient terms:
-               f_2_gga1 = 0.0d0
-               f_2_gga2 = 0.0d0
-               do ixyz = 1, 3
-!                 (1) (R_M times r)_a1 (R_M times r )_a2 chi^M grad(chi^N) + (R_N times r)_a1 (R_N times r )_a2 chi^N grad(chi^M)
-!                 ---------------------------------------------------------------------------------------------------------------
-                  f_2_gga1 = f_2_gga1 &
-                           +((f1i - f2i - f3i + f4i)*ao(ao_off_g1_m0(ixyz, 0) + jj) &
-                           + (f1j - f2j + f3j + f4j)*ao(ao_off_g1_m0(ixyz, 0) + ii))*n_g(ixyz)
-
-!                 (2) (R_M times r)_a1 (R_M times r )_a2 grad{chi^M} chi^N + (R_N times r)_a1 (R_N times r )_a2 grad{chi^N} chi^M
-!                 ---------------------------------------------------------------------------------------------------------------
-                  fg1i = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + ii)
-                  fg2i = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + ii)
-                  fg3i = r_co(b2)*r_co(c1)*ao(ao_off_g1_m2(ixyz, ind(b1,c2)) + ii)
-                  fg4i = r_co(b1)*r_co(b2)*ao(ao_off_g1_m2(ixyz, ind(c1,c2)) + ii)
-
-                  fg1j = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + jj)
-                  fg2j = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + jj)
-                  fg3j = r_co(b2)*r_co(c1)*ao(ao_off_g1_m2(ixyz, ind(b1,c2)) + jj)
-                  fg4j = r_co(b1)*r_co(b2)*ao(ao_off_g1_m2(ixyz, ind(c1,c2)) + jj)
+           f1a_gga_rg1m1 = 0.0d0
+           f1b_gga_rg1m1 = 0.0d0
+           f1a_gga_rg0m1 = 0.0d0
+           f1b_gga_rg0m1 = 0.0d0
+           f2_gga_g1m2   = 0.0d0
+           f2_gga_g1m0   = 0.0d0
+           do ii = 1, mat_dim
+!            lda
+             f1a(ii)  = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
+             f1b(ii)  = (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))
+             f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+             f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
+             f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+             f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+             f2(ii) = f1i - f2i - f3i + f4i
+!            gga
+             f1a_gga_ng(ii)  = (n_g(c1)*ao(ao_off_g0_m1(0, b1) + ii) - n_g(b1)*ao(ao_off_g0_m1(0, c1) + ii))
+             f1b_gga_ng(ii)  = (n_g(c2)*ao(ao_off_g0_m1(0, b2) + ii) - n_g(b2)*ao(ao_off_g0_m1(0, c2) + ii))
+             f1a_gga_r(ii)   = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)- r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
+             f1b_gga_r(ii)   = (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)- r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))
 !
-                  f_2_gga2 = f_2_gga2 &
-                           +((fg1i - fg2i - fg3i + fg4i)*ao(jj) &
-                           + (fg1j - fg2j - fg3j + fg4j)*ao(ii))*n_g(ixyz)
+             do ixyz = 1, 3
+               f1a_gga_rg1m1(ii) = f1a_gga_rg1m1(ii) &
+                       + (r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + ii) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + ii))*n_g(ixyz)
+               f1b_gga_rg1m1(ii) = f1b_gga_rg1m1(ii) &
+                       + (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + ii) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + ii))*n_g(ixyz)
+               f1a_gga_rg0m1(ii) = f1a_gga_rg0m1(ii) &
+                       + (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii) - r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))*n_g(ixyz)
+               f1b_gga_rg0m1(ii) = f1b_gga_rg0m1(ii) &
+                       + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii) - r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))*n_g(ixyz)
+!
+               fg1i = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + ii)
+               fg2i = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + ii)
+               fg3i = r_co(b2)*r_co(c1)*ao(ao_off_g1_m2(ixyz, ind(b1,c2)) + ii)
+               fg4i = r_co(b1)*r_co(b2)*ao(ao_off_g1_m2(ixyz, ind(c1,c2)) + ii)
+               f2_gga_g1m2(ii) = f2_gga_g1m2(ii) + (fg1i - fg2i - fg3i + fg4i)*n_g(ixyz)
 
-               end do
-
-!              (3) grad{ (R_M times r)_a1 (R_M times r )_a2} chi^M chi^N + grad{ (R_N times r)_a1 (R_N times r )_a2} chi^M chi^N
-!              -----------------------------------------------------------------------------------------------------------------
-!              ...{grad (R_M times r)_a1}  (R_M times r )_a2 chi^M chi^N
-               fg1i = n_g(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
-               fg2i = n_g(c1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
-               fg3i = n_g(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
-               fg4i = n_g(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
-
-!              ...{grad (R_N times r)_a1}  (R_N times r )_a2 chi^M chi^N
-               fg1j = n_g(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
-               fg2j = n_g(c1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
-               fg3j = n_g(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b2,c1)) + jj)
-               fg4j = n_g(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
-
-               f_2_gga3a = (fg1i - fg2i - fg3i + fg4i)*ao(jj) + (fg1j - fg2j - fg3j + fg4j)*ao(ii)
-
-!              ...(R_M times r)_a1 {grad (R_M times r )_a2} chi^M chi^N
-               fg1i = n_g(c2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
-               fg2i = n_g(c2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
-               fg3i = n_g(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
-               fg4i = n_g(b2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
-
-!              ...(R_N times r)_a1 {grad (R_N times r )_a2} chi^M chi^N
-               fg1j = n_g(c2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
-               fg2j = n_g(c2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(b2,c1)) + jj)
-               fg3j = n_g(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
-               fg4j = n_g(b2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
-
-               f_2_gga3b = (fg1i - fg2i - fg3i + fg4i)*ao(jj) + (fg1j - fg2j - fg3j + fg4j)*ao(ii)
-
-
-               n_bb(a2, a1) = n_bb(a2, a1)              &
-                            + dmat(jj, ii, iq(0))       &
-                            *(d_r*(f_1_lda - f_2_lda)   &
-                            + d_z*(f_1_gga1 + f_1_gga2 - f_2_gga1 - f_2_gga2 - f_2_gga3a - f_2_gga3b))
-
-
-
+               f2_gga_g1m0(ii) = f2_gga_g1m0(ii) &
+                       + ao(ao_off_g1_m0(ixyz, 0) + ii)*n_g(ixyz)
              end do
+!
+             fg1i = n_g(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+             fg2i = n_g(c1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+             fg3i = n_g(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
+             fg4i = n_g(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+             f2a_gga_g0m2(ii) = (fg1i - fg2i - fg3i + fg4i)
+
+             fg1i = n_g(c2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+             fg2i = n_g(c2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
+             fg3i = n_g(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+             fg4i = n_g(b2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+             f2b_gga_g0m2(ii) = (fg1i - fg2i - fg3i + fg4i)
+
            end do
+
+!          lda
+           s = d_r 
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a(st2),              &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a(st1), 1, buffer, 1)
+
+           s = - d_r
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2(st1), 1, buffer, 1)
+
+!          gga
+           s = d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_ng(st2),       &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_r(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_ng(st2),       &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_r(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_r(st2),       &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_ng(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_r(st2),       &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_ng(st1), 1, buffer, 1)
+
+           s = d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_rg1m1(st2),    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_rg0m1(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_rg0m1(st2),    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_rg1m1(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_rg1m1(st2),    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_rg0m1(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_rg0m1(st2),    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_rg1m1(st1), 1, buffer, 1)
+!
+           s = - d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2_gga_g1m0(st2),      &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2,                    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2_gga_g1m0(st1), 1, buffer, 1)
+
+           !s = - d_z
+           s =  d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2_gga_g1m2(st2),      &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, ao(st1), 1, buffer, 1)
+ 
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2_gga_g1m2(st1), 1, buffer, 1)
+
+
+           s = - d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2a_gga_g0m2(st2),     &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2a_gga_g0m2(st1), 1, buffer, 1)
+  
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2b_gga_g0m2(st2),     &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2b_gga_g0m2(st1), 1, buffer, 1)
+
+
+
+
+
+!
+!
+! 
+!           do ii = st1, st1 + nr1 - 1
+!             do jj = st2, st2 + nr2 - 1
+!
+!!              --------------------------------------------------
+!!              contributions involving first-order derivs of LAOs
+!!              --------------------------------------------------
+!!              lda-type contribution:
+!               f_1_lda = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
+!                       * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj))  &
+!                       + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
+!                       * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj))
+!
+!!              gradient terms:
+!               f_1_gga1 =   &
+!!                   {grad (R_M times r)_a1} chi^M (R_N times r)_a2 chi^N
+!                  + (n_g(c1)*ao(ao_off_g0_m1(0, b1) + ii) - n_g(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
+!                  * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)- r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj)) &
+!!                   {grad (R_M times r)_a2} chi^M (R_N times r)_a1 chi^N
+!                  + (n_g(c2)*ao(ao_off_g0_m1(0, b2) + ii) - n_g(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
+!                  * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)- r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj)) &
+!!                   (R_M times r)_a1 chi^M {grad (R_N times r)_a2} chi^N
+!                  + (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
+!                  * (n_g(c2)*ao(ao_off_g0_m1(0, b2) + jj)-n_g(b2)*ao(ao_off_g0_m1(0, c2) + jj))    &
+!!                   (R_M times r)_a2 chi^M {grad (R_N times r)_a1} chi^N
+!                  + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
+!                  * (n_g(c1)*ao(ao_off_g0_m1(0, b1) + jj)-n_g(b1)*ao(ao_off_g0_m1(0, c1) + jj))
+!
+!               f_1_gga2 = 0.0d0
+!               do ixyz = 1, 3
+!                  f_1_gga2 = f_1_gga2 &
+!!                      (R_M times r)_a1 {grad chi^M} (R_N times r)_a2 chi^N
+!                     +((r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + ii) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + ii)) &
+!                     * (r_co(c2)*ao(ao_off_g0_m1(0, b2)    + jj) - r_co(b2)*ao(ao_off_g0_m1(0, c2)    + jj)) &
+!!                      (R_M times r)_a2 {grad chi^M} (R_N times r)_a1 chi^N
+!                     + (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + ii) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + ii)) &
+!                     * (r_co(c1)*ao(ao_off_g0_m1(0, b1)    + jj) - r_co(b1)*ao(ao_off_g0_m1(0, c1)    + jj)) &
+!!                      (R_M times r)_a1 chi^M (R_N times r)_a2 {grad chi^N}
+!                     + (r_co(c1)*ao(ao_off_g0_m1(0, b1)    + ii) - r_co(b1)*ao(ao_off_g0_m1(0, c1)    + ii)) &
+!                     * (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + jj) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + jj)) &
+!!                      (R_M times r)_a2 chi^M (R_N times r)_a1 {grad chi^N}
+!                     + (r_co(c2)*ao(ao_off_g0_m1(0, b2)    + ii) - r_co(b2)*ao(ao_off_g0_m1(0, c2)    + ii)) &
+!                     * (r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + jj) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + jj)))*n_g(ixyz)
+!
+!               end do
+!
+!!              ---------------------------------------------------
+!!              contributions involving second-order derivs of LAOs
+!!              ---------------------------------------------------
+!!              lda-type contribution:
+!               f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+!               f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
+!               f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+!               f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+!
+!               f1j = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
+!               f2j = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + jj)
+!               f3j = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
+!               f4j = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
+!
+!               f_2_lda = (f1i - f2i - f3i + f4i)*ao(jj) + (f1j - f2j - f3j + f4j)*ao(ii)
+!
+!!              gradient terms:
+!               f_2_gga1 = 0.0d0
+!               f_2_gga2 = 0.0d0
+!               do ixyz = 1, 3
+!!                 (1) (R_M times r)_a1 (R_M times r )_a2 chi^M grad(chi^N) + (R_N times r)_a1 (R_N times r )_a2 chi^N grad(chi^M)
+!!                 ---------------------------------------------------------------------------------------------------------------
+!                  f_2_gga1 = f_2_gga1 &
+!                           +((f1i - f2i - f3i + f4i)*ao(ao_off_g1_m0(ixyz, 0) + jj) &
+!                           + (f1j - f2j + f3j + f4j)*ao(ao_off_g1_m0(ixyz, 0) + ii))*n_g(ixyz)
+!
+!!                 (2) (R_M times r)_a1 (R_M times r )_a2 grad{chi^M} chi^N + (R_N times r)_a1 (R_N times r )_a2 grad{chi^N} chi^M
+!!                 ---------------------------------------------------------------------------------------------------------------
+!                  fg1i = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + ii)
+!                  fg2i = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + ii)
+!                  fg3i = r_co(b2)*r_co(c1)*ao(ao_off_g1_m2(ixyz, ind(b1,c2)) + ii)
+!                  fg4i = r_co(b1)*r_co(b2)*ao(ao_off_g1_m2(ixyz, ind(c1,c2)) + ii)
+!
+!                  fg1j = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + jj)
+!                  fg2j = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + jj)
+!                  fg3j = r_co(b2)*r_co(c1)*ao(ao_off_g1_m2(ixyz, ind(b1,c2)) + jj)
+!                  fg4j = r_co(b1)*r_co(b2)*ao(ao_off_g1_m2(ixyz, ind(c1,c2)) + jj)
+!!
+!                  f_2_gga2 = f_2_gga2 &
+!                           +((fg1i - fg2i - fg3i + fg4i)*ao(jj) &
+!                           + (fg1j - fg2j - fg3j + fg4j)*ao(ii))*n_g(ixyz)
+!
+!               end do
+!
+!!              (3) grad{ (R_M times r)_a1 (R_M times r )_a2} chi^M chi^N + grad{ (R_N times r)_a1 (R_N times r )_a2} chi^M chi^N
+!!              -----------------------------------------------------------------------------------------------------------------
+!!              ...{grad (R_M times r)_a1}  (R_M times r )_a2 chi^M chi^N
+!               fg1i = n_g(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+!               fg2i = n_g(c1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+!               fg3i = n_g(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
+!               fg4i = n_g(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+!
+!!              ...{grad (R_N times r)_a1}  (R_N times r )_a2 chi^M chi^N
+!               fg1j = n_g(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
+!               fg2j = n_g(c1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
+!               fg3j = n_g(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b2,c1)) + jj)
+!               fg4j = n_g(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
+!
+!               f_2_gga3a = (fg1i - fg2i - fg3i + fg4i)*ao(jj) + (fg1j - fg2j - fg3j + fg4j)*ao(ii)
+!
+!!              ...(R_M times r)_a1 {grad (R_M times r )_a2} chi^M chi^N
+!               fg1i = n_g(c2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+!               fg2i = n_g(c2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
+!               fg3i = n_g(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+!               fg4i = n_g(b2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+!
+!!              ...(R_N times r)_a1 {grad (R_N times r )_a2} chi^M chi^N
+!               fg1j = n_g(c2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
+!               fg2j = n_g(c2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(b2,c1)) + jj)
+!               fg3j = n_g(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
+!               fg4j = n_g(b2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
+!
+!               f_2_gga3b = (fg1i - fg2i - fg3i + fg4i)*ao(jj) + (fg1j - fg2j - fg3j + fg4j)*ao(ii)
+!
+!
+!               n_bb(a2, a1) = n_bb(a2, a1)              &
+!                            + dmat(jj, ii, iq(0))       &
+!                            *(d_r*(f_1_lda - f_2_lda)   &
+!                            + d_z*(f_1_gga1 + f_1_gga2 - f_2_gga1 - f_2_gga2 - f_2_gga3a - f_2_gga3b))
+!
+!
+!
+!             end do
+!           end do
          end do
        end do
      end do

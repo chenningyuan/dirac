@@ -1284,22 +1284,22 @@ contains
 !       (3) direct-lao spin density contribution, 2nd functional derivatives
 !       --------------------------------------------------------------------
 
-        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
-              call lr_sdft_lao_direct(ipoint,         &
-                                      bllen,          &
-                                      mat_dim,        &
-                                      nz,             &
-                                      ao,             &
-                                      n_0,            &
-                                      gn_0_pointwise, &
-                                      gnn_0,          &
-                                      w(1),           &
-                                      use_gga,        &
-                                      buffer,         &
-                                      derv_length,    &
-                                      derv, u,        &
-                                      rx(ipoint), ry(ipoint), rz(ipoint))
-        end if
+!        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
+!              call lr_sdft_lao_direct(ipoint,         &
+!                                      bllen,          &
+!                                      mat_dim,        &
+!                                      nz,             &
+!                                      ao,             &
+!                                      n_0,            &
+!                                      gn_0_pointwise, &
+!                                      gnn_0,          &
+!                                      w(1),           &
+!                                      use_gga,        &
+!                                      buffer,         &
+!                                      derv_length,    &
+!                                      derv, u,        &
+!                                      rx(ipoint), ry(ipoint), rz(ipoint))
+!        end if
 
 !       linear response
 !       ===============
