@@ -1729,7 +1729,7 @@ contains
 
    end subroutine
 
-   subroutine lda_london_sus2el_der1(s, isym, mat_dim, nz, dmat, ao, cx, cy, cz, n_bb)
+   subroutine lda_london_sus2el_der1(s, isym, mat_dim, nz, dmat, ao, cx, cy, cz, buffer, n_bb)
 
 !    ----------------------------------------------------------------------------
      real(8), intent(in)    :: s
@@ -1739,6 +1739,7 @@ contains
      real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)    :: ao(*)
      real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(in)    :: buffer(*)
      real(8), intent(out)   :: n_bb(3, 3)
 !    ----------------------------------------------------------------------------
      integer                :: nr1, nr2, st1, st2, iblock, ii, jj
@@ -1747,6 +1748,8 @@ contains
      real(8)                :: f1i, f2i, f3i, f4i, f1j, f2j, f3j, f4j
      real(8)                :: f_1, f_2
      real(8)                :: r_co(3)
+     real(8) :: f1a(mat_dim), f1b(mat_dim), f2(mat_dim)
+     real(8), external    :: ddot
 !    ----------------------------------------------------------------------------
 
      r_co(1) = cx
@@ -1793,32 +1796,101 @@ contains
            st2 = ao_block_start(llss_block_partner(iblock, 0, 0))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
-           do ii = st1, st1 + nr1 - 1
-             do jj = st2, st2 + nr2 - 1
-
-!              first calculate contributions involving first-order derivs of LAOs
-               f_1 = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
-                   * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj))  &
-                   + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
-                   * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj))
-
-!              contributions involving second-order derivs of LAOs
-               f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
-               f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
-               f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
-               f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
-
-               f1j = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
-               f2j = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + jj)
-               f3j = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
-               f4j = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
-
-               f_2 = (f1i - f2i - f3i + f4i)*ao(jj) + (f1j - f2j - f3j + f4j)*ao(ii)
-
-               n_bb(a2, a1) = n_bb(a2, a1) + dmat(jj, ii, iq(0))*(f_1 - f_2)
-
-             end do
+           do ii = 1, mat_dim
+             f1a(ii)  = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
+             f1b(ii)  = (r_co(c1)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c2) + ii))
+             f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+             f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
+             f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+             f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+             f2(ii) = f1i - f2i - f3i + f4i
            end do
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      1.0d0,                 &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      1.0d0,                 &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a(st1), 1, buffer, 1)
+
+
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      1.0d0,                 &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+
+           n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      1.0d0,                 &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+
+           n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, f2(st1), 1, buffer, 1)
+
+
+        !    do ii = st1, st1 + nr1 - 1
+        !     do jj = st2, st2 + nr2 - 1
+
+!       !       first calculate contributions involving first-order derivs of LAOs
+        !       f_1 = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))  &
+        !           * (r_co(c2)*ao(ao_off_g0_m1(0, b2) + jj)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + jj))  &
+        !           + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))  &
+        !           * (r_co(c1)*ao(ao_off_g0_m1(0, b1) + jj)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + jj))
+
+!       !       contributions involving second-order derivs of LAOs
+        !       f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+        !       f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
+        !       f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+        !       f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+
+        !       f1j = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + jj)
+        !       f2j = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + jj)
+        !       f3j = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + jj)
+        !       f4j = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + jj)
+
+        !       f_2 = (f1i - f2i - f3i + f4i)*ao(jj) + (f1j - f2j - f3j + f4j)*ao(ii)
+
+        !       n_bb(a2, a1) = n_bb(a2, a1) + dmat(jj, ii, iq(0))*(f_1 - f_2)
+
+        !     end do
+        !   end do
          end do
        end do
      end do

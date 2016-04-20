@@ -713,6 +713,7 @@ contains
 #endif
 
 !     check for nan in xc matrix
+      if (xc_nr_fmat > 0) then
       do imat = 1, xc_nr_fmat
          do iz = 1, nz
             do i = 1, mat_dim
@@ -725,6 +726,7 @@ contains
             end do
          end do
       end do
+      end if
 
    end subroutine
 
@@ -1710,7 +1712,7 @@ contains
 !         now works only in C1 symmetry, because isymop in pammag is hardcoded to 1
 
           if (do_london_susc2el) then
-            write(*, *) 'do_london_susc2el ', xc_mpi_get_rank() 
+            !write(*, *) 'do_london_susc2el ', xc_mpi_get_rank() 
             n_bb = 0.0d0
 !           here no SDFT contributions (first-order functional derivatives)
             if (use_gga) then
@@ -1742,6 +1744,7 @@ contains
                                           dmat_0,              &
                                           ao,                  &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
                                           n_bb)
              !  call xc_london_c1_susc_der1(derv(1, d1000000),   &
              !                              mat_dim,             &

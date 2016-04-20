@@ -2183,6 +2183,7 @@ contains
                                           dmat_0,    &
                                           ao,        &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
                                           n_bb)
               !call xc_london_c1_susc_der1(t,                   &
               !                            mat_dim,             &
