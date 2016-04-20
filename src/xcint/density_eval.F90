@@ -1798,7 +1798,7 @@ contains
 
            do ii = 1, mat_dim
              f1a(ii)  = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
-             f1b(ii)  = (r_co(c1)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c2) + ii))
+             f1b(ii)  = (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))
              f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
              f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
              f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
@@ -1900,7 +1900,7 @@ contains
    end subroutine
 
 
-   subroutine gga_london_sus2el_der1(d_r, d_z, n_g, isym, mat_dim, nz, dmat, ao, cx, cy, cz, n_bb)
+   subroutine gga_london_sus2el_der1(d_r, d_z, n_g, isym, mat_dim, nz, dmat, ao, cx, cy, cz, buffer, n_bb)
 
 !    ----------------------------------------------------------------------------
      real(8), intent(in)    :: d_r
@@ -1912,6 +1912,7 @@ contains
      real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)    :: ao(*)
      real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(in)    :: buffer(*)
      real(8), intent(out)   :: n_bb(3, 3)
 !    ----------------------------------------------------------------------------
      integer                :: nr1, nr2, st1, st2, iblock, ii, jj, ixyz

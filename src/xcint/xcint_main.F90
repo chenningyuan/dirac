@@ -1725,6 +1725,7 @@ contains
                                           dmat_0,                   &
                                           ao,                       &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
                                           n_bb)
             !   call xc_london_c1_susc_gga_der1(derv(1, d1000000),   &
             !                               2.0d0*derv(1, d0010000),  &
