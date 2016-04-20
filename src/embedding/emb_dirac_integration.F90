@@ -1712,6 +1712,7 @@ contains
                                       mat_dim,        &
                                       nz,             &
                                       ao,             &
+                                      buffer,         &
                                       n_0,            &
                                       n_0_t,          &
                                       gn_0_pointwise, &
@@ -2218,6 +2219,7 @@ contains
                                           dmat_0,              &
                                           ao,                  &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
                                           n_bb_total)
 
               call gga_london_sus2el_der2(derv_active(1, d0200000),   &
@@ -2231,6 +2233,7 @@ contains
                                           dmat_0,              &
                                           ao,                  &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
                                           n_bb_active)
               do ixyz = 1, 3
                 do jxyz = 1, 3
@@ -2246,6 +2249,7 @@ contains
                                           dmat_0,    &
                                           ao,        &
                                           rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
                                           n_bb)
               do ixyz = 1, 3
                 do jxyz = 1, 3
@@ -3088,6 +3092,7 @@ contains
                         mat_dim,            &
                         nz,                 &
                         ao,               &
+                        buffer,           &
                         n_0,                &
                         n_0_t,                &
                         gn_0_pointwise,     &
@@ -3108,6 +3113,7 @@ contains
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
     real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: buffer(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: n_0_t(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
@@ -3155,7 +3161,7 @@ contains
                       mat_dim,     &
                       dmat_full,   &
                       ao,          &
-                      rx, ry, rz)
+                      rx, ry, rz, buffer)
 
       call get_gs_lao(s_b_lao,     &
                       gs_b_lao,    &
@@ -3165,7 +3171,7 @@ contains
                       mat_dim,     &
                       dmat_full,   &
                       ao,          &
-                      rx, ry, rz)
+                      rx, ry, rz, buffer)
 
     else
        call get_s_lao(s_b_lao,          &
@@ -3173,7 +3179,7 @@ contains
                       mat_dim,          &
                       dmat_full,        &
                       ao,               &
-                      rx, ry, rz)
+                      rx, ry, rz, buffer)
     end if
 
     do a = 1, 3     !B_{x,y,z}
@@ -3701,14 +3707,14 @@ contains
                         mat_dim,     &
                         dmat_0,      &
                         ao,          &
-                        rx, ry, rz)
+                        rx, ry, rz, buffer)
       else
          call get_s_lao(s1,          &
                         (/0, 0, 0/),      &
                         mat_dim,          &
                         dmat_0,           &
                         ao,               &
-                        rx, ry, rz)
+                        rx, ry, rz, buffer)
       end if
       
 !     then get s_T, gs_T:
@@ -4561,6 +4567,7 @@ contains
                                       mat_dim,        &
                                       nz,             &
                                       ao,             &
+                                      buffer,         &
                                       n_0,            &
                                       n_0_t,          &
                                       gn_0_pointwise, &
@@ -4587,6 +4594,7 @@ contains
                                  mat_dim,        &
                                  nz,             &
                                  ao,             &
+                                 buffer,         &
                                  n_0,            &
                                  n_0_t,          &
                                  gn_0_pointwise, &
@@ -4603,6 +4611,7 @@ contains
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
     real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: buffer(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: n_0_t(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
@@ -4645,7 +4654,7 @@ contains
                       mat_dim,     &
                       dmat_full,   &
                       ao,          &
-                      px, py, pz)
+                      px, py, pz, buffer)
 
     else
        call get_s_lao(s_b,              &
@@ -4653,7 +4662,7 @@ contains
                       mat_dim,          &
                       dmat_full,        &
                       ao,               &
-                      px, py, pz)
+                      px, py, pz, buffer)
     end if
 
     !write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_direct= ', &

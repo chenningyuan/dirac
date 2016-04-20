@@ -1284,22 +1284,22 @@ contains
 !       (3) direct-lao spin density contribution, 2nd functional derivatives
 !       --------------------------------------------------------------------
 
-!        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
-!              call lr_sdft_lao_direct(ipoint,         &
-!                                      bllen,          &
-!                                      mat_dim,        &
-!                                      nz,             &
-!                                      ao,             &
-!                                      n_0,            &
-!                                      gn_0_pointwise, &
-!                                      gnn_0,          &
-!                                      w(1),           &
-!                                      use_gga,        &
-!                                      buffer,         &
-!                                      derv_length,    &
-!                                      derv, u,        &
-!                                      rx(ipoint), ry(ipoint), rz(ipoint))
-!        end if
+        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
+              call lr_sdft_lao_direct(ipoint,         &
+                                      bllen,          &
+                                      mat_dim,        &
+                                      nz,             &
+                                      ao,             &
+                                      n_0,            &
+                                      gn_0_pointwise, &
+                                      gnn_0,          &
+                                      w(1),           &
+                                      use_gga,        &
+                                      buffer,         &
+                                      derv_length,    &
+                                      derv, u,        &
+                                      rx(ipoint), ry(ipoint), rz(ipoint))
+        end if
 
 !       linear response
 !       ===============
@@ -1779,6 +1779,7 @@ contains
                                             dmat_0,              &
                                             ao,                  &
                                             rx(ipoint), ry(ipoint), rz(ipoint), &
+                                            buffer, &
                                             n_bb)
               else
                 call lda_london_sus2el_der2(derv(1, d0200000),   &
@@ -1788,6 +1789,7 @@ contains
                                             dmat_0,              &
                                             ao,                  &
                                             rx(ipoint), ry(ipoint), rz(ipoint), &
+                                            buffer, &
                                             n_bb)
 
               end if
@@ -2756,7 +2758,7 @@ contains
                      mat_dim,     &
                      dmat_0,      &
                      ao,          &
-                     px, py, pz)
+                     px, py, pz, buffer)
     else
 
       !call xc_london_c1_get_s_b(s_b_lao,    &
@@ -2771,7 +2773,8 @@ contains
                      mat_dim,      &
                      dmat_0,       &
                      ao,           & 
-                     px, py, pz)
+                     px, py, pz,   &
+                     buffer)
     end if
 
 !    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba dft s_b = ', px, py, pz, &

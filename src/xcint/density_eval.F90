@@ -1371,7 +1371,7 @@ contains
 
    end subroutine
 
-   subroutine get_s_lao(s, irep, mat_dim, dmat, ao, cx, cy, cz)
+   subroutine get_s_lao(s, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
 !    ----------------------------------------------------------------------------
      real(8), intent(out) :: s(3, 3)
@@ -1380,6 +1380,7 @@ contains
      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)  :: ao(*)
      real(8), intent(in)  :: cx, cy, cz
+     real(8), intent(in)  :: buffer(*)
 !    ----------------------------------------------------------------------------
      integer              :: nr1, nr2, st1, st2, iblock, jxyz
      integer              :: a, b, c, irp1, irp2, ii, jj
@@ -1416,17 +1417,51 @@ contains
            st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
-           do ii = st1, st1 + nr1 - 1
-             do jj = st2, st2 + nr2 - 1
-
-               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
-
-               s(jxyz, a) = s(jxyz, a) &
-                          + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-
-             end do
+           do ii = 1, mat_dim
+             f(ii) = (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))
            end do
+
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      f(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s(jxyz, a) = s(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      ao(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s(jxyz, a) = s(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, f(st1), 1, buffer, 1)
+
+           !do ii = st1, st1 + nr1 - 1
+           !  do jj = st2, st2 + nr2 - 1
+
+           !    ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+           !       - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+
+           !    s(jxyz, a) = s(jxyz, a) &
+           !               + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+
+           !  end do
+           !end do
 
          end do  ! do iblock = 1, nr_ao_blocks
 
@@ -1435,7 +1470,7 @@ contains
 
    end subroutine
 
-   subroutine get_gs_lao(s, gs, gsgn, gn_0, isym, mat_dim, dmat, ao, cx, cy, cz)
+   subroutine get_gs_lao(s, gs, gsgn, gn_0, isym, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
 !    ----------------------------------------------------------------------------
      real(8), intent(out) :: s(3, 3)
@@ -1446,12 +1481,14 @@ contains
      integer, intent(in)  :: mat_dim
      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)  :: ao(*)
+     real(8), intent(in)  :: buffer(*)
      real(8), intent(in)  :: cx, cy, cz
 !    ----------------------------------------------------------------------------
      integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
      integer              :: a, b, c, ii, jj
      real(8)              :: r_co(3), ff, ff_gn
      real(8), external    :: ddot
+     real(8) :: f_lda(mat_dim), f1_gga(mat_dim), f2_gga(mat_dim, 3), f3_gga(mat_dim, 3)
      integer :: i, j, k
 !    ----------------------------------------------------------------------------
 
@@ -1484,59 +1521,200 @@ contains
            st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
-           do ii = st1, st1 + nr1 - 1
-             do jj = st2, st2 + nr2 - 1
-
-!              lda term
-               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
-
-               ff_gn = (gn_0(c)*ao(ao_off_g0_m1(0, b) + jj) - gn_0(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-                     - (gn_0(c)*ao(ao_off_g0_m1(0, b) + ii) - gn_0(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
-
-               s(jxyz, a) = s(jxyz, a) &
-                          + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-
-               gsgn(jxyz, a) = gsgn(jxyz, a) &
-                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
-
-!              start gradient terms
-               ff_gn = 0.0d0
-               do ixyz = 1, 3 ! dR_{x,y,z}
-
-                  ff = (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + jj) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + jj))*ao(ii)  &
-                     - (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + ii) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + ii))*ao(jj)  &
-                     + (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ao_off_g1_m0(ixyz, 0) + ii)  &
-                     - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(ao_off_g1_m0(ixyz, 0) + jj)
-
-                  ff_gn = ff_gn + ff*gn_0(ixyz)
-
-                  gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                                    + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-
-                  if (ixyz .eq. b) then
-
-                     ff = -(ao(ao_off_g0_m1(0, c) + jj)*ao(ii) - ao(ao_off_g0_m1(0, c) + ii)*ao(jj))
-
-                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-
-                  else if (ixyz .eq. c) then
-
-                     ff = ao(ao_off_g0_m1(0, b) + jj)*ao(ii) - ao(ao_off_g0_m1(0, b) + ii)*ao(jj)
-
-                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-
-                  end if
-
-               end do ! do ixyz = 1, 3
-
-               gsgn(jxyz, a) = gsgn(jxyz, a) &
-                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
-
+           do ii = 1, mat_dim
+             f_lda(ii)  = (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii)) 
+             f1_gga(ii) = (gn_0(c)*ao(ao_off_g0_m1(0, b) + ii) - gn_0(b)*ao(ao_off_g0_m1(0, c) + ii))
+             do ixyz = 1, 3
+               f2_gga(ii, ixyz) =  &
+                  + (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + ii) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + ii))*gn_0(ixyz)
+               f3_gga(ii, ixyz) =  &
+                  + ao(ao_off_g1_m0(ixyz, 0) + ii)*gn_0(ixyz)
              end do
            end do
+
+!          lda
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      f_lda(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s(jxyz, a) = s(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      ao(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s(jxyz, a) = s(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
+
+!
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      f1_gga(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           gsgn(jxyz, a) = gsgn(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      ao(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           gsgn(jxyz, a) = gsgn(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, f1_gga(st1), 1, buffer, 1)
+
+!gga
+           do ixyz = 1, 3
+             call dgemv('N',                      &
+                        nr1,                      &
+                        nr2,                      &
+                        1.0d0,                    &
+                        dmat(st1, st2, iq(jxyz)), &
+                        mat_dim,                  &
+                        f2_gga(st2, ixyz),                  &
+                        1,                        &
+                        0.0d0,                    &
+                        buffer,                   &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+             
+             call dgemv('N',                      &
+                        nr1,                      &
+                        nr2,                      &
+                        1.0d0,                    &
+                        dmat(st1, st2, iq(jxyz)), &
+                        mat_dim,                  &
+                        ao(st2),                  &
+                        1,                        &
+                        0.0d0,                    &
+                        buffer,                   &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     + llss_prefactor(iblock)*ddot(nr1, f2_gga(st1, ixyz), 1, buffer, 1)
+
+!
+             call dgemv('N',                      &
+                        nr1,                      &
+                        nr2,                      &
+                        1.0d0,                    &
+                        dmat(st1, st2, iq(jxyz)), &
+                        mat_dim,                  &
+                        f3_gga(st2, ixyz),                  &
+                        1,                        &
+                        0.0d0,                    &
+                        buffer,                   &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     + llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
+             
+             call dgemv('N',                      &
+                        nr1,                      &
+                        nr2,                      &
+                        1.0d0,                    &
+                        dmat(st1, st2, iq(jxyz)), &
+                        mat_dim,                  &
+                        f_lda(st2),                  &
+                        1,                        &
+                        0.0d0,                    &
+                        buffer,                   &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     + llss_prefactor(iblock)*ddot(nr1, f3_gga(st1, ixyz), 1, buffer, 1)
+
+           end do
+
+  
+
+
+!           do ii = st1, st1 + nr1 - 1
+!             do jj = st2, st2 + nr2 - 1
+!
+!!              lda term
+!               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+!                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+!
+!               ff_gn = (gn_0(c)*ao(ao_off_g0_m1(0, b) + jj) - gn_0(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
+!                     - (gn_0(c)*ao(ao_off_g0_m1(0, b) + ii) - gn_0(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
+!
+!               s(jxyz, a) = s(jxyz, a) &
+!                          + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+!
+!               gsgn(jxyz, a) = gsgn(jxyz, a) &
+!                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
+!
+!!              start gradient terms
+!               ff_gn = 0.0d0
+!               do ixyz = 1, 3 ! dR_{x,y,z}
+!
+!                  ff = (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + jj) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + jj))*ao(ii)  &
+!                     - (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + ii) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + ii))*ao(jj)  &
+!                     + (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ao_off_g1_m0(ixyz, 0) + ii)  &
+!                     - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(ao_off_g1_m0(ixyz, 0) + jj)
+!
+!                  ff_gn = ff_gn + ff*gn_0(ixyz)
+!
+!                  gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+!                                    + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+!
+!                  if (ixyz .eq. b) then
+!
+!                     ff = -(ao(ao_off_g0_m1(0, c) + jj)*ao(ii) - ao(ao_off_g0_m1(0, c) + ii)*ao(jj))
+!
+!                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+!                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+!
+!                  else if (ixyz .eq. c) then
+!
+!                     ff = ao(ao_off_g0_m1(0, b) + jj)*ao(ii) - ao(ao_off_g0_m1(0, b) + ii)*ao(jj)
+!
+!                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+!                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
+!
+!                  end if
+!
+!               end do ! do ixyz = 1, 3
+!
+!               gsgn(jxyz, a) = gsgn(jxyz, a) &
+!                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
+!
+!             end do
+!           end do
 
          end do  ! do iblock = 1, nr_ao_blocks
        end do    ! do jxyz = 1, jxyz_start, 3
@@ -2447,7 +2625,7 @@ contains
    end subroutine
 
 
-   subroutine lda_london_sus2el_der2(s, isym, mat_dim, nz, dmat, ao, cx, cy, cz, n_bb)
+   subroutine lda_london_sus2el_der2(s, isym, mat_dim, nz, dmat, ao, cx, cy, cz, buffer,n_bb)
 !    ----------------------------------------------------------------------------
      real(8), intent(in)    :: s
      integer, intent(in)    :: isym(*)
@@ -2456,6 +2634,7 @@ contains
      real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)    :: ao(*)
      real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(in)    :: buffer(*)
      real(8), intent(out)   :: n_bb(3, 3)
 !    ----------------------------------------------------------------------------
      integer                :: nr1, nr2, st1, st2, iblock
@@ -2468,7 +2647,7 @@ contains
      do i = 1, 3
         irep(i) = isym(i) - 1
      end do
-     call get_s_lao(s_b_lao, irep, mat_dim, dmat, ao, cx, cy, cz)
+     call get_s_lao(s_b_lao, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
 !    s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
      do jxyz = 1, 3
@@ -2671,7 +2850,7 @@ contains
 
 
    subroutine gga_london_sus2el_der2(d_s, d_sns, d_nsns, d_ss, n_g, &
-                                     isym, mat_dim, nz, dmat, ao, cx, cy, cz, n_bb)
+                                     isym, mat_dim, nz, dmat, ao, cx, cy, cz, buffer, n_bb)
 !    ----------------------------------------------------------------------------
      real(8), intent(in)    :: d_s, d_sns, d_nsns, d_ss
      real(8), intent(in)    :: n_g(3)
@@ -2680,6 +2859,7 @@ contains
      integer, intent(in)    :: nz
      real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: buffer(*)
      real(8), intent(in)    :: cx, cy, cz
      real(8), intent(out)   :: n_bb(3, 3)
 !    ----------------------------------------------------------------------------
@@ -2704,7 +2884,7 @@ contains
 !    --------------------------
 !    s(Sigma_{x,y,z}, B_{x,y,z})
 !    gs(dR_{x,y,z}, Sigma_{x,y,z}, B_{x,y,z})
-     call get_gs_lao(s, gs, dummy, n_g, isym, mat_dim, dmat, ao, cx, cy, cz)
+     call get_gs_lao(s, gs, dummy, n_g, isym, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
 !    sums:
      n_sum = n_g(1) + n_g(2) + n_g(3)
