@@ -1427,21 +1427,6 @@ contains
                       1.0d0,                    &
                       dmat(st1, st2, iq(jxyz)), &
                       mat_dim,                  &
-                      f(st2),                  &
-                      1,                        &
-                      0.0d0,                    &
-                      buffer,                   &
-                      1)
-     
-           s(jxyz, a) = s(jxyz, a) &
-                   + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
-
-           call dgemv('N',                      &
-                      nr1,                      &
-                      nr2,                      &
-                      1.0d0,                    &
-                      dmat(st1, st2, iq(jxyz)), &
-                      mat_dim,                  &
                       ao(st2),                  &
                       1,                        &
                       0.0d0,                    &
@@ -1449,7 +1434,22 @@ contains
                       1)
      
            s(jxyz, a) = s(jxyz, a) &
-                   - llss_prefactor(iblock)*ddot(nr1, f(st1), 1, buffer, 1)
+                   + llss_prefactor(iblock)*ddot(nr1, f(st1), 1, buffer, 1)
+
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      f(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s(jxyz, a) = s(jxyz, a) &
+                   - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
 
 !          OLD code
            !do ii = st1, st1 + nr1 - 1
@@ -1540,6 +1540,21 @@ contains
                       1.0d0,                    &
                       dmat(st1, st2, iq(jxyz)), &
                       mat_dim,                  &
+                      ao(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s(jxyz, a) = s(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
+
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
                       f_lda(st2),               &
                       1,                        &
                       0.0d0,                    &
@@ -1547,8 +1562,11 @@ contains
                       1)
      
            s(jxyz, a) = s(jxyz, a) &
-                   + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+                   - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
 
+
+!          gga
+!          [R_M \times (\partial(i) r)] ao_M * gn_0(i) * Dmat * ao_N
            call dgemv('N',                      &
                       nr1,                      &
                       nr2,                      &
@@ -1561,11 +1579,9 @@ contains
                       buffer,                   &
                       1)
      
-           s(jxyz, a) = s(jxyz, a) &
-                   - llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
+           gsgn(jxyz, a) = gsgn(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, f1_gga(st1), 1, buffer, 1)
 
-!          gga
-!          [R_M \times (\partial(i) r)] ao_M * gn_0(i) * Dmat * ao_N
            call dgemv('N',                      &
                       nr1,                      &
                       nr2,                      &
@@ -1579,40 +1595,10 @@ contains
                       1)
      
            gsgn(jxyz, a) = gsgn(jxyz, a) &
-                   + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
-
-           call dgemv('N',                      &
-                      nr1,                      &
-                      nr2,                      &
-                      1.0d0,                    &
-                      dmat(st1, st2, iq(jxyz)), &
-                      mat_dim,                  &
-                      ao(st2),                  &
-                      1,                        &
-                      0.0d0,                    &
-                      buffer,                   &
-                      1)
-     
-           gsgn(jxyz, a) = gsgn(jxyz, a) &
-                   - llss_prefactor(iblock)*ddot(nr1, f1_gga(st1), 1, buffer, 1)
+                   - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
 
 !          [R_M \times r] (\partial(i)ao_M) * gn_0(i) * Dmat * ao_N
            do ixyz = 1, 3
-             call dgemv('N',                      &
-                        nr1,                      &
-                        nr2,                      &
-                        1.0d0,                    &
-                        dmat(st1, st2, iq(jxyz)), &
-                        mat_dim,                  &
-                        f2_gga(st2, ixyz),                  &
-                        1,                        &
-                        0.0d0,                    &
-                        buffer,                   &
-                        1)
-             
-             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                     + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
-             
              call dgemv('N',                      &
                         nr1,                      &
                         nr2,                      &
@@ -1626,25 +1612,24 @@ contains
                         1)
              
              gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                     - llss_prefactor(iblock)*ddot(nr1, f2_gga(st1, ixyz), 1, buffer, 1)
+                     + llss_prefactor(iblock)*ddot(nr1, f2_gga(st1, ixyz), 1, buffer, 1)
 
-!            [R_M \times r] *ao_M * Dmat * (\partial(i) ao_N)*gn_0(i)
-            
              call dgemv('N',                      &
                         nr1,                      &
                         nr2,                      &
                         1.0d0,                    &
                         dmat(st1, st2, iq(jxyz)), &
                         mat_dim,                  &
-                        f_lda(st2),               &
+                        f2_gga(st2, ixyz),                  &
                         1,                        &
                         0.0d0,                    &
                         buffer,                   &
                         1)
              
              gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                     + llss_prefactor(iblock)*ddot(nr1, f3_gga(st1, ixyz), 1, buffer, 1)
-
+                     - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+             
+!            [R_M \times r] *ao_M * Dmat * (\partial(i) ao_N)*gn_0(i)
              call dgemv('N',                      &
                         nr1,                      &
                         nr2,                      &
@@ -1658,7 +1643,23 @@ contains
                         1)
              
              gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                     - llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
+                     + llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
+
+             call dgemv('N',                      &
+                        nr1,                      &
+                        nr2,                      &
+                        1.0d0,                    &
+                        dmat(st1, st2, iq(jxyz)), &
+                        mat_dim,                  &
+                        f_lda(st2),               &
+                        1,                        &
+                        0.0d0,                    &
+                        buffer,                   &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     - llss_prefactor(iblock)*ddot(nr1, f3_gga(st1, ixyz), 1, buffer, 1)
+
             end do
 
   
