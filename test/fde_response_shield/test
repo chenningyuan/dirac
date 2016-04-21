@@ -15,29 +15,36 @@ f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
       rel_tolerance   = 0.002)
 
-shutil.copy('FROZEN.save', 'FROZEN')
 shutil.copy('numerical_grid.save', 'numerical_grid')
 
 # only embedding potential (v)
+shutil.copy('FROZEN.ll_lda', 'FROZEN')
 test.run(['ll_lda_updatevemb_shield_g0_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 test.run(['ll_lda_updatevemb_shield_g1_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+
+shutil.copy('FROZEN.ll_pbe', 'FROZEN')
 test.run(['ll_pbe_updatevemb_shield_g0_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 test.run(['ll_pbe_updatevemb_shield_g1_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 
-#shutil.copy('DFCOEF.dc', 'DFCOEF')
+shutil.copy('FROZEN.dc_lda', 'FROZEN')
 test.run(['dc_lda_updatevemb_scf.inp'],                  ['h2o-1.xyz'],    args='--put="numerical_grid FROZEN" --outcmo')
 test.run(['dc_lda_updatevemb_shield_g0_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_updatevemb_shield_g1_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_updatevemb_shield_g1_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-#test.run(['dc_lda_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
-#test.run(['dc_lda_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+shutil.copy('FROZEN.pert.dc_lda', 'FROZEN')
+test.run(['dc_lda_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+test.run(['dc_lda_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
+shutil.copy('FROZEN.dc_pbe', 'FROZEN')
 test.run(['dc_pbe_updatevemb_scf.inp'],                  ['h2o-1.xyz'],    args='--put="numerical_grid FROZEN" --outcmo')
 test.run(['dc_pbe_updatevemb_shield_g0_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_pbe_updatevemb_shield_g1_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_pbe_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_pbe_updatevemb_shield_g1_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+shutil.copy('FROZEN.pert.dc_pbe', 'FROZEN')
+test.run(['dc_pbe_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+test.run(['dc_pbe_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
 os.unlink('FROZEN')
 os.unlink('DFCOEF')
