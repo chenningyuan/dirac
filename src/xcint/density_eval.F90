@@ -2917,7 +2917,6 @@ contains
                       + d_ss*gn_2(a1)*gn_2(a2)
        end do
      end do
-     n_bb = -1.0d0*n_bb
 
    end subroutine
 
