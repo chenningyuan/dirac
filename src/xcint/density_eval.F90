@@ -2113,6 +2113,7 @@ contains
      real(8) ::  f1a_gga_rg0m1(mat_dim), f2_gga_g1m2(mat_dim), f2a_gga_g0m2(mat_dim)
      real(8) ::  f1b_gga_rg0m1(mat_dim), f2_gga_g1m0(mat_dim), f2b_gga_g0m2(mat_dim)
      real(8), external    :: ddot
+! d_z is already multiplied by 2.0
 !    ----------------------------------------------------------------------------
 
      n_bb = 0.0d0
@@ -2497,8 +2498,7 @@ contains
 
 
 
-!
-!
+! OLD code left for tests
 ! 
 !           do ii = st1, st1 + nr1 - 1
 !             do jj = st2, st2 + nr2 - 1
@@ -2664,8 +2664,6 @@ contains
      do jxyz = 1, 3
         do a1 = 1, 3
           do a2 = 1, 3
-!           "-" sign comes from "i*i", from London derivatives (not included in get_s_lao)
-            !n_bb(a2, a1) = n_bb(a2, a1) - s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2)
             n_bb(a2, a1) = n_bb(a2, a1) + s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2)
           end do
         end do
@@ -2882,6 +2880,7 @@ contains
      real(8)                :: fg, fg1, fg2, fg3, gn_1(3, 3), gn_2(3), ggn_2(3,3)
      real(8)                :: s(3, 3), gs(3, 3, 3), n_sum
      real(8)                :: dummy(3, 3)
+!    d_ss is already multiplied by 2.0
 !    ----------------------------------------------------------------------------
 
      s = 0.0d0
