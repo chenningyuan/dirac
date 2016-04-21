@@ -1717,12 +1717,7 @@ contains
                                       n_0_t,          &
                                       gn_0_pointwise, &
                                       z0tt,           &
-                                      gnn_0,          &
-                                      gnn_0_t,        &
-                                      w,              &
                                       use_gga,        &
-!                                     dmat_0 = dmat_0(mat_dim, mat_dim, nz)
-                                      dmat_0,         &
                                       derv_length,    &
                                       derv_active,    &
                                       derv_total,     &
@@ -3089,24 +3084,20 @@ contains
   end subroutine
 
   subroutine london_direct_kern(block_length,       &
-                        mat_dim,            &
-                        nz,                 &
-                        ao,               &
-                        buffer,           &
-                        n_0,                &
-                        n_0_t,                &
-                        gn_0_pointwise,     &
-                        gn_0_t_pointwise,     &
-                        gnn_0,              &
-                        gnn_0_t,              &
-                        w,                  &
-                        is_gga,             &
-                        dmat_full,            &
-                        n,                  &
-                        derv_active,        &
-                        derv_total,         &
-                        rx, ry, rz,         &
-                        u)
+                                mat_dim,            &
+                                nz,                 &
+                                ao,                 &
+                                buffer,             &
+                                n_0,                &
+                                n_0_t,              &
+                                gn_0_pointwise,     &
+                                gn_0_t_pointwise,   &
+                                is_gga,             &
+                                n,                  &
+                                derv_active,        &
+                                derv_total,         &
+                                rx, ry, rz,         &
+                                u)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: block_length
@@ -3118,34 +3109,22 @@ contains
     real(8), intent(in)    :: n_0_t(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
     real(8), intent(in)    :: gn_0_t_pointwise(*)
-    real(8), intent(in)    :: gnn_0(*)
-    real(8), intent(in)    :: gnn_0_t(*)
-    real(8), intent(in)    :: w(*)
     logical, intent(in)    :: is_gga
-    real(8), intent(in)    :: dmat_full(*)
     integer, intent(in)    :: n
     real(8), intent(in)    :: derv_active(max_block_length, 0:n)
     real(8), intent(in)    :: derv_total(max_block_length, 0:n)
     real(8), intent(in)    :: rx, ry, rz
 !   ----------------------------------------------------------------------------
-    real(8)                ::  s_b_lao(3, 3)
-    real(8)                ::  gs_b_lao(3, 3, 3)
-    real(8)                ::  gsgn_b_lao(3, 3)
-    real(8)                ::  gsgn_t_b_lao(3, 3)
-    real(8)                ::  t_b,    ts_b(3)
+    real(8)                :: s_b_lao(3, 3)
+    real(8)                :: gs_b_lao(3, 3, 3)
+    real(8)                :: y_b, y_b_t
 
-    real(8)                :: y_b(3, 3)
-    real(8)                :: y_b_t(3, 3)
-
-    integer                :: k_start, k, a, im_off, j
+    integer                :: k_start, k, im
     type(fde_omega_prefactor) :: u
-    integer :: i
 !   ----------------------------------------------------------------------------
 
     s_b_lao    = 0.0d0
     gs_b_lao   = 0.0d0
-    gsgn_b_lao   = 0.0d0
-    gsgn_t_b_lao   = 0.0d0
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
@@ -3153,52 +3132,48 @@ contains
     if (is_gga) then
 
 ! that is not optimal, but for the moment it works
-!      call get_gs_lao(s_b_lao,     &
-!                      gs_b_lao,    &
-!                      gsgn_b_lao,  &
-!                      gn_0_pointwise, &
-!                      (/1,1,1/),   &
-!                      mat_dim,     &
-!                      dmat_full,   &
-!                      ao,          &
-!                      rx, ry, rz, buffer)
-!
-!      call get_gs_lao(s_b_lao,     &
-!                      gs_b_lao,    &
-!                      gsgn_t_b_lao,  &
-!                      gn_0_t_pointwise, &
-!                      (/1,1,1/),   &
-!                      mat_dim,     &
-!                      dmat_full,   &
-!                      ao,          &
-!                      rx, ry, rz, buffer)
-
+      call get_gs_lao(s_b_lao,     &
+                      gs_b_lao,    &
+                      (/1,1,1/),   &
+                      mat_dim,     &
+                      dmat_0,      &
+                      ao,          &
+                      rx, ry, rz, buffer)
     else
        call get_s_lao(s_b_lao,          &
                       (/0, 0, 0/),      &
                       mat_dim,          &
-                      dmat_full,        &
+                      dmat_0,           &
                       ao,               &
                       rx, ry, rz, buffer)
     end if
 
-    do a = 1, 3     !B_{x,y,z}
+    do im = 1, 3     !B_{x,y,z}
        do k = k_start, 3  !Sigma_{x,y,z}
 
-          u%s_b_lao(k, a) = u%s_b_lao(k, a)  &
-                          + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b_lao(k, a)
+          u%s_b_lao(k, im) = u%s_b_lao(k, im)  &
+                           + (derv_total(1, d0200000) - derv_active(1, d0200000))*s_b_lao(k, im)
          
           if (is_gga) then
+
+             y_b  = gn_0_pointwise(1)*gs_b_lao(1, k, im) &
+                  + gn_0_pointwise(2)*gs_b_lao(2, k, im) &
+                  + gn_0_pointwise(3)*gs_b_lao(3, k, im)
+
+             y_b_t  = gn_0_t_pointwise(1)*gs_b_lao(1, k, im) &
+                    + gn_0_t_pointwise(2)*gs_b_lao(2, k, im) &
+                    + gn_0_t_pointwise(3)*gs_b_lao(3, k, im)
+
          
-             u%s_b_lao(k, a) = u%s_b_lao(k, a) + (derv_total(1, d0101000)*gsgn_t_b_lao(k, a) &
-                                                - derv_active(1, d0101000)*gsgn_b_lao(k, a))
+             u%s_b_lao(k,im) = u%s_b_lao(k,im) + (derv_total(1, d0101000)*y_b_t &
+                                               - derv_active(1, d0101000)*y_b)
          
-             u%gs_b_lao(1:3, k, a) = u%gs_b_lao(1:3, k, a) + gn_0_t_pointwise(1:3)*s_b_lao(k, a)*derv_total(1, d0101000)   &
-                                                           - gn_0_pointwise(1:3)*s_b_lao(k, a)*derv_active(1, d0101000)    &
-                                                           + gn_0_t_pointwise(1:3)*gsgn_t_b_lao(k, a)*derv_total(1, d0002000)     &
-                                                           - gn_0_pointwise(1:3)*gsgn_b_lao(k, a)*derv_active(1, d0002000)        &
-                                                     + 2.0d0*gs_b_lao(1:3, k, a)*derv_total(1, d0000100)                   &
-                                                     - 2.0d0*gs_b_lao(1:3, k, a)*derv_active(1, d0000100)
+             u%gs_b_lao(1:3, k, im) = u%gs_b_lao(1:3, k, im) &
+                     + s_b_lao(k, im)*( gn_0_t_pointwise(1:3)*derv_total(1, d0101000)    &
+                                      - gn_0_pointwise(1:3)*derv_active(1, d0101000))    &
+                     + gn_0_t_pointwise(1:3)*y_b_t*derv_total(1, d0002000)           &
+                     - gn_0_pointwise(1:3)*y_b*derv_active(1, d0002000)              &
+                     + 2.0d0*gs_b_lao(1:3, k, im)*(derv_total(1, d0000100) - derv_active(1, d0000100))
           end if
        end do
     end do
@@ -3699,15 +3674,13 @@ contains
 !     then we need active densities also to correspond to (LAO+T)^beta
 !     first get s_lao and gs_lao:
       if (is_gga) then
-!        call get_gs_lao(s1,     &
-!                        gs1,    &
-!                        gsgn_b_lao,  &
-!                        gn_0_pointwise, &
-!                        (/1,1,1/),   &
-!                        mat_dim,     &
-!                        dmat_0,      &
-!                        ao,          &
-!                        rx, ry, rz, buffer)
+        call get_gs_lao(s1,     &
+                        gs1,    &
+                        (/1,1,1/),   &
+                        mat_dim,     &
+                        dmat_0,      &
+                        ao,          &
+                        rx, ry, rz, buffer)
       else
          call get_s_lao(s1,          &
                         (/0, 0, 0/),      &
@@ -4625,8 +4598,6 @@ contains
 !   ----------------------------------------------------------------------------
     real(8)                ::  s_b(3, 3)
     real(8)                ::  gs_b(3, 3, 3)
-    real(8)                ::  gsgn_b(3, 3)
-    real(8)                ::  t_b,    ts_b(3)
 
     real(8)                :: y_b(3, 3)
     real(8)                :: y_b_t(3, 3)
@@ -4638,24 +4609,19 @@ contains
 
     s_b    = 0.0d0
     gs_b   = 0.0d0
-    gsgn_b   = 0.0d0
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
     if (is_gga) then
+      call get_gs_lao(s_b,         &
+                      gs_b,        &
+                      (/1,1,1/),   &
+                      mat_dim,     &
+                      dmat_full,   &
+                      ao,          &
+                      px, py, pz, buffer)
 
-! that is not optimal, but for the moment it works
-!      call get_gs_lao(s_b,         &
-!                      gs_b,        &
-!                      gsgn_b,      &
-!                      gn_0_pointwise, &
-!                      (/1,1,1/),   &
-!                      mat_dim,     &
-!                      dmat_full,   &
-!                      ao,          &
-!                      px, py, pz, buffer)
-!
     else
        call get_s_lao(s_b,              &
                       (/0, 0, 0/),      &
