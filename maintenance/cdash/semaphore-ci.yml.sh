@@ -57,6 +57,13 @@ sudo pip install sphinxcontrib-bibtex
 sudo pip install sphinx_rtd_theme
 sudo pip install hieroglyph
 
+# install most recent CMake
+wget https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+tar xzf cmake-3.5.2.tar.gz
+export PATH=$HOME/cmake-3.5.2-Linux-x86_64/bin:$PATH
+cmake --version
+
+
 # CDash project name 
   export CTEST_PROJECT_NAME="DIRACext"
 # set for parallel buildup

@@ -20,7 +20,7 @@ machine:
 # set environment variables to make MPI and tests work
         CTEST_PROJECT_NAME: "DIRACext"
         DIRAC_MPI_COMMAND: "mpirun -np 2"
-        PATH: $HOME/open_mpi/bin:$PATH
+        PATH: $HOME/open_mpi/bin:$HOME/cmake-3.5.2-Linux-x86_64/bin:$PATH
         LD_LIBRARY_PATH: $HOME/open_mpi/lib:$LD_LIBRARY_PATH
         FC: gfortran
         CC: gcc
@@ -44,6 +44,10 @@ dependencies:
         - cd openmpi-1.8.4 && ./configure --prefix=$HOME/open_mpi && make -j $N_PROC && make install
 # check if integer size is correct - should be 8
         - echo "Fortran MPI Integer size is $(ompi_info -a | grep 'Fort integer size') - should be equal to 8"
+# download latest cmake
+        - wget https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+        - tar xzf cmake-3.5.2.tar.gz
+        - cmake --version
         
 test:
     pre:
