@@ -1383,10 +1383,9 @@ contains
      real(8), intent(in)  :: buffer(*)
 !    ----------------------------------------------------------------------------
      integer              :: nr1, nr2, st1, st2, iblock, jxyz
-     integer              :: a, b, c, irp1, irp2, ii, jj
-     real(8)              :: r_co(3), f(mat_dim), ff
+     integer              :: a, b, c, ii
+     real(8)              :: r_co(3), f(mat_dim)
      real(8), external    :: ddot
-     integer :: i, j, k
 !    ----------------------------------------------------------------------------
 
      r_co(1) = cx
@@ -1395,7 +1394,6 @@ contains
 
      s = 0.0d0
      f = 0.0d0
-     ff= 0.0d0
 
      do a = 1, 3   ! Bx, By, Bz
        select case (a)
@@ -1954,13 +1952,12 @@ contains
      real(8), intent(in)    :: buffer(*)
      real(8), intent(out)   :: n_bb(3, 3)
 !    ----------------------------------------------------------------------------
-     integer                :: nr1, nr2, st1, st2, iblock, ii, jj
+     integer                :: nr1, nr2, st1, st2, iblock, ii
      integer                :: a1, a2, b1, b2, c1, c2
      integer                :: ind(3, 3)
-     real(8)                :: f1i, f2i, f3i, f4i, f1j, f2j, f3j, f4j
-     real(8)                :: f_1, f_2
+     real(8)                :: f1i, f2i, f3i, f4i
      real(8)                :: r_co(3)
-     real(8) :: f1a(mat_dim), f1b(mat_dim), f2(mat_dim)
+     real(8)                :: f1a(mat_dim), f1b(mat_dim), f2(mat_dim)
      real(8), external    :: ddot
 !    ----------------------------------------------------------------------------
 
@@ -2142,8 +2139,8 @@ contains
      real(8) ::  f1a(mat_dim), f1b(mat_dim), f2(mat_dim)
      real(8) ::  f1a_gga_ng(mat_dim), f1a_gga_r(mat_dim), f1a_gga_rg1m1(mat_dim)
      real(8) ::  f1b_gga_ng(mat_dim), f1b_gga_r(mat_dim), f1b_gga_rg1m1(mat_dim)
-     real(8) ::  f1a_gga_rg0m1(mat_dim), f2_gga_g1m2(mat_dim), f2a_gga_g0m2(mat_dim)
-     real(8) ::  f1b_gga_rg0m1(mat_dim), f2_gga_g1m0(mat_dim), f2b_gga_g0m2(mat_dim)
+     real(8) ::  f2_gga_g1m2(mat_dim), f2a_gga_g0m2(mat_dim)
+     real(8) ::  f2_gga_g1m0(mat_dim), f2b_gga_g0m2(mat_dim)
      real(8), external    :: ddot
 ! d_z is already multiplied by 2.0
 !    ----------------------------------------------------------------------------
@@ -2196,12 +2193,10 @@ contains
 
            f1a_gga_rg1m1 = 0.0d0
            f1b_gga_rg1m1 = 0.0d0
-           f1a_gga_rg0m1 = 0.0d0
-           f1b_gga_rg0m1 = 0.0d0
            f2_gga_g1m2   = 0.0d0
            f2_gga_g1m0   = 0.0d0
            do ii = 1, mat_dim
-!            lda
+!
              f1a(ii)  = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
              f1b(ii)  = (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))
              f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
@@ -2209,7 +2204,7 @@ contains
              f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
              f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
              f2(ii) = f1i - f2i - f3i + f4i
-!            gga
+!
              f1a_gga_ng(ii)  = (n_g(c1)*ao(ao_off_g0_m1(0, b1) + ii) - n_g(b1)*ao(ao_off_g0_m1(0, c1) + ii))
              f1b_gga_ng(ii)  = (n_g(c2)*ao(ao_off_g0_m1(0, b2) + ii) - n_g(b2)*ao(ao_off_g0_m1(0, c2) + ii))
              f1a_gga_r(ii)   = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)- r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
@@ -2220,10 +2215,6 @@ contains
                        + (r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + ii) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + ii))*n_g(ixyz)
                f1b_gga_rg1m1(ii) = f1b_gga_rg1m1(ii) &
                        + (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + ii) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + ii))*n_g(ixyz)
-               f1a_gga_rg0m1(ii) = f1a_gga_rg0m1(ii) &
-                       + (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii) - r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))*n_g(ixyz)
-               f1b_gga_rg0m1(ii) = f1b_gga_rg0m1(ii) &
-                       + (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii) - r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))*n_g(ixyz)
 !
                fg1i = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + ii)
                fg2i = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + ii)
@@ -2680,16 +2671,15 @@ contains
      real(8), intent(in)    :: buffer(*)
      real(8), intent(out)   :: n_bb(3, 3)
 !    ----------------------------------------------------------------------------
-     integer                :: nr1, nr2, st1, st2, iblock
-     integer                :: i, ii, jj, a, b, c, a1, a2, jxyz
-     real(8)                :: ff, f1, n_1(3)
+     integer                :: i, a1, a2, jxyz
      real(8)                :: r_co(3), s_b_lao(3,3)
-     integer                :: nr3, nr4, st3, st4, kk, ll, irep(3)
+     integer                :: irep(3)
 !    ----------------------------------------------------------------------------
 
      do i = 1, 3
         irep(i) = isym(i) - 1
      end do
+     s_b_lao = 0.0d0
      call get_s_lao(s_b_lao, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
 !    s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
@@ -2904,23 +2894,13 @@ contains
      real(8), intent(in)    :: cx, cy, cz
      real(8), intent(out)   :: n_bb(3, 3)
 !    ----------------------------------------------------------------------------
-     integer                :: nr1, nr2, st1, st2, iblock
-     integer                :: i, ii, jj, a, a1, a2, jxyz, ixyz
-     real(8)                :: ff, f1, n_1(3)
-     real(8)                :: r_co(3)
-     integer                :: nr3, nr4, st3, st4, kk, ll
-     real(8)                :: fg, fg1, fg2, fg3, gn_1(3, 3), gn_2(3), ggn_2(3,3)
-     real(8)                :: s(3, 3), gs(3, 3, 3), n_sum
-     real(8)                :: dummy(3, 3)
+     integer                :: a1, a2, ixyz
+     real(8)                :: s(3, 3), gs(3, 3, 3)
 !    d_ss is already multiplied by 2.0
 !    ----------------------------------------------------------------------------
 
      s = 0.0d0
      gs = 0.0d0
-     n_1 = 0.0d0
-     gn_2 = 0.0d0
-
-     dummy = 0.0d0
 
 !    get s and gs in LAO basis:
 !    --------------------------
