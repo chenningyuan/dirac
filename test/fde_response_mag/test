@@ -9,24 +9,22 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-shutil.copy('numerical_grid.save', 'numerical_grid')
-
-
 f = Filter()
-f.add(from_string = '  Magnetizabilities                    au          SI         cgs',
+f.add(from_string = '  Magnetizabilities                     au                       SI                      cgs',
       num_lines   = 9,
       rel_tolerance   = 0.0002)
 
 
+shutil.copy('numerical_grid.save', 'numerical_grid')
+
 # only embedding potential (v) in property gradient and embedding potential (v) in expectation value
-#shutil.copy('FROZEN.ll_lda', 'FROZEN')
-#test.run(['ll_lda_magn_g0_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-#test.run(['ll_lda_magn_g1_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-#test.run(['ll_lda_magn_g0_vw11_vw11.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-#test.run(['ll_lda_magn_g1_vw11_vw11.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-#shutil.copy('FROZEN.ll_pbe', 'FROZEN')
-#test.run(['ll_pbe_magn_g0_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-#test.run(['ll_pbe_magn_g1_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+shutil.copy('FROZEN.ll_lda', 'FROZEN')
+test.run(['ll_lda_magn_g0_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_lda_magn_g1_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+
+shutil.copy('FROZEN.ll_pbe', 'FROZEN')
+test.run(['ll_pbe_magn_g0_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_pbe_magn_g1_v_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 
 # DC/lda
 # ------
@@ -36,14 +34,11 @@ test.run(['dc_lda_magn_g0_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical
 test.run(['dc_lda_magn_g1_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_magn_g0_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_magn_g1_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-os.unlink('FROZEN')
 
 shutil.copy('FROZEN.pert.dc_lda', 'FROZEN')
 test.run(['dc_lda_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
-os.unlink('FROZEN')
-os.unlink('DFCOEF')
 
 # DC/gga
 # ------
@@ -53,7 +48,6 @@ test.run(['dc_pbe_magn_g0_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical
 test.run(['dc_pbe_magn_g1_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_pbe_magn_g0_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_pbe_magn_g1_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-os.unlink('FROZEN')
 
 shutil.copy('FROZEN.pert.dc_pbe', 'FROZEN')
 test.run(['dc_pbe_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
@@ -61,7 +55,6 @@ test.run(['dc_pbe_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numer
 
 os.unlink('FROZEN')
 os.unlink('DFCOEF')
-
 os.unlink('numerical_grid')
 
 
