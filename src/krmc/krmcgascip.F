@@ -1032,7 +1032,7 @@ C
 C     Diagonalize Hamiltonian:
 C     ------------------------
 C
-      IF ( IPRINT .GE. 20 ) THEN
+      IF ( IPRINT .GE. 41 ) THEN
          WRITE(LUPRI,'(A)') ' (GASCIP_FULLCI) CI matrix - real part:'
          CALL OUTPUT(WORK(KHR),1,NDET,1,NDET,NDET,NDET,-1,LUPRI)
         IF (NZ_in_CI .GT. 1) THEN
@@ -2338,7 +2338,7 @@ C          DOSIG,SVEC,BVEC,HCORE,VMUUUU,
 C          DODEN,CL,CR,DV,PV,
 C          DO2EL,NDET,IDET,IHRM,IPRINT)
 C
-      IF (IPRINT .GT. 10) THEN
+      IF (IPRINT .GT. 20) THEN
          WRITE(LUPRI,'(/A)')
      &      ' (GASCIP_RCISTD) Diagonal of CI Hamiltonian'
          CALL OUTPUT(WORK(KHDIAG),1,1,1,NDET,1,NDET,-1,LUPRI)
@@ -2517,7 +2517,7 @@ C
      &              ' (GASCIP_RCISTD) Trial vector no. ',I,' of ',N_CSIM
                CALL GASCIP_ANACI(WORK(KBCVEC+(I_TOT-1)*NDETQ),
      &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
-               IF (IPRINT .GE. 20)
+               IF (IPRINT .GE. 41)
      &            CALL OUTPUT(WORK(KBCVEC+(I_TOT-1)*NDETQ),
      &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
 C
@@ -2527,7 +2527,7 @@ C
      &              ' (GASCIP_RCISTD) Sigma vector no. ',I,' of ',N_CSIM
                CALL GASCIP_ANACI(WORK(KSCVEC+(I_TOT-1)*NDETQ),
      &                     NDET,IDET,THR_PCI,WORK(KFREE),LFREE)
-               IF (IPRINT .GE. 20)
+               IF (IPRINT .GE. 41)
      &            CALL OUTPUT(WORK(KSCVEC+(I_TOT-1)*NDETQ),
      &              1,NDET,1,NZ_in_CI,NDET,NZ_in_CI,1,LUPRI)
             END IF
@@ -2552,7 +2552,7 @@ C
 C        (Old + New) sigma vectors * New trial vectors
 C
 
-         IF (IPRINT .GE. 20) THEN
+         IF (IPRINT .GE. 41) THEN
              write (lupri,*) 'All N_CRED trial vectors',N_CRED
              CALL OUTPUT(WORK(KBCVEC),
      &                   1,NDETQ,1,N_CRED,NDETQ,N_CRED,-1,LUPRI)
@@ -2755,7 +2755,7 @@ C
      &           WORK(KS_MHLF),MAX_HRED,MAX_HRED,NZ_in_CI,
      &           0.0D0,IQINDX,WORK(KH_TILDE),MAX_HRED,MAX_HRED,NZ_in_CI)
 
-         IF (IPRINT .GE. 5) THEN
+         IF (IPRINT .GE. 11) THEN
             WRITE(LUPRI,'(/A)')
      &           ' (GASCIP_RCISTD) S**(-0.5) matrix'
             CALL OUTPUT(WORK(KS_MHLF),1,N_CRED,1,N_CRED,
@@ -2907,7 +2907,7 @@ C
          WRITE(LUPRI,'(/A,1P,D8.2,A/,(I10,D20.5))')
      &     ' (GASCIP_RCISTD) Norm of CI residuals (thr = ',THR_CONV,')',
      &     (I_ROOT,DNRES(I_ROOT),I_ROOT=1,N_ROOTS)
-         IF (IPRINT .GE. 10) THEN
+         IF (IPRINT .GE. 41) THEN
             WRITE(LUPRI,'(/A,I4,A)')
      &       ' (GASCIP_RCISTD) CI residual vectors for',N_ROOTS,' roots'
             IF (NZ_in_CI.gt.1)
@@ -2959,14 +2959,14 @@ C
                IF (NZ_in_CI .EQ. 2)
      &         WORK(JBCVEC + NDET + I) = - CVECS(NDET + I, I_ROOT) / HD
             END DO
-            IF (IPRINT .GE. 10) THEN
+            IF (IPRINT .GE. 41) THEN
               write (lupri,*) 'trial vector',N_ROOTS_NOT_CONVERGED,
      &                        ' for root',i_root,' before renorm'
               call output(work(jbcvec+1),1,ndet,1,NZ_in_CI,
      &                    ndet,NZ_in_CI,1,lupri)
             END IF
             CALL RCINORM(WORK(JBCVEC+1),IPRINT)
-            IF (IPRINT .GE. 10) THEN
+            IF (IPRINT .GE. 41) THEN
               write (lupri,*) 'trial vector',N_ROOTS_NOT_CONVERGED,
      &                        ' for root',i_root,' after renorm'
               call output(work(jbcvec+1),1,ndet,1,NZ_in_CI,
@@ -4207,7 +4207,7 @@ C
      &      'out of bounds in GASCIP_CISIG_SCREEN')
       END IF
 
-      IF (IPRINT .GT. 1 .AND. MYTID .LE. 1)
+      IF (IPRINT .GT. 5 .AND. MYTID .LE. 1)
      &   WRITE (LUPRI,'(//A,I6/A,L10,1P,D10.2,2I12)')
      &   ' --- Output from GASCIP_CISIG_SCREEN --- node',MYTID,
      &   ' DO2EL, THRSCR, interval:',DO2EL,THRSCR,IS_START,IS_END
