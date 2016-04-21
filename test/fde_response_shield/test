@@ -9,23 +9,20 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-shutil.copy('FROZEN.save', 'FROZEN')
-shutil.copy('numerical_grid.save', 'numerical_grid')
 
 f = Filter()
 f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
       rel_tolerance   = 0.002)
 
+shutil.copy('FROZEN.save', 'FROZEN')
+shutil.copy('numerical_grid.save', 'numerical_grid')
+
 # only embedding potential (v)
-test.run(['ll_lda_updatevemb_shield_g0_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-test.run(['ll_lda_updatevemb_shield_g1_v.inp'],          ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-# embedding potential (v) and embedding kernel without coupling terms (w11)
-test.run(['ll_lda_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-test.run(['ll_lda_updatevemb_shield_g1_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
-# embedding potential (v) and embedding kernel without coupling terms (w11) and with coupling terms (w12)
-#test.run(['ll_lda_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
-#test.run(['ll_lda_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN EMBPOT"')
+test.run(['ll_lda_updatevemb_shield_g0_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_lda_updatevemb_shield_g1_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_pbe_updatevemb_shield_g0_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
+test.run(['ll_pbe_updatevemb_shield_g1_v.inp'], ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN"')
 
 #shutil.copy('DFCOEF.dc', 'DFCOEF')
 test.run(['dc_lda_updatevemb_scf.inp'],                  ['h2o-1.xyz'],    args='--put="numerical_grid FROZEN" --outcmo')
