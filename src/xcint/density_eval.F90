@@ -1986,13 +1986,14 @@ contains
              f2(ii) = f1i - f2i - f3i + f4i
            end do
 
+!          first-order magnetic derivatives of lao (contribute with "+")
            call dgemv('N',                   &
                       nr1,                   &
                       nr2,                   &
                       1.0d0,                 &
                       dmat(st1, st2, iq(0)), &
                       mat_dim,               &
-                      f1a(st2),               &
+                      f1a(st2),              &
                       1,                     &
                       0.0d0,                 &
                       buffer,                &
@@ -2006,7 +2007,7 @@ contains
                       1.0d0,                 &
                       dmat(st1, st2, iq(0)), &
                       mat_dim,               &
-                      f1b(st2),               &
+                      f1b(st2),              &
                       1,                     &
                       0.0d0,                 &
                       buffer,                &
@@ -2015,7 +2016,7 @@ contains
            n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a(st1), 1, buffer, 1)
 
 
-
+!          second-order magnetic derivatives of lao (contribute with "-")
            call dgemv('N',                   &
                       nr1,                   &
                       nr2,                   &
@@ -2045,6 +2046,7 @@ contains
            n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, f2(st1), 1, buffer, 1)
 
 
+!            OLD code
         !    do ii = st1, st1 + nr1 - 1
         !     do jj = st2, st2 + nr2 - 1
 
@@ -2071,6 +2073,7 @@ contains
 
         !     end do
         !   end do
+
          end do
        end do
      end do
@@ -2214,6 +2217,7 @@ contains
            end do
 
 !          lda
+!          first-order magnetic derivatives of lao (contribute with "+")
            s = d_r 
            call dgemv('N',                   &
                       nr1,                   &
@@ -2234,14 +2238,15 @@ contains
                       s,                     &
                       dmat(st1, st2, iq(0)), &
                       mat_dim,               &
-                      f1b(st2),               &
+                      f1b(st2),              &
                       1,                     &
                       0.0d0,                 &
                       buffer,                &
                       1)
            n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a(st1), 1, buffer, 1)
 
-           s = - d_r
+!          second-order magnetic derivatives of lao (contribute with "-")
+           s = d_r
            call dgemv('N',                   &
                       nr1,                   &
                       nr2,                   &
@@ -2253,7 +2258,7 @@ contains
                       0.0d0,                 &
                       buffer,                &
                       1)
-           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, ao(st1), 1, buffer, 1)
+           n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, ao(st1), 1, buffer, 1)
 
            call dgemv('N',                   &
                       nr1,                   &
@@ -2266,9 +2271,65 @@ contains
                       0.0d0,                 &
                       buffer,                &
                       1)
-           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2(st1), 1, buffer, 1)
+           n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, f2(st1), 1, buffer, 1)
 
 !          gga
+!          first-order magnetic derivatives of lao (contribute with "+")
+!          [ R_M \times r] (\partial ao_M)] Dmat_MN [R_N \times r] ao_N
+           s = d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_rg1m1(st2),    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_r(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_r(st2),        &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_rg1m1(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_rg1m1(st2),    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_r(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_r(st2),        &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_rg1m1(st1), 1, buffer, 1)
+
+!          [ R_M \times (\partial(i) r)] (ao_M)] * n_g(i)* Dmat_MN [R_N \times r] ao_N
            s = d_z
            call dgemv('N',                   &
                       nr1,                   &
@@ -2302,7 +2363,7 @@ contains
                       s,                     &
                       dmat(st1, st2, iq(0)), &
                       mat_dim,               &
-                      f1a_gga_r(st2),       &
+                      f1a_gga_r(st2),        &
                       1,                     &
                       0.0d0,                 &
                       buffer,                &
@@ -2315,95 +2376,17 @@ contains
                       s,                     &
                       dmat(st1, st2, iq(0)), &
                       mat_dim,               &
-                      f1b_gga_r(st2),       &
+                      f1b_gga_r(st2),        &
                       1,                     &
                       0.0d0,                 &
                       buffer,                &
                       1)
            n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_ng(st1), 1, buffer, 1)
 
-           s = d_z
-           call dgemv('N',                   &
-                      nr1,                   &
-                      nr2,                   &
-                      s,                     &
-                      dmat(st1, st2, iq(0)), &
-                      mat_dim,               &
-                      f1a_gga_rg1m1(st2),    &
-                      1,                     &
-                      0.0d0,                 &
-                      buffer,                &
-                      1)
-           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_rg0m1(st1), 1, buffer, 1)
-
-           call dgemv('N',                   &
-                      nr1,                   &
-                      nr2,                   &
-                      s,                     &
-                      dmat(st1, st2, iq(0)), &
-                      mat_dim,               &
-                      f1a_gga_rg0m1(st2),    &
-                      1,                     &
-                      0.0d0,                 &
-                      buffer,                &
-                      1)
-           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_rg1m1(st1), 1, buffer, 1)
-
-           call dgemv('N',                   &
-                      nr1,                   &
-                      nr2,                   &
-                      s,                     &
-                      dmat(st1, st2, iq(0)), &
-                      mat_dim,               &
-                      f1b_gga_rg1m1(st2),    &
-                      1,                     &
-                      0.0d0,                 &
-                      buffer,                &
-                      1)
-           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_rg0m1(st1), 1, buffer, 1)
-
-           call dgemv('N',                   &
-                      nr1,                   &
-                      nr2,                   &
-                      s,                     &
-                      dmat(st1, st2, iq(0)), &
-                      mat_dim,               &
-                      f1b_gga_rg0m1(st2),    &
-                      1,                     &
-                      0.0d0,                 &
-                      buffer,                &
-                      1)
-           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_rg1m1(st1), 1, buffer, 1)
-!
+!          second-order magnetic derivatives of lao (contribute with "-")
+!          [ R_M \times r] [R_M \times r] (\partial ao_M)] Dmat_MN ao_N
            s = - d_z
-           call dgemv('N',                   &
-                      nr1,                   &
-                      nr2,                   &
-                      s,                     &
-                      dmat(st1, st2, iq(0)), &
-                      mat_dim,               &
-                      f2_gga_g1m0(st2),      &
-                      1,                     &
-                      0.0d0,                 &
-                      buffer,                &
-                      1)
-           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2(st1), 1, buffer, 1)
-
-           call dgemv('N',                   &
-                      nr1,                   &
-                      nr2,                   &
-                      s,                     &
-                      dmat(st1, st2, iq(0)), &
-                      mat_dim,               &
-                      f2,                    &
-                      1,                     &
-                      0.0d0,                 &
-                      buffer,                &
-                      1)
-           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2_gga_g1m0(st1), 1, buffer, 1)
-
-           !s = - d_z
-           s =  d_z
+           !s =  d_z
            call dgemv('N',                   &
                       nr1,                   &
                       nr2,                   &
@@ -2430,7 +2413,7 @@ contains
                       1)
            n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2_gga_g1m2(st1), 1, buffer, 1)
 
-
+!          [ R_M \times (\partial(i) r)] [R_M \times r] ao_M Dmat_MN ao_N
            s = - d_z
            call dgemv('N',                   &
                       nr1,                   &
@@ -2484,7 +2467,33 @@ contains
                       1)
            n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2b_gga_g0m2(st1), 1, buffer, 1)
 
+!          [ R_M \times r)] [R_M \times r] ao_M Dmat_MN (\partial(i) ao_N)*n_g(i)
+           s = - d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2_gga_g1m0(st2),      &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2(st1), 1, buffer, 1)
 
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2,                    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2_gga_g1m0(st1), 1, buffer, 1)
 
 
 
