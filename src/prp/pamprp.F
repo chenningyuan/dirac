@@ -5977,22 +5977,22 @@ C ... This is needed for compatibility with Dalton
         CALL HEADER('One-electron expectation values',-1)
         CALL POLPRI(SUSDIA,'   ',-2)
         AVERAG = (SUSDIA(1,1) + SUSDIA(2,2) + SUSDIA(3,3))/D3
-        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
 
         CALL HEADER('Two-electron expectation values',-1)
         CALL POLPRI(SUS2EL,'   ',-2)
         AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/D3
-        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
 
         CALL HEADER('Highest-order reorthonormalization',-1)
         CALL POLPRI(SUSFS,'   ',-2)
         AVERAG = (SUSFS (1,1) + SUSFS (2,2) + SUSFS (3,3))/D3
-        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
 C
         CALL HEADER('Lowest-order reorthonormalization',-1)
         CALL POLPRI(SUSFSY,'   ',-2)
         AVERAG = (SUSFSY(1,1) + SUSFSY(2,2) + SUSFSY(3,3))/D3
-        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
         CALL FLSHFO(LUPRI)
        ENDIF
       ENDIF
@@ -6072,7 +6072,7 @@ C    .... DALTON type of output
           CALL OUTPUT(SUSREL,1,3,1,3,3,3,1,LUPRI)
          ENDIF
          AVERAG = (SUSREL(1,1) + SUSREL(2,2) + SUSREL(3,3))/D3
-         WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+         WRITE (LUPRI,'(/,6X,A,F20.6)') ' Average value:',AVERAG
          IF (.NOT.XLR_SKIPEP) THEN
 C ....write out e-e and e-p contributions...
           CALL HEADER('e-p "diamagnetic" and e-e "paramagnetic"'//
@@ -6086,7 +6086,7 @@ C ....write out e-e and e-p contributions...
      &      (SUSREL_EP(1,1,1)+SUSREL_EP(2,2,1)+SUSREL_EP(3,3,1))/D3
           AVERAG_EP =
      &      (SUSREL_EP(1,1,2)+SUSREL_EP(2,2,2)+SUSREL_EP(3,3,2))/D3
-          WRITE(LUPRI,'(/,1X,A,F12.6,4X,A,F12.6)')
+          WRITE(LUPRI,'(/,1X,A,F20.6,4X,A,F20.6)')
      &    'e-p "diamagnetic" contribution:',AVERAG_EP,
      &    'e-e "paramagnetic":',AVERAG_EE
 !        ... write out MSUSCDIA diamagnetic terms for comparison
@@ -6096,7 +6096,7 @@ C ....write out e-e and e-p contributions...
            CALL OUTPUT(SUSDIA_EX,1,3,1,3,3,3,1,LUPRI)
            AVERAG_EX = 
      &      (SUSDIA_EX(1,1) + SUSDIA_EX(2,2) + SUSDIA_EX(3,3))/D3
-            WRITE (LUPRI,'(/,6X,A,F12.6)')
+            WRITE (LUPRI,'(/,6X,A,F20.6)')
      &      '.MSUSCDIA average value:',AVERAG_EX
           ENDIF
  
@@ -6218,7 +6218,7 @@ CMI   ...there are three defferent types of the magnetizability output
 CMI  ====================================================================
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
-         WRITE (LUPRI,'(3(/,1X,A,3(F12.4,A)))')
+         WRITE (LUPRI,'(3(/,1X,A,3(F20.4,A)))')
      &      ' Magnetizability:           ',    AVE,' (au), ',
      &        SI*AVE*1.0D31,' (SI), ', CGS*AVE,' (cgs)',
      &      ' Diamagnetic contribution:  ',DIAMAG,' (au), ',
@@ -6236,9 +6236,11 @@ CMI  ====================================================================
             PER = (PVAL(2) + PVAL(3))/D2
          END IF
          ANI = PAR - PER
-         CALL HEADER('Magnetizabilities           '
-     &             //'         au          SI         cgs',1)
-         WRITE (LUPRI,'(6(1X,A,3F12.4,/))')
+         CALL HEADER('Magnetizabilities        '
+     &             //'             au          '
+     &             //'             SI          '
+     &             //'            cgs',1)
+         WRITE (LUPRI,'(6(1X,A,3F20.4,/))')
      &      ' Isotropic magnetizability: ',AVE,SI*AVE*1.0D31,CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
      &                                     CGS*DIAMAG,
@@ -6260,9 +6262,11 @@ CMI  ====================================================================
          AVE  = (PVAL(1) + PVAL(2) + PVAL(3))/D3
          ANI1 = PVAL(3) - (PVAL(1) + PVAL(2))/D2
          ANI2 = PVAL(2) - (PVAL(1) + PVAL(3))/D2
-         CALL HEADER('Magnetizabilities           '
-     &             //'         au          SI         cgs',1)
-         WRITE (LUPRI,'(5(1X,A,3F12.4,/))')
+         CALL HEADER('Magnetizabilities        '
+     &             //'             au          '
+     &             //'             SI          '
+     &             //'            cgs',1)
+         WRITE (LUPRI,'(5(1X,A,3F20.4,/))')
      &      ' Isotropic magnetizability: ',AVE, SI*AVE*1.0D31, CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
      &                                     CGS*DIAMAG,
