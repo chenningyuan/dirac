@@ -3153,25 +3153,25 @@ contains
     if (is_gga) then
 
 ! that is not optimal, but for the moment it works
-      call get_gs_lao(s_b_lao,     &
-                      gs_b_lao,    &
-                      gsgn_b_lao,  &
-                      gn_0_pointwise, &
-                      (/1,1,1/),   &
-                      mat_dim,     &
-                      dmat_full,   &
-                      ao,          &
-                      rx, ry, rz, buffer)
-
-      call get_gs_lao(s_b_lao,     &
-                      gs_b_lao,    &
-                      gsgn_t_b_lao,  &
-                      gn_0_t_pointwise, &
-                      (/1,1,1/),   &
-                      mat_dim,     &
-                      dmat_full,   &
-                      ao,          &
-                      rx, ry, rz, buffer)
+!      call get_gs_lao(s_b_lao,     &
+!                      gs_b_lao,    &
+!                      gsgn_b_lao,  &
+!                      gn_0_pointwise, &
+!                      (/1,1,1/),   &
+!                      mat_dim,     &
+!                      dmat_full,   &
+!                      ao,          &
+!                      rx, ry, rz, buffer)
+!
+!      call get_gs_lao(s_b_lao,     &
+!                      gs_b_lao,    &
+!                      gsgn_t_b_lao,  &
+!                      gn_0_t_pointwise, &
+!                      (/1,1,1/),   &
+!                      mat_dim,     &
+!                      dmat_full,   &
+!                      ao,          &
+!                      rx, ry, rz, buffer)
 
     else
        call get_s_lao(s_b_lao,          &
@@ -3699,15 +3699,15 @@ contains
 !     then we need active densities also to correspond to (LAO+T)^beta
 !     first get s_lao and gs_lao:
       if (is_gga) then
-        call get_gs_lao(s1,     &
-                        gs1,    &
-                        gsgn_b_lao,  &
-                        gn_0_pointwise, &
-                        (/1,1,1/),   &
-                        mat_dim,     &
-                        dmat_0,      &
-                        ao,          &
-                        rx, ry, rz, buffer)
+!        call get_gs_lao(s1,     &
+!                        gs1,    &
+!                        gsgn_b_lao,  &
+!                        gn_0_pointwise, &
+!                        (/1,1,1/),   &
+!                        mat_dim,     &
+!                        dmat_0,      &
+!                        ao,          &
+!                        rx, ry, rz, buffer)
       else
          call get_s_lao(s1,          &
                         (/0, 0, 0/),      &
@@ -4646,16 +4646,16 @@ contains
     if (is_gga) then
 
 ! that is not optimal, but for the moment it works
-      call get_gs_lao(s_b,         &
-                      gs_b,        &
-                      gsgn_b,      &
-                      gn_0_pointwise, &
-                      (/1,1,1/),   &
-                      mat_dim,     &
-                      dmat_full,   &
-                      ao,          &
-                      px, py, pz, buffer)
-
+!      call get_gs_lao(s_b,         &
+!                      gs_b,        &
+!                      gsgn_b,      &
+!                      gn_0_pointwise, &
+!                      (/1,1,1/),   &
+!                      mat_dim,     &
+!                      dmat_full,   &
+!                      ao,          &
+!                      px, py, pz, buffer)
+!
     else
        call get_s_lao(s_b,              &
                       (/0, 0, 0/),      &

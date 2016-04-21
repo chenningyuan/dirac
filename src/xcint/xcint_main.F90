@@ -2720,7 +2720,7 @@ contains
     real(8)                ::  gsgn_b_lao(3, 3)
 
     real(8)                :: z_b
-    real(8)                :: y_b(3, 3)
+    real(8)                :: y_b(3)
 
     integer                :: k_start, k, im, im_off, j, ioff, i
     type(omega_prefactor) :: u
@@ -2752,8 +2752,6 @@ contains
 
       call get_gs_lao(s_b_lao,    &
                      gs_b_lao,    &
-                     gsgn_b_lao,  &
-                     gn_0_pointwise, &
                      fmat_pg_sym, &
                      mat_dim,     &
                      dmat_0,      &
@@ -2791,10 +2789,14 @@ contains
            u%s_lao(k, im) = derv(1, d0200000)*s_b_lao(k, im)
 
            if (is_gga) then
-              u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0101000)*gsgn_b_lao(k, im)
+              y_b(k)  = gn_0_pointwise(1)*gs_b_lao(1, k, im) &
+                      + gn_0_pointwise(2)*gs_b_lao(2, k, im) &
+                      + gn_0_pointwise(3)*gs_b_lao(3, k, im)
+
+              u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0101000)*y_b(k)
               u%gs_lao(1:3, k, im) = &
                                    + gn_0_pointwise(1:3)*s_b_lao(k, im)*derv(1, d0101000)    &
-                                   + gn_0_pointwise(1:3)*gsgn_b_lao(k,im)*derv(1, d0002000)  &
+                                   + gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000)  &
                                    + 2.0d0*gs_b_lao(1:3, k, im)*derv(1, d0000100)
            end if
         end do
