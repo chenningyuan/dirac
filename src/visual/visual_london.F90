@@ -75,8 +75,8 @@ contains
     read(file_unit) nr_xyz_comp
     read(file_unit) which_icomp
     read(file_unit) D_con_mo%irep
-!gosia: dummy will be removed; now it is left to do visualization with TBMO files calculated before doeprn was removed
-    read(file_unit) dummy
+!gosia: comment out dummy to go with old TBMO
+!    read(file_unit) dummy
     read(file_unit) D_con_mo%elms
 
     if (nr_xyz_comp > 1) then
