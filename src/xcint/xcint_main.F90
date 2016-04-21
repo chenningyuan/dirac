@@ -2777,10 +2777,13 @@ contains
                      buffer)
     end if
 
-!    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba dft s_b = ', px, py, pz, &
-!                                      s_b_lao(1,1), s_b_lao(2,1), s_b_lao(3,1), &
-!                                      s_b_lao(1,2), s_b_lao(2,2), s_b_lao(3,2), &
-!                                      s_b_lao(1,3), s_b_lao(2,3), s_b_lao(3,3)
+    write(*, '(A,3F16.8,18ES30.20E3)') 'ale buba dft s_b = ', px, py, pz, &
+                                      s_b_lao(1,1), s_b_lao(2,1), s_b_lao(3,1), &
+                                      s_b_lao(1,2), s_b_lao(2,2), s_b_lao(3,2), &
+                                      s_b_lao(1,3), s_b_lao(2,3), s_b_lao(3,3), &
+                                      gs_b_lao(1,1,1), gs_b_lao(1,1,2), gs_b_lao(1,1,3), &
+                                      gs_b_lao(1,2,1), gs_b_lao(1,2,2), gs_b_lao(1,2,3), &
+                                      gs_b_lao(2,2,1), gs_b_lao(2,2,2), gs_b_lao(2,2,3)
 
      do im = 1, nr_fmat         ! B_{x,y,z}
         do k = k_start, 3       ! Sigma_{x,y,z}
