@@ -45,8 +45,8 @@ dependencies:
 # check if integer size is correct - should be 8
         - echo "Fortran MPI Integer size is $(ompi_info -a | grep 'Fort integer size') - should be equal to 8"
 # download latest cmake
-        - wget https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
-        - tar xzf cmake-3.5.2.tar.gz
+        - wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+        - tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
         - cmake --version
         
 test:
