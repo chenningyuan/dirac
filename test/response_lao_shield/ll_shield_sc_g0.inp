@@ -6,7 +6,7 @@
 **MOLECULE
 *BASIS
 .DEFAULT
- aug-cc-pVTZ
+ cc-pVDZ
 **INTEGRALS
 .NUCMOD
 1
