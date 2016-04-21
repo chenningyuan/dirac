@@ -10,7 +10,7 @@
 
 install:
     # update sources
-    - sudo apt-get update -y
+    #- sudo apt-get update -y
     # install software
     - sudo apt-get install gcc g++ gfortran make cmake libblas-dev liblapack-dev zlib1g-dev doxygen python-dateutil python-pyparsing python-numpy python-matplotlib python-pip python-setuptools python-dev -y
     # install Python packages with pip
@@ -21,7 +21,7 @@ install:
     # install most recent CMake version
     - wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
     - tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
-    - export PATH=$HOME/cmake-3.5.2-Linux-x86_64/bin:$PATH
+    - export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
     - cmake --version
 
 script:

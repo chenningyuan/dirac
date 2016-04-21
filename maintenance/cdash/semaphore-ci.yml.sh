@@ -35,7 +35,7 @@ echo
 
 # install packages
 echo "installing packages :"
-sudo apt-get update
+#sudo apt-get update
 sudo apt-get install gcc -y
 sudo apt-get install g++ -y
 sudo apt-get install gfortran -y
@@ -60,7 +60,7 @@ sudo pip install hieroglyph
 # install most recent CMake
 wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
 tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
-export PATH=$HOME/cmake-3.5.2-Linux-x86_64/bin:$PATH
+export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
 cmake --version
 
 
