@@ -223,29 +223,31 @@ C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
       if (london) then
+        if (.not.regrad) then
 
-        call alloc(cmo,   ncmotq)
-        call alloc(ibeig, ntbas(0))
+          call alloc(cmo,   ncmotq)
+          call alloc(ibeig, ntbas(0))
 
-c.......direct contribution
-        call onelon(cmo, ibeig, work, kfree, lfree)
+c.........direct contribution
+          call onelon(cmo, ibeig, work, kfree, lfree)
+          
+          if (.not.notwol) then
+            call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
+          end if
 
-        if (.not.notwol) then
-          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
-        end if
+c.........reorthonormalization contribution
+!         gosia: in connection-independent formulation, there is no
+!         reorthonormalization contribution in the property gradient.
+!         Instead, there is a contribution from magnetic derivatives 
+!         of overlap matrix (modifications in london_reorth.F90)
+          if (.not. noonei) then
+            call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+          end if
+         
+          call dealloc(cmo)
+          call dealloc(ibeig)
 
-c.......reorthonormalization contribution
-!       gosia: in connection-independent formulation, there is no
-!       reorthonormalization contribution in the property gradient.
-!       Instead, there is a contribution from magnetic derivatives 
-!       of overlap matrix (modifications in london_reorth.F90)
-        if (.not. noonei) then
-          call london_reort_hb(cmo, ibeig, work(kfree), lfree)
-        end if
-
-        call dealloc(cmo)
-        call dealloc(ibeig)
-
+        endif
       endif
 
 C

@@ -56,6 +56,7 @@ C
       PARAMETER (NTABLE = 16)
       LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
       LOGICAL :: INTNMR_SET
+      LOGICAL :: oneexi, twoexi, fckexi
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK)
@@ -63,7 +64,7 @@ C
       SAVE SET
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.FULMAT',
-     &            '.XXXXXX','.LONDON','.USECM ','.MLLSUS',
+     &            '.REGRAD','.LONDON','.USECM ','.MLLSUS',
      &            '.GO ANG','.SEPTEP','.EXPPED','.XXXXXX'  /
       DATA SET/.FALSE./
 C
@@ -102,6 +103,7 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       SEPTEP = .FALSE.
       FULMAT = .FALSE.
       EXPPED = .FALSE.
+      REGRAD = .FALSE.
 
 ! The INTNMR parameter here is read before INTXLR (in XLRINP) 
 ! assign top level default value from dcbgen.h instead of previous INTNMR = 7
@@ -191,7 +193,9 @@ C      for the property gradient H(B)
                FULMAT = .true.
                GO TO 100
     9          CONTINUE
-C
+C ...REGRAD - restart London contributions to property gradient from file
+               REGRAD = .TRUE.
+!               READ(LUCMD,'(A6)') REGFIL
                GO TO 100
    10          CONTINUE
 C&&&& .LONDON: use London atomic orbitals rather than conventional atomic orbitals
@@ -401,7 +405,23 @@ C =========================================================================
 !      if (dirac_cfg_fde_response .and. london) then
 !         EXPPED = .true.
 !      end if
-
+      if (REGRAD) then
+        IF (.NOT.LONDON) THEN
+            CALL QUIT(
+     &    'read london property gradient only for runs with .LONDON')
+        END IF
+         WRITE(LUPRI,'(1X,A,A6)')
+     & 'London contribs to property gradient read from files'
+        INQUIRE(FILE='ONELON',EXIST=oneexi)
+        INQUIRE(FILE='TWOLON',EXIST=twoexi)
+        INQUIRE(FILE='FCKLON',EXIST=fckexi)
+        if (.not. oneexi) call quit(
+     & 'no ONELON file found, remember to copy it by pam')
+        if (.not. twoexi) call quit(
+     & 'no TWOLON file found, remember to copy it by pam')
+        if (.not. fckexi) call quit(
+     & 'no FCKLON file found, remember to copy it by pam')
+      end if
 
   999 CONTINUE
       CALL QEXIT('NMRINP')
