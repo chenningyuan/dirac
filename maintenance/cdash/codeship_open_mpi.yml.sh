@@ -75,6 +75,8 @@ ldd dirac.x
 # submit to CDash board
 ctest -D ExperimentalSubmit
 
+cd ..
+
 # finally build the documentation
 #make html
 #make slides
