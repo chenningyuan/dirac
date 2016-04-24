@@ -879,10 +879,13 @@ C
      &           J,(N(JJ),JJ=1,N1),HNORM,HR(J,I),HI(J,I)
           ENDIF
  40     CONTINUE
+        SUMOCC=0.0D0
         WRITE(6,'(A)') '    Orb.  Orbital energy       Occupation'
         DO JJ = 1,NSPACT
           WRITE(6,'(3X,I5,G20.10,5X,F8.4)') JJ,EPS(JJ),DS(JJ)
+          SUMOCC=SUMOCC+DS(JJ)
         ENDDO
+        WRITE(6,'(7X,A,F8.4)') 'Sum of occupations :',SUMOCC
         WRITE(6,*) 
  30   CONTINUE
       deallocate(DS)
