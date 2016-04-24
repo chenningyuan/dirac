@@ -409,12 +409,16 @@ C     ===========================
 C
 #include "goscom.h"
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
-      real*8, allocatable :: ee(:,:)
+      real*8, allocatable :: ee(:,:),e1(:),e2(:)
       real*8, allocatable :: e(:)
 C
       call alloc(e, n2, id="e")
       call alloc(ee,n2*n2,2, id="ee")
-      CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
+      call alloc(e1,n2, id="e1")
+      call alloc(e2,2*n2, id="e2")
+      CALL CRDIAG(NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E1,E2,IERR)
+      call dealloc(e2, id="e1")
+      call dealloc(e1, id="e2")
       call dealloc(ee, id="ee")
       call dealloc(e, id="e")
       RETURN
