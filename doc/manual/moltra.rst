@@ -97,10 +97,12 @@ advantage that the full size of the problem is exactly divided between
 processes - so the larger the number of MPI processes, the less disk
 space is used per process.
 
-In connection to scheme 6 the
+keyword(HTSORT)
+
+In connection to the scheme 6 the
 user can also choose whether or perform an intermediate sorting step
-prior to the second half-transformation step, via the keyword
-**.HTSORT**. In this step the 1HT entities on disk are rearranged from
+prior to the second half-transformation step, via the keyword :ref:`MOLTRA_.HTSORT`.
+In this step the 1HT entities on disk are rearranged from
 their "natural" order (arising from the two-electron integral algorithm)
 to an order which will minimize the amount of I/O operations taking
 place at the 2HT step.
