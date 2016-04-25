@@ -1904,8 +1904,11 @@ def get_hostname():
     NOTE: short hostnames are used in batch-system  "machinefiles"
     only short master's hostname can be compared with slaves hostnames
     """
-    import socket
-    return socket.gethostname()
+    try:
+        import socket
+        return socket.gethostname()
+    except:
+        return 'not found'
 
 class disk_space:
     """
