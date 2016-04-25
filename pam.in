@@ -1726,6 +1726,7 @@ Options are also read from ~/.diracrc"""
             print '  DIRAC pam script running:'
             print
             print '  user           :', self.user_name
+            print '  machine        :', self.master
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
             print '  pam command    :', os.path.join(pam_directory, 'pam')
