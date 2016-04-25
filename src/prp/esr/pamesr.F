@@ -460,7 +460,7 @@ C
         DO I = 1,NESRP
           INDXPR = LESRP(I)
           CALL PRSYMB(LUPRI,'.',75,0)
-          WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+          WRITE(LUPRI,'(4X,A,I3,A,3X,A)')
      &       'Operator no.',I,':',PRPNAM(INDXPR)
           CALL PRSYMB(LUPRI,'.',75,0)
           CALL WRIXPR(I,INDXPR)
@@ -478,7 +478,7 @@ C
         DO I = 1,NESRP
           INDXPR = LESRP(I)
           CALL PRSYMB(LUPRI,'.',75,0)
-          WRITE(LUPRI,'(4X,A,I3,A,3X,A16)')
+          WRITE(LUPRI,'(4X,A,I3,A,3X,A)')
      &       'Operator no.',I,':',PRPNAM(INDXPR)
           CALL PRSYMB(LUPRI,'.',75,0)
           CALL WRIXPR(I,INDXPR)
@@ -908,7 +908,7 @@ C         =============================
 C
           IF (IPRESR.GT.1) THEN
             CALL PRSYMB(LUPRI,'=',75,0)
-            WRITE(LUPRI,'(A,I3,A,3X,A16)')
+            WRITE(LUPRI,'(A,I3,A,3X,A)')
      &        '* ESRPHASE: calculating property no.',I,' :',
      &        PRPNAM(INDXPR)
             CALL PRSYMB(LUPRI,'.',75,0)
@@ -1129,7 +1129,7 @@ C
 chj       IF (IPRESR.GT.1 .OR. ITIM.GE.0) THEN
           IF (IPRESR.GT.1) THEN
              CALL PRSYMB(LUPRI,'=',75,0)
-             WRITE(LUPRI,'(A,I3,A,A16/A,3I5)')
+             WRITE(LUPRI,'(A,I3,A,A/A,3I5)')
      &       '* PRPESR1: calculating property no.',I,' : ',
      &         PRPNAM(INDXPR),
      &       '  Boson symmetry, g/u symmetry, time reversal :',
@@ -1237,7 +1237,7 @@ c         CALL PRPESR2(LU1INT,INDXPR,ESRVAL(I),LESRST(1,I),
 c    &        work(kDMAT),PMAT,work(kPTRI),work(kOP1INT),
 c    &        WORK(KFREE),LFREE,IPRESR)
 c         FMT = MXFORM(ESRVAL(I),15)
-c         WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
+c         WRITE(LUPRI,'(4X,A,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
 c    &       PRPNAM(INDXPR),' : ',ESRVAL(I),'a.u.',
 c    &       LESRST(1,I),LESRST(2,I)
 c         CALL FLSHFO(LUPRI)
@@ -1329,6 +1329,13 @@ C     Allocate memory for property matrix in molfdir format:
      &   KPMLF  ,MZ*(2*NASHT)**2,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','MUUUU',
      &   KMUUUU ,0,WORK,KFREE,LFREE)
+
+      IF (INDEX(PRPNAM(INDXPR),'magnetic field') .gt. 0 .or.
+     &    INDEX(PRPNAM(INDXPR),'g_1 MAGFLD') .gt. 0 ) THEN
+         ACCURACY = 1.D-6 ! 6 digits for ppm in g-shifts
+      ELSE
+         ACCURACY = 1.D-3 ! 3 digits enough for HFI etc. - other errors are bigger
+      END IF
 C
 C     Extract symmetry information
 C     =============================
@@ -1340,11 +1347,13 @@ C
 chj   IF (IPRESR.GT.1 .OR. ITIM.GE.0) THEN
       IF (IPRESR.GT.1) THEN
          CALL PRSYMB(LUPRI,'-',75,0)
-         WRITE(LUPRI,'(A,A16/A,3I5)')
-     &       '* ESRTRANS: calculating property  : ',
+         WRITE(LUPRI,'(2A/A,3I5/A,1P,D10.2)')
+     &       '* ESRTRANS: calculating CI property matrix    : ',
      &         PRPNAM(INDXPR),
      &       '  Boson symmetry, g/u symmetry, time reversal :',
-     &         ISYM,IOPSY,ITIM
+     &         ISYM,IOPSY,ITIM,
+     &       '  Requested relative accuracy in CI property matrix :',
+     &         ACCURACY
       END IF
 C
 chj       IF (ITIM .GE. 0) CALL QUIT(
@@ -1366,7 +1375,6 @@ c      print *, 'npsh   :',npsh
 c      print *, 'nish   :',nish
 c      print *, 'IPCMO,nash:',IPCMO,nash
 C
-!d    call memchk('esrTRANS 2',work,1)
       CALL MEMGET2('REAL','IBEIG',KIBEIG ,NORBT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ESRPRP')
       CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
@@ -1376,9 +1384,7 @@ C
      &            WORK,KFREE,LFREE,IPRESR)
       CALL MEMREL('after PRPMAT',WORK,1,KIBEIG,KFREE,LFREE)
 c    &            WORK,KFREE,LFREE,10)
-!d    call memchk('esrTRANS 3',work,1)
       CALL QFC2MFC(PMAT,WORK(KPMLF),ISYM,ITIM,IPRESR)
-chjdbg    CALL QFC2MFC(PMAT,WORK(KPMLF),ISYM,ITIM,40)
 C
 C     Calculate CI property matrix over determinants
 C
@@ -1422,7 +1428,7 @@ C
      &    N_CIESR,NZCONF,KZCONF,MULTIPESR,IHRM,KPMLF
        WRITE(LUPRI,*)
      &   'GASCIP_MAKE_P1MAT: Real part of the N_CIESR CI vectors'//
-     &   ' BEFORE MAKE_P1MAT'
+     &   ' before MAKE_P1MAT'
        CALL OUTPUT(CIEVEC,1,NZCONF,1,N_CIESR,
      &             NZCONF,N_CIESR,-1,LUPRI)
        IF (NZ_in_CI .EQ. 2) THEN
@@ -1436,10 +1442,11 @@ C
 #endif
          CALL GASCIP_MAKE_P1MAT(CIEVEC,N_CIESR,NZCONF,WORK(KZCONF),
      &                         ESRVAL(1,1,JZ),MULTIPESR,IHRM,
-     &                         WORK(KPMLF),WORK(KFREE),LFREE,IPRESR)
+     &                         WORK(KPMLF),ACCURACY,
+     &                         WORK(KFREE),LFREE,IPRESR)
 C       CALL GASCIP_MAKE_P1MAT(CIVEC,N_CIVEC,NDET,IDET,
 C    &                         P1MAT_CI,N_P1MAT_CI,IHRM_P1,
-C    &                         P1MAT_MO,  WORK,LWORK, IPRINT)
+C    &                         P1MAT_MO,  ACCURACY, WORK,LWORK, IPRINT)
       ELSE  ! here if MAX_CIESR_IT .le. 0
 C
 C         Our first non-iterative code with full, explicit CI matrices.

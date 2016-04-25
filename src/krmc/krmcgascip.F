@@ -1703,7 +1703,7 @@ c     call output(hr,1,NDET,1,NDET,NDET,NDET,-1,lupri)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_makepmat */
       SUBROUTINE GASCIP_MAKE_P1MAT(CIVEC,N_CIVEC,NDET,IDET,P1MAT_CI,
-     &                             N_P1MAT_CI,IHRM_P1,P1MAT_MO,
+     &                             N_P1MAT_CI,IHRM_P1,P1MAT_MO,ACCURACY,
      &                             WORK,LWORK, IPRINT)
 C***********************************************************************
 C
@@ -1716,6 +1716,7 @@ C            N_CIVEC  :     Number of CI eigenvectors
 C            IDET     :     Determinant strings
 C            P1MAT_MO :     One electron property integrals
 C            IHRM_P1  :     Hermiticity of P1 when NZ_in_CI .eq. 1
+C            ACCURACY :     Minimum accuracy (number of digits) of P1MAT_CI
 C
 C     OUTPUT:
 C            P1MAT_CI :     Property matrix between the first
@@ -1736,10 +1737,10 @@ C
 #include "dcbgen.h"
 C
 !     output
-      DIMENSION P1MAT_CI(N_P1MAT_CI,N_P1MAT_CI,*)
+      REAL*8    P1MAT_CI(N_P1MAT_CI,N_P1MAT_CI,*)
 !     input
-      DIMENSION CIVEC(NDET,N_CIVEC,*)
-      DIMENSION P1MAT_MO(2*NASHT,2*NASHT,*), WORK(LWORK)
+      REAL*8    CIVEC(NDET,N_CIVEC,*)
+      REAL*8    P1MAT_MO(2*NASHT,2*NASHT,*), WORK(LWORK)
       INTEGER*8 IDET(2,*)
       LOGICAL   PAR_GASCIP
 
@@ -1788,13 +1789,12 @@ C
 #endif
 
       PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
-      THRSCR = 1.0D-10
       IF (PAR_GASCIP) THEN
          IPRINT_slaves = IPRINT - 1
          CALL GASCIP_WAKE_NODES()
          CALL GASCIP_PAR_CISIG_SETUP(
      &            P1MAT_MO,WORK(KPMUUUU),
-     &            .FALSE.,NDET,IDET,THRSCR,IPRINT_slaves)
+     &            .FALSE.,NDET,IDET,ACCURACY,IPRINT_slaves)
       END IF
 
 C      Make sigma vectors from property matrix and CI vectors
@@ -1813,7 +1813,7 @@ C hj 16-jun-2004 new sigma code with screening
      &           WORK(KSVECPRP+(I-1)*NDET*NZ_in_CI),
      &           WORK(KBVECPRP),
      &           P1MAT_MO,WORK(KPMUUUU),
-     &           .FALSE.,NDET,IDET,THRSCR,IPRINT)
+     &           .FALSE.,NDET,IDET,ACCURACY,IPRINT)
 C      SUBROUTINE GASCIP_CISIG_SCREEN(IS_START, IS_END,
 C     &           SVEC,BVEC,HCORE,VMUUUU,
 C     &           DO2EL,NDET,IDET,THRSCR,IPRINT)

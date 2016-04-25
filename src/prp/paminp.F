@@ -2611,7 +2611,7 @@ C     Written by T.Saue June 28 1996
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER OP1KEY*6
+      CHARACTER OP1KEY*(*)
       DIMENSION IPR1OP(MAX1OP)
 C
 C     Search for INDXPR
@@ -2630,7 +2630,7 @@ C
       N1OPER = N1OPER + 1
       IND1OP = N1OPER
       IF(N1OPER.GT.MAX1OP) THEN
-        WRITE(LUPRI,'(A6,A)') OP1KEY,' out of bounds in OP1IND'
+        WRITE(LUPRI,'(/2A)')  OP1KEY,' out of bounds in OP1IND'
         WRITE(LUPRI,'(A,I5)') 'Current value of MAX1OP: ',MAX1OP
         CALL QUIT('OP1IND: Out of bounds !')
       ELSE
