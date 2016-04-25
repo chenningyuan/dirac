@@ -1,12 +1,14 @@
-15.1 (2016-xx-xx)
+15.1 (2016-05-02)
 -----------------
 
-- Bugfix: "all" keyword for ".GAS SHELLS" was not recognized
+- Bugrix: KRMSCF was not converging is some cases (problem reported by Miro Ilias for Os atom).
+- Bugfix: "all" keyword for ".GAS SHELLS" was not recognized (problem reported by Miro Ilias).
 - Bugfix for numerical gradient when automatic symmetry detection: do no move or rotate molecule
   for finding highest possible symmetry because then the numerical gradient will not be correct
+  (problem reported by Miro Ilias).
 - Added OPENBLAS in search list for blas and lapack libraries.
 - Made keyword .X2Cmmf case insensitive.
-- BUGfix for spinfree X2Cmmf and linear symmetry.
+- Bugfix for spinfree X2Cmmf and linear symmetry.
 - Error corrections and updates in isotope properties for the following atoms:
       Br isotope 2: quadrupole moment  .2620 ->  .2615
       Ag isotope 2: magnetic moment    .130563 -> -.130691 (note sign change)
