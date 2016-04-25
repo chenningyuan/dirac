@@ -1056,20 +1056,16 @@ Options are also read from ~/.diracrc"""
     def set_mkl_environment_variables(self):
         '''
         For the Intel-MKL library linked with DIRAC
-        set OMP and MKL environment variables to safe defaults
+        set MKL & OpenMP environment variables to safe defaults
         unless they are set by the user where we leave them as
-        they are and trust that the user knows what he/she is doing
+        they are and trust that the user knows what he/she is doing.
+        These variables are valid for both serial and (hybrid) parallel runs.
+        TODO: Extend variables setting for OpenBLAS !
         '''
-        # Only use set MKL and OMP environment variables  if this is an MPI parallel dirac.x !
-        # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
-        if "@ENABLE_MPI@" == "False":
-           return
-        env_variables_set = 0
         if not os.environ.get('MKL_NUM_THREADS'):
             os.environ['MKL_NUM_THREADS'] = '1'
             if self.verbose:
                 print('  Setting MKL_NUM_THREADS=1')
-            env_variables_set += 1
         else:
             if self.verbose:
                 print '  Variabl.MKL_NUM_THREADS=',os.environ.get('MKL_NUM_THREADS')
@@ -1077,7 +1073,6 @@ Options are also read from ~/.diracrc"""
             os.environ['MKL_DYNAMIC'] = 'FALSE'
             if self.verbose:
                 print('  Setting MKL_DYNAMIC="FALSE"')
-            env_variables_set += 1
         else:
             if self.verbose:
                 print '  Variabl.MKL_DYNAMIC=',os.environ.get('MKL_DYNAMIC')
@@ -1085,7 +1080,6 @@ Options are also read from ~/.diracrc"""
             os.environ['OMP_NUM_THREADS'] = '1'
             if self.verbose:
                 print('  Setting OMP_NUM_THREADS=1')
-            env_variables_set += 1
         else:
             if self.verbose:
                 print '  Variabl.OMP_NUM_THREADS=',os.environ.get('OMP_NUM_THREADS')
@@ -1093,15 +1087,11 @@ Options are also read from ~/.diracrc"""
             os.environ['OMP_DYNAMIC'] = 'FALSE'
             if self.verbose:
                 print('  Setting OMP_DYNAMIC="FALSE"')
-            env_variables_set += 1
         else:
             if self.verbose:
                 print '  Variabl.OMP_DYNAMIC=',os.environ.get('OMP_DYNAMIC')
         if self.verbose:
-            if env_variables_set > 1:
-                print('  pam script will not (re)set these environment variables if they are set by the user')
-            elif env_variables_set > 0:
-                print('  pam script will not (re)set these environment variable if they were set by the user')
+            print '  INFO: Variables set by user are not overwritten by pam. '
 
     def copy_files(self):
         '''copy file from any directory to the scratch directory'''
