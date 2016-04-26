@@ -15,27 +15,27 @@ f.add(from_string = '  Magnetizabilities                     au                 
 
 test.run(['ll_lda_magn_sc_g0.inp'], ['hf.xyz'], f)
 test.run(['ll_lda_magn_sc_g1.inp'], ['hf.xyz'], f)
-test.run(['ll_lda_magn_nc_g0.inp'], ['hf.xyz'], f)
-test.run(['ll_lda_magn_nc_g1.inp'], ['hf.xyz'], f)
+#test.run(['ll_lda_magn_nc_g0.inp'], ['hf.xyz'], f)
+#test.run(['ll_lda_magn_nc_g1.inp'], ['hf.xyz'], f)
 test.run(['ll_pbe_magn_sc_g0.inp'], ['hf.xyz'], f)
 test.run(['ll_pbe_magn_sc_g1.inp'], ['hf.xyz'], f)
-test.run(['ll_pbe_magn_nc_g0.inp'], ['hf.xyz'], f)
-test.run(['ll_pbe_magn_nc_g1.inp'], ['hf.xyz'], f)
+#test.run(['ll_pbe_magn_nc_g0.inp'], ['hf.xyz'], f)
+#test.run(['ll_pbe_magn_nc_g1.inp'], ['hf.xyz'], f)
 
 
 test.run(['dc_lda.inp'], ['hf.xyz'], args='--outcmo')
 test.run(['dc_lda_magn_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
 test.run(['dc_lda_magn_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
-test.run(['dc_lda_magn_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
-test.run(['dc_lda_magn_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_lda_magn_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_lda_magn_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
 
 os.unlink('DFCOEF')
 
 test.run(['dc_pbe.inp'], ['hf.xyz'], args='--outcmo')
 test.run(['dc_pbe_magn_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
 test.run(['dc_pbe_magn_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
-test.run(['dc_pbe_magn_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
-test.run(['dc_pbe_magn_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_pbe_magn_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
+#test.run(['dc_pbe_magn_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
 
 os.unlink('DFCOEF')
 

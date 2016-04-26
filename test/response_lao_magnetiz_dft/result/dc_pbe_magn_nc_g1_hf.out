@@ -2756,7 +2756,7 @@ WARNING from GETDHB: The total property gradientmatrix dH/dB for LAO-PDBS is not
   London atomic orbitals used in calculations.
 
 
-  Magnetizabilities                    au          SI         cgs
+  Magnetizabilities                     au                       SI                      cgs
   ---------------------------------------------------------------
 
   Isotropic magnetizability:      -1.9367   -152.8256     -9.2034
