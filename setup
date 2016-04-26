@@ -37,6 +37,8 @@ Options:
   --prof                                 Enable profiling [default: False]
   --check                                Enable runtime checking of compiled executables [default: False]
   --int64                                Enable 64bit integers [default: False].
+  --pcmsolver=<ENABLE_PCMSOLVER>         Toggle use of PCMSolver <ON/OFF> [default: ON].
+  --pcmsolver-dir=<PCMSOLVER_ROOT>       The PCMSolver module location. [default: ''].
   --type=<TYPE>                          Set the CMake build type (debug, release, or relwithdeb) [default: release].
   --generator=<STRING>                   Set the CMake build system generator [default: Unix Makefiles].
   --show                                 Show CMake command and exit.
@@ -75,6 +77,8 @@ def gen_cmake_command(options, arguments):
     command.append('-DENABLE_PROFILING={0}'.format(arguments['--check']))
     command.append('-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check']))
     command.append('-DENABLE_64BIT_INTEGERS=%s' % arguments['--int64'])
+    command.append('-DENABLE_PCMSOLVER="{0}"'.format(arguments['--pcmsolver']))
+    command.append('-DPCMSOLVER_ROOT="%s"' % arguments['--pcmsolver-dir'])
     command.append('-DCMAKE_BUILD_TYPE={0}'.format(arguments['--type']))
     command.append('-G "{0}"'.format(arguments['--generator']))
     if arguments['--cmake-options'] != "''":
