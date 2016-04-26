@@ -2512,7 +2512,7 @@ contains
                       s,                     &
                       dmat(st1, st2, iq(0)), &
                       mat_dim,               &
-                      f2,                    &
+                      f2(st2),               &
                       1,                     &
                       0.0d0,                 &
                       buffer,                &
