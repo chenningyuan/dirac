@@ -7,8 +7,8 @@
 #################################################################################
 
 #----------------------------------------------------------------------------------
-# Set all module options and definitions first 
-# so they can be DEFINED for all source subdirectories below 
+# Set all module options and definitions first
+# so they can be DEFINED for all source subdirectories below
 #----------------------------------------------------------------------------------
 option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" ON)
 option(ENABLE_XCFUN "Enable XCFun library" ON)
@@ -18,13 +18,6 @@ endif()
 option(ENABLE_QCORR "Davidson-type +Q corrections for (MR)CISD" ON)
 if(ENABLE_QCORR)
     add_definitions(-DMOD_QCORR)
-endif()
-option(ENABLE_PCMSOLVER "Enable Polarizable Continuum Model through PCMSolver" ON)
-if(ENABLE_PCMSOLVER)
-    find_package(ZLIB)
-    if(ZLIB_FOUND)
-        add_definitions(-DHAS_PCMSOLVER)
-    endif()
 endif()
 option(ENABLE_STIELTJES "Enable stieltjes library" ON)
 if(ENABLE_STIELTJES)
@@ -230,82 +223,22 @@ set(EXTERNAL_LIBS grid ${EXTERNAL_LIBS})
 
 # pcmsolver as separate external library
 if(ENABLE_PCMSOLVER)
-    find_package(ZLIB)
-    if(NOT ZLIB_FOUND)
-        set(ENABLE_PCMSOLVER OFF)
-        message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
-        message(STATUS " PCMSolver dependencies NOT satisfied:")
-        if(NOT ZLIB_FOUND)
-           IF (ENABLE_STATIC_LINKING)
-              message(STATUS "  - install static Zlib development libraries")
-           else()
-              message(STATUS "  - install dynamic Zlib development libraries")
-           endif()
-        endif()
-    else()
-        message(STATUS "Polarizable Continuum Model via PCMSolver ENABLED")
-        set(PCMSOLVER_TESTS OFF)
-        get_filename_component(ZLIB_ROOT ${ZLIB_LIBRARIES} PATH)
-        # PCMSolver does not know profile
-        if(CMAKE_BUILD_TYPE MATCHES "profile")
-            set(PCM_BUILD_TYPE "release")
-        else()
-            set(PCM_BUILD_TYPE ${CMAKE_BUILD_TYPE})
-        endif()
-        set(ExternalProjectCMakeArgs
-            -DCMAKE_BUILD_TYPE=${PCM_BUILD_TYPE}
-            -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-            -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-            -DEXTRA_Fortran_FLAGS=${PCM_EXTRA_Fortran_FLAGS}
-            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-            -DEXTRA_C_FLAGS=${PCM_EXTRA_C_FLAGS}
-            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-            -DEXTRA_CXX_FLAGS=${PCM_EXTRA_CXX_FLAGS}
-            -DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-            -DBoost_NO_BOOST_CMAKE=ON
-            -DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
-            -DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-            -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-            -DENABLE_TESTS=${PCMSOLVER_TESTS}
-            -DZLIB_ROOT=${ZLIB_ROOT}
-            -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
-            -DSUBMODULES_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-            -DENABLE_CXX11_SUPPORT=OFF
-            -DENABLE_LOGGER=OFF
-            -DENABLE_TIMER=OFF
-            -DBUILD_STANDALONE=OFF
-            -DENABLE_FORTRAN_API=ON
-            )
-            if(PCMSOLVER_TESTS)
-                add_external(pcmsolver ${CMAKE_CTEST_COMMAND})
-            else()
-                add_external(pcmsolver)
-            endif()
-            # not working for the scope up ! 
-            #link_directories(${PROJECT_BINARY_DIR}/external/lib)
-            set(EXTERNAL_LIBS
-                ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES}
-                ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
-                ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES}
-                ${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
-                ${ZLIB_LIBRARIES}
-                ${EXTERNAL_LIBS})
-            if (ENABLE_STATIC_LINKING)
-                list(REMOVE_ITEM EXTERNAL_LIBS "c")
-                message(STATUS "PCM accompanying libs cleared of 'libc' due to static linking")
-            endif()
-    endif()
-    set(PCMSOLVER_PARSE_DIR ${PROJECT_BINARY_DIR}/external/bin)
-    include_directories(${PROJECT_BINARY_DIR}/external/pcmsolver-build/modules)
-    dirac_test(pcm_energy "short;scf;pcm")
-    dirac_test(pcm_response "short;polarizabilities;pcm")
+  include_directories(${PROJECT_BINARY_DIR}/external/pcmsolver/src/pcmsolver-build/modules)
+  #    set related pcm_dirac as separate library
+  # ... needs HAS_PCMSOLVER definition !
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/pcm)
+  set(EXTERNAL_LIBS
+    ${PCMSOLVER_LIBS}
+    ${EXTERNAL_LIBS}
+    )
+  if (ENABLE_STATIC_LINKING)
+    list(REMOVE_ITEM EXTERNAL_LIBS "c")
+    message(STATUS "PCM accompanying libs cleared of 'libc' due to static linking")
+  endif()
+  dirac_test(pcm_energy "short;scf;pcm")
+  dirac_test(pcm_response "short;polarizabilities;pcm")
 
-#    set related pcm_dirac as separate library
-# ... needs HAS_PCMSOLVER definition !
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pcm)
-    set(EXTERNAL_LIBS pcm_dirac ${EXTERNAL_LIBS})
-else()
-    message(STATUS "Polarizable Continuum Model via PCMSolver DISABLED")
+  set(EXTERNAL_LIBS pcm_dirac ${EXTERNAL_LIBS})
 endif()
 
 # prp as separate library
@@ -314,21 +247,21 @@ set(EXTERNAL_LIBS prp ${EXTERNAL_LIBS})
 
 #  stieltjes as separate external library
 if(ENABLE_STIELTJES)
-    message(STATUS "Stieltjes external module ENABLED")
-    include_directories (${PROJECT_BINARY_DIR}/external/stieltjes-build)
-    set(ExternalProjectCMakeArgs
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
-    add_external(stieltjes)
-    set(EXTERNAL_LIBS
-        ${PROJECT_BINARY_DIR}/external/lib/libstieltjes.a
-        ${EXTERNAL_LIBS})
+  message(STATUS "Stieltjes external module ENABLED")
+  include_directories (${PROJECT_BINARY_DIR}/external/stieltjes-build)
+  set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
+  add_external(stieltjes)
+  set(EXTERNAL_LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/libstieltjes.a
+    ${EXTERNAL_LIBS})
 else()
-    message(STATUS "Stieltjes external module DISABLED")
+  message(STATUS "Stieltjes external module DISABLED")
 endif()
 
 # interest as separate library
