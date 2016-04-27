@@ -56,17 +56,17 @@ Introduction
 ------------
 
 As a first simple example we shall consider the methane molecule.
-The molecular input file ``CH4.xyz`` (:download:`download <CH4.xyz>`) is
+The molecular input file ``CH4.xyz`` (:download:`download <../../../../test/tutorial_projection_analysis/CH4.xyz>`) is
 
-.. literalinclude:: CH4.xyz
+.. literalinclude:: ../../../../test/tutorial_projection_analysis/CH4.xyz
 
 Suppose that we have run a DFT(PBE) calculation using::
 
    pam --inp=PBE  --mol=CH4.xyz --outcmo
 
-where we keep the coefficients and the menu file ``PBE.inp`` (:download:`download <PBE.inp>`) is
+where we keep the coefficients and the menu file ``PBE.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/PBE.inp>`) is
 
-.. literalinclude:: PBE.inp
+.. literalinclude:: ../../../../test/tutorial_projection_analysis/PBE.inp
 
 Preparing for analysis
 ----------------------
@@ -76,28 +76,25 @@ the orbitals of the constituent atoms. We first generate the atomic fragments.
 We recommend calculating the atoms in the highest possible 
 symmetry and the converting the coefficients to no (:math:`C_1`) symmetry. 
 This allows a very precise identification
-of the individual atomic orbitals (including :math:`m_j` quantum number). We accordingly run::
+of the individual atomic orbitals (including :math:`m_j` quantum number). 
+We accordingly run calculations where we save MO files, each as the unique file::
 
-   pam --inp=H  --mol=H --get "DFACMO=ac.H"
-   pam --inp=C  --mol=C --get "DFACMO=ac.C"
+   pam --inp=H  --mol=H --get "DFACMO=AFHXXX"
+   pam --inp=C  --mol=C --get "DFACMO=AFCXXX"
 
-with corresponding input files ``H.inp`` (:download:`download <H.inp>`),
-``H.mol`` (:download:`download <H.mol>`), 
-``C.inp`` (:download:`download <C.inp>`),
-and ``C.mol`` (:download:`download <C.mol>`).
-
-As a final preparation we make symbolic links to the needed coefficient files::
-
-   $ ln -s ac.C AFCXXX
-   $ ln -s ac.H AFHXXX
+with corresponding input files ``H.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/H.inp>`),
+``H.mol`` (:download:`download <../../../../test/tutorial_projection_analysis/H.mol>`), 
+``C.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/C.inp>`),
+and ``C.mol`` (:download:`download <../../../../test/tutorial_projection_analysis/C.mol>`).
 
 
 Running the analysis
 --------------------
 
-We are now ready for the projection analysis itself. We prepare the input file ``prj.inp`` (:download:`download <prj.inp>`)
+We are now ready for the projection analysis itself. We prepare the input file ``prj.inp`` 
+(:download:`download <../../../../test/tutorial_projection_analysis/prj.inp>`)
 
-.. literalinclude:: prj.inp
+.. literalinclude:: ../../../../test/tutorial_projection_analysis/prj.inp
 
 In the ``*PROJEC`` section we specify the two atomic types identified by the name of 
 their coefficient files as well as an orbital string (see :ref:`orbital_strings`) listing 
@@ -113,7 +110,8 @@ We now run the projection analysis using::
 Interpreting the output
 -----------------------
 
-The first thing to look for in the output is the section::
+The first thing to look for in the output 
+(:download:`download <../../../../test/tutorial_projection_analysis/result/prj_CH4.out>`) is the section::
    
    * Total gross contributions:
       AFCX 1               6.4301   E -     6.4301   P -     0.0000
@@ -129,8 +127,10 @@ is small and perfectly acceptable. If it becomes too large the analysis looses m
 impies that significant electron density has not been assigned to any fragment. In the case of
 significant polarization contribution one can either increase the number of atomic orbitals used
 in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`PROJECTION_.POLREF` 
+(see `input file <../../../../test/tutorial_projection_analysis/prj_polref.inp>`)
 keyword which activates *Intrinsic Atomic Orbitals (IAOs)*, :cite:`Knizia2013`, 
-thus eliminating completely the polarization contribution. We then get::
+thus eliminating completely the polarization contribution. 
+We then get (`output <../../../../test/tutorial_projection_analysis/result/prj_polref_CH4.out>`)::
 
   * Total gross contributions:
      AFCX 1               6.4782   E -     6.4782   P -     0.0000
@@ -214,7 +214,7 @@ Exercises
 ---------
 
 1. What is the effect of increasing the C-H bond distance on the atomic configurations of the C,H atoms in the methane molecule and 
-   on the atomic charges of the constituent atoms ? Collect calculated data in a table.
+   on the atomic charges of the constituent atoms ? Collect your calculated data in a table.
 
 2. How different basis sets affect the atomic configurations of the C,H atoms in the methane molecule and 
    the atomic charges of the same constituent atoms ?
