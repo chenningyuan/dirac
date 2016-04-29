@@ -25,5 +25,5 @@ molecule4  acetylene        D(oo,h)     D2h
 molecule5  SF6              O(h)        D2h
 molecule6  allene           D(2d)       C1   <--- this is wrong !
 molecule7  NH3              C(3v)       Cs
-molecule8  PF5              D(3h)     
+molecule8  PF5              D(3h)       C2v
 
