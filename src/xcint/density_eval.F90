@@ -1691,63 +1691,6 @@ contains
 
            end do
 
-
-  
-!           OLD code
-!           do ii = st1, st1 + nr1 - 1
-!             do jj = st2, st2 + nr2 - 1
-!
-!!              lda term
-!               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-!                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
-!
-!               ff_gn = (gn_0(c)*ao(ao_off_g0_m1(0, b) + jj) - gn_0(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-!                     - (gn_0(c)*ao(ao_off_g0_m1(0, b) + ii) - gn_0(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
-!
-!               s(jxyz, a) = s(jxyz, a) &
-!                          + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-!
-!               gsgn(jxyz, a) = gsgn(jxyz, a) &
-!                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
-!
-!!              start gradient terms
-!               ff_gn = 0.0d0
-!               do ixyz = 1, 3 ! dR_{x,y,z}
-!
-!                  ff = (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + jj) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + jj))*ao(ii)  &
-!                     - (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + ii) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + ii))*ao(jj)  &
-!                     + (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ao_off_g1_m0(ixyz, 0) + ii)  &
-!                     - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(ao_off_g1_m0(ixyz, 0) + jj)
-!
-!                  ff_gn = ff_gn + ff*gn_0(ixyz)
-!
-!                  gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-!                                    + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-!
-!                  if (ixyz .eq. b) then
-!
-!                     ff = -(ao(ao_off_g0_m1(0, c) + jj)*ao(ii) - ao(ao_off_g0_m1(0, c) + ii)*ao(jj))
-!
-!                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-!                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-!
-!                  else if (ixyz .eq. c) then
-!
-!                     ff = ao(ao_off_g0_m1(0, b) + jj)*ao(ii) - ao(ao_off_g0_m1(0, b) + ii)*ao(jj)
-!
-!                     gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-!                                       + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff
-!
-!                  end if
-!
-!               end do ! do ixyz = 1, 3
-!
-!               gsgn(jxyz, a) = gsgn(jxyz, a) &
-!                             + llss_prefactor(iblock)*dmat(jj, ii, iq(jxyz))*ff_gn
-!
-!             end do
-!           end do
-
          end do  ! do iblock = 1, nr_ao_blocks
        end do    ! do jxyz = 1, jxyz_start, 3
      end do      ! do a = 1, 3
