@@ -1311,8 +1311,6 @@ C
 C
       CALL QENTER('ESRTRANS')
       KFRSAV = KFREE
-!d    print *,'ESRTRANS 1 KFREE,LFREE',KFREE,LFREE
-!d    call memchk('esrTRANS 1',work,1)
 C
 c LU1INT must be opened before calling ESRTRANS
 c     OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
@@ -1332,9 +1330,9 @@ C     Allocate memory for property matrix in molfdir format:
 
       IF (INDEX(PRPNAM(INDXPR),'magnetic field') .gt. 0 .or.
      &    INDEX(PRPNAM(INDXPR),'g_1 MAGFLD') .gt. 0 ) THEN
-         ACCURACY = 1.D-6 ! 6 digits for ppm in g-shifts
+         ACCURACY = 1.D-6 ! for accuracy of about 10 ppm in g-shifts
       ELSE
-         ACCURACY = 1.D-3 ! 3 digits enough for HFI etc. - other errors are bigger
+         ACCURACY = 1.D-4 ! 3 digits enough for HFI etc. - other errors are bigger
       END IF
 C
 C     Extract symmetry information
@@ -1345,7 +1343,7 @@ C
       ITIM = IPRPTIM(INDXPR)
       IOPSY = JBTOF(ISYM-1,1)
 chj   IF (IPRESR.GT.1 .OR. ITIM.GE.0) THEN
-      IF (IPRESR.GT.1) THEN
+      IF (IPRESR.GT.2) THEN
          CALL PRSYMB(LUPRI,'-',75,0)
          WRITE(LUPRI,'(2A/A,3I5/A,1P,D10.2)')
      &       '* ESRTRANS: calculating CI property matrix    : ',
@@ -1448,6 +1446,7 @@ C       CALL GASCIP_MAKE_P1MAT(CIVEC,N_CIVEC,NDET,IDET,
 C    &                         P1MAT_CI,N_P1MAT_CI,IHRM_P1,
 C    &                         P1MAT_MO,  ACCURACY, WORK,LWORK, IPRINT)
       ELSE  ! here if MAX_CIESR_IT .le. 0
+         ACCURACY = 0.0D0 ! no screening
 C
 C         Our first non-iterative code with full, explicit CI matrices.
 C         Construct complete property matrix over determinants
@@ -1491,32 +1490,35 @@ C
      &        WORK(KFREE),LFREE,-1)
        END IF
 C
-       IF (IPRESR .GT. 2) THEN
-          CALL HEADER('ESRTRANS results in CI eigenvector basis'//
-     &                ' (test output)',1)
+       IF (IPRESR .GE. 0) THEN
+          CALL HEADER('ESRTRANS results in CI eigenvector basis',1)
           CALL PRSYMB(LUPRI,'.',75,0)
-          WRITE(LUPRI,'(4X,A,3X,A16)')
-     &                'Operator no. 1 :',PRPNAM(INDXPR)
+          WRITE(LUPRI,'(A,3X,A/A,3I5/A,1P,D10.2)')
+     &       '* ESRTRANS: CI property matrix for operator :',
+     &         PRPNAM(INDXPR),
+     &       '  Boson and fermion symmetry, time reversal :',
+     &         ISYM,IOPSY,ITIM,
+     &       '  Requested relative accuracy in CI property matrix :',
+     &         ACCURACY
           CALL PRSYMB(LUPRI,'.',75,0)
           CALL WRIXPR(1,INDXPR)
           CALL PRQMAT(ESRVAL,MULTIPESR,MULTIPESR,
      &                MULTIPESR,MULTIPESR,NZCMPLX,IQINDX,LUPRI)
-C
-          CALL MEMREL('ESRTRANS',WORK,1,KFRSAV,KFREE,LFREE)
-C
-       END IF
-       IF (ITIM.EQ.1) THEN
-          WRITE (LUPRI,*)' WARNING: Inactive contribution not added!'
+      END IF
+      IF (ITIM.EQ.1) THEN
+         WRITE (LUPRI,*)' NOTE: Inactive contribution is not included!'
 C TODO
-c         DO I = 1,MULTIPESR
-c            ESRVAL(I,I,1) = ESRVAL(I,I,1) + PCORE
-c         END DO
-       END IF
+c        DO I = 1,MULTIPESR
+c           ESRVAL(I,I,1) = ESRVAL(I,I,1) + PCORE
+c        END DO
+      END IF
+C
+      CALL MEMREL('ESRTRANS',WORK,1,KFRSAV,KFREE,LFREE)
+C
       CALL QEXIT('ESRTRANS')
       RETURN
-C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesrodd */
       SUBROUTINE PRPESRODD(ESRVAL,IREP,ITIM,PMLF)

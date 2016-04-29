@@ -1717,6 +1717,7 @@ C            IDET     :     Determinant strings
 C            P1MAT_MO :     One electron property integrals
 C            IHRM_P1  :     Hermiticity of P1 when NZ_in_CI .eq. 1
 C            ACCURACY :     Minimum accuracy (number of digits) of P1MAT_CI
+C            IPRINT   :     Print level
 C
 C     OUTPUT:
 C            P1MAT_CI :     Property matrix between the first
