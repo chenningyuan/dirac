@@ -18,7 +18,7 @@ detected in the hersym.F/SYMADD subroutine.
 
 xyz input    molecule    full group  represented as 
 ---------------------------------------------------
-molecule1  aromatic napht.  D(2h)       D2h
+molecule1  arom heterocyc   D(2h)       D2h
 molecule2  Re2(CO)10        C(4v)       C2v
 molecule3  Os(CO)5          C(2v)       C2v
 molecule4  acetylene        D(oo,h)     D2h
