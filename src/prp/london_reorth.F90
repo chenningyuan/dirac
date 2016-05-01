@@ -602,6 +602,8 @@ contains
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, i, j
+    real(8), pointer       :: work(:)
+    integer                :: lwork
 !-----------------------------------------------------------------------
 
     do icomp = 1, nr_xyz_comp
@@ -610,10 +612,54 @@ contains
       isym(icomp)   = iprpsym(indxpr)
       irep(icomp)   = isym(icomp) - 1
       iopsy(icomp)  = jbtof(irep(icomp), 1)
+      itim(icomp)   = iprptim(indxpr)
 
-      do i = 1, nfsym 
-        j = mod(i + iopsy(icomp), 2) + 1 
-
+      if (spinfr .and.((itim(icomp).eq.1).or.nospin)) then
+        lwork = len_f77_work
+        call di_select_wrk(work, lwork)
+        do i = 1, nfsym 
+          j = mod(i + iopsy(icomp), 2) + 1 
+          if (nfbas(i, 0) > 0 .and. nfbas(j, 0) > 0) then
+            call qbtrans(0, 'AOMO',                  &
+                      'S',                           &
+                      0.0d0,                         &
+                      nfbas(i, 0),                   &
+                      nfbas(j, 0),                   &
+                      norb(i),                       &
+                      norb(j),                       &
+!                     --------------------------------
+                      fao(1 + i2basx(i, j), icomp),  &
+                      ntbas(0),                      &
+                      ntbas(0),                      &
+                      nz,                            &
+                      ipqtoq(1, irep(icomp)),        &
+!                     --------------------------------
+                      fmo(1 + i2orbx(i, j),icomp),   &
+                      norbt,                         &
+                      norbt,                         &
+                      nz,                            &
+                      ipqtoq(1, irep(icomp)),        &
+!                     --------------------------------
+                      cmo(1 + icmoq(i)),             &
+                      nfbas(i, 0),                   &
+                      norb(i),                       &
+                      nz,                            &
+                      ipqtoq(1, 0), ibeig(iorb(i)+1),&
+!                     --------------------------------
+                      cmo(1 + icmoq(j)),             &
+                      nfbas(j, 0),                   & 
+                      norb(j),                       &
+                      nz,                            &
+                      ipqtoq(1, 0),ibeig(iorb(j)+1), &
+!                     --------------------------------
+                      work, lwork, iprprp)
+          end if
+        end do
+        call di_deselect_wrk(work, lwork)        
+      else
+        do i = 1, nfsym 
+          j = mod(i + iopsy(icomp), 2) + 1 
+          if (nfbas(i, 0) > 0 .and. nfbas(j, 0) > 0) then
         call qtrans90('AOMO',                        &
                       'S',                           &
                       0.0d0,                         &
@@ -647,6 +693,9 @@ contains
                       ipqtoq(1, 0),                  &
 !                     --------------------------------
                       iprprp)
+          end if
+        end do
+      end if
 
       debug_me = .false.
       if (debug_me) then
@@ -660,8 +709,8 @@ contains
                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
-      end do
     end do
+
 
   end subroutine
 

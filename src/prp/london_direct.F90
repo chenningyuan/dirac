@@ -477,6 +477,9 @@ contains
     integer, intent(in)    :: ibeig(*)
     real(8), intent(inout) :: fmat(n2bbasx, nz, max_nr_xyz_comp)
 
+    real(8), pointer       :: work(:)
+    integer                :: lwork
+
     real(8), allocatable :: gmat(:)
     integer :: icomp, ii, jj, irep, iopsy
     logical :: debug_me
@@ -494,37 +497,73 @@ contains
 
       call dzero(gmat, n2orbxq)
 
-      do ii = 1, nfsym
-        iopsy = jbtof(irep, 1)
-        jj = mod(ii + iopsy, 2) + 1
+      if (spinfr) then
+        lwork = len_f77_work
+        call di_select_wrk(work, lwork)
 
-! todo add qbtrans for spin-free case
+        do ii = 1, nfsym
+          iopsy = jbtof(irep, 1)
+          jj = mod(ii + iopsy, 2) + 1
+          if (nfbas(ii, 0) > 0 .and. nfbas(jj, 0) > 0) then
 
-        call qtrans90('AOMO',                             &
-                      'S',                                &
-                      0.0d0,                              &
-                      nfbas(ii, 0), nfbas(jj, 0),         &
-                      norb(ii), norb(jj),                 &
-!                     -------------------------------------
-                      fmat(i2basx(ii, jj) + 1, 1, icomp), &
-                      ntbas(0), ntbas(0), nz,             &
-                      ipqtoq(1, irep_2el_lao(icomp)),     &
-!                     -------------------------------------
-                      gmat(i2orbx(ii, jj) + 1),           &
-                      norbt,    norbt,    nz,             &
-                      ipqtoq(1, irep_2el_lao(icomp)),     &
-!                     -------------------------------------
-                      cmo(icmoq(ii) + 1),                 &
-                      nfbas(ii,0), norb(ii), nz,          &
-                      ipqtoq(1, 0),                       &
-!                     -------------------------------------
-                      cmo(icmoq(jj) + 1),                 &
-                      nfbas(jj, 0), norb(jj), nz,         &
-                      ipqtoq(1, 0),                       &
-!                     -------------------------------------
-                      iprprp)
-
-      end do
+            call qbtrans(irep_2el_lao(icomp),                &
+                         'AOMO',                             &
+                         'S',                                &
+                         0.0d0,                              &
+                         nfbas(ii, 0), nfbas(jj, 0),         &
+                         norb(ii), norb(jj),                 &
+!                        -------------------------------------
+                         fmat(i2basx(ii, jj) + 1, 1, icomp), &
+                         ntbas(0), ntbas(0), nz,             &
+                         ipqtoq(1, irep_2el_lao(icomp)),     &
+!                        -------------------------------------
+                         gmat(i2orbx(ii, jj) + 1),           &
+                         norbt,    norbt,    nz,             &
+                         ipqtoq(1, irep_2el_lao(icomp)),     &
+!                        -------------------------------------
+                         cmo(icmoq(ii) + 1),                 &
+                         nfbas(ii,0), norb(ii), nz,          &
+                         ipqtoq(1, 0),ibeig(iorb(ii)+1),     &
+!                        -------------------------------------
+                         cmo(icmoq(jj) + 1),                 &
+                         nfbas(jj, 0), norb(jj), nz,         &
+                         ipqtoq(1, 0),ibeig(iorb(jj)+1),     &
+!                        -------------------------------------
+                         work, lwork, iprprp)
+          end if
+        end do
+        call di_deselect_wrk(work, lwork)
+      else
+        do ii = 1, nfsym
+          iopsy = jbtof(irep, 1)
+          jj = mod(ii + iopsy, 2) + 1
+          if (nfbas(ii, 0) > 0 .and. nfbas(jj, 0) > 0) then
+            call qtrans90('AOMO',                             &
+                          'S',                                &
+                          0.0d0,                              &
+                          nfbas(ii, 0), nfbas(jj, 0),         &
+                          norb(ii), norb(jj),                 &
+!                         -------------------------------------
+                          fmat(i2basx(ii, jj) + 1, 1, icomp), &
+                          ntbas(0), ntbas(0), nz,             &
+                          ipqtoq(1, irep_2el_lao(icomp)),     &
+!                         -------------------------------------
+                          gmat(i2orbx(ii, jj) + 1),           &
+                          norbt,    norbt,    nz,             &
+                          ipqtoq(1, irep_2el_lao(icomp)),     &
+!                         -------------------------------------
+                          cmo(icmoq(ii) + 1),                 &
+                          nfbas(ii,0), norb(ii), nz,          &
+                          ipqtoq(1, 0),                       &
+!                         -------------------------------------
+                          cmo(icmoq(jj) + 1),                 &
+                          nfbas(jj, 0), norb(jj), nz,         &
+                          ipqtoq(1, 0),                       &
+!                         -------------------------------------
+                          iprprp)
+          end if
+        end do
+      end if
 
 !     write the two-electron London contribution to file
 !     --------------------------------------------------
