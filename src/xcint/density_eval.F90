@@ -51,7 +51,6 @@ module density_eval
    public gga_london_distribute_r
    public get_s_lao
    public get_gs_lao
-   public get_n2_lao
    public get_jblao
    public get_gjblao
    public get_jblao_ll
