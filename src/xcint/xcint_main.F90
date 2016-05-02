@@ -1270,7 +1270,6 @@ contains
                                    ao,             &
                                    n_0,            &
                                    gn_0_pointwise, &
-                                   gnn_0,          &
                                    w(1),           &
                                    use_gga,        &
                                    dmat,           &
@@ -2839,7 +2838,6 @@ contains
                                 ao,                 &
                                 n_0,                &
                                 gn_0_pointwise,     &
-                                gnn_0,              &
                                 w,                  &
                                 is_gga,             &
                                 tb_dmat,            &
@@ -2857,7 +2855,6 @@ contains
     real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
-    real(8), intent(in)    :: gnn_0(*)
     real(8), intent(in)    :: w
     logical, intent(in)    :: is_gga
     real(8), intent(in)    :: tb_dmat(*)
@@ -2872,9 +2869,8 @@ contains
 
     real(8)                :: z_b
     real(8)                :: y_b(3)
-    real(8)                :: testme(3)
 
-    integer                :: k_start, k, im, im_off, ioff, j, i
+    integer                :: k_start, k, im, im_off, ioff, j, i, irep
     type(omega_prefactor) :: u
 
     real(8) :: temp(pertden_nr_columns)
@@ -2890,25 +2886,24 @@ contains
     do im = 1, nr_fmat
 
        im_off = mat_dim*mat_dim*nz*(im - 1)
+       irep   = isym(im) - 1
 
-!      only charge density part
+!      charge density part
        if (is_gga) then
           call get_gn_nonhermitian(r_b(im),             &
-                                   gr_b(1:3,im),        &
-                                   isym(im) - 1,        &
+                                   gr_b(1,im),          &
+                                   irep,                &
                                    mat_dim,             &
                                    tb_dmat(1 + im_off), &
                                    buffer,              &
                                    ao)
        else
-   ! write(*, *) 'call get_n in dft_reorth, im, im_off = ', im, im_off
           call get_n(r_b(im),             &
-                     isym(im) - 1,        &
+                     irep,                &
                      mat_dim,             &
                      tb_dmat(1 + im_off), &
                      buffer,              &
                      ao)
-   ! write(*, '(A,3F16.8,I,I,ES30.20E3)') 'buba dft reorth:r, im, im_off, r_b = ', px, py, pz, im, im_off, r_b(im)
        end if
 
        u%n(im) = u%n(im) + derv(1, d2000000)*r_b(im)
@@ -2925,29 +2920,20 @@ contains
                                         + 2.0d0*gr_b(1:3,im)*derv(1, d0010000)
        end if
 
-    end do !do im = 1, nr_fmat
 
-    !write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba dft reorth r_b = ', px, py, pz, r_b(1), r_b(2), r_b(3)
-
-
-!      SDFT
-
-    do im = 1, nr_fmat
-
-       im_off = mat_dim*mat_dim*nz*(im - 1)
-
+!      spin density part
        if (.not. dft_cfg_no_sdft) then
           if (is_gga) then
-            call get_gs_nonhermitian(s_b(1:3,im),         &
-                                     gs_b(1:3,1:3,im),    &
-                                     isym(im) - 1,        &
+            call get_gs_nonhermitian(s_b(1,im),           &
+                                     gs_b(1,1,im),        &
+                                     irep,                &
                                      mat_dim,             &
                                      tb_dmat(1 + im_off), &
                                      buffer,              &
                                      ao)
           else
-             call get_s(s_b(1:3,im),          &
-                        isym(im) - 1,         &
+             call get_s(s_b(1,im),            &
+                        irep,                 &
                         mat_dim,              &
                         tb_dmat(1 + im_off),  &
                         buffer,               &
