@@ -1158,7 +1158,7 @@ contains
      real(8), intent(in)    :: ao(*)
      real(8), intent(in)    :: cx, cy, cz
 !    ----------------------------------------------------------------------------
-     integer                :: nr1, nr2, st1, st2, iblock, ii, i, a, b, c
+     integer                :: nr1, nr2, st1, st2, iblock, ii, jj, i, a, b, c
      real(8)                :: f
      real(8)                :: r_co(3)
 !    ----------------------------------------------------------------------------
@@ -1198,7 +1198,7 @@ contains
                         1)
      
            end do
-     
+ 
          end do
      end do
 
@@ -1306,69 +1306,6 @@ contains
        end do   ! iblock = 1, nr_ao_blocks
      end do     ! a = 1, 3
    
-   end subroutine
-
-   subroutine get_n2_lao(n, isym, mat_dim, dmat, ao, cx, cy, cz)
-!    ----------------------------------------------------------------------------
-     real(8), intent(out) :: n(3, 3)
-     integer, intent(in)  :: isym(*)
-     integer, intent(in)  :: mat_dim
-     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-     real(8), intent(in)  :: ao(*)
-     real(8), intent(in)  :: cx, cy, cz
-!    ----------------------------------------------------------------------------
-     integer              :: nr1, nr2, st1, st2, iblock, jxyz
-     integer              :: a, b, c, irp1, irp2, ii, jj
-     real(8)              :: r_co(3), f(mat_dim), ff
-     real(8), external    :: ddot
-     integer :: i, j, k
-!    ----------------------------------------------------------------------------
-
-     r_co(1) = cx
-     r_co(2) = cy
-     r_co(3) = cz
-
-     n = 0.0d0
-     f = 0.0d0
-     ff= 0.0d0
-
-     do a = 1, 3   ! Bx, By, Bz
-       select case (a)
-         case (1)
-           b = 2; c = 3
-         case (2)
-           b = 3; c = 1
-         case (3)
-           b = 1; c = 2
-       end select
-       do jxyz = jxyz_start, 3
-
-         do iblock = 1, nr_ao_blocks
-
-           nr1 = ao_block_nr(iblock)
-           st1 = ao_block_start(iblock)
-           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a)))
-           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a)))
-           if ((nr1 < 1) .or. (nr2 < 1)) cycle
-
-           do ii = st1, st1 + nr1 - 1
-             do jj = st2, st2 + nr2 - 1
-
-               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) &
-                   - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) &
-                   - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
-
-               n(jxyz, a) = n(jxyz, a) - dmat(jj, ii, iq(jxyz))*ff
-
-             end do
-           end do
-
-         end do  ! do iblock = 1, nr_ao_blocks
-
-       end do    ! do jxyz = 1, jxyz_start, 3
-     end do      ! do a = 1, 3
-
    end subroutine
 
    subroutine get_s_lao(s, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
