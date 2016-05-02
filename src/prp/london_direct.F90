@@ -435,26 +435,40 @@ contains
 #endif
 
 !     sdft and no_sdft contributions separated inside integrate_xc
-      if (expped) then
-!        additionally write s_b_lao and gs_b_lao to file
-         call integrate_xc(xc_mat_dim              = ntbas(0),        &
-                           xc_nz                   = nz,              &
-                           xc_dmat_0               = dmat,            &
-                           xc_nr_dmat              = 0,               &
-                           xc_nr_fmat              = max_nr_xyz_comp, &
-                           xc_fmat                 = fmat,            &
-                           xc_fmat_pg_sym          = isym_2el_lao,    &
-                           xc_do_london_rhs_direct = .true.,     &
-                           xc_london_direct_export = .true.)
+      if (.not. dft_cfg_no_sdft) then
+        if (expped) then
+!          additionally write s_b_lao and gs_b_lao to file
+           call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                             xc_nz                   = nz,              &
+                             xc_dmat_0               = dmat,            &
+                             xc_nr_dmat              = 0,               &
+                             xc_nr_fmat              = max_nr_xyz_comp, &
+                             xc_fmat                 = fmat,            &
+                             xc_fmat_pg_sym          = isym_2el_lao,    &
+                             xc_do_london_rhs_direct_der1 = .true.,     &
+                             xc_do_london_rhs_direct_der2 = .true.,     &
+                             xc_london_direct_export = .true.)
+        else
+           call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                             xc_nz                   = nz,              &
+                             xc_dmat_0               = dmat,            &
+                             xc_nr_dmat              = 0,               &
+                             xc_nr_fmat              = max_nr_xyz_comp, &
+                             xc_fmat                 = fmat,            &
+                             xc_fmat_pg_sym          = isym_2el_lao,    &
+                             xc_do_london_rhs_direct_der1 = .true.,     &
+                             xc_do_london_rhs_direct_der2 = .true.)
+        end if
       else
-         call integrate_xc(xc_mat_dim              = ntbas(0),        &
-                           xc_nz                   = nz,              &
-                           xc_dmat_0               = dmat,            &
-                           xc_nr_dmat              = 0,               &
-                           xc_nr_fmat              = max_nr_xyz_comp, &
-                           xc_fmat                 = fmat,            &
-                           xc_fmat_pg_sym          = isym_2el_lao,    &
-                           xc_do_london_rhs_direct = .true.)
+!     no spin contributions
+        call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                          xc_nz                   = nz,              &
+                          xc_dmat_0               = dmat,            &
+                          xc_nr_dmat              = 0,               &
+                          xc_nr_fmat              = max_nr_xyz_comp, &
+                          xc_fmat                 = fmat,            &
+                          xc_fmat_pg_sym          = isym_2el_lao,    &
+                          xc_do_london_rhs_direct_der1 = .true.)
       end if
 
     call dealloc(dmat)
