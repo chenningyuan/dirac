@@ -1291,9 +1291,9 @@ contains
                                       ao,             &
                                       n_0,            &
                                       gn_0_pointwise, &
-                                      gnn_0,          &
                                       w(1),           &
                                       use_gga,        &
+                                      dmat_0,         &
                                       buffer,         &
                                       derv_length,    &
                                       derv, u,        &
@@ -1772,7 +1772,7 @@ contains
                                             derv(1, d0002000),   &
                                             2.0d0*derv(1, d0000100),   &
                                             gn_0_pointwise,      &
-                                            (/1,1,1/),           &
+                                            (/0,0,0/),           &
                                             mat_dim,             &
                                             nz,                  &
                                             dmat_0,              &
@@ -1782,7 +1782,7 @@ contains
                                             n_bb)
               else
                 call lda_london_sus2el_der2(derv(1, d0200000),   &
-                                            (/1,1,1/),           &
+                                            (/0,0,0/),           &
                                             mat_dim,             &
                                             nz,                  &
                                             dmat_0,              &
@@ -2691,9 +2691,9 @@ contains
                                 ao,                 &
                                 n_0,                &
                                 gn_0_pointwise,     &
-                                gnn_0,              &
                                 w,                  &
                                 is_gga,             &
+                                dmat_full,          &
                                 buffer,             &
                                 n,                  &
                                 derv, u,            &
@@ -2707,16 +2707,15 @@ contains
     real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
-    real(8), intent(in)    :: gnn_0(*)
     real(8), intent(in)    :: w
     logical, intent(in)    :: is_gga
+    real(8), intent(in)    :: dmat_full(*)
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
     real(8), intent(in)    :: derv(max_block_length, 0:n)
     real(8), intent(in)    :: px, py, pz
 !   ----------------------------------------------------------------------------
     real(8)                ::  s_b_lao(3, 3), gs_b_lao(3, 3, 3)
-    real(8)                ::  gsgn_b_lao(3, 3)
 
     real(8)                :: z_b
     real(8)                :: y_b(3)
@@ -2728,59 +2727,47 @@ contains
 !   ----------------------------------------------------------------------------
 
 !   gs_b_lao(R_{x,y,z}, Sigma_{x,y,z}, B_{x,y,z})
-!   gsgn_b_lao(Sigma_{x,y,z}, B_{x,y,z})
 !   s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
     s_b_lao = 0.0d0
     gs_b_lao = 0.0d0
-    gsgn_b_lao = 0.0d0
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
-!   xc_london_* subroutines left for testing
+!   please leave xc_london_* subroutines for testing
     if (is_gga) then
-      !call xc_london_c1_get_gs_b(gs_b_lao,   &
-      !                           gsgn_b_lao, &
-      !                           s_b_lao,    &
-      !                           gn_0_pointwise, &
-      !                           mat_dim,    &
-      !                           nz,         &
-      !                           dmat,       &
-      !                           ao,         &
-      !                           (/px, py, pz/))
+      call xc_london_c1_get_gs_b(gs_b_lao,   &
+                                 s_b_lao,    &
+                                 mat_dim,    &
+                                 nz,         &
+                                 dmat_full,  &
+                                 ao,         &
+                                 (/px, py, pz/))
 
-      call get_gs_lao(s_b_lao,    &
-                     gs_b_lao,    &
-                     fmat_pg_sym, &
-                     mat_dim,     &
-                     dmat_0,      &
-                     ao,          &
-                     px, py, pz, buffer)
+      !call get_gs_lao(s_b_lao,    &
+      !               gs_b_lao,    &
+      !               fmat_pg_sym - 1, &
+      !               mat_dim,     &
+      !               dmat_full,   &
+      !               ao,          &
+      !               px, py, pz, buffer)
     else
 
-      !call xc_london_c1_get_s_b(s_b_lao,    &
-      !                          mat_dim,    &
-      !                          nz,         &
-      !                          dmat,       &
-      !                          ao,         &
-      !                          (/px, py, pz/))
+      call xc_london_c1_get_s_b(s_b_lao,    &
+                                mat_dim,    &
+                                nz,         &
+                                dmat_full,  &
+                                ao,         &
+                                (/px, py, pz/))
 
-      call get_s_lao(s_b_lao,      &
-                     fmat_pg_sym-1,  &
-                     mat_dim,      &
-                     dmat_0,       &
-                     ao,           & 
-                     px, py, pz,   &
-                     buffer)
+      !call get_s_lao(s_b_lao,      &
+      !               fmat_pg_sym-1,  &
+      !               mat_dim,      &
+      !               dmat_full,    &
+      !               ao,           & 
+      !               px, py, pz,   &
+      !               buffer)
     end if
-
-!    write(*, '(A,3F16.8,18ES30.20E3)') 'ale buba dft s_b = ', px, py, pz, &
-!                                      s_b_lao(1,1), s_b_lao(2,1), s_b_lao(3,1), &
-!                                      s_b_lao(1,2), s_b_lao(2,2), s_b_lao(3,2), &
-!                                      s_b_lao(1,3), s_b_lao(2,3), s_b_lao(3,3), &
-!                                      gs_b_lao(1,1,1), gs_b_lao(1,1,2), gs_b_lao(1,1,3), &
-!                                      gs_b_lao(1,2,1), gs_b_lao(1,2,2), gs_b_lao(1,2,3), &
-!                                      gs_b_lao(2,2,1), gs_b_lao(2,2,2), gs_b_lao(2,2,3)
 
      do im = 1, nr_fmat         ! B_{x,y,z}
         do k = k_start, 3       ! Sigma_{x,y,z}

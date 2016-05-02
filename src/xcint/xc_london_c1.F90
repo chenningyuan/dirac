@@ -410,9 +410,7 @@ contains
    end subroutine
 
    subroutine xc_london_c1_get_gs_b(gs,      &
-                                    gsgn,    &
                                     s,       &
-                                    gn,      &
                                     mat_dim, &
                                     nz,      &
                                     dmat,    &
@@ -421,9 +419,7 @@ contains
 
 !     --------------------------------------------------------------------------
       real(8), intent(out) :: gs(3, 3, 3)
-      real(8), intent(out) :: gsgn(3, 3)
       real(8), intent(out) :: s(3, 3)
-      real(8), intent(in)  :: gn(3)
       integer, intent(in)  :: mat_dim
       integer, intent(in)  :: nz
       real(8), intent(in)  :: dmat(mat_dim, mat_dim, nz)
@@ -438,9 +434,8 @@ contains
       real(8)              :: omega, nabla_omega(3)
 !     --------------------------------------------------------------------------
 
-      s = 0.0d0
-      gs = 0.0d0
-      gsgn = 0.0d0
+      s = 0.0d0   ! \Sigma, B
+      gs = 0.0d0  ! grad, \sigma, B
 
       do n = 1, 3   ! \Sigma_{x,y,z}
          do k = 1, mat_dim
@@ -455,25 +450,13 @@ contains
                   nabla_omega(ixyz) = nabla_omega(ixyz)*f
                end do
 
-               gn_nabla_omega = gn(1)*nabla_omega(1) &
-                              + gn(2)*nabla_omega(2) &
-                              + gn(3)*nabla_omega(3)
-
                do bxyz = 1, 3  ! dB_{x,y,z}
                   rkl_cross_r = ao_distance(k, l, b(bxyz))*r(c(bxyz)) &
                               - ao_distance(k, l, c(bxyz))*r(b(bxyz))
                   rkl_cross_r = 0.5d0*rkl_cross_r
          
-                  rkl_cross_gn = ao_distance(k, l, b(bxyz))*gn(c(bxyz)) &
-                               - ao_distance(k, l, c(bxyz))*gn(b(bxyz))
-                  rkl_cross_gn = 0.5d0*rkl_cross_gn
-
                   s(n, bxyz) = s(n, bxyz) &
                             + rkl_cross_r*omega
-
-                  gsgn(n, bxyz) = gsgn(n, bxyz) &
-                                + rkl_cross_r*gn_nabla_omega &
-                                + rkl_cross_gn*omega
 
                   do ixyz = 1, 3
 
