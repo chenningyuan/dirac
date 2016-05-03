@@ -170,8 +170,11 @@ We are now ready to run the atomic start.  The input file 'PuO2.inp' reads::
   .MULPOP
   **END OF
 
-The keyword ``ATOMST`` is followed by input for each atomic type. The occupations chosen corresponds to those of the atomic runs, 
-but the user may modify this at will. The molecular input file 'PuO2.mol' reads::
+The keyword ``ATOMST`` is followed by input for each atomic type. The
+occupations chosen corresponds to those of the atomic runs, but the user may
+modify this at will.  Please note that the order of atoms corresponds to the
+order they appear in the molecule file.  The molecular input file 'PuO2.mol'
+reads::
 
   DIRAC
   

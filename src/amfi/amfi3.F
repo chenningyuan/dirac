@@ -1,13 +1,13 @@
       Subroutine contandmult(Lhigh,makemean,AIMP,oneonly,
      &  ADDSO1,numballcart,
-     *  LUPROP,ifinite,OLDNRM,WRK,LWRK)
+     *  LUPROP,ifinite,WRK,LWRK)
 #include "implicit.h"
 #include "priunit.h"
 #include "para.h"
 #include "param.h"
 #include "ired.h"
 #include "alphac.h"
-      logical OLDNRM,ADDSO1 
+      logical ADDSO1
       logical makemean,AIMP,oneonly  
       character*8 xa,ya,za
       dimension xa(4),ya(4),za(4)
@@ -104,13 +104,6 @@ cbs   ***********************************************************************
       do Mfirst=-Lrun,Msec  ! Mfirst <= Msec (actually '=' does never appear
 c                             as there is no L-component  in Ag
 C
-C    choose the correct normalisation 
-       If (OLDNRM) then
-       factor=normasHERMIT(Mfirst,Lrun)*normasHERMIT(Msec,Lrun)
-       else
-       factor=1d0
-       endif
-
 c
 cbs   determine  if L_X L_Y or L_Z 
         ipowx=ipowxyz(1,mfirst,Lrun)+ipowxyz(1,msec,Lrun)
@@ -134,7 +127,7 @@ cbs     calculate shift to get to the beginning of the block
 CBS                print *, 'iocax',iocax,iredired,icartsec
       		WRK(iocax+iredired+(icartsec-1))=
      *		WRK(iocax+iredired+(icartsec-1)) 
-     *		+onecartx(icartfirst,icartsec,mrun,Lrun)*factor
+     *		+onecartx(icartfirst,icartsec,mrun,Lrun)
       		enddo
 cbs             shift pointer by number of functions in IR
       		iredired=iredired+itotalperIR(iredsec)
@@ -146,7 +139,7 @@ cbs             shift pointer by number of functions in IR
       		do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
       		WRK(iocay+iredired+(icartsec-1))=
      *		WRK(iocay+iredired+(icartsec-1)) 
-     *	        +onecarty(icartfirst,icartsec,mrun,Lrun)*factor
+     *	        +onecarty(icartfirst,icartsec,mrun,Lrun)
       		enddo
 cbs             shift pointer by number of functions in IR
       		iredired=iredired+itotalperIR(iredsec)
@@ -158,7 +151,7 @@ cbs             shift pointer by number of functions in IR
       		do icartsec=1,ncontrac(Lrun)   ! loop over functions second index
       		WRK(iocaz+iredired+(icartsec-1))=
      *		WRK(iocaz+iredired+(icartsec-1)) 
-     *	        +onecartz(icartfirst,icartsec,mrun,Lrun)*factor
+     *	        +onecartz(icartfirst,icartsec,mrun,Lrun)
       		enddo
 cbs             shift pointer by number of functions in IR
       		iredired=iredired+itotalperIR(iredsec)
@@ -179,7 +172,7 @@ cbs     calculate shift to get to the beginning of the block
       		do icartfirst=1,ncontrac(Lrun) !loop over functions first index
       		WRK(iocax+iredired+(icartfirst-1))=
      *		WRK(iocax+iredired+(icartfirst-1)) 
-     *         -onecartx(icartsec,icartfirst,mrun,Lrun)*factor
+     *         -onecartx(icartsec,icartfirst,mrun,Lrun)
       		enddo
 cbs             shift pointer by number of functions in IR
       		iredired=iredired+itotalperIR(iredfirst)
@@ -191,7 +184,7 @@ cbs             shift pointer by number of functions in IR
       		do icartfirst=1,ncontrac(Lrun) !loop over functions first index
       		WRK(iocay+iredired+(icartfirst-1))=
      *		WRK(iocay+iredired+(icartfirst-1)) 
-     *	       -onecarty(icartsec,icartfirst,mrun,Lrun)*factor
+     *	       -onecarty(icartsec,icartfirst,mrun,Lrun)
       		enddo
 cbs             shift pointer by number of functions in IR
       		iredired=iredired+itotalperIR(iredfirst)
@@ -203,7 +196,7 @@ cbs             shift pointer by number of functions in IR
       		do icartfirst=1,ncontrac(Lrun) !loop over functions first index
       		WRK(iocaz+iredired+(icartfirst-1))=
      *		WRK(iocaz+iredired+(icartfirst-1)) 
-     *	       -onecartz(icartsec,icartfirst,mrun,Lrun)*factor
+     *	       -onecartz(icartsec,icartfirst,mrun,Lrun)
       		enddo
       		iredired=iredired+itotalperIR(iredfirst)
       		enddo

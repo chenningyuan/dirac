@@ -18,5 +18,6 @@ test.run(['test_xyz.inp'], ['molecule3.xyz'], f)
 test.run(['test_xyz.inp'], ['molecule4.xyz'], f)
 test.run(['test_xyz.inp'], ['molecule5.xyz'], f)
 test.run(['test_xyz.inp'], ['molecule7.xyz'], f)
+test.run(['test_xyz.inp'], ['molecule8.xyz'], f)
 
 sys.exit(test.return_code)
