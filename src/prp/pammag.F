@@ -790,7 +790,7 @@ CTROND
 #endif
 C ... do the reorthonormalization ...
              CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &                   CONMAT,WORK(KTHMAT),IPRINT)
+     &                   CONMAT,WORK(KTHMAT),.true.,IPRINT)
 #ifdef MOD_LAO_REARRANGED
              end if !if (shielding_rearrange .or. lao_lr_rearrange) then
 #endif
@@ -843,7 +843,7 @@ C ... release the memmory...
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck TTRA */
-      SUBROUTINE TTRA(ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
+      SUBROUTINE TTRA(ISYMT,ISYMH,TMAT,HMAT,THMAT,AH,IPRINT)
 C*****************************************************************************
 C
 C   PURPOSE:
@@ -870,6 +870,7 @@ C On input:
 C-----------
 C  EPMIX = .true - run o-summation over both positronic and electronic shells,
 C   else (EPMIX=.false.) run only over electronic shells.
+C gosia: now epmix is replaced by epreorth (which is false only when xlr_skipep)
 C
 C  AH = .true. - take -1 for Hermitian conjugate, otherwise take +1
 C
@@ -895,6 +896,7 @@ C
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
      &           HMAT(NORBT,NORBT,NZ),
      &          THMAT(NORBT,NORBT,NZ)
+      logical :: AH
 C
 #include "ibtfun.h"
       CALL QENTER('TTRA')
@@ -907,6 +909,12 @@ C
 
       IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
       IOPSYTH = JBTOF(IREPTH,1)
+
+      if (AH) then
+        PM = DM1
+      else
+        PM = D1
+      end if
 
       IF(IPRINT.GE.5) THEN
        WRITE(LUPRI,'(/2X,A,I1,A,I1)')
@@ -975,7 +983,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DM1, 
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), PM,  
 !                    -----------------------------------
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
@@ -1041,7 +1049,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DM1,
+          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), PM, 
 !                    ---------------------------------------------- --
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
@@ -2366,8 +2374,8 @@ C ... Call TTRA
         AH = .FALSE. ! S(2) is hermitian ...
         ISYMT = ISYM
         ISYMH = 1 ! It's the H(0) term
-        CALL TTRA4(ISYMT,ISYMH,WORK(KT2MAT),
-     &    WORK(KFMAT),WORK(KTFMAT),IPRINT)
+        CALL TTRA(ISYMT,ISYMH,WORK(KT2MAT),
+     &    WORK(KFMAT),WORK(KTFMAT),.false.,IPRINT)
 
         IF (IPRINT.GE.5) THEN
          CALL HEADER(
@@ -2602,8 +2610,8 @@ C ... call TTRA for {S(1)S(1), H(0)} = {S(1)S(1), F(0)}
         AH  = .FALSE. ! product of S(1)W(1) is hermitian 
         ISYM12 = IREP12 + 1 ! Total symmetry of S(1)*W(1)/S(1) operators
         ISYMF=1 ! F(0) is fully symmetric
-        CALL TTRA4(ISYM12,ISYMF,WORK(KSWMAT),
-     &             WORK(KFMAT),WORK(KXMAT),IPRINT)
+        CALL TTRA(ISYM12,ISYMF,WORK(KSWMAT),
+     &             WORK(KFMAT),WORK(KXMAT),.false.,IPRINT)
 
         IF (IPRINT.GE.5) THEN
          IF (.NOT.SYMCON) THEN 
@@ -2703,7 +2711,7 @@ C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
 C ... call TTRA for {W(1)/S(1),F(1)} .. get all into KSWMAT
           AH  = .TRUE. ! T=W =>evidently antisymm...
           CALL TTRA(ISYM2,ISYM1,WORK(KWMAT),
-     &            WORK(KSMAT),WORK(KSWMAT),IPRINT)
+     &            WORK(KSMAT),WORK(KSWMAT),.true.,IPRINT)
 
           IF (IPRINT.GE.5) THEN
            IF (.NOT.SYMCON) THEN
@@ -2813,7 +2821,7 @@ C ...  Do transform  F''={W(1)/S(1)_ic1,F'_ic2} into WORK(KSWMAT)
          AH  = .TRUE. ! T=W=>evidently antiherm...
          CALL DZERO(WORK(KSWMAT),N2ORBXQ)
          CALL TTRA(ISYM1,ISYM2,WORK(KSMAT),
-     &          WORK(KWMAT),WORK(KSWMAT),IPRINT)
+     &          WORK(KWMAT),WORK(KSWMAT),.true.,IPRINT)
 
          IF (IPRINT.GE.5) THEN
           IF (.NOT.SYMCON) THEN
@@ -3954,234 +3962,5 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
       RETURN
       END
 #endif
-
-C*****************************************************************************
-      SUBROUTINE TTRA4(ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
-C*****************************************************************************
-C
-C   PURPOSE:
-C ===========
-C    Do one-index transformation of entering MO-matrixes, {T,h}.
-C    This expression is used for reorthonormalization terms when
-C    employing London atomic orbitals.
-C
-C Definition (Ruud et al., Chem.Phys. 195(1995) 157):
-C -----------------------------------------------------
-C  {T,h}= THMAT_{mn} = Sum_{o}(TMAT_{om}^*.HMAT_{on} + HMAT_{mo}.TMAT_{no}) 
-C
-C           in matrix notation:    T^{+}.H + H.T
-C
-C COMMENT: Helgaker,Jorgensen, JCP 95(1991) 2595 prefer (1 1^*) definition,
-C          however, definition (1^* 1) is correct here because 
-C          we have the same type
-C          of one- and two-electron (1^* 1|2^* 2) matrix elements.
-C          We have to obey the convention carefully since we are
-C          working with general (quaternion,complex) quantities.
-C
-C
-C On input:
-C-----------
-C  EPMIX = .true - run o-summation over both positronic and electronic shells,
-C   else (EPMIX=.false.) run only over electronic shells.
-C
-C  AH = .true. - take -1 for Hermitian conjugate, otherwise take +1
-C
-C  ISYMT,ISYMH ... boson symmetries on entering operators T,h
-C
-C  Note: The TMAT might also be a general matrix,
-C        the entering h is usually anti-/hermitian
-C
-C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
-C
-C*****************************************************************************
-#ifdef MOD_LAO_REARRANGED
-      use london_helper
-#endif
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbnmr.h"
-C
-      DIMENSION  TMAT(NORBT,NORBT,NZ), 
-     &           HMAT(NORBT,NORBT,NZ),
-     &          THMAT(NORBT,NORBT,NZ)
-C
-#include "ibtfun.h"
-      CALL QENTER('TTRA')
-
-      IREPT = ISYMT-1
-      IOPSYT = JBTOF(IREPT,1)
-
-      IREPH = ISYMH-1
-      IOPSYH = JBTOF(IREPH,1)
-
-      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
-      IOPSYTH = JBTOF(IREPTH,1)
-
-      IF(IPRINT.GE.5) THEN
-       WRITE(LUPRI,'(/2X,A,I1,A,I1)')
-     &'TTRA: Entering total H MO matrix of boson symmetry ',
-     & ISYMH,'/',NBSYM
-       CALL PRQMAT(HMAT,NORBT,NORBT,NORBT,
-     &             NORBT,NZ,IPQTOQ(1,IREPH),LUPRI)
-       WRITE(LUPRI,'(/2X,A,I1,A,I1)')
-     &'TTRA: Entering total T MO matrix of boson symmetry ',
-     & ISYMT,'/',NBSYM
-       CALL PRQMAT(TMAT,NORBT,NORBT,NORBT,
-     &             NORBT,NZ,IPQTOQ(1,IREPT),LUPRI)
-      ENDIF
-
-C ... do matrix multiplications - run over fermion irreps
-C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
-
-      DO I1 = 1, NFSYM
-        IF (EPREORTH) THEN ! Matrix multiplication in full e+p MO space
-#ifdef MOD_LAO_REARRANGED
-          if (lao_lr_rearrange) then
-!         called only from get_ftb
-!         then we do: TH(I1,I3) = T(I1,I2).H(I2,I3) 
-!         where T contains S^B matrix (only 'ai' elements)
-!         and H has only 'ij' elements
-            I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-            I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-            CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
-!                      -----------------------------------
-     &                 'N', 'N', IPQTOQ(1,IREPT),
-     &                 TMAT(IORB(I1)+1, IORB(I2)+1, 1),
-     &                 NORBT,NORBT,NZ,
-!                      -----------------------------------
-     &                 'N', 'N', IPQTOQ(1,IREPH),
-     &                 HMAT(IORB(I2)+1, IORB(I3)+1, 1),
-     &                 NORBT,NORBT,NZ, 
-!                      -----------------------------------
-     &                 D1, IPQTOQ(1,IREPTH),
-     &                 THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &                 NORBT,NORBT,NZ)
-          else !if (lao_lr_rearrange) then
-#endif
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
-!                    ---------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+1, IORB(I2)+1, 1),
-     &               NORBT, NORBT, NZ,
-!                    ---------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1, IORB(I3)+1, 1), 
-     &               NORBT, NORBT, NZ, 
-!                    ---------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ)
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
-     &    'TTRA: 1.part transformed H.T over e-p :',
-     &     IREPTH+1,'/',NBSYM,DSGN
-            CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
-     &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
-          ENDIF
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
-!                    -----------------------------------
-     &               'H', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
-     &               NORBT,NORBT,NZ,
-!                    -----------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ, 
-!                    -----------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ)
-#ifdef MOD_LAO_REARRANGED
-         end if !if (lao_lr_rearrange) then
-#endif
-        ELSE  ! Transformation in the e-e space only
-#ifdef MOD_LAO_REARRANGED
-          if (lao_lr_rearrange) then
-!         called only from get_ftb
-!         then we do: TH(I1,I3) = T(I1,I2).H(I2,I3) 
-!         where T contains S^B matrix (only 'ai' elements and only electronic 'a' indices)
-!         and H has only 'ij' elements
-            I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-            I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-            CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), D1,
-!                      -----------------------------------
-     &                 'N', 'N', IPQTOQ(1,IREPT),
-     &                 TMAT(IORB(I1)+1+NPSH(I1),IORB(I2)+1+NPSH(I2),1),
-     &                 NORBT,NORBT,NZ,
-!                      -----------------------------------
-     &                 'N', 'N', IPQTOQ(1,IREPH),
-     &                 HMAT(IORB(I2)+1+NPSH(I2),IORB(I3)+1+NPSH(I3),1),
-     &                 NORBT,NORBT,NZ, 
-!                      -----------------------------------
-     &                 D1, IPQTOQ(1,IREPTH),
-     &                 THMAT(IORB(I1)+1+NPSH(I1),IORB(I3)+1+NPSH(I3),1),
-     &                 NORBT,NORBT,NZ)
-          else
-#endif
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NESH(I1),NESH(I3),NESH(I2),D1,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-          IF(IPRINT.GE.5) THEN
-            WRITE(LUPRI,'(/2X,A,I1,A,I1,F6.2)')
-     &    'TTRA: 1.part transformed H.T over e:',
-     &     IREPTH+1,'/',NBSYM,DSGN
-            CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
-     &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
-          ENDIF
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), D1,
-!                    ---------------------------------------------- --
-     &               'H', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-#ifdef MOD_LAO_REARRANGED
-          end if !if (lao_lr_rearrange) then
-#endif
-        ENDIF
-      ENDDO
-      IF(IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(/2X,A,I1,A,I1)')
-     &'TTRA: TOTAL transformed {T,H} MO matrix over e of symm ',
-     & IREPTH+1,'/',NBSYM
-          CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
-     &           NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
-      ENDIF
-
-      CALL QEXIT('TTRA')
-      RETURN
-      END
 
 
