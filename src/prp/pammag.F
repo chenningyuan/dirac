@@ -50,7 +50,6 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
-#include "dcbxlr.h"
 C
 
       PARAMETER (NTABLE = 16)
@@ -376,10 +375,15 @@ C =========================================================================
       END IF
 
 ! reorthonormalization:
-      EPREORTH = .true.
-      if (xlr_skipep) then
-        EPREORTH = .false.
-      end if
+!xlr_skipep is not yet set up at this point, so epreorth has to be done differently
+!      EPREORTH = .true.
+!      if (xlr_skipep) then
+!        EPREORTH = .false.
+!      end if
+      EPREORTH = .FALSE.
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj)
+     &  EPREORTH = .TRUE.
+      write(*, *) 'bubabuba epreorth   = ', epreorth  
 
 ! easy
 !       if (.not. symcon) then
@@ -1222,6 +1226,7 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbnmr.h"
+#include "dcbham.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
 
@@ -1253,6 +1258,85 @@ C
 C     Generate MDM = modified density matrix of f.symm I1,I2
 C   ===========================================================
 C
+!      if (spinfr .and.((itim(icomp).eq.1).or.nospin)) then
+      if (spinfr) then
+      DO  I1 = 1, NFSYM
+          I2 = MOD(I1+IOPSY,2) + 1
+C
+C  DMAT_{ab} = Sum_{i,o}[ c_{ao} T_{oi} c_{bi}^* ] ... C T(oi) C^+
+C
+!gosia: fixme
+!g        if (lao_lr_rearrange) then
+!g            CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+!g     &                  NOCC(I1),NOCC(I2),
+!g     &       DMAT(I2BASX(I1,I2)+1,1),
+!g     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
+!g!          T(o,i)
+!g     &     TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+!g     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+!g!          C(a,o)^+
+!g     &     CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
+!g     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+!g!          C(i,b)
+!g     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
+!g     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+!g     &     WORK(KFREE),LFREE,IPRINT)
+!g
+!g        else  ! if not lao_lr_rearrange
+
+        IF (EPREORTH) THEN ! Run 'o' over both (p+e) shell
+          IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
+            CALL QBTRANS(IREP, 'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+     &                  NORB(I1),NOCC(I2),
+     &       DMAT(I2BASX(I1,I2)+1,1),
+     &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
+!          T(o,i)
+     &     TMAT(IORB(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &       NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+!          C(a,o)^+
+     &     CMO(ICMOQ(I1)+1),
+     &       NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &       ibeig(iorb(i1)+1),
+!          C(i,b)
+     &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
+     &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &       ibeig(iorb(i2)+1),
+     &     WORK(KFREE),LFREE,IPRINT)
+          ENDIF
+
+        ELSE ! Run o only over electronic states
+
+        IF (NOCC(I2).GT.0.AND.NESH(I1).GT.0) THEN
+          CALL QBTRANS(IREP,'MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
+     &             NESH(I1),NOCC(I2),
+     &             DMAT(I2BASX(I1,I2)+1,1),
+     &             NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
+     &             TMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
+     &             NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+     &             CMO(ICMOQ(I1)+(NPSH(I1)*NFBAS(I1,0))+1),
+     &             NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
+     &       ibeig(iorb(i1)+1),
+     &             CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
+     &             NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
+     &       ibeig(iorb(i2)+1),
+     &             WORK(KFREE),LFREE,IPRINT)
+        ENDIF
+      ENDIF
+!g      end if ! if lao_lr_rearrange !gosia fixme
+      ENDDO
+      IF (IPRINT.GE.6) THEN
+        CALL HEADER(
+     &'GETMDM: NON-HERMITIAN modified density matrix',-1)
+        IF (EPREORTH) THEN
+         WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
+        ELSE
+         WRITE(LUPRI,'(2X,A)') "summation over e shells..."
+        ENDIF
+        CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
+     &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+        CALL FLSHFO(LUPRI)
+      ENDIF
+      else !
       DO  I1 = 1, NFSYM
           I2 = MOD(I1+IOPSY,2) + 1
 C
@@ -1325,6 +1409,7 @@ C
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
       ENDIF
+      end if !if (spinfr) then
 
 !     gosia: if lao_lr_rearrange we only do: DMAT = C*(SB)C(+)
 #ifdef MOD_LAO_REARRANGED
@@ -1344,7 +1429,7 @@ C  ... in gp/gpsaue.F
 #ifdef MOD_LAO_REARRANGED
       end if ! if (.not. lao_lr_rearrange) 
 #endif
-      IF(IPRINT.GE.5) THEN
+!gosia      IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
         IF (EPREORTH) THEN
@@ -1355,7 +1440,7 @@ C  ... in gp/gpsaue.F
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-      ENDIF
+!gosia      ENDIF
       CALL QEXIT('GETMDM')
       RETURN
       END
