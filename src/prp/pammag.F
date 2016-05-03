@@ -50,6 +50,7 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
+#include "dcbxlr.h"
 C
 
       PARAMETER (NTABLE = 16)
@@ -374,21 +375,6 @@ C =========================================================================
           ENDIF
       END IF
 
-! reorthonormalization:
-!xlr_skipep is not yet set up at this point, so epreorth has to be done differently
-!      EPREORTH = .true.
-!      if (xlr_skipep) then
-!        EPREORTH = .false.
-!      end if
-!it follows the setup in pamxlr.F for xlr_skipep
-!but it won't know if .skipep was defined in the input...
-      EPREORTH = .TRUE.
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj)
-     &  EPREORTH = .FALSE.
-!so for us:
-!fixme
-      if (spinfr .and. london) epreorth = .false.
-
 ! easy
 !       if (.not. symcon) then
 !         fulmat = .true.
@@ -432,6 +418,13 @@ C =========================================================================
       end if
 
   999 CONTINUE
+!gosia: here we are after reading xlr input, so epreorth has to be assigned here
+!otherwise xlr_skipep is not known yet
+      EPREORTH = .true.
+      if (xlr_skipep) then
+        EPREORTH = .false.
+      end if
+
       CALL QEXIT('NMRINP')
       RETURN
       END
