@@ -496,6 +496,8 @@ contains
     real(8), allocatable :: gmat(:)
     integer :: icomp, ii, jj, irep, iopsy
     logical :: debug_me
+    real(8) :: dsx
+    real(8), external :: symcheck
 !   --------------------------------------------------------------------
 
     call alloc(gmat, n2orbxq)
@@ -577,6 +579,10 @@ contains
           end if
         end do
       end if
+
+! check if it is antisymmetric:
+      DSX=SYMCHECK(gmat(1),NORBT,NORBT,NORBT,NZ)
+      write(*, *) 'symmetry check in london_direct', dsx
 
 !     write the two-electron London contribution to file
 !     --------------------------------------------------

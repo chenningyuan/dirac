@@ -160,7 +160,8 @@ contains
     integer :: indxpr
     integer :: icomp, i, j, t, isymh, iz
     logical :: ah, ee, ep
-    real(8) :: a
+    real(8) :: a, dsx
+    real(8), external :: symcheck
 !-----------------------------------------------------------------------
 
     call alloc(fmo, n2bbasxq)
@@ -298,6 +299,7 @@ contains
                 tb,              &
                 fmo,             &
                 buf,             &
+                .true.,          &
                 iprprp)
 
       debug_me = .false.
@@ -315,6 +317,10 @@ contains
                  1,              & 
                  fmat(1, icomp), & 
                  1)
+
+!check if it is antisymmetric:
+      DSX=SYMCHECK(fmat(1,icomp),NORBT,NORBT,NORBT,NZ)
+      write(*, *) 'symmetry check in london_reorth', dsx
 
 !     write to FCKLON file:
       call wrtdac(lufckl, norbt*norbt*nz,   &
