@@ -5867,6 +5867,8 @@ C  /* Deck gosgint */
 C
 C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
+C     References are:
+C        Nanna Homgaard List, Joanna Kauczor, Trond Saue, Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -5883,15 +5885,17 @@ C
 #include "symmet.h"
 #include "inforb.h"
 #include "pgroup.h"
-C
+C Operator symmetries:
+C     Real part: eq. 44
       OPIREP(1) = 0 
-      OPIREP(2) = IEOR(ISYMAX(2,1),ISYMAX(3,1)) 
-      OPIREP(3) = IEOR(ISYMAX(1,1),ISYMAX(3,1)) 
-      OPIREP(4) = IEOR(ISYMAX(1,1),ISYMAX(2,1)) 
+      OPIREP(2) = ISYMAX(1,2)
+      OPIREP(3) = ISYMAX(2,2)
+      OPIREP(4) = ISYMAX(3,2)
+C     Imaginary part: eq. 45
       OPIREP(5) = ISYMAX(3,1)
       OPIREP(6) = ISYMAX(2,1)
       OPIREP(7) = ISYMAX(1,1) 
-      OPIREP(8) = IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
+      OPIREP(8) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 C
       CALL DZERO(TMPARR,KCKTAB*NIREP)
 C
