@@ -1711,6 +1711,7 @@ contains
                                       mat_dim,        &
                                       nz,             &
                                       ao,             &
+                                      dmat_0,         &
                                       buffer,         &
                                       n_0,            &
                                       n_0_t,          &
@@ -2980,7 +2981,7 @@ contains
     real(8)                :: y_b(3)
     real(8)                :: y_b_t(3)
 
-    integer                :: k_start, k, im, im_off, j
+    integer                :: k_start, k, im, im_off, j, irep
     type(fde_omega_prefactor) :: u
     integer :: i
 !   ----------------------------------------------------------------------------
@@ -2991,22 +2992,23 @@ contains
     do im = 1, nr_dmat
 
        im_off = mat_dim*mat_dim*nz*(im - 1)
+       irep = isym(im) - 1
 
 !      charge density part
        if (is_gga) then
-          call get_gn_nonhermitian(r_b,                      &
-                                   gr_b,                     &
-                                   isym(im) - 1,             &
-                                   mat_dim,                  &
-                                   tb_dmat(1 + im_off),      &
-                                   buffer,                   &
+          call get_gn_nonhermitian(r_b,                 &
+                                   gr_b,                &
+                                   irep,                &
+                                   mat_dim,             &
+                                   tb_dmat(1 + im_off), &
+                                   buffer,              &
                                    ao)
        else
-          call get_n(r_b,                       &
-                     isym(im) - 1,              &
-                     mat_dim,                   &
-                     tb_dmat(1 + im_off),       &
-                     buffer,                    &
+          call get_n(r_b,                 &
+                     irep,                &
+                     mat_dim,             &
+                     tb_dmat(1 + im_off), &
+                     buffer,              &
                      ao)
        end if
 
@@ -3025,7 +3027,6 @@ contains
           u%n(im) = u%n(im) + (derv_total(1, d1010000)*z_b_t - derv_active(1, d1010000)*z_b)
 
           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_t_pointwise(1:3)*r_b*derv_total(1, d1010000)   &
-                                        ! gosia: additional factor 2 is in definitions of z_b and z_b_t
                                         + 2.0d0*gn_0_t_pointwise(1:3)*z_b_t*derv_total(1, d0020000) &
                                         + 2.0d0*gr_b(1:3)*derv_total(1, d0010000)                   &
                                         - 2.0d0*gn_0_pointwise(1:3)*r_b*derv_active(1, d1010000)    &
@@ -3037,19 +3038,19 @@ contains
 !      SDFT
        if (.not. fde_cfg_no_sdft) then
           if (is_gga) then
-             call get_gs_nonhermitian(s_b,                       &
-                                      gs_b,                      &
-                                      isym(im) - 1,              &
-                                      mat_dim,                   &
-                                      tb_dmat(1 + im_off),       &
-                                      buffer,                    &
+             call get_gs_nonhermitian(s_b,                  &
+                                      gs_b,                 &
+                                      irep,                 &
+                                      mat_dim,              &
+                                      tb_dmat(1 + im_off),  &
+                                      buffer,               &
                                       ao)
           else
-             call get_s(s_b,                        &
-                        isym(im) - 1,               &
-                        mat_dim,                    &
-                        tb_dmat(1 + im_off),        &
-                        buffer,                     &
+             call get_s(s_b,                 &
+                        irep,                &
+                        mat_dim,             &
+                        tb_dmat(1 + im_off), &
+                        buffer,              &
                         ao)
           end if
 
@@ -3086,6 +3087,7 @@ contains
                                 mat_dim,            &
                                 nz,                 &
                                 ao,                 &
+                                dmat_full,          &
                                 buffer,             &
                                 n_0,                &
                                 n_0_t,              &
@@ -3103,6 +3105,7 @@ contains
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
     real(8), intent(in)    :: ao(*)
+    real(8), intent(in)    :: dmat_full(*)
     real(8), intent(in)    :: buffer(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: n_0_t(*)
@@ -3130,19 +3133,18 @@ contains
 
     if (is_gga) then
 
-! that is not optimal, but for the moment it works
       call get_gs_lao(s_b_lao,     &
                       gs_b_lao,    &
-                      (/1,1,1/),   &
+                      (/0,0,0/),   &
                       mat_dim,     &
-                      dmat_0,      &
+                      dmat_full,   &
                       ao,          &
                       rx, ry, rz, buffer)
     else
        call get_s_lao(s_b_lao,          &
                       (/0, 0, 0/),      &
                       mat_dim,          &
-                      dmat_0,           &
+                      dmat_full,        &
                       ao,               &
                       rx, ry, rz, buffer)
     end if

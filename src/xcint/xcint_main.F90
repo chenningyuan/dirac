@@ -2743,37 +2743,37 @@ contains
 
 !   please leave xc_london_* subroutines for testing
     if (is_gga) then
-      call xc_london_c1_get_gs_b(gs_b_lao,   &
-                                 s_b_lao,    &
-                                 mat_dim,    &
-                                 nz,         &
-                                 dmat_full,  &
-                                 ao,         &
-                                 (/px, py, pz/))
+      !call xc_london_c1_get_gs_b(gs_b_lao,   &
+      !                           s_b_lao,    &
+      !                           mat_dim,    &
+      !                           nz,         &
+      !                           dmat_full,  &
+      !                           ao,         &
+      !                           (/px, py, pz/))
 
-      !call get_gs_lao(s_b_lao,    &
-      !               gs_b_lao,    &
-      !               fmat_pg_sym - 1, &
-      !               mat_dim,     &
-      !               dmat_full,   &
-      !               ao,          &
-      !               px, py, pz, buffer)
+      call get_gs_lao(s_b_lao,    &
+                     gs_b_lao,    &
+                     fmat_pg_sym - 1, &
+                     mat_dim,     &
+                     dmat_full,   &
+                     ao,          &
+                     px, py, pz, buffer)
     else
 
-      call xc_london_c1_get_s_b(s_b_lao,    &
-                                mat_dim,    &
-                                nz,         &
-                                dmat_full,  &
-                                ao,         &
-                                (/px, py, pz/))
+      !call xc_london_c1_get_s_b(s_b_lao,    &
+      !                          mat_dim,    &
+      !                          nz,         &
+      !                          dmat_full,  &
+      !                          ao,         &
+      !                          (/px, py, pz/))
 
-      !call get_s_lao(s_b_lao,      &
-      !               fmat_pg_sym-1,  &
-      !               mat_dim,      &
-      !               dmat_full,    &
-      !               ao,           & 
-      !               px, py, pz,   &
-      !               buffer)
+      call get_s_lao(s_b_lao,      &
+                     fmat_pg_sym-1,  &
+                     mat_dim,      &
+                     dmat_full,    &
+                     ao,           & 
+                     px, py, pz,   &
+                     buffer)
     end if
 
      do im = 1, nr_fmat         ! B_{x,y,z}
