@@ -559,25 +559,25 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
                 call get_m_ee(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
-                CALL TTRA3E(AH,ISYM2,ISYM,WORK(KTMAT),
-     &                    CONMAT,WORK(KTHMAT),IPRINT)
+                CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &             CONMAT,WORK(KTHMAT),.true.,.false.,.false.,IPRINT)
              else if (ep) then
                 call get_m_ep(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
-                CALL TTRA3P(AH,ISYM2,ISYM,WORK(KTMAT),
-     &                     CONMAT,WORK(KTHMAT),IPRINT)
+                CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &            CONMAT,WORK(KTHMAT),.true.,.true.,.false.,IPRINT)
              else if (occ) then
                 call get_m_ij(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
                 if (lao_lr_rearrange .or.shielding_rearrange) then
 !                 then all contribution to {T,h} comes from occ-occ blocks
-                  CALL TTRA2(AH,ISYM2,ISYM,WORK(KTMAT),
-     &                       CONMAT,WORK(KTHMAT),IPRINT)
+                  CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &                CONMAT,WORK(KTHMAT),.true.,.false.,.true.,IPRINT)
                 else 
-                  CALL TTRA3E(AH,ISYM2,ISYM,WORK(KTMAT),
-     &                       CONMAT,WORK(KTHMAT),IPRINT)
+                  CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &                CONMAT,WORK(KTHMAT),.true.,.false.,.false.,IPRINT)
                 end if
              end if
 #endif
@@ -784,13 +784,13 @@ CTROND
              !if (shielding_rearrange .or. lao_lr_rearrange) then
 #ifdef MOD_LAO_REARRANGED
              if (shielding_rearrange.or.lao_lr_rearrange) then
-             CALL TTRA2(AH,ISYM2,ISYM,WORK(KTMAT),
-     &                   CONMAT,WORK(KTHMAT),IPRINT)
+             CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &              CONMAT,WORK(KTHMAT),.true.,epreorth,.true.,IPRINT)
              else
 #endif
 C ... do the reorthonormalization ...
              CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &                   CONMAT,WORK(KTHMAT),.true.,IPRINT)
+     &          CONMAT,WORK(KTHMAT),.true.,epreorth,.false.,IPRINT)
 #ifdef MOD_LAO_REARRANGED
              end if !if (shielding_rearrange .or. lao_lr_rearrange) then
 #endif
@@ -843,7 +843,8 @@ C ... release the memmory...
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck TTRA */
-      SUBROUTINE TTRA(ISYMT,ISYMH,TMAT,HMAT,THMAT,AH,IPRINT)
+      SUBROUTINE TTRA(ISYMT,ISYMH,TMAT,HMAT,THMAT,
+     &                AH,ep_transform,half,IPRINT)
 C*****************************************************************************
 C
 C   PURPOSE:
@@ -896,7 +897,7 @@ C
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
      &           HMAT(NORBT,NORBT,NZ),
      &          THMAT(NORBT,NORBT,NZ)
-      logical :: AH
+      logical :: AH, ep_transform, half
 C
 #include "ibtfun.h"
       CALL QENTER('TTRA')
@@ -933,7 +934,7 @@ C ... do matrix multiplications - run over fermion irreps
 C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
 
       DO I1 = 1, NFSYM
-        IF (EPREORTH) THEN ! Matrix multiplication in full e+p MO space
+        IF (ep_transform) THEN ! Matrix multiplication in full e+p MO space
 #ifdef MOD_LAO_REARRANGED
           if (lao_lr_rearrange) then
 !         called only from get_ftb
@@ -980,6 +981,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
+          if (.not.half) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
@@ -996,6 +998,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
      &               NORBT,NORBT,NZ)
+       end if !if (.not.half) then
 #ifdef MOD_LAO_REARRANGED
          end if !if (lao_lr_rearrange) then
 #endif
@@ -1046,6 +1049,7 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
+          if (.not.half) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
@@ -1062,6 +1066,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
      &               NORBT,NORBT,NZ)
+          end if ! if (.not.half) then
 #ifdef MOD_LAO_REARRANGED
           end if !if (lao_lr_rearrange) then
 #endif
@@ -2375,7 +2380,7 @@ C ... Call TTRA
         ISYMT = ISYM
         ISYMH = 1 ! It's the H(0) term
         CALL TTRA(ISYMT,ISYMH,WORK(KT2MAT),
-     &    WORK(KFMAT),WORK(KTFMAT),.false.,IPRINT)
+     &    WORK(KFMAT),WORK(KTFMAT),.false.,epreorth,.false.,IPRINT)
 
         IF (IPRINT.GE.5) THEN
          CALL HEADER(
@@ -2611,7 +2616,7 @@ C ... call TTRA for {S(1)S(1), H(0)} = {S(1)S(1), F(0)}
         ISYM12 = IREP12 + 1 ! Total symmetry of S(1)*W(1)/S(1) operators
         ISYMF=1 ! F(0) is fully symmetric
         CALL TTRA(ISYM12,ISYMF,WORK(KSWMAT),
-     &             WORK(KFMAT),WORK(KXMAT),.false.,IPRINT)
+     &        WORK(KFMAT),WORK(KXMAT),.false.,epreorth,.false.,IPRINT)
 
         IF (IPRINT.GE.5) THEN
          IF (.NOT.SYMCON) THEN 
@@ -2711,7 +2716,7 @@ C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
 C ... call TTRA for {W(1)/S(1),F(1)} .. get all into KSWMAT
           AH  = .TRUE. ! T=W =>evidently antisymm...
           CALL TTRA(ISYM2,ISYM1,WORK(KWMAT),
-     &            WORK(KSMAT),WORK(KSWMAT),.true.,IPRINT)
+     &      WORK(KSMAT),WORK(KSWMAT),.true.,epreorth,.false.,IPRINT)
 
           IF (IPRINT.GE.5) THEN
            IF (.NOT.SYMCON) THEN
@@ -2821,7 +2826,7 @@ C ...  Do transform  F''={W(1)/S(1)_ic1,F'_ic2} into WORK(KSWMAT)
          AH  = .TRUE. ! T=W=>evidently antiherm...
          CALL DZERO(WORK(KSWMAT),N2ORBXQ)
          CALL TTRA(ISYM1,ISYM2,WORK(KSMAT),
-     &          WORK(KWMAT),WORK(KSWMAT),.true.,IPRINT)
+     &    WORK(KWMAT),WORK(KSWMAT),.true.,epreorth,.false.,IPRINT)
 
          IF (IPRINT.GE.5) THEN
           IF (.NOT.SYMCON) THEN
@@ -3717,250 +3722,5 @@ C******************************************************
       ENDIF
       RETURN
       END
-
-#ifdef MOD_LAO_REARRANGED
-!ttra2: will be removed
-      SUBROUTINE TTRA2(AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
-C*****************************************************************************
-      use london_helper
-      use london_reorth_hb
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbnmr.h"
-C
-      LOGICAL AH
-      DIMENSION  TMAT(NORBT,NORBT,NZ), 
-     &           HMAT(NORBT,NORBT,NZ),
-     &          THMAT(NORBT,NORBT,NZ)
-C
-#include "ibtfun.h"
-      CALL QENTER('TTRA2')
-
-      IREPT = ISYMT-1
-      IOPSYT = JBTOF(IREPT,1)
-
-      IREPH = ISYMH-1
-      IOPSYH = JBTOF(IREPH,1)
-
-      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
-      IOPSYTH = JBTOF(IREPTH,1)
-
-C ... specify sign for herm.conjugate of TMAT 
-      IF (AH) THEN ! anti-hermitian
-        DSGN = DM1
-      ELSE
-        DSGN = D1
-      ENDIF
-
-C ... do matrix multiplications - run over fermion irreps
-C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
-
-      DO I1 = 1, NFSYM
-        IF (EPREORTH) THEN ! Matrix multiplication in full e+p MO space
-
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
-!                    ---------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+1, IORB(I2)+1, 1),
-     &               NORBT, NORBT, NZ,
-!                    ---------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1, IORB(I3)+1, 1), 
-     &               NORBT, NORBT, NZ, 
-!                    ---------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ)
-        ELSE  ! Transformation in the e-e space only
-
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NESH(I1),NESH(I3),NESH(I2),D1,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-        ENDIF
-      ENDDO
-
-      CALL QEXIT('TTRA2')
-      RETURN
-      END
-
-      SUBROUTINE TTRA3E(AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
-C*****************************************************************************
-      use london_helper
-      use london_reorth_hb
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbnmr.h"
-C
-      LOGICAL AH
-      DIMENSION  TMAT(NORBT,NORBT,NZ), 
-     &           HMAT(NORBT,NORBT,NZ),
-     &          THMAT(NORBT,NORBT,NZ)
-C
-#include "ibtfun.h"
-      CALL QENTER('TTRA3E')
-
-      IREPT = ISYMT-1
-      IOPSYT = JBTOF(IREPT,1)
-
-      IREPH = ISYMH-1
-      IOPSYH = JBTOF(IREPH,1)
-
-      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
-      IOPSYTH = JBTOF(IREPTH,1)
-
-C ... specify sign for herm.conjugate of TMAT 
-      IF (AH) THEN ! anti-hermitian
-        DSGN = DM1
-      ELSE
-        DSGN = D1
-      ENDIF
-
-C ... do matrix multiplications - run over fermion irreps
-C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
-
-      DO I1 = 1, NFSYM
-
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NESH(I1),NESH(I3),NESH(I2),D1,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DM1,
-!                    ---------------------------------------------- --
-     &               'H', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-
-      ENDDO
-
-      CALL QEXIT('TTRA3E')
-      RETURN
-      END
-
-      SUBROUTINE TTRA3P(AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
-C*****************************************************************************
-      use london_helper
-      use london_reorth_hb
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbnmr.h"
-C
-      LOGICAL AH
-      DIMENSION  TMAT(NORBT,NORBT,NZ), 
-     &           HMAT(NORBT,NORBT,NZ),
-     &          THMAT(NORBT,NORBT,NZ)
-C
-#include "ibtfun.h"
-      CALL QENTER('TTRA3P')
-
-      IREPT = ISYMT-1
-      IOPSYT = JBTOF(IREPT,1)
-
-      IREPH = ISYMH-1
-      IOPSYH = JBTOF(IREPH,1)
-
-      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
-      IOPSYTH = JBTOF(IREPTH,1)
-
-C ... specify sign for herm.conjugate of TMAT 
-      IF (AH) THEN ! anti-hermitian
-        DSGN = DM1
-      ELSE
-        DSGN = D1
-      ENDIF
-
-      DO I1 = 1, NFSYM
-
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NORB(I1),NORB(I3),NORB(I2),D1,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+1,IORB(I2)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1,IORB(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1,IORB(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DM1,
-!                    -----------------------------------
-     &               'H', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
-     &               NORBT,NORBT,NZ,
-!                    -----------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ, 
-!                    -----------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ)
-
-      ENDDO
-
-      CALL QEXIT('TTRA3P')
-      RETURN
-      END
-#endif
 
 

@@ -300,6 +300,8 @@ contains
                 fmo,             &
                 buf,             &
                 .true.,          &
+                epreorth,        &
+                .false.,         &
                 iprprp)
 
       debug_me = .false.
