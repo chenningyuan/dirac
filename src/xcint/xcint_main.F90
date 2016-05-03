@@ -676,6 +676,8 @@ contains
 !        symmetrize matrices
          if (use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct_der1 &
+                                   .and. .not. do_london_rhs_direct_der2 &
+                                   .and. .not. do_london_rhs_ro          &
                                    .and. .not. do_london_susc2el    &
                                    .and. .not. do_london_ks         &
                                    .and. .not. do_geo)) then
@@ -686,7 +688,7 @@ contains
             end if
          end if
 
-         if (do_london_rhs_direct_der1) then
+         if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2 .or. do_london_rhs_ro) then
             call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
