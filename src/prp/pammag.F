@@ -383,7 +383,6 @@ C =========================================================================
       EPREORTH = .FALSE.
       if(x2c.or.bss.or.levyle.or.freepj.or.vextpj)
      &  EPREORTH = .TRUE.
-      write(*, *) 'bubabuba epreorth   = ', epreorth  
 
 ! easy
 !       if (.not. symcon) then
@@ -1429,7 +1428,7 @@ C  ... in gp/gpsaue.F
 #ifdef MOD_LAO_REARRANGED
       end if ! if (.not. lao_lr_rearrange) 
 #endif
-!gosia      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
         IF (EPREORTH) THEN
@@ -1440,7 +1439,7 @@ C  ... in gp/gpsaue.F
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-!gosia      ENDIF
+      ENDIF
       CALL QEXIT('GETMDM')
       RETURN
       END
