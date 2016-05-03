@@ -640,7 +640,7 @@ contains
                          fde_nr_fmat            = max_nr_xyz_comp,      &
                          fde_fmat               = fmat,       &
                          fde_use_potential      = .true.,     &
-                         fde_do_london_rhs_direct = .true.)
+                         fde_do_london_rhs_direct_der1 = .true.)
         else
            call fde_dirac_emb_matrices_via_integration(       &   
                          fde_mat_dim            = ntbas(0),   &
@@ -649,7 +649,7 @@ contains
                          fde_nr_dmat            = 0,          &
                          fde_nr_fmat            = max_nr_xyz_comp,      &
                          fde_fmat               = fmat,       &
-                         fde_do_london_rhs_direct = .true.)
+                         fde_do_london_rhs_direct_der1 = .true.)
         end if
      end if
 
@@ -672,7 +672,7 @@ contains
                       fde_nr_dmat            = 0,          &
                       fde_nr_fmat            = max_nr_xyz_comp, &
                       fde_fmat               = fmat,       &
-                      fde_do_london_rhs_direct_kern = .true.)
+                      fde_do_london_rhs_direct_der2 = .true.)
 
         call dealloc(buffer)
      end if
