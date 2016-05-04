@@ -29,4 +29,12 @@ test.run(['ll_magn_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
 
 os.unlink('DFCOEF')
 
+test.run(['sf_scf.inp'], ['hf.xyz'], args='--outcmo')
+test.run(['sf_magn_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
+test.run(['sf_magn_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
+test.run(['sf_magn_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
+test.run(['sf_magn_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
+
+os.unlink('DFCOEF')
+
 sys.exit(test.return_code)

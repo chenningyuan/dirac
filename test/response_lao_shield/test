@@ -21,8 +21,10 @@ test.run(['ll_shield_nc_g0.inp'], ['hf.xyz'], f)
 test.run(['ll_shield_nc_g1.inp'], ['hf.xyz'], f)
 #
 ## SF
-#test.run(['sf_shield_sc_g0.inp'], ['hf.xyz'], f)
-#test.run(['sf_shield_sc_g1.inp'], ['hf.xyz'], f)
+test.run(['sf_shield_sc_g0.inp'], ['hf.xyz'], f)
+test.run(['sf_shield_sc_g1.inp'], ['hf.xyz'], f)
+test.run(['sf_shield_nc_g0.inp'], ['hf.xyz'], f)
+test.run(['sf_shield_nc_g1.inp'], ['hf.xyz'], f)
 #
 ## bss
 #test.run(['bss_shield_sc_g0.inp'], ['hf.xyz'], f)
