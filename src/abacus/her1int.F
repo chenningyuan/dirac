@@ -5877,7 +5877,8 @@ C
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0, NIREP = 8)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
-     &   SHLINT(KCKTAB,NOPTYP),ORIGIN(3),DIPORG(3),TMPARR(KCKTAB,NIREP)
+     &   SHLINT(KCKTAB,NOPTYP),ORIGIN(3),DIPORG(3)
+C,TMPARR(KCKTAB,NIREP)
       INTEGER OPIREP(NIREP),NOPTYP
       INTEGER T, U, V
 #include "onecom.h" !contains KCKTAB, which is N^2, where N is the number of basis functs.
@@ -5885,19 +5886,19 @@ C
 #include "symmet.h"
 #include "inforb.h"
 #include "pgroup.h"
-C Operator symmetries:
-C     Real part: eq. 44
-      OPIREP(1) = 0 
-      OPIREP(2) = ISYMAX(1,2)
-      OPIREP(3) = ISYMAX(2,2)
-      OPIREP(4) = ISYMAX(3,2)
-C     Imaginary part: eq. 45
-      OPIREP(5) = ISYMAX(3,1)
-      OPIREP(6) = ISYMAX(2,1)
-      OPIREP(7) = ISYMAX(1,1) 
-      OPIREP(8) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
+CC Operator symmetries:
+CC     Real part: eq. 44
+C      OPIREP(1) = 0 
+C      OPIREP(2) = ISYMAX(1,2)
+C      OPIREP(3) = ISYMAX(2,2)
+C      OPIREP(4) = ISYMAX(3,2)
+CC     Imaginary part: eq. 45
+C      OPIREP(5) = ISYMAX(3,1)
+C      OPIREP(6) = ISYMAX(2,1)
+C      OPIREP(7) = ISYMAX(1,1) 
+C      OPIREP(8) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 C
-      CALL DZERO(TMPARR,KCKTAB*NIREP)
+C      CALL DZERO(TMPARR,KCKTAB*NIREP)
 C
       DKX = ORIGIN(1)
       DKY = ORIGIN(2)
@@ -5981,35 +5982,35 @@ C
   400    CONTINUE
 C
          INT = INT + 1
-        TMPARR(INT,1) = TMPARR(INT,1) + CX*CY*CZ 
-        TMPARR(INT,2) = TMPARR(INT,2) - CX*SY*SZ 
-        TMPARR(INT,3) = TMPARR(INT,3) - SX*CY*SZ 
-        TMPARR(INT,4) = TMPARR(INT,4) - SX*SY*CZ 
-        TMPARR(INT,5) = TMPARR(INT,5) + CX*CY*SZ 
-        TMPARR(INT,6) = TMPARR(INT,6) + CX*SY*CZ 
-        TMPARR(INT,7) = TMPARR(INT,7) + SX*CY*CZ 
-        TMPARR(INT,8) = TMPARR(INT,8) - SX*SY*SZ 
+        SHLINT(INT,1) = SHLINT(INT,1) + CX*CY*CZ 
+        SHLINT(INT,2) = SHLINT(INT,2) - CX*SY*SZ 
+        SHLINT(INT,3) = SHLINT(INT,3) - SX*CY*SZ 
+        SHLINT(INT,4) = SHLINT(INT,4) - SX*SY*CZ 
+        SHLINT(INT,5) = SHLINT(INT,5) + CX*CY*SZ 
+        SHLINT(INT,6) = SHLINT(INT,6) + CX*SY*CZ 
+        SHLINT(INT,7) = SHLINT(INT,7) + SX*CY*CZ 
+        SHLINT(INT,8) = SHLINT(INT,8) - SX*SY*SZ 
   100 CONTINUE
-      DO IOPER = 1, NIREP
-C         WRITE(LUPRI,'(/A,I2,A,I1)') 'NSYM: ', NSYM
-C         WRITE(LUPRI,'(/A,I2,A,I1)') 'TMPARR for IOPER: ', IOPER,
-C     &              ' of symmetry: ', OPIREP(IOPER)
-         IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR. 
-     &                           GROUP == 'D2h') THEN
-C              WRITE(LUPRI,*) 'INVERSION',
-C     &               'Index in SHLINT: ', OPIREP(IOPER)+1
-              SHLINT(:,OPIREP(IOPER)+1) = 
-     &        SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)        
-         ELSE
-            IF (IOPER<5) THEN !add to real operator
-               SHLINT(:,OPIREP(IOPER)+1) =     
-     &            SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)   
-            ELSE !add to imag operator
-               SHLINT(:,NSYM+OPIREP(IOPER)+1) = 
-     &            SHLINT(:,NSYM+OPIREP(IOPER)+1) + TMPARR(:,IOPER)
-            END IF
-         END IF
-      END DO
+C      DO IOPER = 1, NIREP
+CC         WRITE(LUPRI,'(/A,I2,A,I1)') 'NSYM: ', NSYM
+CC         WRITE(LUPRI,'(/A,I2,A,I1)') 'TMPARR for IOPER: ', IOPER,
+CC     &              ' of symmetry: ', OPIREP(IOPER)
+C         IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR. 
+C     &                           GROUP == 'D2h') THEN
+CC              WRITE(LUPRI,*) 'INVERSION',
+CC     &               'Index in SHLINT: ', OPIREP(IOPER)+1
+C              SHLINT(:,OPIREP(IOPER)+1) = 
+C     &        SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)        
+C         ELSE
+C            IF (IOPER<5) THEN !add to real operator
+C               SHLINT(:,OPIREP(IOPER)+1) =     
+C     &            SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)   
+C            ELSE !add to imag operator
+C               SHLINT(:,NSYM+OPIREP(IOPER)+1) = 
+C     &            SHLINT(:,NSYM+OPIREP(IOPER)+1) + TMPARR(:,IOPER)
+C            END IF
+C         END IF
+C      END DO
       RETURN
       END
 

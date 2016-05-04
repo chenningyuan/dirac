@@ -2046,6 +2046,9 @@ CMI  EDM2 operator, see Refs. [Nataraj2007]_, [Mukherjee2009]_
 !    original  e_EDM operator of Flambaum
       ELSE IF(LABINT(2:6).EQ.'E_EDM') THEN
         CLASLB = 'E_EDM'
+!    complex exponential operator
+      ELSE IF(LABINT(1:5).EQ.'CXIKR') THEN
+        CLASLB = 'CXIKR'
 C
 C     Unknown LABINT
 C   
