@@ -452,6 +452,12 @@ C     type 58 already defined (NUCFIEL)
          jmaxm  = 0
          donuc1 = .true.
          domom1 = .true.
+      else if (inttyp == 106) then
+!        cxikr
+         jmaxd  = 0
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .true.
 C
 C hjaaj: INTTYP .gt. 200 are special relativistic operators for Dirac ...
 C
@@ -1896,6 +1902,9 @@ C
 !     ===========================================================
 
          ELSE IF (INTTYP == 106) THEN
+            ORIGIN(1) = 0.5
+            ORIGIN(2) = 0.5
+            ORIGIN(3) = 0.5
             CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
 
@@ -5861,14 +5870,14 @@ C
   100 CONTINUE
       RETURN
       END
-C  /* Deck gosgint */
+C  /* Deck cexpint */
       SUBROUTINE CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
 C
 C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
 C     References are:
-C        Nanna Homgaard List, Joanna Kauczor, Trond Saue, Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C        Nanna Holmgaard List, Joanna Kauczor, Trond Saue, Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 #include "implicit.h"
 #include "priunit.h"
