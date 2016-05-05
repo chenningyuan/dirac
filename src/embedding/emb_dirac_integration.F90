@@ -1323,16 +1323,14 @@ contains
       allocate(u%gn(   3, nr_fmat))
       allocate(u%s (   3, nr_fmat))
       allocate(u%gs(3, 3, nr_fmat))
-      allocate(u%n_b_lao(3)) 
-      allocate(u%gn_b_lao(3, 3)) 
-      allocate(u%s_b_lao(3, 3)) 
-      allocate(u%gs_b_lao(3, 3, 3))
       allocate(u%tn(      nr_fmat))
       allocate(u%ts(   3, nr_fmat))
-   else
-!     gosia: when we calculate contribution for magnetizability, then nr_fmat = 0
-!     it is funny that in xcint it works without problems..
+      allocate(u%n_b_lao(nr_fmat)) 
+      allocate(u%gn_b_lao(3, nr_fmat)) 
+      allocate(u%s_b_lao(3, nr_fmat)) 
+      allocate(u%gs_b_lao(3, 3, nr_fmat))
    end if
+
 !  if (fde_use_blas3_scheme) then
 !      block_threshold = get_block_threshold(fde_cfg_tinydens, mat_dim, dmat_0)
 !   end if
@@ -1559,15 +1557,14 @@ contains
                                 derv_active)
 
 !gosia: we don't need derv_active for the coupling-kernel term, so save time.
-!the missing Coulomb term is evaluated outside (see fde calls from prp/london_direct.F90)
-!               if (.not. do_london_rhs_kern_coupling) then
-!                 call get_xcke_fun_derv(max_fun_derv, & 
-!                                        bllen,        &
-!                                        w,            &
-!                                        n_0,          &
-!                                        gnn_0,        &
-!                                        derv_active)
-!               end if
+         if (.not. do_london_rhs_kern_coupling) then
+           call get_xcke_fun_derv(max_fun_derv, & 
+                                  bllen,        &
+                                  w,            &
+                                  n_0,          &
+                                  gnn_0,        &
+                                  derv_active)
+         end if
 
          time_derv = time_derv + second() - time_derv_start
 
@@ -3257,9 +3254,10 @@ contains
 
           u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d1010000)*z_b
 
-          u%gn_b_lao(1:3, a) = u%gn_b_lao(1:3, a) + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
-                                      + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
-                                      + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
+          u%gn_b_lao(1:3, a) = u%gn_b_lao(1:3, a) &
+                     + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
+                     + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
+                     + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
        end if
     end do
 
