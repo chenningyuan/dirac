@@ -22,6 +22,8 @@ module fde_evaluators_dirac
    use interface_mo_specific
 
    use memory_allocator
+!gosia: temporarily:
+   use electrostatic_potential
 
    implicit none
 
@@ -439,8 +441,7 @@ module fde_evaluators_dirac
 
          do icomp = 1, ncomp
             allocate(buffer(ndim,ndim))
-!           icol = fde_pertden_ncol - 48 + icomp
-            icol = 10 + icomp
+            icol = fde_pertden_ncol - 48 + icomp
             call get_electronic_mep(np,                &
                                     buffer,            &
                                     ndim,              &
@@ -460,8 +461,7 @@ module fde_evaluators_dirac
                   end do
                end do
 
-            call daxpy(ndim*ndim, 1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
-            !call daxpy(ndim*ndim, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
+            call daxpy(ndim*ndim, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
             deallocate(buffer)
 
          end do
@@ -1190,241 +1190,5 @@ module fde_evaluators_dirac
          nr_boson_irreps = nbsym
 
       end subroutine fde_dirac_data_interface
-
-   subroutine get_electronic_mep(nr_points, matrix, mat_dim, points, vector,    &
-                        work, lwork, iprint, get_matrix, skipss_block)
-!      
-! Driver routine for the calculation of the electronic part of the molecular 
-! electrostatic potential on a certain grid of points {r_i}:
-!     V_el(r_i) = tr(DV_i)
-! tr is the trace operator, D is the density matrix, V^i is the matrix of the 
-! "nuclear attraction" integrals calculated at point r_i of the grid:
-!     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
-! 
-!  array ADER(mu, nu, r_i) contains these integrals.
-!  array vc(r_i) contains the electronic MEP at point r_i.
-!
-! RDR 0512.
-! 
-! RDR 010512 CANNOT yet handle 2-component Hamiltonians.
-! RDR 050312 CANNOT yet handle symmetry.
-! RDR 220312 This routine will be used to form both potentials and Fock
-!            matrix contribution for PCM.
-!            matrix is Fock or density matrix, vector is potentials 
-!            or charges vector.
-!            get_matrix logical is present and TRUE:
-!            charges vector as input, Fock matrix contribution as output.
-!            get_matrix logical is absent or is present and FALSE:
-!            density matrix as input, potentials vector as output.                        
-!                        
-
-#include "pi.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
-#ifdef prg_dirac
-#include "dcbgrd.h"
-#endif
-#include "ccom.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "cbisol.h"
-#include "shells.h"
-#include "onecom.h"
-#include "primit.h"
-#include "symind.h"
-#include "symmet.h"
-#include "lmns.h"
-#include "nuclei.h"
-
-! Passed variables
-      integer, intent(in) :: nr_points
-      integer, intent(in) :: mat_dim 
-      real(8)             :: matrix(mat_dim,mat_dim, *)
-! Triggers whether we want PCM Fock matrix contribution or just the
-! potential.      
-      logical, optional   :: get_matrix 
-      real(8)             :: vector(nr_points)
-      real(8), intent(in) :: points(3, nr_points)
-      real(8)             :: work(*)
-      integer             :: iprint, lwork
-      logical             :: skipss_block
-
-! Local variables
-      real(8), allocatable :: ader(:, :, :)
-      real(8) :: tolog, tols, factor = 1.0d0
-      integer :: ishela, ishelb, ica, icb, ia, ib
-      integer :: multa, multb, nhktab, kab
-      integer :: ipoint, idxmax
-      logical :: do_matrix
-      real(8) :: debug_dij , debug_vij,  debug_prod , debug_sum
-      integer :: idxa, idxb
-
-      if (nbsym > 1) then
-         call quit('ESP calculation cannot handle symmetry!')
-      end if
-      if (BSS.or.x2c) then
-         call quit('ESP calculation not working with X2C Hamiltonian!')
-      end if
-
-! Fock matrix contribution or potential calculation?      
-      do_matrix = .false. 
-      if (present(get_matrix)) then
-        if (get_matrix) then
-            do_matrix = .true.
-        end if
-      end if
-      
-      tols = thrs**2
-      tolog = 2 * log(thrs)
-! Decide whether we loop on LL block only or not
-      if (nosmlv) then
-! Looping only over LL block only
-          idxmax = nlrgsh
-      else if  (skipss_block) then
-! Looping only over LL block only
-          idxmax = nlrgsh
-      else 
-          idxmax = kmax
-      end if
-! Loop over bras <mu|      
-
-!!!!
-!! aspg, 23/10/2015
-!! debug printouts
-!     print *,'debug: mc, skipss_block, idxmax, kmax, nlrgsh:',mc,skipss_block,idxmax,kmax,nlrgsh
-!
-!!!
-
-      idena = 0
-      do ishela = 1, idxmax
-        ica   = lclass(ishela)
-        nhkta = nhkt(ishela)
-        khkta = khkt(ishela)
-        kckta = kckt(ishela)
-        call lmnval(nhkta, kckta, lvalua, mvalua, nvalua)
-        ncenta = ncent(ishela)
-        icenta = nucnum(ncenta, 1)
-        mula   = istbao(ishela)
-        multa  = mult(mula)
-        nuca   = nuco(ishela)
-        numcfa = numcf(ishela)
-        jsta   = jstrt(ishela)
-        corax  = cent(ishela, 1, 1)
-        coray  = cent(ishela, 2, 1)
-        coraz  = cent(ishela, 3, 1)
-! Loop over kets |nu>
-        idenb = 0        
-        do ishelb = 1, ishela
-          icb   = lclass(ishelb)
-          ldiag = ishela .eq. ishelb
-          nhktb = nhkt(ishelb)
-          khktb = khkt(ishelb)
-          kcktb = kckt(ishelb)
-          call lmnval(nhktb, kcktb, lvalub, mvalub, nvalub)
-          ncentb = ncent(ishelb)
-          nhktab = nhkta + nhktb
-          mulb   = istbao(ishelb)
-          multb  = mult(mulb)
-          nucb   = nuco(ishelb)
-          numcfb = numcf(ishelb)
-          jstb   = jstrt(ishelb)
-          corbx  = cent(ishelb, 1, 1)
-          corby  = cent(ishelb, 2, 1)
-          corbz  = cent(ishelb, 3, 1)
-          khktab = khkta * khktb
-          kcktab = kckta * kcktb
-          mab    = ior(mula, mulb)
-          kab    = iand(mula ,mulb)
-          hkab   = fmult(kab)
-! Calculate -<mu|1/|r-r_i||nu> integrals for each shell pair mu, nu and point r_i,
-! then contract with the density matrix. The minus sign accounts for the
-! charge of the electron.
-          if (ica == icb) then 
-              allocate(ader(nr_points, kckta, kcktb))
-              ader = 0.0d0
-              call vc_shell(nr_points, ader, tolog, tols,               &
-                    points, iprint, work, lwork)
-              if (ishela /= ishelb) then 
-                  ader = 2.0d0 * ader
-              end if
-! We multiply by +2.0d0. The D matrix refers to the alpha part only.
-!     do ipoint = 1, nr_points
-!        print *, "ELECTROSTATIC_POTENTIAL_MATRIX @point", ipoint
-!        do ib = 1, kcktb
-!          do ia = 1, kckta
-!             print *, "ELEMENT", ia, ib
-!             print *, ader(ipoint, ia, ib)
-!        call output(ader(ipoint,:,:),1,kckta,1,kcktb,kckta,kcktb,2,6)
-!          enddo
-!        enddo
-!     enddo 
-              do ipoint = 1, nr_points
-!!!!
-!! aspg, 23/10/2015
-!! debug printouts
-!             debug_sum = 0.0d0
-!             print *, " debug -- at point:",ipoint
-!             write (*, '(A,6I4)') "khkta, khktb, multa, multb, idena, idenb:", khkta, khktb, multa, multb,idena, idenb
-!             print *, "      i, j, Dij, Vij, DV, sum"
-!!!!
-              if (do_matrix) then
-                 do ib = 1, kcktb
-                   do ia = 1, kckta 
-               matrix(idena+ia,idenb+ib, 1) = matrix(idena+ia,idenb+ib, 1) &
-                    - ader(ipoint, ia, ib) * vector(ipoint)
-                   end do
-                 end do
-               else
-               vector(ipoint) = vector(ipoint) + 2.0d0                    * &
-                    sum(matrix(idena+1:idena+kckta, idenb+1:idenb+kcktb, 1) * &
-                            ader(ipoint, 1:kckta, 1:kcktb))
-                
-                   do ib = 1, kcktb
-                   do ia = 1, kckta 
-                      idxa = idena+ia
-                      idxb = idenb+ia
-!!!!
-!! aspg, 23/10/2015
-!! debug printouts
-!                     debug_dij  = matrix(idxa,idxb,1)
-!                     debug_vij  = ader(ipoint, ia, ib)
-!                     debug_prod = debug_dij * debug_vij 
-!                     debug_sum  = debug_sum + debug_prod 
-!                     write (*,'(5x,2i4,e20.8,2i4,e20.8,2e20.8)') idxa,idxb,debug_dij,ia,ib,debug_vij,debug_prod,debug_sum
-!!!!
-                   end do
-                   end do
-                end if
-              end do 
-              deallocate(ader)
-          end if  
-        idenb = idenb + khktb * multb
-       end do
-       idena = idena + khkta * multa
-      end do
-
-      if (skipss_block .and. (.not. do_matrix) .and. (.not.nosmlv)) then
-! Simple Coulombic Correction for the MEP when skipss is selected.
-! This must NOT be done when:
-! 1. we want a Fock matrix contribution;
-! 2. MC == 1, i.e. the Hamiltonian specified does not make use of the SS-block
-          call get_scc_electronic_mep(nr_points, points, vector, iprint)
-      end if
-
-!          do ipoint = 1, nr_points
-!            print *, "Electronic ESP @point", ipoint, vector(ipoint)
-!          end do
-      if (iprint > 5) then
-          do ipoint = 1, nr_points
-            print *, "Electronic ESP @point", ipoint, vector(ipoint)
-          end do
-      end if
-
-   end subroutine 
-
 
 end module fde_evaluators_dirac
