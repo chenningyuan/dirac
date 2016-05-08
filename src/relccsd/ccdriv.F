@@ -1450,8 +1450,6 @@ C
       ENDDO
 C
 
-
-
       DO JREP = 1, NREP
          IJREP = MULTB(JREP,JREP,1)
          IIOOT(JREP,JREP) = NOOT(IJREP)
@@ -2694,6 +2692,7 @@ C
      &                             a_BB2(:),l1_sort(:),l2_sort(:)
 
 
+      integer(kind=8)        :: NV5IRP,NV6IRP
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -3034,7 +3033,7 @@ C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
        NBUF3 = freemem / RCW
 
-         NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
+         NV5IRP = MAX(INT(JVOVV(NREP+1),8),INT(JOVVV(NREP+1),8))
          NV6IRP = 1
          DO IRP = 1, NREP
             NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
@@ -3050,6 +3049,7 @@ C        Check the minimum size for the general use of this array
 
 C     Allocate now also this remaining work array
         call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+
 
          MAXDIM = MXDIMCC
          MAXIT  = MXITCC
@@ -3106,6 +3106,8 @@ C         this means that, for the time being, we can deallocate everything?
 !------------------------------------------
 
 !        get coupled cluster lambdas
+
+
 
          CALL CCDUMP
 

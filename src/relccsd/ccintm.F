@@ -407,8 +407,8 @@ C----------------------------------------------------------------------
 C For the H-intermediate in the lambda equations we should not scale t2
 C----------------------------------------------------------------------
       CALL GETTAU (T1,BUF1,BUF2)
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              BUF2,BUF1)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,
+     &             JJVO,BUF2,BUF1)
 C---------------------------------------------------------------
 C BUF1 now contains 0.5*T(AD,IL) - T(A,L)*T(D,I) + T(A,I)*T(D,L)
 C Subtract T(A,I)*T(D,L)

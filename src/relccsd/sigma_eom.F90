@@ -1,9 +1,10 @@
   module sigma_eom
 
-!this module calculates the sigma vectors for IP(2h-1p), EA(1h-2p) and EE(2h-2p)  
-
   use contraction
   use intermediates_1b_2b
+  implicit none
+
+!this module calculates the sigma vectors for IP(2h-1p), EA(1h-2p) and EE(2h-2p)  
 
 !    public eom_ip  
 !    public eom_ea
@@ -108,9 +109,10 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
   real(8), intent(inout)           :: sigma1(:,:), sigma2(:,:)  ! sigma-vectors
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
-  real(8), pointer :: r1_ptr(:),r2_ptr(:)
+  real(8), pointer     :: r1_ptr(:),r2_ptr(:)
   real(8), allocatable :: int_1b(:),sigma2_temp(:) 
   integer :: off1,off2,irp,istart,mint,m,n,k,nint
+  integer :: off3,nd,i,j
   logical :: done 
 !--------------------------------------------------
 
@@ -296,7 +298,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
       allocate (sigma2_temp(j2vovo(nrep+1)*rcw))
 
-      resl2_temp = 0.0d0
+      sigma2_temp = 0.0d0
 
 
       do i = 1, nrep
@@ -310,7 +312,6 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
           off1 = 1 + j2voov(i)*rcw  
           off2 = 1 + j2ovvo(i)*rcw  
           off3 = 1 + j2vovo(i)*rcw  
-
 
             call xgemm ('n','t',m,n,k,a1,buf2(off1),m, &
       &                  buf3(off2),nd,a0,sigma2_temp(off3),m)

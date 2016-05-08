@@ -365,6 +365,7 @@
    real(8),allocatable :: im_temp_temp(:)
    integer             :: asym_factor_R,asym_factor_L
    integer             :: maxdim1, maxdim2
+   integer             :: contraction_type
 
 #include "param.inc"
 #include "complex.inc"
@@ -403,7 +404,23 @@
     call sorting_for_blas(save_index_r,.false.,transB,right_sorted,y_row,y_column,if_TotSym=.false.)
     endif
 
-!  3) matrix-matrix multiplication routine runs for each irreps.
+
+!  3) Distinguish the cases based on symmetry ordering of the sorted tensors.
+!     This disntiction is required since some of them use multb(*,*,1) for final
+!     packing and some others multb(*,*,2). As of now I am hard-coding them, until
+!     I get a better solution.
+
+    if ((save_index_l==2).and.(save_index_r==1)) then
+      contraction_type = 2 
+    elseif ((save_index_l==1).and.(save_index_r==2)) then
+      contraction_type = 3
+    elseif ((save_index_l==2).and.(save_index_r==2)) then
+      contraction_type = 4
+    else
+      contraction_type = 1
+    endif  
+
+!  4) matrix-matrix multiplication routine runs for each irreps.
 
    if (dia_sum_factor==0.0d0) then
 
@@ -411,11 +428,43 @@
 
    im_temp = 0.0d0
 
+   select case(contraction_type)
+
+    case(1)
+
+    call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,&
+    &    right_sorted,A0,im_temp,1,1,.true.) 
+
+    case(2)
+
+    call cntrct_1 (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort, &
+    &      right_sorted,A0,im_temp,1,1,.true.) 
+
+
+    case(3)
+
+    call cntrct_2 (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort, &
+    &              right_sorted,A0,im_temp,1,1,.true.) 
+    case(4)
+
+    call cntrct_3 (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort, &
+    &           right_sorted,A0,im_temp,1,1,.true.) 
+
+  end select  
+
+
   !if ((save_index_l==3).or.(save_index_r==3)) then  
-   call cntrct_sp (transA,transB,x_row,y_column,y_row,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp) 
+!====
+!! call cntrct_sp (transA,transB,x_row,y_column,y_row,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp) 
+!====
+
   ! else 
 !!   call cntrct (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,right_sorted,A0,im_temp,nrep) 
   ! endif
+
+! call cntrct_new2(transA,transB,x_row,y_column,y_row,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort, &
+!        &          right_sorted,A0,im_temp,1,1,.true.) 
+
    transA = 'N'
 
    v_sort = 0.0d0
@@ -510,8 +559,13 @@
    allocate(im_temp(dot_product(x_row,y_column)*rcw))
    im_temp = 0.0d0
 
-  if (present(RightTensor)) call cntrct (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
-   &                                      RightTensor,A0,im_temp,nrep) 
+! if (present(RightTensor)) call cntrct (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
+!  &                                      RightTensor,A0,im_temp,nrep) 
+
+
+    if (present(RightTensor)) call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor*dia_factor*A1,v_sort, &
+    &                                      RightTensor,A0,im_temp,1,1,.false.)
+
 
 !!   v_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the intermediate.
@@ -600,13 +654,18 @@
 
    call onebody_for_blas (left_order,im_order,sorted_opArray,transA,x_row,x_column,FreeIndx)
 
-!  3) matrix-matrix multiplication routine runs for each irreps.
+!  3) matrix-matrix multiplication routine runs over each irreps.
 
    allocate(im_temp(dot_product(x_row,y_column)*rcw))
    im_temp = 0.0d0
 
-  if (present(LeftTensor)) call cntrct (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
-  &        right_sort,A0,im_temp,nrep) 
+! if (present(LeftTensor)) call cntrct (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
+! &        right_sort,A0,im_temp,nrep) 
+
+
+  if (present(LeftTensor)) call cntrct_new (transA,transB,x_row,y_column,y_row,asym_factor*dia_factor*A1,LeftTensor,&
+  &        right_sort,A0,im_temp,1,1,.false.) 
+
 
 !!   right_sort = 0.0d0
 !  4) re-sort the arrays to align with the desired structure of the imtermediate.

@@ -22,7 +22,6 @@
     public w_ejmb_out_of_core
     public f_bar_ae_out_of_core
     public w_iemn_out_of_core
-    public w_efam_out_of_core
     public w_efam_diagram2
     public w_efab_out_of_core
     public G_intm
@@ -34,7 +33,6 @@
          real*8,intent(out) :: tau(*)
          end subroutine gettau
       end interface
-
 
      contains
 
@@ -513,7 +511,11 @@
    integer :: AllocateStatus 
    real*8, allocatable  :: tau(:)                
    real*8, allocatable  :: vovv1(:),temp(:)                
-   integer :: m,n,k,off1,off2,off3,irep,jrep 
+   integer :: m,n,k,off1,off2,off3,irep,jrep,lrep 
+
+
+   type(indices) :: e,f,g
+
 !----------------------------------------------------------
 !        Initialize
 !----------------------------------------------------------
@@ -526,57 +528,125 @@
 !-----------------------------------------------------------
 
 
-! call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-!            &      -1.0d0,0.0d0,nrep,RightTensor=t2)
-
-      allocate(vovv1(nv5*rcw),stat = AllocateStatus) 
-
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
-      call getvovv_incore(vovv1)
-
-      CALL SRT26 (NREP,MULTB,.false.,.false.,NV,NO,NV,NV,MVV,JVVVOI4, &
-     &            JJVV,JJVO,VOVV1,buf3)
+  call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+             &      -1.0d0,0.0d0,nrep,RightTensor=t2)
 
 
-      deallocate(vovv1) 
 
-      CALL SRT1TT4 (NREP,MULTB,.false.,.false.,NV,NV,NO,NO, &
-     &              MVO,J2VOVO,JJVO,JJVO,T2,buf2)
+!     allocate(vovv1(nv5*rcw),stat = AllocateStatus) 
+
+!     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+
+!     call getvovv_incore(vovv1)
+
+!     CALL SRT26 (NREP,MULTB,.false.,.false.,NV,NO,NV,NV,MVV,JVVVOI4, &
+!    &            JJVV,JJVO,VOVV1,buf3)
 
 
-      allocate(temp(jvvvoI4(nrep+1)*rcw),stat=AllocateStatus) 
+!     deallocate(vovv1) 
 
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+!     CALL SRT1TT4 (NREP,MULTB,.false.,.false.,NV,NV,NO,NO, &
+!    &              MVO,J2VOVO,JJVO,JJVO,T2,buf2)
 
-       temp =0.0d0
+!     allocate(temp(jvvvoI4(nrep+1)*rcw),stat=AllocateStatus) 
 
-       OFF1 = 1
-       OFF3 = 1
-       OFF2 = 1
+!     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-      DO IREP = 1, NREP
-         JREP = MULTB(IREP+NREP,1+NREP,2)
-         M = MVV(IREP)
-         N = MVO(IREP)
-         K = MVO(JREP)
+!      temp =0.0d0
 
-         off2 = 1 + j2vovo(jrep)*rcw  
+!      OFF1 = 1
+!      OFF3 = 1
+!      OFF2 = 1
 
-        CALL XGEMM ('N','T',M,N,K,-A1,buf3(OFF1),M,buf2(OFF2),N, &
-    &               A0,temp(OFF3),M)
+!     DO IREP = 1, NREP
+!        JREP = MULTB(IREP+NREP,1+NREP,2)
 
-       OFF1 = OFF1 + M*K*rcw 
-       OFF3 = OFF3 + M*N*rcw
+!        M = MVV(IREP)
+!        N = MVO(JREP)
+!        K = MVO(IREP)
 
-      ENDDO
+!        off2 = 1 + j2vovo(jrep)*rcw  
 
-      CALL SRT1TS4 (NREP,MULTB,.false.,.true.,NV,NV,NV,NO,MVV,JVVVOI4, &
-     &              JJVV,JJVO,temp,buf3)
+!       CALL XGEMM ('N','T',M,N,K,-A1,buf3(OFF1),M,buf2(OFF2),N, &
+!   &               A0,temp(OFF3),M)
 
-       deallocate(temp)
+!      OFF1 = OFF1 + M*K*rcw 
+!      OFF3 = OFF3 + M*N*rcw
 
-       call xaxpy (nv5,A1,buf3,1,w_vvvo,1)
+!     ENDDO
+
+!     CALL SRT1TS4 (NREP,MULTB,.false.,.true.,NV,NV,NV,NO,MVV,JVVVOI4, &
+!    &              JJVV,JJVO,temp,buf3)
+
+!      deallocate(temp)
+
+!      call xaxpy (nv5,A1,buf3,1,w_vvvo,1)
+
+!==========================================================================
+
+ !    call auto_symmetry_offset(e,mvv,mvo,.true.)
+ !    call auto_symmetry_offset(f,mvo,mvo,.true.)
+ !    call auto_symmetry_offset(g,mvv,mvo,.true.)
+
+ !    allocate(vovv1(nv5*rcw),stat = AllocateStatus) 
+
+ !    IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+
+ !    call getvovv_incore(vovv1)
+
+ !    CALL SRT26 (NREP,MULTB,.false.,.false.,NV,NO,NV,NV,MVV,JVVVOI4, &
+ !   &            JJVV,JJVO,VOVV1,buf3)
+
+ !    deallocate(vovv1) 
+
+!!    CALL SRT1TT4_exp (NREP,MULTB,.false.,.false.,NV,NV,NO,NO, &
+!!   &              MVO,J2VOVO,JJVO,JJVO,T2,buf2,f%twononDirac)
+
+
+ !    CALL SRT1TT4 (NREP,MULTB,.false.,.false.,NV,NV,NO,NO, &
+ !   &              MVO,J2VOVO,JJVO,JJVO,T2,buf2)
+
+
+ !    allocate(temp(jvvvoI4(nrep+1)*rcw),stat=AllocateStatus) 
+
+ !    IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+
+ !     temp =0.0d0
+
+ !     OFF1 = 1
+ !     OFF3 = 1
+ !     OFF2 = 1
+
+ !    DO IREP = 1, NREP
+ !       JREP = MULTB(IREP+NREP,1+NREP,1)
+ !       LREP = MULTB(IREP+NREP,1+NREP,2)
+
+ !       M = MVV(IREP)
+ !       N = MVO(LREP)
+ !       K = MVO(JREP)
+
+
+ !        off1 = 1 + e%twoDirac(irep,jrep)*rcw
+ !        off2 = 1 + f%twononDirac(jrep,lrep)*rcw
+ !        off3 = 1 + g%twononDirac(irep,lrep)*rcw 
+
+
+!!        off2 = 1 + j2vovo(jrep)*rcw  
+
+ !      CALL XGEMM ('N','T',M,N,K,-A1,buf3(OFF1),M,buf2(OFF2),N, &
+ !  &               A0,temp(OFF3),M)
+
+!!     OFF1 = OFF1 + M*K*rcw 
+!!     OFF3 = OFF3 + M*N*rcw
+
+ !    ENDDO
+
+ !    CALL SRT1TS4_exp (NREP,MULTB,.false.,.true.,NV,NV,NV,NO,MVV,JVVVOI4, &
+ !   &              JJVV,JJVO,temp,buf3)
+
+ !     deallocate(temp)
+
+ !     call xaxpy (nv5,A1,buf3,1,w_vvvo,1)
 
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 
@@ -958,401 +1028,7 @@
 
   end subroutine
 
-   subroutine w_efam_out_of_core (t1,t2,hov,w_vovo,wbar_ovvo,buf1,buf2,buf3,nbuf3,nbuf2,w_vvvo)
 
-!---------------Common Blocks--------------------------------------   
-                                                                     
-#include "param.inc"                                                  
-#include "complex.inc"                                                
-#include "symm.inc"                                                   
-!#include "eqns.inc"                                                   
-#include "ccpar.inc"                                                  
-
-!---------------Calling variables-------------------------------------
-
-   real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2) ! Amplitudes.
-   real(8), intent(in)    :: hov(nfvo*rcw)       
-   real(8), intent(in)    :: w_vovo(rcw*nv4),wbar_ovvo(rcw*nv4)       
-   real(8), intent(out)   :: w_vvvo(rcw*nv5)             ! Intermediate.
-   real(8), intent(in)    :: buf1(*),buf2(*)             ! buffer arrays.
-   real(8), intent(in),target    :: buf3(*)              ! buffer arrays.
-   integer, intent(in)    :: nbuf3,nbuf2 
-
-!---------------Local variables----------------
-      logical :: done,teq
-      integer :: kd,istart,nint,m,n,k
-      integer :: irp,mint,off1,off2,off3
-      integer :: a,ab,abkj,abkl,ak,akcj,amin,arep,b,bk,bkcj,c,cd
-      integer :: cj,ck,cmin,crep,brep,d,dj,drep,j,i,jrep,kmin,krep 
-      integer :: AllocateStatus 
-      real*8,allocatable :: tau(:)
-      real*8,allocatable :: t_sort(:,:)
-      real*8,allocatable :: w_vvvv(:)
-      real*8             :: t1con(2)
-      real*8, pointer    :: xx(:,:) 
-!----------------------------------------------
-      integer :: ijkl, ik0,il0,imin,ip0,iq0,irep,kco,kj,kl,klstar,lj,ljrep, &
-       &         lq0,lrep,p,pl0,pq,pq0,pqrep,prep,l,q,qrep,kjrep,lqrep,lqip, & 
-       &         ilrep,iqrep,ilpq,pliq 
-      real*8  :: tval(2) 
-
-
-!-------------Initialization---------------
-
-      t1con = (/0.0d0,0.0d0/)
-      tval = (/0.0d0,0.0d0/)
-
-      do i = 1,nrep
-       xx(1:mvo(i),1:mvv(i)) => buf3 (1:mvo(i)*mvv(i)) 
-      enddo
-
-      call xcopy(nv5,A0,0,w_vvvo,1)
-
-!     allocate (t_sort(j2vovo(nrep+1)*rcw))
-     allocate (t_sort(sum(mvo,nrep),sum(mvo,nrep)))
-
-     t_sort = 0.0d0
-
-      call srt1tt4 (nrep,multb,lfa,lfa,nv,nv,no,no,mvo,j2vovo,jjvo,jjvo, &
-      &              t2,t_sort)
-
-      allocate (tau(ndimt2),stat = AllocateStatus)
-      if (AllocateStatus /= 0) stop "*** not enough memory ***"
-
-      call gettau (t1,t2,tau)
-
-      off3 = 1
-      off1 = 1
-
-      done = .false.
-
-      DO 50 IRP = 1, NREP
-         IF (NOV(IRP).EQ.0.OR.NVVT(IRP).EQ.0) GOTO 50
-         MINT = MIN0(NBUF3/NVVT(IRP),NBUF2/NVO(IRP))
-         ISTART = 0
- 10      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF2,MINT)
-
-         allocate (w_vvvv(nint*nvvt(irp)),stat = AllocateStatus)!hopefully ok. not 100% sure.
-         if (AllocateStatus /= 0) stop "*** not enough memory ***"
-
-
-         w_vvvv = 0.0d0
-
-         call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,w_vvvv,nint)
-
-!-----------------------------------------------------------------------
-!        w(ef,am) = w(ef,am) + w_vvvv(ef,ag)*t(gm)
-!-----------------------------------------------------------------------
-         CD = 1
-         DO DREP = 1, NREP
-            CREP = MULTB(DREP,IRP+NREP,2)
-            IF (CREP.LT.DREP) cycle
-            DO D = 1, NV(DREP)
-               CMIN = 1
-               IF (CREP.EQ.DREP) CMIN = D + 1
-               DO C = CMIN, NV(CREP)
-                  JREP = DREP
-                  DO J = 1, NO(JREP)
-                     DJ = (IVO(JREP)+(J-1)*NV(DREP)+D-1) * RCW + 1
-                     CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                     T1CON(1) =  T1(DJ)
-                     IF (CARITH) T1CON(2) = - T1(DJ+1)
-                     CALL XAXPY(NINT,T1CON,w_vvvv(CD),1, &
-                      &         BUF2(CJ),NVO(IRP))
-                  ENDDO
-                  JREP = CREP
-                  DO J = 1, NO(JREP)
-                     CJ = (IVO(JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                     DJ = (IIVO(DREP,JREP)+(J-1)*NV(DREP)+D-1) * RCW + 1
-                     T1CON(1) =  - T1(CJ)
-                     IF (CARITH) T1CON(2) = T1(CJ+1)
-                     CALL XAXPY(NINT,T1CON,w_vvvv(CD),1, &
-                       &       BUF2(DJ),NVO(IRP))
-                  ENDDO
-                  CD = CD + RCW
-               ENDDO
-            ENDDO
-         ENDDO
-         
-         deallocate (w_vvvv)
-
-
-!!=================================term to investigate==========================
-!-------------------------------------------------------
-!new term:  w(ef,am) = w(ef,am) + p(ef) V(en,ag)*t(gf,mn)
-!-------------------------------------------------------
-
-
-   !   IJKL = 1
-   !   KL = 0
-   !   KCO = 0
-   !   KLSTAR = 0
-
-   !   DO LREP = 1, NREP
-   !    KREP = MULTB(LREP,IRP+NREP,2)
-   !    IF (KREP.LT.LREP) cycle
-   !    DO L = 1, NV(LREP)
-   !     KMIN = 1
-   !     IF (KREP.EQ.LREP) KMIN = L + 1
-   !     DO K = KMIN, NV(KREP)
-
-   !      IF(KCO.LT.KLSTAR) THEN
-   !        KCO = KCO + 1
-   !        cycle
-   !      ENDIF
-
-   !      KL = KL + 1
- 
-   !      IF (KL.EQ.NINT+1) THEN
-!!-!---------------------
-!!W! need the next buffer
-!!-!---------------------
-   !         KLSTAR = KLSTAR + NINT
-   !         NINT = MINT
-   !            IF(.NOT.DONE) THEN
-   !              CALL GETVOVV (IRP,KLSTAR,NINT,DONE,BUF1,MINT)
-   !            ELSE
-   !              GOTO 50
-   !            ENDIF
-
- ! !         KL = 1
- ! !         IJKL = 1
- ! !         KCO = KLSTAR
-   !      ENDIF
-
-   !         DO  JREP = 1, NREP
-   !          IREP = MULTB(JREP,IRP+NREP,2)
-   !          LJREP = MULTB(LREP,JREP,2)
-   !          KJREP = MULTB(KREP,JREP,2)
-   !          LJ    = JJVO(LREP,JREP) + L - 1
-   !          LJ    = LJ * RCW + 1
-   !          KJ    = JJVO(KREP,JREP) + K - 1
-   !          KJ    = KJ * RCW + 1
-
-   !          IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP)
-   !          IK0   = IK0 * RCW + 1
-   !          IL0   = JJVV(IREP,LREP) + (L-1)*NV(IREP)
-   !          IL0   = IL0 * RCW + 1
-
-   !          PQ = NVO(LJREP)
-
-   !        DO  J = 1, NO(JREP)
-
-!!-!----------new loop over (P,Q) to get all the elements of sorted t2 array------------
-
-   !           CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),t_sort(LJ,OFF3), &
-   !           &               NVO(IRP),A1,xx(IK0,OFF3),NVV(IRP))
-
-   !              CALL XCOPY (PQ,t_sort(KJ,OFF3),1,TVAL,1)
-   !              CALL XSCAL (PQ,-A1,TVAL,1)
-
-   !              CALL XGEMM ('N','N',NV(IREP),PQ,1,A1,BUF1(IJKL),NVV(IRP),TVAL, &
-   !              &               NVO(IRP),A1,xx(IL0,OFF3),NVV(IRP))
-
-   !           IJKL = IJKL + NV(IREP) * RCW
-   !           LJ   = LJ   + NV(LREP) * RCW
-   !           KJ   = KJ   + NV(KREP) * RCW
-
-   !          enddo
-
-   !           OFF3 = OFF3 + PQ * RCW
-   !         enddo
-
-   !     enddo
-   !    enddo
-   !   enddo
-
-!!-!------------------------------------------------
-!! ! sorting step. major caveat: buf3 is not triangular.
-!  !IL,PQ) -> (LQ,IP)-(LQ,PI) -> (LQ,I>P)  
-!!-!------------------------------------------------
-
-   !     DO PQREP = 1,NREP
-   !      DO  PREP = 1,NREP
-   !          QREP = MULTB(PREP,PQREP+NREP,2) 
-   !       DO Q = 1, NO (QREP) 
-
-   !         DO P = 1, NV (PREP)
-
-   !          DO IREP = 1, NREP 
-   !             LREP = MULTB(IREP,PQREP+NREP,2) 
-
-   !        
-   !           LQREP = MULTB(LREP,QREP,2)
-   !           ILREP = MULTB(IREP,LREP,2)
-   !           IQREP = MULTB(IREP,QREP,2)
-   !           PQ0   = JJVV(PREP,QREP) + (Q-1)*NV(PREP)+P
-   !           PQ0   = PQ0 * RCW + 1 
-
-   !           PL0   = JJVV(PREP,LREP) +  P
-   !           PL0   = PL0 * RCW + 1
-
-
-   !           IMIN = 1
-   !           IF (IREP.EQ.PREP) IMIN = P + 1
-   !           DO I = IMIN, NV(IREP)
-
-
-   !           IP0   = JJVV(IREP,PREP) + (P-1)*NV(IREP)+I
-   !           IP0   = IP0 * RCW + 1 
-
-   !           IL0   = JJVV(IREP,KREP) +  I
-   !           IL0   = IK0 * RCW + 1
-
-   !           IQ0   = JJVO(KREP,QREP) + (Q-1)*NV(IREP) + I
-   !           IQ0   = IQ0 * RCW + 1
-
-   !           LQ0   = JJVO(LREP,QREP) + (Q-1)*NV(LREP)
-   !           LQ0   = LQ0 * RCW + 1
-
-
-   !           LQIP = (IP0-1)*MVO(LQREP)  + LQ0
-!  !            ILPQ = (PQ0-1)*MVV(ILREP)  + IL0
-!  !            PLIQ = (PL0-1)*MVV(IQREP)  + IQ0
-
-   !           CALL XCOPY (NV(LREP),xx(IL0,PQ0),NV(IREP),buf2(LQIP),1)
-
-   !           CALL XAXPY (NV(LREP),-A1,xx(PL0,IQ0),NV(PREP),buf2(LQIP),1)
-
-
-   !           LQ0 = LQ0 + RCW*NV(LREP)
-   !           enddo
-   !           IL0 = IL0 + RCW*NV(LREP) 
-   !           PL0 = PL0 + RCW*NV(LREP) 
-   !          enddo
-   !         enddo
-
-   !       enddo
-   !      enddo
-   !     enddo
-
-!             DO I = 1, NV (PREP) 
-!              PMIN = 1
-!              IF (IREP.EQ.PREP) PMIN = I + 1
-!              DO P = PMIN, NV(PREP)
-
-!              IK0   = JJVV(IREP,KREP) + (K-1)*NV(IREP) + I
-!              IK0   = IK0 * RCW + 1
-
-!              PI0   = JJVV(IREP,PREP) + (I-1)*NV(IREP)+P
-!              PI0   = PI0 * RCW + 1 
-
-!              IF (LJREP.EQ.1) THEN
-!!               CALL XCOPY (1,BUF2(IK0,OFF3),1,buf3(KQ0,PI0),1)
-!              CALL XAXPY (1,-A1,BUF2(IK0,OFF3),1,buf3(KQ0,PI0),1)
-!              ENDIF
-
-!              IF (KJREP.EQ.1) THEN
-!!               CALL XCOPY (1,BUF2(IL0,OFF3),1,buf3(LQ0,PI0),1)
-!              CALL XAXPY (1,-A1,BUF2(IL0,OFF3),1,buf3(LQ0,PI0),1)
-!              ENDIF
-
-!              enddo
-!             enddo
-
-
-!!================================ term to investigate ==================================
-
-!-------------------------------------------------
-!    w(ef,am) = w(ef,am) + 1/2 V(no,am)*tau(ef,no)
-!-------------------------------------------------
-
-         CALL GETVOOO (BUF3)
-         M = NVO(IRP)
-         N = NINT
-         K = NOOT(IRP)
-         ABKL = (IVVOOTT(IRP)+ISTART)*RCW+1
-         CALL XGEMM ('N','C',M,N,K,A1,BUF3,M,tau(ABKL),NVVT(IRP), &
-     &               A1,BUF2,M)
-
-!-------------------------------------------
-!   w(ef,am) = w(ef,am) + f_bar(na)*t(ef,mn) 
-!-------------------------------------------
-
-         ABKJ = (IVVOOTT(IRP)+ISTART)*RCW+1
-         DO 30 JREP = 1, NREP
-            KREP = MULTB(JREP,IRP+NREP,2)
-            IF (KREP.LT.JREP) GOTO 30
-            DO J = 1, NO(JREP)
-               KMIN = 1
-               IF (KREP.EQ.JREP) KMIN = J + 1
-               DO K = KMIN, NO(KREP)
-                  CREP = KREP
-                  DO C = 1, NV(CREP)
-                     CK = (IVO(KREP)+(K-1)*NV(CREP)+C-1) * RCW + 1
-                     CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                     T1CON(1) =  - HOV(CK)
-                     IF (CARITH) T1CON(2) = HOV(CK+1)
-                     CALL XAXPY(NINT,T1CON,T2(ABKJ),1, &
-                       &        BUF2(CJ),NVO(IRP))
-                  ENDDO
-                  CREP = JREP
-                  DO C = 1, NV(CREP)
-                     CJ = (IVO(JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                     CK = (IIVO(CREP,KREP)+(K-1)*NV(CREP)+C-1) * RCW + 1
-                     T1CON(1) =  HOV(CJ)
-                     IF (CARITH) T1CON(2) = - HOV(CJ+1)
-                     CALL XAXPY(NINT,T1CON,T2(ABKJ),1, &
-                       &        BUF2(CK),NVO(IRP))
-                  ENDDO
-                  ABKJ = ABKJ + NVVT(IRP) * RCW
-               ENDDO
-            ENDDO
- 30      CONTINUE
-
-!------------------------------------------------
-!    w(ef,am) = w(ef,am) + w_bar(nf,am)*t(en) 
-!------------------------------------------------
-
-         AB = 0
-         DO 40 BREP = 1, NREP
-            AREP = MULTB(BREP,IRP+NREP,2)
-            IF (AREP.LT.BREP) GOTO 40
-            DO B = 1, NV(BREP)
-               AMIN = 1
-               IF (AREP.EQ.BREP) AMIN = B + 1
-               DO A = AMIN, NV(AREP)
-                  IF (AB.LT.ISTART) GOTO 40
-                  IF (AB.GE.ISTART+NINT) GOTO 41
-                  KREP = BREP
-                  AKCJ = (IVOVO(IRP)+IIVO(AREP,KREP)+A-1)
-                  DO K = 1, NO(KREP)
-                     BK = (IVO(KREP)+(K-1)*NV(BREP)+B-1) * RCW + 1
-                     T1CON(1) = - T1(BK)
-                     IF (CARITH) T1CON(2) = T1(BK+1)
-                     CALL XAXPY (NVO(IRP),T1CON,wbar_ovvo(AKCJ),NVO(IRP), &
-                       &         BUF2(AB*RCW+1),1)
-                     AKCJ = AKCJ + NV(AREP) * RCW
-                  ENDDO
-                  KREP = AREP
-                  BKCJ = (IVOVO(IRP)+IIVO(BREP,KREP)+B-1)
-                  DO K = 1, NO(KREP)
-                     AK = (IVO(KREP)+(K-1)*NV(BREP)+A-1) * RCW + 1
-                     T1CON(1) = T1(AK)
-                     IF (CARITH) T1CON(2) = - T1(AK+1)
-                     CALL XAXPY (NVO(IRP),T1CON,wbar_ovvo(BKCJ),NVO(IRP), &
-                      &          BUF2(AB*RCW+1),1)
-                     BKCJ = BKCJ + NV(BREP) * RCW
-                  ENDDO
-                  AB = AB + 1
-               ENDDO
-            ENDDO
-   40    CONTINUE
-   41    CONTINUE
-
-        call xcopy(nint*nvo(irp),buf2,1,w_vvvo(istart*nvo(irp)*rcw+off1),1)
-
-         IF (.NOT.DONE) THEN
-            ISTART = ISTART + NINT
-            GOTO 10
-         ENDIF
-         off1 = off1 + nvo(irp)*nvvt(irp)*rcw
- 50   CONTINUE
-
-    deallocate(tau)
-    deallocate(t_sort)
-
-   end subroutine
 
    subroutine w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,w_vvvv,nint)
 

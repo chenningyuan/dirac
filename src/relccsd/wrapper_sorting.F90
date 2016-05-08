@@ -8,9 +8,14 @@
     public sorting_for_blas
     public decide_sorting_routine 
     public sorted_dimension 
+    public cntrct_new
+    public cntrct_1
+    public cntrct_2
+    public cntrct_3
+    public auto_symmetry_offset
 
     private
-
+    public indices !!may go away
     integer      :: sortType
     logical      :: do_direct, do_exchange
     logical      :: t_direct, t_exchange
@@ -29,10 +34,12 @@
     type indices
       integer, dimension(:,:),pointer :: tuple
       integer, dimension(:),pointer   :: tuple_combInd, orbital_type, full_array 
+      integer, dimension(32)          :: oneDirac,oneNonDirac
+      integer, dimension(32,32)       :: twoDirac,twoNonDirac
     endtype indices
 
     type, extends(indices) :: middle_indices
-       type(indices) :: triangular
+       type(indices) :: triangular,Index22,Index31,Index21 
     endtype
 
    type, extends(middle_indices) :: more_indices
@@ -55,22 +62,30 @@
    external SRT16
    external SRT1R1
    external SRT1TT4
+   external SRT1TT4_exp
    external SRT1TT5
+   external SRT1TT5_exp
    external SRT1ST4
+   external SRT1ST4_exp
    external SRT36 
    external SRT22
+   external SRT22_exp
    external SRT32
    external SRT26
    external SRT20D
    external SRT1T3
+   external SRT1T3_exp
    external SRT1T2
+   external SRT1T2_exp
    external SRT1S2
    external SRT19
    external SRT1S3
    external SRT7
+   external SRT7_exp
    external SRT6
    external SRT9
    external SRT1TS4
+   external SRT1TS4_exp
 
    external getvoov
    external getoovv
@@ -241,7 +256,7 @@
 
   case(22)
   allocate(A(3))
-  A = (/1234,1432,1324/)
+  A = (/1234,1324,1432/)
 
   case(31)
   allocate(A(4))
@@ -368,7 +383,7 @@
 
   case(22)
   allocate(A(3))
-  A = (/1234,1432,1324/)
+  A = (/1234,1324,1432/)
 
   case(31)
   allocate(A(4))
@@ -639,7 +654,7 @@
 !---------------------------------
 
 !--------------calling variables---------------
-    real(8),intent(in),target,optional           :: presorted(:)
+    real(8),intent(in),target,optional    :: presorted(:)
     logical,intent(in),optional           :: if_TotSym
     integer,intent(inout)                 :: save_index
     logical,intent(in)                    :: do_inverse  
@@ -660,7 +675,8 @@
 #include "complex.inc"
 
     type(sorting_list)     :: a
-    type(middle_indices)   :: c(0:30)  
+    type(middle_indices)   :: c(0:30)!,e  
+    type(indices)   :: e  
     type(more_indices)     :: m(0:15)  
     type(bit_processing)   :: d 
     type(presorting),target  :: V 
@@ -674,12 +690,12 @@
        srt_22(2)%unrestricted => SRT16     
        srt_22(3)%unrestricted => SRT1L1    
        srt_22(4)%unrestricted => SRT1R1 
-       srt_22(1)%restricted_braket =>  SRT1TT4
-       srt_22(2)%restricted_braket =>  SRT1TT5
+       srt_22(1)%restricted_braket => SRT1TT4_exp
+       srt_22(2)%restricted_braket => SRT1TT5_exp
 !      srt_22(1)%restricted_bra =  SRT1LS1
-       srt_22(1)%restricted_bra => SRT36
-       srt_22(2)%restricted_bra => SRT1TS4
-       srt_22(1)%restricted_ket => SRT1ST4
+       srt_22(1)%restricted_bra => SRT1TS4_exp
+       srt_22(2)%restricted_bra => SRT36
+       srt_22(1)%restricted_ket => SRT1ST4_exp
        srt_22(2)%restricted_ket => SRT26
 !       srt_22(3)%restricted_ket => SRT20D
 
@@ -693,9 +709,11 @@
        srt_31(1)%restricted_ket => SRT22
        srt_31(2)%restricted_ket => SRT6
        srt_31(3)%restricted_ket => SRT9
-       srt_31(0)%restricted_braket => SRT1T3
+       srt_31(0)%restricted_braket => SRT1T3_exp
        srt_31(1)%restricted_braket => SRT22
+       srt_31(1)%restricted_braket => SRT22_exp
        srt_31(2)%restricted_braket => SRT7
+       srt_31(2)%restricted_braket => SRT7_exp
        srt_31(0)%restricted_bra => SRT1S3
        srt_31(1)%restricted_bra => SRT7
        srt_31(2)%restricted_bra => SRT19
@@ -705,7 +723,8 @@
        srt_13(0)%unrestricted => SRT1S2
        srt_13(0)%restricted_bra => SRT1T2
        srt_13(0)%restricted_ket => SRT1S2
-       srt_13(0)%restricted_braket => SRT1T2
+      srt_13(0)%restricted_braket => SRT1T2_exp
+!       srt_13(0)%restricted_braket => SRT1T2
 
 !----------------------------------------------
 
@@ -724,7 +743,6 @@
      B%integral => v%presorted(1:size(v%presorted)) 
 
      endif
-
 
      if (present(presorted)) then
 
@@ -821,19 +839,51 @@
        endif
        endif
 
-      
-      if (save_index==2) then
 
-      call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-      &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array, &
-      &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+     if (save_index==2) then
+
+!     call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+!     &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array, &
+!     &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+
+
+        call auto_symmetry_offset(e,c(d%bra_reorder)%tuple_combInd,c(d%ket_reorder)%tuple_combInd,.true.)
+      if (do_totsym.or.do_inverse) then
+
+        call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array, &
+       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted,e%twoDirac)
 
       else
 
-      call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-      &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
-      &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+        call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
+       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted,e%twoDirac)
 
+      endif
+
+     else
+
+!     call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+!     &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
+!     &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+
+
+       call auto_symmetry_offset(e,c(d%bra_reorder)%tuple_combInd,c(d%ket_reorder)%tuple_combInd,.true.)
+
+      if (do_totsym.or.do_inverse) then
+
+        call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
+       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted,e%twononDirac)
+
+      else
+
+        call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
+       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted,e%twoNonDirac)
+
+      endif
       endif
 
          case('restricted_bra')
@@ -1057,10 +1107,12 @@
           column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
        endif
 
+      call auto_symmetry_offset(e,m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,.false.) 
+
       call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%I)%orbital_type, &
         &  c(d%J)%orbital_type,m(d%ijk_reorder)%qrs%triangular%tuple_combInd, &
         &  array_tot(m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-        &  m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted,c(d%ket)%triangular%tuple_combInd)
+        &  m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted,c(d%ket)%triangular%tuple_combInd,e%twodirac)
 
        elseif (save_index == 1) then
 
@@ -1072,10 +1124,12 @@
           column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
        endif
 
+     call auto_symmetry_offset(e,m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,.false.) 
+
      call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
            & c(d%L)%orbital_type,m(d%ijk_reorder)%qrs%triangular%tuple_combInd, &
            & array_tot(m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-           & m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted)
+           & m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted,e%twodirac)
 
        else
 
@@ -1087,10 +1141,21 @@
           column = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
        endif
 
+
+     call auto_symmetry_offset(e,m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,.false.) 
+
+
      call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
               & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%triangular%tuple_combInd, &
-              & array_tot(m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep),        &
-              & m(d%ijk_reorder)%pqr%triangular%tuple,B%integral,sorted)
+              & array_tot(m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), & 
+              & m(d%ijk_reorder)%pqr%triangular%tuple,B%integral,sorted,e%twonondirac)
+
+
+!    call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
+!             & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%triangular%tuple_combInd, &
+!             & array_tot(m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), & 
+!             & m(d%ijk_reorder)%pqr%triangular%tuple,B%integral,sorted)
+
 
        endif
 
@@ -1305,10 +1370,19 @@
 
        endif 
 
+        call auto_symmetry_offset(e,c(d%i_reorder)%orbital_type,m(d%jkl_reorder)%qrs%triangular%tuple_combInd,.false.)
+
       call srt_13(save_index)%restricted_braket (nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,&
      &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd, &
      & array_tot(c(d%i_reorder)%orbital_type,m(d%jkl_reorder)%qrs%triangular%tuple_combInd,nrep), &
-     &  m(d%jkl_reorder)%qrs%triangular%tuple,B%integral,sorted)
+     &  m(d%jkl_reorder)%qrs%triangular%tuple,B%integral,sorted,e%twodirac)
+
+
+!     call srt_13(save_index)%restricted_braket (nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,&
+!    &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd, &
+!    & array_tot(c(d%i_reorder)%orbital_type,m(d%jkl_reorder)%qrs%triangular%tuple_combInd,nrep), &
+!    &  m(d%jkl_reorder)%qrs%triangular%tuple,B%integral,sorted)
+
 
          case('restricted_bra')
 
@@ -1664,7 +1738,7 @@
       a(13)%full_array => JVVOV
       a(10)%full_array => JVOVO
       a(11)%full_array => JVOVV
-      a(9)%full_array => JVOOV
+      a(9)%full_array  => JVOOV
       a(14)%full_array => JVVVOI4
 
       a(15)%full_array => J2OOOO     
@@ -1969,7 +2043,7 @@
   function array_tot(row,column,nrep)
 
 !-----------description-------------------------------------------------------
-! construct the symmetry offset between an index triple bra/ket and and a single index bra/ket. 
+! construct the symmetry offset between an index triple bra/ket and a single index bra/ket. 
 !-----------------------------------------------------------------------------
 
   integer,intent(in):: nrep
@@ -2029,5 +2103,464 @@
      end select  
 
   end function
+
+  subroutine auto_symmetry_offset(a,row,column,shift_for_boson)
+#include "symm.inc"
+
+! In this subroutine my target is to generate the offset arrays for symmetry.  
+
+   integer,intent(in)  :: row(nrep),column(nrep)
+   integer             :: irep, jrep, ijrep
+   logical,intent(in)  :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrreps is necessary 
+!   type(middle_indices),intent(out) :: a
+   type(indices),intent(out) :: a
+   integer :: shift
+
+! 1> case 1: Offset for (2,2) type integrals.
+!            here we have dealt with four different type of offsets 
+!            oneDirac ->  bra(k)*ket(l) = ket(kl) !multb(*,*,2)
+!                      or,ket(k)*bra(l) = bra(kl)
+!            twoDirac ->  bra(k)*ket(l) = ket(k,l)!multb(*,*,1) 
+!                      or,ket(k)*bra(l) = bra(k,l)
+
+!            oneNonDirac ->  bra(k)*bra(l) = bra(kl) !multb(*,*,2)
+!                      or,ket(k)*ket(l) = ket(kl)
+!            twoNonDirac ->  bra(k)*bra(l) = bra(k,l)!multb(*,*,1) 
+!                      or,ket(k)*ket(l) = ket(k,l)
+
+!  If the irreps are bosonic we have used a shift of nrep (the total number of irreps) i.e, for case1.
+!  But, for fermionic irreps the shift is not necessary, that is the case2   
+
+   shift = 0
+   if(shift_for_boson) shift=nrep 
+
+   a%oneDirac(1:nrep) = 0
+   a%oneNonDirac(1:nrep) = 0
+   a%twoDirac(1:nrep,1:nrep) = 0
+   a%twoNonDirac(1:nrep,1:nrep) = 0
+
+!   a%Index22%oneDirac(1:nrep) = 0
+!   a%Index22%oneNonDirac(1:nrep) = 0
+!   a%Index22%twoDirac(1:nrep,1:nrep) = 0
+!   a%Index22%twoNonDirac(1:nrep,1:nrep) = 0
+!   a%Index31%oneDirac(1:nrep) = 0
+!   a%Index31%oneNonDirac(1:nrep) = 0
+!   a%Index31%twoDirac(1:nrep,1:nrep) = 0
+!   a%Index31%twoNonDirac(1:nrep,1:nrep) = 0
+
+!   do jrep = 1,nrep
+!     do irep = 1,nrep
+!       ijrep = multb(irep+shift,jrep+shift,2)
+!       a%Index22%twoDirac(irep,jrep) = a%Index22%oneDirac(ijrep) 
+!       a%Index22%oneDirac(ijrep) = a%Index22%oneDirac(ijrep)+row(irep)*column(jrep) 
+
+!       ijrep = multb(irep+shift,jrep+shift,1)
+!       a%Index22%twoNonDirac(irep,jrep) = a%Index22%oneNonDirac(ijrep) 
+!       a%Index22%oneNonDirac(ijrep) = a%Index22%oneNonDirac(ijrep)+row(irep)*column(jrep) 
+!     enddo 
+!   enddo 
+! 2> case 2:offset for (3,1) or (1,3) type integrals. Since they are generated identically, we have 
+!            used only 31 naming.  
+
+!   do jrep = 1,nrep
+!     do irep = 1,nrep
+!       ijrep = multb(irep+shift,jrep+shift,2)
+!       a%Index31%twoDirac(irep,jrep) = a%Index31%oneDirac(ijrep) 
+!       a%Index31%oneDirac(ijrep) = a%Index31%oneDirac(ijrep)+row(irep)*column(jrep) 
+
+!       ijrep = multb(irep+shift,jrep+shift,1)
+!       a%Index31%twoNonDirac(irep,jrep) = a%Index31%oneNonDirac(ijrep) 
+!       a%Index31%oneNonDirac(ijrep) = a%Index31%oneNonDirac(ijrep)+row(jrep)*column(irep) 
+!     enddo 
+!   enddo 
+
+    do jrep = 1,nrep
+      do irep = 1,nrep
+        ijrep = multb(irep+shift,jrep+shift,2)
+        a%twoDirac(irep,jrep) = a%oneDirac(ijrep) 
+        a%oneDirac(ijrep) = a%oneDirac(ijrep)+row(irep)*column(jrep) 
+
+        ijrep = multb(irep+shift,jrep+shift,1)
+        a%twoNonDirac(irep,jrep) = a%oneNonDirac(ijrep) 
+        a%oneNonDirac(ijrep) = a%oneNonDirac(ijrep)+row(irep)*column(jrep) 
+      enddo 
+    enddo 
+
+   end subroutine
+
+!===========================================================================
+
+      subroutine cntrct_new (transa,transb,mdim,ndim,kdim,alpha,a,b, &
+     &                   beta,c,irrepa,irrepb,shift_for_boson)
+
+#include "symm.inc"
+!---------------description--------------------------------------------
+!     generalization of cntrct routine by Luuk. the previous routine is
+!     applicable only for the tensors of totally symmetric irrep.
+!     now my target is to contract the tensors of any given bosonic irreps.
+!     the contraction will generate a tensor belonging to the direct product 
+!     irrep of the incoming ones. 
+!---------------routines called----------------------------------------
+
+!---------------last modified------------------------------------------
+!     author : avijit shee
+!---------------calling variables--------------------------------------
+
+    real*8,intent(in)     :: a(*),b(*),c(*)
+    complex*16,intent(in) :: alpha,beta
+    integer,intent(in)    :: mdim(nrep),ndim(nrep),kdim(nrep)
+!   integer,intent(in)    :: nrep           ! total number of irreps
+    integer,intent(in)    :: irrepa,irrepb  ! irreps to which A & B belong.
+    logical,intent(in)    :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrrep is necessary 
+    character*1,intent(in):: transa,transb
+
+!---------------common blocks--------------------------------------
+
+#include "param.inc"
+#include "complex.inc"
+
+!---------------local variables--------------------------------------
+     integer :: mrp,nrp,krp 
+     integer :: lda,ldb,ldc,m,n,k 
+     integer :: off1,off2,off3,shift 
+     type(indices) :: e,f,g
+!---------------executable code--------------------------------------
+
+      shift = 0
+      if(shift_for_boson) shift=nrep 
+
+       if (transa.eq.'N'.or.transa.eq.'n') then
+        call auto_symmetry_offset(e,mdim,kdim,shift_for_boson)
+       else
+        call auto_symmetry_offset(e,kdim,mdim,shift_for_boson)
+       endif
+       if (transb.eq.'N'.or.transb.eq.'n') then
+        call auto_symmetry_offset(f,kdim,ndim,shift_for_boson)
+       else
+        call auto_symmetry_offset(f,ndim,kdim,shift_for_boson)
+       endif
+        call auto_symmetry_offset(g,mdim,ndim,shift_for_boson)
+
+      do krp = 1, nrep
+         mrp = multb(krp+shift,irrepa+nrep,1)  
+         nrp = multb(krp+shift,irrepb+nrep,1)  
+
+         m = mdim(mrp)
+         n = ndim(nrp)
+         k = kdim(krp)
+         if (transa.eq.'N'.or.transa.eq.'n') then
+            lda = m
+         else
+            lda = k
+         endif
+         if (transb.eq.'N'.or.transb.eq.'n') then
+            ldb = k
+         else
+            ldb = n
+         endif
+         ldc = m
+
+         if (transa.eq.'N'.or.transa.eq.'n') then
+          off1 = 1 + e%twoDirac(mrp,krp)*rcw
+         else 
+          off1 = 1 + e%twoDirac(krp,mrp)*rcw
+         endif
+
+         if (transb.eq.'N'.or.transb.eq.'n') then
+          off2 = 1 + f%twoDirac(krp,nrp)*rcw
+         else 
+          off2 = 1 + f%twoDirac(nrp,krp)*rcw
+         endif
+
+         off3 = 1 + g%twoDirac(mrp,nrp)*rcw
+
+         if (k.eq.0) then
+            call xscal (m*n,beta,c(off3),1)
+         else
+            call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
+         endif
+      enddo
+
+      end subroutine
+
+      subroutine cntrct_1 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
+     &                   beta,c,irrepa,irrepb,shift_for_boson)
+
+#include "symm.inc"
+!---------------description--------------------------------------------
+!     generalization of cntrct routine by Luuk. the previous routine is
+!     applicable only for the tensors of totally symmetric irrep.
+!     now my target is to contract the tensors of any given bosonic irreps.
+!     the contraction will generate a tensor belonging to the direct product 
+!     irrep of the incoming ones. 
+!---------------routines called----------------------------------------
+
+!---------------last modified------------------------------------------
+!     author : avijit shee
+!---------------calling variables--------------------------------------
+
+    real*8,intent(in)     :: a(*),b(*),c(*)
+    complex*16,intent(in) :: alpha,beta
+    integer,intent(in)    :: mdim(nrep),ndim(nrep),kdim(nrep)
+!   integer,intent(in)    :: nrep           ! total number of irreps
+    integer,intent(in)    :: irrepa,irrepb  ! irreps to which A & B belong.
+    logical,intent(in)    :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrrep is necessary 
+    character*1,intent(in):: transa,transb
+
+!---------------common blocks--------------------------------------
+
+#include "param.inc"
+#include "complex.inc"
+
+!---------------local variables--------------------------------------
+     integer :: mrp,nrp,krp 
+     integer :: lda,ldb,ldc,m,n,k 
+     integer :: off1,off2,off3,shift 
+     type(indices) :: e,f,g
+!---------------executable code--------------------------------------
+
+      shift = 0
+      if(shift_for_boson) shift=nrep 
+
+       if (transa.eq.'N'.or.transa.eq.'n') then
+        call auto_symmetry_offset(e,mdim,kdim,shift_for_boson)
+       else
+        call auto_symmetry_offset(e,kdim,mdim,shift_for_boson)
+       endif
+       if (transb.eq.'N'.or.transb.eq.'n') then
+        call auto_symmetry_offset(f,kdim,ndim,shift_for_boson)
+       else
+        call auto_symmetry_offset(f,ndim,kdim,shift_for_boson)
+       endif
+        call auto_symmetry_offset(g,mdim,ndim,shift_for_boson)
+
+      do krp = 1, nrep
+         mrp = multb(krp+shift,irrepa+nrep,1)  
+         nrp = multb(krp+shift,irrepb+nrep,2)  
+
+         m = mdim(mrp)
+         n = ndim(nrp)
+         k = kdim(krp)
+         if (transa.eq.'N'.or.transa.eq.'n') then
+            lda = m
+         else
+            lda = k
+         endif
+         if (transb.eq.'N'.or.transb.eq.'n') then
+            ldb = k
+         else
+            ldb = n
+         endif
+         ldc = m
+
+         if (transa.eq.'N'.or.transa.eq.'n') then
+          off1 = 1 + e%twoDirac(mrp,krp)*rcw
+         else 
+          off1 = 1 + e%twoDirac(krp,mrp)*rcw
+         endif
+
+         if (transb.eq.'N'.or.transb.eq.'n') then
+          off2 = 1 + f%twononDirac(krp,nrp)*rcw
+         else 
+          off2 = 1 + f%twononDirac(nrp,krp)*rcw
+         endif
+
+         off3 = 1 + g%twononDirac(mrp,nrp)*rcw
+
+         if (k.eq.0) then
+            call xscal (m*n,beta,c(off3),1)
+         else
+            call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
+         endif
+      enddo
+
+      end subroutine
+
+      subroutine cntrct_2 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
+     &                   beta,c,irrepa,irrepb,shift_for_boson)
+
+#include "symm.inc"
+!---------------description--------------------------------------------
+!     generalization of cntrct routine by Luuk. the previous routine is
+!     applicable only for the tensors of totally symmetric irrep.
+!     now my target is to contract the tensors of any given bosonic irreps.
+!     the contraction will generate a tensor belonging to the direct product 
+!     irrep of the incoming ones. 
+!---------------routines called----------------------------------------
+
+!---------------last modified------------------------------------------
+!     author : avijit shee
+!---------------calling variables--------------------------------------
+
+    real*8,intent(in)     :: a(*),b(*),c(*)
+    complex*16,intent(in) :: alpha,beta
+    integer,intent(in)    :: mdim(nrep),ndim(nrep),kdim(nrep)
+!   integer,intent(in)    :: nrep           ! total number of irreps
+    integer,intent(in)    :: irrepa,irrepb  ! irreps to which A & B belong.
+    logical,intent(in)    :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrrep is necessary 
+    character*1,intent(in):: transa,transb
+
+!---------------common blocks--------------------------------------
+
+#include "param.inc"
+#include "complex.inc"
+
+!---------------local variables--------------------------------------
+     integer :: mrp,nrp,krp 
+     integer :: lda,ldb,ldc,m,n,k 
+     integer :: off1,off2,off3,shift 
+     type(indices) :: e,f,g
+!---------------executable code--------------------------------------
+
+      shift = 0
+      if(shift_for_boson) shift=nrep 
+
+       if (transa.eq.'N'.or.transa.eq.'n') then
+        call auto_symmetry_offset(e,mdim,kdim,shift_for_boson)
+       else
+        call auto_symmetry_offset(e,kdim,mdim,shift_for_boson)
+       endif
+       if (transb.eq.'N'.or.transb.eq.'n') then
+        call auto_symmetry_offset(f,kdim,ndim,shift_for_boson)
+       else
+        call auto_symmetry_offset(f,ndim,kdim,shift_for_boson)
+       endif
+        call auto_symmetry_offset(g,mdim,ndim,shift_for_boson)
+
+      do krp = 1, nrep
+         mrp = multb(krp+shift,irrepa+nrep,2)  
+         nrp = multb(krp+shift,irrepb+nrep,1)  
+
+         m = mdim(mrp)
+         n = ndim(nrp)
+         k = kdim(krp)
+         if (transa.eq.'N'.or.transa.eq.'n') then
+            lda = m
+         else
+            lda = k
+         endif
+         if (transb.eq.'N'.or.transb.eq.'n') then
+            ldb = k
+         else
+            ldb = n
+         endif
+         ldc = m
+
+         if (transa.eq.'N'.or.transa.eq.'n') then
+          off1 = 1 + e%twononDirac(mrp,krp)*rcw
+         else 
+          off1 = 1 + e%twononDirac(krp,mrp)*rcw
+         endif
+
+         if (transb.eq.'N'.or.transb.eq.'n') then
+          off2 = 1 + f%twoDirac(krp,nrp)*rcw
+         else 
+          off2 = 1 + f%twoDirac(nrp,krp)*rcw
+         endif
+
+         off3 = 1 + g%twononDirac(mrp,nrp)*rcw
+
+         if (k.eq.0) then
+            call xscal (m*n,beta,c(off3),1)
+         else
+            call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
+         endif
+      enddo
+
+      end subroutine
+
+      subroutine cntrct_3 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
+     &                   beta,c,irrepa,irrepb,shift_for_boson)
+
+#include "symm.inc"
+!---------------description--------------------------------------------
+!     generalization of cntrct routine by Luuk. the previous routine is
+!     applicable only for the tensors of totally symmetric irrep.
+!     now my target is to contract the tensors of any given bosonic irreps.
+!     the contraction will generate a tensor belonging to the direct product 
+!     irrep of the incoming ones. 
+!---------------routines called----------------------------------------
+
+!---------------last modified------------------------------------------
+!     author : avijit shee
+!---------------calling variables--------------------------------------
+
+    real*8,intent(in)     :: a(*),b(*),c(*)
+    complex*16,intent(in) :: alpha,beta
+    integer,intent(in)    :: mdim(nrep),ndim(nrep),kdim(nrep)
+!   integer,intent(in)    :: nrep           ! total number of irreps
+    integer,intent(in)    :: irrepa,irrepb  ! irreps to which A & B belong.
+    logical,intent(in)    :: shift_for_boson! a logical variable indicating whether the shift for bosonic irrrep is necessary 
+    character*1,intent(in):: transa,transb
+
+!---------------common blocks--------------------------------------
+
+#include "param.inc"
+#include "complex.inc"
+
+!---------------local variables--------------------------------------
+     integer :: mrp,nrp,krp 
+     integer :: lda,ldb,ldc,m,n,k 
+     integer :: off1,off2,off3,shift 
+     type(indices) :: e,f,g
+!---------------executable code--------------------------------------
+
+      shift = 0
+      if(shift_for_boson) shift=nrep 
+
+       if (transa.eq.'N'.or.transa.eq.'n') then
+        call auto_symmetry_offset(e,mdim,kdim,shift_for_boson)
+       else
+        call auto_symmetry_offset(e,kdim,mdim,shift_for_boson)
+       endif
+       if (transb.eq.'N'.or.transb.eq.'n') then
+        call auto_symmetry_offset(f,kdim,ndim,shift_for_boson)
+       else
+        call auto_symmetry_offset(f,ndim,kdim,shift_for_boson)
+       endif
+        call auto_symmetry_offset(g,mdim,ndim,shift_for_boson)
+
+      do krp = 1, nrep
+         mrp = multb(krp+shift,irrepa+nrep,2)  
+         nrp = multb(krp+shift,irrepb+nrep,2)  
+
+         m = mdim(mrp)
+         n = ndim(nrp)
+         k = kdim(krp)
+         if (transa.eq.'N'.or.transa.eq.'n') then
+            lda = m
+         else
+            lda = k
+         endif
+         if (transb.eq.'N'.or.transb.eq.'n') then
+            ldb = k
+         else
+            ldb = n
+         endif
+         ldc = m
+
+         if (transa.eq.'N'.or.transa.eq.'n') then
+          off1 = 1 + e%twononDirac(mrp,krp)*rcw
+         else 
+          off1 = 1 + e%twononDirac(krp,mrp)*rcw
+         endif
+
+         if (transb.eq.'N'.or.transb.eq.'n') then
+          off2 = 1 + f%twononDirac(krp,nrp)*rcw
+         else 
+          off2 = 1 + f%twononDirac(nrp,krp)*rcw
+         endif
+
+         off3 = 1 + g%twononDirac(mrp,nrp)*rcw
+
+         if (k.eq.0) then
+            call xscal (m*n,beta,c(off3),1)
+         else
+            call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
+         endif
+      enddo
+
+      end subroutine
+
 
   end module   

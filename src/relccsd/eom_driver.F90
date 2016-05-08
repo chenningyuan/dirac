@@ -63,7 +63,6 @@
  
     R1(1:ndimt1*rcw,1:nroot) = 0.0d0 
     R2(1:ndimt2*rcw,1:nroot) = 0.0d0 
- 
 
 ! 1> determine the minimum energy singly excited determinant.
 
@@ -94,8 +93,8 @@
          aoff = io(nrep+1) + iv(arep)
           do a = 1, nv(arep)
              aa = aoff + a
-             iaai = iovvo(iarep) + (jjvo(arep,irep)+((i-1)*nv(arep)+a)-1)*nov(iarep) + &
-       &    jjov(irep,arep) + (a-1)*no(irep) + i
+             iaai = (iovvo(iarep) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(iarep) + &
+       &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i 
              H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
              ai = ai + 1
           enddo
@@ -104,6 +103,7 @@
 
     do iroot = 1, nroot
      k = minloc(H_II) 
+     write(*,*)'roots',iroot,H_II(k(1)) 
      i = k(1)
      H_II(i) = 8000.0d0
      R1(k,iroot) = 1.0d0
@@ -129,14 +129,13 @@
 
    type(intermediates) :: B
    real*8, allocatable :: t1(:),t2(:) 
-   real*8, allocatable :: sigma1(:,:), sigma2(:,:) 
-   real*8, allocatable :: R1(:,:), R2(:,:) 
-   real*8, allocatable :: ev(:), evec(:,:) 
-   real*8, allocatable :: buf1(:),buf2(:),buf3(:) ! may be all of them are not necessary. 
-   real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
+   real*8, allocatable :: sigma1(:,:),sigma2(:,:) 
+   real*8, allocatable :: R1(:,:),R2(:,:) 
+   real*8, allocatable :: ev(:),evec(:,:) 
+   real*8, allocatable :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
+!   real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
+   real*8, allocatable:: sub_H(:,:)! sub_H(nroot,nroot)
    integer :: irp,iroot,jroot,i,j
-
-
 
 !memory allocation
 !------------------
@@ -154,7 +153,6 @@
 
 !     call alloc( buf1  , nbuf1*rcw             , id="buf1" )
 !     call alloc( buf2  , nbuf2*rcw             , id="buf2" )
-
 
     call allocator_get_words_inuse(start_mem_use)
     call legacy_lwork_get(work_memsize)
@@ -185,7 +183,7 @@
 
 
 !     For the moment I am using as much in-core memory as possible. However we
-!     may think of writing them in a file, replacing the integral ones.  
+!     may think of writing them in files, replacing the integral ones.  
 
 
       allocate (B%Fbar_mi(nfoo*rcw))  
@@ -203,18 +201,21 @@
        
 ! allocate the amplitudes
 
-
       call read_input()
 
+
+      allocate (sub_H(nroot,nroot))
 
       allocate (t1(ndimt1*rcw))
       allocate (t2(ndimt2*rcw))
 
-      allocate (r1(ndimt1*rcw,nr_roots(2)))
-      allocate (r2(ndimt2*rcw,nr_roots(2)))
+      allocate (r1(ndimt1*rcw,nroot))
+      allocate (r2(ndimt2*rcw,nroot))
 
-      allocate (sigma1(ndimt1*rcw,nr_roots(2)))
-      allocate (sigma2(ndimt2*rcw,nr_roots(2)))
+      allocate (sigma1(ndimt1*rcw,nroot))
+      allocate (sigma2(ndimt2*rcw,nroot))
+
+
 
 
       call allocator_get_words_inuse(current_mem_use)
@@ -236,7 +237,7 @@
     call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
 
 
-    do iroot = 1, nr_roots(2)
+    do iroot = 1, nroot
       sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
       sigma2(1:ndimt2*rcw,iroot:iroot) = 0.0d0 
 
@@ -244,21 +245,23 @@
      &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3,int(nbuf3,4))
     enddo
 
-    sub_H(1:nr_roots(2),1:nr_roots(2)) = 0.0d0
+    sub_H = 0.0d0
 
-    do jroot = 1, nr_roots(2)
-     do iroot = 1, nr_roots(2)
+    do jroot = 1, nroot
+     do iroot = 1, nroot
       sub_H(iroot,jroot) = dot_product(r1(:,iroot),sigma1(:,jroot)) + dot_product(r2(:,iroot),sigma2(:,jroot)) 
-      enddo
      enddo
+    enddo
 
-     allocate (ev(nr_roots(2)))
-     allocate (evec(nr_roots(2),nr_roots(2)))
+     write(*,*)'eigenvalues', (sub_H(i,i),i=1,nroot)
+
+     allocate (ev(nroot))
+     allocate (evec(nroot,nroot))
 
     call solve_cg(nr_roots(2),sub_H,evec,ev)
 
-     write(*,*)'eigenvalues', (ev(i),i=1,nr_roots(2))
-     write(*,*)'eigenvectors', ((evec(i,j),i=1,nr_roots(2)),j=1,nr_roots(2))
+     write(*,*)'eigenvalues', (ev(i),i=1,nroot)
+     write(*,*)'eigenvectors', ((evec(i,j),i=1,nroot),j=1,nroot)
 
      deallocate(ev)
      deallocate(evec)
@@ -267,16 +270,14 @@
 
  451  continue
 
-
 !    call dealloc(buf1)  
 !    call dealloc(buf2)  
- !    call dealloc(buf3)  
+!    call dealloc(buf3)  
      deallocate(buf3)
      deallocate(buf1)
      deallocate(buf2)
 
-
-     deallocate(t1,t2,sigma1,sigma2,r1,r2)
+     deallocate (t1,t2,sigma1,sigma2,r1,r2)
      deallocate (B%Fbar_mi)  
      deallocate (B%Fbar_me)  
      deallocate (B%Fbar_ae)  
@@ -288,6 +289,7 @@
      deallocate (B%W_efam)
      deallocate (B%W_amef)
      deallocate (B%W_mnie)
+     deallocate (sub_H)
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 

@@ -19,8 +19,8 @@ C---------------Calling variables--------------------------------------
 C
 C     Intermediaries etc.
 
-      REAL*8 EPS(*),FOO(:),FVO(*),FVV(*),L1(*),S1(*),L2(*),S2(*)
-      REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(:),HV(*),
+      REAL*8 EPS(*),FOO(*),FVO(*),FVV(*),L1(*),S1(*),L2(*),S2(*)
+      REAL*8 W_OOOO(*),W_VOOV(*),W_OVVO(*),W_OVOO(*),HO(*),HV(*),
      & HOV(*),BUF1(*),BUF2(*),BUF3(*)
       REAL*8 CZ(*) ! is only allocated for Lambda equations
       INTEGER NBUF2,NBUF3 
@@ -97,15 +97,28 @@ C     Initialize the work arrays to zero.
 
 !        write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
 
-!!         call w_ejmb(S1,S2,w_voov)
+!!       call w_ejmb(S1,S2,w_voov)
 
          call wbar_mbej(S2,w_ovvo)
 
+         write(*,*)'dot product wbar_mbej', 
+     &  dot_product(w_ovvo(1:iovvo(nrep+1)),w_ovvo(1:iovvo(nrep+1)))
+
+
          call w_mbej(s1,s2,w_voov)
+
+
+         write(*,*)'dot product w_mbej', 
+     &  dot_product(w_voov(1:iovvo(nrep+1)),w_ovvo(1:iovvo(nrep+1)))
+
 
 !       write(*,*)'starting w_iemn intermediate'
 
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
+
+
+         write(*,*)'dot product w_iemn', 
+     &  dot_product(w_ovoo(1:iovoot(nrep+1)),w_ovoo(1:iovoot(nrep+1)))
 
 
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
