@@ -11,9 +11,11 @@ the lines below should only be changed on the release branch.)
 -------------------------------------------------------------------------------------------------------
 
 
-15.1 (2016-05-02)
+15.1 (2016-05-10)
 -----------------
 
+- Change any tab character in coordinate specifications in .mol file to a blank
+  (tab characters have been reported to cause errors in reading coordinates).
 - Bugfix: KRMSCF was not converging is some cases (problem reported by Miro Ilias for Os atom).
 - Bugfix: "all" keyword for ".GAS SHELLS" was not recognized (problem reported by Miro Ilias).
 - Bugfix for numerical gradient when automatic symmetry detection: do no move or rotate molecule
