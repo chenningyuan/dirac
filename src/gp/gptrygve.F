@@ -19,6 +19,12 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+C
+C FILE    : gptrygve.F
+C
+C General Purpose utility routines (originally) introduced in Dalton by Trygve Helgaker
+C or one of his students
+C
 ! Dirac uses INT_STAR8 and Dalton used VAR_INT64;
 ! If one set then set the other:
 #ifdef INT_STAR8
@@ -44,6 +50,7 @@ C
       WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
       WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
+      CALL FLSHFO(LUPRI)
       RETURN
       END
       SUBROUTINE HEADER2(HEAD,IN,unitn)
@@ -67,13 +74,10 @@ C  /* Deck timer */
 #include "priunit.h"
       CHARACTER TEXT*(*), OUT_TEXT*50
 C
-      IF (TEXT(1:6) .EQ. 'START ') THEN
+      IF (TEXT(1:5) .EQ. 'START') THEN
          CALL GETTIM(TIMSTR,DUMMY)
       ELSE
          CALL GETTIM(TIMEND,DUMMY)
-#if defined (SYS_T3D)
-         TIMEND = TIMEND + 1.0D0
-#endif
          TIME   = TIMEND - TIMSTR
          TIMSTR = TIMEND
          IF (TIME .GT. 0.1D0) THEN
@@ -355,7 +359,7 @@ C   Open files for direct access through WRITDX and READDX routines.
 C   The ....DX routines enables direct access, even when the number
 C   of elements per record (the logical record length) is greater
 C   than the maximum physical record length.
-C   >>> THIS IS MACHINE DEPENDENT <<<
+C   THIS IS MACHINE DEPENDENT 
 C
 C Input:
 C  LUDX     file unit number
@@ -420,7 +424,7 @@ C
       CALL QTRACE(LUPRI)
       CALL QUIT('ERROR (OPENDX) FILE NOT FOUND')
 C
-      RETURN
+C end of OPENDX
 C
       END
 C  /* Deck finddx */
@@ -1216,6 +1220,7 @@ C
       DO I = 1, LEN_WORD
          K = INDEX(LOWER,WORD(I:I))
          IF (K .NE. 0) WORD(I:I) = UPPER(K:K)
+         IF (ICHAR(WORD(I:I)) .EQ. 9) WORD(I:I) = ' ' ! change tab to blank
       END DO
 C
       RETURN
