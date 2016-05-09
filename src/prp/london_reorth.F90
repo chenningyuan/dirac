@@ -300,7 +300,6 @@ contains
                 fmo,             &
                 buf,             &
                 .true.,          &
-                epreorth,        &
                 .false.,         &
                 iprprp)
 

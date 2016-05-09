@@ -785,12 +785,12 @@ CTROND
 #ifdef MOD_LAO_REARRANGED
              if (shielding_rearrange.or.lao_lr_rearrange) then
              CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &              CONMAT,WORK(KTHMAT),.true.,epreorth,.true.,IPRINT)
+     &              CONMAT,WORK(KTHMAT),.true.,.true.,IPRINT)
              else
 #endif
 C ... do the reorthonormalization ...
              CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
-     &          CONMAT,WORK(KTHMAT),.true.,epreorth,.false.,IPRINT)
+     &          CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
 #ifdef MOD_LAO_REARRANGED
              end if !if (shielding_rearrange .or. lao_lr_rearrange) then
 #endif
@@ -844,7 +844,7 @@ C ... release the memmory...
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck TTRA */
       SUBROUTINE TTRA(ISYMT,ISYMH,TMAT,HMAT,THMAT,
-     &                AH,ep_transform,half,IPRINT)
+     &                AH,half,IPRINT)
 C*****************************************************************************
 C
 C   PURPOSE:
@@ -897,7 +897,7 @@ C
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
      &           HMAT(NORBT,NORBT,NZ),
      &          THMAT(NORBT,NORBT,NZ)
-      logical :: AH, ep_transform, half
+      logical :: AH, half
 C
 #include "ibtfun.h"
       CALL QENTER('TTRA')
@@ -934,7 +934,7 @@ C ... do matrix multiplications - run over fermion irreps
 C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
 
       DO I1 = 1, NFSYM
-        IF (ep_transform) THEN ! Matrix multiplication in full e+p MO space
+        IF (epreorth) THEN ! Matrix multiplication in full e+p MO space
 #ifdef MOD_LAO_REARRANGED
           if (lao_lr_rearrange) then
 !         called only from get_ftb
@@ -1264,6 +1264,7 @@ C
         CALL PRQMAT(CMO,NTBAS(0),NORBT,NTBAS(0),NORBT,NZ,
      &               IPQTOQ(1,0),LUPRI)
       ENDIF
+      write(*, *) 'epreorth in getmdm =', epreorth
 C
 C     Generate MDM = modified density matrix of f.symm I1,I2
 C   ===========================================================
@@ -2380,7 +2381,7 @@ C ... Call TTRA
         ISYMT = ISYM
         ISYMH = 1 ! It's the H(0) term
         CALL TTRA(ISYMT,ISYMH,WORK(KT2MAT),
-     &    WORK(KFMAT),WORK(KTFMAT),.false.,epreorth,.false.,IPRINT)
+     &    WORK(KFMAT),WORK(KTFMAT),.false.,.false.,IPRINT)
 
         IF (IPRINT.GE.5) THEN
          CALL HEADER(
@@ -2616,7 +2617,7 @@ C ... call TTRA for {S(1)S(1), H(0)} = {S(1)S(1), F(0)}
         ISYM12 = IREP12 + 1 ! Total symmetry of S(1)*W(1)/S(1) operators
         ISYMF=1 ! F(0) is fully symmetric
         CALL TTRA(ISYM12,ISYMF,WORK(KSWMAT),
-     &        WORK(KFMAT),WORK(KXMAT),.false.,epreorth,.false.,IPRINT)
+     &        WORK(KFMAT),WORK(KXMAT),.false.,.false.,IPRINT)
 
         IF (IPRINT.GE.5) THEN
          IF (.NOT.SYMCON) THEN 
@@ -2716,7 +2717,7 @@ C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
 C ... call TTRA for {W(1)/S(1),F(1)} .. get all into KSWMAT
           AH  = .TRUE. ! T=W =>evidently antisymm...
           CALL TTRA(ISYM2,ISYM1,WORK(KWMAT),
-     &      WORK(KSMAT),WORK(KSWMAT),.true.,epreorth,.false.,IPRINT)
+     &      WORK(KSMAT),WORK(KSWMAT),.true.,.false.,IPRINT)
 
           IF (IPRINT.GE.5) THEN
            IF (.NOT.SYMCON) THEN
@@ -2826,7 +2827,7 @@ C ...  Do transform  F''={W(1)/S(1)_ic1,F'_ic2} into WORK(KSWMAT)
          AH  = .TRUE. ! T=W=>evidently antiherm...
          CALL DZERO(WORK(KSWMAT),N2ORBXQ)
          CALL TTRA(ISYM1,ISYM2,WORK(KSMAT),
-     &    WORK(KWMAT),WORK(KSWMAT),.true.,epreorth,.false.,IPRINT)
+     &    WORK(KWMAT),WORK(KSWMAT),.true.,.false.,IPRINT)
 
          IF (IPRINT.GE.5) THEN
           IF (.NOT.SYMCON) THEN
