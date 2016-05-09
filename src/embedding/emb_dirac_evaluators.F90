@@ -441,6 +441,7 @@ module fde_evaluators_dirac
 
          do icomp = 1, ncomp
             allocate(buffer(ndim,ndim))
+!           columns correspond only to rho_0 (no spin density, no gradients)
             icol = fde_pertden_ncol - 48 + icomp
             call get_electronic_mep(np,                &
                                     buffer,            &
@@ -452,12 +453,11 @@ module fde_evaluators_dirac
                                     .true.,            &
                                     .false.)
 
-               do i = 1, ndim
-                  do j = 1, i
+               do j = 1, ndim
+                  do i = 1, j
 !                       fmat ^B is antisymmetric
-                        average = 0.5d0*(buffer(i,j) - buffer(j,i))
-                        buffer(i,j) = average
-                        buffer(j,i) =-average
+                        buffer(i,j) = buffer(i,j) - buffer(j,i)
+                        buffer(j,i) =-buffer(i,j)
                   end do
                end do
 
