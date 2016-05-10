@@ -2198,6 +2198,8 @@ contains
 !         embker-dependent term, only when SDFT contributions
           if (do_london_susc2el_der2) then
             n_bb = 0.0d0
+            n_bb_total = 0.0d0
+            n_bb_active = 0.0d0
             t = derv_total(1, d0200000) - derv_active(1, d0200000)
             if (use_gga) then
               call gga_london_sus2el_der2(derv_total(1, d0200000),   &
