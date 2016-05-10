@@ -5,6 +5,7 @@ Keyword reference
 
 * :doc:`**DIRAC <dirac>` --- Job specification
    - :doc:`*OPTIMIZE <optimize>` --- Geometry optimization directives
+   - :doc:`*PARALLEL <parallel>` --- Parallelization directives
 
 * :doc:`**GENERAL <general>` --- General input
 
