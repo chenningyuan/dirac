@@ -75,8 +75,7 @@ contains
     read(file_unit) nr_xyz_comp
     read(file_unit) which_icomp
     read(file_unit) D_con_mo%irep
-!gosia: comment out dummy to go with old TBMO
-!    read(file_unit) dummy
+    read(file_unit) sum_ep_rn
     read(file_unit) D_con_mo%elms
 
     if (nr_xyz_comp > 1) then

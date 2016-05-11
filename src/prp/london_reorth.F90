@@ -260,8 +260,8 @@ contains
       write(tbmo_unit) icomp
 ! *) irep of T^B_icomp:
       write(tbmo_unit) (isym(icomp) - 1)
-! *) time-reversal symmetry:
-!      write(tbmo_unit) 
+! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr.h), we need it for visualization
+      write(tbmo_unit) epreorth 
 ! *) T^B_icomp matrix in MO basis:
       write(tbmo_unit) tb
 
