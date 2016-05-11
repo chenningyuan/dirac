@@ -39,6 +39,7 @@ the lines below should only be changed on the release branch.)
       Po isotope 1: nuclear moment added: 0.000 -> 0.688
 - Restored "make install" target.
 - Cache compiler flags.
+- Test reladc_fano does not report failure if Stieltjes is deactivated.
 
 
 15.0 (2015-12-16)
