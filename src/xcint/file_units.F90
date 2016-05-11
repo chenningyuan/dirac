@@ -31,7 +31,6 @@ module file_units
    logical                , public :: pertden_reorth_lao_par_file_open   = .false.
 
 !  nr of columns for exported density
-   integer                , public :: pertden_nr_components   = 0
    integer                , public :: pertden_nr_columns      = 52
    character(*),parameter , public :: pertden_file_format     = '(52d20.12)'
 

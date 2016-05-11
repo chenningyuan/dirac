@@ -610,7 +610,6 @@ contains
 #endif
 
       if (london_direct_export .or. london_reorth_export) then
-         call london_export_initialize(london_direct_export, london_reorth_export)
          call london_export_open_files(london_direct_export, london_reorth_export)
       end if
 
@@ -2054,75 +2053,17 @@ contains
 
    end subroutine
 
-
-   subroutine london_export_initialize(lao_direct, lao_reorth)
-      logical, intent(in) :: lao_direct, lao_reorth
-
-!     pertden files always have the same number of columns (52)
-!     the order of columns is:
-!     1  2  3  4  |     5-7      |         8-16           |       17-25           |       26-52
-!     rx ry rz w  | n_b(B=x,y,z) | gn_b(r=x,y,z; B=x,y,z) | s_b(s=x,y,z; B=x,y,z) | gs_b(r=x,y,z; s=x,y,z; B=x,y,z)
-
-      if (xc_mpi_is_master()) then 
-         if (lao_direct.and..not.dft_cfg_no_sdft) then
-            if (use_gga) then 
-               pertden_nr_components = 36
-            else
-               pertden_nr_components = 9
-            end if
-         end if
-         
-         if (lao_reorth) then
-            if (.not. dft_cfg_no_sdft) then
-!              sdft
-               if (use_gga) then
-                  pertden_nr_components = 48
-               else
-                  pertden_nr_components = 12
-               end if
-            else
-!              nosdft
-               if (use_gga) then
-                  pertden_nr_components = 12
-               else
-                  pertden_nr_components = 3
-               end if
-            end if
-         end if
-      end if
-
-#ifdef VAR_MPI
-      if (parallel_xc) then
-         call xc_mpi_bcast(pertden_nr_components)
-         call xc_mpi_bcast(pertden_nr_columns)
-         !call xc_mpi_bcast(pertden_file_format)
-
-!        also bcast file-related info
-!         if (lao_direct) then
-!            !call xc_mpi_bcast(pertden_direct_lao_par_file_name)
-!            call xc_mpi_bcast(pertden_direct_lao_par_file_unit)
-!            call xc_mpi_bcast(pertden_direct_lao_par_file_exists)
-!            call xc_mpi_bcast(pertden_direct_lao_par_file_open)
-!         end if
-!         if (lao_reorth) then
-!            !call xc_mpi_bcast(pertden_reorth_lao_par_file_name)
-!            call xc_mpi_bcast(pertden_reorth_lao_par_file_unit)
-!            call xc_mpi_bcast(pertden_reorth_lao_par_file_exists)
-!            call xc_mpi_bcast(pertden_reorth_lao_par_file_open)
-!         end if
-
-      end if
-#endif
-
-   end subroutine
-
-
    subroutine london_export_open_files(lao_direct, lao_reorth)
       logical, intent(in) :: lao_direct, lao_reorth
       integer :: numproc, myproc
       integer :: file_name_length, file_unit
       character :: file_name*18, file_name_full*24
       logical :: file_exists
+!     pertden files always have the same number of columns (52)
+!     the order of columns is:
+!     1  2  3  4  |     5-7      |         8-16           |       17-25           |       26-52
+!     rx ry rz w  | n_b(B=x,y,z) | gn_b(r=x,y,z; B=x,y,z) | s_b(s=x,y,z; B=x,y,z) | gs_b(r=x,y,z; s=x,y,z; B=x,y,z)
+
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -2135,8 +2076,6 @@ contains
             file_name = pertden_reorth_lao_par_file_name !"pertden_reorth_lao"
             file_unit = pertden_reorth_lao_par_file_unit
          end if
-         !call xc_mpi_bcast(file_name)
-         call xc_mpi_bcast(file_unit)
 
 !        get the number of all proc involved (including master)
          numproc = xc_mpi_get_nr_proc()
@@ -2156,7 +2095,11 @@ contains
          else
             call quit("error in london_export_open_files parallel run")
          endif
+
+!        bcast whatever will be needed:
+         call xc_mpi_bcast(pertden_nr_columns)
          call xc_mpi_bcast(file_name_length)
+         call xc_mpi_bcast(file_name_full)
 
       else
 !        if serial run, then write directly to the *FINAL file
@@ -2197,7 +2140,6 @@ contains
               status = 'new',        &
               form   = 'formatted',  &
               access = 'sequential')
-         rewind(file_unit)
 
 #ifdef VAR_MPI
          if (parallel_xc) then
@@ -2298,73 +2240,70 @@ contains
                if (lao_reorth) pertden_reorth_lao_file_open = file_is_open
 
             end if
-          
-            do i = 0, numproc - 1
-               if (i .lt. 10) then
-                  write (file_name_full,'(a18,a1,i1)') file_name_par,'.',i
-                  file_name_length=20
-               else if (i .lt. 100) then
-                  write (file_name_full,'(a18,a1,i2)') file_name_par,'.',i
-                  file_name_length=21
-               else if (i .lt. 1000) then
-                  write (file_name_full,'(a18,a1,i3)') file_name_par,'.',i
-                  file_name_length=22
-               else
-                  call quit("error in london.*collect parallel run")
-               endif
-          
-               inquire(file=file_name_full(1:file_name_length), exist=file_exists)
-               if (file_exists) then
-
-                  if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
-                  if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
-
-                  if (.not.file_is_open) then
-
-                     open(file_unit_par,  &
-                          file = file_name_full(1:file_name_length), &
-                          status = 'old',        &
-                          form   = 'formatted',  &
-                          access = 'sequential')
-
-                     file_is_open = .true.
-                     if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
-                     if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
-
-                  end if
-
-                  rewind(file_unit_par)
-
-                  call london_export_copy_data_from_files(file_unit_par,  &
-                                                          file_unit_final)
-                  
-                  if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
-                  if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
-
-                  if (file_is_open) then
-                     close(file_unit_par, status='delete')
-                     file_is_open = .false.
-                     if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
-                     if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
-                  end if
-               end if
-          
-            end do ! do i = 0, numproc - 1
-
-            !test grid points - leave it for debugging
-            !call compare_files(file_unit_final)
-           
-           
-            if (pertden_direct_lao_file_open) then
-               close(file_unit_final, status = 'keep')
-               pertden_direct_lao_file_open = .false.
-            end if
-            if (pertden_reorth_lao_file_open) then
-               close(file_unit_final, status = 'keep')
-               pertden_reorth_lao_file_open = .false.
-            end if
-
          end if
+      end if
+          
+      do i = 0, numproc - 1
+         if (i .lt. 10) then
+            write (file_name_full,'(a18,a1,i1)') file_name_par,'.',i
+            file_name_length=20
+         else if (i .lt. 100) then
+            write (file_name_full,'(a18,a1,i2)') file_name_par,'.',i
+            file_name_length=21
+         else if (i .lt. 1000) then
+            write (file_name_full,'(a18,a1,i3)') file_name_par,'.',i
+            file_name_length=22
+         else
+            call quit("error in london.*collect parallel run")
+         endif
+      
+         if (myproc == i) then
+            inquire(file=file_name_full(1:file_name_length), exist=file_exists)
+            if (file_exists) then
+            
+               if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
+               if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
+            
+               if (.not.file_is_open) then
+            
+                  open(file_unit_par,  &
+                       file = file_name_full(1:file_name_length), &
+                       status = 'old',        &
+                       form   = 'formatted',  &
+                       access = 'sequential')
+            
+                  file_is_open = .true.
+                  if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
+                  if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
+            
+               end if
+            
+               rewind(file_unit_par)
+            
+               call london_export_copy_data_from_files(file_unit_par,  &
+                                                       file_unit_final)
+               
+               if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
+               if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
+            
+               if (file_is_open) then
+                  close(file_unit_par, status='delete')
+                  file_is_open = .false.
+                  if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
+                  if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
+               end if
+            end if
+         end if
+      
+      end do ! do i = 0, numproc - 1
+
+      if (pertden_direct_lao_file_open) then
+         close(file_unit_final, status = 'keep')
+         pertden_direct_lao_file_open = .false.
+      end if
+      if (pertden_reorth_lao_file_open) then
+         close(file_unit_final, status = 'keep')
+         pertden_reorth_lao_file_open = .false.
       end if
 
    end subroutine

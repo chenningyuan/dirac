@@ -66,6 +66,8 @@ module xc_mpi
       module procedure xc_mpi_bcast_r4
       module procedure xc_mpi_bcast_l0
       module procedure xc_mpi_bcast_l1
+      module procedure xc_mpi_bcast_cx
+      module procedure xc_mpi_bcast_c1
    end interface
 
    interface xc_mpi_reduce
@@ -179,6 +181,16 @@ contains
    subroutine xc_mpi_bcast_l1(x)
       logical :: x(:)
       call interface_mpi_bcast_l1(x, size(x),  irank_master, global_communicator)
+   end subroutine
+
+   subroutine xc_mpi_bcast_cx(x)
+      character*(*) :: x
+      call interface_mpi_bcast(x, 1,  irank_master, global_communicator)
+   end subroutine
+
+   subroutine xc_mpi_bcast_c1(x)
+      character*(*) :: x(:)
+      call interface_mpi_bcast(x, size(x),  irank_master, global_communicator)
    end subroutine
 
    subroutine xc_mpi_reduce_i0(x)
