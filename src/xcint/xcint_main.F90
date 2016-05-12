@@ -1984,12 +1984,10 @@ contains
                         d(1:pertden_nr_columns)
          i = i+1
          if (ierr .ne. 0) then
-            !write(*, *) 'buba i, ierr = ', i, ierr
             exit
          end if
          write(hfile_out, pertden_file_format) &
                         d(1:pertden_nr_columns)
-
       end do
 
    end subroutine
@@ -2243,6 +2241,8 @@ contains
          end if
       end if
           
+!gosia fixme: this does not work
+!possibly to do: add xc_mpi routines to send node files to master; then copy to common file
       do i = 0, numproc - 1
          if (i .lt. 10) then
             write (file_name_full,'(a18,a1,i1)') file_name_par,'.',i
@@ -2292,6 +2292,7 @@ contains
                   if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
                   if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
                end if
+
             end if
          end if
       
