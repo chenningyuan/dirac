@@ -94,6 +94,11 @@ foreach(
             # miro: GNU+MKL/OPENBLAS-static needs extra lib !
             target_link_libraries(${_executable} -ldl)
         endif()
+        if ( BLAS_TYPE MATCHES OPENBLAS )
+            # miro: OPENBLAS-static needs extra lib !
+            target_link_libraries(${_executable} -lgfortran)
+        endif()
+      
     endif()
 
     if(CMAKE_CXX_COMPILER_ID MATCHES PGI)
