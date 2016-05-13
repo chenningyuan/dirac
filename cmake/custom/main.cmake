@@ -150,4 +150,6 @@ foreach(
 
 endforeach()
 
-unset(_list_of_executables)
+# radovan: no! we cannot unset
+#          these are used in the make install target
+# unset(_list_of_executables)

@@ -4,7 +4,7 @@ file(COPY ${PROJECT_SOURCE_DIR}/basis_ecp    DESTINATION ${PROJECT_BINARY_DIR})
 
 foreach(
     EXECUTABLE
-    ${LIST_OF_EXECUTABLES}
+    ${_list_of_executables}
     )
     install(
         TARGETS ${EXECUTABLE}

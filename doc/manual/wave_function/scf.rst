@@ -147,11 +147,14 @@ iteration.
 
 keyword(ATOMST)
 
-Start first SCF iteration with a molecular density matrix constructed from atomic densities. 
-The keyword ``ATOMST`` is followed by input for each atomic type. The details, orbital strings (see
-:ref:`orbital_strings` for the syntax) and occupation, usually correspond to those of the atomic runs, 
-but the user may modify this at will. 
-The syntax is explained in the parenthesis "" for each atomic type but we highly recommend to carefully check the tutorial example :ref:`atomic_start_guess`.
+Start first SCF iteration with a molecular density matrix constructed from
+atomic densities.  The keyword ``ATOMST`` is followed by input for each atomic
+type. The details, orbital strings (see :ref:`orbital_strings` for the syntax)
+and occupation, usually correspond to those of the atomic runs, but the user
+may modify this at will.  The syntax is explained in the parenthesis "" for
+each atomic type but we highly recommend to carefully check the tutorial
+example :ref:`atomic_start_guess`. Please note that the order of atoms
+corresponds to the order they appear in the molecule file.
 
 ::
 

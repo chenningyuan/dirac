@@ -321,8 +321,10 @@ The input file ``atomstart.inp`` reads ::
   .MULPOP
   *END OF
 
-The keyword ``ATOMST`` is followed by input for each atomic type. The occupations chosen corresponds to those of the atomic runs, 
-but the user may modify this at will. 
+The keyword ``ATOMST`` is followed by input for each atomic type. The
+occupations chosen corresponds to those of the atomic runs, but the user may
+modify this at will.  Please note that the order of atoms corresponds to the
+order they appear in the molecule file.
 
 Before running the calculation the user must make provide links to the atomic coefficient files ::
 
