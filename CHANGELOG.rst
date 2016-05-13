@@ -11,9 +11,11 @@ the lines below should only be changed on the release branch.)
 -------------------------------------------------------------------------------------------------------
 
 
-15.1 (2016-05-02)
+15.1 (2016-05-10)
 -----------------
 
+- Change any tab character in coordinate specifications in .mol file to a blank
+  (tab characters have been reported to cause errors in reading coordinates).
 - Bugfix: KRMSCF was not converging is some cases (problem reported by Miro Ilias for Os atom).
 - Bugfix: "all" keyword for ".GAS SHELLS" was not recognized (problem reported by Miro Ilias).
 - Bugfix for numerical gradient when automatic symmetry detection: do no move or rotate molecule
@@ -37,6 +39,7 @@ the lines below should only be changed on the release branch.)
       Po isotope 1: nuclear moment added: 0.000 -> 0.688
 - Restored "make install" target.
 - Cache compiler flags.
+- Test reladc_fano does not report failure if Stieltjes is deactivated.
 
 
 15.0 (2015-12-16)
