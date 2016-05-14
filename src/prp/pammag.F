@@ -2058,6 +2058,16 @@ C
 #endif
          ENDIF
       END DO
+
+      if (iprprp .ge. 1) then
+!       sus2el before adding dft contributions:
+        CALL HEADER('Two-electron expectation values, ' //
+     &              'before adding XC terms',-1)
+        CALL POLPRI(SUS2EL,'   ',-2)
+        AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/3.0d0
+        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+      end if
+
 !     gosia: add xc contributions:
 !     ============================
 !     here inside integrate_xc we calculate each component of sus2el_xc(i, j)
@@ -2073,41 +2083,60 @@ C
         if (parcal) call dirac_parctl(4)
 #endif
 
-! gosia: differentiation between sdft and no_sdft moved inside integrate_xc
+!       charge density contribution dependent on XC potential
+        sus2el_xc = 0.0d0
         call integrate_xc(xc_mat_dim   = ntbas(0),
      &                    xc_nz        = nz,
      &                    xc_dmat_0    = dmat_0,
      &                    xc_nr_dmat   = 0,
      &                    xc_nr_fmat   = 0,
-     &                    xc_do_london_susc2el = .true.)
+     &                    xc_do_london_susc2el_der1 = .true.)
         sus2el_xc = get_susc2el_integrated()
 
-        call dealloc(dmat_0)
-
         if (iprprp .ge. 1) then
-!         sus2el before adding dft contributions:
-          CALL HEADER('Two-electron expectation values, ' //
-     &                'before adding XC terms',-1)
-          CALL POLPRI(SUS2EL,'   ',-2)
-          AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/3.0d0
-          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
-
-!         sus2el - dft contributions only:
-          CALL HEADER('XC contribs to two-electron '//
-     &                ' expectation values',-1)
+          CALL HEADER('XC potential contribs to two-electron '//
+     &               ' expectation values (charge density)',-1)
           CALL POLPRI(sus2el_xc,'   ',-2)
           AVERAG = (sus2el_xc(1,1) + sus2el_xc(2,2)
      &            + sus2el_xc(3,3))/3.0d0
           WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
-
         end if
-
-!       Calculate total value of sus2el:
         do i = 1, 3
            do j = 1, 3
               sus2el(j, i) = sus2el(j, i) + sus2el_xc(j, i)
            end do
         end do
+
+        if (.not. dft_cfg_no_sdft) then
+!         spin density contribution dependent on XC kernel
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl(4)
+#endif
+          sus2el_xc = 0.0d0
+          call integrate_xc(xc_mat_dim   = ntbas(0),
+     &                      xc_nz        = nz,
+     &                      xc_dmat_0    = dmat_0,
+     &                      xc_nr_dmat   = 0,
+     &                      xc_nr_fmat   = 0,
+     &                      xc_do_london_susc2el_der2 = .true.)
+          sus2el_xc = get_susc2el_integrated()
+
+          if (iprprp .ge. 1) then
+            CALL HEADER('XC kernel contribs to two-electron '//
+     &                  ' expectation values (spin density)',-1)
+            CALL POLPRI(sus2el_xc,'   ',-2)
+            AVERAG = (sus2el_xc(1,1) + sus2el_xc(2,2)
+     &              + sus2el_xc(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+          end if
+          do i = 1, 3
+             do j = 1, 3
+                sus2el(j, i) = sus2el(j, i) + sus2el_xc(j, i)
+             end do
+          end do
+        end if
+
+        call dealloc(dmat_0)
 
       end if
 
@@ -2226,7 +2255,7 @@ C
             end if
 
           else ! not fde_rsp_mag_lao_import
-!           put this quit before, now it is already after costly response equations
+!gosia todo:  put this quit before, now it is already after costly response equations
             call quit('You asked for coupling kernel term without '//
      &                'importing perturbed density') 
           end if

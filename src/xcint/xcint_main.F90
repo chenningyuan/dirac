@@ -135,7 +135,8 @@ module xcint_main
    logical :: do_london_rhs_direct_der1
    logical :: do_london_rhs_direct_der2
    logical :: do_london_rhs_ro
-   logical :: do_london_susc2el
+   logical :: do_london_susc2el_der1
+   logical :: do_london_susc2el_der2
    logical :: london_direct_export
    logical :: london_reorth_export
    logical :: do_geo
@@ -170,7 +171,8 @@ contains
                             xc_london_direct_export,       &
                             xc_london_reorth_export,       &
                             xc_do_london_rhs_ro,      &
-                            xc_do_london_susc2el,     &
+                            xc_do_london_susc2el_der1,&
+                            xc_do_london_susc2el_der2,&
                             xc_do_geo_0,              &
                             xc_do_geo_1,              &
                             xc_do_geo_2,              &
@@ -213,7 +215,8 @@ contains
       logical, optional,         intent(in)    :: xc_london_direct_export
       logical, optional,         intent(in)    :: xc_london_reorth_export
       logical, optional,         intent(in)    :: xc_do_london_rhs_ro
-      logical, optional,         intent(in)    :: xc_do_london_susc2el
+      logical, optional,         intent(in)    :: xc_do_london_susc2el_der1
+      logical, optional,         intent(in)    :: xc_do_london_susc2el_der2
       logical, optional,         intent(in)    :: xc_do_geo_0
       logical, optional,         intent(in)    :: xc_do_geo_1
       logical, optional,         intent(in)    :: xc_do_geo_2
@@ -286,7 +289,8 @@ contains
       london_direct_export  = .false.
       london_reorth_export  = .false.
       do_london_rhs_ro      = .false.
-      do_london_susc2el     = .false.
+      do_london_susc2el_der1= .false.
+      do_london_susc2el_der2= .false.
       do_geo_0              = .false.
       do_geo_1              = .false.
       do_geo_2              = .false.
@@ -305,7 +309,8 @@ contains
          if (present(xc_london_direct_export))  london_direct_export  = xc_london_direct_export
          if (present(xc_london_reorth_export))  london_reorth_export  = xc_london_reorth_export
          if (present(xc_do_london_rhs_ro))      do_london_rhs_ro      = xc_do_london_rhs_ro
-         if (present(xc_do_london_susc2el))     do_london_susc2el     = xc_do_london_susc2el
+         if (present(xc_do_london_susc2el_der1))  do_london_susc2el_der1  = xc_do_london_susc2el_der1
+         if (present(xc_do_london_susc2el_der2))  do_london_susc2el_der2  = xc_do_london_susc2el_der2
          if (present(xc_do_geo_0))              do_geo_0              = xc_do_geo_0
          if (present(xc_do_geo_1))              do_geo_1              = xc_do_geo_1
          if (present(xc_do_geo_2))              do_geo_2              = xc_do_geo_2
@@ -329,7 +334,8 @@ contains
          call xc_mpi_bcast(london_direct_export)
          call xc_mpi_bcast(london_reorth_export)
          call xc_mpi_bcast(do_london_rhs_ro)
-         call xc_mpi_bcast(do_london_susc2el)
+         call xc_mpi_bcast(do_london_susc2el_der1)
+         call xc_mpi_bcast(do_london_susc2el_der2)
          call xc_mpi_bcast(response_order_mo)
          call xc_mpi_bcast(response_order_ao)
          call xc_mpi_bcast(do_geo_0)
@@ -510,7 +516,7 @@ contains
       if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2) then
         max_ao_m_order = 1
       end if
-      if (do_london_susc2el) then
+      if (do_london_susc2el_der1 .or. do_london_susc2el_der2) then
         max_ao_m_order = 2
       end if
      
@@ -651,11 +657,11 @@ contains
          if (do_geo) then
             call xc_mpi_reduce(property_gradient)
          end if
-         if (do_london_susc2el) then
+         if (do_london_susc2el_der1) then
             call xc_mpi_reduce(susc2el_xc_integrated)
-            if (.not. dft_cfg_no_sdft) then
-               call xc_mpi_reduce(susc2el_xc_integrated_sdft)
-            end if
+         end if
+         if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
+            call xc_mpi_reduce(susc2el_xc_integrated_sdft)
          end if
       end if
 #endif
@@ -677,7 +683,8 @@ contains
                                    .and. .not. do_london_rhs_direct_der1 &
                                    .and. .not. do_london_rhs_direct_der2 &
                                    .and. .not. do_london_rhs_ro          &
-                                   .and. .not. do_london_susc2el    &
+                                   .and. .not. do_london_susc2el_der1    &
+                                   .and. .not. do_london_susc2el_der2    &
                                    .and. .not. do_london_ks         &
                                    .and. .not. do_geo)) then
             if (nr_dmat > 0) then
@@ -942,7 +949,10 @@ contains
     if (do_london_rhs_direct_der2 .and. .not. dft_cfg_no_sdft) then
        max_fun_derv = 2
     end if
-    if (do_london_susc2el) then
+    if (do_london_susc2el_der1) then
+       max_fun_derv = 1
+    end if
+    if (do_london_susc2el_der2) then
        max_fun_derv = 2
     end if
     if (do_geo_0) then
@@ -1716,8 +1726,7 @@ contains
 !         these are 'pure-direct' terms
 !         now works only in C1 symmetry, because isymop in pammag is hardcoded to 1
 
-          if (do_london_susc2el) then
-            !write(*, *) 'do_london_susc2el ', xc_mpi_get_rank() 
+          if (do_london_susc2el_der1) then
             n_bb = 0.0d0
 !           here no SDFT contributions (first-order functional derivatives)
             if (use_gga) then
@@ -1768,49 +1777,49 @@ contains
                                                   + n_bb(jxyz, ixyz)
               end do
             end do
+          end if  ! if (do_london_susc2el_der1) then
 
+          if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
 !           here only sdft contributions (second-order functional derivatives)
-            if (.not. dft_cfg_no_sdft) then
-              n_bb = 0.0d0
-              if (use_gga) then
-                call gga_london_sus2el_der2(derv(1, d0200000),   &
-                                            derv(1, d0101000),   &
-                                            derv(1, d0002000),   &
-                                            2.0d0*derv(1, d0000100),   &
-                                            gn_0_pointwise,      &
-                                            (/0,0,0/),           &
-                                            mat_dim,             &
-                                            nz,                  &
-                                            dmat_0,              &
-                                            ao,                  &
-                                            rx(ipoint), ry(ipoint), rz(ipoint), &
-                                            buffer, &
-                                            n_bb)
-              else
-                call lda_london_sus2el_der2(derv(1, d0200000),   &
-                                            (/0,0,0/),           &
-                                            mat_dim,             &
-                                            nz,                  &
-                                            dmat_0,              &
-                                            ao,                  &
-                                            rx(ipoint), ry(ipoint), rz(ipoint), &
-                                            buffer, &
-                                            n_bb)
-
-              end if
-
-!             sum to susc2el_xc_integrated_sdft
-              do ixyz = 1, 3
-                do jxyz = 1, 3
-                  susc2el_xc_integrated_sdft(jxyz, ixyz) = susc2el_xc_integrated_sdft(jxyz, ixyz) &
-                                                    + n_bb(jxyz, ixyz)
-                end do
-              end do
+            n_bb = 0.0d0
+            if (use_gga) then
+              call gga_london_sus2el_der2(derv(1, d0200000),   &
+                                          derv(1, d0101000),   &
+                                          derv(1, d0002000),   &
+                                          2.0d0*derv(1, d0000100),   &
+                                          gn_0_pointwise,      &
+                                          (/0,0,0/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat_0,              &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
+                                          n_bb)
+            else
+              call lda_london_sus2el_der2(derv(1, d0200000),   &
+                                          (/0,0,0/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat_0,              &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
+                                          n_bb)
 
             end if
-          end if !do_london_susc2el
 
-!gosia: if perturbed density export, then in points where the density is lower than threshold, put put the perturbed density to 0
+!           sum to susc2el_xc_integrated_sdft
+            do ixyz = 1, 3
+              do jxyz = 1, 3
+                susc2el_xc_integrated_sdft(jxyz, ixyz) = susc2el_xc_integrated_sdft(jxyz, ixyz) &
+                                                  + n_bb(jxyz, ixyz)
+              end do
+            end do
+
+          end if ! if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
+
+!gosia: if perturbed density export, then in points where the density is lower than threshold, put the perturbed density to 0
       else if (n_0(1) <= dft_cfg_tinydens) then
          temp2 = 0.0d0
          if (london_direct_export .or. london_reorth_export) then
@@ -1925,21 +1934,27 @@ contains
       real(8) :: r(3, 3)
       integer :: i, j
 
-      write(*, *) 'XC contributions - details:'
-      do i = 1, 3
-        do j = 1, 3
-          write(*, *) 'j, i, susc2el_xc_integrated     ', j, i, susc2el_xc_integrated(j,i)
-          if (.not. dft_cfg_no_sdft) then
-            write(*, *) 'j, i, susc2el_xc_integrated_sdft', j, i, susc2el_xc_integrated_sdft(j,i)
-          end if
+      if (do_london_susc2el_der1) then
+        write(*, *) 'XC contributions to susc2el (charge density; XC potential) - details:'
+        do i = 1, 3
+          write(*, '(3F20.12)') (susc2el_xc_integrated(i,j), j = 1, 3)
         end do
-      end do
+      end if
+
+      if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
+        write(*, *) 'XC contributions to susc2el (spin density; XC kernel) - details:'
+        do i = 1, 3
+          write(*, '(3F20.12)') (susc2el_xc_integrated_sdft(i,j), j = 1, 3)
+        end do
+      end if
 
       r = 0.0d0
       do i = 1,3
         do j = 1,3
-          r(j, i) = r(j, i) + susc2el_xc_integrated(j, i)
-          if (.not. dft_cfg_no_sdft) then
+          if (do_london_susc2el_der1) then
+            r(j, i) = r(j, i) + susc2el_xc_integrated(j, i)
+          end if
+          if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
             r(j, i) = r(j, i) + susc2el_xc_integrated_sdft(j, i)
           end if
         end do
