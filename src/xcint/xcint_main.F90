@@ -2811,11 +2811,10 @@ contains
 !   ----------------------------------------------------------------------------
 
     r_b = 0.0d0
+    gr_b = 0.0d0
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
-
-    ioff = 0
 
     do im = 1, nr_fmat
 
