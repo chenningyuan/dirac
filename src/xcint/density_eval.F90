@@ -227,8 +227,6 @@ contains
                     1)
     
          n = n + ddot(nr1, ao(st1), 1, buffer, 1)
-     !    write(*, '(A,I7,I7,I7,I7,3ES30.20E3)') 'in get_n st1, st2, nr1, nr2, ao, dmat, n = ', &
-     !                          st1, st2, nr1, nr2, ao(st2), dmat(st1, st2, iq(0)), n
       end do
    
    end subroutine
