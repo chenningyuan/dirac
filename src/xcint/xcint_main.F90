@@ -939,7 +939,7 @@ contains
     if (do_london_rhs_direct_der1) then
        max_fun_derv = 1
     end if
-    if (do_london_rhs_direct_der2) then
+    if (do_london_rhs_direct_der2 .and. .not. dft_cfg_no_sdft) then
        max_fun_derv = 2
     end if
     if (do_london_susc2el) then
