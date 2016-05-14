@@ -418,25 +418,39 @@ contains
     real(8), allocatable   :: dmat(:, :), buffer(:,:)
 
     integer :: icomp
-    logical :: debug_me, parcal_temp
+    logical :: debug_me
+!   gosia todo: Bx, By and Bz contributions are added on top, if we want just one
+!   of these contributions (for instance for VISUAL), then routines in density_eval
+!   need to be adapted...
 !   --------------------------------------------------------------------
 
     call alloc(dmat, n2bbasx, nz)
     dmat = 0.0d0
     call genden(dmat, cmo, 1, iprprp)
 
-!   gosia todo: Bx, By and Bz contributions are added on top, if we want just one
-!   of these contributions (for instance for VISUAL), then routines in density_eval
-!   need to be adapted...
-
     call generate_num_grid(dmat)
+
 #ifdef VAR_MPI
     if (parcal) call dirac_parctl(4)
 #endif
+!     no spin contributions for closed-shell (xc potential)
+      call integrate_xc(xc_mat_dim              = ntbas(0),        &
+                        xc_nz                   = nz,              &
+                        xc_dmat_0               = dmat,            &
+                        xc_nr_dmat              = 0,               &
+                        xc_nr_fmat              = max_nr_xyz_comp, &
+                        xc_fmat                 = fmat,            &
+                        xc_fmat_pg_sym          = isym_2el_lao,    &
+                        xc_do_london_rhs_direct_der1 = .true.)
 
+!   spin density contributions (xc kernel)
     if (.not. dft_cfg_no_sdft) then
+
+#ifdef VAR_MPI
+      if (parcal) call dirac_parctl(4)
+#endif
       if (expped) then
-!        additionally write s_b_lao and gs_b_lao to file
+!        s_b_lao and gs_b_lao export (used in fde)
          call integrate_xc(xc_mat_dim              = ntbas(0),        &
                            xc_nz                   = nz,              &
                            xc_dmat_0               = dmat,            &
@@ -444,7 +458,6 @@ contains
                            xc_nr_fmat              = max_nr_xyz_comp, &
                            xc_fmat                 = fmat,            &
                            xc_fmat_pg_sym          = isym_2el_lao,    &
-                           xc_do_london_rhs_direct_der1 = .true.,     &
                            xc_do_london_rhs_direct_der2 = .true.,     &
                            xc_london_direct_export = .true.)
       else
@@ -455,19 +468,8 @@ contains
                            xc_nr_fmat              = max_nr_xyz_comp, &
                            xc_fmat                 = fmat,            &
                            xc_fmat_pg_sym          = isym_2el_lao,    &
-                           xc_do_london_rhs_direct_der1 = .true.,     &
                            xc_do_london_rhs_direct_der2 = .true.)
       end if
-    else
-!   no spin contributions; also no export of spin densities possible
-      call integrate_xc(xc_mat_dim              = ntbas(0),        &
-                        xc_nz                   = nz,              &
-                        xc_dmat_0               = dmat,            &
-                        xc_nr_dmat              = 0,               &
-                        xc_nr_fmat              = max_nr_xyz_comp, &
-                        xc_fmat                 = fmat,            &
-                        xc_fmat_pg_sym          = isym_2el_lao,    &
-                        xc_do_london_rhs_direct_der1 = .true.)
     end if
 
     call dealloc(dmat)
@@ -479,7 +481,6 @@ contains
                     ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
                     nz, ipqtoq(1, 0), lupri)
     end if
-
 
   end subroutine
 
@@ -630,6 +631,8 @@ contains
      dmat = 0.0d0
      call genden(dmat, cmo, 1, iprprp)
 
+     call generate_num_grid(dmat)
+
      if (fde_lao_direct_active_embpot) then
         write(*, *) 'LAO-direct contribution to property gradient (embpot)'
 
@@ -664,11 +667,8 @@ contains
 
         write(*, *) 'LAO-direct contribution to property gradient (embker)'
 
-        call alloc(buffer, n2bbasxq)
-        call dcopy(n2bbasxq, dmat, 1, buffer, 1)
-
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(12)
+        if (parcal) call dirac_parctl(12)
 #endif
 
         call fde_dirac_emb_matrices_via_integration(       &   
@@ -679,8 +679,6 @@ contains
                       fde_nr_fmat            = max_nr_xyz_comp, &
                       fde_fmat               = fmat,       &
                       fde_do_london_rhs_direct_der2 = .true.)
-
-        call dealloc(buffer)
      end if
 
      call dealloc(dmat)
