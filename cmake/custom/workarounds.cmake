@@ -22,3 +22,12 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
         message(STATUS "pgf90 flag -rdynamic fremoved from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS")
     endif()
 endif()
+
+if ( ENABLE_STATIC_LINKING AND BLAS_TYPE MATCHES OPENBLAS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel AND (MPI_FOUND AND ENABLE_MPI))
+#miro: workaround to get static linking with OpenMPI/Intel/OPENBLAS
+    list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
+    list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES  "pthread")
+    list(REMOVE_ITEM CMAKE_CXX_IMPLICIT_LINK_LIBRARIES  "pthread")
+    message(STATUS "Linking flag -lpthread fremoved from CMAKE_SHARED_LIBRARY_LINK_Fortran/CXX/C_FLAGS (OpenMPI/Intel/OPENBLAS/static)")
+endif()
+
