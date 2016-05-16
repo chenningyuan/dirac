@@ -8,6 +8,8 @@ include(autocmake_CMakeDependentOption)
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 
+            list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
+
 # Ivan Hrasko's determination of compiler versions 
 include(FindCompilerVersion)
 # Miro Ilias restrored CMake printout, associated with build_info.h generation
@@ -90,13 +92,17 @@ foreach(
             # this bug is: signal 11 (SIGSEGV):Segmentation fault, function __restore_rt (0x1613DA0),from file sigaction.c
             target_link_libraries(${_executable} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
         endif()
-        if ( (BLAS_TYPE MATCHES MKL OR BLAS_TYPE MATCHES OPENBLAS) AND CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-            # miro: GNU+MKL/OPENBLAS-static needs extra lib !
+        if ( CMAKE_Fortran_COMPILER_ID MATCHES GNU )
+            # miro: GNU+NoneLibs/MKL/OPENBLAS-static needs extra lib !
             target_link_libraries(${_executable} -ldl)
         endif()
         if ( BLAS_TYPE MATCHES OPENBLAS )
             # miro: OPENBLAS-static needs extra lib !
             target_link_libraries(${_executable} -lgfortran)
+        endif()
+        if ( BLAS_TYPE MATCHES OPENBLAS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel AND (MPI_FOUND AND ENABLE_MPI) )
+            # miro:  needs extra lib , plus remove -lpthread from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS !
+            target_link_libraries(${_executable} -lquadmath)
         endif()
       
     endif()
