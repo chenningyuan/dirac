@@ -1902,9 +1902,9 @@ C
 !     ===========================================================
 
          ELSE IF (INTTYP == 106) THEN
-            ORIGIN(1) = 0.5
-            ORIGIN(2) = 0.5
-            ORIGIN(3) = 0.5
+            ORIGIN(1) = 0.0
+            ORIGIN(2) = 0.0
+            ORIGIN(3) = 10.0d0/CVAL
             CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
 
@@ -5991,13 +5991,13 @@ C
   400    CONTINUE
 C
          INT = INT + 1
-        SHLINT(INT,1) = SHLINT(INT,1) + CX*CY*CZ 
+        SHLINT(INT,1) = SHLINT(INT,1) - CX*CY*CZ 
         SHLINT(INT,2) = SHLINT(INT,2) - CX*SY*SZ 
         SHLINT(INT,3) = SHLINT(INT,3) - SX*CY*SZ 
         SHLINT(INT,4) = SHLINT(INT,4) - SX*SY*CZ 
-        SHLINT(INT,5) = SHLINT(INT,5) + CX*CY*SZ 
-        SHLINT(INT,6) = SHLINT(INT,6) + CX*SY*CZ 
-        SHLINT(INT,7) = SHLINT(INT,7) + SX*CY*CZ 
+        SHLINT(INT,5) = SHLINT(INT,5) - CX*CY*SZ 
+        SHLINT(INT,6) = SHLINT(INT,6) - CX*SY*CZ 
+        SHLINT(INT,7) = SHLINT(INT,7) - SX*CY*CZ 
         SHLINT(INT,8) = SHLINT(INT,8) - SX*SY*SZ 
   100 CONTINUE
 C      DO IOPER = 1, NIREP
