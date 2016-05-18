@@ -1752,7 +1752,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetint */
-      SUBROUTINE RGETINT(WORD,OP1INT,DOINT,NCOMP,IORDER,NPQUAD,
+      SUBROUTINE RGETINT(CLASLB,OP1INT,DOINT,NCOMP,IORDER,NPQUAD,
      &                  MXFORM,TOFILE,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
@@ -1771,14 +1771,14 @@ C
 #include "symmet.h"
 #include "nuclei.h"
       DIMENSION OP1INT(*),WORK(LWORK)
-      CHARACTER WORD*7,MXFORM*6,LABINT(3*MXCOOR)*8
+      CHARACTER CLASLB*7,MXFORM*6,LABINT(3*MXCOOR)*8
       LOGICAL DOINT(2,2),PROPRI,TRIANG,TOFILE
 C
       CALL QENTER('RGETINT')
 #include "memint.h"
 C
       MAXTYP = 3*MXCOOR
-      IF ((WORD.EQ.'ELFGRDC').OR.(WORD.EQ.'ELFGRDS')) THEN
+      IF ((CLASLB.EQ.'ELFGRDC').OR.(CLASLB.EQ.'ELFGRDS')) THEN
          NINTAD = 9*NUCIND*(MAXREP+1)
       ELSE
          NINTAD = MAXTYP
@@ -1794,7 +1794,7 @@ C
 C     Calculate integrals in abacus part
 C
       CALL PR1INT_1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
-     &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
+     &            LABINT,CLASLB,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,OP1INT,NCOMP,TOFILE,MXFORM,DOINT)
 C
 C     Memory deallocation
