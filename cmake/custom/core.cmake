@@ -100,7 +100,7 @@ foreach(
             # miro: OPENBLAS-static needs extra lib !
             target_link_libraries(${_executable} -lgfortran)
         endif()
-        if ( BLAS_TYPE MATCHES OPENBLAS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel AND (MPI_FOUND AND ENABLE_MPI) )
+        if ( BLAS_TYPE MATCHES OPENBLAS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel )
             # miro:  needs extra lib , plus remove -lpthread from CMAKE_SHARED_LIBRARY_LINK_Fortran_FLAGS !
             target_link_libraries(${_executable} -lquadmath)
         endif()
