@@ -6,7 +6,7 @@ import datetime
 import ast
 import collections
 
-__version__ = 'X.Y.Z'
+__version__ = '0.5.0'
 
 # we do not use the nicer sys.version_info.major
 # for compatibility with Python < 2.7
@@ -375,7 +375,7 @@ def main(argv):
         if not os.path.isfile('autocmake.cfg'):
             print('- fetching example autocmake.cfg')
             fetch_url(
-                src='{0}/raw/master/example/autocmake.cfg'.format(AUTOCMAKE_GITHUB_URL),
+                src='{0}/raw/stable-0.x/example/autocmake.cfg'.format(AUTOCMAKE_GITHUB_URL),
                 dst='autocmake.cfg'
             )
         if not os.path.isfile('.gitignore'):
@@ -384,17 +384,17 @@ def main(argv):
                 f.write('*.pyc\n')
         print('- fetching lib/config.py')
         fetch_url(
-            src='{0}/raw/master/lib/config.py'.format(AUTOCMAKE_GITHUB_URL),
+            src='{0}/raw/stable-0.x/lib/config.py'.format(AUTOCMAKE_GITHUB_URL),
             dst='lib/config.py'
         )
         print('- fetching lib/docopt/docopt.py')
         fetch_url(
-            src='{0}/raw/master/lib/docopt/docopt.py'.format(AUTOCMAKE_GITHUB_URL),
+            src='{0}/raw/stable-0.x/lib/docopt/docopt.py'.format(AUTOCMAKE_GITHUB_URL),
             dst='lib/docopt/docopt.py'
         )
         print('- fetching update.py')
         fetch_url(
-            src='{0}/raw/master/update.py'.format(AUTOCMAKE_GITHUB_URL),
+            src='{0}/raw/stable-0.x/update.py'.format(AUTOCMAKE_GITHUB_URL),
             dst='update.py'
         )
         sys.exit(0)
