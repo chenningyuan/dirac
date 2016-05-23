@@ -1,0 +1,1704 @@
+  module modified_sorting
+  
+  use symmetry_offset
+
+   public SRT1SS4_exp
+   public SRT16_exp
+   public SRT1TT4_exp
+   public SRT1TT5_exp
+   public SRT1ST4_exp
+   public SRT36_exp 
+   public SRT22_exp
+   public SRT32_exp
+   public SRT26_exp
+   public SRT1T3_exp
+   public SRT1T2_exp
+   public SRT1S2_exp
+   public SRT19_exp
+   public SRT1S3_exp
+   public SRT7_exp
+   public SRT6_exp
+   public SRT9_exp
+   public SRT1TS4_exp
+
+     private
+
+     contains
+
+      SUBROUTINE SRT1TT4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,NPAIR, &
+     &                    OFF,OFF1,OFF2,BUF1,BUF2,OFFX)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,K>L:KLREP) <--> BUF(IK,JL)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!     If (DOINV) inverse sort.
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      INTEGER OFFX(nrep,nrep)
+      LOGICAL FIRST,DOINV
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+!
+!---------------Executable code--------------------------------------
+
+      IF (.NOT.DOINV) THEN
+         IF (FIRST) THEN
+            CALL XCOPY(OFF(2),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+         ENDIF
+      ENDIF
+
+!     This loop shows the use of MULTB(*,*,2):
+!     For instance, I have
+!       ket(k)*ket(l) = KLREP = ket(l)*ket(k)
+!     where the latter term comes from the Abelian nature of the point group
+!     In the two outermost loops I fix KLREP and LREP and I want to know the
+!     corresponding KREP.
+!     I obtain this by the operation
+!       bra(l)*KLREP = bra(l)*ket(l)*ket(k) = ket(k)
+!     which is exactly the information obtained by
+!       KREP = MULTB(LREP,KLREP+NREP,2)
+!     (the shift by NREP is due to the fact that KLREP is a boson irrep)
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+         IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
+        DO L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,IJREP+NREP,2)
+           IF (IREP.LT.JREP) GOTO 20
+           JLREP = MULTB(JREP,LREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           JKREP = MULTB(JREP,KREP,2)
+
+
+           IKJL0 = OFFX(IKREP,JLREP) & 
+     &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
+
+           IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+
+           ILJK0 = OFFX(ILREP,JKREP) & 
+     &          + (OFF2(JREP,KREP)+(K-1)*JFIE(JREP)) * NPAIR(ILREP)
+
+           ILJK0 = ILJK0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+
+           JKIL0 = OFFX(JKREP,ILREP) & 
+     &          + (OFF2(IREP,LREP)+(L-1)*IFIE(IREP)) * NPAIR(JKREP)
+           JKIL0 = JKIL0 + OFF1(JREP,KREP) + (K-1)*JFIE(JREP)
+
+           JLIK0 = OFFX(JLREP,IKREP) & 
+     &          + (OFF2(IREP,KREP)+(K-1)*IFIE(IREP)) * NPAIR(JLREP)
+           JLIK0 = JLIK0 + OFF1(JREP,LREP) + (L-1)*JFIE(JREP)
+           DO J = 1, JFIE(JREP)
+             IMIN = 1
+             IF (IREP.EQ.JREP) IMIN = J + 1
+             N = IFIE(IREP) - IMIN + 1
+             IKJL = IKJL0 + IMIN-1
+             ILJK = ILJK0 + IMIN-1
+             JKIL = JKIL0 + (IMIN-1)*NPAIR(JKREP)
+             JLIK = JLIK0 + (IMIN-1)*NPAIR(JLREP)
+             IF (DOINV) THEN
+                CALL XCOPY (N,BUF1(IKJL*RCW+1),1,BUF2(IJKL),1)
+                CALL XAXPY (N,-A1,BUF1(ILJK*RCW+1),1,BUF2(IJKL),1)
+                NP = NPAIR(JKREP)
+                CALL XAXPY(N,-A1,BUF1(JKIL*RCW+1),NP,BUF2(IJKL),1)
+                NP = NPAIR(JLREP)
+                CALL XAXPY (N,A1,BUF1(JLIK*RCW+1),NP,BUF2(IJKL),1)
+             ELSE
+                IF ((.NOT.FIRST).OR.(IKREP.EQ.1)) &
+     &            CALL XCOPY (N,BUF1(IJKL),1,BUF2(IKJL*RCW+1),1)
+
+                IF ((.NOT.FIRST).OR.(ILREP.EQ.1)) THEN
+                  CALL XCOPY (N,BUF1(IJKL),1,BUF2(ILJK*RCW+1),1)
+                  CALL XSCAL (N,-A1,BUF2(ILJK*RCW+1),1)
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JKREP.EQ.1)) THEN
+                  NP = NPAIR(JKREP)
+                  CALL XCOPY(N,BUF1(IJKL),1,BUF2(JKIL*RCW+1),NP)
+                  CALL XSCAL(N,-A1,BUF2(JKIL*RCW+1),NP)
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JLREP.EQ.1))  THEN
+                  NP = NPAIR(JLREP)
+                  CALL XCOPY (N,BUF1(IJKL),1,BUF2(JLIK*RCW+1),NP)
+                ENDIF
+             ENDIF
+             IJKL = IJKL + RCW * N
+             IKJL0 = IKJL0 + NPAIR(IKREP)
+             ILJK0 = ILJK0 + NPAIR(ILREP)
+             JKIL0 = JKIL0 + 1
+             JLIK0 = JLIK0 + 1
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1TT5_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,NPAIR, &
+     &                    OFF,OFF1,OFF2,BUF1,BUF2,OFFX)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,K>L:KLREP) <--> BUF(IK,LJ)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!     If (DOINV) inverse sort.
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Avijit Shee, 05/05/15
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      INTEGER OFFX(nrep,nrep)
+      LOGICAL FIRST,DOINV
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+!
+!---------------Executable code--------------------------------------
+
+      IF (.NOT.DOINV) THEN
+         IF (FIRST) THEN
+            CALL XCOPY(OFF(2),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+         ENDIF
+      ENDIF
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+         IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
+        DO L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,IJREP+NREP,2)
+           IF (IREP.LT.JREP) GOTO 20
+           JLREP = MULTB(JREP,LREP,2)
+           LJREP = MULTB(LREP,JREP,2) !a bra type symmetry product
+           KJREP = MULTB(KREP,JREP,2) !a bra type symmetry product
+           IKREP = MULTB(IREP,KREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           LIREP = MULTB(LREP,IREP,2) !a bra type symmetry product
+           KIREP = MULTB(KREP,IREP,2) !a bra type symmetry product
+           JKREP = MULTB(JREP,KREP,2)
+
+           IKLJ0 = OFFX(IKREP,LJREP) & 
+     &          + (OFF2(LREP,JREP)+L-1)* NPAIR(IKREP)
+
+           IKLJ0 = IKLJ0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+
+           ILKJ0 = OFFX(ILREP,KJREP) & 
+     &          + (OFF2(KREP,JREP)+K-1) * NPAIR(ILREP)
+
+           ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+
+           JKLI0 = OFFX(JKREP,LIREP) &
+     &          + (OFF2(LREP,IREP)+L-1) * NPAIR(JKREP)
+
+           JKLI0 = JKLI0 + OFF1(JREP,KREP) + (K-1)*JFIE(JREP)
+
+           JLKI0 = OFFX(JLREP,KIREP) &
+     &          + (OFF2(KREP,IREP)+K-1) * NPAIR(JLREP)
+           JLKI0 = JLKI0 + OFF1(JREP,LREP) + (L-1)*JFIE(JREP)
+
+           DO J = 1, JFIE(JREP)
+             IMIN = 1
+             IF (IREP.EQ.JREP) IMIN = J + 1
+             N = IFIE(IREP) - IMIN + 1
+             IKLJ = IKLJ0 + IMIN-1
+             ILKJ = ILKJ0 + IMIN-1
+             JKLI = (JKLI0+(IMIN-1)*NPAIR(JKREP)*LFIE(LREP)+J-1)*RCW+1 
+             JLKI = (JLKI0+(IMIN-1)*NPAIR(JLREP)*KFIE(KREP)+J-1)*RCW+1 
+             IF (DOINV) THEN
+                CALL XCOPY (N,BUF1(IKLJ*RCW+1),1,BUF2(IJKL),1)
+                CALL XAXPY (N,-A1,BUF1(ILKJ*RCW+1),1,BUF2(IJKL),1)
+                NP = NPAIR(JKREP)*LFIE(LREP)
+                CALL XAXPY(N,-A1,BUF1(JKLI),NP,BUF2(IJKL),1)
+                NP = NPAIR(JLREP)*KFIE(KREP)
+                CALL XAXPY (N,A1,BUF1(JLKI),NP,BUF2(IJKL),1)
+             ELSE
+                IF ((.NOT.FIRST).OR.(IKREP.EQ.1)) &
+     &            CALL XCOPY (N,BUF1(IJKL),1,BUF2(IKLJ*RCW+1),1)
+
+                IF ((.NOT.FIRST).OR.(ILREP.EQ.1)) THEN
+                  CALL XCOPY (N,BUF1(IJKL),1,BUF2(ILKJ*RCW+1),1)
+                  CALL XSCAL (N,-A1,BUF2(ILKJ*RCW+1),1)
+
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JKREP.EQ.1)) THEN
+                  NP = NPAIR(JKREP)*LFIE(LREP)
+                  CALL XCOPY(N,BUF1(IJKL),1,BUF2(JKLI),NP)
+                  CALL XSCAL(N,-A1,BUF2(JKLI),NP)
+
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JLREP.EQ.1))  THEN
+                  NP = NPAIR(JLREP)*KFIE(KREP)
+                  CALL XCOPY (N,BUF1(IJKL),1,BUF2(JLKI),NP)
+
+                ENDIF
+             ENDIF
+             IJKL = IJKL + RCW * N
+             IKLJ0 = IKLJ0 + NPAIR(IKREP)*LFIE(LREP)
+             ILKJ0 = ILKJ0 + NPAIR(ILREP)*KFIE(KREP)
+!             JKLI0 = JKLI0 + 1
+!             JLKI0 = JLKI0 + 1
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+
+!=====================================================================================
+      SUBROUTINE SRT1ST4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,K>L:KLREP) to array BUF2(IK,JL:JLREP=1)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL FIRST,DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      type(Offset) :: d,e,f,g,h
+!---------------Executable code--------------------------------------
+
+
+      call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset_triangular(e,KFIE,LFIE)
+
+      call auto_symmetry_offset(f,IFIE,KFIE,.false.,.false.)
+      call auto_symmetry_offset(g,JFIE,LFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+
+      IF (.NOT.DOINV) THEN
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
+      IF (FIRST) THEN
+        CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
+      ELSE
+        CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+      ENDIF
+      ELSE
+         ROW    = d%oneNonDirac
+         COLUMN = e%oneNonDirac
+      ENDIF
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+        IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
+        DO L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,IJREP+NREP,2)
+           JLREP = MULTB(JREP,LREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           JKREP = MULTB(JREP,KREP,2)
+           IKJL0 = h%twoNonDirac(IKREP,JLREP)  & 
+     &          + (g%twoDirac(JREP,LREP)+(L-1)*JFIE(JREP)) *f%oneDirac(IKREP)
+           IKJL0 = IKJL0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
+           IKJL0 = IKJL0 * RCW + 1
+           ILJK0 = h%twoNonDirac(ILREP,JKREP) &
+     &          + (g%twoDirac(JREP,KREP)+(K-1)*JFIE(JREP)) * f%oneDirac(ILREP)
+           ILJK0 = ILJK0 + f%twoDirac(IREP,LREP) + (L-1)*IFIE(IREP)
+           ILJK0 = ILJK0 * RCW + 1
+           DO J = 1, JFIE(JREP)
+            IF (DOINV) THEN
+             CALL XCOPY(IFIE(IREP),BUF1(IKJL0),1,BUF2(IJKL),1)
+             CALL XAXPY(IFIE(IREP),-A1,BUF1(ILJK0),1,BUF2(IJKL),1)
+            ELSE
+            IF ((JLREP.EQ.1).OR.(.NOT.FIRST)) &
+     &         CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKJL0),1)
+            IF ((JKREP.EQ.1).OR.(.NOT.FIRST)) THEN 
+               CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(ILJK0),1)
+               CALL XSCAL (IFIE(IREP),-A1,BUF2(ILJK0),1)
+            ENDIF
+            ENDIF
+            IJKL = IJKL + IFIE(IREP) * RCW
+            IKJL0 = IKJL0 + f%oneDirac(IKREP) * RCW
+            ILJK0 = ILJK0 + f%oneDirac(ILREP) * RCW
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1SS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE, &
+     &              NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,KL:KLREP) to array BUF2(IK,JL:JLREP=1)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      LOGICAL FIRST,DOINV
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+!
+!---------------Executable code--------------------------------------
+
+      IF (FIRST) THEN
+        CALL XCOPY(OFF(2),A0,0,BUF2,1)
+      ELSE
+        CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      ENDIF
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,KLREP+NREP,2)
+           JLREP = MULTB(JREP,LREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+           IKJL0 = OFF(JLREP)  & 
+     &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
+           IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+
+            DO J = 1, JFIE(JREP)
+            IF (DOINV) THEN
+              CALL XCOPY (IFIE(IREP),BUF1(IKJL0*RCW+1),1,BUF2(IJKL),1)
+            ELSE
+            IF ((JLREP.EQ.1).OR.(.NOT.FIRST))  & 
+     &        CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKJL0*RCW+1),1)
+            ENDIF
+            IJKL = IJKL + IFIE(IREP) * RCW
+            IKJL0 = IKJL0 + NPAIR(IKREP)
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+!=======================================================================
+      SUBROUTINE SRT1T3_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(IJ,K>L:KLREP) <--> BUF(IJ K,L:LREP)
+!     If (DOINV) inverse sort.
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      INTEGER IJKREP,IJLREP
+      type(Offset) :: e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset_triangular(e,KFIE,LFIE)
+      if (all(IFIE == JFIE)) then 
+      call auto_symmetry_offset_triangular(f,IFIE,JFIE)
+      else
+      call auto_symmetry_offset(f,IFIE,JFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,f%onenonDirac,KFIE,.true.,.false.)
+      call auto_symmetry_offset(h,g%oneDirac,LFIE,.false.,.false.)
+
+      if (.not.doinv) then 
+         CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+         row = g%oneDirac
+         column = lfie
+      else
+         row = f%oneNonDirac 
+         column = e%oneNonDirac
+      endif
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       N = f%oneNonDirac(IJREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IJKREP = MULTB(IJREP+NREP,KREP,2) 
+        IJLREP = MULTB(IJREP+NREP,LREP,2) 
+        IF (KREP.LT.LREP) GOTO 10
+        LOFF = (h%twoNonDirac(IJKREP,LREP) + g%twoDirac(IJREP,KREP)) * RCW
+        KOFF = (h%twoNonDirac(IJLREP,KREP) + g%twoDirac(IJREP,LREP)) * RCW
+        DO L = 1, LFIE(LREP)
+         IJL  = (L-1) * N * RCW + 1
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+            IJK  = (K-1) * N * RCW + 1
+            IJKL1 = LOFF + (L-1) * g%oneDirac(IJKREP) * RCW + IJK 
+            IJLK1 = KOFF + (K-1) * g%oneDirac(IJLREP) * RCW + IJL 
+            IF (DOINV) THEN
+               CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
+               CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
+            ELSE
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJKL1),1)
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
+               CALL XSCAL (N,-A1,BUF2(IJLK1),1)
+            ENDIF
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      SUBROUTINE SRT1T2_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,KL:KLREP) <--> BUF(I,J KL:JKLREP)
+!     If (DOINV) inverse sort.
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      INTEGER JKLREP, IKLREP 
+      type(Offset) :: e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset_triangular(e,IFIE,JFIE)
+      if (all(KFIE == LFIE)) then !this may be a rstriction since it may happen that the holes and particles are equal in number.
+      call auto_symmetry_offset_triangular(f,KFIE,LFIE)
+      else
+      call auto_symmetry_offset(f,KFIE,LFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,JFIE,f%onenonDirac,.false.,.true.)
+      call auto_symmetry_offset(h,IFIE,g%oneDirac,.false.,.false.)
+
+      if (.not.doinv) then 
+         CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+         row = jfie
+         column = g%oneDirac
+      else
+         row = e%oneNonDirac 
+         column = f%oneNonDirac
+      endif
+
+      IJKL = 0
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       M = e%onenonDirac(IJREP)
+       N = f%onenonDirac(KLREP)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        IF (IREP.LT.JREP) GOTO 10
+        JKLREP = MULTB(JREP,KLREP+NREP,2)
+        IKLREP = MULTB(IREP,KLREP+NREP,2)
+        JKLOFF=(h%twoDirac(IREP,JKLREP)+ &
+     &       g%twoDirac(JREP,KLREP)*IFIE(IREP))*RCW
+        IKLOFF=(h%twoDirac(JREP,IKLREP)+ &
+     &       g%twoDirac(IREP,KLREP)*JFIE(JREP))*RCW
+        M2 = IFIE(IREP) * JFIE(JREP)
+        DO J = 1, JFIE(JREP)
+         IMIN = 1
+         IF (IREP.EQ.JREP) IMIN = J + 1
+         DO I = IMIN, IFIE(IREP)
+            IJKL1 = JKLOFF + ((J-1) * IFIE(IREP) + I - 1) * RCW + 1
+            JIKL1 = IKLOFF + ((I-1) * JFIE(JREP) + J - 1) * RCW + 1
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(IJKL1),M2,BUF2(IJKL+IJ),M)
+               CALL XAXPY(N,-A1,BUF1(JIKL1),M2,BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IJKL1),M2)
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(JIKL1),M2)
+               CALL XSCAL(N,-A1,BUF2(JIKL1),M2)
+            ENDIF
+            IJ = IJ + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+       IJKL = IJKL + M * N * RCW
+      ENDDO
+
+      RETURN
+      END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT6_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(I,J;KL:KLREP) to array BUF2(I KL, J:JREP)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+     type(Offset) :: e,f,g,h 
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset(e,IFIE,JFIE,.false.,.false.)
+
+      if (all(KFIE == LFIE)) then !this may be a restriction since it may happen that the holes and particles are equal in number.
+      call auto_symmetry_offset_triangular(f,KFIE,LFIE)
+      else
+      call auto_symmetry_offset(f,KFIE,LFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,IFIE,f%onenonDirac,.false.,.true.)
+      call auto_symmetry_offset(h,g%oneDirac,JFIE,.false.,.false.)
+
+      if (.not.doinv) then 
+      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      row = g%oneDirac
+      column = jfie
+      else
+      row = e%oneNonDirac 
+      column = f%oneNonDirac
+      endif
+
+
+      IJKL = 0
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       M = e%onenonDirac(IJREP)
+       N = f%onenonDirac(KLREP)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        IKLREP = MULTB(IREP,KLREP+NREP,2)
+        JOFF = (h%twoDirac(IKLREP,JREP) + g%twoDirac(IREP,KLREP)) * RCW
+        DO J = 1, JFIE(JREP)
+         DO I = 1, IFIE(IREP)
+            IKLJ1 = JOFF + ((J-1)*g%oneDirac(JREP)+I-1) * RCW + 1
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(IKLJ1),IFIE(IREP),BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IKLJ1),IFIE(IREP))
+            ENDIF 
+            IJ = IJ + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+       IJKL = IJKL + M * N * RCW
+      ENDDO
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT9_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(I,J;KL:KLREP) to array BUF2(KL J,I:IREP)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher ; modified by Avijit Shee, so that now 
+!                              it does only the sorting. c.c. and
+!                              anti-symmetrization should be done
+!                              later, if needed. 
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+     type(Offset) :: e,f,g,h 
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset(e,IFIE,JFIE,.false.,.false.)
+
+     if (all(KFIE == LFIE)) then !this may be a restriction since it may happen that the holes and particles are equal in number.
+      call auto_symmetry_offset_triangular(f,KFIE,LFIE)
+      else
+      call auto_symmetry_offset(f,KFIE,LFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,f%onenonDirac,JFIE,.true.,.false.)
+      call auto_symmetry_offset(h,g%oneDirac,IFIE,.false.,.false.)
+
+      if (.not.doinv) then 
+      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      row = g%oneDirac
+      column = Ifie
+      else
+      row = e%oneNonDirac 
+      column = f%oneNonDirac
+      endif
+
+      IJKL = 0
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       M = e%onenonDirac(IJREP)
+       N = f%onenonDirac(KLREP)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        KLJREP = MULTB(KLREP+NREP,JREP,2)
+        IOFF = (h%twoDirac(KLJREP,IREP)+g%twoDirac(KLREP,JREP)) * RCW + 1
+        DO J = 1, JFIE(JREP)
+         DO I = 1, IFIE(IREP)
+            KLJI = IOFF+((I-1)*g%oneDirac(IREP)+(J-1)*N)*RCW
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(KLJI),1,BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(KLJI),1)
+            ENDIF
+            IJ = IJ + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+       IJKL = IJKL + M * N * RCW
+      ENDDO
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1S2_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I J,KL:KLREP) <--> BUF(I,J KL:JKLREP)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+       type(Offset) :: e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset(e,IFIE,JFIE,.false.,.false.)
+      if (all(KFIE == LFIE)) then !this may be a rstriction since it may happen that the holes and particles are equal in number.
+      call auto_symmetry_offset_triangular(f,KFIE,LFIE)
+      else
+      call auto_symmetry_offset(f,KFIE,LFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,JFIE,f%onenonDirac,.false.,.true.)
+      call auto_symmetry_offset(h,IFIE,g%oneDirac,.false.,.false.)
+
+      if (.not.doinv) then 
+      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      row = ifie
+      column = g%oneDirac
+      else
+      row = e%oneNonDirac 
+      column = f%oneNonDirac
+      endif
+
+      IJKL = 0
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       M = e%onenonDirac(IJREP)
+       N = f%onenonDirac(KLREP)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        JKLREP = MULTB(JREP,KLREP+NREP,2)
+        JKLOFF = (h%twoDirac(IREP,JKLREP)+g%twoDirac(JREP,KLREP)*IFIE(IREP)) * RCW
+        M2 = IFIE(IREP) * JFIE(JREP)
+        DO J = 1, JFIE(JREP)
+         DO I = 1, IFIE(IREP)
+            IJKL1 = JKLOFF + ((J-1) * IFIE(IREP) + I - 1) * RCW + 1
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(IJKL1),M2,BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IJKL1),M2)
+            ENDIF
+            IJ = IJ + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+       IJKL = IJKL + M * N * RCW
+      ENDDO
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT16_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE, &
+     &                  NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,KL:KLREP) to array BUF2(IL,KJ:KJREP)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!
+!---------------Routines called----------------------------------------
+
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      LOGICAL FIRST, DOINV
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+!
+!---------------Executable code--------------------------------------
+
+! 15-8-2003 LV : Removed initialization of buf2, should not be necessary
+! because we go from a square array to a square
+
+
+      if (doinv) write(*,*)'WARNING, not doing the right thing'
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,KLREP+NREP,2)
+           KJREP = MULTB(KREP,JREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           ILKJ0 = OFF(KJREP) & 
+     &          + (OFF2(KREP,JREP)+K-1)*NPAIR(ILREP)
+           ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+            DO J = 1, JFIE(JREP)
+            IF (DOINV) THEN
+               IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) &
+     &         CALL XCOPY(IFIE(IREP),BUF2(ILKJ0*RCW+1),1,BUF1(IJKL),1)
+            ELSE
+               IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) &
+     &         CALL XCOPY(IFIE(IREP),BUF1(IJKL),1,BUF2(ILKJ0*RCW+1),1)
+            ENDIF
+            IJKL = IJKL + RCW * IFIE(IREP)
+            ILKJ0 = ILKJ0 + NPAIR(ILREP) * KFIE(KREP)
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT19_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+ 
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,KL:KLREP) to array BUF2(IJ L,K:KREP)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "complex.inc"
+#include "param.inc"
+!
+!---------------Local variables--------------------------------------
+      type(Offset) :: e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
+      if (all(IFIE == JFIE)) then 
+      call auto_symmetry_offset_triangular(f,IFIE,JFIE)
+      else
+      call auto_symmetry_offset(f,IFIE,JFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,f%onenonDirac,LFIE,.true.,.false.)
+      call auto_symmetry_offset(h,g%oneDirac,KFIE,.false.,.false.)
+
+      if (.not.doinv) then 
+      CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+      row = g%oneDirac
+      column = kfie
+      else
+      row = f%oneNonDirac 
+      column = e%oneNonDirac
+      endif
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       N = f%oneNonDirac(IJREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IJLREP = MULTB(IJREP+NREP,LREP,2)
+        KOFF = (h%twoNonDirac(IJLREP,KREP) + g%twoDirac(IJREP,LREP)) * RCW
+        DO L = 1, LFIE(LREP)
+         IJL  = (L-1) * N * RCW + 1
+         DO K = 1, KFIE(KREP)
+            IJLK1 = KOFF + (K-1) * g%oneDirac(IJLREP) * RCW + IJL
+            IF(DOINV) THEN
+            CALL XCOPY (N,BUF1(IJLK1),1,BUF2(IJKL),1)
+            ELSE 
+            CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
+            ENDIF
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+ 
+      RETURN
+      END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT22_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,K>L:KLREP) to array BUF2(L IJ,K:KREP)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      type(Offset) :: e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset_triangular(e,KFIE,LFIE)
+      if (all(IFIE == JFIE)) then 
+      call auto_symmetry_offset_triangular(f,IFIE,JFIE)
+      else
+      call auto_symmetry_offset(f,IFIE,JFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,LFIE,f%onenonDirac,.false.,.true.)
+      call auto_symmetry_offset(h,g%oneDirac,KFIE,.false.,.false.)
+
+      if (.not.doinv) then 
+      row = g%oneDirac
+      column = kfie
+      else
+      row = f%oneNonDirac 
+      column = e%oneNonDirac
+      endif
+
+      IF (.NOT.DOINV) CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       N = f%oneNonDirac(IJREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        LIJREP = MULTB(LREP,IJREP+NREP,2)
+        KIJREP = MULTB(KREP,IJREP+NREP,2) 
+        IF (KREP.LT.LREP) GOTO 10
+        KOFF = h%twoDirac(LIJREP,KREP) + g%twoDirac(LREP,IJREP)
+        LOFF = h%twoDirac(KIJREP,LREP) + g%twoDirac(KREP,IJREP)
+        DO L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+            LIJK = (KOFF + (K-1) * g%oneDirac(KREP) + L - 1) * RCW + 1 
+            KIJL = (LOFF + (L-1) * g%oneDirac(LREP) + K - 1) * RCW + 1
+            IF (DOINV) THEN
+               CALL XCOPY (N,BUF1(LIJK),LFIE(LREP),BUF2(IJKL),1)
+               CALL XAXPY (N,-A1,BUF1(KIJL),KFIE(KREP),BUF2(IJKL),1)
+            ELSE
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(LIJK),LFIE(LREP))
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(KIJL),KFIE(KREP))
+               CALL XSCAL (N,-A1,BUF2(KIJL),KFIE(KREP))
+            ENDIF  
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+!===========================================================================
+      SUBROUTINE SRT32_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,KL:KLREP) to array BUF2(L IJ,K:KREP)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author :Avijit Shee, from SRT22 routine by Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+     type(Offset) :: e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
+      if (all(IFIE == JFIE)) then 
+      call auto_symmetry_offset_triangular(f,IFIE,JFIE)
+      else
+      call auto_symmetry_offset(f,IFIE,JFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,LFIE,f%onenonDirac,.false.,.true.)
+      call auto_symmetry_offset(h,g%oneDirac,KFIE,.false.,.false.)
+
+      if (.not.doinv) then 
+      row = g%oneDirac
+      column = kfie
+      else
+      row = f%oneNonDirac 
+      column = e%oneNonDirac
+      endif
+
+      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       N = f%oneNonDirac(IJREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        LIJREP = MULTB(LREP,IJREP+NREP,2)
+        KOFF = h%twoDirac(LIJREP,KREP) + g%twoDirac(LREP,IJREP)
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+            LIJK = (KOFF + (K-1) * g%oneDirac(KREP) + L - 1) * RCW + 1 
+            IF (DOINV) THEN
+               CALL XCOPY (N,BUF1(LIJK),LFIE(LREP),BUF2(IJKL),1)
+            ELSE
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(LIJK),LFIE(LREP))
+            ENDIF  
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+
+!====================================================================================
+
+      SUBROUTINE SRT1S3_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(IJ,K L:KLREP) <--> BUF(IJ K,L:LREP)
+!     If (DOINV) inverse sort.
+!
+!---------------Routines called----------------------------------------
+
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      type(Offset) :: e,f,g,h
+!---------------Executable code--------------------------------------
+
+
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
+      if (all(IFIE == JFIE)) then 
+      call auto_symmetry_offset_triangular(f,IFIE,JFIE)
+      else
+      call auto_symmetry_offset(f,IFIE,JFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,f%onenonDirac,KFIE,.true.,.false.)
+      call auto_symmetry_offset(h,g%oneDirac,LFIE,.false.,.false.)
+
+      IF (DOINV) THEN
+        ROW    = f%onenonDirac
+        COLUMN = e%onenonDirac  
+      ELSE
+        ROW    = g%oneDirac
+        COLUMN = lfie 
+      ENDIF
+
+      CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+      IJKL = 1
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       N = f%oneNonDirac(IJREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IJKREP = MULTB(IJREP+NREP,KREP,2)
+        LOFF = (h%twoNonDirac(IJKREP,LREP) + g%twoDirac(IJREP,KREP)) * RCW
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+            IJK  = (K-1) * N * RCW + 1
+            IJKL1 = LOFF + (L-1) * g%oneDirac(IJKREP) * RCW + IJK 
+            IF (DOINV) THEN
+                CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
+            ELSE
+                CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJKL1),1)
+            ENDIF
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+      
+!==========================================================================================
+      SUBROUTINE SRT26_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(IJ,K>L:KLREP) <--> BUF(IL,KJ:KJREP=1)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!     If (DOINV) inverse sort.
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Luuk Visscher
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL FIRST,DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+       type(Offset) :: d,e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset_triangular(e,KFIE,LFIE)
+
+      call auto_symmetry_offset(f,IFIE,LFIE,.false.,.false.)
+      call auto_symmetry_offset(g,KFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+      IF (.NOT.DOINV) THEN
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
+         IF (FIRST) THEN
+            CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+         ENDIF
+      ELSE
+         ROW    = d%oneNonDirac
+         COLUMN = e%oneNonDirac
+      ENDIF
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+         IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
+        DO L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,IJREP+NREP,2)
+           KJREP = MULTB(KREP,JREP,2)
+           LJREP = MULTB(LREP,JREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+           ILKJ0 = h%twoDirac(ILREP,KJREP) & 
+     &          + (g%twoDirac(KREP,JREP)+K-1)*f%oneDirac(ILREP)
+           ILKJ0 = ILKJ0 + f%twoDirac(IREP,LREP) + (L-1)*IFIE(IREP)
+           IKLJ0 = h%twoDirac(IKREP,LJREP) &
+     &          + (g%twoDirac(LREP,JREP)+L-1)*f%oneDirac(IKREP)
+           IKLJ0 = IKLJ0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
+
+            DO J = 1, JFIE(JREP)
+            IF (DOINV) THEN
+             CALL XCOPY(IFIE(IREP),BUF1(ILKJ0*RCW+1),1,BUF2(IJKL),1)
+             CALL XAXPY(IFIE(IREP),-A1,BUF1(IKLJ0*RCW+1),1,BUF2(IJKL),1)
+            ELSE
+             IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) &
+     &          CALL XCOPY(IFIE(IREP),BUF1(IJKL),1,BUF2(ILKJ0*RCW+1),1)
+             IF ((.NOT.FIRST).OR.(LJREP.EQ.1)) THEN
+                CALL XCOPY(IFIE(IREP),BUF1(IJKL),1,BUF2(IKLJ0*RCW+1),1)
+                CALL XSCAL(IFIE(IREP),-A1,BUF2(IKLJ0*RCW+1),1)
+             ENDIF
+            ENDIF
+            IJKL = IJKL + RCW * IFIE(IREP)
+            ILKJ0 = ILKJ0 + f%oneDirac(ILREP) * KFIE(KREP)
+            IKLJ0 = IKLJ0 + f%oneDirac(IKREP) * LFIE(LREP)
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT36_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,KL:KLREP) <--> BUF(IL,KJ)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!     If (DOINV) inverse sort. 
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Avijit Shee
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL FIRST,DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+
+      integer :: offx(nrep,nrep)
+      type(Offset) :: d,e,f,g,h
+
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset_triangular(d,IFIE,JFIE)
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
+
+      call auto_symmetry_offset(f,IFIE,LFIE,.false.,.false.)
+      call auto_symmetry_offset(g,KFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+      IF (.NOT.DOINV) THEN
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
+         offx = h%twoDirac
+         IF (FIRST) THEN
+            CALL XCOPY((f%oneDirac(1)*g%oneDirac(1)),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+         ENDIF
+      ELSE
+         ROW = d%oneNonDirac
+         COLUMN = e%oneNonDirac
+         offx = h%twoNonDirac
+      ENDIF
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       DO 10 LREP = 1, NREP
+         KREP = MULTB(LREP,KLREP+NREP,2)
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,IJREP+NREP,2)
+           IF (IREP.LT.JREP) GOTO 20
+
+           KJREP = MULTB(KREP,JREP,2)
+           JLREP = MULTB(JREP,LREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           KIREP = MULTB(KREP,IREP,2)
+
+           ILKJ0 = OFFX(ILREP,KJREP) & 
+     &          + (g%twoDirac(KREP,JREP)+K-1)*f%oneDirac(ILREP)
+           ILKJ0 = ILKJ0 + f%twoDirac(IREP,LREP) + (L-1)*IFIE(IREP)
+
+           JLKI0 = OFFX(JLREP,KIREP) &
+     &          + (g%twoDirac(KREP,IREP)+K-1)*f%oneDirac(JLREP)
+           JLKI0 = JLKI0 + f%twoDirac(JREP,LREP) + (L-1)*JFIE(JREP)
+          
+           DO J = 1, JFIE(JREP)
+             IMIN = 1
+             IF (IREP.EQ.JREP) IMIN = J + 1
+             N = IFIE(IREP) - IMIN + 1
+
+             ILKJ = ILKJ0 + IMIN-1             
+             JLKI = JLKI0 + (IMIN-1)*f%oneDirac(JLREP)*KFIE(KREP)
+
+             IF (DOINV) THEN
+                CALL XCOPY (N,BUF1(ILKJ*RCW+1),1,BUF2(IJKL),1)
+                 NP = f%oneDirac(JLREP)*KFIE(KREP)
+                CALL XAXPY(N,-A1,BUF1(JLKI*RCW+1),NP,BUF2(IJKL),1)
+             ELSE
+             IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) THEN
+                CALL XCOPY (N,BUF1(IJKL),1,BUF2(ILKJ*RCW+1),1)
+             ENDIF
+                IF ((.NOT.FIRST).OR.(JLREP.EQ.1)) THEN
+                  NP = f%oneDirac(JLREP)*KFIE(KREP)
+                  CALL XCOPY(N,BUF1(IJKL),1,BUF2(JLKI*RCW+1),NP)
+                  CALL XSCAL(N,-A1,BUF2(JLKI*RCW+1),NP)
+                ENDIF
+             ENDIF
+             IJKL = IJKL + RCW * N
+             ILKJ0 = ILKJ0 + f%oneDirac(ILREP)*KFIE(KREP)
+             JLKI0 = JLKI0 + 1
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      SUBROUTINE SRT1TS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,KL:KLREP) <--> BUF(IK,JL)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!     If (DOINV) inverse sort.
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : MP modified 1TT4 by LV
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL FIRST,DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      type(Offset) :: d,e,f,g,h
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset_triangular(d,IFIE,JFIE)
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
+
+      call auto_symmetry_offset(f,IFIE,KFIE,.false.,.false.)
+      call auto_symmetry_offset(g,JFIE,LFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+      IF (.NOT.DOINV) THEN
+         ROW    = f%oneDirac  
+         COLUMN = g%oneDirac  
+         IF (FIRST) THEN
+            CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+         ENDIF
+      ELSE
+         ROW = d%oneNonDirac 
+         COLUMN = e%oneNonDirac 
+      ENDIF
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+        IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,IJREP+NREP,2)
+           IF (IREP.LT.JREP) GOTO 20
+           IKREP = MULTB(IREP,KREP,2)
+           JKREP = MULTB(JREP,KREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           JLREP = MULTB(JREP,LREP,2)
+           IKJL0 = h%twoNonDirac(IKREP,JLREP) & 
+     &          + (g%twoDirac(JREP,LREP)+(L-1)*JFIE(JREP)) * f%oneDirac(IKREP)
+           IKJL0 = IKJL0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
+           JKIL0 = h%twoNonDirac(JKREP,ILREP) &
+     &          + (g%twoDirac(IREP,LREP)+(L-1)*IFIE(IREP)) * f%oneDirac(JKREP)
+           JKIL0 = JKIL0 + f%twoDirac(JREP,KREP) + (K-1)*JFIE(JREP)
+           DO J = 1, JFIE(JREP)
+             IMIN = 1
+             IF (IREP.EQ.JREP) IMIN = J + 1
+             N = IFIE(IREP) - IMIN + 1
+             IKJL = IKJL0 + IMIN-1
+             JKIL = JKIL0 + (IMIN-1)*f%oneDirac(JKREP)
+             IF (DOINV) THEN
+                CALL XCOPY (N,BUF1(IKJL*RCW+1),1,BUF2(IJKL),1)
+                NP = f%oneDirac(JKREP)
+                CALL XAXPY(N,-A1,BUF1(JKIL*RCW+1),NP,BUF2(IJKL),1)
+             ELSE
+                IF ((.NOT.FIRST).OR.(IKREP.EQ.1)) THEN
+                  CALL XCOPY (N,BUF1(IJKL),1,BUF2(IKJL*RCW+1),1)
+                ENDIF
+                IF ((.NOT.FIRST).OR.(JKREP.EQ.1)) THEN
+                  NP = f%oneDirac(JKREP)
+                  CALL XCOPY(N,BUF1(IJKL),1,BUF2(JKIL*RCW+1),NP)
+                  CALL XSCAL(N,-A1,BUF2(JKIL*RCW+1),NP)
+                ENDIF
+             ENDIF
+             IJKL = IJKL + RCW * N
+             IKJL0 = IKJL0 + f%oneDirac(IKREP)
+             JKIL0 = JKIL0 + 1
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      RETURN
+      END
+
+!=======================================================================
+
+      SUBROUTINE SRT7_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(I>J;KL:KLREP) to array BUF2(I KL, J:JREP)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : LV, extended for the case I>J by MP
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP) 
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+      type(Offset) :: e,f,g,h 
+!---------------Executable code--------------------------------------
+
+      call auto_symmetry_offset_triangular(e,IFIE,JFIE)
+      if (all(KFIE == LFIE)) then !this may be a restriction since it may happen that the holes and particles are equal in number.
+      call auto_symmetry_offset_triangular(f,KFIE,LFIE)
+      else
+      call auto_symmetry_offset(f,KFIE,LFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,IFIE,f%onenonDirac,.false.,.true.)
+      call auto_symmetry_offset(h,g%oneDirac,JFIE,.false.,.false.)
+
+      if (.not.doinv) then 
+      row = g%oneDirac
+      column = jfie
+      else
+      row = e%oneNonDirac 
+      column = f%oneNonDirac
+      endif
+
+      IF (.NOT.DOINV) CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      IJKL = 0
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       M = e%onenonDirac(IJREP)
+       N = f%onenonDirac(KLREP)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        IKLREP = MULTB(IREP,KLREP+NREP,2)
+        JKLREP = MULTB(JREP,KLREP+NREP,2)
+        IF(IREP.LT.JREP) GOTO 10
+        JOFF = (h%twoDirac(IKLREP,JREP) + g%twoDirac(IREP,KLREP)) * RCW
+        IOFF = (h%twoDirac(JKLREP,IREP) + g%twoDirac(JREP,KLREP)) * RCW
+        DO J = 1, JFIE(JREP)
+         IMIN=1
+         IF(IREP.EQ.JREP) IMIN=J+1
+         DO I = IMIN, IFIE(IREP)
+            IKLJ1 = JOFF + ((J-1)*g%oneDirac(JREP)+I-1) * RCW + 1
+            JKLI1 = IOFF + ((I-1)*g%oneDirac(IREP)+J-1) * RCW + 1
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(IKLJ1),IFIE(IREP),BUF2(IJKL+IJ),M)
+               CALL XAXPY(N,-A1,BUF1(JKLI1),JFIE(JREP),BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(IKLJ1),IFIE(IREP))
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(JKLI1),JFIE(JREP))
+               CALL XSCAL(N,-A1,BUF2(JKLI1),JFIE(JREP))
+            ENDIF 
+            IJ = IJ + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+       IJKL = IJKL + M * N * RCW
+      ENDDO
+
+      RETURN
+      END
+
+  end module      
