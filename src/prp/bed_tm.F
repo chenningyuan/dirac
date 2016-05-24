@@ -8,39 +8,44 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      LOGICAL TOFILE, DOINT(4)
-      INTEGER LWORK, KFREE, LFREE, KONEIN
+      LOGICAL TOFILE, DOINT(2,2)
+      INTEGER LWORK, KONEIN, NCOMP
       DIMENSION WORK(LWORK)
 C
-#include "dummy.h"
 C#include "dcbgen.h"
 #include "dcbbas.h"
 C
       CALL QENTER('GET_BED')
 #include "memint.h"
-      TOFILE = .TRUE.
+C
+C     Integral information
+C
+      TOFILE = .FALSE.
       IPRINT = 100
+C     DOINT: 0++0 - LS, SL components are computed and multiplied by +1
+      DOINT(1,1)=.FALSE.
+      DOINT(2,1)=.TRUE.
+      DOINT(1,2)=.TRUE.
+      DOINT(2,2)=.FALSE.
+      IORDER = IDUMMY ! Order of multipole moment. Not applicable here.
+      NPQUAD = 0 ! Number of Gaussian quadrature points. 0 in our case
+      NCOMP = 8  ! Number of operators
 C
-      WRITE(LUPRI,*) 'DOINT',  DOINT
-      WRITE(LUPRI,*) 'IDUMMY', IDUMMY
-      WRITE(LUPRI,*) 'KONEIN', KONEIN
-      WRITE(LUPRI,*) 'IPRINT', IPRINT
-      CALL MEMGET('REAL',KONEIN,NNBBASX,WORK,KFREE,LFREE)
+C     Memory allocation
 C
-C      SUBROUTINE RGETINT(CLASLB,OP1INT,DOINT,NCOMP,IORDER,NPQUAD,
-C     &                  MXFORM,TOFILE,IPRINT,WORK,LWORK)
+      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
 C
-C     I dont know what NCOMP should be.      
-C   
 C     Generate integrals
 C
-      CALL RGETINT('CXIKR   ',WORK(KONEIN),DOINT,0,IDUMMY,IDUMMY,
-     &                  'TRIANG',.FALSE.,IPRINT,WORK,LWORK)
+      CALL RGETINT('CXIKR   ',WORK(KONEIN),DOINT,NCOMP,IORDER,NPQUAD,
+     &                  'TRIANG',TOFILE,IPRINT,WORK(KFREE),LFREE)
 C
 C      IF(IPRINT.GE.6) THEN
-        CALL HEADER('Small component overlap integrals',-1)
+        CALL HEADER('Small component CXIKR integrals',-1)
         CALL OUTPAK(WORK(KONEIN),NTBAS(0),1,LUPRI)
 C      ENDIF
+C
+      CALL MEMREL('GET_BED',WORK,KWORK,KONEIN,KFREE,LFREE)
 C
       CALL QEXIT('GET_BED')
       RETURN

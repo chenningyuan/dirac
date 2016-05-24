@@ -320,7 +320,7 @@ C
 C
 C     NANNA: Call bed integrals
 C
-      CALL GET_BED(WORK,LFREE)
+      CALL GET_BED(WORK(KFREE),LFREE)
 C
 C     Final print section
 C
