@@ -60,13 +60,13 @@ build:
         name: build doxygen documentation
         code: |
           cd build_wercker-ci
-          make doxygen
+          #make doxygen
 
     - script:
         name: build slides
         code: |
           cd build_wercker-ci
-          make slides
+          #make slides
 
 ## turn off email notifications
 notifications:
