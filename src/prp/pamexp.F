@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -143,12 +143,8 @@ C.........accumulate all density into one matrix
           CALL DENMAT(DMAT,CMO,IPREXP)
           AOC = FILEX
         END IF
-      ELSE IF (WF .EQ. 'MP2 ' .OR. WF .EQ. 'CC  ') THEN
-C
-         IF (WF.EQ.'CC  ') 
-     &        CALL QUIT('*** ERROR in PRPEX1 *** '
-     &        // 'CC properties not implemented')
-C
+      ELSE IF (WF .EQ. 'MP2 ' .OR. WF .EQ. 'CCSD') THEN
+
          IF (ORBANA) 
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
      &        // 'ORBANA not implemented for MP2')

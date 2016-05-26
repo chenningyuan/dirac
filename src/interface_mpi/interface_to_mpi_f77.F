@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -380,7 +380,6 @@
      &                   communicator_i4, ierr_i4)
 #else
 !-------------------------------------------------------------------------------
-      if (.not. MPI_INIT_called) return
       call mpi_allreduce(x, y, ndim   , MPI_REAL8, operation   ,
      &                   communicator   , ierr   )
 #endif

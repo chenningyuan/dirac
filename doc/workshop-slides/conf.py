@@ -38,7 +38,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = [os.path.join(os.path.abspath('..'), '_templates', 'shared')]
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -280,8 +280,12 @@ extensions += [
 #    print('sphinx.ext.hieroglyph extension not found => slides will not be generated')
 #    sys.exit(0)
 
-slide_theme = 'slides'
+slide_theme_path = [os.path.join(os.path.abspath('..'), '_themes')]
+slide_theme = 'slides3'
 slide_levels = 3
+slide_theme_options = {
+    'google_analytics_account': 'UA-61958338-1',
+}
 
 # Place custom static assets in the _static directory and uncomment
 # the following lines to include them

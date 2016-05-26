@@ -37,6 +37,9 @@
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
+        case ('*CCREST')
+           call read_input_ccrestart(word, kw_section)
+
         case ('*CCENER')
            call read_input_ccener(word, kw_section)
 
@@ -52,13 +55,13 @@
         case ('*CCIH  ')
            call read_input_ccih(word, kw_section)
 
-#ifdef HAS_PCMSOLVER           
+#ifdef HAS_PCMSOLVER
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
-        
+
         case ('*PCMSOL')
            call read_input_pcmsolver(word, kw_section)
-#endif           
+#endif
 
         case ('**RELAD')
            call read_input_reladc(word, kw_section)
@@ -813,6 +816,14 @@
          relcc_timing = .true.
       end if
 
+      if (kw_matches(word, '.RESTART')) then
+         relcc_do_restart = .true.
+      end if
+
+      if (kw_matches(word, '.NORESTART')) then
+         relcc_do_restart = .false.
+      end if
+
       if (kw_matches(word, '.NOSORT')) then
          relcc_do_sort = .false.
       end if
@@ -824,7 +835,7 @@
 
       if (kw_matches(word, '.GRADIE')) then
          relcc_do_gradient = .true.
-         relcc_do_mp2gradient = .true. ! this is currently the only one available, should thus always be active when gradient is switched on
+         relcc_do_mp2gradient = .true.
       end if
 
       if (kw_matches(word, '.HESSIA')) then
@@ -894,6 +905,12 @@
          read(get_file_unit(),'(i5)') relcc_ccener_desired_convergence
       end if
 
+! miro (luuk) - expert's keyword
+      if (kw_matches(word, '.DHOLU ')) then
+         call kw_read(word, relcc_ccener_dholu_limit)
+         relcc_ccener_dholu_limit_set = .true.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
@@ -932,8 +949,8 @@
          relcc_do_naturalorbitals = .true.
       end if
 
-      if (kw_matches(word, '.UNRELAXED')) then
-         relcc_do_unrelaxed = .true.
+      if (kw_matches(word, '.RELAXED')) then
+         relcc_do_relaxed = .true.
       end if
 
       if (kw_matches(word, '.NEOPER')) then
@@ -983,6 +1000,107 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+   subroutine read_input_ccrestart(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: i
+      integer                          :: j
+      integer                          :: nsect
+      character(2)                     :: ifss(6)
+      character(2)                     :: read_sect(6)
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+!     forces results from unconverged iterative procedures to be taken as converged
+      if (kw_matches(word, '.UNCONV')) then
+         relcc_restart_unconverged = .true.
+      end if
+
+!     in the case of fock-space calculations, indicate which sectors are to be
+!     skipped (e.g. because converged, or otherwise)
+      if (kw_matches(word, '.SKIPSECT')) then
+
+         do i = 1, 6
+            read_sect(i) = '  '
+         enddo
+
+         read(get_file_unit(), *) nsect
+         read(get_file_unit(), *) (read_sect(i), i = 1, nsect)
+
+         ifss(1) = '00'
+         ifss(2) = '01'
+         ifss(3) = '10'
+         ifss(4) = '11'
+         ifss(5) = '02'
+         ifss(6) = '20'
+
+         do i = 1, nsect
+            do j = 1, 6
+               if (read_sect(i).eq.IFSS(j)) then
+                  relcc_restart_skipsect(j) = .true.
+               endif
+            enddo
+         enddo
+      end if
+
+!     forces restart even if setup is potentially different (number of electrons, active/inactive etc)
+      if (kw_matches(word, '.FORCER')) then
+         relcc_restart_ignore_check = .true.
+      end if
+
+!     forces sorting to be done even if it has been completed before.
+      if (kw_matches(word, '.REDOCCSD')) then
+         relcc_restart_redo_ccsd = .true.
+      end if
+
+!     forces sorting to be done even if it has been completed before.
+      if (kw_matches(word, '.REDOSORT')) then
+         relcc_restart_redo_sorting = .true.
+      end if
+
+!     in the case of fock-space calculations, indicate which sectors are to be
+!     recalculated even if converged.
+      if (kw_matches(word, '.REDOSECT')) then
+
+         do i = 1, 6
+            read_sect(i) = '  '
+         enddo
+
+         read(get_file_unit(), *) nsect
+         read(get_file_unit(), *) (read_sect(i), i = 1, nsect)
+
+         ifss(1) = '00'
+         ifss(2) = '01'
+         ifss(3) = '10'
+         ifss(4) = '11'
+         ifss(5) = '02'
+         ifss(6) = '20'
+
+         do i = 1, nsect
+            do j = 1, 6
+               if (read_sect(i).eq.IFSS(j)) then
+                  relcc_restart_redosect(j) = .true.
+               endif
+            enddo
+         enddo
+      end if
+
+
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
 
    subroutine read_input_ccfspc(word, kw_section)
 
@@ -1183,15 +1301,13 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
-      integer                          :: i, j !counters
+      integer                          :: i, j, k !counters
       character(100)                   :: line
+      integer                          :: temp, already
       integer                          :: user_req_symmetries
-      integer                          :: no_sipreps
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
-
-      no_sipreps = 0
 
       if (kw_matches(word, '.ADCLEV')) then
          read(get_file_unit(),'(i5)') reladc_adclevel
@@ -1216,7 +1332,7 @@
       if (kw_matches(word, '.SIPREP')) then
          call kw_read(word, user_req_symmetries)
          !call kw_read(word, reladc_sipreps, user_req_symmetries)
-         call kw_read(word, reladc_sipreps, no_sipreps, user_req_symmetries)
+         call kw_read(word, reladc_sipreps, reladc_no_sipreps, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.DIPREP')) then
@@ -1267,21 +1383,43 @@
 
       if (kw_matches(word, '.FANOIN')) then
          call kw_read(word, reladc_fano_inrep)
-         call kw_read(word, reladc_fano_inabssp) ! use absolute spinor numbers
+         reladc_no_sipreps = reladc_no_sipreps + 1
+         reladc_sipreps(reladc_no_sipreps) = reladc_fano_inrep
+         reladc_sipeigv(reladc_no_sipreps) = 0
+         call kw_read(word, reladc_fano_inrelsp) ! use relative spinor numbers
       end if
 
       if (kw_matches(word, '.FANOCHNL')) then
          ! read number of channels
-         call kw_read(word, reladc_fano_nrchannels)
+         call kw_read(word, reladc_fano_nrgroups)
+         allocate(reladc_fano_groups(reladc_fano_nrgroups))
+         allocate(reladc_fano_labels(reladc_fano_nrgroups))
+         reladc_fano_groups = 0
+         call kw_read(word, reladc_fano_groups, reladc_fano_nrgroups)
+         reladc_fano_nrchannels = SUM(reladc_fano_groups)
          allocate(reladc_fano_channels(reladc_fano_nrchannels,2))
+         reladc_fano_channels = 0
+         already = 0
          print *, ''
          print *, 'Absolute spinor numbers of Fano final states: '
-         do i = 1, reladc_fano_nrchannels
-            ! read every line
-            read(get_file_unit(), '(a)') line
-            ! read the absolute spinor numbers of the final states
-            read(line,*) (reladc_fano_channels(i,j), j = 1, 2)
-            print *, (reladc_fano_channels(i,j), j=1,2)
+         do k = 1, reladc_fano_nrgroups
+           call kw_read(word,reladc_fano_labels(k))
+           do i = 1, reladc_fano_groups(k)
+              ! read every line
+              read(get_file_unit(), '(a)') line
+              ! read the absolute spinor numbers of the final states
+              read(line,*) (reladc_fano_channels(i+already,j), j = 1, 2)
+              if (reladc_fano_channels(i+already,1) < reladc_fano_channels(i+already,2)) then
+                temp = reladc_fano_channels(i+already,1)
+                reladc_fano_channels(i+already,1) = reladc_fano_channels(i+already,2)
+                reladc_fano_channels(i+already,2) = temp
+              end if 
+              print *, (reladc_fano_channels(i+already,j), j=1,2)
+              if (reladc_fano_channels(i+already,1) == reladc_fano_channels(i+already,2)) then
+                call quit ( 'Equal spinors in one channel -> Unphysical choice')
+              end if
+           end do
+           already = already + reladc_fano_groups(k)
          end do
       end if
 
@@ -1290,6 +1428,15 @@
          reladc_sipreps    = 0
          reladc_sipreps(1) = reladc_fano_inrep
          reladc_dodiag     = .false.
+         reladc_fanoonly   = .true.
+      end if
+
+      if (kw_matches(word, '.FANOFOVL')) then
+         call kw_read(word, reladc_fano_fovl)
+      end if
+
+      if (kw_matches(word, '.FANOFCHK')) then
+         reladc_fano_checkfin = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1601,7 +1748,7 @@
           call upcase(input_line)
 
 !         print *, 'ref input line is',input_line
- 
+
           islash = index(input_line,'/')
           ibar   = index(input_line,'|')
           if(islash <= 1)then
@@ -1623,7 +1770,7 @@
 
 !         alpha string
           read(input_line(1:ibar-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,1)
- 
+
           if(ios /= 0)then
             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
                   i,'/',nref_qcorr,'- the defining input line does not contain an alpha string',                &
@@ -1635,7 +1782,7 @@
 
 !         beta string
           read(input_line(ibar+1:islash-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,2)
- 
+
           if(ios /= 0)then
             write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
                   i,'/',nref_qcorr,'- the defining input line does not contain a beta string',                  &
@@ -1658,12 +1805,12 @@
           end if
 
         end do
- 
+
         open(1234,file='refvec.luci',status='replace',form='unformatted',    &
         access='sequential',action="readwrite",position='rewind')
 
         write(1234) nref_qcorr, nash_qcorr(1:nfsym)
-        write(1234) nref_e_qcorr 
+        write(1234) nref_e_qcorr
         write(1234) reference_energy_qcorr(1:nref_e_qcorr)
 !       write # reference configurations
         do i = 1, nref_qcorr
@@ -1724,9 +1871,9 @@
 !         Split potentials and polarization charges in nuclear and electronic
          pcmmod_separate = .true.
       end if
-      
+
       if (kw_matches(word, '.DOSPF ')) then
-!        Perform elimination of spin-orbit dependent terms in the PCM operator 
+!        Perform elimination of spin-orbit dependent terms in the PCM operator
          pcmmod_dospf = .true.
       end if
 
@@ -1743,7 +1890,7 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
-   
+
    subroutine read_input_pcmsolver(word, kw_section)
 
       use pcmmod_cfg
@@ -1763,27 +1910,27 @@
       if (kw_matches(word, '.CAVTYP')) then
          call kw_read(word, pcmmod_cavity_type)
       end if
-      
+
       if (kw_matches(word, '.PATCHL')) then
          call kw_read(word, pcmmod_patch_level)
       end if
-      
+
       if (kw_matches(word, '.COARSI')) then
          call kw_read(word, pcmmod_coarsity)
       end if
-      
+
       if (kw_matches(word, '.AREATS')) then
          call kw_read(word, pcmmod_cavity_area)
       end if
-      
+
       if (kw_matches(word, '.MINDIS')) then
          call kw_read(word, pcmmod_min_distance)
       end if
-      
+
       if (kw_matches(word, '.DERORD')) then
          call kw_read(word, pcmmod_der_order)
       end if
-      
+
       if (kw_matches(word, '.NOSCAL')) then
               pcmmod_scaling = .false.
       end if
@@ -1791,7 +1938,7 @@
       if (kw_matches(word, '.RADIIS')) then
          call kw_read(word, pcmmod_radii_set)
       end if
-      
+
       if (kw_matches(word, '.RESTAR')) then
          call kw_read(word, pcmmod_restart_name)
       end if
@@ -1799,11 +1946,11 @@
       if (kw_matches(word, '.MINRAD')) then
          call kw_read(word, pcmmod_min_radius)
       end if
-      
+
       if (kw_matches(word, '.SOLVER')) then
          call kw_read(word, pcmmod_solver_type)
       end if
-      
+
       if (kw_matches(word, '.SOLVNT')) then
          call kw_read(word, pcmmod_solvent)
       end if
@@ -1823,7 +1970,7 @@
       if (kw_matches(word, '.GINSID')) then
          call kw_read(word, pcmmod_inside_type)
       end if
-      
+
       if (kw_matches(word, '.GOUTSI')) then
          call kw_read(word, pcmmod_outside_type)
       end if

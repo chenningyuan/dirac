@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -144,7 +144,9 @@ C
 C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
-C
+C              Miro Ilias, July/2015 - add control printouts      
+C      
+C      
 C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
@@ -191,10 +193,21 @@ C
       DOSOPR  = relcc_do_hessian
       DOFSPC  = relcc_do_fspc
       DOIH    = relcc_fs_do_ih
+      DORESTART = relcc_do_restart
       DEBUG   = relcc_debug
       TIMING  = relcc_timing
       MWORD   = relcc_memory_in_mw
       INTERFACE = relcc_integral_interface
+
+!     Print section
+      CALL PRSYMB(IW,'=',75,0)
+      WRITE(IW,'(A)')
+     & ' **RELCC: Set-up for Coupled Cluster calculations'
+      CALL PRSYMB(IW,'=',75,0)
+      WRITE(IW,'(1X,A,I3)') '* General print level   : ',IPRNT
+      IF (IPRNT.GE.1) THEN
+        WRITE(IW,"(1X,A,16I3)") "NEL_F1:",(NELEC_F1(I),I=1,16)
+      ENDIF
 C
 C     Input for the energy calculation.
 C
@@ -216,7 +229,7 @@ C
       DOMP2GOLD = relcc_do_oldmp2gradient 
       DOCCSDG   = relcc_do_ccsdgradient 
       DOCCSDTG  = relcc_do_ccsdtgradient
-      NOZG      = relcc_do_unrelaxed
+      NOZG      = .not.relcc_do_relaxed
       DONATORB  = relcc_do_naturalorbitals
       NEOPER    = 3
       NAMEE(1)  = 'XDIPLEN '
@@ -227,8 +240,8 @@ C
       NTOL      = relcc_fopr_desired_convergence
 C     Switch on evaluation of property output if necessary
       IF (DOMP2G) THEN
-         IF (SPFR) 
-     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
+!         IF (SPFR) 
+!     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
           IPRP_WF = 0
           DO I = 1, NPRP_WF
@@ -244,6 +257,26 @@ C     Switch on evaluation of property output if necessary
              PRP_WF(IPRP_WF) = 'MP2 '
           END IF
       END IF
+
+!     following section is for switching on coupled cluster property evaluation. 
+      IF (DOCCSDG) THEN
+          DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'CCSD') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'CCSD'
+          END IF
+      END IF
+
+
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
       NTOLGR = NTOL
@@ -304,6 +337,21 @@ C
       DO ISECT = 2, 6
           FSSECT(ISECT) = relcc_fs_fssect(ISECT)
       ENDDO
+
+! in case we want to jump to a given sector 
+      do isect = 1, 6
+         FS_SKIP_SECT(isect) = relcc_restart_skipsect(isect)
+         FS_REDO_SECT(isect) = relcc_restart_redosect(isect)
+         if ((FS_SKIP_SECT(isect) .eqv. .true.).and.
+     &       (FS_REDO_SECT(isect) .eqv. .true.)) then
+            call quit('Inconsistent input for skip/redo_sect')
+         endif
+      enddo
+      restart_unconverged  = relcc_restart_unconverged
+      restart_redo_sort    = relcc_restart_redo_sorting
+      restart_redo_ccsd    = relcc_restart_redo_ccsd
+      restart_ignore_check = relcc_restart_ignore_check
+
 CMI   ...provide with default values
       MAXIT02=relcc_fs_max02_iterations 
       MAXIT01=relcc_fs_max01_iterations 
@@ -392,15 +440,8 @@ C     Some processing of the input is necessary
 C
       ER_IH(1,1) = EHMIN ! for (1,0) or (2,0) sectors plus (1,1) sector
       ER_IH(2,1) = EHMAX ! the same
-CMI ....
       ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
       ER_IH(2,2) = EPMAX
-
-! MI: control output ... 
-      write(IW,'(/,2X,A,F12.5,1X,A,F12.5)') 
-     &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
-      write(IW,'(2X,A,F12.5,1X,A,F12.5)') 
-     &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
 
 C
 C     XIH energy shift sign definition.
@@ -460,6 +501,13 @@ C
          DOENER = .FALSE.
       endif
 
+      IF (DOFSPC) THEN
+!     mi: print out range of intermediate Hamilt.spaces
+        write(IW,'(/,2X,A,F12.5,1X,A,F12.5)') 
+     &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
+        write(IW,'(2X,A,F12.5,1X,A,F12.5)') 
+     &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
+      ENDIF
 C
       IF( MP2_DENRUN )THEN
         IN = IN_SAVE
@@ -523,7 +571,6 @@ C
       integer(kind=klongint) :: mxcorr
       integer(kind=klongint) :: mxcorr1
       integer(kind=klongint) :: mword_limit
-      real(kind=kreal)       :: total_mem_new = 0
       real(kind=kreal)       :: new_mword_limit = 0
       integer :: word
 C
@@ -568,12 +615,7 @@ C
 C     Memory and I/O setup section
 C     ----------------------------
 C
-      call allocator_get_available_mem(total_mem_new)
-
-! miro & andre: at runtime-check ifort giving "forrtl: error (65): floating invalid" 
-! the simplest solution is to remove the -ftrapuv flag from among runtime checking flags
-      maxcor = nint((total_mem_new/8.0d0),kind(8))
-
+      call allocator_get_words_available(maxcor)
       mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
 C
@@ -629,7 +671,7 @@ C
 C     General setup
 C     -------------
 C
-      CALL CCDINI
+      CALL CCDINI(DORESTART)
       EQNS = '      '
 C
 C     Set up symmetry tables and parallel distribution arrays
@@ -669,6 +711,15 @@ C
      &                DOFOPR,
      &                DOSOPR,DEBUG,TIMING,IPRNT,INTERFACE
       endif
+
+!miro: printout of changed DHOLU limit, with warning
+      if (relcc_ccener_dholu_limit_set) then
+        write(IW,*) 'WARNING: you have altered the DHOLU limit !'
+        write(IW,*) 'new value=',relcc_ccener_dholu_limit
+        write(IW,*) 
+     & 'Decreasing DHOLU does not solve CC convergence problems !'
+      endif
+
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
@@ -693,6 +744,7 @@ C
          CALL CCFOPR (ICALC,NSP,IREPSPI,MXCORR1,EPS)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
+
 C
       IF (DOSOPR) THEN
          MXCORR1 = 0
@@ -934,7 +986,7 @@ C---------------Local variables--------------------------------------
 C
       CHARACTER*14 REPNT(16)
       INTEGER NVIRT(16)
-      INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
+!      INTEGER NOOOT2(MXREP),NVVVT2(MXREP)
       CHARACTER*4 REPNA_ACT(MXREP)
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
@@ -964,6 +1016,12 @@ C
          MOV(IREP) = 0
          MVO(IREP) = 0
          MVV(IREP) = 0
+
+         POO(IREP) = 0
+         POV(IREP) = 0
+         PVO(IREP) = 0
+         PVV(IREP) = 0
+
          NOO(IREP) = 0
          NOV(IREP) = 0
          NVO(IREP) = 0
@@ -974,10 +1032,16 @@ C
          NVOOT(IREP) = 0
          NVVOT(IREP) = 0
          NOOVT(IREP) = 0
+         NOOV(IREP) = 0
          NVVVT(IREP) = 0
          NVOO (IREP) = 0
+         NVOV (IREP) = 0
+         NVOV2(IREP) = 0
          NOVO (IREP) = 0
+         NOVO2 (IREP) = 0
+         NVVO (IREP) = 0
          NOVVT(IREP) = 0
+         NOVV(IREP) = 0
          NOOOT2(IREP) = 0
          NVVVT2(IREP) = 0
 C ** additional arrays for parallel triples
@@ -1329,6 +1393,7 @@ C
       DO JREP = 1, NREP
          DO IREP = 1, NREP
             IJREP = MULTB(IREP,JREP,1)
+            IIOO(IREP,JREP) = NOO(IJREP)  !new
             IIOV(IREP,JREP) = NOV(IJREP)
             IIVO(IREP,JREP) = NVO(IJREP)
             IIVV(IREP,JREP) = NVV(IJREP)
@@ -1349,6 +1414,25 @@ C
          ENDDO
       ENDDO
 C
+
+
+      DO JREP = 1, NREP
+         DO IREP = 1, NREP
+            IJREP = MULTB(IREP,JREP,3)
+            KKOO(IREP,JREP) = POO(IJREP)
+            KKOV(IREP,JREP) = POV(IJREP)
+            KKVO(IREP,JREP) = PVO(IJREP)
+            KKVV(IREP,JREP) = PVV(IJREP)
+            POO(IJREP) = POO(IJREP) + NO(IREP)*NO(JREP)
+            POV(IJREP) = POV(IJREP) + NO(IREP)*NV(JREP)
+            PVO(IJREP) = PVO(IJREP) + NV(IREP)*NO(JREP)
+            PVV(IJREP) = PVV(IJREP) + NV(IREP)*NV(JREP)
+         ENDDO
+      ENDDO
+C
+
+
+
       DO JREP = 1, NREP
          IJREP = MULTB(JREP,JREP,1)
          IIOOT(JREP,JREP) = NOOT(IJREP)
@@ -1370,12 +1454,21 @@ C
             KKOOOT(IJREP,KREP) = NOOOT(IJKREP)
             KKVVOT(IJREP,KREP) = NVVOT(IJKREP)
             KKOOVT(IJREP,KREP) = NOOVT(IJKREP)
+            KKVVVT(IJREP,KREP) = NVVVT(IJKREP)
             KKVOO (IJREP,KREP) = NVOO (IJKREP)
+            KKVOV (IJREP,KREP) = NVOV (IJKREP)
+            KKOVO (IJREP,KREP) = NOVO2(IJKREP)
+            KKOVV (IJREP,KREP) = NOVV (IJKREP)
+
+
             NOOOT(IJKREP) = NOOOT(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVOT(IJKREP) = NVVOT(IJKREP) + NVVT(IJREP)*NO(KREP)
             NOOVT(IJKREP) = NOOVT(IJKREP) + NOOT(IJREP)*NV(KREP)
             NVVVT(IJKREP) = NVVVT(IJKREP) + NVVT(IJREP)*NV(KREP)
             NVOO (IJKREP) = NVOO (IJKREP) + NVO (IJREP)*NO(KREP)
+            NOVV (IJKREP) = NOVV (IJKREP) + NOV (IJREP)*NV(KREP)
+            NOVO2(IJKREP) = NOVO2(IJKREP) + NOV (IJREP)*NO(KREP)
+            NVOV (IJKREP) = NVOV (IJKREP) + NVO (IJREP)*NV(KREP)
          ENDDO
       ENDDO
 C
@@ -1383,12 +1476,18 @@ C
          DO KREP = 1, NREP
             IJKREP = MULTB(KREP,IJREP+NREP,2)
             LLOVO (KREP,IJREP) = NOVO (IJKREP)
+            LLOOV (KREP,IJREP) = NOOV (IJKREP)
+            LLVVO (KREP,IJREP) = NVVO (IJKREP)
             LLVOOT(KREP,IJREP) = NVOOT(IJKREP)
+            LLVOV (KREP,IJREP) = NVOV (IJKREP)
             LLOVVT(KREP,IJREP) = NOVVT(IJKREP)
             LLOOOT(KREP,IJREP) = NOOOT2(IJKREP)
             LLVVVT(KREP,IJREP) = NVVVT2(IJKREP)
             NOVO (IJKREP) = NOVO (IJKREP) + NVO(IJREP)*NO(KREP)
+            NOOV (IJKREP) = NOOV (IJKREP) + NOV(IJREP)*NO(KREP)
+            NVVO (IJKREP) = NVVO (IJKREP) + NVO(IJREP)*NV(KREP)
             NVOOT(IJKREP) = NVOOT(IJKREP) + NOOT(IJREP)*NV(KREP)
+            NVOV2(IJKREP) = NVOV2(IJKREP) + NOV (IJREP)*NV(KREP)
             NOVVT(IJKREP) = NOVVT(IJKREP) + NVVT(IJREP)*NO(KREP)
             NOOOT2(IJKREP) = NOOOT2(IJKREP) + NOOT(IJREP)*NO(KREP)
             NVVVT2(IJKREP) = NVVVT2(IJKREP) + NVVT(IJREP)*NV(KREP)
@@ -1425,10 +1524,15 @@ C
       IVO(1) = 0
       IVV(1) = 0
       IOOOOTT(1) = 0
+      IOOOO(1) = 0
       IVOOOT (1) = 0
+      IOVOOT (1) = 0
       IVVOOTT(1) = 0
       IVOVO  (1) = 0
+      IOVVO  (1) = 0
+      IVOOV  (1) = 0 ! new index
       IVOVVT (1) = 0
+      IOVVVT (1) = 0
       IVVVVTT(1) = 0
       IVVOO  (1) = 0
       IVVOOT (1) = 0
@@ -1447,10 +1551,16 @@ C
          IVO    (IREP+1) = IVO    (IREP) + NV  (IREP)*NO  (IREP)
          IVV    (IREP+1) = IVV    (IREP) + NV  (IREP)*NV  (IREP)
          IOOOOTT(IREP+1) = IOOOOTT(IREP) + NOOT(IREP)*NOOT(IREP)
+! new index. will go away.
+         IOOOO  (IREP+1) = IOOOO  (IREP) + NOO(IREP)*NOO(IREP)
          IVOOOT (IREP+1) = IVOOOT (IREP) + NVO (IREP)*NOOT(IREP)
+         IOVOOT (IREP+1) = IOVOOT (IREP) + NOV (IREP)*NOOT(IREP)
          IVVOOTT(IREP+1) = IVVOOTT(IREP) + NVVT(IREP)*NOOT(IREP)
          IVOVO  (IREP+1) = IVOVO  (IREP) + NVO (IREP)*NVO (IREP)
+         IOVVO  (IREP+1) = IOVVO  (IREP) + NOV (IREP)*NVO (IREP)
+         IVOOV  (IREP+1) = IVOOV  (IREP) + NVO (IREP)*NOV (IREP) !new index
          IVOVVT (IREP+1) = IVOVVT (IREP) + NVO (IREP)*NVVT(IREP)
+         IOVVVT (IREP+1) = IOVVVT (IREP) + NOV (IREP)*NVVT(IREP) !new index
          IVVVVTT(IREP+1) = IVVVVTT(IREP) + NVVT(IREP)*NVVT(IREP)
          IVVOO  (IREP+1) = IVVOO  (IREP) + NVV (IREP)*NOO (IREP)
          IVVOOT (IREP+1) = IVVOOT (IREP) + NVV (IREP)*NOOT(IREP)
@@ -1463,19 +1573,42 @@ C
       NV5 = IVOVVT (NREP+1)
       NV6 = IVVVVTT(NREP+1)
 C
+
       JVOXX(1) = 0
       JOOOO(1) = 0
+      JOOOV(1) = 0
+      JOOVO(1) = 0
+      JOOVV(1) = 0
+      JOVOO(1) = 0
+      JOVOV(1) = 0
+      JOVVO(1) = 0
+      JOVVV(1) = 0
       JVOOO(1) = 0
       JVVOO(1) = 0
+      JVVOV(1) = 0
       JVOVO(1) = 0
+      JVOOV(1) = 0
       JVVVO(1) = 0
-      J2VOVO(1) = 0
+      JVVVOI4(1)  = 0
 C
 C ** additional RELADC arrays
 C
+
+      J2OOOV(1) = 0
+      J2OOVO(1) = 0
+      J2OOVV(1) = 0
+      J2OVOO(1) = 0
+      J2OVOV(1) = 0
+      J2OVVO(1) = 0
+      J2OVVV(1) = 0
+
+      J2VOVO(1) = 0
+      J2VOOV(1) = 0
       J2OOOO(1) = 0
+      J2OOVO(1) = 0
       J2VOOO(1) = 0
       J2VVOO(1) = 0
+      J2VVOV(1) = 0
       J2VOVV(1) = 0
       J2VVVO(1) = 0
 C
@@ -1484,22 +1617,46 @@ C
       DO IREP = 1, NREP
          JVOXX(IREP+1) = JVOXX(IREP) + MVO(IREP)
          JOOOO(IREP+1) = JOOOO(IREP) + MOO(IREP)*MOO(IREP)
+         JOOOV(IREP+1) = JOOOV(IREP) + MOO(IREP)*MOV(IREP)
+         JOOVO(IREP+1) = JOOVO(IREP) + MOO(IREP)*MVO(IREP)
+         JOOVV(IREP+1) = JOOVO(IREP) + MOO(IREP)*MVV(IREP)
+         JOVOO(IREP+1) = JOVOO(IREP) + MOV(IREP)*MOO(IREP)
+         JOVOV(IREP+1) = JOVOV(IREP) + MOV(IREP)*MOV(IREP)
+         JOVVO(IREP+1) = JOVVO(IREP) + MOV(IREP)*MVO(IREP)
+         JOVVV(IREP+1) = JOVVV(IREP) + MOV(IREP)*MVV(IREP)
          JVOOO(IREP+1) = JVOOO(IREP) + MVO(IREP)*MOO(IREP)
          JVVOO(IREP+1) = JVVOO(IREP) + MVV(IREP)*MOO(IREP)
          JVOVO(IREP+1) = JVOVO(IREP) + MVO(IREP)*MVO(IREP)
+         JVOOV(IREP+1) = JVOOV(IREP) + MVO(IREP)*MOV(IREP)
          JVVVO(IREP+1) = JVVVO(IREP) + MVV(IREP)*MVO(IREP)
+         JVVOV(IREP+1) = JVVOV(IREP) + MVV(IREP)*MOV(IREP)
+         JVVVOI4(IREP+1) = JVVVOI4(IREP) + MVV(IREP)*MVO(IREP) !new index to avoid integer8
          JREP = MULTB(IREP+NREP,1+NREP,2)
-         J2VOVO(IREP+1) = J2VOVO(IREP) + MVO(IREP)*MVO(JREP)
 
+         J2OOOV(IREP+1) = J2OOOV(IREP) + MOO(IREP)*MOV(JREP)
+         J2OOVO(IREP+1) = J2OOVO(IREP) + MOO(IREP)*MVO(JREP)
+         J2OOVV(IREP+1) = J2OOVO(IREP) + MOO(IREP)*MVV(JREP)
+         J2OVOO(IREP+1) = J2OVOO(IREP) + MOV(IREP)*MOO(JREP)
+         J2OVOV(IREP+1) = J2OVOV(IREP) + MOV(IREP)*MOV(JREP)
+         J2OVVO(IREP+1) = J2OVVO(IREP) + MOV(IREP)*MVO(JREP)
+         J2OVVV(IREP+1) = J2OVVV(IREP) + MOV(IREP)*MVV(JREP)
+         J2VOVO(IREP+1) = J2VOVO(IREP) + MVO(IREP)*MVO(JREP)
+         J2VOOV(IREP+1) = J2VOOV(IREP) + MVO(IREP)*MOV(JREP)
          J2OOOO(IREP+1) = J2OOOO(IREP) + MOO(IREP)*MOO(JREP)
          J2VOOO(IREP+1) = J2VOOO(IREP) + MVO(IREP)*MOO(JREP)
          J2VVOO(IREP+1) = J2VVOO(IREP) + MVV(IREP)*MOO(JREP)
+         J2VVOV(IREP+1) = J2VVOV(IREP) + MVV(IREP)*MOV(JREP)
          J2VOVV(IREP+1) = J2VOVV(IREP) + MVO(IREP)*MVV(JREP)
          J2VVVO(IREP+1) = J2VVVO(IREP) + MVV(IREP)*MVO(JREP)
       ENDDO
       NDIMX = JVOXX(NREP+1)
 C
       KVOOV (1) = 0
+      KVOVV (1) = 0
+      KOVOO(1)  = 0
+      KOVOV(1)  = 0
+      KOVVOT(1) = 0
+      KVOVO (1) = 0
       KVOOO (1) = 0
       KOOOOT(1) = 0
       KVVOOT(1) = 0
@@ -1507,24 +1664,35 @@ C
       KOOOVT(1) = 0
       KOOVVT(1) = 0
       KVVVOT(1) = 0
+      KVVOVT(1) = 0
       DO IREP = 1, NREP
          KVOOV  (IREP+1) = KVOOV  (IREP) + NVOO (IREP)*NV(IREP)
+         KOVOO  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NO(IREP)
+         KOVOV  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NV(IREP)
+         KOVVOT  (IREP+1) = KOVVOT  (IREP) + NOVVT (IREP)*NO(IREP)
+         KVOVV  (IREP+1) = KVOVV  (IREP) + NVOV (IREP)*NV(IREP)
+         KVOVO  (IREP+1) = KVOVO  (IREP) + NVOV (IREP)*NO(IREP)
          KVOOO  (IREP+1) = KVOOO  (IREP) + NVOO (IREP)*NO(IREP)
          KOOOOT (IREP+1) = KOOOOT (IREP) + NOOOT(IREP)*NO(IREP)
          KVVOOT (IREP+1) = KVVOOT (IREP) + NVVOT(IREP)*NO(IREP)
          KOOVOT (IREP+1) = KOOVOT (IREP) + NOOVT(IREP)*NO(IREP)
          KOOOVT (IREP+1) = KOOOVT (IREP) + NOOOT(IREP)*NV(IREP)
          KOOVVT (IREP+1) = KOOVVT (IREP) + NVOOT(IREP)*NV(IREP)
+         KVVOVT (IREP+1) = KVVOVT (IREP) + NVVOT(IREP)*NV(IREP)
          KVVVOT (IREP+1) = KVVVOT (IREP) + NVVVT(IREP)*NO(IREP)
       ENDDO
 C
       LOOVO (1) = 0
+      LOVVO (1) = 0
+      LOVOV (1) = 0
       LVOVO (1) = 0
+      LVVVO (1) = 0
       LOOOOT(1) = 0
       LVVOOT(1) = 0
       LOVOOT(1) = 0
       LVOOOT(1) = 0
       LOVVOT(1) = 0
+      LVOOVT(1) = 0 !new index
 C ** additional RELADC arrays
       LOOVVT(1) = 0
       LVOVVT(1) = 0
@@ -1532,12 +1700,16 @@ C ** additional RELADC arrays
       DO IREP = 1, NREP
          LOOVO  (IREP+1) = LOOVO  (IREP) + NO(IREP)*NOVO (IREP)
          LVOVO  (IREP+1) = LVOVO  (IREP) + NV(IREP)*NOVO (IREP)
+         LOVVO  (IREP+1) = LOVVO  (IREP) + NO(IREP)*NVVO(IREP)
+         LOVOV  (IREP+1) = LOVOV  (IREP) + NO(IREP)*NVOV(IREP)
+         LVVVO  (IREP+1) = LVVVO  (IREP) + NV(IREP)*NVVO(IREP)
          LOOOOT (IREP+1) = LOOOOT (IREP) + NO(IREP)*NOOOT(IREP)
          LVVOOT (IREP+1) = LVVOOT (IREP) + NV(IREP)*NVOOT(IREP)
          LOVOOT (IREP+1) = LOVOOT (IREP) + NO(IREP)*NVOOT(IREP)
          LVOOOT (IREP+1) = LVOOOT (IREP) + NV(IREP)*NOOOT(IREP)
          LOVVOT (IREP+1) = LOVVOT (IREP) + NO(IREP)*NVVOT(IREP)
 
+         LVOOVT (IREP+1) = LVOOVT (IREP) + NV(IREP)*NVOOT(IREP) !new index
          LOOVVT (IREP+1) = LOOVVT (IREP) + NO(IREP)*NOVVT(IREP)
          LVOVVT (IREP+1) = LVOVVT (IREP) + NV(IREP)*NOVVT(IREP)
       ENDDO
@@ -1585,6 +1757,12 @@ C
       DO IREP=1,NREP
         KT3VVVOT(IREP+1) = KT3VVVOT(IREP) + NT3VVVT(IREP)*NO(IREP)
       ENDDO
+
+      KT3VVVVT(1)=0
+      DO IREP=1,NREP
+        KT3VVVVT(IREP+1) = KT3VVVVT(IREP) + NT3VVVT(IREP)*NV(IREP)
+      ENDDO
+
 C
 C----------------------------------------------
 C----- F O C K   S P A C E   A R R A Y S ------
@@ -1904,7 +2082,6 @@ Caspg, replacing memget
      &                              a_v3(:),     a_vta(:)
       real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
 c
-      real (kind=kreal)   :: total_mem_new = 0
       integer(kind=8)        :: mxcorr
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
@@ -2103,13 +2280,14 @@ c
      &                             a_VVOO(:),a_VVVO(:), a_BUF3(:),
      &                             a_TAU3(:), a_T2T(:)
 c
-      real(kind=kreal)    :: total_mem_new   = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0 
       integer(kind=8)        :: mxcr    = 0
       integer(kind=8)        :: mxcorr  
-      integer         :: freemem = 0
+      integer                :: freemem = 0
+      integer                :: maxit_save
+      logical                :: is_ccsd_converged = .false.
 C
 C---------------Executable code--------------------------------------
 C
@@ -2209,17 +2387,18 @@ C
 C  Solve relativistic MP2 equations
 C
       IF (DOMP2) THEN
-         IF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(5).EQ.3) THEN
             WRITE (IW,1010)
             GOTO 10
          ENDIF
 C
-         CALL MP2EQN(EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
+         CALL amplitude_equation_mp2 (EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        This is a restart point: save the amplitudes and update status.
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(4) = 3
+         IMSTAT(5) = 3
          CALL CCDUMP
    10    CONTINUE
          if (doxml) then
@@ -2230,7 +2409,8 @@ C
 C  Solve relativistic CCSD equations
 C
    11 IF (DOCCSD) THEN
-         IF (IMSTAT(5).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.3) THEN
             WRITE (IW,1011)
             GOTO 20
          ENDIF
@@ -2243,13 +2423,15 @@ C
 C
 C        Initialize T1 and T2 amplitudes
 C
-         IF (IMSTAT(5).EQ.2) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.2) THEN
 C
 C           Use restart amplitudes
 C
             CALL GETAMPT (a_T1,a_T2)
 C
-         ELSEIF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         ELSEIF (IMSTAT(5).EQ.3) THEN
 C
 C           Use MP2 amplitudes
 C
@@ -2267,16 +2449,20 @@ C
          ENDIF
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(5) = 2
+! aspg changed
+         IMSTAT(6) = 2
          CALL CCDUMP
 C
          CALL XTIME(5,1,'CCSD equations                ')
-         CALL CCEQN(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
-     &           a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
+
+         maxit_save = MAXIT
+         CALL cceqn_driver_amplitudes(MAXIT_SAVE,EPS,a_FOO,a_FVO,a_FVV,
+     &           a_T1,a_S1,a_T2 ,a_S2 ,a_AZ,DUM,a_H,a_HO,a_HV,a_HOV,
      &           a_GOO,a_GVV,a_BUF1,a_BUF2,a_BUF3,
      &           a_CCC,a_BB1,a_BB2,
      &           TOL,NBUF2,NBUF3,DUM,DUM,DUM)
          CALL XTIME(5,2,'CCSD equations                ')
+         if (maxit_save.le.maxit) is_ccsd_converged = .true.
 
          if (doxml) then
             call xml_quantity('CCSD energy',ESCF+ECCSD,'Hartree')
@@ -2285,7 +2471,11 @@ C
 C        This is a restart point: save the amplitudes and update status.
 C
          CALL PUTAMPT(a_T1,a_T2)
-         IMSTAT(5) = 3
+! aspg changed
+
+         if (is_ccsd_converged.or.restart_unconverged) then
+            IMSTAT(6) = 3
+         endif
          CALL CCDUMP
    20    CONTINUE
       ENDIF
@@ -2296,11 +2486,6 @@ C
  420  CONTINUE
       IF (DOCCSDT) THEN
          IF (ICALC.EQ.1) GOTO 421
-
-         IF (IMSTAT(6).EQ.3) THEN
-            WRITE (IW,1012)
-            GOTO 30
-         ENDIF
 C
  421     CONTINUE
          call dealloc(a_AZ  )
@@ -2316,6 +2501,13 @@ C
          call dealloc(a_BUF1)
          call dealloc(a_BUF2)
          call dealloc(a_BUF3)
+
+! aspg changed
+         IF (IMSTAT(7).EQ.3) THEN
+            WRITE (IW,1012)
+            GOTO 30
+         ENDIF
+
 C
 C        now we start reallocating
 C
@@ -2344,9 +2536,11 @@ C
 C
 C        Check if CCSD amplitudes are available
 C
-         IF (IMSTAT(5).EQ.3) THEN
+! aspg changed
+         IF (IMSTAT(6).EQ.3) THEN
             CALL GETAMPT (a_T1,a_T2)
-         ELSEIF (IMSTAT(4).EQ.3) THEN
+! aspg changed
+         ELSEIF (IMSTAT(5).EQ.3) THEN
             WRITE (IW,1006)
             CALL GETAMPT (a_T1,a_T2)
          ELSE
@@ -2368,7 +2562,8 @@ C
 C
 C     This is a restart point : update status.
 C
-         IMSTAT(6) = 3
+! aspg changed
+         IF (IMSTAT(6).EQ.3) IMSTAT(7) = 3
          CALL CCDUMP
    30    CONTINUE
 
@@ -2385,10 +2580,10 @@ C
       ENDIF
 C
       call dealloc(a_FVO , id="fvo")
-      call dealloc(a_FOO , id="fvo")
-      call dealloc(a_FVV , id="fvo")
-      call dealloc(a_T1  , id="fvo")
-      call dealloc(a_T2  , id="fvo")
+      call dealloc(a_FOO , id="foo")
+      call dealloc(a_FVV , id="fvv")
+      call dealloc(a_T1  , id="t1")
+      call dealloc(a_T2  , id="t2")
       call dealloc(a_S1  , id="s1")
       call dealloc(a_S2  , id="s2")
 C
@@ -2402,8 +2597,8 @@ C
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
-1006  FORMAT (/' WARNING : Calculating CCSD(T) energies with MP2',
-     &         ' amplitudes')
+1006  FORMAT (/' WARNING : Calculating CCSD(T) energies with',
+     &         ' MP2/unconverged amplitudes')
 1010  FORMAT (/' Skipping MP2 calculation')
 1011  FORMAT (/' Skipping CCSD calculation')
 1012  FORMAT (/' Skipping CCSD(T) calculation')
@@ -2416,6 +2611,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
+      use lambda_equation
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2462,6 +2658,7 @@ C
       REAL*8 TOL
       COMPLEX*16 EPHASE,CEXPA
       LOGICAL ALLOC_ME
+      INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
 C
       real(kind=kreal), allocatable, target :: a_FOO(:), a_FVO(:), 
@@ -2472,11 +2669,13 @@ C
      &                             a_XVO(:), a_XOV(:),  a_EVO(:),
      &                             a_EOV(:), a_EOO(:),  a_EVV(:),
      &                             a_DG(:),  a_DMO(:),  a_XMO(:),
-     &                             a_CCC(:), a_BB1(:),  a_BB2(:),
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
-     &                             a_BUF3(:),a_FVV(:)
+     &                    a_BUF3(:),a_FVV(:),a_AZ(:),a_H(:),a_Hbar(:),
+     &                    wovoo(:),a_HO(:), a_HV(:),a_HOV(:),a_GOO(:),
+     &                    wvvvo(:),a_GVV(:), a_CCC(:),  a_BB1(:),
+     &                             a_BB2(:),l1_sort(:),l2_sort(:)
 
-      real(kind=kreal)       :: total_mem_new = 0
+
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -2491,15 +2690,20 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-         WRITE (IW,*) ' CCSD gradient not yet implemented,'//
-     &         ' calculate MP2 gradient instead'
-         doccsdg = .false.
-         domp2g = .true.
+        if (nmproc.gt.1) then
+          call quit('CC-Gradient is not parallelized')
+        else
+          WRITE (IW,*) 'Calculate CCSD gradient'
+          doccsdg = .true.
+        endif
       endif
-      ALLOC_ME = ICALC.GE.2
-      IF (ICALC.LE.0) RETURN
-C
-C     Allocate space for the calculation of the gradient
+
+      if (domp2g) then
+
+         WRITE (IW,*) 'calculate MP2 gradient'
+         domp2g = .true.
+
+      endif
 C
 C     here we allocate the variables common to both schemes
 C     the specific ones are allocated as needed
@@ -2517,13 +2721,12 @@ C
       call alloc( a_DOV   , NDIMX*RCW        , id="dov" )
       call alloc( a_DMO   , NORBT*NORBT*NZ   , id="dmo" )
       call alloc( a_XMO   , NORBT*NORBT*NZ   , id="xmo" )
-
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
 
 C     Calculate the size of the array needed for the sorted T2 array that      
 C     is used in MOLTRA. In spinfree calculations this will be larger than     
-C     the the dimension used in RELCCSD (was a nasty bug in DIRAC08)           
+C     the dimension used in RELCCSD (was a nasty bug in DIRAC08)           
 C     This initialization does not fix the problem with spinfree calculations, 
 C     however, various routines (e.g. DOOTODIR and DVVTODIR) do need to be     
 C     adapted to the fact that in spinfree calculations there is a many-to-1   
@@ -2590,7 +2793,14 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW
+!     NBUF3 = (freemem - work_memsize) / RCW
+! hjaaj Aug. 2015: modified because this could give NBUF3 < 0
+      IF (MYPROC .NE. MASTER) THEN
+         NBUF3 = 0
+      ELSE
+         NBUF3 = freemem / RCW
+      END IF
+
 C
 C     Allocate now also this remaining work array
 C
@@ -2631,7 +2841,7 @@ C
 C
 C        Solve relativistic MP2 lambda equations
 C
-         CALL MP2EQN(EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
+         CALL lambda_equation_mp2 (EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        Get amplitude part of density matrix
 C
@@ -2702,7 +2912,13 @@ C       fact that later on in the call to dirnod2 there will
 C       be allocation(s) of the same size for the integral
 C       drivers etc; so this is in a way a hack, because of
 C       limitations elsewhere. 20120720
-      NBUF3 = (freemem - work_memsize) / RCW 
+!     NBUF3 = (freemem - work_memsize) / RCW
+! hjaaj Aug. 2015: modified because this could give NBUF3 < 0
+      IF (MYPROC .NE. MASTER) THEN
+         NBUF3 = 0
+      ELSE
+         NBUF3 = freemem / RCW
+      END IF
 C
 C     Allocate now also this remaining work array
 C
@@ -2732,9 +2948,9 @@ C         this means that, for the time being, we can deallocate everything?
           ENDIF
 #endif
 C
-C        Get MP2 amplitudes and lambdas
+C        Get CCSD amplitudes and lambdas
 C
-         CALL MP2EQN(EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
+         CALL lambda_equation_mp2 (EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
 C
 C        Get amplitude part of density matrix
 C
@@ -2751,7 +2967,6 @@ C
 C        Create upper triangle of density matrix
 C
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
-C
 C        Write density matrix to file for later processing
 C
          CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
@@ -2767,6 +2982,8 @@ C
 C
           CALL MP2_NATORB( a_DMO,IPRINT_NO,NOZG)
          END IF
+
+
 C
 C        Release the slaves (in case of parallel runs)
 C
@@ -2779,6 +2996,168 @@ C
 #endif
  431  CONTINUE
          if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
+      ENDIF
+
+
+!-----------------------------------------------------------
+**ashee
+** new section for lambda equation in coupled cluster level.
+!-----------------------------------------------------------
+      IF (DOCCSDG) THEN
+C
+C     Calculate size of the 3rd work array that is passed on to the
+C     response module as work, we make it as large as possible.
+C
+      call allocator_get_maxbuff(freemem,kind(a_BUF3))
+C aspg: the subtraction of work_memsize here is due to the 
+C       fact that later on in the call to dirnod2 there will
+C       be allocation(s) of the same size for the integral
+C       drivers etc; so this is in a way a hack, because of
+C       limitations elsewhere. 20120720
+       NBUF3 = freemem / RCW
+
+         NV5IRP = MAX(INT(JVOVV(NREP+1),8),INT(JOVVV(NREP+1),8))
+         NV6IRP = 1
+         DO IRP = 1, NREP
+            NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
+         ENDDO
+
+
+C        Check the minimum size for the general use of this array
+
+         NVIRP = MAX(NV5IRP,NV6IRP)
+
+         NBUF3 = MIN(NVIRP,INT(NBUF3,8))
+         NBUF3 = MAX(NBUF1,NBUF3)
+
+C     Allocate now also this remaining work array
+        call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+
+         MAXDIM = MXDIMCC
+         MAXIT  = MXITCC
+
+! arrays specific for the use in the call sequence of cceqns subroutine.
+
+         call alloc( a_AZ   ,    NV1*RCW              , id="az" )
+         call alloc( a_H    , ivoov(nrep+1)*RCW              , id="h" )
+         call alloc( a_Hbar , iovvo(nrep+1)*RCW           , id="hbar" )
+         call alloc( wovoo  , iovoot(nrep+1)*RCW   , id="w1v" )
+!         following array consumes too much memory 
+!        call alloc( wvvvo  ,    NV5*RCW            , id="w3v" ) 
+         allocate(wvvvo(nv5*RCW)) !consumes too much memory
+         call alloc( a_HO   ,   NFOO*RCW             , id="ho" )
+         call alloc( a_HV   ,   NFVV*RCW             , id="hv" )
+         call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
+         call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
+         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" ) 
+         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" ) 
+
+
+
+      call allocator_get_words_inuse(current_mem_use)
+      mxcorr = current_mem_use - start_mem_use
+
+      IF (ICALC.EQ.1) THEN
+         WRITE (IW,1001) "Gradient Calculation",MXCORR
+         GOTO 451
+      ENDIF
+
+          WRITE (IW,1010)
+C
+C         Slaves will only help in the integral calculation.
+C
+C         this means that, for the time being, we can deallocate everything? 
+#if defined (VAR_MPI)
+          IF (MYPROC.NE.MASTER) THEN
+             IF (ICALC.EQ.2) CALL DIRNOD2()
+             goto 451
+          ENDIF
+#endif
+
+!--------------------------------------------------
+**ashee
+** get coupled cluster amplitudes
+!--------------------------------------------------
+!      IF (IMSTAT(5).EQ.3) THEN
+!        CALL GETAMPT (a_T1,a_T2)
+!      ENDIF
+
+!------------------------------------------
+** solve coupled cluster lambda equation.
+** ashee
+!------------------------------------------
+
+!        get coupled cluster lambdas
+
+         CALL CCDUMP
+
+    5   format(10f10.6)  
+
+         TOL = 10.0D0**(-NTOLCC)
+
+         CALL cceqn_driver_lambda(MAXIT,EPS,a_FOO,a_FVO,a_FVV,a_T1,a_S1,
+     &          a_T2 ,a_S2 ,a_AZ,wvvvo,a_H,a_Hbar,wovoo,a_HO,a_HV,a_HOV,
+     &           a_BUF1,a_BUF2,a_BUF3,
+     &           a_CCC,a_BB1,a_BB2,
+     &           TOL,NBUF2,NBUF3)
+
+
+!     Get amplitude part of density matrix
+!!!     allocate(l1_sort(ndimt1*rcw))
+!!!     allocate(l2_sort(ndimt2*rcw))
+
+!!!      call srt1c1n(nrep,no,nv,a_T1,l1_sort)
+!!!      call srt1c1n(nrep,noot,nvvt,a_T2,l2_sort)
+
+!!!      CALL CCDENSC (2, a_S1  , l1_sort  , a_S2, l2_sort,
+!!!  &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
+!!!  &                    a_DVV , a_DVO , a_DOV , a_DMO)
+
+!!!     deallocate(l1_sort)
+!!!     deallocate(l2_sort)
+
+       call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2, 
+     &                   a_dmo)
+
+C
+C        Solve Z-vector equations 
+C
+         IF (.NOT.NOZG)
+     &      CALL MP2ZVEC( a_S2, a_BUF1, a_BUF2, a_BUF3,
+     &                   NBUF3, a_XMO , a_DMO)
+C
+C        Create upper triangle of density matrix
+C
+!!         CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
+C        Write density matrix to file for later processing
+C
+         CALL STORE_CC_DENSITY ('CCSD', a_DMO )
+
+C        Release the slaves (in case of parallel runs)
+C
+#if defined (VAR_MPI)
+         NTEST = -1
+         DO NODE = 1,NMPROC-1
+            call interface_mpi_SEND(NTEST,1,NODE,27,
+     &                     global_communicator)
+         ENDDO
+#endif
+ 451  CONTINUE
+         if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
+      
+         call dealloc( a_AZ )
+         call dealloc( a_H  )
+         call dealloc( a_Hbar  )
+         call dealloc( wovoo  )
+!        call dealloc( wvvvo  )
+         deallocate(wvvvo)
+         call dealloc( a_HO )
+         call dealloc( a_HV )
+         call dealloc( a_HOV)
+         call dealloc( a_CCC)
+         call dealloc( a_BB1) 
+         call dealloc( a_BB2) 
+
       ENDIF
 C
       call dealloc( a_FOO, id="foo")
@@ -2805,6 +3184,7 @@ C
      &        /" Maximum number of iterations :",T40,I5
      &        /" Maximum size of DIIS space :",T40,I5
      &        /" Convergence criterium :",T38,E7.1)
+1010  FORMAT (//" Relaxed density matrix for CCSD properties")
 1008  FORMAT (//" Unrelaxed density matrix for MP2 properties")
 1018  FORMAT (//" Relaxed density matrix for MP2 properties")
 1002  FORMAT(//,1X,A7,' Gradient results',//3X,'Expectation value',13X,
@@ -2872,7 +3252,6 @@ C
 
       real(kind=kreal), allocatable, target :: a_AVO(:), a_AOV(:) 
 
-      real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -3041,7 +3420,6 @@ C
      &                                         a_FREQI(:),
      &                                         a_FREQD(:)
 
-      real(kind=kreal)       :: total_mem_new = 0
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -3091,7 +3469,7 @@ C
       MAXDIM  = MXDIMRP
       TOL = 10.0D0**(-NTOLRP)
 C
-C     This is very old code and not well tested : better warn
+C     This is very old code and..not well tested : better warn
       WRITE (IW,*) 
      & " WARNING : This module is obsolete and is not tested anymore"
       WRITE (IW,*) " Use it at your own risk....."
@@ -3192,9 +3570,10 @@ c
      &                             a_BUF2(:), a_BUF3(:),
      &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
      &                             a_EIGENVECTORS(:,:)
-      real(kind=kreal)       :: total_mem_new = 0
       integer                :: freemem = 0
       integer(kind=8)        :: mxcorr, mxcorr1
+      integer                :: maxit_save
+      logical                :: is_ccsd_converged = .false.
 C
 C---------------Executable code--------------------------------------
 C
@@ -3232,12 +3611,6 @@ C
       MXCORR1 = 0
       CALL CCSETI (ICALC,MXCORR1,EPS,NSP,IREPSP,IREPSPI)
       MXCORR = MAX(MXCORR,MXCORR1)
-C
-C     Set restart on sorted integrals to false
-C
-      IMSTAT(1) = 0
-      IMSTAT(2) = 0
-      IMSTAT(3) = 0
 C
 C Allocate space for the calculation of the amplitudes
 C
@@ -3294,8 +3667,7 @@ C     Allocate the work array
 C
       call alloc( a_BUF3 , NBUF3*RCW , id="buf3")
 
-      call allocator_get_available_mem(total_mem_new)
-      mxcorr= nint((total_mem_new/kind(a_BUF3)),kind(8))
+      call allocator_get_words_available(mxcorr)
 C
       IF (ICALC.LE.1) THEN
          WRITE (IW,1001) "Fock space CCSD energies",MXCORR
@@ -3321,12 +3693,31 @@ C
 C
 C     Initialize T1 and T2 amplitudes
 C
-      CALL XCOPY (NDIMT1, a_FVO ,1, a_T1 ,1)
-      CALL GETVVOO ( a_T2 )
-      CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,1)
-      CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,2)
+! aspg changed
+      IF ((IMSTAT(8).ge.2) .or.(IMSTAT(9).ge.2) .or.
+     &    (IMSTAT(10).ge.2).or.(IMSTAT(11).ge.2).or.
+     &    (IMSTAT(12).ge.2).or.(IMSTAT(13).ge.2)    ) THEN
+
+!        if we already have restartable amplitudes, we read them in
+!        and start from there. so far one does not keep track of
+!        the full set of amplitudes on a per-sector basis, so the amplitudes
+!        recovered here correspond, in fact, to those for the last
+!        calculated sector
+
+         write (IW,*)
+         write (iw,*) 'INFO: Reading restartable amplitudes!'
+         call getampt(a_t1,a_t2)
+      ELSE
+!        otherwise, we start from mp2 amplitudes  
+         CALL XCOPY (NDIMT1, a_FVO ,1, a_T1 ,1)
+         CALL GETVVOO ( a_T2 )
+         CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,1)
+         CALL DENOMF(EPS, a_T1 , a_T2 , a_T1 , a_T2 ,2)
 C     Save the zeroth order wave function
-      CALL PUTAMPT ( a_T1 , a_T2 )
+         CALL PUTAMPT ( a_T1 , a_T2 )
+         write (IW,*)
+         write (iw,*) 'INFO: Initializing amplitudes to MP2 ones!'
+      ENDIF
 C
  440  CONTINUE
       IFSS(1) = '00'
@@ -3339,44 +3730,88 @@ C
 C     Solve Fock space equation sector by sector
 C
       DO ICURFSS = 1, 6
+      IFSTAT=7+ICURFSS
       IF (FSSECT(ICURFSS).NE.0) THEN
         IF (ICALC.LE.1) GOTO 441 
         WRITE (IW,1009) IFSS(ICURFSS)
-        WRITE(IW,'(2X,A,I3)')
-     &  '...maximum number of iterations for this sector:',
-     &  MAXIT_SECT(ICURFSS)
+        IF (((IMSTAT(IFSTAT).eq.3).and..not.FS_REDO_SECT(ICURFSS)) 
+     &      .or.FS_SKIP_SECT(ICURFSS)) THEN
+           WRITE (IW,*) '... restarting: sector converged or skipped'
+        ELSE
+           WRITE(IW,'(2X,A,I3)')
+     &     '...maximum number of iterations for this sector:',
+     &     MAXIT_SECT(ICURFSS)
+           if (fs_redo_sect(icurfss).and.(IMSTAT(IFSTAT).eq.3)) then
+              write (IW,*)
+              write (IW,'(5X,A)') 'INFO: sector previously '//
+     &          'marked as converged but user asked to recalculate it'
+           endif 
+        ENDIF
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
 C
  441    CONTINUE
-        call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff" )
-        call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
-     &              id="eigenvalues" )
-        call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
-     &              id="eigenvectors" )
-        IF (ICALC.LE.1) GOTO 442 
 C
-        CALL CCEQN(MAXIT_SECT(ICURFSS),EPS, 
+C       skip sectors which have converged, or that we specifically asked to skip 
+C       conversely calculate sectors we asked to be recalculated even if previously converged
+C
+        IF (((IMSTAT(IFSTAT).ne.3).and..not.FS_SKIP_SECT(ICURFSS)).or.
+     &      FS_REDO_SECT(ICURFSS)) THEN
+           call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff")
+           call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
+     &                 id="eigenvalues" )
+           call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
+     &              id="eigenvectors" )
+           IF (ICALC.LE.1) GOTO 442 
+C
+
+           maxit_save = MAXIT_SECT(ICURFSS)
+        CALL cceqn_driver_amplitudes(maxit_save,EPS, 
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
-     &             a_T2  , a_S2  , a_AZ   , DUM    , a_H    , 
+     &             a_T2  , a_S2  , a_AZ   , DUM    , a_H,  
      &             a_HO  , a_HV  , a_HOV  ,
      &             a_GOO , a_GVV , a_BUF1 , a_BUF2 , a_BUF3 ,
      &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3,
      &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
-C       Print the Fock space eigenvalues, compute transition moments
-        CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
+
+           if (maxit_save.gt.maxit_SECT(ICURFSS)) then
+              is_ccsd_converged = .false.
+           else
+              is_ccsd_converged = .true.
+           endif
+
+           if (ICURFSS.GT.1)  
+C          Print the Fock space eigenvalues, compute transition moments
+C          except for the 00 sector, obviously
+     &     CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS,
      &                    NSP,IREPSPI)
 
-C       Save the updated wave function
-        CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
-C       Dealloc_meate space for the effective Hamiltonian
- 442    CONTINUE
-        call dealloc (a_HEFF, id="heff")
-        call dealloc (a_EIGENVALUES, id="eigenvalues")
-        call dealloc (a_EIGENVECTORS, id="eigenvectors")
+C          Save the updated wave function
+           CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
+
+           if (is_ccsd_converged.or.restart_unconverged) then
+              IMSTAT(IFSTAT) = 3 
+              write (IW,*)
+              write (IW,'(1X,A)') 'INFO:   converged (unconverged'//
+     &                            ' if .UNCONVERGED used) amplitudes'//
+     &                            ' available for restart'
+           else
+              IMSTAT(IFSTAT) = 2
+              write (IW,*)
+              write (IW,'(1X,A)') 'INFO: unconverged amplitudes '//
+     &                            'available for restart'
+           endif
+
+C          Deallocate space for the effective Hamiltonian
+ 442       CONTINUE
+           call dealloc (a_HEFF, id="heff")
+           call dealloc (a_EIGENVALUES, id="eigenvalues")
+           call dealloc (a_EIGENVECTORS, id="eigenvectors")
+        ENDIF
 C
       ENDIF
       ENDDO
+      CALL CCDUMP
 C
       call dealloc( a_FVO , id="fvo" )
       call dealloc( a_FOO , id="foo" )
@@ -3472,7 +3907,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CCDINI
+      SUBROUTINE CCDINI(do_restart)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -3508,7 +3943,15 @@ C
 C---------------Local variables--------------------------------------
 C
       DIMENSION BUFF(RSRCLEN)
-      LOGICAL TOBE
+      LOGICAL do_restart, file_found 
+      LOGICAL restart_and_current_differ
+      INTEGER RST_NEL(16)
+      INTEGER RST_NFRZ(16)
+      INTEGER RST_NACT(16)
+      INTEGER RST_NINACT(16)
+      INTEGER nelec_tot, RST_nelec_tot 
+      INTEGER act_tot, RST_act_tot   
+      INTEGER inact_tot, RST_inact_tot 
 C
 C---------------Executable code--------------------------------------
 C
@@ -3541,50 +3984,119 @@ C
 C     Check the status of the individual restart file
 C
       IRECL = IRECLEN (0,RSRCLEN,0)
-      INQUIRE (FILE=RSFILN(1:LRSFIL),EXIST=TOBE)
-c
-c     Restart is not fool-proof yet : disabled
-c
-C here: if a MCCRES.XXX file exists at the beginning of the
-C ccsd(t) run it will be deleted in any case.... this goes out later on....
+      INQUIRE (FILE=RSFILN(1:LRSFIL),EXIST=file_found)
+C
+C     if  the restart file exists ...
+C
+      IF (file_found) THEN
+         if (do_restart) then
+C
+C        ...and we want to restart we go ahead 
+C
+         write (IW,*)
+         write (IW,*) 'INFO: Found restart file(s)!'
 
-      if (tobe) then
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='OLD',RECL=IRECL)
-         close (MCCRES,STATUS='DELETE')
-         tobe = .false.
-      endif
 
-C here: if  the restart file exists we restart...
+C           Read the input information from the previous run
+C
+             READ(MCCRES,REC=1) RST_NEL,RST_NFRZ,RST_NACT,RST_NINACT
 
-      IF (TOBE) THEN
-         OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
-     &         STATUS='OLD',RECL=IRECL)
-C
-C         Read the input information from the previous run
-C
-C         Not implemented yet
-C
-C         Read the status information
-C
-          READ (MCCRES,REC=2) IMSTAT
-C
-C         Read the energies (read the whole common block)
-C
-          READ (MCCRES,REC=3) BUFF
-          CALL DCOPY(7,BUFF,1,ETOT,1)
+             nelec_tot     = 0 
+             RST_nelec_tot = 0 
 
-C ... if it doesn't exist we create it and write amplitudes out there...
+             act_tot       = 0
+             RST_act_tot   = 0
 
-      ELSE
+             inact_tot     = 0
+             RST_inact_tot = 0
 
+             restart_and_current_differ = .false.
+             DO I = 1, 16
+                nelec_tot     = nelec_tot + NELEC(I)
+                RST_nelec_tot = RST_nelec_tot + RST_NEL(I)
+
+                act_tot       = act_tot + NACT(I)
+                RST_act_tot   = RST_act_tot + RST_NACT(I)
+
+                inact_tot     = inact_tot + NINACT(I)
+                RST_inact_tot = RST_inact_tot + RST_NINACT(I)
+
+                IF ((RST_NEL(I)   .NE. NELEC(I)  ).OR.
+     &              (RST_NFRZ(I)  .NE. NFROZ(I)  ).OR.
+     &              (RST_NACT(I)  .NE. NACT(I)   ).OR.
+     &              (RST_NINACT(I).NE. NINACT(I) )) THEN
+                   restart_and_current_differ = .true.
+                ENDIF
+             END DO
+
+             if (restart_and_current_differ) then
+                write (IW,*) 
+                write (IW,*) 'INFO: Current setup and restart differ' 
+                write (IW,*) 
+                if (RST_nelec_tot .NE. nelec_tot) then
+                write (IW,*) ' # of electrons   (rst):',RST_nelec_tot
+                write (IW,*) '                  (now):',nelec_tot
+                write (IW,*) 
+                endif
+                if (RST_act_tot .NE. act_tot ) then
+                write (IW,*) ' #   act. spinors (rst):',RST_act_tot
+                write (IW,*) '                  (now):',act_tot
+                write (IW,*) 
+                endif
+                if (RST_inact_tot .NE. inact_tot) then
+                write (IW,*) ' # inact. spinors (rst):',RST_inact_tot
+                write (IW,*) '                  (now):',inact_tot
+                write (IW,*) 
+                endif
+
+                if (restart_ignore_check) then
+                   write (IW,*) 'INFO: Ignoring difference, restarting'
+                else
+                   call quit('Calculation and restart inconsistent')
+                endif
+             endif
+
+C
+C            Read the status information
+C
+             READ (MCCRES,REC=2) IMSTAT
+C
+C            Read the energies (read the whole common block)
+C
+             READ (MCCRES,REC=3) BUFF
+             CALL DCOPY(8,BUFF,1,ETOT,1)
+
+         else 
+C
+C        ... if we don't want to restart we trash any existing files and start over 
+C
+            write (IW,*) 
+            write (IW,*) 'INFO: Restart file(s) will be overwriten!'
+            write (IW,*) 
+            OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
+     &            STATUS='REPLACE',RECL=IRECL)
+            CALL DCOPY(8,A0,0,ETOT,1)
+            DO I = 1, NSTATS
+               IMSTAT(I) = 0
+            ENDDO
+         endif
+C
+C ... if the restart files don't exist, we create them
+C
+      else
+         write (IW,*) 
+         write (IW,*) 'INFO: No old restart file(s) found!'
+         write (IW,*) 
          OPEN (MCCRES,FILE=RSFILN(1:LRSFIL),ACCESS='DIRECT',
      &         STATUS='NEW',RECL=IRECL)
-         CALL DCOPY(7,A0,0,ETOT,1)
+         CALL DCOPY(8,A0,0,ETOT,1)
          DO I = 1, NSTATS
             IMSTAT(I) = 0
          ENDDO
-      ENDIF
+
+      endif
 C
 C     Initialize the status information
 C     When restarting the previous status is retained if the module
@@ -3593,9 +4105,31 @@ C
       IF (DOSORT.AND.IMSTAT(1).EQ.0)             IMSTAT(1) = 1
       IF (DOSORT.AND.IMSTAT(2).EQ.0)             IMSTAT(2) = 1
       IF (DOSORT.AND.IMSTAT(3).EQ.0)             IMSTAT(3) = 1
-      IF (DOENER.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(4) = 1
-      IF (DOENER.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(5) = 1
-      IF (DOENER.AND.DOCCSDT.AND.IMSTAT(1).EQ.0) IMSTAT(6) = 1
+      IF (DOSORT.AND.IMSTAT(4).EQ.0)             IMSTAT(4) = 1
+      IF (DOENER.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(5) = 1
+      IF (DOENER.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(6) = 1
+      IF (DOENER.AND.DOCCSDT.AND.IMSTAT(1).EQ.0) IMSTAT(7) = 1
+!aspg, restart fs
+      IF (DOFSPC.AND.DOMP2.AND.IMSTAT(1).EQ.0)   IMSTAT(5) = 1
+      IF (DOFSPC.AND.DOCCSD.AND.IMSTAT(1).EQ.0)  IMSTAT(6) = 1
+
+      IF (DOFSPC.AND.IMSTAT(8).EQ.0)             IMSTAT(8) = 1
+      IF (DOFSPC.AND.IMSTAT(9).EQ.0)             IMSTAT(9) = 1
+      IF (DOFSPC.AND.IMSTAT(10).EQ.0)            IMSTAT(10) = 1
+      IF (DOFSPC.AND.IMSTAT(11).EQ.0)            IMSTAT(11) = 1
+      IF (DOFSPC.AND.IMSTAT(12).EQ.0)            IMSTAT(12) = 1
+      IF (DOFSPC.AND.IMSTAT(13).EQ.0)            IMSTAT(13) = 1
+
+      IF (restart_redo_sort) then
+         DO I = 1, 4
+            IMSTAT(I) = 1
+         ENDDO
+      ENDIF
+      if (doccsd.and.restart_redo_ccsd.and.(imstat(6).eq.3)) then
+            imstat(6) = 2
+            imstat(7) = 1
+      endif
+!aspg, restart fs
 C
 C     Initialize the record information
 C
@@ -3655,6 +4189,7 @@ C
 C     Dump the input information
 C
 C     Not implemented yet
+      WRITE (MCCRES,REC=1) NELEC, NFROZ, NACT, NINACT
 C
 C     Dump the status information
 C
@@ -3662,7 +4197,7 @@ C
 C
 C     Dump the energies (write the whole common block)
 C
-      CALL DCOPY(7,ETOT,1,BUFF,1)
+      CALL DCOPY(8,ETOT,1,BUFF,1)
       WRITE (MCCRES,REC=3) BUFF
 C
       CLOSE (MCCRES,STATUS='KEEP')
@@ -3716,7 +4251,7 @@ C
 C     Read the energies (read the whole common block)
 C
       READ (MCCRES,REC=3) BUFF
-      CALL DCOPY(7,BUFF,1,ETOT,1)
+      CALL DCOPY(8,BUFF,1,ETOT,1)
 C
       CLOSE (MCCRES,STATUS='KEEP')
 C
@@ -3738,6 +4273,7 @@ C
       WRITE (IW,1024) STATCH(IMSTAT(4))
       WRITE (IW,1025) STATCH(IMSTAT(5))
       WRITE (IW,1026) STATCH(IMSTAT(6))
+      WRITE (IW,1026) STATCH(IMSTAT(7))
 C
 C     Write energies
 C
@@ -3915,7 +4451,25 @@ C
        ENDDO
       ENDIF
 C
-C     Make inverse of multiplication table
+C     A complication using fermion irreps is that 
+C     characters are generally complex and that
+C     the complex conjugate of an irrep may be another fermion irrep.
+C     Only the product of an irrep with its complex conjugate gives 
+C     the totally symmetric irrep.
+C     
+C     Table elements like
+C       MULTB(IREP,JREP,1) = KREP
+C     provides the symmetry of product functions in either bra of ket positions
+C       ket(irep)*ket(jrep) = ket(krep)  OR
+C       bra(irep)*bra(jrep) = bra(krep)
+C
+C     To find the irrep of a product function mixing functions in bra and ket positions
+C     we effectively make the inverse of the multiplication table
+C     We note that 
+C       bra(irep)*ket(irep) = 1 (totally symmetric)
+C     This gives
+C       bra(irep)*ket(irep)*ket(jrep) = ket(jrep) = bra(irep)*ket(krep)
+C       ket(irep)*bra(irep)*bra(jrep) = bra(jrep) = ket(irep)*bra(krep) 
 C
       DO JREP = 1, 2*NREP
          DO IREP = 1, 2*NREP
@@ -3923,23 +4477,24 @@ C
             MULTB(IREP,KREP,2) = JREP
          ENDDO
       ENDDO
+       write(*,*) (REPNA(IREP),IREP=1,2*NREP)
 
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  multiplication table  -----------------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-c     ENDDO
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  inverse multiplication table  ---------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
-c     ENDDO
+!     write(*,*)
+!     write(*,*) '--------------------------------------------'
+!     write(*,*) '---  multiplication table  -----------------'
+!     write(*,*) '--------------------------------------------'
+!     write(*,*)
+!     DO IREP = 1, 2*NREP
+!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+!     ENDDO
+!     write(*,*)
+!     write(*,*) '--------------------------------------------'
+!     write(*,*) '---  inverse multiplication table  ---------'
+!     write(*,*) '--------------------------------------------'
+!     write(*,*)
+!     DO IREP = 1, 2*NREP
+!       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+!     ENDDO
 
 C
 C     Get rid of offset for boson reps
@@ -3957,6 +4512,12 @@ C
          ENDDO
       ENDDO
 
+      DO JREP = 1, 2*NREP
+         DO IREP = 1, 2*NREP
+            MULTB(IREP,JREP,3) =  MULTB(JREP,IREP,2)
+         ENDDO
+      ENDDO
+ 
 c     write(*,*)
 c     write(*,*) '--------------------------------------------'
 c     write(*,*) '---  multiplication table (no offset) ------'
@@ -3971,8 +4532,18 @@ c     write(*,*) '---  inverse multiplication table (no offset) -----'
 c     write(*,*) '---------------------------------------------------'
 c     write(*,*)
 c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*nrep)
+c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
 c     ENDDO
+
+c     write(*,*)
+c     write(*,*) '-------------------------------------- ------------'
+c     write(*,*) '---  forward multiplication table (no offset) -----'
+c     write(*,*) '---------------------------------------------------'
+c     write(*,*)
+c     DO IREP = 1, 2*NREP
+c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*NREP)
+c     ENDDO
+
 C
 C     Distribute the information read from MRCONEE
 C

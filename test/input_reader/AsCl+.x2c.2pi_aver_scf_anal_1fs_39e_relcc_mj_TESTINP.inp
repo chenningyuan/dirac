@@ -1,0 +1,51 @@
+**DIRAC
+.TITLE
+  generic
+.WAVE FUNCTION
+.ANALYZE
+.INPTEST
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**HAMILTONIAN
+.X2C
+.NOAMFI
+**WAVE FUNCTION
+.SCF
+.RELCCSD
+*SCF
+# AsCl(+), 2Pi average
+.CLOSED SHELL
+48
+.OPEN SHELL
+1
+1/4
+.EVCCNV
+5.0D-9 5.0D-7
+.MAXITR
+70  
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+1..45
+**MOLTRA
+# reeze 10 electrons
+# 39 correlated electrons
+.ACTIVE
+energy -45.0  50.0  1.0
+**RELCC
+.ENERGY
+.TIMING
+.PRINT
+1
+.NEL_F1
+ 13 13  5  6  1  1  0  0  0  0  0  0  0  0  0  0
+*CCENER
+.MAXIT
+50
+.NTOL
+8
+*CCSORT
+!.USEOE # do not use orbital energies
+*END OF

@@ -19,10 +19,10 @@
              DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory
 
     Environment variables set by pam and used by MKL:
-             MKL_NUM_THREADS - set to 1 if not defined
-             MKL_DYNAMIC     - set to "FALSE" if not defined
-             OMP_NUM_THREADS - set to 1 if not defined
-             OMP_DYNAMIC     - set to "FALSE" if not defined
+             MKL_NUM_THREADS - set to 1 if not defined and parallel dirac.x
+             MKL_DYNAMIC     - set to "FALSE" if not defined and parallel dirac.x
+             OMP_NUM_THREADS - set to 1 if not defined and parallel dirac.x
+             OMP_DYNAMIC     - set to "FALSE" if not defined and parallel dirac.x
 
     Environment variables set by pam and used by DIRAC:
              BASDIR          - basis set directory/directories
@@ -31,7 +31,6 @@
              DIRPAR          - controls parallel run (1) or sequential run (0)
              DIRNOD          - maximum work space for Fortran 77 "WORK" allocations for MPI workers, only used in MPI run
              GLBSCR          - global scratch disk (1) or local scratch disk (0), only used in MPI run (radovan: why this cryptic 6-character name?)
-             XLFRTEOPTS      - put there some specific string for IBM architecture  (radovan: what is this for?)
 """
 
 import os
@@ -860,8 +859,11 @@ Options are also read from ~/.diracrc"""
             self.nr_proc = int(options.dest_mpi)
             self.parallel_run = True
 
-        if os.environ.get('DIRAC_MPI_COMMAND') != None:
-            self.parallel_run = True
+        # Only use DIRAC_MPI_COMMAND if this is an MPI parallel dirac.x !
+        # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
+        if "@ENABLE_MPI@" == "True":
+            if os.environ.get('DIRAC_MPI_COMMAND') != None:
+                self.parallel_run = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -1054,36 +1056,42 @@ Options are also read from ~/.diracrc"""
     def set_mkl_environment_variables(self):
         '''
         For the Intel-MKL library linked with DIRAC
-        set OMP and MKL environment variables to safe defaults
+        set MKL & OpenMP environment variables to safe defaults
         unless they are set by the user where we leave them as
-        they are and trust that the user knows what he/she is doing
+        they are and trust that the user knows what he/she is doing.
+        These variables are valid for both serial and (hybrid) parallel runs.
+        TODO: Extend variables setting for OpenBLAS !
         '''
-        env_variables_set = 0
         if not os.environ.get('MKL_NUM_THREADS'):
             os.environ['MKL_NUM_THREADS'] = '1'
             if self.verbose:
                 print('  Setting MKL_NUM_THREADS=1')
-            env_variables_set += 1
+        else:
+            if self.verbose:
+                print '  Variabl.MKL_NUM_THREADS=',os.environ.get('MKL_NUM_THREADS')
         if not os.environ.get('MKL_DYNAMIC'):
             os.environ['MKL_DYNAMIC'] = 'FALSE'
             if self.verbose:
                 print('  Setting MKL_DYNAMIC="FALSE"')
-            env_variables_set += 1
+        else:
+            if self.verbose:
+                print '  Variabl.MKL_DYNAMIC=',os.environ.get('MKL_DYNAMIC')
         if not os.environ.get('OMP_NUM_THREADS'):
             os.environ['OMP_NUM_THREADS'] = '1'
             if self.verbose:
                 print('  Setting OMP_NUM_THREADS=1')
-            env_variables_set += 1
+        else:
+            if self.verbose:
+                print '  Variabl.OMP_NUM_THREADS=',os.environ.get('OMP_NUM_THREADS')
         if not os.environ.get('OMP_DYNAMIC'):
             os.environ['OMP_DYNAMIC'] = 'FALSE'
             if self.verbose:
                 print('  Setting OMP_DYNAMIC="FALSE"')
-            env_variables_set += 1
+        else:
+            if self.verbose:
+                print '  Variabl.OMP_DYNAMIC=',os.environ.get('OMP_DYNAMIC')
         if self.verbose:
-            if env_variables_set > 1:
-                print('  pam script will not (re)set these environment variables if they are set by the user')
-            elif env_variables_set > 0:
-                print('  pam script will not (re)set this environment variable if it is set by the user')
+            print '  INFO: Variables set by user are not overwritten by pam. '
 
     def copy_files(self):
         '''copy file from any directory to the scratch directory'''
@@ -1251,10 +1259,6 @@ Options are also read from ~/.diracrc"""
                 os.putenv('GLBSCR', '0')
         else:
             os.putenv('DIRPAR', '0')
-
-    # Next line is for IBM only but will not hurt other systems
-
-        os.putenv('XLFRTEOPTS', "'namelist=old'")
 
     # check the timeout environment variable, check if the timeout variable did not enter already through the pam flag --timeout
 
@@ -1451,13 +1455,15 @@ Options are also read from ~/.diracrc"""
 
     def print_all_processes(self):
         """
-        print all remaining processes using the system command "ps"
-        TODO: adapt for Windows, maybe for Mac as well ?
+        print all remaining processes using the system command "ps" (Linux), "tasklist" (Windows)
+        TODO: adapt for Mac?
         """
         sys.stdout.flush()
         sys.stderr.flush()
-        # command - print all processes, to be adapted for other architectures ?
-        command="ps -fu "+self.user_name
+        if not is_windows():
+            command="ps -fu " + self.user_name
+        else:
+            command="tasklist /FI \"USERNAME eq " + self_master + "\\" + self_user_name + "\""
         process_string=subprocess.Popen(shlex.split(command),stdin=subprocess.PIPE,\
                        stdout=subprocess.PIPE).communicate()[0]
         print_error_message("\n current processes left: \n--------------------------- \n"+process_string)
@@ -1475,7 +1481,7 @@ Options are also read from ~/.diracrc"""
                 return name[0]
             else:
                 return str(num)
-        signum_kill=2 # for killing, prepare the strongest ammo
+        signum_kill=signal.SIGKILL # for killing the process, use the most lethal ammo
         # interrupt dirac run
         if self.pgid is not None:
             if signum != signum_kill:
@@ -1710,6 +1716,7 @@ Options are also read from ~/.diracrc"""
             print '  DIRAC pam script running:'
             print
             print '  user           :', self.user_name
+            print '  machine        :', self.master
             print '  date and time  :', datetime.datetime.now()
             print '  input dir      :', self.input_directory
             print '  pam command    :', os.path.join(pam_directory, 'pam')
@@ -1887,8 +1894,11 @@ def get_hostname():
     NOTE: short hostnames are used in batch-system  "machinefiles"
     only short master's hostname can be compared with slaves hostnames
     """
-    import socket
-    return socket.gethostname()
+    try:
+        import socket
+        return socket.gethostname()
+    except:
+        return 'not found'
 
 class disk_space:
     """

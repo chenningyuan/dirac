@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 starstar(WAVE FUNCTION)
 
@@ -8,7 +9,7 @@ starstar(WAVE FUNCTION)
 
 This section allows the specification of which wave function module(s)
 to activate. By default no modules are activated. To activate any of
-these modules you must also specify :ref:`.WAVE FUNCTION`
+these modules you must also specify :ref:`DIRAC_.WAVE FUNCTION`
 under :ref:`**DIRAC`,
 otherwise this input is not read.
 
@@ -22,7 +23,7 @@ Activates the Hartree-Fock/Kohn-Sham module.
 
 Specification of the SCF module can be given in the :ref:`*SCF` subsection.
 
-If :ref:`.DFT` has been specified
+If :ref:`HAMILTONIAN_.DFT` has been specified
 under :ref:`**HAMILTONIAN`, then a
 Kohn-Sham calculation will be performed, otherwise a Hartree-Fock
 calculation will be performed.
@@ -35,15 +36,19 @@ individual energies of the states present in an
 average-of-configurations open-shell Hartree-Fock calculation (see
 :ref:`*RESOLVE`).
 
+keyword(COSCI)
+
+Activates advanced COSCI method, see :ref:`*COSCI`.
+
 
 keyword(MP2)
 
-Activates :ref:`.MP2CAL`.
+Activates :ref:`*MP2CAL`.
 
 
 keyword(MVO)
 
-Calculate modified virtual orbitals (see :ref:`MVOCAL`).
+Calculate modified virtual orbitals (see :ref:`*MVOCAL`).
 
 keyword(MP2 NO)
 
@@ -51,27 +56,27 @@ Activates the :ref:`*MP2 NO` module to calculate MP2 natural orbitals.
 
 keyword(RELCCSD)
 
-Activates the  :ref:`RELCCSD`
-(and the :ref:`MOLTRA`
+Activates the  :ref:`**RELCC`
+(and the :ref:`**MOLTRA`
 module to get 4-index
 transformed integrals).
 
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
-:ref:`MOLTRA` section.
+:ref:`**MOLTRA` section.
 
 
 keyword(DIRRCI)
 
 Activates the MOLFDIR CI module (and also the
-:ref:`MOLTRA`  module to get 4-index transformed integrals).
+:ref:`**MOLTRA`  module to get 4-index transformed integrals).
 
 Specification of input for the MOLFDIR CI module is given in
 the :ref:`DIRRCI`  and :ref:`GOSCIP` sections.
 
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
-:ref:`MOLTRA`  section.
+:ref:`**MOLTRA`  section.
 
 
 keyword(LUCITA)
@@ -156,7 +161,4 @@ keyword(KRMCSCF)
 Activates the :ref:`*KRMCSCF`
 module for the optimization of ground and excited states (in other than the ground state symmetry) 
 at the relativistic MCSCF level.
-
-
-.. _resolve:
 

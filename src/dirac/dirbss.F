@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -5521,8 +5521,7 @@ C      ... diagonalize the H2c in MO(ee) basis !
        IF (DOJACO) THEN
 !        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
-     &                  EIG(IEIG),1,1,0,TBUF(IH2MO),
-     &                  WORK(KFREE),LFREE)
+     &                  EIG(IEIG),1,1,0,TBUF(IH2MO))
        ELSE
         CALL QDIAG(NZ,NESH(I),TMAT(IH2MO),NESH(I),NESH(I), 
      &             EIG(IEIG),1,          
@@ -8599,7 +8598,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "chrnos.h"
 
 C
-      LOGICAL BREIT,PROPRI,OLDNRM,ISONLIST,ONLYSO1,ONLYTRA,EXAMF,
+      LOGICAL BREIT,PROPRI,ISONLIST,ONLYSO1,ONLYTRA,EXAMF,
      &        NOAMFC
       DIMENSION WORK(LWORK),H2SAO(NB,NB,4),IQPOS(1:8)  
       DIMENSION IPTYPAO(NSPH),INDXLM(NSPH),IPNUC(NSPH),
@@ -8847,7 +8846,6 @@ C     Open Mean-field input file generated in READIN
       CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 
-      OLDNRM=.FALSE.
       BREIT = .FALSE.
 
 C  ++++ Find out individual charges on atoms
@@ -9069,7 +9067,7 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-         CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
+         CALL AMFI(LUTMP2,LUMNFPRP,BREIT,GAUNUC,EXPNUCL,
      &             CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..

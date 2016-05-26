@@ -81,8 +81,7 @@ int functional::validate()
 functional *xc_functional_by_name(const char *name)
 {
   for (int i=0;i<XC_NR_PARAMS;i++)
-    if (xcint_functional(i) and
-	strcmp(xc_name(i),name) == 0)
+    if (xcint_functional(i) && strcmp(xc_name(i),name) == 0)
       return xcint_functional(i);
   return 0;
 }

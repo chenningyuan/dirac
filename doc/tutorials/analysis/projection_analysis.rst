@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ===================
 Projection analysis
 ===================
@@ -14,7 +17,7 @@ the large and small component are expanded in scalar basis functions, as is the 
 DIRAC code, then the population analysis can not distinguish distributions from different 
 spin-orbit components of atomic orbitals, for instance, :math:`p_{1/2}` and :math:`p_{3/2}`.
 
-Projection analysis [Dubillard2006]_ eliminates all these inconveniences. It is based on the simple concept of
+Projection analysis :cite:`Dubillard2006` eliminates all these inconveniences. It is based on the simple concept of
 molecular orbitals as linear combination of atomic orbitals (LCAO) and allows analysis of 
 electronic structure in terms of well-defined atomic (or fragment) orbitals. 
 
@@ -42,7 +45,7 @@ For projection analysis, arbitrary fragments can in principle be used. There is,
 in that DIRAC can only do analysis in terms of fragments complying to the molecular point group. For instance, 
 the two hydrogens in water are related by symmetry in the full :math:`C_{2v}` molecular point group. They then have 
 to be treated as a single fragment, or they can be separated by lowering the symmetry. Starting from DIRAC14 
-projection analysis can be carried out in terms of individual atoms using the :ref:`.ATOMS` keyword, as shown in 
+projection analysis can be carried out in terms of individual atoms using the :ref:`PROJECTION_.ATOMS` keyword, as shown in 
 the example below.
 
 ------------------
@@ -53,17 +56,17 @@ Introduction
 ------------
 
 As a first simple example we shall consider the methane molecule.
-The molecular input file ``CH4.xyz`` is
+The molecular input file ``CH4.xyz`` (:download:`download <../../../../test/tutorial_projection_analysis/CH4.xyz>`) is
 
-.. literalinclude:: CH4.xyz
+.. literalinclude:: ../../../../test/tutorial_projection_analysis/CH4.xyz
 
 Suppose that we have run a DFT(PBE) calculation using::
 
    pam --inp=PBE  --mol=CH4.xyz --outcmo
 
-where we keep the coefficients and the menu file ``PBE.inp`` is
+where we keep the coefficients and the menu file ``PBE.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/PBE.inp>`) is
 
-.. literalinclude:: PBE.inp
+.. literalinclude:: ../../../../test/tutorial_projection_analysis/PBE.inp
 
 Preparing for analysis
 ----------------------
@@ -73,39 +76,25 @@ the orbitals of the constituent atoms. We first generate the atomic fragments.
 We recommend calculating the atoms in the highest possible 
 symmetry and the converting the coefficients to no (:math:`C_1`) symmetry. 
 This allows a very precise identification
-of the individual atomic orbitals (including :math:`m_j` quantum number). We accordingly run::
+of the individual atomic orbitals (including :math:`m_j` quantum number). 
+We accordingly run calculations where we save MO files, each as the unique file::
 
-   pam --inp=H  --mol=H --get "DFACMO=ac.H"
-   pam --inp=C  --mol=C --get "DFACMO=ac.C"
+   pam --inp=H  --mol=H --get "DFACMO=AFHXXX"
+   pam --inp=C  --mol=C --get "DFACMO=AFCXXX"
 
-with corresponding input files ``H.inp``, 
-
-.. literalinclude:: H.inp 
-
-``H.mol``, 
-
-.. literalinclude:: H.mol
-
-``C.inp``
-
-.. literalinclude:: C.inp 
-
-and ``C.mol``
-
-.. literalinclude:: C.mol
-
-As a final preparation we make symbolic links to the needed coefficient files::
-
-   $ ln -s ac.C AFCXXX
-   $ ln -s ac.H AFHXXX
+with corresponding input files ``H.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/H.inp>`),
+``H.mol`` (:download:`download <../../../../test/tutorial_projection_analysis/H.mol>`), 
+``C.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/C.inp>`),
+and ``C.mol`` (:download:`download <../../../../test/tutorial_projection_analysis/C.mol>`).
 
 
 Running the analysis
 --------------------
 
-We are now ready for the projection analysis itself. We prepare the input file ``prj.inp``
+We are now ready for the projection analysis itself. We prepare the input file ``prj.inp`` 
+(:download:`download <../../../../test/tutorial_projection_analysis/prj.inp>`)
 
-.. literalinclude:: prj.inp
+.. literalinclude:: ../../../../test/tutorial_projection_analysis/prj.inp
 
 In the ``*PROJEC`` section we specify the two atomic types identified by the name of 
 their coefficient files as well as an orbital string (see :ref:`orbital_strings`) listing 
@@ -121,7 +110,8 @@ We now run the projection analysis using::
 Interpreting the output
 -----------------------
 
-The first thing to look for in the output is the section::
+The first thing to look for in the output 
+(:download:`download <../../../../test/tutorial_projection_analysis/result/prj_CH4.out>`) is the section::
    
    * Total gross contributions:
       AFCX 1               6.4301   E -     6.4301   P -     0.0000
@@ -136,9 +126,11 @@ and then, most importantly, the gross population of the polarization contributio
 is small and perfectly acceptable. If it becomes too large the analysis looses meaning because it 
 impies that significant electron density has not been assigned to any fragment. In the case of
 significant polarization contribution one can either increase the number of atomic orbitals used
-in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`.POLREF` 
-keyword which activates `Intrinsic Atomic Orbitals (IAOs) <http://doi.org/10.1021/ct400687b>`_  , 
-thus eliminating completely the polarization contribution. We then get::
+in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`PROJECTION_.POLREF` keyword
+(see the corresponding :download:`input file <../../../../test/tutorial_projection_analysis/prj_polref.inp>` )
+which activates *Intrinsic Atomic Orbitals (IAOs)*, :cite:`Knizia2013`, 
+thus eliminating completely the polarization contribution. 
+We then get (see the corresponding :download:`output <../../../../test/tutorial_projection_analysis/result/prj_polref_CH4.out>` file )::
 
   * Total gross contributions:
      AFCX 1               6.4782   E -     6.4782   P -     0.0000
@@ -217,6 +209,20 @@ and analogously for Kramers partner 2, from which we get the detailed decomposit
 orbital. We find that this molecular orbital is composed of the carbon :math:`2p_{1/2}` orbital and
 the hydrogen :math:`1s` orbitals.
 
+
+Exercises
+---------
+
+1. What is the effect of increasing the C-H bond distance on the atomic configurations of the C,H atoms in the methane molecule and 
+   on the atomic charges of the constituent atoms ? Collect your calculated data in a table.
+
+2. How different basis sets affect the atomic configurations of the C,H atoms in the methane molecule and 
+   the atomic charges of the same constituent atoms ?
+
+3. Investigate the effect of various DFT functionals (see :ref:`*DFT`) on the atomic configurations of the C and H atoms 
+   in the methane molecule and on atomic charges of these constituent atoms.
+
+
 -----------------
 Example 2: Uranyl
 -----------------
@@ -226,7 +232,7 @@ Introduction
 
 We next turn to a molecule with a heavy atom and a more complicated electronic structure, namely uranyl 
 :math:`UO_2^{2+}`. Here the two oxygens are related by symmetry, and so one would at first consider 
-running the projection analysis with lower (or no) symmetry or using the :ref:`.ATOMS` keyword, as 
+running the projection analysis with lower (or no) symmetry or using the :ref:`PROJECTION_.ATOMS` keyword, as 
 in the methane example above. However, we can reduce the symmetry from :math:`D_{\infty h}` to :math:`C_{\infty v}` 
 by introducing a ghost center. Our molecular input file then looks like
 
@@ -312,7 +318,7 @@ As in the methane case above we first look at the polarization contribution::
       AFO2XX               8.3098   E -     8.3098   P -     0.0000
       Polarization:     0.3169
 
-We see that it is more sizable than before. If we eliminate the polarization contribution using the :ref:`.POLREF` keyword, we obtain::
+We see that it is more sizable than before. If we eliminate the polarization contribution using the :ref:`PROJECTION_.POLREF` keyword, we obtain::
 
    * Total gross contributions:
       AFUXXX              89.1586   E -    89.1586   P -     0.0000

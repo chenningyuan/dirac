@@ -7,11 +7,19 @@ box: wercker/python
 build:
   steps:
     - install-packages:
-        packages: "git gcc g++ gfortran make cmake libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
+        packages: "git gcc g++ gfortran make libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
 
     - pip-install:
         requirements_file: ""
         packages_list: "matplotlib sphinx==1.2.3 sphinxcontrib-bibtex sphinx_rtd_theme hieroglyph"
+
+    - script:
+        name: install the newest cmake form their webpage
+        code: |
+          wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+          tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
+          export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
+          cmake --version
 
     - script:
         name: show system resources
@@ -21,10 +29,26 @@ build:
           free -m
 
     - script:
-        name: run build
+        name: update submodule, setup configuration scripts
         code: |
-          python ./pamadm -a --builddir=build_wercker-ci
-          python ./setup -D BUILDNAME="wercker-ci.i8" --int64 build_wercker-ci
+          git submodule update --init --recursive
+          python ./setup --type=debug --cmake-options="-D BUILDNAME='wercker-ci.i8.gdb' -D ENABLE_UNIT_TESTS=ON"  build_wercker-ci
+
+    - script:
+        name: run ctest for configuration/buildup/test/submit
+        code: |
+          cd build_wercker-ci
+          export CTEST_PROJECT_NAME="DIRACext"
+          ## ctest -D ExperimentalUpdate
+          ctest  -D ExperimentalConfigure
+          ## we have only 30 minutes for the whole buildup !
+          ctest -j 8  -D ExperimentalBuild
+          ## ldd : show dependencies
+          ldd dirac.x
+          ## true : this script continues even if some of tests fail
+          ctest -j 8  -D ExperimentalTest -L short || true
+          ## deliver buildup status to CDash-web
+          ctest -D ExperimentalSubmit
 
     - script:
         name: build sphinx documentation
@@ -44,12 +68,7 @@ build:
           cd build_wercker-ci
           make slides
 
-    - script:
-        name: run tests
-        code: |
-          cd build_wercker-ci
-          ctest --track Miro -D ExperimentalUpdate
-          ctest --track Miro -D ExperimentalConfigure
-          ## ctest -j 12 --track Miro -D ExperimentalBuild
-          ## ctest -j 12 --track Miro -D ExperimentalTest -L short
-          ctest --track Miro -D ExperimentalSubmit
+## turn off email notifications
+notifications:
+        email: false
+

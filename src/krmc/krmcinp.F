@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -69,7 +69,7 @@ C
       integer, parameter              :: max_nkrmc_max_sym = 128
       character(len=400)              :: input_line
       character(len=400)              :: test_string
-      integer                         :: ios, islash
+      integer                         :: ios, islash, icomment
 
       SAVE SET
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
@@ -398,6 +398,10 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                  read(lucmd,'(a)') input_line
                  call upcase(input_line)
+                 icomment = index(input_line,'!')
+                 if (icomment > 0) input_line(icomment:) = ' '
+                 icomment = index(input_line,'#')
+                 if (icomment > 0) input_line(icomment:) = ' '
                  islash = index(input_line,'/')
 
 !                check for correct input format: 
@@ -432,7 +436,8 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
                  end if
 !                step 3: GAS shell orbital occupation
                  read(input_line(islash+1:),*,iostat=ios) test_string
-                 if(trim(test_string) .eq. "ALL")then
+                 islash = index(input_line,'/')
+                 if(index(test_string,"ALL") .gt. 0)then
                    do j=1,nfsym
                      NKRMCGSH(j,i) = -9999
                    end do

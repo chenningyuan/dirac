@@ -3,7 +3,7 @@
 !
 !     Data from the periodic table.
 !
-      CHARACTER(LEN=4), PARAMETER :: NUCLABEL(1:109)=(/                 &
+      CHARACTER(LEN=4), PARAMETER :: NUCLABEL(1:118)=(/                 &
      &  'H  ', 'He ', 'Li ', 'Be ', 'B  ',                              &
      &  'C  ', 'N  ', 'O  ', 'F  ', 'Ne ',                              &
      &  'Na ', 'Mg ', 'Al ', 'Si ', 'P  ',                              &
@@ -24,11 +24,12 @@
      &  'Rn ', 'Fr ', 'Ra ', 'Ac ', 'Th ',                              &
      &  'Pa ', 'U  ', 'Np ', 'Pu ', 'Am ',                              &
      &  'Cm ', 'Bk ', 'Cf ', 'Es ', 'Fm ',                              &
-     &  'Md ', 'No ', 'Lw ', 'Uuq', 'Uup',                              &
-     &  'Uuh', 'Uus', 'Uuo', 'Uue'                                      &
-     &  /)
-
-      REAL(KIND=8), PARAMETER :: NUCMASS(1:109)=(/                      &
+     &  'Md ', 'No ', 'Lr ', 'Rf ', 'Db ',                              &
+     &  'Sg ', 'Bh ', 'Hs ', 'Mt ', 'Ds ',                              &
+     &  'Rg ', 'Cn ', 'Uut', 'Fl ', 'Uup',                              &
+     &  'Lv ', 'Uus', 'Uuo'/)
+! Nuclear mass refers to most abundant or most stable isotope
+      REAL(KIND=8), PARAMETER :: NUCMASS(1:118)=(/                      &
      &    1.D0,   4.D0,   7.D0,   9.D0,  11.D0,                         &
      &   12.D0,  14.D0,  16.D0,  19.D0,  20.D0,                         &
      &   23.D0,  24.D0,  27.D0,  28.D0,  31.D0,                         &
@@ -50,6 +51,6 @@
      &  231.D0, 238.D0, 237.D0, 244.D0, 243.D0,                         &
      &  247.D0, 247.D0, 251.D0, 252.D0, 257.D0,                         &
      &  258.D0, 259.D0, 262.D0, 261.D0, 262.D0,                         &
-     &  263.D0, 262.D0, 265.D0, 266.D0                                  &
-     &  /)
-
+     &  263.D0, 262.D0, 265.D0, 266.D0, 281.D0,                         &
+     &  280.D0, 285.D0, 284.D0, 289.D0, 288.D0,                         &
+     &  292.D0, 293.D0, 294.D0/)

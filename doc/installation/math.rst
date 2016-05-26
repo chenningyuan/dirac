@@ -1,3 +1,5 @@
+:orphan:
+ 
 
 .. _linking_to_math:
 
@@ -6,6 +8,11 @@ Linking to math libraries
 
 General
 -------
+
+The DIRAC program uses libraries like BLAS or LAPACK for which a standard (but slow) 
+implementation is found among the DIRAC source codes. 
+To achieve optimal performance one should use optimized libraries at the linking stage 
+and turn to the included versions (builtin math) only when no optimized version is available.
 
 DIRAC requires BLAS and LAPACK libraries. Typically you will want to link to
 external math (BLAS and LAPACK) libraries, for instance provided by MKL or
@@ -53,15 +60,6 @@ The more general solution is to link to the parallel MKL and control the number
 of threads using MKL environment variables.
 
 
-Cray
-----
-
-Cray typically provides own optimized BLAS/LAPACK wrappers.
-For this use the option --cray to disable automatic BLAS/LAPACK detection::
-
-  $ ./setup --fc=ftn --cc=cc --cxx=CC --cray
-
-
 Explicitly specifying BLAS and LAPACK libraries
 -----------------------------------------------
 
@@ -79,8 +77,8 @@ disable BLAS/LAPACK detection::
 Builtin BLAS and LAPACK implementation
 --------------------------------------
 
-If no external BLAS and LAPACK libraries are available, you can use the builtin
-implementation. However note that these are not optimized and you will sacrifice
+If no external BLAS and LAPACK libraries are available, you can use the (slow) builtin
+BLAS/LAPACK implementation. However note that these are not optimized and you will sacrifice
 performance. This should be the last resort if nothing else is available::
 
   $ ./setup --blas=builtin --lapack=builtin
@@ -149,7 +147,7 @@ Linking to Atlas libraries on Linux Mint
 ----------------------------------------
 
 DIRAC may not be able to detect Atlas BLAS/Lapack
-libraries on Linux Mint because of nonstandard (?) suffix::
+libraries on Linux Mint because of some nonstandard (?) suffix.
 
 After having installed them::
 
@@ -166,7 +164,7 @@ and this::
   $ cd /usr/lib
   $ sudo ln -s liblapack.so.3 liblapack.so
 
-With this the automatic detection of math libraries worked.
+With this the automatic detection of math libraries works.
 
 
 Linking to the ACML library

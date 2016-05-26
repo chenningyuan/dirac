@@ -1,9 +1,7 @@
+:orphan:
+ 
 
-.. _properties:
-
-==============
-\*\*PROPERTIES
-==============
+starstar(PROPERTIES)
 
 This section allows for the evaluation of a large number of molecular
 properties. Available properties include:
@@ -28,8 +26,7 @@ By default no properties are calculated.
 General control statements
 ==========================
 
-.PRINT
-------
+keyword(PRINT)
 
 Print level.
 
@@ -40,8 +37,7 @@ Print level.
     .PRINT
      0
 
-.ABUNDANCIES
-------------
+keyword(ABUNDANCIES)
 
 For properties that make reference to isotopes, give threshold level (in
 % abundance) for isotopes to print.
@@ -53,8 +49,7 @@ For properties that make reference to isotopes, give threshold level (in
     .ABUNDANCIES
      1.0
 
-.RKBIMP
--------
+keyword(RKBIMP)
 
 Import coefficients calculated with restricted kinetic balance (RKB) in
 a calculation using unrestricted kinetic balance (UKB). This option is a
@@ -62,50 +57,50 @@ simple way to generated restricted magnetic balance for the calculation
 of NMR shieldings. This option works in the general SO case, but not in
 the spinfree case since spinfree calculations are not possible with UKB.
 
+keyword(NOPCTR)
+
+In two-component infinite-order relativistic calculations (with :ref:`HAMILTONIAN_.X2C`) take only LL block
+of four-component property operators to avoid the picture change transformation.
+Experimental option, use with care.
+
+
 Predefined electric properties
 ==============================
 
-.DIPOLE
--------
+keyword(DIPOLE)
 
 Evaluate the electronic dipole moment (expectation value).
 
-.QUADRUPOLE
------------
+keyword(QUADRUPOLE)
 
 Evaluate the electronic quadrupole moment (expectation value).
 
-.EFG
-----
+keyword(EFG)
 
 Evaluate electric field gradients (expectation values).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-.NQCC
------
+keyword(NQCC)
 
 Evaluate nuclear quadrupole coupling constants (expectation values).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-.POLARIZABILITY
----------------
+keyword(POLARIZABILITY)
 
 Evaluate the static electronic dipole polarizability tensor (linear
 response).
 
-.FIRST ORDER HYPERPOLARIZABILITY
---------------------------------
+keyword(FIRST ORDER HYPERPOLARIZABILITY)
 
 Evaluate static electronic dipole first-order hyperpolarizability tensor
 (quadratic response). Results are also given for the static electronic
 dipole polarizability.
 
-.VERDET
--------
+keyword(VERDET)
 
-Evaluate Verdet constants [Ekstrom2005]_
+Evaluate Verdet constants :cite:`Ekstrom2005`
 (quadratic response) for a dynamic electric field corresponding to Ruby
 laser wavelength of 694 nm and a static magnetic field along the
 propagation direction of the light beam (in this case, the default
@@ -114,10 +109,9 @@ frequencies of the quadratic response function thus become
 calculation cannot be specified in combination with other quadratic
 response calculations.
 
-The frequencies can be changed using :ref:`.BFREQ` in :ref:`*QUADRATIC RESPONSE`.
+The frequencies can be changed using :ref:`QUADRATIC_RESPONSE_.B FREQ` in :ref:`*QUADRATIC RESPONSE`.
 
-.TWO-PHOTON
------------
+keyword(TWO-PHOTON)
 
 Evaluate two-photon absorption cross sections (quadratic response). Give
 the number of desired states in each boson symmetry. Cannot be specified
@@ -134,89 +128,78 @@ in combination with other quadratic response calculations.
 Predefined magnetic properties
 ==============================
 
-.NMR
-----
+keyword(NMR)
 
 Evaluate nuclear magnetic shieldings and indirect spin-spin couplings
 (linear response).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-.SHIELDING
-----------
+keyword(SHIELDING)
 
-Evaluate nuclear magnetic shieldings (linear response). :ref:`.PRINT`
-2 gives tensor and longer output. :ref:`.PRINT` 4
-gives the raw values in symmetry coordinates as
-well.
+Evaluate nuclear magnetic shieldings (linear response). :ref:`PROPERTIES_.PRINT`
+2 gives tensor and longer output. The :ref:`PROPERTIES_.PRINT` 4
+gives the raw values in symmetry coordinates as well.
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-.MAGNET
--------
+keyword(MAGNET)
 
 Evaluate the magnetic susceptibilities tensor (linear response and
 expectation values).
 
-.SPIN-SPIN COUPLING
--------------------
+keyword(SPIN-SPIN COUPLING)
 
 Evaluate indirect spin-spin couplings (linear response).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-.DSO
-----
+keyword(DSO)
 
 Evaluate the diamagnetic contribution to indirect spin-spin couplings as
 an expectation value.
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-.NSTDIAMAGNETIC
----------------
+keyword(NSTDIAMAGNETIC)
 
 Evaluate the diamagnetic contribution to nuclear magnetic shieldings as
 an expectation value.
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
 Other predefined properties
 ===========================
 
-.MOLGRD
--------
+keyword(MOLGRD)
 
 Evaluate the molecular gradient, i.e.
 
-..|{\\frac{{\\partial E}}{{\\partial X\_A}}}|
+.. math::
 
-where *X*\ :sub:`*A*`\  are the coordinates of the nuclei. This
+  \frac{\partial E}{\partial \mathbf{X}_A}
+
+where :math:`\mathbf{X}_{A}` are the coordinates of the nuclei. This
 is an expectation value of one- and two-electron operators. Normally the
 molecular gradient evaluation is not invoked explicitly with this
 keyword but rather implicitly in the geometry optimization module.
 
-.PVC
-----
+keyword(PVC)
 
 Calculate matrix elements over the nuclear spin-independent
 parity-violating operator, e.g. calculate energy differences between
-enantiomers, see [Laerdahl1999]_ .
+enantiomers, see :cite:`Laerdahl1999` .
 
-.RHONUC
--------
+keyword(RHONUC)
 
 Calculate electronic density at the nucleus(nuclei).
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
-.EFFDEN
--------
+keyword(EFFDEN)
 
 Calculate effective electronic density at the
-nucleus(nuclei), [Knecht2011]_.
+nucleus(nuclei), :cite:`Knecht2011`.
 
-Atomic centers may be restricted with :ref:`.SELECT` under :ref:`**INTEGRALS`.
-
-
+Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
 
