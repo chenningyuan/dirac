@@ -74,8 +74,12 @@
            end do
         end do
 
-        call pe_master(runtype='fock', denmats=dspmat,
-     &                 fckmats=fspmat, energies=nrg, nmats=1)
+        call pe_master(runtype='full_fock',
+     &                 triang = .true.,
+     &                 nmats=1,
+     &                 denmats=dspmat,
+     &                 fckmats=fspmat, 
+     &                 expvals=nrg)
         tot_nrg = nrg(1)
         el_nrg = ddot(nnbbasx, dspmat, 1, fspmat, 1)
 

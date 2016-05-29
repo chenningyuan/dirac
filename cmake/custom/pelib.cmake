@@ -39,4 +39,4 @@ if(ENABLE_PELIB)
         ${EXTERNAL_LIBS})
 endif()
 
-message(STATUS "PElib module: ${ENABLE_PELIB}"
+message(STATUS "PElib module: ${ENABLE_PELIB}")
