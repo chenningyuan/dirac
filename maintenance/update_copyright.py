@@ -1,41 +1,34 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 
-import string
+"""
+Script that updates copyright headers. (c) Radovan Bast
+"""
+
 import os
 import re
 
-#-------------------------------------------------------------------------------
 
-dirac_copyright_fortran_start = '!dirac_copyright_start'
-dirac_copyright_fortran_end   = '!dirac_copyright_end'
+def convert_to_fortran_comments(s):
+    s2 = []
+    for line in s.split('\n'):
+        if line == '/*':
+            pass
+        elif line == ' */':
+            pass
+        elif line == ' *':
+            s2.append('!')
+        elif line == '':
+            pass
+        else:
+            s2.append('! ' + line[2:])
+    return '\n' + '\n'.join(s2) + '\n'
 
-dirac_copyright_fortran = '''
-!      Copyright (c) 2013 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
-'''
 
-dirac_copyright_c_start = '/\* dirac_copyright_start \*/'
-dirac_copyright_c_end   = '/\* dirac_copyright_end \*/'
+copyright = {}
 
-dirac_copyright_c = '''
+copyright[('dirac', 'c')] = '''
 /*
- *     Copyright (c) 2013 by the authors of DIRAC.
+ *     Copyright (c) 2015 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -55,124 +48,56 @@ dirac_copyright_c = '''
  *     DIRAC program, see: http://www.diracprogram.org
  */
 '''
+copyright[('dirac', 'fortran')] = convert_to_fortran_comments(copyright[('dirac', 'c')])
 
-dalton_copyright_fortran_start = '!dalton_copyright_start'
-dalton_copyright_fortran_end   = '!dalton_copyright_end'
-
-dalton_copyright_fortran = '''
-!      Copyright (c) 2013 by the authors of Dalton (see below).
-!      All Rights Reserved.
-!   
-!      The source code in this file is part of
-!      "Dalton, a molecular electronic structure program,
-!       Release DALTON2013 (2013), see http://daltonprogram.org"
-!   
-!      This source code is provided under a written licence and may be
-!      used, copied, transmitted, or stored only in accord with that
-!      written licence.
-!   
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the licence holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the licence holder may not take any part of Dalton,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own licence.
-!   
-!      For further information, including how to get a licence, see:
-!         http://daltonprogram.org
-'''
-
-dalton_copyright_c_start = '/\* dalton_copyright_start \*/'
-dalton_copyright_c_end   = '/\* dalton_copyright_end \*/'
-
-dalton_copyright_c = '''
+copyright[('dalton', 'c')] = '''
 /*
- *     Copyright (c) 2013 by the authors of Dalton (see below).
+ *     Copyright (c) 2015 by the authors of Dalton (see below).
  *     All Rights Reserved.
- *  
+ *
  *     The source code in this file is part of
  *     "Dalton, a molecular electronic structure program,
- *      Release DALTON2013 (2013), see http://daltonprogram.org"
- *  
+ *      Release DALTON2015 (2015), see http://daltonprogram.org"
+ *
  *     This source code is provided under a written licence and may be
  *     used, copied, transmitted, or stored only in accord with that
  *     written licence.
- *  
+ *
  *     In particular, no part of the source code or compiled modules may
  *     be distributed outside the research group of the licence holder.
  *     This means also that persons (e.g. post-docs) leaving the research
  *     group of the licence holder may not take any part of Dalton,
  *     including modified files, with him/her, unless that person has
  *     obtained his/her own licence.
- *  
+ *
  *     For further information, including how to get a licence, see:
  *        http://daltonprogram.org
  */
 '''
 
-#-------------------------------------------------------------------------------
+copyright[('dalton', 'fortran')] = convert_to_fortran_comments(copyright[('dalton', 'c')])
 
-def from_file(file):
+files = {}
+for lang in ['fortran', 'c']:
+    files[lang] = []
 
-    f = open(file, 'r')
-    s = f.read()
-    f.close()
-    return s
+for path, _, _files in os.walk(os.getcwd()):
+    for f in _files:
+        if f.endswith('.F90') or f.endswith('.f90') or f.endswith('.F'):
+            files['fortran'].append(os.path.join(path, f))
+        if f.endswith('.c'):
+            files['c'].append(os.path.join(path, f))
 
-#-------------------------------------------------------------------------------
-
-def to_file(s, file):
-
-    f = open(file, 'w')
-    f.write(s)
-    f.close()
-
-#-------------------------------------------------------------------------------
-
-fortran_file_l = []
-c_file_l       = []
-
-pwd = os.getcwd()
-
-for path, dir, files in os.walk(pwd):
-    for file in files:
-        if file[-4:] == '.F90':
-           fortran_file_l.append(path + '/' + file)
-        if file[-4:] == '.f90':
-           fortran_file_l.append(path + '/' + file)
-        if file[-2:] == '.F':
-           fortran_file_l.append(path + '/' + file)
-        if file[-2:] == '.c':
-           c_file_l.append(path + '/' + file)
-
-# fortran files dirac copyright
-p = re.compile('(?<=' + dirac_copyright_fortran_start + ').*(?=' + dirac_copyright_fortran_end + ')', re.DOTALL)
-for file in fortran_file_l:
-    s = from_file(file)
-    if dirac_copyright_fortran_start in s:
-       s = re.sub(p, dirac_copyright_fortran, s)
-       to_file(s, file)
-
-# fortran files dalton copyright
-p = re.compile('(?<=' + dalton_copyright_fortran_start + ').*(?=' + dalton_copyright_fortran_end + ')', re.DOTALL)
-for file in fortran_file_l:
-    s = from_file(file)
-    if dalton_copyright_fortran_start in s:
-       s = re.sub(p, dalton_copyright_fortran, s)
-       to_file(s, file)
-
-# c files dirac copyright
-p = re.compile('(?<=' + dirac_copyright_c_start + ').*(?=' + dirac_copyright_c_end + ')', re.DOTALL)
-for file in c_file_l:
-    s = from_file(file)
-    if string.replace(dirac_copyright_c_start, '\\', '') in s:
-       s = re.sub(p, dirac_copyright_c, s)
-       to_file(s, file)
-
-# c files dalton copyright
-p = re.compile('(?<=' + dalton_copyright_c_start + ').*(?=' + dalton_copyright_c_end + ')', re.DOTALL)
-for file in c_file_l:
-    s = from_file(file)
-    if string.replace(dalton_copyright_c_start, '\\', '') in s:
-       s = re.sub(p, dalton_copyright_c, s)
-       to_file(s, file)
+for lang in ['fortran', 'c']:
+    for code in ['dirac', 'dalton']:
+        if lang == 'fortran':
+            p = re.compile('(?<=!{}_copyright_start).*(?=!{}_copyright_end)'.format(code, code), re.DOTALL)
+        else:
+            p = re.compile('(?<=/\* {}_copyright_start \*/).*(?=/\* {}_copyright_end \*/)'.format(code, code), re.DOTALL)
+        for file_name in files[lang]:
+            with open(file_name, 'r', encoding="ascii", errors="surrogateescape") as f:
+                s = f.read()
+            if '_copyright_start' in s:
+                s = re.sub(p, copyright[(code, lang)], s)
+                with open(file_name, 'w', encoding="ascii", errors="surrogateescape") as f:
+                    f.write(s)

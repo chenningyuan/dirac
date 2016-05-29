@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -52,8 +52,10 @@ C     Memory allocation
       CALL MEMGET('LOGI',KEXPST,2*NEXPP   ,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
-      CALL MEMGET('REAL',KDMAT ,N2BBASXQ*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT ,N2BBASXQ  ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT ,max(N2ORBXQ*2,nasht**2*nz*2,N2BBASXQ*2),
+     &            WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KPMAT ,max(N2ORBXQ,nasht**2*nz,N2BBASXQ),
+     &            WORK,KFREE,LFREE)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
@@ -103,7 +105,8 @@ C
 #include "dcbprj.h"
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
       DIMENSION EXPVAL(*),CMO(*),DMAT(N2BBASXQ,*),PRPAO(N2BBASXQ),
-     &          EIG(*),WORK(LWORK),NP(2,0:2)
+     &          EIG(*),WORK(*),NP(2,0:2)
+      integer  :: lwork
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4
       INTEGER   GETIOPEN
@@ -111,18 +114,14 @@ C
 C
 C     Initialize
 C
-#include "memint.h"
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 C
 C     Initialize
 C     ==========
 C
+#include "memint.h"
+      KFRSAV = KFREE
       CALL DZERO(EXPVAL,NEXPP)
       N2EXP = 2*NEXPP
       CALL LSET(N2EXP,.FALSE.,LEXPST)
@@ -144,12 +143,8 @@ C.........accumulate all density into one matrix
           CALL DENMAT(DMAT,CMO,IPREXP)
           AOC = FILEX
         END IF
-      ELSE IF (WF .EQ. 'MP2 ' .OR. WF .EQ. 'CC  ') THEN
-C
-         IF (WF.EQ.'CC  ') 
-     &        CALL QUIT('*** ERROR in PRPEX1 *** '
-     &        // 'CC properties not implemented')
-C
+      ELSE IF (WF .EQ. 'MP2 ' .OR. WF .EQ. 'CCSD') THEN
+
          IF (ORBANA) 
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
      &        // 'ORBANA not implemented for MP2')
@@ -375,7 +370,7 @@ C...........Transform property matrix to fragment orbital basis
      &   't0 = T : Expectation value zero by time reversal symmetry.'
       ENDIF
       IF(PRJANA) THEN
-        CALL MEMREL('PRPEX1.prjana',WORK,KWORK,KWORK,KFREE,LFREE)
+        CALL MEMREL('PRPEX1.prjana',WORK,1,KFRSAV,KFREE,LFREE)
       ENDIF
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -668,6 +663,7 @@ C
      &          WORK(*)
       CHARACTER MXFORM*6,FMT*6
 C
+      KFRSAV=KFREE
       N2TOT = NTOT*NTOT
       CALL DZERO(FMAT,N2TOT)
       CALL DZERO(PM,NTOT)
@@ -696,7 +692,7 @@ C
         CALL PRJEX3(EXPVL2,PFO(IPD),DFO(IPD),WORK(KPTRI),NCNT(IFRP),
      &              NR(1,IFRP),NMO(IFRP),IBUF,PBUF,FMAT,PM,INDX,
      &              NTOT,INDXPR,IFRP,IPRINT)
-        CALL MEMREL('PRJEX2.ex3',WORK,KWORK,KPTRI,KFREE,LFREE)
+        CALL MEMREL('PRJEX2.ex3',WORK,1,KPTRI,KFREE,LFREE)
         IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
  10   CONTINUE
       CALL DSCAL(NTOT,D2,PM,1)

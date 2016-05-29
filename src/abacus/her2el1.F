@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -343,13 +343,8 @@ C
                   INDS = INDHSQ(ITUV)
                   DO 500 TUV = 1, NTUV34
                   IF (IODD .EQ. IODDHR(TUV)) THEN
-#if defined (SYS_AIX)
-C                    code due to AIX xlf version 2.2 bug
                      INDT = INDS + INDHSQ(TUV)
                      INDT = INDHVC(INDT)
-#else
-                     INDT = INDHVC(INDS + INDHSQ(TUV))
-#endif
                      DO 510 I = 1, NU1234
                         HCPRIM(I,TUV) = HCPRIM(I,TUV)
      &                        + ETUV(I)*HERINT(I,INDT)
@@ -599,13 +594,8 @@ C
                   INDS = INDHSQ(ITUV)
                   DO 500 TUV = 1, KTUV34
                   IF (IODD .EQ. IODDHR(TUV)) THEN
-#if defined (SYS_AIX)
-C                    due to AIX xlf 2.2 bug
                      INDT = INDS + INDHSQ(TUV)
                      INDT = INDHVC(INDT)
-#else
-                     INDT = INDHVC(INDS + INDHSQ(TUV))
-#endif
                      DO 510 I = 1, NU1234
                         HCPRIM(I,TUV) = HCPRIM(I,TUV)
      &                        + ETUV(I)*HERINT(I,INDT)

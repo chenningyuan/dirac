@@ -153,7 +153,7 @@
                      isFatal = .False.
                   
                   case (allocateFailure)
-                     write (InfoMessage(1),'(a,i7,a)')                                                &
+                     write (InfoMessage(1),'(a,i15,a)')                                                &
      &                     'Not enough memory available when attempting to allocate ',                &
      &                      nint(mbytesRequested),                                                    &
      &                     ' Mb in subroutine '//trace_result(1:42)
@@ -222,6 +222,10 @@
                      if (isVerbose) &
      &               write (*,*) 'Non-fatal error at '//trace_result(1:42)//'. The program will continue.'
                   else
+                     if (var_id.ne.'None') then
+                        nlines_info = nlines_info + 1
+                        write (InfoMessage(nlines_info),'(a)') 'Fatal error at allocation for var. id '//var_id(1:42)
+                     endif
                      call quit(InfoMessage,ErrorMessage,nlines_info)
                   endif
                else

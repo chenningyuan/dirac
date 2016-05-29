@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -69,7 +69,7 @@ C
       integer, parameter              :: max_nkrmc_max_sym = 128
       character(len=400)              :: input_line
       character(len=400)              :: test_string
-      integer                         :: ios, islash
+      integer                         :: ios, islash, icomment
 
       SAVE SET
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
@@ -131,8 +131,8 @@ C
       IKRMC_INTFLG    =  0
       IKRMC_ITRINT(1) =  0
       IKRMC_ITRINT(2) =  0
-      IKRMC_ISTATE    =  1
-      IKRMC_SYMMETRY  =  1
+      IKRMC_STATE     =  1 ! ground state
+      IKRMC_SYMMETRY  =  1 ! totally symmetric
       IKRMC_MEMFAC    =  9
       NKRMCGAS        =  0
       NKRMC_MK2REF    = -1
@@ -197,6 +197,7 @@ C
         WORD1 = WORD
   100   CONTINUE
            READ (LUCMD, '(A7)') WORD
+           CALL UPCASE(WORD)
            PROMPT = WORD(1:1)
            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
               GO TO 100
@@ -244,7 +245,7 @@ C&&& .NEO ALWAYS: Always use NEO-iterations
                GO TO 100
     7          CONTINUE
 C&&& .STATE : which state to converge to
-               READ(LUCMD,*) IKRMC_ISTATE
+               READ(LUCMD,*) IKRMC_STATE
                GO TO 100
     8          CONTINUE
 C&&& DELETE ORBITALS:
@@ -397,6 +398,10 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
 
                  read(lucmd,'(a)') input_line
                  call upcase(input_line)
+                 icomment = index(input_line,'!')
+                 if (icomment > 0) input_line(icomment:) = ' '
+                 icomment = index(input_line,'#')
+                 if (icomment > 0) input_line(icomment:) = ' '
                  islash = index(input_line,'/')
 
 !                check for correct input format: 
@@ -431,7 +436,8 @@ C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon D
                  end if
 !                step 3: GAS shell orbital occupation
                  read(input_line(islash+1:),*,iostat=ios) test_string
-                 if(trim(test_string) .eq. "ALL")then
+                 islash = index(input_line,'/')
+                 if(index(test_string,"ALL") .gt. 0)then
                    do j=1,nfsym
                      NKRMCGSH(j,i) = -9999
                    end do
@@ -691,7 +697,7 @@ C
 
       END IF
       WRITE(LUPRI,'(A,I4)')
-     &     ' * State number          : ',IKRMC_ISTATE
+     &     ' * State number          : ',IKRMC_STATE
       WRITE(LUPRI,'(2A)')
      &     ' * CI program used       : ',KRMC_CIPROGRAM
 C
@@ -958,6 +964,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1160,6 +1167,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

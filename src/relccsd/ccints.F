@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -161,10 +161,7 @@ C
 C
 C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
-      IF (IMSTAT(1).GT.1.AND..NOT.FOCKSP) THEN
-         WRITE (IW,1010)
-         GOTO 150
-      ENDIF
+      IF (IMSTAT(1).EQ.3) GOTO 150
 C
 C     RE-ENTRY POINT IN CASE THE GAUNT INTERACTION HAS TO BE ADDED
 C
@@ -276,21 +273,30 @@ C
       CALL WAIO_SAVE(ITAPT+2)
       CALL WAIO_SAVE(ITAPT+3)
       CALL WAIO_SAVE(ITAPT+4)
+
+      IF (IMSTAT(1).EQ.3) THEN
+C        call relcc_restart_check('OOOO to VOVO sorted integrals ',IW)
+         WRITE(IW,*)
+         WRITE(IW,*) 'Restart: using sorted OOOO to VOVO integrals'
+      ELSE
+         CALL DAYTIME (DATEX,TIMEX)
+         WRITE(IW,*)
+         WRITE(IW,*) 'Sorting of first 4 classes done at '//datex//timex
+      ENDIF
+      CALL FLSHFO (IW)
+C
       IMSTAT(1) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
-      CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,*)
-      WRITE(IW,*) 'Sorting of first 4 classes done at '//datex//timex
-      CALL FLSHFO (IW)
+C
+C Now get the VOVV integrals
 C
       CALL WAIO_OPEN(ITAPT+5)
 C
 C  We may have already sorted these integrals when restarting, in that case jump ahead
 C
-      IF (IMSTAT(2).GT.1.AND..NOT.FOCKSP) THEN
-         WRITE (IW,1011)
-         GOTO 550
-      ENDIF
+      IF (IMSTAT(2).EQ.3) GOTO 450
+C
+      IF (.NOT.SRTALL) GOTO 600
 C
 C     Determine # of passes necessary for treating VOVV integrals
 C     on a specific node
@@ -301,8 +307,6 @@ C
       WRITE (IW,1005) NPASS,'VOVV'
       WRITE(IW,*) 
       CALL FLSHFO (IW)
-C
-      IF (.NOT.SRTALL) GOTO 600
 C
 C   start of IPASS loop for the VOVV
 C ----------------------------
@@ -406,14 +410,32 @@ C ----------------------
       CALL FLSHFO (IW)
       ENDDO
 C ----------------------
-      CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,*) 
-      WRITE(IW,*) 'VOVV sorting done at '//datex//timex
+C
+C     This is a restart point : save the files and update status.
+C
+  450 CONTINUE
+      CALL WAIO_SAVE(ITAPT+5)
+
+      IF (IMSTAT(2).EQ.3) THEN
+C        call relcc_restart_check('VOVV sorted integrals        ',IW)
+         WRITE(IW,*)
+         WRITE(IW,*) 'Restart: using sorted VOVV integrals'
+      ELSE
+         CALL DAYTIME (DATEX,TIMEX)
+         WRITE(IW,*)
+         WRITE(IW,*) 'VOVV sorting done at '//datex//timex
+      ENDIF
       CALL FLSHFO (IW)
+
+      IMSTAT(2) = 3
+      IF(EQNS.NE.'RELADC') CALL CCDUMP
+
 C
 C     GET THE VVVV INTEGRALS
 C
       CALL WAIO_OPEN(ITAPT+6)
+C
+      IF (IMSTAT(3).EQ.3) GOTO 550 
 C
       NPASS = (NV6PAR-1) / NVT + 1
       NSEC6 = 1
@@ -553,9 +575,14 @@ C
 C     This is a restart point : save the files and update status.
 C
   550 CONTINUE
-      CALL WAIO_SAVE(ITAPT+5)
       CALL WAIO_SAVE(ITAPT+6)
-      IMSTAT(2) = 3
+      IF (IMSTAT(3).EQ.3) THEN
+C        call relcc_restart_check('VVVV sorted integrals         ',IW)
+         WRITE(IW,*)
+         WRITE(IW,*) 'Restart: using sorted VVVV integrals'
+      ENDIF
+
+      IMSTAT(3) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
 C
   600 WRITE (IW,1006)
@@ -566,7 +593,7 @@ C
 C     This is a restart point : save the files and update status.
 C
       CALL WAIO_SAVE(ITAPT+0)
-      IMSTAT(3) = 3
+      IMSTAT(4) = 3
       IF(EQNS.NE.'RELADC') CALL CCDUMP
 C
       ESCF = E0 + E1 
@@ -615,9 +642,6 @@ C
      & (' Type ',A4,' :',I16,' integrals'))
  1005 FORMAT (/' Need ',I6,' passes to sort ',A4,' integrals')
  1006 FORMAT (/' Finished sorting of integrals')
- 1010 FORMAT (/' Skipping integral sorting step 1')
- 1011 FORMAT (/' Skipping integral sorting step 2')
- 1012 FORMAT (/' Skipping Fock-matrix build')
  1013 FORMAT (//' SCF energy :',T40,F25.15) 
       RETURN
 10000 CALL QUIT('ERROR READING HEADER MDCINT')
@@ -626,6 +650,24 @@ C
 10010 CALL QUIT('ERROR READING INTEGRALS FROM MDCINT')
 10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine relcc_restart_check(message,file)
+         integer, intent(in) :: file
+         character(30) :: message 
+
+         write (file,'(A)') ' '
+         WRITE (file,'(A)') ' Restart: using prior '//message(1:28)
+         write (file,'(A)') ' '
+         write (file,'(A)') '     Warning: No consistency checks yet'
+         write (file,'(A)') ' '
+         write (file,'(A)') '      Please verify the number of '
+     &                    //'active spinors and the size of the model '
+     &                    //'space'
+         write (file,'(A)') '      (in FSCC calculations) has not'
+     &                    //' changed between this restart and the '
+     &                    //'prior run'
+
+      end subroutine
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI,
      &                    PROPR,PROPI)
@@ -770,7 +812,6 @@ C
       OPEN (MDPROP,FILE='MDPROP',FORM='UNFORMATTED')
       INOP = 0
     1 READ (MDPROP,ERR=10,END=11) ACHAR
-       print *,'ACHAR=',ACHAR
       IF (ACHAR(1:8).NE.'********'.OR.ACHAR(25:32).NE.NAMEA) GOTO 1
       IF (IPRNT.GE.1) WRITE (IW,1000) NAMEA,ACHAR(9:16),ACHAR(17:24)
       READ (MDPROP) PROP
@@ -1676,7 +1717,7 @@ C---------------------------------------------------------------------
       ENDDO
 C
       CALL GETVOOO (BUF1)
-      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+      CALL SRT1ST4 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
      &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP
@@ -1691,7 +1732,7 @@ C---------------------------------------------------------------------
       ENDDO
 C
       CALL GETVOVO (BUF1)
-      CALL SRT1SS4 (NREP,MULTB,NV,NO,NV,NO,MVV,JVVOO,JJVV,JJOO,
+      CALL SRT1SS4 (NREP,MULTB,LTR,LFA,NV,NO,NV,NO,MVV,JVVOO,JJVV,JJOO,
      &              BUF1,BUF2)
       KK = 1
       DO KREP = 1, NREP
@@ -1741,6 +1782,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
+! Type of index pair (oo,vo,ov or vv)
       DO J = 1, NSP
          IF (IREPSP(J,3).GT.0) THEN
             JJ = 0 
@@ -1759,7 +1801,7 @@ C
             INDEX(I,J,4) = 0
          ENDDO
       ENDDO
-C
+! Position in Fock matrix: oo part
       IJ = 0
       DO IREP = 1, NREP
          DO JJ = 1, NO(IREP)
@@ -1771,7 +1813,7 @@ C
             ENDDO
          ENDDO
       ENDDO
-C
+! Position in Fock matrix: vo part
       IJ = 0
       DO IREP = 1, NREP
          DO JJ = 1, NO(IREP)
@@ -1783,7 +1825,7 @@ C
             ENDDO
          ENDDO
       ENDDO
-C
+! Position in Fock matrix: ov part
       IJ = 0
       DO IREP = 1, NREP
          DO JJ = 1, NV(IREP)
@@ -1795,7 +1837,7 @@ C
             ENDDO
          ENDDO
       ENDDO
-C
+! Position in Fock matrix: vv part
       IJ = 0
       DO IREP = 1, NREP
          DO JJ = 1, NV(IREP)
@@ -1807,7 +1849,7 @@ C
             ENDDO
          ENDDO
       ENDDO
-C
+! Position in |i,j> or <i,j| triangular lists: oo part
       DO IJREP = 1, NREP
          IJ = 0
          DO JREP = 1, NREP
@@ -1827,7 +1869,7 @@ C
  10         CONTINUE
          ENDDO
       ENDDO
-C
+! Position in |i,j> or <i,j| triangular lists: vo part
       DO IJREP = 1, NREP
          IJ = 0
          DO JREP = 1, NREP
@@ -1845,7 +1887,7 @@ C
  20         CONTINUE
          ENDDO
       ENDDO
-C
+! Position in |i,j> or <i,j| triangular lists: vv part
       DO IJREP = 1, NREP
          IJ = 0
          DO JREP = 1, NREP

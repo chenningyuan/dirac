@@ -33,7 +33,13 @@
 **MOLTRA
 .ACTIVE
 energy -6.0 20.0 1.0
+#####################################################
+**RELCCSD
+.FOCKSP
+*CCFSPC
+.DOIE
+.NACTH
+ 2 2
+.MAXIT
+100
 **END OF
-
- &RELCCSD DOFSPC=T DOENER=F IPRNT=1 TIMING=T NELEC=7,7 DEBUG=F &END
- &CCFSPC MAXIT=100, NACTH=2,2, NACTP=0,0, DOIE=T &END

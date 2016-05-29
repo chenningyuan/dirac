@@ -1,22 +1,25 @@
-Density-functionals available in DIRAC using the :ref:`.DFT` keyword
-====================================================================
+:orphan:
+ 
 
-Below is a list of density functionals available with the keyword :ref:`.DFT` in DIRAC:
+Density-functionals available in DIRAC using the :ref:`HAMILTONIAN_.DFT` keyword
+================================================================================
+
+Below is a list of density functionals available with the keyword :ref:`HAMILTONIAN_.DFT` in DIRAC:
 
 *Exchange functionals*
 -----------------------
 
--  LDA exchange  [Dirac1930]_
--  Becke 1988 [Becke1988]_
--  The correction term to LDA proposed by Becke [Becke1988]_
--  Perdew--Wang 1986 [Perdew1986]_
+-  LDA exchange  :cite:`Dirac1930`
+-  Becke 1988 :cite:`Becke1988`
+-  The correction term to LDA proposed by Becke :cite:`Becke1988`
+-  Perdew--Wang 1986 :cite:`Perdew1986`
 
 *Correlation functionals*
 --------------------------
 
--  The Vosko--Wilk--Nusair LDA correlation functional (VWN5) [Vosko1980]_
--  The Lee--Yang--Parr functional  [Lee1988]_
--  Perdew 1986 [Perdew1986]_
+-  The Vosko--Wilk--Nusair LDA correlation functional (VWN5) :cite:`Vosko1980`
+-  The Lee--Yang--Parr functional  :cite:`Lee1988`
+-  Perdew 1986 :cite:`Perdew1986`
 
 *Predefined combinations*
 --------------------------
@@ -32,6 +35,7 @@ SVWN5
 SVWN3
    GGAKEY Slater=1.0 VWN3=1.0
 Xalpha
+   ...
 
 GGA functionals
 ~~~~~~~~~~~~~~~

@@ -48,6 +48,7 @@
          public allocator_get_maxbuff
          public allocator_get_arraysize
          public allocator_get_meminuse
+         public allocator_get_words_available
          public allocator_get_words_inuse
          public allocator_init
          public allocator_report
@@ -75,6 +76,11 @@
             module procedure allocator_get_words_inuse_i4
             module procedure allocator_get_words_inuse_i8
          end interface allocator_get_words_inuse
+
+         interface allocator_get_words_available
+            module procedure allocator_get_words_available_i8
+            module procedure allocator_get_words_available_i4
+         end interface allocator_get_words_available
 
          interface allocator_get_arraysize
             module procedure allocator_get_arrayindex_size_i4
@@ -177,7 +183,7 @@
          integer(kind=4), intent(out) :: size 
          real(kind=kreal), intent(in) :: memory
 
-         size = nint(memory/real(kind))
+         size = anint(memory/real(kind))
 
       end subroutine allocator_get_arrayindex_size_i4
 
@@ -186,7 +192,7 @@
          integer(kind=8), intent(out) :: size 
          real(kind=kreal), intent(in) :: memory
 
-         size = nint(memory/real(kind))
+         size = anint(memory/real(kind))
       end subroutine allocator_get_arrayindex_size_i8
 !
 ! will give the size of
@@ -199,7 +205,7 @@
 
          call allocator_get_available_mem(possible_mem) 
 
-         maxindex_long = nint(possible_mem/real(kind_to_use))
+         maxindex_long = anint(possible_mem/real(kind_to_use))
          hugemax       = huge(maxindex) 
 
          if ( maxindex_long < hugemax ) then 
@@ -219,7 +225,7 @@
 
          call allocator_get_available_mem(possible_mem) 
 
-         maxindex_long = nint(possible_mem/real(kind_to_use))
+         maxindex_long = anint(possible_mem/real(kind_to_use))
          hugemax       = huge(maxindex) 
 
          if ( maxindex_long < hugemax ) then 
@@ -244,7 +250,7 @@
          buffsize_real = real(hugebuf,kind(buffsize_real))
 
          if ( maxindex_real < buffsize_real ) then
-            buffsize = nint(maxindex_real)
+            buffsize = anint(maxindex_real)
          else
             buffsize = hugebuf
          endif
@@ -266,7 +272,7 @@
          buffsize_real = real(hugebuf,kind(buffsize_real))
 
          if ( maxindex_real < buffsize_real ) then
-            buffsize = nint(maxindex_real)
+            buffsize = anint(maxindex_real)
          else
             buffsize = hugebuf
          endif
@@ -296,12 +302,30 @@
       end subroutine allocator_get_available_mem
 !
 !
+      subroutine allocator_get_words_available_i8(mem_in_words)
+         real(kind=kreal)             :: mem 
+         integer(kind=8), intent(out) :: mem_in_words
+
+         call allocator_get_available_mem(mem)
+         mem_in_words = anint((mem/8.0d0),kind(8))
+      end subroutine allocator_get_words_available_i8
+!
+!
+      subroutine allocator_get_words_available_i4(mem_in_words)
+         real(kind=kreal)             :: mem 
+         integer(kind=4), intent(out) :: mem_in_words
+
+         call allocator_get_available_mem(mem)
+         mem_in_words = anint((mem/8.0d0),kind(4))
+      end subroutine allocator_get_words_available_i4
+!
+!
       subroutine allocator_get_words_inuse_i8(mem_in_words)
          real(kind=kreal)                    :: mem
          integer(kind=8), intent(out)        :: mem_in_words
 
          call track_getMemoryInuse(mem)
-         mem_in_words = nint(mem/real(kind(mem)),kind(8))
+         mem_in_words = anint(mem/real(kind(mem)),kind(8))
       end subroutine allocator_get_words_inuse_i8
 !
 !
@@ -310,7 +334,7 @@
          integer(kind=4), intent(out)        :: mem_in_words
 
          call track_getMemoryInuse(mem)
-         mem_in_words = nint(mem/real(kind(mem)),kind(4))
+         mem_in_words = anint(mem/real(kind(mem)),kind(4))
       end subroutine allocator_get_words_inuse_i4
 !
       end module allocator_track_if

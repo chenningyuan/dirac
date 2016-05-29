@@ -28,8 +28,6 @@
 **MOLTRA
 .ACTIVE
 2..36
+**RELCCSD
+.GRADIENT
 *END OF                                                                         
- 
- &RELCCSD DOENER=T, NELEC=4,4, TIMING=T, IPRNT=1, DOFOPR=T &END
- &CCENER DOCCSD=T, DOCCSDT=T &END
- &CCFOPR DOMP2G=T &END

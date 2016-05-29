@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ================================
 A TDDFT study of carbon monoxide
 ================================
@@ -6,18 +9,18 @@ Introduction
 ============
 
 To illustrate the TDDFT capabilities of DIRAC we will consider excited states of the carbon monoxide molecule. 
-The experimental spectrum can be found `here <http://webbook.nist.gov/cgi/cbook.cgi?Formula=CO&NoIon=on&Units=SI&cDI=on>`_ .
+The experimental spectrum can be found `at this page <http://webbook.nist.gov/cgi/cbook.cgi?Formula=CO&NoIon=on&Units=SI&cDI=on>`_ .
 Note that this source gives only adiabatic excitation energies :math:`T_e`, that is, the energy difference between the 
 minima of the potential curve of the ground and excited state, whereas the TDDFT calculations give vertical excitation
-energies :math:`T_v`. The experimental adiabatic excitation energies has been converted to vertical ones by [Nielsen_JCP1980]_.
+energies :math:`T_v`. The experimental adiabatic excitation energies has been converted to vertical ones by :cite:`Nielsen_JCP1980`.
 We will begin this tutorial in spinfree mode to faciliate the connection to the non-relativistic domain.
-In the following we employ the molecular input file `CO.mol` 
+In the following we employ the molecular input file `CO.mol` (:download:`download <CO.mol>`):
 
 .. literalinclude:: CO.mol
 
 Here we do not provide any symmetry information, meaning that we ask DIRAC to detect it.
-DIRAC will find that the full group is :math:`C_{\infty v}`. With spin-orbit coupling DIRAC
-will then activate linear supersymmetry, but in the spin-orbit free case it will simply use
+DIRAC will find that the full group is :math:`C_{\infty v}`. With the spin-orbit coupling DIRAC
+will then activate the linear supersymmetry, but in the spin-orbit free case it will simply use
 the highest Abelian single point group, that is :math:`C_{2v}`. Irreps of :math:`C_{\infty v}` and :math:`C_{2v}` 
 correlate as follows:
 
@@ -38,8 +41,8 @@ Ground state electronic structure
 =================================
 
 Before actually doing TDDFT let us first have a look at the electronic structure of the ground state of CO.
-We therefore carry out Kohn-Sham DFT using the PBE functional and the eXact 2-Component (X2C) Hamiltonian 
-followed by Mulliken population analysis using the input file `SCF.inp` 
+We therefore carry out Kohn-Sham DFT (see :ref:`*DFT`)  using the PBE functional and the eXact 2-Component (:ref:`HAMILTONIAN_.X2C`) Hamiltonian 
+followed by Mulliken population analysis using the input file `SCF.inp` (:download:`download <SCF.inp>`):
 
 .. literalinclude:: SCF.inp
 
@@ -53,7 +56,7 @@ Based on orbital energies and the Mulliken population analysis we can set up the
 (Orbital energies for the atoms were obtained from atomic calculations using fractional occupation)
 
 According to the above MO diagram the valence electron configuration of carbon monoxide is
-:math:`1\sigma^{2}2\sigma^{2}1\pi^{4}3\sigma^{2}`. From projection analysis we find that the electron configurations
+:math:`1\sigma^{2}2\sigma^{2}1\pi^{4}3\sigma^{2}`. From the projection analysis we find that the electron configurations
 of the carbon and oxygen atoms in the molecule are :math:`1s^{2.0}2s^{2.0}2p^{2.0}` and :math:`1s^{2.0}2s^{1.7}2p^{4.3}` , respectively, 
 with a slight negative charge of -0.3 on oxygen. We note that the HOMO is a :math:`\sigma` orbital dominated (~90 %) by carbon (2s,2p), 
 whereas the doubly degenerate LUMO is a :math:`\pi` orbital with about 75% C *2p* and 25% O *2p*. The LUMO+1 is :math:`\sigma` orbital
@@ -65,18 +68,24 @@ Excited states
 Preparing the input files
 -------------------------
 
-The excited states will be calculated in a "bottoms-up" fashion for each irrep by expansion of the solution vector in trial vector [Bast2009]_.
+The excited states will be calculated in a "bottoms-up" fashion for each irrep by expansion of the solution vector in trial vector :cite:`Bast2009`.
 For each irrep the user specifies the number of desired excitations. It may be a good idea of including some extra excitations in case of
 root flipping during the iterative solution of the TDDFT equations. We are working within the adiabatic approximation of TDDFT
 and consider single excitations from a closed-shell ground state. The final states will be therefore be singlet or triplets in the spin-orbit 
 free case. We need to tell DIRAC how these states are distributed on the four irreps of :math:`C_{2v}`. 
 At this point we should emphasize that DIRAC will employ the *total* symmetry of the final states,
-that is the combined spin and spatial symmetry. A singlet spin function is totally symmetric (:math:`A_1`), whereas the
+that is the combined spin and spatial symmetry. A singlet spin function 
+
+.. math::
+
+   S_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2-\beta_1\alpha_2\right)
+
+is totally symmetric (:math:`A_1`), whereas the
 triplet spin functions transform as rotations. We know the triplet functions as:
 
 .. math::
 
-   T_{-1} = \alpha_1\alpha_2;\quad T_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2-\beta_1\alpha_2\right);\quad T_{+1}=\beta_1\beta_2
+   T_{-1} = \alpha_1\alpha_2;\quad T_0=\frac{1}{\sqrt{2}}\left(\alpha_1\beta_2+\beta_1\alpha_2\right);\quad T_{+1}=\beta_1\beta_2
 
 but for our purposes it will be more convenient to form the combinations:
 
@@ -119,25 +128,25 @@ We can now set up the following correlation of states:
 Counting total symmetries we find that the 12 microstates are evenly distributed amongst the four irreps of :math:`C_{2v}`:
 
 
-+---+------------+-------------------------------------------------------+
-|   | Irrep      | Valence-excited state                                 |
-+===+============+=======================================================+
-| 1 |:math:`A_1` | :math:`^1\Sigma, ^{3(y)}\Pi_{x}, ^{3(x)}\Pi_{y}`      |
-+---+------------+-------------------------------------------------------+
-| 2 |:math:`B_1` | :math:`^{1}\Pi_{x}, ^{3(y)}\Sigma, ^{3(z)}\Pi_{y}`    |
-+---+------------+-------------------------------------------------------+
-| 3 |:math:`B_2` | :math:`^{1}\Pi_{y}, ^{3(x)}\Sigma, ^{3(z)}\Pi_{x}`    |
-+---+------------+-------------------------------------------------------+
-| 4 |:math:`A_2` | :math:`^{3(z)}\Sigma, ^{3(x)}\Pi_{x}, ^{3(y)}\Pi_{y}` |
-+---+------------+-------------------------------------------------------+
++---+-------------+-------------------------------------------------------+
+|   |  Irrep      | Valence-excited state                                 |
++===+=============+=======================================================+
+| 1 | :math:`A_1` | :math:`^1\Sigma, ^{3(y)}\Pi_{x}, ^{3(x)}\Pi_{y}`      |
++---+-------------+-------------------------------------------------------+
+| 2 | :math:`B_1` | :math:`^{1}\Pi_{x}, ^{3(y)}\Sigma, ^{3(z)}\Pi_{y}`    |
++---+-------------+-------------------------------------------------------+
+| 3 | :math:`B_2` | :math:`^{1}\Pi_{y}, ^{3(x)}\Sigma, ^{3(z)}\Pi_{x}`    |
++---+-------------+-------------------------------------------------------+
+| 4 | :math:`A_2` | :math:`^{3(z)}\Sigma, ^{3(x)}\Pi_{x}, ^{3(y)}\Pi_{y}` |
++---+-------------+-------------------------------------------------------+
 
 Note that the order of the irreps follows the output of DIRAC. 
 
-We now set up the following menu file `TDDFT.inp` for our calculation
+We now set up the following menu file `TDDFT.inp` (:download:`download <TDDFT.inp>`) for our calculation
 
 .. literalinclude:: TDDFT.inp
 
-We base our TDDFT calculation on the long-range corrected CAMB3LYP functional [Yanai_CPL2004]_ 
+We base our TDDFT calculation on the long-range corrected CAMB3LYP functional :cite:`Yanai_CPL2004` 
 which provides a better description of Rydberg and charge-transfer excitations than 
 standard continuum functionals. We furthermore ask for oscillator strengths within the electric dipole
 approximation. Finally we ask for analysis of what orbitals contribute to the various excitations. 
@@ -168,8 +177,8 @@ to closed-shell and so this is :math:`^1A_1` (:math:`C_{2v}`), corresponding to 
 Linear (super)symmetry is not implemented for spin-orbit free calculations, so DIRAC gives symmetry information with respect to :math:`C_{2v}`.
 DIRAC, however, is able to separate spin and spatial symmetries. We see for instance the the next level is six-fold degenerate 
 with equal contributions from :math:`^3B_1` and :math:`^3B_2`. Looking at the above correspondence table between :math:`C_{2v}` and
-:math:`C_{v\infty}` that a degenerate level of :math:`B_1` and :math:`B_2` spatial symmetries corresponds to a :math:`\Delta` term, 
-so we identify the first excited level of CO as :math:`^3\Delta`. The correspondence table also allows us to distinguish mirror symmetry
+:math:`C_{v\infty}` that a degenerate level of :math:`B_1` and :math:`B_2` spatial symmetries corresponds to a :math:`\Pi` term, 
+so we identify the first excited level of CO as :math:`^3\Pi`. The correspondence table also allows us to distinguish mirror symmetry
 about the molecular axis for :math:`\Sigma` states, so we identify the second excited state as :math:`^{3}\Sigma^{+}`. Proceeding 
 in this manner, we also see some failures of the degeneracy detection in DIRAC. Level 4 and 5 are classified as :math:`^3A_1` and 
 :math:`^3A_2`, respectively, and are clearly components of a :math:`^3\Delta` state. Reducing the threshold for degeneracies would 
@@ -179,7 +188,7 @@ However, level 6 is seen to contain both a singlet :math:`^1A_2` (:math:`^1\Sigm
 be needed to distinguish them. 
 
 Below we give a summary of results obtained with a variety of functionals available in DIRAC.
-The assignment and energy of states may be compared to [Tozer_JCP1998]_. 
+The assignment and energy of states may be compared to :cite:`Tozer_JCP1998`. 
 
 +------------------------------+-------------+-------------+----------+-------+-------+-------+-------+-------+
 |                              | :math:`T_e` | :math:`T_v` | CAMB3LYP | LDA   | PBE   | PBE0  | BLYP  | B3LYP |
@@ -320,7 +329,7 @@ DIRAC will also list the corresponding rate of spontaneous emission
 
 and lifetime. This is a spin-orbit free calculation and so we only see oscillator strength to 
 singlet states (clearly dominated by :math:`C\ ^{1}\Sigma^{+}`). Things change is we 
-activate spin-orbit interaction (that is, remove the :ref:`.SPINFREE` keyword). 
+activate spin-orbit interaction (that is, remove the :ref:`HAMILTONIAN_.SPINFREE` keyword). 
 We see that the energy levels split up
 
 .. literalinclude:: TDDFT_CO_exc

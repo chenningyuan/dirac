@@ -1,5 +1,8 @@
-C
-C
-      PARAMETER (MAXFROZ=100)
-      COMMON/FREEZE/NFROZEN,IFROZ(MAXFROZ,32)
-      INTEGER NFROZEN,IFROZ
+! FILE: relccsd/freeze.inc
+!
+      INTEGER   MAXFROZ, MAXIREP, NFROZEN,IFROZ
+      PARAMETER (MAXFROZ=100, MAXIREP=32)
+      LOGICAL   IFROZ_set_in_input
+      COMMON /RELCCSD_FREEZE/ NFROZEN,IFROZ(MAXFROZ,MAXIREP),           &
+     &          IFROZ_set_in_input
+! -- end of relccsd/freeze.inc

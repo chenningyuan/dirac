@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -124,6 +124,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -504,7 +505,11 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
       NO2IND = .FALSE.
       NO4IND = .FALSE.
       NOPAIR = .TRUE.
-      PRPTRA = .FALSE.
+      IF (SPINFR) THEN
+         PRPTRA = .FALSE. ! Phase factor scaling needed for spinfree is not yet debugged for properties (see in traprp)
+      ELSE
+         PRPTRA = .TRUE.  ! Always on to allow intensity calculation in RELCCSD
+      END IF
       RCORBS = .FALSE.
       NOMDCINT = .FALSE.
       MDCSCAT = .FALSE.
@@ -525,6 +530,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',ERR=910,END=920) WORD
+      CALL UPCASE(WORD)
       NEWDEF = (WORD .EQ. '**MOLTR')
       IF (NEWDEF) THEN
          GO TO 930
@@ -544,6 +550,7 @@ C         if reading input from a terminal
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -879,6 +886,8 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 C
   400 CONTINUE
 
+      CALL TRPINP(WORD,.FALSE.,WORK,LWORK)  ! always call this routine, sets transformation for dipole integrals
+
 C
 C     Process defaults for 2- and 4-index transformations
 C
@@ -1133,9 +1142,12 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbtra.h"
+#include "dcbham.h" ! Added temporarily to test for bss (where transform is not working)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PNAME*16
+      DIMENSION PNAME(3)
       DIMENSION WORK(LWORK)
 C
       SAVE SET
@@ -1159,7 +1171,18 @@ C     Initialize /CBIEXP/
 C     ===================
 C
       IPRTRP   = IPRTRA
-      NTRPP   = 0
+!     Always transform the dipole length operator
+      IF (.NOT. BSS) THEN
+      PNAME(1) = 'XDIPLEN'
+      PNAME(2) = 'YDIPLEN'
+      PNAME(3) = 'ZDIPLEN'
+      DO I=1,3
+         CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
+     &               ITRXPR,WORK,LWORK,IPRXQR)
+         CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,MAXTRP)
+      END DO
+      END IF
+
 C
 C     Process input from CBITRP
 C     =========================
@@ -1170,6 +1193,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
   110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -1238,11 +1262,9 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(1X,A)') 'TRPINP: Property integral transformation'
       CALL PRSYMB(LUPRI,'=',75,0)
-      IF(ICHANG.GT.0) THEN
-        WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRTRP
-        WRITE(LUPRI,'(1X,A)')
+      WRITE(LUPRI,'(1X,A,I5)') '* Print level:',IPRTRP
+      WRITE(LUPRI,'(1X,A)')
      &  '*The following operators will be transformed:'
-      ENDIF
       IF(NTRPP.GT.0) THEN
         DO I = 1,NTRPP
           INDXPR = LTRPP(I)
@@ -1339,6 +1361,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

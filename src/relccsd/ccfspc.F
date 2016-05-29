@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2180,6 +2180,13 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
+
+      interface
+         subroutine gettau(t1,t2,tau)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         end subroutine gettau
+      end interface
 C
 C---------------Local variables--------------------------------------
 C
@@ -2233,8 +2240,6 @@ C
 #include "symm.inc"
       REAL*8 TRES,EPS(*),E_OFF
       REAL*8 EV_ALL(RCW,NDT_TOT),H(RCW,*) 
-      REAL*8 INTENSITY(NDT_TOT),
-     &       TRANS_DIPOLE(3,RCW,NDT_TOT)
       INTEGER ICURFSS,IPR,NSP
       DIMENSION IREPSPI(NSP,MXREP,2)
 C
@@ -2253,33 +2258,11 @@ C
 C
 C---------------Executable code--------------------------------------
  
-#ifdef MOD_UNRELEASED
 !     At the moment only sector 4 has intensities
       IF (ICURFSS.EQ.4) THEN
-      CALL FS_COMPUTE_INTENSITY (ICURFSS,H,INTENSITY,TRANS_DIPOLE,
+      CALL FS_COMPUTE_INTENSITY (ICURFSS,H,
      &                           NDT_TOT,IREPSPI,NSP,E_OFF,EV_ALL)
-      WRITE (IW,1100)
-      IF (.NOT.CARITH) THEN
-         WRITE (IW,1110)
-      ELSE
-         WRITE (IW,1111)
-      ENDIF
-      I_EIGENVALUE = 0
-      DO IRP=1,NREP
-!        Not all irreps may be spanned
-         NDT = NFS_HE(IRP,ICURFSS)
-         IF (NDT.EQ.0) CYCLE
-         DO J_EIGENVALUE = 1, NDT
-              I_EIGENVALUE = I_EIGENVALUE + 1
-              IF (INTENSITY(I_EIGENVALUE).GT.1E-05) 
-     &        WRITE (IW,1112) REPNA(NREP+IRP),J_EIGENVALUE,
-     &            EV_ALL(1,I_EIGENVALUE),
-     &            INTENSITY(I_EIGENVALUE),
-     &            ((TRANS_DIPOLE(IX,IY,I_EIGENVALUE),IX=1,3),IY=1,RCW)
-         END DO
-      END DO
       END IF ! Intensities for excitation energies
-#endif
 C
 C     Now print an analysis of the vectors
 C     Initialize and get labels for the excited state coefficiens
@@ -2345,19 +2328,10 @@ C           Loop over the coefficients and print the interesting ones
      &/' other lines : Coefficients of contributing determinants',
      & ' (above a treshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8)
-#ifdef MOD_UNRELEASED
- 1100 FORMAT (//' Excitation energies and intensities'/)
- 1110 FORMAT (/' Irrep   State   Ex. Energy     f        ',
-     & '  mu(x)     mu(y)     mu(z) '  )
- 1111 FORMAT (/' Irrep   State   Ex. Energy   f     ',
-     & 'mu_r(x)   mu_r(y)   mu_r(z)    mu_i(x)    mu_i(y)    mu_i(z)')
- 1112 FORMAT (2X,A4,I8,2f12.6,6f10.5)
-#endif
       END
-#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,EIGENVECTORS,INTENSITY,
-     &                                 TRANS_DIPOLE,NDT_TOT,IREPSPI,NSP,
+      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,EIGENVECTORS,
+     &                                 NDT_TOT,IREPSPI,NSP,
      &                                 E_OFF,EV_ALL) 
 c
       IMPLICIT INTEGER (A-Z)   
@@ -2379,6 +2353,8 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #include "dcbxpr.h"
+#include "dcbham.h"
+! The dcbham common block is needed temporarily to check for spinfree (transformation of dipole integrals not debugged yet for spinfree)
 c
 c---------------Calling Variables-----------------------------------
 c 
@@ -2386,8 +2362,7 @@ c
       REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS))
       REAL*8 E_OFF,EV_ALL(RCW,NDT_TOT)
 !output
-      REAL*8 INTENSITY(NDT_TOT),
-     &       TRANS_DIPOLE(3,RCW,NDT_TOT)
+      REAL*8, ALLOCATABLE ::   INTENSITY(:),TRANS_DIPOLE(:,:,:)
 c
 c---------------Local Variables-----------------------------------------------
 c
@@ -2399,15 +2374,20 @@ c
 c---------------Executable code--------------------------------------------------
 c
 
+      IF (ICURFSS.EQ.0) RETURN ! No intensities if we only have the ground state
+      IF (SPINFR)       RETURN ! Transformed dipole moment integrals not yet available
+
       ALLOCATE(PROP(RCW,NSP,NSP),STAT=IERR)
+      ALLOCATE(INTENSITY(NDT_TOT),STAT=IERR)
+      ALLOCATE(TRANS_DIPOLE(3,RCW,NDT_TOT),STAT=IERR)
       IF (IERR.NE.0) THEN
-       CALL QUIT('Error in PROP allocation!')
+       CALL QUIT('Error allocating memory in intensity calculation')
       ENDIF
 
       CALL DZERO (INTENSITY,NDT_TOT)
       CALL DZERO (TRANS_DIPOLE,3*RCW*NDT_TOT)
 
-       DO EOPER=1, 3 !loop over components of dipole vector
+      DO EOPER=1, 3 !loop over components of dipole vector
       CALL DZERO (PROP,NSP*NSP*RCW)
 c
 c Read in dipole matrices in MO-basis
@@ -2417,9 +2397,10 @@ c
 c  Transition dipole moments for (0,1) or (1,0) sector
 c
       IF ((ICURFSS.EQ.2).OR.(ICURFSS.EQ.3)) THEN 
-! 
-!      CALL TRANSITION_ZEROONE_ONEZERO (ICURFSS,EOPER,PROP,
-!     &               TRANS_DIPOLE,EIGENVECTORS,NDT_TOT,NSP)
+  
+       CALL TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
+     &                        EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+       CYCLE  ! Transition dipoles are only written to xml output, as there are too many to print in human-readable form
 c
 c  Transition dipole moments for (1,1) sector
 c 
@@ -2427,6 +2408,7 @@ c
 
       CALL TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
      &                        EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+
       ENDIF
 c
 c Calculate intensity, gauge dependence? I = 2/3 * |mu|^2 * excitation energy
@@ -2452,7 +2434,30 @@ c
        CALL QUIT('Error in PROP deallocation!')
       ENDIF
 
-!!    Write excitation energies and transition dipoles
+!    Write excitation energies and transition dipoles
+
+      WRITE (IW,1101)
+      WRITE (IW,1100)
+      IF (.NOT.CARITH) THEN
+         WRITE (IW,1110)
+      ELSE
+         WRITE (IW,1111)
+      ENDIF
+
+      I_EIGENVALUE = 0
+      DO IRP=1,NREP
+!        Not all irreps may be spanned
+         NDT = NFS_HE(IRP,ICURFSS)
+         IF (NDT.EQ.0) CYCLE
+         DO J_EIGENVALUE = 1, NDT
+              I_EIGENVALUE = I_EIGENVALUE + 1
+              IF (INTENSITY(I_EIGENVALUE).GT.1E-05) 
+     &        WRITE (IW,1112) REPNA(NREP+IRP),J_EIGENVALUE,
+     &            EV_ALL(1,I_EIGENVALUE),
+     &            INTENSITY(I_EIGENVALUE),
+     &            ((TRANS_DIPOLE(IX,IY,I_EIGENVALUE),IX=1,3),IY=1,RCW)
+         END DO
+      END DO
 
 !      OPEN(20,FILE='FSCC_Spectra.out',STATUS='NEW')
 !      WRITE(20,*) EV_ALL,TRANS_DIPOLE
@@ -2469,8 +2474,118 @@ c
 !       ENDIF
 !      ENDDO
 
+      DEALLOCATE(INTENSITY,STAT=IERR)
+      DEALLOCATE(TRANS_DIPOLE,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in deallocation for intensities')
+      ENDIF
+
+ 1100 FORMAT (//' Excitation energies and (approximate) intensities'/)
+ 1101 FORMAT (//' This intensity calculation will be documented in ',
+     & 'A. Hehn, L. Visscher (to be published)'/
+     & ' Please contact these authors before using the intensities',
+     & ' below in production work')
+ 1110 FORMAT (/' Irrep   State   Ex. Energy     f        ',
+     & '  mu(x)     mu(y)     mu(z) '  )
+ 1111 FORMAT (/' Irrep   State   Ex. Energy   f     ',
+     & 'mu_r(x)   mu_r(y)   mu_r(z)    mu_i(x)    mu_i(y)    mu_i(z)')
+ 1112 FORMAT (2X,A4,I8,2f12.6,6f10.5)
       RETURN
       END 
+!C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
+     &                             EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+      IMPLICIT INTEGER (A-Z)
+c
+c     Contraction of dipole integrals with coefficients for sector (0,1) or (1,0)
+c     Output is written directly here, as getting a nice human-readable output is
+c     difficult and post processing is usually necessary anyhow.
+c
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dcbxpr.h"
+c
+c-------------------Calling Variables-------------------------------------------------
+c
+      INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2)
+      REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 PROP(RCW,NSP,NSP)
+c
+c-------------------Local Variables--------------------------------------------------
+c
+      REAL*8, ALLOCATABLE::  DIP_RHS(:,:,:),DIP_SUB(:,:,:),
+     &                       TDIP_SUB(:,:,:)
+      REAL*8 DDOT
+c
+c------------------------------------------------------------------------------------
+c
+c
+c Contraction of dipole matrix with solution vector. In contrast to the (1,1) case 
+c where we only consider transitions to the ground state, we do not a priori know
+c between which states we should calculate matrix elements. As the dimension of the
+c space is not very large, we therefore simply calculate all couplings.
+c
+c to keep things simple in storage we do not care about symmetry zeroes in the resulting
+c trans_dipole array
+c
+      DO JREP = 1, NREP  ! loop over symmetry of the right-hand vector
+         NDTR = NFS_HE(JREP,ICURFSS) 
+         IF (NDTR.EQ.0) CYCLE ! no need to process irreps with no states
+
+         DO IREP = 1, NREP  ! loop over symmetry of the left-hand vector
+            NDTL = NFS_HE(IREP,ICURFSS) 
+            IF (NDTL.EQ.0) CYCLE
+
+
+!              Get the subset of dipole matrix elements for this symmetry combination
+               ALLOCATE (DIP_SUB (RCW,NDTL,NDTR))
+
+!              Takes symmetry sub block out of full matrix
+               CALL PROP_SUB(ICURFSS,PROP,IREP,JREP,DIP_SUB,NDTL,NDTR,
+     &                       IREPSPI,NSP)
+
+!              Check for zero's no need to process symmetry zeroes
+               IF (DDOT(RCW*NDTR*NDTL,DIP_SUB,1,DIP_SUB,1)
+     &             .LT.1.E-16) THEN
+                  DEALLOCATE (DIP_SUB)
+                  CYCLE
+               END IF
+
+!              Get temporary array to store | dipole | rhs >
+               ALLOCATE (DIP_RHS(RCW,NDTL,NDTR))
+               ALLOCATE (TDIP_SUB(RCW,NDTL,NDTR))
+
+!              Form | dipole | rhs > for the symmetry pair (irep,jrep)
+               CALL XGEMM ('N','N',NDTL,NDTR,NDTR,A1,DIP_SUB,NDTL,
+     &              EIGENVECTORS(1,IFS_HE2(JREP,ICURFSS)+1),NDTR,
+     &              A0,DIP_RHS,NDTL)
+
+!              Form < lhs | dipole | rhs > for the symmetry pair (irep,jrep)
+               CALL XGEMM ('N','N',NDTL,NDTR,NDTL,A1,
+     &              EIGENVECTORS(1,IFS_HE2(IREP,ICURFSS)+1),NDTL,
+     &              DIP_RHS,NDTL,A0,TDIP_SUB,NDTL)
+
+!              Write output (wll be xml after the testing phase is done)
+               Print*, "Transition dipoles for ",eoper,irep,jrep
+               DO J = 1, NDTR
+                  DO I = 1, NDTL
+                  WRITE (*,*) I,J,(TDIP_SUB(IRCW,I,J),IRCW=1,RCW)
+                  ENDDO
+               ENDDO
+               
+               DEALLOCATE (DIP_SUB)
+               DEALLOCATE (DIP_RHS)
+               DEALLOCATE (TDIP_SUB)
+             
+         ENDDO !irreps in lhs
+       enddo ! irreps on rhs
+
+      RETURN
+      END
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
      &                       EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
@@ -2491,8 +2606,7 @@ c
       INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2)
       REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,4)),PROP(RCW,NSP,NSP)
 !output
-      !REAL*8 TRANS_DIPOLE(NEOPER,RCW,NDT_TOT)
-      REAL*8 TRANS_DIPOLE(3,RCW,NDT_TOT) ! miro: out-of-bounds fix
+      REAL*8 TRANS_DIPOLE(3,RCW,NDT_TOT)
 c
 c-------------------Local Variables--------------------------------------------------
 c
@@ -2502,13 +2616,18 @@ c
 c------------------------------------------------------------------------------------
 c
 c
-c Contraction
+c Contraction of dipole matrix with solution vector. We only need to consider the 
+c case where the dipole matrix element has the same symmetry as the solution vector
+c because the ground state is totally symmetric. The contraction with the ground state
+c is implicit because it is a single determinant with expansion coefficient one.
 c
       K = 0
       JI = 0
       DO IJREP = 1, NREP
+c     get the number of states in this symmetry
       NDT = NFS_HE(IJREP,4) 
       IF (NDT.EQ.0) CYCLE
+c     find  the position of the dipole_{av,ao} elements in the full array
       ALLOCATE (IND(2,NDT))
       CALL PROPINDEX(IND,IJREP,NDT,IREPSPI,NSP)
 
@@ -2652,6 +2771,57 @@ C consistency check
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PROP_SUB(ICURFSS,PROP,IREP,JREP,DIP_SUB,NDTL,NDTR,
+     &                    IREPSPI,NSP)
+
+      IMPLICIT INTEGER (A-Z)
+c
+c Takes out symmetry block as needed in subroutine Transition_EA_IP
+c                                                      
+c----------------Common Blocks-----------------------------------------
+c 
+#include "inpt.inc"
+#include "symm.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dcbxpr.h"
+c
+c----------------Calling variables---------------------------------------------
+c
+      INTEGER NDTR, NDTL,IJREP,ICURFSS
+      DIMENSION IREPSPI(NSP,MXREP,2)
+      REAL*8 PROP(RCW,NSP,NSP),DIP_SUB(RCW,NDTL,NDTR)
+
+c
+c  Distinguish between the two possible cases and get the symmetry block
+c 
+      IF (ICURFSS.EQ.2) THEN ! We need active virtuals for the (0,1) sector
+         DO J = 1, NAV(JREP)
+            DO I = 1, NAV(IREP)
+               II = IREPSPI(i,irep,2) 
+               JJ = IREPSPI(j,jrep,2)
+               DIP_SUB(1,I,J) = PROP(1,II,JJ)
+               IF (RCW.EQ.2) DIP_SUB(2,I,J) = PROP(2,II,JJ)
+            END DO
+         END DO
+      ELSEIF (ICURFSS.EQ.3) THEN ! We need active occupied for the (1,0) sector
+         DO J = 1, NAO(JREP)
+            DO I = 1, NAO(IREP)
+               II = IREPSPI(nio(irep)+i,irep,1) ! the active occupied come after the inactive occupied, hence the offset
+               JJ = IREPSPI(nio(jrep)+j,jrep,1)
+               DIP_SUB(1,I,J) = PROP(1,II,JJ)
+               IF (RCW.EQ.2) DIP_SUB(2,I,J) = PROP(2,II,JJ)
+            END DO
+         END DO
+      ELSE ! This should not happen, stop with an error message
+         CALL QUIT ('Error in PROP_SUB')
+      ENDIF
+
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PROPINDEX(IND,IJREP,NDT,IREPSPI,NSP) 
 
       IMPLICIT INTEGER (A-Z)
@@ -2660,7 +2830,6 @@ c define offsets of property matrix needed in subroutine Transition_OneOne
 c                                                      
 c----------------Common Blocks-----------------------------------------
 c 
-#include "freeze.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "param.inc"
@@ -2692,7 +2861,6 @@ c
 
       RETURN
       END
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C

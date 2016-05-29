@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -45,10 +45,11 @@ C
 C---------------Calling variables--------------------------------------
 C
       INTEGER IOPT,nps
-      REAL*8 T1(*),S1(*),T2(*),S2(*)
+      REAL*8 T1(*),S1(*),T2(*),S2(*)  !! T1,T2 are CCSD amplitudes and S1,S2 are Lambdas
       REAL*8 DOO(*),DVV(*),DVO(*),DOV(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       REAL*8 DMO(*)
+      REAL*8 ddot
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -64,6 +65,8 @@ C---------------Executable code--------------------------------------
 C
       CALL XCOPY (NFOO,A0,0,DOO,1)
       CALL XCOPY (NFVV,A0,0,DVV,1)
+      CALL XCOPY (NFVO,A0,0,DVO,1)
+      CALL XCOPY (NFVO,A0,0,DOV,1)
       IF (IOPT.LT.1) RETURN
 C----------------------------------------------------------------------
 C D(I,J) = D(I,J) - T(CD,IL) * L(CD,JL) = D(I,J) - T(CDL,I) * L(CDL,J)
@@ -94,13 +97,16 @@ C
 C###########################################
 C convert the density matrix to DIRAC format
 C###########################################
-      CALL CONVDM(BUF1,BUF2,DOO,DVV,DMO)
+      
+      IF (IOPT.LT.2) CALL CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,DMO)
 C
       IF (IOPT.LT.2) RETURN
 C----------------------------------------------------------------------
 C DVO(A,I) = L(A,I)
 C----------------------------------------------------------------------
-      CALL XCOPY (NDIMT1,S1,1,DVO,1)         
+!!      CALL XCOPY (NDIMT1,S1,1,DVO,1)         
+
+      call srt1c1n(nrep,nv,no,S1,DVO)
 C----------------------------------------------------------------------
 C DOV(A,I) = T(A,I)
 C----------------------------------------------------------------------
@@ -108,14 +114,16 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) + T(AC,IK) * L(C,K)
 C----------------------------------------------------------------------
-      CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
+      CALL SRT1TT4 (NREP,MULTB,LTR,LFA,NV,NV,NO,NO,MVO,JVOVO,JJVO,JJVO,
      &              T2,BUF1)
-      CALL XGEMV ('N',NDIMT1,NDIMT1,A1,BUF1,M,S1,1,A1,DOV,1)
+      CALL XGEMV ('N',MVO(1),MVO(1),A1,BUF1,MVO(1),S1,1,A1,DOV,1)
+
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) - T(A,K) * L(C,K) * T(C,I)
 C----------------------------------------------------------------------
       CALL CNTRCT ('C','N',NO,NO,NV,-A1,S1,T1,A0,BUF1,NREP)
       CALL CNTRCT ('N','N',NV,NO,NO,A1,T1,BUF1,A1,DOV,NREP)
+
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) - T(A,K) * L(CD,LK) * T(CD,LI)
 C----------------------------------------------------------------------
@@ -123,18 +131,172 @@ C----------------------------------------------------------------------
       CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,T2,BUF2)
       CALL CNTRCT ('C','N',NO,NO,NVVOT,-A1,BUF1,BUF2,A0,BUF3,NREP)
       CALL CNTRCT ('N','N',NV,NO,NO,A1,T1,BUF3,A1,DOV,NREP)
+
 C----------------------------------------------------------------------
 C DOV(A,I) = DOV(A,I) - L(CD,KL) * T(AD,KL) * T(D,I)
 C----------------------------------------------------------------------
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,S2,BUF1)
       CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
       CALL CNTRCT ('N','C',NV,NV,NVOOT,-A1,BUF1,BUF2,A0,BUF3,NREP)
-      CALL CNTRCT ('N','N',NV,NO,NV,A1,BUF3,T1,A1,DOV,NREP)
-C
+      CALL CNTRCT ('C','N',NV,NO,NV,A1,BUF3,T1,A1,DOV,NREP)
+
+      IF (CARITH) THEN
+         CALL CONJUGA (NFVO,DOV,1)
+         CALL CONJUGA (NFVO,DVO,1)
+      ENDIF
+
+      CALL CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,DMO)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,dmo)
+
+       subroutine cc_density (l1,l2,t1,t2,doo,dvv,buf1,buf2,dmo)
+
+       use contraction
+
+#include "symm.inc"
+#include "complex.inc"
+!-------------------------calling variables-------------------------
+       real*8, intent(in)  :: l1(ndimt1*rcw),l2(ndimt2*rcw),
+     &                        t1(ndimt1*rcw),t2(ndimt2*rcw)
+       real*8, intent(out) :: doo(nfoo*rcw),dvv(nfvv*rcw),dmo(*) !norbt*
+!    &                        norbt*nz) 
+       real*8, intent(out) :: buf1(*),buf2(*)
+!-------------------------------------------------------------------
+       real*8, allocatable :: dvo(:),dov(:)
+       real*8, allocatable :: woo_temp(:),wpp_temp(:)
+!-------------------------------------------------------------------
+
+        doo(1:nfoo*rcw) = 0.0d0
+        dvv(1:nfvv*rcw) = 0.0d0
+
+!-------------------------------------------------------------------
+!   doo(j,i) = doo(j,i) - l2(jm,ef) * t2(ef,im)
+!-------------------------------------------------------------------
+
+        call contraction_442 ((/"o2","o3","p1","p2"/),
+     &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep,
+     &    LeftTensor=l2,RightTensor=t2)
+
+!---------------------------------------------------------------------
+!    doo(j,i) = doo(j,i) - l1(j,e)*t1(e,i)
+!---------------------------------------------------------------------
+
+       call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
+     &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
+
+!----------------------------------------------------------------------
+!     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
+!----------------------------------------------------------------------
+
+      call contraction_442 ((/"o1","o2","p1","p3"/),
+     &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,
+     &     LeftTensor=l2,RightTensor=t2 )
+
+
+!----------------------------------------------------------------------
+!     dvv(b,a) = dvv(b,a) + l1(m,a)*t1(b,m)
+!----------------------------------------------------------------------
+
+      call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
+     &              l1,t1,dvv,1.0d0,1.0d0,nrep)
+
+
+       allocate(dvo(nfvo*rcw))
+
+!----------------------------------------------------------------------------
+!     dvo(a,i) = t1(a,i)
+!----------------------------------------------------------------------------
+
+      call xcopy (nfvo,t1,1,dvo,1)
+
+!--------------------------------------------------------------------------
+!     dvo(a,i) = dvo(a,i) + l1(m,e) * t(ae,im)
+!--------------------------------------------------------------------------
+
+!     call contraction_242 ((/"o2","p2"/),(/"p1","p2","o1","o2"/), 
+!    & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,RightTensor=t2)
+
+
+      call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), 
+     & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=t2)
+
+
+!----------------------------------------------------------
+!      dvo(a,i) = dvo(a,i) - l1(m,e) * t(e,i)*t(a,m)
+!----------------------------------------------------------
+
+      allocate(woo_temp(nfoo*rcw))
+
+      woo_temp = 0.0d0
+
+      call contraction_222 ((/"o2","p2"/),(/"p2","o1"/),(/"o2","o1"/),
+     &              l1,t1,woo_temp,1.0d0,1.0d0,nrep)
+
+
+      call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
+     &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+
+      deallocate(woo_temp)
+
+!-------------------------------------------------------------
+!       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t2(ef,in)*t1(a,m) 
+!-------------------------------------------------------------
+
+      allocate(woo_temp(nfoo*rcw))
+
+      woo_temp = 0.0d0
+
+      call contraction_442((/"o2","o3","p2","p3"/),(/"p2","p3","o1","o3"
+     &       /),(/"o2","o1"/),woo_temp,1.0d0,1.0d0,nrep,LeftTensor=L2, 
+     &          RightTensor=t2)
+
+      call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
+     &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+
+      deallocate(woo_temp)
+
+!-----------------------------------------------------------------------
+!      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(e,i)*t2(af,mn)
+!-----------------------------------------------------------------------
+
+      allocate(wpp_temp(nfvv*rcw))
+
+      wpp_temp = 0.0d0
+
+      call contraction_442((/"o2","o3","p2","p3"/),(/"p1","p3","o2","o3"
+     &       /),(/"p1","p2"/),wpp_temp,-1.0d0,1.0d0,nrep,LeftTensor=L2, 
+     &          RightTensor=t2)
+
+      call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),
+     &              wpp_temp,t1,dvo,1.0d0,1.0d0,nrep)
+
+      deallocate(wpp_temp)
+
+!----------------------------------------------------------
+!       dov(i,a) = l1(i,a)
+!----------------------------------------------------------
+
+       allocate(dov(nfvo*rcw))
+
+      call xcopy (nfvo,l1,1,dov,1)
+
+      if (carith) then
+         call conjuga (nfoo,doo,1)
+         call conjuga (nfvv,dvv,1)
+         call conjuga (nfvo,dvo,1)
+         call conjuga (nfvo,dov,1)
+      endif
+
+      CALL CONVDM(BUF1,BUF2,DOO,DVV,DOV,DVO,DMO)
+
+       deallocate(dov)
+       deallocate(dvo)
+
+      end subroutine
+
+
+      SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,dmo)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -154,7 +316,7 @@ C     Author : Joost van Stralen - March 2002
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 DOO(*),DVV(*)
+      REAL*8 DOO(*),DVV(*),DOV(*),DVO(*)
       REAL*8 BUF1(*),BUF2(*)
       REAL*8 DMO(*)
 C
@@ -167,6 +329,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:) 
+
 C---------------Executable code--------------------------------------
 C
 C
@@ -186,9 +350,64 @@ C                                           <---O+V---->
 C                                            unbar + bar
 C######################################################################
 C
+
+
+!!!   ALLOCATE(D_TRANS(NFVO*RCW))
+
+!!!   CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
+
+!!!   CALL XAXPY (NFVO,A1,D_TRANS,1,DOV,1)
+
+!!!   CALL XSCAL (NFVO,AP5,DOV,1)
+
+!!!   DEALLOCATE(D_TRANS)
+
+
+      CALL DZERO(DMO,NORBT*NORBT*NZ)
+
+      buf1(1:nfvo*rcw) = 0.0d0
+
+      AI = 0
+      DO IREP = 1, NREP
+         DO I = 1, NO(IREP)
+            DO A = 1, NV(IREP)
+               AI = AI + 1
+               IF (CARITH) THEN
+                  BUF1(AI) = DOV(RCW*AI-1)
+                  BUF2(AI) = -DOV(RCW*AI)
+               ELSE
+                  BUF1(AI)= DOV(AI)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
+      IF (CARITH) THEN
+         CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
+      ENDIF
+
+      CALL RELTODIR(DMO,BUF1,NFVO,RCW,NREP,NV,NO)
+
 C##############
 C     DOO
 C##############
+
+!!! symmetrize the whole array.
+
+
+      buf1(1:nfoo*rcw) = 0.0d0
+
+!!!!  ALLOCATE(DOO_TRANS(NFOO*RCW))
+
+!!!!  CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
+
+!!!!  CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
+
+!!!!  DEALLOCATE(DOO_TRANS)
+
+!!!!  CALL XSCAL (NFOO,AP5,DOO,1)
+
+
       IJ = 0
       DO IREP = 1, NREP
          DO J = 1, NO(IREP)
@@ -208,7 +427,6 @@ C Put imaginary part after real part
 C
       IF (CARITH) THEN
          CALL DCOPY(NFOO,BUF2,1,BUF1(NFOO+1),1)
-      ELSE
       ENDIF
 c     do i = 1, nfoo
 c        print*,'real DOO ',i,buf1(i)
@@ -217,9 +435,20 @@ c     enddo
 C
 c     print*,'laat oo deel dmo op 0'
       CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
+
 C##############
 C     DVV
 C##############
+
+      buf1(1:nfvv*rcw) = 0.0d0
+
+!!!!  ALLOCATE(DVV_TRANS(NFVV*RCW))
+!!!!  CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
+!!!!  CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
+!!!!  DEALLOCATE(DVV_TRANS)
+
+!!!!  CALL XSCAL (NFVV,AP5,DVV,1)
+
       AB = 0
       DO IREP = 1, NREP
          DO B = 1, NV(IREP)
@@ -248,10 +477,49 @@ c     enddo
 C
 c     print*,'laat vv deel dmo op 0'
       CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
-C
+
+C##############
+C     DVO
+C##############
+
+      buf1(1:nfvo*rcw) = 0.0d0
+
+
+!     ALLOCATE(D_TRANS(NFVO*RCW))
+!     CALL SRT1C1 (NREP,NV,NO,DVO,D_TRANS)
+
+!     CALL XAXPY (NFVO,A1,DOV,1,DVO,1)
+
+!     CALL XSCAL (NFVO,AP5,DVO,1)
+
+      IA = 0
+      DO IREP = 1, NREP
+         DO A = 1, NV(IREP)
+            DO I = 1, NO(IREP)
+               IA = IA + 1
+               IF (CARITH) THEN
+                  BUF1(IA) = DVO(RCW*IA-1)
+                  BUF2(IA) = -DVO(RCW*IA)
+               ELSE
+                  BUF1(IA)= DVO(IA)
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
+!      DEALLOCATE(D_TRANS)
+
+      IF (CARITH) THEN
+         CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
+      ENDIF
+
+        CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
+
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE CCDENSZ(IOPT,NSP,IREPSPI,EPS,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,NBUF2,NBUF3,CBUF,
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
@@ -317,7 +585,7 @@ C--------------------------------------------
 C X(A,I) = X(A,I) + V(A,K,C,D) * TAU(C,D,I,K)
 C--------------------------------------------
       CALL XCOPY (NDIMT2,S2,1,BUF1,1)
-      CALL T1EQN2 (BUF1,BUF2,BUF3,NBUF3,XVO)
+      CALL T1EQN2 (BUF1,BUF3,NBUF3,XVO)
 C
 C------------------------------------
 C X(A,I) = X(A,I) + W(CI,DA) * D(C,D)
@@ -351,7 +619,7 @@ C---------------------------------------------------------------------
 C X(A,I) = X(A,I) + V(IK,AL) * D(K,L)
 C---------------------------------------------------------------------
       CALL GETVOOO (BUF1)
-      CALL SRT1ST4 (NREP,MULTB,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+      CALL SRT1ST4 (NREP,MULTB,LTR,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
      &              BUF1,BUF2)
       M = NFVO
       K = NFOO
@@ -435,6 +703,7 @@ C
       CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
       CALL SRTT1T2(BUF2,BUF1)
 
+
 C
 C     +---------------------------------------------------+
 C     | Generate the tau dependent part of the Lagrangian |
@@ -442,6 +711,7 @@ C     +---------------------------------------------------+
 C
       LFREE=NBUF3*RCW
       CALL TR5INI(XMO,BUF2,BUF1,BUF3,LFREE)
+
 C
 C     +-------------------------------------------------------+
 C     | Calculate the ji' and b'a parts of the density matrix |
@@ -458,6 +728,7 @@ C
       KFREE=1 
       LFREE=NBUF3*RCW
       CALL MPGLVC(DMO,XMO,BUF3,KFREE,LFREE,1)
+
 C
 C     +----------------------------------------+
 C     | Solve Z-vector equations by using XRPA |
@@ -466,6 +737,7 @@ C
       KFREE=1
       LFREE=NBUF3*RCW
       CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
+
 C 
       CALL FLSHFO(IW)
 
@@ -550,7 +822,8 @@ C       +--------+--------+--------+--------+
 C        P  O  V
 C######################################################################
 C
-      CALL RELTODIR(XMO,BUF1,NFVO,RCW)
+      CALL DZERO(XMO,NORBT*NORBT*NZ)
+      CALL RELTODIR(XMO,BUF1,NFVO,RCW,NREP,NV,NO)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -616,7 +889,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE  MP2_NATORB(DMO,NOPRNT,NOZG)
+      SUBROUTINE  MP2_NATORB(DMO,NOPRNT_input,NOZG)
 C***********************************************************************
 C
 C     Calculate MP2 nat. orb. and nat. orb. occ. num.
@@ -637,28 +910,45 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
 C
       DIMENSION DMO(NORBT,NORBT,NZ)
       LOGICAL NOZG
       real(8), allocatable :: CMO_NAT(:), OCC_NAT(:)
+      integer, allocatable :: ibeig(:)
 C
 C---------------Local variables--------------------------------------
 C
       CHARACTER*8 LABEL
 C
       CALL QENTER('MP2_NATORB')
+!define DEBUG_MP2_NO
+#ifdef DEBUG_MP2_NO
+      noprnt = max(noprnt_input,10)
+#else
+      noprnt = noprnt_input
+#endif
 C
 C     memory allocation
 C     -----------------
       allocate(CMO_NAT(NASHT*NASHT*NZ))
       allocate(OCC_NAT(NESHT))
+      allocate(ibeig(norbt))
 C
 C     initialize
 C
       CALL DZERO(CMO_NAT,NASHT*NASHT*NZ)
       CALL DZERO(OCC_NAT,NESHT)
+      ibeig(1:norbt) = 0
+
+!     !> read ibeig (info array on boson irreps) from DFCOEF
+      if( linear .or. spinfr )then
+        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
+        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        close(lucoef,STATUS='KEEP')
+      end if
 C
 C     build diagonal according to Fock matrix
 C     ---------------------------------------
@@ -666,7 +956,7 @@ C     ---------------------------------------
 C
 C     calculate NO occ. num. 
 C     ----------------------
-      CALL MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
+      CALL MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,ibeig,NOPRNT)
 C
 C     save nat. orb. occ. num. and transform. matrix to file 
 C     ------------------------------------------------------
@@ -682,22 +972,22 @@ C
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
         CALL NEWLAB('*KRMCMP2',LUKRMC,LUPRI)
 C
-        CALL WRTKRMC(LUKRMC,'MP2NATOB',CMO_NAT,NASHT*NASHT*NZ)
-        CALL WRTKRMC(LUKRMC,'MP2NOOCC',OCC_NAT,NESHT)
+        CALL WRTKRMC(LUKRMC, 'MP2NATOB',CMO_NAT,NASHT*NASHT*NZ)
+        CALL WRTKRMC(LUKRMC, 'MP2NOOCC',OCC_NAT,NESHT)
+        CALL IWRTKRMC(LUKRMC,'IBEIGORI',ibeig,NORBT)
         CLOSE(LUKRMC,STATUS='KEEP')
 C
       END IF
 C
 C     memory deallocation
 C     -------------------
-      deallocate(OCC_NAT)
-      deallocate(CMO_NAT)
+      deallocate(OCC_NAT,CMO_NAT,ibeig)
 C
       CALL QEXIT('MP2_NATORB')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,NOPRNT)
+      SUBROUTINE MP2_NATORB_GEN(DMO,CMO_NAT,OCC_NAT,ibeig,NOPRNT)
 C***********************************************************************
 C
 C     diagonalize second order density matrix DMO
@@ -710,6 +1000,7 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -717,20 +1008,28 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "dcbidx.h"
 #include "../moltra/dcbtr3.h"
 C
-      DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ)
+      DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ), ibeig(norbt)
       DIMENSION DMO(NORBT,NORBT,*)
       real(8), allocatable :: scratch(:)
       real(8), allocatable :: dv(:,:,:), occ(:)
-C
-!#define DEBUG_MP2_NO
-#ifdef DEBUG_MP2_NO
-      noprnt_local = 10
-#else
-      noprnt_local = noprnt
-#endif
-      IF ( NOPRNT_local .ge. 5 )THEN
+      real(8), allocatable :: cmo_nat_all(:)
+      integer :: lwork = 0
+      real(8), allocatable :: work(:)
+
+      call legacy_lwork_get(LWORK)
+#include "memint.h"
+!      Allocating just the amount we need to avoid memory problems
+! miro: guys, you miscalculted the exact amount, this artificial increase by 100 is needed to pass tests ;)
+      lwork = norbt + nz*nasht**2 + 100
+      call alloc(WORK,LWORK,id='WORK in MP2_NATORB')
+      KFRSAV = KFREE
+
+      IF ( NOPRNT .ge. 5 )THEN
          CALL HEADER(
      &               'MP2_NATORB_GEN: DMO :',-1)
          CALL PRQMAT(DMO,
@@ -738,49 +1037,59 @@ C
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
 
-      allocate(occ(nasht))
-      allocate(dv(nasht,nasht,nz))
-      dv  = 0
-      occ = 0
+      allocate(occ(nasht),dv(nasht,nasht,nz),cmo_nat_all(norbt**2*nz))
+      dv          = 0
+      occ         = 0
+      cmo_nat_all = 0
+      iashi       = 0
+      !> set index array idxu2g
       do i = 1,nfsym
         do j = 1, nash(i)
-          do k = 1, nash(i)
-            do iz = 1, nz
-              dv(j,k,iz) = dmo(iorb(i)+npsh(i)+niocc(i)+j,
-     &                         iorb(i)+npsh(i)+niocc(i)+k,
-     &                         iz)
-            end do
-          end do
+          iashi         = iashi  + 1
+          IDXU2G(IASHI) = iorb(i)+ npsh(i) + niocc(i) + j
         end do
       end do
 
-      IF (NZ .EQ. 1) THEN
-         IJOB = 1
-         IORDER = 0
-         IPACK = 0
-         lfree = ((nasht*(nasht+1))/2)+2*nasht+16
-         allocate(scratch(lfree))
+      
+      !> find max j_z value
+      max_loop = 1
+      if(linear) max_loop = iimax(norbt,ibeig,1)
 
-         CALL RSJACO(NASHT,NASHT,NASHT,DV,occ,
-     &               IJOB,IORDER,IPACK,cmo_nat,scratch,lfree)
+!     extract a-a part of dmo
 
-         deallocate(scratch)
+      do indx_loop = 1, max_loop
 
-      ELSE
-         MATZ = 1
-         CALL QDIAG90(NZ,NASHT,DV,NASHT,NASHT,
-     &                occ,MATZ,cmo_nat,NASHT,NASHT,IERR)
-         IF (IERR .NE. 0) THEN
-            WRITE(LUPRI,'(/,1X,2A,I4)')
-     &           '*** ERROR in MP2_NATORB_GEN ***: ',
-     &           'QDIAG failed with error code ',IERR
-            CALL QUIT('*** ERROR in MP2_NATORB_GEN ***')
-         END IF
-      END IF
+        is_symm = 0
+        if(linear)then
+          !> get mj-value
+          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+        end if
+
+        CALL MATGAT_symm(dmo,norbt,norbt,dv,nasht,
+     &                   nasht,idxu2g,ibeig,is_symm,nz)
+      end do
+
+      !> diagonalize
+      CALL DIAG_piv2fock('A',dv,occ,cmo_nat,
+     &                   idxu2g,ibeig,work,lwork)
+
+!     insert new matrix block into transformation matrix
+      do indx_loop = 1, max_loop
+
+        is_symm = 0
+        if(linear)then
+          !> get mj-value
+          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+        end if
+        CALL MATSCT_symm(cmo_nat_all,NORBT,NORBT,cmo_nat,
+     &                   NASHT,NASHT,IDXU2G,ibeig,is_symm,NZ)
+      end do
+
+      call dealloc(work)
 C
 C     debug print section
 C
-      IF ( NOPRNT_local .ge. 5 ) THEN
+      IF ( NOPRNT .ge. 5 ) THEN
          DO IFSYM = 1, NFSYM
            CALL HEADER(
      &     'MP2_NATORB_GEN: Eigenvectors :',-1)
@@ -819,8 +1128,8 @@ C
       END IF
 
 !     release memory
-      deallocate(dv)
-      deallocate(occ)
+      deallocate(dv,occ)
+
 C
  9001 FORMAT(/'   Symmetry',I3,//,'   No occupied orbitals')
  9002 FORMAT(/'   Natural orbital occupation numbers, symmetry',
@@ -846,6 +1155,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "../moltra/dcbtr3.h"
@@ -853,11 +1163,9 @@ C
       DIMENSION DMO(NORBT,NORBT,*)
       LOGICAL NOZG
 C
-      D2 = 2.0D0
-C
 C     add "alpha" and "beta" by scaling with 2.0
 C
-      CALL DSCAL(NZ*NORBT*NORBT,D2,DMO,1)
+      CALL DSCAL(NZ*NORBT*NORBT,2.0D0,DMO,1)
 C
       IF ( NOPRNT .ge. 10 )THEN
          CALL HEADER(
@@ -882,9 +1190,16 @@ C       zero 'wrong' offdiagonal terms for frozen orbs
 C
         IOCC_A = 0
 !       print *, 'NOCC(IFSYM)',NOCC(IFSYM)
-        DO I = 1, NOCC(IFSYM)
+        DO I = 1, NISH_DHF(IFSYM)
            DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
-     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + D2
+     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + 2.0D0
+           IOCC_A = IOCC_A + 1
+        END DO
+        DO I = NISH_DHF(IFSYM)+1,NISH_DHF(IFSYM)+NASH_DHF(IFSYM)
+           DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) = 
+     &     DMO(IOFF1+IOCC_A,IOFF1+IOCC_A,1) + 1.0D0
+       ! Setting occupation of open shell orbitals to 1.0, no matter actual value.
+       ! This will put them in the right place when nat.orb. are sorted.
            IOCC_A = IOCC_A + 1
         END DO
       END DO
@@ -939,9 +1254,16 @@ C
       CHARACTER*6 FILE_NAME
 C
 C---------------Executable code--------------------------------------
- 
+
       ADD_2_FOCK = .FALSE.
       SELECT CASE (WF)
+
+         CASE ("CCSD")
+            WRITE (LUPRI,*) " Retrieving CC density matrix from file"
+            LABEL        = 'CCSDDENS'
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .TRUE.    
+            IERR         = 0
          CASE ("MP2 ")
             WRITE (LUPRI,*) " Retrieving MP2 density matrix from file"
             LABEL        = 'MP2 DENS'
@@ -1019,6 +1341,8 @@ C---------------Last modified------------------------------------------
 C
 C     Author : Luuk Visscher
 C
+
+
 C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"
@@ -1037,17 +1361,30 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      CHARACTER*8 LABEL
+      CHARACTER*8 :: LABEL,EOFLABEL
+      LOGICAL, SAVE :: INIT=.FALSE.
+      LOGICAL :: FNDLAB
 C---------------Executable code--------------------------------------
  
       WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
       LABEL = WF//'DENS'
+      EOFLABEL = 'EOFLABEL'
 
 C     Write the correlated density to file
+C     Code should be replaced by proper storage routine, this just adds to the end of a file 
+C     without being able to do a replace or check for old data.
 
       CALL OPNFIL(MCCDENS,'CCDENS','UNKNOWN','STORE_')
+      IF (.NOT.INIT) THEN
+          CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
+          INIT = .TRUE.
+      END IF
+      REWIND (MCCDENS)
+      IF (FNDLAB(EOFLABEL,MCCDENS))
+     & BACKSPACE MCCDENS
       CALL NEWLAB(LABEL,MCCDENS,LUPRI)
       CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
+      CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
       END

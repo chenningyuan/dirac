@@ -5,6 +5,7 @@
 .TITLE
 Molecular oxygen. Ground and excited states (X, a, b).
 .WAVE F
+.ANALYZE
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
@@ -14,10 +15,22 @@ Molecular oxygen. Ground and excited states (X, a, b).
 ! O2_2+ closed shell reference
 .CLOSED SHELL
  6 8
-.EVCCNV
-1.E-10 1.E-9
+#.EVCCNV
+#1.E-10 1.E-9
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all
+all
+**RELCCSD
+.NELEC
+ 2 2 3 3
+.FOCKSP
+*CCFSPC
+.DOEA2
+.NACTP
+ 2 2 0 0
+.MAXIT
+100
 *END OF
-
- &RELCCSD NELEC=2,2,3,3, DOFSPC=T, DOENER=F &END
- &CCFSPC MAXIT=100, DOEA2=T, NACTP=2,2,0,0 &END
-

@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 star(PRIVEC)
 
 Print vectors read from DFCOEF.
@@ -19,14 +22,14 @@ Separate control for printing of large and small components.
 ::
 
     .PRICMP
-     1
+     1 0
 
-Print small components:
+Print only small components:
 
 ::
 
     .PRICMP
-     2
+     0 1
 
 
 keyword(AOLAB)

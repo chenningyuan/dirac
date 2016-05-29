@@ -9,7 +9,7 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string    = ' The final eigenvalue',
+f.add(string    = ' Final CI energies',
       rel_tolerance = 1.0e-6)
 
 test.run(['be.d2h.inp'], ['Be.d2h.mol'], f)

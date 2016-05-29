@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -367,6 +367,7 @@ C
       WORD1 = WORD
   100 CONTINUE
       READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
          PROMPT = WORD(1:1)
          IF (PROMPT .EQ. '.') THEN
             DO 1102 II = 1, NTABLE
@@ -483,9 +484,6 @@ C
 C     Process section
 C
       IF (.NOT.CAVUSR) THEN
-         DO I = 1, MXCENT
-            ISOTOP(I) = 1
-         ENDDO
          CALL MEMGET('REAL',KGEOM,3*NATOMS,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KMASS,  NATOMS,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KNAT ,  NATOMS,WORK,KFREE,LFREE)

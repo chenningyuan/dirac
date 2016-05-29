@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -347,10 +347,8 @@ C
 C
 #else 
          CALL DZERO(GRADNA,3*NUCDEP)
+         IF (SECDER) HESSNA(:,:) = 0.0D0
 #endif
-         IF (SECDER) THEN
-            CALL HESZER(HESSNA)
-         END IF
       END IF
 C
       KLAST = 1

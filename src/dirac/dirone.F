@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -65,6 +65,7 @@ C
 C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
 C
+      IF (NOSMLV) CALL NOSSNUCATT
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
         IF (IPRONE.GE.2) WRITE(LUPRI,'(/2A,2X,A)')
@@ -84,16 +85,7 @@ C
 C     Nuclear attraction integrals (molecular field)
 C
       IF    (CLSINT(I).EQ.'MOLFLD ') THEN
-        IF (NOSMLV) THEN
-C          ... zero SS integrals
-           CALL NOSSNUCATT
-           COMB(4:4) = 'F'
-           IF(IPRONE.GE.3) THEN
-               WRITE(LUPRI,'(2X,A,A4)')
-     &      'FYI: no SS-nuclear attraction integrals'//
-     &      '(MOLFLD), adapted COMB=',COMB
-           ENDIF
-        END IF
+        IF(NOSMLV) COMB(4:4) = 'F'
         CALL NUCATT(WORK,LWORK,COMB,IPRONE)
 C
 C     Effective electronic density on nuclei
@@ -104,11 +96,7 @@ C
 C     Contribution from (static) embedding potential
 C
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN
-         IF (NOSMLV) THEN
-C          ... zero SS integrals
-           CALL NOSSNUCATT
-           COMB(4:4) = 'F'
-         END IF
+        IF(NOSMLV) COMB(4:4) = 'F'
         call fde_get_import_info(itmp)
         if (itmp%im_vemb) then
             CALL fde_calculate_emb_pot_mat(COMB,IPRONE)
@@ -308,55 +296,6 @@ C     Prefactor = 3 / (48*Z*Pi*R*dR)
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE NOSSNUCATT
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-C Delete marking SS-block of in nucl.attraction integrals as empty
-C
-C Called from: PAMSET (when restart from AOPROPER)
-C              ONEGEN
-C when NOSMLV=.true.
-C
-C Written by Miro Ilias, Dec. 2008, Tel Aviv
-C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include "implicit.h"
-#include "priunit.h"
-      LOGICAL MOLFLD_FOUND
-#include "dcbprl.h"
-#include "dcbcls.h"
-#include "dcbxpr.h"
-
-      MOLFLD_FOUND=.FALSE.
-
-      DO I=1,NPRPCLS
-        IF (CLSINT(I).EQ.'MOLFLD ') THEN
-          MOLFLD_FOUND=.TRUE.
-          CLSCMB(I)(4:4) = '0'
-          ILBL = IPRPLBL(1,I)
-          PDOINT(ILBL)(4:4) = '0'
-        ELSE IF (CLSINT(I).EQ.'FDEVEMB') THEN
-          CLSCMB(I)(4:4) = '0'
-          ILBL = IPRPLBL(1,I)
-          PDOINT(ILBL)(4:4) = '0'
-        ENDIF
-      ENDDO
-
-      IF (MOLFLD_FOUND) THEN
-        WRITE(LUPRI,'(2X,A,A4)')
-     & 'The SS-block of the potential energy matrix and (if present)'//
-     & ' embedding potential are neglected (Levy-Leblond Hamiltonian)'
-      ELSE
-        WRITE(LUPRI,'(2X,A)') 'Nuclear attraction integrals not'//
-     &   ' found in operator list!'
-        WRITE(LUPRI,*) 'NOSSNUCATT routine was supposed to zero'//
-     &   'SS-block of them !'
-        CALL QUIT('NOSSNUCATT: end here')
-      ENDIF
-
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck op1gen */
       SUBROUTINE OP1GEN(WORD,COMB,IORDER,WORK,LWORK,IPRINT)
@@ -895,13 +834,8 @@ C
 C
 C     Initialize
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       allocate(ftri(nnbbasx,nz))
       allocate(op1int(nnbbasx))
       allocate(first(nz))
@@ -2060,13 +1994,8 @@ C
 C
 C     Initialize
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
       CALL LSET(NZ,.TRUE.,FIRST)
 C
 C     Beta matrix
@@ -2156,7 +2085,7 @@ C     calculations run the "URKBAL" branch as only
 C     Lowdin canonical matrix is needed. It's assumed that small
 C     components were eliminated in HERINP.
 C
-C     Called from: PSIDHF (when BSS2DC or DC2BSS mode is activated)
+C     Called from: PSISCF (when BSS2DC or DC2BSS mode is activated)
 C                  PAMSET (at the begining of the DIRAC run, and second time
 C                          when pure two-comp. scheme+BSS is wished)
 C
@@ -2195,6 +2124,9 @@ C*****************************************************************************
 #endif
 !
 #include "implicit.h"
+#ifndef MOD_AOOSOC
+      logical :: aoomod = .false.
+#endif
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -2487,6 +2419,8 @@ C         2) do picture change transformation of integrals on AOPROPER
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
+          !> stknecht: take care of 2c-mmf-sf for a linear molecule
+          if(spinfr .and. linear) linear = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2577,6 +2511,8 @@ C
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
+          !> stknecht: take care of 2c-mmf-sf for a linear molecule
+          if(spinfr .and. linear) linear = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2761,8 +2697,8 @@ C
       CLOSE(LUTMAT,STATUS='KEEP')
 !
       if(x2c.and.x2cmod_mmf)then
-#ifdef MOD_AOOSOC
         if(aoomod)then
+#ifdef MOD_AOOSOC
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
 
 !           release memory
@@ -2824,11 +2760,11 @@ C
             deallocate(pctm_aoosoc)
             deallocate(dmat_aoosoc)
           end if ! check for atomic run
-        end if ! aoomod
 #else
-        call quit('generation of  atomic oo-order 2e-SOC not active'//
+        call quit('generation of atomic oo-order 2e-SOC not active'//
      &            ' in this version')
 #endif
+        end if ! aoomod
         if(x2c_2c_mmf_mos)then
 
 !         release memory
@@ -2876,6 +2812,8 @@ C
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
+          !> stknecht: take care of 2c-mmf-sf for a linear molecule
+          if(spinfr .and. linear) linear = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -4008,7 +3946,7 @@ C
       IF (.NOT.DOQJACO) THEN
 #endif
          IF (LOWJACO) THEN
-            CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
+            CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT)
          ELSE
             CALL QDIAG(1,NS,SMAT,LDM,NS,EIG,1,VMAT,LDM,NS,WORK,LWORK
      $           ,IERR)
@@ -4409,7 +4347,6 @@ C     Initialization (calculate LL and SS)
 C
       DOINT(1,1) = .TRUE.
       IF (NOSMLV.OR.BSS.OR.x2c) THEN
-C     IF (NOSMLV) THEN
          DOINT(2,2) = .FALSE.
          IF (IPRINT.GE.1) WRITE(LUPRI,'(/A)')
      &     '  BNCORR: SS contribution to the bare nuclei omitted !'
@@ -5862,6 +5799,8 @@ C
 C     Written by L.Visscher, october 2003
 C     Last changes: M.Ilias, Strasbourg, 2005
 C                  M.Ilias, Tel Aviv, April 2009 - extended with QJACOBI
+!                 MI, July 2014 - option to print out J_z matrices for
+!                 diagonalization
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -5883,13 +5822,14 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
+      LOGICAL :: DOJACO_SAVE
+      character*100 :: hfile_format,hfile_name
 
       CALL QENTER('LINSYM')
 
 #include "memint.h"
 C
-!     iprham_save = iprham
-!     iprham      = 15
+
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
 C
@@ -5916,9 +5856,8 @@ C
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRHAM)
-!    &            IPRHAM)
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.12) THEN
 
          CALL HEADER(
      &    'LINSYM: Entering AO->MO transformation matrix',-1)
@@ -5965,6 +5904,7 @@ C
      &       access='sequential',action='readwrite',
      &       position='rewind')
       end if
+
 C
       IOFT = 1
       DO 20 I = 1,NFSYM
@@ -5999,7 +5939,7 @@ C
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_LL to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6008,12 +5948,32 @@ C
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
 
+          IF (WRITE_Jz_MATRIX) THEN
+! get the file name first, containing symmetry
+            hfile_format="(A13,A7,I1,A1,I1)"
+            write(hfile_name,hfile_format)
+     &       "Jz_LL_matrix.","fermirp",I,"-",NFSYM
+! open the unique file and write the matrix
+             luhm=95
+             open(luhm,file=trim(hfile_name),access="sequential",
+     &         form="formatted",status="unknown")
+               write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
+               ic=0
+               do ii=1,NL
+               do jj=1,NL
+                 write(luhm,*) ii,jj,WORK(KFLL+ic)
+                 ic = ic + 1
+               enddo
+               enddo
+             close(luhm,status="keep")
+          ENDIF
+
 #ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
 #endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
-     &                  WORK(KVLL),WORK(KFREE),LFREE)
+     &                  WORK(KVLL))
             ELSE
               CALL QDIAG(1,NL,WORK(KFLL),NL,NL,
      &                EIG(IEIGE),1,
@@ -6035,7 +5995,7 @@ C
             ENDDO
           ENDIF
 #endif
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -6043,7 +6003,6 @@ C
            CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
            CALL FLSHFO(LUPRI)
-           !call quit('in linsym')
           ENDIF
         ENDIF
 C
@@ -6054,7 +6013,7 @@ C
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6062,12 +6021,34 @@ C
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
+
+          IF (WRITE_Jz_MATRIX) THEN
+! get the file name first, containing symmetry
+            hfile_format="(A13,A7,I1,A1,I1)"
+            write(hfile_name,hfile_format)
+     &       "Jz_SS_matrix.","fermirp",I,"-",NFSYM
+             print *,trim(hfile_name)
+! open the unique file and write the matrix
+             luhm=95
+             open(luhm,file=trim(hfile_name),access="sequential",
+     &         form="formatted",status="unknown")
+               write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
+               ic=0
+               do ii=1,NS
+               do jj=1,NS
+                 write(luhm,*) ii,jj,WORK(KFSS+ic)
+                 ic = ic + 1
+               enddo
+               enddo
+             close(luhm,status="keep")
+          ENDIF
+
 #ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
 #endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
-     &                  WORK(KVSS),WORK(KFREE),LFREE)
+     &                  WORK(KVSS))
             ELSE
               CALL QDIAG(1,NS,WORK(KFSS),NS,NS,
      &                EIG(IEIGP),1,
@@ -6089,7 +6070,7 @@ C
             ENDDO
           ENDIF
 #endif
-          IF (IPRHAM.GE.15) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -6210,7 +6191,7 @@ C
           call writt(13,NL**2,WORK(KVLL))
         end if
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.5) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,LL',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6231,7 +6212,7 @@ C
      &               WORK(KVSS),NS,NS,1,
      &               TBUF(IOFT),NT,NT,1)
 
-        IF (IPRHAM.GE.15) THEN
+        IF (IPRHAM.GE.5) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,SS',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6297,10 +6278,10 @@ C
         IOFU = IOFU + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
    30 CONTINUE
+
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
-!     iprham = iprham_save
       RETURN
  1000 FORMAT
      & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
@@ -6377,13 +6358,8 @@ C     Sanity check : linear symmetry requires use of real groups (C2v or D2h)
 C
       IF (NZ.NE.1) CALL QUIT ("Linear symmetry requires NZ=1")
 C
-#if defined (SYS_IBM)
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='APROPER')
-#else
          OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-#endif
 C
 C     Get integrals of component of the z-angular momentum that we want to
 C     quantize on.
@@ -6864,9 +6840,9 @@ C       Prepare small component part
 C       ----------------------------
 C
         LWRK = MXBBAS*MXBBAS*NSYM
-        CALL MEMGET('REAL',KSMT,LWRK,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','SMT',KSMT,LWRK,WORK,KFREE,LFREE)
         LWRK = NFORB(I,1) * NFORB(I,1)
-        CALL MEMGET('REAL',KVMT,LWRK,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','VMT',KVMT,LWRK,WORK,KFREE,LFREE)
         IVMT  = KVMT
         IBOL  = 0
         NEFF  = 0
@@ -6955,8 +6931,8 @@ C
         ENDIF
         IMAT = IMAT + NFORB(I,0)*NFORB(I,0)*NZ
         IBUF = IBUF + NFORB(I,0)*NORB(I)*NZ
+        CALL MEMREL('MOD_DIREQ',WORK,KSMT,KSMT,KFREE,LFREE)
    10 CONTINUE
-      CALL MEMREL('MOD_DIREQ',WORK,KSMT,KSMT,KFREE,LFREE)
 C
       IF(VEXTPJ.OR.FREEPJ) THEN
 C     These variables are later set by SETDC2, but needed here...
@@ -7162,6 +7138,35 @@ C
 C
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Get_Overlap_AO */
+      SUBROUTINE GET_OVERLAP_AO(SMAT,SSMTRC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Get overlap matrix in AO-basis
+C     Written by Trond Saue June 4 2012
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbbas.h"
+      DIMENSION SMAT(*),WORK(*)
+      KFRSAV=KFREE
+C.....Get overlap matrix in SO-basis (no symmetry packing)
+      CALL MEMGET('REAL',KSBUF,N2BBASX,WORK,KFREE,LFREE)
+      CALL GTOVLX(WORK(KSBUF),SSMTRC)
+C.....Transform to AO-basis and release memory
+      CALL MTSOAO(WORK(KSBUF),SMAT,NTBAS(0),0,IPRINT)
+      CALL MEMREL('GET_OVERLAP_AO',WORK,1,KFRSAV,KFREE,LFREE)
+C.....Print section
+      IF(IPRINT.GE.5) THEN
+        WRITE(6,*) 'GET_OVERLAP_AO: Overlap matrix in AO-basis'
+        CALL OUTPUT(SMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),
+     &                   1,LUPRI)
+      ENDIF
+C      
+      RETURN
+      END
       subroutine set_intflg(new_intflg)
 #include "implicit.h"
       integer, intent(in) :: new_intflg
@@ -7240,4 +7245,26 @@ C
 !     IDFLAG       = 1
 
       end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck nossnucatt */
+      SUBROUTINE NOSSNUCATT
+C***********************************************************************
+C     
+C     Zero SS-block of potentials
+C
+C***********************************************************************
+#include "dcbham.h"
+#include "dcbxpr.h"      
+#include "dcbprl.h"      
+C.....Nuclear attraction integrals
+      IF(IPMOLFLD.GT.0) THEN
+         ILBL  = IPRPLBL(1,IPMOLFLD)
+           PDOINT(ILBL)(4:4) = '0'
+       ENDIF
+C.....Static embedding potential
+      IF(IPVEMB0.GT.0) THEN
+         ILBL  = IPRPLBL(1,IPVEMB0)
+           PDOINT(ILBL)(4:4) = '0'
+       ENDIF
+       END
 ! -- end of dirone.F --

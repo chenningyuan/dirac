@@ -19,6 +19,6 @@ f.add(from_string = '* Electric field at nuclei:',
       to_string   = '1 a.u. = 234.96474170 MHz',
       rel_tolerance   = 0.00002)
 
-test.run(['mp2_gradient.inp', 'bss+mfsso.mp2_gradient.inp'], ['H2O2.mol'], f, args='--mw=60 --aw=140')
+test.run(['mp2_gradient.inp'], ['H2O2.mol'], f, args='--mw=60 --aw=140')
 
 sys.exit(test.return_code)

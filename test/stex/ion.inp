@@ -19,4 +19,6 @@
  1
  1/2
 .OVLSEL
+# to get the convergence remove all damping
+.NODAMP
 *END OF

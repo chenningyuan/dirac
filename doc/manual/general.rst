@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 starstar(GENERAL)
 
@@ -15,6 +16,10 @@ directly; 0 = do not evaluate directly)::
   .DIRECT
    1 1 1
 
+keyword(4INDEX)
+
+Activate the AO-to-MO transformation.
+By default, the transformation is called automatically when the correlation method is specified.
 
 keyword(SPHTRA)
 
@@ -36,8 +41,8 @@ balance relation.
 keyword(PCMOUT)
 
 Write MO coefficients to the formatted file DFPCMO.  This is useful for porting
-coefficients between machines with different binary structure.
-
+coefficients between machines with different binary structure. For reading the 
+DFPCMO file, there is no keyword - simply copy this file to the working directory.
 
 keyword(ACMOUT)
 
@@ -138,37 +143,3 @@ keyword(SKIP2E)
 
 .. warning:: documentation missing
 
-
-star(PARALLEL)
-
-Parallelization directives.
-
-
-keyword(PRINT)
-
-Print level for the parallel calculation. Default::
-
-  .PRINT
-   0
-
-A print level of at least 2 is needed in order to be able to evaluate
-the parallelization efficiency. A complete timing for all nodes will be
-given if the print level is 4 or higher.
-
-
-keyword(NTASK)
-
-Number of tasks to send to each node when distributing the calculation
-of two-electron integrals. Default::
-
-  .NTASK
-   1
-
-A task is defined as a shell of atomic integrals, a shell being an input block.
-One may therefore increase the number of shells given to each node in order to
-reduce the amount of communication. However, the program uses dynamical
-allocation of work to each node, and thus this option should be used with some
-care, as too large tasks may cause the dynamical load balancing to fail, giving
-an overall decrease in efficiency. The parallelization is also very coarse
-grained, so that the amount of communication seldom represents any significant
-problem.

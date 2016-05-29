@@ -54,6 +54,12 @@ set(FUNCTIONAL_SRCS
     functionals/vwn5c.cpp
     )
 
+#miro: these variables are passed from DIRAC CMake to xcfun submodule
+if (${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL AND ENABLE_64BIT_INTEGERS)
+    SET(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    message(STATUS "For libxcfun.a submodule library, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+endif()
+
 add_library(xcfun
     ${BASE_LIB_SRCS}
     ${FUNCTIONAL_SRCS}
@@ -68,3 +74,5 @@ add_custom_command (
 	COMMAND ${CMAKE_COMMAND} -E make_directory 
 		${CMAKE_CURRENT_BINARY_DIR}/fortran
 	)
+
+install(TARGETS xcfun ARCHIVE DESTINATION lib)

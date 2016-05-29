@@ -99,7 +99,10 @@
 !     NOSFMU     - in spinfree calculations, do not generate spinfree multiplicaton tables, that is
 !                  constructing direct products of spin and spatial symmetries
 !
-!    TRS_MIX - if .true.,allow mixing T+ Hamiltonian with chosen T- perturbative operator 
+!     TRS_MIX - if .true.,allow mixing T+ Hamiltonian with chosen T- perturbative operator 
+!
+!     WRITE_Jz_MATRIX - flag for writing out the Jz matrices from the LINSYM routine into text files
+!
 !
 
       INTEGER MAX1OPER
@@ -133,19 +136,20 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX
+     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX,  &
+     &        WRITE_Jz_MATRIX, NONREL
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
-     &                        SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,     &
+     &                SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,             &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
-     &                ecpcalc,MDIRAC,TRS_MIX,                           &
+     &                ecpcalc,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

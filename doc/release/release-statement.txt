@@ -1,72 +1,45 @@
 Dear DIRAC-users,
 
-We are happy to announce the release of DIRAC13, the latest version of the
+We are happy to announce the release of DIRAC14, the latest version of the
 DIRAC code for 2- and 4-component relativistic  molecular electronic structure
-calculations. The date has been chosen to mark the 80th anniversary of the
+calculations. The date has been chosen to mark the 81th anniversary of the
 Nobel lecture given by P. A. M. Dirac, Dec 12 1933:
 http://www.nobelprize.org/nobel_prizes/physics/laureates/1933/dirac-lecture.html
 
-See also our web site: http://diracprogram.org/
+See also our web site: http://diracprogram.org
 
 
-New features in DIRAC13
+New features in DIRAC14
 -----------------------
 
-* Magnetizabilities at the Hartree-Fock level with London atomic orbitals (LAOs)
-* Improved output for TDDFT excitation energies
-* Hueckel start with atomic fragments
-* XML output functionality
-* Enhancements to frozen density embedding
-* Polarization propagator for 4-C excitations (ADC2 extended)
-* Enhancements to X2C: local spin-free and spin-orbit X2C
-* Dyall basis sets redefined to reduce linear dependence and conform to basis archive files, including fixes
-* Basis sets for 2s, 2p, 3s, 3p, 3d added to Dyall 2z, Dyall 3z sets and for 2p, 3s, 3p for Dyall 4z basis sets
-* Dyall aenz (all-electron) basis sets added, with correlating functions for all shells
+* Intrinsic Atomic Orbitals (IAOs), as formulated by Gerald Knizia,
+  have been implemented to eliminate the polarization contribution in projection analysis.
+* The Polarizable Continuum Model (PCM) is available for the inclusion of solvent effects.
+* As a byproduct of the PCM implementation, molecular electrostatic potential (MEP) maps are available
+  for 4-component electronic-structure calculations.
+* +Q corrections (size-consistency corrections) for KR-CI.
+* Extended Hückel method using atomic fragments for SCF start guess (alternative to atomic start)
 
-
-Improved compilation and testing
---------------------------------
-
-* Support for Windows 7/8 with GNU MinGW32/64 suite and with native math libraries
-* New test script
-* Simplified testing using MPI
-* Updated math library detection
-* Better support for MKL libraries
-* Support for Cray
-* Support for MPI runs which do not use mpirun
-
-
-New defaults
-------------
-
-* The pam script sets (unless these variables are set by the user):
-
-   MKL_NUM_THREADS=1
-   MKL_DYNAMIC="FALSE"
-   OMP_NUM_THREADS=1
-   OMP_DYNAMIC="FALSE" 
-
-
-A full list of features of DIRAC13 is found here:
+A full list of features of DIRAC14 is found here:
 http://diracprogram.org/doku.php?id=features
 
-On http://diracprogram.org/ under "News" you can also find the papers
+On http://diracprogram.org under "News" you can also find the papers
 describing the new developments and some examples of applications.
 Our documentation pages
-http://diracprogram.org/doc/release-13/
+http://diracprogram.org/doc/release-14/
 contains a number of new tutorials and is continually updated.
 
 As usual, the code is freely distributed to all academic users;
 please find detailed information about licensing and download here:
-http://dirac.chem.sdu.dk/DIRAC13/
+http://dirac.chem.sdu.dk/DIRAC14/
 
-For proper citation of DIRAC13, please consult
+For proper citation of DIRAC14, please consult
 http://www.diracprogram.org/doku.php?id=citation
 
 
 On behalf of the DIRAC team,
 
+   Trond Saue
    Lucas Visscher
    Hans Jørgen Aagaard Jensen
    Radovan Bast
-   Trond Saue

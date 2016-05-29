@@ -266,23 +266,51 @@ contains
    end subroutine
 
    subroutine kw_read_ivec_all (kw_input, v)
+!
+! Read line (string) of integer numbers separated by blanks or commas
+! Use method of subsequent erasing of numbers in the string (line)
+! where wanted individual numbers are extracted into v(:) array.
+!
+! Miro Ilias, July 2015 (GSI, Darmstadt): adapted for multi-digit integers (i1,i2,i3)
+!
 
       character(kw_length), intent(in)  :: kw_input
       integer,              intent(out) :: v(:)
-      integer                           :: i, j, start
+      integer                           :: j, start
       character(line_length)            :: line
 
       read(get_file_unit(),'(a)',err=1) line
       start = verify(line,' ,;') ! finds first non-separator character
-
       j = 1
-      do  while (len_trim(line) > 0 .and. start /= 0)
+      do while (len_trim(line) > 0 .and. start /= 0)
          read (line,*,err=1) v(j)
+            if (v(j).ge.0.and.v(j).le.9) then  
+               !  erase 1-char integer, 0 ... 9
+               line(1:start) = ' '   
+            else if (v(j).ge.10.and.v(j).le.99) then
+               ! erase 2-char integer, 10 ... 99
+               line(1:start+1) = '  '  
+            else if (v(j).le.-1.and.v(j).ge.-9) then
+               ! erase negative -char integer, -9 ... -1
+               line(1:start+1) = '  '   
+            else if (v(j).ge.100.and.v(j).le.999) then
+               line(1:start+2) = '   '  ! 100 ... 999
+            else if (v(j).le.-10.and.v(j).ge.-99) then
+               line(1:start+2) = '   '  ! -99 ... -10
+            else if (v(j).ge.1000.and.v(j).le.9999) then
+               line(1:start+3) = '    ' ! 1000 ... 9999
+            else if (v(j).le.-100.and.v(j).ge.-999) then
+               line(1:start+3) = '    ' ! -999 ... -100
+            else ! catch error, we need good, readable output
+               print *,'kw_read_ivec_all: line=',line
+               print *,'kw_read_ivec_all: len_trim(line)=',len_trim(line)
+               print *,'kw_read_ivec_all: v(:)=',v
+               print *,'kw_read_ivec_all: start=',start
+               print *,'kw_read_ivec_all: v(j=',j,')=',v(j)
+               call quit('kw_read_ivec_all: integer out of range !')
+            endif
          j = j + 1
-         do i = 1, start         ! blank out the part that we already read
-            line(i:i) = ' '
-         end do
-         start = verify(line,' ,;')
+         start = verify(line,' ,;') ! renew first non-separator character
       end do
 
       return

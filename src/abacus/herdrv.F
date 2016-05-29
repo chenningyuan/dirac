@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -231,6 +231,7 @@ C
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
   900 READ (LUCMD,'(A7)',END=910,ERR=920) WORD
+      CALL UPCASE(WORD)
       IF ((WORD .EQ. '**HERMI') .OR. (WORD .EQ. '*HERMIT') .OR.
      &    (WORD .EQ. '**INTEG')) THEN
          GO TO 930
@@ -254,6 +255,7 @@ C
 C     ***** Process input for COMMON  /CBIHER/  *****
 C
   100 READ (LUCMD, '(A7)') WORD
+      CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 100
@@ -997,7 +999,7 @@ C
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in HERINP, error in prompt.')
       END IF
-    2   CALL REAINP(WORD,IPRDEF,RELCAL,TSTINP)
+    2   CALL REAINP(WORD,RELCAL,TSTINP)
       GO TO 201
     3   CALL HR1INP(WORD)
       GO TO 201
@@ -1068,9 +1070,6 @@ C
 #endif
       CALL SETDCH
       IF (DORLM .AND. .NOT. CAVUSR) THEN
-         DO 234 I = 1, MXCENT
-            ISOTOP(I) = 1
- 234     CONTINUE
          KGEOM = 1
          KMASS = KGEOM + 3*NATOMS
          KNAT  = KMASS + NATOMS
@@ -1115,6 +1114,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -1138,6 +1138,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1245,6 +1246,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -1282,6 +1284,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1439,6 +1442,7 @@ C
       IF (SET) THEN
          IF (WORD .NE. '*END OF' .AND. WORD(1:2) .NE. '**') THEN
  969        READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .NE. '*') GO TO 969
          END IF
@@ -1461,6 +1465,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

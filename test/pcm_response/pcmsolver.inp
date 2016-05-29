@@ -1,11 +1,10 @@
-Units = AU
-Medium {
-                Solvent = Water
+UNITS = ANGSTROM
+MEDIUM {
+                SOLVENT = WATER
 }
 
-Cavity {
-                Type = GePol
-                Area = 10.0
-		Scaling = False
-                Mode = Implicit
+CAVITY {
+                TYPE = GEPOL
+                AREA = 10.0
+                MODE = IMPLICIT
 }

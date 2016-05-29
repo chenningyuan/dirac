@@ -1,6 +1,6 @@
 #define notESR_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -44,7 +44,7 @@ C
 #include "dcborb.h"
 #include "orgcom.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 15)
+      PARAMETER (NTABLE = 16)
       LOGICAL SET, NEWDEF, RESET, GORG_BY_USER
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
@@ -53,7 +53,7 @@ C
       DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
      &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
      &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI',
-     &            '.COREHO','.MY CI ','.THRPCI'/
+     &            '.COREHO','.MY CI ','.THRPCI','.KR-CON'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -79,7 +79,7 @@ C
       MULTIPESR = 0
       N_CIESR   = -1
       MAX_CIESR_IT = 0
-      THR_CVEC_ESR = 1.0D-3
+      THR_CVEC_ESR = 1.0D-4
       THRPCI_ESR   = 1.0D-3
       THR_CIESR    = 1.0D-6 ! based on 1 ppm = 10**(-6)
 C     variables for spin polarization in CI
@@ -87,6 +87,7 @@ C     variables for spin polarization in CI
       NVSH_ESR(:)  = -1
       NSSH_ESR(:)  = -1
       LVL_CIESR(:) = 0
+      USE_KRAMERS_CONJ = .FALSE.
 C
 C     Initialize orgcom.h
 C     ===================
@@ -104,6 +105,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
   110       CONTINUE
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -112,7 +114,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -200,6 +202,10 @@ C&&&& flexible input of the CI you want
 C&&&& limit for printing CI coefficients in output
    15          CONTINUE ! .THRPCI
                   READ(LUCMD,*) THRPCI_ESR
+               GO TO 100
+C&&&& use Kramers conjugation on CI vector
+   16          CONTINUE ! .KR_CON
+                  USE_KRAMERS_CONJ = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -366,21 +372,7 @@ C
 C **  Retrieve molecular orbitals
 C
       CALL MEMGET2('REAL','CMO',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-      IF(.NOT.FILEX) GOTO 1000
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
-      IF (SPINFR.OR.LEVYLE) THEN
-         CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &               TOTERG,10,WORK,KFREE,LFREE)
-      ELSE
-         KIBRP = KFREE
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,
-     &               2,WORK,KFREE,LFREE)
-      ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
-      CALL MEMREL('PRPESR.REACMO',WORK,1,KEIG,KFREE,LFREE)
+      CALL ESR_READ_CMO(WORK(KCMO),WORK,KFREE,LFREE)
 
 !     write (lupri,*) 'hj1 N_CIESR MAX_CIESR_IT NZCONF',
 !    &                     N_CIESR,MAX_CIESR_IT,NZCONF
@@ -417,7 +409,7 @@ C
 C     Make CI Hamiltonian matrix (diagonal now, but it may be made
 C     non-diagonal in ESRPHASE)
 C
-      CALL MEMGET2('REAL','HCI',KHCI,
+      CALL MEMGET2('REAL','H_CI',KHCI,
      &   MZ*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHCI),MZ*MULTIPESR*MULTIPESR)
       DO I = 1, MULTIPESR
@@ -425,8 +417,8 @@ C
          WORK(II) = WORK(KEIGVL-1 + I)
       END DO
 
-      IF (IPRESR .GT. 25) THEN
-         WRITE(lupri,*) 'DEBUG: WORK(KHCI) AFTER DIAGONAL'
+      IF (IPRESR .GT. 3) THEN
+         WRITE(lupri,*) 'H_CI after ESR_RESOLVE:'
          CALL OUTPUT(WORK(KHCI),1,MULTIPESR,1,MULTIPESR,
      &               MULTIPESR,MULTIPESR,-1,LUPRI)
       END IF
@@ -989,7 +981,7 @@ C       ... here PHASE is new phase of vector J-1
         PHASE_J_R  = PHASE_J_R / PHASE_J_NORM
         PHASE_J_I  = PHASE_J_I / PHASE_J_NORM
            Seff_M = (JM1 - 1) - Seff
-           CPLUS = SQRT( SEFF*(SEFF+1.0D0)-Seff_M*(Seff_M+1.0D0) ) * 0.5D0
+           CPLUS = SQRT( SEFF*(SEFF+1.0D0)-Seff_M*(Seff_M+1.0D0) ) / 2
            write(lupri,*) 'CPLUS / 2 ', CPLUS
            WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10,A,2F15.10)')
      &     " J,JM1,<J|S_x|JM1'> :",J,JM1,PHASE_J_R,' + i',PHASE_J_I,
@@ -2040,3 +2032,90 @@ C
 C     END IF
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE  ESR_READ_CMO(CMO,WORK,KFREE,LFREE)
+C
+C     Hans Joergen Aa. Jensen Feb. 2015
+C
+C     Read MO coefficents for ESR-CI calculation in this priority order:
+C        1. MP2NO on KRMCOLD
+C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals
+C
+#include "implicit.h"
+#include "priunit.h"
+      REAL*8  CMO(*), WORK(*)
+      LOGICAL FILEX
+C
+C Used from COMMON blocks:
+C  dcbgen.h : LUCOEF, LUKRMC
+C  dcbham.h : SPINFR; LEVYLE
+C  dcbbas.h : N2BBASXQ, ...
+C  dcborb.h : NORBT, ...
+#include "dcbgen.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+
+C
+      KFREE_start = KFREE
+      CALL DZERO(CMO,N2BBASXQ)
+
+C        1. MP2NO on KRMCOLD ?
+
+      INQUIRE(FILE='KRMCOLD',EXIST=FILEX)
+      IF (FILEX) THEN
+         WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading MP2 natural orbitals from file KRMCOLD'
+         call flshfo(lupri)
+         CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','PRPESR')
+         CALL MEMGET2('REAL','OCCNO',KOCC ,NORBT   ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','OCCNAT',KEIG_NAT,NESHT,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IBEIG',KBEIG,NORBT   ,WORK,KFREE,LFREE)
+C        ... initialize
+         CALL DZERO(WORK(KOCC),NORBT)
+         CALL DZERO(WORK(KEIG_NAT),NESHT)
+         CALL IZERO(WORK(KBEIG),NORBT)
+C        ... read from file
+         CALL READMP2NAT(CMO,WORK(KOCC),WORK(KEIG_NAT),
+     &                   WORK(KBEIG))
+         CLOSE(LUKRMC,STATUS='KEEP')
+
+         WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  MP2 natural orbitals read from file KRMCOLD'
+C
+         GO TO 9000
+      END IF
+
+C        MP2NO not found. Then:
+C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
+
+      INQUIRE(FILE='DFCOEF',EXIST=FILEX)
+      IF(FILEX) THEN
+         CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
+         IF (SPINFR.OR.LEVYLE) THEN
+            CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
+     &                  TOTERG,10,WORK,KFREE,LFREE)
+         ELSE
+            KIBRP = KFREE
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
+     &                  TOTERG,2,WORK,KFREE,LFREE)
+         END IF
+         CLOSE(LUCOEF,STATUS='KEEP')
+         WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  molecular orbitals read from file DFCOEF'
+         GO TO 9000
+      END IF
+
+C        DFCOEF not found. Then:
+C        3. no more options (yet).
+
+      WRITE(LUPRI,'(//A)') 'Fatal error for ESR: MO coefficients not'//
+     &   ' found on KRMCOLD or DFCOEF'
+      CALL QUIT('ESR fatal error: no MO coefficients found')
+
+ 9000 CALL MEMREL('ESR_READ_CMO',WORK,1,KFREE_start,KFREE,LFREE)
+      RETURN
+      END
+!  -- end of pamesr.F --

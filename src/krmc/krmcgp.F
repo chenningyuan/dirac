@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1726,7 +1726,7 @@ C          ... no sorting
            IORDER = 0
            IPACK  = 0
            CALL RSJACO(NDIM,NDIMI,NDIM,AM,EIG,IJOB,IORDER,IPACK,
-     &                 EIGVEC,WORK(KFREE),LFREE)
+     &                 EIGVEC)
         ELSE
            MATZ = 1
            CALL   QDIAG(NZ,NDIMI,AM,NDIM,NDIM,EIG,MATZ,EIGVEC,
@@ -1866,7 +1866,7 @@ C
 !            step 1: diagonalize
              CALL RSJACO(NDIMI,NDIMI,NDIMI,am,
      &                   EIG(JOFF_eig),IJOB,IORDER,IPACK,
-     &                   work(kvectm),WORK(KFREE),LFREE)
+     &                   work(kvectm))
 
 #ifdef MCSCF_debug
              CALL HEADER('DIAG_piv2fock: eigenvalues:',-1)
@@ -1904,9 +1904,8 @@ C
           ELSE
 C            ... calculate eigenvalues and eigenvectors
              MATZ = 1
-             CALL QDIAG(NZ,NDIMI,AM,NDIMI,NDIMI,
-     &                  EIG(JOFF_eig),MATZ,work(kvectm),NDIMI,NDIMI,
-     &                  WORK(KFREE),LFREE,IERR)
+             CALL QDIAG90(NZ,NDIMI,AM,NDIMI,NDIMI,
+     &       EIG(JOFF_eig),MATZ,work(kvectm),NDIMI,NDIMI,IERR)
              IF( IERR .ne. 0 ) THEN
                     WRITE(LUPRI,'(/,1X,4A,I4)')
      &                   '*** ERROR in  DIAG_piv2fock ***: ',
@@ -2477,7 +2476,7 @@ CSK      IGSOCCX(I          ) = NGASSP(1,I)
 CSK      IGSOCCX(I + MXPNGAS) = NGASSP(2,I)
       END DO
 C     Energy convergence threshold
-      THRES_E =          threci
+      THRES_E = opt_threci
 #if defined (VAR_MPI)
         IF( ISYNC_NODES .eq. 1 )
      &    call interface_mpi_BCAST(thres_e,1,MASTER,
@@ -2519,17 +2518,17 @@ C     Relativistic CI
 C     Reference value for two times M_K projection
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  call interface_mpi_BCAST(MK2REF,1,MASTER,
+     &  call interface_mpi_BCAST(IOPT_MK2REF,1,MASTER,
      &                 global_communicator)
 #endif
-      MK2REF_CI = MK2REF
+      MK2REF_CI = IOPT_MK2REF
 C     Reference value for two times Delta M_K projection (coupling range)
 #if defined (VAR_MPI)
       IF( ISYNC_NODES .eq. 1 )
-     &  call interface_mpi_BCAST(MK2DEL,1,MASTER,
+     &  call interface_mpi_BCAST(IOPT_MK2DEL,1,MASTER,
      &                 global_communicator)
 #endif
-      MK2DEL_CI = MK2DEL
+      MK2DEL_CI = IOPT_MK2DEL
 
 !     IF ((.not.SPINFR).and.(.not.LEVYLE).and.MK2DEL_CI.eq.0) THEN
 !          WRITE(LUWRT,*) 'Spin-dependent calculation and MK2DEL = 0.'
@@ -2870,41 +2869,41 @@ C     DIAPAR.1
       END IF
 *.Spatial symmetry
       IF(PNTGRP.EQ.1) THEN
-        WRITE(LUPRI,'(A,I1)')
-     &  '     Spatial symmetry ....... ', IREFSM
+        WRITE(LUPRI,'(A,I2)')
+     &  '     Spatial symmetry .......', IREFSM
       ELSE IF(PNTGRP.EQ.2) THEN
-        WRITE(LUPRI,'(A,I1)')
-     &  '     ML value ............... ', IREFML
+        WRITE(LUPRI,'(A,I2)')
+     &  '     ML value ...............', IREFML
       ELSE IF(PNTGRP.EQ.3) THEN
-        WRITE(LUPRI,'(A,I1)')
-     &  '     ML value ............... ', IREFML
+        WRITE(LUPRI,'(A,I2)')
+     &  '     ML value ...............', IREFML
         IF(IREFPA.EQ.1) WRITE(LUPRI,'(A)')
      &  '     Parity   ..............  Gerade'
         IF(IREFPA.EQ.2) WRITE(LUPRI,'(A)')
      &  '     Parity   ..............  Ungerade'
       ELSE IF(PNTGRP.EQ.4) THEN
-        WRITE(LUPRI,'(A,I1)')
-     &  '     L  value ............... ', IREFL
-        WRITE(LUPRI,'(A,I1)')
-     &  '     ML value ............... ', IREFML
+        WRITE(LUPRI,'(A,I2)')
+     &  '     L  value ...............', IREFL
+        WRITE(LUPRI,'(A,I2)')
+     &  '     ML value ...............', IREFML
         IF(IREFPA.EQ.1) WRITE(LUPRI,'(A)')
-     &  '     Parity   ..............  Gerade'
+     &  '     Parity   ...............  Gerade'
         IF(IREFPA.EQ.2) WRITE(LUPRI,'(A)')
-     &  '     Parity   ..............  Ungerade'
+     &  '     Parity   ...............  Ungerade'
        ELSE IF(PNTGRP.GE.5)THEN
         print *,'@timo+stefan: check this print (krmcgp.F) here...'
-        WRITE(LUPRI,'(A,I1)')
-     &  '     Double group symmetry... ', IREFSM
+        WRITE(LUPRI,'(A,I2)')
+     &  '     Double group symmetry ..', IREFSM
       END IF
 *.Spin
-        WRITE(LUPRI,'(A,I2)')
-     &    '     2*reference value of MK ', MK2REF_CI
-        WRITE(LUPRI,'(A,I2,A,I2)')
-     &    '     Allowed interval of MK2 ',
-     &          MK2REF_CI-MK2DEL_CI,' to ', MK2REF_CI+MK2DEL_CI
+        WRITE(LUPRI,'(A,I3)')
+     &    '     2*reference value of MK', MK2REF_CI
+        WRITE(LUPRI,'(A,I3,A,I3)')
+     &    '     Allowed interval of MK2',
+     &          MK2REF_CI-MK2DEL_CI,' to', MK2REF_CI+MK2DEL_CI
 *.Number of active electrons
-      WRITE(LUPRI,'(A,I2)')
-     &  '     Active electrons .....  ', NACTEL
+      WRITE(LUPRI,'(A,I3)')
+     &  '     Active electrons ..... ', NACTEL
 *
 *. GAS space
 *

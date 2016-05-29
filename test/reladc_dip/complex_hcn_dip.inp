@@ -20,9 +20,12 @@
 energy  -2.0 1.0 0.1                                                                                
 **RELADC
 .DODIPS
+.DIPREPS
+ 1
+ 1
 **LANCZOS
 .DIPITER
- 20
+ 50
 .DIPPRNT
  45.0
 *END OF                                                                                             

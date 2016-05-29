@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -44,6 +44,10 @@
 ! read in the long eigenvectors in memory (one is in general only interested in a very
 ! small subset of eigenvectors compared to the size of the ADC matrix).
 !
+      use adc_mat
+      use adc_fano_exchange
+      use memory_allocator
+
       implicit none
 !
 ! transferred variables
@@ -212,6 +216,15 @@
         ENDDO
       ENDIF
 
+! In case of a fanoadc run, allocate the arrays for the initial state
+! and the energies and polestrengths
+
+      IF(reladc_md_isfano) THEN
+        nr_in_evecs = 0
+        CALL alloc(in_evecs,ladcx,ispcount)
+        CALL alloc(in_energy,2,ispcount)
+      END IF
+
 ! now loop over all subspaces and form the corresponding set of
 ! linearly independent vectors
 
@@ -291,6 +304,7 @@
 !______________________________________________________
 !|
 !|
+
         DO 177 K=1,NINDEP
 !
 ! it can happen that even a set of linearly independent vectors still does not
@@ -324,6 +338,13 @@
               icount = icount + 1
             endif
           ENDDO
+
+          IF(reladc_md_isfano) THEN
+            nr_in_evecs = nr_in_evecs + 1
+            in_evecs(1:ladcx,nr_in_evecs) = evli(1:ladcx,k)
+            in_energy(1,nr_in_evecs)      = seval
+            in_energy(2,nr_in_evecs)      = polestr
+          END IF
 !
         ELSE IF(ionizlevel.eq.2) then
 !
@@ -398,6 +419,10 @@
 !
 !  complex counterpart of LVECANALY_R
 !  for comments, see this routine.
+!
+      use adc_mat
+      use adc_fano_exchange
+      use memory_allocator
 !
       implicit none
 !
@@ -579,6 +604,15 @@
         ENDDO
       ENDIF
 
+! In case of a fanoadc run, allocate the arrays for the initial state
+! and the energies and polestrengths
+
+      IF(reladc_md_isfano) THEN
+        nr_in_evecs = 0
+        CALL alloc(cin_evecs,ladcx,ispcount)
+        CALL alloc(in_energy,2,ispcount)
+      END IF
+
 ! now loop over all subspaces and form the corresponding set of
 ! linearly independent vectors
 
@@ -661,6 +695,11 @@
 !______________________________________________________
 !|
 !|
+        !IF(reladc_md_isfano) THEN                                      
+        !  nr_in_evecs = nindep                                         
+        !  CALL alloc(cin_evecs,ladcx,nr_in_evecs)                       
+        !END IF    
+
         DO 177 K=1,NINDEP
 
         polestr=vnorm_cmplx(evli(1:nocc,k))
@@ -690,6 +729,14 @@
               icount = icount + 1
             endif
           ENDDO
+
+          IF(reladc_md_isfano) THEN
+            nr_in_evecs = nr_in_evecs + 1
+            cin_evecs(1:ladcx,k) = evli(1:ladcx,k)
+            in_energy(1,nr_in_evecs)      = seval
+            in_energy(2,nr_in_evecs)      = polestr
+          END IF
+
         ELSE
           write(io3,'(A8,2X,4A11,2A20)') &
             'No.',ostr,ostr,ostr,vstr,' Coeff(real)',' Coeff(imag)'

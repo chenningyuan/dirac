@@ -14,7 +14,7 @@ f.add(from_string = 'Electronic energy',
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Overview of calculated energies',
       to_string   = '@ Total CCSD-T  energy',
-      rel_tolerance   = 1.0e-9)
+      abs_tolerance   = 1.0e-10)
 
 test.run(['HF.bss.cc.inp'], ['Z80H.lsym.dir.mol'], f, args='--mw=80')
 

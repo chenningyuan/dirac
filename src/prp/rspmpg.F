@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -90,7 +90,7 @@ C
       ALLCMB    = .FALSE.       !generate all operator combinations
       XLR_SKIPEP= .FALSE.       !do include e-p orbital rotations
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj)
+      if(nonrel.or.x2c.or.bss.or.levyle.or.freepj.or.vextpj)
      &  XLR_SKIPEP = .TRUE.
       XLR_SKIPEE= .FALSE.       !do include e-e orbital rotations
 c     qedrun    = .TRUE.        !not implemented
@@ -128,7 +128,7 @@ C
          xlr_indstr(1,I)='1..'//tmp(1)
          xlr_indstr(2,I)='0'
 CMI      if(levyle)then
-         if(levyle.or.bss.or.x2c) then
+         if(levyle.or.bss.or.x2c.or.nonrel) then
             xlr_indstr(3,I)=tmp(3)//'..'//tmp(4)
          else
             xlr_indstr(3,I)='-'//tmp(2)//'..-1,'//tmp(3)//'..'//tmp(4)
@@ -525,11 +525,7 @@ C
 C
       call qenter('GRDORB_MPG')
 C
-#if defined (SYS_IBM)
-      open(lu1int,status='OLD',form='UNFORMATTED',file='APROPER')
-#else
       open(lu1int,status='OLD',form='UNFORMATTED',file='AOPROPER')
-#endif
 C
       close(lu1int,status='KEEP')
 C
@@ -1124,7 +1120,7 @@ C
         IOFX1 = (1-1)*NORBT*NORBT
         IOFD2 = IOFD1
         IOFX2 = IOFX1
-	DO IFSYM=1, NFSYM
+        DO IFSYM=1, NFSYM
           IOFD2 = IOFD2 + NORBT*NPSH(IFSYM) + NPSH(IFSYM) + NIOCC(IFSYM)
           IOFD3 = IOFD2
           IOFX2 = IOFX2 + NORBT*(NPSH(IFSYM)+NIOCC(IFSYM)) + NPSH(IFSYM)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -5521,8 +5521,7 @@ C      ... diagonalize the H2c in MO(ee) basis !
        IF (DOJACO) THEN
 !        write(lupri,*) 'CMP_EIGVAL: RSJACO used for diagonalization' 
          CALL RSJACO(NESH(I),NESH(I),NESH(I),TMAT(IH2MO),
-     &                  EIG(IEIG),1,1,0,TBUF(IH2MO),
-     &                  WORK(KFREE),LFREE)
+     &                  EIG(IEIG),1,1,0,TBUF(IH2MO))
        ELSE
         CALL QDIAG(NZ,NESH(I),TMAT(IH2MO),NESH(I),NESH(I), 
      &             EIG(IEIG),1,          
@@ -6316,7 +6315,7 @@ C    ... continue with 2el Fock-AO matrixes ... do the picture
 C    change transformations of them if .NOT.CONT2C
 C ==================================================================
       IF (.NOT.ONESYS.AND..NOT.CONT2C) THEN
-        CALL OPNFIL(LUFCK2,'DFFCK2','OLD','PSIDHF')
+        CALL OPNFIL(LUFCK2,'DFFCK2','OLD','PSISCF')
 C          ... read NFMAT 2el Fock matrixes !
         CALL REAFCK(LUFCK2,WORK(KF2),.TRUE.,NFMAT)
 
@@ -7162,7 +7161,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:   Do the reverse picture change transformation of the (converged)
 C ----------   2c Fock matrix into 4c "Fock-Dirac" starting Fock matrix
-C             (called from PSIDHF/dirscf.F)
+C             (called from PSISCF/dirscf.F)
 C
 C  On input : only arrays
 C
@@ -7181,13 +7180,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h" 
 #include "dcborb.h" 
 
-      DIMENSION TBUF(*),TMAT(*),VMAT(*),WORK(LWORK)
+      DIMENSION TBUF(*),TMAT(*),VMAT(*),WORK(*)
       LOGICAL FPB, KEEPH1
       CHARACTER*8 LBL
 
       CALL QENTER('FDTR4C')
 #include "memint.h"
+        CALL MEMGET('REAL',K1,1,    WORK,KFREE,LFREE)
 
+        CALL MEMCHK('FDTR4C 0.0.1',WORK,1)
 C     ... do initiate the important FreeParticleBasis flag!
 C   If .false., we are using the one-step RKB approach !
       FPB = .NOT.NOPRTR
@@ -7243,6 +7244,7 @@ C       ... control print out of the Lowdin 2c matrix ....
          ENDIF 
          ENDDO
         ENDIF 
+        CALL MEMCHK('FDTR4C 0.1',WORK,1)
 
 C   ... needs SaomoC matrix (this should work for linear symmetry as well) !
         CALL DZERO(TBUF,N2BBASXQ)
@@ -7301,6 +7303,7 @@ C     ==========================================================================
 
        ENDIF
        ENDDO
+        CALL MEMCHK('FDTR4C 0.2',WORK,1)
 
 C ======================================================================
 C      ... do transform 2c FD AO marix into 2c ON RKB/FP "k" basis
@@ -7314,6 +7317,7 @@ C ======================================================================
      &  'FDTR4C: H2c SA_AO "xhi" -> H2c ON RKB/FP "k" '//
      &  ' transf.matrix (TM2CAOFP) read into TMAT.' 
         ENDIF
+        CALL MEMCHK('FDTR4C 0.3',WORK,1)
 
 C ==========================================================================
 C      ... Do:     TMAT^+ . TBUF . TMAT = VMAT(FD_2c ON)
@@ -7368,6 +7372,7 @@ C ===========================================================================
 
        ENDIF
        ENDDO
+        CALL MEMCHK('FDTR4C 0.4',WORK,1)
 
 C ====================================================================
 C   ... store FD_2C in ON basis into ee part of block diagonal H1
@@ -7419,11 +7424,13 @@ C       the EE block of the EE+PP block-diagonal matrix...
 C       ... do zero the H1_PP block !
          DO IZ=1,NZ
          DO J=1,NESH(I)
-          ITMAT1 = ITMAT+((NORB(I)*NESH(I))+NESH(I)) + 
-     &     ((IZ-1)*NORB(I)*NORB(I)) + ((J-1)*NORB(I))
-          CALL DZERO(TMAT(ITMAT1),NESH(I))
+!         ITMAT1 = ITMAT+((NORB(I)*NESH(I))+NESH(I)) + 
+!    &     ((IZ-1)*NORB(I)*NORB(I)) + ((J-1)*NORB(I))
+!         CALL DZERO(TMAT(ITMAT1),NESH(I))
          ENDDO
          ENDDO
+!  !  CALL MEMREL('FDTR4C.X2C',WORK,KWORK,KWORK,KFREE,LFREE)
+!     return
 
         IF (IPRHAM.GE.5) THEN
           CALL HEADER(
@@ -7454,6 +7461,7 @@ C       ... do zero the H1_PP block !
 
       ENDIF
       ENDDO
+        CALL MEMCHK('FDTR4C 0.5',WORK,1)
 
 C   ... do the reverse picture change transformation
 C           U . H . U^+ 
@@ -7461,11 +7469,11 @@ C           U . H . U^+
 C  ... read full picture change transf. matrix into VMAT
       ISIZE = (NORB(1)*NORB(1)*NZ)
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NORB(2)*NORB(2)*NZ)
-      CALL RFBSSMAT('U1_ONFUL',.TRUE.,'FDTR4C',TMAT,ISIZE,LUBSS,IPRHAM)
+      CALL RFBSSMAT('U1_ONFUL',.TRUE.,'FDTR4C',VMAT,ISIZE,LUBSS,IPRHAM)
       IF (IPRHAM.GE.2) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'FDTR4C: U1_ONFUL (FULL picture change transf.matrix '//
-     & '4c ONB->2c ONB), TMAT, was read from to the BSSMAT'
+     & '4c ONB->2c ONB), VMAT, was read from to the BSSMAT'
       ENDIF
 
       ITMAT = 1
@@ -7499,7 +7507,7 @@ C  ... read full picture change transf. matrix into VMAT
      &      TMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
      &      VMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
      &      VMAT(ITMAT),NREF,NREF,NZ,IPQTOQ(1,0),
-     &      WORK(KFREE),LFREE,IPRINT)
+     &      WORK(KFREE),LFREE,IPRHAM)
 
        IF (IPRHAM.GE.4) THEN
         CALL HEADER(
@@ -7515,6 +7523,7 @@ C  ... read full picture change transf. matrix into VMAT
 
       ENDIF
       ENDDO
+        CALL MEMCHK('FDTR4C 0.6',WORK,1)
 
 C  ... do transform FD_4C in ON RKB/"k" into SA-AO (VMAT) (still non_linear symmetry)
       IF (FPB) THEN
@@ -7587,6 +7596,7 @@ C  ... read full picture change transf. matrix into VMAT
 
       ENDIF
       ENDDO
+        CALL MEMCHK('FDTR4C 0.7',WORK,1)
 
 C  ... FINALLY: do transform FD_4C in SA-AO into RKB MO ...
 
@@ -7643,6 +7653,7 @@ C
 
       ENDIF
       ENDDO
+        CALL MEMCHK('FDTR4C 0.8',WORK,1)
 
 C ... save (FD4C+H1PP) into the BSSMAT to be used as a starting Fock MO matrix
 C ..  for DC-SCF ... FD4C_RKB
@@ -7658,6 +7669,9 @@ C ..  for DC-SCF ... FD4C_RKB
 
 C     ... this flag must be deactivated for BSS2DC calculations
       START2C = .FALSE.
+        CALL MEMCHK('FDTR4C 0.9',WORK,1)
+
+      CALL MEMREL('FDTR4C.X2C',WORK,KWORK,KWORK,KFREE,LFREE)
 
       CALL QEXIT('FDTR4C')
       RETURN
@@ -7897,7 +7911,7 @@ C  On input : only arrays
 C
 C  On output:  the initial 4c MO are written into BSSMAT
 C
-C  Called from PSIDHF (dirscf.F)
+C  Called from PSISCF (dirscf.F)
 C
 C  Written by Miro Ilias, Sept 2005, Strasbourg
 C
@@ -8584,7 +8598,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "chrnos.h"
 
 C
-      LOGICAL BREIT,PROPRI,OLDNRM,ISONLIST,ONLYSO1,ONLYTRA,EXAMF,
+      LOGICAL BREIT,PROPRI,ISONLIST,ONLYSO1,ONLYTRA,EXAMF,
      &        NOAMFC
       DIMENSION WORK(LWORK),H2SAO(NB,NB,4),IQPOS(1:8)  
       DIMENSION IPTYPAO(NSPH),INDXLM(NSPH),IPNUC(NSPH),
@@ -8832,7 +8846,6 @@ C     Open Mean-field input file generated in READIN
       CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 
-      OLDNRM=.FALSE.
       BREIT = .FALSE.
 
 C  ++++ Find out individual charges on atoms
@@ -9054,7 +9067,7 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-         CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
+         CALL AMFI(LUTMP2,LUMNFPRP,BREIT,GAUNUC,EXPNUCL,
      &             CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
@@ -10013,6 +10026,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100

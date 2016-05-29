@@ -1,6 +1,6 @@
 !#define DEBUG_SOC
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -31,7 +31,9 @@
 module atomic_oo_order_so_correction_utils
 
   use picture_change_operations
+#ifdef MOD_INTEREST
   use module_interest_interface
+#endif
   use x2c_utils, only: print_x2cmat
 
 
@@ -183,7 +185,9 @@ contains
      read(81) dmat
      close(81,status="delete")
 
-     !> read the F1 Fock matrix in AO basis from file
+     !> read from DFFCKT (full Fock matrix): ok if FOC not for AOC!
+
+     !> read the F1+F2 Fock matrix in AO basis from file
      open(81,file='4cf1f2AO',status='old',form='unformatted',       &
           access='sequential',action='read',position='rewind')
      read(81) fmat

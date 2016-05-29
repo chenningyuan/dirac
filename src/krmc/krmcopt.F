@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2013 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1802,7 +1802,10 @@ C
 C
 C     Write to file KRMC FOCK
 C
-      IF (TOFILE) CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
+      IF (TOFILE) THEN
+         CALL WRTKRMC(LUKRM3,'FCMO    ',FC,N2ORBXQ)
+         IF( CWRTFO_MAT ) CALL WRTKRMC(LUKRM3,'ECORE_LR',ECORE_LR,1)
+      END IF
 C
       CALL MEMREL('rGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
@@ -2413,18 +2416,16 @@ C
 C           Generate determinants
 C
             KFRSAV = KFREE
-C           HJAaJ TODO: reconsider KALLOC ....
-C               .... size KIASTR ca. sqrt size KIDET ???
-C               .... problem if IRAT .eq. 1 -- more than LFREE used
-C                    (for IRAT .eq. 2 only ca. half of LFREE is used !)
-            KALLOC = MIN(10 000 000, (LFREE-10 000)/4 )
-                         !max 10,000,000 determinants in this version
-            CALL MEMGET('INT8',KIDET ,2*KALLOC,WORK,KFREE,LFREE)
-            CALL MEMGET('INT8',KIASTR,  KALLOC,WORK,KFREE,LFREE)
-            CALL MEMGET('INT8',KIBSTR,  KALLOC,WORK,KFREE,LFREE)
+C           HJAaJ : re size of MAXSTR ....
+C               .... size KISTR ca. sqrt size KIDET ??? No, not when GAS
+            MAXSTR = 10 000 000
+            MAXDET = MIN(100 000 000, (LFREE-MAXSTR-10 000)/2 )
+                         !max 100,000,000 determinants in this version
+            CALL MEMGET2('INT8','IDET',KIDET ,2*MAXDET,WORK,KFREE,LFREE)
+            CALL MEMGET2('INT8','ISTR',KISTR,   MAXSTR,WORK,KFREE,LFREE)
 
-            CALL GASCIP_GENDET(NZCONF,WORK(KIDET),WORK(KIASTR),
-     &                        WORK(KIBSTR),KALLOC,OPT_UCIBOS,
+            CALL GASCIP_GENDET(NZCONF,WORK(KIDET),WORK(KISTR),
+     &                        MAXDET,MAXSTR,OPT_UCIBOS,
      &                        IOPT_SYMMETRY,IPROPT)
             CALL MEMREL('RSETCI.GASCIP',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -3532,6 +3533,8 @@ C
 C     Written by J. Thyssen - Jun 27 2000
 C
 C***********************************************************************
+      use mc_energies
+      use qcorr_cfg
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3581,23 +3584,24 @@ C
 C
 C           MAXCIT Davidson CI iterations.
 C
-            CALL MEMGET('REAL',KECI,NCIROOT,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
-            THRGCI = 0.1D0 * SQRT(THRECI)   ! GASCIP uses gradient threshold, not energy threshold
+            THRGCI = 0.1D0 * SQRT(OPT_THRECI)   ! GASCIP uses gradient threshold, not energy threshold
             CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         IOPT_ISTATE,ICONV_TOT,
-     &                         IPROPT,WORK(KFREE),LFREE)
+     &                         OPT_THR_CVEC,IOPT_STATE,ICONV_TOT,
+     &                         THRPCI,IPROPT,WORK(KFREE),LFREE)
+
 C
             ECI = WORK(KECI)
          ELSE
 C
 C           Full CI.
 C
-            CALL MEMGET('REAL',KECI,NZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET('REAL','ECI',KECI,NZCONF,WORK,KFREE,LFREE)
             CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
-     &                           NZCONF,IOPT_ISTATE,THRPCI,
-     &                           IPROPT, WORK,KFREE,LFREE)
+     &                           NZCONF,IOPT_STATE,
+     &                           THRPCI,IPROPT, WORK,KFREE,LFREE)
 C
          END IF
          CALL MEMREL('RCIST.after GASCIP start vec',WORK,
@@ -3606,6 +3610,7 @@ C
            CALL GASCIP_ANACI(CREF,NZCONF,WORK(KZCONF),THRPCI,
      &                       WORK(KFREE),LFREE)
          END IF
+
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
@@ -3617,9 +3622,7 @@ C
 C
            IF( MAXCIT .le. 0 ) THEN
 C
-             IF( NATOLCR ) THEN
-               GOTO 500
-             ELSE IF( IANACI .eq. 1 ) THEN
+             IF( NATOLCR .or. ( IANACI .eq. 1 ) .or. luci_cfg_qcorr)then
                GOTO 500
              ELSE
                GOTO 1000
@@ -3629,11 +3632,18 @@ C
          END IF
 C
          CALL LUCI_RCIST(CREF,CMO,WORK(KFREE),LFREE)
+         eci = eci_init
 C
          call memchk('after CALL LUCI_RCIST',WORK,KFREE)
- 500     IF (IANACI.EQ.1) THEN
+
+ 500     if(luci_cfg_qcorr)then
+           CALL LUCI_QCORR(CREF,WORK,KFREE,LFREE)
+         end if
+
+         IF (IANACI.EQ.1) THEN
            CALL LUCI_ANAL(CREF,WORK,KFREE,LFREE)
          END IF
+
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
          IF (IPROPT.GT.5)
@@ -3646,7 +3656,7 @@ C
          CALL QUIT('*** ERROR in RCIST *** Not implemented')
       END IF
 C
-      WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
+!     WRITE(LUPRI,'(/A,F20.8)') ' (RCIST) CI energy:',ECI
 C
 C     General allocation for NO generation
 C
@@ -3680,12 +3690,12 @@ C
           CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &                TRA_NATO,MOISNO,.false.,IPRNO,WORK,KFREE,LFREE)
 C
-         END DO
+        END DO
 C
 C        set back if KR-MCSCF - otherwise LUCI_DENS call may fail
 C        do NOT set back for KR-CI - we might do more than one symmetry
 C
-         IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
+        IF( JKRRUNTYPE .lt. 2 ) NATOLCR = .FALSE.
 C
       END IF
 C
@@ -4365,7 +4375,7 @@ C     Normal MCSCF optimization
 C
       RATVGD = D1 - DP1 * (D1 * RATGOD)
       RTSAVE = RTRUST
-      IF ( IOPT_ISTATE .EQ. 1 ) THEN
+      IF ( IOPT_STATE .EQ. 1 ) THEN
          IF ( RATIO .LT. RATMIN ) THEN
             RTRUST = STPRED * RTRUST
             IF ( RATIO .LT. RATREJ .AND. .NOT. NOREJT ) THEN
@@ -4449,42 +4459,46 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck krmc_getfck */
-      SUBROUTINE KRMC_GETFCK(FMO,IPRINT,WORK,LWORK)
+      SUBROUTINE KRMC_GETFCK(FMO,IPRINT)
 C***********************************************************************
 C
 C     Read Fock matrix from file KRMC FOCK
 C
 C     Input:
+C        IPRINT - print level
+C        CRDFO_MAT (in dcbopt.h)
+C        
 C
 C     Output:
 C        FMO    - Fock matrix in MO basis
+C        ECORE_LR (in dcbopt.h, only if CRDFO_MAT is true)
 C
-C     Written by J. Thyssen - Nov 27 1998
+C     Written by J. Thyssen - Nov 27 1998; revised Aug 2015 hjaaj
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+C
+C dgroup.h : IPTQOQ
+C dcborb.h : NORBT,...
+C dcbopt.h : CRDFO_MAT, ECORE_LR
+C dcbgen.h : LUKRM3
 C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
 C
-      DIMENSION WORK(*),FMO(*)
+      REAL*8   FMO(*)
 C
-#include "memint.h"
-C
-      REWIND(LUKRM3)
       IF( CRDFO_MAT) THEN
-        CALL MOLLAB('FCMO    ',LUKRM3,LUPRI)
+        CALL REAKRMC(LUKRM3,'FCMO    ',FMO,N2ORBXQ)
+        CALL REAKRMC(LUKRM3,'ECORE_LR',ECORE_LR,1)
       ELSE
-        CALL MOLLAB('FC      ',LUKRM3,LUPRI)
+        CALL REAKRMC(LUKRM3,'FC      ',FMO,N2ORBXQ)
       END IF
-      CALL READT(LUKRM3,N2ORBXQ,FMO)
-      IF( CRDFO_MAT ) CALL READT(LUKRM3,1,ECORE_LR)
       IF (IPRINT .GE. 5) THEN
-         CALL HEADER('Output from KRMC_GETFCK',-1)
-         CALL HEADER('KRMC_GETFCK: FMO',-1)
+         CALL HEADER('FCMO from KRMC_GETFCK',-1)
          CALL PRQMAT(FMO,NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,0),LUPRI)
       END IF
@@ -4603,7 +4617,7 @@ C
       DIMENSION IBTYP(*), INERTIA(3)
       DIMENSION WORK(*)
 C
-      IF (IOPT_ISTATE .NE. 1)
+      IF (IOPT_STATE .NE. 1)
      &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
 C
       RTRMAX = RTRUST*RTTOL
@@ -4719,7 +4733,7 @@ C
       DIMENSION WORK(*)
       PARAMETER (STPL_EP_MAX = 0.0100D0)
 C
-      IF (IOPT_ISTATE .NE. 1)
+      IF (IOPT_STATE .NE. 1)
      &     CALL QUIT('KMRCSOL: excited state opt. not implemented yet')
 C
       RTRMAX = RTRUST*RTTOL
@@ -4748,12 +4762,13 @@ C
       STPL_OLD = STPL
       CALL XRSLINRED(NZRED,NREDM,REDE,REDS,DLVLSH,REDGP,
      &     EVECR,IBTYP,INERTIA,IINFO(6),IPROPT,WORK,KFREE,LFREE)
+      INONPOS = INERTIA(2) + INERTIA(3)
       ITER = ITER + 1
       STPL = DP5 * DNRM2(NZRED,EVECR,1)
       STPL_CI = D0
       STPL_EE = D0
       STPL_EP = D0
-      IF (NPRED .GT. 0) THEN
+      IF (NPRED .GT. 0 .OR. IPRINT .GE. 5) THEN
          DO I = 1, NZRED
             IF (IBTYP(1,I) .EQ. JBCNDX) THEN
                STPL_CI = STPL_CI + EVECR(I)**2
@@ -4768,12 +4783,11 @@ C
          STPL_CI = DP5 * SQRT(STPL_CI)
          STPL_EE = DP5 * SQRT(STPL_EE)
          STPL_EP = DP5 * SQRT(STPL_EP)
+         IF (IPRINT .GE. 5)
+     &      WRITE (LUPRI,'(A,I5,1P,G10.2,I5/A,3G10.2)')
+     &      'KRMSOL ITER, STPL, INONPOS',ITER,STPL,INONPOS,
+     &      'step length CI, e-e, e-p',STPL_CI,STPL_EE,STPL_EP
       END IF
-      INONPOS = INERTIA(2) + INERTIA(3)
-      IF (IPRINT .GE. 5)
-     &   WRITE (LUPRI,'(A,I5,1P,G10.2,I5/A,3G10.2)')
-     &   'KRMSOL ITER, STPL, INONPOS',ITER,STPL,INONPOS,
-     &   'step length CI, e-e, e-p',STPL_CI,STPL_EE,STPL_EP
 C
 C     Save electronic Hessian's index for zero level shift
 C     (used in RCNVTHR below)
@@ -4803,7 +4817,7 @@ C
 C
       IF (STPL .GT. RTRMAX .OR. STPL_EP .GT. STPL_EP_MAX .OR.    ! too long step
      &    INONPOS .NE. NPRED ) THEN                              ! wrong number of negative eigenvalues
-         IF (ITER .LE. 2 .AND.
+         IF (ITER .LE. 2 .AND. JHESSIAN .EQ. 0 .AND.
      &       STPL .GT. STPL_OLD .AND. STPL_OLD .GT. RTRMAX) THEN ! reset
             INCREASE_SHIFT = -INCREASE_SHIFT
             DLVLMAX = D0
@@ -4975,6 +4989,8 @@ C
       IF ( DN .NE. D1 ) THEN
          IF ( DN .LE. THRTT ) THEN
             DN = D1 / DN
+            IF (IPRINT .GE. 5) WRITE(LUPRI,'(/A,F20.12)')
+     &        ' (RCINORM) CI vector renormalized with factor ',DN
             CALL DSCAL(NZCONFQ, DN, CREF, 1)
             DN = DNORM2(NZCONFQ,CREF,1)
          END IF
@@ -6305,7 +6321,7 @@ C
          IORDER = 0
          IPACK = 0
          CALL RSJACO(NC,NC,NC,WORK(KVEC),WORK(KEIG),
-     &        IJOB,IORDER,IPACK,U,WORK(KFREE),LFREE)
+     &        IJOB,IORDER,IPACK,U)
       ELSE
          MATZ = 1
          CALL QDIAG(NZ,NC,WORK(KVEC),NC,NC,
@@ -6421,7 +6437,7 @@ C
          IORDER = 0
          IPACK = 0
          CALL RSJACO(NDIM,NDIM,NDIM,WORK(KFD),WORK(KEIG),
-     &        IJOB,IORDER,IPACK,U,WORK(KFREE),LFREE)
+     &        IJOB,IORDER,IPACK,U)
       ELSE
          MATZ = 1
          CALL QDIAG(NZ,NDIM,WORK(KFD),NDIM,NDIM,
@@ -6479,13 +6495,7 @@ C     Last revision: S. Knecht           - June 2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "dcbgen.h"
-#include "infpar.h"
-#include "parkrmc.h"
 C
       IF (.NOT.PARCAL) RETURN
 C

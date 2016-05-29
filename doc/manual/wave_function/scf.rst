@@ -1,12 +1,15 @@
+:orphan:
+ 
+
 star(SCF)
 
 This section gives directives for Hartree-Fock and Kohn-Sham calculations.
 Kohn-Sham calculations are activated by invoking the keyword
-:ref:`.DFT` under :ref:`**HAMILTONIAN`.
+:ref:`HAMILTONIAN_.DFT` under :ref:`**HAMILTONIAN`.
 
 Open-shell calculations correspond to either
-average-of-configurations (:ref:`.AOC`) or fractional
-occupation (:ref:`.FOCC`).
+average-of-configurations (:ref:`SCF_.AOC`) or fractional
+occupation (:ref:`SCF_.FOCC`).
 The former is the default for
 Hartree-Fock calculations, whereas the latter is default for
 Kohn-Sham calculations. Note that average-of-configurations
@@ -25,7 +28,7 @@ fermion irrep, and you need only to specify the number of
 electrons.
 
 For symmetry groups *with* inversion symmetry, you need to specify
-the distribution of the electrons in the two fermion irreps [Saue2000]_.
+the distribution of the electrons in the two fermion irreps :cite:`Saue2000`.
 
 keyword(OPEN SHELL)
 
@@ -46,7 +49,7 @@ active spinors.
 irrep 2 (the *ungerade* one). Thus, the fractional occupation is 5/6.
 
 The open shell module in DIRAC is based on
-average-of-configurations [Thyssen1998]_ .
+average-of-configurations :cite:`Thyssen1998` .
 The simplest case is one electron in two spinors (= one Kramers
 pair). For this special case the average-of-configuration
 calculation gives the same result as the usual restricted
@@ -73,16 +76,16 @@ that is, the lowest molecular orbitals are doubly occupied, the
 next ones are occupied with the electrons of open shell no. 1,
 etc.
 
-Other orderings can be achieved by using :ref:`.REORDER MO'S`
-and :ref:`.OVLSEL`.
+Other orderings can be achieved by using :ref:`WAVE_FUNCTION_.REORDER MO`
+and :ref:`SCF_.OVLSEL`.
 
 To get the energies of the individual states present in the
-average-of-configurations, specify :ref:`.RESOLVE` (see also
+average-of-configurations, specify :ref:`WAVE_FUNCTION_.RESOLVE` (see also
 :ref:`*RESOLVE`).
 
 To get the energies of (some) of the individual states present in
 the average of configurations, you can use the
-:ref:`GOSCIP`, the :ref:`DIRRCI`, or the :ref:`LUCITA`.
+:ref:`GOSCIP`, the :ref:`DIRRCI`, or the :ref:`*LUCITA`.
 
 keyword(BOSONS)
 
@@ -106,11 +109,11 @@ keyword(FOCC)
 Fractional occupation (default for open-shell
 Kohn-Sham) CLARIFY
 
-:ref:`.FOCC` calculations are less memory-intensive than
-:ref:`.AOC` calculations. In the latter case one additional
+:ref:`SCF_.FOCC` calculations are less memory-intensive than
+:ref:`SCF_.AOC` calculations. In the latter case one additional
 AO-Fock matrix is generated for each open shell.
 
-:ref:`.FOCC` calculations are therefore an interesting option
+:ref:`SCF_.FOCC` calculations are therefore an interesting option
 for generating start orbitals for MCSCF as well as initial
 convergence in open-shell Hartree-Fock.
 
@@ -119,7 +122,7 @@ keyword(AUTOCC)
 Program is allowed to change occupation during SCF cycles. This is
 deactivated by default. However, the program will still try to do
 an automatic initial occupation if neither
-:ref:`.CLOSED SHELL` nor :ref:`.OPEN SHELL` is given.
+:ref:`SCF_.CLOSED SHELL` nor :ref:`SCF_.OPEN SHELL` is given.
 
 Trial function
 ==============
@@ -134,12 +137,57 @@ ways:
 -  Using the **two-electron Fock matrix** from a previous
    calculation; this may be thought of as starting from a converged
    SCF potential.
--  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. [vanLenthe2006]_ .
+-  Using an **atomic start** based on densities from atomic SCF runs for the individual centers, see e.g. :cite:`vanLenthe2006` .
+-  Using an **extended Hückel start** based on *atomic fragments*
 
 The default is to start from MO coefficients if the file DFCOEF is
 present. Otherwise the corrected bare nucleus approach is followed.
 In all cases linear dependencies are removed in the zeroth
 iteration.
+
+keyword(ATOMST)
+
+Start first SCF iteration with a molecular density matrix constructed from
+atomic densities.  The keyword ``ATOMST`` is followed by input for each atomic
+type. The details, orbital strings (see :ref:`orbital_strings` for the syntax)
+and occupation, usually correspond to those of the atomic runs, but the user
+may modify this at will.  The syntax is explained in the parenthesis "" for
+each atomic type but we highly recommend to carefully check the tutorial
+example :ref:`atomic_start_guess`. Please note that the order of atoms
+corresponds to the order they appear in the molecule file.
+
+::
+
+  .ATOMST
+  "SCF coefficients file name (6 characters)" "integer specifying # of occupation patterns, here: 2"
+  orbital occupation string #1 for atomic type 1
+  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
+  orbital occupation string #2 for atomic type 1
+  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
+  "SCF coefficients file name (6 characters)" "integer specifying # of occupation patterns, here: 1"
+  orbital occupation string #1 for atomic type 2
+  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
+  ...
+
+keyword(AD HOC)
+
+Start first SCF iteration with orbitals generated from an extended Hückel calculation using pre-calculated orbitals 
+for each constituent atomic type of the molecule. 
+
+::
+
+   .AD HOC
+   "SCF coefficients file name (6 characters)" 
+   orbital occupation string for atomic type 1
+   "SCF coefficients file name (6 characters)" 
+   orbital occupation string for atomic type 2
+   ...
+
+The order of atomic types follows that of the input. Presently, this functionality only works without symmetry.
+
+keyword(HUCPAR)
+Modify the the Wolfsberg-Helmholtz constant :math:`K` of the extended Hückel calculation.
+*Default:* 1.75
 
 keyword(NOBNCR)
 
@@ -158,6 +206,17 @@ example, with one heavy element and without this correction (that
 is, with the bare nucleus Hamiltonian) all electrons will end up on
 that heavy element in the initial guess!
 
+keyword(BNC_FORCE)
+
+Force employing the bare nucleus correction (BNC). This keyword is worth when the calculated system
+is highly positively charged what makes (from defined charge value) switching off the default BNC.
+The BNC can help to achieve better convergence also for non-neutral systems.
+
+keyword(FOMOUT)
+
+Print Fock MO matrices for diagonalization (according to symmetries) into own formatted files. 
+Programmer's option suitable for testing. Only in for the linear symmetry.
+
 keyword(TRIVEC)
 
 Start SCF-iterations from the vector file.
@@ -166,28 +225,6 @@ keyword(TRIFCK)
 
 Start SCF-iterations from the two-electron Fock matrix from
 previous calculation (stored on file DFFCK2).
-
-keyword(ATOMST)
-
-Start first SCF iteration with a molecular density matrix constructed from atomic densities. 
-The keyword ``ATOMST`` is followed by input for each atomic type. The details, orbital occupation strings (see
-:ref:`orbital_strings` for the syntax) and occupation, ususally correspond to those of the atomic runs, 
-but the user may modify this at will. 
-The syntax is explained in the parenthesis "" for each atomic type but we highly recommend to carefully check the tutorial
-example :ref:`Atomic start guess`: 
-
-::
-
-  .ATOMST
-  "SCF coefficients file name (6 characters)" "integer specifying # of occupation patterns, here: 2"
-  orbital occupation string #1 for type 1
-  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
-  orbital occupation string #2 for type 1
-  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
-  "SCF coefficients file name (6 characters)" "integer specifying # of occupation patterns, here: 1"
-  orbital occupation string #1 for type 2
-  occupation (real*8 value in the range of 0.0d0 - 1.0d0)
-  ...
 
 
 Convergence criteria
@@ -200,16 +237,16 @@ Three different criteria for convergence may be chosen:
    :math:`\mathbf{e} = [\mathbf{F}, \mathbf{D}]` (in MO basis). This
    corresponds to the norm of the electronic gradient and is the
    recommended convergence criterion. When you are only interested in
-   the energy :ref:`.EVCCNV` = 1.0D-5 is usually sufficient.
+   the energy :ref:`SCF_.EVCCNV` = 1.0D-5 is usually sufficient.
    For properties and correlated methods you should converge to
-   :ref:`.EVCCNV` = 1.0D-9. Large negative energy eigenvalues
+   :ref:`SCF_.EVCCNV` = 1.0D-9. Large negative energy eigenvalues
    lead to a loss of precision that might lead to convergence
    problems. Remember also that a too loose screening threshold (too
    many integrals neglected) will hinder convergence. You should
    modify
-   :ref:`.SCREEN` under
+   :ref:`TWOINT_.SCREEN` under
    :ref:`*TWOINT` if you
-   modify :ref:`.EVCCNV` or one of the other two convergence
+   modify :ref:`SCF_.EVCCNV` or one of the other two convergence
    criteria.
 -  The difference in total energy between two consecutive
    iterations.
@@ -301,7 +338,7 @@ This may be achieved by convergence acceleration schemes:
    :math:`\mathbf{F}\' = (1-c) \mathbf{F}_{n+1} + c \mathbf{F}_n`,
    where :math:`c` is the damping factor.
 
--  **DIIS:** Direct inversion of iterative subspaces, Refs. [Pulay1980]_ , [Pulay1982]_ , [Hamilton1986]_,
+-  **DIIS:** Direct inversion of iterative subspaces, Refs. :cite:`Pulay1980` , :cite:`Pulay1982` , :cite:`Hamilton1986`,
    may be thought of as generalized damping involving Fock matrices from many iterations.
    Damping factors are obtained by solving a simple matrix equation
    involving the B-matrix constructed from error vectors (approximate
@@ -332,14 +369,10 @@ Maximum dimension of B-matrix in the DIIS module.
     .MXDIIS
      10
 
-.. _.DIISMO:
-
 keyword(DIISMO)
 
 Activate DIIS in orthogonal basis (MO) with the error vector as
 described above.
-
-.. _.DIISAO:
 
 keyword(DIISAO)
 
@@ -360,8 +393,8 @@ where the term :math:`\mathbf{f}` is given by
 keyword(NODIIS)
 
 Do not perform DIIS. The default is to activate
-:ref:`.DIISMO` for closed-shell calculations, and to
-activate :ref:`.DIISAO` for average-of-configurations
+:ref:`SCF_.DIISMO` for closed-shell calculations, and to
+activate :ref:`SCF_.DIISAO` for average-of-configurations
 calculations.
 
 keyword(DAMPFC)
@@ -432,14 +465,14 @@ previous iteration is used as the criterion. For the first
 iteration either restart vectors or vectors generated by the bare
 nucleus approach (not*recommended) are used.*
 
-If :ref:`.NODYNSEL` is given, either the restart vectors
+If :ref:`SCF_.NODYNSEL` is given, either the restart vectors
 or the bare nucleus vectors are used, i.e. the overlap selection
 vectors are *not* updated in each iteration. Please note, that
 overlap selection based on vectors from the bare nucleus approach
 is not recommended.
 
 Overlap selection is very useful together with
-:ref:`.REORDER MO'S`.
+:ref:`WAVE_FUNCTION_.REORDER MO`.
 This will reshuffle the vectors within the restart coefficients.
 
 Example: First one might do a open shell calculation on Boron, this
@@ -452,7 +485,7 @@ request overlap selection, we can converge to the
 There also exists a keyword for reordering the converged SCF
 orbitals. This is useful for reordering the orbitals for the
 4-index transformation and subsequent correlation calculations
-(CCSD, CI etc.) (see :ref:`.POST DHF REORDER MO'S`).
+(CCSD, CI etc.) (see :ref:`WAVE_FUNCTION_.POST SCF REORDER MO`).
 
 keyword(OVLSEL)
 
@@ -472,14 +505,14 @@ number of integrals to be processed in each iteration:
 
 
 -  **Screening on integrals:** Thresholds may be set to eliminate
-   integrals below the threshold value, see [Saue1997]_.
+   integrals below the threshold value, see :cite:`Saue1997`.
    . The threshold for LL
    integrals is set in the basis file, but this threshold may be
    adjusted for SL and SS integrals by threshold factors set in the
-   :ref:`**INTEGRALS` section.
+   :ref:`\*\*INTEGRALS` section.
 
 -  **Screening on density:** In direct mode further reductions are
-   obtained by screening on the density matrix as well, see Ref. [Saue1997]_.
+   obtained by screening on the density matrix as well, see Ref. :cite:`Saue1997`.
    This becomes even more
    effective if one employs *differential densities*, that is
    :math:`\Delta \mathbf{D} = \mathbf{D}_{n+1} - \alpha \cdot \mathbf{D}_n`.
@@ -487,7 +520,7 @@ number of integrals to be processed in each iteration:
    :math:`\alpha=\frac{ \mathbf{D}_{n+1} \cdot \mathbf{D}_n }{ \mathbf{D}_{n}  \cdot \mathbf{D}_n }`
    which corresponds to a Gram-Schmidt orthogonalization. As SCF
    converges, :math:`alpha` goes towards 1, but  :math:`alpha` can also explicitly be set equal
-   to 1 with :ref:`.FIXDIF`.
+   to 1 with :ref:`SCF_.FIXDIF`.
 
 
 -  **Neglect of integrals:** The number of integrals to be
@@ -533,9 +566,9 @@ SCF-iterations.
 keyword(INTFLG)
 
 Specify what two-electron integrals to include (see
-:ref:`.INTFLG` under :ref:`**HAMILTONIAN`).
+:ref:`HAMILTONIAN_.INTFLG` under :ref:`**HAMILTONIAN`).
 
-*Default:* :ref:`.INTFLG` from :ref:`**HAMILTONIAN`.
+*Default:* :ref:`HAMILTONIAN_.INTFLG` from :ref:`**HAMILTONIAN`.
 
 Output control
 ==============
@@ -582,7 +615,7 @@ The use of frozen orbitals is demonstrated in test/33.frozen: When
 the geometry of the water molecule is optimized with the oxygen 1s
 and 2s orbitals frozen, a bond angle of 96.242 degrees is found,
 contrary to the 90 degrees one might have expected when s-p
-hybridization is thus blocked [Kutzelnigg1984]_.
+hybridization is thus blocked :cite:`Kutzelnigg1984`.
 
 The elimination of orbitals is achieved by projecting the selected
 orbitals out of the transformation matrix to orthonormal basis. The
@@ -649,7 +682,7 @@ symmetry independent nuclei in the DIRAC basis file.
 keyword(FROZEN)
 
 Freeze orbitals (must only be used in conjunction with
-:ref:`.PROJECT`).
+:ref:`SCF_.PROJECT`).
 
 For each fermion irrep, give an :ref:`orbital_strings` of
 orbitals to freeze.

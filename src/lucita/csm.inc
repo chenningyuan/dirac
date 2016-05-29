@@ -1,4 +1,5 @@
-*comdeck csm.inc $Revision$ 
+!comdeck csm.inc $Revision$ 
 
-*.CSM
+!.CSM
+      integer :: NSMSX,NSMDX,NSMST,NSMCI,NSMXT,ITSSX,ITSDX,ITSXT
       COMMON/CSM/NSMSX,NSMDX,NSMST,NSMCI,NSMXT,ITSSX,ITSDX,ITSXT
