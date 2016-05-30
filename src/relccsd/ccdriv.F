@@ -2705,10 +2705,7 @@ C
       endif
 
       if (domp2g) then
-
          WRITE (IW,*) 'calculate MP2 gradient'
-         domp2g = .true.
-
       endif
 C
 C     here we allocate the variables common to both schemes
