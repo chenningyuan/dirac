@@ -372,10 +372,12 @@ CJTH check this
          end do
       end do
 
-      call pe_master('fock', denmats=dlmat_triangle,
-     &               fckmats=flmat_triangle, nmats=1,
-     &               Epe=Epe,
-     &               dalwrk=work(kfree:kfree + lfree))
+      call pe_master('full_fock',
+     &               triang=.true.,
+     &               nmats=1,
+     &               denmats=dlmat_triangle,
+     &               fckmats=flmat_triangle, 
+     &               Epe=Epe)
       eqmmm = work(kfree)
 
       ! F = F + M

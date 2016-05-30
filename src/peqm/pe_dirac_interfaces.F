@@ -31,6 +31,8 @@
         use polarizable_embedding, only: pe_master
         implicit none
 #include "dcbbas.h"
+! edh debug
+#include "priunit.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
         real*8, dimension(n2bbasx), intent(inout) :: fmat
         real*8, intent(out) :: tot_nrg, el_nrg
@@ -73,12 +75,13 @@
               k = k + 1
            end do
         end do
-
+        write(lupri,*)'edh before pe_master'
         call pe_master(runtype='full_fock',
      &                 triang = .true.,
+     &                 ndim = ntbas(0),
      &                 nmats=1,
      &                 denmats=dspmat,
-     &                 fckmats=fspmat, 
+     &                 fckmats=fspmat,
      &                 expvals=nrg)
         tot_nrg = nrg(1)
         el_nrg = ddot(nnbbasx, dspmat, 1, fspmat, 1)
@@ -92,9 +95,9 @@
      &                                    + fspmat(k)
               else
               fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
-     &                                 + fspmat(k)
+     &                               + fspmat(k)
               fmat((j-1)*ntbas(0)+i) = fmat((j-1)*ntbas(0)+i)
-     &                                 + fspmat(k)
+     &                               + fspmat(k)
               end if
               k = k + 1
            end do
@@ -117,8 +120,7 @@
            end do
         end do
 
-        deallocate(dspmat)
-        deallocate(fspmat)
+        deallocate(dspmat,fspmat)
 
         call qexit('pe_ifc_fock')
 
@@ -160,8 +162,11 @@
               k = k + 1
            end do
         end do
-
-        call pe_master(runtype='energy', denmats=dspmat, nmats=1)
+        call pe_master(runtype='print_energy',
+     &                 triang = .true.,
+     &                 ndim = ntbas(0),                      
+     &                 nmats=1, 
+     &                 denmats=dspmat)
 
         call qexit('pe_ifc_energy')
 

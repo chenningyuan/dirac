@@ -4240,11 +4240,11 @@ C
 !      CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
 !     &            1,(/1, 2, 3, 4/),LUPRI)
 
-      call pe_master(runtype='response',
+      call pe_master(runtype='dynamic_response',
+     &               triang = .true.,
+     &               nmats=ndmat,
      &               denmats=dlmat_triangle,
-     &               fckmats=flmat_triangle,
-     &               nmats=ndmat, 
-     &               dalwrk=work(kfree:kfree + lfree)) 
+     &               fckmats=flmat_triangle) 
 
 !     print *, 'raboof', flmat_triangle(1:20)
 
@@ -4302,10 +4302,7 @@ C
 !       CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
 !     &           1,(/1, 2, 3, 4/),LUPRI)
 
-!      call QUIT('EDH STOP HERE')
- 
-      deallocate(dlmat_triangle)
-      deallocate(flmat_triangle)                    
+      deallocate(dlmat_triangle, flmat_triangle)
 #endif
 C
 C
