@@ -37,6 +37,7 @@ module atomic_oo_order_so_correction_cfg
   logical, public :: aoomod                                 =  .false. ! atomic-oo-order module activated
   logical, public :: aoomod_debug                           =  .false. ! debug mode (set print level high)
   logical, public :: aoo_2c_mmf_mos                         =  .false. ! .true. if we are running a 4-component SCF
+  logical, public :: aoofocc                                =  .false. ! X-AMFI with fractional-occupation 2e-Fock-matrix 
 
 ! integer block
   integer, public :: aoo_prt                                =  0 ! print level

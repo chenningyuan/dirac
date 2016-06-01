@@ -99,6 +99,7 @@ contains
 
 #endif
 
+#ifdef DEBUG_SOC
 !       debug print
         if(print_lvl > 2)then
           call print_x2cmat(                             &
@@ -111,6 +112,7 @@ contains
                             6                            &
                            )
         end if
+#endif
 
 !       normalize (picture-change transform) 2e-SO-fock matrix
         call get_normalized_2e_soc(                      &
@@ -129,6 +131,7 @@ contains
                                    print_lvl             &
                                   )
 
+#ifdef DEBUG_SOC
 !       debug print
 !       if(print_lvl > 2)then
           call print_x2cmat(                             &
@@ -141,6 +144,7 @@ contains
                             6                            &
                            )
 !       end if
+#endif
       end if
 
 !     save spin-orbit parts on file (of atom(1) ... == atomic fragment)

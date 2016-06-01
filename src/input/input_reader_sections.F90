@@ -1639,8 +1639,15 @@
          aoomod       = .true.
          x2c_add_amfi = 2
       end if
+
       if (kw_matches(word, '.atomic')) then
          aoomod       = .true.
+         x2c_add_amfi = 2
+      end if
+
+      if (kw_matches(word, '.focc  ')) then
+         aoomod       = .true.
+         aoofocc      = .true.
          x2c_add_amfi = 2
       end if
 

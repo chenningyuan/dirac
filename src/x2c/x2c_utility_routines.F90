@@ -899,8 +899,7 @@ contains
        record_number = 1
        if(scf_iter_counter > 0)then
          record_number = mod(scf_iter_counter-2,diis_counter-1) + 1
-         if(record_number == 0)  &
-         record_number = 1
+         if(record_number == 0) record_number = 1
        end if
 
 !      step 2: read matrix elements from file

@@ -34,15 +34,15 @@ module atomic_oo_order_so_correction_utils
 #ifdef MOD_INTEREST
   use module_interest_interface
 #endif
+#ifdef DEBUG_SOC
   use x2c_utils, only: print_x2cmat
+#endif
 
 
   implicit none
 
   public get_scso_2e_fock
   public get_scso_2e_fock_aoc
-  public make_so_2e_fock
-  public pure_so_2e
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
   public read_normalized_2e_soc
@@ -185,8 +185,6 @@ contains
      read(81) dmat
      close(81,status="delete")
 
-     !> read from DFFCKT (full Fock matrix): ok if FOC not for AOC!
-
      !> read the F1+F2 Fock matrix in AO basis from file
      open(81,file='4cf1f2AO',status='old',form='unformatted',       &
           access='sequential',action='read',position='rewind')
@@ -274,6 +272,7 @@ contains
                                                 3,                   & !(LL|LL) + (SS|LL)
                                                 hfxfac               &
                                                )
+#ifdef DEBUG_SOC
       call print_x2cmat(fmat,                   &
                         nrows,                  &
                         ncols,                  &
@@ -290,8 +289,10 @@ contains
                         'aoosoc - 2e-llll     ',&
                         6                       &
                         )
+#endif
       call daxpy(nrows*ncols*nz*1,-1.0d0,fmat_local(1,1,1,1),1,fmat_local2(1,1,1,1),1)
       call daxpy(nrows*ncols*nz*1,-1.0d0,fmat_local(1,1,1,1),1,fmat(1,1,1,1),1)
+#ifdef DEBUG_SOC
       call print_x2cmat(fmat_local2,            &
                         nrows,                  &
                         ncols,                  &
@@ -308,6 +309,7 @@ contains
                         'aoosoc - 2e-ssll-ssss',&
                         6                       &
                         )
+#endif
       deallocate(fmat_local)
       deallocate(fmat_local2)
 #endif /* OLD_VERSION_AOOSOC */
@@ -333,131 +335,6 @@ contains
       end do
 
   end subroutine old_get_scso_2e_fock
-!----------------------------------------------------------------------
-
-  subroutine make_so_2e_fock(                            &
-                             Gmat,                       &
-                             nrow,                       &
-                             ncol,                       &
-                             nz                          &
-                            )
-!----------------------------------------------------------------------
-!
-!    purpose: retain only two-electron spin-orbit elements in 2-el Fock matrix
-!
-!----------------------------------------------------------------------
-     real(8), intent(inout)   :: Gmat(2*nrow,2*ncol,4)
-     integer, intent(in)      :: nrow
-     integer, intent(in)      :: ncol
-     integer, intent(in)      :: nz
-!----------------------------------------------------------------------
-     integer                  :: i, j
-!----------------------------------------------------------------------
-
-!      check dimensionalities
-       if(nz /= 4) call quit( '2-el Fock matrix is not in quaternion format' )
-
-       if(nrow /= ncol) call quit( '2-el Fock matrix is not in MDIRAC format' )
-
-!      take out scalar parts
-       do j=1,nrow
-         do i=1,nrow
-           !> quaternion(0)
-           Gmat(i     ,j     ,1) = 0.0d0                 ! ll
-           Gmat(i+nrow,j     ,1) = 0.0d0                 ! sl
-           Gmat(i     ,j+nrow,1) = 0.0d0                 ! sl
-           Gmat(i+nrow,j+nrow,1) = 0.0d0                 ! ss
-           !> quaternion(i)
-           Gmat(i     ,j     ,2) = Gmat(i     ,j     ,2) ! ll
-           Gmat(i+nrow,j     ,2) = Gmat(i+nrow,j     ,2) ! sl
-           Gmat(i     ,j+nrow,2) = Gmat(i     ,j+nrow,2) ! sl
-           Gmat(i+nrow,j+nrow,2) = Gmat(i+nrow,j+nrow,2) ! ss
-           !> quaternion(j)
-           Gmat(i     ,j     ,3) = Gmat(i     ,j     ,3) ! ll
-           Gmat(i+nrow,j     ,3) = Gmat(i+nrow,j     ,3) ! sl
-           Gmat(i     ,j+nrow,3) = Gmat(i     ,j+nrow,3) ! sl
-           Gmat(i+nrow,j+nrow,3) = Gmat(i+nrow,j+nrow,3) ! ss
-           !> quaternion(k)
-           Gmat(i     ,j     ,4) = Gmat(i     ,j     ,4) ! ll
-           Gmat(i+nrow,j     ,4) = Gmat(i+nrow,j     ,4) ! sl
-           Gmat(i     ,j+nrow,4) = Gmat(i     ,j+nrow,4) ! sl
-           Gmat(i+nrow,j+nrow,4) = Gmat(i+nrow,j+nrow,4) ! ss
-         enddo
-       enddo
-
-  end subroutine make_so_2e_fock
-!----------------------------------------------------------------------
-
-  subroutine pure_so_2e(                            &
-                        Gmat,                       &
-                        nrow,                       &
-                        ncol,                       &
-                        nz                          &
-                       )
-!----------------------------------------------------------------------
-!
-!    purpose: retain only two-electron spin-orbit elements in imaginary parts
-!
-!----------------------------------------------------------------------
-     real(8), intent(inout)   :: Gmat(nrow,ncol,4)
-     integer, intent(in)      :: nrow
-     integer, intent(in)      :: ncol
-     integer, intent(in)      :: nz
-!----------------------------------------------------------------------
-     integer                  :: i, j
-!----------------------------------------------------------------------
-
-!      check dimensionalities
-       if(nz /= 4) call quit( '2-el soc matrix is not in quaternion format' )
-
-       if(nrow /= ncol) call quit( '2-el soc matrix is not in MDIRAC format' )
-
-!      take out real parts
-       do j=1,nrow
-         do i=1,nrow
-           !> quaternion(0)
-           Gmat(i     ,j     ,1) = 0.0d0                 ! ll
-         enddo
-       enddo
-
-  end subroutine pure_so_2e
-!----------------------------------------------------------------------
-
-  subroutine lval_so_2e(                            &
-                        Gmat,                       &
-                        cart2lval,                  &
-                        nrow,                       &
-                        ncol,                       &
-                        nz                          &
-                       )
-!----------------------------------------------------------------------
-!
-!    purpose: retain only two-electron spin-orbit elements in imaginary parts between elements of the same lvalue
-!
-!----------------------------------------------------------------------
-     real(8), intent(inout)   :: Gmat(nrow,ncol,4)
-     integer, intent(in)      :: cart2lval(nrow)
-     integer, intent(in)      :: nrow
-     integer, intent(in)      :: ncol
-     integer, intent(in)      :: nz
-!----------------------------------------------------------------------
-     integer                  :: i, j, iz
-!----------------------------------------------------------------------
-
-!      take out offdiagonal l-value parts
-     do iz = 2, nz
-       do j=1,nrow
-         do i=1,ncol
-           !> lz(i) /= lz(j)
-           if(cart2lval(i) /= cart2lval(j))then
-             Gmat(i     ,j     ,iz) = 0.0d0
-             Gmat(j     ,i     ,iz) = 0.0d0
-           end if
-         enddo
-       enddo
-     enddo
-
-  end subroutine lval_so_2e
 !----------------------------------------------------------------------
 
   subroutine get_normalized_2e_soc(                      &
@@ -523,37 +400,7 @@ contains
                                 aoo_bs_to_fs,                 &
                                 .true.,                       &
                                 print_lvl)
-#ifdef OLD_VERSION_AOOSOC
-!     pure 2e-SO matrix
-      call pure_so_2e(                            &
-                      fmat,                       &
-                      nr_ao_large_aoo,            &
-                      nr_ao_large_aoo,            &
-                      nr_quat                     &
-                      )
-
 #ifdef DEBUG_SOC
-!     get lvalues for cartesian functions
-      allocate(lvalue_array(nr_ao_large_aoo))
-      lvalue_array(1:nr_ao_large_aoo) = 0.0d0
-      call transfer_gto_info(                     &
-                             lvalue_array         &
-                          )
-
-!     check for l-values in 2e-SO matrix
-      call lval_so_2e(                            &
-                      fmat,                       &
-                      lvalue_array,               &
-                      nr_ao_large_aoo,            &
-                      nr_ao_large_aoo,            &
-                      nr_quat                     &
-                      )
-
-      deallocate(lvalue_array)
-#endif /* SOC_DEBUG */
-
-#endif /* OLD_VERSION_AOOSOC */
-
 !     debug print
       if(print_lvl > 2)then
         call print_x2cmat(fmat,                   &
@@ -565,6 +412,7 @@ contains
                           6                       &
                          )
       end if
+#endif
 
 #ifdef DEBUG_SOC
       call print_x2cmat(fmat,                   &
