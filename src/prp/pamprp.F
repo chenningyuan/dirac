@@ -266,12 +266,10 @@ C*******************************************************************************
 C*****  OUTPUT of density, derivatives of density, and coulomb potential on a grid ****
 C**************************************************************************************
 C
-#ifdef MOD_UNRELEASED
       if (dirac_cfg_fde_export) then
          CALL TITLER('Output FDE data to file','*',118)
          call fde_export_to_file(wf)
       END IF
-#endif
 
 #ifdef MOD_OPENRSP
       if (dirac_cfg_openrsp) then
