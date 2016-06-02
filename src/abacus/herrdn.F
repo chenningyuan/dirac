@@ -76,8 +76,7 @@ C                 '.PRINT '
                   ENDIF
                   IF (IPREAD .EQ. IPREAD_ini) ICHANG = ICHANG - 1
                GO TO 100
-    2          CONTINUE ! .OLDNOR
-                  OLDNRM = .TRUE.
+    2          CONTINUE !
                GO TO 100
     3          CONTINUE ! .MAXPRI
                   READ (LUCMD, *,IOSTAT=IOS) MAXPRI
@@ -140,10 +139,6 @@ C determined symmetry
          IF (IPREAD .NE. IPREAD_ini) THEN
             WRITE (LUPRI,'(A,I5)')
      &         ' Print level in molecule setup (READIN):',IPREAD
-         END IF
-         IF (OLDNRM) THEN
-            WRITE (LUPRI,'(A)')
-     &         ' Dalton 1.0 normalization of spherical GTOs used.'
          END IF
          IF (TOL_SYMADD .NE. 0.0D0) THEN
             WRITE (LUPRI,'(A,1P,G10.2)')
@@ -237,7 +232,6 @@ C
       BASIS  = .FALSE.
       ATOMBA = .FALSE.
       PRIBAS = .FALSE.
-      OLDNRM = .FALSE.
       TOL_SYMADD = 0.0D0
       ZCMVAL = 1.0D0
       LCMMAX = -1
@@ -7046,14 +7040,8 @@ C***********************************************************************
           CSP (6) = D1
           CSP(10) = D1
         ELSE
-          IF (OLDNRM) THEN
-C         use old Dalton 1.0 normalization
-            MINTEG = 0
-            SPHNRM = .FALSE.
-          ELSE
 C         generate normalized s,p,d,f,g,h,i GTO's
-            MINTEG = 2
-          END IF
+          MINTEG = 2
           CALL SPHCOM(LVAL,WORK(KCSPT),NLM,NXYZ,1,MINTEG,
      &                WORK(KFREE),LFREE,IPREAD)
 C.........transpose  CSPT(NXYZ,NLM) --> CSP(NLM,NXYZ)
