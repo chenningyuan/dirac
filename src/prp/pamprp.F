@@ -6847,7 +6847,7 @@ C       ...add London + reorthonormalization contribution
           AVEDIA3E = (DMATREE(1,1) + DMATREE(2,2) + DMATREE(3,3))/D3
           AVEDIA3P = (DMATREP(1,1) + DMATREP(2,2) + DMATREP(3,3))/D3
           AVEDIA3O = (DMATREO(1,1) + DMATREO(2,2) + DMATREO(3,3))/D3
-          AVEDIAL = AVEDIA + AVEDIA1 + AVEDIA3
+          AVEDIA = AVEDIA + AVEDIA1 + AVEDIA3
       ENDIF
 C     Paramagnetic part
       AVEPAR = (PMATEE(1,1) + PMATEE(2,2) + PMATEE(3,3))/D3
@@ -6938,8 +6938,12 @@ C   ... make separate print out of e-e and e-p response contributions
             WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
      &            (PMATEP(K,ICOOR),K=1,3), (PMATEE(K,ICOOR),K=1,3)
           END DO
+!gosia: below we want to print isotropic value calculated for PMATEP tensor printed above
+!so if we use london, we cannot use AVEDIA, as this already contains other terms than response,
+!and those are printed separately
           WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
-     &          ' e-p "diamagnetic" contribution:',AVEDIA,
+     &          ' e-p "diamagnetic" contribution:',
+     &          (PMATEP(1,1) + PMATEP(2,2) + PMATEP(3,3))/D3,
      &          ' e-e "paramagnetic": ',AVEPAR
           IF (NSTDIA) THEN
             IF (LONDON) THEN
