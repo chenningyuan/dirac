@@ -7,6 +7,7 @@ Keyword reference
    - :doc:`*OPTIMIZE <optimize>` --- Geometry optimization directives
 
 * :doc:`**GENERAL <general>` --- General input
+   - :doc:`*PARALLEL <parallel>` --- Parallel run directives
 
 * :doc:`**MOLECULE<molecule>` --- Specification of basis set information
 
@@ -23,6 +24,7 @@ Keyword reference
    - :doc:`MP2CAL <wave_function/mp2cal>` --- second-order Møller-Plesset perturbation theory
    - :doc:`RESOLVE <wave_function/resolve>` --- resolve open-shell states
    - :doc:`GOSCIP <wave_function/goscip>`  --- Complete Open-Shell module
+   - :doc:`COSCI  <wave_function/cosci>`   --- Complete Open-Shell CI module
    - :doc:`DIRRCI <wave_function/dirrci>` --- Direct Relativistic CI module
    - :doc:`LUCITA <wave_function/lucita>` --- Spinfree large-scale CI module
    - :doc:`KR CI <wave_function/krci>` --- Kramers-restricted relativistic large-scale CI module

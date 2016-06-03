@@ -14,11 +14,6 @@ The CI workers build status badges
 Complete CI buildups are visible only to Miro Ilias, because these CI services 
 fetch the DIRAC code from his private github and bitbucket repositories.
 
-* circle-ci
-
-.. image:: https://circleci.com/gh/miroi/DIRAC/tree/master.svg?style=svg&circle-token=19525d797bb0d7bf0516dfc291da5fd7de0ffa1a
-       :target: https://circleci.com/gh/miroi/DIRAC/tree/master
-
 * magnum-ci
 
 .. image:: https://magnum-ci.com/status/99965d25e6e85b28dbc64884c9ea0f38.png
@@ -36,8 +31,8 @@ fetch the DIRAC code from his private github and bitbucket repositories.
 
 * shippable
 
-.. image:: https://api.shippable.com/projects/54b3c4df1cda23c2985c9baf/badge?branchName=master
-       :target: https://app.shippable.com/projects/54b3c4df1cda23c2985c9baf/builds/latest
+.. image:: https://api.shippable.com/projects/5676d56d1895ca447466ad11/badge?branch=master
+       :target: https://app.shippable.com/projects/5676d56d1895ca447466ad11
 
 * semaphoreci
 

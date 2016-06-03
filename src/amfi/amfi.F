@@ -6,12 +6,11 @@ C
 C in DIRAC include directory:
 C     dummy.h implicit.h pi.h priunit.h 
 
-      Subroutine amfi(IN,LUPROP,OLDNRM,BREIT,FINITE,EXP_FIN,
+      Subroutine amfi(IN,LUPROP,BREIT,FINITE,EXP_FIN,
      *                 CVEL_AMFI,EXAMF,IC_AMFIX,IACH,WRK,LFREE) 
 CBS
 CBS IN:  Input file, to be replaced by direct reading from DALTON arrays..
 CBS LUPROP: Unit for writing the atomic integrals 
-CBS OLDNRM: FLAG for switching different normalisation schemes
 CBS BREIT: FLAG to switch to Breit-Pauli (Douglas-Kroll is the default)
 CBS FINITE: flag whether to use a finite nucleus or not ...
 CB  EXP_FIN: the finite nucleus exponent (if required)
@@ -126,8 +125,6 @@ cbs                         ! integrals in memory
       logical SAMEORB    ! parameter for same-orbit only 
       logical AIMP       ! parameter to delete CORE for AIMP     
       logical oneonly    ! parameter to use only oneelectron integrals    
-      logical OLDNRM     ! depending on OLDNRM, different normalisation 
-CBS                        schemes are used 
       logical FINITE
 
       logical ADDSO1  ! Add also one-electron SO integrals
@@ -317,7 +314,7 @@ cbs    the one-electron spin-orbit integrals
       call gen1overR3(Lhigh)   ! generates the 1/r**3 integrals  for normalized functions 
       call contandmult(Lhigh,makemean,AIMP,oneonly,
      &     ADDSO1,numballcart,LUPROP,
-     *     ifinite,OLDNRM,WRK,LFREE) ! multiplies radial integrals with l,m-dependent
+     *     ifinite,WRK,LFREE) ! multiplies radial integrals with l,m-dependent
 cbs                             factors and contraction coefficients 
 CBS   write(6,*) '***************************************************' 
 CMI   if (amfi_verbose) write(LUPRI,*)

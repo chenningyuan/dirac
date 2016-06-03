@@ -65,6 +65,7 @@ C
      &     3X,'Additional contributions from:',/,
      &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
+
       DO I = 1, NPRP_WF
          WF = PRP_WF(I)
 C
@@ -76,6 +77,8 @@ C
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'MP2 ') THEN
             IF (DOESR) cycle
+            CALL SETDC2(0)
+         ELSE IF (WF .EQ. 'CCSD') THEN
             CALL SETDC2(0)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP *** ' //
@@ -2827,7 +2830,7 @@ C
           NATOM =  NATOM + 1
           DMPV(NATOM) = TEMP(IATOM)
           ICHARGE = NINT(CHARGE(IATOM))
-          IMASS = NINT(DISOTP(ICHARGE,1,'MASS'))
+          IMASS = NINT(DISOTP(ICHARGE,ISOTOP(IATOM),'MASS'))
           NPROTON  = ICHARGE
           NNEUTRON = IMASS - ICHARGE
           IS(NATOM) = IMASS
@@ -2846,7 +2849,7 @@ C
       CALL PRSYMB(LUPRI,'-',76,0)
 C
       WRITE(LUPRI,9000)
-     &   'Nucleus','Isotop','integral    ','factor  ','contrib.    '
+     &   'Nucleus','Isotope','integral    ','factor  ','contrib.    '
       WRITE(LUPRI,9000) ' ',' ','MPV(n)/au    ','QW(n)    '
       NATOM  = 0
       IATOMD = 0
@@ -2865,7 +2868,7 @@ C
  120  CONTINUE
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,9020) 'Total EPV = ',DTOT
- 9000 FORMAT(4X,A8,'  ',A6,'  ',A20,'  ',A10,'  ',A20)
+ 9000 FORMAT(4X,A8,'  ',A7,' ',A20,'  ',A10,'  ',A20)
  9010 FORMAT(4X,A8,'   ',I4,'   ',1P,E20.12,'  ',0P,F11.5,'  ',
      &       1P,E20.12)
  9020 FORMAT(4X,A12,41X,1P,E20.12)
@@ -6844,7 +6847,7 @@ C       ...add London + reorthonormalization contribution
           AVEDIA3E = (DMATREE(1,1) + DMATREE(2,2) + DMATREE(3,3))/D3
           AVEDIA3P = (DMATREP(1,1) + DMATREP(2,2) + DMATREP(3,3))/D3
           AVEDIA3O = (DMATREO(1,1) + DMATREO(2,2) + DMATREO(3,3))/D3
-          AVEDIA  = AVEDIA + AVEDIA1 + AVEDIA3
+          AVEDIA = AVEDIA + AVEDIA1 + AVEDIA3
       ENDIF
 C     Paramagnetic part
       AVEPAR = (PMATEE(1,1) + PMATEE(2,2) + PMATEE(3,3))/D3
@@ -6928,15 +6931,19 @@ C   XLR_SKIPEP: Diamagnetic contribution (Sternheimer approx.)
         ELSE
 C   ... make separate print out of e-e and e-p response contributions
           CALL HEADER('e-p "diamagnetic" and e-e "paramagnetic"'//
-     &      ' contributions (ppm):',1)
+     &      ' response contributions (ppm):',1)
           WRITE (LUPRI,'(15X,3(A,9X),4X,3(A,9X)/)')
      &    'Bx', 'By', 'Bz', 'Bx','By','Bz'
           DO ICOOR = 1, 3
             WRITE (LUPRI,'(2X,A6,3F11.4,4X,3F11.4)') NAMEX(ICOOR),
      &            (PMATEP(K,ICOOR),K=1,3), (PMATEE(K,ICOOR),K=1,3)
           END DO
+!gosia: below we want to print isotropic value calculated for PMATEP tensor printed above
+!so if we use london, we cannot use AVEDIA, as this already contains other terms than response,
+!and those are printed separately
           WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
-     &          ' e-p "diamagnetic" contribution:',AVEDIA,
+     &          ' e-p "diamagnetic" contribution:',
+     &          (PMATEP(1,1) + PMATEP(2,2) + PMATEP(3,3))/D3,
      &          ' e-e "paramagnetic": ',AVEPAR
           IF (NSTDIA) THEN
             IF (LONDON) THEN
@@ -7810,10 +7817,6 @@ C
       CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
 
-
-      DO I = 1, MXCENT
-            ISOTOP(I) = 1
-      END DO
       CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,
      &            IPRPRP)
 
@@ -7836,9 +7839,6 @@ CMI      IF (KLAST .GT. LWORK) CALL
 
         CALL MEMCHK('prp_rotg 0.1',WORK,1)
 
-      DO I = 1, MXCENT
-            ISOTOP(I) = 1
-      END DO
       CALL MGFRES(WORK(KGEOM),WORK(KAMASS),JATOM,IPRPRP)
 
 
@@ -7957,10 +7957,6 @@ C
       CALL QENTER('MGFRES')
 
 C     CALL MEMCHK('MGFRES 0.9',WORK,1)
-
-      DO I = 1, MXCENT
-          ISOTOP(I) = 1
-      END DO
 
       NOLOND = .TRUE.
 

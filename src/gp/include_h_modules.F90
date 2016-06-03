@@ -1,10 +1,12 @@
 !-----------------------------------------------------------------------------------------
 !
-! Collection of Fortran90 modules encapsulating "old" Fortran77 include files
+! Collection of Fortran90 modules encapsulating the "old" Fortran77 include files
 ! (like dcbham.h,dcbgen.h,...) among Dirac source codes.
 !
-! Selected variables inside these h-include files are private and are
+!   All variables inside the h-include files become PRIVATE within own module and are
 ! accessible out of module scope only via dedicated subroutines (methods).
+!   Programmers can still use include h-files in the old way.
+!
 !
 ! Notation examples:  
 ! ------------------
@@ -14,9 +16,13 @@
 !             use include_dgroup_h, only : get_IPQTOQ
 !             use include_dcbdhf_h
 !
-!  Function get_<variable>(parameter1,parameter2,...) - function returns include file (module) variable
+! Examples of usage:
 !
-!  Subroutine set_<variable>(parameter1,parameter2,...) - method changes include file (module) variable
+!    Function get_<variable>(parameter1,parameter2,...) - function returns include file (module) variable
+!
+!    Subroutine set_<variable>(parameter1,parameter2,...) - method changes include file (module) variable
+!
+!
 !
 ! Written by Miro Ilias, August 2014, Banska Bystrica
 !
