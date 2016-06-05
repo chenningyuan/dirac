@@ -900,6 +900,7 @@ C
           WRITE(LUPRI,'(4X,A3,4(2X,A1))')
      &       REP(IBRP),(QUNIT(IPQTOQ(IZ,IBRP)),IZ=1,NZ)
         ENDDO
+        CALL FLSHFO(LUPRI)
       ENDIF
       RETURN
 C

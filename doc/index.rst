@@ -3,7 +3,7 @@ Setting up DIRAC
 ================
 
 * **Installation:**
-  :doc:`Supported platforms <installation/platforms>` |
+  :doc:`Requirements <installation/requirements>` |
   :doc:`Linux, Unix, Mac <installation/general>` |
   :doc:`Windows <installation/windows>` |
   :doc:`Expert options <installation/expert>` |

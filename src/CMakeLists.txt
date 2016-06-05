@@ -1,444 +1,382 @@
-# this is not an ideal solution
-# later we will isolate sources into
-# libraries with more locality
+#################################################################################
+#
+# Big substitution of many autocmake.cfg's custom/FUNCTIONALITY.cmake files.
+#
+# Written by Miro Ilias, February 2016, GSI
+#
+#################################################################################
 
-set(FIXED_FORTRAN_SOURCES
-    ${FIXED_FORTRAN_SOURCES}
-    src/main/dirac.F
-    src/abacus/abadip.F
-    src/abacus/abalnr.F
-    src/abacus/abamolden.F
-    src/abacus/abanuc.F
-    src/abacus/abaop2.F
-    src/abacus/abaopt.F
-    src/abacus/abaortvec.F
-    src/abacus/abarint.F
-    src/abacus/abatro.F
-    src/abacus/abavib.F
-    src/abacus/abavrml.F
-    src/abacus/abawalk.F
-    src/abacus/her1ave.F
-    src/abacus/her1car.F
-    src/abacus/her1cat.F
-    src/abacus/her1drv.F
-    src/abacus/her1int.F
-    src/abacus/her1odc.F
-    src/abacus/her1out.F
-    src/abacus/her1pro.F
-    src/abacus/her1sym.F
-    src/abacus/her2ave.F
-    src/abacus/her2dir.F
-    src/abacus/her2drv.F
-    src/abacus/her2el1.F
-    src/abacus/her2el2.F
-    src/abacus/her2fck.F
-    src/abacus/her2gab.F
-    src/abacus/her2her.F
-    src/abacus/her2odc.F
-    src/abacus/her2out.F
-    src/abacus/her2sym.F
-    src/abacus/herbas.F
-    src/abacus/hercen.F
-    src/abacus/herdirect.F
-    src/abacus/herdrv.F
-    src/abacus/herfckcon.F
-    src/abacus/hergam.F
-    src/abacus/hergeo.F
-    src/abacus/hergp.F
-    src/abacus/hergroup.F
-    src/abacus/hermem.F
-    src/abacus/herpar.F
-    src/abacus/herrdn.F
-    src/abacus/herrdn_dirac.F
-    src/abacus/hersol.F
-    src/abacus/hersym.F
-    src/abacus/hertst.F
-    src/abacus/vibnor.F
-    src/amfi/amfi.F
-    src/amfi/amfi1.F
-    src/amfi/amfi2.F
-    src/amfi/amfi3.F
-    src/amfi/relscf.F
-    src/dirac/atom2molecule_utils.F
-    src/dirac/dftaux.F
-    src/dirac/dirana.F
-    src/dirac/diraos.F
-    src/dirac/dirbss.F
-    src/dirac/dircnv.F
-    src/dirac/dirden.F
-    src/dirac/dirgeo.F
-    src/dirac/dirgp.F
-    src/dirac/dirgrd.F
-    src/dirac/dirmp2no.F
-    src/dirac/dirone.F
-    src/dirac/diropen.F
-    src/dirac/dirout.F
-    src/dirac/dirrdn.F
-    src/dirac/dirscf.F
-    src/dirac/dirset.F
-    src/dirac/dirsol.F
-    src/dirac/dirspf.F
-    src/dirac/dirtra.F
-    src/dirac/dirtwo.F
-    src/dirac/dirv1c.F
-    src/dirac/huckel.F
-    src/dirrci/cidirr.F
-    src/dirrci/cigenp.F
-    src/dirrci/cigosc.F
-    src/dirrci/cimain.F
-    src/ecp/recp1.F
-    src/ecp/recp_lnk.F
-    src/embedding/emb_quit.F
-    src/embedding/get_vemb_mat.F
-    src/gp/finesort_scheme6.F
-    src/gp/global_file.F
-    src/gp/gphjj.F
-    src/gp/gpjeppe.F
-    src/gp/gpjth.F
-    src/gp/gpkrmc.F
-    src/gp/gplucia.F
-    src/gp/gplucia_io.F
-    src/gp/gplupar.F
-    src/gp/gpluuk.F
-    src/gp/gpsaue.F
-    src/gp/gptrygve.F
-    src/gp/gpulfek.F
-    src/gp/graphic.F
-    src/gp/io.F
-    src/gp/matexport.F
-    src/gp/math.F
-    src/gp/mempkg.F
-    src/gp/mpi2macro.F
-    src/gp/mxmpack.F
-    src/gp/order2.F
-    src/gp/qalgebra.F
-    src/gp/qpack.F
-    src/gp/spline.F
-    src/gp/time.F
-    src/gp/vcraypack.F
-    src/grid/Lebedev-Laikov.F
-    src/grid/dftgrd.F
-    src/grid/grtest.F
-    src/interface_mpi/interface_to_mpi_f77.F
-    src/krmc/krci_ctl.F
-    src/krmc/krmc_gradient.F
-    src/krmc/krmccan.F
-    src/krmc/krmcgascip.F
-    src/krmc/krmcgp.F
-    src/krmc/krmcinp.F
-    src/krmc/krmcluci.F
-    src/krmc/krmcmlf.F
-    src/krmc/krmcopt.F
-    src/krmc/krmcout.F
-    src/krmc/krmcsav.F
-    src/krmc/krmctra.F
-    src/krmc/krmcvec.F
-    src/luciarel/ciinfo_r.F
-    src/luciarel/diagonal_r.F
-    src/luciarel/diagonalize_r.F
-    src/luciarel/gasci_main_driver_r.F
-    src/luciarel/interface_r.F
-    src/luciarel/io_r.F
-    src/luciarel/memory_r.F
-    src/luciarel/par_lucia_r.F
-    src/luciarel/par_lushmem_r.F
-    src/luciarel/par_solver_r.F
-    src/luciarel/property_r.F
-    src/luciarel/resolution_utils_r.F
-    src/luciarel/sigden_r.F
-    src/luciarel/strings_r.F
-    src/luciarel/utils_r.F
-    src/luciarel/vecmat_r.F
-    src/lucita/ciinfo.F
-    src/lucita/density.F
-    src/lucita/diagonal.F
-    src/lucita/doubledir.F
-    src/lucita/fock.F
-    src/lucita/interface.F
-    src/lucita/io.F
-    src/lucita/lucia_cc.F
-    src/lucita/lucia_icci.F
-    src/lucita/lucita_diagonalize.F
-    src/lucita/memory.F
-    src/lucita/par_lucia.F
-    src/lucita/par_solver.F
-    src/lucita/program.F
-    src/lucita/property.F
-    src/lucita/sigma.F
-    src/lucita/strings.F
-    src/lucita/transform.F
-    src/lucita/utils.F
-    src/lucita/vecmat.F
-    src/moltra/tradr1.F
-    src/moltra/tradr2.F
-    src/moltra/tradr3.F
-    src/moltra/tradr4.F
-    src/moltra/tradr5.F
-    src/moltra/tradr6.F
-    src/moltra/trainp.F
-    src/moltra/traone.F
-    src/moltra/traout.F
-    src/moltra/trapam.F
-    src/moltra/traprp.F
-    src/pdpack/arhpack.F
-    src/pdpack/dge.F
-    src/pdpack/dlamch.F
-    src/pdpack/dsp.F
-    src/pdpack/eispack.F
-    src/pdpack/gp_auxlapack.F
-    src/pdpack/gp_dlapack.F
-    src/pdpack/gp_zlapack.F
-    src/pdpack/gp_zlinpack.F
-    src/pdpack/gpblas.F
-    src/pdpack/linextra.F
-    src/pdpack/printpkg.F
-    src/prp/excprp.F
-    src/prp/help.F
-    src/prp/mp2lag.F
-    src/prp/pamexp.F
-    src/prp/pamfck.F
-    src/prp/pamgrd.F
-    src/prp/paminp.F
-    src/prp/pammag.F
-    src/prp/pamogrd.F
-    src/prp/pamprp.F
-    src/prp/pamrsp.F
-    src/prp/pamrvc.F
-    src/prp/pamset.F
-    src/prp/pamstex.F
-    src/prp/pamtpa.F
-    src/prp/pamxlr.F
-    src/prp/pamxpp.F
-    src/prp/rspmpg.F
-    src/prp/van_der_waals.F
-    src/reladc/adccore.F
-    src/reladc/adcdble.F
-    src/reladc/adcdiag.F
-    src/reladc/adcexci.F
-    src/reladc/adcsort.F
-    PARENT_SCOPE
-    )
+#----------------------------------------------------------------------------------
+# Set all module options and definitions first
+# so they can be DEFINED for all source subdirectories below
+#----------------------------------------------------------------------------------
+option(ENABLE_RELCCSD_STANDALONE "Enable standalone RELCCSD" ON)
+option(ENABLE_XCFUN "Enable XCFun library" ON)
+if(NOT ENABLE_XCFUN)
+    add_definitions(-DEXCLUDE_XCFUN)
+endif()
+option(ENABLE_QCORR "Davidson-type +Q corrections for (MR)CISD" ON)
+if(ENABLE_QCORR)
+    add_definitions(-DMOD_QCORR)
+endif()
+option(ENABLE_STIELTJES "Enable stieltjes library" ON)
+if(ENABLE_STIELTJES)
+    add_definitions(-DHAS_STIELTJES)
+endif()
+# interest as separate library
+cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
+if(ENABLE_INTEREST)
+    add_definitions(-DMOD_INTEREST)
+endif()
+option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
+if(ENABLE_OPENRSP)
+    add_definitions(-DMOD_OPENRSP)
+endif()
+cmake_dependent_option(ENABLE_LAO_REARRANGED "LAO properties without connection matrices" ON "ENABLE_UNRELEASED" OFF)
+if(ENABLE_LAO_REARRANGED)
+    add_definitions(-DMOD_LAO_REARRANGED)
+endif()
+cmake_dependent_option(ENABLE_MCSCF_spinfree "Spinfree MCSCF module" ON "ENABLE_UNRELEASED" OFF)
+if(ENABLE_MCSCF_spinfree)
+    add_definitions(-DMOD_MCSCF_spinfree)
+endif()
+cmake_dependent_option(ENABLE_AOOSOC "Atomic oo-order spin-orbit correction module" ON "ENABLE_UNRELEASED" OFF)
+if(ENABLE_AOOSOC)
+    add_definitions(-DMOD_AOOSOC)
+endif()
+cmake_dependent_option(ENABLE_ERI "ERI integral routines" ON "ENABLE_UNRELEASED" OFF)
+if(ENABLE_ERI)
+    add_definitions(-DMOD_ERI)
+endif()
+cmake_dependent_option(ENABLE_DENSFIT "Density fitting module" ON "ENABLE_UNRELEASED" OFF)
+if(ENABLE_DENSFIT)
+    add_definitions(-DMOD_DNF)
+endif()
+cmake_dependent_option(ENABLE_ESR "ESR property module" ON "ENABLE_UNRELEASED" OFF)
+if(ENABLE_ESR)
+    add_definitions(-DMOD_ESR)
+endif()
+cmake_dependent_option(ENABLE_KRCC "KRCC module" ON "ENABLE_UNRELEASED" OFF)
+if(ENABLE_KRCC)
+    add_definitions(-DMOD_KRCC)
+endif()
+cmake_dependent_option(ENABLE_SRDFT "srDFT module" ON  "ENABLE_UNRELEASED" OFF)
+if(ENABLE_SRDFT)
+    add_definitions(-DMOD_SRDFT)
+endif()
 
-set(FREE_FORTRAN_SOURCES
-    ${FREE_FORTRAN_SOURCES}
-    src/main/logo.F90
-    src/main/mpi_framework.F90
-    src/abacus/hermodules.F90
-    src/abacus/filemodule.F90
-    src/dirac/numerical_operators.F90
-    src/dirac/codata.F90
-    src/dirac/dirac_cfg.F90
-    src/dirac/electrostatic_potential.F90
-    src/ecp/recp_chk.F90
-    src/ecp/recp_cso.F90
-    src/ecp/recp_cso_ang.F90
-    src/ecp/recp_cso_ps.F90
-    src/ecp/recp_cso_rad.F90
-    src/ecp/recp_cso_sub.F90
-    src/ecp/recp_cso_table.F90
-    src/ecp/recp_function1.F90
-    src/ecp/recp_function2.F90
-    src/ecp/recp_inp.F90
-    src/ecp/recp_inp_orb.F90
-    src/ecp/recp_inp_print.F90
-    src/ecp/recp_inp_read.F90
-    src/ecp/recp_ipt.F90
-    src/ecp/recp_ntr.F90
-    src/ecp/recp_one.F90
-    src/ecp/recp_one_stvcz.F90
-    src/ecp/recp_one_sub.F90
-    src/ecp/recp_output.F90
-    src/ecp/recp_socfpd.F90
-    src/ecp/recp_write.F90
-    src/embedding/emb_cfg.F90
-    src/embedding/emb_data.F90
-    src/embedding/emb_dirac_evaluators.F90
-    src/embedding/emb_dirac_input.F90
-    src/embedding/emb_dirac_integration.F90
-    src/embedding/emb_evaluators.F90
-    src/embedding/emb_export.F90
-    src/embedding/emb_input.F90
-    src/embedding/emb_io.F90
-    src/embedding/emb_main.F90
-    src/embedding/emb_max_block_length.F90
-    src/embedding/emb_nadd_derv.F90
-    src/embedding/emb_types.F90
-    src/embedding/emb_xcfun_interface.F90
-    src/gp/debug_mem_alloc.F90
-    src/gp/dynamic_string.F90
-    src/gp/exception_handling.F90
-    src/gp/f77_work_interface.F90
-    src/gp/gp_q_diag.F90
-    src/gp/gpsk.F90
-    src/gp/include_h_modules.F90
-    src/gp/kinds.F90
-    src/gp/machine_parameters.F90
-    src/gp/memory_allocator.F90
-    src/gp/memory_control.F90
-    src/gp/memory_errorhandler.F90
-    src/gp/memory_internal_ada_1d.F90
-    src/gp/memory_internal_ada_2d.F90
-    src/gp/memory_internal_ada_3d.F90
-    src/gp/memory_internal_ada_4d.F90
-    src/gp/memory_internal_init.F90
-    src/gp/memory_legacy_dirac.F90
-    src/gp/memory_parameters.F90
-    src/gp/memory_track_if.F90
-    src/gp/memory_tracker.F90
-    src/gp/num_der.F90
-    src/gp/osutils.F90
-    src/gp/picture_change_operations.F90
-    src/gp/quaternion_algebra.F90
-    src/gp/selftests.F90
-    src/gp/string_manipulations.f90
-    src/gp/unit_test_generator.f90
-    src/gp/unit_testing.F90
-    src/gp/vector_functions.F90
-    src/gp/xmlout.F90
-    src/grid/num_grid_cfg.F90
-    src/grid/num_grid_gen.F90
-    src/input/input_reader.F90
-    src/input/input_reader_sections.F90
-    src/input/parse_input.F90
-    src/interface_mpi/integer_kind_mpilib.F90
-    src/interface_mpi/integer_model.F90
-    src/interface_mpi/interface_to_mpi.F90
-    src/krmc/mc_energies.F90
-    src/krmc/mcscf_routines.F90
-    src/localization/func_PipekMezey.F90
-    src/localization/localization_interface.F90
-    src/localization/second_order_minimization.f90
-    src/localization/select_coeff_own_bas.F90
-    src/luciarel/io_ttss_r.F90
-    src/luciarel/krci_cfg.F90
-    src/luciarel/krci_prop.F90
-    src/luciarel/mospinor_info.F90
-    src/luciarel/string_info.F90
-    src/luciarel/symmetry_setup.F90
-    src/matrix_operations/dirac_interface.F90
-    src/matrix_operations/matrix_defop.F90
-    src/matrix_operations/matrix_genop.F90
-    src/matrix_operations/matrix_module.F90
-    src/matrix_operations/matrix_operations.F90
-    src/matrix_operations/matrix_stat.F90
-    src/matrix_operations/memory_bouncer.F90
-    src/moltra/moltra_labeling.F90
-    src/moltra/moltra_mocoefficients.F90
-    src/pcm/pcm_gp.F90
-    src/pcm/pcm_integrals.F90
-    src/pcm/pcm_linear_response.F90
-    src/pcm/pcm_scf.F90
-    src/pcm/pcm_write.F90
-    src/pcm/pcmmod_cfg.F90
-    src/prp/conf_parameters.F90
-    src/prp/london_direct.F90
-    src/prp/london_helper.F90
-    src/prp/london_reorth.F90
-    src/prp/london_utils.F90
-    src/prp/orbital_rotation_indices.F90
-    src/prp/pamxqr.F90
-    src/reladc/adc_cfg.F90
-    src/reladc/adc_fano.F90
-    src/reladc/adc_fano_complex_routines.F90
-    src/reladc/adc_fano_diag.F90
-    src/reladc/adc_fano_exchange.F90
-    src/reladc/adc_fano_matmul.F90
-    src/reladc/adc_fano_real_routines.F90
-    src/reladc/adc_fano_routines.F90
-    src/reladc/adc_mat.F90
-    src/reladc/adcutil.F90
-    src/visual/integration.F90
-    src/visual/visual.F90
-    src/visual/visual_cfg.F90
-    src/visual/visual_in_point.F90
-    src/visual/visual_london.F90
-    src/x2c/fragment_x2c_cfg.F90
-    src/x2c/x2c_2e_soc_interface.F90
-    src/x2c/x2c_cfg.F90
-    src/x2c/x2c_common_block_interface.F90
-    src/x2c/x2c_construct_decoupling_matrices_onmo.F90
-    src/x2c/x2c_construct_h1_inf_2c_matrix_onmo.F90
-    src/x2c/x2c_driver.F90
-    src/x2c/x2c_fragment_x2c_interface.F90
-    src/x2c/x2c_import_export_C1_matrices_ao.F90
-    src/x2c/x2c_io_interface.F90
-    src/x2c/x2c_picture_change_transform_mo_coefficients_ao.F90
-    src/x2c/x2c_picture_change_transform_operator_ao.F90
-    src/x2c/x2c_setup_basic_h1_4c_matrix_ao2onmo.F90
-    src/x2c/x2c_setup_defining_h1_4c_matrix_ao2onmo.F90
-    src/x2c/x2c_transform_h1_inf_2c_matrix_onmo2ao.F90
-    src/x2c/x2c_utility_routines.F90
-    src/cfun/fortran_io.F90
-    src/xcint/density_eval.F90
-    src/xcint/dft_cfg.F90
-    src/xcint/dirac_ao_eval.F90
-    src/xcint/dirac_ao_eval_sub.F90
-    src/xcint/extra.F90
-    src/xcint/file_units.F90
-    src/xcint/interface_ao.F90
-    src/xcint/interface_ao_specific.F90
-    src/xcint/interface_file_io.F90
-    src/xcint/interface_fortran.F90
-    src/xcint/interface_functional_read.F90
-    src/xcint/interface_grid.F90
-    src/xcint/interface_mo.F90
-    src/xcint/interface_mo_specific.F90
-    src/xcint/overlap_diagnostic.F90
-    src/xcint/sigma_prefactor_setting.F90
-    src/xcint/xc_ac.F90
-    src/xcint/xc_blas3.F90
-    src/xcint/xc_derv.F90
-    src/xcint/xc_geometric.F90
-    src/xcint/xc_london_c1.F90
-    src/xcint/xc_max_block_length.F90
-    src/xcint/xc_mpi.F90
-    src/xcint/xc_response.F90
-    src/xcint/xcint_main.F90
-    src/gp/xml/xml_file.F90
-    src/gp/xml/xml_structure.F90
-    src/gp/xml/xml_parser.F90
-    PARENT_SCOPE
-    )
+#--------------------------------------------------------------------------------------------------------------
+#
+# WARNING: The order of the functionality modules is crucial for the proper linking of all DIRAC executables !
+#
+# The first module here (pdpack) is the last in the linking command due way of filling the ${EXTERNAL_LIBS}
+# variable.
+#
+# The resulting ${EXTERNAL_LIBS} variable contains localized source libraries of all functionality modules
+# of DIRAC (main,dirac,relccsd,prp,reladc, interest ...)
+#
+# Due to entanglements between libraries (like dirac depends localization and vise versa) it is necessary
+# to keep source files (modules) as localized as possible and with minimal interdependencie on other modules.
+#
+#----------------------------------------------------------------------------------------------------------
 
-set(C_SOURCES
-    ${C_SOURCES}
-    src/gp/execinfo_bsd.c
-    src/gp/gpc.c
-    src/gp/memory_sys_if.c
-    src/gp/print_info.c
-    src/gp/selftest_fortran_c_interoperability.c
-    src/gp/stacktraverse_bsd.c
-    src/gp/trace.c
-    src/krmc/gendet.c
-    src/lucita/flush_stdout.c
-    src/cfun/emb-functional.c
-    src/cfun/fun-becke.c
-    src/cfun/fun-cam.c
-    src/cfun/fun-gga.c
-    src/cfun/fun-gllb_hole.c
-    src/cfun/fun-hjsx.c
-    src/cfun/fun-kin_pw91k.c
-    src/cfun/fun-kin_tf.c
-    src/cfun/fun-kin_vw.c
-    src/cfun/fun-kt.c
-    src/cfun/fun-lb94.c
-    src/cfun/fun-lbalpha.c
-    src/cfun/fun-lyp.c
-    src/cfun/fun-optx.c
-    src/cfun/fun-p86c.c
-    src/cfun/fun-pbec.c
-    src/cfun/fun-pbex.c
-    src/cfun/fun-pw86x.c
-    src/cfun/fun-pw91c.c
-    src/cfun/fun-pw91x.c
-    src/cfun/fun-pz81.c
-    src/cfun/fun-revpbex.c
-    src/cfun/fun-rpbex.c
-    src/cfun/fun-slater.c
-    src/cfun/fun-srpbec.c
-    src/cfun/fun-srvwn5.c
-    src/cfun/fun-vwn.c
-    src/cfun/functionals.c
-    src/cfun/general.c
-    PARENT_SCOPE
+# make the EXTERNAL_LIBS variable visible to the scope up !
+set(EXTERNAL_LIBS PARENT_SCOPE)
+
+# pdpack as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/pdpack)
+set(EXTERNAL_LIBS pdpack ${EXTERNAL_LIBS})
+
+# Making interface_mpi as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
+set(EXTERNAL_LIBS interface_mpi ${EXTERNAL_LIBS})
+
+# gp as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/gp)
+set(EXTERNAL_LIBS gp ${EXTERNAL_LIBS})
+
+# Abacus as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/abacus)
+set(EXTERNAL_LIBS abacus ${EXTERNAL_LIBS})
+
+# Making matrix_operations  as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
+set(EXTERNAL_LIBS matrix_operations ${EXTERNAL_LIBS})
+
+#    Moltra as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
+set(EXTERNAL_LIBS moltra ${EXTERNAL_LIBS})
+
+#    embedding as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/embedding)
+set(EXTERNAL_LIBS embedding ${EXTERNAL_LIBS})
+
+# Making x2c as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/x2c)
+set(EXTERNAL_LIBS x2c ${EXTERNAL_LIBS})
+
+# Making localization  as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/localization)
+set(EXTERNAL_LIBS localization ${EXTERNAL_LIBS})
+
+# cfun as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/cfun)
+set(EXTERNAL_LIBS cfun ${EXTERNAL_LIBS})
+
+# xcfun as external separate library
+if(ENABLE_XCFUN)
+    message(STATUS "The XCFun submodule ENABLED")
+    include(ExternalProject)
+    # miro: pass carefully all necessary arguments !
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS} )
+    ExternalProject_Add(xcfun
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/xcfun
+        BINARY_DIR ${PROJECT_BINARY_DIR}/external/xcfun-build
+        STAMP_DIR ${PROJECT_BINARY_DIR}/external/xcfun-stamp
+        TMP_DIR ${PROJECT_BINARY_DIR}/external/xcfun-tmp
+        INSTALL_DIR ${PROJECT_BINARY_DIR}/external
+        CMAKE_ARGS ${ExternalProjectCMakeArgs}  )
+    if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
+        SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
+        message(STATUS "For libxcfun_fortran_bindings.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+    endif()
+    add_library(
+        xcfun_fortran_bindings
+        ${PROJECT_SOURCE_DIR}/src/xcfun/fortran/xcfun_autogen.F90
+        ${PROJECT_SOURCE_DIR}/src/xcfun/fortran/xcfun_module.F90  )
+    set(EXTERNAL_LIBS
+        xcfun_fortran_bindings
+        ${PROJECT_BINARY_DIR}/external/xcfun-build/src/libxcfun.a
+        ${EXTERNAL_LIBS} )
+    add_dependencies(xcfun_fortran_bindings xcfun)
+    include_directories(${PROJECT_BINARY_DIR}/external/xcfun-build/fortran)
+else()
+    message(STATUS "The XCFun submodule DISABLED")
+endif()
+
+# xcint as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/xcint)
+set(EXTERNAL_LIBS xcint ${EXTERNAL_LIBS})
+
+if(ENABLE_QCORR)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/qcorr)
+    set(EXTERNAL_LIBS qcorr ${EXTERNAL_LIBS})
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_QCORR)
+endif()
+message(STATUS "Davidson-type +Q corrections for (MR)CISD: ${ENABLE_QCORR}")
+
+# luciarel as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/luciarel)
+set(EXTERNAL_LIBS luciarel ${EXTERNAL_LIBS})
+
+# lucita as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/lucita)
+set(EXTERNAL_LIBS lucita ${EXTERNAL_LIBS})
+
+# krmc as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/krmc)
+set(EXTERNAL_LIBS krmc ${EXTERNAL_LIBS})
+
+#     esr as separate library
+if(ENABLE_ESR)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
+    set(EXTERNAL_LIBS esr ${EXTERNAL_LIBS})
+    dirac_test(esr "short;gascip;ci")
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_ESR)
+endif()
+message(STATUS "ESR property module: ${ENABLE_ESR}")
+
+# ecp as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/ecp)
+set(EXTERNAL_LIBS ecp ${EXTERNAL_LIBS})
+
+# amfi as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/amfi)
+set(EXTERNAL_LIBS amfi ${EXTERNAL_LIBS})
+
+# dirrci as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirrci)
+set(EXTERNAL_LIBS dirrci ${EXTERNAL_LIBS})
+
+# Making reladc as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/reladc)
+set(EXTERNAL_LIBS reladc ${EXTERNAL_LIBS})
+
+# Making visual as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/visual)
+set(EXTERNAL_LIBS visual ${EXTERNAL_LIBS})
+
+# grid as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/grid)
+set(EXTERNAL_LIBS grid ${EXTERNAL_LIBS})
+
+# pcmsolver as separate external library
+if(ENABLE_PCMSOLVER)
+  include_directories(${PROJECT_BINARY_DIR}/external/pcmsolver/src/pcmsolver-build/modules)
+  #    set related pcm_dirac as separate library
+  # ... needs HAS_PCMSOLVER definition !
+  add_subdirectory(${PROJECT_SOURCE_DIR}/src/pcm)
+  set(EXTERNAL_LIBS
+    ${PCMSOLVER_LIBS}
+    ${EXTERNAL_LIBS}
     )
+  if (ENABLE_STATIC_LINKING)
+    list(REMOVE_ITEM EXTERNAL_LIBS "c")
+    message(STATUS "PCM accompanying libs cleared of 'libc' due to static linking")
+  endif()
+  dirac_test(pcm_energy "short;scf;pcm")
+  dirac_test(pcm_response "short;polarizabilities;pcm")
+
+  set(EXTERNAL_LIBS pcm_dirac ${EXTERNAL_LIBS})
+endif()
+
+# prp as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp)
+set(EXTERNAL_LIBS prp ${EXTERNAL_LIBS})
+
+#  stieltjes as separate external library
+if(ENABLE_STIELTJES)
+  message(STATUS "Stieltjes external module ENABLED")
+  include_directories (${PROJECT_BINARY_DIR}/external/stieltjes-build)
+  set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
+  add_external(stieltjes)
+  set(EXTERNAL_LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/libstieltjes.a
+    ${EXTERNAL_LIBS})
+else()
+  message(STATUS "Stieltjes external module DISABLED")
+endif()
+
+# interest as separate library
+if(ENABLE_INTEREST)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
+    set(EXTERNAL_LIBS interest ${EXTERNAL_LIBS})
+    dirac_test(mdirac_closed-shell_dft "interest")
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
+endif()
+message(STATUS "Interest library: ${ENABLE_INTEREST}")
+
+#   krcc as separate library
+if(ENABLE_KRCC)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/krcc)
+    set(EXTERNAL_LIBS krcc ${EXTERNAL_LIBS})
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_KRCC)
+endif()
+message(STATUS "KRCC module: ${ENABLE_KRCC}")
+
+# Making relccsd as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/relccsd)
+set(EXTERNAL_LIBS relccsd ${EXTERNAL_LIBS})
+#  relccsd.x as standalone executable by default
+message(STATUS "Enable compilation of standalone relccsd.x: ${ENABLE_RELCCSD_STANDALONE}")
+
+#  openrsp as separate library
+if(ENABLE_OPENRSP)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/openrsp)
+    set(EXTERNAL_LIBS openrsp ${EXTERNAL_LIBS})
+    dirac_test(legacy_openrsp_cars "openrsp")
+    dirac_test(legacy_openrsp_cme "openrsp")
+    dirac_test(legacy_openrsp_delta "openrsp")
+    dirac_test(legacy_openrsp_efgb "openrsp")
+    dirac_test(legacy_openrsp_efgb_dft "openrsp")
+    dirac_test(legacy_openrsp_electric "openrsp")
+    dirac_test(legacy_openrsp_jones "openrsp")
+    dirac_test(legacy_openrsp_magnetizability "openrsp")
+    dirac_test(legacy_openrsp_molecular_gradient "openrsp")
+    dirac_test(legacy_openrsp_pv "openrsp")
+    dirac_test(legacy_openrsp_quadrupole "openrsp")
+    dirac_test(legacy_openrsp_roa "openrsp")
+    dirac_test(legacy_openrsp_pnc_gradient "openrsp")
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_OPENRSP)
+endif()
+message(STATUS "OpenRSP library: ${ENABLE_OPENRSP}")
+
+#    lao_rearranged as separate library
+if(ENABLE_LAO_REARRANGED)
+    dirac_test(lao_shield_rearranged "")
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_LAO_REARRANGED)
+endif()
+message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRANGED}")
+
+#  mcscf_sf as separate library
+if(NOT ENABLE_MCSCF_spinfree)
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_MCSCF_spinfree)
+endif()
+message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
+
+# aoosoc as separate library
+if(ENABLE_AOOSOC)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/aoosoc)
+    set(EXTERNAL_LIBS aoosoc ${EXTERNAL_LIBS})
+    dirac_test(atomic_x2c_2esoc_models_energy "short")
+    dirac_test(atomic_x2c_spinfree_energy "medium")
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_AOOSOC)
+endif()
+message(STATUS "Atomic oo-order spin-orbit correction module: ${ENABLE_AOOSOC}")
+
+#  eri as separate library
+if(ENABLE_ERI)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/eri)
+    set(EXTERNAL_LIBS eri ${EXTERNAL_LIBS})
+    dirac_test(integrals_eri "")
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_ERI)
+endif()
+message(STATUS "ERI integral routines: ${ENABLE_ERI}")
+
+#  densfit as separate library
+if(ENABLE_DENSFIT)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/densfit)
+    set(EXTERNAL_LIBS densfit ${EXTERNAL_LIBS})
+    dirac_test(integrals_densfit "")
+    dirac_test(integrals_jengine "")
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_DNF)
+endif()
+message(STATUS "Density fitting module: ${ENABLE_DENSFIT}")
+
+#  srdft module as separate library
+if(ENABLE_SRDFT)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/srdft)
+    set(EXTERNAL_LIBS srdft ${EXTERNAL_LIBS})
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_SRDFT)
+endif()
+message(STATUS "srDFT module: ${ENABLE_SRDFT}")
+
+#  dirac sources as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
+set(EXTERNAL_LIBS dirac ${EXTERNAL_LIBS})
+
+#  input reader directory as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/input)
+set(EXTERNAL_LIBS input ${EXTERNAL_LIBS})
+
+# main directory as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
+set(EXTERNAL_LIBS main ${EXTERNAL_LIBS})
+
+# make the EXTERNAL_LIBS variable visible to the scope up !
+set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)

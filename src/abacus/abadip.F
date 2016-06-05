@@ -20,7 +20,6 @@
 !dirac_copyright_end
 
 #ifndef PRG_DIRAC
-#include "single.h"
 C
 C  /* Deck dipinp */
       SUBROUTINE DIPINP(WORD)

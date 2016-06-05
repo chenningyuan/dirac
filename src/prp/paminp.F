@@ -177,8 +177,7 @@ C        Tell user which property input is missing
 C        (**PROPE or **PRP F or ?)
          WRITE(LUPRI,'(/3A/A)')
      &   ' * INFORMATION: No property input "',WRDSRC,
-     &   '" found in input file.',
-     &   ' - No properties calculated.'
+     &   '" found in input file.'
          CALL QEXIT('PRPINP')
          RETURN
   920 CONTINUE

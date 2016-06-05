@@ -70,6 +70,10 @@ if [ $INT64 -eq 1 ]; then
     SETUP_FLAGS="$SETUP_FLAGS --int64"
 fi
 
+if [ "$BRANCH" == 'release-15' ]; then
+   ./pamadm --release
+fi    
+
 ./setup $SETUP_FLAGS --cmake-options="-DBUILDNAME=$BUILDNAME"
 
 cd build

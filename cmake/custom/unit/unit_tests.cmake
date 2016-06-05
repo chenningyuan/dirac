@@ -10,16 +10,11 @@ if(ENABLE_UNIT_TESTS)
         )
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_BINARY_DIR}/unit)
 
-    # set unit test libs
+    #miro: simple workaround to satisfy linking dependency of the localization library on the dirac library
     set(UNIT_TEST_LIBS
-        dirac
-        ${EXTERNAL_LIBS}
+        localization
+        ${EXTERNAL_LIBS} 
         )
-
-    if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
-    #   add -lC linking flag for each unit test executable to satisfy missing objects sqrtf,logf
-        set(UNIT_TEST_LIBS "${UNIT_TEST_LIBS} -lC")
-    endif()
 
     macro(add_unit_test _path _name)
         file(GLOB COPIED_FILES "${_path}/*")
@@ -36,10 +31,21 @@ if(ENABLE_UNIT_TESTS)
             RUNTIME_OUTPUT_DIRECTORY
             "unit-tests/${_name}"
             )
-        target_link_libraries(
-            ${_name}.x
-            ${UNIT_TEST_LIBS}
-            )
+
+        if (CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
+        # add -lC linking flag for each unit test executable to satisfy missing objects sqrtf,logf...\
+        # add -Wl,-bbigtoc flag to deal with TOC overflow
+            target_link_libraries(
+                ${_name}.x
+                ${UNIT_TEST_LIBS} -lC -Wl,-bbigtoc
+                )
+        else()
+            target_link_libraries(
+                ${_name}.x
+                ${UNIT_TEST_LIBS} 
+                )
+        endif()
+
         set_property(
             TARGET ${_name}.x
             PROPERTY

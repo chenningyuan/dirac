@@ -53,50 +53,28 @@ C  /* Deck zergrd */
       SUBROUTINE ZERGRD
 #include "implicit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.D00)
+#include "trkoor.h"
 #include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         GRDMOL(I) = D0
-  100 CONTINUE
+      GRDMOL(1:NCOOR) = 0.0D0
       RETURN
       END
 C  /* Deck zerhes */
       SUBROUTINE ZERHES
 #include "implicit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.D00)
+#include "trkoor.h"
 #include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         DO 200 J = 1, NCOORD
-            HESMOL(J,I) = D0
-  200    CONTINUE
-  100 CONTINUE
-      RETURN
-      END
-C  /* Deck heszer */
-      SUBROUTINE HESZER(HESS)
-#include "implicit.h"
-#include "mxcent.h"
-      DIMENSION HESS(MXCOOR,MXCOOR)
-#include "nuclei.h"
-      DO 100 I = 1, 3*NUCDEP
-         CALL DZERO(HESS(1,I),3*NUCDEP)
-  100 CONTINUE
+      HESMOL(1:NCOOR,1:NCOOR) = 0.0D0
       RETURN
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
 #include "implicit.h"
 #include "mxcent.h"
-      DIMENSION GRAD(MXCOOR)
+#include "trkoor.h"
+      REAL*8 GRAD(NCOOR)
 #include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO I = 1, NCOORD
+      DO I = 1, NCOOR
          GRDMOL(I) = GRDMOL(I) + GRAD(I)
       END DO
       RETURN
@@ -105,13 +83,12 @@ C  /* Deck addhes */
       SUBROUTINE ADDHES(HESS)
 #include "implicit.h"
 #include "mxcent.h"
+#include "trkoor.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
 #include "taymol.h"
-#include "nuclei.h"
 C
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         DO 200 J = 1, NCOORD
+      DO 100 I = 1, NCOOR
+         DO 200 J = 1, NCOOR
             HESMOL(J,I) = HESMOL(J,I) + HESS(J,I)
   200    CONTINUE
   100 CONTINUE
@@ -174,8 +151,7 @@ C
 #include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
-      DIMENSION SHESS(MXCOOR,MXCOOR),
-     &          CSTRA(*), SCTRA(*)
+      DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -212,11 +188,11 @@ C
          NCOL = 1
          DO 100 K = BEGIN,NROW
             DO 200 I = 1,NCOL
-               IF (SHESS(K,(BEGIN-1)+I) .NE. D0) GO TO 400
+               IF (SHESS(K+NROW_DIM*(BEGIN-2+I)) .NE. D0) GO TO 400
   200       CONTINUE
             GO TO 300
   400       WRITE (LUPRI,2000) NAMEX(K),
-     &            (SHESS(K,(BEGIN-1)+J),J=1,NCOL)
+     &            (SHESS(K+NROW_DIM*(BEGIN-2+J)),J=1,NCOL)
             IF (MOD(K,3) .EQ. 0) WRITE (LUPRI,'()')
   300       IF (K .LT. (BEGIN+KCOL-1)) NCOL = NCOL + 1
   100    CONTINUE
@@ -239,7 +215,7 @@ C
                   NCOL = 1
                   DO 40 K = BEGIN, NROW
                      WRITE (LUPRI,2000) NAMEX(IPTCOR(K,ITYPE)),
-     &                     (SHESS(K,(BEGIN-1)+J),J=1,NCOL)
+     &                     (SHESS(K+NROW_DIM*(BEGIN-2+J)),J=1,NCOL)
                      IF (K .LT. (BEGIN+KCOL-1)) NCOL = NCOL + 1
    40             CONTINUE
                   WRITE (LUPRI,'()')
@@ -256,8 +232,8 @@ C
          NCOOR = 3*NUCDEP
          allocate( CHESS(NCOOR,NCOOR) )
          CALL DZERO(CHESS,NCOOR*NCOOR)
-         CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,NCOOR,NCOOR,ITYPE)
-         CALL PR2DER(CHESS,NCOOR,MXCOOR,LUPRI)
+         CALL TRAHES(SHESS,NROW_DIM,CHESS,CSTRA,SCTRA,NCOOR,NCOOR,ITYPE)
+         CALL PR2DER(CHESS,NCOOR,NCOOR,LUPRI)
          deallocate( CHESS )
       END IF
       WRITE (LUPRI,'()')
@@ -1594,7 +1570,7 @@ C     110 - 118
 C
       DATA (((DATNUC(I,J,K),I=1,5),J=1,MAXISO),K=110,118) /
 C
-C     Uun(110):
+C     Ds(110):
 C
      &268.143500D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1603,7 +1579,7 @@ C
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
 C
-C     Uuu(111):
+C     Rg(111):
 C
      &272.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1612,9 +1588,9 @@ C
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
 C
-C     Uub(112):
+C     Cn(112):
 C
-     &277.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &285.177120D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1630,9 +1606,9 @@ C     -- no data ---
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
 C
-C     Uuq(114):
+C     Fl(114):
 C
-     &289.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &289.190420D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1648,9 +1624,9 @@ C     -- no data --
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
 C
-C     Uuh(116):
-C     -- no data --
-     &300.000000D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+C     Lv(116):
+C                   
+     &293.204490D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
@@ -1962,7 +1938,7 @@ C  /* Deck dp0pri */
          DO 100 I = 1, 3
             IF (ISYMAX(I,1) .EQ. 0) THEN
                WRITE (LUPRI,'(20X,A,2F16.8)') CHRXYZ(-I),
-     *              DIPOLE(I), DEBYE*DIPOLE(I)
+     *                DIPOLE(I), DEBYE*DIPOLE(I)
             END IF
   100    CONTINUE
          WRITE (LUPRI,'(/,23X,A,F12.8,A)') ' 1 Debye = ',DEBYE,' a.u. '
@@ -1971,46 +1947,55 @@ C  /* Deck dp0pri */
       RETURN
       END
 C  /* Deck cmmass */
-      SUBROUTINE CMMASS(GEOM,AMASS,NATTYP,ISOTOP,IPRINT)
+      SUBROUTINE CMMASS(GEOM,AMASS,NATTYP,NUMIS,IPRINT)
 C
-C     Determine center of mass from information in common blocks
+C     Determine center of mass in orgcom.h(CMXYZ) from information in common blocks
 C     K.Ruud, June-94
 C
 C     radovan: AMASS is not used !?
+C     hjaaj:   AMASS is passed on to VIBMAS
 C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
       DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
-     &          ISOTOP(MXCENT)
-#include "orgcom.h"
+     &          NUMIS(NATOMS)
 #include "nuclei.h"
+#include "orgcom.h"
 #include "symmet.h"
-#include "ibtfun.h"
+
 C
-      JATOM = 0
+      ICHTOT = 0
+      JATOM  = 0
+C
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               IF (NINT(CHARGE(IATOM)) .NE. 0) THEN
-                  NATTYP(JATOM + 1) = NINT(CHARGE(IATOM))
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               ICHARG = IZATOM(IATOM)
+               IF (ICHARG .NE. 0) THEN
+                  ICHTOT = ICHTOT + ICHARG
                   DO 30 KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                    *CORD(KCOOR,IATOM)
  30               CONTINUE
                   JATOM = JATOM + 1
+                  NATTYP(JATOM) = ICHARG
+                  NUMIS(JATOM)  = ISOTOP(IATOM)
                END IF
             END IF
  20      CONTINUE
  10   CONTINUE
 C
-      CALL VIBMAS(AMASS,TOTMAS,ISOTOP,NATTYP,GEOM,CMXYZ,IPRINT)
+      CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
+      TELCMAS = ICHTOT/XFAMU
+      TNUCMAS = TOTMAS - TELCMAS
+C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
       RETURN
       END
 C  /* Deck vibmas */
-      SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,
+      SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
 #include "implicit.h"
 C
@@ -2022,7 +2007,7 @@ C
       PARAMETER ( D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
      &            BIGMAS = 1.0D20, XTANG    = 0.5291772108D0 )
 C
-      DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3,NATOMS), ORIGIN(3)
+      DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3,NNATOM), ORIGIN(3)
 C
 #include "cbisol.h"
 #include "nuclei.h"
@@ -2031,8 +2016,8 @@ C
       TOTMAS = D0
       ABUND  = D100
       CALL DZERO(ORIGIN,3)
-      DO 100 IATOM = 1, NATOMS
-         IF (SOLVNT .AND. IATOM .EQ. NATOMS) THEN
+      DO 100 IATOM = 1, NNATOM
+         IF (SOLVNT .AND. IATOM .EQ. NNATOM) THEN
             RMASS = BIGMAS
             AMASS(IATOM) = RMASS
          ELSE

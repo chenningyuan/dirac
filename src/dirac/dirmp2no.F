@@ -1155,7 +1155,6 @@ C
       relcc_do_ccsd_t = .false.
       relcc_do_gradient = .true.
       relcc_do_mp2gradient = .true.
-      relcc_do_unrelaxed = .true.
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
 

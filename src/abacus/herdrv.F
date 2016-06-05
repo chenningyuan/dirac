@@ -996,7 +996,7 @@ C
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in HERINP, error in prompt.')
       END IF
-    2   CALL REAINP(WORD,IPRDEF,RELCAL,TSTINP)
+    2   CALL REAINP(WORD,RELCAL,TSTINP)
       GO TO 201
     3   CALL HR1INP(WORD)
       GO TO 201
@@ -1067,9 +1067,6 @@ C
 #endif
       CALL SETDCH
 C.....Find center of mass
-      DO 234 I = 1, MXCENT
-         ISOTOP(I) = 1
- 234  CONTINUE
       KGEOM = 1
       KMASS = KGEOM + 3*NATOMS
       KNAT  = KMASS + NATOMS
