@@ -152,7 +152,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
        subroutine cc_density (l1,l2,t1,t2,doo,dvv,buf1,buf2,dmo)
 
-       use contraction
+       !use contraction
 
 #include "symm.inc"
 #include "complex.inc"
@@ -174,32 +174,32 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !   doo(j,i) = doo(j,i) - l2(jm,ef) * t2(ef,im)
 !-------------------------------------------------------------------
 
-        call contraction_442 ((/"o2","o3","p1","p2"/),
-     &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep,
-     &    LeftTensor=l2,RightTensor=t2)
+!       call contraction_442 ((/"o2","o3","p1","p2"/),
+!    &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep,
+!    &    LeftTensor=l2,RightTensor=t2)
 
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l1(j,e)*t1(e,i)
 !---------------------------------------------------------------------
 
-       call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
-     &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
+!      call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
+!    &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
 !----------------------------------------------------------------------
 
-      call contraction_442 ((/"o1","o2","p1","p3"/),
-     &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,
-     &     LeftTensor=l2,RightTensor=t2 )
+!     call contraction_442 ((/"o1","o2","p1","p3"/),
+!    &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,
+!    &     LeftTensor=l2,RightTensor=t2 )
 
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l1(m,a)*t1(b,m)
 !----------------------------------------------------------------------
 
-      call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
-     &              l1,t1,dvv,1.0d0,1.0d0,nrep)
+!     call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
+!    &              l1,t1,dvv,1.0d0,1.0d0,nrep)
 
 
        allocate(dvo(nfvo*rcw))
@@ -218,8 +218,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !    & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,RightTensor=t2)
 
 
-      call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), 
-     & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=t2)
+!     call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), 
+!    & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=t2)
 
 
 !----------------------------------------------------------
@@ -230,12 +230,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       woo_temp = 0.0d0
 
-      call contraction_222 ((/"o2","p2"/),(/"p2","o1"/),(/"o2","o1"/),
-     &              l1,t1,woo_temp,1.0d0,1.0d0,nrep)
+!     call contraction_222 ((/"o2","p2"/),(/"p2","o1"/),(/"o2","o1"/),
+!    &              l1,t1,woo_temp,1.0d0,1.0d0,nrep)
 
 
-      call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
-     &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+!     call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
+!    &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
 
       deallocate(woo_temp)
 
@@ -247,12 +247,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       woo_temp = 0.0d0
 
-      call contraction_442((/"o2","o3","p2","p3"/),(/"p2","p3","o1","o3"
-     &       /),(/"o2","o1"/),woo_temp,1.0d0,1.0d0,nrep,LeftTensor=L2, 
-     &          RightTensor=t2)
+!     call contraction_442((/"o2","o3","p2","p3"/),(/"p2","p3","o1","o3"
+!    &       /),(/"o2","o1"/),woo_temp,1.0d0,1.0d0,nrep,LeftTensor=L2, 
+!    &          RightTensor=t2)
 
-      call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
-     &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+!     call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
+!    &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
 
       deallocate(woo_temp)
 
@@ -264,12 +264,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       wpp_temp = 0.0d0
 
-      call contraction_442((/"o2","o3","p2","p3"/),(/"p1","p3","o2","o3"
-     &       /),(/"p1","p2"/),wpp_temp,-1.0d0,1.0d0,nrep,LeftTensor=L2, 
-     &          RightTensor=t2)
+!     call contraction_442((/"o2","o3","p2","p3"/),(/"p1","p3","o2","o3"
+!    &       /),(/"p1","p2"/),wpp_temp,-1.0d0,1.0d0,nrep,LeftTensor=L2, 
+!    &          RightTensor=t2)
 
-      call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),
-     &              wpp_temp,t1,dvo,1.0d0,1.0d0,nrep)
+!     call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),
+!    &              wpp_temp,t1,dvo,1.0d0,1.0d0,nrep)
 
       deallocate(wpp_temp)
 

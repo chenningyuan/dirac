@@ -5,8 +5,8 @@
 
       use interface_to_mpi
       use xmlout
-      use intermediates_1b_2b
-      use lambda_equation
+      !use intermediates_1b_2b
+      !use lambda_equation
 
       IMPLICIT INTEGER (A-Z)
 
@@ -87,43 +87,43 @@ C     Initialize the work arrays to zero.
 
 !!       CALL ZCORE (S1,S2)
 
-         call f_bar_mi(foo,fvo,s1,s2,ho)
+!         call f_bar_mi(foo,fvo,s1,s2,ho)
 
-         call w_ijmn(S1,S2,w_oooo)
+!         call w_ijmn(S1,S2,w_oooo)
 
-         call f_bar_me(fvo,S1,hov)
+!         call f_bar_me(fvo,S1,hov)
 
-         call f_bar_ae(fvv,fvo,s1,s2,hv)
+!         call f_bar_ae(fvv,fvo,s1,s2,hv)
 
 !        write(*,*)'wpp done',ddot(nfvv,hv,1,hv,1)
 
 !!         call w_ejmb(S1,S2,w_voov)
 
-          call wbar_mbej(S2,w_ovvo,buf2,buf3)
+!          call wbar_mbej(S2,w_ovvo,buf2,buf3)
 
-         call w_mbej(s1,s2,w_voov)
+!         call w_mbej(s1,s2,w_voov)
 
 !       write(*,*)'starting w_iemn intermediate'
 
-         call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
+!        call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
 
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
-         call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
+!         call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
 
-         call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
+!         call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
 
       CALL XTIME(5,2,'-- "efam" Intermediate                     ')
 
         
       allocate (int_wooop(iovoot(nrep+1)*rcw))
 
-         call w_mnie(s1,int_wooop)
+!         call w_mnie(s1,int_wooop)
 
       allocate (w_v_temp(nv5*rcw))
 
-         call w_amef(s1,w_v_temp)
+!         call w_amef(s1,w_v_temp)
 
 ! out-of-core section of the intemediates
 
@@ -187,7 +187,7 @@ C     Initialize the work arrays to zero.
        G_vv = 0.0d0
        G_oo = 0.0d0
 
-      call G_intm (s2,l2,G_vv,G_oo)
+!      call G_intm (s2,l2,G_vv,G_oo)
 
 !     evaluate L1 equation  
 
@@ -196,9 +196,9 @@ C     Initialize the work arrays to zero.
       if (ndimt1 > 0) then
 
        call xcopy (ndimt1,hov,1,ResL1,1)
-       CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_voov,w_ovoo,
-     &               cz,w_v_temp,int_wooop,G_oo,G_vv,buf1,buf2,buf3,
-     &               nbuf2,nbuf3,resL1,iprnt)
+!      CALL lambda_equation_L1(s1,s2,l1,l2,ho,hv,hov,w_voov,w_ovoo,
+!    &               cz,w_v_temp,int_wooop,G_oo,G_vv,buf1,buf2,buf3,
+!    &               nbuf2,nbuf3,resL1,iprnt)
 
       endif
 
@@ -206,9 +206,9 @@ C     Initialize the work arrays to zero.
                                  
       CALL XTIME(5,1,'-- L2 equations                     ')
 
-       CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
-     &                      int_wooop,G_oo,G_vv,buf1,buf2,buf3,
-     &                      nbuf3,resL2,iprnt,nit)
+!      CALL lambda_equation_L2(s1,s2,l1,l2,ho,hv,hov,w_voov,w_oooo,
+!    &                      int_wooop,G_oo,G_vv,buf1,buf2,buf3,
+!    &                      nbuf3,resL2,iprnt,nit)
 
       CALL XTIME(5,2,'-- L2 equations                     ')
 

@@ -5,7 +5,7 @@
 
       use interface_to_mpi
       use xmlout
-      use intermediates_1b_2b
+      !use intermediates_1b_2b
       IMPLICIT INTEGER (A-Z)
 
 C---------------Description--------------------------------------------

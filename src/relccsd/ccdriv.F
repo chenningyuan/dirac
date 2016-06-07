@@ -2611,7 +2611,7 @@ C
       use memory_allocator
       use allocator_parameters, only : klongint, kreal
       use interface_to_mpi
-      use lambda_equation
+      !use lambda_equation
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2841,7 +2841,7 @@ C
 C
 C        Solve relativistic MP2 lambda equations
 C
-         CALL lambda_equation_mp2 (EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
+!         CALL lambda_equation_mp2 (EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        Get amplitude part of density matrix
 C
@@ -2950,7 +2950,7 @@ C         this means that, for the time being, we can deallocate everything?
 C
 C        Get CCSD amplitudes and lambdas
 C
-         CALL lambda_equation_mp2 (EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
+!         CALL lambda_equation_mp2 (EPS, a_FVO, a_T1, a_S1, a_T2, a_S2)
 C
 C        Get amplitude part of density matrix
 C
