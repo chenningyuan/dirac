@@ -15,53 +15,6 @@ include(FindCompilerVersion)
 # Miro Ilias restrored CMake printout, associated with build_info.h generation
 include(build_info)
 
-# HEAD ========================
-#set(DIRAC_SOURCES
-#    ${C_SOURCES}
-#    ${FREE_FORTRAN_SOURCES}
-#    ${FIXED_FORTRAN_SOURCES}
-#    )
-
-#if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
-#    SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-#    message(STATUS "For libdirac.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
-#endif()
-
-#add_library(
-#    dirac
-#    ${DIRAC_SOURCES}
-#    )
-
-#add_dependencies(dirac git_info)
-
-#if(ENABLE_XCFUN)
-#    add_dependencies(dirac xcfun_fortran_bindings)
-#endif()
-
-#if(ENABLE_PCMSOLVER)
-#    add_dependencies(dirac pcmsolver)
-#endif()
-
-#if(ENABLE_GEN1INT)
-#    add_dependencies(dirac gen1int)
-#endif()
-
-#if(ENABLE_PELIB)
-#    add_dependencies(gen1int_interface gen1int)
-#    add_dependencies(pelib gen1int_interface)
-#    add_dependencies(dirac pelib)
-#endif()
-
-#if(ENABLE_INTEREST)
-#    add_dependencies(dirac interest)
-#endif()
-
-#if(ENABLE_STIELTJES)
-#    add_dependencies(dirac stieltjes)
-#endif()
-
-#add_dependencies(dirac relccsd)
-# ==============================
 set(_lisd_of_executables)
 macro(compile_standalone _executable _source _list_of_executables)
     add_executable(
