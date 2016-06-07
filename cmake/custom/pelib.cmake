@@ -24,10 +24,10 @@ if(ENABLE_PELIB)
         -DHOST_PROGRAM=${PE_HOST_PROGRAM}
     )
 
-    set(FIXED_FORTRAN_SOURCES
-        ${FIXED_FORTRAN_SOURCES}
-	src/pelib/pe_dirac_interfaces.F
-        )
+#   set(FIXED_FORTRAN_SOURCES
+#       ${FIXED_FORTRAN_SOURCES}
+#       src/pelib/pe_dirac_interfaces.F
+#   )
 
     add_external(pelib)
 

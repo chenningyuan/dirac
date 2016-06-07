@@ -6,8 +6,14 @@ add_definitions(-DBUILD_PELIB)
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
     SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    message(STATUS "For libsrdft.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
+    message(STATUS "For libpelib_interface.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
 endif()
+
+set(FIXED_PELIB_FORTRAN_SOURCES
+    pe_dirac_interfaces.F
+)
+set(FREE_PELIB_FORTRAN_SOURCES
+)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_PELIB_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -15,15 +21,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
 endif()
 
 add_library(
-    pelib
-    ${FIXED_PELIB_FORTRAN_SOURCES}
-    ${FREE_PELIB_FORTRAN_SOURCES}
+          pelib_interface
+          ${FIXED_PELIB_FORTRAN_SOURCES}
+          ${FREE_PELIB_FORTRAN_SOURCES}
 )
 
-#
 # deal with intedependencies
 # needs memory allocator etc..
 
 add_dependencies(gen1int_interface gen1int)
 add_dependencies(pelib gen1int_interface)
-add_dependencies(dirac pelib)
+add_dependencies(pelib_interface pelib)
+#add_dependencies(dirac pelib)

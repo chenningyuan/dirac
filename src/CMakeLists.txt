@@ -1,14 +1,3 @@
-##<<<<<<< HEAD
-# this is not an ideal solution
-# later we will isolate sources into
-# libraries with more locality
-
-#set(FIXED_FORTRAN_SOURCES
-#   ${FIXED_FORTRAN_SOURCES}
-#   src/peqm/pe_dirac_interfaces.F
-#   PARENT_SCOPE
-#   )
-#=======
 #################################################################################
 #
 # Big substitution of many autocmake.cfg's custom/FUNCTIONALITY.cmake files.
@@ -16,7 +5,6 @@
 # Written by Miro Ilias, February 2016, GSI
 #
 #################################################################################
-#>>>>>>> master
 
 #----------------------------------------------------------------------------------
 # Set all module options and definitions first
@@ -377,6 +365,13 @@ else()
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_SRDFT)
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
+
+
+# pelib interface routines added as module
+if(ENABLE_PELIB)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
+    set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
+endif()
 
 #  dirac sources as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
