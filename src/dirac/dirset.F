@@ -102,7 +102,7 @@ C     Start RECP integral
 C     ===================
       IF (ECPCALC) CALL RECP
 
-#ifdef BUILD_GEN1INT
+#if defined (BUILD_GEN1INT) && defined (BUILD_PELIB)
 !     test suite of gen1int interface
       if (test_gen1int) then
          call gen1int_host_test(lwork, work, lupri, iprdef)
