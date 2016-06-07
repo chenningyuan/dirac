@@ -206,10 +206,11 @@ C
 C
 C     Initialize PE library
 C
+#if defined (BUILD_PELIB)
       IF (PEQM) THEN
         CALL PE_IFC_INIT()
       END IF
-
+#endif
 !     this is the new input reader
 !     contains:
 !     *DFT

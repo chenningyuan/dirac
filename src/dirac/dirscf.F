@@ -1619,12 +1619,14 @@ C
 C        Polarizable embedding contribution
 C        ==================================
 C
+#if defined (BUILD_PELIB)
          IF (PEQM) THEN
             IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
             PE_TIME = SECOND()
             CALL PE_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
             PE_TIME = SECOND() - PE_TIME
          END IF
+#endif
 C
 C        Read one-electron Fock matrix from file into CMO
 C        ================================================
@@ -2055,6 +2057,7 @@ C
         dhferg = dhferg + pcm_energy
       endif 
 #endif
+#if defined (BUILD_PELIB)
       IF (PEQM) THEN
         ! The PE Fock matrix is added to F2 before entering ERGCAL
         ! and the electronic PE energy is therefore added to E2PART.
@@ -2065,7 +2068,7 @@ C
         DHFERG = DHFERG + PE_TOT_NRG - 0.5d0 * PE_EL_NRG
         DEALLOCATE(PE_FMAT)
       END IF
-
+#endif
       IF(LVCON) THEN
          IF (ONECAP .AND. (INTV1C.EQ.2)) THEN
             JPRINT=0
