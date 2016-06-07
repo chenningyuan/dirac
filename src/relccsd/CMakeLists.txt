@@ -42,7 +42,6 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
    #contraction.F90
    #intermediates.F90
    #lambda_equation.F90
-   relcc_cfg.F90
    #wrapper_sorting.F90 
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90

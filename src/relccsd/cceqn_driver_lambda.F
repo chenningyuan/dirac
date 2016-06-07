@@ -119,11 +119,11 @@ C     Initialize the work arrays to zero.
         
       allocate (int_wooop(iovoot(nrep+1)*rcw))
 
-         !call w_mnie(s1,int_wooop)
+!         call w_mnie(s1,int_wooop)
 
       allocate (w_v_temp(nv5*rcw))
 
-         !call w_amef(s1,w_v_temp)
+!         call w_amef(s1,w_v_temp)
 
 ! out-of-core section of the intemediates
 
@@ -187,7 +187,7 @@ C     Initialize the work arrays to zero.
        G_vv = 0.0d0
        G_oo = 0.0d0
 
-      !call G_intm (s2,l2,G_vv,G_oo)
+!      call G_intm (s2,l2,G_vv,G_oo)
 
 !     evaluate L1 equation  
 

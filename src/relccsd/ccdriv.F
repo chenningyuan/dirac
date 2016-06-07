@@ -2841,7 +2841,7 @@ C
 C
 C        Solve relativistic MP2 lambda equations
 C
-         !CALL lambda_equation_mp2 (EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
+!         CALL lambda_equation_mp2 (EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        Get amplitude part of density matrix
 C
