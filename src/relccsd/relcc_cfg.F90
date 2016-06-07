@@ -33,6 +33,7 @@ module relcc_cfg
 
 !Pawel new relcc input 1.03.2011
   integer, dimension(1:16), public :: relcc_nelec   = 0  
+  integer, dimension(1:16), public :: relcc_nelec_open = 0  
   integer, dimension(1:16), public :: relcc_nelec_f1= 0 
   integer, dimension(1:16), public :: relcc_nelec_f2= 0 
   integer, dimension(1:16), public :: relcc_nfroz   = 0
@@ -40,6 +41,7 @@ module relcc_cfg
 
 ! General control flags
   logical, public :: nelec_input                   = .false.
+  logical, public :: nelec_open_input              = .false.
   logical, public :: relcc_debug                   = .false.
   logical, public :: relcc_timing                  = .false.
   logical, public :: relcc_do_sort                 = .true.
@@ -152,6 +154,7 @@ contains
 #include "freeze.inc"
   
   call interface_mpi_BCAST(relcc_nelec,   size(relcc_nelec),   0,global_communicator)
+  call interface_mpi_BCAST(relcc_nelec_open,size(relcc_nelec_open),   0,global_communicator)
   call interface_mpi_BCAST(relcc_nelec_f1,size(relcc_nelec_f1),0,global_communicator)
   call interface_mpi_BCAST(relcc_nelec_f2,size(relcc_nelec_f2),0,global_communicator)
   call interface_mpi_BCAST(relcc_nfroz,   size(relcc_nfroz),   0,global_communicator)

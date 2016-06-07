@@ -10,9 +10,6 @@ Kramers unrestricted Coupled-Cluster methods
 See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space CC 
 implementation is described in :cite:`Visscher2001`.
 
-The old namelist style input used up to DIRAC10 is now no longer supported.
-The input below follows the regular DIRAC style conventions.
-
 starstar(RELCC)
 
 Specification of reference determinant, type of calculation, and general
@@ -55,13 +52,16 @@ molecular properties. See :cite:`vanStralen2005`.
 
 keyword(NELEC)
 
-Number of active electrons. This variable determines the reference determinant to be used in the exponential expansion of the wave function. 
+Number of correlated electrons. This variable determines the reference determinant to be used in the exponential expansion of the wave function. 
 Since the default values correspond to the information passed on by the MOLTRA code on basis of the Hartree-Fock occupations 
-and chosen range of active orbitals in MOLTRA, **there is usually no need to specify this variable manually**. 
+and chosen range of active orbitals in MOLTRA, **for CLOSED SHELL systems there is usually no need to specify this variable manually**. 
+If you do chose to specify this manually, you should make sure to count electrons carefully as the numbers relate to the number of correlated
+electrons rather than the total number. This number may therefore change if you change tresholds in the integral transformation.
 
-Notable exception is the treatment of a high-spin open shell state with the single reference CCSD(T) ansatz. 
-In such a case one first needs to determine the number of closed shell electrons in each irrep and 
-then add to these occupations the open shell electrons (see corresponding tutorial examples). 
+For OPEN SHELL systems it is usually better to employ the multireference Fock space approach, except for simple cases such as 
+a high-spin open shell state. In this case the single reference CCSD(T) ansatz works rater well. For such cases it is easier to use 
+the :ref:`NELEC_OPEN` keyword that allows to just specify the distribution of open shell electrons over the irreps, but for backwards
+compatibility we retain the older NELEC option as well.
 
 *Arguments:*
 
@@ -73,11 +73,32 @@ then add to these occupations the open shell electrons (see corresponding tutori
 
 ::
 
-     Active electrons in these irreps (written by **MOLTRA).
+     Number of correlated electrons in closed shells in these irreps (written by **MOLTRA).
+
+keyword(NELEC_OPEN)
+
+Distribution of correlated open shell electrons over the irreps.  This determines the reference determinant for open shell single reference calculations.
+
+This input should always be given for average-of-configuration SCF calculations that are followed by a CC calculation. The total number of electrons that is
+given should correspond to the number of open shell electrons.
+
+*Arguments:*
+
+::
+
+    Integer (NELEC_OPEN(I),I=1,NFSYM*2).
+
+*Default:*
+
+::
+
+     Zero. (note that this default leads to wrong results because a closed shell ion will be calculated if no input is given).
 
 keyword(NEL_F1)
 
-Number of electrons in the *gerade* irreps of the Abelian symmetry group. See below for more information.
+Number of electrons in the *gerade* irreps of the Abelian symmetry group. This works like the NELEC keyword, but uses the 
+supersymmetry possible for linear groups in which irreps are ordered as 1/2, -1/2, 3/2, -3/2, 5/2, ... (with the number
+being the m_j value). 
 
 keyword(NEL_F2)
 

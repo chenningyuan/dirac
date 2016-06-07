@@ -575,11 +575,12 @@ C
          CALL GMULTA (NZ,NFSYM,NSYMRPA,REPA,MULTB)
       ENDIF
 C
-C     Set the number of active electrons
+C     Set the number of closed shell electrons that will be correlated.
+C     Open shell electrons are not considered, these require user input.
 C
       DO IREP = 1, NSYMRP
          IFRP = (IREP+1) / 2
-         NAEL(IREP) = NOCC(IFRP) - NSPC(IFRP,1)
+         NAEL(IREP) = NISH(IFRP) - NSPC(IFRP,1)
       ENDDO
 C
 C     The correlation codes (RELCCSD, DIRRCI, LUCITA) do not use 
