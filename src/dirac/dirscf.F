@@ -1422,7 +1422,7 @@ C
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
       REAL(8) :: PE_TOT_NRG, PE_EL_NRG, PE_TIME
-      CALL QENTER('SCFCY1')
+      CALL QENTER('SCFCYC_1')
 #include "memint.h"
 C
 #ifdef MOD_DNF
