@@ -20,6 +20,10 @@
     iarep = nr_roots(1)
     nroot = nr_roots(2)
 
+    if (relcc_do_eomip) eomtype = 'IP'
+    if (relcc_do_eomea) eomtype = 'EA'
+    if (relcc_do_eomee) eomtype = 'EE'
+
   end subroutine
 
    subroutine input_processor(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2)
@@ -45,13 +49,11 @@
    real*8  :: fac1
    real*8,allocatable  :: H_II(:)
    real*8  :: eps((iv(nrep+1)+io(nrep+1))) 
+   integer :: icount, acount
 
 !   iarep = nr_roots(1)
 !   nroot = nr_roots(2)
 
-    if (relcc_do_eomip) eomtype = 'IP'
-    if (relcc_do_eomea) eomtype = 'EA'
-    if (relcc_do_eomee) eomtype = 'EE'
 
 !     CALL PRSYMB(LUPRI,'-',75,0)
 !     WRITE(LUPRI,'(A,8(/10X,A,I2,3A,I5))')
@@ -64,7 +66,7 @@
     R1(1:ndimt1*rcw,1:nroot) = 0.0d0 
     R2(1:ndimt2*rcw,1:nroot) = 0.0d0 
 
-! 1> determine the minimum energy singly excited determinant.
+! 1> Determine the minimum energy determinants for IP, EA & EE. The number of them is equal to the number of roots. 
 
      i = 1
      ii = 1
@@ -81,7 +83,11 @@
         ii =  ii + NV(irep)* nv(irep) * rcw
      enddo
 
-     allocate(H_II(nfvo*rcw))
+   select case (eomtype)
+
+   case ('EE')
+
+    allocate(H_II(nfvo*rcw))
 
     ai = 1
     ii = 0
@@ -94,7 +100,7 @@
           do a = 1, nv(arep)
              aa = aoff + a
              iaai = (iovvo(iarep) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(iarep) + &
-       &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i 
+       &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i ! careful about the complex algebra  
              H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
              ai = ai + 1
           enddo
@@ -110,6 +116,43 @@
     enddo
 
      deallocate(H_II)
+
+   case ('IP')
+
+! As of now, I am targetting the lowest energy determinants across the symmetries.
+
+
+     allocate(H_II(io(nrep+1)*rcw))    
+
+    H_II = eps(1:(io(nrep+1)*rcw))
+
+    do iroot = 1, nroot
+     k = minloc(H_II) 
+     write(*,*)'roots',iroot,H_II(k(1)) 
+     i = k(1)
+     H_II(i) = 8000.0d0
+     R1(k,iroot) = 1.0d0
+    enddo
+
+     deallocate(H_II)
+
+   case ('EA')
+
+     allocate(H_II(nv(iarep)*rcw))    
+
+      H_II = eps((1+no(nrep+1)):(no(nrep+1)+nv(nrep+1)))
+
+      do iroot = 1, nroot
+        k = minloc(H_II) 
+        write(*,*)'roots',iroot,H_II(k(1)) 
+        i = k(1)
+        H_II(i) = 8000.0d0
+        R1(k,iroot) = 1.0d0
+      enddo
+     deallocate(H_II)
+
+  end select 
+
 
    end subroutine
 
@@ -133,9 +176,11 @@
    real*8, allocatable :: R1(:,:),R2(:,:) 
    real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
-!   real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
-   real*8, allocatable:: sub_H(:,:)! sub_H(nroot,nroot)
-   integer :: irp,iroot,jroot,i,j
+!  real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
+   real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
+   integer :: irp,iroot,jroot,i,j,irep
+   integer :: ndimr1,ndimr2
+   integer :: AllocateStatus
 
 !memory allocation
 !------------------
@@ -203,20 +248,10 @@
 
       call read_input()
 
-
       allocate (sub_H(nroot,nroot))
 
       allocate (t1(ndimt1*rcw))
       allocate (t2(ndimt2*rcw))
-
-      allocate (r1(ndimt1*rcw,nroot))
-      allocate (r2(ndimt2*rcw,nroot))
-
-      allocate (sigma1(ndimt1*rcw,nroot))
-      allocate (sigma2(ndimt2*rcw,nroot))
-
-
-
 
       call allocator_get_words_inuse(current_mem_use)
       mxcorr = current_mem_use - start_mem_use
@@ -234,8 +269,24 @@
 
      deallocate(B%Wbar_mbej) 
 
-    call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
+   select case (eomtype)
 
+    case ('EE')
+
+      allocate (r1(ndimt1*rcw,nroot))
+      allocate (r2(ndimt2*rcw,nroot))
+
+      allocate (sigma1(ndimt1*rcw,nroot),stat=AllocateStatus)
+
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      allocate (sigma2(ndimt2*rcw,nroot),stat = AllocateStatus)
+
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+
+!  call alloc (sigma1(ndimt1*rcw,nroot))
+!  call alloc (sigma2(ndimt2*rcw,nroot))
+
+    call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
 
     do iroot = 1, nroot
       sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
@@ -244,6 +295,34 @@
       call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot),r2(1:ndimt2*rcw,iroot:iroot),t1,t2,B, &
      &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3,int(nbuf3,4))
     enddo
+
+    case ('IP')
+
+      do irep = 1, nrep
+         ndimr2 = ndimr2 + nv(irep)*noot(irep)
+      enddo
+
+       allocate (r1(io(nrep+1)*rcw,nroot))
+       allocate (r2(ndimr2*rcw,nroot))
+
+       allocate (sigma1(io(nrep+1)*rcw,nroot))
+       allocate (sigma2(ndimr2*rcw,nroot))
+
+
+    case('EA')
+
+      do irep = 1, nrep
+         ndimr2 = ndimr2 + nvvt(irep)*no(irep)
+      enddo
+
+       allocate (r1(iv(nrep+1)*rcw,nroot))
+       allocate (r2(ndimr2*rcw,nroot))
+
+       allocate (sigma1(iv(nrep+1)*rcw,nroot))
+       allocate (sigma2(ndimr2*rcw,nroot))
+
+
+   end select 
 
     sub_H = 0.0d0
 
@@ -268,6 +347,7 @@
 
 !    call davidson 
 
+     deallocate (t1,t2,sigma1,sigma2,r1,r2)
  451  continue
 
 !    call dealloc(buf1)  
@@ -277,7 +357,6 @@
      deallocate(buf1)
      deallocate(buf2)
 
-     deallocate (t1,t2,sigma1,sigma2,r1,r2)
      deallocate (B%Fbar_mi)  
      deallocate (B%Fbar_me)  
      deallocate (B%Fbar_ae)  

@@ -1003,10 +1003,19 @@
          call kw_read(word,  nr_roots)
       end if
 
+      if (kw_matches(word, '.IP    ')) then
+         relcc_do_eomip=.true.
+         call kw_read(word,  nr_roots)
+      end if
+
+      if (kw_matches(word, '.EA    ')) then
+         relcc_do_eomea=.true.
+         call kw_read(word,  nr_roots)
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
-
 
 
    subroutine read_input_ccsort(word, kw_section)

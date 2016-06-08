@@ -96,11 +96,11 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 #include "complex.inc"
 
 !---------------Description--------------------------------------------
-!     Calculates 1h1p type sigma vectors for excitation energy
+!     Calculates 1h1p & 2h2p type sigma vectors for excitation energy
 !-----------------------------------------------------------------------
 
 !---------------Calling variables--------------------------------------
-  real(8), intent(in),target   :: r1(:,:), r2(:,:)           ! R-Amplitudes
+  real(8), intent(in),target   :: r1(:,:), r2(:,:) ! R-Amplitudes
   real(8), intent(in)     :: t1(:),t2(:)           ! t-Amplitudes
   integer, intent(in)     :: nbuf3    
   real(8), intent(in)     :: buf2(*)           
@@ -288,43 +288,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 ! S(ab,ij) = S(ab,ij) + P(ab)P(ij) w_mbej(mb,ej)*r2(ae,im)
 !----------------------------------------------------------
 
-      call srt1tt5 (nrep,multb,.false.,.false.,nv,nv,no,no,mvo,j2voov,jjvo,jjov, &
-     &              r2,buf2)
-
-
-      call srt1ss4 (nrep,multb,.false.,.false.,no,nv,nv,no,mov,j2ovvo,jjov,jjvo, &
-     &              B%W_mbej,buf3)
-
-
-      allocate (sigma2_temp(j2vovo(nrep+1)*rcw))
-
-      sigma2_temp = 0.0d0
-
-
-      do i = 1, nrep
-         j = multb(i+nrep,1+nrep,2)
-
-          m = mvo(i)
-          n = mvo(i)
-          k = mov(j)
-
-          nd = mvo(i)
-          off1 = 1 + j2voov(i)*rcw  
-          off2 = 1 + j2ovvo(i)*rcw  
-          off3 = 1 + j2vovo(i)*rcw  
-
-            call xgemm ('n','t',m,n,k,a1,buf2(off1),m, &
-      &                  buf3(off2),nd,a0,sigma2_temp(off3),m)
-
-      enddo
-
-      call srt1tt4 (nrep,multb,.false.,.true.,nv,nv,no,no,mvo,j2vovo,jjvo,jjvo, &
-     &              sigma2_temp,buf2)
-
-      deallocate(sigma2_temp)
-
-      call xaxpy (ndimt2,a1,buf2,1,sigma2,1)
-
+      call contraction_444((/"o3","p2","p3","o2"/),(/"p1","p3","o1","o3"/), &
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_mbej)
 
 !int_1b(a,f) = int_1b(a,f) - V(nm,fe)*r2(ea,mn)  
 !S(ab,ij) = S(ab,ij) + int_1b(a,f)*t2(fb,ij)  
@@ -358,5 +323,117 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     write(*,*)'inside sigma 13', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
 
   end subroutine
+
+   subroutine sigma_IP(r1,r2,t1,t2,B,sigma1,sigma2,buf2,buf3,nbuf3)
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+
+!---------------Description--------------------------------------------
+!     Calculates 2h1p and 1h type sigma vectors for ionization energy
+!-----------------------------------------------------------------------
+
+!---------------Calling variables--------------------------------------
+  real(8), intent(in),target   :: r1(:,:), r2(:,:) ! R-Amplitudes
+  real(8), intent(in)     :: t1(:),t2(:)           ! t-Amplitudes
+  integer, intent(in)     :: nbuf3    
+  real(8), intent(in)     :: buf2(*)           
+  real(8), intent(inout)  :: buf3(*)           
+  type(intermediates), intent(in)  :: B      
+  real(8), intent(inout)           :: sigma1(:,:),sigma2(:,:)  ! sigma-vectors
+!---------------Local Variables--------------------
+  real(8), allocatable :: tau(:)
+  real(8), pointer     :: r1_ptr(:),r2_ptr(:)
+  real(8), allocatable :: int_1b(:),sigma2_temp(:) 
+  integer :: off1,off2,irp,istart,mint,m,n,k,nint
+  integer :: off3,nd,i,j
+  logical :: done 
+!--------------------------------------------------
+
+  r1_ptr(1:ndimt1*rcw) => r1(1:ndimt1*rcw,1)
+  r2_ptr(1:ndimt2*rcw) => r2(1:ndimt2*rcw,1)
+
+
+!------------------------------------------
+! S(a*,i) = S(a*,i) - Fbar_mi(m,i)*r(a*,m)
+!------------------------------------------
+
+  call contraction_222 ((/"o2","o1"/),(/"c1","o2"/),(/"c1","o1"/),B%Fbar_mi,r1,sigma1,-1.0d0,1.0d0,nrep)
+
+!--------------------------------------------
+! S(a*,i) = S(a*,i) + Fbar_me(m,e)*r2(a*e,im)
+!--------------------------------------------
+
+    call contraction_242 ((/"o2","p2"/),(/"c1","p2","o1","o2"/), &
+   &   (/"c1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
+
+!-------------------------------------
+!S(a*,i) = S(a*,i) - W_mnie(mn,ie)*r2(a*e,mn)
+!-------------------------------------
+
+    call contraction_442((/"o2","o3","o1","p2"/),(/"c1","p2","o2","o3"/),(/"c1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
+   &         LeftTensor=B%W_mnie,RightTensor=r2_ptr)
+
+
+!--------------------------------------------
+!  S(a*b,ij) = S(a*b,ij)-W(mb,ij)*r(a*,m)
+!--------------------------------------------
+
+    call contraction_424 ((/"o3","p2","o1","o2"/),(/"c1","o3"/), &
+   &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%W_iemn, &
+   &    RightTensor=r1_ptr) 
+  
+!----------------------------------------------------
+! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
+!-----------------------------------------------------
+
+    call contraction_244 ((/"o3","o2"/),(/"c1","p2","o1","o3"/), &
+   & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
+
+!---------------------------------------------------------
+! S(a*b,ij) = S(a*b,ij) + P(ij) w_mbej(mb,ej)*r2(a*e,im)
+!----------------------------------------------------------
+
+      call contraction_444((/"o3","p2","p3","o2"/),(/"p1","p3","o1","o3"/), &
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_mbej)
+
+!--------------------------------------------------
+! S(ab,ij) = S(ab,ij) + w_ijmn(mn,ij) * r2(ab,mn)
+!--------------------------------------------------
+
+      call contraction_444((/"o3","o4","o1","o2"/),(/"c1","p2","o3","o4"/), &
+     &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ijmn)
+
+!----------------------------------------------------
+! S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
+!-----------------------------------------------------
+
+    call contraction_244 ((/"o3","o2"/),(/"c1","p2","o1","o3"/), &
+   & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
+
+!------------------------------------------------------
+! S(ab,ij) = S(ab,ij) + P(ab) f_bar_ae(b,e) * r2(a*e,ij)
+!------------------------------------------------------
+
+    call contraction_244 ((/"p2","p3"/),(/"c1","p3","o1","o2"/), &
+   & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2_ptr)
+
+!int_1b(a*,f) = int_1b(a*,f) - V(nm,fe)*r2(ea*,mn)  
+!S(a*b,ij) = S(a*b,ij) + int_1b(a*,f)*t2(fb,ij)  
+!-----------------------------------------------
+
+    allocate(int_1b(nfvv*rcw))
+    int_1b = 0.0d0
+
+    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p3","c1","o3","o4"/),(/"c1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
+
+    call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
+    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+
+    deallocate(int_1b)
+
+
+   end subroutine
+
 
    end module 

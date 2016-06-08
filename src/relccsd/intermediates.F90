@@ -10,7 +10,7 @@
 
     public f_bar_mi
     public f_bar_me
-    public f_bar_ae   ! these names are subject to be changed if better alternative is found out
+    public f_bar_ae   
     public w_ijmn
     public w_ejmb
     public w_mbej
@@ -44,7 +44,7 @@
 !--------------Calling variables---------------------------------------
      real(8), intent(in) :: foo(nfoo*rcw), fvo(rcw*nfvo)   ! Fock matrix elements
      real(8), intent(in) :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes
-     real(8), intent(inout):: ho(nfoo*rcw)                   ! Intermediate
+     real(8), intent(inout):: ho(nfoo*rcw)                 ! Intermediate
 !---------------Local variables----------------------------------------
      real(8), allocatable :: tau(:) !, vooo(:),vooo_sorted(:),vvoo(:)
 
@@ -62,7 +62,6 @@
    call contraction_442 ((/"o3","o2","p1","p2"/),(/"p1","p2","o1","o3"/),(/"o2","o1"/),ho,-1.0d0,1.0d0,nrep,RightTensor=tau)
 
    deallocate(tau) 
-
 
 !------------------------TERM-2---------------------
 !F_bar_mi(m,i) = F_bar_mi(m,i) - V(mn, ei) * T1(e,n) 
@@ -155,9 +154,7 @@
   subroutine w_ijmn(t1,t2,w_oooo)
 
 !---------------Description--------------------------------------------
-
 !     Calculates w_oooo intermediate
-
 !-----------------------------------------------------------------------
 
 #include "param.inc"
@@ -182,8 +179,10 @@
 !*************************************************
 
    call contraction_424 ((/"o1","o2","p1","o4"/),(/"p1","o3"/),(/"o1","o2","o4","o3"/),w_oooo, &
-           &      1.0d0,-1.0d0,nrep,RightTensor=t1)
+  &      1.0d0,-1.0d0,nrep,RightTensor=t1)
 
+   write(*,*)'dot product w_ijmn : dia1',& 
+     &  dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
 
 !******************************************************
 ! w_oooo(ij,mn) = w_oooo(ij,mn) +  V(ij,ef) * Tau(ef,mn)
@@ -196,8 +195,11 @@
 
    deallocate(tau)
 
-  end subroutine
+   write(*,*)'dot product w_ijmn : dia2',& 
+  &  dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
 
+
+  end subroutine
  
 !===============================================================================================
 
@@ -332,9 +334,9 @@
 
  subroutine w_iemn(t1,t2,w_ovoo,wbar_ovvo,w_oooo,hov)
 
- !---------------Description--------------------------------------------
- !     Calculates w_voov intermediate
- !-----------------------------------------------------------------------
+!---------------Description--------------------------------------------
+!     Calculates w_voov intermediate
+!-----------------------------------------------------------------------
 
 #include "param.inc"
 #include "symm.inc"
@@ -485,8 +487,7 @@
 ! w_amef(am,ef) = w_amef(am,ef) - V(nm,ef) * t(a,n) 
 !---------------------------------------------------
     call contraction_424 ((/"o2","o1","p3","p1"/),(/"p2","o2"/), &
-   &    (/"p2","o1","p3","p1"/),w_v_temp,-1.0d0, &
-   &    1.0d0,nrep,RightTensor=t1)
+   &    (/"p2","o1","p3","p1"/),w_v_temp,-1.0d0,1.0d0,nrep,RightTensor=t1)
 
  end subroutine
 
@@ -522,131 +523,12 @@
 
    call getvvvo_incore(w_vvvo)
 
-
 !-----------------------------------------------------------
 !   diagram1 : w_vvvo(ef,am)  = w_vvvo(ef,am) + p(ef) V(en,ag)*t2(fg,mn)  
 !-----------------------------------------------------------
 
-
   call contraction_444 ((/"p2","o2","p4","p1"/),(/"p3","p4","o1","o2"/),(/"p2","p3","p1","o1"/),w_vvvo, &
              &      -1.0d0,0.0d0,nrep,RightTensor=t2)
-
-
-
-!     allocate(vovv1(nv5*rcw),stat = AllocateStatus) 
-
-!     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
-!     call getvovv_incore(vovv1)
-
-!     CALL SRT26 (NREP,MULTB,.false.,.false.,NV,NO,NV,NV,MVV,JVVVOI4, &
-!    &            JJVV,JJVO,VOVV1,buf3)
-
-
-!     deallocate(vovv1) 
-
-!     CALL SRT1TT4 (NREP,MULTB,.false.,.false.,NV,NV,NO,NO, &
-!    &              MVO,J2VOVO,JJVO,JJVO,T2,buf2)
-
-!     allocate(temp(jvvvoI4(nrep+1)*rcw),stat=AllocateStatus) 
-
-!     IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
-!      temp =0.0d0
-
-!      OFF1 = 1
-!      OFF3 = 1
-!      OFF2 = 1
-
-!     DO IREP = 1, NREP
-!        JREP = MULTB(IREP+NREP,1+NREP,2)
-
-!        M = MVV(IREP)
-!        N = MVO(JREP)
-!        K = MVO(IREP)
-
-!        off2 = 1 + j2vovo(jrep)*rcw  
-
-!       CALL XGEMM ('N','T',M,N,K,-A1,buf3(OFF1),M,buf2(OFF2),N, &
-!   &               A0,temp(OFF3),M)
-
-!      OFF1 = OFF1 + M*K*rcw 
-!      OFF3 = OFF3 + M*N*rcw
-
-!     ENDDO
-
-!     CALL SRT1TS4 (NREP,MULTB,.false.,.true.,NV,NV,NV,NO,MVV,JVVVOI4, &
-!    &              JJVV,JJVO,temp,buf3)
-
-!      deallocate(temp)
-
-!      call xaxpy (nv5,A1,buf3,1,w_vvvo,1)
-
-!==========================================================================
-
- !    call auto_symmetry_offset(e,mvv,mvo,.true.)
- !    call auto_symmetry_offset(f,mvo,mvo,.true.)
- !    call auto_symmetry_offset(g,mvv,mvo,.true.)
-
- !    allocate(vovv1(nv5*rcw),stat = AllocateStatus) 
-
- !    IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
- !    call getvovv_incore(vovv1)
-
- !    CALL SRT26 (NREP,MULTB,.false.,.false.,NV,NO,NV,NV,MVV,JVVVOI4, &
- !   &            JJVV,JJVO,VOVV1,buf3)
-
- !    deallocate(vovv1) 
-
-!!    CALL SRT1TT4_exp (NREP,MULTB,.false.,.false.,NV,NV,NO,NO, &
-!!   &              MVO,J2VOVO,JJVO,JJVO,T2,buf2,f%twononDirac)
-
-
- !    CALL SRT1TT4 (NREP,MULTB,.false.,.false.,NV,NV,NO,NO, &
- !   &              MVO,J2VOVO,JJVO,JJVO,T2,buf2)
-
-
- !    allocate(temp(jvvvoI4(nrep+1)*rcw),stat=AllocateStatus) 
-
- !    IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
- !     temp =0.0d0
-
- !     OFF1 = 1
- !     OFF3 = 1
- !     OFF2 = 1
-
- !    DO IREP = 1, NREP
- !       JREP = MULTB(IREP+NREP,1+NREP,1)
- !       LREP = MULTB(IREP+NREP,1+NREP,2)
-
- !       M = MVV(IREP)
- !       N = MVO(LREP)
- !       K = MVO(JREP)
-
-
- !        off1 = 1 + e%twoDirac(irep,jrep)*rcw
- !        off2 = 1 + f%twononDirac(jrep,lrep)*rcw
- !        off3 = 1 + g%twononDirac(irep,lrep)*rcw 
-
-
-!!        off2 = 1 + j2vovo(jrep)*rcw  
-
- !      CALL XGEMM ('N','T',M,N,K,-A1,buf3(OFF1),M,buf2(OFF2),N, &
- !  &               A0,temp(OFF3),M)
-
-!!     OFF1 = OFF1 + M*K*rcw 
-!!     OFF3 = OFF3 + M*N*rcw
-
- !    ENDDO
-
- !    CALL SRT1TS4_exp (NREP,MULTB,.false.,.true.,NV,NV,NV,NO,MVV,JVVVOI4, &
- !   &              JJVV,JJVO,temp,buf3)
-
- !     deallocate(temp)
-
- !     call xaxpy (nv5,A1,buf3,1,w_vvvo,1)
 
 !------------------------------------------------------------
 !  diagram2 : w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m) 

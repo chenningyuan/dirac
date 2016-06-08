@@ -1405,6 +1405,16 @@ C           Write only active irreps (NO or NV > 0)
             WRITE (IW,1002) 'inactive virtual ',(NIV(I),I=1,NREP)
          ENDIF
       ENDIF
+
+
+! Dimension array for continuous orbital
+
+      DO IREP = 1, NREP
+
+       NCONT(IREP) = 1  
+
+      ENDDO
+
 C
 C
 C     Set up dimension arrays
@@ -1433,23 +1443,6 @@ C
          ENDDO
       ENDDO
 C
-
-
-      DO JREP = 1, NREP
-         DO IREP = 1, NREP
-            IJREP = MULTB(IREP,JREP,3)
-            KKOO(IREP,JREP) = POO(IJREP)
-            KKOV(IREP,JREP) = POV(IJREP)
-            KKVO(IREP,JREP) = PVO(IJREP)
-            KKVV(IREP,JREP) = PVV(IJREP)
-            POO(IJREP) = POO(IJREP) + NO(IREP)*NO(JREP)
-            POV(IJREP) = POV(IJREP) + NO(IREP)*NV(JREP)
-            PVO(IJREP) = PVO(IJREP) + NV(IREP)*NO(JREP)
-            PVV(IJREP) = PVV(IJREP) + NV(IREP)*NV(JREP)
-         ENDDO
-      ENDDO
-C
-
       DO JREP = 1, NREP
          IJREP = MULTB(JREP,JREP,1)
          IIOOT(JREP,JREP) = NOOT(IJREP)
@@ -1686,7 +1679,7 @@ C
          KVOOV  (IREP+1) = KVOOV  (IREP) + NVOO (IREP)*NV(IREP)
          KOVOO  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NO(IREP)
          KOVOV  (IREP+1) = KOVOO  (IREP) + NOVO (IREP)*NV(IREP)
-         KOVVOT  (IREP+1) = KOVVOT  (IREP) + NOVVT (IREP)*NO(IREP)
+         KOVVOT (IREP+1) = KOVVOT (IREP) + NOVVT (IREP)*NO(IREP)
          KVOVV  (IREP+1) = KVOVV  (IREP) + NVOV (IREP)*NV(IREP)
          KVOVO  (IREP+1) = KVOVO  (IREP) + NVOV (IREP)*NO(IREP)
          KVOOO  (IREP+1) = KVOOO  (IREP) + NVOO (IREP)*NO(IREP)

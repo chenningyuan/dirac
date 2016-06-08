@@ -25,8 +25,7 @@
 
      contains
 
-      SUBROUTINE SRT1TT4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,NPAIR, &
-     &                    OFF,OFF1,OFF2,BUF1,BUF2,OFFX)
+      SUBROUTINE SRT1TT4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -46,10 +45,9 @@
 
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
-      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
-      INTEGER OFFX(nrep,nrep)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
 
 !---------------Common Blocks--------------------------------------
 
@@ -57,15 +55,29 @@
 #include "param.inc"
 
 !---------------Local variables--------------------------------------
-!
+      type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(d,nrep,e,f,g,h)
+      call auto_symmetry_offset_triangular(d,IFIE,JFIE)
+      call auto_symmetry_offset_triangular(e,KFIE,LFIE)
+
+      call auto_symmetry_offset(f,IFIE,KFIE,.false.,.false.)
+      call auto_symmetry_offset(g,JFIE,LFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+
       IF (.NOT.DOINV) THEN
-         IF (FIRST) THEN
-            CALL XCOPY(OFF(2),A0,0,BUF2,1)
-         ELSE
-            CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
-         ENDIF
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
+      IF (FIRST) THEN
+        CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
+      ELSE
+        CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+      ENDIF
+      ELSE
+         ROW    = d%oneNonDirac
+         COLUMN = e%oneNonDirac
       ENDIF
 
 !     This loop shows the use of MULTB(*,*,2):
@@ -98,38 +110,37 @@
            ILREP = MULTB(IREP,LREP,2)
            JKREP = MULTB(JREP,KREP,2)
 
+           IKJL0 = h%twoNonDirac(IKREP,JLREP) & 
+     &          + (g%twoDirac(JREP,LREP)+(L-1)*JFIE(JREP))*f%oneDirac(IKREP)
 
-           IKJL0 = OFFX(IKREP,JLREP) & 
-     &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
+           IKJL0 = IKJL0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
 
-           IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+           ILJK0 = h%twoNonDirac(ILREP,JKREP) & 
+     &          + (g%twoDirac(JREP,KREP)+(K-1)*JFIE(JREP))*f%oneDirac(ILREP)
 
-           ILJK0 = OFFX(ILREP,JKREP) & 
-     &          + (OFF2(JREP,KREP)+(K-1)*JFIE(JREP)) * NPAIR(ILREP)
+           ILJK0 = ILJK0 + f%twoDirac(IREP,LREP) + (L-1)*IFIE(IREP)
 
-           ILJK0 = ILJK0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+           JKIL0 = h%twoNonDirac(JKREP,ILREP) & 
+     &          + (g%twoDirac(IREP,LREP)+(L-1)*IFIE(IREP)) * f%oneDirac(JKREP)
+           JKIL0 = JKIL0 + f%twoDirac(JREP,KREP) + (K-1)*JFIE(JREP)
 
-           JKIL0 = OFFX(JKREP,ILREP) & 
-     &          + (OFF2(IREP,LREP)+(L-1)*IFIE(IREP)) * NPAIR(JKREP)
-           JKIL0 = JKIL0 + OFF1(JREP,KREP) + (K-1)*JFIE(JREP)
-
-           JLIK0 = OFFX(JLREP,IKREP) & 
-     &          + (OFF2(IREP,KREP)+(K-1)*IFIE(IREP)) * NPAIR(JLREP)
-           JLIK0 = JLIK0 + OFF1(JREP,LREP) + (L-1)*JFIE(JREP)
+           JLIK0 = h%twoNonDirac(JLREP,IKREP) & 
+     &          + (g%twoDirac(IREP,KREP)+(K-1)*IFIE(IREP)) * f%oneDirac(JLREP)
+           JLIK0 = JLIK0 + f%twoDirac(JREP,LREP) + (L-1)*JFIE(JREP)
            DO J = 1, JFIE(JREP)
              IMIN = 1
              IF (IREP.EQ.JREP) IMIN = J + 1
              N = IFIE(IREP) - IMIN + 1
              IKJL = IKJL0 + IMIN-1
              ILJK = ILJK0 + IMIN-1
-             JKIL = JKIL0 + (IMIN-1)*NPAIR(JKREP)
-             JLIK = JLIK0 + (IMIN-1)*NPAIR(JLREP)
+             JKIL = JKIL0 + (IMIN-1)*f%oneDirac(JKREP)
+             JLIK = JLIK0 + (IMIN-1)*f%oneDirac(JLREP)
              IF (DOINV) THEN
                 CALL XCOPY (N,BUF1(IKJL*RCW+1),1,BUF2(IJKL),1)
                 CALL XAXPY (N,-A1,BUF1(ILJK*RCW+1),1,BUF2(IJKL),1)
-                NP = NPAIR(JKREP)
+                NP = f%oneDirac(JKREP)
                 CALL XAXPY(N,-A1,BUF1(JKIL*RCW+1),NP,BUF2(IJKL),1)
-                NP = NPAIR(JLREP)
+                NP = f%oneDirac(JLREP)
                 CALL XAXPY (N,A1,BUF1(JLIK*RCW+1),NP,BUF2(IJKL),1)
              ELSE
                 IF ((.NOT.FIRST).OR.(IKREP.EQ.1)) &
@@ -140,18 +151,18 @@
                   CALL XSCAL (N,-A1,BUF2(ILJK*RCW+1),1)
                 ENDIF
                 IF ((.NOT.FIRST).OR.(JKREP.EQ.1)) THEN
-                  NP = NPAIR(JKREP)
+                  NP = f%oneDirac(JKREP)
                   CALL XCOPY(N,BUF1(IJKL),1,BUF2(JKIL*RCW+1),NP)
                   CALL XSCAL(N,-A1,BUF2(JKIL*RCW+1),NP)
                 ENDIF
                 IF ((.NOT.FIRST).OR.(JLREP.EQ.1))  THEN
-                  NP = NPAIR(JLREP)
+                  NP = f%oneDirac(JLREP)
                   CALL XCOPY (N,BUF1(IJKL),1,BUF2(JLIK*RCW+1),NP)
                 ENDIF
              ENDIF
              IJKL = IJKL + RCW * N
-             IKJL0 = IKJL0 + NPAIR(IKREP)
-             ILJK0 = ILJK0 + NPAIR(ILREP)
+             IKJL0 = IKJL0 + f%oneDirac(IKREP)
+             ILJK0 = ILJK0 + f%oneDirac(ILREP)
              JKIL0 = JKIL0 + 1
              JLIK0 = JLIK0 + 1
            ENDDO
@@ -161,12 +172,12 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(d,e,f,g,h)
       RETURN
       END
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1TT5_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,NPAIR, &
-     &                    OFF,OFF1,OFF2,BUF1,BUF2,OFFX)
+      SUBROUTINE SRT1TT5_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -184,10 +195,9 @@
 
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
-      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
-      INTEGER OFFX(nrep,nrep)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
 
 !---------------Common Blocks--------------------------------------
 
@@ -195,15 +205,29 @@
 #include "param.inc"
 
 !---------------Local variables--------------------------------------
-!
+      type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(d,nrep,e,f,g,h)
+      call auto_symmetry_offset_triangular(d,IFIE,JFIE)
+      call auto_symmetry_offset_triangular(e,KFIE,LFIE)
+
+      call auto_symmetry_offset(f,IFIE,KFIE,.false.,.false.)
+      call auto_symmetry_offset(g,LFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+
       IF (.NOT.DOINV) THEN
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
          IF (FIRST) THEN
-            CALL XCOPY(OFF(2),A0,0,BUF2,1)
+            CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
          ELSE
-            CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
          ENDIF
+      ELSE
+         ROW    = d%oneNonDirac
+         COLUMN = e%oneNonDirac
       ENDIF
 
       IJKL = 1
@@ -220,32 +244,32 @@
            IREP = MULTB(JREP,IJREP+NREP,2)
            IF (IREP.LT.JREP) GOTO 20
            JLREP = MULTB(JREP,LREP,2)
-           LJREP = MULTB(LREP,JREP,2) !a bra type symmetry product
-           KJREP = MULTB(KREP,JREP,2) !a bra type symmetry product
+           LJREP = MULTB(LREP,JREP,2) !a bra class symmetry product
+           KJREP = MULTB(KREP,JREP,2) !a bra class symmetry product
            IKREP = MULTB(IREP,KREP,2)
            ILREP = MULTB(IREP,LREP,2)
-           LIREP = MULTB(LREP,IREP,2) !a bra type symmetry product
-           KIREP = MULTB(KREP,IREP,2) !a bra type symmetry product
+           LIREP = MULTB(LREP,IREP,2) !a bra class symmetry product
+           KIREP = MULTB(KREP,IREP,2) !a bra class symmetry product
            JKREP = MULTB(JREP,KREP,2)
 
-           IKLJ0 = OFFX(IKREP,LJREP) & 
-     &          + (OFF2(LREP,JREP)+L-1)* NPAIR(IKREP)
+           IKLJ0 = h%twoDirac(IKREP,LJREP) & 
+     &          + (g%twoDirac(LREP,JREP)+L-1)* f%oneDirac(IKREP)
 
-           IKLJ0 = IKLJ0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+           IKLJ0 = IKLJ0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
 
-           ILKJ0 = OFFX(ILREP,KJREP) & 
-     &          + (OFF2(KREP,JREP)+K-1) * NPAIR(ILREP)
+           ILKJ0 = h%twoDirac(ILREP,KJREP) & 
+     &          + (g%twoDirac(KREP,JREP)+K-1) * f%oneDirac(ILREP)
 
-           ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+           ILKJ0 = ILKJ0 + f%twoDirac(IREP,LREP) + (L-1)*IFIE(IREP)
 
-           JKLI0 = OFFX(JKREP,LIREP) &
-     &          + (OFF2(LREP,IREP)+L-1) * NPAIR(JKREP)
+           JKLI0 = h%twoDirac(JKREP,LIREP) &
+     &          + (g%twoDirac(LREP,IREP)+L-1) * f%oneDirac(JKREP)
 
-           JKLI0 = JKLI0 + OFF1(JREP,KREP) + (K-1)*JFIE(JREP)
+           JKLI0 = JKLI0 + f%twoDirac(JREP,KREP) + (K-1)*JFIE(JREP)
 
-           JLKI0 = OFFX(JLREP,KIREP) &
-     &          + (OFF2(KREP,IREP)+K-1) * NPAIR(JLREP)
-           JLKI0 = JLKI0 + OFF1(JREP,LREP) + (L-1)*JFIE(JREP)
+           JLKI0 = h%twoDirac(JLREP,KIREP) &
+     &          + (g%twoDirac(KREP,IREP)+K-1) * f%oneDirac(JLREP)
+           JLKI0 = JLKI0 + f%twoDirac(JREP,LREP) + (L-1)*JFIE(JREP)
 
            DO J = 1, JFIE(JREP)
              IMIN = 1
@@ -253,14 +277,14 @@
              N = IFIE(IREP) - IMIN + 1
              IKLJ = IKLJ0 + IMIN-1
              ILKJ = ILKJ0 + IMIN-1
-             JKLI = (JKLI0+(IMIN-1)*NPAIR(JKREP)*LFIE(LREP)+J-1)*RCW+1 
-             JLKI = (JLKI0+(IMIN-1)*NPAIR(JLREP)*KFIE(KREP)+J-1)*RCW+1 
+             JKLI = (JKLI0+(IMIN-1)*f%oneDirac(JKREP)*LFIE(LREP)+J-1)*RCW+1 
+             JLKI = (JLKI0+(IMIN-1)*f%oneDirac(JLREP)*KFIE(KREP)+J-1)*RCW+1 
              IF (DOINV) THEN
                 CALL XCOPY (N,BUF1(IKLJ*RCW+1),1,BUF2(IJKL),1)
                 CALL XAXPY (N,-A1,BUF1(ILKJ*RCW+1),1,BUF2(IJKL),1)
-                NP = NPAIR(JKREP)*LFIE(LREP)
+                NP = f%oneDirac(JKREP)*LFIE(LREP)
                 CALL XAXPY(N,-A1,BUF1(JKLI),NP,BUF2(IJKL),1)
-                NP = NPAIR(JLREP)*KFIE(KREP)
+                NP = f%oneDirac(JLREP)*KFIE(KREP)
                 CALL XAXPY (N,A1,BUF1(JLKI),NP,BUF2(IJKL),1)
              ELSE
                 IF ((.NOT.FIRST).OR.(IKREP.EQ.1)) &
@@ -272,22 +296,20 @@
 
                 ENDIF
                 IF ((.NOT.FIRST).OR.(JKREP.EQ.1)) THEN
-                  NP = NPAIR(JKREP)*LFIE(LREP)
+                  NP = f%oneDirac(JKREP)*LFIE(LREP)
                   CALL XCOPY(N,BUF1(IJKL),1,BUF2(JKLI),NP)
                   CALL XSCAL(N,-A1,BUF2(JKLI),NP)
 
                 ENDIF
                 IF ((.NOT.FIRST).OR.(JLREP.EQ.1))  THEN
-                  NP = NPAIR(JLREP)*KFIE(KREP)
+                  NP = f%oneDirac(JLREP)*KFIE(KREP)
                   CALL XCOPY (N,BUF1(IJKL),1,BUF2(JLKI),NP)
 
                 ENDIF
              ENDIF
              IJKL = IJKL + RCW * N
-             IKLJ0 = IKLJ0 + NPAIR(IKREP)*LFIE(LREP)
-             ILKJ0 = ILKJ0 + NPAIR(ILREP)*KFIE(KREP)
-!             JKLI0 = JKLI0 + 1
-!             JLKI0 = JLKI0 + 1
+             IKLJ0 = IKLJ0 + f%oneDirac(IKREP)*LFIE(LREP)
+             ILKJ0 = ILKJ0 + f%oneDirac(ILREP)*KFIE(KREP)
            ENDDO
  20       CONTINUE
          ENDDO
@@ -295,6 +317,7 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(d,e,f,g,h)
       RETURN
       END
 
@@ -330,6 +353,7 @@
       type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(d,nrep,e,f,g,h)
 
       call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
       call auto_symmetry_offset_triangular(e,KFIE,LFIE)
@@ -398,12 +422,12 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(d,e,f,g,h)
       RETURN
       END
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT1SS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE, &
-     &              NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
+      SUBROUTINE SRT1SS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -421,9 +445,9 @@
 
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
-      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
 
 !---------------Common Blocks--------------------------------------
 
@@ -431,13 +455,29 @@
 #include "param.inc"
 
 !---------------Local variables--------------------------------------
-!
+      type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(d,nrep,e,f,g,h)
+      call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
+
+      call auto_symmetry_offset(f,IFIE,KFIE,.false.,.false.)
+      call auto_symmetry_offset(g,JFIE,LFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+
+      IF (.NOT.DOINV) THEN
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
       IF (FIRST) THEN
-        CALL XCOPY(OFF(2),A0,0,BUF2,1)
+        CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
       ELSE
-        CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+        CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
+      ENDIF
+      ELSE
+         ROW    = d%oneNonDirac
+         COLUMN = e%oneNonDirac
       ENDIF
 
       IJKL = 1
@@ -450,9 +490,9 @@
            IREP = MULTB(JREP,KLREP+NREP,2)
            JLREP = MULTB(JREP,LREP,2)
            IKREP = MULTB(IREP,KREP,2)
-           IKJL0 = OFF(JLREP)  & 
-     &          + (OFF2(JREP,LREP)+(L-1)*JFIE(JREP)) * NPAIR(IKREP)
-           IKJL0 = IKJL0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+           IKJL0 = h%twoNonDirac(IKREP,JLREP)  & 
+     &          + (g%twoDirac(JREP,LREP)+(L-1)*JFIE(JREP)) * f%oneDirac(IKREP)
+           IKJL0 = IKJL0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
 
             DO J = 1, JFIE(JREP)
             IF (DOINV) THEN
@@ -462,7 +502,7 @@
      &        CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKJL0*RCW+1),1)
             ENDIF
             IJKL = IJKL + IFIE(IREP) * RCW
-            IKJL0 = IKJL0 + NPAIR(IKREP)
+            IKJL0 = IKJL0 + f%oneDirac(IKREP)
            ENDDO
  20       CONTINUE
          ENDDO
@@ -470,6 +510,7 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(d,e,f,g,h)
       RETURN
       END
 !=======================================================================
@@ -506,6 +547,7 @@
       type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset_triangular(e,KFIE,LFIE)
       if (all(IFIE == JFIE)) then 
       call auto_symmetry_offset_triangular(f,IFIE,JFIE)
@@ -557,6 +599,7 @@
         ENDDO
  10    CONTINUE
       ENDDO
+      call dealloc_array(e,f,g,h)
 
       RETURN
       END
@@ -595,6 +638,7 @@
       type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset_triangular(e,IFIE,JFIE)
       if (all(KFIE == LFIE)) then !this may be a rstriction since it may happen that the holes and particles are equal in number.
       call auto_symmetry_offset_triangular(f,KFIE,LFIE)
@@ -650,6 +694,7 @@
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
+      call dealloc_array(e,f,g,h)
 
       RETURN
       END
@@ -686,6 +731,7 @@
      type(Offset) :: e,f,g,h 
 !---------------Executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset(e,IFIE,JFIE,.false.,.false.)
 
       if (all(KFIE == LFIE)) then !this may be a restriction since it may happen that the holes and particles are equal in number.
@@ -732,6 +778,7 @@
        IJKL = IJKL + M * N * RCW
       ENDDO
 
+      call dealloc_array(e,f,g,h)
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -769,6 +816,7 @@
      type(Offset) :: e,f,g,h 
 !---------------Executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset(e,IFIE,JFIE,.false.,.false.)
 
      if (all(KFIE == LFIE)) then !this may be a restriction since it may happen that the holes and particles are equal in number.
@@ -813,6 +861,8 @@
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
+
+      call dealloc_array(e,f,g,h)
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -847,6 +897,7 @@
        type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset(e,IFIE,JFIE,.false.,.false.)
       if (all(KFIE == LFIE)) then !this may be a rstriction since it may happen that the holes and particles are equal in number.
       call auto_symmetry_offset_triangular(f,KFIE,LFIE)
@@ -892,11 +943,11 @@
        IJKL = IJKL + M * N * RCW
       ENDDO
 
+      call dealloc_array(e,f,g,h)
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SRT16_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE, &
-     &                  NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
+      SUBROUTINE SRT16_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)
 
@@ -915,9 +966,9 @@
 
       REAL*8 BUF1(*),BUF2(*)
       INTEGER NREP, MULTB(64,64,2)
-      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
-      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST, DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
 
 !---------------Common Blocks--------------------------------------
 
@@ -925,14 +976,32 @@
 #include "param.inc"
 
 !---------------Local variables--------------------------------------
-!
+       type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
 
 ! 15-8-2003 LV : Removed initialization of buf2, should not be necessary
 ! because we go from a square array to a square
 
+      call alloc_array(d,nrep,e,f,g,h)
+      call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
 
-      if (doinv) write(*,*)'WARNING, not doing the right thing'
+      call auto_symmetry_offset(f,IFIE,LFIE,.false.,.false.)
+      call auto_symmetry_offset(g,KFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+      IF (.NOT.DOINV) THEN
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
+         IF (FIRST) THEN
+            CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+         ENDIF
+      ELSE
+         ROW    = d%oneNonDirac
+         COLUMN = e%oneNonDirac
+      ENDIF
 
       IJKL = 1
       DO KLREP = 1, NREP
@@ -944,19 +1013,19 @@
            IREP = MULTB(JREP,KLREP+NREP,2)
            KJREP = MULTB(KREP,JREP,2)
            ILREP = MULTB(IREP,LREP,2)
-           ILKJ0 = OFF(KJREP) & 
-     &          + (OFF2(KREP,JREP)+K-1)*NPAIR(ILREP)
-           ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+           ILKJ0 = h%twoDirac(ILREP,KJREP) & 
+     &          + (g%twoDirac(KREP,JREP)+K-1)*f%oneDirac(ILREP)
+           ILKJ0 = ILKJ0 + f%twoDirac(IREP,LREP) + (L-1)*IFIE(IREP)
             DO J = 1, JFIE(JREP)
             IF (DOINV) THEN
                IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) &
-     &         CALL XCOPY(IFIE(IREP),BUF2(ILKJ0*RCW+1),1,BUF1(IJKL),1)
+     &         CALL XCOPY(IFIE(IREP),BUF1(ILKJ0*RCW+1),1,BUF2(IJKL),1)
             ELSE
                IF ((.NOT.FIRST).OR.(KJREP.EQ.1)) &
      &         CALL XCOPY(IFIE(IREP),BUF1(IJKL),1,BUF2(ILKJ0*RCW+1),1)
             ENDIF
             IJKL = IJKL + RCW * IFIE(IREP)
-            ILKJ0 = ILKJ0 + NPAIR(ILREP) * KFIE(KREP)
+            ILKJ0 = ILKJ0 + f%oneDirac(ILREP) * KFIE(KREP)
            ENDDO
  20       CONTINUE
          ENDDO
@@ -964,6 +1033,7 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(d,e,f,g,h)
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -998,6 +1068,7 @@
       type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
       if (all(IFIE == JFIE)) then 
       call auto_symmetry_offset_triangular(f,IFIE,JFIE)
@@ -1040,6 +1111,7 @@
  10    CONTINUE
       ENDDO
  
+      call dealloc_array(e,f,g,h)
       RETURN
       END
 
@@ -1075,6 +1147,7 @@
       type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset_triangular(e,KFIE,LFIE)
       if (all(IFIE == JFIE)) then 
       call auto_symmetry_offset_triangular(f,IFIE,JFIE)
@@ -1126,6 +1199,7 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(e,f,g,h)
       RETURN
       END
 !===========================================================================
@@ -1160,6 +1234,7 @@
      type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
       if (all(IFIE == JFIE)) then 
       call auto_symmetry_offset_triangular(f,IFIE,JFIE)
@@ -1202,6 +1277,7 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(e,f,g,h)
       RETURN
       END
 
@@ -1240,6 +1316,7 @@
 !---------------Executable code--------------------------------------
 
 
+      call alloc_array(e,nrep,f,g,h)
       call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
       if (all(IFIE == JFIE)) then 
       call auto_symmetry_offset_triangular(f,IFIE,JFIE)
@@ -1254,11 +1331,11 @@
         ROW    = f%onenonDirac
         COLUMN = e%onenonDirac  
       ELSE
+        CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
         ROW    = g%oneDirac
         COLUMN = lfie 
       ENDIF
 
-      CALL XCOPY(h%oneNonDirac(1),A0,0,BUF2,1)
       IJKL = 1
       DO KLREP = 1, NREP
        IJREP = MULTB(KLREP+NREP,1+NREP,1)
@@ -1282,6 +1359,7 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(e,f,g,h)
       RETURN
       END
       
@@ -1317,7 +1395,11 @@
 
 !---------------Local variables--------------------------------------
        type(Offset) :: d,e,f,g,h
+       integer :: offx(nrep,nrep)
 !---------------Executable code--------------------------------------
+
+
+      call alloc_array(d,nrep,e,f,g,h) 
 
       call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
       call auto_symmetry_offset_triangular(e,KFIE,LFIE)
@@ -1334,9 +1416,11 @@
          ELSE
             CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
          ENDIF
+         offx = h%twoDirac 
       ELSE
          ROW    = d%oneNonDirac
          COLUMN = e%oneNonDirac
+         offx = h%twoNonDirac 
       ENDIF
 
       IJKL = 1
@@ -1355,10 +1439,10 @@
            LJREP = MULTB(LREP,JREP,2)
            ILREP = MULTB(IREP,LREP,2)
            IKREP = MULTB(IREP,KREP,2)
-           ILKJ0 = h%twoDirac(ILREP,KJREP) & 
+           ILKJ0 = offx(ILREP,KJREP) & 
      &          + (g%twoDirac(KREP,JREP)+K-1)*f%oneDirac(ILREP)
            ILKJ0 = ILKJ0 + f%twoDirac(IREP,LREP) + (L-1)*IFIE(IREP)
-           IKLJ0 = h%twoDirac(IKREP,LJREP) &
+           IKLJ0 = offx(IKREP,LJREP) &
      &          + (g%twoDirac(LREP,JREP)+L-1)*f%oneDirac(IKREP)
            IKLJ0 = IKLJ0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
 
@@ -1383,6 +1467,9 @@
         ENDDO
  10    CONTINUE
       ENDDO
+
+
+      call dealloc_array(d,e,f,g,h) 
 
       RETURN
       END
@@ -1410,7 +1497,7 @@
       INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
-      INTEGER ROW(NREP),COLUMN(NREP)
+      INTEGER ROW(nrep),COLUMN(nrep)
 
 !---------------Common Blocks--------------------------------------
 
@@ -1424,6 +1511,7 @@
 
 !---------------Executable code--------------------------------------
 
+      call alloc_array(d,nrep,e,f,g,h)
       call auto_symmetry_offset_triangular(d,IFIE,JFIE)
       call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
 
@@ -1502,6 +1590,9 @@
  10    CONTINUE
       ENDDO
 
+
+      call dealloc_array(d,e,f,g,h)
+
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1528,7 +1619,7 @@
       INTEGER NREP, MULTB(64,64,2)
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
-      INTEGER ROW(NREP),COLUMN(NREP)
+      INTEGER ROW(nrep),COLUMN(nrep)
 
 !---------------Common Blocks--------------------------------------
 
@@ -1537,7 +1628,11 @@
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
+      integer :: offx(nrep,nrep)
 !---------------Executable code--------------------------------------
+
+
+      call alloc_array(d,nrep,e,f,g,h)
 
       call auto_symmetry_offset_triangular(d,IFIE,JFIE)
       call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
@@ -1549,6 +1644,7 @@
       IF (.NOT.DOINV) THEN
          ROW    = f%oneDirac  
          COLUMN = g%oneDirac  
+         offx   = h%twoNonDirac 
          IF (FIRST) THEN
             CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
          ELSE
@@ -1557,6 +1653,7 @@
       ELSE
          ROW = d%oneNonDirac 
          COLUMN = e%oneNonDirac 
+         offx = h%twoNonDirac 
       ENDIF
 
       IJKL = 1
@@ -1573,10 +1670,10 @@
            JKREP = MULTB(JREP,KREP,2)
            ILREP = MULTB(IREP,LREP,2)
            JLREP = MULTB(JREP,LREP,2)
-           IKJL0 = h%twoNonDirac(IKREP,JLREP) & 
+           IKJL0 = offx(IKREP,JLREP) & 
      &          + (g%twoDirac(JREP,LREP)+(L-1)*JFIE(JREP)) * f%oneDirac(IKREP)
            IKJL0 = IKJL0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
-           JKIL0 = h%twoNonDirac(JKREP,ILREP) &
+           JKIL0 = offx(JKREP,ILREP) &
      &          + (g%twoDirac(IREP,LREP)+(L-1)*IFIE(IREP)) * f%oneDirac(JKREP)
            JKIL0 = JKIL0 + f%twoDirac(JREP,KREP) + (K-1)*JFIE(JREP)
            DO J = 1, JFIE(JREP)
@@ -1608,6 +1705,9 @@
         ENDDO
  10    CONTINUE
       ENDDO
+
+
+      call dealloc_array(d,e,f,g,h)
 
       RETURN
       END
@@ -1644,6 +1744,8 @@
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h 
 !---------------Executable code--------------------------------------
+
+      call alloc_array(e,nrep,f,g,h)
 
       call auto_symmetry_offset_triangular(e,IFIE,JFIE)
       if (all(KFIE == LFIE)) then !this may be a restriction since it may happen that the holes and particles are equal in number.
@@ -1698,6 +1800,7 @@
        IJKL = IJKL + M * N * RCW
       ENDDO
 
+      call dealloc_array(e,f,g,h)
       RETURN
       END
 

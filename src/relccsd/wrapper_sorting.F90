@@ -20,7 +20,6 @@
     public indices 
     integer      :: sortType
     logical      :: do_direct, do_exchange
-    logical      :: t_direct, t_exchange
     character(20):: arraytype
     character(2),pointer :: array_original(:)
     character(2)         :: exchange(4)
@@ -28,8 +27,7 @@
     type sorting_list
       integer :: num 
       integer :: trans
-!     contains
-      procedure(),pointer, nopass :: unrestricted !, restricted 
+      procedure(),pointer, nopass :: unrestricted  
       procedure(),pointer, nopass :: restricted_braket, restricted_bra, restricted_ket 
     endtype sorting_list 
 
@@ -53,7 +51,7 @@
     endtype bit_processing 
 
     type presorting
-       real*8, allocatable :: presorted(:) 
+       real*8,allocatable :: presorted(:) 
        real*8, pointer :: integral(:)
     endtype
    external SRT1SS4
@@ -512,7 +510,6 @@
 
     if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
-
 !   if (arraytype=='unrestricted') then 
 
     if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
@@ -528,7 +525,7 @@
 
    if (do_exchange) then
 
-! In this mode I generate all the antisymmetrized components of an array on-the-fly, whereever the interchange is possible between the same orbital-type (i.e, h or p).
+! In this mode I generate all the antisymmetrized components of an array on-the-fly, wherever the interchange is possible between the same orbital-type (i.e, h or p).
 ! I have included the change in sign due to anti-symmetrization.
 
        write(*,*)'=====contraction will be done in exchange mode====='
@@ -637,13 +634,15 @@
 
   end subroutine
 
-  subroutine sorting_for_blas(save_index,do_inverse,if_trans,sorted,row,column,presorted,if_TotSym) 
+  subroutine sorting_for_blas(Sort_Type,orb_array,save_index,do_inverse,if_trans,sorted,row,column,presorted,if_TotSym) 
 
 !---------------description-------
 !        carry-out the sorting.
 !---------------------------------
 
 !--------------calling variables---------------
+    integer,intent(in)                    :: Sort_Type 
+    character(2),intent(in)               :: orb_array(:)
     real(8),intent(in),target,optional    :: presorted(:)
     logical,intent(in),optional           :: if_TotSym
     integer,intent(inout)                 :: save_index
@@ -654,19 +653,18 @@
 !----------------------------------------------
 
 !-------local variables------------------------
-!   character(2) :: array_exchange(4)
-    integer      :: reorder_v(4)
-    logical      :: do_TotSym
+    character(20) :: Array_Type
+    logical      :: do_TotSym,if_bra,if_ket
     integer      :: i,j,k,l 
-    character(2) :: p,q,r,s
-    integer      :: sort_type_dummy,shift,shift1,AllocateStatus
+    integer      :: sort_type_dummy,AllocateStatus,total_dim
+
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
 
     type(sorting_list)     :: a
-    type(middle_indices)   :: c(0:30)!,e  
-    type(Offset)   :: e,f   ! Indices to generate the automatic symmetry offsets.   
+    type(middle_indices)   :: c(-14:5)!,e  
+    type(Offset)           :: e,f      
     type(more_indices)     :: m(0:15)  
     type(bit_processing)   :: d 
     type(presorting),target  :: V 
@@ -676,8 +674,8 @@
     type(sorting_list) :: srt_31(0:5)
     type(sorting_list) :: srt_13(0:5)
 ! (2,2)->(2,2) type of sorting routines         
-       srt_22(1)%unrestricted => SRT1SS4   
-       srt_22(2)%unrestricted => SRT16     
+       srt_22(1)%unrestricted => SRT1SS4_exp   
+       srt_22(2)%unrestricted => SRT16_exp     
        srt_22(3)%unrestricted => SRT1L1    
        srt_22(4)%unrestricted => SRT1R1 
        srt_22(1)%restricted_braket => SRT1TT4_exp
@@ -719,141 +717,108 @@
 
 !----------------------------------------------
 
+    Array_Type = 'unrestricted'
+
+    if_bra = all(orb_array(1:size(orb_array)/2)(1:1) == orb_array(1)(1:1)) 
+    if_ket = all(orb_array((size(orb_array)/2)+1:size(orb_array))(1:1) == orb_array((size(orb_array)/2)+1)(1:1)) 
+
+    if (if_ket) Array_Type = 'restricted_ket' 
+
+    if (if_bra) then
+     Array_Type = 'restricted_bra'  
+     if (if_ket) Array_Type = 'restricted_braket' 
+    endif 
+
      save_index = save_index - 1
 
-      do_TotSym =.false.
+     do_TotSym =.false.
 
      if (present(if_TotSym)) do_TotSym = if_TotSym
 
-     shift     = 0
-     shift1    = 0
-
      if (.not.present(presorted)) then
-     call integral_fetching_incore(V) 
+
+     call input_index(orb_array,c,d)
+
+     call alloc_array(e,nrep,f)
+      select case(Array_Type)
+ 
+      case('restricted_braket')
+
+      call auto_symmetry_offset_triangular(e,c(d%I)%orbital_type,c(d%J)%orbital_type)
+      call auto_symmetry_offset_triangular(f,c(d%K)%orbital_type,c(d%L)%orbital_type)
+
+       case('restricted_bra')
+
+      call auto_symmetry_offset_triangular(e,c(d%I)%orbital_type,c(d%J)%orbital_type)
+      call auto_symmetry_offset(f,c(d%K)%orbital_type,c(d%L)%orbital_type,.false.,.false.)
+
+       case('restricted_ket')
+
+      call auto_symmetry_offset(e,c(d%I)%orbital_type,c(d%J)%orbital_type,.false.,.false.)
+      call auto_symmetry_offset_triangular(f,c(d%K)%orbital_type,c(d%L)%orbital_type)
+
+       case('unrestricted')
+
+      call auto_symmetry_offset(e,c(d%I)%orbital_type,c(d%J)%orbital_type,.false.,.false.)
+      call auto_symmetry_offset(f,c(d%K)%orbital_type,c(d%L)%orbital_type,.false.,.false.)
+
+       end select
+
+       total_dim = dot_product(e%oneNonDirac(1:nrep),f%oneNonDirac(1:nrep)) 
+
+      call dealloc_array(e,f)
+
+      allocate(V%presorted(total_dim*rcw))
+
+     call integral_fetching_incore(orb_array,V%presorted) 
 
      B%integral => v%presorted(1:size(v%presorted)) 
 
-     endif
-
-     if (present(presorted)) then
+     elseif (present(presorted)) then
 
       B%integral => presorted(1:size(presorted)) 
 
      endif
 
-     sort_type_dummy = sortType
+     sort_type_dummy = Sort_Type
 
      if (if_trans == 'T') then
-       if (sortType == 31) sort_type_dummy = 13
-       if (sortType == 13) sort_type_dummy = 31
+       if (Sort_Type == 31) sort_type_dummy = 13
+       if (Sort_Type == 13) sort_type_dummy = 31
      endif
 
-    if (sortType == 22) then
-
-     if ((.not.do_TotSym).and.(.not.do_inverse)) shift=15  
+    if (Sort_Type == 22) then
 
      if (save_index > 0) then
-      select case(arraytype)
+      select case(Array_Type)
         
          case('unrestricted')
 
-       call input_index(c,d,m)
+       call input_index(orb_array,c,d)
 
-       if (do_inverse) then
-
-       shift1 = 4
-
-       if (if_trans=='N') then
-        column =  c(d%ket+shift1)%tuple_combInd
-        row    =  c(d%bra+shift1)%tuple_combInd
-       else
-        row    = c(d%ket+shift1)%tuple_combInd
-        column = c(d%bra+shift1)%tuple_combInd
-       endif
-       else
-       if (if_trans=='N') then
-        row     = c(d%bra_reorder)%tuple_combInd
-        column  = c(d%ket_reorder)%tuple_combInd     
-       else 
-        column  = c(d%bra_reorder)%tuple_combInd
-        row     = c(d%ket_reorder)%tuple_combInd     
-       endif
-       endif
-
-      if (save_index==3) then
-
-       shift1 = 4
-       call srt_22(save_index)%unrestricted (nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type, &
-     &         c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%braket)%totsym%full_array,c(d%bra_reorder+shift1)%tuple, &
-     &         B%integral,sorted) 
-
-      elseif (save_index==4) then
-
-       call srt_22(save_index)%unrestricted (nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%K)%orbital_type, &
-     &         c(d%L)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%braket)%totsym%full_array,c(d%ket_reorder+shift1)%tuple, &
-     &         B%integral,sorted) 
-
-      elseif (save_index==2) then
-
+    if (if_trans=='N') then
       call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
-     &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
-     &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
-    
-      else
-
+     &     c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
+    else
       call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
-     &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
-     &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
-
-
-       endif
+     &     c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
+    endif
 
          case('restricted_braket') 
 
-      call input_index(c,d)
+      call input_index(orb_array,c,d)
 
-       if (do_inverse) then
-       if (if_trans=='N') then
-        row     = c(d%bra)%triangular%tuple_combInd
-        column  = c(d%ket)%triangular%tuple_combInd     
-       else 
-        column  = c(d%bra)%triangular%tuple_combInd
-        row     = c(d%ket)%triangular%tuple_combInd     
-       endif
-       else
-       if (if_trans=='N') then
-        row     = c(d%bra_reorder)%tuple_combInd
-        column  = c(d%ket_reorder)%tuple_combInd     
-       else 
-        column  = c(d%bra_reorder)%tuple_combInd
-        row     = c(d%ket_reorder)%tuple_combInd     
-       endif
-       endif
-
-
-     if (save_index==2) then
-
-        call auto_symmetry_offset(e,c(d%bra_reorder)%tuple_combInd,c(d%ket_reorder)%tuple_combInd,.true.,.true.)
-
+    if (if_trans=='N') then
         call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
-       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted,e%twoDirac)
-
-
-     else
-
-       call auto_symmetry_offset(e,c(d%bra_reorder)%tuple_combInd,c(d%ket_reorder)%tuple_combInd,.true.,.true.)
-
+       &    c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
+    else
         call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-       &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
-       &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted,e%twoNonDirac)
-
-      endif
+       &    c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
+    endif
 
          case('restricted_bra')
 
-      call input_index(c,d)
-
+      call input_index(orb_array,c,d)
 
     if (if_trans=='N') then
       call srt_22(save_index)%restricted_bra(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
@@ -862,12 +827,10 @@
       call srt_22(save_index)%restricted_bra(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)  
     endif
-
 
       case('restricted_ket')
 
-      call input_index(c,d)
-
+      call input_index(orb_array,c,d)
 
     if (if_trans=='N') then
       call srt_22(save_index)%restricted_ket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
@@ -876,7 +839,6 @@
       call srt_22(save_index)%restricted_ket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
      & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)  
     endif
-
 
        end select
      else
@@ -891,61 +853,50 @@
 
      endif
 
-     call input_index(c,d)
-       shift1 = 4
-      select case(arraytype)
+     call input_index(orb_array,c,d)
+
+     call alloc_array(e,nrep,f)
+      select case(Array_Type)
  
       case('restricted_braket')
 
-       if (if_trans=='N') then
-       row = c(d%bra)%triangular%tuple_combInd
-       column = c(d%ket)%triangular%tuple_combInd     
-       else 
-       column = c(d%bra)%triangular%tuple_combInd
-       row = c(d%ket)%triangular%tuple_combInd     
-       endif
+      call auto_symmetry_offset_triangular(e,c(d%I)%orbital_type,c(d%J)%orbital_type)
+      call auto_symmetry_offset_triangular(f,c(d%K)%orbital_type,c(d%L)%orbital_type)
 
        case('restricted_bra')
 
-       if (if_trans=='N') then
-       row = c(d%bra)%triangular%tuple_combInd
-       column = c(d%ket+shift1)%tuple_combInd     
-       else 
-       column = c(d%bra)%triangular%tuple_combInd
-       row = c(d%ket+shift1)%tuple_combInd     
-       endif
+      call auto_symmetry_offset_triangular(e,c(d%I)%orbital_type,c(d%J)%orbital_type)
+      call auto_symmetry_offset(f,c(d%K)%orbital_type,c(d%L)%orbital_type,.false.,.false.)
 
        case('restricted_ket')
 
-       if (if_trans=='N') then
-       row = c(d%bra+shift1)%tuple_combInd
-       column = c(d%ket)%triangular%tuple_combInd     
-       else 
-       column = c(d%bra+shift1)%tuple_combInd
-       row = c(d%ket)%triangular%tuple_combInd     
-       endif
+      call auto_symmetry_offset(e,c(d%I)%orbital_type,c(d%J)%orbital_type,.false.,.false.)
+      call auto_symmetry_offset_triangular(f,c(d%K)%orbital_type,c(d%L)%orbital_type)
 
        case('unrestricted')
 
-       if (if_trans=='N') then
-       row    = c(d%bra+shift1)%tuple_combInd
-       column = c(d%ket+shift1)%tuple_combInd     
-       else 
-       column = c(d%bra+shift1)%tuple_combInd
-       row    = c(d%ket+shift1)%tuple_combInd     
-       endif
+      call auto_symmetry_offset(e,c(d%I)%orbital_type,c(d%J)%orbital_type,.false.,.false.)
+      call auto_symmetry_offset(f,c(d%K)%orbital_type,c(d%L)%orbital_type,.false.,.false.)
 
        end select
 
+       if (if_trans=='N') then
+       row = e%oneNonDirac 
+       column = f%oneNonDirac   
+       else 
+       column = e%oneNonDirac 
+       row = f%oneNonDirac   
+       endif
+
+     call dealloc_array(e,f)
      endif
 
      elseif (sort_type_dummy == 31) then
-       select case(arraytype)
+       select case(Array_type)
       
        case('unrestricted')
 
-       call input_index(c,d,m)
-
+       call input_index(orb_array,c,d)
 
       if (if_trans=='N') then
 
@@ -959,10 +910,9 @@
 
       endif
 
-         case('restricted_braket')
+       case('restricted_braket')
 
-       call input_index(c,d,m)
-
+       call input_index(orb_array,c,d)
 
       if (if_trans=='N') then
 
@@ -975,11 +925,10 @@
      &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
       endif
-
 
         case('restricted_bra')
 
-       call input_index(c,d,m)
+       call input_index(orb_array,c,d)
 
       if (if_trans=='N') then
 
@@ -995,7 +944,7 @@
 
          case('restricted_ket')
 
-       call input_index(c,d,m)
+       call input_index(orb_array,c,d)
 
 
       if (if_trans=='N') then
@@ -1013,12 +962,11 @@
       end select
 
      elseif (sort_type_dummy == 13) then
-      select case(arraytype)
+      select case(Array_type)
         
          case('unrestricted')
 
-     call input_index(c,d,m)
-
+     call input_index(orb_array,c,d)
 
       if (if_trans=='N') then
 
@@ -1034,7 +982,7 @@
 
        case('restricted_braket')
 
-      call input_index(c,d,m)
+      call input_index(orb_array,c,d)
 
 
       if (if_trans=='N') then
@@ -1049,10 +997,9 @@
 
      endif 
 
-
          case('restricted_bra')
 
-         call input_index(c,d,m)
+         call input_index(orb_array,c,d)
 
 
       if (if_trans=='N') then
@@ -1070,7 +1017,7 @@
 
       case('restricted_ket')
 
-     call input_index(c,d,m)
+     call input_index(orb_array,c,d)
 
       if (if_trans=='N') then
 
@@ -1084,12 +1031,12 @@
 
      endif 
 
-
       end select
    endif
-     if (allocated(V%presorted)) deallocate(V%presorted)
      
      if (associated(B%integral)) nullify(B%integral)
+
+     if (allocated(V%presorted)) deallocate(V%presorted)
  
   end subroutine
 
@@ -1106,7 +1053,7 @@
    character(2),optional,intent(out)     :: FreeIndx(size(array1))
    integer                               :: reorder_array(size(array1))      
    integer,intent(out)                   :: row(:), column(:) 
-   type(middle_indices)                  :: a(0:2)  
+   type(middle_indices)                  :: a(-14:2)  
    integer,dimension(2)                  :: bit_reordered
    integer                               :: i
 !------------------------------
@@ -1122,6 +1069,7 @@
   
    a(0)%orbital_type => NO
    a(1)%orbital_type => NV
+   a(-12)%orbital_type => NCONT
 
    bit_reordered = bitString(array1,reorder_array) 
 
@@ -1177,19 +1125,16 @@
     
   end subroutine
 
-
-  subroutine integral_fetching_incore(G)
+  subroutine integral_fetching_incore(orb_array,array)
   implicit none
 !-------------------------------------------------------------
   integer :: value
-  integer,dimension(4):: bit_original, bit_available
-  integer :: AllocateStatus 
-  type(presorting),intent(out) :: G
+  character(2),intent(in) :: orb_array(:)
+  integer:: bit_original(size(orb_array))
+  real*8,intent(out) :: array(:)
 !-------------------------------------------------------------
-#include "symm.inc"
-#include "complex.inc"
 
-    bit_original = bitString (array_original,(/1,2,3,4/)) 
+    bit_original = bitString (orb_array,(/1,2,3,4/)) 
 
     value = bin2dec(bit_original)
 
@@ -1199,31 +1144,23 @@
 
     case (0)
 
-      allocate(G%presorted(nv1*rcw))
-      call getoooo(G%presorted)
+      call getoooo(array)
 
     case (1)
 
-      allocate(G%presorted(iovoot(nrep+1)*rcw))
-      call getooov(G%presorted)
+      call getooov(array)
 
     case (2)
 
-      allocate(G%presorted(nv2*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getoovo(G%presorted) 
+      call getoovo(array) 
 
     case (3)
 
-      allocate(G%presorted(nv3*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getoovv(G%presorted)
+      call getoovv(array)
 
    case (4)
 
-      allocate(G%presorted(iovoot(nrep+1)*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getovoo(G%presorted)
+      call getovoo(array)
 
     case (5)
 
@@ -1244,47 +1181,33 @@
 
     case (7)
 
-      allocate(G%presorted(iovvvt(nrep+1)*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getovvv_incore(G%presorted)
+      call getovvv_incore(array)
 
 !      write(*,*)'ovvv type array has to be fetched in out-of-core way.'
 
     case (8)
 
-      allocate(G%presorted(nv2*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvooo(G%presorted)
+      call getvooo(array)
 
     case (9)
 
-      allocate(G%presorted(ivoov(nrep+1)*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvoov(G%presorted)
+      call getvoov(array)
 
     case (10)
 
-      allocate(G%presorted(nv4*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvovo(G%presorted)
+      call getvovo(array)
 
     case (11)
 
-      allocate(G%presorted(nv5*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvovv_incore(G%presorted)
+      call getvovv_incore(array)
 
     case (12)
 
-      allocate(G%presorted(nv3*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvvoo(G%presorted)
+      call getvvoo(array)
 
     case (14)
 
-      allocate(G%presorted(nv5*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvvvo_incore(G%presorted)
+      call getvvvo_incore(array)
 
     case default
       write(*,*)'no suitable array to fetch'
@@ -1292,7 +1215,7 @@
 
   end subroutine
 
-  subroutine input_index(a,b,k,reorder_v)
+  subroutine input_index_old(a,b,k,reorder_v)
 
 !pointer to most of the indices available in RELCCSD module. purpose is to access them in a generalized fashion. 
 
@@ -1301,7 +1224,7 @@
  integer,dimension(4),intent(in),optional:: reorder_v 
 ! logical, intent(in)                :: do_exchange
 ! character(2), intent(in)           :: array_exchange(4)
- type(middle_indices),intent(out)     :: a(0:30)  
+ type(middle_indices),intent(out)   :: a(0:30)  
  type(bit_processing),intent(out)   :: b 
  type(more_indices),intent(out),optional :: k(0:15)
  integer :: i
@@ -1373,6 +1296,7 @@
 !dimension for the single orbital index
      a(0)%orbital_type => NO
      a(1)%orbital_type => NV
+     a(2)%orbital_type => NCONT
 
   if (present(k)) then
 
@@ -1519,13 +1443,44 @@
   deallocate (bit_original)
   end subroutine
 
+
+  subroutine input_index(orb_array,a,b)
+#include "symm.inc"
+! This subroutine identifies the dimension of each individual
+! orbital-type (i.e, hole, particle, continuous, active etc.) 
+
+!-------------------------------
+ character(2),intent(in)                   :: orb_array(:)
+ type(middle_indices),intent(out)     :: a(-14:5)  
+ type(bit_processing),intent(out)     :: b 
+ integer,allocatable :: bit_original(:)
+!-------------------------------
+
+   allocate(bit_original(size(orb_array)))
+
+    bit_original  = bitString (orb_array,(/1,2,3,4/)) 
+
+    b%I = bit_original(1) 
+    b%J = bit_original(2)
+    b%K = bit_original(3)
+    b%L = bit_original(4)
+
+    a(0)%orbital_type => NO
+    a(1)%orbital_type => NV
+    a(-12)%orbital_type => NCONT
+
+   deallocate(bit_original)
+
+  end subroutine
+
+
   integer function findloc(array,value)
 
   character(*), dimension(:),intent(in) :: array
   character(2),intent(in) :: value
   integer      :: i  
 
-     do i = 1, size(array)       ! loop over vorder 
+     do i = 1, size(array)        
         if (array(i)==value) then
           findloc = i
           exit
@@ -1537,7 +1492,7 @@
 
   function bitString (generic_array,reorder_index_array)
 
-  character(*), dimension(:),intent(in) :: generic_array
+  character(2), dimension(:),intent(in) :: generic_array
   integer,      dimension(:),intent(in) :: reorder_index_array
   integer      :: i,k
   integer, dimension(size(generic_array)) ::bitString 
@@ -1749,6 +1704,8 @@
      type(Offset) :: e,f,g
 !---------------executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g)
+
       shift = 0
       if(shift_for_boson) shift=nrep 
 
@@ -1804,6 +1761,7 @@
          endif
       enddo
 
+      call dealloc_array(e,f,g)
       end subroutine
 
       subroutine cntrct_1 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
@@ -1842,6 +1800,7 @@
      type(Offset) :: e,f,g
 !---------------executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g)
       shift = 0
       if(shift_for_boson) shift=nrep 
 
@@ -1896,6 +1855,8 @@
             call xgemm (transa,transb,m,n,k,alpha,a(off1),lda,b(off2),ldb,beta,c(off3),ldc)
          endif
       enddo
+     
+      call dealloc_array(e,f,g)
 
       end subroutine
 
@@ -1935,6 +1896,7 @@
      type(Offset) :: e,f,g
 !---------------executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g)
       shift = 0
       if(shift_for_boson) shift=nrep 
 
@@ -1990,6 +1952,7 @@
          endif
       enddo
 
+      call dealloc_array(e,f,g)
       end subroutine
 
       subroutine cntrct_3 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
@@ -2028,6 +1991,7 @@
      type(Offset) :: e,f,g
 !---------------executable code--------------------------------------
 
+      call alloc_array(e,nrep,f,g)
       shift = 0
       if(shift_for_boson) shift=nrep 
 
@@ -2083,6 +2047,7 @@
          endif
       enddo
 
+      call dealloc_array(e,f,g)
       end subroutine
 
   end module   
