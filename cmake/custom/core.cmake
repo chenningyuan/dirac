@@ -39,7 +39,6 @@ if(ENABLE_UTILITIES)
     compile_standalone(mx2fit.x                  utils/mx2fit.F90                    "${_list_of_executables}")
     compile_standalone(diag.x                    utils/diag.F90                      "${_list_of_executables}")
     compile_standalone(test_allocator.x          utils/test_allocator.F90            "${_list_of_executables}")
-#avijit    compile_standalone(test_davidson_lille.x     utils/test_davidson_lille.F90       "${_list_of_executables}")
 endif()
 
 if(ENABLE_RELCCSD_STANDALONE)
