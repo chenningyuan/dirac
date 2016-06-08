@@ -32,7 +32,10 @@ module atomic_oo_order_so_correction
   use atomic_oo_order_so_correction_cfg
   use atomic_oo_order_so_correction_utils
   use module_aoosoc_pfg
+
+#ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
+#endif
 
   implicit none
 
