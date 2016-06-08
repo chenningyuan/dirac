@@ -125,10 +125,21 @@ contains
 !     initialize real*8
       aoo_cspeed = cval
 
+!     initialize data if we are still in the 4c-component picture
       if(mc > 1)then
-!       4c-component picture
-        nr_2e_fock_matrices        = nfmat
-        aoo_intflg                 = intflg
+                    nr_2e_fock_matrices        = nfmat
+        if(aoofocc) nr_2e_fock_matrices        = 1
+        aoo_intflg                             = intflg
+        aoo_nopen                              = nopen
+      end if
+
+
+!     active density matrix factors
+      if(aoo_nopen > 1)then 
+        if(.not.allocated(aoo_dfopen))    &
+        allocate(aoo_dfopen(0:aoo_nopen-1), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_dfopen(:)'
+        aoo_dfopen(0)           = 1.0d0
+        aoo_dfopen(1:(aoo_nopen-1)) = df(1:(aoo_nopen-1))
       end if
 
       j = nucind
@@ -138,13 +149,6 @@ contains
 !         j = j + 1
 !       end do
 !     end do
-
-!    active fock matrix factors
-     if(nr_2e_fock_matrices > 1)then 
-       if(.not.allocated(aoo_dfopen))    &
-       allocate(aoo_dfopen(nr_2e_fock_matrices), stat=ier ); if( ier.ne.0 )stop ' Error in allocation: aoo_dfopen(:)'
-       aoo_dfopen(1:(nr_2e_fock_matrices-1)) = df(1:(nr_2e_fock_matrices-1))
-     end if
 
     !> interface atomic/molecular data
        allocate( atom(j), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: atom(:)'
@@ -170,7 +174,7 @@ contains
 
   subroutine aoosoc_finalize()
 
-     if(nr_2e_fock_matrices > 1) deallocate(aoo_dfopen)
+     if(aoo_nopen > 1) deallocate(aoo_dfopen)
      deallocate(atom)
      deallocate(aoo_nont)
      deallocate(aoo_nucdeg)

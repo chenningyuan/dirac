@@ -1510,7 +1510,12 @@ contains
      call twofck(isymop,ihrmop,ifckop,Gmat,Dmat,nr_2e_fock_matrices,   &
                  pos,intflg,print_lvl,work,local_lwork)
 
-!     accumulate active fock matrices (add to inactive fock matrix)
+!     !> accumulate active fock matrices (add to inactive fock matrix)
+!     
+!     stefan: this step may be questionable since we do not take into account 
+!     the coupling between the shells in an appropriate way... FIXME?
+!     should we not better use MKMOFK to construct the Fock matrix in MO basis 
+!     and backtransform afterwards?
       if(nr_2e_fock_matrices > 1)then
         do i = 1, nr_2e_fock_matrices-1
           call daxpy(nrows*ncols*nz,aoc_factors(i),Gmat(1,1,1,i+1),1,Gmat(1,1,1,1),1)

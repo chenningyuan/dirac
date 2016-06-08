@@ -69,6 +69,7 @@ module module_aoosoc_pfg
   integer            :: aoo_mxatom                             =  0
   integer            :: aoo_mxcent                             =  0
   integer            :: aoo_nontyp                             =  0
+  integer            :: aoo_nopen                              =  0
   integer, allocatable :: aoo_nont(:)
   integer, allocatable :: aoo_nucdeg(:)
 

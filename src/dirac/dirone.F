@@ -2104,6 +2104,7 @@ C*****************************************************************************
      &    get_2e_2c_fock_matrix_x2c,
      &    write_fock_matrices_saao_basis_x2c,
      &    read_fock_matrices_saao_basis_x2c
+
       use x2c_pct_mo_coefficients, only:
      &    x2c_molecular_mean_field_mos
       use x2c_cb_interface, only:
@@ -2169,7 +2170,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: dmat_aoosoc(:)
       real(8), allocatable :: cmo_aoosoc(:)
       real(8), allocatable :: pctm_aoosoc(:)
-      logical              :: no1esystem_aoosoc
+      logical              :: no1esystem_aoosoc, aoc_save
 #endif
 
       CALL QENTER('GMOTRA')
@@ -2699,23 +2700,34 @@ C
       if(x2c.and.x2cmod_mmf)then
         if(aoomod)then
 #ifdef MOD_AOOSOC
-          if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SOC in an atomic run
+          if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SO+scalar corrections in an atomic run
 
 !           release memory
             CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
 
-!           generate density matri(x/ces) - incoming variable to aoosoc module
+            !> density matrix for 2e-SO+scalar corrections always with fractional occupation for open shell atoms
+            if(aoofocc .and. aoc)then
+              aoc_save   = aoc
+              nfmat_save = nfmat
+              aoc        = .false.
+              nfmat      = 1
+            end if
+            !> turn off x2c to properly call twofck
+            x2c = .false.
+
+!           !> generate density matrix - incoming variable to the aoosoc module
             allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
             allocate(cmo_aoosoc(ncmotq))
             dmat_aoosoc = 0.0d0
             cmo_aoosoc  = 0.0d0
-!           read coefficients
+
+!           !> read MO coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
             call reacmo_no_work(lucoef,'DFCOEF',cmo_aoosoc,xx,ii,jj,2)
             close(lucoef,status='keep')
 
-!           generate density matri(x/ces)
+!           !> generate density matrix
             call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
             deallocate(cmo_aoosoc)
 
@@ -2724,7 +2736,7 @@ C
      &           access='sequential',action='readwrite',
      &           position='rewind')
 
-!           initialize offset
+!           !> read the U matrix
             ioff_pct_mat = 1
             do i = 1, nfsym
               write(flabel,'(a11,i1)') 'pctmtAO   1',i
@@ -2737,13 +2749,11 @@ C
 
             close(lux2c,status='keep')
 
-!           no 2e-SO correction for 1e-systems
+!           !> ensure to not calculate any spurious 2e-SO+scalar corrections for actual 1e-systems
             call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
-            no1esystem_aoosoc = .false.
-            no1esystem_aoosoc = (ichrg - kcharg > 1)
+                       no1esystem_aoosoc = .false.
+                       no1esystem_aoosoc = (ichrg - kcharg > 1)
             if(onesys) no1esystem_aoosoc = .false.
-
-            x2c = .false. ! turn off x2c for the proper inside call of twofck
 
             lwork_local = lwork - ntbas(0)**2*nz*nfmat - ntbas(0)**2*nz
 
@@ -2754,8 +2764,11 @@ C
      &                                             lwork_local,
      &                                             iprham
      &                                             )
-
-            x2c = .true. ! reset
+            !> restore logicals
+            if(aoofocc)then
+              aoc = aoc_save
+            end if
+            x2c = .true.
 
             deallocate(pctm_aoosoc)
             deallocate(dmat_aoosoc)
@@ -2765,6 +2778,7 @@ C
      &            ' in this version')
 #endif
         end if ! aoomod
+
         if(x2c_2c_mmf_mos)then
 
 !         release memory
@@ -2862,7 +2876,20 @@ C
           CALL MEMREL('GMOTRA - mmfmos-2',WORK,KWORK,KWORK,KFREE,LFREE)
           call dealloc(work)
 
-! ***     prepare the H1_mmf_X2C_AO and save it on DFFCK1_mmf
+! ***     post-SCF X2Cmmf:                   calculate H1_mmf_X2C_AO and save it on DFFCK1_mmf
+! ***     atomic 2e-SO + scalar corrections: calculate G_A[2c] and save it on D2FCK_mmf
+
+#ifdef MOD_AOOSOC
+          !> density matrix for 2e-SO/scalar corrections always with fractional occupation for open shell atoms
+          if(aoomod .and. aoofocc .and. aoc)then
+            aoc_save   = aoc
+            nfmat_save = nfmat
+            !> implies focc ...
+            aoc        = .false.
+            nfmat      = 1
+          end if
+#endif
+
           len_fmat  = ntbas(0)**2*nz
           len_fmats = len_fmat*nfmat
 
@@ -2874,7 +2901,8 @@ C
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
           call reacmo_no_work(lucoef,'DFCOEF',cmo_mmf,xx,ii,jj,2)
           close(lucoef,status='keep')
-          !> density matrix/ces
+
+          !> calculate density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 
           deallocate(cmo_mmf)
@@ -2886,42 +2914,65 @@ C
      &    call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
      &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
 
-          open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &         access='sequential',action='readwrite',
-     &         position='rewind')
 
-!         2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
-          write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
-          call x2c_read(flabel,tbuf_mmf,len_fmat,lux2c)
-          call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
-          close(lux2c, status='keep')
+          !> here we split...
 
-!         save H1_mmf_X2C_AO
-          open(lux2c,file='DFFCK_mmf',status='unknown',
-     &         access='sequential',action='readwrite',
-     &         form='unformatted',position='rewind')
-          call write_fock_matrices_saao_basis_x2c(
-     &                                            tbuf_mmf,
-     &                                            len_fmat, 1,
-     &                                            lux2c, 0)
-!         save F2c-ll part
-          close(lux2c, status='keep')
-          open(lux2c,file='D2FCK_mmf',status='unknown',
-     &         access='sequential',action='readwrite',
-     &         form='unformatted',position='rewind')
-          call write_fock_matrices_saao_basis_x2c(
-     &                                            tmat_mmf,
-     &                                            len_fmat, 1,
-     &                                            lux2c, 0)
-          close(lux2c, status='keep')
-          deallocate(tmat_mmf)
-          deallocate(tbuf_mmf)
+          !> either construct H1_mmf_X2C_AO for post-SCF X2Cmmf calculation ...
+          if(.not.aoomod)then
 
-        end if ! x2c_2c_mmf_mos == .true. or aoomod == true
+            open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &           access='sequential',action='readwrite',
+     &           position='rewind')
+
+!           2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
+            write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
+            call x2c_read(flabel,tbuf_mmf,len_fmat,lux2c)
+            call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+            close(lux2c, status='keep')
+
+!           save H1_mmf_X2C_AO
+            open(lux2c,file='DFFCK_mmf',status='unknown',
+     &           access='sequential',action='readwrite',
+     &           form='unformatted',position='rewind')
+            call write_fock_matrices_saao_basis_x2c(
+     &                                              tbuf_mmf,
+     &                                              len_fmat, 1,
+     &                                              lux2c, 0)
+            close(lux2c, status='keep')
+
+          !> ... or save the G_A[2c] contribution to calculate the final 2e-SO+scalar atomic correction below
+          else !
+            open(lux2c,file='D2FCK_mmf',status='unknown',
+     &           access='sequential',action='readwrite',
+     &           form='unformatted',position='rewind')
+            call write_fock_matrices_saao_basis_x2c(
+     &                                              tmat_mmf,
+     &                                              len_fmat, 1,
+     &                                              lux2c, 0)
+            close(lux2c, status='keep')
 
 #ifdef MOD_AOOSOC
-        if(aoomod .and. no1esystem_aoosoc)then
-          if(nucdep == 1 .and. nucind == 1)then ! finalize the 2e-SOC in an atomic run
+            !> restore original settings
+            if(aoofocc .and. aoc)then
+              aoc        = aoc_save
+              nfmat      = nfmat_save
+            end if
+#endif
+
+          end if
+
+
+          deallocate(tbuf_mmf)
+          deallocate(tmat_mmf)
+
+        end if ! x2c_2c_mmf_mos == .true.
+
+#ifdef MOD_AOOSOC 
+        !>                                                              ~
+        !>  final step for atomic 2e-spin-orbit and scalar corrections: G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
+
+        if(aoomod .and. no1esystem_aoosoc .and. x2c_2c_mmf_mos)then
+          if(nucdep == 1 .and. nucind == 1)then
             len_fmat  = ntbas(0)**2*nz
             allocate(tmat_mmf(len_fmat))
             allocate(tbuf_mmf(len_fmat))
@@ -2930,12 +2981,16 @@ C
             open(lux2c,file='D2FCK_mmf',status='unknown',
      &           access='sequential',action='readwrite',
      &           form='unformatted',position='rewind')
+
+            !> read G_A[2c]
             call read_fock_matrices_saao_basis_x2c(
      &                                             tmat_mmf,
      &                                             len_fmat, 1,
      &                                             lux2c, 0,
      &                                             .false.,scratch_mmf)
             close(lux2c, status='keep')
+
+            !> read {U+ G_A[4c] U}^{++}
             call read_normalized_2e_soc(
      &                                  tbuf_mmf,
      &                                  ntbas(0),
@@ -2945,7 +3000,19 @@ C
      &                                  nint(charge(1)),
      &                                  lux2c
      &                                 )
+            !> ~
+            !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+
+#define DEBUG_SOC
+#ifdef DEBUG_SOC
+            CALL HEADER(
+     &      'aoosoc - 2e-normalized (final)',-1)
+            CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+#undef DEBUG_SOC
+#endif
+
             call dump_normalized_2e_soc(
      &                                  tbuf_mmf,
      &                                  ntbas(0),

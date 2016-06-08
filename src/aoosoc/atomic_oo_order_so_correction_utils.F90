@@ -42,7 +42,6 @@ module atomic_oo_order_so_correction_utils
   implicit none
 
   public get_scso_2e_fock
-  public get_scso_2e_fock_aoc
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
   public read_normalized_2e_soc
@@ -60,7 +59,6 @@ contains
                              nrows,                  &
                              ncols,                  &
                              nr_2e_fock_matrices,    &
-                             aoo_dfopen,             &
                              intflg,                 &
                              mdirac,                 &
                              nz,                     &
@@ -75,7 +73,6 @@ contains
 #endif
      real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
      real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)
-     real(8), intent(in)                :: aoo_dfopen(nr_2e_fock_matrices-1)
      integer, intent(in)                :: nr_2e_fock_matrices
      integer, intent(in)                :: nrows
      integer, intent(in)                :: ncols
@@ -95,64 +92,72 @@ contains
 !----------------------------------------------------------------------
 
 !    take care of present "limitations" (being pragmatic for now)
-!    if(.not.mdirac   ) call quit( 'mdirac required for aoosoc module' )
      if(nz /= 4       ) call quit( 'c1 symmetry required for aoosoc module' )
 
-!    do i = 1, nr_2e_fock_matrices-1
-!      call daxpy(nrows*ncols*nz,aoo_dfopen(i),dmat(1,1,1,i+1),1,dmat(1,1,1,1),1)
-!    end do
+!    !> in order for this routine to work with AOC as well we would need to transform 
+     !> the AO Fock matrices to MO basis via MKMOFK and backtransform to AO basis afterwards
+     !> FIXME! 
+     !> For the time being we circumvent it by reusing the Fock matrices from the preceeding 
+     !> X2C transformation.
+     if(nr_2e_fock_matrices > 1)then
 
-!    2e-fock matrix construction
-     allocate(isymop(nr_2e_fock_matrices))
-     allocate(ifckop(nr_2e_fock_matrices))
-     allocate(ihrmop(nr_2e_fock_matrices))
+       call get_scso_2e_fock_aoc(                       &
+                                 dmat,                  &
+                                 fmat,                  &
+                                 nrows,                 &
+                                 ncols,                 &
+                                 1,                     &
+                                 nz                     &
+                                )
 
-     ihrmop = 0
-     ifckop = 0
-     isymop = 0
 
-     do i = 1,nr_2e_fock_matrices
-!      totally symmetric operator
-       isymop(i) = 1
-!      fock matrix type
-       ifckop(i) = 1
-!      hermitian operator
-       ihrmop(i) = 1
-     end do
+     else
 
-     allocate(saveflags(4))
+       !> 2e-fock matrix construction
+       allocate(isymop(nr_2e_fock_matrices))
+       allocate(ifckop(nr_2e_fock_matrices))
+       allocate(ihrmop(nr_2e_fock_matrices))
 
-     call SaveTaskDistribFlags(saveflags)
-     call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-     parcal = .false.
+       ihrmop = 0
+       ifckop = 0
+       isymop = 0
+
+       do i = 1,nr_2e_fock_matrices
+!        totally symmetric operator
+         isymop(i) = 1
+!        fock matrix type
+         ifckop(i) = 1
+!        hermitian operator
+         ihrmop(i) = 1
+       end do
+
+       allocate(saveflags(4))
+
+       call SaveTaskDistribFlags(saveflags)
+       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+       parcal = .false.
 #ifdef VAR_MPI
-     call mpi_initialized(parcal,i)
+       call mpi_initialized(parcal,i)
 #endif
-     call SetIntTaskArrayDimension(npos,parcal)
-     allocate(pos(npos))
+       call SetIntTaskArrayDimension(npos,parcal)
+       allocate(pos(npos))
 
-     local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - npos - 3*nr_2e_fock_matrices
-     allocate(work(local_lwork))
+       local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - npos - 3*nr_2e_fock_matrices
+       allocate(work(local_lwork))
 
-!    2e-fock matrices (Dirac driver routine)
-     call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
-                 pos,intflg,print_lvl,work,local_lwork)
+!      2e-fock matrices (Dirac driver routine)
+       call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
+                   pos,intflg,print_lvl,work,local_lwork)
 
-!     FIXME!!!
-!     accumulate active fock matrices (add to inactive fock matrix)
-      if(nr_2e_fock_matrices > 1)then
-        do i = 1, nr_2e_fock_matrices-1
-          call daxpy(nrows*ncols*nz,aoo_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
-        end do
+       deallocate(work)
+       if(parcal) call SetTaskDistribFlags(saveflags)
+       deallocate(pos)
+       deallocate(saveflags)
+       deallocate(ihrmop)
+       deallocate(ifckop)
+       deallocate(isymop)
+
      end if
-
-     deallocate(work)
-     if(parcal) call SetTaskDistribFlags(saveflags)
-     deallocate(pos)
-     deallocate(saveflags)
-     deallocate(ihrmop)
-     deallocate(ifckop)
-     deallocate(isymop)
 
   end subroutine get_scso_2e_fock
 !----------------------------------------------------------------------
@@ -195,146 +200,6 @@ contains
      call daxpy(nrows*ncols*nz*nr_2e_fock_matrices,-1.0d0,dmat,1,fmat,1)
 
   end subroutine get_scso_2e_fock_aoc
-!----------------------------------------------------------------------
-
-  subroutine old_get_scso_2e_fock(       &
-                             dmat,       &
-                             fmat,       &
-                             nrows,      &
-                             ncols,      &
-                             nopen,      &
-                             aoo_dfopen, &
-                             intflg,     &
-                             mdirac,     &
-                             nz,         &
-                             ipqtoq,     &
-                             ihqmat,     &
-                             print_lvl   &
-                             )
-!**********************************************************************
-     real(8), intent(inout)             :: dmat(nrows,ncols,nz,1+nopen)
-     real(8), intent(out)               :: fmat(nrows,ncols,nz,1+nopen)
-     real(8), intent(in)                :: aoo_dfopen(nopen)
-     integer, intent(in)                :: nopen
-     integer, intent(in)                :: nrows
-     integer, intent(in)                :: ncols
-     integer, intent(in)                :: nz
-     integer, intent(in)                :: intflg
-     integer, intent(in)                :: ipqtoq(4,0:7)
-     integer, intent(in)                :: ihqmat(4,-1:1)
-     integer, intent(in)                :: print_lvl
-     logical, intent(in)                :: mdirac
-!----------------------------------------------------------------------
-     real(8), parameter                 :: hfxfac = 1.0d0
-     real(8), allocatable               :: fmat_local(:,:,:,:)
-     real(8), allocatable               :: fmat_local2(:,:,:,:)
-     integer                            :: irep, iz, iq, ih
-     integer                            :: i, intflg_local
-!----------------------------------------------------------------------
-
-!     take care of present "limitations" (being pragmatic for now)
-!     if(.not.mdirac   ) call quit( 'mdirac required for aoosoc module' )
-      if(nz /= 4       ) call quit( 'c1 symmetry required for aoosoc module' )
-
-      do i = 1, nopen
-        call daxpy(nrows*ncols*nz,aoo_dfopen(i),dmat(1,1,1,i+1),1,dmat(1,1,1,1),1)
-      end do
-
-!     2e-fock matrix construction
-
-#ifdef MOD_INTEREST
-      intflg_local = intflg
-!     intflg_local = intflg - mod(intflg,2) ! remove the bit for (LL|LL) integrals
-      ! stefan: the "easy way" modification above does not work with the present version of InteRest
-      !         we will thus do it differently for the time being...
-      ! g[(ll|ss)+(ss|ss)] = gg[(ll|ll)+(ll|ss)+(ss|ss)] - g[(ll|ll)]
-
-      call process_two_electron_integrals_4comp(               &
-                                                fmat(1,1,1,1), &
-                                                dmat(1,1,1,1), &
-                                                intflg_local,  & !all classes by default
-                                                hfxfac         &
-                                               )
-#ifdef OLD_VERSION_AOOSOC
-      allocate(fmat_local(nrows,ncols,nz,1))
-      fmat_local = 0
-      call process_two_electron_integrals_4comp(                     &
-                                                fmat_local(1,1,1,1), &
-                                                dmat(1,1,1,1),       &
-                                                1,                   & !(LL|LL)
-                                                hfxfac               &
-                                               )
-      allocate(fmat_local2(nrows,ncols,nz,1))
-      fmat_local2 = 0
-      call process_two_electron_integrals_4comp(                     &
-                                                fmat_local2(1,1,1,1),&
-                                                dmat(1,1,1,1),       &
-                                                3,                   & !(LL|LL) + (SS|LL)
-                                                hfxfac               &
-                                               )
-#ifdef DEBUG_SOC
-      call print_x2cmat(fmat,                   &
-                        nrows,                  &
-                        ncols,                  &
-                        nz,                     &
-                        ipqtoq(1,0),            &
-                        'aoosoc - 2e-full     ',&
-                        6                       &
-                        )
-      call print_x2cmat(fmat_local,             &
-                        nrows,                  &
-                        ncols,                  &
-                        nz,                     &
-                        ipqtoq(1,0),            &
-                        'aoosoc - 2e-llll     ',&
-                        6                       &
-                        )
-#endif
-      call daxpy(nrows*ncols*nz*1,-1.0d0,fmat_local(1,1,1,1),1,fmat_local2(1,1,1,1),1)
-      call daxpy(nrows*ncols*nz*1,-1.0d0,fmat_local(1,1,1,1),1,fmat(1,1,1,1),1)
-#ifdef DEBUG_SOC
-      call print_x2cmat(fmat_local2,            &
-                        nrows,                  &
-                        ncols,                  &
-                        nz,                     &
-                        ipqtoq(1,0),            &
-                        'aoosoc - 2e-ssll     ',&
-                        6                       &
-                        )
-      call print_x2cmat(fmat,                   &
-                        nrows,                  &
-                        ncols,                  &
-                        nz,                     &
-                        ipqtoq(1,0),            &
-                        'aoosoc - 2e-ssll-ssss',&
-                        6                       &
-                        )
-#endif
-      deallocate(fmat_local)
-      deallocate(fmat_local2)
-#endif /* OLD_VERSION_AOOSOC */
-#else
-      call quit( 'InteRest required for aoosoc module' )
-#endif
-
-!     Symmetrize FMAT matrix
-!     ======================
-!     IH = 0   Non-symmetric
-!     IH = 1   Symmetric
-!     IH = 2   Anti-symmetric
-
-      irep = 0
-      do iz = 1,nz
-        iq = ipqtoq(iz,irep)
-        ih = ihqmat(iq,1)
-        if(ih == 1)then
-          call fulmat('S',nrows,ncols,fmat(1,1,iz,1))
-        else if(ih == 2)then
-          call fulmat('A',nrows,ncols,fmat(1,1,iz,1))
-        end if
-      end do
-
-  end subroutine old_get_scso_2e_fock
 !----------------------------------------------------------------------
 
   subroutine get_normalized_2e_soc(                      &
