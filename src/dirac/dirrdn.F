@@ -1044,10 +1044,7 @@ C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
 C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.
       IF (dirac_cfg_dft_calculation) AOC = .FALSE.
-!     TODO: fix oo-order 2e-SOC-SC corrections for AOC - seems to work for FOCC - sk march 2014
-#ifdef MOD_AOOSOC
-      if (aoomod .and. x2cmod_mmf) AOC = .FALSE.
-#endif
+
       ATOMST = .FALSE.
       ATHUCK = .FALSE.
       HUCPAR = 1.5D0
