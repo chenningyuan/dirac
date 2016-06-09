@@ -28,7 +28,7 @@
 !
 ! written by sknecht august 2012
 !
-module atomic_oo_order_so_correction_utils
+module xamfi_utils
 
   use picture_change_operations
 #ifdef MOD_INTEREST

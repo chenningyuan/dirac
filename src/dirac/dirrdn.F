@@ -48,8 +48,8 @@ C***********************************************************************
       use pcm_write
 #endif      
       use x2cmod_cfg
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters
 #endif
 
 #include "implicit.h"
@@ -214,7 +214,7 @@ C
 !     *X2C
 !     *PCM
 !     *PCMSOL      
-!     *AooSOC
+!     *X-AMFI
 !     *QCORR
 !     ignores rest
       call read_menu_input('DIRAC.INP', lucmd, 'ALL', input_found)
@@ -234,7 +234,7 @@ C
         call quit('*** fragment X2C calculation not possible. ***')
       end if
 !     consistency check for atomic oo-order SOC contributions
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
       if(aoomod)then
         write(lupri,*) 'Information about the oo-order SOC module:'
         write(lupri,*) '* atomic oo-order SOC module active'
@@ -248,7 +248,7 @@ C
           write(lupri,*) '  - add 2e-SOCs to the X2C Hamiltonian'
         end if
         if(.not.x2c)then
-          call quit(' aooSOC does not make sense in NON-2c '//
+          call quit(' X-AMFI does not make sense in NON-2c '//
      &      ' relativistic runs')
         end if
       end if
@@ -916,7 +916,7 @@ C
 C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
        use atomic_oo_order_so_correction_cfg
 #endif
 
@@ -4711,7 +4711,7 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
 #endif
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
       use atomic_oo_order_so_correction_cfg
 #endif
 
@@ -4750,7 +4750,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC','*PCMSOL'/
+     &             '*PCM   ','*X-AMFI','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -6505,7 +6505,7 @@ CMI  ... reading input routine for AMFI+RELSCF
         call move_to_next_star(word, lucmd)
         go to 200
    10 continue
-      ! this is a cheat so that *aooSOC section is parsed
+      ! this is a cheat so that *X-AMFI section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200

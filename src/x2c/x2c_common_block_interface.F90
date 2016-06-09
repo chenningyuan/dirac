@@ -30,8 +30,8 @@ module x2c_cb_interface
 !          hide as much as you can for public - it will save us lots of trouble in future
 
   use x2cmod_cfg
-#ifdef MOD_AOOSOC
-  use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+  use xamfi_global_parameters
 #endif
 
   implicit none
@@ -107,7 +107,7 @@ contains
 
 !        common block variables for Diracs 2e-SOC or the old AMFI
          if(x2c_add_amfi > 0)then
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
            if(aoomod)then ! Dirac oo-order 2e-SOC
              x2c_amfi_order           = aoo_soc_order
              x2c_add_amfi             = 2
@@ -116,7 +116,7 @@ contains
              x2c_tot_charge_for_mfsum = imfch
              x2c_amfi_order           = isorder_amfi_x2c
              x2c_max_quant_num        = mxqn
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
            end if
 #endif
          end if

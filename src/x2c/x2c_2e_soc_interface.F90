@@ -32,8 +32,8 @@ module x2c_2e_soc_interface
   use x2c_utils, only:                 &
       print_x2cmat
   use picture_change_operations
-#ifdef MOD_AOOSOC
-  use atomic_oo_order_so_correction
+#ifdef MOD_XAMFI
+  use xamfi_driver
 #endif
 
   implicit none
@@ -137,7 +137,7 @@ contains
                                      x2c_file_glb,         &
                                      print_lvl)
        else
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
          call x2c_interface2aoosoc(naosh_ls,             &
                                    nr_ao_L,              &
                                    naosh_all,            &
@@ -629,7 +629,7 @@ contains
          call labcount(ncols_frag,aooso_info,nr_ao_L,1,-1,center_total,1,-1)
          nrows_frag = ncols_frag
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
          call put_atomic_oo_order_so_correction(                &
                                                 scr1_mat,       &
                                                 nr_ao_L,        &
@@ -648,17 +648,17 @@ contains
 
 !      debug print
        if(print_lvl > 2)then
-         call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - aooSOC contribution',6)
+         call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - XAMFI contribution',6)
        end if
 
 #ifdef DEBUG_SOC
        open(99,file='soc-contributions',status='replace',form='formatted',  &
        access='sequential',action="readwrite",position='rewind')
 
-       call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - aooSOC contribution',99)
+       call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - XAMFI contribution',99)
        close(99,status='keep')
 
-       open(99,file='aoo2e-ss-soc-contributions',status='replace',form='unformatted',  &
+       open(99,file='XAMFI-ss-soc-contributions',status='replace',form='unformatted',  &
        access='sequential',action="readwrite",position='rewind')
 
        write(99) scr1_mat(1:nr_ao_L*nr_ao_L*nz)
@@ -668,14 +668,14 @@ contains
        deallocate(aooso_info)
 
 !      -----------------------------------------
-!      step 4. add aoo-SO contributions to h1_2c
+!      step 4. add XAMFI-SO contributions to h1_2c
 !      -----------------------------------------
 
        call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr1_mat,1,scr2_mat,1)
 
 !      debug print
        if(print_lvl > 2)then
-         call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h1 + aooSOC contribution',6)
+         call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h1 + XAMFI contribution',6)
        end if
 
 !      -------------------------------------------------------------

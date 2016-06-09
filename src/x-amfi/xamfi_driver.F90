@@ -27,11 +27,11 @@
 !
 ! written by sknecht august 2012
 !
-module atomic_oo_order_so_correction
+module xamfi_driver
 
-  use atomic_oo_order_so_correction_cfg
-  use atomic_oo_order_so_correction_utils
-  use module_aoosoc_pfg
+  use xamfi_global_parameters
+  use xamfi_utils
+  use xamfi_internal_parameters
 
 #define DEBUG_SOC
 #ifdef  DEBUG_SOC
@@ -244,4 +244,4 @@ contains
   end subroutine put_atomic_oo_order_so_correction
 !----------------------------------------------------------------------
 
-  end module atomic_oo_order_so_correction
+  end module xamfi_driver

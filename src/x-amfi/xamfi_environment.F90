@@ -21,7 +21,7 @@
 !
 !
 !
-module module_aoosoc_init
+module xamfi_environment
 
 ! stefan:
 !          this module is the interface between the aoosoc code and common blocks
@@ -29,19 +29,19 @@ module module_aoosoc_init
 !          outside this module to keep the interface clean
 !          hide as much as you can for public - it will save us lots of trouble in future
 
-  use atomic_oo_order_so_correction_cfg
-  use module_aoosoc_pfg
+  use xamfi_global_parameters
+  use xamfi_internal_parameters
 
   implicit none
 
-  public aoosoc_init
-  public aoosoc_finalize
+  public xamfi_init
+  public xamfi_finalize
 
   private
 
 contains
 
-  subroutine aoosoc_init()
+  subroutine xamfi_init()
 
       use quaternion_algebra
 #include "dcbbas.h"
@@ -169,17 +169,17 @@ contains
     !> end
 
 ! 
-  end subroutine
+  end subroutine xamfi_init
 !**********************************************************************
 
-  subroutine aoosoc_finalize()
+  subroutine xamfi_finalize()
 
      if(aoo_nopen > 1) deallocate(aoo_dfopen)
      deallocate(atom)
      deallocate(aoo_nont)
      deallocate(aoo_nucdeg)
 
-  end subroutine aoosoc_finalize
+  end subroutine xamfi_finalize
 !**********************************************************************
 
 end module

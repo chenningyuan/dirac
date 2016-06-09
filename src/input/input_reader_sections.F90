@@ -31,7 +31,7 @@
         case ('*X2C')
            call read_input_x2c(word, kw_section)
 
-        case ('*aooSOC')
+        case ('*X-AMFI')
            call read_input_aoosoc(word, kw_section)
 
         case ('**RELCC')
@@ -1619,8 +1619,8 @@
 
       use x2cmod_cfg
       use input_reader
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters
 #endif
 
       implicit none
@@ -1630,7 +1630,7 @@
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
       call reset_available_kw_list()
 
 

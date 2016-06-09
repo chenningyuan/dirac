@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-module module_aoosoc_pfg
+module xamfi_internal_parameters
 
   implicit none
 

@@ -30,15 +30,15 @@ set(FREE_X2C_FORTRAN_SOURCES
 )
 
 
-if (ENABLE_AOOSOC)
-# X2C depends on some aoosoc files and vice versa
+if (ENABLE_XAMFI)
+# X2C depends on some XAMFI files and vice versa
     set(FREE_X2C_FORTRAN_SOURCES
         ${FREE_X2C_FORTRAN_SOURCES}
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/atomic_oo_order_so_correction_cfg.F90
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/atomic_oo_order_so_correction.F90
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/atomic_oo_order_so_correction_utils.F90
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/module_aoosoc_pfg.F90
-        ${PROJECT_SOURCE_DIR}/src/aoosoc/module_aoosoc_init.F90
+        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_global_parameters.F90
+        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_driver.F90
+        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_utils.F90
+        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_internal_parameters.F90
+        ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_environment.F90
     )
 endif()
 

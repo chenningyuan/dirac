@@ -2113,19 +2113,19 @@ C*****************************************************************************
       use num_grid_gen
       use interface_mo_specific
       use interface_ao_specific
-#ifdef MOD_AOOSOC
-      use atomic_oo_order_so_correction_cfg
-      use module_aoosoc_pfg
-      use module_aoosoc_init
-      use atomic_oo_order_so_correction_utils, only:
+#ifdef MOD_XAMFI
+      use xamfi_global_parameters
+      use xamfi_internal_parameters
+      use xamfi_environment
+      use xamfi_utils, only:
      &    dump_normalized_2e_soc,
      &    read_normalized_2e_soc
-      use atomic_oo_order_so_correction, only:
+      use xamfi_driver, only:
      &    get_atomic_oo_order_so_correction
 #endif
 !
 #include "implicit.h"
-#ifndef MOD_AOOSOC
+#ifndef MOD_XAMFI
       logical :: aoomod = .false.
 #endif
 #include "priunit.h"
@@ -2147,7 +2147,7 @@ C   PAMIOU: LUTMAT
 #include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
 #include "mxcent.h"
 #include "nuclei.h"
 #endif
@@ -2166,7 +2166,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: tbuf_mmf(:)
       real(8), allocatable :: cmo_mmf(:)
       real(8), allocatable :: scratch_mmf(:)
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
       real(8), allocatable :: dmat_aoosoc(:)
       real(8), allocatable :: cmo_aoosoc(:)
       real(8), allocatable :: pctm_aoosoc(:)
@@ -2256,9 +2256,9 @@ C     ==============================================
        call dealloc(work)
       end if
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
 !     initialize atomic oo-order 2e-SOC module if enabled
-      if(aoomod) call aoosoc_init()
+      if(aoomod) call xamfi_init()
 #endif
 
 C     Unrestricted kinetic balance; use Lowdin canonical matrix
@@ -2699,7 +2699,7 @@ C
 !
       if(x2c.and.x2cmod_mmf)then
         if(aoomod)then
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SO+scalar corrections in an atomic run
 
 !           release memory
@@ -2879,7 +2879,7 @@ C
 ! ***     post-SCF X2Cmmf:                   calculate H1_mmf_X2C_AO and save it on DFFCK1_mmf
 ! ***     atomic 2e-SO + scalar corrections: calculate G_A[2c] and save it on D2FCK_mmf
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
           !> density matrix for 2e-SO/scalar corrections always with fractional occupation for open shell atoms
           if(aoomod .and. aoofocc .and. aoc)then
             aoc_save   = aoc
@@ -2951,7 +2951,7 @@ C
      &                                              lux2c, 0)
             close(lux2c, status='keep')
 
-#ifdef MOD_AOOSOC
+#ifdef MOD_XAMFI
             !> restore original settings
             if(aoofocc .and. aoc)then
               aoc        = aoc_save
@@ -2967,7 +2967,7 @@ C
 
         end if ! x2c_2c_mmf_mos == .true.
 
-#ifdef MOD_AOOSOC 
+#ifdef MOD_XAMFI 
         !>                                                              ~
         !>  final step for atomic 2e-spin-orbit and scalar corrections: G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
 
@@ -3075,8 +3075,8 @@ C     Memory deallocation
 
  10   CONTINUE
 
-#ifdef MOD_AOOSOC
-      if(aoomod) call aoosoc_finalize()
+#ifdef MOD_XAMFI
+      if(aoomod) call xamfi_finalize()
 #endif
 
       CALL QEXIT('GMOTRA')

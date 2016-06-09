@@ -48,7 +48,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         COMMAND rm -f  ${EXPORT_DIR}/external/stieltjes/.git
         COMMAND rm -rf ${EXPORT_DIR}/src/interest/
         COMMAND rm -rf ${EXPORT_DIR}/src/openrsp/
-        COMMAND rm -rf ${EXPORT_DIR}/src/aoosoc/
+        COMMAND rm -rf ${EXPORT_DIR}/src/x-amfi/
         COMMAND rm -rf ${EXPORT_DIR}/src/eri/
         COMMAND rm -rf ${EXPORT_DIR}/src/densfit/
         COMMAND rm -rf ${EXPORT_DIR}/src/prp/esr/

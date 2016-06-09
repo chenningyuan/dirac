@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-module atomic_oo_order_so_correction_cfg
+module xamfi_global_parameters
 
   implicit none
 
