@@ -1,0 +1,6 @@
+! This test calculates RHONUC for three Hamiltonian models:
+!
+! 4c-DC      :    4c.inp
+! X2C+AMFI   :  amfi.inp
+! X2c+X-AMFI : xamfi.inp
+!
