@@ -33,7 +33,7 @@ module xamfi_driver
   use xamfi_utils
   use xamfi_internal_parameters
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
 #undef DEBUG_SOC
@@ -41,21 +41,21 @@ module xamfi_driver
 
   implicit none
 
-  public get_atomic_oo_order_so_correction
-  public put_atomic_oo_order_so_correction
+  public get_xamfi_correction
+  public put_xamfi_correction
 
   private
 
 contains
 
 !----------------------------------------------------------------------
-  subroutine get_atomic_oo_order_so_correction(            &
-                                               dmat,       &
-                                               pct_mat,    &
-                                               calc_2esoc, &
-                                               lwork_ext,  &
-                                               print_lvl   &
-                                               )
+  subroutine get_xamfi_correction(            &
+                                  dmat,       &
+                                  pct_mat,    &
+                                  calc_2esoc, &
+                                  lwork_ext,  &
+                                  print_lvl   &
+                                  )
 !**********************************************************************
      real(8), intent(inout)             :: dmat(nrows,ncols,nr_quat,nr_2e_fock_matrices)
      real(8), intent(in)                :: pct_mat(*)
@@ -69,7 +69,7 @@ contains
 
       if(.not. calc_2esoc) return
 
-      call hello_aoosoc()
+      call hello_xamfi()
 
       allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices)); fmat = 0
 
@@ -91,14 +91,14 @@ contains
 
 #ifdef DEBUG_SOC
       !> debug print
-      if(print_lvl > 2)then
+      if(print_lvl > 5)then
         call print_x2cmat(                             &
                           fmat,                        &
                           nr_ao_total_aoo,             &
                           nr_ao_total_aoo,             &
                           nr_quat,                     &
                           aoo_cb_pq_to_uq(1,0),        &
-                          'aoosoc - 2e-complete',      &
+                          'X-AMFI - 2e-complete',      &
                           6                            &
                          )
       end if
@@ -121,20 +121,19 @@ contains
                                  print_lvl             &
                                 )
 
-#define DEBUG_SOC
 #ifdef DEBUG_SOC
       !> debug print
-!     if(print_lvl > 2)then
+      if(print_lvl > 2)then
         call print_x2cmat(                             &
                           fmat,                        &
                           nr_ao_large_aoo,             &
                           nr_ao_large_aoo,             &
                           nr_quat,                     &
                           aoo_cb_pq_to_uq(1,0),        &
-                          'aoosoc - 2e-normalized',    &
+                          'X-AMFI - 2e-normalized',    &
                           6                            &
                          )
-!     end if
+      end if
 #undef DEBUG_SOC
 #endif
 
@@ -151,22 +150,22 @@ contains
 
       deallocate(fmat)
 
-      call goodbye_aoosoc()
+      call goodbye_xamfi()
 
-  end subroutine get_atomic_oo_order_so_correction
+  end subroutine get_xamfi_correction
 !----------------------------------------------------------------------
 
-  subroutine put_atomic_oo_order_so_correction(                             &
-                                               Gmat,                        &
-                                               naosh_l,                     &
-                                               nrows_ext,                   &
-                                               ncols_ext,                   &
-                                               nr_quat_ext,                 &
-                                               center_id,                   &
-                                               center_total,                &
-                                               max_center,                  &
-                                               print_lvl                    &
-                                              )
+  subroutine put_xamfi_correction(                             &
+                                  Gmat,                        &
+                                  naosh_l,                     &
+                                  nrows_ext,                   &
+                                  ncols_ext,                   &
+                                  nr_quat_ext,                 &
+                                  center_id,                   &
+                                  center_total,                &
+                                  max_center,                  &
+                                  print_lvl                    &
+                                 )
 !**********************************************************************
      real(8), optional, intent(inout)   :: Gmat(*)
      integer, intent(in)                :: naosh_l
@@ -189,8 +188,7 @@ contains
       if(nint(atom(center_total)%charge) > 1)then
 
         allocate(Gmat_frag(nrows_ext*ncols_ext*4))
-!       print *, 'charge, nrows_ext,total,id',nint(atom(center_total)%charge),nrows_ext,center_total,center_id
-!       get spin-orbit parts from file (of atom(i) ... == atomic fragment)
+!       !> get spin-orbit parts from file (of atom(i) ... == atomic fragment)
         call read_normalized_2e_soc(                                 &
                                     Gmat_frag,                       &
                                     nrows_ext,                       &
@@ -239,9 +237,8 @@ contains
 
 !     update counter
       center_total = center_total + aoo_nont(center_id)
-!     print *, 'center_total,  aoo_nont(center_id)',center_total,  aoo_nont(center_id)
 
-  end subroutine put_atomic_oo_order_so_correction
+  end subroutine put_xamfi_correction
 !----------------------------------------------------------------------
 
   end module xamfi_driver

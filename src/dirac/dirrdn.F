@@ -236,16 +236,18 @@ C
 !     consistency check for atomic oo-order SOC contributions
 #ifdef MOD_XAMFI
       if(aoomod)then
-        write(lupri,*) 'Information about the oo-order SOC module:'
-        write(lupri,*) '* atomic oo-order SOC module active'
+        write(lupri,'(/a/)') 'Information about the X-AMFI module:'
         x2c_2c_mmf_mos = .false.
         if(x2cmod_mmf)then
-          write(lupri,*) '  - generate 2e-SRCs/SOCs to be added to'//
-     &                   ' the X2C Hamiltonian (of a molecule)'
+          write(lupri,'(a/)') ' - generate atomic two-electron '//
+     &                   ' scalar- and spin-orbit corrections for'//
+     &                   ' subsequent use in X2C calculations.'
           x2c_add_amfi   = -1
           x2c_2c_mmf_mos = .true.
         else
-          write(lupri,*) '  - add 2e-SOCs to the X2C Hamiltonian'
+          write(lupri,'(a/)') ' - add atomic two-electron '//
+     &                   ' scalar- and spin-orbit corrections '//
+     &                   ' to the X2C Hamiltonian.'
         end if
         if(.not.x2c)then
           call quit(' X-AMFI does not make sense in NON-2c '//

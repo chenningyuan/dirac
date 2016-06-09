@@ -630,19 +630,19 @@ contains
          nrows_frag = ncols_frag
 
 #ifdef MOD_XAMFI
-         call put_atomic_oo_order_so_correction(                &
-                                                scr1_mat,       &
-                                                nr_ao_L,        &
-                                                nrows_frag,     &
-                                                ncols_frag,     &
-                                                4,              &
-                                                i,              &
-                                                center_total,   &
-                                                nuclei_totnum,  &
-                                                print_lvl       &
-                                               )
+         call put_xamfi_correction(                &
+                                   scr1_mat,       &
+                                   nr_ao_L,        &
+                                   nrows_frag,     &
+                                   ncols_frag,     &
+                                   4,              &
+                                   i,              &
+                                   center_total,   &
+                                   nuclei_totnum,  &
+                                   print_lvl       &
+                                  )
 #else
-         call quit('call put_atomic_oo_order_so_correction inaccessible')
+         call quit('X-AMFI not avaliable in this version.')
 #endif
        end do
 

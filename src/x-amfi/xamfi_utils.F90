@@ -45,8 +45,8 @@ module xamfi_utils
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
   public read_normalized_2e_soc
-  public hello_aoosoc
-  public goodbye_aoosoc
+  public hello_xamfi
+  public goodbye_xamfi
 
   private
 
@@ -403,38 +403,44 @@ contains
   end subroutine read_normalized_2e_soc
 !----------------------------------------------------------------------
 
-  subroutine hello_aoosoc()
+  subroutine hello_xamfi()
 !**********************************************************************
 
     print '(/18x,a)', ' *********************************************************************'
-    print '( 18x,a)', ' ***                        aoo2eSO-SCC                            ***'
-    print '( 18x,a)', ' *** a module for oo-order atomic 2e-spin-orbit/scalar corrections ***'
+    print '( 18x,a)', ' ***                          X-AMFI                               ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** library version:  aoo2eSO-SCC v1.1 (March 2014)               ***'
+    print '( 18x,a)', ' *** a module for the generation of atomic two-electron            ***'
+    print '(18x,a )', ' *** scalar- and spin-orbit corrections                            ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** authors:          - Stefan Knecht                             ***'
-    print '(18x,a )', ' ***                   - Trond Saue                                ***'
-    print '(18x,a )', ' ***                   - Hans Joergen Aagaard Jensen               ***'
-    print '(18x,a )', ' ***                   - Michal Repisky                            ***'
-    print '(18x,a )', ' *** features:         - atomic 2e-SOC corrections:                ***'
-    print '(18x,a )', ' ***                      --> spin-same-orbit                      ***'
-    print '(18x,a )', ' ***                      --> spin-other-orbit                     ***'
+    print '(18x,a )', ' *** library version: X-AMFI v1.2 (June 2016)                      ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '( 18x,a)', ' ***        Universities of Zurich, Odense, Toulouse, and Tromsoe  ***'
+    print '(18x,a )', ' *** authors:         - Stefan Knecht (ETH Zuerich, CH)            ***'
+    print '(18x,a )', ' ***                  - Trond Saue ( U Toulouse, F)                ***'
+    print '(18x,a )', ' ***                  - Hans Joergen Aa. Jensen (SDU Odense, DK)   ***'
+    print '(18x,a )', ' ***                  - Michal Repisky (U Tromsoe, NO)             ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** features:        - atomic two-electron scalar corrections     ***'
+    print '(18x,a )', ' ***                  - atomic two-electron spin-orbit corrections ***'
+    print '(18x,a )', ' ***                    @ spin-same-orbit                          ***'
+    print '(18x,a )', ' ***                    @ spin-same + spin-other-orbit             ***'
+    print '(18x,a )', ' ***                                                               ***'
+    print '(18x,a )', ' *** contact: stefan.knecht@phys.chem.ethz.ch                      ***'
     print '(18x,a/)', ' *********************************************************************'
 
-  end subroutine hello_aoosoc
+  end subroutine hello_xamfi
 !**********************************************************************
 
-  subroutine goodbye_aoosoc()
+  subroutine goodbye_xamfi()
 !**********************************************************************
 
     print '(/18x,a)', ' *********************************************************************'
-    print '( 18x,a)', ' *** oo-order atomic 2e-SO/SC corrections have been prepared.      ***'
-    print '( 18x,a)', ' *** corrections are stored on file aoo2esoc.Z (Z=nuclear charge)  ***'
+    print '( 18x,a)', ' ***                          X-AMFI                               ***'
+    print '( 18x,a)', ' *** Atomic 2e-scalar and spin-orbit corrections are ready.        ***'
+    print '( 18x,a)', ' *** The corrections have been stored on the file aoo2esoc.Z where ***'
+    print '( 18x,a)', ' *** Z is the nuclear charge in 3-digit format.                    ***'
     print '(18x,a/)', ' *********************************************************************'
 
-  end subroutine goodbye_aoosoc
+  end subroutine goodbye_xamfi
 !**********************************************************************
 
 #if !defined(PRG_DIRAC) && !defined(PRG_DALTON)

@@ -2121,12 +2121,12 @@ C*****************************************************************************
      &    dump_normalized_2e_soc,
      &    read_normalized_2e_soc
       use xamfi_driver, only:
-     &    get_atomic_oo_order_so_correction
+     &    get_xamfi_correction
 #endif
 !
 #include "implicit.h"
 #ifndef MOD_XAMFI
-      logical :: aoomod = .false.
+      logical :: aoomod   = .false.
 #endif
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -2171,6 +2171,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: cmo_aoosoc(:)
       real(8), allocatable :: pctm_aoosoc(:)
       logical              :: no1esystem_aoosoc, aoc_save
+      logical              :: x2c_save
 #endif
 
       CALL QENTER('GMOTRA')
@@ -2713,8 +2714,10 @@ C
               aoc        = .false.
               nfmat      = 1
             end if
+
             !> turn off x2c to properly call twofck
-            x2c = .false.
+            x2c_save = x2c
+            x2c      = .false.
 
 !           !> generate density matrix - incoming variable to the aoosoc module
             allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
@@ -2757,25 +2760,24 @@ C
 
             lwork_local = lwork - ntbas(0)**2*nz*nfmat - ntbas(0)**2*nz
 
-            call get_atomic_oo_order_so_correction(
-     &                                             dmat_aoosoc,
-     &                                             pctm_aoosoc,
-     &                                             no1esystem_aoosoc,
-     &                                             lwork_local,
-     &                                             iprham
-     &                                             )
+            call get_xamfi_correction(
+     &                                dmat_aoosoc,
+     &                                pctm_aoosoc,
+     &                                no1esystem_aoosoc,
+     &                                lwork_local,
+     &                                iprham
+     &                               )
             !> restore logicals
             if(aoofocc)then
               aoc = aoc_save
             end if
-            x2c = .true.
+            x2c = x2c_save
 
             deallocate(pctm_aoosoc)
             deallocate(dmat_aoosoc)
           end if ! check for atomic run
 #else
-        call quit('generation of atomic oo-order 2e-SOC not active'//
-     &            ' in this version')
+        call quit('X-AMFI not available in this version')
 #endif
         end if ! aoomod
 
@@ -3004,10 +3006,10 @@ C
             !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
-     &      'aoosoc - 2e-normalized (final)',-1)
+     &      'X-AMFI - 2e-normalized (final)',-1)
             CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &                  IPQTOQ(1,0),LUPRI)
 #undef DEBUG_SOC
