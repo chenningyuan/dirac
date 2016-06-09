@@ -11,8 +11,8 @@
 !.MDIRAC
 .DOSSSS
 .X2Cmmf
-!*X-AMFI
-!.atomic
+*X-AMFI
+.atomic
 **WAVE FUNCTION
 .SCF
 *SCF

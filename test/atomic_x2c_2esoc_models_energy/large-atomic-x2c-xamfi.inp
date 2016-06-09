@@ -8,11 +8,11 @@
 .PRINT
  2
 **HAMILTONIAN
-.MDIRAC
+!.MDIRAC
 .X2C
 .DOSSSS
-!*X2C
-!.fragX2C
+*X2C
+.fragX2C
 *X-AMFI
 .atomic
 **WAVE FUNCTION

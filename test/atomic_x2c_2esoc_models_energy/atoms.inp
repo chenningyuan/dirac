@@ -8,17 +8,13 @@
 .PRINT
  2
 **HAMILTONIAN
-!.MDIRAC
 .X2Cmmf
 .DOSSSS
-!*X2C
-!.fragX2C
-!*X-AMFI
-!.atomic
+*X-AMFI
+.atomic
 **WAVE FUNCTION
 .SCF
 *SCF
-.NOBNCR
 .CLOSED SHELL
  closed_occ
 .OPEN SHELL
