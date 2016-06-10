@@ -62,9 +62,11 @@
 
 !initialize the R-vector
 !=======================
- 
-    R1(1:ndimt1*rcw,1:nroot) = 0.0d0 
-    R2(1:ndimt2*rcw,1:nroot) = 0.0d0 
+
+    write(*,*)'array size', size(R2(:,nroot))  
+
+    R1(1:size(R1(:,nroot)),1:nroot) = 0.0d0 
+    R2(1:size(R2(:,nroot)),1:nroot) = 0.0d0 
 
 ! 1> Determine the minimum energy determinants for IP, EA & EE. The number of them is equal to the number of roots. 
 
@@ -121,10 +123,9 @@
 
 ! As of now, I am targetting the lowest energy determinants across the symmetries.
 
-
      allocate(H_II(io(nrep+1)*rcw))    
 
-    H_II = eps(1:(io(nrep+1)*rcw))
+    H_II = -eps(1:(io(nrep+1)*rcw))
 
     do iroot = 1, nroot
      k = minloc(H_II) 
@@ -138,7 +139,7 @@
 
    case ('EA')
 
-     allocate(H_II(nv(iarep)*rcw))    
+     allocate(H_II(iv(nrep+1)*rcw))    
 
       H_II = eps((1+no(nrep+1)):(no(nrep+1)+nv(nrep+1)))
 
@@ -152,7 +153,6 @@
      deallocate(H_II)
 
   end select 
-
 
    end subroutine
 
@@ -228,7 +228,7 @@
 
 
 !     For the moment I am using as much in-core memory as possible. However we
-!     may think of writing them in files, replacing the integral ones.  
+!     may think of writing them in files, replacing the integral ones...  
 
 
       allocate (B%Fbar_mi(nfoo*rcw))  
@@ -302,12 +302,28 @@
          ndimr2 = ndimr2 + nv(irep)*noot(irep)
       enddo
 
-       allocate (r1(io(nrep+1)*rcw,nroot))
+
+        write(*,*)'dimension r2 IP',ndimr2 
+
+         ndimr1 = io(nrep+1)
+
+       allocate (r1(ndimr1*rcw,nroot))
        allocate (r2(ndimr2*rcw,nroot))
 
-       allocate (sigma1(io(nrep+1)*rcw,nroot))
+       allocate (sigma1(ndimr1*rcw,nroot))
        allocate (sigma2(ndimr2*rcw,nroot))
 
+       call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
+
+    do iroot = 1, nroot
+
+      sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
+      sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
+
+       call sigma_IP(r1(1:ndimr1*rcw,iroot:iroot),r2(1:ndimr2*rcw,iroot:iroot),t1,t2,B, &
+     &  sigma1(1:ndimr1*rcw,iroot:iroot),sigma2(1:ndimr2*rcw,iroot:iroot),ndimr1,ndimr2)
+
+    enddo
 
     case('EA')
 
@@ -320,7 +336,6 @@
 
        allocate (sigma1(iv(nrep+1)*rcw,nroot))
        allocate (sigma2(ndimr2*rcw,nroot))
-
 
    end select 
 
