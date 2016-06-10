@@ -7267,4 +7267,5 @@ C.....Static embedding potential
            PDOINT(ILBL)(4:4) = '0'
        ENDIF
        END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! -- end of dirone.F --

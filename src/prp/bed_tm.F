@@ -1,53 +1,59 @@
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck get_bed */                                                  C
-      SUBROUTINE GET_BED(WORK,LWORK)
+      SUBROUTINE GET_BED(OMEGA,ISSYM,WORK,KFREE,LFREE)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dgroup.h"
+#include "dcbxpp.h"
       LOGICAL TOFILE, DOINT(2,2)
       INTEGER LWORK, KONEIN, NCOMP
-      DIMENSION WORK(LWORK)
+      DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
+      character (len=8),  allocatable   :: LABINT(:)
+      integer, allocatable              :: INTREP(:)
+      LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
 C#include "dcbgen.h"
 #include "dcbbas.h"
 C
-      CALL QENTER('GET_BED')
-#include "memint.h"
-C
 C     Integral information
 C
-      TOFILE = .FALSE.
-      IPRINT = 100
+C      TOFILE = .FALSE.
+C      IPRINT = 100
 C     DOINT: 0++0 - LS, SL components are computed and multiplied by +1
-      DOINT(1,1)=.FALSE.
-      DOINT(2,1)=.TRUE.
-      DOINT(1,2)=.TRUE.
-      DOINT(2,2)=.FALSE.
-      IORDER = IDUMMY ! Order of multipole moment. Not applicable here.
-      NPQUAD = 0 ! Number of Gaussian quadrature points. 0 in our case
-      NCOMP = 8  ! Number of operators
+C      DOINT(1,1)=.FALSE.
+C      DOINT(2,1)=.TRUE.
+C      DOINT(1,2)=.TRUE.
+C      DOINT(2,2)=.FALSE.
+C      IORDER = IDUMMY ! Order of multipole moment. Not applicable here.
+C      NPQUAD = 0 ! Number of Gaussian quadrature points. 0 in our case
+C      NCOMP = 8  ! Number of operators
 C
 C     Memory allocation
 C
-      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
+C      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
 C
 C     Generate integrals
 C
-      CALL RGETINT('CXIKR   ',WORK(KONEIN),DOINT,NCOMP,IORDER,NPQUAD,
-     &                  'TRIANG',TOFILE,IPRINT,WORK(KFREE),LFREE)
+      IPRINT=6
+      NCOMP=8
+      allocate(LABINT(NCOMP))
+      allocate(INTREP(NCOMP))
+      CALL PR1DIR('CXIKR   ',INTTYP,NOPTYP,INTREP,
+     &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
+     &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
+CTROND      CALL RGETINT('CXIKR   ',WORK(KONEIN),DOINT,NCOMP,IORDER,NPQUAD,
+CTROND     &                  'TRIANG',TOFILE,IPRINT,WORK(KFREE),LFREE)
 C
-C      IF(IPRINT.GE.6) THEN
-        CALL HEADER('Small component CXIKR integrals',-1)
-        CALL OUTPAK(WORK(KONEIN),NTBAS(0),1,LUPRI)
-C      ENDIF
 C
-      CALL MEMREL('GET_BED',WORK,KWORK,KONEIN,KFREE,LFREE)
+C     Memory allocation
+      deallocate(LABINT)
+      deallocate(INTREP)
 C
-      CALL QEXIT('GET_BED')
       RETURN
       END
 C

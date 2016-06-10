@@ -318,10 +318,6 @@ C
  10   CONTINUE
       CALL MEMREL('PRPXP1',WORK,1,KXPP,KFREE,LFREE)
 C
-C     NANNA: Call bed integrals
-C
-      CALL GET_BED(WORK(KFREE),LFREE)
-C
 C     Final print section
 C
       CALL XPPOUT(ATMPPF,OMEGA,RCNV,WORK(KEIG),ISSYM,WORK,KFREE,LFREE)
@@ -2210,6 +2206,10 @@ C.......Isotropic contribution
       deallocate(ind)
       deallocate(ieerg)
 C
+C
+C     NANNA: Call bed integrals
+C
+      CALL GET_BED(OMEGA,ISSYM,WORK,KFREE,LFREE)
       RETURN
       END
 
