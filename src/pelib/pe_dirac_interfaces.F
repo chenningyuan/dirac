@@ -30,6 +30,8 @@
       subroutine pe_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
         use polarizable_embedding, only: pe_master
         implicit none
+!ehd debug
+#include "priunit.h"
 #include "dcbbas.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
         real*8, dimension(n2bbasx), intent(inout) :: fmat
@@ -73,12 +75,12 @@
               k = k + 1
            end do
         end do
-
         call pe_master(runtype='full_fock',
      &                 triang = .true.,
+     &                 ndim = ntbas(0),
      &                 nmats=1,
      &                 denmats=dspmat,
-     &                 fckmats=fspmat, 
+     &                 fckmats=fspmat,
      &                 expvals=nrg)
         tot_nrg = nrg(1)
         el_nrg = ddot(nnbbasx, dspmat, 1, fspmat, 1)
@@ -89,12 +91,12 @@
            do j = 1, i
               if (i == j) then
                  fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
-     &                                    + fspmat(k)
+     &                                  + fspmat(k)
               else
-              fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
-     &                                 + fspmat(k)
-              fmat((j-1)*ntbas(0)+i) = fmat((j-1)*ntbas(0)+i)
-     &                                 + fspmat(k)
+                 fmat((i-1)*ntbas(0)+j) = fmat((i-1)*ntbas(0)+j)
+     &                                  + fspmat(k)
+                 fmat((j-1)*ntbas(0)+i) = fmat((j-1)*ntbas(0)+i)
+     &                                  + fspmat(k)
               end if
               k = k + 1
            end do
@@ -117,8 +119,7 @@
            end do
         end do
 
-        deallocate(dspmat)
-        deallocate(fspmat)
+        deallocate(dspmat,fspmat)
 
         call qexit('pe_ifc_fock')
 
@@ -160,8 +161,11 @@
               k = k + 1
            end do
         end do
-
-        call pe_master(runtype='energy', denmats=dspmat, nmats=1)
+        call pe_master(runtype='print_energy',
+     &                 triang = .true.,
+     &                 ndim = ntbas(0),                      
+     &                 nmats=1, 
+     &                 denmats=dspmat)
 
         call qexit('pe_ifc_energy')
 

@@ -206,7 +206,7 @@ C
 C
 C     Initialize PE library
 C
-#if defined (BUILD_PELIB)
+#ifdef HAS_PELIB
       IF (PEQM) THEN
         CALL PE_IFC_INIT()
       END IF
@@ -5512,7 +5512,10 @@ C..TODO: check for inconsistencies and add stops
           TRS_MIX = .TRUE.
 !&&&& .PEQM: polarizable embedding
   166     CONTINUE
-#if defined (BUILD_PELIB)
+#ifdef HAS_PELIB
+            WRITE(LUPRI,*) 'PE library will be used.'
+#endif
+#ifdef HAS_PELIB
             PEQM = .TRUE.
 #else
             WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
@@ -6533,7 +6536,7 @@ CMI  ... reading input routine for AMFI+RELSCF
         go to 200
 !       *PEQM
    11 CONTINUE
-#if defined (BUILD_PELIB)
+#ifdef HAS_PELIB
         CALL PE_IFC_INPUT_READER(WORD)
 #else
         CALL QUIT('ERROR for *PEQM: PE library not enabled.')

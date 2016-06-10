@@ -160,7 +160,7 @@ C            leave this to authors of this part) Done, hjaaj.
      +  'Solvation energy                         :   ',get_pcm_energy()
         end if 
 #endif
-#ifdef MOD_PEQM
+#if defined (BUILD_PELIB)
         IF (PEQM) THEN
             write(lupri,'(3X,A,'//FMT//')')
      +  'PE energy (code not written yet)         :   '

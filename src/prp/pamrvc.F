@@ -3993,7 +3993,7 @@ C***********************************************************************
         use pcmmod_cfg
 #endif
 
-#ifdef MOD_PEQM 
+#ifdef HAS_PELIB
         use polarizable_embedding, only: pe_master
 #endif
         use orbital_rotation_indices
@@ -4024,7 +4024,7 @@ C
 
 C
 C
-#ifdef MOD_PEQM 
+#ifdef HAS_PELIB
       real(8) :: Epe(1)
       real(8), dimension(:), allocatable :: dlmat_triangle
       real(8), dimension(:), allocatable :: flmat_triangle
@@ -4189,7 +4189,7 @@ C
         endif 
 #endif      
 
-#ifdef MOD_PEQM
+#ifdef HAS_PELIB
 !      write(lupri,*) 'ndmat', ndmat
 !      print *, 'raboof', IHRMOP(1:ndmat)
 

@@ -2331,8 +2331,11 @@ C     Geometry optimization for Dirac
 C
 C     Execute Dirac, and retrieve energy.
 C
-#if defined (BUILD_PELIB)
-     call quit('PELib geometry optimization not implemented in DIRAC')
+#ifdef HAS_PELIB
+      if (peqm) then 
+         call quit('PELib geometry optimization '//
+     &   'not implemented in DIRAC')
+      endif 
 #endif 
       IF ( .NOT. EXSIR ) THEN
          CALL EXEDIR()

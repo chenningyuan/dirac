@@ -3,6 +3,7 @@ option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
 if(ENABLE_PELIB)
     include_directories(${PROJECT_BINARY_DIR}/external/pelib-build)
 
+    add_definitions(-DHAS_PELIB)
     set(PE_HOST_PROGRAM "DIRAC")
     if(ENABLE_GEN1INT)
         set(PE_INTEGRAL_LIBRARY "GEN1INT")
@@ -23,11 +24,6 @@ if(ENABLE_PELIB)
         -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
         -DHOST_PROGRAM=${PE_HOST_PROGRAM}
     )
-
-#   set(FIXED_FORTRAN_SOURCES
-#       ${FIXED_FORTRAN_SOURCES}
-#       src/pelib/pe_dirac_interfaces.F
-#   )
 
     add_external(pelib)
 

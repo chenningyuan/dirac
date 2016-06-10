@@ -116,7 +116,7 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: compute_mep_asc, pcm_oper_ao_driver
 #endif
-#ifdef MOD_PEQM
+#ifdef HAS_PELIB
       use polarizable_embedding, only: pe_master
 #endif
 
@@ -139,7 +139,7 @@ C
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
-#ifdef MOD_PEQM
+#ifdef HAS_PELIB
       real(8) :: Epe(1)
       real(8), allocatable :: dlmat_triangle(:)
       real(8), allocatable :: dsmat_triangle(:)
@@ -335,7 +335,7 @@ CJTH check this
         endif 
 #endif
 
-#ifdef MOD_PEQM
+#ifdef HAS_PELIB
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
 ! before starting a response calcaultion from DFCOEF(!)
@@ -377,8 +377,8 @@ CJTH check this
      &               nmats=1,
      &               denmats=dlmat_triangle,
      &               fckmats=flmat_triangle, 
-     &               Epe=Epe)
-      eqmmm = work(kfree)
+     &               expvals=Epe)
+!      eqmmm = work(kfree)
 
       ! F = F + M
       ! LL block

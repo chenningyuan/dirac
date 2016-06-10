@@ -1619,7 +1619,7 @@ C
 C        Polarizable embedding contribution
 C        ==================================
 C
-#if defined (BUILD_PELIB)
+#ifdef HAS_PELIB
          IF (PEQM) THEN
             IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
             PE_TIME = SECOND()
