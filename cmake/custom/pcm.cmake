@@ -11,12 +11,14 @@
 #
 #   PCMSOLVER_FOUND         - Was the PCMSolver module found
 #
-# autocmake.cfg configuration::
+# autocmake.yml configuration::
 #
-#   docopt: --pcmsolver=<ENABLE_PCMSOLVER> Toggle use of PCMSolver <ON/OFF> [default: ON].
-#           --pcmsolver-dir=<PCMSOLVER_ROOT> The PCMSolver module location. [default: ''].
-#   define: '-DENABLE_PCMSOLVER="{0}"'.format(arguments['--pcmsolver'])
-#           '-DPCMSOLVER_ROOT="%s"' % arguments['--pcmsolver-dir']
+#   docopt:
+#     - "--pcmsolver=<ENABLE_PCMSOLVER> Toggle use of PCMSolver <ON/OFF> [default: ON]."
+#     - "--pcmsolver-dir=<PCMSOLVER_ROOT> The PCMSolver module location. [default: '']."
+#   define:
+#     - "'-DENABLE_PCMSOLVER={0}'.format(arguments['--pcmsolver'])"
+#     - "'-DPCMSOLVER_ROOT={0}'.format(arguments['--pcmsolver-dir'])"
 
 option(ENABLE_PCMSOLVER "Enable Polarizable Continuum Model through PCMSolver" ON)
 

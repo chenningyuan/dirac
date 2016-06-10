@@ -8,10 +8,10 @@
 #   CMAKE_C_FLAGS
 #   CMAKE_CXX_FLAGS
 #
-# autocmake.cfg configuration::
+# autocmake.yml configuration::
 #
-#   docopt:  --prof Enable profiling [default: False]
-#   define: '-DENABLE_PROFILING={0}'.format(arguments['--check'])
+#   docopt: "--prof Enable profiling [default: False]"
+#   define: "'-DENABLE_PROFILING={0}'.format(arguments['--check'])"
 
 option(ENABLE_PROFILING "Enable profiling" OFF)
 
