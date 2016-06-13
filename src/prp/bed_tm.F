@@ -13,13 +13,13 @@ C
 #include "orgcom.h"
 C#include "cbiher.h"
       LOGICAL TOFILE, DOINT(2,2)
-      INTEGER LWORK, KONEIN, NCOMP
+      INTEGER LWORK, KONEIN, NCOMP, NOPTP
       DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
-C#include "dcbgen.h"
+#include "dcbgen.h"
 #include "dcbbas.h"
 C
 C     Integral information
@@ -43,7 +43,7 @@ C     Generate k vector for given excitation - for now - just along z
 C
       ORIGIN(1)=0.0
       ORIGIN(2)=0.0
-      ORIGIN(3)=OMEGA(1,ISYM)/CVAL
+      ORIGIN(3)=OMEGA(1,1)/CVAL !NHL: FIXME just some arbitrary value
 C
 C     Generate integrals
 C
@@ -51,31 +51,28 @@ C
       NCOMP=8
       allocate(LABINT(NCOMP))
       allocate(INTREP(NCOMP))
-      CALL PR1DIR('CXIKR   ',INTTYP,NOPTYP,INTREP,
+C
+C     NHL: changed to NOPTYP->NOPTP because the former is already
+C     defined in dgroup.h
+      CALL PR1DIR('CXIKR   ',INTTYP,NOPTP,INTREP,
      &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
      &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
 CTROND      CALL RGETINT('CXIKR   ',WORK(KONEIN),DOINT,NCOMP,IORDER,NPQUAD,
 CTROND     &                  'TRIANG',TOFILE,IPRINT,WORK(KFREE),LFREE)
 C
-C      DOINT
-      TOFILE=.FALSE.
-C     Memory allocation
 C
-      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
-      CALL PR1IN2(WORK,LWORK,WORK(KONEIN),INTTYP,NOPTYP,INTREP,
-     &           ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
-     &           PROPRI,SOLVNT,IORDER,NPQUAD,DOATOM,
-     &           NATOM,NBAST,NELMNT,IPRINT,DOINT,TOFILE)
+C      TOFILE=.FALSE.
 C
-C      IF(IPRINT.GE.6) THEN
-        CALL HEADER('Small component CXIKR integrals',-1)
-        CALL OUTPAK(WORK(KONEIN),NTBAS(0),1,LUPRI)
-C      ENDIF
+C      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
+C      CALL PR1IN2(WORK(KFREE),LFREE,WORK(KONEIN),INTTYP,NOPTP,INTREP,
+C     &           ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
+C     &           PROPRI,SOLVNT,IORDER,NPQUAD,DOATOM,
+C     &           NATOM,NBAST,NELMNT,IPRINT,DOINT,TOFILE)
 C
 C     Memory deallocation
-      CALL MEMREL('GET_BED',WORK,KWORK,KONEIN,KFREE,LFREE)
       deallocate(LABINT)
       deallocate(INTREP)
+C      CALL MEMREL('GET_BED',WORK,KWORK,KONEIN,KFREE,LFREE)
 C
       RETURN
       END
