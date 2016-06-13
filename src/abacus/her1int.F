@@ -1902,9 +1902,6 @@ C
 !     ===========================================================
 
          ELSE IF (INTTYP == 106) THEN
-            ORIGIN(1) = 0.0
-            ORIGIN(2) = 0.0
-            ORIGIN(3) = 10.0d0/CVAL
             CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
 

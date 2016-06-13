@@ -10,6 +10,7 @@ C
 C
 #include "dgroup.h"
 #include "dcbxpp.h"
+#include "orgcom.h"
       LOGICAL TOFILE, DOINT(2,2)
       INTEGER LWORK, KONEIN, NCOMP
       DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
@@ -36,6 +37,12 @@ C
 C     Memory allocation
 C
 C      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
+C
+C     Generate k vector for given excitation - for now - just along z
+C
+      ORIGIN(1)=0.0
+      ORIGIN(2)=0.0
+      ORIGIN(3)=OMEGA/CVAL
 C
 C     Generate integrals
 C
