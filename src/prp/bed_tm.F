@@ -11,6 +11,7 @@ C
 #include "dgroup.h"
 #include "dcbxpp.h"
 #include "orgcom.h"
+C#include "cbiher.h"
       LOGICAL TOFILE, DOINT(2,2)
       INTEGER LWORK, KONEIN, NCOMP
       DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
@@ -34,15 +35,15 @@ C      IORDER = IDUMMY ! Order of multipole moment. Not applicable here.
 C      NPQUAD = 0 ! Number of Gaussian quadrature points. 0 in our case
 C      NCOMP = 8  ! Number of operators
 C
-C     Memory allocation
-C
-C      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
+C      DO IFRP=1,NFSYM
+C        DO IBF=1,NBF
+C           ISYM=JFSYM(IBF,IFRP) ! symmetry of exitation
 C
 C     Generate k vector for given excitation - for now - just along z
 C
       ORIGIN(1)=0.0
       ORIGIN(2)=0.0
-      ORIGIN(3)=OMEGA/CVAL
+      ORIGIN(3)=OMEGA(1,ISYM)/CVAL
 C
 C     Generate integrals
 C
@@ -56,8 +57,23 @@ C
 CTROND      CALL RGETINT('CXIKR   ',WORK(KONEIN),DOINT,NCOMP,IORDER,NPQUAD,
 CTROND     &                  'TRIANG',TOFILE,IPRINT,WORK(KFREE),LFREE)
 C
-C
+C      DOINT
+      TOFILE=.FALSE.
 C     Memory allocation
+C
+      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
+      CALL PR1IN2(WORK,LWORK,WORK(KONEIN),INTTYP,NOPTYP,INTREP,
+     &           ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
+     &           PROPRI,SOLVNT,IORDER,NPQUAD,DOATOM,
+     &           NATOM,NBAST,NELMNT,IPRINT,DOINT,TOFILE)
+C
+C      IF(IPRINT.GE.6) THEN
+        CALL HEADER('Small component CXIKR integrals',-1)
+        CALL OUTPAK(WORK(KONEIN),NTBAS(0),1,LUPRI)
+C      ENDIF
+C
+C     Memory deallocation
+      CALL MEMREL('GET_BED',WORK,KWORK,KONEIN,KFREE,LFREE)
       deallocate(LABINT)
       deallocate(INTREP)
 C
