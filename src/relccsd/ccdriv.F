@@ -181,7 +181,13 @@ C
 C     Convert input from module file to old-fashioned keywords
 C
       DO I= 1, 16
-       if (nelec_input)  NELEC(I)    = relcc_nelec(I)
+       if (nelec_input)  then
+!         Overwrite information provided by SCF program with user-specified input
+          NELEC(I)    = relcc_nelec(I)
+       else if (nelec_open_input) then
+!         Open shells require user input because the SCF-initialized nelec counts only closed shell electrons
+          NELEC(I) = NELEC(I) + relcc_nelec_open(I) 
+       end if 
        NFROZ(I)    = relcc_nfroz(I)
        NELEC_F1(I) = relcc_nelec_f1(I)
        NELEC_F2(I) = relcc_nelec_f2(I)
