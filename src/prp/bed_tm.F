@@ -1,36 +1,35 @@
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck get_bed */                                                  C
-      SUBROUTINE GET_BED(OMEGA,ISSYM,WORK,KFREE,LFREE)
+      SUBROUTINE GET_BED(OMEGA,ISSYM,IPRINT,WORK,KFREE,LFREE)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dcbgen.h"
+#include "dcbbas.h"
+#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
 #include "orgcom.h"
 C#include "cbiher.h"
-      LOGICAL TOFILE, DOINT(2,2)
-      INTEGER LWORK, KONEIN, NCOMP, NOPTP
+      LOGICAL DOINT(2,2)
+      INTEGER LWORK, NCOMP, NOPTP
       DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
+      real(8), allocatable              :: ONEINT(:,:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+      LOGICAL PROPRI,TOFILE
 C
-#include "dcbgen.h"
-#include "dcbbas.h"
 C
 C     Integral information
 C
 C      TOFILE = .FALSE.
 C      IPRINT = 100
 C     DOINT: 0++0 - LS, SL components are computed and multiplied by +1
-C      DOINT(1,1)=.FALSE.
-C      DOINT(2,1)=.TRUE.
-C      DOINT(1,2)=.TRUE.
-C      DOINT(2,2)=.FALSE.
 C      IORDER = IDUMMY ! Order of multipole moment. Not applicable here.
 C      NPQUAD = 0 ! Number of Gaussian quadrature points. 0 in our case
 C      NCOMP = 8  ! Number of operators
@@ -41,35 +40,66 @@ C           ISYM=JFSYM(IBF,IFRP) ! symmetry of exitation
 C
 C     Generate k vector for given excitation - for now - just along z
 C
-      ORIGIN(1)=0.0
-      ORIGIN(2)=0.0
-      ORIGIN(3)=OMEGA(1,1)/CVAL !NHL: FIXME just some arbitrary value
 C
 C     Generate integrals
 C
-      IPRINT=6
       NCOMP=8
       allocate(LABINT(NCOMP))
       allocate(INTREP(NCOMP))
 C
-C     NHL: changed to NOPTYP->NOPTP because the former is already
-C     defined in dgroup.h
-      CALL PR1DIR('CXIKR   ',INTTYP,NOPTP,INTREP,
+C     Integral directives
+C     
+      CALL PR1DIR('CXIKR   ',INTTYP,NCOMP2,INTREP,
      &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
      &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
-CTROND      CALL RGETINT('CXIKR   ',WORK(KONEIN),DOINT,NCOMP,IORDER,NPQUAD,
-CTROND     &                  'TRIANG',TOFILE,IPRINT,WORK(KFREE),LFREE)
+      IF(NCOMP2.NE.NCOMP) THEN
+        WRITE(6,*) 'NCOMP - expected :',NCOMP
+        WRITE(6,*) 'NCOMP - returned :',NCOMP2 
+        CALL QUIT('GET_BED: NCOMP differs !')
+      ENDIF
+CTROND
+      WRITE(6,*) 'BASINFO:',NBAST,NELMNT
+      DO I = 1,8
+        WRITE(6,*) 'INTREP..',INTREP(I)
+      ENDDO
+      DOINT(1,1)=.FALSE.
+      DOINT(2,1)=.TRUE.
+      DOINT(1,2)=.TRUE.
+      DOINT(2,2)=.FALSE.
+      allocate(ONEINT(NELMNT,NCOMP))
+      IORDER=0
+      NPQUAD=0
+      TOFILE=.FALSE.
+
 C
+C     Generate integrals
 C
-C      TOFILE=.FALSE.
-C
-C      CALL MEMGET('REAL',KONEIN,NNBBASX*NCOMP,WORK,KFREE,LFREE)
-C      CALL PR1IN2(WORK(KFREE),LFREE,WORK(KONEIN),INTTYP,NOPTP,INTREP,
-C     &           ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
-C     &           PROPRI,SOLVNT,IORDER,NPQUAD,DOATOM,
-C     &           NATOM,NBAST,NELMNT,IPRINT,DOINT,TOFILE)
+      ORIGIN(1)=0.0
+      ORIGIN(2)=0.0
+      ORIGIN(3)=1.0
+      DO I = 1,3
+        ORIGIN(I) = ORIGIN(I)/CVAL
+      ENDDO
+      CALL RGETINT('CXIKR   ',ONEINT,DOINT,NCOMP,IORDER,NPQUAD,
+     &                  'TRIANG',TOFILE,20,WORK(KFREE),LFREE)
+      CALL QUIT('End of test')
+      PROPRI=.FALSE.
+      CALL PR1IN2(WORK(KFREE),LFREE,ONEINT,INTTYP,
+     &           NCOMP,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
+CTROND     &           TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
+     &           TRASPH,PROPRI,SOLVNT,IORDER,NPQUAD,DUMMY,
+CTROND     &           0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
+     &           0,NBAST,NELMNT,20,DOINT,.FALSE.)
+CTROND      IF(IPRINT.GE.5) THEN
+C        DO ICOMP = 1,NCOMP
+C          WRITE(6,*) '* Integrals of ',LABINT(ICOMP),'. Symmetry: ',
+C     &               REP(INTREP(NCOMP))
+C          CALL OUTPAK(ONEINT(1,ICOMP),NBAST,1,LUPRI)
+C        ENDDO
+CTROND      ENDIF
 C
 C     Memory deallocation
+      deallocate(ONEINT)
       deallocate(LABINT)
       deallocate(INTREP)
 C      CALL MEMREL('GET_BED',WORK,KWORK,KONEIN,KFREE,LFREE)

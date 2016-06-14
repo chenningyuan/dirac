@@ -2251,11 +2251,12 @@ C
          INTTYP = 106 
          NOPTYP = 8
          CALL NTYPTS(NOPTYP)
-CTROND         CALL SETATM(DOATOM,NATOM,INTTYP)
+C........Real part of exponential
          LABINT(1) = 'CXIKRCCC'
          LABINT(2) = 'CXIKRCSS'
          LABINT(3) = 'CXIKRSCS'
          LABINT(4) = 'CXIKRSSC'
+C........Imaginary part of exponential
          LABINT(5) = 'CXIKRCCS'
          LABINT(6) = 'CXIKRCSC'
          LABINT(7) = 'CXIKRSCC'

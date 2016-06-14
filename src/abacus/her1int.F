@@ -38,7 +38,6 @@ C
 C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(A,/)')
      &     ' <<<<<<<<<< OUTPUT FROM PR1DRV >>>>>>>>>> '
-
       npoint = 1
 
       if      (inttyp == 12) then
@@ -524,7 +523,7 @@ C
       END IF
 C
       IF (IPRINT .GT. 5) THEN
-            WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
+         WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
          WRITE (LUPRI,'(A,I5)') ' NELMNT ', NELMNT
          WRITE (LUPRI,'(A,I5)') ' INTTYP ', INTTYP
          WRITE (LUPRI,'(A,I5)') ' NOPTYP ', NOPTYP
@@ -1014,7 +1013,6 @@ C
          ELSE IF (INTTYP .EQ. 57) THEN
             CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-
          else if (inttyp == 100) then
 !          g1o
            call s1htra(shlint, soint, isymop, 
@@ -1186,7 +1184,7 @@ C
          JPRIMA = JSTA + IPRIMA
          CONTA = PRICCF(JPRIMA,NUMCFA)
          EXPA = PRIEXP(JPRIMA)
-      DO 100 IPRIMB = 1,NUCB
+      DO 200 IPRIMB = 1,NUCB
          JPRIMB = JSTB + IPRIMB
          CONTB = PRICCF(JPRIMB,NUMCFB)
          EXPB = PRIEXP(JPRIMB)
@@ -1902,13 +1900,8 @@ C
 !     ===========================================================
 
          ELSE IF (INTTYP == 106) THEN
-C            ORIGIN(1) = 0.0
-C            ORIGIN(2) = 0.0
-C            ORIGIN(3) = 10.0d0/CVAL
-             WRITE(LUPRI,*) 'ORIGIN', ORIGIN
-            CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+             CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
-
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
 C        --------------------------------------------------
@@ -2007,14 +2000,6 @@ Cdj mixed bra-ket part
             DIFOBZ = GAGORG(3) - CORBZ
             CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
-
-
-
-
-
-
-
-
          END IF
   200    CONTINUE
   100 CONTINUE
