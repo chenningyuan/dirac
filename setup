@@ -30,11 +30,11 @@ Options:
   --mkl=<MKL>                            Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
   --mpi                                  Enable MPI parallelization [default: False].
   --coverage                             Enable code coverage [default: False].
-  --explicit-libs=<LIBS>                 Explicit linker specification for extra libraries passed directly to the linker [default: off].
   --static                               Enable static linking [default: False].
   --prof                                 Enable profiling [default: False]
   --check                                Enable runtime checking of compiled executables [default: False]
   --int64                                Enable 64bit integers [default: False].
+  --explicit-libs=<LIBS>                 Explicit linker specification for extra libraries passed directly to the linker [default: off].
   --pcmsolver=<ENABLE_PCMSOLVER>         Toggle use of PCMSolver <ON/OFF> [default: ON].
   --pcmsolver-dir=<PCMSOLVER_ROOT>       The PCMSolver module location. [default: ''].
   --type=<TYPE>                          Set the CMake build type (debug, release, or relwithdeb) [default: release].
@@ -70,11 +70,11 @@ def gen_cmake_command(options, arguments):
     command.append('-DLAPACK_LANG=Fortran')
     command.append('-DENABLE_MPI={0}'.format(arguments['--mpi']))
     command.append('-DENABLE_CODE_COVERAGE={0}'.format(arguments['--coverage']))
-    command.append('-DEXPLICIT_LIBS="{0}"'.format(arguments['--explicit-libs'].strip()))
     command.append('-DENABLE_STATIC_LINKING={0}'.format(arguments['--static']))
     command.append('-DENABLE_PROFILING={0}'.format(arguments['--check']))
     command.append('-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check']))
     command.append('-DENABLE_64BIT_INTEGERS={0}'.format(arguments['--int64']))
+    command.append('-DEXPLICIT_LIBS="{0}"'.format(arguments['--explicit-libs'].strip()))
     command.append('-DENABLE_PCMSOLVER={0}'.format(arguments['--pcmsolver']))
     command.append('-DPCMSOLVER_ROOT={0}'.format(arguments['--pcmsolver-dir']))
     command.append('-DCMAKE_BUILD_TYPE={0}'.format(arguments['--type']))
