@@ -46,7 +46,7 @@ modules:
 - explicit:
   - docopt: "--explicit-libs=<LIBS> Explicit linker specification for extra libraries passed directly to the linker [default: off]."
   - define: "'-DEXPLICIT_LIBS=\"{0}\"'.format(arguments['--explicit-libs'].strip())"
-- main1:
+- custom:
   - source:
     - 'custom/mpi.cmake'
     - 'custom/test.cmake'
@@ -61,9 +61,9 @@ modules:
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
     - 'custom/pcm.cmake'
-- src:
+- subdirectories:
   - source: '%(url_root)modules/src.cmake'
-- main2:
+- custom:
   - source:
     - 'custom/benchmarks.cmake'
     - 'custom/external_libs.cmake'
@@ -72,8 +72,12 @@ modules:
     - 'custom/unit/unit_tests.cmake'
     - 'custom/core.cmake'
     - 'custom/c_fortran_interface.cmake'
+- documentation:
+  - source:
     - 'custom/doxygen.cmake'
     - 'custom/sphinx.cmake'
+- install:
+  - source:
     - 'custom/install.cmake'
     - 'custom/cpack.cmake'
     - 'custom/pam.cmake'
