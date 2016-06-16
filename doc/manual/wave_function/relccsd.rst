@@ -40,9 +40,9 @@ to the FS calculation.
 
 keyword(GRADIENT)
 
-Calculate the effective 1-particle density matrix (currently only for a
-closed shell MP2 wave function). This option can be used to calculate
-molecular properties. See :cite:`vanStralen2005`.
+Calculate the effective 1-particle density matrix. This option can be used to calculate
+molecular properties. For closed-shell MP2 see :cite:`vanStralen2005`. For closed-shell CC 
+see :cite:`Shee_CCgrad2016`.
 
 *Default:*
 
@@ -178,16 +178,28 @@ Deactivate contribution from doubles; corresponds to a CCS calculation.
 
 star(CCFOPR)
 
-Calculate first-order properties (expectation values) for the MP2 wave
+Calculate first-order properties (expectation values) for the MP2 and CCSD wave
 function.
+
+keyword(MP2G)
+Use MP2 wave function. 
+
+keyword(CCSDG)
+Use CCSD wave function.
 
 keyword(NATORB)
 
 Calculate natural orbitals (currently only for MP2 density matrix)
 
-keyword(UNRELAXED)
+keyword(RELAXED)
 
-Use unrelaxed density matrix (computationally cheaper but less accurate)
+Use orbital-relaxed density matrix (currently only for MP2).
+The current default for MP2 and CC wave functions is to use the unrelaxed 
+density matrix. This is computationally less expensive, but also less accurate.
+
+
+
+
 
 star(CCFSPC)
 
