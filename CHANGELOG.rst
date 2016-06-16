@@ -11,14 +11,19 @@ the lines below should only be changed on the release branch.)
 -------------------------------------------------------------------------------------------------------
 
 
-15.1 (2016-xx-xx)
+15.1 (2016-05-10)
 -----------------
 
+- Change any tab character in coordinate specifications in .mol file to a blank
+  (tab characters have been reported to cause errors in reading coordinates).
+- Bugfix: KRMSCF was not converging is some cases (problem reported by Miro Ilias for Os atom).
+- Bugfix: "all" keyword for ".GAS SHELLS" was not recognized (problem reported by Miro Ilias).
 - Bugfix for numerical gradient when automatic symmetry detection: do no move or rotate molecule
   for finding highest possible symmetry because then the numerical gradient will not be correct
+  (problem reported by Miro Ilias).
 - Added OPENBLAS in search list for blas and lapack libraries.
 - Made keyword .X2Cmmf case insensitive.
-- BUGfix for spinfree X2Cmmf and linear symmetry.
+- Bugfix for spinfree X2Cmmf and linear symmetry.
 - Error corrections and updates in isotope properties for the following atoms:
       Br isotope 2: quadrupole moment  .2620 ->  .2615
       Ag isotope 2: magnetic moment    .130563 -> -.130691 (note sign change)
@@ -34,6 +39,7 @@ the lines below should only be changed on the release branch.)
       Po isotope 1: nuclear moment added: 0.000 -> 0.688
 - Restored "make install" target.
 - Cache compiler flags.
+- Test reladc_fano does not report failure if Stieltjes is deactivated.
 
 
 15.0 (2015-12-16)

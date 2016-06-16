@@ -4758,12 +4758,13 @@ C
       STPL_OLD = STPL
       CALL XRSLINRED(NZRED,NREDM,REDE,REDS,DLVLSH,REDGP,
      &     EVECR,IBTYP,INERTIA,IINFO(6),IPROPT,WORK,KFREE,LFREE)
+      INONPOS = INERTIA(2) + INERTIA(3)
       ITER = ITER + 1
       STPL = DP5 * DNRM2(NZRED,EVECR,1)
       STPL_CI = D0
       STPL_EE = D0
       STPL_EP = D0
-      IF (NPRED .GT. 0) THEN
+      IF (NPRED .GT. 0 .OR. IPRINT .GE. 5) THEN
          DO I = 1, NZRED
             IF (IBTYP(1,I) .EQ. JBCNDX) THEN
                STPL_CI = STPL_CI + EVECR(I)**2
@@ -4778,12 +4779,11 @@ C
          STPL_CI = DP5 * SQRT(STPL_CI)
          STPL_EE = DP5 * SQRT(STPL_EE)
          STPL_EP = DP5 * SQRT(STPL_EP)
+         IF (IPRINT .GE. 5)
+     &      WRITE (LUPRI,'(A,I5,1P,G10.2,I5/A,3G10.2)')
+     &      'KRMSOL ITER, STPL, INONPOS',ITER,STPL,INONPOS,
+     &      'step length CI, e-e, e-p',STPL_CI,STPL_EE,STPL_EP
       END IF
-      INONPOS = INERTIA(2) + INERTIA(3)
-      IF (IPRINT .GE. 5)
-     &   WRITE (LUPRI,'(A,I5,1P,G10.2,I5/A,3G10.2)')
-     &   'KRMSOL ITER, STPL, INONPOS',ITER,STPL,INONPOS,
-     &   'step length CI, e-e, e-p',STPL_CI,STPL_EE,STPL_EP
 C
 C     Save electronic Hessian's index for zero level shift
 C     (used in RCNVTHR below)
@@ -4813,7 +4813,7 @@ C
 C
       IF (STPL .GT. RTRMAX .OR. STPL_EP .GT. STPL_EP_MAX .OR.    ! too long step
      &    INONPOS .NE. NPRED ) THEN                              ! wrong number of negative eigenvalues
-         IF (ITER .LE. 2 .AND.
+         IF (ITER .LE. 2 .AND. JHESSIAN .EQ. 0 .AND.
      &       STPL .GT. STPL_OLD .AND. STPL_OLD .GT. RTRMAX) THEN ! reset
             INCREASE_SHIFT = -INCREASE_SHIFT
             DLVLMAX = D0

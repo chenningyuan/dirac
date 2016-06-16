@@ -7,11 +7,19 @@ box: wercker/python
 build:
   steps:
     - install-packages:
-        packages: "git gcc g++ gfortran make cmake libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
+        packages: "git gcc g++ gfortran make libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
 
     - pip-install:
         requirements_file: ""
         packages_list: "matplotlib sphinx==1.2.3 sphinxcontrib-bibtex sphinx_rtd_theme hieroglyph"
+
+    - script:
+        name: install the newest cmake form their webpage
+        code: |
+          wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+          tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
+          export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
+          cmake --version
 
     - script:
         name: show system resources
@@ -52,13 +60,13 @@ build:
         name: build doxygen documentation
         code: |
           cd build_wercker-ci
-          make doxygen
+          #make doxygen
 
     - script:
         name: build slides
         code: |
           cd build_wercker-ci
-          make slides
+          #make slides
 
 ## turn off email notifications
 notifications:

@@ -7,6 +7,7 @@ Keyword reference
    - :doc:`*OPTIMIZE <optimize>` --- Geometry optimization directives
 
 * :doc:`**GENERAL <general>` --- General input
+   - :doc:`*PARALLEL <parallel>` --- Parallel run directives
 
 * :doc:`**MOLECULE<molecule>` --- Specification of basis set information
 
