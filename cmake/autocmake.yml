@@ -40,6 +40,7 @@ modules:
     - 'custom/profiling.cmake'
     - 'custom/runtimecheck.cmake'
     - '%(url_root)modules/int64.cmake'
+    - 'custom/mathlibs-integer-compatibility.cmake'
     - '%(url_root)modules/safeguards.cmake'
     - '%(url_root)modules/git_info/git_info.cmake'
     - '%(url_root)modules/version.cmake'
