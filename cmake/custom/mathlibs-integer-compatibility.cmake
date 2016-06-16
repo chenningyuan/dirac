@@ -23,7 +23,15 @@ if (ENABLE_MATH_INT_TEST)
 
     set(CMAKE_REQUIRED_FLAGS ${CMAKE_Fortran_FLAGS})
     # you can not always combine libraries from different  sources (like MKL, SYSTEM_NATIVE)!
-    set(CMAKE_REQUIRED_LIBRARIES "${MATH_LIBS};${EXPLICIT_LIBS}")
+    if (MATH_LIBS AND EXPLICIT_LIBS)
+      set(CMAKE_REQUIRED_LIBRARIES "${MATH_LIBS};${EXPLICIT_LIBS}")
+    elseif(MATH_LIBS AND NOT EXPLICIT_LIBS)
+      set(CMAKE_REQUIRED_LIBRARIES "${MATH_LIBS}")
+    elseif(NOT MATH_LIBS AND EXPLICIT_LIBS)
+      set(CMAKE_REQUIRED_LIBRARIES "${EXPLICIT_LIBS}")
+    else()
+      message(STATUS "Have you any blas library linked to Dirac ? Last linking step may crash ...")
+    endif()
 
 #   perform BLAS-integer test only, LAPACK-integer test is inside executable, dirac.x
     CHECK_BLAS_INTEGER_TYPE(blas_test_compiled blas_test_run blas_integer_type)
