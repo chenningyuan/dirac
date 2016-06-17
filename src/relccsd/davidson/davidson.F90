@@ -6,6 +6,7 @@ implicit none
 !public davidson_solve_nonsymmetric_R
 !public davidson_solve_symmetric_R
 public davidson_setup
+public davidson_driver
 
 private
 
@@ -21,7 +22,7 @@ real(kind=8), parameter :: one_r8  = 1.0d0
 
 real(kind=8), save :: safe_minimum = 1.0d-12
 real(kind=8), save :: convergence_threshold = 1.0d-4
-integer, save      :: max_subspace_size     
+integer, save      :: max_subspace_size = 128
 integer, save      :: roots_per_symmetry(nr_max_irreps)
 
 contains 
@@ -72,7 +73,7 @@ contains
             verbose_local = .false.
         end if
 
-        allocate(new_subspace_vectors_R(new_L, N))
+        allocate(new_subspace_vectors_R(N, new_L))
         new_subspace_vectors_R = 0.0d0
 
         if (.not.present(old_subspace_vectors_R)) then
@@ -107,8 +108,8 @@ contains
         integer :: i
         logical :: verbose_local
 
-        vectors_L = size(old_vectors_R,2)
         vectors_N = size(old_vectors_R,1)
+        vectors_L = size(old_vectors_R,2)
 
         if (present(verbose)) then
             verbose_local = verbose
@@ -123,7 +124,7 @@ contains
            updated_subspace_vectors_R(:, vectors_L + i) = delta(:,i)
         end do
 
-        deallocate(old_vectors_R)
+        if (allocated(old_vectors_R)) deallocate(old_vectors_R)
     end function
 
     subroutine gram_schmidt_projection_R(projection, u, v)
@@ -214,12 +215,14 @@ contains
 
         if (present(label)) then
             label_local = label
-            print *, label_local(1:max_label_length)
+            print "(a)", label_local(1:max_label_length)
         end if
         do i = 1, N
-            print *, (vectors(i,j), j= 1,L)
+            print "(4x,1f14.6,a,$)" , (vectors(i,j), j= 1,L)
+            print *, ""
         end do
     end subroutine
+
 
     subroutine print_eigenvalues_eigenvectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left, right)
         real(kind=8), intent(in) :: eVectorsL(:,:)
@@ -282,7 +285,10 @@ contains
         call dgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
                    alpha_lapack, b, vectors_L, c_small_M, vectors_L,            &
                    beta_lapack, residue_b, vectors_L)
-
+        if (.true.) then
+            print *, "debug in form_r, residue_a :",residue_a
+            print *, "debug in fomr_r, residue_b :",residue_b
+        end if
         do k = 1, nroots
             r(:,k) = residue_a(:,k) - e_small_M(k)*residue_b(:,k)    
         end do
@@ -401,9 +407,12 @@ contains
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
+        print *, "debug, in create_reduced_problem, dimensions ",vectors_L," by ", vectors_L
         allocate(create_reduced_problem(vectors_L,vectors_L))
+        call print_vectors_R(create_reduced_problem, "M_small, before construction")
         call dgemm('T', 'N', vectors_L, vectors_L, vectors_N, alpha_lapack, b, vectors_N, &
                    sigma_vector, vectors_N, beta_lapack, create_reduced_problem, vectors_L)
+        call print_vectors_R(create_reduced_problem, "M_small, after  construction")
 
     end function
 
@@ -467,6 +476,7 @@ contains
 
     end function
 
+
     subroutine davidson_driver(nroots, M, symmetric, eValuesRe, eValuesIm, eVectorsL, eVectorsR, left, right, verbose)
         real(kind=8), intent(in)    :: M(:,:)
         real(kind=8), intent(inout) :: eVectorsL(:,:)
@@ -485,6 +495,7 @@ contains
         real(kind=8), allocatable :: e_small_r(:)
         real(kind=8), allocatable :: e_small_i(:)
         integer :: vectors_N, L, min_subspace_size, niter
+        integer :: i, j
 
         vectors_N = size(M,1)
         M_diag = get_diagonal_elements(M)
@@ -500,9 +511,14 @@ contains
 
         b  = new_subspace_vectors_R(min_subspace_size,vectors_N)
         if (verbose) then
-            print *, "Start by mapping M onto a subspace of size ",min_subspace_size, &
-                     ", will extend it up to ",max_subspace_size,"\n"
-            print *, "Initial subspace vectors : \n",b,"\n"
+            print "(4x,a,i4,a,i8)", "Start by mapping M onto a subspace of size ",min_subspace_size, &
+                     ", will extend it up to ",max_subspace_size
+            print *, "Initial subspace vectors : "
+            do i = 1, vectors_N
+                print "(4x,1f14.6,a,$)", (b(i,j), j = 1, min_subspace_size)
+                print *, ""
+            end do
+            print *, ""
         end if
 
         niter = 1
