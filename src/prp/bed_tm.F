@@ -80,9 +80,9 @@ C
       DO I = 1,3
         ORIGIN(I) = ORIGIN(I)/CVAL
       ENDDO
-      CALL RGETINT('CXIKR   ',ONEINT,DOINT,NCOMP,IORDER,NPQUAD,
-     &                  'TRIANG',TOFILE,20,WORK(KFREE),LFREE)
-      CALL QUIT('End of test')
+C      CALL RGETINT('CXIKR   ',ONEINT,DOINT,NCOMP,IORDER,NPQUAD,
+C     &                  'TRIANG',TOFILE,20,WORK(KFREE),LFREE)
+C      CALL QUIT('End of test')
       PROPRI=.FALSE.
       CALL PR1IN2(WORK(KFREE),LFREE,ONEINT,INTTYP,
      &           NCOMP,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
@@ -91,11 +91,11 @@ CTROND     &           TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
 CTROND     &           0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
      &           0,NBAST,NELMNT,20,DOINT,.FALSE.)
 CTROND      IF(IPRINT.GE.5) THEN
-C        DO ICOMP = 1,NCOMP
-C          WRITE(6,*) '* Integrals of ',LABINT(ICOMP),'. Symmetry: ',
-C     &               REP(INTREP(NCOMP))
-C          CALL OUTPAK(ONEINT(1,ICOMP),NBAST,1,LUPRI)
-C        ENDDO
+        DO ICOMP = 1,NCOMP
+          WRITE(6,*) '* Integrals of ',LABINT(ICOMP),'. Symmetry: ',
+     &               REP(INTREP(NCOMP))
+          CALL OUTPAK(ONEINT(1,ICOMP),NBAST,1,LUPRI)
+        ENDDO
 CTROND      ENDIF
 C
 C     Memory deallocation
