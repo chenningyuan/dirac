@@ -1900,7 +1900,7 @@ C
 !     ===========================================================
 
          ELSE IF (INTTYP == 106) THEN
-             CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+           CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
