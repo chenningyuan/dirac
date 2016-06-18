@@ -31,7 +31,7 @@ program test_davidson
 !
    integer :: mdim
 
-   mdim = 16
+   mdim = 12
 
 ! allocating eigenvectors and eigenvalues storage
    allocate(eval_real(mdim))

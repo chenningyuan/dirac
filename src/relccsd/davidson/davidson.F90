@@ -12,7 +12,7 @@ private
 
 ! module parameters
 
-integer, parameter :: max_label_length = 10
+integer, parameter :: max_label_length = 30
 integer, parameter :: nr_max_irreps = 32
 
 real(kind=8), parameter :: zero_r8 = 0.0d0
@@ -191,7 +191,7 @@ contains
                 vectors(:,j) = vectors(:,j) - projection(:)
             end do
             if (verbose_local) then
-                call print_vectors_R(vectors, label="all vectors")
+                call print_vectors_R(vectors, label="all vectors                   ")
             end if
         end do
 
@@ -210,15 +210,19 @@ contains
         integer :: L, N, i, j
         character(len=max_label_length) :: label_local
 
-        L = size(vectors,2)
         N = size(vectors,1)
+        L = size(vectors,2)
 
         if (present(label)) then
             label_local = label
+            print *, ""
             print "(a)", label_local(1:max_label_length)
+            print *, ""
         end if
         do i = 1, N
-            print "(4x,1f14.6,a,$)" , (vectors(i,j), j= 1,L)
+            do j = 1, L
+                print "(4x,1f14.6,$)", vectors(i,j)
+            end do
             print *, ""
         end do
     end subroutine
@@ -244,11 +248,11 @@ contains
             end if
         end do
         if (right) then
-            label = "Right Eigenvalues"
+            label = "Right Eigenvalues            "
             call print_vectors_R(eVectorsR, label) 
         end if
         if (left) then
-            label = "Left Eigenvalues"
+            label = "Left Eigenvalues            "
             call print_vectors_R(eVectorsL, label) 
         end if
 
@@ -279,13 +283,15 @@ contains
         residue_a = zero_r8
         residue_b = zero_r8
 
+        print *, "debug, before first dgemm call"
         call dgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
                    alpha_lapack, sigma_vector, vectors_N, c_small_M, vectors_L, &
-                   beta_lapack, residue_a, vectors_L) 
+                   beta_lapack, residue_a, vectors_N) 
+        print *, "debug, before second dgemm call"
         call dgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
-                   alpha_lapack, b, vectors_L, c_small_M, vectors_L,            &
-                   beta_lapack, residue_b, vectors_L)
-        if (.true.) then
+                   alpha_lapack, b, vectors_N, c_small_M, vectors_L,            &
+                   beta_lapack, residue_b, vectors_N)
+        if (.false.) then
             print *, "debug in form_r, residue_a :",residue_a
             print *, "debug in fomr_r, residue_b :",residue_b
         end if
@@ -329,6 +335,7 @@ contains
         allocate(r(vectors_N,nroots))
         allocate(correction_vectors(vectors_N,nroots))
 
+        print *, "debug, calling form_r"
         call form_r(r, nroots, e_small_M, c_small_M, sigma_vector, b)
 
         converged_roots = 0
@@ -344,6 +351,7 @@ contains
        print *, ""
 
        if (converged_roots .ne. nroots) then
+           print *, "debug, calling form_delta"
            call form_delta(correction_vectors, nroots, r, M_diag, e_small_M)
        end if
 
@@ -407,12 +415,12 @@ contains
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
-        print *, "debug, in create_reduced_problem, dimensions ",vectors_L," by ", vectors_L
         allocate(create_reduced_problem(vectors_L,vectors_L))
-        call print_vectors_R(create_reduced_problem, "M_small, before construction")
+        create_reduced_problem = 0.0d0
+        call print_vectors_R(create_reduced_problem, "M_small, before construction  ")
         call dgemm('T', 'N', vectors_L, vectors_L, vectors_N, alpha_lapack, b, vectors_N, &
                    sigma_vector, vectors_N, beta_lapack, create_reduced_problem, vectors_L)
-        call print_vectors_R(create_reduced_problem, "M_small, after  construction")
+        call print_vectors_R(create_reduced_problem, "M_small, after  construction  ")
 
     end function
 
@@ -429,34 +437,65 @@ contains
         character(len=1) :: do_left = 'N', do_right = 'V'
         real(kind=8), allocatable :: work(:)
 
+        print *, " > debug, at the start of solve_small_eigenvalue()"
         vectors_L = size(A_small,1)
+        print *, "    size of A_small :",vectors_L
+
+        if (allocated(eVectorsL)) deallocate(eVectorsL)
+        if (allocated(eVectorsR)) deallocate(eVectorsR)
+        if (allocated(eValuesRe)) deallocate(eValuesRe)
+        if (allocated(eValuesIm)) deallocate(eValuesIm)
+
         if (left) then
             do_left = 'V'
-            if (.not.allocated(eVectorsL)) allocate(eVectorsL(vectors_L,vectors_L))
+            allocate(eVectorsL(vectors_L,vectors_L))
+            eVectorsL = zero_r8
+            print *,"after alloc VL"
         end if
-        if (.not.allocated(eVectorsR)) allocate(eVectorsR(vectors_L,vectors_L))
-        if (.not.allocated(eValuesRe)) allocate(eValuesRe(vectors_L))
-        if (.not.allocated(eValuesIm)) allocate(eValuesIm(vectors_L))
+        allocate(eVectorsR(vectors_L,vectors_L))
+            print *,"after alloc VR"
+        allocate(eValuesRe(vectors_L))
+            print *,"after alloc er"
+        allocate(eValuesIm(vectors_L))
+            print *,"aftoer alloc ei"
+
+        eVectorsR = zero_r8
+        eValuesRe = zero_r8
+        eValuesIm = zero_r8
 
 ! first query optimal lwork value
         lwork = -1
+        print *,"before alloc work #1 size work = ",(4*vectors_L) 
         allocate(work(4*vectors_L))
+        print *,"after  alloc work #1"
         call dgeev (do_left, do_right, vectors_L, A_small, vectors_L,      &
                     eValuesRe, eValuesIm, eVectorsL, vectors_L, eVectorsR, &
                     vectors_L, WORK, LWORK, INFO)
         lwork = work(1)
+        print *,"before dealloc work #1, size work = ",lwork
         deallocate(work)
+        print *,"after  dealloc work #1"
+        print *,"before alloc work #2"
         allocate(work(lwork))
+        print *,"after  alloc work #2"
         call dgeev (do_left, do_right, vectors_L, A_small, vectors_L,      &
                     eValuesRe, eValuesIm, eVectorsL, vectors_L, eVectorsR, &
                     vectors_L, WORK, LWORK, INFO)
+        print *,"before dealloc work #2"
+        deallocate(work)
+        print *,"after  dealloc work #2"
         if (info .gt. 0) then
             print *, 'in small_solve_eigenvalue: not all eigenvalues converged' 
             print *, 'converged'
             do i = info+1, vectors_L 
                 print *, " real part : ",eValuesRe(i), " imaginary part : ",eValuesIm(i)
             end do
+        else
+            do i = 1, vectors_L 
+                print *, " real      part : ",eValuesRe(i)," imaginary part : ",eValuesIm(i)
+            end do
         end if
+        print *, " > debug, at the end   of solve_small_eigenvalue()"
 
     end subroutine
  
@@ -502,6 +541,7 @@ contains
 
         min_subspace_size = nroots 
         max_subspace_size = max(nroots, max_subspace_size)
+        max_subspace_size = min(vectors_N, max_subspace_size)
 
         print *, "Requested ",nroots," eigenvales"
         if ( nroots .gt. vectors_N ) then 
@@ -513,33 +553,46 @@ contains
         if (verbose) then
             print "(4x,a,i4,a,i8)", "Start by mapping M onto a subspace of size ",min_subspace_size, &
                      ", will extend it up to ",max_subspace_size
-            print *, "Initial subspace vectors : "
-            do i = 1, vectors_N
-                print "(4x,1f14.6,a,$)", (b(i,j), j = 1, min_subspace_size)
-                print *, ""
-            end do
-            print *, ""
+            call print_vectors_R(b, "Initial subspace vectors      ")
         end if
 
         niter = 1
         do L = min_subspace_size, max_subspace_size, nroots 
+            print *, ""
+            print *, "Iteration ", niter
+            print *, ""
+
+            print *, "debug, before freeing up M_small, sigma_vector"
             if (allocated(M_small)) deallocate(M_small)
             if (allocated(sigma_vector)) deallocate(sigma_vector)
+            print *, "debug, aftere freeing up M_small, sigma_vector"
 
+            print *, "debug, before creating sigma_vector"
             sigma_vector = create_sigma_vector(M, b)
-            M_small = create_reduced_problem(b, sigma_vector)
+            print *, "debug, after  creating sigma_vector"
 
+            print *, "debug, before creating M_small"
+            M_small = create_reduced_problem(b, sigma_vector)
+            print *, "debug, after  creating M_small"
+
+            print *, "debug, before solve_small_eigenvalue"
             call solve_small_eigenvalue(M_small, e_small_r, e_small_i, c_small_r, c_small_l, .false.)
+            print *, "debug, after  solve_small_eigenvalue"
 !           call sort_values_vectors(e_small_r, e_small_i, c_small_r, c_small_l, .false.) 
 
-            print *, "Iteration ", niter,",  projection onto the smaller problem"
+            print *, "debug, before print_eigenvalues_eigenvectors"
             call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, .false., .false.)
-            print *, "Calculating correction to subspace"
+            print *, "debug, after  print_eigenvalues_eigenvectors"
 
+            print *, "debug, before calculating correction to subspace"
             delta = correction_vectors(nroots, M_diag, e_small_r, c_small_r, sigma_vector, b)
+            print *, "debug, after  calculating correction to subspace"
             if (is_converged(delta)) exit 
 
+            print *, "debug, before updating subspace vectors"
             b = updated_subspace_vectors_R(b, delta, nroots)
+            print *, "debug, after  updating subspace vectors"
+            call print_vectors_R(b, "Updated subspace vectors      ")
             niter = niter + 1
         end do
 
