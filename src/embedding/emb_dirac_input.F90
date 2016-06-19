@@ -121,7 +121,6 @@ module fde_input_dirac
                call fde_set_nadd_all_alda
                dirac_cfg_fde_response = .true.
 
-#ifdef MOD_UNRELEASED
             CASE ('.LEVEL')
                read(lucmd,*) etmp%ex_level 
 
@@ -146,7 +145,6 @@ module fde_input_dirac
                skip_all_imports = .true.
                doprp = .true.
 
-#endif /* MOD_UNRELEASED */ 
 
             CASE DEFAULT
               WRITE (lunit,'(/,3A,/)') ' Keyword "',WORD, &

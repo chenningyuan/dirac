@@ -2,7 +2,7 @@
 # CheckFortranSourceCompiles
 # --------------------------
 #
-# Check if given Fortran source compiles and links into an executable::
+# Check if given Fortran source compiles (with F90 extension) and links into an executable::
 #
 #   CHECK_Fortran_SOURCE_COMPILES(<code> <var> [FAIL_REGEX <fail-regex>])
 #
@@ -24,20 +24,7 @@
 #   CMAKE_REQUIRED_INCLUDES = list of include directories
 #   CMAKE_REQUIRED_LIBRARIES = list of libraries to link
 #   CMAKE_REQUIRED_QUIET = execute quietly without messages
-
-#=============================================================================
-# Copyright 2005-2009 Kitware, Inc.
 #
-# Distributed under the OSI-approved BSD License (the "License");
-# see accompanying file Copyright.txt for details.
-#
-# This software is distributed WITHOUT ANY WARRANTY; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the License for more information.
-#=============================================================================
-# (To distribute this file outside of CMake, substitute the full
-#  License text for the above reference.)
-
 
 
 macro(CHECK_Fortran_SOURCE_COMPILES SOURCE VAR)
@@ -53,8 +40,7 @@ macro(CHECK_Fortran_SOURCE_COMPILES SOURCE VAR)
         message(FATAL_ERROR "Unknown argument:\n  ${arg}\n")
       endif()
     endforeach()
-    set(MACRO_CHECK_FUNCTION_DEFINITIONS
-      "-D${VAR} ${CMAKE_REQUIRED_FLAGS}")
+    set(MACRO_CHECK_FUNCTION_DEFINITIONS "${CMAKE_REQUIRED_FLAGS}")
     if(CMAKE_REQUIRED_LIBRARIES)
       set(CHECK_Fortran_SOURCE_COMPILES_ADD_LIBRARIES
         LINK_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})

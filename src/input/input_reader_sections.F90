@@ -792,6 +792,11 @@
          call kw_read(word, relcc_nelec, 2*nfsym)
       end if
 
+      if (kw_matches(word, '.NELEC_OPEN ')) then
+         nelec_open_input = .true.
+         call kw_read(word, relcc_nelec_open, 2*nfsym)
+      end if
+
       if (kw_matches(word, '.NEL_F1')) then
          call kw_read(word, relcc_nelec_f1)
       end if
