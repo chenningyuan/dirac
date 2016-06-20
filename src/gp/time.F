@@ -49,7 +49,7 @@ C
       integer :: clock_count, clock_rate, clock_max
       call cpu_time (timcpu)
       call system_clock ( clock_count, clock_rate, clock_max )
-      timwal = real ( clock_count ) / real ( clock_rate )
+      timwal = dble ( clock_count ) / dble ( clock_rate )
       return
       end
 C  /* Deck timtxt */
