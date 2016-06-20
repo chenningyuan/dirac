@@ -7,6 +7,7 @@ implicit none
 !public davidson_solve_symmetric_R
 public davidson_setup
 public davidson_driver
+public sort_values_vectors
 
 private
 
@@ -555,6 +556,7 @@ contains
         real(kind=8), pointer :: e_small_i(:)        => NULL()
         integer :: vectors_N, L, min_subspace_size, niter
         integer :: i, j
+        integer :: sorting_order = 1
 
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -623,7 +625,7 @@ contains
             print *, "debug, before solve_small_eigenvalue"
             call solve_small_eigenvalue(M_small, e_small_r, e_small_i, c_small_r, c_small_l, .false.)
             print *, "debug, after  solve_small_eigenvalue"
-!           call sort_values_vectors(e_small_r, e_small_i, c_small_r, c_small_l, .false.) 
+            call sort_values_vectors(sorting_order,e_small_r, e_small_i, c_small_r, c_small_l, .false.) 
 
             print *, "debug, before print_eigenvalues_eigenvectors"
             call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, .false., .false.)
@@ -656,7 +658,7 @@ contains
         M_small => create_reduced_problem(b, sigma_vector)
 
         call solve_small_eigenvalue(M_small, e_small_r, e_small_i, c_small_r, c_small_l, .false.)
-!       call sort_values_vectors(e_small_r, e_small_i, c_small_r, c_small_l, .false.) 
+        call sort_values_vectors(sorting_order,e_small_r, e_small_i, c_small_r, c_small_l, .false.) 
 
         print "(4x,a,i6,a)", "After iteration ", (niter-1),",  Eigenvalues for the smaller problem"
         call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, .true., .true.)
@@ -718,7 +720,7 @@ contains
             call dgemm('N', 'N', vectors_N, vectors_L, vectors_N, alpha_lapack, b, &
                        vectors_N, eVectorsSmall, vectors_N, beta_lapack, bc, vectors_N)
 
-!           call print_vectors_R(bc, label="bc                            ")
+            call print_vectors_R(bc, label="bc                            ")
             do i = 1, nroots
                 eVectorsFull(:,i) = bc(:,i) 
             end do
@@ -745,12 +747,85 @@ contains
 
     end function
 
-!   subroutine sort_values_vectors(e_small_r, e_small_i, c_small_r, c_small_l, .false., order) 
-!       integer, intent(in) :: order ! 1: ascending, -1: descending
+    subroutine sort_values_vectors(order, e_small_r, e_small_i, c_small_r, c_small_l, left) 
+        integer, intent(in) :: order ! 1: ascending, -1: descending
+        logical, intent(in) :: left  ! if true, sort also the left eigenvectors
+        real(kind=8), intent(inout) :: e_small_r(:)
+        real(kind=8), intent(inout) :: e_small_i(:)
+        real(kind=8), intent(inout) :: c_small_r(:,:)
+        real(kind=8), intent(inout) :: c_small_l(:,:)
 
+        real(kind=8), allocatable :: temp_vector(:,:)
+        real(kind=8) :: temp
+        integer, allocatable :: indices_sorted_array(:)
+        integer :: vectors_L, i_sorted, i
+
+        vectors_L = size(e_small_r,1)
+        allocate(indices_sorted_array(vectors_L))
+        allocate(temp_vector(vectors_L,vectors_L))
+        do i = 1, vectors_L 
+            indices_sorted_array(i) = i 
+        end do
+        print *, "blah!"
+        print *,"original order, ",e_small_r
+        call quicksort_vector(e_small_r, indices_sorted_array, 1, vectors_L)
+        print *,"sorted eigenvalues",e_small_r
+        print *,"mapping between original and sorted indices",indices_sorted_array
 ! we sort the indices that would sort the eigenvalues array, and apply the change to all other arrays
+        do i = 1, vectors_L
+         i_sorted = indices_sorted_array(i)
 
-!   end subroutine
+         temp = e_small_i(i)
+         e_small_i(i) = e_small_i(i_sorted)
+         e_small_i(i_sorted) = temp
+        end do
+
+        do i = 1, vectors_L
+         i_sorted = indices_sorted_array(i)
+         temp_vector(:,i) = c_small_r(:,i_sorted)
+        end do
+        c_small_r = temp_vector
+
+        if (left) then
+            do i = 1, vectors_L
+             i_sorted = indices_sorted_array(i)
+             temp_vector(:,i) = c_small_l(:,i_sorted)
+            end do
+            c_small_l = temp_vector
+        end if
+        deallocate(temp_vector)
+        deallocate(indices_sorted_array)
+
+    end subroutine
+
+recursive subroutine quicksort_vector(a, indices_sorted_array, first, last)
+! routine taken from https://gist.github.com/t-nissie/479f0f16966925fa29ea; this is GPL so this has to be replaced by a clean version
+  real(kind=8)  a(*), x, t
+  integer indices_sorted_array(*)
+  integer first, last
+  integer i, j, ti
+
+  x = a( (first+last) / 2 )
+  i = first
+  j = last
+  do
+     do while (a(i) < x)
+        i=i+1
+     end do
+     do while (x < a(j))
+        j=j-1
+     end do
+     if (i >= j) exit
+     t = a(i);  a(i) = a(j);  a(j) = t
+     ti = indices_sorted_array(i)
+     indices_sorted_array(i) = indices_sorted_array(j)
+     indices_sorted_array(j) = ti
+     i=i+1
+     j=j-1
+  end do
+  if (first < i-1) call quicksort_vector(a, indices_sorted_array, first, i-1)
+  if (j+1 < last)  call quicksort_vector(a, indices_sorted_array, j+1, last)
+end subroutine 
 
 
 !   subroutine davidson_solve_nonsymmetric_R

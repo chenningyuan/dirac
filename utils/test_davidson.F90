@@ -31,6 +31,7 @@ program test_davidson
 !
    integer :: mdim
    integer :: nroots 
+   integer :: sorting_order = 1
 
    mdim = 12
    nroots = 2
@@ -71,6 +72,9 @@ program test_davidson
       print *, "full diagonalization with dgeev"
       call diagonalize_real_general_matrix_full(m_real_symmetric_full,eval_r,eval_i,evec_real_r,evec_real_l)
       call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
+      print *, "sorting eigenvectors and eigenvalues in ascending order"
+      call sort_values_vectors(sorting_order,eval_r, eval_i, evec_real_r, evec_real_l, .true.)
+      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
 
       print *, "davidson diagonalization for lowest root(s)" 
       call setup_real_symmetric_matrix_full(m_real_symmetric_full, mdim)
@@ -96,6 +100,9 @@ program test_davidson
    if (diagonalize_real_nonsymm_full) then
       print *, "full diagonalization with dgeev"
       call diagonalize_real_general_matrix_full(m_real_nonsymmetric_full,eval_r,eval_i,evec_real_r,evec_real_l)
+      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
+      print *, "sorting eigenvectors and eigenvalues in ascending order"
+      call sort_values_vectors(sorting_order,eval_r, eval_i, evec_real_r, evec_real_l, .true.)
       call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
 
       print *, "davidson diagonalization for lowest root(s)"
