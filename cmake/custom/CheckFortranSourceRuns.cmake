@@ -4,7 +4,7 @@
 #
 # Check if the given Fortran source code (src.F90) compiles and runs.
 #
-# CHECK_FORTRAN_SOURCE_RUNS(<code> <var>)
+# CHECK_FORTRAN_SOURCE_RUNS1(<code> <var>)
 #
 # ::
 #
@@ -37,12 +37,16 @@
 # (To distribute this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
+#
+# Miro: adapted also for IBM AXI : -D${VAR} had to ve removed
+#
 
 
-macro(CHECK_FORTRAN_SOURCE_RUNS SOURCE VAR)
+macro(CHECK_FORTRAN_SOURCE_RUNS1 SOURCE VAR)
   if(NOT DEFINED "${VAR}")
     set(MACRO_CHECK_FUNCTION_DEFINITIONS
-      "-D${VAR} ${CMAKE_REQUIRED_FLAGS}")
+      #"-D${VAR} ${CMAKE_REQUIRED_FLAGS}")
+      " ${CMAKE_REQUIRED_FLAGS}")
     if(CMAKE_REQUIRED_LIBRARIES)
       set(CHECK_FORTRAN_SOURCE_COMPILES_ADD_LIBRARIES
         LINK_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES})

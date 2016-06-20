@@ -25,7 +25,7 @@
 #
 #  ::
 #
-#   CHECK_Fortran_SOURCE_COMPILES
+#   CHECK_Fortran_SOURCE_COMPILES1 (our macro, not CMake's)
 #   CHECK_Fortran_SOURCE_RUNS
 #
 # Program is compiling and running short Fortran source code of Hans Jorgen Aa Jensen, test-blas-integer-compatibility.F90.
@@ -48,19 +48,16 @@ macro(CHECK_BLAS_INTEGER_TYPE VAR_COMPILE VAR_RUN VAR_TYPE)
   include(CheckFortranSourceCompiles)
   include(CheckFortranSourceRuns)
 
-  #message(STATUS "CMAKE_REQUIRED_FLAGS=${CMAKE_REQUIRED_FLAGS} ")
-  #message(STATUS "CMAKE_REQUIRED_LIBRARIES=${CMAKE_REQUIRED_LIBRARIES} ")
-
   if(NOT CMAKE_REQUIRED_QUIET)
     message(STATUS "Performing compile and run test of blas integer size (can deactivate with -D ENABLE_MATH_INT_TEST=OFF) ")
   endif()
 
-   #  try if Fortran source compiles ...
+   #  try if Fortran source compiles (Miro's adapted macro)
   file(READ "${PROJECT_SOURCE_DIR}/cmake/custom/test-blas-integer-compatibility.F90" blas_source)
-  CHECK_Fortran_SOURCE_COMPILES(${blas_source} ${VAR_COMPILE} )
+  CHECK_Fortran_SOURCE_COMPILES1(${blas_source} ${VAR_COMPILE} )
 
-  # try if Fortran source runs ....
-  CHECK_Fortran_SOURCE_RUNS(${blas_source} ${VAR_RUN})
+  # try if Fortran source runs (Miro's adapted macro)
+  CHECK_Fortran_SOURCE_RUNS1(${blas_source} ${VAR_RUN})
 
   if (${VAR_COMPILE} AND ${VAR_RUN})
     if(NOT CMAKE_REQUIRED_QUIET)
