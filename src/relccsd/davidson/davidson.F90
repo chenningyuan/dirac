@@ -20,7 +20,7 @@ real(kind=8), parameter :: one_r8  = 1.0d0
 
 ! module variables
 
-real(kind=8), save :: safe_minimum = 1.0d-12
+real(kind=8), save :: safe_minimum = 1.0d-31
 real(kind=8), save :: convergence_threshold = 1.0d-4
 integer, save      :: max_subspace_size = 128
 integer, save      :: roots_per_symmetry(nr_max_irreps)
@@ -58,9 +58,10 @@ contains
 !   N is the dimension of the original problem
 !   new_subspace_vectors_R  is the subspace we create or update
 !   old_subspace_vectors_R (if present) is the old subspace
-        real(kind=8), allocatable :: new_subspace_vectors_R(:,:)
+        real(kind=8), pointer :: new_subspace_vectors_R(:,:)
+
         integer, intent (in) :: new_L, N
-        real(kind=8), intent(inout), optional, allocatable, target :: old_subspace_vectors_R(:,:)
+        real(kind=8), intent(inout), optional, pointer :: old_subspace_vectors_R(:,:)
         logical, optional, intent(in) :: verbose
 
         real(kind=8), pointer :: old_subspace_vectors_local(:,:)
@@ -74,7 +75,7 @@ contains
         end if
 
         allocate(new_subspace_vectors_R(N, new_L))
-        new_subspace_vectors_R = 0.0d0
+        new_subspace_vectors_R = zero_r8
 
         if (.not.present(old_subspace_vectors_R)) then
             do i = 1, N
@@ -97,9 +98,10 @@ contains
     end function
 
     function updated_subspace_vectors_R(old_vectors_R, delta, nroots, verbose)
-        real(kind=8), allocatable     :: updated_subspace_vectors_R(:,:), c(:,:)
+        real(kind=8), pointer:: updated_subspace_vectors_R(:,:)
+        real(kind=8), allocatable :: c(:,:)
 
-        real(kind=8), intent(inout), allocatable :: old_vectors_R(:,:)
+        real(kind=8), intent(inout), pointer :: old_vectors_R(:,:)
         real(kind=8), intent(in)      :: delta(:,:)
         integer, intent(in)           :: nroots
         logical, optional, intent(in) :: verbose
@@ -118,33 +120,33 @@ contains
         end if
 
         new_L = vectors_L + nroots
-        updated_subspace_vectors_R = new_subspace_vectors_R(new_L,vectors_N,old_subspace_vectors_R=old_vectors_R)
+        updated_subspace_vectors_R => new_subspace_vectors_R(new_L,vectors_N,old_subspace_vectors_R=old_vectors_R)
 
         do i = 1, nroots
            updated_subspace_vectors_R(:, vectors_L + i) = delta(:,i)
         end do
+        call gram_schmidt_orthogonalization(updated_subspace_vectors_R, verbose=verbose_local)
 
-        if (allocated(old_vectors_R)) deallocate(old_vectors_R)
+        if (associated(old_vectors_R)) deallocate(old_vectors_R)
     end function
 
     subroutine gram_schmidt_projection_R(projection, u, v)
-        real(kind=8), intent(out)   :: projection(:)
-        real(kind=8), intent(inout) :: u(:)
-        real(kind=8), intent(in)    :: v(:)
+        real(kind=8), intent(inout) :: projection(:)
+        real(kind=8), intent(in) :: u(:)
+        real(kind=8), intent(in) :: v(:)
         real(kind=8) :: numerator, denominator, factor
         integer :: N
         double precision ddot
 
         N = size(u,1)
-
         denominator = ddot(N, u, 1, u, 1) 
         numerator   = ddot(N, v, 1, u, 1) 
 
-        projection = 0.0d0
+        projection = zero_r8
         if (denominator .gt. safe_minimum) then
             factor = numerator/denominator
         else
-            factor = 0.0
+            factor = zero_r8
         end if
         projection = factor * u
     end subroutine 
@@ -157,14 +159,14 @@ contains
         real(kind=8), allocatable   :: norms(:)
 
         integer :: vectors_L, vectors_N
-        integer :: i, j
+        integer :: i, j, k
         logical :: verbose_local
 
         vectors_L = size(vectors,2)
         vectors_N = size(vectors,1)
 
-        allocate(norms(vectors_L))
-        allocate(projection(vectors_L))
+!       allocate(norms(vectors_L))
+        allocate(projection(vectors_N))
 
         if (present(verbose)) then
             verbose_local = verbose
@@ -172,20 +174,32 @@ contains
             verbose_local = .false.
         end if
 
-        norms = 0.0d0
+!       norms = zero_r8 
 
         do i = 1, vectors_L
             if (verbose_local) then
                 print *, "debug, Gram-Schmidt orthogonalization"
-                print *, "  renormalizing vector",vectors(:,i)
+                print *, "  renormalizing vector v(",i,") :"
+                do k = 1, vectors_N
+                    print "(4x,1f14.6)", vectors(k,i)
+                end do
+                print *, ""
             end if 
             vectors(:,i) = vectors(:,i) / vector_norm(vectors(:,i))
             if (verbose_local) then
-                print *, "renormalized  vector v(",i,") :",vectors(:,i)
+                print *, "renormalized  vector v(",i,") :"
+                do k = 1, vectors_N
+                    print "(4x,1f14.6)", vectors(k,i)
+                end do
+                print *, ""
             end if
             do j = i+1, vectors_L
                 if (verbose_local) then
-                    print *," projection of v(",i,") onto v(",j,"):",vectors(:,j)
+                    print *," projection of v(",i,") onto v(",j,"):"
+                    do k = 1, vectors_N
+                        print "(4x,1f14.6)", vectors(k,j)
+                    end do
+                    print *, ""
                 end if
                 call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
                 vectors(:,j) = vectors(:,j) - projection(:)
@@ -200,7 +214,7 @@ contains
 !       end do
 
         deallocate(projection)
-        deallocate(norms)
+!       deallocate(norms)
     end subroutine 
 
     subroutine print_vectors_R(vectors, label)
@@ -316,7 +330,7 @@ contains
     end function
 
     function correction_vectors(nroots, M_diag, e_small_M, c_small_M, sigma_vector, b)
-        real(kind=8), allocatable :: correction_vectors(:,:)
+        real(kind=8), pointer     :: correction_vectors(:,:)
         integer, intent(in)       :: nroots
         real(kind=8), intent(in)  :: M_diag(:)
         real(kind=8), intent(in)  :: e_small_M(:)
@@ -333,8 +347,6 @@ contains
         vectors_L = size(b,2)
 
         allocate(r(vectors_N,nroots))
-        allocate(correction_vectors(vectors_N,nroots))
-
         print *, "debug, calling form_r"
         call form_r(r, nroots, e_small_M, c_small_M, sigma_vector, b)
 
@@ -342,38 +354,43 @@ contains
         do k = 1, nroots
             norm_r = vector_norm(r(:,k))
             if (norm_r .lt. convergence_threshold) then 
-               print *, "root ",k,"  ||q_k,M|| ",norm_r, " threshold ", convergence_threshold, " <<< converged ! "
+               print "(4x,a,i6,a,1e14.6,a,1e14.6,a)", "root ",k,"  ||q_k,M|| ", norm_r,  &
+                                                      " threshold ", convergence_threshold, &
+                                                      " <<< converged ! "
                converged_roots = converged_roots + 1
             else
-               print *, "root ",k,"  ||q_k,M|| ", norm_r, " threshold ", convergence_threshold
+               print "(4x,a,i6,a,1e14.6,a,1e14.6)",  "root ",k,"  ||q_k,M|| ", norm_r, &
+                                                     " threshold ", convergence_threshold
             end if
-       end do
-       print *, ""
+        end do
+        print *, ""
 
-       if (converged_roots .ne. nroots) then
-           print *, "debug, calling form_delta"
-           call form_delta(correction_vectors, nroots, r, M_diag, e_small_M)
-       end if
+        allocate(correction_vectors(vectors_N,nroots))
+        correction_vectors = zero_r8
+        if (converged_roots .ne. nroots) then
+            print *, "debug, calling form_delta"
+            call form_delta(correction_vectors, nroots, r, M_diag, e_small_M)
+        end if
 
-       deallocate(r)
+        deallocate(r)
     end function
 
     function is_converged(correction_vectors)
         logical :: is_converged
         real(kind=8) :: norm_d, correction_vectors(:,:)
-        integer :: i, vectors_N
+        integer :: i, vectors_L
 
-        vectors_N = size(correction_vectors,1)
+        vectors_L = size(correction_vectors,2)
 
         norm_d = zero_r8
-        do i = 1, vectors_N
-            norm_d = norm_d + vector_norm(correction_vectors(:,i))
+        do i = 1, vectors_L
+            norm_d = vector_norm(correction_vectors(:,i))
+            if (norm_d .gt. convergence_threshold) then
+                is_converged = .false.
+            else
+                is_converged = .true.
+            end if
         end do
-        if (norm_d .gt. zero_r8) then
-            is_converged = .false.
-        else
-            is_converged = .true.
-        end if 
     
     end function
 
@@ -404,7 +421,7 @@ contains
     end subroutine 
 
     function create_reduced_problem(b, sigma_vector)
-        real(kind=8), allocatable :: create_reduced_problem(:,:)
+        real(kind=8), pointer     :: create_reduced_problem(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
         real(kind=8), intent(in)  :: b(:,:)
 
@@ -416,7 +433,7 @@ contains
         vectors_L = size(b,2)
 
         allocate(create_reduced_problem(vectors_L,vectors_L))
-        create_reduced_problem = 0.0d0
+        create_reduced_problem = zero_r8
         call print_vectors_R(create_reduced_problem, "M_small, before construction  ")
         call dgemm('T', 'N', vectors_L, vectors_L, vectors_N, alpha_lapack, b, vectors_N, &
                    sigma_vector, vectors_N, beta_lapack, create_reduced_problem, vectors_L)
@@ -425,10 +442,10 @@ contains
     end function
 
     subroutine solve_small_eigenvalue(A_small, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left)
-        real(kind=8), intent(inout) :: A_small(:,:)
-        real(kind=8), intent(inout), allocatable :: eVectorsL(:,:)
-        real(kind=8), intent(inout), allocatable :: eVectorsR(:,:)
-        real(kind=8), intent(inout), allocatable :: eValuesRe(:), eValuesIm(:)
+        real(kind=8), intent(inout), pointer :: A_small(:,:)
+        real(kind=8), intent(inout), pointer :: eVectorsL(:,:)
+        real(kind=8), intent(inout), pointer :: eVectorsR(:,:)
+        real(kind=8), intent(inout), pointer :: eValuesRe(:), eValuesIm(:)
         logical, intent(in) :: left 
 
         integer :: vectors_L, i
@@ -441,10 +458,10 @@ contains
         vectors_L = size(A_small,1)
         print *, "    size of A_small :",vectors_L
 
-        if (allocated(eVectorsL)) deallocate(eVectorsL)
-        if (allocated(eVectorsR)) deallocate(eVectorsR)
-        if (allocated(eValuesRe)) deallocate(eValuesRe)
-        if (allocated(eValuesIm)) deallocate(eValuesIm)
+        if (associated(eVectorsL)) deallocate(eVectorsL)
+        if (associated(eVectorsR)) deallocate(eVectorsR)
+        if (associated(eValuesRe)) deallocate(eValuesRe)
+        if (associated(eValuesIm)) deallocate(eValuesIm)
 
         if (left) then
             do_left = 'V'
@@ -501,7 +518,7 @@ contains
  
     function get_diagonal_elements(M)
         real(kind=8), intent(in)    :: M(:,:)
-        real(kind=8), allocatable :: get_diagonal_elements(:)
+        real(kind=8), pointer :: get_diagonal_elements(:)
 
         integer :: vectors_N
         integer :: i
@@ -523,33 +540,50 @@ contains
         real(kind=8), intent(inout) :: eValuesRe(:), eValuesIm(:)
         integer, intent(in) :: nroots 
         logical, intent(in) :: left, right, verbose, symmetric
-
-        real(kind=8), allocatable :: M_diag(:)
-        real(kind=8), allocatable :: delta(:,:)
-        real(kind=8), allocatable :: sigma_vector(:,:)
-        real(kind=8), allocatable :: b(:,:)
-        real(kind=8), allocatable :: M_small(:,:)
-        real(kind=8), allocatable :: c_small_r(:,:)
-        real(kind=8), allocatable :: c_small_l(:,:)
-        real(kind=8), allocatable :: e_small_r(:)
-        real(kind=8), allocatable :: e_small_i(:)
+!
+! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
+! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
+! 
+        real(kind=8), pointer :: M_diag(:)           => NULL()
+        real(kind=8), pointer :: delta(:,:)          => NULL()
+        real(kind=8), pointer :: sigma_vector(:,:)   => NULL()
+        real(kind=8), pointer :: b(:,:)              => NULL()
+        real(kind=8), pointer :: M_small(:,:)        => NULL()
+        real(kind=8), pointer :: c_small_r(:,:)      => NULL()
+        real(kind=8), pointer :: c_small_l(:,:)      => NULL()
+        real(kind=8), pointer :: e_small_r(:)        => NULL()
+        real(kind=8), pointer :: e_small_i(:)        => NULL()
         integer :: vectors_N, L, min_subspace_size, niter
         integer :: i, j
 
+! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
+! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
+! 
+!       nullify(M_diag)
+!       nullify(delta)
+!       nullify(sigma_vector)
+!       nullify(b)
+!       nullify(M_small)
+!       nullify(c_small_r)
+!       nullify(c_small_l)
+!       nullify(e_small_r)
+!       nullify(e_small_i)
+
         vectors_N = size(M,1)
-        M_diag = get_diagonal_elements(M)
+        M_diag => get_diagonal_elements(M)
 
         min_subspace_size = nroots 
         max_subspace_size = max(nroots, max_subspace_size)
         max_subspace_size = min(vectors_N, max_subspace_size)
+        max_subspace_size = max_subspace_size - nroots
 
-        print *, "Requested ",nroots," eigenvales"
+        print "(4x,a,i6,a)", "Requested ",nroots," eigenvales"
         if ( nroots .gt. vectors_N ) then 
-           print *, "Number of roots requested larger than matrix order !"
+           print "(4x,a)", "Number of roots requested larger than matrix order !"
            return 
         endif
 
-        b  = new_subspace_vectors_R(min_subspace_size,vectors_N)
+        b => new_subspace_vectors_R(min_subspace_size,vectors_N)
         if (verbose) then
             print "(4x,a,i4,a,i8)", "Start by mapping M onto a subspace of size ",min_subspace_size, &
                      ", will extend it up to ",max_subspace_size
@@ -557,22 +591,33 @@ contains
         end if
 
         niter = 1
+        if (min_subspace_size.le.max_subspace_size) L = min_subspace_size 
+
         do L = min_subspace_size, max_subspace_size, nroots 
             print *, ""
             print *, "Iteration ", niter
             print *, ""
 
-            print *, "debug, before freeing up M_small, sigma_vector"
-            if (allocated(M_small)) deallocate(M_small)
-            if (allocated(sigma_vector)) deallocate(sigma_vector)
-            print *, "debug, aftere freeing up M_small, sigma_vector"
+            print *, "debug, before freeing up sigma_vector", associated(sigma_vector)
+            if (associated(sigma_vector)) then 
+                call print_vectors_R(sigma_vector, "sigma_vector before deallocate")
+                deallocate(sigma_vector)
+            end if
+            print *, "debug, after freeing up sigma_vector", associated(sigma_vector)
+
+            print *, "debug, before freeing up M_small", associated(M_small)
+            if (associated(M_small)) then
+                call print_vectors_R(M_small, "M_small before deallocate     ")
+                deallocate(M_small)
+            end if
+            print *, "debug, after freeing up M_small", associated(M_small)
 
             print *, "debug, before creating sigma_vector"
-            sigma_vector = create_sigma_vector(M, b)
+            sigma_vector => create_sigma_vector(M, b)
             print *, "debug, after  creating sigma_vector"
 
             print *, "debug, before creating M_small"
-            M_small = create_reduced_problem(b, sigma_vector)
+            M_small => create_reduced_problem(b, sigma_vector)
             print *, "debug, after  creating M_small"
 
             print *, "debug, before solve_small_eigenvalue"
@@ -585,39 +630,105 @@ contains
             print *, "debug, after  print_eigenvalues_eigenvectors"
 
             print *, "debug, before calculating correction to subspace"
-            delta = correction_vectors(nroots, M_diag, e_small_r, c_small_r, sigma_vector, b)
+            delta => correction_vectors(nroots, M_diag, e_small_r, c_small_r, sigma_vector, b)
+            call print_vectors_R(delta, "delta                         ")
             print *, "debug, after  calculating correction to subspace"
-            if (is_converged(delta)) exit 
+            niter = niter + 1
+            if (is_converged(delta)) then
+                print *, "All roots converged, stopping ..."
+                exit 
+            else
+                print *, "not all roots converged, continuing ..."
+            end if
 
             print *, "debug, before updating subspace vectors"
-            b = updated_subspace_vectors_R(b, delta, nroots)
+            b => updated_subspace_vectors_R(b, delta, nroots)
             print *, "debug, after  updating subspace vectors"
             call print_vectors_R(b, "Updated subspace vectors      ")
-            niter = niter + 1
         end do
 
         print *, "Final size of reduced subspace : ",L
 
-        if (allocated(M_small)) deallocate(M_small)
-        if (allocated(sigma_vector)) deallocate(sigma_vector)
+        if (associated(M_small)) deallocate(M_small)
+        if (associated(sigma_vector)) deallocate(sigma_vector)
 
-        sigma_vector = create_sigma_vector(M, b)
-        M_small = create_reduced_problem(b, sigma_vector)
+        sigma_vector => create_sigma_vector(M, b)
+        M_small => create_reduced_problem(b, sigma_vector)
 
         call solve_small_eigenvalue(M_small, e_small_r, e_small_i, c_small_r, c_small_l, .false.)
 !       call sort_values_vectors(e_small_r, e_small_i, c_small_r, c_small_l, .false.) 
 
-        print *, "After iteration ", (niter-1),",  Eigenvalues for the smaller problem"
-        call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, .false., .false.)
+        print "(4x,a,i6,a)", "After iteration ", (niter-1),",  Eigenvalues for the smaller problem"
+        call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, .true., .true.)
+
+        call print_vectors_R(b, "Final subspace vectors        ")
+        call form_eigenvalues_full_problem(eValuesRe, eValuesIm, nroots, e_small_r, e_small_i) 
+        if (right) call form_eigenvector_full_problem(eVectorsR,nroots,b,c_small_r, .false.)
+!       if (left)  call form_eigenvector_full_problem(eVectorsL,nroots,b,c_small_l, .true.)
 
         deallocate(b)
         deallocate(M_small)
         deallocate(sigma_vector)
         deallocate(M_diag)
+
+    end subroutine
+
+    subroutine form_eigenvalues_full_problem(eValuesRe, eValuesIm, nroots, e_small_r, e_small_i)
+        real(kind=8), intent(inout) :: eValuesRe(:), eValuesIm(:)
+        real(kind=8), intent(in)    :: e_small_r(:), e_small_i(:)
+        integer, intent(in) :: nroots
+
+        integer :: i
+
+        do i = 1, nroots
+            eValuesRe(i) = e_small_r(i)
+            eValuesIm(i) = e_small_i(i)
+        end do
+    end subroutine
+
+    subroutine form_eigenvector_full_problem(eVectorsFull,nroots,b,eVectorsSmall,left_vector) 
+        real(kind=8), intent(inout) :: eVectorsFull(:,:)
+        real(kind=8), intent(in)    :: eVectorsSmall(:,:)
+        real(kind=8), intent(in)    :: b(:,:)
+        logical, intent(in) :: left_vector
+        integer, intent(in) :: nroots
+
+        integer :: i
+        real(kind=8), allocatable :: bc(:,:)
+        integer :: vectors_L, vectors_N
+        real(kind=8) :: alpha_lapack = 1.0
+        real(kind=8) :: beta_lapack = 0.0
+
+        vectors_N = size(b,1)
+        vectors_L = size(b,2)
+
+        if (left_vector) then
+            allocate(bc(vectors_L,vectors_N))
+            bc = zero_r8
+            call dgemm('N', 'T', vectors_L, vectors_N, vectors_L, alpha_lapack, eVectorsSmall, &
+                       vectors_N, b, vectors_N, beta_lapack, bc, vectors_L)
+
+            do i = 1, nroots
+                eVectorsFull(:,i) = bc(i,:) 
+            end do
+
+        else
+            allocate(bc(vectors_N,vectors_L))
+            bc = zero_r8
+            call dgemm('N', 'N', vectors_N, vectors_L, vectors_N, alpha_lapack, b, &
+                       vectors_N, eVectorsSmall, vectors_N, beta_lapack, bc, vectors_N)
+
+!           call print_vectors_R(bc, label="bc                            ")
+            do i = 1, nroots
+                eVectorsFull(:,i) = bc(:,i) 
+            end do
+        end if
+
+        deallocate (bc)
     end subroutine
 
     function create_sigma_vector(A, b)
-        real(kind=8), allocatable :: create_sigma_vector(:,:)
+        real(kind=8), pointer :: create_sigma_vector(:,:)
         real(kind=8), intent(in)  :: A(:,:)
         real(kind=8), intent(in)  :: b(:,:)
 
@@ -633,6 +744,13 @@ contains
                    b, vectors_N, beta_lapack, create_sigma_vector, vectors_N)
 
     end function
+
+!   subroutine sort_values_vectors(e_small_r, e_small_i, c_small_r, c_small_l, .false., order) 
+!       integer, intent(in) :: order ! 1: ascending, -1: descending
+
+! we sort the indices that would sort the eigenvalues array, and apply the change to all other arrays
+
+!   end subroutine
 
 
 !   subroutine davidson_solve_nonsymmetric_R
