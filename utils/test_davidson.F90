@@ -5,33 +5,35 @@ program test_davidson
    implicit none
 
 ! eigenvectors, eigenvalues 
-   double precision, allocatable :: eval_real(:)
-   double precision, allocatable :: evec_real(:,:)
-   double precision, allocatable :: evec_real_l(:,:)
-   double precision, allocatable :: evec_real_r(:,:)
+   double precision, pointer :: eval_real(:)
+   double precision, pointer :: evec_real(:,:)
+   double precision, pointer :: evec_real_l(:,:)
+   double precision, pointer :: evec_real_r(:,:)
 
-   double precision, allocatable :: eval_r(:)
-   double precision, allocatable :: eval_i(:)
-   complex (kind=8), allocatable :: eval_complex(:)
-   complex (kind=8), allocatable :: evec_complex(:,:)
-   complex (kind=8), allocatable :: evec_complex_r(:,:)
-   complex (kind=8), allocatable :: evec_complex_l(:,:)
+   double precision, pointer :: eval_r(:)
+   double precision, pointer :: eval_i(:)
+   complex (kind=8), pointer :: eval_complex(:)
+   complex (kind=8), pointer :: evec_complex(:,:)
+   complex (kind=8), pointer :: evec_complex_r(:,:)
+   complex (kind=8), pointer :: evec_complex_l(:,:)
 
 ! matrices to diagolize
-   double precision, allocatable :: m_real_symmetric_packed(:)
-   double precision, allocatable :: m_real_symmetric_full(:,:)
-   double precision, allocatable :: m_real_nonsymmetric_full(:,:)
+   double precision, pointer :: m_real_symmetric_packed(:)
+   double precision, pointer :: m_real_symmetric_full(:,:)
+   double precision, pointer :: m_real_nonsymmetric_full(:,:)
 
-   complex (kind=8), allocatable :: m_complex_hermitian_packed(:)
-   complex (kind=8), allocatable :: m_complex_hermitian_full(:,:)
-   complex (kind=8), allocatable :: m_complex_nonsymmetric_full(:,:)
+   complex (kind=8), pointer :: m_complex_hermitian_packed(:)
+   complex (kind=8), pointer :: m_complex_hermitian_full(:,:)
+   complex (kind=8), pointer :: m_complex_nonsymmetric_full(:,:)
 !
    logical :: diagonalize_real_symm_full       = .true.
    logical :: diagonalize_real_nonsymm_full    = .true.
 !
    integer :: mdim
+   integer :: nroots 
 
    mdim = 12
+   nroots = 2
 
 ! allocating eigenvectors and eigenvalues storage
    allocate(eval_real(mdim))
@@ -63,89 +65,114 @@ program test_davidson
    allocate(m_real_symmetric_full(mdim,mdim))
    call setup_real_symmetric_matrix_full(m_real_symmetric_full, mdim)
    print *, "test, full real symmetric matrix"
-   call print_real_matrix_full(m_real_symmetric_full, mdim)
+   call print_real_matrix_full(m_real_symmetric_full, mdim, mdim)
    if (diagonalize_real_symm_full) then
       evec_real = m_real_symmetric_full
       print *, "full diagonalization with dgeev"
       call diagonalize_real_general_matrix_full(m_real_symmetric_full,eval_r,eval_i,evec_real_r,evec_real_l)
-      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim)
+      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
 
-      print *, "davidson diagonalization for lowest root" 
+      print *, "davidson diagonalization for lowest root(s)" 
       call setup_real_symmetric_matrix_full(m_real_symmetric_full, mdim)
-      eval_r = 0.0d0
-      eval_i = 0.0d0
+      eval_r      = 0.0d0
+      eval_i      = 0.0d0
       evec_real_l = 0.0d0
       evec_real_r = 0.0d0
-      call diagonalize_via_davidson(m_real_symmetric_full, 2, .true., eval_r, eval_i, evec_real_l, evec_real_r)
-      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim)
+      call diagonalize_via_davidson(m_real_symmetric_full, nroots, .true., eval_r, eval_i, evec_real_l, evec_real_r)
+      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, nroots)
+
+!     deallocate(eval_r)
+!     deallocate(eval_i)
+!     deallocate(evec_real_r)
+!     deallocate(evec_real_l)
    endif
 
-! reference diagonalization for real nonsymmetric full storage matrix
+!i reference diagonalization for real nonsymmetric full storage matrix
 
    allocate(m_real_nonsymmetric_full(mdim,mdim))
    call setup_real_nonsymmetric_matrix_full(m_real_nonsymmetric_full, mdim)
    print *, "test, full real non-symmetric matrix"
-   call print_real_matrix_full(m_real_nonsymmetric_full, mdim)
+   call print_real_matrix_full(m_real_nonsymmetric_full, mdim, mdim)
    if (diagonalize_real_nonsymm_full) then
+      print *, "full diagonalization with dgeev"
       call diagonalize_real_general_matrix_full(m_real_nonsymmetric_full,eval_r,eval_i,evec_real_r,evec_real_l)
-      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim)
-   endif
+      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
+
+      print *, "davidson diagonalization for lowest root(s)"
+      call setup_real_nonsymmetric_matrix_full(m_real_nonsymmetric_full, mdim)
+      eval_r      = 0.0d0
+      eval_i      = 0.0d0
+      evec_real_l = 0.0d0
+      evec_real_r = 0.0d0
+      call diagonalize_via_davidson(m_real_nonsymmetric_full, nroots, .false., eval_r, eval_i, evec_real_l, evec_real_r)
+      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, nroots)
+
+!     deallocate(eval_r)
+!     deallocate(eval_i)
+!     deallocate(evec_real_r)
+!     deallocate(evec_real_l)
+
+
+   end if
 
 contains
 
 
-   subroutine print_real_eigenvalues_complex_eigenvectors(eval,evec_l,evec_r,mdim)
+   subroutine print_real_eigenvalues_complex_eigenvectors(eval,evec_l,evec_r,mdim, nroots)
       real(kind=8) :: eval(:)
       complex(kind=8) :: evec_l(:,:), evec_r(:,:)
       integer :: mdim
+      integer :: nroots
 
       print *, ""
       print *, "                ***       eigenvalues  ***"
-      call print_real_eigenvalues(eval, mdim)
+      call print_real_eigenvalues(eval, nroots)
       print *, "                *** left  eigenvectors ***"
-      call print_complex_matrix_full(evec_l, mdim)
+      call print_complex_matrix_full(evec_l, mdim, nroots)
       print *, "                *** right eigenvectors ***"
-      call print_complex_matrix_full(evec_r, mdim)
+      call print_complex_matrix_full(evec_r, mdim, nroots)
       print *, ""
       print *, ""
       print *, ""
 
    end subroutine
 
-   subroutine print_real_eigenvalues_eigenvectors(eval_r,eval_i,evec_l,evec_r,mdim)
-      real(kind=8), allocatable :: eval_r(:), eval_i(:)
-      real(kind=8), allocatable :: evec_l(:,:), evec_r(:,:)
+   subroutine print_real_eigenvalues_eigenvectors(eval_r,eval_i,evec_l,evec_r,mdim, nroots)
+      real(kind=8), pointer :: eval_r(:), eval_i(:)
+      real(kind=8), pointer :: evec_l(:,:), evec_r(:,:)
       integer :: mdim
+      integer :: nroots
 
       print *, ""
       print *, "                ***       eigenvalues (real part) ***"
-      call print_real_eigenvalues(eval_r, mdim)
-      if (allocated(eval_i)) then
+      call print_real_eigenvalues(eval_r, nroots)
+      if (associated(eval_i)) then
           print *, "                ***       eigenvalues (imaginary part) ***"
-          call print_real_eigenvalues(eval_i, mdim)
+          call print_real_eigenvalues(eval_i, nroots)
       end if
       print *, "                *** left  eigenvectors ***"
-      call print_real_matrix_full(evec_l, mdim)
+      call print_real_matrix_full(evec_l, mdim, nroots)
       print *, "                *** right eigenvectors ***"
-      call print_real_matrix_full(evec_r, mdim)
+      call print_real_matrix_full(evec_r, mdim, nroots)
       print *, ""
       print *, ""
       print *, ""
 
    end subroutine
 
-   subroutine print_complex_eigenvalues_eigenvectors(eval,evec_l,evec_r,mdim)
+   subroutine print_complex_eigenvalues_eigenvectors(eval,evec_l,evec_r,mdim, nroots)
       complex(kind=8) :: eval(:)
       complex(kind=8) :: evec_l(:,:), evec_r(:,:)
       integer :: mdim
+      integer :: nroots 
 
       print *, ""
       print *, "                ***       eigenvalues  ***"
-      call print_complex_eigenvalues(eval, mdim)
+      call print_complex_eigenvalues(eval, nroots)
       print *, "                *** left  eigenvectors ***"
-      call print_complex_matrix_full(evec_l, mdim)
+      call print_complex_matrix_full(evec_l, mdim, nroots)
       print *, "                *** right eigenvectors ***"
-      call print_complex_matrix_full(evec_r, mdim)
+      call print_complex_matrix_full(evec_r, mdim, nroots)
       print *, ""
       print *, ""
       print *, ""
@@ -367,13 +394,13 @@ contains
    end subroutine
 
 
-   subroutine print_real_matrix_full(m, mdim)
+   subroutine print_real_matrix_full(m, na, nb)
       integer :: i, j
-      integer, intent(in) :: mdim
+      integer, intent(in) :: na, nb 
       double precision, intent(inout) :: m(:,:)
 
-      do i = 1, mdim
-         do j = 1, mdim
+      do i = 1, na 
+         do j = 1, nb
             print "(4x,1f14.6,$)", m(i,j)
          enddo
          print *, ""
@@ -407,14 +434,14 @@ contains
       print *, ""
    end subroutine
 
-   subroutine print_complex_matrix_full(m, mdim)
+   subroutine print_complex_matrix_full(m, na, nb)
       integer :: i, j
-      integer, intent(in) :: mdim
+      integer, intent(in) :: na, nb 
       complex (kind=8), intent(inout) :: m(:,:)
       character(4) :: imag_sign = "   +"
 
-      do i = 1, mdim
-         do j = 1, mdim
+      do i = 1, na 
+         do j = 1, nb 
             if (aimag(m(i,j)) .ge. 0.0d0) then
                 imag_sign = "   +" 
             else
@@ -467,14 +494,14 @@ contains
 
    subroutine diagonalize_real_general_matrix_full(m,eval_r,eval_i,evec_r,evec_l)
       double precision, intent(inout) :: m(:,:)
-      double precision, intent(out), allocatable :: eval_r(:), eval_i(:)
-      double precision, intent(out), allocatable :: evec_r(:,:), evec_l(:,:)
+      double precision, intent(out), pointer :: eval_r(:), eval_i(:)
+      double precision, intent(out), pointer :: evec_r(:,:), evec_l(:,:)
 
       integer :: vectors_L, i
 
       integer :: lwork, info
       character(len=1) :: do_left = 'V', do_right = 'V'
-      real(kind=8), allocatable :: work(:)
+      real(kind=8), pointer :: work(:)
 
       vectors_L = size(m,1)
       allocate(evec_l(vectors_L,vectors_L))
@@ -546,8 +573,8 @@ contains
        use davidson
 
       double precision, intent(inout) :: m(:,:)
-      double precision, intent(out), allocatable :: eval_r(:), eval_i(:)
-      double precision, intent(out), allocatable :: evec_r(:,:), evec_l(:,:)
+      double precision, intent(inout), pointer :: eval_r(:), eval_i(:)
+      double precision, intent(inout), pointer :: evec_r(:,:), evec_l(:,:)
       logical, intent(in) :: symmetric 
       integer, intent(in) :: nroots
     
