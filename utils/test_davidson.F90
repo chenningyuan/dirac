@@ -27,13 +27,13 @@ program test_davidson
    complex (kind=8), pointer :: m_complex_nonsymmetric_full(:,:)
 !
    logical :: diagonalize_real_symm_full       = .true.
-   logical :: diagonalize_real_nonsymm_full    = .true.
+   logical :: diagonalize_real_nonsymm_full    = .false.
 !
    integer :: mdim
    integer :: nroots 
    integer :: sorting_order = 1
 
-   mdim = 12
+   mdim =  16
    nroots = 2
 
 ! allocating eigenvectors and eigenvalues storage
@@ -66,15 +66,16 @@ program test_davidson
    allocate(m_real_symmetric_full(mdim,mdim))
    call setup_real_symmetric_matrix_full(m_real_symmetric_full, mdim)
    print *, "test, full real symmetric matrix"
-   call print_real_matrix_full(m_real_symmetric_full, mdim, mdim)
+!  call print_real_matrix_full(m_real_symmetric_full, mdim, mdim)
    if (diagonalize_real_symm_full) then
       evec_real = m_real_symmetric_full
       print *, "full diagonalization with dgeev"
       call diagonalize_real_general_matrix_full(m_real_symmetric_full,eval_r,eval_i,evec_real_r,evec_real_l)
-      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
+!     call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
       print *, "sorting eigenvectors and eigenvalues in ascending order"
       call sort_values_vectors(sorting_order,eval_r, eval_i, evec_real_r, evec_real_l, .true.)
-      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
+!     call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
+      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, nroots)
 
       print *, "davidson diagonalization for lowest root(s)" 
       call setup_real_symmetric_matrix_full(m_real_symmetric_full, mdim)
@@ -310,11 +311,13 @@ contains
             jj = j - 1
             if (jj .le. k) then
                m(i,j) = ii*delta_real(i,j) - (ii - jj - k*k)
-            else if ((jj .le. mdim).and.(jj .ge. (k+1))) then
+            end if
+            if (jj .le. mdim) then
                m(i,j) = ii*delta_real(i,j) + (ii - jj - k*k)
-            endif
+            end if
          enddo
       enddo
+
    end subroutine
 
   subroutine setup_complex_nonsymmetric_matrix_full(m, mdim)
@@ -358,9 +361,9 @@ contains
          do j = 1, mdim
             if (i .le. j) then
                ij = i + j*(j-1)/2 
-               print "(4x,1f14.6)", m(ij)
+               print "(4x,1e14.6)", m(ij)
             else
-               print "(4x,1f14.6)", my_zero 
+               print "(4x,1e14.6)", my_zero 
             endif
          enddo
          print *, ""
@@ -384,7 +387,7 @@ contains
                else
                 imag_sign = "   -"
                endif
-               print "(4x,1f14.6,a,1f14.6,a)", real(m(ij)),imag_sign,abs(aimag(m(ij)))," i"
+               print "(4x,1e14.6,a,1e14.6,a)", real(m(ij)),imag_sign,abs(aimag(m(ij)))," i"
             else
                ij = j + i*(i-1)/2
                value = conjg(m(ij))
@@ -393,7 +396,7 @@ contains
                else
                 imag_sign = "   -"
                endif
-               print "(4x,1f14.6,a,1f14.6,a)", real(value),imag_sign,abs(aimag(value))," i"
+               print "(4x,1e14.6,a,1e14.6,a)", real(value),imag_sign,abs(aimag(value))," i"
             endif
          enddo
          print *, ""
@@ -408,7 +411,7 @@ contains
 
       do i = 1, na 
          do j = 1, nb
-            print "(4x,1f14.6,$)", m(i,j)
+            print "(4x,1e14.6,$)", m(i,j)
          enddo
          print *, ""
       enddo
@@ -419,7 +422,7 @@ contains
       double precision, intent(in) :: e(:)
 
       do i = 1, n
-         print "(4x,1f14.6,$)", e(i)
+         print "(4x,1e14.6,$)", e(i)
       enddo
       print *, ""
    end subroutine
@@ -436,7 +439,7 @@ contains
              imag_sign = "   -"
          endif
 
-         print "(4x,1f14.6,a,1f14.6,a,$)", real(e(i)),imag_sign,abs(aimag(e(i)))," i"
+         print "(4x,1e14.6,a,1e14.6,a,$)", real(e(i)),imag_sign,abs(aimag(e(i)))," i"
       enddo
       print *, ""
    end subroutine
@@ -455,7 +458,7 @@ contains
                 imag_sign = "   -" 
             endif
 
-            print "(4x,1f14.6,a,1f14.6,a,$)", real(m(i,j)),imag_sign,abs(aimag(m(i,j)))," i"
+            print "(4x,1e14.6,a,1e14.6,a,$)", real(m(i,j)),imag_sign,abs(aimag(m(i,j)))," i"
          enddo
          print *, ""
       enddo
@@ -584,10 +587,12 @@ contains
       double precision, intent(inout), pointer :: evec_r(:,:), evec_l(:,:)
       logical, intent(in) :: symmetric 
       integer, intent(in) :: nroots
+      logical :: left = .false., right=.true.
     
       logical :: verbose = .true.
 
-       call davidson_driver(nroots, m, symmetric, eval_r, eval_i, evec_l, evec_r, .true., .true., verbose)
+       call set_safe_minimum()
+       call davidson_driver(nroots, m, symmetric, eval_r, eval_i, evec_l, evec_r, left, right, verbose)
    end subroutine
 
 
