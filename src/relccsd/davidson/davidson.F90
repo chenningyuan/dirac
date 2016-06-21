@@ -124,12 +124,12 @@ contains
 
         new_L = vectors_L + nroots
         updated_subspace_vectors_R => new_subspace_vectors_R(new_L,vectors_N,old_subspace_vectors_R=old_vectors_R)
-
         do i = 1, nroots
            updated_subspace_vectors_R(:, vectors_L + i) = delta(:,i)
         end do
-        call gram_schmidt_orthogonalization(updated_subspace_vectors_R, verbose=verbose_local)
 
+        if (verbose_local) call print_vectors_R(updated_subspace_vectors_R, "new subspace vectors before GS")
+        call gram_schmidt_orthogonalization(updated_subspace_vectors_R, verbose=verbose_local)
         if (associated(old_vectors_R)) deallocate(old_vectors_R)
     end function
 
@@ -150,6 +150,9 @@ contains
             factor = numerator/denominator
         else
             factor = zero_r8
+        end if
+        if (.true.) then
+            print *, "GS projection, factor: ",factor
         end if
         projection = factor * u
     end subroutine 
@@ -616,7 +619,6 @@ contains
             delta => correction_vectors(nroots, M_diag, e_small_r, c_small_r, sigma_vector, b)
             if (verbose) call print_vectors_R(delta, "delta                         ")
 
-            niter = niter + 1
             if (is_converged(delta)) then
                 print *, "All roots converged, stopping ..."
                 exit 
@@ -626,6 +628,7 @@ contains
 
             b => updated_subspace_vectors_R(b, delta, nroots, verbose=.true.)
             if (verbose) call print_vectors_R(b, "Updated subspace vectors      ")
+            niter = niter + 1
         end do
 
         print *, "Final size of reduced subspace : ",L
@@ -696,8 +699,9 @@ contains
         else
             allocate(bc(vectors_N,vectors_L))
             bc = zero_r8
-            call dgemm('N', 'N', vectors_N, vectors_L, vectors_N, alpha_lapack, b, &
-                       vectors_N, eVectorsSmall, vectors_N, beta_lapack, bc, vectors_N)
+            call print_vectors_R(eVectorsSmall, label="eigenvectors small problem    ")
+            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
+                       vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
 
             call print_vectors_R(bc, label="bc                            ")
             do i = 1, nroots
