@@ -633,14 +633,19 @@ contains
 
         print *, "Final size of reduced subspace : ",L
 
-        if (associated(M_small)) deallocate(M_small)
         if (associated(sigma_vector)) deallocate(sigma_vector)
+        print *, "bla #1"
+        if (associated(M_small)) deallocate(M_small)
+        print *, "bla #2"
 
         sigma_vector => create_sigma_vector(M, b)
         M_small => create_reduced_problem(b, sigma_vector)
 
-        call solve_small_eigenvalue(M_small, e_small_r, e_small_i, c_small_r, c_small_l, .false.)
-        call sort_values_vectors(sorting_order,e_small_r, e_small_i, c_small_r, c_small_l, .false.) 
+        print *, "bla #3"
+        call solve_small_eigenvalue(M_small, e_small_r, e_small_i, c_small_r, c_small_l, left)
+        print *, "bla #4"
+        call sort_values_vectors(sorting_order,e_small_r, e_small_i, c_small_r, c_small_l, left) 
+        print *, "bla #5"
 
         print "(4x,a,i6,a)", "After iteration ", (niter-1),",  Eigenvalues for the smaller problem"
         call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, left, right, nroots=nroots)
@@ -689,9 +694,10 @@ contains
         if (left_vector) then
             allocate(bc(vectors_L,vectors_N))
             bc = zero_r8
-            call dgemm('N', 'T', vectors_L, vectors_N, vectors_L, alpha_lapack, eVectorsSmall, &
+            call print_vectors_R(eVectorsSmall, label="L eigenvectors small problem  ")
+            call dgemm('T', 'T', vectors_L, vectors_N, vectors_L, alpha_lapack, eVectorsSmall, &
                        vectors_N, b, vectors_N, beta_lapack, bc, vectors_L)
-
+            call print_vectors_R(bc, label="bc                            ")
             do i = 1, nroots
                 eVectorsFull(:,i) = bc(i,:) 
             end do
@@ -699,7 +705,7 @@ contains
         else
             allocate(bc(vectors_N,vectors_L))
             bc = zero_r8
-            call print_vectors_R(eVectorsSmall, label="eigenvectors small problem    ")
+            call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
             call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
                        vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
 
