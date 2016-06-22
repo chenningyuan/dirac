@@ -50,6 +50,7 @@ endif()
 
 add_library(
     reladc
+    OBJECT
     ${FIXED_RELADC_FORTRAN_SOURCES}
     ${FREE_RELADC_FORTRAN_SOURCES}
     ${C_RELADC_SOURCES}

@@ -32,6 +32,7 @@ endif()
 
 add_library(
     dirrci 
+    OBJECT
     ${FIXED_DIRRCI_FORTRAN_SOURCES}
     ${FREE_DIRRCI_FORTRAN_SOURCES}
 )

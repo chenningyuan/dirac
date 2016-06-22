@@ -83,6 +83,7 @@ endif()
 
 add_library(
     lucita
+    OBJECT
     ${FIXED_LUCITA_FORTRAN_SOURCES}
     ${FREE_LUCITA_FORTRAN_SOURCES}
     ${LUCITA_C_SOURCES}
