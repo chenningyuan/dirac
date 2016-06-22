@@ -405,21 +405,26 @@ contains
 
         integer :: vectors_N
         integer :: k
-        real(kind=8) :: denominator
+        real(kind=8), allocatable :: denominator(:,:)
 
         vectors_N = size(delta,1)
 
+        allocate(denominator(vectors_N,nroots))
+
         do k = 1, nroots
-            denominator = e_small_M(k) - M_diag(k)
-            if (dabs(denominator) .lt. safe_minimum) then
+            denominator(:,k) = e_small_M(k) - M_diag(:)
+            if (all((dabs(denominator) .lt. safe_minimum))) then
                 print *,"error !"
-                denominator = 1000
+                denominator(:,k) = 1000
             else
-                denominator = one_r8 / denominator
+                denominator(:,k) = one_r8 / denominator(:,k)
             end if
-           delta(:,k) = denominator*r(:,k)
+           delta(:,k) = denominator(:,k)*r(:,k)
            delta(:,k) = delta(:,k) / vector_norm(delta(:,k))
        end do
+
+        deallocate(denominator)
+
     end subroutine 
 
     function create_reduced_problem(b, sigma_vector)
