@@ -26,14 +26,14 @@ program test_davidson
    complex (kind=8), pointer :: m_complex_hermitian_full(:,:)
    complex (kind=8), pointer :: m_complex_nonsymmetric_full(:,:)
 !
-   logical :: diagonalize_real_symm_full       = .true.
-   logical :: diagonalize_real_nonsymm_full    = .false.
+   logical :: diagonalize_real_symm_full       = .false.
+   logical :: diagonalize_real_nonsymm_full    = .true.
 !
    integer :: mdim
    integer :: nroots 
    integer :: sorting_order = 1
 
-   mdim =  16
+   mdim =  24
    nroots = 2
 
 ! allocating eigenvectors and eigenvalues storage
@@ -86,10 +86,6 @@ program test_davidson
       call diagonalize_via_davidson(m_real_symmetric_full, nroots, .true., eval_r, eval_i, evec_real_l, evec_real_r)
       call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, nroots)
 
-!     deallocate(eval_r)
-!     deallocate(eval_i)
-!     deallocate(evec_real_r)
-!     deallocate(evec_real_l)
    endif
 
 !i reference diagonalization for real nonsymmetric full storage matrix
@@ -97,14 +93,14 @@ program test_davidson
    allocate(m_real_nonsymmetric_full(mdim,mdim))
    call setup_real_nonsymmetric_matrix_full(m_real_nonsymmetric_full, mdim)
    print *, "test, full real non-symmetric matrix"
-   call print_real_matrix_full(m_real_nonsymmetric_full, mdim, mdim)
+!  call print_real_matrix_full(m_real_nonsymmetric_full, mdim, mdim)
    if (diagonalize_real_nonsymm_full) then
       print *, "full diagonalization with dgeev"
       call diagonalize_real_general_matrix_full(m_real_nonsymmetric_full,eval_r,eval_i,evec_real_r,evec_real_l)
-      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
+!     call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
       print *, "sorting eigenvectors and eigenvalues in ascending order"
       call sort_values_vectors(sorting_order,eval_r, eval_i, evec_real_r, evec_real_l, .true.)
-      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, mdim)
+      call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, nroots)
 
       print *, "davidson diagonalization for lowest root(s)"
       call setup_real_nonsymmetric_matrix_full(m_real_nonsymmetric_full, mdim)
@@ -114,13 +110,6 @@ program test_davidson
       evec_real_r = 0.0d0
       call diagonalize_via_davidson(m_real_nonsymmetric_full, nroots, .false., eval_r, eval_i, evec_real_l, evec_real_r)
       call print_real_eigenvalues_eigenvectors(eval_r, eval_i, evec_real_l, evec_real_r, mdim, nroots)
-
-!     deallocate(eval_r)
-!     deallocate(eval_i)
-!     deallocate(evec_real_r)
-!     deallocate(evec_real_l)
-
-
    end if
 
 contains
@@ -587,7 +576,7 @@ contains
       double precision, intent(inout), pointer :: evec_r(:,:), evec_l(:,:)
       logical, intent(in) :: symmetric 
       integer, intent(in) :: nroots
-      logical :: left = .false., right=.true.
+      logical :: left = .true., right=.true.
     
       logical :: verbose = .true.
 
