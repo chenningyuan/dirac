@@ -454,43 +454,6 @@ contains
 
    end subroutine
 
-   subroutine diagonalize_real_symmetric_matrix_packed(m,eval,evec)
-
-      use lapack95, only: spev
-
-      character :: jobz = 'V'
-      character :: uplo = 'U'
-      integer   :: info
-      double precision, intent(inout) :: m(:)  
-      double precision, intent(out) :: eval(:)
-      double precision, intent(out) :: evec(:,:)
-
-      call spev(m, eval, uplo, evec, info)
-      if (info .ne. 0) then
-         print *, 'error in diagonalize_real_symmetric_matrix_packed, ',info
-         call exit(info)
-      endif
-   end subroutine
-
-   subroutine diagonalize_real_symmetric_matrix_full(m,eval)
-
-      use lapack95, only: syev
-
-      character :: jobz = 'V'
-      character :: uplo = 'U'
-      integer   :: info
-      double precision, intent(inout) :: m(:,:)  
-      double precision, intent(out) :: eval(:)
-
-!     call syev(m, eval)
-!     call syev(m, eval, jobz, uplo, info)
-      if (info .ne. 0) then
-         print *, 'error in diagonalize_real_symmetric_matrix_full, ',info
-         call exit(info)
-      endif
-   end subroutine
-
-
    subroutine diagonalize_real_general_matrix_full(m,eval_r,eval_i,evec_r,evec_l)
       double precision, intent(inout) :: m(:,:)
       double precision, intent(out), pointer :: eval_r(:), eval_i(:)
@@ -530,43 +493,6 @@ contains
 
 
    end subroutine 
-
-   subroutine diagonalize_complex_general_matrix_full(m,eval,evec_r,evec_l)
-
-      use lapack95, only: geev
-
-      integer   :: info
-      complex (kind=8), intent(inout) :: m(:,:)
-      complex (kind=8), intent(out) :: eval(:)
-      complex (kind=8), intent(out) :: evec_r(:,:), evec_l(:,:)
-
-      call geev(m, eval, evec_l, evec_r, info)
-
-      if (info .ne. 0) then
-         print *, 'error in diagonalize_complex_general_matrix, ',info
-         call exit(info)
-      endif
-
-   end subroutine
-
-   subroutine diagonalize_complex_hermitian_matrix_packed(m,eval,evec)
-
-      use lapack95, only: hpev
-
-      character :: jobz = 'V'
-      character :: uplo = 'U'
-      integer   :: info
-      complex (kind=8), intent(inout) :: m(:)  
-      double precision, intent(out) :: eval(:)
-      complex (kind=8), intent(out) :: evec(:,:)
-
-      call hpev(m, eval, uplo, evec, info)
-      if (info .ne. 0) then
-         print *, 'error in diagonalize_complex_hermitian_matrix_packed, ',info
-         call exit(info)
-      endif
-   end subroutine
-
 
    subroutine diagonalize_via_davidson(m, nroots, symmetric, eval_r, eval_i, evec_l, evec_r)
        use davidson
