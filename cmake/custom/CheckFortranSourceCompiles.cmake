@@ -27,8 +27,8 @@
 #
 
 #NOTE of Miro: this macro has to be distinct from CMake macro, therefore I used different name
-# the CMake macro CHECK_Fortran_SOURCE_COMPILES hurts the source code compilation on IBM AIX due 
-# to -Dblas..  flag.
+# the original CMake macro CHECK_Fortran_SOURCE_COMPILES hurts the source code compilation on IBM AIX due 
+# to offfending -D<something>..  flag.
 #
 
 macro(CHECK_Fortran_SOURCE_COMPILES1 SOURCE VAR)
