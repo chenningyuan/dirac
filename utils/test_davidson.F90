@@ -26,15 +26,15 @@ program test_davidson
    complex (kind=8), pointer :: m_complex_hermitian_full(:,:)
    complex (kind=8), pointer :: m_complex_nonsymmetric_full(:,:)
 !
-   logical :: diagonalize_real_symm_full       = .false.
-   logical :: diagonalize_real_nonsymm_full    = .true.
+   logical :: diagonalize_real_symm_full       = .true.
+   logical :: diagonalize_real_nonsymm_full    = .false.
 !
    integer :: mdim
    integer :: nroots 
    integer :: sorting_order = 1
 
-   mdim =  24
-   nroots = 2
+   mdim =  128
+   nroots = 4
 
 ! allocating eigenvectors and eigenvalues storage
    allocate(eval_real(mdim))
@@ -504,7 +504,7 @@ contains
       integer, intent(in) :: nroots
       logical :: left = .true., right=.true.
     
-      logical :: verbose = .true.
+      logical :: verbose = .false.
 
        call set_safe_minimum()
        call davidson_driver(nroots, m, symmetric, eval_r, eval_i, evec_l, evec_r, left, right, verbose)
