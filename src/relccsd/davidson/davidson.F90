@@ -133,7 +133,7 @@ contains
            updated_subspace_vectors_R(:, vectors_L + i) = delta(:,i)
         end do
 
-        if (verbose_local) &
+!       if (verbose_local) &
             call print_vectors_R(updated_subspace_vectors_R, label="new subspace vectors before GS")
 
         call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
@@ -328,8 +328,8 @@ contains
         vector_norm = dnrm2(vector_N, v, 1)
     end function
 
-    function correction_vectors(nroots, M_diag, e_small_M, c_small_M, sigma_vector, b)
-        real(kind=8), pointer     :: correction_vectors(:,:)
+    function correction_to_vectors(nroots, M_diag, e_small_M, c_small_M, sigma_vector, b)
+        real(kind=8), pointer     :: correction_to_vectors(:,:)
         integer, intent(in)       :: nroots
         real(kind=8), intent(in)  :: M_diag(:)
         real(kind=8), intent(in)  :: e_small_M(:)
@@ -370,11 +370,15 @@ contains
         print *, ""
 
         if (any(vectors_to_update)) then
-            allocate(correction_vectors(vectors_N,unconverged_roots))
-            correction_vectors = zero_r8
-            call form_delta(correction_vectors, vectors_to_update, r, M_diag, e_small_M)
+! debug, forcing vectors for all roots to be updated
+            unconverged_roots = nroots
+            vectors_to_update = .true.
+! debug, forcing vectors for all roots to be updated
+            allocate(correction_to_vectors(vectors_N,unconverged_roots))
+            correction_to_vectors = zero_r8
+            call form_delta(correction_to_vectors, vectors_to_update, r, M_diag, e_small_M)
         else
-            correction_vectors => NULL()
+            correction_to_vectors => NULL()
         end if
 
         deallocate(vectors_to_update)
@@ -466,16 +470,16 @@ contains
     end subroutine
 
 
-    function is_converged(correction_vectors)
+    function is_converged(correction_to_vectors)
         logical :: is_converged
-        real(kind=8) :: norm_d, correction_vectors(:,:)
+        real(kind=8) :: norm_d, correction_to_vectors(:,:)
         integer :: i, vectors_L
 
-        vectors_L = size(correction_vectors,2)
+        vectors_L = size(correction_to_vectors,2)
 
         norm_d = zero_r8
         do i = 1, vectors_L
-            norm_d = vector_norm(correction_vectors(:,i))
+            norm_d = vector_norm(correction_to_vectors(:,i))
             if (norm_d .gt. convergence_threshold) then
                 is_converged = .false.
             else
@@ -636,7 +640,7 @@ contains
             if (verbose) &
             call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, left, right, nroots=nroots)
 
-            delta => correction_vectors(nroots, M_diag, e_small_r, c_small_r, sigma_vector, b)
+            delta => correction_to_vectors(nroots, M_diag, e_small_r, c_small_r, sigma_vector, b)
             if (.not.associated(delta)) then
                 print *, "All roots converged, stopping ..."
                 exit
