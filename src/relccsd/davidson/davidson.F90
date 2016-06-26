@@ -328,7 +328,7 @@ contains
         vector_norm = dnrm2(vector_N, v, 1)
     end function
 
-    function correction_to_vectors(nroots, M_diag, e_small_M, c_small_M, sigma_vector, b)
+    function correction_to_vectors(nroots, M_diag, e_small_M, c_small_M, sigma_vector, b, correct_all)
         real(kind=8), pointer     :: correction_to_vectors(:,:)
         integer, intent(in)       :: nroots
         real(kind=8), intent(in)  :: M_diag(:)
@@ -336,15 +336,23 @@ contains
         real(kind=8), intent(in)  :: c_small_M(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
         real(kind=8), intent(in)  :: b(:,:)
+        logical, optional, intent(in) :: correct_all
 
         integer :: vectors_L, vectors_N
         integer :: k, unconverged_roots
         real(kind=8) :: norm_r = zero_r8
         real(kind=8), allocatable :: r(:,:)
         logical, allocatable :: vectors_to_update(:)
+        logical :: correct_all_local
 
         vectors_N = size(b,1)
         vectors_L = size(b,2)
+
+        if (present(correct_all)) then
+            correct_all_local = correct_all
+        else
+            correct_all_local = .false. 
+        end if
 
         allocate(vectors_to_update(nroots))
         vectors_to_update = .true.
@@ -370,10 +378,10 @@ contains
         print *, ""
 
         if (any(vectors_to_update)) then
-! debug, forcing vectors for all roots to be updated
-            unconverged_roots = nroots
-            vectors_to_update = .true.
-! debug, forcing vectors for all roots to be updated
+            if (correct_all_local) then
+                unconverged_roots = nroots
+                vectors_to_update = .true.
+            end if
             allocate(correction_to_vectors(vectors_N,unconverged_roots))
             correction_to_vectors = zero_r8
             call form_delta(correction_to_vectors, vectors_to_update, r, M_diag, e_small_M)
@@ -414,17 +422,14 @@ contains
         i = 1
         do k = 1, nroots
             if (vectors_to_update(k)) then
-!              delta(:,i) = denominator(:,i)*r(:,i)
-
                denom = 1.0/(e_small_M(k) - M_diag(k)) 
-               delta(:,i) = denom*r(:,i)
+               delta(:,i) = denom*r(:,k)
+!              delta(:,i) = denominator(:,k)*r(:,k)
                delta(:,i) = delta(:,i) / vector_norm(delta(:,i))
                i = i + 1
            end if
         end do
-
 !       deallocate(denominator)
-
     end subroutine 
 
     subroutine form_r(r, nroots,  e_small_M, c_small_M, sigma_vector,  b)
