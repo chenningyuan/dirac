@@ -328,14 +328,14 @@ contains
         vector_norm = dnrm2(vector_N, v, 1)
     end function
 
-    function correction_to_vectors(nroots, M_diag, e_small_M, c_small_M, sigma_vector, b, correct_all)
+    function correction_to_vectors(nroots, e_small_M, c_small_M, sigma_vector, b, preconditioner, correct_all)
         real(kind=8), pointer     :: correction_to_vectors(:,:)
         integer, intent(in)       :: nroots
-        real(kind=8), intent(in)  :: M_diag(:)
         real(kind=8), intent(in)  :: e_small_M(:)
         real(kind=8), intent(in)  :: c_small_M(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
         real(kind=8), intent(in)  :: b(:,:)
+        real(kind=8), pointer :: preconditioner(:,:)
         logical, optional, intent(in) :: correct_all
 
         integer :: vectors_L, vectors_N
@@ -384,7 +384,7 @@ contains
             end if
             allocate(correction_to_vectors(vectors_N,unconverged_roots))
             correction_to_vectors = zero_r8
-            call form_delta(correction_to_vectors, vectors_to_update, r, M_diag, e_small_M)
+            call form_delta(correction_to_vectors, vectors_to_update, r, preconditioner)
         else
             correction_to_vectors => NULL()
         end if
@@ -393,43 +393,51 @@ contains
         deallocate(r)
     end function
 
-    subroutine form_delta(delta, vectors_to_update, r, M_diag, e_small_M)
-        real(kind=8), intent(inout) :: delta(:,:)
-        logical, intent(in)         :: vectors_to_update(:)
-        real(kind=8), intent(in)    :: e_small_M(:)
-        real(kind=8), intent(in)    :: M_diag(:)
-        real(kind=8), intent(in)    :: r(:,:)
+    function form_preconditioner(M_diag, eigenvectors)
+        real(kind=8), pointer     :: form_preconditioner(:,:)
+        real(kind=8), intent(in)  :: eigenvectors(:)
+        real(kind=8), intent(in)  :: M_diag(:)
 
+        integer :: i, k, l
         integer :: vectors_N
         integer :: nroots
-        integer :: i, k
-        real(kind=8), allocatable :: denominator(:,:)
-        real(kind=8) ::  denom
 
-        vectors_N = size(delta,1)
+        nroots    = size(eigenvectors,1)
+        vectors_N = size(M_diag,1)
+
+        allocate(form_preconditioner(vectors_N,nroots))
+        form_preconditioner = 0.0d0
+        do k = 1, nroots
+            form_preconditioner(:,k) = eigenvectors(k) - M_diag(:)
+            do l = 1, vectors_N
+                if (dabs(form_preconditioner(l,k)) .gt. safe_minimum) then
+                    form_preconditioner(l,k) = one_r8 / form_preconditioner(l,k)
+                else
+                    stop ('detected division by zero')
+                end if
+            end do
+        end do
+    end function
+
+    subroutine form_delta(delta, vectors_to_update, r, preconditioner)
+        real(kind=8), intent(inout) :: delta(:,:)
+        logical, intent(in)         :: vectors_to_update(:)
+        real(kind=8), intent(in)    :: preconditioner(:,:)
+        real(kind=8), intent(in)    :: r(:,:)
+
+        integer :: nroots
+        integer :: i, k
+
         nroots    = size(vectors_to_update,1)
  
-!       allocate(denominator(vectors_N,nroots))
-!       do k = 1, nroots
-!           denominator(:,k) = e_small_M(k) - M_diag(:)
-!           if (all((dabs(denominator) .lt. safe_minimum))) then
-!               print *,"error !"
-!               denominator(:,k) = 1000
-!           else
-!               denominator(:,k) = one_r8 / denominator(:,k)
-!           end if
-!       end do
         i = 1
         do k = 1, nroots
             if (vectors_to_update(k)) then
-               denom = 1.0/(e_small_M(k) - M_diag(k)) 
-               delta(:,i) = denom*r(:,k)
-!              delta(:,i) = denominator(:,k)*r(:,k)
+               delta(:,i) = preconditioner(:,k)*r(:,k)
                delta(:,i) = delta(:,i) / vector_norm(delta(:,i))
                i = i + 1
            end if
         end do
-!       deallocate(denominator)
     end subroutine 
 
     subroutine form_r(r, nroots,  e_small_M, c_small_M, sigma_vector,  b)
@@ -597,6 +605,7 @@ contains
 ! 
         real(kind=8), pointer :: M_diag(:)           => NULL()
         real(kind=8), pointer :: delta(:,:)          => NULL()
+        real(kind=8), pointer :: preconditioner(:,:) => NULL()
         real(kind=8), pointer :: sigma_vector(:,:)   => NULL()
         real(kind=8), pointer :: b(:,:)              => NULL()
         real(kind=8), pointer :: M_small(:,:)        => NULL()
@@ -642,7 +651,11 @@ contains
             call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
                                                 c_small_r, c_small_l, left=left, verbose=verbose)
 
-            delta => correction_to_vectors(nroots, M_diag, e_small_r, c_small_r, sigma_vector, b)
+            if (associated(preconditioner)) deallocate(preconditioner)
+            if (associated(delta)) deallocate(delta)
+
+            preconditioner =>  form_preconditioner(M_diag, e_small_r)
+            delta => correction_to_vectors(nroots, e_small_r, c_small_r, sigma_vector, b, preconditioner)
             if (.not.associated(delta)) then
                 print *, "All roots converged, stopping ..."
                 exit
@@ -652,13 +665,11 @@ contains
                 call print_vectors_R(delta, label="delta                         ")
                 call print_vectors_R(b, label="Updated subspace vectors      ")
             end if
-
             L = size(b,2)
             if (L .eq. max_subspace_size) then
                 print *, "Reached maximum subspace size, stopping ..."
                 exit
             end if
-
         end do
 
         print *, "Final size of reduced subspace : ",L
