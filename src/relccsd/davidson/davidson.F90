@@ -133,7 +133,7 @@ contains
            updated_subspace_vectors_R(:, vectors_L + i) = delta(:,i)
         end do
 
-!       if (verbose_local) &
+        if (verbose_local) &
             call print_vectors_R(updated_subspace_vectors_R, label="new subspace vectors before GS")
 
         call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
@@ -283,7 +283,7 @@ contains
     end subroutine
 
 
-    subroutine print_eigenvalues_eigenvectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left, right, nroots)
+    subroutine print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left, right, nroots)
         real(kind=8), intent(in) :: eVectorsL(:,:)
         real(kind=8), intent(in) :: eVectorsR(:,:)
         real(kind=8), intent(in) :: eValuesRe(:), eValuesIm(:)
@@ -513,8 +513,8 @@ contains
 
     end function
 
-    subroutine solve_small_eigenvalue(A_small, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left)
-        real(kind=8), intent(inout), pointer :: A_small(:,:)
+    subroutine solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left)
+        real(kind=8), intent(inout), pointer :: M(:,:)
         real(kind=8), intent(inout), pointer :: eVectorsL(:,:)
         real(kind=8), intent(inout), pointer :: eVectorsR(:,:)
         real(kind=8), intent(inout), pointer :: eValuesRe(:), eValuesIm(:)
@@ -526,7 +526,7 @@ contains
         character(len=1) :: do_left = 'N', do_right = 'V'
         real(kind=8), allocatable :: work(:)
 
-        vectors_L = size(A_small,1)
+        vectors_L = size(M,1)
         if (associated(eVectorsL)) deallocate(eVectorsL)
         if (associated(eVectorsR)) deallocate(eVectorsR)
         if (associated(eValuesRe)) deallocate(eValuesRe)
@@ -548,13 +548,13 @@ contains
 ! first query optimal lwork value
         lwork = -1
         allocate(work(4*vectors_L))
-        call dgeev (do_left, do_right, vectors_L, A_small, vectors_L,      &
+        call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                     eValuesRe, eValuesIm, eVectorsL, vectors_L, eVectorsR, &
                     vectors_L, WORK, LWORK, INFO)
         lwork = work(1)
         deallocate(work)
         allocate(work(lwork))
-        call dgeev (do_left, do_right, vectors_L, A_small, vectors_L,      &
+        call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                     eValuesRe, eValuesIm, eVectorsL, vectors_L, eVectorsR, &
                     vectors_L, WORK, LWORK, INFO)
         deallocate(work)
@@ -606,7 +606,6 @@ contains
         real(kind=8), pointer :: e_small_i(:)        => NULL()
         integer :: vectors_N, L, min_subspace_size, niter
         integer :: i, j
-        integer :: sorting_order = 1
 
 
         vectors_N = size(M,1)
@@ -640,10 +639,8 @@ contains
             sigma_vector => create_sigma_vector(M, b)
             M_small => create_reduced_problem(b, sigma_vector)
 
-            call solve_small_eigenvalue(M_small, e_small_r, e_small_i, c_small_r, c_small_l, left)
-            call sort_values_vectors(sorting_order,e_small_r, e_small_i, c_small_r, c_small_l, left) 
-            if (verbose) &
-            call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, left, right, nroots=nroots)
+            call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
+                                                c_small_r, c_small_l, left=left, verbose=verbose)
 
             delta => correction_to_vectors(nroots, M_diag, e_small_r, c_small_r, sigma_vector, b)
             if (.not.associated(delta)) then
@@ -672,12 +669,13 @@ contains
         sigma_vector => create_sigma_vector(M, b)
         M_small => create_reduced_problem(b, sigma_vector)
 
-        print "(4x,a,i6,a)", "After iteration ", niter,",  Eigenvalues for the smaller problem"
-        call solve_small_eigenvalue(M_small, e_small_r, e_small_i, c_small_r, c_small_l, left)
-        call sort_values_vectors(sorting_order,e_small_r, e_small_i, c_small_r, c_small_l, left) 
-        call print_eigenvalues_eigenvectors_R(e_small_r, e_small_i, c_small_r, c_small_l, left, right, nroots=nroots)
+        if (verbose) then
+            call print_vectors_R(b, label="Final subspace vectors        ")
+            print "(4x,a,i6,a)", "After iteration ", niter,",  Eigenvalues for the smaller problem"
+        end if
+        call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
+                                            c_small_r, c_small_l, left=left, verbose=verbose)
 
-        call print_vectors_R(b, label="Final subspace vectors        ")
         call form_eigenvalues_full_problem(eValuesRe, eValuesIm, nroots, e_small_r, e_small_i) 
         if (left)  call form_eigenvector_full_problem(eVectorsL,nroots,b,c_small_l, .true.)
         if (right) call form_eigenvector_full_problem(eVectorsR,nroots,b,c_small_r, .false.)
@@ -686,6 +684,54 @@ contains
         deallocate(M_small)
         deallocate(sigma_vector)
         deallocate(M_diag)
+
+    end subroutine
+
+    subroutine calculate_eigenvalues_and_eigenvectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
+                                                      left, right, sorting_order, nroots, verbose)
+        real(kind=8), intent(inout), pointer   :: M(:,:)
+        real(kind=8), intent(inout), pointer   :: eValuesRe(:), eValuesIm(:)
+        real(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
+        logical, optional, intent(in) :: left, right, verbose
+        integer, optional, intent(in) :: sorting_order, nroots
+
+        logical :: left_local, right_local, verbose_local
+        integer :: sorting_order_local, nroots_local
+
+        if (present(sorting_order)) then
+            sorting_order_local = sorting_order
+        else
+            sorting_order_local = 1 
+        end if
+
+        if (present(right)) then
+            right_local = right
+        else
+            right_local = .true.
+        end if
+
+        if (present(left)) then
+            left_local = left
+        else
+            left_local = .false. 
+        end if
+
+        if (present(verbose)) then
+            verbose_local = verbose
+        else
+            verbose_local = .false. 
+        end if
+
+        if (present(nroots)) then
+            nroots_local = nroots
+        else
+            nroots_local = size(M,1) 
+        end if
+
+        call solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
+        call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
+        if (verbose_local) &
+        call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local, right_local, nroots=nroots_local)
 
     end subroutine
 
@@ -745,9 +791,9 @@ contains
         deallocate (bc)
     end subroutine
 
-    function create_sigma_vector(A, b)
+    function create_sigma_vector(M, b)
         real(kind=8), pointer :: create_sigma_vector(:,:)
-        real(kind=8), intent(in)  :: A(:,:)
+        real(kind=8), intent(in)  :: M(:,:)
         real(kind=8), intent(in)  :: b(:,:)
 
         integer :: vectors_L, vectors_N
@@ -758,7 +804,7 @@ contains
         vectors_L = size(b,2)
 
         allocate(create_sigma_vector(vectors_N,vectors_L))
-        call dgemm('N', 'N', vectors_N, vectors_L, vectors_N, alpha_lapack, A, vectors_N, &
+        call dgemm('N', 'N', vectors_N, vectors_L, vectors_N, alpha_lapack, M, vectors_N, &
                    b, vectors_N, beta_lapack, create_sigma_vector, vectors_N)
 
     end function
