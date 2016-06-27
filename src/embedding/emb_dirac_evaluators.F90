@@ -425,8 +425,12 @@ module fde_evaluators_dirac
          real(8), allocatable   :: work(:)
          integer :: iz, i, j, ixyz, ip
          real(8) :: average
-         real(8), allocatable :: buffer(:,:)
+         real(8) :: time_start, time_total
+         real(8), allocatable :: buffer(:,:), vector(:)
+         real(8), external :: second
 
+
+         time_start = second()
 
          call fde_get_files_info(ftmp)
          call fde_get_import_info(itmp)
@@ -442,27 +446,49 @@ module fde_evaluators_dirac
          do icomp = 1, ncomp
             allocate(buffer(ndim,ndim))
 !           columns correspond only to rho_0 (no spin density, no gradients)
-            icol = fde_pertden_ncol - 48 + icomp
+            !icol = fde_pertden_ncol - 48 + icomp
+            icol = 10 + icomp
+            write(*, *) 'buba icomp = ', icomp
+            allocate(vector(np))
+            do i = 1, np
+              !vector(i) = pertden(icol,i)*fde_grid_im%w(i)
+              vector(i) = fde_grid_im%w(i)
+            end do
             call get_electronic_mep(np,                &
                                     buffer,            &
                                     ndim,              &
                                     fde_grid_im%r(1:3,1:np),     & 
-                                    pertden(icol,1:np)*fde_grid_im%w(1:np), &
+                                    vector, &
                                     work, lwork,       &
                                     0,                 &
-                                    .true.,            &
+                                     .true.,  &
                                     .false.)
-
+               deallocate(vector)
                do j = 1, ndim
                   do i = 1, j
-!                       fmat ^B is antisymmetric
-                        buffer(i,j) = buffer(i,j) - buffer(j,i)
-                        buffer(j,i) =-buffer(i,j)
+!                       we have to antisymmetrize it, as fmat ^B is antisymmetric
+                        average = 0.5d0*(buffer(i,j) - buffer(j,i))
+                        buffer(j,i) = average
+                        buffer(i,j) =-average
                   end do
                end do
 
+              write(*, *) 'buba buffer, icomp = ', icomp
+              CALL PRQMAT(buffer,ndim, ndim, ndim, &
+                    ndim, 1,(/1, 2, 3, 4/), 6)
+
+              write(*, *) 'buba fmat before, icomp = ', icomp
+              CALL PRQMAT(fmat(1,1,1,icomp),ndim, ndim, ndim, &
+                    ndim, nz,(/1, 2, 3, 4/), 6)
+
+
             call daxpy(ndim*ndim, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
             deallocate(buffer)
+
+              write(*, *) 'buba fmat after, icomp = ', icomp
+              CALL PRQMAT(fmat(1,1,1,icomp),ndim, ndim, ndim, &
+                    ndim, nz,(/1, 2, 3, 4/), 6)
+
 
          end do
 
@@ -471,6 +497,11 @@ module fde_evaluators_dirac
          if (associated(pertden)) then
             nullify(pertden)
          end if
+
+         time_total = second() - time_start
+         call timtxt('  time spent in Coulomb coupling term  =', &
+                      time_total, 6)
+
 
       end subroutine fde_get_elpot_pertden
  
