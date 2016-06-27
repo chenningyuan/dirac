@@ -740,40 +740,6 @@ module fde_evaluators_dirac
                                   fde_active_gridfunction = gf)
          call dealloc(buffer)
 
-!      if (.not. fde_cfg_no_sdft) then
-!         call alloc(buffer, ndim*ndim, nz)
-!         call dcopy(ndim*ndim*nz, dmat, 1, buffer, 1)
-!
-!#ifdef VAR_MPI
-!         if (parcal) call dirac_parctl(12)
-!#endif
-!         call fde_dirac_emb_matrices_via_integration(      &
-!                                  fde_mat_dim   = ndim,    &
-!                                  fde_nz        = nz,      &
-!                                  fde_dmat_0    = dmat,    & !only real part of dmat
-!                                  fde_nr_dmat   = 3,       &
-!                                  fde_nr_fmat   = 0,       &
-!                                  fde_dmat      = tbdmat,  &
-!                                  fde_do_export_pertden_reorth = .true., &
-!                                  fde_do_export_pertden_direct = .true., &
-!                                  fde_active_grid = grid, &
-!                                  fde_active_gridfunction = gf)
-!         call dealloc(buffer)
-!
-!      else
-!#ifdef VAR_MPI
-!         if (parcal) call dirac_parctl(12)
-!#endif
-!         call fde_dirac_emb_matrices_via_integration(      &
-!                                  fde_mat_dim   = ndim,    &
-!                                  fde_nz        = nz,      &
-!                                  fde_dmat_0    = dmat,    & !only real part of dmat
-!                                  fde_nr_dmat   = 3,       &
-!                                  fde_nr_fmat   = 0,       &
-!                                  fde_dmat      = tbdmat,  &
-!                                  fde_do_export_pertden_reorth = .true.)
-!
-!      end if
       call dealloc(tbdmat)
       call dealloc(dmat)
       call dealloc(cmo)
