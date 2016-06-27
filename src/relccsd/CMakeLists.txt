@@ -41,6 +41,7 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    eom_driver.F90
    ccsort_exp.F90
    auto_offset.F90
+   davidson/davidson.F90
    ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
    ${PROJECT_SOURCE_DIR}/src/main/dirac.F
 # needs fix missing object pamgeo
