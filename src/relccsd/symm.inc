@@ -31,7 +31,7 @@
       COMMON /DIMS8/ NV5,NV6
 
 !     Sub dimensions of symmetry packed arrays.
-      INTEGER,TARGET :: NE, NO, NV, NC, NCONT
+      INTEGER,TARGET :: NE, NO, NV, NC, NCONT(MXREP)
       INTEGER,TARGET :: MOO, MVO, MOV, MVV
       INTEGER,TARGET :: POO, PVO, POV, PVV
       INTEGER,TARGET :: NOO, NOV, NVO, NVV
@@ -41,7 +41,7 @@
       INTEGER,TARGET :: NOVO2, NOVV
       INTEGER,TARGET :: NOOOT2, NVVVT2
       COMMON /SYMD/ NE(MXREP),NO(MXREP),NV(MXREP),NC(MXREP),            &
-     & NCONT(MXREP),MOO(MXREP),MVO(MXREP),MOV(MXREP),MVV(MXREP),        &
+     & NCONT,MOO(MXREP),MVO(MXREP),MOV(MXREP),MVV(MXREP),               &
      & POO(MXREP),PVO(MXREP),POV(MXREP),PVV(MXREP),                     &
      & NOO(MXREP),NOV(MXREP),NVO(MXREP),NVV(MXREP),                     &
      & NOOT(MXREP),NVVT(MXREP),                                         &

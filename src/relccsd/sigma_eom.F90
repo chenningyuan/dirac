@@ -354,12 +354,17 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
   call contraction_222 ((/"o2","o1"/),(/"c1","o2"/),(/"c1","o1"/),B%Fbar_mi,r1,sigma1,-1.0d0,1.0d0,nrep)
 
+  write(*,*)'diagram 1',dot_product(sigma1(ndimr1*rcw,:),sigma1(ndimr1*rcw,:))
+
 !--------------------------------------------
 ! S(a*,i) = S(a*,i) + Fbar_me(m,e)*r2(a*e,im)
 !--------------------------------------------
 
     call contraction_242 ((/"o2","p2"/),(/"c1","p2","o1","o2"/), &
    &   (/"c1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
+
+
+  write(*,*)'diagram 2',dot_product(sigma1(ndimr1*rcw,:),sigma1(ndimr1*rcw,:))
 
 !-------------------------------------
 !S(a*,i) = S(a*,i) - W_mnie(mn,ie)*r2(a*e,mn)
@@ -368,6 +373,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_442((/"o2","o3","o1","p2"/),(/"c1","p2","o2","o3"/),(/"c1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
    &         LeftTensor=B%W_mnie,RightTensor=r2_ptr)
 
+  write(*,*)'diagram 3',dot_product(sigma1(ndimr1*rcw,:),sigma1(ndimr1*rcw,:))
+
 !--------------------------------------------
 !  S(a*b,ij) = S(a*b,ij)-W(mb,ij)*r(a*,m)
 !--------------------------------------------
@@ -375,13 +382,19 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_424 ((/"o3","p2","o1","o2"/),(/"c1","o3"/), &
    &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%W_iemn, &
    &    RightTensor=r1_ptr) 
-  
+ 
+  write(*,*)'diagram 4',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
+
+
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
 !-----------------------------------------------------
 
     call contraction_244 ((/"o3","o2"/),(/"c1","p2","o1","o3"/), &
    & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
+
+
+  write(*,*)'diagram 5',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
 
 !---------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + P(ij) w_mbej(mb,ej)*r2(a*e,im)
@@ -390,12 +403,16 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
       call contraction_444((/"o3","p2","p3","o2"/),(/"c1","p3","o1","o3"/), &
      &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_mbej)
 
+  write(*,*)'diagram 6',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
+
 !--------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + w_ijmn(mn,ij) * r2(a*b,mn)
 !--------------------------------------------------
 
       call contraction_444((/"o3","o4","o1","o2"/),(/"c1","p2","o3","o4"/), &
      &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ijmn)
+
+  write(*,*)'diagram 7',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
 
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
@@ -404,12 +421,16 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_244 ((/"o3","o2"/),(/"c1","p2","o1","o3"/), &
    & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
 
+  write(*,*)'diagram 8',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
+
 !------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + f_bar_ae(b,e) * r2(a*e,ij)
 !------------------------------------------------------
 
     call contraction_244 ((/"p2","p3"/),(/"c1","p3","o1","o2"/), &
    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2_ptr)
+
+  write(*,*)'diagram 9',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
 
 !int_1b(a*,f) = int_1b(a*,f) - V(nm,fe)*r2(ea*,mn)  
 !S(a*b,ij) = S(a*b,ij) + int_1b(a*,f)*t2(fb,ij)  
@@ -425,8 +446,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
     deallocate(int_1b)
 
+  write(*,*)'diagram 10',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
 
    end subroutine
-
 
    end module 
