@@ -741,8 +741,7 @@ C
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN,blk)
 
-! edh: && defined (BUILD_OPENRSP) replaced with defined (BUILD_PELIB)
-#if defined (BUILD_GEN1INT)  && defined (BUILD_PELIB)
+#if defined (BUILD_GEN1INT)  
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
      &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,

@@ -2057,7 +2057,7 @@ C
         dhferg = dhferg + pcm_energy
       endif 
 #endif
-#if defined (BUILD_PELIB)
+#ifdef HAS_PELIB
       IF (PEQM) THEN
         ! The PE Fock matrix is added to F2 before entering ERGCAL
         ! and the electronic PE energy is therefore added to E2PART.

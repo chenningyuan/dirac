@@ -1146,7 +1146,9 @@
 ! uses \var(MAXREP)
 #include "symmet.h"
 ! uses FIELD1
-#include "efield.h"
+! edh commented out for now - 
+! check if this have an equivalent in DIRAC
+!#include "efield.h"
 !FIXME: having problem of calling \fn(PR1IN1) with \var(GET_EXPT)=.true., which gives wrong integrals
     integer size_int                                      !size of property integrals
     integer start_herm_int, end_herm_int                  !addresses for integrals from \fn(PR1IN1)
