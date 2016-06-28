@@ -3369,9 +3369,9 @@ C
      &                 CREF(I,1),' + ',CREF(I,2),' i; weight ',DI
                END IF
                CALL IDET2STR(IDET(1,I),IDET(2,I),JASTR,JBSTR,IA,IB)
-               WRITE(LUPRI,'(3X,A,40I4)')
+               WRITE(LUPRI,'(3X,A,(T21,40I4))')
      &            '  P-string     : ',(JASTR(J),J=1,IA)
-               WRITE(LUPRI,'(3X,A,40I4)')
+               WRITE(LUPRI,'(3X,A,(T21,40I4))')
      &            '  P(bar)-string: ',(JBSTR(J)-NASHT,J=1,IB)
             END IF
          END DO
