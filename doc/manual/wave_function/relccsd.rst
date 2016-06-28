@@ -60,7 +60,7 @@ electrons rather than the total number. This number may therefore change if you 
 
 For OPEN SHELL systems it is usually better to employ the multireference Fock space approach, except for simple cases such as 
 a high-spin open shell state. In this case the single reference CCSD(T) ansatz works rater well. For such cases it is easier to use 
-the :ref:`NELEC_OPEN` keyword that allows to just specify the distribution of open shell electrons over the irreps, but for backwards
+the :ref:`RELCC_.NELEC_OPEN` keyword that allows to just specify the distribution of open shell electrons over the irreps, but for backwards
 compatibility we retain the older NELEC option as well.
 
 *Arguments:*
