@@ -289,7 +289,7 @@
 
    allocate(right_sort(maxdim*rcw))  
 
-     transA = 'N'
+     transA  =  'N'
      trans1A = 'N'
 
 !**  1> fetch the integral array, properly sorted to contract with BLAS.
@@ -411,8 +411,6 @@
     else
       contraction_type = 1
     endif  
-
-    write(*,*)'what is the contraction type?',contraction_type
 
 !  4) matrix-matrix multiplication routine runs for each irreps.
 

@@ -325,7 +325,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
   end subroutine
 
-   subroutine sigma_IP(r1,r2,t1,t2,B,sigma1,sigma2,ndimr1,ndimr2)
+   subroutine sigma_IP(nvx,r1,r2,t1,t2,B,sigma1,sigma2,ndimr1,ndimr2)
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -339,11 +339,12 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
   real(8), intent(in)     :: t1(:),t2(:)           ! t-Amplitudes
   type(intermediates), intent(in)  :: B      
   real(8), intent(inout)           :: sigma1(:,:),sigma2(:,:)  ! sigma-vectors
-  integer, intent(in) :: ndimr1, ndimr2
+  integer, intent(in) :: ndimr1, ndimr2,nvx(nrep)
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
   real(8), pointer     :: r1_ptr(:),r2_ptr(:)
   real(8), allocatable :: int_1b(:) 
+  integer :: scalar
 !--------------------------------------------------
   r1_ptr(1:ndimr1*rcw) => r1(1:ndimr1*rcw,1)
   r2_ptr(1:ndimr2*rcw) => r2(1:ndimr2*rcw,1)
@@ -362,7 +363,6 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
     call contraction_242 ((/"o2","p2"/),(/"c1","p2","o1","o2"/), &
    &   (/"c1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
-
 
   write(*,*)'diagram 2',dot_product(sigma1(ndimr1*rcw,:),sigma1(ndimr1*rcw,:))
 
@@ -436,10 +436,10 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 !S(a*b,ij) = S(a*b,ij) + int_1b(a*,f)*t2(fb,ij)  
 !-----------------------------------------------
 
-    allocate(int_1b(iv(nrep+1)*rcw))
+    allocate(int_1b(nvx(1)*rcw))
     int_1b = 0.0d0
 
-    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p3","c1","o3","o4"/),(/"c1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
+    call contraction_442 ((/"o4","o3","p4","p3"/),(/"c1","p3","o3","o4"/),(/"c1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
     call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
     & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)

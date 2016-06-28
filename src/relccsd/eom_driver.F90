@@ -176,7 +176,7 @@
    real*8, allocatable :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
 !  real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
-   integer :: irp,iroot,jroot,i,j,irep
+   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep),nox(nrep)
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
 
@@ -280,9 +280,6 @@
 
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-!  call alloc (sigma1(ndimt1*rcw,nroot))
-!  call alloc (sigma2(ndimt2*rcw,nroot))
-
     call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
 
     do iroot = 1, nroot
@@ -295,13 +292,26 @@
 
     case ('IP')
 
-         ndimr2 = 0
+       ndimr2 = 0
+       ndimr1 = 0
 
-      do irep = 1, nrep
-         ndimr2 = ndimr2 + nv(irep)*noot(irep)
+       nvx = 0
+       nox = 0
+
+      do jrep = 1, nrep
+        do irep = 1, nrep
+        ijrep = multb(irep,jrep,1)
+        nvx(ijrep) = nvx(ijrep) + ncont(irep)*nv(jrep)
+        enddo
       enddo
 
-         ndimr1 = io(nrep+1)
+        do irep = 1, nrep
+         ndimr1 = ndimr1 + ncont(irep)*no(irep)
+        enddo
+
+      do irep = 1, nrep
+         ndimr2 = ndimr2 + nvx(irep)*noot(irep)
+      enddo
 
        allocate (r1(ndimr1*rcw,nroot))
        allocate (r2(ndimr2*rcw,nroot))
@@ -316,8 +326,8 @@
       sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
       sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
 
-       call sigma_IP(r1(1:ndimr1*rcw,iroot:iroot),r2(1:ndimr2*rcw,iroot:iroot),t1,t2,B, &
-     &  sigma1(1:ndimr1*rcw,iroot:iroot),sigma2(1:ndimr2*rcw,iroot:iroot),ndimr1,ndimr2)
+       call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),t1,t2,B, &
+     &  sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
 
     enddo
 
@@ -334,7 +344,6 @@
        allocate (sigma2(ndimr2*rcw,nroot))
 
    end select 
-
 
     sub_H = 0.0d0
 
@@ -362,9 +371,6 @@
      deallocate (t1,t2,sigma1,sigma2,r1,r2)
  451  continue
 
-!    call dealloc(buf1)  
-!    call dealloc(buf2)  
-!    call dealloc(buf3)  
      deallocate(buf3)
      deallocate(buf1)
      deallocate(buf2)
