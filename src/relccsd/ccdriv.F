@@ -761,7 +761,6 @@ C
 
 !! Activate EOMCC calculation 
 
-
       IF (relcc_do_eomcc) THEN
          MXCORR1 = 0
          CALL eom_ee(ICALC,MXCORR1)
@@ -1025,6 +1024,7 @@ C
          NO(IREP) = 0
          NV(IREP) = 0
          NC(IREP) = 0
+         NCONT(IREP) = 0
          NIO(IREP) = 0
          NIV(IREP) = 0
          NAO(IREP) = 0

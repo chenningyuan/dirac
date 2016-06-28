@@ -40,7 +40,7 @@
 !================
 
    real*8, intent(in)  :: Fbar_HH(:),Fbar_PP(:),Vbar_SS(:)
-   real*8, intent(out) :: R1(:,:), R2(:,:) ! (ndimt1,nroot) and (ndimt2,nroot)
+   real*8, intent(inout) :: R1(:,:), R2(:,:) ! (ndimt1,nroot) and (ndimt2,nroot)
 
 !Local Variables
 !==============
@@ -62,8 +62,6 @@
 
 !initialize the R-vector
 !=======================
-
-    write(*,*)'array size', size(R2(:,nroot))  
 
     R1(1:size(R1(:,nroot)),1:nroot) = 0.0d0 
     R2(1:size(R2(:,nroot)),1:nroot) = 0.0d0 
@@ -114,14 +112,14 @@
      write(*,*)'roots',iroot,H_II(k(1)) 
      i = k(1)
      H_II(i) = 8000.0d0
-     R1(k,iroot) = 1.0d0
+     R1(i,iroot) = 1.0d0
     enddo
 
      deallocate(H_II)
 
    case ('IP')
 
-! As of now, I am targetting the lowest energy determinants across the symmetries.
+!As of now, I am targetting the lowest energy determinants across the symmetries.
 
      allocate(H_II(io(nrep+1)*rcw))    
 
@@ -129,10 +127,10 @@
 
     do iroot = 1, nroot
      k = minloc(H_II) 
-     write(*,*)'roots',iroot,H_II(k(1)) 
+     write(*,*)'roots',iroot,H_II(k(1)),k(1) 
      i = k(1)
      H_II(i) = 8000.0d0
-     R1(k,iroot) = 1.0d0
+     R1(i,iroot) = 1.0d0
     enddo
 
      deallocate(H_II)
@@ -148,7 +146,7 @@
         write(*,*)'roots',iroot,H_II(k(1)) 
         i = k(1)
         H_II(i) = 8000.0d0
-        R1(k,iroot) = 1.0d0
+        R1(i,iroot) = 1.0d0
       enddo
      deallocate(H_II)
 
@@ -250,9 +248,6 @@
 
       allocate (sub_H(nroot,nroot))
 
-      allocate (t1(ndimt1*rcw))
-      allocate (t2(ndimt2*rcw))
-
       call allocator_get_words_inuse(current_mem_use)
       mxcorr = current_mem_use - start_mem_use
 
@@ -261,13 +256,15 @@
          goto 451
       endif
 
+      allocate (t1(ndimt1*rcw))
+      allocate (t2(ndimt2*rcw))
+
     call ccdump
 
     call getampt(t1,t2)
 
     call IM_container(eomtype,t1,t2,B,buf1,buf2,buf3,int(nbuf3,4))
 
-     deallocate(B%Wbar_mbej) 
 
    select case (eomtype)
 
@@ -298,12 +295,11 @@
 
     case ('IP')
 
+         ndimr2 = 0
+
       do irep = 1, nrep
          ndimr2 = ndimr2 + nv(irep)*noot(irep)
       enddo
-
-
-        write(*,*)'dimension r2 IP',ndimr2 
 
          ndimr1 = io(nrep+1)
 
@@ -339,6 +335,7 @@
 
    end select 
 
+
     sub_H = 0.0d0
 
     do jroot = 1, nroot
@@ -352,7 +349,7 @@
      allocate (ev(nroot))
      allocate (evec(nroot,nroot))
 
-    call solve_cg(nr_roots(2),sub_H,evec,ev)
+    call solve_cg(nroot,sub_H,evec,ev)
 
      write(*,*)'eigenvalues', (ev(i),i=1,nroot)
      write(*,*)'eigenvectors', ((evec(i,j),i=1,nroot),j=1,nroot)
@@ -372,6 +369,7 @@
      deallocate(buf1)
      deallocate(buf2)
 
+     deallocate(B%Wbar_mbej) 
      deallocate (B%Fbar_mi)  
      deallocate (B%Fbar_me)  
      deallocate (B%Fbar_ae)  

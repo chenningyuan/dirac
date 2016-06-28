@@ -92,11 +92,11 @@
 
   subroutine alloc_array(c,array_dim,d,e,f,g)
 
-   type(Offset),intent(out) :: c
-   type(Offset),intent(out),optional :: d
-   type(Offset),intent(out),optional :: e
-   type(Offset),intent(out),optional :: f
-   type(Offset),intent(out),optional :: g
+   type(Offset),intent(inout) :: c
+   type(Offset),intent(inout),optional :: d
+   type(Offset),intent(inout),optional :: e
+   type(Offset),intent(inout),optional :: f
+   type(Offset),intent(inout),optional :: g
    integer, intent(in) :: array_dim
 
    allocate(c%oneDirac(array_dim)) 
@@ -149,45 +149,45 @@
    type(Offset),intent(inout),optional :: f
    type(Offset),intent(inout),optional :: g
 
-   deallocate(c%oneDirac) 
-   deallocate(c%oneNonDirac) 
-   deallocate(c%twoDirac) 
-   deallocate(c%twoNonDirac) 
+  if(allocated(c%oneDirac))    deallocate(c%oneDirac) 
+  if(allocated(c%oneNonDirac)) deallocate(c%oneNonDirac) 
+  if(allocated(c%twoDirac))    deallocate(c%twoDirac) 
+  if(allocated(c%twoNonDirac)) deallocate(c%twoNonDirac) 
 
 
    if(present(d)) then
 
-   deallocate(d%oneDirac) 
-   deallocate(d%oneNonDirac) 
-   deallocate(d%twoDirac) 
-   deallocate(d%twoNonDirac) 
+   if(allocated(d%oneDirac))   deallocate(d%oneDirac) 
+   if(allocated(d%oneNonDirac))deallocate(d%oneNonDirac) 
+   if(allocated(d%twoDirac))   deallocate(d%twoDirac) 
+   if(allocated(d%twoNonDirac))deallocate(d%twoNonDirac) 
 
    endif
 
    if(present(e)) then
 
-   deallocate(e%oneDirac) 
-   deallocate(e%oneNonDirac) 
-   deallocate(e%twoDirac) 
-   deallocate(e%twoNonDirac) 
+   if(allocated(e%oneDirac))   deallocate(e%oneDirac) 
+   if(allocated(e%oneNonDirac))deallocate(e%oneNonDirac) 
+   if(allocated(e%twoDirac))   deallocate(e%twoDirac) 
+   if(allocated(e%twoNonDirac))deallocate(e%twoNonDirac) 
 
    endif
 
    if(present(f)) then
 
-   deallocate(f%oneDirac) 
-   deallocate(f%oneNonDirac) 
-   deallocate(f%twoDirac) 
-   deallocate(f%twoNonDirac) 
+   if(allocated(f%oneDirac))   deallocate(f%oneDirac) 
+   if(allocated(f%oneNonDirac))deallocate(f%oneNonDirac) 
+   if(allocated(f%twoDirac))   deallocate(f%twoDirac) 
+   if(allocated(f%twoNonDirac))deallocate(f%twoNonDirac) 
 
    endif
 
    if(present(g)) then
 
-   deallocate(g%oneDirac) 
-   deallocate(g%oneNonDirac) 
-   deallocate(g%twoDirac) 
-   deallocate(g%twoNonDirac) 
+   if(allocated(g%oneDirac))   deallocate(g%oneDirac) 
+   if(allocated(g%oneNonDirac))deallocate(g%oneNonDirac) 
+   if(allocated(g%twoDirac))   deallocate(g%twoDirac) 
+   if(allocated(g%twoNonDirac))deallocate(g%twoNonDirac) 
 
    endif
 
