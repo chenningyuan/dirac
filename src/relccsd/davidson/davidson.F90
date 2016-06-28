@@ -482,26 +482,6 @@ contains
         deallocate(residue_b)
     end subroutine
 
-
-    function is_converged(correction_to_vectors)
-        logical :: is_converged
-        real(kind=8) :: norm_d, correction_to_vectors(:,:)
-        integer :: i, vectors_L
-
-        vectors_L = size(correction_to_vectors,2)
-
-        norm_d = zero_r8
-        do i = 1, vectors_L
-            norm_d = vector_norm(correction_to_vectors(:,i))
-            if (norm_d .gt. convergence_threshold) then
-                is_converged = .false.
-            else
-                is_converged = .true.
-            end if
-        end do
-
-    end function
-
     function create_reduced_problem(b, sigma_vector)
         real(kind=8), pointer     :: create_reduced_problem(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
