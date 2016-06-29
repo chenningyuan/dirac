@@ -344,6 +344,7 @@
 
    end select 
 
+   if (.false.) then
     sub_H = 0.0d0
 
     do jroot = 1, nroot
@@ -367,6 +368,12 @@
      deallocate(ev)
      deallocate(evec)
 
+    else 
+!       call davidson_setup(1.0e-2, subspace_size, nroot)
+        call davidson_driver(nroot, B, ptr_sigma_vector, ptr_preconditioner, .false., evRe, evIm,  eValuesIm, eVectorsL, eVectorsR, .false., .true., .false.)
+
+    
+    end if
 !    call davidson 
 
      deallocate (t1,t2,sigma1,sigma2,r1,r2)

@@ -17,9 +17,27 @@
     type intermediates
       real(8),allocatable,dimension(:) :: Fbar_mi, Fbar_me, Fbar_ae                                         ! all 1-b intermediates 
       real(8),allocatable,dimension(:) :: W_ijmn, W_ejmb, W_mbej, W_iemn, W_efam, W_amef, W_mnie, Wbar_mbej ! all 2-b intermediates   
+      real(8),allocatable,dimension(:) :: t1, t2
     endtype intermediates
 
    contains
+
+   function create_sigma_vector(B, r)
+      real(kind=8), pointer :: create_sigma_vector(:,:)
+      type(intermediates) :: B
+      real(kind=8), intent(in) :: r(:,:)
+      real(kind=8), allocatable :: buf2(:), buf3(:)
+
+      N = size(r,1)
+      L = size(r,2)
+      allocate(create_sigma_vector(N,L))
+
+      allocate(buf2(X))
+      allocate(buf3(X))
+
+      call sigma_ee_1h1p(r(1:ndimt1,:),r(ndimt1+1:N,:),B,create_sigma_vector(1:ndimt1,:),create_sigma_vector((ndimt1+1:N,:),buf2,buf3,nbuf3)
+
+   end function
 
    subroutine IM_container(eomtype,t1,t2,A,buf1,buf2,buf3,nbuf3)
 

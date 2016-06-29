@@ -572,13 +572,15 @@ contains
     end function
 
 
-    subroutine davidson_driver(nroots, M, symmetric, eValuesRe, eValuesIm, eVectorsL, eVectorsR, left, right, verbose)
+    subroutine davidson_driver(nroots, M, symmetric, eValuesRe, eValuesIm, eVectorsL, eVectorsR, left, right, verbose, b_guess)
         real(kind=8), intent(in)    :: M(:,:)
         real(kind=8), intent(inout) :: eVectorsL(:,:)
         real(kind=8), intent(inout) :: eVectorsR(:,:)
         real(kind=8), intent(inout) :: eValuesRe(:), eValuesIm(:)
+        real(kind=8), optional, pointer :: b_guess(:,:)
         integer, intent(in) :: nroots 
         logical, intent(in) :: left, right, verbose, symmetric
+
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -610,7 +612,12 @@ contains
            return 
         endif
 
-        b => new_subspace_vectors_R(min_subspace_size,vectors_N)
+        if (present(b_guess)) then
+            b => b_guess
+        else
+            b => new_subspace_vectors_R(min_subspace_size,vectors_N)
+        end if
+
         if (verbose) then
             print "(4x,a,i4,a,i8)", "Start by mapping M onto a subspace of size ",min_subspace_size, &
                      ", will extend it up to ",max_subspace_size
