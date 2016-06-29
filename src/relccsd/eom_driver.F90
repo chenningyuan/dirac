@@ -176,7 +176,7 @@
    real*8, allocatable :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
 !  real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep),nox(nrep)
+   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep)
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
 
@@ -296,7 +296,6 @@
        ndimr1 = 0
 
        nvx = 0
-       nox = 0
 
       do jrep = 1, nrep
         do irep = 1, nrep
@@ -349,7 +348,9 @@
 
     do jroot = 1, nroot
      do iroot = 1, nroot
-      sub_H(iroot,jroot) = dot_product(r1(:,iroot),sigma1(:,jroot)) + dot_product(r2(:,iroot),sigma2(:,jroot)) 
+      sub_H(iroot,jroot) = dot_product(r1(:,iroot),sigma1(:,jroot)) + &
+     &             dot_product(r2(:,iroot),sigma2(:,jroot)) 
+
      enddo
     enddo
 
@@ -361,7 +362,7 @@
     call solve_cg(nroot,sub_H,evec,ev)
 
      write(*,*)'eigenvalues', (ev(i),i=1,nroot)
-     write(*,*)'eigenvectors', ((evec(i,j),i=1,nroot),j=1,nroot)
+!!     write(*,*)'eigenvectors', ((evec(i,j),i=1,nroot),j=1,nroot)
 
      deallocate(ev)
      deallocate(evec)

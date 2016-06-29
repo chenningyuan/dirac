@@ -453,7 +453,7 @@
                        & transA,save_index,asym_factor_R,.false.,sorted_opArray=sorted_opArray_right,inverse=.true.)
 
    if (transA=='T') then
-    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
+!!    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
    call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
