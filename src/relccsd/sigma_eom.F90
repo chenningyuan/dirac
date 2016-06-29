@@ -325,7 +325,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
   end subroutine
 
-   subroutine sigma_IP(r1,r2,t1,t2,B,sigma1,sigma2,ndimr1,ndimr2)
+   subroutine sigma_IP(nvx,r1,r2,t1,t2,B,sigma1,sigma2,ndimr1,ndimr2)
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -339,22 +339,25 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
   real(8), intent(in)     :: t1(:),t2(:)           ! t-Amplitudes
   type(intermediates), intent(in)  :: B      
   real(8), intent(inout)           :: sigma1(:,:),sigma2(:,:)  ! sigma-vectors
-  integer, intent(in) :: ndimr1, ndimr2
+  integer, intent(in) :: ndimr1, ndimr2,nvx(nrep)
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
   real(8), pointer     :: r1_ptr(:),r2_ptr(:)
   real(8), allocatable :: int_1b(:) 
+  real(8)              :: ddot
+  integer :: i
 !--------------------------------------------------
-  r1_ptr(1:ndimr1*rcw) => r1(1:ndimr1*rcw,1)
-  r2_ptr(1:ndimr2*rcw) => r2(1:ndimr2*rcw,1)
-
+  r1_ptr => r1(:,1)
+  r2_ptr => r2(:,1)
 !------------------------------------------
 ! S(a*,i) = S(a*,i) - Fbar_mi(m,i)*r(a*,m)
 !------------------------------------------
 
   call contraction_222 ((/"o2","o1"/),(/"c1","o2"/),(/"c1","o1"/),B%Fbar_mi,r1,sigma1,-1.0d0,1.0d0,nrep)
 
-  write(*,*)'diagram 1',dot_product(sigma1(ndimr1*rcw,:),sigma1(ndimr1*rcw,:))
+!  write(*,*)'diagram 1',dot_product(sigma1(ndimr1*rcw,:),sigma1(ndimr1*rcw,:))
+
+  write(*,*)'diagram 1 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 !--------------------------------------------
 ! S(a*,i) = S(a*,i) + Fbar_me(m,e)*r2(a*e,im)
@@ -364,8 +367,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
    &   (/"c1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
 
-  write(*,*)'diagram 2',dot_product(sigma1(ndimr1*rcw,:),sigma1(ndimr1*rcw,:))
-
+  write(*,*)'diagram 2 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 !-------------------------------------
 !S(a*,i) = S(a*,i) - W_mnie(mn,ie)*r2(a*e,mn)
 !-------------------------------------
@@ -373,7 +375,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_442((/"o2","o3","o1","p2"/),(/"c1","p2","o2","o3"/),(/"c1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
    &         LeftTensor=B%W_mnie,RightTensor=r2_ptr)
 
-  write(*,*)'diagram 3',dot_product(sigma1(ndimr1*rcw,:),sigma1(ndimr1*rcw,:))
+
+  write(*,*)'diagram 3 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 !--------------------------------------------
 !  S(a*b,ij) = S(a*b,ij)-W(mb,ij)*r(a*,m)
@@ -382,9 +385,9 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_424 ((/"o3","p2","o1","o2"/),(/"c1","o3"/), &
    &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%W_iemn, &
    &    RightTensor=r1_ptr) 
- 
-  write(*,*)'diagram 4',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
 
+
+  write(*,*)'diagram 4 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
@@ -394,7 +397,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
    & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
 
 
-  write(*,*)'diagram 5',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
+  write(*,*)'diagram 5 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !---------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + P(ij) w_mbej(mb,ej)*r2(a*e,im)
@@ -403,7 +406,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
       call contraction_444((/"o3","p2","p3","o2"/),(/"c1","p3","o1","o3"/), &
      &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_mbej)
 
-  write(*,*)'diagram 6',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
+
+  write(*,*)'diagram 6 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !--------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + w_ijmn(mn,ij) * r2(a*b,mn)
@@ -412,7 +416,8 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
       call contraction_444((/"o3","o4","o1","o2"/),(/"c1","p2","o3","o4"/), &
      &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ijmn)
 
-  write(*,*)'diagram 7',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
+
+  write(*,*)'diagram 7 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
@@ -421,8 +426,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_244 ((/"o3","o2"/),(/"c1","p2","o1","o3"/), &
    & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
 
-  write(*,*)'diagram 8',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
-
+  write(*,*)'diagram 8 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 !------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + f_bar_ae(b,e) * r2(a*e,ij)
 !------------------------------------------------------
@@ -430,23 +434,24 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_244 ((/"p2","p3"/),(/"c1","p3","o1","o2"/), &
    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2_ptr)
 
-  write(*,*)'diagram 9',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
+
+  write(*,*)'diagram 9 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !int_1b(a*,f) = int_1b(a*,f) - V(nm,fe)*r2(ea*,mn)  
 !S(a*b,ij) = S(a*b,ij) + int_1b(a*,f)*t2(fb,ij)  
 !-----------------------------------------------
 
-    allocate(int_1b(iv(nrep+1)*rcw))
+    allocate(int_1b(nvx(1)*rcw))
     int_1b = 0.0d0
 
-    call contraction_442 ((/"o4","o3","p4","p3"/),(/"p3","c1","o3","o4"/),(/"c1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
+    call contraction_442 ((/"o4","o3","p4","p3"/),(/"c1","p3","o3","o4"/),(/"c1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
     call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
     & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
 
     deallocate(int_1b)
 
-  write(*,*)'diagram 10',dot_product(sigma2(ndimr2*rcw,:),sigma2(ndimr2*rcw,:))
+  write(*,*)'diagram 10 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
    end subroutine
 

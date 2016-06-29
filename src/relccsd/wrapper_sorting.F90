@@ -725,8 +725,6 @@
      if (if_ket) Array_Type = 'restricted_braket' 
     endif 
 
-     write(*,*)'whteher correct array type', (orb_array(i),i=1,size(orb_array)), Array_Type
-
      save_index = save_index - 1
 
      do_TotSym =.false.
@@ -1071,9 +1069,9 @@
   trans_1b = 'N'
   endif
   
-   a(0)%orbital_type => NO
-   a(1)%orbital_type => NV
-   a(-12)%orbital_type => NCONT
+   a(0)%orbital_type(1:nrep) => NO(1:nrep)
+   a(1)%orbital_type(1:nrep) => NV(1:nrep)
+   a(-12)%orbital_type(1:nrep) => NCONT(1:nrep)
 
    bit_reordered = bitString(array1,reorder_array) 
 
@@ -1467,9 +1465,9 @@
     b%K = bit_original(3)
     b%L = bit_original(4)
 
-    a(0)%orbital_type => NO
-    a(1)%orbital_type => NV
-    a(-12)%orbital_type => NCONT
+    a(0)%orbital_type(1:nrep) => NO(1:nrep)
+    a(1)%orbital_type(1:nrep) => NV(1:nrep)
+    a(-12)%orbital_type(1:nrep) => NCONT(1:nrep)
 
    deallocate(bit_original)
 
