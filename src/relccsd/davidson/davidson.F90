@@ -572,15 +572,14 @@ contains
     end function
 
 
-    subroutine davidson_driver(nroots, M, symmetric, eValuesRe, eValuesIm, eVectorsL, eVectorsR, left, right, verbose, b_guess)
+    subroutine davidson_driver(nroots, Intm, ptr_to_sigma, ptr_to_diagonal, symmetric, eValuesRe, eValuesIm, eVectorsL, eVectorsR, verbose, b_guess)
+        integer, intent(in) :: nroots 
         real(kind=8), intent(in)    :: M(:,:)
-        real(kind=8), intent(inout) :: eVectorsL(:,:)
-        real(kind=8), intent(inout) :: eVectorsR(:,:)
+        real(kind=8), intent(inout), optional :: eVectorsL(:,:)
+        real(kind=8), intent(inout), optional :: eVectorsR(:,:)
         real(kind=8), intent(inout) :: eValuesRe(:), eValuesIm(:)
         real(kind=8), optional, pointer :: b_guess(:,:)
-        integer, intent(in) :: nroots 
-        logical, intent(in) :: left, right, verbose, symmetric
-
+        logical, intent(in), optional :: verbose, symmetric
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -597,7 +596,32 @@ contains
         real(kind=8), pointer :: e_small_i(:)        => NULL()
         integer :: vectors_N, L, min_subspace_size, niter
         integer :: i, j
+        logical :: left, right, verbose_local, symmetric_local, eVectorsL_local, eVectorsR_local
 
+
+        if (present(eVectorsL)) then
+            left = .true.
+        else
+            left = .false.
+        end if
+            
+        if (present(eVectorsR)) then
+            right = .true.
+        else
+            right = .false.
+        end if
+
+        if (present(verbose)) then
+            verbose_local = verbose
+        else
+            verbose_local = .false. 
+        end if
+
+        if (present(symmetric)) then
+            symmetric_local = symmetric
+        else
+            symmetric_local = .false. 
+        end if
 
         vectors_N = size(M,1)
         M_diag => get_diagonal_elements(M)

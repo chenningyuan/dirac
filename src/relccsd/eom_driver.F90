@@ -173,7 +173,7 @@
    real*8, allocatable :: sigma1(:,:),sigma2(:,:) 
    real*8, allocatable :: R1(:,:),R2(:,:) 
    real*8, allocatable :: ev(:),evec(:,:) 
-   real*8, allocatable :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
+   real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
 !  real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
    integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep)
@@ -223,7 +223,7 @@
         allocate(buf2(nbuf2*rcw))
 
 !!        call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
-
+        call initialize_buffers(buf1, buf2, buf3)
 
 !     For the moment I am using as much in-core memory as possible. However we
 !     may think of writing them in files, replacing the integral ones...  
@@ -282,13 +282,13 @@
 
     call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
 
-    do iroot = 1, nroot
-      sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
-      sigma2(1:ndimt2*rcw,iroot:iroot) = 0.0d0 
+!   do iroot = 1, nroot
+!     sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
+!     sigma2(1:ndimt2*rcw,iroot:iroot) = 0.0d0 
 
-      call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot),r2(1:ndimt2*rcw,iroot:iroot),t1,t2,B, &
-     &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3,int(nbuf3,4))
-    enddo
+!     call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot),r2(1:ndimt2*rcw,iroot:iroot),t1,t2,B, &
+!    &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3,int(nbuf3,4))
+!   enddo
 
     case ('IP')
 
@@ -315,20 +315,20 @@
        allocate (r1(ndimr1*rcw,nroot))
        allocate (r2(ndimr2*rcw,nroot))
 
-       allocate (sigma1(ndimr1*rcw,nroot))
-       allocate (sigma2(ndimr2*rcw,nroot))
+!      allocate (sigma1(ndimr1*rcw,nroot))
+!      allocate (sigma2(ndimr2*rcw,nroot))
 
        call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
 
-    do iroot = 1, nroot
+!   do iroot = 1, nroot
 
-      sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
-      sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
+!     sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
+!     sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
 
-       call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),t1,t2,B, &
-     &  sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
+!      call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),t1,t2,B, &
+!    &  sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
 
-    enddo
+!   enddo
 
     case('EA')
 
@@ -339,8 +339,8 @@
        allocate (r1(iv(nrep+1)*rcw,nroot))
        allocate (r2(ndimr2*rcw,nroot))
 
-       allocate (sigma1(iv(nrep+1)*rcw,nroot))
-       allocate (sigma2(ndimr2*rcw,nroot))
+!      allocate (sigma1(iv(nrep+1)*rcw,nroot))
+!      allocate (sigma2(ndimr2*rcw,nroot))
 
    end select 
 
@@ -370,7 +370,13 @@
 
     else 
 !       call davidson_setup(1.0e-2, subspace_size, nroot)
+        symmetric = .false.
+        left_vectors = .false.
+        right_vectors = .true.
+        eVectorsL => NULL()
         call davidson_driver(nroot, B, ptr_sigma_vector, ptr_preconditioner, .false., evRe, evIm,  eValuesIm, eVectorsL, eVectorsR, .false., .true., .false.)
+        eVectorsR => [r1, r2]
+        call davidson_driver(nroot, B, symmetric, eValuesRe, eValuesIm, eVectorsL, eVectorsR, left, right, verbose)
 
     
     end if

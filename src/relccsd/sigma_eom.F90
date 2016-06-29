@@ -11,31 +11,63 @@
     public sigma_ee_1h1p
     public sigma_IP
     public IM_container
+    public create_sigma_vector
+    public initialize_buffers
+    public free_buffers
 
     private
     public intermediates
     type intermediates
+      character(8) :: eomtype
       real(8),allocatable,dimension(:) :: Fbar_mi, Fbar_me, Fbar_ae                                         ! all 1-b intermediates 
       real(8),allocatable,dimension(:) :: W_ijmn, W_ejmb, W_mbej, W_iemn, W_efam, W_amef, W_mnie, Wbar_mbej ! all 2-b intermediates   
       real(8),allocatable,dimension(:) :: t1, t2
     endtype intermediates
 
+    real(kind=8), pointer :: local_buf1(:) 
+    real(kind=8), pointer :: local_buf2(:) 
+    real(kind=8), pointer :: local_buf3(:) 
+
    contains
+
+   subroutine initialize_buffers(buf1, buf2, buf3)
+       real(kind=8), pointer ::  buf1(:), buf2(:), buf3(:)
+       local_buf1 => buf1 
+       local_buf2 => buf2 
+       local_buf3 => buf3 
+   end subroutine
+
+   subroutine free_buffers()
+       if (associated(local_buf1)) nullify(local_buf1)
+       if (associated(local_buf2)) nullify(local_buf2)
+       if (associated(local_buf3)) nullify(local_buf3)
+   end subroutine
 
    function create_sigma_vector(B, r)
       real(kind=8), pointer :: create_sigma_vector(:,:)
       type(intermediates) :: B
       real(kind=8), intent(in) :: r(:,:)
-      real(kind=8), allocatable :: buf2(:), buf3(:)
+      integer :: nbuf3, ndimt1, ndimt2
 
       N = size(r,1)
       L = size(r,2)
       allocate(create_sigma_vector(N,L))
 
-      allocate(buf2(X))
-      allocate(buf3(X))
+      nbuf3 = size(local_buf3)
+      ndimt1 = size(B%t1)
+      ndimt2 = size(B%t2)
 
-      call sigma_ee_1h1p(r(1:ndimt1,:),r(ndimt1+1:N,:),B,create_sigma_vector(1:ndimt1,:),create_sigma_vector((ndimt1+1:N,:),buf2,buf3,nbuf3)
+      select case (B%eomtype)
+         case ("IP")
+         case ("EA")
+         case ("EE")
+            call sigma_ee_1h1p(r(1:ndimt1,:),r(ndimt1+1:N,:),B, &
+                               create_sigma_vector(1:ndimt1,:), &
+                               create_sigma_vector((ndimt1+1:N,:),&
+                               local_buf2,&
+                               local_buf3,&
+                               nbuf3)
+      end select
 
    end function
 
@@ -69,6 +101,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
      allocate (fvo(nfvo*rcw))
      allocate (fvv(nfvv*rcw))
 
+     A%eomtype = eomtype
 
      call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
 
