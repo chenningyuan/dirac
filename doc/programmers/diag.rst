@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 =================================
 Problems with the diagonalization 
 =================================
@@ -178,8 +181,8 @@ Intel+lapack 3.5.0, DSYEVR:
      U^{+}*U - I ?= 0> norm/diag:0.2097D-15  norm/offdiag:0.1905D-06
      U*U^{+} - I ?= 0> norm/diag:0.7649D-06  norm/offdiag:0.5035D-06
 
-The "newest" (in August 2014) lapack 3.5.0 from netlib still suffers with non-orthogonal eigenvectors
- (see this `bug report <http://www.netlib.org/lapack/Errata/index2.html#_strong_span_class_red_bug0056_span_strong_non_orthogonal_eigenvectors_returned_from_dsyevr>`_ ).
+The recent lapack 3.6.0 from netlib still suffers with non-orthogonal eigenvectors
+ (see this `bug report <http://www.netlib.org/lapack/Errata/index2.html#_strong_span_class_red_bug_126_span_strong_dstemr_related_to_some_splitting_of_the_tridiagonal>`_ ).
 
 Solution of the problem
 =======================
@@ -188,4 +191,6 @@ The eispack's RS routine, own DIRAC's Householder or Jacobi methods do fit for t
 they can properly handle eigenvectos of 
 degenerate eigenvalues. The drawback is the time efficiency as the diagonalized matrix is of the Fock matrix size.
 
-More elaborate solution for improving the diagonalization methods for degenerate eigenvalues is pointed out by Luuk Visscher (private communication).
+Addendum
+========
+The dsyevr standalone testing program was placed on github, https://github.com/miroi/lapack-dsyevr-test.

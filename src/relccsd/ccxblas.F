@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -109,6 +109,14 @@ C
 C---------------Description--------------------------------------------
 C
 C     Generic version of BLAS routines SGEMM, DGEMM, CGEMM, ZGEMM
+C
+C         C:= ALPHA*op(A)*op(B) + BETA*C
+C
+C     where 
+C        op(A) has dimension M x K
+C        op(B) has dimension K x N
+C        C     has dimension M x N
+C
 C     Depending of the value of CARITH and the machine specification
 C     the appropriate routine is called
 C

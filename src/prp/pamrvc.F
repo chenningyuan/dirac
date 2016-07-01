@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3993,7 +3993,7 @@ C***********************************************************************
         use pcmmod_cfg
 #endif
 
-#ifdef MOD_PEQM 
+#ifdef HAS_PELIB
         use polarizable_embedding, only: pe_master
 #endif
         use orbital_rotation_indices
@@ -4024,7 +4024,7 @@ C
 
 C
 C
-#ifdef MOD_PEQM 
+#ifdef HAS_PELIB
       real(8) :: Epe(1)
       real(8), dimension(:), allocatable :: dlmat_triangle
       real(8), dimension(:), allocatable :: flmat_triangle
@@ -4189,7 +4189,7 @@ C
         endif 
 #endif      
 
-#ifdef MOD_PEQM
+#ifdef HAS_PELIB
 !      write(lupri,*) 'ndmat', ndmat
 !      print *, 'raboof', IHRMOP(1:ndmat)
 
@@ -4240,11 +4240,11 @@ C
 !      CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
 !     &            1,(/1, 2, 3, 4/),LUPRI)
 
-      call pe_master(runtype='response',
+      call pe_master(runtype='dynamic_response',
+     &               triang = .true.,
+     &               nmats=ndmat,
      &               denmats=dlmat_triangle,
-     &               fckmats=flmat_triangle,
-     &               nmats=ndmat, 
-     &               dalwrk=work(kfree:kfree + lfree)) 
+     &               fckmats=flmat_triangle) 
 
 !     print *, 'raboof', flmat_triangle(1:20)
 
@@ -4302,10 +4302,7 @@ C
 !       CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
 !     &           1,(/1, 2, 3, 4/),LUPRI)
 
-!      call QUIT('EDH STOP HERE')
- 
-      deallocate(dlmat_triangle)
-      deallocate(flmat_triangle)                    
+      deallocate(dlmat_triangle, flmat_triangle)
 #endif
 C
 C

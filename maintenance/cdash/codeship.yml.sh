@@ -16,7 +16,7 @@
 # **Note**
 # In the following command: 
 #
-#           echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
+#           echo "$(ctest -j $N_PROC -D ExperimentalTest -L short)"
 #
 # command "echo" makes possible to continue after one of Dirac tests fails because otherwise 
 # codeship can stop and do not submit results to dashboard.
@@ -31,6 +31,9 @@
 
 # export number of processors as environment variable N_PROC
 export N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)
+
+# export CDash project name
+export CTEST_PROJECT_NAME=DIRACext
 
 # show number of processors to be used
 echo "Number of available processors is $N_PROC"
@@ -51,6 +54,13 @@ pip install sphinxcontrib-bibtex
 pip install sphinx_rtd_theme
 pip install hieroglyph
 
+# install most recent CMake
+wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
+export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
+cmake --version
+
+
 # git whereabouts
 which git
 whereis git
@@ -63,31 +73,31 @@ doxygen --version
 # update submodule
 git submodule update --init --recursive
 
-# 32-bit Integer build
-python ./pamadm -a --builddir=build_codeship_i4
-python ./setup -D BUILDNAME="gnu.i4-codeship-ci" build_codeship_i4
+# Do the 32-bit Integer build
+python ./setup --cmake-options="-D BUILDNAME='gnu.i4-codeship-ci'" build_codeship_i4
 cd build_codeship_i4
-ctest --track Miro -D ExperimentalConfigure
-ctest -j $N_PROC --track Miro -D ExperimentalBuild
-#echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest)"
-if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+ctest -D ExperimentalConfigure
+ctest -j $N_PROC -D ExperimentalBuild
+#echo "$(ctest -j $N_PROC  -D ExperimentalTest -L short)"
+echo "$(ctest -j $N_PROC -D ExperimentalTest)"
+if [ "$CI_BRANCH" == "master" ]; then ctest -D ExperimentalSubmit; fi
 
-# Back to source dir
+# Back to the source dir
 cd .. 
 
-# 64-bit Integer build
-python ./pamadm -a --builddir=build_codeship_i8
-python ./setup -D BUILDNAME="gnu.i8-codeship-ci" --int64 build_codeship_i8
+# Now do the 64-bit Integer build
+python ./setup --int64 --blas=off --lapack=off --cmake-options="-D BUILDNAME='gnu.i8-codeship-ci' -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_codeship_i8
 cd build_codeship_i8
-ctest --track Miro -D ExperimentalConfigure
-ctest -j $N_PROC --track Miro -D ExperimentalBuild
-#echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest -L short)"
-echo "$(ctest -j $N_PROC --track Miro -D ExperimentalTest)"
-if [ "$CI_BRANCH" == "master" ]; then ctest --track Miro -D ExperimentalSubmit; fi
+ctest -D ExperimentalConfigure
+ctest -j $N_PROC -D ExperimentalBuild
+#echo "$(ctest -j $N_PROC -D ExperimentalTest -L short)"
+echo "$(ctest -j $N_PROC -D ExperimentalTest)"
+if [ "$CI_BRANCH" == "master" ]; then ctest -D ExperimentalSubmit; fi
 
 # finally do the documentation buildup in the build_codeship_i8 directory
 make html
 make slides
 # for doxygen encompass the building command into echo so that the build does not stop in the case of error
 echo "$(make doxygen)"
+
+cd ..

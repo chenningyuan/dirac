@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -50,6 +50,7 @@ C     NUMNOD = INUMNOD - 1
 C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
+      MYNUM  = MYTID
 C Additional check for parallelism, parallel with only a master is the same as serial
       PARCAL = PARCAL.AND.NUMNOD.ne.0
 C Test the communication by sending an empty task
@@ -542,7 +543,7 @@ C
 C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
          NGAS_DC  = NOPEN
-         OPT_THR_CVEC = 1.0D-3
+         OPT_THR_CVEC = 1.0D-4
          CALL IZERO(NGSHT,MXGAS)
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
@@ -562,7 +563,7 @@ C
       ELSE IF (CISELECT .EQ. 'FULLCI') THEN
 C        ... do a full CI in the active space
          NGAS_DC  = 1
-         OPT_THR_CVEC = 1.0D-3
+         OPT_THR_CVEC = 1.0D-4
 
 C        ... set CI program in charge
 !        OPT_CIPROGRAM = 'GASCIP'
@@ -900,7 +901,7 @@ C
       OPT_THRECI     = MAX(DKRCI_THRECI, OPT_THRGRD**2)
       THRPCI         = DKRMC_THRPCI
       E_LVCORR_MC    = 0.0d0
-      OPT_THR_CVEC   = 1.0D-3
+      OPT_THR_CVEC   = 1.0D-4
 C
 C     Set common block DCLOPT
 C
@@ -1020,7 +1021,7 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       THRPCI         = DKRCI_THRPCI
       E_LVCORR_MC    = 0.0d0
-      OPT_THR_CVEC    = 1.0d-03
+      OPT_THR_CVEC   = 1.0d-04
       OPT_THRGRD     = 1.D99
       OPT_THRECI     = DKRCI_THRECI
 C
@@ -1556,7 +1557,7 @@ C
 C     Set common block DCROPT
 C
       E_LVCORR_MC    = 0.0d0
-      OPT_THR_CVEC   = 1.0D-3
+      OPT_THR_CVEC   = 1.0D-4
 
       OPT_CIPROGRAM  = 'KRCC'
       DO I = 1, NFSYM

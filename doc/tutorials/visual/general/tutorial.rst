@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 How to visualize densities and properties
 =========================================
@@ -112,7 +113,7 @@ perpendicular to the molecular plane::
   ...
 
 This is the operator for the magnetic field along z.  If you only want to plot
-unperturbed densities than you can remove :ref:`.PROPERTIES` and everything
+unperturbed densities than you can remove :ref:`DIRAC_.PROPERTIES` and everything
 under :ref:`**PROPERTIES`.  Also note that in production calculation we really
 should run with uncontracted basis sets::
 
@@ -276,7 +277,7 @@ In this plot we visualize the electron localization function in benzene::
    10.0
   *END OF
 
-Observe how we have increased the cube size with :ref:`3D_ADD` (default is 4.0
+Observe how we have increased the cube size with :ref:`VISUAL_.3D_ADD` (default is 4.0
 bohr)::
 
   pam --mw=10 --inp=elf_3d.inp --mol=benzene.mol --put=DFCOEF --get="plot.3d.cube plot.3d.scalar"

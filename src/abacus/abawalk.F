@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,7 +21,6 @@
 
 C
 #ifndef PRG_DIRAC
-#include "single.h"
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
 #include "implicit.h"
@@ -422,7 +421,7 @@ C
             END IF
          END IF
          IF (NIS .GT. 0) WRITE (LUPRI,'(/A,20I3)')
-     *      ' Isotops specified:', (ISOTPS(I), I = 1, NIS)
+     *      ' Isotopes specified:', (ISOTPS(I), I = 1, NIS)
 C
          IF (IPRWLK .NE. IPRDEF) THEN
             WRITE (LUPRI,'(A,I10)') ' Print level in WALK    :',IPRWLK
@@ -498,6 +497,7 @@ C
 #include "mxcent.h"
 #include "abainf.h"
 #include "gnrinf.h"
+#include "nuclei.h"
 #include "cbiwlk.h"
 C
       IF (DOWALK) THEN
@@ -549,7 +549,7 @@ C
       NZEROG = 0
       ZERGRD = 1.D-5
       DO 410 I = 1, MXCENT
-         ISOTPS(I) = 1
+         ISOTPS(I) = ISOTOP(I)
   410 CONTINUE
 C
       NOORTH = .FALSE.
@@ -3143,7 +3143,6 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
-      iprint = 12
 C
 C     ***** STPSYM *****
 C

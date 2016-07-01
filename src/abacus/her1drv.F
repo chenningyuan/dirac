@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -355,15 +355,10 @@ C
          CALL DZERO(GRADKE,3*NUCDEP)
          CALL DZERO(GRADNA,3*NUCDEP)
          CALL DZERO(GRADFS,3*NUCDEP)
-#endif
          IF (SECDER) THEN
-            CALL HESZER(HESSKE)
-            CALL HESZER(HESSNA)
-            CALL HESZER(HESFS2)
-         END IF
-         IF (DIFDIP) THEN
-            CALL DZERO(DDIPE,9*NUCDEP)
-            CALL DZERO(DDIPS,9*NUCDEP)
+            HESSKE(:,:) = 0.0D0
+            HESSNA(:,:) = 0.0D0
+            HESFS2(:,:) = 0.0D0
          END IF
          IF (SOLVNT) THEN
             ESOLTT = D0
@@ -371,9 +366,14 @@ C
             CALL DZERO(GSOLTT,3*NUCDEP)
             CALL DZERO(GSOLNN,3*NUCDEP)
             IF (SECDER) THEN
-               CALL HESZER(HSOLT2)
-               CALL HESZER(HSOLNN)
+               HSOLT2(:,:) = 0.0D0
+               HSOLNN(:,:) = 0.0D0
             END IF
+         END IF
+#endif
+         IF (DIFDIP) THEN
+            CALL DZERO(DDIPE,9*NUCDEP)
+            CALL DZERO(DDIPS,9*NUCDEP)
          END IF
       END IF
 C

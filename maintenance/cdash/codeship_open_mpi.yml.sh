@@ -24,6 +24,8 @@
 # export DIRAC_MPI_COMMAND
 export DIRAC_MPI_COMMAND="mpirun -np 2"
 
+export CTEST_PROJECT_NAME="DIRACext"
+
 # show system info (processors, disks, memory)
 lscpu
 df -h
@@ -42,6 +44,12 @@ pip install sphinxcontrib-bibtex
 pip install sphinx_rtd_theme
 pip install hieroglyph
 
+# install most recent CMake
+wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
+export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
+cmake --version
+
 # git whereabouts
 which git
 whereis git
@@ -55,9 +63,8 @@ doxygen --version
 git submodule update --init --recursive
 
 # configure Dirac with Open MPI in 64-bit mode
-python ./pamadm -a --builddir=build
-python ./setup -D BUILDNAME="open_mpi.gnu.i8-codeship-ci" --int64 --mpi -D DART_TESTING_TIMEOUT=99999 build
-cd build
+python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --blas=off --lapack=off --int64 --mpi --cmake-options="-D BUILDNAME='open_mpi.i8-codeship-ci' -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_openmpi_i8
+cd build_openmpi_i8
 ctest -D ExperimentalConfigure
 # build
 ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) -D ExperimentalBuild
@@ -65,14 +72,16 @@ ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) -D ExperimentalBuild
 ldd dirac.x
 # run ctest (note: (ctest ..) || echo "CTest end." makes possible to continue after some tests inside ctest command fail)
 (ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 4) -D ExperimentalTest) || echo "CTest end."
-# submit
+# submit to CDash board
 ctest -D ExperimentalSubmit
 
+cd ..
+
 # finally build the documentation
-make html
-make slides
+#make html
+#make slides
 # for doxygen encompass the building command into echo so that the build does not stop in the case of error
 # **Note**
 # Using echo command like in this case is not enough for ctest because it can happen that command prints no output
 # for long time and build is stopped.
-echo "$(make doxygen)"
+##echo "$(make doxygen)"

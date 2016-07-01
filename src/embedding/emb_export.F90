@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -21,7 +21,6 @@
 
 module fde_export_data
 
-#ifdef MOD_UNRELEASED
    use fde_cfg
    use fde_types
    use fde_data
@@ -29,7 +28,6 @@ module fde_export_data
    use xml_parser
    use xml_file
    use fde_evaluators
-#endif
    
    public fde_export_to_file
 
@@ -37,16 +35,6 @@ module fde_export_data
    
    contains
 
-#ifndef MOD_UNRELEASED 
-!   ----------------------------------------------------------------------------
-      subroutine fde_export_to_file(level)
-!   ----------------------------------------------------------------------------
-         character(len=4) :: level
-
-         call fde_quit('FDE density/el. pot. not available in this version')
-      end subroutine fde_export_to_file
-      
-#else
 !   ----------------------------------------------------------------------------
       subroutine fde_export_to_file(level)
 !   ----------------------------------------------------------------------------
@@ -277,12 +265,12 @@ module fde_export_data
          write (export_unit,'(2I8)') grid%npoints, nr_variables
 
          do i = 1, grid%npoints
-            write (export_unit,'(10E28.20)') (grid%r(j,i), j = 1,3), &
-                                            grid%w(i),             &
-                                            gf%elpot(i),           &
-                                            v_pc_array,            &
-                                            gf%n(i),               &
-                                            (gf%gn(j,i), j = 1,3)
+            write (export_unit,'(10E28.16e3)') (grid%r(j,i), j = 1,3), &
+                                                grid%w(i),             &
+                                                gf%elpot(i),           &
+                                                v_pc_array,            &
+                                                gf%n(i),               &
+                                                (gf%gn(j,i), j = 1,3)
          end do
 
          write(log_unit,*) 'done writing plaintext file'       
@@ -291,6 +279,5 @@ module fde_export_data
 
       end subroutine fde_export_data_as_txt
       
-#endif /* MOD_UNRELEASED */
 
 end module fde_export_data 

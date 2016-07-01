@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -97,7 +97,8 @@ C
       DO I = 1,4
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
-          CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','VEC tmp',KVEC(IFRP,I),NR(IFRP),
+     &       WORK,KFREE,LFREE)
           NSTR(IFRP,0,I) = - 1
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -108,7 +109,7 @@ C
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('PAMTRA.1',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
+          CALL MEMGET2('INTE','VEC',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
       ENDDO
@@ -165,7 +166,7 @@ C
 C
          IF (ISAME(I).EQ.I) THEN
             IF (I.NE.1) CALL QUIT ('All ranges should be equal')
-            CALL MEMGET('REAL',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','Qmat',KQ(1,I),NQT(I),WORK,KFREE,LFREE)
          ELSE
             KQ(1,I) = KQ(1,ISAME(I))
          ENDIF
@@ -180,7 +181,7 @@ C
         DO IFRP = 1, NFSYM
           NDIM = NDIM + NSTR(IFRP,0,I)
         ENDDO
-        CALL MEMGET('REAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIGVAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
         KE(2,I) = KE(1,I) + NSTR(1,0,I)
       ENDDO
 C
@@ -189,7 +190,8 @@ C     spinors.
 C
       DO I = 1, 4
        DO IFRP = 1, NFSYM
-        CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBE(IFRP,I),NSTR(IFRP,0,I),
+     &     WORK,KFREE,LFREE)
        ENDDO
       ENDDO
 C
@@ -302,7 +304,8 @@ C
       ENDDO
 C
       DO IFRP = 1,NFSYM
-         CALL MEMGET('INTE',KVEC(IFRP,5),NR(IFRP),WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','VEC tmp',KVEC(IFRP,5),NR(IFRP),
+     &      WORK,KFREE,LFREE)
          NSPC(IFRP,0) = - 1
 C
 C        If the user did not specify the core index range explictly we
@@ -323,7 +326,7 @@ C
          ENDIF
          NSPC(IFRP,0) = NSPC(IFRP,1) + NSPC(IFRP,2)
          CALL MEMREL('PAMTRA.4',WORK,KFRSAV,KVEC(IFRP,5),KFREE,LFREE)
-         CALL MEMGET('INTE',KVEC(IFRP,5),NSPC(IFRP,0),
+         CALL MEMGET2('INTE','VEC',KVEC(IFRP,5),NSPC(IFRP,0),
      &               WORK,KFREE,LFREE)
          NDMOQC(1,IFRP,1) = NFBAS(IFRP,0)
          NDMOQC(2,IFRP,1) = NSPC(IFRP,0)
@@ -388,7 +391,7 @@ C
 C
 C     Allocate the memory for the coefficients
 C
-      CALL MEMGET('REAL',KQC(1),NQT(1),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','QC mat',KQC(1),NQT(1),WORK,KFREE,LFREE)
       KQC(2) = KQC(1) + NQ(1,1)
 C
 C     Get all coefficients
@@ -610,7 +613,8 @@ C
           IR(2,IFRP) =  NOCC(IFRP)
         ENDIF
 C
-        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC',KVEC(IFRP,1),NR(IFRP),
+     &     WORK,KFREE,LFREE)
         NSTR(IFRP,0,1) = - 1
         CALL NUMLST(MP2_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -636,7 +640,8 @@ C
           IR(2,IFRP) =  NESH(IFRP)
         ENDIF
 C
-        CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC',KVEC(IFRP,2),NR(IFRP),
+     &     WORK,KFREE,LFREE)
         NSTR(IFRP,0,2) = - 1
         CALL  NUMLST(MP2_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -670,7 +675,7 @@ C
         DO IFRP = 1, NFSYM
           NDIM = NDIM + NSTR(IFRP,0,I)
         ENDDO
-        CALL MEMGET('REAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIGVAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
         KE(2,I) = KE(1,I) + NSTR(1,0,I)
       ENDDO
 C
@@ -679,7 +684,8 @@ C     spinors.
 C
       DO I = 1, 2
        DO IFRP = 1, NFSYM
-        CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBE(IFRP,I),NSTR(IFRP,0,I),
+     &     WORK,KFREE,LFREE)
        ENDDO
       ENDDO
 C
@@ -694,7 +700,7 @@ C
           NQ(IFRP)         = NFBAS(IFRP,0)*NSTR(IFRP,0,I)*NZ
           NDIM             = NDIM + NQ(IFRP)
         ENDDO
-        CALL MEMGET('REAL',KQ(1,I),NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','Q mat',KQ(1,I),NDIM,WORK,KFREE,LFREE)
         KQ(2,I)   = KQ(1,I) + NQ(1)
       ENDDO
 C
@@ -888,7 +894,8 @@ C
         IEND = NOCC(IFRP)
         WRITE(MPR_INDSTR(1,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
-        CALL MEMGET('INTE',KVEC(IFRP,1),NR(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC',KVEC(IFRP,1),NR(IFRP),
+     &     WORK,KFREE,LFREE)
         NSTR(IFRP,0,1) = - 1
         CALL NUMLST(MPR_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -922,7 +929,8 @@ C
         ENDIF
         WRITE(MPR_INDSTR(2,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
-        CALL MEMGET('INTE',KVEC(IFRP,2),NR(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC',KVEC(IFRP,2),NR(IFRP),
+     &     WORK,KFREE,LFREE)
         NSTR(IFRP,0,2) = - 1
         CALL NUMLST(MPR_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -956,7 +964,8 @@ C
         ENDIF
         WRITE(MPR_INDSTR(3,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
-        CALL MEMGET('INTE',KVEC(IFRP,3),NR(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC',KVEC(IFRP,3),NR(IFRP),
+     &     WORK,KFREE,LFREE)
         NSTR(IFRP,0,3) = - 1
         CALL NUMLST(MPR_INDSTR(3,IFRP),WORK(KVEC(IFRP,3)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -993,7 +1002,8 @@ C
         IEND = NOCC(IFRP)
         WRITE(MPR_INDSTR(4,IFRP),'(i4,A2,i4)')ISTART,'..',IEND
 C
-        CALL MEMGET('INTE',KVEC(IFRP,4),NR(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC',KVEC(IFRP,4),NR(IFRP),
+     &      WORK,KFREE,LFREE)
         NSTR(IFRP,0,4) = - 1
         CALL NUMLST(MPR_INDSTR(4,IFRP),WORK(KVEC(IFRP,4)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
@@ -1036,7 +1046,7 @@ C
             IF (IFRP.LT.NFSYM)
      &         ICMOQR(IFRP+1,I) = ICMOQR(IFRP,I) + NQ(IFRP,I)
          ENDDO
-        CALL MEMGET('REAL',KQ(1,I),NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','Q mat',KQ(1,I),NDIM,WORK,KFREE,LFREE)
         KQ(2,I)   = KQ(1,I) + NQ(1,I)
       ENDDO
 C
@@ -1047,7 +1057,7 @@ C
         DO IFRP = 1, NFSYM
           NDIM = NDIM + NSTR(IFRP,0,I)
         ENDDO  
-        CALL MEMGET('REAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','EIGVAL',KE(1,I),NDIM,WORK,KFREE,LFREE)
         KE(2,I) = KE(1,I) + NSTR(1,0,I)
       ENDDO
 C     
@@ -1056,7 +1066,8 @@ C     spinors.
 C        
       DO I = 1, 4
        DO IFRP = 1, NFSYM
-        CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBE(IFRP,I),NSTR(IFRP,0,I),
+     &     WORK,KFREE,LFREE)
        ENDDO
       ENDDO 
 C    
@@ -1307,10 +1318,11 @@ C
 #include "dcbibt.h"
 C
       KFRSAV = KFREE
+      call memchk('Start of PAMTR1',WORK,1)
 C
 C     Set up symmetry packing information.
 C
-      CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDX',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
       CALL GISPCK(NSPCK,ISPCK,0,0,0,IDUM,IDUM,IDUM,IDUM,IDUM,IDUM)
 C.....Create pointer array INDX:
 C     INDX(1,INDA) : Position of function in shell
@@ -1462,7 +1474,7 @@ C
 C
 C     Set up symmetry packing information.
 C
-      CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDX',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
       CALL GISPCK(NSPCK,ISPCK,0,0,0,IDUM,IDUM,IDUM,IDUM,IDUM,IDUM)
       MXINSH = NINSH(0,-1,WORK(KINDX),IPRINT)
 C
@@ -1667,7 +1679,7 @@ C
       ELSE
          LHTMP = 0
       END IF
-      CALL MEMGET ('REAL',KHTMP,LHTMP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HTMP',KHTMP,LHTMP,WORK,KFREE,LFREE)
       IF (TRIAN) THEN
          IF (NFSYM .EQ. 1) THEN
             NI = NSTR1(1)
@@ -1676,9 +1688,9 @@ C
             NI = MAX(NSTR1(1),NSTR1(2))
             NJ = MAX(NSTR2(1),NSTR2(2))
          END IF
-         CALL MEMGET('REAL',KBMAT,NI*NJ*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','BMAT',KBMAT,NI*NJ*NZ,WORK,KFREE,LFREE)
       ELSE
-         CALL MEMGET('REAL',KBMAT,0,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','BMAT',KBMAT,0,WORK,KFREE,LFREE)
       END IF
 C
       IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
@@ -2733,7 +2745,7 @@ C
 C
 C     Make index array from AOs to blocks
 C
-      CALL MEMGET('INTE',KINRAO,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INRAO',KINRAO,NTBAS(0),WORK,KFREE,LFREE)
       CALL PTRDAO(WORK(KINRAO))
 C
 C     Get maximal elements for vector set 1 in AO-basis
@@ -2744,7 +2756,7 @@ C
         IV(IFRP,1) = NRV1
         NRV1       = NRV1 + NSTR1(IFRP,0)*NSYMBL
       ENDDO
-      CALL MEMGET('REAL',KNRV1,NRV1,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','NRV1',KNRV1,NRV1,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KNRV1),NRV1)
       CALL GETCFB(WORK(KNRV1),WORK(KINRAO),Q1,NDMOQ1,ICMOQ1,NSTR1,
      &            IPRINT,WORK,KFREE,LFREE)
@@ -2765,7 +2777,7 @@ C
           IV(IFRP,2) = NRV2
           NRV2       = NRV2 +  NSTR2(IFRP,0)*NSYMBL
         ENDDO
-        CALL MEMGET('REAL',KNRV2,NRV2,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','NRV2',KNRV2,NRV2,WORK,KFREE,LFREE)
         CALL DZERO(WORK(KNRV2),NRV2)
         CALL GETCFB(WORK(KNRV2),WORK(KINRAO),Q2,NDMOQ2,ICMOQ2,NSTR2,
      &            IPRINT,WORK,KFREE,LFREE)
@@ -2843,7 +2855,7 @@ C
           CALL QEXPAND(CAO,Q(ISEL),NSEL,IFRP,NFBAS(IFRP,0))
         ELSE
           NCBF = NFBAS(IFRP,0)*NSEL*4
-          CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','CBF',KCBF,NCBF,WORK,KFREE,LFREE)
           CALL QEXPAND(WORK(KCBF),Q(ISEL),NSEL,IFRP,NFBAS(IFRP,0))
           CALL WTSOAO(WORK(KCBF),CAO,IFRP,NFBAS(IFRP,0),
      &                NTBAS(0),NSEL*4,IPRINT)
@@ -2854,7 +2866,7 @@ C
 C       Only some vectors are selected
 C
         NCBF = NTBAS(0)*NSEL*4
-        CALL MEMGET('REAL',KCBF,NCBF,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CBF',KCBF,NCBF,WORK,KFREE,LFREE)
         NDSEL = NSEL*NFBAS(IFRP,0)
         NDVEC = NVEC*NFBAS(IFRP,0)
         IF(NBSYM.EQ.1) THEN
@@ -2931,7 +2943,7 @@ C       1. Transform to AO-basis
 C
         NCAO  = NTBAS(0)*NSTR(IFRP,0)
         NCAOQ = NCAO*4
-        CALL MEMGET('REAL',KCAO,NCAOQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CAO',KCAO,NCAOQ,WORK,KFREE,LFREE)
         CALL GETCAO(WORK(KCAO),Q,IFRP,NDMOQR(2,IFRP),
      &              NSTR(IFRP,0),ICMOQR(IFRP),
      &              IPRINT,WORK,KFREE,LFREE)
@@ -3003,7 +3015,7 @@ C     degeneracy of centers into account
 C
 C     Get Cauchy-Schwartz integrals
 C
-      CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GAB',KGAB,N2GAB,WORK,KFREE,LFREE)
       IJOB   = 0
       ITYPE  = 0
       IGTYP  = 1
@@ -3058,7 +3070,7 @@ C
 C
 C     Get screening matrices
 C
-      CALL MEMGET('REAL',KDRIJ,NDRIJ*2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DRIJ',KDRIJ,NDRIJ*2,WORK,KFREE,LFREE)
 C
 C     Screening matrix for electron 1 ; vectors 1 and 2 !
 C
@@ -3115,8 +3127,8 @@ C     Initialize
 C
       N2GAB   = NSYMBL*NSYMBL
       NDRIJ   = N2GAB*NFSYM
-      CALL MEMGET('REAL',KDRIJ,NDRIJ*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDRIJE,NDRIJ*2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DRIJ',KDRIJ,NDRIJ*2,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DRIJE',KDRIJE,NDRIJ*2,WORK,KFREE,LFREE)
 C
 C     Get screening matrices for direct contribution
 C
@@ -3413,8 +3425,8 @@ C
           NFMO(2,IFRP) = NDMOQR(2,IFRP)
           NELM = NELM + NDMOQR(2,IFRP)*NDMOQR(2,IFRP)*NZ
         ENDDO
-        CALL MEMGET('REAL',KFMO,NELM    ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFAO,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FMO',KFMO,NELM    ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FAO',KFAO,N2BBASXQ,WORK,KFREE,LFREE)
         CALL VIRCA1(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,NDMOQR,ICMOQR,
      &       INTDEF,CMO,WORK(KFMO),NFMO,IFMO,WORK(KFAO))
         CALL MEMREL('VIRCAN',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -3476,9 +3488,8 @@ C
            CALL DZERO(FAO(1+IFMO(I)),NFMO2*NZ)
            NBO = NFMO(1,I)
            CALL RSJACO(NBO,NBO,NBO,FMO(IFMO(I)+1),
-     &                 WORK(KE(I)),1,1,0,FAO(IFMO(I)+1),
-     &                 WORK(KFREE),LFREE)
-           CALL MEMGET('INTE',KIBEIG2,NBO,WORK,KFREE,LFREE)
+     &                 WORK(KE(I)),1,1,0,FAO(IFMO(I)+1))
+           CALL MEMGET2('INTE','IBEIG2',KIBEIG2,NBO,WORK,KFREE,LFREE)
            CALL IDBOS (NBO,WORK(KIBE(I)),WORK(KIBEIG2),FAO(IFMO(I)+1))
            CALL MEMREL('VIRCA1',WORK,KIBEIG2,KIBEIG2,KFREE,LFREE)
         ENDIF
@@ -3583,13 +3594,13 @@ C
 C
 C     Read and check eigenvalues
 C
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),DUM,DUM,4,
      &            WORK,KFREE,LFREE)
       DO IFRP = 1,NFSYM
         NSEL = 0
         NDEL = 0
-        CALL MEMGET('INTE',KBUF,NSTR(IFRP,1),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBUF',KBUF,NSTR(IFRP,1),WORK,KFREE,LFREE)
         IOFF = NPSH(IFRP) + IORB(IFRP)
         CALL EIGTHR(WORK(KEIG+IOFF),NSTR(IFRP,1),NSEL,
      &              WORK(KVEC(IFRP)),WORK(KBUF),THRESH)
@@ -3659,7 +3670,7 @@ C
        call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
         call SetIntTaskArrayDimension(NPOS,PARCAL)
         if (NPOS.GT.0) THEN
-           CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+           CALL MEMGET2('INTE','IPOS',KPOS,NPOS,WORK,KFREE,LFREE)
         else
            KPOS = KFREE
         endif
@@ -3856,7 +3867,8 @@ C
       ISAME(1) = 1
       NSTRT(1) = 0
       DO IFRP = 1,NFSYM
-        CALL MEMGET('INTE',KVEC(IFRP,1),NASH(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','VEC',KVEC(IFRP,1),NASH(IFRP),
+     &     WORK,KFREE,LFREE)
         CALL INDARR(WORK(KVEC(IFRP,1)),NISH(IFRP),NASH(IFRP),IPRINT)
         NSTR(IFRP,1,1) = NASH(IFRP)
         NSTR(IFRP,2,1) = 0
@@ -3868,11 +3880,12 @@ C
 C
         NQ(IFRP) = NFBAS(IFRP,0)*NASH(IFRP)*NZ
         NQT      = NQT + NQ(IFRP)
-        CALL MEMGET('INTE',KIBE(IFRP,1),NSTR(IFRP,0,1),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBE(IFRP,1),NSTR(IFRP,0,1),
+     &     WORK,KFREE,LFREE)
       ENDDO
-      CALL MEMGET('REAL',KQ(1,1),NQT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KQ',KQ(1,1),NQT,WORK,KFREE,LFREE)
       KQ(2,1) = KQ(1,1) + NQ(1)
-      CALL MEMGET('REAL',KE(1,1),NSTRT(1),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KE',KE(1,1),NSTRT(1),WORK,KFREE,LFREE)
       KE(2,1) = KE(1,1) + NSTR(1,0,1)
 C
 C     Copy for indices 2..4
@@ -3901,7 +3914,8 @@ C       Set up index arrays for core orbitals
 C       =======================================
         NQT  = 0
         DO IFRP = 1,NFSYM
-          CALL MEMGET('INTE',KVEC(IFRP,2),NISH(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','KVEC',KVEC(IFRP,2),NISH(IFRP),
+     &       WORK,KFREE,LFREE)
           CALL INDARR(WORK(KVEC(IFRP,2)),0,NISH(IFRP),IPRINT)
           NSPC(IFRP,1) = NISH(IFRP)
           NSPC(IFRP,2) = 0
@@ -3913,7 +3927,7 @@ C       =======================================
           NQT      = NQT + NQ(IFRP)
           KE(IFRP,2) = KE(IFRP,1)
         ENDDO
-        CALL MEMGET('REAL',KQC(1),NQT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','KQC',KQC(1),NQT,WORK,KFREE,LFREE)
         KQC(2) = KQC(1) + NQ(1)
         NSTRT(2) = NSTRT(1)
       ENDIF
@@ -3930,9 +3944,9 @@ C
 C
 C     Allocate buffer spaced for coefficients AND core Fock matrix
 C
-      CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KBUF',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KEIG',KEIG,NORBT ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
 C     Get all coefficients and eigenvalues
 C     ====================================
@@ -3996,8 +4010,8 @@ C
 C       Write MOLFDIR file MRCONEE
 C       --------------------------
 C
-        CALL MEMGET('REAL',KORBE,NSTRT(1),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBORB,NSTRT(1),WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','KORBE',KORBE,NSTRT(1),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','KIBORB',KIBORB,NSTRT(1),WORK,KFREE,LFREE)
 C
         CALL MRCONE(WORK(KBUF),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
      &              WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
@@ -4216,7 +4230,8 @@ C
       ISAME(1) = 1
       NSTRT(1) = 0
       DO IFRP = 1,NFSYM
-        CALL MEMGET('INTE',KVEC(IFRP,1),NASH(IFRP),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','KVEC',KVEC(IFRP,1),NASH(IFRP),
+     &     WORK,KFREE,LFREE)
         CALL INDARR(WORK(KVEC(IFRP,1)),NISH(IFRP),NASH(IFRP),IPRINT)
         NSTR(IFRP,1,1) = NASH(IFRP)
         NSTR(IFRP,2,1) = 0
@@ -4228,11 +4243,12 @@ C
 C
         NQ(IFRP) = NFBAS(IFRP,0)*NASH(IFRP)*NZ
         NQT      = NQT + NQ(IFRP)
-        CALL MEMGET('INTE',KIBE(IFRP,1),NSTR(IFRP,0,1),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','KIBE',KIBE(IFRP,1),NSTR(IFRP,0,1),
+     &     WORK,KFREE,LFREE)
       ENDDO
-      CALL MEMGET('REAL',KQ(1,1),NQT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KQ',KQ(1,1),NQT,WORK,KFREE,LFREE)
       KQ(2,1) = KQ(1,1) + NQ(1)
-      CALL MEMGET('REAL',KE(1,1),NSTRT(1),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KE',KE(1,1),NSTRT(1),WORK,KFREE,LFREE)
       KE(2,1) = KE(1,1) + NSTR(1,0,1)
 C
 C     Copy for indices 2..4
@@ -4259,7 +4275,8 @@ C       Set up index arrays for core orbitals
 C       =======================================
         NQT  = 0
         DO IFRP = 1,NFSYM
-          CALL MEMGET('INTE',KVEC(IFRP,2),NISH(IFRP),WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','KVEC',KVEC(IFRP,2),NISH(IFRP),
+     &       WORK,KFREE,LFREE)
           CALL INDARR(WORK(KVEC(IFRP,2)),0,NISH(IFRP),IPRINT)
           NSPC(IFRP,1) = NISH(IFRP)
           NSPC(IFRP,2) = 0
@@ -4271,7 +4288,7 @@ C       =======================================
           NQT      = NQT + NQ(IFRP)
           KE(IFRP,2) = KE(IFRP,1)
         ENDDO
-        CALL MEMGET('REAL',KQC(1),NQT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','KQC',KQC(1),NQT,WORK,KFREE,LFREE)
         KQC(2) = KQC(1) + NQ(1)
         NSTRT(2) = NSTRT(1)
       ENDIF
@@ -4288,9 +4305,9 @@ C
 C
 C     Allocate buffer spaced for coefficients AND core Fock matrix
 C
-      CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KBUF',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KEIG',KEIG,NORBT ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
 C     Get all coefficients and eigenvalues
 C     ====================================
@@ -4861,7 +4878,7 @@ C     ****** SLAVE receive *****
 C     **************************
 C
 C       Symmetry packing information
-        CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','KINDX',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
         CALL interface_mpi_bcast_i1_work_f77(WORK(KINDX),NTBAS(0)*3,
      &                                       MPARID,global_communicator)
 C       Coefficients; use sameness relations to compress
@@ -4878,7 +4895,7 @@ C       Coefficients; use sameness relations to compress
             DO J = 1, NFSYM
               NSIZE = NSIZE + NDMOQR(1,J,I)*NDMOQR(2,J,I)*NZ
             ENDDO
-            CALL MEMGET('REAL',KQ(1,I),NSIZE,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','KQ',KQ(1,I),NSIZE,WORK,KFREE,LFREE)
             KQ(2,I) = KQ(1,I) + NDMOQR(1,1,I)*NDMOQR(2,1,I)*NZ
             CALL interface_mpi_bcast_r1_work_f77(WORK(KQ(1,I)),NSIZE,
      &              MPARID,global_communicator)
@@ -4893,7 +4910,7 @@ C       Receive orbital energies
           DO J = 1,NFSYM
             NSIZE = NSIZE + NSTR(J,0,I)
           ENDDO
-          CALL MEMGET('REAL',KE(1,I),NSIZE,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','KE',KE(1,I),NSIZE,WORK,KFREE,LFREE)
           KE(2,I) = KE(1,I) + NSTR(1,0,I)
           CALL interface_mpi_bcast_r1_work_f77(WORK(KE(1,I)),NSIZE,
      &                   MPARID,global_communicator)
@@ -4901,7 +4918,8 @@ C       Receive orbital energies
 C       Receive orbital (single group) info
         DO I = 1,4
           DO J = 1,NFSYM
-            CALL MEMGET('REAL',KIBE(J,I),NSTR(J,0,I),WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','KIBE',KIBE(J,I),NSTR(J,0,I),
+     &         WORK,KFREE,LFREE)
             CALL interface_mpi_bcast_i1_work_f77(WORK(KIBE(J,I)),
      &                                       NSTR(J,0,I),
      &                                       MPARID,global_communicator)
@@ -5062,7 +5080,7 @@ C     ***** Master receive *****
 C     **************************
 C
         IF(LMP2) EBUF = D0
-        CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','KBUF',KBUF,8,WORK,KFREE,LFREE)
         IF(ISTRAT.EQ.4) THEN
 C         For historical reasons we need to set the third variable in the buf to -1 to
 C         signal the slave to stop computing & transforming integrals.
@@ -5232,15 +5250,15 @@ C.....Read symmetry information for Abelian subgroup
 
 C.....Allocate memory for orbital symmetry information
       NDIM = NREP*NOPEN
-      CALL MEMGET('INTE',KGASO,NDIM, WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIELC,NOPEN,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KGASO',KGASO,NDIM, WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIELC',KIELC,NOPEN,WORK,KFREE,LFREE)
 C      
-      CALL MEMGET('INTE',KIRPA,NORB,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIPA',KIRPA,NORB,WORK,KFREE,LFREE)
       CALL GOSRE1(REPA,NREP,WORK(KIRPA),
      &            WORK(KGASO),WORK(KIELC),WORK(KFREE),LFREE)
       CALL MEMREL('GOSRES',WORK,1,KIRPA,KFREE,LFREE)
 C.....Call GOSCIP module
-      CALL MEMGET('INTE',KIGAS,NOPEN,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIGAS',KIGAS,NOPEN,WORK,KFREE,LFREE)
       CALL PAMGOS(WORK(KFREE),LFREE,NAELEC_DHF,NOPEN,WORK(KIGAS),
      &            WORK(KIELC),WORK(KIELC),WORK(KGASO))
       CALL MEMREL('PAMGOS',WORK,1,KFREE,KFREE,LFREE)
@@ -5361,13 +5379,13 @@ C.....Read symmetry information for Abelian subgroup
 !.q
 C.....Allocate memory for orbital symmetry information
       NDIM = NREP*NOPEN
-      CALL MEMGET('INTE',KGASO,NDIM, WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIELC,NOPEN,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KGASO',KGASO,NDIM, WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIELC',KIELC,NOPEN,WORK,KFREE,LFREE)
 !.s/sya,2007.01.31
-      CALL MEMGET('INTE',KIELC2,NOPEN,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIELC2',KIELC2,NOPEN,WORK,KFREE,LFREE)
 !.q
 C      
-      CALL MEMGET('INTE',KIRPA,NORB,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIRPA',KIRPA,NORB,WORK,KFREE,LFREE)
 !.s/sya,2007.02.04
 !#    CALL GOSRE1(REPA,NREP,WORK(KIRPA),
 !#   &            WORK(KGASO),WORK(KIELC),WORK(KFREE),LFREE)
@@ -5376,7 +5394,7 @@ C
 !.q
       CALL MEMREL('GOSRES',WORK,1,KIRPA,KFREE,LFREE)
 C.....Call GOSCIP module
-      CALL MEMGET('INTE',KIGAS,NOPEN,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','KIGAS',KIGAS,NOPEN,WORK,KFREE,LFREE)
 !.s/sya,2007.01.31
 !#    CALL PAMGOS(WORK(KFREE),LFREE,NAELEC_DHF,NOPEN,WORK(KIGAS),
 !#   &            WORK(KIELC),WORK(KIELC),WORK(KGASO))

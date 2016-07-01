@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 Checklist for beta-testers
 ==========================
@@ -13,9 +14,9 @@ Check out the release branch::
 
 Create the tarball yourself::
 
-  $ ./pamadm --release
+  $ mkdir build
   $ cd build
-  $ cmake ..
+  $ cmake -DENABLE_UNRELEASED=OFF ..
   $ make release
 
 Please report if the tarball generation is broken.

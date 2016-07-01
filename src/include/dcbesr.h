@@ -14,7 +14,9 @@
       INTEGER IPRESR,NESRP,LESRP(MAXESR),N_CIESR,IPSIGMA(NPSIGMA),      &
      &        MULTIPESR, MAX_CIESR_IT,                                  &
      &        NCSH_ESR(2),NVSH_ESR(2),NSSH_ESR(2),LVL_CIESR(0:2)
+      LOGICAL USE_KRAMERS_CONJ
       COMMON /DCBESR/ THR_CIESR,THR_CVEC_ESR,THRPCI_ESR,                &
      &        IPRESR,NESRP,LESRP,N_CIESR,IPSIGMA, MULTIPESR,            &
-     &        MAX_CIESR_IT,NCSH_ESR,NVSH_ESR,NSSH_ESR,LVL_CIESR
+     &        MAX_CIESR_IT,NCSH_ESR,NVSH_ESR,NSSH_ESR,LVL_CIESR,        &
+     &        USE_KRAMERS_CONJ
 ! --- end of dcbesr.h ---

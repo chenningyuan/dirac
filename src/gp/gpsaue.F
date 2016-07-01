@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -259,16 +259,29 @@ C***********************************************************************
 C
 C	Open sequential, unformatted file.
 C	Based on OPENDX
-C	T.Saue, University of Tromsoe, Norway, Feb.-94
+C       T.Saue, University of Tromsoe, Norway, Feb.-94
+C       Revised Aug. 2015 hjaaj to find IUNIT if not OK number in input
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*(*) NAME,STATUS,SUB
+      LOGICAL       IUNIT_USED
+
+      IF (IUNIT .LE. 0) THEN
+         IUNIT = 21
+    5    CONTINUE
+            INQUIRE( UNIT=IUNIT, OPENED=IUNIT_USED )
+            IF (IUNIT_USED) THEN
+               IUNIT = IUNIT + 1
+               GO TO 5
+            END IF
+      END IF
+C
       IF (STATUS .EQ. 'NEW') GO TO 10
       IF (STATUS .NE. 'OLD' .AND. STATUS .NE. 'UNKNOWN') GO TO 100
 C
-C	Open old file
+C      Open old file
 C
       OPEN(IUNIT,FILE=NAME,STATUS='OLD',FORM='UNFORMATTED',
      +     ACCESS='SEQUENTIAL',ERR=10)
@@ -279,14 +292,14 @@ C     Just in case....
    10 CONTINUE
       IF(STATUS.EQ.'OLD') GOTO 110
 C
-C	Open new file
+C      Open new file
 C
       OPEN(IUNIT,FILE=NAME,STATUS='NEW',FORM='UNFORMATTED',
      +     ACCESS='SEQUENTIAL')
    20 CONTINUE
       RETURN
 C
-C	Error messages
+C      Error messages
 C
   100 CONTINUE
       WRITE(LUPRI,'(6A,I2,A)') SUB,': Invalid STATUS keyword ',STATUS,
@@ -3758,7 +3771,8 @@ C
       DO IATOM = 1, NUCIND
         NCHARG = NINT(CHARGE(IATOM))
         IF (NCHARG .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
-          TOTMASS = TOTMASS + NUCDEG(IATOM)*DISOTP(NCHARG,1,'MASS')
+          TOTMASS = TOTMASS
+     &            + NUCDEG(IATOM)*DISOTP(NCHARG,ISOTOP(IATOM),'MASS')
         ENDIF
       END DO
 C

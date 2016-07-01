@@ -1,4 +1,5 @@
-
+:orphan:
+ 
 
 Transfering uncommitted code between machines
 =============================================
@@ -17,23 +18,6 @@ otherwise compilation will complain with::
 Also make sure that you get all the external sources.
 In other words if you manually tar up a fresh DIRAC clone without .git
 that has never been built, externals will be missing.
-
-
-How to compile without Git
---------------------------
-
-CMake checks whether file cmake/GIT_HASH exists.
-
-If yes, it assumes that this is exported "user" code and will
-not require Git to fetch external sources.
-
-If the file is not present it assumes development code
-and assumes that Git is available.
-
-This means that you can trick DIRAC into behaving like
-user code by creating cmake/GIT_HASH::
-
-  echo "whatever" > cmake/GIT_HASH
 
 
 Using "make release" tarball

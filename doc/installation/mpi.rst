@@ -1,4 +1,14 @@
+:orphan:
 
+Introduction
+------------
+
+The DIRAC program suite is parallelized using the MPI2 protocol.
+
+See related works involving parallelization implementation, :cite:`Pernpointner2003`, :cite:`Saue1997`,
+:cite:`Knecht2008`, :cite:`Knecht2010a`,
+:cite:`Fleig2006`, :cite:`Fleig2001`, :cite:`Fleig2003`.
+ 
 
 Parallel run information
 ------------------------

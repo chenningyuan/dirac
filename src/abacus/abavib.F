@@ -1,28 +1,27 @@
 !dalton_copyright_start
-!      Copyright (c) 2013 by the authors of Dalton (see below).
+!      Copyright (c) 2015 by the authors of Dalton (see below).
 !      All Rights Reserved.
-!   
+!
 !      The source code in this file is part of
 !      "Dalton, a molecular electronic structure program,
-!       Release DALTON2013 (2013), see http://daltonprogram.org"
-!   
+!       Release DALTON2015 (2015), see http://daltonprogram.org"
+!
 !      This source code is provided under a written licence and may be
 !      used, copied, transmitted, or stored only in accord with that
 !      written licence.
-!   
+!
 !      In particular, no part of the source code or compiled modules may
 !      be distributed outside the research group of the licence holder.
 !      This means also that persons (e.g. post-docs) leaving the research
 !      group of the licence holder may not take any part of Dalton,
 !      including modified files, with him/her, unless that person has
 !      obtained his/her own licence.
-!   
+!
 !      For further information, including how to get a licence, see:
 !         http://daltonprogram.org
 !dalton_copyright_end
 
 #ifndef PRG_DIRAC
-#include "single.h"
 C
 #ifdef REV_LOG
 c970923-vb
@@ -1476,10 +1475,11 @@ C
      &          NATTYP(*), WRK(*)
       LOGICAL   LINDEP(6)
 C
+#include "nuclei.h"
 #include "taymol.h"
 #include "cbisol.h"
 #include "hotfccom.h"
-      AMASS(I) = DISOTP(NATTYP(I),1,'MASS')
+      AMASS(I) = DISOTP(NATTYP(I),ISOTOP(I),'MASS')
 C
 C     Construct 6 vectors that span the translational and rotational
 C     vector space

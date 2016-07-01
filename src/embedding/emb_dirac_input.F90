@@ -1,6 +1,6 @@
 
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -90,6 +90,12 @@ module fde_input_dirac
             CASE ('.UPDATE')
                itmp%im_update_vemb = .true.
 
+            CASE ('.NUCREP')
+               read(lucmd,*) fde_intersub_nucrep
+
+            CASE ('.ENER_B')
+               read(lucmd,*) fde_frozen_energy 
+
             CASE ('.SKIPK')
                call fde_set_skip_nadd_ke(.true.)
             CASE ('.SKIPX')
@@ -115,7 +121,6 @@ module fde_input_dirac
                call fde_set_nadd_all_alda
                dirac_cfg_fde_response = .true.
 
-#ifdef MOD_UNRELEASED
             CASE ('.LEVEL')
                read(lucmd,*) etmp%ex_level 
 
@@ -140,7 +145,6 @@ module fde_input_dirac
                skip_all_imports = .true.
                doprp = .true.
 
-#endif /* MOD_UNRELEASED */ 
 
             CASE DEFAULT
               WRITE (lunit,'(/,3A,/)') ' Keyword "',WORD, &

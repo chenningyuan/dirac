@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -54,7 +54,6 @@ C
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
-      logical :: myprint = .False.
 #include "memint.h"
 C
 C     Summary of calculation
@@ -161,7 +160,7 @@ C            leave this to authors of this part) Done, hjaaj.
      +  'Solvation energy                         :   ',get_pcm_energy()
         end if 
 #endif
-#ifdef MOD_PEQM
+#if defined (BUILD_PELIB)
         IF (PEQM) THEN
             write(lupri,'(3X,A,'//FMT//')')
      +  'PE energy (code not written yet)         :   '
@@ -185,12 +184,7 @@ C       ERGCAL routine
      +      'Total energy                             :   ',DHFERG
 
         if (dirac_cfg_fde) then
-            WRITE(LUPRI,'(A)') ''
-            write(lupri,'(2X,A)') 
-     &      'FDE frozen subsystem contributions'
-            write(lupri,'(/3X,A)') 
-     &      'Total energy                             :    n/a'
-          call fde_calculate_interaction_energy('DHF ',myprint=myprint)
+          call fde_calculate_interaction_energy(DHFERG,'DHF ')
         endif
       ENDIF
 C

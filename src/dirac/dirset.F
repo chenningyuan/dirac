@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -102,7 +102,7 @@ C     Start RECP integral
 C     ===================
       IF (ECPCALC) CALL RECP
 
-#ifdef BUILD_GEN1INT
+#if defined (BUILD_GEN1INT) 
 !     test suite of gen1int interface
       if (test_gen1int) then
          call gen1int_host_test(lwork, work, lupri, iprdef)
@@ -119,9 +119,7 @@ C     ===================
         WRITE(LUPRI,'(2X,A,A)') 
      &  '* WARNING: DIRAC found the AOPROPER file ',
      &  '(one-electron integrals) ...will attempt restart.'
-        IF (NOSMLV) THEN
-          CALL NOSSNUCATT
-        ENDIF
+        IF (NOSMLV) CALL NOSSNUCATT
       ELSE 
         CALL ONEGEN(WORK,LWORK)
       ENDIF

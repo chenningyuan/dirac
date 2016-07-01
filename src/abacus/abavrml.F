@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,9 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C$Id$
 C
-C#include "single.h"
 #ifdef UNDEF
 C Principal author of this module: Vebjoern Bakken
 C (960319-vebjornb: New module for visualization with VRML models.)

@@ -1,3 +1,4 @@
+:orphan:
 
 Keyword reference
 =================
@@ -6,6 +7,9 @@ Keyword reference
    - :doc:`*OPTIMIZE <optimize>` --- Geometry optimization directives
 
 * :doc:`**GENERAL <general>` --- General input
+   - :doc:`*PARALLEL <parallel>` --- Parallel run directives
+
+* :doc:`**MOLECULE<molecule>` --- Specification of basis set information
 
 * :doc:`**HAMILTONIAN <hamiltonian>` --- Specify the Hamiltonian
    - :doc:`*DFT <dft>` --- DFT directives
@@ -20,6 +24,7 @@ Keyword reference
    - :doc:`MP2CAL <wave_function/mp2cal>` --- second-order Møller-Plesset perturbation theory
    - :doc:`RESOLVE <wave_function/resolve>` --- resolve open-shell states
    - :doc:`GOSCIP <wave_function/goscip>`  --- Complete Open-Shell module
+   - :doc:`COSCI  <wave_function/cosci>`   --- Complete Open-Shell CI module
    - :doc:`DIRRCI <wave_function/dirrci>` --- Direct Relativistic CI module
    - :doc:`LUCITA <wave_function/lucita>` --- Spinfree large-scale CI module
    - :doc:`KR CI <wave_function/krci>` --- Kramers-restricted relativistic large-scale CI module
@@ -31,6 +36,7 @@ Keyword reference
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`MULPOP <analyze/mulpop>` --- Mulliken population analysis
+   - :doc:`PRIVEC <analyze/privec>` --- Print coefficients
    - :doc:`PROJECTION <analyze/prjana>` --- Projection analysis
    - :doc:`LOCALIZATION <analyze/localization>` --- Localization 
    - :doc:`DENSITY <analyze/density>` --- Density

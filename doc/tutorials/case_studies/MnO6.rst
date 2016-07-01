@@ -1,3 +1,6 @@
+:orphan:
+ 
+
 ========================
 The :math:`MnO_6` system
 ========================
@@ -8,13 +11,13 @@ In the following we show how one can get converged molecular spinors (or molecul
 using single determinant SCF method.
 
 We take into account two parameters for controling the SCF convergence -
-the :ref:`.OPENFACTOR` and the :ref:`.OLEVEL` keywords.
+the :ref:`SCF_.OPENFACTOR` and the :ref:`SCF_.OLEVEL` keywords.
 
 Here the noAcAc abbreviation ("no active-active") means value of OPENFAC=0, what is no active-active interation among open-shell
 spinors. The wAcAc ("with active-active") means OPENFAC=1, that is full active-active interation (or full open-shell contribution
 to the Fock matrix).
 
-For simplicity, we employ the two-component Hamiltonian, see the keyword :ref:`.X2C`.
+For simplicity, we employ the two-component Hamiltonian, see the keyword :ref:`HAMILTONIAN_.X2C`.
 
 The way to the convergence
 ==========================
