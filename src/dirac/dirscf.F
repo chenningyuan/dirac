@@ -5716,6 +5716,8 @@ C       molecular C1 density matrix
 C.......Release memory        
         CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
+        write(lupri,*) 'added block for center ',icent,
+     &  NONT(IATOM),iatom,NUCDEG(ICENT)
         ICENT = ICENT+NONT(IATOM)
       ENDDO
 C

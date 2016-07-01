@@ -2580,7 +2580,7 @@ C.........do canonical orthonormalization
 !       out: MO2MO linear symmetry adapted   --> KTBUF (if linear == .true.; nothing otherwise)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
      &              .not.(VEXTPJ.OR.FREEPJ.OR.LEVYLE),linear,
-     &              is_defining_h1mat,WORK(KFREE),LFREE)
+     &              is_defining_h1mat,.true.,WORK(KFREE),LFREE)
 
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 
@@ -3088,7 +3088,7 @@ C     Memory deallocation
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
       SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,LSYMAD,
-     &                  is_defining_h1mat,WORK,LWORK)
+     &                  is_defining_h1mat,print_header,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate transformation matrix to MO-basis with the
@@ -3151,7 +3151,7 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       LOGICAL SLGROUP,LSYMAD
-      logical, save :: print_header = .true.
+      logical, intent(in) :: print_header
       integer is_defining_h1mat
       CALL QENTER('MODHAM')
 #include "memint.h"
@@ -3233,8 +3233,6 @@ C       =============================================================
           iMAT        = imat + NFBAS(ifrp,0)*NORB(ifrp)*NZ
         END DO
 
-        print_header = .false.
-
       ELSE
 C
 C       The modified Dirac equation at the matrix level (Hermit):
@@ -3253,7 +3251,6 @@ C
           WRITE(LUPRI,'(A)') ' * Applied strict kinetic balance !'
         ENDIF
       end if
-      print_header = .false.
       IF(IPRHAM.GE.5) THEN
         CALL HEADER(
      &    'MODHAM: Actual transformation matrix 4c AO->MO ',-1)
@@ -3291,7 +3288,7 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
           call writt(99,ISIZE, WORK(KBUF))
 !CTROND
-         print *,'SLSORT branch 1...'
+!        print *,'SLSORT branch 1...'
         else
           call dzero(VMAT,n2bbasxq)
 !         in:  AO2MO transformation matrix             --> TMAT
@@ -3300,7 +3297,7 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
           CALL SLSORT(TMAT,VMAT,IPRHAM,WORK(KFREE),LFREE)
           call writt(99,ISIZE, vmat)
 !CTROND
-         print *,'SLSORT branch 2...'
+!        print *,'SLSORT branch 2...'
         end if
         close(99,status='keep')
       ENDIF

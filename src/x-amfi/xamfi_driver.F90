@@ -163,7 +163,6 @@ contains
                                   nr_quat_ext,                 &
                                   center_id,                   &
                                   center_total,                &
-                                  max_center,                  &
                                   print_lvl                    &
                                  )
 !**********************************************************************
@@ -174,7 +173,6 @@ contains
      integer, intent(in)                :: nr_quat_ext
      integer, intent(in)                :: center_id
      integer, intent(inout)             :: center_total
-     integer, intent(in)                :: max_center
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      real(8), allocatable               :: Gmat_frag(:)
@@ -187,6 +185,7 @@ contains
 
       if(nint(atom(center_total)%charge) > 1)then
 
+        write(6,*) 'reading correction for center ',center_total
         allocate(Gmat_frag(nrows_ext*ncols_ext*4))
 !       !> get spin-orbit parts from file (of atom(i) ... == atomic fragment)
         call read_normalized_2e_soc(                                 &
@@ -236,6 +235,7 @@ contains
       end if
 
 !     update counter
+      write(6,*) 'done correction for center ',center_total,aoo_nont(center_id),center_id,aoo_nucdeg(center_total)
       center_total = center_total + aoo_nont(center_id)
 
   end subroutine put_xamfi_correction

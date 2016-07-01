@@ -689,6 +689,7 @@ contains
                      .true.,                                            &
                      .false.,                                           &
                      defining_h1mat,                                    &
+                     .false.,                                           &
                      wrk,                                               &
                      local_lwrk)
          deallocate(wrk)

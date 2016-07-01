@@ -559,6 +559,7 @@ contains
 !--------------------------------------------------------------
      real(8), allocatable            :: scr1_mat(:)
      real(8), allocatable            :: scr2_mat(:)
+     real(8), allocatable            :: scr3_mat(:)
      real(8), allocatable            :: wrk(:)
      integer, allocatable            :: aooso_info(:)
      integer                         :: i
@@ -578,20 +579,16 @@ contains
 !**********************************************************************
  
 !      allocate scratch space
-       allocate(scr1_mat(naosh_ls*naosh_ls*4))
-       allocate(scr2_mat(nr_ao_L*nr_ao_L*4))
-       scr1_mat = 0.0d0
-       scr2_mat = 0.0d0
+       allocate(scr1_mat(naosh_ls*naosh_ls*4),scr2_mat(naosh_ls*naosh_ls*4),scr3_mat(nr_ao_L*nr_ao_L*4))
+       scr1_mat = 0; scr2_mat = 0; scr3_mat = 0
 
 !      -------------------------------------------------------------------------------
 !      step 1. read h1_2c_saao_cartesian_gaussian from file and add aoosoc contributions 
 !      -------------------------------------------------------------------------------
 
-       i = 0
-       j = 0
+       i = 0; j = 0
        write(flabel,'(a7,i4,i1)') 'h12cAOa',1,i
        call x2c_read(flabel,scr1_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
-
 
 !      --------------------------------------------------------
 !      step 2. select LL-block of h1_++_saao_cartesian_gaussian
@@ -621,8 +618,9 @@ contains
        allocate(aooso_info(naosh_ls))
 
        center_total = 1
-       scr1_mat     = 0.0d0
+       scr1_mat     = 0
 
+       !> a. read contributions for symmetry independent centers
        do i = 1, nuclei_type
 
 !        count the number of basis functions for center_total
@@ -638,7 +636,6 @@ contains
                                    4,              &
                                    i,              &
                                    center_total,   &
-                                   nuclei_totnum,  &
                                    print_lvl       &
                                   )
 #else
@@ -646,22 +643,45 @@ contains
 #endif
        end do
 
+!      b. transform from AO-basis to SO-AO basis
+!      -----------------------------------------
+!        in : xamfi_AO    -> scr1_mat
+!        out: xamfi-SO-AO -> scr3_mat
+       i = op_bs_to_fs(0,1)
+       do iz = 1, 4
+         irepd = bs_irrep_mat(iz,0)
+         iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
+         ipq   = iqp_off_in(iq,0)
+         call mtaoso(scr1_mat(1+(nr_ao_L*nr_ao_L*(iz-1))),     &
+                     scr3_mat(1+(nr_ao_L*nr_ao_L*(ipq-1))),    &
+                     nr_ao_L,                                  &
+                     irepd,                                    &
+                     print_lvl)
+       end do
+
+!      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
+!      -----------------------------------------------------------
+       call butobs_L_no_work(scr3_mat,nz)
+
+!      d. insert quaternion phase factors
+!      ----------------------------------
+       if(nz < 4)then
+         do iz = 1, nz                                                
+           iq = ipq_off_in(iz,0)
+           call q2bphase('F',iq,1,scr3_mat(1+(nr_ao_L*nr_ao_L*(iz-1))))
+         end do           
+       end if          
+
 !      debug print
        if(print_lvl > 2)then
-         call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - XAMFI contribution',6)
+         call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - X-AMFI contribution',6)
        end if
 
 #ifdef DEBUG_SOC
        open(99,file='soc-contributions',status='replace',form='formatted',  &
        access='sequential',action="readwrite",position='rewind')
 
-       call print_x2cmat(scr1_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - XAMFI contribution',99)
-       close(99,status='keep')
-
-       open(99,file='XAMFI-ss-soc-contributions',status='replace',form='unformatted',  &
-       access='sequential',action="readwrite",position='rewind')
-
-       write(99) scr1_mat(1:nr_ao_L*nr_ao_L*nz)
+       call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - X-AMFI contribution',99)
        close(99,status='keep')
 #endif
 
@@ -671,7 +691,7 @@ contains
 !      step 4. add XAMFI-SO contributions to h1_2c
 !      -----------------------------------------
 
-       call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr1_mat,1,scr2_mat,1)
+       call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr3_mat,1,scr2_mat,1)
 
 !      debug print
        if(print_lvl > 2)then
@@ -706,8 +726,7 @@ contains
        end if
 
 !      release scratch space
-       deallocate(scr1_mat)
-       deallocate(scr2_mat)
+       deallocate(scr1_mat,scr2_mat,scr3_mat)
 
   end subroutine x2c_interface2aoosoc
 

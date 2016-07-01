@@ -1863,7 +1863,7 @@ C     Memory deallocation
       call qexit('bstobu_no_work_nonquadmat_LS_L')
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck butobs */
+C  /* Deck butobs_no_work */
       SUBROUTINE BUTOBS_no_work(AMAT,MZ)
 C***********************************************************************
 C
@@ -1975,6 +1975,66 @@ C
       ENDDO
 C
       CALL QEXIT ('BUTOBS')
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck butobs_L_no_work */
+      SUBROUTINE BUTOBS_L_no_work(AMAT,MZ)
+C***********************************************************************
+C
+C     Matrix transform:
+C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
+C     to class/symmetry sorted basis ("sorted basis" = Dirac sorted)
+C
+C     Based on BUTOBS written by T.Saue Mar 2 1995
+C
+C     only large-component functions...
+C
+C***********************************************************************
+
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+C
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "symmet.h"
+C
+      DIMENSION AMAT(*)
+      real(8), allocatable             :: buf(:)
+      CALL QENTER('BUTOBS-L')
+C
+      call alloc(buf, mz*NTBAS(1)*NTBAS(1), id='buf in butobs')
+      CALL DCOPY(MZ*NTBAS(1)*NTBAS(1),AMAT,1,buf,1)
+      IZOFF = 0
+      DO IZ = 1,MZ
+        DO JC = 1,1
+          DO JREP = 0,MAXREP
+            DO J = 0,NBBAS(JREP,JC)-1
+              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(1)
+              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(1)
+              DO IC = 1,1
+                DO IREP = 0,MAXREP
+                  IUOFF = JUOFF + ICOS (IREP+1,IC)
+                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
+                  if(NBBAS(IREP,IC).GT.0)then
+                    CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
+     &                                        AMAT(ISOFF+1)   ,1)
+                  end if
+                ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
+        IZOFF = IZOFF + NTBAS(1)*NTBAS(1)
+      ENDDO
+C
+      call dealloc(buf)
+      CALL QEXIT ('BUTOBS-L')
       RETURN
 C
       END
