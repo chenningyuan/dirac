@@ -1157,6 +1157,13 @@ C
       relcc_do_mp2gradient = .true.
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
+C     The original NO generation treats open shells as closed, set occupation explicitlty to keep this definition.
+C     These lines are necessary because the default for information written to MRCONEE has changed to closed shells only.
+      do ifrp = 1, nfsym
+         relcc_nelec(ifrp*2-1) = naocc(ifrp)
+         relcc_nelec(ifrp*2)   = naocc(ifrp)
+      enddo
+      nelec_input = .true.
 
 !     no frozen orbitals in MP2
       relcc_ifroz_input  = .false.
