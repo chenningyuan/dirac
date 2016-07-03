@@ -1,6 +1,6 @@
 #.rst:
-# CheckFortranSourceCompiles
-# --------------------------
+# CheckFortranSourceCompiles1
+# ---------------------------
 #
 # Check if given Fortran source compiles (with F90 extension) and links into an executable::
 #

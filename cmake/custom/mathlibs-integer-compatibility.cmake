@@ -11,16 +11,18 @@
 #  CMAKE_Fortran_FLAGS
 #  CMAKE_Fortran_COMPILER
 #
+# This (own) macro is called: CHECK_BLAS_INTEGER_TYPE
 #
-# Hint: to check it manually, compile the short test-blas-integer-compatibility.F90 source code
+# Hint: to check it manually, compile the short "test-blas-integer-compatibility.F90" source code
 # and link it against desired BLAS library, for example:
 #
 #        ifort -i8 test-blas-integer-compatibility.F90 -lblas
 #        ifort -mkl=parallel test-blas-integer-compatibility.F90
+#        ifort -i8 -mkl=sequential test-blas-integer-compatibility.F90
 #        gfortran test-blas-integer-compatibility.F90 -L${MKLROOT}/lib/intel64 -lmkl_intel_ilp64 -lmkl_core -lmkl_sequential -lpthread -lm
 #        ifort  test-blas-integer-compatibility.F90 -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm
 #
-# The executable, a.out,  always crashes when linked against integer*8-size blas.
+# The executable, a.out,  always crashes when is linked against integer*8 (or ilp64) blas library
 #
 
 option(ENABLE_MATH_INT_TEST "Enable checking of math libs integer size compatibility" ON)
@@ -28,10 +30,9 @@ option(ENABLE_MATH_INT_TEST "Enable checking of math libs integer size compatibi
 if (ENABLE_MATH_INT_TEST)
 
 #
-# Miro: we have multiple combinations of blas-library linking flags in MATH_LIBS,EXPLICIT_LIBS, MKL_FLAG
+# Miro: we have multiple combinations of blas-library linking flags in MATH_LIBS,EXPLICIT_LIBS,MKL_FLAG
 #
-#
-# Blas-integer size test is deactivated for ENABLE_BUILTIN_BLAS=ON, because on takes builtin blas source FIRST
+# The blas-integer-size test is always deactivated for ENABLE_BUILTIN_BLAS=ON, because on takes builtin blas source FIRST.
 #
 #
 
@@ -39,25 +40,25 @@ if (ENABLE_MATH_INT_TEST)
 
     message(STATUS "Configure-time Linked math libs integer compatibility test ENABLED")
 
-    include(CheckFortranSourceCompiles) # this macro may be in the newest CMake
-    include(CheckFortranSourceRuns)   # this macro may be in newest CMake
     include(CheckBlasIntegerType) # own macro
 
     set(CMAKE_REQUIRED_FLAGS ${CMAKE_Fortran_FLAGS})
 
-    # Miro you can not always combine libraries from different sources, like MKL, SYSTEM_NATIVE)
-    if (MATH_LIBS AND EXPLICIT_LIBS AND NOT ${MKL_FLAG} MATCHES "parallel")
-      set(CMAKE_REQUIRED_LIBRARIES "${MATH_LIBS};${EXPLICIT_LIBS}")
-    elseif(MATH_LIBS AND NOT EXPLICIT_LIBS AND NOT ${MKL_FLAG} MATCHES "parallel")
-      set(CMAKE_REQUIRED_LIBRARIES "${MATH_LIBS}")
-    elseif(NOT MATH_LIBS AND EXPLICIT_LIBS AND NOT ${MKL_FLAG} MATCHES "parallel")
-      set(CMAKE_REQUIRED_LIBRARIES "${EXPLICIT_LIBS}")
-   # Miro: only for -mkl=parallel the ifort compiler links associated MKL math libs, including BLAS !
-   # even if  -mkl=parallel it does not accept MATH_LIBS,EXPLICIT_LIBS (right, Rado?)
-    elseif(${MKL_FLAG} MATCHES "parallel") 
-      set(CMAKE_REQUIRED_LIBRARIES "-mkl=${MKL_FLAG}")
+    if (MKL_FLAG)
+      # MKL_FLAG belong to CMAKE_REQUIRED_FLAGS !
+      set(CMAKE_REQUIRED_FLAGS "${CMAKE_Fortran_FLAGS} -mkl=${MKL_FLAG}")
     else()
-      message(STATUS "Have you any blas library linked to Dirac ? Last linking step may crash ...")
+      if (MATH_LIBS AND EXPLICIT_LIBS)
+        #Miro: both MATH_LIBS and EXPLICIT_LIBS are active !
+        # FYI: you can not combine, for example MKL and SYSTEM_NATIVE libraries
+        set(CMAKE_REQUIRED_LIBRARIES "${MATH_LIBS};${EXPLICIT_LIBS}")
+      elseif(MATH_LIBS AND NOT EXPLICIT_LIBS)
+        set(CMAKE_REQUIRED_LIBRARIES "${MATH_LIBS}")
+      elseif(NOT MATH_LIBS AND EXPLICIT_LIBS)
+        set(CMAKE_REQUIRED_LIBRARIES "${EXPLICIT_LIBS}")
+      else()
+        message(STATUS "Have you any blas library linked to Dirac ? The linking step may crash ...")
+      endif()
     endif()
 
 #   perform BLAS-integer test only, LAPACK-integer test is done inside executable, dirac.x
