@@ -80,6 +80,8 @@ C
          CALL QUIT
      & ('GET_BED: Polarization not orthogonal to propagation !')
       ENDIF
+C     Operator type
+      IOPTYP = 8 ! iA.P
 C
 C     Loop over excitation energies
 C
@@ -97,9 +99,8 @@ C
 C
 C         Find contributions to property matrix
 C
-          ITYP = 8 ! iA.P
           DO IMAT = 1,3
-            IAIND = JM4(1,ITYP)
+            IAIND = JM4(1,IOPTYP)
             IAREP = JM4REP(IAIND)
             IBREP = IBTXOR(IAREP,IREP)
             WRITE(6,*) '* Contributions to ',
