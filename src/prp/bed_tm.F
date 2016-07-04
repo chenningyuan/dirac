@@ -1,9 +1,11 @@
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
 C  /* Deck get_bed */                                                  C
       SUBROUTINE GET_BED(OMEGA,ISSYM,IPRINT,WORK,KFREE,LFREE)
-C                                                                      C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C***********************************************************************
+C
+C     Upon entering this routine solution vectors have been written
+C     to unformatted file PAMXVC which is open with unit number LUXVC                                                                 
+C                                                                      
+C***********************************************************************
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -21,25 +23,12 @@ C#include "cbiher.h"
       real(8), allocatable              :: ONEINT(:,:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:)
+      real(8)                           :: WAVVEC(3),POLVEC(3)
+      character (len=6)                 :: PM4NAM(3)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
-      LOGICAL PROPRI,TOFILE
+      DATA PM4NAM/'XALPHA','YALPHA','ZALPHA'/
 C
-C
-C     Integral information
-C
-C      TOFILE = .FALSE.
-C      IPRINT = 100
-C     DOINT: 0++0 - LS, SL components are computed and multiplied by +1
-C      IORDER = IDUMMY ! Order of multipole moment. Not applicable here.
-C      NPQUAD = 0 ! Number of Gaussian quadrature points. 0 in our case
-C      NCOMP = 8  ! Number of operators
-C
-C      DO IFRP=1,NFSYM
-C        DO IBF=1,NBF
-C           ISYM=JFSYM(IBF,IFRP) ! symmetry of exitation
-C
-C     Generate k vector for given excitation - for now - just along z
-C
+#include "ibtfun.h"
 C
 C     Generate integrals
 C
@@ -59,8 +48,9 @@ C
       ENDIF
 CTROND
       WRITE(6,*) 'BASINFO:',NBAST,NELMNT
-      DO I = 1,8
-        WRITE(6,*) 'INTREP..',INTREP(I)
+      DO ICOMP = 1,NCOMP
+          WRITE(6,*) LABINT(ICOMP),'. Symmetry: ',
+     &               REP(INTREP(ICOMP))
       ENDDO
       DOINT(1,1)=.FALSE.
       DOINT(2,1)=.TRUE.
@@ -69,40 +59,92 @@ CTROND
       allocate(ONEINT(NELMNT,NCOMP))
       IORDER=0
       NPQUAD=0
-      TOFILE=.FALSE.
+C
+C     Define propagation vector
+C
+      WAVVEC(1)=0.0
+      WAVVEC(2)=0.0
+      WAVVEC(3)=1.0
+C
+C     Define polarization vector
+C
+      POLVEC(1)=1.0
+      POLVEC(2)=0.0
+      POLVEC(3)=0.0
+C
+C     Check for orthogonality of propagation and polarization vector
+C
+      TTOL=1.0D-10
+      TMP=DDOT(3,WAVVEC,1,POLVEC,1)
+      IF(ABS(TMP).GT.TTOL) THEN
+         CALL QUIT
+     & ('GET_BED: Polarization not orthogonal to propagation !')
+      ENDIF
+C
+C     Loop over excitation energies
+C
+      DO 10 IOPSY = 1,NFSYM
+        NBF = NBSYM/NFSYM
+        DO 20 IBF = 1,NBF
+          ISYM = JFSYM(IBF,IOPSY)
+          IREP = ISYM-1
+          NEXCNV = KEXCNV(JSYMOP)
+          IF (NEXCNV .EQ. 0) GO TO 20
+          CALL PRSYMB(LUPRI,'=',80,0)
+          WRITE(LUPRI,'(/A,I2,A,A3/)')
+     &     ' *** Excitations of boson symmetry',ISYM,' : ',REP(IREP)
 
 C
-C     Generate integrals
+C         Find contributions to property matrix
 C
-      ORIGIN(1)=0.0
-      ORIGIN(2)=0.0
-      ORIGIN(3)=1.0
-      DO I = 1,3
-        ORIGIN(I) = ORIGIN(I)/CVAL
-      ENDDO
-C      CALL RGETINT('CXIKR   ',ONEINT,DOINT,NCOMP,IORDER,NPQUAD,
-C     &                  'TRIANG',TOFILE,20,WORK(KFREE),LFREE)
-C      CALL QUIT('End of test')
-      PROPRI=.FALSE.
-      CALL PR1IN2(WORK(KFREE),LFREE,ONEINT,INTTYP,
+          ITYP = 8 ! iA.P
+          DO IMAT = 1,3
+            IAIND = JM4(1,ITYP)
+            IAREP = JM4REP(IAIND)
+            IBREP = IBTXOR(IAREP,IREP)
+            WRITE(6,*) '* Contributions to ',
+     &         PM4NAM(IMAT),' ',REP(IAREP),' from:'
+            DO ICOMP = 1,NCOMP
+            IF(INTREP(ICOMP).EQ.IBREP) THEN
+              WRITE(6,*) '            ',LABINT(ICOMP),'. Symmetry: ',
+     &               REP(INTREP(ICOMP))
+            ENDIF
+            ENDDO
+          ENDDO
+          DO IEXC = 1,KEXCNV(ISYM)
+C
+C           Length of wave vector
+C 
+            FAC=OMEGA(IEXC,ISYM)/CVAL
+C
+C           Generate integrals
+C
+            DO I = 1,3
+              ORIGIN(I) = FAC*WAVVEC(I)
+            ENDDO
+CTROND
+            WRITE(6,*) '*Wave..',REP(IREP),IEXC,OMEGA(IEXC,ISYM),FAC,
+     &          (ORIGIN(J),J=1,3)
+            CALL PR1IN2(WORK(KFREE),LFREE,ONEINT,INTTYP,
      &           NCOMP,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
-CTROND     &           TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
-     &           TRASPH,PROPRI,SOLVNT,IORDER,NPQUAD,DUMMY,
-CTROND     &           0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
-     &           0,NBAST,NELMNT,20,DOINT,.FALSE.)
-CTROND      IF(IPRINT.GE.5) THEN
-        DO ICOMP = 1,NCOMP
-          WRITE(6,*) '* Integrals of ',LABINT(ICOMP),'. Symmetry: ',
-     &               REP(INTREP(NCOMP))
-          CALL OUTPAK(ONEINT(1,ICOMP),NBAST,1,LUPRI)
-        ENDDO
-CTROND      ENDIF
+     &           TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
+     &           0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
+            IF(IPRINT.GE.5) THEN
+              DO ICOMP = 1,NCOMP
+                WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
+     &            '. Symmetry: ',REP(INTREP(NCOMP))
+                CALL OUTPAK(ONEINT(1,ICOMP),NBAST,1,LUPRI)
+              ENDDO
+            ENDIF
+
+          ENDDO
+ 20     CONTINUE
+ 10   CONTINUE
 C
 C     Memory deallocation
       deallocate(ONEINT)
       deallocate(LABINT)
       deallocate(INTREP)
-C      CALL MEMREL('GET_BED',WORK,KWORK,KONEIN,KFREE,LFREE)
 C
       RETURN
       END
