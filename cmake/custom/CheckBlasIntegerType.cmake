@@ -16,7 +16,8 @@
 #                     <var_run> is valid only for <var_compile>=1 !
 #                     Will be created as an internal cache variable.
 #
-#  <var_type>       - variable to store the blas integer type: 1 for integer*4 blas, 2 for integer*8 blas and 0 for not-tested (or test failed)
+#  <var_type>       - variable to store the blas integer type: 1 for integer*4 blas, 2 for integer*8 blas 
+#                     and 0 for not-tested (or test failed).
 #                     Will be created as an internal cache variable.
 #
 #
@@ -25,11 +26,10 @@
 #
 #  ::
 #
-#   CHECK_Fortran_SOURCE_COMPILES
-#   CHECK_Fortran_SOURCE_RUNS
+#   CHECK_Fortran_SOURCE_COMPILES1 (our macro, not CMake's)
+#   CHECK_Fortran_SOURCE_RUNS1  (our macro, not CMake's)
 #
 # Program is compiling and running short Fortran source code of Hans Jorgen Aa Jensen, test-blas-integer-compatibility.F90.
-#
 #
 # The following variables are to be set before calling this macro to modify
 # the way the check is run:
@@ -45,22 +45,19 @@
 
 macro(CHECK_BLAS_INTEGER_TYPE VAR_COMPILE VAR_RUN VAR_TYPE)
 
-  include(CheckFortranSourceCompiles)
-  include(CheckFortranSourceRuns)
-
-  #message(STATUS "CMAKE_REQUIRED_FLAGS=${CMAKE_REQUIRED_FLAGS} ")
-  #message(STATUS "CMAKE_REQUIRED_LIBRARIES=${CMAKE_REQUIRED_LIBRARIES} ")
+  include(CheckFortranSourceCompiles1)
+  include(CheckFortranSourceRuns1)
 
   if(NOT CMAKE_REQUIRED_QUIET)
     message(STATUS "Performing compile and run test of blas integer size (can deactivate with -D ENABLE_MATH_INT_TEST=OFF) ")
   endif()
 
-   #  try if Fortran source compiles ...
+   #  try if Fortran source compiles (Miro's adapted macro)
   file(READ "${PROJECT_SOURCE_DIR}/cmake/custom/test-blas-integer-compatibility.F90" blas_source)
-  CHECK_Fortran_SOURCE_COMPILES(${blas_source} ${VAR_COMPILE} )
+  CHECK_Fortran_SOURCE_COMPILES1(${blas_source} ${VAR_COMPILE} )
 
-  # try if Fortran source runs ....
-  CHECK_Fortran_SOURCE_RUNS(${blas_source} ${VAR_RUN})
+  # try if Fortran source runs (Miro's adapted macro)
+  CHECK_Fortran_SOURCE_RUNS1(${blas_source} ${VAR_RUN})
 
   if (${VAR_COMPILE} AND ${VAR_RUN})
     if(NOT CMAKE_REQUIRED_QUIET)

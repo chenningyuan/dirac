@@ -1,10 +1,10 @@
 #.rst:
-# CheckFortranSourceCompiles
-# --------------------------
+# CheckFortranSourceCompiles1
+# ---------------------------
 #
 # Check if given Fortran source compiles (with F90 extension) and links into an executable::
 #
-#   CHECK_Fortran_SOURCE_COMPILES(<code> <var> [FAIL_REGEX <fail-regex>])
+#   CHECK_Fortran_SOURCE_COMPILES1(<code> <var> [FAIL_REGEX <fail-regex>])
 #
 # The arguments are:
 #
@@ -26,8 +26,12 @@
 #   CMAKE_REQUIRED_QUIET = execute quietly without messages
 #
 
+#NOTE of Miro: this macro has to be distinct from CMake macro, therefore I used different name
+# the original CMake macro CHECK_Fortran_SOURCE_COMPILES hurts the source code compilation on IBM AIX due 
+# to offfending -D<something>..  flag.
+#
 
-macro(CHECK_Fortran_SOURCE_COMPILES SOURCE VAR)
+macro(CHECK_Fortran_SOURCE_COMPILES1 SOURCE VAR)
   if(NOT DEFINED "${VAR}")
     set(_FAIL_REGEX)
     set(_key)
