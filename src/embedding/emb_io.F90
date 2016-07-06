@@ -130,7 +130,7 @@ module fde_io
     REAL(kind=8),POINTER :: points(:,:), ptmp_many(:,:)
     REAL(kind=8),pointer :: properties(:,:)
     INTEGER              :: file
-    INTEGER              :: i,npoints, nprop
+    INTEGER              :: i,npoints, nprop, ierr
    
     REWIND(file)
     READ(file,*) npoints, nprop
@@ -141,7 +141,8 @@ module fde_io
     allocate(properties(nprop,npoints))
 
     DO i=1,npoints
-       READ(file,*) points(:,i),properties(:,i)
+       READ(file,*, IOSTAT=ierr) points(:,i),properties(:,i)
+       if (ierr .ne. 0) write(*,*) 'error ierr in point', ierr, i
     END DO
 
   END SUBROUTINE READ_GRID_manycol
