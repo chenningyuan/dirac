@@ -12,8 +12,10 @@
     public sigma_IP
     public IM_container
     public create_sigma_vector
+    public create_diagonal
     public initialize_buffers
     public free_buffers
+    public get_matrix_size
 
     private
     public intermediates
@@ -30,23 +32,63 @@
 
    contains
 
+   function get_matrix_size(A)
+      integer :: get_matrix_size
+      type(intermediates), intent(in) :: A
+
+      get_matrix_size = size(A%t1) + size(A%t2)
+   end function
+
    subroutine initialize_buffers(buf1, buf2, buf3)
-       real(kind=8), pointer ::  buf1(:), buf2(:), buf3(:)
+       real(kind=8), allocatable, target ::  buf1(:), buf2(:), buf3(:)
        local_buf1 => buf1 
        local_buf2 => buf2 
        local_buf3 => buf3 
    end subroutine
 
    subroutine free_buffers()
-       if (associated(local_buf1)) nullify(local_buf1)
-       if (associated(local_buf2)) nullify(local_buf2)
-       if (associated(local_buf3)) nullify(local_buf3)
+       if (associated(local_buf1)) then
+           deallocate(local_buf1)
+           nullify(local_buf1)
+       end if
+       if (associated(local_buf2)) then
+           deallocate(local_buf2)
+           nullify(local_buf2)
+       end if
+       if (associated(local_buf3)) then
+           deallocate(local_buf3)
+           nullify(local_buf3)
+       end if
    end subroutine
 
-   function create_sigma_vector(B, r)
+   function create_diagonal(A)
+      real(kind=8), pointer :: create_diagonal(:)
+      type(intermediates) :: A
+      integer :: N
+      integer :: nbuf3, ndimt1, ndimt2
+
+      ndimt1 = size(A%t1)
+      ndimt2 = size(A%t2)
+      nbuf3 = size(local_buf3)
+
+      N = ndimt1 + ndimt2
+      allocate(create_diagonal(N))
+      create_diagonal = 1.0d0
+
+      select case (A%eomtype)
+         case ("IP")
+         case ("EA")
+         case ("EE")
+             create_diagonal = 1.0d0
+      end select
+
+   end function
+
+   function create_sigma_vector(A, r)
       real(kind=8), pointer :: create_sigma_vector(:,:)
-      type(intermediates) :: B
+      type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
+      integer :: L, N
       integer :: nbuf3, ndimt1, ndimt2
 
       N = size(r,1)
@@ -54,16 +96,16 @@
       allocate(create_sigma_vector(N,L))
 
       nbuf3 = size(local_buf3)
-      ndimt1 = size(B%t1)
-      ndimt2 = size(B%t2)
+      ndimt1 = size(A%t1)
+      ndimt2 = size(A%t2)
 
-      select case (B%eomtype)
+      select case (A%eomtype)
          case ("IP")
          case ("EA")
          case ("EE")
-            call sigma_ee_1h1p(r(1:ndimt1,:),r(ndimt1+1:N,:),B, &
+            call sigma_ee_1h1p(r(1:ndimt1,:),r(ndimt1+1:N,:),A, &
                                create_sigma_vector(1:ndimt1,:), &
-                               create_sigma_vector((ndimt1+1:N,:),&
+                               create_sigma_vector(ndimt1+1:N,:),&
                                local_buf2,&
                                local_buf3,&
                                nbuf3)
@@ -71,7 +113,7 @@
 
    end function
 
-   subroutine IM_container(eomtype,t1,t2,A,buf1,buf2,buf3,nbuf3)
+   subroutine IM_container(eomtype,A)
 
 #include "symm.inc"
 #include "complex.inc"
@@ -86,16 +128,15 @@
 !----------------- 
 character(8), intent (in) :: eomtype  
 type(intermediates), intent(inout) :: A
-real(8), intent(in) :: t1(:), t2(:)
-real(8), intent(in) :: buf1(*),buf2(*)
-real(8), intent(inout) :: buf3(*)
-integer, intent(in) :: nbuf3
 
 !Local Variables
 !----------------
 real(8), allocatable :: foo(:),fvo(:),fvv(:) 
+integer :: nbuf3
 
 !-----------------------------------------------------------------------------
+
+     nbuf3 = int(size(local_buf3),4)
 
      allocate (foo(nfoo*rcw))
      allocate (fvo(nfvo*rcw))
@@ -105,33 +146,33 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
      call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
 
-     call f_bar_mi(foo,fvo,t1,t2,A%Fbar_mi)
+     call f_bar_mi(foo,fvo,A%t1,A%t2,A%Fbar_mi)
 
-     call f_bar_me(fvo,t1,A%Fbar_me)
+     call f_bar_me(fvo,A%t1,A%Fbar_me)
 
-     call f_bar_ae(fvv,fvo,t1,t2,A%Fbar_ae)
+     call f_bar_ae(fvv,fvo,A%t1,A%t2,A%Fbar_ae)
 
-     call w_ijmn(t1,t2,A%W_ijmn)
+     call w_ijmn(A%t1,A%t2,A%W_ijmn)
 
-     call wbar_mbej(t2,A%Wbar_mbej)
+     call wbar_mbej(A%t2,A%Wbar_mbej)
 
-     call w_mbej(t1,t2,A%W_mbej)
+     call w_mbej(A%t1,A%t2,A%W_mbej)
 
-     call w_iemn(t1,t2,A%W_iemn,A%Wbar_mbej,A%W_ijmn,A%Fbar_me)
+     call w_iemn(A%t1,A%t2,A%W_iemn,A%Wbar_mbej,A%W_ijmn,A%Fbar_me)
 
      if (eomtype /= "IP") then
 
-      call w_efam(t1,t2,A%Wbar_mbej,A%Fbar_me,A%W_efam,buf2,buf3)
+      call w_efam(A%t1,A%t2,A%Wbar_mbej,A%Fbar_me,A%W_efam,local_buf2,local_buf3)
 
-      call w_efam_diagram2 (t1,t2,buf1,buf2,buf3,nbuf3,A%W_efam)
+      call w_efam_diagram2 (A%t1,A%t2,local_buf1,local_buf2,local_buf3,nbuf3,A%W_efam)
 
      endif 
 
-     call w_mnie(t1,A%W_mnie)
+     call w_mnie(A%t1,A%W_mnie)
 
      if (eomtype /= "IP") then
 
-      call w_amef(t1,A%W_amef)
+      call w_amef(A%t1,A%W_amef)
 
      endif 
 
@@ -142,7 +183,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
    end subroutine
 
-   subroutine sigma_ee_1h1p(r1,r2,t1,t2,B,sigma1,sigma2,buf2,buf3,nbuf3)
+   subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2,buf2,buf3,nbuf3)
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -153,7 +194,6 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
 !---------------Calling variables--------------------------------------
   real(8), intent(in),target   :: r1(:,:), r2(:,:) ! R-Amplitudes
-  real(8), intent(in)     :: t1(:),t2(:)           ! t-Amplitudes
   integer, intent(in)     :: nbuf3    
   real(8), intent(in)     :: buf2(*)           
   real(8), intent(inout)  :: buf3(*)           
@@ -259,7 +299,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_422 ((/"p2","o3","p4","p3"/),(/"p3","o3"/),(/"p2","p4"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,B%W_amef)
 
     call contraction_244 ((/"p2","p4"/),(/"p1","p4","o1","o2"/),(/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0, &
-   &                       nrep,LeftTensor=int_1b,RightTensor=t2)
+   &                       nrep,LeftTensor=int_1b,RightTensor=B%t2)
 
     deallocate(int_1b)
 
@@ -276,7 +316,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_422 ((/"o4","o3","o2","p3"/),(/"p3","o3"/),(/"o4","o2"/),r1,int_1b,1.0d0,1.0d0,nrep,LeftTensor=B%W_mnie)
 
     call contraction_244 ((/"o4","o2"/),(/"p1","p2","o1","o4"/), &
-   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
 
     deallocate(int_1b)
 
@@ -307,14 +347,14 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
      allocate(int_1b(ndimt2*rcw))
 
-     call gettau (t1,t2,int_1b)
+     call gettau (B%t1,B%t2,int_1b)
       off1 = 1
       off2 = 1
       do irp = 1, nrep
          istart = 0
          done =.false.
          if (nvvt(irp).eq.0) cycle
-   10    call w_efab_out_of_core (irp,istart,done,int_1b,buf2,t1,nbuf3,buf3,nint)
+   10    call w_efab_out_of_core (irp,istart,done,int_1b,buf2,B%t1,nbuf3,buf3,nint)
          m = nvvt(irp)
          n = noot(irp)
          k = nint
@@ -353,7 +393,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"p3","p1","o3","o4"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
     call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
-    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
 
     deallocate(int_1b)
 
@@ -369,14 +409,14 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o1","o4"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
     call contraction_244 ((/"o1","o4"/),(/"p1","p2","o2","o4"/), &
-    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
 
     deallocate(int_1b)
     write(*,*)'inside sigma 13', dot_product(sigma2(ndimt2*rcw,:),sigma2(ndimt2*rcw,:))
 
   end subroutine
 
-   subroutine sigma_IP(nvx,r1,r2,t1,t2,B,sigma1,sigma2,ndimr1,ndimr2)
+   subroutine sigma_IP(nvx,r1,r2,B,sigma1,sigma2,ndimr1,ndimr2)
 #include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
@@ -387,7 +427,6 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 
 !---------------Calling variables--------------------------------------
   real(8), intent(in),target   :: r1(:,:), r2(:,:) ! R-Amplitudes
-  real(8), intent(in)     :: t1(:),t2(:)           ! t-Amplitudes
   type(intermediates), intent(in)  :: B      
   real(8), intent(inout)           :: sigma1(:,:),sigma2(:,:)  ! sigma-vectors
   integer, intent(in) :: ndimr1, ndimr2,nvx(nrep)
@@ -498,7 +537,7 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"c1","p3","o3","o4"/),(/"c1","p4"/),int_1b,-1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
     call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
-    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=t2)
+    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
 
     deallocate(int_1b)
 

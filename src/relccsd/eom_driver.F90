@@ -156,7 +156,7 @@
 
 
    subroutine eom_ee(icalc,mxcorr)
-
+   use davidson
    use memory_allocator
    use allocator_parameters, only : klongint
 
@@ -169,7 +169,6 @@
 !--------------------------------------------------
 
    type(intermediates) :: B
-   real*8, allocatable :: t1(:),t2(:) 
    real*8, allocatable :: sigma1(:,:),sigma2(:,:) 
    real*8, allocatable :: R1(:,:),R2(:,:) 
    real*8, allocatable :: ev(:),evec(:,:) 
@@ -179,6 +178,13 @@
    integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep)
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
+
+   type(davidson_results) :: davResults
+   logical :: left_vectors, right_vectors
+   logical :: symmetric = .false.
+   logical :: verbose = .false.
+   integer :: N ! size of determinantal space 
+   real(kind=8), pointer :: b_guess(:,:)
 
 !memory allocation
 !------------------
@@ -256,14 +262,14 @@
          goto 451
       endif
 
-      allocate (t1(ndimt1*rcw))
-      allocate (t2(ndimt2*rcw))
+      allocate (B%t1(ndimt1*rcw))
+      allocate (B%t2(ndimt2*rcw))
 
     call ccdump
 
-    call getampt(t1,t2)
+    call getampt(B%t1,B%t2)
 
-    call IM_container(eomtype,t1,t2,B,buf1,buf2,buf3,int(nbuf3,4))
+    call IM_container(eomtype,B)
 
 
    select case (eomtype)
@@ -371,23 +377,26 @@
     else 
 !       call davidson_setup(1.0e-2, subspace_size, nroot)
         symmetric = .false.
+        verbose   = .false.
         left_vectors = .false.
         right_vectors = .true.
-        eVectorsL => NULL()
-        call davidson_driver(nroot, B, ptr_sigma_vector, ptr_preconditioner, .false., evRe, evIm,  eValuesIm, eVectorsL, eVectorsR, .false., .true., .false.)
-        eVectorsR => [r1, r2]
-        call davidson_driver(nroot, B, symmetric, eValuesRe, eValuesIm, eVectorsL, eVectorsR, left, right, verbose)
+        N = size(r1,1) + size(r2,1)
 
+        b_guess => merge_arrays(1, r1, r2)
+        call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
+
+        call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
     
     end if
 !    call davidson 
 
-     deallocate (t1,t2,sigma1,sigma2,r1,r2)
+     deallocate (sigma1,sigma2,r1,r2)
+     call free_buffers()
  451  continue
-
-     deallocate(buf3)
-     deallocate(buf1)
-     deallocate(buf2)
+! todo:
+! allocations/deallocations of intermediates would be more simply handled via
+!    call initialize_intermediates() 
+!    call free_intermediates()
 
      deallocate(B%Wbar_mbej) 
      deallocate (B%Fbar_mi)  
@@ -406,5 +415,36 @@
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
 
    end subroutine
+
+   function merge_arrays(dimension_to_merge, a,b)
+       real(kind=8), pointer :: merge_arrays(:,:)
+       real(kind=8), intent(in) :: a(:,:), b(:,:)
+       integer, intent(in) :: dimension_to_merge
+
+       integer :: Na, Nb, La, Lb, Ns, Ls
+
+       Na = size(a,1)
+       La = size(a,2)
+
+       Nb = size(b,1)
+       Lb = size(b,2)
+
+       if ((dimension_to_merge .eq. 1) .and. (La .eq. Lb)) then
+           Ns = Na + Nb
+           Ls = La
+           allocate(merge_arrays(Ns,Ls))
+           merge_arrays(1:Na, :) = a(1:Na, :) 
+           merge_arrays(Na+1:Ns, :) = b(1:Nb, :)
+       else if ((dimension_to_merge .eq. 2) .and. (Na .eq. Nb)) then
+           Ls = La + Lb
+           Ns = Na
+           allocate(merge_arrays(Ns,Ls))
+           merge_arrays(:, 1:La) = a(:, 1:La) 
+           merge_arrays(:, La+1:Ls) = b(:, 1:Lb)
+       else
+           stop('mismatch in array dimensions')
+       end if
+
+   end function
 
    end module 

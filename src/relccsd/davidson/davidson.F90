@@ -9,8 +9,22 @@ public davidson_setup
 public davidson_driver
 public sort_values_vectors
 public set_safe_minimum
+public initialize_davidson_results
+public free_davidson_results
+
+public davidson_results
 
 private
+
+! derived types
+
+type davidson_results
+    real(kind=8), pointer :: eValuesRe(:)
+    real(kind=8), pointer :: eValuesIm(:)
+    real(kind=8), pointer :: eVectorsR(:,:)
+    real(kind=8), pointer :: eVectorsL(:,:)
+end type
+
 
 ! module parameters
 
@@ -29,6 +43,43 @@ integer, save      :: roots_per_symmetry(nr_max_irreps)
 integer, save      :: max_iterations = 100
 
 contains 
+
+    subroutine initialize_davidson_results(results, N, nroots, left, right)
+        integer, intent(in) :: N, nroots 
+        type(davidson_results), intent(inout) :: results
+        logical, intent(in), optional :: left, right
+
+        allocate(results%eValuesRe(nroots))
+        allocate(results%eValuesIm(nroots))
+
+        if (present(left)) then
+            allocate(results%eVectorsL(N,nroots))
+        else
+            results%eVectorsL => NULL()
+        end if
+
+        if (present(right)) then
+            allocate(results%eVectorsR(N,nroots))
+        else
+            results%eVectorsR => NULL()
+        end if
+    
+    end subroutine
+
+    subroutine free_davidson_results(results)
+        type(davidson_results), intent(inout) :: results 
+
+        deallocate(results%eValuesRe)
+        deallocate(results%eValuesIm)
+
+        if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
+        if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
+
+        results%eValuesRe => NULL()
+        results%eValuesIm => NULL()
+        results%eVectorsR => NULL()
+        results%eVectorsL => NULL()
+    end subroutine
 
     subroutine davidson_setup(threshold, subspace_size, nr_roots)
         real(kind=8), intent(in) :: threshold
@@ -571,15 +622,16 @@ contains
         end do
     end function
 
-
-    subroutine davidson_driver(nroots, Intm, ptr_to_sigma, ptr_to_diagonal, symmetric, eValuesRe, eValuesIm, eVectorsL, eVectorsR, verbose, b_guess)
-        integer, intent(in) :: nroots 
-        real(kind=8), intent(in)    :: M(:,:)
-        real(kind=8), intent(inout), optional :: eVectorsL(:,:)
-        real(kind=8), intent(inout), optional :: eVectorsR(:,:)
-        real(kind=8), intent(inout) :: eValuesRe(:), eValuesIm(:)
+    subroutine davidson_driver(nroots, A, symmetric, results, verbose, b_guess)
+! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
+! and that will have asslciated get_matrix_size, create_sigma_vector and create_diagonal
+        use sigma_eom, only : intermediates, get_matrix_size, create_sigma_vector, create_diagonal
+        type(intermediates), intent(in) :: A
+! back to general stuff
+        type(davidson_results), intent(inout) :: results
         real(kind=8), optional, pointer :: b_guess(:,:)
         logical, intent(in), optional :: verbose, symmetric
+        integer, intent(in) :: nroots
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -596,16 +648,16 @@ contains
         real(kind=8), pointer :: e_small_i(:)        => NULL()
         integer :: vectors_N, L, min_subspace_size, niter
         integer :: i, j
-        logical :: left, right, verbose_local, symmetric_local, eVectorsL_local, eVectorsR_local
+        logical :: left, right
+        logical :: verbose_local, symmetric_local, eVectorsL_local, eVectorsR_local
 
-
-        if (present(eVectorsL)) then
+        if (associated(results%eVectorsL)) then
             left = .true.
         else
             left = .false.
         end if
             
-        if (present(eVectorsR)) then
+        if (associated(results%eVectorsR)) then
             right = .true.
         else
             right = .false.
@@ -623,8 +675,8 @@ contains
             symmetric_local = .false. 
         end if
 
-        vectors_N = size(M,1)
-        M_diag => get_diagonal_elements(M)
+        vectors_N = get_matrix_size(A)
+        M_diag => create_diagonal(A)
 
         min_subspace_size = nroots 
         max_subspace_size = max(nroots, max_subspace_size)
@@ -656,7 +708,7 @@ contains
             if (associated(sigma_vector)) deallocate(sigma_vector)
             if (associated(M_small)) deallocate(M_small)
 
-            sigma_vector => create_sigma_vector(M, b)
+            sigma_vector => create_sigma_vector(A, b)
             M_small => create_reduced_problem(b, sigma_vector)
 
             call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
@@ -688,7 +740,7 @@ contains
         if (associated(sigma_vector)) deallocate(sigma_vector)
         if (associated(M_small)) deallocate(M_small)
 
-        sigma_vector => create_sigma_vector(M, b)
+        sigma_vector => create_sigma_vector(A, b)
         M_small => create_reduced_problem(b, sigma_vector)
 
         if (verbose) then
@@ -698,9 +750,9 @@ contains
         call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
                                             c_small_r, c_small_l, left=left, verbose=verbose)
 
-        call form_eigenvalues_full_problem(eValuesRe, eValuesIm, nroots, e_small_r, e_small_i) 
-        if (left)  call form_eigenvector_full_problem(eVectorsL,nroots,b,c_small_l, .true.)
-        if (right) call form_eigenvector_full_problem(eVectorsR,nroots,b,c_small_r, .false.)
+        call form_eigenvalues_full_problem(results%eValuesRe, results%eValuesIm, nroots, e_small_r, e_small_i) 
+        if (left)  call form_eigenvector_full_problem(results%eVectorsL,nroots,b,c_small_l, .true.)
+        if (right) call form_eigenvector_full_problem(results%eVectorsR,nroots,b,c_small_r, .false.)
 
         deallocate(b)
         deallocate(M_small)
