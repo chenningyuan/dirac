@@ -24,6 +24,7 @@ module xc_mpi
 #ifdef VAR_MPI
 
    use interface_to_mpi
+   use integer_kind_mpilib
 #ifdef USE_MPI_MOD_F90
    use mpi
    implicit none
@@ -45,6 +46,13 @@ module xc_mpi
    public xc_mpi_reduce
    public xc_mpi_distribute_points
    public xc_mpi_get_rank
+   public xc_interface_mpi_barrier
+   public xc_interface_mpi_file_open_to_write
+   public xc_interface_mpi_file_close
+   public xc_interface_mpi_file_set_view_r8
+   public xc_interface_mpi_file_write_at
+   public xc_interface_mpi_info_create
+   public xc_interface_mpi_info_free
 #endif
 
    private
@@ -329,6 +337,72 @@ contains
          end if
       end if
    end subroutine
+
+   subroutine xc_interface_mpi_barrier()
+      call interface_mpi_barrier(global_communicator)
+   end subroutine
+
+   subroutine xc_interface_mpi_file_open_to_write(file_name, file_handle, file_info)
+      integer(kind=integer_kind)       :: file_handle
+      integer(kind=integer_kind)       :: file_info
+      integer(kind=integer_kind)       :: amode
+      character*(*)                    :: file_name
+
+      amode = df_mpi_mode_create + df_mpi_mode_wronly + df_mpi_mode_sequential
+
+      call interface_mpi_file_open(global_communicator, file_name, amode, file_info, file_handle)
+
+   end subroutine
+
+   subroutine xc_interface_mpi_file_set_view_r8(file_handle, disp)
+      integer(kind=integer_kind)       :: file_handle
+      integer(kind=integer_kind)       :: info
+      integer(kind=integer_kind)       :: etype
+      integer(kind=integer_kind)       :: ftype
+!      character*(*)                    :: datarep
+      integer(kind=df_mpi_offset_kind) :: disp
+
+      etype   = df_mpi_real8
+      ftype   = df_mpi_real8
+!      datarep = "native"
+      info    = df_mpi_info_null
+
+      call interface_mpi_file_set_view(file_handle, disp, etype, ftype, "native", info)
+
+   end subroutine
+
+   subroutine xc_interface_mpi_file_close(file_handle)
+      integer(kind=integer_kind)       :: file_handle
+
+      call interface_mpi_file_close(file_handle)
+
+   end subroutine
+
+   subroutine xc_interface_mpi_info_create(file_info)
+      integer(kind=integer_kind) :: file_info
+
+      call interface_mpi_info_create(file_info)
+
+   end subroutine
+
+   subroutine xc_interface_mpi_info_free(file_info)
+      integer(kind=integer_kind) :: file_info
+
+      call interface_mpi_info_free(file_info)
+
+   end subroutine
+
+   subroutine xc_interface_mpi_file_write_at(file_handle, offset, buf, length)
+      integer(kind=integer_kind)       :: file_handle
+      real(8)                          :: buf(:)
+      integer(kind=df_mpi_offset_kind) :: offset
+      integer(kind=integer_kind)       :: length
+      integer(kind=integer_kind)       :: status_array(MPI_STATUS_SIZE)
+
+      call interface_mpi_file_write_at(file_handle, offset, buf, length, status_array)
+
+   end subroutine
+
 #endif /* ifdef VAR_MPI */
 
 end module

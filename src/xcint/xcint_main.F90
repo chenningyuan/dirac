@@ -625,7 +625,7 @@ contains
          call london_export_close_files()
 #ifdef VAR_MPI
          if (parallel_xc) then
-            call london_export_data_collect(london_direct_export, london_reorth_export)
+            call london_export_data_collect(london_direct_export, london_reorth_export, xc_mpi_get_nr_proc())
          end if
 #endif
       end if
@@ -2202,19 +2202,24 @@ contains
    end subroutine
 
 #ifdef VAR_MPI
-   subroutine london_export_data_collect(lao_direct, lao_reorth)
+   subroutine london_export_data_collect(lao_direct, lao_reorth, numproc)
 !     this is called only in parallel run
 !     here: data from all the files created for each process
 !     is copied to one "final" file
       logical, intent(in) :: lao_direct, lao_reorth
-      integer :: numproc, myproc
+      integer, intent(in) :: numproc
+      integer :: myproc
       integer :: ieof
       integer :: file_unit_par, file_unit_final, file_name_length
       character :: file_name_final*24, file_name_full*22, file_name_par*18
       logical :: file_exists, file_is_open
-      integer :: i
+      integer :: ioff(0:numproc-1), nr_points_proc(0:numproc-1)
+      integer :: i, iline, ierr
+      real(8) :: d(pertden_nr_columns)
+      real(8), allocatable, target :: buffer_container(:, :)
+      real(8), pointer             :: buffer(:, :)
      
-      numproc = xc_mpi_get_nr_proc()
+      !numproc = xc_mpi_get_nr_proc()
       myproc = xc_mpi_get_rank()
       file_is_open = .false.
 
@@ -2256,8 +2261,28 @@ contains
          end if
       end if
           
-!gosia fixme: this does not work
-!possibly to do: add xc_mpi routines to send node files to master; then copy to common file
+!     prepare buffer
+      nullify(buffer)
+      allocate(buffer_container(nr_points_total,pertden_nr_columns))
+      buffer_container = 0.0d0
+      buffer => buffer_container
+      call xc_mpi_bcast(buffer)
+
+!     and offsets for buffer:
+      do i = 0, numproc - 1
+        nr_points_proc(i) = nr_points_on_this_proc
+        call xc_interface_mpi_barrier()
+      end do
+      call xc_mpi_bcast(nr_points_proc)
+      ioff(0)  = 1 
+      do i = 1, numproc - 1
+        ioff(i) = ioff(i-1) + nr_points_proc(i-1)
+        call xc_interface_mpi_barrier()
+      end do
+      call xc_mpi_bcast(ioff)
+
+      call xc_interface_mpi_barrier()
+
       do i = 0, numproc - 1
          if (i .lt. 10) then
             write (file_name_full,'(a18,a1,i1)') file_name_par,'.',i
@@ -2272,55 +2297,46 @@ contains
             call quit("error in london.*collect parallel run")
          endif
       
+         call xc_interface_mpi_barrier()
          if (myproc == i) then
             inquire(file=file_name_full(1:file_name_length), exist=file_exists)
-            if (file_exists) then
-            
-               if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
-               if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
-            
-               if (.not.file_is_open) then
-            
-                  open(file_unit_par,  &
-                       file = file_name_full(1:file_name_length), &
-                       status = 'old',        &
-                       form   = 'formatted',  &
-                       access = 'sequential')
-            
-                  file_is_open = .true.
-                  if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
-                  if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
-            
-               end if
-            
-               rewind(file_unit_par)
-            
-               call london_export_copy_data_from_files(file_unit_par,  &
-                                                       file_unit_final)
-               
-               if (lao_direct) file_is_open = pertden_direct_lao_par_file_open
-               if (lao_reorth) file_is_open = pertden_reorth_lao_par_file_open
-            
-               if (file_is_open) then
-                  close(file_unit_par, status='delete')
-                  file_is_open = .false.
-                  if (lao_direct) pertden_direct_lao_par_file_open = file_is_open
-                  if (lao_reorth) pertden_reorth_lao_par_file_open = file_is_open
-               end if
-
-            end if
+            open(file_unit_par,  &
+                 file = file_name_full(1:file_name_length), &
+                 status = 'old',        &
+                 form   = 'formatted',  &
+                 access = 'sequential')
+            rewind(file_unit_par)
+         
+            iline = 0
+            do
+               read(file_unit_par, pertden_file_format, iostat=ierr) &
+                              d(1:pertden_nr_columns)
+                              !buffer(ioff(i)+iline, 1:pertden_nr_columns)
+               if (ierr .ne. 0) exit
+               buffer(ioff(i)+iline, 1:pertden_nr_columns) = d(1:pertden_nr_columns)
+               iline = iline+1
+            end do
+            close(file_unit_par, status='delete')
          end if
       
       end do ! do i = 0, numproc - 1
+      call xc_interface_mpi_barrier()
 
-      if (pertden_direct_lao_file_open) then
-         close(file_unit_final, status = 'keep')
-         pertden_direct_lao_file_open = .false.
+      call xc_mpi_reduce(buffer)
+
+      call xc_interface_mpi_barrier()
+
+      if (xc_mpi_is_master()) then
+        do iline = 1, nr_points_total
+          write(file_unit_final, pertden_file_format) &
+                     buffer(iline, 1:pertden_nr_columns)
+        end do
       end if
-      if (pertden_reorth_lao_file_open) then
-         close(file_unit_final, status = 'keep')
-         pertden_reorth_lao_file_open = .false.
-      end if
+
+      nullify(buffer)
+      if (allocated(buffer_container)) deallocate(buffer_container)
+
+      close(file_unit_final, status = 'keep')
 
    end subroutine
 
@@ -2946,7 +2962,6 @@ contains
              end do
           end if
        end if
-
        call london_export_write_data_to_files( &
                (/temp(1:pertden_nr_columns)/), &
                (/.false., .true./))
