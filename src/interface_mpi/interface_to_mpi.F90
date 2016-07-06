@@ -246,6 +246,7 @@ module interface_to_mpi
   integer,                        parameter, public :: df_mpi_mode_rdonly  = mpi_mode_rdonly 
   integer,                        parameter, public :: df_mpi_mode_rdwr    = mpi_mode_rdwr   
   integer,                        parameter, public :: df_mpi_mode_create  = mpi_mode_create 
+  integer,                        parameter, public :: df_mpi_mode_sequential = mpi_mode_sequential
   integer,                        parameter, public :: df_mpi_mode_excl    = mpi_mode_excl
   integer,                        parameter, public :: df_mpi_mode_delete_on_close  = mpi_mode_delete_on_close 
   integer,                        parameter, public :: df_mpi_file_null    = mpi_file_null
