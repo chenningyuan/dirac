@@ -26,7 +26,7 @@
 
   end subroutine
 
-   subroutine input_processor(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2)
+   subroutine input_processor(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2,H_II)
 
 #include "symm.inc"
 #include "complex.inc"
@@ -41,15 +41,19 @@
 
    real*8, intent(in)  :: Fbar_HH(:),Fbar_PP(:),Vbar_SS(:)
    real*8, intent(inout) :: R1(:,:), R2(:,:) ! (ndimt1,nroot) and (ndimt2,nroot)
+   real*8, intent(inout) :: H_II(:)
 
 !Local Variables
 !==============
 
    integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1)
    real*8  :: fac1
-   real*8,allocatable  :: H_II(:)
    real*8  :: eps((iv(nrep+1)+io(nrep+1))) 
    integer :: icount, acount
+
+   integer :: abij, ijrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b
+   real(kind=8) :: fac, fac3, fac2
+
 
 !   iarep = nr_roots(1)
 !   nroot = nr_roots(2)
@@ -70,15 +74,17 @@
 
      i = 1
      ii = 1
+     print *, "nrep is ",nrep
      do irep = 1, nrep
-        call dcopy (no(irep),Fbar_HH(ii),((no(irep)+1)*rcw),eps(i),1)
+        print *, irep, i, ii, no(irep)
+        if (no(irep) .gt. 0) call dcopy (no(irep),Fbar_HH(ii),((no(irep)+1)*rcw),eps(i),1)
         i  =  i + no(irep)
         ii =  ii + NO(irep)* no(irep) * rcw
      enddo
 
      ii = 1
      do irep = 1, nrep
-        call dcopy (nv(irep),Fbar_PP(ii),((nv(irep)+1)*rcw),eps(i),1)
+        if (nv(irep) .gt. 0) call dcopy (nv(irep),Fbar_PP(ii),((nv(irep)+1)*rcw),eps(i),1)
         i  =  i + nv(irep)
         ii =  ii + NV(irep)* nv(irep) * rcw
      enddo
@@ -87,7 +93,7 @@
 
    case ('EE')
 
-    allocate(H_II(nfvo*rcw))
+!   allocate(H_II(nfvo*rcw))
 
     ai = 1
     ii = 0
@@ -107,6 +113,47 @@
         enddo
     enddo
 
+!aspg+as
+      ABIJ = ai 
+      DO IJRP = 1, NREP
+      DO 10 JRP = 1, NREP
+      JJ = IO(JRP)
+      IRP = MULTB(JRP,IJRP+NREP,2)
+      IF (IRP.LT.JRP) GOTO 10
+      IOFF = IO(IRP)
+      DO J = 1, NO(JRP)
+         JJ = JJ + 1
+         FAC1 = EPS(JJ)
+         IMIN = 1
+         IF (IRP.EQ.JRP) IMIN = J + 1
+         DO I = IMIN, NO(IRP)
+            II = IOFF + I
+            FAC2 = EPS(II) + FAC1
+            DO 20 BRP = 1, NREP
+            BB = IV(BRP) + IO(NREP+1)
+            ARP = MULTB(BRP,IJRP+NREP,2)
+            IF (ARP.LT.BRP) GOTO 20
+            AOFF = IV(ARP) + IO(NREP+1)
+            DO B = 1, NV(BRP)
+               BB = BB + 1
+               FAC3 = FAC2 - EPS(BB)
+               AMIN = 1
+               IF (ARP.EQ.BRP) AMIN = B + 1
+               DO A = AMIN, NV(ARP)
+                  AA = AOFF + A
+                  FAC = FAC3 - EPS(AA)
+                  H_II(ABIJ) = FAC
+                  ABIJ = ABIJ + 1
+               ENDDO
+            ENDDO
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+!aspg+as
+
+
     do iroot = 1, nroot
      k = minloc(H_II) 
      write(*,*)'roots',iroot,H_II(k(1)) 
@@ -115,13 +162,13 @@
      R1(i,iroot) = 1.0d0
     enddo
 
-     deallocate(H_II)
+!    deallocate(H_II)
 
    case ('IP')
 
 !As of now, I am targetting the lowest energy determinants across the symmetries.
 
-     allocate(H_II(io(nrep+1)*rcw))    
+!    allocate(H_II(io(nrep+1)*rcw))    
 
     H_II = -eps(1:(io(nrep+1)*rcw))
 
@@ -133,11 +180,11 @@
      R1(i,iroot) = 1.0d0
     enddo
 
-     deallocate(H_II)
+!    deallocate(H_II)
 
    case ('EA')
 
-     allocate(H_II(iv(nrep+1)*rcw))    
+!    allocate(H_II(iv(nrep+1)*rcw))    
 
       H_II = eps((1+no(nrep+1)):(no(nrep+1)+nv(nrep+1)))
 
@@ -148,7 +195,7 @@
         H_II(i) = 8000.0d0
         R1(i,iroot) = 1.0d0
       enddo
-     deallocate(H_II)
+!    deallocate(H_II)
 
   end select 
 
@@ -278,6 +325,7 @@
 
       allocate (r1(ndimt1*rcw,nroot))
       allocate (r2(ndimt2*rcw,nroot))
+      allocate (B%H_II((ndimt1+ndimt2)*rcw))
 
       allocate (sigma1(ndimt1*rcw,nroot),stat=AllocateStatus)
 
@@ -286,7 +334,7 @@
 
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-    call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
+    call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2,B%H_II)
 
 !   do iroot = 1, nroot
 !     sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
@@ -320,11 +368,12 @@
 
        allocate (r1(ndimr1*rcw,nroot))
        allocate (r2(ndimr2*rcw,nroot))
+       allocate (B%H_II(io(nrep+1)*rcw)) 
 
 !      allocate (sigma1(ndimr1*rcw,nroot))
 !      allocate (sigma2(ndimr2*rcw,nroot))
 
-       call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2)
+       call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2,B%H_II)
 
 !   do iroot = 1, nroot
 
@@ -384,8 +433,8 @@
 
         b_guess => merge_arrays(1, r1, r2)
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-
-        call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
+!       call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
+        call davidson_driver(nroot, B, symmetric, davResults, verbose)
     
     end if
 !    call davidson 

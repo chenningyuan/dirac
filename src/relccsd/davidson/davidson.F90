@@ -743,12 +743,12 @@ contains
         sigma_vector => create_sigma_vector(A, b)
         M_small => create_reduced_problem(b, sigma_vector)
 
-        if (verbose) then
+        if (verbose_local) then
             call print_vectors_R(b, label="Final subspace vectors        ")
             print "(4x,a,i6,a)", "After iteration ", niter,",  Eigenvalues for the smaller problem"
         end if
         call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
-                                            c_small_r, c_small_l, left=left, verbose=verbose)
+                                            c_small_r, c_small_l, left=left, verbose=verbose_local)
 
         call form_eigenvalues_full_problem(results%eValuesRe, results%eValuesIm, nroots, e_small_r, e_small_i) 
         if (left)  call form_eigenvector_full_problem(results%eVectorsL,nroots,b,c_small_l, .true.)
@@ -804,7 +804,7 @@ contains
 
         call solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
         call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
-        if (verbose_local) &
+!       if (verbose_local) &
         call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local, right_local, nroots=nroots_local)
 
     end subroutine

@@ -24,6 +24,7 @@
       real(8),allocatable,dimension(:) :: Fbar_mi, Fbar_me, Fbar_ae                                         ! all 1-b intermediates 
       real(8),allocatable,dimension(:) :: W_ijmn, W_ejmb, W_mbej, W_iemn, W_efam, W_amef, W_mnie, Wbar_mbej ! all 2-b intermediates   
       real(8),allocatable,dimension(:) :: t1, t2
+      real(8),allocatable,dimension(:) :: H_II
     endtype intermediates
 
     real(kind=8), pointer :: local_buf1(:) 
@@ -79,7 +80,7 @@
          case ("IP")
          case ("EA")
          case ("EE")
-             create_diagonal = 1.0d0
+             create_diagonal = A%H_II 
       end select
 
    end function
