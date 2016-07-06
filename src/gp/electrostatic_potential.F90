@@ -405,6 +405,12 @@ module electrostatic_potential
           do ipoint = 1, nr_points
             print *, "Electronic ESP @point", ipoint, vector(ipoint)
           end do
+          if (do_matrix) then
+            write(*, *) 'matrix from get_electronic_mep'
+           CALL PRQMAT(matrix(1,1,1),mat_dim, mat_dim, mat_dim, &
+                        mat_dim, 1,(/1, 2, 3, 4/), 6)
+          end if
+
       end if
 
    end subroutine 
