@@ -940,7 +940,7 @@
 
 !--------------------local variables----------------
    integer :: mint,off1,off2,off3,off4,off5
-   integer :: abkl,m,n,k,irrep,irep,mm(nrep)
+   integer :: abkl,m,n,k,irrep,irep,mm(mxrep)
    integer :: xxt3vvvt(nrep,nrep),yt3vvvt(nrep),zt3vvvot(nrep+1),zt3vvvvt(nrep+1)
    real*8,allocatable :: w_vvvv_temp(:),w_vvvv_temp_temp(:),w_v(:)  
 !---------------------------------------------------
