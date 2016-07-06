@@ -428,6 +428,7 @@ module fde_evaluators_dirac
          real(8) :: time_start, time_total
          real(8), allocatable :: buffer(:,:), vector(:)
          real(8), external :: second
+         logical :: debug_me
 
 
          time_start = second()
@@ -445,50 +446,51 @@ module fde_evaluators_dirac
 
          do icomp = 1, ncomp
             allocate(buffer(ndim,ndim))
+            buffer = 0.0d0
 !           columns correspond only to rho_0 (no spin density, no gradients)
-            !icol = fde_pertden_ncol - 48 + icomp
             icol = 10 + icomp
-            write(*, *) 'buba icomp = ', icomp
             allocate(vector(np))
             do i = 1, np
-              !vector(i) = pertden(icol,i)*fde_grid_im%w(i)
-              vector(i) = fde_grid_im%w(i)
+              vector(i) = pertden(icol,i)*fde_grid_im%w(i)
             end do
             call get_electronic_mep(np,                &
                                     buffer,            &
                                     ndim,              &
-                                    fde_grid_im%r(1:3,1:np),     & 
-                                    vector, &
+                                    fde_grid_im%r(1:3,1:np),  & 
+                                    vector,            &
                                     work, lwork,       &
                                     0,                 &
                                      .true.,  &
                                     .false.)
-               deallocate(vector)
-               do j = 1, ndim
-                  do i = 1, j
-!                       we have to antisymmetrize it, as fmat ^B is antisymmetric
-                        average = 0.5d0*(buffer(i,j) - buffer(j,i))
-                        buffer(j,i) = average
-                        buffer(i,j) =-average
-                  end do
+            deallocate(vector)
+            do j = 1, ndim
+               do i = 1, j
+!                    we have to antisymmetrize it, as fmat ^B is antisymmetric
+                     average = 0.5d0*(buffer(i,j) - buffer(j,i))
+                     buffer(j,i) = average
+                     buffer(i,j) =-average
                end do
+            end do
 
-              write(*, *) 'buba buffer, icomp = ', icomp
-              CALL PRQMAT(buffer,ndim, ndim, ndim, &
-                    ndim, 1,(/1, 2, 3, 4/), 6)
+            debug_me = .false.
+            if (debug_me) then
+               write(*, *) 'Coulomb-coupling term: buffer, icomp = ', icomp
+               CALL PRQMAT(buffer,ndim, ndim, ndim, &
+                     ndim, 1,(/1, 2, 3, 4/), 6)
+               write(*, *) 'Coulomb-coupling term: fmat before daxpy, icomp = ', icomp
+               CALL PRQMAT(fmat(1,1,1,icomp),ndim, ndim, ndim, &
+                     ndim, nz,(/1, 2, 3, 4/), 6)
+            end if
 
-              write(*, *) 'buba fmat before, icomp = ', icomp
-              CALL PRQMAT(fmat(1,1,1,icomp),ndim, ndim, ndim, &
-                    ndim, nz,(/1, 2, 3, 4/), 6)
+            call daxpy(ndim*ndim, 1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
 
-
-            call daxpy(ndim*ndim, -1.0d0, buffer, 1, fmat(1,1,1,icomp), 1)
             deallocate(buffer)
 
-              write(*, *) 'buba fmat after, icomp = ', icomp
-              CALL PRQMAT(fmat(1,1,1,icomp),ndim, ndim, ndim, &
-                    ndim, nz,(/1, 2, 3, 4/), 6)
-
+            if (debug_me) then
+               write(*, *) 'Coulomb-coupling term: fmat after daxpy, icomp = ', icomp
+               CALL PRQMAT(fmat(1,1,1,icomp),ndim, ndim, ndim, &
+                     ndim, nz,(/1, 2, 3, 4/), 6)
+            end if
 
          end do
 
@@ -1187,5 +1189,6 @@ module fde_evaluators_dirac
          nr_boson_irreps = nbsym
 
       end subroutine fde_dirac_data_interface
+
 
 end module fde_evaluators_dirac
