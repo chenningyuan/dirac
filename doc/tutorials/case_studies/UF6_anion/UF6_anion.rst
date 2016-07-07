@@ -1,5 +1,4 @@
-:orphan:
- 
+.. _UF6anion: 
 
 ========================
 The :math:`UF_6` anion
@@ -9,7 +8,7 @@ The problem
 -----------
 
 This case study, suggested by `Kirk Peterson <http://tyr0.chem.wsu.edu/~kipeters/>`_ concerns the 
-calculation of the :math:`UF_6` anion using effective core potentials
+calculation of the :math:`UF_6` anion using effective core potentials (ECP)
 
 .. image:: UF6.jpg
    :scale: 50
