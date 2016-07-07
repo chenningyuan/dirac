@@ -2225,7 +2225,10 @@ C
 !       --------------------------------------
 !       this is the coupling-kernel contribution
 !       which involves the nonadditive xc and kinetic energy functionals
-!       There is no contribution from the Coulomb term
+!       There is no contribution from the Coulomb term from LAO phase factor
+!       in closed-shell systems (only the reorthonormalization term,
+!       but this is taken care of in LORDRNT subroutine which uses
+!       Coulomb term calculated for property gradient and stored on FCKLON file)
         if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker
      &        .and. .not. fde_cfg_no_sdft) then
           if (fde_rsp_mag_lao_import) then
@@ -2247,7 +2250,7 @@ C
 
             if (iprprp .ge. 1) then
               CALL HEADER('FDE 2-el contribution dependent on ' //
-     &                'embedding kernel, coupling two subsystems', -1)
+     &                'coupling embedding kernel (no Coulomb)', -1)
               CALL POLPRI(sus2el_fde_3,'   ',-2)
               AVERAG = (sus2el_fde_3(1,1) + sus2el_fde_3(2,2)
      &                + sus2el_fde_3(3,3))/3.0d0
