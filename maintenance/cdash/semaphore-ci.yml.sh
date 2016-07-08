@@ -35,7 +35,7 @@ echo
 
 # install packages
 echo "installing packages :"
-sudo apt-get update
+#sudo apt-get update
 sudo apt-get install gcc -y
 sudo apt-get install g++ -y
 sudo apt-get install gfortran -y
@@ -57,6 +57,13 @@ sudo pip install sphinxcontrib-bibtex
 sudo pip install sphinx_rtd_theme
 sudo pip install hieroglyph
 
+# install most recent CMake
+wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
+export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
+cmake --version
+
+
 # CDash project name 
   export CTEST_PROJECT_NAME="DIRACext"
 # set for parallel buildup
@@ -73,7 +80,6 @@ echo "Number of processors/jobs for test step is $TEST_N_PROC"
 git submodule update --init --recursive
 
 # 64-bit Integer, MPICH parallel build
-python ./pamadm -a --builddir=build_semaphore-ci_i8
 python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --blas=off --lapack=off --cmake-options="-D BUILDNAME='mpich-gnu-i8_semaphore' -D DART_TESTING_TIMEOUT=9999 -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON"  build_semaphore-ci_i8
 cd build_semaphore-ci_i8
 ctest -D ExperimentalConfigure

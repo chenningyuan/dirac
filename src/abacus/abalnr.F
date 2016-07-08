@@ -22,7 +22,6 @@
 !dalton_copyright_end
 
 #ifndef PRG_DIRAC
-#include "single.h"
 C
 C  /* Deck lnrinp */
       SUBROUTINE LNRINP(WORD)

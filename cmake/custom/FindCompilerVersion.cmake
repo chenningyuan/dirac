@@ -152,14 +152,14 @@ if(CMAKE_Fortran_COMPILER_VERSION)
 	
     # and available version of compiler must be greater or equal than minimum required version
 	if(NOT (CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER REQUIRED_Fortran OR CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL REQUIRED_Fortran))
-		message(WARNING 
-        "Not supported version of Fortran compiler. Found: ${CMAKE_Fortran_COMPILER_VERSION}, Required: ${REQUIRED_Fortran}")
+		message(STATUS 
+        "Not supported version of Fortran compiler according to CMake. Found: ${CMAKE_Fortran_COMPILER_VERSION}, Required: ${REQUIRED_Fortran}")
 	endif()
 else()
 	# if CMake variable is not defined, only compiler version from Python script must be equal or greater
 	# than minimum required version
 	if(NOT (PYTHON_Fortran_VERSION VERSION_GREATER REQUIRED_Fortran OR PYTHON_Fortran_VERSION VERSION_EQUAL REQUIRED_Fortran))
-		message(WARNING 
+		message(WARNING
 		"Not supported version of Fortran compiler. Found: ${PYTHON_Fortran_VERSION}, Required: ${REQUIRED_Fortran}")
 	endif()
 endif()

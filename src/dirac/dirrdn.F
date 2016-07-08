@@ -1297,9 +1297,7 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
 ! with '*' format  (Ex: '   BARE NUC' became 'BARE       ' in LINE !)
 !              READ (LUCMD,*) LINE
                READ (LUCMD,'(A)') LINE
-               ! write (lupri,*) 'hjaaj: .MOSTAR line 1 ',line
                CALL UPCASE(LINE)
-               ! write (lupri,*) 'hjaaj: .MOSTAR line 2 ',line
                IF (INDEX(LINE,'HUCKEL').ne.0 .OR.
      &             INDEX(LINE,'EHT').ne.0) THEN
                   DOHUCKEL = .TRUE.
@@ -8205,13 +8203,13 @@ C         if reading input from a terminal
       PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
          GO TO 930
-      ELSEIF(PROMPT.EQ.'.') THEN
+      ELSE IF(PROMPT.EQ.'.') THEN
 C
 C        Look for 2-component Hamiltonians
 C
          IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   '.OR.
      &       WORD.EQ.'.X2C   '.OR.WORD.EQ.'.X2COLD'.OR.
-     &       WORD.EQ.'.X2Cmmf') THEN
+     &       WORD.EQ.'.X2CMMF') THEN
 C............active 2-component modus
            TWOCOMP=.TRUE.
 C............variable telling that this is a 2-component relativistic calculation
@@ -8331,24 +8329,26 @@ C
 C     Position menu file at the specified keyword
 C
 C     Written by L. Visscher, october 2006
+C     Revsision Jan. 2016 hjaaj: Comparison is now case insensitive.
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL KEY_FOUND
-      CHARACTER LINE*80,KEYWORD*(*)
+      CHARACTER LINE*80, KEYWORD*(*), KEYWORD_UPCASE*80
 C
       KEY_FOUND = .FALSE.
       REWIND (LUCMD,IOSTAT=IOS)
 C
-      LEN_KEYWORD = LEN(KEYWORD)
+      LEN_KEYWORD = MIN(LEN(KEYWORD),80)
+      KEYWORD_UPCASE(1:LEN_KEYWORD) = KEYWORD(1:LEN_KEYWORD)
+      CALL UPCASE(KEYWORD_UPCASE(1:LEN_KEYWORD))
+
   200 READ (LUCMD,'(A80)',END=220,ERR=210) LINE
-Caspg write (6,*) 'line:',line
-      CALL BLANKR (80,LINE)
+      CALL UPCASE(LINE)     ! change any lower case characters to upper case
+      CALL BLANKR(80,LINE)  ! move any text all the way to the left of LINE
 C
-Caspg write (6,*) 'test1',LINE(1:LEN_KEYWORD),':'
-Caspg write (6,*) 'test2',KEYWORD(1:LEN_KEYWORD),':'
-      IF (LINE(1:LEN_KEYWORD) .EQ. KEYWORD(1:LEN_KEYWORD)) THEN
+      IF (LINE(1:LEN_KEYWORD) .EQ. KEYWORD_UPCASE(1:LEN_KEYWORD)) THEN
          KEY_FOUND = .TRUE.
          GO TO 220
       ENDIF
@@ -8381,7 +8381,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER (NTABLE = 31)
+      PARAMETER (NTABLE = 10)
 !     PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 !
       LOGICAL SET, NEWDEF, LBIT, RESET
@@ -8401,12 +8401,7 @@ C
 !     ...The variable "SET" must have save attribute.
       SAVE SET
       DATA TABLE /'.PRINT ','.INACT ','.ACTIVE','.NREP  ','.NOPEN ',
-     &            '.GASO  ','.IELC  ','.MINMAX','.TRDM  ','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX'/
+     &            '.GASO  ','.IELC  ','.MINMAX','.TRDM  ','.XXXXXX'/
       DATA SET/.FALSE./
 !
       DATA MAXACT/31/
@@ -8461,10 +8456,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31), I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -8573,27 +8565,6 @@ C
                GO TO 100
 !
    10          CONTINUE
-   11          CONTINUE
-   12          CONTINUE
-   13          CONTINUE
-   14          CONTINUE
-   15          CONTINUE
-   16          CONTINUE
-   17          CONTINUE
-   18          CONTINUE
-   19          CONTINUE
-   20          CONTINUE
-   21          CONTINUE
-   22          CONTINUE
-   23          CONTINUE
-   24          CONTINUE
-   25          CONTINUE
-   26          CONTINUE
-   27          CONTINUE
-   28          CONTINUE
-   29          CONTINUE
-   30          CONTINUE
-   31          CONTINUE
 !&&&  XXXXXX: invalid data
                   CALL QUIT('*** ERROR in COSCI_INP *** ' //
      &                      'invalid data XXXXXX')
@@ -8690,7 +8661,7 @@ C
      &   (SYA_ACTIV(I),I=1,NFSYM)
 !
       WRITE(LUPRI,'(A,I4)')
-     &   ' * # fermi+boson irreps : ', NREP
+     &   ' * # fermi+boson irreps : ', SYA_NREP
 !
       WRITE(LUPRI,'(A,I4)')
      &   ' * Number of gas shells : ', SYA_NOPEN

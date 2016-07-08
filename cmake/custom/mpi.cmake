@@ -1,3 +1,4 @@
+# depends on CMake's default module FindMPI (on Ubuntu, /usr/share/cmake-2.8/Modules/FindMPI.cmake)
 if(MPI_FOUND)
     include(CheckFortranSourceCompiles)
 
@@ -6,7 +7,7 @@ if(MPI_FOUND)
 
     # test whether MPI module is compatible with compiler
     file(READ "${PROJECT_SOURCE_DIR}/cmake/custom/test-MPI-compiler-compatibility.F90" _source)
-    check_fortran_source_compiles(
+    check_fortran_source_compiles1(
         ${_source}
         MPI_COMPILER_MATCHES
         )
@@ -19,7 +20,7 @@ if(MPI_FOUND)
 
     # test whether MPI integer type matches
     file(READ "${PROJECT_SOURCE_DIR}/cmake/custom/test-MPI-itype-compatibility.F90" _source)
-    check_fortran_source_compiles(
+    check_fortran_source_compiles1(
         ${_source}
         MPI_ITYPE_MATCHES
         )
@@ -37,5 +38,11 @@ if(MPI_FOUND)
         message(STATUS "32-bit integer MPI interface activated by the user")
         add_definitions(-DVAR_MPI_32BIT_INT)
         set(USE_32BIT_MPI_INTERFACE TRUE)
+    endif()
+
+    if(ENABLE_64BIT_INTEGERS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ilp64")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ilp64")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ilp64")
     endif()
 endif()

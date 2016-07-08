@@ -4,7 +4,7 @@
 #
 # Variables used::
 #
-#   MATH_LIB_SEARCH_ORDER, example: set(MATH_LIB_SEARCH_ORDER MKL ESSL ATLAS ACML SYSTEM_NATIVE)
+#   MATH_LIB_SEARCH_ORDER, example: set(MATH_LIB_SEARCH_ORDER MKL ESSL OPENBLAS ATLAS ACML SYSTEM_NATIVE)
 #   ENABLE_STATIC_LINKING
 #   ENABLE_BLAS
 #   ENABLE_LAPACK
@@ -37,18 +37,20 @@
 #   MKL_ROOT
 #   MKLROOT
 #
-# autocmake.cfg configuration::
+# autocmake.yml configuration::
 #
-#   docopt: --blas=<BLAS> Detect and link BLAS library (auto or off) [default: auto].
-#           --lapack=<LAPACK> Detect and link LAPACK library (auto or off) [default: auto].
-#           --mkl=<MKL> Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
-#   define: '-DENABLE_BLAS=%s' % arguments['--blas']
-#           '-DENABLE_LAPACK=%s' % arguments['--lapack']
-#           '-DMKL_FLAG=%s' % arguments['--mkl']
-#           '-DMATH_LIB_SEARCH_ORDER="MKL;ESSL;ATLAS;ACML;SYSTEM_NATIVE"'
-#           '-DBLAS_LANG=Fortran'
-#           '-DLAPACK_LANG=Fortran'
-#   warning: 'This module is deprecated and will be removed in future versions'
+#   docopt:
+#     - "--blas=<BLAS> Detect and link BLAS library (auto or off) [default: auto]."
+#     - "--lapack=<LAPACK> Detect and link LAPACK library (auto or off) [default: auto]."
+#     - "--mkl=<MKL> Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off]."
+#   define:
+#     - "'-DENABLE_BLAS={0}'.format(arguments['--blas'])"
+#     - "'-DENABLE_LAPACK={0}'.format(arguments['--lapack'])"
+#     - "'-DMKL_FLAG={0}'.format(arguments['--mkl'])"
+#     - "'-DMATH_LIB_SEARCH_ORDER=\"MKL;ESSL;OPENBLAS;ATLAS;ACML;SYSTEM_NATIVE\"'"
+#     - "'-DBLAS_LANG=Fortran'"
+#     - "'-DLAPACK_LANG=Fortran'"
+#   warning: "the math_libs.cmake module is deprecated and will be removed in future versions"
 
 #-------------------------------------------------------------------------------
 # ENABLE_STATIC_LINKING
@@ -88,8 +90,8 @@ if(ENABLE_64BIT_INTEGERS)
    set(ESSL_BLAS_LIBS   esslsmp6464)
    set(ESSL_LAPACK_LIBS esslsmp6464)
 else()
-   set(ESSL_BLAS_LIBS   essl)
-   set(ESSL_LAPACK_LIBS essl)
+   set(ESSL_BLAS_LIBS   esslsmp)
+   set(ESSL_LAPACK_LIBS esslsmp)
 endif()
 
 #-------------------------------------------------------------------------------
@@ -506,7 +508,7 @@ if (ENABLE_STATIC_LINKING)
         BLAS_TYPE MATCHES SYSTEM_NATIVE OR
         BLAS_TYPE MATCHES OPENBLAS)
         #cc_blas_static with ATLAS on travis-ci needs -lm
-        set(MATH_LIBS ${MATH_LIBS} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -lm)
+        set(MATH_LIBS ${MATH_LIBS} -Wl,--whole-archive -lpthread -ldl -Wl,--no-whole-archive -lm)
     endif()
     if (LAPACK_TYPE MATCHES MKL OR
         BLAS_TYPE MATCHES MKL)

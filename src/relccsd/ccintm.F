@@ -53,6 +53,15 @@ C
 C---------------Local variables--------------------------------------
 C
       real*8 ddot
+
+      interface
+         subroutine gettau(t1,t2,tau)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         end subroutine gettau
+      end interface
+
+
 C---------------Executable code--------------------------------------
 C
 C--------------------
@@ -65,7 +74,7 @@ C A(KL,IJ) = A(KL,IJ) + PIJ ( W(KL,IC) * T(C,J) )
 C------------------------------------------------
       CALL GETVOOO (BUF1)
       CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
-      CALL SRT9 (NREP,MULTB,NVO,NV,NO,NOOT,NOOOT,KOOOVT,KKOOOT,
+      CALL SRT9 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,NOOOT,KOOOVT,KKOOOT,
      &           BUF1,BUF2)
       CALL CNTRCT ('N','N',NOOOT,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
       CALL SRT1T3 (NREP,MULTB,LTR,NOOT,NO,NO,NOOOT,KOOOOT,KKOOOT,
@@ -244,6 +253,14 @@ C
       real*8 ddot,xsum
 C
 C---------------Executable code--------------------------------------
+
+      interface
+         subroutine gettau(t1,t2,tau)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         end subroutine gettau
+      end interface
+
 C
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
@@ -272,6 +289,7 @@ C step !
 C---------------------------------------------------------------------
       CALL GETVOVO (H)
       CALL DELINT ('VOVO','KDDK',H,0,0,0)
+
 C----------------------------------------
 C H(AK,CI) = H(AK,CI) + T(A,L) * W(LK,CI)
 C----------------------------------------
@@ -288,6 +306,7 @@ C----------------------------------------
         CALL XCOPY(NV4,A0,0,BUF1,1)
 
       ENDIF
+
 
 C ***************************
 C ** END OF TASK SPLITTING **
@@ -367,6 +386,7 @@ C                   ---------------------------------------
  15        CONTINUE
  20      CONTINUE
  30    CONTINUE
+
 C------------------------------------------------------------------
 C Now sort H(AK,CI) to H(AI,CK)  is to be done in any case !!
 C The H buffer is not changed any more up to the final XGEMM !
@@ -456,6 +476,12 @@ C---------------Local variables--------------------------------------
 C
       real*8 ddot
 C---------------Executable code--------------------------------------
+      interface
+         subroutine gettau(t1,t2,tau)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         end subroutine gettau
+      end interface
 C
 C---------------------------------------
 C H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
@@ -572,7 +598,15 @@ C---------------Local variables--------------------------------------
       REAL*8 ddot
 C
 C---------------Executable code--------------------------------------
-C
+
+
+      interface
+         subroutine gettau(t1,t2,tau)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         end subroutine gettau
+      end interface
+
 C---------------------------------------
 C H(A,C) = F(A,C)  - DELTA(A,C) * EPS(A)
 C---------------------------------------
@@ -644,7 +678,14 @@ C
       REAL*8 ddot
 C
 C---------------Executable code--------------------------------------
-C
+
+      interface
+         subroutine gettau(t1,t2,tau)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         end subroutine gettau
+      end interface
+
       IF (EQNS.EQ.'AMPLTD') THEN
          TEQ = .TRUE.
       ELSEIF (EQNS.EQ.'LAMBDA') THEN
@@ -655,7 +696,7 @@ C
          CALL QUIT('Wrong keyword in call to BINTM')
       ENDIF
 C---------------------------------------------
-C S(AB,CD) =  S(AB,CD) + V(AB,CD) * TAU(CD,IJ)
+C S(AB,IJ) =  S(AB,IJ) + V(AB,CD) * TAU(CD,IJ)
 C---------------------------------------------
       IF (TEQ) THEN
          CALL GETTAU (T1,T2,BUF1)
@@ -765,7 +806,8 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 T1(*),T2(*),TAU(*)
+      REAL*8,intent(in) :: T1(*),T2(*)
+      REAL*8,intent(out) :: TAU(*)
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -774,11 +816,13 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 T1MIN(2)
-      DATA T1MIN /2*0.0D0/
+      REAL*8  T1MIN(2)
+      DATA    T1MIN /2*0.0D0/
+    
 C
 C---------------Executable code--------------------------------------
 C
+
       CALL XCOPY (NDIMT2,T2,1,TAU,1)
 C
       ABIJOFF = 0
@@ -796,19 +840,21 @@ C
 C--------------------------------------------------------
 C TAU(AB,IJ) = T2(AB,IJ) + T1(A,I) * T1(B,J)
 C--------------------------------------------------------
+
             IF (BRP.EQ.JRP) THEN
                AB = 1
                BJ = (IVO(JRP) + (J-1) * NV(JRP)) * RCW + 1 ! off-set to (B=1,J)
                DO B = 1, NV(BRP)
                   AMIN = 1
                   IF (ARP.EQ.BRP) AMIN = B + 1 ! defines a triangular loop A > B
-                  AI = (IVO(IRP) + (I-1) * NV(IRP) + AMIN - 1) * RCW + 1 ! off-set to (A=1,I)
+                  AI = (IVO(IRP) + (I-1) * NV(IRP) + AMIN - 1) * RCW +1 ! off-set to (A=1,I)
                   NA = NV(ARP) - AMIN + 1
                   CALL XAXPY (NA,T1(BJ),T1(AI),1,TAU(ABIJOFF+AB),1) ! T1(BJ) is a scalar here
                   AB = AB + NA * RCW
                   BJ = BJ + RCW
                ENDDO
             ENDIF
+
 C--------------------------------------------------------
 C TAU(AB,IJ) = T2(AB,IJ) - T1(A,J) * T1(B,I)
 C--------------------------------------------------------
@@ -843,7 +889,9 @@ C--------------------------------------------------------
 C
       RETURN
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
       SUBROUTINE GETTAU2 (S1,DL,TAU)
 C
       IMPLICIT INTEGER (A-Z)
@@ -1204,7 +1252,14 @@ C
       real*8 ddot,xsum
 C
 C---------------Executable code--------------------------------------
-C
+
+      interface
+         subroutine gettau(t1,t2,tau)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         end subroutine gettau
+      end interface
+
 C---------------------------------------------------------------------
 C CZ(AL,IJ) = V(AL,IJ)
 C---------------------------------------------------------------------
@@ -1262,7 +1317,7 @@ C------------------------------------------------------------------
 C CZ(AL,IJ) = CZ(AL,IJ) + PIJ.[ T(AC,IK) * LVOOO1(KL,CJ) ]
 C------------------------------------------------------------------
       IF (CARITH) CALL CONJUGA (NV2,BUF1,1)
-      CALL SRT1ST4 (NREP,MULTB,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
+      CALL SRT1ST4 (NREP,MULTB,LFA,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
      &              BUF1,BUF2)
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
@@ -1292,7 +1347,7 @@ C------------------------------------------------------------------
 C CZ(AL,IJ) = CZ(AL,IJ) + PIJ.[ V(AL,ID) * T(D,J) ]
 C------------------------------------------------------------------
       CALL GETVOVO (BUF1)
-      CALL SRT19 (NREP,MULTB,NVO,NV,NO,NVOO,KVOOV,KKVOO,BUF1,BUF2)
+      CALL SRT19 (NREP,MULTB,LFA,NVO,NV,NO,NVOO,KVOOV,KKVOO,BUF1,BUF2)
       OFF1 = 1
       OFF2 = 1
       OFF3 = 1
@@ -1369,6 +1424,13 @@ C
       LOGICAL DONE
 C
 C---------------Executable code--------------------------------------
+
+      interface
+         subroutine gettau(t1,t2,tau)
+         real*8,intent(in) :: t1(*),t2(*)
+         real*8,intent(out) :: tau(*)
+         end subroutine gettau
+      end interface
 C
 C -------------------------------------------------------------
 C H1(AK,CJ) = V(AK,CJ) + V(AK,CD) * T(D,J) - V(KL,CD) * T(AD,LJ)
@@ -1638,6 +1700,95 @@ C
 C
       RETURN
       END
+
+!###############################################################################
+
+      SUBROUTINE CNTRCT_SP (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
+     &                   BETA,C)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     Generalization of XGEMM to contract symmetry packed matrices
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+#include "symm.inc"
+      REAL*8 A(*),B(*),C(*)
+      COMPLEX*16 ALPHA,BETA
+      INTEGER MDIM(NREP),NDIM(NREP),KDIM(NREP)
+      CHARACTER*1 TRANSA,TRANSB
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+      INTEGER :: OFFXX(NREP+1),OFFYY(NREP+1),OFFZZ(NREP+1),IRP,JRP
+C---------------Executable code--------------------------------------
+C
+
+       OFFXX(1) = 0
+       OFFYY(1) = 0
+       OFFZZ(1) = 0
+
+      DO IRP = 1, NREP
+         JRP = MULTB(IRP+NREP,1+NREP,2)
+         OFFXX(IRP+1) = OFFXX(IRP) + MDIM(IRP)*KDIM(JRP) 
+         if (TRANSB.EQ.'N'.OR.TRANSB.EQ.'n') then
+          OFFYY(IRP+1) = OFFYY(IRP) + KDIM(IRP)*NDIM(JRP)
+         else
+          OFFYY(IRP+1) = OFFYY(IRP) + NDIM(IRP)*KDIM(JRP)
+         endif
+         OFFZZ(IRP+1) = OFFZZ(IRP) + MDIM(IRP)*NDIM(IRP) 
+      ENDDO
+
+      DO IRP = 1, NREP
+
+         JRP = MULTB(IRP+NREP,1+NREP,2)
+
+         OFF1 = 1 + OFFXX(JRP) * RCW
+         OFF2 = 1 + OFFYY(IRP) * RCW
+         OFF3 = 1 + OFFZZ(IRP) * RCW
+
+         M = MDIM(IRP)
+         N = NDIM(IRP)
+         K = KDIM(JRP)
+         IF (TRANSA.EQ.'N'.OR.TRANSA.EQ.'n') THEN
+            LDA = M
+         ELSE
+            LDA = K
+         ENDIF
+         IF (TRANSB.EQ.'N'.OR.TRANSB.EQ.'n') THEN
+            LDB = K
+         ELSE
+            LDB = N
+         ENDIF
+         LDC = M
+         IF (K.EQ.0) THEN
+            CALL XSCAL (M*N,BETA,C(OFF3),1)
+         ELSE
+            CALL XGEMM (TRANSA,TRANSB,M,N,K,ALPHA,A(OFF1),LDA,
+     &                  B(OFF2),LDB,BETA,C(OFF3),LDC)
+         ENDIF
+
+          OFF1 = OFF1 + M*K
+
+      ENDDO
+C
+      RETURN
+      END
+
+!###############################################################################
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DINTM1(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C

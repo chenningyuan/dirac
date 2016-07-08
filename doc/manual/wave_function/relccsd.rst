@@ -3,14 +3,12 @@
 
 .. _relccsd:
 
+============================================
 Kramers unrestricted Coupled-Cluster methods
 ============================================
 
-See :cite:`Visscher1996` for initial CCSD(T) implementation. The Fock-space CC 
+See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space CC 
 implementation is described in :cite:`Visscher2001`.
-
-The old namelist style input used up to DIRAC10 is now no longer supported.
-The input below follows the regular DIRAC style conventions.
 
 starstar(RELCC)
 
@@ -24,7 +22,7 @@ multireference calculations. See further :ref:`*CCFSPC`.
 Because the first sector of Fock space gives the same result as a 
 regular CCSD calculation, the latter calculation is switched off. If you
 do wish to perform also a regular CC calculation (e.g. to get the CCSD(T) energy)
-you need to activate this explicitly via .ENERGY (see below).
+you need to activate this explicitly via :ref:`RELCC_.ENERGY` (see below).
 
 keyword(ENERGY)
 
@@ -38,13 +36,13 @@ to the FS calculation.
 
 ::
 
-    Perform energy calculation..
+    Perform energy calculation.
 
 keyword(GRADIENT)
 
-Calculate the effective 1-particle density matrix (currently only for a
-closed shell MP2 wave function). This option can be used to calculate
-molecular properties. See :cite:`vanStralen2005`.
+Calculate the effective 1-particle density matrix. This option can be used to calculate
+molecular properties. For closed-shell MP2 see :cite:`vanStralen2005`. For closed-shell CC 
+see :cite:`Shee_CCgrad2016`.
 
 *Default:*
 
@@ -54,13 +52,16 @@ molecular properties. See :cite:`vanStralen2005`.
 
 keyword(NELEC)
 
-Number of active electrons. This variable determines the reference determinant to be used in the exponential expansion of the wave function. 
+Number of correlated electrons. This variable determines the reference determinant to be used in the exponential expansion of the wave function. 
 Since the default values correspond to the information passed on by the MOLTRA code on basis of the Hartree-Fock occupations 
-and chosen range of active orbitals in MOLTRA, **there is usually no need to specify this variable manually**. 
+and chosen range of active orbitals in MOLTRA, **for CLOSED SHELL systems there is usually no need to specify this variable manually**. 
+If you do chose to specify this manually, you should make sure to count electrons carefully as the numbers relate to the number of correlated
+electrons rather than the total number. This number may therefore change if you change tresholds in the integral transformation.
 
-Notable exception is the treatment of a high-spin open shell state with the single reference CCSD(T) ansatz. 
-In such a case one first needs to determine the number of closed shell electrons in each irrep and 
-then add to these occupations the open shell electrons (see corresponding tutorial examples). 
+For OPEN SHELL systems it is usually better to employ the multireference Fock space approach, except for simple cases such as 
+a high-spin open shell state. In this case the single reference CCSD(T) ansatz works rater well. For such cases it is easier to use 
+the :ref:`RELCC_.NELEC_OPEN` keyword that allows to just specify the distribution of open shell electrons over the irreps, but for backwards
+compatibility we retain the older NELEC option as well.
 
 *Arguments:*
 
@@ -72,13 +73,34 @@ then add to these occupations the open shell electrons (see corresponding tutori
 
 ::
 
-     Active electrons in these irreps (written by **MOLTRA).
+     Number of correlated electrons in closed shells in these irreps (written by **MOLTRA).
 
-keyword(NEL\_F1)
+keyword(NELEC_OPEN)
 
-Number of electrons in the *gerade* irreps of the Abelian symmetry group. See below for more information.
+Distribution of correlated open shell electrons over the irreps.  This determines the reference determinant for open shell single reference calculations.
 
-keyword(NEL\_F2)
+This input should always be given for average-of-configuration SCF calculations that are followed by a CC calculation. The total number of electrons that is
+given should correspond to the number of open shell electrons.
+
+*Arguments:*
+
+::
+
+    Integer (NELEC_OPEN(I),I=1,NFSYM*2).
+
+*Default:*
+
+::
+
+     Zero. (note that this default leads to wrong results because a closed shell ion will be calculated if no input is given).
+
+keyword(NEL_F1)
+
+Number of electrons in the *gerade* irreps of the Abelian symmetry group. This works like the NELEC keyword, but uses the 
+supersymmetry possible for linear groups in which irreps are ordered as 1/2, -1/2, 3/2, -3/2, 5/2, ... (with the number
+being the m_j value). 
+
+keyword(NEL_F2)
 
 Number of electrons in the *ungerade* irreps of the Abelian symmetry group. 
 
@@ -156,16 +178,28 @@ Deactivate contribution from doubles; corresponds to a CCS calculation.
 
 star(CCFOPR)
 
-Calculate first-order properties (expectation values) for the MP2 wave
+Calculate first-order properties (expectation values) for the MP2 and CCSD wave
 function.
+
+keyword(MP2G)
+Use MP2 wave function. 
+
+keyword(CCSDG)
+Use CCSD wave function.
 
 keyword(NATORB)
 
 Calculate natural orbitals (currently only for MP2 density matrix)
 
-keyword(UNRELAXED)
+keyword(RELAXED)
 
-Use unrelaxed density matrix (computationally cheaper but less accurate)
+Use orbital-relaxed density matrix (currently only for MP2).
+The current default for MP2 and CC wave functions is to use the unrelaxed 
+density matrix. This is computationally less expensive, but also less accurate.
+
+
+
+
 
 star(CCFSPC)
 
@@ -246,7 +280,6 @@ low limit of orbital energies of active occupied
 orbitals, which constitute the secondary Pi space. Could be
 used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
 
-
 keyword(EHMAX)
 
 Maximum orbital energy of occupied orbitals forming the auxiliary (Pi)
@@ -256,7 +289,6 @@ primary (Pm) space.
 This is upper limit of one-electronic energies of
 active occupied orbitals, which constitute the secondary Pi space.
 Could be used in (1,0), (2,0) and (1,1) sectors. Arguments: real.
- 
 
 keyword(EPMIN)
 
@@ -267,7 +299,6 @@ primary (Pm) space.
 This is the low limit of orbital energies of active virtual
 orbitals, which constitute the secondary Pi space.
 Could be used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
- 
 
 keyword(EPMAX)
 
@@ -279,7 +310,6 @@ This is the upper limit of one-electronic energies of active virtual
 orbitals, which constitute the secondary Pi space. Could be
 used in (0,1), (0,2) and (1,1) sectors. Arguments: real.
  
-====================================================
 Other Intermediate Hamiltonian (IH) input parameters
 ====================================================
  

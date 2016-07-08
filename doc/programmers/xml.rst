@@ -16,7 +16,6 @@ data to xml. For more documentation on xml see
     set by the attributes size=, which indicates the number of lines and width=,
     which indicates the number of columns.
 
-Use the -xml option when running pamadm for the modules to be compiled.
 
 Usage
 -----

@@ -792,6 +792,11 @@
          call kw_read(word, relcc_nelec, 2*nfsym)
       end if
 
+      if (kw_matches(word, '.NELEC_OPEN ')) then
+         nelec_open_input = .true.
+         call kw_read(word, relcc_nelec_open, 2*nfsym)
+      end if
+
       if (kw_matches(word, '.NEL_F1')) then
          call kw_read(word, relcc_nelec_f1)
       end if
@@ -835,7 +840,7 @@
 
       if (kw_matches(word, '.GRADIE')) then
          relcc_do_gradient = .true.
-         relcc_do_mp2gradient = .true. ! this is currently the only one available, should thus always be active when gradient is switched on
+         relcc_do_mp2gradient = .true.
       end if
 
       if (kw_matches(word, '.HESSIA')) then
@@ -949,8 +954,8 @@
          relcc_do_naturalorbitals = .true.
       end if
 
-      if (kw_matches(word, '.UNRELAXED')) then
-         relcc_do_unrelaxed = .true.
+      if (kw_matches(word, '.RELAXED')) then
+         relcc_do_relaxed = .true.
       end if
 
       if (kw_matches(word, '.NEOPER')) then
@@ -983,6 +988,7 @@
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
+      integer :: i
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -995,6 +1001,22 @@
 !     do not re-compute orbital energies
       if (kw_matches(word, '.NORECMP')) then
          relcc_no_recompute   = .true.
+      end if
+
+! miro&luuk: expert option - adding finite field perturbation operators
+      if (kw_matches(word, '.NFFOPER')) then
+#ifdef MOD_UNRELEASED
+         call kw_read(word, relcc_nffoper)
+         relcc_ADD_FINITE_FIELD = .TRUE.
+         ! after reading the number of perturbative operators
+         ! read each one after one  - property name and its complex field strength
+         do i=1,relcc_nffoper
+           call kw_read(word, relcc_FF_PROP_NAMES(i))
+           call kw_read(word, relcc_FF_PROP_STRENGTHS(1,i),relcc_FF_PROP_STRENGTHS(2,i))
+         enddo
+#else
+         call quit('.NFFOPER keyword not in the Dirac release version !')
+#endif
       end if
 
       call check_whether_kw_found(word, kw_section)

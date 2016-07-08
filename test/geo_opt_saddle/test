@@ -16,7 +16,7 @@ test.run(['minimum.inp', 'saddle.inp'], ['ethane_1.mol'], f)
 test.run(['constrained.inp'], ['ethane_2.mol'], f)
 
 f = Filter()
-f.add(from_string = '                          Redundant internal coordinates',
+f.add(from_string = '                      PRNRED: Redundant internal coordinates',
       num_lines   = 37,
       rel_tolerance   = 1.0e-4)
 

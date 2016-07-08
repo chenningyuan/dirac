@@ -25,6 +25,4 @@ add_custom_target(
     ${_generated_files}
     )
 
-add_dependencies(dirac dirac_interfaces)
-
 unset(_generated_files)

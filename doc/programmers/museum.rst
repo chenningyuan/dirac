@@ -46,7 +46,7 @@ Shell (sh) scripts for configuring Dirac. Set the platform, compilers, flags, li
 
 pamadm   
 ------
-Shell (sh) script for selecting modules of Dirac.  Currently replaced with platform universal Python version.
+Used to be a shell (sh) script for selecting modules of Dirac. Later replaced with platform universal Python version. Later removed.
 
 Makefile, Makefile.in
 ----------------------

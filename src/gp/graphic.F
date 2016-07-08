@@ -21,8 +21,6 @@
 
 C
 C
-#include "single.h"
-C
 C/* Deck MOLPLT */
       SUBROUTINE MOLPLT(KINDS,KOLOR,TITMOL,WORK,LWORK)
 C
