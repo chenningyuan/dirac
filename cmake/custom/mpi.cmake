@@ -1,6 +1,6 @@
 # depends on CMake's default module FindMPI (on Ubuntu, /usr/share/cmake-2.8/Modules/FindMPI.cmake)
 if(MPI_FOUND)
-    include(CheckFortranSourceCompiles)
+    include(CheckFortranSourceCompiles1)
 
     add_definitions(-DVAR_MPI)
     add_definitions(-DVAR_MPI2)
