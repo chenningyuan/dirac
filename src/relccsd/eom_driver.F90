@@ -41,7 +41,7 @@
 
    real*8, intent(in)  :: Fbar_HH(:),Fbar_PP(:),Vbar_SS(:)
    real*8, intent(inout) :: R1(:,:), R2(:,:) ! (ndimt1,nroot) and (ndimt2,nroot)
-   real*8, intent(inout) :: H_II(:)
+   real*8, intent(inout),target :: H_II(:)
 
 !Local Variables
 !==============
@@ -49,6 +49,7 @@
    integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1)
    real*8  :: fac1
    real*8  :: eps((iv(nrep+1)+io(nrep+1))) 
+   real*8, pointer :: diag_H(:)
    integer :: icount, acount
 
    integer :: abij, ijrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b
@@ -74,9 +75,7 @@
 
      i = 1
      ii = 1
-     print *, "nrep is ",nrep
      do irep = 1, nrep
-        print *, irep, i, ii, no(irep)
         if (no(irep) .gt. 0) call dcopy (no(irep),Fbar_HH(ii),((no(irep)+1)*rcw),eps(i),1)
         i  =  i + no(irep)
         ii =  ii + NO(irep)* no(irep) * rcw
@@ -153,22 +152,19 @@
       ENDDO
 !aspg+as
 
+    diag_H => H_II(1:ndimt1)
 
     do iroot = 1, nroot
-     k = minloc(H_II) 
-     write(*,*)'roots',iroot,H_II(k(1)) 
+     k = minloc(diag_H) 
+     write(*,*)'roots',iroot,H_II(k(1)),k(1) 
      i = k(1)
-     H_II(i) = 8000.0d0
+     diag_H(i) = 8000.0d0
      R1(i,iroot) = 1.0d0
     enddo
-
-!    deallocate(H_II)
 
    case ('IP')
 
 !As of now, I am targetting the lowest energy determinants across the symmetries.
-
-!    allocate(H_II(io(nrep+1)*rcw))    
 
     H_II = -eps(1:(io(nrep+1)*rcw))
 
@@ -180,11 +176,7 @@
      R1(i,iroot) = 1.0d0
     enddo
 
-!    deallocate(H_II)
-
    case ('EA')
-
-!    allocate(H_II(iv(nrep+1)*rcw))    
 
       H_II = eps((1+no(nrep+1)):(no(nrep+1)+nv(nrep+1)))
 
@@ -195,9 +187,9 @@
         H_II(i) = 8000.0d0
         R1(i,iroot) = 1.0d0
       enddo
-!    deallocate(H_II)
 
   end select 
+
 
    end subroutine
 
@@ -220,7 +212,6 @@
    real*8, allocatable :: R1(:,:),R2(:,:) 
    real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
-!  real*8 :: sub_H(nr_roots(2),nr_roots(2))! sub_H(nroot,nroot)
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
    integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep)
    integer :: ndimr1,ndimr2
@@ -336,13 +327,13 @@
 
     call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2,B%H_II)
 
-!   do iroot = 1, nroot
-!     sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
-!     sigma2(1:ndimt2*rcw,iroot:iroot) = 0.0d0 
+    do iroot = 1, nroot
+      sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
+      sigma2(1:ndimt2*rcw,iroot:iroot) = 0.0d0 
 
-!     call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot),r2(1:ndimt2*rcw,iroot:iroot),t1,t2,B, &
-!    &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3,int(nbuf3,4))
-!   enddo
+      call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot),r2(1:ndimt2*rcw,iroot:iroot),B, &
+     &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3,int(nbuf3,4))
+    enddo
 
     case ('IP')
 
@@ -433,13 +424,14 @@
 
         b_guess => merge_arrays(1, r1, r2)
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-!       call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
-        call davidson_driver(nroot, B, symmetric, davResults, verbose)
+       call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
+!        call davidson_driver(nroot, B, symmetric, davResults, verbose)
     
     end if
 !    call davidson 
 
      deallocate (sigma1,sigma2,r1,r2)
+     deallocate(B%H_II)
      call free_buffers()
  451  continue
 ! todo:
