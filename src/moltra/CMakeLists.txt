@@ -24,6 +24,7 @@ set(FIXED_MOLTRA_FORTRAN_SOURCES
 )
 
 set(FREE_MOLTRA_FORTRAN_SOURCES
+    dcbtra_h.F90
     moltra_mocoefficients.F90
 )
 
@@ -40,6 +41,7 @@ add_library(
 )
 
 # deal with intermodule dependencies
+# moltra depends on:
 add_dependencies(moltra main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)
