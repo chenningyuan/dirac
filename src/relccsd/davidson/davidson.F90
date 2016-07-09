@@ -803,7 +803,7 @@ contains
         end if
 
         call solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
-        call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
+        call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, right_local, left_local)
 !       if (verbose_local) &
         call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local, right_local, nroots=nroots_local)
 
@@ -883,8 +883,9 @@ contains
 
     end function
 
-    subroutine sort_values_vectors(order, e_small_r, e_small_i, c_small_r, c_small_l, left) 
+    subroutine sort_values_vectors(order, e_small_r, e_small_i, c_small_r, c_small_l, right, left) 
         integer, intent(in) :: order ! 1: ascending, -1: descending
+        logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
         real(kind=8), intent(inout) :: e_small_r(:)
         real(kind=8), intent(inout) :: e_small_i(:)
@@ -913,11 +914,13 @@ contains
          e_small_i(i_sorted) = temp
         end do
 
-        do i = 1, vectors_L
-         i_sorted = indices_sorted_array(i)
-         temp_vector(:,i) = c_small_r(:,i_sorted)
-        end do
-        c_small_r = temp_vector
+        if (right) then
+            do i = 1, vectors_L
+             i_sorted = indices_sorted_array(i)
+             temp_vector(:,i) = c_small_r(:,i_sorted)
+            end do
+            c_small_r = temp_vector
+        end if
 
         if (left) then
             do i = 1, vectors_L
