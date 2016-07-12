@@ -112,6 +112,8 @@
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N
       integer :: nbuf3, ndimt1, ndimt2
+      integer :: start_r1, end_r1, start_r2, end_r2
+      integer :: iroot
 
       N = size(r,1)
       L = size(r,2)
@@ -121,16 +123,28 @@
       ndimt1 = size(A%t1)
       ndimt2 = size(A%t2)
 
+      start_r1 = 1
+      end_r1   = ndimt1
+      start_r2 = end_r1 + 1
+      end_r2   = end_r1 + ndimt2 
+
       select case (A%eomtype)
          case ("IP")
          case ("EA")
          case ("EE")
-            call sigma_ee_1h1p(r(1:ndimt1,:),r(ndimt1+1:N,:),A, &
-                               create_sigma_vector(1:ndimt1,:), &
-                               create_sigma_vector(ndimt1+1:N,:),&
-                               local_buf2,&
-                               local_buf3,&
-                               nbuf3)
+
+             do iroot = 1, L
+                 print *, "debug, constructing sigma vector ",iroot," out of ",L
+                 create_sigma_vector(:,iroot:iroot) = 0.0d0
+                 call sigma_ee_1h1p(r(start_r1:end_r1, iroot:iroot), &
+                 &                  r(start_r2:end_r2, iroot:iroot), & 
+                 &                  A,                               &
+                 &                  create_sigma_vector(start_r1:end_r1, iroot:iroot), &
+                 &                  create_sigma_vector(start_r2:end_r2, iroot:iroot), &
+                 &                  local_buf2, &
+                 &                  local_buf3, &
+                 &                  int(nbuf3,4))
+             enddo
       end select
 
    end function

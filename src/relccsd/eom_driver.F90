@@ -68,6 +68,7 @@
 !initialize the R-vector
 !=======================
 
+    print *, "dimensions of R1, R2", size(R1(:,nroot)), size(R2(:,nroot))
     R1(1:size(R1(:,nroot)),1:nroot) = 0.0d0 
     R2(1:size(R2(:,nroot)),1:nroot) = 0.0d0 
 
@@ -163,9 +164,6 @@
      R1(i,iroot) = 1.0d0
     enddo
 
-!   print *, "debug, H_II",(H_II(i),i=1,size(H_II))
-!   print *, "debug, R1 "
-!   print *, R1
     deallocate(diag_H)
 
    case ('IP')
@@ -214,8 +212,8 @@
 !--------------------------------------------------
 
    type(intermediates) :: B
-   real*8, allocatable :: sigma1(:,:),sigma2(:,:)
-   real*8, allocatable :: R1(:,:),R2(:,:)
+   real*8, allocatable :: sigma1(:,:),sigma2(:,:) 
+   real*8, allocatable :: R1(:,:),R2(:,:) 
    real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
@@ -223,8 +221,6 @@
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
 
-   real*8, allocatable :: sigma(:,:) 
-   real*8, allocatable, target :: R(:,:) 
    type(davidson_results) :: davResults
    logical :: left_vectors, right_vectors
    logical :: symmetric = .false.
@@ -242,7 +238,6 @@
   integer                :: nbuf1,nbuf2
   integer(kind=8)        :: nbuf3
   integer*8              :: nv5irp,nv6irp,nvirp
-  integer :: r1_start, r1_end, r2_start, r2_end
 
     nbuf1 = max(joooo(nrep+1),jvooo(nrep+1),jvvoo(nrep+1),jvovo(nrep+1))
     nbuf2 = nbuf1
@@ -322,32 +317,56 @@
     case ('EE')
 
       N = ndimt1 + ndimt2
+      nroot = 8
 
-      r1_start = 1
-      r1_end   = ndimt1*rcw
-      r2_start = r1_end + 1
-      r2_end   = N*rcw
-
-      allocate (r(N*rcw,nroot))
-      allocate (sigma(N*rcw,nroot),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
+      allocate (r1(ndimt1*rcw,nroot))
+      allocate (r2(ndimt2*rcw,nroot))
       allocate (B%H_II(N*rcw))
+
+      allocate (sigma1(ndimt1*rcw,nroot),stat=AllocateStatus)
+
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      allocate (sigma2(ndimt2*rcw,nroot),stat = AllocateStatus)
+
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
       call input_processor(B%Fbar_mi, &
       &                    B%Fbar_ae, &
       &                    B%W_mbej,  &
-      &                    r(r1_start:r1_end,:), &
-      &                    r(r2_start:r2_end,:), &
+      &                    R1,        &
+      &                    R2,        &
       &                    B%H_II)
 
+!       b_guess => merge_arrays(1, r1, r2)
+!       print *, "debug, r ", size(b_guess,1), size(b_guess,2)
+!       do i = 1, size(b_guess,1)
+!           do j = 1, size(b_guess,2)
+!               print "(4x,1f4.1$)", b_guess(i,j)
+!           end do
+!           print "(4x,a)", ""
+!       end do
+!       print *, "resetting r"
+!       b_guess = 0.0d0
+!       do i = 1, size(b_guess,1)
+!           do j = 1, size(b_guess,2)
+!               if (i .eq. j ) b_guess(i,j) = 1.0d0
+!               print "(4x,1f4.1$)", b_guess(i,j)
+!           end do
+!           print "(4x,a)", ""
+!       end do
+
+
       do iroot = 1, nroot
-          sigma(:,iroot:iroot) = 0.0d0
-          call sigma_ee_1h1p(r(r1_start:r1_end, iroot:iroot), &
-          &                  r(r2_start:r2_end,iroot:iroot),  &
-          &                  B,                               &
-          &                  sigma(r1_start:r1_end, iroot:iroot), &
-          &                  sigma(r2_start:r2_end,iroot:iroot),  &
+          print *, "debug, constructing sigma vector ",iroot
+          sigma1(:,iroot:iroot) = 0.0d0
+          sigma2(:,iroot:iroot) = 0.0d0
+          call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot), &
+          &                  r2(1:ndimt2*rcw,iroot:iroot), &
+!         call sigma_ee_1h1p(b_guess(1:ndimt1*rcw,iroot:iroot), &
+!         &                  b_guess(ndimt1+1:N*rcw,iroot:iroot), &
+          &                  B,                            &
+          &                  sigma1(1:ndimt1*rcw,iroot:iroot), &
+          &                  sigma2(1:ndimt2*rcw,iroot:iroot), &
           &                  buf2, &
           &                  buf3, &
           &                  int(nbuf3,4))
@@ -414,14 +433,14 @@
 
     do jroot = 1, nroot
      do iroot = 1, nroot
-      sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot)) 
+      sub_H(iroot,jroot) = dot_product(r1(:,iroot),sigma1(:,jroot)) + &
+     &             dot_product(r2(:,iroot),sigma2(:,jroot)) 
 
      enddo
     enddo
 
-!    write(*,*)'matrix to diagonalize', ((sub_H(i,j),i=1,nroot), j=1,nroot)
      write(*,*)'matrix to diagonalize', sub_H
-     call dump_to_file(42,sub_H) 
+     call dump_to_file(42,sub_H)
 
      allocate (ev(nroot))
      allocate (evec(nroot,nroot))
@@ -429,7 +448,7 @@
     call solve_cg(nroot,sub_H,evec,ev)
 
      write(*,*)'eigenvalues', (ev(i),i=1,nroot)
-!!     write(*,*)'eigenvectors', ((evec(i,j),i=1,nroot),j=1,nroot)
+!!   write(*,*)'eigenvectors', ((evec(i,j),i=1,nroot),j=1,nroot)
 
      deallocate(ev)
      deallocate(evec)
@@ -443,14 +462,25 @@
         left_vectors = .false.
         right_vectors = .true.
 
-        b_guess => r
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
+        if (.false.) then
+        b_guess = 0.0d0
+        do i = 1, size(b_guess,1)
+            do j = 1, size(b_guess,2)
+                if (i .eq. j ) b_guess(i,j) = 1.0d0
+                print "(4x,1f4.1$)", b_guess(i,j)
+            end do
+            print "(4x,a)", ""
+        end do
+        end if
         call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
         call free_davidson_results(davResults)
     end if
 
-     if (allocated(sigma)) deallocate (sigma)
-     if (allocated(r)) deallocate (r)
+     if (allocated(sigma1)) deallocate (sigma1)
+     if (allocated(r1)) deallocate (r1)
+     if (allocated(sigma2)) deallocate (sigma2)
+     if (allocated(r2)) deallocate (r2)
      call free_buffers()
  451  continue
 ! todo:
