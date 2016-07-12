@@ -141,7 +141,7 @@
                DO A = AMIN, NV(ARP)
                   AA = AOFF + A
                   FAC = FAC3 - EPS(AA)
-                  H_II(ABIJ) = FAC
+                  H_II(ABIJ) = -FAC
                   ABIJ = ABIJ + 1
                ENDDO
             ENDDO
@@ -152,7 +152,8 @@
       ENDDO
 !aspg+as
 
-    diag_H => H_II(1:ndimt1)
+    allocate(diag_H(ndimt1))
+    diag_H = H_II(1:ndimt1)
 
     do iroot = 1, nroot
      k = minloc(diag_H) 
@@ -161,6 +162,11 @@
      diag_H(i) = 8000.0d0
      R1(i,iroot) = 1.0d0
     enddo
+
+!   print *, "debug, H_II",(H_II(i),i=1,size(H_II))
+!   print *, "debug, R1 "
+!   print *, R1
+    deallocate(diag_H)
 
    case ('IP')
 
@@ -208,8 +214,8 @@
 !--------------------------------------------------
 
    type(intermediates) :: B
-   real*8, allocatable :: sigma1(:,:),sigma2(:,:) 
-   real*8, allocatable :: R1(:,:),R2(:,:) 
+   real*8, allocatable :: sigma1(:,:),sigma2(:,:)
+   real*8, allocatable :: R1(:,:),R2(:,:)
    real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
@@ -217,6 +223,8 @@
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
 
+   real*8, allocatable :: sigma(:,:) 
+   real*8, allocatable, target :: R(:,:) 
    type(davidson_results) :: davResults
    logical :: left_vectors, right_vectors
    logical :: symmetric = .false.
@@ -234,6 +242,7 @@
   integer                :: nbuf1,nbuf2
   integer(kind=8)        :: nbuf3
   integer*8              :: nv5irp,nv6irp,nvirp
+  integer :: r1_start, r1_end, r2_start, r2_end
 
     nbuf1 = max(joooo(nrep+1),jvooo(nrep+1),jvvoo(nrep+1),jvovo(nrep+1))
     nbuf2 = nbuf1
@@ -290,8 +299,6 @@
 
       call read_input()
 
-      allocate (sub_H(nroot,nroot))
-
       call allocator_get_words_inuse(current_mem_use)
       mxcorr = current_mem_use - start_mem_use
 
@@ -314,26 +321,37 @@
 
     case ('EE')
 
-      allocate (r1(ndimt1*rcw,nroot))
-      allocate (r2(ndimt2*rcw,nroot))
-      allocate (B%H_II((ndimt1+ndimt2)*rcw))
+      N = ndimt1 + ndimt2
 
-      allocate (sigma1(ndimt1*rcw,nroot),stat=AllocateStatus)
+      r1_start = 1
+      r1_end   = ndimt1*rcw
+      r2_start = r1_end + 1
+      r2_end   = N*rcw
 
+      allocate (r(N*rcw,nroot))
+      allocate (sigma(N*rcw,nroot),stat = AllocateStatus)
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      allocate (sigma2(ndimt2*rcw,nroot),stat = AllocateStatus)
 
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      allocate (B%H_II(N*rcw))
 
-    call input_processor(B%Fbar_mi,B%Fbar_ae,B%W_mbej,R1,R2,B%H_II)
+      call input_processor(B%Fbar_mi, &
+      &                    B%Fbar_ae, &
+      &                    B%W_mbej,  &
+      &                    r(r1_start:r1_end,:), &
+      &                    r(r2_start:r2_end,:), &
+      &                    B%H_II)
 
-    do iroot = 1, nroot
-      sigma1(1:ndimt1*rcw,iroot:iroot) = 0.0d0 
-      sigma2(1:ndimt2*rcw,iroot:iroot) = 0.0d0 
-
-      call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot),r2(1:ndimt2*rcw,iroot:iroot),B, &
-     &                  sigma1(1:ndimt1*rcw,iroot:iroot),sigma2(1:ndimt2*rcw,iroot:iroot),buf2,buf3,int(nbuf3,4))
-    enddo
+      do iroot = 1, nroot
+          sigma(:,iroot:iroot) = 0.0d0
+          call sigma_ee_1h1p(r(r1_start:r1_end, iroot:iroot), &
+          &                  r(r2_start:r2_end,iroot:iroot),  &
+          &                  B,                               &
+          &                  sigma(r1_start:r1_end, iroot:iroot), &
+          &                  sigma(r2_start:r2_end,iroot:iroot),  &
+          &                  buf2, &
+          &                  buf3, &
+          &                  int(nbuf3,4))
+      enddo
 
     case ('IP')
 
@@ -390,18 +408,20 @@
 
    end select 
 
-   if (.false.) then
+   if (.true.) then
+    allocate (sub_H(nroot,nroot))
     sub_H = 0.0d0
 
     do jroot = 1, nroot
      do iroot = 1, nroot
-      sub_H(iroot,jroot) = dot_product(r1(:,iroot),sigma1(:,jroot)) + &
-     &             dot_product(r2(:,iroot),sigma2(:,jroot)) 
+      sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot)) 
 
      enddo
     enddo
 
-     write(*,*)'eigenvalues', (sub_H(i,i),i=1,nroot)
+!    write(*,*)'matrix to diagonalize', ((sub_H(i,j),i=1,nroot), j=1,nroot)
+     write(*,*)'matrix to diagonalize', sub_H
+     call dump_to_file(42,sub_H) 
 
      allocate (ev(nroot))
      allocate (evec(nroot,nroot))
@@ -414,47 +434,32 @@
      deallocate(ev)
      deallocate(evec)
 
-    else 
+    end if
+
+    if (.true.) then
 !       call davidson_setup(1.0e-2, subspace_size, nroot)
         symmetric = .false.
         verbose   = .false.
         left_vectors = .false.
         right_vectors = .true.
-        N = size(r1,1) + size(r2,1)
 
-        b_guess => merge_arrays(1, r1, r2)
+        b_guess => r
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-       call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
-!        call davidson_driver(nroot, B, symmetric, davResults, verbose)
-    
+        call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
+        call free_davidson_results(davResults)
     end if
-!    call davidson 
 
-     deallocate (sigma1,sigma2,r1,r2)
-     deallocate(B%H_II)
+     if (allocated(sigma)) deallocate (sigma)
+     if (allocated(r)) deallocate (r)
      call free_buffers()
  451  continue
 ! todo:
 ! allocations/deallocations of intermediates would be more simply handled via
 !    call initialize_intermediates() 
-!    call free_intermediates()
-
-     deallocate(B%Wbar_mbej) 
-     deallocate (B%Fbar_mi)  
-     deallocate (B%Fbar_me)  
-     deallocate (B%Fbar_ae)  
-
-     deallocate (B%W_ijmn) 
-     deallocate (B%W_ejmb)
-     deallocate (B%W_mbej)
-     deallocate (B%W_iemn)
-     deallocate (B%W_efam)
-     deallocate (B%W_amef)
-     deallocate (B%W_mnie)
-     deallocate (sub_H)
+     call free_intermediates(B)
+     if (allocated(sub_H)) deallocate (sub_H)
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
-
    end subroutine
 
    function merge_arrays(dimension_to_merge, a,b)
@@ -487,5 +492,16 @@
        end if
 
    end function
+
+   subroutine dump_to_file(fileno, matrix)
+       integer, intent(in) :: fileno
+       real(kind=8) :: matrix(:,:)
+       integer :: irec
+  
+       inquire (iolength = irec) matrix
+       open (unit=fileno, file="CCjacobian.bin", form="unformatted", access="direct", recl=irec)
+       write(unit=fileno, rec=1) matrix
+       close(unit=fileno)
+   end subroutine
 
    end module 
