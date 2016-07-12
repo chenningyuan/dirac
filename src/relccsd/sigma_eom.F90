@@ -15,6 +15,7 @@
     public create_diagonal
     public initialize_buffers
     public free_buffers
+    public free_intermediates
     public get_matrix_size
 
     private
@@ -39,6 +40,26 @@
 
       get_matrix_size = size(A%t1) + size(A%t2)
    end function
+
+   subroutine free_intermediates(A)
+      type(intermediates), intent(inout) :: A
+
+      if (allocated(A%Fbar_mi)) deallocate(A%Fbar_mi)
+      if (allocated(A%Fbar_me)) deallocate(A%Fbar_me)
+      if (allocated(A%Fbar_ae)) deallocate(A%Fbar_ae)
+      if (allocated(A%W_ijmn)) deallocate(A%W_ijmn)
+      if (allocated(A%W_ejmb)) deallocate(A%W_ejmb)
+      if (allocated(A%W_mbej)) deallocate(A%W_mbej)
+      if (allocated(A%W_iemn)) deallocate(A%W_iemn)
+      if (allocated(A%W_efam)) deallocate(A%W_efam)
+      if (allocated(A%W_amef)) deallocate(A%W_amef)
+      if (allocated(A%W_mnie)) deallocate(A%W_mnie)
+      if (allocated(A%Wbar_mbej)) deallocate(A%Wbar_mbej)
+      if (allocated(A%t1)) deallocate(A%t1)
+      if (allocated(A%t2)) deallocate(A%t2)
+      if (allocated(A%H_II)) deallocate(A%H_II)
+
+   end subroutine
 
    subroutine initialize_buffers(buf1, buf2, buf3)
        real(kind=8), allocatable, target ::  buf1(:), buf2(:), buf3(:)
