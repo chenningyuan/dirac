@@ -49,19 +49,20 @@ contains
         type(davidson_results), intent(inout) :: results
         logical, intent(in), optional :: left, right
 
+        results%eValuesRe => NULL()
+        results%eValuesIm => NULL()
+        results%eVectorsL => NULL()
+        results%eVectorsR => NULL()
+
         allocate(results%eValuesRe(nroots))
         allocate(results%eValuesIm(nroots))
 
         if (present(left)) then
             allocate(results%eVectorsL(N,nroots))
-        else
-            results%eVectorsL => NULL()
         end if
 
         if (present(right)) then
             allocate(results%eVectorsR(N,nroots))
-        else
-            results%eVectorsR => NULL()
         end if
     
     end subroutine
@@ -69,9 +70,8 @@ contains
     subroutine free_davidson_results(results)
         type(davidson_results), intent(inout) :: results 
 
-        deallocate(results%eValuesRe)
-        deallocate(results%eValuesIm)
-
+        if (associated(results%eValuesRe)) deallocate(results%eValuesRe)
+        if (associated(results%eValuesIm)) deallocate(results%eValuesIm)
         if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
         if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
 
