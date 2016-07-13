@@ -16,6 +16,7 @@
                                  it allows to run DIRAC in parallel on systems which
                                  do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
                                  --mpi overrides DIRAC_MPI_COMMAND
+             DIRAC_MPI_MACHFILE - if set, tells about parallel multinodes run with nodes specified by this variable. Is overwritten by --machfile flag.
              DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory
 
     Environment variables set by pam and used by MKL:
@@ -848,6 +849,9 @@ Options are also read from ~/.diracrc"""
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
 
+        if os.environ.get('DIRAC_MPI_MACHFILE'):
+            #following  --machfile keyword overwrites enviro variable
+            self.machinefile=os.environ.get('DIRAC_MPI_MACHFILE')
         if options.machfile:
             self.global_scratch_disk = False
             self.machinefile = options.machfile
@@ -1275,9 +1279,7 @@ Options are also read from ~/.diracrc"""
             sys.exit(13)
 
         if self.parallel_run:
-
             dirac_mpi_command = os.environ.get('DIRAC_MPI_COMMAND')
-
             if (dirac_mpi_command != None) and (self.nr_proc == 0):
                 # DIRAC_MPI_COMMAND is set and --mpi is not set
                 # --mpi overrides DIRAC_MPI_COMMAND
