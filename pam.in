@@ -1650,26 +1650,30 @@ Options are also read from ~/.diracrc"""
                 print_error_message('No rsh command specified, use --rsh= on the command line or in ~/.dirac')
                 sys.exit(-1)
             for this_node in self.nodes:
-                print 'Content of the scratch_dir, slave node ', this_node, \
+                print '\n Content of the scratch_directory, slave node ', this_node, \
                     ':', self.scratch_dir
                 command = self.rsh + ' ' + this_node + ' "ls -l ' \
                     + self.scratch_dir + ' "'
+                print "  "+command
                 os.system(command)
-                print ' Total size of the slave node scratch directory:\c'
+                print  " Total size of the slave node scratch directory:"
                 command = self.rsh + ' ' + this_node + ' "du -h -s ' \
                     + self.scratch_dir + ' "'
+                print "  "+command
                 os.system(command)
-                print '  Info on the disk space usage on the slave node:'
-                command = self.rsh + ' ' + this_node + ' "df -h  ."'
+                print ' Info on the disk space usage on the slave node:'
+                command = self.rsh + ' ' + this_node + ' "df -h  "' + self.scratch_dir
+                print "  "+command
                 os.system(command)
+
                 sys.stdout.flush()
 
-        # finally removing node content
+        # finally remove nodes content;TODO: find Python replacement !
 
                 command = self.rsh + ' ' + this_node + ' "rm -fr  ' \
                     + self.scratch_dir + ' "'
                 os.system(command)
-                print 'scratch directory on slave node', this_node, ':', \
+                print ' Scratch directory on slave node', this_node, ':', \
                     self.scratch_dir, ' deleted.'
                 sys.stdout.flush()
 
