@@ -160,7 +160,7 @@ C              as in non-relativistic CI programs. /hjaaj aug 03
          ENDDO
       END DO
 C
-C     Setup pointer from active orbital to a- and b-strings
+C     Set up pointers from active orbital to a- and b-strings
 C
       II = 0
       DO J = 1, NFSYM
@@ -250,13 +250,13 @@ C
 #include "pgroup.h"
 #include "dgroup.h"
 C
-      DIMENSION NA(MAXASH_GASCIP), NB(MAXASH_GASCIP)
+      INTEGER   NA(MAXASH_GASCIP), NB(MAXASH_GASCIP)
       INTEGER*8 IDET(2,*), IASTR, IBSTR
       INTEGER*8 ISTR(*)
-      LOGICAL GASCIP_GASOK, GASCIP_SYMOK, UCIBOS, MK_symmetric
+      LOGICAL   GASCIP_GASOK, GASCIP_SYMOK, UCIBOS, MK_symmetric
 C
       INTEGER*8 MSKGAS(MXGAS), L
-      INTEGER IBTAB(0:255)
+      INTEGER   IBTAB(0:255)
 
 #ifdef GASCIP_DEBUG
       iprint = max(20,iprint_in)
@@ -3728,7 +3728,7 @@ C
       THRSCR = 1.0D-10
       NDSKIP = 0
 C
-      MK2I_STEP = 2 ! remeber that MK = MK2 / 2, step of 1 for MK is thus step of 2 for MK2
+      MK2I_STEP = 2 ! remember that MK = MK2 / 2, step of 1 for MK is thus step of 2 for MK2
 C
       DO 10 MK2I = MINMK2, MAXMK2, MK2I_STEP
 C        ... MK2 is NAEL - NBEL
@@ -3814,6 +3814,7 @@ C
 C
                   JDA = IDET(1,J)
                   IF (JDA .NE. JDAOLD) THEN
+                     JDAOLD = JDA
 C                    ... outer loop in gascip_gendet is over A-strings
                      IDAV = IEOR(IDA, JDA)
                      CALL FNBITS(NDAV,IDAV,IBTAB)
@@ -3838,7 +3839,6 @@ C
                            MA = IPTA2O(II)
                         END IF
                      END DO
-                     JDAOLD = JDA
                   END IF
                   IF (NDAV .GT. MXNDAV) GOTO 200
 C                 ... see note above about MXNDAV

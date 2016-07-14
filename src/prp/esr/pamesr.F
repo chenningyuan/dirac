@@ -1793,7 +1793,6 @@ C
      &          SCTRA(NUCDEP*NUCDEP*9)
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
       CALL HEADER('ESR nuclear hyperfine couplings',1)
 C
@@ -1952,7 +1951,7 @@ C
          IATOM = 0
          DO 100 I = 1, NUCIND
             DO 200 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+               IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
                   IATOM = IATOM + 1
                   IF (DOATOM(IATOM)) THEN
                      NSPEC = NSPEC + 1
