@@ -185,7 +185,6 @@ contains
 
       if(nint(atom(center_total)%charge) > 1)then
 
-        write(6,*) 'reading correction for center ',center_total
         allocate(Gmat_frag(nrows_ext*ncols_ext*4))
 !       !> get spin-orbit parts from file (of atom(i) ... == atomic fragment)
         call read_normalized_2e_soc(                                 &
@@ -231,11 +230,12 @@ contains
         deallocate(cbuf)
         deallocate(rbuf)
         deallocate(Gmat_frag)
+        write(6,*) 'done correction for center ',center_total,aoo_nont(center_id),center_id,aoo_nucdeg(center_total)
+        call flshfo(6)
 
       end if
 
 !     update counter
-      write(6,*) 'done correction for center ',center_total,aoo_nont(center_id),center_id,aoo_nucdeg(center_total)
       center_total = center_total + aoo_nont(center_id)
 
   end subroutine put_xamfi_correction

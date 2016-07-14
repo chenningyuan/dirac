@@ -407,6 +407,69 @@ CTROND                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
    10 CONTINUE
 C
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck q2bphase */
+      SUBROUTINE Q2BPHASE_L(TYP,IM,JFAC,AMAT)
+C***********************************************************************
+C
+C     Quaternion phase insertion in square matrix
+C       TYP = F:  (e_K1)(e_IM)(e_K2*)   as Fock matrix
+C       TYP = D:  (e_K1*)(e_IM)(e_K2)   as density matrix
+C
+C     Written by T.Saue, January 1995
+C     Last revision: June 25 1996 - tsaue
+C
+C***********************************************************************
+      use quaternion_algebra
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DM1 = -1.0D0)
+C
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+C
+#include "symmet.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      CHARACTER TYP*1
+      DIMENSION AMAT(*)
+C
+      IF(TYP.NE.'F'.AND.TYP.NE.'D') THEN
+        CALL QUIT('Q2BPHASE: Unknown TYP !')
+      ENDIF
+      DO 10 IRP1 = 0,NBSYM-1
+        ISY1 = IRP1 + 1
+        DO 20 IC1 = 1,1
+          NB1 = NBBAS(IRP1,IC1)
+          IF(NB1.EQ.0) GOTO 20
+          K1  = JQBAS(IRP1,IC1)
+          DO 30 IRP2 = 0,NBSYM-1
+            ISY2 = IRP2 + 1
+            DO 40 IC2 = 1,1
+              NB2 = NBBAS(IRP2,IC2)
+              IF(NB2.EQ.0) GOTO 40
+              K2   = JQBAS(IRP2,IC2)
+              IF    (TYP.EQ.'F') THEN
+                KFAC = JFAC*IQPHASE(K1,K2,IM)*IQPH(K1,1)*IQPH(K2,2)
+              ELSEIF(TYP.EQ.'D') THEN
+                IQ   = IQMULT(K1,K2,IM)
+                KFAC = JFAC*IQPHASE(K1,K2,IQ)*IQPH(K1,2)*IQPH(K2,1)
+              ENDIF
+              IF(KFAC.EQ.-1) THEN
+CTROND                IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
+                IOFF = I2BBASX(IRP1,IRP2,IC1,IC2)
+                DO 50 ICOL = 1,NB2
+                  CALL DSCAL(NB1,DM1,AMAT(IOFF+1),1)
+                  IOFF = IOFF + NTBAS(1)
+   50           CONTINUE
+              ENDIF
+   40       CONTINUE
+   30     CONTINUE
+   20   CONTINUE
+   10 CONTINUE
+C
+      END
 
       subroutine q2bphase_nonquadmat_LS_L(typ,im,jfac,amat)
 C***********************************************************************
@@ -965,6 +1028,113 @@ C
                ISTRB = 1
                DO 400 IREPB = 0, MAXREP
                DO 450 JJ = 1,2
+                  ID    = MOD(II+JJ,2)+1
+                  NBB   = NCOS(IREPB+1,JJ)
+                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  DO 500 J = ISTRB,ISTRB + NBB - 1
+                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
+                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     NHKTB  = NHKT(IB)
+                     KHKTB  = KHKT(IB)
+                     MULB   = ISTBAO(IB)
+                     INDB   = KSTRT(IB) + NB - KHKTB
+                     BN     = D1/FMULT(MULB)
+                     DO 600 ISYMB = 0, MAXOPR
+                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                        INDB = INDB + KHKTB
+                        FACB = PT(IBTAND(ISYMB,
+     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        ASO(I,J) = ASO(I,J)
+     &                                 + FACA*FACB*AAO(INDA,INDB)
+          IF (IPRINT.GE.28) THEN 
+CMI        ... control print-out to track the AO-SO matrix construction
+             WRITE(LUPRI,
+     &'(2X,A,I3,A,I3,A,D12.6,A,D10.4,A,D10.4,A,I3,A,I3,A,D12.6)')
+     &'ASO(',I,',',J,') =',ASO(I,J),
+     &'  from :  ',
+     & FACA,'*',FACB,'*AAO(',INDA,',',INDB,')=',AAO(INDA,INDB)
+          ENDIF
+                     END IF
+  600                CONTINUE
+  500             CONTINUE
+                  END IF
+                  ISTRB = ISTRB + NBB
+  450             CONTINUE
+  400          CONTINUE
+            END IF
+  300       CONTINUE
+  200    CONTINUE
+         ISTRA = ISTRA + NBA
+  150    CONTINUE
+  100 CONTINUE
+
+      IF (IPRINT .GE. 10) THEN
+         CALL HEADER('INPUT(MTAOSO):  Total matrix in AO basis',-1)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
+         CALL HEADER('OUTPUT(MTAOSO): Total matrix in SO basis',-1)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
+      END IF
+
+      CALL QEXIT('MTAOSO')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck mtaoso */
+      SUBROUTINE MTAOSO_L(AAO,ASO,NBAST,IREPDM,IPRINT)
+C***********************************************************************
+C
+C     Matrix transform: AO-basis to SO-basis
+C     Based on HERMIT routine DSOTAO (880418  PRT)
+C
+C     Written by T.Saue - Sept 10 1995
+C     Last revision: Sep 10 1995 - tsaue
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.0D0)
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+      DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
+      DIMENSION IR(2)
+#include "shells.h"
+#include "pincom.h"
+#include "symmet.h"
+#include "pgroup.h"
+#include "ibtfun.h"
+
+      CALL QENTER('MTAOSO')
+
+      IF (IPRINT .GE. 10) THEN
+        CALL HEADER('Subroutine MTAOSO',-1)
+        WRITE(LUPRI,'(2X,A,I2)') 'entering symmetry, IREPDM=',IREPDM
+      ENDIF
+C
+C     Loop over all irreps in molecule
+C
+      IR(1) = IREPDM
+      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      ISTRA = 1
+      DO 100 IREPA = 0, MAXREP
+         DO 150 II = 1
+         NBA   = NCOS(IREPA+1,II)
+         DO 200 I = ISTRA,ISTRA + NBA - 1
+            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
+            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            NHKTA  = NHKT(IA)
+            KHKTA  = KHKT(IA)
+            MULA   = ISTBAO(IA)
+            INDA   = KSTRT(IA) + NA - KHKTA
+            AN     = D1/FMULT(MULA)
+            DO 300 ISYMA = 0, MAXOPR
+            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+               INDA = INDA + KHKTA
+               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               ISTRB = 1
+               DO 400 IREPB = 0, MAXREP
+               DO 450 JJ = 1
                   ID    = MOD(II+JJ,2)+1
                   NBB   = NCOS(IREPB+1,JJ)
                   IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN

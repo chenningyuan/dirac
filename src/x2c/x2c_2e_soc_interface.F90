@@ -410,9 +410,9 @@ contains
        end if          
 
 !      debug print
-       if(print_lvl > 2)then
+!      if(print_lvl > 2)then
          call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',6)
-       end if
+!      end if
 
 #ifdef DEBUG_SOC
        open(99,file='soc-contributions',status='replace',form='formatted',  &
@@ -652,11 +652,11 @@ contains
          irepd = bs_irrep_mat(iz,0)
          iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
          ipq   = iqp_off_in(iq,0)
-         call mtaoso(scr1_mat(1+(nr_ao_L*nr_ao_L*(iz-1))),     &
-                     scr3_mat(1+(nr_ao_L*nr_ao_L*(ipq-1))),    &
-                     nr_ao_L,                                  &
-                     irepd,                                    &
-                     print_lvl)
+         call mtaoso_L(scr1_mat(1+(nr_ao_L*nr_ao_L*(iz-1))),     &
+                       scr3_mat(1+(nr_ao_L*nr_ao_L*(ipq-1))),    &
+                       nr_ao_L,                                  &
+                       irepd,                                    &
+                       print_lvl)
        end do
 
 !      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
@@ -668,14 +668,14 @@ contains
        if(nz < 4)then
          do iz = 1, nz                                                
            iq = ipq_off_in(iz,0)
-           call q2bphase('F',iq,1,scr3_mat(1+(nr_ao_L*nr_ao_L*(iz-1))))
+           call q2bphase_L('F',iq,1,scr3_mat(1+(nr_ao_L*nr_ao_L*(iz-1))))
          end do           
        end if          
 
 !      debug print
-       if(print_lvl > 2)then
+!      if(print_lvl > 2)then
          call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - X-AMFI contribution',6)
-       end if
+!      end if
 
 #ifdef DEBUG_SOC
        open(99,file='soc-contributions',status='replace',form='formatted',  &
