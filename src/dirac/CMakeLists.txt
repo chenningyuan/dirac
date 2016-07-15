@@ -94,3 +94,7 @@ endif()
 if (ENABLE_KRCC)
     add_dependencies(dirac krcc)
 endif()
+
+if(ENABLE_EXATENSOR)
+    add_dependencies(dirac exatensor)
+endif()
