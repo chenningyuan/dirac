@@ -182,13 +182,22 @@ the factors given here. Default::
    1.0 1.0
 
 
+keyword(AOFOCK)
+
+Do direct Fock matrix construction in non-symmetry-adapted basis (AO basis).
+
+The direct Fock matrix construction is performed in AO basis using the
+skeleton matrix approach. This may give better screening, and does give more tasks
+for better parallelization, but AOFOCK is more memory intensive than SOFOCK.
+Default is AOFOCK if 25 or more MPI nodes.
+
 keyword(SOFOCK)
 
 Do direct Fock matrix construction in symmetry-adapted basis (SO basis).
 
-By default the direct Fock matrix construction in performed AO basis using the
-skeleton matrix approach. This may give better screening, but is more memory
-intensive.
+AOFOCK may give better screening, and does give more tasks
+for better parallelization, but AOFOCK is more memory intensive than SOFOCK.
+Default is SOFOCK if at most 24 MPI nodes.
 
 
 keyword(PRINT)

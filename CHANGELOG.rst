@@ -1,4 +1,4 @@
-15.1 (2016-05-10)
+15.1 (2016-??-??)
 -----------------
 
 - Change any tab character in coordinate specifications in .mol file to a blank
@@ -27,6 +27,7 @@
 - Restored "make install" target.
 - Cache compiler flags.
 - Test reladc_fano does not report failure if Stieltjes is deactivated.
+- .AOFOCK documented. AOFOCK is now default if at least 25 MPI nodes (parallelizes better than SOFOCK)
 
 
 15.0 (2015-12-16)
