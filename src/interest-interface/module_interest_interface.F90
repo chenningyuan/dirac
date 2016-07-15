@@ -37,6 +37,7 @@
 !                            
 ! ------------------------------------------------------------------------------------
 
+#ifdef MOD_INTEREST
 MODULE MODULE_INTEREST_INTERFACE
 
     use module_interest_eri
@@ -2579,3 +2580,5 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 END MODULE
+
+#endif
