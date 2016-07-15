@@ -185,10 +185,14 @@ the factors given here. Default::
 keyword(SOFOCK)
 
 Do direct Fock matrix construction in symmetry-adapted basis (SO basis).
+This is the default setting.
 
-By default the direct Fock matrix construction in performed AO basis using the
+
+keyword(AOFOCK)
+
+Perform the direct Fock matrix construction in AO basis using the
 skeleton matrix approach. This may give better screening, but is more memory
-intensive.
+intensive. Keyword setting may speed up calculations of large, symmetric molecules.
 
 
 keyword(PRINT)
