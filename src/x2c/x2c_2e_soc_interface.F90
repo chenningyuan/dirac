@@ -38,6 +38,10 @@ module x2c_2e_soc_interface
 
   implicit none
 
+#include "cbirea.h"
+#include "dcbgen.h"
+#include "dcbcls.h"
+
   public x2c_add_2e_so_corrections
 
   private
@@ -247,6 +251,7 @@ contains
      real(8), allocatable            :: wrk(:)
      real(8), allocatable            :: scr1_mat(:)
      real(8), allocatable            :: scr2_mat(:)
+     real(8), allocatable            :: scr3_mat(:)
      real(8), allocatable            :: rcha_pnuc(:)
      integer, allocatable            :: itmp_mat1(:)
      integer, allocatable            :: itmp_mat2(:)
@@ -354,8 +359,8 @@ contains
        call sphgen(1,2,.true.,wrk,lwrk,print_lvl)
 
 !      allocate scratch space
-       allocate(scr2_mat(naosh_ls*naosh_ls*4))
-       scr2_mat = 0
+       allocate(scr2_mat(naosh_ls*naosh_ls*4),scr3_mat(naosh_ls*naosh_ls*4))
+       scr2_mat = 0; scr3_mat = 0
 
 !      a. transform from spherical Gaussian AO basis to cartesian Gaussian AO basis
 !      ----------------------------------------------------------------------------
@@ -409,10 +414,21 @@ contains
          end do           
        end if          
 
+       call pick_LL_block_saao_bas(scr1_mat,            &
+                                   scr3_mat,            &
+                                   naosh_L,             &
+                                   naosh_all,           &
+                                   naosh_ls,            &
+                                   nr_ao_L,             &
+                                   nfsym,               &
+                                   nz,                  &
+                                   0,                   &
+                                   op_bs_to_fs)
+
 !      debug print
-!      if(print_lvl > 2)then
-         call print_x2cmat(scr1_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - AMFI contribution',6)
-!      end if
+       if(print_lvl > 2)then
+         call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - AMFI contribution',6)
+       end if
 
 #ifdef DEBUG_SOC
        open(99,file='soc-contributions',status='replace',form='formatted',  &
@@ -485,8 +501,7 @@ contains
        end if
 
 !      release scratch space
-       deallocate(scr1_mat)
-       deallocate(scr2_mat)
+       deallocate(scr1_mat,scr2_mat,scr3_mat)
 
   end subroutine x2c_interface2old_amfi
 
@@ -643,6 +658,14 @@ contains
 #endif
        end do
 
+       !> reset offsets in atomic basis to two-component mode
+       IPREAD  = IPREAD - 10000
+       TWOCOMP = .TRUE.
+       RDINPC  = .FALSE.
+       CALL READIN(.FALSE.)
+       CALL SETDC1(IPREAD)
+       call getlab(ipread)
+
 !      b. transform from AO-basis to SO-AO basis
 !      -----------------------------------------
 !        in : xamfi_AO    -> scr1_mat
@@ -652,7 +675,7 @@ contains
          irepd = bs_irrep_mat(iz,0)
          iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
          ipq   = iqp_off_in(iq,0)
-         call mtaoso_L(scr1_mat(1+(nr_ao_L*nr_ao_L*(iz-1))),     &
+         call mtaoso(scr1_mat(1+(nr_ao_L*nr_ao_L*(iz-1))),     &
                        scr3_mat(1+(nr_ao_L*nr_ao_L*(ipq-1))),    &
                        nr_ao_L,                                  &
                        irepd,                                    &
@@ -661,21 +684,36 @@ contains
 
 !      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
 !      -----------------------------------------------------------
-       call butobs_L_no_work(scr3_mat,nz)
+       call butobs_no_work(scr3_mat,nz)
 
 !      d. insert quaternion phase factors
 !      ----------------------------------
        if(nz < 4)then
          do iz = 1, nz                                                
            iq = ipq_off_in(iz,0)
-           call q2bphase_L('F',iq,1,scr3_mat(1+(nr_ao_L*nr_ao_L*(iz-1))))
+           call q2bphase('F',iq,1,scr3_mat(1+(nr_ao_L*nr_ao_L*(iz-1))))
          end do           
        end if          
 
+       !> restore offsets in atomic basis to four-component mode (for now)
+       TWOCOMP = .FALSE.
+       CALL READIN(.FALSE.)
+       CALL SETDC1(IPREAD)
+       call getlab(ipread)
+       !> reset NEWPRP to re-initialize AOPROPER
+!      newprp = .true.
+!      call lset(nprpcls,.true.,clscal)
+!      lwrk = is_len_wrk - 3*(naosh_ls*naosh_ls*4)
+!      allocate(wrk(lwrk))
+!      call onegen(wrk,lwrk)
+!      deallocate(wrk)
+
+       IPREAD = IPREAD + 10000
+
 !      debug print
-!      if(print_lvl > 2)then
+       if(print_lvl > 2)then
          call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - X-AMFI contribution',6)
-!      end if
+       end if
 
 #ifdef DEBUG_SOC
        open(99,file='soc-contributions',status='replace',form='formatted',  &

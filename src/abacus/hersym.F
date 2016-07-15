@@ -60,6 +60,8 @@ C*****************************************************************************
       CALL QENTER('SYMADD')
 
       IPRSYM = MAX(HERSYM_DEBUG, IPRSYM_input)
+      !print *, 'HERSYM_DEBUG, IPRSYM_input == ',
+      !&          HERSYM_DEBUG, IPRSYM_input
 
 C     Set control variables in "mxsymm.h"
       IF (TOLLRN_INPUT .LE. 0.0D0) THEN
@@ -72,7 +74,7 @@ C     Set control variables in "mxsymm.h"
       MAXAXS = 100
       MAXMIR = 25
 CSK   only MPARID needs to print the information
-      IF( MYTID .eq. MPARID .OR. IPRSYM .GT. 0)THEN
+      IF( (MYTID .eq. MPARID) .and. IPRSYM .GT. 0)THEN
         CALL HEADER('SYMADD: Detection of molecular symmetry',-1)
         WRITE(LUPRI,'(A,1P,G10.2)') ' Symmetry test threshold:', TOLLRN
       END IF
@@ -169,7 +171,7 @@ C            /hjaaj Mar 2004
          IF (.NOT. NOMOVE) THEN
 C           Place molecular center of mass at the origin and
 C           with principal axes of inertia along coordinate axes
-            CALL CENTER_MOLECULE(ATMARR)
+            CALL CENTER_MOLECULE(ATMARR,IPRSYM)
          END IF
 C     Sort atoms after atom number and distance from origo
 CRF      We have to sort the atoms AFTER we center the molecule
@@ -200,7 +202,7 @@ C        ::: the symmetry elements is constructed.  :::
      &               DMRPLN,MAXMIR,WORK(KFREE),LFREE)
       END IF
 C
-      IF ( MYTID .eq. MPARID  .OR. IPRSYM .GT. 0) WRITE(LUPRI,'(/2A)')
+      IF ( MYTID .eq. MPARID  .and. IPRSYM .GT. 0) WRITE(LUPRI,'(/2A)')
      &      ' Symmetry point group found: ', POINT_GROUP
       LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
       IF (.NOT. NOMOVE) THEN
@@ -215,7 +217,7 @@ C
             CALL PRNARR2(text, mxcent, atmarr, ibuf) ! prints atoms in original order
             deallocate(IBUF)
          END IF
-      ELSE IF ( MYTID .EQ. MPARID .OR. IPRSYM .GT. 0) THEN
+      ELSE IF ( MYTID .EQ. MPARID .and. IPRSYM .GT. 0) THEN
          WRITE (LUPRI,'(/A/)') ' Molecule was not centered nor'//
      &      ' rotated as requested in input.'
       END IF
@@ -268,7 +270,7 @@ C ::: If there is any Aangstroem mark, it is removed. :::
         WRITE(TMPLN(10:10), '(I1)') NSYMOP
         WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
       end if
-      IF( MYTID .eq. MPARID .OR. IPRSYM .GE. 1) THEN
+      IF( MYTID .eq. MPARID .and. IPRSYM .GE. 1) THEN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
@@ -722,7 +724,7 @@ C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          RETURN
       END
 C ---
-      SUBROUTINE CENTER_MOLECULE(ATMARR)
+      SUBROUTINE CENTER_MOLECULE(ATMARR,IPRSYM)
 C :::::::::::::::::::::::::::::::::::::::::::
 C ::                                       ::
 C ::       Centres molecule in space       ::
@@ -794,7 +796,7 @@ C
       CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
 #endif
 
-      IF (MYTID .EQ. MPARID) WRITE(LUPRI,'(/A)')
+      IF (MYTID .EQ. MPARID .and. IPRSYM > 0) WRITE(LUPRI,'(/A)')
      &   '    The molecule has been centered at center of mass'
 #if HERSYM_DEBUG > 0
       CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)

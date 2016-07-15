@@ -336,45 +336,8 @@ contains
 
      end if
 
-      
-!    --------------------------------------------------------------------------------------------------
-!    step 1.3: add oo-order 2e-SOC or AMFI contributions in case
-!              h1 == bare-nucleus 1e Dirac-Hamiltonian .and. 2e-SOC are desired
-!    --------------------------------------------------------------------------------------------------
-     if(x2c_add_amfi > 0)then
-
-       call x2c_add_2e_so_corrections(final_ham_lvl_x2c,                 &
-                                      x2c_add_amfi,                      &
-                                      nr_ao_total_x2c,                   &
-                                      nr_ao_large_x2c,                   &
-                                      nr_ao_all,                         &
-                                      nr_ao_l,                           &
-                                      nr_fsym,                           &
-                                      nr_quat,                           &
-                                      x2c_bs_irrep_mat,                  &
-                                      x2c_cb_pq_to_uq,                   &
-                                      x2c_cb_uq_to_pq,                   &
-                                      x2c_iqmult_trip_q,                 &
-                                      x2c_bs_to_fs,                      &
-                                      x2c_pointer_quat,                  &
-                                      x2c_pointer_quat_op,               &
-                                      x2c_max_quant_num,                 &
-                                      num_nuclei,                        &
-                                      type_nuclei,                       &
-                                      x2c_tot_charge_for_mfsum,          &
-                                      x2c_amfi_order,                    &
-                                      lwrk,                              &
-                                      x2c_do_spherical,                  &
-                                      x2c_famfi,                         &
-                                      x2c_funit,                         &
-                                      x2c_cspeed,                        &
-                                      x2c_prt)
-      end if
-
-      close(x2c_famfi,status="delete")
-
 !     ------------------------------------------------------------------------------------------
-!     step 2: picture-change transform all (remaining) operator (in DIRAC-sorted SA-AO basis):
+!     step 2: picture-change transform all operator (in DIRAC-sorted SA-AO basis):
 !             a. if(appropriate) bare-nucleus corrected 1e Dirac-Hamiltonian
 !             b. if(appropriate) 1-electron/2-electron Fock matrices
 !             c. list of 1e-property operators
@@ -446,15 +409,51 @@ contains
          call x2c_export_pctmat2C1()
        end if
 
-!      ----------------------------------------------------------------------------------------
-!      step 5: renew dimensions on common blocks, i.e. "remove" references to positronic shells
-!      ----------------------------------------------------------------------------------------
-       call renew_x2c_cb_orb_shell_dim(final_ham_lvl_x2c)
+!      --------------------------------------------------------------------------------------------------
+!      step 5: add oo-order 2e-SOC or AMFI contributions in case
+!              h1 == bare-nucleus 1e Dirac-Hamiltonian .and. 2e-SOC are desired
+!      --------------------------------------------------------------------------------------------------
+       if(x2c_add_amfi > 0)then
 
-       close(x2c_funit,status="keep")
+       call x2c_add_2e_so_corrections(final_ham_lvl_x2c,                 &
+                                      x2c_add_amfi,                      &
+                                      nr_ao_total_x2c,                   &
+                                      nr_ao_large_x2c,                   &
+                                      nr_ao_all,                         &
+                                      nr_ao_l,                           &
+                                      nr_fsym,                           &
+                                      nr_quat,                           &
+                                      x2c_bs_irrep_mat,                  &
+                                      x2c_cb_pq_to_uq,                   &
+                                      x2c_cb_uq_to_pq,                   &
+                                      x2c_iqmult_trip_q,                 &
+                                      x2c_bs_to_fs,                      &
+                                      x2c_pointer_quat,                  &
+                                      x2c_pointer_quat_op,               &
+                                      x2c_max_quant_num,                 &
+                                      num_nuclei,                        &
+                                      type_nuclei,                       &
+                                      x2c_tot_charge_for_mfsum,          &
+                                      x2c_amfi_order,                    &
+                                      lwrk,                              &
+                                      x2c_do_spherical,                  &
+                                      x2c_famfi,                         &
+                                      x2c_funit,                         &
+                                      x2c_cspeed,                        &
+                                      x2c_prt)
+      end if
 
-!      print goodbye 
-       call goodbye_dirx2c()
+      close(x2c_famfi,status="delete")
+
+!     ----------------------------------------------------------------------------------------
+!     step 6: renew dimensions on common blocks, i.e. "remove" references to positronic shells
+!     ----------------------------------------------------------------------------------------
+      call renew_x2c_cb_orb_shell_dim(final_ham_lvl_x2c)
+
+      close(x2c_funit,status="keep")
+
+!     print goodbye 
+      call goodbye_dirx2c()
 
   end subroutine x2c_main
 

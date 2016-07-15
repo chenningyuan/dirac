@@ -36,7 +36,6 @@ module xamfi_driver
 !#define DEBUG_SOC
 #ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
-#undef DEBUG_SOC
 #endif
 
   implicit none
@@ -134,7 +133,6 @@ contains
                           6                            &
                          )
       end if
-#undef DEBUG_SOC
 #endif
 
       !> save spin-orbit parts on file (of atom(1) ... == atomic fragment)
@@ -185,7 +183,7 @@ contains
 
       if(nint(atom(center_total)%charge) > 1)then
 
-        allocate(Gmat_frag(nrows_ext*ncols_ext*4))
+        allocate(Gmat_frag(nrows_ext*ncols_ext*4)); Gmat_frag = 0
 !       !> get spin-orbit parts from file (of atom(i) ... == atomic fragment)
         call read_normalized_2e_soc(                                 &
                                     Gmat_frag,                       &
@@ -196,6 +194,23 @@ contains
                                     nint(atom(center_total)%charge), &
                                     aoo_fsoc                         &
                                    )
+
+#ifdef DEBUG_SOC
+      !> debug print
+      if(print_lvl > 5)then
+        call print_x2cmat(                                       &
+                          Gmat_frag,                             &
+                          nrows_ext,                             &
+                          ncols_ext,                             &
+                          nr_quat_ext,                           &
+                          aoo_cb_pq_to_uq(1,0),                  &
+                          'X-AMFI - corrections from file',      &
+                          6                                      &
+                         )
+      end if
+#endif
+
+
         allocate(rbuf(naosh_l))
         allocate(cbuf(naosh_l))
         allocate(ibuf(nrows_ext))
@@ -225,13 +240,27 @@ contains
                          ibuf,                            &
                          jbuf)
 
+#ifdef DEBUG_SOC
+      !> debug print
+      if(print_lvl > 5)then
+        call print_x2cmat(                                       &
+                          Gmat,                                  &
+                          naosh_l,                               &
+                          naosh_l,                               &
+                          nr_quat_ext,                           &
+                          aoo_cb_pq_to_uq(1,0),                  &
+                          'X-AMFI - corrections accumulated',    &
+                          6                                      &
+                         )
+      end if
+#endif
         deallocate(jbuf)
         deallocate(ibuf)
         deallocate(cbuf)
         deallocate(rbuf)
         deallocate(Gmat_frag)
-        write(6,*) 'done correction for center ',center_total,aoo_nont(center_id),center_id,aoo_nucdeg(center_total)
-        call flshfo(6)
+        !write(6,*) 'done correction for center ',center_total,aoo_nont(center_id),center_id,aoo_nucdeg(center_total)
+        !call flshfo(6)
 
       end if
 
