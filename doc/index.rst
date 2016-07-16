@@ -134,10 +134,12 @@ Tutorials and walkthrus
 * **Case studies:**
   :doc:`W atom <tutorials/case_studies/W>` |
   :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
-  :doc:`MnO6 system <tutorials/case_studies/MnO6>`  |
-  :doc:`UF6(-) anion <tutorials/case_studies/UF6_anion/UF6_anion>`  |
-  :doc:`UO6(-6) anion <tutorials/case_studies/UO6_6minus/UO6_6minus>`  |
-  :doc:`LuF3 system <tutorials/case_studies/LuF3/LuF3>`
+  :doc:`CmF molecule <tutorials/case_studies/CmF/CmF>` |
+  :doc:`MnO6 system <tutorials/case_studies/MnO6>` |
+  :doc:`UF6 molecule <tutorials/case_studies/UF6_molecule/UF6>` |
+  :doc:`UF6(-) anion <tutorials/case_studies/UF6_anion/UF6_anion>` |
+  :doc:`UO6(-6) anion <tutorials/case_studies/UO6_6minus/UO6_6minus>` |
+  :doc:`LuF3 molecule <tutorials/case_studies/LuF3/LuF3>`
 
 * **ADC:**
   :doc:`Triatomic molecule <tutorials/reladc/triatomic_molecule>` |

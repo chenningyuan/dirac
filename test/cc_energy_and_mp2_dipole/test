@@ -28,6 +28,9 @@ test.run(['so-ccsd.inp'],    ['H2O.mol'], f, args='--mw=64 --aw=130  --incmo')
 f.add(from_string = ' Overview of calculated energies',
       to_string   = '@ Total CCSD-T  energy',
       rel_tolerance   = 1.0e-7)
+
+test.run(['ccsd.small.ion.inp'], ['H2O.mol'], f, args='--mw=64 --aw=130         ')
+
 f.add(from_string = '* Dipole moment',
       to_string   = '1 a.u =   2.54177000 Debye',
       rel_tolerance   = 1.0e-5)
