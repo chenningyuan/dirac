@@ -167,6 +167,7 @@ contains
   call interface_mpi_BCAST(relcc_nfroz,   size(relcc_nfroz),   0,global_communicator)
 
   call interface_mpi_bcast_l0(nelec_input              ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(nelec_open_input         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_debug              ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_timing             ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_sort            ,1,0,global_communicator)

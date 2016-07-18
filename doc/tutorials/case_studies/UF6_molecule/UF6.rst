@@ -3,17 +3,19 @@
 UF6 molecule
 ============
 
-The UF6 (146 electrons, Oh) is known compound connected with the uranium enrichment.
+:math:`UF_6` (146 electrons, :math:`O_h` symmetry) is known compound connected with the uranium enrichment.
 We shall investigate UF6 as the closed-shell (singlet) state 
-in the highest D2h* computational symmetry 
-(UF6 mol file :download:`UF6.v2z.D2h.mol <../../../../../test/tutorial_UF6/UF6.v2z.D2h.mol>`).
+and in the highest D2h* computational symmetry 
+(:download:`UF6.v2z.D2h.mol <../../../../../test/tutorial_UF6/UF6.v2z.D2h.mol>`).
 
-How do we obtain converged molecular orbitals with the all-electron method ?
+How do we obtain converged molecular orbitals with the all-electron method ? 
+
 The default SCF automatic occupation scheme does not work.
-Iteartions are interrupted with message about too many changes in the SCF occupation, meaning
-that no convergence was achieved.
+SCF iterations are interrupted with message about too many changes in the SCF occupation, meaning
+that no convergence was achieved. Another route has to be taken.
 
-Clearly, another route must be taken.
+Note that is tutorial shows different way for obtaining convergence than another one for :math:`UF_6^{-}`, :ref:`UF6anion`, 
+which is based upon relativistic effective core potentials.
 
 Atomic start and the autooccupation 
 -----------------------------------
@@ -47,33 +49,36 @@ Results - occupations and SCF energy - are collected in the following table:
 ==========  ===================
 occupation  SCF energy
 ==========  ===================
-68   78     not conv
-70   76     -28636.011248088082
-72   74     -28636.624880692940 
-74   72     -28635.715232162675
-76   70     -28634.793937853457
+68,   78     not converged
+70,   76     -28636.011248088082
+72,   74     -28636.624880692940 
+74,   72     -28635.715232162675
+76,   70     -28634.793937853457
 ==========  ===================
 
 We see that manually assigned occupation of 72,74 gives the lowest energy, what is the
-proof of correct autooccupation settings (see one input file, :download:`UF6.x2c_a4p.atstart_scf_autoocc_72_74 <../../../../../test/tutorial_UF6/UF6.x2c_a4p.atstart_scf_autoocc_72_74.inp>` )
+proof of the correct autooccupation settings 
+(see one input file, :download:`UF6.x2c_a4p.atstart_scf_autoocc_72_74 <../../../../../test/tutorial_UF6/UF6.x2c_a4p.atstart_scf_autoocc_72_74.inp>`).
 
 Geometry optimization
 ---------------------
 
-The UF6 molecule spans high Oh symmetry. Therefore, the geometry optimization
+The UF6 geometry optimization, thanks to the high Oh symmetry,
 requires change of one parameter only - the U-F bond distance.
 
-To perform the UF6 geometry optimization with the BP86 functional effectively, let us first obtain 
+To carry out the UF6 structure optimization with the BP86 functional effectively, let us first obtain 
 starting set of (DFT) molecular orbitals. For that, we first run single point DFT step with molecular
 orbitals file from the previous SCF step and reuse them for the DFT-geometry optimization. 
 See the BP86 input file, :download:`UF6.x2c_a4p.bp86_72_74.inp <../../../../../test/tutorial_UF6/UF6.x2c_a4p.bp86_72_74.inp>`, and the geometry optimization input, 
 :download:`UF6.geomopt.x2c_a4p.bp86_72_74.inp <../../../../../test/tutorial_UF6/UF6.geomopt.x2c_a4p.bp86_72_74.inp>`.
 
 Thanks to this MO start, number SCF iterations during the geometry optimization cycle is less than 10,
-see the corresponding :download:`output file <../../../../../test/tutorial_UF6/result/UF6.geomopt.x2c_a4p.bp86_72_74_UF6.v2z.D2h.out>` . The final U-F bond distance obtained with the X2C-BP86-v2z method is 2.020A (experimental distance is 1.999A) 
+see the corresponding :download:`output file <../../../../../test/tutorial_UF6/result/UF6.geomopt.x2c_a4p.bp86_72_74_UF6.v2z.D2h.out>`. 
 
-Testing Python script
----------------------
+The final U-F bond distance obtained with the X2c-BP86-v2z method is 2.020A (experimental distance is 1.999A). 
 
-The comprehensive testing script of this tutorial is :download:`test <../../../../../test/tutorial_UF6/test>`.
-Pay attention to comments and commented files.
+Test script
+-----------
+
+The Dirac Python test script for this tutorial is :download:`test <../../../../../test/tutorial_UF6/test>`.
+Pay attention to comments and commented lines to be able to reproduce this tutorial's demostrative calculations.
