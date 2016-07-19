@@ -1,13 +1,13 @@
 # depends on CMake's default module FindMPI (on Ubuntu, /usr/share/cmake-2.8/Modules/FindMPI.cmake)
 if(MPI_FOUND)
-    include(CheckFortranSourceCompiles)
+    include(CheckFortranSourceCompiles1)
 
     add_definitions(-DVAR_MPI)
     add_definitions(-DVAR_MPI2)
 
     # test whether MPI module is compatible with compiler
     file(READ "${PROJECT_SOURCE_DIR}/cmake/custom/test-MPI-compiler-compatibility.F90" _source)
-    check_fortran_source_compiles(
+    check_fortran_source_compiles1(
         ${_source}
         MPI_COMPILER_MATCHES
         )
@@ -20,7 +20,7 @@ if(MPI_FOUND)
 
     # test whether MPI integer type matches
     file(READ "${PROJECT_SOURCE_DIR}/cmake/custom/test-MPI-itype-compatibility.F90" _source)
-    check_fortran_source_compiles(
+    check_fortran_source_compiles1(
         ${_source}
         MPI_ITYPE_MATCHES
         )

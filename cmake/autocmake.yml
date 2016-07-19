@@ -32,7 +32,7 @@ modules:
     - 'custom/builtin_math.cmake'
     - '%(url_root)modules/python_interpreter.cmake'
     - '%(url_root)modules/math_libs.cmake'
-    - 'custom/CheckFortranSourceCompiles.cmake'  # DIRAC MPI section needs this to run configure-time checks
+    - 'custom/CheckFortranSourceCompiles1.cmake'  # DIRAC MPI section needs this to run configure-time checks
     - 'https://github.com/Kitware/CMake/raw/master/Modules/CMakeDependentOption.cmake'  # in CMake since 3.0
     - '%(url_root)modules/mpi.cmake'
     - '%(url_root)modules/code_coverage.cmake'
@@ -40,6 +40,7 @@ modules:
     - 'custom/profiling.cmake'
     - 'custom/runtimecheck.cmake'
     - '%(url_root)modules/int64.cmake'
+    - 'custom/mathlibs-integer-compatibility.cmake'
     - '%(url_root)modules/safeguards.cmake'
     - '%(url_root)modules/git_info/git_info.cmake'
     - '%(url_root)modules/version.cmake'
