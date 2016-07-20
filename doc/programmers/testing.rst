@@ -13,7 +13,7 @@ When you add a new test always add it to CMake
 ----------------------------------------------
 
 Otherwise the test will never be run as part of the default test suite.
-``git grep`` for an existing test to see where tests are defined.
+``git grep`` for an existing test to see where tests are defined. For details, see below.
 
 
 Strive for portability
@@ -39,6 +39,8 @@ The test runner is CTest. You can run a single test with::
 
   ctest -R mynewtest
 
+where *mynewtest* is the name of test directory.
+
 Alternatively you can run a test directly in the test directory.
 For this check out::
 
@@ -57,24 +59,79 @@ numbers.
 How to add labels to tests
 --------------------------
 
+Individual tests can have extra descriptors (labels, tags) helping to categorize them.
+Pick suitable label names characterizing given test.
+
 Here is an example::
 
   dirac_test('dft_ac', 'short;dft')
 
 If you give several labels, separate them with ";".
 
+The advantage of your test's labeling  is that one can call group of tests according to their labels. For instance,
+lauching all tests containing label "short"::
+
+  ctest -L short
+
 
 How to add a new test
 ---------------------
 
-All you need to add a test is to add a python script called "test" in a new
-directory.
+1. First thing to add a new test is to add a python script called "test" in your 
+test directory.
 
 In most cases you probably want to use the runtest_dirac.py test library
 since it gives you the framework to run DIRAC jobs and
 to filter numbers with numerical tolerance.  But you don't have to. You have
 full liberty to test whatever you want in whatever way you want. Important is
 that you return an exit code. If the exit code is 0, the test was successful,
-if non-0, then the test has failed. Add the test also to CMake
-otherwise the test will never be run as part of the default test suite.
-``git grep`` for an existing test to see where tests are defined.
+if non-0, then the test has failed. 
+
+Please provide also README.rst description file to the test directory so that other developers
+know what functionalities are tests covering, what is the meaning of the test.
+
+2. You have to add the new test also to CMake infrastructure,
+otherwise the test will never be run as part of the selected test suite.
+Read the following.
+
+Tests categories in Dirac
+-------------------------
+
+Tests are grouped into several categories. Consider to choose suitable class for your test
+depending on test's execution time, test's intention etc.
+
+2.1. Default tests. These are always run as they cover at least released Dirac functionalities. 
+Be sure they do take not too much time !
+
+Modify :download:`this CMake file <../../../cmake/custom/test.cmake>`.
+
+
+2.2. Tutorial tests. These are added to default tests upon  **-D ENABLE_TUTORIALS=ON**.
+Tutorial tests are directly interconnected with tutorial documentation files,
+which refer also to corresponding input and output files of given tutorial test(s). 
+Therefore these tests serve mainly to 
+verify corectness of (ascii) file read and produced by Dirac.
+These tests are not restricted by time as are default tests, but please consider rather shorter than longer examples.
+
+See and modify :download:`this CMake file <../../../cmake/custom/tutorials.cmake>`.
+
+
+2.3 Bechmark tests. Added to default test suite and becoming part of testing if **-D ENABLE_BENCHMARKS=ON**.
+These tests serve to asses the Dirac execution perfomance.
+
+See and modify :download:`this CMake file <../../../cmake/custom/benchmarks.cmake>`.
+
+
+2.4 Special test for testing all basis set files. Activated when *-D ENABLE_BASIS_SETS_CHECK=ON**.
+See the corresponding :download:`CMake file <../../../cmake/custom/basis_set_check.cmake>`.
+
+
+2.5 Unreleased and features restricted tests. 
+In the DIRAC development version, unreleased and preprocessor restricted
+features are accompanied with dedicated tests. 
+
+How to include them, see
+ :download:`this CMake file <../../../src/CMakeLists.txt>` for feature attached tests and
+ :download:`this CMake file <../../../cmake/custom/unreleased.cmake>` for testing of 
+remaining unreleased features.
+
