@@ -103,7 +103,7 @@ depending on test's execution time, test's intention etc.
 2.1. Default tests. These are always run as they cover at least released Dirac functionalities. 
 Be sure they do take not too much time !
 
-Modify :download:`this CMake file <../../../cmake/custom/test.cmake>`.
+Modify the :download:`cmake/custom/test.cmake file <../../../cmake/custom/test.cmake>`.
 
 
 2.2. Tutorial tests. These are added to default tests upon  **-D ENABLE_TUTORIALS=ON**.
@@ -113,17 +113,17 @@ Therefore these tests serve mainly to
 verify corectness of (ascii) file read and produced by Dirac.
 These tests are not restricted by time as are default tests, but please consider rather shorter than longer examples.
 
-See and modify :download:`this CMake file <../../../cmake/custom/tutorials.cmake>`.
+See and modify the :download:`cmake/custom/tutorials.cmake file <../../../cmake/custom/tutorials.cmake>`.
 
 
 2.3 Bechmark tests. Added to default test suite and becoming part of testing if **-D ENABLE_BENCHMARKS=ON**.
 These tests serve to asses the Dirac execution perfomance.
 
-See and modify :download:`this CMake file <../../../cmake/custom/benchmarks.cmake>`.
+See and modify the :download:`cmake/custom/benchmarks.cmake file <../../../cmake/custom/benchmarks.cmake>`.
 
 
 2.4 Special test for testing all basis set files. Activated when *-D ENABLE_BASIS_SETS_CHECK=ON**.
-See the corresponding :download:`CMake file <../../../cmake/custom/basis_set_check.cmake>`.
+See the corresponding :download:`cmake/custom/basis_set_check.cmake file <../../../cmake/custom/basis_set_check.cmake>`.
 
 
 2.5 Unreleased and features restricted tests. 
@@ -131,6 +131,6 @@ In the DIRAC development version, unreleased and preprocessor restricted
 features are accompanied with dedicated tests. 
 
 How to include them, see
-:download:`this CMake file <../../../src/CMakeLists.txt>` for feature attached tests and
-:download:`this CMake file <../../../cmake/custom/unreleased.cmake>` for testing of 
+:download:`src/CMakeLists.tx file <../../../src/CMakeLists.txt>` for feature attached tests and the
+:download:`cmake/custom/unreleased.cmake <../../../cmake/custom/unreleased.cmake>` file for testing of 
 remaining unreleased features.
