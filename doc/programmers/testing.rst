@@ -131,7 +131,6 @@ In the DIRAC development version, unreleased and preprocessor restricted
 features are accompanied with dedicated tests. 
 
 How to include them, see
- :download:`this CMake file <../../../src/CMakeLists.txt>` for feature attached tests and
- :download:`this CMake file <../../../cmake/custom/unreleased.cmake>` for testing of 
+:download:`this CMake file <../../../src/CMakeLists.txt>` for feature attached tests and
+:download:`this CMake file <../../../cmake/custom/unreleased.cmake>` for testing of 
 remaining unreleased features.
-
