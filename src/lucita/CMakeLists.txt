@@ -8,45 +8,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_LUCITA_FORTRAN_SOURCES
-blksize.inc 
- cgas.inc  
-  cprnt.inc 
-  cstate.inc  
-gasstr.inc  
- irat.inc   
-  multd2h.inc  
-orbinf_lucita.inc 
- stinf.inc  
- units.inc
-cands.inc  
-  cicisp.inc  
-crun.inc  
-  files.inc  
- glbbas.inc
-   luci.inc   
-  mxpdim.inc  
- orbinp.inc     
-    strbas.inc
-  vrsn.inc
-cc_exc.inc 
-  clunit.inc 
- csfbas.inc  
-fio.inc    
- gshelp.inc  
- lucinp.inc  
- oper.inc   
-  rasdim.inc   
-      strinp.inc  
-wrkspc.inc
-cecore.inc   
-comjep.inc
-  csm.inc   
-  fnc.inc  
-   intform.inc
-  machine.inc 
- orbinf.inc  
- spinfo.inc    
-     SysDef.inc
     ciinfo.F
     density.F
     diagonal.F

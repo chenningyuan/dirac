@@ -11,9 +11,6 @@ set(FREE_KRCC_FORTRAN_SOURCES
 )
 
 set(FIXED_KRCC_FORTRAN_SOURCES
-cands.inc    cgas.inc    clunit.inc  csm.inc     ctccp.inc   glbbas.inc    ipoist8.inc  multd2h.inc  stinf.inc   symm.inc
-cc_scr2.inc  cicisp.inc  coeff.inc   cstate.inc  dbgsym.inc  implicit.inc  irat.inc     mxpdim.inc   strbas.inc
-cecore.inc   cintfo.inc  crun.inc    ctcc.inc    gasstr.inc  interm.inc    lucinp.inc   orbinp.inc   strinp.inc
         cc_vec_fnc2.F
         optimization.F
         cc_vec_fnc.F

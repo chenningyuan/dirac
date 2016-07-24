@@ -8,14 +8,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_DIRRCI_FORTRAN_SOURCES
- cosbit.h  
- files.inc 
- general.inc 
- goscom.h 
- iterat.inc 
- mempoint.inc 
- param.inc 
- symm.inc
  cidirr.F
  cigenp.F
  cigosc.F

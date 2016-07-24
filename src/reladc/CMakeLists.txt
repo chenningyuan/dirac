@@ -12,7 +12,6 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     adcdble.F
     adcdiag.F
     adcexci.F
-    adcinpt.inc
     adcsort.F
 )
 
