@@ -47,6 +47,7 @@ endif()
 
 add_library(
     xcint
+    OBJECT
     ${FIXED_XCINT_FORTRAN_SOURCES}
     ${FREE_XCINT_FORTRAN_SOURCES}
 )

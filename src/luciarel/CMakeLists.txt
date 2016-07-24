@@ -68,6 +68,7 @@ endif()
 
 add_library(
     luciarel
+    OBJECT
     ${FIXED_LUCIAREL_FORTRAN_SOURCES}
     ${FREE_LUCIAREL_FORTRAN_SOURCES}
     ${LUCIAREL_C_SOURCES}

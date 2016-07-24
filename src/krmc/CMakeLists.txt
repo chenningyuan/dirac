@@ -41,6 +41,7 @@ endif()
 
 add_library(
     krmc
+    OBJECT
     ${FIXED_KRMC_FORTRAN_SOURCES}
     ${FREE_KRMC_FORTRAN_SOURCES}
     ${KRMC_C_SOURCES}
