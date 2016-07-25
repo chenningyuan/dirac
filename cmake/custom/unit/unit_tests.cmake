@@ -10,12 +10,7 @@ if(ENABLE_UNIT_TESTS)
         )
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_BINARY_DIR}/unit)
 
-    #miro: simple workaround to satisfy linking dependency of the localization library on the dirac library
-   # set(UNIT_TEST_LIBS
-   #     localization
-   #     ${EXTERNAL_LIBS} 
-   #     )
-    #miro: switched to OBJECT libraries later
+    #miro: OBJECT libraries throughout the DIRCA suite
     add_library(objlib.UNIT_TEST_LIBS ${EXTERNAL_OBJECTS})
 
     macro(add_unit_test _path _name)
@@ -39,12 +34,12 @@ if(ENABLE_UNIT_TESTS)
         # add -Wl,-bbigtoc flag to deal with TOC overflow
             target_link_libraries(
                 ${_name}.x
-                objlib.UNIT_TEST_LIB -lC -Wl,-bbigtoc
+                objlib.UNIT_TEST_LIB ${EXTERNAL_LIBS} -lC -Wl,-bbigtoc
                 )
         else()
             target_link_libraries(
                 ${_name}.x
-                objlib.UNIT_TEST_LIBS
+                objlib.UNIT_TEST_LIBS ${EXTERNAL_LIBS}
                 )
         endif()
 
