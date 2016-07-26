@@ -59,7 +59,8 @@ in index.rst.
 New theme
 ---------
 
-The `sphinx_rtd_theme <https://github.com/snide/sphinx_rtd_theme>`_ has been customized and integrated as the new theme for Dirac. Theme extension can be installed using pip:
+The `sphinx_rtd_theme <https://github.com/snide/sphinx_rtd_theme>`_ has been customized and integrated as the new theme for Dirac. 
+Theme extension can be installed using pip:
 
 .. code-block:: bash
 
@@ -366,6 +367,7 @@ Summary
 -------
 
 We give complete list of packages to be installed for compiling the DIRAC documentation:
+
 ::
 
     sudo apt-get install python-sphinx python-matplotlib
