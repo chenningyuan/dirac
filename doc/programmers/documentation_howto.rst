@@ -118,13 +118,15 @@ Citations can be added using the new :rst:dir:`cite` directive:
     # new format
     :cite:`Dubillard2006`
 
-The new format also enables the option to download the citations in BibTeX. This code will generate a link to static BibTeX file with all citations:
+The new format also enables the option to download the citations in BibTeX.
+This code will generate a link to static BibTeX file with all citations:
 
 .. code-block:: rest
 
     :download:`BibTeX <zreferences.bib>`
 
-The list of references can be added to the document using the :rst:dir:`bibliography` directive:
+The list of references can be added to the document using the
+:rst:dir:`bibliography` directive:
 
 .. code-block:: rest
 
@@ -138,14 +140,17 @@ The list of references can be added to the document using the :rst:dir:`bibliogr
     name the references page so that it starts with the "z" letter in order to be alphabeticaly last.
     The issue is being tracked `here <http://sphinxcontrib-bibtex.readthedocs.org/en/latest/usage.html#unresolved-citations-across-documents>`_.
 
-When definining you own styles, please consider studying these `examples <http://bazaar.launchpad.net/~pybtex-devs/pybtex/trunk/files/head:/pybtex/style/>`_, as the documentation of this project is really poor. In order for citations to be sorted alphabeticaly, the ``plain`` or ``alpha`` formatting must be used.
+When defining you own styles, please consider studying these `examples
+<http://bazaar.launchpad.net/~pybtex-devs/pybtex/trunk/files/head:/pybtex/style/>`_,
+as the documentation of this project is really poor. In order for citations to
+be sorted alphabetically, the ``plain`` or ``alpha`` formatting must be used.
 
 Available labels:
 
 * ``alpha`` - Display data from citation fields.
 * ``numbers`` - Displays numbers.
 
-Available formattings:
+Available formatting:
 
 * ``alpha`` - Uses ``alpha`` label, citations are sorted by ``author_year_title``.
 * ``plain`` -  Uses ``number`` label, citations are sorted by ``author_year_title``.
