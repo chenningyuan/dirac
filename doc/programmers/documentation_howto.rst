@@ -16,23 +16,21 @@ Primer <http://sphinx.pocoo.org/rest.html>`_ and the `Sphinx Markup Constructs
 auto-colored in the terminal so you can see when the markup is correct or
 wrong.
 
+
 Sphinx installation
 -------------------
 
-The sphinx generator is part of standard packages, and on most systems
-can be installed via their official repositories.
-Common names of packages are "python-sphinx" and "python-matplotlib", but there might be
-additional packages needed depending on the operating system.
+We recommend to install the required packages using virtualenv and not using
+standard packages (you may need to install python-pip and python-virtualenv)::
 
-Linux users, for example on Ubuntu, can get the documentation generator as::
+  $ virtualenv venv
+  $ source venv/bin/activate
+  $ pip install sphinx matplotlib sphinx_rtd_theme hieroglyph sphinxcontrib-bibtex
 
-    sudo apt-get install python-sphinx python-matplotlib
+The advantage of using virtualenv is that it is cross-platform,
+you get the latest packages, you get an isolated and disposable
+environment, and you do not require sudo permissions.
 
-For  *Mac* users using the macport::
-
-    sudo port install python-sphinx
-    sudo port select --set sphinx py27-sphinx
-    sudo port install py27-matplotlib
 
 Generation of html pages
 ------------------------
@@ -367,14 +365,3 @@ After keyword arguments you have to provide two positional arguments.
 
 Every operation on the remote server will be executed under the given user. If the ``post_script`` option is passed it will be executed after the rsync operation finishes. Example
 post deploy script can be found in ``maintenance/post_deploy.py``. It used to generate nice overview of last documentation builds on the `main documentation site <http://dirac.umb.sk/doc/doc-deployments/>`_.
-
-Summary 
--------
-
-We give complete list of packages to be installed for compiling the DIRAC documentation:
-
-::
-
-    sudo apt-get install python-sphinx python-matplotlib
-    pip install sphinx_rtd_theme hieroglyph sphinxcontrib-bibtex
-
