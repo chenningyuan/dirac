@@ -24,12 +24,29 @@ We recommend to install the required packages using virtualenv and not using
 standard packages (you may need to install python-pip and python-virtualenv)::
 
   $ virtualenv venv
+
+This will create a directory called ``venv`` in your current working directory.
+You can create it in another place and you can give it a different name.
+It may make sense to install it into ``~/venv``.
+Once you have set it up, you need to activate it::
+
   $ source venv/bin/activate
+
+Next time you log on, you do not need to install it again, you just activate it
+like above.  Once activated, you can install Python packages into the virtual
+environment::
+
   $ pip install sphinx matplotlib sphinx_rtd_theme hieroglyph sphinxcontrib-bibtex
 
 The advantage of using virtualenv is that it is cross-platform,
 you get the latest packages, you get an isolated and disposable
 environment, and you do not require sudo permissions.
+
+If you do not like the virtual environment anymore, you just delete it - it does
+not pollute your system installation.
+
+To learn more about virtual environments, see:
+http://docs.python-guide.org/en/latest/dev/virtualenvs/.
 
 
 Generation of html pages
