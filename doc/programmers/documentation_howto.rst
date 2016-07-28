@@ -27,7 +27,8 @@ standard packages (you may need to install python-pip and python-virtualenv)::
 
 This will create a directory called ``venv`` in your current working directory.
 You can create it in another place and you can give it a different name.
-It may make sense to install it into ``~/venv``.
+It may make sense to install it into ``~/venv``. It is no problem to have
+20 different virtual environments on your computer.
 Once you have set it up, you need to activate it::
 
   $ source venv/bin/activate
