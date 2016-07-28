@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 """
-    Launch script for DIRAC calculations.
-    Takes care of copying files in and out and setting appropriate environment variables for a DIRAC calculation.
+    Launching script for DIRAC calculations.
+    Takes care of copying files in and out and of setting appropriate environment variables for a DIRAC calculation.
   
     Written by Miroslav Ilias, Matej Bel University, Banska Bystrica, Slovakia, 2010-2013
    
@@ -165,7 +165,7 @@ class pam_enviroment:
             else:
                 self.dirac_exe = None
 
-        # put/get files
+        # flags for putting/getting files for Dirac calculation
         self.put_files = None
         self.get_files = None
 
@@ -260,16 +260,16 @@ class pam_enviroment:
     # total spent time for pam script + job execution
         self.start_time=time.time()
 
-    #  read diracrc file, full path
+    #  variable for the diracrc file, full path
         self.diracrc_file = None
     # variable for the sole diracrc file argument list for pam
         self.diracrc_args = []
-    # list of all pam arguments
+    # variable for listing all pam arguments
         self.pam_args = []
 
     def set_basdir(self):
         '''
-        set and controls the basis set directory
+        sets and controls the deafult basis set directory
         '''
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
