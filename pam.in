@@ -17,7 +17,7 @@
                                  do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
                                  --mpi overrides DIRAC_MPI_COMMAND
              DIRAC_MPI_MACHFILE - if set, tells about parallel multinodes run with nodes specified by this variable. Is overwritten by --machfile flag.
-             DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory
+             DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory. Is overwritten by --scratch/--scratchfull flags.
              BASDIR            - if set, DIRAC will use this basis set directory/directories, otherwise it takes the default $DIRAC/build*
 
     Environment variables set by pam and used by MKL:
