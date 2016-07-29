@@ -58,6 +58,7 @@ endif()
 # - the ccunix.c is not included
 add_library(
     relccsd
+    OBJECT
     ${FIXED_RELCCSD_FORTRAN_SOURCES}
     ${FREE_RELCCSD_FORTRAN_SOURCES}
 )

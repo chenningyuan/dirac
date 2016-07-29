@@ -26,6 +26,7 @@ endif()
 
 add_library(
     main
+    OBJECT
     ${FIXED_MAIN_FORTRAN_SOURCES}
     ${FREE_MAIN_FORTRAN_SOURCES}
 )

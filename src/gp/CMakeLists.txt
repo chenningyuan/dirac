@@ -99,6 +99,7 @@ endif()
 
 add_library(
     gp
+    OBJECT
     ${FIXED_GP_FORTRAN_SOURCES}
     ${FREE_GP_FORTRAN_SOURCES}
     ${GP_C_SOURCES}

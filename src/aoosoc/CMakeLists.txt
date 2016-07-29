@@ -25,6 +25,7 @@ endif()
 
 add_library(
     aoosoc
+    OBJECT
     ${FIXED_AOOSOC_FORTRAN_SOURCES}
     ${FREE_AOOSOC_FORTRAN_SOURCES}
 )

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 """
-    Launch script for DIRAC calculations.
-    Takes care of copying files in and out and setting appropriate environment variables for a DIRAC calculation.
+    Launching script for DIRAC calculations.
+    Takes care of copying files in and out and of setting appropriate environment variables for a DIRAC calculation.
   
     Written by Miroslav Ilias, Matej Bel University, Banska Bystrica, Slovakia, 2010-2013
    
@@ -17,7 +17,8 @@
                                  do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
                                  --mpi overrides DIRAC_MPI_COMMAND
              DIRAC_MPI_MACHFILE - if set, tells about parallel multinodes run with nodes specified by this variable. Is overwritten by --machfile flag.
-             DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory
+             DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory. Is overwritten by --scratch/--scratchfull flags.
+             BASDIR_PATH       - if set, DIRAC will use this basis set directory/directories, otherwise it takes the default $DIRAC/build*
 
     Environment variables set by pam and used by MKL:
              MKL_NUM_THREADS - set to 1 if not defined and parallel dirac.x
@@ -26,7 +27,7 @@
              OMP_DYNAMIC     - set to "FALSE" if not defined and parallel dirac.x
 
     Environment variables set by pam and used by DIRAC:
-             BASDIR          - basis set directory/directories
+             BASDIR          - contains path for basis set directories
              DIRWRK          - work space for Fortran 77 "WORK" allocations         (radovan: what units?)
              DIRMAX          - maximum work space for Fortran 77 "WORK" allocations (radovan: how does it differ from DIRWRK?)
              DIRPAR          - controls parallel run (1) or sequential run (0)
@@ -164,7 +165,7 @@ class pam_enviroment:
             else:
                 self.dirac_exe = None
 
-        # put/get files
+        # flags for putting/getting files for Dirac calculation
         self.put_files = None
         self.get_files = None
 
@@ -259,16 +260,16 @@ class pam_enviroment:
     # total spent time for pam script + job execution
         self.start_time=time.time()
 
-    #  read diracrc file, full path
+    #  variable for the diracrc file, full path
         self.diracrc_file = None
     # variable for the sole diracrc file argument list for pam
         self.diracrc_args = []
-    # list of all pam arguments
+    # variable for listing all pam arguments
         self.pam_args = []
 
     def set_basdir(self):
         '''
-        set and controls the basis set directory
+        sets and controls the deafult basis set directory
         '''
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
@@ -1235,15 +1236,19 @@ Options are also read from ~/.diracrc"""
             sys.exit(-1)
 
     def set_dirac_environment(self):
-        """export important variables for DIRAC
-           TODO: implement for WINDOWS"""
-        if not is_windows():
-            self.basdir = self.input_directory + ':' + self.basdir
-        else:
-            self.basdir = self.input_directory + ';' + self.basdir
-        
-        os.putenv('BASDIR', self.basdir)
+        """export important variables for DIRAC"""
 
+        if os.environ.get('BASDIR_PATH'):
+            self.basdir = os.environ.get('BASDIR_PATH')
+        else:
+            if not is_windows():
+                self.basdir = self.input_directory + ':' + self.basdir
+            else:
+                self.basdir = self.input_directory + ';' + self.basdir
+
+        #miro: BASDIR is used by dirac.x !
+        os.putenv('BASDIR', self.basdir)
+        
         dirwrk_amount = str(int(self.max_memory_work_master * 1000000))
         try:
             # make sure DIRWRK is integer
@@ -1431,7 +1436,11 @@ Options are also read from ~/.diracrc"""
             basis_set_directory_list = self.basdir.split(';')
             
         if self.verbose:
-            print '  Basis set libraries : %s' % basis_set_directory_list[0]
+            if os.environ.get('BASDIR_SET'):
+                print '  Basis set libraries (BASDIR_SET) : %s' % basis_set_directory_list[0]
+            else:
+                print '  Basis set libraries (default)    : %s' % basis_set_directory_list[0]
+            # ...
             if len(basis_set_directory_list) > 1:
                 for i in range(1, len(basis_set_directory_list)):
                     if basis_set_directory_list[i] != '.':
