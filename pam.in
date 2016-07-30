@@ -269,7 +269,7 @@ class pam_enviroment:
 
     def set_basdir(self):
         '''
-        sets and controls the deafult basis set directory
+        sets and controls the default basis set directory
         '''
     # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
