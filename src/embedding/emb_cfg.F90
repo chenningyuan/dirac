@@ -50,6 +50,8 @@ implicit none
       logical          :: im_coulomb
       logical          :: im_vemb
       logical          :: im_frozen
+      logical          :: im_frozen_pert_direct
+      logical          :: im_frozen_pert_reorth
       logical          :: im_update_vemb
    end type
 
@@ -199,6 +201,8 @@ implicit none
          ic%im_coulomb   = .false.
          ic%im_vemb      = .false.
          ic%im_frozen    = .false.
+         ic%im_frozen_pert_direct    = .false.
+         ic%im_frozen_pert_reorth    = .false.
          ic%im_update_vemb=.false.
       end subroutine fde_initialize_import
 
@@ -237,6 +241,8 @@ implicit none
          fde_im_control%im_coulomb   = tmp%im_coulomb
          fde_im_control%im_vemb      = tmp%im_vemb
          fde_im_control%im_frozen    = tmp%im_frozen
+         fde_im_control%im_frozen_pert_direct    = tmp%im_frozen_pert_direct
+         fde_im_control%im_frozen_pert_reorth    = tmp%im_frozen_pert_reorth
          fde_im_control%im_update_vemb=tmp%im_update_vemb
       end subroutine fde_set_import_info
 
@@ -297,6 +303,8 @@ implicit none
          tmp%im_coulomb     = fde_im_control%im_coulomb     
          tmp%im_vemb        = fde_im_control%im_vemb        
          tmp%im_frozen      = fde_im_control%im_frozen      
+         tmp%im_frozen_pert_direct      = fde_im_control%im_frozen_pert_direct      
+         tmp%im_frozen_pert_reorth      = fde_im_control%im_frozen_pert_reorth      
          tmp%im_update_vemb = fde_im_control%im_update_vemb 
 !g         write(*, *) 'test4 inside fde_get_import_info', tmp%im_n, tmp%im_n_b
       end subroutine fde_get_import_info
