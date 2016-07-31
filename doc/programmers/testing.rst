@@ -13,7 +13,7 @@ When you add a new test always add it to CMake
 ----------------------------------------------
 
 Otherwise the test will never be run as part of the default test suite.
-``git grep`` for an existing test to see where tests are defined. For details, see below.
+``git grep add_test`` to see where tests are defined. For details, see below.
 
 
 Strive for portability
@@ -27,7 +27,7 @@ use explicit forward slashes for paths, instead use os.path.join().
 Never add inputs to the test directories which are never run
 ------------------------------------------------------------
 
-We want all inputs and outputs inside test/ to be accessile by the default test
+We want all inputs and outputs inside test/ to be accessible by the default test
 suite. Otherwise we have no automatic way to detect that some inputs or outputs
 have degraded. And degraded inputs and outputs are useless and confusing.
 
@@ -68,8 +68,8 @@ Here is an example::
 
 If you give several labels, separate them with ";".
 
-The advantage of your test's labeling  is that one can call group of tests according to their labels. For instance,
-lauching all tests containing label "short"::
+The advantage of labeling a test is that one can call group of tests according to their labels. For instance,
+launching all tests containing label "short"::
 
   ctest -L short
 
@@ -88,7 +88,7 @@ that you return an exit code. If the exit code is 0, the test was successful,
 if non-0, then the test has failed. 
 
 Please provide also README.rst description file to the test directory so that other developers
-know what functionalities are tests covering, what is the meaning of the test.
+know what functionalities the test covers, what is the meaning of the test.
 
 2. You have to add the new test also to CMake infrastructure,
 otherwise the test will never be run as part of the selected test suite.
@@ -110,14 +110,15 @@ Modify the :download:`cmake/custom/test.cmake file <../../../cmake/custom/test.c
 Tutorial tests are directly interconnected with tutorial documentation files,
 which refer also to corresponding input and output files of given tutorial test(s). 
 Therefore these tests serve mainly to 
-verify corectness of (ascii) file read and produced by Dirac.
+verify correctness of (ascii) files read and produced by Dirac.
 These tests are not restricted by time as are default tests, but please consider rather shorter than longer examples.
 
 See and modify the :download:`cmake/custom/tutorials.cmake file <../../../cmake/custom/tutorials.cmake>`.
 
 
-2.3 Bechmark tests. Added to default test suite and becoming part of testing if **-D ENABLE_BENCHMARKS=ON**.
-These tests serve to asses the Dirac execution perfomance.
+2.3 Benchmark tests.
+These tests serve to asses the Dirac execution performance.
+These tests are activated with *ctest -C benchmarks -L benchmark*.
 
 See and modify the :download:`cmake/custom/benchmarks.cmake file <../../../cmake/custom/benchmarks.cmake>`.
 
