@@ -100,6 +100,7 @@ module fde_input
             end if
          end if
       endif
+!g      write(*, *) 'test1 itmp%im_n_b =', itmp%im_n_b 
 
       endif ! .not.skip_all_imports
 

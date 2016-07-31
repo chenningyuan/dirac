@@ -162,6 +162,7 @@ module fde_types
                gf%gs_b = 0.0d0
             end if
          end if
+!g         write(*, *) 'test2 ', associated(gf%n), associated(gf%n_b)
 
       end subroutine new_grid_function
 
