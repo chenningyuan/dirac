@@ -91,13 +91,17 @@ module fde_input
          itmp%im_n        = .true.
          itmp%im_gn       = .true.
          itmp%im_coulomb  = .true.
-         if (fde_rsp_mag_lao_import) then
-            itmp%im_n_b      = .true.
-            itmp%im_gn_b     = .true.
-            if (.not. fde_cfg_no_sdft) then
-               itmp%im_s_b      = .true.
-               itmp%im_gs_b     = .true.
-            end if
+      end if
+      if (itmp%im_frozen_pert_direct .and. .not. fde_cfg_no_sdft) then
+         itmp%im_s_b      = .true.
+         itmp%im_gs_b     = .true.
+      endif
+      if (itmp%im_frozen_pert_reorth) then
+         itmp%im_n_b      = .true.
+         itmp%im_gn_b     = .true.
+         if (.not. fde_cfg_no_sdft) then
+            itmp%im_s_b      = .true.
+            itmp%im_gs_b     = .true.
          end if
       endif
 !g      write(*, *) 'test1 itmp%im_n_b =', itmp%im_n_b 
@@ -108,6 +112,7 @@ module fde_input
          etmp%ex_n        = .true.
          etmp%ex_coulomb  = .true.
          etmp%ex_gn       = .true.
+!gosia: not tested:
          if (fde_rsp_mag_lao_export) then
             etmp%ex_n_b      = .true.
             etmp%ex_gn_b     = .true.
@@ -124,7 +129,7 @@ module fde_input
          call fde_import_static      
       endif
 
-      if (itmp%im_frozen) then
+      if (itmp%im_frozen .or. itmp%im_frozen_pert_direct .or. itmp%im_frozen_pert_reorth) then
          call fde_import_frozen
       endif
 
@@ -199,9 +204,20 @@ module fde_input
             'S. Hofener, A.S.P. Gomes and L. Visscher,',&
             ' J. Chem. Phys. 139 (2013) 104106.' 
             write(unit,*)
-            if (fde_rsp_mag_lao_import) then
-               write(unit, *) 'magnetic derivatives of density and density gradient also read from ', string
-            end if
+         endif
+
+         if (itmp%im_frozen_pert_direct) then
+            string = ftmp%frozen_pert_direct%name
+            write(unit,'(A,A60)') &
+                ' * Direct-LAO part of perturbed density of frozen subsystems read from file: ',string
+            write(unit,*)
+         endif
+
+         if (itmp%im_frozen_pert_reorth) then
+            string = ftmp%frozen_pert_reorth%name
+            write(unit,'(A,A60)') &
+                ' * Reorthonormalization part of perturbed density of frozen subsystems read from file: ',string
+            write(unit,*)
          endif
 
          if (etmp%do_grid_out) then

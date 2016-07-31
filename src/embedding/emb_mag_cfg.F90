@@ -9,7 +9,7 @@ module fde_mag_cfg
    public fde_lao_direct_active_embpot
    public fde_lao_direct_active_embker
    public fde_lao_reorth_active_embker
-   public fde_lao_frozen_embker
+   public fde_lao_frozen_embker_nonadd
    public fde_lao_frozen_embker_coulomb
    public fde_magn_expval_lao
    public fde_lao_magn_expval_no_embpot
@@ -27,7 +27,7 @@ module fde_mag_cfg
    logical, save :: fde_lao_direct_active_embpot  = .false.
    logical, save :: fde_lao_direct_active_embker  = .false.
    logical, save :: fde_lao_reorth_active_embker  = .false.
-   logical, save :: fde_lao_frozen_embker         = .false.
+   logical, save :: fde_lao_frozen_embker_nonadd  = .false.
    logical, save :: fde_lao_frozen_embker_coulomb = .false.
 
 !  these indicate contributions to expectation value to magnetizability (in LAO basis):

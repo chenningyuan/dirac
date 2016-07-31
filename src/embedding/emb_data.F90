@@ -160,10 +160,10 @@ module fde_data
 !   ----------------------------------------------------------------------------
    subroutine fde_import_frozen
 !   ----------------------------------------------------------------------------
-      integer :: file_unit
-      character(len=60) :: file_name
+      integer :: file_unit, file_unit_pert_direct, file_unit_pert_reorth
+      character(len=60) :: file_name, file_name_pert_direct, file_name_pert_reorth
       integer :: i
-      real(kind=8), pointer :: fde_frozen_prp(:,:), gridp(:,:)
+      real(kind=8), pointer :: fde_frozen_prp(:,:), fde_frozen_prp_pert(:,:), gridp(:,:)
       type(fde_files)  :: ftmp
       type(fde_import)  :: itmp
 
@@ -176,6 +176,21 @@ module fde_data
       call fde_open_file(file_name,file_unit)
       call read_grid(file_unit,gridp,fde_frozen_prp)
       call fde_close_file(file_unit)
+
+      if (itmp%im_frozen_pert_direct) then
+        file_unit_pert_direct = ftmp%frozen_pert_direct%unit
+        file_name_pert_direct = ftmp%frozen_pert_direct%name
+        call fde_open_file(file_name_pert_direct,file_unit_pert_direct)
+        call read_grid(file_unit_pert_direct,gridp,fde_frozen_prp_pert)
+        call fde_close_file(file_unit_pert_direct)
+      end if
+      if (itmp%im_frozen_pert_reorth) then
+        file_unit_pert_reorth = ftmp%frozen_pert_reorth%unit
+        file_name_pert_reorth = ftmp%frozen_pert_reorth%name
+        call fde_open_file(file_name_pert_reorth,file_unit_pert_reorth)
+        call read_grid(file_unit_pert_reorth,gridp,fde_frozen_prp_pert)
+        call fde_close_file(file_unit_pert_reorth)
+      end if
 
       fde_import_grid_np = size(gridp,2)
 
@@ -193,70 +208,72 @@ module fde_data
          
 !gosia: add here frozen perturbed magnetic densities...
 !        ... first n
+         if (itmp%im_frozen_pert_direct .or. itmp%im_frozen_pert_reorth) then
      !    if (itmp%im_n_b) then
 !           (Bxyz, i)
-            gf_frozen%n_b(1,i)      = fde_frozen_prp(7,i)
-            gf_frozen%n_b(2,i)      = fde_frozen_prp(8,i)
-            gf_frozen%n_b(3,i)      = fde_frozen_prp(9,i)
+            gf_frozen%n_b(1,i)      = fde_frozen_prp_pert(1,i)
+            gf_frozen%n_b(2,i)      = fde_frozen_prp_pert(2,i)
+            gf_frozen%n_b(3,i)      = fde_frozen_prp_pert(3,i)
      !    end if
 !g          write(*, *) 'test6 inside import', gf_frozen%n(i), gf_frozen%n_b(1, i)
 !        ... and gn
      !    if (itmp%im_gn_b) then
 !           (Rxyz, Bxyz, i)
-            gf_frozen%gn_b(1,1,i)   = fde_frozen_prp(10,i) ! dxBx
-            gf_frozen%gn_b(2,1,i)   = fde_frozen_prp(11,i) ! dyBx
-            gf_frozen%gn_b(3,1,i)   = fde_frozen_prp(12,i) ! dzBx
-            gf_frozen%gn_b(1,2,i)   = fde_frozen_prp(13,i) ! dxBy
-            gf_frozen%gn_b(2,2,i)   = fde_frozen_prp(14,i) ! dyBy
-            gf_frozen%gn_b(3,2,i)   = fde_frozen_prp(15,i) ! dzBy
-            gf_frozen%gn_b(1,3,i)   = fde_frozen_prp(16,i) ! dxBz
-            gf_frozen%gn_b(2,3,i)   = fde_frozen_prp(17,i) ! dyBz
-            gf_frozen%gn_b(3,3,i)   = fde_frozen_prp(18,i) ! dzBz
+            gf_frozen%gn_b(1,1,i)   = fde_frozen_prp_pert(4,i) ! dxBx
+            gf_frozen%gn_b(2,1,i)   = fde_frozen_prp_pert(5,i) ! dyBx
+            gf_frozen%gn_b(3,1,i)   = fde_frozen_prp_pert(6,i) ! dzBx
+            gf_frozen%gn_b(1,2,i)   = fde_frozen_prp_pert(7,i) ! dxBy
+            gf_frozen%gn_b(2,2,i)   = fde_frozen_prp_pert(8,i) ! dyBy
+            gf_frozen%gn_b(3,2,i)   = fde_frozen_prp_pert(9,i) ! dzBy
+            gf_frozen%gn_b(1,3,i)   = fde_frozen_prp_pert(10,i) ! dxBz
+            gf_frozen%gn_b(2,3,i)   = fde_frozen_prp_pert(11,i) ! dyBz
+            gf_frozen%gn_b(3,3,i)   = fde_frozen_prp_pert(12,i) ! dzBz
      !    end if
 !        ... then s
      !    if (itmp%im_s_b) then
 !           (Sigma_xyz, Bxyz, i)
-            gf_frozen%s_b(1,1,i)    = fde_frozen_prp(19,i) ! sxBx
-            gf_frozen%s_b(2,1,i)    = fde_frozen_prp(20,i) ! syBx
-            gf_frozen%s_b(3,1,i)    = fde_frozen_prp(21,i) ! szBx
-            gf_frozen%s_b(1,2,i)    = fde_frozen_prp(22,i) ! sxBy
-            gf_frozen%s_b(2,2,i)    = fde_frozen_prp(23,i) ! syBy
-            gf_frozen%s_b(3,2,i)    = fde_frozen_prp(24,i) ! szBy
-            gf_frozen%s_b(1,3,i)    = fde_frozen_prp(25,i) ! sxBz
-            gf_frozen%s_b(2,3,i)    = fde_frozen_prp(26,i) ! syBz
-            gf_frozen%s_b(3,3,i)    = fde_frozen_prp(27,i) ! szBz
+            gf_frozen%s_b(1,1,i)    = fde_frozen_prp_pert(13,i) ! sxBx
+            gf_frozen%s_b(2,1,i)    = fde_frozen_prp_pert(14,i) ! syBx
+            gf_frozen%s_b(3,1,i)    = fde_frozen_prp_pert(15,i) ! szBx
+            gf_frozen%s_b(1,2,i)    = fde_frozen_prp_pert(16,i) ! sxBy
+            gf_frozen%s_b(2,2,i)    = fde_frozen_prp_pert(17,i) ! syBy
+            gf_frozen%s_b(3,2,i)    = fde_frozen_prp_pert(18,i) ! szBy
+            gf_frozen%s_b(1,3,i)    = fde_frozen_prp_pert(19,i) ! sxBz
+            gf_frozen%s_b(2,3,i)    = fde_frozen_prp_pert(20,i) ! syBz
+            gf_frozen%s_b(3,3,i)    = fde_frozen_prp_pert(21,i) ! szBz
      !    end if
 !        ... and gs
      !    if (itmp%im_gs_b) then
 !           (Rxyz, Sigma_xyz, Bxyz, i)
-            gf_frozen%gs_b(1,1,1,i) = fde_frozen_prp(28,i) ! dxsxBx
-            gf_frozen%gs_b(2,1,1,i) = fde_frozen_prp(29,i) ! dysxBx
-            gf_frozen%gs_b(3,1,1,i) = fde_frozen_prp(30,i) ! dzsxBx
-            gf_frozen%gs_b(1,2,1,i) = fde_frozen_prp(31,i) ! dxsyBx
-            gf_frozen%gs_b(2,2,1,i) = fde_frozen_prp(32,i) ! dysyBx
-            gf_frozen%gs_b(3,2,1,i) = fde_frozen_prp(33,i) ! dzsyBx
-            gf_frozen%gs_b(1,3,1,i) = fde_frozen_prp(34,i) ! dxszBx
-            gf_frozen%gs_b(2,3,1,i) = fde_frozen_prp(35,i) ! dyszBx
-            gf_frozen%gs_b(3,3,1,i) = fde_frozen_prp(36,i) ! dzszBx
-            gf_frozen%gs_b(1,1,2,i) = fde_frozen_prp(37,i) ! dxsxBy
-            gf_frozen%gs_b(2,1,2,i) = fde_frozen_prp(38,i) ! dysxBy
-            gf_frozen%gs_b(3,1,2,i) = fde_frozen_prp(39,i) ! dzsxBy
-            gf_frozen%gs_b(1,2,2,i) = fde_frozen_prp(40,i) ! dxsyBy
-            gf_frozen%gs_b(2,2,2,i) = fde_frozen_prp(41,i) ! dysyBy
-            gf_frozen%gs_b(3,2,2,i) = fde_frozen_prp(42,i) ! dzsyBy
-            gf_frozen%gs_b(1,3,2,i) = fde_frozen_prp(43,i) ! dxszBy
-            gf_frozen%gs_b(2,3,2,i) = fde_frozen_prp(44,i) ! dyszBy
-            gf_frozen%gs_b(3,3,2,i) = fde_frozen_prp(45,i) ! dzszBy
-            gf_frozen%gs_b(1,1,3,i) = fde_frozen_prp(46,i) ! dxsxBz
-            gf_frozen%gs_b(2,1,3,i) = fde_frozen_prp(47,i) ! dysxBz
-            gf_frozen%gs_b(3,1,3,i) = fde_frozen_prp(48,i) ! dzsxBz
-            gf_frozen%gs_b(1,2,3,i) = fde_frozen_prp(49,i) ! dxsyBz
-            gf_frozen%gs_b(2,2,3,i) = fde_frozen_prp(50,i) ! dysyBz
-            gf_frozen%gs_b(3,2,3,i) = fde_frozen_prp(51,i) ! dzsyBz
-            gf_frozen%gs_b(1,3,3,i) = fde_frozen_prp(52,i) ! dxszBz
-            gf_frozen%gs_b(2,3,3,i) = fde_frozen_prp(53,i) ! dyszBz
-            gf_frozen%gs_b(3,3,3,i) = fde_frozen_prp(54,i) ! dzszBz
+            gf_frozen%gs_b(1,1,1,i) = fde_frozen_prp_pert(22,i) ! dxsxBx
+            gf_frozen%gs_b(2,1,1,i) = fde_frozen_prp_pert(23,i) ! dysxBx
+            gf_frozen%gs_b(3,1,1,i) = fde_frozen_prp_pert(24,i) ! dzsxBx
+            gf_frozen%gs_b(1,2,1,i) = fde_frozen_prp_pert(25,i) ! dxsyBx
+            gf_frozen%gs_b(2,2,1,i) = fde_frozen_prp_pert(26,i) ! dysyBx
+            gf_frozen%gs_b(3,2,1,i) = fde_frozen_prp_pert(27,i) ! dzsyBx
+            gf_frozen%gs_b(1,3,1,i) = fde_frozen_prp_pert(28,i) ! dxszBx
+            gf_frozen%gs_b(2,3,1,i) = fde_frozen_prp_pert(29,i) ! dyszBx
+            gf_frozen%gs_b(3,3,1,i) = fde_frozen_prp_pert(30,i) ! dzszBx
+            gf_frozen%gs_b(1,1,2,i) = fde_frozen_prp_pert(31,i) ! dxsxBy
+            gf_frozen%gs_b(2,1,2,i) = fde_frozen_prp_pert(32,i) ! dysxBy
+            gf_frozen%gs_b(3,1,2,i) = fde_frozen_prp_pert(33,i) ! dzsxBy
+            gf_frozen%gs_b(1,2,2,i) = fde_frozen_prp_pert(34,i) ! dxsyBy
+            gf_frozen%gs_b(2,2,2,i) = fde_frozen_prp_pert(35,i) ! dysyBy
+            gf_frozen%gs_b(3,2,2,i) = fde_frozen_prp_pert(36,i) ! dzsyBy
+            gf_frozen%gs_b(1,3,2,i) = fde_frozen_prp_pert(37,i) ! dxszBy
+            gf_frozen%gs_b(2,3,2,i) = fde_frozen_prp_pert(38,i) ! dyszBy
+            gf_frozen%gs_b(3,3,2,i) = fde_frozen_prp_pert(39,i) ! dzszBy
+            gf_frozen%gs_b(1,1,3,i) = fde_frozen_prp_pert(40,i) ! dxsxBz
+            gf_frozen%gs_b(2,1,3,i) = fde_frozen_prp_pert(41,i) ! dysxBz
+            gf_frozen%gs_b(3,1,3,i) = fde_frozen_prp_pert(42,i) ! dzsxBz
+            gf_frozen%gs_b(1,2,3,i) = fde_frozen_prp_pert(43,i) ! dxsyBz
+            gf_frozen%gs_b(2,2,3,i) = fde_frozen_prp_pert(44,i) ! dysyBz
+            gf_frozen%gs_b(3,2,3,i) = fde_frozen_prp_pert(45,i) ! dzsyBz
+            gf_frozen%gs_b(1,3,3,i) = fde_frozen_prp_pert(46,i) ! dxszBz
+            gf_frozen%gs_b(2,3,3,i) = fde_frozen_prp_pert(47,i) ! dyszBz
+            gf_frozen%gs_b(3,3,3,i) = fde_frozen_prp_pert(48,i) ! dzszBz
       !   end if
+         end if !if (itmp%im_frozen_pert_direct .or. itmp%im_frozen_pert_reorth) then
 
          fde_grid_im%r(1,i)  = gridp(1,i)
          fde_grid_im%r(2,i)  = gridp(2,i)
@@ -265,6 +282,7 @@ module fde_data
       enddo
 
 !gosia comment: these two are allocated inside read_grid...
+      deallocate(fde_frozen_prp_pert) 
       deallocate(fde_frozen_prp) 
       deallocate(gridp)
    end subroutine fde_import_frozen

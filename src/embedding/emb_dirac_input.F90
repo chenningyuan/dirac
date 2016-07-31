@@ -153,38 +153,33 @@ module fde_input_dirac
             CASE ('.NOSDFT')
 !              no spin density contributions
                fde_cfg_no_sdft = .true.
-! gosia: below keywords to be used in LAO basis sets:
+! gosia: keywords in LAO basis sets:
 !           embedding contributions to property gradient:
 !           ---------------------------------------------
             CASE ('.LAODPT')
 !              Direct-LAO contribution to property gradient, involving embedding PoTential
-               itmp%im_frozen = .true.
                fde_rsp_mag_lao = .true.
                fde_lao_direct_active_embpot = .true.
                doprp = .true.
                dirac_cfg_fde_response = .true.
             CASE ('.LAODKR')
 !              Direct-LAO contribution to property gradient, involving embedding KeRnel (only if SDFT)
-               itmp%im_frozen = .true.
                fde_rsp_mag_lao = .true.
                fde_lao_direct_active_embker = .true.
                doprp = .true.
             CASE ('.LAORKR')
 !              Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
-               itmp%im_frozen = .true.
                fde_rsp_mag_lao = .true.
                fde_lao_reorth_active_embker = .true.
                doprp = .true.
             CASE ('.LAOFRZ')
 !              LAO contribution to property gradient from the FRoZen density (read from file)
 !              it depends on embedding kernel and does NOT include the Coulomb term...
-               itmp%im_frozen = .true.
                fde_rsp_mag_lao = .true.
-               fde_lao_frozen_embker = .true.
+               fde_lao_frozen_embker_nonadd = .true.
                doprp = .true.
             CASE ('.LFCOUL')
 !              ...this is the additional Coulomb term that contributes to the coupling-kernel-like term (.LAOFRZ)
-               itmp%im_frozen = .true.
                fde_rsp_mag_lao = .true.
                fde_lao_frozen_embker_coulomb = .true.
                doprp = .true.
@@ -192,6 +187,10 @@ module fde_input_dirac
 !           -----------------------------------
             CASE ('.PERTIM')
 !              import perturbed density (additional columns on 'GRIDOUT' file)
+               read(lucmd,'(A60)') ftmp%frozen_pert_direct%name
+               read(lucmd,'(A60)') ftmp%frozen_pert_reorth%name
+               itmp%im_frozen_pert_direct = .true.
+               itmp%im_frozen_pert_reorth = .true.
                itmp%im_frozen = .true.
                fde_rsp_mag_lao_import = .true.
                doprp = .true.
@@ -205,20 +204,16 @@ module fde_input_dirac
 !           ----------------------------------------------------------------
             CASE ('.EMAFDE')
 !              Expectation value contribution to MAgnetizability - FDE (all terms, excluding terms by keywords below)
-               itmp%im_frozen = .true.
                fde_magn_expval_lao = .true.
                doprp = .true.
             CASE ('.MNOPOT')
 !              Magnetizability NO embedding POTential
-               itmp%im_frozen   = .true.
                fde_lao_magn_expval_no_embpot = .true.
             CASE ('.MNOUKE')
 !              Magnetizability NO Uncoupled KErnel
-               itmp%im_frozen   = .true.
                fde_lao_magn_expval_no_uncoup_embker = .true.
             CASE ('.MNONKE')
 !              Magnetizability NO coupled Nonadditive KErnel
-               itmp%im_frozen   = .true.
                fde_lao_magn_expval_no_coupl_nonadd_embker = .true.
 !              it has to be called with PERTIM which imports perturbed density
  

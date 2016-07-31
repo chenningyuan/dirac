@@ -63,6 +63,8 @@ implicit none
    type fde_files
       type(fde_file) :: embpot
       type(fde_file) :: frozen
+      type(fde_file) :: frozen_pert_direct
+      type(fde_file) :: frozen_pert_reorth
       type(fde_file) :: export
       type(fde_file) :: test
       type(fde_file) :: logfile
@@ -155,6 +157,12 @@ implicit none
 
          f%frozen%name = 'FRZDNS'
          f%frozen%unit = 48
+
+         f%frozen_pert_direct%name = 'pertden_direct_lao.FINAL'
+         f%frozen_pert_direct%unit = 51
+
+         f%frozen_pert_reorth%name = 'pertden_reorth_lao.FINAL'
+         f%frozen_pert_reorth%unit = 52
 
          f%export%name = 'GRIDOUT'
          f%export%unit = 47
@@ -258,6 +266,12 @@ implicit none
          fde_f%frozen%name = tmp%frozen%name
          fde_f%frozen%unit = tmp%frozen%unit
 
+         fde_f%frozen_pert_direct%name = tmp%frozen_pert_direct%name
+         fde_f%frozen_pert_direct%unit = tmp%frozen_pert_direct%unit
+
+         fde_f%frozen_pert_reorth%name = tmp%frozen_pert_reorth%name
+         fde_f%frozen_pert_reorth%unit = tmp%frozen_pert_reorth%unit
+
          fde_f%export%name = tmp%export%name
          fde_f%export%unit = tmp%export%unit
 
@@ -320,6 +334,12 @@ implicit none
 
          tmp%frozen%name = fde_f%frozen%name
          tmp%frozen%unit = fde_f%frozen%unit
+
+         tmp%frozen_pert_direct%name = fde_f%frozen_pert_direct%name
+         tmp%frozen_pert_direct%unit = fde_f%frozen_pert_direct%unit
+
+         tmp%frozen_pert_reorth%name = fde_f%frozen_pert_reorth%name
+         tmp%frozen_pert_reorth%unit = fde_f%frozen_pert_reorth%unit
 
          tmp%export%name = fde_f%export%name
          tmp%export%unit = fde_f%export%unit

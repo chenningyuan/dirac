@@ -540,7 +540,7 @@ contains
 
 !      coupling (non-additive xc and kinetic energy):
 !      ----------------------------------------------
-       if (fde_lao_frozen_embker.and.fde_rsp_mag_lao_import) then
+       if (fde_lao_frozen_embker_nonadd.and.fde_rsp_mag_lao_import) then
          write(*, *) 'LAO kernel-like contribution to property gradient '// &
                      'from frozen perturbed density (non-additive xc and kin terms)'
          call alloc(dmat, n2bbasxq)
@@ -555,15 +555,10 @@ contains
                        fde_mat_dim            = ntbas(0),   &
                        fde_nz                 = nz,         &
                        fde_dmat_0             = dmat,       &
-!                      the perturbed density, imported inside fde_dirac_emb_matrices_via_integration
-!                      includes BOTH direct and reorthonormalization parts
-!                      this is why it is called only once here
-!                      it is better than to call it in london_direct.F90
-!                      as then it is already included for magnetizability
                        fde_nr_dmat            = 0,          &
                        fde_nr_fmat            = nr_xyz_comp,      &
                        fde_fmat               = fao,        &
-                       fde_do_london_rhs_kern_coupling = .true.)
+                       fde_do_london_rhs_reorth_coupling = .true.)
 
          call dealloc(dmat)
        end if

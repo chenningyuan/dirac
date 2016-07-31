@@ -413,7 +413,7 @@ module fde_evaluators_dirac
          integer                :: nz
          integer                :: ncomp
          real(8), intent(inout) :: fmat(ndim,ndim,nz,ncomp)
-         real(8), pointer       :: pertden(:, :)
+         real(8), pointer       :: pertden(:, :), gridp(:,:)
          type(grid_function)    :: gf
          type(fde_grid)         :: grid
          type(fde_files)        :: ftmp
@@ -423,6 +423,8 @@ module fde_evaluators_dirac
          integer                :: irrep = 1
          integer                :: lwork
          real(8), allocatable   :: work(:)
+         integer :: file_unit
+         character(len=60) :: file_name
          integer :: iz, i, j, ixyz, ip
          real(8) :: average
          real(8) :: time_start, time_total
@@ -437,7 +439,12 @@ module fde_evaluators_dirac
          call fde_get_import_info(itmp)
 
          nullify(pertden)
-         call fde_read_pertden(pertden)
+         file_name = ftmp%frozen_pert_reorth%name
+         file_unit = ftmp%frozen_pert_reorth%unit
+         call fde_open_file(file_name,file_unit)
+         !call read_grid_pertden(file_unit,pertden)
+         call read_grid(file_unit,gridp,pertden)
+         call fde_close_file(file_unit)
 
          np = size(fde_grid_im%r,2)
 
@@ -448,7 +455,8 @@ module fde_evaluators_dirac
             allocate(buffer(ndim,ndim))
             buffer = 0.0d0
 !           columns correspond only to rho_0 (no spin density, no gradients)
-            icol = 10 + icomp
+            !icol = 10 + icomp
+            icol = icomp
             allocate(vector(np))
             do i = 1, np
               vector(i) = pertden(icol,i)*fde_grid_im%w(i)

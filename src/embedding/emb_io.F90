@@ -158,29 +158,24 @@ module fde_io
 
   subroutine read_grid_pertden(file,pertden)
     integer  :: ncol, nrow
+    real(8), dimension(52) :: line
     real(8), pointer :: pertden(:, :)
     integer, intent(in)  :: file
     integer :: i,j
 
     rewind(file)
-    read(file,*) nrow, ncol
+    read(file,*) nrow
 
-    fde_pertden_ncol = ncol + 4
+    fde_pertden_ncol = 52
     fde_pertden_nrow = nrow
 
-    if (associated(pertden)) nullify(pertden)
-    allocate(pertden(fde_pertden_ncol,fde_pertden_nrow))
-    pertden = 0.0d0
-
-    if (fde_pertden_ncol .ne. 58) then
-       write(*, *) 'WARNING! nr of columns different from 58, change formatting'
-    end if
-
     do i=1, fde_pertden_nrow
-       read(file,'(58d20.12)') (pertden(j,i), j = 1, fde_pertden_ncol)
+       read(file,'(52d20.12)') line
+       pertden(7:54,i) = line(5:52)
     end do
 
   end subroutine
 
 
 end module fde_io
+

@@ -696,7 +696,7 @@ contains
                      fde_nz                 = nz,         &
                      fde_dmat_0             = dmat,       &
                      fde_nr_dmat            = 0,          &
-                     fde_nr_fmat            = nr_xyz_comp,      &
+                     fde_nr_fmat            = max_nr_xyz_comp,      &
                      fde_fmat               = fmat,       &
                      fde_do_london_rhs_direct_coupling = .true.)
 
