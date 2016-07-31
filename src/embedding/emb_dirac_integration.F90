@@ -451,7 +451,7 @@ contains
       integer, parameter :: max_response_order_mo = 5
       integer :: i, j, iz, imat
        
-!g      call fde_get_import_info(itmp)
+      call fde_get_import_info(itmp)
 
 
 !#define DEBUG_XC
@@ -687,11 +687,9 @@ contains
 
       if (do_london_rhs_kern_coupling .or. do_london_susc2el_coupling &
        .or. do_london_suscreo_coupling) then
-!gosia: i don't know why the frozen* variables are not recognized here
-! while it seems they should be, as fde_import_frozen is called in emb_input.F90
-! so i call it again here
          if (fde_mpi_is_master()) then
-            call fde_import_frozen
+            if (.not. import_data_is_initialized) call fde_import_frozen
+            !if (.not. import_data_is_initialized) write(*, *) 'error NOT import_data_is_initialized'
          end if
       end if
 
@@ -957,7 +955,6 @@ contains
             end if
          end if
 
-         !if (do_london_rhs_direct .or. do_london_rhs_ro) then
          if (do_london_rhs_direct_der1 .or. do_london_rhs_ro .or. &
              do_london_rhs_direct_der2 .or. do_london_rhs_kern_coupling) then
             call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
@@ -2037,8 +2034,7 @@ contains
 
 !            london contributions to property gradient
 !            gosia: this "if" should not be needed here
-!            nevertheless without that the test "fde_response_autodiff" brakes on gfortran
-!            for some misterious reason
+!            nevertheless without that the test "fde_response_autodiff" fails on gfortran
              if (do_london_rhs_direct_der2.or.do_london_rhs_kern_coupling) then
 
                us_b_lao_above_threshold = .false.
@@ -2195,7 +2191,7 @@ contains
             end do
           end if
 
-!         embker-dependent term, only when SDFT contributions
+!         embker-dependent LAO-direct term, only when SDFT contributions
           if (do_london_susc2el_der2) then
             n_bb = 0.0d0
             n_bb_total = 0.0d0
@@ -2256,7 +2252,6 @@ contains
 
           if (do_london_susc2el_coupling) then
             if (.not. fde_cfg_no_sdft) then
-              n_bb = 0.0d0
               call london_susc2el_coupling(ipoint,   &
                                         bllen,       &
                                         mat_dim,     &
@@ -2270,7 +2265,7 @@ contains
                                         derv_length, &
                                         derv_total,  &
                                         rx(ipoint), ry(ipoint), rz(ipoint),&
-                                        n_bb)
+                                        buffer)
             end if
           end if !do_london_susc2el_coupling
 
@@ -2496,7 +2491,7 @@ contains
                   frozen_n_bz  = active_gridfunction%n_b(3,:)
 !debug print
                   !do i = 1, nr_points_batch
-                  !  write(*, '(A,3ES30.20E3)') 'buba import frozen n = ', &
+                  !  write(*, '(A,3ES30.20E3)') 'test12 import frozen n = ', &
                   !              frozen_n_bx(i), frozen_n_by(i), frozen_n_bz(i)
                   !end do
                   if (use_gga) then
@@ -2511,7 +2506,7 @@ contains
                      frozen_gzn_bz(:)  = active_gridfunction%gn_b(3,3,:)
 !debug print
                      !do i = 1, nr_points_batch
-                     !   write(*, '(A,9ES30.20E3)') 'buba import frozen gn = ', &
+                     !   write(*, '(A,9ES30.20E3)') 'test13 import frozen gn = ', &
                      !               frozen_gxn_bx(i), frozen_gyn_bx(i), frozen_gzn_bx(i), &
                      !               frozen_gxn_by(i), frozen_gyn_by(i), frozen_gzn_by(i), &
                      !               frozen_gxn_bz(i), frozen_gyn_bz(i), frozen_gzn_bz(i)
@@ -2529,7 +2524,7 @@ contains
                      frozen_sz_bz(:)  = active_gridfunction%s_b(3,3,:)
 !debug print
                      !do i = 1, nr_points_batch
-                     !   write(*, '(A,9ES30.20E3)') 'buba import frozen s = ', &
+                     !   write(*, '(A,9ES30.20E3)') 'test15 import frozen s = ', &
                      !               frozen_sx_bx(i), frozen_sy_bx(i), frozen_sz_bx(i), &
                      !               frozen_sx_by(i), frozen_sy_by(i), frozen_sz_by(i), &
                      !               frozen_sx_bz(i), frozen_sy_bz(i), frozen_sz_bz(i)
@@ -2564,7 +2559,7 @@ contains
                         frozen_gzsz_bz(:)  = active_gridfunction%gs_b(3,3,3,:)
 !debug print
                      !do i = 1, nr_points_batch
-                     !   write(*, '(A,27ES30.20E3)') 'buba import frozen gs = ', &
+                     !   write(*, '(A,27ES30.20E3)') 'test16 import frozen gs = ', &
                      !               frozen_gxsx_bx(i), frozen_gysx_bx(i), frozen_gzsx_bx(i), &
                      !               frozen_gxsy_bx(i), frozen_gysy_bx(i), frozen_gzsy_bx(i), &
                      !               frozen_gxsz_bx(i), frozen_gysz_bx(i), frozen_gzsz_bx(i), &
@@ -3344,7 +3339,7 @@ contains
                                      n,                 &
                                      derv_total,        &
                                      rx, ry, rz,        &
-                                     n_bb)
+                                     buffer)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ipoint
@@ -3360,23 +3355,26 @@ contains
     integer, intent(in)    :: n
     real(8), intent(in)    :: derv_total(max_block_length, 0:n)
     real(8), intent(in)    :: rx, ry, rz
-    real(8), intent(inout) :: n_bb(3,3)
+    real(8), intent(in)    :: buffer(*)
 !   ----------------------------------------------------------------------------
-    real(8)                ::  s_b_lao(3, 3)
-    real(8)                ::  gs_b_lao(3, 3, 3)
+    real(8)                ::  s_b_lao(3, 3), s_b_lao_active(3, 3)
+    real(8)                ::  gs_b_lao(3, 3, 3), gs_b_lao_active(3, 3, 3)
     real(8)                ::  s, d_s, d_sns, d_nsns, d_ss, n_sum
     real(8)                ::  s_1(3), gs_2(3)
-    real(8)                ::  gngs(3, 3), gsgs(3, 3, 3)
+    real(8)                ::  gngs(3, 3), gsgs(3, 3, 3), gngs_active(3, 3)
+    real(8)                ::  n_bb(3,3)
 
     integer                :: k_start, k, a
     integer                :: ixyz, jxyz, a1, a2
 !   ----------------------------------------------------------------------------
     s_b_lao    = 0.0d0
     gs_b_lao   = 0.0d0
+    n_bb = 0.0d0
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
+!   perturbed density of frozen subsystem collected in s_b_lao, gs_b_lao
     s_b_lao(1,1) = frozen_sx_bx(ipoint)
     s_b_lao(1,2) = frozen_sx_by(ipoint)
     s_b_lao(1,3) = frozen_sx_bz(ipoint)
@@ -3416,6 +3414,28 @@ contains
        gs_b_lao(3,3,3) = frozen_gzsz_bz(ipoint)
     end if
 
+!   perturbed density of active subsystem collected in s_b_lao_active, gs_b_lao_active
+    s_b_lao_active = 0.0d0
+    gs_b_lao_active = 0.0d0
+    if (is_gga) then
+       call get_gs_lao(s_b_lao_active,   &
+                       gs_b_lao_active,  &
+                       (/0, 0, 0/),      &
+                       mat_dim,          &
+                       dmat_0,           &
+                       ao,               &
+                       rx, ry, rz,       &
+                       buffer)
+    else
+       call get_s_lao(s_b_lao_active,    &
+                      (/0, 0, 0/),       &
+                      mat_dim,           &
+                      dmat_0,            &
+                      ao,                &
+                      rx, ry, rz,        &
+                      buffer)
+    end if
+
     if (is_gga) then
       d_s    = derv_total(1, d0200000)
       d_sns  = derv_total(1, d0101000)
@@ -3423,6 +3443,7 @@ contains
       d_ss   = derv_total(1, d0000100)*2.0d0
 
       gngs = 0.0d0
+      gngs_active = 0.0d0
       gsgs = 0.0d0
       do jxyz = 1, 3
         do a1 = 1, 3
@@ -3431,11 +3452,15 @@ contains
                          + gn_0_t_pointwise(2)*gs_b_lao(2, jxyz, a1) &
                          + gn_0_t_pointwise(3)*gs_b_lao(3, jxyz, a1) 
       
-          do a2 = 1, 3
+          gngs_active(jxyz, a1) = gngs_active(jxyz, a1) &
+                         + gn_0_t_pointwise(1)*gs_b_lao_active(1, jxyz, a1) &
+                         + gn_0_t_pointwise(2)*gs_b_lao_active(2, jxyz, a1) &
+                         + gn_0_t_pointwise(3)*gs_b_lao_active(3, jxyz, a1) 
+           do a2 = 1, 3
             gsgs(jxyz, a1, a2) = gsgs(jxyz, a1, a2) &
-                               + gs_b_lao(1, jxyz, a1)*gs_b_lao(1, jxyz, a2) &
-                               + gs_b_lao(2, jxyz, a1)*gs_b_lao(2, jxyz, a2) &
-                               + gs_b_lao(3, jxyz, a1)*gs_b_lao(3, jxyz, a2)
+                               + gs_b_lao_active(1, jxyz, a1)*gs_b_lao(1, jxyz, a2) &
+                               + gs_b_lao_active(2, jxyz, a1)*gs_b_lao(2, jxyz, a2) &
+                               + gs_b_lao_active(3, jxyz, a1)*gs_b_lao(3, jxyz, a2)
           end do
         end do
       end do
@@ -3445,25 +3470,28 @@ contains
           do a2 = 1, 3
             n_bb(a2, a1) = n_bb(a2, a1) &
 !                          lda
-                         + d_s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2) &
+                         + d_s*s_b_lao_active(jxyz,a1)*s_b_lao(jxyz,a2) &
 !                          gradient terms
-                         + d_sns*(gngs(jxyz,a1)*s_b_lao(jxyz,a2) + gngs(jxyz,a2)*s_b_lao(jxyz,a1)) &
-                         + d_nsns*(gngs(jxyz,a1)*gngs(jxyz,a2)) &
+                         + d_sns*(gngs(jxyz,a1)*s_b_lao_active(jxyz,a2) + gngs_active(jxyz,a2)*s_b_lao(jxyz,a1)) &
+                         + d_nsns*(gngs_active(jxyz,a1)*gngs(jxyz,a2)) &
                          + d_ss*gsgs(jxyz, a1, a2)
+!g           write(*, *) 'test8', s_b_lao_active(jxyz,a1), s_b_lao(jxyz,a2)
           end do
         end do
       end do
 
     else
-      s = derv_total(1, d0200000)
+      d_s = derv_total(1, d0200000)
       do jxyz = 1, 3
          do a1 = 1, 3
            do a2 = 1, 3
-             n_bb(a2, a1) = n_bb(a2, a1) + s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2)
+             n_bb(a2, a1) = n_bb(a2, a1) + d_s*s_b_lao_active(jxyz,a1)*s_b_lao(jxyz,a2)
+!g           write(*, *) 'test9', s_b_lao_active(jxyz,a1), s_b_lao(jxyz,a2)
            end do
          end do
       end do
     end if
+!g    write(*, *) 'test10', n_bb(1,1), n_bb(2,2), n_bb(3,3)
 
 !   sum to susc2el_xc_integrated_sdft
     do ixyz = 1, 3
@@ -3949,7 +3977,6 @@ contains
 
         if (fde_mpi_is_master()) then
            nr_points_batch = active_grid%npoints
-           write(*, *) 'ble nr_points_batch = ', nr_points_batch
         end if
 #ifdef VAR_MPI
         if (parallel_fde) then
@@ -4111,7 +4138,7 @@ contains
            active_gridfunction%n_b(3,:) = active_n_bz(:)
 !debug print
         !   do i = 1, nr_points_batch
-        ! write(*, '(A,3ES30.20E3)') 'ale buba w gf =', &
+        ! write(*, '(A,3ES30.20E3)') 'test25  gf =', &
         ! active_gridfunction%n_b(1,i), active_gridfunction%n_b(2,i), active_gridfunction%n_b(3,i)
         !    end do
            if (use_gga) then
@@ -4632,7 +4659,7 @@ contains
                       px, py, pz, buffer)
     end if
 
-    !write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_direct= ', &
+    !write(*, '(A,3F16.8,9ES30.20E3)') 'test23 get_pertden_direct= ', &
     !            px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), s_b(1,2), s_b(2,2), s_b(3,2), s_b(1,3), s_b(2,3), s_b(3,3)
 
 ! gosia: s_b and gs_b contributions can also come from reorthonormalization part
@@ -4758,7 +4785,7 @@ contains
                      tb_dmat(1 + im_off),       &
                      buffer,                    &
                      ao)
-!    write(*, '(A,3F16.8,I,I,ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+!    write(*, '(A,3F16.8,I,I,ES30.20E3)') 'test22 get_pertden_reorth= ', &
 !                px, py, pz, im, im_off, r_b(im)
 
        end if
@@ -4785,10 +4812,10 @@ contains
        end if
     end do
 
-!    write(*, '(A,3F16.8,3ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+!    write(*, '(A,3F16.8,3ES30.20E3)') 'test20  get_pertden_reorth= ', &
 !                px, py, pz, r_b(1), r_b(2), r_b(3)
 
-!    write(*, '(A,3F16.8,9ES30.20E3)') 'ale buba w get_pertden_reorth= ', &
+!    write(*, '(A,3F16.8,9ES30.20E3)') 'test21 get_pertden_reorth= ', &
 !                px, py, pz, s_b(1,1), s_b(2,1), s_b(3,1), &
 !                            s_b(1,2), s_b(2,2), s_b(3,2), &
 !                            s_b(1,3), s_b(2,3), s_b(3,3)
