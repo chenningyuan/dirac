@@ -681,6 +681,27 @@ contains
                       fde_do_london_rhs_direct_der2 = .true.)
      end if
 
+!    coupling (non-additive xc and kinetic energy):
+!    ----------------------------------------------
+     if (fde_lao_frozen_embker_nonadd.and.fde_rsp_mag_lao_import &
+       .and..not.fde_cfg_no_sdft) then
+       write(*, *) 'LAO kernel-like contribution to property gradient '// &
+                   'from frozen perturbed density (non-additive xc and kin terms)'
+#ifdef VAR_MPI
+       if (parcal) call dirac_parctl(12)
+#endif
+
+       call fde_dirac_emb_matrices_via_integration(       &
+                     fde_mat_dim            = ntbas(0),   &
+                     fde_nz                 = nz,         &
+                     fde_dmat_0             = dmat,       &
+                     fde_nr_dmat            = 0,          &
+                     fde_nr_fmat            = nr_xyz_comp,      &
+                     fde_fmat               = fmat,       &
+                     fde_do_london_rhs_direct_coupling = .true.)
+
+     end if
+
      call dealloc(dmat)
 
 ! all coupling terms are in london_reorth.F90
