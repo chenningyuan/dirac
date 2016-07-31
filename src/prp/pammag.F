@@ -2735,7 +2735,9 @@ C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ENDIF
 C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
-!gosia: if fde - then all contributions are on TWOLON file
+!gosia: if we do fde, then fde terms included here are determined by flags 
+!made for property gradient (and stored on TWOLON and FCKLON files)
+!all the coupling terms are on FCKLON file (next GETDHB call)
         DO IH1 = 1, 3 ! Components of H(1)
           IB = 3 ! 0011 ... get ONELON + TWOLON
           INDXPR1 = IPLONDON(1,IH1) ! RM1H1_comp
@@ -2844,8 +2846,6 @@ C    --- Get the S(1) connection matrix in MO basis into WORK(KSMAT) ---
 
         DO I2  =  1, 3
 C ...  get FCKLON_icomp(I2) into WORK(KWMAT)
-!gosia: if fde - then all contributions are on FCKLON file,
-!including coupling terms
          INDXPR2 = IPLONDON(1,I2) ! Get index of RM1H1_comp
          ISYM2   = IPRPSYM(INDXPR2)
          IREP2   = ISYM2 - 1 ! 0-7
