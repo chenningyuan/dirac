@@ -64,6 +64,8 @@ module fde_data
    public gf_frozen
    public gf_active
    public fde_grid_im
+!gosia:
+   public import_data_is_initialized
 
    integer, save :: fde_import_grid_np = 0
    logical, save :: import_data_is_initialized = .false.
@@ -178,6 +180,7 @@ module fde_data
       fde_import_grid_np = size(gridp,2)
 
       call fde_initialize_import_data
+!g      write(*, *) 'test5 itmp%im_n, itmp%im_n_b = ', itmp%im_n, itmp%im_n_b
       
 !aspg print *, "np #1: ",fde_import_grid_np,"  np #2: ",fde_grid_im%npoints
       do i = 1, fde_grid_im%npoints
@@ -190,14 +193,15 @@ module fde_data
          
 !gosia: add here frozen perturbed magnetic densities...
 !        ... first n
-         if (itmp%im_n_b) then
+     !    if (itmp%im_n_b) then
 !           (Bxyz, i)
             gf_frozen%n_b(1,i)      = fde_frozen_prp(7,i)
             gf_frozen%n_b(2,i)      = fde_frozen_prp(8,i)
             gf_frozen%n_b(3,i)      = fde_frozen_prp(9,i)
-         end if
+     !    end if
+!g          write(*, *) 'test6 inside import', gf_frozen%n(i), gf_frozen%n_b(1, i)
 !        ... and gn
-         if (itmp%im_gn_b) then
+     !    if (itmp%im_gn_b) then
 !           (Rxyz, Bxyz, i)
             gf_frozen%gn_b(1,1,i)   = fde_frozen_prp(10,i) ! dxBx
             gf_frozen%gn_b(2,1,i)   = fde_frozen_prp(11,i) ! dyBx
@@ -208,9 +212,9 @@ module fde_data
             gf_frozen%gn_b(1,3,i)   = fde_frozen_prp(16,i) ! dxBz
             gf_frozen%gn_b(2,3,i)   = fde_frozen_prp(17,i) ! dyBz
             gf_frozen%gn_b(3,3,i)   = fde_frozen_prp(18,i) ! dzBz
-         end if
+     !    end if
 !        ... then s
-         if (itmp%im_s_b) then
+     !    if (itmp%im_s_b) then
 !           (Sigma_xyz, Bxyz, i)
             gf_frozen%s_b(1,1,i)    = fde_frozen_prp(19,i) ! sxBx
             gf_frozen%s_b(2,1,i)    = fde_frozen_prp(20,i) ! syBx
@@ -221,9 +225,9 @@ module fde_data
             gf_frozen%s_b(1,3,i)    = fde_frozen_prp(25,i) ! sxBz
             gf_frozen%s_b(2,3,i)    = fde_frozen_prp(26,i) ! syBz
             gf_frozen%s_b(3,3,i)    = fde_frozen_prp(27,i) ! szBz
-         end if
+     !    end if
 !        ... and gs
-         if (itmp%im_gs_b) then
+     !    if (itmp%im_gs_b) then
 !           (Rxyz, Sigma_xyz, Bxyz, i)
             gf_frozen%gs_b(1,1,1,i) = fde_frozen_prp(28,i) ! dxsxBx
             gf_frozen%gs_b(2,1,1,i) = fde_frozen_prp(29,i) ! dysxBx
@@ -252,7 +256,7 @@ module fde_data
             gf_frozen%gs_b(1,3,3,i) = fde_frozen_prp(52,i) ! dxszBz
             gf_frozen%gs_b(2,3,3,i) = fde_frozen_prp(53,i) ! dyszBz
             gf_frozen%gs_b(3,3,3,i) = fde_frozen_prp(54,i) ! dzszBz
-         end if
+      !   end if
 
          fde_grid_im%r(1,i)  = gridp(1,i)
          fde_grid_im%r(2,i)  = gridp(2,i)
@@ -317,7 +321,7 @@ module fde_data
             call fde_quit('there are no grid points for fde import !')
          endif
       endif
-      
+      !write(*, *) 'test3 ', gf_frozen%n_b 
    end subroutine fde_initialize_import_data
 
 
