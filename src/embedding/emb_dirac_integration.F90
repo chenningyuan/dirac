@@ -275,7 +275,8 @@ module fde_dirac_matrices_integration
    integer :: response_order_ao
    logical :: do_london_rhs_direct_der1
    logical :: do_london_rhs_direct_der2
-   logical :: do_london_rhs_kern_coupling
+   logical :: do_london_rhs_reorth_coupling
+   logical :: do_london_rhs_direct_coupling
    logical :: do_london_rhs_ro
    logical :: do_london_susc2el_der1
    logical :: do_london_susc2el_der2
@@ -376,7 +377,8 @@ contains
                              fde_response_order_ao,     &
                              fde_do_london_rhs_direct_der1,   &
                              fde_do_london_rhs_direct_der2,   &
-                             fde_do_london_rhs_kern_coupling, &
+                             fde_do_london_rhs_reorth_coupling, &
+                             fde_do_london_rhs_direct_coupling, &
                              fde_do_london_rhs_ro,      &
                              fde_do_london_susc2el_der1,     &
                              fde_do_london_susc2el_der2,     &
@@ -430,7 +432,8 @@ contains
       integer, optional,         intent(in)    :: fde_response_order_ao
       logical, optional,         intent(in)    :: fde_do_london_rhs_direct_der1
       logical, optional,         intent(in)    :: fde_do_london_rhs_direct_der2
-      logical, optional,         intent(in)    :: fde_do_london_rhs_kern_coupling
+      logical, optional,         intent(in)    :: fde_do_london_rhs_reorth_coupling
+      logical, optional,         intent(in)    :: fde_do_london_rhs_direct_coupling
       logical, optional,         intent(in)    :: fde_do_london_rhs_ro
       logical, optional,         intent(in)    :: fde_do_london_susc2el_der1
       logical, optional,         intent(in)    :: fde_do_london_susc2el_der2
@@ -500,7 +503,8 @@ contains
       response_order_ao     = 0
       do_london_rhs_direct_der1    = .false.
       do_london_rhs_direct_der2    = .false.
-      do_london_rhs_kern_coupling  = .false.
+      do_london_rhs_reorth_coupling  = .false.
+      do_london_rhs_direct_coupling  = .false.
       do_london_rhs_ro             = .false.
       do_london_susc2el_der1       = .false.
       do_london_susc2el_der2       = .false.
@@ -526,7 +530,8 @@ contains
          if (present(fde_response_order_ao))     response_order_ao     = fde_response_order_ao
          if (present(fde_do_london_rhs_direct_der1))    do_london_rhs_direct_der1    = fde_do_london_rhs_direct_der1
          if (present(fde_do_london_rhs_direct_der2))    do_london_rhs_direct_der2    = fde_do_london_rhs_direct_der2
-         if (present(fde_do_london_rhs_kern_coupling))  do_london_rhs_kern_coupling  = fde_do_london_rhs_kern_coupling
+         if (present(fde_do_london_rhs_reorth_coupling))  do_london_rhs_reorth_coupling  = fde_do_london_rhs_reorth_coupling
+         if (present(fde_do_london_rhs_direct_coupling))  do_london_rhs_direct_coupling  = fde_do_london_rhs_direct_coupling
          if (present(fde_do_london_rhs_ro))             do_london_rhs_ro             = fde_do_london_rhs_ro
          if (present(fde_do_london_susc2el_der1))       do_london_susc2el_der1       = fde_do_london_susc2el_der1
          if (present(fde_do_london_susc2el_der2))       do_london_susc2el_der2       = fde_do_london_susc2el_der2
@@ -593,7 +598,8 @@ contains
          call fde_mpi_bcast(do_electrostatic_pot)
          call fde_mpi_bcast(do_london_rhs_direct_der1)
          call fde_mpi_bcast(do_london_rhs_direct_der2)
-         call fde_mpi_bcast(do_london_rhs_kern_coupling)
+         call fde_mpi_bcast(do_london_rhs_reorth_coupling)
+         call fde_mpi_bcast(do_london_rhs_direct_coupling)
          call fde_mpi_bcast(do_london_rhs_ro)
          call fde_mpi_bcast(do_london_susc2el_der1)
          call fde_mpi_bcast(do_london_susc2el_der2)
@@ -685,11 +691,11 @@ contains
          end if
       end if
 
-      if (do_london_rhs_kern_coupling .or. do_london_susc2el_coupling &
+      if (do_london_rhs_direct_coupling .or. do_london_rhs_reorth_coupling &
+       .or. do_london_susc2el_coupling &
        .or. do_london_suscreo_coupling) then
          if (fde_mpi_is_master()) then
             if (.not. import_data_is_initialized) call fde_import_frozen
-            !if (.not. import_data_is_initialized) write(*, *) 'error NOT import_data_is_initialized'
          end if
       end if
 
@@ -819,8 +825,8 @@ contains
       end if
      
       max_ao_m_order = 0
-      !if (do_london_rhs_direct .or. do_london_rhs_direct_kern .or. do_export_pertden_direct) then
-      if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2) then
+      if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2 &
+         .or. do_london_rhs_reorth_coupling .or. do_london_rhs_direct_coupling) then
         max_ao_m_order = 1
       end if
       if (do_london_susc2el_der2 .or. do_london_susc2el_coupling &
@@ -939,7 +945,8 @@ contains
                                    .and. .not. do_london_rhs_direct_der1 &
                                    .and. .not. do_london_rhs_direct_der2 &
                                    .and. .not. do_london_rhs_ro &
-                                   .and. .not. do_london_rhs_kern_coupling &
+                                   .and. .not. do_london_rhs_reorth_coupling &
+                                   .and. .not. do_london_rhs_direct_coupling &
                                    .and. .not. do_london_susc2el_der1 &
                                    .and. .not. do_london_susc2el_der2 &
                                    .and. .not. do_london_susc2el_coupling &
@@ -956,7 +963,8 @@ contains
          end if
 
          if (do_london_rhs_direct_der1 .or. do_london_rhs_ro .or. &
-             do_london_rhs_direct_der2 .or. do_london_rhs_kern_coupling) then
+             do_london_rhs_direct_der2 .or.  &
+             do_london_rhs_reorth_coupling .or. do_london_rhs_direct_coupling) then
             call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
@@ -1358,7 +1366,7 @@ contains
    if (do_london_rhs_direct_der2 .and. .not. fde_cfg_no_sdft) then
       max_fun_derv = 2
    end if
-   if (do_london_rhs_kern_coupling) then
+   if (do_london_rhs_reorth_coupling .or. do_london_rhs_direct_coupling) then
       max_fun_derv = 2
    end if
    if (do_london_rhs_ro) then
@@ -1554,7 +1562,7 @@ contains
                                 derv_active)
 
 !gosia: we don't need derv_active for the coupling-kernel term, so save time.
-         if (.not. do_london_rhs_kern_coupling) then
+         if (.not. do_london_rhs_reorth_coupling .and. .not. do_london_rhs_direct_coupling) then
            call get_xcke_fun_derv(max_fun_derv, & 
                                   bllen,        &
                                   w,            &
@@ -1719,7 +1727,7 @@ contains
                                       u)
            end if
 
-           if (do_london_rhs_kern_coupling) then
+           if (do_london_rhs_reorth_coupling .or. do_london_rhs_direct_coupling) then
               call london_kern_coupling(ipoint,      &
                                         bllen,       &
                                         mat_dim,     &
@@ -2035,7 +2043,8 @@ contains
 !            london contributions to property gradient
 !            gosia: this "if" should not be needed here
 !            nevertheless without that the test "fde_response_autodiff" fails on gfortran
-             if (do_london_rhs_direct_der2.or.do_london_rhs_kern_coupling) then
+             if (do_london_rhs_direct_der2.or.do_london_rhs_reorth_coupling &
+                 .or. do_london_rhs_direct_coupling) then
 
                us_b_lao_above_threshold = .false.
                if (maxval((/dabs(u%s_b_lao(1, im)), &
@@ -2083,7 +2092,7 @@ contains
 
              end if !if (do_london_rhs_direct_der2.or.do_london_rhs_kern_coupling) then
 
-             if (do_london_rhs_kern_coupling) then
+             if (do_london_rhs_reorth_coupling) then
 
                un_b_lao_above_threshold = .false.
                if (maxval((/dabs(u%n_b_lao(im)), &
@@ -2428,7 +2437,8 @@ contains
 
             end if
 
-            if (do_london_rhs_kern_coupling &
+            if (do_london_rhs_reorth_coupling &
+              .or. do_london_rhs_direct_coupling &
               .or. do_london_susc2el_coupling &
               .or. do_london_suscreo_coupling) then
                allocate(frozen_n_bx(nr_points_batch))
@@ -2586,7 +2596,9 @@ contains
             if (use_potential) then
               call fde_mpi_distribute_vemb(use_vemb, nr_points_batch, nr_points_on_this_proc)
             end if
-            if (do_london_rhs_kern_coupling &
+            if (do_london_rhs_reorth_coupling &
+              .or. do_london_rhs_reorth_coupling &
+              .or. do_london_rhs_direct_coupling &
               .or. do_london_susc2el_coupling &
               .or. do_london_suscreo_coupling) then
               call fde_mpi_distribute_frozen_pertden_n(frozen_n_bx, frozen_n_by, frozen_n_bz, nr_points_batch, nr_points_on_this_proc)
