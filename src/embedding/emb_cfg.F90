@@ -298,6 +298,7 @@ implicit none
          tmp%im_vemb        = fde_im_control%im_vemb        
          tmp%im_frozen      = fde_im_control%im_frozen      
          tmp%im_update_vemb = fde_im_control%im_update_vemb 
+!g         write(*, *) 'test4 inside fde_get_import_info', tmp%im_n, tmp%im_n_b
       end subroutine fde_get_import_info
 
       
