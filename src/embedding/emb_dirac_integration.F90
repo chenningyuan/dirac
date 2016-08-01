@@ -2212,7 +2212,7 @@ contains
                                           derv_total(1, d0002000),   &
                                           2.0d0*derv_total(1, d0000100),   &
                                           z0tt, &
-                                          (/1,1,1/),           &
+                                          (/0,0,0/),           &
                                           mat_dim,             &
                                           nz,                  &
                                           dmat_0,              &
@@ -2226,7 +2226,7 @@ contains
                                           derv_active(1, d0002000),   &
                                           2.0d0*derv_active(1, d0000100),   &
                                           gn_0_pointwise, &
-                                          (/1,1,1/),           &
+                                          (/0,0,0/),           &
                                           mat_dim,             &
                                           nz,                  &
                                           dmat_0,              &
@@ -2242,7 +2242,7 @@ contains
               end do
             else
               call lda_london_sus2el_der2(t,         &
-                                          (/1,1,1/), &
+                                          (/0,0,0/), &
                                           mat_dim,   &
                                           nz,        &
                                           dmat_0,    &
