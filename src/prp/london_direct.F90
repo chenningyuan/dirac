@@ -704,8 +704,6 @@ contains
 
      call dealloc(dmat)
 
-! all coupling terms are in london_reorth.F90
-
   end subroutine fde_direct_contribs
   
 
