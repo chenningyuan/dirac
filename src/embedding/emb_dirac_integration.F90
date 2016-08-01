@@ -2444,6 +2444,9 @@ contains
                allocate(frozen_n_bx(nr_points_batch))
                allocate(frozen_n_by(nr_points_batch))
                allocate(frozen_n_bz(nr_points_batch))
+               frozen_n_bx = 0.0d0
+               frozen_n_by = 0.0d0
+               frozen_n_bz = 0.0d0
                if (use_gga) then
                   allocate(frozen_gxn_bx(nr_points_batch))
                   allocate(frozen_gxn_by(nr_points_batch))
@@ -2454,6 +2457,15 @@ contains
                   allocate(frozen_gzn_bx(nr_points_batch))
                   allocate(frozen_gzn_by(nr_points_batch))
                   allocate(frozen_gzn_bz(nr_points_batch))
+                  frozen_gxn_bx = 0.0d0  
+                  frozen_gxn_by = 0.0d0
+                  frozen_gxn_bz = 0.0d0
+                  frozen_gyn_bx = 0.0d0
+                  frozen_gyn_by = 0.0d0
+                  frozen_gyn_bz = 0.0d0
+                  frozen_gzn_bx = 0.0d0
+                  frozen_gzn_by = 0.0d0
+                  frozen_gzn_bz = 0.0d0
                end if
                if (.not. fde_cfg_no_sdft) then
                   allocate(frozen_sx_bx(nr_points_batch))
@@ -2465,6 +2477,15 @@ contains
                   allocate(frozen_sz_bx(nr_points_batch))
                   allocate(frozen_sz_by(nr_points_batch))
                   allocate(frozen_sz_bz(nr_points_batch))
+                  frozen_sx_bx = 0.0d0  
+                  frozen_sx_by = 0.0d0
+                  frozen_sx_bz = 0.0d0
+                  frozen_sy_bx = 0.0d0
+                  frozen_sy_by = 0.0d0
+                  frozen_sy_bz = 0.0d0
+                  frozen_sz_bx = 0.0d0
+                  frozen_sz_by = 0.0d0
+                  frozen_sz_bz = 0.0d0
                   if (use_gga) then
                      allocate(frozen_gxsx_bx(nr_points_batch))
                      allocate(frozen_gxsx_by(nr_points_batch))
@@ -2493,94 +2514,186 @@ contains
                      allocate(frozen_gzsz_bx(nr_points_batch))
                      allocate(frozen_gzsz_by(nr_points_batch))
                      allocate(frozen_gzsz_bz(nr_points_batch))
+                     frozen_gxsx_bx = 0.0d0  
+                     frozen_gxsx_by = 0.0d0
+                     frozen_gxsx_bz = 0.0d0
+                     frozen_gxsy_bx = 0.0d0
+                     frozen_gxsy_by = 0.0d0
+                     frozen_gxsy_bz = 0.0d0
+                     frozen_gxsz_bx = 0.0d0
+                     frozen_gxsz_by = 0.0d0
+                     frozen_gxsz_bz = 0.0d0
+                     frozen_gysx_bx = 0.0d0
+                     frozen_gysx_by = 0.0d0
+                     frozen_gysx_bz = 0.0d0
+                     frozen_gysy_bx = 0.0d0
+                     frozen_gysy_by = 0.0d0
+                     frozen_gysy_bz = 0.0d0
+                     frozen_gysz_bx = 0.0d0
+                     frozen_gysz_by = 0.0d0
+                     frozen_gysz_bz = 0.0d0
+                     frozen_gzsx_bx = 0.0d0
+                     frozen_gzsx_by = 0.0d0
+                     frozen_gzsx_bz = 0.0d0
+                     frozen_gzsy_bx = 0.0d0
+                     frozen_gzsy_by = 0.0d0
+                     frozen_gzsy_bz = 0.0d0
+                     frozen_gzsz_bx = 0.0d0
+                     frozen_gzsz_by = 0.0d0
+                     frozen_gzsz_bz = 0.0d0
                   end if
                end if
                if (fde_mpi_is_master()) then
-                  frozen_n_bx  = active_gridfunction%n_b(1,:)
-                  frozen_n_by  = active_gridfunction%n_b(2,:)
-                  frozen_n_bz  = active_gridfunction%n_b(3,:)
-!debug print
-                  !do i = 1, nr_points_batch
-                  !  write(*, '(A,3ES30.20E3)') 'test12 import frozen n = ', &
-                  !              frozen_n_bx(i), frozen_n_by(i), frozen_n_bz(i)
-                  !end do
-                  if (use_gga) then
-                     frozen_gxn_bx(:)  = active_gridfunction%gn_b(1,1,:)
-                     frozen_gyn_bx(:)  = active_gridfunction%gn_b(2,1,:)
-                     frozen_gzn_bx(:)  = active_gridfunction%gn_b(3,1,:)
-                     frozen_gxn_by(:)  = active_gridfunction%gn_b(1,2,:)
-                     frozen_gyn_by(:)  = active_gridfunction%gn_b(2,2,:)
-                     frozen_gzn_by(:)  = active_gridfunction%gn_b(3,2,:)
-                     frozen_gxn_bz(:)  = active_gridfunction%gn_b(1,3,:)
-                     frozen_gyn_bz(:)  = active_gridfunction%gn_b(2,3,:)
-                     frozen_gzn_bz(:)  = active_gridfunction%gn_b(3,3,:)
-!debug print
-                     !do i = 1, nr_points_batch
-                     !   write(*, '(A,9ES30.20E3)') 'test13 import frozen gn = ', &
-                     !               frozen_gxn_bx(i), frozen_gyn_bx(i), frozen_gzn_bx(i), &
-                     !               frozen_gxn_by(i), frozen_gyn_by(i), frozen_gzn_by(i), &
-                     !               frozen_gxn_bz(i), frozen_gyn_bz(i), frozen_gzn_bz(i)
-                     !end do
+                  if (do_london_rhs_direct_coupling.or.do_london_susc2el_coupling) then
+                    if (.not. fde_cfg_no_sdft) then
+                       frozen_sx_bx(:)  = active_gridfunction%s_b_direct(1,1,:)
+                       frozen_sy_bx(:)  = active_gridfunction%s_b_direct(2,1,:)
+                       frozen_sz_bx(:)  = active_gridfunction%s_b_direct(3,1,:)
+                       frozen_sx_by(:)  = active_gridfunction%s_b_direct(1,2,:)
+                       frozen_sy_by(:)  = active_gridfunction%s_b_direct(2,2,:)
+                       frozen_sz_by(:)  = active_gridfunction%s_b_direct(3,2,:)
+                       frozen_sx_bz(:)  = active_gridfunction%s_b_direct(1,3,:)
+                       frozen_sy_bz(:)  = active_gridfunction%s_b_direct(2,3,:)
+                       frozen_sz_bz(:)  = active_gridfunction%s_b_direct(3,3,:)
+!debug print        
+                       !do i = 1, nr_points_batch
+                       !   write(*, '(A,9ES30.20E3)') 'test15 import frozen s = ', &
+                       !               frozen_sx_bx(i), frozen_sy_bx(i), frozen_sz_bx(i), &
+                       !               frozen_sx_by(i), frozen_sy_by(i), frozen_sz_by(i), &
+                       !               frozen_sx_bz(i), frozen_sy_bz(i), frozen_sz_bz(i)
+                       !end do
+                       if (use_gga) then
+                          frozen_gxsx_bx(:)  = active_gridfunction%gs_b_direct(1,1,1,:)
+                          frozen_gysx_bx(:)  = active_gridfunction%gs_b_direct(2,1,1,:)
+                          frozen_gzsx_bx(:)  = active_gridfunction%gs_b_direct(3,1,1,:)
+                          frozen_gxsy_bx(:)  = active_gridfunction%gs_b_direct(1,2,1,:)
+                          frozen_gysy_bx(:)  = active_gridfunction%gs_b_direct(2,2,1,:)
+                          frozen_gzsy_bx(:)  = active_gridfunction%gs_b_direct(3,2,1,:)
+                          frozen_gxsz_bx(:)  = active_gridfunction%gs_b_direct(1,3,1,:)
+                          frozen_gysz_bx(:)  = active_gridfunction%gs_b_direct(2,3,1,:)
+                          frozen_gzsz_bx(:)  = active_gridfunction%gs_b_direct(3,3,1,:)
+                          frozen_gxsx_by(:)  = active_gridfunction%gs_b_direct(1,1,2,:)
+                          frozen_gysx_by(:)  = active_gridfunction%gs_b_direct(2,1,2,:)
+                          frozen_gzsx_by(:)  = active_gridfunction%gs_b_direct(3,1,2,:)
+                          frozen_gxsy_by(:)  = active_gridfunction%gs_b_direct(1,2,2,:)
+                          frozen_gysy_by(:)  = active_gridfunction%gs_b_direct(2,2,2,:)
+                          frozen_gzsy_by(:)  = active_gridfunction%gs_b_direct(3,2,2,:)
+                          frozen_gxsz_by(:)  = active_gridfunction%gs_b_direct(1,3,2,:)
+                          frozen_gysz_by(:)  = active_gridfunction%gs_b_direct(2,3,2,:)
+                          frozen_gzsz_by(:)  = active_gridfunction%gs_b_direct(3,3,2,:)
+                          frozen_gxsx_bz(:)  = active_gridfunction%gs_b_direct(1,1,3,:)
+                          frozen_gysx_bz(:)  = active_gridfunction%gs_b_direct(2,1,3,:)
+                          frozen_gzsx_bz(:)  = active_gridfunction%gs_b_direct(3,1,3,:)
+                          frozen_gxsy_bz(:)  = active_gridfunction%gs_b_direct(1,2,3,:)
+                          frozen_gysy_bz(:)  = active_gridfunction%gs_b_direct(2,2,3,:)
+                          frozen_gzsy_bz(:)  = active_gridfunction%gs_b_direct(3,2,3,:)
+                          frozen_gxsz_bz(:)  = active_gridfunction%gs_b_direct(1,3,3,:)
+                          frozen_gysz_bz(:)  = active_gridfunction%gs_b_direct(2,3,3,:)
+                          frozen_gzsz_bz(:)  = active_gridfunction%gs_b_direct(3,3,3,:)
+!debug print        
+                       !do i = 1, nr_points_batch
+                       !   write(*, '(A,27ES30.20E3)') 'test16 import frozen gs = ', &
+                       !               frozen_gxsx_bx(i), frozen_gysx_bx(i), frozen_gzsx_bx(i), &
+                       !               frozen_gxsy_bx(i), frozen_gysy_bx(i), frozen_gzsy_bx(i), &
+                       !               frozen_gxsz_bx(i), frozen_gysz_bx(i), frozen_gzsz_bx(i), &
+                       !               frozen_gxsx_by(i), frozen_gysx_by(i), frozen_gzsx_by(i), &
+                       !               frozen_gxsy_by(i), frozen_gysy_by(i), frozen_gzsy_by(i), &
+                       !               frozen_gxsz_by(i), frozen_gysz_by(i), frozen_gzsz_by(i), &
+                       !               frozen_gxsx_bz(i), frozen_gysx_bz(i), frozen_gzsx_bz(i), &
+                       !               frozen_gxsy_bz(i), frozen_gysy_bz(i), frozen_gzsy_bz(i), &
+                       !               frozen_gxsz_bz(i), frozen_gysz_bz(i), frozen_gzsz_bz(i)
+                       !end do
+                       end if
+                    end if
                   end if
-                  if (.not. fde_cfg_no_sdft) then
-                     frozen_sx_bx(:)  = active_gridfunction%s_b(1,1,:)
-                     frozen_sy_bx(:)  = active_gridfunction%s_b(2,1,:)
-                     frozen_sz_bx(:)  = active_gridfunction%s_b(3,1,:)
-                     frozen_sx_by(:)  = active_gridfunction%s_b(1,2,:)
-                     frozen_sy_by(:)  = active_gridfunction%s_b(2,2,:)
-                     frozen_sz_by(:)  = active_gridfunction%s_b(3,2,:)
-                     frozen_sx_bz(:)  = active_gridfunction%s_b(1,3,:)
-                     frozen_sy_bz(:)  = active_gridfunction%s_b(2,3,:)
-                     frozen_sz_bz(:)  = active_gridfunction%s_b(3,3,:)
-!debug print
-                     !do i = 1, nr_points_batch
-                     !   write(*, '(A,9ES30.20E3)') 'test15 import frozen s = ', &
-                     !               frozen_sx_bx(i), frozen_sy_bx(i), frozen_sz_bx(i), &
-                     !               frozen_sx_by(i), frozen_sy_by(i), frozen_sz_by(i), &
-                     !               frozen_sx_bz(i), frozen_sy_bz(i), frozen_sz_bz(i)
-                     !end do
-                     if (use_gga) then
-                        frozen_gxsx_bx(:)  = active_gridfunction%gs_b(1,1,1,:)
-                        frozen_gysx_bx(:)  = active_gridfunction%gs_b(2,1,1,:)
-                        frozen_gzsx_bx(:)  = active_gridfunction%gs_b(3,1,1,:)
-                        frozen_gxsy_bx(:)  = active_gridfunction%gs_b(1,2,1,:)
-                        frozen_gysy_bx(:)  = active_gridfunction%gs_b(2,2,1,:)
-                        frozen_gzsy_bx(:)  = active_gridfunction%gs_b(3,2,1,:)
-                        frozen_gxsz_bx(:)  = active_gridfunction%gs_b(1,3,1,:)
-                        frozen_gysz_bx(:)  = active_gridfunction%gs_b(2,3,1,:)
-                        frozen_gzsz_bx(:)  = active_gridfunction%gs_b(3,3,1,:)
-                        frozen_gxsx_by(:)  = active_gridfunction%gs_b(1,1,2,:)
-                        frozen_gysx_by(:)  = active_gridfunction%gs_b(2,1,2,:)
-                        frozen_gzsx_by(:)  = active_gridfunction%gs_b(3,1,2,:)
-                        frozen_gxsy_by(:)  = active_gridfunction%gs_b(1,2,2,:)
-                        frozen_gysy_by(:)  = active_gridfunction%gs_b(2,2,2,:)
-                        frozen_gzsy_by(:)  = active_gridfunction%gs_b(3,2,2,:)
-                        frozen_gxsz_by(:)  = active_gridfunction%gs_b(1,3,2,:)
-                        frozen_gysz_by(:)  = active_gridfunction%gs_b(2,3,2,:)
-                        frozen_gzsz_by(:)  = active_gridfunction%gs_b(3,3,2,:)
-                        frozen_gxsx_bz(:)  = active_gridfunction%gs_b(1,1,3,:)
-                        frozen_gysx_bz(:)  = active_gridfunction%gs_b(2,1,3,:)
-                        frozen_gzsx_bz(:)  = active_gridfunction%gs_b(3,1,3,:)
-                        frozen_gxsy_bz(:)  = active_gridfunction%gs_b(1,2,3,:)
-                        frozen_gysy_bz(:)  = active_gridfunction%gs_b(2,2,3,:)
-                        frozen_gzsy_bz(:)  = active_gridfunction%gs_b(3,2,3,:)
-                        frozen_gxsz_bz(:)  = active_gridfunction%gs_b(1,3,3,:)
-                        frozen_gysz_bz(:)  = active_gridfunction%gs_b(2,3,3,:)
-                        frozen_gzsz_bz(:)  = active_gridfunction%gs_b(3,3,3,:)
-!debug print
-                     !do i = 1, nr_points_batch
-                     !   write(*, '(A,27ES30.20E3)') 'test16 import frozen gs = ', &
-                     !               frozen_gxsx_bx(i), frozen_gysx_bx(i), frozen_gzsx_bx(i), &
-                     !               frozen_gxsy_bx(i), frozen_gysy_bx(i), frozen_gzsy_bx(i), &
-                     !               frozen_gxsz_bx(i), frozen_gysz_bx(i), frozen_gzsz_bx(i), &
-                     !               frozen_gxsx_by(i), frozen_gysx_by(i), frozen_gzsx_by(i), &
-                     !               frozen_gxsy_by(i), frozen_gysy_by(i), frozen_gzsy_by(i), &
-                     !               frozen_gxsz_by(i), frozen_gysz_by(i), frozen_gzsz_by(i), &
-                     !               frozen_gxsx_bz(i), frozen_gysx_bz(i), frozen_gzsx_bz(i), &
-                     !               frozen_gxsy_bz(i), frozen_gysy_bz(i), frozen_gzsy_bz(i), &
-                     !               frozen_gxsz_bz(i), frozen_gysz_bz(i), frozen_gzsz_bz(i)
-                     !end do
-                     end if
+!
+                  if (do_london_rhs_reorth_coupling) then
+                    frozen_n_bx  = active_gridfunction%n_b_reorth(1,:)
+                    frozen_n_by  = active_gridfunction%n_b_reorth(2,:)
+                    frozen_n_bz  = active_gridfunction%n_b_reorth(3,:)
+!debug print        
+                    !do i = 1, nr_points_batch
+                    !  write(*, '(A,3ES30.20E3)') 'test12 import frozen n = ', &
+                    !              frozen_n_bx(i), frozen_n_by(i), frozen_n_bz(i)
+                    !end do
+                    if (use_gga) then
+                       frozen_gxn_bx(:)  = active_gridfunction%gn_b_reorth(1,1,:)
+                       frozen_gyn_bx(:)  = active_gridfunction%gn_b_reorth(2,1,:)
+                       frozen_gzn_bx(:)  = active_gridfunction%gn_b_reorth(3,1,:)
+                       frozen_gxn_by(:)  = active_gridfunction%gn_b_reorth(1,2,:)
+                       frozen_gyn_by(:)  = active_gridfunction%gn_b_reorth(2,2,:)
+                       frozen_gzn_by(:)  = active_gridfunction%gn_b_reorth(3,2,:)
+                       frozen_gxn_bz(:)  = active_gridfunction%gn_b_reorth(1,3,:)
+                       frozen_gyn_bz(:)  = active_gridfunction%gn_b_reorth(2,3,:)
+                       frozen_gzn_bz(:)  = active_gridfunction%gn_b_reorth(3,3,:)
+!debug print        
+                       !do i = 1, nr_points_batch
+                       !   write(*, '(A,9ES30.20E3)') 'test13 import frozen gn = ', &
+                       !               frozen_gxn_bx(i), frozen_gyn_bx(i), frozen_gzn_bx(i), &
+                       !               frozen_gxn_by(i), frozen_gyn_by(i), frozen_gzn_by(i), &
+                       !               frozen_gxn_bz(i), frozen_gyn_bz(i), frozen_gzn_bz(i)
+                       !end do
+                    end if
+                    if (.not. fde_cfg_no_sdft) then
+                       frozen_sx_bx(:)  = active_gridfunction%s_b_reorth(1,1,:)
+                       frozen_sy_bx(:)  = active_gridfunction%s_b_reorth(2,1,:)
+                       frozen_sz_bx(:)  = active_gridfunction%s_b_reorth(3,1,:)
+                       frozen_sx_by(:)  = active_gridfunction%s_b_reorth(1,2,:)
+                       frozen_sy_by(:)  = active_gridfunction%s_b_reorth(2,2,:)
+                       frozen_sz_by(:)  = active_gridfunction%s_b_reorth(3,2,:)
+                       frozen_sx_bz(:)  = active_gridfunction%s_b_reorth(1,3,:)
+                       frozen_sy_bz(:)  = active_gridfunction%s_b_reorth(2,3,:)
+                       frozen_sz_bz(:)  = active_gridfunction%s_b_reorth(3,3,:)
+!debug print        
+                       !do i = 1, nr_points_batch
+                       !   write(*, '(A,9ES30.20E3)') 'test15 import frozen s = ', &
+                       !               frozen_sx_bx(i), frozen_sy_bx(i), frozen_sz_bx(i), &
+                       !               frozen_sx_by(i), frozen_sy_by(i), frozen_sz_by(i), &
+                       !               frozen_sx_bz(i), frozen_sy_bz(i), frozen_sz_bz(i)
+                       !end do
+                       if (use_gga) then
+                          frozen_gxsx_bx(:)  = active_gridfunction%gs_b_reorth(1,1,1,:)
+                          frozen_gysx_bx(:)  = active_gridfunction%gs_b_reorth(2,1,1,:)
+                          frozen_gzsx_bx(:)  = active_gridfunction%gs_b_reorth(3,1,1,:)
+                          frozen_gxsy_bx(:)  = active_gridfunction%gs_b_reorth(1,2,1,:)
+                          frozen_gysy_bx(:)  = active_gridfunction%gs_b_reorth(2,2,1,:)
+                          frozen_gzsy_bx(:)  = active_gridfunction%gs_b_reorth(3,2,1,:)
+                          frozen_gxsz_bx(:)  = active_gridfunction%gs_b_reorth(1,3,1,:)
+                          frozen_gysz_bx(:)  = active_gridfunction%gs_b_reorth(2,3,1,:)
+                          frozen_gzsz_bx(:)  = active_gridfunction%gs_b_reorth(3,3,1,:)
+                          frozen_gxsx_by(:)  = active_gridfunction%gs_b_reorth(1,1,2,:)
+                          frozen_gysx_by(:)  = active_gridfunction%gs_b_reorth(2,1,2,:)
+                          frozen_gzsx_by(:)  = active_gridfunction%gs_b_reorth(3,1,2,:)
+                          frozen_gxsy_by(:)  = active_gridfunction%gs_b_reorth(1,2,2,:)
+                          frozen_gysy_by(:)  = active_gridfunction%gs_b_reorth(2,2,2,:)
+                          frozen_gzsy_by(:)  = active_gridfunction%gs_b_reorth(3,2,2,:)
+                          frozen_gxsz_by(:)  = active_gridfunction%gs_b_reorth(1,3,2,:)
+                          frozen_gysz_by(:)  = active_gridfunction%gs_b_reorth(2,3,2,:)
+                          frozen_gzsz_by(:)  = active_gridfunction%gs_b_reorth(3,3,2,:)
+                          frozen_gxsx_bz(:)  = active_gridfunction%gs_b_reorth(1,1,3,:)
+                          frozen_gysx_bz(:)  = active_gridfunction%gs_b_reorth(2,1,3,:)
+                          frozen_gzsx_bz(:)  = active_gridfunction%gs_b_reorth(3,1,3,:)
+                          frozen_gxsy_bz(:)  = active_gridfunction%gs_b_reorth(1,2,3,:)
+                          frozen_gysy_bz(:)  = active_gridfunction%gs_b_reorth(2,2,3,:)
+                          frozen_gzsy_bz(:)  = active_gridfunction%gs_b_reorth(3,2,3,:)
+                          frozen_gxsz_bz(:)  = active_gridfunction%gs_b_reorth(1,3,3,:)
+                          frozen_gysz_bz(:)  = active_gridfunction%gs_b_reorth(2,3,3,:)
+                          frozen_gzsz_bz(:)  = active_gridfunction%gs_b_reorth(3,3,3,:)
+!debug print        
+                       !do i = 1, nr_points_batch
+                       !   write(*, '(A,27ES30.20E3)') 'test16 import frozen gs = ', &
+                       !               frozen_gxsx_bx(i), frozen_gysx_bx(i), frozen_gzsx_bx(i), &
+                       !               frozen_gxsy_bx(i), frozen_gysy_bx(i), frozen_gzsy_bx(i), &
+                       !               frozen_gxsz_bx(i), frozen_gysz_bx(i), frozen_gzsz_bx(i), &
+                       !               frozen_gxsx_by(i), frozen_gysx_by(i), frozen_gzsx_by(i), &
+                       !               frozen_gxsy_by(i), frozen_gysy_by(i), frozen_gzsy_by(i), &
+                       !               frozen_gxsz_by(i), frozen_gysz_by(i), frozen_gzsz_by(i), &
+                       !               frozen_gxsx_bz(i), frozen_gysx_bz(i), frozen_gzsx_bz(i), &
+                       !               frozen_gxsy_bz(i), frozen_gysy_bz(i), frozen_gzsy_bz(i), &
+                       !               frozen_gxsz_bz(i), frozen_gysz_bz(i), frozen_gzsz_bz(i)
+                       !end do
+                       end if
+                    end if
                   end if
                end if
             end if
@@ -3237,38 +3350,45 @@ contains
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
-!   charge density contributions
-    n_b_lao(1) = frozen_n_bx(ipoint)
-    n_b_lao(2) = frozen_n_by(ipoint)
-    n_b_lao(3) = frozen_n_bz(ipoint)
-    if (is_gga) then
-       gn_b_lao(1,1) = frozen_gxn_bx(ipoint)
-       gn_b_lao(1,2) = frozen_gxn_bx(ipoint)
-       gn_b_lao(1,3) = frozen_gxn_bx(ipoint)
-       gn_b_lao(2,1) = frozen_gyn_bx(ipoint)
-       gn_b_lao(2,2) = frozen_gyn_by(ipoint)
-       gn_b_lao(2,3) = frozen_gyn_bz(ipoint)
-       gn_b_lao(3,1) = frozen_gzn_bx(ipoint)
-       gn_b_lao(3,2) = frozen_gzn_by(ipoint)
-       gn_b_lao(3,3) = frozen_gzn_bz(ipoint)
+!   charge density contributions - equal 0 when do_london_rhs_direct_coupling, so save time:
+    if (.not. do_london_rhs_direct_coupling) then
+      n_b_lao(1) = frozen_n_bx(ipoint)
+      n_b_lao(2) = frozen_n_by(ipoint)
+      n_b_lao(3) = frozen_n_bz(ipoint)
+      if (is_gga) then
+         gn_b_lao(1,1) = frozen_gxn_bx(ipoint)
+         gn_b_lao(1,2) = frozen_gxn_bx(ipoint)
+         gn_b_lao(1,3) = frozen_gxn_bx(ipoint)
+         gn_b_lao(2,1) = frozen_gyn_bx(ipoint)
+         gn_b_lao(2,2) = frozen_gyn_by(ipoint)
+         gn_b_lao(2,3) = frozen_gyn_bz(ipoint)
+         gn_b_lao(3,1) = frozen_gzn_bx(ipoint)
+         gn_b_lao(3,2) = frozen_gzn_by(ipoint)
+         gn_b_lao(3,3) = frozen_gzn_bz(ipoint)
+      end if
+      
+      write(*, *) 'test in coupling propgrad n, reorth, direct ', &
+                   do_london_rhs_reorth_coupling, do_london_rhs_direct_coupling, &
+                   rx, ry, rz, &
+                   n_b_lao(1), n_b_lao(2), n_b_lao(3)
+
+      do a = 1, 3     !B_{x,y,z}
+         u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d2000000)*n_b_lao(a)
+      
+         if (is_gga) then
+            z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
+                       + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
+                       + gn_0_t_pointwise(3)*gn_b_lao(3, a))
+      
+            u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d1010000)*z_b
+      
+            u%gn_b_lao(1:3, a) = u%gn_b_lao(1:3, a) &
+                       + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
+                       + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
+                       + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
+         end if
+      end do
     end if
-
-    do a = 1, 3     !B_{x,y,z}
-       u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d2000000)*n_b_lao(a)
-
-       if (is_gga) then
-          z_b = 2.0d0*(gn_0_t_pointwise(1)*gn_b_lao(1, a) &
-                     + gn_0_t_pointwise(2)*gn_b_lao(2, a) &
-                     + gn_0_t_pointwise(3)*gn_b_lao(3, a))
-
-          u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d1010000)*z_b
-
-          u%gn_b_lao(1:3, a) = u%gn_b_lao(1:3, a) &
-                     + 2.0d0*gn_0_t_pointwise(1:3)*n_b_lao(a)*derv_total(1, d1010000) &
-                     + 2.0d0*gn_0_t_pointwise(1:3)*z_b*derv_total(1, d0020000) &
-                     + 2.0d0*gn_b_lao(1:3, a)*derv_total(1, d0010000)
-       end if
-    end do
 
 !   spin density contributions
 
@@ -3311,6 +3431,12 @@ contains
           gs_b_lao(3,3,2) = frozen_gzsz_by(ipoint)
           gs_b_lao(3,3,3) = frozen_gzsz_bz(ipoint)
        end if
+
+       write(*, *) 'test in coupling propgrad s, reorth, direct ', &
+                    do_london_rhs_reorth_coupling, do_london_rhs_direct_coupling, &
+                    rx, ry, rz, &
+                    s_b_lao(1,1), s_b_lao(1,2), s_b_lao(1,3)
+
        do a = 1, 3     !B_{x,y,z}
           do k = k_start, 3  !Sigma_{x,y,z}
        
@@ -4087,121 +4213,200 @@ contains
 
 #ifdef VAR_MPI
         if (parallel_fde) then
-           call fde_mpi_gatherv(active_n_bx, active_gridfunction%n_b(1,:), nr_points_on_this_proc)
-           call fde_mpi_gatherv(active_n_by, active_gridfunction%n_b(2,:), nr_points_on_this_proc)
-           call fde_mpi_gatherv(active_n_bz, active_gridfunction%n_b(3,:), nr_points_on_this_proc)
-
-           if (use_gga) then
-              call fde_mpi_gatherv(active_gxn_bx, active_gridfunction%gn_b(1,1,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_gxn_by, active_gridfunction%gn_b(1,2,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_gxn_bz, active_gridfunction%gn_b(1,3,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_gyn_bx, active_gridfunction%gn_b(2,1,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_gyn_by, active_gridfunction%gn_b(2,2,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_gyn_bz, active_gridfunction%gn_b(2,3,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_gzn_bx, active_gridfunction%gn_b(3,1,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_gzn_by, active_gridfunction%gn_b(3,2,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_gzn_bz, active_gridfunction%gn_b(3,3,:), nr_points_on_this_proc)
+           if (do_london_rhs_reorth_coupling) then
+             call fde_mpi_gatherv(active_n_bx, active_gridfunction%n_b_reorth(1,:), nr_points_on_this_proc)
+             call fde_mpi_gatherv(active_n_by, active_gridfunction%n_b_reorth(2,:), nr_points_on_this_proc)
+             call fde_mpi_gatherv(active_n_bz, active_gridfunction%n_b_reorth(3,:), nr_points_on_this_proc)
+             
+             if (use_gga) then
+                call fde_mpi_gatherv(active_gxn_bx, active_gridfunction%gn_b_reorth(1,1,:), nr_points_on_this_proc)
+                call fde_mpi_gatherv(active_gxn_by, active_gridfunction%gn_b_reorth(1,2,:), nr_points_on_this_proc)
+                call fde_mpi_gatherv(active_gxn_bz, active_gridfunction%gn_b_reorth(1,3,:), nr_points_on_this_proc)
+                call fde_mpi_gatherv(active_gyn_bx, active_gridfunction%gn_b_reorth(2,1,:), nr_points_on_this_proc)
+                call fde_mpi_gatherv(active_gyn_by, active_gridfunction%gn_b_reorth(2,2,:), nr_points_on_this_proc)
+                call fde_mpi_gatherv(active_gyn_bz, active_gridfunction%gn_b_reorth(2,3,:), nr_points_on_this_proc)
+                call fde_mpi_gatherv(active_gzn_bx, active_gridfunction%gn_b_reorth(3,1,:), nr_points_on_this_proc)
+                call fde_mpi_gatherv(active_gzn_by, active_gridfunction%gn_b_reorth(3,2,:), nr_points_on_this_proc)
+                call fde_mpi_gatherv(active_gzn_bz, active_gridfunction%gn_b_reorth(3,3,:), nr_points_on_this_proc)
+             end if
            end if
-           if (.not. fde_cfg_no_sdft) then
-              call fde_mpi_gatherv(active_sx_bx, active_gridfunction%s_b(1,1,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_sx_by, active_gridfunction%s_b(1,2,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_sx_bz, active_gridfunction%s_b(1,3,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_sy_bx, active_gridfunction%s_b(2,1,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_sy_by, active_gridfunction%s_b(2,2,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_sy_bz, active_gridfunction%s_b(2,3,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_sz_bx, active_gridfunction%s_b(3,1,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_sz_by, active_gridfunction%s_b(3,2,:), nr_points_on_this_proc)
-              call fde_mpi_gatherv(active_sz_bz, active_gridfunction%s_b(3,3,:), nr_points_on_this_proc)
+           if (do_london_rhs_reorth_coupling.and..not. fde_cfg_no_sdft) then
+              call fde_mpi_gatherv(active_sx_bx, active_gridfunction%s_b_reorth(1,1,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sx_by, active_gridfunction%s_b_reorth(1,2,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sx_bz, active_gridfunction%s_b_reorth(1,3,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sy_bx, active_gridfunction%s_b_reorth(2,1,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sy_by, active_gridfunction%s_b_reorth(2,2,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sy_bz, active_gridfunction%s_b_reorth(2,3,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sz_bx, active_gridfunction%s_b_reorth(3,1,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sz_by, active_gridfunction%s_b_reorth(3,2,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sz_bz, active_gridfunction%s_b_reorth(3,3,:), nr_points_on_this_proc)
               if (use_gga) then
-                 call fde_mpi_gatherv(active_gxsx_bx, active_gridfunction%gs_b(1,1,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gxsx_by, active_gridfunction%gs_b(1,1,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gxsx_bz, active_gridfunction%gs_b(1,1,3,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gxsy_bx, active_gridfunction%gs_b(1,2,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gxsy_by, active_gridfunction%gs_b(1,2,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gxsy_bz, active_gridfunction%gs_b(1,2,3,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gxsz_bx, active_gridfunction%gs_b(1,3,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gxsz_by, active_gridfunction%gs_b(1,3,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gxsz_bz, active_gridfunction%gs_b(1,3,3,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysx_bx, active_gridfunction%gs_b(2,1,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysx_by, active_gridfunction%gs_b(2,1,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysx_bz, active_gridfunction%gs_b(2,1,3,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysy_bx, active_gridfunction%gs_b(2,2,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysy_by, active_gridfunction%gs_b(2,2,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysy_bz, active_gridfunction%gs_b(2,2,3,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysz_bx, active_gridfunction%gs_b(2,3,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysz_by, active_gridfunction%gs_b(2,3,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gysz_bz, active_gridfunction%gs_b(2,3,3,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsx_bx, active_gridfunction%gs_b(3,1,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsx_by, active_gridfunction%gs_b(3,1,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsx_bz, active_gridfunction%gs_b(3,1,3,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsy_bx, active_gridfunction%gs_b(3,2,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsy_by, active_gridfunction%gs_b(3,2,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsy_bz, active_gridfunction%gs_b(3,2,3,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsz_bx, active_gridfunction%gs_b(3,3,1,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsz_by, active_gridfunction%gs_b(3,3,2,:), nr_points_on_this_proc)
-                 call fde_mpi_gatherv(active_gzsz_bz, active_gridfunction%gs_b(3,3,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsx_bx, active_gridfunction%gs_b_reorth(1,1,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsx_by, active_gridfunction%gs_b_reorth(1,1,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsx_bz, active_gridfunction%gs_b_reorth(1,1,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsy_bx, active_gridfunction%gs_b_reorth(1,2,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsy_by, active_gridfunction%gs_b_reorth(1,2,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsy_bz, active_gridfunction%gs_b_reorth(1,2,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsz_bx, active_gridfunction%gs_b_reorth(1,3,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsz_by, active_gridfunction%gs_b_reorth(1,3,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsz_bz, active_gridfunction%gs_b_reorth(1,3,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysx_bx, active_gridfunction%gs_b_reorth(2,1,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysx_by, active_gridfunction%gs_b_reorth(2,1,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysx_bz, active_gridfunction%gs_b_reorth(2,1,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysy_bx, active_gridfunction%gs_b_reorth(2,2,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysy_by, active_gridfunction%gs_b_reorth(2,2,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysy_bz, active_gridfunction%gs_b_reorth(2,2,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysz_bx, active_gridfunction%gs_b_reorth(2,3,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysz_by, active_gridfunction%gs_b_reorth(2,3,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysz_bz, active_gridfunction%gs_b_reorth(2,3,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsx_bx, active_gridfunction%gs_b_reorth(3,1,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsx_by, active_gridfunction%gs_b_reorth(3,1,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsx_bz, active_gridfunction%gs_b_reorth(3,1,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsy_bx, active_gridfunction%gs_b_reorth(3,2,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsy_by, active_gridfunction%gs_b_reorth(3,2,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsy_bz, active_gridfunction%gs_b_reorth(3,2,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsz_bx, active_gridfunction%gs_b_reorth(3,3,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsz_by, active_gridfunction%gs_b_reorth(3,3,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsz_bz, active_gridfunction%gs_b_reorth(3,3,3,:), nr_points_on_this_proc)
+              end if
+           end if
+           if (do_london_rhs_direct_coupling.or.do_london_susc2el_coupling.and..not. fde_cfg_no_sdft) then
+              call fde_mpi_gatherv(active_sx_bx, active_gridfunction%s_b_direct(1,1,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sx_by, active_gridfunction%s_b_direct(1,2,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sx_bz, active_gridfunction%s_b_direct(1,3,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sy_bx, active_gridfunction%s_b_direct(2,1,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sy_by, active_gridfunction%s_b_direct(2,2,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sy_bz, active_gridfunction%s_b_direct(2,3,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sz_bx, active_gridfunction%s_b_direct(3,1,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sz_by, active_gridfunction%s_b_direct(3,2,:), nr_points_on_this_proc)
+              call fde_mpi_gatherv(active_sz_bz, active_gridfunction%s_b_direct(3,3,:), nr_points_on_this_proc)
+              if (use_gga) then
+                 call fde_mpi_gatherv(active_gxsx_bx, active_gridfunction%gs_b_direct(1,1,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsx_by, active_gridfunction%gs_b_direct(1,1,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsx_bz, active_gridfunction%gs_b_direct(1,1,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsy_bx, active_gridfunction%gs_b_direct(1,2,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsy_by, active_gridfunction%gs_b_direct(1,2,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsy_bz, active_gridfunction%gs_b_direct(1,2,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsz_bx, active_gridfunction%gs_b_direct(1,3,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsz_by, active_gridfunction%gs_b_direct(1,3,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gxsz_bz, active_gridfunction%gs_b_direct(1,3,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysx_bx, active_gridfunction%gs_b_direct(2,1,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysx_by, active_gridfunction%gs_b_direct(2,1,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysx_bz, active_gridfunction%gs_b_direct(2,1,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysy_bx, active_gridfunction%gs_b_direct(2,2,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysy_by, active_gridfunction%gs_b_direct(2,2,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysy_bz, active_gridfunction%gs_b_direct(2,2,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysz_bx, active_gridfunction%gs_b_direct(2,3,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysz_by, active_gridfunction%gs_b_direct(2,3,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gysz_bz, active_gridfunction%gs_b_direct(2,3,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsx_bx, active_gridfunction%gs_b_direct(3,1,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsx_by, active_gridfunction%gs_b_direct(3,1,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsx_bz, active_gridfunction%gs_b_direct(3,1,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsy_bx, active_gridfunction%gs_b_direct(3,2,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsy_by, active_gridfunction%gs_b_direct(3,2,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsy_bz, active_gridfunction%gs_b_direct(3,2,3,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsz_bx, active_gridfunction%gs_b_direct(3,3,1,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsz_by, active_gridfunction%gs_b_direct(3,3,2,:), nr_points_on_this_proc)
+                 call fde_mpi_gatherv(active_gzsz_bz, active_gridfunction%gs_b_direct(3,3,3,:), nr_points_on_this_proc)
               end if
            end if
         end if
 #endif
         if (fde_mpi_is_master()) then
-           active_gridfunction%n_b(1,:) = active_n_bx(:)
-           active_gridfunction%n_b(2,:) = active_n_by(:)
-           active_gridfunction%n_b(3,:) = active_n_bz(:)
-!debug print
-        !   do i = 1, nr_points_batch
-        ! write(*, '(A,3ES30.20E3)') 'test25  gf =', &
-        ! active_gridfunction%n_b(1,i), active_gridfunction%n_b(2,i), active_gridfunction%n_b(3,i)
-        !    end do
-           if (use_gga) then
-              active_gridfunction%gn_b(1,1,:) = active_gxn_bx(:)
-              active_gridfunction%gn_b(1,2,:) = active_gxn_by(:)
-              active_gridfunction%gn_b(1,3,:) = active_gxn_bz(:)
-              active_gridfunction%gn_b(2,1,:) = active_gyn_bx(:)
-              active_gridfunction%gn_b(2,2,:) = active_gyn_by(:)
-              active_gridfunction%gn_b(2,3,:) = active_gyn_bz(:)
-              active_gridfunction%gn_b(3,1,:) = active_gzn_bx(:)
-              active_gridfunction%gn_b(3,2,:) = active_gzn_by(:)
-              active_gridfunction%gn_b(3,3,:) = active_gzn_bz(:)
+           if (do_london_rhs_reorth_coupling) then
+             active_gridfunction%n_b_reorth(1,:) = active_n_bx(:)
+             active_gridfunction%n_b_reorth(2,:) = active_n_by(:)
+             active_gridfunction%n_b_reorth(3,:) = active_n_bz(:)
+             if (use_gga) then
+                active_gridfunction%gn_b_reorth(1,1,:) = active_gxn_bx(:)
+                active_gridfunction%gn_b_reorth(1,2,:) = active_gxn_by(:)
+                active_gridfunction%gn_b_reorth(1,3,:) = active_gxn_bz(:)
+                active_gridfunction%gn_b_reorth(2,1,:) = active_gyn_bx(:)
+                active_gridfunction%gn_b_reorth(2,2,:) = active_gyn_by(:)
+                active_gridfunction%gn_b_reorth(2,3,:) = active_gyn_bz(:)
+                active_gridfunction%gn_b_reorth(3,1,:) = active_gzn_bx(:)
+                active_gridfunction%gn_b_reorth(3,2,:) = active_gzn_by(:)
+                active_gridfunction%gn_b_reorth(3,3,:) = active_gzn_bz(:)
+             endif
            endif
-           if (.not. fde_cfg_no_sdft) then
-              active_gridfunction%s_b(1,1,:) = active_sx_bx(:)
-              active_gridfunction%s_b(1,2,:) = active_sx_by(:)
-              active_gridfunction%s_b(1,3,:) = active_sx_bz(:)
-              active_gridfunction%s_b(2,1,:) = active_sy_bx(:)
-              active_gridfunction%s_b(2,2,:) = active_sy_by(:)
-              active_gridfunction%s_b(2,3,:) = active_sy_bz(:)
-              active_gridfunction%s_b(3,1,:) = active_sz_bx(:)
-              active_gridfunction%s_b(3,2,:) = active_sz_by(:)
-              active_gridfunction%s_b(3,3,:) = active_sz_bz(:)
+           if (do_london_rhs_reorth_coupling.and..not. fde_cfg_no_sdft) then
+              active_gridfunction%s_b_reorth(1,1,:) = active_sx_bx(:)
+              active_gridfunction%s_b_reorth(1,2,:) = active_sx_by(:)
+              active_gridfunction%s_b_reorth(1,3,:) = active_sx_bz(:)
+              active_gridfunction%s_b_reorth(2,1,:) = active_sy_bx(:)
+              active_gridfunction%s_b_reorth(2,2,:) = active_sy_by(:)
+              active_gridfunction%s_b_reorth(2,3,:) = active_sy_bz(:)
+              active_gridfunction%s_b_reorth(3,1,:) = active_sz_bx(:)
+              active_gridfunction%s_b_reorth(3,2,:) = active_sz_by(:)
+              active_gridfunction%s_b_reorth(3,3,:) = active_sz_bz(:)
               if (use_gga) then
-                 active_gridfunction%gs_b(1,1,1,:) = active_gxsx_bx(:)
-                 active_gridfunction%gs_b(1,1,2,:) = active_gxsx_by(:)
-                 active_gridfunction%gs_b(1,1,3,:) = active_gxsx_bz(:)
-                 active_gridfunction%gs_b(1,2,1,:) = active_gxsy_bx(:)
-                 active_gridfunction%gs_b(1,2,2,:) = active_gxsy_by(:)
-                 active_gridfunction%gs_b(1,2,3,:) = active_gxsy_bz(:)
-                 active_gridfunction%gs_b(1,3,1,:) = active_gxsz_bx(:)
-                 active_gridfunction%gs_b(1,3,2,:) = active_gxsz_by(:)
-                 active_gridfunction%gs_b(1,3,3,:) = active_gxsz_bz(:)
-                 active_gridfunction%gs_b(2,1,1,:) = active_gysx_bx(:)
-                 active_gridfunction%gs_b(2,1,2,:) = active_gysx_by(:)
-                 active_gridfunction%gs_b(2,1,3,:) = active_gysx_bz(:)
-                 active_gridfunction%gs_b(2,2,1,:) = active_gysy_bx(:)
-                 active_gridfunction%gs_b(2,2,2,:) = active_gysy_by(:)
-                 active_gridfunction%gs_b(2,2,3,:) = active_gysy_bz(:)
-                 active_gridfunction%gs_b(2,3,1,:) = active_gysz_bx(:)
-                 active_gridfunction%gs_b(2,3,2,:) = active_gysz_by(:)
-                 active_gridfunction%gs_b(2,3,3,:) = active_gysz_bz(:)
-                 active_gridfunction%gs_b(3,1,1,:) = active_gzsx_bx(:)
-                 active_gridfunction%gs_b(3,1,2,:) = active_gzsx_by(:)
-                 active_gridfunction%gs_b(3,1,3,:) = active_gzsx_bz(:)
-                 active_gridfunction%gs_b(3,2,1,:) = active_gzsy_bx(:)
-                 active_gridfunction%gs_b(3,2,2,:) = active_gzsy_by(:)
-                 active_gridfunction%gs_b(3,2,3,:) = active_gzsy_bz(:)
-                 active_gridfunction%gs_b(3,3,1,:) = active_gzsz_bx(:)
-                 active_gridfunction%gs_b(3,3,2,:) = active_gzsz_by(:)
-                 active_gridfunction%gs_b(3,3,3,:) = active_gzsz_bz(:)
+                 active_gridfunction%gs_b_reorth(1,1,1,:) = active_gxsx_bx(:)
+                 active_gridfunction%gs_b_reorth(1,1,2,:) = active_gxsx_by(:)
+                 active_gridfunction%gs_b_reorth(1,1,3,:) = active_gxsx_bz(:)
+                 active_gridfunction%gs_b_reorth(1,2,1,:) = active_gxsy_bx(:)
+                 active_gridfunction%gs_b_reorth(1,2,2,:) = active_gxsy_by(:)
+                 active_gridfunction%gs_b_reorth(1,2,3,:) = active_gxsy_bz(:)
+                 active_gridfunction%gs_b_reorth(1,3,1,:) = active_gxsz_bx(:)
+                 active_gridfunction%gs_b_reorth(1,3,2,:) = active_gxsz_by(:)
+                 active_gridfunction%gs_b_reorth(1,3,3,:) = active_gxsz_bz(:)
+                 active_gridfunction%gs_b_reorth(2,1,1,:) = active_gysx_bx(:)
+                 active_gridfunction%gs_b_reorth(2,1,2,:) = active_gysx_by(:)
+                 active_gridfunction%gs_b_reorth(2,1,3,:) = active_gysx_bz(:)
+                 active_gridfunction%gs_b_reorth(2,2,1,:) = active_gysy_bx(:)
+                 active_gridfunction%gs_b_reorth(2,2,2,:) = active_gysy_by(:)
+                 active_gridfunction%gs_b_reorth(2,2,3,:) = active_gysy_bz(:)
+                 active_gridfunction%gs_b_reorth(2,3,1,:) = active_gysz_bx(:)
+                 active_gridfunction%gs_b_reorth(2,3,2,:) = active_gysz_by(:)
+                 active_gridfunction%gs_b_reorth(2,3,3,:) = active_gysz_bz(:)
+                 active_gridfunction%gs_b_reorth(3,1,1,:) = active_gzsx_bx(:)
+                 active_gridfunction%gs_b_reorth(3,1,2,:) = active_gzsx_by(:)
+                 active_gridfunction%gs_b_reorth(3,1,3,:) = active_gzsx_bz(:)
+                 active_gridfunction%gs_b_reorth(3,2,1,:) = active_gzsy_bx(:)
+                 active_gridfunction%gs_b_reorth(3,2,2,:) = active_gzsy_by(:)
+                 active_gridfunction%gs_b_reorth(3,2,3,:) = active_gzsy_bz(:)
+                 active_gridfunction%gs_b_reorth(3,3,1,:) = active_gzsz_bx(:)
+                 active_gridfunction%gs_b_reorth(3,3,2,:) = active_gzsz_by(:)
+                 active_gridfunction%gs_b_reorth(3,3,3,:) = active_gzsz_bz(:)
+              end if
+           end if
+           if (do_london_rhs_direct_coupling.or.do_london_susc2el_coupling.and..not. fde_cfg_no_sdft) then
+              active_gridfunction%s_b_direct(1,1,:) = active_sx_bx(:)
+              active_gridfunction%s_b_direct(1,2,:) = active_sx_by(:)
+              active_gridfunction%s_b_direct(1,3,:) = active_sx_bz(:)
+              active_gridfunction%s_b_direct(2,1,:) = active_sy_bx(:)
+              active_gridfunction%s_b_direct(2,2,:) = active_sy_by(:)
+              active_gridfunction%s_b_direct(2,3,:) = active_sy_bz(:)
+              active_gridfunction%s_b_direct(3,1,:) = active_sz_bx(:)
+              active_gridfunction%s_b_direct(3,2,:) = active_sz_by(:)
+              active_gridfunction%s_b_direct(3,3,:) = active_sz_bz(:)
+              if (use_gga) then
+                 active_gridfunction%gs_b_direct(1,1,1,:) = active_gxsx_bx(:)
+                 active_gridfunction%gs_b_direct(1,1,2,:) = active_gxsx_by(:)
+                 active_gridfunction%gs_b_direct(1,1,3,:) = active_gxsx_bz(:)
+                 active_gridfunction%gs_b_direct(1,2,1,:) = active_gxsy_bx(:)
+                 active_gridfunction%gs_b_direct(1,2,2,:) = active_gxsy_by(:)
+                 active_gridfunction%gs_b_direct(1,2,3,:) = active_gxsy_bz(:)
+                 active_gridfunction%gs_b_direct(1,3,1,:) = active_gxsz_bx(:)
+                 active_gridfunction%gs_b_direct(1,3,2,:) = active_gxsz_by(:)
+                 active_gridfunction%gs_b_direct(1,3,3,:) = active_gxsz_bz(:)
+                 active_gridfunction%gs_b_direct(2,1,1,:) = active_gysx_bx(:)
+                 active_gridfunction%gs_b_direct(2,1,2,:) = active_gysx_by(:)
+                 active_gridfunction%gs_b_direct(2,1,3,:) = active_gysx_bz(:)
+                 active_gridfunction%gs_b_direct(2,2,1,:) = active_gysy_bx(:)
+                 active_gridfunction%gs_b_direct(2,2,2,:) = active_gysy_by(:)
+                 active_gridfunction%gs_b_direct(2,2,3,:) = active_gysy_bz(:)
+                 active_gridfunction%gs_b_direct(2,3,1,:) = active_gysz_bx(:)
+                 active_gridfunction%gs_b_direct(2,3,2,:) = active_gysz_by(:)
+                 active_gridfunction%gs_b_direct(2,3,3,:) = active_gysz_bz(:)
+                 active_gridfunction%gs_b_direct(3,1,1,:) = active_gzsx_bx(:)
+                 active_gridfunction%gs_b_direct(3,1,2,:) = active_gzsx_by(:)
+                 active_gridfunction%gs_b_direct(3,1,3,:) = active_gzsx_bz(:)
+                 active_gridfunction%gs_b_direct(3,2,1,:) = active_gzsy_bx(:)
+                 active_gridfunction%gs_b_direct(3,2,2,:) = active_gzsy_by(:)
+                 active_gridfunction%gs_b_direct(3,2,3,:) = active_gzsy_bz(:)
+                 active_gridfunction%gs_b_direct(3,3,1,:) = active_gzsz_bx(:)
+                 active_gridfunction%gs_b_direct(3,3,2,:) = active_gzsz_by(:)
+                 active_gridfunction%gs_b_direct(3,3,3,:) = active_gzsz_bz(:)
               end if
            end if
         endif

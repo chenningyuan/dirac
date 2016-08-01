@@ -21,11 +21,15 @@ module fde_types
       integer :: npoints
       integer :: nspin
       real(kind=8), pointer :: n(:)          => null()
-      real(kind=8), pointer :: n_b(:,:)      => null()
-      real(kind=8), pointer :: s_b(:,:,:)    => null()
+      real(kind=8), pointer :: n_b_direct(:,:)      => null()
+      real(kind=8), pointer :: n_b_reorth(:,:)      => null()
+      real(kind=8), pointer :: s_b_direct(:,:,:)    => null()
+      real(kind=8), pointer :: s_b_reorth(:,:,:)    => null()
       real(kind=8), pointer :: gn(:,:)       => null()
-      real(kind=8), pointer :: gn_b(:,:,:)   => null()
-      real(kind=8), pointer :: gs_b(:,:,:,:) => null()
+      real(kind=8), pointer :: gn_b_direct(:,:,:)   => null()
+      real(kind=8), pointer :: gn_b_reorth(:,:,:)   => null()
+      real(kind=8), pointer :: gs_b_direct(:,:,:,:) => null()
+      real(kind=8), pointer :: gs_b_reorth(:,:,:,:) => null()
       real(kind=8), pointer :: elpot(:)      => null()
       real(kind=8), pointer :: nucpot(:)     => null()
       real(kind=8), pointer :: hn(:,:)       => null()
@@ -104,42 +108,82 @@ module fde_types
          endif
 
          if (fde_rsp_mag_lao_import .or. fde_rsp_mag_lao_export) then
-            if (.not. associated(gf%n_b)) then
-               allocate(gf%n_b(3,nr_elements))
+            if (.not. associated(gf%n_b_direct)) then
+               allocate(gf%n_b_direct(3,nr_elements))
             else
-               prior_nr_elements = size(gf%n_b)
-               print *, 'Warning ! gf%n_b already allocated !'
+               prior_nr_elements = size(gf%n_b_direct)
+               print *, 'Warning ! gf%n_b_direct already allocated !'
                if (prior_nr_elements .ne. nr_elements) then
                   print *, prior_nr_elements,' elements then,',nr_elements,'now !'
                   stop
                endif
             end if
-            if (.not. associated(gf%gn_b)) then
-               allocate(gf%gn_b(3,3,nr_elements))
+            if (.not. associated(gf%n_b_reorth)) then
+               allocate(gf%n_b_reorth(3,nr_elements))
             else
-               prior_nr_elements = size(gf%gn_b)
-               print *, 'Warning ! gf%gn_b already allocated !'
+               prior_nr_elements = size(gf%n_b_reorth)
+               print *, 'Warning ! gf%n_b_reorth already allocated !'
+               if (prior_nr_elements .ne. nr_elements) then
+                  print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+                  stop
+               endif
+            end if
+            if (.not. associated(gf%gn_b_direct)) then
+               allocate(gf%gn_b_direct(3,3,nr_elements))
+            else
+               prior_nr_elements = size(gf%gn_b_direct)
+               print *, 'Warning ! gf%gn_b_direct already allocated !'
+               if (prior_nr_elements .ne. nr_elements) then
+                  print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+                  stop
+               endif
+            end if
+            if (.not. associated(gf%gn_b_reorth)) then
+               allocate(gf%gn_b_reorth(3,3,nr_elements))
+            else
+               prior_nr_elements = size(gf%gn_b_reorth)
+               print *, 'Warning ! gf%gn_b_reorth already allocated !'
                if (prior_nr_elements .ne. nr_elements) then
                   print *, prior_nr_elements,' elements then,',nr_elements,'now !'
                   stop
                endif
             end if
             if (.not. fde_cfg_no_sdft) then
-               if (.not. associated(gf%s_b)) then
-                  allocate(gf%s_b(3,3,nr_elements))
+               if (.not. associated(gf%s_b_direct)) then
+                  allocate(gf%s_b_direct(3,3,nr_elements))
                else
-                  prior_nr_elements = size(gf%s_b)
-                  print *, 'Warning ! gf%s_b already allocated !'
+                  prior_nr_elements = size(gf%s_b_direct)
+                  print *, 'Warning ! gf%s_b_direct already allocated !'
                   if (prior_nr_elements .ne. nr_elements) then
                      print *, prior_nr_elements,' elements then,',nr_elements,'now !'
                      stop
                   endif
                end if
-               if (.not. associated(gf%gs_b)) then
-                  allocate(gf%gs_b(3,3,3,nr_elements))
+               if (.not. associated(gf%s_b_reorth)) then
+                  allocate(gf%s_b_reorth(3,3,nr_elements))
                else
-                  prior_nr_elements = size(gf%gs_b)
-                  print *, 'Warning ! gf%gs_b already allocated !'
+                  prior_nr_elements = size(gf%s_b_reorth)
+                  print *, 'Warning ! gf%s_b_reorth already allocated !'
+                  if (prior_nr_elements .ne. nr_elements) then
+                     print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+                     stop
+                  endif
+               end if
+               if (.not. associated(gf%gs_b_direct)) then
+                  allocate(gf%gs_b_direct(3,3,3,nr_elements))
+               else
+                  prior_nr_elements = size(gf%gs_b_direct)
+                  print *, 'Warning ! gf%gs_b_direct already allocated !'
+                  if (prior_nr_elements .ne. nr_elements) then
+                     print *, prior_nr_elements,' elements then,',nr_elements,'now !'
+                     stop
+                  endif
+               end if
+               if (.not. associated(gf%gs_b_reorth)) then
+                  allocate(gf%gs_b_reorth(3,3,3,nr_elements))
+               else
+                  prior_nr_elements = size(gf%gs_b_reorth)
+                  print *, 'Warning ! gf%gs_b_reorth already allocated !'
                   if (prior_nr_elements .ne. nr_elements) then
                      print *, prior_nr_elements,' elements then,',nr_elements,'now !'
                      stop
@@ -154,15 +198,15 @@ module fde_types
          gf%elpot = 0.0d0
          gf%nucpot = 0.0d0
 
-         if (fde_rsp_mag_lao_import .or. fde_rsp_mag_lao_export) then
-            gf%n_b  = 0.0d0
-            gf%gn_b = 0.0d0
-            if (.not. fde_cfg_no_sdft) then
-               gf%s_b  = 0.0d0
-               gf%gs_b = 0.0d0
-            end if
-         end if
-!g         write(*, *) 'test2 ', associated(gf%n), associated(gf%n_b)
+         if (associated(gf%n_b_direct)) gf%n_b_direct  = 0.0d0
+         if (associated(gf%n_b_reorth)) gf%n_b_reorth  = 0.0d0
+         if (associated(gf%gn_b_direct)) gf%gn_b_direct  = 0.0d0
+         if (associated(gf%gn_b_reorth)) gf%gn_b_reorth  = 0.0d0
+         if (associated(gf%s_b_direct)) gf%s_b_direct  = 0.0d0
+         if (associated(gf%s_b_reorth)) gf%s_b_reorth  = 0.0d0
+         if (associated(gf%gs_b_direct)) gf%gs_b_direct  = 0.0d0
+         if (associated(gf%gs_b_reorth)) gf%gs_b_reorth  = 0.0d0
+         !write(*, *) 'test2 ', associated(gf%n_b)
 
       end subroutine new_grid_function
 
@@ -187,17 +231,29 @@ module fde_types
          if (associated(gf%nucpot)) &
             deallocate(gf%nucpot)
 
-         if (associated(gf%n_b)) &
-            deallocate(gf%n_b)
+         if (associated(gf%n_b_direct)) &
+            deallocate(gf%n_b_direct)
 
-         if (associated(gf%gn_b)) &
-            deallocate(gf%gn_b)
+         if (associated(gf%n_b_reorth)) &
+            deallocate(gf%n_b_reorth)
 
-         if (associated(gf%s_b)) &
-            deallocate(gf%s_b)
+         if (associated(gf%gn_b_direct)) &
+            deallocate(gf%gn_b_direct)
 
-         if (associated(gf%gs_b)) &
-            deallocate(gf%gs_b)
+         if (associated(gf%gn_b_reorth)) &
+            deallocate(gf%gn_b_reorth)
+
+         if (associated(gf%s_b_direct)) &
+            deallocate(gf%s_b_direct)
+
+         if (associated(gf%s_b_reorth)) &
+            deallocate(gf%s_b_reorth)
+
+         if (associated(gf%gs_b_direct)) &
+            deallocate(gf%gs_b_direct)
+
+         if (associated(gf%gs_b_reorth)) &
+            deallocate(gf%gs_b_reorth)
 
       end subroutine del_grid_function
 

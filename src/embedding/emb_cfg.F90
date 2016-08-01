@@ -29,11 +29,11 @@ implicit none
       character(len=4) :: ex_level
       character(len=3) :: ex_format
       logical          :: ex_n
-      logical          :: ex_n_b
-      logical          :: ex_s_b
+      !logical          :: ex_n_b
+      !logical          :: ex_s_b
       logical          :: ex_gn
-      logical          :: ex_gn_b
-      logical          :: ex_gs_b
+      !logical          :: ex_gn_b
+      !logical          :: ex_gs_b
       logical          :: ex_coulomb
       logical          :: do_grid_out
    end type
@@ -42,11 +42,15 @@ implicit none
       character(len=4) :: im_level
       character(len=3) :: im_format
       logical          :: im_n
-      logical          :: im_n_b
-      logical          :: im_s_b
+      logical          :: im_n_b_direct
+      logical          :: im_n_b_reorth
+      logical          :: im_s_b_direct
+      logical          :: im_s_b_reorth
       logical          :: im_gn
-      logical          :: im_gn_b
-      logical          :: im_gs_b
+      logical          :: im_gn_b_direct
+      logical          :: im_gn_b_reorth
+      logical          :: im_gs_b_direct
+      logical          :: im_gs_b_reorth
       logical          :: im_coulomb
       logical          :: im_vemb
       logical          :: im_frozen
@@ -183,11 +187,11 @@ implicit none
          ec%ex_level     = 'DHF'
          ec%ex_format    = 'XML'
          ec%ex_n         = .false.
-         ec%ex_n_b       = .false.
-         ec%ex_s_b       = .false.
+         !ec%ex_n_b       = .false.
+         !ec%ex_s_b       = .false.
          ec%ex_gn        = .false.
-         ec%ex_gn_b      = .false.
-         ec%ex_gs_b      = .false.
+         !ec%ex_gn_b      = .false.
+         !ec%ex_gs_b      = .false.
          ec%ex_coulomb   = .false.
          ec%do_grid_out  = .false.
       end subroutine fde_initialize_export
@@ -201,11 +205,15 @@ implicit none
          ic%im_level     = 'DHF'
          ic%im_format    = 'TXT'
          ic%im_n         = .false.
-         ic%im_n_b       = .false.
-         ic%im_s_b       = .false.
+         ic%im_n_b_direct       = .false.
+         ic%im_n_b_reorth       = .false.
+         ic%im_s_b_direct       = .false.
+         ic%im_s_b_reorth       = .false.
          ic%im_gn        = .false.
-         ic%im_gn_b      = .false.
-         ic%im_gs_b      = .false.
+         ic%im_gn_b_direct      = .false.
+         ic%im_gn_b_reorth      = .false.
+         ic%im_gs_b_direct      = .false.
+         ic%im_gs_b_reorth      = .false.
          ic%im_coulomb   = .false.
          ic%im_vemb      = .false.
          ic%im_frozen    = .false.
@@ -223,11 +231,15 @@ implicit none
          fde_ex_control%ex_level     = tmp%ex_level
          fde_ex_control%ex_format    = tmp%ex_format
          fde_ex_control%ex_n         = tmp%ex_n
-         fde_ex_control%ex_n_b       = tmp%ex_n_b
-         fde_ex_control%ex_s_b       = tmp%ex_s_b
+         !fde_ex_control%ex_n_b_direct       = tmp%ex_n_b_direct
+         !fde_ex_control%ex_n_b_reorth       = tmp%ex_n_b_reorth
+         !fde_ex_control%ex_s_b_direct       = tmp%ex_s_b_direct
+         !fde_ex_control%ex_s_b_reorth       = tmp%ex_s_b_reorth
          fde_ex_control%ex_gn        = tmp%ex_gn 
-         fde_ex_control%ex_gn_b      = tmp%ex_gn_b
-         fde_ex_control%ex_gs_b      = tmp%ex_gs_b
+         !fde_ex_control%ex_gn_b_direct      = tmp%ex_gn_b_direct
+         !fde_ex_control%ex_gn_b_reorth      = tmp%ex_gn_b_reorth
+         !fde_ex_control%ex_gs_b_direct      = tmp%ex_gs_b_direct
+         !fde_ex_control%ex_gs_b_reorth      = tmp%ex_gs_b_reorth
          fde_ex_control%ex_coulomb   = tmp%ex_coulomb
          fde_ex_control%do_grid_out  = tmp%do_grid_out
       end subroutine fde_set_export_info
@@ -241,11 +253,15 @@ implicit none
          fde_im_control%im_level     = tmp%im_level
          fde_im_control%im_format    = tmp%im_format
          fde_im_control%im_n         = tmp%im_n
-         fde_im_control%im_n_b       = tmp%im_n_b
-         fde_im_control%im_s_b       = tmp%im_s_b
+         fde_im_control%im_n_b_direct       = tmp%im_n_b_direct
+         fde_im_control%im_n_b_reorth       = tmp%im_n_b_reorth
+         fde_im_control%im_s_b_direct       = tmp%im_s_b_direct
+         fde_im_control%im_s_b_reorth       = tmp%im_s_b_reorth
          fde_im_control%im_gn        = tmp%im_gn 
-         fde_im_control%im_gn_b      = tmp%im_gn_b
-         fde_im_control%im_gs_b      = tmp%im_gs_b
+         fde_im_control%im_gn_b_direct      = tmp%im_gn_b_direct
+         fde_im_control%im_gn_b_reorth      = tmp%im_gn_b_reorth
+         fde_im_control%im_gs_b_direct      = tmp%im_gs_b_direct
+         fde_im_control%im_gs_b_reorth      = tmp%im_gs_b_reorth
          fde_im_control%im_coulomb   = tmp%im_coulomb
          fde_im_control%im_vemb      = tmp%im_vemb
          fde_im_control%im_frozen    = tmp%im_frozen
@@ -291,11 +307,15 @@ implicit none
          tmp%ex_level   = fde_ex_control%ex_level
          tmp%ex_format  = fde_ex_control%ex_format
          tmp%ex_n       = fde_ex_control%ex_n         
-         tmp%ex_n_b     = fde_ex_control%ex_n_b       
-         tmp%ex_s_b     = fde_ex_control%ex_s_b       
+         !tmp%ex_n_b_direct     = fde_ex_control%ex_n_b_direct       
+         !tmp%ex_n_b_reorth     = fde_ex_control%ex_n_b_reorth       
+         !tmp%ex_s_b_direct     = fde_ex_control%ex_s_b_direct       
+         !tmp%ex_s_b_reorth     = fde_ex_control%ex_s_b_reorth       
          tmp%ex_gn      = fde_ex_control%ex_gn           
-         tmp%ex_gn_b    = fde_ex_control%ex_gn_b         
-         tmp%ex_gs_b    = fde_ex_control%ex_gs_b         
+         !tmp%ex_gn_b_direct    = fde_ex_control%ex_gn_b_direct         
+         !tmp%ex_gn_b_reorth    = fde_ex_control%ex_gn_b_reorth         
+         !tmp%ex_gs_b_direct    = fde_ex_control%ex_gs_b_direct         
+         !tmp%ex_gs_b_reorth    = fde_ex_control%ex_gs_b_reorth         
          tmp%ex_coulomb = fde_ex_control%ex_coulomb
          tmp%do_grid_out= fde_ex_control%do_grid_out    
       end subroutine fde_get_export_info
@@ -309,11 +329,15 @@ implicit none
          tmp%im_level       = fde_im_control%im_level       
          tmp%im_format      = fde_im_control%im_format      
          tmp%im_n           = fde_im_control%im_n           
-         tmp%im_n_b         = fde_im_control%im_n_b         
-         tmp%im_s_b         = fde_im_control%im_s_b         
+         tmp%im_n_b_direct         = fde_im_control%im_n_b_direct         
+         tmp%im_n_b_reorth         = fde_im_control%im_n_b_reorth         
+         tmp%im_s_b_direct         = fde_im_control%im_s_b_direct         
+         tmp%im_s_b_reorth         = fde_im_control%im_s_b_reorth         
          tmp%im_gn          = fde_im_control%im_gn           
-         tmp%im_gn_b        = fde_im_control%im_gn_b         
-         tmp%im_gs_b        = fde_im_control%im_gs_b         
+         tmp%im_gn_b_direct        = fde_im_control%im_gn_b_direct         
+         tmp%im_gn_b_reorth        = fde_im_control%im_gn_b_reorth         
+         tmp%im_gs_b_direct        = fde_im_control%im_gs_b_direct         
+         tmp%im_gs_b_reorth        = fde_im_control%im_gs_b_reorth         
          tmp%im_coulomb     = fde_im_control%im_coulomb     
          tmp%im_vemb        = fde_im_control%im_vemb        
          tmp%im_frozen      = fde_im_control%im_frozen      

@@ -276,30 +276,30 @@ module fde_export_data
             call fde_quit('potential not available in fde export')
 
 !        lao contribs
-         if (fde_rsp_mag_lao_export) then
-            if (.not.associated(gf%n_b)) then
-               call fde_quit('n_b not available in fde export')
-            else
-               nr_variables = nr_variables + 3
-            end if
-            if (.not.associated(gf%gn_b)) then
-               call fde_quit('gn_b not available in fde export')
-            else
-               nr_variables = nr_variables + 9
-            end if
-            if (.not. fde_cfg_no_sdft) then
-               if (.not.associated(gf%s_b)) then
-                  call fde_quit('s_b not available in fde export')
-               else
-                  nr_variables = nr_variables + 9
-               end if
-               if (.not.associated(gf%gs_b)) then
-                  call fde_quit('gs_b not available in fde export')
-               else
-                  nr_variables = nr_variables + 27
-               end if
-            end if
-         end if
+         !if (fde_rsp_mag_lao_export) then
+         !   if (.not.associated(gf%n_b)) then
+         !      call fde_quit('n_b not available in fde export')
+         !   else
+         !      nr_variables = nr_variables + 3
+         !   end if
+         !   if (.not.associated(gf%gn_b)) then
+         !      call fde_quit('gn_b not available in fde export')
+         !   else
+         !      nr_variables = nr_variables + 9
+         !   end if
+         !   if (.not. fde_cfg_no_sdft) then
+         !      if (.not.associated(gf%s_b)) then
+         !         call fde_quit('s_b not available in fde export')
+         !      else
+         !         nr_variables = nr_variables + 9
+         !      end if
+         !      if (.not.associated(gf%gs_b)) then
+         !         call fde_quit('gs_b not available in fde export')
+         !      else
+         !         nr_variables = nr_variables + 27
+         !      end if
+         !   end if
+         !end if
          
          call fde_get_files_info(ftmp)
          call fde_get_export_info(etmp)
@@ -318,39 +318,34 @@ module fde_export_data
          write (export_unit,'(2I8)') grid%npoints, nr_variables
 
          do i = 1, grid%npoints
-               !write (export_unit,'(58ES30.20E3)') (grid%r(j,i), j = 1,3), &   
-               !                                (gf%n_b(j,i), j = 1,3)
-               !                                !((gf%s_b(j,k,i), j = 1,3), k=1,3)
-               !                                !(((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3)
-
-             if (fde_rsp_mag_lao_export.and..not.fde_cfg_no_sdft) then                   ! order of columns:
-               write (export_unit,'(58ES30.20E3)') (grid%r(j,i), j = 1,3), &                 !1-3,   x-y-z
-                                               grid%w(i),             &                      !4
-                                               gf%elpot(i),          &                       !5
-                                               v_pc_array,            &                      !6
-                                               gf%n(i),               &                      !7
-                                               (gf%gn(j,i), j = 1,3), &                      !8-10,  gx-gy-gz
-                                               (gf%n_b(j,i), j = 1,3),             &         !11-13, bx-by-bz
-                                               ((gf%gn_b(j,k,i), j = 1,3), k=1,3), &         !14-22, gxbx-gybx-gzbx - gxby-gyby-gzby - gzbx-gzby-gzbz
-                                               ((gf%s_b(j,k,i), j = 1,3), k=1,3),  &         !23-31, sxbx-sybx-szbx - sxby-syby-szby - szbx-szby-szbz
-                                               (((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3) !32-58, gxsxbx-gysxbx-gzsxbx - gxsybx-gysybx-gzsybx - etc.
-             else if (fde_rsp_mag_lao_export.and.fde_cfg_no_sdft) then
-               write (export_unit,'(22ES30.20E3)') (grid%r(j,i), j = 1,3), &
-                                               grid%w(i),             &
-                                               gf%elpot(i),          &
-                                               v_pc_array,            &
-                                               gf%n(i),               &
-                                               (gf%gn(j,i), j = 1,3), &
-                                               (gf%n_b(j,i), j = 1,3), &
-                                               ((gf%gn_b(j,k,i), j = 1,3), k=1,3)
-             else
+!             if (fde_rsp_mag_lao_export.and..not.fde_cfg_no_sdft) then                   ! order of columns:
+!               write (export_unit,'(58ES30.20E3)') (grid%r(j,i), j = 1,3), &                 !1-3,   x-y-z
+!                                               grid%w(i),             &                      !4
+!                                               gf%elpot(i),          &                       !5
+!                                               v_pc_array,            &                      !6
+!                                               gf%n(i),               &                      !7
+!                                               (gf%gn(j,i), j = 1,3), &                      !8-10,  gx-gy-gz
+!                                               (gf%n_b(j,i), j = 1,3),             &         !11-13, bx-by-bz
+!                                               ((gf%gn_b(j,k,i), j = 1,3), k=1,3), &         !14-22, gxbx-gybx-gzbx - gxby-gyby-gzby - gzbx-gzby-gzbz
+!                                               ((gf%s_b(j,k,i), j = 1,3), k=1,3),  &         !23-31, sxbx-sybx-szbx - sxby-syby-szby - szbx-szby-szbz
+!                                               (((gf%gs_b(j,k,l,i), j = 1,3), k=1,3), l=1,3) !32-58, gxsxbx-gysxbx-gzsxbx - gxsybx-gysybx-gzsybx - etc.
+!             else if (fde_rsp_mag_lao_export.and.fde_cfg_no_sdft) then
+!               write (export_unit,'(22ES30.20E3)') (grid%r(j,i), j = 1,3), &
+!                                               grid%w(i),             &
+!                                               gf%elpot(i),          &
+!                                               v_pc_array,            &
+!                                               gf%n(i),               &
+!                                               (gf%gn(j,i), j = 1,3), &
+!                                               (gf%n_b(j,i), j = 1,3), &
+!                                               ((gf%gn_b(j,k,i), j = 1,3), k=1,3)
+!             else
                write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
                                                grid%w(i),             &
                                                gf%elpot(i),          &
                                                v_pc_array,            &
                                                gf%n(i),               &
                                                (gf%gn(j,i), j = 1,3)
-             end if
+!             end if
 
          end do
 

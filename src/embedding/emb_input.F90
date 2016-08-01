@@ -93,15 +93,15 @@ module fde_input
          itmp%im_coulomb  = .true.
       end if
       if (itmp%im_frozen_pert_direct .and. .not. fde_cfg_no_sdft) then
-         itmp%im_s_b      = .true.
-         itmp%im_gs_b     = .true.
+         itmp%im_s_b_direct      = .true.
+         itmp%im_gs_b_direct     = .true.
       endif
       if (itmp%im_frozen_pert_reorth) then
-         itmp%im_n_b      = .true.
-         itmp%im_gn_b     = .true.
+         itmp%im_n_b_reorth      = .true.
+         itmp%im_gn_b_reorth     = .true.
          if (.not. fde_cfg_no_sdft) then
-            itmp%im_s_b      = .true.
-            itmp%im_gs_b     = .true.
+            itmp%im_s_b_reorth      = .true.
+            itmp%im_gs_b_reorth     = .true.
          end if
       endif
 !g      write(*, *) 'test1 itmp%im_n_b =', itmp%im_n_b 
@@ -113,14 +113,14 @@ module fde_input
          etmp%ex_coulomb  = .true.
          etmp%ex_gn       = .true.
 !gosia: not tested:
-         if (fde_rsp_mag_lao_export) then
-            etmp%ex_n_b      = .true.
-            etmp%ex_gn_b     = .true.
-            if (.not. fde_cfg_no_sdft) then
-               etmp%ex_s_b      = .true.
-               etmp%ex_gs_b     = .true.
-            end if
-         end if
+!         if (fde_rsp_mag_lao_export) then
+!            etmp%ex_n_b      = .true.
+!            etmp%ex_gn_b     = .true.
+!            if (.not. fde_cfg_no_sdft) then
+!               etmp%ex_s_b      = .true.
+!               etmp%ex_gs_b     = .true.
+!            end if
+!         end if
       endif
 
       call fde_initialize_nadd_functionals         
