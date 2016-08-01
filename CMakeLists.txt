@@ -2,7 +2,7 @@
 # Copyright (c) 2015-2016 by Radovan Bast, Jonas Juselius, and contributors.
 
 # set minimum cmake version
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.10 FATAL_ERROR)
 
 # project name
 project(DIRAC)
@@ -43,7 +43,7 @@ include(autocmake_definitions)
 include(builtin_math)
 include(autocmake_python_interpreter)
 include(autocmake_math_libs)
-include(CheckFortranSourceCompiles)
+include(CheckFortranSourceCompiles1)
 include(autocmake_CMakeDependentOption)
 include(autocmake_mpi)
 include(autocmake_code_coverage)
@@ -51,6 +51,7 @@ include(static_linking)
 include(profiling)
 include(runtimecheck)
 include(autocmake_int64)
+include(mathlibs-integer-compatibility)
 include(autocmake_safeguards)
 include(autocmake_git_info)
 include(autocmake_version)

@@ -122,6 +122,7 @@ endif()
 
 add_library(
     abacus
+    OBJECT
     ${FIXED_ABACUS_FORTRAN_SOURCES}
     ${FREE_ABACUS_FORTRAN_SOURCES}
 )

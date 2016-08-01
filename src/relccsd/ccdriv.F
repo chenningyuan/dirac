@@ -472,12 +472,15 @@ C     This assumes that PRTRA is called as well !
 C
       USEOE   = relcc_use_orbital_energies
       NORECMP = relcc_no_recompute
-      ADD_FINITE_FIELD = .FALSE.
-      NFFOPER=0
+      ADD_FINITE_FIELD = relcc_ADD_FINITE_FIELD
+      NFFOPER = relcc_NFFOPER
       DO IOPER = 1, MAXOP
-         FF_PROP_NAMES(IOPER) = '        '
-         FF_PROP_STRENGTHS(1,IOPER) = 0.D0
-         FF_PROP_STRENGTHS(2,IOPER) = 0.D0
+         !FF_PROP_NAMES(IOPER) = '        '
+         FF_PROP_NAMES(IOPER) = relcc_FF_PROP_NAMES(IOPER)
+         !FF_PROP_STRENGTHS(1,IOPER) = 0.D0
+         FF_PROP_STRENGTHS(1,IOPER) = relcc_FF_PROP_STRENGTHS(1,IOPER)
+         !FF_PROP_STRENGTHS(2,IOPER) = 0.D0
+         FF_PROP_STRENGTHS(2,IOPER) = relcc_FF_PROP_STRENGTHS(2,IOPER)
       ENDDO
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
@@ -2705,10 +2708,7 @@ C
       endif
 
       if (domp2g) then
-
          WRITE (IW,*) 'calculate MP2 gradient'
-         domp2g = .true.
-
       endif
 C
 C     here we allocate the variables common to both schemes

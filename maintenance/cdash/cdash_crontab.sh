@@ -48,9 +48,9 @@ export DIRAC_TMPDIR=$CTEST_TEMP_DIR/run
 ssh-agent bash -c "ssh-add ${DEPLOY_KEY}; git clone --recursive -b $BRANCH git@gitlab.com:dirac/dirac.git $CTEST_TEMP_DIR/compile"
 
 cd $CTEST_TEMP_DIR/compile
-
 if [ $MAKE_RELEASE -eq 1 ]; then
     mkdir -p build
+    ./pamadm --release
     cd build
     cmake ..
     make release
@@ -69,10 +69,6 @@ fi
 if [ $INT64 -eq 1 ]; then
     SETUP_FLAGS="$SETUP_FLAGS --int64"
 fi
-
-if [ "$BRANCH" == 'release-15' ]; then
-   ./pamadm --release
-fi    
 
 ./setup $SETUP_FLAGS --cmake-options="-DBUILDNAME=$BUILDNAME"
 

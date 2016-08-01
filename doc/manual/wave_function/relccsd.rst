@@ -40,9 +40,9 @@ to the FS calculation.
 
 keyword(GRADIENT)
 
-Calculate the effective 1-particle density matrix (currently only for a
-closed shell MP2 wave function). This option can be used to calculate
-molecular properties. See :cite:`vanStralen2005`.
+Calculate the effective 1-particle density matrix. This option can be used to calculate
+molecular properties. For closed-shell MP2 see :cite:`vanStralen2005`. For closed-shell CC 
+see :cite:`Shee_CCgrad2016`.
 
 *Default:*
 
@@ -60,7 +60,7 @@ electrons rather than the total number. This number may therefore change if you 
 
 For OPEN SHELL systems it is usually better to employ the multireference Fock space approach, except for simple cases such as 
 a high-spin open shell state. In this case the single reference CCSD(T) ansatz works rater well. For such cases it is easier to use 
-the :ref:`NELEC_OPEN` keyword that allows to just specify the distribution of open shell electrons over the irreps, but for backwards
+the :ref:`RELCC_.NELEC_OPEN` keyword that allows to just specify the distribution of open shell electrons over the irreps, but for backwards
 compatibility we retain the older NELEC option as well.
 
 *Arguments:*
@@ -178,16 +178,28 @@ Deactivate contribution from doubles; corresponds to a CCS calculation.
 
 star(CCFOPR)
 
-Calculate first-order properties (expectation values) for the MP2 wave
+Calculate first-order properties (expectation values) for the MP2 and CCSD wave
 function.
+
+keyword(MP2G)
+Use MP2 wave function. 
+
+keyword(CCSDG)
+Use CCSD wave function.
 
 keyword(NATORB)
 
 Calculate natural orbitals (currently only for MP2 density matrix)
 
-keyword(UNRELAXED)
+keyword(RELAXED)
 
-Use unrelaxed density matrix (computationally cheaper but less accurate)
+Use orbital-relaxed density matrix (currently only for MP2).
+The current default for MP2 and CC wave functions is to use the unrelaxed 
+density matrix. This is computationally less expensive, but also less accurate.
+
+
+
+
 
 star(CCFSPC)
 
