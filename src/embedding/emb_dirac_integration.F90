@@ -3367,10 +3367,10 @@ contains
          gn_b_lao(3,3) = frozen_gzn_bz(ipoint)
       end if
       
-      write(*, *) 'test in coupling propgrad n, reorth, direct ', &
-                   do_london_rhs_reorth_coupling, do_london_rhs_direct_coupling, &
-                   rx, ry, rz, &
-                   n_b_lao(1), n_b_lao(2), n_b_lao(3)
+!      write(*, *) 'test in coupling propgrad n, reorth, direct ', &
+!                   do_london_rhs_reorth_coupling, do_london_rhs_direct_coupling, &
+!                   rx, ry, rz, &
+!                   n_b_lao(1), n_b_lao(2), n_b_lao(3)
 
       do a = 1, 3     !B_{x,y,z}
          u%n_b_lao(a) = u%n_b_lao(a) + derv_total(1, d2000000)*n_b_lao(a)
@@ -3432,10 +3432,10 @@ contains
           gs_b_lao(3,3,3) = frozen_gzsz_bz(ipoint)
        end if
 
-       write(*, *) 'test in coupling propgrad s, reorth, direct ', &
-                    do_london_rhs_reorth_coupling, do_london_rhs_direct_coupling, &
-                    rx, ry, rz, &
-                    s_b_lao(1,1), s_b_lao(1,2), s_b_lao(1,3)
+!       write(*, *) 'test in coupling propgrad s, reorth, direct ', &
+!                    do_london_rhs_reorth_coupling, do_london_rhs_direct_coupling, &
+!                    rx, ry, rz, &
+!                    s_b_lao(1,1), s_b_lao(1,2), s_b_lao(1,3)
 
        do a = 1, 3     !B_{x,y,z}
           do k = k_start, 3  !Sigma_{x,y,z}
