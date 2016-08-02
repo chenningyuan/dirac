@@ -2671,7 +2671,6 @@ C
 C
       if (doccsdg) then
          WRITE (IW,*) 'Calculate CCSD gradient'
-         doccsdg = .true.
       endif
 
       if (domp2g) then
@@ -3100,7 +3099,11 @@ C
 !!         CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C        Write density matrix to file for later processing
 C
-         CALL STORE_CC_DENSITY ('CCSD', a_DMO )
+         if (myproc==0) then 
+
+           CALL STORE_CC_DENSITY ('CCSD', a_DMO )
+
+         endif
 
 C        Release the slaves (in case of parallel runs)
 C

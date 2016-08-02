@@ -835,7 +835,7 @@
 
       if (kw_matches(word, '.GRADIE')) then
          relcc_do_gradient = .true.
-         relcc_do_mp2gradient = .true.
+!         relcc_do_mp2gradient = .true.
       end if
 
       if (kw_matches(word, '.HESSIA')) then
