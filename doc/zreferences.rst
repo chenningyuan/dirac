@@ -16,12 +16,13 @@ after the year.
 Please always provide each citation entry with its permanent URL-link.
 The best web-link is the DOI web identity, used almost for all peer-reviewed papers.
 For books we recommend to resort to semi-permanent links, like the publisher's web-site,
-or popular Google-Books web-space.
+or the popular Google-Books web-space.
 
 
 References availability
 -----------------------
 All references are also available for :download:`download <references.bib>` as one (big) file in the popular BibTex format.
+Please keep them in the alphabetical order as described above.
 
 .. bibliography:: references.bib
   :enumtype: upperroman

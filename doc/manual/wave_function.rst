@@ -36,6 +36,10 @@ individual energies of the states present in an
 average-of-configurations open-shell Hartree-Fock calculation (see
 :ref:`*RESOLVE`).
 
+keyword(COSCI)
+
+Activates advanced COSCI method, see :ref:`*COSCI`.
+
 
 keyword(MP2)
 

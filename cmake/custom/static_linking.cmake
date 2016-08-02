@@ -8,10 +8,10 @@
 #   CMAKE_C_FLAGS
 #   CMAKE_CXX_FLAGS
 #
-# autocmake.cfg configuration::
+# autocmake.yml configuration::
 #
-#   docopt: --static Enable static linking [default: False].
-#   define: '-DENABLE_STATIC_LINKING=%s' % arguments['--static']
+#   docopt: "--static Enable static linking [default: False]."
+#   define: "'-DENABLE_STATIC_LINKING={0}'.format(arguments['--static'])"
 
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
 

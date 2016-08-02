@@ -31,8 +31,8 @@ fetch the DIRAC code from his private github and bitbucket repositories.
 
 * shippable
 
-.. image:: https://api.shippable.com/projects/54b3c4df1cda23c2985c9baf/badge?branchName=master
-       :target: https://app.shippable.com/projects/54b3c4df1cda23c2985c9baf/builds/latest
+.. image:: https://api.shippable.com/projects/5676d56d1895ca447466ad11/badge?branch=master
+       :target: https://app.shippable.com/projects/5676d56d1895ca447466ad11
 
 * semaphoreci
 

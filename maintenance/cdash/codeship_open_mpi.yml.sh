@@ -44,6 +44,12 @@ pip install sphinxcontrib-bibtex
 pip install sphinx_rtd_theme
 pip install hieroglyph
 
+# install most recent CMake
+wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
+export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
+cmake --version
+
 # git whereabouts
 which git
 whereis git
@@ -68,6 +74,8 @@ ldd dirac.x
 (ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 4) -D ExperimentalTest) || echo "CTest end."
 # submit to CDash board
 ctest -D ExperimentalSubmit
+
+cd ..
 
 # finally build the documentation
 #make html

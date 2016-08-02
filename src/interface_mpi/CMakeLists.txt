@@ -24,6 +24,7 @@ endif()
 
 add_library(
     interface_mpi
+    OBJECT
     ${FIXED_INTERFACE_MPI_FORTRAN_SOURCES}
     ${FREE_INTERFACE_MPI_FORTRAN_SOURCES}
 )

@@ -49,6 +49,7 @@ endif()
 
 add_library(
     eri
+    OBJECT
     ${FIXED_ERI_FORTRAN_SOURCES}
     ${FREE_ERI_FORTRAN_SOURCES}
 )

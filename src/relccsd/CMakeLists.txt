@@ -30,12 +30,7 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
    ccrpa.F
    ccsort.F
    ccxblas.F
-   contraction.F90
-   intermediates.F90
-   lambda_equation.F90
-   relcc_cfg.F90
    waio.F
-   wrapper_sorting.F90 
    ${PROJECT_SOURCE_DIR}/src/prp/mp2lag.F
    ${PROJECT_SOURCE_DIR}/src/main/dirac.F
 # needs fix missing object pamgeo
@@ -43,9 +38,14 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
-    relcc_cfg.F90
-    # needs dependency
-    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
+   relcc_cfg.F90
+   contraction.F90
+   intermediates.F90
+   lambda_equation.F90
+   relcc_cfg.F90
+   wrapper_sorting.F90 
+   # needs dependency
+   ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -58,6 +58,7 @@ endif()
 # - the ccunix.c is not included
 add_library(
     relccsd
+    OBJECT
     ${FIXED_RELCCSD_FORTRAN_SOURCES}
     ${FREE_RELCCSD_FORTRAN_SOURCES}
 )

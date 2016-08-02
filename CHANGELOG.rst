@@ -1,9 +1,11 @@
 :orphan:
 
-16.0 (scheduled for 016-12-12 ?)
+16.0 (scheduled for 2016-11-15 ?)
 ---------------------------------
 
-- calculation of dipole intensities together with the excitation energies in Fock space CC.
+- Calculation of dipole intensities together with the excitation energies in Fock space CC.
+- Faster Dirac compilation due to implemented OBJECT libraries (requires CMake of version at least 2.8.10)
+- Run benchmark tests and only benchmark tests with "ctest -C benchmarks -L benchmark"
 
 (Do not change anything below this text on the master branch,
 the lines below should only be changed on the release branch.)
@@ -11,12 +13,19 @@ the lines below should only be changed on the release branch.)
 -------------------------------------------------------------------------------------------------------
 
 
-15.1 (2016-xx-xx)
+15.1 (2016-??-??)
 -----------------
 
+- Change any tab character in coordinate specifications in .mol file to a blank
+  (tab characters have been reported to cause errors in reading coordinates).
+- Bugfix: KRMSCF was not converging is some cases (problem reported by Miro Ilias for Os atom).
+- Bugfix: "all" keyword for ".GAS SHELLS" was not recognized (problem reported by Miro Ilias).
+- Bugfix for numerical gradient when automatic symmetry detection: do no move or rotate molecule
+  for finding highest possible symmetry because then the numerical gradient will not be correct
+  (problem reported by Miro Ilias).
 - Added OPENBLAS in search list for blas and lapack libraries.
 - Made keyword .X2Cmmf case insensitive.
-- BUGfix for spinfree X2Cmmf and linear symmetry.
+- Bugfix for spinfree X2Cmmf and linear symmetry.
 - Error corrections and updates in isotope properties for the following atoms:
       Br isotope 2: quadrupole moment  .2620 ->  .2615
       Ag isotope 2: magnetic moment    .130563 -> -.130691 (note sign change)
@@ -31,6 +40,9 @@ the lines below should only be changed on the release branch.)
       Pb isotope 3: nuclear moment 0.582583D0 -> 0.592583D0 (typo, error 1.d-2)
       Po isotope 1: nuclear moment added: 0.000 -> 0.688
 - Restored "make install" target.
+- Cache compiler flags.
+- Test reladc_fano does not report failure if Stieltjes is deactivated.
+- .AOFOCK documented. AOFOCK is now default if at least 25 MPI nodes (parallelizes better than SOFOCK)
 
 
 15.0 (2015-12-16)

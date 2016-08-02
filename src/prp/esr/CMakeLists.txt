@@ -22,6 +22,7 @@ endif()
 
 add_library(
     esr
+    OBJECT
     ${FIXED_ESR_FORTRAN_SOURCES}
     ${FREE_ESR_FORTRAN_SOURCES}
 )

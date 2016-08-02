@@ -1004,6 +1004,7 @@ C     initial molecular orbitals:
       BARNUC    = .TRUE.
       BNCRON    = .TRUE.
       force_bnc = .false.
+      BNSPON    = .FALSE. ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
       EWMO      = .FALSE. ! in huckel.h
@@ -1330,6 +1331,11 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
                ELSE IF (INDEX(LINE,'BNCORR').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .TRUE.
+                  BNSPON = .FALSE.
+               ELSE IF (INDEX(LINE,'SCRPOT').ne.0) THEN
+                  BARNUC = .TRUE.
+                  BNCRON = .FALSE.
+                  BNSPON = .TRUE.
                ELSE IF (INDEX(LINE,'TRIFCK').ne.0) THEN
 C              TRIFCK: Start on two-electron Fock matrix read from file
                   TRIFCK = .TRUE.
@@ -1499,6 +1505,7 @@ C&&&& OWNBASis: Use local basis for projection
    23          CONTINUE
 C&&&& NOBNCR : Deactivate screening for use with bare nucleus start guess
                   BNCRON = .FALSE.
+                  BNSPON = .FALSE.
                GO TO 100
    24          CONTINUE
 C&&& DIISTH: Change default threshold for DIIS
@@ -2039,7 +2046,11 @@ C     a U(+90) calculation.
      &      ' abs(molecular charge) .gt. 10'
          END IF
       END IF
-      IF(BNCRON) THEN
+      IF (BNSPON) THEN
+         WRITE (LUPRI,'(A)')
+     &      ' * Sum of atomic potentials used for start guess'
+      END IF
+      IF(BNCRON.OR.BNSPON) THEN
         DHF_INTTYP= 'Scr. nuclei '
       ENDIF
 C
@@ -8381,7 +8392,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER (NTABLE = 31)
+      PARAMETER (NTABLE = 10)
 !     PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 !
       LOGICAL SET, NEWDEF, LBIT, RESET
@@ -8401,12 +8412,7 @@ C
 !     ...The variable "SET" must have save attribute.
       SAVE SET
       DATA TABLE /'.PRINT ','.INACT ','.ACTIVE','.NREP  ','.NOPEN ',
-     &            '.GASO  ','.IELC  ','.MINMAX','.TRDM  ','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
-     &            '.XXXXXX'/
+     &            '.GASO  ','.IELC  ','.MINMAX','.TRDM  ','.XXXXXX'/
       DATA SET/.FALSE./
 !
       DATA MAXACT/31/
@@ -8461,10 +8467,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                     11,12,13,14,15,16,17,18,19,20,
-     &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31), I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -8573,27 +8576,6 @@ C
                GO TO 100
 !
    10          CONTINUE
-   11          CONTINUE
-   12          CONTINUE
-   13          CONTINUE
-   14          CONTINUE
-   15          CONTINUE
-   16          CONTINUE
-   17          CONTINUE
-   18          CONTINUE
-   19          CONTINUE
-   20          CONTINUE
-   21          CONTINUE
-   22          CONTINUE
-   23          CONTINUE
-   24          CONTINUE
-   25          CONTINUE
-   26          CONTINUE
-   27          CONTINUE
-   28          CONTINUE
-   29          CONTINUE
-   30          CONTINUE
-   31          CONTINUE
 !&&&  XXXXXX: invalid data
                   CALL QUIT('*** ERROR in COSCI_INP *** ' //
      &                      'invalid data XXXXXX')
