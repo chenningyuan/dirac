@@ -153,18 +153,27 @@
       ENDDO
 !aspg+as
 
-    allocate(diag_H(ndimt1))
-    diag_H = H_II(1:ndimt1)
+    if (nroot.eq.(ndimt1+ndimt2)) then
+     do iroot = 1, ndimt1
+         R1(iroot,iroot) = 1.0d0
+     end do
+     do iroot = 1, ndimt2
+         R2(iroot,ndimt1+iroot) = 1.0d0
+     end do
+    else
+     allocate(diag_H(ndimt1))
+     diag_H = H_II(1:ndimt1)
 
-    do iroot = 1, nroot
-     k = minloc(diag_H) 
-     write(*,*)'roots',iroot,H_II(k(1)),k(1) 
-     i = k(1)
-     diag_H(i) = 8000.0d0
-     R1(i,iroot) = 1.0d0
-    enddo
+     do iroot = 1, nroot
+      k = minloc(diag_H) 
+      write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+      i = k(1)
+      diag_H(i) = 8000.0d0
+      R1(i,iroot) = 1.0d0
+     enddo
+     deallocate(diag_H)
+    end if
 
-    deallocate(diag_H)
 
    case ('IP')
 
@@ -212,11 +221,13 @@
 !--------------------------------------------------
 
    type(intermediates) :: B
-   real*8, allocatable :: sigma1(:,:),sigma2(:,:) 
-   real*8, allocatable :: R1(:,:),R2(:,:) 
+   real*8, allocatable :: sigma1(:,:),sigma2(:,:),sigma(:,:) 
+   real*8, allocatable :: R1(:,:),R2(:,:)
+   real*8, pointer :: r(:,:) 
    real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
+   real*8, pointer :: sub_Hp(:,:) ! sub_H(nroot,nroot)
    integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep)
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
@@ -225,7 +236,7 @@
    logical :: left_vectors, right_vectors
    logical :: symmetric = .false.
    logical :: verbose = .false.
-   integer :: N ! size of determinantal space 
+   integer :: N, N1, N2 ! size of determinantal space 
    real(kind=8), pointer :: b_guess(:,:)
 
 !memory allocation
@@ -316,57 +327,33 @@
 
     case ('EE')
 
+      N1 = ndimt1*rcw
+      N2 = ndimt2*rcw
       N = ndimt1 + ndimt2
-      nroot = 8
+!     nroot = N
 
-      allocate (r1(ndimt1*rcw,nroot))
-      allocate (r2(ndimt2*rcw,nroot))
-      allocate (B%H_II(N*rcw))
-
-      allocate (sigma1(ndimt1*rcw,nroot),stat=AllocateStatus)
-
+      allocate (r (N*rcw,nroot), stat = AllocateStatus)
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      allocate (sigma2(ndimt2*rcw,nroot),stat = AllocateStatus)
-
+      allocate (B%H_II(N*rcw),  stat = AllocateStatus)
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+      allocate (sigma(N*rcw,nroot),stat = AllocateStatus)
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
       call input_processor(B%Fbar_mi, &
       &                    B%Fbar_ae, &
       &                    B%W_mbej,  &
-      &                    R1,        &
-      &                    R2,        &
+      &                    r(1:ndimt1*rcw,:), &
+      &                    r((ndimt1*rcw)+1:N*rcw,:),  &
       &                    B%H_II)
-
-!       b_guess => merge_arrays(1, r1, r2)
-!       print *, "debug, r ", size(b_guess,1), size(b_guess,2)
-!       do i = 1, size(b_guess,1)
-!           do j = 1, size(b_guess,2)
-!               print "(4x,1f4.1$)", b_guess(i,j)
-!           end do
-!           print "(4x,a)", ""
-!       end do
-!       print *, "resetting r"
-!       b_guess = 0.0d0
-!       do i = 1, size(b_guess,1)
-!           do j = 1, size(b_guess,2)
-!               if (i .eq. j ) b_guess(i,j) = 1.0d0
-!               print "(4x,1f4.1$)", b_guess(i,j)
-!           end do
-!           print "(4x,a)", ""
-!       end do
-
 
       do iroot = 1, nroot
           print *, "debug, constructing sigma vector ",iroot
-          sigma1(:,iroot:iroot) = 0.0d0
-          sigma2(:,iroot:iroot) = 0.0d0
-          call sigma_ee_1h1p(r1(1:ndimt1*rcw,iroot:iroot), &
-          &                  r2(1:ndimt2*rcw,iroot:iroot), &
-!         call sigma_ee_1h1p(b_guess(1:ndimt1*rcw,iroot:iroot), &
-!         &                  b_guess(ndimt1+1:N*rcw,iroot:iroot), &
+          sigma(:,iroot:iroot) = 0.0d0
+          call sigma_ee_1h1p(r(1:ndimt1*rcw,iroot:iroot), &
+          &                  r((ndimt1*rcw)+1:N*rcw,iroot:iroot), &
           &                  B,                            &
-          &                  sigma1(1:ndimt1*rcw,iroot:iroot), &
-          &                  sigma2(1:ndimt2*rcw,iroot:iroot), &
+          &                  sigma(1:ndimt1*rcw,iroot:iroot), &
+          &                  sigma((ndimt1*rcw)+1:N*rcw,iroot:iroot), &
           &                  buf2, &
           &                  buf3, &
           &                  int(nbuf3,4))
@@ -427,31 +414,34 @@
 
    end select 
 
-   if (.true.) then
-    allocate (sub_H(nroot,nroot))
-    sub_H = 0.0d0
+   if (.false.) then
+      allocate (sub_H(nroot,nroot))
+      sub_H = 0.0d0
 
-    do jroot = 1, nroot
-     do iroot = 1, nroot
-      sub_H(iroot,jroot) = dot_product(r1(:,iroot),sigma1(:,jroot)) + &
-     &             dot_product(r2(:,iroot),sigma2(:,jroot)) 
+      do jroot = 1, nroot
+         do iroot = 1, nroot
+            sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot))
+         enddo
+      enddo
+      write(*,*)'matrix to diagonalize', sub_H
+      call dump_to_file(42,"CCjacobianH.bin",sub_H)
 
-     enddo
-    enddo
+      write(*,*)'matrix to diagonalize', sigma 
+      call dump_to_file(42,"CCjacobianHp.bin", sigma)
 
-     write(*,*)'matrix to diagonalize', sub_H
-     call dump_to_file(42,sub_H)
+       allocate (ev(nroot))
+       allocate (evec(nroot,nroot))
 
-     allocate (ev(nroot))
-     allocate (evec(nroot,nroot))
+       call solve_cg(nroot,sigma,evec,ev)
+       write(*,*)'Hp eigenvalues', (ev(i),i=1,min(10,nroot))
 
-    call solve_cg(nroot,sub_H,evec,ev)
+       evec = 0.0d0
+       ev = 0.0d0
+       call solve_cg(nroot,sub_H,evec,ev)
+       write(*,*)'H eigenvalues', (ev(i),i=1,min(10,nroot))
 
-     write(*,*)'eigenvalues', (ev(i),i=1,nroot)
-!!   write(*,*)'eigenvectors', ((evec(i,j),i=1,nroot),j=1,nroot)
-
-     deallocate(ev)
-     deallocate(evec)
+       deallocate(ev)
+       deallocate(evec)
 
     end if
 
@@ -463,26 +453,21 @@
         right_vectors = .true.
 
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-        if (.false.) then
-        b_guess = 0.0d0
-        do i = 1, size(b_guess,1)
-            do j = 1, size(b_guess,2)
-                if (i .eq. j ) b_guess(i,j) = 1.0d0
-                print "(4x,1f4.1$)", b_guess(i,j)
-            end do
-            print "(4x,a)", ""
-        end do
-        end if
-        call davidson_driver(nroot, B, symmetric, davResults, verbose, b_guess = b_guess)
+        call davidson_driver(nroot, B, symmetric, davResults, verbose, r)
         call free_davidson_results(davResults)
     end if
+    if (allocated(sigma)) deallocate (sigma)
+    if (associated(r)) then
+        deallocate (r)
+        r => NULL()
+    end if
 
-     if (allocated(sigma1)) deallocate (sigma1)
-     if (allocated(r1)) deallocate (r1)
-     if (allocated(sigma2)) deallocate (sigma2)
-     if (allocated(r2)) deallocate (r2)
-     call free_buffers()
- 451  continue
+    if (allocated(sigma1)) deallocate (sigma1)
+    if (allocated(r1)) deallocate (r1)
+    if (allocated(sigma2)) deallocate (sigma2)
+    if (allocated(r2)) deallocate (r2)
+    call free_buffers()
+ 451 continue
 ! todo:
 ! allocations/deallocations of intermediates would be more simply handled via
 !    call initialize_intermediates() 
@@ -523,13 +508,14 @@
 
    end function
 
-   subroutine dump_to_file(fileno, matrix)
+   subroutine dump_to_file(fileno, filename, matrix)
        integer, intent(in) :: fileno
+       character(len=14), intent(in) :: filename
        real(kind=8) :: matrix(:,:)
        integer :: irec
   
        inquire (iolength = irec) matrix
-       open (unit=fileno, file="CCjacobian.bin", form="unformatted", access="direct", recl=irec)
+       open (unit=fileno, file=filename, form="unformatted", access="direct", recl=irec)
        write(unit=fileno, rec=1) matrix
        close(unit=fileno)
    end subroutine
