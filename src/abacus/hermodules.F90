@@ -30,6 +30,7 @@
 
       MODULE READ_XYZFILE
         USE FILE
+        USE CODATA
         IMPLICIT NONE
 
         PRIVATE
@@ -84,6 +85,9 @@
         INTEGER :: NSYMOP=0
         CHARACTER(LEN=1) :: KASYM(3,3)=' '
         INTEGER :: natoms_given
+
+!     The unit conversion global variable is used when reading/writing xyz files
+       REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION = 1.D0 / XTANG
 
       CONTAINS
 
@@ -433,7 +437,7 @@
           INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
 
 !     FOR UNIT CONVERSION and explicitly defined charges and/or nuclear exponents
-          REAL(KIND=8)      :: UNIT_CONVERSION,ONE=1.0
+          REAL(KIND=8)      :: ONE=1.0
           CHARACTER(LEN=32) :: UNITNAME='Angstrom'
           TYPE(atom), POINTER                :: mol
 
@@ -457,9 +461,6 @@
           NSYMOP=0
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
-
-!     Standard for xyz is angstrom, initialize with the AU/ANG conversion factor
-          UNIT_CONVERSION = ONE / XTANG
 
           DO
             read(tmp_file,*,iostat=ios) str
@@ -653,12 +654,6 @@
                     call Quit ("error reading units in .UNITS")
                   end if
                 END SELECT
-                IF (.NOT.first_call) THEN
-!               In geometry optimizations this routine will be called multiple times,
-!               and since we will write new XYZ files in Angstroms we overrule the initial unit choice here
-                  UNIT_CONVERSION = ONE / XTANG
-                  unitname='angstrom'
-                END IF
 
 !             End of processing of the **MOLECULE BLOCK
               END IF

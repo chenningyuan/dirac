@@ -1,9 +1,11 @@
 :orphan:
 
-16.0 (scheduled for 016-12-12 ?)
+16.0 (scheduled for 2016-11-15 ?)
 ---------------------------------
 
-- calculation of dipole intensities together with the excitation energies in Fock space CC.
+- Calculation of dipole intensities together with the excitation energies in Fock space CC.
+- Faster Dirac compilation due to implemented OBJECT libraries (requires CMake of version at least 2.8.10)
+- Run benchmark tests and only benchmark tests with "ctest -C benchmarks -L benchmark"
 
 (Do not change anything below this text on the master branch,
 the lines below should only be changed on the release branch.)

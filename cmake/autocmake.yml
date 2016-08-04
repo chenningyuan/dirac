@@ -1,6 +1,6 @@
 name: DIRAC
 
-min_cmake_version: 2.8
+min_cmake_version: 2.8.10
 
 url_root: https://github.com/coderefinery/autocmake/raw/master/
 

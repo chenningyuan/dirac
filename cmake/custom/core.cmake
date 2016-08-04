@@ -8,7 +8,7 @@ include(autocmake_CMakeDependentOption)
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 
-            list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
+list(REMOVE_ITEM CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES  "pthread")
 
 # Ivan Hrasko's determination of compiler versions 
 include(FindCompilerVersion)
@@ -48,7 +48,8 @@ if(ENABLE_RELCCSD_STANDALONE)
         set_source_files_properties(src/relccsd/ccmain.F PROPERTIES COMPILE_FLAGS "-qfixed")
     endif()
     compile_standalone(relccsd.x                 src/relccsd/ccmain.F                "${_list_of_executables}")
-    target_link_libraries(relccsd.x relccsd)
+# miro: take care of object lib
+    target_link_libraries(relccsd.x objlib.relccsd.x)
 endif()
 
 option(ENABLE_HSCC "Enable compilation of the standalone hsmrcc.x" OFF)
@@ -72,10 +73,12 @@ foreach(
     if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
         SET_TARGET_PROPERTIES(${_executable} PROPERTIES LINK_FLAGS "-Wl,-E")
     endif()
-    target_link_libraries(
-        ${_executable}
-        ${EXTERNAL_LIBS}
-        )
+
+#miro: libraries are OBJECT type
+    add_library(objlib.${_executable} ${EXTERNAL_OBJECTS})
+    SET_TARGET_PROPERTIES(objlib.${_executable}  PROPERTIES LINKER_LANGUAGE Fortran)
+    target_link_libraries( ${_executable} objlib.${_executable} ${EXTERNAL_LIBS} )
+
     if(ENABLE_STATIC_LINKING)
         if(ENABLE_OLD_LINKER)
            set(_no_dyn_export "")
@@ -93,11 +96,11 @@ foreach(
             target_link_libraries(${_executable} -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
         endif()
         if ( CMAKE_Fortran_COMPILER_ID MATCHES GNU )
-            # miro: GNU+NoneLibs/MKL/OPENBLAS-static needs extra lib !
+            # miro: GNU+NoneLibs/MKL/OPENBLAS-static needs this extra lib !
             target_link_libraries(${_executable} -ldl)
         endif()
         if ( BLAS_TYPE MATCHES OPENBLAS )
-            # miro: OPENBLAS-static needs extra lib !
+            # miro: OPENBLAS-static needs this extra lib !
             target_link_libraries(${_executable} -lgfortran)
         endif()
         if ( BLAS_TYPE MATCHES OPENBLAS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel )

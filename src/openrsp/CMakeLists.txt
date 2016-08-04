@@ -33,6 +33,7 @@ endif()
 
 add_library(
     openrsp
+    OBJECT
     ${FIXED_OPENRSP_FORTRAN_SOURCES}
     ${FREE_OPENRSP_FORTRAN_SOURCES}
 )
