@@ -37,7 +37,7 @@ real(kind=8), parameter :: one_r8  = 1.0d0
 ! module variables
 
 real(kind=8), save :: safe_minimum = 1.0d-36
-real(kind=8), save :: convergence_threshold = 1.0d-2
+real(kind=8), save :: convergence_threshold = 1.0d-5
 integer, save      :: max_subspace_size = 2048
 integer, save      :: roots_per_symmetry(nr_max_irreps)
 integer, save      :: max_iterations = 100
@@ -326,6 +326,7 @@ contains
             print *, ""
         end if
         do i = 1, N
+            print "(2x,i6,$)", i
             do j = 1, L
                 print "(4x,1e14.6,$)", vectors(i,j)
             end do
@@ -353,17 +354,17 @@ contains
         label = "Eigenvalues"
         do i = 1, nroots_local 
             if (eValuesIm(i) .eq. zero_r8) then
-                print *, "Eigenvalue ",i," : ",eValuesRe(i)
+                print "(4x,a,i6,a,1e14.6)", "Eigenvalue ",i," : ",eValuesRe(i)
             else
-                print *, "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
+                print "(4x,a,i6,a,1e14.6,a,1e14.6,a)", "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
             end if
         end do
         if (left) then
-            label = "Left Eigenvalues            "
+            label = "Left Eigenvectors            "
             call print_vectors_R(eVectorsL, label=label) 
         end if
         if (right) then
-            label = "Right Eigenvalues            "
+            label = "Right Eigenvectors           "
             call print_vectors_R(eVectorsR, label=label) 
         end if
 
@@ -629,7 +630,8 @@ contains
         type(intermediates), intent(in) :: A
 ! back to general stuff
         type(davidson_results), intent(inout) :: results
-        real(kind=8), optional, pointer :: b_guess(:,:)
+!       real(kind=8), optional, pointer :: b_guess(:,:)
+        real(kind=8), intent(in), pointer :: b_guess(:,:)
         logical, intent(in), optional :: verbose, symmetric
         integer, intent(in) :: nroots
 !
@@ -688,11 +690,11 @@ contains
            return 
         endif
 
-        if (present(b_guess)) then
+!       if (present(b_guess)) then
             b => b_guess
-        else
-            b => new_subspace_vectors_R(min_subspace_size,vectors_N)
-        end if
+!       else
+!           b => new_subspace_vectors_R(min_subspace_size,vectors_N)
+!       end if
 
         if (verbose) then
             print "(4x,a,i4,a,i8)", "Start by mapping M onto a subspace of size ",min_subspace_size, &
@@ -708,6 +710,9 @@ contains
             if (associated(sigma_vector)) deallocate(sigma_vector)
             if (associated(M_small)) deallocate(M_small)
 
+! here, instead of create_sigma_vector, have update_sigma_vector, which will
+! keep the prior sigma vectors and just construct the nroot new ones, or create
+! a new one at first iteration
             sigma_vector => create_sigma_vector(A, b)
             M_small => create_reduced_problem(b, sigma_vector)
 
@@ -805,7 +810,8 @@ contains
         call solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
         call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, right_local, left_local)
 !       if (verbose_local) &
-        call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local, right_local, nroots=nroots_local)
+!       call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local, right_local, nroots=nroots_local)
+        call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, .false., .false., nroots=nroots_local)
 
     end subroutine
 
@@ -841,10 +847,10 @@ contains
         if (left_vector) then
             allocate(bc(vectors_L,vectors_N))
             bc = zero_r8
-            call print_vectors_R(eVectorsSmall, label="L eigenvectors small problem  ")
+!           call print_vectors_R(eVectorsSmall, label="L eigenvectors small problem  ")
             call dgemm('T', 'T', vectors_L, vectors_N, vectors_L, alpha_lapack, eVectorsSmall, &
                        vectors_N, b, vectors_N, beta_lapack, bc, vectors_L)
-            call print_vectors_R(bc, label="bc                            ")
+!           call print_vectors_R(bc, label="bc                            ")
             do i = 1, nroots
                 eVectorsFull(:,i) = bc(i,:) 
             end do
@@ -852,11 +858,11 @@ contains
         else
             allocate(bc(vectors_N,vectors_L))
             bc = zero_r8
-            call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
+!           call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
             call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
                        vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
 
-            call print_vectors_R(bc, label="bc                            ")
+!           call print_vectors_R(bc, label="bc                            ")
             do i = 1, nroots
                 eVectorsFull(:,i) = bc(:,i) 
             end do
