@@ -1,6 +1,6 @@
 #.rst:
-# CheckFortranSourceRuns
-# ----------------------
+# CheckFortranSourceRuns1
+# -----------------------
 #
 # Check if the given Fortran source code (src.F90) compiles and runs.
 #
@@ -38,7 +38,7 @@
 #  License text for the above reference.)
 
 #
-# Miro: adapted also for IBM AXI : -D${VAR} had to ve removed
+# Miro: adapted for IBM AXI : -D${VAR} removed
 #
 
 

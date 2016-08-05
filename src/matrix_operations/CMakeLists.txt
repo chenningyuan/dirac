@@ -27,6 +27,7 @@ endif()
 
 add_library(
     matrix_operations
+    OBJECT
     ${FIXED_MATRIX_OPERATIONS_FORTRAN_SOURCES}
     ${FREE_MATRIX_OPERATIONS_FORTRAN_SOURCES}
 )

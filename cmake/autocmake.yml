@@ -1,6 +1,6 @@
 name: DIRAC
 
-min_cmake_version: 2.8
+min_cmake_version: 2.8.10
 
 url_root: https://github.com/coderefinery/autocmake/raw/master/
 
@@ -32,7 +32,7 @@ modules:
     - 'custom/builtin_math.cmake'
     - '%(url_root)modules/python_interpreter.cmake'
     - '%(url_root)modules/math_libs.cmake'
-    - 'custom/CheckFortranSourceCompiles.cmake'  # DIRAC MPI section needs this to run configure-time checks
+    - 'custom/CheckFortranSourceCompiles1.cmake'  # DIRAC MPI section needs this to run configure-time checks
     - 'https://github.com/Kitware/CMake/raw/master/Modules/CMakeDependentOption.cmake'  # in CMake since 3.0
     - '%(url_root)modules/mpi.cmake'
     - '%(url_root)modules/code_coverage.cmake'

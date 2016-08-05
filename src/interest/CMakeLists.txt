@@ -26,5 +26,6 @@ endif()
 
 add_library(
     interest
+    OBJECT
     ${FREE_INTEREST_FORTRAN_SOURCES}
 )
