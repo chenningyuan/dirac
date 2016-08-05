@@ -181,16 +181,6 @@
         call qexit('pe_ifc_london')
       end subroutine pe_ifc_london
 
-#if defined(VAR_MPI)
-      subroutine pe_ifc_mpi(runtype)
-        use polarizable_embedding, only: pe_mpi
-        integer, intent(in) :: runtype
-        call qenter('pe_ifc_mpi')
-        call pe_mpi(runtype)
-        call qexit('pe_ifc_mpi')
-      end subroutine pe_ifc_mpi
-#endif
-
 !      subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !!
 !!     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
