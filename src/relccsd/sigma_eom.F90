@@ -13,10 +13,17 @@
     public IM_container
     public create_sigma_vector
     public create_diagonal
+    public create_eom_ndet
+    public create_eom_nvx
     public initialize_buffers
     public free_buffers
     public free_intermediates
+    public free_eom_ndet
+    public free_eom_nvx
     public get_matrix_size
+    public set_eom_ndet
+    public set_eom_nvx
+    public get_eom_nvx
 
     private
     public intermediates
@@ -31,14 +38,60 @@
     real(kind=8), pointer :: local_buf1(:) 
     real(kind=8), pointer :: local_buf2(:) 
     real(kind=8), pointer :: local_buf3(:) 
+    integer, pointer :: eom_ndet(:)
+    integer, pointer :: eom_nvx(:)
 
    contains
+
+
+   subroutine create_eom_nvx(nrep)
+       integer, intent(in) :: nrep
+
+       if (.not.associated(eom_nvx)) allocate(eom_nvx(nrep))
+       eom_nvx = 0
+   end subroutine
+
+   subroutine set_eom_nvx(item,value)
+       integer, intent(in) :: item, value
+
+       eom_nvx(item) = value
+   end subroutine
+
+   function get_eom_nvx(item)
+       integer :: get_eom_nvx
+       integer, intent(in) :: item
+
+       get_eom_nvx = eom_nvx(item)  
+   end function
+
+   subroutine free_eom_nvx()
+       deallocate(eom_nvx)
+       nullify(eom_nvx)
+   end subroutine
+
+   subroutine create_eom_ndet(max_excitation_level)
+       integer, intent(in) :: max_excitation_level
+
+       if (.not.associated(eom_ndet)) allocate(eom_ndet(max_excitation_level))
+       eom_ndet = 0
+   end subroutine
+
+   subroutine free_eom_ndet()
+       if (associated(eom_ndet)) deallocate(eom_ndet)
+       nullify(eom_ndet)
+   end subroutine
+
+   subroutine set_eom_ndet(excitation_level, nr_det)
+       integer, intent(in) :: excitation_level
+       integer, intent(in) :: nr_det
+       eom_ndet(excitation_level) = nr_det
+   end subroutine 
 
    function get_matrix_size(A)
       integer :: get_matrix_size
       type(intermediates), intent(in) :: A
 
-      get_matrix_size = size(A%t1) + size(A%t2)
+      get_matrix_size = eom_ndet(1) + eom_ndet(2)
    end function
 
    subroutine free_intermediates(A)
@@ -89,8 +142,8 @@
       integer :: N
       integer :: nbuf3, ndimt1, ndimt2
 
-      ndimt1 = size(A%t1)
-      ndimt2 = size(A%t2)
+      ndimt1 = eom_ndet(1)
+      ndimt2 = eom_ndet(2)
       nbuf3 = size(local_buf3)
 
       N = ndimt1 + ndimt2
@@ -111,31 +164,46 @@
       type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N
-      integer :: nbuf3, ndimt1, ndimt2
+      integer :: nbuf3, ndimr1, ndimr2
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot
+
+      nbuf3 = size(local_buf3)
 
       N = size(r,1)
       L = size(r,2)
       allocate(create_sigma_vector(N,L))
 
-      nbuf3 = size(local_buf3)
-      ndimt1 = size(A%t1)
-      ndimt2 = size(A%t2)
+      ndimr1 = eom_ndet(1)
+      ndimr2 = eom_ndet(2)
 
       start_r1 = 1
-      end_r1   = ndimt1
+      end_r1   = ndimr1
       start_r2 = end_r1 + 1
-      end_r2   = end_r1 + ndimt2 
+      end_r2   = end_r1 + ndimr2
 
+      create_sigma_vector(:,iroot:iroot) = 0.0d0
       select case (A%eomtype)
          case ("IP")
+
+             print *, "debug: eom_nvx:",eom_nvx
+             do iroot = 1, L
+                 print "(2x,a,i6,a,i6)", "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
+                 call sigma_IP(eom_nvx,  &
+                 &             r(start_r1:end_r1, iroot:iroot), &
+                 &             r(start_r2:end_r2, iroot:iroot), &
+                 &             A,                               &
+                 &             create_sigma_vector(start_r1:end_r1, iroot:iroot), &
+                 &             create_sigma_vector(start_r2:end_r2, iroot:iroot), &
+                 &             ndimr1, &
+                 &             ndimr2) 
+             enddo
+
          case ("EA")
          case ("EE")
 
              do iroot = 1, L
-                 print *, "debug, constructing sigma vector ",iroot," out of ",L
-                 create_sigma_vector(:,iroot:iroot) = 0.0d0
+                 print "(2x,a,i6,a,i6)", "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
                  call sigma_ee_1h1p(r(start_r1:end_r1, iroot:iroot), &
                  &                  r(start_r2:end_r2, iroot:iroot), & 
                  &                  A,                               &
