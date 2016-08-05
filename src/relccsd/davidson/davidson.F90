@@ -717,7 +717,8 @@ contains
             M_small => create_reduced_problem(b, sigma_vector)
 
             call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
-                                                c_small_r, c_small_l, left=left, verbose=verbose)
+!                                               c_small_r, c_small_l, left=left, verbose=verbose)
+                                                c_small_r, c_small_l, left=left, verbose=.true.)
 
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
