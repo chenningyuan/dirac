@@ -3,12 +3,12 @@ $ Elements Supported
 $ H  He
 $ B  C  N  O  F  Ne Al Si P  S  Cl Ar
 $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
-$ Uut Fl Uup Lv Uus Uuo
+$ Nh Fl Mc Lv Ts Og
 $ 
 $  REFERENCE
 $ 
 $ 1s:    K.G. Dyall, unpublished.
-$ 2p-3p: K.G. Dyall, unpublished.
+$ 2p-3p: K.G. Dyall, Theor. Chem. Acc. (2016) 135:128.
 $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (2006) 115:441;
 $        K.G. Dyall, Theor. Chem. Acc. (2012) 131:1217.
 $    7p: K.G. Dyall, Theor. Chem. Acc. (2012) 131:1172;
@@ -2961,7 +2961,7 @@ $ i functions
     1    0    0
     2.18799660E+01
 
-$ Uut
+$ Nh
 a 113
 $ s functions
    36    0    0
@@ -3265,7 +3265,7 @@ $ i functions
     5.74898160E+01
     7.52088120E+00
 
-$ Uup
+$ Mc
 a 115
 $ s functions
    36    0    0
@@ -3569,7 +3569,7 @@ $ i functions
     6.05995550E+01
     8.19838960E+00
 
-$ Uus
+$ Ts
 a 117
 $ s functions
    36    0    0
@@ -3721,7 +3721,7 @@ $ i functions
     6.21839190E+01
     8.54423950E+00
 
-$ Uuo
+$ Og
 a 118
 $ s functions
    36    0    0

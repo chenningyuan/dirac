@@ -7466,6 +7466,7 @@ C
 C
 #ifdef PRG_DIRAC
          use dirac_cfg
+         use read_xyzfile
 #endif
       use codata
 #include "implicit.h"
@@ -7612,9 +7613,9 @@ C        Write updated .xyz style geometry file
                      if (ibtand(i_symop, mulcnt) == 0)
      &                  write (lumol,'(A4,3F26.16)')  
      &                     namn(icent),
-     *      pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)*xtang,
-     *      pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)*xtang,
-     *      pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)*xtang
+     * pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)/unit_conversion,
+     * pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)/unit_conversion,
+     * pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)/unit_conversion
                 end do
                end if
             end do
@@ -7675,6 +7676,7 @@ CTROND      deallocate(STPCAR)
 C     Write an XYZ file
 C
       use codata
+      use read_xyzfile
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7684,9 +7686,9 @@ C
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"
 C
-!     XYZ files are written in Angstroms
+!     XYZ files are written in Angstroms (default) or a user-specified Unit
 !
-      FAC = XTANG
+      FAC = 1.D0 / UNIT_CONVERSION
 
 !     Write the file
 

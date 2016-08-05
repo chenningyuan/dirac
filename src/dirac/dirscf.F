@@ -262,6 +262,7 @@ C         .... prepare the DFCOEF file with staring MOs
         RESTFCK=(INI2C.EQ.1.OR.INI2C.EQ.2) 
 
         BNCRON = .FALSE.
+        BNSPON = .FALSE.
         ERGCNV = ERGCNV_SAVE
         EVCCNV = EVCCNV_SAVE
         FCKCNV = FCKCNV_SAVE
@@ -334,6 +335,7 @@ CMI ... consider TRMO4C2C ...???
           end if
 
           BNCRON = .FALSE.
+          BNSPON = .FALSE.
 C         ... need to reset them...
           DHFCONV(1)=.FALSE.
           DHFCONV(2)=.FALSE.
@@ -697,15 +699,17 @@ C       ... read 1-electron Fock matrix into FOCK ...
          CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
-!       bncron = .false.
+!       ... add some kind of screening potential
         IF(BNCRON .AND. .NOT. ONESYS) THEN
           CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
-          IF(IPRSCF.GE.12) THEN
-           CALL HEADER(
+        ELSEIF (BNSPON .AND. .NOT. ONESYS) THEN
+          CALL Add_Screening_Potential(FOCK,WORK(KFREE),LFREE,IPRSCF)
+        ENDIF
+        IF(IPRSCF.GE.12) THEN
+          CALL HEADER(
      & 'PREDHF: 1-electron Fock matrix + BNCORR within "BARNUC"',-1)
            CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                 NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
         ENDIF
       END IF
 
@@ -3754,6 +3758,9 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
             IF (BNCRON) WRITE(LUPRI,'(A/)')
      &    "             Improved by an "//
      &    "estimate of the electronic screening (Slater's rules)."
+            IF (BNSPON) WRITE(LUPRI,'(A/)')
+     &    "             Improved by a sum of "//
+     &    "atomic screening potentials."
           ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case

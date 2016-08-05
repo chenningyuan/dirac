@@ -27,6 +27,7 @@ endif()
 
 add_library(
     grid
+    OBJECT
     ${FIXED_GRID_FORTRAN_SOURCES}
     ${FREE_GRID_FORTRAN_SOURCES}
 )
