@@ -11,9 +11,9 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'TOTAL ENERGY',
       num_lines   = 10,
-      rel_tolerance   = 1.0e-5)
+      rel_tolerance   = 1.0e-8)
 f.add(from_string = 'Eigenvalues',
-      num_lines   = 21,
+      to_re       = 'HOMO - LUMO',
       rel_tolerance   = 1.0e-7)
 
 test.run(['B.x2c.scf_2P12.inp'],         ['B.lsym.mol'],  f, args='--outcmo')
