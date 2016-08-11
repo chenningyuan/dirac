@@ -863,7 +863,6 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_mpi:
             self.nr_proc = int(options.dest_mpi)
-            self.parallel_run = True
 
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
         if "@ENABLE_MPI@" == "True":
