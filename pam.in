@@ -5,8 +5,9 @@
     Takes care of copying files in and out and of setting appropriate environment variables for a DIRAC calculation.
   
     Written by Miroslav Ilias, Matej Bel University, Banska Bystrica, Slovakia, 2010-2013
-   
     Contributors: Radovan Bast, Ulf Ekstrom, Stefan Knecht, Andre Gomes
+
+    This script is distributed under the MIT licence.
    
     Environment variables (set by user) used by pam:
              DIRTIMEOUT        - time out limit for dirac run
@@ -34,6 +35,7 @@
              DIRPAR          - controls parallel run (1) or sequential run (0)
              DIRNOD          - maximum work space for Fortran 77 "WORK" allocations for MPI workers, only used in MPI run
              GLBSCR          - global scratch disk (1) or local scratch disk (0), only used in MPI run (cryptic 6-character name is used in source codes)
+
 """
 
 import os
