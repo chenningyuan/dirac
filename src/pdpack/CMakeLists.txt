@@ -34,6 +34,7 @@ endif()
 
 add_library(
     pdpack
+    OBJECT
     ${FIXED_PDPACK_FORTRAN_SOURCES}
     ${FREE_PDPACK_FORTRAN_SOURCES}
 )

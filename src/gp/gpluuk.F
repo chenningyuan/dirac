@@ -522,7 +522,7 @@ C
       ELSE IF (IRCW.EQ.1) THEN
         CALL INDEXX(N_TOTAL,EV(1,1),INDX)
       ELSE
-        write(LUPRI,*) 'IRCW=',IRCW
+        write(LUPRI,*) 'PRT_EV: wrong parameter IRCW=',IRCW
         CALL QUIT('PRT_EV...wrong parameter !!! ')
       ENDIF
 
@@ -540,15 +540,15 @@ CMI ... own printout
       ENDIF
       ENDIF
 C
-      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
-     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+      WRITE(LUPRI,'(/A,F14.10,A,F17.9,A)')
+     & ' ( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 
       IF (IRCW.EQ.1) THEN
         WRITE (LUPRI,1005)
       ELSE IF (IRCW.EQ.2) THEN
         WRITE (LUPRI,1007)
       ELSE
-        WRITE(LUPRI,*) 'PRT_EV: IRCW=',IRCW
+        WRITE(LUPRI,*) 'PRT_EV: wrong IRCW=',IRCW
         CALL QUIT('PRT_EV: wrong IRCW value !')
       ENDIF
 C
@@ -791,8 +791,8 @@ C
       CALL INDEXX(N_TOTAL,EV,INDX)
 C
 CMI ... print out conversion factors (from codata)
-      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
-     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+      WRITE(LUPRI,'(/A,F14.10,A,F17.9,A)')
+     & ' ( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 
 
       WRITE (LUPRI,1005)
@@ -1485,8 +1485,8 @@ C
         GIGABYTES = GIGABYTES / (1024.0**3)
         WRITE (LUPRI,1000) MYTID,N_WRITTEN,PERC, GIGABYTES
       ENDIF
- 1000 FORMAT (/" Node",I5," finished first half transformation",I16,
-     &         " HT integrals written (",F6.2,"%, ",F9.2," GB)") 
+ 1000 FORMAT (" Node",I5," finished first half transformation",I16,
+     &        " HT integrals written (",F6.2,"%, ",F9.2," GB)") 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

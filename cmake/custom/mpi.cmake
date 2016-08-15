@@ -41,8 +41,9 @@ if(MPI_FOUND)
     endif()
 
     if(ENABLE_64BIT_INTEGERS AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ilp64")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ilp64")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ilp64")
+    # Miro: which Intel compiler has the -ilp64 flag  ? I haven's see such yet.
+        #set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -ilp64")
+        #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ilp64")
+        #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ilp64")
     endif()
 endif()

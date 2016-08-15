@@ -1004,6 +1004,7 @@ C     initial molecular orbitals:
       BARNUC    = .TRUE.
       BNCRON    = .TRUE.
       force_bnc = .false.
+      BNSPON    = .FALSE. ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
       EWMO      = .FALSE. ! in huckel.h
@@ -1330,6 +1331,11 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
                ELSE IF (INDEX(LINE,'BNCORR').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .TRUE.
+                  BNSPON = .FALSE.
+               ELSE IF (INDEX(LINE,'SCRPOT').ne.0) THEN
+                  BARNUC = .TRUE.
+                  BNCRON = .FALSE.
+                  BNSPON = .TRUE.
                ELSE IF (INDEX(LINE,'TRIFCK').ne.0) THEN
 C              TRIFCK: Start on two-electron Fock matrix read from file
                   TRIFCK = .TRUE.
@@ -1499,6 +1505,7 @@ C&&&& OWNBASis: Use local basis for projection
    23          CONTINUE
 C&&&& NOBNCR : Deactivate screening for use with bare nucleus start guess
                   BNCRON = .FALSE.
+                  BNSPON = .FALSE.
                GO TO 100
    24          CONTINUE
 C&&& DIISTH: Change default threshold for DIIS
@@ -2039,7 +2046,11 @@ C     a U(+90) calculation.
      &      ' abs(molecular charge) .gt. 10'
          END IF
       END IF
-      IF(BNCRON) THEN
+      IF (BNSPON) THEN
+         WRITE (LUPRI,'(A)')
+     &      ' * Sum of atomic potentials used for start guess'
+      END IF
+      IF(BNCRON.OR.BNSPON) THEN
         DHF_INTTYP= 'Scr. nuclei '
       ENDIF
 C

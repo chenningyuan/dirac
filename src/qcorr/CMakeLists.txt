@@ -23,6 +23,7 @@ endif()
 
 add_library(
     qcorr
+    OBJECT
     ${FIXED_QCORR_FORTRAN_SOURCES}
     ${FREE_QCORR_FORTRAN_SOURCES}
 )

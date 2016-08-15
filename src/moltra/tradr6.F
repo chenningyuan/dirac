@@ -843,7 +843,7 @@ C
 C
             IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,
-     &              '(//,1X,A,2I16/,2(1X,A,I16/),2(1X,A,I16,F10.3/))')
+     &              '(//A,2I16/,2(A,I16/),2(A,I16,F10.3/))')
      &         ' Calculation of integral distribution set:',
      &              ISHLA,ISHLB,
      &         ' Number of distributions in this set:     ',NUMDIS,
@@ -1260,9 +1260,7 @@ C
       if (do_finesort) call sort_buffers(mytid,1)
 #endif        
 
-      write (*,*) ' '
-      write (*,*) '<<< Starting 2HT on node ',mytid
-      write (*,*) ' '
+      if (iprint .gt. 0) write (*,*) '<<< Starting 2HT on node ',mytid
 c
       Allocate (GMAT(maxval(NSPCK(:,0))*NZ))
       NIJOFF = 0
@@ -1373,10 +1371,8 @@ C
 #if defined (VAR_PFS)
       CALL LOCAL_FILE_CLOSE_READ
 #endif
-        write (*,*) ' '
-        write (*,*) '>>> Finished 2HT on node ',mytid
+        if (iprint .gt.0) write (*,*) '>>> Finished 2HT on node ',mytid
         call timer('2HT_all',TIMSTR,TIMEND)
-        write (*,*) ' '
 
       CALL QEXIT('MS6IN2')
 C
