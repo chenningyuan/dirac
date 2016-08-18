@@ -26,16 +26,18 @@ module dirac_MO
 ! In particular:  - Orbital energy
 !                 - Boson characterization (for spinfree runs)
 !                 - Coefficients of AO-functions
+!                 - Position in the full list of MO vectors
 
    implicit none
   
 !  Private
 
-  Public :: create, delete, set_coefficients, get_coefficients
+  Public :: create, delete, set_coefficients, get_coefficients, sync_coefficients
 
   type MO
      
     integer ::  &
+      fermion_irrep, &     ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
       nao,      &          ! number of aos
       nmo,      &          ! number of mos
       nz                   ! number of active quaternion units
@@ -45,8 +47,8 @@ module dirac_MO
       coeff (:,:,:)        ! coefficients (AO,MO,IZ)
      
     integer, pointer ::  &
-      boson_irrep(:),    & ! for spinfree calculations: boson irrep to which the spinor belongs
-      fermion_irrep(:)     ! fermion irrep (1=gerade, 2=ungerade) to which the spinor belongs
+      index(:),          & ! index of the spinor in the full list of spinors for this fermion symmetry
+      boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
 
   end type MO
 
@@ -64,6 +66,10 @@ module dirac_MO
 
   interface get_coefficients
     module procedure GetMOcoefficients
+  end interface  
+
+  interface sync_coefficients
+    module procedure SyncMOcoefficients
   end interface  
 
 contains
@@ -98,9 +104,9 @@ contains
     allocate (M%boson_irrep(M%nmo))
     M%boson_irrep = 0
 
-    nullify  (M%fermion_irrep)
-    allocate (M%fermion_irrep(M%nmo))
-    M%fermion_irrep = 0
+    nullify  (M%index)
+    allocate (M%index(M%nmo))
+    M%index = 0
     
   end subroutine AllocMO
 
@@ -119,7 +125,7 @@ contains
     deallocate (M%energy)
     deallocate (M%coeff)
     deallocate (M%boson_irrep)
-    deallocate (M%fermion_irrep)
+    deallocate (M%index)
     
   end subroutine DeAllocMO
 
@@ -146,5 +152,38 @@ contains
     coefficients = M%coeff
 
   end subroutine GetMOcoefficients
+
+#if defined (VAR_MPI)
+
+  subroutine SyncMOcoefficients (M, mparid)
+   
+!   Synchronize an already allocated block of MOcoefficients
+ 
+    type (MO), intent (inout)   :: M
+    integer, intent(in)         :: mparid
+    integer                     :: n_coef, ierr
+    INCLUDE 'mpif.h'
+
+    mpi_bcast (M%fermion_irrep,    1,mpi_integer,mparid,mpi_comm_world,ierr)
+    mpi_bcast (M%boson_irrep,  M%nmo,mpi_integer,mparid,mpi_comm_world,ierr)
+    mpi_bcast (M%index,        M%nmo,mpi_integer,mparid,mpi_comm_world,ierr)
+    mpi_bcast (M%energy,       M%nmo,mpi_double_precision,mparid,mpi_comm_world,ierr)
+    n_coef = M%nao * M%nmo * M%nz
+    mpi_bcast (M%coeff,n_coef,mpi_double_precision,mparid,mpi_comm_world,ierr)
+
+  end subroutine SyncMOcoefficients
+
+#else
+
+  subroutine SyncMOcoefficients (M, mparid)
+ 
+!   do nothing, makes it possible to call sync also in serial runs
+
+    type (MO), intent (inout)   :: M
+    integer, intent(in)         :: mparid
+
+  end subroutine SyncMOcoefficients
+
+#endif
 
 end module dirac_MO

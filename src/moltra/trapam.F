@@ -35,6 +35,7 @@ C***********************************************************************
 
       Use memory_allocator
       Use moltra_labeling
+      Use exacorr_ao_to_mo
 
 #include "implicit.h"
 #include "priunit.h"
@@ -61,6 +62,11 @@ C
       Real(8), Allocatable :: CMO(:),EIG(:)
       Integer, Allocatable :: IBEIG(:)
       real(8), allocatable :: WORK(:)
+C     Temporary hack to test the exacorr module
+      Logical              :: exacorr = .TRUE.
+      Integer, Allocatable :: MO_List(:)
+      Integer              :: NMO(4)
+C     End of hack
 C
       CALL QENTER('PAMTRA')
       call legacy_lwork_get(LWORK)
@@ -114,6 +120,28 @@ C
         ENDDO
       ENDDO
 C
+C     Temporary hack to call the exacorr module
+      if (exacorr) then
+         if (nfsym.eq.1) then
+            nao = nfbas(1,0)
+            ntmo = 0
+            do i = 1, 4
+               nmo(i) = nstrt(i)
+               ntmo = ntmo + nmo(i)
+            end do 
+            allocate (mo_list(ntmo))
+            imo = 1
+            do i = 1, 4
+               call icopy (nmo(i),work(kvec(1,i)),1,mo_list(imo),1)
+               imo = imo + nmo(i)
+            end do 
+            call compute_mo_integrals (nao, nmo, mo_list)
+            deallocate (mo_list)
+         else
+            call quit ('exacorr can not handle symmetry')
+         end if
+      end if
+C     End of hack
 C
       CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
 
