@@ -274,6 +274,10 @@ else()
 endif()
 message(STATUS "Interest library: ${ENABLE_INTEREST}")
 
+# exacorr as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
+set(EXTERNAL_LIBS exacorr ${EXTERNAL_LIBS})
+
 #   krcc as separate library
 if(ENABLE_KRCC)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/krcc)
