@@ -103,6 +103,10 @@ set(EXTERNAL_LIBS abacus ${EXTERNAL_LIBS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
 set(EXTERNAL_LIBS matrix_operations ${EXTERNAL_LIBS})
 
+# exacorr as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
+set(EXTERNAL_LIBS exacorr ${EXTERNAL_LIBS})
+
 #    Moltra as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_LIBS moltra ${EXTERNAL_LIBS})
@@ -273,10 +277,6 @@ else()
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
 endif()
 message(STATUS "Interest library: ${ENABLE_INTEREST}")
-
-# exacorr as separate library
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
-set(EXTERNAL_LIBS exacorr ${EXTERNAL_LIBS})
 
 #   krcc as separate library
 if(ENABLE_KRCC)
