@@ -16,7 +16,7 @@
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !
          Use dirac_MO
-!         Use talsh
+         Use talsh
 
          implicit none
          integer, intent(in) :: nao 
@@ -32,7 +32,7 @@
 !        Make some noise so that we know we are here
          print*, " Arrived in compute_mo_integrals routine"
 !        Initialize library
-!         ierr = talsh_init()
+         ierr = talsh_init()
          
 !        Create empty tensors for MO coefficients
 
@@ -58,7 +58,7 @@
 !        Initialize AO integral tensors
 
 !        Shut down library
-!         ierr = talsh_shutdown()
+         ierr = talsh_shutdown()
 
 !        Make some noise so that we know we are leaving
          print*, " Leaving compute_mo_integrals routine"

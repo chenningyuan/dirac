@@ -15,7 +15,7 @@ if(ENABLE_EXATENSOR)
         INSTALL_DIR "${PROJECT_BINARY_DIR}/exatensor/install"
         )
 
-    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/libExaTensor.a)
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/TALSH/libtalsh.a -lgomp)
 
     include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/TALSH)
 endif()
