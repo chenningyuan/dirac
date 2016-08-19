@@ -16,6 +16,8 @@ if(ENABLE_EXATENSOR)
         )
 
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/libExaTensor.a)
+
+    include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/TALSH)
 endif()
 
 message(STATUS "Enable ExaTensor library: ${ENABLE_EXATENSOR}")
