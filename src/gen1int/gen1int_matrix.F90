@@ -318,7 +318,7 @@ module gen1int_matrix
 
   ! public subroutines for test suite of Gen1Int interface
   public :: MatCreate
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   public :: MatBcast
 #endif
   public :: MatDestroy
@@ -747,7 +747,7 @@ module gen1int_matrix
     A%elms_alpha = 0.0
   end subroutine MatCreate
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   !> \brief broadcasts matrix
   !> \author Bin Gao
   !> \date 2012-05-13

@@ -91,7 +91,7 @@ module gen1int_api
 
   ! \fn(Gen1IntAPICreate) might be the only program specific subroutine (depends on common blocks)
   public :: Gen1IntAPICreate
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   public :: Gen1IntAPIBcast
 #endif
   public :: Gen1IntAPIInited
@@ -326,7 +326,7 @@ module gen1int_api
     api_inited = .true.
   end subroutine Gen1IntAPICreate
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   !> \brief broadcasts AO sub-shells
   !> \author Bin Gao
   !> \date 2012-05-13

@@ -6,8 +6,8 @@
 
 #define MAX_LEN_STR 80
 
-#if defined(VAR_MPI)
-#define MANAGER 0
-#define REQUEST_WORK 0
-#define NO_MORE_WORK 0
-#endif
+!#if defined(VAR_MPInotdef)
+!#define MANAGER 0
+!#define REQUEST_WORK 0
+!#define NO_MORE_WORK 0
+!#endif

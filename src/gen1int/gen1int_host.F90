@@ -69,7 +69,7 @@
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
     integer :: ierr  !error information
     logical :: mpi_sync = .true.
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
@@ -79,7 +79,7 @@
     call Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                           ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                           num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
     if (mpi_sync) then
       ! wakes up workers
       call MPI_Bcast(GEN1INT_INIT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -92,7 +92,7 @@
     return
   end subroutine gen1int_host_init
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   !> \brief initializes Gen1Int interface, for instance, creates the AO sub-shells
   !>        of host program (based on \fn(ORBPRO) subroutine by getting the unnormalized
   !>        contraction coefficients); should be called before any calculation
@@ -216,13 +216,13 @@
     type(nary_tree_t) nary_tree_ket    !N-ary tree for partial geometric derivatives on ket center
     type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
     integer ierr                       !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
     ! wakes up workers
     call MPI_Bcast(GEN1INT_GET_INT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts level of print
@@ -257,7 +257,7 @@
                                   nary_tree_bra=nary_tree_bra,     &
                                   nary_tree_ket=nary_tree_ket,     &
                                   nary_tree_total=nary_tree_total, &
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
                                   api_comm=MPI_COMM_WORLD,         &
 #endif
                                   num_ints=num_ints,               &
@@ -271,7 +271,7 @@
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_bra)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_ket)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
     ! blocks until all processors have finished
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif
@@ -280,7 +280,7 @@
     return
   end subroutine gen1int_host_get_int
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   !> \brief evaluates the one-electron property integral matrices on worker processors
   !> \author Bin Gao
   !> \date 2012-05-09
@@ -405,13 +405,13 @@
     type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
     integer idens                      !incremental recorder over AO density matrices
     integer ierr                       !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
     ! wakes up workers
     call MPI_Bcast(GEN1INT_GET_EXPT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     ! broadcasts level of print
@@ -452,7 +452,7 @@
                                   nary_tree_bra=nary_tree_bra,     &
                                   nary_tree_ket=nary_tree_ket,     &
                                   nary_tree_total=nary_tree_total, &
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
                                   api_comm=MPI_COMM_WORLD,         &
 #endif
                                   num_dens=num_dens,               &
@@ -467,7 +467,7 @@
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_bra)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_ket)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
     ! blocks until all processors have finished
     call MPI_Barrier(MPI_COMM_WORLD, ierr)
 #endif
@@ -476,7 +476,7 @@
     return
   end subroutine gen1int_host_get_expt
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   !> \brief evaluates the one-electron property expectation values on worker processors
   !> \author Bin Gao
   !> \date 2012-05-09
@@ -717,7 +717,7 @@
     logical found                                     !if found required data from SIRIFC
     integer start_ao, end_ao                          !start and end addresses of AOs
     integer imo                                       !incremental recorder over MOs
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
 #include "mpif.h"
 #include "iprtyp.h"
     ! wakes up workers
@@ -1002,7 +1002,7 @@
 100 format("gen1int_host_get_cube>> ",A,I8)
   end subroutine gen1int_host_get_cube
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   subroutine gen1int_worker_get_cube(len_work, wrk_space, io_viewer, level_print)
     use gen1int_matrix
     use gen1int_api
@@ -1427,7 +1427,7 @@
     type(prop_comp_t), intent(inout) :: prop_comp
     integer len_name  !length of property name
     integer ierr      !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
 #include "mpif.h"
     ! broadcasts input arguments
     call MPI_Bcast(gto_type, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1469,7 +1469,7 @@
     return
   end subroutine gen1int_host_prop_create
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   !> \brief creates the operator of property integrals on worker processors by the arguments from manager
   !> \author Bin Gao
   !> \date 2012-05-09
@@ -1581,7 +1581,7 @@
     type(nary_tree_t), intent(inout) :: nary_tree_ket
     type(nary_tree_t), intent(inout) :: nary_tree_total
     integer ierr  !error information
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
 #include "mpif.h"
     ! broadcasts information of N-ary trees
     call MPI_Bcast(max_ncent_bra, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1627,7 +1627,7 @@
     return
   end subroutine gen1int_host_geom_create
 
-#if defined(VAR_MPI)
+#if defined(VAR_MPInotdef)
   !> \brief creates N-ary tree for geometric derivatives on worker processors by the arguments from manager
   !> \author Bin Gao
   !> \date 2012-05-09
