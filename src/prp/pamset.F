@@ -339,86 +339,88 @@ CJTH check this
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
 ! before starting a response calcaultion from DFCOEF(!)
+      IF (PEQM) THEN
+        write(lupri,*)'PEQM : ', PEQM
+        call genden(fao, cmo, 1, iprint)
 
-      call genden(fao, cmo, 1, iprint)
-
-      allocate(dlmat_triangle(nnbbasx))
-      allocate(flmat_triangle(nnbbasx))
-      dlmat_triangle = 0.0d0
-      flmat_triangle = 0.0d0
-      k = 1
-      ! LL block
-      do i = 1, ntbas(1)
-         do j = 1, i
-            if (i == j) then
-                dlmat_triangle(k) = 2.0d0*fao((i-1)*ntbas(0) + j)
-            else
-                dlmat_triangle(k) = 4.0d0*fao((i-1)*ntbas(0) + j)
-            end if
-            k = k + 1
-         end do
-      end do
-      ! SS block
-      do i = ntbas(1) + 1, ntbas(0)
-         do j = 1, i
-            if (j > ntbas(1)) then
-               if (i == j) then
-                   dlmat_triangle(k) = 2.0d0*fao((i-1)*ntbas(0) + j)
-               else
-                   dlmat_triangle(k) = 4.0d0*fao((i-1)*ntbas(0) + j)
-               end if
-            end if
-            k = k + 1
-         end do
-      end do
-
-      call pe_master('full_fock',
-     &               triang=.true.,
-     &               nmats=1,
-     &               denmats=dlmat_triangle,
-     &               fckmats=flmat_triangle, 
-     &               expvals=Epe)
-!      eqmmm = work(kfree)
-
-      ! F = F + M
-      ! LL block
-      k = 1
-      do i = 1, ntbas(1)
-         do j = 1, i
-            if (i == j) then ! edh: Conversion from DALTON to DIRAC
-               fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
-     &                                 + flmat_triangle(k)
-            else
-            fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
-     &                              + flmat_triangle(k)
-            fmo((j-1)*ntbas(0) + i) = fmo((j-1)*ntbas(0) + i)
-     &                              + flmat_triangle(k)
-            end if
-            k = k + 1
-         end do
-      end do
-      ! SS block
-      do i = ntbas(1) + 1, ntbas(0)
-         do j = 1, i
-            if (j > ntbas(1)) then
+        allocate(dlmat_triangle(nnbbasx))
+        allocate(flmat_triangle(nnbbasx))
+        dlmat_triangle = 0.0d0
+        flmat_triangle = 0.0d0
+        k = 1
+        ! LL block
+        do i = 1, ntbas(1)
+           do j = 1, i
+              if (i == j) then
+                  dlmat_triangle(k) = 2.0d0*fao((i-1)*ntbas(0) + j)
+              else
+                  dlmat_triangle(k) = 4.0d0*fao((i-1)*ntbas(0) + j)
+              end if
+              k = k + 1
+           end do
+        end do
+        ! SS block
+        do i = ntbas(1) + 1, ntbas(0)
+          do j = 1, i
+             if (j > ntbas(1)) then
                 if (i == j) then
-                   fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
-     &                                     + flmat_triangle(k)
+                    dlmat_triangle(k) = 2.0d0*fao((i-1)*ntbas(0) + j)
                 else
-                   fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
-     &                                     + flmat_triangle(k)
-                   fmo((j-1)*ntbas(0) + i) = fmo((j-1)*ntbas(0) + i)
-     &                                     + flmat_triangle(k)
+                    dlmat_triangle(k) = 4.0d0*fao((i-1)*ntbas(0) + j)
                 end if
-            end if
-            k = k + 1
-         end do
-      end do
+             end if
+             k = k + 1
+          end do
+        end do
+! edh: Check this part, might need correction!
+! TODO Make separate routine for the loops below (already exist for
+! energy
+        call pe_master('full_fock',
+     &                 triang=.true.,
+     &                 nmats=1,
+     &                 denmats=dlmat_triangle,
+     &                 fckmats=flmat_triangle, 
+     &                 expvals=Epe)
 
-      deallocate(dlmat_triangle)
-      deallocate(flmat_triangle)
+        !F = F + M
+        !LL block
+        k = 1
+        do i = 1, ntbas(1)
+           do j = 1, i
+              if (i == j) then ! edh: Conversion from DALTON to DIRAC
+                 fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
+     &                                   + flmat_triangle(k)
+              else
+              fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
+     &                                + flmat_triangle(k)
+              fmo((j-1)*ntbas(0) + i) = fmo((j-1)*ntbas(0) + i)
+     &                                + flmat_triangle(k)
+              end if
+              k = k + 1
+           end do
+        end do
+        ! SS block
+        do i = ntbas(1) + 1, ntbas(0)
+           do j = 1, i
+              if (j > ntbas(1)) then
+                  if (i == j) then
+                     fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
+     &                                       + flmat_triangle(k)
+                  else
+                     fmo((i-1)*ntbas(0) + j) = fmo((i-1)*ntbas(0) + j)
+     &                                       + flmat_triangle(k)
+                     fmo((j-1)*ntbas(0) + i) = fmo((j-1)*ntbas(0) + i)
+     &                                       + flmat_triangle(k)
+                  end if
+              end if
+              k = k + 1
+           end do
+        end do
+        deallocate(dlmat_triangle)
+        deallocate(flmat_triangle)
+
+      ENDIF
 #endif 
-
 
 C
 C     3. Get one-electron Fock matrix
