@@ -43,6 +43,8 @@
 
          real(8)   :: vd,vl,vr
          complex(8):: zero=(0.0,0.0), aoint_value=(1.D-6,0.0), mocoef_value=(1.D-3,0.0)
+         real(8), pointer, contiguous:: mo_tens(:,:)
+         type(C_PTR):: body_p
 
 
 !        Make some noise so that we know we are here
@@ -62,6 +64,8 @@
          ierr=talsh_tensor_construct(aoint_tensor,R8,aoint_dims,init_val=aoint_value)
          ierr=talsh_tensor_construct(a1int_tensor,R8,a1int_dims,init_val=zero)
          ierr=talsh_tensor_construct(mocoef_tensor,R8,mocoef_dims,init_val=mocoef_value)
+         ierr=talsh_get_body_access(mocoef_tensor,body_p,'R8',0,DEV_HOST)
+         call c_f_pointer(body_p,mo_tens,mocoef_dims(1:2)) !now you can use <mo_tens> as a regular Fortran 2d array
 !        ierr=talsh_tensor_construct(mocoef_tensor,R8,mocoef_dims,init_method=mocoef_init(mo_list(1:nmo(i)))) ! here I need information on how to write such an intialization method....
 
 !        Do dummy 1st quarter-transformation
