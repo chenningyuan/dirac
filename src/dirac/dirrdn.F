@@ -1107,7 +1107,8 @@ CMI   ... criteria of convergence for prelim.BSS-SCF
       PRJTHR    = 1.0D-10
       DOLEVEL   = .FALSE.
       DLSHIF    = D0
-      OPEN_FAC  = 0.5D0 ! this value seems to a good compromise value for good convergence
+      OPEN_FAC  = -0.5D0 ! abs(OPEN_FAC) seems to a good compromise value for good convergence
+      ! the negative sign signifies that this is the default value, i.e. not user input
       CALL DZERO(OLEV,MXOPEN)
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
@@ -1625,6 +1626,7 @@ C&&& FOCC: Fractional Occupation
 C&&& LSHIFT: Level shift
                   READ(LUCMD,*) DLSHIF
                   DOLEVEL = .TRUE.
+                  IF (OPEN_FAC .LT. 0) OPEN_FAC = -1.0D0
                GOTO 100
  45            CONTINUE
 C&&& Specify the maximum number of preliminary BSS-SCF iterations
@@ -1698,6 +1700,7 @@ C&&& OLEVEL: Open-shell level shifts
                   ELSE
                     READ(LUCMD,*) (OLEV(IOPEN),IOPEN=1,NOPEN)
                     DOLEVEL = .TRUE.
+                    IF (OPEN_FAC .LT. 0) OPEN_FAC = -1.0D0
                   ENDIF
                GOTO 100
  51            CONTINUE
@@ -2171,9 +2174,19 @@ C
       ELSE
         CALL QUIT('ERROR, initial trial SCF function not defined!')
       ENDIF
-      IF (OPEN_FAC .NE. D1) WRITE (LUPRI,'(A,F12.6)')
+      IF (abs(OPEN_FAC) .NE. D1) THEN
+         WRITE (LUPRI,'(A,F12.6)')
      &   ' * Scaling of active-active block correction to '//
-     &   'open shell Fock operator', OPEN_FAC
+     &   'open shell Fock operator', abs(OPEN_FAC)
+         IF (OPEN_FAC .LT. 0.0D0) THEN
+            WRITE (LUPRI,'(A)')
+     &   '   to improve convergence (default value).',
+     &   '   The final open-shell orbital energies are recalculated '//
+     &   'with 1.0 scaling,',
+     &   '   such that all occupied orbital energies correspond to '//
+     &   "Koopmans' theorem ionization energies."
+         END IF
+      END IF
 
       WRITE(LUPRI,'(/A)') ' ***** SCF CONVERGENCE CRITERIA *****'
       IF(ERGCNV) THEN
