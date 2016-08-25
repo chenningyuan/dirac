@@ -4242,15 +4242,12 @@ C
 !        write(lupri,*), 'FOCK MATRIX RESPONSE WITHOUT PE'
 !        CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
 !    &               1,(/1, 2, 3, 4/),LUPRI)
-
         call pe_master(runtype='dynamic_response',
      &                 triang = .true.,
+     &                 ndim = ntbas(0),
      &                 nmats=ndmat,
      &                 denmats=dlmat_triangle,
      &                 fckmats=flmat_triangle)
-
-!       print *, 'raboof', flmat_triangle(1:20)
-
         ! F = F + M
         ! LL block
         k = 1

@@ -338,9 +338,9 @@ CJTH check this
 #ifdef HAS_PELIB
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
-! before starting a response calcaultion from DFCOEF(!)
+! before starting a response calculation from DFCOEF(!)
       IF (PEQM) THEN
-        write(lupri,*)'PEQM : ', PEQM
+        !write(lupri,*)'PEQM activated? : ', PEQM
         call genden(fao, cmo, 1, iprint)
 
         allocate(dlmat_triangle(nnbbasx))
@@ -374,14 +374,16 @@ CJTH check this
         end do
 ! edh: Check this part, might need correction!
 ! TODO Make separate routine for the loops below (already exist for
-! energy
-        call pe_master('full_fock',
-     &                 triang=.true.,
+! energy 
+        write(lupri,'(a)') '* Calling pe_master to construct '//
+     &                  '<Vpe> = Ves + <0|F|0>R<Fe> contribution to H.'
+        call pe_master(runtype='full_fock',
+     &                 triang = .true.,
+     &                 ndim = ntbas(0),
      &                 nmats=1,
      &                 denmats=dlmat_triangle,
-     &                 fckmats=flmat_triangle, 
+     &                 fckmats=flmat_triangle,
      &                 expvals=Epe)
-
         !F = F + M
         !LL block
         k = 1
