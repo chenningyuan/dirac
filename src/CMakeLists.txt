@@ -406,6 +406,7 @@ message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 if(ENABLE_PELIB)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
     set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
+    dirac_test(pe_energy "short;scf;pelib")
 endif()
 
 #  dirac sources as separate library
