@@ -160,10 +160,11 @@ C            leave this to authors of this part) Done, hjaaj.
      +  'Solvation energy                         :   ',get_pcm_energy()
         end if 
 #endif
-#if defined (BUILD_PELIB)
+#ifdef HAS_PELIB
+! edh should be replaced with energy routine
         IF (PEQM) THEN
             write(lupri,'(3X,A,'//FMT//')')
-     +  'PE energy (code not written yet)         :   '
+     +  'Embedding energy                         :   ', E_PE
         END IF
 #endif
 C       A one-center approximation may be used that gives a correction 

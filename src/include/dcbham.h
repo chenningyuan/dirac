@@ -158,9 +158,9 @@
 ! checking should be done as to whether or not HFXFAC can leave 
 ! DCRHAM and go to DFTCOM in dftcom.h, for now it stays here
 !
-      REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC,        &
+      REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, E_PE, EPSTAT, RSOLAV, HFXFAC,  &
      &       HFXATT, HFXMU, ONECNV
-      COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       & 
+      COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, E_PE, EPSTAT, RSOLAV, & 
      &                HFXFAC, HFXMU, HFXATT, ONECNV
 
 !     REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV
@@ -170,7 +170,7 @@
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
   extern struct common_dcrham {
-    real ssmtrc,ssmtrc_save,epsol,epstat,rsolav,hfxfac,hfxmu,hxatt,onecnv;
+    real ssmtrc,ssmtrc_save,epsol,e_pe,epstat,rsolav,hfxfac,hfxmu,hxatt,onecnv;
   } dcrham_;
 
 #endif /* __CVERSION__ */

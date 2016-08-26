@@ -2067,9 +2067,13 @@ C
         ! and the electronic PE energy is therefore added to E2PART.
         ! Therefore we subtract it contribution from the total PE energy.
         ALLOCATE(PE_FMAT(N2BBASX))
+        E_PE = 0.0D0
         CALL PE_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
         IF (IPRSCF >= 1) CALL PE_IFC_ENERGY(DMAT)
         DHFERG = DHFERG + PE_TOT_NRG - 0.5d0 * PE_EL_NRG
+        E_PE = PE_TOT_NRG 
+        write(lupri,*)'E_PE', E_PE
+        write(lupri,*)'PE_TOT_NRG', PE_TOT_NRG
         DEALLOCATE(PE_FMAT)
       END IF
 #endif
@@ -2137,7 +2141,7 @@ CMI      ... print out matrixes ...
 #endif
         ! later this will be replaced by a get energy routine
         IF (PEQM) WRITE(LUPRI,'(A,'//FMT//')')
-     +       'Polarizable embedding energy       :  ',PE_TOT_NRG
+     +       'Embedding energy       :  ',PE_TOT_NRG
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
          IF(IPRSCF.GE.2) THEN
