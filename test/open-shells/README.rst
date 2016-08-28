@@ -18,9 +18,10 @@ The reordering of valence spinors and distributing 1 electron over 4 2p_32 shell
 C 
 ---
 
-We obtained the ground state [He] 2s(2) 2p(2) by placing one open-shell electron into the 2p_12 shell and
-the second into the 2p_32 spinor. The spinors SCF convergence with two open-shell levels 
-and the proper degeneracy of the two 2p_32 shells was ensured by selecting proper ".OLEVEL" values.
+We obtained the high spin state [He] 2s(2) 2p12(1) 2p32(1) by placing one open-shell electron into the 2p_12 shell and
+the second into the 2p_32 spinor. The spinors SCF convergence with two open-shells 
+and the proper degeneracy of the two 2p_32 shells was ensured by selecting proper ".OLEVEL" values for OpenFactor=1.0.
+It also converges with the default OpenFactor setting in the SCF procedure.
 
 N
 ---
