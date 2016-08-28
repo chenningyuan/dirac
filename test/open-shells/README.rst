@@ -49,3 +49,11 @@ CH (^2Pi)
 
 The CH molecule...
 
+CO(+)
+-----
+
+Starting from the DFCOEF of the neutral CO molecule ground state we are interested in the excited 4sigma-hole state of CO(+).
+The calculation with the default SCF setting (OPENFAC=1) converges as desired to the excited 4sigma-hole state. 
+However, the calculation with OPENFAC=0, converges to the 5sigma hole state.
+
+

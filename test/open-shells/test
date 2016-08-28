@@ -25,6 +25,9 @@ test.run(['F.x2c.scf_2P32.inp'],         ['F.lsym.mol'],  f, args='--outcmo')
 test.run(['F.x2c.scf_2P12_reord.inp'],   ['F.lsym.mol'],  f, args='--incmo ')
 test.run(['CH.x2c.scf.2Pi12.inp'],       ['CH.lsym.mol'], f, args='--outcmo')
 test.run(['CH.x2c.scf.2Pi32_reord.inp'], ['CH.lsym.mol'], f, args='--incmo ')
+test.run(['CO.x2c.scf.inp'], ['CO.sto-2g.mol'], f, args='--outcmo ')
+test.run(['CO_1p.x2c.scf_4sigma.inp'], ['CO.sto-2g.mol'], f, args='--incmo ')
+test.run(['CO_1p.x2c.scf_5sigma.inp'], ['CO.sto-2g.mol'], f, args='--incmo ')
 
 os.unlink('DFCOEF')
 
