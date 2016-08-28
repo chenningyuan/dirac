@@ -1,9 +1,9 @@
 DIRAC open-shell tests
 ========================
 
-Test dedicated to demonstrate Dirac HF-SCF open-shell capabilities.
+This test is dedicated to demonstrate Dirac HF-SCF open-shell capabilities.
 
-The aim is to get converged ground and first excited states of 
+We get converged ground and first excited states of 
 several open-shell atoms and molecules.
 
 For the sake of quick performance we use the STO-2G uncontracted basis sets and 
@@ -47,7 +47,9 @@ where we obtain the desired occupation with swapped p12,p32 molecular spinors : 
 CH (^2Pi)
 ---------
 
-The CH molecule...
+We demonstrate the ^2Pi_1/2-^2Pi_3/2 spin-orbital splitting of the CH molecule. The excited state is
+obtained either through the MOs reordering, or with the help of the mJ-occupation scheme.
+
 
 CO(+)
 -----
