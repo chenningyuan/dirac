@@ -465,7 +465,8 @@ contains
                 if (dabs(form_preconditioner(l,k)) .gt. safe_minimum) then
                     form_preconditioner(l,k) = one_r8 / form_preconditioner(l,k)
                 else
-                    stop ('detected division by zero')
+!                    stop ('detected division by zero')
+                    form_preconditioner(l,k) = one_r8 
                 end if
             end do
         end do
@@ -678,7 +679,11 @@ contains
         end if
 
         vectors_N = get_matrix_size(A)
-        M_diag => create_diagonal(A)
+
+        allocate(M_diag(size(A%H_II))) 
+
+!        M_diag => create_diagonal(A)
+        M_diag = A%H_II 
 
         min_subspace_size = nroots 
         max_subspace_size = max(nroots, max_subspace_size)

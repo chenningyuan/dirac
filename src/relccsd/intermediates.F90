@@ -181,9 +181,6 @@
    call contraction_424 ((/"o1","o2","p1","o4"/),(/"p1","o3"/),(/"o1","o2","o4","o3"/),w_oooo, &
   &      1.0d0,-1.0d0,nrep,RightTensor=t1)
 
-   write(*,*)'dot product w_ijmn : dia1',& 
-     &  dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
-
 !******************************************************
 ! w_oooo(ij,mn) = w_oooo(ij,mn) +  V(ij,ef) * Tau(ef,mn)
 !******************************************************
@@ -194,9 +191,6 @@
    &                      RightTensor=tau)
 
    deallocate(tau)
-
-   write(*,*)'dot product w_ijmn : dia2',& 
-  &  dot_product(w_oooo(1:nv1*rcw),w_oooo(1:nv1*rcw))
 
 
   end subroutine
@@ -235,8 +229,8 @@
 !   w_voov(ej,mb) = w_voov(ej,mb) + V(nj,fb)*(T2(ef,mn)-T1(f,m)*T1(e,n)
 !----------------------------------------------------------------------
 
-  call contraction_444 ((/"o3","o1","p3","p1"/),(/"p2","p3","o2","o3"/),(/"p2","o1","o2","p1"/),w_voov, &
-   &      1.0d0,0.0d0,nrep,RightTensor=t2)
+  call contraction_444 ((/"p2","p3","o2","o3"/),(/"o3","o1","p3","p1"/),(/"p2","o1","o2","p1"/),w_voov, &
+   &      1.0d0,0.0d0,nrep,LeftTensor=t2)
 
 
   allocate(array_temp(iovoot(nrep+1)*rcw))
@@ -303,8 +297,9 @@
 !  w_ovvo(mb,ej) = w_ovvo(mb,ej) - V(mn,ef)*(T2(bf,nj)+T1(f,j)*T1(b,n))
 !-------------------------------------------------------------------------------------
 
-  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
-             &      1.0d0,0.0d0,nrep,RightTensor=t2)
+
+  call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o3","o1"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+             &      -1.0d0,0.0d0,nrep,RightTensor=t2)
 
 
   allocate(array_temp(nv2*rcw))
@@ -617,6 +612,8 @@
 ! ** We therefore have to count upwards in case of ISTART.NE.0 !!
 
 
+!        MINT = NBUF3/NVVT(IRP)
+!        CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
 
          call putdz (irp,istart,nint,buf3)
@@ -645,6 +642,7 @@
                     ISTART = ISTART + NINT
                     IF(.NOT.DONE) THEN
                     call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
+                     write(*,*)'DONT EXPECT ME HERE'
 
                     call putdz (irp,istart,nint,buf3)
                       CD = 1
@@ -940,7 +938,7 @@
 
 !--------------------local variables----------------
    integer :: mint,off1,off2,off3,off4,off5
-   integer :: abkl,m,n,k,irrep,irep,mm(mxrep)
+   integer :: abkl,abmn,m,n,k,irrep,irep,mm(mxrep)
    integer :: xxt3vvvt(nrep,nrep),yt3vvvt(nrep),zt3vvvot(nrep+1),zt3vvvvt(nrep+1)
    real*8,allocatable :: w_vvvv_temp(:),w_vvvv_temp_temp(:),w_v(:)  
 !---------------------------------------------------
@@ -950,7 +948,7 @@
          off3 = 0
 
 
-         if (nvvt(irp) > 0) then
+!         if (nvvt(irp) > 0) then
          mint = nbuf3/nvvt(irp)
          call getvvvv (irp,istart,nint,done,w_vvvv,mint)
 !        if (carith) then
@@ -962,36 +960,53 @@
 !          =  V(ef,ab) + TAU(ef,mn) * V'*(ab,mn)            
 !----------------------------------------------
 
-       call getvvoo (buf1)
+
+
+       call getoovv (buf1)
        m = nvvt(irp)
        n = nint
        k = noot(irp)
-       abkl = (ivvoott(irp)+istart)*rcw+1
-       off1 = off1 + ivvoott(irp)*rcw  
+!       abmn = (ivvoott(irp)+displ(myproc))*rcw+1
+       abmn = (ivvoott(irp)+istart)*rcw+1
+       off1 = off1 + ivvoott(irp)*rcw
 
-!      if(carith) then
-
-!       call conjuga(ndimt2,tau,1)
-
-!      endif
-
-!      call xgemm ('n','t',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
-!    &               a1,w_vvvv,m)
+        call xgemm ('n','n',m,n,k,a1,tau(off1),nvvt(irp),buf1(abmn),k, &
+      &               a1,w_vvvv,m)
 
 
-       call xgemm ('n','c',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
-     &               a1,w_vvvv,m)
 
-       endif
+ !     call getvvoo (buf1)
+ !     m = nvvt(irp)
+ !     n = nint
+ !     k = noot(irp)
+ !     abkl = (ivvoott(irp)+istart)*rcw+1
+ !     off1 = off1 + ivvoott(irp)*rcw  
 
-!      if (carith) then
-!         call conjuga (nint*nvvt(irp),w_vvvv,1)
-!      endif
+!!     if(carith) then
+
+!!      call conjuga(ndimt2,tau,1)
+
+!!     endif
+
+!!     call xgemm ('n','t',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
+!!   &               a1,w_vvvv,m)
+
+
+ !     call xgemm ('n','c',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
+ !   &               a1,w_vvvv,m)
+
+ !     endif
+
+!!     if (carith) then
+!!        call conjuga (nint*nvvt(irp),w_vvvv,1)
+!!     endif
 
 
 !-----------------------------------------------------
 ! w(ef,ab) = w(ef,ab) - V(em,ab)*t(f,m)
 !-----------------------------------------------------
+
+     if (.true.) then
 
       call offset_outofcore_sorter(irp,xxt3vvvt,yt3vvvt,zt3vvvot,zt3vvvvt)
 
@@ -1018,7 +1033,8 @@
 
        deallocate(w_v)
 
-       allocate(w_vvvv_temp(nvvt(irp)*nint*rcw)) 
+!       allocate(w_vvvv_temp(nvvt(irp)*nint*rcw)) 
+       allocate(w_vvvv_temp(zt3vvvvt(nrep+1)*rcw)) 
 
       w_vvvv_temp = 0.0d0 
       call srt43 (irp,istart,nrep,multb,.true.,nvvt,nv,nv,  &
@@ -1030,6 +1046,8 @@
        call xaxpy(nint*nvvt(irp),a1,w_vvvv_temp,1,w_vvvv,1)
 
        deallocate(w_vvvv_temp)
+
+    endif
 
    end subroutine
 

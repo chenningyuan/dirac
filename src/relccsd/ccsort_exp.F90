@@ -846,7 +846,7 @@
        DO 10 JREP = 1, NREP
         IREP = MULTB(JREP,IJREP+NREP,2)
         KLJREP = MULTB(KLREP+NREP,JREP,2)
-        IOFF = (h%twoDirac(KLJREP,IREP)+g%twoDirac(KLREP,JREP)) * RCW + 1
+        IOFF = (h%twoNonDirac(KLJREP,IREP)+g%twoDirac(KLREP,JREP)) * RCW + 1
         DO J = 1, JFIE(JREP)
          DO I = 1, IFIE(IREP)
             KLJI = IOFF+((I-1)*g%oneDirac(IREP)+(J-1)*N)*RCW
@@ -1420,7 +1420,7 @@
       ELSE
          ROW    = d%oneNonDirac
          COLUMN = e%oneNonDirac
-         offx = h%twoNonDirac 
+         offx = h%twoDirac 
       ENDIF
 
       IJKL = 1

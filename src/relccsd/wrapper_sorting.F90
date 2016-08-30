@@ -546,16 +546,16 @@
        if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
        if (.not.no_match) exit
-       if (k>3)           exit
+       if (k>=3)           exit
        i = i + size(opArray_left)/2 
-       if (k>2) then
+       if (k==2) then
         array_exchange = opArray_left
         i = 3
        endif
        k = k+1
      enddo
 
-     if(.not.no_match) asym_factor = asym_factor*(-1)**k
+     if(.not.no_match) asym_factor = asym_factor*(-1)**(k)
 
 !      if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
 
@@ -571,7 +571,7 @@
 
        call match_array (a%num,no_match,save_index,if_trans)
       
-       call match_array_transpose (a%trans,no_match,save_index,if_trans)  
+       if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
        if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
 
@@ -591,7 +591,6 @@
 !  call shuffle_indices (reorder_v,no_match,save_index,if_trans)
 
 !  endif 
-
 
     if (no_match) then
       call quit('No Sorting subroutine available. code stops here.')
