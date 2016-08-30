@@ -55,6 +55,7 @@
    integer :: abij, ijrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b
    real(kind=8) :: fac, fac3, fac2
    integer :: ndimr1, ndimr2
+   real*8,allocatable :: R1_dum(:,:) 
 
 
 !   iarep = nr_roots(1)
@@ -69,8 +70,8 @@
 !initialize the R-vector
 !=======================
 
-    ndimr1 = size(R1(:,nroot))
-    ndimr2 = size(R2(:,nroot))
+    ndimr1 = size(R1,1)
+    ndimr2 = size(R2,1)
     print *, "dimensions of R1, R2", ndimr1, ndimr2
     R1(1:ndimr1,1:nroot) = 0.0d0 
     R2(1:ndimr2,1:nroot) = 0.0d0 
@@ -156,51 +157,123 @@
       ENDDO
 !aspg+as
 
-    if (nroot.eq.(ndimr1+ndimr2)) then
-     do iroot = 1, ndimr1
-         R1(iroot,iroot) = 1.0d0
-     end do
-     do iroot = 1, ndimr2
-         R2(iroot,ndimr1+iroot) = 1.0d0
-     end do
-    else
-     allocate(diag_H(ndimr1))
-     diag_H = H_II(1:ndimr1)
+! New trial vectors for R1 
 
-     do iroot = 1, nroot
-      k = minloc(diag_H) 
-      write(*,*)'roots',iroot,H_II(k(1)),k(1) 
-      i = k(1)
-      diag_H(i) = 8000.0d0
-      R1(i,iroot) = 1.0d0
-     enddo
-     deallocate(diag_H)
-    end if
+   allocate (R1_dum(ndimr1,ndimr1))
+     R1_dum = 0.0d0
+
+     do iroot = 1, ndimr1
+         R1_dum(iroot,iroot) = 1.0d0
+     end do
+
+      call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
+      
+      R1 = R1_dum(:,1:nroot) 
+
+    deallocate(R1_dum)
+
+
+!!  if (nroot.eq.(ndimr1+ndimr2)) then
+!!   do iroot = 1, ndimr1
+!!       R1(iroot,iroot) = 1.0d0
+!!   end do
+!!   do iroot = 1, ndimr2
+!!       R2(iroot,ndimr1+iroot) = 1.0d0
+!!   end do
+!!  else
+!!   allocate(diag_H(ndimr1))
+!!   diag_H = H_II(1:ndimr1)
+
+!!   do iroot = 1, nroot
+!!    k = minloc(diag_H) 
+!!    write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+!!    i = k(1)
+!!    diag_H(i) = 8000.0d0
+!!    R1(i,iroot) = 1.0d0
+!!   enddo
+!!   deallocate(diag_H)
+!!  end if
 
 
    case ('IP')
 
 !As of now, I am targetting the lowest energy determinants across the symmetries.
 
-    H_II = -eps(1:(io(nrep+1)*rcw))
+      H_II = -eps(1:(ndimr1*rcw)) !+ 100.0d0
 
-    if (nroot.eq.(ndimr1+ndimr2)) then
+      ABIJ = ndimr1+1 
+      DO IJRP = 1, NREP
+      DO 30 JRP = 1, NREP
+      JJ = IO(JRP)
+      IRP = MULTB(JRP,IJRP+NREP,2)
+      IF (IRP.LT.JRP) GOTO 30
+      IOFF = IO(IRP)
+      DO J = 1, NO(JRP)
+         JJ = JJ + 1
+         FAC1 = EPS(JJ)
+         IMIN = 1
+         IF (IRP.EQ.JRP) IMIN = J + 1
+         DO I = IMIN, NO(IRP)
+            II = IOFF + I
+            FAC2 = EPS(II) + FAC1
+            DO 40 BRP = 1, NREP
+            BB = IV(BRP) + IO(NREP+1)
+            ARP = MULTB(BRP,IJRP+NREP,2)
+!            IF (ARP.LT.BRP) GOTO 40
+            AOFF = IV(ARP) + IO(NREP+1)
+            DO B = 1, NV(BRP)
+               BB = BB + 1
+               FAC3 = FAC2 - EPS(BB)
+!              AMIN = 1
+!              IF (ARP.EQ.BRP) AMIN = B + 1
+               DO A = 1, NCONT(ARP)
+!                 AA = AOFF + A
+                  FAC = FAC3 !- 100.0d0
+                  H_II(ABIJ) = -FAC
+                  ABIJ = ABIJ + 1
+               ENDDO
+            ENDDO
+ 40         CONTINUE
+         ENDDO
+      ENDDO
+ 30   CONTINUE
+      ENDDO
+
+   allocate (R1_dum(ndimr1,ndimr1))
+     R1_dum = 0.0d0
+
      do iroot = 1, ndimr1
-         R1(iroot,iroot) = 1.0d0
+         R1_dum(iroot,iroot) = 1.0d0
      end do
-     do iroot = 1, ndimr2
-         R2(iroot,ndimr1+iroot) = 1.0d0
-     end do
-    else
-       do iroot = 1, nroot
-        k = minloc(H_II) 
-        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
-        i = k(1)
-        H_II(i) = 8000.0d0
-        print *, "debug: i, iroot, ndimr1, ndimr2, size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
-        R1(i,iroot) = 1.0d0
-       enddo
-    end if 
+
+      call trial_vectors_ip(R1_dum,Fbar_HH)
+      
+      R1 = R1_dum(:,1:nroot) 
+
+    deallocate(R1_dum)
+
+ !  if (nroot.eq.(ndimr1+ndimr2)) then
+ !   do iroot = 1, ndimr1
+ !       R1(iroot,iroot) = 1.0d0
+ !   end do
+ !   do iroot = 1, ndimr2
+ !       R2(iroot,ndimr1+iroot) = 1.0d0
+ !   end do
+ !  else
+
+!!   allocate(diag_H(ndimr1))
+!!   diag_H = H_II(1:ndimr1)
+
+!!     do iroot = 1, nroot
+!!      k = minloc(diag_H) 
+!!      write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+!!      i = k(1)
+!!      diag_H(i) = 8000.0d0
+!!      print *, "debug: i, iroot, ndimr1, ndimr2, size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
+!!      R1(i,iroot) = 1.0d0
+!!     enddo
+!!   deallocate(diag_H)
+ ! end if 
 
    case ('EA')
 
@@ -366,18 +439,18 @@
       &                    r((ndimr1*rcw)+1:N*rcw,:),  &
       &                    B%H_II)
 
-      do iroot = 1, nroot
-          print *, "debug, constructing sigma vector ",iroot
-          sigma(:,iroot:iroot) = 0.0d0
-          call sigma_ee_1h1p(r(1:ndimr1*rcw,iroot:iroot), &
-          &                  r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-          &                  B,                            &
-          &                  sigma(1:ndimr1*rcw,iroot:iroot), &
-          &                  sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-          &                  buf2, &
-          &                  buf3, &
-          &                  int(nbuf3,4))
-      enddo
+!     do iroot = 1, nroot
+!         print *, "debug, constructing sigma vector ",iroot
+!         sigma(:,iroot:iroot) = 0.0d0
+!         call sigma_ee_1h1p(r(1:ndimr1*rcw,iroot:iroot), &
+!         &                  r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!         &                  B,                            &
+!         &                  sigma(1:ndimr1*rcw,iroot:iroot), &
+!         &                  sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!         &                  buf2, &
+!         &                  buf3, &
+!         &                  int(nbuf3,4))
+!     enddo
 
     case ('IP')
 
@@ -404,15 +477,15 @@
         enddo
 
       do irep = 1, nrep
-!        ndimr2 = ndimr2 + nvx(irep)*noot(irep)
-         ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
+!       ndimr2 = ndimr2 + nvx(irep)*noot(irep)
+          ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
          print *, "debug, ndimr2: irep",irep,"nvx(irep)",nvx(irep),"noot(irep)",noot(irep)
       enddo
        
        print *, "debug, ndimr1",ndimr1,"ndimr2",ndimr2
 
        N = ndimr1 + ndimr2
-!     nroot = N
+!       nroot = N
 
        call set_eom_ndet(1, ndimr1)
        call set_eom_ndet(2, ndimr2)
@@ -424,7 +497,11 @@
 
        allocate (sigma(N*rcw,nroot))
        allocate (r(N*rcw,nroot))
-       allocate (B%H_II(io(nrep+1)*rcw)) 
+       allocate (B%H_II(N*rcw)) 
+       
+       r = 0.0d0
+
+       B%H_II = 1.0d0
 
       call input_processor(B%Fbar_mi, &
       &                    B%Fbar_ae, &
@@ -433,24 +510,24 @@
       &                    r((ndimr1*rcw)+1:N*rcw,:),  &
       &                    B%H_II)
 
-       do iroot = 1, nroot
+!      do iroot = 1, nroot
 
 !         sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
 !         sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
 !         call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),B, &
 !    &                  sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
 
-          sigma(1:N*rcw,iroot:iroot) = 0.0d0 
-          call sigma_IP(nvx, &
-                        r(1:ndimr1*rcw,iroot:iroot), &
-          &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-          &             B,                            &
-          &             sigma(1:ndimr1*rcw,iroot:iroot), &
-          &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-          &             ndimr1, &
-          &             ndimr2)
+!         sigma(1:N*rcw,iroot:iroot) = 0.0d0 
+!         call sigma_IP(nvx, &
+!                       r(1:ndimr1*rcw,iroot:iroot), &
+!         &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!         &             B,                            &
+!         &             sigma(1:ndimr1*rcw,iroot:iroot), &
+!         &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!         &             ndimr1, &
+!         &             ndimr2)
 
-       end do
+!       end do
 
     case('EA')
 
@@ -466,7 +543,7 @@
 
    end select 
 
-   if (.true.) then
+   if (.false.) then
       allocate (sub_H(nroot,nroot))
       sub_H = 0.0d0
 
@@ -475,22 +552,22 @@
             sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot))
          enddo
       enddo
-      write(*,*)'matrix to diagonalize', sub_H
+!      write(*,*)'matrix to diagonalize', sub_H
       call dump_to_file(42,"CCjacobianH.bin",sub_H)
 
-      write(*,*)'matrix to diagonalize', sigma 
+!      write(*,*)'matrix to diagonalize', sigma 
       call dump_to_file(42,"CCjacobianHp.bin", sigma)
 
        allocate (ev(nroot))
        allocate (evec(nroot,nroot))
 
        call solve_cg(nroot,sigma,evec,ev)
-       write(*,*)'Hp eigenvalues', (ev(i),i=1,min(10,nroot))
+       write(*,*)'Hp eigenvalues', (ev(i),i=1,min(20,nroot))
 
-       evec = 0.0d0
-       ev = 0.0d0
-       call solve_cg(nroot,sub_H,evec,ev)
-       write(*,*)'H eigenvalues', (ev(i),i=1,min(10,nroot))
+!      evec = 0.0d0
+!      ev = 0.0d0
+!      call solve_cg(nroot,sub_H,evec,ev)
+!      write(*,*)'H eigenvalues', (ev(i),i=1,min(10,nroot))
 
        deallocate(ev)
        deallocate(evec)

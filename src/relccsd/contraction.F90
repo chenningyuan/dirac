@@ -85,7 +85,7 @@
     integer   :: x_row(nrep),x_column(nrep)
     integer   :: y_column(nrep),y_row(nrep)              
     real(8),intent(inout) :: ImTensor(*)
-    integer               :: match_index  
+    integer               :: match_index_R,match_index_L  
     character(1)          :: transA,transB
     real(8),allocatable   :: v_sort(:)
     real(8),allocatable   :: right_sorted(:)    
@@ -112,27 +112,33 @@
 
 ! 1) fetch 2-e integrals and sort them for BLAS.
 
-    call decide_sorting_routine(13,left_order,right_order,im_order,transA,match_index,asym_factor_L, &
+     call decide_sorting_routine(13,left_order,right_order,im_order,transA,match_index_L,asym_factor_L, &
     &   .true.,sorted_opArray=sorted_oparray_left)
 
+
+!     write(*,*)'debug info left array 13 ',transA,match_index_L,asym_factor_L
+
      if (present(LeftTensor)) then 
-      call sorting_for_blas(13,left_order,match_index,.false.,transA,v_sort,x_row,x_column,LeftTensor)
+      call sorting_for_blas(13,left_order,match_index_L,.false.,transA,v_sort,x_row,x_column,LeftTensor)
      else
-      call sorting_for_blas(13,left_order,match_index,.false.,transA,v_sort,x_row,x_column)
+      call sorting_for_blas(13,left_order,match_index_L,.false.,transA,v_sort,x_row,x_column)
      endif 
 
 ! 2) general sorting routine for fixed arrays. 
 
-     call decide_sorting_routine(31,right_order,im_order,sorted_oparray_left,transB,match_index,asym_factor_R, &
+     call decide_sorting_routine(31,right_order,im_order,sorted_oparray_left,transB,match_index_R,asym_factor_R, &
     &         .false.,sorted_opArray=sorted_oparray_right)
 
+
+!     write(*,*)'debug info right array 31 ',transB,match_index_R,asym_factor_R,&
+!    & sorted_oparray_right
 
      array_equal = all((/sorted_oparray_left(1),sorted_oparray_right(4)/)==im_order)
 
      if (present(RightTensor)) then 
-     call sorting_for_blas(31,right_order,match_index,.false.,transB,right_sorted,y_row,y_column,rightTensor)
+     call sorting_for_blas(31,right_order,match_index_R,.false.,transB,right_sorted,y_row,y_column,rightTensor)
      else
-     call sorting_for_blas(31,right_order,match_index,.false.,transB,right_sorted,y_row,y_column)
+     call sorting_for_blas(31,right_order,match_index_R,.false.,transB,right_sorted,y_row,y_column)
      endif  
 
 ! 3) contraction routine for symmetry-packed arrays.
@@ -221,6 +227,9 @@
      call onebody_for_blas (right_order,sorted_left(3:4),im_order,transB,y_row,y_column) 
 
      array_equal = all((/sorted_left(1),sorted_left(2)/)==im_order)
+
+
+!      write(*,*)'inside 422: array_equal' ,array_equal 
 
          if (transA.eq.'n'.or.transA.eq.'N') then
             lda = x_row(1)
@@ -364,6 +373,7 @@
 
 #include "param.inc"
 #include "complex.inc"
+#include "dcbham.h"
 
   maxdim1 = max(sorted_dimension(left_order),sorted_dimension(im_order))
   maxdim2 = sorted_dimension(right_order)
@@ -379,6 +389,9 @@
     call decide_sorting_routine(22,left_order,right_order,im_order,transA,save_index_l,asym_factor_L,.true., &
     &  sorted_opArray=sorted_opArray_left)
 
+
+!    write(*,*)'debug info left array 22:  ',transA,save_index_L,asym_factor_L,sorted_opArray_left
+
     if (present(LeftTensor)) then 
     call sorting_for_blas(22,left_order,save_index_l,.false.,transA,v_sort,x_row,x_column, presorted=LeftTensor,if_TotSym=.false.)
     else
@@ -389,6 +402,9 @@
 
     call decide_sorting_routine(22,right_order,im_order,sorted_opArray_left,transB,save_index_r,asym_factor_R,&
     &          .false.,sorted_opArray=sorted_opArray_right)
+
+
+!     write(*,*)'debug info right array 22:  ',transB,save_index_r,asym_factor_r,sorted_opArray_right
 
     if (present(RightTensor)) then 
     call sorting_for_blas(22,right_order,save_index_r,.false.,transB,right_sorted,y_row,y_column,&
@@ -424,6 +440,8 @@
 
     case(1)
 
+!    write(*,*)'***ALLOCATION COULD BE WRONG***'
+
     call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,&
     &    right_sorted,A0,im_temp,1,1,.true.) 
 
@@ -452,9 +470,17 @@
    call decide_sorting_routine(22,im_order,left_order,(/sorted_opArray_left(1:2),sorted_opArray_right(3:4)/), &
                        & transA,save_index,asym_factor_R,.false.,sorted_opArray=sorted_opArray_right,inverse=.true.)
 
+
+!     write(*,*)'debug info intermediate array 22:  ' ,transA,save_index,asym_factor_r,sorted_opArray_right
+
+
    if (transA=='T') then
-!!    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
+
+    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
+
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
+
+   im_temp_temp = 0.0d0
 
    call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
 
@@ -471,8 +497,8 @@
    call xaxpy (dot_product(x_row,x_column),A1*asym_factor_R,v_sort,1,imTensor,1)
 
    else
-    call cntrct (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort,right_sorted, &
-   &              dia_sum_factor*A1,imTensor,nrep) 
+    call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_R*asym_factor_L*dia_factor*A1,v_sort,right_sorted, &
+   &              dia_sum_factor*A1,imTensor,1,1,.true.) 
    endif
 
    deallocate(v_sort)
@@ -546,11 +572,11 @@
 
    if (transA=='T') then
 
+    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
+
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
    call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
-
-!!      if (carith) call conjuga(dot_product(x_row,y_column),im_temp_temp,1)
 
    deallocate(im_temp)
 
@@ -643,6 +669,7 @@
 
    if (transA=='T') then
 
+    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
   allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
    call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
 
