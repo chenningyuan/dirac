@@ -2061,18 +2061,16 @@ C
       KFREE_start = KFREE
       CALL DZERO(CMO,N2BBASXQ)
 
-C        1. NEWORB on KRMCSCF ?
+C        1. Orbitals on KRMCSCF ?
 
       INQUIRE(FILE='KRMCSCF',EXIST=FILEX)
       IF (FILEX) THEN
-         flush(lupri)
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PRPESR')
 
          REWIND (LUKRMC)
          IF (FNDLAB('NEWNATOB', LUKRMC)) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (ESR)  Reading "NEWNATOB" orbitals from file KRMCSCF'
-            CALL REAKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
             GO TO 101
          END IF
 
@@ -2080,7 +2078,6 @@ C        1. NEWORB on KRMCSCF ?
          IF (FNDLAB('MCCINATO', LUKRMC)) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (ESR)  Reading "MCCINATO" orbitals from file KRMCSCF'
-            CALL REAKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
             GO TO 101
          END IF
 
@@ -2088,7 +2085,6 @@ C        1. NEWORB on KRMCSCF ?
          IF (FNDLAB('NEWORB  ', LUKRMC)) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (ESR)  Reading "NEWORB  " orbitals from file KRMCSCF'
-            CALL REAKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
             GO TO 101
          END IF
 
@@ -2096,17 +2092,20 @@ C        1. NEWORB on KRMCSCF ?
          IF (FNDLAB('OLDORB  ', LUKRMC)) THEN
             WRITE(LUPRI,'(/A)')
      &      ' (ESR)  Reading "OLDORB  " orbitals from file KRMCSCF'
-            CALL REAKRMC(LUKRMC,'OLDORB  ',CMO,NCMOTQ)
             GO TO 101
          END IF
 
-  101    CLOSE(LUKRMC,STATUS='KEEP')
+         ! no orbitals found on KRMCSCF, try next file
+         GO TO 200
+
+  101    CALL READT(LUKRMC,NCMOTQ,CMO)
+         CLOSE(LUKRMC,STATUS='KEEP')
          GO TO 9000
-       END IF
+      END IF
 
 C        2. MP2NO on KRMCOLD ?
 
-      INQUIRE(FILE='KRMCOLD',EXIST=FILEX)
+  200 INQUIRE(FILE='KRMCOLD',EXIST=FILEX)
       IF (FILEX) THEN
          WRITE(LUPRI,'(/A)')
      &      ' (ESR)  Reading MP2 natural orbitals from file KRMCOLD'
@@ -2153,13 +2152,14 @@ C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
       END IF
 
 C        DFCOEF not found. Then:
-C        3. no more options (yet).
+C        4. no more options (yet).
 
       WRITE(LUPRI,'(//A)') 'Fatal error for ESR: MO coefficients not'//
      &   ' found on KRMCOLD or DFCOEF'
       CALL QUIT('ESR fatal error: no MO coefficients found')
 
  9000 CALL MEMREL('ESR_READ_CMO',WORK,1,KFREE_start,KFREE,LFREE)
+      flush(lupri)
       RETURN
       END
 !  -- end of pamesr.F --
