@@ -323,6 +323,7 @@ C
       IF (TOBE) THEN
 C       ... search for coefficients label
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','MP2_NA')
+        IF( FNDLAB('MP2NATOB',LUKRMC)) THEN
         IF( FNDLAB('NEWNATOB',LUKRMC)) THEN 
            SKIP_MP2DEN = .TRUE.
            WRITE(LUPRI,'(//A/A)') 
@@ -330,6 +331,7 @@ C       ... search for coefficients label
      &'     *****             using existing orbitals          *****'
         END IF
         CLOSE(LUKRMC,STATUS='KEEP')
+      END IF
       END IF
       INQUIRE(FILE='MDCINT',EXIST=TOBE)
       IF (TOBE) SKIP_ITRAFO = .TRUE.
