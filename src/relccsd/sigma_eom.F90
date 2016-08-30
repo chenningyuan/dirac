@@ -163,11 +163,12 @@
 
    end function
 
-   function create_sigma_vector(A, r)
+   function create_sigma_vector(A, r, old_sigma_vector)
       real(kind=8), pointer :: create_sigma_vector(:,:)
+      real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
-      integer :: L, N 
+      integer :: L, N, L_already_done 
       integer :: nbuf3, ndimr1, ndimr2
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot
@@ -179,6 +180,17 @@
       L = size(r,2)
 
       allocate(create_sigma_vector(N,L))
+
+      if (associated(old_sigma_vector)) then 
+          L_already_done = size(old_sigma_vector,2)
+          do iroot = 1, L_already_done
+              create_sigma_vector(:,iroot) = old_sigma_vector(:,iroot)
+          end do
+          deallocate(old_sigma_vector)
+          nullify(old_sigma_vector)
+      else
+          L_already_done = 1
+      endif
 
       ndimr1 = eom_ndet(1)
       ndimr2 = eom_ndet(2)
@@ -192,7 +204,7 @@
          case ("IP")
 
              print *, "debug: eom_nvx:",eom_nvx
-             do iroot = 1, L 
+             do iroot = L_already_done, L 
 
                 create_sigma_vector(:,iroot:iroot) = 0.0d0
                  print "(2x,a,i6,a,i6)", "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
@@ -209,7 +221,7 @@
          case ("EA")
          case ("EE")
 
-             do iroot = 1, L
+             do iroot = L_already_done, L
 
                 create_sigma_vector(:,iroot:iroot) = 0.0d0
                  print "(2x,a,i6,a,i6)", "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
