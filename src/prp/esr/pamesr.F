@@ -2038,19 +2038,20 @@ C
 C     Hans Joergen Aa. Jensen Feb. 2015
 C
 C     Read MO coefficents for ESR-CI calculation in this priority order:
-C        1. MP2NO on KRMCOLD
-C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals
+C        1. Orbitals on KRMCSCF
+C        2. MP2NO on KRMCOLD
+C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals
 C
 #include "implicit.h"
 #include "priunit.h"
       REAL*8  CMO(*), WORK(*)
-      LOGICAL FILEX
+      LOGICAL FILEX, FNDLAB
 C
 C Used from COMMON blocks:
 C  dcbgen.h : LUCOEF, LUKRMC
 C  dcbham.h : SPINFR; LEVYLE
 C  dcbbas.h : N2BBASXQ, ...
-C  dcborb.h : NORBT, ...
+C  dcborb.h : NORBT, ..., NCMOTQ
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -2060,7 +2061,50 @@ C
       KFREE_start = KFREE
       CALL DZERO(CMO,N2BBASXQ)
 
-C        1. MP2NO on KRMCOLD ?
+C        1. NEWORB on KRMCSCF ?
+
+      INQUIRE(FILE='KRMCSCF',EXIST=FILEX)
+      IF (FILEX) THEN
+         flush(lupri)
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PRPESR')
+
+         REWIND (LUKRMC)
+         IF (FNDLAB('NEWNATOB', LUKRMC)) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading "NEWNATOB" orbitals from file KRMCSCF'
+            CALL REAKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
+            GO TO 101
+         END IF
+
+         REWIND (LUKRMC)
+         IF (FNDLAB('MCCINATO', LUKRMC)) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading "MCCINATO" orbitals from file KRMCSCF'
+            CALL REAKRMC(LUKRMC,'MCCINATO',CMO,NCMOTQ)
+            GO TO 101
+         END IF
+
+         REWIND (LUKRMC)
+         IF (FNDLAB('NEWORB  ', LUKRMC)) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading "NEWORB  " orbitals from file KRMCSCF'
+            CALL REAKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
+            GO TO 101
+         END IF
+
+         REWIND (LUKRMC)
+         IF (FNDLAB('OLDORB  ', LUKRMC)) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading "OLDORB  " orbitals from file KRMCSCF'
+            CALL REAKRMC(LUKRMC,'OLDORB  ',CMO,NCMOTQ)
+            GO TO 101
+         END IF
+
+  101    CLOSE(LUKRMC,STATUS='KEEP')
+         GO TO 9000
+       END IF
+
+C        2. MP2NO on KRMCOLD ?
 
       INQUIRE(FILE='KRMCOLD',EXIST=FILEX)
       IF (FILEX) THEN
@@ -2080,14 +2124,14 @@ C        ... read from file
      &                   WORK(KBEIG))
          CLOSE(LUKRMC,STATUS='KEEP')
 
-         WRITE(LUPRI,'(/A)')
-     &      ' (ESR)  MP2 natural orbitals read from file KRMCOLD'
+!        WRITE(LUPRI,'(/A)')
+!    &      ' (ESR)  MP2 natural orbitals read from file KRMCOLD'
 C
          GO TO 9000
       END IF
 
 C        MP2NO not found. Then:
-C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
+C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
 
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(FILEX) THEN
