@@ -712,13 +712,13 @@ contains
             print *, "Iteration ", niter
             print *, ""
 
-            if (associated(sigma_vector)) deallocate(sigma_vector)
+!           if (associated(sigma_vector)) deallocate(sigma_vector)
             if (associated(M_small)) deallocate(M_small)
 
 ! here, instead of create_sigma_vector, have update_sigma_vector, which will
 ! keep the prior sigma vectors and just construct the nroot new ones, or create
 ! a new one at first iteration
-            sigma_vector => create_sigma_vector(A, b)
+            sigma_vector => create_sigma_vector(A, b, sigma_vector)
             M_small => create_reduced_problem(b, sigma_vector)
 
             call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
@@ -748,10 +748,10 @@ contains
 
         print *, "Final size of reduced subspace : ",L
 
-        if (associated(sigma_vector)) deallocate(sigma_vector)
+!       if (associated(sigma_vector)) deallocate(sigma_vector)
         if (associated(M_small)) deallocate(M_small)
 
-        sigma_vector => create_sigma_vector(A, b)
+        sigma_vector => create_sigma_vector(A, b, sigma_vector)
         M_small => create_reduced_problem(b, sigma_vector)
 
         if (verbose_local) then
@@ -876,6 +876,38 @@ contains
 
         deallocate (bc)
     end subroutine
+
+
+    function update_sigma_vector(M, b, old_sigma_vector)
+        real(kind=8), pointer :: update_sigma_vector(:,:)
+        real(kind=8), intent(in)  :: M(:,:)
+        real(kind=8), intent(in)  :: b(:,:)
+        real(kind=8), pointer :: old_sigma_vector(:,:)
+
+        integer :: vectors_L, vectors_N
+        integer :: vectors_L_old
+        integer :: new_L, i
+
+        real(kind=8) :: alpha_lapack = 1.0
+        real(kind=8) :: beta_lapack = 0.0
+
+        vectors_N = size(b,1)
+        vectors_L = size(b,2)
+        vectors_L_old = size(old_sigma_vector,2)
+
+        allocate(update_sigma_vector(vectors_N,vectors_L))
+        do i = 1, vectors_L_old 
+           update_sigma_vector(:, i) = old_sigma_vector(:, i)  
+        end do
+        deallocate(old_sigma_vector)
+        nullify(old_sigma_vector)
+
+        new_L = vectors_L - vectors_L_old
+        call dgemm('N', 'N', vectors_N, new_L, vectors_N, alpha_lapack, M, vectors_N, &
+       &           b(:, vectors_L_old:vectors_L), vectors_N, beta_lapack,             &
+       &           update_sigma_vector(:,vectors_L_old:vectors_L), vectors_N)
+    end function
+
 
     function create_sigma_vector(M, b)
         real(kind=8), pointer :: create_sigma_vector(:,:)
