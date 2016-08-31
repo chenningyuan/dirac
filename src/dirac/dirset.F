@@ -1635,11 +1635,11 @@ C.......skip AO2MO transformation matrix
 C.......skip inverse transformation matrix
         READ(LUTMAT)
 C.......read records containing orbital information
-        READ(LUTMAT,END=10) NZT,URKBAL,SUB_BL,I2COFK
+        READ(LUTMAT,END=10,ERR=10) NZT,URKBAL,SUB_BL,I2COFK
         N2TMT   = 0
         N2TMOTQ = 0
         DO IFRP = 1,NFSYM
-          READ(LUTMAT,END=10) 
+          READ(LUTMAT,END=10,ERR=10) 
      &       NORB(IFRP),(NFORB(IFRP,J),J=0,2),
      &       ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
      &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
@@ -1655,7 +1655,7 @@ C.......read records containing orbital information
         ENDDO
         IF(SUB_BL) THEN
           DO IFRP = 1,NFSYM
-            READ(LUTMAT,END=10) N_SUB_BL(IFRP),
+            READ(LUTMAT,END=10,ERR=10) N_SUB_BL(IFRP),
      &       ((NORB_SUB(IB,IFRP,IC),IC=0,2),
      &       ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
           ENDDO
@@ -1670,11 +1670,11 @@ C.......Look for a formatted file with same information
         IF(GOFAST) THEN
           OPEN(LUTMAT,FILE ='GOFAST',STATUS='OLD',
      &             ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
-          READ(LUTMAT,*,END=30) NZT,URKBAL,SUB_BL,I2COFK
+          READ(LUTMAT,*,END=30,ERR=30) NZT,URKBAL,SUB_BL,I2COFK
           N2TMT   = 0
           N2TMOTQ = 0
           DO IFRP = 1,NFSYM
-            READ(LUTMAT,*,END=30) 
+            READ(LUTMAT,*,END=30,ERR=30) 
      &      NORB(IFRP),(NFORB(IFRP,J),J=0,2),
      &      ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
      &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
@@ -1690,7 +1690,7 @@ C.......Look for a formatted file with same information
           ENDDO
           IF(SUB_BL) THEN
             DO IFRP = 1,NFSYM
-              READ(LUTMAT,*,END=30) N_SUB_BL(IFRP),
+              READ(LUTMAT,*,END=30,ERR=30) N_SUB_BL(IFRP),
      &        ((NORB_SUB(IB,IFRP,IC),IC=0,2),
      &        ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
             ENDDO
