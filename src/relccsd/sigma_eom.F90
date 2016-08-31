@@ -182,7 +182,7 @@
       allocate(create_sigma_vector(N,L))
 
       if (associated(old_sigma_vector)) then 
-          L_already_done = size(old_sigma_vector,2)
+          L_already_done = size(old_sigma_vector,2) + 1
           do iroot = 1, L_already_done
               create_sigma_vector(:,iroot) = old_sigma_vector(:,iroot)
           end do
