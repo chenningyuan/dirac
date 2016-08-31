@@ -1531,7 +1531,7 @@
       ELSE
          ROW = d%oneNonDirac
          COLUMN = e%oneNonDirac
-         offx = h%twoNonDirac
+         offx = h%twoDirac
       ENDIF
 
       IJKL = 1
