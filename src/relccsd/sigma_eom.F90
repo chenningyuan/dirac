@@ -142,7 +142,8 @@
       real(kind=8), pointer :: create_diagonal(:)
       type(intermediates) :: A
       integer :: N
-      integer :: nbuf3, ndimt1, ndimt2
+      integer :: ndimt1, ndimt2
+      integer :: nbuf3
 
       ndimt1 = eom_ndet(1)
       ndimt2 = eom_ndet(2)
@@ -169,7 +170,8 @@
       type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N, L_already_done 
-      integer :: nbuf3, ndimr1, ndimr2
+      integer :: ndimr1, ndimr2
+      integer :: nbuf3
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot
 
@@ -261,7 +263,7 @@ integer :: nbuf3
 
 !-----------------------------------------------------------------------------
 
-     nbuf3 = int(size(local_buf3),4)
+     nbuf3 = size(local_buf3)
 
      allocate (foo(nfoo*rcw))
      allocate (fvo(nfvo*rcw))

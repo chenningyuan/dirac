@@ -318,7 +318,7 @@ end if
   integer                :: freemem = 0
   integer                :: work_memsize
   integer                :: nbuf1,nbuf2
-  integer(kind=8)        :: nbuf3
+  integer                :: nbuf3
   integer*8              :: nv5irp,nv6irp,nvirp
 
     nbuf1 = max(joooo(nrep+1),jvooo(nrep+1),jvvoo(nrep+1),jvovo(nrep+1))
