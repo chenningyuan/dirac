@@ -99,7 +99,7 @@ contains
     subroutine set_threshold(threshold)
         real(kind=8), intent(in) :: threshold
         convergence_threshold = threshold
-    end
+    end subroutine
 
     subroutine set_safe_minimum()
         double precision dlamch
