@@ -99,7 +99,7 @@ contains
     subroutine set_threshold(threshold)
         real(kind=8), intent(in) :: threshold
         convergence_threshold = threshold
-    end
+    end subroutine
 
     subroutine set_safe_minimum()
         double precision dlamch
@@ -272,7 +272,7 @@ contains
                 print *, "debug, Gram-Schmidt orthogonalization"
                 print *, "  renormalizing vector v(",i,") : (norm = ",norm,")"
                 do k = 1, vectors_N
-                    print "(4x,1e14.6)", vectors(k,i)
+                    print "(4x,1e24.16)", vectors(k,i)
                 end do
                 print *, ""
             end if 
@@ -284,7 +284,7 @@ contains
             if (verbose_local) then
                 print *, "renormalized  vector v(",i,") : " 
                 do k = 1, vectors_N
-                    print "(4x,1e14.6)", vectors(k,i)
+                    print "(4x,1e24.16)", vectors(k,i)
                 end do
                 print *, ""
             end if
@@ -293,7 +293,7 @@ contains
                 if (verbose_local) then
                     print *," projection of v(",i,") onto v(",j,"):"
                     do k = 1, vectors_N
-                        print "(4x,1e14.6,4x,1e14.6)", vectors(k,j), projection(k)
+                        print "(4x,1e24.16,4x,1e24.16)", vectors(k,j), projection(k)
                     end do
                     print *, ""
                 end if
@@ -328,7 +328,7 @@ contains
         do i = 1, N
             print "(2x,i6,$)", i
             do j = 1, L
-                print "(4x,1e14.6,$)", vectors(i,j)
+                print "(4x,1e24.16,$)", vectors(i,j)
             end do
             print *, ""
         end do
@@ -354,9 +354,9 @@ contains
         label = "Eigenvalues"
         do i = 1, nroots_local 
             if (eValuesIm(i) .eq. zero_r8) then
-                print "(4x,a,i6,a,1e14.6)", "Eigenvalue ",i," : ",eValuesRe(i)
+                print "(4x,a,i6,a,1e24.16)", "Eigenvalue ",i," : ",eValuesRe(i)
             else
-                print "(4x,a,i6,a,1e14.6,a,1e14.6,a)", "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
+                print "(4x,a,i6,a,1e24.16,a,1e24.16,a)", "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
             end if
         end do
         if (left) then
@@ -416,12 +416,12 @@ contains
         do k = 1, nroots
             norm_r = vector_norm(r(:,k))
             if (norm_r .lt. convergence_threshold) then 
-               print "(4x,a,i6,a,1e14.6,a,1e14.6,a)", "Root ",k,"  ||q_k,M|| ", norm_r,  &
+               print "(4x,a,i6,a,1e24.16,a,1e24.16,a)", "Root ",k,"  ||q_k,M|| ", norm_r,  &
                                                       " threshold ", convergence_threshold, &
                                                       " <<< converged ! "
                vectors_to_update(k) = .false.
             else
-               print "(4x,a,i6,a,1e14.6,a,1e14.6)",  "Root ",k,"  ||q_k,M|| ", norm_r, &
+               print "(4x,a,i6,a,1e24.16,a,1e24.16)",  "Root ",k,"  ||q_k,M|| ", norm_r, &
                                                      " threshold ", convergence_threshold
                vectors_to_update(k) = .true.
                unconverged_roots = unconverged_roots + 1

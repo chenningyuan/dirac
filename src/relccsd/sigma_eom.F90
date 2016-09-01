@@ -67,7 +67,7 @@
    end function
 
    subroutine free_eom_nvx()
-       deallocate(eom_nvx)
+       if (associated(eom_nvx)) deallocate(eom_nvx)
        nullify(eom_nvx)
    end subroutine
 
@@ -142,7 +142,8 @@
       real(kind=8), pointer :: create_diagonal(:)
       type(intermediates) :: A
       integer :: N
-      integer :: nbuf3, ndimt1, ndimt2
+      integer :: ndimt1, ndimt2
+      integer :: nbuf3
 
       ndimt1 = eom_ndet(1)
       ndimt2 = eom_ndet(2)
@@ -169,7 +170,8 @@
       type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
       integer :: L, N, L_already_done 
-      integer :: nbuf3, ndimr1, ndimr2
+      integer :: ndimr1, ndimr2
+      integer :: nbuf3
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot
 
@@ -182,14 +184,14 @@
       allocate(create_sigma_vector(N,L))
 
       if (associated(old_sigma_vector)) then 
-          L_already_done = size(old_sigma_vector,2) + 1
+          L_already_done = size(old_sigma_vector,2) 
           do iroot = 1, L_already_done
               create_sigma_vector(:,iroot) = old_sigma_vector(:,iroot)
           end do
           deallocate(old_sigma_vector)
           nullify(old_sigma_vector)
       else
-          L_already_done = 1
+          L_already_done = 0
       endif
 
       ndimr1 = eom_ndet(1)
@@ -204,7 +206,7 @@
          case ("IP")
 
              print *, "debug: eom_nvx:",eom_nvx
-             do iroot = L_already_done, L 
+             do iroot = L_already_done + 1, L 
 
                 create_sigma_vector(:,iroot:iroot) = 0.0d0
                  print "(2x,a,i6,a,i6)", "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
@@ -221,7 +223,7 @@
          case ("EA")
          case ("EE")
 
-             do iroot = L_already_done, L
+             do iroot = L_already_done + 1, L
 
                 create_sigma_vector(:,iroot:iroot) = 0.0d0
                  print "(2x,a,i6,a,i6)", "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
@@ -232,7 +234,7 @@
                  &                  create_sigma_vector(start_r2:end_r2, iroot:iroot), &
                  &                  local_buf2, &
                  &                  local_buf3, &
-                 &                  int(nbuf3,4))
+                 &                  nbuf3)
              enddo
       end select
 
@@ -261,7 +263,7 @@ integer :: nbuf3
 
 !-----------------------------------------------------------------------------
 
-     nbuf3 = int(size(local_buf3),4)
+     nbuf3 = size(local_buf3)
 
      allocate (foo(nfoo*rcw))
      allocate (fvo(nfvo*rcw))
@@ -352,8 +354,6 @@ integer :: nbuf3
 !S_ai = S_ai - f_bar_mi(m,i)*r1(a,m) 
 !------------------------------------
 
-!    call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),B%Fbar_mi,r1,sigma1,-1.0d0,1.0d0,nrep)
-
 
     call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/),r1,B%Fbar_mi,sigma1,-1.0d0,1.0d0,nrep)
 
@@ -387,10 +387,6 @@ integer :: nbuf3
 !S_ai = S_ai - W_mnie(mn,ie)*r2(ae,mn)
 !---------------------------------------
 
-!   call contraction_442((/"o2","o3","o1","p2"/),(/"p1","p2","o2","o3"/),(/"p1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
-!  &         LeftTensor=B%W_mnie,RightTensor=r2_ptr)
-
-
      call contraction_442((/"p1","p2","o2","o3"/),(/"o2","o3","o1","p2"/),(/"p1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
     &         RightTensor=B%W_mnie,LeftTensor=r2_ptr)
 
@@ -403,11 +399,6 @@ integer :: nbuf3
 !S(ab,ij) = S(ab,ij) - P(ab) w_iemn(mb,ij)*r1(a,m)
 !--------------------------------------------------
 
-!   call contraction_424 ((/"o3","p2","o1","o2"/),(/"p1","o3"/), &
-!  &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%W_iemn, &
-!  &    RightTensor=r1_ptr) 
-
-
     call contraction_244 ((/"p1","o3"/),(/"o3","p2","o1","o2"/), &
    &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
    &   LeftTensor=r1_ptr) 
@@ -418,18 +409,9 @@ integer :: nbuf3
 !S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
 !--------------------------------------------------
 
-!   call contraction_424 ((/"p1","p2","p3","o2"/),(/"p3","o1"/), &
-!  &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%W_efam, &
-!  &    RightTensor=r1_ptr) 
-
-
-
     call contraction_424 ((/"p1","p2","p3","o2"/),(/"p3","o1"/), &
-   &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep, &
+   &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%W_efam, &
    &    RightTensor=r1_ptr) 
-
-
-
 
     write(*,*)'diagram 8 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
@@ -439,14 +421,9 @@ integer :: nbuf3
 
     allocate(int_1b(nfvv*rcw))
 
-
     int_1b = 0.0d0
 
     call contraction_422 ((/"p2","o3","p4","p3"/),(/"p3","o3"/),(/"p2","p4"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,B%W_amef)
-
-!   call contraction_244 ((/"p2","p4"/),(/"p1","p4","o1","o2"/),(/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0, &
-!  &                       nrep,LeftTensor=int_1b,RightTensor=B%t2)
-
 
     call contraction_424 ((/"p1","p4","o1","o2"/),(/"p2","p4"/),(/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0, &
    &                       nrep,RightTensor=int_1b,LeftTensor=B%t2)
@@ -465,10 +442,6 @@ integer :: nbuf3
 
     call contraction_422 ((/"o4","o3","o2","p3"/),(/"p3","o3"/),(/"o4","o2"/),r1_ptr,int_1b,1.0d0,1.0d0,nrep,LeftTensor=B%W_mnie)
 
-!   call contraction_244 ((/"o4","o2"/),(/"p1","p2","o1","o4"/), &
-!  & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
-
-
     call contraction_424 ((/"p1","p2","o1","o4"/),(/"o4","o2"/), &
    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2)
 
@@ -483,9 +456,6 @@ integer :: nbuf3
 ! S(ab,ij) = S(ab,ij) + P(ab) f_bar_ae(b,e) * r2(ae,ij)
 !-------------------------------------------------------
 
-!   call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
-!  & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2_ptr)
-
 
     call contraction_424 ((/"p1","p3","o1","o2"/),(/"p2","p3"/), &
    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr)
@@ -495,9 +465,6 @@ integer :: nbuf3
      
 ! S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
 !-----------------------------------------------------
-
-!   call contraction_244 ((/"o3","o2"/),(/"p1","p2","o1","o3"/), &
-!  & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2_ptr)
 
 
     call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
@@ -519,7 +486,8 @@ integer :: nbuf3
          istart = 0
          done =.false.
          if (nvvt(irp).eq.0) cycle
-   10    call w_efab_out_of_core (irp,istart,done,int_1b,buf2,B%t1,nbuf3,buf3,nint)
+         mint = nbuf3/nvvt(irp)
+   10    call getdz (irp,istart,nint,done,buf3,mint)
          m = nvvt(irp)
          n = noot(irp)
          k = nint
@@ -537,7 +505,6 @@ integer :: nbuf3
 
     write(*,*)'diagram 13 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
-
 ! S(ab,ij) = S(ab,ij) + w_ijmn(mn,ij) * r2(ab,mn)
 !--------------------------------------------------
 
@@ -551,18 +518,6 @@ integer :: nbuf3
 
       call contraction_444((/"p1","p3","o1","o3"/),(/"o3","p2","p3","o2"/), &
      &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_mbej)
-
-
-!      call contraction_444((/"o3","p2","p3","o2"/),(/"p1","p3","o1","o3"/), &
-!     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_mbej)
-
-
-!     call contraction_444((/"p1","p3","o1","o3"/),(/"p2","o3","o2","p3"/), &
-!    &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_ejmb)
-
-
-!     call contraction_444((/"p2","o3","o2","p3"/),(/"p1","p3","o1","o3"/), &
-!    &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ejmb)
 
 
     write(*,*)'diagram 15 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
@@ -591,10 +546,6 @@ integer :: nbuf3
     int_1b = 0.0d0
 
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
-
-!   call contraction_244 ((/"o4","o1"/),(/"p1","p2","o2","o4"/), &
-!   & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
-
 
     call contraction_424 ((/"p1","p2","o2","o4"/),(/"o4","o1"/), &
     & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2)

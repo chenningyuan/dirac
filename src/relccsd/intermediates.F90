@@ -611,9 +611,6 @@
 ! ** actually read integrals from this batch and is a pure output parameter !
 ! ** We therefore have to count upwards in case of ISTART.NE.0 !!
 
-
-!        MINT = NBUF3/NVVT(IRP)
-!        CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
 
          call putdz (irp,istart,nint,buf3)
@@ -642,8 +639,6 @@
                     ISTART = ISTART + NINT
                     IF(.NOT.DONE) THEN
                     call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
-                     write(*,*)'DONT EXPECT ME HERE'
-
                     call putdz (irp,istart,nint,buf3)
                       CD = 1
                       CCO=ISTART
