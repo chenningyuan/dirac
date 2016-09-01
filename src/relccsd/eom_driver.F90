@@ -159,6 +159,14 @@
 
 ! New trial vectors for R1 
 
+if (nroot.eq.(ndimr1+ndimr2)) then
+     do iroot = 1, ndimr1
+         R1(iroot,iroot) = 1.0d0
+     end do
+     do iroot = 1, ndimr2
+         R2(iroot,ndimr1+iroot) = 1.0d0
+     end do
+else
    allocate (R1_dum(ndimr1,ndimr1))
      R1_dum = 0.0d0
 
@@ -171,28 +179,7 @@
       R1 = R1_dum(:,1:nroot) 
 
     deallocate(R1_dum)
-
-
-!!  if (nroot.eq.(ndimr1+ndimr2)) then
-!!   do iroot = 1, ndimr1
-!!       R1(iroot,iroot) = 1.0d0
-!!   end do
-!!   do iroot = 1, ndimr2
-!!       R2(iroot,ndimr1+iroot) = 1.0d0
-!!   end do
-!!  else
-!!   allocate(diag_H(ndimr1))
-!!   diag_H = H_II(1:ndimr1)
-
-!!   do iroot = 1, nroot
-!!    k = minloc(diag_H) 
-!!    write(*,*)'roots',iroot,H_II(k(1)),k(1) 
-!!    i = k(1)
-!!    diag_H(i) = 8000.0d0
-!!    R1(i,iroot) = 1.0d0
-!!   enddo
-!!   deallocate(diag_H)
-!!  end if
+end if
 
 
    case ('IP')
@@ -313,7 +300,6 @@
    real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
-   real*8, pointer :: sub_Hp(:,:) ! sub_H(nroot,nroot)
    integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep)
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
@@ -323,7 +309,6 @@
    logical :: symmetric = .false.
    logical :: verbose = .false.
    integer :: N, N1, N2 ! size of determinantal space 
-   real(kind=8), pointer :: b_guess(:,:)
 
 !memory allocation
 !------------------
@@ -429,8 +414,6 @@
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
       allocate (B%H_II(N*rcw),  stat = AllocateStatus)
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      allocate (sigma(N*rcw,nroot),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
       call input_processor(B%Fbar_mi, &
       &                    B%Fbar_ae, &
@@ -439,18 +422,25 @@
       &                    r((ndimr1*rcw)+1:N*rcw,:),  &
       &                    B%H_II)
 
-!     do iroot = 1, nroot
-!         print *, "debug, constructing sigma vector ",iroot
-!         sigma(:,iroot:iroot) = 0.0d0
-!         call sigma_ee_1h1p(r(1:ndimr1*rcw,iroot:iroot), &
-!         &                  r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-!         &                  B,                            &
-!         &                  sigma(1:ndimr1*rcw,iroot:iroot), &
-!         &                  sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-!         &                  buf2, &
-!         &                  buf3, &
-!         &                  int(nbuf3,4))
-!     enddo
+      if (nroot .eq. N) then
+! this is to test the full diagonalizaion
+
+          allocate (sigma(N*rcw,nroot),stat = AllocateStatus)
+          IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+
+          do iroot = 1, nroot
+              print *, "debug, constructing sigma vector ",iroot
+              sigma(:,iroot:iroot) = 0.0d0
+              call sigma_ee_1h1p(r(1:ndimr1*rcw,iroot:iroot),         &
+              &                  r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+              &                  B,                                   &
+              &                  sigma(1:ndimr1*rcw,iroot:iroot),     &
+              &                  sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+              &                  buf2, &
+              &                  buf3, &
+              &                  nbuf3)
+          enddo
+      endif
 
     case ('IP')
 
@@ -490,13 +480,7 @@
        call set_eom_ndet(1, ndimr1)
        call set_eom_ndet(2, ndimr2)
 
-!      allocate (r1(ndimr1*rcw,nroot))
-!      allocate (r2(ndimr2*rcw,nroot))
-!      allocate (sigma1(ndimr1*rcw,nroot))
-!      allocate (sigma2(ndimr2*rcw,nroot))
-
        allocate (sigma(N*rcw,nroot))
-       allocate (r(N*rcw,nroot))
        allocate (B%H_II(N*rcw)) 
        
        r = 0.0d0
@@ -510,24 +494,24 @@
       &                    r((ndimr1*rcw)+1:N*rcw,:),  &
       &                    B%H_II)
 
-!      do iroot = 1, nroot
 
-!         sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
-!         sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
-!         call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),B, &
-!    &                  sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
+      if (nroot .eq. N) then
+! this is to test the full diagonalizaion
+          allocate (sigma(N*rcw,nroot))
+          do iroot = 1, nroot
+              print *, "debug, constructing sigma vector ",iroot
+              sigma(:,iroot:iroot) = 0.0d0
+              call sigma_IP(nvx,   &
+              &             r(1:ndimr1*rcw,iroot:iroot),         &
+              &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+              &             B,                                   &
+              &             sigma(1:ndimr1*rcw,iroot:iroot),     &
+              &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+              &             ndimr1,                              &
+              &             ndimr2)
+          enddo
+       end if
 
-!         sigma(1:N*rcw,iroot:iroot) = 0.0d0 
-!         call sigma_IP(nvx, &
-!                       r(1:ndimr1*rcw,iroot:iroot), &
-!         &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-!         &             B,                            &
-!         &             sigma(1:ndimr1*rcw,iroot:iroot), &
-!         &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-!         &             ndimr1, &
-!         &             ndimr2)
-
-!       end do
 
     case('EA')
 
@@ -543,7 +527,8 @@
 
    end select 
 
-   if (.false.) then
+   if (nroot.eq.N) then
+! this is to test the full diagonalizaion
       allocate (sub_H(nroot,nroot))
       sub_H = 0.0d0
 
@@ -567,10 +552,12 @@
 !      evec = 0.0d0
 !      ev = 0.0d0
 !      call solve_cg(nroot,sub_H,evec,ev)
-!      write(*,*)'H eigenvalues', (ev(i),i=1,min(10,nroot))
+!      write(*,*)'H eigenvalues', (ev(i),i=1,min(20,nroot))
 
        deallocate(ev)
        deallocate(evec)
+       deallocate (sub_H)
+       if (allocated(sigma)) deallocate (sigma)
 
     end if
 
@@ -583,29 +570,34 @@
 
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
         call davidson_driver(nroot, B, symmetric, davResults, verbose, r)
+        print *, "debug, after davidson !"
         call free_davidson_results(davResults)
-    end if
-    if (allocated(sigma)) deallocate (sigma)
-    if (associated(r)) then
-        deallocate (r)
-        r => NULL()
+        print *, "debug, after free_davidson_results !"
+        
     end if
 
-    if (allocated(sigma1)) deallocate (sigma1)
-    if (allocated(r1)) deallocate (r1)
-    if (allocated(sigma2)) deallocate (sigma2)
-    if (allocated(r2)) deallocate (r2)
+! this seems to be the offending code, ucomment
+!   if (associated(r)) then
+!       deallocate (r)
+!       r => NULL()
+!   end if
+
     call free_buffers()
+        print *, "debug, after free_buffers !"
     call free_eom_ndet()
+        print *, "debug, after free_eom_ndet !"
     call free_eom_nvx()
-    if (allocated(sub_H)) deallocate (sub_H)
+        print *, "debug, after free_eom_nvx !"
+
  451 continue
 ! todo:
 ! allocations/deallocations of intermediates would be more simply handled via
 !    call initialize_intermediates() 
      call free_intermediates(B)
+        print *, "debug, after free_intermediates !"
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
+        print *, "debug, before the end of eom_driver !"
    end subroutine
 
    function merge_arrays(dimension_to_merge, a,b)

@@ -67,7 +67,7 @@
    end function
 
    subroutine free_eom_nvx()
-       deallocate(eom_nvx)
+       if (associated(eom_nvx)) deallocate(eom_nvx)
        nullify(eom_nvx)
    end subroutine
 
@@ -232,7 +232,7 @@
                  &                  create_sigma_vector(start_r2:end_r2, iroot:iroot), &
                  &                  local_buf2, &
                  &                  local_buf3, &
-                 &                  int(nbuf3,4))
+                 &                  nbuf3)
              enddo
       end select
 
