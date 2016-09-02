@@ -1449,7 +1449,7 @@ C
 C     Initiate/restart SCF cycle
 C
       DHFEXIT = .FALSE.
-      OPEN_FAC = 1.0D0
+      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
       OPEN_FAC = OPEN_FAC_save
@@ -1829,9 +1829,9 @@ C          electrons from HOMO. This was tested with MCSCF calculations with DAL
 C          This gives a physical explanation why OPEN_FAC = 1.0 often is a bad
 C          idea for convergence.)
 
-           IF (NOPEN .eq. 0 .OR. OPEN_FAC .eq. 1.0D0) GOTO 30
+           IF (NOPEN .eq. 0 .OR. OPEN_FAC .ge. 0.0D0) GOTO 30
 
-           WRITE(LUPRI,'(///A/A)') ' * Converged. '//
+           WRITE(LUPRI,'(///A/)') ' * Converged. '//
      &        'Redoing orbital energy calculation with .OPENFAC 1.0D0'
            OPEN_FAC = 1.0D0
 C          do continue even though converged :
@@ -1842,7 +1842,7 @@ C          restore density matrix and  total Fock matrices (have been destroyed 
            CALL REAFCK(LUFCKT,FOCK,.FALSE.,NFMAT)
            CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
      &                 ICHKCNV,OVLSEL ,DOLEVEL,WORK(KFREE),LFREE)
-C          Read CMO coefficients and bosos identification, but not orbital energies in EIG (code 10)
+C          Read CMO coefficients and boson identification, but not orbital energies in EIG (code 10)
 C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
 
            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10,
@@ -5332,7 +5332,7 @@ C
 C     Solve one-electron system with vacuum polarisation added.
 C
       OPEN_FAC_save = OPEN_FAC
-      OPEN_FAC = 1.0D0
+      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),DUM,WORK(KPOS),
      &            WORK(KFREE),LFREE)
       OPEN_FAC = OPEN_FAC_save
