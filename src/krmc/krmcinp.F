@@ -366,14 +366,13 @@ C&&&  CASSCF -- this defines a CAS space
      &                 'You cannot specify both .GASSH and .CASSCF')
                END IF
                READ(LUCMD,*) NKRMCAELEC
-               READ(LUCMD,*) (NKRMCASH(I),I=1,NFSYM)
+               READ(LUCMD,*) (NKRMCGSH(I,1),I=1,NFSYM)
                NKRMCGAS = 1
                NKRMCGSP(1,NKRMCGAS) = NKRMCAELEC
                NKRMCGSP(2,NKRMCGAS) = NKRMCAELEC 
                GO TO 100
-!     xxx
+!
  29            CONTINUE
-
 C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA) 
 !              and Diracs opens-shell AOC Hartree-Fock format
                IF(NKRMCGAS .GT. 0)THEN
