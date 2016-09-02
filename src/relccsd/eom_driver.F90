@@ -102,7 +102,7 @@
     ai = 1
     ii = 0
     do irep = 1, nrep
-       arep = multb (irep,iarep+nrep,2)
+       arep = multb (irep,iarep+nrep,1)
         do i = 1, no(irep)
          ii = ii + 1
          fac1 = eps(ii)
@@ -159,28 +159,40 @@
 
 ! New trial vectors for R1 
 
-if (nroot.eq.(ndimr1+ndimr2)) then
-     do iroot = 1, ndimr1
-         R1(iroot,iroot) = 1.0d0
-     end do
-     do iroot = 1, ndimr2
-         R2(iroot,ndimr1+iroot) = 1.0d0
-     end do
-else
-   allocate (R1_dum(ndimr1,ndimr1))
-     R1_dum = 0.0d0
+!if (nroot.eq.(ndimr1+ndimr2)) then
+!    do iroot = 1, ndimr1
+!        R1(iroot,iroot) = 1.0d0
+!    end do
+!    do iroot = 1, ndimr2
+!        R2(iroot,ndimr1+iroot) = 1.0d0
+!    end do
+!else
+!  allocate (R1_dum(ndimr1,ndimr1))
+!    R1_dum = 0.0d0
 
-     do iroot = 1, ndimr1
-         R1_dum(iroot,iroot) = 1.0d0
-     end do
+!    do iroot = 1, ndimr1
+!        R1_dum(iroot,iroot) = 1.0d0
+!    end do
 
-      call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
-      
-      R1 = R1_dum(:,1:nroot) 
+!     call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
+!     
+!     R1 = R1_dum(:,1:nroot) 
 
-    deallocate(R1_dum)
-end if
+!   deallocate(R1_dum)
+!end if
 
+     allocate(diag_H(ndimr1))
+     diag_H = H_II(1:ndimr1)
+
+       do iroot = 1, nroot
+        k = minloc(diag_H) 
+        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+        i = k(1)
+        diag_H(i) = 8000.0d0
+        print *, "debug: i, iroot, ndimr1, ndimr2,size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
+        R1(i,iroot) = 1.0d0
+       enddo
+     deallocate(diag_H)
 
    case ('IP')
 
@@ -206,16 +218,12 @@ end if
             DO 40 BRP = 1, NREP
             BB = IV(BRP) + IO(NREP+1)
             ARP = MULTB(BRP,IJRP+NREP,2)
-!            IF (ARP.LT.BRP) GOTO 40
             AOFF = IV(ARP) + IO(NREP+1)
             DO B = 1, NV(BRP)
                BB = BB + 1
                FAC3 = FAC2 - EPS(BB)
-!              AMIN = 1
-!              IF (ARP.EQ.BRP) AMIN = B + 1
                DO A = 1, NCONT(ARP)
-!                 AA = AOFF + A
-                  FAC = FAC3 !- 100.0d0
+                  FAC = FAC3! - 100.0d0
                   H_II(ABIJ) = -FAC
                   ABIJ = ABIJ + 1
                ENDDO
@@ -226,18 +234,18 @@ end if
  30   CONTINUE
       ENDDO
 
-   allocate (R1_dum(ndimr1,ndimr1))
-     R1_dum = 0.0d0
+!  allocate (R1_dum(ndimr1,ndimr1))
+!    R1_dum = 0.0d0
 
-     do iroot = 1, ndimr1
-         R1_dum(iroot,iroot) = 1.0d0
-     end do
+!    do iroot = 1, ndimr1
+!        R1_dum(iroot,iroot) = 1.0d0
+!    end do
 
-      call trial_vectors_ip(R1_dum,Fbar_HH)
-      
-      R1 = R1_dum(:,1:nroot) 
+!     call trial_vectors_ip(R1_dum,Fbar_HH)
+!     
+!     R1 = R1_dum(:,1:nroot) 
 
-    deallocate(R1_dum)
+!   deallocate(R1_dum)
 
  !  if (nroot.eq.(ndimr1+ndimr2)) then
  !   do iroot = 1, ndimr1
@@ -248,18 +256,18 @@ end if
  !   end do
  !  else
 
-!!   allocate(diag_H(ndimr1))
-!!   diag_H = H_II(1:ndimr1)
+     allocate(diag_H(ndimr1))
+     diag_H = H_II(1:ndimr1)
 
-!!     do iroot = 1, nroot
-!!      k = minloc(diag_H) 
-!!      write(*,*)'roots',iroot,H_II(k(1)),k(1) 
-!!      i = k(1)
-!!      diag_H(i) = 8000.0d0
-!!      print *, "debug: i, iroot, ndimr1, ndimr2, size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
-!!      R1(i,iroot) = 1.0d0
-!!     enddo
-!!   deallocate(diag_H)
+       do iroot = 1, nroot
+        k = minloc(diag_H) 
+        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+        i = k(1)
+        diag_H(i) = 8000.0d0
+        print *, "debug: i, iroot, ndimr1, ndimr2, size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
+        R1(i,iroot) = 1.0d0
+       enddo
+     deallocate(diag_H)
  ! end if 
 
    case ('EA')
@@ -353,7 +361,6 @@ end if
         allocate(buf2(nbuf2*rcw))
 
 !!        call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
-        call initialize_buffers(buf1, buf2, buf3)
 
 !     For the moment I am using as much in-core memory as possible. However we
 !     may think of writing them in files, replacing the integral ones...  
@@ -371,6 +378,8 @@ end if
       allocate (B%W_amef(nv5*rcw))
       allocate (B%W_mnie(iovoot(nrep+1)*rcw))
       allocate (B%Wbar_mbej(iovvo(nrep+1)*rcw))
+      allocate (B%t1(ndimt1*rcw))
+      allocate (B%t2(ndimt2*rcw))
        
 ! allocate the amplitudes
 
@@ -384,8 +393,7 @@ end if
          goto 451
       endif
 
-      allocate (B%t1(ndimt1*rcw))
-      allocate (B%t2(ndimt2*rcw))
+    call initialize_buffers(buf1, buf2, buf3)
 
     call ccdump
 
@@ -480,7 +488,8 @@ end if
        call set_eom_ndet(1, ndimr1)
        call set_eom_ndet(2, ndimr2)
 
-       allocate (sigma(N*rcw,nroot))
+      allocate (r (N*rcw,nroot), stat = AllocateStatus)
+      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
        allocate (B%H_II(N*rcw)) 
        
        r = 0.0d0
@@ -522,9 +531,6 @@ end if
        allocate (r1(iv(nrep+1)*rcw,nroot))
        allocate (r2(ndimr2*rcw,nroot))
 
-!      allocate (sigma1(iv(nrep+1)*rcw,nroot))
-!      allocate (sigma2(ndimr2*rcw,nroot))
-
    end select 
 
    if (nroot.eq.N) then
@@ -549,11 +555,6 @@ end if
        call solve_cg(nroot,sigma,evec,ev)
        write(*,*)'Hp eigenvalues', (ev(i),i=1,min(20,nroot))
 
-!      evec = 0.0d0
-!      ev = 0.0d0
-!      call solve_cg(nroot,sub_H,evec,ev)
-!      write(*,*)'H eigenvalues', (ev(i),i=1,min(20,nroot))
-
        deallocate(ev)
        deallocate(evec)
        deallocate (sub_H)
@@ -575,24 +576,21 @@ end if
         print *, "debug, after free_davidson_results !"
         
     end if
-
-! this seems to be the offending code, ucomment
-!   if (associated(r)) then
-!       deallocate (r)
-!       r => NULL()
-!   end if
-
-    call free_buffers()
-        print *, "debug, after free_buffers !"
     call free_eom_ndet()
         print *, "debug, after free_eom_ndet !"
     call free_eom_nvx()
         print *, "debug, after free_eom_nvx !"
 
- 451 continue
+      if (allocated(B%H_II)) deallocate(B%H_II)
+
 ! todo:
 ! allocations/deallocations of intermediates would be more simply handled via
 !    call initialize_intermediates() 
+
+ 451 continue
+    call free_buffers(buf1,buf2,buf3)
+        print *, "debug, after free_buffers !"
+
      call free_intermediates(B)
         print *, "debug, after free_intermediates !"
 

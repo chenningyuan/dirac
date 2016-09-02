@@ -112,7 +112,7 @@
       if (allocated(A%Wbar_mbej)) deallocate(A%Wbar_mbej)
       if (allocated(A%t1)) deallocate(A%t1)
       if (allocated(A%t2)) deallocate(A%t2)
-      if (allocated(A%H_II)) deallocate(A%H_II)
+!      if (allocated(A%H_II)) deallocate(A%H_II)
 
    end subroutine
 
@@ -123,17 +123,23 @@
        local_buf3 => buf3 
    end subroutine
 
-   subroutine free_buffers()
+   subroutine free_buffers(buf1, buf2, buf3)
+
+       real(kind=8),allocatable,intent(inout) ::  buf1(:), buf2(:), buf3(:)
+           deallocate(buf1)
        if (associated(local_buf1)) then
-           deallocate(local_buf1)
            nullify(local_buf1)
        end if
+
+           deallocate(buf2)
+
        if (associated(local_buf2)) then
-           deallocate(local_buf2)
            nullify(local_buf2)
        end if
+
+           deallocate(buf3)
+
        if (associated(local_buf3)) then
-           deallocate(local_buf3)
            nullify(local_buf3)
        end if
    end subroutine
@@ -189,7 +195,7 @@
               create_sigma_vector(:,iroot) = old_sigma_vector(:,iroot)
           end do
           deallocate(old_sigma_vector)
-          nullify(old_sigma_vector)
+!ashee          nullify(old_sigma_vector)
       else
           L_already_done = 0
       endif
@@ -486,8 +492,9 @@ integer :: nbuf3
          istart = 0
          done =.false.
          if (nvvt(irp).eq.0) cycle
-         mint = nbuf3/nvvt(irp)
-   10    call getdz (irp,istart,nint,done,buf3,mint)
+          mint = nbuf3/nvvt(irp)
+     10    call getdz (irp,istart,nint,done,buf3,mint)
+!    10    call w_efab_out_of_core (irp,istart,done,int_1b,buf2,B%t1,nbuf3,buf3,nint)
          m = nvvt(irp)
          n = noot(irp)
          k = nint
