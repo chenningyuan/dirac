@@ -276,7 +276,7 @@ cdbg        print*,"first record",irec,offb,extra,'-->',off
 C              This record has been written before, copy the
 C              old information first before partially overwriting
 C              with new information.
-               CALL READDI (ITAPE,IREC,OFFB-1,BUFF)
+               READ (ITAPE,REC=IREC) BUFF
             ELSE
 C              This record has NOT been written before, this is not
 C              allowed in the current version of WAIO (all records

@@ -75,10 +75,10 @@ contains
         if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
         if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
 
-        results%eValuesRe => NULL()
-        results%eValuesIm => NULL()
-        results%eVectorsR => NULL()
-        results%eVectorsL => NULL()
+!!      results%eValuesRe => NULL()
+!!      results%eValuesIm => NULL()
+!!      results%eVectorsR => NULL()
+!!      results%eVectorsL => NULL()
     end subroutine
 
     subroutine davidson_setup(threshold, subspace_size, nr_roots)
@@ -749,17 +749,17 @@ contains
         print *, "Final size of reduced subspace : ",L
 
 !       if (associated(sigma_vector)) deallocate(sigma_vector)
-        if (associated(M_small)) deallocate(M_small)
+!        if (associated(M_small)) deallocate(M_small)
 
-        sigma_vector => create_sigma_vector(A, b, sigma_vector)
-        M_small => create_reduced_problem(b, sigma_vector)
+!       sigma_vector => create_sigma_vector(A, b, sigma_vector)
+!       M_small => create_reduced_problem(b, sigma_vector)
 
-        if (verbose_local) then
-            call print_vectors_R(b, label="Final subspace vectors        ")
-            print "(4x,a,i6,a)", "After iteration ", niter,",  Eigenvalues for the smaller problem"
-        end if
-        call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
-                                            c_small_r, c_small_l, left=left, verbose=verbose_local)
+!       if (verbose_local) then
+!           call print_vectors_R(b, label="Final subspace vectors        ")
+!           print "(4x,a,i6,a)", "After iteration ", niter,",  Eigenvalues for the smaller problem"
+!       end if
+!       call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
+!                                           c_small_r, c_small_l, left=left, verbose=verbose_local)
 
         call form_eigenvalues_full_problem(results%eValuesRe, results%eValuesIm, nroots, e_small_r, e_small_i) 
         if (left)  call form_eigenvector_full_problem(results%eVectorsL,nroots,b,c_small_l, .true.)
@@ -769,6 +769,10 @@ contains
         deallocate(M_small)
         deallocate(sigma_vector)
         deallocate(M_diag)
+        deallocate(e_small_r)
+        deallocate(e_small_i)
+        deallocate(c_small_r)
+        deallocate(c_small_l)
 
     end subroutine
 
