@@ -8,6 +8,8 @@
    public SRT1TT5_exp
    public SRT1ST4_exp
    public SRT36_exp 
+   public SRT46_exp 
+   public SRT56_exp 
    public SRT22_exp
    public SRT32_exp
    public SRT26_exp
@@ -1036,6 +1038,102 @@
       call dealloc_array(d,e,f,g,h)
       RETURN
       END
+!=============================================================================================================
+      SUBROUTINE SRT46_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,KL:KLREP) to array BUF2(IK,LJ:KJREP)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!
+!---------------Routines called----------------------------------------
+
+!---------------Last modified------------------------------------------
+!
+!     Author : Avijit Shee
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL FIRST, DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+       type(Offset) :: d,e,f,g,h
+!---------------Executable code--------------------------------------
+
+
+      write(*,*)'Inside srt46'
+
+      call alloc_array(d,nrep,e,f,g,h)
+      call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
+
+      call auto_symmetry_offset(f,IFIE,KFIE,.false.,.false.)
+      call auto_symmetry_offset(g,LFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+      IF (.NOT.DOINV) THEN
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
+         IF (FIRST) THEN
+            CALL XCOPY(f%oneDirac(1)*g%oneDirac(1),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+         ENDIF
+      ELSE
+         ROW    = d%oneNonDirac
+         COLUMN = e%oneNonDirac
+      ENDIF
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,KLREP+NREP,2)
+
+           LJREP = MULTB(LREP,JREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+
+           IKLJ0 = h%twoDirac(IKREP,LJREP) & 
+     &          + (g%twoDirac(LREP,JREP)+L-1)* f%oneDirac(IKREP)
+
+           IKLJ0 = IKLJ0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
+
+            DO J = 1, JFIE(JREP)
+            IF (DOINV) THEN
+               IF ((.NOT.FIRST).OR.(IKREP.EQ.1)) &
+     &         CALL XCOPY(IFIE(IREP),BUF1(IKLJ0*RCW+1),1,BUF2(IJKL),1)
+            ELSE
+               IF ((.NOT.FIRST).OR.(IKREP.EQ.1)) &
+     &         CALL XCOPY(IFIE(IREP),BUF1(IJKL),1,BUF2(IKLJ0*RCW+1),1)
+            ENDIF
+            IJKL = IJKL + RCW * IFIE(IREP)
+            IKLJ0 = IKLJ0 + f%oneDirac(IKREP) * LFIE(LREP)
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+
+      call dealloc_array(d,e,f,g,h)
+      RETURN
+      END
+
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT19_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
  
@@ -1590,11 +1688,141 @@
  10    CONTINUE
       ENDDO
 
+      call dealloc_array(d,e,f,g,h)
+
+      RETURN
+      END
+
+!====================================================================================
+
+      SUBROUTINE SRT56_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     BUF(I>J,KL:KLREP) <--> BUF(IK,LJ)
+!     If (FIRST) take only the totally symmetric (first) irrep.
+!     If (DOINV) inverse sort. 
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author : Avijit Shee
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL FIRST,DOINV
+      INTEGER ROW(nrep),COLUMN(nrep)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+
+      integer :: offx(nrep,nrep)
+      type(Offset) :: d,e,f,g,h
+
+!---------------Executable code--------------------------------------
+
+
+      write(*,*)'Inside srt56'
+
+      call alloc_array(d,nrep,e,f,g,h)
+      call auto_symmetry_offset_triangular(d,IFIE,JFIE)
+      call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
+
+      call auto_symmetry_offset(f,IFIE,KFIE,.false.,.false.)
+      call auto_symmetry_offset(g,LFIE,JFIE,.false.,.false.)
+      call auto_symmetry_offset(h,f%oneDirac,g%oneDirac,.true.,.true.)
+
+      IF (.NOT.DOINV) THEN
+         ROW = f%oneDirac 
+         COLUMN = g%oneDirac
+         offx = h%twoDirac
+         IF (FIRST) THEN
+            CALL XCOPY((f%oneDirac(1)*g%oneDirac(1)),A0,0,BUF2,1)
+         ELSE
+            CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+         ENDIF
+      ELSE
+         ROW = d%oneNonDirac
+         COLUMN = e%oneNonDirac
+         offx = h%twoDirac
+      ENDIF
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       DO 10 LREP = 1, NREP
+         KREP = MULTB(LREP,KLREP+NREP,2)
+        DO L = 1, LFIE(LREP)
+         DO K = 1, KFIE(KREP)
+          DO 20 JREP = 1, NREP
+           IREP = MULTB(JREP,IJREP+NREP,2)
+           IF (IREP.LT.JREP) GOTO 20
+
+           IKREP = MULTB(IREP,KREP,2)
+           LJREP = MULTB(LREP,JREP,2) !a bra class symmetry product
+           JKREP = MULTB(JREP,KREP,2)
+           LIREP = MULTB(LREP,IREP,2) !a bra class symmetry product
+
+           IKLJ0 = OFFX(IKREP,LJREP) & 
+     &          + (g%twoDirac(LREP,JREP)+L-1)* f%oneDirac(IKREP)
+
+           IKLJ0 = IKLJ0 + f%twoDirac(IREP,KREP) + (K-1)*IFIE(IREP)
+
+           JKLI0 = OFFX(JKREP,LIREP) &
+     &          + (g%twoDirac(LREP,IREP)+L-1) * f%oneDirac(JKREP)
+
+           JKLI0 = JKLI0 + f%twoDirac(JREP,KREP) + (K-1)*JFIE(JREP)
+          
+           DO J = 1, JFIE(JREP)
+             IMIN = 1
+             IF (IREP.EQ.JREP) IMIN = J + 1
+             N = IFIE(IREP) - IMIN + 1
+
+             IKLJ = IKLJ0 + IMIN-1
+
+!             JKLI = (JKLI0+(IMIN-1)*f%oneDirac(JKREP)*LFIE(LREP)+J-1)*RCW+1 
+             JKLI = JKLI0+(IMIN-1)*f%oneDirac(JKREP)*LFIE(LREP) 
+
+             IF (DOINV) THEN
+                CALL XCOPY (N,BUF1(IKLJ*RCW+1),1,BUF2(IJKL),1)
+                NP = f%oneDirac(JKREP)*LFIE(LREP)
+                CALL XAXPY(N,-A1,BUF1(JKLI*RCW+1),NP,BUF2(IJKL),1)
+             ELSE
+
+                IF ((.NOT.FIRST).OR.(LJREP.EQ.1)) &
+     &            CALL XCOPY (N,BUF1(IJKL),1,BUF2(IKLJ*RCW+1),1)
+                IF ((.NOT.FIRST).OR.(LIREP.EQ.1)) THEN
+                  NP = f%oneDirac(JKREP)*LFIE(LREP)
+                  CALL XCOPY(N,BUF1(IJKL),1,BUF2(JKLI*RCW+1),NP)
+                  CALL XSCAL(N,-A1,BUF2(JKLI*RCW+1),NP)
+                ENDIF
+             ENDIF
+             IJKL = IJKL + RCW * N
+             IKLJ0 = IKLJ0 + f%oneDirac(IKREP)*LFIE(LREP)
+             JKLI0 = JKLI0 + 1
+           ENDDO
+ 20       CONTINUE
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
 
       call dealloc_array(d,e,f,g,h)
 
       RETURN
       END
+
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE SRT1TS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)

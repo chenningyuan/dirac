@@ -102,7 +102,7 @@
     ai = 1
     ii = 0
     do irep = 1, nrep
-       arep = multb (irep,iarep+nrep,2)
+       arep = multb (irep,iarep+nrep,1)
         do i = 1, no(irep)
          ii = ii + 1
          fac1 = eps(ii)
@@ -111,7 +111,7 @@
              aa = aoff + a
              iaai = (iovvo(iarep) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(iarep) + &
        &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i ! careful about the complex algebra  
-             H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
+             H_II(ai) = -fac1 + eps(aa) !- vbar_ss (iaai)
              ai = ai + 1
           enddo
         enddo
@@ -159,18 +159,18 @@
 
 ! New trial vectors for R1 
 
-   allocate (R1_dum(ndimr1,ndimr1))
-     R1_dum = 0.0d0
+    allocate (R1_dum(ndimr1,ndimr1))
+      R1_dum = 0.0d0
 
-     do iroot = 1, ndimr1
-         R1_dum(iroot,iroot) = 1.0d0
-     end do
+      do iroot = 1, ndimr1
+          R1_dum(iroot,iroot) = 1.0d0
+      end do
 
-      call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
-      
-      R1 = R1_dum(:,1:nroot) 
+       call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
+       
+       R1 = R1_dum(:,1:nroot) 
 
-    deallocate(R1_dum)
+     deallocate(R1_dum)
 
 
 !!  if (nroot.eq.(ndimr1+ndimr2)) then
@@ -181,18 +181,18 @@
 !!       R2(iroot,ndimr1+iroot) = 1.0d0
 !!   end do
 !!  else
-!!   allocate(diag_H(ndimr1))
-!!   diag_H = H_II(1:ndimr1)
+   ! allocate(diag_H(ndimr1))
+   ! diag_H = H_II(1:ndimr1)
 
-!!   do iroot = 1, nroot
-!!    k = minloc(diag_H) 
-!!    write(*,*)'roots',iroot,H_II(k(1)),k(1) 
-!!    i = k(1)
-!!    diag_H(i) = 8000.0d0
-!!    R1(i,iroot) = 1.0d0
-!!   enddo
-!!   deallocate(diag_H)
-!!  end if
+   ! do iroot = 1, nroot
+   !  k = minloc(diag_H) 
+   !  write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+   !  i = k(1)
+   !  diag_H(i) = 8000.0d0
+   !  R1(i,iroot) = 1.0d0
+   ! enddo
+   ! deallocate(diag_H)
+!    end if
 
 
    case ('IP')
@@ -277,21 +277,93 @@
 
    case ('EA')
 
-      H_II = eps((1+no(nrep+1)):(no(nrep+1)+nv(nrep+1)))
+    ai = 1
+    do irep = 1, nrep
+       arep = multb (irep,1+nrep,1)
+        do i = 1, ncont(irep)
+         aoff = io(nrep+1) + iv(arep)
+          do a = 1, nv(arep)
+             aa = aoff + a
+             H_II(ai) =  eps(aa) 
+             ai = ai + 1
+          enddo
+        enddo
+    enddo
 
-      do iroot = 1, nroot
-        k = minloc(H_II) 
-        write(*,*)'roots',iroot,H_II(k(1)) 
+      ABIJ = ai 
+      DO IJRP = 1, NREP
+      DO 50 JRP = 1, NREP
+      JJ = IO(JRP)
+      IRP = MULTB(JRP,IJRP+NREP,2)
+!      IF (IRP.LT.JRP) GOTO 10
+!      IOFF = IO(IRP)
+      DO J = 1, NO(JRP)
+         JJ = JJ + 1
+         FAC1 = EPS(JJ)
+         DO I = 1, NCONT(IRP)
+            FAC2 =  FAC1
+            DO 60 BRP = 1, NREP
+            BB = IV(BRP) + IO(NREP+1)
+            ARP = MULTB(BRP,IJRP+NREP,2)
+            IF (ARP.LT.BRP) GOTO 60
+            AOFF = IV(ARP) + IO(NREP+1)
+            DO B = 1, NV(BRP)
+               BB = BB + 1
+               FAC3 = FAC2 - EPS(BB)
+               AMIN = 1
+               IF (ARP.EQ.BRP) AMIN = B + 1
+               DO A = AMIN, NV(ARP)
+                  AA = AOFF + A
+                  FAC = FAC3 - EPS(AA)
+                  H_II(ABIJ) = -FAC
+                  ABIJ = ABIJ + 1
+               ENDDO
+            ENDDO
+ 60         CONTINUE
+         ENDDO
+      ENDDO
+ 50   CONTINUE
+      ENDDO
+
+!! allocate (r1_dum(ndimr1,ndimr1))
+!!   r1_dum = 0.0d0
+
+!!   do iroot = 1, ndimr1
+!!       r1_dum(iroot,iroot) = 1.0d0
+!!   end do
+
+!!    call trial_vectors_EA(R1_dum,Fbar_PP)
+!!    
+!!    r1 = r1_dum(:,1:nroot) 
+
+!!  deallocate(R1_dum)
+
+ !  if (nroot.eq.(ndimr1+ndimr2)) then
+ !   do iroot = 1, ndimr1
+ !       R1(iroot,iroot) = 1.0d0
+ !   end do
+ !   do iroot = 1, ndimr2
+ !       R2(iroot,ndimr1+iroot) = 1.0d0
+ !   end do
+ !  else
+
+     allocate(diag_H(ndimr1))
+     diag_H = H_II((no(nrep+1)+1):(ndimr1+no(nrep+1)))
+
+       do iroot = 1, nroot
+        k = minloc(diag_H) 
+        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
-        H_II(i) = 8000.0d0
+        diag_H(i) = 8000.0d0
+        print *, "debug: i, iroot, ndimr1, ndimr2, size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
         R1(i,iroot) = 1.0d0
-      enddo
+       enddo
+     deallocate(diag_H)
+!! end if 
 
   end select 
 
-
    end subroutine
-
 
    subroutine eom_ee(icalc,mxcorr)
    use davidson
@@ -314,7 +386,7 @@
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
    real*8, pointer :: sub_Hp(:,:) ! sub_H(nroot,nroot)
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep)
+   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep),nox(nrep)
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
 
@@ -531,15 +603,75 @@
 
     case('EA')
 
-      do irep = 1, nrep
-         ndimr2 = ndimr2 + nvvt(irep)*no(irep)
+       ndimr2 = 0
+       ndimr1 = 0
+       nox(1:nrep) = 0
+       
+       call create_eom_nvx(nrep)
+
+      do jrep = 1, nrep
+        do irep = 1, nrep
+        ijrep = multb(irep,jrep,1)
+        nox(ijrep) = nox(ijrep) + ncont(irep)*no(jrep)
+        call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*no(jrep)))
+        enddo
       enddo
+      print *, "debug, in eom_driver, nvx:",nox
+      do jrep = 1, nrep
+         print *, "debug, in eom_driver, get_nvx(jrep):",jrep,get_eom_nvx(jrep),nox(jrep)
+      end do
 
-       allocate (r1(iv(nrep+1)*rcw,nroot))
-       allocate (r2(ndimr2*rcw,nroot))
+        do irep = 1, nrep
+         ndimr1 = ndimr1 + ncont(irep)*nv(irep)
+        enddo
 
-!      allocate (sigma1(iv(nrep+1)*rcw,nroot))
-!      allocate (sigma2(ndimr2*rcw,nroot))
+      do irep = 1, nrep
+!       ndimr2 = ndimr2 + nvx(irep)*noot(irep)
+          ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
+         print *, "debug, ndimr2: irep",irep,"nvx(irep)",nox(irep),"nvvt(irep)",nvvt(irep),get_eom_nvx(irep)
+      enddo
+       
+       print *, "debug, ndimr1",ndimr1,"ndimr2",ndimr2
+
+       N = ndimr1 + ndimr2
+!       nroot = N
+
+       call set_eom_ndet(1, ndimr1)
+       call set_eom_ndet(2, ndimr2)
+
+       allocate (sigma(N*rcw,nroot))
+       allocate (r(N*rcw,nroot))
+       allocate (B%H_II(N*rcw)) 
+       
+       r = 0.0d0
+
+       B%H_II = 1.0d0
+
+      call input_processor(B%Fbar_mi, &
+      &                    B%Fbar_ae, &
+      &                    B%W_mbej,  &
+      &                    r(1:ndimr1*rcw,:), &
+      &                    r((ndimr1*rcw)+1:N*rcw,:),  &
+      &                    B%H_II)
+
+!      do iroot = 1, nroot
+
+!         sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
+!         sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
+!         call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),B, &
+!    &                  sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
+
+!         sigma(1:N*rcw,iroot:iroot) = 0.0d0 
+!         call sigma_IP(nvx, &
+!                       r(1:ndimr1*rcw,iroot:iroot), &
+!         &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!         &             B,                            &
+!         &             sigma(1:ndimr1*rcw,iroot:iroot), &
+!         &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!         &             ndimr1, &
+!         &             ndimr2)
+
+!       end do
 
    end select 
 
