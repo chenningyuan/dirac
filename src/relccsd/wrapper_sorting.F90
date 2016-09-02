@@ -198,7 +198,7 @@
 
   allocate(A(6))
   
-  A = (/1234,1324,1432,2134,1243,1342/)
+  A = (/1234,1324,1432,1342,2134,1243/)
 
   case(31)
 
@@ -325,7 +325,7 @@
 
   allocate(A(6))
 
-  A = (/1234,1324,1432,2134,1243,1342/)
+  A = (/1234,1324,1432,1342,2134,1243/)
 
   case(31)
 
@@ -671,9 +671,9 @@
 ! (2,2)->(2,2) type of sorting routines         
        srt_22(1)%unrestricted => SRT1SS4_exp   
        srt_22(2)%unrestricted => SRT16_exp     
-       srt_22(3)%unrestricted => SRT1L1    
-       srt_22(4)%unrestricted => SRT1R1 
-       srt_22(5)%unrestricted => SRT46_exp 
+       srt_22(3)%unrestricted => SRT46_exp 
+       srt_22(4)%unrestricted => SRT1L1    
+       srt_22(5)%unrestricted => SRT1R1 
        srt_22(1)%restricted_braket => SRT1TT4_exp
        srt_22(2)%restricted_braket => SRT1TT5_exp
 !      srt_22(1)%restricted_bra =  SRT1LS1

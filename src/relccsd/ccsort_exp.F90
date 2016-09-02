@@ -176,7 +176,7 @@
 
       call dealloc_array(d,e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1TT5_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -321,7 +321,7 @@
 
       call dealloc_array(d,e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 
 !=====================================================================================
       SUBROUTINE SRT1ST4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -426,7 +426,7 @@
 
       call dealloc_array(d,e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1SS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -514,7 +514,7 @@
 
       call dealloc_array(d,e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 !=======================================================================
       SUBROUTINE SRT1T3_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
@@ -604,7 +604,7 @@
       call dealloc_array(e,f,g,h)
 
       RETURN
-      END
+      END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE SRT1T2_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -699,7 +699,7 @@
       call dealloc_array(e,f,g,h)
 
       RETURN
-      END
+      END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT6_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -782,7 +782,7 @@
 
       call dealloc_array(e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT9_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
@@ -866,7 +866,7 @@
 
       call dealloc_array(e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1S2_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
@@ -947,7 +947,7 @@
 
       call dealloc_array(e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT16_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
@@ -1037,7 +1037,7 @@
 
       call dealloc_array(d,e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 !=============================================================================================================
       SUBROUTINE SRT46_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
@@ -1070,9 +1070,6 @@
 !---------------Local variables--------------------------------------
        type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
-
-
-      write(*,*)'Inside srt46'
 
       call alloc_array(d,nrep,e,f,g,h)
       call auto_symmetry_offset(d,IFIE,JFIE,.false.,.false.)
@@ -1131,9 +1128,8 @@
 
       call dealloc_array(d,e,f,g,h)
       RETURN
-      END
 
-
+      END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT19_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
  
@@ -1211,7 +1207,7 @@
  
       call dealloc_array(e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT22_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -1299,7 +1295,7 @@
 
       call dealloc_array(e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 !===========================================================================
       SUBROUTINE SRT32_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
@@ -1377,7 +1373,7 @@
 
       call dealloc_array(e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 
 !====================================================================================
 
@@ -1459,7 +1455,7 @@
 
       call dealloc_array(e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
       
 !==========================================================================================
       SUBROUTINE SRT26_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -1570,7 +1566,7 @@
       call dealloc_array(d,e,f,g,h) 
 
       RETURN
-      END
+      END SUBROUTINE
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT36_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -1629,7 +1625,7 @@
       ELSE
          ROW = d%oneNonDirac
          COLUMN = e%oneNonDirac
-         offx = h%twoNonDirac
+         offx = h%twoDirac
       ENDIF
 
       IJKL = 1
@@ -1731,9 +1727,6 @@
 
 !---------------Executable code--------------------------------------
 
-
-      write(*,*)'Inside srt56'
-
       call alloc_array(d,nrep,e,f,g,h)
       call auto_symmetry_offset_triangular(d,IFIE,JFIE)
       call auto_symmetry_offset(e,KFIE,LFIE,.false.,.false.)
@@ -1820,9 +1813,8 @@
       call dealloc_array(d,e,f,g,h)
 
       RETURN
-      END
 
-
+      END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE SRT1TS4_exp (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
@@ -1938,7 +1930,7 @@
       call dealloc_array(d,e,f,g,h)
 
       RETURN
-      END
+      END SUBROUTINE
 
 !=======================================================================
 
@@ -2030,6 +2022,6 @@
 
       call dealloc_array(e,f,g,h)
       RETURN
-      END
+      END SUBROUTINE
 
   end module      

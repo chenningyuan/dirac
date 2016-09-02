@@ -487,7 +487,7 @@
 
  end subroutine
 
- subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo,buf2,buf3)
+ subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo)
 
 !--------------------DESCRIPTION---------------------------
 !        calculates vvvo type intermediate in-core fashion.      
@@ -500,7 +500,6 @@
 
 !---------------Calling variables--------------------------------------
    real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
-   real*8, intent(in)  :: buf2(*),buf3(*)         
    real*8, intent(in)  :: wbar_ovvo(rcw*iovvo(nrep+1)),hov(nfvo*rcw)     ! Intermediate.
    real*8, intent(out) :: w_vvvo(rcw*nv5)                ! Intermediate.
 !---------------Local Variables----------------------------------------
@@ -508,8 +507,6 @@
    integer :: AllocateStatus 
    real*8, allocatable  :: tau(:)                
    real*8, allocatable  :: vovv1(:),temp(:)                
-   integer :: m,n,k,off1,off2,off3,irep,jrep,lrep 
-
 
    type(indices) :: e,f,g
 
@@ -613,9 +610,6 @@
 ! ** actually read integrals from this batch and is a pure output parameter !
 ! ** We therefore have to count upwards in case of ISTART.NE.0 !!
 
-
-!        MINT = NBUF3/NVVT(IRP)
-!        CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
          call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
 
          call putdz (irp,istart,nint,buf3)
@@ -644,7 +638,6 @@
                     ISTART = ISTART + NINT
                     IF(.NOT.DONE) THEN
                     call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
-
                     call putdz (irp,istart,nint,buf3)
                       CD = 1
                       CCO=ISTART
