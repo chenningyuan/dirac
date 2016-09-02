@@ -656,7 +656,7 @@ C
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A)') 'Done.'
 C
-C     Write coefficients to either KRMCSCF or DFCOEF
+C     Write coefficients to either KRMCOLD or DFCOEF
 C
       IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')

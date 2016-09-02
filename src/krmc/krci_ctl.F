@@ -1187,15 +1187,16 @@ C     no shared memory mode for non MPI-2 executables
       END IF
       IF( CINT_REORD_KRCI )THEN
         WRITE(LUPRI,'(A)')
-     &     ' * GAS-scheme specific integral file  in use '
+     &     ' * GAS-scheme specific integral file in use (.IJKLRO)'
       END IF
       IF( CINT_SPLIT_KRCI )THEN
         WRITE(LUPRI,'(A)')
-     &     ' * Revised integral allocation scheme '
+     &     ' * Revised integral allocation scheme (.IJKLSPLIT)'
       END IF
 C     ... only natural orbitals occupation numbers
       IF( NATOLCR_KRCI )THEN
-        WRITE(LUPRI,'(A)') ' * Calculation of nat. orb. occ. numbers'
+        WRITE(LUPRI,'(A)')
+     &  ' * Calculation of natural orbital occupation numbers (.NOOCCN)'
       END IF
 !     additional check because we might have turned off the <j_z>
 !     calculation. see comment above for more information.
@@ -1221,7 +1222,7 @@ C
 C
       ENDIF
       IF(DOOSCILLST) THEN
-        WRITE(LUPRI,'(/A)') ' * Calculation of oscillator strength'//
+        WRITE(LUPRI,'(/A)') ' * Calculation of oscillator strengths'//
      &                     ' for (allowed) electronic transitions'
       END IF
       if(dodipmom_krci)then
@@ -1252,7 +1253,7 @@ C
       END IF
       IF( LOWSORT_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' * Use memory-saving integral reordering'//
-     &                      ' scheme'
+     &                      ' scheme (.LOWSRT)'
       END IF
       if(state_select_krci)then
         write(lupri,'(/a)') ' * Select CI state(s) for subsequent'//

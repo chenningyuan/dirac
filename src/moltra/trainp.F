@@ -450,7 +450,8 @@ C
 #include "ibtfun.h"
 #include "memint.h"
       IF (SET) RETURN
-      SET = .TRUE.
+!Miro: nasty workaround to enable repeated input reading in the RelCC geometry optimization
+      !SET = .TRUE. 
 C
 C     Local variables
 C
@@ -886,7 +887,8 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 C
   400 CONTINUE
 
-      CALL TRPINP(WORD,.FALSE.,WORK,LWORK)  ! always call this routine, sets transformation for dipole integrals
+      CALL TRPINP(WORD,.TRUE.,WORK,LWORK)  ! always call this routine, sets transformation for dipole integrals
+!Miro: set RESET to .true. to enable geometry optimization
 
 C
 C     Process defaults for 2- and 4-index transformations
@@ -1173,14 +1175,14 @@ C
       IPRTRP   = IPRTRA
 !     Always transform the dipole length operator
       IF (.NOT. BSS) THEN
-      PNAME(1) = 'XDIPLEN'
-      PNAME(2) = 'YDIPLEN'
-      PNAME(3) = 'ZDIPLEN'
-      DO I=1,3
-         CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &               ITRXPR,WORK,LWORK,IPRXQR)
-         CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,MAXTRP)
-      END DO
+        PNAME(1) = 'XDIPLEN'
+        PNAME(2) = 'YDIPLEN'
+        PNAME(3) = 'ZDIPLEN'
+        DO I=1,3
+          CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
+     &               ITRXPR,IPRTRP)
+          CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,MAXTRP)
+        END DO
       END IF
 
 C
