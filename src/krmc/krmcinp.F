@@ -307,13 +307,16 @@ C&&& MAX MK2: maximum value of 2 * MK
    21          CONTINUE
 C&&& GASSH: GAS setup
                   IF (NKRMCGAS .GT. 0) THEN
-                     CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &                 'You cannot specify both .GASSH and .CASSCF')
+                    CALL QUIT('*** ERROR in *KRMCSCF *** You may ' //
+     &              'only specify one of .GASSH , .CASSCF, and .GAS SH')
                   END IF
                   READ(LUCMD,*) NKRMCGAS
                   IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXGAS) THEN
-                     CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &                         'illegal value of NKRMCGAS')
+                     WRITE(LUPRI,'(//A,I0)')
+     &               '*** ERROR for *KRMCSCF/.GASSH  input *** ' //
+     &               'invalid number of GAS spaces: ',NKRMCGAS
+                     CALL QUIT('*** ERROR for *KRMCSCF input *** ' //
+     &                     'invalid number of GAS spaces for .GASSH ')
                   END IF
                   DO I = 1, NKRMCGAS
                      READ(LUCMD,*) (NKRMCGSH(J,I),J=1,NFSYM)
@@ -322,8 +325,8 @@ C&&& GASSH: GAS setup
    22          CONTINUE
 C&&& GASSPC: GAS space constraints
                   IF (NKRMCGAS .EQ. 0) THEN
-                     WRITE(LUPRI,'(A)') ' *** ERROR in *KRMCSCF ***'
-     &                  //' .GASSH must be specified before .GASSP!'
+                     WRITE(LUPRI,'(//A)') ' *** ERROR in *KRMCSCF ***'
+     &                  //' .GASSH must be specified before .GASSP'
                      CALL QUIT('*** ERROR in *KRMCSCF ***')
                   END IF
                   DO I = 1, NKRMCGAS
@@ -362,12 +365,12 @@ C&&&  INACTIVE ORBITALS
  28            CONTINUE
 C&&&  CASSCF -- this defines a CAS space
                IF (NKRMCGAS .GT. 0) THEN
-                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &                 'You cannot specify both .GASSH and .CASSCF')
+                  CALL QUIT('*** ERROR in *KRMCSCF *** You may ' //
+     &              'only specify one of .GASSH , .CASSCF, and .GAS SH')
                END IF
-               READ(LUCMD,*) NKRMCAELEC
-               READ(LUCMD,*) (NKRMCGSH(I,1),I=1,NFSYM)
                NKRMCGAS = 1
+               READ(LUCMD,*) NKRMCAELEC
+               READ(LUCMD,*) (NKRMCGSH(I,NKRMCGAS),I=1,NFSYM)
                NKRMCGSP(1,NKRMCGAS) = NKRMCAELEC
                NKRMCGSP(2,NKRMCGAS) = NKRMCAELEC 
                GO TO 100
@@ -376,16 +379,18 @@ C&&&  CASSCF -- this defines a CAS space
 C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA) 
 !              and Diracs opens-shell AOC Hartree-Fock format
                IF(NKRMCGAS .GT. 0)THEN
-                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &            'You cannot specify both GAS SH and '//
-     &            '(.GASSH/GASSPC or .CASSCF)')
+                  CALL QUIT('*** ERROR in *KRMCSCF *** You may ' //
+     &              'only specify one of .GASSH , .CASSCF, and .GAS SH')
                END IF
 
 !              step 1: read the # of GA spaces
                READ(LUCMD,*) NKRMCGAS
                IF(NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXGAS) THEN
-                 CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &                     'illegal value of NKRMCGAS')
+                 WRITE(LUPRI,'(//A,I0)')
+     &              '*** ERROR for *KRMCSCF/.GAS SH input *** ' //
+     &              'invalid number of GAS spaces: ',NKRMCGAS
+                 CALL QUIT('*** ERROR for *KRMCSCF input *** ' //
+     &                     'invalid number of GAS spaces for .GAS SH ')
                END IF
 
 !              process the min max occupation / per orbital occupation in each GAS shell
