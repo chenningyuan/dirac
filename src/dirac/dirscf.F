@@ -3143,7 +3143,7 @@ C***********************************************************************
 
       CALL QENTER('SELBOS')
 
-      IF (IPRINT.GE.7) THEN
+      IF (IPRINT.GE.7) THEN 
        CALL HEADER('*** Output from SELBOS - before resorting ***',-1)
        write(lupri,'(2x,a,i1,a,i1,a,i4)')
      & 'fermion symmetry IFSYM/NFSYM=',IFSYM,'/',NFSYM,

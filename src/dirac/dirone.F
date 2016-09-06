@@ -2687,9 +2687,9 @@ C
 C     Write transformation matrices
 C
       CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
-!     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.) --> S(-1/2)
+!     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
-!     right index transformed overlap matrix Saomo --> S(+1/2)
+!     right index transformed overlap matrix Saomo 
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
 !     orbital dimensions, etc --> "runtime" data
       CALL ORBDAT
@@ -4797,6 +4797,9 @@ C***********************************************************************
 C
 C     Eliminate a set of fragment orbitals from the variational space;
 C     this is done by projecting them out of the MO transformation matrix
+C     On input:
+C       TMAT contains the MO transformation matrix T (canonical orthogonalization)
+C       TINV contains the inverse of T^{dagger}, that is, TINV = ST
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
@@ -4916,170 +4919,12 @@ C     Reduce variational space by projection using the fragment orbitals
 C     ===================================================================
 C     If more than one set of fragment orbitals, they must be orthogonalized !
 C
-C     Do projection
-C
       CALL PSIPR1(NVECS,WORK(KQ),WORK(KE),WORK(KI),TMAT,TINV,
      &            NSTR,IPRINT,WORK,KFREE,LFREE)
  30   CONTINUE
       CALL MEMREL('PSIPRJ.final',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck PRJORT */
-      SUBROUTINE PRJORT(VECS,IBVEC,VREF,IBREF,IREF,NREF,
-     &                  THRLDP,THRMAX,NVDIM,NVECS,NVREF,NDEL,IP,IPRINT)
-C*****************************************************************************
-C
-C     On input:
-C        VECS  - unit matrix (transformation matrix in MO-basis)
-C        IBVEC - integer array with boson irrep info for transformation matrix
-C        VREF  - fragment vectors in MO-basis
-C        IBREF - integer array with boson irrep info for fragment vectors
-C        NREF  - number of fragment vectors to project out
-C        IREF  - starting adress of fragment vectors to project out
-C
-C     Written by T. Saue
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1=-1.0D0)
-      PARAMETER (T1MIN = 1.0D-8, THRRND = 1.0D-4)
-C
-#include "dgroup.h"
-      DIMENSION VECS(NVDIM,NVECS,NZ),VREF(NVDIM,NVREF,NZ),
-     &          IBVEC(NVECS),IBREF(NVREF)
-      DIMENSION P(4)
-C
-CTROND
-      IF(IPRINT.GE.7) THEN
-         CALL HEADER('PRJORT: MO transformation matrix on input',-1)
-         CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)
-      ENDIF
-      THRMAX = D0
-      NDEL   = 0
-      N2VECS = NVDIM*NVECS
-      N2VREF = NVDIM*NVREF
-      IROUND = 0
-      ITURN  = 0
- 10   CONTINUE
-      ITURN  = ITURN + 1
-      IF(IPRINT.GE.2) WRITE(6,'(A,I5)') '* Projection turn :',ITURN
-C
-C     First project out fragment vectors
-C     ===================================
-C
-      JTOP = IREF+NREF-1
-      DO JREF = IREF,JTOP
-        IF(IPRINT.GE.3) THEN
-          CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
-     &           'N',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1)
-          VNRM=SQRT(VNRM)
-          WRITE(LUPRI,'(A,I3,A,1P,D12.5,4X,A,I5)')
-     &      'Fragment vector no.',JREF,' Norm: ',VNRM,
-     &      'Bsym: ',IBREF(JREF)
-        ENDIF
-        DO 100 IVEC = 1,NVECS
-          IF(IBVEC(IVEC).NE.IBREF(JREF)) GOTO 100
-C
-C         Form -<VREF|IVEC>
-C
-          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
-     &         'H',IPQTOQ(1,0),VREF(1,JREF,1),N2VREF,NZ,1,
-     &         'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-          DO IZ = 1,NZ
-            P(IZ) = -P(IZ)
-          ENDDO
-C
-C         Form VECS = VECS -VREF<VREF|VECS>
-C
-          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
-     &                VREF(1,JREF,1),N2VREF,1,IPQTOQ(1,0),NZ,
-     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
- 100    CONTINUE
-      ENDDO
-C
-C     Next commence internal orthogonalization
-C     =========================================
-C
-      IF(IPRINT.GE.2) THEN
-        WRITE(LUPRI,'(A)')
-     &      '* MO-vectors after projecting out reference vectors:'
-      ENDIF
-      DO 200 IVEC = 1,NVECS
-CTROND: This is a bit dangerous; should be fixed !
-        IF(IBVEC(IVEC).LT.-100) GOTO 200
-C
-C       Check size of norm
-C       ==================
-C
-        CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
-     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-        VNRM=SQRT(VNRM)
-
-        THRMAX=MAX(THRMAX,VNRM)
-        IF(VNRM.LT.THRLDP) THEN
-          IF(IPRINT.GE.1) THEN
-            WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5,3X,A,I5)')
-     &        'Vector no.',IVEC,' removed. Linear dependence: ',VNRM,
-     &        ' Bsym: ',IBVEC(IVEC)
-          ENDIF
-C         Store information about irrep and neg/pos solution
-C         of deleted vector
-          IBVEC(IVEC) = -(IP*1000+IBVEC(IVEC))
-          NDEL = NDEL + 1
-          GOTO 200
-        ELSE
-          IF(IPRINT.GE.2) WRITE(LUPRI,'(3X,A,I3,A,1P,D12.5,3X,A,I5)')
-     &      'Vector no.',IVEC,' Norm: ',VNRM,
-     &      'Bsym:',IBVEC(IVEC)
-          IF(VNRM.LT.THRRND.AND.ITURN.EQ.1) IROUND=IROUND+1
-          IF(VNRM.LT.T1MIN) THEN
-            VNRM = D1/VNRM
-            DO IZ = 1,NZ
-              CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
-            ENDDO
-            CALL QDOT(VNRM,IPQTOQ(1,0),1,NVDIM,
-     &           'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
-     &           'N',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1)
-          END IF
-          VNRM = D1 / VNRM
-          DO IZ = 1,NZ
-            CALL DSCAL(NVDIM,VNRM,VECS(1,IVEC,IZ),1)
-          ENDDO
-        ENDIF
-        DO 300 JVEC = (IVEC+1),NVECS
-          IF(IBVEC(JVEC).NE.IBVEC(IVEC)) GOTO 300
-C
-C         Form -<IVEC|JVEC>
-C
-          CALL QDOT(P,IPQTOQ(1,0),NZ,NVDIM,
-     &         'H',IPQTOQ(1,0),VECS(1,IVEC,1),N2VECS,NZ,1,
-     &         'N',IPQTOQ(1,0),VECS(1,JVEC,1),N2VECS,NZ,1)
-          DO IZ = 1,NZ
-            P(IZ) = -P(IZ)
-          ENDDO
-C
-C         Form JVEC = JVEC -IVEC<IVEC|JVEC>
-C
-          CALL  QXAPY(NVDIM,'N','N',P,IPQTOQ(1,0),NZ,
-     &                VECS(1,IVEC,1),N2VECS,1,IPQTOQ(1,0),NZ,
-     &                VECS(1,JVEC,1),N2VECS,1,IPQTOQ(1,0),NZ)
- 300    CONTINUE
- 200  CONTINUE
-      IF (ITURN.LT.4) THEN
-        GO TO 10
-      ENDIF
-      IF(IPRINT.GE.7) THEN
-         CALL HEADER('PRJORT: MO transformation matrix on output',-1)
-         CALL PRQMAT(VECS,NVDIM,NVECS,NVDIM,NVECS,1,IPQTOQ(1,0),LUPRI)
-      ENDIF
-C
-      RETURN
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck prjcnt */
@@ -6986,6 +6831,23 @@ C/* Deck psipr1 */
      &                  IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
+C      Reduce variational space by projection using the fragment orbitals
+C      On input:
+C        NVECS(ifrp) is the number of fragment orbitals in ifrp
+C        CSEL, ESEL, ISEL contains fragment orbitals (coefficients), 
+C           their energies and, if avavilable, supersymmetry labels
+C        TMAT is the AOMO transformation matrix T (canonical orhogonalization)
+C        TINV is the inverse of T^{dagger}, that is TINV = ST, where S is the
+C           AO overlap matrix
+C
+C      On input, for a given fermion ircop, the AOMO transformation matrix
+C      has the dimension
+C         TMAT(nfbas(ifrp,0),norb(ifr),nz)
+C      On output, the dimension has been modified to
+C         TMAT(nfbas(ifrp,0),ntmo(ifr),nz)
+C   
+C
+C      Written by Trond Saue long time ago....
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -7001,16 +6863,111 @@ C
       DIMENSION CSEL(*),ESEL(*),ISEL(*),TMAT(*),TINV(*),WORK(*)
       DIMENSION NVECS(2),NQ(2),NSTR(2,0:2,MFRAG)
 C
+      CALL QENTER('PSIPR1')
       KFRSAV = KFREE
       NFROT = 0
       DO IFRP = 1,NFSYM
         NFROT = NFROT + NFRO(IFRP)
       ENDDO
       IF(NFROT.GT.0) CALL OPNFIL(LUCOEF,'DFFROZ','UNKNOWN','PSIPR1')
+C.....For simplification , set subblock information, also 
+C     when there is no subblock ...
+      IF(.NOT.SUB_BL) THEN
+        DO IFRP = 1,NFSYM
+          N_SUB_BL(IFRP) = 1
+          NORB_SUB(1,IFRP,0) = NORB(IFRP)
+          ID_SUB_BL(1,IFRP)  = 1
+        ENDDO
+      ENDIF
       TOBE = .FALSE.
       N2TMT = 0
       ICOFF = 1
       IEOFF = 1
+      IF (SUB_BL) THEN
+        DO 8 IFRP =  1,NFSYM
+          WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
+          NTMO(IFRP) = NORB(IFRP) - NVECS(IFRP)
+          IBORB = 0
+          IBEFF = 0
+          DO ISUB = 1,N_SUB_BL(IFRP)
+          IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
+            ITM = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1
+            ITEFF = I2TMT(IFRP) + NFBAS(IFRP,0)*IBEFF + 1
+C...........Find orbitals in this subblock
+            NVECS_SUB = 0
+            DO IVEC = 1,NVECS(IFRP)
+            IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+              NVECS_SUB = NVECS_SUB + 1
+            ENDIF
+            ENDDO
+            WRITE(6,*) 'TEST..sub',IFRP,ID_SUB_BL(ISUB,IFRP),
+     &          NORB_SUB(ISUB,IFRP,0),NVECS_SUB
+            IF(NVECS_SUB.GT.0) THEN
+              NREF = NORB_SUB(ISUB,IFRP,0)*NVECS_SUB*NZ
+              CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
+              IMO  = 1
+              IREF = KREF
+C.............Transform vector of this subblock to orthonormal basis
+              DO IVEC = 1,NVECS(IFRP)
+              IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+                CALL QGEMM(NORB_SUB(ISUB,IFRP,0),1,NFBAS(IFRP,0),D1,
+     &            'H','N',IPQTOQ(1,0),TINV(ITM),
+     &                    NFBAS(IFRP,0),NORB(IFRP),NZT,
+     &            'N','N',IPQTOQ(1,0),CSEL(IMO),
+     &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
+     &            D0,IPQTOQ(1,0),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
+     &            NVECS_SUB,NZ)
+                  IREF = IREF + NORB_SUB(ISUB,IFRP,0)
+              ENDIF
+              IMO = IMO + NFBAS(IFRP,0)
+              ENDDO
+              IF(IPRINT.GE.5) THEN
+                WRITE(6,*) '  Transformed coefficients for subblock ',
+     &            ISUB
+                CALL PRQMAT(WORK(KREF),NORB_SUB(ISUB,IFRP,0),NVECS_SUB,
+     &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB,NZ,
+     &                IPQTOQ(1,0),LUPRI)
+              ENDIF
+C.............Do projection
+              NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZ
+              CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
+              CALL PRJORT(WORK(KBUF),WORK(KREF),NORB_SUB(ISUB,IFRP,0),
+     &              NVECS_SUB,NZ,WORK,KFREE,LFREE)
+              CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KREF,KFREE,LFREE)
+            ENDIF
+C...........At this point we do not need this part of TINV anymore, 
+C           so we overwrite with the old TMAT
+            IOFF = ITM
+            DO IZ = 1,NZ
+              CALL DCOPY(NDIM,TMAT(IOFF),1,TINV(IOFF),1)
+              IOFF = IOFF + NFBAS(IFRP,0)*NORB(IFRP)
+            ENDDO
+            IF(NVECS_SUB.GT.0) THEN
+             CALL QGEMM(NFBAS(IFRP,0),NTMO(IFRP),NORB(IFRP),D1,
+     &       'N','N',IPQTOQ(1,0),TINV(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,
+     &       'N','N',IPQTOQ(1,0),WORK(KBUF),NORB_SUB(ISUB,IFRP,0),
+     &       NORB_SUB(ISUB,IFRP,0),NZ,D0,
+     &       IPQTOQ(1,0),TMAT(ITEFF),NFBAS(IFRP,0),NTMO(IFRP),NZ)
+            ELSE
+              IOFF = ITM
+              JOFF = ITEFF
+              DO IZ = 1,NZ
+                CALL DCOPY(NDIM,TINV(IOFF),1,TMAT(IOFF),1)
+                IOFF = IOFF + NFBAS(IFRP,0)*NORB(IFRP)
+                JOFF = JOFF + NFBAS(IFRP,0)*NTMO(IFRP)
+              ENDDO
+            ENDIF
+            IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
+            NORB_SUB(ISUB,IFRP,0) = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB
+            IBEFF = IBEFF + NORB_SUB(ISUB,IFRP,0)
+          ENDIF
+          ENDDO
+          I2TMT(IFRP) = N2TMT
+          N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+ 8      CONTINUE
+CTROND
+        CALL QUIT('End of test')
+      ELSE
       DO 10 IFRP = 1,NFSYM
         WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
 C       Transform fragment coefficients to orthonormal basis
@@ -7022,9 +6979,6 @@ C       Transform fragment coefficients to orthonormal basis
           GOTO 11
         ENDIF
         NREF = NORB(IFRP)*NVECS(IFRP)*NZ
-        NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
-        CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBOS,NORB(IFRP),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
         CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
      &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
@@ -7038,76 +6992,48 @@ C       Transform fragment coefficients to orthonormal basis
           CALL PRQMAT(WORK(KREF),NORB(IFRP),NVECS(IFRP),
      &                NORB(IFRP),NVECS(IFRP),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
-C       Initialize unit matrix (transformation matrix in MO-basis)
-        CALL DUNIT2(WORK(KBUF),NORB(IFRP),NORB(IFRP),NORB(IFRP),NZ)
-        IF(SUB_BL) THEN
-C         Spin-free or linear case: Fill array with subblock info
-          CALL INIBOS(WORK(KIBOS),IFRP,.FALSE.,0)
-        ELSE
-C         Spin-orbit coupling: Fill array with zeros..
-          CALL ICOPY (NORB(IFRP),0,0,WORK(KIBOS),1)
-        ENDIF
 C       Do projection
-        IREF  = 1
+        NPRJ = NORB(IFRP)*NORB(IFRP)*NZ
+        CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
+        CALL PRJORT(WORK(KBUF),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ,
+     &              WORK,KFREE,LFREE)
         DO IFRAG = 1,NFRAG
-          DO IP = 2,1,-1
-            NREF = NSTR(IFRP,IP,IFRAG)
-            IF(NREF.GT.0) THEN
-              CALL PRJORT(WORK(KBUF),WORK(KIBOS),
-     &              WORK(KREF),ISEL(IEOFF),IREF,NREF,
-     &              PRJTHR,THRMAX,NORB(IFRP),NORB(IFRP),
-     &              NVECS(IFRP),NDEL,IP,IPRHAM)
-              IREF = IREF + NREF
-              NQ(IP) = NQ(IP) + NDEL
-            ENDIF
-          ENDDO
+          NQ(1) = NQ(1) + NSTR(IFRP,1,IFRAG)
+          NQ(2) = NQ(2) + NSTR(IFRP,2,IFRAG)
         ENDDO
-        CALL MEMREL('PSIPRJ.prjort',WORK,KFRSAV,KREF,KFREE,LFREE)
-        NDEL = NQ(1) + NQ(2)
         WRITE(LUPRI,'(2X,A,I6)')
-     &     '- Total number of orbitals deleted: ',NDEL,
+     &     '- Total number of orbitals deleted: ',NVECS(IFRP),
      &     '       - positive energy solutions: ',NQ(1),
      &     '       - negative energy solutions: ',NQ(2)
  11     CONTINUE
-        NTMO(IFRP)  = NORB(IFRP)-NDEL
+        NTMO(IFRP)  = NORB(IFRP)-NVECS(IFRP)
         NESH(IFRP)  = NESH(IFRP)-NQ(1)
         NPSH(IFRP)  = NPSH(IFRP)-NQ(2)
-        IEFF        = I2TMT(IFRP)+1
+        IEFF        = I2TMT(IFRP)+1 ! contains the "old" offset
         I2TMT(IFRP) = N2TMT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
-        IF(NFRO(IFRP).GT.0) THEN
-          IF(NDEL.LT.NFRO(IFRP)) THEN
-            WRITE(LUPRI,'(2X,A,I6,A)')
-     &      'is smaller than number of frozen orbitals',
-     &      NFRO(IFRP),'!'
-            WRITE(LUPRI,'(2X,A)')
-     &      'You may rerun with PRINT.GE.2 under **HAMILTONIAN',
-     &      'to see the norms of the remaining vectors.',
-     &      'Based on this, you may set the projection threshold'
-            WRITE(LUPRI,'(2X,A,E12.4)')
-     &      'PRJTHR lower. Current value is ',PRJTHR
-            CALL QUIT
-     &      ('PSIPRJ:Fewer deleted orbitals than frozen ones!')
-          ENDIF
+        IF(NVECS(IFRP).GT.0) THEN
 C         Backtransform to SO-basis
           NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
           CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)
-          CALL PRJCNT(WORK(KBUF),TMAT(I2TMT(IFRP)+1),
-     &                IFRP,NORB(IFRP),NFBAS(IFRP,0),
-     &                NTMO(IFRP),WORK(KIBOS),TINV(IEFF))
+          CALL QGEMM(NFBAS(IFRP,0),NTMO(IFRP),NORB(IFRP),D1,
+     &      'N','N',IPQTOQ(1,0),TINV(IEFF),NFBAS(IFRP,0),NORB(IFRP),NZT,
+     &      'N','N',IPQTOQ(1,0),WORK(KBUF),NORB(IFRP),NORB(IFRP),NZ,D0,
+     &      IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),NFBAS(IFRP,0),NTMO(IFRP),NZ)
           CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
 C
 C         Save frozen orbitals to file
 C
-C
-          NBUF = NFBAS(IFRP,0)*NZ
-          CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-          CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
-     &                  WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
-          CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
-          TOBE = .TRUE.
+          IF(NFRO(IFRP).GT.0) THEN
+            NBUF = NFBAS(IFRP,0)*NZ
+            CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+            CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
+     &           WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
+            CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
+            TOBE = .TRUE.
+          ENDIF
         ELSEIF((I2TMT(IFRP)+1).NE.IEFF) THEN
 C         Move transformation matrix if columns was deleted in previous
 C         irrep ...
@@ -7117,6 +7043,7 @@ C         irrep ...
         ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
         IEOFF = IEOFF + NVECS(IFRP)
  10   CONTINUE
+      ENDIF
       IF(NFROT.GT.0) CLOSE(LUCOEF,STATUS='KEEP')
       IF(IPRHAM.GE.5) THEN
         CALL HEADER('PSIPRJ: Final transformation matrix ',-1)
@@ -7136,6 +7063,7 @@ C
         CALL MKSAOMO(TINV,TMAT,.FALSE.,IPRHAM,WORK(KFREE),LFREE)
       ENDIF
 C
+      CALL QEXIT('PSIPR1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -7267,4 +7195,37 @@ C.....Static embedding potential
            PDOINT(ILBL)(4:4) = '0'
        ENDIF
        END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck prjort */
+      SUBROUTINE PRJORT(VMO,COEF,NORB,NVEC,NZ,WORK,KFREE,LFREE)
+C***********************************************************************
+C     This routine projects vectors COEF out of the identity matrix
+C     Presently, this is done by first forming the density matrix 
+C     of vectors COEF and then diagonalize it. The first NORB-NVEC 
+C     columns of the resulting eigenvectors have zero eigenvalues 
+C     and provide the orthogonal complement.
+C     A possible better approach is to do a "fat" QR decomposition.
+C     Thanks to Ulf Ekstrom for suggestions.
+C
+C     Written by Trond Saue
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      DIMENSION VMO(NORB,NORB,NZ),COEF(NORB,NVEC,NZ),WORK(*)
+C.....Form density matrix
+      KFRSAV = KFREE
+      CALL MEMGET('REAL',KDMAT,NORB*NORB*NZ,WORK,KFREE,LFREE)
+      CALL DENST1(WORK(KDMAT),NORB,NORB,NZ,D1,D0,
+     &              COEF,NORB,NVEC,1,NVEC,NORB)
+      CALL MEMGET('REAL',KEIG,NORB,WORK,KFREE,LFREE)
+      CALL QDIAG(NZ,NORB,WORK(KDMAT),NORB,NORB,
+     &           WORK(KEIG),1,VMO,NORB,
+     &           NORB,WORK(KFREE),LFREE,IERR)
+      WRITE(6,*) 'Eigenvalues from PRJORT:'
+      CALL OUTPUT(WORK(KEIG),1,NORB,1,1,
+     &            NORB,NORB,-1,LUPRI)
+      CALL MEMREL('PRJORT',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
 ! -- end of dirone.F --
