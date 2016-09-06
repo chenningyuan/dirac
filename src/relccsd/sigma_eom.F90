@@ -230,10 +230,10 @@
              enddo
 
          case ("EA")
-             do iroot = L_already_done, L 
+             do iroot = L_already_done + 1, L 
 
                 create_sigma_vector(:,iroot:iroot) = 0.0d0
-                 print "(2x,a,i6,a,i6)", "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
+                 print "(2x,a,i6,a,i6)", "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
                  call sigma_EA(eom_nvx,  &
                  &             r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &

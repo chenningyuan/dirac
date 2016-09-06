@@ -700,7 +700,7 @@
         right_vectors = .true.
 
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-        call davidson_driver(nroot, B, symmetric, davResults, verbose, r)
+        call davidson_driver(nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
         call free_davidson_results(davResults)
         
     end if
@@ -709,7 +709,6 @@
 
       if (allocated(B%H_II)) deallocate(B%H_II)
 
-    print*,'write me after davidson'
 
 ! todo:
 ! allocations/deallocations of intermediates would be more simply handled via
