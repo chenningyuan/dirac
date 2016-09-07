@@ -64,11 +64,6 @@ cmake_dependent_option(ENABLE_SRDFT "srDFT module" ON  "ENABLE_UNRELEASED" OFF)
 if(ENABLE_SRDFT)
     add_definitions(-DMOD_SRDFT)
 endif()
-cmake_dependent_option(ENABLE_DFTCOSCI "DFT-COSCI module" ON  "ENABLE_UNRELEASED" OFF)
-if(ENABLE_DFTCOSCI)
-    add_definitions(-DMOD_DFTCOSCI)
-endif()
-
 
 #--------------------------------------------------------------------------------------------------------------
 #

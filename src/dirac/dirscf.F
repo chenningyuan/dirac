@@ -2063,9 +2063,9 @@ C
         xcint_elergy=xcint_get_xc_energy()
         !elergy = elergy + xcint_get_xc_energy()
         elergy = elergy + xcint_elergy
-        print *
-        print *,'ERGCAL: xcint_get_xc_energy()=',xcint_elergy
-        print *
+        IF(IPRSCF.GE.5) THEN
+          print *,'ERGCAL: xcint_get_xc_energy()=',xcint_elergy
+        ENDIF
       end if
 
       if (dirac_cfg_fde) then

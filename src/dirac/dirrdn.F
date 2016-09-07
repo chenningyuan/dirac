@@ -7249,9 +7249,9 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
-#if !defined MOD_DFTCOSCI
+#if !defined MOD_UNRELEASED
       IF (DORES .AND.dirac_cfg_dft_calculation)
-     &   CALL QUIT ('.RESOLVE does not work with DFT')
+     &   CALL QUIT ('.RESOLVE does not work with DFT !')
 #endif
 
 

@@ -203,6 +203,7 @@ C
 #include "dcbres.h"
       LOGICAL TOBE, SAVEFLAGS(4)
       LOGICAL ::  remove_spinfree_terms=.false.
+      LOGICAL :: dirac_cfg_dft_calculation_save
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
@@ -257,21 +258,21 @@ C       Get the two-electron Fock matrix using core density matrix
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
 
+#if defined MOD_UNRELEASED
 ! Miro: inject xcint density into FMO as is in dirscf.F
-#if defined MOD_DFTCOSCI
         if (dirac_cfg_dft_calculation.AND..NOT.NOVXC) then
           IF (COREDENS) THEN
             ! take only core-density for Vxc contribution
             call xcint_potential_rks(NTBAS(0),DMAT,FMO)
           ELSE
-            ! default - take full density for Vxc contribution
+            ! default - take whole electronic density for Vxc contribution
             NOPEN=NOPENBUF 
             call DENMAT(DMATfull,CMO,IPRINT) 
             NOPEN=0
             call xcint_potential_rks(NTBAS(0),DMATfull,FMO)
           ENDIF
 
-          IF(IPRINT.GE.5) THEN
+          IF(IPRINT.GE.6) THEN
            CALL HEADER(
      &'GTCFC1: Two-el.Fock matrix with xc contribution in AO-basis',-1)
             IF (COREDENS) THEN
@@ -311,14 +312,24 @@ C
 C     4. Calculate core-core interaction.
 C     ===================================
 C
-!Miro  if DFT-COSCI active, the core-core interaction is calculated with 
-!     with the xint_xc energy contribution which is in FMO (2el Fock mtx)
-!  TODO: find out what energy contrib is it for .NOVCX ... maybe it should not be calculated ?
-#if defined MOD_DFTCOSCI
-!       if (dirac_cfg_dft_calculation.AND.NOVXC) 
-!    &    dirac_cfg_dft_calculation=.false.   ! do we have interest in absolute energies of multiplet states ?
+!Miro for DFT-COSCI - using Kohn-Sham orbitals
+! if NOVXC=.true. - do not add Exc to the core SCF energy, FMO (2-el Fock mtx) does not contain Vxc
+! if NOVXC=.false. - add Exc from core density only to the core SCF energy, FMO (2-el Fock mtx) contains Vxc
+!
+#if defined MOD_UNRELEASED
+       if (dirac_cfg_dft_calculation.AND.NOVXC) then
+          dirac_cfg_dft_calculation_save=.true.
+          dirac_cfg_dft_calculation=.false.   !Miro: do we have interest in absolute energies of multiplet states ?
+       endif
 #endif
       CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
+!Miro: restore the DFT status
+#if defined MOD_UNRELEASED
+       if (dirac_cfg_dft_calculation_save.AND.NOVXC) then
+          dirac_cfg_dft_calculation=.true.   !Miro: do we have interest in absolute energies of multiplet states ?
+       endif
+#endif
+
 C
 C     IF LVCON is used we should take the repulsion between all charge while
 C     for the core-core interaction we leave out the valence part. Add on the

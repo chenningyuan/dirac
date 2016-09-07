@@ -30,10 +30,8 @@ Fluorine atom.
 .MAXITR
 25
 .PRINT
-5
+0
 *RESOLVE
 .PRINT
-5
+0
 *END OF
-
- $GOSCIP IPRNT=7 &END

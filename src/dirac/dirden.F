@@ -437,18 +437,20 @@ C.......Average of Configuration
         END DO
       ELSE
 C.......Fractional Occupation
-        print *,'DENMAT: NOPEN=',NOPEN
         DO IOPEN = 1,NOPEN
           CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPRINT)
         END DO
-        print *,'DENMAT: complete fract.occupation density matrix'
-        DO IFRP = 1, NFSYM
-          WRITE(LUPRI,'(/A,A3)')
-     &      '* Fermion ircop ',FREP(IFRP)
-          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
+        IF (IPRNT.GE.8) THEN
+          WRITE(LUPRI,"(2X,A)")
+     &    'DENMAT: Total density matrix, open-shell fract. occupation'
+          DO IFRP = 1, NFSYM
+            WRITE(LUPRI,'(/A,A3)')
+     &        '* Fermion ircop ',FREP(IFRP)
+            CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
      &              NFBAS(IFRP,0),NFBAS(IFRP,0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-        ENDDO
+          ENDDO
+        ENDIF
       ENDIF
 C
       CALL QEXIT('DENMAT')

@@ -2,6 +2,16 @@
 module type_basis
 !------------------------------------------------------------------------------!
 !
+! This module stores information on basis sets in a derived type
+!
+!   BASIS_INFO
+!
+! .  This derived type can created and destroyed by
+!
+!   ALLOCATE_BASIS     and    DEALLOCATE_BASIS
+!
+!
+!
 ! kmax                     - number of shells contracted shells
 ! nuco(1:kmax)             - number of uncontracted functions
 ! nrco(1:????)             - number of contracted functions
@@ -17,6 +27,28 @@ module type_basis
 ! ncont                    - number of contractions
 ! priexp(1:npshel)         - normalized contraction coefficients
 ! priccf(1:npshel,1:ncont) - exponents of primitive shells
+!
+!  Note:
+!
+!   (1) Please create an instance of the derived type for each kind of basis set
+!       (orbital basis, fitting basis (Coulomb fit, MP2 fit ...), 
+!        CABS basis  for F12 theories ...)
+!
+!   (2) The module basically contains information provided on the 
+!
+!              SHELL.H     and    PRIMIT.H
+!
+!       common blocks. Those common blocks should be removed at some point
+!       and replaced by such containers. The advantage is point (1)
+!
+!   (3) If you feel that something should be added, please go ahead, but mind
+!       that simplicity wins in the long run!
+! 
+!   (4) So far, this module is used only in the LBM-AOCC and AO-NEVPT2 branch.
+!       I would be glad if others would use as well.
+!
+! 
+!  BHP, summer 2016
 !
 !------------------------------------------------------------------------------!
 
