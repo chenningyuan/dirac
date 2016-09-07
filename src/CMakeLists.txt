@@ -401,6 +401,9 @@ else()
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
+# print just message, no extra library for that
+message(STATUS "DFT-COSCI module: ${ENABLE_DFTCOSCI}")
+
 #  dirac sources as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/dirac)
 #set(EXTERNAL_LIBS dirac ${EXTERNAL_LIBS})

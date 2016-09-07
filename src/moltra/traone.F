@@ -33,6 +33,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 C
 #include "maxorb.h"
 #include "dcbtra.h"
@@ -63,9 +64,10 @@ C     Transform core-fock matrix to active MO basis
 C     ---------------------------------------------
 C
       Allocate (FMO(N2BBASXQ))
+!Miro: used parameter DUMMY -no need for full set of MOs
       CALL GTCFCK(FMO,IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &            WORK(KQC(1)),NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
-     &            ITRA_INTFL2,WORK,KFREE,LFREE)
+     &        WORK(KQC(1)),DUMMY,NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
+     &        ITRA_INTFL2,WORK,KFREE,LFREE)
 C
 C     Write MOLFDIR file MRCONEE
 C     --------------------------
@@ -93,17 +95,18 @@ C
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gtcfck */
-      SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,NDMOQR,ICMOQR,NSTR,
+      SUBROUTINE GTCFCK(FMO,IPRINT,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
      &                  NDMOQC,ICMOQC,NSPC,INTFLG2,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
 C     use active coefficients for MO-transformation
 C
-C     Called from traone.F/TRAONE
-C                 trapam.F/RESOLV
+C     Called from traone.F/TRAONE - uses DUMMY instead of CMO
+C                 trapam.F/RESOLV - uses CMO
 C
 C     Based on Trond Saue's GETFCK, Luuk Visscher, Mar 17 1997
+C     Modified by Miro Ilias for DFT-COSCI, Auguste 2016
 C
 C***********************************************************************
 #include "implicit.h"
@@ -118,8 +121,8 @@ C
       DIMENSION FMO(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
-      DIMENSION Q1(*),Q2(*),QCO(*)
-      Real(8), Allocatable :: FAO(:),DMAT(:)
+      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
+      Real(8), Allocatable :: FAO(:),DMAT(:),DMATfull(:)
 C
       CALL QENTER('GTCFCK')
       KFRSAV = KFREE
@@ -129,9 +132,10 @@ C
       INTFLG = INTFLG2
 C
       Allocate(FAO(N2BBASXQ))
-      Allocate(DMAT(N2BBASXQ))
+      Allocate(DMAT(N2BBASXQ)) ! core density matrix
+      Allocate(DMATfull(N2BBASXQ))! Miro: full density matrix
 C
-      CALL GTCFC1(FMO,FAO,DMAT,Q1,Q2,QCO,NDMOQR,ICMOQR,
+      CALL GTCFC1(FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,
      &            NSTR,NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
@@ -142,10 +146,13 @@ C
      &                NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 C
+!Miro: printout the core-energy
+!TODO: add xc contribution !
       WRITE (LUPRI,1000) DHFERG,ELERGY,E1PART,E2PART
 C
       DeAllocate(FAO)
       DeAllocate(DMAT)
+      DeAllocate(DMATfull)
       CALL QEXIT('GTCFCK')
 C
  1000 FORMAT (//' Core energy (includes nuclear repulsion) :',T50,F20.10
@@ -157,16 +164,26 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GTCFC1 */
-      SUBROUTINE GTCFC1(FMO,FAO,DMAT,Q1,Q2,QCO,NDMOQR,ICMOQR,NSTR,
-     &                  NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE GTCFC1(
+     &   FMO,FAO,DMAT,DMATfull,Q1,Q2,QCO,CMO,NDMOQR,ICMOQR,NSTR,
+     &             NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
 C*****************************************************************************
 C     
 C     Get core Fock-matrix in MO-basis; 
 C     use active coefficients for MO-transformation
 C
+C     On input: QCO - core MOs 
+C               CMO - full set of MOs
+C               DMAT - variable for core density mtx
+C               DMATfull - variable for full density matrix
+C
+C     Called from  GTCFCK
+C
 C     Based on Trond Saue's GETFC1, Luuk Visscher, Mar 17 1997
+C     Miro Ilias,2016: for DFT-COSCI, add xcint contribution based of DMAT/DMATfull
 C
 C*****************************************************************************
+         use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -183,12 +200,14 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "cbihr2.h"
+#include "dcbres.h"
       LOGICAL TOBE, SAVEFLAGS(4)
       LOGICAL ::  remove_spinfree_terms=.false.
-      DIMENSION FMO(*),FAO(*),DMAT(*),WORK(*)
+      LOGICAL :: dirac_cfg_dft_calculation_save
+      DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
-      DIMENSION Q1(*),Q2(*),QCO(*)
+      DIMENSION Q1(*),Q2(*),QCO(*),CMO(*)
 
       Integer, Allocatable :: POS(:)
 C
@@ -196,7 +215,7 @@ C
       KFRSAV = KFREE
       LUBUF = 22
 C
-C     Initialize
+C     Initialize - core is the closed-shell system !
 C
       NOPENBUF = NOPEN
       NFMAT = 1
@@ -227,9 +246,46 @@ C       Fock matrix type
 C       Hermitian operator
         IHRMOP(1) = 1
 C       Get core density matrix
-        CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)        
+        CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT) 
+C       Get the two-electron Fock matrix using core density matrix
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
      &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
+
+! Miro:  control printout for DFT-COSCI
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('GTCFC1: Two-el.Fock matrix in AO-basis',-1)
+          CALL PRQMAT(FMO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+
+#if defined MOD_UNRELEASED
+! Miro: inject xcint density into FMO as is in dirscf.F
+        if (dirac_cfg_dft_calculation.AND..NOT.NOVXC) then
+          IF (COREDENS) THEN
+            ! take only core-density for Vxc contribution
+            call xcint_potential_rks(NTBAS(0),DMAT,FMO)
+          ELSE
+            ! default - take whole electronic density for Vxc contribution
+            NOPEN=NOPENBUF 
+            call DENMAT(DMATfull,CMO,IPRINT) 
+            NOPEN=0
+            call xcint_potential_rks(NTBAS(0),DMATfull,FMO)
+          ENDIF
+
+          IF(IPRINT.GE.6) THEN
+           CALL HEADER(
+     &'GTCFC1: Two-el.Fock matrix with xc contribution in AO-basis',-1)
+            IF (COREDENS) THEN
+              WRITE(LUPRI,*) 'Only core-density for xc contribution'
+            ELSE
+              WRITE(LUPRI,*)
+     &        'Full electronic density for xc contribution'
+            ENDIF
+            CALL PRQMAT(FMO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+        endif
+#endif
 
         IF(PARCAL) call SetTaskDistribFlags(saveflags)
 
@@ -256,7 +312,24 @@ C
 C     4. Calculate core-core interaction.
 C     ===================================
 C
+!Miro for DFT-COSCI - using Kohn-Sham orbitals
+! if NOVXC=.true. - do not add Exc to the core SCF energy, FMO (2-el Fock mtx) does not contain Vxc
+! if NOVXC=.false. - add Exc from core density only to the core SCF energy, FMO (2-el Fock mtx) contains Vxc
+!
+#if defined MOD_UNRELEASED
+       if (dirac_cfg_dft_calculation.AND.NOVXC) then
+          dirac_cfg_dft_calculation_save=.true.
+          dirac_cfg_dft_calculation=.false.   !Miro: do we have interest in absolute energies of multiplet states ?
+       endif
+#endif
       CALL ERGCAL(FAO,FMO,DMAT,WORK(KFREE),LFREE)
+!Miro: restore the DFT status
+#if defined MOD_UNRELEASED
+       if (dirac_cfg_dft_calculation_save.AND.NOVXC) then
+          dirac_cfg_dft_calculation=.true.   !Miro: do we have interest in absolute energies of multiplet states ?
+       endif
+#endif
+
 C
 C     IF LVCON is used we should take the repulsion between all charge while
 C     for the core-core interaction we leave out the valence part. Add on the
@@ -348,6 +421,8 @@ C  /* Deck CDENS */
       SUBROUTINE CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)
 C*****************************************************************************
 C
+C Get the core density matrix into DMAT, from selected MO's in QCO
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -368,11 +443,19 @@ C
 C
 C     Print section
 C
-      IF(IPRINT.GE.4) THEN
+      IF (IPRINT.GE.5) THEN
         CALL TITLER('Output from CDENS','*',103)
         DO 20 I = 1,NFSYM
         IF(NORB(I).EQ.0) GOTO 20
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          WRITE(LUPRI,'(/3X,A,I1,A,I1/)')
+     &    '*** Fermion corep ',I,'/',NFSYM
+          IF (IPRINT.GE.7) THEN
+            write(LUPRI,*)
+     &      'Core molecular orbitals, QCO:',NDMOQC(1,I),NDMOQC(2,I)
+            CALL PRQMAT(QCO(ICMOQC(I)),NDMOQC(1,I),NDMOQC(2,I),
+     &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+          write(LUPRI,*) 'Core density matrix, DMAT:'
           CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    20   CONTINUE
