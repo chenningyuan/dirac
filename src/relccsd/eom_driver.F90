@@ -111,7 +111,7 @@
              aa = aoff + a
              iaai = (iovvo(iarep) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(iarep) + &
        &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i ! careful about the complex algebra  
-             H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
+             H_II(ai) = -fac1 + eps(aa) !- vbar_ss (iaai)
              ai = ai + 1
           enddo
         enddo
@@ -158,7 +158,6 @@
 !aspg+as
 
 ! New trial vectors for R1 
-
 !if (nroot.eq.(ndimr1+ndimr2)) then
 !    do iroot = 1, ndimr1
 !        R1(iroot,iroot) = 1.0d0
@@ -272,21 +271,93 @@
 
    case ('EA')
 
-      H_II = eps((1+no(nrep+1)):(no(nrep+1)+nv(nrep+1)))
+    ai = 1
+    do irep = 1, nrep
+       arep = multb (irep,1+nrep,1)
+        do i = 1, ncont(irep)
+         aoff = io(nrep+1) + iv(arep)
+          do a = 1, nv(arep)
+             aa = aoff + a
+             H_II(ai) =  eps(aa) 
+             ai = ai + 1
+          enddo
+        enddo
+    enddo
 
-      do iroot = 1, nroot
-        k = minloc(H_II) 
-        write(*,*)'roots',iroot,H_II(k(1)) 
+      ABIJ = ai 
+      DO IJRP = 1, NREP
+      DO 50 JRP = 1, NREP
+      JJ = IO(JRP)
+      IRP = MULTB(JRP,IJRP+NREP,2)
+!      IF (IRP.LT.JRP) GOTO 10
+!      IOFF = IO(IRP)
+      DO J = 1, NO(JRP)
+         JJ = JJ + 1
+         FAC1 = EPS(JJ)
+         DO I = 1, NCONT(IRP)
+            FAC2 =  FAC1
+            DO 60 BRP = 1, NREP
+            BB = IV(BRP) + IO(NREP+1)
+            ARP = MULTB(BRP,IJRP+NREP,2)
+            IF (ARP.LT.BRP) GOTO 60
+            AOFF = IV(ARP) + IO(NREP+1)
+            DO B = 1, NV(BRP)
+               BB = BB + 1
+               FAC3 = FAC2 - EPS(BB)
+               AMIN = 1
+               IF (ARP.EQ.BRP) AMIN = B + 1
+               DO A = AMIN, NV(ARP)
+                  AA = AOFF + A
+                  FAC = FAC3 - EPS(AA)
+                  H_II(ABIJ) = -FAC
+                  ABIJ = ABIJ + 1
+               ENDDO
+            ENDDO
+ 60         CONTINUE
+         ENDDO
+      ENDDO
+ 50   CONTINUE
+      ENDDO
+
+!! allocate (r1_dum(ndimr1,ndimr1))
+!!   r1_dum = 0.0d0
+
+!!   do iroot = 1, ndimr1
+!!       r1_dum(iroot,iroot) = 1.0d0
+!!   end do
+
+!!    call trial_vectors_EA(R1_dum,Fbar_PP)
+!!    
+!!    r1 = r1_dum(:,1:nroot) 
+
+!!  deallocate(R1_dum)
+
+ !  if (nroot.eq.(ndimr1+ndimr2)) then
+ !   do iroot = 1, ndimr1
+ !       R1(iroot,iroot) = 1.0d0
+ !   end do
+ !   do iroot = 1, ndimr2
+ !       R2(iroot,ndimr1+iroot) = 1.0d0
+ !   end do
+ !  else
+
+     allocate(diag_H(ndimr1))
+     diag_H = H_II((no(nrep+1)+1):(ndimr1+no(nrep+1)))
+
+       do iroot = 1, nroot
+        k = minloc(diag_H) 
+        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
-        H_II(i) = 8000.0d0
+        diag_H(i) = 8000.0d0
+        print *, "debug: i, iroot, ndimr1, ndimr2, size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
         R1(i,iroot) = 1.0d0
-      enddo
+       enddo
+     deallocate(diag_H)
+!! end if 
 
   end select 
 
-
    end subroutine
-
 
    subroutine eom_ee(icalc,mxcorr)
    use davidson
@@ -308,7 +379,7 @@
    real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
    real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep)
+   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep),nox(nrep)
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
 
@@ -356,9 +427,6 @@
          NBUF3 = MAX(NBUF1,NBUF3)
 
 !     Allocate now also this remaining work array
-        allocate(buf3(nbuf3*rcw))
-        allocate(buf1(nbuf1*rcw))
-        allocate(buf2(nbuf2*rcw))
 
 !!        call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
 
@@ -393,6 +461,10 @@
          goto 451
       endif
 
+        allocate(buf3(nbuf3*rcw))
+        allocate(buf1(nbuf1*rcw))
+        allocate(buf2(nbuf2*rcw))
+
     call initialize_buffers(buf1, buf2, buf3)
 
     call ccdump
@@ -400,6 +472,9 @@
     call getampt(B%t1,B%t2)
 
     call IM_container(eomtype,B)
+
+     call free_buffers(buf1,buf2,buf3)
+
     call create_eom_ndet(2)
 
    select case (eomtype)
@@ -444,8 +519,6 @@
               &                  B,                                   &
               &                  sigma(1:ndimr1*rcw,iroot:iroot),     &
               &                  sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-              &                  buf2, &
-              &                  buf3, &
               &                  nbuf3)
           enddo
       endif
@@ -475,7 +548,6 @@
         enddo
 
       do irep = 1, nrep
-!       ndimr2 = ndimr2 + nvx(irep)*noot(irep)
           ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
          print *, "debug, ndimr2: irep",irep,"nvx(irep)",nvx(irep),"noot(irep)",noot(irep)
       enddo
@@ -485,8 +557,8 @@
        N = ndimr1 + ndimr2
 !       nroot = N
 
-       call set_eom_ndet(1, ndimr1)
-       call set_eom_ndet(2, ndimr2)
+       call set_eom_ndet(1, ndimr1*rcw)
+       call set_eom_ndet(2, ndimr2*rcw)
 
       allocate (r (N*rcw,nroot), stat = AllocateStatus)
       IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
@@ -524,12 +596,73 @@
 
     case('EA')
 
-      do irep = 1, nrep
-         ndimr2 = ndimr2 + nvvt(irep)*no(irep)
-      enddo
+       ndimr2 = 0
+       ndimr1 = 0
+       nox(1:nrep) = 0
+       
+       call create_eom_nvx(nrep)
 
-       allocate (r1(iv(nrep+1)*rcw,nroot))
-       allocate (r2(ndimr2*rcw,nroot))
+      do jrep = 1, nrep
+        do irep = 1, nrep
+        ijrep = multb(irep,jrep,1)
+        nox(ijrep) = nox(ijrep) + ncont(irep)*no(jrep)
+        call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*no(jrep)))
+        enddo
+      enddo
+      print *, "debug, in eom_driver, nvx:",nox
+      do jrep = 1, nrep
+         print *, "debug, in eom_driver, get_nvx(jrep):",jrep,get_eom_nvx(jrep),nox(jrep)
+      end do
+
+        do irep = 1, nrep
+         ndimr1 = ndimr1 + ncont(irep)*nv(irep)
+        enddo
+
+      do irep = 1, nrep
+          ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
+         print *, "debug, ndimr2: irep",irep,"nvx(irep)",nox(irep),"nvvt(irep)",nvvt(irep),get_eom_nvx(irep)
+      enddo
+       
+       print *, "debug, ndimr1",ndimr1,"ndimr2",ndimr2
+
+       N = ndimr1 + ndimr2
+!       nroot = N
+
+       call set_eom_ndet(1, ndimr1)
+       call set_eom_ndet(2, ndimr2)
+
+       allocate (r(N*rcw,nroot))
+       allocate (B%H_II(N*rcw)) 
+       
+       r = 0.0d0
+
+       B%H_II = 1.0d0
+
+      call input_processor(B%Fbar_mi, &
+      &                    B%Fbar_ae, &
+      &                    B%W_mbej,  &
+      &                    r(1:ndimr1*rcw,:), &
+      &                    r((ndimr1*rcw)+1:N*rcw,:),  &
+      &                    B%H_II)
+
+!      do iroot = 1, nroot
+
+!         sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
+!         sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
+!         call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),B, &
+!    &                  sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
+
+!         sigma(1:N*rcw,iroot:iroot) = 0.0d0 
+!         call sigma_IP(nvx, &
+!                       r(1:ndimr1*rcw,iroot:iroot), &
+!         &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!         &             B,                            &
+!         &             sigma(1:ndimr1*rcw,iroot:iroot), &
+!         &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!         &             ndimr1, &
+!         &             ndimr2)
+
+!       end do
 
    end select 
 
@@ -543,11 +676,8 @@
             sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot))
          enddo
       enddo
-!      write(*,*)'matrix to diagonalize', sub_H
-      call dump_to_file(42,"CCjacobianH.bin",sub_H)
 
-!      write(*,*)'matrix to diagonalize', sigma 
-      call dump_to_file(42,"CCjacobianHp.bin", sigma)
+      call dump_to_file(42,"CCjacobianH.bin",sub_H)
 
        allocate (ev(nroot))
        allocate (evec(nroot,nroot))
@@ -570,32 +700,25 @@
         right_vectors = .true.
 
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-        call davidson_driver(nroot, B, symmetric, davResults, verbose, r)
-        print *, "debug, after davidson !"
+        call davidson_driver(nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
         call free_davidson_results(davResults)
-        print *, "debug, after free_davidson_results !"
         
     end if
     call free_eom_ndet()
-        print *, "debug, after free_eom_ndet !"
     call free_eom_nvx()
-        print *, "debug, after free_eom_nvx !"
 
       if (allocated(B%H_II)) deallocate(B%H_II)
+
 
 ! todo:
 ! allocations/deallocations of intermediates would be more simply handled via
 !    call initialize_intermediates() 
 
  451 continue
-    call free_buffers(buf1,buf2,buf3)
-        print *, "debug, after free_buffers !"
 
      call free_intermediates(B)
-        print *, "debug, after free_intermediates !"
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
-        print *, "debug, before the end of eom_driver !"
    end subroutine
 
    function merge_arrays(dimension_to_merge, a,b)

@@ -568,6 +568,7 @@ contains
         real(kind=8), allocatable :: work(:)
 
         vectors_L = size(M,1)
+
         if (associated(eVectorsL)) deallocate(eVectorsL)
         if (associated(eVectorsR)) deallocate(eVectorsR)
         if (associated(eValuesRe)) deallocate(eValuesRe)
@@ -624,7 +625,7 @@ contains
         end do
     end function
 
-    subroutine davidson_driver(nroots, A, symmetric, results, verbose, b_guess)
+    subroutine davidson_driver(nroots, A, symmetric, results, verbose, b_guess, left, right)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have asslciated get_matrix_size, create_sigma_vector and create_diagonal
         use sigma_eom, only : intermediates, get_matrix_size, create_sigma_vector, create_diagonal
@@ -633,7 +634,7 @@ contains
         type(davidson_results), intent(inout) :: results
 !       real(kind=8), optional, pointer :: b_guess(:,:)
         real(kind=8), intent(in), pointer :: b_guess(:,:)
-        logical, intent(in), optional :: verbose, symmetric
+        logical, intent(in), optional :: verbose, symmetric, left, right
         integer, intent(in) :: nroots
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
@@ -651,20 +652,20 @@ contains
         real(kind=8), pointer :: e_small_i(:)        => NULL()
         integer :: vectors_N, L, min_subspace_size, niter
         integer :: i, j
-        logical :: left, right
+!Ashee        logical :: left, right
         logical :: verbose_local, symmetric_local, eVectorsL_local, eVectorsR_local
 
-        if (associated(results%eVectorsL)) then
-            left = .true.
-        else
-            left = .false.
-        end if
-            
-        if (associated(results%eVectorsR)) then
-            right = .true.
-        else
-            right = .false.
-        end if
+!       if (associated(results%eVectorsL)) then
+!           left = .true.
+!       else
+!           left = .false.
+!       end if
+!           
+!       if (associated(results%eVectorsR)) then
+!           right = .true.
+!       else
+!           right = .false.
+!       end if
 
         if (present(verbose)) then
             verbose_local = verbose
@@ -725,6 +726,7 @@ contains
 !                                               c_small_r, c_small_l, left=left, verbose=verbose)
                                                 c_small_r, c_small_l, left=left, verbose=.true.)
 
+
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
 
@@ -732,15 +734,21 @@ contains
             delta => correction_to_vectors(nroots, e_small_r, c_small_r, sigma_vector, b, preconditioner)
             if (.not.associated(delta)) then
                 print *, "All roots converged, stopping ..."
+                 if (associated(preconditioner)) deallocate(preconditioner)
                 exit
             end if
             b => updated_subspace_vectors_R(b, delta, verbose=verbose)
+
             if (verbose) then
                 call print_vectors_R(delta, label="delta                         ")
                 call print_vectors_R(b, label="Updated subspace vectors      ")
             end if
+  
+!            if (associated(delta)) deallocate(delta)
             L = size(b,2)
             if (L .eq. max_subspace_size) then
+               if (associated(preconditioner)) deallocate(preconditioner)
+               if (associated(delta)) deallocate(delta)
                 print *, "Reached maximum subspace size, stopping ..."
                 exit
             end if
@@ -762,8 +770,10 @@ contains
 !                                           c_small_r, c_small_l, left=left, verbose=verbose_local)
 
         call form_eigenvalues_full_problem(results%eValuesRe, results%eValuesIm, nroots, e_small_r, e_small_i) 
-        if (left)  call form_eigenvector_full_problem(results%eVectorsL,nroots,b,c_small_l, .true.)
-        if (right) call form_eigenvector_full_problem(results%eVectorsR,nroots,b,c_small_r, .false.)
+
+        if (left)  call form_eigenvector_full_problem(results%eVectorsL,nroots,b,c_small_l, left)
+        if (right) call form_eigenvector_full_problem(results%eVectorsR,nroots,b,c_small_r, right)
+
 
         deallocate(b)
         deallocate(M_small)
@@ -772,7 +782,7 @@ contains
         deallocate(e_small_r)
         deallocate(e_small_i)
         deallocate(c_small_r)
-        deallocate(c_small_l)
+        if (associated(c_small_l)) deallocate(c_small_l)
 
     end subroutine
 
@@ -904,7 +914,7 @@ contains
            update_sigma_vector(:, i) = old_sigma_vector(:, i)  
         end do
         deallocate(old_sigma_vector)
-        nullify(old_sigma_vector)
+!ashee        nullify(old_sigma_vector)
 
         new_L = vectors_L - vectors_L_old
         call dgemm('N', 'N', vectors_N, new_L, vectors_N, alpha_lapack, M, vectors_N, &

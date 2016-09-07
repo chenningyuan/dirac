@@ -418,11 +418,11 @@
 !     packing and some others multb(*,*,2). As of now I am hard-coding them, until
 !     I get a better solution.
 
-    if ((save_index_l==2).and.(save_index_r==1)) then
+    if (((save_index_l==2).or.(save_index_l==3)).and.(save_index_r==1)) then
       contraction_type = 2 
-    elseif ((save_index_l==1).and.(save_index_r==2)) then
+    elseif ((save_index_l==1).and.((save_index_l==2).or.(save_index_l==3))) then
       contraction_type = 3
-    elseif ((save_index_l==2).and.(save_index_r==2)) then
+    elseif (((save_index_l==2).or.(save_index_l==3)).and.((save_index_l==2).or.(save_index_l==3))) then
       contraction_type = 4
     else
       contraction_type = 1
@@ -439,8 +439,6 @@
    select case(contraction_type)
 
     case(1)
-
-!    write(*,*)'***ALLOCATION COULD BE WRONG***'
 
     call cntrct_new (transA,transB,x_row,y_column,x_column,asym_factor_L*asym_factor_R*dia_factor*A1,v_sort,&
     &    right_sorted,A0,im_temp,1,1,.true.) 
@@ -476,7 +474,7 @@
 
    if (transA=='T') then
 
-    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
+!    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
 
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
@@ -572,7 +570,7 @@
 
    if (transA=='T') then
 
-    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
+!    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
 
    allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
 
@@ -669,7 +667,7 @@
 
    if (transA=='T') then
 
-    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
+!    write(*,*)'possibility of mistake',x_row(1),y_column(1),x_row(2),y_column(2)
   allocate(im_temp_temp(dot_product(x_row,y_column)*rcw))
    call srt1c1n (nrep,x_row,y_column,im_temp,im_temp_temp)
 

@@ -454,8 +454,8 @@
 !     w(mn,ie) = V(mn,ie) + t(f,i) * V(mn,fe)
 !----------------------------------------------------------------------------
 
-  call contraction_424 ((/"o1","o2","p2","p3"/),(/"p3","o3"/), &
- &        (/"o1","o2","o3","p2"/),int_wooop,-1.0d0,1.0d0,nrep,RightTensor=t1)
+  call contraction_424 ((/"o1","o2","p3","p2"/),(/"p3","o3"/), &
+ &        (/"o1","o2","o3","p2"/),int_wooop,1.0d0,1.0d0,nrep,RightTensor=t1)
 
  end subroutine
 
@@ -481,12 +481,13 @@
 !---------------------------------------------------
 ! w_amef(am,ef) = w_amef(am,ef) - V(nm,ef) * t(a,n) 
 !---------------------------------------------------
-    call contraction_424 ((/"o2","o1","p3","p1"/),(/"p2","o2"/), &
-   &    (/"p2","o1","p3","p1"/),w_v_temp,-1.0d0,1.0d0,nrep,RightTensor=t1)
+
+    call contraction_244 ((/"p2","o2"/),(/"o2","o1","p3","p1"/), &
+   &    (/"p2","o1","p3","p1"/),w_v_temp,-1.0d0,1.0d0,nrep,LeftTensor=t1)
 
  end subroutine
 
- subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo,buf2,buf3)
+ subroutine w_efam(t1,t2,wbar_ovvo,hov,w_vvvo)
 
 !--------------------DESCRIPTION---------------------------
 !        calculates vvvo type intermediate in-core fashion.      
@@ -499,7 +500,6 @@
 
 !---------------Calling variables--------------------------------------
    real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
-   real*8, intent(in)  :: buf2(*),buf3(*)         
    real*8, intent(in)  :: wbar_ovvo(rcw*iovvo(nrep+1)),hov(nfvo*rcw)     ! Intermediate.
    real*8, intent(out) :: w_vvvo(rcw*nv5)                ! Intermediate.
 !---------------Local Variables----------------------------------------
@@ -507,8 +507,6 @@
    integer :: AllocateStatus 
    real*8, allocatable  :: tau(:)                
    real*8, allocatable  :: vovv1(:),temp(:)                
-   integer :: m,n,k,off1,off2,off3,irep,jrep,lrep 
-
 
    type(indices) :: e,f,g
 
@@ -534,8 +532,9 @@
 !  diagram3 : w_vvvo(ef,am) =  w_vvvo(ef,am) + f_bar_me(na) * t(ef,nm)
 !-------------------------------------------------------------
 
-      call contraction_244 ((/"o2","p1"/),(/"p2","p3","o2","o1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
-     &      -1.0d0,1.0d0,nrep,LeftTensor=hov,RightTensor=t2)
+      call contraction_424 ((/"p2","p3","o2","o1"/),(/"o2","p1"/),(/"p2","p3","p1","o1"/),w_vvvo, &
+     &      -1.0d0,1.0d0,nrep,RightTensor=hov,LeftTensor=t2)
+
 
 !-----------------------------------------------------------
 !   diagram4 : w_vvvo(ef,am) =  w_vvvo(ef,am) + V(no,am) * tau(ef,no) 
@@ -942,7 +941,6 @@
          off2 = 1
          off3 = 0
 
-
 !         if (nvvt(irp) > 0) then
          mint = nbuf3/nvvt(irp)
          call getvvvv (irp,istart,nint,done,w_vvvv,mint)
@@ -954,8 +952,6 @@
 ! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU(ef,mn)
 !          =  V(ef,ab) + TAU(ef,mn) * V'*(ab,mn)            
 !----------------------------------------------
-
-
 
        call getoovv (buf1)
        m = nvvt(irp)
@@ -1020,16 +1016,15 @@
          mm(irrep) = mm(irrep)+ nint*nv(irep)
        enddo
 
-       allocate(w_vvvv_temp_temp(dot_product(mm,nv)*rcw))  
+       allocate(w_vvvv_temp_temp(dot_product(yt3vvvt,nv)*rcw))  
 
        w_vvvv_temp_temp = 0.0d0
 
-       call cntrct ('N','T',mm,nv,no,-a1,w_v,t1,a0,w_vvvv_temp_temp,nrep)
+       call cntrct ('N','T',yt3vvvt,nv,no,-a1,w_v,t1,a1,w_vvvv_temp_temp,nrep)
 
        deallocate(w_v)
 
-!       allocate(w_vvvv_temp(nvvt(irp)*nint*rcw)) 
-       allocate(w_vvvv_temp(zt3vvvvt(nrep+1)*rcw)) 
+       allocate(w_vvvv_temp(nvvt(irp)*nint*rcw)) 
 
       w_vvvv_temp = 0.0d0 
       call srt43 (irp,istart,nrep,multb,.true.,nvvt,nv,nv,  &
@@ -1089,7 +1084,7 @@
 !------------------------------------------------
 
 !------------------------------------------------
-        integer :: irep,krep,ijkrep
+        integer :: irep,krep,ijkrep,jrep
 !------------------------------------------------
 
         YT3VVVT(1:nrep) = 0

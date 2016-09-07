@@ -110,7 +110,7 @@ C
 
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
-         call w_efam(s1,s2,w_ovvo,hov,cz,buf2,buf3)
+         call w_efam(s1,s2,w_ovvo,hov,cz)
 
          call w_efam_diagram2 (s1,s2,buf1,buf2,buf3,nbuf3,cz)
 
