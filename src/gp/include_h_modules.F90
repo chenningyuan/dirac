@@ -1,12 +1,12 @@
 !-----------------------------------------------------------------------------------------
 !
 ! Collection of Fortran90 modules encapsulating the "old" Fortran77 include files
-! (like dcbham.h,dcbgen.h,...) in the Dirac source codes.
+! (dcbham.h,dcbgen.h,...) in the Dirac source codes.
 !
-!   All variables inside the h-include files become PRIVATE within own father's module and are
-! accessible out of module scope ONLY via dedicated subroutines (methods).
+!  All variables inside the h-include files become PRIVATE within the dedicated Fotran90 module and are
+! accessible out of module scope ONLY via dedicated subroutines/functions (methods).
 !
-!  Programmers can still use include h-files in the old way.
+! Programmers can still use the h-include files in the old way (#include "dcbgham.h")
 !
 !
 ! Notation examples:  
@@ -18,14 +18,17 @@
 !             use include_dcbdhf_h
 !
 ! Examples of usage:
+! ------------------
 !
 !    Function get_<variable>(parameter1,parameter2,...) - function returns include file (module) variable
 !
 !    Subroutine set_<variable>(parameter1,parameter2,...) - method changes include file (module) variable
 !
 !
+! TODO: extend encapsulating modules for other inlcude files and other variables
 !
-! Written by Miro Ilias, August 2014, Banska Bystrica; July 2016, GSI, Darmstadt
+!
+! Written by Miro Ilias, August 2014, Banska Bystrica; July 2016, GSI.de, Darmstadt
 !
 !-----------------------------------------------------------------------------------------
 
@@ -63,7 +66,7 @@ function get_IPQTOQ(i,j) result (IPQTOQ_out)
  IPQTOQ_out=IPQTOQ(i,j)
 end function get_IPQTOQ
 
-function get_NZ result (NZ_out)
+function get_NZ() result (NZ_out)
 !> retrieves the important NZ value from "dgroup.h"
  implicit none
  integer :: NZ_out
