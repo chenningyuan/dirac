@@ -869,7 +869,7 @@ contains
             bc = zero_r8
 !           call print_vectors_R(eVectorsSmall, label="L eigenvectors small problem  ")
             call dgemm('T', 'T', vectors_L, vectors_N, vectors_L, alpha_lapack, eVectorsSmall, &
-                       vectors_N, b, vectors_N, beta_lapack, bc, vectors_L)
+                       vectors_L, b, vectors_N, beta_lapack, bc, vectors_L)
 !           call print_vectors_R(bc, label="bc                            ")
             do i = 1, nroots
                 eVectorsFull(:,i) = bc(i,:) 
