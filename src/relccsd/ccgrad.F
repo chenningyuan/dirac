@@ -326,6 +326,7 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -771,6 +772,7 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
 C

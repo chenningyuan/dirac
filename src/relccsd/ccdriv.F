@@ -2659,6 +2659,7 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "symm.inc"
+#include "dgroup.h"
 #include "complex.inc"
 #include "ccpar.inc"
 #include "dcbmp2no.h"

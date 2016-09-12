@@ -18,6 +18,7 @@
   subroutine read_input()
 #include "symm.inc"
 #include "dcbham.h"
+#include "dgroup.h"
 
     state_sym = nr_roots(1)
     nroot = nr_roots(2)
@@ -30,10 +31,11 @@
 !===============================================
 
      ncont(1:nrep) = 0
-
      ncont(state_sym) = 1
     if (spinfr) then
        ncont(state_sym+(nrep/4)) = 1 
+    elseif (linear) then
+       ncont(state_sym+1) = 1 
     else
        ncont(state_sym+(nrep/2)) = 1 
     endif
@@ -44,10 +46,11 @@
 
 #include "symm.inc"
 #include "complex.inc"
+
 !description
 !===========
 !1)  this subroutine processes the guess vectors for eomcc.
-!2)  it also defines the denominator for the error vectors, which is relevant in
+!2)  it also defines the Preconditioner for the error vectors, which is relevant at
 !    the Davidson step.
 
 !calling variables
@@ -114,7 +117,7 @@
              aa = aoff + a
              iaai = (iovvo(state_sym) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(state_sym) + &
        &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i ! careful about the complex algebra  
-             H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
+              H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
              ai = ai + 1
           enddo
         enddo
@@ -273,6 +276,10 @@
  !       R2(iroot,ndimr1+iroot) = 1.0d0
  !   end do
  !  else
+
+
+! In the following section we generate the guess vectors belonging to a particular state symmetry.
+! Thereby we avoid the sigma vector calculations of the degenerate roots.  
 
      search_dimension = ncont(state_sym)*no(state_sym) 
 
@@ -816,10 +823,10 @@
       REAL*8 :: E_OFF
 !---------------Executable code--------------------------------------
 
-! Generate an array denoting number of states per symmetry...
-
     dum1(1:rcw) = 0.0d0
     dum2 = 0
+
+! Generate an array denoting number of states per symmetry...
 
    allocate(nstate_sym(nrep,3))  
 
@@ -939,7 +946,6 @@
 !---------------Executable code--------------------------------------
  
 !     Now print an analysis of the vectors
-!     Initialize and get labels for the excited state coefficiens
 
       if (ipr.le.0) then
          tres = 0.1d0
@@ -1116,9 +1122,9 @@
          end do
       end do
  
- 1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian' &
-     &/' First line  :  Energy, Eigenvalue' &
-     &/' other lines : Coefficients of contributing determinants',&
+ 1000 FORMAT (//' Analysis of EOM eigenvectors' &
+     &/' First line  :  State Energy, Eigenvalue' &
+     &/' other lines : Largest R1 and R2 Vectors',&
      & ' (above a treshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8)
 
