@@ -541,8 +541,8 @@ contains
         real(kind=8), intent(in)  :: b(:,:)
 
         integer :: vectors_L, vectors_N
-        real(kind=8) :: alpha_lapack = 1.0
-        real(kind=8) :: beta_lapack = 1.0
+        real(kind=8) :: alpha_lapack = 1.0d0
+        real(kind=8) :: beta_lapack = 1.0d0
 
         vectors_N = size(b,1)
         vectors_L = size(b,2)
@@ -858,8 +858,8 @@ contains
         integer :: i
         real(kind=8), allocatable :: bc(:,:)
         integer :: vectors_L, vectors_N
-        real(kind=8) :: alpha_lapack = 1.0
-        real(kind=8) :: beta_lapack = 0.0
+        real(kind=8) :: alpha_lapack = 1.0d0
+        real(kind=8) :: beta_lapack = 1.0d0
 
         vectors_N = size(b,1)
         vectors_L = size(b,2)
@@ -902,8 +902,8 @@ contains
         integer :: vectors_L_old
         integer :: new_L, i
 
-        real(kind=8) :: alpha_lapack = 1.0
-        real(kind=8) :: beta_lapack = 0.0
+        real(kind=8) :: alpha_lapack = 1.0d0
+        real(kind=8) :: beta_lapack = 0.0d0
 
         vectors_N = size(b,1)
         vectors_L = size(b,2)

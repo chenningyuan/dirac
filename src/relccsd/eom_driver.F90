@@ -68,18 +68,9 @@
 
    integer :: abij, ijrp, abrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b
    real(kind=8) :: fac, fac3, fac2
-   integer :: ndimr1, ndimr2
+   integer :: ndimr1, ndimr2, search_dimension, xroot
    real*8,allocatable :: R1_dum(:,:) 
 
-
-!Assigning Dimension to the continuous orbital
-!===============================================
-
-     do i = 1, nrep
-
-       write(*,*)'dimension of continuous orbital',ncont(i),repna(i)
-
-     enddo
 
 !initialize the R-vector
 !=======================
@@ -283,16 +274,24 @@
  !   end do
  !  else
 
+     search_dimension = ncont(state_sym)*no(state_sym) 
+
      allocate(diag_H(ndimr1))
      diag_H = H_II(1:ndimr1)
 
-       do iroot = 1, nroot
+        xroot = 1 
+
+       do iroot = 1, 2*nroot
         k = minloc(diag_H) 
         write(*,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
-        print *, "debug: i, iroot, ndimr1, ndimr2, size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
-        R1(i,iroot) = 1.0d0
+
+        if (i <= search_dimension) then
+         R1(i,xroot) = 1.0d0
+         xroot = xroot + 1
+        endif
+
        enddo
      deallocate(diag_H)
  ! end if 
@@ -318,8 +317,6 @@
       DO 50 JRP = 1, NREP
       JJ = IO(JRP)
       IRP = MULTB(JRP,IJRP+NREP,2)
-!      IF (IRP.LT.JRP) GOTO 10
-!      IOFF = IO(IRP)
       DO J = 1, NO(JRP)
          JJ = JJ + 1
          FAC1 = EPS(JJ)
@@ -348,6 +345,11 @@
  50   CONTINUE
       ENDDO
 
+
+! calculate the orbital dimension within which our desired root should belong..
+
+  search_dimension = ncont(state_sym)*nv(state_sym) 
+
 !! allocate (r1_dum(ndimr1,ndimr1))
 !!   r1_dum = 0.0d0
 
@@ -373,13 +375,17 @@
      allocate(diag_H(ndimr1))
      diag_H = H_II((no(nrep+1)+1):(ndimr1+no(nrep+1)))
 
-       do iroot = 1, nroot
+        xroot = 1
+
+       do iroot = 1, 2*nroot
         k = minloc(diag_H) 
         write(*,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
-        print *, "debug: i, iroot, ndimr1, ndimr2, size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
-        R1(i,iroot) = 1.0d0
+        if (i <= search_dimension) then
+         R1(i,xroot) = 1.0d0
+         xroot = xroot + 1
+        endif
        enddo
      deallocate(diag_H)
 !! end if 
@@ -568,10 +574,6 @@
         call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*nv(jrep)))
         enddo
       enddo
-      print *, "debug, in eom_driver, nvx:",nvx
-      do jrep = 1, nrep
-         print *, "debug, in eom_driver, get_nvx(jrep):",jrep,get_eom_nvx(jrep)
-      end do
 
         do irep = 1, nrep
          ndimr1 = ndimr1 + ncont(irep)*no(irep)
@@ -579,10 +581,7 @@
 
       do irep = 1, nrep
           ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
-         print *, "debug, ndimr2: irep",irep,"nvx(irep)",nvx(irep),"noot(irep)",noot(irep)
       enddo
-       
-       print *, "debug, ndimr1",ndimr1,"ndimr2",ndimr2
 
        N = ndimr1 + ndimr2
 !       nroot = N
@@ -639,10 +638,6 @@
         call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*no(jrep)))
         enddo
       enddo
-      print *, "debug, in eom_driver, nvx:",nox
-      do jrep = 1, nrep
-         print *, "debug, in eom_driver, get_nvx(jrep):",jrep,get_eom_nvx(jrep),nox(jrep)
-      end do
 
         do irep = 1, nrep
          ndimr1 = ndimr1 + ncont(irep)*nv(irep)
@@ -650,10 +645,7 @@
 
       do irep = 1, nrep
           ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
-         print *, "debug, ndimr2: irep",irep,"nvx(irep)",nox(irep),"nvvt(irep)",nvvt(irep),get_eom_nvx(irep)
       enddo
-       
-       print *, "debug, ndimr1",ndimr1,"ndimr2",ndimr2
 
        N = ndimr1 + ndimr2
 !       nroot = N
@@ -734,9 +726,7 @@
 
 !      Fock-Space like output for EA, EE and IP
 
-
        call eom_analysis(davResults%eValuesRe,davResults%eVectorsR,eps)
-
 
        call free_davidson_results(davResults)
         
@@ -943,8 +933,8 @@
    integer       :: i_eigenvalue, j_eigenvalue,ndt, irpoff
    character*100 :: label
    real*8        :: value,tres
-   integer       :: i,ii,irep,j,aoff,a,aa,ai,arep
-   integer       :: ijrp, abrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b
+   integer       :: i,ii,irep,j,aoff,a,aa,ai,arep,ssym
+   integer       :: ijrp, abrp, jrp, jj, kk, irp, ioff, imin, bb, amin, arp, brp, b
 
 !---------------Executable code--------------------------------------
  
@@ -952,21 +942,21 @@
 !     Initialize and get labels for the excited state coefficiens
 
       if (ipr.le.0) then
-         tres = 0.1
+         tres = 0.1d0
       elseif (ipr.le.2) then
-         tres = 0.001
+         tres = 0.01d0
       else
-         tres = 0.0
+         tres = 0.0d0
       end if
 
       i_eigenvalue = 0
 
       write (iw,1000) tres
-      do irep=1,nrep
+      do ssym = 1,nrep
  
 !     get the dimension of the space
  
-         ndt = nstate_sym(irep,select_eom) 
+         ndt = nstate_sym(ssym,select_eom) 
          if (ndt.eq.0) cycle
 
 !     add an offset for irrep names for bosonic irreps
@@ -977,29 +967,28 @@
           irpoff = nrep
          endif
 
-!        Loop over the eigenvalues
+!   Loop over the eigenvalues
 
      ii = 1
-     do j_eigenvalue = 1, nstate_sym(irep,select_eom), 2 
-          i_eigenvalue = i_eigenvalue + 2
+     do j_eigenvalue = 1, nstate_sym(ssym,select_eom) 
+          i_eigenvalue = i_eigenvalue + 1 
 !    I have seen crazy ouputs with large fock space calcs, put a limit
           if (j_eigenvalue.lt.100) then
-          write (iw,1010) repna(irpoff+irep),j_eigenvalue,  &
+          write (iw,1010) repna(irpoff+ssym),j_eigenvalue,  &
     &             e_off+ev_all(1,i_eigenvalue),ev_all(1,i_eigenvalue)
 !    Loop over the R-vectors and print the interesting ones
-
-     ii = (ii-1)*2 + 1 
 
     select case(eomtype)
 
       case('EA')
 
+      do irep=1,nrep
         arep = multb (irep,1+nrep,1)
         do i = 1, ncont(irep)
           aoff = io(nrep+1) + iv(arep)
          do a = 1, nv(arep)
           aa = aoff + a
-          write(label,1001) repna(arep),(a+io(arep+1)),eps(aa)
+          write(label,1001) repna(arep),(a+no(arep)),eps(aa)
             value = abs(eigenvectors(1,ii))
             if (carith) value = value + abs(eigenvectors(2,ii))
             if (carith .and. value.gt.tres) then
@@ -1011,19 +1000,21 @@
           ii = ii + 1
          enddo
         enddo
+      enddo
 
+      do irep=1,nrep
       ijrp = irep
       abrp = multb (ijrp+nrep,1+nrep,1)
-      do 50 jrp = 1, nrep
+      do jrp = 1, nrep
       jj = io(jrp)
       irp = multb(jrp,ijrp+nrep,2)
       do j = 1, no(jrp)
          jj = jj + 1
          do i = 1, ncont(irp)
-            do 60 brp = 1, nrep
+            do brp = 1, nrep
             bb = iv(brp) + io(nrep+1)
             arp = multb(brp,abrp+nrep,2)
-            if (arp.lt.brp) goto 60
+            if (arp.lt.brp) cycle
             aoff = iv(arp) + io(nrep+1)
             do b = 1, nv(brp)
                bb = bb + 1
@@ -1031,30 +1022,90 @@
                if (arp.eq.brp) amin = b + 1
                do a = amin, nv(arp)
                   aa = aoff + a
-
                   write(label,1002) repna(jrp),j,eps(jj), &
-                &          repna(arp),(a+io(arp+1)),eps(aa),&
-                &          repna(brp),(b+io(brp+1)),eps(bb)
+                &          repna(arp),(a+no(arp)),eps(aa),&
+                &          repna(brp),(b+no(brp)),eps(bb)
 
                   value = abs(eigenvectors(1,ii))
                   if (carith) value = value + abs(eigenvectors(2,ii))
                   if (carith .and. value.gt.tres) then
-                      write (iw,'(2f15.5,3x,a50)') & 
+                      write (iw,'(2f15.5,3x,a70)') & 
             &             eigenvectors(1,ii),eigenvectors(2,ii),label
                   else if (value.gt.tres) then              
-                  write (iw,'(f15.5,3x,a50)') eigenvectors(1,ii),label
+                  write (iw,'(f15.5,3x,a70)') eigenvectors(1,ii),label
                   end if
                   ii = ii + 1
                enddo
             enddo
- 60         continue
+            enddo
          enddo
       enddo
- 50   continue
-     
+      enddo
+      enddo
       case('IP')
-            
-          write(*,*)'under preparation'  
+
+    jj = 0
+  do irep = 1, nrep
+     arep = multb (irep,1+nrep,1)
+      do i = 1, no(irep)
+       jj = jj + 1
+        do a = 1, ncont(arep)
+          write(label,1001) repna(irep),i,eps(jj)
+            value = abs(eigenvectors(1,ii))
+            if (carith) value = value + abs(eigenvectors(2,ii))
+            if (carith .and. value.gt.tres) then
+                write (iw,'(2f15.5,3x,a50)') & 
+  &             eigenvectors(1,ii),eigenvectors(2,ii),label
+            else if (value.gt.tres) then              
+            write (iw,'(f15.5,3x,a50)') eigenvectors(1,ii),label
+            end if
+          ii = ii + 1
+        enddo
+      enddo
+  enddo
+
+
+  do ijrp = 1, nrep
+       abrp = multb (ijrp+nrep,1+nrep,1)
+    do jrp = 1, nrep
+      jj = io(jrp)
+      irp = multb(jrp,ijrp+nrep,2)
+      if (irp.lt.jrp) cycle
+      ioff = io(irp)
+      do j = 1, no(jrp)
+         jj = jj + 1
+         imin = 1
+         if (irp.eq.jrp) imin = j + 1
+         do i = imin, no(irp)
+            kk = ioff + i
+            do brp = 1, nrep
+            bb = iv(brp) + io(nrep+1)
+            arp = multb(brp,abrp+nrep,2)
+            aoff = iv(arp) + io(nrep+1)
+            do b = 1, nv(brp)
+               bb = bb + 1
+               do a = 1, ncont(arp)
+
+                  write(label,1003) repna(irp),i,eps(kk), &
+                &          repna(jrp),j,eps(jj),&
+                &          repna(brp),(b+no(brp)),eps(bb)
+
+                  value = abs(eigenvectors(1,ii))
+                  if (carith) value = value + abs(eigenvectors(2,ii))
+                  if (carith .and. value.gt.tres) then
+                      write (iw,'(2f15.5,3x,a70)') & 
+            &             eigenvectors(1,ii),eigenvectors(2,ii),label
+                  else if (value.gt.tres) then              
+                  write (iw,'(f15.5,3x,a70)') eigenvectors(1,ii),label
+                  end if
+                  ii = ii + 1
+               enddo
+            enddo
+            enddo
+         enddo
+      enddo
+    enddo
+  enddo
 
       case('EE')
 

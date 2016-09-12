@@ -214,7 +214,6 @@
       select case (A%eomtype)
          case ("IP")
 
-             print *, "debug: eom_nvx:",eom_nvx
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector(:,iroot:iroot) = 0.0d0
