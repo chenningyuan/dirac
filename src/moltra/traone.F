@@ -192,6 +192,7 @@ C*****************************************************************************
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"
+#include "dcbpsi.h"
 #include "dcbfir.h"
 #include "dcbdhf.h"
 #include "blocks.h"
@@ -260,7 +261,7 @@ C       Get the two-electron Fock matrix using core density matrix
 
 #if defined MOD_UNRELEASED
 ! Miro: inject xcint density into FMO as is in dirscf.F
-        if (dirac_cfg_dft_calculation.AND..NOT.NOVXC) then
+        if (DORES.AND.dirac_cfg_dft_calculation.AND..NOT.NOVXC) then
           IF (COREDENS) THEN
             ! take only core-density for Vxc contribution
             call xcint_potential_rks(NTBAS(0),DMAT,FMO)
@@ -317,7 +318,7 @@ C
 ! if NOVXC=.false. - add Exc from core density only to the core SCF energy, FMO (2-el Fock mtx) contains Vxc
 !
 #if defined MOD_UNRELEASED
-       if (dirac_cfg_dft_calculation.AND.NOVXC) then
+       if (DORES.AND.dirac_cfg_dft_calculation.AND.NOVXC) then
           dirac_cfg_dft_calculation_save=.true.
           dirac_cfg_dft_calculation=.false.   !Miro: do we have interest in absolute energies of multiplet states ?
        endif
