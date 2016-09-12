@@ -380,7 +380,7 @@
  !  else
 
      allocate(diag_H(ndimr1))
-     diag_H = H_II((no(nrep+1)+1):(ndimr1+no(nrep+1)))
+     diag_H = H_II(1:ndimr1)
 
         xroot = 1
 
