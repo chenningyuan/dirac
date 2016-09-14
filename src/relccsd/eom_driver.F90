@@ -195,7 +195,6 @@
         write(*,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
-        print *, "debug: i, iroot, ndimr1, ndimr2,size(H_II)",i,iroot,ndimr1,ndimr2,size(H_II)
         R1(i,iroot) = 1.0d0
        enddo
      deallocate(diag_H)
@@ -381,9 +380,7 @@
 
      allocate(diag_H(ndimr1))
      diag_H = H_II(1:ndimr1)
-
         xroot = 1
-
        do iroot = 1, 2*nroot
         k = minloc(diag_H) 
         write(*,*)'roots',iroot,H_II(k(1)),k(1) 

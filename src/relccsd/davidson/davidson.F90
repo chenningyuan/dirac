@@ -40,7 +40,7 @@ real(kind=8), save :: safe_minimum = 1.0d-36
 real(kind=8), save :: convergence_threshold = 1.0d-5
 integer, save      :: max_subspace_size = 2048
 integer, save      :: roots_per_symmetry(nr_max_irreps)
-integer, save      :: max_iterations = 100
+integer, save      :: max_iterations = 50
 
 contains 
 
@@ -650,6 +650,11 @@ contains
         real(kind=8), pointer :: c_small_l(:,:)      => NULL()
         real(kind=8), pointer :: e_small_r(:)        => NULL()
         real(kind=8), pointer :: e_small_i(:)        => NULL()
+
+
+        real(kind=8), pointer :: c_small_r_old(:,:) => NULL()
+        real(kind=8), pointer :: c_small_l_old(:,:) => NULL()
+
         integer :: vectors_N, L, min_subspace_size, niter
         integer :: i, j
 !Ashee        logical :: left, right
@@ -708,6 +713,22 @@ contains
             call print_vectors_R(b, label="Initial subspace vectors      ")
         end if
 
+       if (right) then
+       
+         allocate(c_small_r_old(nroots,nroots))
+
+          c_small_r_old = 0.0d0
+
+         do i = 1, nroots
+
+          c_small_r_old(i,i) = 1.0d0
+
+         enddo
+
+       endif
+       if (left) allocate(c_small_l_old(nroots,nroots))
+
+
         do niter = 1, max_iterations
             print *, ""
             print *, "Iteration ", niter
@@ -723,9 +744,13 @@ contains
             M_small => create_reduced_problem(b, sigma_vector)
 
             call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
-!                                               c_small_r, c_small_l, left=left, verbose=verbose)
-                                                c_small_r, c_small_l, left=left, verbose=.true.)
+                                                c_small_r, c_small_l, &
+                                                c_small_r_old, c_small_l_old, left=left, verbose=.true.)
 
+! store old c_small vectors, that is, subspace vectors for the overlap selection in the next iterative step   
+
+            if (right) c_small_r_old = c_small_r(1:nroots,1:nroots)
+            if (left)  c_small_l_old = c_small_l(1:nroots,1:nroots)
 
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
@@ -753,6 +778,9 @@ contains
                 exit
             end if
         end do
+
+        if (right) deallocate(c_small_r_old)
+        if (left)  deallocate(c_small_l_old)
 
         print *, "Final size of reduced subspace : ",L
 
@@ -787,15 +815,21 @@ contains
     end subroutine
 
     subroutine calculate_eigenvalues_and_eigenvectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
-                                                      left, right, sorting_order, nroots, verbose)
+                                eVectorsR_old, eVectorsL_old, left, right, sorting_order, nroots, verbose)
         real(kind=8), intent(inout), pointer   :: M(:,:)
         real(kind=8), intent(inout), pointer   :: eValuesRe(:), eValuesIm(:)
         real(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
+        real(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
         logical, optional, intent(in) :: left, right, verbose
         integer, optional, intent(in) :: sorting_order, nroots
 
         logical :: left_local, right_local, verbose_local
-        integer :: sorting_order_local, nroots_local
+        integer :: sorting_order_local, nroots_local, nroot
+        real(kind=8), allocatable :: overlap(:,:)
+        real(kind=8) :: alpha_lapack, beta_lapack
+
+        alpha_lapack = 1.0d0
+        beta_lapack  = 1.0d0
 
         if (present(sorting_order)) then
             sorting_order_local = sorting_order
@@ -828,7 +862,29 @@ contains
         end if
 
         call solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
-        call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, right_local, left_local)
+
+! calculate overlap between old and new vectors. Overlap(nroot,mroot) = Old(nroot,nroot)*New(1:nroot,mroot)   
+! Max(Overlap(iroot,mroot)) for all iroot = 1,nroot 
+
+       nroot = size(eVectorsR_old,1)
+
+       allocate(overlap(nroot,nroots_local))
+
+       overlap = 0.0d0 
+
+       call dgemm('N', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsR_old, &
+                       nroot, eVectorsR(1:nroot,:), nroot, beta_lapack, overlap, nroot)
+
+!     the following sorter is based on eigenvalues..
+
+!ashee      call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, right_local, left_local)
+
+!      New sorter based on Overlap 
+
+       call sort_by_overlap(-1, eValuesRe, eValuesIm, overlap, eVectorsR, eVectorsL, right_local, left_local) 
+
+       deallocate(overlap)
+
 !       if (verbose_local) &
 !       call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local, right_local, nroots=nroots_local)
         call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, .false., .false., nroots=nroots_local)
@@ -991,6 +1047,80 @@ contains
         deallocate(indices_sorted_array)
 
     end subroutine
+
+
+    subroutine sort_by_overlap(order, e_small_r, e_small_i, overlap, c_small_r, c_small_l, right, left) 
+        integer, intent(in) :: order ! 1: ascending, -1: descending
+        logical, intent(in) :: right ! if true, sort also the right eigenvectors
+        logical, intent(in) :: left  ! if true, sort also the left eigenvectors
+        real(kind=8), intent(inout) :: overlap(:,:)
+        real(kind=8), intent(inout) :: c_small_r(:,:)
+        real(kind=8), intent(inout) :: c_small_l(:,:)
+        real(kind=8), intent(inout) :: e_small_r(:)
+        real(kind=8), intent(inout) :: e_small_i(:)
+
+        real(kind=8), allocatable :: temp_vector(:,:)
+        real(kind=8),allocatable :: temp(:)
+        integer, allocatable :: indices_sorted_array(:)
+        integer :: vectors_L, i_sorted, i, max_overlap(1), iroot, nroot
+
+        vectors_L = size(overlap,2)
+        nroot     = size(overlap,1)
+        allocate(indices_sorted_array(vectors_L))
+        allocate(temp_vector(vectors_L,vectors_L))
+        do i = 1, vectors_L 
+            indices_sorted_array(i) = i 
+        end do
+
+        do iroot = 1, nroot
+
+          max_overlap = maxloc(abs(overlap(iroot:iroot,:)),2)
+          i = max_overlap(1)
+          indices_sorted_array(iroot) = i
+
+        enddo
+
+        do i = 1, nroot
+ 
+          if (indices_sorted_array(i) > nroot) then
+           indices_sorted_array(indices_sorted_array(i)) = i
+          endif
+
+        enddo
+
+!        call quicksort_vector(e_small_r, indices_sorted_array, 1, vectors_L)
+        ! we sort the indices that would sort the eigenvalues array, and apply the change to all other arrays
+
+        if (right) then
+            do i = 1, vectors_L
+             i_sorted = indices_sorted_array(i)
+             temp_vector(:,i) = c_small_r(:,i_sorted)
+            end do
+            c_small_r = temp_vector
+        end if
+
+        if (left) then
+            do i = 1, vectors_L
+             i_sorted = indices_sorted_array(i)
+             temp_vector(:,i) = c_small_l(:,i_sorted)
+            end do
+            c_small_l = temp_vector
+        end if
+
+        deallocate(temp_vector)
+
+        allocate(temp(vectors_L))
+           do i = 1, vectors_L
+             i_sorted = indices_sorted_array(i)
+             temp(i) = e_small_r(i_sorted)
+            end do
+            e_small_r = temp
+
+        deallocate(temp)
+        deallocate(indices_sorted_array)
+
+    end subroutine
+
 
     recursive subroutine quicksort_vector(v, indices_sorted, first, last)
         real(kind=8), intent(inout) ::  v(:)
