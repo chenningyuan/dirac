@@ -54,6 +54,27 @@
 ! 2. EA: maximum number of roots for irrepN is reset back to the number of virtual  spinors (nvirt), per symmetry 
 ! 3. EE: maximum number of roots for irrepN is reset back to  nocc(irrepM)*nvirt(irrepO) for irrepN = irrepM * irrepO
 
+   select case (eomtype)
+       case ('IP')
+           if (nroot.gt.no(state_sym)) then
+               nroot = no(state_sym)
+               print *,"Warning, More EOM-IP roots selected than are occupied orbitals."
+           end if
+       case ('EA')
+           if (nroot.gt.nv(state_sym)) then
+               nroot = nv(state_sym)
+               print *,"Warning, More EOM-EA roots selected than are occupied orbitals."
+           end if
+       case ('EE')
+           if (nroot.gt.nvo(state_sym)) then
+               nroot = nvo(state_sym)
+               print *,"Warning, More EOM-EA roots selected than are occupied orbitals."
+           end if
+   end select
+   print *,"Number or roots reset to ",nroot  
+
+ 
+
   end subroutine
 
    subroutine input_processor(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2,H_II)
