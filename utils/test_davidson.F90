@@ -4,6 +4,10 @@ program test_davidson
 
    implicit none
 
+    type intermediates
+      real(8),allocatable,dimension(:,:) :: M
+    endtype intermediates
+
 ! eigenvectors, eigenvalues 
    double precision, pointer :: eval_real(:)
    double precision, pointer :: evec_real(:,:)
@@ -503,11 +507,18 @@ contains
       logical, intent(in) :: symmetric 
       integer, intent(in) :: nroots
       logical :: left = .true., right=.true.
-    
+
+      type(davidson_results) :: davResults
+      real(kind=8), pointer :: b_guess(:,:)
+      type(intermediates) :: B
+     
       logical :: verbose = .false.
 
        call set_safe_minimum()
        call davidson_driver(nroots, m, symmetric, eval_r, eval_i, evec_l, evec_r, left, right, verbose)
+
+       subroutine davidson_driver(nroots, A, symmetric, results, verbose, b_guess)
+
    end subroutine
 
 
