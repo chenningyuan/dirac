@@ -106,6 +106,7 @@ module relcc_cfg
   logical, public :: relcc_do_eomea = .false.
   logical, public :: relcc_do_eomee = .false.
   integer, public :: nr_roots(2) ! Ashee: I will soon change this input for a better one.
+! integer, public :: nr_roots(2,1:16) ! aspg: this should hold all roots, and in eom_driver we should loop over all requested roots
 
 ! Information relevant for the (Intermediate Hamiltonian) Fock space calculations
   logical, public :: relcc_fs_do_ea                   = .false.
