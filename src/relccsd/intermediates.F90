@@ -1016,11 +1016,11 @@
          mm(irrep) = mm(irrep)+ nint*nv(irep)
        enddo
 
-       allocate(w_vvvv_temp_temp(dot_product(yt3vvvt,nv)*rcw))  
+       allocate(w_vvvv_temp_temp(dot_product(mm,nv)*rcw))  
 
        w_vvvv_temp_temp = 0.0d0
 
-       call cntrct ('N','T',yt3vvvt,nv,no,-a1,w_v,t1,a1,w_vvvv_temp_temp,nrep)
+       call cntrct ('N','T',mm,nv,no,-a1,w_v,t1,a1,w_vvvv_temp_temp,nrep)
 
        deallocate(w_v)
 

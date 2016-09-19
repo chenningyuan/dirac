@@ -763,7 +763,7 @@ C
 
       IF (relcc_do_eomcc) THEN
          MXCORR1 = 0
-         CALL eom_ee(ICALC,MXCORR1)
+         CALL eom_ee(ICALC,MXCORR1,eps)
          MXCORR = MAX(MXCORR,MXCORR1)
       ENDIF
 
@@ -838,7 +838,7 @@ C
       WALL1 = WALL2
       CALL FLSHFO (IW)
 
-      IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR)
+      IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR,eps)
       CALL GETTIM(CPU2,WALL2)
       CPUFS = CPUFS + CPU2 - CPU1
       CPU1 = CPU2
@@ -1026,7 +1026,7 @@ C
          NO(IREP) = 0
          NV(IREP) = 0
          NC(IREP) = 0
-         NCONT(IREP) = 0
+!         NCONT(IREP) = 0
          NIO(IREP) = 0
          NIV(IREP) = 0
          NAO(IREP) = 0
@@ -1411,11 +1411,11 @@ C           Write only active irreps (NO or NV > 0)
 
 ! Dimension array for continuous orbital
 
-      DO IREP = 1, NREP
+!!    DO IREP = 1, NREP
 
-       NCONT(IREP) = 1  
+!!     NCONT(IREP) = 1  
 
-      ENDDO
+!!    ENDDO
 
 C
 C
@@ -2659,6 +2659,7 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "symm.inc"
+#include "dgroup.h"
 #include "complex.inc"
 #include "ccpar.inc"
 #include "dcbmp2no.h"
