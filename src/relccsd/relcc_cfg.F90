@@ -105,8 +105,7 @@ module relcc_cfg
   logical, public :: relcc_do_eomip = .false.
   logical, public :: relcc_do_eomea = .false.
   logical, public :: relcc_do_eomee = .false.
-  integer, public :: nr_roots(2) ! Ashee: I will soon change this input for a better one.
-! integer, public :: nr_roots(2,1:16) ! aspg: this should hold all roots, and in eom_driver we should loop over all requested roots
+  integer, public, dimension(1:16) :: relcc_eom_nroots = 0 
 
 ! Information relevant for the (Intermediate Hamiltonian) Fock space calculations
   logical, public :: relcc_fs_do_ea                   = .false.
@@ -194,7 +193,7 @@ contains
 ! call interface_mpi_bcast(relcc_do_eomee        ,1,0,global_communicator)
 ! call interface_mpi_bcast(relcc_do_eomea        ,1,0,global_communicator)
 ! call interface_mpi_bcast(relcc_do_eomip        ,1,0,global_communicator)
-! call interface_mpi_bcast(nr_roots        ,1,0,global_communicator)
+! call interface_mpi_bcast(relcc_eom_nroots      ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)

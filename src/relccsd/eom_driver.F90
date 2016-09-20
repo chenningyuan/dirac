@@ -15,13 +15,31 @@
 
    contains
 
+  subroutine set_continuous_orbital(active_irrep)
+#include "symm.inc"
+#include "dcbham.h"
+#include "dgroup.h"
+     integer, intent(in) :: active_irrep
+
+!Assigning Dimension to the continuous orbital
+!===============================================
+     ncont(1:nrep) = 0
+     ncont(active_irrep) = 1
+     if (spinfr) then
+        ncont(active_irrep+(nrep/4)) = 1 
+     elseif (linear) then
+        ncont(active_irrep+1) = 1 
+     else
+        ncont(active_irrep+(nrep/2)) = 1 
+     endif
+  end subroutine
+
   subroutine read_input()
 #include "symm.inc"
 #include "dcbham.h"
 #include "dgroup.h"
-
-    state_sym = nr_roots(1)
-    nroot = nr_roots(2)
+#include "files.inc"
+    logical :: reset_roots_in_symmetry = .false.
 
     if (relcc_do_eomip) eomtype = 'IP'
     if (relcc_do_eomea) eomtype = 'EA'
@@ -32,19 +50,8 @@
         .or.(relcc_do_eomea .and. relcc_do_eomee)) &
           call quit('Specifying more than one EOM kind of calculation at a time (IP/EE/EA)  not allowed !') 
 
-!Assigning Dimension to the continuous orbital
-!===============================================
-
-     ncont(1:nrep) = 0
-     ncont(state_sym) = 1
-    if (spinfr) then
-       ncont(state_sym+(nrep/4)) = 1 
-    elseif (linear) then
-       ncont(state_sym+1) = 1 
-    else
-       ncont(state_sym+(nrep/2)) = 1 
-    endif
-
+     do state_sym = 1, 16 
+        if (relcc_eom_nroots(state_sym).gt.0) then
 ! checking whether or not, for ip/ea, we can actually ask for this many roots 
 !
 ! we choose to restrict the number of roots one cas ask for in the eom-ee/ip/ea calculationsnos to
@@ -54,26 +61,37 @@
 ! 2. EA: maximum number of roots for irrepN is reset back to the number of virtual  spinors (nvirt), per symmetry 
 ! 3. EE: maximum number of roots for irrepN is reset back to  nocc(irrepM)*nvirt(irrepO) for irrepN = irrepM * irrepO
 
-   select case (eomtype)
-       case ('IP')
-           if (nroot.gt.no(state_sym)) then
-               nroot = no(state_sym)
-               print *,"Warning, More EOM-IP roots selected than are occupied orbitals."
-           end if
-       case ('EA')
-           if (nroot.gt.nv(state_sym)) then
-               nroot = nv(state_sym)
-               print *,"Warning, More EOM-EA roots selected than are occupied orbitals."
-           end if
-       case ('EE')
-           if (nroot.gt.nvo(state_sym)) then
-               nroot = nvo(state_sym)
-               print *,"Warning, More EOM-EA roots selected than are occupied orbitals."
-           end if
-   end select
-   print *,"Number or roots reset to ",nroot  
+          write (iw,'(2x,A,I6,2x,A,2x,I3)') "Requested",relcc_eom_nroots(state_sym),"root(s) for symmetry",state_sym
+          select case (eomtype)
+             case ('IP')
+                if (relcc_eom_nroots(state_sym).gt.no(state_sym)) then
+                   relcc_eom_nroots(state_sym) = no(state_sym)
+                   reset_roots_in_symmetry = .true.
+                else
+                   reset_roots_in_symmetry = .false.
+                end if
+             case ('EA')
+                if (relcc_eom_nroots(state_sym).gt.nv(state_sym)) then
+                    relcc_eom_nroots(state_sym) = nv(state_sym)
+                   reset_roots_in_symmetry = .true.
+                else
+                   reset_roots_in_symmetry = .false.
+                end if
+             case ('EE')
+                if (relcc_eom_nroots(state_sym).gt.nvo(state_sym)) then
+                    relcc_eom_nroots(state_sym) = nvo(state_sym)
+                   reset_roots_in_symmetry = .true.
+                else
+                   reset_roots_in_symmetry = .false.
+                end if
+          end select
 
- 
+          if (reset_roots_in_symmetry) then
+             write (iw,'(4x,A)') "Warning: more EOM-"//eomtype(1:2)//" roots than there are occupied/virtual orbitals/pairs."
+             write (iw,'(13x,A,I3,2x,A,2x,I3)') "Number or roots for symmetry",state_sym,"set to",relcc_eom_nroots(state_sym)
+          end if
+       end if
+    end do
 
   end subroutine
 
@@ -478,305 +496,314 @@
     nbuf1 = max(joooo(nrep+1),jvooo(nrep+1),jvvoo(nrep+1),jvovo(nrep+1))
     nbuf2 = nbuf1
 
-!     call alloc( buf1  , nbuf1*rcw             , id="buf1" )
-!     call alloc( buf2  , nbuf2*rcw             , id="buf2" )
+    call alloc( buf1  , nbuf1*rcw             , id="buf1" )
+    call alloc( buf2  , nbuf2*rcw             , id="buf2" )
 
     call allocator_get_words_inuse(start_mem_use)
     call legacy_lwork_get(work_memsize)
 
     call allocator_get_maxbuff(freemem,kind(BUF3))
 
-       NBUF3 = freemem / RCW
+    NBUF3 = freemem / RCW
 
-         NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
-         NV6IRP = 1
-         DO IRP = 1, NREP
-            NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
-         ENDDO
+    NV5IRP = MAX(JVOVV(NREP+1),JOVVV(NREP+1))
+    NV6IRP = 1
+    DO IRP = 1, NREP
+       NV6IRP = MAX(NV6IRP,INT(NVVT(IRP),8)*INT(NVVT(IRP),8))
+    ENDDO
 
-!        Check the minimum size for the general use of this array
+!   Check the minimum size for the general use of this array
 
-         NVIRP = MAX(NV5IRP,NV6IRP)
+    NVIRP = MAX(NV5IRP,NV6IRP)
 
-         NBUF3 = MIN(NVIRP,INT(NBUF3,8))
-         NBUF3 = MAX(NBUF1,NBUF3)
+    NBUF3 = MIN(NVIRP,INT(NBUF3,8))
+    NBUF3 = MAX(NBUF1,NBUF3)
 
 !     Allocate now also this remaining work array
 
-!!        call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
+    call alloc( BUF3  , NBUF3*RCW             , id="buf3" )
 
-!     For the moment I am using as much in-core memory as possible. However we
-!     may think of writing them in files, replacing the integral ones...  
+!   For the moment I am using as much in-core memory as possible. However we
+!   may think of writing them in files, replacing the integral ones...  
 
 
-      allocate (B%Fbar_mi(nfoo*rcw))  
-      allocate (B%Fbar_me(nfvo*rcw))  
-      allocate (B%Fbar_ae(nfvv*rcw))  
+    allocate (B%Fbar_mi(nfoo*rcw))  
+    allocate (B%Fbar_me(nfvo*rcw))  
+    allocate (B%Fbar_ae(nfvv*rcw))  
 
-      allocate (B%W_ijmn(nv1*rcw)) 
-      allocate (B%W_ejmb(iovvo(nrep+1)*rcw))
-      allocate (B%W_mbej(iovvo(nrep+1)*rcw))
-      allocate (B%W_iemn(iovoot(nrep+1)*rcw))
-      allocate (B%W_efam(nv5*rcw))
-      allocate (B%W_amef(nv5*rcw))
-      allocate (B%W_mnie(iovoot(nrep+1)*rcw))
-      allocate (B%Wbar_mbej(iovvo(nrep+1)*rcw))
-      allocate (B%t1(ndimt1*rcw))
-      allocate (B%t2(ndimt2*rcw))
+    allocate (B%W_ijmn(nv1*rcw)) 
+    allocate (B%W_ejmb(iovvo(nrep+1)*rcw))
+    allocate (B%W_mbej(iovvo(nrep+1)*rcw))
+    allocate (B%W_iemn(iovoot(nrep+1)*rcw))
+    allocate (B%W_efam(nv5*rcw))
+    allocate (B%W_amef(nv5*rcw))
+    allocate (B%W_mnie(iovoot(nrep+1)*rcw))
+    allocate (B%Wbar_mbej(iovvo(nrep+1)*rcw))
+    allocate (B%t1(ndimt1*rcw))
+    allocate (B%t2(ndimt2*rcw))
        
 ! allocate the amplitudes
 
-      call read_input()
+    call allocator_get_words_inuse(current_mem_use)
+    mxcorr = current_mem_use - start_mem_use
 
-      call allocator_get_words_inuse(current_mem_use)
-      mxcorr = current_mem_use - start_mem_use
+    if (icalc.eq.1) then
+       write (iw,1001) "EOMCC calculation",mxcorr
+       goto 451
+    endif
 
-      if (icalc.eq.1) then
-         write (iw,1001) "EOMCC calculation",mxcorr
-         goto 451
-      endif
+    write (iw,*) " "
+    write (iw,*) "Equation of Motion CC module setup"
+    write (iw,*) " "
 
-        allocate(buf3(nbuf3*rcw))
-        allocate(buf1(nbuf1*rcw))
-        allocate(buf2(nbuf2*rcw))
+    call read_input()
+
+!   allocate(buf3(nbuf3*rcw))
+!   allocate(buf1(nbuf1*rcw))
+!   allocate(buf2(nbuf2*rcw))
 
     call initialize_buffers(buf1, buf2, buf3)
-
     call ccdump
-
     call getampt(B%t1,B%t2)
-
     call IM_container(eomtype,B)
+    call free_buffers(buf1,buf2,buf3)
 
-     call free_buffers(buf1,buf2,buf3)
+!
+! be very careful with state_sym and nroot, now these are global variables in this module !!
+!
+    do state_sym = 1, 16
+       call create_eom_ndet(2)
+       nroot = relcc_eom_nroots(state_sym)
 
-    call create_eom_ndet(2)
+       if (nroot.gt.0) then
+          write (iw,*) ""
+          write (iw,'(2x,A,2x,I3)') "Determining EOM-"//eomtype(1:2)//" roots for symmetry",state_sym
+          write (iw,*) ""
 
-!     add here loop over asked for irreps (those with nroot .ne. 0)
+! setting up information for continuous orbital. this is a trick to perform
+! EOM-IP and EOM-EA calculations within the same framework as EOM-EE 
+       call set_continuous_orbital(state_sym)
 
-   select case (eomtype)
+       select case (eomtype)
 
-    case ('EE')
+          case ('EE')
 
-      ndimr1 = ndimt1
-      ndimr2 = ndimt2
+             ndimr1 = ndimt1
+             ndimr2 = ndimt2
 
-      call set_eom_ndet(1, ndimr1)
-      call set_eom_ndet(2, ndimr2)
+             call set_eom_ndet(1, ndimr1)
+             call set_eom_ndet(2, ndimr2)
 
-      N1 = ndimr1*rcw
-      N2 = ndimr2*rcw
-      N = ndimr1 + ndimr2
+             N1 = ndimr1*rcw
+             N2 = ndimr2*rcw
+             N = ndimr1 + ndimr2
 
-!     nroot = N
+!            nroot = N
 
-      allocate (r (N*rcw,nroot), stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      allocate (B%H_II(N*rcw),  stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+             allocate (r (N*rcw,nroot), stat = AllocateStatus)
+             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+             allocate (B%H_II(N*rcw),  stat = AllocateStatus)
+             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-      call input_processor(B%Fbar_mi, &
-      &                    B%Fbar_ae, &
-      &                    B%W_mbej,  &
-      &                    r(1:ndimr1*rcw,:), &
-      &                    r((ndimr1*rcw)+1:N*rcw,:),  &
-      &                    B%H_II)
+             call input_processor(B%Fbar_mi, &
+      &                           B%Fbar_ae, &
+      &                           B%W_mbej,  &
+      &                           r(1:ndimr1*rcw,:), &
+      &                           r((ndimr1*rcw)+1:N*rcw,:),  &
+      &                           B%H_II)
 
-      if (nroot .eq. N) then
+             if (nroot .eq. N) then
 ! this is to test the full diagonalizaion
 
-          allocate (sigma(N*rcw,nroot),stat = AllocateStatus)
-          IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+                allocate (sigma(N*rcw,nroot),stat = AllocateStatus)
+                IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-          do iroot = 1, nroot
-              print *, "debug, constructing sigma vector ",iroot
-              sigma(:,iroot:iroot) = 0.0d0
-              call sigma_ee_1h1p(r(1:ndimr1*rcw,iroot:iroot),         &
-              &                  r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-              &                  B,                                   &
-              &                  sigma(1:ndimr1*rcw,iroot:iroot),     &
-              &                  sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-              &                  nbuf3)
-          enddo
-      endif
+                do iroot = 1, nroot
+                    sigma(:,iroot:iroot) = 0.0d0
+                    call sigma_ee_1h1p(r(1:ndimr1*rcw,iroot:iroot),         &
+                    &                  r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+                    &                  B,                                   &
+                    &                  sigma(1:ndimr1*rcw,iroot:iroot),     &
+                    &                  sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+                    &                  nbuf3)
+                enddo
+            endif
 
-    case ('IP')
+          case ('IP')
 
-       ndimr2 = 0
-       ndimr1 = 0
-       nvx = 0
+             ndimr2 = 0
+             ndimr1 = 0
+             nvx = 0
        
-       call create_eom_nvx(nrep)
+             call create_eom_nvx(nrep)
 
-      do jrep = 1, nrep
-        do irep = 1, nrep
-        ijrep = multb(irep,jrep,1)
-        nvx(ijrep) = nvx(ijrep) + ncont(irep)*nv(jrep)
-        call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*nv(jrep)))
-        enddo
-      enddo
+! this need a bit of explaining
+             do jrep = 1, nrep
+                do irep = 1, nrep
+                   ijrep = multb(irep,jrep,1)
+                   nvx(ijrep) = nvx(ijrep) + ncont(irep)*nv(jrep)
+                   call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*nv(jrep)))
+                enddo
+             enddo
 
-        do irep = 1, nrep
-         ndimr1 = ndimr1 + ncont(irep)*no(irep)
-        enddo
+             do irep = 1, nrep
+                ndimr1 = ndimr1 + ncont(irep)*no(irep)
+             enddo
 
-      do irep = 1, nrep
-          ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
-      enddo
+             do irep = 1, nrep
+                 ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
+             enddo
 
-       N = ndimr1 + ndimr2
-!       nroot = N
+             N = ndimr1 + ndimr2
+!            nroot = N
 
-       call set_eom_ndet(1, ndimr1*rcw)
-       call set_eom_ndet(2, ndimr2*rcw)
+             call set_eom_ndet(1, ndimr1*rcw)
+             call set_eom_ndet(2, ndimr2*rcw)
 
-      allocate (r (N*rcw,nroot), stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-       allocate (B%H_II(N*rcw)) 
+             allocate (r (N*rcw,nroot), stat = AllocateStatus)
+             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+             allocate (B%H_II(N*rcw)) 
        
-       r = 0.0d0
+             r = 0.0d0
+             B%H_II = 1.0d0
 
-       B%H_II = 1.0d0
-
-      call input_processor(B%Fbar_mi, &
-      &                    B%Fbar_ae, &
-      &                    B%W_mbej,  &
-      &                    r(1:ndimr1*rcw,:), &
-      &                    r((ndimr1*rcw)+1:N*rcw,:),  &
-      &                    B%H_II)
+             call input_processor(B%Fbar_mi, &
+      &                           B%Fbar_ae, &
+      &                           B%W_mbej,  &
+      &                           r(1:ndimr1*rcw,:), &
+      &                           r((ndimr1*rcw)+1:N*rcw,:),  &
+      &                           B%H_II)
 
 
-      if (nroot .eq. N) then
+             if (nroot .eq. N) then
 ! this is to test the full diagonalizaion
-          allocate (sigma(N*rcw,nroot))
-          do iroot = 1, nroot
-              print *, "debug, constructing sigma vector ",iroot
-              sigma(:,iroot:iroot) = 0.0d0
-              call sigma_IP(nvx,   &
-              &             r(1:ndimr1*rcw,iroot:iroot),         &
-              &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-              &             B,                                   &
-              &             sigma(1:ndimr1*rcw,iroot:iroot),     &
-              &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-              &             ndimr1,                              &
-              &             ndimr2)
-          enddo
-       end if
+                allocate (sigma(N*rcw,nroot))
+                do iroot = 1, nroot
+                    sigma(:,iroot:iroot) = 0.0d0
+                    call sigma_IP(nvx,   &
+              &                   r(1:ndimr1*rcw,iroot:iroot),         &
+              &                   r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+              &                   B,                                   &
+              &                   sigma(1:ndimr1*rcw,iroot:iroot),     &
+              &                   sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+              &                   ndimr1,                              &
+              &                   ndimr2)
+                enddo
+             end if
 
 
-    case('EA')
+          case('EA')
 
-       ndimr2 = 0
-       ndimr1 = 0
-       nox(1:nrep) = 0
+             ndimr2 = 0
+             ndimr1 = 0
+             nox(1:nrep) = 0
        
-       call create_eom_nvx(nrep)
+             call create_eom_nvx(nrep)
 
-      do jrep = 1, nrep
-        do irep = 1, nrep
-        ijrep = multb(irep,jrep,1)
-        nox(ijrep) = nox(ijrep) + ncont(irep)*no(jrep)
-        call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*no(jrep)))
-        enddo
-      enddo
+            do jrep = 1, nrep
+              do irep = 1, nrep
+              ijrep = multb(irep,jrep,1)
+              nox(ijrep) = nox(ijrep) + ncont(irep)*no(jrep)
+              call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*no(jrep)))
+              enddo
+            enddo
 
-        do irep = 1, nrep
-         ndimr1 = ndimr1 + ncont(irep)*nv(irep)
-        enddo
+              do irep = 1, nrep
+               ndimr1 = ndimr1 + ncont(irep)*nv(irep)
+              enddo
 
-      do irep = 1, nrep
-          ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
-      enddo
+            do irep = 1, nrep
+                ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
+            enddo
 
-       N = ndimr1 + ndimr2
-!       nroot = N
+             N = ndimr1 + ndimr2
+!             nroot = N
 
-       call set_eom_ndet(1, ndimr1)
-       call set_eom_ndet(2, ndimr2)
+             call set_eom_ndet(1, ndimr1)
+             call set_eom_ndet(2, ndimr2)
 
-       allocate (r(N*rcw,nroot))
-       allocate (B%H_II(N*rcw)) 
+             allocate (r(N*rcw,nroot))
+             allocate (B%H_II(N*rcw)) 
        
-       r = 0.0d0
+             r = 0.0d0
 
-       B%H_II = 1.0d0
+             B%H_II = 1.0d0
 
-      call input_processor(B%Fbar_mi, &
-      &                    B%Fbar_ae, &
-      &                    B%W_mbej,  &
-      &                    r(1:ndimr1*rcw,:), &
-      &                    r((ndimr1*rcw)+1:N*rcw,:),  &
-      &                    B%H_II)
+            call input_processor(B%Fbar_mi, &
+      &                          B%Fbar_ae, &
+      &                          B%W_mbej,  &
+      &                          r(1:ndimr1*rcw,:), &
+      &                          r((ndimr1*rcw)+1:N*rcw,:),  &
+      &                          B%H_II)
 
-!      do iroot = 1, nroot
+!            do iroot = 1, nroot
+!               sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
+!               sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
+!               call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),B, &
+!    &                        sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
+!               sigma(1:N*rcw,iroot:iroot) = 0.0d0 
+!               call sigma_IP(nvx, &
+!                             r(1:ndimr1*rcw,iroot:iroot), &
+!               &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!               &             B,                            &
+!               &             sigma(1:ndimr1*rcw,iroot:iroot), &
+!               &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
+!               &             ndimr1, &
+!               &             ndimr2)
+!             end do
 
-!         sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
-!         sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
-!         call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),B, &
-!    &                  sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
+         end select 
 
-!         sigma(1:N*rcw,iroot:iroot) = 0.0d0 
-!         call sigma_IP(nvx, &
-!                       r(1:ndimr1*rcw,iroot:iroot), &
-!         &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-!         &             B,                            &
-!         &             sigma(1:ndimr1*rcw,iroot:iroot), &
-!         &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-!         &             ndimr1, &
-!         &             ndimr2)
+         if (nroot.eq.N) then
+! doing a full diagonalization if the request the same number of roots as the dimension of the matrix
+            allocate (sub_H(nroot,nroot))
+            sub_H = 0.0d0
 
-!       end do
+            do jroot = 1, nroot
+               do iroot = 1, nroot
+                  sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot))
+               enddo
+            enddo
 
-   end select 
+            call dump_to_file(42,"CCjacobianH.bin",sub_H)
 
-   if (nroot.eq.N) then
-! this is to test the full diagonalizaion
-      allocate (sub_H(nroot,nroot))
-      sub_H = 0.0d0
+            allocate (ev(nroot))
+            allocate (evec(nroot,nroot))
 
-      do jroot = 1, nroot
-         do iroot = 1, nroot
-            sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot))
-         enddo
-      enddo
+            call solve_cg(nroot,sigma,evec,ev)
 
-      call dump_to_file(42,"CCjacobianH.bin",sub_H)
+            write(*,*)'Hp eigenvalues', (ev(i),i=1,min(20,nroot))
 
-       allocate (ev(nroot))
-       allocate (evec(nroot,nroot))
+            deallocate(ev)
+            deallocate(evec)
+            deallocate (sub_H)
+            if (allocated(sigma)) deallocate (sigma)
 
-       call solve_cg(nroot,sigma,evec,ev)
-       write(*,*)'Hp eigenvalues', (ev(i),i=1,min(20,nroot))
+         else
+! if the matrix is too large, we use a matrix-free method like davidson etc 
 
-       deallocate(ev)
-       deallocate(evec)
-       deallocate (sub_H)
-       if (allocated(sigma)) deallocate (sigma)
+! todo: create the setup for davidson routine
+!           call davidson_setup(1.0e-2, subspace_size, nroot)
+            symmetric = .false.
+            verbose   = .false.
+            left_vectors = .false.
+            right_vectors = .true.
 
-    end if
-
-    if (.true.) then
-!       call davidson_setup(1.0e-2, subspace_size, nroot)
-        symmetric = .false.
-        verbose   = .false.
-        left_vectors = .false.
-        right_vectors = .true.
-
-        call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-        call davidson_driver(nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
+            call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
+            call davidson_driver(nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
 
 !      Fock-Space like output for EA, EE and IP
+            call eom_analysis(davResults%eValuesRe,davResults%eVectorsR,eps)
+            call free_davidson_results(davResults)
+         end if
+         call free_eom_ndet()
+         call free_eom_nvx()
 
-       call eom_analysis(davResults%eValuesRe,davResults%eVectorsR,eps)
+         if (allocated(B%H_II)) deallocate(B%H_II)
+      end if 
 
-       call free_davidson_results(davResults)
-        
-    end if
-    call free_eom_ndet()
-    call free_eom_nvx()
-
-      if (allocated(B%H_II)) deallocate(B%H_II)
-
+! this ends the loop over symmetries
+   end do
 
 ! todo:
 ! allocations/deallocations of intermediates would be more simply handled via
@@ -787,6 +814,11 @@
 ! move the analysis etc of eom here, so that it is printed only when all requested irreps are processed and calculated ?
 
      call free_intermediates(B)
+
+     call dealloc(buf1, id="buf1")
+     call dealloc(buf2, id="buf2")
+     call dealloc(buf3, id="buf3")
+
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
    end subroutine
