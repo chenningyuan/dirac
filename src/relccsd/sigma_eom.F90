@@ -99,21 +99,31 @@
    end function
 
    subroutine free_intermediates(A)
+      use memory_allocator
+      use allocator_parameters, only : klongint
       type(intermediates), intent(inout) :: A
 
-      if (allocated(A%Fbar_mi)) deallocate(A%Fbar_mi)
-      if (allocated(A%Fbar_me)) deallocate(A%Fbar_me)
-      if (allocated(A%Fbar_ae)) deallocate(A%Fbar_ae)
-      if (allocated(A%W_ijmn)) deallocate(A%W_ijmn)
-      if (allocated(A%W_ejmb)) deallocate(A%W_ejmb)
-      if (allocated(A%W_mbej)) deallocate(A%W_mbej)
-      if (allocated(A%W_iemn)) deallocate(A%W_iemn)
+      call dealloc(A%Fbar_mi,   id="Fbar_mi")
+      call dealloc(A%Fbar_me,   id="Fbar_me")
+      call dealloc(A%Fbar_ae,   id="Fbar_ae")
+    
+      call dealloc(A%W_ijmn,    id="W_ijmn")
+      call dealloc(A%W_ejmb,    id="W_ejmb")
+      call dealloc(A%W_mbej,    id="W_mbej")
+      call dealloc(A%W_iemn,    id="W_iemn")
+
+! todo: get special handling for these in the case of i4 ? we keep using deallocate here for the time being
+!     call dealloc(A%W_efam,    id="W_efam")
+!     call dealloc(A%W_amef,    id="W_amef")
       if (allocated(A%W_efam)) deallocate(A%W_efam)
       if (allocated(A%W_amef)) deallocate(A%W_amef)
-      if (allocated(A%W_mnie)) deallocate(A%W_mnie)
-      if (allocated(A%Wbar_mbej)) deallocate(A%Wbar_mbej)
-      if (allocated(A%t1)) deallocate(A%t1)
-      if (allocated(A%t2)) deallocate(A%t2)
+
+      call dealloc(A%W_mnie,    id="W_mnie")
+      call dealloc(A%Wbar_mbej, id="Wbar_mbej")
+
+      call dealloc(A%t1,  id="t1")
+      call dealloc(A%t2,  id="t2")
+
 !      if (allocated(A%H_II)) deallocate(A%H_II)
 
    end subroutine
@@ -126,24 +136,25 @@
    end subroutine
 
    subroutine free_buffers(buf1, buf2, buf3)
+      use memory_allocator
+      use allocator_parameters, only : klongint
 
-       real(kind=8),allocatable,intent(inout) ::  buf1(:), buf2(:), buf3(:)
-           deallocate(buf1)
-       if (associated(local_buf1)) then
-           nullify(local_buf1)
-       end if
+      real(kind=8),allocatable,intent(inout) ::  buf1(:), buf2(:), buf3(:)
 
-           deallocate(buf2)
+      call dealloc(buf1, id="buf1")
+      if (associated(local_buf1)) then
+          nullify(local_buf1)
+      end if
 
-       if (associated(local_buf2)) then
-           nullify(local_buf2)
-       end if
+      call dealloc(buf2, id="buf2")
+      if (associated(local_buf2)) then
+          nullify(local_buf2)
+      end if
 
-           deallocate(buf3)
-
-       if (associated(local_buf3)) then
-           nullify(local_buf3)
-       end if
+      call dealloc(buf3, id="buf3")
+      if (associated(local_buf3)) then
+          nullify(local_buf3)
+      end if
    end subroutine
 
    function create_diagonal(A)

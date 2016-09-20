@@ -34,7 +34,7 @@
      endif
   end subroutine
 
-  subroutine read_input()
+  subroutine verify_input()
 #include "symm.inc"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -527,20 +527,26 @@
 !   may think of writing them in files, replacing the integral ones...  
 
 
-    allocate (B%Fbar_mi(nfoo*rcw))  
-    allocate (B%Fbar_me(nfvo*rcw))  
-    allocate (B%Fbar_ae(nfvv*rcw))  
+    call alloc(B%Fbar_mi,   (nfoo*rcw), id="Fbar_mi")  
+    call alloc(B%Fbar_me,   (nfvo*rcw), id="Fbar_me")  
+    call alloc(B%Fbar_ae,   (nfvv*rcw), id="Fbar_ae")  
 
-    allocate (B%W_ijmn(nv1*rcw)) 
-    allocate (B%W_ejmb(iovvo(nrep+1)*rcw))
-    allocate (B%W_mbej(iovvo(nrep+1)*rcw))
-    allocate (B%W_iemn(iovoot(nrep+1)*rcw))
+    call alloc(B%W_ijmn,    (nv1*rcw),            id="W_ijmn") 
+    call alloc(B%W_ejmb,    (iovvo(nrep+1)*rcw),  id="W_ejmb")
+    call alloc(B%W_mbej,    (iovvo(nrep+1)*rcw),  id="W_mbej")
+    call alloc(B%W_iemn,    (iovoot(nrep+1)*rcw), id="W_iemn")
+
+! todo: get special handling for these in the case of i4 ? we keep using deallocate here for the time being
+!   call alloc(B%W_efam,    (nv5*rcw),            id="W_efam")
+!   call alloc(B%W_amef,    (nv5*rcw),            id="W_amef")
     allocate (B%W_efam(nv5*rcw))
     allocate (B%W_amef(nv5*rcw))
-    allocate (B%W_mnie(iovoot(nrep+1)*rcw))
-    allocate (B%Wbar_mbej(iovvo(nrep+1)*rcw))
-    allocate (B%t1(ndimt1*rcw))
-    allocate (B%t2(ndimt2*rcw))
+
+    call alloc(B%W_mnie,    (iovoot(nrep+1)*rcw), id="W_mnie")
+    call alloc(B%Wbar_mbej, (iovvo(nrep+1)*rcw),  id="Wbar_mbej")
+
+    call alloc(B%t1, (ndimt1*rcw), id="t1")
+    call alloc(B%t2, (ndimt2*rcw), id="t2")
        
 ! allocate the amplitudes
 
@@ -556,12 +562,7 @@
     write (iw,*) "Equation of Motion CC module setup"
     write (iw,*) " "
 
-    call read_input()
-
-!   allocate(buf3(nbuf3*rcw))
-!   allocate(buf1(nbuf1*rcw))
-!   allocate(buf2(nbuf2*rcw))
-
+    call verify_input()
     call initialize_buffers(buf1, buf2, buf3)
     call ccdump
     call getampt(B%t1,B%t2)
@@ -814,11 +815,6 @@
 ! move the analysis etc of eom here, so that it is printed only when all requested irreps are processed and calculated ?
 
      call free_intermediates(B)
-
-     call dealloc(buf1, id="buf1")
-     call dealloc(buf2, id="buf2")
-     call dealloc(buf3, id="buf3")
-
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
    end subroutine
