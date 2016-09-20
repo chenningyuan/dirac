@@ -190,10 +190,10 @@ contains
 
 ! Information relevant to EOMCC module
 
-! call interface_mpi_bcast(relcc_do_eomee        ,1,0,global_communicator)
-! call interface_mpi_bcast(relcc_do_eomea        ,1,0,global_communicator)
-! call interface_mpi_bcast(relcc_do_eomip        ,1,0,global_communicator)
-! call interface_mpi_bcast(nr_roots        ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eomee        ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eomea        ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eomip        ,1,0,global_communicator)
+  call interface_mpi_bcast(nr_roots,size(nr_roots),0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)

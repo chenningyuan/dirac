@@ -24,7 +24,7 @@
     nroot = nr_roots(2)
 
     if (relcc_do_eomip) eomtype = 'IP'
-    if (relcc_do_eomea) eomtype = 'EA'
+    if (relcc_do_eomea) eomtype = "EA"
     if (relcc_do_eomee) eomtype = 'EE'
 
 !Assigning Dimension to the continuous orbital
@@ -46,6 +46,7 @@
 
 #include "symm.inc"
 #include "complex.inc"
+#include "files.inc"
 
 !description
 !===========
@@ -103,7 +104,7 @@
 
    select case (eomtype)
 
-   case ('EE')
+   case ("EE")
 
     ai = 1
     ii = 0
@@ -192,7 +193,7 @@
 
        do iroot = 1, nroot
         k = minloc(diag_H) 
-        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
         R1(i,iroot) = 1.0d0
@@ -289,7 +290,7 @@
 
        do iroot = 1, 2*nroot
         k = minloc(diag_H) 
-        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
 
@@ -302,7 +303,7 @@
      deallocate(diag_H)
  ! end if 
 
-   case ('EA')
+   case ("EA")
 
     ai = 1
     do irep = 1, nrep
@@ -383,7 +384,7 @@
         xroot = 1
        do iroot = 1, 2*nroot
         k = minloc(diag_H) 
-        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
         if (i <= search_dimension) then
@@ -406,6 +407,7 @@
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
+#include "ccpar.inc"
 !--------------------------------------------------
  integer, intent(in)                   :: icalc
  integer(kind=klongint), intent(inout) :: mxcorr
@@ -513,7 +515,7 @@
 
     call IM_container(eomtype,B)
 
-     call free_buffers(buf1,buf2,buf3)
+    call free_buffers(buf1,buf2,buf3)
 
     call create_eom_ndet(2)
 
@@ -552,7 +554,7 @@
           IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
           do iroot = 1, nroot
-              print *, "debug, constructing sigma vector ",iroot
+              write(iw,*) "debug, constructing sigma vector ",iroot
               sigma(:,iroot:iroot) = 0.0d0
               call sigma_ee_1h1p(r(1:ndimr1*rcw,iroot:iroot),         &
               &                  r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
@@ -568,7 +570,8 @@
        ndimr2 = 0
        ndimr1 = 0
        nvx = 0
-       
+
+ 
        call create_eom_nvx(nrep)
 
       do jrep = 1, nrep
@@ -613,7 +616,7 @@
 ! this is to test the full diagonalizaion
           allocate (sigma(N*rcw,nroot))
           do iroot = 1, nroot
-              print *, "debug, constructing sigma vector ",iroot
+              write(iw,*)"debug, constructing sigma vector ",iroot
               sigma(:,iroot:iroot) = 0.0d0
               call sigma_IP(nvx,   &
               &             r(1:ndimr1*rcw,iroot:iroot),         &
@@ -627,7 +630,7 @@
        end if
 
 
-    case('EA')
+    case("EA")
 
        ndimr2 = 0
        ndimr1 = 0
@@ -694,27 +697,27 @@
 
    if (nroot.eq.N) then
 ! this is to test the full diagonalizaion
-      allocate (sub_H(nroot,nroot))
-      sub_H = 0.0d0
+!!    allocate (sub_H(nroot,nroot))
+!!    sub_H = 0.0d0
 
-      do jroot = 1, nroot
-         do iroot = 1, nroot
-            sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot))
-         enddo
-      enddo
+!!    do jroot = 1, nroot
+!!       do iroot = 1, nroot
+!!          sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot))
+!!       enddo
+!!    enddo
 
-      call dump_to_file(42,"CCjacobianH.bin",sub_H)
+!!    call dump_to_file(42,"CCjacobianH.bin",sub_H)
 
-       allocate (ev(nroot))
-       allocate (evec(nroot,nroot))
+!!     allocate (ev(nroot))
+!!     allocate (evec(nroot,nroot))
 
-       call solve_cg(nroot,sigma,evec,ev)
-       write(*,*)'Hp eigenvalues', (ev(i),i=1,min(20,nroot))
+!!     call solve_cg(nroot,sigma,evec,ev)
+!!     write(*,*)'Hp eigenvalues', (ev(i),i=1,min(20,nroot))
 
-       deallocate(ev)
-       deallocate(evec)
-       deallocate (sub_H)
-       if (allocated(sigma)) deallocate (sigma)
+!!     deallocate(ev)
+!!     deallocate(evec)
+!!     deallocate (sub_H)
+!!     if (allocated(sigma)) deallocate (sigma)
 
     end if
 
@@ -726,7 +729,7 @@
         right_vectors = .true.
 
         call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-        call davidson_driver(nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
+        call davidson_driver(iw, nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
 
 !      Fock-Space like output for EA, EE and IP
 
@@ -739,6 +742,7 @@
     call free_eom_nvx()
 
       if (allocated(B%H_II)) deallocate(B%H_II)
+!      if (associated(r)) deallocate(r)
 
 
 ! todo:
@@ -947,7 +951,7 @@
       if (ipr.le.0) then
          tres = 0.1d0
       elseif (ipr.le.2) then
-         tres = 0.01d0
+         tres = 0.1d0
       else
          tres = 0.0d0
       end if

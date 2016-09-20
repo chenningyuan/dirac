@@ -4,6 +4,7 @@
 ! Written by Avijit Shee and Lucas Visscher, 2014
 
   use contraction
+  use interface_to_mpi
   use wrapper_sorting
 
     implicit none
@@ -75,7 +76,6 @@
    
    call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),fvo,t1,ho,1.0d0,1.0d0,nrep)
 
-   write(*,*)'value of ho', dot_product(ho,ho)
    end subroutine
 
    subroutine f_bar_ae(fvv,fvo,t1,t2,hv)
@@ -557,17 +557,18 @@
 
  end subroutine
 
- subroutine w_efam_diagram2(t1,t2,buf1,buf2,buf3,nbuf3,w_vvvo)
+ subroutine w_efam_diagram2(t1,t2,buf2,buf3,nbuf3,w_vvvo)
 
 #include "param.inc"  
 #include "complex.inc"
 #include "symm.inc"   
 #include "ccpar.inc"
+#include "files.inc"
 !---------------Calling variables-------------------------------------
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
    real(8), intent(inout) :: w_vvvo(rcw*nv5)                ! Intermediate.
-   real(8), intent(in)    :: buf1(*),buf2(*)                ! buffer arrays
+   real(8), intent(in)    :: buf2(*)                        ! buffer arrays
    real(8), intent(inout) :: buf3(*)                        ! buffer arrays
    integer, intent(in)    :: nbuf3 
 
@@ -578,7 +579,6 @@
       integer :: cd,cco,istart,nint,akcd,ci,akci,t1di,di,akdi,t1ci,cmin,c,d,i,j
       integer :: crep,drep,irp,mint
       real*8,allocatable  :: tau (:)
-      real*8,allocatable  :: array_temp(:) !huge
 
 !------------------------------------------------------------------
 !  w_vvvo(ef,am) =  w_vvvo(ef,am) + w (ef,ag)*t(g,m)
@@ -586,17 +586,8 @@
 
       t1val = (/0.0d0,0.0d0/)
 
-     allocate(array_temp(nv5*rcw))
-
      allocate (tau(ndimt2*rcw))
      call gettau (t1,t2,tau)
-
-      if(myproc.eq.master) then
-
-        call xcopy(nv5,w_vvvo,1,array_temp,1)
-      else 
-        call xcopy(nv5,a0,0,array_temp,1)
-      endif
 
       do 30 irp = 1, nrep
          if (nvvt(irp).eq.0) goto 30
@@ -604,18 +595,18 @@
          istart = 0
          cco=0
 
-! ** w_efab are constructed over the batches.
+! ** w_efab is constructed over the batches.
 ! ** ISTART is updated with the actual batch #
 ! ** available on the local node, NINT is updated with the number of
 ! ** actually read integrals from this batch and is a pure output parameter !
 ! ** We therefore have to count upwards in case of ISTART.NE.0 !!
 
-         call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
+         call w_efab_out_of_core (irp,istart,done,tau,buf2,t1,nbuf3,buf3,nint)
 
          call putdz (irp,istart,nint,buf3)
 
 ! ** now start SORTING and contraction loop
-
+          
          CD = 0
          DO 20 DREP = 1, NREP
            CREP = MULTB(DREP,IRP+NREP,2)
@@ -637,7 +628,9 @@
 !                   ---------------------------------------
                     ISTART = ISTART + NINT
                     IF(.NOT.DONE) THEN
-                    call w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,buf3,nint)
+
+                    call w_efab_out_of_core (irp,istart,done,tau,buf2,t1,nbuf3,buf3,nint)
+                     
                     call putdz (irp,istart,nint,buf3)
                       CD = 1
                       CCO=ISTART
@@ -652,7 +645,7 @@
                     T1DI = (IVO(DREP)+(I-1)*NV(DREP)+D-1) * RCW + 1
                     T1VAL(1) =  T1(T1DI)
                     IF (CARITH) T1VAL(2) =  T1(T1DI+1)
-                    CALL XAXPY(NVVT(IRP),T1VAL,BUF3(AKCD),1,array_temp(AKCI),1)
+                    CALL XAXPY(NVVT(IRP),T1VAL,BUF3(AKCD),1,w_vvvo(AKCI),1)
                  ENDDO
                  DO I = 1, NO(CREP)
                     DI = IIVO(DREP,CREP)+(I-1)*NV(DREP)+D
@@ -660,21 +653,16 @@
                     T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
                     T1VAL(1) = -T1(T1CI)
                     IF (CARITH) T1VAL(2) = -T1(T1CI+1)
-                    CALL XAXPY(NVVT(IRP),T1VAL,BUF3(AKCD),1,array_temp(AKDI),1)
+                    CALL XAXPY(NVVT(IRP),T1VAL,BUF3(AKCD),1,w_vvvo(AKDI),1)
                  ENDDO
  10           CONTINUE
  15        CONTINUE
  20      CONTINUE
  30    CONTINUE
 
-
    deallocate (tau)
 
-   call xcopy(nv5,array_temp,1,w_vvvo,1)
-
-   deallocate(array_temp)
  end subroutine
-
 
  subroutine w_ejmb_out_of_core(t1,t2,buf1,buf2,buf3,nbuf3,w_vovo)
 
@@ -902,18 +890,15 @@
 
   end subroutine
 
-
-
    subroutine w_efab_out_of_core (irp,istart,done,tau,buf1,t1,nbuf3,w_vvvv,nint)
 
 !-----------------------description------------------------------------------------
 !   W_vvvv intermediates are formed such a manner that it could be used as fetching 
 !   VVVV integrals, representationwise. However, we will call them only once to construct
 !   term2 of W_efam integrals and transfer it to a file, subsequently, inside that routine.
-!   batch size is fixed to the distributed batches of VVVV integrals. I assumed that batch 
+!   batch size is fixed to the distributed batches of VVVV integrals. I assumed that the batch 
 !   size for VOVV and VVVV integrals are the same.
 !-----------------------------------------------------------------------------------
-
 
 #include "param.inc"                                                  
 #include "complex.inc"                                                
@@ -929,25 +914,47 @@
    logical, intent(inout) :: done
 !--------------------------------------------------
 
-
 !--------------------local variables----------------
    integer :: mint,off1,off2,off3,off4,off5
-   integer :: abkl,abmn,m,n,k,irrep,irep,mm(mxrep)
+   integer :: abmn,m,n,k,i,irrep,irep,mm(nrep)
    integer :: xxt3vvvt(nrep,nrep),yt3vvvt(nrep),zt3vvvot(nrep+1),zt3vvvvt(nrep+1)
-   real*8,allocatable :: w_vvvv_temp(:),w_vvvv_temp_temp(:),w_v(:)  
+   integer, allocatable :: counter(:), displ(:)
+   real*8,allocatable :: w_vvvv_temp_temp(:),w_vvvv_temp(:),w_v(:)  
 !---------------------------------------------------
 
          off1 = 1
          off2 = 1
          off3 = 0
 
-!         if (nvvt(irp) > 0) then
+       allocate(counter(0:nmproc-1))
+       allocate(displ(0:nmproc-1))
+
+       counter = 0
+       displ = 0 
+
          mint = nbuf3/nvvt(irp)
          call getvvvv (irp,istart,nint,done,w_vvvv,mint)
-!        if (carith) then
-!           call conjuga (nint*nvvt(irp),w_vvvv,1)
-!        endif
-   
+
+!-----------------------------------------------------------------------
+! generate offsets to distribute the intermediate on different nodes
+!-----------------------------------------------------------------------
+#if defined (VAR_MPI)
+       call interface_mpi_allgather(NINT,1, &
+     &   counter,1,global_communicator)
+
+      do i = 0, (nmproc-1)
+
+       counter(i) = counter(i)*noot(irp)            
+
+      enddo
+
+         displ(0) = 0
+         do i = 1, (nmproc-1) 
+             displ(i) = displ(i-1) + counter(i-1)
+         enddo
+#endif
+
+
 !----------------------------------------------
 ! w(ef,ab) =  V(ef,ab) + V(mn,ab) * TAU(ef,mn)
 !          =  V(ef,ab) + TAU(ef,mn) * V'*(ab,mn)            
@@ -957,47 +964,15 @@
        m = nvvt(irp)
        n = nint
        k = noot(irp)
-!       abmn = (ivvoott(irp)+displ(myproc))*rcw+1
-       abmn = (ivvoott(irp)+istart)*rcw+1
-       off1 = off1 + ivvoott(irp)*rcw
+       abmn = (ivvoott(irp)+displ(myproc))*rcw+1
+       off1 = off1 + ivvoott(irp)*rcw  
 
         call xgemm ('n','n',m,n,k,a1,tau(off1),nvvt(irp),buf1(abmn),k, &
       &               a1,w_vvvv,m)
 
-
-
- !     call getvvoo (buf1)
- !     m = nvvt(irp)
- !     n = nint
- !     k = noot(irp)
- !     abkl = (ivvoott(irp)+istart)*rcw+1
- !     off1 = off1 + ivvoott(irp)*rcw  
-
-!!     if(carith) then
-
-!!      call conjuga(ndimt2,tau,1)
-
-!!     endif
-
-!!     call xgemm ('n','t',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
-!!   &               a1,w_vvvv,m)
-
-
- !     call xgemm ('n','c',m,n,k,a1,tau(off1),nvvt(irp),buf1(abkl),m, &
- !   &               a1,w_vvvv,m)
-
- !     endif
-
-!!     if (carith) then
-!!        call conjuga (nint*nvvt(irp),w_vvvv,1)
-!!     endif
-
-
 !-----------------------------------------------------
 ! w(ef,ab) = w(ef,ab) - V(em,ab)*t(f,m)
 !-----------------------------------------------------
-
-     if (.true.) then
 
       call offset_outofcore_sorter(irp,xxt3vvvt,yt3vvvt,zt3vvvot,zt3vvvvt)
 
@@ -1020,7 +995,7 @@
 
        w_vvvv_temp_temp = 0.0d0
 
-       call cntrct ('N','T',mm,nv,no,-a1,w_v,t1,a1,w_vvvv_temp_temp,nrep)
+       call cntrct ('N','T',mm,nv,no,-a1,w_v,t1,a0,w_vvvv_temp_temp,nrep)
 
        deallocate(w_v)
 
@@ -1036,8 +1011,6 @@
        call xaxpy(nint*nvvt(irp),a1,w_vvvv_temp,1,w_vvvv,1)
 
        deallocate(w_vvvv_temp)
-
-    endif
 
    end subroutine
 

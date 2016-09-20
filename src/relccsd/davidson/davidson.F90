@@ -40,7 +40,7 @@ real(kind=8), save :: safe_minimum = 1.0d-36
 real(kind=8), save :: convergence_threshold = 1.0d-5
 integer, save      :: max_subspace_size = 2048
 integer, save      :: roots_per_symmetry(nr_max_irreps)
-integer, save      :: max_iterations = 50
+integer, save      :: max_iterations = 80
 
 contains 
 
@@ -335,11 +335,12 @@ contains
     end subroutine
 
 
-    subroutine print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left, right, nroots)
+    subroutine print_values_vectors_R(output_file_unit, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left, right, nroots)
         real(kind=8), intent(in) :: eVectorsL(:,:)
         real(kind=8), intent(in) :: eVectorsR(:,:)
         real(kind=8), intent(in) :: eValuesRe(:), eValuesIm(:)
         integer, optional, intent(in) :: nroots
+        integer, intent(in) :: output_file_unit
 
         logical :: left, right
         integer :: vectors_N
@@ -354,9 +355,9 @@ contains
         label = "Eigenvalues"
         do i = 1, nroots_local 
             if (eValuesIm(i) .eq. zero_r8) then
-                print "(4x,a,i6,a,1e24.16)", "Eigenvalue ",i," : ",eValuesRe(i)
+                write(output_file_unit,"(4x,a,i6,a,1e24.16)") "Eigenvalue ",i," : ",eValuesRe(i)
             else
-                print "(4x,a,i6,a,1e24.16,a,1e24.16,a)", "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
+                write(output_file_unit, "(4x,a,i6,a,1e24.16,a,1e24.16,a)") "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
             end if
         end do
         if (left) then
@@ -380,9 +381,9 @@ contains
         vector_norm = dnrm2(vector_N, v, 1)
     end function
 
-    function correction_to_vectors(nroots, e_small_M, c_small_M, sigma_vector, b, preconditioner, correct_all)
+    function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, sigma_vector, b, preconditioner, correct_all)
         real(kind=8), pointer     :: correction_to_vectors(:,:)
-        integer, intent(in)       :: nroots
+        integer, intent(in)       :: nroots, output_file_unit
         real(kind=8), intent(in)  :: e_small_M(:)
         real(kind=8), intent(in)  :: c_small_M(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
@@ -416,12 +417,12 @@ contains
         do k = 1, nroots
             norm_r = vector_norm(r(:,k))
             if (norm_r .lt. convergence_threshold) then 
-               print "(4x,a,i6,a,1e24.16,a,1e24.16,a)", "Root ",k,"  ||q_k,M|| ", norm_r,  &
+               write(output_file_unit, "(4x,a,i6,a,1e24.16,a,1e24.16,a)") "Root ",k,"  ||q_k,M|| ", norm_r,  &
                                                       " threshold ", convergence_threshold, &
                                                       " <<< converged ! "
                vectors_to_update(k) = .false.
             else
-               print "(4x,a,i6,a,1e24.16,a,1e24.16)",  "Root ",k,"  ||q_k,M|| ", norm_r, &
+               write(output_file_unit, "(4x,a,i6,a,1e24.16,a,1e24.16)")  "Root ",k,"  ||q_k,M|| ", norm_r, &
                                                      " threshold ", convergence_threshold
                vectors_to_update(k) = .true.
                unconverged_roots = unconverged_roots + 1
@@ -625,9 +626,9 @@ contains
         end do
     end function
 
-    subroutine davidson_driver(nroots, A, symmetric, results, verbose, b_guess, left, right)
+    subroutine davidson_driver(output_file_unit, nroots, A, symmetric, results, verbose, b_guess, left, right)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
-! and that will have asslciated get_matrix_size, create_sigma_vector and create_diagonal
+! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
         use sigma_eom, only : intermediates, get_matrix_size, create_sigma_vector, create_diagonal
         type(intermediates), intent(in) :: A
 ! back to general stuff
@@ -635,7 +636,7 @@ contains
 !       real(kind=8), optional, pointer :: b_guess(:,:)
         real(kind=8), intent(in), pointer :: b_guess(:,:)
         logical, intent(in), optional :: verbose, symmetric, left, right
-        integer, intent(in) :: nroots
+        integer, intent(in) :: nroots, output_file_unit
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -695,9 +696,9 @@ contains
         max_subspace_size = max(nroots, max_subspace_size)
         max_subspace_size = min(vectors_N, max_subspace_size)
 
-        print "(4x,a,i6,a)", "Requested ",nroots," eigenvales"
+        write(output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
         if ( nroots .gt. vectors_N ) then 
-           print "(4x,a)", "Number of roots requested larger than matrix order !"
+           write(output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
            return 
         endif
 
@@ -707,8 +708,8 @@ contains
 !           b => new_subspace_vectors_R(min_subspace_size,vectors_N)
 !       end if
 
-        if (verbose) then
-            print "(4x,a,i4,a,i8)", "Start by mapping M onto a subspace of size ",min_subspace_size, &
+        if (verbose_local) then
+            write(output_file_unit,"(4x,a,i4,a,i8)") "Start by mapping M onto a subspace of size ",min_subspace_size, &
                      ", will extend it up to ",max_subspace_size
             call print_vectors_R(b, label="Initial subspace vectors      ")
         end if
@@ -730,9 +731,9 @@ contains
 
 
         do niter = 1, max_iterations
-            print *, ""
-            print *, "Iteration ", niter
-            print *, ""
+            write(output_file_unit,*) ""
+            write(output_file_unit,*) "Iteration ", niter
+            write(output_file_unit,*) ""
 
 !           if (associated(sigma_vector)) deallocate(sigma_vector)
             if (associated(M_small)) deallocate(M_small)
@@ -743,7 +744,7 @@ contains
             sigma_vector => create_sigma_vector(A, b, sigma_vector)
             M_small => create_reduced_problem(b, sigma_vector)
 
-            call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
+            call calculate_eigenvalues_and_eigenvectors(output_file_unit, M_small, e_small_r, e_small_i, &
                                                 c_small_r, c_small_l, &
                                                 c_small_r_old, c_small_l_old, left=left, verbose=.true.)
 
@@ -756,9 +757,9 @@ contains
             if (associated(delta)) deallocate(delta)
 
             preconditioner =>  form_preconditioner(M_diag, e_small_r)
-            delta => correction_to_vectors(nroots, e_small_r, c_small_r, sigma_vector, b, preconditioner)
+            delta => correction_to_vectors(output_file_unit, nroots, e_small_r, c_small_r, sigma_vector, b, preconditioner)
             if (.not.associated(delta)) then
-                print *, "All roots converged, stopping ..."
+                write(output_file_unit,*) "All roots converged, stopping ..."
                  if (associated(preconditioner)) deallocate(preconditioner)
                 exit
             end if
@@ -774,7 +775,7 @@ contains
             if (L .eq. max_subspace_size) then
                if (associated(preconditioner)) deallocate(preconditioner)
                if (associated(delta)) deallocate(delta)
-                print *, "Reached maximum subspace size, stopping ..."
+                write(output_file_unit, *) "Reached maximum subspace size, stopping ..."
                 exit
             end if
         end do
@@ -782,7 +783,7 @@ contains
         if (right) deallocate(c_small_r_old)
         if (left)  deallocate(c_small_l_old)
 
-        print *, "Final size of reduced subspace : ",L
+        write(output_file_unit, *) "Final size of reduced subspace : ",L
 
 !       if (associated(sigma_vector)) deallocate(sigma_vector)
 !        if (associated(M_small)) deallocate(M_small)
@@ -803,7 +804,7 @@ contains
         if (right) call form_eigenvector_full_problem(results%eVectorsR,nroots,b,c_small_r, right)
 
 
-        deallocate(b)
+        if(associated(b)) deallocate(b)
         deallocate(M_small)
         deallocate(sigma_vector)
         deallocate(M_diag)
@@ -814,7 +815,7 @@ contains
 
     end subroutine
 
-    subroutine calculate_eigenvalues_and_eigenvectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
+    subroutine calculate_eigenvalues_and_eigenvectors(output_file_unit, M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
                                 eVectorsR_old, eVectorsL_old, left, right, sorting_order, nroots, verbose)
         real(kind=8), intent(inout), pointer   :: M(:,:)
         real(kind=8), intent(inout), pointer   :: eValuesRe(:), eValuesIm(:)
@@ -822,6 +823,7 @@ contains
         real(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
         logical, optional, intent(in) :: left, right, verbose
         integer, optional, intent(in) :: sorting_order, nroots
+        integer, intent(in) :: output_file_unit 
 
         logical :: left_local, right_local, verbose_local
         integer :: sorting_order_local, nroots_local, nroot
@@ -887,7 +889,7 @@ contains
 
 !       if (verbose_local) &
 !       call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local, right_local, nroots=nroots_local)
-        call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, .false., .false., nroots=nroots_local)
+        call print_values_vectors_R(output_file_unit, eValuesRe, eValuesIm, eVectorsR, eVectorsL, .false., .false., nroots=nroot)
 
     end subroutine
 
