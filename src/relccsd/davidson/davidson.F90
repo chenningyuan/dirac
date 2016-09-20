@@ -707,11 +707,11 @@ contains
 !           b => new_subspace_vectors_R(min_subspace_size,vectors_N)
 !       end if
 
-        if (verbose) then
+!       if (verbose) then
             print "(4x,a,i4,a,i8)", "Start by mapping M onto a subspace of size ",min_subspace_size, &
                      ", will extend it up to ",max_subspace_size
             call print_vectors_R(b, label="Initial subspace vectors      ")
-        end if
+!       end if
 
        if (right) then
        

@@ -27,6 +27,11 @@
     if (relcc_do_eomea) eomtype = 'EA'
     if (relcc_do_eomee) eomtype = 'EE'
 
+    if (    (relcc_do_eomip .and. relcc_do_eomea) &
+        .or.(relcc_do_eomip .and. relcc_do_eomee) &
+        .or.(relcc_do_eomea .and. relcc_do_eomee)) &
+          call quit('Specifying more than one EOM kind of calculation at a time (IP/EE/EA)  not allowed !') 
+
 !Assigning Dimension to the continuous orbital
 !===============================================
 
@@ -39,6 +44,36 @@
     else
        ncont(state_sym+(nrep/2)) = 1 
     endif
+
+! checking whether or not, for ip/ea, we can actually ask for this many roots 
+!
+! we choose to restrict the number of roots one cas ask for in the eom-ee/ip/ea calculationsnos to
+! avoid setting up guess trial vectors which would have to sample the 2h1p (ip, ea) or 2h2p subblocks:
+!
+! 1. IP: maximum number of roots for irrepN is reset back to the number of occupied spinors (nocc) in irrepN
+! 2. EA: maximum number of roots for irrepN is reset back to the number of virtual  spinors (nvirt), per symmetry 
+! 3. EE: maximum number of roots for irrepN is reset back to  nocc(irrepM)*nvirt(irrepO) for irrepN = irrepM * irrepO
+
+   select case (eomtype)
+       case ('IP')
+           if (nroot.gt.no(state_sym)) then
+               nroot = no(state_sym)
+               print *,"Warning, More EOM-IP roots selected than are occupied orbitals."
+           end if
+       case ('EA')
+           if (nroot.gt.nv(state_sym)) then
+               nroot = nv(state_sym)
+               print *,"Warning, More EOM-EA roots selected than are occupied orbitals."
+           end if
+       case ('EE')
+           if (nroot.gt.nvo(state_sym)) then
+               nroot = nvo(state_sym)
+               print *,"Warning, More EOM-EA roots selected than are occupied orbitals."
+           end if
+   end select
+   print *,"Number or roots reset to ",nroot  
+
+ 
 
   end subroutine
 
@@ -517,6 +552,8 @@
 
     call create_eom_ndet(2)
 
+!     add here loop over asked for irreps (those with nroot .ne. 0)
+
    select case (eomtype)
 
     case ('EE')
@@ -746,6 +783,8 @@
 !    call initialize_intermediates() 
 
  451 continue
+
+! move the analysis etc of eom here, so that it is printed only when all requested irreps are processed and calculated ?
 
      call free_intermediates(B)
 
