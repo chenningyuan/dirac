@@ -12,6 +12,7 @@
     public sigma_IP
     public sigma_EA
     public IM_container
+    public initialize_sigma_construction
     public create_sigma_vector
     public create_diagonal
     public create_eom_ndet
@@ -45,8 +46,18 @@
     integer, pointer :: eom_ndet(:)
     integer, pointer :: eom_nvx(:)
 
+    logical, save :: do_sigma_vector_lhs = .false.
+    logical, save :: do_sigma_vector_rhs = .true.
+
    contains
 
+   subroutine initialize_sigma_construction(left, right)
+       logical, intent(in) :: left, right
+
+       do_sigma_vector_lhs = left
+       do_sigma_vector_rhs = right 
+
+   end subroutine
 
    subroutine create_eom_nvx(nrep)
        integer, intent(in) :: nrep
@@ -184,8 +195,53 @@
 
    end function
 
+!
+! create_sigma_vector is the interface used with the diagonalizer. 
+! inside it we will handle left and right sigma vector cases, and the sigma_eom module 
+! will have to be initialized so that it knows whether to do left or right vectors
+!
    function create_sigma_vector(A, r, old_sigma_vector)
       real(kind=8), pointer :: create_sigma_vector(:,:)
+      real(kind=8), pointer :: old_sigma_vector(:,:)
+      type(intermediates) :: A
+      real(kind=8), intent(in) :: r(:,:)
+      
+      if (do_sigma_vector_rhs.and..not.do_sigma_vector_lhs) then
+!     do right vectors, this is the default
+          create_sigma_vector => create_sigma_vector_right(A, r, old_sigma_vector)
+
+      else if (do_sigma_vector_lhs.and..not.do_sigma_vector_rhs) then
+!     do left vectors vectors
+          create_sigma_vector => create_sigma_vector_left(A, r, old_sigma_vector)
+
+      else
+! do both at the same time; this will require some thinking, one option is to return
+! a matrix of (N,(Lr+Lf)), L(r/l) the number of rhs/lhs vecturs, containing Lr rhs vectors 
+! in the first Lr columns and the transpose of sigma_L in the remaining columns. it is easy
+! if there's always the same number of columns flr left and right, otherwise there's no 
+! simple way to keep track of the dimensions.
+          create_sigma_vector => NULL()
+      endif
+   end function
+
+
+   function create_sigma_vector_left(A, r, old_sigma_vector)
+      real(kind=8), pointer :: create_sigma_vector_left(:,:)
+      real(kind=8), pointer :: old_sigma_vector(:,:)
+      type(intermediates) :: A
+      real(kind=8), intent(in) :: r(:,:)
+      integer :: L, N, L_already_done
+      integer :: ndimr1, ndimr2
+      integer :: nbuf3
+      integer :: start_r1, end_r1, start_r2, end_r2
+      integer :: iroot
+
+      create_sigma_vector_left => NULL()
+   end function 
+   
+
+   function create_sigma_vector_right(A, r, old_sigma_vector)
+      real(kind=8), pointer :: create_sigma_vector_right(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
       real(kind=8), intent(in) :: r(:,:)
@@ -201,12 +257,12 @@
       N = size(r,1)
       L = size(r,2)
 
-      allocate(create_sigma_vector(N,L))
+      allocate(create_sigma_vector_right(N,L))
 
       if (associated(old_sigma_vector)) then 
           L_already_done = size(old_sigma_vector,2) 
           do iroot = 1, L_already_done
-              create_sigma_vector(:,iroot) = old_sigma_vector(:,iroot)
+              create_sigma_vector_right(:,iroot) = old_sigma_vector(:,iroot)
           end do
           deallocate(old_sigma_vector)
 !ashee          nullify(old_sigma_vector)
@@ -227,14 +283,14 @@
 
              do iroot = L_already_done + 1, L 
 
-                create_sigma_vector(:,iroot:iroot) = 0.0d0
+                create_sigma_vector_right(:,iroot:iroot) = 0.0d0
                  print "(2x,a,i6,a,i6)", "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
                  call sigma_IP(eom_nvx,  &
                  &             r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &
                  &             A,                               &
-                 &             create_sigma_vector(start_r1:end_r1, iroot:iroot), &
-                 &             create_sigma_vector(start_r2:end_r2, iroot:iroot), &
+                 &             create_sigma_vector_right(start_r1:end_r1, iroot:iroot), &
+                 &             create_sigma_vector_right(start_r2:end_r2, iroot:iroot), &
                  &             ndimr1, &
                  &             ndimr2) 
              enddo
@@ -242,14 +298,14 @@
          case ("EA")
              do iroot = L_already_done + 1, L 
 
-                create_sigma_vector(:,iroot:iroot) = 0.0d0
+                create_sigma_vector_right(:,iroot:iroot) = 0.0d0
                  print "(2x,a,i6,a,i6)", "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
                  call sigma_EA(eom_nvx,  &
                  &             r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &
                  &             A,                               &
-                 &             create_sigma_vector(start_r1:end_r1, iroot:iroot), &
-                 &             create_sigma_vector(start_r2:end_r2, iroot:iroot), &
+                 &             create_sigma_vector_right(start_r1:end_r1, iroot:iroot), &
+                 &             create_sigma_vector_right(start_r2:end_r2, iroot:iroot), &
                  &             ndimr1, &
                  &             ndimr2,nbuf3) 
              enddo
@@ -258,13 +314,13 @@
 
              do iroot = L_already_done + 1, L
 
-                create_sigma_vector(:,iroot:iroot) = 0.0d0
+                create_sigma_vector_right(:,iroot:iroot) = 0.0d0
                  print "(2x,a,i6,a,i6)", "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
                  call sigma_ee_1h1p(r(start_r1:end_r1, iroot:iroot), &
                  &                  r(start_r2:end_r2, iroot:iroot), & 
                  &                  A,                               &
-                 &                  create_sigma_vector(start_r1:end_r1, iroot:iroot), &
-                 &                  create_sigma_vector(start_r2:end_r2, iroot:iroot), &
+                 &                  create_sigma_vector_right(start_r1:end_r1, iroot:iroot), &
+                 &                  create_sigma_vector_right(start_r2:end_r2, iroot:iroot), &
                  &                  nbuf3)
              enddo
       end select
