@@ -8,10 +8,10 @@
 #   CMAKE_C_FLAGS
 #   CMAKE_CXX_FLAGS
 #
-# autocmake.cfg configuration::
+# autocmake.yml configuration::
 #
-#   docopt:  --check Enable runtime checking of compiled executables [default: False]
-#   define: '-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check'])
+#   docopt: "--check Enable runtime checking of compiled executables [default: False]"
+#   define: "'-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check'])"
 
 option(ENABLE_RUNTIMECHECK "Enable run-time checking" OFF)
 

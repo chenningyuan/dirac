@@ -15,6 +15,6 @@ f.add(from_string = 'Energies       Transition moments',
 #      mask        = [1, 2, 3])
 
 test.run(['fano_real.inp'], ['ne_d2h.mol'],
-                 f, args='--mw=64 --aw=130', accepted_errors=['RELADC not parallelized'])
+                 f, args='--mw=64 --aw=130', accepted_errors=['RELADC not parallelized', 'stieltjes not supported in this version'])
 
 sys.exit(test.return_code)

@@ -8598,7 +8598,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "chrnos.h"
 
 C
-      LOGICAL BREIT,PROPRI,OLDNRM,ISONLIST,ONLYSO1,ONLYTRA,EXAMF,
+      LOGICAL BREIT,PROPRI,ISONLIST,ONLYSO1,ONLYTRA,EXAMF,
      &        NOAMFC
       DIMENSION WORK(LWORK),H2SAO(NB,NB,4),IQPOS(1:8)  
       DIMENSION IPTYPAO(NSPH),INDXLM(NSPH),IPNUC(NSPH),
@@ -8846,7 +8846,6 @@ C     Open Mean-field input file generated in READIN
       CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
 
-      OLDNRM=.FALSE.
       BREIT = .FALSE.
 
 C  ++++ Find out individual charges on atoms
@@ -9068,7 +9067,7 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-         CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
+         CALL AMFI(LUTMP2,LUMNFPRP,BREIT,GAUNUC,EXPNUCL,
      &             CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..

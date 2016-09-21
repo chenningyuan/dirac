@@ -181,7 +181,13 @@ C
 C     Convert input from module file to old-fashioned keywords
 C
       DO I= 1, 16
-       if (nelec_input)  NELEC(I)    = relcc_nelec(I)
+       if (nelec_input)  then
+!         Overwrite information provided by SCF program with user-specified input
+          NELEC(I)    = relcc_nelec(I)
+       else if (nelec_open_input) then
+!         Open shells require user input because the SCF-initialized nelec counts only closed shell electrons
+          NELEC(I) = NELEC(I) + relcc_nelec_open(I) 
+       end if 
        NFROZ(I)    = relcc_nfroz(I)
        NELEC_F1(I) = relcc_nelec_f1(I)
        NELEC_F2(I) = relcc_nelec_f2(I)
@@ -466,12 +472,15 @@ C     This assumes that PRTRA is called as well !
 C
       USEOE   = relcc_use_orbital_energies
       NORECMP = relcc_no_recompute
-      ADD_FINITE_FIELD = .FALSE.
-      NFFOPER=0
+      ADD_FINITE_FIELD = relcc_ADD_FINITE_FIELD
+      NFFOPER = relcc_NFFOPER
       DO IOPER = 1, MAXOP
-         FF_PROP_NAMES(IOPER) = '        '
-         FF_PROP_STRENGTHS(1,IOPER) = 0.D0
-         FF_PROP_STRENGTHS(2,IOPER) = 0.D0
+         !FF_PROP_NAMES(IOPER) = '        '
+         FF_PROP_NAMES(IOPER) = relcc_FF_PROP_NAMES(IOPER)
+         !FF_PROP_STRENGTHS(1,IOPER) = 0.D0
+         FF_PROP_STRENGTHS(1,IOPER) = relcc_FF_PROP_STRENGTHS(1,IOPER)
+         !FF_PROP_STRENGTHS(2,IOPER) = 0.D0
+         FF_PROP_STRENGTHS(2,IOPER) = relcc_FF_PROP_STRENGTHS(2,IOPER)
       ENDDO
 !
 !     X2Cmmf hamiltonian in use - by default always set USEOE and NORECMP to .true.
@@ -2646,6 +2655,7 @@ C
       REAL*8 TOL
       COMPLEX*16 EPHASE,CEXPA
       LOGICAL ALLOC_ME
+      INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
 C
       real(kind=kreal), allocatable, target :: a_FOO(:), a_FVO(:), 
@@ -2663,7 +2673,6 @@ C
      &                             a_BB2(:),l1_sort(:),l2_sort(:)
 
 
-      integer(kind=8)        :: NV5IRP,NV6IRP
       integer(kind=8)        :: current_mem_use = 0
       integer(kind=8)        :: start_mem_use   = 0
       integer(kind=8)        :: mxcor   = 0
@@ -2678,17 +2687,11 @@ C
       call legacy_lwork_get(work_memsize)
 C
       if (doccsdg) then
-        if (nmproc.gt.1) then
-          call quit('CC-Gradient is not parallelized')
-        else
           WRITE (IW,*) 'Calculate CCSD gradient'
-        endif
       endif
 
       if (domp2g) then
-
          WRITE (IW,*) 'calculate MP2 gradient'
-
       endif
 C
 C     here we allocate the variables common to both schemes

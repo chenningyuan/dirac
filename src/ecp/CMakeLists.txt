@@ -46,6 +46,7 @@ endif()
 
 add_library(
     ecp
+    OBJECT
     ${FIXED_ECP_FORTRAN_SOURCES}
     ${FREE_ECP_FORTRAN_SOURCES}
 )

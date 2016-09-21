@@ -1238,6 +1238,8 @@ C
 #else
 #include "gnrinf.h"
 #endif
+! infpar.h : NUMNOD
+#include "infpar.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.SCREEN', '.THRFAC', '.AOFOCK'/
@@ -1266,10 +1268,10 @@ C
       IPRSUM = 0
       RTNTWO = .FALSE.
       TKTIME = .FALSE.
-      IF(RELCAL) THEN
-        SOFOCK = .TRUE.
+      IF (RELCAL .AND. NUMNOD .LE. 24) THEN
+         SOFOCK = .TRUE.
       ELSE
-        SOFOCK = .FALSE.
+         SOFOCK = .FALSE.
       ENDIF
       ICDIFF = 1
       IEDIFF = 1

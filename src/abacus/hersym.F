@@ -48,7 +48,7 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "mxsymm.h"
 
-! infpar.h : MYNUM, MASTER
+! infpar.h : MYTID, MPARID
 ! optinf.h : VRML_SYM
 #include "infpar.h"
 #include "optinf.h"
@@ -72,7 +72,7 @@ C     Set control variables in "mxsymm.h"
       MAXAXS = 100
       MAXMIR = 25
 CSK   only MPARID needs to print the information
-      IF( MYTID .eq. MPARID )THEN
+      IF( MYTID .eq. MPARID .OR. IPRSYM .GT. 0)THEN
         CALL HEADER('SYMADD: Detection of molecular symmetry',-1)
         WRITE(LUPRI,'(A,1P,G10.2)') ' Symmetry test threshold:', TOLLRN
       END IF
@@ -200,7 +200,7 @@ C        ::: the symmetry elements is constructed.  :::
      &               DMRPLN,MAXMIR,WORK(KFREE),LFREE)
       END IF
 C
-      IF ( MYTID .eq. MPARID ) WRITE(LUPRI,'(/2A)')
+      IF ( MYTID .eq. MPARID  .OR. IPRSYM .GT. 0) WRITE(LUPRI,'(/2A)')
      &      ' Symmetry point group found: ', POINT_GROUP
       LENTMP = NINT(ATMARR(1,0) + DRTAXS(1,0) + DMRPLN(1,0))
       IF (.NOT. NOMOVE) THEN
@@ -215,7 +215,7 @@ C
             CALL PRNARR2(text, mxcent, atmarr, ibuf) ! prints atoms in original order
             deallocate(IBUF)
          END IF
-      ELSE
+      ELSE IF ( MYTID .EQ. MPARID .OR. IPRSYM .GT. 0) THEN
          WRITE (LUPRI,'(/A/)') ' Molecule was not centered nor'//
      &      ' rotated as requested in input.'
       END IF
@@ -268,7 +268,7 @@ C ::: If there is any Aangstroem mark, it is removed. :::
         WRITE(TMPLN(10:10), '(I1)') NSYMOP
         WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
       end if
-      IF( MYTID .eq. MPARID ) THEN
+      IF( MYTID .eq. MPARID .OR. IPRSYM .GE. 1) THEN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
@@ -290,9 +290,15 @@ C ::: The reduced coordinates are moved back. :::
       IF (NCTOT .LE. 0) CALL QUIT ('No atoms defined')
 
       DO 250 I = 1, NCTOT
-         CORD(1:3,I) = ATMARR(1:3,I)
-         IOLD = NINT(ATMARR(5,I))
+CMI    I don't know why is there this assignement but do this
+CMI    only if no moving of coordinates required
+         IF (.NOT.NOMOVE) THEN
+           CORD(1:3,I) = ATMARR(1:3,I)
 C        ... IOLD .ge. I after CALL SRTOLD
+           IOLD = NINT(ATMARR(5,I))
+         ELSE
+           IOLD = I
+         ENDIF
          IATOMTYP(I) = IATOMTYP(IOLD)
          CHARGE(I) = CHARGE(IOLD)
          IZATOM(I) = IZATOM(IOLD)
@@ -728,6 +734,9 @@ C
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
+! infpar.h : MYTID, MPARID
+#include "infpar.h"
+
       N_ATOMS = NINT(ATMARR(1,0))
 
 #if HERSYM_DEBUG > 0
@@ -785,7 +794,7 @@ C
       CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
 #endif
 
-      WRITE(LUPRI,'(/A)')
+      IF (MYTID .EQ. MPARID) WRITE(LUPRI,'(/A)')
      &   '    The molecule has been centered at center of mass'
 #if HERSYM_DEBUG > 0
       CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
@@ -810,6 +819,9 @@ C
 #include "priunit.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
+
+! infpar.h: MPARID, MYTID
+#include "infpar.h"
 
       N_ATOMS = NINT(ATMARR(1,0))
 
@@ -958,7 +970,7 @@ C
 
       IF (ITURN .LE. 1) GO TO 10
 
- 100  WRITE(LUPRI,'(/A/A)')
+ 100  IF (MYTID .EQ. MPARID) WRITE(LUPRI,'(/A/A)')
      &   '    The molecule has been centered at center of mass and',
      &   '    rotated so principal axes of inertia are along'//
      &      ' the coordinate axes.'

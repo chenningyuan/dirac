@@ -29,6 +29,7 @@ endif()
 
 add_library(
     input
+    OBJECT
     ${FIXED_INPUT_FORTRAN_SOURCES}
     ${FREE_INPUT_FORTRAN_SOURCES}
 )

@@ -948,8 +948,6 @@ C 15-8-2003 LV : Removed initialization of buf2, should not be necessary
 C because we go from a square array to a square
 C
 
-      if (doinv) write(*,*)'WARNING, not doing the right thing'
-
       IJKL = 1
       DO KLREP = 1, NREP
        DO 10 LREP = 1, NREP

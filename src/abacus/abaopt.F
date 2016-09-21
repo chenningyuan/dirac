@@ -1295,6 +1295,7 @@ C
       IPRUSR = IPRSAV
       HRINPC = .FALSE.
       WORK(1) = WRKDLM
+      NENECALCS = 0 ! MI: counter for energy calculations
 C
       IF (FINDRE .OR. DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
          KATARR = 2
@@ -1619,7 +1620,7 @@ C
 C
 C     Determine value of the various coordinates
 C
-      IF (REDINT .AND. (IPRINT .GE. 1)) THEN
+      IF (REDINT .AND. (IPRINT .GE. 2)) THEN
          CALL ATMINI(TEMP1,IATOM,.TRUE.)
          CALL GETINT(IATOM,MXRCRD,TEMP1,CRDINT)
          CALL HEADER('New internal coordinates',-1) 
@@ -1787,7 +1788,7 @@ C
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
          CALL PRIALL(CSTEP,TEMP1)
          CALL ATMINI(TEMP1,IATOM,.TRUE.)
-         IF (REDINT .AND. (IPRINT .GE. 1)) THEN
+         IF (REDINT .AND. (IPRINT .GE. 2)) THEN
             CALL GETINT(IATOM,MXRCRD,TEMP1,CRDINT)
             CALL HEADER('New internal coordinates',-1) 
             CALL OUTPUT(CRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
@@ -2006,7 +2007,7 @@ C     No single point energy has been calculated.
          CALL TITLER('Optimization Control Center','<',120)
          CALL PRI_GEOINF(GEINFO)
          DOSPE = TMPLOG
-         WRITE(LUPRI,'(/A/A,I3,A/A/)')
+         WRITE(LUPRI,'(/A/A,I3,A/A/A/)')
      &      '  WARNING: Geometry has NOT converged!',
      &      '  Maximum number of iterations (', ITRMAX,
      &         ') has been reached and',
@@ -2015,6 +2016,8 @@ C     No single point energy has been calculated.
          IF (DOSPE) WRITE(LUPRI,'(A/)')
      &      '  Therefore, no single point energy has been calculated.'
       END IF
+      WRITE(LUPRI,'(/,A,I5)') 
+     & 'Total number of energy calculation steps ',NENECALCS
       deallocate(EGRAD)
       deallocate(CSTEP)
       deallocate(SCLVEC)
@@ -2352,6 +2355,7 @@ C
          EXSIR = .TRUE.
       END IF
       NEWGEO = .TRUE.
+      NENECALCS = NENECALCS + 1
 C
 C
 C     In Dirac THRGRD is called SCFCNV if EVCCNV is .true.
@@ -7456,6 +7460,7 @@ C
 C
 #ifdef PRG_DIRAC
          use dirac_cfg
+         use read_xyzfile
 #endif
       use codata
 #include "implicit.h"
@@ -7467,8 +7472,10 @@ C
 #include "maxorb.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
-      LOGICAL EXHER, EXSIR, EXABA, BIG, ex
+      LOGICAL   EXHER, EXSIR, EXABA, BIG, ex, NOMOVE_bkp
       CHARACTER*4 NAME
+C
+C numder.h : NOMOVE
 C
 #include "molinp.h"
 #include "taymol.h"
@@ -7476,6 +7483,7 @@ C
 #include "nuclei.h"
 #include "optinf.h"
 #include "infopt.h"
+#include "numder.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -7489,6 +7497,7 @@ C
       integer              :: i_symop
 #include "ibtfun.h"
 C
+      NOMOVE_bkp = NOMOVE
 #ifdef PRG_DIRAC
       IF (DOCCM) THEN
          ECORR = RGETCCSD()
@@ -7506,7 +7515,6 @@ C
       allocate(STPSYM1(NCART))
       allocate(STPCAR1(NCRIND))
       allocate(COOR(3,NUCIND))
-      IPRINT = 0
       IF (.NOT. CHGRDT) THEN
          GRDTHR = 1.0D-4
          THRSTP = GRDTHR
@@ -7525,6 +7533,8 @@ C     Start loop over displaced geometries
 C
       DO IPOINT = 0, 2*NCART
          IF (IPOINT .NE. 0) THEN
+            NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
+                            ! during numerical differentiation, otherwise wrong results!
 C     
 C     Do numerical differentiation
 C
@@ -7558,8 +7568,8 @@ C
             CRY = COOR(2,N)
             CRZ = COOR(3,N)
             BIG = (ABS(CRX) .GT. D100 .OR.
-     *           ABS(CRY) .GT. D100 .OR.
-     *           ABS(CRZ) .GT. D100)
+     &             ABS(CRY) .GT. D100 .OR.
+     &             ABS(CRZ) .GT. D100)
             NC = NCLINE(N)
             IF (NC .NE. 0) THEN
                READ  (MLINE(NC),9100) NAME
@@ -7597,9 +7607,9 @@ C        Write updated .xyz style geometry file
                      if (ibtand(i_symop, mulcnt) == 0)
      &                  write (lumol,'(A4,3F26.16)')  
      &                     namn(icent),
-     *      pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)*xtang,
-     *      pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)*xtang,
-     *      pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)*xtang
+     * pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)/unit_conversion,
+     * pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)/unit_conversion,
+     * pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)/unit_conversion
                 end do
                end if
             end do
@@ -7651,6 +7661,7 @@ CTROND      deallocate(STPSYM)
 CTROND      deallocate(STPCAR)
       deallocate(COOR)
 
+      NOMOVE = NOMOVE_bkp
       RETURN
       END
 
@@ -7659,6 +7670,7 @@ CTROND      deallocate(STPCAR)
 C     Write an XYZ file
 C
       use codata
+      use read_xyzfile
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7668,9 +7680,9 @@ C
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"
 C
-!     XYZ files are written in Angstroms
+!     XYZ files are written in Angstroms (default) or a user-specified Unit
 !
-      FAC = XTANG
+      FAC = 1.D0 / UNIT_CONVERSION
 
 !     Write the file
 
