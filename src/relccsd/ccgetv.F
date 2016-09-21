@@ -544,9 +544,6 @@ C
 #include "symm.inc"
 #include "eqns.inc"
 #include "ccpar.inc"
-#if defined (VAR_MPI)
-     DIMENSION ISTAT(df_MPI_STATUS_SIZE)
-#endif
 C
 C---------------Local variables--------------------------------------
       REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
@@ -563,7 +560,6 @@ C
        OFF1 = 1
        DO  30 IRP = 1, NREP
 
-         check = IRP
          totsize = 0
          IF (NVO(IRP).EQ.0) GOTO 30
          ALLOCATE(VOVV_TEMP(NVO(IRP)*NVVT(IRP)*RCW))
@@ -604,12 +600,14 @@ C
            CALL QUIT('MPI_GATHER ERROR in collecting VOVV Integrals !')
         ENDIF
 
-      ELSE
-      call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
       ENDIF
-!#else
-!      call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
 #endif
+
+      if (nmproc .eq. 1) then
+
+       call xcopy(nvo(irp)*nvvt(irp),vovv_temp(1),1,VVOVV(off1),1) 
+     
+      endif
 
          totsize = totsize + sum(counter)
 

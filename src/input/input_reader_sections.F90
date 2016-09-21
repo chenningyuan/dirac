@@ -993,7 +993,7 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
-!      integer                          :: nr_roots(2) ! number of roots in each symmetry 
+       integer                          :: nr_roots(2) ! number of roots in each symmetry 
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1001,19 +1001,28 @@
       if (kw_matches(word, '.EE    ')) then
          relcc_do_eomee=.true.
          call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
       end if
 
       if (kw_matches(word, '.IP    ')) then
          relcc_do_eomip=.true.
          call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
       end if
 
       if (kw_matches(word, '.EA    ')) then
          relcc_do_eomea=.true.
          call kw_read(word,  nr_roots)
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
       end if
 
       call check_whether_kw_found(word, kw_section)
+
+      if (    (relcc_do_eomip .and. relcc_do_eomea) &
+          .or.(relcc_do_eomip .and. relcc_do_eomee) &
+          .or.(relcc_do_eomea .and. relcc_do_eomee)) &
+          call quit('Only one EOM kind of calculation at a time (IP/EE/EA) allowed !')
+
 
    end subroutine
 

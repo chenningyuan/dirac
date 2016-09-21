@@ -100,21 +100,31 @@
    end function
 
    subroutine free_intermediates(A)
+      use memory_allocator
+      use allocator_parameters, only : klongint
       type(intermediates), intent(inout) :: A
 
-      if (allocated(A%Fbar_mi)) deallocate(A%Fbar_mi)
-      if (allocated(A%Fbar_me)) deallocate(A%Fbar_me)
-      if (allocated(A%Fbar_ae)) deallocate(A%Fbar_ae)
-      if (allocated(A%W_ijmn)) deallocate(A%W_ijmn)
-      if (allocated(A%W_ejmb)) deallocate(A%W_ejmb)
-      if (allocated(A%W_mbej)) deallocate(A%W_mbej)
-      if (allocated(A%W_iemn)) deallocate(A%W_iemn)
+      call dealloc(A%Fbar_mi,   id="Fbar_mi")
+      call dealloc(A%Fbar_me,   id="Fbar_me")
+      call dealloc(A%Fbar_ae,   id="Fbar_ae")
+    
+      call dealloc(A%W_ijmn,    id="W_ijmn")
+      call dealloc(A%W_ejmb,    id="W_ejmb")
+      call dealloc(A%W_mbej,    id="W_mbej")
+      call dealloc(A%W_iemn,    id="W_iemn")
+
+! todo: get special handling for these in the case of i4 ? we keep using deallocate here for the time being
+!     call dealloc(A%W_efam,    id="W_efam")
+!     call dealloc(A%W_amef,    id="W_amef")
       if (allocated(A%W_efam)) deallocate(A%W_efam)
       if (allocated(A%W_amef)) deallocate(A%W_amef)
-      if (allocated(A%W_mnie)) deallocate(A%W_mnie)
-      if (allocated(A%Wbar_mbej)) deallocate(A%Wbar_mbej)
-      if (allocated(A%t1)) deallocate(A%t1)
-      if (allocated(A%t2)) deallocate(A%t2)
+
+      call dealloc(A%W_mnie,    id="W_mnie")
+      call dealloc(A%Wbar_mbej, id="Wbar_mbej")
+
+      call dealloc(A%t1,  id="t1")
+      call dealloc(A%t2,  id="t2")
+
 !      if (allocated(A%H_II)) deallocate(A%H_II)
 
    end subroutine
@@ -127,24 +137,25 @@
    end subroutine
 
    subroutine free_buffers(buf1, buf2, buf3)
+      use memory_allocator
+      use allocator_parameters, only : klongint
 
-       real(kind=8),allocatable,intent(inout) ::  buf1(:), buf2(:), buf3(:)
-           deallocate(buf1)
-       if (associated(local_buf1)) then
-           nullify(local_buf1)
-       end if
+      real(kind=8),allocatable,intent(inout) ::  buf1(:), buf2(:), buf3(:)
 
-           deallocate(buf2)
+      call dealloc(buf1, id="buf1")
+      if (associated(local_buf1)) then
+          nullify(local_buf1)
+      end if
 
-       if (associated(local_buf2)) then
-           nullify(local_buf2)
-       end if
+      call dealloc(buf2, id="buf2")
+      if (associated(local_buf2)) then
+          nullify(local_buf2)
+      end if
 
-           deallocate(buf3)
-
-       if (associated(local_buf3)) then
-           nullify(local_buf3)
-       end if
+      call dealloc(buf3, id="buf3")
+      if (associated(local_buf3)) then
+          nullify(local_buf3)
+      end if
    end subroutine
 
    function create_diagonal(A)
@@ -651,7 +662,7 @@ integer :: nbuf3,ierr
 
   call contraction_222 ((/"c1","o2"/),(/"o2","o1"/),(/"c1","o1"/),r1_ptr,B%Fbar_mi,sigma1,-1.0d0,1.0d0,nrep)
 
-  if (iprnt.ge.1) &
+  if (iprnt.ge.2) &
   write(iw,*)'diagram 1 ', ddot(ndimr1,sigma1,1,sigma1,1)
 !--------------------------------------------
 ! S(a*,i) = S(a*,i) + Fbar_me(m,e)*r2(a*e,im)
@@ -660,7 +671,7 @@ integer :: nbuf3,ierr
     call contraction_422 ((/"c1","p2","o1","o2"/),(/"o2","p2"/),(/"c1","o1"/),B%Fbar_me, &
   &                      sigma1,1.0d0,1.0d0,nrep,r2_ptr)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
   write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 !-------------------------------------
 !S(a*,i) = S(a*,i) - W_mnie(mn,ie)*r2(a*e,mn)
@@ -669,7 +680,7 @@ integer :: nbuf3,ierr
     call contraction_442((/"c1","p2","o2","o3"/),(/"o2","o3","o1","p2"/),(/"c1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
    &         RightTensor=B%W_mnie,LeftTensor=r2_ptr)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
   write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 !--------------------------------------------
@@ -680,7 +691,7 @@ integer :: nbuf3,ierr
    &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
    &    LeftTensor=r1_ptr) 
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
   write(iw,*)'diagram 4 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !----------------------------------------------------
@@ -690,7 +701,7 @@ integer :: nbuf3,ierr
     call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
    & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
   write(iw,*)'diagram 5 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !---------------------------------------------------------
@@ -700,7 +711,7 @@ integer :: nbuf3,ierr
       call contraction_444((/"c1","p3","o3","o1"/),(/"o3","p2","p3","o2"/), &
      &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_mbej)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
   write(iw,*)'diagram 6 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !--------------------------------------------------
@@ -710,7 +721,7 @@ integer :: nbuf3,ierr
       call contraction_444((/"c1","p2","o3","o4"/), (/"o3","o4","o1","o2"/),&
      &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_ijmn)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
   write(iw,*)'diagram 7 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !------------------------------------------------------
@@ -720,7 +731,7 @@ integer :: nbuf3,ierr
     call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
   write(iw,*)'diagram 8 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !int_1b(a*,f) = int_1b(a*,f) - V(nm,fe)*r2(a*e,nm)  
@@ -737,7 +748,7 @@ integer :: nbuf3,ierr
 
     deallocate(int_1b)
 
- if (iprnt.ge.1) &
+ if (iprnt.ge.2) &
   write(iw,*)'diagram 9 ',ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
  end subroutine
@@ -781,7 +792,7 @@ integer :: nbuf3,ierr
    
     call contraction_222 ((/"p1","p2"/),(/"p2","c1"/),(/"p1","c1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep)
 
-       if (iprnt.ge.1) &
+    if (iprnt.ge.2) &
     write(iw,*)'diagram 1 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 !S(a,i*) = S(a,i*) + F_bar_me(m,e)*r2(ae,i*m)
@@ -790,14 +801,11 @@ integer :: nbuf3,ierr
     call contraction_422 ((/"p1","p2","c1","o2"/),(/"o2","p2"/), &
    &   (/"p1","c1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)
 
-
 !   call contraction_242 ((/"o2","p2"/),(/"p1","p2","c1","o2"/), &
 !  &   (/"p1","c1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
-
-   if (iprnt.ge.1) &
-    write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
-
+   if (iprnt.ge.2) &
+   write(iw,*)'diagram 2 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 !S(a,i*) = S(a,i*) + w_amef(am,ef) * r2(ef,i*m)
 !----------------------------------------
@@ -805,12 +813,10 @@ integer :: nbuf3,ierr
     call contraction_442((/"p1","o2","p2","p3"/),(/"p2","p3","c1","o2"/),(/"p1","c1"/),sigma1,1.0d0,1.0d0,nrep, &
    &         LeftTensor=B%W_amef,RightTensor=r2_ptr)
 
+   if (iprnt.ge.2) &
+   write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
-   if (iprnt.ge.1) &
-    write(iw,*)'diagram 3 ', ddot(ndimr1,sigma1(:,1:1),1,sigma1(:,1:1),1)
-
-
-   if (myproc /= master) then
+   if (myproc == master) then
 
 !S(ab,i*j) = S(ab,i*j) +  w_efam(ab,ej)*r1(e,i*)
 !--------------------------------------------------
@@ -819,7 +825,7 @@ integer :: nbuf3,ierr
    &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%W_efam, &
    &    RightTensor=r1_ptr) 
 
-   if (iprnt.ge.1) &
+   if (iprnt.ge.2) &
     write(iw,*)'diagram 4 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 ! S(ab,i*j) = S(ab,i*j) + P(ab) f_bar_ae(b,e) * r2(ae,i*j)
@@ -828,10 +834,8 @@ integer :: nbuf3,ierr
     call contraction_424 ((/"p1","p3","c1","o2"/),(/"p2","p3"/), &
    & (/"p1","p2","c1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr)
 
-
-   if (iprnt.ge.1) &
+   if (iprnt.ge.2) &
     write(iw,*)'diagram 5 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
-
 
 ! S(ab,i*j) = S(ab,i*j) - P(ij) f_bar_mi(m,j)*r2(ab,i*m) 
 !-----------------------------------------------------
@@ -839,7 +843,7 @@ integer :: nbuf3,ierr
     call contraction_424 ((/"p1","p2","c1","o3"/),(/"o3","o2"/), &
    & (/"p1","p2","c1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
     write(iw,*)'diagram 6 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 ! S(ab,i*j) = S(ab,i*j) + P(ab) w_mbej(mb,ej)*r2(ae,i*m)
@@ -848,15 +852,13 @@ integer :: nbuf3,ierr
       call contraction_444((/"p1","p3","c1","o3"/),(/"o3","p2","p3","o2"/), &
      &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_mbej)
 
-
 !     call contraction_444((/"o3","p2","p3","o2"/),(/"p1","p3","c1","o3"/), &
 !    &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_mbej)
 
 !     call contraction_444((/"p2","o3","o2","p3"/),(/"p1","p3","c1","o3"/), &
 !    &    (/"p1","p2","c1","o2"/),sigma2,1.0d0,0.0d0,nrep,RightTensor=r2_ptr,LeftTensor=B%W_ejmb)
 
-
-       if (iprnt.ge.1) &
+   if (iprnt.ge.2) &
     write(iw,*)'diagram 8 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !int_1b(n,i*) = int_1b(n,i*) + V(nm,fe)*r2(fe,i*m)
@@ -873,7 +875,7 @@ integer :: nbuf3,ierr
 
     deallocate(int_1b)
 
-       if (iprnt.ge.1) &
+       if (iprnt.ge.2) &
     write(iw,*)'diagram 9 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
      else
@@ -915,7 +917,7 @@ integer :: nbuf3,ierr
          off2 = off2 + m * n * rcw
       enddo
 
-    if (iprnt.ge.1) &
+    if (iprnt.ge.2) &
     write(iw,*)'diagram 7 ', ddot(ndimr2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
       allocate (local_buffer(ndimr2))
@@ -939,7 +941,6 @@ integer :: nbuf3,ierr
       deallocate (local_buffer)
 
  end subroutine
-
 
    subroutine trial_vectors_ee (r1,Fbar_mi,Fbar_ae,W_mbej)
 
