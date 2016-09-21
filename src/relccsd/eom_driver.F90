@@ -791,6 +791,8 @@
             right_vectors = .true.
 
             call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
+
+            call initialize_sigma_construction(left_vectors,right_vectors)
             call davidson_driver(iw, nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
 
 !      Fock-Space like output for EA, EE and IP
