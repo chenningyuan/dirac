@@ -513,7 +513,7 @@
 !   endif
 
      if (no_match) then
-      write (*,*) "====no matching sorting subroutine available for direct mode of contraction.====="
+!ashee      write (*,*) "====no matching sorting subroutine available for direct mode of contraction.====="
       do_exchange = .true.
      endif
 
@@ -524,7 +524,7 @@
 ! In this mode I generate all the antisymmetrized components of an array on-the-fly, wherever the interchange is possible between the same orbital-type (i.e, h or p).
 ! I have included the change in sign due to anti-symmetrization.
 
-       write(*,*)'=====contraction will be done in exchange mode====='
+! ashee       write(*,*)'=====contraction will be done in exchange mode====='
 
        array_exchange = opArray_left
 

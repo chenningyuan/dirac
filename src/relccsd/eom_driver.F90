@@ -99,6 +99,7 @@
 
 #include "symm.inc"
 #include "complex.inc"
+#include "files.inc"
 
 !description
 !===========
@@ -133,7 +134,6 @@
 
     ndimr1 = size(R1,1)
     ndimr2 = size(R2,1)
-    print *, "dimensions of R1, R2", ndimr1, ndimr2
     R1(1:ndimr1,1:nroot) = 0.0d0 
     R2(1:ndimr2,1:nroot) = 0.0d0 
 
@@ -156,7 +156,7 @@
 
    select case (eomtype)
 
-   case ('EE')
+   case ("EE")
 
     ai = 1
     ii = 0
@@ -245,7 +245,7 @@
 
        do iroot = 1, nroot
         k = minloc(diag_H) 
-        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
         R1(i,iroot) = 1.0d0
@@ -342,7 +342,7 @@
 
        do iroot = 1, 2*nroot
         k = minloc(diag_H) 
-        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
 
@@ -355,7 +355,7 @@
      deallocate(diag_H)
  ! end if 
 
-   case ('EA')
+   case ("EA")
 
     ai = 1
     do irep = 1, nrep
@@ -436,7 +436,7 @@
         xroot = 1
        do iroot = 1, 2*nroot
         k = minloc(diag_H) 
-        write(*,*)'roots',iroot,H_II(k(1)),k(1) 
+!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
         diag_H(i) = 8000.0d0
         if (i <= search_dimension) then
@@ -459,6 +459,7 @@
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
+#include "ccpar.inc"
 !--------------------------------------------------
  integer, intent(in)                   :: icalc
  integer(kind=klongint), intent(inout) :: mxcorr
@@ -677,7 +678,6 @@
 
 
              if (nroot .eq. N) then
-! this is to test the full diagonalizaion
                 allocate (sigma(N*rcw,nroot))
                 do iroot = 1, nroot
                     sigma(:,iroot:iroot) = 0.0d0
@@ -793,7 +793,7 @@
             call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
 
             call initialize_sigma_construction(left_vectors,right_vectors)
-            call davidson_driver(nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
+            call davidson_driver(iw, nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
 
 !      Fock-Space like output for EA, EE and IP
             call eom_analysis(davResults%eValuesRe,davResults%eVectorsR,eps)
@@ -804,7 +804,6 @@
 
          if (allocated(B%H_II)) deallocate(B%H_II)
       end if 
-
 ! this ends the loop over symmetries
    end do
 
@@ -1016,7 +1015,7 @@
       if (ipr.le.0) then
          tres = 0.1d0
       elseif (ipr.le.2) then
-         tres = 0.01d0
+         tres = 0.1d0
       else
          tres = 0.0d0
       end if

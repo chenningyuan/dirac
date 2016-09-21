@@ -562,9 +562,9 @@ C
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC_ME,CA
       REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUS
-      REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR
+      REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR,CPUEOM
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
-      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
+      REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR,WALLEOM
       CHARACTER*10 INTFCE
       integer :: verbose    = 0
       integer :: ncore_elec = 0
@@ -602,6 +602,7 @@ C
       CPUE = 0
       CPUFO = 0
       CPUFS = 0
+      CPUEOM = 0
       CPUSO = 0
       CPUTOT = 0
       WALL1 = WALL0
@@ -610,6 +611,7 @@ C
       WALLE = 0
       WALLFO = 0
       WALLFS = 0
+      WALLEOM = 0
       WALLSO = 0
       WALLTOT = 0
 C
@@ -840,9 +842,9 @@ C
 
       IF (relcc_do_eomcc) CALL eom_ee(ICALC,MXCORR,eps)
       CALL GETTIM(CPU2,WALL2)
-      CPUFS = CPUFS + CPU2 - CPU1
+      CPUEOM = CPUEOM + CPU2 - CPU1
       CPU1 = CPU2
-      WALLFS = WALLFS + CPU2 - CPU1
+      WALLEOM = WALLEOM + CPU2 - CPU1
       WALL1 = WALL2
       CALL FLSHFO (IW)
 
@@ -870,15 +872,18 @@ C
 C   
 C     Print timings
 C
+
       CALL XTIME(0,4,' RELCCSD                         ')
       CALL FLSHFO (IW)
+
       CALL GETTIM(CPUTOT,WALLTOT)
+
       CPUTOT = CPUTOT - CPU0
-      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO-CPUFS
+      CPUVAR = CPUTOT-CPUI-CPUS-CPUE-CPUFO-CPUSO-CPUFS-CPUEOM
       WALLTOT = WALLTOT-WALL0
-      WALLVAR = WALLTOT-WALLI-WALLS-WALLE-WALLFO-WALLSO-WALLFS
+      WALLVAR = WALLTOT-WALLI-WALLS-WALLE-WALLFO-WALLSO-WALLFS-WALLEOM
       WRITE(IW,1010) WALL0,CPU0,WALLI,CPUI,WALLS,CPUS,WALLE,CPUE,
-     & WALLFO,CPUFO,WALLSO,CPUSO,WALLFS,CPUFS,
+     & WALLFO,CPUFO,WALLSO,CPUSO,WALLFS,CPUFS,WALLEOM,CPUEOM,
      & WALLVAR,CPUVAR,WALLTOT,CPUTOT
 C
 C     Print I/O statistics
@@ -890,30 +895,7 @@ C
          call xml_end('output')
          call xml_end('task')
       endif
-C
-C     Let us synchronize all processes! 
-C
-C SK-- 21-08-07: jobs on my x86-64 platform finish now properly when
-C introducing the following synchronization. 
-C
-#if defined (VAR_MPI)
-      TIME_SYNC     = 0.0D0
-      TIME_SYNC_TOT = 0.0D0
-      DO 8888 I = 1, 2
-        call interface_mpi_BARRIER(global_communicator)
-        TIME_SYNC = interface_MPI_WTIME()
-        IF (IPRNT .GT. 10)
-     &     WRITE(IW,*) 'I AM IN SYNC PROC., MYPROC = ', MYPROC
-        call interface_mpi_BARRIER(global_communicator)
-        TIME_SYNC_TOT = interface_MPI_WTIME() - TIME_SYNC
- 8888 CONTINUE
-C
-      IF (IPRNT .GT. 10)
-     &  WRITE(IW,*) 'SYNC. PROCESS HAS USED', TIME_SYNC_TOT, 'SEC.'
-#endif
-C
-      RETURN
-C
+
 1000  FORMAT (/" Total memory available :",T50,I15," MB")
 1410  FORMAT (/" Total memory available has not been determined")
 1001  FORMAT (" Memory used for active modules :",
@@ -961,6 +943,7 @@ C
      &/' First order properties :',T30,F12.2,T55,F12.2
      &/' Second order properties :',T30,F12.2,T55,F12.2
      &/' Fock space energies :',T30,F12.2,T55,F12.2
+     &/' EOMCC energies :',T30,F12.2,T55,F12.2
      &/' Untimed parts :',T30,F12.2,T55,F12.2 
      &/' Total time in CC driver :',T30,F12.0,T55,F12.2)
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
@@ -1411,16 +1394,8 @@ C           Write only active irreps (NO or NV > 0)
 
 ! Dimension array for continuous orbital
 
-!!    DO IREP = 1, NREP
-
-!!     NCONT(IREP) = 1  
-
-!!    ENDDO
-
-C
-C
 C     Set up dimension arrays
-C
+
       DO JREP = 1, NREP
          DO IREP = 1, NREP
             IJREP = MULTB(IREP,JREP,1)
@@ -2707,14 +2682,12 @@ C
           call quit('CC-Gradient is not parallelized')
         else
           WRITE (IW,*) 'Calculate CCSD gradient'
-          doccsdg = .true.
         endif
       endif
 
       if (domp2g) then
 
          WRITE (IW,*) 'calculate MP2 gradient'
-         domp2g = .true.
 
       endif
 C
@@ -3041,6 +3014,15 @@ C        Check the minimum size for the general use of this array
          NVIRP = MAX(NV5IRP,NV6IRP)
 
          NBUF3 = MIN(NVIRP,INT(NBUF3,8))
+
+         IF (NV5IRP.GT.NBUF3) THEN
+
+           write(iw,*) 'The calculation may Fail because of very high //
+     &                  memory requirement. Increase mw'
+           NBUF3 = NV5IRP
+         
+         ENDIF
+
          NBUF3 = MAX(NBUF1,NBUF3)
 
 C     Allocate now also this remaining work array
@@ -3118,20 +3100,6 @@ C         this means that, for the time being, we can deallocate everything?
      &           TOL,NBUF2,NBUF3)
 
 
-!     Get amplitude part of density matrix
-!!!     allocate(l1_sort(ndimt1*rcw))
-!!!     allocate(l2_sort(ndimt2*rcw))
-
-!!!      call srt1c1n(nrep,no,nv,a_T1,l1_sort)
-!!!      call srt1c1n(nrep,noot,nvvt,a_T2,l2_sort)
-
-!!!      CALL CCDENSC (2, a_S1  , l1_sort  , a_S2, l2_sort,
-!!!  &                    a_BUF1, a_BUF2, a_BUF3, a_DOO,
-!!!  &                    a_DVV , a_DVO , a_DOV , a_DMO)
-
-!!!     deallocate(l1_sort)
-!!!     deallocate(l2_sort)
-
        call cc_density (a_T1,a_T2,a_S1,a_S2,a_doo,a_dvv,a_buf1,a_buf2, 
      &                   a_dmo)
 
@@ -3141,23 +3109,12 @@ C
          IF (.NOT.NOZG)
      &      CALL MP2ZVEC( a_S2, a_BUF1, a_BUF2, a_BUF3,
      &                   NBUF3, a_XMO , a_DMO)
-C
-C        Create upper triangle of density matrix
-C
-!!         CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
+
+
 C        Write density matrix to file for later processing
-C
+
          CALL STORE_CC_DENSITY ('CCSD', a_DMO )
 
-C        Release the slaves (in case of parallel runs)
-C
-#if defined (VAR_MPI)
-         NTEST = -1
-         DO NODE = 1,NMPROC-1
-            call interface_mpi_SEND(NTEST,1,NODE,27,
-     &                     global_communicator)
-         ENDDO
-#endif
  451  CONTINUE
          if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
       
