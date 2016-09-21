@@ -245,6 +245,7 @@
    
 
    function create_sigma_vector_right(A, r, old_sigma_vector)
+#include "files.inc"
       real(kind=8), pointer :: create_sigma_vector_right(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A

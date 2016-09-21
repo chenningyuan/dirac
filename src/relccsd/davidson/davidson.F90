@@ -357,7 +357,8 @@ contains
             if (eValuesIm(i) .eq. zero_r8) then
                 write(output_file_unit,"(4x,a,i6,a,1e24.16)") "Eigenvalue ",i," : ",eValuesRe(i)
             else
-                write(output_file_unit, "(4x,a,i6,a,1e24.16,a,1e24.16,a)") "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
+                write(output_file_unit,"(4x,a,i6,a,1e24.16,a,1e24.16,a)") &
+                      "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
             end if
         end do
         if (left) then
