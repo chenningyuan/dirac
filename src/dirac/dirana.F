@@ -349,8 +349,8 @@ C          ... read from file
            CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT),
      &                     WORK(KBEIG))
            WRITE(LUPRI,'(/A)')
-     &           ' (MULPOP)  Orbitals and occupancies read from' //
-     &           ' label NEWNATOB/NEWNATOC on file KRMCOLD'
+     &        ' (MULPOP) MP2 natural orbitals and occupancies read'//
+     &        ' from label NEWNATOB/NEWNATOC on file KRMCOLD'
 C
            CLOSE(LUKRMC,STATUS='KEEP')
          ELSE
@@ -612,8 +612,8 @@ C     PGRS - gross population
 C     SMAT - overlap matrix
 C     COEF - coefficients
 C
-C     KRMC_FLG = 2: Orbitals and occupancies read from
-C                   label NEWNATOB/MP2NOOCC on file KRMCOLD
+C     KRMC_FLG = 2: MP2 natural orbitals and occupancies read from
+C                   label NEWNATOB/NEWNATOC on file KRMCOLD
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
 C     KRMC_FLG = 0  Orbitals read from DFCOEF

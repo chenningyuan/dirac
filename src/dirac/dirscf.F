@@ -1449,7 +1449,7 @@ C
 C     Initiate/restart SCF cycle
 C
       DHFEXIT = .FALSE.
-      OPEN_FAC = 1.0D0
+      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
       OPEN_FAC = OPEN_FAC_save
@@ -1829,9 +1829,9 @@ C          electrons from HOMO. This was tested with MCSCF calculations with DAL
 C          This gives a physical explanation why OPEN_FAC = 1.0 often is a bad
 C          idea for convergence.)
 
-           IF (NOPEN .eq. 0 .OR. OPEN_FAC .eq. 1.0D0) GOTO 30
+           IF (NOPEN .eq. 0 .OR. OPEN_FAC .ge. 0.0D0) GOTO 30
 
-           WRITE(LUPRI,'(///A/A)') ' * Converged. '//
+           WRITE(LUPRI,'(///A/)') ' * Converged. '//
      &        'Redoing orbital energy calculation with .OPENFAC 1.0D0'
            OPEN_FAC = 1.0D0
 C          do continue even though converged :
@@ -1842,7 +1842,7 @@ C          restore density matrix and  total Fock matrices (have been destroyed 
            CALL REAFCK(LUFCKT,FOCK,.FALSE.,NFMAT)
            CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
      &                 ICHKCNV,OVLSEL ,DOLEVEL,WORK(KFREE),LFREE)
-C          Read CMO coefficients and bosos identification, but not orbital energies in EIG (code 10)
+C          Read CMO coefficients and boson identification, but not orbital energies in EIG (code 10)
 C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
 
            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10,
@@ -1907,7 +1907,7 @@ C****************************************************************************
 C
 C     PURPOSE:
 C   ==============
-C        Calculate Dirac-Hartree-Fock or 2comp. SCF energy
+C        Calculate the SCF energy using the formula
 C
 C           E(SCF) = D(IJ)(*)(F1(IJ)+0.5F2(IJ))
 C
@@ -1915,7 +1915,8 @@ C     On input:
 C        F1, F2 - one- and two-electron Fock matrixes in SA-AO basis
 C        DMAT  - density matrix in SA-AO basis
 C
-C     On output: nothink, only print-out
+C     On output: internal variables of SCF energy updated
+C 
 C
 C     Last revision: 971022-jth
 C                    Sept 2005, Miro Ilias - added control outputs
@@ -2017,7 +2018,13 @@ C
 
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
-        e(1, 2, 0) = e(1, 2, 0) - xcint_get_xc_mat_energy()
+!Miro: separate this contribution into own variable, xcint_xc_energy
+! the density for calculation is the same as for xcint_xc_contribution to the 2el Fock matrix
+        xcint_xc_energy=xcint_get_xc_mat_energy()
+        e(1, 2, 0) = e(1, 2, 0) - xcint_xc_energy
+        !print *
+        !print *,'ERGCAL: xcint_get_xc_mat_energy()=',xcint_xc_energy
+        !print *
       end if
 
       DO IZ = 1,NZ
@@ -2053,7 +2060,12 @@ C
       ELERGY = E1PART + E2PART
 
       if (dirac_cfg_dft_calculation) then
-        elergy = elergy + xcint_get_xc_energy()
+        xcint_elergy=xcint_get_xc_energy()
+        !elergy = elergy + xcint_get_xc_energy()
+        elergy = elergy + xcint_elergy
+        IF(IPRSCF.GE.5) THEN
+          print *,'ERGCAL: xcint_get_xc_energy()=',xcint_elergy
+        ENDIF
       end if
 
       if (dirac_cfg_fde) then
@@ -2063,13 +2075,12 @@ C
          end if
       end if
 
-
       DHFERG = DHFERG + ELERGY
 C
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
 CMI      ... print out matrixes ...
-         IF (IPRSCF.GE.5.AND.IPRHAM.GE.7) THEN
+         IF (IPRSCF.GE.5) THEN
           CALL HEADER(
      &    'ERGCAL: Entering total Fock F1 matrix in SA-AO',-1)
           CALL PRQMAT(F1,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
@@ -5332,7 +5343,7 @@ C
 C     Solve one-electron system with vacuum polarisation added.
 C
       OPEN_FAC_save = OPEN_FAC
-      OPEN_FAC = 1.0D0
+      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),DUM,WORK(KPOS),
      &            WORK(KFREE),LFREE)
       OPEN_FAC = OPEN_FAC_save

@@ -13,9 +13,11 @@ the lines below should only be changed on the release branch.)
 -------------------------------------------------------------------------------------------------------
 
 
-15.1 (2016-??-??)
+15.1 (2016-09-??)
 -----------------
 
+- Bugfix: MCSCF and GASCIP was not correct for odd number of electrons
+- Bugfix: now .CASSCF works again for KRMSCF input
 - Change any tab character in coordinate specifications in .mol file to a blank
   (tab characters have been reported to cause errors in reading coordinates).
 - Bugfix: KRMSCF was not converging is some cases (problem reported by Miro Ilias for Os atom).

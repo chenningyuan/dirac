@@ -77,7 +77,8 @@ end interface
 ! iparex = 1 for parallel run mode with MPI executable (default)
   iparex = get_environment_integer('DIRPAR',1)
 !
-! initialize MPI environment and wake up slaves - set parcal == .true.
+! initialize MPI environment and wake up slaves -
+! iff numnod > 0 set parcal == .true.
   if (iparex .gt. 0) call mpixinit()
   if (parcal) then 
     call stopwatch(1,numnod+1)

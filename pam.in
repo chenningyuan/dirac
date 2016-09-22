@@ -5,20 +5,22 @@
     Takes care of copying files in and out and of setting appropriate environment variables for a DIRAC calculation.
   
     Written by Miroslav Ilias, Matej Bel University, Banska Bystrica, Slovakia, 2010-2013
-   
     Contributors: Radovan Bast, Ulf Ekstrom, Stefan Knecht, Andre Gomes
+
+    This script is distributed under the MIT licence.
    
-    Environment variables used by pam:
+    Environment variables (set by user) used by pam:
              DIRTIMEOUT        - time out limit for dirac run
              DIRAC_MPI_COMMAND - if set, instead of "dirac.x" pam will execute "$DIRAC_MPI_COMMAND dirac.x", example: export DIRAC_MPI_COMMAND="mpirun -np 8"
                                  if set, pam assumes that this is an MPI run
-                                 this environment variable has to be set for parallel test with ctest
+                                 this environment variable has to be set for parallel tests with ctest
                                  it allows to run DIRAC in parallel on systems which
-                                 do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
-                                 --mpi overrides DIRAC_MPI_COMMAND
+                                 do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use the "--mpi" flag
+                                 because "--mpi" overrides the DIRAC_MPI_COMMAND environmental variable
              DIRAC_MPI_MACHFILE - if set, tells about parallel multinodes run with nodes specified by this variable. Is overwritten by --machfile flag.
              DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory. Is overwritten by --scratch/--scratchfull flags.
              BASDIR_PATH       - if set, DIRAC will use this basis set directory/directories, otherwise it takes the default $DIRAC/build*
+             LOCAL_SCRATCH_BOOL- if set, DIRAC will use local scratch disks in PARALLEL calculation (parallel run must be set on to read this variable)
 
     Environment variables set by pam and used by MKL:
              MKL_NUM_THREADS - set to 1 if not defined and parallel dirac.x
@@ -26,13 +28,14 @@
              OMP_NUM_THREADS - set to 1 if not defined and parallel dirac.x
              OMP_DYNAMIC     - set to "FALSE" if not defined and parallel dirac.x
 
-    Environment variables set by pam and used by DIRAC:
+    Environment variables set only by pam and used by DIRAC:
              BASDIR          - contains path for basis set directories
-             DIRWRK          - work space for Fortran 77 "WORK" allocations         (radovan: what units?)
+             DIRWRK          - work space for Fortran 77 "WORK" allocations         (units - million words)
              DIRMAX          - maximum work space for Fortran 77 "WORK" allocations (radovan: how does it differ from DIRWRK?)
              DIRPAR          - controls parallel run (1) or sequential run (0)
              DIRNOD          - maximum work space for Fortran 77 "WORK" allocations for MPI workers, only used in MPI run
-             GLBSCR          - global scratch disk (1) or local scratch disk (0), only used in MPI run (radovan: why this cryptic 6-character name?)
+             GLBSCR          - global scratch disk (1) or local scratch disk (0), only used in MPI run (cryptic 6-character name is used in source codes)
+
 """
 
 import os
@@ -61,9 +64,9 @@ class pam_enviroment:
     """
 
     def __init__(self):
-        '''Initialize the global set of variables'''
+        '''Initialize the global set of variables for dirac run'''
 
-        # set up own dirac executable file
+        # set up own dirac executable file name for Windows/Linux
         if is_windows():
             self.dirac_exe_file="dirac.x.exe"
         else:
@@ -87,7 +90,7 @@ class pam_enviroment:
         self.scratch_dir = None
 
         # globally accessible scratch disk in parallel runs
-        # this variable will decide whether files are distributed over local disks
+        # this variable decides whether files are distributed over local disks in parallel calculation
         self.global_scratch_disk = True
 
         # the default is to delete the scratch after the job
@@ -329,7 +332,7 @@ class pam_enviroment:
             print "  default pam arguments from this file: ",self.diracrc_args
 
     def create_scratch_dir(self):
-        ''' create the scratch directory  '''
+        ''' create the scratch directory for Dirac run  '''
         if not os.path.isdir(self.scratch_dir) :
             if self.verbose:
                 print '\n  Creating the scratch directory.'
@@ -341,7 +344,7 @@ class pam_enviroment:
                 self.list_scratch_dir()
                 os.chdir(self.input_directory)
             else:
-                print '  The scratch directory already exists and is empty'
+                print '  The scratch directory already exists and is empty.'
 
     def copy_file(self, src, dest):
         """copy file from directory "scr" to "dest"
@@ -418,7 +421,7 @@ class pam_enviroment:
         sys.stdout.flush()
 
     def remove_scratch_dir(self):
-        ''' remove the scratch directory (if it exists) '''
+        ''' remove the scratch directory (if it exists) after Dirac run '''
         if os.path.isdir(self.scratch_dir):
             if self.verbose and os.path.isdir(self.scratch_dir):
                 self.list_scratch_dir()
@@ -493,7 +496,7 @@ class pam_enviroment:
         return fullargs
 
     def process_pam_arguments(self):
-        ''' the longest method - reading and processing script flags  '''
+        ''' the longest method - reading and processing pam script flags  '''
 
         from optparse import OptionParser, OptionGroup
 
@@ -615,7 +618,7 @@ Options are also read from ~/.diracrc"""
             type='int',
             action='store',
             dest='dest_mpi',
-            default=None,
+            default=1,
             help='set number of MPI processes in parallel run [default: %default]',
             metavar='INTEGER',
             )
@@ -862,15 +865,16 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_mpi:
             self.nr_proc = int(options.dest_mpi)
-            self.parallel_run = True
 
-        # Only use DIRAC_MPI_COMMAND if this is an MPI parallel dirac.x !
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
         if "@ENABLE_MPI@" == "True":
-            if os.environ.get('DIRAC_MPI_COMMAND') != None:
-                self.parallel_run = True
-            if os.environ.get('GLBSCR') != None:
+            # always is parallel run if ENABLE_MPI=ON
+            self.parallel_run = True
+            if os.environ.get('LOCAL_SCRATCH_BOOL'):
+                # set local disks for paralell run
                 self.global_scratch_disk = False
+
+        if os.environ.get('DIRAC_MPI_COMMAND'): self.parallel_run = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -936,7 +940,7 @@ Options are also read from ~/.diracrc"""
     # assign input directory ...
         self.input_directory = os.getcwd()
 
-#   input and molecule are required
+#   input and molecule files are required
 #   check that they are there, if not exit
 #   if yes, assign output file name
 
@@ -1180,7 +1184,7 @@ Options are also read from ~/.diracrc"""
     def distribute_scratch_dir(self):
         """
         This routine is called when local disks are selected
-        for parallel calculations.
+        for parallel calculations and we need to distribute dirac.x and input files onto the local disks.
         """
         if not self.rcp:
             print_error_message('No rcp command specified, use --rcp= on the command line or in ~/.diracrc')
@@ -1191,7 +1195,7 @@ Options are also read from ~/.diracrc"""
         # get the list of nodes
         self.get_nodes()
 
-    # ... distribute master scratch_dir selected files over different nodes
+    # ... distribute master scratch_dir's selected files over different nodes scratch dirs
     # by "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all CPUs are on one machine-master
     #
@@ -1246,7 +1250,7 @@ Options are also read from ~/.diracrc"""
             else:
                 self.basdir = self.input_directory + ';' + self.basdir
 
-        #miro: BASDIR is used by dirac.x !
+        #miro: BASDIR enviro-variable is read by dirac.x, so set it
         os.putenv('BASDIR', self.basdir)
         
         dirwrk_amount = str(int(self.max_memory_work_master * 1000000))
@@ -1262,15 +1266,17 @@ Options are also read from ~/.diracrc"""
         os.putenv('DIRMAX', str(int(self.max_memory_dynamic * 1000000)))
 
         if self.parallel_run:
+        # set environ. variables for parallel dirac.x run
             os.putenv('DIRPAR', '1')
             os.putenv('DIRNOD', str(int(self.max_memory_work_slave * 1000000)))
             if not self.global_scratch_disk:
                 os.putenv('GLBSCR', '0')
+            else:
+                os.putenv('GLBSCR', '1')
         else:
             os.putenv('DIRPAR', '0')
 
     # check the timeout environment variable, check if the timeout variable did not enter already through the pam flag --timeout
-
         timeout_env=os.getenv('DIRTIMEOUT')
         if timeout_env and self.timeout==None:
             self.timeout = process_time_string(timeout_env)
@@ -1285,8 +1291,8 @@ Options are also read from ~/.diracrc"""
 
         if self.parallel_run:
             dirac_mpi_command = os.environ.get('DIRAC_MPI_COMMAND')
-            if (dirac_mpi_command != None) and (self.nr_proc == 0):
-                # DIRAC_MPI_COMMAND is set and --mpi is not set
+            if (dirac_mpi_command != None):
+                # DIRAC_MPI_COMMAND is set 
                 # --mpi overrides DIRAC_MPI_COMMAND
                 self.dirac_cmd = "%s %s" % (dirac_mpi_command, dirac_executable)
             else:
@@ -1785,6 +1791,9 @@ Options are also read from ~/.diracrc"""
             sys.exit(22)
 
 class pam_run(pam_enviroment):
+    """
+    class for running pam script - perform couple methods necessary for running Dirac
+    """
 
     def __init__(self):
         self.pam_variables = pam_enviroment()
