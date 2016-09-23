@@ -13,8 +13,8 @@
     public sigma_IP
     public sigma_EA
     public IM_container
-    public initialize_sigma_construction
-    public create_sigma_vector
+    public create_sigma_vector_left
+    public create_sigma_vector_right
     public create_diagonal
     public create_eom_ndet
     public create_eom_nvx
@@ -47,18 +47,7 @@
     integer, pointer :: eom_ndet(:)
     integer, pointer :: eom_nvx(:)
 
-    logical, save :: do_sigma_vector_lhs = .false.
-    logical, save :: do_sigma_vector_rhs = .true.
-
    contains
-
-   subroutine initialize_sigma_construction(left, right)
-       logical, intent(in) :: left, right
-
-       do_sigma_vector_lhs = left
-       do_sigma_vector_rhs = right 
-
-   end subroutine
 
    subroutine create_eom_nvx(nrep)
        integer, intent(in) :: nrep
@@ -194,38 +183,6 @@
              create_diagonal = A%H_II 
       end select
 
-   end function
-
-!
-! create_sigma_vector is the interface used with the diagonalizer. 
-! inside it we will handle left and right sigma vector cases, and the sigma_eom module 
-! will have to be initialized so that it knows whether to do left or right vectors
-!
-   function create_sigma_vector(A, r, old_sigma_vector)
-#include "param.inc"
-#include "files.inc"
-
-      real(kind=8), pointer :: create_sigma_vector(:,:)
-      real(kind=8), pointer :: old_sigma_vector(:,:)
-      type(intermediates) :: A
-      real(kind=8), intent(in) :: r(:,:)
-      
-      if (do_sigma_vector_rhs.and..not.do_sigma_vector_lhs) then
-!     do right vectors, this is the default
-          create_sigma_vector => create_sigma_vector_right(A, r, old_sigma_vector)
-
-      else if (do_sigma_vector_lhs.and..not.do_sigma_vector_rhs) then
-!     do left vectors vectors
-          create_sigma_vector => create_sigma_vector_left(A, r, old_sigma_vector)
-
-      else
-! do both at the same time; this will require some thinking, one option is to return
-! a matrix of (N,(Lr+Lf)), L(r/l) the number of rhs/lhs vecturs, containing Lr rhs vectors 
-! in the first Lr columns and the transpose of sigma_L in the remaining columns. it is easy
-! if there's always the same number of columns flr left and right, otherwise there's no 
-! simple way to keep track of the dimensions.
-          create_sigma_vector => NULL()
-      endif
    end function
 
 

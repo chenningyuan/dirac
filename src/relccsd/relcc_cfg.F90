@@ -109,6 +109,12 @@ module relcc_cfg
   logical, public :: relcc_do_eomee = .false.
   integer, public, dimension(1:16) :: relcc_eom_nroots = 0 
 
+! Information relevant for matrix-free diagonalization (Davidson etc)
+  real*8, public  :: relcc_mfd_convergence_threshold = 1.0d-5
+  integer, public :: relcc_mfd_max_subspace_size = 128
+  integer, public :: relcc_mfd_max_iterations = 80
+! will add filenames etc here too
+
 ! Information relevant for the (Intermediate Hamiltonian) Fock space calculations
   logical, public :: relcc_fs_do_ea                   = .false.
   logical, public :: relcc_fs_do_ea2                  = .false.
@@ -205,6 +211,12 @@ contains
   call interface_mpi_bcast_l0(relcc_do_eomea        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_eomip        ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots,size(relcc_eom_nroots),0,global_communicator)
+
+! Information relevant to the davidson or other type of matrix-free diagonalization methods
+
+  call interface_mpi_bcast(relcc_mfd_convergence_threshold ,1,0,global_communicator)
+  call interface_mpi_bcast(relcc_mfd_max_subspace_size     ,1,0,global_communicator)
+  call interface_mpi_bcast(relcc_mfd_max_iterations        ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)

@@ -3,14 +3,18 @@ module davidson
 
 implicit none
 
-!public davidson_solve_nonsymmetric_R
-!public davidson_solve_symmetric_R
 public davidson_setup
+public davidson_cleanup
 public davidson_driver
-public sort_values_vectors
-public set_safe_minimum
-public initialize_davidson_results
-public free_davidson_results
+
+!public sort_values_vectors
+!public set_safe_minimum
+!public davidson_create_results
+!public free_davidson_results
+
+interface davidson_driver
+    module procedure get_values_vectors_davidson
+end interface
 
 public davidson_results
 
@@ -19,10 +23,10 @@ private
 ! derived types
 
 type davidson_results
-    real(kind=8), pointer :: eValuesRe(:)
-    real(kind=8), pointer :: eValuesIm(:)
-    real(kind=8), pointer :: eVectorsR(:,:)
-    real(kind=8), pointer :: eVectorsL(:,:)
+    real(kind=8), pointer :: eValuesRe(:) => NULL()
+    real(kind=8), pointer :: eValuesIm(:) => NULL()
+    real(kind=8), pointer :: eVectorsR(:,:) => NULL()
+    real(kind=8), pointer :: eVectorsL(:,:) => NULL()
 end type
 
 
@@ -34,78 +38,302 @@ integer, parameter :: nr_max_irreps = 32
 real(kind=8), parameter :: zero_r8 = 0.0d0
 real(kind=8), parameter :: one_r8  = 1.0d0
 
-! module variables
+! module variables, should be set with a call to davidson_setup
 
 real(kind=8), save :: safe_minimum = 1.0d-36
-real(kind=8), save :: convergence_threshold = 1.0d-5
-integer, save      :: max_subspace_size = 2048
-integer, save      :: roots_per_symmetry(nr_max_irreps)
-integer, save      :: max_iterations = 80
+
+real(kind=8), save :: davidson_convergence_threshold 
+
+integer, save      :: davidson_max_subspace_size 
+integer, save      :: davidson_max_iterations
+integer, save      :: davidson_output_file_unit 
+integer, save      :: davidson_subspaces_file_unit 
+integer, save      :: davidson_sigmas_file_unit 
+integer, save      :: davidson_results_file_unit 
+
+logical, save      :: davidson_solve_rhs 
+logical, save      :: davidson_solve_lhs 
+logical, save      :: davidson_solve_values
+logical, save      :: davidson_verbose 
+logical, save      :: davidson_symmetric 
+logical, save      :: davidson_complex_matrix 
+logical, save      :: davidson_save_subspaces 
+logical, save      :: davidson_save_sigmas 
+logical, save      :: davidson_save_results
+logical, save      :: davidson_overlap_sorting
 
 contains 
 
-    subroutine initialize_davidson_results(results, N, nroots, left, right)
-        integer, intent(in) :: N, nroots 
+!
+! create_sigma_vector is the interface used with the diagonalizer. 
+! inside it we will handle left and right sigma vector cases, and the sigma_eom module 
+! will have to be initialized so that it knows whether to do left or right vectors
+!  
+   function create_sigma_vector(A, r, old_sigma_vector)
+! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
+! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
+      use sigma_eom, only : intermediates, create_sigma_vector_left, create_sigma_vector_right
+
+      real(kind=8), pointer :: create_sigma_vector(:,:)
+      real(kind=8), pointer :: old_sigma_vector(:,:)
+      type(intermediates) :: A
+      real(kind=8), intent(in) :: r(:,:)
+
+      if (davidson_solve_rhs.and..not.davidson_solve_lhs) then 
+!     do right vectors, this is the default
+          create_sigma_vector => create_sigma_vector_right(A, r, old_sigma_vector)
+
+      else if (davidson_solve_lhs.and..not.davidson_solve_rhs) then
+!     do left vectors vectors
+          create_sigma_vector => create_sigma_vector_left(A, r, old_sigma_vector)
+
+      else
+! do both at the same time; this will require some thinking, one option is to return
+! a matrix of (N,(Lr+Lf)), L(r/l) the number of rhs/lhs vecturs, containing Lr rhs vectors 
+! in the first Lr columns and the transpose of sigma_L in the remaining columns. it is easy
+! if there's always the same number of columns flr left and right, otherwise there's no 
+! simple way to keep track of the dimensions.
+          create_sigma_vector => NULL()
+      endif 
+   end function
+
+
+! this should never be used to update an instance, only to create new ones. it's better to have results
+! for left and right separately if we determine these in two steps. but we must check whether an 
+! element of the derived type has been allocated already... perhaps this should then be changed to a
+! function returning a results type, and have the davidson driver return that to its caller
+    subroutine davidson_create_results(results, N, nroots, values, left, right)
         type(davidson_results), intent(inout) :: results
-        logical, intent(in), optional :: left, right
+        integer, intent(in)    :: N, nroots 
+        integer                :: nroots_local 
+        logical, intent(in)    :: values, left, right
 
-        results%eValuesRe => NULL()
-        results%eValuesIm => NULL()
-        results%eVectorsL => NULL()
-        results%eVectorsR => NULL()
+! we don't use complex variables but rather use twice the amount of real variables
+! for symmetric matrices we only need one of the vectors, and we choose it to be the right one
+! left vectors, if asked, are ignored
+        nroots_local = nroots 
+        if (davidson_symmetric) then
+            if (davidson_complex_matrix) nroots_local = 2*nroots
+            if (values) allocate(results%eValuesRe(nroots_local))
+            if (right)  allocate(results%eVectorsR(N,nroots_local))
+        else
+            if (values) then
+                allocate(results%eValuesRe(nroots_local))
+                allocate(results%eValuesIm(nroots_local))
+            end if
 
-        allocate(results%eValuesRe(nroots))
-        allocate(results%eValuesIm(nroots))
-
-        if (present(left)) then
-            allocate(results%eVectorsL(N,nroots))
+            if (davidson_complex_matrix) nroots_local = 2*nroots_local
+            if (right) allocate(results%eVectorsR(N,nroots_local))
+            if (left)  allocate(results%eVectorsL(N,nroots_local))
         end if
-
-        if (present(right)) then
-            allocate(results%eVectorsR(N,nroots))
-        end if
-    
     end subroutine
 
+
     subroutine free_davidson_results(results)
-        type(davidson_results), intent(inout) :: results 
+        type(davidson_results), intent(inout) :: results
 
         if (associated(results%eValuesRe)) deallocate(results%eValuesRe)
         if (associated(results%eValuesIm)) deallocate(results%eValuesIm)
         if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
         if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
-
-!!      results%eValuesRe => NULL()
-!!      results%eValuesIm => NULL()
-!!      results%eVectorsR => NULL()
-!!      results%eVectorsL => NULL()
     end subroutine
 
-    subroutine davidson_setup(threshold, subspace_size, nr_roots)
-        real(kind=8), intent(in) :: threshold
-        integer, intent(in) :: subspace_size 
-        integer, intent(in) :: nr_roots(nr_max_irreps)
 
-        integer :: i
+    subroutine davidson_setup(convergence_threshold, &
+                              max_subspace_size, &
+                              max_iterations,    & 
+                              unit_output,       & 
+                              unit_sigmas,       & 
+                              unit_subspaces,    &
+                              unit_results,      &
+                              solve_values,      &
+                              solve_right,       &
+                              solve_left,        &
+                              symmetric,         &
+                              complex_matrix,    &
+                              verbose,           & 
+                              overlap_sorting,   &
+                              save_results,      &
+                              save_sigmas,       &
+                              save_subspaces)
 
-        call set_safe_minimum()
-        convergence_threshold = threshold
-        max_subspace_size = subspace_size  
-        do i = 1, nr_max_irreps
-            roots_per_symmetry(i) = nr_roots(i)
-        end do
+        real(kind=8), intent(in), optional :: convergence_threshold
+        integer, intent(in), optional :: max_subspace_size 
+        integer, intent(in), optional :: max_iterations
+        integer, intent(in), optional :: unit_output
+        integer, intent(in), optional :: unit_subspaces
+        integer, intent(in), optional :: unit_sigmas
+        integer, intent(in), optional :: unit_results
+        logical, optional :: solve_values
+        logical, optional :: solve_right
+        logical, optional :: solve_left
+        logical, optional :: verbose
+        logical, optional :: symmetric
+        logical, optional :: overlap_sorting
+        logical, optional :: save_sigmas 
+        logical, optional :: save_subspaces
+        logical, optional :: save_results
+        logical, optional :: complex_matrix
+
+        call set_safe_minimum() 
+
+        if (present(convergence_threshold)) then
+            davidson_convergence_threshold = convergence_threshold
+        else
+            davidson_convergence_threshold = 1.0d-5 
+        end if
+
+        if (present(max_subspace_size)) then
+            davidson_max_subspace_size = max_subspace_size  
+        else
+            davidson_max_subspace_size = 1024
+        end if
+
+        if (present(max_iterations)) then
+            davidson_max_iterations = max_iterations
+        else
+            davidson_max_iterations = 80
+        end if
+
+        if (present(solve_values)) then
+            davidson_solve_values = solve_values
+        else
+            davidson_solve_values = .true. 
+        end if
+
+        if (present(solve_left)) then
+            davidson_solve_rhs = solve_left 
+        else
+            davidson_solve_rhs = .false. 
+        end if
+
+        if (present(solve_right)) then
+            davidson_solve_rhs = solve_right
+        else
+            davidson_solve_rhs = .true. 
+        end if
+
+        if (present(overlap_sorting)) then
+            davidson_overlap_sorting = overlap_sorting
+        else
+            davidson_overlap_sorting = .true.
+        end if
+
+        if (present(verbose)) then
+            davidson_verbose = verbose
+        else
+            davidson_verbose = .false.
+        end if
+
+        if (present(symmetric)) then
+            davidson_symmetric = symmetric
+        else
+            davidson_symmetric = .false. 
+        end if
+
+        if (present(complex_matrix)) then
+            davidson_complex_matrix = complex_matrix 
+        else
+            davidson_complex_matrix = .false. 
+        end if
+
+        if (present(unit_output)) then
+            davidson_output_file_unit = unit_output
+        end if
+
+        if (present(save_subspaces)) then
+           davidson_save_subspaces = save_subspaces
+        else
+           davidson_save_subspaces = .true. 
+        end if
+
+        if (present(save_sigmas)) then
+           davidson_save_sigmas = save_sigmas
+        else
+           davidson_save_sigmas = .true. 
+        end if
+
+        if (present(save_results)) then
+           davidson_save_results = save_results
+        else
+           davidson_save_results = .true. 
+        end if
+
+        if (present(unit_subspaces)) then
+            davidson_subspaces_file_unit = unit_subspaces
+        else
+            davidson_subspaces_file_unit = 137 
+        end if
+
+        if (present(unit_sigmas)) then
+            davidson_sigmas_file_unit = unit_sigmas
+        else
+            davidson_sigmas_file_unit = 138
+        end if
+
+        if (present(unit_results)) then
+            davidson_results_file_unit = unit_results
+        else
+            davidson_results_file_unit = 138
+        end if
+
+        call davidson_show_configurations()
     end subroutine
 
-    subroutine set_threshold(threshold)
-        real(kind=8), intent(in) :: threshold
-        convergence_threshold = threshold
+
+    subroutine davidson_show_configurations
+
+        write(davidson_output_file_unit, *) ""
+        write(davidson_output_file_unit, *) "Configuration variables for matrix-free diagonalizer"
+        write(davidson_output_file_unit, *) ""
+        write(davidson_output_file_unit, *) "  output written to unit        : ", davidson_output_file_unit
+        write(davidson_output_file_unit, *) "  verbose output                : ", davidson_verbose
+
+        write(davidson_output_file_unit, *) ""
+        write(davidson_output_file_unit, *) " convergence control"
+        write(davidson_output_file_unit, *) ""
+        write(davidson_output_file_unit, *) "  convergence threshold         : ", davidson_convergence_threshold
+        write(davidson_output_file_unit, *) "  maximum subspace size         : ", davidson_max_subspace_size
+        write(davidson_output_file_unit, *) "  maximum number of iterations  : ", davidson_max_iterations
+
+        write(davidson_output_file_unit, *) ""
+        write(davidson_output_file_unit, *) " restart/data storage"
+        write(davidson_output_file_unit, *) ""
+        write(davidson_output_file_unit, *) "  save subspaces                :", davidson_save_subspaces
+        if (davidson_save_subspaces) &
+        write(davidson_output_file_unit, *) "  subspaces written to unit     : ", davidson_subspaces_file_unit
+        write(davidson_output_file_unit, *) "  save sigma vectors            : ", davidson_save_sigmas
+        if (davidson_save_sigmas) &
+        write(davidson_output_file_unit, *) "  sigma vectors written to unit : ", davidson_sigmas_file_unit
+        write(davidson_output_file_unit, *) "  save results                  :", davidson_save_results
+        if (davidson_save_results) &
+        write(davidson_output_file_unit, *) "  results written to unit       : ", davidson_results_file_unit
+
+        write(davidson_output_file_unit, *) ""
+        write(davidson_output_file_unit, *) " diagonalization characteristics"
+        write(davidson_output_file_unit, *) ""
+        write(davidson_output_file_unit, *) "  solve for right eigenvectors  : ", davidson_solve_rhs
+        write(davidson_output_file_unit, *) "  solve for left eigenvectors   : ", davidson_solve_lhs
+        write(davidson_output_file_unit, *) "  symmetric eigenproblem        : ", davidson_symmetric
+        write(davidson_output_file_unit, *) "  complex matrix                : ", davidson_complex_matrix
+        write(davidson_output_file_unit, *) "  root following via overlap    : ", davidson_overlap_sorting
+
+        write(davidson_output_file_unit, *) ""
+
     end subroutine
+
 
     subroutine set_safe_minimum()
         double precision dlamch
         safe_minimum = dlamch('S')
-        print *, " safe minimum is ",safe_minimum
+        print *, "debug, safe minimum (LAPACK) is ",safe_minimum
     end subroutine 
+
+
+    subroutine davidson_cleanup(results)
+        type(davidson_results), intent(inout) :: results
+        call free_davidson_results(results)
+    end subroutine
 
 
     function new_subspace_vectors_R(new_L, N, old_subspace_vectors_R, verbose)
@@ -417,14 +645,14 @@ contains
         unconverged_roots = 0
         do k = 1, nroots
             norm_r = vector_norm(r(:,k))
-            if (norm_r .lt. convergence_threshold) then 
+            if (norm_r .lt. davidson_convergence_threshold) then 
                write(output_file_unit, "(4x,a,i6,a,1e24.16,a,1e24.16,a)") "Root ",k,"  ||q_k,M|| ", norm_r,  &
-                                                      " threshold ", convergence_threshold, &
+                                                      " threshold ", davidson_convergence_threshold, &
                                                       " <<< converged ! "
                vectors_to_update(k) = .false.
             else
                write(output_file_unit, "(4x,a,i6,a,1e24.16,a,1e24.16)")  "Root ",k,"  ||q_k,M|| ", norm_r, &
-                                                     " threshold ", convergence_threshold
+                                                     " threshold ", davidson_convergence_threshold
                vectors_to_update(k) = .true.
                unconverged_roots = unconverged_roots + 1
             end if
@@ -627,17 +855,15 @@ contains
         end do
     end function
 
-    subroutine davidson_driver(output_file_unit, nroots, A, symmetric, results, verbose, b_guess, left, right)
+    subroutine get_values_vectors_davidson(nroots, A, results, b_guess)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
-        use sigma_eom, only : intermediates, get_matrix_size, create_sigma_vector, create_diagonal
-        type(intermediates), intent(in) :: A
+        use sigma_eom, only : intermediates, get_matrix_size, create_diagonal
+        type(intermediates), intent(in)   :: A
 ! back to general stuff
         type(davidson_results), intent(inout) :: results
-!       real(kind=8), optional, pointer :: b_guess(:,:)
         real(kind=8), intent(in), pointer :: b_guess(:,:)
-        logical, intent(in), optional :: verbose, symmetric, left, right
-        integer, intent(in) :: nroots, output_file_unit
+        integer, intent(in) :: nroots
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
@@ -653,157 +879,117 @@ contains
         real(kind=8), pointer :: e_small_r(:)        => NULL()
         real(kind=8), pointer :: e_small_i(:)        => NULL()
 
+        real(kind=8), pointer :: c_small_r_old(:,:)  => NULL()
+        real(kind=8), pointer :: c_small_l_old(:,:)  => NULL()
 
-        real(kind=8), pointer :: c_small_r_old(:,:) => NULL()
-        real(kind=8), pointer :: c_small_l_old(:,:) => NULL()
-
-        integer :: vectors_N, L, min_subspace_size, niter
+        integer :: vectors_N, L, min_subspace_size, max_subspace_size, niter
         integer :: i, j
-!Ashee        logical :: left, right
-        logical :: verbose_local, symmetric_local, eVectorsL_local, eVectorsR_local
-
-!       if (associated(results%eVectorsL)) then
-!           left = .true.
-!       else
-!           left = .false.
-!       end if
-!           
-!       if (associated(results%eVectorsR)) then
-!           right = .true.
-!       else
-!           right = .false.
-!       end if
-
-        if (present(verbose)) then
-            verbose_local = verbose
-        else
-            verbose_local = .false. 
-        end if
-
-        if (present(symmetric)) then
-            symmetric_local = symmetric
-        else
-            symmetric_local = .false. 
-        end if
 
         vectors_N = get_matrix_size(A)
+!
+! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
+! 
+        call davidson_create_results(results,vectors_N,nroots,&
+                                     davidson_solve_values,   &
+                                     davidson_solve_lhs,      &
+                                     davidson_solve_rhs)
 
-        allocate(M_diag(size(A%H_II))) 
-
+! todo: replace lines below with a call to a function which also performs the allocation, like
 !        M_diag => create_diagonal(A)
+        allocate(M_diag(size(A%H_II))) 
         M_diag = A%H_II 
 
         min_subspace_size = nroots 
-        max_subspace_size = max(nroots, max_subspace_size)
+        max_subspace_size = max(nroots, davidson_max_subspace_size)
         max_subspace_size = min(vectors_N, max_subspace_size)
 
-        write(output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
+        write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
         if ( nroots .gt. vectors_N ) then 
-           write(output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
+           write(davidson_output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
            return 
         endif
 
-!       if (present(b_guess)) then
-            b => b_guess
-!       else
-!           b => new_subspace_vectors_R(min_subspace_size,vectors_N)
-!       end if
+        b => b_guess
 
-        if (verbose_local) then
-            write(output_file_unit,"(4x,a,i4,a,i8)") "Start by mapping M onto a subspace of size ",min_subspace_size, &
-                     ", will extend it up to ",max_subspace_size
+        if (davidson_verbose) then
+            write(davidson_output_file_unit,"(4x,a,i4,a,i8)") &
+                  "Start by mapping M onto a subspace of size ",min_subspace_size, &
+                  ", will extend it up to ",max_subspace_size
             call print_vectors_R(b, label="Initial subspace vectors      ")
         end if
 
-       if (right) then
-       
-         allocate(c_small_r_old(nroots,nroots))
-
-          c_small_r_old = 0.0d0
-
-         do i = 1, nroots
-
-          c_small_r_old(i,i) = 1.0d0
-
-         enddo
-
+       if (davidson_solve_rhs.and.davidson_overlap_sorting) then
+           allocate(c_small_r_old(nroots,nroots))
+           c_small_r_old = 0.0d0
+           do i = 1, nroots
+               c_small_r_old(i,i) = 1.0d0
+           enddo
        endif
-       if (left) allocate(c_small_l_old(nroots,nroots))
+       if (davidson_solve_lhs.and.davidson_overlap_sorting) allocate(c_small_l_old(nroots,nroots))
 
+        do niter = 1, davidson_max_iterations
+            write(davidson_output_file_unit,*) ""
+            write(davidson_output_file_unit,*) "Iteration ", niter
+            write(davidson_output_file_unit,*) ""
 
-        do niter = 1, max_iterations
-            write(output_file_unit,*) ""
-            write(output_file_unit,*) "Iteration ", niter
-            write(output_file_unit,*) ""
-
-!           if (associated(sigma_vector)) deallocate(sigma_vector)
             if (associated(M_small)) deallocate(M_small)
 
-! here, instead of create_sigma_vector, have update_sigma_vector, which will
-! keep the prior sigma vectors and just construct the nroot new ones, or create
-! a new one at first iteration
             sigma_vector => create_sigma_vector(A, b, sigma_vector)
             M_small => create_reduced_problem(b, sigma_vector)
 
-            call calculate_eigenvalues_and_eigenvectors(output_file_unit, M_small, e_small_r, e_small_i, &
-                                                c_small_r, c_small_l, &
-                                                c_small_r_old, c_small_l_old, left=left, verbose=.true.)
+            call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
+                                                        M_small,                      &
+                                                        e_small_r, e_small_i,         &
+                                                        c_small_r, c_small_l,         &
+                                                        c_small_r_old, c_small_l_old, &
+                                                        left=davidson_solve_lhs,      &
+                                                        right=davidson_solve_rhs,     &
+                                                        verbose=davidson_verbose)
 
 ! store old c_small vectors, that is, subspace vectors for the overlap selection in the next iterative step   
-
-            if (right) c_small_r_old = c_small_r(1:nroots,1:nroots)
-            if (left)  c_small_l_old = c_small_l(1:nroots,1:nroots)
+            if (davidson_solve_rhs.and.davidson_overlap_sorting) c_small_r_old = c_small_r(1:nroots,1:nroots)
+            if (davidson_solve_lhs.and.davidson_overlap_sorting) c_small_l_old = c_small_l(1:nroots,1:nroots)
 
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
 
             preconditioner =>  form_preconditioner(M_diag, e_small_r)
-            delta => correction_to_vectors(output_file_unit, nroots, e_small_r, c_small_r, sigma_vector, b, preconditioner)
+            delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+                                           e_small_r, c_small_r, sigma_vector, & 
+                                           b, preconditioner)
+
             if (.not.associated(delta)) then
-                write(output_file_unit,*) "All roots converged, stopping ..."
+                write(davidson_output_file_unit,*) "All roots converged."
                  if (associated(preconditioner)) deallocate(preconditioner)
                 exit
             end if
-            b => updated_subspace_vectors_R(b, delta, verbose=verbose)
+            b => updated_subspace_vectors_R(b, delta, verbose=davidson_verbose)
 
-            if (verbose) then
+            if (davidson_verbose) then
                 call print_vectors_R(delta, label="delta                         ")
                 call print_vectors_R(b, label="Updated subspace vectors      ")
             end if
   
-!            if (associated(delta)) deallocate(delta)
             L = size(b,2)
             if (L .eq. max_subspace_size) then
                if (associated(preconditioner)) deallocate(preconditioner)
                if (associated(delta)) deallocate(delta)
-                write(output_file_unit, *) "Reached maximum subspace size, stopping ..."
+                write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
                 exit
             end if
         end do
 
-        if (right) deallocate(c_small_r_old)
-        if (left)  deallocate(c_small_l_old)
+        if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
+        if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
 
-        write(output_file_unit, *) "Final size of reduced subspace : ",L
-
-!       if (associated(sigma_vector)) deallocate(sigma_vector)
-!        if (associated(M_small)) deallocate(M_small)
-
-!       sigma_vector => create_sigma_vector(A, b, sigma_vector)
-!       M_small => create_reduced_problem(b, sigma_vector)
-
-!       if (verbose_local) then
-!           call print_vectors_R(b, label="Final subspace vectors        ")
-!           print "(4x,a,i6,a)", "After iteration ", niter,",  Eigenvalues for the smaller problem"
-!       end if
-!       call calculate_eigenvalues_and_eigenvectors(M_small, e_small_r, e_small_i, &
-!                                           c_small_r, c_small_l, left=left, verbose=verbose_local)
+        write(davidson_output_file_unit, *) "Final size of reduced subspace : ",L
 
         call form_eigenvalues_full_problem(results%eValuesRe, results%eValuesIm, nroots, e_small_r, e_small_i) 
 
-        if (left)  call form_eigenvector_full_problem(results%eVectorsL,nroots,b,c_small_l, left)
-        if (right) call form_eigenvector_full_problem(results%eVectorsR,nroots,b,c_small_r, right)
-
+        if (davidson_solve_lhs) &
+            call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_lhs)
+        if (davidson_solve_rhs) &
+            call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs)
 
         if(associated(b)) deallocate(b)
         deallocate(M_small)
@@ -866,31 +1052,25 @@ contains
 
         call solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
 
+        if (davidson_overlap_sorting) then
 ! calculate overlap between old and new vectors. Overlap(nroot,mroot) = Old(nroot,nroot)*New(1:nroot,mroot)   
 ! Max(Overlap(iroot,mroot)) for all iroot = 1,nroot 
+            nroot = size(eVectorsR_old,1)
+            allocate(overlap(nroot,nroots_local))
+            overlap = 0.0d0 
+            call dgemm('N', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsR_old, &
+                            nroot, eVectorsR(1:nroot,:), nroot, beta_lapack, overlap, nroot)
+            call sort_by_overlap(-1, eValuesRe, eValuesIm, overlap, eVectorsR, eVectorsL, &
+                                 right_local, left_local) 
+            deallocate(overlap)
+        else
+            call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
+                                     right_local, left_local)
+        end if
 
-       nroot = size(eVectorsR_old,1)
-
-       allocate(overlap(nroot,nroots_local))
-
-       overlap = 0.0d0 
-
-       call dgemm('N', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsR_old, &
-                       nroot, eVectorsR(1:nroot,:), nroot, beta_lapack, overlap, nroot)
-
-!     the following sorter is based on eigenvalues..
-
-!ashee      call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, right_local, left_local)
-
-!      New sorter based on Overlap 
-
-       call sort_by_overlap(-1, eValuesRe, eValuesIm, overlap, eVectorsR, eVectorsL, right_local, left_local) 
-
-       deallocate(overlap)
-
-!       if (verbose_local) &
-!       call print_values_vectors_R(eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local, right_local, nroots=nroots_local)
-        call print_values_vectors_R(output_file_unit, eValuesRe, eValuesIm, eVectorsR, eVectorsL, .false., .false., nroots=nroot)
+        if (davidson_verbose) &
+        call print_values_vectors_R(davidson_output_file_unit,eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
+                                    left_local, right_local, nroots=nroots_local)
 
     end subroutine
 
@@ -982,8 +1162,8 @@ contains
     end function
 
 
-    function create_sigma_vector(M, b)
-        real(kind=8), pointer :: create_sigma_vector(:,:)
+    function create_sigma_vector_full_matrix(M, b)
+        real(kind=8), pointer :: create_sigma_vector_full_matrix(:,:)
         real(kind=8), intent(in)  :: M(:,:)
         real(kind=8), intent(in)  :: b(:,:)
 
@@ -994,7 +1174,7 @@ contains
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
-        allocate(create_sigma_vector(vectors_N,vectors_L))
+        allocate(create_sigma_vector_full_matrix(vectors_N,vectors_L))
         call dgemm('N', 'N', vectors_N, vectors_L, vectors_N, alpha_lapack, M, vectors_N, &
                    b, vectors_N, beta_lapack, create_sigma_vector, vectors_N)
 
