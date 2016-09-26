@@ -7022,6 +7022,7 @@ C         Backtransform to SO-basis; note that we only backtransform NTMO vector
      &      'N','N',IPQTOQ(1,0),WORK(KBUF),NORB(IFRP),NORB(IFRP),NZ,D0,
      &      IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),NFBAS(IFRP,0),NTMO(IFRP),NZ)
           CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
+          TOBE = .TRUE.
 C
 C         Save frozen orbitals to file
 C
@@ -7033,16 +7034,14 @@ C
             CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
      &           WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
             CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
-            TOBE = .TRUE.
           ENDIF
         ELSEIF((I2TMT(IFRP)+1).NE.IEFF) THEN
-C         Move transformation matrix if columns was deleted in previous
-C         irrep ...
+C         Move transformation matrix if columns was deleted in previous irrep ...
           NDIM = NFBAS(IFRP,0)*NTMO(IFRP)*NZT
           CALL DCOPY(NDIM,TMAT(IEFF),1,TMAT(I2TMT(IFRP)+1),1)
         ENDIF
-        ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
-        IEOFF = IEOFF + NVECS(IFRP)
+        ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ  ! update offset for selected coefficients
+        IEOFF = IEOFF + NVECS(IFRP)                   ! update offset for energies and supersymmetries
  10   CONTINUE
       ENDIF
       IF(NFROT.GT.0) CLOSE(LUCOEF,STATUS='KEEP')
