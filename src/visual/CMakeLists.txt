@@ -25,6 +25,7 @@ endif()
 
 add_library(
     visual 
+    OBJECT
     ${FIXED_VISUAL_FORTRAN_SOURCES}
     ${FREE_VISUAL_FORTRAN_SOURCES}
 )

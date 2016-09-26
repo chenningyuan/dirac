@@ -26,8 +26,8 @@
      &  'Cm ', 'Bk ', 'Cf ', 'Es ', 'Fm ',                              &
      &  'Md ', 'No ', 'Lr ', 'Rf ', 'Db ',                              &
      &  'Sg ', 'Bh ', 'Hs ', 'Mt ', 'Ds ',                              &
-     &  'Rg ', 'Cn ', 'Uut', 'Fl ', 'Uup',                              &
-     &  'Lv ', 'Uus', 'Uuo'/)
+     &  'Rg ', 'Cn ', 'Nh ', 'Fl ', 'Mc ',                              &
+     &  'Lv ', 'Ts ', 'Og '/)
 ! Nuclear mass refers to most abundant or most stable isotope
       REAL(KIND=8), PARAMETER :: NUCMASS(1:118)=(/                      &
      &    1.D0,   4.D0,   7.D0,   9.D0,  11.D0,                         &

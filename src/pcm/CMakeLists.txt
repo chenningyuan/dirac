@@ -98,6 +98,7 @@ endif()
 
 add_library(
     pcm_dirac
+    OBJECT
     ${FIXED_PCM_DIRAC_FORTRAN_SOURCES}
     ${FREE_PCM_DIRAC_FORTRAN_SOURCES}
 )

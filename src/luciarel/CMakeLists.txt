@@ -8,29 +8,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_LUCIAREL_FORTRAN_SOURCES
-cands.inc  
- cintfo.inc 
- crun.inc  
-  files_r.inc 
- implicit.inc   
-    memory_r.inc 
-  oper.inc   
- strinp.inc
-cgas.inc   
- clunit.inc 
- cstate.inc  
-gasstr.inc 
-  integrals_off.inc 
- mxpdim.inc   
-  stinf.inc 
-  wrkspc.inc
-cicisp.inc 
- cprnt.inc 
-  ctcc.inc  
-  glbbas.inc 
-  ipoist8.inc    
-    noccn_inf.inc 
- strbas.inc
    ciinfo_r.F
    diagonal_r.F
    diagonalize_r.F
@@ -68,6 +45,7 @@ endif()
 
 add_library(
     luciarel
+    OBJECT
     ${FIXED_LUCIAREL_FORTRAN_SOURCES}
     ${FREE_LUCIAREL_FORTRAN_SOURCES}
     ${LUCIAREL_C_SOURCES}

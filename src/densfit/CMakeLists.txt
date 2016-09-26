@@ -27,6 +27,7 @@ endif()
 
 add_library(
    densfit
+   OBJECT
    ${FIXED_DENSFIT_FORTRAN_SOURCES}
    ${FREE_DENSFIT_FORTRAN_SOURCES}
 )

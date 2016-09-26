@@ -1182,8 +1182,6 @@ C
       OPEN(LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
-      write(print_unit,'(/a)') ' Reading from file : 4INDINFO '
-C
 C     Read time & date for creation
 C
       READ (LUINT) DATEX, TIMEX
@@ -1271,7 +1269,8 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
            mytid      = mytid_save
          end if
 
-         WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
+         IF (IPRINT .GE. 5)
+     &   WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
      &        ACCESS='DIRECT',RECL=IRECL)
          IIKLB = IIKLB + NFPCK34(IREPIJ)
@@ -1299,8 +1298,8 @@ C
             CALL GTXY(NXY,IX,IY,IXU,IYU,idxkr12)
             call dzero(h2xy,nclass*n2orbx)
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-            write(6,'(2x,a,2i8)') ' active : ',ixu,iyu
-            write(6,'(2x,a, i8)') ' IXY is     : ',IXY
+      write(print_unit,'(2x,a,2i8)') ' active : ',ixu,iyu
+      write(print_unit,'(2x,a, i8)') ' IXY is     : ',IXY
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(1,ixy)',
      &                              idxkr12(1,ixy)
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(2,ixy)',

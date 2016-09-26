@@ -38,6 +38,7 @@ endif()
 
 add_library(
    embedding 
+   OBJECT
    ${FIXED_EMBEDDING_FORTRAN_SOURCES}
    ${FREE_EMBEDDING_FORTRAN_SOURCES}
 )

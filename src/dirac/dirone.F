@@ -4449,6 +4449,7 @@ c  ... end loop within shells
          ENDDO ! DO L = 1,NSLOOP
 c  ... end loop over shells
       ENDDO ! DO N = 0,NSHELL
+
       IF (IPRINT .GE. 1) WRITE(LUPRI,'(14X,A/)')
      &      '-----------------------------------------'
 C
@@ -7228,4 +7229,206 @@ C.....Form density matrix
       CALL MEMREL('PRJORT',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE Add_Screening_Potential(FMAT,WORK,LWORK,IPRINT)
+C*****************************************************************************
+C
+C     Replacement for BNCORR, add screening potential by reading in fitted local
+C     potential from GRASP DFT calculations. 
+C
+C     Lucas Visscher, July 2016
+C
+C     For each center in a molecule we estimate the screening
+C     neglected in the bare nucleus approximation by a sum of the
+C     contributions from Gaussian functions :
+C           sum_(n) <X_A|(c(n)*G(n,a,r_C))/r_C|X_B>
+C           X=L,S ; G(a,r)=exp(-a*r^2)
+C
+C     On input/ouput:     FMAT - assumed one-electron (2c/4c bare nucleus) Fock matrix (input),
+C    =================    screening bare nucleus added (ouput)
+C
+C     Called from: PREDHF/dirscf.F
+C                  RH1DIAG/../krmc/krmcopt.F
+C
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+C
+      LOGICAL DOINT(2,2), FINISH
+      DIMENSION WORK(LWORK),FMAT(*)
+      real*8, allocatable  :: ONEMT(:),ONEIN(:),FCBA(:,:,:),COORC(:,:)
+      real*8, allocatable  :: SIGNC(:,:),GEXP(:)
+      integer, allocatable :: NCENT(:),JSYMC(:),JCENT(:)
+      real*8, allocatable  :: fit_exp(:),fit_coef(:)
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
+C
+#include "ibtfun.h"
+c
+#include "memint.h"
+
+        if(mdirac)then
+        write(lupri,*)
+     &  ' bare-nucleus correction not implemented yet for MDIRAC'
+        write(lupri,*)
+     &  ' program will continue with the default 1-el Hamiltonian'
+          return
+        end if
+
+C     Memory allocation
+      Allocate (ONEMT(N2BBASX))
+      Allocate (ONEIN(N2BBASX))
+      Allocate (COORC(3,NUCDEP))
+      Allocate (SIGNC(3,NUCDEP))
+      Allocate (GEXP(NUCDEP))
+      Allocate (NCENT(NUCDEP))
+      Allocate (JSYMC(NUCDEP))
+      Allocate (JCENT(NUCDEP))
+
+      ONEMT = D0
+C
+C     Initialization (calculate LL and SS)
+C
+      DOINT(1,1) = .TRUE.
+      IF (NOSMLV.OR.BSS.OR.x2c) THEN
+         DOINT(2,2) = .FALSE.
+         IF (IPRINT.GE.1) WRITE(LUPRI,'(/A)')
+     &     '  SCRPOT: SS contribution to the bare nuclei omitted !'
+      ELSE
+         DOINT(2,2) = .TRUE.
+      END IF
+      DOINT(1,2) = .FALSE.
+      DOINT(2,1) = .FALSE.
+c
+
+      DO I = 1,NUCIND
+         IF (NOORBT(I) .OR. CHARGE(I).EQ.0.0D0) THEN ! skip point charges and floating orbitals
+            CYCLE
+         ELSE
+c        ... Get charges and exponents for the electrons in this group
+            n_charge = NINT(CHARGE(I))
+            n_exp = -1 ! signal the routine to provide the number of exponents only
+            CALL Read_screening_parameters
+     &           (n_charge,n_exp,fit_exp,fit_coef)
+            Allocate (fit_exp(n_exp))
+            Allocate (fit_coef(n_exp))
+            CALL Read_screening_parameters 
+     &           (n_charge,n_exp,fit_exp,fit_coef)
+         END IF
+
+c        The driver routines below cannot take a generally contracted potential, so we need to loop. 
+c        if this becomes a bottleneck: rewrite the catdr1 routine....
+
+         MXCENTC = 0
+         MULC   = ISTBNU(I)
+         CORCX0 = CORD(1,I)
+         CORCY0 = CORD(2,I)
+         CORCZ0 = CORD(3,I)
+c
+c        ... Count number of symmetry-dependent nuclei so we can allocate FCBA
+c
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULC) .EQ. 0) THEN
+               MXCENTC = MXCENTC + 1
+            END IF
+         end do
+         Allocate (FCBA(MXCENTC,NUCDEP,NUCDEP))
+
+         DO N = 1, n_exp
+            NCENTC = 0
+            CHARG1 = - fit_coef(N)
+            DO ISYMOP = 0, MAXOPR
+               IF (IBTAND(ISYMOP,MULC) .EQ. 0) THEN
+                  NCENTC = NCENTC + 1
+                  JSYMC(NCENTC)   = ISYMOP
+                  JCENT(NCENTC)   = I
+                  SIGNC(1,NCENTC) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
+                  SIGNC(2,NCENTC) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
+                  SIGNC(3,NCENTC) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  COORC(1,NCENTC) = SIGNC(1,NCENTC)*CORCX0
+                  COORC(2,NCENTC) = SIGNC(2,NCENTC)*CORCY0
+                  COORC(3,NCENTC) = SIGNC(3,NCENTC)*CORCZ0
+                  GEXP(NCENTC)    = fit_exp(N)
+                  CALL DCOPY(NUCDEP*NUCDEP,CHARG1,0,
+     &                       FCBA(NCENTC,1,1),MXCENTC)
+               END IF
+            end do
+c
+c       ... Calculate integrals (both LL and SS)
+c
+            CALL CATDR1(ONEMT,DUMMY,NCENTC,FCBA,
+     &                  COORC,SIGNC,JSYMC,
+     &                  JCENT,GEXP,WORK,LWORK,IPRONE,
+     &                  .FALSE.,0,NNBBASX,DOINT)
+         ENDDO ! Loop over exponents
+         DeAllocate (fit_exp)
+         DeAllocate (fit_coef)
+         DeAllocate (FCBA)
+      ENDDO ! Loop over nuclei
+C
+C     Symmetry unpack integrals
+C
+      CALL SYMUPK(ONEMT,ONEIN,1,NNBBASX)
+      CALL DSPTSI(NTBAS(0),ONEIN,ONEMT)
+      CALL BUTOBS(ONEMT,1,WORK,LWORK)
+ 
+C     Add correction to (entering) Fock-matrix, FMAT
+
+      CALL DAXPY(N2BBASX,D1,ONEMT,1,FMAT,1)
+
+      IF(IPRINT.GE.11) THEN
+         CALL HEADER('Screening potential for DC FMAT',-1)
+         CALL OUTPUT(ONEMT,1,NTBAS(0),1,NTBAS(0),
+     &        NTBAS(0),NTBAS(0),-1,LUPRI)
+      END IF
+C
+C     Memory deallocation
+      DeAllocate (ONEMT)
+      DeAllocate (ONEIN)
+      DeAllocate (COORC)
+      DeAllocate (SIGNC)
+      DeAllocate (GEXP)
+      DeAllocate (NCENT)
+      DeAllocate (JSYMC)
+      DeAllocate (JCENT)
+
+      END
+*
+      subroutine Read_Screening_Parameters (n_charge,n_exp,
+     &                                      fit_exp,fit_coef)
+      implicit none
+      logical newel, early_exit
+      integer,intent (in)    :: n_charge
+      integer,intent (inout) :: n_exp
+      real*8,intent (out)    :: fit_exp(*),fit_coef(*)
+      integer                :: i,intorb,intisg
+      integer, parameter     :: lupot=91, iprint=0
+
+      early_exit = n_exp .eq. -1 ! Use this to query the number of exponents
+      call findel ('SCRPOT',n_charge,lupot)
+      call finpos (newel,n_exp,intorb,intisg,lupot,iprint)
+      if (early_exit) then
+         rewind (lupot)
+         return
+      end if
+      
+      do i = 1, n_exp
+         read (lupot,*) fit_exp(i),fit_coef(i)
+      end do
+      rewind (lupot)
+
+      end
 ! -- end of dirone.F --

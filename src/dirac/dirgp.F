@@ -57,7 +57,7 @@ C
       call alloc(a_EIG, NORBT,    id="EIG in PCMOIN")
       call alloc(a_IBG, NORBT,    id="IBG in PCMOIN")
 
-      CALL PCMOI1(a_CMO, a_EIG, a_IBG)
+      CALL PCMOIN_1(a_CMO, a_EIG, a_IBG)
 
       call dealloc(a_EIG)
       call dealloc(a_CMO)
@@ -95,7 +95,7 @@ C
       call alloc(a_EIG, NORBT,    id="EIG in PCMOUT")
       call alloc(a_IBG, NORBT,    id="IBG in PCMOUT")
 
-      CALL PCMOU1(a_CMO, a_EIG, a_IBG)
+      CALL PCMOUT_1(a_CMO, a_EIG, a_IBG)
 
       call dealloc(a_CMO, id="CMO in PCMOUT")
       call dealloc(a_EIG, id="EIG in PCMOUT")
@@ -309,9 +309,19 @@ C
 C     Error messages
 C
  10   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading TEXT')
+      write(lupri,'(//A/A/A)')
+     &   'REACMO: END OF FILE reading first record on DFCOEF.',
+     &   '        Possible reason: DFCOEF was generated with'//
+     &      ' 32-bit integer Dirac version.',
+     &   '        This Dirac is compiled with 64 bit integers.'
+      CALL QUIT('REACMO: END OF FILE reading first record')
  20   CONTINUE
-      CALL QUIT('REACMO: ERROR reading TEXT')
+      write(lupri,'(//A/A/A)')
+     &   'REACMO: ERROR reading first record on DFCOEF.',
+     &   '        Possible reason: DFCOEF was generated with'//
+     &      ' 32-bit integer Dirac version.',
+     &   '        This Dirac is compiled with 64 bit integers.'
+      CALL QUIT('REACMO: ERROR reading first record')
  30   CONTINUE
       CALL QUIT('REACMO: END OF FILE reading coefficients')
  40   CONTINUE
@@ -492,9 +502,19 @@ C
 C     Error messages
 C
  10   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading TEXT')
+      write(lupri,'(//A/A/A)')
+     &   'REACMO: END OF FILE reading first record on DFCOEF.',
+     &   '        Possible reason: DFCOEF was generated with'//
+     &      ' 32-bit integer Dirac version.',
+     &   '        This Dirac is compiled with 64 bit integers.'
+      CALL QUIT('REACMO: END OF FILE reading first record')
  20   CONTINUE
-      CALL QUIT('REACMO: ERROR reading TEXT')
+      write(lupri,'(//A/A/A)')
+     &   'REACMO: ERROR reading first record on DFCOEF.',
+     &   '        Possible reason: DFCOEF was generated with'//
+     &      ' 32-bit integer Dirac version.',
+     &   '        This Dirac is compiled with 64 bit integers.'
+      CALL QUIT('REACMO: ERROR reading first record')
  30   CONTINUE
       CALL QUIT('REACMO: END OF FILE reading coefficients')
  40   CONTINUE
@@ -510,8 +530,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck pcmoi1 */
-      SUBROUTINE PCMOI1(CMO,EIG,IBEIG)
+C  /* Deck pcmoin_1 */
+      SUBROUTINE PCMOIN_1(CMO,EIG,IBEIG)
 C*****************************************************************************
 C
 C     Read DHF/KRMCSCF-coefficients and eigenvalues from FORMATTED file
@@ -636,7 +656,7 @@ C
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A)') 'Done.'
 C
-C     Write coefficients to either KRMCSCF or DFCOEF
+C     Write coefficients to either KRMCOLD or DFCOEF
 C
       IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
@@ -664,8 +684,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck pcmou1 */
-      SUBROUTINE PCMOU1(CMO,EIG,IBEIG)
+C  /* Deck pcmout_1 */
+      SUBROUTINE PCMOUT_1(CMO,EIG,IBEIG)
 C*****************************************************************************
 C
 C     Write DHF/KRMCSCF-coefficients and eigenvalues to FORMATTED file
