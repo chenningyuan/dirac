@@ -1955,6 +1955,8 @@ C
 C     radovan: AMASS is not used !?
 C     hjaaj:   AMASS is passed on to VIBMAS
 C
+      USE CODATA, ONLY : XFAMU
+C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
