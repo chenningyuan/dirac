@@ -431,6 +431,8 @@ C  /* Deck rmolchr */
 C
 C     Calculates sum of all nuclear charges
 C
+      USE CODATA, ONLY : XFAMU
+C
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1954,6 +1956,8 @@ C     K.Ruud, June-94
 C
 C     radovan: AMASS is not used !?
 C     hjaaj:   AMASS is passed on to VIBMAS
+C
+      USE CODATA, ONLY : XFAMU
 C
 #include "implicit.h"
 #include "mxcent.h"
