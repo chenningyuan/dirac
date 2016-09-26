@@ -6836,7 +6836,7 @@ C      Reduce variational space by projection using the fragment orbitals
 C      On input:
 C        NVECS(ifrp) is the number of fragment orbitals in ifrp
 C        CSEL, ESEL, ISEL contains fragment orbitals (coefficients), 
-C           their energies and, if avavilable, supersymmetry labels
+C           their energies and, if available, supersymmetry labels
 C        TMAT is the AOMO transformation matrix T (canonical orhogonalization)
 C        TINV is the inverse of T^{dagger}, that is TINV = ST, where S is the
 C           AO overlap matrix
@@ -6968,11 +6968,11 @@ C           so we overwrite with the old TMAT
  8      CONTINUE
 CTROND
         CALL QUIT('End of test')
-      ELSE
+      ELSE ! IF (SUB_BL) THEN
       DO 10 IFRP = 1,NFSYM
         WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
 C       Transform fragment coefficients to orthonormal basis
-        NDEL = 0
+        NDEL  = 0
         NQ(1) = 0
         NQ(2) = 0
         IF(NVECS(IFRP).EQ.0) THEN
@@ -6982,11 +6982,11 @@ C       Transform fragment coefficients to orthonormal basis
         NREF = NORB(IFRP)*NVECS(IFRP)*NZ
         CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
         CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
-     &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),
+     &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),              ! TINV = SV , inverse of T^dagger
      &                    NFBAS(IFRP,0),NORB(IFRP),NZT,
-     &            'N','N',IPQTOQ(1,0),CSEL(ICOFF),
+     &            'N','N',IPQTOQ(1,0),CSEL(ICOFF),                      ! selected coefficients
      &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
-     &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)
+     &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)  ! result stored in WORK(KREF)
         IF(IPRINT.GE.5) THEN
           CALL HEADER('PSIPR1: Fragment coefs in orthonormal basis',-1)
           WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',IFRP
@@ -6999,24 +6999,24 @@ C       Do projection
         CALL PRJORT(WORK(KBUF),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ,
      &              WORK,KFREE,LFREE)
         DO IFRAG = 1,NFRAG
-          NQ(1) = NQ(1) + NSTR(IFRP,1,IFRAG)
-          NQ(2) = NQ(2) + NSTR(IFRP,2,IFRAG)
+          NQ(1) = NQ(1) + NSTR(IFRP,1,IFRAG) ! positive energy solutions deleted
+          NQ(2) = NQ(2) + NSTR(IFRP,2,IFRAG) ! negative energy solutions deleted
         ENDDO
         WRITE(LUPRI,'(2X,A,I6)')
      &     '- Total number of orbitals deleted: ',NVECS(IFRP),
      &     '       - positive energy solutions: ',NQ(1),
      &     '       - negative energy solutions: ',NQ(2)
  11     CONTINUE
-        NTMO(IFRP)  = NORB(IFRP)-NVECS(IFRP)
-        NESH(IFRP)  = NESH(IFRP)-NQ(1)
-        NPSH(IFRP)  = NPSH(IFRP)-NQ(2)
-        IEFF        = I2TMT(IFRP)+1 ! contains the "old" offset
-        I2TMT(IFRP) = N2TMT
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+        NTMO(IFRP)  = NORB(IFRP)-NVECS(IFRP)          ! this will be the number of orbitals in orthonormal basis
+        NESH(IFRP)  = NESH(IFRP)-NQ(1)                ! this will be the number of positive energy solutions
+        NPSH(IFRP)  = NPSH(IFRP)-NQ(2)                ! this will be the number of negative energy solutions
+        IEFF        = I2TMT(IFRP)+1                   ! contains the old offset to coefficients in orthonormal basis
+        I2TMT(IFRP) = N2TMT                           ! new offset to coefficients in orthonormal basis
+        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT  ! total dimension of coefficient matrix in orthonormal basis (all fermion irreps)
         IF(NVECS(IFRP).GT.0) THEN
-C         Backtransform to SO-basis
-          NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT
-          CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)
+C         Backtransform to SO-basis; note that we only backtransform NTMO vectors
+          NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT         ! this one is dangerous in case of UKB since NZT is then not equal to NZ
+          CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)  ! put old transformation matrix T into TINV, then put new ones into T by backtransformation
           CALL QGEMM(NFBAS(IFRP,0),NTMO(IFRP),NORB(IFRP),D1,
      &      'N','N',IPQTOQ(1,0),TINV(IEFF),NFBAS(IFRP,0),NORB(IFRP),NZT,
      &      'N','N',IPQTOQ(1,0),WORK(KBUF),NORB(IFRP),NORB(IFRP),NZ,D0,
@@ -7202,9 +7202,10 @@ C/* Deck prjort */
 C***********************************************************************
 C     This routine projects vectors COEF out of the identity matrix
 C     Presently, this is done by first forming the density matrix 
-C     of vectors COEF and then diagonalize it. The first NORB-NVEC 
-C     columns of the resulting eigenvectors have zero eigenvalues 
-C     and provide the orthogonal complement.
+C     of vectors COEF and then diagonalize it.
+C     Provided that eigenvalues are given in ascending order, then
+C     the first NORB-NVEC columns of the resulting eigenvectors have
+C     zero eigenvalues and provide the orthogonal complement.
 C     A possible better approach is to do a "fat" QR decomposition.
 C     Thanks to Ulf Ekstrom for suggestions.
 C
