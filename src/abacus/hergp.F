@@ -431,6 +431,8 @@ C  /* Deck rmolchr */
 C
 C     Calculates sum of all nuclear charges
 C
+      USE CODATA, ONLY : XFAMU
+C
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
