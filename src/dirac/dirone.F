@@ -6286,7 +6286,7 @@ C
       NPSH(IFRP) = NPSH(IFRP) + NDEL(2)
       CALL NUMLS3(VCFROZ(IFRP),IVEC,NFBAS(IFRP,0),
      &            -NPSH(IFRP),NESH(IFRP),NTOT,NZERO)
-C
+C     
 C     Consistency check
 C
       IF(NFRO(IFRP).NE.(NTOT-NZERO)) THEN
@@ -6878,16 +6878,19 @@ C     when there is no subblock ...
         DO IFRP = 1,NFSYM
           N_SUB_BL(IFRP) = 1
           NORB_SUB(1,IFRP,0) = NORB(IFRP)
-          ID_SUB_BL(1,IFRP)  = 1
+          ID_SUB_BL(1,IFRP)  = 0
         ENDDO
       ENDIF
       TOBE = .FALSE.
       N2TMT = 0
       ICOFF = 1
       IEOFF = 1
+C     TROND
       IF (SUB_BL) THEN
-        ITEFF = 1
+        ITEFF = 0
         DO 8 IFRP =  1,NFSYM
+          NQ(1) = 0
+          NQ(2) = 0
           WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
           allocate(NVECS_SUB(N_SUB_BL(IFRP)))
 C.........First find how the selected vectors are distributed on subblocks
@@ -6897,6 +6900,7 @@ C.........First find how the selected vectors are distributed on subblocks
 C...........Find orbitals in this subblock
             NVECS_SUB(ISUB) = 0
             DO IVEC = 1,NVECS(IFRP)
+            WRITE(6,*) 'TEST..isel..',ISEL(IVEC),ID_SUB_BL(ISUB,IFRP)             
             IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
               NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
             ENDIF
@@ -6939,7 +6943,7 @@ C...........Transform vector of this subblock to orthonormal basis
      &                NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
             IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
-            IREF  = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
+            IREF  = IREF  + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
           ENDIF             
           ENDDO
 C.......We have now transformed all vectors of this irrep to orthonormal basis
@@ -6955,6 +6959,16 @@ C.......We now start accumulating the new transformation matrix for each subbloc
           IBEFF = 0
           IREF = KREF
           NTMO(IFRP) = NORB(IFRP) - NVECS(IFRP)
+          DO IFRAG = 1,NFRAG
+            NQ(1) = NQ(1) + NSTR(IFRP,1,IFRAG) ! positive energy solutions deleted
+            NQ(2) = NQ(2) + NSTR(IFRP,2,IFRAG) ! negative energy solutions deleted
+          ENDDO
+          WRITE(LUPRI,'(2X,A,I6)')
+     &       '- Total number of orbitals deleted: ',NVECS(IFRP),
+     &       '       - positive energy solutions: ',NQ(1),
+     &       '       - negative energy solutions: ',NQ(2)
+          NESH(IFRP)  = NESH(IFRP)-NQ(1)                ! this will be the number of positive energy solutions
+          NPSH(IFRP)  = NPSH(IFRP)-NQ(2) ! this will be the number of negative energy solutions
           DO ISUB = 1,N_SUB_BL(IFRP)
           IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
             ITM   = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
@@ -6967,13 +6981,22 @@ C...........New matrix
 C.............Do projection
               CALL PRJORT(WORK(KBUF),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
      &             NVECS_SUB(ISUB),NZ,WORK,KFREE,LFREE)
-C............Backtransform new transformation matrix (TINV now contains this part of TMAT)
+              IF(IPRINT.GE.5) THEN
+                WRITE(6,*) '* TEST..BUF..matrix'             
+                CALL PRQMAT(WORK(KBUF),
+     &                NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
+     &                NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+              ENDIF            
+C.............Backtransform new transformation matrix (TINV now contains this part of TMAT)
              CALL QGEMM(NFBAS(IFRP,0),NEFF,NORB_SUB(ISUB,IFRP,0),D1,
      &       'N','N',IPQTOQ(1,0),TINV(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,
      &       'N','N',IPQTOQ(1,0),WORK(KBUF),NORB_SUB(ISUB,IFRP,0),
      &       NORB_SUB(ISUB,IFRP,0),NZ,D0,
-     &             IPQTOQ(1,0),TMAT(ITEFF),NFBAS(IFRP,0),NTMO(IFRP),NZ)
-             CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
+     &       IPQTOQ(1,0),TMAT(ITEFF),NFBAS(IFRP,0),NTMO(IFRP),NZ)
+              CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
+              IREF  = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
+              TOBE = .TRUE.
             ELSE
               IOFF = ITM
               JOFF = ITEFF
@@ -6990,16 +7013,27 @@ C............Backtransform new transformation matrix (TINV now contains this par
           ENDIF
           ENDDO                    ! DO ISUB = 1,N_SUB_BL(IFRP)
           deallocate(NVECS_SUB)
-          I2TMT(IFRP) = N2TMT
-          N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+C
+C         Save frozen orbitals to file
+C
+          IF(NFRO(IFRP).GT.0) THEN
+            NBUF = NFBAS(IFRP,0)*NZ
+            CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
+            CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
+            CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
+            CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
+     &           WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
+            CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
+         ENDIF
+         I2TMT(IFRP) = N2TMT
+         N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+         ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ  ! update offset for selected coefficients
+         IEOFF = IEOFF + NVECS(IFRP)                   ! update offset for energies and supersymmetries
  8      CONTINUE
-CTROND
-        CALL QUIT('End of test')
       ELSE ! IF (SUB_BL) THEN
       DO 10 IFRP = 1,NFSYM
         WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
 C       Transform fragment coefficients to orthonormal basis
-        NDEL  = 0
         NQ(1) = 0
         NQ(2) = 0
         IF(NVECS(IFRP).EQ.0) THEN
@@ -7025,6 +7059,13 @@ C       Do projection
         CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
         CALL PRJORT(WORK(KBUF),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ,
      &              WORK,KFREE,LFREE)
+        IF(IPRINT.GE.5) THEN
+          WRITE(6,*) '* TEST..BUF..matrix'             
+          CALL PRQMAT(WORK(KBUF),
+     &                NORB(IFRP),NORB(IFRP),
+     &                NORB(IFRP),NORB(IFRP),
+     &         NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
         DO IFRAG = 1,NFRAG
           NQ(1) = NQ(1) + NSTR(IFRP,1,IFRAG) ! positive energy solutions deleted
           NQ(2) = NQ(2) + NSTR(IFRP,2,IFRAG) ! negative energy solutions deleted
@@ -7039,7 +7080,7 @@ C       Do projection
         NPSH(IFRP)  = NPSH(IFRP)-NQ(2)                ! this will be the number of negative energy solutions
         IEFF        = I2TMT(IFRP)+1                   ! contains the old offset to coefficients in orthonormal basis
         I2TMT(IFRP) = N2TMT                           ! new offset to coefficients in orthonormal basis
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT  ! total dimension of coefficient matrix in orthonormal basis (all fermion irreps)
+        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT ! total dimension of coefficient matrix in orthonormal basis (all fermion irreps)
         IF(NVECS(IFRP).GT.0) THEN
 C         Backtransform to SO-basis; note that we only backtransform NTMO vectors
           NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT         ! this one is dangerous in case of UKB since NZT is then not equal to NZ
@@ -7250,6 +7291,7 @@ C.....Form density matrix
       CALL QDIAG(NZ,NORB,WORK(KDMAT),NORB,NORB,
      &           WORK(KEIG),1,VMO,NORB,
      &           NORB,WORK(KFREE),LFREE,IERR)
+CTROND
       WRITE(6,*) 'Eigenvalues from PRJORT:'
       CALL OUTPUT(WORK(KEIG),1,NORB,1,1,
      &            NORB,NORB,-1,LUPRI)

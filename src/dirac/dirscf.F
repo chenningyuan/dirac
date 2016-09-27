@@ -1191,6 +1191,8 @@ C     NZT is the NZ value for the transformation matrix
 C
       IF(NFROT.GT.0) CALL OPNFIL(LUTMAT,'DFFROZ','OLD','DFSOLV')
       DO 40 I = 1,NFSYM
+CTROND
+        WRITE(6,*) 'TEST..irrep..nfroz..',I,NFRO(I)        
         IF(NORB(I).EQ.0) GOTO 40
         IF(NFRO(I).EQ.0) THEN
           CALL BCKTR1(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
@@ -1224,6 +1226,8 @@ CMI     ... Control printout ...
           CALL PRQMAT(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
+CTROND
+        WRITE(6,*) 'TEST..irrep..endcycle..',I
 
  40   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
