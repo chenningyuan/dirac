@@ -461,6 +461,7 @@ C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
+      TDXC=D0
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
 
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
@@ -1989,7 +1990,7 @@ C           fact that all Fock matrices were multiplied with 2
 C           in TWOFCK.
 C
          DFRAC2 = DP25*DFRAC1*DFRAC1*DA(ISHELL)
-!        print *, 'dfrac1, dfrac2',dfrac1,dfrac2
+!     print *, 'dfrac1, dfrac2',dfrac1,dfrac2
 C...     Intra-shell contributions
          DO IZ = 1,NZ
             E(IZ,1,ISHELL) =
@@ -2015,18 +2016,16 @@ C
             END DO
          END DO
       END DO
-
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
 !Miro: separate this contribution into own variable, xcint_xc_energy
-! the density for calculation is the same as for xcint_xc_contribution to the 2el Fock matrix
+!     the density for calculation is the same as for xcint_xc_contribution to the 2el Fock matrix
         xcint_xc_energy=xcint_get_xc_mat_energy()
         e(1, 2, 0) = e(1, 2, 0) - xcint_xc_energy
         !print *
         !print *,'ERGCAL: xcint_get_xc_mat_energy()=',xcint_xc_energy
         !print *
       end if
-
       DO IZ = 1,NZ
         DO IOPEN = 0,ITOP
            E1PART = E1PART + E(IZ,1,IOPEN)
