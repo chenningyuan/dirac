@@ -6861,6 +6861,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
+      integer, allocatable :: NVECS_SUB(:)
       DIMENSION CSEL(*),ESEL(*),ISEL(*),TMAT(*),TINV(*),WORK(*)
       DIMENSION NVECS(2),NQ(2),NSTR(2,0:2,MFRAG)
 C
@@ -6885,84 +6886,110 @@ C     when there is no subblock ...
       ICOFF = 1
       IEOFF = 1
       IF (SUB_BL) THEN
+        ITEFF = 1
         DO 8 IFRP =  1,NFSYM
           WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
-          NTMO(IFRP) = NORB(IFRP) - NVECS(IFRP)
-          IBORB = 0
-          IBEFF = 0
+          allocate(NVECS_SUB(N_SUB_BL(IFRP)))
+C.........First find how the selected vectors are distributed on subblocks
+          NREF = 0
           DO ISUB = 1,N_SUB_BL(IFRP)
           IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
-            ITM = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1
-            ITEFF = I2TMT(IFRP) + NFBAS(IFRP,0)*IBEFF + 1
 C...........Find orbitals in this subblock
-            NVECS_SUB = 0
+            NVECS_SUB(ISUB) = 0
             DO IVEC = 1,NVECS(IFRP)
             IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
-              NVECS_SUB = NVECS_SUB + 1
+              NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
             ENDIF
             ENDDO
+            NREF = NREF+NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
             WRITE(6,*) 'TEST..sub',IFRP,ID_SUB_BL(ISUB,IFRP),
-     &          NORB_SUB(ISUB,IFRP,0),NVECS_SUB
-            IF(NVECS_SUB.GT.0) THEN
-              NREF = NORB_SUB(ISUB,IFRP,0)*NVECS_SUB*NZ
-              CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
-              IMO  = 1
-              IREF = KREF
-C.............Transform vector of this subblock to orthonormal basis
-              DO IVEC = 1,NVECS(IFRP)
+     &         NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB)
+          ENDIF
+          ENDDO
+C.........Allocate an array to hold all vectors
+          CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
+C.........Transform vector of each subblock to orthonormal basis
+          IBORB = 0
+          IREF = KREF
+          DO ISUB = 1,N_SUB_BL(IFRP)
+          IF(NVECS_SUB(ISUB).GT.0) THEN
+            IMO  = 1
+C...........Transform vector of this subblock to orthonormal basis
+            ITM  = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
+            JREF = IREF
+            DO IVEC = 1,NVECS(IFRP)
               IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
-                CALL QGEMM(NORB_SUB(ISUB,IFRP,0),1,NFBAS(IFRP,0),D1,
-     &            'H','N',IPQTOQ(1,0),TINV(ITM),
-     &                    NFBAS(IFRP,0),NORB(IFRP),NZT,
-     &            'N','N',IPQTOQ(1,0),CSEL(IMO),
-     &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
-     &            D0,IPQTOQ(1,0),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
-     &            NVECS_SUB,NZ)
-                  IREF = IREF + NORB_SUB(ISUB,IFRP,0)
+                 CALL QGEMM(NORB_SUB(ISUB,IFRP,0),1,NFBAS(IFRP,0),D1,
+     &             'H','N',IPQTOQ(1,0),TINV(ITM),
+     &                     NFBAS(IFRP,0),NORB(IFRP),NZT,
+     &             'N','N',IPQTOQ(1,0),CSEL(IMO),
+     &                     NFBAS(IFRP,0),NVECS(IFRP),NZ,
+     &             D0,IPQTOQ(1,0),WORK(JREF),NORB_SUB(ISUB,IFRP,0),
+     &             NVECS_SUB(ISUB),NZ)
+                  JREF = JREF + NORB_SUB(ISUB,IFRP,0)
               ENDIF
               IMO = IMO + NFBAS(IFRP,0)
-              ENDDO
-              IF(IPRINT.GE.5) THEN
-                WRITE(6,*) '  Transformed coefficients for subblock ',
-     &            ISUB
-                CALL PRQMAT(WORK(KREF),NORB_SUB(ISUB,IFRP,0),NVECS_SUB,
-     &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB,NZ,
-     &                IPQTOQ(1,0),LUPRI)
-              ENDIF
-C.............Do projection
+            ENDDO
+            IF(IPRINT.GE.5) THEN
+               WRITE(6,*)
+     &         '  Transformed coefficients for subblock ',ISUB
+                CALL PRQMAT(WORK(IREF),
+     &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
+     &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
+     &                NZ,IPQTOQ(1,0),LUPRI)
+            ENDIF
+            IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
+            IREF  = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
+          ENDIF             
+          ENDDO
+C.......We have now transformed all vectors of this irrep to orthonormal basis
+C.......and overwrite TINV with TMAT        
+          IOFF = I2TMT(IFRP)  + 1
+          NDIM = NFBAS(IFRP,0)*NORB(IFRP)
+          DO IZ = 1,NZ
+            CALL DCOPY(NDIM,TMAT(IOFF),1,TINV(IOFF),1)
+            IOFF = IOFF + NDIM
+          ENDDO
+C.......We now start accumulating the new transformation matrix for each subblock
+          IBORB = 0
+          IBEFF = 0
+          IREF = KREF
+          NTMO(IFRP) = NORB(IFRP) - NVECS(IFRP)
+          DO ISUB = 1,N_SUB_BL(IFRP)
+          IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
+            ITM   = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
+            ITEFF = ITEFF       + NFBAS(IFRP,0)*IBEFF + 1 ! new offset for transformation
+            NEFF = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB(ISUB)
+C...........New matrix
+            IF(NVECS_SUB(ISUB).GT.0) THEN
               NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZ
               CALL MEMGET('REAL',KBUF,NPRJ,WORK,KFREE,LFREE)
-              CALL PRJORT(WORK(KBUF),WORK(KREF),NORB_SUB(ISUB,IFRP,0),
-     &              NVECS_SUB,NZ,WORK,KFREE,LFREE)
-              CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KREF,KFREE,LFREE)
-            ENDIF
-C...........At this point we do not need this part of TINV anymore, 
-C           so we overwrite with the old TMAT
-            IOFF = ITM
-            DO IZ = 1,NZ
-              CALL DCOPY(NDIM,TMAT(IOFF),1,TINV(IOFF),1)
-              IOFF = IOFF + NFBAS(IFRP,0)*NORB(IFRP)
-            ENDDO
-            IF(NVECS_SUB.GT.0) THEN
-             CALL QGEMM(NFBAS(IFRP,0),NTMO(IFRP),NORB(IFRP),D1,
+C.............Do projection
+              CALL PRJORT(WORK(KBUF),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
+     &             NVECS_SUB(ISUB),NZ,WORK,KFREE,LFREE)
+C............Backtransform new transformation matrix (TINV now contains this part of TMAT)
+             CALL QGEMM(NFBAS(IFRP,0),NEFF,NORB_SUB(ISUB,IFRP,0),D1,
      &       'N','N',IPQTOQ(1,0),TINV(ITM),NFBAS(IFRP,0),NORB(IFRP),NZT,
      &       'N','N',IPQTOQ(1,0),WORK(KBUF),NORB_SUB(ISUB,IFRP,0),
      &       NORB_SUB(ISUB,IFRP,0),NZ,D0,
-     &       IPQTOQ(1,0),TMAT(ITEFF),NFBAS(IFRP,0),NTMO(IFRP),NZ)
+     &             IPQTOQ(1,0),TMAT(ITEFF),NFBAS(IFRP,0),NTMO(IFRP),NZ)
+             CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
             ELSE
               IOFF = ITM
               JOFF = ITEFF
+              NDIM = NFBAS(IFRP,0)*NORB_SUB(ISUB,IFRP,0)
               DO IZ = 1,NZ
-                CALL DCOPY(NDIM,TINV(IOFF),1,TMAT(IOFF),1)
+                CALL DCOPY(NDIM,TINV(IOFF),1,TMAT(JOFF),1)
                 IOFF = IOFF + NFBAS(IFRP,0)*NORB(IFRP)
                 JOFF = JOFF + NFBAS(IFRP,0)*NTMO(IFRP)
               ENDDO
-            ENDIF
+            ENDIF ! IF(NVECS_SUB(ISUB).GT.0) THEN
             IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
-            NORB_SUB(ISUB,IFRP,0) = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB
-            IBEFF = IBEFF + NORB_SUB(ISUB,IFRP,0)
+            NORB_SUB(ISUB,IFRP,0) = NEFF
+            IBEFF = IBEFF + NEFF
           ENDIF
-          ENDDO
+          ENDDO                    ! DO ISUB = 1,N_SUB_BL(IFRP)
+          deallocate(NVECS_SUB)
           I2TMT(IFRP) = N2TMT
           N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
  8      CONTINUE
