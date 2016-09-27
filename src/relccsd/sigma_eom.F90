@@ -11,6 +11,7 @@
 !    public eom_ea
     public sigma_ee_1h1p
     public sigma_IP
+    public lambda_IP
     public sigma_EA
     public IM_container
     public initialize_sigma_construction
@@ -997,6 +998,116 @@ integer :: nbuf3,ierr
 
  end subroutine
 
+   subroutine Lambda_IP(l1,l2,B,lambda1,lambda2,ndiml1,ndiml2)
+
+  use symmetry_offset
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "inpt.inc"
+
+!---------------Description--------------------------------------------
+!     Calculates 2h1p and 1h type sigma vectors for ionization energy
+!-----------------------------------------------------------------------
+
+!---------------Calling variables--------------------------------------
+  real(8), intent(in),contiguous,target   :: L1(:,:), L2(:,:) ! R-Amplitudes
+  type(intermediates), intent(in)  :: B      
+  real(8), intent(inout),contiguous :: lambda1(:,:),lambda2(:,:)  ! sigma-vectors
+  integer, intent(in) :: ndiml1, ndiml2
+!---------------Local Variables--------------------
+  real(8), pointer,contiguous :: l1_ptr(:),l2_ptr(:)
+  real(8), allocatable :: int_1b(:), G(:) 
+  real(8)              :: ddot
+  type(Offset)         :: e
+!--------------------------------------------------
+  l1_ptr(1:ndiml1) => l1
+  l2_ptr(1:ndiml2) => l2
+
+!------------------------------------------
+! L(i,a*) = L(i,a*) - L(m,a*)*f_bar_mi(i,m)  
+!------------------------------------------
+
+     call contraction_222 ((/"o2","c1"/),(/"o1","o2"/),(/"o1","c1"/), &
+  &    L1_ptr,B%Fbar_mi,lambda1,-1.0d0,1.0d0,nrep)
+
+!-----------------------------------------------------
+! L(i,a*) = L(i,a*) -  L2(mn,a*e)*W(ie,mn)
+!-----------------------------------------------------
+
+    call contraction_442((/"o2","o3","c1","p2"/),(/"o1","p2","o2","o3" &
+  &          /),(/"c1","p1"/),lambda1,-1.0d0,1.0d0,nrep,LeftTensor=L2_ptr,  &
+  &          RightTensor=B%W_iemn)
+
+!-------------------------------------------------
+!  L(ij,a*b) = L(ij,a*b) + L2 (ij,a*e)*f_bar_ae(e,b)
+!-------------------------------------------------
+
+     call contraction_424 ((/"o1","o2","c1","p3"/),(/"p3","p2"/), &
+   &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,LeftTensor=L2_ptr, &
+   &    RightTensor=B%Fbar_ae)
+
+!----------------------------------------------
+!  L(ij,a*b) = L(ij,a*b) - P(ij) L2 (im,a*b)*f_bar_im (j,m)
+!----------------------------------------------
+
+       call contraction_424 ((/"o1","o3","c1","p2"/),(/"o2","o3"/), &
+     &    (/"o1","o2","c1","p2"/),lambda2,-1.0d0,1.0d0,nrep, &
+     &    LeftTensor=L2_ptr,RightTensor=B%Fbar_mi)
+
+!--------------------------------------------------------
+!  L(ij,a*b) = L(ij,a*b) + L2(mn,a*b) * W_ijmn(ij,mn)
+!--------------------------------------------------------
+
+    call contraction_444((/"o1","o2","o3","o4"/),(/"o3","o4","c1","p2"/), &
+   &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,RightTensor=L2_ptr,LeftTensor=B%W_ijmn)
+
+!--------------------------------------------------------
+!  L(ij,a*b) = L(ij,a*b) + P(ij) L2(im,a*e) * W_bmej(je,bm)
+!--------------------------------------------------------
+
+     call contraction_444((/"o1","o3","c1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","c1","p2"/),lambda2, &
+    &    1.0d0,0.0d0,nrep,righttensor=B%W_mbej,LeftTensor=L2_ptr)
+
+!---------------------------------------------------------------------------
+!  L(ij,a*b) = L(ij,a*b) + L1(m,a*) * w_mnie(ij,mb)
+!---------------------------------------------------------------------------
+
+     call contraction_424 ((/"o1","o2","o3","p2"/),(/"o3","c1"/), &
+    &   (/"o1","o2","c1","p2"/),lambda2,-1.0d0,1.0d0,nrep,RightTensor=L1_ptr, &
+    &   LeftTensor=B%W_mnie)
+
+!---------------------------------------------------------------
+!  G (e,a*)  = G(e,a*) + L2(mn,a*f) * t2(ef,mn) 
+!  L(ij,a*b) = L(ij,a*b) + V(ij,eb)*G (e,a*)  
+!---------------------------------------------------------------
+
+    call alloc_array(e,nrep)
+    call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
+
+    allocate (G(e%oneNonDirac(1)))
+
+     G = 0.0d0
+
+     call contraction_442((/"o3","o4","c1","p4"/),(/"p3","p4","o3","o4" &
+    &          /),(/"p3","c1"/),G,1.0d0,1.0d0,nrep,LeftTensor=L2_ptr,  &
+    &          RightTensor=B%t2)
+
+     call contraction_424 ((/"o1","o2","p3","p2"/),(/"p3","c1"/), &
+    &        (/"o1","o2","c1","p2"/),Lambda2,1.0d0,1.0d0,nrep,RightTensor=G)
+
+    deallocate(G)
+
+     call dealloc_array(e)
+
+
+    call lambda2_disconnected_IP(L1,B%Fbar_ae,lambda2)
+
+
+ end subroutine
+
+
    subroutine trial_vectors_ee (r1,Fbar_mi,Fbar_ae,W_mbej)
 
 #include "symm.inc"
@@ -1158,6 +1269,94 @@ integer :: nbuf3,ierr
 
        deallocate(ev)
        deallocate(evec)
+
+ end subroutine
+
+  subroutine lambda2_disconnected_IP(l1,f_bar,ResL2)
+
+!---------------Description--------------------------------------------
+
+!Calculating the contribution from the disconnected piece in lambda2 of IP. 
+
+  use symmetry_offset
+  implicit none
+#include "symm.inc"
+#include "complex.inc"
+!---------------Calling variables--------------------------------------
+
+      real*8, intent(in)    :: l1(*),f_bar(:)
+      real*8, intent(inout) :: ResL2(*)
+
+!---------------Local variables--------------------------------------
+      integer :: ijaboff,abrep,arep,brep,a,b,amin,imin,i,j,ij,jb,ia,ja, &
+     &           ib,ni,irep,jrep
+      real*8  :: L1min(2)
+      type(Offset)         :: e
+!---------------Executable code--------------------------------------
+
+    call alloc_array(e,nrep)
+    call auto_symmetry_offset(e,no,ncont,.false.,.false.)
+
+  L1min=(/0.0d0,0.0d0/)
+
+  ijaboff = 0
+  do abrep = 1, nrep
+  do brep = 1, nrep
+  arep = multb(brep,abrep+nrep,2)
+  do b = 1, nv(brep)
+     do a = 1, ncont(arep)
+        do jrep = 1, nrep
+        irep = multb(jrep,abrep+nrep,2)
+        if (irep.lt.jrep) cycle
+!--------------------------------------------------------------
+! L2(ij,a*b) = L2(ij,a*b) + L1(i,a*) * f_bar(j,b) 
+!--------------------------------------------------------------
+        if (jrep.eq.brep) then
+           ij = 1
+           jb = (ivo(brep) + (b-1) * no(brep)) * rcw + 1
+           do j = 1, no(jrep)
+              imin = 1
+              if (irep.eq.jrep) imin = j + 1
+              ia = (e%oneNonDirac(arep) + (a-1) * no(arep) + imin - 1)*rcw + 1 !define ivx
+              ni = no(irep) - imin + 1
+              call xaxpy (ni,f_bar(jb),l1(ia),1,resl2(ijaboff+ij),1)
+              ij = ij + ni * rcw
+              jb = jb + rcw
+           enddo
+        endif
+!--------------------------------------------------------------
+! L2(ij,ab) = L2(ij,ab) - L1(j,a*) * f_bar(i,b) 
+!--------------------------------------------------------------
+        if (jrep.eq.arep) then
+           ij = 1
+           ja = (e%oneNonDirac(arep) + (a-1) * no(arep)) * rcw + 1  !define ivx
+           do j = 1, no(jrep)
+              imin = 1
+              if (irep.eq.jrep) imin = j + 1
+              ib = (ivo(brep) + (b-1) * no(brep) + imin - 1)*rcw + 1
+              ni = no(irep) - imin + 1
+               L1min(1) = -l1(ja)
+               if (carith) L1min(2) = -l1(ja+1)
+              call xaxpy (ni,L1min,f_bar(ib),1,resl2(ijaboff+ij),1)
+              ij = ij + ni * rcw
+              ja = ja + rcw
+           enddo
+        endif
+!--------------------------------------------------------
+! update offset and go to next irrep pair
+!--------------------------------------------------------
+       if (irep.ne.jrep) then
+          ijaboff = ijaboff + no(irep) * no(jrep) * rcw
+       else
+          ijaboff = ijaboff + no(irep) * (no(irep)-1) * rcw / 2
+       endif
+       enddo
+    enddo
+ enddo
+ enddo
+ enddo
+
+  call dealloc_array(e)
 
  end subroutine
 

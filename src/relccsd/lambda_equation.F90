@@ -184,110 +184,16 @@
 
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term3', dot_product(ResL2,ResL2)
+
 !--------------------------------------------------------
 !   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_bmej(je,bm)
-
-!   The following calls should be able to replace the hand coding below, but
-!   did not give the correct result. To be debugged before activating
+!--------------------------------------------------------
 
       call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
      &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
 
-!!!   CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVVO,JJOV,JJVO, &
-!!!  &              L2,buf2)
-
-!!!   CALL SRT1SS4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NV,NV,NO,MOV,J2OVVO,JJOV,JJVO, &
-!!!  &              w_voov,buf3)
-
-
-!!!   allocate (ResL2_temp(j2ovov(nrep+1)*rcw))
-
-!!!   ResL2_temp = 0.0d0
-
-
-!!!   do i = 1, nrep
-!!!      J = MULTB(i+NREP,1+NREP,2)
-
-!!!       M = mov(i)
-!!!       N = mov(i)
-!!!       K = mvo(j)
-
-!!!       ND = mov(i)
-!!!       off1 = 1 + j2ovvo(i)*rcw
-!!!       off2 = 1 + j2ovvo(i)*rcw
-!!!       off3 = 1 + j2ovov(i)*rcw
-
-!!!         CALL XGEMM ('N','T',M,N,K,A1,buf2(OFF1),M, &
-!!!   &                  buf3(OFF2),ND,A0,ResL2_temp(OFF3),M)
-
-!!!   enddo
-
-!!!   CALL SRT1TT4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NO,NV,NV,MOV,J2OVOV,JJOV,JJOV, &
-!!!  &              ResL2_temp,buf2)
-
-!!!   deallocate(ResL2_temp)
-
-!!!   CALL XAXPY (ndimt2,A1,buf2,1,resl2,1)
-
-!!!    if (iprnt.ge.1) &
-!!!&  write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
-
-
-!=============================================================================================
-
- !      call auto_symmetry_offset(e,mov,mov,.true.)
- !      call auto_symmetry_offset(f,mov,mvo,.true.)
- !      call auto_symmetry_offset(g,mov,mov,.true.)
-
- !    CALL SRT1TT5_exp (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVVO,JJOV,JJVO, &
- !   &              L2,buf2,e%twoDirac)
-
-
- !    CALL SRT1SS4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NV,NV,NO,MOV,J2OVVO,JJOV,JJVO, &
- !   &              w_voov,buf3)
-
-
- !    allocate (ResL2_temp(j2ovov(nrep+1)*rcw))
-
- !    ResL2_temp = 0.0d0
-
-
- !    do i = 1, nrep
-
- !       j = MULTB(i+NREP,1+NREP,1)
- !       l = multb(j+nrep,1+nrep,2)
-
- !        M = mov(i)
- !        N = mov(l)
- !        K = mvo(j)
-
- !        ND = mov(i)
-!!        off1 = 1 + j2ovvo(i)*rcw
-!!        off2 = 1 + j2ovvo(i)*rcw
-!!        off3 = 1 + j2ovov(i)*rcw
-
-!!         off1 = 1 + e%twoDirac(i,j)*rcw
- !        off1 = 1 + e%twoDirac(i,j)*rcw
- !        off2 = 1 + f%twononDirac(l,j)*rcw
- !        off3 = 1 + g%twononDirac(i,l)*rcw ! I haven't understood the reverse symmetry order.
-
- !        CALL XGEMM ('N','T',M,N,K,A1,buf2(OFF1),M, &
- !    &              buf3(OFF2),ND,A0,ResL2_temp(OFF3),M)
-
- !    enddo
-
- !    CALL SRT1TT4_exp (NREP,MULTB,.FALSE.,.TRUE.,NO,NO,NV,NV,MOV,JOVOV,JJOV,JJOV, &
- !   &              ResL2_temp,buf2,g%twononDirac)
-
- !    deallocate(ResL2_temp)
-
- !    CALL XAXPY (ndimt2,A1,buf2,1,resl2,1)
-
- !     if (iprnt.ge.1) &
- ! &  write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
-
 !-----------------------------------------------------------
-!   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*G_vv(b,e)
+!   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*G_vv(e,b)
 !-----------------------------------------------------------
 
       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/), &
