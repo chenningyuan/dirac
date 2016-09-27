@@ -526,8 +526,8 @@
 
 !   For the moment I am using as much in-core memory as possible. However we
 !   may think of writing them in files, replacing the integral ones...  
-
-
+! aspg: we should collect these actions into a routine, like
+!    call initialize_intermediates() 
     call alloc(B%Fbar_mi,   (nfoo*rcw), id="Fbar_mi")  
     call alloc(B%Fbar_me,   (nfvo*rcw), id="Fbar_me")  
     call alloc(B%Fbar_ae,   (nfvv*rcw), id="Fbar_ae")  
@@ -569,6 +569,18 @@
     call getampt(B%t1,B%t2)
     call IM_container(eomtype,B)
     call free_buffers(buf1,buf2,buf3)
+! 
+! now we set the state for the diagonalizer, as this should not change within a given type of calculation,
+! e.g. excitation energies
+!
+    call davidson_setup(unit_output= iw,   &
+                        solve_right=.true.,&
+                        solve_left=.false.,&
+                        symmetric=.false., &
+                        verbose=.false.,   &
+!                       convergence_threshold = relcc_mfd_convergence_threshold, &
+!                       max_subspace_size = relcc_mfd_max_subspace_size, &
+                        overlap_sorting=.true.)
 
 !
 ! be very careful with state_sym and nroot, now these are global variables in this module !!
@@ -782,22 +794,14 @@
 
          else
 ! if the matrix is too large, we use a matrix-free method like davidson etc 
-
-! todo: create the setup for davidson routine
-!           call davidson_setup(1.0e-2, subspace_size, nroot)
-            symmetric = .false.
-            verbose   = .false.
-            left_vectors = .false.
-            right_vectors = .true.
-
-            call initialize_davidson_results(davResults, N, nroot, left_vectors, right_vectors)
-
-            call initialize_sigma_construction(left_vectors,right_vectors)
-            call davidson_driver(iw, nroot, B, symmetric, davResults, verbose, r, left_vectors, right_vectors)
-
-!      Fock-Space like output for EA, EE and IP
-            call eom_analysis(davResults%eValuesRe,davResults%eVectorsR,eps)
-            call free_davidson_results(davResults)
+            call davidson_driver(nroot, B, davResults, r)
+            call eom_analysis(davResults%eValuesRe,davResults%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
+            call davidson_cleanup(davResults)
+!
+! we can replace what goes above with the following. the goal would be to have all energies before printing the results in the FS-like manner, outside the symmetry loop
+!           call davidson_driver(nroot, B, davResultsIrrep(state_sym), r)
+!           call davidson_cleanup(davResultsIrrep(state_sym))
+!
          end if
          call free_eom_ndet()
          call free_eom_nvx()
@@ -807,15 +811,16 @@
 ! this ends the loop over symmetries
    end do
 
-! todo:
-! allocations/deallocations of intermediates would be more simply handled via
-!    call initialize_intermediates() 
-
  451 continue
 
 ! move the analysis etc of eom here, so that it is printed only when all requested irreps are processed and calculated ?
-
+! something like this could be used,
+!    call eom_analysis_allirreps(davResultsIrrep, eps)
+!
      call free_intermediates(B)
+!    do state_sym = 1, 16
+!        call davidson_cleanup(davResultsIrrep(state_sym))
+!    end do
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
    end subroutine
@@ -1012,10 +1017,10 @@
  
 !     Now print an analysis of the vectors
 
-      if (ipr.le.0) then
+      if (ipr.le.1) then
          tres = 0.1d0
       elseif (ipr.le.2) then
-         tres = 0.1d0
+         tres = 0.01d0
       else
          tres = 0.0d0
       end if

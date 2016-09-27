@@ -58,6 +58,9 @@
         case ('*EOMCC')
            call read_input_cceom(word, kw_section)
 
+        case ('*CCDIAG')
+           call read_input_ccdiag(word, kw_section)
+
 #ifdef HAS_PCMSOLVER
         case ('*PCM   ')
            call read_input_pcm(word, kw_section)
@@ -1030,6 +1033,39 @@
 
 
    end subroutine
+
+
+   subroutine read_input_ccdiag(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.MAXSIZE')) then
+         call kw_read(word,  relcc_mfd_max_subspace_size)
+      end if
+
+      if (kw_matches(word, '.MAXITER')) then
+         call kw_read(word, relcc_mfd_max_iterations)
+      end if
+
+      if (kw_matches(word, '.CONVERG')) then
+         call kw_read(word, relcc_mfd_convergence_threshold)
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+
+   end subroutine
+
 
 
    subroutine read_input_ccsort(word, kw_section)
