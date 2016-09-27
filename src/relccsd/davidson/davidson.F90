@@ -192,7 +192,7 @@ contains
         if (present(max_iterations)) then
             davidson_max_iterations = max_iterations
         else
-            davidson_max_iterations = 80
+            davidson_max_iterations = 50
         end if
 
         if (present(solve_values)) then

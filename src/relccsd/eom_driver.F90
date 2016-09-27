@@ -1017,10 +1017,10 @@
  
 !     Now print an analysis of the vectors
 
-      if (ipr.le.0) then
+      if (ipr.le.1) then
          tres = 0.1d0
       elseif (ipr.le.2) then
-         tres = 0.1d0
+         tres = 0.01d0
       else
          tres = 0.0d0
       end if
