@@ -62,6 +62,25 @@ logical, save      :: davidson_save_sigmas
 logical, save      :: davidson_save_results
 logical, save      :: davidson_overlap_sorting
 
+! 
+! variables for controlling i/o
+!
+character(len=16), save :: left_sigma_file_name     = 'LSIGMAV.sym'
+character(len=16), save :: left_vectors_file_name   = 'LEVECTO.sym'
+character(len=16), save :: left_subspace_file_name  = 'LSUBSPA.sym'
+
+character(len=16), save :: right_sigma_file_name    = 'RSIGMAV.sym'
+character(len=16), save :: right_vectors_file_name  = 'REVECTO.sym'
+character(len=16), save :: right_subspace_file_name = 'RSUBSPA.sym'
+
+integer, save :: right_sigma_file_unit    = 140
+integer, save :: right_vectors_file_unit  = 141
+integer, save :: right_subspace_file_unit = 142
+
+integer, save :: left_sigma_file_unit     = 240
+integer, save :: left_vectors_file_unit   = 241
+integer, save :: left_subspace_file_unit  = 242
+
 contains 
 
 !
@@ -1339,6 +1358,106 @@ contains
         if (first < i-1) call quicksort_vector(v, indices_sorted, first, i-1)
         if (j+1 < last)  call quicksort_vector(v, indices_sorted, j+1, last)
     end subroutine 
+
+
+    subroutine save_davidson_setup(reclen,left,right,symmetry,node)
+        integer, intent(in) :: reclen, node, symmetry
+        logical, intent(in) :: left, right
+
+        left_sigma_file_name     = 'LSIGMAV.sym'//trim(str(symmetry))//"."//trim(str(node))
+        left_vectors_file_name   = 'LEVECTO.sym'//trim(str(symmetry))//"."//trim(str(node))
+        left_subspace_file_name  = 'LSUBSPA.sym'//trim(str(symmetry))//"."//trim(str(node))
+
+        right_sigma_file_name    = 'RSIGMAV.sym'//trim(str(symmetry))//"."//trim(str(node))
+        right_vectors_file_name  = 'REVECTO.sym'//trim(str(symmetry))//"."//trim(str(node))
+        right_subspace_file_name = 'RSUBSPA.sym'//trim(str(symmetry))//"."//trim(str(node))
+
+        if (right) then
+            open(unit=right_sigma_file_unit,file=right_sigma_file_name,&
+                 form="unformatted", access="direct", recl=reclen)
+            open(unit=right_vectors_file_unit, file=right_vectors_file_name, &
+                 form="unformatted", access="direct", recl=reclen)
+            open(unit=right_subspace_file_unit, file=right_subspace_file_name, &
+                 form="unformatted", access="direct", recl=reclen)
+        end if
+
+        if (left) then
+            open(unit=left_sigma_file_unit, file=left_sigma_file_name, &
+                 form='unformatted', access='direct', recl=reclen)
+            open(unit=left_vectors_file_unit, file=left_vectors_file_name, &
+                 form='unformatted', access='direct', recl=reclen)
+            open(unit=left_subspace_file_unit, file=left_subspace_file_name, &
+                 form='unformatted', access='direct', recl=reclen)
+        end if
+
+    end subroutine
+
+    subroutine save_davidson_finalize(left,right)
+        logical, intent(in) :: left, right
+
+        if (right) then
+            close(unit=right_sigma_file_unit)
+            close(unit=right_vectors_file_unit)
+            close(unit=right_subspace_file_unit)
+        end if
+
+        if (left) then
+            close(unit=left_sigma_file_unit)
+            close(unit=left_vectors_file_unit)
+            close(unit=left_subspace_file_unit)
+        end if
+
+    end subroutine
+
+    subroutine write_davidson_values_vectors(file_unit,valuesRe,valuesIm,vectors,column_start,column_end)
+        real(kind=8), intent(in) :: vectors(:,:), valuesRe(:), valuesIm(:)
+        integer, intent(in) :: column_start, column_end, file_unit
+        integer :: i
+
+        do i = column_start, column_end
+            write(file_unit, rec=i) valuesRe(i), valuesIm(i), vectors(:,i)
+        end do
+
+    end subroutine
+
+    subroutine read_davidson_values_vectors(file_unit,valuesRe,valuesIm,vectors,column_start,column_end)
+        real(kind=8), intent(inout) :: vectors(:,:), valuesRe(:), valuesIm(:)
+        integer, intent(in) :: column_start, column_end, file_unit
+        integer :: i
+
+        do i = column_start, column_end
+            read(file_unit, rec=i) valuesRe(i), valuesIm(i), vectors(:,i)
+        end do
+
+    end subroutine
+
+    subroutine write_davidson_data_2d(file_unit,data2d,column_start,column_end)
+        real(kind=8), intent(in) :: data2d(:,:)
+        integer, intent(in) :: column_start, column_end, file_unit
+        integer :: i
+
+        do i = column_start, column_end
+            write(file_unit, rec=i) data2d(:,i)
+        end do
+    end subroutine
+
+    subroutine read_davidson_data_2d(file_unit,data2d,column_start,column_end)
+        real(kind=8), intent(inout) :: data2d(:,:)
+        integer, intent(in) :: column_start, column_end, file_unit
+        integer :: i
+
+        do i = column_start, column_end
+            read(file_unit, rec=i) data2d(:,i)
+        end do
+    end subroutine
+
+! taken from http://stackoverflow.com/questions/1262695/converting-integers-to-strings-in-fortran
+    character(len=20) function str(k)
+!       "Convert an integer to string."
+        integer, intent(in) :: k
+        write (str, *) k
+        str = adjustl(str)
+    end function str
 
 end module
 
