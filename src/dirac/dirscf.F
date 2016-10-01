@@ -4161,8 +4161,7 @@ C***********************************************************************
         if(nelect_dhf.ne.total_num_e)then
           print *, 'calculated # of e-: ',nelect_dhf
           print *, 'total # of e-     : ',total_num_e
-          call quit(' *** error in automatic occupation module: 
-     & calculated # of e- does not match the total # of e-.***')
+          call quit(' *** error in calculated # of e-')
         end if
 
       else ! naelec_dhf != 2*deg_counter
@@ -4229,8 +4228,7 @@ C***********************************************************************
           if(nelect_dhf+naelec_dhf.ne.total_num_e)then
             print *, 'calculated # of e-: ',nelect_dhf+naelec_dhf
             print *, 'total # of e-     : ',total_num_e
-            call quit(' *** error in automatic occupation module: 
-     & calculated # of e- does not match the total # of e-.***')
+            call quit(' *** error in calculated # of e-')
           end if
 
 !         initial occupation from the Aufbau principle ended up with a
@@ -4245,8 +4243,7 @@ C***********************************************************************
           if(naelec_dhf.ne.1)then
             print *, 'calculated # of active e- : ',naelec_dhf
             print *, 'total # of degenerate orbs: ',deg_counter
-            call quit(' *** error in automatic occupation module:
-     & calculated # of active e- does not match the # of deg. orbs.***')
+            call quit(' *** error in calculated # of active e-')
           end if
 
           nasht_dhf  = naelec_dhf
