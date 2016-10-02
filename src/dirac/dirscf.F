@@ -1988,7 +1988,6 @@ C           fact that all Fock matrices were multiplied with 2
 C           in TWOFCK.
 C
          DFRAC2 = DP25*DFRAC1*DFRAC1*DA(ISHELL)
-!        print *, 'dfrac1, dfrac2',dfrac1,dfrac2
 C...     Intra-shell contributions
          DO IZ = 1,NZ
             E(IZ,1,ISHELL) =
