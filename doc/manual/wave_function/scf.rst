@@ -688,8 +688,11 @@ symmetry independent nuclei in the DIRAC basis file.
 
 keyword(FROZEN)
 
-Freeze orbitals (must only be used in conjunction with
-:ref:`SCF_.PROJECT`).
+Freeze orbitals. This keyword must only be used in conjunction with the keyword
+:ref:`SCF_.PROJECT`. The latter keyword eliminates selected orbitals from the
+variational space. From the list of eliminated orbitals, the user can select those
+that should be added to the coefficient array after diagonalization of the Fock matrix
+in orthonormal basis. To do so, the user must, for each fermion irrep, give an :ref:`orbital_strings`
+giving the position of the eliminated orbital in the coefficient array. If the value zero
+is given, it means that this eliminated orbital is definitely out and not kept frozen.
 
-For each fermion irrep, give an :ref:`orbital_strings` of
-orbitals to freeze.

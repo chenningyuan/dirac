@@ -79,7 +79,7 @@ $ H-TYPE FUNCTIONS
 a 3
 $ LITHIUM       (10s,8p,7d,6f,4g,3h,1i)
 $ S-TYPE FUNCTIONS
-    10   0    0
+   10    0    0
     115.55300000
      24.228600000
       7.7953700000
@@ -134,7 +134,7 @@ $ I-TYPE FUNCTIONS
 a 4
 $ BERYLLIUM       (10s,8p,7d,6f,4g,3h,1i)
 $ S-TYPE FUNCTIONS
-    10   0    0
+   10    0    0
     155.47600000
      33.616500000
       9.8657500000
@@ -189,7 +189,7 @@ $ I-TYPE FUNCTIONS
 a 5
 $ BORON       (10s,8p,7d,6f,4g,3h,1i)
 $ S-TYPE FUNCTIONS
-    10   0    0
+   10    0    0
     142.71500000
      34.757300000
       9.0633200000
@@ -244,7 +244,7 @@ $ I-TYPE FUNCTIONS
 a 6
 $ CARBON       (10s,8p,7d,6f,4g,3h,1i)
 $ S-TYPE FUNCTIONS
-    10   0    0
+   10    0    0
     247.06400000
      53.400400000
      13.932000000
@@ -299,7 +299,7 @@ $ I-TYPE FUNCTIONS
 a 7
 $ NITROGEN       (10s,8p,7d,6f,4g,3h,1i)
 $ S-TYPE FUNCTIONS
-    10   0    0
+   10    0    0
     330.81400000
      72.692500000
      18.515300000
@@ -354,7 +354,7 @@ $ I-TYPE FUNCTIONS
 a 8
 $ OXYGEN       (10s,8p,7d,6f,4g,3h,1i)
 $ S-TYPE FUNCTIONS
-    10   0    0
+   10    0    0
     488.56100000
     105.27900000
      28.708200000
@@ -409,7 +409,7 @@ $ I-TYPE FUNCTIONS
 a 9
 $ FLUORINE       (10s,8p,7d,6f,4g,3h,1i)
 $ S-TYPE FUNCTIONS
-    10   0    0
+   10    0    0
     645.42400000
     138.61800000
      38.729500000
@@ -464,7 +464,7 @@ $ I-TYPE FUNCTIONS
 a 10
 $ NEON       (10s,8p,7d,6f,4g,3h,1i)
 $ S-TYPE FUNCTIONS
-    10   0    0
+   10    0    0
     812.72000000
     174.70000000
      44.592600000
@@ -519,7 +519,7 @@ $ I-TYPE FUNCTIONS
 a 11
 $ SODIUM       (12s,11p,9d,7f,5g,3h,1i)
 $ S-TYPE FUNCTIONS
-    12   0    0
+   12    0    0
     419.61600000
      76.184400000
      36.109400000
@@ -583,7 +583,7 @@ $ I-TYPE FUNCTIONS
 a 12
 $ MAGNESIUM       (12s,11p,9d,7f,5g,3h,1i)
 $ S-TYPE FUNCTIONS
-    12   0    0
+   12    0    0
     540.41600000
     102.12700000
      43.111400000
@@ -647,7 +647,7 @@ $ I-TYPE FUNCTIONS
 a 13
 $ ALUMINUM       (12s,11p,9d,7f,5g,3h,1i)
 $ S-TYPE FUNCTIONS
-    12   0    0
+   12    0    0
     622.65800000
     126.72300000
      50.988000000
@@ -711,7 +711,7 @@ $ I-TYPE FUNCTIONS
 a 14
 $ SILICON       (12s,11p,9d,7f,5g,3h,1i)
 $ S-TYPE FUNCTIONS
-    12   0    0
+   12    0    0
     731.47500000
     151.82300000
      67.672100000
@@ -775,7 +775,7 @@ $ I-TYPE FUNCTIONS
 a 15
 $ PHOSPHOROUS       (12s,11p,9d,7f,5g,3h,1i)
 $ S-TYPE FUNCTIONS
-    12   0    0
+   12    0    0
     901.73800000
     197.09600000
      81.752300000
@@ -839,7 +839,7 @@ $ I-TYPE FUNCTIONS
 a 16
 $ SULFUR       (12s,11p,9d,7f,5g,3h,1i)
 $ S-TYPE FUNCTIONS
-    12   0    0
+   12    0    0
    1061.1400000
     244.79900000
      98.446100000
@@ -903,7 +903,7 @@ $ I-TYPE FUNCTIONS
 a 17
 $ CHLORINE       (12s,11p,9d,7f,5g,3h,1i)
 $ S-TYPE FUNCTIONS
-    12   0    0
+   12    0    0
    1275.1900000
     308.27100000
     107.71100000
@@ -967,7 +967,7 @@ $ I-TYPE FUNCTIONS
 a 18
 $ ARGON       (12s,11p,9d,7f,5g,3h,1i)
 $ S-TYPE FUNCTIONS
-    12   0    0
+   12    0    0
    1632.4000000
     367.09200000
     141.24500000
@@ -1031,7 +1031,7 @@ $ I-TYPE FUNCTIONS
 a 21
 $ SCANDIUM       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     228.5930000
     105.6560000
      52.1820000
@@ -1123,7 +1123,7 @@ $ L-TYPE FUNCTIONS
 a 22
 $ TITANIUM       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     245.7080000
     119.8290000
      57.5570000
@@ -1215,7 +1215,7 @@ $ L-TYPE FUNCTIONS
 a 23
 $ VANADIUM       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     294.8300000
     152.4960000
      68.3160000
@@ -1307,7 +1307,7 @@ $ L-TYPE FUNCTIONS
 a 24
 $ CHROMIUM       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     345.7490000
     173.4600000
      76.3031000
@@ -1399,7 +1399,7 @@ $ L-TYPE FUNCTIONS
 a 25
 $ MANGANESE       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     382.4970000
     195.3480000
      83.2642000
@@ -1491,7 +1491,7 @@ $ L-TYPE FUNCTIONS
 a 26
 $ IRON       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     411.1890000
     219.3440000
      92.2630000
@@ -1583,7 +1583,7 @@ $ L-TYPE FUNCTIONS
 a 27
 $ COBALT       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     432.1520000
     225.9270000
      99.2568000
@@ -1675,7 +1675,7 @@ $ L-TYPE FUNCTIONS
 a 28
 $ NICKEL       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     457.0840000
     239.8970000
     108.2470000
@@ -1767,7 +1767,7 @@ $ L-TYPE FUNCTIONS
 a 29
 $ COPPER       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     472.2810000
     248.1180000
     116.4960000
@@ -1859,7 +1859,7 @@ $ L-TYPE FUNCTIONS
 a 30
 $ ZINC       (13s,12p,11d,10f,9g,6h,5i,4k,2l)
 $ S-TYPE FUNCTIONS
-    13   0    0
+   13    0    0
     495.3420000
     266.1960000
     125.5760000

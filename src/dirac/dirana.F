@@ -4261,11 +4261,12 @@ C.......Read information from coefficient file
 C.............NPSH............NESH............NBAS...........TOTERG
         CLOSE(LUCOEF,STATUS='KEEP')
         IF(NAO(INDEP).NE.MBAS) THEN
-           WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
+           WRITE(LUPRI,'(A,A,I3,/,A,A6,A,I6)') 
      &     'Atomic projection analysis: ',
      &     '  Wrong number of basis function for atomic type ', ITYP,
      &     '  Number read from                     ',
      &     REFFIL(INDEP),' : '  ,MBAS
+           write(LUPRI,*) 'NAO(INDEP), MBAS:',NAO(INDEP), MBAS
            CALL QUIT
      &     ('PRJAOB: Wrong number of basis functions !')
         ENDIF

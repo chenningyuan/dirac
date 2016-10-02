@@ -461,6 +461,7 @@ C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
+      TDXC=D0
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
 
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
@@ -1907,7 +1908,7 @@ C****************************************************************************
 C
 C     PURPOSE:
 C   ==============
-C        Calculate Dirac-Hartree-Fock or 2comp. SCF energy
+C        Calculate the SCF energy using the formula
 C
 C           E(SCF) = D(IJ)(*)(F1(IJ)+0.5F2(IJ))
 C
@@ -1915,7 +1916,8 @@ C     On input:
 C        F1, F2 - one- and two-electron Fock matrixes in SA-AO basis
 C        DMAT  - density matrix in SA-AO basis
 C
-C     On output: nothink, only print-out
+C     On output: internal variables of SCF energy updated
+C 
 C
 C     Last revision: 971022-jth
 C                    Sept 2005, Miro Ilias - added control outputs
@@ -2013,12 +2015,16 @@ C
             END DO
          END DO
       END DO
-
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
-        e(1, 2, 0) = e(1, 2, 0) - xcint_get_xc_mat_energy()
+!Miro: separate this contribution into own variable, xcint_xc_energy
+!     the density for calculation is the same as for xcint_xc_contribution to the 2el Fock matrix
+        xcint_xc_energy=xcint_get_xc_mat_energy()
+        e(1, 2, 0) = e(1, 2, 0) - xcint_xc_energy
+        !print *
+        !print *,'ERGCAL: xcint_get_xc_mat_energy()=',xcint_xc_energy
+        !print *
       end if
-
       DO IZ = 1,NZ
         DO IOPEN = 0,ITOP
            E1PART = E1PART + E(IZ,1,IOPEN)
@@ -2052,7 +2058,12 @@ C
       ELERGY = E1PART + E2PART
 
       if (dirac_cfg_dft_calculation) then
-        elergy = elergy + xcint_get_xc_energy()
+        xcint_elergy=xcint_get_xc_energy()
+        !elergy = elergy + xcint_get_xc_energy()
+        elergy = elergy + xcint_elergy
+        IF(IPRSCF.GE.5) THEN
+          print *,'ERGCAL: xcint_get_xc_energy()=',xcint_elergy
+        ENDIF
       end if
 
       if (dirac_cfg_fde) then
@@ -2062,13 +2073,12 @@ C
          end if
       end if
 
-
       DHFERG = DHFERG + ELERGY
 C
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
 CMI      ... print out matrixes ...
-         IF (IPRSCF.GE.5.AND.IPRHAM.GE.7) THEN
+         IF (IPRSCF.GE.5) THEN
           CALL HEADER(
      &    'ERGCAL: Entering total Fock F1 matrix in SA-AO',-1)
           CALL PRQMAT(F1,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
@@ -4150,8 +4160,7 @@ C***********************************************************************
         if(nelect_dhf.ne.total_num_e)then
           print *, 'calculated # of e-: ',nelect_dhf
           print *, 'total # of e-     : ',total_num_e
-          call quit(' *** error in automatic occupation module: 
-     & calculated # of e- does not match the total # of e-.***')
+          call quit(' *** error in calculated # of e-')
         end if
 
       else ! naelec_dhf != 2*deg_counter
@@ -4218,8 +4227,7 @@ C***********************************************************************
           if(nelect_dhf+naelec_dhf.ne.total_num_e)then
             print *, 'calculated # of e-: ',nelect_dhf+naelec_dhf
             print *, 'total # of e-     : ',total_num_e
-            call quit(' *** error in automatic occupation module: 
-     & calculated # of e- does not match the total # of e-.***')
+            call quit(' *** error in calculated # of e-')
           end if
 
 !         initial occupation from the Aufbau principle ended up with a
@@ -4234,8 +4242,7 @@ C***********************************************************************
           if(naelec_dhf.ne.1)then
             print *, 'calculated # of active e- : ',naelec_dhf
             print *, 'total # of degenerate orbs: ',deg_counter
-            call quit(' *** error in automatic occupation module:
-     & calculated # of active e- does not match the # of deg. orbs.***')
+            call quit(' *** error in calculated # of active e-')
           end if
 
           nasht_dhf  = naelec_dhf

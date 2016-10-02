@@ -4236,9 +4236,21 @@ C&&&& VECREF: Fragment vectors
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
-                    READ(LUCMD,'(A6)') REFFIL(J)
-                    READ(LUCMD, '(I8)') NPROJNUC(J)
-                    READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
+                    READ(LUCMD,'(A6)', IOSTAT=IOS1) REFFIL(J)
+                    IF (IOS1.NE.0) THEN ! miro: specific error message
+                      call quit('error in REFFIL(J) reading!')
+                    ENDIF
+                    READ(LUCMD, '(I8)', IOSTAT=IOS2) NPROJNUC(J)
+                    IF (IOS2.NE.0) THEN ! miro: specific error message
+                      write(LUPRI,*) 'J,NREFS:',J,NREFS
+                      call quit('error in NPROJNUC(J) reading!')
+                    ENDIF
+                    READ(LUCMD,'(A72)', IOSTAT=IOS3) 
+     &              (VECREF(I,J),I=1,NFSYM)
+                    IF (IOS3.NE.0) THEN ! miro: specific error message
+                      call quit('error in VECREF(I,J) reading!')
+                    ENDIF
+
                  ENDDO
                   REFFIL(NREFS+1) = 'Polari'
                GO TO 100
@@ -7249,8 +7261,12 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
+#if !defined MOD_UNRELEASED
       IF (DORES .AND.dirac_cfg_dft_calculation)
-     &   CALL QUIT ('.RESOLVE does not work with DFT')
+     &   CALL QUIT ('.RESOLVE does not work with DFT !')
+#endif
+
+
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
 C     the input routines use different common blocks,
 C     so I think running both should be OK. I have modified the test:
