@@ -4912,6 +4912,12 @@ C
      &             WORK(KCMO),WORK(KEIG),WORK(KIBE),IOFF,
      &             WORK,KFREE,LFREE)
 C
+C     Collect fragment info
+C      
+      CALL MEMGET('INTE',KSEL,2*NVECT,WORK,KFREE,LFREE)
+      CALL FRAGINFO(WORK(KSEL),NVECT,KVEC,NFRAG,NSTR,
+     &              WORK,KFREE,LFREE)
+C
 C     Throw away the full set of coefficients and eigenvalues
 C     =======================================================
 C
@@ -4919,10 +4925,9 @@ C
 C
 C     Reduce variational space by projection using the fragment orbitals
 C     ===================================================================
-C     If more than one set of fragment orbitals, they must be orthogonalized !
 C
       CALL PSIPR1(NVECS,WORK(KQ),WORK(KE),WORK(KI),TMAT,TINV,
-     &            NSTR,IPRINT,WORK,KFREE,LFREE)
+     &            NSTR,WORK(KSEL),IPRINT,WORK,KFREE,LFREE)
  30   CONTINUE
       CALL MEMREL('PSIPRJ.final',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
@@ -6830,7 +6835,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck psipr1 */
       SUBROUTINE PSIPR1(NVECS,CSEL,ESEL,ISEL,TMAT,TINV,NSTR,
-     &                  IPRINT,WORK,KFREE,LFREE)
+     &                  INFOSEL,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C      Reduce variational space by projection using the fragment orbitals
@@ -6863,7 +6868,8 @@ C
 #include "dcbbas.h"
 #include "dcbdhf.h"
       integer, allocatable :: NVECS_SUB(:)
-      DIMENSION CSEL(*),ESEL(*),ISEL(*),TMAT(*),TINV(*),WORK(*)
+      DIMENSION CSEL(*),ESEL(*),ISEL(*),TMAT(*),TINV(*),
+     &          INFOSEL(2,*),WORK(*)
       DIMENSION NVECS(2),NQ(2),NSTR(2,0:2,MFRAG)
 C
       CALL QENTER('PSIPR1')
@@ -6889,6 +6895,7 @@ C     when there is no subblock ...
 C     TROND
       IF (SUB_BL) THEN
         ITEFF = 0
+        IVOFF = 0 
         DO 8 IFRP =  1,NFSYM
           NQ(1) = 0
           NQ(2) = 0
@@ -6901,9 +6908,15 @@ C.........First find how the selected vectors are distributed on subblocks
 C...........Find orbitals in this subblock
             NVECS_SUB(ISUB) = 0
             DO IVEC = 1,NVECS(IFRP)
-            WRITE(6,*) 'TEST..isel..',ISEL(IVEC),ID_SUB_BL(ISUB,IFRP)             
+               WRITE(6,*) 'TEST..isel..',ISEL(IVEC),ID_SUB_BL(ISUB,IFRP)
+               WRITE(6,*) 'TEST..infosel..',INFOSEL(1,IVOFF+IVEC)
             IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
-              NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
+               NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
+               IF(INFOSEL(1,IVOFF+IVEC).GT.0) THEN
+                  NORB_SUB(ISUB,IFRP,1) = NORB_SUB(ISUB,IFRP,1) - 1
+               ELSE
+                  NORB_SUB(ISUB,IFRP,2) = NORB_SUB(ISUB,IFRP,2) - 1
+               ENDIF
             ENDIF
             ENDDO
             NREF = NREF+NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
@@ -7009,7 +7022,8 @@ C.............Backtransform new transformation matrix (TINV now contains this pa
               ENDDO
             ENDIF ! IF(NVECS_SUB(ISUB).GT.0) THEN
             IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
-            NORB_SUB(ISUB,IFRP,0) = NEFF
+            NORB_SUB(ISUB,IFRP,0) = NORB_SUB(ISUB,IFRP,1)
+     &                            + NORB_SUB(ISUB,IFRP,2)
             IBEFF = IBEFF + NEFF
           ENDIF
           ENDDO                    ! DO ISUB = 1,N_SUB_BL(IFRP)
@@ -7029,7 +7043,8 @@ C
          I2TMT(IFRP) = N2TMT
          N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
          ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ  ! update offset for selected coefficients
-         IEOFF = IEOFF + NVECS(IFRP)                   ! update offset for energies and supersymmetries
+         IEOFF = IEOFF + NVECS(IFRP) ! update offset for energies and supersymmetries
+         IVOFF = IVOFF + NVECS(IFRP)
  8      CONTINUE
       ELSE ! IF (SUB_BL) THEN
       DO 10 IFRP = 1,NFSYM

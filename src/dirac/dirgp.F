@@ -4765,4 +4765,32 @@ C
       
       return
       end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FRAGINFO(INFOSEL,NVECT,KVEC,NFRAG,NSTR,
+     &      WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Collect info about fragments in an integer array
+C
+C     Written by T. Saue Oct 5 2016
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"      
+      DIMENSION INFOSEL(2,NVECT),KVEC(2,NFRAG),NSTR(2,0:2,NFRAG),
+     &     WORK(*)
+      IOFF = 1
+      DO IFRP = 1,NFSYM
+         DO IFRAG = 1,NFRAG
+            CALL IICOPY(NSTR(IFRP,0,IFRAG),WORK(KVEC(IFRP,IFRAG)),1,1,
+     &           INFOSEL(1,IOFF),2,1)
+            CALL ICOPY(NSTR(IFRP,0,IFRAG),IFRAG,0,
+     &           INFOSEL(2,IOFF),2)
+            IOFF = IOFF + NSTR(IFRP,0,IFRAG)
+         ENDDO
+      ENDDO
+      RETURN
+      END
 ! -- end of dirgp.F --
