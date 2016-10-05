@@ -2923,8 +2923,9 @@ C.....loop over fragments
         ENDIF
         INQUIRE(FILE=FRAGFIL(IFRAG),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
-           WRITE(LUPRI,'(A,A6,A)') 
-     &     'Fragment coefficient file ',FRAGFIL(IFRAG),' not present'
+           WRITE(LUPRI,'(A,I2,A,I2,A,A6,A)') 
+     &     'Fragment coefficient file no. ',
+     &     IFRAG,'/',NFRAG,' named ',FRAGFIL(IFRAG),' not present'
            CALL QUIT('SELFRAG: No fragment coefficients !')
         ENDIF
 C
