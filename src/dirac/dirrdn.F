@@ -1002,9 +1002,9 @@ C     initial molecular orbitals:
       TRIVEC    = .TRUE. ! default!
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
-      BNCRON    = .TRUE.
+      BNCRON    = .FALSE.
       force_bnc = .false.
-      BNSPON    = .FALSE. ! use either this or BNCRON
+      BNSPON    = .TRUE.  ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
       EWMO      = .FALSE. ! in huckel.h

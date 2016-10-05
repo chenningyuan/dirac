@@ -679,7 +679,6 @@ C        Hermitian operator
          IHRMOP(I) = 1
       END DO
 C
-C
       RETURN
 C
       END

@@ -14,6 +14,8 @@ EMBPOT
 **WAVE FUNCTIONS
 .SCF
 *SCF
+.MOSTART ! test is made with old start procedure and not converged, so we need to use this
+BNCORR    
 .EVCCNV
  1.0D-2
 **PROPERTIES
