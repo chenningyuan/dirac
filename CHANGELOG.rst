@@ -1,6 +1,8 @@
-15.1 (2016-05-10)
+15.1 (2016-09-??)
 -----------------
 
+- Bugfix: MCSCF and GASCIP was not correct for odd number of electrons
+- Bugfix: now .CASSCF works again for KRMSCF input
 - Change any tab character in coordinate specifications in .mol file to a blank
   (tab characters have been reported to cause errors in reading coordinates).
 - Bugfix: KRMSCF was not converging is some cases (problem reported by Miro Ilias for Os atom).
@@ -27,6 +29,7 @@
 - Restored "make install" target.
 - Cache compiler flags.
 - Test reladc_fano does not report failure if Stieltjes is deactivated.
+- .AOFOCK documented. AOFOCK is now default if at least 25 MPI nodes (parallelizes better than SOFOCK)
 
 
 15.0 (2015-12-16)

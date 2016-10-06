@@ -6058,13 +6058,20 @@ C          XMIN ; FUNCT(..,XMIN,..) < 0
 C  Output: XDET ; FUNCT(..,XDET,..) = 0
 C
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION GDDIA(*),HESDIA(*)
       PARAMETER ( MAXIT=100 , D2=2.0D0 , D0=0.0D0 , DTEST=1.0D-7 )
       EXTERNAL FUNCT
       IFAIL = 0
       FMAX  = FUNCT(GDDIA,HESDIA,XMAX,NCORD,TRUSTR)
       FMIN  = FUNCT(GDDIA,HESDIA,XMIN,NCORD,TRUSTR)
-      IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) )  RETURN
+      IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) )  THEN
+         WRITE(LUPRI,'(1P,//A,2(/A,2D15.2))')
+     &    'Invalid input to WLKBIS, expected E(XMAX)>0 and E(XMIN)<0',
+     &    '   XMAX, E(XMAX) : ',XMAX,FMAX,
+     &    '   XMIN, E(XMIN) : ',XMIN,FMIN
+         RETURN
+      END IF
 C
       ITER = 0
  100  CONTINUE
