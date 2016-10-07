@@ -1441,6 +1441,7 @@ C
       IF(NREFS.GT.1.OR.POLREF) THEN
         NDIM=NTOT*NTOT*NZ
         CALL MEMGET('REAL',KAMAT,NTOT*NTOT*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KAMAT1,NTOT*NTOT,WORK,KFREE,LFREE)
       ELSE
         KAMAT = KFREE
       ENDIF
@@ -1450,7 +1451,8 @@ C
       IF(POLREF) THEN
         CALL PRJAN2(CMO(1,IMOL,1),EIG(IMOL),NMOL,NBAS,NTOT,
      &              CMO          ,EIG      ,NREF,NBAS,NTOT,
-     &              NTOT,NBAS,NZ,IPQ,WORK(KAMAT),BVEC,SMAT,PTOL,
+     &              NTOT,NBAS,NZ,IPQ,WORK(KAMAT),WORK(KAMAT1),
+     &              BVEC,SMAT,PTOL,
      &              NREFS,REFFIL,NFRAGV,IPRINT,WORK,KFREE,LFREE)
         CALL KNIZIA(CMO,BVEC,SMAT,WORK(KAMAT),NTOT,NMOL,
      &              NBAS,NZ,IPQ,NREFS,REFFIL,NFRAGV,
@@ -1461,7 +1463,8 @@ C     Get fragment expansion coefficients
 C
       CALL PRJAN2(CMO(1,IMOL,1),EIG(IMOL),NMOL,NBAS,NTOT,
      &            CMO          ,EIG      ,NREF,NBAS,NTOT,
-     &            NTOT,NBAS,NZ,IPQ,WORK(KAMAT),BVEC,SMAT,PTOL,
+     &            NTOT,NBAS,NZ,IPQ,WORK(KAMAT),WORK(KAMAT1),
+     &            BVEC,SMAT,PTOL,
      &            NREFS,REFFIL,NFRAGV,IPRINT,WORK,KFREE,LFREE)
 C
 C     Replace molecular coefficients by polarization contribution 
@@ -1506,7 +1509,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRJAN2(CMOL,EMOL,NMOL,LRMOL,LCMOL,
      &                  CREF,EREF,NREF,LRREF,LCREF,
-     &                  NTOT,NBAS,NZ,IPQ,AMAT,BVEC,SMAT,PTOL,
+     &                  NTOT,NBAS,NZ,IPQ,AMAT,AMAT1,BVEC,SMAT,PTOL,
      &                  NFRAG,FRAGLAB,NFRAGV,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -1526,6 +1529,7 @@ C
       real(8),intent(in)      :: SMAT(NBAS,NBAS),PTOL
       integer,intent(inout)   :: KFREE,LFREE
       real(8),intent(out)     :: AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ)
+      real(8),intent(out)     :: AMAT1(NTOT,NTOT,1)
       real(8),intent(out)     :: WORK(*)
       real(8), allocatable    :: BUF1(:),BUF2(:)
       integer, allocatable    :: IPIVOT(:)
@@ -1553,6 +1557,8 @@ C
      &             CREF,LRREF,LCREF,NZ,IPQ,
      &             CREF,LRREF,LCREF,NZ,IPQ,
      &             WORK(KFREE),LFREE,IPRINT)
+
+        CALL AMPLITUDES(AMAT,AMAT1,NTOT,NZ)
 C
 C       Print overlaps
 C       ==============
@@ -1562,10 +1568,14 @@ C
           DO J = 1,NFRAG
             IOFF = 1
             DO I = 1,(J-1)
-              WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
+              WRITE(LUPRI,'(/,A,2(3X,A6))') '*Overlaps :',
      &             FRAGLAB(I),FRAGLAB(J)
               CALL PRQMAT(AMAT(IOFF,JOFF,1),NFRAGV(I),NFRAGV(J),
      &                    NTOT,NTOT,NZ,IPQ,LUPRI)
+              WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps - amplitudes :',
+     &             FRAGLAB(I),FRAGLAB(J)
+              CALL PRQMAT(AMAT1(IOFF,JOFF,1),NFRAGV(I),NFRAGV(J),
+     &                    NTOT,NTOT,1,IPQ,LUPRI)
               IOFF = IOFF + NFRAGV(I)
             ENDDO
             JOFF = JOFF + NFRAGV(J)
