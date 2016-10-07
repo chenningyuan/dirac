@@ -2675,13 +2675,6 @@ C     respect to a set of fragment orbitals
 C
       IF(PROJEC) THEN
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
-        N2TMOTQ = 0
-        DO IFRP = 1,NFSYM
-          I2TMOT(IFRP) = N2TMOTQ
-          N2TMO(IFRP) = NTMO(IFRP)*NTMO(IFRP)
-          N2TMOTQ = N2TMOTQ + N2TMO(IFRP)*NZ
-          NORB(IFRP) = NTMO(IFRP) + NFRO(IFRP)
-        ENDDO
         CALL SETDC2(0)
       ENDIF
 C
@@ -4933,108 +4926,6 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C /* Deck prjcnt */
-      SUBROUTINE PRJCNT(VMO,VAO,IFRP,NMO,NAO,NEFF,IVEC,TMAT)
-C***********************************************************************
-C
-C     After a projection step, backtransform to SO-basis
-C     VMO is Mo transformation matrix after transformation.
-C     The columns for which IVEC=1 are backtransformed to
-C     VAO, the transformation matrix in AO-basis, using
-C     the transformation matrix TMAT
-C
-C     Written by T.Saue Jan 31 2001
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
-C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "dcbham.h"
-      DIMENSION VMO(NMO,NMO,NZ),VAO(NAO,NEFF,NZ),IVEC(*),
-     &          TMAT(NAO,NMO,NZT)
-      DIMENSION IBOS(0:7)
-      NBRP = 4/NZ
-      DO ISYM = 1, NBRP
-        IREP = JFSYM(ISYM,IFRP) - 1
-        IBOS(IREP) = ISYM
-      ENDDO
-      II = 0
-      DO I = 1,NMO
-      IF(IVEC(I).GE.-100) THEN
-        II = II + 1
-        CALL QGEMM(NAO,1,NMO,D1,
-     &          'N','N',IPQTOQ(1,0),TMAT,NAO,NMO,NZT,
-     &          'N','N',IPQTOQ(1,0),VMO(1,I,1), NMO,NMO,NZ,
-     &          D0,IPQTOQ(1,0),VAO(1,II,1),NAO,NEFF,NZ)
-      ELSE
-        IF(SUB_BL) THEN
-          ID = -MOD(IVEC(I),1000)
-          IP   = -(IVEC(I)+ID)/1000
-          DO IB = 1, N_SUB_BL(IFRP)
-            IF(ID.eq.ID_SUB_BL(IB,IFRP)) THEN
-              NORB_SUB(IB,IFRP,IP) = NORB_SUB(IB,IFRP,IP) - 1
-              GOTO 10
-            ENDIF
-          ENDDO
- 10       CONTINUE
-        ENDIF
-      ENDIF
-      ENDDO
-      DO IB = 1, N_SUB_BL(IFRP)
-        NORB_SUB(IB,IFRP,0) = NORB_SUB(IB,IFRP,1)+NORB_SUB(IB,IFRP,2)
-      ENDDO
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C /* Deck prjcnt2 */
-      SUBROUTINE PRJCNT2(IVEC,IFRP,NBAS,TMAT,NMAT,TBUF,NBUF)
-C***********************************************************************
-C
-C     After a projection step, update dimension arrays in
-C     COMMON blocks DCBBAS and DCBORB
-C     Written by T.Saue Jan 31 2001
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-      DIMENSION IVEC(*),TMAT(NBAS,NMAT,NZ),TBUF(NBAS,NBUF,NZ)
-      NSYM = 4/NZ
-      JVEC = 0
-      JBUF = 0
-      DO ISYM = 1,NSYM
-        DO IC = 2,1,-1
-          NVEC = NBORB(ISYM,IFRP,IC)
-          IF(NVEC.GT.0) THEN
-            NBORB(ISYM,IFRP,IC)=ISUM(NVEC,IVEC(JVEC+1),1)
-            DO II = 1,NVEC
-              JVEC = JVEC + 1
-              IF(IVEC(JVEC).EQ.1) THEN
-                JBUF = JBUF + 1
-                DO IZ = 1,NZ
-                  CALL DCOPY(NBAS,TMAT(1,JVEC,IZ),1,TBUF(1,JBUF,IZ),1)
-                ENDDO
-              ENDIF
-            ENDDO
-          ENDIF
-        ENDDO
-        NBORB(ISYM,IFRP,0) = NBORB(ISYM,IFRP,1) + NBORB(ISYM,IFRP,2)
-      ENDDO
-      NESH(IFRP) = ISUM(NSYM,NBORB(1,IFRP,1),1)
-      NPSH(IFRP) = ISUM(NSYM,NBORB(1,IFRP,2),1)
-      NORB(IFRP) = NESH(IFRP) + NPSH(IFRP)
-      RETURN
-      END
-C
 C*****************************************************************************
 C  /* Deck mk1cex */
       SUBROUTINE MK1CEX (WORK,KFREE,LFREE,IPRINT)
@@ -6129,8 +6020,9 @@ C
         IOFT = IOFT + NFBAS(I,0)*NORB(I)
         IOFU = IOFU + NORB(I)*NORB(I)
         IOFV = IOFV + NORB(I)*NFBAS(I,0)
-   30 CONTINUE
-
+ 30   CONTINUE
+C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis
+      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
@@ -6271,7 +6163,8 @@ C  /* Deck Wrifrz */
      &                  NVEC,NDEL)
 C***********************************************************************
 C
-C     Dump frozen orbitals to file
+C     Dump frozen orbitals to file.
+C     Also adjust orbital parameters accordingly      
 C     Written by T. Saue May 2003
 C
 C***********************************************************************
@@ -6282,16 +6175,17 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
+#include "dcbham.h"
       DIMENSION CSEL(*),ESEL(*),ISEL(*),
      &          BUF(*),IVEC(*),IBUF(*),NDEL(2)
 C
 C     Get index array for frozen orbitals;
 C
       NTOT=1
-      NESH(IFRP) = NESH(IFRP) + NDEL(1)
-      NPSH(IFRP) = NPSH(IFRP) + NDEL(2)
+      NTOP = NESH(IFRP) + NDEL(1)
+      NLOW = NPSH(IFRP) + NDEL(2)
       CALL NUMLS3(VCFROZ(IFRP),IVEC,NFBAS(IFRP,0),
-     &            -NPSH(IFRP),NESH(IFRP),NTOT,NZERO)
+     &            -NLOW,NTOP,NTOT,NZERO)
 C     
 C     Consistency check
 C
@@ -6315,13 +6209,29 @@ C
         II = II + 1
         IBUF(II)=I
 C       Positronic position
-        IF(IP.LT.0.AND.IP.GE.(-NPSH(IFRP))) THEN
+        IF(IP.LT.0.AND.IP.GE.(-NLOW)) THEN
           IVEC(II)=1+IP
           NP = NP + 1
+          IF (SUB_BL) THEN
+            DO ISUB = 1,N_SUB_BL(IFRP)
+            IF(ISEL(I).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+              NORB_SUB(ISUB,IFRP,2)=NORB_SUB(ISUB,IFRP,2)+1
+              NORB_SUB(ISUB,IFRP,0)=NORB_SUB(ISUB,IFRP,0)+1
+            ENDIF
+            ENDDO
+          ENDIF
 C       Electronic position
-        ELSEIF (IP.GT.0.AND.IP.LE.NESH(IFRP)) THEN
+        ELSEIF (IP.GT.0.AND.IP.LE.NTOP) THEN
           IVEC(II)=IP
           NE = NE + 1
+          IF (SUB_BL) THEN
+            DO ISUB = 1,N_SUB_BL(IFRP)
+            IF(ISEL(I).EQ.ID_SUB_BL(ISUB,IFRP)) THEN             
+              NORB_SUB(ISUB,IFRP,1)=NORB_SUB(ISUB,IFRP,1)+1
+              NORB_SUB(ISUB,IFRP,0)=NORB_SUB(ISUB,IFRP,0)+1
+            ENDIF
+            ENDDO
+          ENDIF
 C         Check if orbital belongs to closed or open shells.
 C         If so, subtract from occupation number
           IF(IP.GT.0.AND.IP.LE.NISH(IFRP)) THEN
@@ -6349,8 +6259,8 @@ C         If so, subtract from occupation number
 C
 C     Final adjustments
 C
-      NPSHMF(IFRP) = NPSH(IFRP) - NP
-      NESHMF(IFRP) = NESH(IFRP) - NE
+      NPSH(IFRP) = NPSH(IFRP) + NP
+      NESH(IFRP) = NESH(IFRP) + NE
       DO I = 1,NFRO(IFRP)
         IVEC(I) = IVEC(I) + NPSH(IFRP)
       ENDDO
@@ -6373,7 +6283,7 @@ C
           JOFF = JOFF + NFBAS(IFRP,0)
         ENDDO
         CALL WRITT(IUNIT,JDIM,BUF)
-        WRITE(IUNIT) ESEL(I),ISEL(I)
+ 99     WRITE(IUNIT) ESEL(I),ISEL(I)
       ENDDO
 C
       RETURN
@@ -6382,7 +6292,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Inisub */
       SUBROUTINE INISUB
 C***********************************************************************
-C
 C
 C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
@@ -6405,6 +6314,8 @@ C
           ID_SUB_BL(IB,IFRP) = IREP
         ENDDO
       ENDDO
+C.....Also initialize NTMO_SUB which will be the number of orbitals in each subblock in orthonormal basis
+      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
 C
       RETURN
       END
@@ -6890,9 +6801,9 @@ C     when there is no subblock ...
       ENDIF
       TOBE = .FALSE.
       N2TMT = 0
+      N2TMOTQ = 0      
       ICOFF = 1
       IEOFF = 1
-C     TROND
       IF (SUB_BL) THEN
         ITEFF = 0
         IVOFF = 0 
@@ -6913,15 +6824,19 @@ C...........Find orbitals in this subblock
             IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
                NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
                IF(INFOSEL(1,IVOFF+IVEC).GT.0) THEN
-                  NORB_SUB(ISUB,IFRP,1) = NORB_SUB(ISUB,IFRP,1) - 1
+C.................Positive energy solution                  
+                  NTMO_SUB(ISUB,IFRP,1) = NTMO_SUB(ISUB,IFRP,1) - 1
+                  NQ(1) = NQ(1) + 1
                ELSE
-                  NORB_SUB(ISUB,IFRP,2) = NORB_SUB(ISUB,IFRP,2) - 1
+C.................Negative-energy solution                  
+                  NTMO_SUB(ISUB,IFRP,2) = NTMO_SUB(ISUB,IFRP,2) - 1
+                  NQ(2)= NQ(2) + 1
                ENDIF
             ENDIF
             ENDDO
             NREF = NREF+NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
             WRITE(6,*) 'TEST..sub',IFRP,ID_SUB_BL(ISUB,IFRP),
-     &         NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB)
+     &         NTMO_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB)
           ENDIF
           ENDDO
 C.........Allocate an array to hold all vectors
@@ -6973,16 +6888,14 @@ C.......We now start accumulating the new transformation matrix for each subbloc
           IBEFF = 0
           IREF = KREF
           NTMO(IFRP) = NORB(IFRP) - NVECS(IFRP)
-          DO IFRAG = 1,NFRAG
-            NQ(1) = NQ(1) + NSTR(IFRP,1,IFRAG) ! positive energy solutions deleted
-            NQ(2) = NQ(2) + NSTR(IFRP,2,IFRAG) ! negative energy solutions deleted
-          ENDDO
           WRITE(LUPRI,'(2X,A,I6)')
      &       '- Total number of orbitals deleted: ',NVECS(IFRP),
      &       '       - positive energy solutions: ',NQ(1),
      &       '       - negative energy solutions: ',NQ(2)
-          NESH(IFRP)  = NESH(IFRP)-NQ(1)                ! this will be the number of positive energy solutions
+          NESH(IFRP)  = NESH(IFRP)-NQ(1) ! this will be the number of positive energy solutions
           NPSH(IFRP)  = NPSH(IFRP)-NQ(2) ! this will be the number of negative energy solutions
+          NESHMF(IFRP)=NESH(IFRP)
+          NPSHMF(IFRP)=NPSH(IFRP)          
           DO ISUB = 1,N_SUB_BL(IFRP)
           IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
             ITM   = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
@@ -7022,9 +6935,14 @@ C.............Backtransform new transformation matrix (TINV now contains this pa
               ENDDO
             ENDIF ! IF(NVECS_SUB(ISUB).GT.0) THEN
             IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
-            NORB_SUB(ISUB,IFRP,0) = NORB_SUB(ISUB,IFRP,1)
-     &                            + NORB_SUB(ISUB,IFRP,2)
+            NTMO_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,1)
+     &                            + NTMO_SUB(ISUB,IFRP,2)
+            NORB_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,0) ! this will be the number of MO-orbitals unless there are frozen orbitals
+            NORB_SUB(ISUB,IFRP,1) = NTMO_SUB(ISUB,IFRP,1)
+            NORB_SUB(ISUB,IFRP,2) = NTMO_SUB(ISUB,IFRP,2)            
             IBEFF = IBEFF + NEFF
+CTROND
+            WRITE(6,*) 'test',ID_SUB_BL(ISUB,IFRP),NORB_SUB(ISUB,IFRP,0)
           ENDIF
           ENDDO                    ! DO ISUB = 1,N_SUB_BL(IFRP)
           deallocate(NVECS_SUB)
@@ -7040,8 +6958,12 @@ C
      &           WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
             CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
          ENDIF
-         I2TMT(IFRP) = N2TMT
-         N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+         NORB(IFRP)   = NTMO(IFRP) + NFRO(IFRP)
+         I2TMT(IFRP)  = N2TMT
+         N2TMT        = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
+         I2TMOT(IFRP) = N2TMOTQ
+         N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
+         N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
          ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ  ! update offset for selected coefficients
          IEOFF = IEOFF + NVECS(IFRP) ! update offset for energies and supersymmetries
          IVOFF = IVOFF + NVECS(IFRP)
@@ -7091,12 +7013,16 @@ C       Do projection
      &     '       - positive energy solutions: ',NQ(1),
      &     '       - negative energy solutions: ',NQ(2)
  11     CONTINUE
-        NTMO(IFRP)  = NORB(IFRP)-NVECS(IFRP)          ! this will be the number of orbitals in orthonormal basis
-        NESH(IFRP)  = NESH(IFRP)-NQ(1)                ! this will be the number of positive energy solutions
-        NPSH(IFRP)  = NPSH(IFRP)-NQ(2)                ! this will be the number of negative energy solutions
-        IEFF        = I2TMT(IFRP)+1                   ! contains the old offset to coefficients in orthonormal basis
-        I2TMT(IFRP) = N2TMT                           ! new offset to coefficients in orthonormal basis
-        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT ! total dimension of coefficient matrix in orthonormal basis (all fermion irreps)
+        NTMO(IFRP)  = NORB(IFRP)-NVECS(IFRP)          
+        NORB(IFRP) = NTMO(IFRP) + NFRO(IFRP)
+        NESH(IFRP)  = NESH(IFRP)-NQ(1)                
+        NPSH(IFRP)  = NPSH(IFRP)-NQ(2)                
+        IEFF        = I2TMT(IFRP)+1                   
+        I2TMT(IFRP) = N2TMT                           
+        N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT 
+        I2TMOT(IFRP) = N2TMOTQ
+        N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
+        N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
         IF(NVECS(IFRP).GT.0) THEN
 C         Backtransform to SO-basis; note that we only backtransform NTMO vectors
           NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT         ! this one is dangerous in case of UKB since NZT is then not equal to NZ

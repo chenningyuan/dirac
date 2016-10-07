@@ -1751,10 +1751,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
-C      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','ORBDAT')
       NBRP = 4/NZ
-C      READ(LUTMAT)
-C      READ(LUTMAT)
       WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK
       DO IFRP = 1,NFSYM
         WRITE(LUTMAT) NORB(IFRP),(NFORB(IFRP,J),J=0,2),
@@ -1773,7 +1770,6 @@ C      READ(LUTMAT)
      &     ID_SUB_BL(IB,IFRP),IB=1,NN)
         ENDDO
       ENDIF
-C      CLOSE(LUTMAT,STATUS='KEEP')      
 C
       RETURN
       END

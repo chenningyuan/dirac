@@ -456,13 +456,15 @@ C
       CALL QENTER('PREDHF')
 C
 #include "memint.h"
-C
+C     
 C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
       TDXC=D0
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
+CTROND
+      WRITE(6,*) 'TEST..enter PREDHF',RESTFCK,BARNUC,DOHUCKEL,ATOMST
 
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
       IF (RESTFCK) THEN
@@ -487,7 +489,7 @@ C
         CALL OPNFIL(LUFCK2,'DFFCK2','UNKNOWN','PREDHF')
         CALL OPNFIL(LUFCKT,'DFFCKT','UNKNOWN','PREDHF')
         CALL OPNFIL(LUDENS,'DFDENS','UNKNOWN','PREDHF')
-      ENDIF
+      ENDIF  ! IF (.NOT.ONESYS) THEN
       CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF')
       OPEN (LUFOCK, FILE='DFFOCK', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
@@ -693,7 +695,9 @@ C     --------------------------------------
 C
       ELSE IF (BARNUC) THEN
 C       ... read 1-electron Fock matrix into FOCK ...
-        CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
+CTROND
+         WRITE(6,*) 'TEST: Getting Fock matrix..'
+         CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
         IF(IPRSCF.GE.12) THEN
          CALL HEADER(
      &   'PREDHF: Fresh 1-electron Fock matrix within "BARNUC"',-1)
@@ -717,8 +721,8 @@ C       ... read 1-electron Fock matrix into FOCK ...
 ! =======================================================================
 
       IF (.NOT. BARNUC) THEN
-CMI     ... get 1-electron Fock matrix into CMO ...
-        CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
+C     MI     ... get 1-electron Fock matrix into CMO ...
+         CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 C
 C     Calculate correction according to the One-center app. models 
 C     ============================================================
@@ -980,31 +984,29 @@ C         read LUTMAT rec#2 with SAOMO
 
 CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF from BSS-SCF
       IF (.NOT.RESTFCK) THEN
-
         IF (NASHT.GT.0.AND.AOC) THEN
-        IF (TRIVEC) THEN
-          CALL MEMGET2('REAL','CMOSAV',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
-          CALL MEMGET2('REAL','EIG   ',KEIG   ,NORBT ,WORK,KFREE,LFREE)
-          CALL MEMGET2('INTE','IBEIG ',KIBEIG ,NORBT ,WORK,KFREE,LFREE)
-          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),
-     &              WORK(KEIG),WORK(IBKEIG),TOTERG,6,WORK,KFREE,LFREE)
-        ELSE
-          CALL MEMGET2('REAL','CMOSAV',KCMOSAV,0     ,WORK,KFREE,LFREE)
-          CALL MEMGET2('REAL','EIG   ',KEIG   ,0     ,WORK,KFREE,LFREE)
-          CALL MEMGET2('INTE','IBEIG ',KIBEIG ,0     ,WORK,KFREE,LFREE)
-        END IF
-          CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ*NFMAT,
-     &                  WORK,KFREE,LFREE)
-          CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ,
-     &                  WORK,KFREE,LFREE)
-          CALL MKMOFK(FMO,FAO,DAO,TMAT,WORK(KCMOSAV),
-     &                SAOMO,WORK(KDTEMP),WORK(KDEVEC),
-     &                WORK(KFREE),LFREE)
+          IF (TRIVEC) THEN
+           CALL MEMGET2('REAL','CMOSAV',KCMOSAV,NCMOTQ,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','EIG   ',KEIG   ,NORBT ,WORK,KFREE,LFREE)
+           CALL MEMGET2('INTE','IBEIG ',KIBEIG ,NORBT ,WORK,KFREE,LFREE)
+           CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMOSAV),
+     &                WORK(KEIG),WORK(IBKEIG),TOTERG,6,WORK,KFREE,LFREE)
+          ELSE
+           CALL MEMGET2('REAL','CMOSAV',KCMOSAV,0     ,WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','EIG   ',KEIG   ,0     ,WORK,KFREE,LFREE)
+           CALL MEMGET2('INTE','IBEIG ',KIBEIG ,0     ,WORK,KFREE,LFREE)
+          END IF
+           CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ*NFMAT,
+     &                   WORK,KFREE,LFREE)
+           CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ,
+     &                   WORK,KFREE,LFREE)
+           CALL MKMOFK(FMO,FAO,DAO,TMAT,WORK(KCMOSAV),
+     &                 SAOMO,WORK(KDTEMP),WORK(KDEVEC),
+     &                 WORK(KFREE),LFREE)
         ELSE
           CALL MKMOFK(FMO,FAO,DUMMY,TMAT,DUMMY,
      &                DUMMY,DUMMY,DUMMY,WORK(KFREE),LFREE)
         END IF
-
       ELSE ! IF  .NOT.RESTFCK  ELSE, i.e. RESTFCK true 
 
 CMI ==================================================================
@@ -1109,7 +1111,7 @@ C
 C     Transform AO Fock matrix to reference MO basis
 C     ============================================== 
 C
-C     And modify open-shell diagonal blocks for open-shell calculations
+C     ..and modify open-shell diagonal blocks for open-shell calculations
 C
       CALL MEMGET2('REAL','TMAT' ,KTMAT ,N2TMT,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','SAOMO',KSAOMO,N2TMT,WORK,KFREE,LFREE)
@@ -1206,26 +1208,26 @@ CTROND
           CALL MEMGET('REAL',KBUF,NFBAS(I,0)*NZ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KEBF,NTMO(I),WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KIBF,NTMO(I),WORK,KFREE,LFREE)
-          CALL BCKTR2(I,LUTMAT,FMO(ICMOQ(I)+1),FAO(I2TMOT(I)+1),
+          CALL BCKTRA_FRZ(I,LUTMAT,FMO(ICMOQ(I)+1),FAO(I2TMOT(I)+1),
      &                EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &                WORK(KTMAT+I2TMT(I)),WORK(KIND),WORK(KBUF),
      &                WORK(KEBF),WORK(KIBF),IPRSCF)
           CALL MEMREL('DFSOLV.froz',WORK,KIND,KIND,KFREE,LFREE)
         ENDIF
 
-CMI     ... Control printout ...
-        IF (IPRSCF.GE.6) THEN
-          WRITE(LUPRI,'(/,2X,A)') 
-     &    'DFSOLV: Eigenvalues:'
+        IF (IPRSCF.GE.3) THEN
+          WRITE(LUPRI,'(/,2X,A)') 'DFSOLV: Eigenvalues:'
           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
           WRITE(LUPRI,'(I5,F25.10)') (J,EIG(IORB(I)+J),J=1,NTMO(I))
-          WRITE(LUPRI,'(/,2X,A)') 
-     &    'DFSOLV: Eigenvectors - MO coefficients'
-          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          CALL PRQMAT(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
+          IF(IPRSCF.GE.5) THEN
+            WRITE(LUPRI,'(/,2X,A)') 
+     &       'DFSOLV: Eigenvectors - MO coefficients'
+            WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &       '*** Fermion corep ',I,'/',NFSYM
+            CALL PRQMAT(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
         ENDIF
 CTROND
         WRITE(6,*) 'TEST..irrep..endcycle..',I
@@ -4308,7 +4310,6 @@ C       EIG - eigenvalues
 C       IBEIG - boson irreps of eigenvectors
 C
 C     Taken out of DFSOLV and modified by L.Visscher Jan 10 2000
-C     Last revision: Jan 10 2000
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4324,7 +4325,6 @@ C
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
       LOGICAL   SPECIAL,DODBG
       DIMENSION FMO(*),EIG(*),IBEIG(*),FAO(*),WORK(*)
-      character*100 :: hfile_format,hfile_name
 
       CALL QENTER('DFDIAG')
 C
@@ -4427,112 +4427,84 @@ C
 
           IBO = 0
           DO ISUB = 1, N_SUB_BL(I)
-           NBO = NORB_SUB(ISUB,I,0)
-           IF(NBO.GT.0) THEN
-            IMAT = I2TMOT(I) + (NTMO(I)+1)*IBO + 1
-            IEIG = IORB(I) + IBO + 1
+            NBO = NTMO_SUB(ISUB,I,0)
+            IF(NBO.GT.0) THEN
+              IMAT = I2TMOT(I) + (NTMO(I)+1)*IBO + 1
+              IEIG = IORB(I) + IBO + 1
 
-            IF (DODBG.AND.IPRHAM.GE.5) THEN
-             CALL HEADER(
-     &       'DFDIAG: MO matrix (subblocks) to be diagonalized',-1)
-              WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
-     &        '*** Fermion corep ',I,'/',NFSYM,
-     &        '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
-             CALL PRQMAT(FMO(IMAT),
-     &          NBO,NBO,NTMO(I),NTMO(I),
-     &          1,IPQTOQ(1,0),LUPRI)
-            ENDIF 
-
-! miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
-!-----------------------------------------------------------------------------------
-! only in the linear symmetry !
-      IF (WRITE_FMO_MATRIX) THEN
-! get the file name first, containing symmetry
-        hfile_format="(A8,A7,I1,A1,I1,A7,I1,A1,I1)"
-        write(hfile_name,hfile_format)
-     & "hmatrix.","fermirp",I,"-",NFSYM,
-     & "_bosirp",ISUB,"-",N_SUB_BL(I)
-! open the unique file and write the matrix
-        luhm=95
-        open(luhm,file=trim(hfile_name),access="sequential",
-     &      form="formatted",status="unknown")
-        write(luhm,*) NBO,1 ! this is pure real matrix (NZ=1)
-        ic=0
-        do ii=1,NBO
-        do jj=1,NBO
-          write(luhm,*) ii,jj,FMO(IMAT+ic)
-          ic = ic + 1
-        enddo
-          ic = ic + NTMO(I) - NBO
-        enddo
-        close(luhm,status="keep")
-      ENDIF
-
+              IF (DODBG.AND.IPRHAM.GE.5) THEN
+                CALL HEADER(
+     &          'DFDIAG: MO matrix (subblocks) to be diagonalized',-1)
+                WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
+     &          '*** Fermion corep ',I,'/',NFSYM,
+     &          '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
+                CALL PRQMAT(FMO(IMAT),NBO,NBO,NTMO(I),NTMO(I),
+     &                      1,IPQTOQ(1,0),LUPRI)
+              ENDIF
+              IF (WRITE_FMO_MATRIX) CALL FMO_WRITE(FMO,I,ISUB,NBO)
 C
-C           Diagonalize the isub'th block of parity i
+C             Diagonalize the isub'th block of parity i
 C
 #ifdef MOD_UNRELEASED
-            IF (.NOT.DOQJACO) THEN
+              IF (.NOT.DOQJACO) THEN
 #endif
-            IF (DOJACO) THEN
-              CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
-     &                    EIG(IEIG),1,1,0,FAO(IMAT))
-            ELSE
-              CALL QDIAG(1,NBO,FMO(IMAT),NTMO(I),NTMO(I),
+                IF (DOJACO) THEN
+                  CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
+     &                      EIG(IEIG),1,1,0,FAO(IMAT))
+                ELSE
+                  CALL QDIAG(1,NBO,FMO(IMAT),NTMO(I),NTMO(I),
      &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
      &                   WORK(KFREE),LFREE,IERR)
-            ENDIF
+                ENDIF
 #ifdef MOD_UNRELEASED
-            ELSE
-             CALL MEMGET('REAL',KFMO,NBO*NBO,WORK,KFREE,LFREE)
-             CALL MEMGET('REAL',KFA, NBO*NBO,WORK,KFREE,LFREE)
-             IPOS=0
-             DO II=1,NBO
-             DO JJ=1,NBO
-              WORK(KFMO+IPOS)=FMO(IMAT+(NTMO(I)*(II-1))+JJ-1)
-              IPOS=IPOS+1
-             ENDDO
-             ENDDO
-             CALL QJACOBI(WORK(KFMO),WORK(KFA),NBO,1,0,
-     &                    IDUMMY,.TRUE.,IPRSCF)
-              IPOS=0
-              DO II=1,NBO
-                EIG(IEIG+II-1)=WORK(KFMO+(NBO*(II-1)+II-1))
-                DO JJ=1,NBO ! store eigenvectors
-                  FAO( IMAT+ (NTMO(I)*(II-1)+JJ-1) ) =
-     &            WORK(KFA+(NBO*(II-1))+JJ-1)
-                  IPOS=IPOS+1
+              ELSE
+                CALL MEMGET('REAL',KFMO,NBO*NBO,WORK,KFREE,LFREE)
+                CALL MEMGET('REAL',KFA, NBO*NBO,WORK,KFREE,LFREE)
+                IPOS=0
+                DO II=1,NBO
+                  DO JJ=1,NBO
+                    WORK(KFMO+IPOS)=FMO(IMAT+(NTMO(I)*(II-1))+JJ-1)
+                    IPOS=IPOS+1
+                  ENDDO
                 ENDDO
-              ENDDO
-              CALL MEMREL('DFDIAG',WORK,KFA ,KFA ,KFREE,LFREE)
-              CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
-            ENDIF
+                CALL QJACOBI(WORK(KFMO),WORK(KFA),NBO,1,0,
+     &                       IDUMMY,.TRUE.,IPRSCF)
+                IPOS=0
+                DO II=1,NBO
+                  EIG(IEIG+II-1)=WORK(KFMO+(NBO*(II-1)+II-1))
+                  DO JJ=1,NBO ! store eigenvectors
+                    FAO( IMAT+ (NTMO(I)*(II-1)+JJ-1) ) =
+     &              WORK(KFA+(NBO*(II-1))+JJ-1)
+                    IPOS=IPOS+1
+                  ENDDO
+                ENDDO
+                CALL MEMREL('DFDIAG',WORK,KFA ,KFA ,KFREE,LFREE)
+                CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
+              ENDIF
 #endif
 
-            IF (DODBG) THEN
-             IF (IPRHAM.GE.3) THEN
-             CALL HEADER(
-     &       'DFDIAG: Eigenvalues (special_subbblock) :',-1)
-             WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
-     &       '*** Fermion corep ',I,'/',NFSYM,
-     &       '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
-             WRITE(LUPRI,'(I5,F25.10)') (IX,EIG(IX),IX=IEIG,IEIG+NBO-1) 
-             ENDIF
-
-             IF (IPRHAM.GE.5) THEN
-              CALL HEADER(
-     &       'DFDIAG: Eigenvectors(special_subblock)',-1)
-             WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
-     &       '*** Fermion corep ',I,'/',NFSYM,
-     &       '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
-              CALL PRQMAT(FAO(IMAT), NBO,NBO,NTMO(I),NTMO(I),
-     &                   1,IPQTOQ(1,0),LUPRI)
-            ENDIF
-
-            ENDIF
-
-            IBO = IBO + NORB_SUB(ISUB,I,0)
-           ENDIF
+              IF (DODBG) THEN
+                IF (IPRHAM.GE.3) THEN
+                  CALL HEADER(
+     &             'DFDIAG: Eigenvalues (special_subbblock) :',-1)
+                   WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
+     &             '*** Fermion corep ',I,'/',NFSYM,
+     &             '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
+                   WRITE(LUPRI,'(I5,F25.10)')
+     &             (IX,EIG(IX),IX=IEIG,IEIG+NBO-1) 
+                ENDIF
+                IF (IPRHAM.GE.5) THEN
+                  CALL HEADER(
+     &            'DFDIAG: Eigenvectors(special_subblock)',-1)
+                  WRITE(LUPRI,'(3X,A,I1,A,I1,3X,A,I3,A,I3/)')
+     &            '*** Fermion corep ',I,'/',NFSYM,
+     &            '*** boson sub-corep ',ISUB,'/',N_SUB_BL(I)
+                  CALL PRQMAT(FAO(IMAT), NBO,NBO,NTMO(I),NTMO(I),
+     &                        1,IPQTOQ(1,0),LUPRI)
+                ENDIF
+              ENDIF
+              IBO = IBO + NTMO_SUB(ISUB,I,0)
+            ENDIF ! IF(NBO.GT.0) THEN
           ENDDO
 C
 C         Sort the eigenvalues according to energy : keep track of
@@ -4540,7 +4512,6 @@ C         the block identification. (Use FMO as scratch space for the
 C         vector sort)
 C
           CALL INIBOS(IBEIG(IORB(I)+1),I,.FALSE.,IPRHAM)
-
           CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KIDUM,NORB(I),WORK,KFREE,LFREE)
           CALL SELBOS (I,NTMO(I),WORK(KINDX),EIG(IORB(I)+1),
@@ -4558,8 +4529,6 @@ C
 C
 C       3 : ZORA; diagonalize modified LL block
 C
-!       IF (.NOT.SPECIAL) THEN
-!       ELSEIF (.NOT.ZORA) THEN
         ELSEIF (ZORA.AND.(.NOT.SUB_BL)) THEN
           NL = NESH(I)
           NS = NPSH(I)
@@ -4571,17 +4540,14 @@ C
 C
 C       4 : Spinfree ZORA : Make modified matrix but do it block by block
 C
-!       IF (.NOT.SPECIAL) THEN
-!       ELSEIF (.NOT.ZORA) THEN
-!       ELSEIF (ZORA.AND.(.NOT.SUB_BL)) THEN
         ELSEIF (ZORA.AND.SPINFR) THEN
           NT = NORB(I)
           IEIGP = IORB(I) + 1
           DO 21 ISUB = 1, N_SUB_BL(I)
-            NBO = NORB_SUB(ISUB,I,0)
+            NBO = NTMO_SUB(ISUB,I,0)
             IF (NBO.EQ.0) GOTO 21
-            NL = NORB_SUB(ISUB,I,1)
-            NS = NORB_SUB(ISUB,I,2)
+            NL = NTMO_SUB(ISUB,I,1)
+            NS = NTMO_SUB(ISUB,I,2)
             NZS = 1
             IEIGE = IEIGP + NS
             CALL ZORAEQ(I,ISUB,NZS,NL,NS,NT,EIG,IEIGP,IEIGE,
@@ -4788,6 +4754,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
       DIMENSION IBOS(*)
       LOGICAL SORTLS
 C
@@ -4798,7 +4765,7 @@ C
         DO ISUB = 1, NSUB
           ID = ID_SUB_BL(ISUB,IFRP)
           DO IC = 2, 1, -1
-            NBO = NORB_SUB(ISUB,IFRP,IC)
+            NBO = NTMO_SUB(ISUB,IFRP,IC)
             IF(NBO.GT.0) THEN
               CALL ICOPY(NBO,ID,0,IBOS(IX),1)
               IX = IX + NBO
@@ -4809,7 +4776,7 @@ C
         DO IC = 2, 1, -1
           DO ISUB = 1, NSUB
             ID = ID_SUB_BL(ISUB,IFRP)
-            NBO = NORB_SUB(ISUB,IFRP,IC)
+            NBO = NTMO_SUB(ISUB,IFRP,IC)
             IF(NBO.GT.0) THEN
               CALL ICOPY(NBO,ID,0,IBOS(IX),1)
               IX = IX + NBO
@@ -4822,11 +4789,11 @@ C
        CALL HEADER('*** Output from INIBOS ***',-1)
        write(lupri,'(2X,A,L1)') 'flag on S_L resorting, SORTLS=',SORTLS
        write(lupri,'(2X,A,I1,A,I3,A,I3,A,I3)')
-     & 'IBOS for IFRP=',IFRP,' NORB(IFRP)=',NORB(IFRP),
+     & 'IBOS for IFRP=',IFRP,' NTMO(IFRP)=',NTMO(IFRP),
      & ' positr.orbs:',NPSH(IFRP),' electr.orbs:',NESH(IFRP)
        write(lupri,'(2X,A,/,4X,25I3)')
      & 'boson irreps of each MO (from pos. to el.):',
-     &                (IBOS(J),J=1,NORB(IFRP))
+     &                (IBOS(J),J=1,NTMO(IFRP))
       ENDIF
 
       RETURN
@@ -6004,6 +5971,42 @@ C     Solve general eigenvalue problem; coefficients stored in SMAT
       CALL DCOPY(N2DIM,WORK(KSMAT),1,HMAT,1)
 C
       CALL MEMREL('EHUCKEL',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FMO_WRITE(FMO,IFRP,ISUB,NBO)
+C***********************************************************************
+C      miro: save the matrix for diagonalization, FMO(IMAT), into formatted, unique files
+C      -----------------------------------------------------------------------------------
+C       only in the linear symmetry !
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcborb.h"            
+#include "dcbdhf.h"      
+      character*100 :: hfile_format,hfile_name
+      DIMENSION FMO(*)      
+! get the file name first, containing symmetry
+      luhm=95
+      hfile_format="(A8,A7,I1,A1,I1,A7,I1,A1,I1)"
+      write(hfile_name,hfile_format)
+     & "hmatrix.","fermirp",IFRP,"-",NFSYM,
+     & "_bosirp",ISUB,"-",N_SUB_BL(IFRP)
+! open the unique file and write the matrix
+      open(luhm,file=trim(hfile_name),access="sequential",
+     &     form="formatted",status="unknown")
+      write(luhm,*) NBO,1 ! this is pure real matrix (NZ=1)
+      ic=0
+      do ii=1,NBO
+        do jj=1,NBO
+          write(luhm,*) ii,jj,FMO(IMAT+ic)
+          ic = ic + 1
+        enddo
+        ic = ic + NTMO(IFRP) - NBO
+      enddo
+      close(luhm,status="keep")
       RETURN
       END
 C --- end of dirac/dirscf.F ---
