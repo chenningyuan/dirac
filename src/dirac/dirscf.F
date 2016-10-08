@@ -463,9 +463,6 @@ C     ****************************************************
 C
       TDXC=D0
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
-CTROND
-      WRITE(6,*) 'TEST..enter PREDHF',RESTFCK,BARNUC,DOHUCKEL,ATOMST
-
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
       IF (RESTFCK) THEN
          BARNUC  =.FALSE.
@@ -695,8 +692,6 @@ C     --------------------------------------
 C
       ELSE IF (BARNUC) THEN
 C       ... read 1-electron Fock matrix into FOCK ...
-CTROND
-         WRITE(6,*) 'TEST: Getting Fock matrix..'
          CALL REAFCK(LUFCK1,FOCK,.FALSE.,1)
         IF(IPRSCF.GE.12) THEN
          CALL HEADER(
@@ -1178,15 +1173,6 @@ C     ====================
 C
       IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
 C
-C     If converged, do not select occupation or save orbitals
-C
-      IF (DHFEXIT) GOTO 9999 
-C
-C     Automatic occupation
-C     ====================
-C
-      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)
-C
 C
 C     Backtransform all spinors (temporary storage in FMO)
 C     ====================================================
@@ -1194,8 +1180,6 @@ C     NZT is the NZ value for the transformation matrix
 C
       IF(NFROT.GT.0) CALL OPNFIL(LUTMAT,'DFFROZ','OLD','DFSOLV')
       DO 40 I = 1,NFSYM
-CTROND
-        WRITE(6,*) 'TEST..irrep..nfroz..',I,NFRO(I)        
         IF(NORB(I).EQ.0) GOTO 40
         IF(NFRO(I).EQ.0) THEN
           CALL BCKTR1(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
@@ -1229,9 +1213,6 @@ CTROND
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
         ENDIF
-CTROND
-        WRITE(6,*) 'TEST..irrep..endcycle..',I
-
  40   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
 C
@@ -1260,6 +1241,15 @@ C     Write untransformed coefficients
       CALL WRITT(LUCMOS,N2TMOTQ,FAO)
 C     Write transformed coefficients
       CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
+C
+C     If converged, do not select occupation or save orbitals
+C
+      IF (DHFEXIT) GOTO 9999 
+C
+C     Automatic occupation
+C     ====================
+C
+      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)
 C
 C
 C     Dynamic update of overlap selection matrix, if not converged
@@ -1803,8 +1793,9 @@ C          reset intbuf so no old Fock matrices are used :
         END IF
 C
         IF (DHFEXIT) THEN
-
-C          Comments on open shell convergence. Feb. 2013 hjaaj.
+CTROND
+           WRITE(6,*) 'After DHFEXIT'
+C     Comments on open shell convergence. Feb. 2013 hjaaj.
 C          ====================================================
 C          Some authors have put forward that OPEN_FAC = 1.0D0 is the best choice,
 C          for interpretation of results as ionization potentials.

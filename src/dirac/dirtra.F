@@ -3384,10 +3384,6 @@ C
       CALL DZERO(FMO(I2TMOT(IFRP)+1),NDIM)
       IBORB = 0    
       DO ISUB = 1,N_SUB_BL(IFRP)
-CTROND         
-         WRITE(6,*) '* TEST from TSUBBL..',ISUB,IFRP,
-     &      ID_SUB_BL(ISUB,IFRP),NORB_SUB(ISUB,IFRP,0),
-     &      NTMO_SUB(ISUB,IFRP,0)         
       IF(NTMO_SUB(ISUB,IFRP,0).GT.0) THEN
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
