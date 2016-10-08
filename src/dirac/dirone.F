@@ -6805,7 +6805,7 @@ C     when there is no subblock ...
       ICOFF = 1
       IEOFF = 1
       IF (SUB_BL) THEN
-        ITEFF = 0
+        ITEFF = 1
         IVOFF = 0 
         DO 8 IFRP =  1,NFSYM
           NQ(1) = 0
@@ -6819,8 +6819,6 @@ C.........First find how the selected vectors are distributed on subblocks
 C...........Find orbitals in this subblock
             NVECS_SUB(ISUB) = 0
             DO IVEC = 1,NVECS(IFRP)
-               WRITE(6,*) 'TEST..isel..',ISEL(IVEC),ID_SUB_BL(ISUB,IFRP)
-               WRITE(6,*) 'TEST..infosel..',INFOSEL(1,IVOFF+IVEC)
             IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
                NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
                IF(INFOSEL(1,IVOFF+IVEC).GT.0) THEN
@@ -6835,15 +6833,13 @@ C.................Negative-energy solution
             ENDIF
             ENDDO
             NREF = NREF+NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
-            WRITE(6,*) 'TEST..sub',IFRP,ID_SUB_BL(ISUB,IFRP),
-     &         NTMO_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB)
           ENDIF
           ENDDO
 C.........Allocate an array to hold all vectors
           CALL MEMGET('REAL',KREF,NREF,WORK,KFREE,LFREE)
 C.........Transform vector of each subblock to orthonormal basis
           IBORB = 0
-          IREF = KREF
+          IREF  = KREF
           DO ISUB = 1,N_SUB_BL(IFRP)
           IF(NVECS_SUB(ISUB).GT.0) THEN
             IMO  = 1
@@ -6859,7 +6855,7 @@ C...........Transform vector of this subblock to orthonormal basis
      &                     NFBAS(IFRP,0),NVECS(IFRP),NZ,
      &             D0,IPQTOQ(1,0),WORK(JREF),NORB_SUB(ISUB,IFRP,0),
      &             NVECS_SUB(ISUB),NZ)
-                  JREF = JREF + NORB_SUB(ISUB,IFRP,0)
+                 JREF = JREF + NORB_SUB(ISUB,IFRP,0)
               ENDIF
               IMO = IMO + NFBAS(IFRP,0)
             ENDDO
@@ -6871,9 +6867,9 @@ C...........Transform vector of this subblock to orthonormal basis
      &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
      &                NZ,IPQTOQ(1,0),LUPRI)
             ENDIF
-            IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
             IREF  = IREF  + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
           ENDIF             
+          IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
           ENDDO
 C.......We have now transformed all vectors of this irrep to orthonormal basis
 C.......and overwrite TINV with TMAT        
@@ -6885,7 +6881,6 @@ C.......and overwrite TINV with TMAT
           ENDDO
 C.......We now start accumulating the new transformation matrix for each subblock
           IBORB = 0
-          IBEFF = 0
           IREF = KREF
           NTMO(IFRP) = NORB(IFRP) - NVECS(IFRP)
           WRITE(LUPRI,'(2X,A,I6)')
@@ -6899,8 +6894,8 @@ C.......We now start accumulating the new transformation matrix for each subbloc
           DO ISUB = 1,N_SUB_BL(IFRP)
           IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
             ITM   = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
-            ITEFF = ITEFF       + NFBAS(IFRP,0)*IBEFF + 1 ! new offset for transformation
             NEFF = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB(ISUB)
+            ITEFF = ITEFF       + NFBAS(IFRP,0)*NEFF   ! new offset for transformation
 C...........New matrix
             IF(NVECS_SUB(ISUB).GT.0) THEN
               NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZ
@@ -6909,8 +6904,9 @@ C.............Do projection
               CALL PRJORT(WORK(KBUF),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
      &             NVECS_SUB(ISUB),NZ,WORK,KFREE,LFREE)
               IF(IPRINT.GE.5) THEN
-                WRITE(6,*) '* TEST..BUF..matrix'             
-                CALL PRQMAT(WORK(KBUF),
+              WRITE(6,*)
+     &           'PSIPR1: Eigenvectors from PRJORT for subblock ', ISUB
+              CALL PRQMAT(WORK(KBUF),
      &                NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
      &                NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
      &                NZ,IPQTOQ(1,0),LUPRI)
@@ -6934,15 +6930,20 @@ C.............Backtransform new transformation matrix (TINV now contains this pa
                 JOFF = JOFF + NFBAS(IFRP,0)*NTMO(IFRP)
               ENDDO
             ENDIF ! IF(NVECS_SUB(ISUB).GT.0) THEN
+            IF(IPRINT.GE.5) THEN
+              WRITE(6,*) '* PSIPR1: Transformation matrix..',
+     &                 ID_SUB_BL(ISUB,IFRP)
+              CALL PRQMAT(TMAT(ITEFF),
+     &              NFBAS(IFRP,0),NEFF,
+     &              NFBAS(IFRP,0),NTMO(IFRP),
+     &              NZ,IPQTOQ(1,0),LUPRI)
+            ENDIF            
             IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
             NTMO_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,1)
      &                            + NTMO_SUB(ISUB,IFRP,2)
-            NORB_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,0) ! this will be the number of MO-orbitals unless there are frozen orbitals
+            NORB_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,0) 
             NORB_SUB(ISUB,IFRP,1) = NTMO_SUB(ISUB,IFRP,1)
             NORB_SUB(ISUB,IFRP,2) = NTMO_SUB(ISUB,IFRP,2)            
-            IBEFF = IBEFF + NEFF
-CTROND
-            WRITE(6,*) 'test',ID_SUB_BL(ISUB,IFRP),NORB_SUB(ISUB,IFRP,0)
           ENDIF
           ENDDO                    ! DO ISUB = 1,N_SUB_BL(IFRP)
           deallocate(NVECS_SUB)
@@ -6998,7 +6999,6 @@ C       Do projection
         CALL PRJORT(WORK(KBUF),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ,
      &              WORK,KFREE,LFREE)
         IF(IPRINT.GE.5) THEN
-          WRITE(6,*) '* TEST..BUF..matrix'             
           CALL PRQMAT(WORK(KBUF),
      &                NORB(IFRP),NORB(IFRP),
      &                NORB(IFRP),NORB(IFRP),
