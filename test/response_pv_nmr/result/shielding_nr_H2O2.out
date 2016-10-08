@@ -1,6 +1,6 @@
-DIRAC pam run in /home/saue/Dirac/test/response_pv_nmr
+DIRAC pam run in /Users/visscher/sources/Dirac2/build_newstartpot/test/response_pv_nmr
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
-DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+             out of the allowed maximum of 2147483648 words (16384 MB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw
 
@@ -81,10 +81,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
- *    Radovan Bast             Universite P. Sabatier, Toulouse  France        *
- *    Trond Saue               Universite P. Sabatier, Toulouse  France        *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           VU University Amsterdam           Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
@@ -94,31 +94,34 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Timo Fleig               Universite P. Sabatier, Toulouse  France        *
- *    Olav Fossgaard           University of Tromsoe             Norway        *
- *    Andre S. P. Gomes        CNRS/Universite Lille 1           France        *
+ *    Elke Fasshauer           UiT The Arctic University of      Norway        *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Trygve Helgaker          University of Oslo                Norway        *
- *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
- *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany       *
- *    Stefan Knecht            University of Southern Denmark    Denmark       *
- *    Stanislav Komorovsky     University of Tromsoe             Norway        *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
  *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       xxx                               India         *
  *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
- *    Kenneth Ruud             University of Tromsoe             Norway        *
+ *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
- *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany       *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
- *    Andreas J. Thorvaldsen   University of Tromsoe             Norway        *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
  *    Joost van Stralen        VU University Amsterdam           Netherlands   *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
@@ -140,55 +143,62 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC12 (2012),                                                  *
- *    written by H. J. Aa. Jensen, R. Bast, T. Saue, and L. Visscher,          *
+ *    Release DIRAC15 (2015),                                                  *
+ *    written by R. Bast, T. Saue, L. Visscher, and H. J. Aa. Jensen,          *
  *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,            *
- *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, Y. S. Lee, J. Henriksson,   *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
- *    C. V. Larsen, H. S. Nataraj, P. Norman, G. Olejniczak, J. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, K. Ruud, P. Salek,          *
- *    B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen, J. Thyssen,           *
- *    J. van Stralen, S. Villaume, O. Visser, T. Winther, and S. Yamamoto      *
- *    (see http://www.diracprogram.org).                                       *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, H. S. Nataraj, M. K. Nayak, P. Norman,          *
+ *    G. Olejniczak, J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner,    *
+ *    R. Di Remigio, K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema,        *
+ *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, S. Villaume, O. Visser,   *
+ *    T. Winther, and S. Yamamoto (see http://www.diracprogram.org).           *
  *                                                                             *
  *******************************************************************************
 
+ ---  Git version information  ---
+                Git branch : master
+      Last git commit hash : 74e634a
+    Last git commit author : Hans Jørgen Aagaard Jensen
+      Last git commit date : Fri Sep 2 11:58:55 2016 +0200
 
-Binary information
-------------------
-
- Who compiled             | saue@lpqlx129
- System                   | Linux-3.0.0-17-generic
- CMake generator          | Unix Makefiles
- Processor                | x86_64
- 64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
- Fortran flags            | -g -fcray-pointer -fbacktrace -DVAR_GFORTRAN -DVAR
-                          | _MFDS -fno-range-check -O3 -funroll-all-loops
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
- C flags                  | -g -O2 -Wno-unused
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
- C++ flags                |  -O3 -DNDEBUG
- BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
-                          | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
- LAPACK                   | /usr/lib/atlas-base/liblapack_atlas.so;/usr/lib/at
-                          | las-base/atlas/liblapack.so
- Static linking           | OFF
- Last Git revision        | 279a4413f5aecefbf478c95710af9f6c7a6e25b4
- Configuration time       | 2013-01-20 21:08:45.770352
-
+---  Configuration and build info  ---
+              Who compiled : visscher
+        Compiled on server : VisscherMacBookPro2012.local
+          Operating system : Darwin-15.6.0
+            Python version : 2.7.1
+             CMake version : 3.6.1
+           CMake generator : Unix Makefiles
+          CMake build type : release
+       MPI parallelization : False
+              MPI launcher : unknown
+           64-bit integers : False
+          Fortran compiler : /opt/local/bin/gfortran
+  Fortran compiler version : 5.4.0
+    Fortran compiler flags :   -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
+                C compiler : /opt/local/bin/gcc
+        C compiler version : 5.4.0
+          C compiler flags :   -g  -g
+              C++ compiler : /opt/local/bin/g++
+      C++ compiler version : 5.4.0
+        C++ compiler flags :   -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+            Static linking : False
+      Builtin BLAS library : OFF
+    Builtin LAPACK library : OFF
+    Mathematical libraries : /opt/local/lib/libatlas.a;/usr/lib/liblapack.dylib;/opt/local/lib/libf77blas.a;/usr/lib/libcblas.dylib;/opt/local/lib/libatlas.a
+        Explicit libraries : unknown
+       Modules definitions : MOD_UNRELEASED;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ERI;MOD_DNF;MOD_ESR;MOD_KRCC;MOD_SRDFT
+       Configuration time :  2016-09-29 14:44:28.126446
+-----------------------------------------------------------------
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Sep 26 18:13:23 2013
-     Host name              : not found                               
+     Date and time (Mac OSX): Fri Sep 30 08:52:06 2016
+     Host name              : VisscherMacBookPro2012.clients.vu.nl    
 
 
 Contents of the input file
@@ -292,15 +302,15 @@ FINISH
             3
 
 
- Changes of defaults for READIN:
+ Changes of defaults for *READIN
  -------------------------------
 
 
 
 
-    *************************************************************************
-    ****************** Output from READIN input processing ******************
-    *************************************************************************
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
 
 
 
@@ -309,9 +319,7 @@ FINISH
 
   H2O2 molecule                                                           
   cc-pVDZ basis                                                           
-
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
-
   Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
 
 
@@ -365,10 +373,24 @@ Point group: C1
 
 
 
+                                 Isotopic Masses
+                                 ---------------
+
+                           H1          1.007825
+                           H2          1.007825
+                           O3         15.994915
+                           O4         15.994915
+
+                       Total mass:    34.005480 amu
+                       Natural abundance:  99.491 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.098856
+
+
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    4
 
   label    atoms   charge   prim    cont     basis   
@@ -403,8 +425,8 @@ Point group: C1
             J. Chem. Phys., 110, 7667 (1999)                                      
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (bohr)
+  ----------------------------
 
   Total number of coordinates: 12
 
@@ -427,8 +449,8 @@ Point group: C1
 
 
 
-  Cartesian coordinates xyz format (angstrom)
-  -------------------------------------------
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
 
     4
 
@@ -470,7 +492,8 @@ O4     0.0000000000   0.7450000160   0.0000000000
   bond angle:       O3         O4         H2                   100.000
 
 
-  Nuclear repulsion energy :   36.151284237507
+
+   Nuclear repulsion energy :   36.151284237507 Hartree
 
 
                                 GETLAB: AO-labels
@@ -639,15 +662,19 @@ O4     0.0000000000   0.7450000160   0.0000000000
    Charge of molecule    =   0
    i.e. no. of electrons =  18
 ===========================================================================
- SCFINP: Set-up for Hartree-Fock calculation:
+ *SCF: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with    18 electrons in    9 orbitals.
- * Bare nucleus screening correction used for start guess
+ * Sum of atomic potentials used for start guess
  * General print level   :   0
 
  ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+   The final open-shell orbital energies are recalculated with 1.0 scaling,
+   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -663,9 +690,7 @@ O4     0.0000000000   0.7450000160   0.0000000000
  * Damping of Fock matrix when DIIS is not activated. 
    Weight of old matrix    : 0.250
  * Maximum number of SCF iterations  :   50
- * Quadratic convergent Hartree-Fock
-   - Maximum number of macro iterations: 25
-   - Maximum number of micro iterations: 25
+ * No quadratic convergent Hartree-Fock
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
     ---> this is default setting from Hamiltonian input
@@ -700,7 +725,7 @@ O4     0.0000000000   0.7450000160   0.0000000000
     ---> these are default values from Hamiltonian input
  * Initial trial vectors will be preconditioned.
  * Linear response functions evaluated at the following REAL frequencies:
-       0.00000D+00 a.u.
+       0.00000E+00 a.u.
 ===========================================================================
    Magnetic properties:
 ===========================================================================
@@ -750,20 +775,19 @@ to NMR shielding
                     z      3.33555000      8.47820092
 
                         1 Debye =   2.54177000 a.u. 
-  The SS-block of the potential energy matrix and (if present) embedding potential are neglected (Levy-Leblond Hamiltonian)
 
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          2(Proj:          2, Lindep:          0)
-   S   A     * Deleted:         16(Proj:         16, Lindep:          0)
+   L   A     * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.13E-01
+   S   A     * Deleted:         16(Proj:         16, Lindep:          0) Smin: 0.64E-02
 
 
                                 Output from MODHAM
                                 ------------------
 
-* All positronic solutions deleted !
+ * All positronic solutions deleted !
 
 
       **********************************************************************
@@ -773,7 +797,6 @@ to NMR shielding
 No. of positive energy orbitals (NESH):    38
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    38
- >>> Time used in PAMSET is   0.13 seconds
 
 
    ****************************************************************************
@@ -781,88 +804,89 @@ Total no. of orbitals           (NORB):    38
    ****************************************************************************
 
 
-*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
-             Improved by an estimate of the electronic screening (Slater's rules).
+*** INFO *** No trial vectors found.
+ Using bare nucleus approximation for initial trial vectors.
+             Improved by a sum of atomic screening potentials.
 
 
-########## START ITERATION NO.   1 ##########   Thu Sep 26 18:13:23 2013
+########## START ITERATION NO.   1 ##########   Fri Sep 30 08:52:06 2016
 
+E_HOMO...E_LUMO, symmetry 1:     9  -0.74231   10  -0.58630
 
 => Calculating sum of orbital energies
-It.    1    -46.47073218477      0.00D+00  0.00D+00  0.00D+00               0.04000299s   Scr. nuclei    Thu Sep 26
+It.    1    -55.46319945706      0.00D+00  0.00D+00  0.00D+00               0.20403400s   Scr. nuclei    Fri Sep 30
 
-########## START ITERATION NO.   2 ##########   Thu Sep 26 18:13:23 2013
+########## START ITERATION NO.   2 ##########   Fri Sep 30 08:52:06 2016
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.52%    0.00%   58.11%   0.29201800s
->>> Total wall time: 1.00000000s
->>> Total CPU time : 0.78804898s
+SOfock:LL  1.00D-12    0.00%   22.52%    0.00%   58.11%   0.25363803s
+E_HOMO...E_LUMO, symmetry 1:     9  -0.25976   10   0.19588
+>>> Total wall time: 0.42400000s, and total CPU time : 0.41899500s
 
-########## END ITERATION NO.   2 ##########   Thu Sep 26 18:13:23 2013
+########## END ITERATION NO.   2 ##########   Fri Sep 30 08:52:06 2016
 
-It.    2    -150.4810619886      1.04D+02 -6.10D-01  1.32D+00               0.78804898s   LL             Thu Sep 26
+It.    2    -150.4850427315      9.50D+01  1.22D+00  1.22D+00               0.41899500s   LL             Fri Sep 30
 
-########## START ITERATION NO.   3 ##########   Thu Sep 26 18:13:24 2013
+########## START ITERATION NO.   3 ##########   Fri Sep 30 08:52:06 2016
 
-    3 *** Differential density matrix. DCOVLP     = 0.7504
+    3 *** Differential density matrix. DCOVLP     = 0.7614
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.53%    0.00%   58.11%   0.28001702s
->>> Total wall time: 1.00000000s
->>> Total CPU time : 0.60403800s
+SOfock:LL  1.00D-12    0.00%   22.52%    0.00%   58.11%   0.25692397s
+E_HOMO...E_LUMO, symmetry 1:     9  -0.47036   10   0.16463
+>>> Total wall time: 0.28100000s, and total CPU time : 0.27519100s
 
-########## END ITERATION NO.   3 ##########   Thu Sep 26 18:13:24 2013
+########## END ITERATION NO.   3 ##########   Fri Sep 30 08:52:07 2016
 
-It.    3    -150.7174613393      2.36D-01 -7.50D-01  5.42D-01   DIIS   2    0.60403800s   LL             Thu Sep 26
+It.    3    -150.7153731180      2.30D-01 -7.72D-01  5.78D-01   DIIS   2    0.27519100s   LL             Fri Sep 30
 
-########## START ITERATION NO.   4 ##########   Thu Sep 26 18:13:25 2013
+########## START ITERATION NO.   4 ##########   Fri Sep 30 08:52:07 2016
 
-    4 *** Differential density matrix. DCOVLP     = 1.0548
+    4 *** Differential density matrix. DCOVLP     = 1.0497
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.53%    0.00%   58.10%   0.28801799s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.60803699s
+SOfock:LL  1.00D-12    0.00%   22.53%    0.00%   58.10%   0.26674503s
+E_HOMO...E_LUMO, symmetry 1:     9  -0.46969   10   0.16135
+>>> Total wall time: 0.28800000s, and total CPU time : 0.28344200s
 
-########## END ITERATION NO.   4 ##########   Thu Sep 26 18:13:25 2013
+########## END ITERATION NO.   4 ##########   Fri Sep 30 08:52:07 2016
 
-It.    4    -150.7713935258      5.39D-02  2.64D-01  6.13D-02   DIIS   3    0.60803699s   LL             Thu Sep 26
+It.    4    -150.7716967487      5.63D-02  2.56D-01  3.42D-02   DIIS   3    0.28344200s   LL             Fri Sep 30
 
-########## START ITERATION NO.   5 ##########   Thu Sep 26 18:13:25 2013
+########## START ITERATION NO.   5 ##########   Fri Sep 30 08:52:07 2016
 
-    5 *** Differential density matrix. DCOVLP     = 0.9973
+    5 *** Differential density matrix. DCOVLP     = 0.9982
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.54%    0.00%   58.10%   0.28401709s
->>> Total wall time: 1.00000000s
->>> Total CPU time : 0.60003805s
+SOfock:LL  1.00D-12    0.00%   22.54%    0.00%   58.09%   0.25890195s
+E_HOMO...E_LUMO, symmetry 1:     9  -0.47167   10   0.16219
+>>> Total wall time: 0.27900000s, and total CPU time : 0.27549700s
 
-########## END ITERATION NO.   5 ##########   Thu Sep 26 18:13:25 2013
+########## END ITERATION NO.   5 ##########   Fri Sep 30 08:52:07 2016
 
-It.    5    -150.7721264362      7.33D-04 -1.91D-02  7.24D-03   DIIS   4    0.60003805s   LL             Thu Sep 26
+It.    5    -150.7720783040      3.82D-04 -1.04D-02  1.05D-02   DIIS   4    0.27549700s   LL             Fri Sep 30
 
-########## START ITERATION NO.   6 ##########   Thu Sep 26 18:13:26 2013
+########## START ITERATION NO.   6 ##########   Fri Sep 30 08:52:07 2016
 
-    6 *** Differential density matrix. DCOVLP     = 1.0004
+    6 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.58%    0.00%   58.07%   0.28401804s
->>> Total wall time: 1.00000000s
->>> Total CPU time : 0.60803795s
+SOfock:LL  1.00D-12    0.00%   22.56%    0.00%   58.08%   0.24678099s
+E_HOMO...E_LUMO, symmetry 1:     9  -0.47213   10   0.16222
+>>> Total wall time: 0.26600000s, and total CPU time : 0.26224400s
 
-########## END ITERATION NO.   6 ##########   Thu Sep 26 18:13:26 2013
+########## END ITERATION NO.   6 ##########   Fri Sep 30 08:52:08 2016
 
-It.    6    -150.7721437334      1.73D-05  5.64D-04  1.19D-03   DIIS   5    0.60803795s   LL             Thu Sep 26
+It.    6    -150.7721328738      5.46D-05  1.28D-03  3.60D-03   DIIS   5    0.26224400s   LL             Fri Sep 30
 
-########## START ITERATION NO.   7 ##########   Thu Sep 26 18:13:27 2013
+########## START ITERATION NO.   7 ##########   Fri Sep 30 08:52:08 2016
 
-    7 *** Differential density matrix. DCOVLP     = 1.0001
+    7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.65%    0.01%   58.01%   0.28801799s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.60403681s
+SOfock:LL  1.00D-12    0.00%   22.59%    0.00%   58.06%   0.24866986s
+>>> Total wall time: 0.27200000s, and total CPU time : 0.26649400s
 
-########## END ITERATION NO.   7 ##########   Thu Sep 26 18:13:27 2013
+########## END ITERATION NO.   7 ##########   Fri Sep 30 08:52:08 2016
 
-It.    7    -150.7721447317      9.98D-07  1.10D-04  3.54D-04   DIIS   5    0.60403681s   LL             Thu Sep 26
+It.    7    -150.7721439119      1.10D-05 -7.54D-04  9.35D-04   DIIS   5    0.26649400s   LL             Fri Sep 30
 
 
                                    SCF - CYCLE
@@ -878,30 +902,30 @@ It.    7    -150.7721447317      9.98D-07  1.10D-04  3.54D-04   DIIS   5    0.60
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -46.47073218477      0.00D+00  0.00D+00  0.00D+00               0.04000299s   Scr. nuclei    Thu Sep 26
-It.    2    -150.4810619886      1.04D+02 -6.10D-01  1.32D+00               0.78804898s   LL             Thu Sep 26
-It.    3    -150.7174613393      2.36D-01 -7.50D-01  5.42D-01   DIIS   2    0.60403800s   LL             Thu Sep 26
-It.    4    -150.7713935258      5.39D-02  2.64D-01  6.13D-02   DIIS   3    0.60803699s   LL             Thu Sep 26
-It.    5    -150.7721264362      7.33D-04 -1.91D-02  7.24D-03   DIIS   4    0.60003805s   LL             Thu Sep 26
-It.    6    -150.7721437334      1.73D-05  5.64D-04  1.19D-03   DIIS   5    0.60803795s   LL             Thu Sep 26
-It.    7    -150.7721447317      9.98D-07  1.10D-04  3.54D-04   DIIS   5    0.60403681s   LL             Thu Sep 26
+It.    1    -55.46319945706      0.00D+00  0.00D+00  0.00D+00               0.20403400s   Scr. nuclei    Fri Sep 30
+It.    2    -150.4850427315      9.50D+01  1.22D+00  1.22D+00               0.41899500s   LL             Fri Sep 30
+It.    3    -150.7153731180      2.30D-01 -7.72D-01  5.78D-01   DIIS   2    0.27519100s   LL             Fri Sep 30
+It.    4    -150.7716967487      5.63D-02  2.56D-01  3.42D-02   DIIS   3    0.28344200s   LL             Fri Sep 30
+It.    5    -150.7720783040      3.82D-04 -1.04D-02  1.05D-02   DIIS   4    0.27549700s   LL             Fri Sep 30
+It.    6    -150.7721328738      5.46D-05  1.28D-03  3.60D-03   DIIS   5    0.26224400s   LL             Fri Sep 30
+It.    7    -150.7721439119      1.10D-05 -7.54D-04  9.35D-04   DIIS   5    0.26649400s   LL             Fri Sep 30
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    7 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00000000s
-      LL           :    0.66666667s
+      No 2-ints    :    0.20700000s
+      LL           :    0.30166667s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -186.92342896915864
+   Electronic energy                        :    -186.92342814936131
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      36.15128423750657
 
    Sum of all contributions to the energy
-   Total energy                             :    -150.77214473165208
+   Total energy                             :    -150.77214391185476
 
 
                                    Eigenvalues
@@ -910,15 +934,15 @@ It.    7    -150.7721447317      9.98D-07  1.10D-04  3.54D-04   DIIS   5    0.60
 
 * Boson symmetry A  
   * Closed shell, f = 1.0000
--20.63182270465957  ( 2)   -20.63156434234891  ( 2)    -1.45753872224290  ( 2)    -1.21633210470350  ( 2)    -0.73929040766945  ( 2)
- -0.64816207828868  ( 2)    -0.58133308142073  ( 2)    -0.54845883689183  ( 2)    -0.47213276788090  ( 2)
+-20.63178121525217  ( 2)   -20.63152280353106  ( 2)    -1.45749389704404  ( 2)    -1.21632207745637  ( 2)    -0.73938996034677  ( 2)
+ -0.64813769160878  ( 2)    -0.58113780206889  ( 2)    -0.54840765241812  ( 2)    -0.47211459010177  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.16225685689626  ( 2)     0.18320712741086  ( 2)     0.29593447902909  ( 2)     0.80202972178119  ( 2)     0.81756533723826  ( 2)
-  1.11666796839380  ( 2)     1.13328192892921  ( 2)     1.18039213588903  ( 2)     1.20422047842124  ( 2)     1.29613302883118  ( 2)
-  1.30139188272799  ( 2)     1.49855073408020  ( 2)     1.53686686549816  ( 2)     1.54535523662963  ( 2)     1.72182293464495  ( 2)
-  1.88127342797315  ( 2)     2.03620696952991  ( 2)     2.37621063301616  ( 2)     2.42250951748466  ( 2)     2.71497084935818  ( 2)
-  2.71856183468879  ( 2)     2.97512175495562  ( 2)     3.25793522107152  ( 2)     3.27136818406544  ( 2)     3.36313500262427  ( 2)
-  3.49722011450528  ( 2)     3.85588660362350  ( 2)     3.97562021838273  ( 2)     4.18447044989675  ( 2)
+  0.16224878256572  ( 2)     0.18330025596859  ( 2)     0.29586186299331  ( 2)     0.80204489661507  ( 2)     0.81760523966522  ( 2)
+  1.11674636373837  ( 2)     1.13331991925178  ( 2)     1.18046516931900  ( 2)     1.20427202983878  ( 2)     1.29616483392916  ( 2)
+  1.30139172930206  ( 2)     1.49854884090659  ( 2)     1.53686776945726  ( 2)     1.54536407347832  ( 2)     1.72183084534743  ( 2)
+  1.88133297457888  ( 2)     2.03625451986355  ( 2)     2.37621825974580  ( 2)     2.42251897465302  ( 2)     2.71503728808343  ( 2)
+  2.71861470239396  ( 2)     2.97516927972670  ( 2)     3.25799532540996  ( 2)     3.27143010402346  ( 2)     3.36318892389535  ( 2)
+  3.49726969985438  ( 2)     3.85595532110313  ( 2)     3.97567924125476  ( 2)     4.18452163861956  ( 2)
 
 * Occupation of subblocks
                        E1 :  A                                                                              
@@ -929,10 +953,10 @@ tot.num. of pos.erg shells:   38
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.16225686 au (symmetry A  )
-  - E(HOMO) :    -0.47213277 au (symmetry A  )
+    E(LUMO) :     0.16224878 au (symmetry A  )
+  - E(HOMO) :    -0.47211459 au (symmetry A  )
   ------------------------------------------
-    gap     :     0.63438962 au
+    gap     :     0.63436337 au
 
 
 
@@ -979,8 +1003,8 @@ tot.num. of pos.erg shells:   38
     - Active orbitals    : No electrons
     - Secondary orbitals :     10..    38                                          
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -150.772143733444608
-* Heading :DIRAC: No title specified !!!                     Thu Sep 26 18:13:27 2013
+* REACMO: Coefficients read from file DFCOEF - Total energy: -150.772132873838501
+* Heading :DIRAC: No title specified !!!                     Fri Sep 30 08:52:08 2016
 
 
 
@@ -991,52 +1015,52 @@ MAGFLDX          - Symmetry: A    T-
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Thu Sep 26 18:13:27 2013
+* Heading :DIRAC: No title specified !!!                     Fri Sep 30 08:52:08 2016
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Thu Sep 26 18:13:23 2013
+* Heading :DIRAC: No title specified !!!                     Fri Sep 30 08:52:06 2016
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  4.67D-06
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.14D+03
-* Screening threshold in LR solver scaled with norm of property vector:  6.1089D+00
+* Screening threshold in LR solver scaled with norm of property vector:  6.1087D+00
   and changed to:  2.8546D-05
 
-########## START MICROITERATION NO.   1 ##########   Thu Sep 26 18:13:27 2013
+########## START MICROITERATION NO.   1 ##########   Fri Sep 30 08:52:08 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.85D-05    0.00%   31.13%    0.00%   51.74%   0.28001690s
+SOfock:LL  2.85D-05    0.00%   31.12%    0.00%   51.74%   0.25846887s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-02  1.47E+00  1.47E+00
 
-########## START MICROITERATION NO.   2 ##########   Thu Sep 26 18:13:28 2013
+########## START MICROITERATION NO.   2 ##########   Fri Sep 30 08:52:08 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.85D-05    0.16%   36.12%    0.00%   48.04%   0.28401804s
+SOfock:LL  2.85D-05    0.16%   36.12%    0.00%   48.04%   0.26166511s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
-     0.00000000  1.00E-02  4.14E-01  4.14E-01
+     0.00000000  1.00E-02  4.13E-01  4.13E-01
 
-########## START MICROITERATION NO.   3 ##########   Thu Sep 26 18:13:28 2013
+########## START MICROITERATION NO.   3 ##########   Fri Sep 30 08:52:08 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.85D-05    0.39%   44.18%    0.00%   42.12%   0.28401709s
+SOfock:LL  2.85D-05    0.39%   44.19%    0.00%   42.12%   0.26146317s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
-     0.00000000  1.00E-02  8.81E-02  8.81E-02
+     0.00000000  1.00E-02  8.80E-02  8.80E-02
 
-########## START MICROITERATION NO.   4 ##########   Thu Sep 26 18:13:28 2013
+########## START MICROITERATION NO.   4 ##########   Fri Sep 30 08:52:09 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.85D-05    1.27%   57.56%    0.00%   31.98%   0.28001833s
+SOfock:LL  2.85D-05    1.27%   57.57%    0.00%   31.97%   0.26854801s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
@@ -1052,19 +1076,19 @@ SOfock:LL  2.85D-05    1.27%   57.56%    0.00%   31.98%   0.28001833s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.31201887s  (LL       )     [  1]
+* It.  1   0.26716495s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.47D+00 |   1.47D+00
 ==============================================
-* It.  2   0.31202030s  (LL       )     [  1]
+* It.  2   0.27304602s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   4.14D-01 |   4.14D-01
+            0.000000 :   4.13D-01 |   4.13D-01
 ==============================================
-* It.  3   0.31601858s  (LL       )     [  1]
+* It.  3   0.27022004s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   8.81D-02 |   8.81D-02
+            0.000000 :   8.80D-02 |   8.80D-02
 ==============================================
-* It.  4   0.30802011s  (LL       )     [  1]
+* It.  4   0.27671790s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   3.58D-02 |   3.58D-02
 ==============================================
@@ -1077,38 +1101,38 @@ MAGFLDY          - Symmetry: A    T-
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  4.67D-06
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.14D+03
-* Screening threshold in LR solver scaled with norm of property vector:  7.6230D-01
-  and changed to:  3.5621D-06
+* Screening threshold in LR solver scaled with norm of property vector:  7.6224D-01
+  and changed to:  3.5619D-06
 
-########## START MICROITERATION NO.   1 ##########   Thu Sep 26 18:13:29 2013
+########## START MICROITERATION NO.   1 ##########   Fri Sep 30 08:52:09 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.56D-06    0.00%   30.75%    0.00%   52.12%   0.28801775s
+SOfock:LL  3.56D-06    0.00%   30.75%    0.00%   52.12%   0.26108193s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-02  1.32E-01  1.32E-01
 
-########## START MICROITERATION NO.   2 ##########   Thu Sep 26 18:13:29 2013
+########## START MICROITERATION NO.   2 ##########   Fri Sep 30 08:52:09 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.56D-06    0.09%   37.96%    0.00%   46.94%   0.28801680s
+SOfock:LL  3.56D-06    0.09%   37.95%    0.00%   46.95%   0.25950289s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
-     0.00000000  1.00E-02  2.80E-02  2.80E-02
+     0.00000000  1.00E-02  2.78E-02  2.78E-02
 
-########## START MICROITERATION NO.   3 ##########   Thu Sep 26 18:13:29 2013
+########## START MICROITERATION NO.   3 ##########   Fri Sep 30 08:52:10 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.56D-06    0.39%   48.05%    0.00%   39.26%   0.27201700s
+SOfock:LL  3.56D-06    0.39%   48.00%    0.00%   39.29%   0.26241302s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
-     0.00000000  1.00E-02  6.56E-03  6.56E-03
+     0.00000000  1.00E-02  6.18E-03  6.18E-03
 
 
                              Final output from XRSCTL
@@ -1119,17 +1143,17 @@ SOfock:LL  3.56D-06    0.39%   48.05%    0.00%   39.26%   0.27201700s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.31602001s  (LL       )     [  1]
+* It.  1   0.26913714s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.32D-01 |   1.32D-01
 ==============================================
-* It.  2   0.31601906s  (LL       )     [  1]
+* It.  2   0.27030087s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   2.80D-02 |   2.80D-02
+            0.000000 :   2.78D-02 |   2.78D-02
 ==============================================
-* It.  3   0.30401897s  (LL       )     [  1]
+* It.  3   0.27177000s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   6.56D-03 |   6.56D-03
+            0.000000 :   6.18D-03 |   6.18D-03
 ==============================================
 
 
@@ -1140,43 +1164,43 @@ MAGFLDZ          - Symmetry: A    T-
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  4.67D-06
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.14D+03
-* Screening threshold in LR solver scaled with norm of property vector:  5.8097D+00
+* Screening threshold in LR solver scaled with norm of property vector:  5.8096D+00
   and changed to:  2.7148D-05
 
-########## START MICROITERATION NO.   1 ##########   Thu Sep 26 18:13:30 2013
+########## START MICROITERATION NO.   1 ##########   Fri Sep 30 08:52:10 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.71D-05    0.00%   30.75%    0.00%   52.03%   0.28401804s
+SOfock:LL  2.71D-05    0.00%   30.75%    0.00%   52.04%   0.26575184s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-02  1.12E+00  1.12E+00
 
-########## START MICROITERATION NO.   2 ##########   Thu Sep 26 18:13:30 2013
+########## START MICROITERATION NO.   2 ##########   Fri Sep 30 08:52:10 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.71D-05    0.28%   38.34%    0.00%   46.43%   0.28001690s
+SOfock:LL  2.71D-05    0.28%   38.34%    0.00%   46.43%   0.27203608s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
      0.00000000  1.00E-02  5.70E-01  5.70E-01
 
-########## START MICROITERATION NO.   3 ##########   Thu Sep 26 18:13:30 2013
+########## START MICROITERATION NO.   3 ##########   Fri Sep 30 08:52:10 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.71D-05    0.25%   42.04%    0.00%   43.74%   0.28401756s
+SOfock:LL  2.71D-05    0.25%   42.04%    0.00%   43.73%   0.25971985s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part 
-     0.00000000  1.00E-02  9.94E-02  9.94E-02
+     0.00000000  1.00E-02  9.93E-02  9.93E-02
 
-########## START MICROITERATION NO.   4 ##########   Thu Sep 26 18:13:31 2013
+########## START MICROITERATION NO.   4 ##########   Fri Sep 30 08:52:11 2016
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
+SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.25371218s
 * Trial vectors in this micro iteration:  E-:  1
 
 * Norm of residual vectors:
@@ -1192,19 +1216,19 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 
             Freq.(au)   Total norm    E- norm 
 ==============================================
-* It.  1   0.31202030s  (LL       )     [  1]
+* It.  1   0.27415705s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   1.12D+00 |   1.12D+00
 ==============================================
-* It.  2   0.31201887s  (LL       )     [  1]
+* It.  2   0.28177881s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   5.70D-01 |   5.70D-01
 ==============================================
-* It.  3   0.31602001s  (LL       )     [  1]
+* It.  3   0.26795292s  (LL       )     [  1]
 ----------------------------------------------
-            0.000000 :   9.94D-02 |   9.94D-02
+            0.000000 :   9.93D-02 |   9.93D-02
 ==============================================
-* It.  4   0.30801916s  (LL       )     [  1]
+* It.  4   0.26259279s  (LL       )     [  1]
 ----------------------------------------------
             0.000000 :   2.25D-02 |   2.25D-02
 ==============================================
@@ -1221,7 +1245,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.305452834557 a.u.                       5.86E-03   (converged)
+  0.00000000 a.u.   -1.306423936559 a.u.                       5.87E-03   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 2)>> - linear response function (real):
@@ -1231,7 +1255,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.751120998272 a.u.                       8.61E-03   (converged)
+  0.00000000 a.u.   -1.766025842446 a.u.                       8.11E-03   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 3)>> - linear response function (real):
@@ -1241,7 +1265,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    2.972727334213 a.u.                       3.87E-03   (converged)
+  0.00000000 a.u.    2.974466825026 a.u.                       3.87E-03   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 1)>> - linear response function (real):
@@ -1251,7 +1275,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.251871731735 a.u.                       5.86E-03   (converged)
+  0.00000000 a.u.   -1.244569833015 a.u.                       5.87E-03   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 2)>> - linear response function (real):
@@ -1261,7 +1285,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.16044126D-01 a.u.                       8.61E-03   (converged)
+  0.00000000 a.u.   -0.10342718E-01 a.u.                       8.11E-03   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 3)>> - linear response function (real):
@@ -1271,7 +1295,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.206660157911 a.u.                       3.87E-03   (converged)
+  0.00000000 a.u.   -0.208649030915 a.u.                       3.87E-03   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 1)>> - linear response function (real):
@@ -1281,7 +1305,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -1.274221323047 a.u.                       5.86E-03   (converged)
+  0.00000000 a.u.   -1.276968159520 a.u.                       5.87E-03   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 2)>> - linear response function (real):
@@ -1291,7 +1315,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.   -0.853857938733 a.u.                       8.61E-03   (converged)
+  0.00000000 a.u.   -0.854733214401 a.u.                       8.11E-03   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 3)>> - linear response function (real):
@@ -1301,7 +1325,7 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    1.103157069735 a.u.                       3.87E-03   (converged)
+  0.00000000 a.u.    1.101273986590 a.u.                       3.87E-03   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
@@ -1316,24 +1340,24 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 
                      x                   y                   z
 
-         x    0.5254684535E-07    0.7048579761E-07   -0.1196576693E-06
-         y    0.5039010874E-07    0.6458051813E-09    0.8318446344E-08
-         z    0.5128972035E-07    0.3436933137E-07   -0.4440407375E-07
-   trace/3                                                                0.2929525595E-08
+         x    0.5258593397E-07    0.7108574464E-07   -0.1197276869E-06
+         y    0.5009619407E-07    0.4163131510E-09    0.8398502091E-08
+         z    0.5140028550E-07    0.3440456281E-07   -0.4432827624E-07
+   trace/3                                                                0.2891323628E-08
 
           principal components
 
-              0.9455934829E-07
-             -0.6366687898E-08
-             -0.7940408361E-07
+              0.9464920802E-07
+             -0.6456770157E-08
+             -0.7951846698E-07
 
-     sum/3    0.2929525595E-08
+     sum/3    0.2891323628E-08
 
                 principal axes
 
-         x    0.8469704299E+00   -0.3130286671E+00    0.4297140264E+00
-         y    0.5157175396E+00    0.6800934810E+00   -0.5210645607E+00
-         z   -0.1291375632E+00    0.6629373354E+00    0.7374534420E+00
+         x    0.8471705457E+00   -0.3118355112E+00    0.4301867972E+00
+         y    0.5154540071E+00    0.6787503989E+00   -0.5230727125E+00
+         z   -0.1288768135E+00    0.6648733037E+00    0.7357542097E+00
 
 ----------------------------------------------
 
@@ -1343,32 +1367,32 @@ SOfock:LL  2.71D-05    1.56%   56.21%    0.00%   32.85%   0.28001785s
 
 
  
-     Date and time (Linux)  : Thu Sep 26 18:13:31 2013
-     Host name              : not found                               
+     Date and time (Mac OSX): Fri Sep 30 08:52:11 2016
+     Host name              : VisscherMacBookPro2012.clients.vu.nl    
 
->>>> Node 0, utime: 7, stime: 0, minflt: 16952, majflt: 0, nvcsw: 8, nivcsw: 1072, maxrss: 14628
->>>> Total WALL time used in DIRAC: 8s
+>>>> Node 0, utime: 5, stime: 0, minflt: 7031, majflt: 0, nvcsw: 6, nivcsw: 765, maxrss: 14725120
+>>>> Total WALL time used in DIRAC: 5s
   
-  Dynamical Memory Usage Summary
+  Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        43.62
+  Mean allocation size (Mb) :        66.64
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSIDHF                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
-        7.63 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in READIN                            
-        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
-        0.35 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.35 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.18 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.18 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+      488.28 Mb at subroutine unknown                                    for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine unknown                                    for WORK in PSISCF                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine unknown                                    for WORK in GMOTRA                            
+      488.28 Mb at subroutine unknown                                    for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine unknown                                    for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine unknown                                    for PAMINP WORK array                         
+        0.35 Mb at subroutine unknown                                    for buf in butobs                             
+        0.18 Mb at subroutine unknown                                    for unnamed variable                          
+        0.06 Mb at subroutine unknown                                    for QTRANS90-buffer-space                     
   
   Peak memory usage    (Mb) :       489.00
-       reached at subroutine : __allocator_track_if_MOD_allocator_registe
-              for variable   : unnamed variable                          
+       reached at subroutine : unknown                                   
+              for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 

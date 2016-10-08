@@ -5,17 +5,18 @@
     Takes care of copying files in and out and of setting appropriate environment variables for a DIRAC calculation.
   
     Written by Miroslav Ilias, Matej Bel University, Banska Bystrica, Slovakia, 2010-2013
-   
     Contributors: Radovan Bast, Ulf Ekstrom, Stefan Knecht, Andre Gomes
+
+    This script is distributed under the MIT licence.
    
     Environment variables (set by user) used by pam:
              DIRTIMEOUT        - time out limit for dirac run
              DIRAC_MPI_COMMAND - if set, instead of "dirac.x" pam will execute "$DIRAC_MPI_COMMAND dirac.x", example: export DIRAC_MPI_COMMAND="mpirun -np 8"
                                  if set, pam assumes that this is an MPI run
-                                 this environment variable has to be set for parallel test with ctest
+                                 this environment variable has to be set for parallel tests with ctest
                                  it allows to run DIRAC in parallel on systems which
-                                 do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use --mpi
-                                 --mpi overrides DIRAC_MPI_COMMAND
+                                 do not use mpirun (SGI, Cray, systems with own wrappers); in this case do not use the "--mpi" flag
+                                 because "--mpi" overrides the DIRAC_MPI_COMMAND environmental variable
              DIRAC_MPI_MACHFILE - if set, tells about parallel multinodes run with nodes specified by this variable. Is overwritten by --machfile flag.
              DIRAC_TMPDIR      - if set, DIRAC will use the path $DIRAC_TMPDIR as scratch directory. Is overwritten by --scratch/--scratchfull flags.
              BASDIR_PATH       - if set, DIRAC will use this basis set directory/directories, otherwise it takes the default $DIRAC/build*
@@ -34,6 +35,7 @@
              DIRPAR          - controls parallel run (1) or sequential run (0)
              DIRNOD          - maximum work space for Fortran 77 "WORK" allocations for MPI workers, only used in MPI run
              GLBSCR          - global scratch disk (1) or local scratch disk (0), only used in MPI run (cryptic 6-character name is used in source codes)
+
 """
 
 import os
@@ -624,7 +626,7 @@ Options are also read from ~/.diracrc"""
             type='int',
             action='store',
             dest='dest_mpi',
-            default=None,
+            default=1,
             help='set number of MPI processes in parallel run [default: %default]',
             metavar='INTEGER',
             )
@@ -871,16 +873,16 @@ Options are also read from ~/.diracrc"""
 
         if options.dest_mpi:
             self.nr_proc = int(options.dest_mpi)
-            self.parallel_run = True
 
-        # Only use DIRAC_MPI_COMMAND if this is an MPI parallel dirac.x !
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
         if "@ENABLE_MPI@" == "True":
-            if os.environ.get('DIRAC_MPI_COMMAND') != None:
-                self.parallel_run = True
-            if os.environ.get('LOCAL_SCRATCH_BOOL') and self.parallel_run:
+            # always is parallel run if ENABLE_MPI=ON
+            self.parallel_run = True
+            if os.environ.get('LOCAL_SCRATCH_BOOL'):
                 # set local disks for paralell run
                 self.global_scratch_disk = False
+
+        if os.environ.get('DIRAC_MPI_COMMAND'): self.parallel_run = True
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -1327,8 +1329,8 @@ Options are also read from ~/.diracrc"""
 
         if self.parallel_run:
             dirac_mpi_command = os.environ.get('DIRAC_MPI_COMMAND')
-            if (dirac_mpi_command != None) and (self.nr_proc == 0):
-                # DIRAC_MPI_COMMAND is set and --mpi is not set
+            if (dirac_mpi_command != None):
+                # DIRAC_MPI_COMMAND is set 
                 # --mpi overrides DIRAC_MPI_COMMAND
                 self.dirac_cmd = "%s %s" % (dirac_mpi_command, dirac_executable)
             else:

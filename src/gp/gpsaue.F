@@ -4220,6 +4220,43 @@ C
       RETURN
       END
 
+      SUBROUTINE AMPLITUDES(AMAT,AMAT1,NTOT,NZ)
+!
+! Get amplitudes of the quaternion like matrix AMAT into AMAT1
+!
+! AMAT1(i,j,1)=sqrt(AMAT(i,j,1)+AMAT(i,j,2)+AMAT(i,j,3)+AMAT(i,j,4))
+!
+! Written by Miro Ilias, GSI, 2016
+!
+!
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION AMAT(NTOT,NTOT,NZ)
+      DIMENSION AMAT1(NTOT,NTOT,1)
+
+      DO J = 1, NTOT
+        DO I = 1,NTOT
+           AMAT1(I,J,1) = AMAT(I,J,1)*AMAT(I,J,1)
+        ENDDO
+      ENDDO
+
+      DO IZ = 2,NZ
+        DO J = 1, NTOT
+          DO I = 1,NTOT
+             AMAT1(I,J,1) = AMAT1(I,J,1)+AMAT(I,J,IZ)*AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+
+      DO J = 1, NTOT
+        DO I = 1,NTOT
+           AMAT1(I,J,1) = DSQRT(AMAT1(I,J,1))
+        ENDDO
+      ENDDO
+
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck iicopy */
       SUBROUTINE IICOPY(NDIM,IA,IA1,IASTEP,IB,IBSTEP,IB1)

@@ -53,7 +53,6 @@ add_library(
 )
 
 # add dependencies 
-#add_dependencies(xcint gp)
 if(ENABLE_XCFUN)
     add_dependencies(xcint xcfun_fortran_bindings)
 endif()
