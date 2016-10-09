@@ -118,6 +118,7 @@ C***********************************************************************
 #endif
 #ifdef HAS_PELIB
       use polarizable_embedding, only: pe_master
+      use pe_variables, only: peqm
 #endif
 
 #include "implicit.h"
@@ -145,7 +146,6 @@ CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       real(8), allocatable :: dsmat_triangle(:)
       real(8), allocatable :: flmat_triangle(:)
       real(8), allocatable :: fsmat_triangle(:)
-      logical :: ketlrg, bralrg, ketsml, brasml
 #endif
 
       real(8), allocatable :: xc_matrix(:, :, :)
