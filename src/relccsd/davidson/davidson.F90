@@ -221,9 +221,9 @@ contains
         end if
 
         if (present(solve_left)) then
-            davidson_solve_rhs = solve_left 
+            davidson_solve_lhs = solve_left 
         else
-            davidson_solve_rhs = .false. 
+            davidson_solve_lhs = .false. 
         end if
 
         if (present(solve_right)) then
