@@ -1360,9 +1360,18 @@ contains
     end subroutine 
 
 
-    subroutine save_davidson_setup(reclen,left,right,symmetry,node)
-        integer, intent(in) :: reclen, node, symmetry
-        logical, intent(in) :: left, right
+! I/O for davidson
+
+    subroutine io_davidson_setup(N, L, nroot, complex_mode, left, right, symmetry, node)
+        integer, intent(in) :: N, L, nroot, node, symmetry
+        logical, intent(in) :: left, right, complex_mode
+        integer :: reclen_real, reclen_vector, factor
+        real(kind=8) :: dummy
+
+        factor = 1
+        if (complex_mode) factor = 2
+
+        inquire (iolength = reclen_real) dummy
 
         left_sigma_file_name     = 'LSIGMAV.sym'//trim(str(symmetry))//"."//trim(str(node))
         left_vectors_file_name   = 'LEVECTO.sym'//trim(str(symmetry))//"."//trim(str(node))
@@ -1373,26 +1382,32 @@ contains
         right_subspace_file_name = 'RSUBSPA.sym'//trim(str(symmetry))//"."//trim(str(node))
 
         if (right) then
+            reclen_vector = factor*N*L*reclen_real
             open(unit=right_sigma_file_unit,file=right_sigma_file_name,&
-                 form="unformatted", access="direct", recl=reclen)
-            open(unit=right_vectors_file_unit, file=right_vectors_file_name, &
-                 form="unformatted", access="direct", recl=reclen)
+                 form="unformatted", access="direct", recl=reclen_vector)
             open(unit=right_subspace_file_unit, file=right_subspace_file_name, &
-                 form="unformatted", access="direct", recl=reclen)
+                 form="unformatted", access="direct", recl=reclen_vector)
+
+            reclen_vector = factor*N*nroot*reclen_real + 2 
+            open(unit=right_vectors_file_unit, file=right_vectors_file_name, &
+                 form="unformatted", access="direct", recl=reclen_vector)
         end if
 
         if (left) then
+            reclen_vector = factor*N*L*reclen_real
             open(unit=left_sigma_file_unit, file=left_sigma_file_name, &
-                 form='unformatted', access='direct', recl=reclen)
-            open(unit=left_vectors_file_unit, file=left_vectors_file_name, &
-                 form='unformatted', access='direct', recl=reclen)
+                 form='unformatted', access='direct', recl=reclen_vector)
             open(unit=left_subspace_file_unit, file=left_subspace_file_name, &
-                 form='unformatted', access='direct', recl=reclen)
+                 form='unformatted', access='direct', recl=reclen_vector)
+
+            reclen_vector = factor*N*nroot*reclen_real + 2 
+            open(unit=left_vectors_file_unit, file=left_vectors_file_name, &
+                 form='unformatted', access='direct', recl=reclen_vector)
         end if
 
     end subroutine
 
-    subroutine save_davidson_finalize(left,right)
+    subroutine io_davidson_finalize(left,right)
         logical, intent(in) :: left, right
 
         if (right) then
@@ -1429,6 +1444,20 @@ contains
             read(file_unit, rec=i) valuesRe(i), valuesIm(i), vectors(:,i)
         end do
 
+    end subroutine
+
+    subroutine write_davidson_data_1d(file_unit,data1d)
+        real(kind=8), intent(inout) :: data1d(:)
+        integer, intent(in) :: file_unit
+
+        write(file_unit, rec=1) data1d(:)
+    end subroutine
+
+    subroutine read_davidson_data_1d(file_unit,data1d)
+        real(kind=8), intent(inout) :: data1d(:)
+        integer, intent(in) :: file_unit
+
+        read(file_unit, rec=1) data1d(:)
     end subroutine
 
     subroutine write_davidson_data_2d(file_unit,data2d,column_start,column_end)
