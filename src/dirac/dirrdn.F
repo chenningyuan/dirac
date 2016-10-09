@@ -46,7 +46,10 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif      
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -4755,6 +4758,9 @@ C***********************************************************************
       use x2cmod_cfg
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
 #endif
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg

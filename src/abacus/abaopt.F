@@ -2283,6 +2283,9 @@ C
 #ifdef HAS_PCMSOLVER      
       use pcm_scf
 #endif      
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif 
 
 #include "implicit.h"
 #include "priunit.h"

@@ -1397,6 +1397,9 @@ C*****************************************************************************
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1426,7 +1429,9 @@ C
       character(12)        :: pcm_cputid
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
+#ifdef HAS_PELIB
       REAL(8) :: PE_TOT_NRG, PE_EL_NRG, PE_TIME
+#endif
       CALL QENTER('SCFCYC_1')
 #include "memint.h"
 C
@@ -1946,6 +1951,9 @@ C*****************************************************************************
       use fde_mod
 #ifdef HAS_PCMSOLVER
       use pcm_scf
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
 #endif
 
 #include "implicit.h"

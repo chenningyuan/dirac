@@ -35,6 +35,10 @@ C***********************************************************************
       use pcm_scf, only: get_pcm_energy, pcm_scf_finalize
 #endif      
 
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
