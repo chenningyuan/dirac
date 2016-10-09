@@ -477,7 +477,7 @@
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
 
-   type(davidson_results) :: davResults
+   type(davidson_results) :: davResultsR(nrep), davResultsL(nrep)
    logical :: left_vectors, right_vectors
    logical :: symmetric = .false.
    logical :: verbose = .false.
@@ -585,7 +585,7 @@
 !
 ! be very careful with state_sym and nroot, now these are global variables in this module !!
 !
-    do state_sym = 1, 16
+    do state_sym = 1, nrep ! 16 
        call create_eom_ndet(2)
        nroot = relcc_eom_nroots(state_sym)
 
@@ -794,14 +794,8 @@
 
          else
 ! if the matrix is too large, we use a matrix-free method like davidson etc 
-            call davidson_driver(nroot, B, davResults, r)
-            call eom_analysis(davResults%eValuesRe,davResults%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
-            call davidson_cleanup(davResults)
-!
-! we can replace what goes above with the following. the goal would be to have all energies before printing the results in the FS-like manner, outside the symmetry loop
-!           call davidson_driver(nroot, B, davResultsIrrep(state_sym), r)
-!           call davidson_cleanup(davResultsIrrep(state_sym))
-!
+            call davidson_driver(nroot, B, davResultsR(state_sym), r)
+            call eom_analysis(davResultsR(state_sym)%eValuesRe,davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
          end if
          call free_eom_ndet()
          call free_eom_nvx()
@@ -815,12 +809,37 @@
 
 ! move the analysis etc of eom here, so that it is printed only when all requested irreps are processed and calculated ?
 ! something like this could be used,
-!    call eom_analysis_allirreps(davResultsIrrep, eps)
+!    call eom_analysis_allirreps(davResultsR, eps)
+
+
+!!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!
+!
+! now for the left hand side
+!
+
+! now we set the state for the diagonalizer, as this should not change within a given type of calculation,
+! e.g. excitation energies
+!
+    call davidson_setup(unit_output= iw,   &
+                        solve_right=.false.,&
+                        solve_left=.true.,&
+                        symmetric=.false., &
+                        verbose=.false.,   &
+!                       convergence_threshold = relcc_mfd_convergence_threshold, &
+!                       max_subspace_size = relcc_mfd_max_subspace_size, &
+                        overlap_sorting=.true.)
+
+
+!!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!  !!!!!!!!!!!!!!!!!!
+!
+! final cleanup
 !
      call free_intermediates(B)
-!    do state_sym = 1, 16
-!        call davidson_cleanup(davResultsIrrep(state_sym))
-!    end do
+     do state_sym = 1, 16
+         call davidson_cleanup(davResultsR(state_sym))
+         call davidson_cleanup(davResultsL(state_sym))
+     end do
+
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
    end subroutine
