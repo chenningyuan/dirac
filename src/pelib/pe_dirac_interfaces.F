@@ -19,8 +19,25 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
-
 #if defined (BUILD_PELIB)
+      logical function use_pelib()
+          use pe_variables, only: peqm
+          if (peqm) then
+             use_pelib = .true.
+          else
+             use_pelib = .false.
+          end if
+      end function use_pelib
+
+      logical function pelib_ifc_gspol()
+          use pe_variables, only: pe_gspol
+          if (pe_gspol) then
+              pelib_ifc_gspol = .true.
+          else
+             pelib_ifc_gspol = .false.
+          end if
+      end function pelib_ifc_gspol
+
       subroutine pe_ifc_input_reader(word)
         use pe_variables, only: peqm
         use polarizable_embedding, only: pe_input_reader
