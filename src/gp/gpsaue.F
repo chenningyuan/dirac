@@ -4235,17 +4235,20 @@ C
 
       DO J = 1, NTOT
         DO I = 1,NTOT
-           AMAT1(I,J,1) = AMAT(I,J,1)*AMAT(I,J,1)
+!         ...accumulate the real part
+           AMAT1(I,J,1) = (AMAT(I,J,1)*AMAT(I,J,1))
         ENDDO
       ENDDO
 
       DO IZ = 2,NZ
         DO J = 1, NTOT
           DO I = 1,NTOT
+!           ... accumulate quaternion-imaginary parts
              AMAT1(I,J,1) = AMAT1(I,J,1)+(AMAT(I,J,IZ)*AMAT(I,J,IZ))
           ENDDO
         ENDDO
       ENDDO
+!    finally, get the amplitude
       DO J = 1, NTOT
         DO I = 1,NTOT
            AMAT1(I,J,1) = DSQRT(AMAT1(I,J,1))
@@ -4268,14 +4271,15 @@ C
       AMAT_SUM_NZ(1)=0.0D0; AMAT_SUM_NZ(2)=0.0D0
       AMAT_SUM_NZ(3)=0.0D0; AMAT_SUM_NZ(4)=0.0D0 
       DO IZ=1, NZ
-      DO I=1, NROW
-      DO J=1, NCOL
-         AMAT_SUM_NZ(IZ)=AMAT_SUM_NZ(IZ)+AMAT(I,J,IZ)
+        DO I=1, NROW
+          DO J=1, NCOL
+            AMAT_SUM_NZ(IZ)=AMAT_SUM_NZ(IZ)+AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
       ENDDO
-      ENDDO
-      ENDDO
+! get the amplitude ...
       AMAT_SUM =
-     &      DSQRT((AMAT_SUM_NZ(1)*AMAT_SUM_NZ(2)) + 
+     &      DSQRT((AMAT_SUM_NZ(1)*AMAT_SUM_NZ(1)) + 
      &            (AMAT_SUM_NZ(2)*AMAT_SUM_NZ(2)) +
      &            (AMAT_SUM_NZ(3)*AMAT_SUM_NZ(3)) +
      &            (AMAT_SUM_NZ(4)*AMAT_SUM_NZ(4)))
@@ -4283,7 +4287,7 @@ C
 
       SUBROUTINE SUM_RE_MATRIX(AMAT,NROW,NCOL,LRQ,LCQ,AMAT_SUM)
 !----------------------------------------------------------------------------
-! Sum all elements in the entering real matrix AMAT, containing
+! Sum all elements in the entering real matrix AMAT, containing real 
 ! amplitutes, into AMAT_SUM.
 !
 ! Written by Miro Ilias, GSI, 2016
