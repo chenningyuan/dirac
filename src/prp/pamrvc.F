@@ -4193,6 +4193,8 @@ C
 #ifdef HAS_PELIB
 !       write(lupri,*) 'ndmat', ndmat
 !       print *, 'raboof', IHRMOP(1:ndmat)
+! edh: We only construct dlmat_triangle for the hermitic part
+! ihrmop(l)=1 of fmo (i.e. transformed density matrix)
         if (pe_gspol) write(lupri,*)'pe_gspol set true'//
      &     ' Dynamical response is disabled'
         if (peqm .and. .not. pe_gspol) then
