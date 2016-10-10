@@ -95,7 +95,7 @@
 
   end subroutine
 
-   subroutine input_processor(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2,H_II)
+   subroutine input_processor_right(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2,H_II)
 
 #include "symm.inc"
 #include "complex.inc"
@@ -1033,6 +1033,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 !                       overlap_sorting = relcc_mfd_overlap_sorting, &
                         overlap_sorting=.true.)
 
+    if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
+
     if (right_vectors) then
         left_or_right = "RHS"
     else if (left_vectors) then
@@ -1074,12 +1076,16 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              allocate (B%H_II(N*rcw),  stat = AllocateStatus)
              IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-             call input_processor(B%Fbar_mi, &
-      &                           B%Fbar_ae, &
-      &                           B%W_mbej,  &
-      &                           trial_vector(1:ndimr1*rcw,:),         &
-      &                           trial_vector((ndimr1*rcw)+1:N*rcw,:), &
-      &                           B%H_II)
+             if (right_vectors.and..not.left_vectors) then
+                 call input_processor_right(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+             else if (left_vectors.and..not.right_vectors) then    
+                 print *, 'write me !'
+             end if
 
 
           case ('IP')
@@ -1119,12 +1125,16 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              trial_vector = 0.0d0
              B%H_II = 1.0d0
 
-             call input_processor(B%Fbar_mi, &
-      &                           B%Fbar_ae, &
-      &                           B%W_mbej,  &
-      &                           trial_vector(1:ndimr1*rcw,:), &
-      &                           trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
-      &                           B%H_II)
+             if (right_vectors.and..not.left_vectors) then
+                 call input_processor_right(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+             else if (left_vectors.and..not.right_vectors) then    
+                 print *, 'write me !'
+             end if
 
           case('EA')
 
@@ -1162,12 +1172,16 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
              B%H_II = 1.0d0
 
-            call input_processor(B%Fbar_mi, &
-      &                          B%Fbar_ae, &
-      &                          B%W_mbej,  &
-      &                          trial_vector(1:ndimr1*rcw,:), &
-      &                          trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
-      &                          B%H_II)
+             if (right_vectors.and..not.left_vectors) then 
+                 call input_processor_right(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+             else if (left_vectors.and..not.right_vectors) then 
+                 print *, 'write me !'
+             end if
 
          end select 
 
@@ -1176,9 +1190,10 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              call eom_analysis(davResultsR(state_sym)%eValuesRe,davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
 
          else if (left_vectors) then
+! here we copy the right vectors instead of passing them directly in order to keep it`
              trial_vector = davResultsR(state_sym)%eVectorsR
              call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector)
-             call eom_analysis(davResultsL(state_sym)%eValuesRe,davResultsL(state_sym)%eVectorsL,eps) ! Fock-Space like output for EA, EE and IP
+!            call eom_analysis(davResultsL(state_sym)%eValuesRe,davResultsL(state_sym)%eVectorsL,eps) ! Fock-Space like output for EA, EE and IP
 
          end if
 
