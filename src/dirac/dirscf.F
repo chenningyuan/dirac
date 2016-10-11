@@ -1793,8 +1793,6 @@ C          reset intbuf so no old Fock matrices are used :
         END IF
 C
         IF (DHFEXIT) THEN
-CTROND
-           WRITE(6,*) 'After DHFEXIT'
 C     Comments on open shell convergence. Feb. 2013 hjaaj.
 C          ====================================================
 C          Some authors have put forward that OPEN_FAC = 1.0D0 is the best choice,

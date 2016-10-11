@@ -6802,11 +6802,10 @@ C     when there is no subblock ...
       TOBE = .FALSE.
       N2TMT = 0
       N2TMOTQ = 0      
-      ICOFF = 1
-      IEOFF = 1
+      ICOFF = 0
+      IVOFF = 0
       IF (SUB_BL) THEN
         ITEFF = 1
-        IVOFF = 0 
         DO 8 IFRP =  1,NFSYM
           NQ(1) = 0
           NQ(2) = 0
@@ -6819,7 +6818,11 @@ C.........First find how the selected vectors are distributed on subblocks
 C...........Find orbitals in this subblock
             NVECS_SUB(ISUB) = 0
             DO IVEC = 1,NVECS(IFRP)
-            IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+CTROND
+            WRITE(6,*) 'TESTsel2..',IVEC,ISEL(IVEC+IVOFF)
+            IF(ISEL(IVEC+IVOFF).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+CTROND
+               WRITE(6,*) 'TESTsel..',IFRP,IVEC,IVOFF,ISEL(IVEC+IVOFF)
                NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
                IF(INFOSEL(1,IVOFF+IVEC).GT.0) THEN
 C.................Positive energy solution                  
@@ -6842,12 +6845,15 @@ C.........Transform vector of each subblock to orthonormal basis
           IREF  = KREF
           DO ISUB = 1,N_SUB_BL(IFRP)
           IF(NVECS_SUB(ISUB).GT.0) THEN
-            IMO  = 1
 C...........Transform vector of this subblock to orthonormal basis
             ITM  = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
+            IMO  = ICOFF + 1
             JREF = IREF
             DO IVEC = 1,NVECS(IFRP)
-              IF(ISEL(IVEC).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+              IF(ISEL(IVEC+IVOFF).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
+CTROND
+                 WRITE(6,*) 'TEST..',ISUB,IFRP,IVEC,
+     &                ID_SUB_BL(ISUB,IFRP),IMO,ITM,I2TMT(IFRP)
                  CALL QGEMM(NORB_SUB(ISUB,IFRP,0),1,NFBAS(IFRP,0),D1,
      &             'H','N',IPQTOQ(1,0),TINV(ITM),
      &                     NFBAS(IFRP,0),NORB(IFRP),NZT,
@@ -6859,14 +6865,14 @@ C...........Transform vector of this subblock to orthonormal basis
               ENDIF
               IMO = IMO + NFBAS(IFRP,0)
             ENDDO
-            IF(IPRINT.GE.5) THEN
+CTROND            IF(IPRINT.GE.5) THEN
                WRITE(6,*)
      &         '  Transformed coefficients for subblock ',ISUB
                 CALL PRQMAT(WORK(IREF),
      &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
      &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
      &                NZ,IPQTOQ(1,0),LUPRI)
-            ENDIF
+CTROND            ENDIF
             IREF  = IREF  + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
           ENDIF             
           IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
@@ -6955,8 +6961,9 @@ C
             CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-            CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
-     &           WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
+            CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF+1),ESEL(IVOFF+1),
+     &           ISEL(IVOFF+1),WORK(KSEL),WORK(KBUF),WORK(KIND),
+     &           NVECS(IFRP),NQ)
             CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
          ENDIF
          NORB(IFRP)   = NTMO(IFRP) + NFRO(IFRP)
@@ -6967,7 +6974,6 @@ C
          N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
          ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ  ! update offset for selected coefficients
          IEOFF = IEOFF + NVECS(IFRP) ! update offset for energies and supersymmetries
-         IVOFF = IVOFF + NVECS(IFRP)
  8      CONTINUE
       ELSE ! IF (SUB_BL) THEN
       DO 10 IFRP = 1,NFSYM
@@ -6984,7 +6990,7 @@ C       Transform fragment coefficients to orthonormal basis
         CALL QGEMM(NORB(IFRP),NVECS(IFRP),NFBAS(IFRP,0),D1,
      &            'H','N',IPQTOQ(1,0),TINV(I2TMT(IFRP)+1),              ! TINV = SV , inverse of T^dagger
      &                    NFBAS(IFRP,0),NORB(IFRP),NZT,
-     &            'N','N',IPQTOQ(1,0),CSEL(ICOFF),                      ! selected coefficients
+     &            'N','N',IPQTOQ(1,0),CSEL(ICOFF+1),                      ! selected coefficients
      &                    NFBAS(IFRP,0),NVECS(IFRP),NZ,
      &            D0,IPQTOQ(1,0),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ)  ! result stored in WORK(KREF)
         IF(IPRINT.GE.5) THEN
@@ -7041,7 +7047,8 @@ C
             CALL MEMGET('INTE',KSEL,NVECS(IFRP),WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
             CALL MEMGET('REAL',KBUF,NBUF,WORK,KFREE,LFREE)
-            CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF),ESEL(IEOFF),ISEL(IEOFF),
+            CALL WRIFRZ(LUCOEF,IFRP,CSEL(ICOFF+1),ESEL(IVOFF+1),
+     &           ISEL(IVOFF+1),
      &           WORK(KSEL),WORK(KBUF),WORK(KIND),NVECS(IFRP),NQ)
             CALL MEMREL('PSIPRJ.froz',WORK,KFRSAV,KBUF,KFREE,LFREE)
           ENDIF
@@ -7051,7 +7058,7 @@ C         Move transformation matrix if columns was deleted in previous irrep ..
           CALL DCOPY(NDIM,TMAT(IEFF),1,TMAT(I2TMT(IFRP)+1),1)
         ENDIF
         ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ  ! update offset for selected coefficients
-        IEOFF = IEOFF + NVECS(IFRP)                   ! update offset for energies and supersymmetries
+        IVOFF = IVOFF + NVECS(IFRP)                   ! update offset for energies and supersymmetries
  10   CONTINUE
       ENDIF
       IF(NFROT.GT.0) CLOSE(LUCOEF,STATUS='KEEP')
