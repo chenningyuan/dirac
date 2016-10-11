@@ -58,6 +58,9 @@
         case ('*EOMCC')
            call read_input_cceom(word, kw_section)
 
+        case ('*EOMPROP')
+           call read_input_eomprop(word, kw_section)
+
         case ('*CCDIAG')
            call read_input_ccdiag(word, kw_section)
 
@@ -857,6 +860,10 @@
          relcc_do_eomcc  = .true.
       end if
 
+      if (kw_matches(word, '.EOMPROP')) then
+         relcc_do_eomprop  = .true.
+      end if
+
       if (kw_matches(word, '.FOCKSP')) then
          relcc_do_fspc     = .true.
          if (.not. explicitly_set_energy) relcc_do_energy = .false.
@@ -989,7 +996,6 @@
    end subroutine
 
 
-
    subroutine read_input_cceom(word, kw_section)
 
       use relcc_cfg
@@ -1033,6 +1039,46 @@
 
 
    end subroutine
+
+
+   subroutine read_input_eomprop(word, kw_section)
+
+      use relcc_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+       integer   :: nr_roots_prop(2),nr_roots_left(2),nr_roots_right(2) ! number of roots in each symmetry 
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.EXCPRP')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_prop)
+         relcc_eom_nroots_prop(nr_roots_prop(1)) = nr_roots_prop(2)           
+      end if
+
+      if (kw_matches(word, '.LEFT_STATE')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_left)
+         relcc_eom_nroots_left(nr_roots_left(1)) = nr_roots_left(2)           
+      end if
+
+      if (kw_matches(word, '.RIGHT_STATE')) then
+         relcc_do_excprp=.true.
+         call kw_read(word,  nr_roots_right)
+         relcc_eom_nroots_right(nr_roots_right(1)) = nr_roots_right(2)           
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
 
 
    subroutine read_input_ccdiag(word, kw_section)

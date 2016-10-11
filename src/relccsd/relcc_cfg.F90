@@ -51,6 +51,8 @@ module relcc_cfg
   logical, public :: relcc_do_energy               = .true.
   logical, public :: relcc_do_gradient             = .false.
   logical, public :: relcc_do_eomcc                = .false.
+  logical, public :: relcc_do_eomprop              = .false.
+  logical, public :: relcc_do_excprp               = .false.
   logical, public :: relcc_do_hessian              = .false. ! this currently only relates to the old Hartree-Fock MO response code 
   logical, public :: relcc_do_fspc                 = .false.
   logical, public :: relcc_carith                  = .false.
@@ -108,6 +110,9 @@ module relcc_cfg
   logical, public :: relcc_do_eomea = .false.
   logical, public :: relcc_do_eomee = .false.
   integer, public, dimension(1:16) :: relcc_eom_nroots = 0 
+  integer, public, dimension(1:16) :: relcc_eom_nroots_prop  = 0 
+  integer, public, dimension(1:16) :: relcc_eom_nroots_left  = 0 
+  integer, public, dimension(1:16) :: relcc_eom_nroots_right = 0 
 
 ! Information relevant for matrix-free diagonalization (Davidson etc)
   real*8, public  :: relcc_mfd_convergence_threshold = 1.0d-5
@@ -188,6 +193,7 @@ contains
   call interface_mpi_bcast_l0(relcc_do_energy          ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_gradient        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_eomcc           ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_do_eomprop         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_hessian         ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_fspc            ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_carith             ,1,0,global_communicator)
@@ -211,6 +217,9 @@ contains
   call interface_mpi_bcast_l0(relcc_do_eomea        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_do_eomip        ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_eom_nroots,size(relcc_eom_nroots),0,global_communicator)
+  call interface_mpi_bcast(relcc_eom_nroots_prop,size(relcc_eom_nroots_prop),0,global_communicator)
+  call interface_mpi_bcast(relcc_eom_nroots_left,size(relcc_eom_nroots_prop),0,global_communicator)
+  call interface_mpi_bcast(relcc_eom_nroots_right,size(relcc_eom_nroots_prop),0,global_communicator)
 
 ! Information relevant to the davidson or other type of matrix-free diagonalization methods
 
