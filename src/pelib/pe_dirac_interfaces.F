@@ -19,7 +19,7 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
-#if defined (BUILD_PELIB)
+#ifdef HAS_PELIB
       logical function use_pelib()
           use pe_variables, only: peqm
           if (peqm) then
