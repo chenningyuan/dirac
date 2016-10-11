@@ -446,17 +446,11 @@
 !         Dalton basis set
 !
           BASNAM = BASFIL
-#if defined (DIRAC_DENSFIT_DEBUG)
-          write(*,*) 'before call to baslib'
-#endif
           CALL BASLIB(IQM,JCO,NUC,NRC,SEG,                               &
      &         ALPHA,CPRIM,CPRIMU,                                       &
      &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,Q,1,DSM,                      &
      &         BASREF)
           NBLCK = NBLCK + NBLOCK
-#if defined (DIRAC_DENSFIT_DEBUG)
-          write(*,*) 'after call to baslib'
-#endif
       CASE (4)
 !
 !         Generate well-temperered/family basis set
