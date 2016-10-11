@@ -95,7 +95,7 @@
 
   end subroutine
 
-   subroutine input_processor(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2,H_II)
+   subroutine input_processor_right(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2,H_II)
 
 #include "symm.inc"
 #include "complex.inc"
@@ -477,7 +477,7 @@
    integer :: ndimr1,ndimr2
    integer :: AllocateStatus
 
-   type(davidson_results) :: davResults
+   type(davidson_results) :: davResultsR(nrep), davResultsL(nrep)
    logical :: left_vectors, right_vectors
    logical :: symmetric = .false.
    logical :: verbose = .false.
@@ -569,258 +569,27 @@
     call getampt(B%t1,B%t2)
     call IM_container(eomtype,B)
     call free_buffers(buf1,buf2,buf3)
-! 
-! now we set the state for the diagonalizer, as this should not change within a given type of calculation,
-! e.g. excitation energies
-!
-    call davidson_setup(unit_output= iw,   &
-                        solve_right=.true.,&
-                        solve_left=.false.,&
-                        symmetric=.false., &
-                        verbose=.false.,   &
-!                       convergence_threshold = relcc_mfd_convergence_threshold, &
-!                       max_subspace_size = relcc_mfd_max_subspace_size, &
-                        overlap_sorting=.true.)
 
-!
-! be very careful with state_sym and nroot, now these are global variables in this module !!
-!
-    do state_sym = 1, 16
-       call create_eom_ndet(2)
-       nroot = relcc_eom_nroots(state_sym)
+    right_vectors = .true.
+    left_vectors =  .false.
+    call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
 
-       if (nroot.gt.0) then
-          write (iw,*) ""
-          write (iw,'(2x,A,2x,I3)') "Determining EOM-"//eomtype(1:2)//" roots for symmetry",state_sym
-          write (iw,*) ""
-
-! setting up information for continuous orbital. this is a trick to perform
-! EOM-IP and EOM-EA calculations within the same framework as EOM-EE 
-       call set_continuous_orbital(state_sym)
-
-       select case (eomtype)
-
-          case ('EE')
-
-             ndimr1 = ndimt1
-             ndimr2 = ndimt2
-
-             call set_eom_ndet(1, ndimr1)
-             call set_eom_ndet(2, ndimr2)
-
-             N1 = ndimr1*rcw
-             N2 = ndimr2*rcw
-             N = ndimr1 + ndimr2
-
-!            nroot = N
-
-             allocate (r (N*rcw,nroot), stat = AllocateStatus)
-             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-             allocate (B%H_II(N*rcw),  stat = AllocateStatus)
-             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
-             call input_processor(B%Fbar_mi, &
-      &                           B%Fbar_ae, &
-      &                           B%W_mbej,  &
-      &                           r(1:ndimr1*rcw,:), &
-      &                           r((ndimr1*rcw)+1:N*rcw,:),  &
-      &                           B%H_II)
-
-             if (nroot .eq. N) then
-! this is to test the full diagonalizaion
-
-                allocate (sigma(N*rcw,nroot),stat = AllocateStatus)
-                IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-
-                do iroot = 1, nroot
-                    sigma(:,iroot:iroot) = 0.0d0
-                    call sigma_ee_1h1p(r(1:ndimr1*rcw,iroot:iroot),         &
-                    &                  r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-                    &                  B,                                   &
-                    &                  sigma(1:ndimr1*rcw,iroot:iroot),     &
-                    &                  sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-                    &                  nbuf3)
-                enddo
-            endif
-
-          case ('IP')
-
-             ndimr2 = 0
-             ndimr1 = 0
-             nvx = 0
-       
-             call create_eom_nvx(nrep)
-
-! this need a bit of explaining
-             do jrep = 1, nrep
-                do irep = 1, nrep
-                   ijrep = multb(irep,jrep,1)
-                   nvx(ijrep) = nvx(ijrep) + ncont(irep)*nv(jrep)
-                   call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*nv(jrep)))
-                enddo
-             enddo
-
-             do irep = 1, nrep
-                ndimr1 = ndimr1 + ncont(irep)*no(irep)
-             enddo
-
-             do irep = 1, nrep
-                 ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
-             enddo
-
-             N = ndimr1 + ndimr2
-!            nroot = N
-
-             call set_eom_ndet(1, ndimr1*rcw)
-             call set_eom_ndet(2, ndimr2*rcw)
-
-             allocate (r (N*rcw,nroot), stat = AllocateStatus)
-             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-             allocate (B%H_II(N*rcw)) 
-       
-             r = 0.0d0
-             B%H_II = 1.0d0
-
-             call input_processor(B%Fbar_mi, &
-      &                           B%Fbar_ae, &
-      &                           B%W_mbej,  &
-      &                           r(1:ndimr1*rcw,:), &
-      &                           r((ndimr1*rcw)+1:N*rcw,:),  &
-      &                           B%H_II)
-
-
-             if (nroot .eq. N) then
-                allocate (sigma(N*rcw,nroot))
-                do iroot = 1, nroot
-                    sigma(:,iroot:iroot) = 0.0d0
-                    call sigma_IP(nvx,   &
-              &                   r(1:ndimr1*rcw,iroot:iroot),         &
-              &                   r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-              &                   B,                                   &
-              &                   sigma(1:ndimr1*rcw,iroot:iroot),     &
-              &                   sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-              &                   ndimr1,                              &
-              &                   ndimr2)
-                enddo
-             end if
-
-
-          case('EA')
-
-             ndimr2 = 0
-             ndimr1 = 0
-             nox(1:nrep) = 0
-       
-             call create_eom_nvx(nrep)
-
-            do jrep = 1, nrep
-              do irep = 1, nrep
-              ijrep = multb(irep,jrep,1)
-              nox(ijrep) = nox(ijrep) + ncont(irep)*no(jrep)
-              call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*no(jrep)))
-              enddo
-            enddo
-
-              do irep = 1, nrep
-               ndimr1 = ndimr1 + ncont(irep)*nv(irep)
-              enddo
-
-            do irep = 1, nrep
-                ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
-            enddo
-
-             N = ndimr1 + ndimr2
-!             nroot = N
-
-             call set_eom_ndet(1, ndimr1)
-             call set_eom_ndet(2, ndimr2)
-
-             allocate (r(N*rcw,nroot))
-             allocate (B%H_II(N*rcw)) 
-       
-             r = 0.0d0
-
-             B%H_II = 1.0d0
-
-            call input_processor(B%Fbar_mi, &
-      &                          B%Fbar_ae, &
-      &                          B%W_mbej,  &
-      &                          r(1:ndimr1*rcw,:), &
-      &                          r((ndimr1*rcw)+1:N*rcw,:),  &
-      &                          B%H_II)
-
-!            do iroot = 1, nroot
-!               sigma1(1:ndimr1*rcw,iroot:iroot) = 0.0d0 
-!               sigma2(1:ndimr2*rcw,iroot:iroot) = 0.0d0 
-!               call sigma_IP(nvx,r1(:,iroot:iroot),r2(:,iroot:iroot),B, &
-!    &                        sigma1(:,iroot:iroot),sigma2(:,iroot:iroot),ndimr1,ndimr2)
-!               sigma(1:N*rcw,iroot:iroot) = 0.0d0 
-!               call sigma_IP(nvx, &
-!                             r(1:ndimr1*rcw,iroot:iroot), &
-!               &             r((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-!               &             B,                            &
-!               &             sigma(1:ndimr1*rcw,iroot:iroot), &
-!               &             sigma((ndimr1*rcw)+1:N*rcw,iroot:iroot), &
-!               &             ndimr1, &
-!               &             ndimr2)
-!             end do
-
-         end select 
-
-         if (nroot.eq.N) then
-! doing a full diagonalization if the request the same number of roots as the dimension of the matrix
-            allocate (sub_H(nroot,nroot))
-            sub_H = 0.0d0
-
-            do jroot = 1, nroot
-               do iroot = 1, nroot
-                  sub_H(iroot,jroot) = dot_product(r(:,iroot),sigma(:,jroot))
-               enddo
-            enddo
-
-            call dump_to_file(42,"CCjacobianH.bin",sub_H)
-
-            allocate (ev(nroot))
-            allocate (evec(nroot,nroot))
-
-            call solve_cg(nroot,sigma,evec,ev)
-
-            write(*,*)'Hp eigenvalues', (ev(i),i=1,min(20,nroot))
-
-            deallocate(ev)
-            deallocate(evec)
-            deallocate (sub_H)
-            if (allocated(sigma)) deallocate (sigma)
-
-         else
-! if the matrix is too large, we use a matrix-free method like davidson etc 
-            call davidson_driver(nroot, B, davResults, r)
-            call eom_analysis(davResults%eValuesRe,davResults%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
-            call davidson_cleanup(davResults)
-!
-! we can replace what goes above with the following. the goal would be to have all energies before printing the results in the FS-like manner, outside the symmetry loop
-!           call davidson_driver(nroot, B, davResultsIrrep(state_sym), r)
-!           call davidson_cleanup(davResultsIrrep(state_sym))
-!
-         end if
-         call free_eom_ndet()
-         call free_eom_nvx()
-
-         if (allocated(B%H_II)) deallocate(B%H_II)
-      end if 
-! this ends the loop over symmetries
-   end do
+! todo: debug lhs vectors
+!   right_vectors = .false.
+!   left_vectors =  .true.
+!   call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
 
  451 continue
 
-! move the analysis etc of eom here, so that it is printed only when all requested irreps are processed and calculated ?
-! something like this could be used,
-!    call eom_analysis_allirreps(davResultsIrrep, eps)
+!
+! final cleanup
 !
      call free_intermediates(B)
-!    do state_sym = 1, 16
-!        call davidson_cleanup(davResultsIrrep(state_sym))
-!    end do
+     do state_sym = 1, nrep 
+         call davidson_cleanup(davResultsR(state_sym))
+         call davidson_cleanup(davResultsL(state_sym))
+     end do
+
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
    end subroutine
@@ -1223,5 +992,245 @@
      &           a4,' #',i4,' (',f8.3,')  ')
 
   end subroutine
+
+
+
+subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+   use davidson
+   use allocator_parameters, only : klongint
+
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+!--------------------------------------------------
+   type(davidson_results), intent(inout) :: davResultsL(nrep)
+   type(davidson_results), intent(inout) :: davResultsR(nrep)
+   type(intermediates), intent (inout)   :: B
+   real(kind=8)                          :: eps(*)
+   logical, intent(in)                   :: left_vectors
+   logical, intent(in)                   :: right_vectors
+!--------------------------------------------------
+   real*8, pointer :: trial_vector(:,:)
+   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep,nvx(nrep),nox(nrep)
+   integer :: ndimr1,ndimr2
+   integer :: AllocateStatus
+   integer :: N, N1, N2 ! size of determinantal space 
+   character(len=3) :: left_or_right
+
+! 
+!  we set the state for the diagonalizer, as this should not change within a given type of calculation,
+! e.g. excitation energies
+!
+    call davidson_setup(unit_output= iw,   &
+                        solve_right=right_vectors, &
+                        solve_left=left_vectors,   &
+                        symmetric=.false., &
+!                       verbose=.false.,   &
+                        verbose=left_vectors,   &
+!                       convergence_threshold = relcc_mfd_convergence_threshold, &
+!                       max_subspace_size = relcc_mfd_max_subspace_size, &
+!                       overlap_sorting = relcc_mfd_overlap_sorting, &
+                        overlap_sorting=.true.)
+
+    if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
+
+    if (right_vectors) then
+        left_or_right = "RHS"
+    else if (left_vectors) then
+        left_or_right = "LHS"
+    end if
+!
+! be very careful with state_sym and nroot, now these are global variables in this module !!
+!
+    do state_sym = 1, nrep ! 16 
+       call create_eom_ndet(2)
+       nroot = relcc_eom_nroots(state_sym)
+
+       if (nroot.gt.0) then
+          write (iw,*) ""
+          write (iw,'(2x,A42,2x,I3)') "Solving "//left_or_right(1:3)//" EOM-"//eomtype(1:2)//" equations for symmetry",state_sym
+!         write (iw,'(2x,A,2x,I3)') "Solving EOM-"//eomtype(1:2)//" equations for symmetry",state_sym
+          write (iw,*) ""
+
+! setting up information for continuous orbital. this is a trick to perform
+! EOM-IP and EOM-EA calculations within the same framework as EOM-EE 
+       call set_continuous_orbital(state_sym)
+
+       select case (eomtype)
+
+          case ('EE')
+
+             ndimr1 = ndimt1
+             ndimr2 = ndimt2
+
+             call set_eom_ndet(1, ndimr1)
+             call set_eom_ndet(2, ndimr2)
+
+             N1 = ndimr1*rcw
+             N2 = ndimr2*rcw
+             N = ndimr1 + ndimr2
+
+             allocate (trial_vector(N*rcw,nroot), stat = AllocateStatus)
+             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+             allocate (B%H_II(N*rcw),  stat = AllocateStatus)
+             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+
+             if (right_vectors.and..not.left_vectors) then
+                 call input_processor_right(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+             else if (left_vectors.and..not.right_vectors) then    
+                 print *, 'write me !'
+             end if
+
+
+          case ('IP')
+
+             ndimr2 = 0
+             ndimr1 = 0
+             nvx = 0
+       
+             call create_eom_nvx(nrep)
+
+! this need a bit of explaining
+             do jrep = 1, nrep
+                do irep = 1, nrep
+                   ijrep = multb(irep,jrep,1)
+                   nvx(ijrep) = nvx(ijrep) + ncont(irep)*nv(jrep)
+                   call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*nv(jrep)))
+                enddo
+             enddo
+
+             do irep = 1, nrep
+                ndimr1 = ndimr1 + ncont(irep)*no(irep)
+             enddo
+
+             do irep = 1, nrep
+                 ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
+             enddo
+
+             N = ndimr1 + ndimr2
+
+             call set_eom_ndet(1, ndimr1*rcw)
+             call set_eom_ndet(2, ndimr2*rcw)
+
+             allocate (trial_vector(N*rcw,nroot), stat = AllocateStatus)
+             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+             allocate (B%H_II(N*rcw)) 
+       
+             trial_vector = 0.0d0
+             B%H_II = 1.0d0
+
+             if (right_vectors.and..not.left_vectors) then
+                 call input_processor_right(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+             else if (left_vectors.and..not.right_vectors) then    
+                 print *, 'write me !'
+             end if
+
+          case('EA')
+
+             ndimr2 = 0
+             ndimr1 = 0
+             nox(1:nrep) = 0
+       
+             call create_eom_nvx(nrep)
+
+            do jrep = 1, nrep
+              do irep = 1, nrep
+              ijrep = multb(irep,jrep,1)
+              nox(ijrep) = nox(ijrep) + ncont(irep)*no(jrep)
+              call set_eom_nvx(ijrep, (get_eom_nvx(ijrep) + ncont(irep)*no(jrep)))
+              enddo
+            enddo
+
+              do irep = 1, nrep
+               ndimr1 = ndimr1 + ncont(irep)*nv(irep)
+              enddo
+
+            do irep = 1, nrep
+                ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
+            enddo
+
+             N = ndimr1 + ndimr2
+
+             call set_eom_ndet(1, ndimr1)
+             call set_eom_ndet(2, ndimr2)
+
+             allocate (trial_vector(N*rcw,nroot))
+             allocate (B%H_II(N*rcw)) 
+       
+             trial_vector = 0.0d0
+
+             B%H_II = 1.0d0
+
+             if (right_vectors.and..not.left_vectors) then 
+                 call input_processor_right(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+             else if (left_vectors.and..not.right_vectors) then 
+                 print *, 'write me !'
+             end if
+
+         end select 
+
+         if (right_vectors) then
+             call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector)
+             call eom_analysis(davResultsR(state_sym)%eValuesRe,davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
+
+         else if (left_vectors) then
+! here we copy the right vectors instead of passing them directly in order to keep it`
+             trial_vector = davResultsR(state_sym)%eVectorsR
+             call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector)
+!            call eom_analysis(davResultsL(state_sym)%eValuesRe,davResultsL(state_sym)%eVectorsL,eps) ! Fock-Space like output for EA, EE and IP
+
+         end if
+
+         call free_eom_ndet()
+         call free_eom_nvx()
+
+         if (allocated(B%H_II)) deallocate(B%H_II)
+
+      end if ! this ends the if checking whether there are any roots required for this symmetry
+   end do    ! this ends the loop over symmetries
+
+   if (right_vectors) then
+       write (iw,*) ""
+       write (iw,'(2x,A)') "Final results for "//left_or_right//" EOM-"//eomtype(1:2)
+       write (iw,*) ""
+       call eom_analysis_allirreps(davResultsR, eps)
+   else if (left_vectors) then
+       write (iw,*) ""
+       write (iw,'(2x,A)') "Final results for "//left_or_right//" EOM-"//eomtype(1:2)
+       write (iw,*) ""
+       call eom_analysis_allirreps(davResultsL, eps)
+   end if
+   
+end subroutine
+
+
+subroutine eom_analysis_allirreps(davResults, eps)
+    use davidson
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+!--------------------------------------------------
+   type(davidson_results), intent(inout) :: davResults(nrep)
+   real(kind=8)                          :: eps(*)
+!--------------------------------------------------
+   print *, "Analysis of all EOM roots not implemented yet !"
+end subroutine
 
    end module 
