@@ -4220,41 +4220,88 @@ C
       RETURN
       END
 
-      SUBROUTINE AMPLITUDES(AMAT,AMAT1,NTOT,NZ)
+      SUBROUTINE NZ_MTX_AMPLITUDES(AMAT,AMAT1,NTOT,NZ)
+!------------------------------------------------------------------------
+! Get amplitudes of the full quaternion matrix AMAT into AMAT1
 !
-! Get amplitudes of the quaternion like matrix AMAT into AMAT1
-!
-! AMAT1(i,j,1)=sqrt(AMAT(i,j,1)+AMAT(i,j,2)+AMAT(i,j,3)+AMAT(i,j,4))
+! AMAT1(i,j,1)=sqrt(AMAT(i,j,1)+...+AMAT(i,j,NZ))
 !
 ! Written by Miro Ilias, GSI, 2016
-!
-!
-#include "implicit.h"
-#include "priunit.h"
-      DIMENSION AMAT(NTOT,NTOT,NZ)
-      DIMENSION AMAT1(NTOT,NTOT,1)
+!------------------------------------------------------------------------
+      integer, intent(in)  :: NTOT,NZ
+      real*8,  intent(in)  :: AMAT(NTOT,NTOT,NZ)
+      real*8,  intent(out) :: AMAT1(NTOT,NTOT,1)
+      integer              :: I,J,IZ
 
       DO J = 1, NTOT
         DO I = 1,NTOT
-           AMAT1(I,J,1) = AMAT(I,J,1)*AMAT(I,J,1)
+!         ...accumulate the real part
+           AMAT1(I,J,1) = (AMAT(I,J,1)*AMAT(I,J,1))
         ENDDO
       ENDDO
 
       DO IZ = 2,NZ
         DO J = 1, NTOT
           DO I = 1,NTOT
-             AMAT1(I,J,1) = AMAT1(I,J,1)+AMAT(I,J,IZ)*AMAT(I,J,IZ)
+!           ... accumulate quaternion-imaginary parts
+             AMAT1(I,J,1) = AMAT1(I,J,1)+(AMAT(I,J,IZ)*AMAT(I,J,IZ))
           ENDDO
         ENDDO
       ENDDO
-
+!    finally, get the amplitude
       DO J = 1, NTOT
         DO I = 1,NTOT
            AMAT1(I,J,1) = DSQRT(AMAT1(I,J,1))
         ENDDO
       ENDDO
+      END
 
-      RETURN
+      SUBROUTINE SUM_NZ_MATRIX(AMAT,NROW,NCOL,LRQ,LCQ,NZ,
+     &                         AMAT_SUM_NZ,AMAT_SUM)
+!----------------------------------------------------------------------------
+! Sum all elements in the entering quaternion matrix AMAT into
+! quaternion AMAT_SUM_NZ and real amplitude AMAT_SUM.
+!
+! Written by Miro Ilias, GSI, 2016
+!----------------------------------------------------------------------------
+      integer, intent(in)    :: NROW,NCOL,LRQ,LCQ,NZ
+      real*8,  intent(in)    :: AMAT(LRQ,LCQ,NZ)
+      real*8,  intent(out)   :: AMAT_SUM_NZ(1:4),AMAT_SUM
+      integer                :: I,J,IZ
+      AMAT_SUM_NZ(1)=0.0D0; AMAT_SUM_NZ(2)=0.0D0
+      AMAT_SUM_NZ(3)=0.0D0; AMAT_SUM_NZ(4)=0.0D0 
+      DO IZ=1, NZ
+        DO I=1, NROW
+          DO J=1, NCOL
+            AMAT_SUM_NZ(IZ)=AMAT_SUM_NZ(IZ)+AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+! get the amplitude ...
+      AMAT_SUM =
+     &      DSQRT((AMAT_SUM_NZ(1)*AMAT_SUM_NZ(1)) + 
+     &            (AMAT_SUM_NZ(2)*AMAT_SUM_NZ(2)) +
+     &            (AMAT_SUM_NZ(3)*AMAT_SUM_NZ(3)) +
+     &            (AMAT_SUM_NZ(4)*AMAT_SUM_NZ(4)))
+      END
+
+      SUBROUTINE SUM_RE_MATRIX(AMAT,NROW,NCOL,LRQ,LCQ,AMAT_SUM)
+!----------------------------------------------------------------------------
+! Sum all elements in the entering real matrix AMAT, containing real 
+! amplitutes, into AMAT_SUM.
+!
+! Written by Miro Ilias, GSI, 2016
+!----------------------------------------------------------------------------
+      integer, intent(in)  :: NROW,NCOL,LRQ,LCQ
+      real*8,  intent(in)  :: AMAT(LRQ,LCQ,1)
+      real*8,  intent(out) :: AMAT_SUM
+      integer              :: I,J
+      AMAT_SUM=0.0D0
+      DO I=1, NROW
+      DO J=1, NCOL
+         AMAT_SUM=AMAT_SUM+AMAT(I,J,1)
+      ENDDO
+      ENDDO
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
