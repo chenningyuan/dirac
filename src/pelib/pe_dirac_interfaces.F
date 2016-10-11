@@ -38,6 +38,15 @@
           end if
       end function pelib_ifc_gspol
 
+      logical function pelib_ifc_dolf()
+        use pe_variables, only: pe_lf
+        if (pe_lf) then
+            pelib_ifc_dolf = .true.
+        else
+            pelib_ifc_dolf = .false.
+        end if
+      end function pelib_ifc_dolf
+
       subroutine pe_ifc_input_reader(word)
         use pe_variables, only: peqm
         use polarizable_embedding, only: pe_input_reader
@@ -65,6 +74,33 @@
         call pe_finalize()
         call qexit('pe_ifc_finalize')
       end subroutine pe_ifc_finalize
+
+      subroutine pelib_ifc_localfield(soint, nelmnt, noptyp)
+          use polarizable_embedding, only: pe_master
+          use pe_variables, only: peqm
+#include "inforb.h"
+          integer :: nelmnt, noptyp
+          real*8, dimension(nelmnt,noptyp), intent(inout) :: soint
+          real*8, dimension(:), allocatable :: intmats
+          integer :: i, ndim
+          call qenter('pelib_ifc_localfield')
+          if (.not. peqm) call quit('PElib not active')
+          print *, 'Local field corrections to dipole integrals applied'
+          print *, 'TODO: improve output wrt EEF'
+          if (noptyp /= 3) then
+             call quit('ERROR: inconsistent dimension')
+          end if
+          allocate(intmats(3*nelmnt))
+          ndim = int(0.5 * (sqrt(1.0 + 8.0 * nelmnt) - 1.0))
+          call pe_master(runtype='effdipole',
+     &                   triang=.true.,
+     &                   ndim=ndim,
+     &                   fckmats=intmats)
+          do i = 1, 3
+            soint(:,i) = soint(:,i) + intmats((i-1)*nelmnt+1:i*nelmnt)
+          end do
+          call qexit('pelib_ifc_localfield')
+      end subroutine pelib_ifc_localfield
 
       subroutine pe_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
         use polarizable_embedding, only: pe_master
@@ -202,8 +238,8 @@
         end do
         call pe_master(runtype='print_energy',
      &                 triang = .true.,
-     &                 ndim = ntbas(0),                      
-     &                 nmats=1, 
+     &                 ndim = ntbas(0),
+     &                 nmats=1,
      &                 denmats=dspmat)
 
         call qexit('pe_ifc_energy')
