@@ -2085,8 +2085,6 @@ C
         IF (IPRSCF >= 1) CALL PE_IFC_ENERGY(DMAT)
         DHFERG = DHFERG + PE_TOT_NRG - 0.5d0 * PE_EL_NRG
         E_PE = PE_TOT_NRG 
-        write(lupri,*)'E_PE', E_PE
-        write(lupri,*)'PE_TOT_NRG', PE_TOT_NRG
         DEALLOCATE(PE_FMAT)
       END IF
 #endif
