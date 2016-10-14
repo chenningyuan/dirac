@@ -4205,18 +4205,18 @@ C
            flmat_triangle = 0.0d0
            k = 1
            ! LL block
-!          ndmat = 1
            do l = 1, ndmat
               if (ihrmop(l) == -1) cycle
               write(lupri,*)'ihrmop(l)', ihrmop(l)
+              ioff = (l-1)*n2bbasxq
               do i = 1, ntbas(1)
                  do j = 1, i
                     if (i == j) then
                        dlmat_triangle(k) =
-     &                 2.0d0*fmo(((i-1)*ntbas(0) + j), l)
+     &                 2.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
                     else
                        dlmat_triangle(k) =
-     &                 4.0d0*fmo(((i-1)*ntbas(0) + j), l)
+     &                 4.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
                     end if
                     k = k + 1
                  end do
@@ -4227,10 +4227,10 @@ C
                     if (j > ntbas(1)) then
                        if (i == j) then
                           dlmat_triangle(k) =
-     &                    2.0d0*fmo(((i-1)*ntbas(0) + j), l)
+     &                    2.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
                        else
                           dlmat_triangle(k) =
-     &                    4.0d0*fmo(((i-1)*ntbas(0) + j), l)
+     &                    4.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
                        end if
                     end if
                     k = k + 1
