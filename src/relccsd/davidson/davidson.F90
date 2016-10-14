@@ -944,7 +944,14 @@ contains
                c_small_r_old(i,i) = 1.0d0
            enddo
        endif
-       if (davidson_solve_lhs.and.davidson_overlap_sorting) allocate(c_small_l_old(nroots,nroots))
+       if (davidson_solve_lhs.and.davidson_overlap_sorting) then
+           allocate(c_small_l_old(nroots,nroots))
+           c_small_l_old = 0.0d0
+           do i = 1, nroots
+               c_small_l_old(i,i) = 1.0d0
+           enddo
+       endif
+ 
 
         do niter = 1, davidson_max_iterations
             write(davidson_output_file_unit,*) ""
@@ -954,7 +961,11 @@ contains
             if (associated(M_small)) deallocate(M_small)
 
             sigma_vector => create_sigma_vector(A, b, sigma_vector)
-            M_small => create_reduced_problem(b, sigma_vector)
+
+
+
+            if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
+            if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
             call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
                                                         M_small,                      &
@@ -1077,8 +1088,15 @@ contains
             nroot = size(eVectorsR_old,1)
             allocate(overlap(nroot,nroots_local))
             overlap = 0.0d0 
-            call dgemm('N', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsR_old, &
+
+            if(right) then    
+                 call dgemm('N', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsR_old, &
                             nroot, eVectorsR(1:nroot,:), nroot, beta_lapack, overlap, nroot)
+            else
+                 call dgemm('N', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsL_old, &
+                            nroot, eVectorsL(1:nroot,:), nroot, beta_lapack, overlap, nroot)
+            endif
+
             call sort_by_overlap(-1, eValuesRe, eValuesIm, overlap, eVectorsR, eVectorsL, &
                                  right_local, left_local) 
             deallocate(overlap)
