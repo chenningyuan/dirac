@@ -50,7 +50,7 @@
         .or.(relcc_do_eomea .and. relcc_do_eomee)) &
           call quit('Specifying more than one EOM kind of calculation at a time (IP/EE/EA)  not allowed !') 
 
-     do state_sym = 1, 16 
+     do state_sym = 1, nrep 
         if (relcc_eom_nroots(state_sym).gt.0) then
 ! checking whether or not, for ip/ea, we can actually ask for this many roots 
 !
@@ -180,10 +180,10 @@
       ABIJ = ai 
       DO IJRP = 1, NREP
        abrp = multb (ijrp+nrep,state_sym+nrep,1)
-      DO 10 JRP = 1, NREP
+      DO JRP = 1, NREP
       JJ = IO(JRP)
       IRP = MULTB(JRP,IJRP+NREP,2)
-      IF (IRP.LT.JRP) GOTO 10
+      IF (IRP.LT.JRP) CYCLE
       IOFF = IO(IRP)
       DO J = 1, NO(JRP)
          JJ = JJ + 1
@@ -193,10 +193,10 @@
          DO I = IMIN, NO(IRP)
             II = IOFF + I
             FAC2 = EPS(II) + FAC1
-            DO 20 BRP = 1, NREP
+            DO BRP = 1, NREP
             BB = IV(BRP) + IO(NREP+1)
             ARP = MULTB(BRP,ABRP+NREP,2)
-            IF (ARP.LT.BRP) GOTO 20
+            IF (ARP.LT.BRP) CYCLE
             AOFF = IV(ARP) + IO(NREP+1)
             DO B = 1, NV(BRP)
                BB = BB + 1
@@ -210,10 +210,10 @@
                   ABIJ = ABIJ + 1
                ENDDO
             ENDDO
- 20         CONTINUE
+            ENDDO
          ENDDO
       ENDDO
- 10   CONTINUE
+      ENDDO
       ENDDO
 !aspg+as
 
@@ -275,10 +275,10 @@
       ABIJ = ai 
       DO IJRP = 1, NREP
        abrp = multb (ijrp+nrep,1+nrep,1)
-      DO 30 JRP = 1, NREP
+      DO JRP = 1, NREP
       JJ = IO(JRP)
       IRP = MULTB(JRP,IJRP+NREP,2)
-      IF (IRP.LT.JRP) GOTO 30
+      IF (IRP.LT.JRP) CYCLE
       IOFF = IO(IRP)
       DO J = 1, NO(JRP)
          JJ = JJ + 1
@@ -288,7 +288,7 @@
          DO I = IMIN, NO(IRP)
             II = IOFF + I
             FAC2 = EPS(II) + FAC1
-            DO 40 BRP = 1, NREP
+            DO BRP = 1, NREP
             BB = IV(BRP) + IO(NREP+1)
             ARP = MULTB(BRP,ABRP+NREP,2)
             AOFF = IV(ARP) + IO(NREP+1)
@@ -301,10 +301,10 @@
                   ABIJ = ABIJ + 1
                ENDDO
             ENDDO
- 40         CONTINUE
+            ENDDO
          ENDDO
       ENDDO
- 30   CONTINUE
+      ENDDO
       ENDDO
 
 !  allocate (R1_dum(ndimr1,ndimr1))
@@ -373,7 +373,7 @@
       ABIJ = ai 
       DO IJRP = 1, NREP
        abrp = multb (ijrp+nrep,1+nrep,1)
-      DO 50 JRP = 1, NREP
+      DO JRP = 1, NREP
       JJ = IO(JRP)
       IRP = MULTB(JRP,IJRP+NREP,2)
       DO J = 1, NO(JRP)
@@ -381,10 +381,10 @@
          FAC1 = EPS(JJ)
          DO I = 1, NCONT(IRP)
             FAC2 =  FAC1
-            DO 60 BRP = 1, NREP
+            DO BRP = 1, NREP
             BB = IV(BRP) + IO(NREP+1)
             ARP = MULTB(BRP,ABRP+NREP,2)
-            IF (ARP.LT.BRP) GOTO 60
+            IF (ARP.LT.BRP) CYCLE
             AOFF = IV(ARP) + IO(NREP+1)
             DO B = 1, NV(BRP)
                BB = BB + 1
@@ -398,10 +398,10 @@
                   ABIJ = ABIJ + 1
                ENDDO
             ENDDO
- 60         CONTINUE
+            ENDDO
          ENDDO
       ENDDO
- 50   CONTINUE
+      ENDDO
       ENDDO
 
 
@@ -450,6 +450,359 @@
   end select 
 
    end subroutine
+
+
+   subroutine input_processor_left(Fbar_HH,Fbar_PP,Vbar_SS,L1,L2,H_II)
+
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+
+!description
+!===========
+!1)  this subroutine processes the left hand guess vectors for eomcc.
+!2)  it also defines the Preconditioner for the error vectors, which is relevant at
+!    the Davidson step.
+
+!calling variables
+!================
+
+   real*8, intent(in)  :: Fbar_HH(:),Fbar_PP(:),Vbar_SS(:)
+   real*8, intent(inout) :: L1(:,:), L2(:,:) ! (ndimt1,nroot) and (ndimt2,nroot)
+   real*8, intent(inout),target :: H_II(:)
+
+!Local Variables
+!==============
+
+   integer :: i,ii,irep,j,iaai,aoff,a,aa,ia,arep,iroot,k(1)
+   real*8  :: fac1
+   real*8  :: eps((iv(nrep+1)+io(nrep+1))) 
+   real*8, pointer :: diag_H(:)
+   integer :: icount, acount
+
+   integer :: ijab, ijrp, abrp, jrp, jj, irp, ioff, imin, bb, amin, arp, brp, b
+   real(kind=8) :: fac, fac3, fac2
+   integer :: ndimL1, ndimL2, search_dimension, xroot
+   real*8,allocatable :: L1_dum(:,:) 
+
+
+!initialize the R-vector
+!=======================
+
+    ndimL1 = size(L1,1)
+    ndimL2 = size(L2,1)
+
+! 1> store the diagonal elements of the transformed Hamiltonian..  
+
+     i = 1
+     ii = 1
+     do irep = 1, nrep
+        if (no(irep) .gt. 0) call dcopy (no(irep),Fbar_HH(ii),((no(irep)+1)*rcw),eps(i),1)
+        i  =  i + no(irep)
+        ii =  ii + NO(irep)* no(irep) * rcw
+     enddo
+
+     ii = 1
+     do irep = 1, nrep
+        if (nv(irep) .gt. 0) call dcopy (nv(irep),Fbar_PP(ii),((nv(irep)+1)*rcw),eps(i),1)
+        i  =  i + nv(irep)
+        ii =  ii + NV(irep)* nv(irep) * rcw
+     enddo
+
+   select case (eomtype)
+
+   case ("EE")
+
+    ia = 1
+    ii = 0
+
+      do arp = 1, nrep
+         irep = multb (arep,state_sym+nrep,1)
+         aa = io(nrep+1) + iv(arp)
+      do a = 1, nv(arp)
+         aa = aa + 1
+         fac1 = eps(aa)
+         ioff = io(arp)
+         do i = 1, no(arp)
+             ii = ioff + i
+             h_ii(ia) = fac1 - eps(ii) ! I will add the missing two-electron term later 
+             ia = ia + 1
+         enddo
+      enddo
+      enddo
+
+
+      ijab = ia
+      do abrp = 1, nrep
+      do brp = 1, nrep
+      bb = iv(brp) + io(nrep+1)
+      arp = multb(brp,abrp+nrep,2)
+      if (arp.lt.brp) cycle
+      do b = 1, nv(brp)
+         bb = bb + 1
+         fac1 = eps(bb)
+            aoff = iv(arp) + io(nrep+1)
+           amin = 1
+           if (arp.eq.brp) amin = b + 1
+         do a = amin, nv(arp)
+            aa = aoff + a
+            fac2 = eps(aa) + fac1
+            do jrp = 1, nrep
+            jj = io(jrp)
+            irp = multb(jrp,abrp+nrep,2)
+            if (irp.lt.jrp) cycle
+            ioff = io(irp)
+            do j = 1, no(jrp)
+               jj = jj + 1
+               fac3 = fac2 - eps(jj)
+               imin = 1
+               if (irp.eq.jrp) imin = j + 1
+               do i = imin, no(irp)
+                  ii = ioff + i
+                  fac = fac3 - eps(ii)
+                  h_ii(ijab) = -fac
+                  ijab = ijab + 1
+               enddo
+            enddo
+            enddo
+         enddo
+      enddo
+      enddo
+      enddo
+
+
+! New trial vectors for R1 
+!if (nroot.eq.(ndimr1+ndimr2)) then
+!    do iroot = 1, ndimr1
+!        R1(iroot,iroot) = 1.0d0
+!    end do
+!    do iroot = 1, ndimr2
+!        R2(iroot,ndimr1+iroot) = 1.0d0
+!    end do
+!else
+!  allocate (R1_dum(ndimr1,ndimr1))
+!    R1_dum = 0.0d0
+
+!    do iroot = 1, ndimr1
+!        R1_dum(iroot,iroot) = 1.0d0
+!    end do
+
+!     call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
+!     
+!     R1 = R1_dum(:,1:nroot) 
+
+!   deallocate(R1_dum)
+!end if
+
+     allocate(diag_H(ndimL1))
+     diag_H = H_II(1:ndimL1)
+
+       do iroot = 1, nroot
+        k = minloc(diag_H) 
+!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
+        i = k(1)
+        diag_H(i) = 8000.0d0
+        L1(i,iroot) = 1.0d0
+       enddo
+     deallocate(diag_H)
+
+   case ('IP')
+
+    ia = 1
+    ii = 0
+
+      do arp = 1, nrep
+         irep = multb (arep,state_sym+nrep,1)
+         aa = io(nrep+1) + iv(arp)
+      do a = 1, ncont(arp)
+         ioff = io(arp)
+         do i = 1, no(arp)
+             ii = ioff + i
+             h_ii(ia) = - eps(ii)  
+             ia = ia + 1
+         enddo
+      enddo
+      enddo
+
+
+      ijab = ia
+      do abrp = 1, nrep
+      do brp = 1, nrep
+      bb = iv(brp) + io(nrep+1)
+      arp = multb(brp,abrp+nrep,2)
+      do b = 1, nv(brp)
+         bb = bb + 1
+         fac1 = eps(bb)
+         do a = 1, ncont(arp)
+            fac2 =  fac1
+            do jrp = 1, nrep
+            jj = io(jrp)
+            irp = multb(jrp,abrp+nrep,2)
+            if (irp.lt.jrp) cycle
+            ioff = io(irp)
+            do j = 1, no(jrp)
+               jj = jj + 1
+               fac3 = fac2 - eps(jj)
+               imin = 1
+               if (irp.eq.jrp) imin = j + 1
+               do i = imin, no(irp)
+                  ii = ioff + i
+                  fac = fac3 - eps(ii)
+                  h_ii(ijab) = -fac
+                  ijab = ijab + 1
+               enddo
+            enddo
+            enddo
+         enddo
+      enddo
+      enddo
+      enddo
+
+
+!  allocate (R1_dum(ndimr1,ndimr1))
+!    R1_dum = 0.0d0
+
+!    do iroot = 1, ndimr1
+!        R1_dum(iroot,iroot) = 1.0d0
+!    end do
+
+!     call trial_vectors_ip(R1_dum,Fbar_HH)
+!     
+!     R1 = R1_dum(:,1:nroot) 
+
+!   deallocate(R1_dum)
+
+ !  if (nroot.eq.(ndimr1+ndimr2)) then
+ !   do iroot = 1, ndimr1
+ !       R1(iroot,iroot) = 1.0d0
+ !   end do
+ !   do iroot = 1, ndimr2
+ !       R2(iroot,ndimr1+iroot) = 1.0d0
+ !   end do
+ !  else
+
+
+! In the following section we generate the guess vectors belonging to a particular state symmetry.
+! Thereby we avoid the sigma vector calculations of the degenerate roots.  
+
+     search_dimension = ncont(state_sym)*no(state_sym) 
+
+     allocate(diag_H(ndimL1))
+     diag_H = H_II(1:ndimL1)
+
+        xroot = 1 
+
+       do iroot = 1, 2*nroot
+        k = minloc(diag_H) 
+        i = k(1)
+        diag_H(i) = 8000.0d0
+
+        if (i <= search_dimension) then
+         L1(i,xroot) = 1.0d0
+         xroot = xroot + 1
+        endif
+
+       enddo
+     deallocate(diag_H)
+ ! end if 
+
+   case ("EA")
+
+    ia = 1
+    aa = 0
+
+      do arp = 1, nrep
+         irep = multb (arep,state_sym+nrep,1)
+         aa = io(nrep+1) + iv(arp)
+      do a = 1, nv(arp)
+         aa = aa + 1
+         fac1 = eps(aa)
+         do i = 1, ncont(arp)
+             h_ii(ia) = fac1  
+             ia = ia + 1
+         enddo
+      enddo
+      enddo
+
+      ijab = ia
+      do abrp = 1, nrep
+      do brp = 1, nrep
+      bb = iv(brp) + io(nrep+1)
+      arp = multb(brp,abrp+nrep,2)
+      if (arp.lt.brp) cycle
+      do b = 1, nv(brp)
+         bb = bb + 1
+         fac1 = eps(bb)
+            aoff = iv(arp) + io(nrep+1)
+           amin = 1
+           if (arp.eq.brp) amin = b + 1
+         do a = amin, nv(arp)
+            aa = aoff + a
+            fac2 = eps(aa) + fac1
+            do jrp = 1, nrep
+            jj = io(jrp)
+            irp = multb(jrp,abrp+nrep,2)
+            do j = 1, no(jrp)
+               jj = jj + 1
+               fac3 = fac2 - eps(jj)
+               do i = 1, ncont(irp)
+                  fac = fac3  
+                  h_ii(ijab) = -fac
+                  ijab = ijab + 1
+               enddo
+            enddo
+            enddo
+         enddo
+      enddo
+      enddo
+      enddo
+
+
+! calculate the orbital dimension within which our desired root should belong..
+
+  search_dimension = ncont(state_sym)*nv(state_sym) 
+
+!! allocate (r1_dum(ndimr1,ndimr1))
+!!   r1_dum = 0.0d0
+
+!!   do iroot = 1, ndimr1
+!!       r1_dum(iroot,iroot) = 1.0d0
+!!   end do
+
+!!    call trial_vectors_EA(R1_dum,Fbar_PP)
+!!    
+!!    r1 = r1_dum(:,1:nroot) 
+
+!!  deallocate(R1_dum)
+
+ !  if (nroot.eq.(ndimr1+ndimr2)) then
+ !   do iroot = 1, ndimr1
+ !       R1(iroot,iroot) = 1.0d0
+ !   end do
+ !   do iroot = 1, ndimr2
+ !       R2(iroot,ndimr1+iroot) = 1.0d0
+ !   end do
+ !  else
+
+     allocate(diag_H(ndimL1))
+     diag_H = H_II(1:ndimL1)
+        xroot = 1
+       do iroot = 1, 2*nroot
+        k = minloc(diag_H) 
+        i = k(1)
+        diag_H(i) = 8000.0d0
+        if (i <= search_dimension) then
+         L1(i,xroot) = 1.0d0
+         xroot = xroot + 1
+        endif
+       enddo
+     deallocate(diag_H)
+!! end if 
+
+  end select 
+
+   end subroutine
+
 
    subroutine eom_ee(icalc,mxcorr,eps)
    use davidson
@@ -574,10 +927,14 @@
     left_vectors =  .false.
     call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
 
-! todo: debug lhs vectors
-!   right_vectors = .false.
-!   left_vectors =  .true.
-!   call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+
+   if (relcc_do_eomprop) then
+
+    right_vectors = .false.
+    left_vectors =  .true.
+    call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+
+   endif
 
  451 continue
 
@@ -1084,7 +1441,13 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
       &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
       &                               B%H_II)
              else if (left_vectors.and..not.right_vectors) then    
-                 print *, 'write me !'
+                 call input_processor_left(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+ 
              end if
 
 
@@ -1133,7 +1496,13 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
       &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
       &                               B%H_II)
              else if (left_vectors.and..not.right_vectors) then    
-                 print *, 'write me !'
+                 call input_processor_right(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+
              end if
 
           case('EA')
@@ -1180,7 +1549,13 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
       &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
       &                               B%H_II)
              else if (left_vectors.and..not.right_vectors) then 
-                 print *, 'write me !'
+                 call input_processor_right(B%Fbar_mi, &
+      &                               B%Fbar_ae, &
+      &                               B%W_mbej,  &
+      &                               trial_vector(1:ndimr1*rcw,:), &
+      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               B%H_II)
+ 
              end if
 
          end select 

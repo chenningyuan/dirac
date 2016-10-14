@@ -188,6 +188,7 @@
 
 
    function create_sigma_vector_left(A, r, old_sigma_vector)
+#include "files.inc"
       real(kind=8), pointer :: create_sigma_vector_left(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
@@ -197,8 +198,85 @@
       integer :: nbuf3
       integer :: start_r1, end_r1, start_r2, end_r2
       integer :: iroot
+      real(kind=8), allocatable :: local_buffer (:)  
 
-      create_sigma_vector_left => NULL()
+      nbuf3 = size(local_buf3)
+
+      N = size(r,1)
+      L = size(r,2)
+
+      allocate(create_sigma_vector_left(N,L))
+
+      if (associated(old_sigma_vector)) then 
+          L_already_done = size(old_sigma_vector,2) 
+          do iroot = 1, L_already_done
+              create_sigma_vector_left(:,iroot) = old_sigma_vector(:,iroot)
+          end do
+          deallocate(old_sigma_vector)
+      else
+          L_already_done = 0
+      endif
+
+      ndimr1 = eom_ndet(1)
+      ndimr2 = eom_ndet(2)
+
+      start_r1 = 1
+      end_r1   = ndimr1
+      start_r2 = end_r1 + 1
+      end_r2   = end_r1 + ndimr2
+
+      allocate (local_buffer(ndimr2))
+
+      select case (A%eomtype)
+         case ('IP')
+
+             do iroot = L_already_done + 1, L 
+
+                create_sigma_vector_left(:,iroot:iroot) = 0.0d0
+                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-IP sigma vector ",iroot," out of ",L
+                call Lambda_IP(r(start_r1:end_r1, iroot:iroot), &
+                 &             r(start_r2:end_r2, iroot:iroot), &
+                 &             A,                               &
+                 &             create_sigma_vector_left(start_r1:end_r1, iroot:iroot), &
+                 &             create_sigma_vector_left(start_r2:end_r2, iroot:iroot), &
+                 &             ndimr1, &
+                 &             ndimr2) 
+             enddo
+
+         case ("EA")
+             do iroot = L_already_done + 1, L 
+
+                create_sigma_vector_left(:,iroot:iroot) = 0.0d0
+                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EA sigma vector ",iroot," out of ",L
+!               call Lambda_EA(r(start_r1:end_r1, iroot:iroot),  &
+!                &             r(start_r2:end_r2, iroot:iroot), &
+!                &             A,                               &
+!                &             create_sigma_vector_left(start_r1:end_r1, iroot:iroot), &
+!                &             create_sigma_vector_left(start_r2:end_r2, iroot:iroot), &
+!                &             ndimr1, &
+!                &             ndimr2,nbuf3) 
+
+
+             enddo
+
+         case ('EE')
+
+             do iroot = L_already_done + 1, L
+
+                create_sigma_vector_left(:,iroot:iroot) = 0.0d0
+                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EE sigma vector ",iroot," out of ",L
+!               call Lambda_ee(r(start_r1:end_r1, iroot:iroot), &
+!                &                  r(start_r2:end_r2, iroot:iroot), & 
+!                &                  A,                               &
+!                &                  create_sigma_vector_left(start_r1:end_r1, iroot:iroot), &
+!                &                  create_sigma_vector_left(start_r2:end_r2, iroot:iroot), &
+!                &                  nbuf3)
+
+             enddo
+      end select
+
+      deallocate (local_buffer)
+
    end function 
    
 
@@ -228,7 +306,6 @@
               create_sigma_vector_right(:,iroot) = old_sigma_vector(:,iroot)
           end do
           deallocate(old_sigma_vector)
-!ashee          nullify(old_sigma_vector)
       else
           L_already_done = 0
       endif
@@ -989,13 +1066,24 @@ integer :: nbuf3,ierr
      call contraction_222 ((/"o2","c1"/),(/"o1","o2"/),(/"o1","c1"/), &
   &    L1_ptr,B%Fbar_mi,lambda1,-1.0d0,1.0d0,nrep)
 
+
+   write(*,*)'passed diagram 1'
+
 !-----------------------------------------------------
 ! L(i,a*) = L(i,a*) -  L2(mn,a*e)*W(ie,mn)
 !-----------------------------------------------------
 
-    call contraction_442((/"o2","o3","c1","p2"/),(/"o1","p2","o2","o3" &
-  &          /),(/"c1","p1"/),lambda1,-1.0d0,1.0d0,nrep,LeftTensor=L2_ptr,  &
-  &          RightTensor=B%W_iemn)
+!   call contraction_442((/"o2","o3","c1","p2"/),(/"o1","p2","o2","o3" &
+! &          /),(/"c1","p1"/),lambda1,-1.0d0,1.0d0,nrep,LeftTensor=L2_ptr,  &
+! &          RightTensor=B%W_iemn)
+
+
+    call contraction_442((/"o1","p2","o2","o3"/), (/"o2","o3","c1","p2"/), &
+  &          (/"o1","c1"/),lambda1,-1.0d0,1.0d0,nrep,RightTensor=L2_ptr,  &
+  &          LeftTensor=B%W_iemn)
+
+
+   write(*,*)'passed diagram 2'
 
 !-------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2 (ij,a*e)*f_bar_ae(e,b)
@@ -1005,6 +1093,10 @@ integer :: nbuf3,ierr
    &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,LeftTensor=L2_ptr, &
    &    RightTensor=B%Fbar_ae)
 
+
+
+   write(*,*)'passed diagram 3'
+
 !----------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) - P(ij) L2 (im,a*b)*f_bar_im (j,m)
 !----------------------------------------------
@@ -1013,12 +1105,19 @@ integer :: nbuf3,ierr
      &    (/"o1","o2","c1","p2"/),lambda2,-1.0d0,1.0d0,nrep, &
      &    LeftTensor=L2_ptr,RightTensor=B%Fbar_mi)
 
+
+
+   write(*,*)'passed diagram 4'
+
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2(mn,a*b) * W_ijmn(ij,mn)
 !--------------------------------------------------------
 
     call contraction_444((/"o1","o2","o3","o4"/),(/"o3","o4","c1","p2"/), &
    &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,RightTensor=L2_ptr,LeftTensor=B%W_ijmn)
+
+
+   write(*,*)'passed diagram 5'
 
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + P(ij) L2(im,a*e) * W_bmej(je,bm)
@@ -1027,6 +1126,10 @@ integer :: nbuf3,ierr
      call contraction_444((/"o1","o3","c1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","c1","p2"/),lambda2, &
     &    1.0d0,0.0d0,nrep,righttensor=B%W_mbej,LeftTensor=L2_ptr)
 
+
+   write(*,*)'passed diagram 6'
+
+
 !---------------------------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L1(m,a*) * w_mnie(ij,mb)
 !---------------------------------------------------------------------------
@@ -1034,6 +1137,10 @@ integer :: nbuf3,ierr
      call contraction_424 ((/"o1","o2","o3","p2"/),(/"o3","c1"/), &
     &   (/"o1","o2","c1","p2"/),lambda2,-1.0d0,1.0d0,nrep,RightTensor=L1_ptr, &
     &   LeftTensor=B%W_mnie)
+
+
+   write(*,*)'passed diagram 7'
+
 
 !---------------------------------------------------------------
 !  G (e,a*)  = G(e,a*) + L2(mn,a*f) * t2(ef,mn) 
@@ -1057,6 +1164,10 @@ integer :: nbuf3,ierr
     deallocate(G)
 
      call dealloc_array(e)
+
+
+   write(*,*)'passed diagram 8'
+
 
 
     call lambda2_disconnected_IP(L1,B%Fbar_ae,lambda2)
