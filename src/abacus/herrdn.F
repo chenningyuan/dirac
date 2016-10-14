@@ -2121,6 +2121,8 @@ C
 #include "huckel.h"
 #include "aosotr.h"
 #include "gencon.h"
+#include "fitshells.h"
+#include "fitprimit.h"
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
