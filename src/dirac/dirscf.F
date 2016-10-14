@@ -2156,7 +2156,7 @@ CMI      ... print out matrixes ...
 #endif
         ! later this will be replaced by a get energy routine
         IF (PEQM) WRITE(LUPRI,'(A,'//FMT//')')
-     +       'Embedding energy       :  ',PE_TOT_NRG
+     +       'Embedding energy                   :  ',PE_TOT_NRG
          WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total energy                       :  ',DHFERG
          IF(IPRSCF.GE.2) THEN
