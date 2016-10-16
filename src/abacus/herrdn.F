@@ -362,8 +362,6 @@ C
          moltype='MOL' ! .mol input is in the .inp file
       END IF
 
-      ATOMDF  = .FALSE.
-
       REWIND(LUINFO)
 C     JHS TMP reset the variables with the read .mol file
       NMLINE=0
@@ -1844,9 +1842,8 @@ C
      &             CPRIMU(1,1,IBLOCK(ISET),ISET),
      &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,Q,1,DSM,
      &             BASREF(1,I,ISET))
-              NBLCK(I,ISET) = NBLOCK
-C          write (*,*) 'testing reading of fit sets...0'
 C
+              NBLCK(I,ISET) = NBLOCK
            ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
 C             Generate well-temperered/family basis set
@@ -1868,10 +1865,8 @@ C
 C
 C          Print out fit set
 C
-C          write (*,*) 'testing reading of fit sets...1'
            NOFITFS  = NOFITFS.AND.IQM(I,ISET).EQ.0
            IF (IQM(I,ISET).GT.0) THEN
-C          write (*,*) 'testing reading of fit sets...2'
               IF(INPTST) THEN
                  WRITE(LUPRI,'(3X,A)') 'Density fit set:'
                  WRITE(LUPRI,'(6X,A,I5,A,12I5)')
@@ -1881,12 +1876,12 @@ C          write (*,*) 'testing reading of fit sets...2'
 C aspg, 2006-07-03
 C replacing NHTYPF for NHTYP while a complete rework of the reading
 C of basis for density fitting is not done.
-C             NHTYPF    = MAX(NHTYPF,IQM(I,ISET))
+              NHTYPF    = MAX(NHTYPF,IQM(I,ISET))
 C             Since it's the density the angular momentum may be twice
 C             the maximum value for the orbitals : 2 * MXQN - 2
-C             IF(NHTYPF-1.GT.2*MXQN-2) GOTO 5001
-              NHTYP    = MAX(NHTYP,IQM(I,ISET))
-              IF(NHTYP -1.GT.2*MXQN-2) GOTO 5001
+              IF(NHTYPF-1.GT.2*MXQN-2) GOTO 5001
+C              NHTYP    = MAX(NHTYP,IQM(I,ISET))
+C              IF(NHTYP -1.GT.2*MXQN-2) GOTO 5001
            ENDIF
 C
 C       (no need to check whether the set is contracted, so code differs
@@ -2378,6 +2373,7 @@ C*****************************************************************************
 #include "aosotr.h"
 C
 
+
       IF(DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
          SET_TYPE(2) = 'small component basis functions'
@@ -2441,8 +2437,10 @@ C
             NTPRIM(ISET) = NTPRIM(ISET)+NUCLEI_IN_TYPE*NPRIM(ISET)
             NTBAS(ISET)  = NTBAS(ISET) +NUCLEI_IN_TYPE*NCONT(ISET)
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
-            NBAS_ATOMTYPE(I,ISET) = NCONT(ISET)
-            NBAS_ATOMTYPE(I,0) = NBAS_ATOMTYPE(I,0) + NCONT(ISET)
+            IF (ISET.EQ.1 .OR. ISET.EQ.2) THEN
+               NBAS_ATOMTYPE(I,ISET) = NCONT(ISET)
+               NBAS_ATOMTYPE(I,0) = NBAS_ATOMTYPE(I,0) + NCONT(ISET)
+            END IF
          END DO
 
          IF (IPREAD .GT. 0) THEN
@@ -4407,6 +4405,7 @@ C
           ENDDO
         ENDDO
       ENDDO
+
 C
 C     For ECP integral
 C
