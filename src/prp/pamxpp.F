@@ -1416,8 +1416,9 @@ C
                    XMOM = ATMPPF(I,INDAP,ISYM,1)
                    OSCILL = OSCILL + D2R3*XMOM*XMOM*OMEGA(I,ISYM)
                END IF
-               IF (INDEX(PRPNAM(INDPRA),'c_alpha') .NE. 0  .OR.
-     &             INDEX(PRPNAM(INDPRA),'C_ALPHA') .NE. 0) THEN
+!              IF (INDEX(PRPNAM(INDPRA),'c_alpha') .NE. 0  .OR.
+!    &             INDEX(PRPNAM(INDPRA),'C_ALPHA') .NE. 0) THEN
+               IF (INDEX(PRPNAM(INDPRA),'DIPVEL') .NE. 0) THEN  
                    XMOM = ATMPPF(I,INDAP,ISYM,1)
                    OSCILV = OSCILV + D2R3*XMOM*XMOM/OMEGA(I,ISYM)
                END IF
