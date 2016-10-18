@@ -4207,7 +4207,6 @@ C
            ! LL block
            do l = 1, ndmat
               if (ihrmop(l) == -1) cycle
-              write(lupri,*)'ihrmop(l)', ihrmop(l)
               ioff = (l-1)*n2bbasxq
               do i = 1, ntbas(1)
                  do j = 1, i
