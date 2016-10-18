@@ -408,6 +408,7 @@ if(ENABLE_PELIB)
     set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
     dirac_test(pe_energy "short;scf;pelib")
     dirac_test(pe_response "short;polarizabilities;pelib")
+    dirac_test(pe_exc "short;pelib")
 endif()
 
 #  dirac sources as separate library
