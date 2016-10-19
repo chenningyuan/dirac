@@ -245,19 +245,20 @@
 
       end subroutine pe_ifc_energy
 
-      subroutine pe_ifc_response(fao_loc, fao, fmo, ndmat)
+      subroutine pe_ifc_response(fao, fmo, ndmat, dmat_ih_sym)
         use polarizable_embedding, only: pe_master
         use pe_variables, only: peqm, pe_gspol
         implicit none
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
-        ! fmo should be N2ORBXQ; for now we use its size from input
-        integer, intent(in)                          :: ndmat
+!#include "dcbdhf.h" ! edh This does not work - made a input instead
+        integer, intent(in)                       :: ndmat
+        integer, intent(in)                       :: dmat_ih_sym(ndmat)
+        ! rename fmo to dens1 (pertubed density matrix
         real*8, dimension(n2orbxq,*),  intent(in)    :: fmo
-        real*8, dimension(n2bbasxq,*), intent(in)    :: fao ! temp.
-        real*8, dimension(n2bbasxq,*), intent(out)   :: fao_loc
+        !real*8, dimension(n2bbasxq,*),  intent(in)   :: fmo
+        real*8, dimension(n2bbasxq,*), intent(inout) :: fao 
         ! local
         integer :: i, j, k, l, ioff
         real*8, dimension(:), allocatable :: dlmat_triangle 
@@ -277,16 +278,18 @@
            k = 1
            ! LL block
            do l = 1, ndmat
-              if (ihrmop(l) == -1) cycle
+              if (dmat_ih_sym(l) == -1) cycle
               ioff = (l-1)*n2bbasxq
               do i = 1, ntbas(1)
                  do j = 1, i
                     if (i == j) then
                        dlmat_triangle(k) =
      &                 2.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
+!     &                 2.0d0*fmo(((i-1)*ntbas(0) + j), 1)
                     else
                        dlmat_triangle(k) =
      &                 4.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
+!     &                 4.0d0*fmo(((i-1)*ntbas(0) + j), 1)
                     end if
                     k = k + 1
                  end do
@@ -298,15 +301,21 @@
                        if (i == j) then
                           dlmat_triangle(k) =
      &                    2.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
+!     &                    2.0d0*fmo(((i-1)*ntbas(0) + j), 1)
                        else
                           dlmat_triangle(k) =
      &                    4.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
+!     &                    4.0d0*fmo(((i-1)*ntbas(0) + j), 1)
                        end if
                     end if
                     k = k + 1
                  end do
               end do
-           end do           
+           end do
+           do k = 1, nnbbasx*ndmat
+              write(lupri,*)'k , dlmat_triangle', k, dlmat_triangle(k)
+           enddo
+!           write(lupri,*)'dlmat in interface'
 !          do k = 1, nnbbasx*ndmat
 !             print *, 'k'
 !             print *, k
@@ -320,23 +329,31 @@
      &                    fckmats=flmat_triangle)
            ! F = F + M
            ! LL block
-           call daxpy(n2bbasx, 1.0d0, fao, 1, fao_loc, 1) 
+           do k = 1, nnbbasx*ndmat
+              write(lupri,*)'k , flmat_triangle', k, flmat_triangle(k)
+           enddo
+
            k = 1
            do l = 1, ndmat
-              if (ihrmop(l) == -1) cycle
+              write(lupri,*)'ihrmop(l)', dmat_ih_sym(l)
+              if (dmat_ih_sym(l) == -1) cycle
               do i = 1, ntbas(1)
                  do j = 1, i
-                    if (i == j) then ! edh: Conversion from DALTON to DIRAC
-                       fao_loc(((i-1)*ntbas(0) + j), l) =
-     &                 fao_loc(((i-1)*ntbas(0) + j), l)
-     &                 + flmat_triangle(k)
-                    else
-                       fao_loc(((i-1)*ntbas(0) + j), l) =
+                    if (i == j) then 
+                       fao(((i-1)*ntbas(0) + j), l) =
      &                 fao(((i-1)*ntbas(0) + j), l)
      &                 + flmat_triangle(k)
-                       fao_loc(((j-1)*ntbas(0) + i), l) =
-     &                 fao_loc(((j-1)*ntbas(0) + i), l)
+                  !write(lupri,*)'i,j,k', i , j ,k
+                  !write(lupri,*)'fmo dL', fao(((j-1)*ntbas(0) + i), l)
+                    else
+                       fao(((i-1)*ntbas(0) + j), l) =
+     &                 fao(((i-1)*ntbas(0) + j), l)
      &                 + flmat_triangle(k)
+                       fao(((j-1)*ntbas(0) + i), l) =
+     &                 fao(((j-1)*ntbas(0) + i), l)
+     &                 + flmat_triangle(k)
+                   !write(lupri,*)'i,j,k', i , j ,k
+                   !write(lupri,*)'fmo odL', fao(((j-1)*ntbas(0) + i), l)
                     end if
                     k = k + 1
                  end do
@@ -346,26 +363,29 @@
                  do j = 1, i
                     if (j > ntbas(1)) then
                         if (i == j) then
-                           fao_loc(((i-1)*ntbas(0) + j), l) =
+                           fao(((i-1)*ntbas(0) + j), l) =
      &                     fao(((i-1)*ntbas(0) + j), l)
      &                     + flmat_triangle(k)
+                   !write(lupri,*)'i,j,k', i , j ,k
+                   !write(lupri,*)'fmo dS', fao(((j-1)*ntbas(0) + i), l)
                         else
-                           fao_loc(((i-1)*ntbas(0) + j), l) =
-     &                     fao_loc(((i-1)*ntbas(0) + j), l)
+                           fao(((i-1)*ntbas(0) + j), l) =
+     &                     fao(((i-1)*ntbas(0) + j), l)
      &                     + flmat_triangle(k)
-                           fao_loc(((j-1)*ntbas(0) + i), l) =
-     &                     fao_loc(((j-1)*ntbas(0) + i), l)
+                           fao(((j-1)*ntbas(0) + i), l) =
+     &                     fao(((j-1)*ntbas(0) + i), l)
      &                     + flmat_triangle(k)
+                   !write(lupri,*)'i,j,k', i , j ,k
+                   !write(lupri,*)'fmo odS', fao(((j-1)*ntbas(0) + i), l)
                         end if
                     end if
                     k = k + 1
                  end do
               end do
            end do
-           write(lupri,*)'FAO from interface'
-           CALL PRQMAT(FAO_LOC,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                 1,(/1, 2, 3, 4/),LUPRI)
-          
+!            write(lupri,*)'FAO from interface'
+!          CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!    &                 1,(/1, 2, 3, 4/),LUPRI)
            deallocate(dlmat_triangle, flmat_triangle)
       endif ! peqm
 
