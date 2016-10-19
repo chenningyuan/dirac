@@ -14,38 +14,15 @@ f.add(from_string = '@            isotropic shielding',
       num_lines   = 7,
       rel_tolerance   = 0.002)
 
-# LL
-test.run(['ll_shield_sc_g0.inp'], ['hf.xyz'], f)
-test.run(['ll_shield_sc_g1.inp'], ['hf.xyz'], f)
-test.run(['ll_shield_nc_g0.inp'], ['hf.xyz'], f)
-test.run(['ll_shield_nc_g1.inp'], ['hf.xyz'], f)
-#
-## SF
-test.run(['sf_shield_sc_g0.inp'], ['hf.xyz'], f)
-test.run(['sf_shield_sc_g1.inp'], ['hf.xyz'], f)
-test.run(['sf_shield_nc_g0.inp'], ['hf.xyz'], f)
-test.run(['sf_shield_nc_g1.inp'], ['hf.xyz'], f)
-#
-## bss
-#test.run(['bss_shield_sc_g0.inp'], ['hf.xyz'], f)
-#test.run(['bss_shield_sc_g1.inp'], ['hf.xyz'], f)
-#
-## bss_sfb
-#test.run(['bss_sfb_shield_sc_g0.inp'], ['hf.xyz'], f)
-#test.run(['bss_sfb_shield_sc_g1.inp'], ['hf.xyz'], f)
-#
-## bss_mfsso
-#test.run(['bss_mfsso_shield_sc_g0.inp'], ['hf.xyz'], f)
-#test.run(['bss_mfsso_shield_sc_g1.inp'], ['hf.xyz'], f)
-#
-## DC
-test.run(['dc_scf.inp'], ['hf.xyz'], args='--outcmo')
-test.run(['dc_shield_sc_g0.inp'], ['hf.xyz'], f, args='--incmo')
-test.run(['dc_shield_sc_g1.inp'], ['hf.xyz'], f, args='--incmo')
-##test.run(['dc_shield_nc_g0.inp'], ['hf.xyz'], f, args='--incmo')
-##test.run(['dc_shield_nc_g1.inp'], ['hf.xyz'], f, args='--incmo')
-#
-#os.unlink('DFCOEF')
+inp_files = []
+inp_files.append('LiH.levyle.shield_lao_go=cm.inp')
+inp_files.append('LiH.dc_ukb.shield_lao_go=cm.inp')
+inp_files.append('LiH.dc_rkb.shield_lao_go=cm.inp')
+inp_files.append('LiH.dc_sf.shield_lao_go=cm.inp')
+inp_files.append('LiH.bss.shield_lao_go=cm.inp')
+inp_files.append('LiH.bss+mfsso.shield_lao_go=cm.inp')
+inp_files.append('LiH.bss_sfB.shield_lao_go=cm.inp')
 
+test.run(inp_files, ['LiH.lsym.dir.mol'], f)
 
 sys.exit(test.return_code)
