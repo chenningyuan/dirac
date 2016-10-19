@@ -17,6 +17,8 @@
 .UPDATE
 .FRDENS
 FROZEN
+.RDFRMT
+TXT
 .RSP
 .LAODPT
 .LAORKR
@@ -24,6 +26,8 @@ FROZEN
 .LAOFRZ
 .LFCOUL
 .PERTIM
+pertden_direct_lao.FINAL
+pertden_reorth_lao.FINAL
 **GRID
 .IMPORT
 numerical_grid
