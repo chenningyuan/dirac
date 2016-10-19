@@ -256,7 +256,7 @@
 #include "dcborb.h"
         ! input: (ndmat = number of b-vectors; dmat_ih_sym = symmetry
         ! wrt. hermicity; dens1 = one-index-transformed density matrix) 
-        ! Note: fmo should have dim. n2bbasxq, but is passed
+        ! Note: dens1 should have dim. n2bbasxq, but is passed
         ! from routine GMOLITX1 with N2ORBXQ(for reasons of memory re-use) - 
         ! for this reason, ioff is defined
         integer, intent(in)                       :: ndmat
@@ -278,7 +278,7 @@
         flmat_triangle = 0.0d0
         k = 1
 ! edh: We only construct dlmat_triangle for the hermitic part
-! ihrmop(l)=1 of fmo (i.e. transformed density matrix)
+! ihrmop(l)=1 of dens1 (i.e. transformed density matrix)
         ! LL block
         do l = 1, ndmat
            if (dmat_ih_sym(l) == -1) cycle
