@@ -4029,7 +4029,7 @@ C
       !real(8) :: Epe_loc(1)
       real(8), dimension(:), allocatable :: dlmat_triangle
       real(8), dimension(:), allocatable :: flmat_triangle
-      integer :: kfoo, nnbas
+      real(8), dimension(:,:), allocatable :: fao_loc
 #endif
 
       CALL QENTER('GMOLITX1')
@@ -4189,10 +4189,19 @@ C
            endif
         endif 
 #endif      
-
 #ifdef HAS_PELIB
-!       write(lupri,*) 'ndmat', ndmat
-!       print *, 'raboof', IHRMOP(1:ndmat)
+        if (peqm) then
+           write(lupri,*)'ndmat',ndmat
+           allocate(fao_loc(N2BBASXQ,ndmat))           
+           call pe_ifc_response(fao_loc, fao, fmo, ndmat)
+!          CALL PRQMAT(FAO_LOC,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+!    &                 1,(/1, 2, 3, 4/),LUPRI)
+           deallocate(fao_loc)
+        endif
+#endif
+
+!moved to interface routine...
+#ifdef HAS_PELIB
 ! edh: We only construct dlmat_triangle for the hermitic part
 ! ihrmop(l)=1 of fmo (i.e. transformed density matrix)
         if (pe_gspol) write(lupri,*)'pe_gspol set true'//
@@ -4236,17 +4245,13 @@ C
                  end do
               end do
            end do
-!          do kfoo = 1, ntbas(0)*ndmat
-!          write(lupri,*) 'dlmat', 0.5d0*dlmat_triangle(kfoo)
+
+!          do k = 1, nnbbasx*ndmat
+!             print *, 'k'
+!             print *, k
+!             print *, dlmat_triangle(k) 
 !          end do
-          
-!          write(lupri,*), 'DENSITY MATRIX RESPONSE'
-!          CALL PRQMAT(FMO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!    &                 1,(/1, 2, 3, 4/),LUPRI)
-          
-!          write(lupri,*), 'FOCK MATRIX RESPONSE WITHOUT PE'
-!          CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!    &                  1,(/1, 2, 3, 4/),LUPRI)
+
            call pe_master(runtype='dynamic_response',
      &                    triang = .true.,
      &                    ndim = ntbas(0),
@@ -4296,17 +4301,12 @@ C
                  end do
               end do
            end do
-!          do kfoo = 1, 20
-!            write(lupri,*) 'flmat', flmat_triangle(kfoo)
-!          end do
-!          stop 1
-!          write(lupri,*), 'ndmat', ndmat
-!          write(lupri,*), 'FOCK MATRIX RESPONSE WITH PE'
-!          CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!    &                 1,(/1, 2, 3, 4/),LUPRI)
+           write(lupri,*)'FAO matrix from GMOLITX1'
+           CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                 1,(/1, 2, 3, 4/),LUPRI)
           
            deallocate(dlmat_triangle, flmat_triangle)
-      endif ! peqm
+       endif ! peqm
 #endif
 C
 C
