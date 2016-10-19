@@ -264,13 +264,14 @@ contains
 
           end if
 
+!gosia:
+! comparison with getmdm shows that this factor is not needed for 4cDC Hamiltonian; yet this works...
           if (.not. levyle) then
 !            radovan: magic factor for levyle
 !                     need to find the reason for it
              D_con_mo = 0.5d0*D_con_mo
              if (visual_cfg_london_none) D_con_mo_ai = 0.5d0*D_con_mo_ai
           end if
-
 
 !         build 'modified' (by T^B) density matrices:
 
@@ -450,6 +451,11 @@ contains
 !   plot and integrate
 !   ==================
 
+    if (visual_cfg_nics) then
+      write(*,*)"VISUAL: nics value in ", visual_cfg_nics_origin(1), &
+                                          visual_cfg_nics_origin(2), &
+                                          visual_cfg_nics_origin(3)
+    end if
     time_start = second()
 
     call visual_driver(visual_cfg_nr_dmat, &
