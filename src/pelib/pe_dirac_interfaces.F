@@ -105,7 +105,6 @@
       subroutine pe_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
         use polarizable_embedding, only: pe_master
         implicit none
-!ehd debug
 #include "priunit.h"
 #include "dcbbas.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
@@ -245,6 +244,134 @@
         call qexit('pe_ifc_energy')
 
       end subroutine pe_ifc_energy
+
+      subroutine pe_ifc_response(fao_loc, fao, fmo, ndmat)
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: peqm, pe_gspol
+        implicit none
+#include "priunit.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
+        ! fmo should be N2ORBXQ; for now we use its size from input
+        integer, intent(in)                          :: ndmat
+        real*8, dimension(n2orbxq,*),  intent(in)    :: fmo
+        real*8, dimension(n2bbasxq,*), intent(in)    :: fao ! temp.
+        real*8, dimension(n2bbasxq,*), intent(out)   :: fao_loc
+        ! local
+        integer :: i, j, k, l, ioff
+        real*8, dimension(:), allocatable :: dlmat_triangle 
+        real*8, dimension(:), allocatable :: flmat_triangle
+
+        call qenter('pe_ifc_response')
+
+        if (pe_gspol) write(lupri,*)'Dynamical response is disabled'
+
+! edh do we need peqm??? probably makes more sense outside
+        if (peqm .and. .not. pe_gspol) then
+           write(lupri,*)'*** Calculate dynamical PE response'
+           allocate(dlmat_triangle(nnbbasx*ndmat))
+           allocate(flmat_triangle(nnbbasx*ndmat))
+           dlmat_triangle = 0.0d0
+           flmat_triangle = 0.0d0
+           k = 1
+           ! LL block
+           do l = 1, ndmat
+              if (ihrmop(l) == -1) cycle
+              ioff = (l-1)*n2bbasxq
+              do i = 1, ntbas(1)
+                 do j = 1, i
+                    if (i == j) then
+                       dlmat_triangle(k) =
+     &                 2.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
+                    else
+                       dlmat_triangle(k) =
+     &                 4.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
+                    end if
+                    k = k + 1
+                 end do
+              end do
+            ! SS block
+              do i = ntbas(1) + 1, ntbas(0)
+                 do j = 1, i
+                    if (j > ntbas(1)) then
+                       if (i == j) then
+                          dlmat_triangle(k) =
+     &                    2.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
+                       else
+                          dlmat_triangle(k) =
+     &                    4.0d0*fmo((ioff+(i-1)*ntbas(0) + j), 1)
+                       end if
+                    end if
+                    k = k + 1
+                 end do
+              end do
+           end do           
+!          do k = 1, nnbbasx*ndmat
+!             print *, 'k'
+!             print *, k
+!             print *, dlmat_triangle(k) 
+!          end do
+           call pe_master(runtype='dynamic_response',
+     &                    triang = .true.,
+     &                    ndim = ntbas(0),
+     &                    nmats=ndmat,
+     &                    denmats=dlmat_triangle,
+     &                    fckmats=flmat_triangle)
+           ! F = F + M
+           ! LL block
+           call daxpy(n2bbasx, 1.0d0, fao, 1, fao_loc, 1) 
+           k = 1
+           do l = 1, ndmat
+              if (ihrmop(l) == -1) cycle
+              do i = 1, ntbas(1)
+                 do j = 1, i
+                    if (i == j) then ! edh: Conversion from DALTON to DIRAC
+                       fao_loc(((i-1)*ntbas(0) + j), l) =
+     &                 fao_loc(((i-1)*ntbas(0) + j), l)
+     &                 + flmat_triangle(k)
+                    else
+                       fao_loc(((i-1)*ntbas(0) + j), l) =
+     &                 fao(((i-1)*ntbas(0) + j), l)
+     &                 + flmat_triangle(k)
+                       fao_loc(((j-1)*ntbas(0) + i), l) =
+     &                 fao_loc(((j-1)*ntbas(0) + i), l)
+     &                 + flmat_triangle(k)
+                    end if
+                    k = k + 1
+                 end do
+              end do
+             ! SS block
+              do i = ntbas(1) + 1, ntbas(0)
+                 do j = 1, i
+                    if (j > ntbas(1)) then
+                        if (i == j) then
+                           fao_loc(((i-1)*ntbas(0) + j), l) =
+     &                     fao(((i-1)*ntbas(0) + j), l)
+     &                     + flmat_triangle(k)
+                        else
+                           fao_loc(((i-1)*ntbas(0) + j), l) =
+     &                     fao_loc(((i-1)*ntbas(0) + j), l)
+     &                     + flmat_triangle(k)
+                           fao_loc(((j-1)*ntbas(0) + i), l) =
+     &                     fao_loc(((j-1)*ntbas(0) + i), l)
+     &                     + flmat_triangle(k)
+                        end if
+                    end if
+                    k = k + 1
+                 end do
+              end do
+           end do
+           write(lupri,*)'FAO from interface'
+           CALL PRQMAT(FAO_LOC,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                 1,(/1, 2, 3, 4/),LUPRI)
+          
+           deallocate(dlmat_triangle, flmat_triangle)
+      endif ! peqm
+
+        call qexit('pe_ifc_response')
+
+      end subroutine pe_ifc_response
 
       subroutine pe_ifc_london(fckmats, nmats)
         use polarizable_embedding, only: pe_master
