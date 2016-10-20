@@ -21,8 +21,10 @@ TXT
 .LAODKR
 .LAORKR
 .LAOFRZ
-.PERTIM
 .LFCOUL
+.PERTIM
+pertden_direct_lao.FINAL
+pertden_reorth_lao.FINAL
 **INTEGRALS
 *READIN
 .UNCONTRACT

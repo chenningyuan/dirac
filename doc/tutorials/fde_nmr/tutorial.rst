@@ -6,7 +6,7 @@
 Calculation of NMR shieldings in Frozen Density Embedding scheme
 ================================================================
 
-In this tutorial we look at calculations of NMR shielding tensor with London atomic orbitals
+In this tutorial we will calculate the NMR shielding tensor with London atomic orbitals
 within the FDE scheme. 
 
 
@@ -15,11 +15,12 @@ Basic theory of NMR-LAO with FDE
 
 In order to calculate the NMR properties with LAOs, one must take into account 
 modifications of the property gradient due to the use of perturbation-dependent basis sets.
-Here we only present some key points, for the detailed explanations we encourage the reader
-to consults papers...
+For the detailed explanations we encourage the reader to consults Ref. :cite:`Ilias2009`, :cite:`Olejniczak2012`.
+
 The FDE contribution to the property gradient due to the use of perturbation-dependent basis sets:
 
 .. math::
+   :label: fde_pg
 
     E_{[1],emb}^{[B]} = - \int v_{emb}^I \Omega_{ia}^{B,I} - \iint w_{emb}^{I,I} \Omega_{ia}^{I} \Omega_{jj}^{I} - \iint w_{emb}^{I,II} \Omega_{ia}^{I} \Omega_{jj}^{II}
 
@@ -32,9 +33,10 @@ where :math:`\Omega_{pq}^{B}` is the first-order perturbed overlap distribution,
 "direct" LAO term (the first term) and "reorthonormalization" term (two last terms in brackets).
 The :math:`v_{emb}^I` is the embedding potential of subsystem I, :math:`w_{emb}^{I,I}` is the embedding kernel involving subsystem I and :math:`w_{emb}^{I,II}` is the embedding kernel coupling subsystem I and subsystem II.
 
-In this tutorial we will show how to include each of the contributions to the property gradient in the
+In this tutorial we will show how to include each of these contributions to the property gradient in the
 calculations of the NMR shielding tensor. We will also present how to calculate and plot the first-order
 perturbed current density induced by magnetic field and how to use it in analysis of the NMR shielding tensor.
+
 
 A sample calculation of NMR shielding tensor within FDE
 =======================================================
@@ -62,7 +64,7 @@ In this example we will use the four-component relativistic DC Hamiltonian and D
 Calculations without the FDE coupling terms
 -------------------------------------------
 
-We will show how to include only the first two terms in the property gradient.
+Here we demonstrate how to include the first two terms in the property gradient in Eq. :eq:`fde_pg`.
 
 Before launching any calculations, one should think of the numerical grid that will be used
 for the system. In this tutorial, we use a coarse grid generated in DIRAC in preceeding calculations
@@ -77,8 +79,8 @@ This can be done by the script, which can be found in ``utils`` directory of DIR
 
 The original grid file is saved as ``numerical_grid.ORIG``
 
-Step 1: SCF calculation on the subsystem II
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 1: SCF calculation on the subsystem II (frozen)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first step is the calculation on subsystem II, the aim of which is
 to get its density and electrostatic potential written on a text file.
@@ -98,8 +100,8 @@ After this calculation, the ``GRIDOUT`` file will be updated: additional columns
 correspond to the electrostatic potential and the density of subsystem II
 calculated in each of grid points on that file.
 
-Step 2: SCF and response calculation on the subsystem I
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: SCF and response calculation on the subsystem I (active)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now we can use the information on the subsystem II written on the ``GRIDOUT`` file for constructing
 the embedding potential, :math:`v_{emb}^{I}`, and embedding kernel, :math:`w_{emb}^{I,I}`.
@@ -114,8 +116,7 @@ and the ``pam`` command is:
 
 .. literalinclude:: updatefrozen.run
 
-From this step, we save the ``DFCOEF`` file, what is important in order to calculate the NMR shielding
-tensor with the simple magnetic balance (smb). In order to do this, we use the following input file:
+To calculate the NMR shielding tensor, we use the following input file:
 
 .. literalinclude:: shield_v.inp
 
@@ -145,20 +146,19 @@ The calculation on our test molecule give the following results for the isotropi
     v+w11                                2409.2205      
     ===================================  =========
 
-Without these additional contributions in the property gradient, the result is dependent on the choice of the gauge origin.
-``None`` in the table represents a value calculated without any of presented contributions for the gauge origin in the center of mass of SeH2.
+``None`` in the table denotes calculation performed without any of presented FDE contributions in the property gradient (the gauge origin is in the center of mass of SeH2).
 
 
 Calculations with the FDE coupling terms
 ----------------------------------------
 
-We will show how to include the coupling between two subsystems in the property gradient 
+Here we will demonstrate how to include the coupling between two subsystems in the property gradient 
 (term dependent on :math:`w_{emb}^{I,II}`).
 
 Step 1: SCF and response calculation on the subsystem II
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As in example above without the coupling term, the first step is the calculation on subsystem II, the aim of which is
+The first step is the calculation on subsystem II, the aim of which is
 to get its density and electrostatic potential written on a text file.
 In addition, we will export the perturbed density of subsystem II. We will need the DFCOEF file of subsystem II, which can be taken from ``getfrozen.inp`` run with the following input:
 
@@ -168,31 +168,23 @@ with the ``pam`` command:
 
 .. literalinclude:: getfrozen.run
 
-exactly as done in calculations without the FDE coupling terms. From this step, we saved the ``GRIDOUT.h2o`` file.
-The menu file ``getfrozenpert.inp`` which is used after this step reads:
+(exactly as done in calculations without the FDE coupling terms presented above). 
+From this step we saved the ``GRIDOUT.h2o`` file.
+In order to get the density perturbed by an external magnetic field in LAO basis, the following input can be used:
 
 .. literalinclude:: getfrozenpert.inp
 
-This input allows to calculate the NMR shielding of the subsystem II and the only difference 
-from the standard shielding calculations is the keyword :ref:`EXPPED` under :ref:`NMR` section. 
-From these calculations we save ``pertden*`` files: 
+which used the keyword :ref:`EXPPED` (under :ref:`NMR` section) commanding the program to save the contributions to the perturbed density on two files ``pertden_direct_lao.FINAL`` and ``pertden_reorth_lao.FINAL``. The pam command is:
 
 .. literalinclude:: getfrozenpert.run
 
 NOTE: This step has to be run in serial mode for the moment.
-There are two files: ``pertden_reorth_lao.FINAL`` and ``pertden_direct_lao.FINAL``. Now we want to add their content as
-additional columns on ``FROZEN`` file, which is a copy of ``GRIDOUT.h2o`` file. 
-This can be done by using the script ``add_pertden_to_frozen.py`` in utils directory of DIRAC:
-
-.. literalinclude:: add_pertden_to_frozen.run
-
-We may look into the ``FROZEN.result`` file to see that there are now additional columns added to every grid point, which correspond to the perturbed frozen density.
 
 
 Step 2: Response calculation on the subsystem I
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In the next step, we may calculate the FDE contributions to the NMR shielding tensor of an active subsystem (H2Se) 
+Now we can finally calculate the FDE contributions to the NMR shielding tensor of an active subsystem (H2Se) 
 which depend on the embedding kernel including the coupling terms between two subsystems. 
 If the SCF step on an active subsystem was not done before, we should run the following input:
 
@@ -202,7 +194,6 @@ with the ``pam`` command:
 
 .. literalinclude:: updatefrozen.run
 
-which saves the ``DFCOEF`` file.
 The response input is then the following:
 
 .. literalinclude:: shield_v_w11_w12_nocoulomb.inp
