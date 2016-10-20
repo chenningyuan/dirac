@@ -19,17 +19,17 @@ shutil.copy('numerical_grid.save', 'numerical_grid')
 
 
 # prepare for fde with coupling:
-test.run(['dc_lda.inp'],      ['h2o-2.xyz'],  args='--put="numerical_grid" --outcmo')
-test.run(['dc_lda_pert.inp'], ['h2o-2.xyz'],  args='--put="numerical_grid" --incmo --get="pertden_direct_lao.FINAL pertden_reorth_lao.FINAL"')
-shutil.move('pertden_direct_lao.FINAL', 'pertden_direct_lao.FINAL.lda')
-shutil.move('pertden_reorth_lao.FINAL', 'pertden_reorth_lao.FINAL.lda')
-os.unlink('DFCOEF')
-
-test.run(['dc_pbe.inp'],      ['h2o-2.xyz'],  args='--put="numerical_grid" --outcmo')
-test.run(['dc_pbe_pert.inp'], ['h2o-2.xyz'],  args='--put="numerical_grid" --incmo --get="pertden_direct_lao.FINAL pertden_reorth_lao.FINAL"')
-shutil.move('pertden_direct_lao.FINAL', 'pertden_direct_lao.FINAL.pbe')
-shutil.move('pertden_reorth_lao.FINAL', 'pertden_reorth_lao.FINAL.pbe')
-os.unlink('DFCOEF')
+#test.run(['dc_lda.inp'],      ['h2o-2.xyz'],  args='--put="numerical_grid" --outcmo')
+#test.run(['dc_lda_pert.inp'], ['h2o-2.xyz'],  args='--put="numerical_grid" --incmo --get="pertden_direct_lao.FINAL pertden_reorth_lao.FINAL"')
+#shutil.move('pertden_direct_lao.FINAL', 'pertden_direct_lao.FINAL.lda')
+#shutil.move('pertden_reorth_lao.FINAL', 'pertden_reorth_lao.FINAL.lda')
+#os.unlink('DFCOEF')
+#
+#test.run(['dc_pbe.inp'],      ['h2o-2.xyz'],  args='--put="numerical_grid" --outcmo')
+#test.run(['dc_pbe_pert.inp'], ['h2o-2.xyz'],  args='--put="numerical_grid" --incmo --get="pertden_direct_lao.FINAL pertden_reorth_lao.FINAL"')
+#shutil.move('pertden_direct_lao.FINAL', 'pertden_direct_lao.FINAL.pbe')
+#shutil.move('pertden_reorth_lao.FINAL', 'pertden_reorth_lao.FINAL.pbe')
+#os.unlink('DFCOEF')
 
 
 # now move on to the proper fde tests
@@ -49,10 +49,10 @@ test.run(['dc_lda_updatevemb_shield_g1_v.inp'],          ['h2o-1.xyz'], f, args=
 test.run(['dc_lda_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_updatevemb_shield_g1_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
-shutil.copy('pertden_direct_lao.FINAL.lda', 'pertden_direct_lao.FINAL')
-shutil.copy('pertden_reorth_lao.FINAL.lda', 'pertden_reorth_lao.FINAL')
-test.run(['dc_lda_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
-test.run(['dc_lda_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
+#shutil.copy('pertden_direct_lao.FINAL.lda', 'pertden_direct_lao.FINAL')
+#shutil.copy('pertden_reorth_lao.FINAL.lda', 'pertden_reorth_lao.FINAL')
+#test.run(['dc_lda_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
+#test.run(['dc_lda_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
 
 
 shutil.copy('FROZEN.dc_pbe', 'FROZEN')
@@ -62,10 +62,10 @@ test.run(['dc_pbe_updatevemb_shield_g1_v.inp'],          ['h2o-1.xyz'], f, args=
 test.run(['dc_pbe_updatevemb_shield_g0_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_pbe_updatevemb_shield_g1_v_w11.inp'],      ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
-shutil.copy('pertden_direct_lao.FINAL.pbe', 'pertden_direct_lao.FINAL')
-shutil.copy('pertden_reorth_lao.FINAL.pbe', 'pertden_reorth_lao.FINAL')
-test.run(['dc_pbe_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
-test.run(['dc_pbe_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
+#shutil.copy('pertden_direct_lao.FINAL.pbe', 'pertden_direct_lao.FINAL')
+#shutil.copy('pertden_reorth_lao.FINAL.pbe', 'pertden_reorth_lao.FINAL')
+#test.run(['dc_pbe_updatevemb_shield_g0_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
+#test.run(['dc_pbe_updatevemb_shield_g1_v_w11_w12.inp'],  ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
 
 os.unlink('FROZEN')
 os.unlink('DFCOEF')
