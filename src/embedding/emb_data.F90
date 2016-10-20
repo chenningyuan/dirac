@@ -40,7 +40,6 @@ module fde_data
    public fde_import_static
    public fde_initialize_import_data
 
-   public fde_read_pertden
 !
 ! variables 
 !
@@ -178,22 +177,29 @@ module fde_data
       call read_grid(file_unit,gridp,fde_frozen_prp)
       call fde_close_file(file_unit)
 
+      fde_import_grid_np = size(gridp,2)
+      write(*, *) 'fde_import_grid_np 1 = ', fde_import_grid_np
+
+!     "direct" and "reorthonormalization" components of the perturbed density in lao basis
+!     are read from respective files
+!     number of columns is hardcoded = 4 (for grid) + 48 (for properties)
       if (itmp%im_frozen_pert_direct) then
         file_unit_pert_direct = ftmp%frozen_pert_direct%unit
         file_name_pert_direct = ftmp%frozen_pert_direct%name
         call fde_open_file(file_name_pert_direct,file_unit_pert_direct)
-        call read_grid(file_unit_pert_direct,gridp,fde_frozen_prp_pert_direct)
+        call read_grid(file_unit_pert_direct,size(gridp,2),48,fde_frozen_prp_pert_direct)
         call fde_close_file(file_unit_pert_direct)
+        write(*, *) 'fde: im_frozen_pert_direct file read'
       end if
       if (itmp%im_frozen_pert_reorth) then
         file_unit_pert_reorth = ftmp%frozen_pert_reorth%unit
         file_name_pert_reorth = ftmp%frozen_pert_reorth%name
         call fde_open_file(file_name_pert_reorth,file_unit_pert_reorth)
-        call read_grid(file_unit_pert_reorth,gridp,fde_frozen_prp_pert_reorth)
+        call read_grid(file_unit_pert_reorth,size(gridp,2),48,fde_frozen_prp_pert_reorth)
         call fde_close_file(file_unit_pert_reorth)
+        write(*, *) 'fde: im_frozen_pert_reorth file read'
       end if
 
-      fde_import_grid_np = size(gridp,2)
 
       call fde_initialize_import_data
 !g      write(*, *) 'test5 itmp%im_n, itmp%im_n_b = ', itmp%im_n, itmp%im_n_b
@@ -475,22 +481,4 @@ module fde_data
 
    end subroutine fde_test_export
 
-   subroutine fde_read_pertden(pertden)
-      real(8), pointer :: pertden(:, :)
-      integer :: file_unit
-      character(len=60) :: file_name
-      type(fde_files)  :: ftmp
-
-      call fde_get_files_info(ftmp)
-      
-      file_unit = ftmp%frozen%unit
-      file_name = ftmp%frozen%name
-
-      call fde_open_file(file_name,file_unit)
-      call read_grid_pertden(file_unit,pertden)
-      call fde_close_file(file_unit)
-
-   end subroutine
-
-   
 end module fde_data

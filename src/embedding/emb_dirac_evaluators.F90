@@ -413,7 +413,7 @@ module fde_evaluators_dirac
          integer                :: nz
          integer                :: ncomp
          real(8), intent(inout) :: fmat(ndim,ndim,nz,ncomp)
-         real(8), pointer       :: pertden(:, :), gridp(:,:)
+         real(8), pointer       :: pertden(:, :), gridp(:,:), dummy(:, :)
          type(grid_function)    :: gf
          type(fde_grid)         :: grid
          type(fde_files)        :: ftmp
@@ -438,15 +438,14 @@ module fde_evaluators_dirac
          call fde_get_files_info(ftmp)
          call fde_get_import_info(itmp)
 
+         np = size(fde_grid_im%r,2)
+
          nullify(pertden)
          file_name = ftmp%frozen_pert_reorth%name
          file_unit = ftmp%frozen_pert_reorth%unit
          call fde_open_file(file_name,file_unit)
-         !call read_grid_pertden(file_unit,pertden)
-         call read_grid(file_unit,gridp,pertden)
+         call read_grid(file_unit,np,48,pertden)
          call fde_close_file(file_unit)
-
-         np = size(fde_grid_im%r,2)
 
          call legacy_lwork_get(lwork)
          allocate(work(lwork))

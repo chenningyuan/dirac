@@ -29,12 +29,12 @@ module fde_io
    public fde_close_file
    public read_grid
    public read_grid_dim_only
-   public read_grid_pertden
 
 
    interface read_grid
       module procedure read_grid_onecol
       module procedure read_grid_manycol
+      module procedure read_grid_proponly
    end interface read_grid
 
    real(kind=8) :: threshold = 1.0d-18
@@ -147,32 +147,29 @@ module fde_io
 
   END SUBROUTINE READ_GRID_manycol
   
-  subroutine read_grid_dim_only(file,nr_points, nr_cols)
+  SUBROUTINE READ_GRID_proponly(file,npoints,nprop,properties)
+    REAL(kind=8),pointer :: properties(:,:)
+    REAL(kind=8)         :: dummy(4)
+    INTEGER              :: file
+    INTEGER              :: i,npoints, nprop, ierr
+   
+    REWIND(file)
+    if (associated(properties)) nullify(properties)
+    allocate(properties(nprop,npoints))
+
+    DO i=1,npoints
+       READ(file,*, IOSTAT=ierr) dummy(:), properties(:,i)
+       if (ierr .ne. 0) write(*,*) 'error ierr in point', ierr, i
+    END DO
+
+  END SUBROUTINE READ_GRID_proponly
+
+   subroutine read_grid_dim_only(file,nr_points, nr_cols)
     integer    :: nr_points, nr_cols
     integer    :: file
 
     rewind(file)
     read(file,*) nr_points, nr_cols
-
-  end subroutine
-
-  subroutine read_grid_pertden(file,pertden)
-    integer  :: ncol, nrow
-    real(8), dimension(52) :: line
-    real(8), pointer :: pertden(:, :)
-    integer, intent(in)  :: file
-    integer :: i,j
-
-    rewind(file)
-    read(file,*) nrow
-
-    fde_pertden_ncol = 52
-    fde_pertden_nrow = nrow
-
-    do i=1, fde_pertden_nrow
-       read(file,'(52d20.12)') line
-       pertden(7:54,i) = line(5:52)
-    end do
 
   end subroutine
 
