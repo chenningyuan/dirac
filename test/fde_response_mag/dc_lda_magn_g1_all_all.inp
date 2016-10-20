@@ -25,6 +25,8 @@ FROZEN
 .LFCOUL
 .EMAFDE
 .PERTIM
+pertden_direct_lao.FINAL
+pertden_reorth_lao.FINAL
 **GRID
 .IMPORT
 numerical_grid

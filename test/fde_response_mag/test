@@ -35,9 +35,11 @@ test.run(['dc_lda_magn_g1_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical
 test.run(['dc_lda_magn_g0_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_lda_magn_g1_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
-shutil.copy('FROZEN.pert.dc_lda', 'FROZEN')
-test.run(['dc_lda_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-test.run(['dc_lda_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+shutil.copy('pertden_direct_lao.FINAL.lda', 'pertden_direct_lao.FINAL')
+shutil.copy('pertden_reorth_lao.FINAL.lda', 'pertden_reorth_lao.FINAL')
+test.run(['dc_lda_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
+test.run(['dc_lda_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
+
 
 
 # DC/gga
@@ -49,13 +51,20 @@ test.run(['dc_pbe_magn_g1_v_v.inp'],    ['h2o-1.xyz'], f, args='--put="numerical
 test.run(['dc_pbe_magn_g0_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 test.run(['dc_pbe_magn_g1_vw11_vw11.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
 
-shutil.copy('FROZEN.pert.dc_pbe', 'FROZEN')
-test.run(['dc_pbe_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
-test.run(['dc_pbe_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN" --incmo')
+shutil.copy('pertden_direct_lao.FINAL.pbe', 'pertden_direct_lao.FINAL')
+shutil.copy('pertden_reorth_lao.FINAL.pbe', 'pertden_reorth_lao.FINAL')
+test.run(['dc_pbe_magn_g0_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
+test.run(['dc_pbe_magn_g1_all_all.inp'],    ['h2o-1.xyz'], f, args='--put="numerical_grid FROZEN pertden_direct_lao.FINAL pertden_reorth_lao.FINAL" --incmo')
 
+
+# cleaning
+# --------
 os.unlink('FROZEN')
 os.unlink('DFCOEF')
 os.unlink('numerical_grid')
+os.unlink('pertden_direct_lao.FINAL')
+os.unlink('pertden_reorth_lao.FINAL')
+
 
 
 sys.exit(test.return_code)
