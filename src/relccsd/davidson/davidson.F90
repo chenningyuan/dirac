@@ -963,7 +963,6 @@ contains
             sigma_vector => create_sigma_vector(A, b, sigma_vector)
 
 
-
             if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
@@ -984,8 +983,12 @@ contains
             if (associated(delta)) deallocate(delta)
 
             preconditioner =>  form_preconditioner(M_diag, e_small_r)
-            delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+           if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
                                            e_small_r, c_small_r, sigma_vector, & 
+                                           b, preconditioner)
+
+           if (davidson_solve_lhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+                                           e_small_r, c_small_l, sigma_vector, & 
                                            b, preconditioner)
 
             if (.not.associated(delta)) then
@@ -1059,7 +1062,7 @@ contains
         if (present(right)) then
             right_local = right
         else
-            right_local = .true.
+            right_local = .false.
         end if
 
         if (present(left)) then
@@ -1307,9 +1310,6 @@ contains
           endif
 
         enddo
-
-!        call quicksort_vector(e_small_r, indices_sorted_array, 1, vectors_L)
-        ! we sort the indices that would sort the eigenvalues array, and apply the change to all other arrays
 
         if (right) then
             do i = 1, vectors_L

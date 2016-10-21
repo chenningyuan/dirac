@@ -1067,7 +1067,7 @@ integer :: nbuf3,ierr
   &    L1_ptr,B%Fbar_mi,lambda1,-1.0d0,1.0d0,nrep)
 
 
-   write(*,*)'passed diagram 1'
+   write(*,*)'passed diagram 1', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
 
 !-----------------------------------------------------
 ! L(i,a*) = L(i,a*) -  L2(mn,a*e)*W(ie,mn)
@@ -1083,7 +1083,7 @@ integer :: nbuf3,ierr
   &          LeftTensor=B%W_iemn)
 
 
-   write(*,*)'passed diagram 2'
+   write(*,*)'passed diagram 2', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
 
 !-------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2 (ij,a*e)*f_bar_ae(e,b)
@@ -1095,7 +1095,7 @@ integer :: nbuf3,ierr
 
 
 
-   write(*,*)'passed diagram 3'
+   write(*,*)'passed diagram 3', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 !----------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) - P(ij) L2 (im,a*b)*f_bar_im (j,m)
@@ -1106,8 +1106,7 @@ integer :: nbuf3,ierr
      &    LeftTensor=L2_ptr,RightTensor=B%Fbar_mi)
 
 
-
-   write(*,*)'passed diagram 4'
+   write(*,*)'passed diagram 4', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2(mn,a*b) * W_ijmn(ij,mn)
@@ -1117,7 +1116,7 @@ integer :: nbuf3,ierr
    &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,RightTensor=L2_ptr,LeftTensor=B%W_ijmn)
 
 
-   write(*,*)'passed diagram 5'
+   write(*,*)'passed diagram 5', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + P(ij) L2(im,a*e) * W_bmej(je,bm)
@@ -1127,7 +1126,7 @@ integer :: nbuf3,ierr
     &    1.0d0,0.0d0,nrep,righttensor=B%W_mbej,LeftTensor=L2_ptr)
 
 
-   write(*,*)'passed diagram 6'
+   write(*,*)'passed diagram 6', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 
 !---------------------------------------------------------------------------
@@ -1139,7 +1138,7 @@ integer :: nbuf3,ierr
     &   LeftTensor=B%W_mnie)
 
 
-   write(*,*)'passed diagram 7'
+   write(*,*)'passed diagram 7', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 
 !---------------------------------------------------------------
@@ -1166,11 +1165,10 @@ integer :: nbuf3,ierr
      call dealloc_array(e)
 
 
-   write(*,*)'passed diagram 8'
+   write(*,*)'passed diagram 8', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 
-
-    call lambda2_disconnected_IP(L1,B%Fbar_ae,lambda2)
+   call lambda2_disconnected_IP(L1,B%Fbar_ae,lambda2)
 
 
  end subroutine
@@ -1385,7 +1383,7 @@ integer :: nbuf3,ierr
            do j = 1, no(jrep)
               imin = 1
               if (irep.eq.jrep) imin = j + 1
-              ia = (e%oneNonDirac(arep) + (a-1) * no(arep) + imin - 1)*rcw + 1 !define ivx
+              ia = (e%twoNonDirac(irep,arep) + (a-1) * no(arep) + imin - 1)*rcw + 1 
               ni = no(irep) - imin + 1
               call xaxpy (ni,f_bar(jb),l1(ia),1,resl2(ijaboff+ij),1)
               ij = ij + ni * rcw
@@ -1397,7 +1395,7 @@ integer :: nbuf3,ierr
 !--------------------------------------------------------------
         if (jrep.eq.arep) then
            ij = 1
-           ja = (e%oneNonDirac(arep) + (a-1) * no(arep)) * rcw + 1  !define ivx
+           ja = (e%twoNonDirac(jrep,arep) + (a-1) * no(arep)) * rcw + 1  
            do j = 1, no(jrep)
               imin = 1
               if (irep.eq.jrep) imin = j + 1
