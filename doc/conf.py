@@ -49,7 +49,7 @@ try:
     import sphinxcontrib.bibtex
     extensions.append('sphinxcontrib.bibtex')
 except ImportError:
-    print('sphinxcontrib.bibtex extension not found => skipping references generation')
+    print('WARNING: sphinxcontrib.bibtex extension not found => can not generate references for documentation !')
 else:
     # bibtex dirac custom style
     from pybtex.plugin import register_plugin
@@ -150,6 +150,7 @@ try:
         'google_analytics_account': 'UA-61958338-1',
     }
 except ImportError:
+    print('sphinx_rtd_theme extension not found - fallback to the old theme')
     html_theme = 'dirac'
     html_theme_path = ['_themes']
 

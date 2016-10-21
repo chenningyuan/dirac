@@ -22,7 +22,7 @@ if os.path.lexists(my_scratchdir):
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
       to_string   = 'The diagonal elements of the recomputed Fock matrix',
-      rel_tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-8)
 
 test.run(['fsccsd_integrals.inp'], ['Mg.mol'], f, args='--keep_scratch --scratchful='+my_scratchdir)
 
@@ -33,21 +33,21 @@ for s in sectors:
    f = Filter()
    f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
          to_string   = 'The diagonal elements of the recomputed Fock matrix',
-         rel_tolerance   = 1.0e-9)
+         rel_tolerance   = 1.0e-8)
    f.add(from_string = 'CCSD results',
          to_string   = 'T1 diagnostic',
-         rel_tolerance   = 5.0e-9)
+         rel_tolerance   = 5.0e-8)
 
    test.run(['fsccsd_restart_s'+s+'_a.inp'], ['Mg.mol'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 
    f = Filter()
    f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
          to_string   = 'The diagonal elements of the recomputed Fock matrix',
-         rel_tolerance   = 1.0e-9)
+         rel_tolerance   = 1.0e-8)
    if s == '00':
       f.add(from_string = 'CCSD results',
             to_string   = 'T1 diagnostic',
-            rel_tolerance   = 5.0e-9)
+            rel_tolerance   = 5.0e-8)
    else:
       f.add(from_string = ' Energy eigenvalues in atomic units',
             to_re       = 'Relative real eigenvalues in other units;',
@@ -76,10 +76,10 @@ if os.path.lexists(my_scratchdir):
 f = Filter()
 f.add(from_string = 'Spinor   Abelian Rep.         Energy   Recalc. Energy',
       to_string   = 'The diagonal elements of the recomputed Fock matrix',
-      rel_tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-8)
 f.add(from_string = 'CCSD results',
       to_string   = 'T1 diagnostic',
-      rel_tolerance   = 5.0e-9)
+      rel_tolerance   = 5.0e-8)
 f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = 'Relative real eigenvalues in other units;',
       rel_tolerance = 1.0e-5)

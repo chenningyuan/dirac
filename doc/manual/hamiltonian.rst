@@ -574,6 +574,7 @@ AMFI is the default. This holds also for keywords :ref:`HAMILTONIAN_.X2C` and
 default.
 
 .. warning:: 
+
  missing AMFI contribution (for :ref:`HAMILTONIAN_.X2C`, :ref:`HAMILTONIAN_.X2C4` and 
  :ref:`HAMILTONIAN_.BSS` keywords)
  may lead to overestimation of spin-orbit effects since these would be represented by

@@ -47,12 +47,12 @@ endif()
 
 add_library(
     xcint
+    OBJECT
     ${FIXED_XCINT_FORTRAN_SOURCES}
     ${FREE_XCINT_FORTRAN_SOURCES}
 )
 
 # add dependencies 
-#add_dependencies(xcint gp)
 if(ENABLE_XCFUN)
     add_dependencies(xcint xcfun_fortran_bindings)
 endif()

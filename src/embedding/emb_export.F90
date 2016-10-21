@@ -21,7 +21,6 @@
 
 module fde_export_data
 
-#ifdef MOD_UNRELEASED
    use fde_cfg
    use fde_types
    use fde_data
@@ -30,7 +29,6 @@ module fde_export_data
    use xml_file
    use fde_mag_cfg
    use fde_evaluators_dirac
-#endif
    
    implicit none
 
@@ -40,16 +38,6 @@ module fde_export_data
    
    contains
 
-#ifndef MOD_UNRELEASED 
-!   ----------------------------------------------------------------------------
-      subroutine fde_export_to_file(level)
-!   ----------------------------------------------------------------------------
-         character(len=4) :: level
-
-         call fde_quit('FDE density/el. pot. not available in this version')
-      end subroutine fde_export_to_file
-      
-#else
 !   ----------------------------------------------------------------------------
       subroutine fde_export_to_file(level)
 !   ----------------------------------------------------------------------------
@@ -355,6 +343,5 @@ module fde_export_data
 
       end subroutine fde_export_data_as_txt
       
-#endif /* MOD_UNRELEASED */
 
 end module fde_export_data 

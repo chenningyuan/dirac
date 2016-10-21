@@ -362,8 +362,6 @@ C
          moltype='MOL' ! .mol input is in the .inp file
       END IF
 
-      ATOMDF  = .FALSE.
-
       REWIND(LUINFO)
 C     JHS TMP reset the variables with the read .mol file
       NMLINE=0
@@ -875,9 +873,6 @@ C
       DO 100 I = 1, NHTYP 
          NHKOFF(I) = IOFF
          IOFF = IOFF + KHK(I)
-#if defined (DIRAC_DENSFIT_DEBUG)
-         write (*,*) 'in baspar: nhkoff(',i,'):',nhkoff(i),'ioff',ioff
-#endif
   100 CONTINUE
 C
 C     ***** MAXOPR *****
@@ -1847,9 +1842,8 @@ C
      &             CPRIMU(1,1,IBLOCK(ISET),ISET),
      &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,Q,1,DSM,
      &             BASREF(1,I,ISET))
-              NBLCK(I,ISET) = NBLOCK
-C          write (*,*) 'testing reading of fit sets...0'
 C
+              NBLCK(I,ISET) = NBLOCK
            ELSE IF ( IBSFLAG .EQ. 4 ) THEN
 C
 C             Generate well-temperered/family basis set
@@ -1871,10 +1865,8 @@ C
 C
 C          Print out fit set
 C
-C          write (*,*) 'testing reading of fit sets...1'
            NOFITFS  = NOFITFS.AND.IQM(I,ISET).EQ.0
            IF (IQM(I,ISET).GT.0) THEN
-C          write (*,*) 'testing reading of fit sets...2'
               IF(INPTST) THEN
                  WRITE(LUPRI,'(3X,A)') 'Density fit set:'
                  WRITE(LUPRI,'(6X,A,I5,A,12I5)')
@@ -1884,12 +1876,12 @@ C          write (*,*) 'testing reading of fit sets...2'
 C aspg, 2006-07-03
 C replacing NHTYPF for NHTYP while a complete rework of the reading
 C of basis for density fitting is not done.
-C             NHTYPF    = MAX(NHTYPF,IQM(I,ISET))
+              NHTYPF    = MAX(NHTYPF,IQM(I,ISET))
 C             Since it's the density the angular momentum may be twice
 C             the maximum value for the orbitals : 2 * MXQN - 2
-C             IF(NHTYPF-1.GT.2*MXQN-2) GOTO 5001
-              NHTYP    = MAX(NHTYP,IQM(I,ISET))
-              IF(NHTYP -1.GT.2*MXQN-2) GOTO 5001
+              IF(NHTYPF-1.GT.2*MXQN-2) GOTO 5001
+C              NHTYP    = MAX(NHTYP,IQM(I,ISET))
+C              IF(NHTYP -1.GT.2*MXQN-2) GOTO 5001
            ENDIF
 C
 C       (no need to check whether the set is contracted, so code differs
@@ -2124,7 +2116,8 @@ C
 #include "huckel.h"
 #include "aosotr.h"
 #include "gencon.h"
-#include "densfit.h"
+#include "fitshells.h"
+#include "fitprimit.h"
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
@@ -2240,12 +2233,6 @@ C
 C*****************************************************************************
 C       Process fit set data for first (LL or LL+SS) density fitset
 C*****************************************************************************
-#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
-      IF (ATOMDF) THEN
-C skipped because dirac does not uses atomdf
-      ELSE
-        KMAXTOT = KMAX  
-      ENDIF   
       LCOMP_FIT  = 1
       ISHELL_FIT = 0
       IPRIM_FIT  = 0
@@ -2263,15 +2250,6 @@ C skipped because dirac does not uses atomdf
       NORBL_FIT  = IORB_FIT
       NPLRG_FIT  = IPRIMD_FIT
       NPLSH_FIT  = IPRIM_FIT
-#if defined (DIRAC_DENSFIT_DEBUG)
-C aspg debug
-      write(*,*) 'DEBUG dfit: large component fit basis'
-      write(*,*) 'DEBUG dfit: NLRGSH_FIT =',NLRGSH_FIT
-      write(*,*) 'DEBUG dfit: NLARGE_FIT =',NLARGE_FIT
-      write(*,*) 'DEBUG dfit: NORBL_FIT  =',NORBL_FIT
-      write(*,*) 'DEBUG dfit: NPLRG_FIT  =',NPLRG_FIT
-      write(*,*) 'DEBUG dfit: NPLSH_FIT  =',NPLSH_FIT
-#endif
 C*****************************************************************************
 C       Process fit set data for secondary (SS) density fitset
 C*****************************************************************************
@@ -2290,102 +2268,9 @@ C*****************************************************************************
       NBASIS_FIT = IORBD_FIT
       NSMALL_FIT = NBASIS_FIT - NLARGE_FIT
       NPBAS_FIT  = IPRIMD_FIT
-      NPSML_FIT   = IPRIMD_FIT - NPLRG_FIT
-      NPSHEL_FIT  = IPRIM_FIT
-      NPSSH_FIT   = IPRIM_FIT - NPLSH_FIT
-#if defined (DIRAC_DENSFIT_DEBUG)
-C aspg debug
-      write(*,*) 'DEBUG dfit: small component fit basis'
-      write(*,*) 'DEBUG dfit: KMAX_FIT   =',KMAX_FIT
-      write(*,*) 'DEBUG dfit: NSMLSH_FIT =',NSMLSH_FIT
-      write(*,*) 'DEBUG dfit: NBASIS_FIT =',NBASIS_FIT
-      write(*,*) 'DEBUG dfit: NSMALL_FIT =',NSMALL_FIT
-      write(*,*) 'DEBUG dfit: NPBAS_FIT  =',NPBAS_FIT
-      write(*,*) 'DEBUG dfit: NPSML_FIT  =',NPSML_FIT
-      write(*,*) 'DEBUG dfit: NPSHEL_FIT =',NPSHEL_FIT
-      write(*,*) 'DEBUG dfit: NPSSH_FIT  =',NPSSH_FIT
-#endif
-#else /* NEW_DIRAC_DENSFIT_PROCESSING */
-C aspg 2006-06-16
-C densfit basis processed as in dalton, so only up to LCOMP=3
-C
-      IF (DOFIT) THEN
-         write (*,*) 'processing global fit function basis'
-         LCOMP = 3
-#if defined (DIRAC_DENSFIT_DEBUG)
-      write (*,*) 'lcomp',lcomp,'iqm(',1,',',lcomp,'):',iqm(1,3)
-#endif
-         CALL ORBPRO(IQM(1,3),NBLCK(1,3),JCO(1,1,3),
-     &               NUC(1,3),NRC(1,3),SEG(1,3),ALPHA(1,1,3),
-     &               CPRIM(1,1,1,3),CPRIMU(1,1,1,3),
-     &               KATOM,KANG,KBLOCK,KPRIM,ISHELL,
-     &               IPRIM,IPRIMD,IORB,IORBD,LCOMP)
-         IF (ISHELL .GT. MXSHEL) GOTO 5070
-         IF (IORBD  .GT. MXCORB) GOTO 5080
-         IF (IPRIMD .GT. MXPRIM) GOTO 5090
-         NAUXSH = ISHELL - NSMLSH - NLRGSH -1
-         NAUX   = IORBD  - NLARGE - NSMALL
-         NORBAUX  = IORB
-         NPAUX  = IPRIMD - NPLRG - NPSML-1
-         NPAUXSH  = IPRIM - NPSHEL - NPLSH -1
-         KMAXAUX   = NAUXSH
-         NBASISAUX = NAUX
-         NBASEAUX = NBASISAUX
-         NPBASAUX  = NPAUX
-         KMAXTOT = ISHELL
-C
-#if defined (DIRAC_DENSFIT_DEBUG)
-         write (*,*) ' > nauxsh    =',nauxsh
-         write (*,*) '   (  ishell =',ishell
-         write (*,*) '    - nsmlsh =',nsmlsh
-         write (*,*) '    - nlrgsh =',nlrgsh
-         write (*,*) '    - 1)'
-         write (*,*) ' > naux      =',naux
-         write (*,*) '   (  iorbd  =',iorbd
-         write (*,*) '    - nlarge =',nlarge
-         write (*,*) '    - nsmall =',nsmall
-         write (*,*) '       )'
-         write (*,*) ' > norbaux   =',norbaux
-         write (*,*) ' > npauxsh   =',npauxsh
-         write (*,*) '   (  iprim  =',iprim
-         write (*,*) '    - npshel =',npshel
-         write (*,*) '    - nplsh  =',nplsh
-         write (*,*) '    - 1)'
-         write (*,*) ' > npaux     =',npaux
-         write (*,*) '   (  iprimd =',iprimd
-         write (*,*) '    - nplrg  =',nplrg
-         write (*,*) '    - npsml  =',npsml
-         write (*,*) '       )'
-         write (*,*) ' > kmaxaux   =',kmaxaux
-         write (*,*) '   (  nauxsh )'
-         write (*,*) ' > nbasisaux =',nbasisaux
-         write (*,*) '   (  naux   )'
-         write (*,*) ' > nbaseaux  =',nbaseaux
-         write (*,*) '   (  nbasisaux )'
-         write (*,*) ' > npbasaux  =',npbasaux
-         write (*,*) '   (  npaux  )'
-         write (*,*) ' > kmaxtot   =',kmaxtot
-         write (*,*) '   (  ishell )'
-         write (*,*) ' > nontyp    =',nontyp
-#endif
-      ELSE
-         NAUXSH    = 0
-         NAUX      = 0
-         NORBAUX   = 0
-         NPAUX     = 0
-         NPAUXSH   = 0
-         KMAXAUX   = 0
-         NBASISAUX = 0
-         NBASEAUX  = NBASISAUX
-         NPBASAUX  = 0
-         KMAXTOT   = KMAX
-#if defined (DIRAC_DENSFIT_DEBUG)
-         write (*,*) ' < nbasisaux =',nbasisaux
-#endif
-      END IF
-C
-C aspg debug
-#endif /* NEW_DIRAC_DENSFIT_PROCESSING */
+      NPSML_FIT  = IPRIMD_FIT - NPLRG_FIT
+      NPSHEL_FIT = IPRIM_FIT
+      NPSSH_FIT  = IPRIM_FIT - NPLSH_FIT
 C
 C     ***************************************
 C     ***** Orbital Symmetry Processing *****
@@ -2486,8 +2371,8 @@ C*****************************************************************************
 #include "primit.h"
 #include "symmet.h"
 #include "aosotr.h"
-#include "densfit.h"
 C
+
 
       IF(DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
@@ -2552,8 +2437,10 @@ C
             NTPRIM(ISET) = NTPRIM(ISET)+NUCLEI_IN_TYPE*NPRIM(ISET)
             NTBAS(ISET)  = NTBAS(ISET) +NUCLEI_IN_TYPE*NCONT(ISET)
             IBLOCK(ISET) = IBLOCK(ISET) + NBLCK(I,ISET)
-            NBAS_ATOMTYPE(I,ISET) = NCONT(ISET)
-            NBAS_ATOMTYPE(I,0) = NBAS_ATOMTYPE(I,0) + NCONT(ISET)
+            IF (ISET.EQ.1 .OR. ISET.EQ.2) THEN
+               NBAS_ATOMTYPE(I,ISET) = NCONT(ISET)
+               NBAS_ATOMTYPE(I,0) = NBAS_ATOMTYPE(I,0) + NCONT(ISET)
+            END IF
          END DO
 
          IF (IPREAD .GT. 0) THEN
@@ -2565,14 +2452,12 @@ C
                  WRITE(LUPRI,'(23X,2I8,6X,2A)')
      &               NPRIM(2),NCONT(2),'S  - ',TSTRING(2)
                ENDIF
-               IF (DOFIT) THEN
-                  IF (NPRIM(3).GT.0)
-     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(3),NCONT(3),'FL - ',TSTRING(3)
-                  IF (NPRIM(4).GT.0)
-     &               WRITE(LUPRI,'(23X,2I8,6X,2A)')
-     &                  NPRIM(4),NCONT(4),'FS - ',TSTRING(4)
-               ENDIF
+               IF (NPRIM(3).GT.0)
+     &            WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &               NPRIM(3),NCONT(3),'FL - ',TSTRING(3)
+               IF (NPRIM(4).GT.0)
+     &            WRITE(LUPRI,'(23X,2I8,6X,2A)')
+     &               NPRIM(4),NCONT(4),'FS - ',TSTRING(4)
             ELSE
                WRITE (LUPRI,'(2X,A4,1X,4I8,6X,A)') NAMN(ICENT),
      &              NUCLEI_IN_TYPE,NCHARG,NPRIM(1),NCONT(1),TSTRING(1)
@@ -2593,13 +2478,6 @@ C
               WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NTPRIM(2),NTBAS(2),'   S  - small components'
             ENDIF
-            IF (DOFIT) THEN
-#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
-C
-C aspg, 2006-06-13
-C adding printout for the fit basis set cases, based upon the
-C value of KSETS
-C
             IF (KSETS.EQ.3) THEN
                WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NPLRG_FIT,NLARGE_FIT, '   FL - global components fit'
@@ -2609,33 +2487,12 @@ C
                WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NPSML_FIT,NSMALL_FIT, '   FS - small components fit'
             ENDIF
-#else
-            IF (KSETS.EQ.3) THEN
-               WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPBASAUX,NBASISAUX,'   FL - global components fit'
-            ELSEIF (KSETS.EQ.4) THEN
-               WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPBASAUX,NBASISAUX,'   FL - large components fit'
-               WRITE(LUPRI,'(23X,2I8,3X,A)')
-     &            NPSML_FIT,NSMALL_FIT, '   FS - small components fit'
-            ENDIF
-#endif /* NEW_DIRAC_DENSFIT_PROCESSING */
-            ENDIF
 C
          ENDIF
          CALL PRSYMB(LUPRI,'-',70,2)
 C     
-#if defined (NEW_DIRAC_DENSFIT_PROCESSING) 
-C aspg, 2006-06-13
-C adding printout for the fit basis set cases, based upon the
-C value of KSETS  
-C
          NTPBAS  = NPBAS  + NPBAS_FIT 
          NTBASIS = NBASIS + NBASIS_FIT
-#else
-         NTPBAS  = NTPRIM(1) +NTPRIM(2) + NPBASAUX 
-         NTBASIS = NTBAS(1)  +NTBAS(2)  + NBASISAUX
-#endif
          WRITE (LUPRI,'(2X,A,I7,3I8,6X,/)')
      &         'total:',NUCDEP,NCHTOT,NTPBAS,NTBASIS
 C
@@ -2723,11 +2580,7 @@ C aspg, 2006-06-13
 C adding printout for the fit functions. when things are stable this
 C and the calls to orbout above should be put in a separate function.
 C
-#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
          IF (NLARGE_FIT.GT.0) THEN
-#else
-         IF (NBASISAUX.GT.0) THEN
-#endif
             CALL HEADER('Fit Functions, Global/Large Component',-1)
             NRMPRI = .FALSE.
             CALL ORBOUT(3,IQM(1,3),NBLCK(1,3),JCO(1,1,3),
@@ -2741,7 +2594,6 @@ C
      &                  WORK(KIPCON),KATOM,KANG,KBLOCK,KPRIM,
      &                  ALPHA(1,1,3),CPRIMU(1,1,1,3),NRMPRI)
             END IF
-#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
             IF (NBASIS_FIT.GT.NLARGE_FIT) THEN 
                CALL HEADER('Fit Functions, Small Component',-1)
                NRMPRI = .FALSE.
@@ -2757,7 +2609,6 @@ C
      &                     CPRIMU(1,1,1,4),NRMPRI)
                END IF
             ENDIF
-#endif
          ENDIF
 C
       END IF
@@ -3679,7 +3530,6 @@ C
 #include "gnrinf.h"
 #endif
 C
-      IFSTSHAUX = 0
       ICENT  = 0
       JBLOCK = 0
       DO 10 I = 1,NONTYP ! atomic type
@@ -3688,9 +3538,6 @@ C
             KBCH = JBLOCK
             NDEG = NUCDEG(ICENT)
             DO 30 J = 1,IQM(I) ! angular momentum value
-#if defined (DIRAC_DENSFIT_DEBUG)
-      write (*,*) 'lcomp',lcomp,'iqm(',i,',',lcomp,'):',iqm(i)
-#endif
                KKK = 0
                NCOMP = KHK(J)
                NCCMP = KCK(J)
@@ -3703,11 +3550,6 @@ C                 ...  dimension PRICCF(MXPRIM,MXCONT)
                   DO 50 KK = 1, NCONT ! contracted shells
                      KKK = KKK + 1
                      ISHELL = ISHELL + 1
-                     !set the pointer to the first shell for density-fitting
-                     !auxiliary basis
-                     IF ( (LCOMP.EQ.3) .AND. (IFSTSHAUX.EQ.0) ) THEN
-                        IFSTSHAUX = ISHELL
-                     END IF
 C*****************************************************************************
 C     Data on the AO-block associated with a given shell(ISHELL):
 C       NUCO    - number of uncontracted functions
@@ -3778,75 +3620,12 @@ C*****************************************************************************
                      PRICRY(IPRIM) = CORD(2,ICENT)
                      PRICRZ(IPRIM) = CORD(3,ICENT)
                      IPRIMD = IPRIMD + NCOMP*NDEG
-#if defined (DIRAC_DENSFIT_DEBUG)
-C aspg, 2006-06-17
-C temporary debug for fit functions
-      write (*,*) 'DEBUG: l, kbch, alpha, iprim, priexp,ishell,lcomp,j',
-C     write (LUPRI,('I4,I4,F10.8,I4,F10.8,I4')),
-     $       L,KBCH,ALPHA(L,KBCH),iprim,priexp(iprim),ishell,lcomp,j
-C     write (*,*) '       lclass=',lclass
-C
-#endif
    60             CONTINUE
    40          CONTINUE
    30       CONTINUE
    20    CONTINUE
          JBLOCK = JBLOCK + NBLCK(I)
    10 CONTINUE
-      !Add exp(0) function (needed in 2- and 3-index integrals)
-      !as an extra "0" class
-      IF (LCOMP .EQ. 3) THEN
-         ISHELL = ISHELL + 1
-         NUCO  (ISHELL) = 1
-         NRCO  (ISHELL) = 1
-         JSTRT (ISHELL) = IPRIM
-         NSTRT (ISHELL) = IORB
-         KSTRT (ISHELL) = IORBD
-         NCENT (ISHELL) = 0
-         NUMCF (ISHELL) = 0
-         NUMCFT(ISHELL) = 0
-         NBCH  (ISHELL) = 0
-         SHARE (ISHELL) = .FALSE.
-*        ISTBAO(ISHELL) = ISTBNU(ICENT)
-         NHKT  (ISHELL) = 1
-         KHKT  (ISHELL) = 1
-         SPHR  (ISHELL) = .FALSE.
-         KCKT  (ISHELL) = 1 
-         SEGM  (ISHELL) = .FALSE.
-         LCLASS(ISHELL) = 0 
-         CENT(ISHELL,1,1) = 0.0D0
-         CENT(ISHELL,2,1) = 0.0D0
-         CENT(ISHELL,3,1) = 0.0D0
-C        Basis-set identifier (WK/UniKa/04-11-2002).
-*        MBSID(ISHELL) = MULBSI(ICENT)
-*        IORB  = IORB  + NCOMP
-*        IORBD = IORBD + NCOMP*NDEG
-         IPRIM = IPRIM + 1
-C*****************************************************************************
-C       PRIEXP  - exponent of primitive shell
-C       CCO     - unnormalized contraction coefficient
-C       PRICCF  - normalized contraction coefficient
-C       PRICRX  - x-coordinate of center
-C       PRICRY  - y-coordiante of center
-C       PRICRZ  - z-coordinate of center
-C*****************************************************************************
-        PRIEXP(IPRIM) = 0.0D0
-        PRICCF(IPRIM,1) = 1.0D0
-        PRICRX(IPRIM) = 0.0d0
-        PRICRY(IPRIM) = 0.0d0
-        PRICRZ(IPRIM) = 0.0d0
-c       IPRSHL(IPRIM) = ISHELL
-        IPRIMD = IPRIMD + 1
-#if defined (DIRAC_DENSFIT_DEBUG)
-C aspg, 2006-06-17
-C temporary debug for fit functions
-      write (*,*) 'DEBUG: l, kbch, alpha, iprim, priexp,ishell,lcomp',
-C     write (LUPRI,('I4,I4,F10.8,I4,F10.8,I4')),
-     $       L,KBCH,ALPHA(L,KBCH),iprim,priexp(iprim),ishell,lcomp
-C     write (*,*) '       lclass=',lclass
-C
-#endif
-      END IF
       RETURN
 C
 C       Error messages:
@@ -4039,25 +3818,13 @@ C
       ELSEIF(ICLS.EQ.2) THEN
         IPRIMD = NPLRG
         IPRIM  = NPLSH
-#if defined (NEW_DIRAC_DENSFIT_PROCESSING)
       ELSEIF(ICLS.EQ.3) THEN
         IPRIMD = 0
         IPRIM  = 0
       ELSEIF(ICLS.EQ.4) THEN
         IPRIMD = NPLRG_FIT
         IPRIM  = NPLSH_FIT
-#else
-      ELSEIF(ICLS.EQ.3) THEN
-        IPRIMD = NPLRG + NPSML
-        IPRIM  = NPLSH + NPSSH
-      ELSEIF(ICLS.EQ.4) THEN
-        write(*,*) 'independent S- fit set inexistent, not printed'
-        GOTO 4242
-#endif
       ENDIF
-#if defined (DIRAC_DENSFIT_DEBUG)
-      write (lupri,*) 'in orbout: iprimd=',iprimd,' iprim=',iprim
-#endif
       ICENT  = 0
       JBLOCK = 0
       DO 100 I = 1, NONTYP
@@ -4098,47 +3865,43 @@ C
                      ITYP = ITYP + 1
                      IPRIMD = IPRIMD + 1
                      IF (IPREAD .GT. 0) THEN
-CC                     IF (ICLS.LE.4) THEN
-#if defined (DIRAC_DENSFIT_DEBUG)
-                       write(*,*) 'mm=',mm,' kbch=',kbch,' nnrc=',nnrc,
-     &                            'ityp=',ityp,' j,khk(j)',j,khk(j),
-     &                            'gtotyp=',gtotyp(ityp),'nhkoff(j)',
-     &                            nhkoff(j)
-#endif
+                      IF (ICLS.LE.2) THEN
                        WRITE (LUPRI,FMTA)  NAMN(ICENT),DEG,
      &                                     GTOTYP(ITYP),
      &                                     IPRIMD,PRIEXP(IPSTRT),
      &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
-C                      ELSE
-C                      WRITE (LUPRI,FMTA)  NAMN(ICENT),DEG,
-C    &                                     GTOTYP(ITYP),
-C    &                                     IPRIMD,PRIEXP_FIT(IPSTRT),
-C    &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
-CC                    ENDIF
+                      ELSE
+                       WRITE (LUPRI,FMTA)  NAMN(ICENT),DEG,
+     &                                     GTOTYP(ITYP),
+     &                                     IPRIMD,PRIEXP_FIT(IPSTRT),
+     &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
+                      ENDIF
                      ENDIF
                      IF (NNUC .GT. 1) THEN
                         IPRIMD = IPRIMD + 1
                         IF (IPREAD .GT. 0) THEN
-CC                         IF (ICLS.LE.3) THEN
-                           WRITE (LUPRI,FMTC) CHRSEG,
-     &                                     IPRIMD,PRIEXP(IPSTRT+1),
+                          IF (ICLS.LE.2) THEN
+                           WRITE(LUPRI,FMTC) CHRSEG,
+     &                                    IPRIMD,PRIEXP(IPSTRT+1),
+     &                                    (CPRIMU(2,MM,KBCH),MM=1,NNRC)
+                          ELSE
+                           WRITE(LUPRI,FMTC) CHRSEG,
+     &                                     IPRIMD,PRIEXP_FIT(IPSTRT+1),
      &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
-C                          ELSE
-C                          WRITE (LUPRI,FMTC) CHRSEG,
-C    &                                     IPRIMD,PRIEXP_FIT(IPSTRT+1),
-C    &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
-CC                         ENDIF
+                          ENDIF
                         END IF
                      END IF
                      DO 410 M = 3, NNUC
                         IPRIMD = IPRIMD + 1
                         IF (IPREAD .GT. 0) THEN
-                          IF (ICLS.LE.3) THEN
-                           WRITE (LUPRI,FMTD) IPRIMD,PRIEXP(IPSTRT-1+M),
+                          IF (ICLS.LE.2) THEN
+                           WRITE (LUPRI,FMTD) IPRIMD,
+     &                                      PRIEXP(IPSTRT-1+M),
      &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
-C                         ELSE
-C                     WRITE (LUPRI,FMTD) IPRIMD,PRIEXP_FIT(IPSTRT-1+M),
-C    &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
+                         ELSE
+                           WRITE (LUPRI,FMTD) IPRIMD,
+     &                                      PRIEXP_FIT(IPSTRT-1+M),
+     &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
                           END IF
                        END IF
   410              CONTINUE
@@ -4642,6 +4405,7 @@ C
           ENDDO
         ENDDO
       ENDDO
+
 C
 C     For ECP integral
 C

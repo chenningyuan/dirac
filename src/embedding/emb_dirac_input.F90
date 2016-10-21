@@ -125,7 +125,6 @@ module fde_input_dirac
                call fde_set_nadd_all_alda
                dirac_cfg_fde_response = .true.
 
-#ifdef MOD_UNRELEASED
             CASE ('.LEVEL')
                read(lucmd,*) etmp%ex_level 
 
@@ -217,7 +216,6 @@ module fde_input_dirac
                fde_lao_magn_expval_no_coupl_nonadd_embker = .true.
 !              it has to be called with PERTIM which imports perturbed density
  
-#endif /* MOD_UNRELEASED */ 
 
             CASE DEFAULT
               WRITE (lunit,'(/,3A,/)') ' Keyword "',WORD, &

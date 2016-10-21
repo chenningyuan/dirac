@@ -1179,9 +1179,6 @@ module fde_evaluators_dirac
 #include "priunit.h"
 #include "dcbbas.h"
 #include "maxaqn.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #include "onecom.h"
 #include "ccom.h"
 #include "dgroup.h"

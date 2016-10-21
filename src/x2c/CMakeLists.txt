@@ -49,6 +49,7 @@ endif()
 
 add_library(
     x2c
+    OBJECT
     ${FIXED_X2C_FORTRAN_SOURCES}
     ${FREE_X2C_FORTRAN_SOURCES}
 )
