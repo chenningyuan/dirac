@@ -25,6 +25,8 @@ TXT
 pertden_direct_lao.FINAL
 pertden_reorth_lao.FINAL
 **INTEGRALS
+.NUCMOD
+1
 *READIN
 .UNCONTRACT
 **WAVE FUNCTIONS
@@ -38,7 +40,6 @@ pertden_reorth_lao.FINAL
 .SHIELDING
 *NMR
 .LONDON
-.DOEPRN
 .SYMCON
 *LINEAR RESPONSE
 .PRINT

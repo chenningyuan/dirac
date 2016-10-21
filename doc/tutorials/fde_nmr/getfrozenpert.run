@@ -1,2 +1,2 @@
-cp DFCOEF.scf.II DFCOEF
+cp DFCOEF.h2o DFCOEF
 pam --inp=getfrozenpert.inp --mol=h2o.mol --incmo --put="numerical_grid" --get="pertden*"

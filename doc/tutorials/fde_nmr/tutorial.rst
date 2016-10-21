@@ -141,9 +141,9 @@ The calculation on our test molecule give the following results for the isotropi
     ===================================  =========
     terms included in property gradient    value
     ===================================  =========
-    None                                 2501.3724
-    v                                    2409.1864
-    v+w11                                2409.2205      
+    None                                 2469.8091
+    v                                    2370.3941
+    v+w11                                2370.2488
     ===================================  =========
 
 ``None`` in the table denotes calculation performed without any of presented FDE contributions in the property gradient (the gauge origin is in the center of mass of SeH2).
@@ -221,10 +221,11 @@ With this setup the calculations on the test system gave the following results:
     ===================================  =========
     terms included in property gradient    value
     ===================================  =========
-    v+w11+w12, no Coulomb                2409.2270
-    v+w11+w12, ALL terms                 2409.2270
+    v+w11+w12, no Coulomb                2370.2536
+    v+w11+w12, ALL terms                 2370.2536
     ===================================  =========
 
+Here the two results are the same within 0.0001 ppm accuracy, as the contributions from the Coulomb embedding contribution to the perturbed Fock matrix are very small (can be printed in the output with the print level set at least to 5 under ``**PROPERTIES`` section).
 
 
 

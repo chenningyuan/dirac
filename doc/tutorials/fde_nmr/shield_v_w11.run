@@ -1,7 +1,5 @@
 cp GRIDOUT.h2o  FROZEN
-cp GRIDOUT.h2o  GRIDOUT
 cp DFCOEF.h2se  DFCOEF
 
-pam --inp=shield_v_w11.inp --mol=h2se.mol --put="numerical_grid FROZEN GRIDOUT" --incmo --outcmo
+pam --inp=shield_v_w11.inp --mol=h2se.mol --put="numerical_grid FROZEN" --incmo
 
-mv DFCOEF DFCOEF.h2se.smb

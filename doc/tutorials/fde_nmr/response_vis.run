@@ -1,9 +1,0 @@
-cp DFCOEF.h2se DFCOEF 
-cp GRIDOUT.h2o GRIDOUT
-cp GRIDOUT.h2o FROZEN
-
-pam --inp=shield_v.inp --mol=h2se.mol --put="numerical_grid FROZEN GRIDOUT" --get="PAMXVC TBMO" --incmo --outcmo
-
-mv DFCOEF DFCOEF.h2se.smb
-mv PAMXVC PAMXVC.h2se
-mv TBMO   TBMO.h2se
