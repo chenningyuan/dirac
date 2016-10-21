@@ -2,9 +2,9 @@
 
 .. _FDENMR:
 
-================================================================
-Calculation of NMR shieldings in Frozen Density Embedding scheme
-================================================================
+==============================================================================================
+Calculation of NMR shieldings in Frozen Density Embedding scheme (with London atomic orbitals)
+==============================================================================================
 
 In this tutorial we will calculate the NMR shielding tensor with London atomic orbitals
 within the FDE scheme. 

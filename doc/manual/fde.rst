@@ -195,39 +195,65 @@ FDE contributions to property gradient can be included by the keywords presented
 
 keyword(LAODPT)
 
+.. warning:: Development version only. 
+
 This keyword corresponds to the term dependent on the embedding potential (:math:`v_{emb}^I`).
 
 keyword(LAODKR)
+
+.. warning:: Development version only. 
+
 
 This keyword corresponds to the term dependent on the embedding kernel, which involves only the
 "direct" LAO term and which does not describe the coupling between subsystem (:math:`w_{emb}^{I,I}`).
 
 keyword(LAORKR)
 
+
+.. warning:: Development version only. 
+
 This keyword corresponds to the term dependent on the embedding kernel, which involves only the
 "reorthonormalization" contribution and which does not describe the coupling between subsystem (:math:`w_{emb}^{I,I}`)
 
 keyword(LAOFRZ)
 
-This keyword adds the term dependent on the embedding kernel, which involves the coupling between 
+
+.. warning:: Development version only. 
+
+This keyword corresponds to the term dependent on the non-additive part of embedding kernel involving the coupling between 
 two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
-the :ref:`.GRIDOU` keyword with a name of the file, which contains contributions from the perturbed 
-density of a subsystem II and with the keyword :ref:`PERTIM`. Additional contributions from the perturbed density can be written on
-the :ref:`GRIDOU`-corresponding file in the preceeding run on the subsystem II, by using the keyword :ref:`PERTEX` (below).
+the keyword :ref:`PERTIM`. 
+
+keyword(LFCOUL)
+
+
+.. warning:: Development version only. 
+
+This keyword corresponds to the term dependent on the Coulomb part of embedding kernel involving the coupling between 
+two subsystems (:math:`w_{emb}^{I,II}`). In order to calculate this term, it is necessary also to use 
+the keyword :ref:`PERTIM`. 
 
 keyword(PERTIM)
 
-This keyword should be used whenever :ref:`LAOFRZ` keyword is present.
+.. warning:: Development version only. 
 
-keyword(PERTEX)
+This keyword should be used whenever :ref:`LAOFRZ` keyword is present. It commands the program to read the contributions
+("direct" LAO contribution and "reorthonormalization" contribution) to the perturbed density in LAO basis from files.
 
-This keyword should be used in calculations on subsystem II and it implies that the perturbed density of this
-subsystem is added to the :ref:`GRIDOU`-corresponding file. This file can be used in a consecutive run on subsystem I,
-together with :ref:`LAOFRZ` and :ref:`PERTIM` keywords.
+*Default:*
+
+::
+
+    .PERTIM
+     pertden_direct_lao.FINAL
+     pertden_reorth_lao.FINAL 
+
 
 keyword(FRZNOS)
 
-This keyword means that no spin-density contributions to the perturbed density will be used in calculations.
+.. warning:: Development version only. 
+
+This keyword means that no spin-density contributions to the perturbed density will be used in FDE calculations.
 
 **Debug/expert options**
 ========================
