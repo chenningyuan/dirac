@@ -280,6 +280,7 @@ contains
      read(tbmo_unit) nr_xyz_comp
      read(tbmo_unit) which_icomp
      read(tbmo_unit) irep
+     read(tbmo_unit) sum_ep_rn
      read(tbmo_unit) T
 
      if (nr_xyz_comp > 1) then
