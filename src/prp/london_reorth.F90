@@ -496,7 +496,7 @@ contains
 
       call dealloc(dmat)
 
-      if (debug_me) then
+      if (iprprp .ge. 5) then
         do icomp = 1, nr_xyz_comp
           ioff = (icomp - 1)*nz*ntbas(0)**2 + 1
           write(lupri, *) 'london_reorth: fmat after integrate_xc, icomp = ', icomp
@@ -536,6 +536,17 @@ contains
                             fde_do_london_rhs_ro = .true.)       
           
           call dealloc(dmat)
+
+          if (iprprp .ge. 5) then
+            do icomp = 1, nr_xyz_comp
+              ioff = (icomp - 1)*nz*ntbas(0)**2 + 1
+              write(lupri, *) 'london_reorth: fmat after fde embker, icomp = ', icomp
+              call prqmat(fao(ioff), &
+                          ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                          nz, ipqtoq(1, isymax(icomp, 2)), lupri)
+            end do
+          end if
+
        end if
 
 !      coupling (non-additive xc and kinetic energy):
@@ -561,6 +572,17 @@ contains
                        fde_do_london_rhs_reorth_coupling = .true.)
 
          call dealloc(dmat)
+
+         if (iprprp .ge. 5) then
+           do icomp = 1, nr_xyz_comp
+             ioff = (icomp - 1)*nz*ntbas(0)**2 + 1
+             write(lupri, *) 'london_reorth: fmat after fde embker (coupling nonadd.), icomp = ', icomp
+             call prqmat(fao(ioff), &
+                         ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                         nz, ipqtoq(1, isymax(icomp, 2)), lupri)
+           end do
+         end if
+
        end if
 !      coupling (Coulomb term):
 !      ------------------------
@@ -568,12 +590,23 @@ contains
          write(*, *) 'LAO kernel-like contribution to property gradient ' // &
                      'from frozen perturbed density (Coulomb term)'
          call fde_get_elpot_pertden(ntbas(0), nz, nr_xyz_comp, fao)
+
+         if (iprprp .ge. 5) then
+           do icomp = 1, nr_xyz_comp
+             ioff = (icomp - 1)*nz*ntbas(0)**2 + 1
+             write(lupri, *) 'london_reorth: fmat after fde embker (coupling Coulomb), icomp = ', icomp
+             call prqmat(fao(ioff), &
+                         ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                         nz, ipqtoq(1, isymax(icomp, 2)), lupri)
+           end do
+         end if
+
        end if
-    end if
-
+    end if   
+             
   end subroutine get_gtb
-
-
+             
+             
       SUBROUTINE my_GET_NPOS(NPOS)
 #include "implicit.h"
 #include "priunit.h"

@@ -474,8 +474,7 @@ contains
 
     call dealloc(dmat)
 
-    debug_me = .false.
-    if (debug_me) then
+    if (iprprp .ge. 5) then
         write(*, *) 'fmat after integrate_xc, london_direct'
         call prqmat(fmat, &
                     ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
@@ -660,6 +659,14 @@ contains
                          fde_fmat               = fmat,       &
                          fde_do_london_rhs_direct_der1 = .true.)
         end if
+
+        if (iprprp .ge. 5) then
+            write(*, *) 'london_direct: fmat after fde integrate (embpot)'
+            call prqmat(fmat, &
+                        ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                        nz, ipqtoq(1, 0), lupri)
+        end if
+
      end if
 
      if (fde_lao_direct_active_embker &
@@ -679,6 +686,14 @@ contains
                       fde_nr_fmat            = max_nr_xyz_comp, &
                       fde_fmat               = fmat,       &
                       fde_do_london_rhs_direct_der2 = .true.)
+
+        if (iprprp .ge. 5) then
+            write(*, *) 'london_direct: fmat after fde integrate (embker)'
+            call prqmat(fmat, &
+                        ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                        nz, ipqtoq(1, 0), lupri)
+        end if
+
      end if
 
 !    coupling (non-additive xc and kinetic energy):
@@ -699,6 +714,14 @@ contains
                      fde_nr_fmat            = max_nr_xyz_comp,      &
                      fde_fmat               = fmat,       &
                      fde_do_london_rhs_direct_coupling = .true.)
+
+       if (iprprp .ge. 5) then
+           write(*, *) 'london_direct: fmat after fde integrate (embpot nonadd)'
+           call prqmat(fmat, &
+                       ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                       nz, ipqtoq(1, 0), lupri)
+       end if
+
 
      end if
 
