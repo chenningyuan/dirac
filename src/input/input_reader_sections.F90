@@ -66,8 +66,14 @@
         case ('**RELAD')
            call read_input_reladc(word, kw_section)
 
+        case ('**POLPR')
+           call read_input_polprp(word, kw_section)
+
         case ('**LANCZ')
            call read_input_lanczos(word, kw_section)
+
+        case ('**DAVID')
+           call read_input_davidson(word, kw_section)
 
         case ('*QCORR ')
            call read_input_qcorr(word, kw_section)
@@ -1343,10 +1349,6 @@
          reladc_dodips = .true.
       end if
 
-      if (kw_matches(word, '.DOEXCI')) then
-         reladc_doexci = .true.
-      end if
-
       if (kw_matches(word, '.FANO  ')) then
          reladc_dofano = .true.
       end if
@@ -1360,11 +1362,6 @@
       if (kw_matches(word, '.DIPREP')) then
          call kw_read(word, user_req_symmetries)
          call kw_read(word, reladc_dipreps, user_req_symmetries)
-      end if
-
-      if (kw_matches(word, '.EXCREP')) then
-         call kw_read(word, user_req_symmetries)
-         call kw_read(word, reladc_excreps, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.READQK')) then
@@ -1385,14 +1382,6 @@
 
       if (kw_matches(word, '.DOLANC')) then
          reladc_dolanc = .true.
-      end if
-
-      if (kw_matches(word, '.DODAVI')) then
-         reladc_dodavi = .true.
-      end if
-
-      if (kw_matches(word, '.DOXEXT')) then
-         reladc_doxext = .true.
       end if
 
       if (kw_matches(word, '.VCONV ')) then
@@ -1465,6 +1454,45 @@
 
    end subroutine
 !
+!  polprp input subroutine
+!
+   subroutine read_input_polprp(word, kw_section)
+
+      use polprp_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: user_req_symmetries
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.STATES')) then
+         call kw_read(word, user_req_symmetries)
+         call kw_read(word, polprp_statesym, user_req_symmetries)
+      end if
+
+      if (kw_matches(word, '.DOEXTE')) then
+         polprp_doextended = .true.
+      end if
+
+      if (kw_matches(word, '.WRITET')) then
+         read(get_file_unit(),'(f15.8)') polprp_writethr
+      end if
+
+      if (kw_matches(word, '.NODIAG')) then
+         polprp_dodiag = .false.
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+!
 !  lanczos input subroutine
 !
    subroutine read_input_lanczos(word, kw_section)
@@ -1495,10 +1523,6 @@
          read(get_file_unit(),'(i8)') reladc_dipiter
       end if
 
-      if (kw_matches(word, '.EXCITER')) then
-         read(get_file_unit(),'(i8)') reladc_exciter
-      end if
-
       if (kw_matches(word, '.SIPEIGV')) then
          call kw_read(word, user_req_symmetries)
          print *, 'lower and upper energy boundaries for ADC single ion. eigenvectors'
@@ -1523,18 +1547,18 @@
          !call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
-      if (kw_matches(word, '.EXCEIGV')) then
-         call kw_read(word, user_req_symmetries)
-         print *, 'lower and upper energy boundaries for ADC excitation eigenvectors'
-         do i = 1, user_req_symmetries
-            ! read every line
-            read(get_file_unit(), '(a)') line
-            read(line,*) (reladc_md_exc_eeigv(i,j), j = 1, 2)
-            print *, (reladc_md_exc_eeigv(i,j), j=1,2)
-         end do
-         !read(get_file_unit(),'(i8)') user_req_symmetries
-         !call kw_read(word, reladc_exceigv, user_req_symmetries)
-      end if
+!     if (kw_matches(word, '.EXCEIGV')) then
+!        call kw_read(word, user_req_symmetries)
+!        print *, 'lower and upper energy boundaries for ADC excitation eigenvectors'
+!        do i = 1, user_req_symmetries
+!           ! read every line
+!           read(get_file_unit(), '(a)') line
+!           read(line,*) (reladc_md_exc_eeigv(i,j), j = 1, 2)
+!           print *, (reladc_md_exc_eeigv(i,j), j=1,2)
+!        end do
+!        !read(get_file_unit(),'(i8)') user_req_symmetries
+!        !call kw_read(word, reladc_exceigv, user_req_symmetries)
+!     end if
 
       if (kw_matches(word, '.SIPPRNT')) then
          read(get_file_unit(),'(f18.6)') reladc_sipprnt
@@ -1542,10 +1566,6 @@
 
       if (kw_matches(word, '.DIPPRNT')) then
          read(get_file_unit(),'(f18.6)') reladc_dipprnt
-      end if
-
-      if (kw_matches(word, '.EXCPRNT')) then
-         read(get_file_unit(),'(f18.6)') reladc_excprnt
       end if
 
       if (kw_matches(word, '.DOINCORE')) then
@@ -1556,30 +1576,60 @@
          read(get_file_unit(),'(i12)') reladc_lancmem
       end if
 
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+!
+!  davidson input subroutine (now separate from Lanczos for consistency)
+!
+   subroutine read_input_davidson(word, kw_section)
+
+      use adc_cfg   ! lanczos only used in combination with reladc. same module
+      use adc_mat
+      use polprp_cfg
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
       if (kw_matches(word, '.DVROOTS')) then
          read(get_file_unit(),'(i12)') reladc_davroots
+         polprp_davroots = reladc_davroots
       end if
 
       if (kw_matches(word, '.DVMAXSP')) then
          read(get_file_unit(),'(i12)') reladc_davmaxsp
+         polprp_davmaxsp = reladc_davmaxsp
       end if
 
       if (kw_matches(word, '.DVMAXIT')) then
          read(get_file_unit(),'(i12)') reladc_davmaxit
+         polprp_davmaxit = reladc_davmaxit
       end if
 
       if (kw_matches(word, '.DVCONV')) then
          read(get_file_unit(),'(f18.6)') reladc_davconv
+         polprp_davconv = reladc_davconv
       end if
 
       if (kw_matches(word, '.DVINCORE')) then
          reladc_davooc = .false.
+         polprp_davooc = .false.
       end if
 
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
-
+!
+!  x2c 
+!
    subroutine read_input_x2c(word, kw_section)
 
       use x2cmod_cfg

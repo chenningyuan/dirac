@@ -70,7 +70,9 @@ C
       write(lupri,'(/a/a)') 'Execution time and host',
      &                       '-----------------------'
       CALL TSTAMP(' ',LUPRI)
+      print*,' +++++ entering dirac/DIRCTL ++++++'
       CALL DIRCTL()
+      print*,' +++++ returning from  dirac/DIRCTL ++++++'
 C
 C     Send finish signal to slaves
 C
@@ -420,6 +422,12 @@ C******* R E L A D C  M O D U L E **************************************
 C***********************************************************************
 C
         IF(DOADC) CALL PAMADC()
+C
+C***********************************************************************
+C******* P O L R I Z A T I O N   P R O P A G A T O R   M O D U L E *****
+C***********************************************************************
+C
+        IF(DOPOLPRP) CALL PAMPOLPRP()
 C
 C***********************************************************************
 C******* C O S C I        stand-alone version of RESOLVE   *************
@@ -1173,7 +1181,7 @@ C
 Csk      write(6,*) 'node will recieve itask',MYTID
          CALL interface_MPI_RECV(ITASK,1,MPARID,27,
      &                           global_communicator)
-Csk      write(6,*) 'node has recieved itask',MYTID,itask
+         print*,'node',mytid,' has recieved itask',itask
 #endif
 C
 C     check for proper LUCITA / LUCIAREL installation
@@ -1273,6 +1281,12 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+
+      ELSE IF (ITASK .EQ. 12) THEN
+C
+C        start POLPRP calculation.
+C
+         CALL POLPRP_NODE()
       ELSE
 C
 C        Unknown task. Abort execution.

@@ -539,6 +539,179 @@ C
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&& a new sorter for the non totally symmetric two-particle
+!&&& contributions to the transition moments (POLPRP)
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1T3_NTSI (NREP,DESREP,MULTB,NPAIR,KFIE,LFIE,NTRIPL,
+     &                        OFF,OFF1,BUF1,BUF2,ICEIL)
+!
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+!  this is a very special sorter for the F_aibj(2) A+B contraction
+!  performing the BUF(IJ K,L:LREP)  --- >  BUF(IJ,K>L:KLREP) step
+!  exclusively. Hereby antisymmetrization in KL is done and it is not
+!  assumed that the product of all four ireps is totally symmetric!
+!  Only for DESREP symmetry the sorting is done.
+!
+!---------------Calling variables--------------------------------------
+!
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, DESREP, MULTB(64,64,2), ICEIL
+      INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
+      INTEGER OFF(nrep,nrep),OFF1(32,32)
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
+!
+!---------------Executable code--------------------------------------
+!
+!---debug. Test offset arrays
+!     do i=1,nrep
+!     do j=1,nrep
+!       write(*,*) i,j,off(i,j),off1(i,j)
+!     enddo
+!     enddo
+!     write(*,*) ' üüüüüüüüüüüüüü'
+
+      IJKL = 1
+      DO KLREP = 1, NREP
+!---debug. Test totally symmetric case
+       IJREP = KLREP     !only for totally symmetric cases!
+       if(multb(ijrep+nrep,klrep+nrep,2).ne.1) then
+         stop 'munchTX'
+       else
+         write(*,*) 'Totsymm check is ok for symm.',klrep
+       endif
+!---debug end.
+       IJREP = MULTB(KLREP+NREP,DESREP+NREP,2)
+       if(MULTB(IJREP+NREP,KLREP+NREP,1).ne.desrep) 
+     &                  stop 'munchDX'
+       N = NPAIR(IJREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
+        IJKREP = MULTB(IJREP+NREP,KREP,1)
+        IJLREP = MULTB(IJREP+NREP,LREP,1)
+        if(multb(ijkrep,lrep,1).ne.desrep) stop 'munch4 :-('
+        if(multb(ijlrep,krep,1).ne.desrep) stop 'munch5 :-('
+        LOFF = (OFF(IJKREP,LREP) + OFF1(IJREP,KREP)) * RCW
+        KOFF = (OFF(IJLREP,KREP) + OFF1(IJREP,LREP)) * RCW
+        DO L = 1, LFIE(LREP)
+         IJL  = (L-1) * N * RCW + 1
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+            IJK  = (K-1) * N * RCW + 1
+            IJKL1 = LOFF + (L-1) * NTRIPL(LREP) * RCW + IJK
+            IJLK1 = KOFF + (K-1) * NTRIPL(KREP) * RCW + IJL
+
+            IF( (IJKL.gt.ICEIL).and.(N.ne.0)) then
+              write(*,*) ' *** Illegal memory access attempt!'
+              STOP 'in SRT1T3_NTSI'
+            endif
+
+            CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
+            CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
+
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
 C
       RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1T2_NTSI(NREP,desrep,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,
+     &                       OFF,OFF2,BUF1,BUF2,ICEIL)
+!
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+!  this is a very special sorter for the F_aibj(2) A+B contraction
+!  performing the BUF(I>J,KL:KLREP) <--- BUF(I,JKL:JKLREP) exclusively.
+!  Hereby antisymmetrization in IJ is done and it is not
+!  assumed that the product of all four ireps is totally symmetric!
+!  Only for DESREP symmetry the sorting is done.
+!
+!---------------Calling variables--------------------------------------
+!
+      INTEGER NREP, desrep, MULTB(64,64,2)
+      INTEGER NPAIR1(NREP),IFIE(NREP),JFIE(NREP),NPAIR2(NREP)
+      INTEGER OFF(NREP,NREP),OFF2(32,32)
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER ICEIL
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
+!
+!---------------Executable code--------------------------------------
+!
+!     do i=1,nrep
+!     do j=1,nrep
+!       write(*,*) i,j,off2(i,j),off(i,j)
+!     enddo
+!     enddo
+!     write(*,*) ' öööööööööööööö'
+
+      IJKL = 0
+      DO KLREP = 1, NREP
+!      IJREP = KLREP  ! now do nontotally symmetric cases.
+       IJREP = MULTB(KLREP+NREP,DESREP+NREP,2)
+       if(MULTB(IJREP+NREP,KLREP+NREP,1).ne.desrep) 
+     &                  stop 'munchDX in SRT1T2_NTSI'
+       M = NPAIR1(IJREP)
+       N = NPAIR2(KLREP)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        IF (IREP.LT.JREP) GOTO 10
+! original:
+!       JKLREP = IREP
+!       IKLREP = JREP
+! now:
+        JKLREP = MULTB(IREP,DESREP+NREP,1)
+        if(MULTB(IREP,JKLREP,2).ne.desrep) stop 'munch2:-( '
+        IKLREP = MULTB(JREP,DESREP+NREP,1)
+        if(MULTB(JREP,IKLREP,2).ne.desrep) stop 'munch3:-( '
+
+        JKLOFF = (OFF(IREP,JKLREP)+OFF2(JREP,KLREP)*IFIE(IREP)) * RCW
+        IKLOFF = (OFF(JREP,IKLREP)+OFF2(IREP,KLREP)*JFIE(JREP)) * RCW
+        M2 = IFIE(IREP) * JFIE(JREP)
+        DO J = 1, JFIE(JREP)
+         IMIN = 1
+         IF (IREP.EQ.JREP) IMIN = J + 1
+         DO I = IMIN, IFIE(IREP)
+           IJKL1 = JKLOFF + ((J-1) * IFIE(IREP) + I - 1) * RCW + 1
+           JIKL1 = IKLOFF + ((I-1) * JFIE(JREP) + J - 1) * RCW + 1
+
+!          if( (ijkl1+n).gt.iceil) then
+!            write(*,*) 'warning:',iceil,ijkl1+n
+!          endif
+!          if( (jikl1+n).gt.iceil) then
+!            write(*,*) 'warning:',iceil,jikl1+n
+!          endif
+
+           CALL XCOPY(N,BUF1(IJKL1),M2,BUF2(IJKL+IJ),M)
+           CALL XAXPY(N,-A1,BUF1(JIKL1),M2,BUF2(IJKL+IJ),M)
+           IJ = IJ + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+       IJKL = IJKL + M * N * RCW
+      ENDDO
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

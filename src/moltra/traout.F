@@ -417,10 +417,19 @@ C                  Take out quaternion phase factor by multiplying
 C                  with the compound phase factor that was introduced
 C                  in the consecutive multiplications
 C 
-                   FMAT(I,1,1,IREPABR) = 
-     &             FMAT(I,1,1,IREPABR) *
-     &             IREPIJB(2)*IREPKLB(2,I)
-                   
+C*******************************************
+C****  LV: skiping specific phase correction here.
+C****  a corresponding change was made
+C****  in the traprp module skipping the phase
+C****  correction for the property AO/MO
+C****  transformation (SPINFR) !!
+C****  This applies to all non-LUCIAREL calculations.
+C****  This means: we leave in the quaternion phase factor
+C****  for all non-LUCIAREL calculations.
+C*******************************************
+C                  FMAT(I,1,1,IREPABR) = 
+C    &             FMAT(I,1,1,IREPABR) *
+C    &             IREPIJB(2)*IREPKLB(2,I)
                ENDIF
             ENDDO
             FACTR = 1.D0
