@@ -7152,9 +7152,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 #endif
 !&&&&&&&&&&& intermediate surrogate
-      SUBROUTINE PAMPOLPRP ()
-      write(*,*) 'Only strut! Nothing is done here'
-      return
-      end
+!     SUBROUTINE PAMPOLPRP ()
+!     write(*,*) 'Only strut! Nothing is done here'
+!     return
+!     end
 !&&&&&&&&&&& intermediate surrogate
 
