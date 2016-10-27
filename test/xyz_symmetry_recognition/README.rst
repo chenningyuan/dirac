@@ -45,8 +45,9 @@ molecule07   NH3                       C(3v)         Cs
 molecule08   PF5                       D(3h)         C2v
 molecule09   Hs(CO)4                   D(2d)         error exit! 
 molecule10   ethane                    C(2h)         C2h
-molecule11   dodecahedrane, I(h)       C(2h)         C2h
+molecule11   dodecahedrane, I(h)       C(2h) (?)     C2h
 molecule12   dodecahedrane, D(5d)      D(5d)         C2h
+molecule13   benzene, D(6h)            D(6h)         D2h 
 ==========   =====================     ==========    ===============
 
 More examples should be added to this test to demostrate the complete variety of symmetry detections.
