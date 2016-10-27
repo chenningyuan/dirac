@@ -159,5 +159,5 @@ If you actually want to add a point charge, let us say of charge -2.3, you can u
   foo -2.3
 
 
-
+.. include:: ../../test/xyz_symmetry_recognition/README.rst
   
