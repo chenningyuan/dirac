@@ -40,7 +40,7 @@ molecule02   Re2(CO)10                 C(4v)         C2v
 molecule03   Os(CO)5                   C(2v)         C2v
 molecule04   acetylene                 D(oo,h)       D2h
 molecule05   SF6                       O(h)          D2h
-molecule06   allene, D2d-NIST          D(2d)         C1 (wrong!) 
+molecule06   allene, S(4)              D(2d)         D2
 molecule07   NH3                       C(3v)         Cs
 molecule08   PF5                       D(3h)         C2v
 molecule09   Hs(CO)4                   D(2d)         error exit! 
