@@ -52,9 +52,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       endif
       write(*,*) 'ubound of eps:',ubound(eps)
       write(*,*) 'lbound of eps:',lbound(eps)
-      do i=1,1000
-        write(*,*) 'eps: ',i,eps(i)
-      enddo
+!     do i=1,1000
+!       write(*,*) 'eps: ',i,eps(i)
+!     enddo
 !
 !******************* preparations
 !
@@ -68,8 +68,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ic1 = ivvoott(nrep+1)
       allocate(sa_vvoott(ic1*rcw),stat=ialloc)
       if(ialloc.ne.0) STOP 'allocation problem 1 in BUILD_X_MAIN'
+      sa_vvoott = 0.0d0
       allocate(sb_vvoott(ic1*rcw),stat=ialloc)
       if(ialloc.ne.0) STOP 'allocation problem 2 in BUILD_X_MAIN'
+      sb_vvoott = 0.0d0
 
       call getvvoo(sa_vvoott)
       do i=1,ic1

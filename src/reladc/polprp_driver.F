@@ -744,6 +744,16 @@ C
 !|
 !|_________________________________________________
 
+
+
+
+
+         STOP '-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X-X'
+
+
+
+
+
 #if defined (VAR_MPI)
       if(MYPROC.EQ.MASTER) then 
 #endif
