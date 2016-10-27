@@ -4,6 +4,9 @@ Examples of xyz-based symmetry detection
 We provide here (test/xyz_symmetry_recognition) collection of input tests aimed for the Dirac automatic symmetry recognition
 of molecular structures given in the xyz-format.
 
+Sources of xyz-inputs
+---------------------
+
 Molecules were obtained by a suitable software and 
 their geometries (coordinates), reflecting the symmetry, was exported,
 preferably in the xyz-format. 
@@ -15,8 +18,20 @@ Very good choice for getting symmetrized xyz coordinates is the GUI of the ADF s
 Note that sometimes the resulting xyz-geometry file had to be manually controlled and coordinates 
 corrected, if necessary, to keep the symmetry of the system.
 
-More examples of symmetrix xyz inputs should be added to this test to demostrate the variety of symmetries
-detected in the hersym.F/SYMADD subroutine.
+List of symmetries
+------------------
+
+The hersym/FIND_PGROUP subroutine can handle these symmetries:
+O(h); I(h); T(d); 
+D(inf,h); D(nh); D(nd); D(n);
+C(inf,v); C(nv); C(nh); C(n); C(s); C(i); C(1);
+S(n)
+
+Examples
+--------
+
+The following table contains examples of 
+the symmetry detection in the xyz molecule inputs.
 
 =========    ==========       ==========   ==============
 xyz input    molecule         full group   represented as 
@@ -32,3 +47,4 @@ molecule8    PF5              D(3h)        C2v
 molecule9    Hs(CO)4          D(2d)        error exit 
 =========    ==========       ==========   ===============
 
+More examples should be added to this test to demostrate the full variety of symmetry detections.
