@@ -189,7 +189,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
     Mathematical libraries : unknown
         Explicit libraries : unknown
        Modules definitions : HAVE_MKL_BLAS;HAVE_MKL_LAPACK;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
-       Configuration time :  2016-10-26 15:25:57.755318
+       Configuration time :  2016-10-27 11:47:09.557642
 -----------------------------------------------------------------
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
@@ -197,7 +197,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Oct 27 13:26:23 2016
+     Date and time (Linux)  : Thu Oct 27 13:47:53 2016
      Host name              : lxir074                                 
 
 
@@ -212,6 +212,9 @@ Contents of the input file
 *BASIS                                                                                              
 .DEFAULT                                                                                            
 dyall.v2z                                                                                           
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONTRACTED                                                                                       
 *END OF                                                                                             
 
 
@@ -219,7 +222,7 @@ Contents of the molecule file
 -----------------------------
 
 7                                                                                                   
-Allene; ADF geom.opt SRZORA,BP,DZP,imposed S4 symm.                                                 
+ Allene; ADF geomopt SRZORA,BP,DZP-imposed S4 symm                                                  
 C       0.00000000       0.00000000       1.29661000                                                
 C       0.00000000       0.00000000       0.00000000                                                
 C       0.00000000       0.00000000      -1.29661000                                                
@@ -227,6 +230,7 @@ H      -0.79925000      -0.45228000       1.87684000
 H       0.79925000       0.45228000       1.87684000                                                
 H      -0.45228000       0.79925000      -1.87684000                                                
 H       0.45228000      -0.79925000      -1.87684000                                                
+                                                                                                    
 
 
     *************************************************************************
@@ -265,6 +269,22 @@ H       0.45228000      -0.79925000      -1.87684000
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
 
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
 
 
    ***************************************************************************
@@ -279,9 +299,6 @@ H       0.45228000      -0.79925000      -1.87684000
  Symmetry test threshold:  5.00E-06
 
     The molecule has been centered at center of mass
- DMRPLN(4,I)=   1.00000000000000                          1
- DMRPLN(4,I)=   1.00000000000000                          1
- FIND_PGROUP: ITEMP=                     2
 
  Symmetry point group found: D(2d)          
 
@@ -307,9 +324,6 @@ H       0.45228000      -0.79925000      -1.87684000
  --------------------------------
        1 :     -0.70710678     0.70710678     0.00000000  Isotope  0
        1 :     -0.70710678    -0.70710678     0.00000000  Isotope  0
- NROT=                     1  IELMNT=                     1
- NROT=                     2  IELMNT=                     1
- NROT=                     3  IELMNT=                     2
 
  The following elements were found: XY XZ    
 
@@ -866,7 +880,7 @@ H      0.6493680624  -0.6493680624  -1.8768400000
 
 
  
-     Date and time (Linux)  : Thu Oct 27 13:26:23 2016
+     Date and time (Linux)  : Thu Oct 27 13:47:53 2016
      Host name              : lxir074                                 
 
   
@@ -894,5 +908,5 @@ H      0.6493680624  -0.6493680624  -1.8768400000
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 4532, majflt: 87, nvcsw: 232, nivcsw: 23, maxrss: 17004
+>>>> Node 0, utime: 0, stime: 0, minflt: 4552, majflt: 88, nvcsw: 200, nivcsw: 23, maxrss: 17036
 >>>> Total WALL time used in DIRAC: 0s
