@@ -25,11 +25,11 @@ The DIRAC's *hersym.F/FIND_PGROUP* subroutine can handle the following point (fu
 * O(h) 
 * I(h) 
 * T(d)
-* D(inf,h) 
+* D(oo,h) 
 * D(nh)
 * D(nd)
 * D(n)
-* C(inf,v)
+* C(oo,v)
 * C(nv)
 * C(nh)
 * C(n)
@@ -49,21 +49,22 @@ The following table contains examples of
 the symmetry detection from the xyz coordinates.
 
 ==========   =====================     ==========    ==============
-xyz input    molecule                  full group    represented as 
+xyz input    molecule; imposed sym     full group    represented as 
 ==========   =====================     ==========    ==============
-molecule01   heterocycycle             D(2h)         D2h
-molecule02   Re2(CO)10                 C(4v)         C2v
-molecule03   Os(CO)5                   C(2v)         C2v
+molecule01   heterocycycle;  D(2h)     D(2h)         D2h
+molecule02   Re2(CO)10;      D(4d)     C(4v)         C2v
+molecule03   Os(CO)5;        D(3h)     C(2v)         C2v
 molecule04   acetylene                 D(oo,h)       D2h
 molecule05   SF6                       O(h)          D2h
-molecule06   allene, S(4)              D(2d)         D2
+molecule06   allene;         S(4)      D(2d)         D2
 molecule07   NH3                       C(3v)         Cs
 molecule08   PF5                       D(3h)         C2v
 molecule09   Hs(CO)4, D(2d)            D(2) (!)      error exit! 
 molecule10   ethane                    C(2h)         C2h
-molecule11   dodecahedrane, I(h)       C(2h) (!)     C2h
-molecule12   dodecahedrane, D(5d)      D(5d)         C2h
-molecule13   benzene, D(6h)            D(6h)         D2h 
+molecule11   dodecahedrane;  I(h)      C(2h) (!)     C2h
+molecule12   dodecahedrane;  D(5d)     D(5d)         C2h
+molecule13   benzene;        D(6h)     D(6h)         D2h 
+molecule14   methane;        T(d)      T(d)          D2
 ==========   =====================     ==========    ==============
 
 More examples have to be be added to this test to demostrate (and test) the complete variety of symmetry detections.
