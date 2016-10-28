@@ -512,6 +512,8 @@ C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
+      USE CODATA, ONLY : XFAMU
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -1954,6 +1956,8 @@ C     K.Ruud, June-94
 C
 C     radovan: AMASS is not used !?
 C     hjaaj:   AMASS is passed on to VIBMAS
+C
+      USE CODATA, ONLY : XFAMU
 C
 #include "implicit.h"
 #include "mxcent.h"

@@ -1,4 +1,4 @@
-#define not_GASCIP_DEBUG
+#define GASCIP_DEBUG -1
 !dirac_copyright_start
 !      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -190,7 +190,7 @@ C     Print section
 C     -------------
 C
       IF (IPRINT .GE. 2 ) THEN
-         WRITE(LUPRI,'(A,3I3/A)')
+         WRITE(LUPRI,'(/A,3I3/A)')
      &      ' (GASCIP_SETUP) NREP, IRP, IRRP = ', NREP, IRP, IRRP,
      &      ' -> IRRP.lt.0 means include all symmetries'
          IF (IRRP.GT.0) WRITE(LUPRI,'(2A)')
@@ -209,6 +209,21 @@ C
             END IF
          END DO
       END IF
+#if GASCIP_DEBUG > 0
+      write(lupri,*) '*** DEBUG OUTPUT GASCIP_SETUP:'
+      write(lupri,*) 'MULTB:'
+      do i = 1, 2*nrep
+         write(lupri,'(i5,a,65i3)') i,' :',multb(i,0:2*nrep)
+      end do
+      write(lupri,*) 'I, IPTA2O, IPTB2O:'
+      do i = 1, nasht
+         write(lupri,*) i, ipta2o(i), iptb2o(i)
+      end do
+      write(lupri,*) 'I, irpamo(i), irpamo(nasht+i)'
+      do i = 1, nasht
+         write(lupri,*) i, irpamo(i), irpamo(nasht+i)
+      end do
+#endif
 C
       CALL QEXIT('GASCIP_SETUP')
       RETURN
@@ -258,11 +273,7 @@ C
       INTEGER*8 MSKGAS(MXGAS), L
       INTEGER IBTAB(0:255)
 
-#ifdef GASCIP_DEBUG
-      iprint = max(20,iprint_in)
-#else
-      iprint = iprint_in
-#endif
+      iprint = max(GASCIP_DEBUG,iprint_in)
 C
 C     Use GASCIP:
 C
@@ -321,7 +332,7 @@ C
             END DO
          END DO
 C
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 1
          DO I = 1, NGAS_DC
             write(lupri,'(I5,A,B64.64)')
      &      I,' gas bit mask            : ',mskgas(i)
@@ -332,7 +343,7 @@ C
             MSKGAS(I) = MSKGAS(I-1) + MSKGAS(I)
          END DO
 C
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 1
          DO I = 1, NGAS_DC
             write(lupri,'(I5,A,B64.64)')
      &      I,' gas bit mask accumulated: ',mskgas(i)
@@ -387,15 +398,25 @@ C
       MINOCC = MIN(MINAEL,MINBEL)
       MAXOCC = MAX(MAXAEL,MAXBEL)
 
-      MK_symmetric = (MAXMK2 + MINMK2 .EQ. 0)
+      IF ( MOD ( NAELEC, 2 ) .EQ. 1  .AND. IRRP .gt. 0) THEN
+         ! For symmetry and odd number of electrons we need to check
+         ! all MK. For e.g. MAXMK2 = 3, we will get GASCIP_SYMOK true
+         ! for MK = 3/2 and MK = -1/2, we will thus not get all if
+         ! we only check positive MK2 values !!
+         MK_symmetric = .false.
+      ELSE
+         MK_symmetric = (MAXMK2 + MINMK2 .EQ. 0)
+      END IF
+
 C
 C
 C     Generate determinants:
 C     -----------------------
 C
-#ifdef GASCIP_DEBUG
-      write(lupri,*) 'maxmk2, minmk2',maxmk2,minmk2
+#if GASCIP_DEBUG > 1
+      write(lupri,*) 'minmk2, maxmk2',minmk2,maxmk2
       write(lupri,*) 'NAELEC, NASHT ',NAELEC, NASHT
+      write(lupri,*) 'MK_symmetric  ',MK_symmetric
 #endif
       IEL_STR(:) = -123456789
       NEL_STR(:) = -123456789
@@ -405,7 +426,7 @@ C
          J1 = NEL_STR_T + 1
          MAXSTR_I = MAXSTR - NEL_STR_T
          CALL GASCIP_GENSTR(IEL,ISTR(J1),NEL_STR(IEL),MSKGAS,MAXSTR_I)
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 1
          write(lupri,*) 'GASCIP_GENSTR: IEL, NEL_STR',IEL,NEL_STR(IEL)
 #endif
          NEL_STR_T = NEL_STR_T + NEL_STR(IEL)
@@ -425,17 +446,15 @@ C
          IMK2(MK2,2) = IBSTR_OFF
          IMK2(MK2,3) = NDET
 C
-#ifdef GASCIP_DEBUG
-         write(lupri,'(A,3I10)') 'A-, B-electrons, MK2',IAEL,IBEL,MK2
-#endif
          NASTR = NEL_STR(IAEL)
          NBSTR = NEL_STR(IBEL)
+
+#if GASCIP_DEBUG > 1
+         write(lupri,'(/A,3I10)') 'A-, B-electrons, MK2',IAEL,IBEL,MK2
+         write(lupri,'(A,3I20)') 'NASTR,NBSTR,NDET',NASTR,NBSTR,NDET
+#endif
          IF (NASTR .EQ. 0) GOTO 10
          IF (NBSTR .EQ. 0) GOTO 10
-
-#ifdef GASCIP_DEBUG
-            write(lupri,'(A,3I20)') 'NASTR,NBSTR,NDET',NASTR,NBSTR,NDET
-#endif
 C
 C HJ TODO : the next can easily be optimized by not redoing the IA
 C           for each IB in GASCIP_GASOK and GASCIP_SYMOK /aug 03
@@ -462,8 +481,8 @@ C
                END IF
             END DO
          END DO
-#ifdef GASCIP_DEBUG
-         write(lupri,'(A,I60)') 'after       NDET',NDET
+#if GASCIP_DEBUG > 1
+         write(lupri,'(A,I60)') 'after check NDET',NDET
          call flshfo(lupri)
 #endif
          NMK2(MK2,1) = NASTR
@@ -614,8 +633,8 @@ C
          IGB = IAND(MSKGAS(IGAS),IB)
          CALL FNBITS(NA,IGA,IBTAB)
          CALL FNBITS(NB,IGB,IBTAB)
-#ifdef GASCIP_DEBUG
-         write(lupri,*) 'hjaaj fnbits igas,na,nb',igas,na,nb
+#if GASCIP_DEBUG > 10
+         write(lupri,*) 'GASCIP_GASOK: fnbits igas,na,nb',igas,na,nb
          WRITE (LUPRI,'(10X,B64/10X,B64)') IGA,IGB
 #endif
          NG = NA + NB
@@ -741,11 +760,12 @@ C***********************************************************************
 #include "priunit.h"
 C
       INTEGER*8 IA, IB, ID
+      LOGICAL   UCIBOS
 C
+C dcbgascip.h : IRRP, *
+C    dcborb.h : NASHT
 #include "dcbgascip.h"
 #include "dcborb.h"
-C
-      LOGICAL UCIBOS
 C
       IF (IRP .LE. 0) THEN
 C        ... include all symmetries
@@ -755,19 +775,19 @@ C
 C        The normal symmetry scheme.
 C
          JRRP = 0
-         ID=IA
+         ID = IA
          DO I=1,NASHT
             IF (MOD(ID,2_8).EQ.1) THEN
                JRRP = MULTB(IRPAMO(IPTA2O(I)),JRRP)
             ENDIF
-            ID=ID/2
+            ID = ID/2
          END DO
-         ID=IB
+         ID = IB
          DO I=1,NASHT
             IF (MOD(ID,2_8).EQ.1) THEN
                JRRP = MULTB(IRPAMO(IPTB2O(I)),JRRP)
             ENDIF
-            ID=ID/2
+            ID = ID/2
          END DO
          GASCIP_SYMOK = (JRRP .EQ. IRRP)
       ELSE
@@ -1535,7 +1555,7 @@ C        ... one and two electron terms
 C        ... only one electron terms
          ITMAX = 2
       END IF
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 30
       write (lupri,'(/A)')
      &   '  GASCIP_MAKEH: Test output of IDET(2,NDET):)'
       DO I = 1, NDET
@@ -1664,7 +1684,7 @@ C
                   END IF
                END DO
 C
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 30
                   write (lupri,*)' dets i, j',i,j
                   write (lupri,*)' do2el, doimag, it',
      &                             do2el, doimag, it
@@ -1675,7 +1695,7 @@ C
 #endif
                CALL GASCIP_HMAT(DO2EL,DOIMAG,IT,IOCCI,JOCCI,K,L,M,N,
      &              HR(I,J),HI(I,J),HCORE,VMUUUU)
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 30
                if (i .eq. j) then
                   write (lupri,*) 'a HR(i,j), HI(i,j)',HR(i,j),HI(i,j)
                end if
@@ -1761,7 +1781,7 @@ C
        CALL MEMGET2('REAL','MUUUU',  KPMUUUU  ,0,
      &      WORK,KFREE,LFREE) ! no 2-electron part
        KBVECPRP_I = KBVECPRP + NDET
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 10
        WRITE(LUPRI,*) 'NZ_in_CI, IHRM_P1 check, NDET'
      &               , NZ_in_CI, IHRM_P1,NDET
 
@@ -1825,7 +1845,7 @@ C     &           DO2EL,NDET,IDET,THRSCR,IPRINT)
      &           .FALSE.,NDET,IDET,IHRM_P1,IPRINT)
          END IF
        END DO
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 20
        WRITE(LUPRI,'(/A)')
      &   ' GASCIP_MAKE_P1MAT: Sigma vectors = P * CI vectors'
        IF (NZ_in_CI.GT.1)
@@ -3046,7 +3066,7 @@ C
             END IF
          END DO
       END DO
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 20
        IF (NZ_in_CI .eq. 2) THEN
          WRITE(LUPRI,*)
      &   '(GASCIP_RCISTD): (Real, imag) part of the N_ROOTS CI vectors'
@@ -3388,7 +3408,7 @@ C     A electrons in each gas space. Total IEL A electrons.
 C     NGASSP(1:2,i) give accumulated minimum and maximum number of
 C     all electrons in gas space i.
 C
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 5
       write (lupri,*) 'gascip_genstr: iel, naelec,ngas_dc',
      &    iel,naelec,ngas_dc
 #endif
@@ -3408,7 +3428,7 @@ C
          !   min total accumulated number of electrons minus max B electrons and
          !   zero
 
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 5
          write (lupri,*) 'GAS space, constraints, NGTOT',
      &      I,NGASSP(1,I),NGASSP(2,I),NGTOT
          write (lupri,*) 'min_a_el,max_a_el,max_b_el',
@@ -3417,7 +3437,7 @@ C
 
          IF ( MAX_A_EL .LT. MIN_A_EL ) THEN
             ! IEL A electrons is not compatible with GAS constraint
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 5
             WRITE (LUPRI,'(/A/A,3I10)')
      &       "This is not compatible with GAS constraints!",
      &       "gas space, MAX_A_EL, MIN_A_EL",I,MAX_A_EL,MIN_A_EL
@@ -3427,7 +3447,7 @@ C
          END IF
          nGASSpc(1,I) = MIN_A_EL
          nGASSpc(2,I) = MAX_A_EL
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 5
          write(lupri,*)
      &       'gascip_genstr: gas, ngsht, nGASsp(1:2), nGASSpc(1:2) : ',
      &      I,ngsht(I),ngassp(1,i),ngassp(2,i),nGASSpc(1,I),nGASSpc(2,I)
@@ -3436,7 +3456,7 @@ C
 C
       CALL cgendet(IEL,NASHT,NSTR,JSTR,
      &             NGAS_DC,nGASTOT,MSKGAS,nGASSpc,MAXSTR)
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 5
       write (lupri,*) 'After cgendet ..., NSTR ',NSTR
 #endif
 C
@@ -3547,7 +3567,7 @@ C
      &      CALL QUIT('GASCIP_CI: IHRM.le.0 not implemented for DODEN')
       END IF
 
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 20
        IF (DOSIG) WRITE(LUPRI,*)
      &   'GASCIP_CI: This CI vector'
        IF (DOSIG) CALL OUTPUT(BVEC,1,NDET,1,NZ_in_CI,
@@ -4791,8 +4811,8 @@ C
 C     Send ITASK = 11 for parallel GASCIP
 C     ==================================
 C
-#ifdef GASCIP_DEBUG
-      write (lupri,*) 'Calling DIRAC_PARCTL(11)'
+#if GASCIP_DEBUG > 0
+      write (lupri,*) 'GASCIP_WAKE_NODES: Calling DIRAC_PARCTL(11)'
       call flshfo(lupri)
 #endif
       CALL DIRAC_PARCTL(11)
@@ -4909,7 +4929,7 @@ C
       len_IDET = 2*NDET
       call interface_MPI_BCAST_r1_work_f77( IDET,len_IDET,MPARID,
      &                         global_communicator)
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 0
       write(lupri,*) 'Master, finished GASCIP_PAR_CISIG_SETUP'
       call flshfo(LUPRI)
 #endif
@@ -5081,7 +5101,7 @@ C
       call alloc(WORK,LWORK,id='WORK in GASCIP_NODE')
 #include "memint.h"
       KFRSAV = KFREE
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 0
       write(lupri,*) 'GASCIP_NODE started, slave ',MYTID
       call flshfo(lupri)
 #endif
@@ -5117,7 +5137,7 @@ C     ================================================
 C
       call interface_MPI_BCAST(itask,1,MPARID,
      &                         global_communicator)
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 0
       write(lupri,*) MYTID,' in GASCIP_NODE: received ITASK',ITASK
       call flshfo(lupri)
 #endif
@@ -5189,7 +5209,7 @@ C
       CALL MEMGET2('REAL','VMUUUU',KVMUUUU,len_VMUUUU,WORK,KFREE,LFREE)
       CALL MEMGET2('INT8','IDET',  KIDET,  len_IDET,WORK,KFREE,LFREE)
 
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 0
       write(lupri,*) MYTID,' GASCIP_NODE_CISIG DO2EL,NDET,THRSCR,IPRINT'
      & ,DO2EL, NDET,THRSCR,IPRINT,NASHT
       write(lupri,*)MYTID,' lengths',len_HCORE,len_VMUUUU,len_IDET
@@ -5215,7 +5235,7 @@ C
   100 CONTINUE ! coming back to here for more batches
 
       call interface_MPI_BCAST(N_CSIM,1,MPARID,global_communicator)
-#ifdef GASCIP_DEBUG
+#if GASCIP_DEBUG > 0
       write(lupri,*) MYTID,' GASCIP_NODE_CISIG: received N_CSIM',N_CSIM
       call flshfo(lupri)
 #endif

@@ -49,8 +49,7 @@ try:
     import sphinxcontrib.bibtex
     extensions.append('sphinxcontrib.bibtex')
 except ImportError:
-    print('sphinxcontrib.bibtex extension not found => can not generate references for documentation !')
-    sys.exit("missing sphinxcontrib.bibtex extension !")
+    print('WARNING: sphinxcontrib.bibtex extension not found => can not generate references for documentation !')
 else:
     # bibtex dirac custom style
     from pybtex.plugin import register_plugin

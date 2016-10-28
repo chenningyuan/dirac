@@ -2577,7 +2577,8 @@ C.........do canonical orthonormalization
 !       out: AO2MO SL resorted               --> KVMAT
 !       out: MO2MO linear symmetry adapted   --> KTBUF (if linear == .true.; nothing otherwise)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &              .not.(VEXTPJ.OR.FREEPJ.OR.LEVYLE),linear,
+     &              .not.(VEXTPJ.OR.FREEPJ.OR.LEVYLE),
+     &               linear,
      &              is_defining_h1mat,WORK(KFREE),LFREE)
 
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
@@ -3036,7 +3037,8 @@ C            possibly with sperical and RKB transformations embedded.
 C            (is destroyed!)
 C
 C     SLGROUP - if .true. (=Trond's 2comp.approach-one step BSS transformation)
-C                resort columns of the transformation matrix into "S-L" order)
+C                resort columns of the transformation matrix into "S-L" order);
+C               routine SLSORT does nothing if conditions for transformations are not met
 C
 C     LSYMAD  - if .true., apply the LINSYM procedure for adaptation
 C               of the transformation matrix for the linear symmetry - needed in connection
@@ -3053,8 +3055,8 @@ C
 C  VMAT - if SLGROUP=.true., then it contains the standard (ALWAYS non-linear symmetry) transformation
 C         matrix with SL-resorted columns
 C
-C  TBUF - if linear symmetry (LSYMAD) is on, it contains the transformation matrix from non-linear MO
-C         to the linear MO
+C  TBUF - if linear symmetry (LSYMAD) is on, it contains the transformation matrix from non-linear symmetry MOs
+C         to the MOs of linear symmetry
 C
 C   Written by T.Saue, October 1995
 C   Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond
@@ -3200,8 +3202,9 @@ C
  80     CONTINUE
       ENDIF
 
-CMI ...  For the BSS.RKB (ie 1step approach) do resort columns of transformation matrix so that
-CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of former S1 L1 S2 L2 ...
+CMI ...  For the the BSS.RKB (ie 1step approach,X2c) resort columns of transformation matrix so that
+CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of default "S1 L1 S2 L2 ..."
+!Miro:  Resorting is also applied for 4c DC_RKB Hamiltonians
       IF(SLGROUP)THEN
         ISIZE = NFBAS(1,0)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
@@ -3222,7 +3225,6 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
           call writt(99,ISIZE, WORK(KBUF))
 !CTROND
-         print *,'SLSORT branch 1...'
         else
           call dzero(VMAT,n2bbasxq)
 !         in:  AO2MO transformation matrix             --> TMAT
@@ -3231,7 +3233,6 @@ CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of f
           CALL SLSORT(TMAT,VMAT,IPRHAM,WORK(KFREE),LFREE)
           call writt(99,ISIZE, vmat)
 !CTROND
-         print *,'SLSORT branch 2...'
         end if
         close(99,status='keep')
       ENDIF
@@ -5768,9 +5769,9 @@ C
       CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
       SUB_BL = .TRUE.
 
-      IF (IPRHAM.GE.2) THEN
-       WRITE(LUPRI,'(/2X,A/)')
-     &'GLINSM: TMAT and Saomo were adapted for the linear symmetry.'
+      IF (IPRHAM.GE.1) THEN
+        WRITE(LUPRI,'(/2X,A/)')
+     &'* TMAT and Saomo were adapted for the linear symmetry in GLINSM.'
       ENDIF
       CALL FLSHFO(LUPRI)
 

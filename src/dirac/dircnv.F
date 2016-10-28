@@ -241,7 +241,7 @@ C         because of round-off errors /hjaaj
      &     EVCDIF*ERGDIF .LT. D0 .and. .not. roundv 
      &     .and. .not. noswit ) THEN
 c     DEBUG
-        WRITE (6,9005) ITDIIS, EVCDIF*ERGVAL, ROUND, NOSWIT
+        WRITE (6,9005) ITDIIS, EVCDIF*ERGVAL, ROUNDV, NOSWIT
  9005   format ('DEBUG in DHFCNV: ITDIIS=',i3,5x,'grad=',d10.3,5x,
      &         'round,noswit=',2l3/)
 c     END DEBUG
