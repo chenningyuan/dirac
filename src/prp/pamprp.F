@@ -9617,6 +9617,16 @@ C     MEAN VALUE PART OF NSR TENSOR
 C
       CALL DZERO(SPRDNL,NCMAT)
 C
+      IF (XLR_SKIPEP) THEN
+Ciaa... A revision is needed for those cases in which .SKIPEP is activated in addition
+C       to another property that use EXPVAL, as NMR shielding or spin-spin coupling.
+C       In such cases, the following values are not what we need 
+C       (because EXPVAL(I) is also used in those properties).
+             WRITE (LUPRI,'(/,2X,A,/)')
+     &    'WARNING: .SKIPEP gives rise to wrong expectaction ' //
+     &    'values of spin-rotation constants in the current ' //
+     &    'implementation, when other properties are also requested.'
+      END IF
       DO IEXP = 1,NEXP
         JEXP = IBUFEXP(IEXP)
         KEXP = IPEFN(JEXP)
