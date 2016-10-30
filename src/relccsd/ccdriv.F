@@ -3007,7 +3007,6 @@ C     Allocate now also this remaining work array
          call alloc( a_H    , ivoov(nrep+1)*RCW              , id="h" )
          call alloc( a_Hbar , iovvo(nrep+1)*RCW           , id="hbar" )
          call alloc( wovoo  , iovoot(nrep+1)*RCW   , id="w1v" )
-!         following array consumes too much memory
 !        call alloc( wvvvo  ,    NV5*RCW            , id="w3v" )
          allocate(wvvvo(nv5*RCW)) !consumes too much memory
          call alloc( a_HO   ,   NFOO*RCW             , id="ho" )
@@ -3087,15 +3086,6 @@ C
 
          endif
 
-C        Release the slaves (in case of parallel runs)
-C
-!#if defined (VAR_MPI)
-!       NTEST = -1
-!       DO NODE = 1,NMPROC-1
-!          call interface_mpi_SEND(NTEST,1,NODE,27,
-!     &                     global_communicator)
-!       ENDDO
-!#endif
  451  CONTINUE
          if(allocated(a_BUF3)) call dealloc(a_BUF3, id="buf3")
 
