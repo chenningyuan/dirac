@@ -1006,12 +1006,6 @@ C
          MOV(IREP) = 0
          MVO(IREP) = 0
          MVV(IREP) = 0
-
-         POO(IREP) = 0
-         POV(IREP) = 0
-         PVO(IREP) = 0
-         PVV(IREP) = 0
-
          NOO(IREP) = 0
          NOV(IREP) = 0
          NVO(IREP) = 0
@@ -1404,25 +1398,6 @@ C
          ENDDO
       ENDDO
 C
-
-
-      DO JREP = 1, NREP
-         DO IREP = 1, NREP
-            IJREP = MULTB(IREP,JREP,3)
-            KKOO(IREP,JREP) = POO(IJREP)
-            KKOV(IREP,JREP) = POV(IJREP)
-            KKVO(IREP,JREP) = PVO(IJREP)
-            KKVV(IREP,JREP) = PVV(IJREP)
-            POO(IJREP) = POO(IJREP) + NO(IREP)*NO(JREP)
-            POV(IJREP) = POV(IJREP) + NO(IREP)*NV(JREP)
-            PVO(IJREP) = PVO(IJREP) + NV(IREP)*NO(JREP)
-            PVV(IJREP) = PVV(IJREP) + NV(IREP)*NV(JREP)
-         ENDDO
-      ENDDO
-C
-
-
-
       DO JREP = 1, NREP
          IJREP = MULTB(JREP,JREP,1)
          IIOOT(JREP,JREP) = NOOT(IJREP)
@@ -4488,12 +4463,6 @@ C
          DO IREP = NREP + 1, 2*NREP
             MULTB(IREP,JREP,1) = MULTB(IREP,JREP,1) - NREP
             MULTB(IREP,JREP,2) = MULTB(IREP,JREP,2) - NREP
-         ENDDO
-      ENDDO
-
-      DO JREP = 1, 2*NREP
-         DO IREP = 1, 2*NREP
-            MULTB(IREP,JREP,3) =  MULTB(JREP,IREP,2)
          ENDDO
       ENDDO
 
