@@ -1,3 +1,4 @@
+#define interface_to_mpi_DEBUG -1
 !dirac_copyright_start
 !      Copyright (c) 2015 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -3259,15 +3260,19 @@ contains
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     datatype_i4     = datatype
+#if interface_to_mpi_DEBUG > 0
     write (0,*) 'datatype ',datatype
     write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
+#endif
     if (.not. MPI_INIT_called) return
     call mpi_type_extent(datatype_i4, extent_i4, ierr_i4)
     extent          = extent_i4
 #else
     integer(kind=integer_kind)       :: ierr
+#if interface_to_mpi_DEBUG > 0
     write (0,*) 'datatype ',datatype
     write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
+#endif
     if (.not. MPI_INIT_called) return
     call mpi_type_extent(datatype   , extent   , ierr   )
 !   print *, 'extent ',extent

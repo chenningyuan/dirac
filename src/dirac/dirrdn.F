@@ -595,9 +595,6 @@ C
         IF(IGTDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       ENDIF
 C
-      IF(DENSFIT)
-     &  WRITE(LUPRI,'(1X,A)') '* Employ density fitting techniques'
-C
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
      &   '* Spherical transformation embedded in MO-transformation',
@@ -1002,9 +999,9 @@ C     initial molecular orbitals:
       TRIVEC    = .TRUE. ! default!
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
-      BNCRON    = .TRUE.
+      BNCRON    = .FALSE.
       force_bnc = .false.
-      BNSPON    = .FALSE. ! use either this or BNCRON
+      BNSPON    = .TRUE.  ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
       EWMO      = .FALSE. ! in huckel.h
@@ -1107,7 +1104,8 @@ CMI   ... criteria of convergence for prelim.BSS-SCF
       PRJTHR    = 1.0D-10
       DOLEVEL   = .FALSE.
       DLSHIF    = D0
-      OPEN_FAC  = 0.5D0 ! this value seems to a good compromise value for good convergence
+      OPEN_FAC  = -0.5D0 ! abs(OPEN_FAC) seems to a good compromise value for good convergence
+      ! the negative sign signifies that this is the default value, i.e. not user input
       CALL DZERO(OLEV,MXOPEN)
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
@@ -1625,6 +1623,7 @@ C&&& FOCC: Fractional Occupation
 C&&& LSHIFT: Level shift
                   READ(LUCMD,*) DLSHIF
                   DOLEVEL = .TRUE.
+                  IF (OPEN_FAC .LT. 0) OPEN_FAC = -1.0D0
                GOTO 100
  45            CONTINUE
 C&&& Specify the maximum number of preliminary BSS-SCF iterations
@@ -1698,6 +1697,7 @@ C&&& OLEVEL: Open-shell level shifts
                   ELSE
                     READ(LUCMD,*) (OLEV(IOPEN),IOPEN=1,NOPEN)
                     DOLEVEL = .TRUE.
+                    IF (OPEN_FAC .LT. 0) OPEN_FAC = -1.0D0
                   ENDIF
                GOTO 100
  51            CONTINUE
@@ -2171,9 +2171,19 @@ C
       ELSE
         CALL QUIT('ERROR, initial trial SCF function not defined!')
       ENDIF
-      IF (OPEN_FAC .NE. D1) WRITE (LUPRI,'(A,F12.6)')
+      IF (abs(OPEN_FAC) .NE. D1) THEN
+         WRITE (LUPRI,'(A,F12.6)')
      &   ' * Scaling of active-active block correction to '//
-     &   'open shell Fock operator', OPEN_FAC
+     &   'open shell Fock operator', abs(OPEN_FAC)
+         IF (OPEN_FAC .LT. 0.0D0) THEN
+            WRITE (LUPRI,'(A)')
+     &   '   to improve convergence (default value).',
+     &   '   The final open-shell orbital energies are recalculated '//
+     &   'with 1.0 scaling,',
+     &   '   such that all occupied orbital energies correspond to '//
+     &   "Koopmans' theorem ionization energies."
+         END IF
+      END IF
 
       WRITE(LUPRI,'(/A)') ' ***** SCF CONVERGENCE CRITERIA *****'
       IF(ERGCNV) THEN
@@ -4223,9 +4233,21 @@ C&&&& VECREF: Fragment vectors
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
-                    READ(LUCMD,'(A6)') REFFIL(J)
-                    READ(LUCMD, '(I8)') NPROJNUC(J)
-                    READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
+                    READ(LUCMD,'(A6)', IOSTAT=IOS1) REFFIL(J)
+                    IF (IOS1.NE.0) THEN ! miro: specific error message
+                      call quit('error in REFFIL(J) reading!')
+                    ENDIF
+                    READ(LUCMD, '(I8)', IOSTAT=IOS2) NPROJNUC(J)
+                    IF (IOS2.NE.0) THEN ! miro: specific error message
+                      write(LUPRI,*) 'J,NREFS:',J,NREFS
+                      call quit('error in NPROJNUC(J) reading!')
+                    ENDIF
+                    READ(LUCMD,'(A72)', IOSTAT=IOS3) 
+     &              (VECREF(I,J),I=1,NFSYM)
+                    IF (IOS3.NE.0) THEN ! miro: specific error message
+                      call quit('error in VECREF(I,J) reading!')
+                    ENDIF
+
                  ENDDO
                   REFFIL(NREFS+1) = 'Polari'
                GO TO 100
@@ -4631,7 +4653,6 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
-      DENSFIT  = .FALSE.
       NOSET    = .FALSE.
       OPTWLK   = .FALSE.
       OPTNEW   = .FALSE.
@@ -4699,9 +4720,6 @@ C     ======================================
       NPRPS        = 0
 C
       CALL OPTINI()
-#ifdef MOD_ERI
-      CALL FCK3INI
-#endif
 C
       RETURN
       END
@@ -4750,9 +4768,6 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -5096,20 +5111,6 @@ C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                      call quit('failure in DFTINPUT after .DFT')
                   end if
                   call set_hf_exchange_factor(hfxfac)
-
-#ifdef MOD_ERI
-C aspg, 20070909
-c if the calculation is performed with non-hybrid functionals,
-C and j-engine is set, we force dolink to true even if it was
-C not specified in the input, so that no extra work in the
-c integral evaluation is done. for hfxfac set to zero, the
-C link driver just acts to scale the fock matrix according to
-c DIRAOF->SKLFC1
-                  IF (DOFCK3.AND.(HFXFAC.EQ.D0)) THEN
-                     DOLINK = .TRUE.
-                  ENDIF
-#endif /* MOD_ERI */
-
                END IF
                dirac_cfg_dft_calculation = .true.
                SETFUN = .TRUE.
@@ -5962,18 +5963,6 @@ CMI    ... quantum dots
 !         so let's not call it in this case
           call dftreport()
         end if
-
-#ifdef MOD_ERI
-C aspg, 20070909
-         IF (DOLINK.AND.(HFXFAC.EQ.D0)) then
-            WRITE (LUPRI,*) ' '
-            WRITE (LUPRI,*) '     Note: as J-Engine was selected '//
-     &                      'together with non-hybrid functionals,'
-            WRITE (LUPRI,*) '           only pure Coulomb integrals'//
-     &                      ' will be calculated.'
-            WRITE (LUPRI,*) ' '
-         ENDIF
-#endif /* MOD_ERI */
 
          IF (IGTINT.EQ.1) THEN
             IF (LSCALE_DFT_GAUNT) THEN
@@ -7236,8 +7225,12 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
+#if !defined MOD_UNRELEASED
       IF (DORES .AND.dirac_cfg_dft_calculation)
-     &   CALL QUIT ('.RESOLVE does not work with DFT')
+     &   CALL QUIT ('.RESOLVE does not work with DFT !')
+#endif
+
+
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
 C     the input routines use different common blocks,
 C     so I think running both should be OK. I have modified the test:

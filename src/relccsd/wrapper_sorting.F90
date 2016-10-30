@@ -1938,7 +1938,18 @@
        N = size(E); Nfac = size(P,1); 
      do i=1,N                           ! cases with E(i) in front 
           if( N>1 ) call permutate((/E(:i-1), E(i+1:)/), S) 
-         forall(k=1:Nfac/N) P((i-1)*Nfac/N+k,:) = (/E(i), S(k,:)/) 
+!
+!    Fix introduced by Tjerk Straatsma:
+!
+!    The following is a work around for the PGI compiler error generated
+!    by the original forall loop
+!
+      do k=1,Nfac/N
+           P((i-1)*Nfac/N+k,:) = (/E(i), S(k,:)/)
+      enddo
+!
+!         forall(k=1:Nfac/N) P((i-1)*Nfac/N+k,:) = (/E(i), S(k,:)/) 
+!
      end do 
   end subroutine permutate 
 

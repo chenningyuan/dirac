@@ -55,7 +55,7 @@
 
 !     # mcru   = max number of core potential expansion functions.
       integer    mcrup
-      parameter (mcrup=140)
+      parameter (mcrup=150)
 
 !     # msfru  = max number of so sets.
       integer    msfrup

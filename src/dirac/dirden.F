@@ -382,9 +382,12 @@ C/* Deck Denmat */
       SUBROUTINE DENMAT(DMAT,CMO,IPRINT)
 C***********************************************************************
 C
-C     Generate density matrix for SCF calculations
+C     Generate density matrix for SCF calculations both for closed-
+C     and open-shell systems.
 C
 C     Entering CMO - MO coefficients, on output - DMAT, density matrix
+C
+C     Calls GENDEN, ACTDEN
 C
 C     Written by T. Saue Nov 23 2004
 C
@@ -437,6 +440,17 @@ C.......Fractional Occupation
         DO IOPEN = 1,NOPEN
           CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPRINT)
         END DO
+        IF (IPRINT.GE.8) THEN
+          WRITE(LUPRI,"(2X,A)")
+     &    'DENMAT: Total density matrix, open-shell fract. occupation'
+          DO IFRP = 1, NFSYM
+            WRITE(LUPRI,'(/A,A3)')
+     &        '* Fermion ircop ',FREP(IFRP)
+            CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
+     &              NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          ENDDO
+        ENDIF
       ENDIF
 C
       CALL QEXIT('DENMAT')

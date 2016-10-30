@@ -643,13 +643,16 @@ C
         IF(IERR.GT.0) THEN
            CALL QUIT('MPI_GATHER ERROR in collecting VOVV Integrals !')
         ENDIF
-
-      ELSE
-      call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
       ENDIF
-!#else
-!      call xcopy(ivovvt(irp+1),vovv_temp,1,VVOVV(off1),1) 
 #endif
+
+      if (nmproc .eq. 1) then
+
+       call xcopy(nvo(irp)*nvvt(irp),vovv_temp(1),1,VVOVV(off1),1)
+    
+      endif
+
+
 
          totsize = totsize + sum(counter)
 
