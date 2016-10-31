@@ -11,7 +11,6 @@ set(FIXED_RELADC_FORTRAN_SOURCES
     adccore.F
     adcdble.F
     adcdiag.F
-    adcexci.F
     adcsort.F
 )
 
@@ -26,6 +25,12 @@ set(FREE_RELADC_FORTRAN_SOURCES
     adc_fano_routines.F90
     adc_mat.F90
     adcutil.F90
+    polprp_cfg.F90
+    polprp_driver.F
+    polprp_parallel_builders.F
+    polprp_parallel_davidson.F
+    polprp_serial_builders.F
+    polprp_tramom.F
 )
 
 set(C_RELADC_SOURCES)
