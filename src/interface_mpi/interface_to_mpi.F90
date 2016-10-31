@@ -57,6 +57,8 @@ module interface_to_mpi
   public interface_mpi_reduce
   public interface_mpi_allreduce
   public interface_mpi_gather
+  public interface_mpi_gatherv
+  public interface_mpi_allgatherv
   public interface_mpi_allgather
   public interface_mpi_test
   public interface_mpi_testall
@@ -1683,8 +1685,8 @@ contains
   subroutine interface_mpi_allreduce_r1(x,y,ndim,operation,communicator)
 
 !-------------------------------------------------------------------------------
-    real(8)                    :: x(:)
-    real(8)                    :: y(:)
+    real(8)                    :: x(*)
+    real(8)                    :: y(*)
     integer(kind=integer_kind) :: ndim
     integer(kind=integer_kind) :: operation
     integer(kind=integer_kind) :: communicator
@@ -1840,6 +1842,78 @@ contains
 
   end subroutine
 !-------------------------------------------------------------------------------
+
+    subroutine interface_mpi_gatherv(x,ndim,y,counter,disp,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                    :: x(*)
+    real(8)                    :: y(*)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: counter(:)
+    integer(kind=integer_kind) :: disp(:)
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: disp_i4(:)
+    integer(kind=4)            :: counter_i4(:)
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    disp_i4         = disp
+    counter_i4      = counter
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
+    call MPI_Gatherv(x,ndim_i4,MPI_REAL8,y,counter_i4,disp_i4,MPI_REAL8,root_proc_i4,communicator_i4,ierr_i4)
+#else
+    if (.not. MPI_INIT_called) return
+    call MPI_Gatherv(x, ndim   , MPI_REAL8, y,counter,disp,MPI_REAL8,root_proc,communicator,ierr )
+#endif
+
+    end subroutine
+
+!-------------------------------------------------------------------------------
+
+
+    subroutine interface_mpi_allgatherv(x,ndim,y,counter,disp,communicator)
+
+!-------------------------------------------------------------------------------
+    real(8)                    :: x(*)
+    real(8)                    :: y(*)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: counter(:)
+    integer(kind=integer_kind) :: disp(:)
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: disp_i4(:)
+    integer(kind=4)            :: counter_i4(:)
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    ndim_i4         = ndim
+    disp_i4         = disp
+    counter_i4      = counter
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    if (.not. MPI_INIT_called) return
+    call MPI_AllGatherv(x,ndim_i4,MPI_REAL8,y,counter_i4,disp_i4,MPI_REAL8,communicator_i4,ierr_i4)
+#else
+    if (.not. MPI_INIT_called) return
+    call MPI_AllGatherv(x, ndim   , MPI_REAL8, y,counter,disp,MPI_REAL8,communicator,ierr )
+#endif
+
+    end subroutine
+
+!--------------------------------------------------------------------------------------------------------------
+
 
   subroutine interface_mpi_allgather_i0(x,ndim,y,ndim2,communicator)
 
