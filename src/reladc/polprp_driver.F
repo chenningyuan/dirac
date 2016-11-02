@@ -526,7 +526,7 @@ C
 !
       integer                 :: n1,n2
       integer                 :: ialloc
-      real*8, allocatable     :: ciajb(:),daibj(:)
+      real*8, allocatable     :: daibj(:)
       integer                 :: irploop,desrep
       CHARACTER*6             :: namematfil = 'PP_ELE'  !name of the main ADC matrix file
       CHARACTER*6             :: namecnffil = 'ADCXCF'  !name of the configuration file
@@ -702,35 +702,22 @@ C
 !  do HPHP block first (it can easily be kept in memory)
 !
 !   all symmetries in the HP-HP block are created at once.
-!   Allocate hphp block memory according to
-!   IVOVO  (IREP+1) = IVOVO  (IREP) + NVO (IREP)*NVO (IREP)
+!   Allocate hphp block memory
 !
-        n1 = ivovo(nrep+1)
-        allocate(ciajb(n1*rcw),stat=ialloc)
-        if(ialloc.ne.0) stop 'allocation problem ciajb'
-        ciajb = 0.0d0
 
-        CALL BUILD_X_MAIN (ciajb,eps,n1) !storage: <|<|,|>|> (as VOVO)
-
-        n2 = jvovo(nrep+1)
-        allocate(daibj(n2*rcw),stat=ialloc)
+        n1 = jvovo(nrep+1)
+        allocate(daibj(n1*rcw),stat=ialloc)
         if(ialloc.ne.0) stop 'allocation problem daibj'
         daibj=0.0d0
-!
-!   Now create C_ai,bj storage mode again!
-!   SRT16: <aj||bi> -->  ai,bj with <||>,|><|  BKC
-!   JVOVO structure. ciajb array is no longer needed afterwards
-!
-        CALL SRT16(NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,
-     &             JJVO,JJVO,ciajb,daibj)
-        deallocate(ciajb)
+
+        CALL BUILD_X_MAIN (daibj,eps,n1) !in matrix storage mode: <||>,|><|
 !
 ! diagonalize main block for Davidson start vectors
 !
         if(carith) then
-          CALL SOLVE_HPHP_C(daibj,n2,iobase)   !iobase is reusable!
+          CALL SOLVE_HPHP_C(daibj,n1,iobase)   !iobase is reusable!
         else
-          CALL SOLVE_HPHP_R(daibj,n2,iobase)   !iobase is reusable!
+          CALL SOLVE_HPHP_R(daibj,n1,iobase)   !iobase is reusable!
         endif
 #if defined (VAR_MPI)
       endif

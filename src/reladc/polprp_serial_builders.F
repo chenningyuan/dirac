@@ -1,5 +1,5 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUILD_X_MAIN (CIAJB,EPS,DIMCIAJB)
+      SUBROUTINE BUILD_X_MAIN (daibj,eps,dimhphp)
 !
       IMPLICIT INTEGER (A-Z)
 !
@@ -11,9 +11,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Calling variables--------------------------------------
 !
-      REAL*8,dimension(:)         :: CIAJB
-      REAL*8,dimension(:)         :: EPS
-      INTEGER                     :: DIMCIAJB
+!
+      REAL*8,dimension(:)         :: daibj
+      REAL*8,dimension(:)         :: eps
+      INTEGER                     :: dimhphp
 !
 !---------------Common Blocks, symmetry arrays from CCSETI --------
 !
@@ -32,9 +33,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       real*8, allocatable        :: buf5(:)
       real*8, allocatable        :: bab(:)
       real*8, allocatable        :: dij(:)
+      real*8, allocatable        :: vovo1(:)
 
       integer                    :: ialloc
-      complex*16,parameter       :: coha=(0.5d0,0.0d0)
       real*8                     :: qmasymh2
 !
 !---------------Executable code--------------------------------------
@@ -50,15 +51,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       if(.not.carith.and.(rcw.ne.1)) then
         call quit('Internal error in BUILD_X_MAIN!')
       endif
-      write(*,*) 'ubound of eps:',ubound(eps)
-      write(*,*) 'lbound of eps:',lbound(eps)
-!     do i=1,1000
-!       write(*,*) 'eps: ',i,eps(i)
-!     enddo
 !
 !******************* preparations
 !
-!  we often need the v_ac,kl array which is V_ac,kl (VVOO)
+!  often needed v_ac,kl array which is V_ac,kl (VVOO)
 !  divided by the energy denominator
 !  e_a + e_c - e_k - e_l and the original V_ac,kl
 !  we therefore calculate it once and store it in this subroutine.
@@ -105,6 +101,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       buf3 = 0.0d0; buf4 = 0.0d0; buf5 = 0.0d0
 
       ic6 = ivovo(nrep+1)      ! size of the generic VOVO array in generic BKC
+      allocate(vovo1(ic6*rcw))  ! in MVO*MVO instead of NVO*NVO manner!
+      vovo1 = 0.0d0
+!
 !
 !  --------------------------------------
 !  Calculate B_ab for  TERM C(2)A       |
@@ -130,9 +129,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         else
           call matsym(bab(ioff),nv(krep),nv(krep))
         endif
-!       do i=1,nv(krep)*nv(krep)
-!         write(*,*) 'Bab: ',ioff+i-1,bab(ioff+i-1)
-!       enddo
       enddo
 !
 !  -------------------------------------
@@ -165,7 +161,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       if(carith) call conjuga(ic4,dij,1)
 !
 !  ----------------------------------------
-!  Calculate TERM C(2)C, again hermitian  |
+!  Calculate TERM C(2)C, part[A] herm.    |
 !  conjugation required, result in buf3   |
 !  ----------------------------------------
 !
@@ -200,7 +196,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          ioff3 = ioff3 + m * n * rcw
       enddo
 !
-! This is now the first half contribution to C(2)C. The second is the hermitian
+! This is now the first half contribution to C(2)C. Part[B] is the hermitian
 ! conjugated one. Multiply result by -0.5 according to the equations.
 !
       do krep=1,nrep
@@ -211,7 +207,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           call matsym(buf5(ioff),mvo(krep),mvo(krep))
         endif
       enddo
-      call xscal(jvovo(nrep+1),-coha,buf5,1)
+      call xscal(jvovo(nrep+1),-ap5,buf5,1)
 !
 !  buf5 now contains C(2)C in <||>,|><| storage mode (Y_ai,bj).
 !  Do intermediate resort of Y_ai,bj (buf5) ---->  Y_aj,bi  (buf3) with *generic* VOVO BKC.
@@ -222,17 +218,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &            buf3,buf5)
 !
 !  ----------------------------------
-!  Then we can add TERM C(1)        |
-!  which is the negative VOVO ints  |
+!  Then we can add C(2)C and C(1)   |
+!  due to identical BKC structure   |
 !  ----------------------------------
 !
-      if(ic6.ne.dimciajb) then
-        write(*,*) ' **** Internal error in BUILD_X_MAIN ****'
-        call quit('verify index logic!')
-      endif
-      call getvovo(ciajb)
-      call xnegate(ic6,ciajb,ciajb)
-      call xaxpy (ic6,A1,buf3,1,ciajb,1)
+      call getvovo(vovo1)
+      call xscal(ic6,-A1,vovo1,1)
+      call xaxpy (ic6,A1,buf3,1,vovo1,1)
 !
 !--------------------------------------------------------
 !  'weave' into the C(0), C(2A) and C(2B) contributions |
@@ -240,15 +232,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !--------------------------------------------------------
 !
       if(carith) then
-        call bweaverc(ciajb,eps,bab,dij,ic6,ic2,ic4)
+        call bweaverc(vovo1,eps,bab,dij,ic6,ic2,ic4)
       else
-        call bweaverr(ciajb,eps,bab,dij,ic6,ic2,ic4)
+        call bweaverr(vovo1,eps,bab,dij,ic6,ic2,ic4)
       endif
 !
 !--------------------------------------------------------
 !  ciajb now contains all the C(2) ai,bj contributions  |
-!  but is C_aj,bi sorted at this stage! <|<| |>|>       |
+!  we sort it back now to the HPHP storage convention.  |
+!  This is now a forward sort <<>>  -->  <>><           |
 !--------------------------------------------------------
+!
+      CALL SRT16(NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,
+     &           JJVO,JJVO,vovo1,daibj)
+
+      deallocate(vovo1)
       deallocate(buf5)
       deallocate(buf4)
       deallocate(buf3)
@@ -261,34 +259,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       RETURN
       END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& remainders:
-!
-!
-!  We have to symmetrize according to A_aj,bi = Y(1)_aj,bi + Y(2)*_bi,aj
-!  Hereby we again interpret the Y(1)_aj,bi array as a two-dimensional matrix
-!  of NVO(i) * NVO(i) submatrices contiguously stored (VOVO storage scheme!)
-!
-!
-!     do krep=1,nrep
-!       ioff=ivovo(krep)*rcw + 1
-!       if(carith) then
-!         call cmatsym(buf3(ioff),nvo(krep),nvo(krep))
-!       else
-!         call matsym(buf3(ioff),nvo(krep),nvo(krep))
-!       endif
-!     enddo
-!
-! now we have B_ab, D_ij and A_aj,bi. but without the prefactors!
-!
-! the array holding the hp/hp block is ciajb (name in the paper) and has the size
-! of the VOVO integrals. All contribs are added to this array initialized with the
-! VOVO integrals.
-!
-!  the ciajb array now contains the full hp/hp block in generic VOVO
-!  storage convention.
-!
-!  we release all memory allocated so far and retain only the ciajb block.
-!
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BWEAVERR(bhphp,eps,bab,dij,ic6,ic2,ic4)
 !
