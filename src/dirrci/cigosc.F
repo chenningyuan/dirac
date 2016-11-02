@@ -499,6 +499,11 @@ C
 C     ===========================================================
       SUBROUTINE HMAT (ID,JD,HMR,HMI,INDTWR,INDTWI,INDGAR,INDGAI,
      &                 TWOINR,TWOINI,MAXINT)
+
+C
+CMiro Sept2016: consider c1,c2,c3 scaling parameters according  for DFT-COSCI
+C  according to Roemelt et al, The Journal of Chemical Physics 138, 204101 (2013)
+C
 C     ===========================================================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
@@ -544,6 +549,7 @@ C---------------------
             SI = SIGN(1,INDI)
             INDR = ABS(INDR)
             INDI = ABS(INDI)
+!Miro: c1 to Coulomb(Breit) term for DFT-COSCI
             HMR = HMR + SR * TWOINR (INDR)
             HMI = HMI + SI * TWOINI (INDI)
             IF (BREIT) THEN
@@ -565,6 +571,7 @@ C---------------------
             SI = SIGN(1,INDI)
             INDR = ABS(INDR)
             INDI = ABS(INDI)
+!Miro: c2 to exchange(Breit) term for DFT-COSCI
             HMR = HMR - SR * TWOINR (INDR)
             HMI = HMI - SI * TWOINI (INDI)
             IF (BREIT) THEN
@@ -597,6 +604,7 @@ C
         IF (IBTAND(IB, IBTSHL(1, I - 1)) .NE. 0) L = I
 35      CONTINUE
 C
+!Miro: c3 to damp all off-diagonal terms (one-el, COulomb, exchange) for DFT-COSCI
       HMR = HMR + ONER (K, L)
       HMI = HMI + ONEI (K, L)
 C
@@ -612,6 +620,7 @@ C---------------------
             SI = SIGN(1,INDI)
             INDR = ABS(INDR)
             INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
             HMR = HMR + SR * TWOINR (INDR)
             HMI = HMI + SI * TWOINI (INDI)
             IF (BREIT) THEN
@@ -621,6 +630,7 @@ C---------------------
                SI = SIGN(1,INDI)
                INDR = ABS(INDR)
                INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
                HMR = HMR + SR * TWOINR (INDR)
                HMI = HMI + SI * TWOINI (INDI)
             ENDIF
@@ -633,6 +643,7 @@ C---------------------
             SI = SIGN(1,INDI)
             INDR = ABS(INDR)
             INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
             HMR = HMR - SR * TWOINR (INDR)
             HMI = HMI - SI * TWOINI (INDI)
             IF (BREIT) THEN
@@ -642,6 +653,7 @@ C---------------------
                SI = SIGN(1,INDI)
                INDR = ABS(INDR)
                INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
                HMR = HMR - SR * TWOINR (INDR)
                HMI = HMI - SI * TWOINI (INDI)
             ENDIF
@@ -683,6 +695,7 @@ C---------------------
       SI = SIGN(1,INDI)
       INDR = ABS(INDR)
       INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
       HMR = HMR + SR * TWOINR (INDR)
       HMI = HMI + SI * TWOINI (INDI)
       IF (BREIT) THEN
@@ -692,6 +705,7 @@ C---------------------
          SI = SIGN(1,INDI)
          INDR = ABS(INDR)
          INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
          HMR = HMR + SR * TWOINR (INDR)
          HMI = HMI + SI * TWOINI (INDI)
       ENDIF
@@ -704,6 +718,7 @@ C---------------------
       SI = SIGN(1,INDI)
       INDR = ABS(INDR)
       INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
       HMR = HMR - SR * TWOINR (INDR)
       HMI = HMI - SI * TWOINI (INDI)
       IF (BREIT) THEN
@@ -713,6 +728,7 @@ C---------------------
          SI = SIGN(1,INDI)
          INDR = ABS(INDR)
          INDI = ABS(INDI)
+!Miro: c3 to damp all off-diagonal terms (one-el, Coulomb, exchange) for DFT-COSCI
          HMR = HMR - SR * TWOINR (INDR)
          HMI = HMI - SI * TWOINI (INDI)
       ENDIF

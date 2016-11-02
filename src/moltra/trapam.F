@@ -284,7 +284,7 @@ C
          END IF
       END IF
 C
-C     Select the set that we need
+C     Select the set of MOs(CMO), eigenvalues(EIG) and boson array id(IBEIG) that we need for core transformation
 C
       DO I = 1, 4
         DO IFRP = 1, NFSYM
@@ -459,9 +459,10 @@ C
             CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
      &                  IBEIG,TOTERG,14,WORK,KFREE,LFREE)
          ENDIF
+         print *,' PAMTRA: CMO read from DFCOEF...'
       END IF
 C
-C     Select the set that we need
+C     Select the set of MOs that we need for core transformation
 C
       DO IFRP = 1, NFSYM
          CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
@@ -471,7 +472,6 @@ C
       ENDDO
 C
 C     Throw away the complete set, keep only the selected sets
-C
       DeAllocate (CMO)
       DeAllocate (EIG)
       DeAllocate (IBEIG)
@@ -485,9 +485,11 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
-      IF (.NOT.NO2IND)
-     &   CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
+      IF (.NOT.NO2IND) THEN
+         CALL FLSHFO(LUPRI)
+         CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,KQ,
      &               KQC,KE,KIBE)
+      ENDIF
 C
       CALL FLSHFO(LUPRI)
 C
@@ -3798,7 +3800,9 @@ C     Driver routine for 4-index transformation for
 C     resolution of electronic states within open-shell manifold
 C
 C     Based on PAMTRA
+C
 C     Written by T.Saue Jan 18 1999
+C     Modified by Miro for DFT-COSCI, August 2016
 C
 C***********************************************************************
 
@@ -3972,7 +3976,9 @@ C
 C
 C     Allocate buffer spaced for coefficients AND core Fock matrix
 C
+!Miro: extra space (KBUF1) for full set of MO coeff for DFT-COSCI
       CALL MEMGET2('REAL','KBUF',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KBUF1',KBUF1,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','KEIG',KEIG,NORBT ,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','KIBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
@@ -3987,6 +3993,8 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESOLV')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF),WORK(KEIG),WORK(KIBEIG),
+     &               TOTERG,14,WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KBUF1),WORK(KEIG),WORK(KIBEIG),
      &               TOTERG,14,WORK,KFREE,LFREE)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
@@ -4029,11 +4037,12 @@ C
 C
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
-C
+CMiro/Aug 2016 - introduced DFT-COSCI, core-fock mtx contains xc contrib 
+
         CALL GTCFCK(WORK(KBUF),IPRRES,WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &              WORK(KQC(1)),NDMOQR,ICMOQR,NSTR(1,0,1),
-     &              NDMOQC,ICMOQC,NSPC(1,0),
-     &              INTRES,WORK,KFREE,LFREE)
+     &            WORK(KQC(1)),WORK(KBUF1),NDMOQR,ICMOQR,NSTR(1,0,1),
+     &             NDMOQC,ICMOQC,NSPC(1,0),
+     &             INTRES,WORK,KFREE,LFREE)
 C
 C       Write MOLFDIR file MRCONEE
 C       --------------------------

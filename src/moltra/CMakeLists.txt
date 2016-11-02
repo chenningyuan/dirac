@@ -24,6 +24,7 @@ set(FIXED_MOLTRA_FORTRAN_SOURCES
 )
 
 set(FREE_MOLTRA_FORTRAN_SOURCES
+    dcbtra_h.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -33,11 +34,13 @@ endif()
 
 add_library(
     moltra
+    OBJECT
     ${FIXED_MOLTRA_FORTRAN_SOURCES}
     ${FREE_MOLTRA_FORTRAN_SOURCES}
 )
 
 # deal with intermodule dependencies
+# moltra depends on:
 add_dependencies(moltra main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)

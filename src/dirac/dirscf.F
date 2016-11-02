@@ -262,6 +262,7 @@ C         .... prepare the DFCOEF file with staring MOs
         RESTFCK=(INI2C.EQ.1.OR.INI2C.EQ.2) 
 
         BNCRON = .FALSE.
+        BNSPON = .FALSE.
         ERGCNV = ERGCNV_SAVE
         EVCCNV = EVCCNV_SAVE
         FCKCNV = FCKCNV_SAVE
@@ -334,6 +335,7 @@ CMI ... consider TRMO4C2C ...???
           end if
 
           BNCRON = .FALSE.
+          BNSPON = .FALSE.
 C         ... need to reset them...
           DHFCONV(1)=.FALSE.
           DHFCONV(2)=.FALSE.
@@ -430,9 +432,6 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -459,6 +458,7 @@ C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
+      TDXC=D0
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
 
 CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
@@ -697,15 +697,17 @@ C       ... read 1-electron Fock matrix into FOCK ...
          CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
-!       bncron = .false.
+!       ... add some kind of screening potential
         IF(BNCRON .AND. .NOT. ONESYS) THEN
           CALL BNCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
-          IF(IPRSCF.GE.12) THEN
-           CALL HEADER(
+        ELSEIF (BNSPON .AND. .NOT. ONESYS) THEN
+          CALL Add_Screening_Potential(FOCK,WORK(KFREE),LFREE,IPRSCF)
+        ENDIF
+        IF(IPRSCF.GE.12) THEN
+          CALL HEADER(
      & 'PREDHF: 1-electron Fock matrix + BNCORR within "BARNUC"',-1)
            CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                 NZ,IPQTOQ(1,0),LUPRI)
-          ENDIF
         ENDIF
       END IF
 
@@ -1407,7 +1409,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbreo.h"
-#include "densfit.h"
       real(8), allocatable :: aoo2esssoc(:)
       LOGICAL   LBIT, tobe, DODIIS_save
       type(fde_import) :: itmp
@@ -1424,17 +1425,6 @@ C
       CALL QENTER('SCFCYC_1')
 #include "memint.h"
 C
-#ifdef MOD_DNF
-      IF (DF_FITVXC) THEN
-         IF (DODSCF) THEN
-            using_diffdens = .true.
-            CALL DF_FitXC_InitFilesDD(NBASISAUX,WORK,LWORK)
-         ELSE
-            using_diffdens = .false.
-         ENDIF
-      ENDIF
-#endif
-C
 C     ***********************************
 C     ***** Perform SCF-iterations ******
 C     ***********************************
@@ -1445,7 +1435,7 @@ C
 C     Initiate/restart SCF cycle
 C
       DHFEXIT = .FALSE.
-      OPEN_FAC = 1.0D0
+      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
       OPEN_FAC = OPEN_FAC_save
@@ -1825,9 +1815,9 @@ C          electrons from HOMO. This was tested with MCSCF calculations with DAL
 C          This gives a physical explanation why OPEN_FAC = 1.0 often is a bad
 C          idea for convergence.)
 
-           IF (NOPEN .eq. 0 .OR. OPEN_FAC .eq. 1.0D0) GOTO 30
+           IF (NOPEN .eq. 0 .OR. OPEN_FAC .ge. 0.0D0) GOTO 30
 
-           WRITE(LUPRI,'(///A/A)') ' * Converged. '//
+           WRITE(LUPRI,'(///A/)') ' * Converged. '//
      &        'Redoing orbital energy calculation with .OPENFAC 1.0D0'
            OPEN_FAC = 1.0D0
 C          do continue even though converged :
@@ -1838,7 +1828,7 @@ C          restore density matrix and  total Fock matrices (have been destroyed 
            CALL REAFCK(LUFCKT,FOCK,.FALSE.,NFMAT)
            CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
      &                 ICHKCNV,OVLSEL ,DOLEVEL,WORK(KFREE),LFREE)
-C          Read CMO coefficients and bosos identification, but not orbital energies in EIG (code 10)
+C          Read CMO coefficients and boson identification, but not orbital energies in EIG (code 10)
 C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
 
            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10,
@@ -1903,7 +1893,7 @@ C****************************************************************************
 C
 C     PURPOSE:
 C   ==============
-C        Calculate Dirac-Hartree-Fock or 2comp. SCF energy
+C        Calculate the SCF energy using the formula
 C
 C           E(SCF) = D(IJ)(*)(F1(IJ)+0.5F2(IJ))
 C
@@ -1911,7 +1901,8 @@ C     On input:
 C        F1, F2 - one- and two-electron Fock matrixes in SA-AO basis
 C        DMAT  - density matrix in SA-AO basis
 C
-C     On output: nothink, only print-out
+C     On output: internal variables of SCF energy updated
+C 
 C
 C     Last revision: 971022-jth
 C                    Sept 2005, Miro Ilias - added control outputs
@@ -1937,9 +1928,6 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
@@ -1984,7 +1972,6 @@ C           fact that all Fock matrices were multiplied with 2
 C           in TWOFCK.
 C
          DFRAC2 = DP25*DFRAC1*DFRAC1*DA(ISHELL)
-!        print *, 'dfrac1, dfrac2',dfrac1,dfrac2
 C...     Intra-shell contributions
          DO IZ = 1,NZ
             E(IZ,1,ISHELL) =
@@ -2010,12 +1997,16 @@ C
             END DO
          END DO
       END DO
-
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
-        e(1, 2, 0) = e(1, 2, 0) - xcint_get_xc_mat_energy()
+!Miro: separate this contribution into own variable, xcint_xc_energy
+!     the density for calculation is the same as for xcint_xc_contribution to the 2el Fock matrix
+        xcint_xc_energy=xcint_get_xc_mat_energy()
+        e(1, 2, 0) = e(1, 2, 0) - xcint_xc_energy
+        !print *
+        !print *,'ERGCAL: xcint_get_xc_mat_energy()=',xcint_xc_energy
+        !print *
       end if
-
       DO IZ = 1,NZ
         DO IOPEN = 0,ITOP
            E1PART = E1PART + E(IZ,1,IOPEN)
@@ -2049,7 +2040,12 @@ C
       ELERGY = E1PART + E2PART
 
       if (dirac_cfg_dft_calculation) then
-        elergy = elergy + xcint_get_xc_energy()
+        xcint_elergy=xcint_get_xc_energy()
+        !elergy = elergy + xcint_get_xc_energy()
+        elergy = elergy + xcint_elergy
+        IF(IPRSCF.GE.5) THEN
+          print *,'ERGCAL: xcint_get_xc_energy()=',xcint_elergy
+        ENDIF
       end if
 
       if (dirac_cfg_fde) then
@@ -2059,13 +2055,12 @@ C
          end if
       end if
 
-
       DHFERG = DHFERG + ELERGY
 C
       IF(IPRSCF.GE.1) THEN
          CALL HEADER('Output from ERGCAL',-1)
 CMI      ... print out matrixes ...
-         IF (IPRSCF.GE.5.AND.IPRHAM.GE.7) THEN
+         IF (IPRSCF.GE.5) THEN
           CALL HEADER(
      &    'ERGCAL: Entering total Fock F1 matrix in SA-AO',-1)
           CALL PRQMAT(F1,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
@@ -3719,6 +3714,9 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
             IF (BNCRON) WRITE(LUPRI,'(A/)')
      &    "             Improved by an "//
      &    "estimate of the electronic screening (Slater's rules)."
+            IF (BNSPON) WRITE(LUPRI,'(A/)')
+     &    "             Improved by a sum of "//
+     &    "atomic screening potentials."
           ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case
@@ -4144,8 +4142,7 @@ C***********************************************************************
         if(nelect_dhf.ne.total_num_e)then
           print *, 'calculated # of e-: ',nelect_dhf
           print *, 'total # of e-     : ',total_num_e
-          call quit(' *** error in automatic occupation module: 
-     & calculated # of e- does not match the total # of e-.***')
+          call quit(' *** error in calculated # of e-')
         end if
 
       else ! naelec_dhf != 2*deg_counter
@@ -4212,8 +4209,7 @@ C***********************************************************************
           if(nelect_dhf+naelec_dhf.ne.total_num_e)then
             print *, 'calculated # of e-: ',nelect_dhf+naelec_dhf
             print *, 'total # of e-     : ',total_num_e
-            call quit(' *** error in automatic occupation module: 
-     & calculated # of e- does not match the total # of e-.***')
+            call quit(' *** error in calculated # of e-')
           end if
 
 !         initial occupation from the Aufbau principle ended up with a
@@ -4228,8 +4224,7 @@ C***********************************************************************
           if(naelec_dhf.ne.1)then
             print *, 'calculated # of active e- : ',naelec_dhf
             print *, 'total # of degenerate orbs: ',deg_counter
-            call quit(' *** error in automatic occupation module:
-     & calculated # of active e- does not match the # of deg. orbs.***')
+            call quit(' *** error in calculated # of active e-')
           end if
 
           nasht_dhf  = naelec_dhf
@@ -5325,7 +5320,7 @@ C
 C     Solve one-electron system with vacuum polarisation added.
 C
       OPEN_FAC_save = OPEN_FAC
-      OPEN_FAC = 1.0D0
+      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),DUM,WORK(KPOS),
      &            WORK(KFREE),LFREE)
       OPEN_FAC = OPEN_FAC_save

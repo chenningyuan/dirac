@@ -186,13 +186,13 @@ C
 !    &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
 !    miro: easy fix
       I_KIBE11=KIBE(1,1)
-      IF (KIBE(1,1).EQ.0) I_KIBE11=1
+      IF (KIBE(1,1).LE.0) I_KIBE11=1
       I_KIBE21=KIBE(2,1)
-      IF (KIBE(2,1).EQ.0) I_KIBE21=1
+      IF (KIBE(2,1).LE.0) I_KIBE21=1
       I_KIBE12=KIBE(1,2)
-      IF (KIBE(1,2).EQ.0) I_KIBE12=1
+      IF (KIBE(1,2).LE.0) I_KIBE12=1
       I_KIBE22=KIBE(2,2)
-      IF (KIBE(2,2).EQ.0) I_KIBE22=1
+      IF (KIBE(2,2).LE.0) I_KIBE22=1
       CALL MKINDXB (NSTR,WORK(I_KIBE11),WORK(I_KIBE21),
      &              WORK(I_KIBE12),WORK(I_KIBE22),
      &              .FALSE.,INDXB12)
@@ -200,13 +200,13 @@ C
 !    &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
 !    miro: easy fix
       I_KIBE13=KIBE(1,3)
-      IF (KIBE(1,3).EQ.0) I_KIBE13=1
+      IF (KIBE(1,3).LE.0) I_KIBE13=1
       I_KIBE23=KIBE(2,3)
-      IF (KIBE(2,3).EQ.0) I_KIBE23=1
+      IF (KIBE(2,3).LE.0) I_KIBE23=1
       I_KIBE14=KIBE(1,4)
-      IF (KIBE(1,4).EQ.0) I_KIBE14=1
+      IF (KIBE(1,4).LE.0) I_KIBE14=1
       I_KIBE24=KIBE(2,4)
-      IF (KIBE(2,4).EQ.0) I_KIBE24=1
+      IF (KIBE(2,4).LE.0) I_KIBE24=1
       CALL MKINDXB (NSTR,WORK(I_KIBE13),WORK(I_KIBE23),
      &              WORK(I_KIBE14),WORK(I_KIBE24),
      &              .FALSE.,INDXB34)
@@ -843,7 +843,7 @@ C
 C
             IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,
-     &              '(//,1X,A,2I16/,2(1X,A,I16/),2(1X,A,I16,F10.3/))')
+     &              '(//A,2I16/,2(A,I16/),2(A,I16,F10.3/))')
      &         ' Calculation of integral distribution set:',
      &              ISHLA,ISHLB,
      &         ' Number of distributions in this set:     ',NUMDIS,
@@ -1260,9 +1260,7 @@ C
       if (do_finesort) call sort_buffers(mytid,1)
 #endif        
 
-      write (*,*) ' '
-      write (*,*) '<<< Starting 2HT on node ',mytid
-      write (*,*) ' '
+      if (iprint .gt. 0) write (*,*) '<<< Starting 2HT on node ',mytid
 c
       Allocate (GMAT(maxval(NSPCK(:,0))*NZ))
       NIJOFF = 0
@@ -1373,10 +1371,8 @@ C
 #if defined (VAR_PFS)
       CALL LOCAL_FILE_CLOSE_READ
 #endif
-        write (*,*) ' '
-        write (*,*) '>>> Finished 2HT on node ',mytid
+        if (iprint .gt.0) write (*,*) '>>> Finished 2HT on node ',mytid
         call timer('2HT_all',TIMSTR,TIMEND)
-        write (*,*) ' '
 
       CALL QEXIT('MS6IN2')
 C

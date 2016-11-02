@@ -62,6 +62,7 @@ endif()
 
 add_library(
     dirac
+    OBJECT
     ${FIXED_DIRAC_FORTRAN_SOURCES}
     ${FREE_DIRAC_FORTRAN_SOURCES}
 )
