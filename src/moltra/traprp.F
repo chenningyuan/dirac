@@ -64,7 +64,6 @@ C
         IC   = 1
         DO I = 1,NFSYM
           NR(I)   = NESH(I)
-          write(*,*) '++++ nesh(i):',nesh(i)
           IR(1,I) = 1
           IR(2,I) = NESH(I)
         ENDDO
@@ -85,42 +84,22 @@ C
           TRA2_INDSTR(1,IFRP) = TRA2_INDPRP(IFRP)
           TRA2_INDSTR(2,IFRP) = TRA2_INDPRP(IFRP)
         END DO
-      ELSE
-        WRITE(LUPRI,"(
-     &    '* A MO range is not set in property integral transf.')")
-        DO IFRP = 1, NFSYM
-          write(lupri,*) TRA2_INDSTR(1,IFRP)
-          write(lupri,*) TRA2_INDSTR(2,IFRP)
-        END DO
       END IF
+!.q
 C
-      WRITE(LUPRI,*) '...entering index array setup for the transform.'
       DO I = 1,2
-        WRITE(LUPRI,*) 'Index ',I
         NSTRT(I) = 0
         DO IFRP = 1,NFSYM
-          
           CALL MEMGET('INTE',KVEC(IFRP,I),NR(IFRP),WORK,KFREE,LFREE)
-!
-!  memget(type,base,length,pool,kfree,lfree)
-!
           NSTR(IFRP,0,I) = 1
           CALL  NUMLST(TRA2_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                 IFRP,NSTR(IFRP,0,I))
-          write(*,*) '   -  IFRP, NSTR(IFRP,0,I):',IFRP,NSTR(IFRP,0,I)
-          write(*,*)
-!         call pbssp(nr(ifrp),work(kvec(ifrp,i)))
-          write(*,*)
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),
      &              NPSH(IFRP),NESH(IFRP),
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-          write(*,*) '  -   NSTR(IFRP,2,I),NSTR(IFRP,1,I))',
-     &      NSTR(IFRP,2,I),NSTR(IFRP,1,I)
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
-          write(*,*) '   $$ NSTR(IFRP,0,I) after add:',NSTR(IFRP,0,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
-          WRITE(LUPRI,*) '  -  Total orbitals: nstrt(i):',nstrt(i)
           CALL MEMREL('TRAPRP',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
           CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
@@ -131,7 +110,6 @@ C     Print section
 C     =============
 C
       DO I = 1, NFSYM
-         write(*,*) 'Entering trapri...'
          CALL TRAPRI(2,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),0,0,NSTR)
       ENDDO
 C
@@ -140,11 +118,6 @@ C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      write(*,*)
-      write(*,*) 'DFCOEF control variables:'
-      write(*,*) 'NCMOTQ:',NCMOTQ
-      write(*,*) 'NORBT:',NORBT
-
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       IF (TOBEK) THEN 
          CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','TRAPRP')
@@ -159,9 +132,6 @@ C
          END IF
          CLOSE (LUKRMC)
       ELSE
-         write(*,*)
-         write(*,*) 'Reading from file DFCOEF'
-         write(*,*)
          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
          IF (.NOT.TOBE) THEN
             WRITE(LUPRI,'(A)') 'Coefficient file not present'
@@ -170,19 +140,6 @@ C
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
             CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
      &                  WORK(KIBEIG),TOTERG,14,WORK,KFREE,LFREE)
-!          do i=1,NCMOTQ
-!            write(*,*) i,WORK(KCMO+i-1)
-!          enddo
-!          write(*,*)
-!          do i=1,NORBT
-!            write(*,*) i,WORK(KEIG+i-1)
-!          enddo
-!          write(*,*)
-!          write(*,*) 'Bosonic symmetries of the spinors from DFCOEF'
-!          write(*,*)
-!          call pbssp(norbt,work(kibeig))
-!          write(*,*)
-!          write(*,*) 'Total HF energy:',TOTERG
          ENDIF
       END IF
 C
@@ -194,13 +151,6 @@ C
         CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
      &                WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-!          write(*,*)
-!          write(*,*) 'Bosonic symmetries of the spinors from SELIBEIG:'
-!          write(*,*)
-!          write(*,*) 'T-index:',i,' fermion irep:',ifrp
-!          write(*,*)
-!          call pbssp(nstr(ifrp,0,I),work(kibe(ifrp,i)))
-!          write(*,*)
        ENDDO
        IF (NFSYM.EQ.1) CALL MEMGET('INTE',KIBE(2,I),0,WORK,KFREE,LFREE)
 C      ... always define KIBE(2,*) for PRPMLF call below
@@ -214,33 +164,9 @@ C
       OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
       OPEN (LUMLF1,FORM='UNFORMATTED',FILE='MDPROP')
-      write(*,*)
-      write(*,*) 'entering property transf.'
-      write(*,*) 'NSTRT(1),NSTRT(2),NZ:',NSTRT(1),NSTRT(2),NZ
-      write(*,*)
 C
       CALL MEMGET('REAL',KPROPMO,NSTRT(1)*NSTRT(2)*NZ,WORK,KFREE,LFREE)
 C
-      write(*,*) 'Number of transformed properties NTRPP:',NTRPP
-      write(*,*)
-      write(*,*) 'First an overview:'
-      write(*,*)
-      do i = 1,ntrpp
-         INDXPR = LTRPP(I)
-         write(*,*) 'INDXPR:',INDXPR
-         ISYM  = IPRPSYM(INDXPR)
-         write(*,*) 'ISYM:',ISYM
-         IOPSY = JBTOF(ISYM-1,1)
-         write(*,*) 'IOPSY:',IOPSY
-         DO IX = 1, 32
-            ACHAR(IX:IX) = '*'
-         ENDDO
-         ACHAR(25:32) = PRPNAM(INDXPR)(1:8)
-         write(*,*) achar
-      write(*,*)
-      enddo
-      write(*,*) ' ----------------- end of overview:'
-
       DO I = 1,NTRPP
          INDXPR = LTRPP(I)
          ISYM  = IPRPSYM(INDXPR)
@@ -249,9 +175,6 @@ C
             ACHAR(IX:IX) = '*'
          ENDDO
          ACHAR(25:32) = PRPNAM(INDXPR)(1:8)
-
-         write(*,*) 'n2orbxq:',n2orbxq
-
          CALL MEMGET('REAL',KPRPMO,N2ORBXQ,WORK,KFREE,LFREE)
          CALL PRPMAT(INDXPR,IOPSY,WORK(KPRPMO),WORK(KCMO),
      &               WORK(KIBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRTRP)
@@ -262,7 +185,7 @@ C
 C
          DO IFRP = 1, NFSYM
 C
-C          DIREP fermion symmetry of indices for the bar and the ket.
+C          Determine fermion symmetry of indices for the bar and the ket.
 C          We fix the ket index, so that the bra index follows from the 
 C          combination of the symmetry of the ket and that of the operator.
 C
@@ -275,16 +198,12 @@ C
            IOFF = I2ORBX(IFRP1,IFRP2)
            JOFF = (IFRP2-1)*NSTRT(1)*NSTR(1,0,2)
      &          + (IFRP1-1)*NSTR(1,0,1)
-           write(*,*) 'enetering selmes with ioff,joff:',ioff,joff
            CALL SELMES(WORK(KPRPMO+IOFF),IFRP1,IFRP2,WORK(KPROPMO+JOFF),
      &                 NSTRT(1),NSTRT(2),
      &                 WORK(KVEC(IFRP1,1)),WORK(KVEC(IFRP2,2)),
      &                 NSTR(IFRP1,2,1),NSTR(IFRP2,2,2),
      &                 NSTR(IFRP1,1,1),NSTR(IFRP2,1,2))
          ENDDO
-
-!        stop
-
          CALL MEMREL('TRAPRP',WORK,KPRPMO,KPRPMO,KFREE,LFREE)
 C
          CALL MEMGET('REAL',KPRCMO,NSTRT(1)*NSTRT(2)*8,WORK,KFREE,LFREE)
@@ -309,16 +228,6 @@ C
 C
       RETURN
       END      
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     SUBROUTINE pbssp(n,spsy)
-C     integer n
-C     integer spsy(n)
-C     integer i
-C     do i=1,n
-C       write(*,*) 'Spinor:',i,' symm:',spsy(i)
-C     enddo
-C     return
-C     end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SELMES(PRPMO,IFRP1,IFRP2,PBUF,NDIM1,NDIM2,JVEC1,JVEC2,
      &                  NPVEC1,NPVEC2,NEVEC1,NEVEC2)
@@ -410,7 +319,6 @@ C
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)
       DIMENSION IOFF1(2,2),IOFF2(2,2),IOFF3(2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE(22)
-      integer  elcounter
 C
       IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix :',ACHAR,' ***'
@@ -508,17 +416,6 @@ C     totally symmetric matrices) it not necessary to do this because
 C     the combination with totally symmetric spinor products 
 C     makes that the phase factors cancel. 
 C
-C**********************************************
-C***** LV: skipping this SPINFR-specific phase
-C***** correction for all non-LUCITRAREL calculations.
-C***** For all other calcs these corrections are not
-C***** needed and commented out. This correction here is
-C***** strongly related to the corresponding LUCIAREL
-C***** correction in the traout part!
-C**********************************************
-
-      if(1.eq.2) then
-      write(*,*) 'Entering LVs phase correction for SPFR' 
       IF (SPINFR) THEN
       CALL DZERO(PRCMO,NSTRT1*NSTRT2*8)
       DO IZ = 1, NZ
@@ -556,15 +453,8 @@ C into RELCCSD. If you use this transformation with another code, you
 C can proceed at your own risk by uncommenting the stop.
 C Stop now when we find non-symmetric operators.
 C  
-                IF (IQ.NE.IQS) THEN
-C     &          CALL QUIT ("This does not work with spinfree !")
-C                WRITE(*,*) 'Warning: spinfree property transformation!'
-C                WRITE(*,*) 'Possible problems with phase-transformed'
-C                WRITE(*,*) 'integrals (according to Luuk)'
-C                WRITE(*,*) ' *** *** *** IQ:',IQ,'  IQS:',IQS
-C                WRITE(*,*) 'We proceed....'
-                ENDIF
-
+                IF (IQ.NE.IQS)
+     &          CALL QUIT ("This does not work with spinfree !")
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS
@@ -587,20 +477,9 @@ C               Translate to the complex (bar/unbar) notation.
         ENDDO
       ENDDO
       ENDIF
-      else
-      write(*,*) 'Skipping LVs phase correction for SPFR' 
-      endif
-
-
 C
-      write(*,*) 
-      write(*,*) 
-      write(*,*)  ' ---- complex matrix elements'
-      write(*,*)  ' ---- of the property operator'
-      write(*,*) 
-      write(*,*) 
 ! Printout of complex matrix elements of the transformed operator
-!     IF (IPRINT.GE.1) THEN
+      IF (IPRINT.GE.1) THEN
          IF (NSTRT1.EQ.NSTRT2) THEN
             ! print out NONZERO diagonal matrix elements
             WRITE (LUPRI,1010) ACHAR(25:32)
@@ -613,24 +492,21 @@ C
             ENDDO
             WRITE (LUPRI,*)
          ENDIF
-!        IF (IPRINT.GE.2) THEN
+         IF (IPRINT.GE.2) THEN
            ! print out all NONZERO matrix elements
             WRITE (LUPRI,1012) ACHAR(25:32)
             WRITE(LUPRI,'(4x,a,d9.3)') 'zero threshold=',ZEROTHRS
-            elcounter = 0
             DO I = 1, NSTRT1*2
                DO J = 1, NSTRT2*2
                 IF ( (DABS(PRCMO(I,J,1)).GT.ZEROTHRS).OR.
      &               (DABS(PRCMO(I,J,2)).GT.ZEROTHRS) ) THEN
                   WRITE (LUPRI,1013) I,J,PRCMO(I,J,1),PRCMO(I,J,2)
                 ENDIF
-                elcounter = elcounter + 1
                ENDDO
             ENDDO
             WRITE (6,*)
-            WRITE (6,*) 'Number of property integrals here:',elcounter
-!        ENDIF
-!     ENDIF
+         ENDIF
+      ENDIF
 C
 C     WRITE PRCMO TO FILE
 C
