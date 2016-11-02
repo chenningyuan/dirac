@@ -21,6 +21,7 @@
          use talsh
          use, intrinsic:: ISO_C_BINDING
 
+
          implicit none
          integer, intent(in) :: nao 
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
@@ -28,7 +29,7 @@
 
          integer             :: ifrp = 1     ! we do not use symmetry, so ifrp is always 1
          integer             :: nz = 4       ! we do not use symmetry, so nz is always 4
-         integer             :: i, imo, ierr
+         integer             :: i, j, k, imo, ierr
          type(MO)            :: qmo
          integer             :: ipqtoq(4)   ! only needed for the debug print, don't forget to remove later
 
@@ -45,7 +46,6 @@
          complex(8):: zero=(0.0,0.0), aoint_value=(1.D-6,0.0), mocoef_value=(1.D-3,0.0)
          real(8), pointer, contiguous:: mo_tens(:,:)
          type(C_PTR):: body_p
-
 
 !        Make some noise so that we know we are here
          print*, " Arrived in compute_mo_integrals routine"
@@ -64,11 +64,35 @@
          ierr=talsh_tensor_construct(aoint_tensor,R8,aoint_dims,init_val=aoint_value)
          ierr=talsh_tensor_construct(a1int_tensor,R8,a1int_dims,init_val=zero)
          ierr=talsh_tensor_construct(mocoef_tensor,R8,mocoef_dims,init_val=mocoef_value)
-         ierr=talsh_get_body_access(mocoef_tensor,body_p,'R8',0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(mocoef_tensor,body_p,R8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,mocoef_dims(1:2)) !now you can use <mo_tens> as a regular Fortran 2d array
 !        ierr=talsh_tensor_construct(mocoef_tensor,R8,mocoef_dims,init_method=mocoef_init(mo_list(1:nmo(i)))) ! here I need information on how to write such an intialization method....
 
-!        Do dummy 1st quarter-transformation
+
+!        Initialize tensors with MO coefficients
+
+         do i = 1, 4
+            ipqtoq(i) = i
+         end do
+
+         imo = 1
+         do i = 1, 1
+            call create (qmo, nao, nmo(i), nz)
+            call get_dirac_mo_coefficients (ifrp,qmo,mo_list(imo:imo+nmo(i)-1),nmo(i))
+
+!           test that we have read the coefficients correctly
+            print*,"Mo coefficients for index ",i
+            CALL PRQMAT(qmo%coeff,nao,nmo(i),nao,nmo(i),nz,ipqtoq,6)
+!           test copying the real coefficients into the tensor
+            mo_tens = qmo%coeff(:,:,1)
+
+            call delete (qmo)
+            imo = imo + nmo(i)
+         end do
+
+!        Initialize AO integral tensors (to be done after we know how to make an initialization method)
+
+!        Do 1st quarter-transformation
          ierr=talsh_tensor_contract("D(i,q,r,s)+=L(p,q,r,s)*R(p,i)",a1int_tensor,aoint_tensor,mocoef_tensor,talsh_task=tsk)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=14; return; endif
          ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=15; return; endif
@@ -81,27 +105,6 @@
          vr=1_C_SIZE_T; do i=1,2; vr=vr*mocoef_dims(i); enddo !volume of the right tensor
          flops=dsqrt(dble(vd)*dble(vl)*dble(vr))*2d0 !number of floating point operations
          write(*,'(1x,A,D8.2)') 'Contraction speed in flops = ',flops/tm
-
-!        Initialize tensors with MO coefficients
-
-         do i = 1, 4
-            ipqtoq(i) = i
-         end do
-
-         imo = 1 
-         do i = 1, 4
-            call create (qmo, nao, nmo(i), nz)
-            call get_dirac_mo_coefficients (ifrp,qmo,mo_list(imo:imo+nmo(i)-1),nmo(i))
-
-!           test that we have read the coefficients correctly
-            print*,"Mo coefficients for index ",i
-            CALL PRQMAT(qmo%coeff,nao,nmo(i),nao,nmo(i),nz,ipqtoq,6)
-
-            call delete (qmo)
-            imo = imo + nmo(i)
-         end do
-
-!        Initialize AO integral tensors (to be done after we know how to make an initialization method)
 
 !        Shut down library
          ierr = talsh_shutdown()
