@@ -74,15 +74,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       sb_vvoott = 0.0d0
 
       call getvvoo(sa_vvoott)
-      do i=1,ic1
-        write(*,*) 'vvoo_ints: ',i,sa_vvoott(i)
-      enddo
-      stop
       call xcopy(ic1,sa_vvoott,1,sb_vvoott,1)
       call denomvvoo_pp(eps,sa_vvoott)
-      do i=1,ic1
-        write(*,*) 'denomvvoo_pp: ',i,sa_vvoott(i)
-      enddo
 !
 ! we have v_ac,kl in sa_vvoott and
 ! V_ac,kl         in sb_vvoott
@@ -137,9 +130,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         else
           call matsym(bab(ioff),nv(krep),nv(krep))
         endif
-        do i=1,nv(krep)*nv(krep)
-          write(*,*) 'Bab: ',ioff+i-1,bab(ioff+i-1)
-        enddo
+!       do i=1,nv(krep)*nv(krep)
+!         write(*,*) 'Bab: ',ioff+i-1,bab(ioff+i-1)
+!       enddo
       enddo
 !
 !  -------------------------------------
