@@ -416,6 +416,17 @@ C     totally symmetric matrices) it not necessary to do this because
 C     the combination with totally symmetric spinor products 
 C     makes that the phase factors cancel. 
 C
+C**********************************************
+C***** LV: skipping this SPINFR-specific phase
+C***** correction for all non-LUCITRAREL calculations.
+C***** For all other calcs these corrections are not
+C***** needed and commented out. This correction here is
+C***** strongly related to the corresponding LUCIAREL
+C***** correction in the traout part!
+C**********************************************
+C
+      if(.false.) then              !forced skipping without deleting the code
+        WRITE(LUPRI,*) 'ATT: A possibly problematic corr. included!'
       IF (SPINFR) THEN
       CALL DZERO(PRCMO,NSTRT1*NSTRT2*8)
       DO IZ = 1, NZ
@@ -453,8 +464,8 @@ C into RELCCSD. If you use this transformation with another code, you
 C can proceed at your own risk by uncommenting the stop.
 C Stop now when we find non-symmetric operators.
 C  
-C               IF (IQ.NE.IQS)
-C    &          CALL QUIT ("This does not work with spinfree !")
+                IF (IQ.NE.IQS)
+     &          CALL QUIT ("This does not work with spinfree !")
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS
@@ -477,6 +488,9 @@ C               Translate to the complex (bar/unbar) notation.
         ENDDO
       ENDDO
       ENDIF
+      else
+        WRITE(LUPRI,*) 'The spinfree correction is skipped!'
+      endif
 C
 ! Printout of complex matrix elements of the transformed operator
       IF (IPRINT.GE.1) THEN
