@@ -966,11 +966,9 @@ C
           if(propertyints) then
             write(*,*)
             write(*,*)  'Property integrals exist.'
-            write(*,*)  'TM are calculated for this state.'
+            write(*,*)  'TMs are calculated for this symmetry.'
             write(*,*)
-            write(*,*)  'Attention: temporarily commented out!'
-            write(*,*)
-!           call build_tramo(desrep,iobase,eps)
+            call build_tramo(desrep,iobase,eps)
           else
             write(*,*) 'No transition moments for irep',desrep,
      &                 ' can be calculated.'

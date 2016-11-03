@@ -453,8 +453,8 @@ C into RELCCSD. If you use this transformation with another code, you
 C can proceed at your own risk by uncommenting the stop.
 C Stop now when we find non-symmetric operators.
 C  
-                IF (IQ.NE.IQS)
-     &          CALL QUIT ("This does not work with spinfree !")
+C               IF (IQ.NE.IQS)
+C    &          CALL QUIT ("This does not work with spinfree !")
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS
