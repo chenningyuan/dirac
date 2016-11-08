@@ -3635,7 +3635,7 @@ C
      *   ' >>> ORBPRO error, '//
      *   'no. of contracted functions per AO-block',NCONT,
      *   '                   '//
-     *   'current maximum number                  ',MXCONT
+     *   'current maximum number MXCONT           ',MXCONT
       CALL QUIT('Too many contracted functions per AO-block')
       END
 C  /* Deck fitpro */
