@@ -385,6 +385,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)
 #set(EXTERNAL_LIBS main ${EXTERNAL_LIBS})
 set(EXTERNAL_OBJECTS  $<TARGET_OBJECTS:main> ${EXTERNAL_OBJECTS})
 
-# make the EXTERNAL_LIBS variable visible to the scope up !
+# make these variables visible to the cmake one level up
 set(EXTERNAL_LIBS ${EXTERNAL_LIBS} PARENT_SCOPE)
 set(EXTERNAL_OBJECTS ${EXTERNAL_OBJECTS} PARENT_SCOPE)
+set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} PARENT_SCOPE)
