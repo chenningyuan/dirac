@@ -23,6 +23,8 @@ option(ENABLE_STIELTJES "Enable stieltjes library" ON)
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
+# interest as separate library
+cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
 if(ENABLE_INTEREST)
     add_definitions(-DMOD_INTEREST)
 endif()
