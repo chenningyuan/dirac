@@ -1,5 +1,5 @@
 :orphan:
- 
+
 
 Release preparation
 ===================
@@ -112,6 +112,42 @@ option, you can use MOD_UNRELEASED::
 
 To summarize, you can remove code using either existing CPP filters or using
 MOD_UNRELEASED. Do this on the release branch and merge to the master.
+
+
+How does the preprocessor-based code removal work?
+--------------------------------------------------
+
+Consider this CMake code at the time of writing found in ``src/CMakeLists.txt``::
+
+    cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
+    if(ENABLE_INTEREST)
+        add_definitions(-DMOD_INTEREST)
+    endif()
+
+    ...
+
+    if(ENABLE_INTEREST)
+        add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
+        set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
+        dirac_test(mdirac_closed-shell_dft "interest")
+    else()
+        set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
+    endif()
+    message(STATUS "Interest library: ${ENABLE_INTEREST}")
+
+This code adds a CMake option ``ENABLE_INTEREST`` to toggle the Interest
+library on or off.  This is a dependent option which depends on
+``ENABLE_UNRELEASED``. This means that Interest library is on by default unless
+``ENABLE_UNRELEASED`` is selected.
+
+We see that selecting ``ENABLE_INTEREST`` defines ``-DMOD_INTEREST`` (among
+other things).  Further down we see that if ``ENABLE_INTEREST`` is false, then
+``-UMOD_INTEREST`` is added to ``CODE_REMOVAL_FLAGS``. This variable is used in
+``cmake/custom/cpack.cmake`` and passed on to the
+``maintenance/remove_unreleased_code`` script which removes code based on these
+flags.  Since ``maintenance/remove_unreleased_code`` works in-place,
+``cmake/custom/cpack.cmake`` first copies the source tree to ``EXPORT_DIR`` to
+make sure we don't delete code in our working directory.
 
 
 How to "remove" entire directories?
