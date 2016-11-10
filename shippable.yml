@@ -19,7 +19,8 @@ env:
     - CTEST_PROJECT_NAME="DIRACext"
     
 # language settings - prepare Python environment
-language: python
+language: 
+    - python
 
 # install/upgrade needed software
 install:
