@@ -604,9 +604,6 @@ C
         IF(IGTDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       ENDIF
 C
-      IF(DENSFIT)
-     &  WRITE(LUPRI,'(1X,A)') '* Employ density fitting techniques'
-C
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
      &   '* Spherical transformation embedded in MO-transformation',
@@ -4665,7 +4662,6 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
-      DENSFIT  = .FALSE.
       NOSET    = .FALSE.
       OPTWLK   = .FALSE.
       OPTNEW   = .FALSE.
@@ -4733,9 +4729,6 @@ C     ======================================
       NPRPS        = 0
 C
       CALL OPTINI()
-#ifdef MOD_ERI
-      CALL FCK3INI
-#endif
 C
       RETURN
       END
@@ -4787,9 +4780,6 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -5135,20 +5125,6 @@ C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                      call quit('failure in DFTINPUT after .DFT')
                   end if
                   call set_hf_exchange_factor(hfxfac)
-
-#ifdef MOD_ERI
-C aspg, 20070909
-c if the calculation is performed with non-hybrid functionals,
-C and j-engine is set, we force dolink to true even if it was
-C not specified in the input, so that no extra work in the
-c integral evaluation is done. for hfxfac set to zero, the
-C link driver just acts to scale the fock matrix according to
-c DIRAOF->SKLFC1
-                  IF (DOFCK3.AND.(HFXFAC.EQ.D0)) THEN
-                     DOLINK = .TRUE.
-                  ENDIF
-#endif /* MOD_ERI */
-
                END IF
                dirac_cfg_dft_calculation = .true.
                SETFUN = .TRUE.
@@ -6012,18 +5988,6 @@ CMI    ... quantum dots
 !         so let's not call it in this case
           call dftreport()
         end if
-
-#ifdef MOD_ERI
-C aspg, 20070909
-         IF (DOLINK.AND.(HFXFAC.EQ.D0)) then
-            WRITE (LUPRI,*) ' '
-            WRITE (LUPRI,*) '     Note: as J-Engine was selected '//
-     &                      'together with non-hybrid functionals,'
-            WRITE (LUPRI,*) '           only pure Coulomb integrals'//
-     &                      ' will be calculated.'
-            WRITE (LUPRI,*) ' '
-         ENDIF
-#endif /* MOD_ERI */
 
          IF (IGTINT.EQ.1) THEN
             IF (LSCALE_DFT_GAUNT) THEN

@@ -432,9 +432,6 @@ C
 #include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1415,7 +1412,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbreo.h"
-#include "densfit.h"
       real(8), allocatable :: aoo2esssoc(:)
       LOGICAL   LBIT, tobe, DODIIS_save
       type(fde_import) :: itmp
@@ -1434,17 +1430,6 @@ C
 #endif
       CALL QENTER('SCFCYC_1')
 #include "memint.h"
-C
-#ifdef MOD_DNF
-      IF (DF_FITVXC) THEN
-         IF (DODSCF) THEN
-            using_diffdens = .true.
-            CALL DF_FitXC_InitFilesDD(NBASISAUX,WORK,LWORK)
-         ELSE
-            using_diffdens = .false.
-         ENDIF
-      ENDIF
-#endif
 C
 C     ***********************************
 C     ***** Perform SCF-iterations ******
@@ -1969,9 +1954,6 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
       LOGICAL LVCON
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),

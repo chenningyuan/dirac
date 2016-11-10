@@ -52,7 +52,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
         COMMAND rm -rf ${EXPORT_DIR}/src/eri/
         COMMAND rm -rf ${EXPORT_DIR}/src/densfit/
         COMMAND rm -rf ${EXPORT_DIR}/src/prp/esr/
-        COMMAND rm -rf ${EXPORT_DIR}/src/gp/xml/
         COMMAND rm -rf ${EXPORT_DIR}/src/krcc/
         COMMAND rm -rf ${EXPORT_DIR}/src/srdft/
         COMMAND ${PROJECT_SOURCE_DIR}/maintenance/remove_copyright_tags ${EXPORT_DIR}
