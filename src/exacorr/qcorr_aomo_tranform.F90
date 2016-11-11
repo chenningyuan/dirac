@@ -17,9 +17,11 @@
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !
          use dirac_MO
+         use dirac_exatensor
          use tensor_algebra
          use talsh
          use, intrinsic:: ISO_C_BINDING
+         use module_interest_interface
 
 
          implicit none
@@ -32,6 +34,8 @@
          integer             :: i, j, k, imo, ierr
          type(MO)            :: qmo
          integer             :: ipqtoq(4)   ! only needed for the debug print, don't forget to remove later
+         integer             :: nshells, number_aoshells   ! number of AO shells
+         type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
 !        we will test the construction and contraction of two tensors, needs to be moved to a proper subroutine later on
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
@@ -49,11 +53,25 @@
 
 !        Make some noise so that we know we are here
          print*, " Arrived in compute_mo_integrals routine"
-!        Initialize library
+!        Initialize libraries
          host_buf_size=BUF_SIZE
          ierr=talsh_init(host_buf_size,host_arg_max)
+         print*, " Initialized talsh library"
          write(*,'("Status ",i11,": Size (Bytes) = ",i13, &
          ": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
+         call interest_initialize
+         print*, " Initialized interest library"
+         nshells = number_aoshells()
+         allocate(shell(nshells))
+         print*, " Allocated ",nshells," shell variables"
+         call initialize_shells(shell)
+         do i = 1, nshells
+            print*,i,shell(i)%orb_momentum,shell(i)%n_primitives
+            do j = 1, shell(i)%n_primitives
+               print*,i,j,shell(i)%exponent(j),shell(i)%contr_coefficient(j)
+            end do
+         enddo
+         print*, " Retrieved basis set information from DIRAC common blocks"
          
 !        Create and initialize tensors
          aoint_dims = nao

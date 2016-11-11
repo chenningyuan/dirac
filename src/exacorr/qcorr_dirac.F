@@ -101,3 +101,67 @@ C
 C
       END
 
+       integer function Number_AOShells()
+
+!      Read information from common block to get a cleaner interface
+
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
+
+       Number_AOShells = nlrgsh
+
+       end
+
+       integer function Dirac_Basis_Size()
+
+!      Count the total number of large component basis functions (to be generalized to large or small or total)
+
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
+
+       nao_large = 0
+       do ishell = 1, nlrgsh
+          nfuns  = kckt(ishell)   ! number of Cartesian components
+          nao_large = nao_large + nfuns
+       end do
+       print*, " Counted ",nao_large," large component functions"
+
+       Dirac_Basis_Size = nao_large
+       end
+
+       subroutine Initialize_Shells (shell)
+
+       use dirac_exatensor
+
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "aovec.h"
+#include "primit.h"
+
+       integer ishell, iPrimStart, iPrimEnd, k
+       type(basis_func_info_t) :: shell(*)
+
+       do ishell = 1, nlrgsh
+          shell(ishell)%orb_momentum = nhkt(ishell)
+          shell(ishell)%atom_number  = ncent(ishell)
+          shell(ishell)%n_primitives = nuco(ishell)
+          nullify  (shell(ishell)%exponent)
+          allocate (shell(ishell)%exponent(nuco(ishell)))
+          nullify  (shell(ishell)%contr_coefficient)
+          allocate (shell(ishell)%contr_coefficient(nuco(ishell)))
+          iPrimStart = jstrt(ishell) + 1
+          iPrimEnd   = jstrt(ishell) + nuco(ishell)
+          k          = numcf(ishell)
+         shell(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
+         shell(ishell)%contr_coefficient = priccf(iPrimStart:iPrimEnd,k)
+         shell(ishell)%center%coord = cent(ishell,1:3,1)
+       end do
+
+       return 
+       end
+
+          
+
