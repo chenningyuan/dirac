@@ -164,12 +164,12 @@ contains
     integer                     :: n_coef, ierr
     INCLUDE 'mpif.h'
 
-    mpi_bcast (M%fermion_irrep,    1,mpi_integer,mparid,mpi_comm_world,ierr)
-    mpi_bcast (M%boson_irrep,  M%nmo,mpi_integer,mparid,mpi_comm_world,ierr)
-    mpi_bcast (M%index,        M%nmo,mpi_integer,mparid,mpi_comm_world,ierr)
-    mpi_bcast (M%energy,       M%nmo,mpi_double_precision,mparid,mpi_comm_world,ierr)
+    call mpi_bcast (M%fermion_irrep,    1,mpi_integer,mparid,mpi_comm_world,ierr)
+    call mpi_bcast (M%boson_irrep,  M%nmo,mpi_integer,mparid,mpi_comm_world,ierr)
+    call mpi_bcast (M%index,        M%nmo,mpi_integer,mparid,mpi_comm_world,ierr)
+    call mpi_bcast (M%energy,       M%nmo,mpi_double_precision,mparid,mpi_comm_world,ierr)
     n_coef = M%nao * M%nmo * M%nz
-    mpi_bcast (M%coeff,n_coef,mpi_double_precision,mparid,mpi_comm_world,ierr)
+    call mpi_bcast (M%coeff,n_coef,mpi_double_precision,mparid,mpi_comm_world,ierr)
 
   end subroutine SyncMOcoefficients
 
