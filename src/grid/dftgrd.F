@@ -637,7 +637,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION X(MAXNUM),Y(MAXNUM),Z(MAXNUM),WT(MAXNUM)
 
 C
-C     Lebedev schemes programmed by Cristoph van Wüllen
+C     Lebedev schemes programmed by Cristoph van Wullen
 C     and used by kind permission.
 C
 C     For principal references, see file Lebedev-Laikov.F

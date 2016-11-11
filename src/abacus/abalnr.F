@@ -307,7 +307,7 @@ C
       CALL TIMER('START ',TIMEIN,TIMOUT)
 C
       IF (IPRLNR .GE. 0) 
-     &     CALL TITLER('Solving Linear Response Equations','¤',118)
+     &     CALL TITLER('Solving Linear Response Equations','#',118)
 C
       IPRRSP = IPRLNR
 C
