@@ -1722,7 +1722,7 @@ C
 *
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
-      write(LUWRT,*) ' I`ll take you to a place '
+      write(LUWRT,*) " I'll take you to a place "
       write(LUWRT,*) ' Where we shall find our'
       write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
       write(LUWRT,*)
