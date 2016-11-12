@@ -4797,7 +4797,7 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -5029,7 +5029,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -5368,7 +5368,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -5623,7 +5623,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -5770,7 +5770,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
