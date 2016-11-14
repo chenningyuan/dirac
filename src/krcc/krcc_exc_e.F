@@ -1063,13 +1063,13 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
 *        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 2 )
      &   WRITE(6,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
+ 1170    FORMAT(/' Convergence was not obtained in',I4,' iterations')
       ELSE
 *        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
          IF (IPRT .GE. 2 )
      &   WRITE(6,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
+ 1180    FORMAT(/' Convergence was obtained in',I4,' iterations')
         END IF
 *. Final eigenvalues
         DO 1601 IROOT = 1, NROOT
@@ -1079,30 +1079,28 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
       iprt = 2
       IF ( IPRT .GT. 1 ) THEN
         DO 1600 IROOT = 1, NROOT
-          WRITE(6,*)
-          WRITE(6,'(A,I3)')
+          WRITE(6,'(/A,I3)')
      &  ' Information about convergence for root... ' ,IROOT
           WRITE(6,*)
      &    '============================================'
-          WRITE(6,*)
           WRITE(6,1190) FINEIG(IROOT)
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
+ 1190     FORMAT(/' The final approximation to eigenvalue ',F18.10)
           IF(IPRT.GE.400) THEN
             WRITE(6,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
+ 1200       FORMAT(/' The final approximation to eigenvector')
             CALL REWINO( LU1)
             CALL FRMDSC(VEC1,NVAR,-1  ,LU1,IMZERO,IAMPACK)
             CALL WRTMAT(VEC1,1,NVAR,1,NVAR)
           END IF
           WRITE(6,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/' Summary of iterations ',
+     +           /' ----------------------')
           WRITE(6,1310)
  1310     FORMAT
-     &    (1H0,' Iteration point        Eigenvalue         Residual ')
+     &    (/'  Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(6,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       END IF
 *
@@ -1134,8 +1132,8 @@ C     IF( ITER .LT. MAXIT .AND. .NOT. CONVER) GOTO 1000
       end do
 C
       RETURN
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(/I6,7F15.8,/,(6X,7F15.8))
       END
 *
       SUBROUTINE MGS3(X,S,NDIM,SCR1)
@@ -1477,7 +1475,7 @@ C
 C
       DO 100 I=1,NROW
       WRITE(6,1010) I,(A(I,J),J=1,NCOL)
- 1010 FORMAT(1H0,I3,2X,2(1X,E25.15),/,(1H ,5X,2(1X,E25.15)))
+ 1010 FORMAT(/I4,2X,2(1X,E25.15),/,(6X,2(1X,E25.15)))
   100 CONTINUE
       RETURN
       END
