@@ -19,6 +19,7 @@ endif()
 
 add_library(
     exacorr
+    OBJECT
     ${FIXED_EXACORR_FORTRAN_SOURCES}
     ${FREE_EXACORR_FORTRAN_SOURCES}
 )

@@ -103,7 +103,8 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:matrix_operations> ${EXTERNAL_OBJECTS})
 
 # exacorr as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
-set(EXTERNAL_LIBS exacorr ${EXTERNAL_LIBS})
+#set(EXTERNAL_LIBS exacorr ${EXTERNAL_LIBS})
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:exacorr> ${EXTERNAL_OBJECTS})
 
 #    Moltra as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
