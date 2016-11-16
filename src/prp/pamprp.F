@@ -6221,12 +6221,11 @@ CMI  ====================================================================
      &             //'             SI          '
      &             //'            cgs',1)
          WRITE (LUPRI,'(3(/,1X,A,3(F20.4,A)))')
-     &      ' Magnetizability:           ',    AVE,' (au), ',
-     &        SI*AVE*1.0D31,' (SI), ', CGS*AVE,' (cgs)',
-     &      ' Diamagnetic contribution:  ',DIAMAG,' (au), ',
-     &        SI*DIAMAG*1.0D31,' (SI), ',CGS*DIAMAG,' (cgs)',
-     &      ' Paramagnetic contribution: ',PARAMA,' (au), ',
-     &        SI*PARAMA*1.0D31,' (SI), ',CGS*PARAMA,' (cgs)'
+     &      ' Magnetizability:           ', AVE,SI*AVE*1.0D31,CGS*AVE,
+     &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
+     &                                     CGS*DIAMAG,
+     &      ' Paramagnetic contribution: ',PARAMA,SI*PARAMA*1.0D31,
+     &                                     CGS*PARAMA
          WRITE (LUPRI,'(/,1X,A)') ' Magnetizability is spherical.'
       ELSE IF (MAGOUT2) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
