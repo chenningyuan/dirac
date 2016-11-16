@@ -6220,7 +6220,7 @@ CMI  ====================================================================
      &             //'             au          '
      &             //'             SI          '
      &             //'            cgs',1)
-         WRITE (LUPRI,'(3(/,1X,A,3(F20.4,A)))')
+         WRITE (LUPRI,'(3(1X,A,3F20.4,/))')
      &      ' Magnetizability:           ', AVE,SI*AVE*1.0D31,CGS*AVE,
      &      ' Diamagnetic contribution:  ',DIAMAG,SI*DIAMAG*1.0D31,
      &                                     CGS*DIAMAG,
