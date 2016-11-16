@@ -6216,6 +6216,10 @@ CMI   ...there are three defferent types of the magnetizability output
 CMI  ====================================================================
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
+         CALL HEADER('Magnetizabilities        '
+     &             //'             au          '
+     &             //'             SI          '
+     &             //'            cgs',1)
          WRITE (LUPRI,'(3(/,1X,A,3(F20.4,A)))')
      &      ' Magnetizability:           ',    AVE,' (au), ',
      &        SI*AVE*1.0D31,' (SI), ', CGS*AVE,' (cgs)',
