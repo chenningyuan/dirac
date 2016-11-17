@@ -1107,6 +1107,14 @@
          call kw_read(word, relcc_mfd_convergence_threshold)
       end if
 
+      if (kw_matches(word, '.OVERLAP')) then
+         relcc_mfd_overlap_sorting = .true.
+      end if
+
+      if (kw_matches(word, '.NOOVERLAP')) then
+         relcc_mfd_overlap_sorting = .false.
+      end if
+
       call check_whether_kw_found(word, kw_section)
 
 
