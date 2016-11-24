@@ -20,7 +20,7 @@
          integer:: atom_element=0        !atomic element number (if centered on a nucleus of some atom)
          integer:: n_primitives=0        !number of primitives in the contraction
          real(REALD), pointer :: exponent(:)
-         real(REALD), pointer :: contr_coefficient(:)
+         real(REALD), pointer :: coefficient(:)
         end type basis_func_info_t
  !Molecular spinor info:
         type, public:: mo_spinor_info_t

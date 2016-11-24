@@ -150,13 +150,13 @@ C
           shell(ishell)%n_primitives = nuco(ishell)
           nullify  (shell(ishell)%exponent)
           allocate (shell(ishell)%exponent(nuco(ishell)))
-          nullify  (shell(ishell)%contr_coefficient)
-          allocate (shell(ishell)%contr_coefficient(nuco(ishell)))
+          nullify  (shell(ishell)%coefficient)
+          allocate (shell(ishell)%coefficient(nuco(ishell)))
           iPrimStart = jstrt(ishell) + 1
           iPrimEnd   = jstrt(ishell) + nuco(ishell)
           k          = numcf(ishell)
          shell(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-         shell(ishell)%contr_coefficient = priccf(iPrimStart:iPrimEnd,k)
+         shell(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
          shell(ishell)%center%coord = cent(ishell,1:3,1)
        end do
 
