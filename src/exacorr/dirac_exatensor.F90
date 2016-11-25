@@ -1,6 +1,5 @@
 !This module provides auxiliary routines required for
 !integrating the ExaTensor library with the DIRAC code.
-!REVISION: 2016-07-17
        module dirac_exatensor
         implicit none
         private
@@ -8,17 +7,13 @@
  !Generic:
         integer, parameter, private:: REALD=8 !default real for this module
 !DERIVED TYPES:
- !3D coordinate:
-        type, public:: coord_3d_t
-         real(REALD):: coord(1:3) !three coordinates (x,y,z)
-        end type coord_3d_t
  !Basis function info:
         type, public:: basis_func_info_t
-         type(coord_3d_t):: center       !3d coordinate of the basis function center (typically a nucleus)
          integer:: orb_momentum=-1       !orbital momentum: (0,1,2,3,...)
          integer:: atom_number=-1        !atom sequential number [1..MAX] (if centered on a nucleus of some atom)
          integer:: atom_element=0        !atomic element number (if centered on a nucleus of some atom)
          integer:: n_primitives=0        !number of primitives in the contraction
+         real(REALD):: coord(1:3)        !coordinate of the basis function center (typically a nucleus)
          real(REALD), pointer :: exponent(:)
          real(REALD), pointer :: coefficient(:)
         end type basis_func_info_t
@@ -53,6 +48,7 @@
         public compute_1e_hamiltonian_integrals
         public compute_2e_coulomb_integrals
         public get_mo_fock_diagonal
+        public compress_unc_shell
 
        contains
 !-------------------------------------------------------------------------------------------
@@ -113,7 +109,7 @@
 !Argument <tens_descr> specifies the tensor slice for which the integrals to be computed.
          implicit none
          type(tens_descr_t), intent(in):: tens_descr       !in: tensor descriptor (specifies which Hamiltonian tensor slice to compute)
-         real(8), intent(inout):: tens_body(*)             !out: Hamiltonian integrals
+         real(REALD), intent(inout):: tens_body(*)             !out: Hamiltonian integrals
          type(basis_func_info_t), intent(in):: ao_info(1:) !in: information on each basis function
          integer, intent(out):: ierr                       !out: error code (0:success)
 
@@ -139,7 +135,7 @@
 !Argument <tens_descr> specifies the tensor slice for which the integrals to be computed.
          implicit none
          type(tens_descr_t), intent(in):: tens_descr       !in: tensor descriptor (specifies which Hamiltonian tensor slice to compute)
-         real(8), intent(inout):: tens_body(*)             !out: Hamiltonian integrals
+         real(REALD), intent(inout):: tens_body(*)             !out: Hamiltonian integrals
          type(basis_func_info_t), intent(in):: ao_info(1:) !in: information on each basis function
          integer, intent(out):: ierr                       !out: error code (0:success)
 
@@ -152,7 +148,7 @@
 !Argument <tens_descr> specifies the tensor slice for which the integrals to be computed.
          implicit none
          type(tens_descr_t), intent(in):: tens_descr       !in: tensor descriptor (specifies which Hamiltonian tensor slice to compute)
-         real(8), intent(inout):: tens_body(*)             !out: Hamiltonian integrals
+         real(REALD), intent(inout):: tens_body(*)             !out: Hamiltonian integrals
          type(basis_func_info_t), intent(in):: ao_info(1:) !in: information on each basis function
          integer, intent(out):: ierr                       !out: error code (0:success)
 
@@ -164,11 +160,60 @@
 !This subroutine returns an array of diagonal Fock elements
 !for the entire molecular spinor range.
          implicit none
-         complex(8), intent(out), allocatable:: fock_diag(:) !diagonal fock elements
+         complex(REALD), intent(out), allocatable:: fock_diag(:) !diagonal fock elements
          integer, intent(out):: ierr                         !out: error code (0:success)
 
          ierr=0
          return
         end subroutine get_mo_fock_diagonal
+
+        integer function compress_unc_shell (shell)
+!If basis functions were grouped together in the input, they appear as quasi-contracted functions
+!with a lot of zero coefficients. Remove these zeroes and reduce the length to just one function.
+!Routine will produce an error, if the function is a true contraced function (more than one non-zero coefficient)
+
+          integer i, j, non_zero 
+          type(basis_func_info_t), intent(inout) :: shell
+          real(REALD), allocatable :: exponents(:), coefficients(:)   
+          real(REALD), parameter   :: treshold=1.D-12   
+
+          allocate(exponents(shell%n_primitives))
+          allocate(coefficients(shell%n_primitives))
+          exponents    = shell%exponent
+          coefficients = shell%coefficient
+
+          non_zero = 0
+          do i = 1, shell%n_primitives
+             if (abs(coefficients(i)) > treshold) then
+                non_zero = non_zero + 1
+                j = i
+             end if
+          end do
+         
+          if (non_zero > 1) then
+             print*, " WARNING: compress_unc_shell called for contracted shell"
+             compress_unc_shell = 1
+             return   ! leave shell untouched and return with error condition
+          else if (non_zero == 0) then
+             print*, " WARNING: compress_unc_shell found empty shell"
+             compress_unc_shell = 2
+             j = 1    ! set j to the first function, to avoid complications with zero length arrays
+          end if
+
+          deallocate (shell%exponent)
+          deallocate (shell%coefficient)
+          allocate   (shell%exponent(1))
+          allocate   (shell%coefficient(1))
+          
+          shell%n_primitives = 1
+          shell%exponent     = exponents(j)
+          shell%coefficient  = coefficients(j)
+      
+           deallocate (exponents)
+           deallocate (coefficients)
+
+           compress_unc_shell = 0
+
+        end function compress_unc_shell
 
        end module dirac_exatensor

@@ -15,6 +15,8 @@
 !-------------------------------------------------------------------------------------------
         subroutine compute_mo_integrals (nao, nmo, mo_list)
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
+!Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
+!Note that all integrals are printed to standard output, should be replaced by checking the MP2 energy or some other printable quantity
 !
          use dirac_MO
          use dirac_exatensor
@@ -38,7 +40,6 @@
          integer             :: nshells, number_aoshells   ! number of AO shells
          type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
-!        we will test the construction and contraction of two tensors, needs to be moved to a proper subroutine later on
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          type(talsh_tens_t):: aoint_tensor, mocoef_tensor,a1int_tensor
          type(talsh_tens_t):: a2int_tensor, a3int_tensor, moint_tensor
@@ -51,48 +52,48 @@
 
          real(8)   :: vd,vl,vr
          complex(8):: zero=(0.0,0.0), aoint_value=(1.D-6,0.0), mocoef_value=(1.D-3,0.0)
-         real(8), pointer, contiguous:: cmo_tens(:,:),ao_tens(:,:,:,:),mo_tens(:,:,:,:)
+         real(8), pointer, contiguous:: camo_tens(:,:),ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR):: body_p
 
 !        Make some noise so that we know we are here
          print*, " Arrived in compute_mo_integrals routine"
+
 !        Initialize libraries
          host_buf_size=BUF_SIZE
          ierr=talsh_init(host_buf_size,host_arg_max)
          print*, " Initialized talsh library"
-         write(*,'("Status ",i11,": Size (Bytes) = ",i13, &
-         ": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
+         write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,host_buf_size,host_arg_max
          call interest_initialize
          print*, " Initialized interest library"
+
+!        Retrieve basis set information from DIRAC common blocks
          nshells = number_aoshells()
          allocate(shell(nshells))
          print*, " Allocated ",nshells," shell variables"
          call initialize_shells(shell)
          do i = 1, nshells
-            print*,i,shell(i)%orb_momentum,shell(i)%n_primitives
-            do j = 1, shell(i)%n_primitives
-               print*,i,j,shell(i)%exponent(j),shell(i)%coefficient(j)
-            end do
+            if (compress_unc_shell(shell(i)) == 1) call quit ('This version can not handle contracted functions')
          enddo
          print*, " Retrieved basis set information from DIRAC common blocks"
          
-!        Set tensor dimensions
-         aoint_dims = nao
-         mocoef_dims(1) = nao
-         mocoef_dims(2) = nmo(1)
-         a1int_dims(1)  = nmo(1)
+!        Set tensor dimensions for the index transformation (simple brute-force algorithm)
+         mocoef_dims(1)  = nao
+         mocoef_dims(2)  = nmo(1)
+         aoint_dims      = nao
+         a1int_dims(1)   = nmo(1)
          a1int_dims(2:4) = nao
-         a2int_dims(1:2)  = nmo(1:2)
+         a2int_dims(1:2) = nmo(1:2)
          a2int_dims(3:4) = nao
-         a3int_dims(1:3)  = nmo(1:3)
-         a3int_dims(4) = nao
+         a3int_dims(1:3) = nmo(1:3)
+         a3int_dims(4)    = nao
          moint_dims(1:4)  = nmo(1:4)
 
 !        Initialize tensors with MO coefficients
          ierr=talsh_tensor_construct(mocoef_tensor,R8,mocoef_dims,init_val=zero)
          ierr=talsh_tensor_get_body_access(mocoef_tensor,body_p,R8,0,DEV_HOST)
-         call c_f_pointer(body_p,cmo_tens,mocoef_dims(1:2)) !now you can use <cmo_tens> as a regular Fortran 2d array
+         call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
 
+!        This array is only needed to print the MO coefficients using the DIRAC routine PRQMAT
          do i = 1, 4
             ipqtoq(i) = i
          end do
@@ -103,8 +104,10 @@
 !           test that we have read the coefficients correctly
             print*,"Mo coefficients for index ",i
             CALL PRQMAT(qmo%coeff,nao,nmo(i),nao,nmo(i),nz,ipqtoq,6)
-!           test copying the real coefficients into the tensor
-            cmo_tens = qmo%coeff(:,:,1)
+!           test copying the real coefficients into the tensor (these are the alpha coefficients)
+!           in the transformation below we assume real coefficients and furthermore (Calpha = Cbeta) so this
+!           will only work for non-relativistic (levy-Leblond) calculations
+            camo_tens = qmo%coeff(:,:,1)
             call delete (qmo)
             imo = imo + nmo(i)
          end do
@@ -236,36 +239,36 @@
          do lsh = 1, nshells
             ll   =  gto(lsh)%orb_momentum
             el   =  gto(lsh)%exponent(1)
-            xl   =  gto(lsh)%center%coord(1)
-            yl   =  gto(lsh)%center%coord(2)
-            zl   =  gto(lsh)%center%coord(3)
+            xl   =  gto(lsh)%coord(1)
+            yl   =  gto(lsh)%coord(2)
+            zl   =  gto(lsh)%coord(3)
             cl   =  gto(lsh)%coefficient(1)
             nl   =  ncartesian(ll)
             koff = 0
             do ksh = 1, nshells
                lk   =  gto(ksh)%orb_momentum
                ek   =  gto(ksh)%exponent(1)
-               xk   =  gto(ksh)%center%coord(1)
-               yk   =  gto(ksh)%center%coord(2)
-               zk   =  gto(ksh)%center%coord(3)
+               xk   =  gto(ksh)%coord(1)
+               yk   =  gto(ksh)%coord(2)
+               zk   =  gto(ksh)%coord(3)
                ck   =  gto(ksh)%coefficient(1)
                nk   =  ncartesian(lk)
                joff = 0
                do jsh = 1, nshells
                   lj   =  gto(jsh)%orb_momentum
                   ej   =  gto(jsh)%exponent(1)
-                  xj   =  gto(jsh)%center%coord(1)
-                  yj   =  gto(jsh)%center%coord(2)
-                  zj   =  gto(jsh)%center%coord(3)
+                  xj   =  gto(jsh)%coord(1)
+                  yj   =  gto(jsh)%coord(2)
+                  zj   =  gto(jsh)%coord(3)
                   cj   =  gto(jsh)%coefficient(1)
                   nj   =  ncartesian(lj)
                   ioff = 0
                   do ish = 1, nshells
                      li   =  gto(ish)%orb_momentum
                      ei   =  gto(ish)%exponent(1)
-                     xi   =  gto(ish)%center%coord(1)
-                     yi   =  gto(ish)%center%coord(2)
-                     zi   =  gto(ish)%center%coord(3)
+                     xi   =  gto(ish)%coord(1)
+                     yi   =  gto(ish)%coord(2)
+                     zi   =  gto(ish)%coord(3)
                      ci   =  gto(ish)%coefficient(1)
                      ni   =  ncartesian(li)
 !                    output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want

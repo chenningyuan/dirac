@@ -157,7 +157,7 @@ C
           k          = numcf(ishell)
          shell(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
          shell(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
-         shell(ishell)%center%coord = cent(ishell,1:3,1)
+         shell(ishell)%coord = cent(ishell,1:3,1)
        end do
 
        return 
