@@ -563,7 +563,7 @@ C
      &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
               CALL FLSHFO(LUPRI)
             ENDIF
-          ENDIF		
+          ENDIF
 
           IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
             CALL QBTRANS(IREP,'AOMO','S',D0,

@@ -372,7 +372,7 @@ C
 C **  Retrieve molecular orbitals
 C
       CALL MEMGET2('REAL','CMO',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL ESR_READ_CMO(WORK(KCMO),WORK,KFREE,LFREE)
+      CALL ESR_READ_CMO(WORK(KCMO),IPRESR,WORK,KFREE,LFREE)
 
 !     write (lupri,*) 'hj1 N_CIESR MAX_CIESR_IT NZCONF',
 !    &                     N_CIESR,MAX_CIESR_IT,NZCONF
@@ -2041,7 +2041,7 @@ C     END IF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE  ESR_READ_CMO(CMO,WORK,KFREE,LFREE)
+      SUBROUTINE  ESR_READ_CMO(CMO,IPRINT,WORK,KFREE,LFREE)
 C
 C     Hans Joergen Aa. Jensen Feb. 2015
 C
@@ -2053,6 +2053,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
       REAL*8  CMO(*), WORK(*)
+      INTEGER IPRINT, KFREE, LFREE
       LOGICAL FILEX, FNDLAB
 C
 C Used from COMMON blocks:
@@ -2167,6 +2168,18 @@ C        4. no more options (yet).
       CALL QUIT('ESR fatal error: no MO coefficients found')
 
  9000 CALL MEMREL('ESR_READ_CMO',WORK,1,KFREE_start,KFREE,LFREE)
+
+      IF ( IPRINT .gt. 20 ) THEN
+         CALL HEADER('ESR: input molecular orbitals:',-1)
+         DO I = 1,NFSYM
+            CALL HEADER('Coefficients for irrep '//CHAR(I+48),-1)
+            WRITE(LUPRI,*) ' printing offset ICMOQ(I)+1',ICMOQ(I)+1
+            WRITE(LUPRI,*) ' NFBAS(I,0), NORB(I)',NFBAS(I,0),NORB(I)
+            CALL PRQMAT(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
+     &                  NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+         END DO
+      END IF
+
       flush(lupri)
       RETURN
       END
