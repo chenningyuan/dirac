@@ -1,5 +1,7 @@
 :orphan:
 
+.. _case_CmF:
+
 ===========================
 Electronic structure of CmF
 ===========================

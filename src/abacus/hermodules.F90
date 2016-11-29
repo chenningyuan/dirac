@@ -941,6 +941,7 @@
 
       typepointer=>firstatomtype
       basindex=0
+      index=0
       NONTYP=0
 
       DO
@@ -1168,8 +1169,7 @@
         END IF
 
         IBLOCK(1:2)=IBLOCK(1:2)+NBLCK(basindex,1:2)
-        NOORBT(basindex+1:NONT(basindex)+basindex) = NOORBTS
-          
+        NOORBT(index+1:NONT(basindex)+index) = NOORBTS
         DO i=3,4
 !     JHS060707 TMP Include also the reading of fitsets.
           IBSFLAG=2
@@ -1180,6 +1180,7 @@
         CALL RECP_LNK_READCP(infile,basindex,NONT(basindex))
 
         typepointer=>typepointer%next
+        index=index+NONT(basindex)
         
       END DO
 

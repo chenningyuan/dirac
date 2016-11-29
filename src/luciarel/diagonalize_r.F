@@ -1722,7 +1722,7 @@ C
 *
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
-      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) " I'll take you to a place "
       write(LUWRT,*) ' Where we shall find our'
       write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
       write(LUWRT,*)
@@ -3263,8 +3263,8 @@ C      END IF
       Call Add_Info('E_CI',FINEIG,NROOT)
 *
       RETURN
- 1030 FORMAT(/,3X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(/,3X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/,3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(/,3X,I3,7F15.8,/,(6X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
  9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL: ',A,'(',A,')')
       END
@@ -3346,7 +3346,7 @@ C      END IF
 *
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
-      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) " I'll take you to a place "
       write(LUWRT,*) ' Where we shall find our'
       write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
       write(LUWRT,*)
@@ -3804,14 +3804,14 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
           END IF
 
           WRITE(LUWRT,1300)
- 1300     FORMAT(/,'  Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/,'  Summary of iterations',
+     +           /,' -----------------------')
           WRITE(LUWRT,1310)
  1310     FORMAT
      &    (/,'  Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
 
         CALL REWINE(LU1,LBLK)
@@ -3853,7 +3853,7 @@ C     Delete scratch units
 C
       call qexit('MICDV4')
 C
- 1030 FORMAT(/,3X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(/,I6,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/,3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(/,I6,7F15.8,/,(6X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
       END

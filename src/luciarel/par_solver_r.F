@@ -703,22 +703,19 @@ C
       end do
       IF ( IPRT .GT. 0 ) THEN
         DO 1600 IROOT = 1, NROOT
-          WRITE(LUWRT,*)
-          WRITE(LUWRT,'(A,I3)')
-     &  ' Information about convergence for root... ' ,IROOT
-          WRITE(LUWRT,*)
-     &    '============================================'
-          WRITE(LUWRT,*)
+          WRITE(LUWRT,'(/A,I3/A/)')
+     &  ' Information about convergence for root... ' ,IROOT,
+     &  ' ============================================'
           FINEIG(IROOT) = EIG(IROOT,ITER)
           WRITE(LUWRT,1300)
- 1300     FORMAT(1H0,' Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/,'  Summary of iterations',
+     +           /,' -----------------------')
           WRITE(LUWRT,1310)
  1310     FORMAT
-     &    (1H0,' Iteration point        Eigenvalue         Residual ')
+     &    (/'  Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
       END IF
 *
@@ -751,8 +748,8 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
 *
       call qexit('MICDV4')
 *
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(/3X,I3,7F15.8,/,(6X,7F15.8))
 
  9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
  9250 FORMAT(' >>>  WALL TIME IN STEP 1 OF CURRENT ITERATION   : ',A)

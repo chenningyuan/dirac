@@ -1,20 +1,22 @@
 :orphan:
 
-16.0 (scheduled for 2016-11-15 ?)
----------------------------------
-
-- Calculation of dipole intensities together with the excitation energies in Fock space CC.
-- Faster Dirac compilation due to implemented OBJECT libraries (requires CMake of version at least 2.8.10)
-- Run benchmark tests and only benchmark tests with "ctest -C benchmarks -L benchmark"
+17.alpha
+--------
 
 (Do not change anything below this text on the master branch,
 the lines below should only be changed on the release branch.)
 
--------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------
 
-
-15.1 (2016-09-??)
+16.0 (2016-12-12)
 -----------------
+
+- DIRAC16 release.
+
+- Calculation of dipole intensities together with the excitation energies in Fock space CC.
+- Faster Dirac compilation due to implemented OBJECT libraries (requires CMake of version at least 2.8.10).
+- Run benchmark tests and only benchmark tests with "ctest -C benchmarks -L benchmark".
+- .AOFOCK documented. AOFOCK is now default if at least 25 MPI nodes (parallelizes better than SOFOCK).
 
 - Bugfix: MCSCF and GASCIP was not correct for odd number of electrons
 - Bugfix: now .CASSCF works again for KRMSCF input
@@ -44,8 +46,8 @@ the lines below should only be changed on the release branch.)
 - Restored "make install" target.
 - Cache compiler flags.
 - Test reladc_fano does not report failure if Stieltjes is deactivated.
-- .AOFOCK documented. AOFOCK is now default if at least 25 MPI nodes (parallelizes better than SOFOCK)
 
+-------------------------------------------------------------------------------------------------------
 
 15.0 (2015-12-16)
 -----------------
