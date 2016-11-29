@@ -163,5 +163,39 @@ C
        return 
        end
 
-          
+       subroutine Write_To_Mdcint (nmo,mo_tens)
 
+!      Utility routine to write to old format, makes it easier to test the index transform
+
+#include "implicit.h"
+
+       integer rcw
+       integer nmo(4)
+       real(8) mo_tens(nmo(1),nmo(2),nmo(3),nmo(4))
+       real(8), allocatable :: rkl(:)
+       integer, allocatable :: indk(:),indl(:)
+
+!      We use no symmetry, so most variables are known and can be hardwired
+       irepij = 1
+       iclass = 1  ! this implies spinfree, needs to be generalized later
+       rcw = 1     ! this is also spinfree, spin-orbit will give rcw = 2
+       iprint = 0
+
+!      Allocate memory needed by mdintb
+       nkl = nmo(1) * nmo(2)
+       allocate(rkl(nkl))
+       allocate(indk(nkl))
+       allocate(indl(nkl))
+       do j = 1, nmo(4)
+          do i = 1, nmo(3)
+              call mdintb(iprint,rcw,iclass,irepij,nmo(1),nmo(2),i,j,
+     &                    mo_tens(:,:,i,j),nkl,indk,indl,rkl)
+          end do
+       end do
+
+       deallocate(rkl)
+       deallocate(indk)
+       deallocate(indl)
+
+       return
+       end

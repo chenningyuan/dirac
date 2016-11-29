@@ -706,7 +706,6 @@ C
 C     /DCBTRL/
 C
       TRA_ANTIS = .FALSE.
-      TRA_MSOUT = .TRUE.
       NO2IND = .TRUE.
       NO4IND = .FALSE.
       NOPAIR = LNOPAIR
@@ -936,7 +935,7 @@ C     --------------------------------------
 C
       CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
      &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
-     &            TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+     &            TRA_ANTIS,ITRA_INTFL4)
 C
 C     Print timing information
 C

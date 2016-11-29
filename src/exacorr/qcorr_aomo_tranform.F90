@@ -101,12 +101,13 @@
          do i = 1, 1  ! CAUTION: should be generalized to different coefficient ranges for each index (e.g. for MP2)
             call create (qmo, nao, nmo(i), nz)
             call get_dirac_mo_coefficients (ifrp,qmo,mo_list(imo:imo+nmo(i)-1),nmo(i))
+!           uncommenting this can be useful for debugging, this piece of code is to be deleted later
 !           test that we have read the coefficients correctly
-            print*,"Mo coefficients for index ",i
-            CALL PRQMAT(qmo%coeff,nao,nmo(i),nao,nmo(i),nz,ipqtoq,6)
-!           test copying the real coefficients into the tensor (these are the alpha coefficients)
+!           print*,"Mo coefficients for index ",i
+!           CALL PRQMAT(qmo%coeff,nao,nmo(i),nao,nmo(i),nz,ipqtoq,6)
+!           copy the real coefficients into the tensor (these are the alpha coefficients)
 !           in the transformation below we assume real coefficients and furthermore (Calpha = Cbeta) so this
-!           will only work for non-relativistic (levy-Leblond) calculations
+!           will only work for non-relativistic (levy-Leblond) or X2C spinfree calculations
             camo_tens = qmo%coeff(:,:,1)
             call delete (qmo)
             imo = imo + nmo(i)
@@ -190,16 +191,21 @@
 !        Print transformed integrals to check correctness
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,R8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
-        print*,"Transformed integrals larger than 1.D-15"
-         do l = 1, nmo(4)
-            do k = 1, nmo(3)
-               do j = 1, nmo(3)
-                  do i = 1, nmo(3)
-                     if (abs(mo_tens(i,j,k,l)) > 1.D-15) print*,i,j,k,l,mo_tens(i,j,k,l)
-                  end do
-               end do
-            end do
-         end do
+
+!        uncommenting this can be useful for debugging, this piece of code is to be deleted later
+!         print*,"Transformed integrals larger than 1.D-15"
+!         do l = 1, nmo(4)
+!            do k = 1, nmo(3)
+!               do j = 1, nmo(2)
+!                  do i = 1, nmo(1)
+!                     if (abs(mo_tens(i,j,k,l)) > 1.D-15) print*,i,j,k,l,mo_tens(i,j,k,l)
+!                  end do
+!               end do
+!            end do
+!         end do
+
+!        Write to old format MO-integrals file to allow for easy debugging to the integral transform
+         call write_to_mdcint (nmo,mo_tens)
      
 !        Shut down library
          ierr = talsh_shutdown()

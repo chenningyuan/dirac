@@ -440,7 +440,7 @@ C
       DATA TABDIR /'*END OF','*PRPTRA','*HSCC  '/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
-     &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
+     &            '.EXACOR','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
@@ -499,9 +499,7 @@ c
         ENDDO
       ENDDO
       TRA_ANTIS  = .FALSE.
-C     TRA_MSOUT  = .FALSE.
-      TRA_MSOUT  = .TRUE.
-C     aug 2001 hjaaj TODO : disabled this option because only true implemented
+      TRA_EXACORR = .FALSE.
       TRA_ASCII = .FALSE.
       NO2IND = .FALSE.
       NO4IND = .FALSE.
@@ -661,9 +659,8 @@ C
                   ENDDO
                GO TO 100
     6          CONTINUE
-C&&&& Write 4-index transformed integrals to file
-C     aug 2001 hjaaj TODO : disabled this option because only true implemented
-                  TRA_MSOUT = .TRUE.
+C&&&& Use exacorr transformation routine
+                  TRA_EXACORR = .TRUE.
                GO TO 100
     7          CONTINUE
 C&&&& POSITRONS - allow positronic solutions
@@ -1079,8 +1076,6 @@ C
      +     '* Gaunt Integrals not transformed.'
       IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)')
      +     '* Calculating Anti-symmetrized integrals.'
-      IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)')
-     +     '* 4-index transformed integrals written to file.'
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,4)
       DO I = 1,NFSYM

@@ -3,7 +3,7 @@
 ! Adapted for include-into-Fortran90 form by Miro Ilias
 !
 !     Length of common block : keep up to date !!
-      LOGICAL TRA_ANTIS,TRA_MSOUT,NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS
+      LOGICAL TRA_ANTIS,TRA_EXACORR,NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS
       LOGICAL FKRMC, NOMDCINT, MDCSCAT, TRA_ASCII, PRPSYA
 !     aspg, 20090424, for fine-sort of 1HT
       logical do_finesort,set_auto_finesort
@@ -33,7 +33,7 @@
      &              NFPCK12(2),NFPCK34(2),NFPCK12T,NFPCK34T,            &
      &              IFPCK12(2,2),IFPCK34(2,2),N2EFIL,NTKL,IPAR4BS
 
-      COMMON/DCBTRL/TRA_ANTIS,TRA_MSOUT,NOPAIR,NO2IND,NO4IND,PRPTRA,    &
+      COMMON/DCBTRL/TRA_ANTIS,TRA_EXACORR,NOPAIR,NO2IND,NO4IND,PRPTRA,    &
      &              RCORBS,FKRMC,NOMDCINT,MDCSCAT,TRA_ASCII,            &
      &              do_finesort,set_auto_finesort, PRPSYA
 

@@ -79,7 +79,6 @@ C       INDX(3,INDA)   - Position of function within this particular irrep
 C                        and block
 C                        (INDA refers to index of SO-orbital)
 C     * CONTROL INFORMATION:
-C       MSOUT = .TRUE. - write transformed integrals to file
 C       EIGN           - eigenvalues (for  MP2 calculation)
 C       INTFLG - flag of what integral types to transform
 C
