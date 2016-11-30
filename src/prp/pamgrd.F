@@ -438,25 +438,20 @@ C
       DIMENSION PRPMO(*),CMO(*),IBEIG(*),IPCMO(*),NPMO(*),WORK(*)
 C
       CALL QENTER('PRPMAT')
-      write(*,*)
-      write(*,*)
       write(*,*) '********** in PRPMAT **********'
-      write(*,*)
-      write(*,*) 'INDXPR:',indxpr
-      write(*,*) 'IOPSY:',iopsy
       KFRSAV = KFREE
 C     Determine whether integrals are fetched on triangular or square form;
 C     check if first scalar property operator is has diagonal symmetry or not
       NPMOT = NPMO(1)
       IF (NFSYM.EQ.2) NPMOT = NPMOT + NPMO(2)
       N2PMOX = NPMOT*NPMOT
-!     IF (IPRINT .GE. 6) THEN
+      IF (IPRINT .GE. 6) THEN
         CALL HEADER('Output from PRPMAT',-1)
         WRITE(LUPRI,'(/A,4I10)')
      &  ' Input to PRPMAT: IPCMO, NPMO:',
      &  (IPCMO(I),NPMO(I),I = 1,NFSYM)
         WRITE(LUPRI,*)' NPMOT,N2PMOX:',NPMOT,N2PMOX
-!     ENDIF
+      ENDIF
       write(*,*) 'N2BBASXQ:',N2BBASXQ
 C
 C     Memory allocation
@@ -535,25 +530,24 @@ C
 C     Get property matrix in AO-basis
 C     ===============================
       CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
-      write(*,*) ' ..... AO property integrals are in PRPAO .....'
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
-!     IF (IPRINT.GE.15) THEN
+      IF (IPRINT.GE.15) THEN
         WRITE(LUPRI,'(/A,A16,1X,A,I1,A,I2)')
      &'PRPMA1: Total 4c or 2c matrix (in SA-AO basis) of property ',
      & PRPNAM(INDXPR),'IREP=',IREP,' ITIM=',ITIM
-!       CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
-!    &            IPQTOQ(1,IREP),LUPRI)
-!     ENDIF
+        CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &            IPQTOQ(1,IREP),LUPRI)
+      ENDIF
 C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
 C         
       CALL DZERO(PRPMO,N2PMOX*NZ)
       IOPSY = JBTOF(IREP,1)
-      write(*,*) 'N2PMOX,NZ:', N2PMOX,NZ
-      write(*,*) 'IOPSY:', IOPSY
-      write(*,*) 'IREP:', IREP
+!     write(*,*) 'N2PMOX,NZ:', N2PMOX,NZ
+!     write(*,*) 'IOPSY:', IOPSY
+!     write(*,*) 'IREP:', IREP
       QBTR = .FALSE.
       DO I1 = 1,NFSYM
         I2  = MOD(I1+IOPSY,2) + 1
@@ -574,7 +568,7 @@ C
      &         NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),LUPRI)
               CALL FLSHFO(LUPRI)
             ENDIF
-          ENDIF		
+          ENDIF
 
           IF(SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) THEN
             CALL QBTRANS(IREP,'AOMO','S',D0,

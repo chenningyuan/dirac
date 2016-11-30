@@ -320,11 +320,17 @@ C
       DIMENSION IOFF1(2,2),IOFF2(2,2),IOFF3(2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE(22)
 C
-      IF (IPRINT.GE.3) THEN
-         WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix :',ACHAR,' ***'
+      write(lupri,*) '*********************************************'
+      write(lupri,*) '****  in PRPMLF. Here the quaternionic ******'
+      write(lupri,*) '****  form of the integrals is transformed **'
+      write(lupri,*) '****  to the complex form                  **'
+      write(lupri,*) '*********************************************'
+!     IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix (PRQMAT):',
+     &                            ACHAR,' ***'
          CALL PRQMAT(PROPMO,NSTRT1,NSTRT2,NSTRT1,NSTRT2,
      &               NZ,IPQTOQ(1,ISYM-1),LUPRI)
-      ENDIF
+!     ENDIF
 C
 C     Fill in complete property matrix in complex form
 C
@@ -491,6 +497,17 @@ C               Translate to the complex (bar/unbar) notation.
       else
         WRITE(LUPRI,*) 'The spinfree correction is skipped!'
       endif
+      write(lupri,*) '*********************************************'
+      write(lupri,*) '****  Now we have property integrals   ******'
+      write(lupri,*) '****  in complex form and print them out   **'
+      write(lupri,*) '****  Attention: the indices do not'
+      write(lupri,*) '****  directly refer to the active MO list!'
+      write(lupri,*) '****  since now each individual Kramers partner'
+      write(lupri,*) '****  gets its own index! IREPSPI tables take'
+      write(lupri,*) '****  over and establish the correct MO labeling.'
+      write(lupri,*) '**** IPRINT:',IPRINT
+      write(lupri,*) '**** nstrt1, nstrt2: ',nstrt1,nstrt2
+      write(lupri,*) '*********************************************'
 C
 ! Printout of complex matrix elements of the transformed operator
       IF (IPRINT.GE.1) THEN

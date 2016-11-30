@@ -85,6 +85,7 @@
       character*8                           :: dsroot ='DAVSTART'
       character*8                           :: dsroot2='DAVILONG'
       character*8                           :: dsroot3='DAVISHRT'
+      character*8                           :: dsroot4='DAVIMEDI'
       character*60                          :: listout
       character*56                          :: field
       logical, allocatable, dimension(:)    :: notconverged
@@ -716,6 +717,49 @@
 !|
 !|
 !|_______________________________________________
+!
+!
+!________________________________________________
+!|
+!|
+!|  write out results as MEDIUM output (symmetry specific)
+!|
+      if(desrep.GT.9) THEN
+        write(davevcname,'(A8,A1,I2)') dsroot4,'.',desrep
+      else
+        write(davevcname,'(A8,A2,I1)') dsroot4,'.0',desrep
+      endif
+      open(iobase,file=davevcname,access='sequential',
+     &     status='unknown',form='formatted')
+      write(iobase,'(A)') 'Generic h/p eigenvector components'
+      write(iobase,'(A,I5)') 'for symmetry ',desrep
+      write(iobase,'(A)') ' '
+      Do K = 1,nroots
+        a1 = 0.0d0
+        do j=1,nmain
+          a1 = a1 + evint(j,k)*evint(j,k)
+        enddo
+        Write(iobase,'(A14,X,I4)') 'Excited state:',K
+        Write(iobase,'(A19)') '-----------------'
+        Write(iobase,'(A12,F10.6,A4,F10.6,A8,F10.6,A5,F10.6,A5,I4)') 
+     &   'Exc. energy:',
+     &   lambda(K),' au ',lambda(K)*autoev,
+     &   ' eV  PS:',a1,' Err:',reserr(k),' Sym:',desrep
+        do j=1,nmain
+          read(iobase1,rec=j) field
+          a1 = evint(j,k)
+          Write(iobase,'(A56,F15.6,3X,F15.6)') field,a1,a1*a1
+        enddo
+        
+        write(iobase,'(A)') ' '
+      Enddo
+      close(iobase)
+!
+!|
+!|
+!|
+!|_______________________________________________
+!
 
       CLOSE(iobase1)
 !
@@ -859,6 +903,7 @@
       character*8                  :: dsroot ='DAVSTART'
       character*8                  :: dsroot2='DAVILONG'
       character*8                  :: dsroot3='DAVISHRT'
+      character*8                  :: dsroot4='DAVIMEDI'
       character*60                 :: listout
       character*56                 :: field
       character*10                 :: fileadc
@@ -1542,6 +1587,48 @@
 !|
 !|
 !|_______________________________________________
+!
+!________________________________________________
+!|
+!|
+!|  write out results as MEDIUM output (symmetry specific)
+!|
+      if(desrep.GT.9) THEN
+        write(davevcname,'(A8,A1,I2)') dsroot4,'.',desrep
+      else
+        write(davevcname,'(A8,A2,I1)') dsroot4,'.0',desrep
+      endif
+      open(iobase,file=davevcname,access='sequential',
+     &     status='unknown',form='formatted')
+      write(iobase,'(A)') 'Generic h/p eigenvector components'
+      write(iobase,'(A,I5)') 'for symmetry ',desrep
+      write(iobase,'(A)') ' '
+      Do K = 1,nroots
+        a1 = 0.0d0
+        do j=1,nmain
+          a1 = a1 + real(conjg(evint(j,k))*evint(j,k))
+        enddo
+        Write(iobase,'(A14,X,I4)') 'Excited state:',K
+        Write(iobase,'(A19)') '-----------------'
+        Write(iobase,'(A12,F10.6,A4,F10.6,A8,F10.6,A5,F10.6,A5,I4)') 
+     &   'Exc. energy:',
+     &   lambda(K),' au ',lambda(K)*autoev,
+     &   ' eV  PS:',a1,' Err:',reserr(k),' Sym:',desrep
+        do j=1,nmain
+          read(iobase1,rec=j) field
+          cax = evint(j,k)
+          Write(iobase,'(A56,2F15.6,3X,F15.6)') field,cax,
+     &                  real(conjg(cax)*cax)
+        enddo
+        write(iobase,'(A)') ' '
+      Enddo
+      close(iobase)
+!
+!|
+!|
+!|
+!|_______________________________________________
+!
 
       CLOSE(iobase1)
 !

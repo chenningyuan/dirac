@@ -583,10 +583,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  on screen.
 !
 !       write(*,*)
-        write(*,'(1X,A27,6X,I3,3X,A4)') 'Vectors available for symm.',
-     &            desrep,repna(desrep)
+        write(*,'(1X,A27,6X,I3,3X,A4,A)') 'Vectors available for symm.',
+     &            desrep,repna(desrep),'  (max. 10 are printed)'
         write(*,*)
-        do i=1,nsiz
+        do i=1,min(nsiz,10)
           write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,
      &             repna(desrep),'@X'
 !         write(*,'(5X,A)') '-----------------------------------------'
@@ -822,13 +822,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  on screen.
 !
 !       write(*,*)
-        write(*,'(1X,A27,6X,I3,3X,A4)') 'Vectors available for symm.',
-     &            desrep,repna(desrep)
-!       write(*,*)
-!       do i=1,nsiz
-!         write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,
-!    &             repna(desrep),'@X'
-!       enddo
+        write(*,'(1X,A27,6X,I3,3X,A4,A)') 'Vectors available for symm.',
+     &            desrep,repna(desrep),'  (max. 10 are printed)'
+        write(*,*)
+        do i=1,min(nsiz,10)
+          write(*,'(I5,2F22.12,2X,A4,X,A2)') i,evl(i),evl(i)*autoev,
+     &             repna(desrep),'@X'
+        enddo
 !
 !  write out start vectors to specific file name.
 !

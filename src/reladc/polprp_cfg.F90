@@ -34,6 +34,7 @@ module polprp_cfg
   logical, public                  :: polprp_doextended   = .false.
   real*8,  public                  :: polprp_writethr     = 0.0
   logical, public                  :: polprp_dodiag       = .true.
+  integer, public                  :: polprp_printlev     = 0
 !
 !  davidson control variables
 !

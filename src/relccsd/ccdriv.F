@@ -1374,6 +1374,9 @@ C
 C
 C     Set up dimension arrays
 C
+      write(*,*) 'Irrep ordering in MVO array.'
+      write(*,*) ' Beta       MVO(off)           gamma(a)      gamma(i)'
+      write(*,*)
       DO JREP = 1, NREP
          DO IREP = 1, NREP
             IJREP = MULTB(IREP,JREP,1)
@@ -1394,7 +1397,10 @@ C
             MOV(IJREP) = MOV(IJREP) + NO(IREP)*NV(JREP)
             MVO(IJREP) = MVO(IJREP) + NV(IREP)*NO(JREP)
             MVV(IJREP) = MVV(IJREP) + NV(IREP)*NV(JREP)
-!           write(*,*) 'MVO irep,jrep,ijrep',irep,jrep,ijrep
+           write(*,*) ijrep,'&',mvo(ijrep),' (',
+     &           repna(ijrep),') ',
+     &           irep,' (',repna(irep),') ',
+     &           jrep,' (',repna(jrep),') '
          ENDDO
       ENDDO
 C
@@ -4428,7 +4434,11 @@ C
 !     write(*,*) '---  multiplication table  -----------------'
 !     write(*,*) '--------------------------------------------'
 !     write(*,*)
-!     DO IREP = 1, 2*NREP
+!     DO IREP = 1, NREP
+!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+!     ENDDO
+!     write(*,*) '-------------------------------------'
+!     DO IREP = NREP+1, 2*NREP
 !       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
 !     ENDDO
 !     write(*,*)
@@ -4456,22 +4466,26 @@ C
          ENDDO
       ENDDO
 
-c     write(*,*)
-c     write(*,*) '--------------------------------------------'
-c     write(*,*) '---  multiplication table (no offset) ------'
-c     write(*,*) '--------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-c     ENDDO
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  inverse multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
-c     ENDDO
+!     write(*,*)
+!     write(*,*) '--------------------------------------------'
+!     write(*,*) '---  multiplication table (no offset) ------'
+!     write(*,*) '--------------------------------------------'
+!     write(*,*)
+!     DO IREP = 1, NREP
+!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+!     ENDDO
+!     write(*,*) '-------------------------------------'
+!     DO IREP = NREP+1, 2*NREP
+!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+!     ENDDO
+!     write(*,*)
+!     write(*,*) '-------------------------------------- ------------'
+!     write(*,*) '---  inverse multiplication table (no offset) -----'
+!     write(*,*) '---------------------------------------------------'
+!     write(*,*)
+!     DO IREP = 1, 2*NREP
+!       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
+!     ENDDO
 
 c     write(*,*)
 c     write(*,*) '-------------------------------------- ------------'
