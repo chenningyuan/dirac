@@ -303,15 +303,15 @@ C
  9001 FORMAT(/'   Symmetry',I3,'.   No occupied orbitals.')
  9002 FORMAT(/'   Symmetry',I3,'.   Occupation of active orbitals:'
      &      //,(5F14.9))
- 9003 FORMAT(/'   Total',T15,F14.9,' +',F12.9,' =',F12.9)
+ 9003 FORMAT(/'   Total',F16.9,' +',F16.9,' =',F16.9)
  9004 FORMAT(/'   Symmetry',I3,'. ** REORDERED DESCENDING OCCUPATION **'
      &      //,(5F14.9))
 C
       IF ( IPRINT .GE. 100 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,'(/1X,A,I3)')
-     &           '(RGETNO) Transformation to NO '//
-     &           '(active orb.) for symmetry ',I
+            WRITE(LUPRI,'(/A,I2)')
+     &           ' (RGETNO) Transformation to NO '//
+     &           '(active orb.) for symmetry',I
             CALL PRQMAT(UNO(1+IASH(I),1+IASH(I),1),NASH(I),NASH(I),
      &           NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
          END DO
@@ -323,8 +323,8 @@ C
 C
       IF (.NOT. NATORB) THEN
         IF ( IPRINT .GE. 1 )
-     &    WRITE(LUPRI,'(/1X,A)')
-     &    '(RGETNO) active orbitals are NOT transformed '//
+     &    WRITE(LUPRI,'(/A)')
+     &    ' (RGETNO) active orbitals are NOT transformed '//
      &    'to natural orbitals.'
       ELSE
 
