@@ -2158,7 +2158,7 @@ C                 Basic operation LL moves coordinate M
  140        CONTINUE
             ISTBNU(II) = MULK
  110     CONTINUE
- 100  CONTINUE
+ 100  CONTINUE      
 
 C*****************************************************************************
 C     Set various basis parameters
@@ -4069,7 +4069,7 @@ C
 
       DO 100 N = 1, NUCIND
          IVARB = ISTBNU(N)
-         NDEG  = MULT(IVARB)
+         NDEG  = MULT(IVARB) !degeneracy of center
          IF (IPREAD .GE. 5)
      &      WRITE (LUPRI,1000) NAMN(N),(CORD(I,N),I=1,3),
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
@@ -4082,35 +4082,35 @@ C
          DPNUC(3) = DPNUC(3) + CORD(3,N)*CHARGE(N)*FMULT(IVARB)
          II = 0
          DO 200 LA = 0,MAXREP
-            IF (IAND(IVARB,LA) .EQ. 0) THEN
-               II = II + 1
-               NUCDEP = NUCDEP + 1
-               NUCNUM(N,LA+1) = NUCDEP
-               IF (NUCDEP .GT. MXCENT) GO TO 200
-C              ... otherwise we may get segmentation fault from NAMDEP,
-C              NAMDPX, and NDEGNM assignments. We exit after 200 loop
-C              when total NUCDEP is known. /hjaaj Jan 2010
-               IF (NDEG .EQ. 1 ) THEN
-                  NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//'  '
-                  NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)
-                  NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)
-                  NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )
-                  NDEGNM(NUCDEP)     = 1
-               ELSE
-                  ICHARD = ICHAR('0') + II
-                  NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//' '
-     &                //CHAR(ICHARD)
-                  NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)(1:3)
-     &                //CHAR(ICHARD)//NAMEX(3*N-2)(5:6)
-                  NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)(1:3)
-     &                //CHAR(ICHARD)//NAMEX(3*N-1)(5:6)
-                  NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )(1:3)
-     &                //CHAR(ICHARD)//NAMEX(3*N  )(5:6)
-                  NDEGNM(NUCDEP)     = II
-               END IF
-            ELSE
-               NUCNUM(N,LA+1) = 0
-            END IF
+           IF (IAND(IVARB,LA) .EQ. 0) THEN ! filter out generator products containing generators that stabilise the center
+              II = II + 1
+              NUCDEP = NUCDEP + 1
+              NUCNUM(N,LA+1) = NUCDEP
+              IF (NUCDEP .GT. MXCENT) GO TO 200
+C             ... otherwise we may get segmentation fault from NAMDEP,
+C             NAMDPX, and NDEGNM assignments. We exit after 200 loop
+C             when total NUCDEP is known. /hjaaj Jan 2010
+              IF (NDEG .EQ. 1 ) THEN
+                 NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//'  '
+                 NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)
+                 NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)
+                 NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )
+                 NDEGNM(NUCDEP)     = 1
+              ELSE
+                 ICHARD = ICHAR('0') + II
+                 NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//' '
+     &               //CHAR(ICHARD)
+                 NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)(1:3)
+     &               //CHAR(ICHARD)//NAMEX(3*N-2)(5:6)
+                 NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)(1:3)
+     &               //CHAR(ICHARD)//NAMEX(3*N-1)(5:6)
+                 NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )(1:3)
+     &               //CHAR(ICHARD)//NAMEX(3*N  )(5:6)
+                 NDEGNM(NUCDEP)     = II
+              END IF
+           ELSE
+              NUCNUM(N,LA+1) = 0
+           END IF
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
@@ -4532,11 +4532,11 @@ C
       IOFFT = 0
       IOFFR = 0
       IOFFTN = 0
-      DO 100 IREP = 0,MAXREP
+      DO 100 IREP = 0,MAXREP ! loop over irreps
          ICENTA = 0
          ICENTB = 0
-         DO 110 ICENT = 1,NUCIND
-            MULC = ISTBNU(ICENT)
+         DO 110 ICENT = 1,NUCIND ! loop over symmetry-independent centers
+            MULC = ISTBNU(ICENT) 
             DO 200 IDIRN = 1,3
                ICENTA = ICENTA + 1
                IF (IAND(MULC,IEOR(IREP,ISYMAX(IDIRN,1))).EQ.0)THEN
