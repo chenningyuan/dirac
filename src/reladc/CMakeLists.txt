@@ -30,7 +30,8 @@ set(FREE_RELADC_FORTRAN_SOURCES
     polprp_parallel_builders.F
     polprp_parallel_davidson.F
     polprp_serial_builders.F
-    polprp_tramom.F
+    polprp_buildtm.F
+    polprp_helpers.F
 )
 
 set(C_RELADC_SOURCES)

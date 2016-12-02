@@ -320,17 +320,11 @@ C
       DIMENSION IOFF1(2,2),IOFF2(2,2),IOFF3(2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE(22)
 C
-      write(lupri,*) '*********************************************'
-      write(lupri,*) '****  in PRPMLF. Here the quaternionic ******'
-      write(lupri,*) '****  form of the integrals is transformed **'
-      write(lupri,*) '****  to the complex form                  **'
-      write(lupri,*) '*********************************************'
-!     IF (IPRINT.GE.3) THEN
-         WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix (PRQMAT):',
-     &                            ACHAR,' ***'
+      IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(/3X,3A/)') '*** Property matrix :',ACHAR,' ***'
          CALL PRQMAT(PROPMO,NSTRT1,NSTRT2,NSTRT1,NSTRT2,
      &               NZ,IPQTOQ(1,ISYM-1),LUPRI)
-!     ENDIF
+      ENDIF
 C
 C     Fill in complete property matrix in complex form
 C
@@ -422,17 +416,6 @@ C     totally symmetric matrices) it not necessary to do this because
 C     the combination with totally symmetric spinor products 
 C     makes that the phase factors cancel. 
 C
-C**********************************************
-C***** LV: skipping this SPINFR-specific phase
-C***** correction for all non-LUCITRAREL calculations.
-C***** For all other calcs these corrections are not
-C***** needed and commented out. This correction here is
-C***** strongly related to the corresponding LUCIAREL
-C***** correction in the traout part!
-C**********************************************
-C
-      if(.false.) then              !forced skipping without deleting the code
-        WRITE(LUPRI,*) 'ATT: A possibly problematic corr. included!'
       IF (SPINFR) THEN
       CALL DZERO(PRCMO,NSTRT1*NSTRT2*8)
       DO IZ = 1, NZ
@@ -470,8 +453,14 @@ C into RELCCSD. If you use this transformation with another code, you
 C can proceed at your own risk by uncommenting the stop.
 C Stop now when we find non-symmetric operators.
 C  
-                IF (IQ.NE.IQS)
-     &          CALL QUIT ("This does not work with spinfree !")
+!MP: according to discussion with Luuk (2nd of Dec 2016) we tentatively comment out
+!MP: this stop condition for the spinfree cases. Code should work for these cases in the
+!MP: current form and is under thorough test for the POLPRP transition moments.
+!MP: if everything is verified also for the Fock-space cases we merge this modification into
+!MP: the master branch
+
+!MP             IF (IQ.NE.IQS)
+!MP  &          CALL QUIT ("This does not work with spinfree !")
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS
@@ -494,20 +483,6 @@ C               Translate to the complex (bar/unbar) notation.
         ENDDO
       ENDDO
       ENDIF
-      else
-        WRITE(LUPRI,*) 'The spinfree correction is skipped!'
-      endif
-      write(lupri,*) '*********************************************'
-      write(lupri,*) '****  Now we have property integrals   ******'
-      write(lupri,*) '****  in complex form and print them out   **'
-      write(lupri,*) '****  Attention: the indices do not'
-      write(lupri,*) '****  directly refer to the active MO list!'
-      write(lupri,*) '****  since now each individual Kramers partner'
-      write(lupri,*) '****  gets its own index! IREPSPI tables take'
-      write(lupri,*) '****  over and establish the correct MO labeling.'
-      write(lupri,*) '**** IPRINT:',IPRINT
-      write(lupri,*) '**** nstrt1, nstrt2: ',nstrt1,nstrt2
-      write(lupri,*) '*********************************************'
 C
 ! Printout of complex matrix elements of the transformed operator
       IF (IPRINT.GE.1) THEN

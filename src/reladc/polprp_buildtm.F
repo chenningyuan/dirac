@@ -418,7 +418,6 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-      stop
 !
 !------------------------
 !------  F_ai(1)
