@@ -108,6 +108,8 @@ add_library(
 # add intermodule dependencies
 add_dependencies(gp interface_mpi)
 add_dependencies(gp dirac_interfaces)
-add_dependencies(gp git_info)
 add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
+
+generate_git_info_header(${PROJECT_BINARY_DIR} git_info.h)
+add_dependencies(gp git_info)
