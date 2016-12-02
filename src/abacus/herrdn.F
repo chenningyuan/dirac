@@ -2124,12 +2124,12 @@ C       MULK    - bitstring of basic operations that stabilise a center
 C*****************************************************************************
 C
       II = 1
-      DO 100 I = 1, NONTYP
-         DO 110 J = 1, NONT(I)
+      DO 100 I = 1, NONTYP        ! loop over atomic types
+         DO 110 J = 1, NONT(I)    ! loop over symmetry-independent centers
             MULK = 0
             LL = 1
-            DO 140 L = 1, NSYMOP
-               DO 150 M = 1,3
+            DO 140 L = 1, NSYMOP  ! loop over generators
+               DO 150 M = 1,3     ! loop over Cartesian coordinates
                   IF(IAND(LL,ISYMAX(M,1)) .NE. 0) THEN
 C                 Basic operation LL moves coordinate M
                      IF(ABS(CORD(M,II)).GE.1.0D-06) GOTO 140

@@ -302,16 +302,16 @@ C
 C
 C       Rotational symmetry
 C
-        IF(NROTS.EQ.3) THEN
+        IF(NROTS.EQ.3) THEN ! D2h, D2
           IND = (1-IXVAL(JSOP(1),I))+(1-IXVAL(JSOP(2),I))/2
           IF(IND.NE.0) THEN
             REP(I)(1:1) = 'B'
             REP(I)(2:2) = CHAR(ICHAR('0')+IND)
             IPOS = 3
           ENDIF
-        ELSEIF(NROTS.EQ.1) THEN
+        ELSEIF(NROTS.EQ.1) THEN ! C2, C2v, C2h
           IF(IXVAL(JSOP(1),I).EQ.-1) REP(I)(1:1) = 'B'
-          IF(NREFL.EQ.2) THEN
+          IF(NREFL.EQ.2) THEN ! C2v
             IF(IBTAND(IBTSHR(JSOP(1),1),1).EQ.1) THEN
               IND = 2
             ELSE
@@ -323,7 +323,7 @@ C
               REP(I)(2:2) = '2'
             ENDIF
           ENDIF
-        ELSEIF(NREFL.EQ.1) THEN
+        ELSEIF(NREFL.EQ.1) THEN ! Cs
 C
 C       Mirror symmetry
 C
