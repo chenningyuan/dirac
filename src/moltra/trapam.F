@@ -126,7 +126,6 @@ C     Temporary hack to call the exacorr module
       if (tra_exacorr) then
          if (nfsym.eq.1) then
             call mdinti (nstr,0)
-            nao = nfbas(1,0)
             ntmo = 0
             do i = 1, 4
                nmo(i) = nstrt(i)
@@ -138,7 +137,7 @@ C     Temporary hack to call the exacorr module
                call icopy (nmo(i),work(kvec(1,i)),1,mo_list(imo),1)
                imo = imo + nmo(i)
             end do 
-            call compute_mo_integrals (nao, nmo, mo_list)
+            call compute_mo_integrals (nmo, mo_list)
             deallocate (mo_list)
             call mdintf
             no4ind = .true. ! skip conventional 4-index transformation

@@ -13,7 +13,7 @@
 
        contains
 !-------------------------------------------------------------------------------------------
-        subroutine compute_mo_integrals (nao, nmo, mo_list)
+        subroutine compute_mo_integrals (nmo, mo_list)
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
 !Note that all integrals are printed to standard output, should be replaced by checking the MP2 energy or some other printable quantity
@@ -28,15 +28,15 @@
 
 
          implicit none
-         integer, intent(in) :: nao 
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
-         integer             :: ifrp = 1     ! we do not use symmetry, so ifrp is always 1
-         integer             :: nz = 4       ! we do not use symmetry, so nz is always 4
          integer             :: i, j, k, l, imo, ierr
          type(MO)            :: qmo
+         integer             :: ifrp = 1     ! we do not use symmetry, so ifrp (g/u) is always 1
+         integer             :: nz = 4       ! we do not use symmetry, so nz is always 4
          integer             :: ipqtoq(4)   ! only needed for the debug print, don't forget to remove later
+         integer             :: nao, number_aos            ! the size of the atomic orbital basis
          integer             :: nshells, number_aoshells   ! number of AO shells
          type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
@@ -67,6 +67,7 @@
          print*, " Initialized interest library"
 
 !        Retrieve basis set information from DIRAC common blocks
+         nao     = number_aos(1)
          nshells = number_aoshells()
          allocate(shell(nshells))
          print*, " Allocated ",nshells," shell variables"
@@ -99,7 +100,6 @@
          end do
          imo = 1
          do i = 1, 1  ! CAUTION: should be generalized to different coefficient ranges for each index (e.g. for MP2)
-            call create (qmo, nao, nmo(i), nz)
             call get_dirac_mo_coefficients (ifrp,qmo,mo_list(imo:imo+nmo(i)-1),nmo(i))
 !           uncommenting this can be useful for debugging, this piece of code is to be deleted later
 !           test that we have read the coefficients correctly

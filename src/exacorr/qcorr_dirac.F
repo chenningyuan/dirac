@@ -113,22 +113,15 @@ C
 
        end
 
-       integer function Dirac_Basis_Size()
+       integer function Number_AOs(ils)
 
-!      Count the total number of large component basis functions (to be generalized to large or small or total)
+!      Get the number of basis functions (0:total, 1:large component, 2:small component)
 
 #include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
+#include "dcbbas.h"
 
-       nao_large = 0
-       do ishell = 1, nlrgsh
-          nfuns  = kckt(ishell)   ! number of Cartesian components
-          nao_large = nao_large + nfuns
-       end do
-       print*, " Counted ",nao_large," large component functions"
+       Number_AOs = nfbas(1,ils)
 
-       Dirac_Basis_Size = nao_large
        end
 
        subroutine Initialize_Shells (shell)
