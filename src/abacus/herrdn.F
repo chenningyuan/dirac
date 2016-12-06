@@ -4747,7 +4747,8 @@ C
          DO 300 ISYM = 0, MAXREP
          IF (NCRREP(ISYM,1) .GT. 0) THEN
             IF (IPREAD .GT. 0) THEN
-               WRITE (LUPRI,'(//1X,A,I2/)') ' Symmetry', ISYM + 1
+                WRITE (LUPRI,'(//A,2X,A3,A1,I2,A1/)')
+     &          '  Symmetry',REP(ISYM),'(',ISYM+1,')'
             END IF
             DO 400 IATOM = 1, NUCIND
                DO 500 ICOOR = 1, 3
