@@ -706,23 +706,25 @@ C
 !
 !  do symmetry test for the main block ordering.
 !
-        WRITE(IW,*)
-        WRITE(IW,*) '|| IREP order in the PH main block: ||'
-        WRITE(IW,*) '|| sorted by IREPs                  ||'
-        WRITE(IW,*)
-        Do qrep = 1,nrep
-          write(iw,*) 'destination irep:',qrep
-          DO JREP = 1, NREP
-            DO IREP = 1, NREP
-              IJREP = MULTB(IREP,JREP,2)
-              If(ijrep.eq.qrep) then
-                 write(*,*) qrep,':   G_i:',irep,
-     &             '   G_j: ',jrep
-              Endif
+        if(polprp_printlev.ge.2) then
+          WRITE(IW,*)
+          WRITE(IW,*) '|| IREP order in the PH main block: ||'
+          WRITE(IW,*) '|| sorted by IREPs                  ||'
+          WRITE(IW,*)
+          Do qrep = 1,nrep
+            write(iw,*) 'destination irep:',qrep
+            DO JREP = 1, NREP
+              DO IREP = 1, NREP
+                IJREP = MULTB(IREP,JREP,2)
+                If(ijrep.eq.qrep) then
+                   write(*,*) qrep,':   G_i:',irep,
+     &               '   G_j: ',jrep
+                Endif
+              ENDDO
             ENDDO
-          ENDDO
-          write(*,*)
-        Enddo    !qrep
+            write(*,*)
+          Enddo    !qrep
+        endif
 !
 !  do HPHP block first (it can easily be kept in memory)
 !

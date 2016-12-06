@@ -39,7 +39,6 @@
 
       INTEGER,allocatable,dimension(:)       :: JPOOXX,JPOVXX
       INTEGER,allocatable,dimension(:)       :: JPVOXX,JPVVXX
-      INTEGER,allocatable,dimension(:)       :: JPVOOV
 
 ! offset arrays for NTS two-electron contributions
                                             
@@ -188,21 +187,17 @@
       allocate(JPVOXX(n1))
       allocate(JPOVXX(n1))
       allocate(JPVVXX(n1))
-      allocate(JPVOOV(n1))
 
       JPOOXX=0
       JPVOXX=0
       JPOVXX=0
       JPVVXX=0
-      JPVOOV=0
 
       DO IREP = 1, NREP
         JPOOXX(IREP+1) = JPOOXX(IREP) + MOO(IREP)
         JPOVXX(IREP+1) = JPOVXX(IREP) + MOV(IREP)
         JPVOXX(IREP+1) = JPVOXX(IREP) + MVO(IREP)
         JPVVXX(IREP+1) = JPVVXX(IREP) + MVV(IREP)
-
-        JPVOOV(IREP+1) = JPVOOV(IREP) + MVO(IREP)*MOV(IREP)
       ENDDO
 !
 ! Generate index arrays for NTS two-particle contribs
@@ -322,7 +317,7 @@
 
       n1 = max0(lvvoot(nrep+1),jvovo(nrep+1),
      &          ivvoott(nrep+1),ivvoot(nrep+1),
-     &          JPVOOV(nrep+1))
+     &          JVOOV(nrep+1))
 
       allocate(vvoo3(n1*rcw))
       allocate(vvoo4(n1*rcw))
@@ -387,11 +382,11 @@
 !
       proprep = multb(desrep+nrep,1+nrep,2)
       write(*,*) 'proprep,desrep:',proprep,desrep
-      write(*,*) 'names:',repna(proprep),repna(desrep)
+!     write(*,*) 'names:',repna(proprep),repna(desrep)
       if(MVO(desrep).ne.MVO(proprep))then
         CALL QUIT('Property dimension inconsistency!')
       endif
-      write(*,*) 'MVO/OFFSET:',MVO(desrep),JPVOXX(desrep)
+!     write(*,*) 'MVO/OFFSET:',MVO(desrep),JPVOXX(desrep)
 !
 !------------------------
 !------  F_ai(0)
@@ -400,10 +395,10 @@
       
       n1 = MVO(proprep)       !number of integrals
       off = JPVOXX(proprep) + 1       !offset from where to read the integrals
-      write(*,*) 'F_ai(0), n1,off:',n1,off
-      do i=1,n1
-        write(*,*) 'Proi:',dvox(off+i-1),dvoy(off+i-1),dvoz(off+i-1)
-      enddo
+!     write(*,*) 'F_ai(0), n1,off:',n1,off
+!     do i=1,n1
+!       write(*,*) 'Proi:',dvox(off+i-1),dvoy(off+i-1),dvoz(off+i-1)
+!     enddo
       call xcopy(n1,dvox(off),1,faipx,1)
       call xcopy(n1,dvoy(off),1,faipy,1)
       call xcopy(n1,dvoz(off),1,faipz,1)
@@ -411,16 +406,6 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
-      do i=1,n1
-        if(carith) then
-          write(*,'(A,4F16.6)') 'faipy,faity:',
-     &          faipy(2*i-1),faipy(2*i),
-     &          real(faity(i)),aimag(faity(i))
-        else
-          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
-     &          real(faity(i)),aimag(faity(i))
-        endif
-      enddo
 
       iorder='0th order                     '
       incsat = 0
@@ -447,13 +432,13 @@
      &              vvoo1,vvoo4)
       CALL RCA_NEGATE(n1,vvoo1)      !reverse negation for the vvoo1 array
       CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &               JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
+     &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract C_ai,jb (vvoo3)  and Djb over corresponding symmetry
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JPVOOV(desrep) + 1
+      off1 = JVOOV(desrep) + 1
       off2 = JPOVXX(desrep) + 1
       M=MVO(desrep)
       K=MOV(desrep)
@@ -475,16 +460,16 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
-      do i=1,n1
-        if(carith) then
-          write(*,'(A,4F16.6)') 'faipy,faity:',
-     &          faipy(2*i-1),faipy(2*i),
-     &          real(faity(i)),aimag(faity(i))
-        else
-          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
-     &          real(faity(i)),aimag(faity(i))
-        endif
-      enddo
+!     do i=1,n1
+!       if(carith) then
+!         write(*,'(A,4F16.6)') 'faipy,faity:',
+!    &          faipy(2*i-1),faipy(2*i),
+!    &          real(faity(i)),aimag(faity(i))
+!       else
+!         write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
+!    &          real(faity(i)),aimag(faity(i))
+!       endif
+!     enddo
 !
 !  calculate corresponding 0th + 1st order TMs
 !
@@ -546,16 +531,6 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
-      do i=1,n1
-        if(carith) then
-          write(*,'(A,4F16.6)') 'faipy,faity:',
-     &          faipy(2*i-1),faipy(2*i),
-     &          real(faity(i)),aimag(faity(i))
-        else
-          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
-     &          real(faity(i)),aimag(faity(i))
-        endif
-      enddo
       write(*,*) '------  F_ai(2)A finished'
 !
 !------------------------
@@ -602,17 +577,6 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
-
-      do i=1,n1
-        if(carith) then
-          write(*,'(A,4F16.6)') 'faipy,faity:',
-     &          faipy(2*i-1),faipy(2*i),
-     &          real(faity(i)),aimag(faity(i))
-        else
-          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
-     &          real(faity(i)),aimag(faity(i))
-        endif
-      enddo
 
       write(*,*) '------  F_ai(2)B finished'
 !
@@ -676,18 +640,9 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
-      do i=1,n1
-        if(carith) then
-          write(*,'(A,4F16.6)') 'faipy,faity:',
-     &          faipy(2*i-1),faipy(2*i),
-     &          real(faity(i)),aimag(faity(i))
-        else
-          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
-     &          real(faity(i)),aimag(faity(i))
-        endif
-      enddo
       
       write(*,*) '------  F_ai(2)C finished'
+
       iorder='0th + 1st + 2ndABC'
       CALL TM_GEN(ioch,desrep,incsat,iorder,
      &            LFA,
@@ -738,7 +693,7 @@
          n = NO(irep)
          k = NO(krep)
          ioff1 = JJVO(arep,krep) + 1
-         ioff2 = JPVOXX(desrep) + JJOO(krep,irep) + 1
+         ioff2 = JPOOXX(desrep) + JJOO(krep,irep) + 1
          ioff3 = JJVO(arep,irep) + 1
          call xgemm ('N','N',m,n,k,a1,aak(ioff1),m,doox(ioff2),k,
      &               a0,faipx(ioff3),m)
@@ -752,6 +707,12 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+
+      iorder='0th + 1st + 2ndABC + 2,1'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,1) finished'
       
@@ -796,7 +757,7 @@
          n = NO(irep)
          k = NO(krep)
          ioff1 = JJVO(arep,krep) + 1
-         ioff2 = JPVOXX(desrep) + JJOO(krep,irep) + 1
+         ioff2 = JPOOXX(desrep) + JJOO(krep,irep) + 1
          ioff3 = JJVO(arep,irep) + 1
          call xgemm ('N','N',m,n,k,a1,aak(ioff1),m,doox(ioff2),k,
      &               a0,faipx(ioff3),m)
@@ -810,6 +771,12 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+
+      iorder='0th + 1st + 2ndABC + 2,2'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
       
       write(*,*) '------  F_ai(2,2) finished'
 !
@@ -865,6 +832,12 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+
+      iorder='0th + 1st + 2ndABC + 2,3'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,3) finished'
 !
@@ -923,8 +896,13 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
-      write(*,*) '------  F_ai(2,4) finished'
+      iorder='0th + 1st + 2ndABC + 2,4'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
 
+      write(*,*) '------  F_ai(2,4) finished'
 !
 !-------------------------------------
 !------  F_ai(2,5), a DOV contribution
@@ -982,19 +960,21 @@
       deallocate(vovo1,vovo2)
 
 !  sort ba>c,i>k (vvoo3) to bac,i>k (vvoo4)
-!  and bac,i>k (vvoo4) ---> bai,kc (vvoo3) (SRT20M)
+!  and bac,i>k (vvoo4) ---> bai,kc (vvoo3) (SRT20_NTS)
+!  In the last array, nontotally symmetric contributions are required
+!  due to the existence of NTS property integrals.
 
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoo3,vvoo4)
-      CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
+      CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
+     &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract bai,kc (vvoo3)  and Dkc over corresponding symmetry
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JPVOOV(desrep) + 1
-      off2 = JPOVXX(desrep)+1
+      off1 = JVOOV(desrep) + 1
+      off2 = JPOVXX(desrep) + 1
       M=MVO(desrep)
       K=MOV(desrep)
       CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
@@ -1008,6 +988,12 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+
+      iorder='0th + 1st + 2ndABC + 2,5'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,5) finished'
 !
@@ -1065,14 +1051,17 @@
 
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoo3,vvoo4)
-      CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
+
+      vvoo3=0.0d0
+
+      CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
+     &            JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract bai,kc (vvoo3)  and Dkc over corresponding symmetry
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JPVOOV(desrep) + 1
+      off1 = JVOOV(desrep) + 1
       off2 = JPOVXX(desrep)+1
       M=MVO(desrep)
       K=MOV(desrep)
@@ -1088,7 +1077,14 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
+      iorder='0th + 1st + 2ndABC + 2,6'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
+
       write(*,*) '------  F_ai(2,6) finished'
+      stop
 !
 !-------------------------------------
 !------  F_ai(2,7): a DOV contribution
@@ -1139,13 +1135,13 @@
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoo3,vvoo4)
       CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
+     &            JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract C_ai,kb (vvoo3)  and Dkb over corresponding symmetry
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JPVOOV(desrep) + 1
+      off1 = JVOOV(desrep) + 1
       off2 = JPOVXX(desrep)+1
       M=MVO(desrep)
       K=MOV(desrep)
@@ -1215,13 +1211,13 @@
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoo3,vvoo4)
       CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
+     &            JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract C_ai,kb (vvoo3)  and Dkb over corresponding symmetry
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JPVOOV(desrep) + 1
+      off1 = JVOOV(desrep) + 1
       off2 = JPOVXX(desrep)+1
       M=MVO(desrep)
       K=MOV(desrep)
@@ -1264,11 +1260,11 @@
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoop,vvoo4)
       CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
+     &            JVOOV,JJVO,JJOV,vvoo4,vvoo3)
       deallocate(vvoop)
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JPVOOV(desrep) + 1
+      off1 = JVOOV(desrep) + 1
       off2 = JPOVXX(desrep)+1
       M=MVO(desrep)
       K=MOV(desrep)
@@ -1303,10 +1299,10 @@
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoo3,vvoo4)
       CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
+     &            JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JPVOOV(desrep) + 1
+      off1 = JVOOV(desrep) + 1
       off2 = JPOVXX(desrep)+1
       M=MVO(desrep)
       K=MOV(desrep)
@@ -1536,7 +1532,6 @@
       deallocate(MVVOOT)
       deallocate(BVVOOT)
 
-      deallocate(JPVOOV)
       deallocate(JPOOXX,JPVOXX,JPOVXX,JPVVXX)
 
       RETURN

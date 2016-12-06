@@ -3889,10 +3889,10 @@ C|
 C|
 C|
 
-      write(*,*) '  **** wcondat output ****'
+!     write(*,*) '  **** wcondat output ****'
       do jrep = 1,nrep   !jrep,brep are fermionic, desrep is bosonic
         brep = multb(desrep+nrep,jrep,2)
-        write(*,*) '  B:',desrep,'  G_a:',brep,'  G_i:',jrep
+!       write(*,*) '  B:',desrep,'  G_a:',brep,'  G_i:',jrep
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
           jabs=IO(jrep) + jfun

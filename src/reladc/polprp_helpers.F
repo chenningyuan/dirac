@@ -386,6 +386,7 @@ C
             ediff = epsa - epsk
             AK = AK+1
             AAK(AK) = AAK(AK)/ediff
+!           write(*,*) 'DENOMVOTS: ak,aak(ak):',ak,aak(ak)
           ENDDO
         ENDDO
       ENDDO
@@ -617,8 +618,8 @@ C
             ax = ax + dcmplx(rcoef(i),D0)*faitx(i)
             ay = ay + dcmplx(rcoef(i),D0)*faity(i)
             az = az + dcmplx(rcoef(i),D0)*faitz(i)
-            write(*,'(F10.6,A,2F10.6,A,2F10.6)') rcoef(i),':',
-     &        faity(i),'|',ay
+!           write(*,'(F10.6,A,2F10.6,A,2F10.6)') rcoef(i),':',
+!    &        faity(i),'|',ay
           enddo
           if(do2h2p) then
             do i=1,n2h2p
@@ -631,7 +632,6 @@ C
         tmx(k) = ax
         tmy(k) = ay
         tmz(k) = az
-        write(*,*) '------------------------------------'
 
       Enddo   ! nroots
 
@@ -758,21 +758,21 @@ C
 !
 !  debugging:  check irepspi organization
 !
-        WRITE(*,*)
-        WRITE(*,*) '|| IREPSPI organization: ||'
-        WRITE(*,*)
-        WRITE(*,*) 'occupied:'
-        Do qrep=1,nrep
-          Do n1=1,NO(qrep)
-            write(*,*) 'G,i,absi:',qrep,n1,irepspi(n1,qrep,1)
-          Enddo
-        Enddo
-        WRITE(*,*) 'virtual:'
-        Do qrep=1,nrep
-          Do n1=1,NV(qrep)
-            write(*,*) 'G,a,absa:',qrep,n1,irepspi(n1,qrep,2)
-          Enddo
-        Enddo
+!       WRITE(*,*)
+!       WRITE(*,*) '|| IREPSPI organization: ||'
+!       WRITE(*,*)
+!       WRITE(*,*) 'occupied:'
+!       Do qrep=1,nrep
+!         Do n1=1,NO(qrep)
+!           write(*,*) 'G,i,absi:',qrep,n1,irepspi(n1,qrep,1)
+!         Enddo
+!       Enddo
+!       WRITE(*,*) 'virtual:'
+!       Do qrep=1,nrep
+!         Do n1=1,NV(qrep)
+!           write(*,*) 'G,a,absa:',qrep,n1,irepspi(n1,qrep,2)
+!         Enddo
+!       Enddo
 
 !
 !     Read symmetry information (master node only) from MDPROP
@@ -891,21 +891,23 @@ C
       APHASE(2) = D0
       PHASE = .FALSE.
 
-      write(*,*)
-      write(*,*) 'Symmetry ordering of PROP ints:'
-      write(*,*)
+      if(printlevel.ge.2) then
+        write(*,*)
+        write(*,*) 'Symmetry ordering of PROP ints:'
+        write(*,*)
+      endif
 
     2 AMAXI = D0
       AAMAX = 0
       IIMAX = 0
       AI = 1
       DO AIREP = 1, NREP
-!        write(*,*) 'Properties for irep',airep
          DO IREP = 1, NREP
             AREP = MULTB (IREP,AIREP+NREP,2)
             AREP = MULTB (AREP,NREP+1,2)
-            write(*,*) AIREP,' (',repna(airep),') ',arep,
-     &           ' (',repna(arep),') ',irep,' (',repna(irep),')'
+            if(printlevel.ge.2)
+     &        write(*,*) AIREP,' (',repna(airep),') ',arep,
+     &            ' (',repna(arep),') ',irep,' (',repna(irep),')'
             DO I = 1, NO(IREP)
                II = IREPSPI(I,IREP,1)
                DO A = 1, NV(AREP)
@@ -920,9 +922,10 @@ C
      &                          PROP(2,AA,II)*APHASE(2)
                       AOV(AI) = PROP(1,II,AA)*APHASE(1) -
      &                          PROP(2,II,AA)*APHASE(2)
-        write(*,*) '-avo- irepspi#:',aa,ii,'  ccseti#:',
-     &       io(nrep+1)+iv(arep)+a,  io(irep)+i,'  value:',
-     &       avo(ai)
+        if(printlevel.ge.2)
+     &    write(*,*) '-avo- irepspi#:',aa,ii,'  ccseti#:',
+     &    io(nrep+1)+iv(arep)+a,  io(irep)+i,'  value:',
+     &    avo(ai)
                       AVOI = PROP(1,AA,II)*APHASE(2) +
      &                       PROP(2,AA,II)*APHASE(1)
                       AOVI = PROP(1,II,AA)*APHASE(2) +
@@ -1054,7 +1057,7 @@ C
 !
 ! ** we print the integrals for printlevel .ge. 1
 !
-      if(printlevel.ge.4) then
+      if(printlevel.ge.2) then
         write(*,*) '---- integral type AOO (all elements) ----'
         do i=1,dimpoo
           if(carith) then
