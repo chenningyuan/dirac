@@ -546,6 +546,10 @@ C
       real*8, allocatable   :: a_CBUF(:)
       real*8, allocatable   :: a_EVO(:), a_EOV(:), a_EOO(:), a_EVV(:)
       complex*16            :: ephase
+!  
+!  variables for symmetry testing
+!
+      integer               :: irep,jrep,ijrep,qrep
     
 !
 !-----------------------interface section---------------------
@@ -697,7 +701,28 @@ C
 !  that are required for transition moment calculations.
 !  If yes fetch them and adapt them for further processing.
 !
+
         CALL property_handler(iobase,iobase+1,propertyints,NSP,IREPSPI)
+!
+!  do symmetry test for the main block ordering.
+!
+        WRITE(IW,*)
+        WRITE(IW,*) '|| IREP order in the PH main block: ||'
+        WRITE(IW,*) '|| sorted by IREPs                  ||'
+        WRITE(IW,*)
+        Do qrep = 1,nrep
+          write(iw,*) 'destination irep:',qrep
+          DO JREP = 1, NREP
+            DO IREP = 1, NREP
+              IJREP = MULTB(IREP,JREP,2)
+              If(ijrep.eq.qrep) then
+                 write(*,*) qrep,':   G_i:',irep,
+     &             '   G_j: ',jrep
+              Endif
+            ENDDO
+          ENDDO
+          write(*,*)
+        Enddo    !qrep
 !
 !  do HPHP block first (it can easily be kept in memory)
 !
@@ -1103,8 +1128,8 @@ C
       write(iw,*) '-------------------------'
       write(iw,*)
       write(iw,*) 'we do extended calculation: ',polprp_doextended
-      write(iw,*) 'threshold for writing elements to ADC matrix:',
-     &             polprp_writethr
+      write(iw,'(A,F10.5)') 
+     &   'threshold for elements in ADC matrix: ',polprp_writethr
       write(iw,*) 'we perform a Davidson diagonalization:',polprp_dodiag
       write(iw,*) 'The way final state symmetries are chosen is:'
 !

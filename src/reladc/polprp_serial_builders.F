@@ -3845,6 +3845,9 @@ C---------------Description--------------------------------------------
 C
 C     Writes explicit configuration information for the excited
 C     states in symmetry DESREP.
+C     Important: The absolute spinor numbers calculated here correspond
+C     to the list in the CCSETI output and not the irepspi numbering!
+C     This makes retrieval of orbitals easier for the user
 C
 C---------------Calling variables--------------------------------------
 C
@@ -3861,7 +3864,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      CHARACTER*56 FIELD
+      CHARACTER*70 FIELD
       INTEGER bl_conf
       CHARACTER*4 bl_irna
       
@@ -3870,11 +3873,11 @@ C---------------Executable code--------------------------------------
 C
 C open config file
 C
-      IRECL = 56
+      IRECL = 70
       OPEN(LUN,FILE=FILENAME,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
 C
-C First do the H--->P part. Column counter is the decisive
+C First do the P--->H part. Column counter is the decisive
 C IRREP.
 C
       BL_CONF = 0
@@ -3886,18 +3889,21 @@ C|
 C|
 C|
 
+      write(*,*) '  **** wcondat output ****'
       do jrep = 1,nrep   !jrep,brep are fermionic, desrep is bosonic
         brep = multb(desrep+nrep,jrep,2)
+        write(*,*) '  B:',desrep,'  G_a:',brep,'  G_i:',jrep
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
           jabs=IO(jrep) + jfun
           babs=IO(nrep+1) + IV(brep) + bfun
 
           WRITE(FIELD,333)
-     &         jabs,REPNA(jrep),
-     &         babs,REPNA(brep),
-     &         BL_CONF,BL_IRNA,
-     &         BL_CONF,BL_IRNA 
+     &         babs,brep,REPNA(brep),
+     &         jabs,jrep,REPNA(jrep),
+     &         BL_CONF,BL_CONF,BL_IRNA,
+     &         BL_CONF,BL_CONF,BL_IRNA 
+ 333  FORMAT(2(I3,' (',I2,',',A4,')  <---- ',I3,' (',I2,',',A4,') '))
 
           WRITE(LUN,REC=RECCOUNT) FIELD
           RECCOUNT = RECCOUNT + 1
@@ -3907,6 +3913,7 @@ C|
       enddo
       if( (reccount-1).ne.MVO(desrep))
      &   stop 'Inconsistent rec counter in WCONDAT_X!'
+      write(*,*)
 C|
 C|
 C|
@@ -3943,10 +3950,10 @@ C|
           ddabs=IO(nrep+1) + IV(drep) + D
 
           WRITE(FIELD,333)
-     &         kabs,REPNA(krep),
-     &         ccabs,REPNA(crep),
-     &         labs,REPNA(lrep),
-     &         ddabs,REPNA(drep)
+     &         ccabs,crep,REPNA(crep),
+     &         kabs,krep,REPNA(krep),
+     &         ddabs,drep,REPNA(drep),
+     &         labs,lrep,REPNA(lrep)
 
           WRITE(LUN,REC=RECCOUNT) FIELD
           RECCOUNT = RECCOUNT + 1
@@ -3968,7 +3975,6 @@ C|__________________________________________________________
       RECCOUNT = RECCOUNT - 1
       write(*,*) 'Wcondat info:',reccount,' conf recs written.'
 
- 333  FORMAT(2(I3,' (',A4,')  ---> ',I3,' (',A4,') '))
  
       RETURN
       END

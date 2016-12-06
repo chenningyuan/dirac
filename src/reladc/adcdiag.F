@@ -2465,7 +2465,7 @@ c
 
         ELSE
 c
-c  take care of double ionizations and excitations
+c  take care of double ionizations
 c
            idipcount=0
            DO iths=1,nholes
@@ -2488,7 +2488,7 @@ c  print on screen only those eigenvalues that are below the given limit.
 c  use cntev for contiguous numbering !
 c
 c  ATT !!! For the two-hole final states an output of the squared
-c  coefficient is shrouding information! We therefore write out the
+c  coefficient is hiding information! We therefore write out the
 c  coefficients themselves!
 c
         if(d(j)*AUEV.le.ELIM) THEN

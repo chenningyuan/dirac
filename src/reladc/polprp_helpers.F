@@ -75,6 +75,7 @@
 !
 !---------------Executable code --------------------------------------
 !
+      call PST('Entering property handler+')
 !
 !**  check for availability of MDPROP
 !
@@ -616,8 +617,8 @@ C
             ax = ax + dcmplx(rcoef(i),D0)*faitx(i)
             ay = ay + dcmplx(rcoef(i),D0)*faity(i)
             az = az + dcmplx(rcoef(i),D0)*faitz(i)
-!           write(*,'(F10.6,A,2F10.6,A,2F10.6)') rcoef(i),':',
-!    &        faity(i),'|',ay
+            write(*,'(F10.6,A,2F10.6,A,2F10.6)') rcoef(i),':',
+     &        faity(i),'|',ay
           enddo
           if(do2h2p) then
             do i=1,n2h2p
@@ -630,7 +631,7 @@ C
         tmx(k) = ax
         tmy(k) = ay
         tmz(k) = az
-!       write(*,*) '------------------------------------'
+        write(*,*) '------------------------------------'
 
       Enddo   ! nroots
 
@@ -711,6 +712,11 @@ C
 !     the F_ai matrix elements by the imaginary unit. The F_ai's therefore have to be kept
 !     complex also in the SPINFREE/NONREL cases.
 !
+!     ATT: the absolute spinor numbers obtained through the irepspi array are *not*
+!     the same ones as listed in the list of active occ/virt orbitals at the beginning
+!     of CCSETI output! The irepspi absolute indices serve as pointers into the 
+!     PROP array where they correspond to the proper indexing.
+!
 !
 !---------------Common Blocks--------------------------------------
 !
@@ -746,10 +752,28 @@ C
       Integer                  :: ixx,rawnum
       real*8, parameter        :: ZEROTHRS=1.0D-11
       integer,allocatable      :: acv(:,:)
-      Integer                  :: acvrow,acvcol
 !
 !---------------Executable code--------------------------------------
 !
+!
+!  debugging:  check irepspi organization
+!
+        WRITE(*,*)
+        WRITE(*,*) '|| IREPSPI organization: ||'
+        WRITE(*,*)
+        WRITE(*,*) 'occupied:'
+        Do qrep=1,nrep
+          Do n1=1,NO(qrep)
+            write(*,*) 'G,i,absi:',qrep,n1,irepspi(n1,qrep,1)
+          Enddo
+        Enddo
+        WRITE(*,*) 'virtual:'
+        Do qrep=1,nrep
+          Do n1=1,NV(qrep)
+            write(*,*) 'G,a,absa:',qrep,n1,irepspi(n1,qrep,2)
+          Enddo
+        Enddo
+
 !
 !     Read symmetry information (master node only) from MDPROP
 !     The file is organized in a way that after a label identifying the
@@ -867,6 +891,10 @@ C
       APHASE(2) = D0
       PHASE = .FALSE.
 
+      write(*,*)
+      write(*,*) 'Symmetry ordering of PROP ints:'
+      write(*,*)
+
     2 AMAXI = D0
       AAMAX = 0
       IIMAX = 0
@@ -876,8 +904,8 @@ C
          DO IREP = 1, NREP
             AREP = MULTB (IREP,AIREP+NREP,2)
             AREP = MULTB (AREP,NREP+1,2)
-!           write(*,*) AIREP,' (',repna(airep),') ',arep,
-!    &           ' (',repna(arep),') ',irep,' (',repna(irep),')'
+            write(*,*) AIREP,' (',repna(airep),') ',arep,
+     &           ' (',repna(arep),') ',irep,' (',repna(irep),')'
             DO I = 1, NO(IREP)
                II = IREPSPI(I,IREP,1)
                DO A = 1, NV(AREP)
@@ -892,7 +920,9 @@ C
      &                          PROP(2,AA,II)*APHASE(2)
                       AOV(AI) = PROP(1,II,AA)*APHASE(1) -
      &                          PROP(2,II,AA)*APHASE(2)
-!       write(*,*) '-avo-',aa,ii,avo(ai)
+        write(*,*) '-avo- irepspi#:',aa,ii,'  ccseti#:',
+     &       io(nrep+1)+iv(arep)+a,  io(irep)+i,'  value:',
+     &       avo(ai)
                       AVOI = PROP(1,AA,II)*APHASE(2) +
      &                       PROP(2,AA,II)*APHASE(1)
                       AOVI = PROP(1,II,AA)*APHASE(2) +
@@ -1064,42 +1094,6 @@ C
      & A8,' storage info : ',A8)
  1010 FORMAT (/' Largest imaginary part of matrix element',2I5,F10.2)
  1020 FORMAT (/' Property ',A8,' scaled with phase factor ',2F10.4)
-      END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE POLPROPINDEX(IJREP,IREPSPI,NSP,PROP)
-
-      IMPLICIT INTEGER (A-Z)
-!
-! determine offsets of property matrix
-!
-!----------------Common Blocks-----------------------------------------
-!
-#include "../relccsd/symm.inc"
-!
-!----------------Calling variables---------------------------------------------
-!
-      INTEGER IJREP
-      DIMENSION IREPSPI(NSP,MXREP,2)
-      REAL*8 PROP(2,NSP,NSP)
-
-!
-!  Determine indices for property matrix (in MOLFDIR format!)
-!
-      II = 0
-      DO JREP = 1, NREP
-         IREP = MULTB(JREP,IJREP+NREP,2)
-         IREP = MULTB(IREP,NREP+1,2)
-          DO J = 1, NV(JREP)
-             DO I = 1, NO(IREP)
-                II = II + 1
-                iocc  = IREPSPI(i,irep,1)
-                ivir  = IREPSPI(j,jrep,2)
-        write(*,*) '-->',ivir,iocc,prop(1,ivir,iocc),prop(2,ivir,iocc)
-             END DO
-          END DO
-      END DO
-
-      RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE IDXCOVERAGE(IREPSPI,NSP,ok)

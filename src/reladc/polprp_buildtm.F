@@ -102,7 +102,7 @@
       integer*8                              :: n8
       character*9                            :: preconfn='VVVVXVVOO'
       character*30                           :: iorder
-      integer                                :: isatctl
+      integer                                :: incsat
       logical                                :: okflag
 !
 !---------------interface region --------------------------------------
@@ -398,8 +398,8 @@
 !------------------------
 !
       
-      n1 = MVO(proprep)
-      off = JPVOXX(proprep) + 1
+      n1 = MVO(proprep)       !number of integrals
+      off = JPVOXX(proprep) + 1       !offset from where to read the integrals
       write(*,*) 'F_ai(0), n1,off:',n1,off
       do i=1,n1
         write(*,*) 'Proi:',dvox(off+i-1),dvoy(off+i-1),dvoz(off+i-1)
@@ -411,10 +411,20 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+      do i=1,n1
+        if(carith) then
+          write(*,'(A,4F16.6)') 'faipy,faity:',
+     &          faipy(2*i-1),faipy(2*i),
+     &          real(faity(i)),aimag(faity(i))
+        else
+          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
+     &          real(faity(i)),aimag(faity(i))
+        endif
+      enddo
 
       iorder='0th order                     '
-      isatctl = 0
-      CALL TM_GEN(ioch,desrep,isatctl,iorder,
+      incsat = 0
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
@@ -426,7 +436,8 @@
 !  contract v_ab,ji and D_jb to F_ai
 !  v_a>b,j>i  ---> -v_a>b,i>j
 !  -v_a>b,i>j  ---> v_ab,i>j (1LS1)
-!  v_ab,i>j  ---> C_ai,jb (SRT20M),(vvoo3)
+! now we need the nontotally symmetric version of SRT20M:
+!  v_ab,i>j  ---> C_ai,jb (SRT20_NTS),(vvoo3)
 !
       vvoo3 = 0.0d0
       vvoo4 = 0.0d0
@@ -435,24 +446,28 @@
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoo1,vvoo4)
       CALL RCA_NEGATE(n1,vvoo1)      !reverse negation for the vvoo1 array
-      CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
-
+      CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
+     &               JPVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract C_ai,jb (vvoo3)  and Djb over corresponding symmetry
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
       off1 = JPVOOV(desrep) + 1
-      off2 = JPOVXX(desrep)+1
+      off2 = JPOVXX(desrep) + 1
       M=MVO(desrep)
       K=MOV(desrep)
+      write(*,*) 'off1,off2,M,K',off1,off2,M,K
       CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
      &            dovx(off2),1,A0,faipx,1)
       CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
      &            dovy(off2),1,A0,faipy,1)
       CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
      &            dovz(off2),1,A0,faipz,1)
+!     n1 = M * K
+!     do i=1,n1
+!       write(*,*) 'vvoo3::',i,vvoo3(off1 + i -1)
+!     enddo
 !
 ! add result on top of the final arrays
 !
@@ -460,11 +475,21 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+      do i=1,n1
+        if(carith) then
+          write(*,'(A,4F16.6)') 'faipy,faity:',
+     &          faipy(2*i-1),faipy(2*i),
+     &          real(faity(i)),aimag(faity(i))
+        else
+          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
+     &          real(faity(i)),aimag(faity(i))
+        endif
+      enddo
 !
 !  calculate corresponding 0th + 1st order TMs
 !
       iorder='0th + 1st order               '
-      CALL TM_GEN(ioch,desrep,isatctl,iorder,
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
@@ -521,6 +546,16 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
+      do i=1,n1
+        if(carith) then
+          write(*,'(A,4F16.6)') 'faipy,faity:',
+     &          faipy(2*i-1),faipy(2*i),
+     &          real(faity(i)),aimag(faity(i))
+        else
+          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
+     &          real(faity(i)),aimag(faity(i))
+        endif
+      enddo
       write(*,*) '------  F_ai(2)A finished'
 !
 !------------------------
@@ -567,6 +602,17 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+
+      do i=1,n1
+        if(carith) then
+          write(*,'(A,4F16.6)') 'faipy,faity:',
+     &          faipy(2*i-1),faipy(2*i),
+     &          real(faity(i)),aimag(faity(i))
+        else
+          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
+     &          real(faity(i)),aimag(faity(i))
+        endif
+      enddo
 
       write(*,*) '------  F_ai(2)B finished'
 !
@@ -630,8 +676,24 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+      do i=1,n1
+        if(carith) then
+          write(*,'(A,4F16.6)') 'faipy,faity:',
+     &          faipy(2*i-1),faipy(2*i),
+     &          real(faity(i)),aimag(faity(i))
+        else
+          write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
+     &          real(faity(i)),aimag(faity(i))
+        endif
+      enddo
       
       write(*,*) '------  F_ai(2)C finished'
+      iorder='0th + 1st + 2ndABC'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
+!
 !
 !------------------------
 !------  F_ai(2,1)
@@ -1268,7 +1330,7 @@
 ! ----------------------------------------------------------
 !
       iorder='0th-2nd order (ph only)'
- 7744 CALL TM_GEN(ioch,desrep,isatctl,iorder,
+ 7744 CALL TM_GEN(ioch,desrep,incsat,iorder,
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
@@ -1432,9 +1494,9 @@
 !  calculate total transition moment including all contribs.
 !
       iorder='0th-2nd order (ph + 2p2h)'
-      isatctl = ABIJTT(desrep)
+      incsat = ABIJTT(desrep)
 
-      CALL TM_GEN(ioch,desrep,isatctl,iorder,
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
      &            LTR,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)

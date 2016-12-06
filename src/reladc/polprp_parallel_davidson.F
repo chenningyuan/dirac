@@ -87,7 +87,7 @@
       character*8                           :: dsroot3='DAVISHRT'
       character*8                           :: dsroot4='DAVIMEDI'
       character*60                          :: listout
-      character*56                          :: field
+      character*70                          :: field
       logical, allocatable, dimension(:)    :: notconverged
       real*8                                :: cput1,cput2,time1,time2
       real*8                                :: ttime,a
@@ -304,7 +304,7 @@
       WRITE(*,*)
       WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',
      &           'exc.energy','error','status'
-      WRITE(*,'(56A1)') ('-',i=1,56)
+      WRITE(*,'(70A1)') ('-',i=1,70)
 
 !_____________________________________________________
 !|
@@ -625,16 +625,12 @@
       OPEN(iobase1,FILE=FILECNF,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
 
-!__________________ loop over the roots and write out long eigenvectors.
-!|
-!| In contrast to earlier versions we will no longer write out the ASCII
-!| numbers since huge unused files are generated, otherwise. Instead we need
-!| the data as binary (format='unformatted').
+!__________________  write out ** LONG ** results (binary)
 !|
 !| The format is number of states, main block size,
 !| length of ADC matrix, then for each state:
 !| state number, excitation energy (eV),
-!| pole strength,  coefficients in the generic h/p,2h/2p order.
+!| pole strength,  coefficients in the generic order.
 !|
 !|
       IF(desrep.GT.9) THEN
@@ -664,8 +660,10 @@
 !|
 !|_______________________________________________
 !
-!   write out results as SHORT output (symmetry specific)
-!
+!_____ write out ** SHORT ** results (overview,formatted,sorted,main)
+!|
+!|
+!|
       IF(desrep.GT.9) THEN
         WRITE(davevcname,'(A8,A1,I2)') dsroot3,'.',desrep
       ELSE
@@ -673,15 +671,8 @@
       ENDIF
       OPEN(iobase,file=davevcname,access='sequential',
      &     status='unknown',form='formatted')
-!
-!__________________ loop over the roots and write out ** SHORT ** results
-!|
-!|
-!|
+
       Do K = 1,nroots
-!
-! determine pole strength
-!
         a1 = 0.0d0
         do j=1,nmain
           a1 = a1 + evint(j,k)*evint(j,k)
@@ -707,7 +698,7 @@
         Do j=1,min(20,ladc)
           Read(iobase1,rec=ievec(j)) field
           a1 = evint(ievec(j),k)
-          Write(iobase,'(A56,F15.6,3X,F15.6)') field,a1,a1*a1
+          Write(iobase,'(A70,F15.6,3X,F15.6)') field,a1,a1*a1
         Enddo
         Write(iobase,'(A17)') '-----------------'
         Write(iobase,'(A)') ' '
@@ -718,11 +709,8 @@
 !|
 !|_______________________________________________
 !
-!
-!________________________________________________
+!_____ write out ** MEDIUM ** results (formatted,main)
 !|
-!|
-!|  write out results as MEDIUM output (symmetry specific)
 !|
       if(desrep.GT.9) THEN
         write(davevcname,'(A8,A1,I2)') dsroot4,'.',desrep
@@ -748,7 +736,7 @@
         do j=1,nmain
           read(iobase1,rec=j) field
           a1 = evint(j,k)
-          Write(iobase,'(A56,F15.6,3X,F15.6)') field,a1,a1*a1
+          Write(iobase,'(A70,F15.6,3X,F15.6)') field,a1,a1*a1
         enddo
         
         write(iobase,'(A)') ' '
@@ -905,7 +893,7 @@
       character*8                  :: dsroot3='DAVISHRT'
       character*8                  :: dsroot4='DAVIMEDI'
       character*60                 :: listout
-      character*56                 :: field
+      character*70                 :: field
       character*10                 :: fileadc
 !
 !---------------Interface area --------------------------------------
@@ -1157,7 +1145,7 @@
       WRITE(*,*)
       WRITE(*,'(3X,A,4X,A,7X,A,7X,A,5X,A)') 'root','dim',
      &           'exc.energy','error','status'
-      WRITE(*,'(56A1)') ('-',i=1,56)
+      WRITE(*,'(70A1)') ('-',i=1,70)
 
 !_____________________________________________________
 !|
@@ -1576,7 +1564,7 @@
         Do j=1,min(20,ladc)
           Read(iobase1,rec=ievec(j)) field
           cax = evint(ievec(j),k)
-          Write(iobase,'(A56,2F15.6,3X,F15.6)') field,cax,
+          Write(iobase,'(A70,2F15.6,3X,F15.6)') field,cax,
      &                  real(conjg(cax)*cax)
         Enddo
         Write(iobase,'(A17)') '-----------------'
@@ -1617,7 +1605,7 @@
         do j=1,nmain
           read(iobase1,rec=j) field
           cax = evint(j,k)
-          Write(iobase,'(A56,2F15.6,3X,F15.6)') field,cax,
+          Write(iobase,'(A70,2F15.6,3X,F15.6)') field,cax,
      &                  real(conjg(cax)*cax)
         enddo
         write(iobase,'(A)') ' '

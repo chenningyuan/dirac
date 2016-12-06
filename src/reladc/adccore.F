@@ -695,12 +695,6 @@ C              only. dimensions 2*MVO(1) * 2*MVO(1)
 c
 c   save the original memory space for the diagonalizers
 
-!     write(iw,*) '  #############################################'
-!     write(iw,*) '  #############################################'
-!     write(iw,*) '  #######  we are in adcsngl_main '
-!     write(iw,*) '  #############################################'
-!     write(iw,*) '  #############################################'
-!     write(iw,*) '  rcw:',rcw
 
       IONIZLEVEL=1
 c
