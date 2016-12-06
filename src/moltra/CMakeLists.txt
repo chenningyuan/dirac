@@ -36,8 +36,8 @@ endif()
 add_library(
     moltra
     OBJECT
-    ${FIXED_MOLTRA_FORTRAN_SOURCES}
     ${FREE_MOLTRA_FORTRAN_SOURCES}
+    ${FIXED_MOLTRA_FORTRAN_SOURCES}
 )
 
 # deal with intermodule dependencies

@@ -23,7 +23,7 @@ C***********************************************************************
 C
 C     Driver routine for computing matrix norm.
 C
-C     Written by Ulf Ekström
+C     Written by Ulf Ekstrom
 C***********************************************************************
       SUBROUTINE QMATNORM(NAME,A,ROWS,COLS,NZ)
       IMPLICIT NONE

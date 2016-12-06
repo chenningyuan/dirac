@@ -2,20 +2,30 @@
 
 import os
 import sys
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest_dirac import Filter, TestRun
 
-test = TestRun(__file__, sys.argv)
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
 
-f = Filter()
-f.add(from_string   = '@   Elements of the electric dipole',
-      to_string     = '@   anisotropy',
-      rel_tolerance = 1.0e-5)
-f.add(from_string   = '************ Expectation values',
-      to_string     = 's0 = T : Expectation value',
-      rel_tolerance = 1.0e-5)
+assert version_info.major == 2
 
-test.run(['PBE0gracLB94.inp', 'GLLBsaopLBalpha.inp'], ['Ne.mol'], f)
+f = [
+    get_filter(from_string='@   Elements of the electric dipole',
+               to_string='@   anisotropy',
+               rel_tolerance=1.0e-5),
+    get_filter(from_string='************ Expectation values',
+               to_string='s0 = T : Expectation value',
+               rel_tolerance=1.0e-5),
+]
 
-sys.exit(test.return_code)
+options = cli()
+
+ierr = 0
+for inp in ['PBE0gracLB94.inp', 'GLLBsaopLBalpha.inp']:
+    for mol in ['Ne.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f})
+
+sys.exit(ierr)

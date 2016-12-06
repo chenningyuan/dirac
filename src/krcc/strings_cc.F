@@ -957,7 +957,7 @@ C       CALL MEMCHK_KRCC(WORK)
         WRITE(6,*) ' Supergroup   Occupation '
         WRITE(6,*) ' =========================================='
         DO ISPGP = 1, NTSPGP
-          WRITE(6,'(1H ,I6,6X,12(I4))')
+          WRITE(6,'(I7,6X,12(I4))')
      &    ISPGP, (NELFSPGP(IGS, ISPGP), IGS = 1, NGAS)
         END DO
       END IF

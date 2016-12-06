@@ -119,7 +119,10 @@ C     memory pointer for C2 vector block
 #endif /* VAR_MPI2 */
       integer(8)             :: NCALC_MAX_BLK, IGET_MY_T_LEN
       integer*8              :: keci_start
+
+      character*12 SECTID ! external function
 C
+      CALL GETTIM(CPU0,WALL0)
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
 C
@@ -1398,8 +1401,12 @@ C     (*_MS2 arrays are in CSTATE )
      &                 IBAT_MS2,IDUMMY,.FALSE.,0,0,IDUMMY)
 C
 #endif
-      if(CIRUN /= 'REFVEC') 
-     &write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
+      if (CIRUN /= 'REFVEC') THEN
+         CALL GETTIM(CPU1,WALL1)
+         WALL1 = WALL1 - WALL0
+         write(LUWRT,'(/5A/)') '  I have completed task ',CIRUN,
+     &      ' in ',SECTID(WALL1),' (wall time)'
+      END IF
 
 C     release memory
       IDUM = 0
