@@ -1,5 +1,5 @@
 :orphan:
- 
+
 
 Release preparation
 ===================
@@ -8,8 +8,8 @@ Release preparation
 Feature freeze
 --------------
 
-Two months before the release (example: DIRAC14), a release branch (example:
-release-14) is created from master. This is a feature freeze and from this
+Two months before the release (example: DIRAC16), a release branch (example:
+release-16) is created from master. This is a feature freeze and from this
 moment on the release branch ideally only receives cosmetics and bugfixes, no
 major new features, no merges from master or other branches (except
 cherry-picks; more about it later). You as developer are responsible to commit
@@ -25,12 +25,12 @@ this reason we will never merge from master to the release branch, only from
 the release branch to master.
 
 
-How to check out the release branch (example release-14 for DIRAC14)
+How to check out the release branch (example release-16 for DIRAC16)
 --------------------------------------------------------------------
 
 Check out the release branch::
 
-  $ git checkout release-14
+  $ git checkout release-16
 
 Now you have it next to master (verify this)::
 
@@ -42,7 +42,7 @@ You can switch back to master::
 
 And then switch back to the release branch::
 
-  $ git checkout release-14
+  $ git checkout release-16
 
 
 How to commit changes and bugfixes that are relevant for the released code
@@ -54,12 +54,12 @@ release branch to master manually. This is not only unnecessary work but it is
 harmful (conflicts)!
 Again, do not commit to master, commit to the release branch::
 
-  $ git checkout release-14
-  $ git pull                      # update the local release-14 branch
+  $ git checkout release-16
+  $ git pull                      # update the local release-16 branch
   $ git commit                    # commit your modifications
-  $ git push                      # push your changes to release-14 branch
+  $ git push                      # push your changes to release-16 branch
   $ git checkout master           # switch to the master branch
-  $ git merge --no-ff release-14  # merge changes to master, fix conflicts if any
+  $ git merge --no-ff release-16  # merge changes to master, fix conflicts if any
   $ git push                      # push your changes to master
 
 Note that by merging your changes to master you might get conflicts. Git points
@@ -70,7 +70,7 @@ What if you accidentally committed something to master which belongs to
 the release? In this case do *not* merge master to the release branch, but
 rather cherry-pick the individual commit(s) to the release branch::
 
-  $ git checkout release-14
+  $ git checkout release-16
   $ git cherry-pick [hash]        # with [hash] that corresponds
                                   # to the commit
 
@@ -112,6 +112,48 @@ option, you can use MOD_UNRELEASED::
 
 To summarize, you can remove code using either existing CPP filters or using
 MOD_UNRELEASED. Do this on the release branch and merge to the master.
+
+
+How does the preprocessor-based code removal work?
+--------------------------------------------------
+
+Consider this CMake code at the time of writing found in ``src/CMakeLists.txt``::
+
+    cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
+    if(ENABLE_INTEREST)
+        add_definitions(-DMOD_INTEREST)
+    endif()
+
+    ...
+
+    if(ENABLE_INTEREST)
+        add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
+        set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
+        dirac_test(mdirac_closed-shell_dft "interest")
+    else()
+        set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
+    endif()
+    message(STATUS "Interest library: ${ENABLE_INTEREST}")
+
+This code adds a CMake option ``ENABLE_INTEREST`` to toggle the Interest
+library on or off.  This is a dependent option which depends on
+``ENABLE_UNRELEASED``. This means that Interest library is on by default unless
+``ENABLE_UNRELEASED`` is selected.
+
+We see that selecting ``ENABLE_INTEREST`` defines ``-DMOD_INTEREST`` (among
+other things).  Further down we see that if ``ENABLE_INTEREST`` is false, then
+``-UMOD_INTEREST`` is added to ``CODE_REMOVAL_FLAGS``. This variable is used in
+``cmake/custom/cpack.cmake`` and passed on to the
+``maintenance/remove_unreleased_code`` script which removes code based on these
+flags.  Since ``maintenance/remove_unreleased_code`` works in-place,
+``cmake/custom/cpack.cmake`` first copies the source tree to ``EXPORT_DIR`` to
+make sure we don't delete code in our working directory.
+
+
+How to "remove" entire directories?
+-----------------------------------
+
+See ``cmake/custom/cpack.cmake`` and search for ``rm -rf``.
 
 
 How to "remove" tests?

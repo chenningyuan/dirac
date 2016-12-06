@@ -43,8 +43,8 @@
      &        DOPUT,DORKBIMP,                                           &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
-     &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
-     &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET,                &
+     &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG,             &
+     &        TWOCOMP, TWOCOMPBSS, NOSET,                               &
      &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     &
      &        QM3, QMMM, BARNUC, DOHUCKEL, force_bnc, BNSPON
       LOGICAL OPTWLK, OPTNEW,  NMWALK
@@ -57,8 +57,8 @@
      &                DOPUT, OPTIMI, HRINPC, RDINPC,                    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
-     &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
-     &                TWOCOMPBSS, DOLINK, DOFMM, NOSET,                 &
+     &                BNCRON, DOACUT, MP2ORG, TWOCOMP,                  &
+     &                TWOCOMPBSS, NOSET,                                &
      &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
      &                DOQJACO, QM3, QMMM, BARNUC, DOHUCKEL,             &
      &                OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON

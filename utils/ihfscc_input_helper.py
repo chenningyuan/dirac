@@ -42,8 +42,8 @@ class spinor:
 #		for key in self.alfa_composition:
 #			print " "*20,key,self.alfa_composition{key}
 
-	def print_eigenvalue(self):
-		print "  Eigenvalue: %18.8f"%(self.eigenvalue),
+	def print_eigenvalue(self, origin=0.0):
+		print "  Eigenvalue: %18.8f"%(self.eigenvalue - origin),
 
 	def print_symmetries(self):
 		print "  Irrep: %6s (%6s)"%(self.boson,self.fermion),
@@ -51,6 +51,9 @@ class spinor:
 	def print_occupation(self):
 		print "  Occup: %8.4f"%(self.occupation * self.degeneracy),
 
+
+	def get_eigenvalue(self):
+		return self.eigenvalue
 
 	def set_eigenvalue(self,eigenvalue):
 		self.eigenvalue = eigenvalue
@@ -108,10 +111,17 @@ class molecular_electronic_structure:
 			if (spinor.fermion or spinor.boson) == symmetry:
 				spinor.print_energy()	
 
-	def print_spinor_list(self,list):
+	def print_spinor_list(self,list,set_energy_origin_to_homo = False):
+                if set_energy_origin_to_homo :
+                        energy_origin = list[self.homo].get_eigenvalue()
+                else:
+                        energy_origin = 0.0
 		for i, spinor in enumerate(list):
-			print "Spinor %6d"%i,
-			spinor.print_eigenvalue()
+                        if set_energy_origin_to_homo :
+			       print "Spinor %6d"%(i - self.homo),
+                        else :
+			       print "Spinor %6d"%i,
+			spinor.print_eigenvalue(origin=energy_origin)
 			spinor.print_occupation()
 			spinor.print_symmetries()
 			print ""
@@ -127,8 +137,8 @@ class molecular_electronic_structure:
 		print "the boson irreps present are ",self.boson_irreps
 		self.print_spinor_list(self.active_spinors)
 
-	def print_all_spinors(self):
-		self.print_spinor_list(self.spinor_list)
+	def print_all_spinors(self, set_energy_origin_to_homo = False):
+		self.print_spinor_list(self.spinor_list, set_energy_origin_to_homo)
 
 	def set_homo_lumo(self):
 		for i,spinor in enumerate(self.spinor_list):
@@ -249,7 +259,7 @@ class molecular_electronic_structure:
 			self.active_per_irrep[irrep] = 0
 			self.active_occ_per_irrep[irrep] = 0
 			self.active_vir_per_irrep[irrep] = 0
-                        print "debug, irrep:",irrep,"  ",self.fermion_irreps
+                        print "#debug, irrep:",irrep,"  ",self.fermion_irreps
 
 		for spinor in self.spinor_list:
                         print spinor.fermion
@@ -297,7 +307,7 @@ class molecular_electronic_structure:
 		symmetry_definition_spinfree_regexp_definition = "\* Boson symmetry ([a-zA-Z][0-9]?)([gu])?"
 		symmetry_definition_linear_regexp_definition   = "\* Block\s+([0-9]+) in ([a-zA-Z][0-9][gu ])\:  Omega \=\s+([0-9\/]+)"
 		occupied_or_not_regexp_definition              = ".+ f = \s*([0-9.]+)"
-	   	eigenvalues_and_degeneracy_regexp_definition   = "\s+(-?\d*\.\d+)\s+\(\s*([0-9]+)\)"
+	   	eigenvalues_and_degeneracy_regexp_definition   = "\s*(-?\d*\.\d+)\s+\(\s*([0-9]+)\)"
 
 		start                        = re.compile (r''+ start_regexp_definition                      +'', re.IGNORECASE)
 		end                          = re.compile (r''+ end_regexp_definition                        +'', re.IGNORECASE)
@@ -392,6 +402,12 @@ def parse_cmdline():
 
         parser.add_option("--scf_output",dest="scf_output", default=None,
                      help="file containing the results of sn SCF run (default=None)")
+
+        parser.add_option("--process_scf_only",action="store_true",dest="process_scf_only", default=False,
+                     help="whether to only read in the scf orbitals and print them, or to contine to setup of fscc input (default=False)")
+        parser.add_option("--reset_energy_scale",action="store_true",dest="reset_energy_scale", default=False,
+                     help="resets orbital energies by making the HOMO the origin")
+
         parser.add_option("--scf_input",dest="scf_input", default=None,
                      help="input scf file, will be used as template for (IH)FSCC input (default=None)")
         parser.add_option("--fscc_input",dest="fscc_input", default=None,
@@ -519,18 +535,18 @@ def main():
         inputfile     = "foo"
         templatefile  = "bar"
 
-        print "debug: scf,template,final",datafile,templatefile,inputfile
+        print "#debug: scf,template,final",datafile,templatefile,inputfile
    
         molecule = molecular_electronic_structure()
 	molecule.create_spinor_list(datafile)
-	molecule.print_all_spinors()
+        molecule.print_all_spinors(set_energy_origin_to_homo=options.reset_energy_scale)
+        if not options.process_scf_only:
+	        print_fscc_summary(options)
+	        molecule.count_spinors_in_range(options.moltra_min,options.moltra_max)
+	        molecule.print_active_spinors()
 
-	print_fscc_summary(options)
-	molecule.count_spinors_in_range(options.moltra_min,options.moltra_max)
-	molecule.print_active_spinors()
-
-	molecule.check_Pspace_integrity(options.nacth,options.nactp)
-	molecule.set_PmSpace_thresholds(options.nacth,options.npmh,options.nactp,options.npmp)
+	        molecule.check_Pspace_integrity(options.nacth,options.nactp)
+	        molecule.set_PmSpace_thresholds(options.nacth,options.npmh,options.nactp,options.npmp)
 
 #input = dirac_menufile()
 #input.print_inpfile(options.nacth,options.npmh,[molecule.ehmin,molecule.ehmax],[molecule.epmin,molecule.epmax])

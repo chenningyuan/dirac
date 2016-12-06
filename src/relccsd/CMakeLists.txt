@@ -38,12 +38,12 @@ set(FIXED_RELCCSD_FORTRAN_SOURCES
 )
 
 set(FREE_RELCCSD_FORTRAN_SOURCES
-   relcc_cfg.F90
+   wrapper_sorting.F90 
    contraction.F90
+   relcc_cfg.F90
    intermediates.F90
    lambda_equation.F90
    relcc_cfg.F90
-   wrapper_sorting.F90 
    # needs dependency
    ${PROJECT_SOURCE_DIR}/src/main/mpi_framework.F90
 )
@@ -59,8 +59,8 @@ endif()
 add_library(
     relccsd
     OBJECT
-    ${FIXED_RELCCSD_FORTRAN_SOURCES}
     ${FREE_RELCCSD_FORTRAN_SOURCES}
+    ${FIXED_RELCCSD_FORTRAN_SOURCES}
 )
 
 # add intermodule dependencies

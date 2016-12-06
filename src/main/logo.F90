@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -104,10 +104,10 @@ print *, '*                                                                     
 print *, '*                                                                             *'
 print *, '*    Written by:                                                              *'
 print *, '*                                                                             *'
-print *, '*    Radovan Bast             UiT The Arctic University of      Norway        *'
-print *, '*    Trond Saue               Universite Toulouse III           France        *'
 print *, '*    Lucas Visscher           VU University Amsterdam           Netherlands   *'
 print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *'
+print *, '*    Radovan Bast             UiT The Arctic University of      Norway        *'
+print *, '*    Trond Saue               Universite Toulouse III           France        *'
 print *, '*                                                                             *'
 print *, '*    with contributions from:                                                 *'
 print *, '*                                                                             *'
@@ -166,8 +166,8 @@ print *, '*    If results obtained with this code are published, an             
 print *, '*    appropriate citation would be:                                           *'
 print *, '*                                                                             *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,            *'
-print *, '*    Release DIRAC15 (2015),                                                  *'
-print *, '*    written by R. Bast, T. Saue, L. Visscher, and H. J. Aa. Jensen,          *'
+print *, '*    Release DIRAC17 (2017),                                                  *'
+print *, '*    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *'
 print *, '*    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *'
 print *, '*    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *'
 print *, '*    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *'

@@ -4011,9 +4011,6 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#ifdef MOD_DNF
-#include "densfit.h"
-#endif
 C
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
@@ -4061,10 +4058,6 @@ C
 C
 C     Calculate AO Fock matrices
 C     --------------------------
-C
-#ifdef MOD_DNF
-      DODFLR = .TRUE.
-#endif
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 
@@ -4072,10 +4065,6 @@ C
 !       ================================
 
         if (dirac_cfg_dft_calculation) then
-
-#ifdef MOD_DNF
-        if (.not. df_fitvxc) then
-#endif
 
           if (ncsim > 0) then
             call quit('gmolitx1: mcscf-dft not implemented')
@@ -4106,10 +4095,6 @@ C
      &                       xc_response_order_mo = 1)
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
-
-#ifdef MOD_DNF
-        end if
-#endif
 
         end if
 
@@ -5093,7 +5078,7 @@ C
 C
 C
 C     ***************************
-C     *** e-e sigma vector(s) ***
+C     *** e-e trial vector(s) ***
 C     ***************************
 C
 C
@@ -5113,8 +5098,8 @@ C
             DFAC(2) = +1.0D00
          END IF
 C
-C        e-e part
-C        --------
+C        e-e part of sigma vector
+C        ------------------------
 C
          IF (NXOPE .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5128,8 +5113,8 @@ C
            ENDIF
          END IF
 C
-C        e-p part
-C        --------
+C        e-p part of sigma vector
+C        ------------------------
 C
          IF (NXOPP .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5149,7 +5134,7 @@ C
 C
 C
 C     ***************************
-C     *** e-p sigma vector(s) ***
+C     *** e-p trial vector(s) ***
 C     ***************************
 C
 C
@@ -5169,8 +5154,8 @@ C
             DFAC(2) = +1.0D00
          END IF
 C
-C        e-e part
-C        --------
+C        e-e part of sigma vector
+C        ------------------------
 C
          IF (NXOPE .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5186,8 +5171,8 @@ C
            ENDIF
          END IF
 C
-C        e-p part
-C        --------
+C        e-p part of sigma vector
+C        ------------------------
 C
          IF (NXOPP .GT. 0) THEN
            IF (NASHT.NE.0) THEN
