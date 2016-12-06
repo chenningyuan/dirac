@@ -5526,8 +5526,9 @@ C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral 
             GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
-!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
+!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operator
           TRS_MIX = .TRUE.
+          GO TO 100
 !&&&& .PEQM: polarizable embedding
   166     CONTINUE
 #ifdef HAS_PELIB

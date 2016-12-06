@@ -3999,6 +3999,7 @@ C***********************************************************************
 #endif
         use orbital_rotation_indices
 
+
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -4022,7 +4023,6 @@ C
 
 C
 C
-
       CALL QENTER('GMOLITX1')
       IREP = JSYMOP - 1
 C
@@ -4176,6 +4176,7 @@ C
 !    &                 1,(/1, 2, 3, 4/),LUPRI)
         endif
 #endif
+ 
 C
 C
 C     *******************************************
