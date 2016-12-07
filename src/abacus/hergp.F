@@ -2053,8 +2053,8 @@ C
       END
       SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)
 C
-C     Sets up transformation matrices between Cartesian and symmetry
-C     nuclear coordinates
+C     Sets up transformation matrices between Cartesian (ITYPE=1)
+C     or rotational (ITYPE=2) to symmetry nuclear coordinates
 C
 C     CSTRA - transformation matrix Cartesian to symmetry coordinates
 C     SCTRA - inverse matrix
