@@ -5,6 +5,7 @@
 
 - DIRAC16 release.
 
+- RELCCSD expectation values aka first-order unrelaxed analytic energy derivative.
 - Calculation of dipole intensities together with the excitation energies in Fock space CC.
 - Faster Dirac compilation due to implemented OBJECT libraries (requires CMake of version at least 2.8.10).
 - Run benchmark tests and only benchmark tests with "ctest -C benchmarks -L benchmark".
