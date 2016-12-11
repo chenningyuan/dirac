@@ -1053,6 +1053,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
       DIMENSION V1(3), V2(3), V3(3), TMPARR(6,0:LENTMP)
+      LOGICAL   LINMOL
 C
       N_ROTAXS = NINT(DRTAXS(1,0))
       N_MIRROR = NINT(DMRPLN(1,0))
@@ -1063,7 +1064,7 @@ C
      &      N_ROTAXS, N_MIRROR, N_ATOMS
       END IF
 
-      IF (N_ROTAXS .LE. 0) GOTO 9000 ! RETURN, no turning if no rotation axes (C1, Cs, or Ci symmetry)
+      IF (N_ROTAXS .LE. 0 . AND. .NOT. LINMOL(MXM, ATMARR)) RETURN ! RETURN, no turning if no rotation axes (C1, Cs, or Ci symmetry)
 C
       CALL DZERO(TMPARR,6*(LENTMP+1))
 C ::: First we make a new array of vectors, consisting of mirror :::
@@ -1210,7 +1211,6 @@ C             i.e. do not require true z-coordinate to be zero this time.
             GOTO 200
          END IF
 C
- 9000 RETURN
       END
 C  /* Deck linmol */
       LOGICAL FUNCTION LINMOL(MXM, ATMARR)
