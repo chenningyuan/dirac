@@ -1292,8 +1292,8 @@ C     Read the appropriate correlated density from file
       CALL OPNFIL(MCCDENS,FILE_NAME,'OLD','GET_CC')
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
-!      CLOSE(Unit=MCCDENS,Status='KEEP')
-      CLOSE(Unit=MCCDENS,Status='DELETE')
+      CLOSE(Unit=MCCDENS,Status='KEEP')
+!      CLOSE(Unit=MCCDENS,Status='DELETE')
 
       
 C     Add the closed shell Hartree-Fock contribution
