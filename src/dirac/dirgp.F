@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4339,7 +4339,7 @@ C
 #include "dcborb.h"
 C
       IF (IORBITAL .LT. 1)
-     &   CALL QUIT('illegal value in GETIOPEN (≤0)')
+     &   CALL QUIT('illegal value in GETIOPEN (<1)')
       IF (IFRP .GT. NFSYM)
      &   CALL QUIT('illegal fermion symmetry in GETIOPEN')
 C
@@ -4751,7 +4751,7 @@ C
       END
       SUBROUTINE ZERO_MO(j,CMOBUF,NBAST,NMOT,NZ)
 C
-C     1-Oct-2015 Hans Jørgen Aa. Jensen
+C     1-Oct-2015 Hans Joergen Aa. Jensen
 C     Zero MO no. j in CMOBUF
 C     (CMOBUF all of CMO, or a subset generated with SELCFS, or?)
 C     In fact, this routine can zero column j in any quaternion matrix.
