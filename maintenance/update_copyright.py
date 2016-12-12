@@ -28,7 +28,7 @@ copyright = {}
 
 copyright[('dirac', 'c')] = '''
 /*
- *     Copyright (c) 2015 by the authors of DIRAC.
+ *     Copyright (c) 2016 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -52,12 +52,12 @@ copyright[('dirac', 'fortran')] = convert_to_fortran_comments(copyright[('dirac'
 
 copyright[('dalton', 'c')] = '''
 /*
- *     Copyright (c) 2015 by the authors of Dalton (see below).
+ *     Copyright (c) 2016 by the authors of Dalton (see below).
  *     All Rights Reserved.
  *
  *     The source code in this file is part of
  *     "Dalton, a molecular electronic structure program,
- *      Release DALTON2015 (2015), see http://daltonprogram.org"
+ *      Release DALTON2016 (2016), see http://daltonprogram.org"
  *
  *     This source code is provided under a written licence and may be
  *     used, copied, transmitted, or stored only in accord with that
