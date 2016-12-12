@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -104,11 +104,11 @@
 
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
-      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) " I'll take you to a place"
       write(LUWRT,*) ' Where we shall find our'
-      write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
+      write(LUWRT,*) '  ROOTS, BLOODY ROOTS'
       write(LUWRT,*)
-      write(LUWRT,*) '               Sepultura '
+      write(LUWRT,*) '               Sepultura'
       write(LUWRT,*) ' ----------------------------------------------'
       write(LUWRT,*)
 
@@ -892,11 +892,11 @@ C
 C
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
-      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) " I'll take you to a place"
       write(LUWRT,*) ' Where we shall find our'
-      write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
+      write(LUWRT,*) '  ROOTS, BLOODY ROOTS'
       write(LUWRT,*)
-      write(LUWRT,*) '               Sepultura '
+      write(LUWRT,*) '               Sepultura'
       write(LUWRT,*) ' ----------------------------------------------'
       write(LUWRT,*)
 

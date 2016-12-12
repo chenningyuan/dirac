@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4996,7 +4996,7 @@ C  MI July 6,2006: Requires DFCOEF with written MO's
 !              in Turbomole (my reference check) and ReSpect (where i implemented it)
 !              for further information check: 
 !              V. R. Saunders and I. H. Hillier, 
-!              A “Level–Shifting” method for converging closed shell Hartree–Fock wave functions, IJQC, 7, p699-705 (1973).
+!              A "Level-Shifting" method for converging closed shell Hartree-Fock wave functions, IJQC, 7, p699-705 (1973).
 C
 C***********************************************************************
 #include "implicit.h"
