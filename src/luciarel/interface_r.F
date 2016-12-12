@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2424,7 +2424,7 @@ C     in list LPROP_KRCI in LUCIAREL sub-double group notation.
 C     
 C     symmetry of property operator IVOP according to
 C      _           _              _      
-C     | (IVOP) =  | (IBSP_KRCI) x | (IASP_KRCI)⁺
+C     | (IVOP) =  | (IBSP_KRCI) x | (IASP_KRCI)*
 C
 C     final symmetry stored in ISYMOPPRP_KRCI (krciprop.h).
 C     

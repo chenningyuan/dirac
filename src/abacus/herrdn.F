@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2129,16 +2129,16 @@ C       MULK    - bitstring of basic operations that stabilise a center
 C*****************************************************************************
 C
       II = 0
-      DO 100 I = 1, NONTYP
-         DO 110 J = 1, NONT(I)
+      DO 100 I = 1, NONTYP        ! loop over atomic types
+         DO 110 J = 1, NONT(I)    ! loop over symmetry-independent centers
             II = II + 1
             II_DEP = 1
             CORD_DEP(1:3,II_DEP) = CORD(1:3,II)
             MULK = 0
-            DO 140 L = 1, NSYMOP
+            DO 140 L = 1, NSYMOP  ! loop over generators
                LL = 2**(L-1)
                II_DEP = II_DEP + 1
-               DO 150 M = 1,3
+               DO 150 M = 1,3     ! loop over Cartesian coordinates
                   IF(IAND(LL,ISYMAX(M,1)) .NE. 0) THEN
 C                 Basic operation LL moves coordinate M
                      CORD_DEP(M,II_DEP) = -CORD(M,II)
@@ -2158,7 +2158,7 @@ C                 Basic operation LL moves coordinate M
  140        CONTINUE
             ISTBNU(II) = MULK
  110     CONTINUE
- 100  CONTINUE
+ 100  CONTINUE      
 
 C*****************************************************************************
 C     Set various basis parameters
@@ -4069,7 +4069,7 @@ C
 
       DO 100 N = 1, NUCIND
          IVARB = ISTBNU(N)
-         NDEG  = MULT(IVARB)
+         NDEG  = MULT(IVARB) !degeneracy of center
          IF (IPREAD .GE. 5)
      &      WRITE (LUPRI,1000) NAMN(N),(CORD(I,N),I=1,3),
      &                        IFAKBN(ISTBNU(N)), NDEG - 1
@@ -4082,35 +4082,35 @@ C
          DPNUC(3) = DPNUC(3) + CORD(3,N)*CHARGE(N)*FMULT(IVARB)
          II = 0
          DO 200 LA = 0,MAXREP
-            IF (IAND(IVARB,LA) .EQ. 0) THEN
-               II = II + 1
-               NUCDEP = NUCDEP + 1
-               NUCNUM(N,LA+1) = NUCDEP
-               IF (NUCDEP .GT. MXCENT) GO TO 200
-C              ... otherwise we may get segmentation fault from NAMDEP,
-C              NAMDPX, and NDEGNM assignments. We exit after 200 loop
-C              when total NUCDEP is known. /hjaaj Jan 2010
-               IF (NDEG .EQ. 1 ) THEN
-                  NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//'  '
-                  NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)
-                  NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)
-                  NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )
-                  NDEGNM(NUCDEP)     = 1
-               ELSE
-                  ICHARD = ICHAR('0') + II
-                  NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//' '
-     &                //CHAR(ICHARD)
-                  NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)(1:3)
-     &                //CHAR(ICHARD)//NAMEX(3*N-2)(5:6)
-                  NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)(1:3)
-     &                //CHAR(ICHARD)//NAMEX(3*N-1)(5:6)
-                  NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )(1:3)
-     &                //CHAR(ICHARD)//NAMEX(3*N  )(5:6)
-                  NDEGNM(NUCDEP)     = II
-               END IF
-            ELSE
-               NUCNUM(N,LA+1) = 0
-            END IF
+           IF (IAND(IVARB,LA) .EQ. 0) THEN ! filter out generator products containing generators that stabilise the center
+              II = II + 1
+              NUCDEP = NUCDEP + 1
+              NUCNUM(N,LA+1) = NUCDEP
+              IF (NUCDEP .GT. MXCENT) GO TO 200
+C             ... otherwise we may get segmentation fault from NAMDEP,
+C             NAMDPX, and NDEGNM assignments. We exit after 200 loop
+C             when total NUCDEP is known. /hjaaj Jan 2010
+              IF (NDEG .EQ. 1 ) THEN
+                 NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//'  '
+                 NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)
+                 NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)
+                 NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )
+                 NDEGNM(NUCDEP)     = 1
+              ELSE
+                 ICHARD = ICHAR('0') + II
+                 NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//' '
+     &               //CHAR(ICHARD)
+                 NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)(1:3)
+     &               //CHAR(ICHARD)//NAMEX(3*N-2)(5:6)
+                 NAMDPX(3*NUCDEP-1) = NAMEX(3*N-1)(1:3)
+     &               //CHAR(ICHARD)//NAMEX(3*N-1)(5:6)
+                 NAMDPX(3*NUCDEP  ) = NAMEX(3*N  )(1:3)
+     &               //CHAR(ICHARD)//NAMEX(3*N  )(5:6)
+                 NDEGNM(NUCDEP)     = II
+              END IF
+           ELSE
+              NUCNUM(N,LA+1) = 0
+           END IF
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
@@ -4532,11 +4532,11 @@ C
       IOFFT = 0
       IOFFR = 0
       IOFFTN = 0
-      DO 100 IREP = 0,MAXREP
+      DO 100 IREP = 0,MAXREP ! loop over irreps
          ICENTA = 0
          ICENTB = 0
-         DO 110 ICENT = 1,NUCIND
-            MULC = ISTBNU(ICENT)
+         DO 110 ICENT = 1,NUCIND ! loop over symmetry-independent centers
+            MULC = ISTBNU(ICENT) 
             DO 200 IDIRN = 1,3
                ICENTA = ICENTA + 1
                IF (IAND(MULC,IEOR(IREP,ISYMAX(IDIRN,1))).EQ.0)THEN
@@ -4747,7 +4747,8 @@ C
          DO 300 ISYM = 0, MAXREP
          IF (NCRREP(ISYM,1) .GT. 0) THEN
             IF (IPREAD .GT. 0) THEN
-               WRITE (LUPRI,'(//1X,A,I2/)') ' Symmetry', ISYM + 1
+                WRITE (LUPRI,'(//A,2X,A3,A1,I2,A1/)')
+     &          '  Symmetry',REP(ISYM),'(',ISYM+1,')'
             END IF
             DO 400 IATOM = 1, NUCIND
                DO 500 ICOOR = 1, 3
