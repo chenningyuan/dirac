@@ -6,6 +6,7 @@ Script that updates copyright headers. (c) Radovan Bast
 
 import os
 import re
+import io
 
 
 def convert_to_fortran_comments(s):
@@ -95,9 +96,9 @@ for lang in ['fortran', 'c']:
         else:
             p = re.compile('(?<=/\* {}_copyright_start \*/).*(?=/\* {}_copyright_end \*/)'.format(code, code), re.DOTALL)
         for file_name in files[lang]:
-            with open(file_name, 'r', encoding="ascii", errors="surrogateescape") as f:
+            with io.open(file_name, 'r', encoding="ascii", errors="ignore") as f:
                 s = f.read()
             if '_copyright_start' in s:
                 s = re.sub(p, copyright[(code, lang)], s)
-                with open(file_name, 'w', encoding="ascii", errors="surrogateescape") as f:
+                with io.open(file_name, 'w', encoding="ascii", errors="ignore") as f:
                     f.write(s)
