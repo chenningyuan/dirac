@@ -40,6 +40,7 @@ set(FIXED_GP_FORTRAN_SOURCES
 )
 
 set(FREE_GP_FORTRAN_SOURCES
+    car2sph.F90
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
