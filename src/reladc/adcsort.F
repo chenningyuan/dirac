@@ -637,8 +637,9 @@ C
 !
 !---------------Description--------------------------------------------
 !
-!  this is a very special sorter for the F_aibj(2) A+B contraction
-!  performing the BUF(IJ K,L:LREP)  --- >  BUF(IJ,K>L:KLREP) step
+!  this is a special sorter for the F_abij(2) A+B array needed
+!  for the 2p2h contributions to the transition moments in POLPRP.
+!  Performing the BUF(IJ K,L:LREP)  --- >  BUF(IJ,K>L:KLREP) step
 !  exclusively. Hereby antisymmetrization in KL is done and it is not
 !  assumed that the product of all four ireps is totally symmetric!
 !  Only for DESREP symmetry the sorting is done.
@@ -657,27 +658,12 @@ C
 !
 !---------------Executable code--------------------------------------
 !
-!---debug. Test offset arrays
-!     do i=1,nrep
-!     do j=1,nrep
-!       write(*,*) i,j,off(i,j),off1(i,j)
-!     enddo
-!     enddo
-!     write(*,*) ' üüüüüüüüüüüüüü'
-
       IJKL = 1
       DO KLREP = 1, NREP
-!---debug. Test totally symmetric case
-       IJREP = KLREP     !only for totally symmetric cases!
-       if(multb(ijrep+nrep,klrep+nrep,2).ne.1) then
-         stop 'munchTX'
-       else
-         write(*,*) 'Totsymm check is ok for symm.',klrep
-       endif
-!---debug end.
        IJREP = MULTB(KLREP+NREP,DESREP+NREP,2)
-       if(MULTB(IJREP+NREP,KLREP+NREP,1).ne.desrep) 
-     &                  stop 'munchDX'
+       if(MULTB(IJREP+NREP,KLREP+NREP,1).ne.desrep) then
+         stop 'munchDX'
+       endif
        N = NPAIR(IJREP)
        DO 10 LREP = 1, NREP
         KREP = MULTB(LREP,KLREP+NREP,2)

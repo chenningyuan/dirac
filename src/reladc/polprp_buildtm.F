@@ -86,9 +86,9 @@
                                             
       REAL*8,allocatable,dimension(:)        :: oooo
 
-      REAL*8,allocatable,dimension(:)        :: vabikx
-      REAL*8,allocatable,dimension(:)        :: vabiky
-      REAL*8,allocatable,dimension(:)        :: vabikz
+      REAL*8,allocatable,dimension(:)        :: vabijx
+      REAL*8,allocatable,dimension(:)        :: vabijy
+      REAL*8,allocatable,dimension(:)        :: vabijz
 
       Integer                                :: n1,n2,n3,n4
       Integer                                :: ialloc,iat
@@ -218,7 +218,7 @@
 
       DO JREP = 1, NREP
         DO IREP = 1, NREP
-           IJREP = MULTB(IREP,JREP,1)
+           IJREP = MULTB(IREP,JREP,2)
            IJBREP = MULTB(IREP+NREP,JREP+NREP,2)  !ABIJTT refers to bosonic ireps!
 
            ABIJTT(IJBREP) = ABIJTT(IJBREP) + NVVT(IREP)*NOOT(JREP)
@@ -1084,7 +1084,6 @@
      &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,6) finished'
-      stop
 !
 !-------------------------------------
 !------  F_ai(2,7): a DOV contribution
@@ -1134,7 +1133,7 @@
 !
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoo3,vvoo4)
-      CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
+      CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
      &            JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract C_ai,kb (vvoo3)  and Dkb over corresponding symmetry
@@ -1156,6 +1155,12 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+
+      iorder='0th + 1st + 2ndABC + 2,7'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,7) finished'
 !
@@ -1210,8 +1215,8 @@
 !
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoo3,vvoo4)
-      CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JVOOV,JJVO,JJOV,vvoo4,vvoo3)
+      CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
+     &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract C_ai,kb (vvoo3)  and Dkb over corresponding symmetry
 !  and add to total result.
@@ -1233,6 +1238,12 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
+      iorder='0th + 1st + 2ndABC + 2,8'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
+
       write(*,*) '------  F_ai(2,8) finished'
 !
 !-------------------------------------
@@ -1249,7 +1260,6 @@
       allocate(vvoop(n1*rcw))
       open(ioch,file=preconfn,form='unformatted',
      &     access='sequential',status='unknown')
-      n1 = ivvoott(nrep+1)
       read(ioch) (vvoop(K),K=1,n1*RCW)
       close(ioch)
       CALL DENOMVVOO (eps,vvoop,vvoop)
@@ -1259,8 +1269,8 @@
 !
       CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
      &              vvoop,vvoo4)
-      CALL SRT20M(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &            JVOOV,JJVO,JJOV,vvoo4,vvoo3)
+      CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
+     &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
       deallocate(vvoop)
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
@@ -1279,6 +1289,12 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+
+      iorder='0th + 1st + 2ndABC + 2,9'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,9) finished'
 !
@@ -1325,7 +1341,7 @@
 ! ---      done and we print the resulting TMs       -------
 ! ----------------------------------------------------------
 !
-      iorder='0th-2nd order (ph only)'
+      iorder='0th-2nd order complete ph'
  7744 CALL TM_GEN(ioch,desrep,incsat,iorder,
      &            LFA,
      &            faitx,faity,faitz,
@@ -1339,28 +1355,25 @@
 !
       write(*,*) '------  calculating the 2h2p 2nd order contributions'
       n1=ABIJTT(desrep)  !ABIJTT is non-cumulative!
-      write(*,*) 'Allocating F_aibj buffers of length',n1
+      write(*,*) 'Allocating F_abij buffers of length',n1
       allocate(fabijtx(n1))
       allocate(fabijty(n1))
       allocate(fabijtz(n1))
       fabijtx = A0
       fabijty = A0
       fabijtz = A0
+      allocate(vvoop(n1*rcw))
+      vvoop = 0.0d0
 
 
       n1=mvvoot(desrep)  !mvvoot is non-cumulative!
-      write(*,*) 'Allocating three A_abi,k buffers of length',n1
-      allocate(vabikx(n1*rcw))
-      allocate(vabiky(n1*rcw))
-      allocate(vabikz(n1*rcw))
-      vabikx = 0.0d0
-      vabiky = 0.0d0
-      vabikz = 0.0d0
-
-      n1=ABIJTT(desrep)  !ABIJTT is non-cumulative!
-      write(*,*) 'Allocating one more F_aibj buffer of length',n1
-      allocate(vvoop(n1*rcw))
-      vvoop = 0.0d0
+      write(*,*) 'Allocating A_abi,k buffers of length',n1
+      allocate(vabijx(n1*rcw))
+      allocate(vabijy(n1*rcw))
+      allocate(vabijz(n1*rcw))
+      vabijx = 0.0d0
+      vabijy = 0.0d0
+      vabijz = 0.0d0
 !
 !---------------------------------------------------
 !-----  F_ab,ij(2,A+B and antisymmetrization) ------
@@ -1379,45 +1392,67 @@
 !
 ! apply proper symmetry loop due to nontotally symmetric D_oo contributions
 ! 
-      do jrep = 1, nrep
-        krep = multb(desrep+nrep,jrep,2)
-        if(MULTB(krep,jrep,2).ne.desrep) stop 'munch:-('
+      do krep = 1, nrep
+        jrep = multb(krep,desrep+nrep,1)
+        if(MULTB(krep,jrep,2).ne.desrep) then
+          stop 'munch:-('
+        endif
         m = NVVOT(krep)
         n = NO(jrep)
         k = NO(krep)
         ioff1 = KVVOOT(krep) + 1
-        ioff2 = JPOOXX(desrep) + JJOO(krep,irep) + 1
+        ioff2 = JPOOXX(desrep) + JJOO(krep,jrep) + 1
         ioff3 = JAVVOO(krep,jrep) + 1
+        write(*,*) 'm,n,k:',m,n,k
 !x
         call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,doox(ioff2),k,
-     &              a0,vabikx(ioff3),m)
+     &              a0,vabijx(ioff3),m)
 !y
         call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,dooy(ioff2),k,
-     &              a0,vabiky(ioff3),m)
+     &              a0,vabijy(ioff3),m)
 !z
         call xgemm ('N','N',m,n,k,a1,vvoo3(ioff1),m,dooz(ioff2),k,
-     &              a0,vabikz(ioff3),m)
+     &              a0,vabijz(ioff3),m)
       enddo
-
 
       n1 = ABIJTT(desrep)
       write(*,*) 'ICEIL 1:',n1
+      vvoop = 0.0d0
       CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-     &                  JAVVOO,KKVVOT,vabikx,vvoop,n1)
+     &                  JAVVOO,KKVVOT,vabijx,vvoop,n1)
+! debug test resorted x array:
+      do i=1,n1
+        write(*,*) i,vvoop(i)
+      enddo
+! debug end
       call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
+      vvoop = 0.0d0
       CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-     &                  JAVVOO,KKVVOT,vabiky,vvoop,n1)
+     &                  JAVVOO,KKVVOT,vabijy,vvoop,n1)
+! debug test resorted x array:
+      do i=1,n1
+        write(*,*) i,vvoop(i)
+      enddo
+! debug end
       call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
+      vvoop = 0.0d0
       CALL SRT1T3_NTSI (NREP,desrep,MULTB,NVVT,NO,NO,NVVOT,
-     &                  JAVVOO,KKVVOT,vabikz,vvoop,n1)
+     &                  JAVVOO,KKVVOT,vabijz,vvoop,n1)
+! debug test resorted x array:
+      do i=1,n1
+        write(*,*) i,vvoop(i)
+      enddo
+! debug end
       call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
 
       deallocate(vvoop)
-      deallocate(vabikx)
-      deallocate(vabiky)
-      deallocate(vabikz)
+      deallocate(vabijx)
+      deallocate(vabijy)
+      deallocate(vabijz)
 
       write(*,*) 'F_ab,ij(2,A+B) contributions finished.'
+      write(*,*) 'skipping the F_ab,ij(2,C+D) contributions.'
+      goto 7766
 !
 !---------------------------------------------------
 !-----  F_ab,ij(2,C+D and antisymmetrization)  -----
@@ -1425,12 +1460,12 @@
 !
       n1=BVVOOT(desrep)
       write(*,*) 'Allocating three B_a,bij buffers of length',n1
-      allocate(vabikx(n1*rcw)) !still called vabik? for simplicity
-      allocate(vabiky(n1*rcw))
-      allocate(vabikz(n1*rcw))
-      vabikx = 0.0d0
-      vabiky = 0.0d0
-      vabikz = 0.0d0
+      allocate(vabijx(n1*rcw)) !still called vabij? for simplicity
+      allocate(vabijy(n1*rcw))
+      allocate(vabijz(n1*rcw))
+      vabijx = 0.0d0
+      vabijy = 0.0d0
+      vabijz = 0.0d0
 
       n1=ABIJTT(desrep)
       write(*,*) 'Allocating one more F_aibj buffer of length',n1
@@ -1454,13 +1489,13 @@
          ioff3 = JBVVOO(arep,crep) + 1
 !x
          call xgemm ('N','N',m,n,k,a1,dvvx(ioff1),m,vvoo3(ioff2),k,
-     &               a0,vabikx(ioff3),m)
+     &               a0,vabijx(ioff3),m)
 !y
          call xgemm ('N','N',m,n,k,a1,dvvy(ioff1),m,vvoo3(ioff2),k,
-     &               a0,vabiky(ioff3),m)
+     &               a0,vabijy(ioff3),m)
 !z
          call xgemm ('N','N',m,n,k,a1,dvvz(ioff1),m,vvoo3(ioff2),k,
-     &               a0,vabikz(ioff3),m)
+     &               a0,vabijz(ioff3),m)
       enddo
 
       n1 = ABIJTT(desrep)
@@ -1468,28 +1503,28 @@
 
 ! debug: original call leading to boundary violations
 !     CALL SRT1T2_NTSI (NREP,desrep,MULTB,NVVT,NV,NV,NOOT,
-!    &                  JBVVOO,vabikx,vvoop,n1)
+!    &                  JBVVOO,vabijx,vvoop,n1)
 ! debug end
 
       CALL SRT1T2_NTSI (NREP,desrep,MULTB,NVVT,NV,NV,NOOT,
-     &                  JBVVOO,LLVOOT,vabikx,vvoop,n1)
+     &                  JBVVOO,LLVOOT,vabijx,vvoop,n1)
       call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
       CALL SRT1T2_NTSI (NREP,desrep,MULTB,NVVT,NV,NV,NOOT,
-     &                  JBVVOO,LLVOOT,vabiky,vvoop,n1)
+     &                  JBVVOO,LLVOOT,vabijy,vvoop,n1)
       call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
       CALL SRT1T2_NTSI (NREP,desrep,MULTB,NVVT,NV,NV,NOOT,
-     &                  JBVVOO,LLVOOT,vabikz,vvoop,n1)
+     &                  JBVVOO,LLVOOT,vabijz,vvoop,n1)
       call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
 
 
       deallocate(vvoop)
-      deallocate(vabikx)
-      deallocate(vabiky)
-      deallocate(vabikz)
+      deallocate(vabijx)
+      deallocate(vabijy)
+      deallocate(vabijz)
 !
 !  calculate total transition moment including all contribs.
 !
-      iorder='0th-2nd order (ph + 2p2h)'
+ 7766 iorder='0th-2nd order ph + 2p2h A+B'
       incsat = ABIJTT(desrep)
 
       CALL TM_GEN(ioch,desrep,incsat,iorder,
