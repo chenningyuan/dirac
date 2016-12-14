@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+#---------------------------------------#
+#
+# Test 1:  C1 - symmetry
+#
+#---------------------------------------#
+
+
+f = Filter()
+
+# check energy
+f.add(from_string = 'Total energy\ *:',
+      num_lines   = 1,
+      rel_tolerance = 1.0e-8)
+ 
+# copy MOs
+shutil.copy('ScfOrb.nosym', 'ScfOrb')
+
+# run test
+test.run(['scf.inp'], ['h2o-cc-pVDZ-nosym.mol'], f, args='--put="ScfOrb" --get="DFPCMO"')
+
+# remove copy
+os.unlink('ScfOrb')
+
+
+sys.exit(test.return_code)
