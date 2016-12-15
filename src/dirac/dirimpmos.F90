@@ -13,43 +13,66 @@ subroutine impmos(qcpack,filimp)
 !
 ! Benjamin Helmich-Paris, fall 2016
 !
+! NOTE: works so far only in C1 symmetry since MOLCAS export MOs in SAO basis
+!
 !------------------------------------------------------------------------------!
 
- use car2sph
- use file_handler, only : getunit, releaseunit
+ use carsph, only : sph2car
+ use file_handler, only : open_seq, releaseunit
 
  implicit none
 
 ! parameters
 #include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "aovec.h"
 
 ! common blocks
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "shells.h"
+#include "nuclei.h"
+#include "blocks.h"
 
 ! parameter:
  character(len=*), parameter :: chrdbg = "impmos>"
- logical, parameter :: locdbg = .true.
+ logical, parameter :: locdbg = .false.
 
 ! input:
  character(len=64), intent(in) :: qcpack, filimp
 
 ! local scalars:
  character(len=74) :: text
- integer :: idim(3,2), lucmo, luimp
+ integer :: idim(3,2), lucmo, luimp, ioff, ish, nhkti, norbi, khkti
+ integer :: idx, ideg, jorb, itmp, mxscr, iofcar, iofsph, nscr, imo
  real(8) :: toterg
 
 ! local allocatables:
  integer, allocatable :: ibeig(:), norb0(:), nbbas0(:)
- real(8), allocatable :: cmosph(:), cmocar(:), eig(:)
-
-! functions:
+ real(8), allocatable :: cmosph(:), cmocar(:), eig(:), ctmp(:)
 
  call qenter("impmos")
 
+ ! check if we have C1 symmetry
+ if (nbsym.gt.1) then
+  call quit(chrdbg//" MO import works so far only in C1 symmetry!")
+ end if
+
+ if (qcpack.ne.'MOLCAS') then
+  call quit(chrdbg//" MO import works so far only for MOLCAS' InpOrb files!")
+ end if
+ 
+ ! determine dimension of scratch array
+ mxscr = 0
+ do ish = 1,maxshl
+  itmp = (2*nhktsh(ish)-1)*norbsh(ish)
+  mxscr = max(mxscr,itmp)
+ end do
+
  allocate(cmocar(ncmotq),cmosph(norbt*norbt),eig(norbt),ibeig(norbt),&
-          norb0(nbsym),nbbas0(nbsym))
+          norb0(nbsym),nbbas0(nbsym),ctmp(mxscr))
 
  ! import MOLCAS information
  call rdinporb(cmosph,eig,norb0,nbbas0,filimp,nbsym,norbt,ntbas(0))
@@ -68,8 +91,56 @@ subroutine impmos(qcpack,filimp)
   call output(cmosph,1,norbt,1,norbt,norbt,norbt,2,lupri)
  end if
 
+ ! ------------------------------------------------------ !
+ ! reorder spherical Harm. AOs from MOLCAS to DIRAC order
+ ! ------------------------------------------------------ !
+ ioff = 0
+ do imo = 1,norbt
+  do ish = 1,maxshl
+   norbi = norbsh(ish)
+   nhkti = nhktsh(ish)
+   khkti = 2*nhkti-1
+   idx = 0
+   do ideg = 1,khkti
+    do jorb = 1,norbi
+     idx = idx+1
+     ctmp(ideg+(jorb-1)*khkti) = cmosph(ioff+idx)
+    end do
+   end do
+   nscr = khkti*norbi
+   call dcopy(nscr,ctmp,1,cmosph(ioff+1),1)
+   ioff = ioff+nscr
+  end do
+ end do
+
+ if (locdbg) then
+  write(lupri,"(a)") chrdbg//" reordered MO coeffs in sph. Harm. basis.:"
+  call output(cmosph,1,norbt,1,norbt,norbt,norbt,1,lupri)
+ end if
+
+ ! ------------------------------------------------------ !
+ ! do the spherical Harm. to Cartesian transformation
+ ! ------------------------------------------------------ !
+ iofsph = 0
+ iofcar = 0
+ do imo = 1,norbt
+  do ish = 1,kmax
+   nhkti = nhkt(ish)
+   call sph2car(cmocar(iofcar+1),cmosph(iofsph+1),nhkti)
+   iofsph = iofsph+(2*nhkti-1)
+   iofcar = iofcar+(nhkti*(nhkti+1)/2)
+  end do
+ end do
+
+ if (locdbg) then
+  write(lupri,"(a)") chrdbg//" reordered MO coeffs. in Cart. basis:"
+  call output(cmocar,1,ntbas(0),1,norbt,ntbas(0),norbt,1,lupri)
+ end if
+
+ ! ------------------------------------------------------ !
  ! save imported and converted MOs to DFPCMO file
- lucmo = getunit("DFPCMO")
+ ! ------------------------------------------------------ !
+ lucmo = open_seq("DFPCMO",cform="FORMATTED")
  call wripcmo(lucmo,cmocar,eig,ibeig,toterg)
  call releaseunit(lucmo)
 
@@ -77,8 +148,6 @@ subroutine impmos(qcpack,filimp)
  deallocate(cmocar,cmosph,eig,ibeig,norb0,nbbas0)
 
  call qexit("impmos")
-
- stop 'panic'
 
 end subroutine impmos
 !==============================================================================!
@@ -106,7 +175,7 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
 
 ! parameter
  character(len=*), parameter :: chrdbg = "rdinporb>"
- logical, parameter :: locdbg = .true.
+ logical, parameter :: locdbg = .false.
 
  integer, parameter :: ndiv  = 4
 
@@ -125,12 +194,10 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  character(len=19) :: chrref
  character(len=72) :: line
  logical :: found
- integer :: kcmo, idum1, idum2, isym, iorb, jorb, luimp, ierr, ibf, jbf
+ integer :: kcmo, iuhf, idum, isym, iorb, jorb, luimp, ierr, ibf, jbf
  integer :: keig, nbsym0
 
  call qenter("rdinporb")
-
- norb(:) = -999
 
  luimp = open_seq(filimp,cform="FORMATTED")
 
@@ -152,8 +219,13 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  read(luimp,'(a72)',iostat=ierr) line
  if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
 
- read(line,"(3I8)") idum1,nbsym0,idum2
- 
+ read(line,"(3I8)") iuhf,nbsym0,idum
+
+ ! check if we have restricted wave function
+ if (iuhf.ne.0) then
+  call quit(chrdbg//" You try to import unrestricted orbitals. Dirac only works in restricted mode!")
+ end if
+
  ! check if number of irreps is consistent
  if (nbsym0.ne.nbsym) then
   call quit(chrdbg//" number of irreps from import file inconsistent with Dirac!")
@@ -161,29 +233,13 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
 
  write(fmtorb,'("(",I1,"I8)")')  nbsym0
 
-! TODO check that
- read(luimp,'(a72)',iostat=ierr) line
- if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
- read(line,fmtorb) (norb(isym),isym=1,nbsym0)
-
-!! check if number of MOs per irrep is consistent
-!do isym = 1,nbsym
-! if (norb0(isym).ne.norb(isym)) then
-!  call quit(chrdbg//" number of MOs per irrep from import file inconsistent with Dirac!")
-! end if
-!end do
-
  read(luimp,'(a72)',iostat=ierr) line
  if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
  read(line,fmtorb) (nbbas(isym),isym=1,nbsym0)
 
-!! check if number of basis functions per irrep are consistent
-!do isym = 1,nbsym
-! if (nbbas0(isym).ne.nbbas(isym)) then
-!  call quit(chrdbg//" number of MOs per irrep from import file inconsistent with Dirac!")
-! end if
-!end do
-! TODO check that
+ read(luimp,'(a72)',iostat=ierr) line
+ if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+ read(line,fmtorb) ( norb(isym),isym=1,nbsym0)
 
  if (locdbg) then
   write(lupri,*) chrdbg//" number of irreps:",nbsym0

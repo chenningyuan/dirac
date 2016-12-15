@@ -40,7 +40,6 @@ set(FIXED_GP_FORTRAN_SOURCES
 )
 
 set(FREE_GP_FORTRAN_SOURCES
-    car2sph.F90
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
@@ -54,6 +53,7 @@ set(FREE_GP_FORTRAN_SOURCES
     include_h_modules.F90
     kinds.F90
     machine_parameters.F90
+    matprt.F90
     memory_allocator.F90
     memory_control.F90
     memory_errorhandler.F90

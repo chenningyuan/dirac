@@ -1,4 +1,5 @@
-module car2sph
+!==============================================================================!
+module carsph
 !------------------------------------------------------------------------------!
 !
 ! NOTE:
@@ -15,6 +16,8 @@ module car2sph
 ! BHP, fall 2016
 !
 !------------------------------------------------------------------------------!
+
+ private
 
  integer, parameter :: iofsph(*) = (/ 0, 5 ,12, 21, 32, 45 /)
   
@@ -430,4 +433,105 @@ module car2sph
   -1.232516621479086763d-02 &! k +7
  /)
 
-end module car2sph
+ public :: car2sph, sph2car
+
+contains
+
+!==============================================================================!
+ subroutine car2sph(sphbas,carbas,nhkt)
+!------------------------------------------------------------------------------!
+!
+! transform one basis function from Cartesians to spherical Harmonics 
+!
+!------------------------------------------------------------------------------!
+
+ implicit none
+
+! dimension:
+ integer, intent(in) :: nhkt
+
+! input:
+ real(8), intent(in) :: carbas(nhkt*(nhkt+1)/2)
+
+! output:
+ real(8), intent(out) :: sphbas(2*nhkt-1)
+
+! local scalars:
+ integer :: ksph, kcar, ioff, jp
+ real(8) :: sphk
+
+ if      (nhkt.eq.1) then
+  sphbas(1) = carbas(1)
+ else if (nhkt.eq.2) then
+  sphbas(1) = carbas(1)
+  sphbas(2) = carbas(2)
+  sphbas(3) = carbas(3)
+ else if (nhkt.gt.8) then
+  stop "Sorry,works so far only up to k functions!"
+ else
+  ioff = iofsph(nhkt-2)
+  do ksph = 1,2*nhkt-1
+   sphk = 0.d0
+   do jp = isph(ioff+ksph),isph(ioff+ksph+1)-1
+    kcar = jcar(jp)
+    sphk = sphk+csph(jp)*carbas(kcar)
+   end do
+   sphbas(ksph) = sphk
+  end do
+ end if
+
+ end subroutine car2sph
+!==============================================================================!
+!==============================================================================!
+ subroutine sph2car(carbas,sphbas,nhkt)
+!------------------------------------------------------------------------------!
+!
+! transform one basis function from spherical Harmonics to Cartesians
+!
+!------------------------------------------------------------------------------!
+
+ implicit none
+
+! dimension:
+ integer, intent(in) :: nhkt
+
+! input:
+ real(8), intent(in) :: sphbas(2*nhkt-1)
+
+! output:
+ real(8), intent(out) :: carbas(nhkt*(nhkt+1)/2)
+
+! local scalars:
+ integer :: ksph, kcar, ioff, jp
+ real(8) :: sphk
+
+ if      (nhkt.eq.1) then
+  carbas(1) = sphbas(1)
+ else if (nhkt.eq.2) then
+  carbas(1) = sphbas(1)
+  carbas(2) = sphbas(2)
+  carbas(3) = sphbas(3)
+ else if (nhkt.gt.8) then
+  stop "Sorry,works so far only up to k functions!"
+ else
+  do kcar = 1,nhkt*(nhkt+1)/2
+   carbas(kcar) = 0.d0
+  end do
+  ioff = iofsph(nhkt-2)
+  do ksph = 1,2*nhkt-1
+   sphk = sphbas(ksph)
+   do jp = isph(ioff+ksph),isph(ioff+ksph+1)-1
+    kcar = jcar(jp)
+    carbas(kcar) = carbas(kcar)+csph(jp)*sphk
+!bhp
+    write(6,*) "debug:",ksph,kcar,jp,csph(jp),sphk, carbas(kcar)
+!bhp
+   end do
+  end do
+ end if
+
+ end subroutine sph2car
+!==============================================================================!
+
+end module carsph
+!==============================================================================!
