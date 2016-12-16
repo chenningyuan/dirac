@@ -15,22 +15,20 @@ test = TestRun(__file__, sys.argv)
 #
 #---------------------------------------#
 
-
 f = Filter()
 
 # check energy
-f.add(from_string = 'Total energy\ *:',
+f.add(from_string = 'checksum of imported and converted MOs:',
       num_lines   = 1,
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-11)
  
 # copy MOs
-shutil.copy('ScfOrb.nosym', 'ScfOrb')
+shutil.copy('scf-h2o-cc-pV5Z-nosym.ScfOrb', 'ScfOrb')
 
 # run test
-test.run(['scf.inp'], ['h2o-cc-pVDZ-nosym.mol'], f, args='--put="ScfOrb" --get="DFPCMO"')
+test.run(['scf.inp'], ['h2o-cc-pV5Z-nosym.mol'], f, args='--put="ScfOrb"')
 
 # remove copy
 os.unlink('ScfOrb')
-
 
 sys.exit(test.return_code)

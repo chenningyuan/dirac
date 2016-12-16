@@ -15,6 +15,8 @@ module carsph
 !
 ! BHP, fall 2016
 !
+! NOTE: tested so far up to H functions (TODO: I and K)
+!
 !------------------------------------------------------------------------------!
 
  private
@@ -523,9 +525,6 @@ contains
    do jp = isph(ioff+ksph),isph(ioff+ksph+1)-1
     kcar = jcar(jp)
     carbas(kcar) = carbas(kcar)+csph(jp)*sphk
-!bhp
-    write(6,*) "debug:",ksph,kcar,jp,csph(jp),sphk, carbas(kcar)
-!bhp
    end do
   end do
  end if

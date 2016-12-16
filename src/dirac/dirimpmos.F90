@@ -27,6 +27,7 @@ subroutine impmos(qcpack,filimp)
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "consts.h"
 
 ! common blocks
 #include "dcbbas.h"
@@ -46,14 +47,19 @@ subroutine impmos(qcpack,filimp)
 ! local scalars:
  character(len=74) :: text
  integer :: idim(3,2), lucmo, luimp, ioff, ish, nhkti, norbi, khkti
- integer :: idx, ideg, jorb, itmp, mxscr, iofcar, iofsph, nscr, imo
- real(8) :: toterg
+ integer :: idx, ideg, jorb, itmp, mxscr, iofcar, iofsph, nscr, imo, ibf
+ real(8) :: toterg, orbsum, chksum
 
 ! local allocatables:
  integer, allocatable :: ibeig(:), norb0(:), nbbas0(:)
  real(8), allocatable :: cmosph(:), cmocar(:), eig(:), ctmp(:)
 
  call qenter("impmos")
+
+ write(lupri,"(/,a)") "    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+ write(lupri,"(  a)") "    !!!        W A R N I N G     !!!"
+ write(lupri,"(  a)") "    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+ write(lupri,"(/,a)") "    import (N/S)R MO energies and coefficients from "//qcpack
 
  ! check if we have C1 symmetry
  if (nbsym.gt.1) then
@@ -74,7 +80,12 @@ subroutine impmos(qcpack,filimp)
  allocate(cmocar(ncmotq),cmosph(norbt*norbt),eig(norbt),ibeig(norbt),&
           norb0(nbsym),nbbas0(nbsym),ctmp(mxscr))
 
+ ! initialze CMOs with 0
+ call dzero(cmocar,ncmotq)
+
+ ! ------------------------------------------------------ !
  ! import MOLCAS information
+ ! ------------------------------------------------------ !
  call rdinporb(cmosph,eig,norb0,nbbas0,filimp,nbsym,norbt,ntbas(0))
 
  if (locdbg) then
@@ -89,6 +100,7 @@ subroutine impmos(qcpack,filimp)
 
   write(lupri,"(a)") chrdbg//" imported MO coeffs.:"
   call output(cmosph,1,norbt,1,norbt,norbt,norbt,2,lupri)
+  !call matprt(cmosph,norbt,norbt)
  end if
 
  ! ------------------------------------------------------ !
@@ -116,6 +128,7 @@ subroutine impmos(qcpack,filimp)
  if (locdbg) then
   write(lupri,"(a)") chrdbg//" reordered MO coeffs in sph. Harm. basis.:"
   call output(cmosph,1,norbt,1,norbt,norbt,norbt,1,lupri)
+  !call matprt(cmosph,norbt,norbt)
  end if
 
  ! ------------------------------------------------------ !
@@ -135,11 +148,31 @@ subroutine impmos(qcpack,filimp)
  if (locdbg) then
   write(lupri,"(a)") chrdbg//" reordered MO coeffs. in Cart. basis:"
   call output(cmocar,1,ntbas(0),1,norbt,ntbas(0),norbt,1,lupri)
+  !call matprt(cmocar,ntbas(0),norbt)
  end if
+
+ ! ------------------------------------------------------ !
+ ! compute check sum that is printed / tested
+ ! ------------------------------------------------------ !
+ chksum = d0
+ iofcar = 0
+ do imo = 1,norbt
+  orbsum = d0
+  do ibf = 1,ntbas(0)
+   orbsum = orbsum+cmocar(iofcar+ibf)
+  end do
+  chksum = chksum+abs(orbsum)
+  iofcar = iofcar+ntbas(0)
+ end do
+
+ write(lupri,"(/,a,E20.13,/)") "checksum of imported and converted MOs:",chksum
 
  ! ------------------------------------------------------ !
  ! save imported and converted MOs to DFPCMO file
  ! ------------------------------------------------------ !
+ toterg = d0
+ ibeig(:) = 0
+
  lucmo = open_seq("DFPCMO",cform="FORMATTED")
  call wripcmo(lucmo,cmocar,eig,ibeig,toterg)
  call releaseunit(lucmo)
@@ -209,15 +242,15 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  found = .false.
  do while (.not.found)
   read(luimp,'(a72)',iostat=ierr) line
-  if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+  if (ierr.ne.0) call quit(chrdbg//' error (1) while reading vector source file!')
   found = (index(line,"#INFO").gt.0)
  end do
 
  read(luimp,'(a72)',iostat=ierr) line
- if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+ if (ierr.ne.0) call quit(chrdbg//' error (2) while reading vector source file!')
 
  read(luimp,'(a72)',iostat=ierr) line
- if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+ if (ierr.ne.0) call quit(chrdbg//' error (3) while reading vector source file!')
 
  read(line,"(3I8)") iuhf,nbsym0,idum
 
@@ -234,11 +267,11 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  write(fmtorb,'("(",I1,"I8)")')  nbsym0
 
  read(luimp,'(a72)',iostat=ierr) line
- if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+ if (ierr.ne.0) call quit(chrdbg//' error (4) while reading vector source file!')
  read(line,fmtorb) (nbbas(isym),isym=1,nbsym0)
 
  read(luimp,'(a72)',iostat=ierr) line
- if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+ if (ierr.ne.0) call quit(chrdbg//' error (5) while reading vector source file!')
  read(line,fmtorb) ( norb(isym),isym=1,nbsym0)
 
  if (locdbg) then
@@ -255,7 +288,7 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  found = .false.
  do while (.not.found)
   read(luimp,'(a72)',iostat=ierr) line
-  if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+  if (ierr.ne.0) call quit(chrdbg//' error (6) while reading vector source file!')
   found = (index(line,"#ORB").gt.0)
  end do
 
@@ -272,13 +305,13 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
    found = .false.
    do while (.not.found)
     read(luimp,'(a72)',iostat=ierr) line
-    if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+    if (ierr.ne.0) call quit(chrdbg//' error (7) while reading vector source file!')
     found = (index(line,chrref).gt.0)
    end do
 
    do ibf=1,nbbas(isym),ndiv
     read(luimp,'(a72)',iostat=ierr) line
-    if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+    if (ierr.ne.0) call quit(chrdbg//' error (8) while reading vector source file!')
     read(line,"(4E18.12)") (cmo(jbf+kcmo),jbf=ibf,min(ibf+3,nbbas(isym)))
    end do
    kcmo=kcmo+nbbas(isym)
@@ -293,14 +326,14 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  found = .false.
  do while (.not.found)
   read(luimp,'(a72)',iostat=ierr) line
-  if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+  if (ierr.ne.0) call quit(chrdbg//' error (9) while reading vector source file!')
   found = (index(line,"#ONE").gt.0)
  end do
 
  found = .false.
  do while (.not.found)
   read(luimp,'(a72)',iostat=ierr) line
-  if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+  if (ierr.ne.0) call quit(chrdbg//' error (10) while reading vector source file!')
   found = (index(line,"* ONE ELECTRON ENERGIES").gt.0)
  end do
 
@@ -308,7 +341,7 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  do isym=1,nbsym
   do iorb=1,norb(isym),ndiv
    read(luimp,'(a72)',iostat=ierr) line
-   if (ierr.ne.0) call quit(chrdbg//' error while reading vector source file!')
+   if (ierr.ne.0) call quit(chrdbg//' error (11) while reading vector source file!')
    read(line,"(4E18.12)") (eig(jorb+keig),jorb=iorb,min(iorb+3,norb(isym)))
   end do
   keig=keig+norb(isym)
