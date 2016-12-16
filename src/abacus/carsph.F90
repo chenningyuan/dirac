@@ -21,9 +21,9 @@ module carsph
 
  private
 
- integer, parameter :: iofsph(*) = (/ 0, 5 ,12, 21, 32, 45 /)
+ integer, parameter :: iofsph(6) = (/ 0, 5 ,12, 21, 32, 45 /)
   
- integer, parameter :: isph(*) = (/ &
+ integer, parameter :: isph(61) = (/ &
 ! d
    1,   2,   3,   6,   7,&
 ! f
@@ -39,7 +39,7 @@ module carsph
 ! end
  271 /)
   
- integer, parameter :: jcar(*) = (/ &
+ integer, parameter :: jcar(270) = (/ &
 ! d -2
   2,&
 ! d -1
@@ -162,7 +162,7 @@ module carsph
   1,  4, 11, 22 &
   /)
 
- real(8), parameter :: csph(*) = (/ &
+ real(8), parameter :: csph(270) = (/ &
   +1.000000000000000000d+00,&! d -2
   +1.000000000000000000d+00,&! d -1
   -2.886751345948128655d-01,&! d  0
