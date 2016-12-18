@@ -10126,7 +10126,7 @@ C
  10   CONTINUE
       RETURN
       END
-
+C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sprres */
       SUBROUTINE SPRRES(GEOM,AMASS,GVAL,DMAT,PMATL,PMATS,KATOM,IPRINT)
@@ -10176,18 +10176,17 @@ C
      &                 GTRANPSEE(3,3,KATOM),GTRANPSEP(3,3,KATOM),
      &                 GTRANP(3,3,KATOM),GTRAND(3,3,KATOM),
      &                 GTRANN(3,3,KATOM)
-
 C
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5, DP5 = 1/D2)
       PARAMETER (FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       LOGICAL PLANAR, LINMOL
 C
-c**** iaa: Only most abundant isotopes are considered
+C**** iaa: Only most abundant isotopes are considered
       DO I = 1, MXCENT
             ISOTOP(I) = 1
       END DO
-c****
+C****
 C
       CALL DZERO(TOTSPR,3*MXCOOR)
       CALL DZERO(GTRANT,9*MXCENT)
@@ -10229,10 +10228,10 @@ CTROND: some test statements..to be removed later
          CALL OUTPUT(SPRNUC(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
          CALL HEADER('TOTSPR in spinrot',-1)
          CALL OUTPUT(TOTSPR(1,1,IATOM),1,3,1,3,3,3,1,LUPRI)
-
-
+C
+C
  99   CONTINUE
-
+C
 C
 C     Determine principal moments of inertia
 C     ======================================
@@ -10288,8 +10287,8 @@ C     NSR constants are defined only for nuclei with non-zero gvalue
               IF (IPRINT .GE. 0) THEN
                 CALL HEADER('Spin-rotation constants (kHz) for '//
      &                          NAMDEP(IATOM),-1)
-                WRITE (LUPRI,'(2X,A18,F6.2,/)')
-     &                   'Nuclear g-value  :',GVAL(IATOM)
+                WRITE (LUPRI,'(2X,A17,F12.6,/)')
+     &                   'Nuclear g-value: ',GVAL(IATOM)
               END IF
               FACTOT = EIGVAL(3)*GVAL(IATOM)*FAC
 C
@@ -10316,17 +10315,18 @@ C
 C
               NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
 C
-              IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &         ' Total spin-rotation constant            :',NSRTOT,
-     &         ' Nuclear part of spin-rotation           :',NSRNUC,
-     &         ' Expectation value part of spin-rotation :',NSREXV,
-     &         ' Linear response part of spin-rotation   :',NSRLR
-              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &         ' ee part of L operator LR contribution   :',NSRLRLEE,
-     &         ' ee part of S operator LR contribution   :',NSRLRSEE,
-     &         ' ep part of L operator LR contribution   :',NSRLRLEP,
-     &         ' ep part of S operator LR contribution   :',NSRLRSEP
+              IF (IPRINT .GE. 0) 
+     &   WRITE(LUPRI,'((1X,A,F12.4,/),/,2(1X,A,F12.4,/),(1X,A,F12.4))')
+     & ' Total spin-rotation constant (SRC)      :',NSRTOT,
+     & '   Nuclear contribution to SRC           :',NSRNUC,
+     & '   Expectation value contribution to SRC :',NSREXV,
+     & '   Linear response contribution to SRC   :',NSRLR
 C
+              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
+     & '           M^L(e-e)    :',NSRLRLEE,
+     & '           M^S(e-e)    :',NSRLRSEE,
+     & '           M^L(e-p)    :',NSRLRLEP,
+     & '           M^S(e-p)    :',NSRLRSEP
  98      CONTINUE
 C
 !     If linear symmetry is not detected:
@@ -10337,8 +10337,8 @@ C
                IF (IPRINT .GE. 0) THEN
                  CALL HEADER('Spin-rotation constants (kHz) for '//
      &                      NAMDEP(IATOM),-1)
-                 WRITE (LUPRI,'(2X,A18,F6.2,/)')
-     &                 'Nuclear g-value  :',GVAL(IATOM)
+                 WRITE (LUPRI,'(2X,A17,F12.6)')
+     &                 'Nuclear g-value: ',GVAL(IATOM)
                END IF
             ELSE   !   if GVAL = 0
                FACTOT = FAC  ! GVAL(IATOM) = 1
@@ -10394,21 +10394,25 @@ C
 ! If there is at least one inertia tensor eigenvalue equal to zero (linear molecule):
 C
                  IF(LINMOL) THEN
-                   IF (IPRINT .GE. 0) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &  ' Total spin-rotation constant            :',GTRANT(3,3,IATOM),
-     &  ' Nuclear part of spin-rotation           :',GTRANN(3,3,IATOM),
-     &  ' Expectation value part of spin-rotation :',GTRAND(3,3,IATOM),
-     &  ' Linear response part of spin-rotation   :',GTRANP(3,3,IATOM)
+                   IF(EIGVAL(1).NE.0) THEN
+                      WRITE (LUPRI,'(2X,A,F12.6,/)')
+     &               'Moment of inertia (a.u.): ', D1/EIGVAL(1)
+                   ELSE
+                      WRITE (LUPRI,'(2X,A,F12.6,/)')
+     &               'Moment of inertia (a.u.): ', D1/EIGVAL(2)
+                   END IF
+                   IF (IPRINT .GE. 0)
+     &   WRITE(LUPRI,'((1X,A,F12.4,/),/,2(1X,A,F12.4,/),(1X,A,F12.4))')
+     &  ' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
+     &  '   Nuclear contribution to SRC           :',GTRANN(3,3,IATOM),
+     &  '   Expectation value contribution to SRC :',GTRAND(3,3,IATOM),
+     &  '   Linear response contribution to SRC   :',GTRANP(3,3,IATOM)
 C
                    IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &               ' ee part of L operator LR contribution   :',
-     &                 GTRANPLEE(3,3,IATOM),
-     &               ' ee part of S operator LR contribution   :',
-     &                 GTRANPSEE(3,3,IATOM),
-     &               ' ep part of L operator LR contribution   :',
-     &                 GTRANPLEP(3,3,IATOM),
-     &               ' ep part of S operator LR contribution   :',
-     &                 GTRANPSEP(3,3,IATOM)
+     &  '           M^L(e-e)    :',GTRANPLEE(3,3,IATOM),
+     &  '           M^S(e-e)    :',GTRANPSEE(3,3,IATOM),
+     &  '           M^L(e-p)    :',GTRANPLEP(3,3,IATOM),
+     &  '           M^S(e-p)    :',GTRANPSEP(3,3,IATOM)
 C
 ! If the inertia tensor corresponds to a non-linear molecule (with and without symmetry):
                  ELSE
@@ -10438,6 +10442,28 @@ C
      &                    'A', (GTRANP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANP(I,3,IATOM),I = 1,3)
+C
+                      CALL HEADER('M^L(e-e)',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+     &                    'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
+                      CALL HEADER('M^S(e-e)',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+     &                    'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
+                      CALL HEADER('M^L(e-p)',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+     &                    'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
+                      CALL HEADER('M^S(e-p)',-1)
+                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+     &                    'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
+     &                    'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
+     &                    'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
+C
                       CALL HEADER('Total spin-rotation constants',-1)
                     END IF
                     WRITE (LUPRI,'(3X,A,6X,3F16.6)')
