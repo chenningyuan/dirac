@@ -9,4 +9,4 @@
 !     and then rebuild the program using the command "make".
 !
       INTEGER MXCONT, MXAOVC
-      PARAMETER (MXCONT = 25, MXAOVC = MXCONT)
+      PARAMETER (MXCONT = 30, MXAOVC = MXCONT)

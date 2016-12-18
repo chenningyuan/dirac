@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -253,10 +253,19 @@ C
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"
+#include "dcbimp.h"
 C
       CALL QENTER('PAMPSI')
+
+C***********************************************************************
+C**** import MO coeff from different QC package ************************
+C****         and dump it on DFPCMO             ************************
+C***********************************************************************
+      IF (DOIMPMOS) CALL IMPMOS(QCPACK,FILIMP)
+
 C     Attempt read of formatted MO coefficients
       CALL PCMOIN()
+
 C     Read C1 MO coefficients
       IF(DOACIN) CALL ACMOIN()
 C     Extend RKB coeffcients with complementary UKB space

@@ -94,6 +94,7 @@ twoao.h
 )
 
 set(FREE_ABACUS_FORTRAN_SOURCES
+   carsph.F90
    hermodules.F90
    filemodule.F90
 )

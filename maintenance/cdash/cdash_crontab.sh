@@ -50,9 +50,8 @@ ssh-agent bash -c "ssh-add ${DEPLOY_KEY}; git clone --recursive -b $BRANCH git@g
 cd $CTEST_TEMP_DIR/compile
 if [ $MAKE_RELEASE -eq 1 ]; then
     mkdir -p build
-    ./pamadm --release
     cd build
-    cmake ..
+    cmake -DENABLE_UNRELEASED=OFF ..
     make release
     tar xvzf DIRAC-*-Source.tar.gz
     cd DIRAC-*-Source

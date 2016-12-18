@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -637,7 +637,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION X(MAXNUM),Y(MAXNUM),Z(MAXNUM),WT(MAXNUM)
 
 C
-C     Lebedev schemes programmed by Cristoph van Wüllen
+C     Lebedev schemes programmed by Cristoph van Wullen
 C     and used by kind permission.
 C
 C     For principal references, see file Lebedev-Laikov.F

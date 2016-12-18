@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -976,7 +976,7 @@ C
       IOFFSET     = IOFFSET + IWRITE_BYTE
 C
 C     check for total number of elements - do not write more than 
-C     1.0*10⁸ elements at each cycle
+C     1.0*10^8 elements at each cycle
 C
       IWRITE_MAX  = 100 000 000
       ILOOP_WRITE = 1
@@ -1176,7 +1176,7 @@ C         modus
 C     ... old-school way of integral handling
 C
 C       check for total number of elements - do not read more than 
-C       1.0*10⁸ elements at each cycle
+C       1.0*10^8 elements at each cycle
 C
         IREAD_MAX  = 100 000 000
         ILOOP_READ = 1

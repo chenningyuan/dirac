@@ -2,33 +2,26 @@
 
 import os
 import sys
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest_dirac import Filter, TestRun
 
-test = TestRun(__file__, sys.argv)
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
 
-f = Filter()
-f.add(from_string = 'SYMGRP:Point group information', 
-      num_lines   = 5, rel_tolerance   = 1.0e-9)
+assert version_info.major == 2
 
-test.run(['test_xyz.inp'], ['molecule01.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule02.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule03.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule04.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule05.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule06.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule07.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule08.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule09.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule10.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule11.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule12.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule13.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule14.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule15.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule16.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule17.xyz'], f)
-test.run(['test_xyz.inp'], ['molecule18.xyz'], f)
+f = [
+    get_filter(from_string='SYMGRP:Point group information',
+               num_lines=5,
+               rel_tolerance=1.0e-9)
+]
 
-sys.exit(test.return_code)
+options = cli()
+
+ierr = 0
+for n in range(1, 19):
+    ierr += run(options,
+                configure,
+                input_files=['test_xyz.inp', 'molecule{0:02}.xyz'.format(n)],
+                filters={'out': f})
+
+sys.exit(ierr)
