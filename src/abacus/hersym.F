@@ -111,7 +111,6 @@ C  /* Deck FIND_SYMMETRY */
 #include "cbisol.h"
 #include "cbihr1.h"
 #include "molinp.h"
-#include "r12int.h"
 #include "numder.h"
 ! infpar.h: MPARID, MYTID
 #include "infpar.h"

@@ -2271,7 +2271,6 @@ C
 #include "abainf.h"
 #include "nuctap.h"
 #include "cbivib.h"
-#include "cbinum.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
 #include "ibtfun.h"
@@ -2326,10 +2325,16 @@ C
       END DO
       ELSE
          CALL DCOPY(NCORD*NCORD*NCORD,FMATF,1,FMATT,1)
-         IF (.NOT.NUMVIB) THEN
-            FAC = D1/XFAMU
-            CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
-         END IF
+Cbhp>
+Cbhp> NUMVIB is never set to any value ???
+Cbhp>
+C        IF (.NOT.NUMVIB) THEN
+C           FAC = D1/XFAMU
+C           CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
+C        END IF
+Cbhp>
+Cbhp> NUMVIB is never set to any value ???
+Cbhp>
       END IF
       
 C

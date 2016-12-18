@@ -845,9 +845,7 @@
 #include "symmet.h"
 
 !     COMMON BLOCKS
-! clsfmm.h : THRCLS
 ! cbirea.h : IPREAD,TOL_SYMADD, ...
-#include "clsfmm.h"
 #include "cbirea.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
@@ -1227,10 +1225,6 @@
 !
 !     TMP copy input to .out file.
 
-!     Default threshold for distinguishing classical and
-!     non-classical contributions to Coulomb integrals
-
-      THRCLS = THRS
 !
 !     ****************************************
 !     ***** Output on LUONEL *****************
