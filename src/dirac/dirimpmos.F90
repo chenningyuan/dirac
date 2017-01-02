@@ -100,7 +100,6 @@ subroutine impmos(qcpack,filimp)
 
   write(lupri,"(a)") chrdbg//" imported MO coeffs.:"
   call output(cmosph,1,norbt,1,norbt,norbt,norbt,2,lupri)
-  !call matprt(cmosph,norbt,norbt)
  end if
 
  ! ------------------------------------------------------ !
@@ -128,7 +127,6 @@ subroutine impmos(qcpack,filimp)
  if (locdbg) then
   write(lupri,"(a)") chrdbg//" reordered MO coeffs in sph. Harm. basis.:"
   call output(cmosph,1,norbt,1,norbt,norbt,norbt,1,lupri)
-  !call matprt(cmosph,norbt,norbt)
  end if
 
  ! ------------------------------------------------------ !
@@ -148,7 +146,6 @@ subroutine impmos(qcpack,filimp)
  if (locdbg) then
   write(lupri,"(a)") chrdbg//" reordered MO coeffs. in Cart. basis:"
   call output(cmocar,1,ntbas(0),1,norbt,ntbas(0),norbt,1,lupri)
-  !call matprt(cmocar,ntbas(0),norbt)
  end if
 
  ! ------------------------------------------------------ !
@@ -198,6 +195,10 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
 !
 ! inspired by J. Olsen's / T. Fleig's RDVEC routine
 !
+! Benjamin Helmich-Paris, fall 2016
+!
+! NOTE: Only InpOrb formats 1.1 and 2.0 are recognized so far.
+!
 !------------------------------------------------------------------------------!
 
  use file_handler, only : open_seq, releaseunit
@@ -210,8 +211,6 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  character(len=*), parameter :: chrdbg = "rdinporb>"
  logical, parameter :: locdbg = .false.
 
- integer, parameter :: ndiv  = 4
-
 ! dimensions:
  integer, intent(in) :: nbsym, ntorb, ntbas
 
@@ -223,33 +222,68 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
  real(8), intent(out) :: cmo(ntbas*ntorb), eig(ntorb)
 
 ! local scalars
- character(len=5)  :: fmtorb
- character(len=19) :: chrref
- character(len=72) :: line
+ character(len=3)   :: chrver
+ character(len=5)   :: fmtsym
+ character(len=6)   :: fmtlin
+ character(len=9)   :: fmtone
+ character(len=9)   :: fmtorb
+ character(len=19)  :: chrref
+ character(len=120) :: line
  logical :: found
  integer :: kcmo, iuhf, idum, isym, iorb, jorb, luimp, ierr, ibf, jbf
- integer :: keig, nbsym0
+ integer :: keig, nbsym0, ncorb, ncone
 
  call qenter("rdinporb")
 
  luimp = open_seq(filimp,cform="FORMATTED")
 
+ rewind(luimp)
+
+ ! --------------------------------------------- !
+ ! figure out which INPORB format is used
+ ! --------------------------------------------- !
+ found = .false.
+ do while (.not.found)
+  read(luimp,'(a11)',iostat=ierr) line
+  if (ierr.ne.0) call quit(chrdbg//' error (1) while reading vector source file!')
+  found = (index(line,"#INPORB").gt.0)
+ end do
+
+ chrver = line(9:11)
+
+ select case (chrver)
+  case ('1.1')
+   write(lupri,"(a/)") "read IMPORB type of file "//trim(filimp)//" with format version "//chrver//" ..."
+   fmtlin = "(a72) "
+   fmtorb = "(4E18.12)"
+   fmtone = "(4E18.12)"
+   ncorb = 4
+   ncone = 4
+  case ('2.0')
+   write(lupri,"(a/)") "read IMPORB type of file "//trim(filimp)//" with format version "//chrver//" ..."
+   fmtlin = "(a110)"
+   fmtorb = "(5E22.14)"
+   fmtone = "(10E12.4)"
+   ncorb = 5
+   ncone = 10
+  case default
+   call quit('Unsupported MOLCAS INPORB file format (so far only 1.1 and 2.0)!')
+ end select
+
  ! --------------------------------------------- !
  ! read header information and check consistency
  ! --------------------------------------------- !
- rewind(luimp)
-
  found = .false.
  do while (.not.found)
-  read(luimp,'(a72)',iostat=ierr) line
+  read(luimp,fmtlin,iostat=ierr) line
   if (ierr.ne.0) call quit(chrdbg//' error (1) while reading vector source file!')
   found = (index(line,"#INFO").gt.0)
  end do
 
- read(luimp,'(a72)',iostat=ierr) line
+ read(luimp,fmtlin,iostat=ierr) line
  if (ierr.ne.0) call quit(chrdbg//' error (2) while reading vector source file!')
 
- read(luimp,'(a72)',iostat=ierr) line
+ read(luimp,fmtlin,iostat=ierr) line
  if (ierr.ne.0) call quit(chrdbg//' error (3) while reading vector source file!')
 
  read(line,"(3I8)") iuhf,nbsym0,idum
@@ -264,15 +298,15 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
   call quit(chrdbg//" number of irreps from import file inconsistent with Dirac!")
  end if
 
- write(fmtorb,'("(",I1,"I8)")')  nbsym0
+ write(fmtsym,'("(",I1,"I8)")')  nbsym0
 
- read(luimp,'(a72)',iostat=ierr) line
+ read(luimp,fmtlin,iostat=ierr) line
  if (ierr.ne.0) call quit(chrdbg//' error (4) while reading vector source file!')
- read(line,fmtorb) (nbbas(isym),isym=1,nbsym0)
+ read(line,fmtsym) (nbbas(isym),isym=1,nbsym0)
 
- read(luimp,'(a72)',iostat=ierr) line
+ read(luimp,fmtlin,iostat=ierr) line
  if (ierr.ne.0) call quit(chrdbg//' error (5) while reading vector source file!')
- read(line,fmtorb) ( norb(isym),isym=1,nbsym0)
+ read(line,fmtsym) ( norb(isym),isym=1,nbsym0)
 
  if (locdbg) then
   write(lupri,*) chrdbg//" number of irreps:",nbsym0
@@ -287,7 +321,7 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
 
  found = .false.
  do while (.not.found)
-  read(luimp,'(a72)',iostat=ierr) line
+  read(luimp,fmtlin,iostat=ierr) line
   if (ierr.ne.0) call quit(chrdbg//' error (6) while reading vector source file!')
   found = (index(line,"#ORB").gt.0)
  end do
@@ -304,15 +338,15 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
    ! find proper orbital string
    found = .false.
    do while (.not.found)
-    read(luimp,'(a72)',iostat=ierr) line
+    read(luimp,fmtlin,iostat=ierr) line
     if (ierr.ne.0) call quit(chrdbg//' error (7) while reading vector source file!')
     found = (index(line,chrref).gt.0)
    end do
 
-   do ibf=1,nbbas(isym),ndiv
-    read(luimp,'(a72)',iostat=ierr) line
+   do ibf=1,nbbas(isym),ncorb
+    read(luimp,fmtlin,iostat=ierr) line
     if (ierr.ne.0) call quit(chrdbg//' error (8) while reading vector source file!')
-    read(line,"(4E18.12)") (cmo(jbf+kcmo),jbf=ibf,min(ibf+3,nbbas(isym)))
+    read(line,fmtorb) (cmo(jbf+kcmo),jbf=ibf,min(ibf+ncorb-1,nbbas(isym)))
    end do
    kcmo=kcmo+nbbas(isym)
   end do
@@ -325,24 +359,24 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
 
  found = .false.
  do while (.not.found)
-  read(luimp,'(a72)',iostat=ierr) line
+  read(luimp,fmtlin,iostat=ierr) line
   if (ierr.ne.0) call quit(chrdbg//' error (9) while reading vector source file!')
   found = (index(line,"#ONE").gt.0)
  end do
 
  found = .false.
  do while (.not.found)
-  read(luimp,'(a72)',iostat=ierr) line
+  read(luimp,fmtlin,iostat=ierr) line
   if (ierr.ne.0) call quit(chrdbg//' error (10) while reading vector source file!')
   found = (index(line,"* ONE ELECTRON ENERGIES").gt.0)
  end do
 
  keig=0
  do isym=1,nbsym
-  do iorb=1,norb(isym),ndiv
-   read(luimp,'(a72)',iostat=ierr) line
+  do iorb=1,norb(isym),ncone
+   read(luimp,fmtlin,iostat=ierr) line
    if (ierr.ne.0) call quit(chrdbg//' error (11) while reading vector source file!')
-   read(line,"(4E18.12)") (eig(jorb+keig),jorb=iorb,min(iorb+3,norb(isym)))
+   read(line,fmtone) (eig(jorb+keig),jorb=iorb,min(iorb+ncone-1,norb(isym)))
   end do
   keig=keig+norb(isym)
  end do

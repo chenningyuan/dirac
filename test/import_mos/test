@@ -11,7 +11,7 @@ test = TestRun(__file__, sys.argv)
 
 #---------------------------------------#
 #
-# Test 1:  C1 - symmetry
+# Test 1:  Molcas format 1.1
 #
 #---------------------------------------#
 
@@ -23,10 +23,32 @@ f.add(from_string = 'checksum of imported and converted MOs:',
       rel_tolerance = 1.0e-11)
  
 # copy MOs
-shutil.copy('scf-h2o-cc-pV5Z-nosym.ScfOrb', 'ScfOrb')
+shutil.copy('scf-h2o-cc-pV5Z-nosym-format-1_1.ScfOrb', 'ScfOrb')
 
 # run test
 test.run(['scf.inp'], ['h2o-cc-pV5Z-nosym.mol'], f, args='--put="ScfOrb"')
+
+# remove copy
+os.unlink('ScfOrb')
+
+#---------------------------------------#
+#
+# Test 2:  Molcas format 2.0
+#
+#---------------------------------------#
+
+f = Filter()
+
+# check energy
+f.add(from_string = 'checksum of imported and converted MOs:',
+      num_lines   = 1,
+      rel_tolerance = 1.0e-11)
+ 
+# copy MOs
+shutil.copy('scf-fh-cc-pV5Z-nosym-format-2_0.ScfOrb', 'ScfOrb')
+
+# run test
+test.run(['scf.inp'], ['fh-cc-pV5Z-nosym.mol'], f, args='--put="ScfOrb"')
 
 # remove copy
 os.unlink('ScfOrb')
