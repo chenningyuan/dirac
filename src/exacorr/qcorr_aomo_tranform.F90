@@ -52,7 +52,7 @@
 
          real(8)   :: vd,vl,vr
          complex(8):: zero=(0.0,0.0), aoint_value=(1.D-6,0.0), mocoef_value=(1.D-3,0.0)
-         real(8), pointer, contiguous:: camo_tens(:,:),ao_tens(:,:,:,:),mo_tens(:,:,:,:)
+         complex(8), pointer, contiguous:: camo_tens(:,:),ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR):: body_p
 
 !        Make some noise so that we know we are here
@@ -90,9 +90,10 @@
          moint_dims(1:4)  = nmo(1:4)
 
 !        Initialize tensors with MO coefficients
-         ierr=talsh_tensor_construct(mocoef_tensor,R8,mocoef_dims,init_val=zero)
-         ierr=talsh_tensor_get_body_access(mocoef_tensor,body_p,R8,0,DEV_HOST)
+         ierr=talsh_tensor_construct(mocoef_tensor,C8,mocoef_dims,init_val=zero)
+         ierr=talsh_tensor_get_body_access(mocoef_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
+
 
 !        This array is only needed to print the MO coefficients using the DIRAC routine PRQMAT
          do i = 1, 4
@@ -108,21 +109,29 @@
 !           copy the real coefficients into the tensor (these are the alpha coefficients)
 !           in the transformation below we assume real coefficients and furthermore (Calpha = Cbeta) so this
 !           will only work for non-relativistic (levy-Leblond) or X2C spinfree calculations
-            camo_tens = qmo%coeff(:,:,1)
+
+            do k = 1, nmo(i)
+               do j = 1, nao
+                  camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),0.D0)
+               end do
+            end do
             call delete (qmo)
             imo = imo + nmo(i)
          end do
 
 !        Get tensor for AO integrals
-         ierr=talsh_tensor_construct(aoint_tensor,R8,aoint_dims,init_val=zero)
+         ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=zero)
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,R8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) !now you can use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens,nshells,shell)
 
 !        Do 1st quarter-transformation
-         ierr=talsh_tensor_construct(a1int_tensor,R8,a1int_dims,init_val=zero)
+         ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,q,r,s)+=L(p,q,r,s)*R(p,i)",a1int_tensor,aoint_tensor,mocoef_tensor,talsh_task=tsk)
+!new     replacing the line above with the one below leads to failure, something is not right with this complex conjugated contraction
+!new     note that in this version we still assume zero imaginary parts, so complex conjugation should not matter
+!new     ierr=talsh_tensor_contract("D(i,q,r,s)+=L(p,q,r,s)*R+(p,i)",a1int_tensor,aoint_tensor,mocoef_tensor,talsh_task=tsk)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=12; return; endif
          ierr=talsh_task_time(tsk,tm,tmc,tmi,tmo)
@@ -138,7 +147,7 @@
          ierr=talsh_tensor_destruct(aoint_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=15; return; endif
 
 !        Do 2nd quarter-transformation
-         ierr=talsh_tensor_construct(a2int_tensor,R8,a2int_dims,init_val=zero)
+         ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoef_tensor,talsh_task=tsk)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
          ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=22; return; endif
@@ -155,8 +164,11 @@
          ierr=talsh_tensor_destruct(a1int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=25; return; endif
 
 !        Do 3rd quarter-transformation
-         ierr=talsh_tensor_construct(a3int_tensor,R8,a3int_dims,init_val=zero)
+         ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,j,k,s)+=L(i,j,r,s)*R(r,k)",a3int_tensor,a2int_tensor,mocoef_tensor,talsh_task=tsk)
+!new     replacing the line above with the one below leads to failure, something is not right with this complex conjugated contraction
+!new     note that in this version we still assume zero imaginary parts, so complex conjugation should not matter
+!new     ierr=talsh_tensor_contract("D(i,j,k,s)+=L(i,j,r,s)*R+(r,k)",a3int_tensor,a2int_tensor,mocoef_tensor,talsh_task=tsk)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
          ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=32; return; endif
          ierr=talsh_task_time(tsk,tm,tmc,tmi,tmo)
@@ -172,7 +184,7 @@
          ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
 
 !        Do final quarter-transformation
-         ierr=talsh_tensor_construct(moint_tensor,R8,moint_dims,init_val=zero)
+         ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoef_tensor,talsh_task=tsk)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
          ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=42; return; endif
@@ -189,7 +201,7 @@
          ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
 
 !        Print transformed integrals to check correctness
-         ierr=talsh_tensor_get_body_access(moint_tensor,body_p,R8,0,DEV_HOST)
+         ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
 
 !        uncommenting this can be useful for debugging, this piece of code is to be deleted later
@@ -224,7 +236,7 @@
 
          implicit none
          integer, intent(in) :: nao, nshells ! number of basis functions and basis function shells
-         real(8),intent(out) :: ao_tens(nao,nao,nao,nao)
+         complex(8),intent(out) :: ao_tens(nao,nao,nao,nao)
          type(basis_func_info_t), intent(in) :: gto(:)  ! array with basis function information
 
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
@@ -289,7 +301,7 @@
                            do j = 1, nj
                               do i = 1, ni
                                  ijkl = ijkl + 1
-                                 ao_tens(i+ioff,j+joff,k+koff,l+loff) = gout(ijkl)
+                                 ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
                               end do
                            end do
                         end do

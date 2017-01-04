@@ -164,7 +164,7 @@ C
 
        integer rcw
        integer nmo(4)
-       real(8) mo_tens(nmo(1),nmo(2),nmo(3),nmo(4))
+       real(8) mo_tens(2,nmo(1),nmo(2),nmo(3),nmo(4))
        real(8), allocatable :: rkl(:)
        integer, allocatable :: indk(:),indl(:)
 
@@ -182,7 +182,7 @@ C
        do j = 1, nmo(4)
           do i = 1, nmo(3)
               call mdintb(iprint,rcw,iclass,irepij,nmo(1),nmo(2),i,j,
-     &                    mo_tens(:,:,i,j),nkl,indk,indl,rkl)
+     &                    mo_tens(1,:,:,i,j),nkl,indk,indl,rkl)
           end do
        end do
 
