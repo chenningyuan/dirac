@@ -119,6 +119,9 @@ module relcc_cfg
   integer, public :: relcc_mfd_max_subspace_size = 128
   integer, public :: relcc_mfd_max_iterations = 80
   logical, public :: relcc_mfd_overlap_sorting = .true.
+  logical, public :: relcc_mfd_verbose = .false.
+  logical, public :: relcc_mfd_trial_diagonal = .false.
+  logical, public :: relcc_mfd_trial_ccs = .true.
 ! will add filenames etc here too
 
 ! Information relevant for the (Intermediate Hamiltonian) Fock space calculations
@@ -228,6 +231,9 @@ contains
   call interface_mpi_bcast(relcc_mfd_max_subspace_size     ,1,0,global_communicator)
   call interface_mpi_bcast(relcc_mfd_max_iterations        ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_overlap_sorting    ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_mfd_verbose            ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_mfd_trial_diagonal     ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_mfd_trial_ccs          ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)

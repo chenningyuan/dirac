@@ -1095,6 +1095,10 @@
 
       call reset_available_kw_list()
 
+      if (kw_matches(word, '.DEBUG ')) then
+         relcc_mfd_verbose = .true.
+      end if
+
       if (kw_matches(word, '.MAXSIZE')) then
          call kw_read(word,  relcc_mfd_max_subspace_size)
       end if
@@ -1105,6 +1109,16 @@
 
       if (kw_matches(word, '.CONVERG')) then
          call kw_read(word, relcc_mfd_convergence_threshold)
+      end if
+
+      if (kw_matches(word, '.TRV_CCS')) then
+         relcc_mfd_trial_diagonal = .false.
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_diagonal 
+      end if
+
+      if (kw_matches(word, '.TRV_I  ')) then
+         relcc_mfd_trial_diagonal = .true.
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_diagonal 
       end if
 
       if (kw_matches(word, '.OVERLAP')) then
