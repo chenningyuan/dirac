@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3438,7 +3438,6 @@ C
 #include "ccom.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
-#include "cbifck3.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "shells.h"

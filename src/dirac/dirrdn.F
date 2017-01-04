@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -352,6 +352,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
+#include "dcbimp.h"
 #include "logging.h"
 #include "infpar.h"
 C
@@ -362,7 +363,7 @@ C
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.IMPMOS','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
 C     NOGENINP is set, if there is no **GENERAL
@@ -375,6 +376,8 @@ C
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
+      DOIMPMOS   = .FALSE.
+C
       RKBIMP_PRJTHR = 2.0D-5
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
@@ -518,9 +521,14 @@ C&&&& RKBIMP: import RKB coefficients
             GO TO 100
   120    CONTINUE
 C&&&& PRJTHR
-            READ(5,*) RKBIMP_PRJTHR
+            READ(LUCMD,*) RKBIMP_PRJTHR
             GO TO 100
   121    CONTINUE
+C&&&& IMPMOS
+            DOIMPMOS = .TRUE.
+            READ(LUCMD,*) QCPACK, FILIMP
+            QCPACK = ADJUSTL(QCPACK)
+            FILIMP = ADJUSTL(FILIMP)
             GO TO 100
   122    CONTINUE
             GO TO 100
@@ -555,6 +563,35 @@ ctec we require that it is a direct calculation
 !       STOL(2) = STOL(1) / (2.0D0 * CVAL ** 2 )
         STOL(2) = 1.0d-04 / (2.0D0 * CVAL ** 2 )
       end if
+
+C
+C     process IMPMOS input
+C
+
+      IF (DOIMPMOS) THEN
+
+       IF (SPINFR .OR. NONREL .OR. LEVYLE) THEN
+
+        QCPACK = ADJUSTL(QCPACK)
+        FILIMP = ADJUSTL(FILIMP)
+
+        CALL UPCASE(QCPACK)
+
+        SELECT CASE (QCPACK(1:6))
+         CASE ('MOLCAS')
+          WRITE (LUPRI,'(/,A)') 
+     &     "import scalar-relativistic MO coefficients from"
+          WRITE (LUPRI,'(/,A,/)') 
+     &     "  MOLCAS file "//TRIM(FILIMP)
+         CASE DEFAULT
+          CALL QUIT("unknown QCPACK type! Available options: MOLCAS")
+        END SELECT
+
+       ELSE
+        CALL QUIT("imported MO calculation only works in 1C modes!")
+       END IF
+      END IF
+
 C
 C     Print section
 C     =============

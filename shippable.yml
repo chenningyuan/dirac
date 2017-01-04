@@ -19,7 +19,8 @@ env:
     - CTEST_PROJECT_NAME="DIRACext"
     
 # language settings - prepare Python environment
-language: python
+#language: 
+#    - python
 
 # install/upgrade needed software
 install:
@@ -60,6 +61,15 @@ script:
     - ldd dirac.x
 # if some tests fail build/ctest can continue because of: || true
     - ctest -j $(nproc)  -D ExperimentalTest -L short || true
+    - ctest -D ExperimentalSubmit
+# now check the release subset
+    - make -j $(nproc) release
+    - tar xzf DIRAC-16.0-Source.tar.gz
+    - cd DIRAC-16.0-Source
+    - python ./setup --type=debug build_release
+    - cd build_release
+    - ctest -D ExperimentalConfigure
+    - ctest -j $(nproc) -D ExperimentalBuild
     - ctest -D ExperimentalSubmit
 
 # turn off email notifications
