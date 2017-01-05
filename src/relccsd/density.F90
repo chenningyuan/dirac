@@ -54,7 +54,7 @@
   call contraction_442 ((/"o2","o3","c1","p2"/),(/"c1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep, &
  &  LeftTensor=l2_ptr,RightTensor=r2_ptr)
 
-   write(*,*)'diagram1'
+   write(*,*)'diagram1',dot_product(doo,doo)
 
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l1(j,e*)*r1(e*,i)
@@ -62,7 +62,7 @@
 
   call contraction_222 ((/"o2","c1"/),(/"c1","o1"/),(/"o2","o1"/),l1,r1,doo,-1.0d0,1.0d0,nrep)
 
-   write(*,*)'diagram2'
+   write(*,*)'diagram2',dot_product(doo,doo) 
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l2(im,a*e)*r1(a*,m)*t1(e,j) 
 
@@ -78,7 +78,7 @@
 
  deallocate(wop_temp)
 
-   write(*,*)'diagram3'
+   write(*,*)'diagram3',dot_product(doo,doo) 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ea)*t2(eb,mn) 
 !----------------------------------------------------------------------

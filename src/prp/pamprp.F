@@ -80,6 +80,8 @@ C
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'CCSD') THEN
             CALL SETDC2(0)
+         ELSE IF (WF .EQ. 'EOM ') THEN
+            CALL SETDC2(0)
          ELSE
             CALL QUIT('*** ERROR in PAMPRP *** ' //
      &           'Unknown wave function: ' // WF)

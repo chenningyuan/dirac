@@ -915,11 +915,15 @@
    do sym = 1, nrep  
     do iroot = 1, relcc_eom_nroots(sym)
 
-    call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot), &
-  & davResultsR(sym)%eVectorsR(1:ndimr1,iroot:iroot),davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot:iroot),B%t1,B%t2,dmo)
+    call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),&
+  &  davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot), &
+  & davResultsR(sym)%eVectorsR(1:ndimr1,iroot:iroot), &
+  & davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot:iroot),B%t1,B%t2,dmo)
 
     enddo
    enddo
+
+    call store_cc_density ('EOM ', dmo)
 
   deallocate(dmo)
 
@@ -1372,8 +1376,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         solve_right=right_vectors, &
                         solve_left=left_vectors,   &
                         symmetric=.false., &
-                        verbose=.false.,   &
-!                        verbose=left_vectors,   &
+!                        verbose=.false.,   &
+                         verbose=left_vectors,   &
 !                       convergence_threshold = relcc_mfd_convergence_threshold, &
 !                       max_subspace_size = relcc_mfd_max_subspace_size, &
 !                       overlap_sorting = relcc_mfd_overlap_sorting, &

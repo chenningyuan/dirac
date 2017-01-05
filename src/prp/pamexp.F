@@ -152,7 +152,18 @@ C
 C        Get relaxed density matrix computed by RELCCSD.
 C
          CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
-C
+
+
+      ELSE IF (WF .EQ. 'EOM ') THEN
+
+         IF (ORBANA) 
+     &        CALL QUIT('*** ERROR in PRPEX1 *** '
+     &        // 'ORBANA not implemented for EOMCC')
+
+C        Get relaxed density matrix computed for excited states
+
+         CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
+
       ELSE IF (WF .EQ. 'KRMC') THEN
 C
          IF (ORBANA) 

@@ -1272,6 +1272,12 @@ C---------------Executable code--------------------------------------
             FILE_NAME    = 'CCDENS'
             ADD_2_FOCK   = .TRUE.
             IERR         = 0
+         CASE ("EOM ")
+            WRITE (LUPRI,*) " Retrieving EOMCC density matrix from file"
+            LABEL        = 'EOM DENS'
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .TRUE.
+            IERR         = 0
          CASE ("MC  ")
             WRITE (LUPRI,*) " Retrieving MCSCF density matrix from file"
             LABEL        = 'MC  DENS'
