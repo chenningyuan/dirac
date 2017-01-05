@@ -1,75 +1,73 @@
+## Simple DIRAC buildup configuration file 
 ##
-## Simple DIRAC buildup configuration file for the www.distelli.com
-##
 ##
 
-#box: wercker/python
+# include branches to test (master branch only)
+branches:
+    only:
+        - master
 
-build:
-  steps:
-    - install-packages:
-        packages: "git gcc g++ gfortran make libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen"
+# environment variable for Dirac MPI command
+env:
+    - DIRAC_MPI_COMMAND="mpirun -np 2"
 
-    - pip-install:
-        requirements_file: ""
-        packages_list: "matplotlib sphinx==1.2.3 sphinxcontrib-bibtex sphinx_rtd_theme hieroglyph"
+env:
+    - CTEST_PROJECT_NAME="DIRACext"
+    
+# language settings - prepare Python environment
+#language: 
+#    - python
 
-    - script:
-        name: install the newest cmake form their webpage
-        code: |
-          wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
-          tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
-          export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
-          cmake --version
+# install/upgrade needed software
+install:
+# install the newest versions
+    - sudo apt-get install gcc g++ gfortran make zlib1g-dev
+# remove Open MPI installation if any
+    - sudo apt-get remove openmpi-bin libopenmpi-dev
+# install MPICH2
+    - sudo apt-get install mpich2
+# newest cmake
+    - wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+    - tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
+    - export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
+    - cmake --version
 
-    - script:
-        name: show system resources
-        code: |
-          lscpu
-          df -h
-          free -m
+# for public modules use (sync, init, update)
+git:
+  submodules: true
 
-    - script:
-        name: update submodule, setup configuration scripts
-        code: |
-          git submodule update --init --recursive
-          python ./setup --type=debug --cmake-options="-D BUILDNAME='wercker-ci.i8.gdb' -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=ON"  build
+# system info
+before_script:
+# show info about available processors
+    - lscpu
+    - echo nproc=$(nproc)
+# show available disc space
+    - df -h
+# show available memory
+    - free -m
+    
+# update submodule; configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
+script:
+    - git submodule update --init --recursive
+    - python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --int64 --mpi --cmake-options="-D BUILDNAME='mpich2.gnu.i8-distelli' -D DART_TESTING_TIMEOUT=99999 -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=ON" build
+    - cd build
+    - ctest -D ExperimentalConfigure
+    - ctest -j $(nproc) -D ExperimentalBuild
+# ldd : show dependencies
+    - ldd dirac.x
+# if some tests fail build/ctest can continue because of: || true
+    - ctest -j $(nproc)  -D ExperimentalTest -L short || true
+    - ctest -D ExperimentalSubmit
+# now check the release subset
+#    - make -j $(nproc) release
+#    - tar xzf DIRAC-16.0-Source.tar.gz
+#    - cd DIRAC-16.0-Source
+#    - python ./setup --type=debug build_release
+#    - cd build_release
+#    - ctest -D ExperimentalConfigure
+#    - ctest -j $(nproc) -D ExperimentalBuild
+#    - ctest -D ExperimentalSubmit
 
-    - script:
-        name: run ctest for configuration/buildup/test/submit
-        code: |
-          cd build
-          export CTEST_PROJECT_NAME="DIRACext"
-          ## ctest -D ExperimentalUpdate
-          ctest  -D ExperimentalConfigure
-          ## we have only 30 minutes for the whole buildup !
-          ctest -j 8  -D ExperimentalBuild
-          ## ldd : show dependencies
-          ldd dirac.x
-          ## true : this script continues even if some of tests fail
-          ctest -j 8  -D ExperimentalTest -L short || true
-          ## deliver buildup status to CDash-web
-          ctest -D ExperimentalSubmit
-
-    - script:
-        name: build sphinx documentation
-        code: |
-          cd build
-          make html
-
-    - script:
-        name: build doxygen documentation
-        code: |
-          cd build
-          #make doxygen
-
-    - script:
-        name: build slides
-        code: |
-          cd build
-          #make slides
-
-## turn off email notifications
+# turn off email notifications
 notifications:
-        email: false
-
+    email: false
