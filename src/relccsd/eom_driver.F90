@@ -806,8 +806,6 @@
 
    type(davidson_results) :: davResultsR(nrep), davResultsL(nrep)
    logical :: left_vectors, right_vectors
-   logical :: symmetric = .false.
-   logical :: verbose = .false.
    integer :: N, N1, N2 ! size of determinantal space 
 
 !memory allocation
@@ -1376,12 +1374,10 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         solve_right=right_vectors, &
                         solve_left=left_vectors,   &
                         symmetric=.false., &
-!                        verbose=.false.,   &
-                         verbose=left_vectors,   &
-!                       convergence_threshold = relcc_mfd_convergence_threshold, &
-!                       max_subspace_size = relcc_mfd_max_subspace_size, &
-!                       overlap_sorting = relcc_mfd_overlap_sorting, &
-                        overlap_sorting=.true.)
+                        verbose=relcc_mfd_verbose,   &
+                        convergence_threshold = relcc_mfd_convergence_threshold, &
+                        max_subspace_size = relcc_mfd_max_subspace_size, &
+                        overlap_sorting = relcc_mfd_overlap_sorting)
 
     if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
 
