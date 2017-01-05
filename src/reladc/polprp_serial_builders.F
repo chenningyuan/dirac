@@ -3421,18 +3421,18 @@ c  .. read elements
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE fulldia_r3(io,fname,intbuf,ladc)
+      SUBROUTINE fulldia_r3(io,fname,intbuf,ladc,desrep)
 
       implicit none
 
-      INTEGER                       :: io,intbuf,ladc
+      INTEGER                       :: io,intbuf,ladc,desrep
       CHARACTER(len=6)              :: fname
 !
 !---------------Description--------------------------------------------
 !
 !  For not too large symmetric matrices the full diagonalization is
-!  performed for debugging purposes. This adapted version only calculates
-!  eigenvalues and is to be used in conjunction with POLPRP
+!  performed for debugging purposes. This adapted version calculates
+!  eigenvalues and eigenvectors and writes them to file "FULLEVC.XX"
 !
 !---------------Local variables--------------------------------------
 !
@@ -3444,6 +3444,8 @@ c  .. read elements
       INTEGER                         :: I,J,K,IXX,IREC,NACT,JDUMMY
       INTEGER                         :: IROW,ICOL,INFO,LWORK
       integer                         :: ioresult,serialindicator
+      character*10                    :: fullevcname
+      Real*8                          :: D0
 !
 !---------------Executable code--------------------------------------
 !
@@ -3456,6 +3458,8 @@ c  .. read elements
       ENDIF
 
       CALL PST('Entering POLPRP REAL FULL diagonalizer+')
+
+      D0 = 0.0d0
 
       open(unit=io,file=fname, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='unknown')
@@ -3510,12 +3514,10 @@ c  .. read elements
 !  call symmetric diagonalizer
 !  calculate only eigenvalues being placed in A
 !
-      JOBZ='N'
+      JOBZ='V'
       UPLO='L'
 
-!     write(*,*) 'Calling DSYEV with lwork=',lwork
       CALL DSYEV( JOBZ, UPLO, LADC, A, LADC, EVL, WORK, LWORK, INFO )
-!     write(*,*) 'AFTER  DSYEV with optimal lwork=',work(1)
 
       IF(INFO.NE.0) THEN
            write(*,*) 'Error in DSYEV. Info:',INFO
@@ -3526,6 +3528,26 @@ c  .. read elements
       DO I=1,min(20,LADC)
         WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
       ENDDO
+!
+!  write full set of eigenvectors to file
+!  Keep hereby the *same* format as in the DAVILONG file in order
+!  to make comparison more readable
+!
+      IF(desrep.GT.9) THEN
+        WRITE(fullevcname,'(A8,I2)') 'FULLEVC.',desrep
+      ELSE
+        WRITE(fullevcname,'(A9,I1)') 'FULLEVC.0',desrep
+      ENDIF
+      open(io,file=fullevcname,access='sequential',
+     &     status='unknown',form='unformatted')
+      do k=1,ladc
+!       write(*,*) 'Wrinting full eigenvector #',k
+        write(io) k
+        write(io) evl(k)
+        write(io) D0
+        write(io) (A(i,k),i=1,ladc)
+      enddo
+      close(io)
 
 !
 !  release all memory

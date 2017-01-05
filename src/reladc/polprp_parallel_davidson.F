@@ -86,6 +86,7 @@
       character*8                           :: dsroot2='DAVILONG'
       character*8                           :: dsroot3='DAVISHRT'
       character*8                           :: dsroot4='DAVIMEDI'
+      character*7                           :: fnroot5='FULLEVC'
       character*60                          :: listout
       character*70                          :: field
       logical, allocatable, dimension(:)    :: notconverged
@@ -789,6 +790,14 @@
 
 #endif
 
+!
+!_____ Perform  eigenvector comparison if a full diag took place
+!|
+!|
+      call compare_evc_r(iobase,desrep,nroots,ladc,dsroot2,fnroot5)
+!|
+!|____________________________________________________________
+
       RETURN
 
 888   call quit('Error reading the diagonal matrix file')
@@ -1482,7 +1491,7 @@
       OPEN(iobase1,FILE=FILECNF,ACCESS='DIRECT',RECL=IRECL,
      &     STATUS='UNKNOWN')
 !
-!__________________ loop over the roots and write out long eigenvectors.
+!__________________ loop over the roots and write out **LONG** results
 !|
 !| In contrast to earlier versions we will no longer write out the ASCII
 !| numbers since huge unused files are generated, otherwise. Instead we need
@@ -1520,8 +1529,10 @@
 !|
 !|_______________________________________________
 !
-!   write out results as SHORT output (symmetry specific)
-!
+!__________________ loop over the roots and write out ** SHORT ** results
+!|
+!|
+!|
       IF(desrep.GT.9) THEN
         WRITE(davevcname,'(A8,A1,I2)') dsroot3,'.',desrep
       ELSE
@@ -1529,11 +1540,7 @@
       ENDIF
       OPEN(iobase,file=davevcname,access='sequential',
      &     status='unknown',form='formatted')
-!
-!__________________ loop over the roots and write out ** SHORT ** results
-!|
-!|
-!|
+
       Do K = 1,nroots
 !
 ! determine pole strength
@@ -2193,6 +2200,123 @@
       enddo
 
       pp_zdotc = a
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine compare_evc_r(io1,desrep,nroots,ladc,
+     &                         davibase,fullbase)
+      implicit none
+!
+! this routine evaluates eigenvectors for the available Davidson roots
+! with respect to the full diagonalization results. It determines phases and
+! absolute deviations
+!
+      integer        :: io1,desrep,nroots,ladc
+      character*8    :: davibase
+      character*7    :: fullbase 
+!
+! local variables
+! 
+      character*11                        :: daviname
+      character*10                        :: fullname
+      logical                             :: fullisthere
+      integer                             :: io2
+      integer                             :: i,j,k
+      integer                             :: k1,k2
+      integer                             :: nmain
+      real*8                              :: lambda1,lambda2,dummy
+      real*8,parameter                    :: autoev = 27.2113957D0
+      real*8,allocatable,dimension (:)    :: e1,e2
+      real*8                              :: devmod,devabs,devphs
+!
+! executable code
+! 
+      Call PST('Comparing D/F eigenvectors+')
+
+      IF(desrep.GT.9) THEN
+        WRITE(daviname,'(A8,A1,I2)') davibase,'.',desrep
+        WRITE(fullname,'(A7,A1,I2)') fullbase,'.',desrep
+      ELSE
+        WRITE(daviname,'(A8,A2,I1)') davibase,'.0',desrep
+        WRITE(fullname,'(A7,A2,I1)') fullbase,'.0',desrep
+      ENDIF
+!
+! do we have an eigenvector file from fulldia ?
+!
+      fullisthere=.false.
+      INQUIRE(FILE=fullname,EXIST=fullisthere)
+      if(.not.fullisthere) then
+        write(*,*) 'The eigenvector file from a full diagonalization'
+        write(*,*) 'is not available. No comparison is made. Returning.'
+        return
+      endif
+      write(*,*) 'Comparing eigenvectors for',nroots,' roots'
+      write(*,*)
+!
+! comparing eigenvectors
+!
+      io2 = io1 + 1
+      open(io1,file=daviname,access='sequential',
+     &     status='unknown',form='unformatted')
+      open(io2,file=fullname,access='sequential',
+     &     status='unknown',form='unformatted')
+
+      allocate(e1(ladc))
+      allocate(e2(ladc))
+      e1 = 0.0d0
+      e2 = 0.0d0
+!
+! three integer reads from the Davidson file
+!
+      read(io1) k
+      read(io1) nmain
+      read(io1) k
+      write(*,*) 'Main space has dimension',nmain
+      write(*,*)
+
+      write(*,'(18X,2A7,4X,3A8)') 'root1','root2',' devmod',
+     &                          'devabs','devphs'
+      do k=1,nroots
+        read(io1) k1
+        read(io2) k2
+        if(.not.(k1.eq.k2 .and. k1.eq.k)) then
+          write(*,*) 'Inconsistency in root numbering!'
+          write(*,*) 'This is serious, continuation questionable!'
+          write(*,*) 'k,k1,k2:',k,k1,k2
+          exit  !leave this do loop
+        endif
+        read(io1) lambda1
+        read(io2) lambda2
+        read(io1) dummy
+        read(io2) dummy
+        read(io1) (e1(i),i=1,ladc)
+        read(io2) (e2(i),i=1,ladc)
+!
+! compare vectors
+!
+        devmod = 0.0d0
+        devabs = 0.0d0
+        devphs = 0.0d0
+        do i=1,ladc
+          devmod = devmod + (abs(e1(i)) - abs(e2(i)))
+          devabs = devabs + (e1(i) - e2(i))
+          devphs = devphs + (e1(i) + e2(i))
+        enddo
+        write(*,'(A,I3,2X,2F12.6,2X,3F14.8)') 'Comparing root',k,
+     &         lambda1,lambda2,devmod,devabs,devphs
+        do i=1,nmain
+          write(*,*) '       ',e1(i),e2(i)
+        enddo
+      enddo
+!
+! release ressources
+!
+      deallocate(e1)
+      deallocate(e2)
+
+      close(io1)
+      close(io2)
 
       return
       end

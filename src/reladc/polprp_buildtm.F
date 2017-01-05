@@ -532,6 +532,12 @@
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
       write(*,*) '------  F_ai(2)A finished'
+
+      iorder='0th + 1st + 2ndA'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
 !
 !------------------------
 !------  F_ai(2)B
@@ -579,6 +585,12 @@
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
       write(*,*) '------  F_ai(2)B finished'
+
+      iorder='0th + 1st + 2ndAB'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
 !
 !------------------------
 !------  F_ai(2)C

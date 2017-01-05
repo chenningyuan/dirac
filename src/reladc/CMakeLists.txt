@@ -34,7 +34,9 @@ set(FREE_RELADC_FORTRAN_SOURCES
     polprp_helpers.F
 )
 
-set(C_RELADC_SOURCES)
+set(C_RELADC_SOURCES
+    polprp_cutils.c
+)
 
 if (ENABLE_STIELTJES)
   #miro: needs extra sources !

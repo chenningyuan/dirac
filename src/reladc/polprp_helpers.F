@@ -510,7 +510,7 @@ C
 
       integer                                 :: ioresult
       integer                                 :: nroots,nmain,ladc
-      real*8,allocatable,dimension(:)         :: evl
+      real*8,allocatable,dimension(:)         :: evl,xnr
       real*8                                  :: ps
       real*8, parameter                       :: D0=0.0d0
       complex*16, parameter                   :: A0=(D0,D0)
@@ -582,6 +582,9 @@ C
         allocate(rcoef(ladc))
       endif
 
+      allocate(xnr(nroots))
+      xnr = D0
+
       Do k=1,nroots
         read(ioch) ist
         read(ioch) evl(k)
@@ -591,9 +594,18 @@ C
      &    ' (eV) and PS',ps
         if(carith) then
           read(ioch)(ccoef(i),i=1,ladc)
+          do i=1,ladc
+            xnr(k)=xnr(k) + 
+     &         (real(ccoef(i))**2.0d0 + aimag(ccoef(i))**2.0d0)
+          enddo
         else
           read(ioch)(rcoef(i),i=1,ladc)
+          do i=1,ladc
+            xnr(k)=xnr(k) + rcoef(i)**2.0d0
+          enddo
         endif
+        xnr(k) = dsqrt(xnr(k))
+        
 !
 ! the do2h2p flag controls the level of contraction.
 !
@@ -618,8 +630,8 @@ C
             ax = ax + dcmplx(rcoef(i),D0)*faitx(i)
             ay = ay + dcmplx(rcoef(i),D0)*faity(i)
             az = az + dcmplx(rcoef(i),D0)*faitz(i)
-!           write(*,'(F10.6,A,2F10.6,A,2F10.6)') rcoef(i),':',
-!    &        faity(i),'|',ay
+            write(*,'(F10.6,A,2F10.6,A,2F10.6)') rcoef(i),':',
+     &        faitx(i),'|',ax
           enddo
           if(do2h2p) then
             do i=1,n2h2p
@@ -655,8 +667,8 @@ C
       write(*,*) '----------------------------------------------------'
       write(*,*)
       do k=1,nroots
-        write(*,'(I4,F14.7,2F15.9,A,2F15.9,A,2F15.9)') k,evl(k)*autoev,
-     &             tmx(k),' | ',tmy(k),' | ',tmz(k)
+        write(*,'(I4,F14.7,F8.4,2F15.9,A,2F15.9,A,2F15.9)') k,
+     &     evl(k)*autoev,xnr(k),tmx(k),' | ',tmy(k),' | ',tmz(k)
       enddo
       write(*,*) '----------------------------------------------------'
 !|
@@ -752,6 +764,7 @@ C
       Integer                  :: ixx,rawnum
       real*8, parameter        :: ZEROTHRS=1.0D-11
       integer,allocatable      :: acv(:,:)
+      integer                  :: irow,icol,retcode
 !
 !---------------Executable code--------------------------------------
 !
@@ -806,6 +819,13 @@ C
       Enddo
       deallocate(DUMPROP)
       CLOSE (MDPROP,STATUS='KEEP')
+!
+! debug C call
+!
+!     retcode = polprp_receiver(PROP,2*NSP*NSP)
+!
+! end debug
+!
 
       write (6,*)
       hdev = 0.0d0
@@ -891,11 +911,11 @@ C
       APHASE(2) = D0
       PHASE = .FALSE.
 
-      if(printlevel.ge.2) then
-        write(*,*)
-        write(*,*) 'Symmetry ordering of PROP ints:'
-        write(*,*)
-      endif
+!     if(printlevel.ge.2) then
+!       write(*,*)
+!       write(*,*) 'Symmetry ordering of PROP ints:'
+!       write(*,*)
+!     endif
 
     2 AMAXI = D0
       AAMAX = 0
@@ -905,9 +925,9 @@ C
          DO IREP = 1, NREP
             AREP = MULTB (IREP,AIREP+NREP,2)
             AREP = MULTB (AREP,NREP+1,2)
-            if(printlevel.ge.2)
-     &        write(*,*) AIREP,' (',repna(airep),') ',arep,
-     &            ' (',repna(arep),') ',irep,' (',repna(irep),')'
+!           if(printlevel.ge.2)
+!    &        write(*,*) AIREP,' (',repna(airep),') ',arep,
+!    &            ' (',repna(arep),') ',irep,' (',repna(irep),')'
             DO I = 1, NO(IREP)
                II = IREPSPI(I,IREP,1)
                DO A = 1, NV(AREP)
@@ -922,10 +942,10 @@ C
      &                          PROP(2,AA,II)*APHASE(2)
                       AOV(AI) = PROP(1,II,AA)*APHASE(1) -
      &                          PROP(2,II,AA)*APHASE(2)
-        if(printlevel.ge.2)
-     &    write(*,*) '-avo- irepspi#:',aa,ii,'  ccseti#:',
-     &    io(nrep+1)+iv(arep)+a,  io(irep)+i,'  value:',
-     &    avo(ai)
+!       if(printlevel.ge.2)
+!    &    write(*,*) '-avo- irepspi#:',aa,ii,'  ccseti#:',
+!    &    io(nrep+1)+iv(arep)+a,  io(irep)+i,'  value:',
+!    &    avo(ai)
                       AVOI = PROP(1,AA,II)*APHASE(2) +
      &                       PROP(2,AA,II)*APHASE(1)
                       AOVI = PROP(1,II,AA)*APHASE(2) +
@@ -1055,42 +1075,59 @@ C
       write(PROCPROP) (avv(ixx),ixx=1,RCW*dimpvv)
       close(PROCPROP)
 !
-! ** we print the integrals for printlevel .ge. 1
+!********************************************
+!***   printing the property integrals  *****
+!********************************************
 !
-      if(printlevel.ge.2) then
-        write(*,*) '---- integral type AOO (all elements) ----'
-        do i=1,dimpoo
-          if(carith) then
-            write(6,'(A,I5,X,2F16.10)') 'Index: ',i,AOO(2*i-1),AOO(2*i)
-          else
-            write(6,'(A,I5,X,F16.10)') 'Index: ',i,AOO(i)
-          endif
-        enddo
-        write(*,*) '---- integral type AOV (all elements) ----'
-        do i=1,dimpov
-          if(carith) then
-            write(6,'(A,I5,X,2F16.10)') 'Index: ',i,AOV(2*i-1),AOV(2*i)
-          else
-            write(6,'(A,I5,X,F16.10)') 'Index: ',i,AOV(i)
-          endif
-        enddo
-        write(*,*) '---- integral type AVO (all elements) ----'
-        do i=1,dimpvo
-          if(carith) then
-            write(6,'(A,I5,X,2F16.10)') 'Index: ',i,AVO(2*i-1),AVO(2*i)
-          else
-            write(6,'(A,I5,X,F16.10)') 'Index: ',i,AVO(i)
-          endif
-        enddo
-        write(*,*) '---- integral type AVV (all elements) ----'
-        do i=1,dimpvv
-          if(carith) then
-            write(6,'(A,I5,X,2F16.10)') 'Index: ',i,AVV(2*i-1),AVV(2*i)
-          else
-            write(6,'(A,I5,X,F16.10)') 'Index: ',i,AVV(i)
-          endif
-        enddo
-      endif
+      if(printlevel.lt.2) return
+      write(*,*) '---------------- AOO -----------------'
+      IJ = 1
+      DO IJREP = 1,NREP
+        DO JREP = 1, NREP
+           IREP = MULTB (JREP,IJREP+NREP,2)
+           IREP = MULTB (IREP,NREP+1,2) ! form gamma*_i
+           DO J = 1, NO(JREP)
+              DO I = 1, NO(IREP)
+                 irow = io(irep) + i
+                 icol = io(jrep) + j
+                 IF (CARITH) THEN
+                    write(6,'(A,2I4,X,2F16.10)') 'i/j: ',irow,icol,
+     &                         AOO(2*IJ-1),AOO(2*IJ)
+                 ELSE
+                    write(6,'(A,2I4,X,F16.10)') 'i/j: ',irow,icol,
+     &                         AOO(IJ)
+                 ENDIF
+                 IJ = IJ + 1
+              ENDDO
+           ENDDO
+        ENDDO
+      ENDDO
+!
+!  AVO type
+!
+      write(*,*) '---------------- AVO -----------------'
+      AI = 1
+      DO AIREP = 1, NREP
+         DO IREP = 1, NREP
+            AREP = MULTB (IREP,AIREP+NREP,2)
+            AREP = MULTB (AREP,NREP+1,2)
+            DO I = 1, NO(IREP)
+               DO A = 1, NV(AREP)
+                 irow = io(nrep) + iv(arep) + a
+                 icol = io(irep) + i
+                  IF (CARITH) THEN
+                    write(6,'(A,2I4,X,2F16.10)') 'a/j: ',irow,icol,
+     &                         AVO(2*AI-1),AVO(2*AI)
+                  ELSE
+                    write(6,'(A,2I4,X,F16.10)') 'a/j: ',irow,icol,
+     &                         AVO(AI)
+                  ENDIF
+                   AI = AI + 1
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+
       RETURN
 
  1000 FORMAT (/' Read integrals of type ',A8,

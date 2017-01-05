@@ -1489,7 +1489,7 @@
          polprp_dodiag = .false.
       end if
 
-      if (kw_matches(word, '.PRINTL')) then
+      if (kw_matches(word, '.PRINT ')) then
          call kw_read(word, polprp_printlev)
       end if
 

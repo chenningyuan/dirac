@@ -13,9 +13,8 @@
 !
 !---------------Description-----------------------------------------------
 !
-!    Double group symmetry adapted and parallel
-!    polarization propagator code for the calculation of electronic
-!    excitations.
+!    Polarization propagator code for the calculation of 
+!    electronic excitations.
 !    In parallel execution this is the part called by the dirac(...)
 !    subroutine, the MASTER PART. 
 !    It has to wake up the slaves with the correct ITASK
@@ -932,7 +931,7 @@ C
      &                                 ladc,
      &                                 MVO(desrep))
           else
-            call fulldia_r3(iobase,namematfil,intbuf,ladc)
+            call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
             call mpi_davidson_master_r(iw,
      &                                 iobase,
      &                                 desrep,
@@ -968,7 +967,7 @@ C
      &                                 ladc,
      &                                 MVO(desrep))
           else
-            call fulldia_r3(iobase,namematfil,intbuf,ladc)
+            call fulldia_r3(iobase,namematfil,intbuf,ladc,desrep)
             call mpi_davidson_master_r(iw,
      &                                 iobase,
      &                                 desrep,
