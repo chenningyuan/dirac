@@ -2308,13 +2308,13 @@ C
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of contracted shells      ',ISHELL,
      *  '               current maximum number (MXSHEL)  ',MXSHEL,
-     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXSHEL in DIRAC/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted shells')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of contracted basis functions',IORBD,
      *  '               current maximum number (MXCORB)     ',MXCORB,
-     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXCORB in DIRAC/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
