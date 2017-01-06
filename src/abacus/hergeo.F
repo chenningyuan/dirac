@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -211,7 +211,7 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (MAXANG = 20)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1P5 = 1.5D00)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL SKIP, DIF, PRINT, PUNCH
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
@@ -311,8 +311,7 @@ C
      &              ' ARE UNAVAILABLE '
                BONDED(I,J) = .FALSE.
                BONDED(J,I) = .FALSE.
-C           The rather arbitrary number 1.2 is replaced with 1.5
-            ELSE IF (DIST2(I,J) .LT. (D1P5 * (RADI + RADJ))) THEN
+            ELSE IF (DIST2(I,J) .LT. (1.2D0 * (RADI + RADJ))) THEN
                NBONDS = NBONDS + 1
                IPAIRS(1,NBONDS) = I
                IPAIRS(2,NBONDS) = J

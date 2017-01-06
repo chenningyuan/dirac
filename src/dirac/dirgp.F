@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -141,6 +141,50 @@ C
       WRITE(IUNIT) CMO
       WRITE(IUNIT) EIG
       WRITE(IUNIT) IBEIG
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck wripcmo */
+      SUBROUTINE WRIPCMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
+C*****************************************************************************
+C
+C     Write DHF-coefficients and eigenvalues to unformatted file
+C
+C     IDIM(1,J) - number of positronic solutions
+C     IDIM(2,J) - number of electronic solutions
+C     IDIM(3,J) - number of AO-basis functions
+C
+C     Written by BHP (adapted from TS WRICMO)
+C
+C*****************************************************************************
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbgen.h"
+
+C
+      INTEGER, INTENT(IN) :: IBEIG(NORBT), IUNIT
+      REAL*8 , INTENT(IN) :: CMO(NCMOTQ), EIG(NORBT), TOTERG
+C
+      CHARACTER TEXT*74
+      INTEGER  I, J, IDIM(3,2)
+C
+      DO I = 1,NFSYM
+        IDIM(1,I) = NPSH(I)
+        IDIM(2,I) = NESH(I)
+        IDIM(3,I) = NFBAS(I,0)
+      ENDDO
+      TEXT(1:50) = TITLE
+      CALL GTINFO(TEXT(51:74))
+      REWIND IUNIT
+      WRITE(IUNIT,'(A74)') TEXT
+      WRITE(IUNIT,'((XI0),6(XI0))') NFSYM,
+     &                             ((IDIM(I,J),I = 1,3),J=1,NFSYM)
+      WRITE(IUNIT,'(E24.16)') TOTERG
+      WRITE(IUNIT,'(6F22.16)') CMO
+      WRITE(IUNIT,'(6E22.12)') EIG
+      WRITE(IUNIT,'(66(XI0))') IBEIG
 C
       RETURN
       END
@@ -751,22 +795,9 @@ C       ... set to zero
 C
 C     Write coefficients to DFPCMO
 C
-      DO I = 1,NFSYM
-        IDIM(1,I) = NPSH(I)
-        IDIM(2,I) = NESH(I)
-        IDIM(3,I) = NFBAS(I,0)
-      ENDDO
       OPEN(LUCOEF,FILE='DFPCMO',STATUS='UNKNOWN',
      &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
-      TEXT(1:50) = TITLE
-      CALL GTINFO(TEXT(51:74))
-      WRITE(LUCOEF,'(A74)') TEXT
-      WRITE(LUCOEF,'((XI0),6(XI0))') NFSYM,((IDIM(I,J),I = 1,3),
-     &                                                  J=1,NFSYM)
-      WRITE(LUCOEF,'(E24.16)') TOTERG
-      WRITE(LUCOEF,'(6F22.16)') (CMO(I),I=1,NCMOTQ)
-      WRITE(LUCOEF,'(6E22.12)') (EIG(I),I=1,NORBT)
-      WRITE(LUCOEF,'(66(XI0))') (IBEIG(I),I=1,NORBT)
+      CALL WRIPCMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -2923,8 +2954,9 @@ C.....loop over fragments
         ENDIF
         INQUIRE(FILE=FRAGFIL(IFRAG),EXIST=TOBE)
         IF (.NOT.TOBE) THEN
-           WRITE(LUPRI,'(A,A6,A)') 
-     &     'Fragment coefficient file ',FRAGFIL(IFRAG),' not present'
+           WRITE(LUPRI,'(A,I2,A,I2,A,A6,A)') 
+     &     'Fragment coefficient file no. ',
+     &     IFRAG,'/',NFRAG,' named ',FRAGFIL(IFRAG),' not present'
            CALL QUIT('SELFRAG: No fragment coefficients !')
         ENDIF
 C
@@ -4338,7 +4370,7 @@ C
 #include "dcborb.h"
 C
       IF (IORBITAL .LT. 1)
-     &   CALL QUIT('illegal value in GETIOPEN (≤0)')
+     &   CALL QUIT('illegal value in GETIOPEN (<1)')
       IF (IFRP .GT. NFSYM)
      &   CALL QUIT('illegal fermion symmetry in GETIOPEN')
 C
@@ -4750,7 +4782,7 @@ C
       END
       SUBROUTINE ZERO_MO(j,CMOBUF,NBAST,NMOT,NZ)
 C
-C     1-Oct-2015 Hans Jørgen Aa. Jensen
+C     1-Oct-2015 Hans Joergen Aa. Jensen
 C     Zero MO no. j in CMOBUF
 C     (CMOBUF all of CMO, or a subset generated with SELCFS, or?)
 C     In fact, this routine can zero column j in any quaternion matrix.

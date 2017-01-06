@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -180,7 +180,8 @@ C
 C
       CALL DAYTIME (DATEX,TIMEX)
       WRITE(IW,*)
-      WRITE(IW,*) 'Start sorting of integral classes at '//datex//timex
+      WRITE(IW,*) 
+     &     'Start sorting of integral classes at '//datex//' '//timex
       WRITE(IW,*)
 C
   100 CALL GET2INTS (MDINT,KR,NSP,INDEX,ITRSGN,1,INDK,INDL,
@@ -281,7 +282,8 @@ C        call relcc_restart_check('OOOO to VOVO sorted integrals ',IW)
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
-         WRITE(IW,*) 'Sorting of first 4 classes done at '//datex//timex
+         WRITE(IW,*) 
+     &         'Sorting of first 4 classes done at '//datex//' '//timex
       ENDIF
       CALL FLSHFO (IW)
 C
@@ -406,7 +408,7 @@ C
 C  end of IPASS LOOP
 C ----------------------
       CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,'(A,I6,A)') '  Pass',ipass,' ended at '//datex//timex
+      WRITE(IW,'(A,I6,A)') ' Pass',ipass,' ended at '//datex//' '//timex
       CALL FLSHFO (IW)
       ENDDO
 C ----------------------
@@ -423,7 +425,7 @@ C        call relcc_restart_check('VOVV sorted integrals        ',IW)
       ELSE
          CALL DAYTIME (DATEX,TIMEX)
          WRITE(IW,*)
-         WRITE(IW,*) 'VOVV sorting done at '//datex//timex
+         WRITE(IW,*) 'VOVV sorting done at '//datex//' '//timex
       ENDIF
       CALL FLSHFO (IW)
 
@@ -541,7 +543,7 @@ C
 C     end of IPASS loop for the VVVV
 C --------------------------
       CALL DAYTIME (DATEX,TIMEX)
-      WRITE(IW,'(A,I6,A)') '  Pass',ipass,' ended at '//datex//timex
+      WRITE(IW,'(A,I6,A)') ' Pass',ipass,' ended at '//datex//' '//timex
       CALL FLSHFO (IW)
       ENDDO
 C --------------------------
@@ -549,7 +551,7 @@ C
   500 CLOSE(MDINT)
       CALL DAYTIME (DATEX,TIMEX)
       write(iw,*)
-      WRITE(IW,*) 'VVVV sorting done at '//datex//timex
+      WRITE(IW,*) 'VVVV sorting done at '//datex//' '//timex
       CALL FLSHFO (IW)
 C
 C

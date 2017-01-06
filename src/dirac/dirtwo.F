@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -315,24 +315,15 @@ C*****************************************************************************
 C
 #include "dcbgen.h"
 #include "cbihr2.h"
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif /* MOD_ERI */
 #include "dcbind.h"
 #include "dcbbas.h"
 #include "hrunit.h"
       DIMENSION WORK(LWORK)
       LUINTA = 11
-#ifdef MOD_ERI
-      IF(.NOT.RUNERI) THEN
-#endif /* MOD_ERI */
         LUSUPM = 17
         LUDASP = 24
         LUSOL  = 49
         CALL PAOVEC(WORK,LWORK,0,IPRTWO)
-#ifdef MOD_ERI
-      ENDIF
-#endif /* MOD_ERI */
 C
 C     Define bit packing
 C     ==================
@@ -3237,179 +3228,7 @@ C
  400  CONTINUE
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck jengine */
-      SUBROUTINE JENGINE(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &                   NPOS,INTFLG,IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Driver for direct Coulomb-contrubution using the J-engine
-C     Two possible options; with and without desity-fitting.
-C
-C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-      PARAMETER (DP5 = 0.5D0,D2=2.0D0)
-      DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
-     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
-     &        NPOS(*),WORK(LWORK)
-      LOGICAL SAVE_DOCART
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "densfit.h"
-#include "dcbgen.h"
-#include "maxaqn.h"
-#include "ccom.h"
-C
-C     (SR,ASPG,TS,LV june 2007) A four-component special :
-C     A not-so-clean hack to use the Hermite scheme ONLY for the Coulomb
-C     2-electron integrals, while keeping the Cartesian intermediates for
-C     all other integrals and transformations. This allows most of the code to
-C     be unmodified while having a faster integral evaluation where it counts
-C     1) Switch off DOCART before diving into FCK3
-C     2) FCK3 uses the Hermite scheme (switch HERECF) and builds a Fock matrix 
-C        directly in the restricted kinetic balance scalar basis that is also
-C        used as an intermediary basis in the Cartesian -> 2c RKB transformation.
-C     3) We switch DOCART back to the orginal value.
-C
-      IF (.NOT.(TWOCOMP)) THEN
-         SAVE_DOCART = DOCART
-         DOCART = .FALSE.
-      ENDIF
-C
-      NDIM = N2BBASX*NZC1*NFMAT
-      CALL DSCAL(NDIM,D2,DSO,1)
-      NDMAT = NZC1*NFMAT
-      KIFCTP = 1
-      KISYMD = KIFCTP + NDMAT
-      KLAST  = KISYMD + NDMAT
-      LWRK   = LWORK - KLAST + 1
-      IF (KLAST.GT.LWRK) CALL STOPIT('JENGINE','Coulomb',KLAST,
-     &                         LWORK)
-      CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
-     &          IFCKOP,IPRINT)
-#ifdef MOD_ERI
-#ifdef MOD_DNF
-      IF (DOFIT) THEN
-        CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
-     &            IPRINT,WORK(KLAST),LWRK)
-      ELSE
-#endif /* MOD_DNF */
-        CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
-     &                   IPRINT,WORK(KLAST),LWRK)
-#ifdef MOD_DNF
-      ENDIF
-#endif /* MOD_DNF */
-      CALL DSCAL(NDIM,DP5,DSO,1)
-#else /* MOD_ERI */
-      CALL QUIT('JENGINE only works if ERI is also present.')
-#endif /* MOD_ERI */
-C     Make sure to switch back DOCART....
-      IF (.NOT.(TWOCOMP)) THEN
-         SAVE_DOCART = DOCART
-         DOCART = .FALSE.
-      ENDIF
-C
-      RETURN
-      END
-#ifdef MOD_ERI
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck FCK_Coulomb */
-      SUBROUTINE FCK_Coulomb(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
-     &                       IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Driver for direct Coulomb-contrubution using the J-engine
-C     without density-fitting
-C
-C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-      DIMENSION FMAT(N2BBASX,NZC1,NDMT),DMAT(N2BBASX,NZC1,NDMT),
-     &        ISYMDM(NZC1,NDMT),IFCTYP(NZC1,NDMT),WORK(LWORK)
-#include "dcbbas.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-      DO IDMT=1,NDMT
-        IF ( (MOD(IFCTYP(1,IDMT),10).EQ.1) .OR.
-     &       (MOD(IFCTYP(1,IDMT),10).EQ.3) ) THEN
-          CALL ACT_ALL_BATCHES
-          CALL FCK3DRV(FMAT(1,1,IDMT),DMAT(1,1,IDMT),1,DUMMY,DUMMY,
-     &             DUMMY,WORK,LWORK)
-#ifdef MOD_FMM
-          if (dofmm) then
-!radovan:
-             call quit('fix rank mismatch in fmmfck call')
-!            CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
-          end if
-#endif /* MOD_FMM */  
-        END IF
-      END DO
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck linkdr */
-      SUBROUTINE LINKDR(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &              NPOS,INTFLG,IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Driver for direct LinK exchange
-C
-C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "cbieri.h"
-      PARAMETER(D0=0.0D0,DP5 = 0.5D0,D2=2.0D0)
-      DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
-     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
-     &        NPOS(*),WORK(LWORK)
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "memint.h"
-      I2TYP_TEMP = 1
-      NDIM = N2BBASX*NZC1*NFMAT
-      NDMAT = NFMAT*NZC1
-      IF (HFXFAC.NE.D0) THEN  
-        CALL DSCAL(NDIM,D2,DSO,1)
-        KIFCTP = 1
-        KISYMD = KIFCTP + NDMAT
-        KCCFBT = KISYMD + NDMAT
-        KINDXB = KCCFBT + MXPRIM*MXCONT
-        KFCKTP = KINDXB + 8*MXSHEL*MXCONT
-        KFREE  = KFCKTP
-        LFREE  = LWORK - KFREE + 1
-        IF (KFREE.GT.LWORK) CALL STOPIT('LINKDR','EXC',KFREE,
-     &                           LWORK)
-        CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
-     &            IFCKOP,IPRINT)
-C
-        CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP_TEMP)
-C
-        CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
-     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &            WORK(KFREE),LFREE)
-        CALL DSCAL(NDIM,DP5,DSO,1)
-      END IF
-CCTROND Scale in accordance with DIRAOF->SKLFC1
-      CALL DSCAL(NDIM,DP5,FMAT,1)
-      RETURN
-      END
-C
-#endif /* MOD_ERI */ 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+CC&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fastjk */
       SUBROUTINE FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &              NPOS,INTFLG,IPRINT,WORK,LWORK)
@@ -3434,102 +3253,10 @@ C
      &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
       DIM = N2BBASX*NZC1*NFMAT
-#ifdef MOD_ERI
-      IF (DOLINK .AND. DOFCK3) THEN
-C
-C       Jengine Coulomb contribution, regular or density-fitted
-        CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &             NPOS,INTFLG,IPRINT,WORK,LWORK)
-C       LinK-exchange
-        CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &            NPOS,INTFLG,IPRINT,WORK,LWORK)
-C
-      ELSEIF (DOLINK) THEN
-C
-C       LinK-exchange plus conventional Coulomb
-C
-C       Turn off exchange. This will affect how IX and IY will be set 
-C       for instance in FCKCON, but IX and IY will be set in SETFCK,
-C       and care has to be taken to correctly match the ifckop_temp
-C       values and those expected in SETFCK... in other words, 
-C       whenever you change this, check if you're doing the correct
-C       correspondenct to the table IPFCK in SETFCK. /aspg/
-C
-        DO IFMAT=1, NFMAT
-          IF (IFCKOP(IFMAT).EQ.1)  THEN
-            IFCKOP_TEMP(IFMAT) = 2
-          ELSEIF (IFCKOP(IFMAT).EQ.3) THEN
-            IFCKOP_TEMP(IFMAT) = 0
-          ELSE
-            IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
-          ENDIF
-        ENDDO
-C     
-C       first add conventional (via 4-center integrals) AO Coulomb
-C
-      CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &            IFCKOP_TEMP,NPOS,INTFLG,
-     &            IPRINT,WORK,LWORK)
-C   
-C       now adding exchange via LinK... 
-C
-C       a "hack"-type solution to combine J from ERI and 
-C       K from linK is to perform a symmetrization of FMAT 
-C       and DMAT inside DIRAO1 before passing them on to LINKDR,
-C       because (a) only the upper triangular elements of the 
-C       fock matrices are placed in FMAT when HRFCK2 is
-C       called, and the full symmetrization of FMAT and
-C       DMAT is done only outside FASTJK; and (b) LINKDR
-C       creates the symmetrical matrices, so the symmetrization
-C       outside FASTJK gets completely wrong after
-C       exchange is added via LINKDR. /aspg/ 
-C       
-      CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &            NPOS,INTFLG,IPRINT,WORK,LWORK)
-C
-      ELSEIF (DOFCK3) THEN
-C
-C       Jengine Coulomb contribution, regular or density-fitted
-C       plus exchange via the conventional AO code
-C
-        CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &               NPOS,INTFLG,IPRINT,WORK,LWORK)
-C
-C       Turn off Coulomb. same comments as for the LinK/Conventional
-C       combination (see above) apply. 
-C
-C       HEADS UP for possible problems when using jengine and eri
-C       together, since JENGINE also creates full matrices (as link,
-C       see comment above) and ERI the upper triangular, but I haven't
-C       seen wrong resuls for the pure non-relativistic calculations.
-C       So at this point (2006-07-27) there's no dirty tricks is DIRAO1
-C       to symmetrize matrices when DOFCK3 is switched on. /aspg/ 
-C
-        DO IFMAT=1, NFMAT
-          IF (IFCKOP(IFMAT).EQ.1) THEN
-            IFCKOP_TEMP(IFMAT) = 3
-          ELSEIF (IFCKOP(IFMAT).EQ.2) THEN
-            IFCKOP_TEMP(IFMAT) = 0
-          ELSE
-            IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
-          ENDIF
-        ENDDO
-C
-C       Conventional (4-center integrals) AO exchange
-C
-        CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &              IFCKOP_TEMP,NPOS,INTFLG,
-     &              IPRINT,WORK,LWORK)
-C
-      ELSE
-#endif /* MOD_ERI */
 C       Conventional (4-center integrals) AO Coulomb + exchange
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &              IFCKOP,NPOS,INTFLG,
      &              IPRINT,WORK,LWORK)
-#ifdef MOD_ERI
-      ENDIF
-#endif /* MOD_ERI */
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3561,7 +3288,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
-#include "cbieri.h"
 #include "blocks.h"
 #include "cbihr2.h"
 #include "ibtfun.h"
@@ -3578,25 +3304,23 @@ C     Memory allocation
       CALL MEMGET('REAL',KGAB  ,N2GAB  ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
 C
-      IF (.NOT.RUNERI) THEN 
 C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-         IF (SCRFCK .GT. D0) THEN
+      IF (SCRFCK .GT. D0) THEN
 C
-            IJOB   = 0
-            ITYPE  = 0
-            IGTYP  = 0
-C           IGTYP 0 gives just the LL integrals
-C           IGTYP 1 will add the SS type integrals
-            IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
-C           IGTYP 2 will add also the SL (Gaunt) type integrals
-            IF(LBIT(INTFLG,4)) IGTYP = 2
-            MAXDIF = 0
-            CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
-     &           IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
-         ENDIF
+         IJOB   = 0
+         ITYPE  = 0
+         IGTYP  = 0
+C        IGTYP 0 gives just the LL integrals
+C        IGTYP 1 will add the SS type integrals
+         IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
+C        IGTYP 2 will add also the SL (Gaunt) type integrals
+         IF(LBIT(INTFLG,4)) IGTYP = 2
+         MAXDIF = 0
+         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
+     &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
       ENDIF
 C
       IF(NBSYM.GT.1) THEN
@@ -3714,13 +3438,10 @@ C
 #include "ccom.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
-#include "cbieri.h"
-#include "cbifck3.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "shells.h"
 #include "blocks.h"
-#include "densfit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -3742,15 +3463,13 @@ Ctec Is FIRST needed???
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZC1,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
 
-      IF (.NOT.RUNERI) THEN
-         IF (SCRFCK.GT.D0) THEN
+      IF (SCRFCK.GT.D0) THEN
 C
-C       Make reduced density matrix for screening
-C       ==========================================
-C       (Reduced GAB is already present in GABRAO)
+C     Make reduced density matrix for screening
+C     ==========================================
+C     (Reduced GAB is already present in GABRAO)
 C
-           CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
-         ENDIF
+         CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
       ENDIF
 C
 C     ****************************
@@ -3810,7 +3529,6 @@ C....> Check whether the class is active
 C
       IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 C
-         IF (.NOT.RUNERI) THEN  ! hermit-based scf
 #if defined (VAR_MPI)
             IF (PARCAL) THEN
 C
@@ -3855,34 +3573,6 @@ C
 #if defined (VAR_MPI)
            ENDIF
 #endif
-         ELSE
-C
-C we are using the eri/fck3 fock matrix builder, if
-C eri has been enabled
-C
-#ifdef MOD_ERI
-           CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
-           CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-           KFCKTP = KFREE
-           CPU = SECOND()
-C
-           CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
-C
-           IPRFCK=IPRINT
-           CALL DSCAL(N2BBASX*NDMAT,D2,DAO,1)
-           CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
-C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
-     &                 WORK(KFREE),LFREE)
-           CALL DSCAL(N2BBASX*NDMAT,DP5,DAO,1)
-           CALL MEMREL('dirao1.hrfck23',WORK,KWORK,KWORK,KFREE,LFREE)
-           CPU = SECOND() - CPU
-         ENDIF
-#else /* MOD_ERI */
-            CALL QUIT('*** Direct SCF only possible with HERMIT 
-     &                 in this version. Recompile with ERI ***')
-         ENDIF
-#endif /* MOD_ERI */
       ENDIF
 C
 C     Restore IFCTYP to the old value (even though we'll not need
@@ -3919,27 +3609,6 @@ C
      &                NZC1,IQMULT,LUPRI)
         ENDDO
       ENDIF
-#ifdef MOD_ERI
-Caspg
-C
-C   2006-07-27
-C
-C   temporary solution (or dirty trick, take your pick) to make the 
-C   combination ERI->J / LinK->K work, due to the differences in 
-C   constructing the fock matrices in each case. So below we add
-C   a bare bones version of the code outside FASTJK responsible to
-C   perform the final setup on the matrices (symmetrization etc).
-C  
-C   This assumes that a call to LINKDR comes after the call to DIRAO1,
-C   otherwise the fock matrices will continue to be updated incorrectly.
-C
-      IF (DOLINK) THEN
-        CALL FULMAT('S',NTBAS(0),NTBAS(0),FAO)
-      ENDIF
-C
-Caspg
-#endif /* MOD_ERI */
-C
       CALL QEXIT('DIRAO1')
       RETURN
       END
@@ -4622,10 +4291,6 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "aovec.h"
-C
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif
 #include "cbihr2.h"
 #include "ccom.h"
 #include "dgroup.h"
@@ -4635,21 +4300,6 @@ C
       CHARACTER CINT(3)*2
       DATA CINT/'LL','SL','SS'/
 #include "memint.h"
-C
-#ifdef MOD_ERI
-      IF(RUNERI) THEN
-C.......Allocate:
-C       CCFBT - normalized contraction coefficients
-        CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
-C       INDXBT - orbital indices for AO batches
-        CALL MEMGET('INTE',KINDXB,NBSYM*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-C
-        CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
-C
-        CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
-        CALL MEMREL('TWODRV.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
-      ELSE
-#endif /* MOD_ERI */
 C.......Undifferentiated integrals written on file
         IF(INTTYP.EQ.0) THEN
           NDMAT  = 1
@@ -4678,98 +4328,6 @@ C.......Undifferentiated integrals written on file
         IF(INTTYP.EQ.0) THEN
           THRS = THRBUF 
         ENDIF
-#ifdef MOD_ERI
-      ENDIF
-#endif
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SET_AOBATCH_STATE(ICENTER,STATUS)
-#include "implicit.h"
-#include "cbieri.h"
-      CHARACTER STATUS
-C
-C     sets and individual center as active when calculating ao batches 
-C     icenter is the center on the two-electron integral to be made active.
-C
-C     arguments:
-C
-C     icenter: the numerical designation for the center, takes 
-C              values 1,2,3 or 4
-C     status : whether to make the center active or inactive, takes 
-C              values 'A' for active and 'I' for inactive
-C
-C     note: the variables are defined in the CBIERI common block 
-C
-      IF (    (ICENTER.LT.1) .OR.(ICENTER.GT.4)
-     &    .OR.((STATUS.NE.'A').AND.(STATUS.NE.'I'))) 
-     &   CALL QUIT('wrong parameter value in set_aobatch_state')
-
-      IF (STATUS.EQ.'A') THEN
-C     center is active
-         NCENTS(ICENTER)   = 0
-         ICENTS(1,ICENTER) = 0
-      ELSE
-         NCENTS(ICENTER)   = 1
-         ICENTS(1,ICENTER) = 1
-      ENDIF
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SET_ALL_AOCENTERS_ACTIVE(I2TYP)
-#include "implicit.h"
-C
-C sets all centers active for the ao-batches of class i2typ
-C
-Caspg     write (6,*) 'debug: setting centers'
-      CALL SET_AOBATCH_STATE(1,'A')
-      CALL SET_AOBATCH_STATE(2,'A')
-      CALL SET_AOBATCH_STATE(3,'A')
-      CALL SET_AOBATCH_STATE(4,'A')
-      CALL SET_AOBATCH_CLASS(I2TYP)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SET_AOBATCH_CLASS(I2TYP)
-#include "implicit.h"
-#include "priunit.h"
-#include "cbieri.h"
-C
-C     note: the variables are in the CBIERI common block 
-C
-C     Index 1
-      IF(I2TYP.EQ.1) THEN
-C       (LL|LL)-integrals
-        ICLASSES(1) = 1
-        ICLASSES(2) = 1
-        ICLASSES(3) = 1
-        ICLASSES(4) = 1
-      ELSEIF(I2TYP.EQ.2) THEN
-C       (SS|LL)-integrals
-        ICLASSES(1) = 2
-        ICLASSES(2) = 2
-        ICLASSES(3) = 1
-        ICLASSES(4) = 1
-      ELSEIF(I2TYP.EQ.3) THEN
-C       (SS|SS)-integrals
-        ICLASSES(1) = 2
-        ICLASSES(2) = 2
-        ICLASSES(3) = 2
-        ICLASSES(4) = 2
-      ELSEIF(I2TYP.EQ.4) THEN
-C       (SL|SL)-integrals (Gaunt integrals)
-        ICLASSES(1) = 2
-        ICLASSES(2) = 1
-        ICLASSES(3) = 2
-        ICLASSES(4) = 1
-! hjaaj May 2012: I have just defined ICLASSES for Gaunt (preceeding four lines)
-!   now quit until someone verifies that Gaunt is OK in ERI
-        call quit('Gaunt integrals not implemented in ERI yet')
-      ELSE
-        write(lupri,*) 'Unknown I2TYP in SET_AOBATCH_CLASS',I2TYP
-        call quit('Unknown I2TYP in SET_AOBATCH_CLASS')
-      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4821,13 +4379,17 @@ C.........construction of Fock matrix using ERIs in SO-basis
         ELSE
 C.........construction of Fock matrix using ERIs in AO-basis:
 C.........skeleton Fock approach
-C aspg, timing
           CALL TIMER('START ',TIMSTR,TIMEND)
-          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                IFCKOP,NPOS,INTFLG,
-     &                IPRINT,WORK,LWORK)
+
+        !DIM = N2BBASX*NZC1*NFMAT
+C       Conventional (4-center integrals) AO Coulomb + exchange
+        CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &              IFCKOP,NPOS,INTFLG,
+     &              IPRINT,WORK,LWORK)
+!          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+!     &                IFCKOP,NPOS,INTFLG,
+!     &                IPRINT,WORK,LWORK)
           CALL TIMER('fastjk',TIMSTR,TIMEND)
-C aspg, timing
         ENDIF
       ELSE
 C

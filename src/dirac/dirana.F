@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1441,6 +1441,7 @@ C
       IF(NREFS.GT.1.OR.POLREF) THEN
         NDIM=NTOT*NTOT*NZ
         CALL MEMGET('REAL',KAMAT,NTOT*NTOT*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KAMAT1,NTOT*NTOT,WORK,KFREE,LFREE)
       ELSE
         KAMAT = KFREE
       ENDIF
@@ -1450,7 +1451,8 @@ C
       IF(POLREF) THEN
         CALL PRJAN2(CMO(1,IMOL,1),EIG(IMOL),NMOL,NBAS,NTOT,
      &              CMO          ,EIG      ,NREF,NBAS,NTOT,
-     &              NTOT,NBAS,NZ,IPQ,WORK(KAMAT),BVEC,SMAT,PTOL,
+     &              NTOT,NBAS,NZ,IPQ,WORK(KAMAT),WORK(KAMAT1),
+     &              BVEC,SMAT,PTOL,
      &              NREFS,REFFIL,NFRAGV,IPRINT,WORK,KFREE,LFREE)
         CALL KNIZIA(CMO,BVEC,SMAT,WORK(KAMAT),NTOT,NMOL,
      &              NBAS,NZ,IPQ,NREFS,REFFIL,NFRAGV,
@@ -1461,7 +1463,8 @@ C     Get fragment expansion coefficients
 C
       CALL PRJAN2(CMO(1,IMOL,1),EIG(IMOL),NMOL,NBAS,NTOT,
      &            CMO          ,EIG      ,NREF,NBAS,NTOT,
-     &            NTOT,NBAS,NZ,IPQ,WORK(KAMAT),BVEC,SMAT,PTOL,
+     &            NTOT,NBAS,NZ,IPQ,WORK(KAMAT),WORK(KAMAT1),
+     &            BVEC,SMAT,PTOL,
      &            NREFS,REFFIL,NFRAGV,IPRINT,WORK,KFREE,LFREE)
 C
 C     Replace molecular coefficients by polarization contribution 
@@ -1506,7 +1509,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRJAN2(CMOL,EMOL,NMOL,LRMOL,LCMOL,
      &                  CREF,EREF,NREF,LRREF,LCREF,
-     &                  NTOT,NBAS,NZ,IPQ,AMAT,BVEC,SMAT,PTOL,
+     &                  NTOT,NBAS,NZ,IPQ,AMAT,AMAT1,BVEC,SMAT,PTOL,
      &                  NFRAG,FRAGLAB,NFRAGV,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -1526,9 +1529,12 @@ C
       real(8),intent(in)      :: SMAT(NBAS,NBAS),PTOL
       integer,intent(inout)   :: KFREE,LFREE
       real(8),intent(out)     :: AMAT(NTOT,NTOT,NZ),BVEC(NTOT,NMOL,NZ)
+      real(8),intent(out)     :: AMAT1(NTOT,NTOT,1)
       real(8),intent(out)     :: WORK(*)
       real(8), allocatable    :: BUF1(:),BUF2(:)
       integer, allocatable    :: IPIVOT(:)
+      real(8)                 :: AMAT_SUM_NZ(1:4),AMAT_SUM,AMAT_SUM_RE
+
 C
 C
 C     Make projection vector  BVEC = <\psi^B_j1\psi^{MO}_i>
@@ -1553,6 +1559,9 @@ C
      &             CREF,LRREF,LCREF,NZ,IPQ,
      &             CREF,LRREF,LCREF,NZ,IPQ,
      &             WORK(KFREE),LFREE,IPRINT)
+
+!Miro: get real numbers matrix AMAT1 of quaternion matrix AMAT
+        CALL NZ_MTX_AMPLITUDES(AMAT,AMAT1,NTOT,NZ)
 C
 C       Print overlaps
 C       ==============
@@ -1562,10 +1571,28 @@ C
           DO J = 1,NFRAG
             IOFF = 1
             DO I = 1,(J-1)
-              WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps :',
+              WRITE(LUPRI,'(/,A,2(3X,A6))') '*Overlaps :',
      &             FRAGLAB(I),FRAGLAB(J)
               CALL PRQMAT(AMAT(IOFF,JOFF,1),NFRAGV(I),NFRAGV(J),
      &                    NTOT,NTOT,NZ,IPQ,LUPRI)
+              WRITE(LUPRI,'(A,2(3X,A6))') '*Overlaps - amplitudes :',
+     &             FRAGLAB(I),FRAGLAB(J)
+              CALL PRQMAT(AMAT1(IOFF,JOFF,1),NFRAGV(I),NFRAGV(J),
+     &                    NTOT,NTOT,1,IPQ,LUPRI)
+
+!Miro: sum all overlaps for given fragments
+              CALL SUM_NZ_MATRIX(
+     &             AMAT(IOFF,JOFF,1),NFRAGV(I),NFRAGV(J),
+     &             NTOT,NTOT,NZ,AMAT_SUM_NZ,AMAT_SUM)
+
+              CALL SUM_RE_MATRIX(AMAT1(IOFF,JOFF,1),
+     &             NFRAGV(I),NFRAGV(J),NTOT,NTOT,AMAT_SUM_RE)
+
+              WRITE(LUPRI,'(A,2(3X,A6),//)')
+     & '*Overlaps - summed per all projected orbitals, per fragments :',
+     &                FRAGLAB(I),FRAGLAB(J)
+              WRITE(LUPRI,'(2F12.4)') AMAT_SUM,AMAT_SUM_RE
+
               IOFF = IOFF + NFRAGV(I)
             ENDDO
             JOFF = JOFF + NFRAGV(J)
@@ -3309,7 +3336,7 @@ C
       NREF=NTOT-NMOL
       IMOL=NREF+1
 C
-      IF(IPRINT.EQ.2) THEN
+      IF(IPRINT.GE.2) THEN
         WRITE(LUPRI,*) '* Starting reference coefficients'
         CALL PRQMAT(CMO,NBAS,NREF,NBAS,NTOT,
      &          NZ,IPQ,LUPRI)
@@ -3367,7 +3394,7 @@ C.....Projector onto depolarized space P' = D'S -> store in M1
      &           'N','N',IPQ,SMAT,NBAS,NBAS,1,
      &           D0,IPQ,WORK(KM1),NBAS,NBAS,NZ)
       CALL MEMREL('KNIZIA.proj1',WORK,KFRSAV,KM2,KFREE,LFREE)
-      IF(IPRINT.EQ.5) THEN
+      IF(IPRINT.GE.5) THEN
         WRITE(LUPRI,*) '* Projector onto depolarized space'
         CALL PRQMAT(WORK(KM1),NBAS,NBAS,NBAS,NBAS,
      &          NZ,IPQ,LUPRI)
@@ -3377,7 +3404,7 @@ C.....apply first projector to fragment coefficients: b11 = P'b0; stored in V1
      &           'N','N',IPQ,WORK(KM1),NBAS,NBAS,NZ,
      &           'N','N',IPQ,CMO,NBAS,NTOT,NZ,
      &           D0,IPQ,WORK(KV1),NBAS,NREF,NZ)
-      IF(IPRINT.EQ.8) THEN
+      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,*) '* Intermediate b11 '
         CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQ,LUPRI)
@@ -3390,7 +3417,7 @@ C.....construct orthogonal complement: b12 = b0 - b11; stored in v2
         IOFF = IOFF + NDIM
       ENDDO
       CALL DAXPY(NDIM*NZ,DM1,WORK(KV1),1,WORK(KV2),1)
-      IF(IPRINT.EQ.8) THEN
+      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,*) '* Intermediate b12 '
         CALL PRQMAT(WORK(KV2),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQ,LUPRI)
@@ -3404,7 +3431,7 @@ C.....Projector onto starting MO space P = DS -> store in M1
      &           'N','N',IPQ,SMAT,NBAS,NBAS,1,
      &           D0,IPQ,WORK(KM1),NBAS,NBAS,NZ)
       CALL MEMREL('KNIZIA.proj',WORK,KFRSAV,KM2,KFREE,LFREE)
-      IF(IPRINT.EQ.5) THEN
+      IF(IPRINT.GE.5) THEN
         WRITE(LUPRI,*) '* Projector onto starting MO space'
         CALL PRQMAT(WORK(KM1),NBAS,NBAS,NBAS,NBAS,
      &          NZ,IPQ,LUPRI)
@@ -3415,7 +3442,7 @@ C.....apply: b21 = P*b11; store in v3
      &           'N','N',IPQ,WORK(KM1),NBAS,NBAS,NZ,
      &           'N','N',IPQ,WORK(KV1),NBAS,NREF,NZ,
      &           D0,IPQ,WORK(KV3),NBAS,NREF,NZ)
-      IF(IPRINT.EQ.8) THEN
+      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,*) '* Intermediate b21 '
         CALL PRQMAT(WORK(KV3),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQ,LUPRI)
@@ -3427,12 +3454,12 @@ C.....subtract P*b12 from b12 -> v1
      &           'N','N',IPQ,WORK(KM1),NBAS,NBAS,NZ,
      &           'N','N',IPQ,WORK(KV2),NBAS,NREF,NZ,
      &           D1,IPQ,WORK(KV1),NBAS,NREF,NZ)
-      IF(IPRINT.EQ.8) THEN
+      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,*) '* Intermediate b22 '
         CALL PRQMAT(WORK(KV1),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQ,LUPRI)
       ENDIF
-      IF(IPRINT.EQ.5) THEN
+      IF(IPRINT.GE.5) THEN
         WRITE(LUPRI,*) '* Polarized reference coefficients - P'
         CALL PRQMAT(WORK(KV3),NBAS,NREF,NBAS,NREF,
      &          NZ,IPQ,LUPRI)
@@ -3466,17 +3493,19 @@ C
       CALL ABSOLUTE_OVERLAP(CMO,NBAS,NTOT,1,NREF,
      &                      WORK(KV1),NREF,1,SMAT,AMAT,
      &                      IPQ,NZ,IPRINT,WORK,KFREE,LFREE)
-      WRITE(LUPRI,*) 
+      IF(IPRINT.GE.2) THEN
+        WRITE(LUPRI,*) 
      &  '* Squared overlap between original and polarized orbitals',
      &  ' after orthonormalization.'
-      CALL PRQMAT(AMAT,NREF,NREF,NREF,NREF,1,IPQ,LUPRI)
+        CALL PRQMAT(AMAT,NREF,NREF,NREF,NREF,1,IPQ,LUPRI)
+      ENDIF
 C.....Replace original polarization coefficients
       IOFF = 0
       DO IZ = 1,NZ
         CALL DCOPY(NDIM,WORK(KV1+IOFF),1,CMO(1,1,IZ),1)
         IOFF = IOFF + NDIM
       ENDDO
-      IF(IPRINT.EQ.2) THEN
+      IF(IPRINT.GE.2) THEN
         WRITE(LUPRI,*) '* Polarized reference coefficients'
         CALL PRQMAT(CMO,NBAS,NREF,NBAS,NTOT,
      &          NZ,IPQ,LUPRI)

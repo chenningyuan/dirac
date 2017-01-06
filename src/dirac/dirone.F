@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1123,7 +1123,7 @@ C               Get integrals from the AOPROPER file
 C =============================================================
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,NDIM,IPRINT)
-        IF(IPRINT.GE.15) THEN
+        IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I3)')
      &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
           IF (NTBAS(0).EQ.NTBAS(1)) THEN
@@ -1633,6 +1633,7 @@ C
       NBRP = 4/NZ
       ISOFF = 1
       IVOFF = 1
+      NLINDEP=0
       CALL HEADER('Generating Lowdin canonical matrix:',-1)
       DO IFRP = 1,NFSYM
         JSOFF = ISOFF
@@ -1654,14 +1655,16 @@ C
           IF(NBBAS(IREP,IC).GT.0) THEN
             IF(LBIT(ISPHTR,IC)) THEN
               CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
-     &                    NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                    NFBAS(IFRP,0),NEFF,NLDP,STOL(IC),EIG,
      &                    WORK,LWORK,IPRINT)
               NDEL  = NBBAS(IREP,IC) - NEFF
+              NLINDEP=NLINDEP+NLDP
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
+              NLINDEP=NLINDEP+NDEL              
               WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10,A,E8.2)')
      &          COMP(IC),REP(IREP),'* Deleted: ',NDEL,
      &          ' *Smin: ',EIG(NBBAS(IREP,IC))
@@ -1700,19 +1703,21 @@ C
             IF(LBIT(ISPHTR,IC)) THEN
               IF(MDIRAC) THEN
                 CALL SPHLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
-     &                      NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                      NFBAS(IFRP,0),NEFF,NLDP,STOL(IC),EIG,
      &                      WORK,LWORK,IPRINT)
               ELSE
                 CALL RKBLOW(IREP,IC,SMAT(JSOFF),VMAT(JVOFF),
-     &                      NFBAS(IFRP,0),NEFF,STOL(IC),EIG,
+     &                      NFBAS(IFRP,0),NEFF,NLDP,STOL(IC),EIG,
      &                      IRKB,WORK,LWORK,IPRINT)
               ENDIF
-              NDEL  = NBBAS(IREP,IC) - NEFF
+              NDEL    = NBBAS(IREP,IC) - NEFF
+              NLINDEP = NLINDEP+NLDP              
             ELSE
               CALL LOWGEN(SMAT(JSOFF),NBBAS(IREP,IC),
      &                    VMAT(JVOFF),NEFF,NFBAS(IFRP,0),
      &                    STOL(IC),IPRINT,EIG,WORK,LWORK)
               NDEL  = NBBAS(IREP,IC) - NEFF
+              NLINDEP=NLINDEP+NDEL
               WRITE(LUPRI,'(3X,A1,3X,A3,3X,A,I10)')
      &           COMP(IC),REP(IREP),'* Deleted: ',NDEL,
      &          ' *Smin: ',EIG(NBBAS(IREP,IC))
@@ -1746,6 +1751,10 @@ C
         ISOFF = ISOFF + NFBAS(IFRP,0)*NFBAS(IFRP,0)
         IVOFF = IVOFF + NFBAS(IFRP,0)*NFORB(IFRP,0)
       ENDDO
+      IF(NLINDEP.GT.0) THEN
+        WRITE(LUPRI,'(A)')
+     &  '*** WARNING *** : Functions deleted due to linear dependence.'
+      ENDIF
 
       CALL QEXIT('LOWDI1')
       RETURN
@@ -3689,7 +3698,7 @@ C  /* Deck reno */
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphlow */
-      SUBROUTINE SPHLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
+      SUBROUTINE SPHLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,NLDP,STOL,
      &                  EIG,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -3711,7 +3720,7 @@ C
       NCAR = NBBAS(IREP,IC)
       NMAT = NCAR*NCAR
       CALL MEMGET('REAL',KTMAT,NMAT,WORK,KFREE,LFREE)
-      CALL SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
+      CALL SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &            WORK(KTMAT),WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('SPHLOW',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -3720,7 +3729,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck sphlo1 */
-      SUBROUTINE SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
+      SUBROUTINE SPHLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &                  TMAT,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -3771,18 +3780,18 @@ C
      &            EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
      &           SMAT,LDM,D0,VMAT,LDM)
-      NA = NCAR - NSPH
-      NB = NSPH - NEFF
-      ND = NA + NB
+      NA   = NCAR - NSPH
+      NLDP = NSPH - NEFF
+      ND   = NA + NLDP
       WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A,E8.2)')
      &           COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &           '(Proj: ',NA,', Lindep: ',NB,') Smin: ',
+     &           '(Proj: ',NA,', Lindep: ',NLDP,') Smin: ',
      &           EIG(NSPH)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkblow */
-      SUBROUTINE RKBLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,STOL,
+      SUBROUTINE RKBLOW(IREP,IC,SMAT,VMAT,LDM,NEFF,NLDP,STOL,
      &                  EIG,IRKB,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -3803,7 +3812,7 @@ C
       NCAR = NBBAS(IREP,IC)
       NMAT = NCAR*NCAR
       CALL MEMGET('REAL',KTMAT,NMAT,WORK,KFREE,LFREE)
-      CALL RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
+      CALL RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &            WORK(KTMAT),IRKB,WORK(KFREE),LFREE,IPRINT)
       CALL MEMREL('RKBLOW',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -3812,7 +3821,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C /* Deck rkblo1 */
-      SUBROUTINE RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,STOL,EIG,
+      SUBROUTINE RKBLO1(IREP,IC,NCAR,SMAT,VMAT,LDM,NEFF,NLDP,STOL,EIG,
      &                  TMAT,IRKB,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -3881,12 +3890,12 @@ C
      &     EIG,WORK,LWORK)
       CALL DGEMM('N','N',NCAR,NEFF,NSPH,D1,TMAT,NCAR,
      &     SMAT,LDM,D0,VMAT,LDM)
-      NA = NCAR - NSPH
-      NB = NSPH - NEFF
-      ND = NA + NB
+      NA   = NCAR - NSPH
+      NLDP = NSPH - NEFF
+      ND   = NA + NLDP
       WRITE(LUPRI,'(3X,A1,3X,A3,3X,3(A,I10),A,E8.2)')
      &     COMP(IC),REP(IREP),'* Deleted: ',ND,
-     &     '(Proj: ',NA,', Lindep: ',NB,') Smin: ',
+     &     '(Proj: ',NA,', Lindep: ',NLDP,') Smin: ',
      &     EIG(NSPH)
 C
       RETURN
