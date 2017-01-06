@@ -2958,7 +2958,7 @@ C.......Fragment orbitals in molecular basis
           ICOFF = 1
           IEOFF = 1
           DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
+             IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
 C             Select coefficients
               IF(LBIT(IOPT_TMP,2)) THEN
                 ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
@@ -2976,7 +2976,7 @@ C             Select eigenvalues
               ENDIF
 C       Select boson irrep information
               IF(LBIT(IOPT_TMP,4)) THEN
-                CALL SELIBEIG(IBEIG(1+IORB(IFRP)),IORB(IFRP),IFRP,
+                CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
      &                 IBSEL(IESEL),WORK(KVEC(IFRP,IFRAG)),
      &                 NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
               ENDIF
