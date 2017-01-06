@@ -3446,7 +3446,7 @@ CMI       ... control print out ...
       ENDIF
       RETURN
       END
-
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GTOVLX(SMAT,SSMETR)
 C*****************************************************************************
 C
@@ -4825,7 +4825,8 @@ C
       NORBT = 0
       NCMOT  = 0
       DO IFRP = 1,NFSYM
-        NORBT       = NORBT  + NORB(IFRP)
+         IORB(IFRP)  = NORBT
+         NORBT       = NORBT  + NORB(IFRP)
         ICMO(IFRP)  = NCMOT
         ICMOQ(IFRP) = NCMOT*NZ
         NCMO(IFRP)  = NFBAS(IFRP,0)*NORB(IFRP)
@@ -4926,7 +4927,7 @@ C
 C
       RETURN
       END
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mk1cex */
       SUBROUTINE MK1CEX (WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
@@ -5011,7 +5012,7 @@ C
       CALL QEXIT('MK1CEX')
       RETURN
       END
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mk1cex2 */
       SUBROUTINE MK1CEX2 (LDM,STOT,PTOT,INDNAO,WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
@@ -5092,7 +5093,7 @@ C
       CALL QEXIT('MK1CEX2')
       RETURN
       END
-C*****************************************************************************
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mk1cex3 */
       SUBROUTINE MK1CEX3 (STOT,SLOC,PTOT,LDM,NTOT,NLOC,V,W,EIG,STOL,
      &                    IPRINT,WORK,KFREE,LFREE)
@@ -6799,17 +6800,18 @@ C     when there is no subblock ...
           ID_SUB_BL(1,IFRP)  = 0
         ENDDO
       ENDIF
-      TOBE = .FALSE.
-      N2TMT = 0
+      TOBE    = .FALSE.
+      N2TMT   = 0
       N2TMOTQ = 0      
-      ICOFF = 0
-      IVOFF = 0
+      ICOFF   = 0
+      IVOFF   = 0
       IF (SUB_BL) THEN
+!      IF (.TRUE.) THEN
         ITEFF = 1
         DO 8 IFRP =  1,NFSYM
+          WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
           NQ(1) = 0
           NQ(2) = 0
-          WRITE(LUPRI,'(A,A3,A2)') '* Fermion ircop ',FREP(IFRP),' :'
           allocate(NVECS_SUB(N_SUB_BL(IFRP)))
 C.........First find how the selected vectors are distributed on subblocks
           NREF = 0
@@ -6818,11 +6820,7 @@ C.........First find how the selected vectors are distributed on subblocks
 C...........Find orbitals in this subblock
             NVECS_SUB(ISUB) = 0
             DO IVEC = 1,NVECS(IFRP)
-CTROND
-            WRITE(6,*) 'TESTsel2..',IVEC,ISEL(IVEC+IVOFF)
             IF(ISEL(IVEC+IVOFF).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
-CTROND
-               WRITE(6,*) 'TESTsel..',IFRP,IVEC,IVOFF,ISEL(IVEC+IVOFF)
                NVECS_SUB(ISUB) = NVECS_SUB(ISUB) + 1
                IF(INFOSEL(1,IVOFF+IVEC).GT.0) THEN
 C.................Positive energy solution                  
@@ -6851,9 +6849,6 @@ C...........Transform vector of this subblock to orthonormal basis
             JREF = IREF
             DO IVEC = 1,NVECS(IFRP)
               IF(ISEL(IVEC+IVOFF).EQ.ID_SUB_BL(ISUB,IFRP)) THEN
-CTROND
-                 WRITE(6,*) 'TEST..',ISUB,IFRP,IVEC,
-     &                ID_SUB_BL(ISUB,IFRP),IMO,ITM,I2TMT(IFRP)
                  CALL QGEMM(NORB_SUB(ISUB,IFRP,0),1,NFBAS(IFRP,0),D1,
      &             'H','N',IPQTOQ(1,0),TINV(ITM),
      &                     NFBAS(IFRP,0),NORB(IFRP),NZT,
@@ -6865,15 +6860,15 @@ CTROND
               ENDIF
               IMO = IMO + NFBAS(IFRP,0)
             ENDDO
-CTROND            IF(IPRINT.GE.5) THEN
+            IF(IPRINT.GE.5) THEN
                WRITE(6,*)
      &         '  Transformed coefficients for subblock ',ISUB
                 CALL PRQMAT(WORK(IREF),
      &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
      &                NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
      &                NZ,IPQTOQ(1,0),LUPRI)
-CTROND            ENDIF
-            IREF  = IREF  + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
+            ENDIF
+            IREF = IREF + NORB_SUB(ISUB,IFRP,0)*NVECS_SUB(ISUB)*NZ
           ENDIF             
           IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
           ENDDO
@@ -6886,22 +6881,22 @@ C.......and overwrite TINV with TMAT
             IOFF = IOFF + NDIM
           ENDDO
 C.......We now start accumulating the new transformation matrix for each subblock
-          IBORB = 0
-          IREF = KREF
           NTMO(IFRP) = NORB(IFRP) - NVECS(IFRP)
           WRITE(LUPRI,'(2X,A,I6)')
      &       '- Total number of orbitals deleted: ',NVECS(IFRP),
      &       '       - positive energy solutions: ',NQ(1),
      &       '       - negative energy solutions: ',NQ(2)
-          NESH(IFRP)  = NESH(IFRP)-NQ(1) ! this will be the number of positive energy solutions
-          NPSH(IFRP)  = NPSH(IFRP)-NQ(2) ! this will be the number of negative energy solutions
-          NESHMF(IFRP)=NESH(IFRP)
-          NPSHMF(IFRP)=NPSH(IFRP)          
+          NESH(IFRP)   = NESH(IFRP)-NQ(1) 
+          NPSH(IFRP)   = NPSH(IFRP)-NQ(2) 
+          NESHMF(IFRP) = NESH(IFRP)
+          NPSHMF(IFRP) = NPSH(IFRP)          
+C
+          IBORB      = 0
+          IREF       = KREF
           DO ISUB = 1,N_SUB_BL(IFRP)
           IF(NORB_SUB(ISUB,IFRP,0).GT.0) THEN
             ITM   = I2TMT(IFRP) + NFBAS(IFRP,0)*IBORB + 1 ! old offset for transformation
-            NEFF = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB(ISUB)
-            ITEFF = ITEFF       + NFBAS(IFRP,0)*NEFF   ! new offset for transformation
+            NEFF  = NORB_SUB(ISUB,IFRP,0) - NVECS_SUB(ISUB)
 C...........New matrix
             IF(NVECS_SUB(ISUB).GT.0) THEN
               NPRJ = NORB_SUB(ISUB,IFRP,0)*NORB_SUB(ISUB,IFRP,0)*NZ
@@ -6945,6 +6940,7 @@ C.............Backtransform new transformation matrix (TINV now contains this pa
      &              NZ,IPQTOQ(1,0),LUPRI)
             ENDIF            
             IBORB = IBORB + NORB_SUB(ISUB,IFRP,0)
+            ITEFF = ITEFF + NFBAS(IFRP,0)*NEFF   ! new offset for transformation
             NTMO_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,1)
      &                            + NTMO_SUB(ISUB,IFRP,2)
             NORB_SUB(ISUB,IFRP,0) = NTMO_SUB(ISUB,IFRP,0) 
@@ -7005,6 +7001,8 @@ C       Do projection
         CALL PRJORT(WORK(KBUF),WORK(KREF),NORB(IFRP),NVECS(IFRP),NZ,
      &              WORK,KFREE,LFREE)
         IF(IPRINT.GE.5) THEN
+              WRITE(6,*)
+     &        'PSIPR1: Eigenvectors from PRJORT for fermion corep ',IFRP
           CALL PRQMAT(WORK(KBUF),
      &                NORB(IFRP),NORB(IFRP),
      &                NORB(IFRP),NORB(IFRP),
@@ -7034,8 +7032,8 @@ C         Backtransform to SO-basis; note that we only backtransform NTMO vector
           NDIM = NFBAS(IFRP,0)*NORB(IFRP)*NZT         ! this one is dangerous in case of UKB since NZT is then not equal to NZ
           CALL DCOPY(NDIM,TMAT(IEFF),1,TINV(IEFF),1)  ! put old transformation matrix T into TINV, then put new ones into T by backtransformation
           CALL QGEMM(NFBAS(IFRP,0),NTMO(IFRP),NORB(IFRP),D1,
-     &      'N','N',IPQTOQ(1,0),TINV(IEFF),NFBAS(IFRP,0),NORB(IFRP),NZT,
-     &      'N','N',IPQTOQ(1,0),WORK(KBUF),NORB(IFRP),NORB(IFRP),NZ,D0,
+     &     'N','N',IPQTOQ(1,0),TINV(IEFF),NFBAS(IFRP,0),NORB(IFRP),NZT,
+     &     'N','N',IPQTOQ(1,0),WORK(KBUF),NORB(IFRP),NORB(IFRP),NZ,D0,
      &      IPQTOQ(1,0),TMAT(I2TMT(IFRP)+1),NFBAS(IFRP,0),NTMO(IFRP),NZ)
           CALL MEMREL('PSIPRJ.prj',WORK,KFRSAV,KBUF,KFREE,LFREE)
           TOBE = .TRUE.
@@ -7112,7 +7110,9 @@ C.....Print section
 C      
       RETURN
       END
-      subroutine set_intflg(new_intflg)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE SET_INTFLG(new_intflg)
+C***********************************************************************      
 #include "implicit.h"
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
@@ -7155,7 +7155,9 @@ C
       call set_intfl2(new_intflg)
 
       end
-      subroutine set_intfl1(new_intflg)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE SET_INTFL1(NEW_INTFLG)
+C***********************************************************************      
       implicit none
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
@@ -7177,7 +7179,9 @@ C
       INTNMR       = new_intflg
 
       end
-      subroutine set_intfl2(new_intflg)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE SET_INTFL2(NEW_INTFLG)
+C***********************************************************************      
       implicit none
       integer, intent(in) :: new_intflg
 #include "dcbgen.h"
@@ -7424,9 +7428,10 @@ C     Memory deallocation
       DeAllocate (JCENT)
 
       END
-*
-      subroutine Read_Screening_Parameters (n_charge,n_exp,
-     &                                      fit_exp,fit_coef)
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE READ_SCREENING_PARAMETERS (N_CHARGE,N_EXP,
+     &     FIT_EXP,FIT_COEF)
+C***********************************************************************      
       implicit none
       logical newel, early_exit
       integer,intent (in)    :: n_charge
