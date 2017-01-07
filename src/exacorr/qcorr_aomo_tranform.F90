@@ -93,7 +93,9 @@
          ierr=talsh_tensor_construct(mocoefa_tensor,C8,mocoef_dims,init_val=zero)
          ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
-
+         ierr=talsh_tensor_construct(mocoefb_tensor,C8,mocoef_dims,init_val=zero)
+         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
 
 !        This array is only needed to print the MO coefficients using the DIRAC routine PRQMAT
          do i = 1, 4
@@ -106,13 +108,14 @@
 !           test that we have read the coefficients correctly
 !           print*,"Mo coefficients for index ",i
 !           CALL PRQMAT(qmo%coeff,nao,nmo(i),nao,nmo(i),nz,ipqtoq,6)
-!           copy the real coefficients into the tensor (these are the alpha coefficients)
-!           in the transformation below we assume real coefficients and furthermore (Calpha = Cbeta) so this
-!           will only work for non-relativistic (levy-Leblond) or X2C spinfree calculations
+
+!           Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in 
+!           T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
 
             do k = 1, nmo(i)
                do j = 1, nao
                    camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),0.D0)
+                   cbmo_tens(j,k) = dcmplx(0.D0,0.D0)
 !                  camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
 !                  cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
                end do
@@ -125,32 +128,36 @@
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=zero)
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
          ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) !now you can use <ao_tens> as a regular Fortran 4d array
+         call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens,nshells,shell)
 
-!        Do 1st quarter-transformation
+!        Do 1st and 2nd quarter-transformation
          ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
+         ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor,aoint_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-
-!        Do 2nd quarter-transformation
-         ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
+         ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
+         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
 
 !        Destruct a0 and a1 integrals:
          ierr=talsh_tensor_destruct(aoint_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=15; return; endif
          ierr=talsh_tensor_destruct(a1int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=25; return; endif
 
-!        Do 3rd quarter-transformation
+!        Do 3rd and 4th quarter-transformation
          ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
+         ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor,a2int_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
-
-!        Do final quarter-transformation
-         ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
+         ierr=talsh_tensor_contract("D(i,j,k,s)=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
+         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
  
 !        Destruct a2 and a3 integrals:
          ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
