@@ -41,7 +41,7 @@
          type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-         type(talsh_tens_t):: aoint_tensor, mocoef_tensor,a1int_tensor
+         type(talsh_tens_t):: aoint_tensor, mocoefa_tensor,mocoefb_tensor,a1int_tensor
          type(talsh_tens_t):: a2int_tensor, a3int_tensor, moint_tensor
          integer(C_INT):: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
          integer(C_INT):: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
@@ -51,8 +51,8 @@
          integer(C_INT):: sts,host_arg_max
 
          real(8)   :: vd,vl,vr
-         complex(8):: zero=(0.0,0.0), aoint_value=(1.D-6,0.0), mocoef_value=(1.D-3,0.0)
-         complex(8), pointer, contiguous:: camo_tens(:,:),ao_tens(:,:,:,:),mo_tens(:,:,:,:)
+         complex(8):: zero=(0.0,0.0)
+         complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:),ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR):: body_p
 
 !        Make some noise so that we know we are here
@@ -90,8 +90,8 @@
          moint_dims(1:4)  = nmo(1:4)
 
 !        Initialize tensors with MO coefficients
-         ierr=talsh_tensor_construct(mocoef_tensor,C8,mocoef_dims,init_val=zero)
-         ierr=talsh_tensor_get_body_access(mocoef_tensor,body_p,C8,0,DEV_HOST)
+         ierr=talsh_tensor_construct(mocoefa_tensor,C8,mocoef_dims,init_val=zero)
+         ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
 
 
@@ -112,7 +112,9 @@
 
             do k = 1, nmo(i)
                do j = 1, nao
-                  camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),0.D0)
+                   camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),0.D0)
+!                  camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+!                  cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
                end do
             end do
             call delete (qmo)
@@ -128,76 +130,30 @@
 
 !        Do 1st quarter-transformation
          ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,q,r,s)+=L(p,q,r,s)*R(p,i)",a1int_tensor,aoint_tensor,mocoef_tensor,talsh_task=tsk)
-!new     replacing the line above with the one below leads to failure, something is not right with this complex conjugated contraction
-!new     note that in this version we still assume zero imaginary parts, so complex conjugation should not matter
-!new     ierr=talsh_tensor_contract("D(i,q,r,s)+=L(p,q,r,s)*R+(p,i)",a1int_tensor,aoint_tensor,mocoef_tensor,talsh_task=tsk)
+         ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor,aoint_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=12; return; endif
-         ierr=talsh_task_time(tsk,tm,tmc,tmi,tmo)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=13; return; endif
-!        Calculate the speed with which this was done
-         vd=1_C_SIZE_T; do i=1,4; vd=vd*a1int_dims(i); enddo !volume of the destination tensor
-         vl=1_C_SIZE_T; do i=1,4; vl=vl*aoint_dims(i); enddo !volume of the left tensor
-         vr=1_C_SIZE_T; do i=1,2; vr=vr*mocoef_dims(i); enddo !volume of the right tensor
-         flops=dsqrt(dble(vd)*dble(vl)*dble(vr))*2d0 !number of floating point operations
-         write(*,'(1x,A,D8.2)') 'Contraction speed 1st quarter in flops = ',flops/tm
-!        Destruct task and ao integrals:
-         ierr=talsh_task_destruct(tsk); if(ierr.ne.TALSH_SUCCESS) then; ierr=14; return; endif
-         ierr=talsh_tensor_destruct(aoint_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=15; return; endif
 
 !        Do 2nd quarter-transformation
          ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoef_tensor,talsh_task=tsk)
+         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
-         ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=22; return; endif
-         ierr=talsh_task_time(tsk,tm,tmc,tmi,tmo)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=23; return; endif
-!        Calculate the speed with which this was done
-         vd=1_C_SIZE_T; do i=1,4; vd=vd*a2int_dims(i); enddo !volume of the destination tensor
-         vl=1_C_SIZE_T; do i=1,4; vl=vl*a1int_dims(i); enddo !volume of the left tensor
-         vr=1_C_SIZE_T; do i=1,2; vr=vr*mocoef_dims(i); enddo !volume of the right tensor
-         flops=dsqrt(dble(vd)*dble(vl)*dble(vr))*2d0 !number of floating point operations
-         write(*,'(1x,A,D8.2)') 'Contraction speed 2nd quarter in flops = ',flops/tm
-!        Destruct task and a1 integrals:
-         ierr=talsh_task_destruct(tsk); if(ierr.ne.TALSH_SUCCESS) then; ierr=24; return; endif
+
+!        Destruct a0 and a1 integrals:
+         ierr=talsh_tensor_destruct(aoint_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=15; return; endif
          ierr=talsh_tensor_destruct(a1int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=25; return; endif
 
 !        Do 3rd quarter-transformation
          ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,j,k,s)+=L(i,j,r,s)*R(r,k)",a3int_tensor,a2int_tensor,mocoef_tensor,talsh_task=tsk)
-!new     replacing the line above with the one below leads to failure, something is not right with this complex conjugated contraction
-!new     note that in this version we still assume zero imaginary parts, so complex conjugation should not matter
-!new     ierr=talsh_tensor_contract("D(i,j,k,s)+=L(i,j,r,s)*R+(r,k)",a3int_tensor,a2int_tensor,mocoef_tensor,talsh_task=tsk)
+         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor,a2int_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
-         ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=32; return; endif
-         ierr=talsh_task_time(tsk,tm,tmc,tmi,tmo)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=33; return; endif
-!        Calculate the speed with which this was done
-         vd=1_C_SIZE_T; do i=1,4; vd=vd*a3int_dims(i); enddo !volume of the destination tensor
-         vl=1_C_SIZE_T; do i=1,4; vl=vl*a2int_dims(i); enddo !volume of the left tensor
-         vr=1_C_SIZE_T; do i=1,2; vr=vr*mocoef_dims(i); enddo !volume of the right tensor
-         flops=dsqrt(dble(vd)*dble(vl)*dble(vr))*2d0 !number of floating point operations
-         write(*,'(1x,A,D8.2)') 'Contraction speed 3rd quarter in flops = ',flops/tm
-!        Destruct task and a2 integrals:
-         ierr=talsh_task_destruct(tsk); if(ierr.ne.TALSH_SUCCESS) then; ierr=34; return; endif
-         ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
 
 !        Do final quarter-transformation
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoef_tensor,talsh_task=tsk)
+         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
-         ierr=talsh_task_wait(tsk,sts); if(ierr.ne.TALSH_SUCCESS.or.sts.ne.TALSH_TASK_COMPLETED) then; ierr=42; return; endif
-         ierr=talsh_task_time(tsk,tm,tmc,tmi,tmo)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=43; return; endif
-!        Calculate the speed with which this was done
-         vd=1_C_SIZE_T; do i=1,4; vd=vd*moint_dims(i); enddo !volume of the destination tensor
-         vl=1_C_SIZE_T; do i=1,4; vl=vl*a3int_dims(i); enddo !volume of the left tensor
-         vr=1_C_SIZE_T; do i=1,2; vr=vr*mocoef_dims(i); enddo !volume of the right tensor
-         flops=dsqrt(dble(vd)*dble(vl)*dble(vr))*2d0 !number of floating point operations
-         write(*,'(1x,A,D8.2)') 'Contraction speed 4rd quarter in flops = ',flops/tm
-!        Destruct task and a3 integrals:
-         ierr=talsh_task_destruct(tsk); if(ierr.ne.TALSH_SUCCESS) then; ierr=44; return; endif
+ 
+!        Destruct a2 and a3 integrals:
+         ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
          ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
 
 !        Print transformed integrals to check correctness
