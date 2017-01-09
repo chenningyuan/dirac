@@ -79,15 +79,15 @@
          
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          mocoef_dims(1)  = nao
-         mocoef_dims(2)  = nmo(1)
+         mocoef_dims(2)  = 2 * nmo(1)
          aoint_dims      = nao
-         a1int_dims(1)   = nmo(1)
+         a1int_dims(1)   = 2 * nmo(1)
          a1int_dims(2:4) = nao
-         a2int_dims(1:2) = nmo(1:2)
+         a2int_dims(1:2) = 2 * nmo(1:2)
          a2int_dims(3:4) = nao
-         a3int_dims(1:3) = nmo(1:3)
+         a3int_dims(1:3) = 2 * nmo(1:3)
          a3int_dims(4)    = nao
-         moint_dims(1:4)  = nmo(1:4)
+         moint_dims(1:4)  = 2 * nmo(1:4)
 
 !        Initialize tensors with MO coefficients
          ierr=talsh_tensor_construct(mocoefa_tensor,C8,mocoef_dims,init_val=zero)
@@ -116,6 +116,8 @@
                do j = 1, nao
                    camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),0.D0)
                    cbmo_tens(j,k) = dcmplx(0.D0,0.D0)
+                   camo_tens(j,k+nmo(i)) = dcmplx(qmo%coeff(j,k,1),0.D0)
+                   cbmo_tens(j,k+nmo(i)) = dcmplx(0.D0,0.D0)
 !                  camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
 !                  cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
                end do
@@ -180,7 +182,7 @@
 !         end do
 
 !        Write to old format MO-integrals file to allow for easy debugging to the integral transform
-         call write_to_mdcint (nmo,mo_tens)
+         call write_to_mdcint (nmo,mo_tens(1:nmo(1),1:nmo(1),1:nmo(1),1:nmo(1)))
      
 !        Shut down library
          ierr = talsh_shutdown()
