@@ -1094,7 +1094,6 @@ integer :: nbuf3,ierr
    &    RightTensor=B%Fbar_ae)
 
 
-
    write(*,*)'passed diagram 3', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 !----------------------------------------------
@@ -1125,9 +1124,7 @@ integer :: nbuf3,ierr
      call contraction_444((/"o1","o3","c1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","c1","p2"/),lambda2, &
     &    1.0d0,0.0d0,nrep,righttensor=B%W_mbej,LeftTensor=L2_ptr)
 
-
    write(*,*)'passed diagram 6', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
-
 
 !---------------------------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L1(m,a*) * w_mnie(ij,mb)
@@ -1154,7 +1151,7 @@ integer :: nbuf3,ierr
      G = 0.0d0
 
      call contraction_442((/"o3","o4","c1","p4"/),(/"p3","p4","o3","o4" &
-    &          /),(/"p3","c1"/),G,1.0d0,1.0d0,nrep,LeftTensor=L2_ptr,  &
+    &          /),(/"p3","c1"/),G,-1.0d0,1.0d0,nrep,LeftTensor=L2_ptr,  &
     &          RightTensor=B%t2)
 
      call contraction_424 ((/"o1","o2","p3","p2"/),(/"p3","c1"/), &
@@ -1164,12 +1161,11 @@ integer :: nbuf3,ierr
 
      call dealloc_array(e)
 
-
    write(*,*)'passed diagram 8', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
+   call lambda2_disconnected_IP(L1,B%Fbar_me,lambda2)
 
-   call lambda2_disconnected_IP(L1,B%Fbar_ae,lambda2)
-
+   write(*,*)'passed diagram 8', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
  end subroutine
 
@@ -1377,7 +1373,7 @@ integer :: nbuf3,ierr
 !--------------------------------------------------------------
 ! L2(ij,a*b) = L2(ij,a*b) + L1(i,a*) * f_bar(j,b) 
 !--------------------------------------------------------------
-        if (jrep.eq.brep) then
+         if (jrep.eq.brep) then
            ij = 1
            jb = (ivo(brep) + (b-1) * no(brep)) * rcw + 1
            do j = 1, no(jrep)
@@ -1389,7 +1385,7 @@ integer :: nbuf3,ierr
               ij = ij + ni * rcw
               jb = jb + rcw
            enddo
-        endif
+         endif
 !--------------------------------------------------------------
 ! L2(ij,ab) = L2(ij,ab) - L1(j,a*) * f_bar(i,b) 
 !--------------------------------------------------------------
@@ -1407,7 +1403,7 @@ integer :: nbuf3,ierr
               ij = ij + ni * rcw
               ja = ja + rcw
            enddo
-        endif
+         endif
 !--------------------------------------------------------
 ! update offset and go to next irrep pair
 !--------------------------------------------------------
