@@ -156,33 +156,88 @@ C
        return 
        end
 
-       subroutine Write_To_Mdcint (nmo,mo_tens)
+       subroutine Write_To_Mdcint (nmo,rcw,mo_tens)
 
 !      Utility routine to write to old format, makes it easier to test the index transform
 
 #include "implicit.h"
 
-       integer rcw
+       integer rcw    ! this is used to toggle between complex (so, rcw=2) and real (scalar, rcw=1) tensors
+       integer iclass, nclass
        integer nmo(4)
-       real(8) mo_tens(2,nmo(1),nmo(2),nmo(3),nmo(4))
-       real(8), allocatable :: rkl(:)
+       real(8) mo_tens(2,nmo(1)*rcw,nmo(2)*rcw,nmo(3)*rcw,nmo(4)*rcw) ! the first rcw is real/complex, the other toggles orbitals/spinors
+       real(8), allocatable :: rkl(:,:)
        integer, allocatable :: indk(:),indl(:)
+       integer :: nmo_start(8,4),nmo_end(8,4)
 
-!      We use no symmetry, so most variables are known and can be hardwired
+!      We use no symmetry, but may have both scalar and spin-orbit tensors as input
        irepij = 1
-       iclass = 1  ! this implies spinfree, needs to be generalized later
-       rcw = 1     ! this is also spinfree, spin-orbit will give rcw = 2
        iprint = 0
+
+       if (rcw == 1) then
+          nclass = 1  ! this implies spinfree
+       else
+          nclass = 8
+       end if
+
+!      classes are subsets of integrals, make them consistent with old format (see symfint & mdintb in moltra)
+!      Class 1 : (i    j    | k    l   )
+!      Class 2 : (i    j    | kbar lbar)
+!      Class 3 : (i    jbar | k    lbar)
+!      Class 4 : (ibar j    | k    lbar)
+!      Class 9 : (i    j    | kbar l   )
+!      Class 10: (i    j    | k    lbar)
+!      Class 11: (ibar j    | k    l   )
+!      Class 12: (i    jbar | k    l   )
+!      NB: classes 5 through 8 are not used, we therefore shift the final 4 in the array below to get a contiguous index
+
+       do i = 1, 4
+          do iclass = 1, 8
+             nmo_start(iclass,i) = 1
+             nmo_end  (iclass,i) = nmo(i)
+          end do
+       end do
+!      bars for index 4
+       do iclass = 2, 4
+          nmo_start(iclass,4) = nmo(4) + 1
+          nmo_end  (iclass,4) = 2 * nmo(4)
+       end do
+       nmo_start(6,4) = nmo(4) + 1
+       nmo_end  (6,4) = 2 * nmo(4)
+!      bars for index 3
+       nmo_start(2,3) = nmo(3) + 1
+       nmo_start(5,3) = nmo(3) + 1
+       nmo_end  (2,3) = 2 * nmo(3)
+       nmo_end  (5,3) = 2 * nmo(3)
+!      bars for index 2
+       nmo_start(3,2) = nmo(2) + 1
+       nmo_start(8,2) = nmo(2) + 1
+       nmo_end  (3,2) = 2 * nmo(2)
+       nmo_end  (8,2) = 2 * nmo(2)
+!      bars for index 1
+       nmo_start(4,1) = nmo(1) + 1
+       nmo_start(7,1) = nmo(1) + 1
+       nmo_end  (4,1) = 2 * nmo(1)
+       nmo_end  (7,1) = 2 * nmo(1)
 
 !      Allocate memory needed by mdintb
        nkl = nmo(1) * nmo(2)
-       allocate(rkl(nkl))
+       allocate(rkl(rcw,nkl))
        allocate(indk(nkl))
        allocate(indl(nkl))
-       do j = 1, nmo(4)
-          do i = 1, nmo(3)
-              call mdintb(iprint,rcw,iclass,irepij,nmo(1),nmo(2),i,j,
-     &                    mo_tens(1,:,:,i,j),nkl,indk,indl,rkl)
+       do iclass = 1, nclass
+          if (iclass.le.4) then
+             jclass = iclass
+          else
+             jclass = iclass + 4  ! shift iclass to obey the old convention given above
+          end if
+          do j = nmo_start(iclass,4), nmo_end(iclass,4)
+             do i = nmo_start(iclass,3),nmo_end(iclass,3)
+                call mdintb(iprint,rcw,jclass,irepij,nmo(1),nmo(2),i,j,
+     &               mo_tens(1,nmo_start(iclass,1):nmo_end(iclass,1),
+     &                         nmo_start(iclass,2):nmo_end(iclass,2),
+     &                         i,j),nkl,indk,indl,rkl)
+             end do
           end do
        end do
 

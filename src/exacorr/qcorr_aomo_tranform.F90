@@ -182,7 +182,7 @@
 !         end do
 
 !        Write to old format MO-integrals file to allow for easy debugging to the integral transform
-         call write_to_mdcint (nmo,mo_tens(1:nmo(1),1:nmo(1),1:nmo(1),1:nmo(1)))
+         call write_to_mdcint (nmo,1,mo_tens(1:nmo(1),1:nmo(1),1:nmo(1),1:nmo(1)))
      
 !        Shut down library
          ierr = talsh_shutdown()
