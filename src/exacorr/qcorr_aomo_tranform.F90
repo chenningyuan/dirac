@@ -5,19 +5,18 @@
 
         implicit none
         private
-!PARAMETERS:
-        integer, parameter, private:: REALD=8 !default real for this module
-!DERIVED TYPES:
-!VISIBILITY:
         public compute_mo_integrals
 
        contains
 !-------------------------------------------------------------------------------------------
         subroutine compute_mo_integrals (nmo, mo_list)
+
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
-!Note that all integrals are printed to standard output, should be replaced by checking the MP2 energy or some other printable quantity
-!
+!The integrals are written to MDCINT, to allow for testing with unmodified DIRAC correlation modules
+ 
+!        Written by Lucas Visscher, winter 2016/2017
+ 
          use dirac_MO
          use dirac_exatensor
          use tensor_algebra
@@ -45,13 +44,11 @@
          type(talsh_tens_t):: a2int_tensor, a3int_tensor, moint_tensor
          integer(C_INT):: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
          integer(C_INT):: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
-         type(talsh_task_t):: tsk
-         real(C_DOUBLE):: flops,tm,tmc,tmi,tmo,cn1
          integer(C_SIZE_T):: host_buf_size
-         integer(C_INT):: sts,host_arg_max
+         integer(C_INT):: host_arg_max
 
          real(8)   :: vd,vl,vr
-         complex(8):: zero=(0.0,0.0)
+         complex(8):: zero=(0.D0,0.D0)
          complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:),ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR):: body_p
 
@@ -103,7 +100,9 @@
          end do
          imo = 1
          do i = 1, 1  ! CAUTION: should be generalized to different coefficient ranges for each index (e.g. for MP2)
+
             call get_dirac_mo_coefficients (ifrp,qmo,mo_list(imo:imo+nmo(i)-1),nmo(i))
+
 !           uncommenting this can be useful for debugging, this piece of code is to be deleted later
 !           test that we have read the coefficients correctly
 !           print*,"Mo coefficients for index ",i
@@ -111,15 +110,15 @@
 
 !           Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in 
 !           T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
+!           The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
+!           using Kramers' symmetry.
 
             do k = 1, nmo(i)
                do j = 1, nao
-                   camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),0.D0)
-                   cbmo_tens(j,k) = dcmplx(0.D0,0.D0)
-                   camo_tens(j,k+nmo(i)) = dcmplx(qmo%coeff(j,k,1),0.D0)
-                   cbmo_tens(j,k+nmo(i)) = dcmplx(0.D0,0.D0)
-!                  camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-!                  cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+                   camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+                   cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+                   camo_tens(j,k+nmo(i)) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+                   cbmo_tens(j,k+nmo(i)) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
                end do
             end do
             call delete (qmo)
@@ -140,6 +139,11 @@
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
+!        Would be nice if the line below could be used, but it seems to add to the existing tensor rather than initializing it first
+!        Problem is that also tensor_init is (temporarily ?) not available, so we need to destruct and construct again
+!        ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
+         ierr=talsh_tensor_destruct(a1int_tensor)
+         ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
          ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor)
@@ -156,7 +160,10 @@
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
-         ierr=talsh_tensor_contract("D(i,j,k,s)=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
+!        ierr=talsh_tensor_contract("D(i,j,k,s)=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
+         ierr=talsh_tensor_destruct(a3int_tensor)
+         ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
+         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
@@ -169,20 +176,9 @@
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
 
-!        uncommenting this can be useful for debugging, this piece of code is to be deleted later
-!         print*,"Transformed integrals larger than 1.D-15"
-!         do l = 1, nmo(4)
-!            do k = 1, nmo(3)
-!               do j = 1, nmo(2)
-!                  do i = 1, nmo(1)
-!                     if (abs(mo_tens(i,j,k,l)) > 1.D-15) print*,i,j,k,l,mo_tens(i,j,k,l)
-!                  end do
-!               end do
-!            end do
-!         end do
-
 !        Write to old format MO-integrals file to allow for easy debugging to the integral transform
-         call write_to_mdcint (nmo,1,mo_tens(1:nmo(1),1:nmo(1),1:nmo(1),1:nmo(1)))
+
+         call write_to_mdcint (nmo,2,mo_tens)
      
 !        Shut down library
          ierr = talsh_shutdown()
@@ -193,7 +189,8 @@
         end subroutine compute_mo_integrals
 
         subroutine compute_ao_integrals (nao,ao_tens,nshells,gto)
-!This subroutine drives the generation of AO integrals
+
+!This subroutine drives the generation of AO integrals by InteRest
 !
          use dirac_exatensor
          use module_interest_eri
