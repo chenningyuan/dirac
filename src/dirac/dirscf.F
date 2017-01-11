@@ -1170,7 +1170,16 @@ C     ====================
 C
       IF(DOBOSSEL) CALL BOSSEL(EIG,IBEIG,FAO,WORK(KFREE),LFREE)
 C
+C     If converged, do not select occupation or save orbitals
 C
+      IF (DHFEXIT) GOTO 9999
+C
+C     Automatic occupation
+C     ====================
+C
+      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)      
+C
+C     
 C     Backtransform all spinors (temporary storage in FMO)
 C     ====================================================
 C     NZT is the NZ value for the transformation matrix
@@ -1238,15 +1247,6 @@ C     Write untransformed coefficients
       CALL WRITT(LUCMOS,N2TMOTQ,FAO)
 C     Write transformed coefficients
       CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
-C
-C     If converged, do not select occupation or save orbitals
-C
-      IF (DHFEXIT) GOTO 9999 
-C
-C     Automatic occupation
-C     ====================
-C
-      IF(AUTOCC.OR.INIOCC) CALL DETOCC(EIG,WORK,KFREE,LFREE)
 C
 C
 C     Dynamic update of overlap selection matrix, if not converged
