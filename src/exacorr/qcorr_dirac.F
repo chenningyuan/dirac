@@ -53,7 +53,7 @@ C     Fill the array with orbital indices
       end do
 C
 C     Transform AO to MO integrals are write MDCINT
-      call mdinti (nmo,0) ! take out first argument after fixing mdinti (this argument is no longer used there)
+      call mdinti (0) 
       call compute_mo_integrals (nmo, mo_list)
       call mdintf
 
