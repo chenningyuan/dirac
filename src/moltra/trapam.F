@@ -62,10 +62,6 @@ C
       Real(8), Allocatable :: CMO(:),EIG(:)
       Integer, Allocatable :: IBEIG(:)
       real(8), allocatable :: WORK(:)
-C     Temporary hack to test the exacorr module
-      Integer, Allocatable :: MO_List(:)
-      Integer              :: NMO(4)
-C     End of hack
 C
       CALL QENTER('PAMTRA')
       call legacy_lwork_get(LWORK)
@@ -124,28 +120,9 @@ C
 
 C     Temporary hack to call the exacorr module
       if (tra_exacorr) then
-         if (nfsym.eq.1) then
-            call mdinti (nstr,0)
-            ntmo = 0
-            do i = 1, 4
-               nmo(i) = nstrt(i)
-               ntmo = ntmo + nmo(i)
-            end do 
-            allocate (mo_list(ntmo))
-            imo = 1
-            do i = 1, 4
-               call icopy (nmo(i),work(kvec(1,i)),1,mo_list(imo),1)
-               imo = imo + nmo(i)
-            end do 
-            call compute_mo_integrals (nmo, mo_list)
-            deallocate (mo_list)
-            call mdintf
-            no4ind = .true. ! skip conventional 4-index transformation
-         else
-            call quit ('exacorr can not handle symmetry')
-         end if
+          call exacorr()
+          no4ind = .true. ! skip conventional 4-index transformation
       end if
-C     End of hack
 
       KFRSAV = KFREE
 C

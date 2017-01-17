@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTI */
-      SUBROUTINE MDINTI(NSTR,IPRINT)
+      SUBROUTINE MDINTI(IPRINT)
 C
 C     Initialize MDINT file
 C     Written by Luuk Visscher, March 1997
@@ -38,7 +38,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "infpar.h"
-      DIMENSION NSTR(2)
       CHARACTER*8 CDATE,TIMEX,DATEX*10
       CHARACTER*10 FNODE,LFNAM
 C

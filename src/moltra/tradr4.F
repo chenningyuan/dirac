@@ -263,7 +263,7 @@ C     Initialize MOLFDIR integral file
 C
       CALL FLSHFO(LUPRI)
       IF (.NOT. NOMDCINT) THEN
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       ELSE
          CALL INI4INDINFO
       END IF
@@ -1185,7 +1185,7 @@ C
 C
 C        Initialize MOLFDIR integral file on slave
 C
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       END IF
 C
       CALL XTIME(4,1,' Symmetrizing MO integrals    ')

@@ -153,7 +153,7 @@ C
 C
 C     Initialize MOLFDIR integral file
 C
-      CALL MDINTI(NSTR,IPRINT)
+      CALL MDINTI(IPRINT)
 C
 C     Make index arrays to translate pair index to individual indices
 C

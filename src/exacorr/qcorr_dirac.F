@@ -2,6 +2,64 @@
 !    Collection of routines needed for exacorr that use the DIRAC common
 !    block infrastructure.
 !
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EXACORR()
+C***********************************************************************
+C
+C     Driver routine for exacorr CC implementation
+C
+C     Written by L.Visscher Jan 2017
+C
+C***********************************************************************
+
+      Use exacorr_ao_to_mo
+
+#include "implicit.h"! because common blocks may assume this
+#include "../moltra/dcbtra.h"  ! to access tra4_indstr
+#include "dcborb.h"  ! to access nesh
+#include "dgroup.h"  ! to access nfsym
+
+      character*72         :: orbital_string(4)  ! String with range of MO's to be transformed for each index
+      integer              :: nr,nstrt,nstr(4)
+      integer              :: kvec
+      Integer, Allocatable :: mo_list(:)
+      Integer              :: nmo(4)
+
+      if (nfsym.ne.1) then
+         call quit ('exacorr can not handle symmetry')
+      end if
+C
+C     Transfer necessary information from common blocks
+      nr = nesh(1) ! number of positive energy "electronlike" orbitals
+      orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
+C
+C     Loop over indices to convert string information to list of orbitals
+C
+C     Count number of orbitals to be transformed for each index 
+      ntmo = 0
+      do i = 1, 4
+        nmo(i) = 0
+        call numlst (orbital_string(i),kvec,nr,1,nesh(1),1,nmo(i))
+        ntmo = ntmo + nmo(i)
+      end do
+
+C     Fill the array with orbital indices
+      allocate (mo_list(ntmo))
+      imo = 1
+      do i = 1, 4
+       call numlst(orbital_string(i),mo_list(imo),nr,1,nesh(1),1,nmo(i))
+       imo = imo + nmo(i)
+      end do
+C
+C     Transform AO to MO integrals are write MDCINT
+      call mdinti (nmo,0) ! take out first argument after fixing mdinti (this argument is no longer used there)
+      call compute_mo_integrals (nmo, mo_list)
+      call mdintf
+
+      deallocate (mo_list)
+
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE Get_DIRAC_MO_coefficients (IFRP,QMO,MO_LIST,NMO)
 C***********************************************************************
