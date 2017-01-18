@@ -132,55 +132,18 @@
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens,nshells,shell)
 
-!        Do 1st and 2nd quarter-transformation
-         ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
-         ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor,aoint_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
-!        Would be nice if the line below could be used, but it seems to add to the existing tensor rather than initializing it first
-!        Problem is that also tensor_init is (temporarily ?) not available, so we need to destruct and construct again
-!        ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
-         ierr=talsh_tensor_destruct(a1int_tensor)
-         ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
-         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
-
-!        Destruct a0 and a1 integrals:
-         ierr=talsh_tensor_destruct(aoint_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=15; return; endif
-         ierr=talsh_tensor_destruct(a1int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=25; return; endif
-
-!        Do 3rd and 4th quarter-transformation
-         ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
+!        Transform to MO basis
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor,a2int_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
-         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
-!        ierr=talsh_tensor_contract("D(i,j,k,s)=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
-         ierr=talsh_tensor_destruct(a3int_tensor)
-         ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
-         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor)
-         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
- 
-!        Destruct a2 and a3 integrals:
-         ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
-         ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
+         call aomo_transform (aoint_tensor,moint_tensor,mocoefa_tensor,mocoefb_tensor,nao,nmo)
 
-!        Print transformed integrals to check correctness
+!        Write to old format MO-integrals file to allow for easy debugging of the integral transform
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
          call c_f_pointer(body_p,mo_tens,moint_dims(1:4))
-
-!        Write to old format MO-integrals file to allow for easy debugging to the integral transform
-
          call write_to_mdcint (nmo,2,mo_tens)
      
-!        Shut down library
+!        Destruct remaining tensors and shut down library
+         ierr=talsh_tensor_destruct(aoint_tensor)
+         ierr=talsh_tensor_destruct(moint_tensor)
          ierr = talsh_shutdown()
 
 !        Make some noise so that we know we are leaving
@@ -277,6 +240,82 @@
             loff = loff + nl
          end do
          
-         end subroutine compute_ao_integrals
+        end subroutine compute_ao_integrals
+
+        subroutine aomo_transform (aoint_tensor,moint_tensor,mocoefa_tensor,mocoefb_tensor,nao,nmo)
+
+!        Transform integral tensor from ao-basis to mo-basis 
+ 
+         use tensor_algebra
+         use talsh
+         use, intrinsic:: ISO_C_BINDING
+
+         implicit none
+
+         type(talsh_tens_t), intent(inout)  :: aoint_tensor, mocoefa_tensor,mocoefb_tensor,moint_tensor
+!        TODO: check why tensors need to be inout (errors if the mocoef is intent(in) and if motensor is intent(out))
+!        TODO: replace these two arguments by querying tensor (information is contained in tensor, but hard to access)
+         integer, intent(in) :: nao,nmo(4)
+
+         type(talsh_tens_t):: a1int_tensor,a2int_tensor, a3int_tensor
+         integer(C_INT):: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
+         integer(C_INT):: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
+
+         complex(8):: zero=(0.D0,0.D0)
+         integer   :: ierr 
+
+!        Set tensor dimensions for the index transformation (simple brute-force algorithm)
+         mocoef_dims(1)  = nao
+         mocoef_dims(2)  = 2 * nmo(1)
+         aoint_dims      = nao
+         a1int_dims(1)   = 2 * nmo(1)
+         a1int_dims(2:4) = nao
+         a2int_dims(1:2) = 2 * nmo(1:2)
+         a2int_dims(3:4) = nao
+         a3int_dims(1:3) = 2 * nmo(1:3)
+         a3int_dims(4)    = nao
+         moint_dims(1:4)  = 2 * nmo(1:4)
+
+!        Do 1st and 2nd quarter-transformation
+         ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
+         ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
+         ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor,aoint_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
+         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
+!        Would be nice if the line below could be used, but it seems to add to the existing tensor rather than initializing it first
+!        Problem is that also tensor_init is (temporarily ?) not available, so we need to destruct and construct again
+!        ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
+         ierr=talsh_tensor_destruct(a1int_tensor)
+         ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
+         ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
+         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
+
+!        Destruct a1 and a1 integrals:
+         ierr=talsh_tensor_destruct(a1int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=25; return; endif
+
+!        Do 3rd and 4th quarter-transformation
+         ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
+         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor,a2int_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
+         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
+!        ierr=talsh_tensor_contract("D(i,j,k,s)=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
+         ierr=talsh_tensor_destruct(a3int_tensor)
+         ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
+         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
+         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor)
+         if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
+ 
+!        Destruct a2 and a3 integrals:
+         ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
+         ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
+
+         return
+
+        end subroutine aomo_transform
 
        end module exacorr_ao_to_mo

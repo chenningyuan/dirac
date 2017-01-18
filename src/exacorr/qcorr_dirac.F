@@ -17,21 +17,19 @@ C***********************************************************************
 
 #include "implicit.h"! because common blocks may assume this
 #include "../moltra/dcbtra.h"  ! to access tra4_indstr
-#include "dcborb.h"  ! to access nesh
-#include "dgroup.h"  ! to access nfsym
+#include "dcborb.h"  ! to access nesh (number of positive energy "electronlike" orbitals)
+#include "dgroup.h"  ! to access nfsym (should be 1)
 
-      character*72         :: orbital_string(4)  ! String with range of MO's to be transformed for each index
-      integer              :: nr,nstrt,nstr(4)
-      integer              :: kvec
-      Integer, Allocatable :: mo_list(:)
-      Integer              :: nmo(4)
+      character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
+      integer              :: kvec              ! Dummy variable needed in first call to numlst
+      integer, allocatable :: mo_list(:)
+      integer              :: nmo(4)
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
       end if
 C
 C     Transfer necessary information from common blocks
-      nr = nesh(1) ! number of positive energy "electronlike" orbitals
       orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
 C
 C     Loop over indices to convert string information to list of orbitals
@@ -40,7 +38,7 @@ C     Count number of orbitals to be transformed for each index
       ntmo = 0
       do i = 1, 4
         nmo(i) = 0
-        call numlst (orbital_string(i),kvec,nr,1,nesh(1),1,nmo(i))
+        call numlst (orbital_string(i),kvec,1,1,nesh(1),1,nmo(i))
         ntmo = ntmo + nmo(i)
       end do
 
@@ -48,11 +46,12 @@ C     Fill the array with orbital indices
       allocate (mo_list(ntmo))
       imo = 1
       do i = 1, 4
-       call numlst(orbital_string(i),mo_list(imo),nr,1,nesh(1),1,nmo(i))
+       call numlst
+     & (orbital_string(i),mo_list(imo),nmo(i),1,nesh(1),1,nmo(i))
        imo = imo + nmo(i)
       end do
 C
-C     Transform AO to MO integrals are write MDCINT
+C     Transformed AO to MO integrals are written to MDCINT
       call mdinti (0) 
       call compute_mo_integrals (nmo, mo_list)
       call mdintf
