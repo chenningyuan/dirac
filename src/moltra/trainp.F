@@ -467,9 +467,13 @@ C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-Caspg, default in MOLTA is scheme 6 unless it's a LUCITA run... 
+Caspg, default in MOLTA is scheme 6 unless it's a GOSCIP, DIRRCI or LUCITA run... 
 C      if problems are encountered, should be reverted to scheme 4
-      if (DOLUCT) then
+Clv,   reason is that scheme 6 produces a list of integrals that is distributed over nodes and the
+clv,   authors of the above-mentioned modules nor anyone else have taken the time to adjust the
+clv,   integral processing routines accordingly (if anyone is inclined to do so: this is not rocket
+clv    science, just have a look on how RELCCSD does this in ccints.F).
+      if (DOLUCT.OR.DOCIM) then
          ISTRAT = 4
       else
          ISTRAT = 6

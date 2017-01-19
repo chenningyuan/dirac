@@ -739,7 +739,7 @@ C
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
      &            DOOWN,blk)
 
-#if defined (BUILD_GEN1INT)
+#if defined (BUILD_GEN1INT) && defined (BUILD_OPENRSP)
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM(:,1:2),
      &                       NBLCK(:,1:2), KANG, JCO(:,:,1:2), KBLOCK,
@@ -856,6 +856,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "aosotr.h"
+
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -870,7 +871,7 @@ C     ***** NHKOFF() *****
 C     - offset for components in list of l-functions
 C
       IOFF = 0
-      DO 100 I = 1, NHTYP 
+      DO 100 I = 1, NHTYP
          NHKOFF(I) = IOFF
          IOFF = IOFF + KHK(I)
   100 CONTINUE
@@ -886,13 +887,13 @@ C
   200    CONTINUE
          II = 1
          DO 300 I = 1, NSYMOP
-            IF(IAND(II,MAXLO).EQ.0) MAXOPR = 2*II
             II = 2*II
+            IF(IAND(II,MAXLO).EQ.0) MAXOPR = II
   300    CONTINUE
       END IF
       MAXOPR = MAXOPR - 1
 C
-      END
+      END ! SUBROUTINE BASPAR
 C  /* Deck basinp */
       SUBROUTINE BASINP(LUINFO,WORK,LWORK,IQM,NBLCK,
      &                  JCO,BASREF,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
@@ -2105,7 +2106,7 @@ C
      &          NBLCK(KATOM,KSETS),NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
      &          SEG(KBLOCK,KSETS),
      &          ALPHA(KPRIM,KBLOCK,KSETS),
-     &          CPRIM (KPRIM,KPRIM,KBLOCK,KSETS),
+     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
 #include "ccom.h"
@@ -2118,37 +2119,57 @@ C
 #include "gencon.h"
 #include "fitshells.h"
 #include "fitprimit.h"
+
+! local arrays:
+      REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
+
 C
 C*****************************************************************************
 C       MULK    - bitstring of basic operations that stabilise a center
 C*****************************************************************************
 C
-      II = 1
+      II = 0
       DO 100 I = 1, NONTYP
          DO 110 J = 1, NONT(I)
+            II = II + 1
+            II_DEP = 1
+            CORD_DEP(1:3,II_DEP) = CORD(1:3,II)
             MULK = 0
-            LL = 1
             DO 140 L = 1, NSYMOP
+               LL = 2**(L-1)
+               II_DEP = II_DEP + 1
                DO 150 M = 1,3
                   IF(IAND(LL,ISYMAX(M,1)) .NE. 0) THEN
 C                 Basic operation LL moves coordinate M
-                     IF(ABS(CORD(M,II)).GE.1.0D-06) GOTO 140
+                     CORD_DEP(M,II_DEP) = -CORD(M,II)
+                  ELSE
+                     CORD_DEP(M,II_DEP) =  CORD(M,II)
                   END IF
  150           CONTINUE
-               MULK = MULK + LL
- 140        LL = 2*LL
+               DO K = 1, II_DEP-1
+                  DIST = (CORD_DEP(1,K) - CORD_DEP(1,II_DEP))**2
+     &                 + (CORD_DEP(2,K) - CORD_DEP(2,II_DEP))**2
+     &                 + (CORD_DEP(3,K) - CORD_DEP(3,II_DEP))**2
+                  IF (DIST .LT. 1.D-12) THEN ! not a new center
+                     MULK = MULK + LL
+                     EXIT
+                  END IF
+               END DO
+ 140        CONTINUE
             ISTBNU(II) = MULK
-            II = II + 1
  110     CONTINUE
  100  CONTINUE
+
 C*****************************************************************************
 C     Set various basis parameters
 C*****************************************************************************
       CALL BASPAR(NSYMOP)
+
 C*****************************************************************************
 C     Process nuclear data
 C*****************************************************************************
       CALL NUCPRO(WORK,LWORK)
+
 C*****************************************************************************
 C     Process orbital data for large components
 C*****************************************************************************
@@ -2164,7 +2185,7 @@ C*****************************************************************************
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM,ISHELL,
      &            IPRIM,IPRIMD,IORB,IORBD,LCOMP)
-C      For ECP integeral
+C      For relativistic RECP integrals
        CALL RECP_LNK_RDORB(IQM(1,1),JCO(1,1,1),NUC(1,1),NRC(1,1),
      &            ALPHA(1,1,1),CPRIM(1,1,1,1),CPRIMU(1,1,1,1),
      &            KATOM,KANG,KBLOCK,KPRIM)
@@ -2202,9 +2223,9 @@ C*****************************************************************************
       IF (DOHUCKEL) THEN
          NSMLSH = ISHELL - NLRGSH
          NORBS  = IORB
-         NSMALL = IORBD - NLARGE
+         NSMALL = IORBD  - NLARGE
          NPSML  = IPRIMD - NPLRG
-         NPSHEL = IPRIM - NPLRG
+         NPSHEL = IPRIM  - NPLRG
 C
          KMAX   = NLRGSH
          NBASIS = NLARGE
@@ -4170,7 +4191,7 @@ C     MAMN    -  name of AO centre
 C     NPARNU  -  offset pointer from non-symmetric operators for given
 C                irrep
 C     NPARSU  -  offset pointer for symmetry dependent AOs for given irrep
-C     NSORB    -  number of symmetry dependent AOs
+C     NSORB   -  number of symmetry dependent AOs
 C     NSYM    -  number of irreps that the AOs contribute to
 C*************************************************************************
 C

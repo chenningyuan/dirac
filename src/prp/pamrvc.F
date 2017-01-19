@@ -3999,6 +3999,7 @@ C***********************************************************************
 #endif
         use orbital_rotation_indices
 
+
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -4022,7 +4023,6 @@ C
 
 C
 C
-
       CALL QENTER('GMOLITX1')
       IREP = JSYMOP - 1
 C
@@ -4176,6 +4176,7 @@ C
 !    &                 1,(/1, 2, 3, 4/),LUPRI)
         endif
 #endif
+ 
 C
 C
 C     *******************************************
@@ -5078,7 +5079,7 @@ C
 C
 C
 C     ***************************
-C     *** e-e sigma vector(s) ***
+C     *** e-e trial vector(s) ***
 C     ***************************
 C
 C
@@ -5098,8 +5099,8 @@ C
             DFAC(2) = +1.0D00
          END IF
 C
-C        e-e part
-C        --------
+C        e-e part of sigma vector
+C        ------------------------
 C
          IF (NXOPE .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5113,8 +5114,8 @@ C
            ENDIF
          END IF
 C
-C        e-p part
-C        --------
+C        e-p part of sigma vector
+C        ------------------------
 C
          IF (NXOPP .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5134,7 +5135,7 @@ C
 C
 C
 C     ***************************
-C     *** e-p sigma vector(s) ***
+C     *** e-p trial vector(s) ***
 C     ***************************
 C
 C
@@ -5154,8 +5155,8 @@ C
             DFAC(2) = +1.0D00
          END IF
 C
-C        e-e part
-C        --------
+C        e-e part of sigma vector
+C        ------------------------
 C
          IF (NXOPE .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5171,8 +5172,8 @@ C
            ENDIF
          END IF
 C
-C        e-p part
-C        --------
+C        e-p part of sigma vector
+C        ------------------------
 C
          IF (NXOPP .GT. 0) THEN
            IF (NASHT.NE.0) THEN

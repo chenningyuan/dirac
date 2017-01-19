@@ -1123,7 +1123,7 @@ C               Get integrals from the AOPROPER file
 C =============================================================
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,NDIM,IPRINT)
-        IF(IPRINT.GE.15) THEN
+        IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I3)')
      &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
           IF (NTBAS(0).EQ.NTBAS(1)) THEN
