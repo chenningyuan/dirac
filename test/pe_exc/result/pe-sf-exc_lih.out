@@ -1,4 +1,4 @@
-DIRAC pam run in /home/erik/programs/tests/pe-dirac/response/pe_resp_excita_test
+DIRAC pam run in /home/erik/programs/dirac-june2014/build_pe/test/pe_exc
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
              out of the allowed maximum of 2147483648 words (16384 MB)
 
@@ -81,10 +81,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
- *    Radovan Bast             UiT The Arctic University of      Norway        *
- *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           VU University Amsterdam           Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Trond Saue               Universite Toulouse III           France        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
@@ -143,8 +143,8 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC15 (2015),                                                  *
- *    written by R. Bast, T. Saue, L. Visscher, and H. J. Aa. Jensen,          *
+ *    Release DIRAC17 (2017),                                                  *
+ *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
  *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
  *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
  *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
@@ -159,9 +159,9 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 
  ---  Git version information  ---
                 Git branch : polarizable-embedding
-      Last git commit hash : e0da678
+      Last git commit hash : c4354c6
     Last git commit author : Erik Donovan Hedegård
-      Last git commit date : Fri Aug 26 15:57:17 2016 +0200
+      Last git commit date : Thu Jan 19 21:34:22 2017 +0100
 
 ---  Configuration and build info  ---
               Who compiled : erik
@@ -188,8 +188,8 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
     Builtin LAPACK library : OFF
     Mathematical libraries : /usr/lib64/liblapack.so;/usr/lib64/libblas.so
         Explicit libraries : unknown
-       Modules definitions : MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ERI;MOD_DNF;MOD_ESR;MOD_KRCC;MOD_SRDFT
-       Configuration time :  2016-10-14 16:04:23.535025
+       Modules definitions : MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+       Configuration time :  2017-01-19 20:40:16.551153
 -----------------------------------------------------------------
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
@@ -197,7 +197,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Oct 18 20:40:07 2016
+     Date and time (Linux)  : Thu Jan 19 23:14:21 2017
      Host name              : adm103910                               
 
 
@@ -750,7 +750,7 @@ Total no. of orbitals           (NORB):    12
              Improved by a sum of atomic screening potentials.
 
 
-########## START ITERATION NO.   1 ##########   Tue Oct 18 20:40:07 2016
+########## START ITERATION NO.   1 ##########   Thu Jan 19 23:14:21 2017
 
 E_HOMO...E_LUMO, symmetry 1:     8  -0.42273    9  -0.10470
 
@@ -765,15 +765,15 @@ Nuclear potential energy  :    0.9953974478117801
 Total energy              :   -3.6840907588926273
    * Quaternion diagonalization(CPU): 0.00000000s
    * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1    -3.684090758893      0.00D+00  0.00D+00  0.00D+00               0.01999700s   Scr. nuclei    Tue Oct 18
+It.    1    -3.684090758893      0.00D+00  0.00D+00  0.00D+00               0.02099700s   Scr. nuclei    Thu Jan 19
 
-########## START ITERATION NO.   2 ##########   Tue Oct 18 20:40:07 2016
+########## START ITERATION NO.   2 ##########   Thu Jan 19 23:14:21 2017
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00199900s
-SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00500000s
+SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00100000s
+SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00599900s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -826,21 +826,21 @@ Total energy                       :    -7.827191317308912
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.20862    9   0.08322
-   * Two-electron Fock matrix  (CPU): 0.01599700s
-   * PE Fock matrix            (CPU): 0.01699800s
+   * Two-electron Fock matrix  (CPU): 0.01499800s
+   * PE Fock matrix            (CPU): 0.01799700s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.06000000s, and total CPU time : 0.05699200s
+>>> Total wall time: 0.06100000s, and total CPU time : 0.05599100s
 
-########## END ITERATION NO.   2 ##########   Tue Oct 18 20:40:07 2016
+########## END ITERATION NO.   2 ##########   Thu Jan 19 23:14:21 2017
 
-It.    2    -7.827191317309      4.14D+00  1.22D+00  2.37D-01               0.05699200s   LL SL          Tue Oct 18
+It.    2    -7.827191317309      4.14D+00  1.22D+00  2.37D-01               0.05599100s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.   3 ##########   Tue Oct 18 20:40:07 2016
+########## START ITERATION NO.   3 ##########   Thu Jan 19 23:14:21 2017
 
     3 *** Differential density matrix. DCOVLP     = 0.9631
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00399900s
-SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00599899s
+SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00599901s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -900,20 +900,20 @@ Total energy                       :    -7.864561422824076
          3      1.089D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.25972    9   0.09565
    * Two-electron Fock matrix  (CPU): 0.01099800s
-   * PE Fock matrix            (CPU): 0.00699900s
+   * PE Fock matrix            (CPU): 0.00699899s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.04400000s, and total CPU time : 0.03999300s
+>>> Total wall time: 0.04400000s, and total CPU time : 0.03999400s
 
-########## END ITERATION NO.   3 ##########   Tue Oct 18 20:40:07 2016
+########## END ITERATION NO.   3 ##########   Thu Jan 19 23:14:21 2017
 
-It.    3    -7.864561422824      3.74D-02 -1.33D-01  2.57D-02   DIIS   2    0.03999300s   LL SL          Tue Oct 18
+It.    3    -7.864561422824      3.74D-02 -1.33D-01  2.57D-02   DIIS   2    0.03999400s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.   4 ##########   Tue Oct 18 20:40:07 2016
+########## START ITERATION NO.   4 ##########   Thu Jan 19 23:14:21 2017
 
     4 *** Differential density matrix. DCOVLP     = 1.0029
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00199901s
-SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00799899s
+SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00200000s
+SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00799800s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -973,21 +973,21 @@ Total energy                       :    -7.865435392034476
          3     -9.874D-01
          4      1.899D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.26043    9   0.09621
-   * Two-electron Fock matrix  (CPU): 0.00999799s
+   * Two-electron Fock matrix  (CPU): 0.00999801s
    * PE Fock matrix            (CPU): 0.00699900s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.04400000s, and total CPU time : 0.03999400s
+>>> Total wall time: 0.04500000s, and total CPU time : 0.03999400s
 
-########## END ITERATION NO.   4 ##########   Tue Oct 18 20:40:07 2016
+########## END ITERATION NO.   4 ##########   Thu Jan 19 23:14:21 2017
 
-It.    4    -7.865435392034      8.74D-04 -1.56D-02  8.29D-03   DIIS   3    0.03999400s   LL SL          Tue Oct 18
+It.    4    -7.865435392034      8.74D-04 -1.56D-02  8.29D-03   DIIS   3    0.03999400s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.   5 ##########   Tue Oct 18 20:40:07 2016
+########## START ITERATION NO.   5 ##########   Thu Jan 19 23:14:21 2017
 
     5 *** Differential density matrix. DCOVLP     = 1.0021
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00200000s
-SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00499900s
+SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00100000s
+SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00599900s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1048,21 +1048,21 @@ Total energy                       :    -7.865609791811256
          4     -4.771D-01
          5      1.284D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.26145    9   0.09628
-   * Two-electron Fock matrix  (CPU): 0.00799900s
-   * PE Fock matrix            (CPU): 0.00599900s
+   * Two-electron Fock matrix  (CPU): 0.00699900s
+   * PE Fock matrix            (CPU): 0.00699900s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.04100000s, and total CPU time : 0.03699500s
+>>> Total wall time: 0.04000000s, and total CPU time : 0.03599500s
 
-########## END ITERATION NO.   5 ##########   Tue Oct 18 20:40:07 2016
+########## END ITERATION NO.   5 ##########   Thu Jan 19 23:14:21 2017
 
-It.    5    -7.865609791811      1.74D-04 -3.22D-03  9.89D-04   DIIS   4    0.03699500s   LL SL          Tue Oct 18
+It.    5    -7.865609791811      1.74D-04 -3.22D-03  9.89D-04   DIIS   4    0.03599500s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.   6 ##########   Tue Oct 18 20:40:07 2016
+########## START ITERATION NO.   6 ##########   Thu Jan 19 23:14:21 2017
 
     6 *** Differential density matrix. DCOVLP     = 1.0003
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00199901s
-SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00799900s
+SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00600000s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1124,21 +1124,21 @@ Total energy                       :    -7.865612117079198
          5     -7.166D-01
          6      1.646D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.26137    9   0.09626
-   * Two-electron Fock matrix  (CPU): 0.00999801s
-   * PE Fock matrix            (CPU): 0.00899900s
+   * Two-electron Fock matrix  (CPU): 0.00799900s
+   * PE Fock matrix            (CPU): 0.00799800s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.04500000s, and total CPU time : 0.03999400s
+>>> Total wall time: 0.04200000s, and total CPU time : 0.03799400s
 
-########## END ITERATION NO.   6 ##########   Tue Oct 18 20:40:07 2016
+########## END ITERATION NO.   6 ##########   Thu Jan 19 23:14:21 2017
 
-It.    6    -7.865612117079      2.33D-06  3.01D-04  3.01D-04   DIIS   5    0.03999400s   LL SL          Tue Oct 18
+It.    6    -7.865612117079      2.33D-06  3.01D-04  3.01D-04   DIIS   5    0.03799400s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.   7 ##########   Tue Oct 18 20:40:07 2016
+########## START ITERATION NO.   7 ##########   Thu Jan 19 23:14:21 2017
 
     7 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00299901s
-SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00899899s
+SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00099999s
+SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00799900s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1201,20 +1201,20 @@ Total energy                       :    -7.865612328643041
          6     -2.970D-01
          7      1.192D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.26139    9   0.09626
-   * Two-electron Fock matrix  (CPU): 0.01199800s
-   * PE Fock matrix            (CPU): 0.00699902s
+   * Two-electron Fock matrix  (CPU): 0.01099902s
+   * PE Fock matrix            (CPU): 0.00799799s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.04500000s, and total CPU time : 0.04099400s
+>>> Total wall time: 0.04600000s, and total CPU time : 0.04099400s
 
-########## END ITERATION NO.   7 ##########   Tue Oct 18 20:40:07 2016
+########## END ITERATION NO.   7 ##########   Thu Jan 19 23:14:21 2017
 
-It.    7    -7.865612328643      2.12D-07 -9.72D-05  1.40D-05   DIIS   6    0.04099400s   LL SL          Tue Oct 18
+It.    7    -7.865612328643      2.12D-07 -9.72D-05  1.40D-05   DIIS   6    0.04099400s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.   8 ##########   Tue Oct 18 20:40:07 2016
+########## START ITERATION NO.   8 ##########   Thu Jan 19 23:14:21 2017
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00100002s
+SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00200000s
 SOfock:SL  1.00D-20    0.00%   21.54%    0.00%   19.61%   0.00699899s
 * Calling PE library
 
@@ -1279,21 +1279,21 @@ Total energy                       :    -7.865612328986955
          7     -7.024D-01
          8      1.591D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.26139    9   0.09626
-   * Two-electron Fock matrix  (CPU): 0.00899801s
-   * PE Fock matrix            (CPU): 0.00899902s
+   * Two-electron Fock matrix  (CPU): 0.01099899s
+   * PE Fock matrix            (CPU): 0.00599900s
    * Quaternion diagonalization(CPU): 0.00000000s
 >>> Total wall time: 0.04500000s, and total CPU time : 0.03999300s
 
-########## END ITERATION NO.   8 ##########   Tue Oct 18 20:40:08 2016
+########## END ITERATION NO.   8 ##########   Thu Jan 19 23:14:21 2017
 
-It.    8    -7.865612328987      3.44D-10 -5.35D-06  2.11D-06   DIIS   7    0.03999300s   LL SL          Tue Oct 18
+It.    8    -7.865612328987      3.44D-10 -5.35D-06  2.11D-06   DIIS   7    0.03999300s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.   9 ##########   Tue Oct 18 20:40:08 2016
+########## START ITERATION NO.   9 ##########   Thu Jan 19 23:14:21 2017
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00199899s
-SOfock:SL  1.00D-20    0.00%   21.57%    0.00%   19.61%   0.00899899s
+SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00099999s
+SOfock:SL  1.00D-20    0.00%   21.57%    0.00%   19.61%   0.00799900s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1358,21 +1358,21 @@ Total energy                       :    -7.865612328995454
          8     -1.531D-01
          9      1.158D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.26139    9   0.09626
-   * Two-electron Fock matrix  (CPU): 0.01099798s
-   * PE Fock matrix            (CPU): 0.00699902s
+   * Two-electron Fock matrix  (CPU): 0.00899899s
+   * PE Fock matrix            (CPU): 0.00799900s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.04400000s, and total CPU time : 0.04099400s
+>>> Total wall time: 0.04500000s, and total CPU time : 0.04099400s
 
-########## END ITERATION NO.   9 ##########   Tue Oct 18 20:40:08 2016
+########## END ITERATION NO.   9 ##########   Thu Jan 19 23:14:21 2017
 
-It.    9    -7.865612328995      8.50D-12  5.47D-07  4.31D-07   DIIS   8    0.04099400s   LL SL          Tue Oct 18
+It.    9    -7.865612328995      8.50D-12  5.47D-07  4.31D-07   DIIS   8    0.04099400s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.  10 ##########   Tue Oct 18 20:40:08 2016
+########## START ITERATION NO.  10 ##########   Thu Jan 19 23:14:21 2017
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00199902s
-SOfock:SL  1.00D-20    0.00%   21.62%    0.00%   19.59%   0.00599900s
+SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00399902s
+SOfock:SL  1.00D-20    0.00%   21.62%    0.00%   19.59%   0.00799897s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1438,21 +1438,21 @@ Total energy                       :    -7.865612328995702
          9     -8.076D-02
         10      1.070D+00
 E_HOMO...E_LUMO, symmetry 1:     8  -0.26139    9   0.09626
-   * Two-electron Fock matrix  (CPU): 0.00799802s
-   * PE Fock matrix            (CPU): 0.00699899s
+   * Two-electron Fock matrix  (CPU): 0.01299798s
+   * PE Fock matrix            (CPU): 0.00699902s
    * Quaternion diagonalization(CPU): 0.00000000s
->>> Total wall time: 0.04100000s, and total CPU time : 0.03599400s
+>>> Total wall time: 0.04700000s, and total CPU time : 0.04199400s
 
-########## END ITERATION NO.  10 ##########   Tue Oct 18 20:40:08 2016
+########## END ITERATION NO.  10 ##########   Thu Jan 19 23:14:22 2017
 
-It.   10    -7.865612328996      2.48D-13 -2.14D-07  1.23D-08   DIIS   9    0.03599400s   LL SL          Tue Oct 18
+It.   10    -7.865612328996      2.48D-13 -2.14D-07  1.23D-08   DIIS   9    0.04199400s   LL SL          Thu Jan 19
 
-########## START ITERATION NO.  11 ##########   Tue Oct 18 20:40:08 2016
+########## START ITERATION NO.  11 ##########   Thu Jan 19 23:14:22 2017
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00200000s
-SOfock:SL  1.00D-20    0.00%   21.97%    0.00%   19.51%   0.00699902s
+SOfock:LL  1.00D-20    0.00%   18.64%    0.00%   61.02%   0.00299999s
+SOfock:SL  1.00D-20    0.00%   21.97%    0.00%   19.51%   0.00599903s
 * Calling PE library
 
     .--------------------------------------------------.
@@ -1497,13 +1497,13 @@ SS Coulombic correction            :     0.000000000862678
 Embedding energy                   :    -0.005145078875359
 Total energy                       :    -7.865612328992059
    * Two-electron Fock matrix  (CPU): 0.00899902s
-   * PE Fock matrix            (CPU): 0.00899801s
+   * PE Fock matrix            (CPU): 0.00699899s
    * Quaternion diagonalization(CPU): 0.00000000s
 >>> Total wall time: 0.03900000s, and total CPU time : 0.03899400s
 
-########## END ITERATION NO.  11 ##########   Tue Oct 18 20:40:08 2016
+########## END ITERATION NO.  11 ##########   Thu Jan 19 23:14:22 2017
 
-It.   11    -7.865612328992     -3.64D-12  9.22D-09  1.48D-09   DIIS   9    0.03899400s   LL SL          Tue Oct 18
+It.   11    -7.865612328992     -3.64D-12  9.22D-09  1.48D-09   DIIS   9    0.03899400s   LL SL          Thu Jan 19
 
 
                                    SCF - CYCLE
@@ -1519,22 +1519,22 @@ It.   11    -7.865612328992     -3.64D-12  9.22D-09  1.48D-09   DIIS   9    0.03
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -3.684090758893      0.00D+00  0.00D+00  0.00D+00               0.01999700s   Scr. nuclei    Tue Oct 18
-It.    2    -7.827191317309      4.14D+00  1.22D+00  2.37D-01               0.05699200s   LL SL          Tue Oct 18
-It.    3    -7.864561422824      3.74D-02 -1.33D-01  2.57D-02   DIIS   2    0.03999300s   LL SL          Tue Oct 18
-It.    4    -7.865435392034      8.74D-04 -1.56D-02  8.29D-03   DIIS   3    0.03999400s   LL SL          Tue Oct 18
-It.    5    -7.865609791811      1.74D-04 -3.22D-03  9.89D-04   DIIS   4    0.03699500s   LL SL          Tue Oct 18
-It.    6    -7.865612117079      2.33D-06  3.01D-04  3.01D-04   DIIS   5    0.03999400s   LL SL          Tue Oct 18
-It.    7    -7.865612328643      2.12D-07 -9.72D-05  1.40D-05   DIIS   6    0.04099400s   LL SL          Tue Oct 18
-It.    8    -7.865612328987      3.44D-10 -5.35D-06  2.11D-06   DIIS   7    0.03999300s   LL SL          Tue Oct 18
-It.    9    -7.865612328995      8.50D-12  5.47D-07  4.31D-07   DIIS   8    0.04099400s   LL SL          Tue Oct 18
-It.   10    -7.865612328996      2.48D-13 -2.14D-07  1.23D-08   DIIS   9    0.03599400s   LL SL          Tue Oct 18
-It.   11    -7.865612328992     -3.64D-12  9.22D-09  1.48D-09   DIIS   9    0.03899400s   LL SL          Tue Oct 18
+It.    1    -3.684090758893      0.00D+00  0.00D+00  0.00D+00               0.02099700s   Scr. nuclei    Thu Jan 19
+It.    2    -7.827191317309      4.14D+00  1.22D+00  2.37D-01               0.05599100s   LL SL          Thu Jan 19
+It.    3    -7.864561422824      3.74D-02 -1.33D-01  2.57D-02   DIIS   2    0.03999400s   LL SL          Thu Jan 19
+It.    4    -7.865435392034      8.74D-04 -1.56D-02  8.29D-03   DIIS   3    0.03999400s   LL SL          Thu Jan 19
+It.    5    -7.865609791811      1.74D-04 -3.22D-03  9.89D-04   DIIS   4    0.03599500s   LL SL          Thu Jan 19
+It.    6    -7.865612117079      2.33D-06  3.01D-04  3.01D-04   DIIS   5    0.03799400s   LL SL          Thu Jan 19
+It.    7    -7.865612328643      2.12D-07 -9.72D-05  1.40D-05   DIIS   6    0.04099400s   LL SL          Thu Jan 19
+It.    8    -7.865612328987      3.44D-10 -5.35D-06  2.11D-06   DIIS   7    0.03999300s   LL SL          Thu Jan 19
+It.    9    -7.865612328995      8.50D-12  5.47D-07  4.31D-07   DIIS   8    0.04099400s   LL SL          Thu Jan 19
+It.   10    -7.865612328996      2.48D-13 -2.14D-07  1.23D-08   DIIS   9    0.04199400s   LL SL          Thu Jan 19
+It.   11    -7.865612328992     -3.64D-12  9.22D-09  1.48D-09   DIIS   9    0.03899400s   LL SL          Thu Jan 19
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   11 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.02100000s
-      LL SL        :    0.04480000s
+      No 2-ints    :    0.02000000s
+      LL SL        :    0.04540000s
 
 
                                    TOTAL ENERGY
@@ -1621,7 +1621,7 @@ tot.num. of pos.erg shells:    6
     - Secondary orbitals :     -6..-1,     3..     6                               
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -7.86561232899570228
-* Heading :LiH triplet and singlet excitation with PE        Tue Oct 18 20:40:08 2016
+* Heading :LiH triplet and singlet excitation with PE        Thu Jan 19 23:14:22 2017
 
 
 
@@ -1631,19 +1631,19 @@ tot.num. of pos.erg shells:    6
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :LiH triplet and singlet excitation with PE        Tue Oct 18 20:40:08 2016
+* Heading :LiH triplet and singlet excitation with PE        Thu Jan 19 23:14:22 2017
 * Calling pe_master to construct <Vpe> = Ves + <0|F|0>R<Fe> contribution to H.
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :LiH triplet and singlet excitation with PE        Tue Oct 18 20:40:07 2016
+* Heading :LiH triplet and singlet excitation with PE        Thu Jan 19 23:14:21 2017
 
-########## START MICROITERATION NO.   1 ##########   Tue Oct 18 20:40:08 2016
+########## START MICROITERATION NO.   1 ##########   Thu Jan 19 23:14:22 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00099999s
-SOfock:SL  1.00D-20    0.00%   21.54%    3.65%   19.61%   0.00799900s
+SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00199997s
+SOfock:SL  1.00D-20    0.00%   21.54%    3.65%   19.61%   0.00699902s
  *** Calculate dynamical PE response
 * Trial vectors in this micro iteration:  E+:  4  E-:  4  P+:  0  P-:  0
 
@@ -1654,11 +1654,11 @@ SOfock:SL  1.00D-20    0.00%   21.54%    3.65%   19.61%   0.00799900s
      0.13308688  1.00E-05  6.56E-02  1.38E-02  6.42E-02  1.50E-04  2.68E-04
      0.15903345  1.00E-05  3.95E-02  3.66E-02  1.50E-02  2.61E-04  1.64E-04
 
-########## START MICROITERATION NO.   2 ##########   Tue Oct 18 20:40:08 2016
+########## START MICROITERATION NO.   2 ##########   Thu Jan 19 23:14:22 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%   48.81%   61.09%   0.00099999s
-SOfock:SL  1.00D-20    0.00%   21.54%    2.92%   19.61%   0.00899804s
+SOfock:LL  1.00D-20    0.00%   18.64%   48.81%   61.09%   0.00100005s
+SOfock:SL  1.00D-20    0.00%   21.54%    2.92%   19.61%   0.00799900s
  *** Calculate dynamical PE response
 * Trial vectors in this micro iteration:  E+:  4  E-:  4  P+:  1  P-:  1
 
@@ -1669,11 +1669,11 @@ SOfock:SL  1.00D-20    0.00%   21.54%    2.92%   19.61%   0.00899804s
      0.11010582  1.00E-05  2.68E-02  1.74E-02  2.04E-02  1.48E-04  3.13E-04
      0.15721110  1.00E-05  1.80E-03  1.33E-03  1.22E-03  5.82E-05  8.91E-06
 
-########## START MICROITERATION NO.   3 ##########   Tue Oct 18 20:40:08 2016
+########## START MICROITERATION NO.   3 ##########   Thu Jan 19 23:14:22 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00099897s
-SOfock:SL  1.00D-20    0.00%   21.54%    2.87%   19.61%   0.01099902s
+SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00199896s
+SOfock:SL  1.00D-20    0.00%   21.54%    2.87%   19.61%   0.00999904s
  *** Calculate dynamical PE response
 * Trial vectors in this micro iteration:  E+:  4  E-:  4  P+:  4  P-:  4
 
@@ -1684,11 +1684,11 @@ SOfock:SL  1.00D-20    0.00%   21.54%    2.87%   19.61%   0.01099902s
      0.10929428  1.00E-05  1.11E-02  6.40E-03  9.12E-03  1.55E-05  1.52E-05
      0.15720460  1.00E-05  7.08E-04  5.08E-04  4.93E-04  1.47E-06  1.25E-06
 
-########## START MICROITERATION NO.   4 ##########   Tue Oct 18 20:40:08 2016
+########## START MICROITERATION NO.   4 ##########   Thu Jan 19 23:14:22 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00199902s
-SOfock:SL  1.00D-20    0.00%   21.54%    3.65%   19.61%   0.00699902s
+SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00099999s
+SOfock:SL  1.00D-20    0.00%   21.54%    3.65%   19.61%   0.00799900s
  *** Calculate dynamical PE response
 * Trial vectors in this micro iteration:  E+:  4  E-:  4  P+:  0  P-:  0
 
@@ -1699,11 +1699,11 @@ SOfock:SL  1.00D-20    0.00%   21.54%    3.65%   19.61%   0.00699902s
      0.10899164  1.00E-05  6.97E-04  5.63E-04  4.10E-04  1.48E-05  1.36E-05
      0.15720258  1.00E-05  2.66E-04  2.58E-04  6.43E-05  2.05E-06  1.30E-06
 
-########## START MICROITERATION NO.   5 ##########   Tue Oct 18 20:40:08 2016
+########## START MICROITERATION NO.   5 ##########   Thu Jan 19 23:14:22 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00099999s
-SOfock:SL  1.00D-20    0.00%   21.54%    2.80%   19.61%   0.01099801s
+SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00100005s
+SOfock:SL  1.00D-20    0.00%   21.54%    2.80%   19.61%   0.01199800s
  *** Calculate dynamical PE response
 * Trial vectors in this micro iteration:  E+:  4  E-:  4  P+:  4  P-:  4
 
@@ -1714,11 +1714,11 @@ SOfock:SL  1.00D-20    0.00%   21.54%    2.80%   19.61%   0.01099801s
      0.10898760  1.00E-05  1.09E-03  5.73E-04  9.29E-04  9.15E-07  4.45E-07
      0.15720247  1.00E-05  5.72E-05  2.19E-05  5.28E-05  2.14E-07  1.15E-08
 
-########## START MICROITERATION NO.   6 ##########   Tue Oct 18 20:40:08 2016
+########## START MICROITERATION NO.   6 ##########   Thu Jan 19 23:14:22 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00199997s
-SOfock:SL  1.00D-20    0.00%   21.54%    3.60%   19.61%   0.00799805s
+SOfock:LL  1.00D-20    0.00%   18.64%   61.02%   61.09%   0.00199902s
+SOfock:SL  1.00D-20    0.00%   21.54%    3.60%   19.61%   0.00699902s
  *** Calculate dynamical PE response
 * Trial vectors in this micro iteration:  E+:  4  E-:  4  P+:  0  P-:  0
 
@@ -1729,7 +1729,7 @@ SOfock:SL  1.00D-20    0.00%   21.54%    3.60%   19.61%   0.00799805s
      0.10898692  1.00E-05  1.82E-05  3.51E-06  1.79E-05  1.00E-06  3.90E-07
      0.15720246  1.00E-05  5.45E-06  4.68E-06  2.78E-06  2.57E-07  5.85E-08
 
-########## START MICROITERATION NO.   7 ##########   Tue Oct 18 20:40:08 2016
+########## START MICROITERATION NO.   7 ##########   Thu Jan 19 23:14:22 2017
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-20    0.00%   18.64%   81.36%   61.09%   0.00099999s
@@ -1753,28 +1753,28 @@ SOfock:SL  1.00D-20    0.00%   21.54%    4.83%   19.61%   0.00699902s
 
             Freq.(au)   Total norm    E+ norm   E- norm   P+ norm   P- norm 
 ============================================================================
-* It.  1   0.03499499s  (LL SL    )     [  4]     [  4]     [  0]     [  0]
+* It.  1   0.03399503s  (LL SL    )     [  4]     [  4]     [  0]     [  0]
 ----------------------------------------------------------------------------
             0.108987 :   6.57D-02 |   1.38D-02  6.42D-02  1.50D-04  2.68D-04
             0.108987 :   6.57D-02 |   1.38D-02  6.42D-02  1.50D-04  2.68D-04
             0.108987 :   6.57D-02 |   1.38D-02  6.42D-02  1.50D-04  2.68D-04
             0.157202 :   3.96D-02 |   3.66D-02  1.50D-02  2.61D-04  1.64D-04
 ============================================================================
-* It.  2   0.03999400s  (LL SL    )     [  4]     [  4]     [  1]     [  1]
+* It.  2   0.03799397s  (LL SL    )     [  4]     [  4]     [  1]     [  1]
 ----------------------------------------------------------------------------
             0.108987 :   2.68D-02 |   1.74D-02  2.04D-02  1.48D-04  3.13D-04
             0.108987 :   2.68D-02 |   1.74D-02  2.04D-02  1.48D-04  3.13D-04
             0.108987 :   2.68D-02 |   1.74D-02  2.04D-02  1.48D-04  3.13D-04
             0.157202 :   1.81D-03 |   1.33D-03  1.22D-03  5.82D-05  8.91D-06
 ============================================================================
-* It.  3   0.05599099s  (LL SL    )     [  4]     [  4]     [  4]     [  4]
+* It.  3   0.05299300s  (LL SL    )     [  4]     [  4]     [  4]     [  4]
 ----------------------------------------------------------------------------
             0.108987 :   1.11D-02 |   6.40D-03  9.12D-03  1.55D-05  1.52D-05
             0.108987 :   1.11D-02 |   6.40D-03  9.12D-03  1.55D-05  1.52D-05
             0.108987 :   1.11D-02 |   6.40D-03  9.12D-03  1.55D-05  1.52D-05
             0.157202 :   7.08D-04 |   5.08D-04  4.93D-04  1.47D-06  1.25D-06
 ============================================================================
-* It.  4   0.03499502s  (LL SL    )     [  4]     [  4]     [  0]     [  0]
+* It.  4   0.03299499s  (LL SL    )     [  4]     [  4]     [  0]     [  0]
 ----------------------------------------------------------------------------
             0.108987 :   6.97D-04 |   5.63D-04  4.10D-04  1.48D-05  1.36D-05
             0.108987 :   6.97D-04 |   5.63D-04  4.10D-04  1.48D-05  1.36D-05
@@ -1788,14 +1788,14 @@ SOfock:SL  1.00D-20    0.00%   21.54%    4.83%   19.61%   0.00699902s
             0.108987 :   1.09D-03 |   5.73D-04  9.29D-04  9.15D-07  4.45D-07
             0.157202 :   5.72D-05 |   2.19D-05  5.28D-05  2.14D-07  1.15D-08
 ============================================================================
-* It.  6   0.03599501s  (LL SL    )     [  4]     [  4]     [  0]     [  0]
+* It.  6   0.03499502s  (LL SL    )     [  4]     [  4]     [  0]     [  0]
 ----------------------------------------------------------------------------
             0.108987 :   1.83D-05 |   3.51D-06  1.79D-05  1.00D-06  3.90D-07
             0.108987 :   1.83D-05 |   3.51D-06  1.79D-05  1.00D-06  3.90D-07
             0.108987 :   1.83D-05 |   3.51D-06  1.79D-05  1.00D-06  3.90D-07
             0.157202 :   5.45D-06 |   4.68D-06  2.78D-06  2.57D-07  5.85D-08
 ============================================================================
-* It.  7   0.03099501s  (LL SL    )     [  3]     [  3]     [  0]     [  0]
+* It.  7   0.02999502s  (LL SL    )     [  3]     [  3]     [  0]     [  0]
 ----------------------------------------------------------------------------
             0.108987 :   1.07D-06 |   4.77D-08  1.69D-08  1.00D-06  3.91D-07
             0.108987 :   1.07D-06 |   4.77D-08  1.69D-08  1.00D-06  3.91D-07
@@ -1857,13 +1857,10 @@ SOfock:SL  1.00D-20    0.00%   21.54%    4.83%   19.61%   0.00699902s
  A - ZDIPVEL              A    T-         0.29098151E-01 a.u.
 
      -> dipole oscillator strength (length)   :  0.03012183
-     -> dipole oscillator strength (velocity) :  0.07720197
+     -> dipole oscillator strength (velocity) :  0.00000000
 
      Total dipole radiation rate (length)   2.39172E+07 s-1
       - corresponding radiation life time   4.18109E-08 s
-
-     Total dipole radiation rate (velocity) 6.12996E+07 s-1
-      - corresponding radiation life time   1.63133E-08 s
 ================================================================================
 
 
@@ -1930,10 +1927,10 @@ SOfock:SL  1.00D-20    0.00%   21.54%    4.83%   19.61%   0.00699902s
 
 
  
-     Date and time (Linux)  : Tue Oct 18 20:40:08 2016
+     Date and time (Linux)  : Thu Jan 19 23:14:22 2017
      Host name              : adm103910                               
 
->>>> Node 0, utime: 0, stime: 0, minflt: 3868, majflt: 0, nvcsw: 9, nivcsw: 82, maxrss: 59900
+>>>> Node 0, utime: 0, stime: 0, minflt: 5493, majflt: 0, nvcsw: 9, nivcsw: 84, maxrss: 61156
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master
