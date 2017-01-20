@@ -1273,6 +1273,13 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+
+      ELSE IF (ITASK .EQ. 12) THEN
+
+C        start PElib MPI
+
+         CALL PELIB_IFC_SLAVE()
+
       ELSE
 C
 C        Unknown task. Abort execution.
