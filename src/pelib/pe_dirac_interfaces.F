@@ -75,33 +75,6 @@
         call qexit('pe_ifc_finalize')
       end subroutine pe_ifc_finalize
 
-      subroutine pelib_ifc_localfield(soint, nelmnt, noptyp)
-          use polarizable_embedding, only: pe_master
-          use pe_variables, only: peqm
-#include "inforb.h"
-          integer :: nelmnt, noptyp
-          real*8, dimension(nelmnt,noptyp), intent(inout) :: soint
-          real*8, dimension(:), allocatable :: intmats
-          integer :: i, ndim
-          call qenter('pelib_ifc_localfield')
-          if (.not. peqm) call quit('PElib not active')
-          print *, 'Local field corrections to dipole integrals applied'
-          print *, 'TODO: improve output wrt EEF'
-          if (noptyp /= 3) then
-             call quit('ERROR: inconsistent dimension')
-          end if
-          allocate(intmats(3*nelmnt))
-          ndim = int(0.5 * (sqrt(1.0 + 8.0 * nelmnt) - 1.0))
-          call pe_master(runtype='effdipole',
-     &                   triang=.true.,
-     &                   ndim=ndim,
-     &                   fckmats=intmats)
-          do i = 1, 3
-            soint(:,i) = soint(:,i) + intmats((i-1)*nelmnt+1:i*nelmnt)
-          end do
-          call qexit('pelib_ifc_localfield')
-      end subroutine pelib_ifc_localfield
-
       subroutine pe_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
         use polarizable_embedding, only: pe_master
         implicit none
@@ -149,6 +122,9 @@
               k = k + 1
            end do
         end do
+#if defined(VAR_MPI)
+        call pelib_ifc_start_slaves(1)
+#endif
         call pe_master(runtype='full_fock',
      &                 triang = .true.,
      &                 ndim = ntbas(0),
@@ -235,6 +211,9 @@
               k = k + 1
            end do
         end do
+#if defined(VAR_MPI)
+        call pelib_ifc_start_slaves(2)
+#endif
         call pe_master(runtype='print_energy',
      &                 triang = .true.,
      &                 ndim = ntbas(0),
@@ -311,6 +290,9 @@
               end do
            end do
         end do         
+#if defined(VAR_MPI)
+        call pelib_ifc_start_slaves(3)
+#endif
         call pe_master(runtype='dynamic_response',
      &                 triang = .true.,
      &                 ndim = ntbas(0),
@@ -365,17 +347,94 @@
         call qexit('pe_ifc_response')
 
       end subroutine pe_ifc_response
-
-      subroutine pe_ifc_london(fckmats, nmats)
-        use polarizable_embedding, only: pe_master
+      subroutine pelib_ifc_london(fckmats)
+          use polarizable_embedding, only: pe_master
 #include "inforb.h"
-        integer, intent(in) :: nmats
-        real*8, dimension(3*nmats*n2basx), intent(out) :: fckmats
-        call qenter('pe_ifc_london')
-        call pe_master('london', fckmats=fckmats, nmats=nmats)
-        call qexit('pe_ifc_london')
-      end subroutine pe_ifc_london
+          real*8, dimension(3*n2basx), intent(out) :: fckmats
+          integer :: i, j, k, l, m
+          real*8, dimension(:), allocatable :: fckmats_packed
+          call qenter('pelib_ifc_london')
+          !if (.not. use_pelib()) call quit('PElib not active')
+          allocate(fckmats_packed(3*nnbasx))
+#if defined(VAR_MPI)
+          call pelib_ifc_start_slaves(4)
+#endif
+          call pe_master('magnetic_gradient',
+     &                   triang=.true.,
+     &                   ndim=nbast,
+     &                   fckmats=fckmats_packed)
+          do i = 1, 3
+             j = (i - 1) * nnbasx + 1
+             k = i * nnbasx
+             l = (i - 1) * n2basx + 1
+             m = i * n2basx
+             call daptge(nbas, fckmats_packed(j:k), fckmats(l:m))
+         end do
+         deallocate(fckmats_packed)
+         call qexit('pelib_ifc_london')
+      end subroutine pelib_ifc_london
 
+      subroutine pelib_ifc_localfield(soint, nelmnt, noptyp)
+          use polarizable_embedding, only: pe_master
+          use pe_variables, only: peqm
+#include "inforb.h"
+          integer :: nelmnt, noptyp
+          real*8, dimension(nelmnt,noptyp), intent(inout) :: soint
+          real*8, dimension(:), allocatable :: intmats
+          integer :: i, ndim
+          call qenter('pelib_ifc_localfield')
+          if (.not. peqm) call quit('PElib not active')
+          print *, 'Local field corrections to dipole integrals applied'
+          print *, 'TODO: improve output wrt EEF'
+          if (noptyp /= 3) then
+             call quit('ERROR: inconsistent dimension')
+          end if
+          allocate(intmats(3*nelmnt))
+          ndim = int(0.5 * (sqrt(1.0 + 8.0 * nelmnt) - 1.0))
+#if defined(VAR_MPI)
+          call pelib_ifc_start_slaves(8)
+#endif
+          call pe_master(runtype='effdipole',
+     &                   triang=.true.,
+     &                   ndim=ndim,
+     &                   fckmats=intmats)
+          do i = 1, 3
+            soint(:,i) = soint(:,i) + intmats((i-1)*nelmnt+1:i*nelmnt)
+          end do
+          call qexit('pelib_ifc_localfield')
+      end subroutine pelib_ifc_localfield
+
+#if defined(VAR_MPI)
+      subroutine pelib_ifc_slave(runtype)
+          use polarizable_embedding, only: pe_slave
+          integer, intent(in) :: runtype
+          call qenter('pelib_ifc_slave')
+          if (runtype == 1) then
+              call pe_slave('full_fock')
+          else if (runtype == 2) then
+              call pe_slave('print_energy')
+          else if (runtype == 3) then
+              call pe_slave('dynamic_response')
+          else if (runtype == 4) then
+              call pe_slave('magnetic_gradient')
+          else if (runtype == 5) then
+              call pe_slave('molecular_gradient')
+          else if (runtype == 8) then
+              call pe_slave('effdipole')
+          end if
+          call qexit('pelib_ifc_slave')
+      end subroutine pelib_ifc_slave
+#endif
+
+      subroutine pelib_ifc_start_slaves(runtyp)
+          integer :: runtyp
+          call qenter('pelib_ifc_start_slaves')
+          call quit('using dummy PElib interface routines')
+          call qexit('pelib_ifc_start_slaves')
+      end subroutine pelib_ifc_start_slaves
+!
+! edh: The remaining is left-over from dalton: quadratic and cubic response,
+! PE-MCSCF (linear and quadratic response + energy). 
 !      subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !!
 !!     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen

@@ -1276,8 +1276,8 @@ C
 
       ELSE IF (ITASK .EQ. 12) THEN
 
-C        start PElib MPI
-
+C        start PElib IMPEMENTATON/pelib/pelib_interface.F90   
+!        
          CALL PELIB_IFC_SLAVE()
 
       ELSE
