@@ -2388,10 +2388,6 @@ C
             N_CSIM = N_CVEC
             WRITE(LUPRI,'(/I5,A)') N_CVEC,
      &         ' restart CI vectors read from GASCIP.RST'
-            write(lupri,*) 'test ouput of start trial vectors'
-            call output(work(kbcvec),1,ndetq,1,N_cvec,
-     &         ndetq,n_cvec,-1,lupri)
-            flush(lupri)
             IF (N_CSIM .GE. N_ROOTS) GO TO 50
          END IF
       ELSE
