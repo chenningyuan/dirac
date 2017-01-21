@@ -122,6 +122,13 @@ C.....BEGIN NON STANDARD DO LOOP.
       IF (BEGIN.LE.NROW) GO TO 1050
   200 CONTINUE
       WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
+#ifdef PRG_DIRAC
+      IF (N_NAN .GT. 0)
+     &   CALL QUIT('ERROR: NaN in matrix')
+#else
+      IF (N_NAN .GT. 0)
+     &   STOP 'ERROR: NaN in matrix'
+#endif
       RETURN
 C
  1000 FORMAT (/10X,8(5X,A6,I4))
@@ -264,6 +271,13 @@ C
 C
   800 CONTINUE
       WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
+#ifdef PRG_DIRAC
+      IF (N_NAN .GT. 0)
+     &   CALL QUIT('ERROR: NaN in matrix')
+#else
+      IF (N_NAN .GT. 0)
+     &   STOP 'ERROR: NaN in matrix'
+#endif
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
@@ -540,6 +554,13 @@ C
 C
   800 CONTINUE
       WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
+#ifdef PRG_DIRAC
+      IF (N_NAN .GT. 0)
+     &   CALL QUIT('ERROR: NaN in matrix')
+#else
+      IF (N_NAN .GT. 0)
+     &   STOP 'ERROR: NaN in matrix'
+#endif
       RETURN
  3000 FORMAT (/5X,'All',I3,' blocks zero matrices.')
  1100 FORMAT (/5X,'*** Block',I3,' zero matrix. ***')
@@ -650,6 +671,13 @@ C
     1    CONTINUE
     2 LAST = MIN(LAST+KCOL,COLHI)
     3 WRITE(LUPRI,'(A)') '    ==== End of matrix output ===='
+#ifdef PRG_DIRAC
+      IF (N_NAN .GT. 0)
+     &   CALL QUIT('ERROR: NaN in matrix')
+#else
+      IF (N_NAN .GT. 0)
+     &   STOP 'ERROR: NaN in matrix'
+#endif
       RETURN
  1000 FORMAT (/10X,8(5X,A6,I4))
       END
