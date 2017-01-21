@@ -253,10 +253,19 @@ C
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"
+#include "dcbimp.h"
 C
       CALL QENTER('PAMPSI')
+
+C***********************************************************************
+C**** import MO coeff from different QC package ************************
+C****         and dump it on DFPCMO             ************************
+C***********************************************************************
+      IF (DOIMPMOS) CALL IMPMOS(QCPACK,FILIMP)
+
 C     Attempt read of formatted MO coefficients
       CALL PCMOIN()
+
 C     Read C1 MO coefficients
       IF(DOACIN) CALL ACMOIN()
 C     Extend RKB coeffcients with complementary UKB space

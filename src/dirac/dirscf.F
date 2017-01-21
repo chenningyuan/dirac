@@ -151,7 +151,6 @@ C     Output section
 C
       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRSCF)
-
 CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
       IF (DO2C4C.AND.(INI2C.EQ.3.OR.INI2C.EQ.4)) THEN
         CALL MEMGET('REAL',K1,N2BBASXQ,      WORK,KFREE,LFREE)
@@ -169,207 +168,29 @@ C
 C=============================================================
 CMI ... after BSS-SCF turn to the four-component picture.....
 C=============================================================
-      IF (DO2C4C) THEN
+      IF (DO2C4C) THEN          ! 2c --> 4c switch
         INTDEF    = INTGEN_SAVE
         INTGEN    = INTDEF 
-        MC        = 2
         SSMTRC    = SSMTRC_SAVE
-        !> set integral flags
-        ILLINT    = IAND(INTGEN,1)
-        ISLINT    = IAND(INTGEN/2,1)
-        ISSINT    = IAND(INTGEN/4,1)
-        IGTINT    = IAND(INTGEN/8,1)
-
-        print *, 'intdef, ssmtrc ==> ',intdef, ssmtrc
-
-
-        BSS        = .FALSE.
-        twocomp    = .false.
-        x2cmod_mmf = .false.
-        x2c        = .false.
-
-        CALL SETDC1(0)
-        CALL SETDC2(0)
-
-        CALL GMOTRA(.FALSE.)
-CMI     ... need to reset 4c settings !!! (28.8 find IORB from 2c for 4c DC-SCF)
-
-        call alloc(WORK,LWORK,id='WORK in PSISCF - part 2')
-#include "memint.h"
-
-        IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
-CMI      ... prepare the starting 4c Fock MO matrix
-        CALL MEMGET2('REAL','K1',K1,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET2('REAL','K2',K2,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET2('REAL','K3',K3,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMCHK('FDTR4C 0.0.0',WORK,1)
-
-        CALL FDTR4C(WORK(K1),WORK(K2),WORK(K3),WORK(KFREE),LFREE)
-
-        CALL MEMREL('FDTR4C.PSISCF',WORK,KWORK,KWORK,KFREE,LFREE)
-
-        ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
-C         .... prepare the DFCOEF file with staring MOs
-        CALL MEMGET('REAL',KCMO,N2BBASXQ,    WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',K1,N2BBASXQ,      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),   WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),   WORK,KFREE,LFREE)
-        CALL CMOINI4C(WORK(KCMO),WORK(K1),WORK(KEIG),
-     &                WORK(KIBRP),WORK(KFREE),LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,KIBRP,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,KEIG,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,K1,KFREE,LFREE)
-        CALL MEMREL('FDTR4C',WORK,KWORK,KCMO,KFREE,LFREE)
-
-        ENDIF
-
-        INQUIRE(FILE='DFDIIS',EXIST=EX)
-        IF (EX) THEN
-#if defined SYS_WINDOWS
-          CALL SYSTEM('del DFDIIS')
-#else
-          CALL SYSTEM('/bin/rm DFDIIS')
-#endif
-          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSISCF: DFDIIS file from previous SCF cycle was deleted.'
-        ENDIF
-
-        INQUIRE(FILE='DFFOCK',EXIST=EX)
-        IF (EX) THEN
-          CALL SYSTEM('/bin/rm DFFOCK')
-          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSISCF: DFFOCK file from previous SCF cycle was deleted.'
-        ENDIF
-
-        INQUIRE(FILE='DFEVEC',EXIST=EX)
-        IF (EX) THEN
-          CALL SYSTEM('/bin/rm DFEVEC')
-          IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &    'PSISCF: DFEVEC file from previous SCF cycle was deleted.'
-        ENDIF
-
-        INQUIRE(FILE='DFCOEF',EXIST=EX)
-        IF (EX.AND.(INI2C.NE.3.AND.INI2C.NE.4)) THEN
-         CALL SYSTEM('/bin/rm DFCOEF')
-         IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &   'PSISCF: DFCOEF file from previous SCF cycle was deleted.'
-        ENDIF
-
-        DHFCONV(1)=.FALSE.
-        DHFCONV(2)=.FALSE.
-        DHFEXIT=.FALSE.
-
-        RESTFCK=(INI2C.EQ.1.OR.INI2C.EQ.2) 
-
-        BNCRON = .FALSE.
-        BNSPON = .FALSE.
         ERGCNV = ERGCNV_SAVE
         EVCCNV = EVCCNV_SAVE
         FCKCNV = FCKCNV_SAVE
         SCFCNV(1) = SCFCNV1_SAVE
         SCFCNV(2) = SCFCNV2_SAVE
         MAXITR = MAXITR_SAVE
-
-        CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-
-        CALL SETDHF(IPRSCF)
-        IF(dirac_cfg_dft_calculation) THEN
-           CALL TITLER('Kohn-Shame DFT calculation','*',125)
-        ELSE
-           CALL TITLER('Hartree-Fock calculation','*',125)
-        END IF
-
-CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
-        IF (MAXITR.GT.0) THEN
-         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
-     &        WORK(KFREE),LFREE)
-
-         CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &            LFREE,IPRSCF)
-        ELSE
-         DHFCONV(1)=.TRUE.
-        ENDIF
-
-        CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
-
-        call dealloc(work)
-
+        CALL GO2C4C()
         DO2C4C = .FALSE.
       ENDIF
 
       DO4C2C = DO4C2C_SAVE
 
-      IF (DO4C2C) THEN
-        if(x2cmod_mmf)then
-          x2c      = .true.
-        else 
-          BSS      = .TRUE.
-          CMPEIG   = .TRUE. ! this flag is needed for preparing transformed data
-          WRITE(lupri,'(/A)')
-     &    '     *** PSISCF: Descending to two-component'// 
-     &    ' mode after previous four-component SCF cycles. ***'
-        end if
-        TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
-        TWOCOMP    = .FALSE.
-
-        START2C = .FALSE.
-
-!
-!       call the x2c/bss transformation module (branch 2 inside gmotra)
-        CALL GMOTRA(.FALSE.)
-
-        call alloc(WORK,LWORK,id='WORK in PSISCF - part 3')
-
-        IF(.NOT.CONT2C) THEN
-CMI ... consider TRMO4C2C ...???
-          DHFCONV(1)=.TRUE. 
-          DHFCONV(2)=.TRUE. 
-        ELSE ! continue with 2c-SCF iterations
-
-          if(BSS)then
-            CALL TITLER('Two-component BSS/DKH SCF calculation',
-     &         '*',125)
-          end if
-
-          BNCRON = .FALSE.
-          BNSPON = .FALSE.
-C         ... need to reset them...
-          DHFCONV(1)=.FALSE.
-          DHFCONV(2)=.FALSE.
-          DHFEXIT   =.FALSE.
-
-CMI    ...remove some files from the previous 4c-SCF cycle ...
-          INQUIRE(FILE='DFDIIS',EXIST=EX)
-          IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
-          INQUIRE(FILE='DFEVEC',EXIST=EX)
-          IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
-          INQUIRE(FILE='DFCOEF',EXIST=EX)
-          IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
-
-          CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
-
-!         IF (.NOT.TRMO4C2C) RESTFCK = .TRUE.
-          RESTFCK = .TRUE.
-          CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
-     &          WORK(KFREE),LFREE)
-
-          CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
-     &              LFREE,IPRSCF)
-
-          CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
-        END IF ! continue in 2c-mode switch
-        call dealloc(work)
-      END IF ! 4c --> 2c switch
+      IF (DO4C2C) THEN ! 4c --> 2c switch
+         CALL GO4C2C()
+      END IF 
 C
 C     Check if DHF/DFT is converged (to hard or soft threshold):
 C
- 101  WFCONV = DHFCONV(1) .OR. DHFCONV(2)
+      WFCONV = DHFCONV(1) .OR. DHFCONV(2)
 C
       CALL FLSHFO(LUPRI)
       if (doxml) then
@@ -5984,5 +5805,220 @@ C
       CALL MEMREL('EHUCKEL',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
-C --- end of dirac/dirscf.F ---
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GO2C4C()
+C***********************************************************************
+C***********************************************************************
+         use memory_allocator
+         use dirac_cfg
+         use x2cmod_cfg
 
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcbdhf.h"      
+#include "dcbham.h"
+#include "dcbbas.h"
+        LOGICAL EX
+        real(8), allocatable :: WORK(:)
+
+      CALL QENTER('GO2C4C')
+      call legacy_lwork_get(LWORK)
+#include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in GO2C4C')
+        
+      MC        = 2
+      !> set integral flags
+      ILLINT    = IAND(INTGEN,1)
+      ISLINT    = IAND(INTGEN/2,1)
+      ISSINT    = IAND(INTGEN/4,1)
+      IGTINT    = IAND(INTGEN/8,1)
+
+      print *, 'intdef, ssmtrc ==> ',intdef, ssmtrc
+
+      BSS        = .FALSE.
+      twocomp    = .false.
+      x2cmod_mmf = .false.
+      x2c        = .false.
+
+      CALL SETDC1(0)
+      CALL SETDC2(0)
+
+      CALL GMOTRA(.FALSE.)
+
+      IF (INI2C.EQ.1.OR.INI2C.EQ.2) THEN
+CMI    ... prepare the starting 4c Fock MO matrix
+        CALL MEMGET2('REAL','K1',K1,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K2',K2,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','K3',K3,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMCHK('FDTR4C 0.0.0',WORK,1)
+
+        CALL FDTR4C(WORK(K1),WORK(K2),WORK(K3),WORK(KFREE),LFREE)
+
+        CALL MEMREL('FDTR4C.GO2C4C',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
+C       .... prepare the DFCOEF file with staring MOs
+        CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',K1   ,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+
+        CALL CMOINI4C(WORK(KCMO),WORK(K1),WORK(KEIG),
+     &                  WORK(KIBRP),WORK(KFREE),LFREE)
+
+        CALL MEMREL('FDTR4C',WORK,KWORK,KCMO,KFREE,LFREE)
+      ENDIF
+
+      INQUIRE(FILE='DFDIIS',EXIST=EX)
+      IF (EX) THEN
+#if defined SYS_WINDOWS
+        CALL SYSTEM('del DFDIIS')
+#else
+        CALL SYSTEM('/bin/rm DFDIIS')
+#endif
+        IF (IPRSCF.GE.0) WRITE(LUPRI,*)
+     &  'GO2C4C: DFDIIS file from previous SCF cycle was deleted.'
+      ENDIF
+
+      INQUIRE(FILE='DFFOCK',EXIST=EX)
+      IF (EX) THEN
+        CALL SYSTEM('/bin/rm DFFOCK')
+        IF (IPRSCF.GE.0) WRITE(LUPRI,*)
+     &  'GO2C4C: DFFOCK file from previous SCF cycle was deleted.'
+      ENDIF
+
+      INQUIRE(FILE='DFEVEC',EXIST=EX)
+      IF (EX) THEN
+        CALL SYSTEM('/bin/rm DFEVEC')
+        IF (IPRSCF.GE.0) WRITE(LUPRI,*)
+     &  'GO2C4C: DFEVEC file from previous SCF cycle was deleted.'
+      ENDIF
+
+      INQUIRE(FILE='DFCOEF',EXIST=EX)
+      IF (EX.AND.(INI2C.NE.3.AND.INI2C.NE.4)) THEN
+        CALL SYSTEM('/bin/rm DFCOEF')
+        IF (IPRSCF.GE.0) WRITE(LUPRI,*)
+     &  'GO2C4C: DFCOEF file from previous SCF cycle was deleted.'
+      ENDIF
+
+      DHFCONV(1)=.FALSE.
+      DHFCONV(2)=.FALSE.
+      DHFEXIT   =.FALSE.
+
+      RESTFCK=(INI2C.EQ.1.OR.INI2C.EQ.2) 
+
+      BNCRON = .FALSE.
+      BNSPON = .FALSE.
+
+      CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+
+      CALL SETDHF(IPRSCF)
+      IF(dirac_cfg_dft_calculation) THEN
+         CALL TITLER('Kohn-Shame DFT calculation','*',125)
+      ELSE
+         CALL TITLER('Hartree-Fock calculation','*',125)
+      END IF
+
+CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
+      IF (MAXITR.GT.0) THEN
+       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
+     &        WORK(KFREE),LFREE)
+       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+     &            LFREE,IPRSCF)
+      ELSE
+        DHFCONV(1)=.TRUE.
+      ENDIF
+
+      CALL MEMREL('GO2C4C.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+
+      call dealloc(work)
+      CALL QEXIT('GO2C4C')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GO4C2C()
+C***********************************************************************
+C***********************************************************************
+      use memory_allocator
+      use dirac_cfg
+      use x2cmod_cfg
+
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcbdhf.h"      
+#include "dcbham.h"
+#include "dcbbas.h"
+      LOGICAL EX
+      real(8), allocatable :: WORK(:)
+
+      CALL QENTER('GO4C2C')
+      if(x2cmod_mmf)then
+        x2c      = .true.
+      else 
+        BSS      = .TRUE.
+        CMPEIG   = .TRUE. ! this flag is needed for preparing transformed data
+        WRITE(lupri,'(/A)')
+     &    '     *** GO4C2C: Descending to two-component'// 
+     &    ' mode after previous four-component SCF cycles. ***'
+       end if
+       TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
+       TWOCOMP    = .FALSE.
+
+       START2C = .FALSE.
+!
+!      call the x2c/bss transformation module (branch 2 inside gmotra)
+      CALL GMOTRA(.FALSE.)
+
+      call legacy_lwork_get(LWORK)
+#include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in GO4C2C')
+      IF(.NOT.CONT2C) THEN
+         DHFCONV(1)=.TRUE. 
+         DHFCONV(2)=.TRUE. 
+      ELSE                     ! continue with 2c-SCF iterations
+        if(BSS)then
+          CALL TITLER('Two-component BSS/DKH SCF calculation','*',125)
+        end if
+
+        BNCRON = .FALSE.
+        BNSPON = .FALSE.
+C       ... need to reset them...
+        DHFCONV(1)=.FALSE.
+        DHFCONV(2)=.FALSE.
+        DHFEXIT   =.FALSE.
+
+CMI    ...remove some files from the previous 4c-SCF cycle ...
+        INQUIRE(FILE='DFDIIS',EXIST=EX)
+        IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
+        INQUIRE(FILE='DFEVEC',EXIST=EX)
+        IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
+        INQUIRE(FILE='DFCOEF',EXIST=EX)
+        IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
+
+        CALL MEMGET('REAL',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
+
+        RESTFCK = .TRUE.
+        CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
+     &         WORK(KFREE),LFREE)
+
+        CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+     &              LFREE,IPRSCF)
+
+        CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
+      END IF ! continue in 2c-mode switch
+      call dealloc(work)
+      CALL QEXIT('GO4C2C')
+
+       RETURN
+       END
+C     --- end of dirac/dirscf.F ---

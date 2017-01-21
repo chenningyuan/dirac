@@ -2202,6 +2202,7 @@ C
 C
 C Used from include files:
 C  dcbgen.h : PARCAL, ...
+C  dcborb.h : NASHT,NCMOTQ,...
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -2215,7 +2216,8 @@ C     Local variales:
 C
       PARAMETER ( MAX_ROOTS = 41, N_CSIM_EXTRA_START = 7)
       real*8    DNRES(MAX_ROOTS), ECIOLD(MAX_ROOTS), ECIA(MAX_ROOTS)
-      INTEGER   J_HDIAG(MAX_ROOTS + 5), ICONV(MAX_ROOTS)
+      INTEGER   J_HDIAG(MAX_ROOTS + N_CSIM_EXTRA_START)
+      INTEGER   ICONV(MAX_ROOTS), LUGASCIP
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12
       real*8    ECI(MAX_ROOTS)
       LOGICAL   PAR_GASCIP
@@ -2225,6 +2227,7 @@ C     for QGEMM etc with complex matrices:
       DIMENSION IQINDX(NZCMPLX)
       SAVE IQINDX
       DATA IQINDX /1,2/
+      LOGICAL   is_open,file_exists
 C
 #include "memint.h"
 C
@@ -2285,11 +2288,7 @@ C
 C
 C     Transform quaternion FCACmo to molfdir type FCAC.
 C
-#ifdef DMRG_DEBUG
-      CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,30)
-#else
       CALL QFC2MFC(WORK(KFCAC),WORK(KFCACM),1,1,IPRINT)
-#endif
 C
       CALL MEMREL('RCISTD after rGETFC etc.',WORK,1,KFCAC,KFREE,LFREE)
 C
@@ -2331,92 +2330,15 @@ C
       end if
 
       CALL MEMREL('GASCIP_RCISTD.H2AC',WORK,KWORK,KH2AC,KFREE,LFREE)
-C
-C
-C     ********************************
-C     *** Find start trial vectors ***
-C     ********************************
-C
-C
-      CALL MEMGET2('REAL','HDIAG',KHDIAG,NDET,WORK,KFREE,LFREE)
-C
-C     Calculate diagonal of CI matrix:
-C     --------------------------------
-C
-c     CALL GASCIP_HDIAG(WORK(KHDIAG),NDET,IDET,WORK(KFCACM),WORK(KMUUUU))
-      IHRM = 1
-      CALL GASCIP_CI(.TRUE.,WORK(KHDIAG),
-     &     .FALSE.,DUMMY,DUMMY,WORK(KFCACM),WORK(KMUUUU),
-     &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
-#ifdef DMRG_DEBUG
-     &     .FALSE.,NDET,IDET,IHRM,IPRINT
-#else
-     &     .TRUE.,NDET,IDET,IHRM,IPRINT
-#endif
-     &     )
-C     CALL GASCIP_CI(DODIA,DIAG,
-C          DOSIG,SVEC,BVEC,HCORE,VMUUUU,
-C          DODEN,CL,CR,DV,PV,
-C          DO2EL,NDET,IDET,IHRM,IPRINT)
-C
-      IF (IPRINT .GT. 20) THEN
-         WRITE(LUPRI,'(/A)')
-     &      ' (GASCIP_RCISTD) Diagonal of CI Hamiltonian'
-         CALL OUTPUT(WORK(KHDIAG),1,1,1,NDET,1,NDET,-1,LUPRI)
-      END IF
-C
-C     If N_ROOTS .gt. 0, then
-C     find N_ROOTS + N_CSIM_EXTRA_START lowest elements in HDIAG:
-C
-C     (We start with extra diagonal elements to be fairly sure
-C      that we cover the N_ROOTS lowest symmetries in the start.
-C      Say that diagonal element no. N_ROOTS + 1 is the first of
-C      symmetry 2, but after convergence symmetry 2 is eigenvalue
-C      no. N_ROOTS - 2. This eigenvalue and eigenvector will be
-C      missed if we don't start with some extra diagonal elements.
-C      /hjaaj Oct 2010 )
-C
-      IF (N_ROOTS_in .GT. 0) THEN
-         N_CSIM = MIN(NDET, N_ROOTS+N_CSIM_EXTRA_START, MAX_ROOTS)
-         J_CSIM = MIN(NDET, N_CSIM+5)
-         ! always OK because DIMENSION J_HDIAG(MAX_ROOTS + 5)
-      ELSE
-         N_CSIM = N_ROOTS
-         J_CSIM = N_ROOTS
-      END IF
-      CALL FNDMIN(J_CSIM,J_HDIAG,WORK(KHDIAG),NDET,WORK(KFREE),LFREE)
-C
-C     Make sure that we don't break symmetry by only having all
-C     components of a (nearly) degenerate set - criterium for
-C     degeneracy: energy difference less than 0.01 bohr)
 
-      !> hardwire for debugging: 
-!     n_csim = 4
-C
-      if (N_CSIM .GT. N_ROOTS) then
-        HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
-   90   HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
-        call flshfo(lupri)
-        IF (ABS(HDIAG_N_CSIMp1 - HDIAG_N_CSIM) .LT. 0.002D0) THEN
-           N_CSIM = N_CSIM - 1
-           HDIAG_N_CSIMp1 = HDIAG_N_CSIM
-           GO TO 90
-        END IF
-      end if
-      IF (N_CSIM .LT. N_ROOTS) THEN
-          WRITE(LUPRI,*) 'N_CSIM .lt. N_ROOTS; increase MAX_ROOTS',
-     &      N_CSIM,N_ROOTS
-         CALL QUIT('N_CSIM .lt. N_ROOTS; increase MAX_ROOTS')
-!        it will be necessary to increase MAX_ROOTS to be sure
-!        to include all members of a quasi-degenerate set.
-      END IF
-C
+!     Allocate memory for reduced space and for b- and sigma-vectors
+
       LHRED = MAX_HRED*MAX_HRED*NZ_in_CI
       CALL MEMGET2('REAL','HRED',KHRED,LHRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','HEIGVL',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','HEIGVC',KEIGVC,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
-      KHREDI = KHRED + MAX_HRED*MAX_HRED
+      KHREDI  = KHRED + MAX_HRED*MAX_HRED
       KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED
 
       CALL MEMGET2('REAL','SRED' ,KSRED,LHRED,WORK,KFREE,LFREE)
@@ -2434,21 +2356,137 @@ C
       CALL MEMGET2('REAL','SCVEC',KSCVEC,MAX_HRED * NDETQ,
      &     WORK,KFREE,LFREE)
 C
+C
+C     ********************************
+C     *** Find start trial vectors ***
+C     ********************************
+C
+C
+      CALL MEMGET2('REAL','HDIAG',KHDIAG,NDET,WORK,KFREE,LFREE)
+C
+C     Calculate diagonal of CI matrix:
+C     --------------------------------
+C
+c     CALL GASCIP_HDIAG(WORK(KHDIAG),NDET,IDET,WORK(KFCACM),WORK(KMUUUU))
+      IHRM = 1
+      CALL GASCIP_CI(.TRUE.,WORK(KHDIAG),
+     &     .FALSE.,DUMMY,DUMMY,WORK(KFCACM),WORK(KMUUUU),
+     &     .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
+     &     .TRUE.,NDET,IDET,IHRM,IPRINT)
+C     CALL GASCIP_CI(DODIA,DIAG,
+C          DOSIG,SVEC,BVEC,HCORE,VMUUUU,
+C          DODEN,CL,CR,DV,PV,
+C          DO2EL,NDET,IDET,IHRM,IPRINT)
+C
+      IF (IPRINT .GT. 20) THEN
+         WRITE(LUPRI,'(/A)')
+     &      ' (GASCIP_RCISTD) Diagonal of CI Hamiltonian'
+         CALL OUTPUT(WORK(KHDIAG),1,1,1,NDET,1,NDET,-1,LUPRI)
+      END IF
+
+      ! Find out if this is a restart
+      inquire(file='GASCIP.RST',opened=is_open,exist=file_exists,
+     &              number=LUGASCIP)
+      IF (file_exists) THEN
+         IF (.NOT. is_open) THEN
+            LUGASCIP = LU_NOT_USED(51)
+            open(LUGASCIP,file='GASCIP.RST',
+     &         status='OLD',form='UNFORMATTED')
+         END IF
+         REWIND (LUGASCIP)
+         READ (LUGASCIP) NCMOTQ_r, NDET_r, NDETQ_r, N_CVEC
+         IF (NCMOTQ .EQ. NCMOTQ_r .AND.
+     &      NDET .EQ. NDET_r .AND. NDETQ_r .EQ. NDETQ) THEN
+         ! GASCIP.RST seems to be OK for restart
+            CALL READT(LUGASCIP,NDETQ*N_CVEC,WORK(KBCVEC))
+            N_CSIM = N_CVEC
+            WRITE(LUPRI,'(/I5,A)') N_CVEC,
+     &         ' restart CI vectors read from GASCIP.RST'
+            write(lupri,*) 'test ouput of start trial vectors'
+            call output(work(kbcvec),1,ndetq,1,N_cvec,
+     &         ndetq,n_cvec,-1,lupri)
+            flush(lupri)
+            IF (N_CSIM .GE. N_ROOTS) GO TO 50
+         END IF
+      ELSE
+         LUGASCIP = LU_NOT_USED(51)
+         open(LUGASCIP,file='GASCIP.RST',
+     &      status='NEW',form='UNFORMATTED')
+         N_CVEC = 0
+      END IF
+
+      ! if here: no or not enough restart CI vectors
+C
+C     If N_ROOTS .gt. 0, then
+C     find N_ROOTS + N_CSIM_EXTRA_START lowest elements in HDIAG:
+C
+C     (We start with extra diagonal elements to be fairly sure
+C      that we cover the N_ROOTS lowest symmetries in the start.
+C      Say that diagonal element no. N_ROOTS + 1 is the first of
+C      symmetry 2, but after convergence symmetry 2 is eigenvalue
+C      no. N_ROOTS - 2. This eigenvalue and eigenvector will be
+C      missed if we don't start with some extra diagonal elements.
+C      /hjaaj Oct 2010 )
+C
+      IF (N_ROOTS_in .GT. 0) THEN
+         N_CSIM = MIN(NDET, N_ROOTS+N_CSIM_EXTRA_START, MAX_ROOTS)
+         J_CSIM = MIN(NDET, N_CSIM+N_CSIM_EXTRA_START)
+         ! always OK because DIMENSION J_HDIAG(MAX_ROOTS + N_CSIM_EXTRA_START)
+      ELSE
+         N_CSIM = N_ROOTS
+         J_CSIM = N_ROOTS
+      END IF
+      CALL FNDMIN(J_CSIM,J_HDIAG,WORK(KHDIAG),NDET,WORK(KFREE),LFREE)
+C
+C     Make sure that we don't break symmetry by only having all
+C     components of a (nearly) degenerate set - criterium for
+C     degeneracy: energy difference less than 0.01 bohr)
+
+      !> hardwire for debugging:
+!     n_csim = 4
+C
+      if (N_CSIM .GT. N_ROOTS) then
+        HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
+   90   HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
+        call flshfo(lupri)
+        IF (ABS(HDIAG_N_CSIMp1 - HDIAG_N_CSIM) .LT. 0.002D0) THEN
+           N_CSIM = N_CSIM - 1
+           HDIAG_N_CSIMp1 = HDIAG_N_CSIM
+           GO TO 90
+        END IF
+      end if
+      IF (N_CSIM .LT. N_ROOTS) THEN
+          WRITE(LUPRI,*)
+     &      'ERROR: N_CSIM .lt. N_ROOTS; increase MAX_ROOTS',
+     &      N_CSIM,N_ROOTS
+         CALL QUIT('N_CSIM .lt. N_ROOTS; increase MAX_ROOTS')
+!        it will be necessary to increase MAX_ROOTS to be sure
+!        to include all members of a quasi-degenerate set.
+      END IF
+C
 C     Set first trial vectors equal to: BCVEC(I,J) = DELTA(I, J_HDIAG(J))
 C
-      CALL DZERO(WORK(KBCVEC),N_CSIM*NDETQ)
-      WRITE(LUPRI,'(/I5,A)') N_CSIM,
+      WRITE(LUPRI,'(/I5,A)') N_CSIM-N_CVEC,
      &   ' start vectors based on lowest diagonal elements of H_CI'
       JBCVEC = KBCVEC - 1
       DO I = 1, N_CSIM
          II = J_HDIAG(I)
          ECIA(I) = WORK(KHDIAG-1+II)
          ECI(I)  = ECIA(I) + ECORE
-         WRITE (LUPRI,'(I10,F20.6)') II, ECI(I)
-         WORK(JBCVEC + II) = 1.0D0
+         IF (I .LE. N_CVEC) THEN
+            WRITE (LUPRI,'(I10,F20.6)') II, ECI(I)
+         ELSE
+            WRITE (LUPRI,'(I10,F20.6,A)') II, ECI(I), ' (used)'
+            CALL DZERO(WORK(JBCVEC+1),NDETQ)
+            WORK(JBCVEC + II) = 1.0D0
+         END IF
          JBCVEC = JBCVEC + NDETQ
       END DO
-C
+
+!     N_CSIM start vectors available, start micro iterations
+
+   50 CONTINUE
+
       ITMIC = 0
       ICONV_TOT = 0
       N_CRED = 0
@@ -2877,16 +2915,16 @@ C
      &        '                 Lowering of energy =',
      &        (ECIOLD(I)-ECI(I),I=1,N_CSIM)
 
-      IF (IPRINT .GE. 3) THEN
-         CALL GETTIM(CPU_end,WALL_end)
-         CPUTID  = SECTID(CPU_end-CPU_st)
-         WALLTID = SECTID(WALL_end-WALL_st)
-         WRITE(LUPRI,'(/5A)')
+         IF (IPRINT .GE. 3) THEN
+            CALL GETTIM(CPU_end,WALL_end)
+            CPUTID  = SECTID(CPU_end-CPU_st)
+            WALLTID = SECTID(WALL_end-WALL_st)
+            WRITE(LUPRI,'(/5A)')
      &     ' (GASCIP_RCISTD) CPU (Wall) time for reduced Hamiltonian :',
-     &     CPUTID,' (',WALLTID,')'
-         CPU_st = CPU_end
-         WALL_st = WALL_end
-      END IF
+     &      CPUTID,' (',WALLTID,')'
+            CPU_st = CPU_end
+            WALL_st = WALL_end
+         END IF
 C
 C        Construct residuals
 C        -------------------
@@ -2895,36 +2933,68 @@ C        r = (H-E)x  (store in CVECS)
 C          = Hx - Ex
 C          = SUM_J C(J) SCVEC(J) - ECIA * SUM_J C(J) BCVEC(J)
 C
-         CALL DZERO(CVECS,N_ROOTS*NDETQ)
-         ICONV_TOT = 1
-         DO, I_ROOT = 1,N_ROOTS
-           DO, I = 1, N_CRED
-             FAC = WORK((KEIGVC-1)+I+(I_ROOT-1)*MAX_HRED)
-C            write (lupri,*) 'i_root, ired, fac_real',i_root,i,fac
-             CALL DAXPY(NDETQ,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
-     &            CVECS(1,I_ROOT),1)
-             CALL DAXPY(NDETQ,-ECIA(I_ROOT)*FAC,
-     &            WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1,I_ROOT),1)
-             IF (NZ_in_CI .gt. 1) THEN
-                FAC = WORK((KEIGVCI-1)+I+(I_ROOT-1)*MAX_HRED)
-C               write (lupri,*) 'i_root, ired, fac_imag',i_root,i,fac
-                CALL DAXPY(NDET,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
-     &               CVECS(1+NDET,I_ROOT),1)
-                CALL DAXPY(NDET,-FAC,WORK(KSCVEC+(I-1)*NDETQ+NDET),1,
-     &               CVECS(1,I_ROOT),1)
-                CALL DAXPY(NDET,-ECIA(I_ROOT)*FAC,
-     &               WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1+NDET,I_ROOT),1)
-                CALL DAXPY(NDET,+ECIA(I_ROOT)*FAC,
-     &               WORK(KBCVEC+(I-1)*NDETQ+NDET),1,CVECS(1,I_ROOT),1)
-              END IF
-           END DO
-           DNRES(I_ROOT) = DNORM2(NDETQ,CVECS(1,I_ROOT),1)
-           IF ( DNRES(I_ROOT) .GT. THR_CONV ) ICONV_TOT = 0 ! not all converged
+
+         ! 1) construct current best solution vector SUM_J C(J,I_ROOT) BCVEC(J)
+         !    (we cannot use QGEMM because of packing of BCVEC and CVECS)
+         ! 1a) the real part of eigen vectors C(:,:)
+         CALL DGEMM('N','N',NDETQ,N_ROOTS,N_CRED,1.0D0,
+     &        WORK(KBCVEC),NDETQ,          ! real + imag. part
+     &        WORK(KEIGVC),MAX_HRED,       ! real part
+     &        0.0D0,CVECS,NDETQ)           ! store in real + imag. part
+         ! 1b) the imaginary part of eigen vectors C(:,:)
+         IF (NZ_in_CI .gt. 1) THEN
+           CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,1.0D0,
+     &        WORK(KBCVEC),NDETQ,          ! real part
+     &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
+     &        1.0D0,CVECS(1+NDET,1),NDETQ) ! add to imaginary part
+           CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,-1.0D0,  ! i*i = -1
+     &        WORK(KBCVEC+NDET),NDETQ,     ! imaginary part
+     &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
+     &        1.0D0,CVECS,NDETQ)           ! subtract from real part
+         END IF
+
+         ! 2) save them for restart
+           ! hjaaj: ought to also save the corresponding SVECS ...
+           ! will save one CI iteration at restart ..
+
+         REWIND (LUGASCIP)
+         WRITE (LUGASCIP) NCMOTQ, NDET, NDETQ, N_ROOTS
+         CALL WRITT(LUGASCIP,N_ROOTS*NDETQ,CVECS)
+
+         ! 3) multipy with -ECIA(i_root) (note: real eigenvalues)
+         DO I_ROOT = 1, N_ROOTS
+           CALL DSCAL(NDETQ,-ECIA(I_ROOT),CVECS(1,I_ROOT),1)
          END DO
+
+         ! 4) add SUM_J C(J,I_ROOT) SCVEC(J) to finish residual
+         ! 4a) the real part of eigen vectors C(:,:)
+         CALL DGEMM('N','N',NDETQ,N_ROOTS,N_CRED,1.0D0,
+     &        WORK(KSCVEC),NDETQ,          ! real + imag. part
+     &        WORK(KEIGVC),MAX_HRED,       ! real part
+     &        1.0D0,CVECS,NDETQ)           ! add to real + imag. part
+         ! 4b) the imaginary part of eigen vectors C(:,:)
+         IF (NZ_in_CI .gt. 1) THEN
+           CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,1.0D0,
+     &        WORK(KSCVEC),NDETQ,          ! real part
+     &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
+     &        1.0D0,CVECS(1+NDET,1),NDETQ) ! add to imaginary part
+           CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,-1.0D0,  ! i*i = -1
+     &        WORK(KSCVEC+NDET),NDETQ,     ! imaginary part
+     &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
+     &        1.0D0,CVECS,NDETQ)           ! subtract from real part
+         END IF
+
+         ! 5) calculate norms of residuals and check if converged
+         ICONV_TOT = 1
+         DO I_ROOT = 1, N_ROOTS
+           DNRES(I_ROOT) = DNORM2(NDETQ,CVECS(1,I_ROOT),1)
+           IF ( DNRES(I_ROOT) .GT. THR_CONV ) ICONV_TOT = 0  ! not all converged
+         END DO ! I_ROOT
          IF (I_STATE .GT. 0) THEN ! only converge this root
            IF ( DNRES(I_STATE) .LE. THR_CONV ) ICONV_TOT = 1 ! the requested state is converged
          END IF
-C
+
+         ! 6) print
          WRITE(LUPRI,'(/A,1P,D8.2,A/,(I10,D20.5))')
      &     ' (GASCIP_RCISTD) Norm of CI residuals (thr = ',THR_CONV,')',
      &     (I_ROOT,DNRES(I_ROOT),I_ROOT=1,N_ROOTS)
@@ -2936,6 +3006,7 @@ C
             CALL OUTPUT(CVECS,1,NDET,1,NZ_in_CI*N_ROOTS,
      &         NDET,NZ_in_CI*N_ROOTS,-1,LUPRI)
          END IF
+
       IF (IPRINT .GE. 3) THEN
          CALL GETTIM(CPU_end,WALL_end)
          CPUTID  = SECTID(CPU_end-CPU_st)
@@ -2995,6 +3066,7 @@ C
             END IF
             JBCVEC = JBCVEC + NDETQ
          END DO  ! I_ROOT = 1, N_ROOTS
+
       IF (IPRINT .GE. 3) THEN
          CALL GETTIM(CPU_end,WALL_end)
          CPUTID  = SECTID(CPU_end-CPU_st)
@@ -3265,6 +3337,9 @@ C
 !
 !     return the final eigenvalues to the incoming array (needed in the calling routine)
       call dcopy(N_ROOTS,eci,1,eci_out,1)
+
+      close(LUGASCIP, status='KEEP')
+      LUGASCIP = -1
 
       CALL FLSHFO(LUPRI)
 

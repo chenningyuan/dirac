@@ -2490,7 +2490,7 @@ C
      &      ' (dimension ',NZCONFQ,')',
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
-      IF (NASHT .GT. 1 .AND. NZCONF .LE. 0) THEN
+      IF (NASHT .GT. 0 .AND. NZCONF .LE. 0) THEN
          WRITE(LUPRI,'(/A)') ' INFO: no determinants in this symmetry!'
       END IF
 C

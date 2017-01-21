@@ -46,6 +46,7 @@ set(FREE_GP_FORTRAN_SOURCES
     dynamic_string.F90
     electrostatic_potential.F90
     exception_handling.F90
+    file_handler.F90
     f77_work_interface.F90
     gp_q_diag.F90
     gpsk.F90

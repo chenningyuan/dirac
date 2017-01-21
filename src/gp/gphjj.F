@@ -1330,3 +1330,22 @@ C
       END IF
       RETURN
       END
+      INTEGER FUNCTION LU_NOT_USED(LU_start)
+      ! find a file logical unit number not in use
+      ! hjaaj Jan 2017
+      implicit none
+      INTEGER  LU_start, LU, ios
+      LOGICAL  is_open
+!
+      do LU = LU_start,99
+         inquire (unit=LU, opened=is_open, iostat=ios)
+         if (ios.ne.0) cycle
+         if (.not.is_open) then
+            LU_NOT_USED = LU
+            RETURN
+         end if
+      end do
+!
+      CALL QUIT('LU_NOT_USED: no free i/o unit numbers')
+      END
+! --- end of gp/gphjj.F ---
