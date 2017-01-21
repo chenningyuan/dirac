@@ -2397,7 +2397,8 @@ C
         END IF
       end if
       IF (N_CSIM .LT. N_ROOTS) THEN
-          WRITE(LUPRI,*) 'N_CSIM .lt. N_ROOTS; increase MAX_ROOTS',
+          WRITE(LUPRI,*)
+     &      'ERROR: N_CSIM .lt. N_ROOTS; increase MAX_ROOTS',
      &      N_CSIM,N_ROOTS
          CALL QUIT('N_CSIM .lt. N_ROOTS; increase MAX_ROOTS')
 !        it will be necessary to increase MAX_ROOTS to be sure
@@ -2727,16 +2728,16 @@ C
      &        '                 Lowering of energy =',
      &        (ECIOLD(I)-ECI(I),I=1,N_CSIM)
 
-      IF (IPRINT .GE. 3) THEN
-         CALL GETTIM(CPU_end,WALL_end)
-         CPUTID  = SECTID(CPU_end-CPU_st)
-         WALLTID = SECTID(WALL_end-WALL_st)
-         WRITE(LUPRI,'(/5A)')
+         IF (IPRINT .GE. 3) THEN
+            CALL GETTIM(CPU_end,WALL_end)
+            CPUTID  = SECTID(CPU_end-CPU_st)
+            WALLTID = SECTID(WALL_end-WALL_st)
+            WRITE(LUPRI,'(/5A)')
      &     ' (GASCIP_RCISTD) CPU (Wall) time for reduced Hamiltonian :',
-     &     CPUTID,' (',WALLTID,')'
-         CPU_st = CPU_end
-         WALL_st = WALL_end
-      END IF
+     &      CPUTID,' (',WALLTID,')'
+            CPU_st = CPU_end
+            WALL_st = WALL_end
+         END IF
 C
 C        Construct residuals
 C        -------------------
@@ -2745,36 +2746,68 @@ C        r = (H-E)x  (store in CVECS)
 C          = Hx - Ex
 C          = SUM_J C(J) SCVEC(J) - ECIA * SUM_J C(J) BCVEC(J)
 C
-         CALL DZERO(CVECS,N_ROOTS*NDETQ)
-         ICONV_TOT = 1
-         DO, I_ROOT = 1,N_ROOTS
-           DO, I = 1, N_CRED
-             FAC = WORK((KEIGVC-1)+I+(I_ROOT-1)*MAX_HRED)
-C            write (lupri,*) 'i_root, ired, fac_real',i_root,i,fac
-             CALL DAXPY(NDETQ,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
-     &            CVECS(1,I_ROOT),1)
-             CALL DAXPY(NDETQ,-ECIA(I_ROOT)*FAC,
-     &            WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1,I_ROOT),1)
-             IF (NZ_in_CI .gt. 1) THEN
-                FAC = WORK((KEIGVCI-1)+I+(I_ROOT-1)*MAX_HRED)
-C               write (lupri,*) 'i_root, ired, fac_imag',i_root,i,fac
-                CALL DAXPY(NDET,FAC,WORK(KSCVEC+(I-1)*NDETQ),1,
-     &               CVECS(1+NDET,I_ROOT),1)
-                CALL DAXPY(NDET,-FAC,WORK(KSCVEC+(I-1)*NDETQ+NDET),1,
-     &               CVECS(1,I_ROOT),1)
-                CALL DAXPY(NDET,-ECIA(I_ROOT)*FAC,
-     &               WORK(KBCVEC+(I-1)*NDETQ),1,CVECS(1+NDET,I_ROOT),1)
-                CALL DAXPY(NDET,+ECIA(I_ROOT)*FAC,
-     &               WORK(KBCVEC+(I-1)*NDETQ+NDET),1,CVECS(1,I_ROOT),1)
-              END IF
-           END DO
-           DNRES(I_ROOT) = DNORM2(NDETQ,CVECS(1,I_ROOT),1)
-           IF ( DNRES(I_ROOT) .GT. THR_CONV ) ICONV_TOT = 0 ! not all converged
+
+         ! 1) construct current best solution vector SUM_J C(J,I_ROOT) BCVEC(J)
+         !    (we cannot use QGEMM because of packing of BCVEC and CVECS)
+         ! 1a) the real part of eigen vectors C(:,:)
+         CALL DGEMM('N','N',NDETQ,N_ROOTS,N_CRED,1.0D0,
+     &        WORK(KBCVEC),NDETQ,          ! real + imag. part
+     &        WORK(KEIGVC),MAX_HRED,       ! real part
+     &        0.0D0,CVECS,NDETQ)           ! store in real + imag. part
+         ! 1b) the imaginary part of eigen vectors C(:,:)
+         IF (NZ_in_CI .gt. 1) THEN
+           CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,1.0D0,
+     &        WORK(KBCVEC),NDETQ,          ! real part
+     &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
+     &        1.0D0,CVECS(1+NDET,1),NDETQ) ! add to imaginary part
+           CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,-1.0D0,  ! i*i = -1
+     &        WORK(KBCVEC+NDET),NDETQ,     ! imaginary part
+     &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
+     &        1.0D0,CVECS,NDETQ)           ! subtract from real part
+         END IF
+
+         ! 2) save them for restart
+           ! hjaaj: ought to also save the corresponding SVECS ...
+           ! will save one CI iteration at restart ..
+
+         DO I_ROOT = 1, N_ROOTS
+      !    CALL WRITT(LUKRMC,NDETQ,CVECS(1,I_ROOT))
          END DO
+
+         ! 3) multipy with -ECIA(i_root) (note: real eigenvalues)
+         DO I_ROOT = 1, N_ROOTS
+           CALL DSCAL(NDETQ,-ECIA(I_ROOT),CVECS(1,I_ROOT),1)
+         END DO
+
+         ! 4) add SUM_J C(J,I_ROOT) SCVEC(J) to finish residual
+         ! 4a) the real part of eigen vectors C(:,:)
+         CALL DGEMM('N','N',NDETQ,N_ROOTS,N_CRED,1.0D0,
+     &        WORK(KSCVEC),NDETQ,          ! real + imag. part
+     &        WORK(KEIGVC),MAX_HRED,       ! real part
+     &        1.0D0,CVECS,NDETQ)           ! add to real + imag. part
+         ! 4b) the imaginary part of eigen vectors C(:,:)
+         IF (NZ_in_CI .gt. 1) THEN
+           CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,1.0D0,
+     &        WORK(KSCVEC),NDETQ,          ! real part
+     &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
+     &        1.0D0,CVECS(1+NDET,1),NDETQ) ! add to imaginary part
+           CALL DGEMM('N','N',NDET,N_ROOTS,N_CRED,-1.0D0,  ! i*i = -1
+     &        WORK(KSCVEC+NDET),NDETQ,     ! imaginary part
+     &        WORK(KEIGVCI),MAX_HRED,      ! imaginary part
+     &        1.0D0,CVECS,NDETQ)           ! subtract from real part
+         END IF
+
+         ! 5) calculate norms of residuals and check if converged
+         ICONV_TOT = 1
+         DO I_ROOT = 1, N_ROOTS
+           DNRES(I_ROOT) = DNORM2(NDETQ,CVECS(1,I_ROOT),1)
+           IF ( DNRES(I_ROOT) .GT. THR_CONV ) ICONV_TOT = 0  ! not all converged
+         END DO ! I_ROOT
          IF (I_STATE .GT. 0) THEN ! only converge this root
            IF ( DNRES(I_STATE) .LE. THR_CONV ) ICONV_TOT = 1 ! the requested state is converged
          END IF
-C
+
+         ! 6) print
          WRITE(LUPRI,'(/A,1P,D8.2,A/,(I10,D20.5))')
      &     ' (GASCIP_RCISTD) Norm of CI residuals (thr = ',THR_CONV,')',
      &     (I_ROOT,DNRES(I_ROOT),I_ROOT=1,N_ROOTS)
@@ -2786,6 +2819,7 @@ C
             CALL OUTPUT(CVECS,1,NDET,1,NZ_in_CI*N_ROOTS,
      &         NDET,NZ_in_CI*N_ROOTS,-1,LUPRI)
          END IF
+
       IF (IPRINT .GE. 3) THEN
          CALL GETTIM(CPU_end,WALL_end)
          CPUTID  = SECTID(CPU_end-CPU_st)
@@ -2845,6 +2879,7 @@ C
             END IF
             JBCVEC = JBCVEC + NDETQ
          END DO  ! I_ROOT = 1, N_ROOTS
+
       IF (IPRINT .GE. 3) THEN
          CALL GETTIM(CPU_end,WALL_end)
          CPUTID  = SECTID(CPU_end-CPU_st)
