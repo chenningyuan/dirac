@@ -238,8 +238,9 @@ C
             N_ROOTS = N_CIROOTS
          END IF
 
-         IPR_GASCIP = max(IPRESR,2) ! print always timing of each micro iteration
-         CALL GASCIP_RCISTD(N_ROOTS, THR_CIESR, MAX_CI_IT,
+         IPR_GASCIP = max(IPRESR,2)   ! print always timing of each micro iteration
+         MAX_CI_IT_local  = MAX_CI_IT ! GASCIP_RCISTD modifies MAX_CI_IT
+         CALL GASCIP_RCISTD(N_ROOTS, THR_CIESR, MAX_CI_IT_local,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
      &                     WORK(KZCONF), CMO,
      &                     THR_CVEC_ESR, 0, ICONV_TOT,

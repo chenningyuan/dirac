@@ -1475,7 +1475,7 @@ C
                WRITE (LUPRI,'(/A)')
      &          ' Imag part of det-CI property matrix'
                CALL OUTPUT(WORK(KPI),1,NZCONF,1,NZCONF,
-     &              NZCONF,NZCONF,1,LUPRI)
+     &              NZCONF,NZCONF,-1,LUPRI)
             END IF
          END IF
 C
