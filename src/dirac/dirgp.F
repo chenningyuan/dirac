@@ -2990,7 +2990,7 @@ C.......Fragment orbitals in molecular basis
           ICOFF = 1
           IEOFF = 1
           DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
+             IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
 C             Select coefficients
               IF(LBIT(IOPT_TMP,2)) THEN
                 ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
@@ -3008,7 +3008,7 @@ C             Select eigenvalues
               ENDIF
 C       Select boson irrep information
               IF(LBIT(IOPT_TMP,4)) THEN
-                CALL SELIBEIG(IBEIG(1+IORB(IFRP)),IORB(IFRP),IFRP,
+                CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
      &                 IBSEL(IESEL),WORK(KVEC(IFRP,IFRAG)),
      &                 NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
               ENDIF
@@ -4096,7 +4096,6 @@ C
 C***********************************************************************
 
       use memory_allocator
-
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4113,8 +4112,13 @@ C
       real(8), allocatable :: cmo(:)
       real(8), allocatable :: eig(:)
       integer, allocatable :: ibeig(:)
-      integer, allocatable :: ibos(:)
       real(8), allocatable :: tmat(:)
+      real(8), allocatable :: WORK(:)
+
+      CALL QENTER('RKBIMP')      
+      call legacy_lwork_get(LWORK)
+#include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in RKBIMP')
 
 C     Check for the presence of coefficient file
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
@@ -4139,19 +4143,21 @@ C.......and calculate space needed to store UKB complement in orthonormal basis
 C.........Read coefficients, eigenvalues and boson irreps
           IOPT=14
           REWIND LUCOEF
-          
-          allocate(buf(nbuf))
+          allocate(buf(nbuf))    ! buffer for storing UKB complement in orthonormal basis
           allocate(cmo(ncmotq))
           allocate(eig(norbt))
           allocate(ibeig(norbt))
-          allocate(ibos(norbt))
           allocate(tmat(n2tmt))
-
+C
           CALL REACMO_no_work(LUCOEF,'DFCOEF',cmo,eig,ibeig,
      &                TOTERG,IOPT)
 C.........Zero IBEIG if no subblocks; this allows to treat linear systems
 C         that are presently not handled in URKBAL
-          IF(.NOT.SUB_BL) CALL ICOPY(NORBT,0,0,ibeig,1)
+          IF(SUB_BL) THEN
+            CALL QUIT('RKBIMP: SUB_BL must be programmed.')
+          ELSE
+            CALL ICOPY(NORBT,0,0,IBEIG,1)
+          ENDIF
 C.........At this point the first columns of the negative energy solutions
 C         corresponding to the UKB complement has been zeroed out by REACMO
           CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','RKBIMP')
@@ -4163,39 +4169,33 @@ C.........Read MO-to-AO-transformation matrix
           DO IFRP = 1,NFSYM
             NUKBP=NPSH(IFRP)-IDIM(1,IFRP)
             IF(NUKBP.GT.0) THEN
-              IADR=IORB(IFRP)
-              CALL RKBIMP_1(IFRP,NFBAS(IFRP,0),NORB(IFRP),
-     &                      IDIM(1,IFRP),IDIM(2,IFRP),NUKBP,
-     &                      cmo(1+ICMOQ(IFRP)),ibeig,
-     &                      ibos,IADR,
-     &                      buf(1+IOFF),tmat(1+I2TMT(IFRP)),
-     &                      NZT,IPRINT)
+              NRKB=IDIM(1,IFRP)+IDIM(2,IFRP)
+              CALL RKBIMP_1(IFRP,NFBAS(IFRP,0),NORB(IFRP),NRKB,NUKBP,
+     &             CMO(1+ICMOQ(IFRP)),BUF(1+IOFF),
+     &             TMAT(1+I2TMT(IFRP)),NZT,WORK,KFREE,LFREE)
               IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
             ENDIF
           ENDDO
 C.........Backtransform UKB complement
           REWIND LUTMAT
-          CALL READT(LUTMAT,N2TMT,tmat)
+          CALL READT(LUTMAT,N2TMT,TMAT)
           IOFF = 0
           DO IFRP = 1,NFSYM
             NUKBP=NPSH(IFRP)-IDIM(1,IFRP)
             IF(NUKBP.GT.0) THEN
-              IADR=IORB(IFRP)
-              CALL RKBIMP_2(IFRP,NFBAS(IFRP,0),NORB(IFRP),
-     &                      cmo(1+ICMOQ(IFRP)),ibeig,
-     &                      eig,ibos,IADR,
-     &                      buf(1+IOFF),tmat(1+I2TMT(IFRP)),
+              CALL RKBIMP_2(IFRP,NFBAS(IFRP,0),NORB(IFRP),NUKBP,
+     &                      CMO(1+ICMOQ(IFRP)),EIG(1+IORB(IFRP)),
+     &                      BUF(1+IOFF),TMAT(1+I2TMT(IFRP)),
      &                      NZT,IPRINT)
               IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
             ENDIF
           ENDDO
-          CALL WRICMO(LUCOEF,cmo,eig,ibeig,DHFERG)
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
 
           deallocate(buf)
           deallocate(cmo)
           deallocate(eig)
           deallocate(ibeig)
-          deallocate(ibos)
           deallocate(tmat)
 
           CLOSE(LUTMAT,STATUS='KEEP')
@@ -4210,6 +4210,8 @@ C.........Backtransform UKB complement
         CALL QUIT('RKBIMP: Coefficient file not found !')
       ENDIF
 C
+      call dealloc(work)
+      CALL QEXIT('RKBIMP')
       RETURN
  10   CONTINUE
       CALL QUIT('RKBIMP: END OF FILE reading TEXT')
@@ -4218,9 +4220,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp_1 */
-      SUBROUTINE RKBIMP_1(IFRP,NBAS,NORB,NPRKB,NERKB,NUKBP,
-     &                    CMO,IBEIG,IBOS,IADR,CBUF,TINV,NZT,
-     &                    IPRINT)
+      SUBROUTINE RKBIMP_1(IFRP,NBAS,NORB,NRKB,NUKBP,CMO,CBUF,TINV,NZT,
+     &                    WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Extend RKB coefficients of fermion ircop IFRP by UKB complement
@@ -4234,74 +4235,26 @@ C***********************************************************************
 C
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcb_rkbimp.h"
-      DIMENSION CMO(NBAS,NORB,NZ),IBEIG(NORB),IBOS(NORB),
-     &          TINV(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ)
-      DIMENSION NQ(2)
+      DIMENSION CMO(NBAS,NORB,NZ),TINV(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
+     &          WORK(*)
       real(8), allocatable :: cf(:)
-      KFRSAV = KFREE
-C     Initialize unit matrix (transformation matrix in MO-basis)
-      CALL DUNIT2(CBUF,NORB,NORB,NORB,NZ)
-      IF(SUB_BL) THEN
-C       Spin-free or linear case: Fill array with subblock info
-        CALL INIBOS(IBOS(IADR+1),IFRP,.FALSE.,0)
-      ELSE
-C       Spin-orbit coupling: Fill array with zeros..
-        CALL ICOPY (NORB,0,0,IBOS(IADR+1),1) 
-      ENDIF
-C
-C.....Transform negative energy coefficients to orthonormal basis
-      IP   = 2
+C.....Transform RKB coefficients to orthonormal basis
       ICOL = 1 + NUKBP
-      IV   = IADR + ICOL
-      NDIM = NORB*NPRKB*NZ
+      NDIM = NORB*NRKB*NZ
       allocate(cf(ndim))
-      CALL QGEMM(NORB,NPRKB,NBAS,D1,
+      CALL QGEMM(NORB,NRKB,NBAS,D1,
      &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
-     &            D0,IPQTOQ(1,0),CF,NORB,NPRKB,NZ)
-C.....Project out negative energy solutions
-      CALL PRJORT(CBUF,IBOS(IADR+1),
-     &            CF,IBEIG(IV),1,NPRKB,
-     &            RKBIMP_PRJTHR,THRMAX,NORB,NORB,
-     &            NPRKB,NQ(IP),IP,IPRINT)
-      deallocate(cf)
-C.....Transform positive energy coefficients to orthonormal basis
-      IP = 1
-      ICOL = 1 + NUKBP + NPRKB
-      IV = IADR + ICOL
-      NDIM = NORB*NERKB*NZ
-      allocate(cf(ndim))
-      CALL QGEMM(NORB,NERKB,NBAS,D1,
-     &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
-     &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NORB,NZ,
-     &            D0,IPQTOQ(1,0),CF,NORB,NERKB,NZ)
-C.....Project out positive energy solutions
-      CALL PRJORT(CBUF,IBOS(IADR+1),
-     &            CF,IBEIG(IV),1,NERKB,
-     &            RKBIMP_PRJTHR,THRMAX,NORB,NORB,
-     &            NERKB,NQ(IP),IP,IPRINT)
-      deallocate(cf)
-C.....
-      NDEL = NQ(1)+NQ(2)
-      NUKB = NORB-NDEL
-      WRITE(6,'(A)') 
-     & '* RKBIMP: Import of RKB coefficients (pre/post):'
-      WRITE(6,'(3X,A,2I6)')
-     &   'Number of RKB electronic solutions: ',NERKB,NQ(1),
-     &   'Number of RKB positronic solutions: ',NPRKB,NQ(2),
-     &   'UKB complement                    : ',NUKBP,NUKB
-      IF(NUKBP.NE.NUKB) THEN
-        WRITE(6,'(A)')
-     &  '*** ERROR: RKBIMPort failed !',
-     &  '  You may want to tune the threshold PRJTHR of RKBIMP.'
-        CALL QUIT('RKBIMP: UKB complement not recovered !')
-      ENDIF
- 5    RETURN
+     &     D0,IPQTOQ(1,0),CF,NORB,NRKB,NZ)
+C.....Generate complement (it fills the first NUKBP columns of CBUF
+      CALL PRJORT(CBUF,CF,NORB,NRKB,NZ,WORK,KFREE,LFREE)
+      deallocate (cf)
+c     
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp_2 */
-      SUBROUTINE RKBIMP_2(IFRP,NBAS,NORB,CMO,IBEIG,EIG,IBOS,IADR,
+      SUBROUTINE RKBIMP_2(IFRP,NBAS,NORB,NUKBP,CMO,EIG,
      &                    CBUF,TMAT,NZT,IPRINT)
 C***********************************************************************
 C
@@ -4317,34 +4270,21 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
-      DIMENSION CMO(NBAS,NORB,NZ),IBEIG(NORB),EIG(NORB),IBOS(NORB),
+      DIMENSION CMO(NBAS,NORB,NZ),EIG(NORB),
      &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ)
-      DIMENSION NQ(2)
-C.....Approximate eigenvalue of UKB complement
-      FAC=-D2*CVAL*CVAL
-      II = 0
       IF(IPRINT.GE.5) THEN
           WRITE(6,*) '* RKBIMP: CBUF on input',I
           CALL PRQMAT(CBUF(1,1,1),NORB,NORB,NORB,NORB,
      &              NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-      DO I = 1,NORB
-      IF(IBOS(IADR+I).GE.-100) THEN
-        II = II + 1
-        CALL QGEMM(NBAS,1,NORB,D1,
+C.....Approximate eigenvalue of UKB complement
+      FAC=-D2*CVAL*CVAL
+      CALL DCOPY(NUKBP,FAC,0,EIG,1)
+C.....Backtransform UKB complement      
+      CALL QGEMM(NBAS,NUKBP,NORB,D1,
      &          'N','N',IPQTOQ(1,0),TMAT,NBAS,NORB,NZT,
-     &          'N','N',IPQTOQ(1,0),CBUF(1,I,1), NORB,NORB,NZ,
-     &          D0,IPQTOQ(1,0),CMO(1,II,1),NBAS,NORB,NZ)
-        IF(SUB_BL) IBEIG(IADR+II)= -MOD(IBOS(IADR+I),1000)
-        IF(IPRINT.GE.5) THEN
-          WRITE(6,*) '* RKBIMP: UKB complement..untrans',I
-          CALL PRQMAT(CBUF(1,I,1),NORB,1,NORB,NORB,
-     &              NZ,IPQTOQ(1,0),LUPRI)
-        ENDIF
-
-      ENDIF
-      ENDDO
-      CALL DCOPY(II,FAC,0,EIG(IADR+1),1)
+     &          'N','N',IPQTOQ(1,0),CBUF(1,1,1), NORB,NORB,NZ,
+     &          D0,IPQTOQ(1,0),CMO(1,1,1),NBAS,NORB,NZ)
       IF(IPRINT.GE.5) THEN
         WRITE(6,*) '* RKBIMP: UKB complement..'
         CALL PRQMAT(CMO(1,1,1),NBAS,II,NBAS,NORB,
@@ -4797,4 +4737,32 @@ C
       
       return
       end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FRAGINFO(INFOSEL,NVECT,KVEC,NFRAG,NSTR,
+     &      WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Collect info about fragments in an integer array
+C
+C     Written by T. Saue Oct 5 2016
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"      
+      DIMENSION INFOSEL(2,NVECT),KVEC(2,NFRAG),NSTR(2,0:2,NFRAG),
+     &     WORK(*)
+      IOFF = 1
+      DO IFRP = 1,NFSYM
+         DO IFRAG = 1,NFRAG
+            CALL IICOPY(NSTR(IFRP,0,IFRAG),WORK(KVEC(IFRP,IFRAG)),1,1,
+     &           INFOSEL(1,IOFF),2,1)
+            CALL ICOPY(NSTR(IFRP,0,IFRAG),IFRAG,0,
+     &           INFOSEL(2,IOFF),2)
+            IOFF = IOFF + NSTR(IFRP,0,IFRAG)
+         ENDDO
+      ENDDO
+      RETURN
+      END
 ! -- end of dirgp.F --

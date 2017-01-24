@@ -292,11 +292,14 @@ contains
          do k = 1, n_sub_bl(i)
            norb_sub(k,i,2) = 0
            norb_sub(k,i,0) = norb_sub(k,i,1) + norb_sub(k,i,2)
+           ntmo_sub(k,i,2) = 0
+           ntmo_sub(k,i,0) = ntmo_sub(k,i,1) + ntmo_sub(k,i,2)
          end do
        end do
        write(fh) n_sub_bl
        write(fh) id_sub_bl
        write(fh) norb_sub
+       write(fh) ntmo_sub
        close(fh,status='keep')
 
   end subroutine set_x2c_subblock_data
@@ -390,6 +393,7 @@ contains
          read(fh) n_sub_bl
          read(fh) id_sub_bl
          read(fh) norb_sub
+         read(fh) ntmo_sub         
          close(fh,status='delete')
 !
 !        initialize sub-block diagonalization in DFDIAG
