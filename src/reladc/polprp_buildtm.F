@@ -392,16 +392,15 @@
 !------  F_ai(0)
 !------------------------
 !
-      
-      n1 = MVO(proprep)       !number of integrals
-      off = JPVOXX(proprep) + 1       !offset from where to read the integrals
+      n1 = MOV(proprep)       !number of integrals
+      off = JPOVXX(proprep) + 1       !offset from where to read the integrals
 !     write(*,*) 'F_ai(0), n1,off:',n1,off
 !     do i=1,n1
 !       write(*,*) 'Proi:',dvox(off+i-1),dvoy(off+i-1),dvoz(off+i-1)
 !     enddo
-      call xcopy(n1,dvox(off),1,faipx,1)
-      call xcopy(n1,dvoy(off),1,faipy,1)
-      call xcopy(n1,dvoz(off),1,faipz,1)
+      call xcopy(n1,dovx(off),1,faipx,1)
+      call xcopy(n1,dovy(off),1,faipy,1)
+      call xcopy(n1,dovz(off),1,faipz,1)
 
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
@@ -413,6 +412,8 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+ 
+      call quit('Temporary stop')
 !
 !------------------------
 !------  F_ai(1)
