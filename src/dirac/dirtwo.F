@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck twofck */
@@ -3534,7 +3536,7 @@ C
 C
 C             Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
-              CALL DIRAC_PARCTL( 1 )
+              CALL DIRAC_PARCTL( HERFCK_PAR )
 C
               CALL GETTIM(CPU1,WALL1)
               CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
@@ -4121,7 +4123,7 @@ C
 C
 C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
-           CALL DIRAC_PARCTL( 1 )
+           CALL DIRAC_PARCTL( HERFCK_PAR )
 C
            CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,

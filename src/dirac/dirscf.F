@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiscf */
       SUBROUTINE PSISCF(WFCONV)
@@ -469,7 +471,7 @@ C
            call interface_mo_write()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
-           if (parcal) call dirac_parctl(4)
+           if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
            call xcint_potential_rks(ntbas(0),
      &                              dmat,
@@ -1403,7 +1405,7 @@ C
            call interface_mo_write()
            call generate_num_grid(dmat)
 #ifdef VAR_MPI
-           if (parcal) call dirac_parctl(4)
+           if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
            call xcint_potential_rks(ntbas(0),
      &                              dmat,

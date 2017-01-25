@@ -22,7 +22,9 @@
 
 ! FILE    : krmcgascip.F
 ! main authors: H.J.Aa. Jensen & J. Thyssen
-C
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GASCIP_SETUP(UCIBOS,ICIREP,IPRINT)
 C***********************************************************************
@@ -4901,10 +4903,11 @@ C     Send ITASK = 11 for parallel GASCIP
 C     ==================================
 C
 #if GASCIP_DEBUG > 0
-      write (lupri,*) 'GASCIP_WAKE_NODES: Calling DIRAC_PARCTL(11)'
+      write (lupri,*)
+     &  'GASCIP_WAKE_NODES: Calling DIRAC_PARCTL( GASCIP_PAR )'
       call flshfo(lupri)
 #endif
-      CALL DIRAC_PARCTL(11)
+      CALL DIRAC_PARCTL( GASCIP_PAR )
 C
 C     Send essential common block information
 C     ==============================================
@@ -4957,7 +4960,7 @@ C
          itask = -1
          call interface_MPI_BCAST(itask,1,MPARID,
      &                         global_communicator)
-         CALL DIRAC_PARCTL(0)
+         CALL DIRAC_PARCTL( RELEASE_NODES )
       END IF
 #endif
       RETURN
