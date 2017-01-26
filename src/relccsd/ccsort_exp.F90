@@ -21,6 +21,7 @@
    public SRT7_exp
    public SRT6_exp
    public SRT9_exp
+   public SRT10_exp
    public SRT1TS4_exp
 
      private
@@ -868,6 +869,89 @@
       RETURN
       END SUBROUTINE
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT10_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
+
+      IMPLICIT INTEGER (A-Z)
+
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(I,J;KL:KLREP) to array BUF2(KL I,J:IREP)
+!
+!---------------Routines called----------------------------------------
+!
+!---------------Last modified------------------------------------------
+!
+!     Author :  Avijit Shee 
+!
+!---------------Calling variables--------------------------------------
+
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
+      LOGICAL DOINV
+      INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
+!---------------Local variables--------------------------------------
+     type(Offset) :: e,f,g,h 
+!---------------Executable code--------------------------------------
+
+      call alloc_array(e,nrep,f,g,h)
+      call auto_symmetry_offset(e,IFIE,JFIE,.false.,.false.)
+
+     if (all(KFIE == LFIE)) then !this may be a restriction since it may happen that the holes and particles are equal in number.
+      call auto_symmetry_offset_triangular(f,KFIE,LFIE)
+      else
+      call auto_symmetry_offset(f,KFIE,LFIE,.false.,.false.)
+      endif
+
+      call auto_symmetry_offset(g,f%onenonDirac,IFIE,.true.,.false.)
+      call auto_symmetry_offset(h,g%oneDirac,JFIE,.false.,.false.)
+
+      if (.not.doinv) then 
+      CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
+      row = g%oneDirac
+      column = Ifie
+      else
+      row = e%oneNonDirac 
+      column = f%oneNonDirac
+      endif
+
+      IJKL = 0
+      DO KLREP = 1, NREP
+       IJREP = MULTB(KLREP+NREP,1+NREP,1)
+       M = e%onenonDirac(IJREP)
+       N = f%onenonDirac(KLREP)
+       IJ = 1
+       DO 10 JREP = 1, NREP
+        IREP = MULTB(JREP,IJREP+NREP,2)
+        KLIREP = MULTB(KLREP+NREP,IREP,2)
+        JOFF = (h%twoNonDirac(KLIREP,JREP)+g%twoDirac(KLREP,IREP)) * RCW + 1
+        DO J = 1, JFIE(JREP)
+         DO I = 1, IFIE(IREP)
+            KLIJ = JOFF+((J-1)*g%oneDirac(KLIREP)+(I-1)*N)*RCW
+            IF (DOINV) THEN
+               CALL XCOPY(N,BUF1(KLIJ),1,BUF2(IJKL+IJ),M)
+            ELSE
+               CALL XCOPY(N,BUF1(IJKL+IJ),M,BUF2(KLIJ),1)
+            ENDIF
+            IJ = IJ + RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+       IJKL = IJKL + M * N * RCW
+      ENDDO
+
+      call dealloc_array(e,f,g,h)
+      RETURN
+      END SUBROUTINE
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
       SUBROUTINE SRT1S2_exp (NREP,MULTB,DOINV,IFIE,JFIE,KFIE,LFIE,BUF1,BUF2,ROW,COLUMN)
 
       IMPLICIT INTEGER (A-Z)

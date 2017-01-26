@@ -202,9 +202,9 @@
 
   case(31)
 
-  allocate(A(5))
+  allocate(A(6))
 
-  A = (/1234,1243,1342,3421,4123/)
+  A = (/1234,1243,1342,3421,4123,3412/)
 
   case(13)
 
@@ -264,8 +264,8 @@
 
   case(31)
 
-  allocate(A(4))
-  A = (/1234,4123,1342,3421/)
+  allocate(A(5))
+  A = (/1234,4123,1342,3421,3412/)
 
 
   case(13)
@@ -329,9 +329,9 @@
 
   case(31)
 
-  allocate(A(5))
+  allocate(A(6))
 
-  A = (/1234,1243,1342,3421,4123/)
+  A = (/1234,1243,1342,3421,4123,3412/)
 
   case(13)
 
@@ -391,8 +391,8 @@
 
   case(31)
 
-  allocate(A(4))
-  A = (/1234,4123,1342,3421/)
+  allocate(A(5))
+  A = (/1234,4123,1342,3421,3412/)
 
   case(13)
   allocate(A(1))
@@ -690,12 +690,14 @@
        srt_31(2)%unrestricted => SRT6_exp
        srt_31(3)%unrestricted => SRT9_exp
        srt_31(4)%unrestricted => SRT32_exp
+       srt_31(5)%unrestricted => SRT10_exp
 
 
        srt_31(0)%restricted_ket => SRT1T3_exp
        srt_31(1)%restricted_ket => SRT22_exp
        srt_31(2)%restricted_ket => SRT6_exp
        srt_31(3)%restricted_ket => SRT9_exp
+       srt_31(4)%restricted_ket => SRT10_exp
        srt_31(0)%restricted_braket => SRT1T3_exp
        srt_31(1)%restricted_braket => SRT22_exp
        srt_31(2)%restricted_braket => SRT7_exp

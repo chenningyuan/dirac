@@ -493,9 +493,9 @@ integer :: nbuf3,ierr
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
   real(8), pointer     :: r1_ptr(:),r2_ptr(:)
-  real(8), allocatable :: int_1b(:),sigma2_temp(:),ResL2_temp(:),w_vvvv(:)
+  real(8), allocatable :: int_1b(:),sigma2_temp(:),ResL2_temp(:),w_vvvv(:),local_buffer(:) 
   integer :: off1,off2,irp,istart,mint,m,n,k,nint
-  integer :: off3,i,j,kstart,ntot
+  integer :: off3,i,j,kstart,ntot,ierr
   logical :: done 
   real(8)              :: ddot
 !--------------------------------------------------
@@ -661,7 +661,7 @@ integer :: nbuf3,ierr
 
     call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)
 
-    call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
+     call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
     & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)
 
     deallocate(int_1b)
@@ -678,7 +678,7 @@ integer :: nbuf3,ierr
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,RightTensor=r2_ptr)
 
     call contraction_424 ((/"p1","p2","o2","o4"/),(/"o4","o1"/), &
-    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2)
+    & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2)
 
     deallocate(int_1b)
 
@@ -718,6 +718,26 @@ integer :: nbuf3,ierr
       enddo
 
     write(*,*)'diagram 13 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
+
+      allocate (local_buffer(ndimt2*rcw))
+
+#if defined (VAR_MPI)
+      if (nmproc .gt. 1) then
+        call xcopy (ndimt2,a0,0,local_buffer,1)
+        ierr = 0
+
+        call interface_mpi_allreduce(sigma2, &
+             local_buffer, ndimt2*rcw, &
+             op_mpi_sum,global_communicator)
+
+        if(ierr.gt.0) then
+           call quit('mpi_reduce error in collecting sigma2 !')
+        endif
+        call xcopy(ndimt2*rcw,local_buffer,1,sigma2,1)
+        endif
+#endif
+
+      deallocate (local_buffer)
 
   end subroutine
 
@@ -1067,8 +1087,6 @@ integer :: nbuf3,ierr
   &    L1_ptr,B%Fbar_mi,lambda1,-1.0d0,1.0d0,nrep)
 
 
-   write(*,*)'passed diagram 1', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
-
 !-----------------------------------------------------
 ! L(i,a*) = L(i,a*) -  L2(mn,a*e)*W(ie,mn)
 !-----------------------------------------------------
@@ -1082,9 +1100,6 @@ integer :: nbuf3,ierr
   &          (/"o1","c1"/),lambda1,-1.0d0,1.0d0,nrep,RightTensor=L2_ptr,  &
   &          LeftTensor=B%W_iemn)
 
-
-   write(*,*)'passed diagram 2', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
-
 !-------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2 (ij,a*e)*f_bar_ae(e,b)
 !-------------------------------------------------
@@ -1092,9 +1107,6 @@ integer :: nbuf3,ierr
      call contraction_424 ((/"o1","o2","c1","p3"/),(/"p3","p2"/), &
    &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,LeftTensor=L2_ptr, &
    &    RightTensor=B%Fbar_ae)
-
-
-   write(*,*)'passed diagram 3', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 !----------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) - P(ij) L2 (im,a*b)*f_bar_im (j,m)
@@ -1104,9 +1116,6 @@ integer :: nbuf3,ierr
      &    (/"o1","o2","c1","p2"/),lambda2,-1.0d0,1.0d0,nrep, &
      &    LeftTensor=L2_ptr,RightTensor=B%Fbar_mi)
 
-
-   write(*,*)'passed diagram 4', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
-
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2(mn,a*b) * W_ijmn(ij,mn)
 !--------------------------------------------------------
@@ -1115,8 +1124,6 @@ integer :: nbuf3,ierr
    &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,RightTensor=L2_ptr,LeftTensor=B%W_ijmn)
 
 
-   write(*,*)'passed diagram 5', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
-
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + P(ij) L2(im,a*e) * W_bmej(je,bm)
 !--------------------------------------------------------
@@ -1124,7 +1131,6 @@ integer :: nbuf3,ierr
      call contraction_444((/"o1","o3","c1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","c1","p2"/),lambda2, &
     &    1.0d0,0.0d0,nrep,righttensor=B%W_mbej,LeftTensor=L2_ptr)
 
-   write(*,*)'passed diagram 6', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 !---------------------------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L1(m,a*) * w_mnie(ij,mb)
@@ -1133,9 +1139,6 @@ integer :: nbuf3,ierr
      call contraction_424 ((/"o1","o2","o3","p2"/),(/"o3","c1"/), &
     &   (/"o1","o2","c1","p2"/),lambda2,-1.0d0,1.0d0,nrep,RightTensor=L1_ptr, &
     &   LeftTensor=B%W_mnie)
-
-
-   write(*,*)'passed diagram 7', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 
 !---------------------------------------------------------------
@@ -1161,11 +1164,8 @@ integer :: nbuf3,ierr
 
      call dealloc_array(e)
 
-   write(*,*)'passed diagram 8', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
-
    call lambda2_disconnected_IP(L1,B%Fbar_me,lambda2)
 
-   write(*,*)'passed diagram 8', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
  end subroutine
 

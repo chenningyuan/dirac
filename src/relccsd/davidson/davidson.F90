@@ -155,6 +155,7 @@ contains
         if (associated(results%eValuesIm)) deallocate(results%eValuesIm)
         if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
         if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
+
     end subroutine
 
 

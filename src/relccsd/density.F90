@@ -19,7 +19,7 @@
 !----------------calling variables-------------------------
    real*8, intent(in),contiguous,target :: l1(:,:),l2(:,:),r1(:,:),r2(:,:)
    real*8, intent(in) :: t1(:),t2(:)
-   real*8, intent(out) :: dmo(*)
+   real*8, intent(inout) :: dmo(*)
 !----------------local variables---------------------------
    real*8, allocatable :: doo(:),dvv(:),dvo(:),dov(:)  
    real*8, allocatable :: work1(:),work2(:) 
@@ -80,11 +80,11 @@
 
    write(*,*)'diagram3',dot_product(doo,doo) 
 !----------------------------------------------------------------------
-!     dvv(b,a) = dvv(b,a) + l2(mn,ea)*t2(eb,mn) 
+!     dvv(b,a) = dvv(b,a) + l2(mn,ea)*r2(eb,mn) 
 !----------------------------------------------------------------------
 
-! call contraction_442 ((/"o1","o2","c1","p1"/),(/"c1","p2","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep, &
-!&     LeftTensor=l2_ptr,RightTensor=t2 )
+  call contraction_442 ((/"c1","p2","o1","o2"/),(/"o1","o2","c1","p1"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep, &
+ &     RightTensor=l2_ptr,LeftTensor=r2_ptr )
 
    write(*,*)'diagram4'
 !----------------------------------------------------------------------
@@ -101,14 +101,14 @@
 
   deallocate(wop_temp)
 
-   write(*,*)'diagram5'
+   write(*,*)'diagram5',dot_product(dvv,dvv)
 !----------------------------------------------------------------------------
 !     dvo(a,i) = t1(a,i)
 !----------------------------------------------------------------------------
 
       call xcopy (nfvo,t1,1,dvo,1)
 
-   write(*,*)'diagram6'
+   write(*,*)'diagram6',dot_product(dvo,dvo)
 !--------------------------------------------------------------------------
 !     dvo(a,i) = dvo(a,i) + l1(m,b) * r(ba,im)
 !--------------------------------------------------------------------------
@@ -119,7 +119,7 @@
       call contraction_422 ((/"c1","p1","o1","o2"/),(/"o2","c1"/), &
      & (/"p1","o1"/),l1_ptr,dvo,-1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)       
 
-   write(*,*)'diagram6'
+   write(*,*)'diagram7',dot_product(dvo,dvo)
 !----------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l1(m,e) * r(e,i)*t(a,m)
 !----------------------------------------------------------
@@ -137,7 +137,7 @@
 
       deallocate(woo_temp)
 
-   write(*,*)'diagram7'
+   write(*,*)'diagram8',dot_product(dvo,dvo)
 !-------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*r2(ef,in)*t1(a,m) 
 !-------------------------------------------------------------
@@ -155,7 +155,7 @@
 
       deallocate(woo_temp)
 
-   write(*,*)'diagram8'
+   write(*,*)'diagram9',dot_product(dvo,dvo)
 !-----------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*r1(e,i)*t2(af,mn)
 !-----------------------------------------------------------------------
@@ -178,7 +178,7 @@
       deallocate(wpp_temp)
   call dealloc_array(e)
 
-   write(*,*)'diagram9'
+   write(*,*)'diagram10',dot_product(dvo,dvo)
 !------------------------------------------------------------------
 !      dvo(a,i) = dvo(a,i) - l2(mn,ef)*t1(f,i)*r2(ea,mn)
 !------------------------------------------------------------------
@@ -210,11 +210,11 @@
      &       (/"o3","p3"/),r1_ptr,woo_temp,1.0d0,1.0d0,nrep,LeftTensor=l2_ptr)   
 
       call contraction_422 ((/"p1","p3","o1","o3"/),(/"o3","p3"/),(/"p1","o1"/),&
-     &              t1,dvo,1.0d0,1.0d0,nrep,woo_temp)                
+     &           woo_temp,dvo,1.0d0,1.0d0,nrep,t2)                
 
       deallocate(woo_temp)
 
-   write(*,*)'diagram11'
+   write(*,*)'diagram11',dot_product(dvo,dvo)
 !--------------------------------------------------------------------
 !       dvo(a,i) = dvo(a,i) -  l2(mn,ef)*t1(f,i)*t1(a,n)*r1(e,m) 
 !--------------------------------------------------------------------
@@ -238,15 +238,15 @@
 
      deallocate(work1)
 
-   write(*,*)'diagram12'
+   write(*,*)'diagram12',dot_product(dvo,dvo)
 !----------------------------------------------------------
 !       dov(i,a) = dov(i,a) + l2(im,ba) * r1(b,m)
 !----------------------------------------------------------
 
       call contraction_422 ((/"o1","o2","c1","p1"/),(/"c1","o2"/), & 
-     & (/"o1","p1"/),r1_ptr,dov,1.0d0,1.0d0,nrep,LeftTensor=l2_ptr)
+     & (/"o1","p1"/),r1_ptr,dov,-1.0d0,1.0d0,nrep,LeftTensor=l2_ptr)
 
-   write(*,*)'diagram13'
+   write(*,*)'diagram13',dot_product(dov,dov)
       if (carith) then
          call conjuga (nfoo,doo,1)
          call conjuga (nfvv,dvv,1)

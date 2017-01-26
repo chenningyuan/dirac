@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpexp */
-      SUBROUTINE PRPEXP(WF,EXPVAL,WORK,LWORK)
+      SUBROUTINE PRPEXP(WF,EXPVAL,WORK,LWORK,state)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -37,6 +37,7 @@ C***********************************************************************
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
       CHARACTER WF*4
+      INTEGER, OPTIONAL :: state 
 C
 #include "dcbexp.h"
 #include "dcbbas.h"
@@ -62,7 +63,7 @@ CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
 #endif
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KFIRST),
-     &            WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE,state)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif
@@ -77,7 +78,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1 */
       SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PRPAO,FIRST,
-     &                  WORK,LWORK)
+     &                  WORK,LWORK,state)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -111,6 +112,7 @@ C
       CHARACTER WF*4
       INTEGER   GETIOPEN
       LOGICAL FNDLAB
+      INTEGER, OPTIONAL :: state 
 C
 C     Initialize
 C
@@ -162,7 +164,9 @@ C
 
 C        Get relaxed density matrix computed for excited states
 
-         CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
+         write(*,*)'# of statets',state
+
+         CALL GET_EOM_DENSITY ('AO',STATE,DMAT,IERR)
 
       ELSE IF (WF .EQ. 'KRMC') THEN
 C

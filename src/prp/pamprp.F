@@ -24,6 +24,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
       SUBROUTINE PAMPRP()
+      use eom_driver , only: number_of_states
 C***********************************************************************
 C
 C     Driver for PAMPRP_1.
@@ -42,6 +43,8 @@ C
 #include "dcbprp.h"
 C
       CHARACTER WF*4
+      INTEGER state 
+      INTEGER J 
 C
       CALL QENTER('PAMPRP')
 C
@@ -88,7 +91,19 @@ C
          END IF
          CALL TITLER('Properties for ' // WF // ' wave function',
      &        '*',110)
-         CALL PAMPRP_1(WF)
+
+         IF (WF .EQ. 'EOM ') THEN 
+           CALL number_of_states(state)
+             write(*,*)'# states', state
+            do j = 1, state
+
+             CALL PAMPRP_1(WF, j)
+
+            enddo 
+
+         ELSE
+           CALL PAMPRP_1(WF)
+         ENDIF
       END DO
 C
       CALL QEXIT('PAMPRP')
@@ -96,7 +111,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pampr1 */
-      SUBROUTINE PAMPRP_1(WF)
+      SUBROUTINE PAMPRP_1(WF,STATE)
 C***********************************************************************
 C
 C     NOTE
@@ -146,6 +161,7 @@ C
       real(8), allocatable :: WORK(:)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
+      INTEGER, OPTIONAL :: STATE
 C
       CALL QENTER('PAMPRP_1')
 C
@@ -175,7 +191,11 @@ C***********************************************************************
 C
       IF (DOEXP) THEN
          CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
-         CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE)
+         IF (PRESENT(STATE)) THEN 
+          CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE)
+         ELSE
+          CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE)
+         ENDIF
       ELSE
          KEXP = KFREE
       END IF

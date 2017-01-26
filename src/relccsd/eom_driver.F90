@@ -7,6 +7,7 @@
 !    public eom_ip  
 !    public eom_ea
     public eom_ee
+    public number_of_states
 
     private
 
@@ -170,7 +171,7 @@
              aa = aoff + a
              iaai = (iovvo(state_sym) + (iivo(arep,irep)+(i-1)*nv(arep)+a-1)*nov(state_sym) + &
        &      iiov(irep,arep) + (a-1)*no(irep))*rcw+i ! careful about the complex algebra  
-              H_II(ai) = -fac1 + eps(aa) - vbar_ss (iaai)
+              H_II(ai) = -fac1 + eps(aa)  - vbar_ss (iaai)
              ai = ai + 1
           enddo
         enddo
@@ -781,6 +782,7 @@
    use memory_allocator
    use allocator_parameters, only : klongint
    use eom_density
+   use symmetry_offset 
 
 #include "symm.inc"
 #include "complex.inc"
@@ -807,6 +809,7 @@
    type(davidson_results) :: davResultsR(nrep), davResultsL(nrep)
    logical :: left_vectors, right_vectors
    integer :: N, N1, N2 ! size of determinantal space 
+   type(Offset)         :: e
 
 !memory allocation
 !------------------
@@ -817,6 +820,7 @@
   integer                :: work_memsize
   integer                :: nbuf1,nbuf2
   integer                :: nbuf3
+  integer                :: state
   integer*8              :: nv5irp,nv6irp,nvirp
   real*8,allocatable     :: dmo(:) 
 
@@ -900,7 +904,6 @@
     left_vectors =  .false.
     call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
 
-
    if (relcc_do_eomprop) then
 
     right_vectors = .false.
@@ -908,24 +911,57 @@
     call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
 
 
+     ndimr1 = 0     
+
+   do irep = 1, nrep
+       ndimr1 = ndimr1 + ncont(irep)*no(irep)
+   enddo
+
+    call alloc_array(e,nrep)
+    call auto_symmetry_offset(e,ncont,nv,.false.,.false.)
+     
+     ndimr2 = 0     
+
+     do irep = 1, nrep
+        ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
+     enddo
+ 
+     call dealloc_array(e)
+
    allocate(dmo(norbt*norbt*nz))
 
+!   dmo =0.0d0
+   state =1
    do sym = 1, nrep  
+
+     if (relcc_eom_nroots(sym) <= 0) cycle
+
     do iroot = 1, relcc_eom_nroots(sym)
 
-    call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),&
-  &  davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot), &
-  & davResultsR(sym)%eVectorsR(1:ndimr1,iroot:iroot), &
-  & davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot:iroot),B%t1,B%t2,dmo)
+     call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),&
+  &   davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot), &
+  &   davResultsR(sym)%eVectorsR(1:ndimr1,iroot:iroot), &
+  &   davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot:iroot),B%t1,B%t2,dmo)
+     
+     call store_eom_density ('EOM ',state,dmo)
+
+      state = state + 1
 
     enddo
    enddo
 
-    call store_cc_density ('EOM ', dmo)
-
   deallocate(dmo)
 
    endif
+
+
+     do state_sym = 1, nrep 
+
+!         if (relcc_eom_nroots(state_sym) <= 0) cycle
+
+         call davidson_cleanup(davResultsR(state_sym))
+         call davidson_cleanup(davResultsL(state_sym))
+     end do
 
  451 continue
 
@@ -933,14 +969,25 @@
 ! final cleanup
 !
      call free_intermediates(B)
-     do state_sym = 1, nrep 
-         call davidson_cleanup(davResultsR(state_sym))
-         call davidson_cleanup(davResultsL(state_sym))
-     end do
-
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
    end subroutine
+
+
+   subroutine number_of_states(state)
+#include "symm.inc"
+
+   integer, intent(out) :: state 
+   integer              :: sym
+
+   state = 0
+   do sym = 1, nrep  
+
+     state = state + relcc_eom_nroots(sym) 
+
+   enddo
+
+   end subroutine  
 
    function merge_arrays(dimension_to_merge, a,b)
        real(kind=8), pointer :: merge_arrays(:,:)
@@ -1004,10 +1051,11 @@
      real*8,intent(in)    :: eps(*)
 
 !---------------Local variables -----------------------------------
-      INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:), nstate_sym(:,:)  
+      INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)  
       INTEGER :: IERR, ISIZE, select_eom,dum2
       REAL*8 :: IND(MXREP),dum1(rcw),eigenvalues_temp(1:rcw,0:nroot)
       REAL*8 :: E_OFF
+      INTEGER :: nstate_sym(nrep,4)
 !---------------Executable code--------------------------------------
 
     dum1(1:rcw) = 0.0d0
@@ -1015,9 +1063,9 @@
 
 ! Generate an array denoting number of states per symmetry...
 
-   allocate(nstate_sym(nrep,3))  
+!   allocate(nstate_sym(nrep,4))  
 
-      nstate_sym = 0
+      nstate_sym(1:nrep,1:4) = 0
 
    select case(eomtype)
 
@@ -1034,6 +1082,7 @@
 
     case('EE')
 
+     nstate_sym(state_sym,4) = nroot
      select_eom = 4
 
   end select  
@@ -1060,15 +1109,16 @@
      &                E_OFF,ECCSDIM,RCW, &
      &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE, &
      &                INDX_ALL,IRPS_ALL,IND,dum1,dum2)
-      ELSE 
+      ELSE IF ((select_eom==4)) THEN 
 !        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
 !        This makes the routine print excitation energies
          nstate_sym(1,select_eom) = nstate_sym(1,select_eom) + 1
+         EIGENVALUES_temp(1:RCW,1:nroot)=eigenvalues(1:RCW,1:nroot)
          EIGENVALUES(1:RCW,0) = 0.D0
 !        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,nstate_sym(1,select_eom),REPNA(NREP+1), &
      &                E_OFF,ECCSDIM,RCW, &
-     &                EIGENVALUES(1:RCW,0:ISIZE),ISIZE, &
+     &                EIGENVALUES_temp(1:RCW,0:ISIZE),ISIZE, &
      &                INDX_ALL,IRPS_ALL,IND,dum1,dum2)
 !        One should not forget this line : the real dimension of the first irrep should be retained !
          nstate_sym(1,select_eom) = nstate_sym(1,select_eom) - 1
@@ -1085,7 +1135,7 @@
        CALL QUIT('Error in IRPS_ALL deallocation !')
       ENDIF
 
-     deallocate(nstate_sym)
+!     deallocate(nstate_sym)
 
    end subroutine
 
@@ -1302,7 +1352,75 @@
 
       case('EE')
 
-          write(*,*)'under preparation'  
+    jj = 0
+  do irep = 1, nrep
+     arep = multb (irep,1+nrep,1)
+      do i = 1, no(irep)
+       jj = jj + 1
+          aoff = io(nrep+1) + iv(arep)
+        do a = 1, nv(arep)
+          aa = aoff + a
+          write(label,1004)repna(irep),i,eps(jj), &
+            repna(arep),(a+no(arep)),eps(aa)
+            value = abs(eigenvectors(1,ii))
+            if (carith) value = value + abs(eigenvectors(2,ii))
+            if (carith .and. value.gt.tres) then
+                write (iw,'(2f15.5,3x,a50)') & 
+  &             eigenvectors(1,ii),eigenvectors(2,ii),label
+            else if (value.gt.tres) then              
+            write (iw,'(f15.5,3x,a50)') eigenvectors(1,ii),label
+            end if
+          ii = ii + 1
+        enddo
+      enddo
+  enddo
+
+
+  do ijrp = 1, nrep
+       abrp = multb (ijrp+nrep,1+nrep,1)
+    do jrp = 1, nrep
+      jj = io(jrp)
+      irp = multb(jrp,ijrp+nrep,2)
+      if (irp.lt.jrp) cycle
+      ioff = io(irp)
+      do j = 1, no(jrp)
+         jj = jj + 1
+         imin = 1
+         if (irp.eq.jrp) imin = j + 1
+         do i = imin, no(irp)
+            kk = ioff + i
+            do brp = 1, nrep
+            bb = iv(brp) + io(nrep+1)
+            arp = multb(brp,abrp+nrep,2)
+            if (arp.lt.brp) cycle
+            aoff = iv(arp) + io(nrep+1)
+            do b = 1, nv(brp)
+               bb = bb + 1
+               amin = 1
+               if (arp.eq.brp) amin = b + 1
+               do a = amin, nv(arp)
+                  aa = aoff + a
+                  write(label,1005) repna(irp),i,eps(kk), &
+                &          repna(jrp),j,eps(jj),&
+                &          repna(arp),(a+no(arp)),eps(aa),&
+                &          repna(brp),(b+no(brp)),eps(bb)
+
+                  value = abs(eigenvectors(1,ii))
+                  if (carith) value = value + abs(eigenvectors(2,ii))
+                  if (carith .and. value.gt.tres) then
+                      write (iw,'(2f15.5,3x,a70)') & 
+            &             eigenvectors(1,ii),eigenvectors(2,ii),label
+                  else if (value.gt.tres) then              
+                  write (iw,'(f15.5,3x,a70)') eigenvectors(1,ii),label
+                  end if
+                  ii = ii + 1
+               enddo
+            enddo
+            enddo
+         enddo
+      enddo
+    enddo
+  enddo
 
       end select
       endif

@@ -1418,8 +1418,6 @@ C           Write only active irreps (NO or NV > 0)
       ENDIF
 
 
-! Dimension array for continuous orbital
-
 C     Set up dimension arrays
 
       DO JREP = 1, NREP
