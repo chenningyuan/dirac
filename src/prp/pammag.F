@@ -1956,7 +1956,7 @@ C
 C     Check what type of two-electron integrals to include
 C
 #if defined (VAR_MPI) || defined (VAR_PVM)
-      MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! MI...hm..some lenght...
+      MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! MI...hm..some length...
       MTOTTK(2) = NLRGBL*(NLRGBL+1)/2
       MTOTTK(3) = NSMLBL*(NSMLBL+1)/2
       FIRST1 = .TRUE.
