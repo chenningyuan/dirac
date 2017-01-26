@@ -2195,7 +2195,7 @@ C.......Isotropic contribution
         ENDDO
         WRITE(LUPRI,'(80A1)') ('-',I=1,72)
         TOT = DSUM(NDIM,FVAL,1)
-        WRITE(6,'(A,F12.5)') 'Sum of oscillator strenghts: ',TOT
+        WRITE(6,'(A,F12.5)') 'Sum of oscillator strengths: ',TOT
         deallocate(fval)
       ENDIF
  10   CONTINUE
