@@ -86,8 +86,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       bab = 0.0d0
 
       ic3 = max(lvvoot(nrep+1),kvvoot(nrep+1))
-      allocate(buf1(ic3*rcw))  ! array has to be slightly larger due to
-      allocate(buf2(ic3*rcw))  ! A,BIJ storage and/or ABI,J storage.
+      allocate(buf1(ic3*rcw))  ! array has to accomodate A,BIJ and ABI,J storage
+      allocate(buf2(ic3*rcw))
       buf1 = 0.0d0; buf2 = 0.0d0
 
       ic4 = NFOO
@@ -238,7 +238,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       endif
 !
 !--------------------------------------------------------
-!  ciajb now contains all the C(2) ai,bj contributions  |
+!  vovo1 now contains all the C(2) ai,bj contributions  |
 !  we sort it back now to the HPHP storage convention.  |
 !  This is now a forward sort <<>>  -->  <>><           |
 !--------------------------------------------------------
@@ -501,6 +501,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       do desrep=1,nrep   !desrep is a bosonic loop
         do jrep = 1,nrep   !jrep,brep are fermionic
           brep = multb(desrep+nrep,jrep,2)
+          if(multb(brep,jrep,2).ne.desrep) then
+            write(*,*) 'HP/HP ordering problem!'
+            stop 'solve_hphp_r'
+          endif
           do jfun = 1,NO(jrep)
           do bfun = 1,NV(brep)
             jabs=IO(jrep) + jfun
@@ -508,7 +512,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
             icount = icount + 1
             write(cfield(icount),777) jabs,repna(jrep),
      &                                babs,repna(brep)
-!           write(*,*) cfield(icount)
           enddo
           enddo
         enddo
@@ -537,6 +540,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &          desrep,repna(desrep)
           cycle
         endif
+        write(*,*) 'solve_hphp_r| irep/offset/#/MVO:',
+     &        desrep,ioff,JVOVO(desrep+1) - JVOVO(desrep),MVO(desrep)
 !
 !  open corresponding file
 !
@@ -718,6 +723,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       do desrep=1,nrep   !desrep is a bosonic loop
         do jrep = 1,nrep   !jrep,brep are fermionic
           brep = multb(desrep+nrep,jrep,2)
+          if(multb(brep,jrep,2).ne.desrep) then
+            write(*,*) 'HP/HP ordering problem!'
+            stop 'SOLVE_HPHP_C'
+          endif
           do jfun = 1,NO(jrep)
           do bfun = 1,NV(brep)
             jabs=IO(jrep) + jfun
@@ -1159,6 +1168,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !  Computes (complex) 2H2P/HP and SAT block of the exc. ADC Matrix
 !  In the corresponding symmetry DESREP.
+!  The matrix is built columnwise. Desrep determines column symmetry
+!  according to |b><j| spinors.
 !
 !---------------Calling variables--------------------------------------
 !
@@ -1380,7 +1391,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  according to the SRT16 convention, 
 !  the columns also have DESREP symmetry. 
 !  We loop over the columns in the same manner and construct
-!  the columns of the 2H2P/HP coupling block. 
+!  the columns of the 2P2H/PH coupling block. 
 !  after construction we write out the column together with the
 !  components of the main block.
 !
@@ -1561,7 +1572,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  do the |>|> side...
 !
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+!     CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+!****** debug
+! in due course of the transition moment problems we reestablish symmetry ordering in the
+! ADC matrix. hereby the column symmetry order may be affected and we change the muliplication
+! index to 1 !!
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
+!****** end debug
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -1674,8 +1691,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ENDDO
 
       IF(CDKL.ne.LENCOUPLBL) STOP 'Internal error #77!'
-!
-!     write(iw,*) 'Xcolmake: current run finished.'
+
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2072,7 +2088,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       CDKL=0    !column counter
 
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+!**** debug reassessment of irep ordering  change from two to one
+!     CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
+!**** end debug
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -2098,7 +2117,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ABIJ=0     !row counter
 
       DO IJREP = 1,NREP
-      ABREP = MULTB(DESREP+NREP,IJREP+NREP,2)
+!**** debug reassessment of irep ordering  change from two to one
+!     ABREP = MULTB(DESREP+NREP,IJREP+NREP,2)
+      ABREP = MULTB(DESREP+NREP,IJREP+NREP,1)
+!**** end debug
       DO 44 JREP = 1, NREP
       IREP = MULTB(JREP,IJREP+NREP,2)
       IF (IREP.LT.JREP) GOTO 44

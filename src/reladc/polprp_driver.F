@@ -520,6 +520,7 @@ C
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"     !LTR/LFA are defined here (true, false)
 #include  "../relccsd/ccpar.inc"
+#include  "polprp_infocodes.h"
 !
 !---------------Local variables---------------------------------
 !
@@ -545,11 +546,6 @@ C
       real*8, allocatable   :: a_CBUF(:)
       real*8, allocatable   :: a_EVO(:), a_EOV(:), a_EOO(:), a_EVV(:)
       complex*16            :: ephase
-!  
-!  variables for symmetry testing
-!
-      integer               :: irep,jrep,ijrep,qrep
-    
 !
 !-----------------------interface section---------------------
 !
@@ -647,6 +643,11 @@ C
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
 
+        FUNCTION icode_activated (i1)
+          integer               :: icode_activated
+          integer               :: i1
+        END FUNCTION
+
       end interface
 !
 !---------------Execution ---------------------------------
@@ -696,34 +697,27 @@ C
         WRITE(IW,*)'|________________________________________________|'
         WRITE(IW,*)
 !
+!  perform tests if required
+!
+        if(icode_activated(icode_mainblock).ne.0) then
+            write(*,*) 'We found the code request'
+        else
+            write(*,*) 'No code for:',icode_mainblock
+        endif
+        if(icode_activated(icode_couplblock).ne.0) then
+            write(*,*) 'We found the code request'
+        else
+            write(*,*) 'No code for:',icode_couplblock
+        endif
+        
+        Call PH_TESTER()
+        Call PPHH_TESTER()
+!
 !  check if there are transformed dipole moment integrals available
 !  that are required for transition moment calculations.
 !  If yes fetch them and adapt them for further processing.
 !
-
         CALL property_handler(iobase,iobase+1,propertyints,NSP,IREPSPI)
-!
-!  do symmetry test for the main block ordering.
-!
-        if(polprp_printlev.ge.2) then
-          WRITE(IW,*)
-          WRITE(IW,*) '|| IREP order in the PH main block: ||'
-          WRITE(IW,*) '|| sorted by IREPs                  ||'
-          WRITE(IW,*)
-          Do qrep = 1,nrep
-            write(iw,*) 'destination irep:',qrep
-            DO JREP = 1, NREP
-              DO IREP = 1, NREP
-                IJREP = MULTB(IREP,JREP,2)
-                If(ijrep.eq.qrep) then
-                   write(*,*) qrep,':   G_i:',irep,
-     &               '   G_j: ',jrep
-                Endif
-              ENDDO
-            ENDDO
-            write(*,*)
-          Enddo    !qrep
-        endif
 !
 !  do HPHP block first (it can easily be kept in memory)
 !
@@ -982,6 +976,7 @@ C
           open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='unknown')
           close(iobase,status='DELETE')
+!       stop 'serial davidson diagonalisator ready.'
 #endif
 !
 !_________________________________________________________________

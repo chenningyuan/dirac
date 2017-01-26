@@ -630,8 +630,7 @@ C
             ax = ax + dcmplx(rcoef(i),D0)*faitx(i)
             ay = ay + dcmplx(rcoef(i),D0)*faity(i)
             az = az + dcmplx(rcoef(i),D0)*faitz(i)
-            write(*,'(F10.6,A,2F10.6,A,2F10.6)') rcoef(i),':',
-     &        faitx(i),'|',ax
+            write(*,'(F10.6,5X,2F10.6)') rcoef(i),faitx(i)
           enddo
           if(do2h2p) then
             do i=1,n2h2p
@@ -899,6 +898,7 @@ C
 !
       if(printlevel.ge.2) then
         i=0
+        write(*,*) 'Index coverage test....'
         call idxcoverage(irepspi,nsp,i)
         if(i.ne.0) stop 'Incomplete array coverage!'
         write(*,*) '... passed.'
@@ -935,7 +935,7 @@ C
                   IF (CARITH) THEN
                       AVO(RCW*AI-1) = PROP(1,AA,II)
                       AVO(RCW*AI)   = PROP(2,AA,II)
-                      AOV(RCW*AI-1) = PROP(1,II,AA)
+                      AOV(RCW*AI-1) = PROP(1,II,AA)   !ov acquire same order as vo !
                       AOV(RCW*AI)   = PROP(2,II,AA)
                   ELSE
                       AVO(AI) = PROP(1,AA,II)*APHASE(1) -
@@ -999,7 +999,40 @@ C
       write(6,'(A,2F10.5)') 'of ',APHASE(1),APHASE(2)
       write(6,'(A)') 'which is also applied to the AOO and AVV ints.'
       write(6,*)
-      
+!
+!*******************************************************************
+!********  debug: temporary reordering of the AOV integrals ********
+!********  due to possible problems in the contraction      ********
+!*******************************************************************
+!
+!     IA = 1
+!     DO IAREP = 1, NREP
+!        DO AREP = 1, NREP
+!           IREP = MULTB (AREP,IAREP+NREP,2)
+!           IREP = MULTB (IREP,NREP+1,2)
+!           DO A = 1, NV(AREP)
+!             AA = IREPSPI(A,AREP,2)
+!             DO I = 1, NO(IREP)
+!               II = IREPSPI(I,IREP,1)
+!               IF (CARITH) THEN
+!                   AOV(RCW*IA-1) = PROP(1,II,AA)
+!                   AOV(RCW*IA)   = PROP(2,II,AA)
+!               ELSE
+!                   AOV(IA) = PROP(1,II,AA)*APHASE(1) -
+!    &                        PROP(2,II,AA)*APHASE(2)
+!               ENDIF
+!               IA = IA + 1
+!            ENDDO
+!          ENDDO
+!        ENDDO
+!     ENDDO
+!
+!*******************************************************************
+!
+
+!
+!  generate AOO stream
+!
       IJ = 1
       DO IJREP = 1,NREP
         DO JREP = 1, NREP
@@ -1023,7 +1056,9 @@ C
         ENDDO
       ENDDO
       IF( (IJ-1).ne.dimpoo) Call Quit('AOO counting error!')
-
+!
+!  generate AVV stream
+!
       AB = 1
       DO ABREP = 1,NREP
         DO BREP = 1, NREP
@@ -1055,8 +1090,7 @@ C
 
       SUCC = .true.
 !
-! ********* from here all integrals are available and processed
-! ********  we flush them to disk
+! ********  flush property integrals to disk
 !
       co = NAMEA(1:1)
       if(carith) then         ! indicator for aphase that we have carith
@@ -1079,7 +1113,8 @@ C
 !***   printing the property integrals  *****
 !********************************************
 !
-      if(printlevel.lt.2) return
+      if(printlevel.lt.6) return
+
       write(*,*) '---------------- AOO -----------------'
       IJ = 1
       DO IJREP = 1,NREP
@@ -1091,11 +1126,11 @@ C
                  irow = io(irep) + i
                  icol = io(jrep) + j
                  IF (CARITH) THEN
-                    write(6,'(A,2I4,X,2F16.10)') 'i/j: ',irow,icol,
-     &                         AOO(2*IJ-1),AOO(2*IJ)
+                    write(6,'(A,I6,X,2I4,X,2F16.10)') 'int #',ij,
+     &                   irow,icol,AOO(2*IJ-1),AOO(2*IJ)
                  ELSE
-                    write(6,'(A,2I4,X,F16.10)') 'i/j: ',irow,icol,
-     &                         AOO(IJ)
+                    write(6,'(A,I6,X,2I4,X,F16.10)') 'int #',ij,
+     &                   irow,icol,AOO(IJ)
                  ENDIF
                  IJ = IJ + 1
               ENDDO
@@ -1103,29 +1138,91 @@ C
         ENDDO
       ENDDO
 !
+!  AOV type
+!
+!     write(*,*) '---------------- AOV -----------------'
+!     IA = 1
+!     DO IAREP = 1, NREP
+!        DO AREP = 1, NREP
+!           IREP = MULTB (AREP,IAREP+NREP,2)
+!           IREP = MULTB (IREP,NREP+1,2)
+!           write(*,*) '   ----> IA,I,Arep:',iarep,irep,arep
+!           DO A = 1, NV(AREP)
+!             DO I = 1, NO(IREP)
+!                irow = io(irep) + i
+!                icol = io(nrep) + iv(arep) + a
+!                 IF (CARITH) THEN
+!                   write(6,'(A,I6,X,2I4,X,2F16.10)') 'j/a: ',IA,
+!    &                    irow,icol,AOV(2*IA-1),AOV(2*IA)
+!                 ELSE
+!                   write(6,'(A,I6,X,2I4,X,F16.10)') 'j/a: ',IA,
+!    &                    irow,icol,AOV(IA)
+!                 ENDIF
+!                 IA = IA + 1
+!              ENDDO
+!           ENDDO
+!        ENDDO
+!     ENDDO
+!
 !  AVO type
 !
-      write(*,*) '---------------- AVO -----------------'
+      write(*,*)
+      write(*,*) '--------- AVO/AOV (same symmetry order!) --------'
+      write(*,*) '--------- this makes eigenvector contraction'
+      write(*,*) '--------- much easier!'
+      write(*,*)
       AI = 1
       DO AIREP = 1, NREP
          DO IREP = 1, NREP
             AREP = MULTB (IREP,AIREP+NREP,2)
             AREP = MULTB (AREP,NREP+1,2)
+!           write(*,*) '   ----> AI,A,Irep:',airep,arep,irep
             DO I = 1, NO(IREP)
                DO A = 1, NV(AREP)
                  irow = io(nrep) + iv(arep) + a
                  icol = io(irep) + i
                   IF (CARITH) THEN
-                    write(6,'(A,2I4,X,2F16.10)') 'a/j: ',irow,icol,
-     &                         AVO(2*AI-1),AVO(2*AI)
+                    write(6,'(A,I6,X2I4,X,2F16.10,A,2F16.10)') 'int # ',
+     &              ai,irow,icol,AVO(2*AI-1),AVO(2*AI),'  ||  ',
+     &              AOV(2*AI-1),AOV(2*AI)
                   ELSE
-                    write(6,'(A,2I4,X,F16.10)') 'a/j: ',irow,icol,
-     &                         AVO(AI)
+                    write(6,'(A,I6,X,2I4,X,F16.10,A,F16.10)') 'int # ',
+     &              ai,irow,icol,AVO(AI),'  ||  ',AOV(AI)
                   ENDIF
-                   AI = AI + 1
+                  AI = AI + 1
                ENDDO
             ENDDO
          ENDDO
+      ENDDO
+
+!
+!  AVV type
+!
+      write(*,*)
+      write(*,*) '------------- AVV ----------------'
+      write(*,*)
+      AB = 1
+      DO ABREP = 1,NREP
+        DO BREP = 1, NREP
+           AREP = MULTB (BREP,ABREP+NREP,2)
+           AREP = MULTB (AREP,NREP+1,2) ! form gamma*_a
+           DO B = 1, NV(BREP)
+              BB = IREPSPI(B,BREP,2)
+              DO A = 1, NV(AREP)
+                 AA = IREPSPI(A,AREP,2)
+                 irow = io(nrep) + iv(arep) + a
+                 icol = io(nrep) + iv(brep) + b
+                 IF (CARITH) THEN
+                    write(6,'(A,I6,X2I4,X,2F16.10)') 'int # ',
+     &              ab,irow,icol,AVV(2*AB-1),AVV(2*AB)
+                 ELSE
+                    write(6,'(A,I6,X,2I4,X,F16.10)') 'int # ',
+     &              ab,irow,icol,AVV(AB)
+                 ENDIF
+                 AB = AB + 1
+              ENDDO
+           ENDDO
+        ENDDO
       ENDDO
 
       RETURN
@@ -1238,15 +1335,3 @@ C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C      symmetry testing loops for NTS two-electron parts.
-!     DO KREP=1,NREP
-!       ABIREP = MULTB(KREP,DESREP+NREP,2)
-!       write(*,*) 'ABIREP/KREP/A*K/K*A/DESREP',
-!    &    abirep,krep,multb(abirep,krep,1),
-!    &    multb(krep,abirep,1),desrep
-!         DO KJREP=1,NREP
-!           JREP = MULTB(KREP,KJREP+NREP,1)
-!           write(*,*) '  -  ABIREP/JREP/A*J/DESREP',
-!    &      ABIREP,JREP,MULTB(ABIREP,JREP,1),DESREP
-!         ENDDO
-!     ENDDO
