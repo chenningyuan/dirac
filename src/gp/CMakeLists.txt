@@ -46,6 +46,7 @@ set(FREE_GP_FORTRAN_SOURCES
     dynamic_string.F90
     electrostatic_potential.F90
     exception_handling.F90
+    file_handler.F90
     f77_work_interface.F90
     gp_q_diag.F90
     gpsk.F90
@@ -108,6 +109,8 @@ add_library(
 # add intermodule dependencies
 add_dependencies(gp interface_mpi)
 add_dependencies(gp dirac_interfaces)
-add_dependencies(gp git_info)
 add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
+
+generate_git_info_header(${PROJECT_BINARY_DIR} git_info.h)
+add_dependencies(gp git_info)

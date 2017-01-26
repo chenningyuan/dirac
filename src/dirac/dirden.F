@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -440,7 +440,7 @@ C.......Fractional Occupation
         DO IOPEN = 1,NOPEN
           CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPRINT)
         END DO
-        IF (IPRNT.GE.8) THEN
+        IF (IPRINT.GE.8) THEN
           WRITE(LUPRI,"(2X,A)")
      &    'DENMAT: Total density matrix, open-shell fract. occupation'
           DO IFRP = 1, NFSYM

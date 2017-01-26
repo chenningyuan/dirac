@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -6074,13 +6074,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
 C ----------
-C  Do resort the entering RKB transformation matrix for the one-step (Trond's) BSS
+C  Resort the entering RKB transformation matrix for the one-step (Trond's) BSS
 C  transformation. Called from MODHAM, if needed (SLGROUP).
+C  Routine is called when DC_RKB Hamiltonian is applied, for post-DCSCF transformations.
 C
-C  NOTE: Routine is processed correctly only if TMAT contains
+C  NOTE: Routine does the job only if TMAT contains
 C        the "standard" symmetry (ie no linear symmetry) 
-C        transformation matrix and when NSYM.GT.1
-C        If NSYM=1 (NZ=4) then only copy TMAT into TBUF.
+C        transformation matrix and when NSYM.GT.1.
+C        If NSYM=1 (NZ=4) then only copy TMAT into TBUF, empty run.
 C
 C  Called from:  MODHAM/dirone.F
 C
@@ -6187,6 +6188,9 @@ C         .... accumulate (and skip) L(isym) blocks
 
       ENDIF                                   
       ENDDO  
+
+      WRITE(LUPRI,'(A)')
+     &' * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.'
 
       CALL QEXIT('SLSORT')
       RETURN
@@ -9615,7 +9619,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "cbieri.h"
 #include "ccom.h"
 
       DIMENSION H2CAO(*),WORK(LWORK)

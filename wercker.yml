@@ -32,7 +32,7 @@ build:
         name: update submodule, setup configuration scripts
         code: |
           git submodule update --init --recursive
-          python ./setup --type=debug --cmake-options="-D BUILDNAME='wercker-ci.i8.gdb' -D ENABLE_UNIT_TESTS=ON"  build_wercker-ci
+          python ./setup --type=debug --cmake-options="-D BUILDNAME='wercker-ci.i8.gdb' -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=ON"  build_wercker-ci
 
     - script:
         name: run ctest for configuration/buildup/test/submit

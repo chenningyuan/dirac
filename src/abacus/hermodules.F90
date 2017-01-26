@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -845,9 +845,7 @@
 #include "symmet.h"
 
 !     COMMON BLOCKS
-! clsfmm.h : THRCLS
 ! cbirea.h : IPREAD,TOL_SYMADD, ...
-#include "clsfmm.h"
 #include "cbirea.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
@@ -941,6 +939,7 @@
 
       typepointer=>firstatomtype
       basindex=0
+      index=0
       NONTYP=0
 
       DO
@@ -1168,8 +1167,7 @@
         END IF
 
         IBLOCK(1:2)=IBLOCK(1:2)+NBLCK(basindex,1:2)
-        NOORBT(basindex+1:NONT(basindex)+basindex) = NOORBTS
-          
+        NOORBT(index+1:NONT(basindex)+index) = NOORBTS
         DO i=3,4
 !     JHS060707 TMP Include also the reading of fitsets.
           IBSFLAG=2
@@ -1180,6 +1178,7 @@
         CALL RECP_LNK_READCP(infile,basindex,NONT(basindex))
 
         typepointer=>typepointer%next
+        index=index+NONT(basindex)
         
       END DO
 
@@ -1226,10 +1225,6 @@
 !
 !     TMP copy input to .out file.
 
-!     Default threshold for distinguishing classical and
-!     non-classical contributions to Coulomb integrals
-
-      THRCLS = THRS
 !
 !     ****************************************
 !     ***** Output on LUONEL *****************

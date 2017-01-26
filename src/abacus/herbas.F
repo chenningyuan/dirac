@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -79,6 +79,7 @@ C
 #include "cbirea.h"
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "dcbpsi.h"
 C*************************************************************
 C* Variable declarations:                                    *
 C*     BASNAM - A character variable that contains the name  *
@@ -108,7 +109,7 @@ C     that generate 3 small component p-functions. The maximum for
 C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
-      LOGICAL SPLIT,TEST
+      LOGICAL SPLIT, TEST, DOSPLT
       integer :: jcount = 0
 #endif /* PRG_DIRAC */
 C
@@ -126,6 +127,14 @@ C
       SADLEJ = .FALSE.
       NQVD   = .FALSE.
       POLFUN = .FALSE.
+
+C
+C     turn on splitting of primitive shells only for methods that
+C     perform and integral transformation to the spinor basis
+C
+      DOSPLT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
+      dosplt = .true.
+
 CDIRAC:..allow contraction only for elements Z.LE.36
 C      except for 2c NR calculations
       TEST = (TWOCOMP.AND.(.NOT.TWOCOMPBSS)).OR.LEVYLE
@@ -395,7 +404,8 @@ C
             KHK_SC = (IQM+1)*(IQM+2)/2
             MAXPRIM_IN_BLOCK = MAX(1,MAX_IN_BLOCK/KHK_SC)
 C
-            IF (INTORB.LE.0.AND.INTEXP.GT.MAXPRIM_IN_BLOCK) THEN
+            IF (DOSPLT .AND. 
+     &          (INTORB.LE.0.AND.INTEXP.GT.MAXPRIM_IN_BLOCK)) THEN
                IF (ANO .OR. SADLEJ) THEN
                   SPLIT = .FALSE.
                ELSE

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -352,6 +352,7 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
+#include "dcbimp.h"
 #include "logging.h"
 #include "infpar.h"
 C
@@ -362,7 +363,7 @@ C
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.IMPMOS','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
 C     NOGENINP is set, if there is no **GENERAL
@@ -375,6 +376,8 @@ C
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
+      DOIMPMOS   = .FALSE.
+C
       RKBIMP_PRJTHR = 2.0D-5
 C
 C     Look for 2c. Hamiltonians, MDIRAC and more
@@ -518,9 +521,14 @@ C&&&& RKBIMP: import RKB coefficients
             GO TO 100
   120    CONTINUE
 C&&&& PRJTHR
-            READ(5,*) RKBIMP_PRJTHR
+            READ(LUCMD,*) RKBIMP_PRJTHR
             GO TO 100
   121    CONTINUE
+C&&&& IMPMOS
+            DOIMPMOS = .TRUE.
+            READ(LUCMD,*) QCPACK, FILIMP
+            QCPACK = ADJUSTL(QCPACK)
+            FILIMP = ADJUSTL(FILIMP)
             GO TO 100
   122    CONTINUE
             GO TO 100
@@ -555,6 +563,35 @@ ctec we require that it is a direct calculation
 !       STOL(2) = STOL(1) / (2.0D0 * CVAL ** 2 )
         STOL(2) = 1.0d-04 / (2.0D0 * CVAL ** 2 )
       end if
+
+C
+C     process IMPMOS input
+C
+
+      IF (DOIMPMOS) THEN
+
+       IF (SPINFR .OR. NONREL .OR. LEVYLE) THEN
+
+        QCPACK = ADJUSTL(QCPACK)
+        FILIMP = ADJUSTL(FILIMP)
+
+        CALL UPCASE(QCPACK)
+
+        SELECT CASE (QCPACK(1:6))
+         CASE ('MOLCAS')
+          WRITE (LUPRI,'(/,A)') 
+     &     "import scalar-relativistic MO coefficients from"
+          WRITE (LUPRI,'(/,A,/)') 
+     &     "  MOLCAS file "//TRIM(FILIMP)
+         CASE DEFAULT
+          CALL QUIT("unknown QCPACK type! Available options: MOLCAS")
+        END SELECT
+
+       ELSE
+        CALL QUIT("imported MO calculation only works in 1C modes!")
+       END IF
+      END IF
+
 C
 C     Print section
 C     =============
@@ -594,9 +631,6 @@ C
         IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
         IF(IGTDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       ENDIF
-C
-      IF(DENSFIT)
-     &  WRITE(LUPRI,'(1X,A)') '* Employ density fitting techniques'
 C
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
@@ -1002,9 +1036,9 @@ C     initial molecular orbitals:
       TRIVEC    = .TRUE. ! default!
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
-      BNCRON    = .TRUE.
+      BNCRON    = .FALSE.
       force_bnc = .false.
-      BNSPON    = .FALSE. ! use either this or BNCRON
+      BNSPON    = .TRUE.  ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
       EWMO      = .FALSE. ! in huckel.h
@@ -4236,9 +4270,21 @@ C&&&& VECREF: Fragment vectors
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
-                    READ(LUCMD,'(A6)') REFFIL(J)
-                    READ(LUCMD, '(I8)') NPROJNUC(J)
-                    READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
+                    READ(LUCMD,'(A6)', IOSTAT=IOS1) REFFIL(J)
+                    IF (IOS1.NE.0) THEN ! miro: specific error message
+                      call quit('error in REFFIL(J) reading!')
+                    ENDIF
+                    READ(LUCMD, '(I8)', IOSTAT=IOS2) NPROJNUC(J)
+                    IF (IOS2.NE.0) THEN ! miro: specific error message
+                      write(LUPRI,*) 'J,NREFS:',J,NREFS
+                      call quit('error in NPROJNUC(J) reading!')
+                    ENDIF
+                    READ(LUCMD,'(A72)', IOSTAT=IOS3) 
+     &              (VECREF(I,J),I=1,NFSYM)
+                    IF (IOS3.NE.0) THEN ! miro: specific error message
+                      call quit('error in VECREF(I,J) reading!')
+                    ENDIF
+
                  ENDDO
                   REFFIL(NREFS+1) = 'Polari'
                GO TO 100
@@ -4644,7 +4690,6 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
-      DENSFIT  = .FALSE.
       NOSET    = .FALSE.
       OPTWLK   = .FALSE.
       OPTNEW   = .FALSE.
@@ -4712,9 +4757,6 @@ C     ======================================
       NPRPS        = 0
 C
       CALL OPTINI()
-#ifdef MOD_ERI
-      CALL FCK3INI
-#endif
 C
       RETURN
       END
@@ -4763,9 +4805,6 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -5109,20 +5148,6 @@ C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                      call quit('failure in DFTINPUT after .DFT')
                   end if
                   call set_hf_exchange_factor(hfxfac)
-
-#ifdef MOD_ERI
-C aspg, 20070909
-c if the calculation is performed with non-hybrid functionals,
-C and j-engine is set, we force dolink to true even if it was
-C not specified in the input, so that no extra work in the
-c integral evaluation is done. for hfxfac set to zero, the
-C link driver just acts to scale the fock matrix according to
-c DIRAOF->SKLFC1
-                  IF (DOFCK3.AND.(HFXFAC.EQ.D0)) THEN
-                     DOLINK = .TRUE.
-                  ENDIF
-#endif /* MOD_ERI */
-
                END IF
                dirac_cfg_dft_calculation = .true.
                SETFUN = .TRUE.
@@ -5975,18 +6000,6 @@ CMI    ... quantum dots
 !         so let's not call it in this case
           call dftreport()
         end if
-
-#ifdef MOD_ERI
-C aspg, 20070909
-         IF (DOLINK.AND.(HFXFAC.EQ.D0)) then
-            WRITE (LUPRI,*) ' '
-            WRITE (LUPRI,*) '     Note: as J-Engine was selected '//
-     &                      'together with non-hybrid functionals,'
-            WRITE (LUPRI,*) '           only pure Coulomb integrals'//
-     &                      ' will be calculated.'
-            WRITE (LUPRI,*) ' '
-         ENDIF
-#endif /* MOD_ERI */
 
          IF (IGTINT.EQ.1) THEN
             IF (LSCALE_DFT_GAUNT) THEN

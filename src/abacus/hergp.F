@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -511,6 +511,8 @@ C (otherwise was getting NaNs), based on
 C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
+C
+      USE CODATA, ONLY : XFAMU
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1955,6 +1957,8 @@ C
 C     radovan: AMASS is not used !?
 C     hjaaj:   AMASS is passed on to VIBMAS
 C
+      USE CODATA, ONLY : XFAMU
+C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -2049,8 +2053,8 @@ C
       END
       SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)
 C
-C     Sets up transformation matrices between Cartesian and symmetry
-C     nuclear coordinates
+C     Sets up transformation matrices between Cartesian (ITYPE=1)
+C     or rotational (ITYPE=2) to symmetry nuclear coordinates
 C
 C     CSTRA - transformation matrix Cartesian to symmetry coordinates
 C     SCTRA - inverse matrix
