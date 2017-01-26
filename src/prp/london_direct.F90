@@ -19,6 +19,9 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
 module london_direct_hb
 
    use memory_allocator
@@ -324,7 +327,7 @@ contains
 
            call alloc(npos, mtottk(i2typ))
            npos = 0
-           call dirac_parctl(1)
+           call dirac_parctl( HERFCK_PAR )
 
            lwork = len_f77_work
            call di_select_wrk(work, lwork)
@@ -447,7 +450,7 @@ contains
 
     call generate_num_grid(dmat)
 #ifdef VAR_MPI
-            if (parcal) call dirac_parctl(4)
+            if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
     call integrate_xc(xc_mat_dim              = ntbas(0),     &
                        xc_nz                   = nz,           &
