@@ -109,10 +109,10 @@ module relcc_cfg
   logical, public :: relcc_do_eomip = .false.
   logical, public :: relcc_do_eomea = .false.
   logical, public :: relcc_do_eomee = .false.
-  integer, public, dimension(1:16) :: relcc_eom_nroots = 0 
-  integer, public, dimension(1:16) :: relcc_eom_nroots_prop  = 0 
-  integer, public, dimension(1:16) :: relcc_eom_nroots_left  = 0 
-  integer, public, dimension(1:16) :: relcc_eom_nroots_right = 0 
+  integer, public, dimension(1:32) :: relcc_eom_nroots = 0 
+  integer, public, dimension(1:32) :: relcc_eom_nroots_prop  = 0 
+  integer, public, dimension(1:32) :: relcc_eom_nroots_left  = 0 
+  integer, public, dimension(1:32) :: relcc_eom_nroots_right = 0 
 
 ! Information relevant for matrix-free diagonalization (Davidson etc)
   real*8, public  :: relcc_mfd_convergence_threshold = 1.0d-5
