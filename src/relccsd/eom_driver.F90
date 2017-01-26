@@ -863,7 +863,7 @@
     call alloc(B%Fbar_ae,   (nfvv*rcw), id="Fbar_ae")  
 
     call alloc(B%W_ijmn,    (nv1*rcw),            id="W_ijmn") 
-    call alloc(B%W_ejmb,    (iovvo(nrep+1)*rcw),  id="W_ejmb")
+!    call alloc(B%W_ejmb,    (iovvo(nrep+1)*rcw),  id="W_ejmb")
     call alloc(B%W_mbej,    (iovvo(nrep+1)*rcw),  id="W_mbej")
     call alloc(B%W_iemn,    (iovoot(nrep+1)*rcw), id="W_iemn")
 
@@ -955,12 +955,12 @@
    endif
 
 
-     do state_sym = 1, nrep 
+     do sym = 1, nrep 
 
-!         if (relcc_eom_nroots(state_sym) <= 0) cycle
+         if (relcc_eom_nroots(sym) <= 0) cycle
 
-         call davidson_cleanup(davResultsR(state_sym))
-         call davidson_cleanup(davResultsL(state_sym))
+       if(right_vectors) call davidson_cleanup(davResultsR(sym))
+!       if(left_vectors) call davidson_cleanup(davResultsL(state_sym))
      end do
 
  451 continue

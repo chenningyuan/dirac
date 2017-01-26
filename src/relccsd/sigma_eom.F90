@@ -110,7 +110,7 @@
       call dealloc(A%Fbar_ae,   id="Fbar_ae")
     
       call dealloc(A%W_ijmn,    id="W_ijmn")
-      call dealloc(A%W_ejmb,    id="W_ejmb")
+!      call dealloc(A%W_ejmb,    id="W_ejmb")
       call dealloc(A%W_mbej,    id="W_mbej")
       call dealloc(A%W_iemn,    id="W_iemn")
 
@@ -526,7 +526,7 @@ integer :: nbuf3,ierr
 !S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
 !------------------------------------ 
 
-    call contraction_422 ((/"p1","o2","o1","p2"/),(/"p2","o2"/),(/"p1","o1"/),r1_ptr,sigma1,1.0d0,1.0d0,nrep,B%W_ejmb)
+    call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1_ptr,sigma1,1.0d0,1.0d0,nrep,B%W_mbej)
 
     write(iw,*)'diagram 3 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
