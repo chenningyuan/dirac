@@ -320,7 +320,7 @@ C
 C
 C     Final print section
 C
-      CALL XPPOUT(ATMPPF,OMEGA,RCNV,WORK(KEIG),ISSYM,WORK,KFREE,LFREE)
+      CALL XPPOUT(ATMPPF,OMEGA,RCNV,ISSYM,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXP1',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -1826,10 +1826,21 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XPPOUT */
-      SUBROUTINE XPPOUT(ATMPPF,OMEGA,RCNV,EIG,ISSYM,
+      SUBROUTINE XPPOUT(ATMPPF,OMEGA,RCNV,ISSYM,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
+C     Output routine for excitation energy module
+C     On input:
+C     - ATMPPF(exc,opA,bsym,nvar) - transition moment associated with
+C       operator opA, excitation exc in boson symmetry sym;
+C       nvar=1 gives the total value, the following ones refer to
+C       values associated with specific variables: e-e, e-p, CI
+C     - OMEGA(exc,bsym) - excitation energy exc of boson symmetry sym
+C     - ISSYM(exc,bsym) - supersymmetry of excited state
+C     - RCNV(exc,bsym) - convergence of solution vector of excitation exc
+C       of boson symmetry bsym
+C     Solution vectors are kept on unformatted file PAMXVC (open)
 C
 C***********************************************************************
          use codata
@@ -1852,7 +1863,7 @@ C
       PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0),
      &          D1=1.0D0,D0=0.0D0)
       DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
-     &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
+     &          RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
       real(8), allocatable              :: excerg(:),excbuf(:),fval(:,:)
       integer, allocatable              :: indx(:),irps(:),ind(:)
