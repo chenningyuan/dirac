@@ -30,7 +30,7 @@ Input files for corresponding F,U atomic runs are
 :download:`F.v2z.D2h.mol <../../../../../test/tutorial_UF6/F.v2z.D2h.mol>`,
 :download:`F.x2c.scf_2fs.inp <../../../../../test/tutorial_UF6/F.x2c.scf_2fs.inp>`,
 :download:`U.v2z.D2h.mol <../../../../../test/tutorial_UF6/U.v2z.D2h.mol>`,
-:download:`x2c.scf_autoocc.inp <../../../../../test/tutorial_UF6/U.v2z.D2h.mol>`.
+:download:`x2c.scf_autoocc.inp <../../../../../test/tutorial_UF6/x2c.scf_autoocc.inp>`.
 Output files from these (F,U) atomic runs are
 :download:`F.x2c.scf_2fs_F.v2z.D2h.out <../../../../../test/tutorial_UF6/result/F.x2c.scf_2fs_F.v2z.D2h.out>` and
 :download:`x2c.scf_autoocc_U.v2z.D2h.out <../../../../../test/tutorial_UF6/result/x2c.scf_autoocc_U.v2z.D2h.out>`.

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1190,9 +1190,9 @@ contains
         end if
 
 !              row
-!              ¦
-!              ¦  column
-!              ¦  ¦
+!              |
+!              |  column
+!              |  |
         matrix(s, i, iz) = matrix(s, i, iz) &
                          +     response_vector(is, iz)
         matrix(i, s, iz) = matrix(i, s, iz) &

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,6 +18,9 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
@@ -4075,7 +4078,7 @@ C     --------------------------
 
           call generate_num_grid(work(kbuf))
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl(4)
+          if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
           call integrate_xc (xc_mat_dim            = ntbas(0),
      &                       xc_nz                 = nz,
@@ -4944,12 +4947,12 @@ C
       CALL RTKTIME(.TRUE.,16)
 C
       LFPV = NZ*NASHT*NORBT
-      CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FPV',KFPV,LFPV,WORK,KFREE,LFREE)
 C
       IREP = JSYMOP - 1
       IM = 0
 C
-      CALL MEMGET('REAL',KFC,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FC',KFC,N2ORBXQ,WORK,KFREE,LFREE)
       CALL GETMAT('FCMO',WORK(KFC),IPRXRS,FKRMC,WORK(KFREE),LFREE)
 C
 C
@@ -5006,12 +5009,16 @@ C
 C
       IF(IPRXRS.GE.5) THEN
          CALL HEADER('Output from RSIGOC',-1)
+      IF (NXOPE .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NCSIM,
      &        ' e-e orbital part of conf. sigma vectors'
-         CALL PRBVEC(LUPRI,SEVEC(1,1,1+NOSIM),NCSIM,NZXOPE)
+         CALL PRBVEC(LUPRI,SEVEC(1,1,1+NOSIM),NCSIM,NXOPE)
+      END IF
+      IF (NXOPP .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NCSIM,
      &        ' e-p orbital part of conf. sigma vectors'
-         CALL PRBVEC(LUPRI,SPVEC(1,1,1+NOSIM),NCSIM,NZXOPP)
+         CALL PRBVEC(LUPRI,SPVEC(1,1,1+NOSIM),NCSIM,NXOPP)
+      END IF
       ENDIF
 C
       CALL MEMREL('RSIGOC',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -5066,7 +5073,7 @@ C
 C
 C
 C     ***************************
-C     *** e-e sigma vector(s) ***
+C     *** e-e trial vector(s) ***
 C     ***************************
 C
 C
@@ -5086,8 +5093,8 @@ C
             DFAC(2) = +1.0D00
          END IF
 C
-C        e-e part
-C        --------
+C        e-e part of sigma vector
+C        ------------------------
 C
          IF (NXOPE .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5101,8 +5108,8 @@ C
            ENDIF
          END IF
 C
-C        e-p part
-C        --------
+C        e-p part of sigma vector
+C        ------------------------
 C
          IF (NXOPP .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5122,7 +5129,7 @@ C
 C
 C
 C     ***************************
-C     *** e-p sigma vector(s) ***
+C     *** e-p trial vector(s) ***
 C     ***************************
 C
 C
@@ -5142,8 +5149,8 @@ C
             DFAC(2) = +1.0D00
          END IF
 C
-C        e-e part
-C        --------
+C        e-e part of sigma vector
+C        ------------------------
 C
          IF (NXOPE .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5159,8 +5166,8 @@ C
            ENDIF
          END IF
 C
-C        e-p part
-C        --------
+C        e-p part of sigma vector
+C        ------------------------
 C
          IF (NXOPP .GT. 0) THEN
            IF (NASHT.NE.0) THEN
@@ -5183,15 +5190,15 @@ C
       CALL MEMREL('RORBGRD.KFPV',WORK,KFPV,KFPV,KFREE,LFREE)
 C
       IF(IPRXRS.GE.5) THEN
-        IF (NZXOPE .GT. 0) THEN
+        IF (NXOPE .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NOSIM,
      &        ' (e-e) orbital part of orbital (e-e) sigma vectors'
-         CALL PRBVEC(LUPRI,SEVEC(1,1,1),NOSIM,NZXOPE)
+         CALL PRBVEC(LUPRI,SEVEC(1,1,1),NOSIM,NXOPE)
         ENDIF
-        IF (NZXOPP .GT. 0) THEN
+        IF (NXOPP .GT. 0) THEN
          WRITE(LUPRI,'(/I5,A)') NOSIM,
      &        ' (e-p) orbital part of orbital (e-p) sigma vectors'
-         CALL PRBVEC(LUPRI,SPVEC(1,1,1),NOSIM,NZXOPP)
+         CALL PRBVEC(LUPRI,SPVEC(1,1,1),NOSIM,NXOPP)
         ENDIF
       ENDIF
 C

@@ -16,14 +16,14 @@ set(FIXED_RELADC_FORTRAN_SOURCES
 
 set(FREE_RELADC_FORTRAN_SOURCES
     adc_cfg.F90
+    adc_fano_exchange.F90
+    adc_fano_routines.F90
+    adc_fano_real_routines.F90
     adc_fano_complex_routines.F90
     adc_fano_diag.F90
-    adc_fano_exchange.F90
-    adc_fano.F90
-    adc_fano_matmul.F90
-    adc_fano_real_routines.F90
-    adc_fano_routines.F90
     adc_mat.F90
+    adc_fano_matmul.F90
+    adc_fano.F90
     adcutil.F90
     polprp_cfg.F90
     polprp_driver.F
@@ -42,9 +42,9 @@ set(C_RELADC_SOURCES
 if (ENABLE_STIELTJES)
   #miro: needs extra sources !
    set(FREE_RELADC_FORTRAN_SOURCES
-        ${FREE_RELADC_FORTRAN_SOURCES}
-        ${PROJECT_SOURCE_DIR}/external/stieltjes/stieltjesmod.f90
         ${PROJECT_SOURCE_DIR}/external/stieltjes/stieltjes_ql_diag.f90
+        ${PROJECT_SOURCE_DIR}/external/stieltjes/stieltjesmod.f90
+        ${FREE_RELADC_FORTRAN_SOURCES}
    )
    set(C_RELADC_SOURCES
         ${PROJECT_SOURCE_DIR}/external/stieltjes/herm_spline.c
@@ -59,8 +59,8 @@ endif()
 add_library(
     reladc
     OBJECT
-    ${FIXED_RELADC_FORTRAN_SOURCES}
     ${FREE_RELADC_FORTRAN_SOURCES}
+    ${FIXED_RELADC_FORTRAN_SOURCES}
     ${C_RELADC_SOURCES}
 )
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2587,7 +2587,7 @@ C    &                  C,CBLK,IEXP,IXCHNG,IKLJ,IKSM,JLSM,SCR)
         WRITE(6,*) ' 2 electron integral block for TS blocks '
         WRITE(6,*) ' Ixchng :', IXCHNG
         WRITE(6,*) ' After GETINC '
-        WRITE(6,'(1H ,4(A,I2,A,I2,A))')
+        WRITE(6,'(1X,4(A,I2,A,I2,A))')
      &  '(',ITP,',',ISM,')','(',JTP,',',JSM,')',
      &  '(',KTP,',',KSM,')','(',LTP,',',LSM,')'
         CALL WRTMAT(XINT,NIK,NJL,NIK,NJL)
@@ -4797,7 +4797,7 @@ CTF      write(LUINP,'(1X,A6)') MACHINE
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -5029,7 +5029,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -5368,7 +5368,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -5623,7 +5623,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *
@@ -5770,7 +5770,7 @@ CC        IVFLEV = 1               ! could be made more flexible
         if (NACTEL.gt.MXTNEL) then
           write(6,*) 'Number of active electrons exceeds '
           write(6,*) 'the orbital space.'
-          write(6,*) 'Consider Pauli큦 famous principle and restart!'
+          write(6,*) "Consider Pauli's famous principle and restart!"
           Call Abend2( 'Quitting.' )
         end if
 *

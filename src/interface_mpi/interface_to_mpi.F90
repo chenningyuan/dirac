@@ -1,6 +1,6 @@
 #define interface_to_mpi_DEBUG -1
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1856,9 +1856,9 @@ contains
     integer(kind=integer_kind) :: ierr
 !-------------------------------------------------------------------------------
 #ifdef VAR_MPI_32BIT_INT
-    integer(kind=4)            :: ndim_i4
-    integer(kind=4)            :: disp_i4(:)
-    integer(kind=4)            :: counter_i4(:)
+    integer(kind=4)           :: ndim_i4
+    integer(kind=4) , pointer  :: disp_i4(:)
+    integer(kind=4) , pointer  :: counter_i4(:)
     integer(kind=4)            :: root_proc_i4
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
@@ -1893,15 +1893,14 @@ contains
 !-------------------------------------------------------------------------------
 #ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ndim_i4
-    integer(kind=4)            :: disp_i4(:)
-    integer(kind=4)            :: counter_i4(:)
+    integer(kind=4) , pointer  :: disp_i4(:)
+    integer(kind=4) , pointer  :: counter_i4(:)
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
     ndim_i4         = ndim
     disp_i4         = disp
     counter_i4      = counter
-    root_proc_i4    = root_proc
     communicator_i4 = communicator
     if (.not. MPI_INIT_called) return
     call MPI_AllGatherv(x,ndim_i4,MPI_REAL8,y,counter_i4,disp_i4,MPI_REAL8,communicator_i4,ierr_i4)

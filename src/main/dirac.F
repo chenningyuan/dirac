@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,7 +20,9 @@
 !dirac_copyright_end
 
 C FILE    : dirac.F
-C
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C***********************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD)
 #include "implicit.h"
@@ -54,8 +56,7 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
 C Additional check for parallelism, parallel with only a master is the same as serial
       PARCAL = PARCAL.AND.NUMNOD.ne.0
 C Test the communication by sending an empty task
-      ITASK = 0
-      IF (PARCAL) CALL DIRAC_PARCTL( ITASK )
+      IF (PARCAL) CALL DIRAC_PARCTL( RELEASE_NODES )
 C
 C     Set basis set directory
 C
@@ -76,7 +77,7 @@ C
 C
 C     Send finish signal to slaves
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( -2 )
+      IF (PARCAL) CALL DIRAC_PARCTL( FINISH_PAR_SIGNAL )
 C
       RETURN
       END
@@ -255,10 +256,19 @@ C
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"
+#include "dcbimp.h"
 C
       CALL QENTER('PAMPSI')
+
+C***********************************************************************
+C**** import MO coeff from different QC package ************************
+C****         and dump it on DFPCMO             ************************
+C***********************************************************************
+      IF (DOIMPMOS) CALL IMPMOS(QCPACK,FILIMP)
+
 C     Attempt read of formatted MO coefficients
       CALL PCMOIN()
+
 C     Read C1 MO coefficients
       IF(DOACIN) CALL ACMOIN()
 C     Extend RKB coeffcients with complementary UKB space
@@ -1189,9 +1199,9 @@ C
 #if !defined (VAR_MPI2)
 C
       IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
-        WRITE(6,*) ' fatal error in starting a parallel LUCITA /
-     & LUCIAREL run; you do not have a MPI-2 library installed'
-       CALL Abend2(' error in DIRNOD: missing MPI-2 library functions')
+        WRITE(LUPRI,'(//A)') 'Fatal error in starting a parallel LUCITA'
+     & //' / LUCIAREL run; you do not have a MPI-2 library installed'
+       CALL Abend2('Error in DIRNOD: missing MPI-2 library functions')
       END IF
 #endif
 C
