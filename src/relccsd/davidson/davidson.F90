@@ -151,8 +151,7 @@ contains
     subroutine free_davidson_results(results)
         type(davidson_results), intent(inout) :: results
 
-!        if (associated(results%eValuesRe)) deallocate(results%eValuesRe)
-        if (allocated(results%eValuesRe)) deallocate(results%eValuesRe)
+        if (associated(results%eValuesRe)) deallocate(results%eValuesRe)
         if (associated(results%eValuesIm)) deallocate(results%eValuesIm)
         if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
         if (associated(results%eVectorsL)) deallocate(results%eVectorsL)

@@ -514,6 +514,7 @@ integer :: nbuf3,ierr
    
     call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep)
 
+       if (iprnt.ge.2) &
     write(iw,*)'diagram 1 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 !S_ai = S_ai - f_bar_mi(m,i)*r1(a,m) 
@@ -521,6 +522,7 @@ integer :: nbuf3,ierr
 
     call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/),r1,B%Fbar_mi,sigma1,-1.0d0,1.0d0,nrep)
 
+       if (iprnt.ge.2) &
     write(iw,*)'diagram 2 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 !S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
@@ -528,6 +530,7 @@ integer :: nbuf3,ierr
 
     call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1_ptr,sigma1,1.0d0,1.0d0,nrep,B%W_mbej)
 
+       if (iprnt.ge.2) &
     write(iw,*)'diagram 3 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 ! class : [HBar_SD*R](a,i)
@@ -539,6 +542,7 @@ integer :: nbuf3,ierr
     call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), &
    &   (/"p1","o1"/),B%Fbar_me,sigma1,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr)
 
+       if (iprnt.ge.2) &
     write(iw,*)'diagram 4 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 !S_ai = S_ai + w_amef(am,ef) * r2(ef,im)
@@ -547,6 +551,7 @@ integer :: nbuf3,ierr
     call contraction_442((/"p1","o2","p2","p3"/),(/"p2","p3","o1","o2"/),(/"p1","o1"/),sigma1,1.0d0,1.0d0,nrep, &
    &         LeftTensor=B%W_amef,RightTensor=r2_ptr)
 
+       if (iprnt.ge.2) &
     write(iw,*)'diagram 5 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 !S_ai = S_ai - W_mnie(mn,ie)*r2(ae,mn)
 !---------------------------------------
@@ -555,6 +560,7 @@ integer :: nbuf3,ierr
     &         RightTensor=B%W_mnie,LeftTensor=r2_ptr)
 
 
+       if (iprnt.ge.2) &
     write(iw,*)'diagram 6 ', ddot(ndimt1,sigma1(:,1:1),1,sigma1(:,1:1),1)
 
 ! class : [HBar_DS*R](ab,ij)
@@ -567,7 +573,7 @@ integer :: nbuf3,ierr
    &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
    &   LeftTensor=r1_ptr) 
 
-
+       if (iprnt.ge.2) &
     write(*,*)'diagram 7 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
@@ -577,6 +583,7 @@ integer :: nbuf3,ierr
    &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%W_efam, &
    &    RightTensor=r1_ptr) 
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 8 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
@@ -594,6 +601,7 @@ integer :: nbuf3,ierr
 
     deallocate(int_1b)
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 9 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !int_1b(n,j) = int_1b(n,j) + w_mnie(nm,je)*r1(e,m)
@@ -612,6 +620,7 @@ integer :: nbuf3,ierr
 
     deallocate(int_1b)
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 10 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 ! class : [HBar_DD*R](ab,ij) 
@@ -624,7 +633,7 @@ integer :: nbuf3,ierr
     call contraction_424 ((/"p1","p3","o1","o2"/),(/"p2","p3"/), &
    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2_ptr)
 
-
+       if (iprnt.ge.2) &
     write(*,*)'diagram 11 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
      
 ! S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
@@ -633,6 +642,7 @@ integer :: nbuf3,ierr
     call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
    & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2_ptr)
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 12 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 
@@ -642,6 +652,7 @@ integer :: nbuf3,ierr
       call contraction_444((/"p1","p2","o3","o4"/),(/"o3","o4","o1","o2"/), &
      &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_ijmn)
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 14 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 ! S(ab,ij) = S(ab,ij) + P(ab)P(ij) w_mbej(mb,ej)*r2(ae,im)
@@ -650,6 +661,7 @@ integer :: nbuf3,ierr
       call contraction_444((/"p1","p3","o1","o3"/),(/"o3","p2","p3","o2"/), &
      &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2_ptr,RightTensor=B%W_mbej)
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 15 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !int_1b(a,f) = int_1b(a,f) - V(nm,fe)*r2(ea,mn)  
@@ -666,6 +678,7 @@ integer :: nbuf3,ierr
 
     deallocate(int_1b)
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 16 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
 !int_1b(n,i) = int_1b(n,i) + V(nm,fe)*r2(fe,im)
@@ -682,6 +695,7 @@ integer :: nbuf3,ierr
 
     deallocate(int_1b)
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 17 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
   endif
@@ -717,6 +731,7 @@ integer :: nbuf3,ierr
          off2 = off2 + m * n * rcw
       enddo
 
+       if (iprnt.ge.2) &
     write(*,*)'diagram 13 ', ddot(ndimt2,sigma2(:,1:1),1,sigma2(:,1:1),1)
 
       allocate (local_buffer(ndimt2*rcw))

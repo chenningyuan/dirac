@@ -1063,9 +1063,7 @@
 
 ! Generate an array denoting number of states per symmetry...
 
-!   allocate(nstate_sym(nrep,4))  
-
-      nstate_sym(1:nrep,1:4) = 0
+   nstate_sym(1:nrep,1:4) = 0
 
    select case(eomtype)
 
@@ -1113,8 +1111,10 @@
 !        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
 !        This makes the routine print excitation energies
          nstate_sym(1,select_eom) = nstate_sym(1,select_eom) + 1
+
          EIGENVALUES_temp(1:RCW,1:nroot)=eigenvalues(1:RCW,1:nroot)
-         EIGENVALUES(1:RCW,0) = 0.D0
+         EIGENVALUES_temp(1:RCW,0) = 0.D0
+
 !        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,nstate_sym(1,select_eom),REPNA(NREP+1), &
      &                E_OFF,ECCSDIM,RCW, &
