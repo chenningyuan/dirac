@@ -1901,7 +1901,7 @@ C
 
          ELSE IF (INTTYP == 106) THEN
            CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
+     &          CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP,WORK,LWORK)
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
 C        --------------------------------------------------
@@ -5856,15 +5856,45 @@ C
   100 CONTINUE
       RETURN
       END
-C  /* Deck cexpint */
+C/* Deck cexpint */
+C***********************************************************************      
       SUBROUTINE CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                   CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NOPTYP)
+     &     CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NINTS,WORK,LWORK)
+C***********************************************************************      
 C
 C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
 C     References are:
-C        Nanna Holmgaard List, Joanna Kauczor, Trond Saue, Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C     Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "onecom.h"             !contains KCKTAB
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &     SHLINT(KCKTAB,NINTS),ORIGIN(3),WORK(LWORK)
+#include "memint.h"
+      CALL MEMGET('REAL',KTMP,8*KCKTAB,WORK,KFREE,LFREE)
+      CALL CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NINTS,WORK(KTMP))
+      CALL MEMREL('CEXPINT',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     CORPX,CORPY,CORPZ,ORIGIN,EXPPI,NINTS,TMPARR)
+C***********************************************************************      
+C
+C     nhl 2016 -- calculates integrals over exp(ikr)
+C                 based on GOSINT routine.
+C     References are:
+C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C     Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5872,29 +5902,18 @@ C
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0, NIREP = 8)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
-     &   SHLINT(KCKTAB,NOPTYP),ORIGIN(3),DIPORG(3)
-C,TMPARR(KCKTAB,NIREP)
-      INTEGER OPIREP(NIREP),NOPTYP
-      INTEGER T, U, V
-#include "onecom.h" !contains KCKTAB, which is N^2, where N is the number of basis functs.
+     &     SHLINT(KCKTAB,NINTS),ORIGIN(3),TMPARR(KCKTAB,8)
+      INTEGER T, U, V, NINTS
+#include "onecom.h" !contains KCKTAB
 #include "lmns.h"
 #include "symmet.h"
 #include "inforb.h"
 #include "pgroup.h"
-CC Operator symmetries:
-CC     Real part: eq. 44
-C      OPIREP(1) = 0 
-C      OPIREP(2) = ISYMAX(1,2)
-C      OPIREP(3) = ISYMAX(2,2)
-C      OPIREP(4) = ISYMAX(3,2)
-CC     Imaginary part: eq. 45
-C      OPIREP(5) = ISYMAX(3,1)
-C      OPIREP(6) = ISYMAX(2,1)
-C      OPIREP(7) = ISYMAX(1,1) 
-C      OPIREP(8) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
+#include "dgroup.h"
+#include "ibtfun.h"
 C
-C      CALL DZERO(TMPARR,KCKTAB*NIREP)
-C
+      CALL DZERO(TMPARR,KCKTAB*8)
+C     
       DKX = ORIGIN(1)
       DKY = ORIGIN(2)
       DKZ = ORIGIN(3)
@@ -5909,8 +5928,6 @@ C
       SINZ = SIN(CORPZ*DKZ)*FACZ
 C
       INT = 0
-C      write(lupri,*) 'KCKTA', KCKTA
-C      write(lupri,*) 'KCKTB', KCKTB
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA) !power of x factor in basis a
          MVALA = MVALUA(ICOMPA) !power of y factor in basis a
@@ -5976,36 +5993,38 @@ C
             FACKZ = FACKZ*DKZ
   400    CONTINUE
 C
-         INT = INT + 1
-        SHLINT(INT,1) = SHLINT(INT,1) - CX*CY*CZ 
-        SHLINT(INT,2) = SHLINT(INT,2) - CX*SY*SZ 
-        SHLINT(INT,3) = SHLINT(INT,3) - SX*CY*SZ 
-        SHLINT(INT,4) = SHLINT(INT,4) - SX*SY*CZ 
-        SHLINT(INT,5) = SHLINT(INT,5) - CX*CY*SZ 
-        SHLINT(INT,6) = SHLINT(INT,6) - CX*SY*CZ 
-        SHLINT(INT,7) = SHLINT(INT,7) - SX*CY*CZ 
-        SHLINT(INT,8) = SHLINT(INT,8) - SX*SY*SZ 
-  100 CONTINUE
-C      DO IOPER = 1, NIREP
-CC         WRITE(LUPRI,'(/A,I2,A,I1)') 'NSYM: ', NSYM
-CC         WRITE(LUPRI,'(/A,I2,A,I1)') 'TMPARR for IOPER: ', IOPER,
-CC     &              ' of symmetry: ', OPIREP(IOPER)
-C         IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR. 
-C     &                           GROUP == 'D2h') THEN
-CC              WRITE(LUPRI,*) 'INVERSION',
-CC     &               'Index in SHLINT: ', OPIREP(IOPER)+1
-C              SHLINT(:,OPIREP(IOPER)+1) = 
-C     &        SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)        
-C         ELSE
-C            IF (IOPER<5) THEN !add to real operator
-C               SHLINT(:,OPIREP(IOPER)+1) =     
-C     &            SHLINT(:,OPIREP(IOPER)+1) + TMPARR(:,IOPER)   
-C            ELSE !add to imag operator
-C               SHLINT(:,NSYM+OPIREP(IOPER)+1) = 
-C     &            SHLINT(:,NSYM+OPIREP(IOPER)+1) + TMPARR(:,IOPER)
-C            END IF
-C         END IF
-C      END DO
+        INT = INT + 1
+CC     Real part: eq. 44
+        TMPARR(INT,1) = TMPARR(INT,1) + CX*CY*CZ ! Sym 0
+        TMPARR(INT,2) = TMPARR(INT,2) - CX*SY*SZ ! Sym yz
+        TMPARR(INT,3) = TMPARR(INT,3) - SX*CY*SZ ! Sym xz
+        TMPARR(INT,4) = TMPARR(INT,4) - SX*SY*CZ ! Sym xy
+CC     Imaginary part: eq. 45
+        TMPARR(INT,5) = TMPARR(INT,5) + CX*CY*SZ ! Sym z
+        TMPARR(INT,6) = TMPARR(INT,6) + CX*SY*CZ ! Sym y
+        TMPARR(INT,7) = TMPARR(INT,7) + SX*CY*CZ ! Sym x
+        TMPARR(INT,8) = TMPARR(INT,8) - SX*SY*SZ ! Sym xyz
+ 100  CONTINUE
+      IOFF = NOPTYP/2
+      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C     accumulating real part on symmetries
+      II = IBTOSF(0,1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,1)  ! Sym 0
+      II = IBTOSF(ISYMAX(1,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,2)  ! Sym yz
+      II = IBTOSF(ISYMAX(2,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,3)  ! Sym xz
+      II = IBTOSF(ISYMAX(3,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,4)  ! Sym xy
+C     accumulating imaginary part on symmetries
+      II = IBTOSF(ISYMAX(3,1),1) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,5)  ! Sym z
+      II = IBTOSF(ISYMAX(2,1),1) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,6)  ! Sym y
+      II = IBTOSF(ISYMAX(1,1),1) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,7)  ! Sym x
+      II = IBTOSF(IXYZ,2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,8)  ! Sym xyz
       RETURN
       END
 

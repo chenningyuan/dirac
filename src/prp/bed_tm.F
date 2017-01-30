@@ -32,26 +32,20 @@ C
 C
 C     Generate integrals
 C
-      NCOMP=8
-      allocate(LABINT(NCOMP))
-      allocate(INTREP(NCOMP))
+      allocate(LABINT(8))
+      allocate(INTREP(8))
 C
 C     Integral directives
 C     
-      CALL PR1DIR('CXIKR   ',INTTYP,NCOMP2,INTREP,
+      CALL PR1DIR('CXIKR   ',INTTYP,NCOMP,INTREP,
      &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
      &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
-      IF(NCOMP2.NE.NCOMP) THEN
-        WRITE(6,*) 'NCOMP - expected :',NCOMP
-        WRITE(6,*) 'NCOMP - returned :',NCOMP2 
-        CALL QUIT('GET_BED: NCOMP differs !')
-      ENDIF
 CTROND
       WRITE(6,*) 'BASINFO:',NBAST,NELMNT
       DO ICOMP = 1,NCOMP
           WRITE(6,*) LABINT(ICOMP),'. Symmetry: ',
      &               REP(INTREP(ICOMP))
-      ENDDO
+       ENDDO
       DOINT(1,1)=.FALSE.
       DOINT(2,1)=.TRUE.
       DOINT(1,2)=.TRUE.

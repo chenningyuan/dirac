@@ -2248,57 +2248,12 @@ C
   97  CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of expikr integrals'
-         INTTYP = 106 
-         NOPTYP = 8
+         INTTYP = 106
+         CALL CEXPINT_INFO(NOPTYP,INTREP,LABINT)
          CALL NTYPTS(NOPTYP)
-C........Real part of exponential
-         LABINT(1) = 'CXIKRCCC'
-         LABINT(2) = 'CXIKRCSS'
-         LABINT(3) = 'CXIKRSCS'
-         LABINT(4) = 'CXIKRSSC'
-C........Imaginary part of exponential
-         LABINT(5) = 'CXIKRCCS'
-         LABINT(6) = 'CXIKRCSC'
-         LABINT(7) = 'CXIKRSCC'
-         LABINT(8) = 'CXIKRSSS'
-         INTREP(1) = 0
-         INTREP(2) = ISYMAX(1,2)
-         INTREP(3) = ISYMAX(2,2)
-         INTREP(4) = ISYMAX(3,2)
-         INTREP(5) = ISYMAX(3,1)
-         INTREP(6) = ISYMAX(2,1)
-         INTREP(7) = ISYMAX(1,1)
-         INTREP(8) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
-         ANTI = .FALSE.
-
-C          IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR. GROUP =='D2h') THEN
-C            NOPTYP = NSYM
-C          ELSE
-C            NOPTYP = 2*NSYM
-C          END IF
-C          DO ISYM = 1, NSYM
-C            WRITE(TMPSTR,'(I1)') ISYM
-C          IF (GROUP == 'Ci ' .OR. GROUP == 'C2h' .OR. 
-C      &       GROUP =='D2h') THEN
-C              IF (REP(ISYM-1)(2:2) == 'g' .OR.
-C      &           REP(ISYM-1)(3:3) == 'g') THEN
-C                LABINT(ISYM) = 'CEXPR'//TMPSTR//'  '
-C              ELSE
-C                LABINT(ISYM) = 'CEXPI'//TMPSTR//'  '
-C              END IF
-C              INTREP(ISYM) = ISYM - 1
-C            ELSE
-C              LABINT(NSYM+ISYM) = 'CEXPI'//TMPSTR//'  '
-C              LABINT(ISYM) = 'CEXPR'//TMPSTR//'  '
-C              INTREP(ISYM) = ISYM - 1
-C              INTREP(NSYM+ISYM) = ISYM - 1
-C            END IF
-C          END DO
-C          CALL NTYPTS(NOPTYP)
-C          CALL SETATM(DOATOM,NATOM,INTTYP)
-C         ANTI = .FALSE.
-         SQUARE = .FALSE. !.TRUE. CHECK THIS
-      go to 200
+         ANTI   = .FALSE.
+         SQUARE = .FALSE.       !.TRUE. CHECK THIS
+         GO TO 200
 
   200 CONTINUE
 C
@@ -4306,3 +4261,33 @@ C  /* Deck effdentyp */
 
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CEXPINT_INFO(NINTS,INTREP,LABINT)
+C***********************************************************************
+#include "implicit.h"
+#include "pgroup.h"
+#include "dgroup.h"
+      DIMENSION INTREP(8)
+      CHARACTER*8 LABINT(8)
+      NFC = NBSYM/NFSYM
+C.....Real part of exponential
+      NINTS = 0
+      DO IS = 1,NFC
+         NINTS = NINTS + 1
+         IREP  = JFSYM(IS,1) - 1
+         INTREP(NINTS) = IREP
+         LABINT(NINTS) = 'CEXPR'//REP(IREP)
+      ENDDO
+C.....Imaginary part of exponential
+      DO IS = 1,NFC
+         NINTS = NINTS + 1
+         IREP   = JFSYM(IS,2) - 1
+         INTREP(NINTS) = IREP
+         LABINT(NINTS) = 'CEXPI'//REP(IREP)
+      ENDDO
+      NINTS = 2*NFC
+C
+      RETURN
+      END
+      
+      
