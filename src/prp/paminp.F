@@ -844,6 +844,7 @@ C
 C  An operator in 4-component theory is a linear combination
 C  of products of a 4x4 matrix and some scalar operator P.
 C  The 4x4 matrices are the alpha matrices and the identity.
+C  Generic one-electron operators are defined in subroutine MOPDEF      
 C  XPRINP recognizes eighteen different kinds of operators:
 C
 C    1. DIAGONAL

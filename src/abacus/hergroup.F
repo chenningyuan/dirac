@@ -1133,6 +1133,9 @@ C
 C     ***************************************
 C     ***** Definition of full operator *****
 C     ***************************************
+C     MCMP : number of components
+C     JM4  : pointer to matrix operator for a given component
+C     JCOM : coefficient of component
 C
 C     1. P             * scalar operator
 C     ==================================
