@@ -1965,7 +1965,7 @@ C     ***************************************************
 C     *** Orbital parameters ****************************
 C     ***************************************************
 C
-      CALL IZERO(NOROT,NORBT)
+      NOROT(1:NORBT) = 0
 C
       NDSHT = 0
       NVSHT = 0
@@ -2044,6 +2044,7 @@ C
          NDSHT = NDSHT + NDSH(I)
          NVSHT = NVSHT + NVSH(I)
       END DO
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
 C     ... 'active' secondary orbitals
       N2VSHX   = NVSHT   * NVSHT
       N2VSHXQ  = N2VSHX  * NZ
@@ -2165,6 +2166,7 @@ C
             NOROT(IORB(I) + NPSH(I) + NISH(I) + J) = 0
          END DO
       END DO
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
       IF (IPROPT .GT. 4) THEN
          WRITE(LUPRI,*) 'Orbitals excluded from 4-index transformation:'
          CALL IWRTMA(NOROT,NORBT,1,NORBT,1)
@@ -6102,7 +6104,7 @@ C
 C     Calculate transformation to SV orbitals
 C     ---------------------------------------
 C
-      CALL DCOPY(NORBT,NOROT,1,NOROTC,1)
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
 C
       IF (NXOPE .GT. 0) THEN
 C
