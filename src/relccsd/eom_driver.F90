@@ -1495,6 +1495,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         verbose=relcc_mfd_verbose,   &
                         convergence_threshold = relcc_mfd_convergence_threshold, &
                         max_subspace_size = relcc_mfd_max_subspace_size, &
+                        max_iterations = relcc_mfd_max_iterations, &
                         overlap_sorting = relcc_mfd_overlap_sorting)
 
     if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
