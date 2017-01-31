@@ -1,5 +1,15 @@
 :orphan:
 
+16.1 (???)
+-----------------
+
+New defaults:
+- .SKIPEP is now default for KR-MCSCF, new keyword .WITHEP to include e-p rotations
+
+Performance improvements:
+- restored integral screening behavior from DIRAC15
+
+
 16.0 (2016-12-12)
 -----------------
 

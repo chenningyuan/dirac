@@ -152,9 +152,13 @@ keyword(SKIPEE)
 
 skip e-e rotations (rotations between electronic-electronic spinors) in the gradient and Hessian calculation. *default*: include e-e rotations.
 
+keyword(WITHEP)
+
+include e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. *default*: skip e-p rotations.
+
 keyword(SKIPEP)
 
-skip e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. *default*: include e-p rotations.
+skip e-p rotations (rotations between electronic-positronic spinors) in the gradient and Hessian calculation. *default*: skip e-p rotations.
 
 keyword(PRINT)
 

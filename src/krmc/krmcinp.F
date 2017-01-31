@@ -78,7 +78,7 @@ C
      &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.GAS SH','.SYMMET',
-     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.xxxxxx'/
+     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.WITHEP'/
       DATA SET/.FALSE./
 C
 C
@@ -104,10 +104,7 @@ C
          MCFLAG(I)            = .FALSE.
       END DO
       KRMC_SKIPEE             = .FALSE.
-      KRMC_SKIPEP             = .FALSE.
-!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
-     &  KRMC_SKIPEP           = .TRUE.
+      KRMC_SKIPEP             = .TRUE.  ! 31-Jan-17, new default /hjaaj
       KRMC_NOCI               = .FALSE.
       KRMC_UCIBOS             = .FALSE.
       KRMC_CHCKJZ             = .FALSE.
@@ -555,8 +552,8 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
 C&&&  .NOCKJZ  -- do not refine orbital rotation vector (kappa matrix) wrt
 C                 the m_j values of each orbital
                  IF( .NOT. LINEAR )THEN
-                   CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &             ' mj-blocking is only active for linear symmetry')
+                   CALL QUIT('*** ERROR in *KRMCSCF *** .NOCKJZ ' //
+     &             ' option is only allowed for linear symmetry')
                  END IF
                  KRMC_CHCKJZ = .FALSE.
                GO TO 100
@@ -564,11 +561,14 @@ C                 the m_j values of each orbital
 C&&&  .SVRONO  -- save reordered NOs rather than the original NOs
                krmc_save_reordered_nos = .true.
                GO TO 100
+! hjaaj Jan 2017: what was .SVRONX for? It was not activated in input TABLE
+!C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+!               krmc_save_reordered_nos = .true.
+C&&&  .WITHEP  -- include e-p rotations in MCSCF optimization
  35            CONTINUE
-C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
-               krmc_save_reordered_nos = .true.
-               READ(LUCMD,*) (IKRMC_SVRONO(I),I=1,NFSYM)
+                  KRMC_SKIPEP = .FALSE.
                GO TO 100
+!               READ(LUCMD,*) (IKRMC_SVRONO(I),I=1,NFSYM)
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -860,12 +860,21 @@ C
      &    'SS-integrals from iteration ',IKRMC_ITRINT(2)
         ENDIF
       ENDIF
+!     if number of positronic shells is zero, skip e-p rotations. hjj+sk - aug 2010
+      IF(x2c.or.bss.or.levyle.or.freepj.or.vextpj) THEN
+         IF(.NOT. KRMC_SKIPEP) THEN
+            WRITE(LUPRI,*) ' * INFO: .WITHEP ignored for '//
+     &      ' X2C, BSS, LEVYLE, FREEPJ, and VEXTPJ'
+            KRMC_SKIPEP = .TRUE.
+         END IF
+      ELSE IF(KRMC_SKIPEP) THEN
+         WRITE(LUPRI,'(A)')
+     &     ' * No-pair KR-MCSCF: No rotations between electrons and'//
+     &     ' positrons in 2nd order optimization.'
+      END IF
       IF(KRMC_SKIPEE) WRITE(LUPRI,'(A)')
      &     ' * NB!!! No e-e rotations in 2nd order optimization'
-      IF(KRMC_SKIPEP) WRITE(LUPRI,'(A)')
-     &     ' * NB!!! No rotations between electrons and positrons'//
-     &     ' in 2nd order optimization.'
-      IF( KRMC_CHCKJZ ) WRITE(LUPRI,'(A)')
+      IF(KRMC_CHCKJZ) WRITE(LUPRI,'(A)')
      &     ' * Checking kappa matrix for orbital rotations'//
      &     ' with respect to the mj-values of the orbitals.'
 
