@@ -19,6 +19,9 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
       SUBROUTINE XQRINP(WORD,RESET)
 !*****************************************************************************
 !
@@ -2415,7 +2418,7 @@
 
          call generate_num_grid(work(kdmat))
 #ifdef VAR_MPI
-         if (parcal) call dirac_parctl(4)
+         if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
          call integrate_xc(xc_mat_dim           = ntbas(0),             &
                        xc_nz                = nz,                       &

@@ -116,8 +116,8 @@ C     ===================
         goto 11
       endif
       IF(TOBE .and. .not. optimi) THEN
-        WRITE(LUPRI,'(2X,A,A)') 
-     &  '* WARNING: DIRAC found the AOPROPER file ',
+        WRITE(LUPRI,'(A)')
+     &  '* WARNING: DIRAC found the AOPROPER file '//
      &  '(one-electron integrals) ...will attempt restart.'
         IF (NOSMLV) CALL NOSSNUCATT
       ELSE 
@@ -1512,7 +1512,7 @@ C
 #include "memint.h"
       INQUIRE(FILE='DFBVAC',EXIST=TOBE)
       IF(TOBE) THEN
-        WRITE(6,'(A)') 
+        WRITE(LUPRI,'(A)')
      &   '* WARNING: BARVAC found file DFBVAC. '//
      &   'No reference vacuum generated.'
       ELSE
@@ -1617,7 +1617,7 @@ C
       GOFAST = .FALSE.
       INQUIRE(FILE='AOMOMAT',EXIST=GOFAST)
       IF(GOFAST) THEN
-        WRITE(LUPRI,'(A,A)') 
+        WRITE(LUPRI,'(2A)')
      &  '* WARNING: DIRAC found file AOMOMAT (transformation matrices)',
      &  '  ...will attempt restart.'
       ENDIF
@@ -1703,7 +1703,8 @@ C.......Look for a formatted file with same information
       IF(GOFAST) THEN
         WRITE(LUPRI,'(A)') '*** Restart successful !'
         IF(IPRINT.GE.2) THEN
-          WRITE(LUPRI,*) NZT,URKBAL,SUB_BL,I2COFK
+          WRITE(LUPRI,*) 'NZT,URKBAL,SUB_BL,I2COFK...',
+     &                    NZT,URKBAL,SUB_BL,I2COFK
           WRITE(LUPRI,*) 'NORB...',(NORB(I),I=1,NFSYM)
           WRITE(LUPRI,*) 'NFORB..',
      &       ((NFORB(IFRP,J),J=0,2),IFRP=1,NFSYM)
@@ -1720,6 +1721,7 @@ C.......Look for a formatted file with same information
           WRITE(LUPRI,*) 'NACSHMF',
      &       ((NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),IFRP=1,NFSYM)
           IF(SUB_BL) THEN
+            WRITE(LUPRI,*) 'SUB_BL information:'
             DO IFRP = 1,NFSYM
               WRITE(LUPRI,*) N_SUB_BL(IFRP),
      &        ((NORB_SUB(IB,IFRP,IC),IC=0,2),
@@ -1751,10 +1753,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
-C      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','ORBDAT')
       NBRP = 4/NZ
-C      READ(LUTMAT)
-C      READ(LUTMAT)
       WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK
       DO IFRP = 1,NFSYM
         WRITE(LUTMAT) NORB(IFRP),(NFORB(IFRP,J),J=0,2),
@@ -1773,8 +1772,7 @@ C      READ(LUTMAT)
      &     ID_SUB_BL(IB,IFRP),IB=1,NN)
         ENDDO
       ENDIF
-C      CLOSE(LUTMAT,STATUS='KEEP')      
 C
       RETURN
       END
-
+! -- end of dirac/dirset.F --

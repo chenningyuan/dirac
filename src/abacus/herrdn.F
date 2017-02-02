@@ -486,7 +486,6 @@ C******************************************************************************
 #include "argoscom.h"
 #include "argoscomch.h"
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
-#include "clsfmm.h"
 #include "cbirea.h"
       REAL(KIND=8):: WORK(LWORK)
 
@@ -787,10 +786,6 @@ C
          WRITE (LUPRI,'(80A1/)') ('-',I = 1, 80)
       END IF
 
-C     Default threshold for distinguishing classical and
-C     non-classical contributions to Coulomb integrals
-
-      THRCLS = THRS
 C
 C     ****************************************
 C     ***** Output on LUONEL *****************
@@ -933,7 +928,6 @@ C***********************************************************************
 #include "huckel.h"
 #include "aosotr.h"
 #include "gencon.h"
-#include "r12int.h"
 #include "dcbgen.h"
 #include "argoscom.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -2314,13 +2308,13 @@ C
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of contracted shells      ',ISHELL,
      *  '               current maximum number (MXSHEL)  ',MXSHEL,
-     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXSHEL in DIRAC/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted shells')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of contracted basis functions',IORBD,
      *  '               current maximum number (MXCORB)     ',MXCORB,
-     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
+     *  ' Increase MXCORB in DIRAC/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')

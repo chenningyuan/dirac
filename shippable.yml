@@ -30,7 +30,7 @@ install:
     - sudo apt-get remove openmpi-bin libopenmpi-dev
 # install MPICH2
     - sudo apt-get install mpich2
-# newest cmake
+# get newest cmake
     - wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
     - tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
     - export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
@@ -49,6 +49,10 @@ before_script:
     - df -h
 # show available memory
     - free -m
+# show cmake version
+    - cmake --version
+# show Python version
+    - python -V
     
 # update submodule; configure, build optimized code and run tests (Dirac 64-bit with MPICH2)
 script:

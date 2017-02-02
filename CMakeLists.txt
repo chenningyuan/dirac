@@ -22,9 +22,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/custom/un
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/downloaded)
 
 # included cmake modules
-include(autocmake_fc)
 include(autocmake_cc)
 include(autocmake_cxx)
+include(autocmake_fc)
+include(ar_ranlib)
 include(Clang.C)
 include(Clang.CXX)
 include(GNU.C)
