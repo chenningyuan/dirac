@@ -10316,17 +10316,17 @@ C
               NSRLR=NSRLRLEE+NSRLRLEP+NSRLRSEE+NSRLRSEP
 C
               IF (IPRINT .GE. 0) 
-     &   WRITE(LUPRI,'((1X,A,F12.4,/),/,2(1X,A,F12.4,/),(1X,A,F12.4))')
+     &   WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      & ' Total spin-rotation constant (SRC)      :',NSRTOT,
      & '   Nuclear contribution to SRC           :',NSRNUC,
      & '   Expectation value contribution to SRC :',NSREXV,
      & '   Linear response contribution to SRC   :',NSRLR
 C
-              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     & '           M^L(e-e)    :',NSRLRLEE,
-     & '           M^S(e-e)    :',NSRLRSEE,
-     & '           M^L(e-p)    :',NSRLRLEP,
-     & '           M^S(e-p)    :',NSRLRSEP
+              IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F16.8,/))')
+     & '           M^L(e-e) :',NSRLRLEE,
+     & '           M^S(e-e) :',NSRLRSEE,
+     & '           M^L(e-p) :',NSRLRLEP,
+     & '           M^S(e-p) :',NSRLRSEP
  98      CONTINUE
 C
 !     If linear symmetry is not detected:
@@ -10395,31 +10395,31 @@ C
 C
                  IF(LINMOL) THEN
                    IF(EIGVAL(1).NE.0) THEN
-                      WRITE (LUPRI,'(2X,A,F12.6,/)')
+                      WRITE (LUPRI,'(2X,A,F14.8,/)')
      &               'Moment of inertia (a.u.): ', D1/EIGVAL(1)
                    ELSE
-                      WRITE (LUPRI,'(2X,A,F12.6,/)')
+                      WRITE (LUPRI,'(2X,A,F14.8,/)')
      &               'Moment of inertia (a.u.): ', D1/EIGVAL(2)
                    END IF
                    IF (IPRINT .GE. 0)
-     &   WRITE(LUPRI,'((1X,A,F12.4,/),/,2(1X,A,F12.4,/),(1X,A,F12.4))')
+     &   WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
      &  ' Total spin-rotation constant (SRC)      :',GTRANT(3,3,IATOM),
      &  '   Nuclear contribution to SRC           :',GTRANN(3,3,IATOM),
      &  '   Expectation value contribution to SRC :',GTRAND(3,3,IATOM),
      &  '   Linear response contribution to SRC   :',GTRANP(3,3,IATOM)
 C
-                   IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F12.4,/))')
-     &  '           M^L(e-e)    :',GTRANPLEE(3,3,IATOM),
-     &  '           M^S(e-e)    :',GTRANPSEE(3,3,IATOM),
-     &  '           M^L(e-p)    :',GTRANPLEP(3,3,IATOM),
-     &  '           M^S(e-p)    :',GTRANPSEP(3,3,IATOM)
+                   IF (IPRINT .GE. 1) WRITE(LUPRI,'(4(1X,A,F16.8,/))')
+     &  '           M^L(e-e) :',GTRANPLEE(3,3,IATOM),
+     &  '           M^S(e-e) :',GTRANPSEE(3,3,IATOM),
+     &  '           M^L(e-p) :',GTRANPLEP(3,3,IATOM),
+     &  '           M^S(e-p) :',GTRANPSEP(3,3,IATOM)
 C
 ! If the inertia tensor corresponds to a non-linear molecule (with and without symmetry):
                  ELSE
                     IF (IPRINT .GE. 0) THEN
                       CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
-                      WRITE (LUPRI,'(3X,A,F12.6,6X,3F12.6)')
+                      WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
      &           'IA',D1/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
      &           'IB',D1/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
      &           'IC',D1/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
@@ -10428,45 +10428,45 @@ C
      &              'principal axis system'
                     IF (IPRINT .GT. 1) THEN
                       CALL HEADER('Nuclear contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANN(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANN(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANN(I,3,IATOM),I = 1,3)
                       CALL HEADER('Expectation value contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRAND(I,1,IATOM),I = 1,3),
      &                    'B', (GTRAND(I,2,IATOM),I = 1,3),
      &                    'C', (GTRAND(I,3,IATOM),I = 1,3)
                       CALL HEADER('Linear response contribution',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANP(I,3,IATOM),I = 1,3)
 C
                       CALL HEADER('M^L(e-e)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPLEE(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPLEE(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPLEE(I,3,IATOM),I = 1,3)
                       CALL HEADER('M^S(e-e)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPSEE(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPSEE(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPSEE(I,3,IATOM),I = 1,3)
                       CALL HEADER('M^L(e-p)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPLEP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPLEP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPLEP(I,3,IATOM),I = 1,3)
                       CALL HEADER('M^S(e-p)',-1)
-                      WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+                      WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                    'A', (GTRANPSEP(I,1,IATOM),I = 1,3),
      &                    'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
 C
                       CALL HEADER('Total spin-rotation constants',-1)
                     END IF
-                    WRITE (LUPRI,'(3X,A,6X,3F16.6)')
+                    WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
      &                 'B', (GTRANT(I,2,IATOM),I = 1,3),
      &                 'C', (GTRANT(I,3,IATOM),I = 1,3)
