@@ -89,7 +89,6 @@ C
      &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2' /
-
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -2048,7 +2047,7 @@ CMI  EDM2 operator, see Refs. [Nataraj2007]_, [Mukherjee2009]_
       ELSE IF(LABINT(2:6).EQ.'E_EDM') THEN
         CLASLB = 'E_EDM'
 !    complex exponential operator
-      ELSE IF(LABINT(1:5).EQ.'CXIKR') THEN
+      ELSE IF(LABINT(1:4).EQ.'CEXP') THEN
         CLASLB = 'CXIKR'
 C
 C     Unknown LABINT
