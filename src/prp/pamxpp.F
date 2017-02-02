@@ -362,7 +362,7 @@ Chj: MAXRM, MXLOAD
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DIMENSION WORK(LWORK)
+      DIMENSION WORK(LWORK),IBED(3,8)
 C
       SAVE SET
       DATA SET/.FALSE./
@@ -370,7 +370,7 @@ C
      &            '.EXCITA','.TRIPLE','.THRESH','.MAXITR',
      &            '.SKIPEP','.MAXRED','.E2CHEK','.NONORM',
      &            '.EPOLE ','.MPOLE ','.INTFLG','.INTENS',
-     &            '.OCCUP ','.VIRTUA','.ACTIVE','-------',
+     &            '.OCCUP ','.VIRTUA','.ACTIVE','.BED   ',
      &            '.ITRINT','.CNVINT','.REAXVC','-------',
      &            '.RESFAC','.ORBANA','-------','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','-------'/
@@ -629,6 +629,15 @@ C&&&& ACTIVE: String of active orbitals in XPP module
                   ENDDO
                GO TO 100
  20            CONTINUE
+C&&&& BED: Full light-matter interaction
+               CALL DEF_BED(LPPAPU(NPPAPT+1),NCOMP,IPRXPP)
+               NPPAPT = NPPAPT + NCOMP
+               IF((NPPAPT+NCOMP).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A)') 'XPPINP: Pointer array LPP',
+     &           'APU out of bounds for BED integrals '
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXEXP to ',(NPPAPT+NCOMP)
+               ENDIF
                GO TO 100
  21            CONTINUE
 C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
