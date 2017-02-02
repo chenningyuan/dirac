@@ -321,11 +321,12 @@ C
 #include "dcbxpp.h"
 #include "orgcom.h"
 C
-      PARAMETER (DI2=0.5D0,DI4=0.25D0,MAXNUM=1455)
+      PARAMETER (D0=0.0D0,DI2=0.5D0,DI4=0.25D0,D2=2.0D0)
+      PARAMETER (MAXNUM=1455)
       DIMENSION X(MAXNUM),Y(MAXNUM),Z(MAXNUM),WT(MAXNUM)
       DIMENSION OMEGA(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       REAL(8):: KVEC(3,MAXNUM),E1VEC(3),E2VEC(3),FAC,TMPNRM
-      REAL(8):: E1E2(3,3)
+      REAL(8):: E1E1(3,3),E1E2(3,3),OSC(MAXEXC),ECD(MAXEXC)
 
 C      IF LEBEDEV THEN
         CALL LD0014(X,Y,Z,WT,NCOUNT)
@@ -341,60 +342,59 @@ C
         KVEC(2,IK)=FAC * Y(IK) 
         KVEC(3,IK)=FAC * Z(IK) 
 CC       
-CC     The associated unit vectors for the polarization direction
-CC     The first unit vector E1 orthogonal to KVEC
-CC
-C        IF (KVEC(1,IK).EQ.0.0.AND.KVEC(2,IK).EQ.0.0) THEN
-C           E1VEC(1) = 1.0d0 
-C           E1VEC(2) = 0.0d0 
-C           E1VEC(3) = 0.0d0 
-C        ELSE
-C           E1VEC(1) = KVEC(2,IK)
-C           E1VEC(2) =-KVEC(1,IK)
-C           E1VEC(3) = 0.0d0
-C        END IF 
-C        TMPNRM = SQRT(E1VEC(1)**2+E1VEC(2)**2+E1VEC(3)**2)
-C        E1VEC(1) = E1VEC(1)/TMPNRM
-C        E1VEC(2) = E1VEC(2)/TMPNRM
-C        E1VEC(3) = E1VEC(3)/TMPNRM
-CC
-CC     Compute the second unit vector E2 orthogonal to KVEC as the cross
-CC     product of KVEC and E1
-CC
-C        E2VEC(1) = KVEC(2,IK)*E1VEC(3)-KVEC(3,IK)*E1VEC(2)
-C        E2VEC(2) = KVEC(3,IK)*E1VEC(1)-KVEC(1,IK)*E1VEC(3)
-C        E2VEC(3) = KVEC(1,IK)*E1VEC(2)-KVEC(2,IK)*E1VEC(1)
-C        TMPNRM = SQRT(E2VEC(1)**2+E2VEC(2)**2+E2VEC(3)**2)   
-C        E2VEC(1) = E2VEC(1)/TMPNRM
-C        E2VEC(2) = E2VEC(2)/TMPNRM
-C        E2VEC(3) = E2VEC(3)/TMPNRM
-CC      
-C       An arbitrary polarization vector can be constructed as
-C       cos(chi)*E1+sin(chi)*E2.
-C 
 C       CALL INTEGRAL ROUTINE
 
 C       Compute theta and phi angles
         PHI=ATAN2(Y(IK),X(IK))
         THETA=ACOS(Z(IK))
 C
-C       <E1VEC,E2VEC>_chi average
-        E1E2(1,1)=DI2*(COS(THETA)**2+COS(PHI)**2+SIN(PHI)**2)
-        E1E2(1,2)=-DI4*SIN(THETA)**2*SIN(2*PHI)
-        E1E2(1,3)=-DI4*SIN(2*THETA)**2*COS(PHI)
-        E1E2(2,1)=E1E2(1,2)
-        E1E2(2,2)=DI2*(COS(THETA)**2*SIN(PHI)**2+COS(PHI)**2)
-        E1E2(2,3)=-DI4*SIN(2*THETA)*SIN(PHI)
-        E1E2(3,1)=E1E2(1,3)
-        E1E2(3,2)=E1E2(2,1)
-        E1E2(3,3)=DI2*SIN(THETA)**2
+C.......Weights for chi-average over pol-directions
+C       Linear absorption 
+C       <E1VEC,E1VEC>_chi average
+        E1E1(1,1)=DI2*((COS(THETA)*COS(PHI))**2+SIN(PHI)**2)
+        E1E1(1,2)=-DI4*SIN(THETA)**2*SIN(2*PHI)
+        E1E1(1,3)=-DI4*SIN(2*THETA)**2*COS(PHI)
+        E1E1(2,1)=E1E1(1,2)
+        E1E1(2,2)=DI2*((COS(THETA)*SIN(PHI))**2+COS(PHI)**2)
+        E1E1(2,3)=-DI4*SIN(2*THETA)*SIN(PHI)
+        E1E1(3,1)=E1E1(1,3)
+        E1E2(3,2)=E1E1(2,3)
+        E1E1(3,3)=DI2*SIN(THETA)**2
+C       Circular dichroism
+C       <E1VEC,E2VEC>_chi average      
+        E1E2(1,1)=D0
+        E1E2(1,2)=DI2*(SIN(PHI)**2-COS(PHI)**2)
+        E1E2(1,3)=-DI2*SIN(THETA)*SIN(PHI)
+        E1E2(2,1)=-E1E2(1,2)
+        E1E2(2,2)=D0
+        E1E2(2,3)=-DI2*COS(PHI)*SIN(THETA)
+        E1E2(3,1)=-E1E2(1,3)
+        E1E2(3,2)=-E1E2(2,3)
+        E1E2(3,3)=D0
 C
-C       AVERAGE OVER POL-DIRECTION      
-C      WRITE(LUPRI,*) 'KVEC', KVEC(1,IK), KVEC(2,IK), KVEC(3,IK), WT(IK)
+C     AVERAGE OVER POL-DIRECTION      
+C     WRITE(LUPRI,*) 'KVEC', KVEC(1,IK), KVEC(2,IK), KVEC(3,IK), WT(IK)
       WRITE(LUPRI,*) 'VEC', X(IK), Y(IK), Z(IK), WT(IK)
       WRITE(LUPRI,*) 'PHI, THETA: ', PHI, THETA
+      DO I=1,3
+        WRITE(LUPRI,*)  E1E1(I,1), E1E1(I,2), E1E1(I,3)
       END DO
+C
+C      DO I=1,3
+C        DO J=I,3
+C          IF I.EQ.J THEN
+C            OSC(IEXC)=OSC(IEXC)+WT(IK)*E1E1(I,I)
+C     &                         *(TMR(I)*TMR(I)+TMI(I)*TMI(I))
+C          ELSE
+C            OSC(IEXC)=OSC(IEXC)+D2*WT(IK)*E1E1(I,J)
+C     &                         *(TMR(I)*TMR(J)-TMI(I),TMI(J))
+C            ECD(IEXC)=ECD(IEXC)+WT(IK)*E1E2(I,J)
+C     &                         *(TMI(I)*TMR(J)+TMR(I)*TMI(J))
+C          END IF 
+C        END DO 
+C      END DO
 C     
+      END DO
       RETURN
       END
 C
