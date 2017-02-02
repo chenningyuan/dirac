@@ -362,7 +362,7 @@ C       <E1VEC,E1VEC>_chi average
         E1E1(2,2)=DI2*((COS(THETA)*SIN(PHI))**2+COS(PHI)**2)
         E1E1(2,3)=-DI4*SIN(2*THETA)*SIN(PHI)
         E1E1(3,1)=E1E1(1,3)
-        E1E2(3,2)=E1E1(2,3)
+        E1E1(3,2)=E1E1(2,3)
         E1E1(3,3)=DI2*SIN(THETA)**2
 C       Circular dichroism
 C       <E1VEC,E2VEC>_chi average      
