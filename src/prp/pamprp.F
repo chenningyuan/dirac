@@ -9222,3 +9222,75 @@ C
  10   CONTINUE
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DEF_BED(IBED,II,IPRINT)
+C***********************************************************************
+C
+C     Define integrals for full light-matter interaction
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER (D2 = 2.0D0)      
+#include "dcbgen.h"
+#include "dgroup.h"
+      CHARACTER PNAME*16      
+      character (len=8),  allocatable   :: LABINT(:)
+      integer, allocatable              :: INTREP(:)
+      DIMENSION IBED(*)
+C      
+C     
+C     Allocate placeholders for integral labels and irreps 
+C
+      allocate(LABINT(8))
+      allocate(INTREP(8))
+C
+C     Get number of scalar integrals (NCOMP) and integral labels (and symmetries)
+C     NCOMP is an even number; first half is real part, then imaginary part      
+C
+      CALL CEXPINT_INFO(NCOMP,INTREP,LABINT)
+      II = 0
+C
+C     x-components
+C
+      IPTYP  = 2
+      NPCOMP = MCMP(IPTYP)
+      PFAC   = CVAL/D2
+      DO ICOMP = 1,NCOMP
+          II = II + 1
+          PNAME='BEDintX_'//LABINT(ICOMP)
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,LABINT(ICOMP),
+     &            IBED(II),ISYXPR,ITRXPR,IPRINT)
+      ENDDO
+C
+C     x-components
+C
+      IPTYP  = 3
+      NPCOMP = MCMP(IPTYP)
+      PFAC   = CVAL/D2
+      DO ICOMP = 1,NCOMP
+          II = II + 1
+          PNAME='BEDintY_'//LABINT(ICOMP)
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,LABINT(ICOMP),
+     &            IBED(II),ISYXPR,ITRXPR,IPRINT)
+      ENDDO
+C
+C     x-components
+C
+      IPTYP  = 4
+      NPCOMP = MCMP(IPTYP)
+      PFAC   = CVAL/D2
+      DO ICOMP = 1,NCOMP
+          II = II + 1
+          PNAME='BEDintZ_'//LABINT(ICOMP)
+          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,LABINT(ICOMP),
+     &            IBED(II),ISYXPR,ITRXPR,IPRINT)
+      ENDDO
+C     Memory deallocation
+      deallocate(LABINT)
+      deallocate(INTREP)
+C
+      RETURN
+      END
+      
