@@ -343,6 +343,16 @@ C
           FSSECT(ISECT) = relcc_fs_fssect(ISECT)
       ENDDO
 
+      if ((DOIE .eqv. .true.).and.( ALL(NACTH == 0) ) ) then
+        write(IW,*) 'WARNING: you did not specify the set of active 
+     &hole orbitals from which electron ionization takes place .NACTH!'
+      endif
+
+      if ((DOEA .eqv. .true.).and.( ALL(NACTP == 0) ) ) then
+        write(IW,*) 'WARNING: you did not specify the set of active 
+     &particle orbitals to which electron attachment takes place .NACTP'
+      endif
+      
 ! in case we want to jump to a given sector
       do isect = 1, 6
          FS_SKIP_SECT(isect) = relcc_restart_skipsect(isect)

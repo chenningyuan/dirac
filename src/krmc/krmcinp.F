@@ -78,7 +78,7 @@ C
      &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.GAS SH','.SYMMET',
-     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.xxxxxx'/
+     &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.WITHEP'/
       DATA SET/.FALSE./
 C
 C
@@ -104,10 +104,7 @@ C
          MCFLAG(I)            = .FALSE.
       END DO
       KRMC_SKIPEE             = .FALSE.
-      KRMC_SKIPEP             = .FALSE.
-!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
-     &  KRMC_SKIPEP           = .TRUE.
+      KRMC_SKIPEP             = .TRUE.  ! 31-Jan-17, new default /hjaaj
       KRMC_NOCI               = .FALSE.
       KRMC_UCIBOS             = .FALSE.
       KRMC_CHCKJZ             = .FALSE.
@@ -220,19 +217,19 @@ C
               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
               CALL QUIT('Illegal keyword in *KRMCSCF.')
     1         CONTINUE
-C&&& THRESHOLD : convergence threshold
+C&&& .THRESHOLD : convergence threshold
                   READ(LUCMD,*) DKRMC_THRGRD
                GO TO 100
     2          CONTINUE
-C&&& PRINT : General print level in KRMC-module
+C&&& .PRINT : General print level in KRMC-module
                   READ(LUCMD,*) IPRKRMC
                GO TO 100
     3          CONTINUE
-C&&& MAX MACRO ITERATIONS: Maximum number of macro iterations
+C&&& .MAX MACRO ITERATIONS: Maximum number of macro iterations
                     READ(LUCMD,*) MKRMC_MXMACRO
                GO TO 100
     4          CONTINUE
-C&&& MAX MICRO ITERATIONS: Maximum number of micro iterations
+C&&& .MAX MICRO ITERATIONS: Maximum number of micro iterations
                   READ(LUCMD,*) MKRMC_MXMICRO
                GO TO 100
     5          CONTINUE
@@ -248,7 +245,7 @@ C&&& .STATE : which state to converge to
                READ(LUCMD,*) IKRMC_STATE
                GO TO 100
     8          CONTINUE
-C&&& DELETE ORBITALS:
+C&&& .DELETE SECONDARY ORBITALS:
                   DO I = 1, NFSYM
                      READ(LUCMD,'(A72)') KRMC_DELSTR(I)
                   END DO
@@ -266,46 +263,46 @@ C&&& .MAKE COFFEE:
      &              'Don''t know how to make coffee yet!')
                GO TO 100
    11          CONTINUE
-C&&& SKIPEE: skip e-e rotations in the gradient and Hessian
+C&&& .SKIPEE: skip e-e rotations in the gradient and Hessian
                   KRMC_SKIPEE = .TRUE.
                GO TO 100
    12          CONTINUE
-C&&& SKIPEP: skip e-p rotations in the gradient and Hessian
+C&&& .SKIPEP: skip e-p rotations in the gradient and Hessian
                   KRMC_SKIPEP = .TRUE.
                GO TO 100
    13          CONTINUE
-C&&& CNVINT: Convergence thresholds for adding SL- and SS-integrals
+C&&& .CNVINT: Convergence thresholds for adding SL- and SS-integrals
                   READ(LUCMD,*) DKRMC_CNVINT(1),DKRMC_CNVINT(2)
                GO TO 100
    14          CONTINUE
-C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
+C&&& .ITRINT: Number of iterations before adding SL- and SS-integrals
                   READ(LUCMD,*) IKRMC_ITRINT(1),IKRMC_ITRINT(2)
                GO TO 100
    15          CONTINUE
-C&&& INTFLG: Specify what two-integrals should be included in this run
+C&&& .INTFLG: Specify what two-integrals should be included in this run
                   READ(LUCMD,*) ILLINT,ISLINT,ISSINT
                GO TO 100
    16          CONTINUE
-C&&& NO CI : debug flag: no CI rotations.
+C&&& .NO CI : debug flag: no CI rotations.
                KRMC_NOCI = .TRUE.
                GO TO 100
    17          CONTINUE
-C&&& THRPCI: threshold for printing CI vector
+C&&& .THRPCI: threshold for printing CI vector
                   READ(LUCMD,*) KRMC_THRPCI
                GO TO 100
    18          CONTINUE
 C&&& xxx
                GO TO 100
    19          CONTINUE
-C&&& MIN MK2: minimum value of 2 * MK
+C&&& .MIN MK2: minimum value of 2 * MK
                READ(LUCMD,*) NKRMC_MINMK2
                GO TO 100
    20          CONTINUE
-C&&& MAX MK2: maximum value of 2 * MK
+C&&& .MAX MK2: maximum value of 2 * MK
                READ(LUCMD,*) NKRMC_MAXMK2
                GO TO 100
    21          CONTINUE
-C&&& GASSH: GAS setup
+C&&& .GASSH : GAS setup
                   IF (NKRMCGAS .GT. 0) THEN
                     CALL QUIT('*** ERROR in *KRMCSCF *** You may ' //
      &              'only specify one of .GASSH , .CASSCF, and .GAS SH')
@@ -323,7 +320,7 @@ C&&& GASSH: GAS setup
                   END DO
                GO TO 100
    22          CONTINUE
-C&&& GASSPC: GAS space constraints
+C&&& .GASSPC: GAS space constraints
                   IF (NKRMCGAS .EQ. 0) THEN
                      WRITE(LUPRI,'(//A)') ' *** ERROR in *KRMCSCF ***'
      &                  //' .GASSH must be specified before .GASSP'
@@ -335,15 +332,15 @@ C&&& GASSPC: GAS space constraints
                   IF (NKRMCAELEC.LT.0) NKRMCAELEC = NKRMCGSP(2,NKRMCGAS)
                GO TO 100
    23          CONTINUE
-C&&& MK2REFERENCE: 2 * M_K reference
+C&&& .MK2REFERENCE: 2 * M_K reference
                   READ(LUCMD,*) NKRMC_MK2REF
                GO TO 100
    24          CONTINUE
-C&&& MK2DELTA: 2 * DELTA M_K
+C&&& .MK2DELTA: 2 * DELTA M_K
                   READ(LUCMD,*) NKRMC_MK2DEL
                GO TO 100
  25            CONTINUE
-C&&& FREEZE ORBITALS:
+C&&& .FREEZE INACTIVE ORBITALS:
                   WRITE(LUPRI,'(A)') ' *** ERROR in *KRMCSCF ***'//
      &            ' FREEZE option is not working yet! '//
      &            ' You have to be patient.'
@@ -355,15 +352,15 @@ C                 SK - Aug 2008
                   END DO
                GO TO 100
  26            CONTINUE
-C&&&  CI PROGRAM: which CI program to use
+C&&&  .CI PROGRAM: which CI program to use
                READ(LUCMD,'(A)') KRMC_CIPROGRAM
                GO TO 100
  27            CONTINUE
-C&&&  INACTIVE ORBITALS
+C&&&  .INACTIVE ORBITALS
                READ(LUCMD,*) (NKRMCISH(I),I=1,NFSYM)
                GO TO 100
  28            CONTINUE
-C&&&  CASSCF -- this defines a CAS space
+C&&&  .CASSCF -- this defines a CAS space
                IF (NKRMCGAS .GT. 0) THEN
                   CALL QUIT('*** ERROR in *KRMCSCF *** You may ' //
      &              'only specify one of .GASSH , .CASSCF, and .GAS SH')
@@ -376,7 +373,7 @@ C&&&  CASSCF -- this defines a CAS space
                GO TO 100
 !
  29            CONTINUE
-C&&&  GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA) 
+C&&&  .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA) 
 !              and Diracs opens-shell AOC Hartree-Fock format
                IF(NKRMCGAS .GT. 0)THEN
                   CALL QUIT('*** ERROR in *KRMCSCF *** You may ' //
@@ -555,8 +552,8 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
 C&&&  .NOCKJZ  -- do not refine orbital rotation vector (kappa matrix) wrt
 C                 the m_j values of each orbital
                  IF( .NOT. LINEAR )THEN
-                   CALL QUIT('*** ERROR in *KRMCSCF *** ' //
-     &             ' mj-blocking is only active for linear symmetry')
+                   CALL QUIT('*** ERROR in *KRMCSCF *** .NOCKJZ ' //
+     &             ' option is only allowed for linear symmetry')
                  END IF
                  KRMC_CHCKJZ = .FALSE.
                GO TO 100
@@ -564,11 +561,14 @@ C                 the m_j values of each orbital
 C&&&  .SVRONO  -- save reordered NOs rather than the original NOs
                krmc_save_reordered_nos = .true.
                GO TO 100
+! hjaaj Jan 2017: what was .SVRONX for? It was not activated in input TABLE
+!C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
+!               krmc_save_reordered_nos = .true.
+C&&&  .WITHEP  -- include e-p rotations in MCSCF optimization
  35            CONTINUE
-C&&&  .SVRONX  -- save reordered NOs rather than the original NOs + active orbital offset
-               krmc_save_reordered_nos = .true.
-               READ(LUCMD,*) (IKRMC_SVRONO(I),I=1,NFSYM)
+                  KRMC_SKIPEP = .FALSE.
                GO TO 100
+!               READ(LUCMD,*) (IKRMC_SVRONO(I),I=1,NFSYM)
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -860,12 +860,21 @@ C
      &    'SS-integrals from iteration ',IKRMC_ITRINT(2)
         ENDIF
       ENDIF
+!     if number of positronic shells is zero, skip e-p rotations. hjj+sk - aug 2010
+      IF(x2c.or.bss.or.levyle.or.freepj.or.vextpj) THEN
+         IF(.NOT. KRMC_SKIPEP) THEN
+            WRITE(LUPRI,*) ' * INFO: .WITHEP ignored for '//
+     &      ' X2C, BSS, LEVYLE, FREEPJ, and VEXTPJ'
+            KRMC_SKIPEP = .TRUE.
+         END IF
+      ELSE IF(KRMC_SKIPEP) THEN
+         WRITE(LUPRI,'(A)')
+     &     ' * No-pair KR-MCSCF: No rotations between electrons and'//
+     &     ' positrons in 2nd order optimization.'
+      END IF
       IF(KRMC_SKIPEE) WRITE(LUPRI,'(A)')
      &     ' * NB!!! No e-e rotations in 2nd order optimization'
-      IF(KRMC_SKIPEP) WRITE(LUPRI,'(A)')
-     &     ' * NB!!! No rotations between electrons and positrons'//
-     &     ' in 2nd order optimization.'
-      IF( KRMC_CHCKJZ ) WRITE(LUPRI,'(A)')
+      IF(KRMC_CHCKJZ) WRITE(LUPRI,'(A)')
      &     ' * Checking kappa matrix for orbital rotations'//
      &     ' with respect to the mj-values of the orbitals.'
 

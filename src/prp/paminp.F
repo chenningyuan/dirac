@@ -1556,7 +1556,7 @@ CMI ... inform about the assigned PCOMB
          WRITE(LUPRI,'(2X,A,A8,A,A4,A,A4)') "Operator ",PNAME,
      &   'changed 4-component matrix structure: ',
      &   PCOMB_SAVE," --> ",PCOMB
-         ! adjust the operator strenght
+         ! adjust the operator strength
          DO I=1,NPCOMP
            PFAC_TEMP = PFAC(I)
            PFAC(I)=2.0d0*PFAC_TEMP
@@ -2162,7 +2162,7 @@ C
         IF (PLABEL.EQ.'EDM') THEN
           PLABEL='KINENERG'
           WRITE(LUPRI,*)
-     &     'EDM: PLABEL SET to KINENERG, factor -4*c*field_strenght'
+     &     'EDM: PLABEL SET to KINENERG, factor -4*c*field_strength'
         ENDIF
 
         IF (IPRINT.GE.5) THEN

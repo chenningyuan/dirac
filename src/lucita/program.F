@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -5619,9 +5621,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "dcbgen.h"
 C
-C     ITASK = 5 for parallel LUCITA
+C     Send task code for parallel LUCITA
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 5 )
+      IF (PARCAL) CALL DIRAC_PARCTL( LUCITA_PAR )
 C
       END
 C/* Deck LUMSTE */
@@ -5650,7 +5652,7 @@ C
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
 C
       END
 #if defined (VAR_MPI2)

@@ -753,7 +753,7 @@ C***********************************************************************
 C
 C     Read VECTOR from LUNIT under label LABEL.
 C
-C     Open & close files if necesary.
+C     Open & close files if necessary.
 C
 C     Input:
 C

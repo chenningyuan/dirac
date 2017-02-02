@@ -72,6 +72,7 @@ add_library(
 
 # add intermodule dependendencies
 add_dependencies(dirac main)
+add_dependencies(dirac abacus)
 add_dependencies(dirac gp)
 add_dependencies(dirac xcfun_fortran_bindings)
 add_dependencies(dirac embedding)

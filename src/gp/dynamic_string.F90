@@ -59,7 +59,7 @@ implicit none
    ! ... store the actual size
    self(1)%str_length = size(self(1)%strp)
    if (self(1)%str_length.ne.len(text)) then
-     write(LUPRI,*) 'new string lenghts:',len(text),self(1)%str_length
+     write(LUPRI,*) 'new string lengths:',len(text),self(1)%str_length
      call FLSHFO(LUPRI)
      call QUIT('make_string: error in string length !')
    endif
@@ -223,7 +223,7 @@ implicit none
    ! ... store the actual size
    self%str_length = size(self%strp)
    if (self%str_length.ne.len(text)) then
-     write(LUPRI,*) 'new string lenghts:',len(text),self%str_length
+     write(LUPRI,*) 'new string lengths:',len(text),self%str_length
      call FLSHFO(LUPRI)
      call QUIT('make_string: error in string length !')
    endif

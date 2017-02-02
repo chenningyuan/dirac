@@ -13,7 +13,7 @@ C 4. Calculate integral offset
 C 5. Fetch integral
 C
 C Could perhaps just pass down IHTYPE instead of finding it?
-C ISUMORB and ISUBLENGHT could be replaced by Gauss's formula
+C ISUMORB and ISUBLENGTH could be replaced by Gauss's formula
 C
 C ISEA = C1
 C JSEA = A1
@@ -24,7 +24,7 @@ C
 #include "mxpdim.inc"
 #include "cgas.inc"
 *. Local scratch
-      INTEGER I_INDX_TO_GAS(4), ISUBLENGHT(NGAS+1)
+      INTEGER I_INDX_TO_GAS(4), ISUBLENGTH(NGAS+1)
       INTEGER IORB(NGAS+1), ITYPE2ALPHA(3), IPOS2ALPHA(3)
       DIMENSION XINT(*)
 *
@@ -35,13 +35,13 @@ C     print*,'ISEA,JSEA,KSEA,LSEA',ISEA,JSEA,KSEA,LSEA
       SIGN2 = 1.0D0
 * 1. Identify the GAS and mark those with one orbital
       IORBCOUNT = 0
-      ILENGHT = 0
+      ILENGTH = 0
       IEND = 0
       JEND = 0
       KEND = 0
       LEND = 0
       ISWAP = 0
-      ISUBLENGHT(1) = 0
+      ISUBLENGTH(1) = 0
       IORB(1) = 0
       DO IGAS = 1,NGAS
         IORBCOUNT = IORBCOUNT + NGSOBT(IGAS)
@@ -69,8 +69,8 @@ C     print*,'ISEA,JSEA,KSEA,LSEA',ISEA,JSEA,KSEA,LSEA
             LEND = 1
           END IF
         END IF
-        ILENGHT = ILENGHT + IGAS
-        ISUBLENGHT(IGAS+1) =  ILENGHT
+        ILENGTH = ILENGTH + IGAS
+        ISUBLENGTH(IGAS+1) =  ILENGTH
         IORB(IGAS+1) = IORBCOUNT
       END DO
 *
@@ -128,8 +128,8 @@ C           print*,'enter 4'
 * Remember to check if there is only one kramers pair in gas shell. Done in step 1
 * Should also add relative offset of type. Done
       IF(NALPHA.EQ.4.OR.NALPHA.EQ.0.OR.ISPINORBIT.EQ.1) THEN
-        ITYPE = ISUBLENGHT(I_INDX_TO_GAS(4)) + I_INDX_TO_GAS(2)-1 +
-     & ILENGHT*(ISUBLENGHT(I_INDX_TO_GAS(3)) + I_INDX_TO_GAS(1)-1)
+        ITYPE = ISUBLENGTH(I_INDX_TO_GAS(4)) + I_INDX_TO_GAS(2)-1 +
+     & ILENGTH*(ISUBLENGTH(I_INDX_TO_GAS(3)) + I_INDX_TO_GAS(1)-1)
 *
         IF(NALPHA.EQ.4) THEN
           ITYPE = ITYPE + IRELTYPE(3)
@@ -276,9 +276,9 @@ C       END IF
       END IF
       IF(NTEST.GE.100) THEN
         WRITE(6,*) 'IORBCOUNT = ', IORBCOUNT 
-        WRITE(6,*) 'ILENGHT = ',ILENGHT
+        WRITE(6,*) 'ILENGTH = ',ILENGTH
         DO IGAS = 1,NGAS
-          WRITE(6,*) 'ISUBLENGHT(IGAS) = ', ISUBLENGHT(IGAS)
+          WRITE(6,*) 'ISUBLENGTH(IGAS) = ', ISUBLENGTH(IGAS)
         END DO
         DO IGAS = 1,NGAS
           WRITE(6,*) 'IORB(IGAS) = ', IORB(IGAS)

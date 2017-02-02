@@ -350,7 +350,7 @@ csk        CALL IWRTMAMN8(IT_TTOL,1,MY_TTOL_LEN,1,MY_TTOL_LEN,LUWRT)
         END IF
 #endif
 C
-C       transfer IS_LENGHT_TT to common block LUCIPAR_I8
+C       transfer IS_LENGTH_TT to common block LUCIPAR_I8
 C       == max. T block length
 C
         IS_LENGTH_TT = 0
