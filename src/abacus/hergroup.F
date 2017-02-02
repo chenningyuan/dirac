@@ -662,10 +662,13 @@ C
 C     Determine boson symmetries connected by a given
 C     fermion irrep
 C
+      CALL ICOPY(16,-1,0,IBTOSF(0,1),1)
       IF(NFSYM.EQ.1) THEN
         DO ISYM = 1,NBSYM
           JFSYM(ISYM,1) = ISYM
           JFSYM(ISYM,2) = ISYM
+          IBTOSF(ISYM-1,1) = ISYM
+          IBTOSF(ISYM-1,2) = ISYM          
         ENDDO
       ELSEIF(NFSYM.EQ.2) THEN
         ISYMA = 0
@@ -674,9 +677,11 @@ C
           IF(JBTOF(ISYM-1,1).EQ.1) THEN
             ISYMA = ISYMA + 1
             JFSYM(ISYMA,1) = ISYM
+            IBTOSF(ISYM-1,1) = ISYMA
           ELSE
             ISYMB = ISYMB + 1
             JFSYM(ISYMB,2) = ISYM
+            IBTOSF(ISYM-1,2) = ISYMB
           ENDIF
         ENDDO
       ENDIF
@@ -1128,6 +1133,9 @@ C
 C     ***************************************
 C     ***** Definition of full operator *****
 C     ***************************************
+C     MCMP : number of components
+C     JM4  : pointer to matrix operator for a given component
+C     JCOM : coefficient of component
 C
 C     1. P             * scalar operator
 C     ==================================

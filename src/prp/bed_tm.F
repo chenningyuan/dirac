@@ -2,8 +2,15 @@ C  /* Deck get_bed */                                                  C
       SUBROUTINE GET_BED(OMEGA,ISSYM,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
+C     Build representation matrix of full light-matter interaction
+C     Scalar integrals are sorted on symmetries (max. 8)
+C     
+C      
 C     Upon entering this routine solution vectors have been written
-C     to unformatted file PAMXVC which is open with unit number LUXVC                                                                 
+C     to unformatted file PAMXVC which is open with unit number LUXVC                                  C     References are:
+C     1. Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C                               
 C                                                                      
 C***********************************************************************
 C
@@ -25,37 +32,36 @@ C#include "cbiher.h"
       integer, allocatable              :: INTREP(:)
       real(8)                           :: WAVVEC(3),POLVEC(3)
       character (len=6)                 :: PM4NAM(3)
+      integer                           :: IM4(3)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+!     We are building the full light-matter interaction operator      
+      DATA IM4/2,3,4/
       DATA PM4NAM/'XALPHA','YALPHA','ZALPHA'/
 C
 #include "ibtfun.h"
+C     
+C     Allocate placeholders for integral labels and irreps 
 C
-C     Generate integrals
-C
-      NCOMP=8
-      allocate(LABINT(NCOMP))
-      allocate(INTREP(NCOMP))
+      allocate(LABINT(8))
+      allocate(INTREP(8))
 C
 C     Integral directives
 C     
-      CALL PR1DIR('CXIKR   ',INTTYP,NCOMP2,INTREP,
+      CALL PR1DIR('CXIKR   ',INTTYP,NCOMP,INTREP,
      &            ANTI,SQUARE,DUMMY,LABINT,TRIANG,TRASPH,
      &            SOLVNT,0,.FALSE.,0,NBAST,NELMNT,IPRINT)
-      IF(NCOMP2.NE.NCOMP) THEN
-        WRITE(6,*) 'NCOMP - expected :',NCOMP
-        WRITE(6,*) 'NCOMP - returned :',NCOMP2 
-        CALL QUIT('GET_BED: NCOMP differs !')
-      ENDIF
-CTROND
-      WRITE(6,*) 'BASINFO:',NBAST,NELMNT
+C     NCOMP is by construction an even number,
+C     the first and second halfs corresponding to the real (eq. 44) and imaginary parts (eq. 45)
       DO ICOMP = 1,NCOMP
           WRITE(6,*) LABINT(ICOMP),'. Symmetry: ',
      &               REP(INTREP(ICOMP))
       ENDDO
+      WRITE(6,*) 'NBAST= ',NBAST,'  NELMNT= ',NELMNT
       DOINT(1,1)=.FALSE.
       DOINT(2,1)=.TRUE.
       DOINT(1,2)=.TRUE.
       DOINT(2,2)=.FALSE.
+C.....allocate array for holding integrals (on triangular form)
       allocate(ONEINT(NELMNT,NCOMP))
       IORDER=0
       NPQUAD=0
@@ -80,8 +86,6 @@ C
          CALL QUIT
      & ('GET_BED: Polarization not orthogonal to propagation !')
       ENDIF
-C     Operator type
-      IOPTYP = 8 ! iA.P
 C
 C     Loop over excitation energies
 C

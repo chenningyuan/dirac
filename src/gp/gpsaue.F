@@ -4079,7 +4079,7 @@ C
 C     This subroutine goes through an integer array IARR and returns the ordering
 C     index array INDX giving indices from smallest to largest
 C
-C     The array ARR is not touched.
+C     The array IARR is not touched.
 C
 C***********************************************************************
       INTEGER N,INDX(N),M,NSTACK,IARR(N)
