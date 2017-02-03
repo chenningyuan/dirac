@@ -405,10 +405,14 @@
       end subroutine pelib_ifc_localfield
 
 #if defined(VAR_MPI)
-      subroutine pelib_ifc_slave(runtype)
+      subroutine pelib_ifc_slave()
+          use interface_to_mpi
           use polarizable_embedding, only: pe_slave
-          integer, intent(in) :: runtype
+#include "infpar.h"
+          integer :: runtype
           call qenter('pelib_ifc_slave')
+          CALL interface_MPI_BCAST(runtype,1,MPARID,
+     &                             global_communicator)
           if (runtype == 1) then
               call pe_slave('full_fock')
           else if (runtype == 2) then
@@ -427,11 +431,18 @@
 #endif
 
       subroutine pelib_ifc_start_slaves(runtyp)
+          use interface_to_mpi
           integer :: runtyp
+#include "iprtyp.h"
+#include "infpar.h"
           call qenter('pelib_ifc_start_slaves')
-          call quit('using dummy PElib interface routines')
+              !if (.not. use_pelib()) call quit('PElib not active')
+          call dirac_parctl(12)
+          CALL interface_MPI_BCAST(RUNTYP,1,MPARID,
+     &                            global_communicator)
           call qexit('pelib_ifc_start_slaves')
       end subroutine pelib_ifc_start_slaves
+
 !
 ! edh: The remaining is left-over from dalton: quadratic and cubic response,
 ! PE-MCSCF (linear and quadratic response + energy). 

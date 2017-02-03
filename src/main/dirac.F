@@ -1106,6 +1106,7 @@ C***********************************************************************
      &          process_two_electron_integrals_4comp_slaves,            &
      &          process_two_electron_integrals_2comp_slaves 
 #endif
+
       implicit none
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1276,8 +1277,6 @@ C
 
       ELSE IF (ITASK .EQ. 12) THEN
 
-C        start PElib IMPEMENTATON/pelib/pelib_interface.F90   
-!        
          CALL PELIB_IFC_SLAVE()
 
       ELSE
