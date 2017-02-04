@@ -1,6 +1,6 @@
 #.rst:
 #
-# Enables profiling by appending corresponding compiler flags.
+# Enable profiling by appending corresponding compiler flags.
 #
 # Variables modified (provided the corresponding language is enabled)::
 #
