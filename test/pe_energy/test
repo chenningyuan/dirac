@@ -21,6 +21,6 @@ f.add(from_string  = '   Total energy',
       rel_tolerance    = 1.0e-8)
 
 #test.run(['nonrel.inp'], ['ch2o.mol'], f, args='--put peqm.pot')
-test.run(['dc.inp', 'dc-pbe.inp', 'spinfree.inp', 'nonrel.inp'], ['ch2o.mol'], f, args='--put peqm.pot')
+test.run(['dc.inp', 'x2c.inp', 'dc-pbe.inp', 'spinfree.inp', 'nonrel.inp'], ['ch2o.mol'], f, args='--put peqm.pot')
 
 sys.exit(test.return_code)
