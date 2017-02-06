@@ -430,6 +430,7 @@
       end subroutine pelib_ifc_slave
 #endif
 
+#if defined(VAR_MPI)
       subroutine pelib_ifc_start_slaves(runtyp)
           use interface_to_mpi
           integer :: runtyp
@@ -442,6 +443,7 @@
      &                            global_communicator)
           call qexit('pelib_ifc_start_slaves')
       end subroutine pelib_ifc_start_slaves
+#endif
 
 !
 ! edh: The remaining is left-over from dalton: quadratic and cubic response,
