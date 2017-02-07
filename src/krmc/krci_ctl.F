@@ -614,7 +614,7 @@ C&&&  CASSCF -- this defines a CAS space
                   NKRCIGSP(2,NKRCIGAS) = NKRCIAELEC
                GO TO 100
    32          CONTINUE
-C&&& .TRDM calculation of transition dipole moments and oscillator strenghts
+C&&& .TRDM calculation of transition dipole moments and oscillator strengths
                   DOPROP_KRCI = .TRUE.
                   DOOSCILLST  = .TRUE.
                GO TO 100
@@ -1530,7 +1530,6 @@ C
 #include "thrzer.h"
 C
 #include "maxorb.h"
-#include "dcbnrt.h"
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbgen.h"

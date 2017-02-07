@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -133,6 +133,7 @@ C     turn on splitting of primitive shells only for methods that
 C     perform and integral transformation to the spinor basis
 C
       DOSPLT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
+      dosplt = .true.
 
 CDIRAC:..allow contraction only for elements Z.LE.36
 C      except for 2c NR calculations

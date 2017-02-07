@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,7 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PAMTRA */
       SUBROUTINE PAMTRA()
@@ -3418,7 +3419,7 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
         NELM = 0
         DO IFRP = 1,NFSYM
@@ -3436,7 +3437,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
       END IF
 C
       CALL QEXIT('VIRCAN')
@@ -4005,7 +4006,7 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
@@ -4030,7 +4031,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-        IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+        IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
       ENDIF
 C
 C     Release buffer memory
@@ -4369,7 +4370,7 @@ C
 C       Get hold of the slaves if we run in parallel.
 C        ( ITASK = 1 for Fock matrices )
 C
-!@d     IF (PARCAL) CALL DIRAC_PARCTL( 1 )
+!@d     IF (PARCAL) CALL DIRAC_PARCTL( HERFCK_PAR )
 C
 C       Transform core-fock matrix to active MO basis
 C       ---------------------------------------------
@@ -4393,7 +4394,7 @@ C
 C       Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-!@d     IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+!@d     IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
 !@d   ENDIF
 C
 C     Release buffer memory

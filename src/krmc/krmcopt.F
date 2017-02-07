@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,7 +20,9 @@
 !dirac_copyright_end
 
 C FILE    : krmcopt.F
-C
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
       SUBROUTINE PSIOPT(WFTYP,WFCONV)
@@ -1965,7 +1967,7 @@ C     ***************************************************
 C     *** Orbital parameters ****************************
 C     ***************************************************
 C
-      CALL IZERO(NOROT,NORBT)
+      NOROT(1:NORBT) = 0
 C
       NDSHT = 0
       NVSHT = 0
@@ -2044,6 +2046,7 @@ C
          NDSHT = NDSHT + NDSH(I)
          NVSHT = NVSHT + NVSH(I)
       END DO
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
 C     ... 'active' secondary orbitals
       N2VSHX   = NVSHT   * NVSHT
       N2VSHXQ  = N2VSHX  * NZ
@@ -2165,6 +2168,7 @@ C
             NOROT(IORB(I) + NPSH(I) + NISH(I) + J) = 0
          END DO
       END DO
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
       IF (IPROPT .GT. 4) THEN
          WRITE(LUPRI,*) 'Orbitals excluded from 4-index transformation:'
          CALL IWRTMA(NOROT,NORBT,1,NORBT,1)
@@ -2490,7 +2494,7 @@ C
      &      ' (dimension ',NZCONFQ,')',
      &      ' CPU (Wall) time for generation of determinants: ',
      &      CPUTID,'(',WALLTID,')'
-      IF (NASHT .GT. 1 .AND. NZCONF .LE. 0) THEN
+      IF (NASHT .GT. 0 .AND. NZCONF .LE. 0) THEN
          WRITE(LUPRI,'(/A)') ' INFO: no determinants in this symmetry!'
       END IF
 C
@@ -6102,7 +6106,7 @@ C
 C     Calculate transformation to SV orbitals
 C     ---------------------------------------
 C
-      CALL DCOPY(NORBT,NOROT,1,NOROTC,1)
+      NOROTC(1:NORBT) = NOROT(1:NORBT)
 C
       IF (NXOPE .GT. 0) THEN
 C
@@ -6476,7 +6480,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     ITASK = 7 for parallel KR-MCSCF
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 7 )
+      IF (PARCAL) CALL DIRAC_PARCTL( KRMCSCF_PAR )
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6497,7 +6501,7 @@ C
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
 C
       END
 #if defined (VAR_MPI2)

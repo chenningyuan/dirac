@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -845,9 +845,7 @@
 #include "symmet.h"
 
 !     COMMON BLOCKS
-! clsfmm.h : THRCLS
 ! cbirea.h : IPREAD,TOL_SYMADD, ...
-#include "clsfmm.h"
 #include "cbirea.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
@@ -1227,10 +1225,6 @@
 !
 !     TMP copy input to .out file.
 
-!     Default threshold for distinguishing classical and
-!     non-classical contributions to Coulomb integrals
-
-      THRCLS = THRS
 !
 !     ****************************************
 !     ***** Output on LUONEL *****************

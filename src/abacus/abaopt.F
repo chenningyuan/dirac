@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -7018,9 +7018,9 @@ C        hjaaj Jan 2014
 C           We want to find the RNU for which the step length SL is TRUSTR
 C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
 C           We know that SL = norm(- (Hess + RNU)^-1 grad )
-C               SL ≤ contribution if all eigenvalues where equal to EVAL(1)
+C               SL  contribution if all eigenvalues where equal to EVAL(1)
 C                  = GRD_ASUM  / (EVAL(1) + RNU)
-C               SL ≥ contribution from first eigenvector
+C               SL  contribution from first eigenvector
 C                  = GRDDIA(1) / (EVAL(1) + RNU)
 C           From this you can derive the formulas for XMIN and XMAX,
 C           when we also remember that if RNU corresponding to trust

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1292,8 +1292,8 @@ C     Read the appropriate correlated density from file
       CALL OPNFIL(MCCDENS,FILE_NAME,'OLD','GET_CC')
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
-!      CLOSE(Unit=MCCDENS,Status='KEEP')
-      CLOSE(Unit=MCCDENS,Status='DELETE')
+      CLOSE(Unit=MCCDENS,Status='KEEP')
+!      CLOSE(Unit=MCCDENS,Status='DELETE')
 
       
 C     Add the closed shell Hartree-Fock contribution

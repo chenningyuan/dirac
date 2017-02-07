@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -45,9 +45,8 @@ use iso_c_binding
 #endif
 
 interface
-!miro: long strings can be printed out only by C function
-  subroutine print_info() bind(c)
-  end subroutine
+   subroutine print_info() bind(c)
+   end subroutine
 end interface
 
 #include "priunit.h"
@@ -151,7 +150,7 @@ end interface
      call printsubtitle
      call flush(lupri)
      ! print out git_info & build_info by the executable
-     call print_info
+     call print_info()
      call flush(lupri)
 ! miro: do the self-tests after printing dirac system info
 #ifndef NO_SELFTEST

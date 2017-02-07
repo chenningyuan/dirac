@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -753,7 +753,7 @@ C***********************************************************************
 C
 C     Read VECTOR from LUNIT under label LABEL.
 C
-C     Open & close files if necesary.
+C     Open & close files if necessary.
 C
 C     Input:
 C

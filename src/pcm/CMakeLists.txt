@@ -41,6 +41,13 @@ ExternalProject_Add(pcmsolver
   GIT_TAG v1.1.1
   CMAKE_ARGS "${PCMSolverCMakeArgs}"
   INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
+  LOG_INSTALL 1
+  LOG_DOWNLOAD 1
+  LOG_UPDATE 1
+  LOG_CONFIGURE 1
+  LOG_BUILD 1
+  LOG_TEST 1
+  LOG_INSTALL 1
   )
 
 # Set also variables usually set by find_package

@@ -45,6 +45,7 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
 )
 
 set(FREE_DIRAC_FORTRAN_SOURCES
+   dirimpmos.F90
 #   dirmp2no.F needs 
     ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
 # needs also input reader..
@@ -71,6 +72,7 @@ add_library(
 
 # add intermodule dependendencies
 add_dependencies(dirac main)
+add_dependencies(dirac abacus)
 add_dependencies(dirac gp)
 add_dependencies(dirac xcfun_fortran_bindings)
 add_dependencies(dirac embedding)
