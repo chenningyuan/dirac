@@ -463,9 +463,42 @@ contains
         if (method_local .eq. 1) then
             call gram_schmidt_orthogonalization(b, verbose=verbose_local)
         else if (method_local .eq. 2) then
-!           cal QR(b, verbose=verbose_local)
+            call qr_orthogonalization(b)
         end if
 
+    end subroutine
+
+    subroutine qr_orthogonalization(b)
+        real(kind=8), intent(inout)   :: b(:,:)
+        integer :: m, n, info, lwork, i, k
+        real(kind=8), allocatable :: work(:), tau(:)
+
+        m = size(b,1)
+        n = size(b,2)
+        k = min(m,n)
+
+        stop ('orthogonalization via QR decomposition not fully debugged yet')
+        allocate(tau(k))
+
+        lwork = -1 
+        allocate(work(1))
+        call dgeqrf(m, n, b, m, tau, work, lwork, info)
+        lwork = work(1)
+        deallocate(work)
+
+        allocate(work(lwork))
+        call dgeqrf(m, n, b, m, tau, work, lwork, info)
+        deallocate(work)
+
+        lwork = -1 
+        allocate(work(1))
+        call dorgqr(m, n, k, b, m, tau, work, lwork, info)
+        lwork = work(1)
+        deallocate(work)
+        allocate(work(lwork))
+        call dorgqr(m, n, k, b, m, tau, work, lwork, info)
+        deallocate(work)
+        deallocate(tau)
 
     end subroutine
 
@@ -1112,6 +1145,8 @@ contains
         if (davidson_verbose) &
         call print_values_vectors_R(davidson_output_file_unit,eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
                                     left_local, right_local, nroots=nroots_local)
+!       call print_values_vectors_R(davidson_output_file_unit,eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
+!                                   .false., .false., nroots=nroots_local)
 
     end subroutine
 
