@@ -380,6 +380,7 @@
 #include "param.inc"
 #include "complex.inc"
 #include "ccpar.inc"
+#include "files.inc"
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific
 !  problem (IP/EA/EE). 
@@ -407,34 +408,46 @@ integer :: nbuf3,ierr
 
      A%eomtype = eomtype
 
+     write (iw,*) " "
+     write (iw,*) " constructing intermediates for EOM-",eomtype
+
      call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
 
      call f_bar_mi(foo,fvo,A%t1,A%t2,A%Fbar_mi)
+     write (iw,*) "    done with Fbar_mi"
 
      call f_bar_me(fvo,A%t1,A%Fbar_me)
+     write (iw,*) "    done with Fbar_me"
 
      call f_bar_ae(fvv,fvo,A%t1,A%t2,A%Fbar_ae)
+     write (iw,*) "    done with Fbar_ae"
 
      call w_ijmn(A%t1,A%t2,A%W_ijmn)
+     write (iw,*) "    done with W_ijmn"
 
      call wbar_mbej(A%t2,A%Wbar_mbej)
+     write (iw,*) "    done with Wbar_mbej"
 
      call w_mbej(A%t1,A%t2,A%W_mbej)
+     write (iw,*) "    done with W_mbej"
 
 !ashee     call w_ejmb(A%t1,A%t2,A%W_ejmb)
 
      call w_iemn(A%t1,A%t2,A%W_iemn,A%Wbar_mbej,A%W_ijmn,A%Fbar_me)
+     write (iw,*) "    done with W_iemn"
 
      if (eomtype /= "IP") then
 
 !      CALL XTIME(5,1,'-- "efam" Intermediate                     ')
       call w_efam(A%t1,A%t2,A%Wbar_mbej,A%Fbar_me,A%W_efam)
+     write (iw,*) "    done with W_efam"
 
         if (myproc.gt.0) then
           A%W_efam(1:nv5*rcw) = 0.0d0
         endif
 
       call w_efam_diagram2 (A%t1,A%t2,local_buf2,local_buf3,nbuf3,A%W_efam)
+     write (iw,*) "    done with W_efam diagram #2"
 
 !   synchronize all the w_efam contributions from different nodes to the master 
 
@@ -459,10 +472,13 @@ integer :: nbuf3,ierr
      endif 
 
      call w_mnie(A%t1,A%W_mnie)
+     write (iw,*) "    done with W_mnie"
+
 
      if (eomtype /= "IP") then
 
       call w_amef(A%t1,A%W_amef)
+     write (iw,*) "    done with W_amef"
 
      endif 
 

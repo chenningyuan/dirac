@@ -118,7 +118,7 @@
 !Local Variables
 !==============
 
-   integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1)
+   integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1), jroot
    real*8  :: fac1
    real*8  :: eps((iv(nrep+1)+io(nrep+1))) 
    real*8, pointer :: diag_H(:)
@@ -226,20 +226,35 @@
 !    do iroot = 1, ndimr2
 !        R2(iroot,ndimr1+iroot) = 1.0d0
 !    end do
-!else
-!  allocate (R1_dum(ndimr1,ndimr1))
-!    R1_dum = 0.0d0
-
-!    do iroot = 1, ndimr1
-!        R1_dum(iroot,iroot) = 1.0d0
-!    end do
-
-!     call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
-!     
-!     R1 = R1_dum(:,1:nroot) 
-
-!   deallocate(R1_dum)
 !end if
+
+      if (relcc_mfd_trial_ccs) then
+          print *, 'debug, using trial vectors from diagonalization of singles-singles block'
+
+          allocate (R1_dum(ndimr1,ndimr1))
+          R1_dum = 0.0d0
+
+          do iroot = 1, ndimr1
+              R1_dum(iroot,iroot) = 1.0d0
+          end do
+
+          call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
+
+          R1 = R1_dum(:,1:nroot) 
+
+!         print *,"R1_dum",R1_dum
+!         do iroot = 1, nroot
+!             jroot = 2*iroot - 1
+!             R1(:,iroot) = R1_dum(:,jroot)
+!         end do
+
+          deallocate(R1_dum)
+      end if
+
+      if (relcc_mfd_trial_diagonal) then
+          print *, 'debug, using trial vectors from (reordered) unit vectors'
+
+
 
      allocate(diag_H(ndimr1))
      diag_H = H_II(1:ndimr1)
@@ -252,6 +267,7 @@
         R1(i,iroot) = 1.0d0
        enddo
      deallocate(diag_H)
+      end if
 
    case ('IP')
 
@@ -308,18 +324,27 @@
       ENDDO
       ENDDO
 
-!  allocate (R1_dum(ndimr1,ndimr1))
-!    R1_dum = 0.0d0
+      if (relcc_mfd_trial_ccs) then
+          print *, 'debug, using trial vectors from diagonalization of singles-singles block'
+          allocate (R1_dum(ndimr1,ndimr1))
+          R1_dum = 0.0d0
 
-!    do iroot = 1, ndimr1
-!        R1_dum(iroot,iroot) = 1.0d0
-!    end do
+          do iroot = 1, ndimr1
+              R1_dum(iroot,iroot) = 1.0d0
+          end do
 
-!     call trial_vectors_ip(R1_dum,Fbar_HH)
-!     
-!     R1 = R1_dum(:,1:nroot) 
+          call trial_vectors_ip(R1_dum,Fbar_HH)
+      
+!         R1 = R1_dum(:,1:nroot) 
 
-!   deallocate(R1_dum)
+          print *,"R1_dum",R1_dum
+          do iroot = 1, nroot
+              jroot = 2*iroot - 1
+              R1(:,iroot) = R1_dum(:,jroot)
+          end do
+
+          deallocate(R1_dum)
+      end if
 
  !  if (nroot.eq.(ndimr1+ndimr2)) then
  !   do iroot = 1, ndimr1
@@ -330,6 +355,8 @@
  !   end do
  !  else
 
+      if (relcc_mfd_trial_diagonal) then
+          print *, 'debug, using trial vectors from (reordered) unit vectors'
 
 ! In the following section we generate the guess vectors belonging to a particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
@@ -354,6 +381,7 @@
 
        enddo
      deallocate(diag_H)
+      end if  ! relcc_mfd_trial_diagonal
  ! end if 
 
    case ("EA")
@@ -406,22 +434,29 @@
       ENDDO
 
 
-! calculate the orbital dimension within which our desired root should belong..
+      if (relcc_mfd_trial_ccs) then
+          print *, 'debug, using trial vectors from diagonalization of singles-singles block'
 
-  search_dimension = ncont(state_sym)*nv(state_sym) 
+          allocate (R1_dum(ndimr1,ndimr1))
+          R1_dum = 0.0d0
 
-!! allocate (r1_dum(ndimr1,ndimr1))
-!!   r1_dum = 0.0d0
+          do iroot = 1, ndimr1
+              R1_dum(iroot,iroot) = 1.0d0
+          end do
 
-!!   do iroot = 1, ndimr1
-!!       r1_dum(iroot,iroot) = 1.0d0
-!!   end do
+          call trial_vectors_EA(R1_dum,Fbar_PP)
 
-!!    call trial_vectors_EA(R1_dum,Fbar_PP)
-!!    
-!!    r1 = r1_dum(:,1:nroot) 
+!         R1 = R1_dum(:,1:nroot) 
 
-!!  deallocate(R1_dum)
+          print *,"R1_dum",R1_dum
+          do iroot = 1, nroot
+              jroot = 2*iroot - 1
+              R1(:,iroot) = R1_dum(:,jroot)
+          end do
+
+          deallocate(R1_dum)
+
+      end if
 
  !  if (nroot.eq.(ndimr1+ndimr2)) then
  !   do iroot = 1, ndimr1
@@ -431,6 +466,13 @@
  !       R2(iroot,ndimr1+iroot) = 1.0d0
  !   end do
  !  else
+
+! calculate the orbital dimension within which our desired root should belong..
+
+      if (relcc_mfd_trial_diagonal) then
+          print *, 'debug, using trial vectors from (reordered) unit vectors'
+
+  search_dimension = ncont(state_sym)*nv(state_sym) 
 
      allocate(diag_H(ndimr1))
      diag_H = H_II(1:ndimr1)
@@ -446,6 +488,8 @@
         endif
        enddo
      deallocate(diag_H)
+
+      end if
 !! end if 
 
   end select 

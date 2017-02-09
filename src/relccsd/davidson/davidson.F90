@@ -878,7 +878,9 @@ contains
                     vectors_L, WORK, LWORK, INFO)
         lwork = work(1)
         deallocate(work)
+        print *, "debug, optimal lwork is ",lwork, "4*vectors_L is",4*vectors_L
         allocate(work(lwork))
+        print *, "debug, work allocated"
         call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                     eValuesRe, eValuesIm, eVectorsL, vectors_L, eVectorsR, &
                     vectors_L, WORK, LWORK, INFO)
