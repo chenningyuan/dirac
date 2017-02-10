@@ -134,7 +134,7 @@
 
 !        Transform to MO basis
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
-         call aomo_transform (aoint_tensor,moint_tensor,mocoefa_tensor,mocoefb_tensor,nao,nmo)
+         call aomo_transform (aoint_tensor,moint_tensor,mocoefa_tensor,mocoefb_tensor)
 
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
@@ -242,7 +242,7 @@
          
         end subroutine compute_ao_integrals
 
-        subroutine aomo_transform (aoint_tensor,moint_tensor,mocoefa_tensor,mocoefb_tensor,nao,nmo)
+        subroutine aomo_transform (aoint_tensor,moint_tensor,mocoefa_tensor,mocoefb_tensor)
 
 !        Transform integral tensor from ao-basis to mo-basis 
  
@@ -254,27 +254,30 @@
 
          type(talsh_tens_t), intent(inout)  :: aoint_tensor, mocoefa_tensor,mocoefb_tensor,moint_tensor
 !        TODO: check why tensors need to be inout (errors if the mocoef is intent(in) and if motensor is intent(out))
-!        TODO: replace these two arguments by querying tensor (information is contained in tensor, but hard to access)
-         integer, intent(in) :: nao,nmo(4)
 
          type(talsh_tens_t):: a1int_tensor,a2int_tensor, a3int_tensor
-         integer(C_INT):: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
-         integer(C_INT):: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
+         integer:: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
+         integer:: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
 
          complex(8):: zero=(0.D0,0.D0)
-         integer   :: ierr 
+         integer   :: ierr, tens_rank
+
+         ierr = 0
+!        Get tensor dimension (mocoefa and mocoefb must have rank 2 and have identical dimensions)
+         ierr = talsh_tensor_dimensions(mocoefa_tensor,tens_rank,mocoef_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.2) stop 'program error: mocoef tensor corrupted'
+         ierr = talsh_tensor_dimensions(aoint_tensor,tens_rank,aoint_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
+         ierr = talsh_tensor_dimensions(moint_tensor,tens_rank,moint_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
-         mocoef_dims(1)  = nao
-         mocoef_dims(2)  = 2 * nmo(1)
-         aoint_dims      = nao
-         a1int_dims(1)   = 2 * nmo(1)
-         a1int_dims(2:4) = nao
-         a2int_dims(1:2) = 2 * nmo(1:2)
-         a2int_dims(3:4) = nao
-         a3int_dims(1:3) = 2 * nmo(1:3)
-         a3int_dims(4)    = nao
-         moint_dims(1:4)  = 2 * nmo(1:4)
+         a1int_dims(1)   = moint_dims(1)
+         a1int_dims(2:4) = aoint_dims(2:4)
+         a2int_dims(1:2) = moint_dims(1:2)
+         a2int_dims(3:4) = aoint_dims(3:4)
+         a3int_dims(1:3) = moint_dims(1:3)
+         a3int_dims(4)   = aoint_dims(4)
 
 !        Do 1st and 2nd quarter-transformation
          ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
