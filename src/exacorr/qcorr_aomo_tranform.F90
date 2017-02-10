@@ -30,26 +30,21 @@
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
 
-         integer             :: i, j, k, l, imo, ierr
-         type(MO)            :: qmo
-         integer             :: ifrp = 1     ! we do not use symmetry, so ifrp (g/u) is always 1
-         integer             :: nz = 4       ! we do not use symmetry, so nz is always 4
-         integer             :: ipqtoq(4)   ! only needed for the debug print, don't forget to remove later
+         integer             :: i, ierr
          integer             :: nao, number_aos            ! the size of the atomic orbital basis
          integer             :: nshells, number_aoshells   ! number of AO shells
          type(basis_func_info_t), allocatable :: shell(:)  ! array with basis function information
 
          integer(C_SIZE_T), parameter:: BUF_SIZE=1_8*1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-         type(talsh_tens_t):: aoint_tensor, mocoefa_tensor,mocoefb_tensor,a1int_tensor
-         type(talsh_tens_t):: a2int_tensor, a3int_tensor, moint_tensor
-         integer(C_INT):: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
-         integer(C_INT):: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
+         type(talsh_tens_t):: aoint_tensor
+         type(talsh_tens_t):: moint_tensor
+         integer(C_INT):: aoint_dims(1:4),moint_dims(1:4)
          integer(C_SIZE_T):: host_buf_size
          integer(C_INT):: host_arg_max
 
          real(8)   :: vd,vl,vr
          complex(8):: zero=(0.D0,0.D0)
-         complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:),ao_tens(:,:,:,:),mo_tens(:,:,:,:)
+         complex(8), pointer, contiguous:: ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR):: body_p
 
 !        Make some noise so that we know we are here
@@ -75,55 +70,8 @@
          print*, " Retrieved basis set information from DIRAC common blocks"
          
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
-         mocoef_dims(1)  = nao
-         mocoef_dims(2)  = 2 * nmo(1)
          aoint_dims      = nao
-         a1int_dims(1)   = 2 * nmo(1)
-         a1int_dims(2:4) = nao
-         a2int_dims(1:2) = 2 * nmo(1:2)
-         a2int_dims(3:4) = nao
-         a3int_dims(1:3) = 2 * nmo(1:3)
-         a3int_dims(4)    = nao
-         moint_dims(1:4)  = 2 * nmo(1:4)
-
-!        Initialize tensors with MO coefficients
-         ierr=talsh_tensor_construct(mocoefa_tensor,C8,mocoef_dims,init_val=zero)
-         ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
-         ierr=talsh_tensor_construct(mocoefb_tensor,C8,mocoef_dims,init_val=zero)
-         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,0,DEV_HOST)
-         call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
-
-!        This array is only needed to print the MO coefficients using the DIRAC routine PRQMAT
-         do i = 1, 4
-            ipqtoq(i) = i
-         end do
-         imo = 1
-         do i = 1, 1  ! CAUTION: should be generalized to different coefficient ranges for each index (e.g. for MP2)
-
-            call get_dirac_mo_coefficients (ifrp,qmo,mo_list(imo:imo+nmo(i)-1),nmo(i))
-
-!           uncommenting this can be useful for debugging, this piece of code is to be deleted later
-!           test that we have read the coefficients correctly
-!           print*,"Mo coefficients for index ",i
-!           CALL PRQMAT(qmo%coeff,nao,nmo(i),nao,nmo(i),nz,ipqtoq,6)
-
-!           Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in 
-!           T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
-!           The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
-!           using Kramers' symmetry.
-
-            do k = 1, nmo(i)
-               do j = 1, nao
-                   camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
-                   cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-                   camo_tens(j,k+nmo(i)) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
-                   cbmo_tens(j,k+nmo(i)) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
-               end do
-            end do
-            call delete (qmo)
-            imo = imo + nmo(i)
-         end do
+         moint_dims(1:4) = 2 * nmo(1:4)
 
 !        Get tensor for AO integrals
          ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=zero)
@@ -134,7 +82,7 @@
 
 !        Transform to MO basis
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=zero)
-         call aomo_transform (aoint_tensor,moint_tensor,mocoefa_tensor,mocoefb_tensor)
+         call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 
 !        Write to old format MO-integrals file to allow for easy debugging of the integral transform
          ierr=talsh_tensor_get_body_access(moint_tensor,body_p,C8,0,DEV_HOST)
@@ -151,13 +99,64 @@
          return
         end subroutine compute_mo_integrals
 
+        subroutine get_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
+
+!This subroutine reads the desired subset of mo coefficients from DIRAC
+ 
+!        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 30 C)
+ 
+         use dirac_MO
+         use tensor_algebra
+         use talsh
+
+         implicit none
+         integer, intent(in) :: nao          ! the length of the ao basis
+         integer, intent(in) :: nmo          ! the length of the mo basis
+         integer, intent(in) :: mo_list(:)   ! and their indices
+         type(talsh_tens_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
+
+         integer             :: j, k, ierr
+         type(MO)            :: qmo
+         integer             :: ifrp = 1     ! we do not use symmetry, so ifrp (g/u) is always 1
+         integer             :: nz = 4       ! we do not use symmetry, so nz is always 4
+         integer             :: tens_rank, mocoef_dims(1:2)
+
+         complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
+         type(C_PTR):: body_p
+
+
+         ierr=talsh_tensor_dimensions(mocoefa_tensor,tens_rank,mocoef_dims)
+         ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
+         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,0,DEV_HOST)
+         call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
+
+         call get_dirac_mo_coefficients (ifrp,qmo,mo_list,nmo)
+
+!        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in 
+!        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
+!        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
+!        using Kramers' symmetry.
+
+         do k = 1, nmo
+            do j = 1, nao
+                camo_tens(j,k) = dcmplx(qmo%coeff(j,k,1),qmo%coeff(j,k,2))
+                cbmo_tens(j,k) = dcmplx(-qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+                camo_tens(j,k+nmo) = dcmplx(qmo%coeff(j,k,3),qmo%coeff(j,k,4))
+                cbmo_tens(j,k+nmo) = dcmplx(qmo%coeff(j,k,1),-qmo%coeff(j,k,2))
+            end do
+         end do
+         call delete (qmo)
+
+         return
+        end subroutine get_mocoef_tensor
+
         subroutine compute_ao_integrals (nao,ao_tens,nshells,gto)
 
 !This subroutine drives the generation of AO integrals by InteRest
 !
          use dirac_exatensor
          use module_interest_eri
-
 
          implicit none
          integer, intent(in) :: nao, nshells ! number of basis functions and basis function shells
@@ -242,7 +241,7 @@
          
         end subroutine compute_ao_integrals
 
-        subroutine aomo_transform (aoint_tensor,moint_tensor,mocoefa_tensor,mocoefb_tensor)
+        subroutine aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 
 !        Transform integral tensor from ao-basis to mo-basis 
  
@@ -251,23 +250,37 @@
 
          implicit none
 
-         type(talsh_tens_t), intent(inout)  :: aoint_tensor, mocoefa_tensor,mocoefb_tensor,moint_tensor
+         integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
+         integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
+         type(talsh_tens_t), intent(inout)  :: aoint_tensor, moint_tensor
 
+         type(talsh_tens_t):: mocoefa_tensor(4),mocoefb_tensor(4)
          type(talsh_tens_t):: a1int_tensor,a2int_tensor, a3int_tensor
          integer:: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
          integer:: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
 
          complex(8):: zero=(0.D0,0.D0)
-         integer   :: ierr, tens_rank
+         integer   :: ierr, tens_rank, i, imo, nao
 
-         ierr = 0
-!        Get tensor dimension (mocoefa and mocoefb must have rank 2 and have identical dimensions)
-         ierr = talsh_tensor_dimensions(mocoefa_tensor,tens_rank,mocoef_dims)
-         if (ierr.ne.0 .or. tens_rank.ne.2) stop 'program error: mocoef tensor corrupted'
+!        Get tensor dimension of input and output tensors
          ierr = talsh_tensor_dimensions(aoint_tensor,tens_rank,aoint_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
          ierr = talsh_tensor_dimensions(moint_tensor,tens_rank,moint_dims)
-         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: moint tensor corrupted'
+
+!        Initialize tensors with MO coefficients
+         nao = aoint_dims(1)
+         imo = 0
+         do i = 1, 4
+            mocoef_dims(1) = aoint_dims(i)
+            if (mocoef_dims(1) .ne. nao)      stop 'program error: inconsistent dimensions'
+            mocoef_dims(2) = moint_dims(i)
+            if (mocoef_dims(2) .ne. 2*nmo(i)) stop 'program error: inconsistent dimensions'
+            ierr=talsh_tensor_construct(mocoefa_tensor(i),C8,mocoef_dims,init_val=zero)
+            ierr=talsh_tensor_construct(mocoefb_tensor(i),C8,mocoef_dims,init_val=zero)
+            call get_mocoef_tensor (nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
+            imo = imo + nmo(i)
+         end do
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          a1int_dims(1)   = moint_dims(1)
@@ -280,14 +293,14 @@
 !        Do 1st and 2nd quarter-transformation
          ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
          ierr=talsh_tensor_construct(a2int_tensor,C8,a2int_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor,aoint_tensor)
+         ierr=talsh_tensor_contract("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor)
+         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor(2))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
          ierr=talsh_tensor_init(a1int_tensor,zero)
-         ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
+         ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor(1),aoint_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
-         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor)
+         ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor(2))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
 
 !        Destruct a1 and a1 integrals:
@@ -295,14 +308,14 @@
 
 !        Do 3rd and 4th quarter-transformation
          ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
-         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor,a2int_tensor)
+         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(3),a2int_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
-         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor)
+         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(4))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
          ierr=talsh_tensor_init(a3int_tensor,zero)
-         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
+         ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor(3),a2int_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
-         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor)
+         ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor(4))
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
  
 !        Destruct a2 and a3 integrals:
