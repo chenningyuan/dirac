@@ -248,12 +248,10 @@
  
          use tensor_algebra
          use talsh
-         use, intrinsic:: ISO_C_BINDING
 
          implicit none
 
          type(talsh_tens_t), intent(inout)  :: aoint_tensor, mocoefa_tensor,mocoefb_tensor,moint_tensor
-!        TODO: check why tensors need to be inout (errors if the mocoef is intent(in) and if motensor is intent(out))
 
          type(talsh_tens_t):: a1int_tensor,a2int_tensor, a3int_tensor
          integer:: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
@@ -286,11 +284,7 @@
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
-!        Would be nice if the line below could be used, but it seems to add to the existing tensor rather than initializing it first
-!        Problem is that also tensor_init is (temporarily ?) not available, so we need to destruct and construct again
-!        ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
-         ierr=talsh_tensor_destruct(a1int_tensor)
-         ierr=talsh_tensor_construct(a1int_tensor,C8,a1int_dims,init_val=zero)
+         ierr=talsh_tensor_init(a1int_tensor,zero)
          ierr=talsh_tensor_contract("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor,aoint_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
          ierr=talsh_tensor_contract("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor)
@@ -305,9 +299,7 @@
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
-!        ierr=talsh_tensor_contract("D(i,j,k,s)=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
-         ierr=talsh_tensor_destruct(a3int_tensor)
-         ierr=talsh_tensor_construct(a3int_tensor,C8,a3int_dims,init_val=zero)
+         ierr=talsh_tensor_init(a3int_tensor,zero)
          ierr=talsh_tensor_contract("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor,a2int_tensor)
          if(ierr.ne.TALSH_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
          ierr=talsh_tensor_contract("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor)
