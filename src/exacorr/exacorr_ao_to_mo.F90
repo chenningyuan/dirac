@@ -6,6 +6,7 @@
         implicit none
         private
         public compute_mo_integrals
+        public aomo_transform
 
        contains
 !-------------------------------------------------------------------------------------------

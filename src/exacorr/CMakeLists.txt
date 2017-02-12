@@ -4,12 +4,13 @@ include_directories(
 
 
 set(FIXED_EXACORR_FORTRAN_SOURCES
-    qcorr_dirac.F
+    exacorr_dirac.F
 )
 
 set(FREE_EXACORR_FORTRAN_SOURCES
    dirac_exatensor.F90
-   qcorr_aomo_tranform.F90
+   exacorr_ao_to_mo.F90
+   exacorr_cc.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
