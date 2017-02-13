@@ -7,6 +7,7 @@
         private
         public compute_mo_integrals
         public aomo_transform
+        public compute_ao_integrals
 
        contains
 !-------------------------------------------------------------------------------------------

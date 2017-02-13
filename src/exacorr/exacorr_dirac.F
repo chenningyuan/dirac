@@ -14,6 +14,7 @@ C
 C***********************************************************************
 
       Use exacorr_ao_to_mo
+      Use exacorr_cc
 
 #include "implicit.h"! because common blocks may assume this
 #include "../moltra/dcbtra.h"  ! to access tra4_indstr
@@ -22,8 +23,8 @@ C***********************************************************************
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
-      integer, allocatable :: mo_list(:)
-      integer              :: nmo(4)
+      integer, allocatable :: mo_list(:),mo_occ(:),mo_vir(:)
+      integer              :: nmo(4),noccu,nvir
 
       if (nfsym.ne.1) then
          call quit ('exacorr can not handle symmetry')
@@ -55,8 +56,25 @@ C     Transformed AO to MO integrals are written to MDCINT
       call mdinti (0) 
       call compute_mo_integrals (nmo, mo_list)
       call mdintf
+C
+C     Start new implementation of CCSD, hardwired test case for the moment
+      orbital_string(1) = '1'
+      noccu = 0
+      call numlst (orbital_string(1),kvec,1,1,nesh(1),1,noccu)
+      allocate (mo_occ(noccu))
+      call numlst (orbital_string(1),mo_occ,noccu,1,nesh(1),1,noccu)
+
+      orbital_string(2) = '2..9'
+      nvir = 0
+      call numlst (orbital_string(2),kvec,1,1,nesh(1),1,nvir)
+      allocate (mo_vir(nvir))
+      call numlst (orbital_string(2),mo_vir,nvir,1,nesh(1),1,nvir)
+
+      call cc_driver (noccu,nvir,mo_occ,mo_vir)
 
       deallocate (mo_list)
+      deallocate (mo_occ)
+      deallocate (mo_vir)
 
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
