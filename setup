@@ -71,7 +71,7 @@ def gen_cmake_command(options, arguments):
     command.append('-DENABLE_MPI={0}'.format(arguments['--mpi']))
     command.append('-DENABLE_CODE_COVERAGE={0}'.format(arguments['--coverage']))
     command.append('-DENABLE_STATIC_LINKING={0}'.format(arguments['--static']))
-    command.append('-DENABLE_PROFILING={0}'.format(arguments['--check']))
+    command.append('-DENABLE_PROFILING={0}'.format(arguments['--profile']))
     command.append('-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check']))
     command.append('-DENABLE_64BIT_INTEGERS={0}'.format(arguments['--int64']))
     command.append('-DEXPLICIT_LIBS="{0}"'.format(arguments['--explicit-libs'].strip()))
