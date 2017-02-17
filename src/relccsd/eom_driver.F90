@@ -1115,21 +1115,23 @@
 
       nstate_sym(state_sym,3) = nroot
       select_eom = 3
+      ISIZE = nroot
 
     case('EA')
 
       nstate_sym(state_sym,2) = nroot
-
       select_eom = 2
+      ISIZE = nroot 
 
     case('EE')
 
      nstate_sym(state_sym,4) = nroot
      select_eom = 4
+     ISIZE = nroot + 1 
 
   end select  
 
-      ISIZE = nroot + 1 ! possibly correct
+!     ISIZE = nroot + 1 ! possibly correct
       ALLOCATE (INDX_ALL(ISIZE),STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL allocation !')
@@ -1714,7 +1716,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
          if (right_vectors) then
              call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector)
-             call eom_analysis(davResultsR(state_sym)%eValuesRe,davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
+             call eom_analysis(davResultsR(state_sym)%eValues(1:rcw,:),davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
 
          else if (left_vectors) then
 ! here we copy the right vectors instead of passing them directly in order to keep it
