@@ -1530,6 +1530,7 @@ C
       LOGICAL, SAVE :: INIT=.FALSE.
       LOGICAL :: FNDLAB
       INTEGER, PARAMETER :: EOMDEN=299
+      integer :: dlength
 C---------------Executable code--------------------------------------
  
       WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
