@@ -10279,7 +10279,7 @@ C
          IF (IPRINT .GE. 0) THEN
             WRITE (LUPRI,'(/,1X,A)') ' The molecule is linear.'
             WRITE (LUPRI,'(A,F16.6)')' Moment of inertia :',
-     &                                  D1/EIGVAL(3)
+     &                                  XFAMU/EIGVAL(3)
          END IF
          DO 98 IATOM = 1, NUCDEP
 C     NSR constants are defined only for nuclei with non-zero gvalue
@@ -10396,10 +10396,10 @@ C
                  IF(LINMOL) THEN
                    IF(EIGVAL(1).NE.0) THEN
                       WRITE (LUPRI,'(2X,A,F14.8,/)')
-     &               'Moment of inertia (a.u.): ', D1/EIGVAL(1)
+     &               'Moment of inertia (a.u.): ', XFAMU/EIGVAL(1)
                    ELSE
                       WRITE (LUPRI,'(2X,A,F14.8,/)')
-     &               'Moment of inertia (a.u.): ', D1/EIGVAL(2)
+     &               'Moment of inertia (a.u.): ', XFAMU/EIGVAL(2)
                    END IF
                    IF (IPRINT .GE. 0)
      &   WRITE(LUPRI,'((1X,A,F16.8,/),/,2(1X,A,F16.8,/),(1X,A,F16.8))')
@@ -10420,9 +10420,9 @@ C
                       CALL HEADER
      &    ('Principal moments of inertia (a.u.) and principal axes',0)
                       WRITE (LUPRI,'(3X,A,F16.8,6X,3F16.8)')
-     &           'IA',D1/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
-     &           'IB',D1/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
-     &           'IC',D1/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
+     &           'IA',XFAMU/EIGVAL(1), (EIGVEC(I,1),I = 1,3),
+     &           'IB',XFAMU/EIGVAL(2), (EIGVEC(I,2),I = 1,3),
+     &           'IC',XFAMU/EIGVAL(3), (EIGVEC(I,3),I = 1,3)
                     END IF
                     WRITE (LUPRI,'(2X,A,/)') 'Components in the '//
      &              'principal axis system'
@@ -10464,7 +10464,7 @@ C
      &                    'B', (GTRANPSEP(I,2,IATOM),I = 1,3),
      &                    'C', (GTRANPSEP(I,3,IATOM),I = 1,3)
 C
-                      CALL HEADER('Total spin-rotation constants',-1)
+                      CALL HEADER('Total spin-rotation constant',-1)
                     END IF
                     WRITE (LUPRI,'(3X,A,6X,3F16.8)')
      &                 'A', (GTRANT(I,1,IATOM),I = 1,3),
