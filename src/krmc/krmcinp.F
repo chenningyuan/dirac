@@ -75,7 +75,7 @@ C
       DATA TABLE /'.THRESH','.PRINT ','.MAX MA','.MAX MI','.NR ALW',
      &            '.NEO AL','.STATE ','.DELETE','.MAX BA','.MAKE C',
      &            '.SKIPEE','.SKIPEP','.CNVINT','.ITRINT','.INTFLG',
-     &            '.NO CI ','.THRPCI','.xxxxxx','.MIN MK','.MAX MK',
+     &            '.NO CI ','.THRPCI','.FROZEN','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.GAS SH','.SYMMET',
      &            '.NO1pDE','.MEMFAC','.NOCKJZ','.SVRONO','.WITHEP'/
@@ -291,7 +291,8 @@ C&&& .THRPCI: threshold for printing CI vector
                   READ(LUCMD,*) KRMC_THRPCI
                GO TO 100
    18          CONTINUE
-C&&& xxx
+C&&& .FROZEN: freeze lowest inactive orbitals
+                  READ(LUCMD,*) NKRMCFRO(1:NFSYM)
                GO TO 100
    19          CONTINUE
 C&&& .MIN MK2: minimum value of 2 * MK
@@ -656,28 +657,34 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
 C
       WRITE(LUPRI,'(A,I6)') ' * General print level   : ',IPRKRMC
-      WRITE(LUPRI,'(A,2I6)')
-     &     ' * Inactive orbitals     : ',(NKRMCISH(I),I=1,NFSYM)
+      IF (NKRMCFRO(1) .ne. 0 .OR. NKRMCFRO(NFSYM) .ne. 0) THEN
+         WRITE(LUPRI,'(A,T31,2I6)') ' * Frozen inactive orbitals',
+     &      (NKRMCFRO(I),I=1,NFSYM)
+         WRITE(LUPRI,'(A,T31,2I6)') ' * Relaxed inactive orbitals',
+     &      (NKRMCISH(I)-NKRMCFRO(I),I=1,NFSYM)
+      ELSE
+         WRITE(LUPRI,'(A,T31,2I6)')
+     &     ' * Inactive orbitals',(NKRMCISH(I),I=1,NFSYM)
+      END IF
       if(.not.KRMC_full_ci)then
-        WRITE(LUPRI,'(A,2I6)')
-     &       ' * Active orbitals       : ',(NKRMCASH(I),I=1,NFSYM)
+        WRITE(LUPRI,'(A,T31,2I6)')
+     &     ' * Active orbitals  ',(NKRMCASH(I),I=1,NFSYM)
       else
-        WRITE(LUPRI,'(A,A)')
-     &       ' * Active orbitals       : ',' all remaining (code -9999)'
+        WRITE(LUPRI,'(A,T31,A)')
+     &     ' * Active orbitals  ',' all remaining (code -9999)'
       end if
-      WRITE(LUPRI,'(A,I6)')
-     &     ' * Active electrons      : ',NKRMCAELEC
+      WRITE(LUPRI,'(A,T31,I6)')
+     &     ' * Active electrons ',NKRMCAELEC
       IF (NKRMCGAS .GT. 0) THEN
          WRITE(LUPRI,'(A,I3,A)')
-     &        ' * GAS space setup for ',NKRMCGAS,' GAS space(s) : '
+     &     ' * GAS space setup for ',NKRMCGAS,' GAS space(s) : '
          N_GAS_ERR = 0
          DO I = 1, NKRMCGAS
-            WRITE(LUPRI,'(A,I3,A,2I6)')
-     &           '   - GAS space ',I,'       : ',
-     &           (NKRMCGSH(J,I),J=1,NFSYM)
-            WRITE(LUPRI,'(A,I3,A1,I3,A)')
-     &      '    (constraints: min/max active electrons after space : ',
-     &           NKRMCGSP(1,I),'/',NKRMCGSP(2,I),')'
+            WRITE(LUPRI,'(A,I3,T31,2I6)')
+     &     '   - GAS space',I,(NKRMCGSH(J,I),J=1,NFSYM)
+            WRITE(LUPRI,'(A,I3,A1,I3)')
+     &     '     min/max active electrons after this space :',
+     &           NKRMCGSP(1,I),'/',NKRMCGSP(2,I)
 C
 C           Consistency checks:
 C
@@ -700,10 +707,10 @@ C
          END IF
 
       END IF
-      WRITE(LUPRI,'(A,I4)')
-     &     ' * State number          : ',IKRMC_STATE
-      WRITE(LUPRI,'(2A)')
-     &     ' * CI program used       : ',KRMC_CIPROGRAM
+      WRITE(LUPRI,'(A,T31,I4)')
+     &     ' * State number',IKRMC_STATE
+      WRITE(LUPRI,'(A,T31,A)')
+     &     ' * CI program used :',KRMC_CIPROGRAM
 C
 C     Symmetry of the wave function:
 C     ------------------------------
