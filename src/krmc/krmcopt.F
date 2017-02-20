@@ -1967,6 +1967,7 @@ C     ***************************************************
 C     *** Orbital parameters ****************************
 C     ***************************************************
 C
+      LNOROT = .FALSE.
       NOROT(1:NORBT) = 0
 C
       NDSHT = 0
@@ -2014,6 +2015,15 @@ C         the associated IDX* arrays could not be made in
 C         the SETDCBIDX routines.) SK+HJAaJ Aug 08
 C        ***************************************************
 C
+         IF (NFRO(I) .GT. 0) THEN
+            WRITE(LUPRI,'(5X,A,I4)')
+     &      'Frozen orbitals     : 1..',NFRO(I)
+            LNOROT = .TRUE.
+            DO J = 1, NFRO(I)
+               K = IORB(I) + NPSH(I) + J
+               NOROT(K) = 1
+            END DO
+         END IF
          NVEC = 1
          CALL NUMLST(OPT_DELSTR(I),ILIST,NORB(I),
      &        -NPSH(I),NESH(I),I,NVEC)
@@ -2026,6 +2036,13 @@ C        we still want to freeze but doubly occupied core
 C        orbitals...
 C        TODO FIXME: IMPLEMENT ME - SK Aug 2008
 C
+C        hjaaj comment Feb 2017: we could use OPT_DELSTR
+C        also for .FREEZE and remove .DELETE
+C        (i.e. let .DELETE be part of .FREEZE);
+C        I have today implemented that NDSH(I) only
+C        counts deleted secondary orbitals.
+C        
+C
 csk      CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
 csk  &        -NPSH(I),NESH(I),I,NVEC)
          IF (NVEC .GT. 0) THEN
@@ -2034,11 +2051,13 @@ csk         WRITE(LUPRI,'(A,A50)')
 csk  &           '     Frozen orbitals      : ',OPT_FRZSTR(I)
             WRITE(LUPRI,'(A,A50)')
      &           '     Deleted orbitals     : ',OPT_DELSTR(I)
+            NVEC_I = 0
             DO J = 1, NVEC
                K = ILIST(J) + IORB(I) + NPSH(I)
                NOROT(K) = 1
+               IF (ILIST(J) .GT. NOCC(I)) NVEC_I = NVEC_I + 1
             END DO
-            NDSH(I) = NVEC
+            NDSH(I) = NVEC_I
          END IF
 C
          NVSH(I) = NSSH(I) - NDSH(I)
