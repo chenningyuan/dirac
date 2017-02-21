@@ -2,6 +2,8 @@ name: DIRAC
 
 min_cmake_version: 2.8.10
 
+default_build_type: release
+
 url_root: https://github.com/coderefinery/autocmake/raw/master/
 
 modules:
@@ -28,6 +30,7 @@ modules:
     - 'custom/compiler_flags/XL.Fortran.cmake'
 - plugins:
   - source:
+    - 'custom/ar_ranlib.cmake'
     - '%(url_root)modules/definitions.cmake'
     - 'custom/builtin_math.cmake'
     - '%(url_root)modules/python_interpreter.cmake'
@@ -37,7 +40,7 @@ modules:
     - '%(url_root)modules/mpi.cmake'
     - '%(url_root)modules/code_coverage.cmake'
     - 'custom/static_linking.cmake'
-    - 'custom/profiling.cmake'
+    - '%(url_root)modules/profile.cmake'
     - 'custom/runtimecheck.cmake'
     - '%(url_root)modules/int64.cmake'
     - 'custom/mathlibs-integer-compatibility.cmake'

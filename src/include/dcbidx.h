@@ -7,7 +7,7 @@
 ! Originally designed by HJAaJ 2001 based on similar data structures
 ! in SIRIUS in DALTON.
 !
-!     ISMO  : Fermion symmetry of orbital (1 for gerade, 2 for ungerade)
+!     IFSMO : Fermion symmetry of orbital (1 for gerade, 2 for ungerade)
 !     IOBTYP: type of orbital:
 !        - frozen orbital         : 0
 !        - positronic orbital     : 1

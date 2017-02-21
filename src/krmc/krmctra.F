@@ -459,13 +459,13 @@ C
          IIDX(IFSYM) = IT
          DO I = 1, NORB(IFSYM)
             IA = IA + 1
-            IF (.NOT. USENOROT .OR. NOROT(IA) .EQ. 0) THEN
+            IF (IDXFLG) THEN
+               IG = IDX(IA)
+            ELSE
+               IG = IA
+            END IF
+            IF (.NOT. USENOROT .OR. NOROT(IG) .EQ. 0) THEN
                IT = IT + 1
-               IF (IDXFLG) THEN
-                  IG = IDX(IA)
-               ELSE
-                  IG = IA
-               END IF
                IDXT2G(IT) = IG
             END IF
          END DO

@@ -750,9 +750,14 @@ C
 C           inactive density matrix...
 C
  
-            NI  = NISH(I2) - NFRO(I2)
-            II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
-            JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+          ! hjaaj Feb 2017: do not exclude frozen orbitals here:
+          !   simpler code, and does not matter for performance.
+          ! NI  = NISH(I2) - NFRO(I2)
+          ! II  = IORB(I2) + NPSH(I2) + NFRO(I2) + 1
+          ! JI  = ICMOQ(I2) + (NPSH(I2)+ NFRO(I2))*NFBAS(I2,0) + 1
+            NI  = NISH(I2)
+            II  = IORB(I2) + NPSH(I2) + 1
+            JI  = ICMOQ(I2) + NPSH(I2)*NFBAS(I2,0) + 1
 C
 C          Generate modified density matrix as transformation MO to AO
 C
@@ -5636,7 +5641,7 @@ C     Generate one-index transformed Fock-matrices
 C     for use in generation of sigma vectors
 C
 C
-C     Bit 1 of ITYP = 0   e-e  rotations in BMAT
+C     Bit 1 of ITYP = 0   e-e rotations in BMAT
 C                     1   e-p rotations in BMAT
 C     Bit 2 of ITYP = 0   inactive density matrix
 C                     1   active density matrix
