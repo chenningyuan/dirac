@@ -453,14 +453,8 @@ C into RELCCSD. If you use this transformation with another code, you
 C can proceed at your own risk by uncommenting the stop.
 C Stop now when we find non-symmetric operators.
 C  
-!MP: according to discussion with Luuk (2nd of Dec 2016) we tentatively comment out
-!MP: this stop condition for the spinfree cases. Code should work for these cases in the
-!MP: current form and is under thorough test for the POLPRP transition moments.
-!MP: if everything is verified also for the Fock-space cases we merge this modification into
-!MP: the master branch
-
-!MP             IF (IQ.NE.IQS)
-!MP  &          CALL QUIT ("This does not work with spinfree !")
+                IF (IQ.NE.IQS)
+     &          CALL QUIT ("This does not work with spinfree !")
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS
