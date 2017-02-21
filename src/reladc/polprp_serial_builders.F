@@ -1,5 +1,5 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUILD_X_MAIN (daibj,eps,dimhphp)
+      SUBROUTINE BUILD_X_MAIN (daibj,eps,dimphph)
 !
       IMPLICIT INTEGER (A-Z)
 !
@@ -14,13 +14,21 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       REAL*8,dimension(:)         :: daibj
       REAL*8,dimension(:)         :: eps
-      INTEGER                     :: dimhphp
+      INTEGER                     :: dimphph
 !
 !---------------Common Blocks, symmetry arrays from CCSETI --------
 !
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"
+!
+!---------------Local variables--------------------------------------
+!
+      interface
+        SUBROUTINE denomvvoo_pp(ra1,ra2)
+          real*8, dimension(:)  :: ra1,ra2
+        END SUBROUTINE
+      end interface
 !
 !---------------Local variables--------------------------------------
 !
@@ -105,10 +113,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       vovo1 = 0.0d0
 !
 !
-!  --------------------------------------
-!  Calculate B_ab for  TERM C(2)A       |
-!  result in bab  <||> BKC              |
-!  --------------------------------------
+!_____________________________________________________
+!|
+!| Calculate B_ab intermediate   TERM C(2)A
+!| result in bab  <a||b> BKC
 !
 !  sort v_ac,kl  -->  v_a,ckl    (buf1)
 !  sort V*_bc,kl  -->  V*_b,ckl  (buf2), c.c. will bw accounted for
@@ -131,16 +139,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         endif
       enddo
 !
-!  -------------------------------------
-!  Calculate D_ij for TERM C(2)B       |
-!  result in dij  <||> = D*_ji         |
-!  -------------------------------------
+!_____________________________________________________
+!|
+!| Calculate D_ij intermediate   TERM C(2)B
+!| result in dij  |i><j|
 !
-!  sort v_cd,ki   -->  v_cdk,i    (buf1)
-!  V_cd,kj        -->  V*_cd,kj   (buf2)
-!  sort V*_cd,kj   -->  V*_cdk,j    (buf2)
+!  sort v_cd,ki   -->  v_cdk,i  <c|<d||k>,|i>  (buf1)
+!  V_cd,kj        -->  V*_cd,kj
+!  sort V*_cd,kj   -->  V*_cdk,j  |c>|d><k|,<j|  (buf2)
 !  v_cdk,i  *  V*_cdk,j  -->  Dij   -->  'hermitize'
-!  c.c. Dij   -->  D_ji with <||>  BKC
+!  Dij   has |i><j| 
 !
       buf1 = 0.0d0; buf2 = 0.0d0
       call srt1t3 (nrep,multb,lfa,nvvt,no,no,nvvot,kvvoot,kkvvot,
@@ -158,12 +166,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           call matsym(dij(ioff),no(krep),no(krep))
         endif
       enddo
+! ****************** why this conjugation ???? ***************
       if(carith) call conjuga(ic4,dij,1)
 !
-!  ----------------------------------------
-!  Calculate TERM C(2)C, part[A] herm.    |
+!_____________________________________________________
+!|
+!|  Calculate TERM C(2)C, part[A] herm.    |
 !  conjugation required, result in buf3   |
-!  ----------------------------------------
 !
 !  sort v_ac,ik    -->  v_ai,ck    (buf3)
 !  V*_bc,jk = V*_cb,kj
@@ -180,12 +189,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !
 !  here again special contraction of v_ai,ck  X  V*_ck,bj
-!  buf3  *  buf4. Result has BKC:  <||>,|><| as the storage mode.
+!  buf3  *  buf4. Result has BKC:  <a||i>,|b><j| as the storage mode.
 !
       ioff1 = 1
       ioff3 = 1
       do irep = 1, nrep
          jrep = multb(irep+nrep,1+nrep,2)
+         if(multb(jrep+nrep,irep+nrep,1).ne.1)
+     &      stop 'BRUTAL FUCK'
          m = mvo(irep)
          n = mvo(irep)
          k = mvo(jrep)
@@ -200,6 +211,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! conjugated one. Multiply result by -0.5 according to the equations.
 !
       do krep=1,nrep
+!       write(*,*) 'JVOVO/J2VOVO of krep:',jvovo(krep),j2vovo(krep)
         ioff=jvovo(krep)*rcw + 1
         if(carith) then
           call cmatsym(buf5(ioff),mvo(krep),mvo(krep))
@@ -209,7 +221,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       enddo
       call xscal(jvovo(nrep+1),-ap5,buf5,1)
 !
-!  buf5 now contains C(2)C in <||>,|><| storage mode (Y_ai,bj).
+!  buf5 now contains C(2)C in <a||i>,|b><j| storage mode (Y_ai,bj).
 !  Do intermediate resort of Y_ai,bj (buf5) ---->  Y_aj,bi  (buf3) with *generic* VOVO BKC.
 !  in SRT 16 the *second* buffer is the source buffer when it comes to inverse !  sorting.
 !
@@ -239,7 +251,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !--------------------------------------------------------
 !  vovo1 now contains all the C(2) ai,bj contributions  |
-!  we sort it back now to the HPHP storage convention.  |
+!  we sort it back now to the PHPH storage convention.  |
 !  This is now a forward sort <<>>  -->  <>><           |
 !--------------------------------------------------------
 !
@@ -260,19 +272,19 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BWEAVERR(bhphp,eps,bab,dij,ic6,ic2,ic4)
+      SUBROUTINE BWEAVERR(bphph,eps,bab,dij,ic6,ic2,ic4)
 !
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
 !
 !     Crawl through the VOVO structure and distribute the
-!     C(0), C(2A) and C(2B) contributions to the hphp block
+!     C(0), C(2A) and C(2B) contributions to the phph block
 !
 !---------------Calling variables--------------------------------------
 !
       integer, intent(in)         :: ic6, ic2, ic4
-      real*8, intent(inout)       :: bhphp(ic6)
+      real*8, intent(inout)       :: bphph(ic6)
       real*8, intent(in)          :: eps(*)
       real*8, intent(in)          :: bab(ic2)
       real*8, intent(in)          :: dij(ic4)
@@ -310,7 +322,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               AOFF = IO(NREP+1) + IV(ARP) + A
               IOFF = IO(IRP) + I
               esum = EPS(AOFF) - EPS(IOFF)
-              bhphp(aibj) = bhphp(aibj) + esum
+              bphph(aibj) = bphph(aibj) + esum
             ENDIF
 !
 !  treat the C(2A) contribution: C(2A) = +0.5*Delta_ij*B_ab
@@ -319,7 +331,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               IF(I.eq.J) THEN
                 if(ARP.NE.BRP) call quit('bweaverr_error C(2A)')
                 aboff = IVV(BRP) + (A-1)*NV(BRP) + B
-                bhphp(aibj) = bhphp(aibj) + 0.5d0*bab(aboff)
+                bphph(aibj) = bphph(aibj) + 0.5d0*bab(aboff)
               ENDIF
             ENDIF
 !
@@ -329,7 +341,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               IF(A.eq.B) THEN
                 if(IRP.NE.JRP) call quit('bweaverr_error C(2B)')
                 ijoff = IOO(JRP) + (I-1)*NO(JRP) + J
-                bhphp(aibj) = bhphp(aibj) + 0.5d0*dij(ijoff)
+                bphph(aibj) = bphph(aibj) + 0.5d0*dij(ijoff)
               ENDIF
             ENDIF
 !
@@ -350,19 +362,19 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BWEAVERC(bhphp,eps,bab,dij,ic6,ic2,ic4)
+      SUBROUTINE BWEAVERC(bphph,eps,bab,dij,ic6,ic2,ic4)
 !
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
 !
 !     Count through the VOVO integrals and distribute the
-!     C(0), C(2A) and C(2B) contributions to the hphp block
+!     C(0), C(2A) and C(2B) contributions to the phph block
 !
 !---------------Calling variables--------------------------------------
 !
       integer, intent(in)         :: ic6, ic2, ic4
-      complex*16, intent(inout)   :: bhphp(ic6)
+      complex*16, intent(inout)   :: bphph(ic6)
       real*8, intent(in)          :: eps(*)
       complex*16, intent(in)      :: bab(ic2)
       complex*16, intent(in)      :: dij(ic4)
@@ -401,7 +413,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               AOFF = IO(NREP+1) + IV(ARP) + A
               IOFF = IO(IRP) + I
               esum = EPS(AOFF) - EPS(IOFF)
-              bhphp(aibj) = bhphp(aibj) + dcmplx(esum,0.0d0)
+              bphph(aibj) = bphph(aibj) + dcmplx(esum,0.0d0)
             ENDIF
 !
 !  treat the C(2A) contribution: C(2A) = +0.5*Delta_ij*B_ab
@@ -410,7 +422,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               IF(I.eq.J) THEN
                 if(ARP.NE.BRP) call quit('bweaverc_error C(2A)')
                 aboff = IVV(BRP) + (A-1)*NV(BRP) + B
-                bhphp(aibj) = bhphp(aibj) + coha*bab(aboff)
+                bphph(aibj) = bphph(aibj) + coha*bab(aboff)
               ENDIF
             ENDIF
 !
@@ -420,7 +432,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
               IF(A.eq.B) THEN
                 if(IRP.NE.JRP) call quit('bweaverc_error C(2B)')
                 ijoff = IOO(JRP) + (I-1)*NO(JRP) + J
-                bhphp(aibj) = bhphp(aibj) + coha*dij(ijoff)
+                bphph(aibj) = bphph(aibj) + coha*dij(ijoff)
               ENDIF
             ENDIF
 !
@@ -441,14 +453,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SOLVE_HPHP_R(daibj,n,iounit)
+      SUBROUTINE SOLVE_PHPH_R(daibj,n,iounit)
 !
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
 !
-!     Diagonalizes the hphp block in each symmetry separately.
-!     For the singles amplitudes a local coniguration analysis is
+!     Diagonalizes the phph block in each symmetry separately.
+!     For the singles amplitudes a local configuration analysis is
 !     provided for convenience.
 !
 !---------------Calling variables--------------------------------------
@@ -503,7 +515,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           brep = multb(desrep+nrep,jrep,2)
           if(multb(brep,jrep,2).ne.desrep) then
             write(*,*) 'HP/HP ordering problem!'
-            stop 'solve_hphp_r'
+            stop 'solve_phph_r'
           endif
           do jfun = 1,NO(jrep)
           do bfun = 1,NV(brep)
@@ -523,7 +535,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       endif
 !     write(*,*) 'HP configuration counting successful'
 !
-!  diagonalize hphp submatrices
+!  diagonalize phph submatrices
 !  and write corresponding orthogonal eigenvectors
 !  as starting vectors for the Davidson algorithm.
 !
@@ -540,8 +552,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &          desrep,repna(desrep)
           cycle
         endif
-        write(*,*) 'solve_hphp_r| irep/offset/#/MVO:',
-     &        desrep,ioff,JVOVO(desrep+1) - JVOVO(desrep),MVO(desrep)
+!       write(*,*) 'irep/name/offset/# of jvovo/size of main block:',
+!    &        desrep,repna(desrep),
+!    &        ioff,JVOVO(desrep+1) - JVOVO(desrep),MVO(desrep)
+        write(*,*)
 !
 !  open corresponding file
 !
@@ -554,9 +568,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &       status='unknown',form='unformatted')
 
         allocate(amat(nsiz,nsiz),stat=ialloc)
-        if(ialloc.ne.0) STOP 'Allocation problem 1 in SOLVE_HPHP_R'
+        if(ialloc.ne.0) STOP 'Allocation problem 1 in SOLVE_PHPH_R'
         allocate(xmat(nsiz*nsiz),stat=ialloc)
-        if(ialloc.ne.0) STOP 'Allocation problem 2 in SOLVE_HPHP_R'
+        if(ialloc.ne.0) STOP 'Allocation problem 2 in SOLVE_PHPH_R'
         amat = 0.0d0; xmat = 0.0d0
 !
 !  we convert the linear MVO*MVO array to quadratic array
@@ -566,12 +580,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         xmat(1:nsiz*nsiz) = daibj(ioff+1:ioff + nsiz*nsiz)
         amat = reshape(xmat,resh_array)
 !
-!  check asymmetry of obtained HPHP matrix
+!  check asymmetry of obtained PHPH matrix
 !
         x2 = dabs(qmasymr(amat,nsiz))
         if(x2.gt.1.0E-10) then
           write(*,*) 'Warning: Asymmetry of HP/HP matrix',
      &         ' in symmetry',desrep,' amounts to',x2
+!       else
+!         write(*,*) 'Matrix symmetric with',x2
         endif
 !
 !  amat array has ph/ph structure and is transferred to LAPACK
@@ -620,7 +636,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         deallocate(xmat)
         deallocate(amat)
 
-      enddo
+      enddo  !desrep
       deallocate(cfield)
       write(*,*) '...success.'
 !|
@@ -632,13 +648,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SOLVE_HPHP_C(daibj,nele,iounit)
+      SUBROUTINE SOLVE_PHPH_C(daibj,nele,iounit)
 !
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
 !
-!     Diagonalizes the hermitian hphp block in each symmetry separately.
+!     Diagonalizes the hermitian PHPH block in each symmetry separately.
 !     For the singles amplitudes a local coniguration analysis is
 !     provided for convenience.
 !     Due to the more restrictive F90 compiler with function prototypes
@@ -725,7 +741,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           brep = multb(desrep+nrep,jrep,2)
           if(multb(brep,jrep,2).ne.desrep) then
             write(*,*) 'HP/HP ordering problem!'
-            stop 'SOLVE_HPHP_C'
+            stop 'SOLVE_PHPH_C'
           endif
           do jfun = 1,NO(jrep)
           do bfun = 1,NV(brep)
@@ -748,7 +764,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|  end configuration generator
 !|__________________________________________
 !
-!  diagonalize hphp submatrices
+!  diagonalize PHPH submatrices
 !  and write corresponding complex orthogonal eigenvectors
 !  as starting vectors for the Davidson algorithm.
 !
@@ -791,9 +807,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &       status='unknown',form='unformatted')
 
         allocate(amat(nsiz,nsiz),stat=ialloc)
-        if(ialloc.ne.0) STOP 'Allocation problem 1 in SOLVE_HPHP_C'
+        if(ialloc.ne.0) STOP 'Allocation problem 1 in SOLVE_PHPH_C'
         allocate(xmat(nsiz*nsiz),stat=ialloc)
-        if(ialloc.ne.0) STOP 'Allocation problem 2 in SOLVE_HPHP_C'
+        if(ialloc.ne.0) STOP 'Allocation problem 2 in SOLVE_PHPH_C'
         amat = czero
         xmat = czero
 !
@@ -804,7 +820,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         xmat(1:nsiz*nsiz) = daibjc(ioff+1:ioff + nsiz*nsiz)
         amat = reshape(xmat,resh_array)
 !
-!  check deviation from hermiticity of obtained HPHP matrix
+!  check deviation from hermiticity of obtained PHPH matrix
 !
         x2 = dabs(qmasymh(amat,nsiz))
         if(x2.gt.1.0E-10) then
@@ -823,7 +839,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         allocate(rwork(lwork))
         CALL ZHEEV('V','L',nsiz,amat,nsiz,evl,work,lwork,rwork,info)
         if(info.ne.0) then
-          write(*,*) 'ZHEEV problem in SOLVE_HPHP_C! code:',info
+          write(*,*) 'ZHEEV problem in SOLVE_PHPH_C! code:',info
           call quit('numerical problem')
         endif
 !
@@ -868,7 +884,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUILD_X_COUSAT_R (HPHP_BLOCK,EPS,DESREP,LENCOUPLBL,
+      SUBROUTINE BUILD_X_COUSAT_R (PHPH_BLOCK,EPS,DESREP,LENCOUPLBL,
      &                             INTBUF,NBUFS,DOXEXT,WTHR,IOCH)
 !
       IMPLICIT INTEGER (A-Z)
@@ -881,8 +897,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Calling variables--------------------------------------
 !
-      REAL*8                           :: HPHP_BLOCK(:)
-      REAL*8                           :: EPS(*)
+      REAL*8                           :: PHPH_BLOCK(:)
+      REAL*8                           :: EPS(:)
       INTEGER                          :: DESREP
       INTEGER                          :: LENCOUPLBL,INTBUF,NBUFS
       LOGICAL                          :: DOXEXT
@@ -1067,13 +1083,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  after construction we write out the column together with the
 !  components of the main block.
 !
+!     write(*,*) '   ======= cousat desrep:',desrep,' ============='
+!     write(*,*)
       mjcol = 1
       do jrep = 1,nrep
 
         brep = multb(desrep+nrep,jrep,2)
 
+!       write(*,*) 'brep,jrep:',brep,jrep
+
         do jfun = 1,NO(jrep)
         do bfun = 1,NV(brep)
+!       write(*,*) '         B,J:',bfun,jfun
 
           bufcol   = 0.0d0
           bufcolex = 0.0d0
@@ -1088,7 +1109,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! data to corresponding symetry DESREP.
 !
           istart = JVOVO(desrep) + (mjcol-1)*nmvod
-          bufcolex(1:nmvod)=hphp_block(istart+1:istart+nmvod)
+          bufcolex(1:nmvod)=phph_block(istart+1:istart+nmvod)
           bufcolex(nmvod+1:nmvod+lencouplbl)=
      &        bufcol(1:lencouplbl)
 
@@ -1102,9 +1123,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
           CALL XCOLWRIT(IOCH,wthr,bufcolex,wbufr,wbufi,wbufj,
      &                  IBFP,NBUFS,LENCOUPLBL+NMVOD,mjcol,INTBUF)
           mjcol = mjcol + 1
-        enddo
-        enddo
-      enddo
+
+        enddo   !bfun
+        enddo   !jfun
+
+      enddo  ! jrep
 
       IF((mjcol-1).ne.mvo(desrep))
      &  stop 'error 3 in build_x_cousat_r!'
@@ -1158,7 +1181,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BUILD_X_COUSAT_C (HPHP_BLOCK,EPS,DESREP,LENCOUPLBL,
+      SUBROUTINE BUILD_X_COUSAT_C (PHPH_BLOCK,EPS,DESREP,LENCOUPLBL,
      &                             INTBUF,NBUFS,DOXEXT,WTHR,IOCH)
 !
       IMPLICIT INTEGER (A-Z)
@@ -1173,7 +1196,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Calling variables--------------------------------------
 !
-      real*8                           :: HPHP_BLOCK(:)
+      real*8                           :: PHPH_BLOCK(:)
       REAL*8                           :: EPS(*)
       INTEGER                          :: DESREP
       INTEGER                          :: LENCOUPLBL
@@ -1215,7 +1238,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !  auxiliary array for complex data type
 !
-      complex*16, allocatable, dimension(:)    :: hphp_blc
+      complex*16, allocatable, dimension(:)    :: phph_blc
 
       real*8,parameter        :: rzero=(0.0d0)
       complex*16,parameter    :: czero=(rzero,rzero)
@@ -1278,11 +1301,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !|  generate complex auxiliary array from original real one.
 
       n2 = jvovo(nrep+1)
-      allocate(hphp_blc(n2))
-      hphp_blc = czero
+      allocate(phph_blc(n2))
+      phph_blc = czero
       do i=1,n2
         ix = 2*(i-1) + 1
-        hphp_blc(i)=dcmplx(hphp_block(ix),hphp_block(ix+1))
+        phph_blc(i)=dcmplx(phph_block(ix),phph_block(ix+1))
       enddo
 
 !|  configuration generator
@@ -1416,7 +1439,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! data to corresponding symetry DESREP.
 !
           istart = JVOVO(desrep) + (mjcol-1)*nmvod
-          bufcolex(1:nmvod)=hphp_blc(istart+1:istart+nmvod)
+          bufcolex(1:nmvod)=phph_blc(istart+1:istart+nmvod)
           bufcolex(nmvod+1:nmvod+lencouplbl)=
      &        bufcol(1:lencouplbl)
 !
@@ -1535,7 +1558,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XCOLMAKE (desrep,lencouplbl,bufcol,
      &                     jrep,brep,J,B,
      &                     mxno,mxnv,
-     &                     voooz,vovvz,oolt,vvlt)
+     &                     voooz,vovvz,
+     &                     oolt,vvlt)
 !
       IMPLICIT INTEGER (A-Z)
 !
@@ -1546,7 +1570,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! and is filled in this subroutine.
 !              *** real case ***
 ! all arrays are transferred as ** assumed shape **
-! the size in each dimension stems from the caller
 !
       INTEGER                          :: desrep,lencouplbl
       REAL*8, dimension(:)             :: bufcol
@@ -1559,10 +1582,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 #include  "../relccsd/symm.inc"
 !
-!---------------Local variables--------------------------------------
-!
-      real*8   ::  S
-!
 !---------------Executable code--------------------------------------
 !
 
@@ -1572,13 +1591,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  do the |>|> side...
 !
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-!     CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
-!****** debug
-! in due course of the transition moment problems we reestablish symmetry ordering in the
-! ADC matrix. hereby the column symmetry order may be affected and we change the muliplication
-! index to 1 !!
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
-!****** end debug
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
+      if(MULTB(CDREP+NREP,KLREP+NREP,2).ne.desrep) then
+         Stop 'xcolmake error #aa1'
+      endif
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -1598,20 +1614,15 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
                 DO C = CMIN, NV(CREP)
                    CDKL = CDKL + 1
 !
-! from here we have all ireps and spinor numbers for filling the
-! corresponding matrix element at the correct position.
-! we have to abandon indentation here in order to fit some code
-! on the line !
-!
-! treat the four delta cases.
-! CDKL can be seen as the local column index here in this irrep!
-! the offsets are *calculated* and not yielded via a lookup table
-! again.
+! from here we have all ireps/spinor numbers.
+! Now treat the four delta cases.
+! CDKL is the local column index in the current irrep!
+! The offsets into the integral fields are *calculated*
+! since a lookup table is impossible.
 !____________________________________________________________
 !|
 !|
-!|
-!|  Case A:  < dj||kl > delta_bc, we calc a VOOO-offset.
+!|  Case A:  -< dj||kl > delta_bc, we calc a VOOO-offset.
 !|
       if(BREP.eq.CREP.and.B.eq.C) then
         DJREP = MULTB(DREP,JREP,1)
@@ -1628,7 +1639,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         bufcol(cdkl) = bufcol(cdkl) - voooz(ioff)
       endif
 !|
-!|  Case B:  < cj||kl > delta_bd, we calc a VOOO-offset.
+!|  Case B:  +< cj||kl > delta_bd, we calc a VOOO-offset.
 !|
       if(BREP.eq.DREP.and.B.eq.D) then
         CJREP = MULTB(CREP,JREP,1)
@@ -1645,7 +1656,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         bufcol(cdkl) = bufcol(cdkl) + voooz(ioff)
       endif
 !|
-!|  Case C:  < bl||cd >* delta_jk, we calc a VOVV offset
+!|  Case C:  -< bl||cd >* delta_jk, we calc a VOVV offset
 !|
       if(JREP.eq.KREP.and.J.eq.K) then
         BLREP = MULTB(BREP,LREP,1)
@@ -1662,7 +1673,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         bufcol(cdkl) = bufcol(cdkl) - vovvz(ioff)
       endif
 !|
-!|  Case D:  < bk||cd >* delta_jl, we calc a VOVV offset
+!|  Case D:  +< bk||cd >* delta_jl, we calc a VOVV offset
 !|
       if(JREP.eq.LREP.and.J.eq.L) then
         BKREP = MULTB(BREP,KREP,1)
@@ -1679,7 +1690,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         bufcol(cdkl) = bufcol(cdkl) + vovvz(ioff)
       endif
 !|
-!|
+!|            END   Case A-D
 !|___________________________________________________________
 !
                 ENDDO
@@ -2088,10 +2099,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       CDKL=0    !column counter
 
       DO KLREP = 1,NREP     ! KLREP (bosonic!) loops through
-!**** debug reassessment of irep ordering  change from two to one
-!     CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
-      CDREP = MULTB(DESREP+NREP,KLREP+NREP,1)
-!**** end debug
+      CDREP = MULTB(DESREP+NREP,KLREP+NREP,2)
       DO 10 LREP = 1, NREP
       KREP = MULTB(LREP,KLREP+NREP,2)
       IF (KREP.LT.LREP) GOTO 10
@@ -2117,10 +2125,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ABIJ=0     !row counter
 
       DO IJREP = 1,NREP
-!**** debug reassessment of irep ordering  change from two to one
-!     ABREP = MULTB(DESREP+NREP,IJREP+NREP,2)
-      ABREP = MULTB(DESREP+NREP,IJREP+NREP,1)
-!**** end debug
+      ABREP = MULTB(DESREP+NREP,IJREP+NREP,2)
       DO 44 JREP = 1, NREP
       IREP = MULTB(JREP,IJREP+NREP,2)
       IF (IREP.LT.JREP) GOTO 44
@@ -3303,10 +3308,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XDIAG_INI_R(iobase,io_out,intbuf,nbufs,ladc)
+      SUBROUTINE XDIAG_INI_R(iobase,io_out,intbuf,nbufs,ladc,ascout)
 
 !  Fetch the diagonal entries of the sparse matrix A
 !  This routine is only called in the serial case and obtains NBUFS
+!  furthermore it allows writing out the ADC matrix in ASCII format
+!  for a brute force comparison.
 
       IMPLICIT NONE
 !
@@ -3314,6 +3321,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
       integer                        :: iobase, io_out
       integer                        :: intbuf,nbufs,ladc
+      logical                        :: ascout
 !
 !------------------------ local variables -------------------------
 !
@@ -3325,6 +3333,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER                                 :: I,K,IXX
       INTEGER                                 :: NACT,JDUMMY,IROW,ICOL
       REAL*8                                  :: A
+      logical                                 :: isthere
 
 !
 !---------------Description--------------------------------------------
@@ -3335,6 +3344,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       allocate(ioi(intbuf))
       allocate(ioj(intbuf))
       allocate(adiag(ladc))
+
+! open ascii file if activated
+
+      if(ascout) then
+         open(unit=io_out, file="ADCMAT.ASC", status='unknown',
+     &        form="formatted")
+         rewind(io_out)
+      endif
 
 c  .. read elements
 
@@ -3353,8 +3370,23 @@ c  .. read elements
 
           IF(IROW.EQ.ICOL) adiag(irow) = A
 
+          IF(ascout) write(io_out,'(2I6,2X,F20.6)') IROW,ICOL,A
+
         ENDDO
       ENDDO
+
+! close file if it was addressed, file handle io_out becomes available again
+
+      if(ascout) then
+         close(io_out)
+      endif
+
+!      Inquire(file=diagfile,exist=isthere)
+!      write(*,*) 'Found an ADC diagonal file. Deleting...'
+!      If(isthere) then
+!        open(unit=io_out, file=diagfile, status='old')
+!        close(io_out, status='delete')
+!      Endif
 
        open(unit=io_out,file=diagfile, access='SEQUENTIAL',
      &     form='UNFORMATTED',status='NEW')
@@ -3474,7 +3506,7 @@ c  .. read elements
 !  do the allocations and
 !  construct ADC matrix by reading nonzero elements from file
 !
-      IF(LADC.gt.5000) THEN
+      IF(LADC.gt.2000) THEN
         write(*,*) 'Full diagonalization skipped'
         return
       ENDIF
@@ -4035,8 +4067,8 @@ C|__________________________________________________________
 !
 !---------------Calling variables--------------------------------------
 !
-      REAL*8 EPS(*)
-      REAL*8 T2(*)
+      REAL*8,dimension(:)                 ::  EPS
+      REAL*8,dimension(:)                 ::  T2
 !
 !---------------Common Blocks--------------------------------------
 !

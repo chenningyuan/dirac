@@ -551,6 +551,22 @@ C
 !
       interface
 
+        SUBROUTINE print_input_info(i1,i2)
+          integer                  :: i1,i2
+        END SUBROUTINE
+
+        SUBROUTINE i_tester()
+        END SUBROUTINE
+
+        SUBROUTINE ph_tester()
+        END SUBROUTINE
+
+        SUBROUTINE pphh_tester()
+        END SUBROUTINE
+
+        SUBROUTINE pphh_pphh_tester()
+        END SUBROUTINE
+
         SUBROUTINE property_handler(i1,i2,l1,i3,ia1)
           integer                  :: i1,i2,i3
           logical                  :: l1
@@ -569,19 +585,19 @@ C
           integer               :: i1
         END SUBROUTINE
 
-        SUBROUTINE SOLVE_HPHP_R(ra1,i1,i2)
+        SUBROUTINE SOLVE_PHPH_R(ra1,i1,i2)
           real*8, dimension(:)  :: ra1
           integer               :: i1,i2
         END SUBROUTINE
 
-        SUBROUTINE SOLVE_HPHP_C(ra1,i1,i2)
+        SUBROUTINE SOLVE_PHPH_C(ra1,i1,i2)
           real*8, dimension(:)  :: ra1
           integer               :: i1,i2
         END SUBROUTINE
 
         SUBROUTINE BUILD_X_COUSAT_R(h,a,i1,i2,i3,i4,l1,r2,i5)
           real*8, dimension(:)  :: h
-          real*8, dimension(*)  :: a
+          real*8, dimension(:)  :: a
           integer               :: i1,i2,i3,i4
           logical               :: l1
           real*8                :: r2
@@ -643,9 +659,10 @@ C
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
 
-        FUNCTION icode_activated (i1)
-          integer               :: icode_activated
-          integer               :: i1
+        FUNCTION icode_activated (c1)
+          use iso_c_binding
+          integer (c_int)       :: icode_activated
+          character*4           :: c1
         END FUNCTION
 
       end interface
@@ -667,6 +684,11 @@ C
         WRITE(IW,*)'|________________________________________________|'
         WRITE(IW,*)
         CALL print_input_info(iw,nrep) 
+        WRITE(IW,*)
+        WRITE(IW,*) 'presetting polprp_infostring with'
+        WRITE(IW,*) 'm23 m12 u8i op55 o4 o2 o5 o0000'
+!       polprp_infostring = 'm23 m12 u8i op55 o4 o2 o5 o0000'//char(0)
+        
 
 #if defined (VAR_MPI)
       endif
@@ -699,30 +721,30 @@ C
 !
 !  perform tests if required
 !
-        if(icode_activated(icode_mainblock).ne.0) then
-            write(*,*) 'We found the code request'
-        else
-            write(*,*) 'No code for:',icode_mainblock
-        endif
-        if(icode_activated(icode_couplblock).ne.0) then
-            write(*,*) 'We found the code request'
-        else
-            write(*,*) 'No code for:',icode_couplblock
-        endif
-        
-        Call PH_TESTER()
-        Call PPHH_TESTER()
-!
-!  check if there are transformed dipole moment integrals available
-!  that are required for transition moment calculations.
-!  If yes fetch them and adapt them for further processing.
-!
+!       if(icode_activated(icode_mainblock).ne.0) then
+!           write(*,*) 'We found the code request'
+!       else
+!           write(*,*) 'No code for:',icode_mainblock
+!       endif
+!       if(icode_activated(icode_couplblock).ne.0) then
+!           write(*,*) 'We found the code request'
+!       else
+!           write(*,*) 'No code for:',icode_couplblock
+!       endif
+!___________________________________________________________________
+!|
+!| check availability of transformed dipole moment integrals
+!| required for transition moment calculations.
+!|
         CALL property_handler(iobase,iobase+1,propertyints,NSP,IREPSPI)
+!|
+!|
+!|__________________________________________________________________
 !
-!  do HPHP block first (it can easily be kept in memory)
+!  do PHPH block first (it can easily be kept in memory)
 !
 !   all symmetries in the HP-HP block are created at once.
-!   Allocate hphp block memory
+!   Allocate PHPH block memory
 !
 
         n1 = jvovo(nrep+1)
@@ -730,18 +752,20 @@ C
         if(ialloc.ne.0) stop 'allocation problem daibj'
         daibj=0.0d0
 
-        CALL BUILD_X_MAIN (daibj,eps,n1) !in matrix storage mode: <||>,|><|
+        write(*,*) 'entering old main building block'
+        CALL BUILD_X_MAIN (daibj,eps,n1)
 !
 ! diagonalize main block for Davidson start vectors
 !
         if(carith) then
-          CALL SOLVE_HPHP_C(daibj,n1,iobase)   !iobase is reusable!
+          CALL SOLVE_PHPH_C(daibj,n1,iobase)   !iobase is reusable!
         else
-          CALL SOLVE_HPHP_R(daibj,n1,iobase)   !iobase is reusable!
+          CALL SOLVE_PHPH_R(daibj,n1,iobase)   !iobase is reusable!
         endif
 #if defined (VAR_MPI)
       endif
 #endif
+
 !__________________________________________________
 !|
 !|      this part is executed by all nodes
@@ -852,6 +876,9 @@ C
 ! remind: in the serial case the number of buffers (NBUFS) is known
 !         after matrix construction.
 !
+! If an old ADC matrix file is still sitting in the tmpdir, throw it away.
+!
+
         OPEN(UNIT=IOBASE,FILE=namematfil, ACCESS='SEQUENTIAL',
      &     FORM='UNFORMATTED',STATUS='NEW')
         serialindicator = -1
@@ -867,7 +894,8 @@ C
      &                          INTBUF,NBUFS,polprp_doextended,
      &                          polprp_writethr,iobase)
           CALL XDIAG_INI_R(iobase,iobase+1,
-     &                     INTBUF,NBUFS,lencouplbl + MVO(desrep))
+     &                     INTBUF,NBUFS,
+     &                     lencouplbl + MVO(desrep),.true.)
         ENDIF
         CLOSE(iobase)
 
@@ -878,7 +906,7 @@ C
 #endif
 
 !
-! check for internal consistency (we use various ways for deriving the matrix dimension)
+! check for internal consistency (we use various approaches for that)
 ! 
           ladc = lencouplbl + MVO(desrep)
           if(ladc.ne.ireccnt) then
@@ -976,7 +1004,7 @@ C
           open(unit=iobase,file=NAMEMATFIL, access='SEQUENTIAL',
      &         form='UNFORMATTED',status='unknown')
           close(iobase,status='DELETE')
-!       stop 'serial davidson diagonalisator ready.'
+!     stop 'after  davidson'
 #endif
 !
 !_________________________________________________________________
@@ -1022,7 +1050,7 @@ C
       else
 
         write(*,*) 'Node ',myproc,' is waiting for master finalizing',
-     &               ' HPHP block.'
+     &               ' PHPH block.'
 
         Do while(.true.)    ! Circulating in the helper loop.
                             ! Slave gets a start signal and a finalizing signal.
@@ -1109,181 +1137,4 @@ C
 
       return
       end 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE print_input_info(iw,nrep)
-      use polprp_cfg     !these data are visible on master node only!
-
-      implicit none
-
-      integer               :: iw         ! I/O file handle for proper screen output
-      integer               :: nrep       ! number of total symmetries in the calculation
-!
-      integer               :: i,n,icount
-
-      write(iw,*) 'POLPRP control variables:'
-      write(iw,*) '-------------------------'
-      write(iw,*)
-      write(iw,*) 'we do extended calculation: ',polprp_doextended
-      write(iw,'(A,F10.5)') 
-     &   'threshold for elements in ADC matrix: ',polprp_writethr
-      write(iw,*) 'we perform a Davidson diagonalization:',polprp_dodiag
-      write(iw,*) 'The way final state symmetries are chosen is:'
-!
-! determine symmetries to be calculated
-!
-      n = 0
-      do i = 1,nrep
-        n = n + polprp_statesym(i)
-      enddo
-      if(n.eq.0) then
-        write(iw,*) 'Program checks symmetries automatically'
-        do i=1,nrep
-          polprp_statesym(i) = i
-        enddo
-      else
-        write(iw,*) 'User has selected the following final'
-        write(iw,*) 'state symmetries:'
-        icount=1
-        do i=1,nrep
-          if(polprp_statesym(i).ne.0) then
-            write(iw,*) '   No: ',icount,
-     &                  '  symmetry: ',polprp_statesym(i)
-            icount = icount + 1
-          endif
-        enddo
-      endif
-      write(iw,*)
-!
-! report diagonalization parameters
-!
-      write(iw,*) 'Davidson control variables:'
-      write(iw,*) '---------------------------'
-      write(iw,*)
-
-      if(polprp_dodiag) then
-        WRITE(IW,*) 'Number of eigenstates to be calculated (roots)',
-     &     polprp_davroots
-        WRITE(IW,*) 'Size of Krylov space: ',polprp_davmaxsp
-        WRITE(IW,*) 'Number of Davidson macro iterations: ',
-     &     polprp_davmaxit
-        WRITE(IW,'(A,E20.4)') ' Requested energy conv.: ',polprp_davconv
-        IF(polprp_davooc.eqv..false.) THEN
-           WRITE(IW,*) 'Trying full incore storage of Davidson vectors.'
-           WRITE(IW,*) 'Will default to out-of-core if resources are'
-           WRITE(IW,*) 'not available.'
-        ENDIF
-      endif
-
-      return
-      end
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRECONTRACT(iounit,iw)
-!
-!
-!  this routine is called by master only when parallel execution takes place.
-!  Then the nodes provide integrals.
-!
-!
-
-#if defined (VAR_MPI)
-      use interface_to_mpi
-#endif
-
-      implicit none
-
-      integer               :: iounit         ! I/O file handle for writing to file
-      integer               :: iw             ! file handle for writing to screen
-!
-! local variables
-!
-      real*8, allocatable, dimension(:)        :: vvvvz
-      real*8, allocatable, dimension(:)        :: vvoo1
-      real*8, allocatable, dimension(:)        :: vvoop
-      integer                                  :: n1,ixx
-      integer                                  :: ialloc
-      integer                                  :: signal
-      integer*8                                :: n8,i8
-      COMPLEX*16                               :: A0,A1
-      character*9                              :: preconfn='VVVVXVVOO'
-
-
-#include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
-#include  "../relccsd/ccpar.inc"
-!
-! execution
-!
-      if(carith) then
-        CALL PST('Performing (complex) precontraction+')
-        if(rcw.ne.2) call quit ('intenal error in PRECONTRACT')
-      else
-        CALL PST('Performing (real) precontraction+')
-        if(rcw.ne.1) call quit ('intenal error in PRECONTRACT')
-      endif
-      A0=(0.0D00,0.0D00)
-      A1=(1.0D00,0.0D00)
-
-
-#if defined (VAR_MPI)
-!
-!  send the slaves a start signal for int supply only
-!
-      signal = 2  !start code.
-      write(iw,*) 'Master indicates PRECONTRACTION (signal=2)'
-      call interface_mpi_bcast(signal,1,MASTER,
-     &                             global_communicator)
-#endif
-
-! allocate buffers and read in integrals
-
-      n1 = ivvoott(nrep+1)
-      allocate(vvoo1(n1*rcw))
-      allocate(vvoop(n1*rcw))
-
-      n8 = ivvvvtt(nrep+1)
-      allocate(vvvvz(n8*rcw),stat=ialloc)
-      if(ialloc.ne.0) then
-        STOP 'VVVV buffer could not be allocated.'
-      else
-        write(*,*) 'Master allocated',n8,' words for VVVV buffer.'
-      endif
-
-#if defined (VAR_MPI)
-      do i8=1,n8*rcw
-        vvvvz(i8) = -4096.0d0
-      enddo
-      call rdvvvv(vvvvz)  ! master reads its own chunks
-      write(*,*) 'masters chunk reading ... complete.'
-      call mpi_vvvv_complete(vvvvz,n8*rcw)  !.... and completes the stream.
-      write(*,*) 'VVVV check in PRECONTRACT...'
-      do i8=1,n8
-        if(vvvvz(i8).eq. -4096.0d0)
-     &    call quit('Internal error: gap in the VVVV stream!')
-      enddo
-      write(*,*) '.... success. No leaks.'
-#else
-      call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
-#endif
-      call getvvoo(vvoo1)
-!
-!  do the contraction over all symmetries
-!
-      CALL CNTRCT('N','N',NVVT,NOOT,NVVT,A1,vvvvz,vvoo1,A0,vvoop,NREP)
-      write(*,*) 'PRECONTRACTION finished.'
-!
-!  open corresponding file and write out contracted integrals.
-!
-      open(unit=iounit,file=preconfn, access='SEQUENTIAL',
-     &     form='UNFORMATTED',status='NEW')
-      write(iounit) (vvoop(ixx), ixx=1,n1*rcw)
-      close(iounit)
-!
-!  free buffers immediately 
-!
-      deallocate(vvoop)
-      deallocate(vvoo1)
-      deallocate(vvvvz)
-
-      return
-      end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

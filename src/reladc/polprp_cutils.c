@@ -9,17 +9,16 @@
  *
  */
 
-extern int __polprp_cfg_MOD_polprp_printlev;    // integer value
-extern int __polprp_cfg_MOD_polprp_inforeqest;  // integer field of length 32
+extern char ppinfo_code;    // character array made available in polprp_cfg module
 
-int icode_activated_(int * icode){
+int icode_activated_(char * icode){
 
    int i;
-   int * a;
+   char * a;
 
-   a =  &__polprp_cfg_MOD_polprp_inforeqest;
-   for(i=0;i<32;i++){
-     if(*icode == *(a+i)) return 1;
-   }
+   printf("\n ---entering icode_activated---\n");
+   a =  &ppinfo_code;
+   printf("ppinfo string: %s\n",a);
+   printf("\n ---end---\n");
    return 0;
 }

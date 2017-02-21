@@ -28,11 +28,10 @@ set(FREE_RELADC_FORTRAN_SOURCES
     polprp_cfg.F90
     polprp_driver.F
     polprp_parallel_builders.F
-    polprp_parallel_davidson.F
+    polprp_davidson.F
     polprp_serial_builders.F
     polprp_buildtm.F
     polprp_helpers.F
-    polprp_testunits.F
 )
 
 set(C_RELADC_SOURCES

@@ -1,7 +1,7 @@
 #if defined (VAR_MPI)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE mpi_bxcs_r(HPHP_BLOCK,
-     &                      dimhphp,
+      SUBROUTINE mpi_bxcs_r(PHPH_BLOCK,
+     &                      dimphph,
      &                      EPS,
      &                      DESREP,
      &                      LENCOUPLBL,
@@ -24,8 +24,8 @@
 !
 !---------------Calling variables--------------------------------------
 !
-      real*8, dimension(:)             :: HPHP_BLOCK
-      integer                          :: dimhphp
+      real*8, dimension(:)             :: PHPH_BLOCK
+      integer                          :: dimphph
       real*8, dimension(*)             :: EPS
       integer                          :: DESREP
       integer                          :: LENCOUPLBL
@@ -125,7 +125,7 @@
 !
 
 !****** debug
-!     write(iw,*) 'dimhphp',dimhphp
+!     write(iw,*) 'dimphph',dimphph
 !     write(iw,*) 'DESREP',desrep
 !     write(iw,*) 'LENCOUPLBL',LENCOUPLBL
 !     write(iw,*) 'INTBUF',intbuf
@@ -304,7 +304,7 @@
 ! data to corresponding symetry DESREP.
 !
           istart = JVOVO(desrep) + (mjcol-1)*nmvod
-          bufcolex(1:nmvod)=hphp_block(istart+1:istart+nmvod)
+          bufcolex(1:nmvod)=phph_block(istart+1:istart+nmvod)
           bufcolex(nmvod+1:nmvod+lencouplbl)=
      &        bufcol(1:lencouplbl)
 
@@ -386,8 +386,8 @@
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE mpi_bxcs_c(HPHP_BLOCK,
-     &                      dimhphp,
+      SUBROUTINE mpi_bxcs_c(PHPH_BLOCK,
+     &                      dimphph,
      &                      EPS,
      &                      DESREP,
      &                      LENCOUPLBL,
@@ -409,8 +409,8 @@
 !
 !---------------Calling variables--------------------------------------
 !
-      real*8, dimension(:)             :: HPHP_BLOCK
-      integer                          :: dimhphp
+      real*8, dimension(:)             :: PHPH_BLOCK
+      integer                          :: dimphph
       real*8, dimension(*)             :: EPS
       integer                          :: DESREP
       integer                          :: LENCOUPLBL
@@ -454,7 +454,7 @@
 !
 !  auxiliary complex array
 !
-      complex*16,  dimension(:), allocatable :: hphp_blc
+      complex*16,  dimension(:), allocatable :: phph_blc
 !
 !  parameters
 !
@@ -588,14 +588,14 @@
 
 !___________________________________________________________
 !|
-!|  transform hphp block stored as a real*rcw array into a 
+!|  transform phph block stored as a real*rcw array into a 
 !|  true complex array for further processing.
 
-      allocate(hphp_blc(dimhphp))
-      hphp_blc = czero
-      do i=1,dimhphp
+      allocate(phph_blc(dimphph))
+      phph_blc = czero
+      do i=1,dimphph
         ix = 2*(i-1) + 1
-        hphp_blc(i)=dcmplx(hphp_block(ix),hphp_block(ix+1))
+        phph_blc(i)=dcmplx(phph_block(ix),phph_block(ix+1))
       enddo
 !|  end transformation
 !|__________________________________________
@@ -686,7 +686,7 @@
 ! data to corresponding symetry DESREP.
 !
           istart = JVOVO(desrep) + (mjcol-1)*nmvod
-          bufcolex(1:nmvod)=hphp_blc(istart+1:istart+nmvod)
+          bufcolex(1:nmvod)=phph_blc(istart+1:istart+nmvod)
           bufcolex(nmvod+1:nmvod+lencouplbl)=
      &        bufcol(1:lencouplbl)
 !
@@ -756,7 +756,7 @@
       deallocate(wbufj)
       deallocate(wbufi)
       deallocate(wbufr)
-      deallocate(hphp_blc)
+      deallocate(phph_blc)
       write(iw,*) '----------- end ----------------------'
 
       RETURN

@@ -4441,7 +4441,7 @@ C
 
       write(*,*)
       write(*,*) '--------------------------------------------'
-      write(*,*) '---  multiplication table  -----------------'
+      write(*,*) '---  multiplication table (full) -----------'
       write(*,*) '--------------------------------------------'
       write(*,*)
       DO IREP = 1, NREP
@@ -4453,7 +4453,7 @@ C
       ENDDO
       write(*,*)
       write(*,*) '--------------------------------------------'
-      write(*,*) '---  inverse multiplication table  ---------'
+      write(*,*) '---  inverse multiplication table (full) ---'
       write(*,*) '--------------------------------------------'
       write(*,*)
       DO IREP = 1, 2*NREP
@@ -4476,36 +4476,26 @@ C
          ENDDO
       ENDDO
 
-!     write(*,*)
-!     write(*,*) '--------------------------------------------'
-!     write(*,*) '---  multiplication table (no offset) ------'
-!     write(*,*) '--------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, NREP
-!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-!     ENDDO
-!     write(*,*) '-------------------------------------'
-!     DO IREP = NREP+1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
-!     ENDDO
-!     write(*,*)
-!     write(*,*) '-------------------------------------- ------------'
-!     write(*,*) '---  inverse multiplication table (no offset) -----'
-!     write(*,*) '---------------------------------------------------'
-!     write(*,*)
-!     DO IREP = 1, 2*NREP
-!       write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
-!     ENDDO
-
-c     write(*,*)
-c     write(*,*) '-------------------------------------- ------------'
-c     write(*,*) '---  forward multiplication table (no offset) -----'
-c     write(*,*) '---------------------------------------------------'
-c     write(*,*)
-c     DO IREP = 1, 2*NREP
-c       write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*NREP)
-c     ENDDO
-
+      write(*,*)
+      write(*,*) '--------------------------------------------'
+      write(*,*) '---  multiplication table (rebased) --------'
+      write(*,*) '--------------------------------------------'
+      write(*,*)
+      DO IREP = 1, NREP
+        write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+      ENDDO
+      write(*,*) '-------------------------------------'
+      DO IREP = NREP+1, 2*NREP
+        write(*,'(50I4)') (multb(irep,jrep,1),jrep=1,2*nrep)
+      ENDDO
+      write(*,*)
+      write(*,*) '-------------------------------------- ------------'
+      write(*,*) '---  inverse multiplication table (rebased) -------'
+      write(*,*) '---------------------------------------------------'
+      write(*,*)
+      DO IREP = 1, 2*NREP
+        write(*,'(50I4)') (multb(irep,jrep,2),jrep=1,2*NREP)
+      ENDDO
 C
 C     Distribute the information read from MRCONEE
 C

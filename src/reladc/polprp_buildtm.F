@@ -161,7 +161,7 @@
 !
       call pst('Calculating transition moments+')
       write(*,*)
-      write(*,*) '   Remember: Even in SPINFREE/NONREL cases the TMs'
+      write(*,*) '   Note: Even in SPINFREE/NONREL cases the TMs'
       write(*,*) '   can be complex due to the quaternionic structure'
       write(*,*) '   of the wave function.'
       write(*,*)
@@ -381,7 +381,7 @@
 !-----------------------------------------------
 !
       proprep = multb(desrep+nrep,1+nrep,2)
-      write(*,*) 'proprep,desrep:',proprep,desrep
+!     write(*,*) 'proprep,desrep:',proprep,desrep
 !     write(*,*) 'names:',repna(proprep),repna(desrep)
       if(MVO(desrep).ne.MVO(proprep))then
         CALL QUIT('Property dimension inconsistency!')
@@ -392,15 +392,27 @@
 !------  F_ai(0)
 !------------------------
 !
-      n1 = MOV(proprep)       !number of integrals
-      off = JPOVXX(proprep) + 1       !offset from where to read the integrals
-!     write(*,*) 'F_ai(0), n1,off:',n1,off
+      n1 = MVO(proprep)       !number of integrals
+      off = JPVOXX(proprep) + 1       !offset from where to read the integrals
+!     write(*,*)  ' JPVOXX offset table:'
+!     write(*,*)  ' irep       MVO(irep)        JPVOXX(irep)'
+!     do i=1,nrep+1
+!       write(*,*) i,mvo(i),JPVOXX(i)
+!     enddo
+!     write(*,*)
 !     do i=1,n1
 !       write(*,*) 'Proi:',dvox(off+i-1),dvoy(off+i-1),dvoz(off+i-1)
 !     enddo
-      call xcopy(n1,dovx(off),1,faipx,1)
-      call xcopy(n1,dovy(off),1,faipy,1)
-      call xcopy(n1,dovz(off),1,faipz,1)
+!debug
+!     write(*,*) 'Changing phase of 9th and 34th integral in x property'
+!     on the basis of a C-programmed phase analyzer
+!     dvox(off+8) = -dvox(off+8)
+!     dvox(off+33) = -dvox(off+33)
+!end debug
+
+      call xcopy(n1,dvox(off),1,faipx,1)
+      call xcopy(n1,dvoy(off),1,faipy,1)
+      call xcopy(n1,dvoz(off),1,faipz,1)
 
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)

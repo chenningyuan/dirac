@@ -1,4 +1,25 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MAKEINVERSE(inverse)
+      IMPLICIT none
+
+      integer, dimension(:)            :: inverse
+
+#include  "../relccsd/symm.inc"  !provides nrep,multb
+
+      integer                          :: i,j
+
+      write(*,*) 'lbound inverse:',lbound(inverse)
+      write(*,*) 'ubound inverse:',ubound(inverse)
+      do i=1,nrep
+        inverse(i) = multb(i,nrep+1,2)
+      enddo
+      do i=1,nrep
+        inverse(i+nrep) = multb(i+nrep,nrep+1,2)
+      enddo
+
+      Return
+      End
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE property_handler(ioch,ioch2,lavail,nsp,irepspi)
 
       use polprp_cfg   !make some input variables available
@@ -92,9 +113,9 @@
         lavail=.true.
         write(*,*) '  ** MDPROP file found.'
       END IF
-      write(*,*)
-      write(*,*) 'Print level is set to ',polprp_printlev
-      write(*,*)
+!     write(*,*)
+!     write(*,*) 'Print level is set to ',polprp_printlev
+!     write(*,*)
 !
 ! allocate proper space for the fou kinds of property integrals.
 !
@@ -116,12 +137,13 @@
         write(*,*) '  ** property array has length',nsp*nsp
         write(*,*) '  ** Calculated dims are:',
      &                npaoo+npaov+npavo+npavv
-      else
-        write(*,*) '  ** Consistency check passed with:',nsp*nsp
-        write(*,*) '  ** Size of OO array:',npaoo
-        write(*,*) '  ** Size of OV array:',npaov
-        write(*,*) '  ** Size of VO array:',npavo
-        write(*,*) '  ** Size of VV array:',npavv
+        STOP
+!     else
+!       write(*,*) '  ** Consistency check passed with:',nsp*nsp
+!       write(*,*) '  ** Size of OO array:',npaoo
+!       write(*,*) '  ** Size of OV array:',npaov
+!       write(*,*) '  ** Size of VO array:',npavo
+!       write(*,*) '  ** Size of VV array:',npavv
       endif
 !
 ! allocate proper space for property integrals
@@ -518,9 +540,14 @@ C
       complex*16                              :: ax,ay,az
       real*8, parameter                       :: autoev = 27.2113957D0
       integer                                 :: n2h2p
+      character*7,dimension(2)                :: numtype
 !
 !  executable
 !
+      if(carith.and.RCW.ne.2) STOP 'Carith error'
+      if(.not.carith.and.RCW.ne.1) STOP 'Carith error'
+      numtype(1) = 'real'
+      numtype(2) = 'complex'
       IF(desrep.GT.9) THEN
         WRITE(davevcname,'(A8,A1,I2)') basename,'.',desrep
       ELSE
@@ -537,9 +564,8 @@ C
         return
       else
         write(*,*)
-        write(*,*) 'Found eigenvectors in symmetry',desrep
+        write(*,*) 'Found ',numtype(rcw),' eigenvecs in symm.',desrep
       endif
-      write(*,*) 'CARITH/RCW:',carith,RCW
       OPEN(ioch,file=davevcname,access='sequential',
      &     status='unknown',form='unformatted')
       REWIND(ioch)
@@ -630,7 +656,7 @@ C
             ax = ax + dcmplx(rcoef(i),D0)*faitx(i)
             ay = ay + dcmplx(rcoef(i),D0)*faity(i)
             az = az + dcmplx(rcoef(i),D0)*faitz(i)
-            write(*,'(F10.6,5X,2F10.6)') rcoef(i),faitx(i)
+!           write(*,'(F10.6,5X,2F10.6,5X,2F10.6)') rcoef(i),faitx(i),ax
           enddo
           if(do2h2p) then
             do i=1,n2h2p
@@ -1000,37 +1026,6 @@ C
       write(6,'(A)') 'which is also applied to the AOO and AVV ints.'
       write(6,*)
 !
-!*******************************************************************
-!********  debug: temporary reordering of the AOV integrals ********
-!********  due to possible problems in the contraction      ********
-!*******************************************************************
-!
-!     IA = 1
-!     DO IAREP = 1, NREP
-!        DO AREP = 1, NREP
-!           IREP = MULTB (AREP,IAREP+NREP,2)
-!           IREP = MULTB (IREP,NREP+1,2)
-!           DO A = 1, NV(AREP)
-!             AA = IREPSPI(A,AREP,2)
-!             DO I = 1, NO(IREP)
-!               II = IREPSPI(I,IREP,1)
-!               IF (CARITH) THEN
-!                   AOV(RCW*IA-1) = PROP(1,II,AA)
-!                   AOV(RCW*IA)   = PROP(2,II,AA)
-!               ELSE
-!                   AOV(IA) = PROP(1,II,AA)*APHASE(1) -
-!    &                        PROP(2,II,AA)*APHASE(2)
-!               ENDIF
-!               IA = IA + 1
-!            ENDDO
-!          ENDDO
-!        ENDDO
-!     ENDDO
-!
-!*******************************************************************
-!
-
-!
 !  generate AOO stream
 !
       IJ = 1
@@ -1108,6 +1103,38 @@ C
       write(PROCPROP) (avo(ixx),ixx=1,RCW*dimpvo)
       write(PROCPROP) (avv(ixx),ixx=1,RCW*dimpvv)
       close(PROCPROP)
+!
+!********************************************
+!***   testing the property streams     *****
+!********************************************
+!
+!     write(*,*)
+!     write(*,*) '----- Irep order in the property integrals'
+!     write(*,*) '----- <A|I> == <V|O> == beta (bosonic)'
+!     write(*,*)
+!     write(*,*)
+!     DO AIREP = 1, NREP
+!        write(*,*) 'AIREP ==  *************',airep,' ***************'
+!        write(*,*)
+!        ipcount = 0
+!        DO IREP = 1, NREP
+!           AREP = MULTB (IREP,AIREP+NREP,2)
+!           AREP = MULTB (AREP,NREP+1,2)
+!           if(airep.ne.multb(arep,irep,2)) 
+!    &         stop 'Property irep inconsistency!'
+!           write(*,*) 'arep,irep',arep,irep
+!           DO I = 1, NO(IREP)
+!           DO A = 1, NV(AREP)
+!             write(*,*) '       A,I:',A,I
+!             ipcount = ipcount + 1
+!           ENDDO
+!           ENDDO
+!        ENDDO
+!        write (*,*) '<A|I> integrals in this irep:',ipcount
+!        write (*,*)
+!     ENDDO
+!     write(*,*) '--------------------------------------'
+!     write (*,*)
 !
 !********************************************
 !***   printing the property integrals  *****
@@ -1334,4 +1361,312 @@ C
 !
       RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE print_input_info(iw,nrep)
+      use polprp_cfg     !these data are visible on master node only!
+
+      implicit none
+
+      integer               :: iw         ! I/O file handle for proper screen output
+      integer               :: nrep       ! number of total symmetries in the calculation
+!
+      integer               :: i,n,icount
+
+      write(iw,*) 'POLPRP control variables:'
+      write(iw,*) '-------------------------'
+      write(iw,*)
+      write(iw,*) 'we do extended calculation: ',polprp_doextended
+      write(iw,'(A,F10.5)') 
+     &   'threshold for elements in ADC matrix: ',polprp_writethr
+      write(iw,*) 'we perform a Davidson diagonalization:',polprp_dodiag
+      write(iw,*) 'The way final state symmetries are chosen is:'
+!
+! determine symmetries to be calculated
+!
+      n = 0
+      do i = 1,nrep
+        n = n + polprp_statesym(i)
+      enddo
+      if(n.eq.0) then
+        write(iw,*) 'Program checks symmetries automatically'
+        do i=1,nrep
+          polprp_statesym(i) = i
+        enddo
+      else
+        write(iw,*) 'User has selected the following final'
+        write(iw,*) 'state symmetries:'
+        icount=1
+        do i=1,nrep
+          if(polprp_statesym(i).ne.0) then
+            write(iw,*) '   No: ',icount,
+     &                  '  symmetry: ',polprp_statesym(i)
+            icount = icount + 1
+          endif
+        enddo
+      endif
+      write(iw,*)
+!
+! report diagonalization parameters
+!
+      write(iw,*) 'Davidson control variables:'
+      write(iw,*) '---------------------------'
+      write(iw,*)
+
+      if(polprp_dodiag) then
+        WRITE(IW,*) 'Number of eigenstates to be calculated (roots)',
+     &     polprp_davroots
+        WRITE(IW,*) 'Size of Krylov space: ',polprp_davmaxsp
+        WRITE(IW,*) 'Number of Davidson macro iterations: ',
+     &     polprp_davmaxit
+        WRITE(IW,'(A,E20.4)') ' Requested energy conv.: ',polprp_davconv
+        IF(polprp_davooc.eqv..false.) THEN
+           WRITE(IW,*) 'Trying full incore storage of Davidson vectors.'
+           WRITE(IW,*) 'Will default to out-of-core if resources are'
+           WRITE(IW,*) 'not available.'
+        ENDIF
+      endif
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRECONTRACT(iounit,iw)
+!
+!
+!  this routine is called by master only when parallel execution takes place.
+!  Then the nodes provide integrals.
+!
+!
+
+#if defined (VAR_MPI)
+      use interface_to_mpi
+#endif
+
+      implicit none
+
+      integer               :: iounit         ! I/O file handle for writing to file
+      integer               :: iw             ! file handle for writing to screen
+!
+! local variables
+!
+      real*8, allocatable, dimension(:)        :: vvvvz
+      real*8, allocatable, dimension(:)        :: vvoo1
+      real*8, allocatable, dimension(:)        :: vvoop
+      integer                                  :: n1,ixx
+      integer                                  :: ialloc
+      integer                                  :: signal
+      integer*8                                :: n8,i8
+      COMPLEX*16                               :: A0,A1
+      character*9                              :: preconfn='VVVVXVVOO'
+      logical                                  :: isthere
+
+
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+#include  "../relccsd/ccpar.inc"
+!
+! execution
+!
+      if(carith) then
+        CALL PST('Performing (complex) precontraction+')
+        if(rcw.ne.2) call quit ('intenal error in PRECONTRACT')
+      else
+        CALL PST('Performing (real) precontraction+')
+        if(rcw.ne.1) call quit ('intenal error in PRECONTRACT')
+      endif
+      A0=(0.0D00,0.0D00)
+      A1=(1.0D00,0.0D00)
+
+
+#if defined (VAR_MPI)
+!
+!  send the slaves a start signal for int supply only
+!
+      signal = 2  !start code.
+      write(iw,*) 'Master indicates PRECONTRACTION (signal=2)'
+      call interface_mpi_bcast(signal,1,MASTER,
+     &                             global_communicator)
+#endif
+
+! allocate buffers and read in integrals
+
+      n1 = ivvoott(nrep+1)
+      allocate(vvoo1(n1*rcw))
+      allocate(vvoop(n1*rcw))
+
+      n8 = ivvvvtt(nrep+1)
+      allocate(vvvvz(n8*rcw),stat=ialloc)
+      if(ialloc.ne.0) then
+        STOP 'VVVV buffer could not be allocated.'
+      else
+        write(*,*) 'Master allocated',n8,' words for VVVV buffer.'
+      endif
+
+#if defined (VAR_MPI)
+      do i8=1,n8*rcw
+        vvvvz(i8) = -4096.0d0
+      enddo
+      call rdvvvv(vvvvz)  ! master reads its own chunks
+      write(*,*) 'masters chunk reading ... complete.'
+      call mpi_vvvv_complete(vvvvz,n8*rcw)  !.... and completes the stream.
+      write(*,*) 'VVVV check in PRECONTRACT...'
+      do i8=1,n8
+        if(vvvvz(i8).eq. -4096.0d0)
+     &    call quit('Internal error: gap in the VVVV stream!')
+      enddo
+      write(*,*) '.... success. No leaks.'
+#else
+      call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
+#endif
+      call getvvoo(vvoo1)
+!
+!  do the contraction over all symmetries
+!
+      CALL CNTRCT('N','N',NVVT,NOOT,NVVT,A1,vvvvz,vvoo1,A0,vvoop,NREP)
+!
+!  check if file already present. If yes, delete it.
+!
+      Inquire(file=preconfn,exist=isthere)
+      If(isthere) then
+         write(*,*) 'Found a precontraction file. Deleting...'
+         open(unit=iounit, file=preconfn, status='old')
+         close(iounit, status='delete')
+      Endif
+!
+!  open corresponding file and write out contracted integrals.
+!
+      open(unit=iounit,file=preconfn, access='SEQUENTIAL',
+     &     form='UNFORMATTED',status='NEW')
+      write(iounit) (vvoop(ixx), ixx=1,n1*rcw)
+      close(iounit)
+!
+!  free buffers immediately 
+!
+      deallocate(vvoop)
+      deallocate(vvoo1)
+      deallocate(vvvvz)
+
+      write(*,*) 'PRECONTRACTION finished. Buffers freed'
+
+      return
+      end
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine compare_evc_r(io1,desrep,nroots,ladc,
+     &                         davibase,fullbase)
+      implicit none
+!
+! this routine evaluates eigenvectors for the available Davidson roots
+! with respect to the full diagonalization results. It determines phases and
+! absolute deviations
+!
+      integer        :: io1,desrep,nroots,ladc
+      character*8    :: davibase
+      character*7    :: fullbase 
+!
+! local variables
+! 
+      character*11                        :: daviname
+      character*10                        :: fullname
+      logical                             :: fullisthere
+      integer                             :: io2
+      integer                             :: i,j,k
+      integer                             :: k1,k2
+      integer                             :: nmain
+      real*8                              :: lambda1,lambda2,dummy
+      real*8,parameter                    :: autoev = 27.2113957D0
+      real*8,allocatable,dimension (:)    :: e1,e2
+      real*8                              :: devmod,devabs,devphs
+!
+! executable code
+! 
+      Call PST('Comparing D/F eigenvectors+')
+
+      IF(desrep.GT.9) THEN
+        WRITE(daviname,'(A8,A1,I2)') davibase,'.',desrep
+        WRITE(fullname,'(A7,A1,I2)') fullbase,'.',desrep
+      ELSE
+        WRITE(daviname,'(A8,A2,I1)') davibase,'.0',desrep
+        WRITE(fullname,'(A7,A2,I1)') fullbase,'.0',desrep
+      ENDIF
+!
+! do we have an eigenvector file from fulldia ?
+!
+      fullisthere=.false.
+      INQUIRE(FILE=fullname,EXIST=fullisthere)
+      if(.not.fullisthere) then
+        write(*,*) 'The eigenvector file from a full diagonalization'
+        write(*,*) 'is not available. No comparison is made. Returning.'
+        return
+      endif
+      write(*,*) 'Comparing eigenvectors for',nroots,' roots'
+      write(*,*)
+!
+! comparing eigenvectors
+!
+      io2 = io1 + 1
+      open(io1,file=daviname,access='sequential',
+     &     status='unknown',form='unformatted')
+      open(io2,file=fullname,access='sequential',
+     &     status='unknown',form='unformatted')
+
+      allocate(e1(ladc))
+      allocate(e2(ladc))
+      e1 = 0.0d0
+      e2 = 0.0d0
+!
+! three integer reads from the Davidson file
+!
+      read(io1) k
+      read(io1) nmain
+      read(io1) k
+      write(*,*) 'Main space has dimension',nmain
+      write(*,*)
+
+      write(*,'(18X,2A7,4X,3A8)') 'root1','root2',' devmod',
+     &                          'devabs','devphs'
+      do k=1,nroots
+        read(io1) k1
+        read(io2) k2
+        if(.not.(k1.eq.k2 .and. k1.eq.k)) then
+          write(*,*) 'Inconsistency in root numbering!'
+          write(*,*) 'This is serious, continuation questionable!'
+          write(*,*) 'k,k1,k2:',k,k1,k2
+          exit  !leave this do loop
+        endif
+        read(io1) lambda1
+        read(io2) lambda2
+        read(io1) dummy
+        read(io2) dummy
+        read(io1) (e1(i),i=1,ladc)
+        read(io2) (e2(i),i=1,ladc)
+!
+! compare vectors
+!
+        devmod = 0.0d0
+        devabs = 0.0d0
+        devphs = 0.0d0
+        do i=1,ladc
+          devmod = devmod + (abs(e1(i)) - abs(e2(i)))
+          devabs = devabs + (e1(i) - e2(i))
+          devphs = devphs + (e1(i) + e2(i))
+        enddo
+        write(*,'(A,I3,2X,2F12.6,2X,3F14.8)') 'Comparing root',k,
+     &         lambda1,lambda2,devmod,devabs,devphs
+        write(*,*)
+        do i=1,min(10,nmain)
+          write(*,*) '       ',e1(i),e2(i)
+        enddo
+        write(*,*) '..................'
+        write(*,*)
+      enddo
+!
+! release ressources
+!
+      deallocate(e1)
+      deallocate(e2)
+
+      close(io1)
+      close(io2)
+
+      return
+      end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

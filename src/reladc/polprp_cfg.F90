@@ -20,6 +20,7 @@
 !dirac_copyright_end
 
 module polprp_cfg
+     use iso_c_binding
 
 ! This module contains all input for the POLPRP/DAVIDSON module
 
@@ -36,6 +37,7 @@ module polprp_cfg
   real*8,  public                  :: polprp_writethr     = 0.0
   logical, public                  :: polprp_dodiag       = .true.
   integer, public                  :: polprp_printlev     = 0
+  character(LEN=120), bind(C,name="ppinfo_code")  ::  polprp_infostring = char(0)
 !
 !  davidson control variables
 !
