@@ -445,7 +445,8 @@ C       active quaternion unit.
                 IF (JFRP.EQ.2) IREPIB = IBE21(I)
                 IQI = IPQTOQ(1,IREPIB)
                 IQ  = IQMULT (IQI,IQJ,IQPRP)
-                IQS = IQPHASE(IQI,IQJ,IQPRP)*IQSIGN(IQJ,2,1)
+!LV             IQS = IQPHASE(IQI,IQJ,IQPRP)*IQSIGN(IQJ,2,1)
+                IQS = IQPHASE(IQI,IQJ,1)*IQSIGN(IQJ,2,1)
 C
 C The code is to be debugged. The MOLTRA part is probably OK but the
 C phase transformed integrals do not give the correct answer when fed
@@ -453,8 +454,11 @@ C into RELCCSD. If you use this transformation with another code, you
 C can proceed at your own risk by uncommenting the stop.
 C Stop now when we find non-symmetric operators.
 C  
-                IF (IQ.NE.IQS)
-     &          CALL QUIT ("This does not work with spinfree !")
+c               IF (IQ.NE.IQS)
+c    &          CALL QUIT ("This does not work with spinfree !")
+                if (iq.eq.1)
+     &          write (*,'(7i4,f20.10)') i,j,iqi,iqj,iqprp,iq,iqs,
+     &                                   propmo(ii1,jj1,iz)
 C
 C               Scale the matrix element
                 PRPME = PROPMO(II1,JJ1,IZ) * IQS
