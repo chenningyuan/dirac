@@ -1597,3 +1597,228 @@
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE TM_GEN(ioch,desrep,isatctl,iorder,
+     &                  do2h2p,
+     &                  faitx,faity,faitz,
+     &                  fabijtx,fabijty,fabijtz)
+      implicit none
+!
+!  this routine contracts the Davidson eigenvector with the 
+!  F_ai/F_aibj matrix elements to form the three transition moments.
+!  Remind that the F_ai and F_aibj elements together with the TMs
+!  are kept complex!
+!
+!  due to high numerical effort in the calling routine a flag (do2h2p) 
+!  determines if the 2h2p contributions should be included. In this
+!  case the arrays fabijt[xyz] must be allocated! Otherwise they are not
+!  referenced.
+!
+!  The routine can be called for each order of perturbation theory in the
+!  F_ai matrix elements. It just needs access to the Davidson eigenvectors.
+!
+!  calling parameters
+!
+      integer                      :: ioch,desrep,isatctl
+      character*30                 :: iorder
+      logical                      :: do2h2p
+      complex*16, dimension(:)     :: faitx,faity,faitz
+      complex*16, dimension(:)     :: fabijtx,fabijty,fabijtz
+
+!
+!  includes
+!
+#include  "../relccsd/complex.inc"
+!
+!  locals
+!
+      character*8, parameter                  :: basename='DAVILONG'
+      character*11                            :: davevcname
+      logical                                 :: isthere
+
+      real*8, allocatable, dimension(:)       :: rcoef
+      complex*16, allocatable, dimension(:)   :: ccoef
+      complex*16,allocatable,dimension(:)     :: tmx,tmy,tmz
+
+      integer                                 :: ioresult
+      integer                                 :: nroots,nmain,ladc
+      real*8,allocatable,dimension(:)         :: evl,xnr
+      real*8                                  :: ps
+      real*8, parameter                       :: D0=0.0d0
+      complex*16, parameter                   :: A0=(D0,D0)
+      integer                                 :: i,k,ist
+      complex*16                              :: ax,ay,az
+      real*8, parameter                       :: autoev = 27.2113957D0
+      integer                                 :: n2h2p
+      character*7,dimension(2)                :: numtype
+!
+!  executable
+!
+      if(carith.and.RCW.ne.2) STOP 'Carith error'
+      if(.not.carith.and.RCW.ne.1) STOP 'Carith error'
+      numtype(1) = 'real'
+      numtype(2) = 'complex'
+      IF(desrep.GT.9) THEN
+        WRITE(davevcname,'(A8,A1,I2)') basename,'.',desrep
+      ELSE
+        WRITE(davevcname,'(A8,A2,I1)') basename,'.0',desrep
+      ENDIF
+      INQUIRE(file=davevcname,exist=isthere)
+      if(.not.isthere) then
+        write(*,*) '***************************************'
+        write(*,*) '*****  Warning:                   *****'
+        write(*,*) '***************************************'
+        write(*,*) 'No eigenvectors found in symmetry',desrep,'!'
+        write(*,*) 'No TMs accessible!'
+        write(*,*)
+        return
+      else
+        write(*,*)
+        write(*,*) 'Found ',numtype(rcw),' eigenvecs in symm.',desrep
+      endif
+      OPEN(ioch,file=davevcname,access='sequential',
+     &     status='unknown',form='unformatted')
+      REWIND(ioch)
+
+!_________________________  perform the contractions
+!|
+
+      READ(ioch,iostat=ioresult) nroots
+      READ(ioch,iostat=ioresult) nmain
+      READ(ioch,iostat=ioresult) ladc
+
+      write(*,*) 'Found',nroots,' states in the eigenvector file.'
+      write(*,*) 'Length of ADC matrix (from file):',ladc
+      write(*,*) 'Length of main space (from file):',nmain
+      n2h2p = ladc-nmain
+      write(*,*) 'Length of sat space:',n2h2p
+
+      if(do2h2p) then
+        write(*,*) 'Including 2h2p contributions to TM.'
+        if (isatctl.ne.n2h2p) 
+     &    call quit('Internal error for coupling block length')
+      else
+        write(*,*) 'Omitting 2h2p contributions to TM'
+      endif
+!
+! allocate eigenvalue, transition moment and coefficient arrays
+!
+      allocate(evl(nroots))
+      evl = D0
+
+      allocate(tmx(nroots))
+      allocate(tmy(nroots))
+      allocate(tmz(nroots))
+      tmx = A0
+      tmy = A0
+      tmz = A0
+      if(carith) then
+        allocate(ccoef(ladc))
+      else
+        allocate(rcoef(ladc))
+      endif
+
+      allocate(xnr(nroots))
+      xnr = D0
+
+      Do k=1,nroots
+        read(ioch) ist
+        read(ioch) evl(k)
+        read(ioch) ps
+        write(*,'(A,X,I3,X,A,F10.4,A,X,F10.4,A,F10.4)') 
+     &    'State',ist,':exc. energy',evl(k),'(au)',evl(k)*autoev,
+     &    ' (eV) and PS',ps
+        if(carith) then
+          read(ioch)(ccoef(i),i=1,ladc)
+          do i=1,ladc
+            xnr(k)=xnr(k) + 
+     &         (real(ccoef(i))**2.0d0 + aimag(ccoef(i))**2.0d0)
+          enddo
+        else
+          read(ioch)(rcoef(i),i=1,ladc)
+          do i=1,ladc
+            xnr(k)=xnr(k) + rcoef(i)**2.0d0
+          enddo
+        endif
+        xnr(k) = dsqrt(xnr(k))
+        
+!
+! the do2h2p flag controls the level of contraction.
+!
+        ax=A0
+        ay=A0
+        az=A0
+        if(carith) then
+          do i=1,nmain
+            ax = ax + ccoef(i) * faitx(i)
+            ay = ay + ccoef(i) * faity(i)
+            az = az + ccoef(i) * faitz(i)
+          enddo
+          if(do2h2p) then
+            do i=1,n2h2p
+              ax = ax + ccoef(i+nmain) * fabijtx(i)
+              ay = ay + ccoef(i+nmain) * fabijty(i)
+              az = az + ccoef(i+nmain) * fabijtz(i)
+            enddo
+          endif
+        else
+          do i=1,nmain
+            ax = ax + dcmplx(rcoef(i),D0)*faitx(i)
+            ay = ay + dcmplx(rcoef(i),D0)*faity(i)
+            az = az + dcmplx(rcoef(i),D0)*faitz(i)
+!           write(*,'(F10.6,5X,2F10.6,5X,2F10.6)') rcoef(i),faitx(i),ax
+          enddo
+          if(do2h2p) then
+            do i=1,n2h2p
+              ax = ax + dcmplx(rcoef(i+nmain),D0)*fabijtx(i)
+              ay = ay + dcmplx(rcoef(i+nmain),D0)*fabijty(i)
+              az = az + dcmplx(rcoef(i+nmain),D0)*fabijtz(i)
+            enddo
+          endif
+        endif
+        tmx(k) = ax
+        tmy(k) = ay
+        tmz(k) = az
+
+      Enddo   ! nroots
+
+      CLOSE(ioch)
+!|________________________ end reading section
+
+!_________________________  print output
+!|
+!|
+      write(*,*) '   Transition moments for states in symmetry',desrep
+      write(*,*)
+      write(*,*)
+      write(*,*) '   *******************************'
+      write(*,'(A,A)') '   Order of computation: ',iorder
+      write(*,*) '   *******************************'
+      write(*,*)
+      write(*,*)
+      write(*,*) '----------------------------------------------------'
+      write(*,'(A,4X,A,9X,A,20X,A,20X,A)')
+     &       'State','Energy(eV)','TM(x)','TM(y)','TM(z)'
+      write(*,*) '----------------------------------------------------'
+      write(*,*)
+      do k=1,nroots
+        write(*,'(I4,F14.7,F8.4,2F15.9,A,2F15.9,A,2F15.9)') k,
+     &     evl(k)*autoev,xnr(k),tmx(k),' | ',tmy(k),' | ',tmz(k)
+      enddo
+      write(*,*) '----------------------------------------------------'
+!|
+!|________________________ end print output
+
+      if(carith) then
+        deallocate(ccoef)
+      else
+        deallocate(rcoef)
+      endif
+      deallocate(tmx)
+      deallocate(tmy)
+      deallocate(tmz)
+
+      deallocate(evl)
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

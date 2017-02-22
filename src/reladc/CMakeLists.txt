@@ -25,13 +25,15 @@ set(FREE_RELADC_FORTRAN_SOURCES
     adc_fano_matmul.F90
     adc_fano.F90
     adcutil.F90
-    polprp_cfg.F90
-    polprp_driver.F
-    polprp_parallel_builders.F
-    polprp_davidson.F
-    polprp_serial_builders.F
     polprp_buildtm.F
+    polprp_cfg.F90
+    polprp_cousat.F
+    polprp_davidson.F
+    polprp_driver.F
     polprp_helpers.F
+    polprp_mainblk.F
+    polprp_mpidrv.F
+    polprp_prpint.F
 )
 
 set(C_RELADC_SOURCES
