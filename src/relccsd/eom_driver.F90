@@ -1,5 +1,6 @@
   module eom_driver
   use sigma_eom
+  use trial_vectors_eom
   use relcc_cfg
   implicit none
 !this module calculates the sigma vectors for IP(2h-1p), EA(1h-2p) and EE(2h-2p)  
