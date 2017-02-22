@@ -1270,8 +1270,11 @@ integer :: nbuf3,ierr
  end subroutine
 
    subroutine trial_vectors_ip (r1,Fbar_mi)
+        use davidson
 
 #include "symm.inc"
+#include "complex.inc"
+#include "inpt.inc"
 !---------------Description--------------------------------------------
 !     generating R1 trial vectors by diagonalizing HBar_SS matrix.
 !-----------------------------------------------------------------------
@@ -1283,14 +1286,15 @@ integer :: nbuf3,ierr
 
 !---------------Local Variables--------------------
 
-  real(8), allocatable :: sigma1(:,:),ev(:),evec(:,:) 
-  integer              :: i,iroot,nroot,jroot
+  real(8), pointer     :: sigma1(:,:),ev(:,:),evec(:,:)
+  integer              :: i,iroot,nroot,jroot,dimr1, j, k, myrep
 
 !--------------------------------------------------
 
-    nroot = size(r1,1)
+    nroot = size(r1,2)
+    dimr1 = size(r1,1)/rcw
 
-    allocate(sigma1(nroot,nroot))
+    allocate(sigma1(dimr1*rcw,nroot))
 
     sigma1 = 0.0d0
 
@@ -1300,21 +1304,32 @@ integer :: nbuf3,ierr
     &                       -1.0d0,1.0d0,nrep)
 
    enddo
+   if (iprnt.ge.2) then
+       print *,"debug in trial_vectors_ip, nrep:",nrep,dimr1,nroot
+       call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
+   end if
 
-       allocate (ev(nroot))
-       allocate (evec(nroot,nroot))
+   allocate (ev(2,nroot))
+   allocate (evec(dimr1*rcw,nroot))
 
-       evec = 0.0d0
-       ev = 0.0d0
-       call solve_cg(nroot,sigma1,evec,ev)
-         write(*,*)'H eigenvalues', (ev(i),i=1,nroot)
+   evec = 0.0d0
+   ev = 0.0d0
 
-     deallocate(sigma1)
+   call solve_values_vectors(sigma1, ev, evec, evec, .false.)
+   if (iprnt.ge.2) then
+       print *,'CCS eigenvalues in (real, imaginary) format'
+       do i = 1, nroot
+           print *,"(",ev(1,i), ",",ev(2,i),")"
+       end do
+       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
+   end if
+
 ! copy the eigenvectors to r1
-         r1 = evec
+   r1 = evec
 
-       deallocate(ev)
-       deallocate(evec)
+   deallocate(ev)
+   deallocate(evec)
+   deallocate(sigma1)
 
  end subroutine
 

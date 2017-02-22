@@ -1368,7 +1368,7 @@ contains
                  if (associated(preconditioner)) deallocate(preconditioner)
                 exit
             end if
-            b => updated_subspace_vectors_R(b, delta, verbose=davidson_verbose)
+            b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
 
             if (davidson_verbose) then
                 call davidson_print_vectors(delta, label="delta                         ")
