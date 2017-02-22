@@ -6,6 +6,8 @@ implicit none
 public davidson_setup
 public davidson_cleanup
 public davidson_driver
+public davidson_print_vectors
+public solve_values_vectors
 
 !public sort_values_vectors
 !public set_safe_minimum
@@ -80,6 +82,10 @@ integer, save :: right_subspace_file_unit = 142
 integer, save :: left_sigma_file_unit     = 240
 integer, save :: left_vectors_file_unit   = 241
 integer, save :: left_subspace_file_unit  = 242
+
+!double precision :: ddot, dscal
+!complex(kind=16) :: zscal, zladiv
+
 
 contains 
 
@@ -502,32 +508,47 @@ contains
         real(kind=8), intent(in) :: u(:)
         real(kind=8), intent(in) :: v(:)
         real(kind=8) :: numerator, denominator, factor
-        real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
         real(kind=8) :: norm_denominator
         integer :: N, N_complex
-        double precision ddot, dscal
-        complex(kind=16) zscal, zladiv
+        double precision ddot, dznrm2
+        complex(kind=16) zladiv, zdotc, zdotu
+        real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
 
         N = size(u,1)
 
-        projection = zero_r8
+        projection = 0.0d0 
 
-!       if (davidson_debug) print *,'debug U',u
+        if (davidson_debug) print *,'debug U',u
+        if (davidson_debug) print *,'debug V',v
+
         if (davidson_complex_mode_with_reals) then
             N_complex = N / 2
-!           if (davidson_debug) print *,'denominator complex',denominator_complex
-!           if (davidson_debug) print *,'  numerator complex',numerator_complex
-            call xdotu(denominator_complex, N_complex, u, 1, u, 1) 
-            call xdotu(denominator_complex, N_complex, v, 1, u, 1) 
-!           if (davidson_debug) print *,'denominator complex',denominator_complex
-!           if (davidson_debug) print *,'  numerator complex',numerator_complex
-            norm_denominator = sqrt(denominator_complex(1)*denominator_complex(1) + denominator_complex(2)*denominator_complex(2))
+
+            if (davidson_debug) print *,'denominator complex before zdot',denominator_complex
+            if (davidson_debug) print *,'  numerator complex before zdot',numerator_complex
+
+!           denominator_complex = zdotu(N_complex, u, 1, u, 1) 
+            call xdotc(denominator_complex,N_complex, u, 1, u, 1) 
+!           numerator_complex   = zdotu(N_complex, v, 1, u, 1) 
+            call xdotc(numerator_complex,N_complex, v, 1, u, 1) 
+
+            if (davidson_debug) print *,'denominator complex  after zdot',denominator_complex
+            if (davidson_debug) print *,'  numerator complex  after zdot',numerator_complex
+
+            norm_denominator = dznrm2(N_complex, u, 1)
+
+            if (davidson_debug) print *,'  norm denominator',norm_denominator
             if (norm_denominator .gt. safe_minimum) then
-                factor_complex = zladiv(numerator_complex,denominator_complex)
+                call dladiv(numerator_complex(1),numerator_complex(2), &
+                            denominator_complex(1),denominator_complex(2), &
+                            factor_complex(1), factor_complex(2))
+                if (davidson_debug) print *,'  factor_complex from zladiv',factor_complex
             else
-                factor_complex = zero_r8
+                factor_complex = cmplx(0.0d0, 0.0d0)
             end if
-            projection = zscal(N_complex, factor_complex, u, 1)
+            projection = u
+            call zscal(N_complex, factor_complex, projection, 1)
+            if (davidson_debug) print *, "GS projection, factor: ",factor_complex
 
         else
             denominator = ddot(N, u, 1, u, 1) 
@@ -539,9 +560,10 @@ contains
             end if
             projection = factor * u
 !           projection = dscal(N, factor, u, 1)
+            if (davidson_debug) print *, "GS projection, factor: ",factor
         end if
 
-        if (davidson_debug) print *, "GS projection, factor: ",factor
+        if (davidson_debug) print *, "GS projection, ",projection
     end subroutine 
 
     subroutine gram_schmidt_orthogonalization(vectors, verbose)
@@ -817,6 +839,7 @@ contains
         vectors_to_update = .true.
 
         allocate(r(vectors_N,nroots))
+        r = 0.0d0
         call form_r(r, nroots, e_small_M, c_small_M, sigma_vector, b)
 
         unconverged_roots = 0
@@ -904,10 +927,8 @@ contains
         real(kind=8), intent(in)  :: c_small_M(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
         real(kind=8), intent(in)  :: b(:,:)
-
         integer :: vectors_L, vectors_N
         integer :: k
-
         real(kind=8), allocatable :: residue_a(:,:)
         real(kind=8), allocatable :: residue_b(:,:)
 
@@ -938,16 +959,27 @@ contains
         end if
 
         if (davidson_debug) then
-            print *, "debug in form_r, residue_a :",residue_a
-            print *, "debug in fomr_r, residue_b :",residue_b
+            call davidson_print_vectors(residue_a,  label="debug: in form_r, residue a   ", complex_dimension=1)
+            call davidson_print_vectors(residue_b,  label="debug: in form_r, residue b   ", complex_dimension=1)
+            call davidson_print_vectors(e_small_M,  label="debug: in form_r, e_small M   ", complex_dimension=1)
         end if
 ! todo: generalize this to the multiplication of the complex e_small with  complex residue_b
+
         do k = 1, nroots
-            r(:,k) = residue_a(:,k) - e_small_M(1,k)*residue_b(:,k)
-            if (davidson_debug) then
-                print *, "debug in form_r, r :",r(:,k)
+            if (davidson_complex_mode_with_reals) then
+!               evalue_c = cmplx(e_small_M(1,k), e_small_M(2,k))
+!               print *,'evalue_c'
+                call zscal(vectors_N,e_small_M(:,k),residue_b(:,k),1)
+            else
+!               evalue_r = e_small_M(1,k)
+!               print *,'evalue_r'
+                call dscal(vectors_N,e_small_M(1,k),residue_b(:,k),1)
             end if
+            r(:,k) = residue_a(:,k) - residue_b(:,k)
         end do
+        if (davidson_debug) then
+            call davidson_print_vectors(r,  label="debug: in form_r, r           ", complex_dimension=1)
+        end if
 
         deallocate(residue_a)
         deallocate(residue_b)
@@ -1153,9 +1185,7 @@ contains
         if (associated(eVectorsR)) deallocate(eVectorsR)
         if (associated(eValues))   deallocate(eValues)
 
-!       if (davidson_debug) call davidson_print_vectors(M, label="debug:  small matrix M #2     ")
-!       print *, "M #2"
-!       print *, M
+        if (davidson_debug) call davidson_print_vectors(M, label="debug:  small matrix M #2     ")
 
         if (left) then
             do_left = 'V'
@@ -1191,7 +1221,6 @@ contains
         deallocate(work)
         allocate(work(lwork))
         if (davidson_complex_mode_with_reals) then
-            allocate(rwork(2*vectors_L))
             call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                         eValues, eVectorsL, vectors_L, eVectorsR, &
                         vectors_L, WORK, LWORK, rwork, INFO)
@@ -1290,8 +1319,8 @@ contains
        endif
  
 
+        write(davidson_output_file_unit,*) ""
         do niter = 1, davidson_max_iterations
-            write(davidson_output_file_unit,*) ""
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
@@ -1428,8 +1457,7 @@ contains
 
         call solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
         if (davidson_debug) then
-           print *, "debug, eValues call to after solve_values_vectors"
-           print *, eValues
+           call davidson_print_vectors(eValues, label="debug, eValues after solveing ")
         end if
 
         if (davidson_overlap_sorting) then
@@ -1609,11 +1637,13 @@ contains
         real(kind=8), allocatable :: temp_vector(:,:)
         real(kind=8) :: temp
         integer, allocatable :: indices_sorted_array(:)
-        integer :: vectors_L, i_sorted, i
+        integer :: vectors_N, vectors_L, i_sorted, i
 
         vectors_L = size(e_small,2)
+        vectors_N = size(e_small,1)
         allocate(indices_sorted_array(vectors_L))
-        allocate(temp_vector(vectors_L,vectors_L))
+        allocate(temp_vector(vectors_N,vectors_L))
+        temp_vector = 0.0d0
         do i = 1, vectors_L 
             indices_sorted_array(i) = i 
         end do
@@ -1652,8 +1682,8 @@ contains
             end do
             c_small_l = temp_vector
         end if
-        deallocate(temp_vector)
-        deallocate(indices_sorted_array)
+!       deallocate(temp_vector)
+!       deallocate(indices_sorted_array)
 
     end subroutine
 
@@ -1778,15 +1808,27 @@ contains
         i = first
         j = last
 
+        print *,"------"
+        print *,"debug, start of sorting of complex eigenvalues"
+        print *,"------"
         do
-           do while (sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)) < x)
+           do while ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)) < x))
+!          do while ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)) < x).or. &
+!                   ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)).eq.x).and.(v(2,i) < v(2,start_index))))
               i = i + 1
            end do
-           do while (x < sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j)))
+           do while ((x < sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j))))
+!          do while ((x < sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j))).or. &
+!                   ((sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j)).eq.x).and.(v(2,start_index) < v(2,j))))
               j = j - 1
            end do
            if (i >= j) exit
 
+           print *,"debug, original vector"
+           print *, v
+           print *,"debug, index vector before exchange"
+           print *,indices_sorted
+           print *," debug, exchanging i",i,"and j",j
            t = v(1,i)
            v(1,i) = v(1,j)
            v(1,j) = t
@@ -1798,13 +1840,29 @@ contains
            ti = indices_sorted(i)
            indices_sorted(i) = indices_sorted(j)
            indices_sorted(j) = ti
+           print *,"debug, echanged vector"
+           print *, v
+           print *,"debug, index vector after exchange"
+           print *,indices_sorted
 
            i = i + 1
            j = j - 1
+           print *,"debug, at the end of the loop, i",i,"j",j
 
         end do
-        if (first < i-1) call quicksort_vector_complex_as_real(v, indices_sorted, first, i-1)
-        if (j+1 < last)  call quicksort_vector_complex_as_real(v, indices_sorted, j+1, last)
+        if (first < i-1) then 
+            print *,"first",first,"i-1",(i-1)
+            call quicksort_vector_complex_as_real(v, indices_sorted, first, i-1)
+        end if
+        if (j+1 < last)  then
+            print *,"last",last,"j+1",(j+1)
+            call quicksort_vector_complex_as_real(v, indices_sorted, j+1, last)
+        end if
+
+        print *,"------"
+        print *,"debug, end of sorting of complex eigenvalues"
+        print *,"------"
+
     end subroutine
 
 

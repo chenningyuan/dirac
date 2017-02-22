@@ -229,7 +229,7 @@
 !end if
 
       if (relcc_mfd_trial_ccs) then
-          print *, 'debug, using trial vectors from diagonalization of singles-singles block'
+          print *, '  Using eigenvalues of singles-singles block as trial vectors'
 
           allocate (R1_dum(ndimr1,ndimr1))
           R1_dum = 0.0d0
@@ -252,7 +252,7 @@
       end if
 
       if (relcc_mfd_trial_diagonal) then
-          print *, 'debug, using trial vectors from (reordered) unit vectors'
+          print *, '  Using (reordered) unit vectors as trial vectors'
 
 
 
@@ -325,7 +325,8 @@
       ENDDO
 
       if (relcc_mfd_trial_ccs) then
-          print *, 'debug, using trial vectors from diagonalization of singles-singles block'
+          print *, '  Using eigenvalues of singles-singles block as trial vectors'
+
           allocate (R1_dum(ndimr1,ndimr1))
           R1_dum = 0.0d0
 
@@ -356,7 +357,7 @@
  !  else
 
       if (relcc_mfd_trial_diagonal) then
-          print *, 'debug, using trial vectors from (reordered) unit vectors'
+          print *, '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
@@ -435,7 +436,7 @@
 
 
       if (relcc_mfd_trial_ccs) then
-          print *, 'debug, using trial vectors from diagonalization of singles-singles block'
+          print *, '  Using eigenvalues of singles-singles block as trial vectors'
 
           allocate (R1_dum(ndimr1,ndimr1))
           R1_dum = 0.0d0
@@ -470,7 +471,8 @@
 ! calculate the orbital dimension within which our desired root should belong..
 
       if (relcc_mfd_trial_diagonal) then
-          print *, 'debug, using trial vectors from (reordered) unit vectors'
+          print *, '  Using (reordered) unit vectors as trial vectors'
+
 
   search_dimension = ncont(state_sym)*nv(state_sym) 
 

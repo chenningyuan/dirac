@@ -189,6 +189,7 @@
 
    function create_sigma_vector_left(A, r, old_sigma_vector)
 #include "files.inc"
+#include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_left(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
@@ -233,7 +234,7 @@
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-IP sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-IP sigma vector ",iroot," out of ",L
                 call Lambda_IP(r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &
                  &             A,                               &
@@ -247,7 +248,7 @@
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EA sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EA sigma vector ",iroot," out of ",L
 !               call Lambda_EA(r(start_r1:end_r1, iroot:iroot),  &
 !                &             r(start_r2:end_r2, iroot:iroot), &
 !                &             A,                               &
@@ -264,7 +265,7 @@
              do iroot = L_already_done + 1, L
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EE sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EE sigma vector ",iroot," out of ",L
 !               call Lambda_ee(r(start_r1:end_r1, iroot:iroot), &
 !                &                  r(start_r2:end_r2, iroot:iroot), & 
 !                &                  A,                               &
@@ -282,6 +283,7 @@
 
    function create_sigma_vector_right(A, r, old_sigma_vector)
 #include "files.inc"
+#include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_right(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
@@ -326,7 +328,7 @@
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
                 call sigma_IP(eom_nvx,  &
                  &             r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &
@@ -341,7 +343,7 @@
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
                 call sigma_EA(eom_nvx,  &
                  &             r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &
@@ -359,7 +361,7 @@
              do iroot = L_already_done + 1, L
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
                 call sigma_ee_1h1p(r(start_r1:end_r1, iroot:iroot), &
                  &                  r(start_r2:end_r2, iroot:iroot), & 
                  &                  A,                               &
