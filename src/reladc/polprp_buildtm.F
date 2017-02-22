@@ -81,7 +81,7 @@
       REAL*8,allocatable,dimension(:)        :: vvoop
                                             
       REAL*8,allocatable,dimension(:)        :: vooo1,vooo2
-      REAL*8,allocatable,dimension(:)        :: vovo1,vovo2
+      REAL*8,allocatable,dimension(:)        :: vovo1,vovo2,vovo3
       REAL*8,allocatable,dimension(:)        :: vovv1,vovv2
                                             
       REAL*8,allocatable,dimension(:)        :: oooo
@@ -381,12 +381,9 @@
 !-----------------------------------------------
 !
       proprep = multb(desrep+nrep,1+nrep,2)
-!     write(*,*) 'proprep,desrep:',proprep,desrep
-!     write(*,*) 'names:',repna(proprep),repna(desrep)
       if(MVO(desrep).ne.MVO(proprep))then
         CALL QUIT('Property dimension inconsistency!')
       endif
-!     write(*,*) 'MVO/OFFSET:',MVO(desrep),JPVOXX(desrep)
 !
 !------------------------
 !------  F_ai(0)
@@ -394,21 +391,6 @@
 !
       n1 = MVO(proprep)       !number of integrals
       off = JPVOXX(proprep) + 1       !offset from where to read the integrals
-!     write(*,*)  ' JPVOXX offset table:'
-!     write(*,*)  ' irep       MVO(irep)        JPVOXX(irep)'
-!     do i=1,nrep+1
-!       write(*,*) i,mvo(i),JPVOXX(i)
-!     enddo
-!     write(*,*)
-!     do i=1,n1
-!       write(*,*) 'Proi:',dvox(off+i-1),dvoy(off+i-1),dvoz(off+i-1)
-!     enddo
-!debug
-!     write(*,*) 'Changing phase of 9th and 34th integral in x property'
-!     on the basis of a C-programmed phase analyzer
-!     dvox(off+8) = -dvox(off+8)
-!     dvox(off+33) = -dvox(off+33)
-!end debug
 
       call xcopy(n1,dvox(off),1,faipx,1)
       call xcopy(n1,dvoy(off),1,faipy,1)
@@ -424,48 +406,42 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
- 
-      call quit('Temporary stop')
 !
 !------------------------
 !------  F_ai(1)
 !------------------------
 !
-!  contract v_ab,ji and D_jb to F_ai
-!  v_a>b,j>i  ---> -v_a>b,i>j
-!  -v_a>b,i>j  ---> v_ab,i>j (1LS1)
-! now we need the nontotally symmetric version of SRT20M:
-!  v_ab,i>j  ---> C_ai,jb (SRT20_NTS),(vvoo3)
+! sort v_ab,ij --> v_ai,bj
+! the minus sign in the contraction is accounted for in the 
+! XGEMV routines!
 !
       vvoo3 = 0.0d0
-      vvoo4 = 0.0d0
-      n1 = ivvoott(nrep+1)
-      CALL RCA_NEGATE(n1,vvoo1)
-      CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
-     &              vvoo1,vvoo4)
-      CALL RCA_NEGATE(n1,vvoo1)      !reverse negation for the vvoo1 array
-      CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
-
-!  contract C_ai,jb (vvoo3)  and Djb over corresponding symmetry
-!  and add to total result.
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
+     &                 MVO,JVOVO,JJVO,JJVO,vvoo1,vvoo3)
+      off = JPVOXX(desrep) + 1
+      n1 = MVO(desrep)
+      if(carith) then
+        call conjuga(n1,dvox(off),1)
+        call conjuga(n1,dvoy(off),1)
+        call conjuga(n1,dvoz(off),1)
+      endif
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOOV(desrep) + 1
-      off2 = JPOVXX(desrep) + 1
+      off1 = JVOVO(desrep) + 1
+      off2 = JPVOXX(desrep) + 1
       M=MVO(desrep)
-      K=MOV(desrep)
-      write(*,*) 'off1,off2,M,K',off1,off2,M,K
-      CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
-     &            dovx(off2),1,A0,faipx,1)
-      CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
-     &            dovy(off2),1,A0,faipy,1)
-      CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
-     &            dovz(off2),1,A0,faipz,1)
-!     n1 = M * K
-!     do i=1,n1
-!       write(*,*) 'vvoo3::',i,vvoo3(off1 + i -1)
-!     enddo
+      K=MVO(desrep)
+      CALL XGEMV ('N',M,K,-A1,vvoo3(off1),M,
+     &            dvox(off2),1,A0,faipx,1)
+      CALL XGEMV ('N',M,K,-A1,vvoo3(off1),M,
+     &            dvoy(off2),1,A0,faipy,1)
+      CALL XGEMV ('N',M,K,-A1,vvoo3(off1),M,
+     &            dvoz(off2),1,A0,faipz,1)
+      if(carith) then
+        call conjuga(n1,dvox(off),1)
+        call conjuga(n1,dvoy(off),1)
+        call conjuga(n1,dvoz(off),1)
+      endif
 !
 ! add result on top of the final arrays
 !
@@ -473,16 +449,6 @@
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
-!     do i=1,n1
-!       if(carith) then
-!         write(*,'(A,4F16.6)') 'faipy,faity:',
-!    &          faipy(2*i-1),faipy(2*i),
-!    &          real(faity(i)),aimag(faity(i))
-!       else
-!         write(*,'(A,3F16.6)') 'faipy,faity:',faipy(i),
-!    &          real(faity(i)),aimag(faity(i))
-!       endif
-!     enddo
 !
 !  calculate corresponding 0th + 1st order TMs
 !
@@ -491,8 +457,7 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
-!
-!
+
 !
 !  enter calculation for second-order contributions
 !
@@ -933,29 +898,30 @@
 !------  F_ai(2,5), a DOV contribution
 !-------------------------------------
 !
-!  v_b>c,k>j  --->  -v_b>c,j>k  (RCA_NEGATE) vvoo1 --> -vvoo1
-!  -v_b>c,j>k  --->  -v_bj,ck   (SRT1TT4) -vvoo1 --> vvoo3
-!  negate vvoo1 again in order to restore original values.
-
-      n1 = ivvoott(nrep+1) 
-      CALL RCA_NEGATE(n1,vvoo1)
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
-     &              MVO,JVOVO,JJVO,JJVO,vvoo1,vvoo3)
-      CALL RCA_NEGATE(n1,vvoo1)
-
 !  read Vaj,bi ---> Vai,bj (SRT16) (vovo1 ---> vovo2)
-!  in special symmetry contraction loop. Buffer not yet allocated.
-
+!
       n1 = max(ivovo(nrep+1),jvovo(nrep+1))
       allocate(vovo1(n1*rcw),stat=ialloc)
         if(ialloc.ne.0)  call quit('vovo allocation problem (tramo)')
       allocate(vovo2(n1*rcw),stat=ialloc)
         if(ialloc.ne.0)  call quit('vovo allocation problem (tramo)')
+      allocate(vovo3(n1*rcw),stat=ialloc)
+        if(ialloc.ne.0)  call quit('vovo allocation problem (tramo)')
       CALL getvovo(vovo1)
       CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
      &            vovo1,vovo2)
+!
+!  v_b>c,k>j  --->  -v_b>c,j>k  (RCA_NEGATE) vvoo1 --> -vvoo1
+!  -v_b>c,j>k  --->  -v_bj,ck   (SRT1TT4) -vvoo1 --> vovo1
+!  negate vvoo1 again in order to restore original values.
 
-!  contract Vai,bj (vovo2) and -v_bj,ck (vvoo3) to Aai,ck (vovo1)
+      n1 = ivvoott(nrep+1) 
+      CALL RCA_NEGATE(n1,vvoo1)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
+     &              MVO,JVOVO,JJVO,JJVO,vvoo1,vovo1)
+      CALL RCA_NEGATE(n1,vvoo1)
+
+!  contract Vai,bj (vovo2) and -v_bj,ck (vovo1) to Aai,ck (vovo3)
 !  Aai,ck  attains  <||>,<||>  BKC  structure
 
       OFF1 = 1
@@ -965,54 +931,60 @@
          M = MVO(IREP)
          N = MVO(IREP)
          K = MVO(JREP)
-         OFF2 = J2VOVO(JREP) * RCW + 1
-         CALL XGEMM ('N','N',M,N,K,A1,vovo2(OFF1),M,vvoo3(OFF2),K,
-     &               A0,vovo1(OFF3),M)
+         OFF2 = JVOVO(JREP) * RCW + 1
+         CALL XGEMM ('N','N',M,N,K,A1,vovo2(OFF1),M,vovo1(OFF2),K,
+     &               A0,vovo3(OFF3),M)
          OFF1 = OFF1 + M * K * RCW
          OFF3 = OFF3 + M * N * RCW
       ENDDO
 
-!  backsort Aai,ck  <||>,<||>, vovo1 
+!  backsort Aai,ck  <||>,<||>, vovo3 
 !      to Bac,ik (vvoo3)  (1TT4 inverse)
 !  Bac,ik again attains <|<|, |>|> structure.
 !  divide Bac,ik by the energy denominator (denomvvoo).
 !  results in b_a>c,i>k (vvoo3).
+!  Afterwards do a forward sort to C_ai_ck (vovo1) 
+!  and contract with
+!  the D_kc integrals
 
       vvoo3 = 0.0d0
       CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,
-     &              MVO,JVOVO,JJVO,JJVO,vovo1,vvoo3)
+     &              MVO,JVOVO,JJVO,JJVO,vovo3,vvoo3)
       CALL DENOMVVOO (eps,vvoo3,vvoo3)
-      deallocate(vovo1,vovo2)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
+     &              MVO,JVOVO,JJVO,JJVO,vvoo3,vovo1)
 
 !  sort ba>c,i>k (vvoo3) to bac,i>k (vvoo4)
 !  and bac,i>k (vvoo4) ---> bai,kc (vvoo3) (SRT20_NTS)
 !  In the last array, nontotally symmetric contributions are required
 !  due to the existence of NTS property integrals.
 
-      CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
-     &              vvoo3,vvoo4)
-      CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-     &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
+!     CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
+!    &              vvoo3,vvoo4)
+!     CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
+!    &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
 
 !  contract bai,kc (vvoo3)  and Dkc over corresponding symmetry
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOOV(desrep) + 1
-      off2 = JPOVXX(desrep) + 1
+      off1 = JVOVO(desrep) + 1
+      off2 = JPVOXX(desrep) + 1
       M=MVO(desrep)
-      K=MOV(desrep)
-      CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
-     &            dovx(off2),1,A0,faipx,1)
-      CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
-     &            dovy(off2),1,A0,faipy,1)
-      CALL XGEMV ('N',M,K,A1,vvoo3(off1),M,
-     &            dovz(off2),1,A0,faipz,1)
+      K=MVO(desrep)
+      CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
+     &            dvox(off2),1,A0,faipx,1)
+      CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
+     &            dvoy(off2),1,A0,faipy,1)
+      CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
+     &            dvoz(off2),1,A0,faipz,1)
 
       n1 = MVO(desrep)
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
+
+      deallocate(vovo1,vovo2)
 
       iorder='0th + 1st + 2ndABC + 2,5'
       CALL TM_GEN(ioch,desrep,incsat,iorder,
@@ -1021,6 +993,7 @@
      &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,5) finished'
+      call quit('Temporary stop')
 !
 !-------------------------------------
 !------  F_ai(2,6): a DOV contribution
