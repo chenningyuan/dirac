@@ -217,6 +217,82 @@ C|__________________________________________________________
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE DENOMVOVO(EPS,T)
+ 
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+! Divides the <a|i><b|j> integral stream by the corresponding
+! denominators e_a - e_i + e_b - e_j.
+! The stream has JVOVO organization.
+!
+!---------------Calling variables--------------------------------------
+!
+      REAL*8,dimension(:)              :: EPS
+      REAL*8,dimension(:)              :: T
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "../relccsd/symm.inc"
+#include "../relccsd/complex.inc"
+!
+!---------------Local variables--------------------------------------
+!
+      REAL*8 EA,EI,EB,EJ
+      COMPLEX*16 CFAC
+!
+!---------------Executable code--------------------------------------
+!
+      AIBJ = 0
+
+      DO BJREP = 1, NREP   !bosonic irep
+        DO 10 JREP = 1, NREP   !fermionic irep
+          JOFF = IO(JREP)
+          BREP = MULTB(JREP,BJREP+NREP,2)
+          BOFF = IO(NREP+1) + IV(BREP)
+          DO J = 1, NO(JREP)
+            JJ = JOFF + J
+            EJ = eps(JJ)
+            DO B = 1, NV(BREP)
+               BB = BOFF + B
+               EB = eps(BB)
+               DO 20 IREP = 1, NREP
+                 IOFF = IO(IREP)
+                 AREP = MULTB(IREP,BJREP+NREP,2)
+                 AOFF = IO(NREP+1) + IV(AREP)
+                 DO I = 1, NO(IREP)
+                   II = IOFF + I
+                   EI = eps(II)
+                   DO A = 1, NV(AREP)
+                     AA = AOFF + A
+                     EA = eps(AA)
+
+                     AIBJ = AIBJ + 1
+                     IF (CARITH) THEN
+                        stop 'complex not yet available'
+                     ELSE
+                        T(AIBJ) = T(AIBJ)/(EA+EB-EI-EJ)
+                     ENDIF
+
+                   ENDDO !A
+                 ENDDO !I
+ 20           ENDDO  !IREP
+            ENDDO  !B
+          ENDDO  !J
+ 10     ENDDO !JREP
+      ENDDO  !BJREP
+
+      IF((AIBJ).ne.JVOVO(nrep+1)) Then
+        write(*,*) 'Consistency error in DENOMVOVO.'
+        write(*,*) 'Counter:',AIBJ
+        write(*,*) 'Required value:',JVOVO(nrep+1)
+        stop
+      ENDIF
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMVOTS(eps,aak)
  
       IMPLICIT INTEGER (A-Z)
