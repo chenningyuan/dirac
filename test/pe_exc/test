@@ -25,6 +25,7 @@ f.add(from_string  = '-> dipole oscillator strength (velocity)',
 
 test.run(['pe-dc-exc.inp'], ['lih.mol'], args='--put peqm.pot')
 test.run(['pe-sf-exc.inp'], ['lih.mol'], f, args='--put peqm.pot')
+test.run(['pe-x2c-exc.inp'], ['lih.mol'], f, args='--put peqm.pot')
 test.run(['pe-eef-dc-exc.inp'], ['lih.mol'], f, args='--put peqm.pot')
 test.run(['pe-dc-gspol-exc.inp'], ['lih.mol'], f, args='--put peqm.pot')
 test.run(['pe-dc-exc-pbe0.inp'], ['lih.mol'], f, args='--put peqm.pot')
