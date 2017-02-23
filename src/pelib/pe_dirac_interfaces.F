@@ -47,35 +47,35 @@
         end if
       end function pelib_ifc_dolf
 
-      subroutine pe_ifc_input_reader(word)
+      subroutine pelib_ifc_input_reader(word)
         use pe_variables, only: peqm
         use polarizable_embedding, only: pe_input_reader
 #include "priunit.h"
         character(len=7), intent(inout) :: word
-        call qenter('pe_ifc_input_reader')
+        call qenter('pelib_ifc_input_reader')
         peqm = .true.
         call pe_input_reader(word, lucmd)
-        call qexit('pe_ifc_input_reader')
-      end subroutine pe_ifc_input_reader
+        call qexit('pelib_ifc_input_reader')
+      end subroutine pelib_ifc_input_reader
 
-      subroutine pe_ifc_init()
+      subroutine pelib_ifc_init()
         use polarizable_embedding, only: pe_init
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-        call qenter('pe_ifc_init')
+        call qenter('pelib_ifc_init')
         call pe_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
-        call qexit('pe_ifc_init')
-      end subroutine pe_ifc_init
+        call qexit('pelib_ifc_init')
+      end subroutine pelib_ifc_init
 
-      subroutine pe_ifc_finalize()
+      subroutine pelib_ifc_finalize()
         use polarizable_embedding, only: pe_finalize
-        call qenter('pe_ifc_finalize')
+        call qenter('pelib_ifc_finalize')
         call pe_finalize()
-        call qexit('pe_ifc_finalize')
-      end subroutine pe_ifc_finalize
+        call qexit('pelib_ifc_finalize')
+      end subroutine pelib_ifc_finalize
 
-      subroutine pe_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
+      subroutine pelib_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
         use polarizable_embedding, only: pe_master
         implicit none
 #include "priunit.h"
@@ -89,7 +89,7 @@
         real*8, dimension(:), allocatable :: fspmat
         real*8, external :: ddot
 
-        call qenter('pe_ifc_fock')
+        call qenter('pelib_ifc_fock')
 
         allocate(dspmat(nnbbasx))
         allocate(fspmat(nnbbasx))
@@ -171,18 +171,18 @@
 
         deallocate(dspmat,fspmat)
 
-        call qexit('pe_ifc_fock')
+        call qexit('pelib_ifc_fock')
 
-      end subroutine pe_ifc_fock
+      end subroutine pelib_ifc_fock
 
-      subroutine pe_ifc_energy(dmat)
+      subroutine pelib_ifc_energy(dmat)
         use polarizable_embedding, only: pe_master
 #include "dcbbas.h"
         real*8, dimension(n2bbasx), intent(in) :: dmat
         integer :: i, j, k, l
         real*8, dimension(1) :: nrg
         real*8, dimension(:), allocatable :: dspmat
-        call qenter('pe_ifc_energy')
+        call qenter('pelib_ifc_energy')
         allocate(dspmat(nnbbasx))
         dspmat = 0.0d0
 
@@ -220,11 +220,11 @@
      &                 nmats=1,
      &                 denmats=dspmat)
 
-        call qexit('pe_ifc_energy')
+        call qexit('pelib_ifc_energy')
 
-      end subroutine pe_ifc_energy
+      end subroutine pelib_ifc_energy
 
-      subroutine pe_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
+      subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
         use polarizable_embedding, only: pe_master
 !!     Written by: Erik Donovan Hedegård (edh) 
 !!     Purpose   : Calculate dynamical pe response part and add it to the
@@ -248,7 +248,7 @@
         real*8, dimension(:), allocatable :: dlmat_triangle 
         real*8, dimension(:), allocatable :: flmat_triangle
 
-        call qenter('pe_ifc_response')
+        call qenter('pelib_ifc_response')
 
         write(lupri,*)'*** Calculate dynamical PE response'
         allocate(dlmat_triangle(nnbbasx*ndmat))
@@ -344,9 +344,9 @@
         end do
         deallocate(dlmat_triangle, flmat_triangle)
 
-        call qexit('pe_ifc_response')
+        call qexit('pelib_ifc_response')
 
-      end subroutine pe_ifc_response
+      end subroutine pelib_ifc_response
       subroutine pelib_ifc_london(fckmats)
           use polarizable_embedding, only: pe_master
 #include "inforb.h"

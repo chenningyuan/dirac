@@ -333,11 +333,10 @@ CJTH check this
 #ifdef HAS_PELIB
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
-! before starting a response calculation from DFCOEF(!)
+! before starting a response calculation from DFCOEF
       IF (PEQM) THEN
-        !write(lupri,*)'PEQM activated? : ', PEQM
         call genden(fao, cmo, 1, iprint)
-        call pe_ifc_fock(fao, fmo, tot_nrg, el_nrg)
+        call pelib_ifc_fock(fao, fmo, tot_nrg, el_nrg)
       ENDIF
 #endif 
 

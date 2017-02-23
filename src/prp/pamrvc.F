@@ -4174,9 +4174,7 @@ C
 #ifdef HAS_PELIB
         if (pe_gspol) write(lupri,*)'Dynamical response is disabled'
         if (peqm .and. .not. pe_gspol) then
-           call pe_ifc_response(fao, fmo, ndmat, ihrmop)
-!          CALL PRQMAT(FAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-!    &                 1,(/1, 2, 3, 4/),LUPRI)
+           call pelib_ifc_response(fao, fmo, ndmat, ihrmop)
         endif
 #endif
  

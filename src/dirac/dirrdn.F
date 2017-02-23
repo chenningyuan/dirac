@@ -211,7 +211,7 @@ C     Initialize PE library
 C
 #ifdef HAS_PELIB
       IF (PEQM) THEN
-        CALL PE_IFC_INIT()
+        CALL PELIB_IFC_INIT()
       END IF
 #endif
 !     this is the new input reader
@@ -6583,7 +6583,7 @@ CMI  ... reading input routine for AMFI+RELSCF
 !       *PEQM
    11 CONTINUE
 #ifdef HAS_PELIB
-        CALL PE_IFC_INPUT_READER(WORD)
+        CALL PELIB_IFC_INPUT_READER(WORD)
 #else
         CALL QUIT('ERROR for *PEQM: PE library not enabled.')
 #endif

@@ -1437,7 +1437,7 @@ C
          IF (PEQM) THEN
             IF (IPRSCF >= 1) WRITE(LUPRI,'(A)') '* Calling PE library'
             PE_TIME = SECOND()
-            CALL PE_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
+            CALL PELIB_IFC_FOCK(DMAT, FOCK, PE_TOT_NRG, PE_EL_NRG)
             PE_TIME = SECOND() - PE_TIME
          END IF
 #endif
@@ -1881,8 +1881,8 @@ C
         ! Therefore we subtract it contribution from the total PE energy.
         ALLOCATE(PE_FMAT(N2BBASX))
         E_PE = 0.0D0
-        CALL PE_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
-        IF (IPRSCF >= 1) CALL PE_IFC_ENERGY(DMAT)
+        CALL PELIB_IFC_FOCK(DMAT, PE_FMAT, PE_TOT_NRG, PE_EL_NRG)
+        IF (IPRSCF >= 1) CALL PELIB_IFC_ENERGY(DMAT)
         DHFERG = DHFERG + PE_TOT_NRG - 0.5d0 * PE_EL_NRG
         E_PE = PE_TOT_NRG 
         DEALLOCATE(PE_FMAT)
