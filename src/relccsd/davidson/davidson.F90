@@ -1292,6 +1292,8 @@ contains
         if ( nroots .gt. vectors_N ) then 
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
            return 
+        else if ( nroots .eq. vectors_N ) then
+           write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
         endif
 
         b => b_guess

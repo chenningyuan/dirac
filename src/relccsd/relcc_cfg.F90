@@ -122,6 +122,7 @@ module relcc_cfg
   logical, public :: relcc_mfd_verbose = .false.
   logical, public :: relcc_mfd_trial_diagonal = .true.
   logical, public :: relcc_mfd_trial_ccs = .false. 
+  logical, public :: relcc_mfd_trial_full_matrix = .false.
 ! will add filenames etc here too
 
 ! Information relevant for the (Intermediate Hamiltonian) Fock space calculations
@@ -234,6 +235,7 @@ contains
   call interface_mpi_bcast_l0(relcc_mfd_verbose            ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_trial_diagonal     ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_trial_ccs          ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_mfd_trial_full_matrix  ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)

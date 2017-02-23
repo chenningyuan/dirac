@@ -53,7 +53,7 @@
           call quit('Specifying more than one EOM kind of calculation at a time (IP/EE/EA)  not allowed !') 
 
      do state_sym = 1, nrep 
-        if (relcc_eom_nroots(state_sym).gt.0) then
+        if (relcc_eom_nroots(state_sym).ne.0) then
 ! checking whether or not, for ip/ea, we can actually ask for this many roots 
 !
 ! we choose to restrict the number of roots one cas ask for in the eom-ee/ip/ea calculationsnos to
@@ -69,6 +69,8 @@
                 if (relcc_eom_nroots(state_sym).gt.no(state_sym)) then
                    relcc_eom_nroots(state_sym) = no(state_sym)
                    reset_roots_in_symmetry = .true.
+                else if (relcc_eom_nroots(state_sym).eq.-1) then
+                   reset_roots_in_symmetry = .true.
                 else
                    reset_roots_in_symmetry = .false.
                 end if
@@ -76,12 +78,16 @@
                 if (relcc_eom_nroots(state_sym).gt.nv(state_sym)) then
                     relcc_eom_nroots(state_sym) = nv(state_sym)
                    reset_roots_in_symmetry = .true.
+                else if (relcc_eom_nroots(state_sym).eq.-1) then
+                   reset_roots_in_symmetry = .true.
                 else
                    reset_roots_in_symmetry = .false.
                 end if
              case ('EE')
                 if (relcc_eom_nroots(state_sym).gt.nvo(state_sym)) then
                     relcc_eom_nroots(state_sym) = nvo(state_sym)
+                   reset_roots_in_symmetry = .true.
+                else if (relcc_eom_nroots(state_sym).eq.-1) then
                    reset_roots_in_symmetry = .true.
                 else
                    reset_roots_in_symmetry = .false.
@@ -221,15 +227,21 @@
       ENDDO
 !aspg+as
 
+      if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 
-!if (nroot.eq.(ndimr1+ndimr2)) then
-!    do iroot = 1, ndimr1
-!        R1(iroot,iroot) = 1.0d0
-!    end do
-!    do iroot = 1, ndimr2
-!        R2(iroot,ndimr1+iroot) = 1.0d0
-!    end do
-!end if
+          do i = 1, ndimr1
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R1(iroot,jroot) = 1.0d0
+          end do
+          do i = 1, ndimr2
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R2(iroot,ndimr1+jroot) = 1.0d0
+         end do
+      end if
 
       if (relcc_mfd_trial_ccs) then
           print *, '  Using eigenvalues of singles-singles block as trial vectors'
@@ -237,10 +249,12 @@
           allocate (R1_dum(ndimr1*rcw,ndimr1))
           R1_dum = 0.0d0
 
+          
           do i = 1, ndimr1
-              iroot = 2*i - 1
+              iroot = i 
+              if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
-              R1_dum(iroot,iroot) = 1.0d0
+              R1_dum(iroot,jroot) = 1.0d0
           end do
 
           call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
@@ -328,6 +342,22 @@
       ENDDO
       ENDDO
       ENDDO
+
+      if (relcc_mfd_trial_full_matrix) then
+! New trial vectors for R1 
+          do i = 1, ndimr1
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1 
+              jroot = i 
+              R1(iroot,jroot) = 1.0d0
+          end do
+          do i = 1, ndimr2
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1 
+              jroot = i 
+              R2(iroot,ndimr1+jroot) = 1.0d0
+         end do
+      end if
 
       if (relcc_mfd_trial_ccs) then
           print *, '  Using eigenvalues of singles-singles block as trial vectors'
@@ -444,6 +474,21 @@
       ENDDO
       ENDDO
 
+      if (relcc_mfd_trial_full_matrix) then
+! New trial vectors for R1 
+          do i = 1, ndimr1
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R1(iroot,jroot) = 1.0d0
+          end do
+          do i = 1, ndimr2
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R2(iroot,ndimr1+jroot) = 1.0d0
+         end do
+      end if
 
       if (relcc_mfd_trial_ccs) then
           print *, '  Using eigenvalues of singles-singles block as trial vectors'
@@ -1574,7 +1619,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
        call create_eom_ndet(2)
        nroot = relcc_eom_nroots(state_sym)
 
-       if (nroot.gt.0) then
+       if (nroot.ne.0) then
           write (iw,*) ""
           write (iw,'(2x,A42,2x,I3)') "Solving "//left_or_right(1:3)//" EOM-"//eomtype(1:2)//" equations for symmetry",state_sym
 !         write (iw,'(2x,A,2x,I3)') "Solving EOM-"//eomtype(1:2)//" equations for symmetry",state_sym
@@ -1593,6 +1638,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
              call set_eom_ndet(1, ndimr1)
              call set_eom_ndet(2, ndimr2)
+
+             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
 
              N1 = ndimr1*rcw
              N2 = ndimr2*rcw
@@ -1657,6 +1704,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              call set_eom_ndet(1, N1)
              call set_eom_ndet(2, N2)
 
+             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
+
              allocate (trial_vector(N,nroot), stat = AllocateStatus)
              IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
              allocate (B%H_II(N)) 
@@ -1712,6 +1761,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
              call set_eom_ndet(1, ndimr1)
              call set_eom_ndet(2, ndimr2)
+
+             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
 
              allocate (trial_vector(N*rcw,nroot))
              allocate (B%H_II(N*rcw)) 
