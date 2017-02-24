@@ -12,6 +12,7 @@
     public sigma_ee_1h1p
     public sigma_IP
     public lambda_IP
+    public lambda_EE
     public sigma_EA
     public IM_container
     public create_sigma_vector_left
@@ -265,12 +266,12 @@
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
                 write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EE sigma vector ",iroot," out of ",L
-!               call Lambda_ee(r(start_r1:end_r1, iroot:iroot), &
-!                &                  r(start_r2:end_r2, iroot:iroot), & 
-!                &                  A,                               &
-!                &                  create_sigma_vector_left(start_r1:end_r1, iroot:iroot), &
-!                &                  create_sigma_vector_left(start_r2:end_r2, iroot:iroot), &
-!                &                  nbuf3)
+                call Lambda_ee(r(start_r1:end_r1, iroot), &
+                 &                  r(start_r2:end_r2, iroot), & 
+                 &                  A,                               &
+                 &                  create_sigma_vector_left(start_r1:end_r1, iroot), &
+                 &                  create_sigma_vector_left(start_r2:end_r2, iroot), &
+                 &                  nbuf3)
 
              enddo
       end select
@@ -493,7 +494,7 @@ integer :: nbuf3,ierr
 !---------------Local Variables--------------------
   real(8), allocatable :: tau(:)
   real(8), pointer     :: r1_ptr(:),r2_ptr(:)
-  real(8), allocatable :: int_1b(:),sigma2_temp(:),ResL2_temp(:),w_vvvv(:),local_buffer(:) 
+  real(8), allocatable :: int_1b(:),sigma2_temp(:),lambda2_temp(:),w_vvvv(:),local_buffer(:) 
   integer :: off1,off2,irp,istart,mint,m,n,k,nint
   integer :: off3,i,j,kstart,ntot,ierr
   logical :: done 
@@ -1101,6 +1102,8 @@ integer :: nbuf3,ierr
      call contraction_222 ((/"o2","c1"/),(/"o1","o2"/),(/"o1","c1"/), &
   &    L1_ptr,B%Fbar_mi,lambda1,-1.0d0,1.0d0,nrep)
 
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 1 ', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
 
 !-----------------------------------------------------
 ! L(i,a*) = L(i,a*) -  L2(mn,a*e)*W(ie,mn)
@@ -1115,6 +1118,10 @@ integer :: nbuf3,ierr
   &          (/"o1","c1"/),lambda1,-1.0d0,1.0d0,nrep,RightTensor=L2_ptr,  &
   &          LeftTensor=B%W_iemn)
 
+
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 2 ', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
+
 !-------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2 (ij,a*e)*f_bar_ae(e,b)
 !-------------------------------------------------
@@ -1122,6 +1129,10 @@ integer :: nbuf3,ierr
      call contraction_424 ((/"o1","o2","c1","p3"/),(/"p3","p2"/), &
    &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,LeftTensor=L2_ptr, &
    &    RightTensor=B%Fbar_ae)
+
+
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 3 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
 !----------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) - P(ij) L2 (im,a*b)*f_bar_im (j,m)
@@ -1131,6 +1142,9 @@ integer :: nbuf3,ierr
      &    (/"o1","o2","c1","p2"/),lambda2,-1.0d0,1.0d0,nrep, &
      &    LeftTensor=L2_ptr,RightTensor=B%Fbar_mi)
 
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 4 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2(mn,a*b) * W_ijmn(ij,mn)
 !--------------------------------------------------------
@@ -1139,6 +1153,8 @@ integer :: nbuf3,ierr
    &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,RightTensor=L2_ptr,LeftTensor=B%W_ijmn)
 
 
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 5 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + P(ij) L2(im,a*e) * W_bmej(je,bm)
 !--------------------------------------------------------
@@ -1147,6 +1163,8 @@ integer :: nbuf3,ierr
     &    1.0d0,0.0d0,nrep,righttensor=B%W_mbej,LeftTensor=L2_ptr)
 
 
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 6 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 !---------------------------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L1(m,a*) * w_mnie(ij,mb)
 !---------------------------------------------------------------------------
@@ -1156,6 +1174,8 @@ integer :: nbuf3,ierr
     &   LeftTensor=B%W_mnie)
 
 
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 7 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 !---------------------------------------------------------------
 !  G (e,a*)  = G(e,a*) + L2(mn,a*f) * t2(ef,mn) 
 !  L(ij,a*b) = L(ij,a*b) + V(ij,eb)*G (e,a*)  
@@ -1168,21 +1188,292 @@ integer :: nbuf3,ierr
 
      G = 0.0d0
 
-     call contraction_442((/"o3","o4","c1","p4"/),(/"p3","p4","o3","o4" &
-    &          /),(/"p3","c1"/),G,-1.0d0,1.0d0,nrep,LeftTensor=L2_ptr,  &
-    &          RightTensor=B%t2)
+     call contraction_442((/"p3","p4","o3","o4"/),(/"o3","o4","c1","p4"/),(/"p3","c1"/),G,-1.0d0,1.0d0,nrep,LeftTensor=B%t2,  &
+    &          RightTensor=L2_ptr)
 
      call contraction_424 ((/"o1","o2","p3","p2"/),(/"p3","c1"/), &
     &        (/"o1","o2","c1","p2"/),Lambda2,1.0d0,1.0d0,nrep,RightTensor=G)
 
     deallocate(G)
 
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 8 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
+
      call dealloc_array(e)
 
-   call lambda2_disconnected_IP(L1,B%Fbar_me,lambda2)
+      call lambda2_disconnected_IP(L1_ptr,B%Fbar_me,lambda2)
 
+       if (iprnt.ge.0) &
+    write(iw,*)'diagram 9 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
 
  end subroutine
+
+   subroutine Lambda_EE(l1,l2,B,lambda1,lambda2,nbuf3)
+  use intermediates_1b_2b 
+  use symmetry_offset
+  use lambda_equation  
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "inpt.inc"
+#include "ccpar.inc"
+
+!---------------Description--------------------------------------------
+!     Calculates 2h2p and 1h1p type sigma vectors for Excitation energy
+!-----------------------------------------------------------------------
+
+!---------------Calling variables--------------------------------------
+  real(8), intent(in),contiguous,target   :: L1(:), L2(:) ! R-Amplitudes
+  type(intermediates), intent(in)  :: B      
+  real(8), intent(inout),contiguous :: lambda1(:),lambda2(:)  ! sigma-vectors
+  integer, intent(in) :: nbuf3
+!---------------Local Variables--------------------
+  real(8), pointer,contiguous :: l1_ptr(:),l2_ptr(:)
+  real(8), allocatable :: int_oo(:), G_vv(:), G_oo(:) 
+  real(8), allocatable :: w_vvvv(:),tau(:) 
+  real(8)              :: ddot
+  logical              :: done
+  integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
+  integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1
+  type(Offset)         :: e
+!--------------------------------------------------
+! l1_ptr(1:ndiml1) => l1
+! l2_ptr(1:ndiml2) => l2
+
+     allocate(G_vv(nfvv*rcw))
+     allocate(G_oo(nfoo*rcw))
+
+      G_vv = 0.0d0
+      G_oo = 0.0d0
+
+       call G_intm (B%t2,l2,G_vv,G_oo)
+       call getoovv (lambda2)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda2 after initialization',dot_product(lambda2,lambda2)
+!-------------------------------------------------
+!   term1 : lambda2 = lambda2 + P(ab) L2 (ij,ae)*f_bar_ae(e,b)
+!-------------------------------------------------
+
+       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/), &
+     &    (/"o1","o2","p1","p2"/),lambda2,1.0d0,1.0d0,nrep,LeftTensor=L2, &
+     &    RightTensor=B%Fbar_ae)
+
+       if (iprnt.ge.1) &
+
+     & write(iw,*)'lambda2 after term1',dot_product(lambda2,lambda2)
+!----------------------------------------------
+!   term2 : lambda2 = lambda2 - P(ij) L2 (im,ab)*f_bar_im (j,m)
+!----------------------------------------------
+
+       call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/), &
+     &    (/"o1","o2","p1","p2"/),lambda2,-1.0d0,1.0d0,nrep, &
+     &    LeftTensor=L2,RightTensor=B%Fbar_mi)
+
+       if (iprnt.ge.1) &
+
+     & write(iw,*)'lambda2 after term2',dot_product(lambda2,lambda2)
+!--------------------------------------------------------
+!   term3 : lambda2 = lambda2 + L2(mn,ab) * W_ijmn(ij,mn)
+!--------------------------------------------------------
+
+      call contraction_444((/"o1","o2","o3","o4"/),(/"o3","o4","p1","p2"/), &
+     &    (/"o1","o2","p1","p2"/),lambda2, &
+     &    1.0d0,1.0d0,nrep,RightTensor=L2,LeftTensor=B%W_ijmn)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda2 after term3', dot_product(lambda2,lambda2)
+
+!--------------------------------------------------------
+!   term4 : lambda2 = lambda2 + P(ij)P(ab) L2(im,ae) * W_bmej(je,bm)
+!--------------------------------------------------------
+
+      call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),lambda2, &
+     &    1.0d0,0.0d0,nrep,righttensor=B%W_mbej,LeftTensor=L2)
+
+!-----------------------------------------------------------
+!   term5 : lambda2 = lambda2 + P(ab) V(ij,ae)*G_vv(e,b)
+!-----------------------------------------------------------
+
+      call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/), &
+     &        (/"o1","o2","p1","p2"/),lambda2,1.0d0,1.0d0,nrep,RightTensor=G_vv)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda2 after term5',dot_product(lambda2,lambda2)
+
+!---------------------------------------------------------------------------
+!     term6: L2(ij,ab) = L2(ij,ab) + L1(m,a) * w_mnie(ij,mb)
+!---------------------------------------------------------------------------
+
+      call contraction_424 ((/"o1","o2","o3","p2"/),(/"o3","p1"/), &
+     &   (/"o1","o2","p2","p1"/),lambda2,-1.0d0,-1.0d0,nrep,RightTensor=L1, &
+     &   LeftTensor=B%W_mnie)
+
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda2 after term6',dot_product(lambda2,lambda2)
+!--------------------------------------------------------------------
+!    term7 : lambda2 = lambda2 - P(ij) V(im,ab)*(G_oo(j,m)+L1(j,e)*t(e,m))
+!--------------------------------------------------------------------
+
+      call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/), &
+     &        (/"o1","o2","p1","p2"/),lambda2,-1.0d0, &
+     &        1.0d0,nrep,RightTensor=G_oo)
+
+      allocate(int_oo(IOO(NREP+1)*rcw))
+
+      int_oo = 0.0d0
+
+      call contraction_222((/"o1","p3"/),(/"p3","o3"/),(/"o1","o3"/),L1, &
+     &        B%t1,int_oo,1.0d0,1.0d0,nrep)
+
+      call contraction_424 ((/"o3","o2","p1","p2"/),(/"o1","o3"/), &
+     &        (/"o1","o2","p1","p2"/),lambda2,-1.0d0, &
+     &        1.0d0,nrep,RightTensor=int_oo)
+
+      deallocate(int_oo)
+
+      if (iprnt.ge.1) &
+
+      & write(iw,*)'lambda2 after term7',dot_product(lambda2,lambda2)
+
+!-------------------------------------------------------------------------
+!   term 8 : lambda2 = lambda2 + expression to be typed
+!-------------------------------------------------------------------------
+
+     call contraction_244 ((/"o1","p3"/),(/"p3","o2","p1","p2"/), &
+    &  (/"o1","o2","p1","p2"/),lambda2,1.0d0,1.0d0,nrep,LeftTensor=L1)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda2 after term8',dot_product(lambda2,lambda2)
+!-------------------------------------------------------------------------
+!   term 9 : lambda2 = lambda2 + P(ij)P(ab) L1(i,a)*f_bar_me(j,b)
+!-------------------------------------------------------------------------
+
+      call lambda2_disconnected(l1,B%Fbar_me,lambda2)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda2 after term9',dot_product(lambda2,lambda2)
+
+!--------------------------------------------------------
+!    term 10 : lambda2 = lambda2 + L2(ij,ef) * W_vvvv(ef,ab)
+!--------------------------------------------------------
+
+      allocate(tau(ndimt2*rcw))
+      call gettau(B%t1,B%t2,tau)
+      off2 = 1
+      off1 = 1
+      do irp = 1, nrep
+         istart = 0
+         if (nvvt(irp).eq.0) cycle
+         mint = nbuf3/nvvt(irp)
+ 10      kstart = istart
+         if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
+         ntot = idist(2,1,irp)
+         nint = min0(mint,ntot-kstart)
+
+         allocate(w_vvvv(nvvt(irp)*nint*rcw))
+
+         call getdz (irp,istart,nint,done,w_vvvv,nbuf3)
+
+         n = nvvt(irp)
+         m = noot(irp)
+         k = nint
+         call xgemm ('n','n',m,k,n,A1,l2(off1),m, &
+     &           w_vvvv,n,a1,lambda2(off2+istart*m*rcw),m)
+
+         deallocate(w_vvvv)
+         if (.not.done) then
+            istart = istart + nint
+            goto 10
+         endif
+         off2 = off2 + m * n * rcw
+         off1 = off1 + m * n * rcw
+       enddo
+
+       deallocate(tau)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda2 after term10',dot_product(lambda2,lambda2)
+
+
+      call xcopy (ndimt1,B%Fbar_me,1,lambda1,1)
+
+     if (iprnt.ge.1) &
+     &   write(iw,*)'lambda1: init',dot_product(lambda1,lambda1)
+!---------------------------------
+!    lambda1 = lambda1 + L(i,e) * f_bar_ae(e,a)
+!---------------------------------
+
+       call contraction_222 ((/"o1","p2"/),(/"p2","p1"/),(/"o1","p1"/), &
+     &    L1,B%Fbar_ae,lambda1,1.0d0,1.0d0,nrep)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda1: after term1',dot_product(lambda1,lambda1)
+!----------------------------------------
+!    lambda1 = lambda1 - L(m,a)*f_bar_mi(i,m)
+!----------------------------------------
+
+        call contraction_222 ((/"o2","p1"/),(/"o1","o2"/),(/"o1","p1"/), &
+     &    L1,B%Fbar_mi,lambda1,-1.0d0,1.0d0,nrep)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda1: after term2',dot_product(lambda1,lambda1)
+!----------------------------------------------
+!      lambda1 = lambda1 - G(m,n) * W(mi,na)
+!      w_mina(mi,na) = w_mina(mi,na) + V(mi,fa)*t(f,n)
+!----------------------------------------------
+
+      call contraction_242 ((/"o3","o2"/),(/"o2","o1","o3","p1"/), &
+     & (/"o1","p1"/),G_oo,lambda1,-1.0d0,1.0d0,nrep,RightTensor=B%W_mnie)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda1: after term3',dot_product(lambda1,lambda1)
+!-------------------------------------------------
+!      lambda1 = lambda1 + L1(m,e) * W(ie,am)
+!-------------------------------------------------
+
+      call contraction_242 ((/"o2","p2"/),(/"o1","p2","p1","o2"/), &
+     &   (/"o1","p1"/),L1,lambda1,1.0d0,1.0d0,nrep,RightTensor=B%W_mbej)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda1 after term4',dot_product(lambda1,lambda1)
+!-----------------------------------------------------
+!       lambda1 = lambda1 -  L2(mn,ae)*W(ie,mn)
+!-----------------------------------------------------
+
+      call contraction_442((/"o2","o3","p1","p2"/),(/"o1","p2","o2","o3" &
+     &          /),(/"o1","p1"/),lambda1,-1.0d0,1.0d0,nrep,LeftTensor=L2,  &
+     &          RightTensor=B%W_iemn)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda1 after term5',dot_product(lambda1,lambda1)
+
+!-------------------------------------------------------
+!      lambda1    = lambda1 + L2(im,ef) * W(ef,am)
+!-------------------------------------------------------
+
+      call contraction_442((/"o1","o2","p2","p3"/),(/"p2","p3","p1","o2"/),(/"o1","p1"/),lambda1,1.0d0,1.0d0,nrep, &
+       &         LeftTensor=L2,RightTensor=B%W_efam)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda1 after term6',dot_product(lambda1,lambda1)
+
+!-------------------------------------------------------
+!    lambda1 = lambda1 - G(e,f) * V(ei,fa)
+!-------------------------------------------------------
+
+      call contraction_242 ((/"p3","p2"/),(/"p2","o1","p3","p1"/), &
+     &  (/"o1","p1"/),G_vv,lambda1,-1.0d0,1.0d0,nrep,RightTensor=B%W_amef)
+
+       if (iprnt.ge.1) &
+     & write(iw,*)'lambda1 after term7',dot_product(lambda1,lambda1)
+
+      deallocate(G_oo)
+      deallocate(G_vv)
+
+      end subroutine
 
 
    subroutine trial_vectors_ee (r1,Fbar_mi,Fbar_ae,W_mbej)
@@ -1349,7 +1640,7 @@ integer :: nbuf3,ierr
 
  end subroutine
 
-  subroutine lambda2_disconnected_IP(l1,f_bar,ResL2)
+  subroutine lambda2_disconnected_IP(l1,f_bar,lambda2)
 
 !---------------Description--------------------------------------------
 
@@ -1362,7 +1653,7 @@ integer :: nbuf3,ierr
 !---------------Calling variables--------------------------------------
 
       real*8, intent(in)    :: l1(*),f_bar(:)
-      real*8, intent(inout) :: ResL2(*)
+      real*8, intent(inout) :: lambda2(*)
 
 !---------------Local variables--------------------------------------
       integer :: ijaboff,abrep,arep,brep,a,b,amin,imin,i,j,ij,jb,ia,ja, &
@@ -1396,7 +1687,7 @@ integer :: nbuf3,ierr
               if (irep.eq.jrep) imin = j + 1
               ia = (e%twoNonDirac(irep,arep) + (a-1) * no(arep) + imin - 1)*rcw + 1 
               ni = no(irep) - imin + 1
-              call xaxpy (ni,f_bar(jb),l1(ia),1,resl2(ijaboff+ij),1)
+              call xaxpy (ni,f_bar(jb),l1(ia),1,lambda2(ijaboff+ij),1)
               ij = ij + ni * rcw
               jb = jb + rcw
            enddo
@@ -1414,7 +1705,7 @@ integer :: nbuf3,ierr
               ni = no(irep) - imin + 1
                L1min(1) = -l1(ja)
                if (carith) L1min(2) = -l1(ja+1)
-              call xaxpy (ni,L1min,f_bar(ib),1,resl2(ijaboff+ij),1)
+              call xaxpy (ni,L1min,f_bar(ib),1,lambda2(ijaboff+ij),1)
               ij = ij + ni * rcw
               ja = ja + rcw
            enddo

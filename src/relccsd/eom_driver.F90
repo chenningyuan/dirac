@@ -12,7 +12,7 @@
     private
 
     character(8) :: eomtype
-    integer :: nroot,state_sym
+    integer :: nroot,state_sym 
 
    contains
 
@@ -241,6 +241,8 @@
 !   deallocate(R1_dum)
 !end if
 
+
+
      allocate(diag_H(ndimr1))
      diag_H = H_II(1:ndimr1)
 
@@ -252,6 +254,7 @@
         R1(i,iroot) = 1.0d0
        enddo
      deallocate(diag_H)
+
 
    case ('IP')
 
@@ -453,7 +456,7 @@
    end subroutine
 
 
-   subroutine input_processor_left(Fbar_HH,Fbar_PP,Vbar_SS,L1,L2,H_II)
+   subroutine input_processor_left(Fbar_HH,Fbar_PP,Vbar_SS,eVectorsR,L1,L2,H_II)
 
   use symmetry_offset
 #include "symm.inc"
@@ -469,7 +472,7 @@
 !calling variables
 !================
 
-   real*8, intent(in)  :: Fbar_HH(:),Fbar_PP(:),Vbar_SS(:)
+   real*8, intent(in)  :: Fbar_HH(:),Fbar_PP(:),Vbar_SS(:),eVectorsR(:,:) 
    real*8, intent(inout) :: L1(:,:), L2(:,:) ! (ndimt1,nroot) and (ndimt2,nroot)
    real*8, intent(inout),target :: H_II(:)
 
@@ -494,6 +497,11 @@
 
     ndimL1 = size(L1,1)
     ndimL2 = size(L2,1)
+
+    L1(1:ndiml1,1:nroot) = 0.0d0 
+    L2(1:ndiml2,1:nroot) = 0.0d0 
+
+
 
 ! 1> store the diagonal elements of the transformed Hamiltonian..  
 
@@ -563,7 +571,7 @@
                do i = imin, no(irp)
                   ii = ioff + i
                   fac = fac3 - eps(ii)
-                  h_ii(ijab) = -fac
+                  h_ii(ijab) = fac
                   ijab = ijab + 1
                enddo
             enddo
@@ -597,17 +605,27 @@
 !   deallocate(R1_dum)
 !end if
 
-     allocate(diag_H(ndimL1))
-     diag_H = H_II(1:ndimL1)
+!!   allocate(diag_H(ndimL1))
+!!   diag_H = H_II(1:ndimL1)
 
-       do iroot = 1, nroot
-        k = minloc(diag_H) 
+!!     do iroot = 1, nroot
+!!      k = minloc(diag_H) 
 !ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
-        i = k(1)
-        diag_H(i) = 8000.0d0
-        L1(i,iroot) = 1.0d0
-       enddo
-     deallocate(diag_H)
+!!      i = k(1)
+!!      diag_H(i) = 8000.0d0
+!!      L1(i,iroot) = 1.0d0
+!!     enddo
+!!   deallocate(diag_H)
+
+
+    do iroot = 1, nroot
+
+      call srt1c1 (nrep,nv,no,eVectorsR(1:ndimL1,iroot:iroot), &
+     &             L1(1:ndimL1,iroot:iroot)) 
+      call srt1c1 (nrep,nvvt,noot,eVectorsR(1+ndiml1:(ndiml1+ndiml2),iroot:iroot), &
+     &             L2(1:ndiml2,iroot:iroot)) 
+
+    enddo
 
    case ('IP')
 
@@ -615,13 +633,13 @@
     ii = 0
 
       do arp = 1, nrep
-         irep = multb (arep,state_sym+nrep,1)
+         irep = multb (arp,1+nrep,1)
          aa = io(nrep+1) + iv(arp)
       do a = 1, ncont(arp)
-         ioff = io(arp)
-         do i = 1, no(arp)
+         ioff = io(irep)
+         do i = 1, no(irep)
              ii = ioff + i
-             h_ii(ia) =  -eps(ii)  
+             h_ii(ia) = -eps(ii)  
              ia = ia + 1
          enddo
       enddo
@@ -667,15 +685,36 @@
     call alloc_array(e,nrep)
     call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
 
+ !   search_dimension = ncont(state_sym)*no(state_sym) 
 
-!   do iroot = 1, nroot
+ !   allocate(diag_H(ndiml1))
+ !   diag_H = H_II(1:ndiml1)
 
-!     call srt1c1 (nrep,ncont,no,davResultsR(state_sym)%eVectorsR(1:ndiml1,iroot:iroot), &
-!    &             trial_vector(1:ndiml1,iroot:iroot)) 
-!     call srt1c1 (nrep,e%oneNonDirac,noot,davResultsR(state_sym)%eVectorsR(1+ndiml1:ndiml1+ndiml2,iroot:iroot), &
-!    &             trial_vector(1+ndiml1:ndiml1+ndiml2,iroot:iroot)) 
+ !      xroot = 1 
 
-!   enddo
+ !     do iroot = 1, 2*nroot
+ !      k = minloc(diag_H) 
+!!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
+ !      i = k(1)
+ !      diag_H(i) = 8000.0d0
+
+ !      if (i <= search_dimension) then
+ !       L1(i,xroot) = 1.0d0
+ !       xroot = xroot + 1
+ !      endif
+
+ !     enddo
+ !   deallocate(diag_H)
+
+
+    do iroot = 1, nroot
+
+      call srt1c1 (nrep,ncont,no,eVectorsR(1:ndimL1,iroot:iroot), &
+     &             L1(1:ndimL1,iroot:iroot)) 
+      call srt1c1 (nrep,e%oneNonDirac,noot,eVectorsR(1+ndiml1:(ndiml1+ndiml2),iroot:iroot), &
+     &             L2(1:ndiml2,iroot:iroot)) 
+
+    enddo
 
   call dealloc_array(e)
 
@@ -730,48 +769,6 @@
       enddo
       enddo
 
-
-! calculate the orbital dimension within which our desired root should belong..
-
-  search_dimension = ncont(state_sym)*nv(state_sym) 
-
-!! allocate (r1_dum(ndimr1,ndimr1))
-!!   r1_dum = 0.0d0
-
-!!   do iroot = 1, ndimr1
-!!       r1_dum(iroot,iroot) = 1.0d0
-!!   end do
-
-!!    call trial_vectors_EA(R1_dum,Fbar_PP)
-!!    
-!!    r1 = r1_dum(:,1:nroot) 
-
-!!  deallocate(R1_dum)
-
- !  if (nroot.eq.(ndimr1+ndimr2)) then
- !   do iroot = 1, ndimr1
- !       R1(iroot,iroot) = 1.0d0
- !   end do
- !   do iroot = 1, ndimr2
- !       R2(iroot,ndimr1+iroot) = 1.0d0
- !   end do
- !  else
-
-     allocate(diag_H(ndimL1))
-     diag_H = H_II(1:ndimL1)
-        xroot = 1
-       do iroot = 1, 2*nroot
-        k = minloc(diag_H) 
-        i = k(1)
-        diag_H(i) = 8000.0d0
-        if (i <= search_dimension) then
-         L1(i,xroot) = 1.0d0
-         xroot = xroot + 1
-        endif
-       enddo
-     deallocate(diag_H)
-!! end if 
-
   end select 
 
    end subroutine
@@ -810,6 +807,7 @@
    logical :: left_vectors, right_vectors
    integer :: N, N1, N2 ! size of determinantal space 
    type(Offset)         :: e
+   real*8               :: overlap 
 
 !memory allocation
 !------------------
@@ -823,6 +821,7 @@
   integer                :: state
   integer*8              :: nv5irp,nv6irp,nvirp
   real*8,allocatable     :: dmo(:) 
+  real*8,allocatable     :: l1_temp(:),l2_temp(:) 
 
     nbuf1 = max(joooo(nrep+1),jvooo(nrep+1),jvvoo(nrep+1),jvovo(nrep+1))
     nbuf2 = nbuf1
@@ -910,8 +909,27 @@
     left_vectors =  .true.
     call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
 
+  allocate(dmo(norbt*norbt*nz))
 
-     ndimr1 = 0     
+   dmo =0.0d0
+   state =1
+   do sym = 1, nrep  
+
+     if (relcc_eom_nroots(sym) <= 0) cycle
+
+    do iroot = 1, relcc_eom_nroots(sym)
+
+  select case(eomtype)
+
+ case ('IP')
+!    call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),&
+! &   davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot), &
+! &   davResultsR(sym)%eVectorsR(1:ndimr1,iroot:iroot), &
+! &   davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot:iroot),B%t1,B%t2,dmo)
+
+
+   call set_continuous_orbital(sym)
+   ndimr1 = 0     
 
    do irep = 1, nrep
        ndimr1 = ndimr1 + ncont(irep)*no(irep)
@@ -925,27 +943,81 @@
      do irep = 1, nrep
         ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
      enddo
- 
+
+     allocate(l1_temp(ndimr1*rcw))
+     allocate(l2_temp(ndimr2*rcw))
+
+      call srt1c1(nrep,no,ncont,davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),l1_temp)
+      call srt1c1(nrep,noot,e%oneNonDirac,davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot),l2_temp)
+
+
      call dealloc_array(e)
 
-   allocate(dmo(norbt*norbt*nz))
+      overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
+    &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
 
-!   dmo =0.0d0
-   state =1
-   do sym = 1, nrep  
+     write(*,*)'overlap', overlap 
 
-     if (relcc_eom_nroots(sym) <= 0) cycle
+      overlap = 1.0d0/overlap
 
-    do iroot = 1, relcc_eom_nroots(sym)
+      call dscal((ndimr1+ndimr2),overlap,davResultsL(sym)%eVectorsL(1:ndimr1+ndimr2,iroot:iroot),1)  
+      call dscal(ndimr1,overlap,l1_temp,1)  
+      call dscal(ndimr2,overlap,l2_temp,1)  
 
-     call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),&
-  &   davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot), &
-  &   davResultsR(sym)%eVectorsR(1:ndimr1,iroot:iroot), &
-  &   davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot:iroot),B%t1,B%t2,dmo)
+     write(*,*)dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
+    &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
+
+      deallocate(l1_temp,l2_temp)
+
+     call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot),&
+  &   davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot), &
+  &   davResultsR(sym)%eVectorsR(1:ndimr1,iroot), &
+  &   davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot),B%t1,B%t2,dmo)
+
+ case ('EE')
+
+      ndimr1 = ndimt1
+      ndimr2 = ndimt2
+
+
+     allocate(l1_temp(ndimt1*rcw))
+     allocate(l2_temp(ndimt2*rcw))
+
+      call srt1c1(nrep,no,nv,davResultsL(sym)%eVectorsL(1:ndimr1,iroot),l1_temp)
+      call srt1c1(nrep,noot,nvvt,davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot),l2_temp)
+
+      overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
+    &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
+
+     write(*,*)'overlap', overlap 
+
+      overlap = 1.0d0/overlap
+
+      call dscal((ndimr1+ndimr2),overlap,davResultsL(sym)%eVectorsL(1:ndimr1+ndimr2,iroot:iroot),1)  
+      call dscal(ndimr1,overlap,l1_temp,1)  
+      call dscal(ndimr2,overlap,l2_temp,1)  
+
+     write(*,*)dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
+    &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
+ 
+!     write(*,*)dot_product(davResultsR(sym)%eVectorsR(1:,iroot),davResultsR(sym)%eVectorsR(1:,iroot))
+
+      deallocate(l1_temp,l2_temp)
+
+     call density_EE(davResultsL(sym)%eVectorsL(1:ndimr1,iroot),&
+  &   davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot), &
+  &   davResultsR(sym)%eVectorsR(1:ndimr1,iroot), &
+  &   davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot),B%t1,B%t2,dmo)
+
+ case ('EA')
+
+   write(*,*)'Not yet implemented'
+
+ end select
      
      call store_eom_density ('EOM ',state,dmo)
 
-      state = state + 1
+     state = state + 1
 
     enddo
    enddo
@@ -954,13 +1026,12 @@
 
    endif
 
-
      do sym = 1, nrep 
 
          if (relcc_eom_nroots(sym) <= 0) cycle
 
-       if(right_vectors) call davidson_cleanup(davResultsR(sym))
-!       if(left_vectors) call davidson_cleanup(davResultsL(state_sym))
+          call davidson_cleanup(davResultsR(sym))
+          if(left_vectors) call davidson_cleanup(davResultsL(sym))
      end do
 
  451 continue
@@ -1411,7 +1482,7 @@
                       write (iw,'(2f15.5,3x,a70)') & 
             &             eigenvectors(1,ii),eigenvectors(2,ii),label
                   else if (value.gt.tres) then              
-                  write (iw,'(f15.5,3x,a70)') eigenvectors(1,ii),label
+                  write (iw,'(f15.5,3x,a100)') eigenvectors(1,ii),label
                   end if
                   ii = ii + 1
                enddo
@@ -1550,7 +1621,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              else if (left_vectors.and..not.right_vectors) then    
                  call input_processor_left(B%Fbar_mi, &
       &                               B%Fbar_ae, &
-      &                               B%W_mbej,  &
+      &                               B%W_mbej,davResultsR(state_sym)%eVectorsR(1:N,:),  &
       &                               trial_vector(1:ndimr1*rcw,:), &
       &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
       &                               B%H_II)
@@ -1605,7 +1676,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              else if (left_vectors.and..not.right_vectors) then    
                  call input_processor_left(B%Fbar_mi, &
       &                               B%Fbar_ae, &
-      &                               B%W_mbej,  &
+      &                               B%W_mbej,davResultsR(state_sym)%eVectorsR(1:N,:),  &
       &                               trial_vector(1:ndimr1*rcw,:), &
       &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
       &                               B%H_II)
@@ -1658,7 +1729,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              else if (left_vectors.and..not.right_vectors) then 
                  call input_processor_left(B%Fbar_mi, &
       &                               B%Fbar_ae, &
-      &                               B%W_mbej,  &
+      &                               B%W_mbej,davResultsR(state_sym)%eVectorsR,  &
       &                               trial_vector(1:ndimr1*rcw,:), &
       &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
       &                               B%H_II)
@@ -1672,32 +1743,20 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              call eom_analysis(davResultsR(state_sym)%eValuesRe,davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
 
          else if (left_vectors) then
-! here we copy the right vectors instead of passing them directly in order to keep it
 
-    do iroot = 1, nroot
-
-      call srt1c1 (nrep,ncont,no,davResultsR(state_sym)%eVectorsR(1:ndimr1,iroot:iroot), &
-     &             trial_vector(1:ndimr1,iroot:iroot)) 
-      call srt1c1 (nrep,nvx,noot,davResultsR(state_sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot:iroot), &
-     &             trial_vector(1+ndimr1:ndimr1+ndimr2,iroot:iroot)) 
-
-    enddo
-
-!             trial_vector = davResultsR(state_sym)%eVectorsR
-
-!             trial_vector = 0.0d0
              call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector)
-!            call eom_analysis(davResultsL(state_sym)%eValuesRe,davResultsL(state_sym)%eVectorsL,eps) ! Fock-Space like output for EA, EE and IP
 
          end if
 
          call free_eom_ndet()
          call free_eom_nvx()
 
-         if (allocated(B%H_II)) deallocate(B%H_II)
+         deallocate(B%H_II)
+        if(associated(trial_vector)) deallocate(trial_vector)
 
       end if ! this ends the if checking whether there are any roots required for this symmetry
    end do    ! this ends the loop over symmetries
+
 
    if (right_vectors) then
        write (iw,*) ""

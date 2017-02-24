@@ -9,6 +9,7 @@
     public lambda_equation_mp2
     public lambda_equation_L2
     public lambda_equation_L1
+    public lambda2_disconnected
 
 
      private

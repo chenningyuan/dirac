@@ -1384,8 +1384,8 @@ C---------------Executable code--------------------------------------
             ADD_2_FOCK = .FALSE.
 
             WRITE (LUPRI,*) " Retrieving EOMCC density matrix from file"
-!            ADD_2_FOCK   = .TRUE.
-            ADD_2_FOCK = .FALSE.
+           ADD_2_FOCK   = .TRUE.
+!              ADD_2_FOCK = .FALSE.
             IERR         = 0
 
 C     Read the appropriate correlated density from file
@@ -1396,16 +1396,18 @@ C     Read the appropriate correlated density from file
       ENDIF
 
 !      call waio_open(itapt+7)
+      
+      inquire(iolength=dlength) DMO
 
       dstart = (state-1)*norbt*norbt*nz+1    
-      dlength = norbt*norbt*nz*8
+!      dlength = norbt*norbt*nz*8
 
       open (eomden,file='EOM_DENS',access='direct',status='old',
      &      recl=dlength)
 
       read (eomden,rec=state) dmo
 
-      write(*,*)(dmo(i,i,1),i=1,norbt) 
+!      write(*,*)(dmo(i,i,1),i=1,norbt) 
 !      call rread (itapt+7,dmo,dlength,dstart)
       
 C     Add the closed shell Hartree-Fock contribution
@@ -1521,7 +1523,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       CHARACTER*4 WF                     ! Wave function type
-      REAL*8 DMO(*)                      ! Density matrix (MO-basis)
+      REAL*8, INTENT(IN):: DMO(*)                      ! Density matrix (MO-basis)
       INTEGER STATE                      ! I designate each state by a Number
 C
 C---------------Local variables--------------------------------------
@@ -1529,7 +1531,9 @@ C
       CHARACTER*8 :: LABEL,EOFLABEL
       LOGICAL, SAVE :: INIT=.FALSE.
       LOGICAL :: FNDLAB
+      logical            :: exist
       INTEGER, PARAMETER :: EOMDEN=299
+      INTEGER :: dlength, i, k
 C---------------Executable code--------------------------------------
  
       WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
@@ -1538,23 +1542,23 @@ C     Write the correlated density to file
 C     Code should be replaced by proper storage routine, this just adds to the end of a file 
 C     without being able to do a replace or check for old data.
 
+      inquire(iolength=dlength) DMO(1:norbt*norbt*nz)
 
-      dstart = (state-1)*norbt*norbt*nz+1    
-      dlength = norbt*norbt*nz*8 
+      inquire(file='EOM_DENS', exist=exist)
+      if (exist) then
 
-      open (eomden,file='EOM_DENS',access='direct',status='unknown',
+      open (eomden,file='EOM_DENS',access='direct',status='old',
      &      recl=dlength)
 
-!      call waio_open(itapt+7)
+      else
+
+       open (eomden,file='EOM_DENS',access='direct',status='new',
+     &      recl=dlength)
+     
+      endif
 
       write (eomden,rec=state) dmo(1:norbt*norbt*nz)
 
-      write(*,*)(dmo(i),i=1,norbt*norbt,norbt)
-
-!      call rwrit(itapt+7,dmo,dlength,dstart)
-
       close (eomden,status='keep')
-
-!      CALL WAIO_SAVE(ITAPT+7)
 
       END

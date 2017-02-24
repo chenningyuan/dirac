@@ -55,6 +55,7 @@ C---------------Local variables--------------------------------------
       LOGICAL    :: FOCKSP,PRENE
       real*8,allocatable :: resL1(:),resL2(:),dinv_one(:),dinv_two(:)
       real*8,allocatable :: G_oo(:),G_vv(:),int_wooop(:),w_v_temp(:)
+      real*8,allocatable :: l1_temp(:),l2_temp(:)
       integer            :: i !remove
       real*8             :: val  
 
@@ -244,7 +245,6 @@ C
 !      call xaxpy (ndimt1,-a1,resL1,1,l1,1)
 !      call xaxpy (ndimt2,-a2,resL2,1,l2,1)
 
-
        call xaxpy (ndimt1,-a1,resL1*dinv_one,1,l1,1)
        call xaxpy (ndimt2,-a2,resL2*dinv_two,1,l2,1)
 
@@ -256,6 +256,25 @@ C
       CALL XTIME(5,2,'- DIIS extrapolation            ')
 
       IF (IPRNT.GE.1) WRITE(IW,6001) NIT,RMS
+
+
+      allocate(l1_temp(ndimt1*rcw))
+      allocate(l2_temp(ndimt2*rcw))
+
+    
+      call srt1c1 (nrep,no,nv,l1,l1_temp) 
+      call srt1c1 (nrep,noot,nvvt,l2,l2_temp) 
+
+      call gettau(s1,s2,buf2)
+
+      write(*,*)'overlap <L|R>',
+     & dot_product(l1_temp(1:ndimt1),s1(1:ndimt1)) 
+     & + dot_product(l2_temp(1:ndimt2),buf2(1:ndimt2))
+
+
+      deallocate(l1_temp)
+      deallocate(l2_temp)
+
       CALL FLSHFO(IW)
 
       if(rms.lt.conv) exit

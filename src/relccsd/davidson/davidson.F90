@@ -396,7 +396,10 @@ contains
             end do
 
             nullify(old_subspace_vectors_local)
-            deallocate(old_subspace_vectors_R)
+           if (associated(old_subspace_vectors_R))then
+            nullify(old_subspace_vectors_R)   
+!            deallocate(old_subspace_vectors_R)
+           endif  
         end if
     end function
 
@@ -437,7 +440,7 @@ contains
 
         call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
 
-        if (associated(old_vectors_R)) deallocate(old_vectors_R)
+        if (associated(old_vectors_R)) nullify(old_vectors_R)
     end function
 
     subroutine orthonormalize_subspace(b, method, verbose)
@@ -826,6 +829,7 @@ contains
 
         if (left) then
             do_left = 'V'
+            do_right = 'N'
             allocate(eVectorsL(vectors_L,vectors_L))
             eVectorsL = zero_r8
         end if
@@ -882,7 +886,7 @@ contains
         type(intermediates), intent(in)   :: A
 ! back to general stuff
         type(davidson_results), intent(inout) :: results
-        real(kind=8), intent(in), pointer :: b_guess(:,:)
+        real(kind=8), intent(inout), pointer :: b_guess(:,:)
         integer, intent(in) :: nroots
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
@@ -900,15 +904,17 @@ contains
         real(kind=8), pointer :: e_small_i(:)        => NULL()
 
         real(kind=8), pointer :: c_small_r_old(:,:)  => NULL()
+        real(kind=8), pointer :: c_small_r_old_dum(:,:)  => NULL()
         real(kind=8), pointer :: c_small_l_old(:,:)  => NULL()
 
         integer :: vectors_N, L, min_subspace_size, max_subspace_size, niter
-        integer :: i, j
+        integer :: i, j, k
 
         vectors_N = get_matrix_size(A)
 !
 ! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
 ! 
+
         call davidson_create_results(results,vectors_N,nroots,&
                                      davidson_solve_values,   &
                                      davidson_solve_lhs,      &
@@ -944,6 +950,15 @@ contains
            do i = 1, nroots
                c_small_r_old(i,i) = 1.0d0
            enddo
+
+!          allocate(c_small_r_old(nroots,nroots))
+!          k = 1 
+!          do i = 1, nroots/2
+!              c_small_r_old(:,i) = c_small_r_old_dum(:,k) - c_small_r_old_dum(:,(k+1))
+!              c_small_r_old(:,i+(nroots/2)) = c_small_r_old_dum(:,k) + c_small_r_old_dum(:,(k+1))
+!              k = k + 2
+!          enddo
+!          deallocate(c_small_r_old_dum)
        endif
        if (davidson_solve_lhs.and.davidson_overlap_sorting) then
            allocate(c_small_l_old(nroots,nroots))
@@ -967,7 +982,7 @@ contains
             if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
-            call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
+            call calculate_eigenvalues_and_eigenvectors(niter,davidson_output_file_unit,    &
                                                         M_small,                      &
                                                         e_small_r, e_small_i,         &
                                                         c_small_r, c_small_l,         &
@@ -1036,7 +1051,7 @@ contains
 
     end subroutine
 
-    subroutine calculate_eigenvalues_and_eigenvectors(output_file_unit, M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
+    subroutine calculate_eigenvalues_and_eigenvectors(niter,output_file_unit, M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
                                 eVectorsR_old, eVectorsL_old, left, right, sorting_order, nroots, verbose)
         real(kind=8), intent(inout), pointer   :: M(:,:)
         real(kind=8), intent(inout), pointer   :: eValuesRe(:), eValuesIm(:)
@@ -1044,7 +1059,7 @@ contains
         real(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
         logical, optional, intent(in) :: left, right, verbose
         integer, optional, intent(in) :: sorting_order, nroots
-        integer, intent(in) :: output_file_unit 
+        integer, intent(in) :: output_file_unit, niter 
 
         logical :: left_local, right_local, verbose_local
         integer :: sorting_order_local, nroots_local, nroot
@@ -1086,19 +1101,25 @@ contains
 
         call solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
 
-        if (davidson_overlap_sorting) then
-! calculate overlap between old and new vectors. Overlap(nroot,mroot) = Old(nroot,nroot)*New(1:nroot,mroot)   
+        if (davidson_overlap_sorting.and.(niter>1)) then
+! calculate overlap between old and new vectors. Overlap(nroot,mroot) = Old^T(nroot,nroot)*New(1:nroot,mroot)   
 ! Max(Overlap(iroot,mroot)) for all iroot = 1,nroot 
+
+            if(right) then    
             nroot = size(eVectorsR_old,1)
             allocate(overlap(nroot,nroots_local))
             overlap = 0.0d0 
 
-            if(right) then    
-                 call dgemm('N', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsR_old, &
-                            nroot, eVectorsR(1:nroot,:), nroot, beta_lapack, overlap, nroot)
+                 call dgemm('T', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsR_old, &
+                            nroot, eVectorsR(1:nroot,1:nroots_local), nroot, beta_lapack, overlap, nroot)
             else
-                 call dgemm('N', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsL_old, &
-                            nroot, eVectorsL(1:nroot,:), nroot, beta_lapack, overlap, nroot)
+
+            nroot = size(eVectorsL_old,1)
+            allocate(overlap(nroot,nroots_local))
+            overlap = 0.0d0 
+
+                 call dgemm('T', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsL_old, &
+                            nroot, eVectorsL(1:nroot,1:nroots_local), nroot, beta_lapack, overlap, nroot)
             endif
 
             call sort_by_overlap(-1, eValuesRe, eValuesIm, overlap, eVectorsR, eVectorsL, &
@@ -1145,21 +1166,33 @@ contains
         vectors_L = size(b,2)
 
         if (left_vector) then
-            allocate(bc(vectors_L,vectors_N))
-            bc = zero_r8
+!           allocate(bc(vectors_L,vectors_N))
+!           bc = zero_r8
 !           call print_vectors_R(eVectorsSmall, label="L eigenvectors small problem  ")
-            call dgemm('T', 'T', vectors_L, vectors_N, vectors_L, alpha_lapack, eVectorsSmall, &
-                       vectors_L, b, vectors_N, beta_lapack, bc, vectors_L)
+!           call dgemm('T', 'T', vectors_L, vectors_N, vectors_L, alpha_lapack, eVectorsSmall, &
+!                      vectors_L, b, vectors_N, beta_lapack, bc, vectors_L)
+!           call print_vectors_R(bc, label="bc                            ")
+!           do i = 1, nroots
+!               eVectorsFull(:,i) = bc(i,:) 
+!           end do
+
+
+            allocate(bc(vectors_N,vectors_L))
+            bc = zero_r8
+!           call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
+            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
+                       vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
+
 !           call print_vectors_R(bc, label="bc                            ")
             do i = 1, nroots
-                eVectorsFull(:,i) = bc(i,:) 
+                eVectorsFull(:,i) = bc(:,i) 
             end do
 
         else
             allocate(bc(vectors_N,vectors_L))
             bc = zero_r8
 !           call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
-            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
+            call dgemm('N', 'T', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
                        vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
 
 !           call print_vectors_R(bc, label="bc                            ")

@@ -915,7 +915,7 @@
       if (.not.doinv) then 
       CALL XCOPY(h%oneDirac(1),A0,0,BUF2,1)
       row = g%oneDirac
-      column = Ifie
+      column = Jfie
       else
       row = e%oneNonDirac 
       column = f%oneNonDirac
