@@ -102,7 +102,7 @@ C
             enddo 
 
          ELSE
-           CALL PAMPRP_1(WF)
+           CALL PAMPRP_1(WF,1)
          ENDIF
       END DO
 C
@@ -161,7 +161,8 @@ C
       real(8), allocatable :: WORK(:)
       CHARACTER WF*4
       CHARACTER WFEXPORT*4
-      INTEGER, OPTIONAL :: STATE
+C     INTEGER, OPTIONAL :: STATE
+      INTEGER :: STATE
 C
       CALL QENTER('PAMPRP_1')
 C
@@ -191,11 +192,7 @@ C***********************************************************************
 C
       IF (DOEXP) THEN
          CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
-         IF (PRESENT(STATE)) THEN 
-          CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE)
-         ELSE
-          CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE)
-         ENDIF
+         CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE)
       ELSE
          KEXP = KFREE
       END IF

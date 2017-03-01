@@ -120,8 +120,9 @@ module relcc_cfg
   integer, public :: relcc_mfd_max_iterations = 80
   logical, public :: relcc_mfd_overlap_sorting = .true.
   logical, public :: relcc_mfd_verbose = .false.
-  logical, public :: relcc_mfd_trial_diagonal = .false.
-  logical, public :: relcc_mfd_trial_ccs = .true.
+  logical, public :: relcc_mfd_trial_diagonal = .true.
+  logical, public :: relcc_mfd_trial_ccs = .false. 
+  logical, public :: relcc_mfd_trial_full_matrix = .false.
 ! will add filenames etc here too
 
 ! Information relevant for the (Intermediate Hamiltonian) Fock space calculations
@@ -154,7 +155,7 @@ module relcc_cfg
   real(8), public :: relcc_ih_shift_h12               = 0.0d+00
   real(8), public :: relcc_ih_shift_p11               = 0.0d+00
   real(8), public :: relcc_ih_shift_p12               = 0.0d+00
-  real(8), public :: relcc_ih_shift_h2                = 0.0d+00
+  real(8), public :: relcc_ih_shift_h2               = 0.0d+00
   real(8), public :: relcc_ih_shift_p2                = 0.0d+00
   real(8), public :: relcc_ih_shift_hp                = 0.0d+00
   real(8), public :: relcc_ih_aih                     = 0.0d+00
@@ -234,6 +235,7 @@ contains
   call interface_mpi_bcast_l0(relcc_mfd_verbose            ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_trial_diagonal     ,1,0,global_communicator)
   call interface_mpi_bcast_l0(relcc_mfd_trial_ccs          ,1,0,global_communicator)
+  call interface_mpi_bcast_l0(relcc_mfd_trial_full_matrix  ,1,0,global_communicator)
 
 ! Information relevant to restarts
   call interface_mpi_bcast_l0(relcc_restart_skipsect,    6,0,global_communicator)

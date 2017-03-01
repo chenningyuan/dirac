@@ -1112,13 +1112,21 @@
       end if
 
       if (kw_matches(word, '.TRV_CCS')) then
-         relcc_mfd_trial_diagonal = .false.
-         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_diagonal 
+         relcc_mfd_trial_ccs      = .true.
+         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_ccs
+         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_ccs
       end if
 
       if (kw_matches(word, '.TRV_I  ')) then
          relcc_mfd_trial_diagonal = .true.
          relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_diagonal 
+         relcc_mfd_trial_full_matrix = .not.relcc_mfd_trial_diagonal
+      end if
+
+      if (kw_matches(word, '.TRV_FULLMATRIX')) then
+         relcc_mfd_trial_full_matrix = .true.
+         relcc_mfd_trial_diagonal = .not.relcc_mfd_trial_full_matrix
+         relcc_mfd_trial_ccs      = .not.relcc_mfd_trial_full_matrix
       end if
 
       if (kw_matches(word, '.OVERLAP')) then

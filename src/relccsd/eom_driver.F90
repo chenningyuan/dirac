@@ -1,5 +1,6 @@
   module eom_driver
   use sigma_eom
+  use trial_vectors_eom
   use relcc_cfg
   implicit none
 !this module calculates the sigma vectors for IP(2h-1p), EA(1h-2p) and EE(2h-2p)  
@@ -52,7 +53,7 @@
           call quit('Specifying more than one EOM kind of calculation at a time (IP/EE/EA)  not allowed !') 
 
      do state_sym = 1, nrep 
-        if (relcc_eom_nroots(state_sym).gt.0) then
+        if (relcc_eom_nroots(state_sym).ne.0) then
 ! checking whether or not, for ip/ea, we can actually ask for this many roots 
 !
 ! we choose to restrict the number of roots one cas ask for in the eom-ee/ip/ea calculationsnos to
@@ -68,6 +69,8 @@
                 if (relcc_eom_nroots(state_sym).gt.no(state_sym)) then
                    relcc_eom_nroots(state_sym) = no(state_sym)
                    reset_roots_in_symmetry = .true.
+                else if (relcc_eom_nroots(state_sym).eq.-1) then
+                   reset_roots_in_symmetry = .true.
                 else
                    reset_roots_in_symmetry = .false.
                 end if
@@ -75,12 +78,16 @@
                 if (relcc_eom_nroots(state_sym).gt.nv(state_sym)) then
                     relcc_eom_nroots(state_sym) = nv(state_sym)
                    reset_roots_in_symmetry = .true.
+                else if (relcc_eom_nroots(state_sym).eq.-1) then
+                   reset_roots_in_symmetry = .true.
                 else
                    reset_roots_in_symmetry = .false.
                 end if
              case ('EE')
                 if (relcc_eom_nroots(state_sym).gt.nvo(state_sym)) then
                     relcc_eom_nroots(state_sym) = nvo(state_sym)
+                   reset_roots_in_symmetry = .true.
+                else if (relcc_eom_nroots(state_sym).eq.-1) then
                    reset_roots_in_symmetry = .true.
                 else
                    reset_roots_in_symmetry = .false.
@@ -97,10 +104,12 @@
   end subroutine
 
    subroutine input_processor_right(Fbar_HH,Fbar_PP,Vbar_SS,R1,R2,H_II)
+      use davidson 
 
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
+#include "inpt.inc"
 
 !description
 !===========
@@ -118,7 +127,7 @@
 !Local Variables
 !==============
 
-   integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1)
+   integer :: i,ii,irep,j,iaai,aoff,a,aa,ai,arep,iroot,k(1), jroot
    real*8  :: fac1
    real*8  :: eps((iv(nrep+1)+io(nrep+1))) 
    real*8, pointer :: diag_H(:)
@@ -133,10 +142,10 @@
 !initialize the R-vector
 !=======================
 
-    ndimr1 = size(R1,1)
-    ndimr2 = size(R2,1)
-    R1(1:ndimr1,1:nroot) = 0.0d0 
-    R2(1:ndimr2,1:nroot) = 0.0d0 
+    ndimr1 = size(R1,1)/rcw
+    ndimr2 = size(R2,1)/rcw
+    R1(1:ndimr1*rcw,1:nroot) = 0.0d0 
+    R2(1:ndimr2*rcw,1:nroot) = 0.0d0 
 
 ! 1> Determine the minimum energy determinants for IP, EA & EE. The number of them is equal to the number of roots. 
 
@@ -218,35 +227,56 @@
       ENDDO
 !aspg+as
 
+      if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 
-!if (nroot.eq.(ndimr1+ndimr2)) then
-!    do iroot = 1, ndimr1
-!        R1(iroot,iroot) = 1.0d0
-!    end do
-!    do iroot = 1, ndimr2
-!        R2(iroot,ndimr1+iroot) = 1.0d0
-!    end do
-!else
-!  allocate (R1_dum(ndimr1,ndimr1))
-!    R1_dum = 0.0d0
+          do i = 1, ndimr1
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R1(iroot,jroot) = 1.0d0
+          end do
+          do i = 1, ndimr2
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R2(iroot,ndimr1+jroot) = 1.0d0
+         end do
+      end if
 
-!    do iroot = 1, ndimr1
-!        R1_dum(iroot,iroot) = 1.0d0
-!    end do
+      if (relcc_mfd_trial_ccs) then
+          print *, '  Using eigenvalues of singles-singles block as trial vectors'
 
-!     call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
-!     
-!     R1 = R1_dum(:,1:nroot) 
+          allocate (R1_dum(ndimr1*rcw,ndimr1))
+          R1_dum = 0.0d0
 
-!   deallocate(R1_dum)
-!end if
+          
+          do i = 1, ndimr1
+              iroot = i 
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R1_dum(iroot,jroot) = 1.0d0
+          end do
 
+          call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
 
+          R1 = R1_dum(:,1:nroot) 
+
+!         print *,"R1_dum",R1_dum
+!         do iroot = 1, nroot
+!             jroot = 2*iroot - 1
+!             R1(:,iroot) = R1_dum(:,jroot)
+!         end do
+
+          deallocate(R1_dum)
+      end if
+
+      if (relcc_mfd_trial_diagonal) then
+          print *, '  Using (reordered) unit vectors as trial vectors'
 
      allocate(diag_H(ndimr1))
      diag_H = H_II(1:ndimr1)
 
-       do iroot = 1, nroot
+       do iroot = 1, nroot*rcw, rcw
         k = minloc(diag_H) 
 !ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
@@ -254,6 +284,7 @@
         R1(i,iroot) = 1.0d0
        enddo
      deallocate(diag_H)
+      end if
 
 
    case ('IP')
@@ -274,7 +305,6 @@
         enddo
     enddo
 
-!      H_II = -eps(1:(ndimr1*rcw)) !+ 100.0d0
 
       ABIJ = ai 
       DO IJRP = 1, NREP
@@ -311,18 +341,49 @@
       ENDDO
       ENDDO
 
-!  allocate (R1_dum(ndimr1,ndimr1))
-!    R1_dum = 0.0d0
+      if (relcc_mfd_trial_full_matrix) then
+! New trial vectors for R1 
+          do i = 1, ndimr1
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1 
+              jroot = i 
+              R1(iroot,jroot) = 1.0d0
+          end do
+          do i = 1, ndimr2
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1 
+              jroot = i 
+              R2(iroot,ndimr1+jroot) = 1.0d0
+         end do
+      end if
 
-!    do iroot = 1, ndimr1
-!        R1_dum(iroot,iroot) = 1.0d0
-!    end do
+      if (relcc_mfd_trial_ccs) then
+          print *, '  Using eigenvalues of singles-singles block as trial vectors'
+          allocate (R1_dum(ndimr1*rcw,ndimr1))
+          R1_dum = 0.0d0
 
-!     call trial_vectors_ip(R1_dum,Fbar_HH)
-!     
-!     R1 = R1_dum(:,1:nroot) 
+          do i = 1, ndimr1
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R1_dum(iroot,jroot) = 1.0d0
+          end do
+!          if (iprnt.ge.2) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector         ")
 
-!   deallocate(R1_dum)
+          call trial_vectors_ip(R1_dum,Fbar_HH)
+!          if (iprnt.ge.2) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector  CD1    ",complex_dimension=1)
+      
+          R1 = R1_dum(:,1:nroot) 
+
+!         print *,"R1_dum",R1_dum
+!         do iroot = 1, nroot
+!             jroot = 2*iroot - 1
+!             R1(:,iroot) = R1_dum(:,jroot)
+!         end do
+!          if (iprnt.ge.2) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+
+          deallocate(R1_dum)
+      end if
 
  !  if (nroot.eq.(ndimr1+ndimr2)) then
  !   do iroot = 1, ndimr1
@@ -333,14 +394,16 @@
  !   end do
  !  else
 
+      if (relcc_mfd_trial_diagonal) then
+          print *, '  Using (reordered) unit vectors as trial vectors'
 
 ! In the following section we generate the guess vectors belonging to a particular state symmetry.
 ! Thereby we avoid the sigma vector calculations of the degenerate roots.  
 
      search_dimension = ncont(state_sym)*no(state_sym) 
 
-     allocate(diag_H(ndimr1))
-     diag_H = H_II(1:ndimr1)
+     allocate(diag_H(ndimr1*rcw))
+     diag_H = H_II(1:ndimr1*rcw)
 
         xroot = 1 
 
@@ -357,6 +420,7 @@
 
        enddo
      deallocate(diag_H)
+      end if  ! relcc_mfd_trial_diagonal
  ! end if 
 
    case ("EA")
@@ -408,23 +472,45 @@
       ENDDO
       ENDDO
 
+      if (relcc_mfd_trial_full_matrix) then
+! New trial vectors for R1 
+          do i = 1, ndimr1
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R1(iroot,jroot) = 1.0d0
+          end do
+          do i = 1, ndimr2
+              iroot = i
+              if (rcw.eq.2) iroot = 2*i - 1
+              jroot = i
+              R2(iroot,ndimr1+jroot) = 1.0d0
+         end do
+      end if
 
-! calculate the orbital dimension within which our desired root should belong..
+      if (relcc_mfd_trial_ccs) then
+          print *, '  Using eigenvalues of singles-singles block as trial vectors'
 
-  search_dimension = ncont(state_sym)*nv(state_sym) 
+          allocate (R1_dum(ndimr1*rcw,ndimr1))
+          R1_dum = 0.0d0
 
-!! allocate (r1_dum(ndimr1,ndimr1))
-!!   r1_dum = 0.0d0
+          do iroot = 1, ndimr1
+              R1_dum(iroot,iroot) = 1.0d0
+          end do
 
-!!   do iroot = 1, ndimr1
-!!       r1_dum(iroot,iroot) = 1.0d0
-!!   end do
+          call trial_vectors_EA(R1_dum,Fbar_PP)
 
-!!    call trial_vectors_EA(R1_dum,Fbar_PP)
-!!    
-!!    r1 = r1_dum(:,1:nroot) 
+!         R1 = R1_dum(:,1:nroot) 
 
-!!  deallocate(R1_dum)
+          print *,"R1_dum",R1_dum
+          do iroot = 1, nroot
+              jroot = 2*iroot - 1
+              R1(:,iroot) = R1_dum(:,jroot)
+          end do
+
+          deallocate(R1_dum)
+
+      end if
 
  !  if (nroot.eq.(ndimr1+ndimr2)) then
  !   do iroot = 1, ndimr1
@@ -435,8 +521,15 @@
  !   end do
  !  else
 
-     allocate(diag_H(ndimr1))
-     diag_H = H_II(1:ndimr1)
+! calculate the orbital dimension within which our desired root should belong..
+
+      if (relcc_mfd_trial_diagonal) then
+          print *, '  Using (reordered) unit vectors as trial vectors'
+
+  search_dimension = ncont(state_sym)*nv(state_sym) 
+
+     allocate(diag_H(ndimr1*rcw))
+     diag_H = H_II(1:ndimr1*rcw)
         xroot = 1
        do iroot = 1, 2*nroot
         k = minloc(diag_H) 
@@ -449,6 +542,8 @@
         endif
        enddo
      deallocate(diag_H)
+
+      end if
 !! end if 
 
   end select 
@@ -495,8 +590,8 @@
 !initialize the R-vector
 !=======================
 
-    ndimL1 = size(L1,1)
-    ndimL2 = size(L2,1)
+    ndimL1 = size(L1,1)/rcw
+    ndimL2 = size(L2,1)/rcw
 
     L1(1:ndiml1,1:nroot) = 0.0d0 
     L2(1:ndiml2,1:nroot) = 0.0d0 
@@ -580,42 +675,6 @@
       enddo
       enddo
       enddo
-
-
-! New trial vectors for R1 
-!if (nroot.eq.(ndimr1+ndimr2)) then
-!    do iroot = 1, ndimr1
-!        R1(iroot,iroot) = 1.0d0
-!    end do
-!    do iroot = 1, ndimr2
-!        R2(iroot,ndimr1+iroot) = 1.0d0
-!    end do
-!else
-!  allocate (R1_dum(ndimr1,ndimr1))
-!    R1_dum = 0.0d0
-
-!    do iroot = 1, ndimr1
-!        R1_dum(iroot,iroot) = 1.0d0
-!    end do
-
-!     call trial_vectors_ee(R1_dum,Fbar_HH,Fbar_PP,Vbar_SS)
-!     
-!     R1 = R1_dum(:,1:nroot) 
-
-!   deallocate(R1_dum)
-!end if
-
-!!   allocate(diag_H(ndimL1))
-!!   diag_H = H_II(1:ndimL1)
-
-!!     do iroot = 1, nroot
-!!      k = minloc(diag_H) 
-!ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
-!!      i = k(1)
-!!      diag_H(i) = 8000.0d0
-!!      L1(i,iroot) = 1.0d0
-!!     enddo
-!!   deallocate(diag_H)
 
 
     do iroot = 1, nroot
@@ -768,6 +827,47 @@
       enddo
       enddo
       enddo
+
+! calculate the orbital dimension within which our desired root should belong..
+
+  search_dimension = ncont(state_sym)*nv(state_sym) 
+
+!! allocate (r1_dum(ndimr1,ndimr1))
+!!   r1_dum = 0.0d0
+
+!!   do iroot = 1, ndimr1
+!!       r1_dum(iroot,iroot) = 1.0d0
+!!   end do
+
+!!    call trial_vectors_EA(R1_dum,Fbar_PP)
+!!    
+!!    r1 = r1_dum(:,1:nroot) 
+
+!!  deallocate(R1_dum)
+
+ !  if (nroot.eq.(ndimr1+ndimr2)) then
+ !   do iroot = 1, ndimr1
+ !       R1(iroot,iroot) = 1.0d0
+ !   end do
+ !   do iroot = 1, ndimr2
+ !       R2(iroot,ndimr1+iroot) = 1.0d0
+ !   end do
+ !  else
+
+     allocate(diag_H(ndimL1*rcw))
+     diag_H = H_II(1:ndimL1*rcw)
+        xroot = 1
+       do iroot = 1, 2*nroot
+        k = minloc(diag_H) 
+        i = k(1)
+        diag_H(i) = 8000.0d0
+        if (i <= search_dimension) then
+         L1(i,xroot) = 1.0d0
+         xroot = xroot + 1
+        endif
+       enddo
+     deallocate(diag_H)
+!! end if 
 
   end select 
 
@@ -922,13 +1022,8 @@
   select case(eomtype)
 
  case ('IP')
-!    call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),&
-! &   davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot), &
-! &   davResultsR(sym)%eVectorsR(1:ndimr1,iroot:iroot), &
-! &   davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot:iroot),B%t1,B%t2,dmo)
 
-
-   call set_continuous_orbital(sym)
+!   call set_continuous_orbital(sym)
    ndimr1 = 0     
 
    do irep = 1, nrep
@@ -955,6 +1050,9 @@
 
       overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
     &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
+     N1 = ndimr1*rcw
+     N2 = ndimr2*rcw
+     N  = N1 + N2
 
      write(*,*)'overlap', overlap 
 
@@ -1142,21 +1240,23 @@
 
       nstate_sym(state_sym,3) = nroot
       select_eom = 3
+      ISIZE = nroot
 
     case('EA')
 
       nstate_sym(state_sym,2) = nroot
-
       select_eom = 2
+      ISIZE = nroot 
 
     case('EE')
 
      nstate_sym(state_sym,4) = nroot
      select_eom = 4
+     ISIZE = nroot + 1 
 
   end select  
 
-      ISIZE = nroot + 1 ! possibly correct
+!     ISIZE = nroot + 1 ! possibly correct
       ALLOCATE (INDX_ALL(ISIZE),STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL allocation !')
@@ -1564,8 +1664,10 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         solve_left=left_vectors,   &
                         symmetric=.false., &
                         verbose=relcc_mfd_verbose,   &
+!                        complex_mode=(rcw.eq.2), &
                         convergence_threshold = relcc_mfd_convergence_threshold, &
                         max_subspace_size = relcc_mfd_max_subspace_size, &
+                        max_iterations = relcc_mfd_max_iterations, &
                         overlap_sorting = relcc_mfd_overlap_sorting)
 
     if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
@@ -1582,7 +1684,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
        call create_eom_ndet(2)
        nroot = relcc_eom_nroots(state_sym)
 
-       if (nroot.gt.0) then
+       if (nroot.ne.0) then
           write (iw,*) ""
           write (iw,'(2x,A42,2x,I3)') "Solving "//left_or_right(1:3)//" EOM-"//eomtype(1:2)//" equations for symmetry",state_sym
 !         write (iw,'(2x,A,2x,I3)') "Solving EOM-"//eomtype(1:2)//" equations for symmetry",state_sym
@@ -1602,28 +1704,34 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              call set_eom_ndet(1, ndimr1)
              call set_eom_ndet(2, ndimr2)
 
+             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
+
              N1 = ndimr1*rcw
              N2 = ndimr2*rcw
-             N = ndimr1 + ndimr2
+             N =  N1 + N2 
 
-             allocate (trial_vector(N*rcw,nroot), stat = AllocateStatus)
+             allocate (trial_vector(N,nroot), stat = AllocateStatus)
              IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-             allocate (B%H_II(N*rcw),  stat = AllocateStatus)
+             allocate (B%H_II(N),  stat = AllocateStatus)
              IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+
+             trial_vector = 0.0d0
+             call eom_initialize_HII(B%H_II)
+!            B%H_II = 1.0d0
 
              if (right_vectors.and..not.left_vectors) then
                  call input_processor_right(B%Fbar_mi, &
       &                               B%Fbar_ae, &
       &                               B%W_mbej,  &
-      &                               trial_vector(1:ndimr1*rcw,:), &
-      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               trial_vector(1:N1,:), &
+      &                               trial_vector(N1+1:N,:),  &
       &                               B%H_II)
              else if (left_vectors.and..not.right_vectors) then    
                  call input_processor_left(B%Fbar_mi, &
       &                               B%Fbar_ae, &
       &                               B%W_mbej,davResultsR(state_sym)%eVectorsR(1:N,:),  &
-      &                               trial_vector(1:ndimr1*rcw,:), &
-      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               trial_vector(1:N1,:), &
+      &                               trial_vector(N1+1:N,:),  &
       &                               B%H_II)
  
              end if
@@ -1647,6 +1755,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              enddo
 
              do irep = 1, nrep
+
+                write(*,*)'continuous orbital ',irep,ncont(irep),nroot
                 ndimr1 = ndimr1 + ncont(irep)*no(irep)
              enddo
 
@@ -1654,31 +1764,36 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                  ndimr2 = ndimr2 + get_eom_nvx(irep)*noot(irep)
              enddo
 
-             N = ndimr1 + ndimr2
+             N1 = ndimr1*rcw
+             N2 = ndimr2*rcw
+             N = N1 + N2 
 
-             call set_eom_ndet(1, ndimr1*rcw)
-             call set_eom_ndet(2, ndimr2*rcw)
+             call set_eom_ndet(1, N1)
+             call set_eom_ndet(2, N2)
 
-             allocate (trial_vector(N*rcw,nroot), stat = AllocateStatus)
+             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
+
+             allocate (trial_vector(N,nroot), stat = AllocateStatus)
              IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-             allocate (B%H_II(N*rcw)) 
+             allocate (B%H_II(N)) 
        
              trial_vector = 0.0d0
-             B%H_II = 1.0d0
+             call eom_initialize_HII(B%H_II)
+ !           B%H_II = 1.0d0
 
              if (right_vectors.and..not.left_vectors) then
                  call input_processor_right(B%Fbar_mi, &
       &                               B%Fbar_ae, &
       &                               B%W_mbej,  &
-      &                               trial_vector(1:ndimr1*rcw,:), &
-      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               trial_vector(1:N1,:), &
+      &                               trial_vector(N1+1:N,:),  &
       &                               B%H_II)
              else if (left_vectors.and..not.right_vectors) then    
                  call input_processor_left(B%Fbar_mi, &
       &                               B%Fbar_ae, &
       &                               B%W_mbej,davResultsR(state_sym)%eVectorsR(1:N,:),  &
-      &                               trial_vector(1:ndimr1*rcw,:), &
-      &                               trial_vector((ndimr1*rcw)+1:N*rcw,:),  &
+      &                               trial_vector(1:N1,:), &
+      &                               trial_vector(N1+1:N,:),  &
       &                               B%H_II)
 
              end if
@@ -1707,17 +1822,22 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                 ndimr2 = ndimr2 + get_eom_nvx(irep)*nvvt(irep)
             enddo
 
-             N = ndimr1 + ndimr2
+             N1 = ndimr1*rcw
+             N2 = ndimr2*rcw
+             N = N1 + N2
 
              call set_eom_ndet(1, ndimr1)
              call set_eom_ndet(2, ndimr2)
+
+             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
 
              allocate (trial_vector(N*rcw,nroot))
              allocate (B%H_II(N*rcw)) 
        
              trial_vector = 0.0d0
 
-             B%H_II = 1.0d0
+             call eom_initialize_HII(B%H_II)
+!            B%H_II = 1.0d0
 
              if (right_vectors.and..not.left_vectors) then 
                  call input_processor_right(B%Fbar_mi, &
@@ -1771,6 +1891,23 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
    end if
    
 end subroutine
+
+subroutine eom_initialize_HII(H_II)
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+
+    real(kind=8), intent(inout) :: H_II(:)
+    integer :: i
+
+    H_II = 0.0d0
+    do i = 1, size(H_II,1), rcw
+        H_II(i) = 1.0d0
+    end do
+
+end subroutine
+
 
 
 subroutine eom_analysis_allirreps(davResults, eps)

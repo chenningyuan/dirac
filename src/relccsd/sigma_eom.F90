@@ -29,9 +29,6 @@
     public set_eom_ndet
     public set_eom_nvx
     public get_eom_nvx
-    public trial_vectors_ee
-    public trial_vectors_ip
-    public trial_vectors_ea
 
     private
     public intermediates
@@ -190,6 +187,7 @@
 
    function create_sigma_vector_left(A, r, old_sigma_vector)
 #include "files.inc"
+#include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_left(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
@@ -234,7 +232,7 @@
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-IP sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-IP sigma vector ",iroot," out of ",L
                 call Lambda_IP(r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &
                  &             A,                               &
@@ -248,7 +246,7 @@
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EA sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EA sigma vector ",iroot," out of ",L
 !               call Lambda_EA(r(start_r1:end_r1, iroot:iroot),  &
 !                &             r(start_r2:end_r2, iroot:iroot), &
 !                &             A,                               &
@@ -265,7 +263,7 @@
              do iroot = L_already_done + 1, L
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EE sigma vector ",iroot," out of ",L
+               if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EE sigma vector ",iroot," out of ",L
                 call Lambda_ee(r(start_r1:end_r1, iroot), &
                  &                  r(start_r2:end_r2, iroot), & 
                  &                  A,                               &
@@ -283,6 +281,7 @@
 
    function create_sigma_vector_right(A, r, old_sigma_vector)
 #include "files.inc"
+#include "inpt.inc"
       real(kind=8), pointer :: create_sigma_vector_right(:,:)
       real(kind=8), pointer :: old_sigma_vector(:,:)
       type(intermediates) :: A
@@ -327,7 +326,7 @@
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-IP sigma vector ",iroot," out of ",L
                 call sigma_IP(eom_nvx,  &
                  &             r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &
@@ -342,7 +341,7 @@
              do iroot = L_already_done + 1, L 
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EA sigma vector ",iroot," out of ",L
                 call sigma_EA(eom_nvx,  &
                  &             r(start_r1:end_r1, iroot:iroot), &
                  &             r(start_r2:end_r2, iroot:iroot), &
@@ -360,7 +359,7 @@
              do iroot = L_already_done + 1, L
 
                 create_sigma_vector_right(:,iroot:iroot) = 0.0d0
-                write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing EOM-EE sigma vector ",iroot," out of ",L
                 call sigma_ee_1h1p(r(start_r1:end_r1, iroot:iroot), &
                  &                  r(start_r2:end_r2, iroot:iroot), & 
                  &                  A,                               &
@@ -381,6 +380,7 @@
 #include "param.inc"
 #include "complex.inc"
 #include "ccpar.inc"
+#include "files.inc"
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific
 !  problem (IP/EA/EE). 
@@ -408,34 +408,46 @@ integer :: nbuf3,ierr
 
      A%eomtype = eomtype
 
+     write (iw,*) " "
+     write (iw,*) " constructing intermediates for EOM-",eomtype
+
      call fmtofile (.false.,fvo,foo,fvv) ! read one-body integrals from file.
 
      call f_bar_mi(foo,fvo,A%t1,A%t2,A%Fbar_mi)
+     write (iw,*) "    done with Fbar_mi"
 
      call f_bar_me(fvo,A%t1,A%Fbar_me)
+     write (iw,*) "    done with Fbar_me"
 
      call f_bar_ae(fvv,fvo,A%t1,A%t2,A%Fbar_ae)
+     write (iw,*) "    done with Fbar_ae"
 
      call w_ijmn(A%t1,A%t2,A%W_ijmn)
+     write (iw,*) "    done with W_ijmn"
 
      call wbar_mbej(A%t2,A%Wbar_mbej)
+     write (iw,*) "    done with Wbar_mbej"
 
      call w_mbej(A%t1,A%t2,A%W_mbej)
+     write (iw,*) "    done with W_mbej"
 
 !ashee     call w_ejmb(A%t1,A%t2,A%W_ejmb)
 
      call w_iemn(A%t1,A%t2,A%W_iemn,A%Wbar_mbej,A%W_ijmn,A%Fbar_me)
+     write (iw,*) "    done with W_iemn"
 
      if (eomtype /= "IP") then
 
 !      CALL XTIME(5,1,'-- "efam" Intermediate                     ')
       call w_efam(A%t1,A%t2,A%Wbar_mbej,A%Fbar_me,A%W_efam)
+     write (iw,*) "    done with W_efam"
 
         if (myproc.gt.0) then
           A%W_efam(1:nv5*rcw) = 0.0d0
         endif
 
       call w_efam_diagram2 (A%t1,A%t2,local_buf2,local_buf3,nbuf3,A%W_efam)
+     write (iw,*) "    done with W_efam diagram #2"
 
 !   synchronize all the w_efam contributions from different nodes to the master 
 
@@ -460,10 +472,13 @@ integer :: nbuf3,ierr
      endif 
 
      call w_mnie(A%t1,A%W_mnie)
+     write (iw,*) "    done with W_mnie"
+
 
      if (eomtype /= "IP") then
 
       call w_amef(A%t1,A%W_amef)
+     write (iw,*) "    done with W_amef"
 
      endif 
 
@@ -1397,7 +1412,6 @@ integer :: nbuf3,ierr
        if (iprnt.ge.1) &
      & write(iw,*)'lambda2 after term10',dot_product(lambda2,lambda2)
 
-
       call xcopy (ndimt1,B%Fbar_me,1,lambda1,1)
 
      if (iprnt.ge.1) &
@@ -1476,170 +1490,6 @@ integer :: nbuf3,ierr
       end subroutine
 
 
-   subroutine trial_vectors_ee (r1,Fbar_mi,Fbar_ae,W_mbej)
-
-#include "symm.inc"
-!---------------Description--------------------------------------------
-!     generating R1 trial vectors by diagonalizing HBar_SS matrix.
-!-----------------------------------------------------------------------
-
-!---------------Calling variables
-  real(8), intent(inout)   :: r1(:,:)       ! R-Amplitudes
-  real(8), intent(in)  :: Fbar_ae(:),Fbar_mi(:),W_mbej(:)      
-
-!---------------Local ------------------
-
-  real(8), allocatable :: sigma1(:,:),ev(:),evec(:,:) 
-  integer              :: i,iroot, nroot,jroot
-
-!--------------------------------------------------
-
-    nroot = size(r1,1)
-
-    allocate(sigma1(nroot,nroot))
-
-    sigma1 = 0.0d0
-
-  do iroot = 1, nroot
-! class : (HBar_SS*R)(a,i)
-!=========================
-
-!S_ai = S_ai +  F^a_e*R^e_i   
-!---------------------------
-   
-    call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),Fbar_ae,r1(:,iroot:iroot),sigma1(:,iroot:iroot), &
-  &                    1.0d0,1.0d0,nrep)
-
-!S_ai = S_ai - f_bar_mi(m,i)*r1(a,m) 
-!------------------------------------
-
-    call contraction_222 ((/"p1","o2"/),(/"o2","o1"/),(/"p1","o1"/),r1(:,iroot:iroot),Fbar_mi, &
-  &                      sigma1(:,iroot:iroot),-1.0d0,1.0d0,nrep)
-
-
-!S_ai = S_ai + w_mbej(ma,ei)*r1(e,m)
-!------------------------------------ 
-
-    call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1(:,iroot:iroot), &
-  &                      sigma1(:,iroot:iroot),1.0d0,1.0d0,nrep,W_mbej)
-
-  enddo
-
-       allocate (ev(nroot))
-       allocate (evec(nroot,nroot))
-
-       evec = 0.0d0
-       ev = 0.0d0
-       call solve_cg(nroot,sigma1,evec,ev)
-       write(*,*)'H eigenvalues', (ev(i),i=1,min(10,nroot))
-
-     deallocate(sigma1)
-! copy the eigenvectors to r1
-         r1 = evec
-
-       deallocate(ev)
-       deallocate(evec)
-
- end subroutine
-
-   subroutine trial_vectors_ip (r1,Fbar_mi)
-
-#include "symm.inc"
-!---------------Description--------------------------------------------
-!     generating R1 trial vectors by diagonalizing HBar_SS matrix.
-!-----------------------------------------------------------------------
-
-!---------------Calling variables--------------------------------------
-
-  real(8), intent(inout)   :: r1(:,:) ! R-Amplitudes
-  real(8), intent(in)  :: Fbar_mi(:)      
-
-!---------------Local Variables--------------------
-
-  real(8), allocatable :: sigma1(:,:),ev(:),evec(:,:) 
-  integer              :: i,iroot,nroot,jroot
-
-!--------------------------------------------------
-
-    nroot = size(r1,1)
-
-    allocate(sigma1(nroot,nroot))
-
-    sigma1 = 0.0d0
-
-   do iroot = 1, nroot
-
-     call contraction_222 ((/"o2","o1"/),(/"c1","o2"/),(/"c1","o1"/),Fbar_mi,r1(:,iroot:iroot),sigma1(:,iroot:iroot), &
-    &                       -1.0d0,1.0d0,nrep)
-
-   enddo
-
-       allocate (ev(nroot))
-       allocate (evec(nroot,nroot))
-
-       evec = 0.0d0
-       ev = 0.0d0
-       call solve_cg(nroot,sigma1,evec,ev)
-         write(*,*)'H eigenvalues', (ev(i),i=1,nroot)
-
-     deallocate(sigma1)
-! copy the eigenvectors to r1
-         r1 = evec
-
-       deallocate(ev)
-       deallocate(evec)
-
- end subroutine
-
-   subroutine trial_vectors_EA (r1,Fbar_ae)
-
-#include "symm.inc"
-!---------------Description--------------------------------------------
-!     generating R1 trial vectors by diagonalizing HBar_SS matrix.
-!-----------------------------------------------------------------------
-
-!---------------Calling variables--------------------------------------
-
-  real(8), intent(inout)   :: r1(:,:) ! R-Amplitudes
-  real(8), intent(in)  :: Fbar_ae(:)      
-
-!---------------Local Variables--------------------
-
-  real(8), allocatable :: sigma1(:,:),ev(:),evec(:,:) 
-  integer              :: i,iroot,nroot,jroot
-
-!--------------------------------------------------
-
-    nroot = size(r1,1)
-
-    allocate(sigma1(nroot,nroot))
-
-    sigma1 = 0.0d0
-
-   do iroot = 1, nroot
-
-    call contraction_222 ((/"p1","p2"/),(/"p2","c1"/),(/"p1","c1"/),Fbar_ae,r1(:,iroot:iroot),sigma1(:,iroot:iroot), &
-   &                    1.0d0,1.0d0,nrep)
-
-   enddo
-
-       allocate (ev(nroot))
-       allocate (evec(nroot,nroot))
-
-       evec = 0.0d0
-       ev = 0.0d0
-       call solve_cg(nroot,sigma1,evec,ev)
-         write(*,*)'H eigenvalues', (ev(i),i=1,20)
-
-     deallocate(sigma1)
-! copy the eigenvectors to r1
-         r1 = evec
-
-       deallocate(ev)
-       deallocate(evec)
-
- end subroutine
-
   subroutine lambda2_disconnected_IP(l1,f_bar,lambda2)
 
 !---------------Description--------------------------------------------
@@ -1693,7 +1543,7 @@ integer :: nbuf3,ierr
            enddo
          endif
 !--------------------------------------------------------------
-! L2(ij,ab) = L2(ij,ab) - L1(j,a*) * f_bar(i,b) 
+! L2(ij,a*b) = L2(ij,ab) - L1(j,a*) * f_bar(i,b) 
 !--------------------------------------------------------------
         if (jrep.eq.arep) then
            ij = 1

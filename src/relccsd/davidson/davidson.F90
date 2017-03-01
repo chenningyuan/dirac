@@ -6,6 +6,7 @@ implicit none
 public davidson_setup
 public davidson_cleanup
 public davidson_driver
+public solve_values_vectors
 
 !public sort_values_vectors
 !public set_safe_minimum
@@ -1192,7 +1193,7 @@ contains
             allocate(bc(vectors_N,vectors_L))
             bc = zero_r8
 !           call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
-            call dgemm('N', 'T', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
+            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
                        vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
 
 !           call print_vectors_R(bc, label="bc                            ")

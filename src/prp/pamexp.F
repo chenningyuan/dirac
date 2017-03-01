@@ -38,6 +38,7 @@ C
       DIMENSION EXPVAL(*),WORK(LWORK)
       CHARACTER WF*4
       INTEGER, OPTIONAL :: state 
+      INTEGER :: state_local 
 C
 #include "dcbexp.h"
 #include "dcbbas.h"
@@ -61,9 +62,14 @@ CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
       LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
 #endif
+      if (present(state)) then
+          state_local = state
+      else
+          state_local = 1
+      end if
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KFIRST),
-     &            WORK(KFREE),LFREE,state)
+     &            WORK(KFREE),LFREE,state_local)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif
@@ -112,7 +118,7 @@ C
       CHARACTER WF*4
       INTEGER   GETIOPEN
       LOGICAL FNDLAB
-      INTEGER, OPTIONAL :: state 
+      INTEGER :: state 
 C
 C     Initialize
 C
