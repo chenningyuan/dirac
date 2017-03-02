@@ -239,8 +239,7 @@ C|__________________________________________________________
 !
 !---------------Local variables--------------------------------------
 !
-      REAL*8 EA,EI,EB,EJ
-      COMPLEX*16 CFAC
+      REAL*8                           :: EA,EI,EB,EJ
 !
 !---------------Executable code--------------------------------------
 !
@@ -750,3 +749,155 @@ C
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT27(S,T)
+ 
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+! Sorts the <a|i><b|j> integral stream to a <a|j><b|i> stream.
+! SRT16 does not apply because it sorts from <<>> to <><> !
+!
+!---------------Calling variables--------------------------------------
+!
+      REAL*8,dimension(:)              :: S   ! source array <><>
+      REAL*8,dimension(:)              :: T   ! destination array <><>
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "../relccsd/symm.inc"
+#include "../relccsd/complex.inc"
+!
+!---------------Local variables--------------------------------------
+!
+!
+!---------------Executable code--------------------------------------
+!
+      AIBJ = 0
+
+      DO BJREP = 1, NREP   !bosonic irep
+        DO 10 JREP = 1, NREP   !fermionic irep
+          BREP = MULTB(JREP,BJREP+NREP,2)
+          DO J = 1, NO(JREP)
+            DO B = 1, NV(BREP)
+               DO 20 IREP = 1, NREP
+                 AREP = MULTB(IREP,BJREP+NREP,2)
+                 DO I = 1, NO(IREP)
+                   DO A = 1, NV(AREP)
+
+!              *** calculate destination offset  AJBI
+
+                     AJREP = MULTB(AREP,JREP,2)
+                     BIREP = MULTB(BREP,IREP,2)
+  
+                     AJBI = JVOVO(BIREP) +
+     &                 (JJVO(BREP,IREP)+(I-1)*NV(BREP) + B-1)*MVO(AJREP)
+                     AJBI = AJBI + JJVO(AREP,JREP) + (J-1)*NV(AREP) + A
+
+                     if(ajbi.gt.jvovo(nrep+1)) then
+                       write(*,*) 'srt 27 problem:'
+                       write(*,*) 'ajbi,jvovo:',ajbi,jvovo(nrep+1)
+                       stop
+                     endif
+
+                     AIBJ = AIBJ + 1
+                     IF (CARITH) THEN
+                        stop 'complex not yet available'
+                     ELSE
+                        T(AJBI) = S(AIBJ)
+                     ENDIF
+
+                   ENDDO !A
+                 ENDDO !I
+ 20           ENDDO  !IREP
+            ENDDO  !B
+          ENDDO  !J
+ 10     ENDDO !JREP
+      ENDDO  !BJREP
+
+      IF((AIBJ).ne.JVOVO(nrep+1)) Then
+        write(*,*) 'Consistency error in SRT27!'
+        write(*,*) 'Counter:',AIBJ
+        write(*,*) 'Required value:',JVOVO(nrep+1)
+        stop
+      ENDIF
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     SUBROUTINE DENOMXYZ (EPS,T2)
+!
+!     IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+!     Divide VVOO integrals by denominators ea + eb - ej - ei
+!     her in the modern F90 version
+!
+!---------------Calling variables--------------------------------------
+!
+!     REAL*8, dimension (:)              ::  EPS
+!     REAL*8, dimension (:)              ::  T2
+!
+!---------------Common Blocks--------------------------------------
+!
+!include  "../relccsd/symm.inc"
+!include  "../relccsd/complex.inc"
+!
+!---------------Local variables--------------------------------------
+!
+!     REAL*8 FAC,FAC1,FAC2,FAC3
+!     COMPLEX*16 CFAC
+!
+!---------------Executable code--------------------------------------
+!
+!     ABIJ = 0
+!     DO IJRP = 1, NREP
+!     DO 10 JRP = 1, NREP
+!     JJ = IO(JRP)
+!     IRP = MULTB(JRP,IJRP+NREP,2)
+!     IF (IRP.LT.JRP) GOTO 10
+!     IOFF = IO(IRP)
+!     DO J = 1, NO(JRP)
+!        JJ = JJ + 1
+!        FAC1 = - EPS(JJ)
+!        IMIN = 1
+!        IF (IRP.EQ.JRP) IMIN = J + 1
+!        DO I = IMIN, NO(IRP)
+!           II = IOFF + I
+!           FAC2 = - EPS(II) + FAC1
+!           DO 20 BRP = 1, NREP
+!           BB = IV(BRP) + IO(NREP+1)
+!           ARP = MULTB(BRP,IJRP+NREP,2)
+!           IF (ARP.LT.BRP) GOTO 20
+!           AOFF = IV(ARP) + IO(NREP+1)
+!           DO B = 1, NV(BRP)
+!              BB = BB + 1
+!              FAC3 = FAC2 + EPS(BB)
+!              AMIN = 1
+!              IF (ARP.EQ.BRP) AMIN = B + 1
+!              DO A = AMIN, NV(ARP)
+!                 AA = AOFF + A
+!                 FAC = FAC3 + EPS(AA)
+!                 ABIJ = ABIJ + 1
+!                 IF (CARITH) THEN
+!                    STOP 'Illegal value'
+!                 ELSE
+!                    T2(ABIJ) = T2(ABIJ)/FAC
+!                 ENDIF
+!              ENDDO
+!           ENDDO
+!20         CONTINUE
+!        ENDDO
+!     ENDDO
+!10   CONTINUE
+!     ENDDO
+!
+!     IF(ABIJ.ne.IVVOOTT(nrep+1)) THEN
+!       WRITE(*,*) 'ABIJ/IVVOOTT:',ABIJ,IVVOOTT(NREP+1)
+!       STOP 'COUNTING ERROR IN DENOMVVOO!'
+!     ENDIF
+!     RETURN
+!     END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+

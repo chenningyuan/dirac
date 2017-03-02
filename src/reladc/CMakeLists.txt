@@ -37,7 +37,7 @@ set(FREE_RELADC_FORTRAN_SOURCES
 )
 
 set(C_RELADC_SOURCES
-    polprp_cutils.c
+    polprp_qstack.c
 )
 
 if (ENABLE_STIELTJES)
