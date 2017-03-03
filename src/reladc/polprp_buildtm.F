@@ -1,5 +1,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_TRAMO(desrep,ioch,eps)
+
+      use qstack
  
       IMPLICIT INTEGER (A-Z)
 !     IMPLICIT none
@@ -160,28 +162,6 @@
           complex*16, dimension(:)      :: ca1,ca2,ca3
           complex*16, dimension(:)      :: ca4,ca5,ca6
         END SUBROUTINE
-
-!       SUBROUTINE tyst_push(i1,ra1) bind(c, name="tyst_push")
-!       use, intrinsic :: iso_c_binding
-!         integer (c_int)                    :: i1
-!         real (c_double)                    :: ra1(*)
-!       END SUBROUTINE
-
-!       FUNCTION tyst_popf (ra1) bind(c, name="tyst_popf")
-!         use, intrinsic ::  iso_c_binding
-!         integer (c_int)         :: tyst_popf
-!         real (c_double)         :: ra1(*)
-!       END FUNCTION
-
-!       FUNCTION tyst_popl (ra1) bind(c, name="tyst_popl")
-!         use, intrinsic :: iso_c_binding
-!         integer (c_int)         :: tyst_popl
-!         real (c_double)         :: ra1(*)
-!       END FUNCTION
-
-!       SUBROUTINE tyst_clr() bind(c, name="tyst_clr")
-!         use, intrinsic :: iso_c_binding
-!       END SUBROUTINE
 
       end interface
 !

@@ -2,8 +2,6 @@
 #include<stdlib.h>
 #include<string.h>
 
-#include "qstack.h"
-
 /*
  *     Local variables managing the heap space for the vector stack.
  *     Visible only in this source file.

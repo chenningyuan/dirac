@@ -34,6 +34,7 @@ set(FREE_RELADC_FORTRAN_SOURCES
     polprp_mainblk.F
     polprp_mpidrv.F
     polprp_prpint.F
+    polprp_qstackm.F90
 )
 
 set(C_RELADC_SOURCES

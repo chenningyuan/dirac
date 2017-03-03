@@ -520,7 +520,6 @@ C
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"     !LTR/LFA are defined here (true, false)
 #include  "../relccsd/ccpar.inc"
-#include  "polprp_infocodes.h"
 !
 !---------------Local variables---------------------------------
 !
