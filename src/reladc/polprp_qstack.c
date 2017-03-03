@@ -138,19 +138,6 @@ int qstack_push(int *stack, int *len, double *arr){
   qsdep[stackn] = curdep;
   printf("PUSH: Stack #%d has now %d vectors stored.\n",*stack,curdep);
 
-/*
-  printf("Push Stack control:\n");
-  for(i=0;i<arrlen;i++) {
-    cule=lenvecs[i];
-    printf("Vector # %d, length: %d  ",i,cule);
-    for(j=0;j<cule;j++) {
-      printf("%f ",astart[i][j]);
-    }
-    printf("\n");
-  }
-  printf("End of stack control\n\n");
-*/
-
   return curdep;
 }
 
@@ -352,7 +339,6 @@ void qstack_shutdown(void){
   }
  
   printf("*** Qstack: Shutting down stack system. Clearing heap space.\n");
-  printf("*** Qstack: Sänk ju foa dräweling wis deudsche bahn.\n");
 
   for(stackn=0;stackn < numofstacks;stackn++){
     curstack = qsbase[stackn];       //clear now stack # stackn
