@@ -9,8 +9,9 @@
  *     All data are on the heap.
  */
 
-static unsigned int numofstacks = 0;
 static unsigned int initialized = 0;
+static unsigned int numofstacks = 0;
+static int verbose = 0;
 static double *** qsbase = NULL;    /* stack distributor */
 static int ** qslen = NULL;  /* length of each vector on each stack */
 static int * qsdep = NULL; /* depth of stack #i */
@@ -21,22 +22,22 @@ static int * qsdep = NULL; /* depth of stack #i */
  *               function qstack_init
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  */
-int qstack_init(int *nost){
+int qstack_init(int *nost, int *vbflag){
 
   int i;
   int nos;
 
   if(initialized){
-    printf("\n\n *** Qstack: Stack already initialized!\n");
-    printf("\n\n *** No action taken.\n");
+    printf("*** Qstack: Stack already initialized!\n");
+    printf("*** Qstack: No action taken.\n");
     return 0;
   }
  
   nos = *nost;
 
   if(nos<1 || nos>100){
-    printf("\n\n *** Qstack: Illegal value for number of stacks!\n");
-    printf("\n\n *** Should be between 1 and 100.\n");
+    printf("*** Qstack: Illegal value for number of stacks!\n");
+    printf("*** Qstack: Should be between 1 and 100.\n");
     return -1;
   }
 
@@ -51,7 +52,7 @@ int qstack_init(int *nost){
 
   qslen = (int **)malloc(nos*sizeof(int *));
   if(qslen == NULL){
-    printf("\n\n *** Could not generate %d stacks.\n",nos);
+    printf("*** Qstack: Could not generate %d stacks.\n",nos);
     return -1;
   }
   for(i=0;i<nos;i++){
@@ -60,7 +61,7 @@ int qstack_init(int *nost){
 
   qsbase = (double ***)malloc(nos*sizeof(double **));
   if(qsbase==NULL){
-    printf("\n\n *** Could not generate %d stacks.\n",nos);
+    printf("*** Qstack: Could not generate %d stacks.\n",nos);
     return -1;
   }
   for(i=0;i<nos;i++){
@@ -68,7 +69,11 @@ int qstack_init(int *nost){
   }
   initialized = 1;
   numofstacks = (unsigned int)nos;
-  printf("\n\n *** Created %d stacks.\n",nos);
+  verbose = (*vbflag)?1:0;
+
+  printf("*** Qstack: Created %d stacks.\n",nos);
+  printf("*** Qstack: Verbose mode is ");
+  printf((verbose)?"on\n":"off\n");
   return nos;
 }
 
@@ -136,12 +141,10 @@ int qstack_push(int *stack, int *len, double *arr){
   qslen[stackn]  = newlen;
 
   qsdep[stackn] = curdep;
-  printf("PUSH: Stack #%d has now %d vectors stored.\n",*stack,curdep);
+  if(verbose) printf("PUSH: Stack #%d has now %d vectors stored.\n",*stack,curdep);
 
-  return curdep;
+  return *len;
 }
-
-
 
 
 /*
@@ -205,7 +208,7 @@ int qstack_popf(int *stack, double *retvec){
     qslen[stackn] = newlen;
   }
   qsdep[stackn] = curdep;
-  printf("POPF: Stack # %d has now %d vectors stored.\n",*stack,curdep);
+  if(verbose) printf("POPF: Stack # %d has now %d vectors stored.\n",*stack,curdep);
   return curlen;
 }
 
@@ -272,7 +275,7 @@ int qstack_popl(int *stack, double *retvec){
     qslen[stackn] = newlen;
   }
   qsdep[stackn] = curdep;
-  printf("POPL: Stack # %d has now %d vectors stored.\n",*stack,curdep);
+  if(verbose) printf("POPL: Stack # %d has now %d vectors stored.\n",*stack,curdep);
   return curlen;
 }
 
@@ -334,7 +337,7 @@ void qstack_shutdown(void){
 
   if(!initialized){
     printf("*** Qstack runtime problem: Stack not initialized!\n");
-    printf("*** No action taken.\n");
+    printf("*** Qstack: No action taken.\n");
     return;
   }
  
@@ -351,5 +354,7 @@ void qstack_shutdown(void){
   free(qsbase);
   free(qslen);
   free(qsdep);
+  numofstacks = 0;
+  initialized = 0;
   return;
 }

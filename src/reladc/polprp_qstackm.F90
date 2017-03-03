@@ -2,10 +2,10 @@ module qstack
 
        interface
 
-         FUNCTION qstack_init (i1) bind(c, name="qstack_init")
+         FUNCTION qstack_init (i1,i2) bind(c, name="qstack_init")
            use, intrinsic ::  iso_c_binding
            integer (c_int)         :: qstack_init
-           integer (c_int)         :: i1
+           integer (c_int)         :: i1,i2
          END FUNCTION
        
          FUNCTION qstack_push (i1, i2, ra1) bind(c, name="qstack_push")
