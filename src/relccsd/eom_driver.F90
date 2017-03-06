@@ -286,7 +286,6 @@
      deallocate(diag_H)
       end if
 
-
    case ('IP')
 
 !As of now, I am targetting the lowest energy determinants across the symmetries.
@@ -305,6 +304,7 @@
         enddo
     enddo
 
+!      H_II = -eps(1:(ndimr1*rcw)) !+ 100.0d0
 
       ABIJ = ai 
       DO IJRP = 1, NREP
@@ -368,10 +368,10 @@
               jroot = i
               R1_dum(iroot,jroot) = 1.0d0
           end do
-!          if (iprnt.ge.2) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector         ")
+          if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector         ")
 
           call trial_vectors_ip(R1_dum,Fbar_HH)
-!          if (iprnt.ge.2) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector  CD1    ",complex_dimension=1)
+          if (iprnt.ge.3) call davidson_print_vectors(R1_dum, label="debug:  R1_dum vector  CD1    ",complex_dimension=1)
       
           R1 = R1_dum(:,1:nroot) 
 
@@ -380,7 +380,7 @@
 !             jroot = 2*iroot - 1
 !             R1(:,iroot) = R1_dum(:,jroot)
 !         end do
-!          if (iprnt.ge.2) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
+          if (iprnt.ge.3) call davidson_print_vectors(R1, label="debug:  R1 vector             ")
 
           deallocate(R1_dum)
       end if
@@ -596,8 +596,6 @@
     L1(1:ndiml1,1:nroot) = 0.0d0 
     L2(1:ndiml2,1:nroot) = 0.0d0 
 
-
-
 ! 1> store the diagonal elements of the transformed Hamiltonian..  
 
      i = 1
@@ -692,7 +690,9 @@
     ii = 0
 
       do arp = 1, nrep
-         irep = multb (arp,1+nrep,1)
+! why 1+nrep instead of state_sym + 1 as before
+!        irep = multb (arp,1+nrep,1)
+         irep = multb (arp,state_sym+nrep,1)
          aa = io(nrep+1) + iv(arp)
       do a = 1, ncont(arp)
          ioff = io(irep)
@@ -1639,6 +1639,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
+#include "inpt.inc"
 #include "ccpar.inc"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResultsL(nrep)
@@ -1664,7 +1665,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         solve_left=left_vectors,   &
                         symmetric=.false., &
                         verbose=relcc_mfd_verbose,   &
-!                        complex_mode=(rcw.eq.2), &
+                        complex_mode=(rcw.eq.2), &
                         convergence_threshold = relcc_mfd_convergence_threshold, &
                         max_subspace_size = relcc_mfd_max_subspace_size, &
                         max_iterations = relcc_mfd_max_iterations, &
@@ -1755,8 +1756,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              enddo
 
              do irep = 1, nrep
-
-                write(*,*)'continuous orbital ',irep,ncont(irep),nroot
+                if (iprnt.ge.1) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
                 ndimr1 = ndimr1 + ncont(irep)*no(irep)
              enddo
 
@@ -1860,7 +1860,8 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 
          if (right_vectors) then
              call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector)
-             call eom_analysis(davResultsR(state_sym)%eValuesRe,davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
+             call eom_analysis(davResultsR(state_sym)%eValues(1:rcw,:),davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
+
 
          else if (left_vectors) then
 
@@ -1871,12 +1872,13 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
          call free_eom_ndet()
          call free_eom_nvx()
 
-         deallocate(B%H_II)
-        if(associated(trial_vector)) deallocate(trial_vector)
+         if (allocated(B%H_II)) deallocate(B%H_II)
+! aspg: trial_vector should have been nullified inside davidson_driver, check
+! why this crashes
+!        if (associated(trial_vector)) deallocate(trial_vector)
 
       end if ! this ends the if checking whether there are any roots required for this symmetry
    end do    ! this ends the loop over symmetries
-
 
    if (right_vectors) then
        write (iw,*) ""

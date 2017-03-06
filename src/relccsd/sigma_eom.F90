@@ -263,7 +263,7 @@
              do iroot = L_already_done + 1, L
 
                 create_sigma_vector_left(:,iroot:iroot) = 0.0d0
-               if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EE sigma vector ",iroot," out of ",L
+                if (iprnt.ge.2) write(iw,"(2x,a,i6,a,i6)") "debug, constructing Left EOM-EE sigma vector ",iroot," out of ",L
                 call Lambda_ee(r(start_r1:end_r1, iroot), &
                  &                  r(start_r2:end_r2, iroot), & 
                  &                  A,                               &
@@ -1133,10 +1133,8 @@ integer :: nbuf3,ierr
   &          (/"o1","c1"/),lambda1,-1.0d0,1.0d0,nrep,RightTensor=L2_ptr,  &
   &          LeftTensor=B%W_iemn)
 
-
        if (iprnt.ge.0) &
     write(iw,*)'diagram 2 ', ddot(ndiml1,lambda1(:,1:1),1,lambda1(:,1:1),1)
-
 !-------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2 (ij,a*e)*f_bar_ae(e,b)
 !-------------------------------------------------
@@ -1145,10 +1143,8 @@ integer :: nbuf3,ierr
    &    (/"o1","o2","c1","p2"/),lambda2,1.0d0,1.0d0,nrep,LeftTensor=L2_ptr, &
    &    RightTensor=B%Fbar_ae)
 
-
        if (iprnt.ge.0) &
     write(iw,*)'diagram 3 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
-
 !----------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) - P(ij) L2 (im,a*b)*f_bar_im (j,m)
 !----------------------------------------------
@@ -1159,7 +1155,6 @@ integer :: nbuf3,ierr
 
        if (iprnt.ge.0) &
     write(iw,*)'diagram 4 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
-
 !--------------------------------------------------------
 !  L(ij,a*b) = L(ij,a*b) + L2(mn,a*b) * W_ijmn(ij,mn)
 !--------------------------------------------------------
@@ -1213,10 +1208,9 @@ integer :: nbuf3,ierr
 
        if (iprnt.ge.0) &
     write(iw,*)'diagram 8 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)
-
      call dealloc_array(e)
 
-      call lambda2_disconnected_IP(L1_ptr,B%Fbar_me,lambda2)
+   call lambda2_disconnected_IP(L1_ptr,B%Fbar_me,lambda2)
 
        if (iprnt.ge.0) &
     write(iw,*)'diagram 9 ', ddot(ndiml2,lambda2(:,1:1),1,lambda2(:,1:1),1)

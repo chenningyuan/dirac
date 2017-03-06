@@ -24,8 +24,7 @@ module trial_vectors_eom
 
 !---------------Local ------------------
 
-  real(8), pointer :: sigma1(:,:),evec(:,:),evR(:), evI(:) 
-!  real(8), allocatable  :: ev(:,:)    
+  real(8), pointer :: sigma1(:,:),evec(:,:), ev(:,:)
   integer          :: i,iroot, nroot,jroot, dimr1
 
 !--------------------------------------------------
@@ -67,20 +66,17 @@ module trial_vectors_eom
 !       call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
    end if
 
-!   allocate (ev(2,nroot))
-   allocate (evR(nroot))
-   allocate (evI(nroot))
+   allocate (ev(2,nroot))
    allocate (evec(dimr1*rcw,nroot))
 
    evec = 0.0d0
-   evR = 0.0d0
-   evI = 0.0d0
+   ev   = 0.0d0
 
-   call solve_values_vectors(sigma1, evR, evI, evec, evec, .false.)
+   call solve_values_vectors(sigma1, ev, evec, evec, .false.)
    if (iprnt.ge.2) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
-           print *,"(",evR(i), ",",evI(i),")"
+           print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
 !       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
    end if
@@ -88,7 +84,7 @@ module trial_vectors_eom
 ! copy the eigenvectors to r1
    r1 = evec
 
-   deallocate(evR,evI)
+   deallocate(ev)
    deallocate(evec)
    deallocate(sigma1)
    end subroutine
@@ -109,7 +105,7 @@ module trial_vectors_eom
 
 !---------------Local Variables--------------------
 
-  real(8), pointer :: sigma1(:,:),evec(:,:),evR(:), evI(:) 
+  real(8), pointer :: sigma1(:,:),evec(:,:), ev(:,:)
   integer              :: i,iroot,nroot,jroot,dimr1, j, k, myrep
 
 !--------------------------------------------------
@@ -133,19 +129,17 @@ module trial_vectors_eom
    end if
 
 
-   allocate (evR(nroot))
-   allocate (evI(nroot))
+   allocate (ev(2,nroot))
    allocate (evec(dimr1*rcw,nroot))
 
    evec = 0.0d0
-   evR = 0.0d0
-   evI = 0.0d0
+   ev   = 0.0d0
 
-   call solve_values_vectors(sigma1, evR, evI, evec, evec, .false.)
+   call solve_values_vectors(sigma1, ev, evec, evec, .false.)
    if (iprnt.ge.2) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
-           print *,"(",evR(i), ",",evI(i),")"
+           print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
 !       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
    end if
@@ -153,7 +147,7 @@ module trial_vectors_eom
 ! copy the eigenvectors to r1
    r1 = evec
 
-   deallocate(evR,evI)
+   deallocate(ev)
    deallocate(evec)
    deallocate(sigma1)
 
@@ -175,8 +169,8 @@ module trial_vectors_eom
 
 !---------------Local Variables--------------------
 
-  real(8), pointer :: sigma1(:,:),evec(:,:),evR(:), evI(:) 
-  integer              :: i,iroot,nroot,jroot,dimr1
+  real(8), pointer :: sigma1(:,:),evec(:,:), ev(:,:)
+  integer          :: i,iroot,nroot,jroot,dimr1
 
 !--------------------------------------------------
 
@@ -200,19 +194,17 @@ module trial_vectors_eom
    end if
 
 
-   allocate (evR(nroot))
-   allocate (evI(nroot))
+   allocate (ev(2,nroot))
    allocate (evec(dimr1*rcw,nroot))
 
    evec = 0.0d0
-   evR = 0.0d0
-   evI = 0.0d0
+   ev   = 0.0d0
 
-   call solve_values_vectors(sigma1, evR, evI, evec, evec, .false.)
+   call solve_values_vectors(sigma1, ev, evec, evec, .false.)
    if (iprnt.ge.2) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
-           print *,"(",evR(i), ",",evI(i),")"
+           print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
 !       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
    end if
@@ -220,7 +212,7 @@ module trial_vectors_eom
 ! copy the eigenvectors to r1
    r1 = evec
 
-   deallocate(evR,evI)
+   deallocate(ev)
    deallocate(evec)
    deallocate(sigma1)
 

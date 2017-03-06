@@ -6,6 +6,7 @@ implicit none
 public davidson_setup
 public davidson_cleanup
 public davidson_driver
+public davidson_print_vectors
 public solve_values_vectors
 
 !public sort_values_vectors
@@ -24,8 +25,7 @@ private
 ! derived types
 
 type davidson_results
-    real(kind=8), pointer :: eValuesRe(:) => NULL()
-    real(kind=8), pointer :: eValuesIm(:) => NULL()
+    real(kind=8), pointer :: eValues(:,:) => NULL()
     real(kind=8), pointer :: eVectorsR(:,:) => NULL()
     real(kind=8), pointer :: eVectorsL(:,:) => NULL()
 end type
@@ -57,11 +57,12 @@ logical, save      :: davidson_solve_lhs
 logical, save      :: davidson_solve_values
 logical, save      :: davidson_verbose 
 logical, save      :: davidson_symmetric 
-logical, save      :: davidson_complex_matrix 
+logical, save      :: davidson_complex_mode_with_reals 
 logical, save      :: davidson_save_subspaces 
 logical, save      :: davidson_save_sigmas 
 logical, save      :: davidson_save_results
 logical, save      :: davidson_overlap_sorting
+logical, save      :: davidson_debug = .false.
 
 ! 
 ! variables for controlling i/o
@@ -81,6 +82,10 @@ integer, save :: right_subspace_file_unit = 142
 integer, save :: left_sigma_file_unit     = 240
 integer, save :: left_vectors_file_unit   = 241
 integer, save :: left_subspace_file_unit  = 242
+
+!double precision :: ddot, dscal
+!complex(kind=16) :: zscal, zladiv
+
 
 contains 
 
@@ -125,26 +130,22 @@ contains
     subroutine davidson_create_results(results, N, nroots, values, left, right)
         type(davidson_results), intent(inout) :: results
         integer, intent(in)    :: N, nroots 
-        integer                :: nroots_local 
+        integer                :: N_local
         logical, intent(in)    :: values, left, right
 
 ! we don't use complex variables but rather use twice the amount of real variables
 ! for symmetric matrices we only need one of the vectors, and we choose it to be the right one
 ! left vectors, if asked, are ignored
-        nroots_local = nroots 
-        if (davidson_symmetric) then
-            if (davidson_complex_matrix) nroots_local = 2*nroots
-            if (values) allocate(results%eValuesRe(nroots_local))
-            if (right)  allocate(results%eVectorsR(N,nroots_local))
-        else
-            if (values) then
-                allocate(results%eValuesRe(nroots_local))
-                allocate(results%eValuesIm(nroots_local))
-            end if
+        N_local = N
+        if (davidson_complex_mode_with_reals) N_local = 2*N
 
-            if (davidson_complex_matrix) nroots_local = 2*nroots_local
-            if (right) allocate(results%eVectorsR(N,nroots_local))
-            if (left)  allocate(results%eVectorsL(N,nroots_local))
+        if (davidson_symmetric) then
+            if (values) allocate(results%eValues(1,nroots))
+            if (right)  allocate(results%eVectorsR(N,nroots))
+        else
+            if (values) allocate(results%eValues(2,nroots))
+            if (right) allocate(results%eVectorsR(N,nroots))
+            if (left)  allocate(results%eVectorsL(N,nroots))
         end if
     end subroutine
 
@@ -152,11 +153,9 @@ contains
     subroutine free_davidson_results(results)
         type(davidson_results), intent(inout) :: results
 
-        if (associated(results%eValuesRe)) deallocate(results%eValuesRe)
-        if (associated(results%eValuesIm)) deallocate(results%eValuesIm)
+        if (associated(results%eValues)) deallocate(results%eValues)
         if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
         if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
-
     end subroutine
 
 
@@ -171,7 +170,7 @@ contains
                               solve_right,       &
                               solve_left,        &
                               symmetric,         &
-                              complex_matrix,    &
+                              complex_mode,      &
                               verbose,           & 
                               overlap_sorting,   &
                               save_results,      &
@@ -194,7 +193,7 @@ contains
         logical, optional :: save_sigmas 
         logical, optional :: save_subspaces
         logical, optional :: save_results
-        logical, optional :: complex_matrix
+        logical, optional :: complex_mode
 
         call set_safe_minimum() 
 
@@ -242,6 +241,7 @@ contains
 
         if (present(verbose)) then
             davidson_verbose = verbose
+            davidson_debug   = verbose
         else
             davidson_verbose = .false.
         end if
@@ -252,10 +252,10 @@ contains
             davidson_symmetric = .false. 
         end if
 
-        if (present(complex_matrix)) then
-            davidson_complex_matrix = complex_matrix 
+        if (present(complex_mode)) then
+            davidson_complex_mode_with_reals = complex_mode 
         else
-            davidson_complex_matrix = .false. 
+            davidson_complex_mode_with_reals = .false. 
         end if
 
         if (present(unit_output)) then
@@ -336,7 +336,7 @@ contains
         write(davidson_output_file_unit, *) "  solve for right eigenvectors  : ", davidson_solve_rhs
         write(davidson_output_file_unit, *) "  solve for left eigenvectors   : ", davidson_solve_lhs
         write(davidson_output_file_unit, *) "  symmetric eigenproblem        : ", davidson_symmetric
-        write(davidson_output_file_unit, *) "  complex matrix                : ", davidson_complex_matrix
+        write(davidson_output_file_unit, *) "  complex mode (real variables) : ", davidson_complex_mode_with_reals
         write(davidson_output_file_unit, *) "  root following via overlap    : ", davidson_overlap_sorting
 
         write(davidson_output_file_unit, *) ""
@@ -347,7 +347,7 @@ contains
     subroutine set_safe_minimum()
         double precision dlamch
         safe_minimum = dlamch('S')
-        print *, "debug, safe minimum (LAPACK) is ",safe_minimum
+        if (davidson_debug) print *, "debug, safe minimum (LAPACK) is ",safe_minimum
     end subroutine 
 
 
@@ -397,10 +397,8 @@ contains
             end do
 
             nullify(old_subspace_vectors_local)
-           if (associated(old_subspace_vectors_R))then
-            nullify(old_subspace_vectors_R)   
-!            deallocate(old_subspace_vectors_R)
-           endif  
+            deallocate(old_subspace_vectors_R)
+            nullify(old_subspace_vectors_R)
         end if
     end function
 
@@ -437,11 +435,14 @@ contains
         end do
 
         if (verbose_local) &
-            call print_vectors_R(updated_subspace_vectors_R, label="new subspace vectors before GS")
+            call davidson_print_vectors(updated_subspace_vectors_R, label="new subspace vectors before GS")
 
         call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
 
-        if (associated(old_vectors_R)) nullify(old_vectors_R)
+        if (associated(old_vectors_R)) then
+            deallocate(old_vectors_R)
+            nullify(old_vectors_R)
+        end if
     end function
 
     subroutine orthonormalize_subspace(b, method, verbose)
@@ -467,9 +468,42 @@ contains
         if (method_local .eq. 1) then
             call gram_schmidt_orthogonalization(b, verbose=verbose_local)
         else if (method_local .eq. 2) then
-!           cal QR(b, verbose=verbose_local)
+            call qr_orthogonalization(b)
         end if
 
+    end subroutine
+
+    subroutine qr_orthogonalization(b)
+        real(kind=8), intent(inout)   :: b(:,:)
+        integer :: m, n, info, lwork, i, k
+        real(kind=8), allocatable :: work(:), tau(:)
+
+        m = size(b,1)
+        n = size(b,2)
+        k = min(m,n)
+
+        stop ('orthogonalization via QR decomposition not fully debugged yet')
+        allocate(tau(k))
+
+        lwork = -1 
+        allocate(work(1))
+        call dgeqrf(m, n, b, m, tau, work, lwork, info)
+        lwork = work(1)
+        deallocate(work)
+
+        allocate(work(lwork))
+        call dgeqrf(m, n, b, m, tau, work, lwork, info)
+        deallocate(work)
+
+        lwork = -1 
+        allocate(work(1))
+        call dorgqr(m, n, k, b, m, tau, work, lwork, info)
+        lwork = work(1)
+        deallocate(work)
+        allocate(work(lwork))
+        call dorgqr(m, n, k, b, m, tau, work, lwork, info)
+        deallocate(work)
+        deallocate(tau)
 
     end subroutine
 
@@ -478,23 +512,62 @@ contains
         real(kind=8), intent(in) :: u(:)
         real(kind=8), intent(in) :: v(:)
         real(kind=8) :: numerator, denominator, factor
-        integer :: N
-        double precision ddot
+        real(kind=8) :: norm_denominator
+        integer :: N, N_complex
+        double precision ddot, dznrm2
+        complex(kind=16) zladiv, zdotc, zdotu
+        real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
 
         N = size(u,1)
-        denominator = ddot(N, u, 1, u, 1) 
-        numerator   = ddot(N, v, 1, u, 1) 
 
-        projection = zero_r8
-        if (denominator .gt. safe_minimum) then
-            factor = numerator/denominator
+        projection = 0.0d0 
+
+        if (davidson_debug) print *,'debug U',u
+        if (davidson_debug) print *,'debug V',v
+
+        if (davidson_complex_mode_with_reals) then
+            N_complex = N / 2
+
+            if (davidson_debug) print *,'denominator complex before zdot',denominator_complex
+            if (davidson_debug) print *,'  numerator complex before zdot',numerator_complex
+
+!           denominator_complex = zdotu(N_complex, u, 1, u, 1) 
+            call xdotc(denominator_complex,N_complex, u, 1, u, 1) 
+!           numerator_complex   = zdotu(N_complex, v, 1, u, 1) 
+            call xdotc(numerator_complex,N_complex, v, 1, u, 1) 
+
+            if (davidson_debug) print *,'denominator complex  after zdot',denominator_complex
+            if (davidson_debug) print *,'  numerator complex  after zdot',numerator_complex
+
+            norm_denominator = dznrm2(N_complex, u, 1)
+
+            if (davidson_debug) print *,'  norm denominator',norm_denominator
+            if (norm_denominator .gt. safe_minimum) then
+                call dladiv(numerator_complex(1),numerator_complex(2), &
+                            denominator_complex(1),denominator_complex(2), &
+                            factor_complex(1), factor_complex(2))
+                if (davidson_debug) print *,'  factor_complex from zladiv',factor_complex
+            else
+                factor_complex = cmplx(0.0d0, 0.0d0)
+            end if
+            projection = u
+            call zscal(N_complex, factor_complex, projection, 1)
+            if (davidson_debug) print *, "GS projection, factor: ",factor_complex
+
         else
-            factor = zero_r8
+            denominator = ddot(N, u, 1, u, 1) 
+            numerator   = ddot(N, v, 1, u, 1) 
+            if (denominator .gt. safe_minimum) then
+                factor = numerator/denominator
+            else
+                factor = zero_r8
+            end if
+            projection = factor * u
+!           projection = dscal(N, factor, u, 1)
+            if (davidson_debug) print *, "GS projection, factor: ",factor
         end if
-        if (.false.) then
-            print *, "GS projection, factor: ",factor
-        end if
-        projection = factor * u
+
+        if (davidson_debug) print *, "GS projection, ",projection
     end subroutine 
 
     subroutine gram_schmidt_orthogonalization(vectors, verbose)
@@ -505,7 +578,7 @@ contains
         integer :: vectors_L, vectors_N
         integer :: i, j, k
         logical :: verbose_local
-        real(kind=8) :: norm
+        real(kind=8) :: norm, vr, vi, pr, pi
 
         vectors_L = size(vectors,2)
         vectors_N = size(vectors,1)
@@ -521,11 +594,24 @@ contains
         do i = 1, vectors_L
             norm = vector_norm(vectors(:,i))
             if (verbose_local) then
-                print *, "debug, Gram-Schmidt orthogonalization"
+                if (davidson_debug) print *, "debug, Gram-Schmidt orthogonalization"
                 print *, "  renormalizing vector v(",i,") : (norm = ",norm,")"
-                do k = 1, vectors_N
-                    print "(4x,1e24.16)", vectors(k,i)
-                end do
+                if (davidson_complex_mode_with_reals) then
+                    do k = 1, vectors_N, 2
+                        vr = vectors(k,i)
+                        vi = vectors(k+1,i)
+                        if (vi < zero_r8) then
+                            print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
+                        else
+                            print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
+                        end if
+                    end do
+                else
+                    do k = 1, vectors_N
+                        vr = vectors(k,i)
+                        print "(4x,1e14.6)", vr
+                    end do
+                end if
                 print *, ""
             end if 
             if (norm .ge. safe_minimum ) then
@@ -535,36 +621,69 @@ contains
             end if
             if (verbose_local) then
                 print *, "renormalized  vector v(",i,") : " 
-                do k = 1, vectors_N
-                    print "(4x,1e24.16)", vectors(k,i)
-                end do
+                if (davidson_complex_mode_with_reals) then
+                    do k = 1, vectors_N, 2
+                        vr = vectors(k,i)
+                        vi = vectors(k+1,i)
+                        if (vi < zero_r8) then
+                            print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
+                        else
+                            print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
+                        end if
+                    end do
+                else
+                    do k = 1, vectors_N
+                        vr = vectors(k,i)
+                        print "(4x,1e14.6)", vr
+                    end do
+                end if
                 print *, ""
             end if
             do j = i+1, vectors_L
                 call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
                 if (verbose_local) then
                     print *," projection of v(",i,") onto v(",j,"):"
-                    do k = 1, vectors_N
-                        print "(4x,1e24.16,4x,1e24.16)", vectors(k,j), projection(k)
-                    end do
+                    if (davidson_complex_mode_with_reals) then
+                        do k = 1, vectors_N, 2
+                            vr = vectors(k,j)
+                            vi = vectors(k+1,j)
+    
+                            pr = projection(k)
+                            pi = projection(k+1)
+
+                            if (vi < zero_r8) then
+                                print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i", pr, " -",abs(pi)," i"
+                            else
+                                print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," +", vi," i", pr," +", pi," i"
+                            end if
+                        end do
+                    else
+                        do k = 1, vectors_N
+                            vr = vectors(k,j)
+                            pr = projection(k)
+                            print "(4x,1e14.6)", vr
+                        end do
+                    end if
                     print *, ""
                 end if
                 vectors(:,j) = vectors(:,j) - projection(:)
             end do
             if (verbose_local) then
-                call print_vectors_R(vectors, label="all vectors                   ")
+                call davidson_print_vectors(vectors, label="all vectors                   ")
             end if
         end do
 
         deallocate(projection)
     end subroutine 
 
-    subroutine print_vectors_R(vectors, label, nvectors)
+    subroutine davidson_print_vectors(vectors, label, nvectors, complex_dimension)
         real(kind=8), intent(in) :: vectors(:,:)
         integer, intent(in), optional :: nvectors
         character(len=max_label_length), intent(in), optional :: label 
+        integer, intent(in), optional :: complex_dimension
 
-        integer :: L, N, i, j
+        integer :: L, N, i, j, N_complex, L_complex, N_step, L_step, kr, ki
+        real(kind=8) :: vr, vi
         character(len=max_label_length) :: label_local
 
         N = size(vectors,1)
@@ -576,21 +695,64 @@ contains
             print *, ""
             print "(a)", label_local(1:max_label_length)
             print *, ""
-        end if
-        do i = 1, N
-            print "(2x,i6,$)", i
-            do j = 1, L
-                print "(4x,1e24.16,$)", vectors(i,j)
-            end do
+            if (davidson_debug) print *, 'debug: size 1 ',N, '  size 2 ',L
             print *, ""
-        end do
+        end if
+        if (present(complex_dimension)) then
+            if (complex_dimension.eq.1) then
+                N_step = 2
+                L_step = 1
+            else if (complex_dimension.eq.2) then
+                N_step = 1
+                L_step = 2
+            end if
+        else
+           N_step = 2
+           L_step = 1
+        end if
+
+        if (davidson_complex_mode_with_reals) then
+            N_complex = N / N_step
+            L_complex = L / L_step
+
+            do i = 1, N_complex
+                print "(2x,i6,$)", i
+                do j = 1, L_complex
+                    if (N_step.eq.2) then
+                        kr = N_step*(i-1) + 1
+                        ki = kr + 1
+                        vr = vectors(kr,j)
+                        vi = vectors(ki,j)
+                    else 
+                        kr = L_step*(j-1) + 1
+                        ki = kr + 1
+                        vr = vectors(i, kr)
+                        vi = vectors(i, ki)
+                    end if
+                    if (vi < zero_r8) then
+                        print "(4x,1e14.6,a,1e13.6,a,$)", vr," -",abs(vi)," i"
+                    else
+                        print "(4x,1e14.6,a,1e13.6,a,$)", vr," +",vi," i"
+                    end if
+                end do
+                print *, ""
+            end do
+        else
+            do i = 1, N
+                print "(2x,i6,$)", i
+                do j = 1, L
+                    print "(4x,1e14.6,$)", vectors(i,j)
+                end do
+                print *, ""
+            end do
+        end if 
     end subroutine
 
 
-    subroutine print_values_vectors_R(output_file_unit, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left, right, nroots)
+    subroutine print_values_vectors_R(output_file_unit, eValues, eVectorsR, eVectorsL, left, right, nroots)
         real(kind=8), intent(in) :: eVectorsL(:,:)
         real(kind=8), intent(in) :: eVectorsR(:,:)
-        real(kind=8), intent(in) :: eValuesRe(:), eValuesIm(:)
+        real(kind=8), intent(in) :: eValues(:,:)
         integer, optional, intent(in) :: nroots
         integer, intent(in) :: output_file_unit
 
@@ -600,26 +762,36 @@ contains
         integer :: i
         character(len=max_label_length) :: label
 
-        vectors_N = size(eValuesRe,1)
+        vectors_N = size(eValues,1)
         nroots_local = vectors_N
         if (present(nroots)) nroots_local = nroots
 
         label = "Eigenvalues"
+        if (davidson_debug) print *, "debug, evalues inside print_values_vectors_R"
+        if (davidson_debug) print *, eValues
+
         do i = 1, nroots_local 
-            if (eValuesIm(i) .eq. zero_r8) then
-                write(output_file_unit,"(4x,a,i6,a,1e24.16)") "Eigenvalue ",i," : ",eValuesRe(i)
+            if (davidson_complex_mode_with_reals) then
+                    write(output_file_unit,"(4x,a,i6,a,1e14.6,a,1e14.6,a)") &
+                          "Eigenvalue ",i," : ",eValues(1,i)," + ",eValues(2,i), " i "
+!                   write(output_file_unit,"(4x,a,i6,a,1e14.6,a,1e14.6,a)") &
+!                         "*igenvalue ",i," : ",eValues(1,i)," + ",eValues(2,i), " i "
             else
-                write(output_file_unit,"(4x,a,i6,a,1e24.16,a,1e24.16,a)") &
-                      "Eigenvalue ",i," : ",eValuesRe(i)," + ",eValuesIm(i), " i "
+                if (eValues(2,i) .eq. zero_r8) then
+                    write(output_file_unit,"(4x,a,i6,a,1e14.6)") "Eigenvalue ",i," : ",eValues(1,i)
+                else
+                    write(output_file_unit,"(4x,a,i6,a,1e14.6,a,1e14.6,a)") &
+                          "Eigenvalue ",i," : ",eValues(1,i)," + ",eValues(2,i), " i "
+                end if
             end if
         end do
         if (left) then
             label = "Left Eigenvectors            "
-            call print_vectors_R(eVectorsL, label=label) 
+            call davidson_print_vectors(eVectorsL, label=label) 
         end if
         if (right) then
             label = "Right Eigenvectors           "
-            call print_vectors_R(eVectorsR, label=label) 
+            call davidson_print_vectors(eVectorsR, label=label) 
         end if
 
     end subroutine 
@@ -627,17 +799,24 @@ contains
     function vector_norm(v)
         real(kind=8) :: vector_norm
         real(kind=8), intent(in) :: v(:)
-        integer :: vector_N, i
-        double precision dnrm2
+        integer :: vector_N, i, vector_N_complex
+        double precision dnrm2, dznrm2
 
         vector_N = size(v,1)
-        vector_norm = dnrm2(vector_N, v, 1)
+        if (davidson_complex_mode_with_reals) then
+            vector_N_complex = vector_N / 2
+            vector_norm = dznrm2(vector_N_complex, v, 1)
+        else
+            vector_norm = dnrm2(vector_N, v, 1)
+        end if
     end function
+
+    
 
     function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, sigma_vector, b, preconditioner, correct_all)
         real(kind=8), pointer     :: correction_to_vectors(:,:)
         integer, intent(in)       :: nroots, output_file_unit
-        real(kind=8), intent(in)  :: e_small_M(:)
+        real(kind=8), intent(in)  :: e_small_M(:,:)
         real(kind=8), intent(in)  :: c_small_M(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
         real(kind=8), intent(in)  :: b(:,:)
@@ -664,19 +843,17 @@ contains
         vectors_to_update = .true.
 
         allocate(r(vectors_N,nroots))
+        r = 0.0d0
         call form_r(r, nroots, e_small_M, c_small_M, sigma_vector, b)
 
         unconverged_roots = 0
         do k = 1, nroots
             norm_r = vector_norm(r(:,k))
             if (norm_r .lt. davidson_convergence_threshold) then 
-               write(output_file_unit, "(4x,a,i6,a,1e24.16,a,1e24.16,a)") "Root ",k,"  ||q_k,M|| ", norm_r,  &
-                                                      " threshold ", davidson_convergence_threshold, &
-                                                      " <<< converged ! "
+               write(output_file_unit, "(4x,a,i6,a,1e14.6,4x,a)") "Root ",k,"  ||q_k,M|| ", norm_r, " <<< converged ! "
                vectors_to_update(k) = .false.
             else
-               write(output_file_unit, "(4x,a,i6,a,1e24.16,a,1e24.16)")  "Root ",k,"  ||q_k,M|| ", norm_r, &
-                                                     " threshold ", davidson_convergence_threshold
+               write(output_file_unit, "(4x,a,i6,a,1e14.6)")  "Root ",k,"  ||q_k,M|| ", norm_r
                vectors_to_update(k) = .true.
                unconverged_roots = unconverged_roots + 1
             end if
@@ -750,15 +927,12 @@ contains
     subroutine form_r(r, nroots,  e_small_M, c_small_M, sigma_vector,  b)
         real(kind=8), intent(inout) :: r(:,:)
         integer, intent(in)       :: nroots
-        real(kind=8), intent(in)  :: e_small_M(:)
+        real(kind=8), intent(in)  :: e_small_M(:,:)
         real(kind=8), intent(in)  :: c_small_M(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
         real(kind=8), intent(in)  :: b(:,:)
-
         integer :: vectors_L, vectors_N
         integer :: k
-        real(kind=8) :: alpha_lapack = one_r8
-        real(kind=8) :: beta_lapack  = zero_r8
         real(kind=8), allocatable :: residue_a(:,:)
         real(kind=8), allocatable :: residue_b(:,:)
 
@@ -771,19 +945,45 @@ contains
         residue_a = zero_r8
         residue_b = zero_r8
 
-        call dgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
-                   alpha_lapack, sigma_vector, vectors_N, c_small_M, vectors_L, &
-                   beta_lapack, residue_a, vectors_N)
-        call dgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
-                   alpha_lapack, b, vectors_N, c_small_M, vectors_L,            &
-                   beta_lapack, residue_b, vectors_N)
-        if (.false.) then
-            print *, "debug in form_r, residue_a :",residue_a
-            print *, "debug in fomr_r, residue_b :",residue_b
+        if (davidson_complex_mode_with_reals) then
+            vectors_N = vectors_N / 2
+            call zgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
+                       (1.0d0, 0.0d0), sigma_vector, vectors_N, c_small_M, vectors_L, &
+                       (0.0d0, 0.0d0), residue_a, vectors_N)
+            call zgemm('N', 'N', vectors_N, vectors_L, vectors_L,                   &
+                       (1.0d0, 0.0d0), b, vectors_N, c_small_M, vectors_L,            &
+                       (0.0d0, 0.0d0), residue_b, vectors_N)
+        else
+            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L,              &
+                       (1.0d0), sigma_vector, vectors_N, c_small_M, vectors_L, &
+                       (0.0d0), residue_a, vectors_N)
+            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L,              &
+                       (1.0d0), b, vectors_N, c_small_M, vectors_L,            &
+                       (0.0d0), residue_b, vectors_N)
         end if
+
+        if (davidson_debug) then
+            call davidson_print_vectors(residue_a,  label="debug: in form_r, residue a   ", complex_dimension=1)
+            call davidson_print_vectors(residue_b,  label="debug: in form_r, residue b   ", complex_dimension=1)
+            call davidson_print_vectors(e_small_M,  label="debug: in form_r, e_small M   ", complex_dimension=1)
+        end if
+! todo: generalize this to the multiplication of the complex e_small with  complex residue_b
+
         do k = 1, nroots
-            r(:,k) = residue_a(:,k) - e_small_M(k)*residue_b(:,k)
+            if (davidson_complex_mode_with_reals) then
+!               evalue_c = cmplx(e_small_M(1,k), e_small_M(2,k))
+!               print *,'evalue_c'
+                call zscal(vectors_N,e_small_M(:,k),residue_b(:,k),1)
+            else
+!               evalue_r = e_small_M(1,k)
+!               print *,'evalue_r'
+                call dscal(vectors_N,e_small_M(1,k),residue_b(:,k),1)
+            end if
+            r(:,k) = residue_a(:,k) - residue_b(:,k)
         end do
+        if (davidson_debug) then
+            call davidson_print_vectors(r,  label="debug: in form_r, r           ", complex_dimension=1)
+        end if
 
         deallocate(residue_a)
         deallocate(residue_b)
@@ -793,92 +993,258 @@ contains
         real(kind=8), pointer     :: create_reduced_problem(:,:)
         real(kind=8), intent(in)  :: sigma_vector(:,:)
         real(kind=8), intent(in)  :: b(:,:)
+        real(kind=8), pointer     :: sigmat(:,:), bt(:,:)
 
         integer :: vectors_L, vectors_N
-        real(kind=8) :: alpha_lapack = 1.0d0
-        real(kind=8) :: beta_lapack = 1.0d0
+        real(kind=8) :: r_alpha_lapack = one_r8
+        real(kind=8) :: r_beta_lapack = one_r8 
+
+        integer :: vectors_L_complex, vectors_N_complex
+
+        complex*16, pointer :: c_b(:,:), c_sigma(:,:), c_reduced(:,:)
+        integer :: i, j, k
 
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
-        allocate(create_reduced_problem(vectors_L,vectors_L))
-        create_reduced_problem = zero_r8
-        call dgemm('T', 'N', vectors_L, vectors_L, vectors_N, alpha_lapack, b, vectors_N, &
-                   sigma_vector, vectors_N, beta_lapack, create_reduced_problem, vectors_L)
+        if (davidson_complex_mode_with_reals) then
+            vectors_L_complex = 2*vectors_L
+            vectors_N_complex = vectors_N / 2
+
+!           allocate(c_b(vectors_N_complex,vectors_L))
+!           allocate(c_sigma(vectors_N_complex,vectors_L))
+!           allocate(c_reduced(vectors_N_complex,vectors_L))
+
+!           do j = 1, vectors_L
+!           k = 1
+!           do i = 1, vectors_N, 2
+!              c_b(k,j) = cmplx(b(i,j),b(i+1,j))
+!              c_sigma(k,j) = cmplx(sigma_vector(i,j),sigma_vector(i+1,j))
+!!             print *,"i,j,k",i,j,k
+!!             print *,"b(i,j), b(i+1,j)",b(i,j),b(i+1,j)
+!!             print *,"c_b(k,j)",c_b(k,j) 
+!!             print *,"s(i,j), s(i+1,j)",sigma_vector(i,j),sigma_vector(i+1,j)
+!!             print *,"c_s(k,j)",c_sigma(k,j) 
+!              k = k+1
+!           end do
+!           end do
+
+!           print *,"b",b
+!           print *,"c_b",c_b
+!           print *,"sigma",sigma_vector
+!           print *,"c_sigma",c_sigma 
+
+            allocate(create_reduced_problem(vectors_L_complex,vectors_L))
+            create_reduced_problem = zero_r8
+
+!           print *, 'debug, transposing b'
+!           allocate(bt(vectors_N_complex,vectors_L_complex))
+!           bt = zero_r8
+!           call  davidson_transpose_conjugate_vector(b, bt, complex_dimension_v=1)
+
+!           print *, 'debug, transposing sigma'
+!           allocate(sigmat(vectors_N_complex,vectors_L_complex))
+!           sigmat = zero_r8
+!           call  davidson_transpose_conjugate_vector(sigma_vector, sigmat, complex_dimension_v=1)
+
+!           print *, "c_alpha: ",c_alpha_lapack, "  c_beta: ",c_beta_lapack
+
+! sigma(2*N, L) = (N_complex,L)
+! b(2*N,L)      = (N_complex,L)
+! bt(2*L,N)     = (L_complex,N_complex)
+! M = bt*sigma = (L,2*N)x(2*N,L) = (L,L) but should be (2*L,L)
+!
+!  C := op( A )*op( B )
+! M = vectors_L
+! N = vectors_L
+! K = vectors_N_complex
+! complex*16, dimension(lda,*)  A = bt
+! LDA = vectors_N_complex 
+! complex*16, dimension(ldb,*)  B = sigma_vector
+! integer         LDB = N
+! complex*16      BETA,
+! complex*16, dimension(ldc,*)    C = reduced_problem
+! integer         LDC  = L_complex,N_complex
+!
+!
+            call zgemm('C', 'N', vectors_L, vectors_L, vectors_N_complex, (1.d0, 0.0d0), b, vectors_N_complex, &
+                       sigma_vector, vectors_N_complex, (0.d0, 0.0d0), create_reduced_problem, vectors_L)
+            print *, "reduced problem from real  zgemm  "
+            print *, create_reduced_problem
+
+!!          c_reduced = (zero_r8, zero_r8)
+
+!           print *,"vectors_L",vectors_L
+!           print *,"vectors_N_complex",vectors_N_complex
+
+!           call zgemm('C', 'N', vectors_L, vectors_N_complex, vectors_L, (1.0d0, 0.0d0), c_b, vectors_N_complex, &
+!                      c_sigma, vectors_N_complex, (0.d0, 0.0d0), c_reduced, vectors_N_complex)
+!           print *, "reduced problem from complex zgemm "
+!           print *, c_reduced
+
+!           call xgemm('C', 'N', vectors_L, vectors_N_complex, vectors_L, (1.0d0, 0.0d0), c_b, vectors_N_complex, &
+!                      c_sigma, vectors_N_complex, (0.d0, 0.0d0), c_reduced, vectors_N_complex)
+!           print *, "reduced problem from complex xgemm ",c_reduced
+
+        if (davidson_debug) &
+        call davidson_print_vectors(create_reduced_problem,  label="debug: rrrrrrrr rrrrrr rrr   1", complex_dimension=1)
+!       if (davidson_debug) call davidson_print_vectors(create_reduced_problem,  label="debug: rrrrrrrr rrrrrr rrr   2", complex_dimension=2)
+
+!           if (associated(c_sigma))   deallocate(c_sigma)
+!           if (associated(c_b))       deallocate(c_b)
+!           if (associated(c_reduced)) deallocate(c_reduced)
+
+!           deallocate(bt)
+!           deallocate(sigmat)
+        else
+            allocate(create_reduced_problem(vectors_L,vectors_L))
+            create_reduced_problem = zero_r8
+            call dgemm('T', 'N', vectors_L, vectors_L, vectors_N, r_alpha_lapack, b, vectors_N, &
+                       sigma_vector, vectors_N, r_beta_lapack, create_reduced_problem, vectors_L)
+        end if
 
     end function
 
-    subroutine solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left)
+    subroutine davidson_transpose_conjugate_vector(v, vt, complex_dimension_v)
+        real(kind=8), intent(in)    :: v(:,:)
+        real(kind=8), intent(inout) :: vt(:,:)
+        integer, intent(in) :: complex_dimension_v
+        integer :: vectors_L, vectors_N
+        real(kind=8) :: vr, vi, vtr, vti
+
+        integer :: i, j, kr, ki, lr, li, N_step, L_step, vectors_N_complex, vectors_L_complex
+
+        vectors_N = size(v,1)
+        vectors_L = size(v,2)
+
+        if (complex_dimension_v.eq.1) then
+            N_step = 2 
+            L_step = 1
+        else if (complex_dimension_v.eq.2) then
+            N_step = 1 
+            L_step = 2
+        end if
+        vectors_N_complex = vectors_N / N_step 
+        vectors_L_complex = vectors_L / L_step
+
+        do i = 1, vectors_N_complex 
+            do j = 1, vectors_L_complex
+                if (complex_dimension_v.eq.1) then
+                    kr = N_step*(i-1) + 1
+                    ki = kr + 1
+
+                    vr = v(kr,j)
+                    vi = v(ki,j)
+                    print '(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)','i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi 
+
+                    vt(j,kr) =  vr
+                    vt(j,ki) = -vi
+
+                    print '(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)', &
+                           ' v(',i,',',j,')=(',vr,',',vi,') ->  vt(',j,',',i,')=(',vt(j,kr),',',vt(j,ki),')'
+                else if (complex_dimension_v.eq.2) then
+
+                    kr = L_step*(j-1) + 1
+                    ki = kr + 1
+
+                    vr = v(i, kr)
+                    vi = v(i, ki)
+                    print '(a,1i4,a,1i4,a,1i4,a,1i4,a,1e14.6,a,1e14.6)','i:',i,' j:',j,' kr',kr,' ki:',ki,'  vr:',vr,'  vi:',vi
+
+                    vt(kr, i) =  vr
+                    vt(ki, i) = -vi
+
+                    print '(a,1i4,a,1i4,a,1e14.6,a,1e14.6,a,1i4,a,1i4,a,1e14.6,a,1e14.6)', &
+                           ' v(',i,',',j,')=(',vr,',',vi,') ->  vt(',j,',',i,')=(',vt(kr,i),',',vt(ki,i),')'
+
+                end if
+            end do
+        end do
+
+        if (davidson_debug) call davidson_print_vectors(v,  label="debug:  original vector v     ", complex_dimension=1)
+!       print *, v
+        if (davidson_debug) call davidson_print_vectors(vt, label="debug:  conj. transpose of v  ", complex_dimension=2)
+!       print *, vt
+
+    end subroutine
+
+    subroutine solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left)
         real(kind=8), intent(inout), pointer :: M(:,:)
         real(kind=8), intent(inout), pointer :: eVectorsL(:,:)
         real(kind=8), intent(inout), pointer :: eVectorsR(:,:)
-        real(kind=8), intent(inout), pointer :: eValuesRe(:), eValuesIm(:)
+        real(kind=8), intent(inout), pointer :: eValues(:,:)
         logical, intent(in) :: left 
 
-        integer :: vectors_L, i
+        integer :: vectors_N, vectors_L, i
 
         integer :: lwork, info
         character(len=1) :: do_left = 'N', do_right = 'V'
         real(kind=8), allocatable :: work(:)
+        real(kind=8), allocatable :: rwork(:)
 
-        vectors_L = size(M,1)
+        vectors_N = size(M,1)
+        vectors_L = size(M,2)
 
         if (associated(eVectorsL)) deallocate(eVectorsL)
         if (associated(eVectorsR)) deallocate(eVectorsR)
-        if (associated(eValuesRe)) deallocate(eValuesRe)
-        if (associated(eValuesIm)) deallocate(eValuesIm)
+        if (associated(eValues))   deallocate(eValues)
+
+        if (davidson_debug) call davidson_print_vectors(M, label="debug:  small matrix M #2     ")
 
         if (left) then
             do_left = 'V'
             do_right = 'N'
-            allocate(eVectorsL(vectors_L,vectors_L))
+            allocate(eVectorsL(vectors_N,vectors_L))
             eVectorsL = zero_r8
         end if
-        allocate(eVectorsR(vectors_L,vectors_L))
-        allocate(eValuesRe(vectors_L))
-        allocate(eValuesIm(vectors_L))
+        allocate(eVectorsR(vectors_N,vectors_L))
+        allocate(eValues(2,vectors_L))
 
         eVectorsR = zero_r8
-        eValuesRe = zero_r8
-        eValuesIm = zero_r8
+        eValues   = zero_r8
 
 ! first query optimal lwork value
         lwork = -1
         allocate(work(4*vectors_L))
-        call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
-                    eValuesRe, eValuesIm, eVectorsL, vectors_L, eVectorsR, &
-                    vectors_L, WORK, LWORK, INFO)
+
+        if (davidson_complex_mode_with_reals) then
+            allocate(rwork(2*vectors_L))
+            call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
+                        eValues, eVectorsL, vectors_L, eVectorsR, &
+                        vectors_L, WORK, LWORK, rwork, INFO)
+        else
+            call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
+                        eValues(1,:), eValues(2,:), eVectorsL, vectors_L, eVectorsR, &
+                        vectors_L, WORK, LWORK, INFO)
+        end if
+! subroutine zgeev (character JOBVL, character  JOBVR, integer  N, complex*16 dimension( lda, * )       A, integer LDA, complex*16 dimension( * )        W,                                    , complex*16 dimension( ldvl, * )        VL, integer LDVL, complex*16, dimension( ldvr, * )        VR, integer  LDVR, complex*16, dimension( * )       WORK, integer LWORK, double precision, dimension( * )        RWORK, integer         INFO )               
+
+! subroutine dgeev (character JOBVL, character  JOBVR, integer  N, double precision dimension( lda, * ) A, integer LDA, double precision dimension( * ) WR, double precision dimension( * )  WI, double precision, dimension( ldvl, * ) VL, integer LDVL, double precision, dimension( ldvr, * )  VR, integer  LDVR, double precision, dimension( * ) WORK, integer LWORK, integer         INFO )               
+
+
         lwork = work(1)
         deallocate(work)
         allocate(work(lwork))
-        call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
-                    eValuesRe, eValuesIm, eVectorsL, vectors_L, eVectorsR, &
-                    vectors_L, WORK, LWORK, INFO)
+        if (davidson_complex_mode_with_reals) then
+            call zgeev (do_left, do_right, vectors_L, M, vectors_L,      &
+                        eValues, eVectorsL, vectors_L, eVectorsR, &
+                        vectors_L, WORK, LWORK, rwork, INFO)
+        else
+            call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
+                        eValues(1,:), eValues(2,:), eVectorsL, vectors_L, eVectorsR, &
+                        vectors_L, WORK, LWORK, INFO)
+        end if
         deallocate(work)
         if (info .gt. 0) then
             print *, 'in small_solve_eigenvalue: not all eigenvalues converged' 
             print *, 'converged'
             do i = info+1, vectors_L 
-                print *, " real part : ",eValuesRe(i), " imaginary part : ",eValuesIm(i)
+                print *, " real part : ",eValues(1,i), " imaginary part : ",eValues(2,i)
             end do
         end if
 
     end subroutine
  
-    function get_diagonal_elements(M)
-        real(kind=8), intent(in)    :: M(:,:)
-        real(kind=8), pointer :: get_diagonal_elements(:)
-
-        integer :: vectors_N
-        integer :: i
-
-        vectors_N = size(M,1)
-        allocate(get_diagonal_elements(vectors_N))
-
-        do i = 1, vectors_N
-            get_diagonal_elements(i) = M(i,i)
-        end do
-    end function
 
     subroutine get_values_vectors_davidson(nroots, A, results, b_guess)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
@@ -901,11 +1267,10 @@ contains
         real(kind=8), pointer :: M_small(:,:)        => NULL()
         real(kind=8), pointer :: c_small_r(:,:)      => NULL()
         real(kind=8), pointer :: c_small_l(:,:)      => NULL()
-        real(kind=8), pointer :: e_small_r(:)        => NULL()
-        real(kind=8), pointer :: e_small_i(:)        => NULL()
+        real(kind=8), pointer :: e_small(:,:)        => NULL()
 
         real(kind=8), pointer :: c_small_r_old(:,:)  => NULL()
-        real(kind=8), pointer :: c_small_r_old_dum(:,:)  => NULL()
+!       real(kind=8), pointer :: c_small_r_old_dum(:,:)  => NULL()
         real(kind=8), pointer :: c_small_l_old(:,:)  => NULL()
 
         integer :: vectors_N, L, min_subspace_size, max_subspace_size, niter
@@ -915,7 +1280,6 @@ contains
 !
 ! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
 ! 
-
         call davidson_create_results(results,vectors_N,nroots,&
                                      davidson_solve_values,   &
                                      davidson_solve_lhs,      &
@@ -934,6 +1298,8 @@ contains
         if ( nroots .gt. vectors_N ) then 
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
            return 
+        else if ( nroots .eq. vectors_N ) then
+           write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
         endif
 
         b => b_guess
@@ -942,7 +1308,7 @@ contains
             write(davidson_output_file_unit,"(4x,a,i4,a,i8)") &
                   "Start by mapping M onto a subspace of size ",min_subspace_size, &
                   ", will extend it up to ",max_subspace_size
-            call print_vectors_R(b, label="Initial subspace vectors      ")
+            call davidson_print_vectors(b, label="Initial subspace vectors      ")
         end if
 
        if (davidson_solve_rhs.and.davidson_overlap_sorting) then
@@ -951,16 +1317,16 @@ contains
            do i = 1, nroots
                c_small_r_old(i,i) = 1.0d0
            enddo
-
-!          allocate(c_small_r_old(nroots,nroots))
-!          k = 1 
-!          do i = 1, nroots/2
-!              c_small_r_old(:,i) = c_small_r_old_dum(:,k) - c_small_r_old_dum(:,(k+1))
-!              c_small_r_old(:,i+(nroots/2)) = c_small_r_old_dum(:,k) + c_small_r_old_dum(:,(k+1))
-!              k = k + 2
-!          enddo
-!          deallocate(c_small_r_old_dum)
        endif
+! avijit
+!      allocate(c_small_r_old(nroots,nroots))
+!      k = 1 
+!      do i = 1, nroots/2
+!          c_small_r_old(:,i) = c_small_r_old_dum(:,k) - c_small_r_old_dum(:,(k+1))
+!          c_small_r_old(:,i+(nroots/2)) = c_small_r_old_dum(:,k) + c_small_r_old_dum(:,(k+1))
+!          k = k + 2
+!      enddo
+!      deallocate(c_small_r_old_dum)
        if (davidson_solve_lhs.and.davidson_overlap_sorting) then
            allocate(c_small_l_old(nroots,nroots))
            c_small_l_old = 0.0d0
@@ -970,26 +1336,33 @@ contains
        endif
  
 
+        write(davidson_output_file_unit,*) ""
         do niter = 1, davidson_max_iterations
-            write(davidson_output_file_unit,*) ""
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
             if (associated(M_small)) deallocate(M_small)
 
+            if (davidson_debug) call davidson_print_vectors(b, label="debug:  b     vector          ")
+
             sigma_vector => create_sigma_vector(A, b, sigma_vector)
 
+            if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
 
             if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
-            call calculate_eigenvalues_and_eigenvectors(niter,davidson_output_file_unit,    &
+            if (davidson_debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
+
+            call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
                                                         M_small,                      &
-                                                        e_small_r, e_small_i,         &
+                                                        e_small,                      &
                                                         c_small_r, c_small_l,         &
                                                         c_small_r_old, c_small_l_old, &
+                                                        follow_overlap=(davidson_overlap_sorting.and.(niter.gt.1)),  &
                                                         left=davidson_solve_lhs,      &
                                                         right=davidson_solve_rhs,     &
+                                                        nroots=nroots,                &
                                                         verbose=davidson_verbose)
 
 ! store old c_small vectors, that is, subspace vectors for the overlap selection in the next iterative step   
@@ -999,13 +1372,13 @@ contains
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
 
-            preconditioner =>  form_preconditioner(M_diag, e_small_r)
+            preconditioner =>  form_preconditioner(M_diag, e_small(1,:)) ! use real part of eigenvalue only
            if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
-                                           e_small_r, c_small_r, sigma_vector, & 
+                                           e_small, c_small_r, sigma_vector, & 
                                            b, preconditioner)
 
            if (davidson_solve_lhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
-                                           e_small_r, c_small_l, sigma_vector, & 
+                                           e_small, c_small_l, sigma_vector, & 
                                            b, preconditioner)
 
             if (.not.associated(delta)) then
@@ -1013,11 +1386,11 @@ contains
                  if (associated(preconditioner)) deallocate(preconditioner)
                 exit
             end if
-            b => updated_subspace_vectors_R(b, delta, verbose=davidson_verbose)
+            b => updated_subspace_vectors_R(b, delta, verbose=davidson_debug)
 
             if (davidson_verbose) then
-                call print_vectors_R(delta, label="delta                         ")
-                call print_vectors_R(b, label="Updated subspace vectors      ")
+                call davidson_print_vectors(delta, label="delta                         ")
+                call davidson_print_vectors(b, label="Updated subspace vectors      ")
             end if
   
             L = size(b,2)
@@ -1034,7 +1407,7 @@ contains
 
         write(davidson_output_file_unit, *) "Final size of reduced subspace : ",L
 
-        call form_eigenvalues_full_problem(results%eValuesRe, results%eValuesIm, nroots, e_small_r, e_small_i) 
+        call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
 
         if (davidson_solve_lhs) &
             call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_lhs)
@@ -1045,30 +1418,32 @@ contains
         deallocate(M_small)
         deallocate(sigma_vector)
         deallocate(M_diag)
-        deallocate(e_small_r)
-        deallocate(e_small_i)
+        deallocate(e_small)
         deallocate(c_small_r)
         if (associated(c_small_l)) deallocate(c_small_l)
 
     end subroutine
 
-    subroutine calculate_eigenvalues_and_eigenvectors(niter,output_file_unit, M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
-                                eVectorsR_old, eVectorsL_old, left, right, sorting_order, nroots, verbose)
+    subroutine calculate_eigenvalues_and_eigenvectors(output_file_unit, M, eValues, & 
+                                eVectorsR, eVectorsL, eVectorsR_old, eVectorsL_old, left, right,    &
+                                sorting_order, nroots, verbose, follow_overlap)
         real(kind=8), intent(inout), pointer   :: M(:,:)
-        real(kind=8), intent(inout), pointer   :: eValuesRe(:), eValuesIm(:)
+        real(kind=8), intent(inout), pointer   :: eValues(:,:)
         real(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
         real(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
-        logical, optional, intent(in) :: left, right, verbose
+        logical, optional, intent(in) :: left, right, verbose, follow_overlap
         integer, optional, intent(in) :: sorting_order, nroots
-        integer, intent(in) :: output_file_unit, niter 
+        integer, intent(in) :: output_file_unit 
 
-        logical :: left_local, right_local, verbose_local
-        integer :: sorting_order_local, nroots_local, nroot
+        logical :: left_local, right_local, verbose_local, follow_overlap_local
+        integer :: sorting_order_local, M_nroots, nroot, nroots_to_print
         real(kind=8), allocatable :: overlap(:,:)
-        real(kind=8) :: alpha_lapack, beta_lapack
 
-        alpha_lapack = 1.0d0
-        beta_lapack  = 1.0d0
+        if (present(follow_overlap)) then
+            follow_overlap_local = follow_overlap
+        else
+            follow_overlap_local = .false.
+        end if
 
         if (present(sorting_order)) then
             sorting_order_local = sorting_order
@@ -1094,59 +1469,91 @@ contains
             verbose_local = .false. 
         end if
 
-        if (present(nroots)) then
-            nroots_local = nroots
-        else
-            nroots_local = size(M,1) 
+        M_nroots = size(M,1) 
+        if (davidson_complex_mode_with_reals) then
+            M_nroots = M_nroots / 2
         end if
 
-        call solve_values_vectors(M, eValuesRe, eValuesIm, eVectorsR, eVectorsL, left_local)
+        if (present(nroots)) then
+            nroots_to_print = nroots
+        else
+            nroots_to_print = M_nroots
+        end if
 
-        if (davidson_overlap_sorting.and.(niter>1)) then
+        call solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
+        if (davidson_debug) then
+           call davidson_print_vectors(eValues, label="debug, eValues after solveing ")
+        end if
+
+        if (follow_overlap) then
 ! calculate overlap between old and new vectors. Overlap(nroot,mroot) = Old^T(nroot,nroot)*New(1:nroot,mroot)   
 ! Max(Overlap(iroot,mroot)) for all iroot = 1,nroot 
-
+            
             if(right) then    
-            nroot = size(eVectorsR_old,1)
-            allocate(overlap(nroot,nroots_local))
-            overlap = 0.0d0 
+                 nroot = size(eVectorsR_old,1)
+                 allocate(overlap(nroot,M_nroots))
+! aspg, check whether second dimension is indeed M_nroots or nroots_to_print
+!                allocate(overlap(nroot,nroots_to_print))
+                 overlap = 0.0d0 
 
-                 call dgemm('T', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsR_old, &
-                            nroot, eVectorsR(1:nroot,1:nroots_local), nroot, beta_lapack, overlap, nroot)
+                 if (davidson_complex_mode_with_reals) then
+! aspg, check consistency of complex and real modes after real mode is validated
+                     call zgemm('N', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
+                                nroot, eVectorsR(1:nroot,:), nroot, (1.0d0, 0.0d0), overlap, nroot)
+                 else
+                     call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsR_old, &
+                                nroot, eVectorsR(1:nroot,:), nroot, (1.0d0), overlap, nroot)
+! aspg, check whether second dimension is indeed M_nroots or nroots_to_print
+!                    call dgemm('T', 'N', nroot, nroots_to_print, nroot, (1.0d0), eVectorsR_old, &
+!                               nroot, eVectorsR(1:nroot,1:nroots_to_print), nroot, (1.0d0), overlap, nroot)
+                 end if
             else
+                 nroot = size(eVectorsL_old,1)
+                 allocate(overlap(nroot,M_nroots))
+! aspg, check whether second dimension is indeed M_nroots or nroots_to_print
+!                allocate(overlap(nroot,nroots_to_print))
+                 overlap = 0.0d0 
 
-            nroot = size(eVectorsL_old,1)
-            allocate(overlap(nroot,nroots_local))
-            overlap = 0.0d0 
-
-                 call dgemm('T', 'N', nroot, nroots_local, nroot, alpha_lapack, eVectorsL_old, &
-                            nroot, eVectorsL(1:nroot,1:nroots_local), nroot, beta_lapack, overlap, nroot)
+                 if (davidson_complex_mode_with_reals) then
+! aspg, check consistency of complex and real modes after real mode is validated
+                     call zgemm('N', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
+                                nroot, eVectorsL(1:nroot,:), nroot, (1.0d0, 0.0d0), overlap, nroot)
+                 else
+                     call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsL_old, &
+                                nroot, eVectorsL(1:nroot,:), nroot, (1.0d0), overlap, nroot)
+! aspg, check whether second dimension is indeed M_nroots or nroots_to_print
+!                    call dgemm('T', 'N', nroot, nroots_to_print, nroot, (1.0d0), eVectorsL_old, &
+!                               nroot, eVectorsL(1:nroot,1:nroots_to_print), nroot, (1.0d0), overlap, nroot)
+                 end if
             endif
 
-            call sort_by_overlap(-1, eValuesRe, eValuesIm, overlap, eVectorsR, eVectorsL, &
+            call sort_by_overlap(-1, eValues, overlap, eVectorsR, eVectorsL, &
                                  right_local, left_local) 
             deallocate(overlap)
         else
-            call sort_values_vectors(sorting_order_local, eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
+            call sort_values_vectors(sorting_order_local, eValues, eVectorsR, eVectorsL, &
                                      right_local, left_local)
         end if
 
-        if (davidson_verbose) &
-        call print_values_vectors_R(davidson_output_file_unit,eValuesRe, eValuesIm, eVectorsR, eVectorsL, &
-                                    left_local, right_local, nroots=nroots_local)
+        if (davidson_verbose) then 
+            call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+                                        left_local, right_local, nroots=nroots_to_print)
+        else
+            call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+                                        .false., .false., nroots=nroots_to_print)
+        end if
 
     end subroutine
 
-    subroutine form_eigenvalues_full_problem(eValuesRe, eValuesIm, nroots, e_small_r, e_small_i)
-        real(kind=8), intent(inout) :: eValuesRe(:), eValuesIm(:)
-        real(kind=8), intent(in)    :: e_small_r(:), e_small_i(:)
+    subroutine form_eigenvalues_full_problem(eValues, nroots, e_small)
+        real(kind=8), intent(inout) :: eValues(:,:)
+        real(kind=8), intent(in)    :: e_small(:,:)
         integer, intent(in) :: nroots
 
         integer :: i
 
         do i = 1, nroots
-            eValuesRe(i) = e_small_r(i)
-            eValuesIm(i) = e_small_i(i)
+            eValues(:,i) = e_small(:,i)
         end do
     end subroutine
 
@@ -1160,43 +1567,44 @@ contains
         integer :: i
         real(kind=8), allocatable :: bc(:,:)
         integer :: vectors_L, vectors_N
-        real(kind=8) :: alpha_lapack = 1.0d0
-        real(kind=8) :: beta_lapack = 1.0d0
 
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
         if (left_vector) then
-!           allocate(bc(vectors_L,vectors_N))
-!           bc = zero_r8
-!           call print_vectors_R(eVectorsSmall, label="L eigenvectors small problem  ")
-!           call dgemm('T', 'T', vectors_L, vectors_N, vectors_L, alpha_lapack, eVectorsSmall, &
-!                      vectors_L, b, vectors_N, beta_lapack, bc, vectors_L)
-!           call print_vectors_R(bc, label="bc                            ")
-!           do i = 1, nroots
-!               eVectorsFull(:,i) = bc(i,:) 
-!           end do
-
-
-            allocate(bc(vectors_N,vectors_L))
+            allocate(bc(vectors_L,vectors_N))
             bc = zero_r8
-!           call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
-            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
-                       vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
 
-!           call print_vectors_R(bc, label="bc                            ")
+!           call davidson_print_vectors(eVectorsSmall, label="L eigenvectors small problem  ")
+            if (davidson_complex_mode_with_reals) then
+                vectors_N = vectors_N / 2
+                call zgemm('T', 'T', vectors_L, vectors_N, vectors_L, (1.0d0, 0.0d0), eVectorsSmall, &
+                           vectors_L, b, vectors_N, (1.0d0, 0.0d0), bc, vectors_L)
+            else
+                call dgemm('T', 'T', vectors_L, vectors_N, vectors_L, (1.0d0), eVectorsSmall, &
+                           vectors_L, b, vectors_N, (1.0d0), bc, vectors_L)
+            end if 
+!           call davidson_print_vectors(bc, label="bc                            ")
             do i = 1, nroots
-                eVectorsFull(:,i) = bc(:,i) 
+! aspg, double check where the index i should go?
+!               eVectorsFull(:,i) = bc(:,i) 
+                eVectorsFull(:,i) = bc(i,:) 
             end do
 
         else
             allocate(bc(vectors_N,vectors_L))
             bc = zero_r8
-!           call print_vectors_R(eVectorsSmall, label="R eigenvectors small problem  ")
-            call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, alpha_lapack, b, &
-                       vectors_N, eVectorsSmall, vectors_L, beta_lapack, bc, vectors_N)
+!           call davidson_print_vectors(eVectorsSmall, label="R eigenvectors small problem  ")
+            if (davidson_complex_mode_with_reals) then
+                vectors_N = vectors_N / 2
+                call zgemm('N', 'N', vectors_N, vectors_L, vectors_L, (1.0d0, 0.0d0), b, &
+                           vectors_N, eVectorsSmall, vectors_L, (1.0d0, 0.0d0), bc, vectors_N)
+            else
+                call dgemm('N', 'N', vectors_N, vectors_L, vectors_L, (1.0d0), b, &
+                           vectors_N, eVectorsSmall, vectors_L, (1.0d0), bc, vectors_N)
+            end if
 
-!           call print_vectors_R(bc, label="bc                            ")
+!           call davidson_print_vectors(bc, label="bc                            ")
             do i = 1, nroots
                 eVectorsFull(:,i) = bc(:,i) 
             end do
@@ -1216,9 +1624,6 @@ contains
         integer :: vectors_L_old
         integer :: new_L, i
 
-        real(kind=8) :: alpha_lapack = 1.0d0
-        real(kind=8) :: beta_lapack = 0.0d0
-
         vectors_N = size(b,1)
         vectors_L = size(b,2)
         vectors_L_old = size(old_sigma_vector,2)
@@ -1231,9 +1636,16 @@ contains
 !ashee        nullify(old_sigma_vector)
 
         new_L = vectors_L - vectors_L_old
-        call dgemm('N', 'N', vectors_N, new_L, vectors_N, alpha_lapack, M, vectors_N, &
-       &           b(:, vectors_L_old:vectors_L), vectors_N, beta_lapack,             &
-       &           update_sigma_vector(:,vectors_L_old:vectors_L), vectors_N)
+        if (davidson_complex_mode_with_reals) then
+            vectors_N = vectors_N / 2
+            call zgemm('N', 'N', vectors_N, new_L, vectors_N, (1.0d0, 0.0d0), M, vectors_N, &
+       &               b(:, vectors_L_old:vectors_L), vectors_N, (0.0d0, 0.0d0),            &
+       &               update_sigma_vector(:,vectors_L_old:vectors_L), vectors_N)
+         else
+            call dgemm('N', 'N', vectors_N, new_L, vectors_N, 1.0d0, M, vectors_N, &
+       &               b(:, vectors_L_old:vectors_L), vectors_N, 0.0d0,            &
+       &               update_sigma_vector(:,vectors_L_old:vectors_L), vectors_N)
+         end if
     end function
 
 
@@ -1241,50 +1653,63 @@ contains
         real(kind=8), pointer :: create_sigma_vector_full_matrix(:,:)
         real(kind=8), intent(in)  :: M(:,:)
         real(kind=8), intent(in)  :: b(:,:)
-
         integer :: vectors_L, vectors_N
-        real(kind=8) :: alpha_lapack = 1.0
-        real(kind=8) :: beta_lapack = 0.0
 
         vectors_N = size(b,1)
         vectors_L = size(b,2)
 
         allocate(create_sigma_vector_full_matrix(vectors_N,vectors_L))
-        call dgemm('N', 'N', vectors_N, vectors_L, vectors_N, alpha_lapack, M, vectors_N, &
-                   b, vectors_N, beta_lapack, create_sigma_vector, vectors_N)
 
+        if (davidson_complex_mode_with_reals) then
+            vectors_N = vectors_N / 2
+            call zgemm('N', 'N', vectors_N, vectors_L, vectors_N, (1.0d0, 0.0d0), M, vectors_N, &
+                       b, vectors_N, (0.0d0, 0.0d0), create_sigma_vector, vectors_N)
+        else
+            call dgemm('N', 'N', vectors_N, vectors_L, vectors_N, 1.0d0, M, vectors_N, &
+                       b, vectors_N, 0.0d0, create_sigma_vector, vectors_N)
+        end if
     end function
 
-    subroutine sort_values_vectors(order, e_small_r, e_small_i, c_small_r, c_small_l, right, left) 
+    subroutine sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left) 
         integer, intent(in) :: order ! 1: ascending, -1: descending
         logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
-        real(kind=8), intent(inout) :: e_small_r(:)
-        real(kind=8), intent(inout) :: e_small_i(:)
+        real(kind=8), intent(inout) :: e_small(:,:)
         real(kind=8), intent(inout) :: c_small_r(:,:)
         real(kind=8), intent(inout) :: c_small_l(:,:)
 
         real(kind=8), allocatable :: temp_vector(:,:)
         real(kind=8) :: temp
         integer, allocatable :: indices_sorted_array(:)
-        integer :: vectors_L, i_sorted, i
+        integer :: vectors_N, vectors_L, i_sorted, i
 
-        vectors_L = size(e_small_r,1)
+        vectors_L = size(e_small,2)
+        vectors_N = size(e_small,1)
         allocate(indices_sorted_array(vectors_L))
-        allocate(temp_vector(vectors_L,vectors_L))
+        allocate(temp_vector(vectors_N,vectors_L))
+        temp_vector = 0.0d0
         do i = 1, vectors_L 
             indices_sorted_array(i) = i 
         end do
 
-        call quicksort_vector(e_small_r, indices_sorted_array, 1, vectors_L)
-        ! we sort the indices that would sort the eigenvalues array, and apply the change to all other arrays
-        do i = 1, vectors_L
-         i_sorted = indices_sorted_array(i)
+        if (davidson_debug) print *, "debug sort_values_vectors, L ",vectors_L
+        if (davidson_complex_mode_with_reals) then
+            call quicksort_vector_complex_as_real(e_small, indices_sorted_array, 1, vectors_L)
+        else
+            if (davidson_debug) print *, "original real part", e_small(1,:)
+            call quicksort_vector_real(e_small(1,:), indices_sorted_array, 1, vectors_L)
+            if (davidson_debug) print *, "sorted real part", e_small(1,:)
+            if (davidson_debug) print *, "indices, sorted",indices_sorted_array
 
-         temp = e_small_i(i)
-         e_small_i(i) = e_small_i(i_sorted)
-         e_small_i(i_sorted) = temp
-        end do
+       ! we sort the indices that would sort the eigenvalues array, and apply the change to all other arrays
+            do i = 1, vectors_L
+                i_sorted = indices_sorted_array(i)
+
+                temp = e_small(2,i)
+                e_small(2,i) = e_small(2,i_sorted)
+                e_small(2,i_sorted) = temp
+            end do
+        end if
 
         if (right) then
             do i = 1, vectors_L
@@ -1301,21 +1726,20 @@ contains
             end do
             c_small_l = temp_vector
         end if
-        deallocate(temp_vector)
-        deallocate(indices_sorted_array)
+!       deallocate(temp_vector)
+!       deallocate(indices_sorted_array)
 
     end subroutine
 
 
-    subroutine sort_by_overlap(order, e_small_r, e_small_i, overlap, c_small_r, c_small_l, right, left) 
+    subroutine sort_by_overlap(order, e_small, overlap, c_small_r, c_small_l, right, left) 
         integer, intent(in) :: order ! 1: ascending, -1: descending
         logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
         real(kind=8), intent(inout) :: overlap(:,:)
         real(kind=8), intent(inout) :: c_small_r(:,:)
         real(kind=8), intent(inout) :: c_small_l(:,:)
-        real(kind=8), intent(inout) :: e_small_r(:)
-        real(kind=8), intent(inout) :: e_small_i(:)
+        real(kind=8), intent(inout) :: e_small(:,:)
 
         real(kind=8), allocatable :: temp_vector(:,:)
         real(kind=8),allocatable :: temp(:)
@@ -1364,20 +1788,21 @@ contains
 
         deallocate(temp_vector)
 
-        allocate(temp(vectors_L))
+        allocate(temp_vector(2,vectors_L))
            do i = 1, vectors_L
              i_sorted = indices_sorted_array(i)
-             temp(i) = e_small_r(i_sorted)
+             temp_vector(1,i) = e_small(1,i_sorted)
+             temp_vector(2,i) = e_small(2,i_sorted)
             end do
-            e_small_r = temp
+            e_small = temp_vector
 
-        deallocate(temp)
+        deallocate(temp_vector)
         deallocate(indices_sorted_array)
 
     end subroutine
 
 
-    recursive subroutine quicksort_vector(v, indices_sorted, first, last)
+    recursive subroutine quicksort_vector_real(v, indices_sorted, first, last)
         real(kind=8), intent(inout) ::  v(:)
         integer, intent(inout) :: indices_sorted(:)
         integer, intent(in)  :: first, last
@@ -1408,9 +1833,82 @@ contains
            i = i + 1
            j = j - 1
         end do
-        if (first < i-1) call quicksort_vector(v, indices_sorted, first, i-1)
-        if (j+1 < last)  call quicksort_vector(v, indices_sorted, j+1, last)
+        if (first < i-1) call quicksort_vector_real(v, indices_sorted, first, i-1)
+        if (j+1 < last)  call quicksort_vector_real(v, indices_sorted, j+1, last)
     end subroutine 
+
+    recursive subroutine quicksort_vector_complex_as_real(v, indices_sorted, first, last)
+        real(kind=8), intent(inout) ::  v(:,:)
+        integer, intent(inout) :: indices_sorted(:)
+        integer, intent(in)  :: first, last
+
+        real(kind=8) :: x, t, value
+        integer :: i, j, ti, start_index
+
+        start_index = (first + last) / 2 
+
+        x = sqrt(v(1,start_index)*v(1,start_index) + v(2,start_index)*v(2,start_index))
+
+        i = first
+        j = last
+
+        print *,"------"
+        print *,"debug, start of sorting of complex eigenvalues"
+        print *,"------"
+        do
+           do while ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)) < x))
+!          do while ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)) < x).or. &
+!                   ((sqrt(v(1,i)*v(1,i) + v(2,i)*v(2,i)).eq.x).and.(v(2,i) < v(2,start_index))))
+              i = i + 1
+           end do
+           do while ((x < sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j))))
+!          do while ((x < sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j))).or. &
+!                   ((sqrt(v(1,j)*v(1,j) + v(2,j)*v(2,j)).eq.x).and.(v(2,start_index) < v(2,j))))
+              j = j - 1
+           end do
+           if (i >= j) exit
+
+           print *,"debug, original vector"
+           print *, v
+           print *,"debug, index vector before exchange"
+           print *,indices_sorted
+           print *," debug, exchanging i",i,"and j",j
+           t = v(1,i)
+           v(1,i) = v(1,j)
+           v(1,j) = t
+
+           t = v(2,i)
+           v(2,i) = v(2,j)
+           v(2,j) = t
+
+           ti = indices_sorted(i)
+           indices_sorted(i) = indices_sorted(j)
+           indices_sorted(j) = ti
+           print *,"debug, echanged vector"
+           print *, v
+           print *,"debug, index vector after exchange"
+           print *,indices_sorted
+
+           i = i + 1
+           j = j - 1
+           print *,"debug, at the end of the loop, i",i,"j",j
+
+        end do
+        if (first < i-1) then 
+            print *,"first",first,"i-1",(i-1)
+            call quicksort_vector_complex_as_real(v, indices_sorted, first, i-1)
+        end if
+        if (j+1 < last)  then
+            print *,"last",last,"j+1",(j+1)
+            call quicksort_vector_complex_as_real(v, indices_sorted, j+1, last)
+        end if
+
+        print *,"------"
+        print *,"debug, end of sorting of complex eigenvalues"
+        print *,"------"
+
+    end subroutine
+
 
 
 ! I/O for davidson
