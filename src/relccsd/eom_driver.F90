@@ -690,9 +690,7 @@
     ii = 0
 
       do arp = 1, nrep
-! why 1+nrep instead of state_sym + 1 as before
-!        irep = multb (arp,1+nrep,1)
-         irep = multb (arp,state_sym+nrep,1)
+         irep = multb (arp,1+nrep,1)
          aa = io(nrep+1) + iv(arp)
       do a = 1, ncont(arp)
          ioff = io(irep)
@@ -1003,134 +1001,127 @@
     left_vectors =  .false.
     call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
 
-   if (relcc_do_eomprop) then
+    if (relcc_do_eomprop) then
 
-    right_vectors = .false.
-    left_vectors =  .true.
-    call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+       right_vectors = .false.
+       left_vectors =  .true.
+       call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
 
-  allocate(dmo(norbt*norbt*nz))
+       allocate(dmo(norbt*norbt*nz))
 
-   dmo =0.0d0
-   state =1
-   do sym = 1, nrep  
+       dmo =0.0d0
+       state =1
+       do sym = 1, nrep  
 
-     if (relcc_eom_nroots(sym) <= 0) cycle
+           if (relcc_eom_nroots(sym) <= 0) cycle
 
-    do iroot = 1, relcc_eom_nroots(sym)
+           do iroot = 1, relcc_eom_nroots(sym)
+               select case(eomtype)
+                  case ('IP')
+!                    call set_continuous_orbital(sym)
+                     ndimr1 = 0     
 
-  select case(eomtype)
+                     do irep = 1, nrep
+                         ndimr1 = ndimr1 + ncont(irep)*no(irep)
+                     enddo
 
- case ('IP')
-
-!   call set_continuous_orbital(sym)
-   ndimr1 = 0     
-
-   do irep = 1, nrep
-       ndimr1 = ndimr1 + ncont(irep)*no(irep)
-   enddo
-
-    call alloc_array(e,nrep)
-    call auto_symmetry_offset(e,ncont,nv,.false.,.false.)
+                     call alloc_array(e,nrep)
+                     call auto_symmetry_offset(e,ncont,nv,.false.,.false.)
      
-     ndimr2 = 0     
+                     ndimr2 = 0     
 
-     do irep = 1, nrep
-        ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
-     enddo
+                     do irep = 1, nrep
+                         ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
+                     enddo
 
-     allocate(l1_temp(ndimr1*rcw))
-     allocate(l2_temp(ndimr2*rcw))
+                     allocate(l1_temp(ndimr1*rcw))
+                     allocate(l2_temp(ndimr2*rcw))
 
-      call srt1c1(nrep,no,ncont,davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),l1_temp)
-      call srt1c1(nrep,noot,e%oneNonDirac,davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot),l2_temp)
+                     call srt1c1(nrep,no,ncont,davResultsL(sym)%eVectorsL(1:ndimr1,iroot:iroot),l1_temp)
+                     call srt1c1(nrep,noot,e%oneNonDirac,davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot:iroot),l2_temp)
+
+                     call dealloc_array(e)
+
+                     overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
+    &                          dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
+                     N1 = ndimr1*rcw
+                     N2 = ndimr2*rcw
+                     N  = N1 + N2
+
+                     write(*,*)'overlap', overlap 
+
+                     overlap = 1.0d0/overlap
+
+                     call dscal((ndimr1+ndimr2),overlap,davResultsL(sym)%eVectorsL(1:ndimr1+ndimr2,iroot:iroot),1)  
+                     call dscal(ndimr1,overlap,l1_temp,1)  
+                     call dscal(ndimr2,overlap,l2_temp,1)  
+
+                     write(*,*) dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
+    &                           dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
+
+                     deallocate(l1_temp,l2_temp)
+
+                     call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot),&
+  &                                  davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot), &
+  &                                  davResultsR(sym)%eVectorsR(1:ndimr1,iroot), &
+  &                                  davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot),B%t1,B%t2,dmo)
+
+                  case ('EE')
+
+                      ndimr1 = ndimt1
+                      ndimr2 = ndimt2
 
 
-     call dealloc_array(e)
+                     allocate(l1_temp(ndimt1*rcw))
+                     allocate(l2_temp(ndimt2*rcw))
 
-      overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
-    &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
-     N1 = ndimr1*rcw
-     N2 = ndimr2*rcw
-     N  = N1 + N2
+                     call srt1c1(nrep,no,nv,davResultsL(sym)%eVectorsL(1:ndimr1,iroot),l1_temp)
+                     call srt1c1(nrep,noot,nvvt,davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot),l2_temp)
 
-     write(*,*)'overlap', overlap 
+                     overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
+    &                          dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
 
-      overlap = 1.0d0/overlap
+                     write(*,*)'overlap', overlap 
 
-      call dscal((ndimr1+ndimr2),overlap,davResultsL(sym)%eVectorsL(1:ndimr1+ndimr2,iroot:iroot),1)  
-      call dscal(ndimr1,overlap,l1_temp,1)  
-      call dscal(ndimr2,overlap,l2_temp,1)  
+                     overlap = 1.0d0/overlap
 
-     write(*,*)dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
-    &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
+                     call dscal((ndimr1+ndimr2),overlap,davResultsL(sym)%eVectorsL(1:ndimr1+ndimr2,iroot:iroot),1)  
+                     call dscal(ndimr1,overlap,l1_temp,1)  
+                     call dscal(ndimr2,overlap,l2_temp,1)  
 
-      deallocate(l1_temp,l2_temp)
-
-     call density_IP(davResultsL(sym)%eVectorsL(1:ndimr1,iroot),&
-  &   davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot), &
-  &   davResultsR(sym)%eVectorsR(1:ndimr1,iroot), &
-  &   davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot),B%t1,B%t2,dmo)
-
- case ('EE')
-
-      ndimr1 = ndimt1
-      ndimr2 = ndimt2
-
-
-     allocate(l1_temp(ndimt1*rcw))
-     allocate(l2_temp(ndimt2*rcw))
-
-      call srt1c1(nrep,no,nv,davResultsL(sym)%eVectorsL(1:ndimr1,iroot),l1_temp)
-      call srt1c1(nrep,noot,nvvt,davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot),l2_temp)
-
-      overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
-    &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
-
-     write(*,*)'overlap', overlap 
-
-      overlap = 1.0d0/overlap
-
-      call dscal((ndimr1+ndimr2),overlap,davResultsL(sym)%eVectorsL(1:ndimr1+ndimr2,iroot:iroot),1)  
-      call dscal(ndimr1,overlap,l1_temp,1)  
-      call dscal(ndimr2,overlap,l2_temp,1)  
-
-     write(*,*)dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
-    &  dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
+                     write(*,*) dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:ndimr1,iroot)) + &
+    &                           dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot))
  
-!     write(*,*)dot_product(davResultsR(sym)%eVectorsR(1:,iroot),davResultsR(sym)%eVectorsR(1:,iroot))
+!                    write(*,*)dot_product(davResultsR(sym)%eVectorsR(1:,iroot),davResultsR(sym)%eVectorsR(1:,iroot))
 
-      deallocate(l1_temp,l2_temp)
+                     deallocate(l1_temp,l2_temp)
 
-     call density_EE(davResultsL(sym)%eVectorsL(1:ndimr1,iroot),&
-  &   davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot), &
-  &   davResultsR(sym)%eVectorsR(1:ndimr1,iroot), &
-  &   davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot),B%t1,B%t2,dmo)
+                     call density_EE(davResultsL(sym)%eVectorsL(1:ndimr1,iroot),&
+  &                                  davResultsL(sym)%eVectorsL(1+ndimr1:ndimr1+ndimr2,iroot), &
+  &                                  davResultsR(sym)%eVectorsR(1:ndimr1,iroot), &
+  &                                  davResultsR(sym)%eVectorsR(1+ndimr1:ndimr1+ndimr2,iroot),B%t1,B%t2,dmo)
 
- case ('EA')
+                 case ('EA')
+                   write(*,*)'Not yet implemented'
 
-   write(*,*)'Not yet implemented'
-
- end select
+               end select
      
-     call store_eom_density ('EOM ',state,dmo)
+               print *, "debug, before store_eom_density for state",state
+               call store_eom_density ('EOM ',state,dmo)
+               print *, "debug,  after store_eom_density for state",state
+               state = state + 1
+           enddo ! loop over roots 
+       enddo ! loop over symmetries
+       deallocate(dmo)
+   endif ! relcc_do_eomprop
 
-     state = state + 1
+!    do sym = 1, nrep 
 
-    enddo
-   enddo
+!        if (relcc_eom_nroots(sym) <= 0) cycle
 
-  deallocate(dmo)
-
-   endif
-
-     do sym = 1, nrep 
-
-         if (relcc_eom_nroots(sym) <= 0) cycle
-
-          call davidson_cleanup(davResultsR(sym))
-          if(left_vectors) call davidson_cleanup(davResultsL(sym))
-     end do
+!         if (right_vectors) call davidson_cleanup(davResultsR(sym))
+!         if (left_vectors)  call davidson_cleanup(davResultsL(sym))
+!    end do
 
  451 continue
 

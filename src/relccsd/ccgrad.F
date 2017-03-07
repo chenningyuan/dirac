@@ -1561,4 +1561,5 @@ C     without being able to do a replace or check for old data.
 
       close (eomden,status='keep')
 
+      print *,"done for state ",state
       END

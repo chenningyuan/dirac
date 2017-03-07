@@ -36,9 +36,6 @@ end type
 integer, parameter :: max_label_length = 30
 integer, parameter :: nr_max_irreps = 32
 
-real(kind=8), parameter :: zero_r8 = 0.0d0
-real(kind=8), parameter :: one_r8  = 1.0d0
-
 ! module variables, should be set with a call to davidson_setup
 
 real(kind=8), save :: safe_minimum = 1.0d-36
@@ -141,11 +138,11 @@ contains
 
         if (davidson_symmetric) then
             if (values) allocate(results%eValues(1,nroots))
-            if (right)  allocate(results%eVectorsR(N,nroots))
+            if (right)  allocate(results%eVectorsR(N_local,nroots))
         else
             if (values) allocate(results%eValues(2,nroots))
-            if (right) allocate(results%eVectorsR(N,nroots))
-            if (left)  allocate(results%eVectorsL(N,nroots))
+            if (right) allocate(results%eVectorsR(N_local,nroots))
+            if (left)  allocate(results%eVectorsL(N_local,nroots))
         end if
     end subroutine
 
@@ -379,13 +376,13 @@ contains
         end if
 
         allocate(new_subspace_vectors_R(N, new_L))
-        new_subspace_vectors_R = zero_r8
+        new_subspace_vectors_R = 0.0d0
 
         if (.not.present(old_subspace_vectors_R)) then
             do i = 1, N
                 do j = 1, new_L
                     if (i .eq. j) then
-                        new_subspace_vectors_R(i,j) = one_r8
+                        new_subspace_vectors_R(i,j) = 1.0d0
                     end if
                 end do
             end do
@@ -560,7 +557,7 @@ contains
             if (denominator .gt. safe_minimum) then
                 factor = numerator/denominator
             else
-                factor = zero_r8
+                factor = 0.0d0
             end if
             projection = factor * u
 !           projection = dscal(N, factor, u, 1)
@@ -600,7 +597,7 @@ contains
                     do k = 1, vectors_N, 2
                         vr = vectors(k,i)
                         vi = vectors(k+1,i)
-                        if (vi < zero_r8) then
+                        if (vi < 0.0d0) then
                             print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
                         else
                             print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
@@ -625,7 +622,7 @@ contains
                     do k = 1, vectors_N, 2
                         vr = vectors(k,i)
                         vi = vectors(k+1,i)
-                        if (vi < zero_r8) then
+                        if (vi < 0.0d0) then
                             print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
                         else
                             print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
@@ -651,7 +648,7 @@ contains
                             pr = projection(k)
                             pi = projection(k+1)
 
-                            if (vi < zero_r8) then
+                            if (vi < 0.0d0) then
                                 print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i", pr, " -",abs(pi)," i"
                             else
                                 print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," +", vi," i", pr," +", pi," i"
@@ -729,7 +726,7 @@ contains
                         vr = vectors(i, kr)
                         vi = vectors(i, ki)
                     end if
-                    if (vi < zero_r8) then
+                    if (vi < 0.0d0) then
                         print "(4x,1e14.6,a,1e13.6,a,$)", vr," -",abs(vi)," i"
                     else
                         print "(4x,1e14.6,a,1e13.6,a,$)", vr," +",vi," i"
@@ -777,7 +774,7 @@ contains
 !                   write(output_file_unit,"(4x,a,i6,a,1e14.6,a,1e14.6,a)") &
 !                         "*igenvalue ",i," : ",eValues(1,i)," + ",eValues(2,i), " i "
             else
-                if (eValues(2,i) .eq. zero_r8) then
+                if (eValues(2,i) .eq. 0.0d0) then
                     write(output_file_unit,"(4x,a,i6,a,1e14.6)") "Eigenvalue ",i," : ",eValues(1,i)
                 else
                     write(output_file_unit,"(4x,a,i6,a,1e14.6,a,1e14.6,a)") &
@@ -825,7 +822,7 @@ contains
 
         integer :: vectors_L, vectors_N
         integer :: k, unconverged_roots
-        real(kind=8) :: norm_r = zero_r8
+        real(kind=8) :: norm_r = 0.0d0
         real(kind=8), allocatable :: r(:,:)
         logical, allocatable :: vectors_to_update(:)
         logical :: correct_all_local
@@ -866,7 +863,7 @@ contains
                 vectors_to_update = .true.
             end if
             allocate(correction_to_vectors(vectors_N,unconverged_roots))
-            correction_to_vectors = zero_r8
+            correction_to_vectors = 0.0d0
             call form_delta(correction_to_vectors, vectors_to_update, r, preconditioner)
         else
             correction_to_vectors => NULL()
@@ -894,10 +891,10 @@ contains
             form_preconditioner(:,k) = eigenvectors(k) - M_diag(:)
             do l = 1, vectors_N
                 if (dabs(form_preconditioner(l,k)) .gt. safe_minimum) then
-                    form_preconditioner(l,k) = one_r8 / form_preconditioner(l,k)
+                    form_preconditioner(l,k) = 1.0d0 / form_preconditioner(l,k)
                 else
 !                    stop ('detected division by zero')
-                    form_preconditioner(l,k) = one_r8 
+                    form_preconditioner(l,k) = 1.0d0 
                 end if
             end do
         end do
@@ -942,8 +939,8 @@ contains
         allocate(residue_a(vectors_N,vectors_L))
         allocate(residue_b(vectors_N,vectors_L))
 
-        residue_a = zero_r8
-        residue_b = zero_r8
+        residue_a = 0.0d0
+        residue_b = 0.0d0
 
         if (davidson_complex_mode_with_reals) then
             vectors_N = vectors_N / 2
@@ -996,8 +993,8 @@ contains
         real(kind=8), pointer     :: sigmat(:,:), bt(:,:)
 
         integer :: vectors_L, vectors_N
-        real(kind=8) :: r_alpha_lapack = one_r8
-        real(kind=8) :: r_beta_lapack = one_r8 
+        real(kind=8) :: r_alpha_lapack = 1.0d0
+        real(kind=8) :: r_beta_lapack = 1.0d0 
 
         integer :: vectors_L_complex, vectors_N_complex
 
@@ -1035,16 +1032,16 @@ contains
 !           print *,"c_sigma",c_sigma 
 
             allocate(create_reduced_problem(vectors_L_complex,vectors_L))
-            create_reduced_problem = zero_r8
+            create_reduced_problem = 0.0d0
 
 !           print *, 'debug, transposing b'
 !           allocate(bt(vectors_N_complex,vectors_L_complex))
-!           bt = zero_r8
+!           bt = 0.0d0
 !           call  davidson_transpose_conjugate_vector(b, bt, complex_dimension_v=1)
 
 !           print *, 'debug, transposing sigma'
 !           allocate(sigmat(vectors_N_complex,vectors_L_complex))
-!           sigmat = zero_r8
+!           sigmat = 0.0d0
 !           call  davidson_transpose_conjugate_vector(sigma_vector, sigmat, complex_dimension_v=1)
 
 !           print *, "c_alpha: ",c_alpha_lapack, "  c_beta: ",c_beta_lapack
@@ -1072,7 +1069,7 @@ contains
             print *, "reduced problem from real  zgemm  "
             print *, create_reduced_problem
 
-!!          c_reduced = (zero_r8, zero_r8)
+!!          c_reduced = (0.0d0, 0.0d0)
 
 !           print *,"vectors_L",vectors_L
 !           print *,"vectors_N_complex",vectors_N_complex
@@ -1098,7 +1095,7 @@ contains
 !           deallocate(sigmat)
         else
             allocate(create_reduced_problem(vectors_L,vectors_L))
-            create_reduced_problem = zero_r8
+            create_reduced_problem = 0.0d0
             call dgemm('T', 'N', vectors_L, vectors_L, vectors_N, r_alpha_lapack, b, vectors_N, &
                        sigma_vector, vectors_N, r_beta_lapack, create_reduced_problem, vectors_L)
         end if
@@ -1193,15 +1190,15 @@ contains
 
         if (left) then
             do_left = 'V'
-            do_right = 'N'
+!           do_right = 'N'
             allocate(eVectorsL(vectors_N,vectors_L))
-            eVectorsL = zero_r8
+            eVectorsL = 0.0d0
         end if
         allocate(eVectorsR(vectors_N,vectors_L))
         allocate(eValues(2,vectors_L))
 
-        eVectorsR = zero_r8
-        eValues   = zero_r8
+        eVectorsR = 0.0d0
+        eValues   = 0.0d0
 
 ! first query optimal lwork value
         lwork = -1
@@ -1217,10 +1214,6 @@ contains
                         eValues(1,:), eValues(2,:), eVectorsL, vectors_L, eVectorsR, &
                         vectors_L, WORK, LWORK, INFO)
         end if
-! subroutine zgeev (character JOBVL, character  JOBVR, integer  N, complex*16 dimension( lda, * )       A, integer LDA, complex*16 dimension( * )        W,                                    , complex*16 dimension( ldvl, * )        VL, integer LDVL, complex*16, dimension( ldvr, * )        VR, integer  LDVR, complex*16, dimension( * )       WORK, integer LWORK, double precision, dimension( * )        RWORK, integer         INFO )               
-
-! subroutine dgeev (character JOBVL, character  JOBVR, integer  N, double precision dimension( lda, * ) A, integer LDA, double precision dimension( * ) WR, double precision dimension( * )  WI, double precision, dimension( ldvl, * ) VL, integer LDVL, double precision, dimension( ldvr, * )  VR, integer  LDVR, double precision, dimension( * ) WORK, integer LWORK, integer         INFO )               
-
 
         lwork = work(1)
         deallocate(work)
@@ -1318,6 +1311,13 @@ contains
                c_small_r_old(i,i) = 1.0d0
            enddo
        endif
+       if (davidson_solve_lhs.and.davidson_overlap_sorting) then
+           allocate(c_small_l_old(nroots,nroots))
+           c_small_l_old = 0.0d0
+           do i = 1, nroots
+               c_small_l_old(i,i) = 1.0d0
+           enddo
+       endif
 ! avijit
 !      allocate(c_small_r_old(nroots,nroots))
 !      k = 1 
@@ -1327,14 +1327,6 @@ contains
 !          k = k + 2
 !      enddo
 !      deallocate(c_small_r_old_dum)
-       if (davidson_solve_lhs.and.davidson_overlap_sorting) then
-           allocate(c_small_l_old(nroots,nroots))
-           c_small_l_old = 0.0d0
-           do i = 1, nroots
-               c_small_l_old(i,i) = 1.0d0
-           enddo
-       endif
- 
 
         write(davidson_output_file_unit,*) ""
         do niter = 1, davidson_max_iterations
@@ -1353,6 +1345,8 @@ contains
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
             if (davidson_debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
+
+            if (davidson_debug) print *,"niter, folow overlap",niter,(davidson_overlap_sorting.and.(niter.gt.1))
 
             call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
                                                         M_small,                      &
@@ -1482,55 +1476,55 @@ contains
 
         call solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
         if (davidson_debug) then
-           call davidson_print_vectors(eValues, label="debug, eValues after solveing ")
+            call davidson_print_vectors(eValues, label="debug, eValues after solving  ")
+            if (davidson_verbose) then 
+                call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+                                            left_local, right_local, nroots=nroots_to_print)
+            else
+                call print_values_vectors_R(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+                                            .false., .false., nroots=nroots_to_print)
+            end if
         end if
 
         if (follow_overlap) then
+            if (davidson_debug) print *, "following overlap !"
 ! calculate overlap between old and new vectors. Overlap(nroot,mroot) = Old^T(nroot,nroot)*New(1:nroot,mroot)   
 ! Max(Overlap(iroot,mroot)) for all iroot = 1,nroot 
             
-            if(right) then    
+            if(right_local) then    
                  nroot = size(eVectorsR_old,1)
                  allocate(overlap(nroot,M_nroots))
-! aspg, check whether second dimension is indeed M_nroots or nroots_to_print
-!                allocate(overlap(nroot,nroots_to_print))
                  overlap = 0.0d0 
 
                  if (davidson_complex_mode_with_reals) then
 ! aspg, check consistency of complex and real modes after real mode is validated
-                     call zgemm('N', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
-                                nroot, eVectorsR(1:nroot,:), nroot, (1.0d0, 0.0d0), overlap, nroot)
+                     call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
+                                nroot, eVectorsR(1:nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
                  else
                      call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsR_old, &
-                                nroot, eVectorsR(1:nroot,:), nroot, (1.0d0), overlap, nroot)
-! aspg, check whether second dimension is indeed M_nroots or nroots_to_print
-!                    call dgemm('T', 'N', nroot, nroots_to_print, nroot, (1.0d0), eVectorsR_old, &
-!                               nroot, eVectorsR(1:nroot,1:nroots_to_print), nroot, (1.0d0), overlap, nroot)
+                                nroot, eVectorsR(1:nroot,1:M_nroots), nroot, (1.0d0), overlap, nroot)
                  end if
-            else
+            else if (left_local) then
                  nroot = size(eVectorsL_old,1)
                  allocate(overlap(nroot,M_nroots))
-! aspg, check whether second dimension is indeed M_nroots or nroots_to_print
-!                allocate(overlap(nroot,nroots_to_print))
                  overlap = 0.0d0 
 
                  if (davidson_complex_mode_with_reals) then
 ! aspg, check consistency of complex and real modes after real mode is validated
-                     call zgemm('N', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
-                                nroot, eVectorsL(1:nroot,:), nroot, (1.0d0, 0.0d0), overlap, nroot)
+                     call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
+                                nroot, eVectorsL(1:nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
                  else
                      call dgemm('T', 'N', nroot, M_nroots, nroot, (1.0d0), eVectorsL_old, &
-                                nroot, eVectorsL(1:nroot,:), nroot, (1.0d0), overlap, nroot)
-! aspg, check whether second dimension is indeed M_nroots or nroots_to_print
-!                    call dgemm('T', 'N', nroot, nroots_to_print, nroot, (1.0d0), eVectorsL_old, &
-!                               nroot, eVectorsL(1:nroot,1:nroots_to_print), nroot, (1.0d0), overlap, nroot)
+                                nroot, eVectorsL(1:nroot,1:M_nroots), nroot, (1.0d0), overlap, nroot)
                  end if
             endif
 
+            if (davidson_debug) call davidson_print_vectors(overlap, label="overlap                       ")
             call sort_by_overlap(-1, eValues, overlap, eVectorsR, eVectorsL, &
                                  right_local, left_local) 
             deallocate(overlap)
         else
+            if (davidson_debug) print *, "not following overlap !"
             call sort_values_vectors(sorting_order_local, eValues, eVectorsR, eVectorsL, &
                                      right_local, left_local)
         end if
@@ -1573,7 +1567,7 @@ contains
 
         if (left_vector) then
             allocate(bc(vectors_L,vectors_N))
-            bc = zero_r8
+            bc = 0.0d0
 
 !           call davidson_print_vectors(eVectorsSmall, label="L eigenvectors small problem  ")
             if (davidson_complex_mode_with_reals) then
@@ -1593,7 +1587,7 @@ contains
 
         else
             allocate(bc(vectors_N,vectors_L))
-            bc = zero_r8
+            bc = 0.0d0
 !           call davidson_print_vectors(eVectorsSmall, label="R eigenvectors small problem  ")
             if (davidson_complex_mode_with_reals) then
                 vectors_N = vectors_N / 2
@@ -1684,21 +1678,23 @@ contains
         integer :: vectors_N, vectors_L, i_sorted, i
 
         vectors_L = size(e_small,2)
-        vectors_N = size(e_small,1)
         allocate(indices_sorted_array(vectors_L))
-        allocate(temp_vector(vectors_N,vectors_L))
-        temp_vector = 0.0d0
         do i = 1, vectors_L 
             indices_sorted_array(i) = i 
         end do
 
         if (davidson_debug) print *, "debug sort_values_vectors, L ",vectors_L
+
         if (davidson_complex_mode_with_reals) then
+            vectors_N = 2*vectors_L
             call quicksort_vector_complex_as_real(e_small, indices_sorted_array, 1, vectors_L)
         else
-            if (davidson_debug) print *, "original real part", e_small(1,:)
+            if (davidson_debug) call davidson_print_vectors(e_small, label="debug, e_small before sort    ")
+
+            vectors_N = vectors_L
             call quicksort_vector_real(e_small(1,:), indices_sorted_array, 1, vectors_L)
-            if (davidson_debug) print *, "sorted real part", e_small(1,:)
+
+            if (davidson_debug) call davidson_print_vectors(e_small, label="debug, e_small  after sort    ")
             if (davidson_debug) print *, "indices, sorted",indices_sorted_array
 
        ! we sort the indices that would sort the eigenvalues array, and apply the change to all other arrays
@@ -1711,23 +1707,31 @@ contains
             end do
         end if
 
+        allocate(temp_vector(vectors_N,vectors_L))
+        temp_vector = 0.0d0
+
         if (right) then
+            if (davidson_debug) call davidson_print_vectors(c_small_r,   label="debug, c_small_r before sort  ")
             do i = 1, vectors_L
              i_sorted = indices_sorted_array(i)
              temp_vector(:,i) = c_small_r(:,i_sorted)
             end do
+            if (davidson_debug) call davidson_print_vectors(temp_vector, label="debug, temp_vector            ")
             c_small_r = temp_vector
+            if (davidson_debug) call davidson_print_vectors(c_small_r, label="debug, c_small_r  after sort  ")
         end if
 
         if (left) then
+            if (davidson_debug) call davidson_print_vectors(c_small_l, label="debug, c_small_l before sort  ")
             do i = 1, vectors_L
              i_sorted = indices_sorted_array(i)
              temp_vector(:,i) = c_small_l(:,i_sorted)
             end do
             c_small_l = temp_vector
+            if (davidson_debug) call davidson_print_vectors(c_small_l, label="debug, c_small_l  after sort  ")
         end if
-!       deallocate(temp_vector)
-!       deallocate(indices_sorted_array)
+        deallocate(temp_vector)
+        deallocate(indices_sorted_array)
 
     end subroutine
 
@@ -1868,11 +1872,15 @@ contains
            end do
            if (i >= j) exit
 
-           print *,"debug, original vector"
-           print *, v
-           print *,"debug, index vector before exchange"
-           print *,indices_sorted
-           print *," debug, exchanging i",i,"and j",j
+!          if (davidson_debug) then
+           if (.true.) then
+               call davidson_print_vectors(v, label="debug, original vector        ")
+!              call davidson_print_vectors(indices_sorted, label="debug, index vector b/f xc    ")
+               print *,"debug, index vector before exchange"
+               print *,indices_sorted
+               print *," debug, exchanging i",i,"and j",j
+           end if
+ 
            t = v(1,i)
            v(1,i) = v(1,j)
            v(1,j) = t
@@ -1884,14 +1892,20 @@ contains
            ti = indices_sorted(i)
            indices_sorted(i) = indices_sorted(j)
            indices_sorted(j) = ti
-           print *,"debug, echanged vector"
-           print *, v
-           print *,"debug, index vector after exchange"
-           print *,indices_sorted
+
+!          if (davidson_debug) then
+           if (.true.) then
+               call davidson_print_vectors(v, label="debug, exchanged vector       ")
+!              call davidson_print_vectors(indices_sorted, label="debug, index vector a/f xc    ")
+               print *,"debug, index vector before exchange"
+               print *,indices_sorted
+           end if
 
            i = i + 1
            j = j - 1
-           print *,"debug, at the end of the loop, i",i,"j",j
+
+!          if (davidson_debug) print *,"debug, at the end of the loop, i",i,"j",j
+           if (.true.) print *,"debug, at the end of the loop, i",i,"j",j
 
         end do
         if (first < i-1) then 

@@ -61,9 +61,9 @@ module trial_vectors_eom
 
   enddo
 
-   if (iprnt.ge.2) then
+   if (iprnt.ge.3) then
        print *,"debug in trial_vectors_ip, nrep:",nrep,dimr1,nroot
-!       call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
+       call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
    end if
 
    allocate (ev(2,nroot))
@@ -73,12 +73,12 @@ module trial_vectors_eom
    ev   = 0.0d0
 
    call solve_values_vectors(sigma1, ev, evec, evec, .false.)
-   if (iprnt.ge.2) then
+   if (iprnt.ge.3) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
            print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
-!       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
+       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
    end if
 
 ! copy the eigenvectors to r1
@@ -123,9 +123,9 @@ module trial_vectors_eom
     &                       -1.0d0,1.0d0,nrep)
 
    enddo
-   if (iprnt.ge.2) then
+   if (iprnt.ge.3) then
        print *,"debug in trial_vectors_ip, nrep:",nrep,dimr1,nroot
-!       call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
+       call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
    end if
 
 
@@ -136,12 +136,12 @@ module trial_vectors_eom
    ev   = 0.0d0
 
    call solve_values_vectors(sigma1, ev, evec, evec, .false.)
-   if (iprnt.ge.2) then
+   if (iprnt.ge.3) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
            print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
-!       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
+       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
    end if
 
 ! copy the eigenvectors to r1
@@ -188,9 +188,9 @@ module trial_vectors_eom
 
    end do
 
-   if (iprnt.ge.2) then
+   if (iprnt.ge.3) then
        print *,"debug in trial_vectors_ip, nrep:",nrep,dimr1,nroot
-!       call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
+       call davidson_print_vectors(sigma1,  label="debug:  sigma1 vector         ")
    end if
 
 
@@ -201,12 +201,12 @@ module trial_vectors_eom
    ev   = 0.0d0
 
    call solve_values_vectors(sigma1, ev, evec, evec, .false.)
-   if (iprnt.ge.2) then
+   if (iprnt.ge.3) then
        print *,'CCS eigenvalues in (real, imaginary) format'
        do i = 1, nroot
            print *,"(",ev(1,i), ",",ev(2,i),")"
        end do
-!       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
+       call davidson_print_vectors(evec, label="debug:  CCS eigenvectors      ")
    end if
 
 ! copy the eigenvectors to r1
