@@ -69,6 +69,12 @@
       REAL*8,allocatable,dimension(:)        :: dovx,dovy,dovz
       REAL*8,allocatable,dimension(:)        :: dvox,dvoy,dvoz
       REAL*8,allocatable,dimension(:)        :: dvvx,dvvy,dvvz
+
+! VO dipole moment integrals holding the complex conjugates in
+! the carith=false case where some di's are purely imaginary.
+! Only accessed if carith=.false. !
+
+      REAL*8,allocatable,dimension(:)        :: dvoxc,dvoyc,dvozc
                                             
 ! auxiliary arrays for contractions
 
@@ -103,6 +109,8 @@
       character*9                            :: preconfn='VVVVXVVOO'
       character*30                           :: iorder
       integer                                :: incsat
+      integer                                :: numstacks
+      real*8                                 :: x4
 !
 !---------------interface region --------------------------------------
 !
@@ -177,6 +185,11 @@
       write(*,*) '   Symmetry: ',desrep
       write(*,*) '   **********************'
       write(*,*)
+
+      numstacks = 8
+      write(*,*) '   Initializing stack system with',numstacks,' stacks'
+      if(qstack_init(numstacks,1).ne.numstacks) 
+     &   call quit('Qstack problem')
 !
 ! initialization of constant variables
 !
@@ -291,14 +304,16 @@
       idaov = JPOVXX(NREP+1)
       idavo = JPVOXX(NREP+1)
       idavv = JPVVXX(NREP+1)
-      n1 = idaoo*rcw   ! lengths
-      n2 = idaov*rcw
-      n3 = idavo*rcw
-      n4 = idavv*rcw
+
+      n1 = idaoo*rcw   ! actual lengths
       allocate(doox(n1),dooy(n1),dooz(n1))
-      allocate(dovx(n2),dovy(n2),dovz(n2))
-      allocate(dvox(n3),dvoy(n3),dvoz(n3))
-      allocate(dvvx(n4),dvvy(n4),dvvz(n4))
+      n1 = idaov*rcw
+      allocate(dovx(n1),dovy(n1),dovz(n1))
+      n1 = idavo*rcw
+      allocate(dvox(n1),dvoy(n1),dvoz(n1))
+      n1 = idavv*rcw
+      allocate(dvvx(n1),dvvy(n1),dvvz(n1))
+
       doox = 0.0d0
       dooy = 0.0d0
       dooz = 0.0d0
@@ -311,6 +326,15 @@
       dvvx = 0.0d0
       dvvy = 0.0d0
       dvvz = 0.0d0
+
+      if(carith.eqv..false.) then
+        n1 = idavo  !these are genuinely real arrays!
+        allocate(dvoxc(n1),dvoyc(n1),dvozc(n1))
+        dvoxc = 0.0d0
+        dvoyc = 0.0d0
+        dvozc = 0.0d0
+      endif
+     
 
 !*********************************************************************
 !  VVOO-type integral arrays, they always remain allocated since they
@@ -378,9 +402,45 @@
      &               dvox,dvoy,dvoz,
      &               dvvx,dvvy,dvvz)
 
-      pphasex = pphase(1)
-      pphasey = pphase(2)
-      pphasez = pphase(3)
+! canary values for catching errors. For complex arithmetic these
+! phase variables must not be accessed or used.
+
+      pphasex = -999999.0d0  
+      pphasey = -999999.0d0
+      pphasez = -999999.0d0
+      
+      If(carith.eqv..false.) then
+        write(*,*) 'We are in real mode and have to check'
+        write(*,*) 'the phases of the property integrals.'
+        if(aimag(pphase(1)).ne.0) then
+          write(*,*) 'Adjusting dvox'
+          dvoxc = -dvox
+          pphasex = AI
+        else
+          write(*,*) 'Unchanged dvox'
+          dvoxc = dvox
+          pphasex = A1
+        endif
+        if(aimag(pphase(2)).ne.0) then
+          write(*,*) 'Adjusting dvoy'
+          dvoyc = -dvoy
+          pphasey = AI
+        else
+          write(*,*) 'Unchanged dvoy'
+          dvoyc = dvoy
+          pphasey = A1
+        endif
+        if(aimag(pphase(3)).ne.0) then
+          write(*,*) 'Adjusting dvoz'
+          dvozc = -dvoz
+          pphasez = AI
+        else
+          write(*,*) 'Unchanged dvoz'
+          dvozc = dvoz
+          pphasez = A1
+        endif
+      Endif   !carith
+ 
 !
 !-----------------------------------------------
 !------ Determine relevant irep such that
@@ -392,13 +452,26 @@
       if(MVO(desrep).ne.MVO(proprep))then
         CALL QUIT('Property dimension inconsistency!')
       endif
+      if(MVO(proprep).ne.MOV(proprep))then
+        CALL QUIT('OV/VO dimension inconsistency!')
+      endif
+      if(JPVOXX(proprep).ne.JPOVXX(proprep))then
+        CALL QUIT('OV/VO offset inconsistency!')
+      endif
+      write(*,*) 'Dimension/offset check passed.'
+!
+!  storage of property contributions is F_ai. Therefore the
+!  First contribution is D_ai and not D_ia
 !
 !------------------------
 !------  F_ai(0)
 !------------------------
 !
-      n1 = MVO(proprep)       !number of integrals
-      off = JPVOXX(proprep) + 1       !offset from where to read the integrals
+      n1 = MVO(proprep)       !number of integrals   (OV = VO!)
+      off = JPVOXX(proprep) + 1    !offset for prop. integrals (OV = VO!)
+
+! even if the dimensions are equivalent we copy the dov* integrals since
+! they bear the correct phases in case of imaginary property integrals.
 
       call xcopy(n1,dvox(off),1,faipx,1)
       call xcopy(n1,dvoy(off),1,faipy,1)
@@ -422,17 +495,18 @@
 ! sort v_ab,ij --> v_ai,bj
 ! the minus sign in the contraction is accounted for in the 
 ! XGEMV routines!
+! We contract over D_jb = D*_bj !!
 !
       vvoo3 = 0.0d0
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
      &                 MVO,JVOVO,JJVO,JJVO,vvoo1,vvoo3)
       off = JPVOXX(desrep) + 1
       n1 = MVO(desrep)
-      if(carith) then
-        call conjuga(n1,dvox(off),1)
-        call conjuga(n1,dvoy(off),1)
-        call conjuga(n1,dvoz(off),1)
-      endif
+!     if(carith) then
+!       call conjuga(n1,dovx(off),1)
+!       call conjuga(n1,dovy(off),1)
+!       call conjuga(n1,dovz(off),1)
+!     endif
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
       off1 = JVOVO(desrep) + 1
@@ -440,16 +514,16 @@
       M=MVO(desrep)
       K=MVO(desrep)
       CALL XGEMV ('N',M,K,-A1,vvoo3(off1),M,
-     &            dvox(off2),1,A0,faipx,1)
+     &            dovx(off2),1,A0,faipx,1)
       CALL XGEMV ('N',M,K,-A1,vvoo3(off1),M,
-     &            dvoy(off2),1,A0,faipy,1)
+     &            dovy(off2),1,A0,faipy,1)
       CALL XGEMV ('N',M,K,-A1,vvoo3(off1),M,
-     &            dvoz(off2),1,A0,faipz,1)
-      if(carith) then
-        call conjuga(n1,dvox(off),1)
-        call conjuga(n1,dvoy(off),1)
-        call conjuga(n1,dvoz(off),1)
-      endif
+     &            dovz(off2),1,A0,faipz,1)
+!     if(carith) then
+!       call conjuga(n1,dovx(off),1)
+!       call conjuga(n1,dovy(off),1)
+!       call conjuga(n1,dovz(off),1)
+!     endif
 !
 ! add result on top of the final arrays
 !
@@ -524,6 +598,7 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+
 !
 !------------------------
 !------  F_ai(2)B
@@ -577,6 +652,7 @@
      &            LFA,
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
+
 !
 !------------------------
 !------  F_ai(2)C
@@ -648,9 +724,9 @@
      &            fabijtx,fabijty,fabijtz)
 !
 !
-!------------------------
-!------  F_ai(2,1)
-!------------------------
+!--------------------------------------
+!------  F_ai(2,1), a DOO contribution
+!--------------------------------------
 !
 !  only temporarily allocate space for the VOVV integrals.
 !
@@ -715,9 +791,9 @@
       write(*,*) '------  F_ai(2,1) finished'
       
 !
-!------------------------
-!------  F_ai(2,2)
-!------------------------
+!--------------------------------------
+!------  F_ai(2,2), a DOO contribution
+!--------------------------------------
 !
       iat = 0
       n1 = ivooot(nrep+1)
@@ -901,6 +977,8 @@
      &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,4) finished'
+
+      stop
 !
 !-------------------------------------
 !------  F_ai(2,5), a DOV contribution
@@ -1610,6 +1688,10 @@
       deallocate(dvox,dvoy,dvoz)
       deallocate(dvvx,dvvy,dvvz)
 
+      if(carith.eqv..false.) then
+        deallocate(dvoxc,dvoyc,dvozc)
+      endif
+
       deallocate(faipx,faipy,faipz)
       deallocate(faitx,faity,faitz)
 
@@ -1794,7 +1876,8 @@
             ax = ax + dcmplx(rcoef(i),D0)*faitx(i)
             ay = ay + dcmplx(rcoef(i),D0)*faity(i)
             az = az + dcmplx(rcoef(i),D0)*faitz(i)
-!           write(*,'(F10.6,5X,2F10.6,5X,2F10.6)') rcoef(i),faitx(i),ax
+!           write(*,'(F10.6,7X,2F10.6,7X,2F10.6)') rcoef(i),
+!    &              faitx(i),faity(i)
           enddo
           if(do2h2p) then
             do i=1,n2h2p
@@ -1819,12 +1902,8 @@
       write(*,*) '   Transition moments for states in symmetry',desrep
       write(*,*)
       write(*,*)
-      write(*,*) '   *******************************'
-      write(*,'(A,A)') '   Order of computation: ',iorder
-      write(*,*) '   *******************************'
-      write(*,*)
-      write(*,*)
-      write(*,*) '----------------------------------------------------'
+      write(*,'(3A)') '---------------  contribution:   ',iorder,
+     &   '-------------------------------------'
       write(*,'(A,4X,A,9X,A,20X,A,20X,A)')
      &       'State','Energy(eV)','TM(x)','TM(y)','TM(z)'
       write(*,*) '----------------------------------------------------'

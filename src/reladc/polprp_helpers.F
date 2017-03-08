@@ -342,8 +342,6 @@ C
 !---------------- description ----------------
 !
 ! this routine xaxpys from as to ad depending on phase
-! if phase is 1.0,0.0 then ad = ad + as
-! if phase is 0.0,1.0 then ad = ad + I*as
 ! ad is always complex, as is either real or complex (following carith)
 !
 !---------------- formal parameters ----------------
@@ -367,6 +365,7 @@ C
 !     write(*,*) ' *** in rcaxpy ***',carith,rcw
 
       if(.not.carith) then       ! ** as = real case + phase **
+!       write(*,*) '                  * * * rcaxpy phase:',phase
         do i=1,n
           ad(i) = ad(i) + phase*dcmplx(as(i),0.0d0)
         enddo

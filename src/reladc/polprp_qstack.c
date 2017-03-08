@@ -113,9 +113,7 @@ int qstack_push(int *stack, int *len, double *arr){
 /* first store vector item on the heap */
 
   curvec = (double *)malloc(*len * sizeof(double));
-  for(i=0;i<*len;i++) {
-    curvec[i] = arr[i];
-  }
+  memcpy(curvec,arr,*len * sizeof(double));
 
 /* insert this address now to the corresponding stack and
  * adjust stack depths and update corresponding length
@@ -180,9 +178,12 @@ int qstack_popf(int *stack, double *retvec){
 /* fetch >>first<< vector from stack (FIFO) and copy to retvec */
 
   curlen = qslen[stackn][0];
+  memcpy(retvec,*qsbase[stackn],curlen*sizeof(double));
+/*
   for(i=0;i<curlen;i++) {
     retvec[i] = *(*qsbase[stackn] + i);
   }
+*/
 
 /* shrink stack from below and check special case for 1 vector
    on stack */
@@ -248,9 +249,12 @@ int qstack_popl(int *stack, double *retvec){
 
   curdep = qsdep[stackn];
   curlen = qslen[stackn][curdep-1];
+  memcpy(retvec,qsbase[stackn][curdep-1],curlen*sizeof(double));
+/*
   for(i=0;i<curlen;i++) {
     retvec[i] = *(qsbase[stackn][curdep-1] + i);
   }
+*/
 
 /* shrink stack from above and check special case for 1 vector
    on stack */
@@ -354,7 +358,14 @@ void qstack_shutdown(void){
   free(qsbase);
   free(qslen);
   free(qsdep);
+
+  qsbase = NULL;
+  qslen = NULL;
+  qsdep = NULL;
+
   numofstacks = 0;
   initialized = 0;
+  verbose = 0;
+
   return;
 }

@@ -394,6 +394,7 @@
       real*8, parameter        :: ZEROTHRS=1.0D-11
       integer,allocatable      :: acv(:,:)
       integer                  :: irow,icol,retcode
+      integer                  :: loopcount
 !
 !---------------Executable code--------------------------------------
 !
@@ -448,13 +449,6 @@
       Enddo
       deallocate(DUMPROP)
       CLOSE (MDPROP,STATUS='KEEP')
-!
-! debug C call
-!
-!     retcode = polprp_receiver(PROP,2*NSP*NSP)
-!
-! end debug
-!
 
       write (6,*)
       hdev = 0.0d0
@@ -541,13 +535,22 @@
       APHASE(2) = D0
       PHASE = .FALSE.
 
+      loopcount = 1
+
 !     if(printlevel.ge.2) then
 !       write(*,*)
 !       write(*,*) 'Symmetry ordering of PROP ints:'
 !       write(*,*)
 !     endif
 
-    2 AMAXI = D0
+    2 continue
+      write(*,*)
+      write(*,*) '-------------------------------------------------'
+      write(*,*) 'Entering phase loop for the',loopcount,'. time'
+      write(*,*) '-------------------------------------------------'
+      write(*,*)
+      loopcount = loopcount + 1
+      AMAXI = D0
       AAMAX = 0
       IIMAX = 0
       AI = 1
@@ -576,6 +579,12 @@
 !    &    write(*,*) '-avo- irepspi#:',aa,ii,'  ccseti#:',
 !    &    io(nrep+1)+iv(arep)+a,  io(irep)+i,'  value:',
 !    &    avo(ai)
+!         write(*,*) '-avo/aov- ',avo(ai),aov(ai)
+
+          write(*,*) AI,' pai1,pai2,pia1,pia2:',
+     &     PROP(1,AA,II),PROP(2,AA,II),PROP(1,II,AA),PROP(2,II,AA),
+     &     AVO(AI),AOV(AI)
+
                       AVOI = PROP(1,AA,II)*APHASE(2) +
      &                       PROP(2,AA,II)*APHASE(1)
                       AOVI = PROP(1,II,AA)*APHASE(2) +
