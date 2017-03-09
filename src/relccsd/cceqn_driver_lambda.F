@@ -84,31 +84,12 @@ C
 
          call w_ijmn(S1,S2,w_oooo)
 
-!!!!!!<<<<<<< HEAD
-!!!!!!!!       call w_ejmb(S1,S2,w_voov)
-!!!!!!
-!!!!!!         call wbar_mbej(S2,w_ovvo)
-!!!!!!
-!!!!!!       write(*,*)'dot product wbar_mbej',dot_product(
-!!!!!!     &  w_ovvo(1:iovvo(nrep+1)*rcw),w_ovvo(1:iovvo(nrep+1)*rcw))
-!!!!!!
-!!!!!!         call w_mbej(s1,s2,w_voov)
-!!!!!!
-!!!!!!         write(*,*)'dot product w_mbej', 
-!!!!!!     &  dot_product(w_voov(1:iovvo(nrep+1)*rcw),
-!!!!!!     &    w_voov(1:iovvo(nrep+1)*rcw))
-!!!!!!
-!!!!!!
-!!!!!!!       write(*,*)'starting w_iemn intermediate'
-!!!!!!
-!!!!!!=======
          call f_bar_me(fvo,S1,hov)
 
          call f_bar_ae(fvv,fvo,s1,s2,hv)
 
          call w_mbej(s1,s2,w_voov)
 
-!!!!!!>>>>>>> master
          call w_iemn(s1,s2,w_ovoo,w_ovvo,w_oooo,hov)
 
          write(*,*)'dot product w_iemn', 
@@ -118,22 +99,11 @@ C
 
       CALL XTIME(5,1,'-- "efam" Intermediate                     ')
 
-!!!!!!<<<<<<< HEAD
-!!!!!!         call w_efam(s1,s2,w_ovvo,hov,cz)
-!!!!!!
-!!!!!!         call w_efam_diagram2 (s1,s2,buf2,buf3,nbuf3,cz)
-!!!!!!
-!!!!!!
-!!!!!!         write(*,*)'dot product w_efam', 
-!!!!!!     &  dot_product(cz(1:ivovvt(nrep+1)*rcw),
-!!!!!!     &     cz(1:ivovvt(nrep+1)*rcw))
-!!!!!!=======
         call w_efam(s1,s2,w_ovvo,hov,cz)
 
         if (myproc.gt.0) then
           cz(1:nv5*rcw) = 0.0d0
         endif
-!!!!!!>>>>>>> master
 
       CALL XTIME(5,2,'-- "efam" Intermediate                     ')
 

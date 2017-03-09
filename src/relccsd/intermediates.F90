@@ -426,77 +426,9 @@
 !   wbar_ovvo(mb,ej) = wbar_ovvo(mb,ej) - V(mn,ef) * T2(bf,nj)
 !------------------------------------------------------------
 
-!!!!!!<<<<<<< HEAD
   call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),wbar_ovvo, &
              &      1.0d0,0.0d0,nrep,RightTensor=t2)
 
-!!!!!!=======
-!!!!!!     testluuk = .false.
-!!!!!!      if(.not.testluuk) then
-!!!!!!
-!!!!!!      call contraction_444 ((/"o2","o3","p2","p3"/),(/"p1","p3","o1","o3"/),(/"o2","p1","p2","o1"/),wbar_ovvo, &
-!!!!!!             &      1.0d0,0.0d0,nrep,RightTensor=t2)
-!!!!!!
-!!!!!!      else
-!!!!!!
-!!!!!!      allocate(temp(nv3*rcw))
-!!!!!!
-!!!!!!      call getoovv(temp)
-!!!!!!
-!!!!!!      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,JOVVO,JJOV,JJVO, &
-!!!!!!     &              temp,buf3)
-!!!!!!
-!!!!!!
-!!!!!!      deallocate(temp)
-!!!!!!
-!!!!!!      CALL SRT1TT4 (NREP,MULTB,.FALSE.,.FALSE.,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO, &
-!!!!!!     &              T2,buf2)
-!!!!!!
-!!!!!!
-!!!!!!     allocate(temp(JOVVO(nrep+1)*rcw))
-!!!!!!
-!!!!!!    temp=0.0d0
-!!!!!!
-!!!!!!
-!!!!!!       off1 = 1
-!!!!!!      do x = 1, nrep
-!!!!!!         J = MULTB(x+NREP,1+NREP,2)
-!!!!!!
-!!!!!!          M = mov(x)
-!!!!!!          N = mvo(j)
-!!!!!!          K = mvo(j)
-!!!!!!
-!!!!!!          off1 = 1 + j2ovvo(j)*rcw  
-!!!!!!          off2 = 1 + j2vovo(x)*rcw  
-!!!!!!          off3 = 1 + jovvo(x)*rcw  
-!!!!!!
-!!!!!!
-!!!!!!            CALL XGEMM ('N','T',M,N,K,A1,buf3(OFF1),M, &
-!!!!!!     &                  buf2(OFF2),N,A0,temp(OFF3),M)
-!!!!!!
-!!!!!!      enddo
-!!!!!!
-!!!!!!!!      write(*,*)(temp(x),x=1,JOVVO(nrep+1))
-!!!!!!
-!!!!!!!    write(*,*)'dot product before sorting',dot_product(temp,temp),dot_product(wbar_ovvo,wbar_ovvo)
-!!!!!!
-!!!!!!      allocate(xxx(J2OVVO(nrep+1)*rcw)) 
-!!!!!!
-!!!!!!      xxx = 0.0d0
-!!!!!!
-!!!!!!      CALL SRT1SS4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NV,NV,NO,MOV,JOVVO,JJOV,JJVO, &
-!!!!!!     &              temp,xxx)
-!!!!!!
-!!!!!!       deallocate(temp)
-!!!!!!
-!!!!!!
-!!!!!!     CALL XAXPY (iovvo(nrep+1),A1,xxx,1,wbar_ovvo,1)
-!!!!!!
-!!!!!!      deallocate(xxx) 
-!!!!!!
-!!!!!!  endif
-!!!!!!
-!!!!!!>>>>>>> master
  end subroutine
 
  subroutine w_mnie(t1,int_wooop)
@@ -583,12 +515,7 @@
 !        Initialize
 !----------------------------------------------------------
 
-
-!!!!!!<<<<<<< HEAD
-!!!!!!=======
    call getvvvo_incore(w_vvvo)
-!!!!!!
-!!!!!!>>>>>>> master
 !-----------------------------------------------------------
 !   diagram1 : w_vvvo(ef,am)  = w_vvvo(ef,am) + p(ef) V(en,ag)*t2(fg,mn)  
 !-----------------------------------------------------------

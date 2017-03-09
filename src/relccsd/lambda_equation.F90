@@ -193,57 +193,9 @@
 !   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_bmej(je,bm)
 !--------------------------------------------------------
 
-!!!!!!<<<<<<< HEAD
-!!!!!!      call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
-!!!!!!     &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
-!!!!!!
-!!!!!!=======
-!   The following calls should be able to replace the hand coding below, but
-!   did not give the correct result. To be debugged before activating
+      call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
+     &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
 
-!     call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
-!    &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
-
-      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVVO,JJOV,JJVO, &
-     &              L2,buf2)
-
-      CALL SRT1SS4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NV,NV,NO,MOV,J2OVVO,JJOV,JJVO, &
-     &              w_voov,buf3)
-
-      allocate (ResL2_temp(j2ovov(nrep+1)*rcw))
-
-      ResL2_temp = 0.0d0
-
-
-      do i = 1, nrep
-         J = MULTB(i+NREP,1+NREP,2)
-
-          M = mov(i)
-!          N = mov(j)
-          N = mov(i)
-          K = mvo(j)
-
-          ND = mov(i)
-          off1 = 1 + j2ovvo(i)*rcw
-          off2 = 1 + j2ovvo(i)*rcw
-          off3 = 1 + j2ovov(i)*rcw
-
-
-            CALL XGEMM ('N','T',M,N,K,A1,buf2(OFF1),M, &
-      &                  buf3(OFF2),ND,A0,ResL2_temp(OFF3),M)
-
-      enddo
-
-      CALL SRT1TT4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NO,NV,NV,MOV,J2OVOV,JJOV,JJOV, &
-     &              ResL2_temp,buf2)
-
-      deallocate(ResL2_temp)
-
-      CALL XAXPY (ndimt2,A1,buf2,1,resl2,1)
-
-      if (iprnt.ge.1) &
-     &  write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
-!!!!!!>>>>>>> master
 !-----------------------------------------------------------
 !   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*G_vv(e,b)
 !-----------------------------------------------------------
@@ -298,8 +250,6 @@
 !    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab)
 !--------------------------------------------------------
 
-!!!!!!<<<<<<< HEAD
-!!!!!!=======
        allocate(counter(0:nmproc-1))
        allocate(displ(0:nmproc-1))
 
@@ -307,7 +257,6 @@
        displ = 0 
 
       done = .false.
-!!!>>>>>>> master
       allocate(tau(ndimt2*rcw))
       call gettau(t1,t2,tau)
       off2 = 1
