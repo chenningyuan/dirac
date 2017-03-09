@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -312,13 +312,17 @@ C     DOOTODIR
 C     DVVTODIR
 C---------------Last modified------------------------------------------
 C
-C     Author : Joost van Stralen - March 2002
+C     Author : Joost van Stralen - March 2002 : Extended by Avijit Shee
+C     for CC
 C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 DOO(*),DVV(*),DOV(*),DVO(*)
       REAL*8 BUF1(*),BUF2(*)
       REAL*8 DMO(*)
+      REAL*8 sym_factor !we will change this factor depending on the
+                        !fact whether our desired property opeartor is
+                        !hermition or anti-hermition.   
 C
 C
 C---------------Common Blocks--------------------------------------
@@ -352,17 +356,18 @@ C                                            unbar + bar
 C######################################################################
 C
 
+      sym_factor = 1.0d0 !1.0d0 for the hermition part of density matrix.
+                         !it will be -1.0d0 for the anti-hermition part. 
 
-!!!   ALLOCATE(D_TRANS(NFVO*RCW))
+      ALLOCATE(D_TRANS(NFVO*RCW))
 
-!!!   CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
+      CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
 
-!!!   CALL XAXPY (NFVO,A1,D_TRANS,1,DOV,1)
+      CALL XAXPY (NFVO,sym_factor*A1,D_TRANS,1,DOV,1)
 
-!!!   CALL XSCAL (NFVO,AP5,DOV,1)
+      CALL XSCAL (NFVO,AP5,DOV,1)
 
-!!!   DEALLOCATE(D_TRANS)
-
+      DEALLOCATE(D_TRANS)
 
       CALL DZERO(DMO,NORBT*NORBT*NZ)
 
@@ -398,16 +403,15 @@ C##############
 
       buf1(1:nfoo*rcw) = 0.0d0
 
-!!!!  ALLOCATE(DOO_TRANS(NFOO*RCW))
+      ALLOCATE(DOO_TRANS(NFOO*RCW))
 
-!!!!  CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
+      CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
 
-!!!!  CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
+      CALL XAXPY (NFOO,sym_factor*A1,DOO_TRANS,1,DOO,1)
 
-!!!!  DEALLOCATE(DOO_TRANS)
+      DEALLOCATE(DOO_TRANS)
 
-!!!!  CALL XSCAL (NFOO,AP5,DOO,1)
-
+      CALL XSCAL (NFOO,AP5,DOO,1)
 
       IJ = 0
       DO IREP = 1, NREP
@@ -429,12 +433,7 @@ C
       IF (CARITH) THEN
          CALL DCOPY(NFOO,BUF2,1,BUF1(NFOO+1),1)
       ENDIF
-c     do i = 1, nfoo
-c        print*,'real DOO ',i,buf1(i)
-c        print*,'imag DOO ',i,buf1(i+nfoo)
-c     enddo
-C
-c     print*,'laat oo deel dmo op 0'
+
       CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
 
 C##############
@@ -443,12 +442,12 @@ C##############
 
       buf1(1:nfvv*rcw) = 0.0d0
 
-!!!!  ALLOCATE(DVV_TRANS(NFVV*RCW))
-!!!!  CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
-!!!!  CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
-!!!!  DEALLOCATE(DVV_TRANS)
+      ALLOCATE(DVV_TRANS(NFVV*RCW))
+      CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
+      CALL XAXPY (NFVV,sym_factor*A1,DVV_TRANS,1,DVV,1)
+      DEALLOCATE(DVV_TRANS)
 
-!!!!  CALL XSCAL (NFVV,AP5,DVV,1)
+      CALL XSCAL (NFVV,AP5,DVV,1)
 
       AB = 0
       DO IREP = 1, NREP
@@ -471,12 +470,7 @@ C
          CALL DCOPY(NFVV,BUF2,1,BUF1(NFVV+1),1)
       ELSE
       ENDIF
-c     do i = 1, nfvv
-c        print*,'real DVV ',i,buf1(i)
-c        print*,'imag DVV ',i,buf1(i+nfvv)
-c     enddo
-C
-c     print*,'laat vv deel dmo op 0'
+
       CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
 
 C##############
@@ -485,13 +479,9 @@ C##############
 
       buf1(1:nfvo*rcw) = 0.0d0
 
+      CALL SRT1C1 (NREP,NV,NO,DOV,DVO)
 
-!     ALLOCATE(D_TRANS(NFVO*RCW))
-!     CALL SRT1C1 (NREP,NV,NO,DVO,D_TRANS)
-
-!     CALL XAXPY (NFVO,A1,DOV,1,DVO,1)
-
-!     CALL XSCAL (NFVO,AP5,DVO,1)
+      CALL XSCAL (NFVO,sym_factor*A1,DVO,1)
 
       IA = 0
       DO IREP = 1, NREP
@@ -507,8 +497,6 @@ C##############
             ENDDO
          ENDDO
       ENDDO
-
-!      DEALLOCATE(D_TRANS)
 
       IF (CARITH) THEN
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
@@ -1313,6 +1301,7 @@ C     Read the appropriate correlated density from file
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CLOSE(Unit=MCCDENS,Status='KEEP')
+!      CLOSE(Unit=MCCDENS,Status='DELETE')
 
       
 C     Add the closed shell Hartree-Fock contribution

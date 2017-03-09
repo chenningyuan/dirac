@@ -64,7 +64,7 @@
       PARAMETER (MAX_SUB_BL = 16)
 
       INTEGER N_SUB_BL(2), ID_SUB_BL(MAX_SUB_BL, 2),                    &
-     &        NORB_SUB(MAX_SUB_BL, 2, 0:2)
-      COMMON /DCBORB_SUB_BL/ N_SUB_BL, ID_SUB_BL, NORB_SUB
+     &        NORB_SUB(MAX_SUB_BL,2,0:2),NTMO_SUB(MAX_SUB_BL,2,0:2)
+      COMMON /DCBORB_SUB_BL/ N_SUB_BL, ID_SUB_BL, NORB_SUB, NTMO_SUB
 
 ! -- end of dcborb.h --

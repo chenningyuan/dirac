@@ -44,6 +44,7 @@ set(FREE_RELCCSD_FORTRAN_SOURCES
    density.F90
    relcc_cfg.F90
    contraction.F90
+   relcc_cfg.F90
    intermediates.F90
    lambda_equation.F90
    relcc_cfg.F90
@@ -67,8 +68,8 @@ endif()
 add_library(
     relccsd
     OBJECT
-    ${FIXED_RELCCSD_FORTRAN_SOURCES}
     ${FREE_RELCCSD_FORTRAN_SOURCES}
+    ${FIXED_RELCCSD_FORTRAN_SOURCES}
 )
 
 # add intermodule dependencies

@@ -42,7 +42,7 @@ keyword(GRADIENT)
 
 Calculate the effective 1-particle density matrix. This option can be used to calculate
 molecular properties. For closed-shell MP2 see :cite:`vanStralen2005`. For closed-shell CC 
-see :cite:`Shee_CCgrad2016`.
+see :cite:`Shee2016`.
 
 *Default:*
 

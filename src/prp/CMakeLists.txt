@@ -55,8 +55,8 @@ endif()
 add_library(
     prp
     OBJECT
-    ${FIXED_PRP_FORTRAN_SOURCES}
     ${FREE_PRP_FORTRAN_SOURCES}
+    ${FIXED_PRP_FORTRAN_SOURCES}
 )
 
 # deal with dependencies

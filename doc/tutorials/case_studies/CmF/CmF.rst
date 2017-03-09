@@ -1,5 +1,7 @@
 :orphan:
 
+.. _case_CmF:
+
 ===========================
 Electronic structure of CmF
 ===========================
@@ -59,5 +61,8 @@ shell in the neutral atom. We therefore set up the input file
 This assures that the orbitals are correctly ordered when we start the SCF iterations. In order to keep them in the desired order, we invoke 
 overlap selection. We impose non-dynamic overlap selection, which means that orbitals in a given iteration are selected based on their overlap 
 with the *initial* orbitals.
+
+This calculation converges smoothly in 13 iterations.
+
 
 

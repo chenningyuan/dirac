@@ -58,7 +58,7 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
 *      
 *
 * Switch between real and complex algebra
-* a multiplication factor to determine lenght of vector
+* a multiplication factor to determine length of vector
       IF(IRECOM.EQ.1) THEN
         IMULTFAC = 1
       ELSE

@@ -1,9 +1,9 @@
 DIRAC open-shell tests
 ========================
 
-Test dedicated to demonstrate Dirac HF-SCF open-shell capabilities.
+This test is dedicated to demonstrate Dirac HF-SCF open-shell capabilities.
 
-The aim is to get converged ground and first excited states of 
+We get converged ground and first excited states of 
 several open-shell atoms and molecules.
 
 For the sake of quick performance we use the STO-2G uncontracted basis sets and 
@@ -18,9 +18,10 @@ The reordering of valence spinors and distributing 1 electron over 4 2p_32 shell
 C 
 ---
 
-We obtained the ground state [He] 2s(2) 2p(2) by placing one open-shell electron into the 2p_12 shell and
-the second into the 2p_32 spinor. The spinors SCF convergence with two open-shell levels 
-and the proper degeneracy of the two 2p_32 shells was ensured by selecting proper ".OLEVEL" values.
+We obtained the high spin state [He] 2s(2) 2p12(1) 2p32(1) by placing one open-shell electron into the 2p_12 shell and
+the second into the 2p_32 spinor. The spinors SCF convergence with two open-shells 
+and the proper degeneracy of the two 2p_32 shells was ensured by selecting proper ".OLEVEL" values for OpenFactor=1.0.
+It also converges with the default OpenFactor setting in the SCF procedure.
 
 N
 ---
@@ -46,5 +47,15 @@ where we obtain the desired occupation with swapped p12,p32 molecular spinors : 
 CH (^2Pi)
 ---------
 
-The CH molecule...
+We demonstrate the ^2Pi_1/2-^2Pi_3/2 spin-orbital splitting of the CH molecule. The excited state is
+obtained either through the MOs reordering, or with the help of the mJ-occupation scheme.
+
+
+CO(+)
+-----
+
+Starting from the DFCOEF of the neutral CO molecule ground state we are interested in the excited 4sigma-hole state of CO(+).
+The calculation with the default SCF setting (OPENFAC=1) converges as desired to the excited 4sigma-hole state. 
+However, the calculation with OPENFAC=0, converges to the 5sigma hole state.
+
 

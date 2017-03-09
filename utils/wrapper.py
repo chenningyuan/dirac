@@ -1,9 +1,33 @@
-#! /usr/bin/env python
-# Universal wrapper, by Ulf Ekstrom 2011
+#!/usr/bin/env python
+
+"""
+Universal wrapper
+
+Copyright (c) 2011-2016 Ulf Ekstrom
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import os, subprocess, shutil, glob, signal, optparse, sys, shlex, tarfile, tempfile, zipfile, socket
 
 def wrap_dirac():
-    usage = """%prog [options] MOLECULE.{mol,xyz} INPUT.inp [ARCHIVE.tgz] [FILE ..] 
+    usage = """%prog [options] MOLECULE.{mol,xyz} INPUT.inp [ARCHIVE.tgz] [FILE ..]
 Run Dirac starting from the given mol and inp files. Additional files will be copied
 to the temporary directory, archives will be extracted.
 
@@ -23,7 +47,7 @@ be deleted at the end of a run.
     parser = optparse.OptionParser(usage)
 
     parser.add_option('-v','--verbose', action='store_true', dest="verbose",
-		     help='Print more information')
+                     help='Print more information')
 
     group = optparse.OptionGroup(parser, 'General options')
 #    group.add_option('--mb', type='string', default=None, dest="mb",
@@ -31,19 +55,19 @@ be deleted at the end of a run.
     group.add_option('--executable', type='string', default=None, dest="executable",
                      help='Path to main executable',metavar="FILE")
     group.add_option('-D','--define', type='string', action='callback',callback=W.define_callback,
-		     help='Define the environment variable NAME as VALUE',
+                     help='Define the environment variable NAME as VALUE',
                      metavar='NAME=VALUE')
     group.add_option('--no-archive', action='store_true', dest="noarchive",default=False,
-		     help="Do not create an archive file.")
+                     help="Do not create an archive file.")
     group.add_option('--backup', type='int', default=1, dest='backup_level',
-		     help="Set backup level for output files [default: %default]. Set to 0 for no backup.")
+                     help="Set backup level for output files [default: %default]. Set to 0 for no backup.")
     group.add_option('-i','--infile', type='string', action='callback',callback=W.infile_callback,
-		     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
+                     help='Copy FILE to the temporary directory, optionally renaming it to NAME',
                      metavar='[NAME=]FILE]')
     group.add_option('-r','--replace', type='string', action='append',default=[],dest="replace",
-		     help='Replace NAME by VALUE in the mol and inp files',metavar="NAME=VALUE")
+                     help='Replace NAME by VALUE in the mol and inp files',metavar="NAME=VALUE")
     group.add_option('-g','--getfile', type='string', action='callback',callback=W.getfile_callback,
-		     help='Copy FILE from temporary directory after the calculation',
+                     help='Copy FILE from temporary directory after the calculation',
                      metavar='NAME[=FILE]')
     group.add_option('-p', '--pcm', type='string', action='callback', callback=W.pcm_callback,
                      help='PCM calculation: parse PCM input and copy it to scratch')
@@ -51,20 +75,20 @@ be deleted at the end of a run.
 
     group = optparse.OptionGroup(parser, 'Temporary directory options')
     group.add_option('-t','--tmpdir', type='string', default=None,dest="tmpbase",
-		     help='Base directory for temporary directory',metavar="PATH")
+                     help='Base directory for temporary directory',metavar="PATH")
     group.add_option('-T','--tmpfull', type='string', default=None,dest="tmppath",
-		     help='Full path to temporary directory. Will be created if not there.',metavar="PATH")
+                     help='Full path to temporary directory. Will be created if not there.',metavar="PATH")
     group.add_option('-k','--keep-tmp', action='store_true', dest="keeptmp",default=False,
-		     help="Keep temporary directory, default if it's preexisting.")
+                     help="Keep temporary directory, default if it's preexisting.")
     parser.add_option_group(group)
 
     group = optparse.OptionGroup(parser, 'Parallel options')
     group.add_option('--launcher', type='string', default=None,dest="launcher",
-		     help='Command used to launch the main executable, i.e. "mpirun -np 2"',metavar="COMMAND")
+                     help='Command used to launch the main executable, i.e. "mpirun -np 2"',metavar="COMMAND")
     group.add_option('--host', type='string', default=None,dest="host",
-		     help='Comma separated list of hosts with separate file systems',metavar='"NODE[,NODE, ..]"')
+                     help='Comma separated list of hosts with separate file systems',metavar='"NODE[,NODE, ..]"')
     group.add_option('--hostfile', type='string', default=None,dest="hostfile",
-		     help='File to read host list from, one host per line',metavar='FILE')
+                     help='File to read host list from, one host per line',metavar='FILE')
     parser.add_option_group(group)
 
     # Read .rc files
@@ -217,47 +241,47 @@ class Wrapper:
         self.remote_hosts = set() # Duplicate tmpdir and stage in on these hosts
         self.rsh = 'ssh'
         self.rcp = 'scp'
-        self.do_pcm = False 
+        self.do_pcm = False
 
     def define_callback(self, option, opt, value, parser):
-	if '=' in value:
-	    ff = value.split('=')
+        if '=' in value:
+            ff = value.split('=')
             self.env[ff[0]] = '='.join(ff[1:])
-	else:
-	    print >> sys.stderr, "Wrapper: Illegal argument to",opt,"expected NAME=VALUE"
-	    sys.exit(1)
+        else:
+            print >> sys.stderr, "Wrapper: Illegal argument to",opt,"expected NAME=VALUE"
+            sys.exit(1)
 
     def infile_callback(self, option, opt, value, parser):
-	if '=' in value:
-	    ff = value.split('=')
-	    if len(ff) != 2:
+        if '=' in value:
+            ff = value.split('=')
+            if len(ff) != 2:
                 parser.error("Illegal argument to "+opt)
-		print >> sys.stderr, "Wrapper: Illegal argument to",opt
-		sys.exit(1)
-	    self.copyin.append(ff)
-	else:
-	    self.copyin.append([value])
+                print >> sys.stderr, "Wrapper: Illegal argument to",opt
+                sys.exit(1)
+            self.copyin.append(ff)
+        else:
+            self.copyin.append([value])
 
     def getfile_callback(self, option, opt, value, parser):
-	if '=' in value:
-	    ff = value.split('=')
-	    if len(ff) != 2:
-		print >> sys.stderr, "Wrapper: Illegal argument to",opt
-		sys.exit(1)
-	    self.copyout.append(ff)
-	else:
-	    self.copyout.append([value])
+        if '=' in value:
+            ff = value.split('=')
+            if len(ff) != 2:
+                print >> sys.stderr, "Wrapper: Illegal argument to",opt
+                sys.exit(1)
+            self.copyout.append(ff)
+        else:
+            self.copyout.append([value])
 
     def command_callback(self, option, opt, value, parser):
-	self.cmdlines.append(shlex.split(value))       
- 
+        self.cmdlines.append(shlex.split(value))
+
     def pcm_callback(self, option, opt, value, parser):
-        if value is None: 
-            sys.exit('No .pcm file specified') 
+        if value is None:
+            sys.exit('No .pcm file specified')
         else:
             self.copyin.append([value,'pcmsolver.inp'])
         if 'PCMSOLVER_PARSE' in os.environ.keys():
-            self.copyin.append([os.environ['PCMSOLVER_PARSE'], 'pcmsolver']) 
+            self.copyin.append([os.environ['PCMSOLVER_PARSE'], 'pcmsolver'])
         else:
             self.copyin.append(['pcmsolver','pcmsolver'])
 #        self.archpatterns.append('PEDRA.OUT')
@@ -321,7 +345,7 @@ class Wrapper:
                 print >> sys.stderr, "Wrapper: Error extracting files from '"+a+"', quitting."
                 raise
         # Copy in files, stop if problem
-        for f in self.copyin: 
+        for f in self.copyin:
             src = f[0]
             if os.path.isfile(src):
                 if len(f) % 2 == 0: # dst name given
@@ -368,7 +392,7 @@ class Wrapper:
                 of.close()
         except IOError,e:
             print >> sys.stderr, "Wrapper: Error copying file '"+src+"'"
-            raise    
+            raise
 
     def stageout(self):
         # Create archive, easiest from tmppath
@@ -393,7 +417,7 @@ class Wrapper:
                 shutil.copy2(src,dst)
             elif os.path.isdir(src):
                 if dst is None: dst=os.path.basename(src)
-                if os.path.exists(dst): 
+                if os.path.exists(dst):
                     shutil.rmtree(dst)
                 shutil.copytree(src,dst)
             elif self.verbose: # Just give a warning, don't panic
@@ -409,7 +433,7 @@ class Wrapper:
                         cpout(os.path.join(self.tmppath,f[0]+'.gz'),f[1])
                     else:
                         cpout(os.path.join(self.tmppath,f[0]),f[1])
-                else: # allow patterns in copyout if there is no = 
+                else: # allow patterns in copyout if there is no =
                     for ff in glob.glob(os.path.join(self.tmppath,f[0])):
                         cpout(ff)
             except:
@@ -425,7 +449,7 @@ class Wrapper:
                 try:
                     self.run_cmd([self.rsh,h,'rm -rf "'+self.tmppath+'"'])
                 except subprocess.CalledProcessError:
-                    pass                
+                    pass
         else:
             if self.verbose: print "Wrapper: Temporary directory kept:",self.tmppath
 
@@ -436,7 +460,7 @@ class Wrapper:
         try:
             cmd = "'"+"' '".join(cmd)+"'" # Need this because we run with shell=True
             def handler(signum,frame):
-                if pgid is not None: 
+                if pgid is not None:
                     if signum == signal.SIGALRM: signum = signal.SIGTERM
                     os.killpg(pgid,signum)
             catch = [signal.SIGTERM, signal.SIGHUP, signal.SIGINT, signal.SIGALRM]

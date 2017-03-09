@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2016 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2416,7 +2416,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
           WRITE(6,*) ' *********************** '
           WRITE(6,*)
           WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(6,*) '      TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
@@ -2636,7 +2636,7 @@ C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
           WRITE(LUWRT,*) ' *********************** '
           WRITE(LUWRT,*)
           WRITE(LUWRT,*) '  Number of blocks included ', LBATCH(JBATCH)
-          WRITE(LUWRT,*) '  TTSS and offsets and lenghts of each block '
+          WRITE(LUWRT,*) '  TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
@@ -2821,7 +2821,7 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
           WRITE(LUWRT,*)
           WRITE(LUWRT,*) '      Number of blocks included ', 
      &                          LBATCH(JBATCH)
-          WRITE(LUWRT,*) '      TTSS and offsets and lenghts of 
+          WRITE(LUWRT,*) '      TTSS and offsets and lengths of 
      &                          each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
@@ -3040,7 +3040,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
           WRITE(LUWRT,*)
           WRITE(LUWRT,*) '      Number of blocks included ', 
      &                          LBATCH(JBATCH)
-          WRITE(LUWRT,*) '      TTSS and offsets and lenghts of 
+          WRITE(LUWRT,*) '      TTSS and offsets and lengths of 
      &                          each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
