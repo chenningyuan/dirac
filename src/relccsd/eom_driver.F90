@@ -921,6 +921,11 @@
   real*8,allocatable     :: dmo(:) 
   real*8,allocatable     :: l1_temp(:),l2_temp(:) 
 
+  real*8 :: difference_in_evalue
+  real*8 :: rhs_lhs_evalue(2)
+  real*8 :: threshold
+  double precision dznrm2
+
     nbuf1 = max(joooo(nrep+1),jvooo(nrep+1),jvvoo(nrep+1),jvovo(nrep+1))
     nbuf2 = nbuf1
 
@@ -1006,6 +1011,27 @@
        right_vectors = .false.
        left_vectors =  .true.
        call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+
+!!!!!
+! turn the loops below into a separare routine ?
+!      call eom_check_left_right_roots(davResultsL,davResultsR)
+       do sym = 1, nrep  
+           if (relcc_eom_nroots(sym) <= 0) cycle
+           write (iw,*) " "
+           do iroot = 1, relcc_eom_nroots(sym)
+               rhs_lhs_evalue(1) = davResultsR(sym)%eValues(1,iroot) - davResultsL(sym)%eValues(1,iroot)
+               rhs_lhs_evalue(2) = davResultsR(sym)%eValues(2,iroot) - davResultsL(sym)%eValues(2,iroot)
+               difference_in_evalue = dznrm2(1,rhs_lhs_evalue,1)
+               write (iw,'(2X,A,I4,A,I3,2X,A,2X,E12.6)') &
+                      "INFO: difference between right and left eigenvalues for root ",iroot,&
+     &                " irrep ",sym,":",difference_in_evalue
+               print *," debug, left :",davResultsL(sym)%eValues(:,iroot)
+               print *," debug, right:",davResultsR(sym)%eValues(:,iroot)
+           end do  
+       end do  
+       write (iw,*) " "
+!!!!!
+       write (iw,*) "Determining EOM density matrices"
 
        allocate(dmo(norbt*norbt*nz))
 
@@ -1105,7 +1131,7 @@
                    write(*,*)'Not yet implemented'
 
                end select
-     
+
                print *, "debug, before store_eom_density for state",state
                call store_eom_density ('EOM ',state,dmo)
                print *, "debug,  after store_eom_density for state",state
