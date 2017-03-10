@@ -2144,8 +2144,8 @@ C***********************************************************************
 C
 C     Select vectors based on overlap.
 C     Input is
-C       CFU   - coefficients in MO-basis
-C       EIG   - corresponding eigenvalues
+C       CFU - coefficients in MO-basis
+C       EIG - corresponding eigenvalues
 C       IBEIG - corresponding boson info
 C
 C     Written by T.Saue Nov 11 1995
@@ -2160,13 +2160,43 @@ C  dcbdhf: NSMOTQ
 C
 #include "dcbdhf.h"
 #include "memint.h"
-      CALL QENTER('SMOSEL')
+C     Memory allocation - NSMOTQ initialized in SMOGEN
+      CALL MEMGET2('REAL','SMO',KSMO,NSMOTQ,WORK,KFREE,LFREE)
+
+      CALL SMOSE1(EIG,IBEIG,CFU,WORK(KSMO),WORK(KFREE),LFREE)
+C     Memory deallocation
+      CALL MEMREL('SMOSEL.SMOSE1',WORK,KWORK,KWORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck smose1 */
+      SUBROUTINE SMOSE1(EIG,IBEIG,CFU,SMO,WORK,LWORK)
+C***********************************************************************
+C
+C     Select vectors based on overlap
+C
+C     Written by T.Saue Nov 11 1995
+C     Last revision May 2002 hjaaj: include EIG and IBEIG
+C                      Aug 2007 MI: extended for all electronic shells
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION EIG(*),IBEIG(*),CFU(*),SMO(*),WORK(LWORK)
+C
+C Used from COMMON blocks:
+C  DCBORB: NSMOTQ,NOCC
+C  DGROUP: NFSYM
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      CALL QENTER('SMOSE1')
+#include "memint.h"
 C
 C     Read vectors to select from
 C
       CALL OPNFIL(LUSMOS,'DFSMOS','OLD','SMOSE1')
-      CALL MEMGET2('REAL','SMO',KSMO,NSMOTQ,WORK,KFREE,LFREE)
-      CALL READT(LUSMOS,NSMOTQ,WORK(KSMO))
+      CALL READT(LUSMOS,NSMOTQ,SMO)
       CLOSE(LUSMOS,STATUS='KEEP')
 C
       DO I = 1,NFSYM
@@ -2181,21 +2211,21 @@ C       Memory allocation
         CALL MEMGET2('REAL','RCSEL' ,KRSEL,NESHMF(I),WORK,KFREE,LFREE)
         CALL MEMGET2('INTE','ICSEL' ,KISEL,2*NESHMF(I),WORK,KFREE,LFREE)
         CALL SMOSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
-     &              CFU(I2ORBT(I)+1),WORK(KSMO+ISMOQ(I)),
+     &              CFU(I2ORBT(I)+1),SMO(ISMOQ(I)+1),
      &              WORK(KEBUF),WORK(KIBEB),WORK(KCBUF),WORK(KSBUF),
-     &              WORK(KRSEL),WORK(KISEL),NTMO(I),NOCCMF(I),NESHMF(I))
-C       Memory deallocation
-        CALL MEMREL('SMOSEL.SMOSE1',WORK,KWORK,KEBUF,KFREE,LFREE)
+     &              WORK(KRSEL),WORK(KISEL),
+     &              NTMO(I),NOCCMF(I),NESHMF(I),WORK(KFREE),LFREE)
+C     Memory deallocation
+        CALL MEMREL('SMOSE1.SMOSE2',WORK,KWORK,KWORK,KFREE,LFREE)
       ENDIF
       ENDDO
-      CALL MEMREL('SMOSEL',WORK,KWORK,KWORK,KFREE,LFREE)
-      CALL QEXIT('SMOSEL')
+      CALL QEXIT('SMOSE1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck smose1 */
-      SUBROUTINE SMOSE1(IFRP,EIG,IBEIG,CFU,SMO,EBUF,IBEBUF,CBUF,SBUF,
-     &                  RCSEL,ICSEL,KNORB,KNOCC,KNESH)
+C  /* Deck smose2 */
+      SUBROUTINE SMOSE2(IFRP,EIG,IBEIG,CFU,SMO,EBUF,IBEBUF,CBUF,SBUF,
+     &                  RCSEL,ICSEL,KNORB,KNOCC,KNESH,WORK,LWORK)
 C***********************************************************************
 C
 C     Select vectors  fermion ircop IFRP based on overlap
@@ -2225,10 +2255,14 @@ C     KNOCC = NOCCMF(IFRP)
 C     KNESH = NESHMF(IFRP)
 C
       CHARACTER FSYM*1
-      DIMENSION EIG(KNORB),IBEIG(KNORB),CFU(KNORB,KNORB,NZ),
-     &          SMO(KNORB,KNESH,NZ),SBUF(KNESH,KNESH,NZ),
-     &          EBUF(KNESH),IBEBUF(KNESH),CBUF(KNORB,KNESH,NZ),
-     &          RCSEL(KNESH),ICSEL(KNESH,2)
+      DIMENSION EIG(KNORB),IBEIG(KNORB),
+     &          CFU(KNORB,KNORB,NZ),
+     &          SMO(KNORB,KNESH,NZ),
+     &          SBUF(KNESH,KNESH,NZ),
+     &          EBUF(KNESH),IBEBUF(KNESH),
+     &          CBUF(KNORB,KNESH,NZ),
+     &          RCSEL(KNESH),ICSEL(KNESH,2),
+     &          WORK(LWORK)
 C
 C            Form product :
 C            --------------
@@ -2241,7 +2275,7 @@ C
      &       D0,IPQTOQ(1,0),SBUF,NESHMF(IFRP),NESHMF(IFRP),NZ)
 
       IF(IPRSCF.GE.10) THEN
-        CALL HEADER('SMOSEL: SBUF-matrix',-1)
+        CALL HEADER('SMOSE2: SBUF-matrix',-1)
         CALL PRQMAT(SBUF,NESHMF(IFRP),NESHMF(IFRP),NESHMF(IFRP),
      &              NESHMF(IFRP),NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -2261,7 +2295,7 @@ C
         ENDDO
       ENDDO
       IF(IPRSCF.GE.6) THEN
-        CALL HEADER('SMOSEL: Squared-matrix',-1)
+        CALL HEADER('SMOSE1: Squared-matrix',-1)
         CALL PRQMAT(SBUF,NESHMF(IFRP),NESHMF(IFRP),NESHMF(IFRP),
      &              NESHMF(IFRP),1,IPQTOQ(1,0),LUPRI)
       ENDIF
