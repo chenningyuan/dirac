@@ -1404,9 +1404,9 @@ contains
         call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
 
         if (davidson_solve_lhs) &
-            call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_lhs)
+            call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,davidson_solve_rhs,davidson_solve_lhs)
         if (davidson_solve_rhs) &
-            call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs)
+            call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,davidson_solve_rhs,davidson_solve_lhs)
 
         if(associated(b)) deallocate(b)
         deallocate(M_small)
@@ -1551,11 +1551,11 @@ contains
         end do
     end subroutine
 
-    subroutine form_eigenvector_full_problem(eVectorsFull,nroots,b,eVectorsSmall,left_vector) 
+    subroutine form_eigenvector_full_problem(eVectorsFull,nroots,b,eVectorsSmall,right_vector,left_vector) 
         real(kind=8), intent(inout) :: eVectorsFull(:,:)
         real(kind=8), intent(in)    :: eVectorsSmall(:,:)
         real(kind=8), intent(in)    :: b(:,:)
-        logical, intent(in) :: left_vector
+        logical, intent(in) :: left_vector, right_vector
         integer, intent(in) :: nroots
 
         integer :: i
@@ -1584,8 +1584,9 @@ contains
 !               eVectorsFull(:,i) = bc(:,i) 
                 eVectorsFull(:,i) = bc(i,:) 
             end do
+        end if
 
-        else
+        if (right_vector) then 
             allocate(bc(vectors_N,vectors_L))
             bc = 0.0d0
 !           call davidson_print_vectors(eVectorsSmall, label="R eigenvectors small problem  ")
