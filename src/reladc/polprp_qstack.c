@@ -285,6 +285,125 @@ int qstack_popl(int *stack, double *retvec){
 
 
 
+
+/*
+ *               function qstack_peekf
+ *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ */
+int qstack_peekf(int *stack, double *retvec){
+  int stackn;
+  int curlen;
+
+  if(!initialized) {
+    printf("*** Qstack runtime problem: Please initialize stack\n");
+    printf("*** before use! No action taken.\n");
+    return -1;
+  }
+
+  if(*stack < 1 || *stack > numofstacks){
+    printf("*** Qstack runtime problem: Stack number out of range!\n");
+    printf("*** No action taken.\n");
+    return -1;
+  }
+
+  stackn = *stack - 1;  // C indexing starts at zero!
+
+/* if there are no elements on stack, return and do not touch retvec array */
+
+  if(qsdep[stackn] == 0) return 0;
+
+/* copy >>last<< vector from stack (LIFO) to retvec, do not adjust stack */
+
+  curlen = qslen[stackn][0];
+  memcpy(retvec,qsbase[stackn][0],curlen*sizeof(double));
+
+  return curlen;
+}
+
+
+
+
+/*
+ *               function qstack_peekl
+ *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ */
+int qstack_peekl(int *stack, double *retvec){
+  int stackn;
+  int curlen;
+  int curdep;
+
+  if(!initialized) {
+    printf("*** Qstack runtime problem: Please initialize stack\n");
+    printf("*** before use! No action taken.\n");
+    return -1;
+  }
+
+  if(*stack < 1 || *stack > numofstacks){
+    printf("*** Qstack runtime problem: Stack number out of range!\n");
+    printf("*** No action taken.\n");
+    return -1;
+  }
+
+  stackn = *stack - 1;  // C indexing starts at zero!
+
+/* if there are no elements on stack, return and do not touch retvec array */
+
+  if(qsdep[stackn] == 0) return 0;
+
+/* copy >>last<< vector from stack (LIFO) to retvec, do not adjust stack */
+
+  curdep = qsdep[stackn];
+  curlen = qslen[stackn][curdep-1];
+  memcpy(retvec,qsbase[stackn][curdep-1],curlen*sizeof(double));
+
+  return curlen;
+}
+
+
+
+
+
+
+
+/*
+ *               function qstack_compl
+ *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ */
+int qstack_compl(int *stack, double *retvec){
+  int stackn;
+  int curlen;
+  int curdep;
+
+  if(!initialized) {
+    printf("*** Qstack runtime problem: Please initialize stack\n");
+    printf("*** before use! No action taken.\n");
+    return -1;
+  }
+
+  if(*stack < 1 || *stack > numofstacks){
+    printf("*** Qstack runtime problem: Stack number out of range!\n");
+    printf("*** No action taken.\n");
+    return -1;
+  }
+
+  stackn = *stack - 1;  // C indexing starts at zero!
+
+/* if there are no elements on stack, return and do not touch retvec array */
+
+  if(qsdep[stackn] == 0) return 0;
+
+/* copy >>last<< vector from stack (LIFO) to retvec, do not adjust stack */
+
+  curdep = qsdep[stackn];
+  curlen = qslen[stackn][curdep - 1];
+  return memcmp(retvec,qsbase[stackn][curdep - 1],curlen*sizeof(double));
+}
+
+
+
+
+
+
 /*
  *               function qstack_meminf
  *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -327,6 +446,55 @@ double qstack_meminf(void){
 
   return usedmem;
 }
+
+
+
+/*
+ *               function qstack_drop
+ *&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+ */
+int qstack_drop(int * stack){
+
+  int stackn,i,curdep;
+  double ** curstack;
+
+  if(!initialized) {
+    printf("*** Qstack runtime problem: Please initialize stack\n");
+    printf("*** before use! No action taken.\n");
+    return -1;
+  }
+
+  if(*stack < 1 || *stack > numofstacks){
+    printf("*** Qstack runtime problem: Stack number out of range!\n");
+    printf("*** No action taken.\n");
+    return -1;
+  }
+
+  stackn = *stack - 1;  // C indexing starts at zero!
+
+/* if there are no elements on stackline, return 0 */
+
+  if(qsdep[stackn] == 0) return 0;
+
+/* clear stack line # stackn */
+
+  curstack = qsbase[stackn];
+  for(i=0;i<qsdep[stackn];i++){
+    free(curstack[i]);
+  }
+  free(qsbase[stackn]);
+  free(qslen[stackn]);
+  curdep = qsdep[stackn];
+  qsdep[stackn] = 0;
+
+  qsbase[stackn] = NULL;
+  qslen[stackn] = NULL;
+
+  if(verbose) printf("*** Qstack: dropped %d elements from stack %d\n",curdep,stackn);
+
+  return curdep;
+}
+
 
 
 

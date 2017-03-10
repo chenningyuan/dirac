@@ -185,8 +185,10 @@
       write(*,*) '   Symmetry: ',desrep
       write(*,*) '   **********************'
       write(*,*)
-
-      numstacks = 8
+!
+! initialization of stack system
+!
+      numstacks = 20
       write(*,*) '   Initializing stack system with',numstacks,' stacks'
       if(qstack_init(numstacks,1).ne.numstacks) 
      &   call quit('Qstack problem')
@@ -392,6 +394,7 @@
       if(carith) call conjuga(n1,vvoo2,1)
       call denomvvoo(eps,vvoo1,vvoo1)
       call denomvvoo(eps,vvoo2,vvoo2)
+      if(qstack_push(7,n1,vvoo1).ne.n1) stop
 !
 !  get the property integrals and phases from corresponding files.
 !
@@ -401,6 +404,13 @@
      &               dovx,dovy,dovz,
      &               dvox,dvoy,dvoz,
      &               dvvx,dvvy,dvvz)
+
+      if(qstack_push(1,idaov,dovx).ne.idaov) stop
+      if(qstack_push(2,idaov,dovy).ne.idaov) stop
+      if(qstack_push(3,idaov,dovz).ne.idaov) stop
+      if(qstack_push(4,idavo,dvox).ne.idavo) stop
+      if(qstack_push(5,idavo,dvoy).ne.idavo) stop
+      if(qstack_push(6,idavo,dvoz).ne.idavo) stop
 
 ! canary values for catching errors. For complex arithmetic these
 ! phase variables must not be accessed or used.
@@ -977,8 +987,6 @@
      &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,4) finished'
-
-      stop
 !
 !-------------------------------------
 !------  F_ai(2,5), a DOV contribution
@@ -1041,17 +1049,17 @@
 
       if(carith) call conjuga(M,dvox(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo3(off1),M,
-     &            dvox(off2),1,A0,faipx,1)
+     &            dovx(off2),1,A0,faipx,1)
       if(carith) call conjuga(M,dvox(off2),1)
 
       if(carith) call conjuga(M,dvoy(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo3(off1),M,
-     &            dvoy(off2),1,A0,faipy,1)
+     &            dovy(off2),1,A0,faipy,1)
       if(carith) call conjuga(M,dvoy(off2),1)
 
       if(carith) call conjuga(M,dvoz(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo3(off1),M,
-     &            dvoz(off2),1,A0,faipz,1)
+     &            dovz(off2),1,A0,faipz,1)
       if(carith) call conjuga(M,dvoz(off2),1)
 
       n1 = MVO(desrep)
@@ -1125,17 +1133,17 @@
 
       if(carith) call conjuga(M,dvox(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
-     &            dvox(off2),1,A0,faipx,1)
+     &            dovx(off2),1,A0,faipx,1)
       if(carith) call conjuga(M,dvox(off2),1)
 
       if(carith) call conjuga(M,dvoy(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
-     &            dvoy(off2),1,A0,faipy,1)
+     &            dovy(off2),1,A0,faipy,1)
       if(carith) call conjuga(M,dvoy(off2),1)
 
       if(carith) call conjuga(M,dvoz(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
-     &            dvoz(off2),1,A0,faipz,1)
+     &            dovz(off2),1,A0,faipz,1)
       if(carith) call conjuga(M,dvoz(off2),1)
 
       n1 = MVO(desrep)
@@ -1152,6 +1160,15 @@
      &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,6) finished'
+      write(*,*) '------ consistency check of the DOV,DVO arrays'
+      if(qstack_compl(1,dovx).ne.0) stop 'CE'
+      if(qstack_compl(2,dovy).ne.0) stop 'CE'
+      if(qstack_compl(3,dovz).ne.0) stop 'CE'
+      if(qstack_compl(4,dvox).ne.0) stop 'CE'
+      if(qstack_compl(5,dvoy).ne.0) stop 'CE'
+      if(qstack_compl(6,dvoz).ne.0) stop 'CE'
+      if(qstack_compl(7,vvoo1).ne.0) stop 'CE'
+      write(*,*) '------ consistency check of the DOV,DVO arrays passed'
 !
 !-------------------------------------
 !------  F_ai(2,7): a DOV contribution
@@ -1196,6 +1213,8 @@
 ! inverse!) The B_ai,bk array is now in vovo2
 
       CALL SRT27 (vovo1,vovo2)
+!     CALL SRT16 (NREP,MULTB,LFA,LTR,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
+!    &            vovo2,vovo1)
 
 !  contract B_ai,bk (vovo2)  and Dbk* = Dkb over corresponding symmetry
 !  and add to total result.
@@ -1208,17 +1227,17 @@
 
       if(carith) call conjuga(M,dvox(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dvox(off2),1,A0,faipx,1)
+     &            dovx(off2),1,A0,faipx,1)
       if(carith) call conjuga(M,dvox(off2),1)
 
       if(carith) call conjuga(M,dvoy(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dvoy(off2),1,A0,faipy,1)
+     &            dovy(off2),1,A0,faipy,1)
       if(carith) call conjuga(M,dvoy(off2),1)
 
       if(carith) call conjuga(M,dvoz(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dvoz(off2),1,A0,faipz,1)
+     &            dovz(off2),1,A0,faipz,1)
       if(carith) call conjuga(M,dvoz(off2),1)
 
       n1 = MVO(desrep)
@@ -1235,6 +1254,7 @@
       deallocate(vovo1,vovo2,vovo3)
 
       write(*,*) '------  F_ai(2,7) finished'
+      stop
 !
 !-------------------------------------
 !------  F_ai(2,8): a DOV contribution

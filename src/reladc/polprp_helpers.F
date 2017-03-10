@@ -248,7 +248,11 @@ C|__________________________________________________________
       DO BJREP = 1, NREP   !bosonic irep
         DO 10 JREP = 1, NREP   !fermionic irep
           JOFF = IO(JREP)
-          BREP = MULTB(JREP,BJREP+NREP,2)
+!*************debug
+!*** tentatively: switch to bra ket inverse 2 --> 1!
+!         BREP = MULTB(JREP,BJREP+NREP,2)
+          BREP = MULTB(JREP,BJREP+NREP,1)
+!*************debug end
           BOFF = IO(NREP+1) + IV(BREP)
           DO J = 1, NO(JREP)
             JJ = JOFF + J
@@ -258,7 +262,10 @@ C|__________________________________________________________
                EB = eps(BB)
                DO 20 IREP = 1, NREP
                  IOFF = IO(IREP)
-                 AREP = MULTB(IREP,BJREP+NREP,2)
+!*************debug, same here
+!                AREP = MULTB(IREP,BJREP+NREP,2)
+                 AREP = MULTB(IREP,BJREP+NREP,1)
+!*************debug
                  AOFF = IO(NREP+1) + IV(AREP)
                  DO I = 1, NO(IREP)
                    II = IOFF + I
@@ -756,6 +763,11 @@ C
 !
 ! Sorts the <a|i><b|j> integral stream to a <a|j><b|i> stream.
 ! SRT16 does not apply because it sorts from <<>> to <><> !
+! Due to the bra ket order on the LHS we change the 
+!          BREP = MULTB(JREP,BJREP+NREP,2)
+! to the
+!          BREP = MULTB(JREP,BJREP+NREP,1)
+! instruction
 !
 !---------------Calling variables--------------------------------------
 !
@@ -776,11 +788,11 @@ C
 
       DO BJREP = 1, NREP   !bosonic irep
         DO 10 JREP = 1, NREP   !fermionic irep
-          BREP = MULTB(JREP,BJREP+NREP,2)
+          BREP = MULTB(JREP,BJREP+NREP,1)
           DO J = 1, NO(JREP)
             DO B = 1, NV(BREP)
                DO 20 IREP = 1, NREP
-                 AREP = MULTB(IREP,BJREP+NREP,2)
+                 AREP = MULTB(IREP,BJREP+NREP,1)
                  DO I = 1, NO(IREP)
                    DO A = 1, NV(AREP)
 

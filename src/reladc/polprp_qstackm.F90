@@ -29,12 +29,39 @@ module qstack
            real (c_double)         :: ra1(*)
          END FUNCTION
        
+         FUNCTION qstack_peekf (i1, ra1) bind(c, name="qstack_peekf")
+           use, intrinsic ::  iso_c_binding
+           integer (c_int)         :: qstack_peekf
+           integer (c_int)         :: i1
+           real (c_double)         :: ra1(*)
+         END FUNCTION
+       
+         FUNCTION qstack_peekl (i1, ra1) bind(c, name="qstack_peekl")
+           use, intrinsic ::  iso_c_binding
+           integer (c_int)         :: qstack_peekl
+           integer (c_int)         :: i1
+           real (c_double)         :: ra1(*)
+         END FUNCTION
+       
+         FUNCTION qstack_compl (i1, ra1) bind(c, name="qstack_compl")
+           use, intrinsic ::  iso_c_binding
+           integer (c_int)         :: qstack_compl
+           integer (c_int)         :: i1
+           real (c_double)         :: ra1(*)
+         END FUNCTION
+       
          FUNCTION qstack_meminf () bind(c, name="qstack_meminf")
            use, intrinsic ::  iso_c_binding
            real (c_double)         :: qstack_meminf
          END FUNCTION
        
-         SUBROUTINE qstack_shutdown() bind(c, name="qstack_shutdown")
+         FUNCTION qstack_drop (i1) bind(c, name="qstack_drop")
+           use, intrinsic ::  iso_c_binding
+           integer (c_int)         :: qstack_drop
+           integer (c_int)         :: i1
+         END FUNCTION
+       
+         SUBROUTINE qstack_shutdown () bind(c, name="qstack_shutdown")
            use, intrinsic :: iso_c_binding
          END SUBROUTINE
 
