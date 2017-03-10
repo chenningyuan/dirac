@@ -1747,7 +1747,7 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
              enddo
 
              do irep = 1, nrep
-                if (iprnt.ge.1) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
+                if (iprnt.ge.2) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
                 ndimr1 = ndimr1 + ncont(irep)*no(irep)
              enddo
 
