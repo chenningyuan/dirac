@@ -1142,13 +1142,13 @@
        deallocate(dmo)
    endif ! relcc_do_eomprop
 
-!    do sym = 1, nrep 
+     do sym = 1, nrep 
 
-!        if (relcc_eom_nroots(sym) <= 0) cycle
+         if (relcc_eom_nroots(sym) <= 0) cycle
 
-!         if (right_vectors) call davidson_cleanup(davResultsR(sym))
-!         if (left_vectors)  call davidson_cleanup(davResultsL(sym))
-!    end do
+          if (right_vectors) call davidson_cleanup(davResultsR(sym))
+          if (left_vectors)  call davidson_cleanup(davResultsL(sym))
+     end do
 
  451 continue
 
