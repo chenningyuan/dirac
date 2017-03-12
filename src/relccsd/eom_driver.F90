@@ -1022,14 +1022,15 @@
                rhs_lhs_evalue(1) = davResultsR(sym)%eValues(1,iroot) - davResultsL(sym)%eValues(1,iroot)
                rhs_lhs_evalue(2) = davResultsR(sym)%eValues(2,iroot) - davResultsL(sym)%eValues(2,iroot)
                difference_in_evalue = dznrm2(1,rhs_lhs_evalue,1)
-               write (iw,'(2X,A,I4,A,I3,2X,A,2X,E12.6)') &
-                      "INFO: difference between right and left eigenvalues for root ",iroot,&
+               write (iw,'(2X,A,I4,A,I3,2X,A,2X,E16.8)') &
+                      "INFO: difference between RHS and LHS eigenvalues for root ",iroot,&
      &                " irrep ",sym,":",difference_in_evalue
-               print *," debug, left :",davResultsL(sym)%eValues(:,iroot)
-               print *," debug, right:",davResultsR(sym)%eValues(:,iroot)
+               write (iw,'(2X,A)') "INFO:              Re                  Im"
+               write (iw,'(2X,A,2X,E16.8,4X,E16.8)') "INFO: E(RHS)   ",davResultsR(sym)%eValues(:,iroot)
+               write (iw,'(2X,A,2X,E16.8,4X,E16.8)') "INFO: E(LHS)   ",davResultsL(sym)%eValues(:,iroot)
+           write (iw,*) " "
            end do  
        end do  
-       write (iw,*) " "
 !!!!!
        write (iw,*) "Determining EOM density matrices"
 
