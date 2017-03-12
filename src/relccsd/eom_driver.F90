@@ -1155,6 +1155,9 @@
 ! final cleanup
 !
      call free_intermediates(B)
+     if (icalc.eq.1) then
+        call free_buffers(buf1,buf2,buf3)
+     end if
 
 1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
    end subroutine
