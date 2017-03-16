@@ -659,11 +659,10 @@ C
           real*8, dimension(:)  :: ra1
         END SUBROUTINE
 
-        FUNCTION icode_activated (c1)
-          use iso_c_binding
-          integer (c_int)       :: icode_activated
-          character*4           :: c1
-        END FUNCTION
+        SUBROUTINE PRECONTRACT(i1,i2,ra1)
+          integer               :: i1,i2
+          real*8, dimension(:)  :: ra1
+        END SUBROUTINE
 
       end interface
 !
@@ -721,19 +720,6 @@ C
      &     call quit('Qstack problem')
         WRITE(IW,*)'Stack system initialized with',numstacks,' stacks'
         WRITE(IW,*)
-!
-!  perform tests if required
-!
-!       if(icode_activated(icode_mainblock).ne.0) then
-!           write(*,*) 'We found the code request'
-!       else
-!           write(*,*) 'No code for:',icode_mainblock
-!       endif
-!       if(icode_activated(icode_couplblock).ne.0) then
-!           write(*,*) 'We found the code request'
-!       else
-!           write(*,*) 'No code for:',icode_couplblock
-!       endif
 !___________________________________________________________________
 !|
 !| check availability of transformed dipole moment integrals
@@ -788,7 +774,7 @@ C
 ! |   integrals from the nodes. Otherwise all are on one node.
 ! |   Files will be written to 'VVVVXVVOO'
 
-        CALL PRECONTRACT(iobase,iw)
+        CALL PRECONTRACT(iobase,iw,eps)
 
 ! ______________ SYMMETRY LOOP FOR COUPLING + SAT BLOCK___________
 ! |

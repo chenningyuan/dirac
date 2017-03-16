@@ -555,12 +555,13 @@ C
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRECONTRACT(iounit,iw)
+      SUBROUTINE PRECONTRACT(iounit,iw,eps)
 !
 !
-!  this routine is called by master only when parallel execution takes place.
-!  Then the nodes provide integrals.
-!
+!  this routine is called by master only. If we have a parallel run
+!  then the nodes provide integrals.
+!  The routine provides <ab||cd> * <cd||ji>/(ec + ed - ej - ei)
+!  contracted over cd.
 !
 
 #if defined (VAR_MPI)
@@ -569,8 +570,9 @@ C
 
       implicit none
 
-      integer               :: iounit         ! I/O file handle for writing to file
-      integer               :: iw             ! file handle for writing to screen
+      integer                  :: iounit         ! I/O file handle for writing to file
+      integer                  :: iw             ! file handle for writing to screen
+      real*8, dimension(:)     :: eps
 !
 ! local variables
 !
@@ -589,6 +591,16 @@ C
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/ccpar.inc"
+!
+!   function interfaces
+!
+      interface
+
+        SUBROUTINE denomvvoo_pp(ra1,ra2)
+          real*8, dimension(:)         :: ra1,ra2
+        END SUBROUTINE
+
+      end interface
 !
 ! execution
 !
@@ -644,6 +656,7 @@ C
       call rdvvvv(vvvvz)  ! master reads complete stream in serial mode
 #endif
       call getvvoo(vvoo1)
+      call denomvvoo_pp(eps,vvoo1)
 !
 !  do the contraction over all symmetries
 !
