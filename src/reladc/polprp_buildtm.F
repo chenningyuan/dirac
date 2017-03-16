@@ -70,11 +70,9 @@
       REAL*8,allocatable,dimension(:)        :: dvox,dvoy,dvoz
       REAL*8,allocatable,dimension(:)        :: dvvx,dvvy,dvvz
 
-! VO dipole moment integrals holding the complex conjugates in
-! the carith=false case where some di's are purely imaginary.
-! Only accessed if carith=.false. !
+! OV dipole moment integrals holding the generic order VO property ints
 
-      REAL*8,allocatable,dimension(:)        :: dvoxc,dvoyc,dvozc
+      REAL*8,allocatable,dimension(:)        :: dovxg,dovyg,dovzg
                                             
 ! auxiliary arrays for contractions
 
@@ -97,6 +95,10 @@
       REAL*8,allocatable,dimension(:)        :: vabijx
       REAL*8,allocatable,dimension(:)        :: vabijy
       REAL*8,allocatable,dimension(:)        :: vabijz
+                                            
+! energy denominator array
+
+      REAL*8,allocatable,dimension(:)        :: evvoo
 
       Integer                                :: n1,n2,n3,n4
       Integer                                :: ialloc,iat
@@ -143,6 +145,15 @@
           real*8, dimension(:)         :: ra1,ra2
         END SUBROUTINE
 
+        SUBROUTINE EARR_VVOO(ra1,ra2)
+          real*8, dimension(:)         :: ra1,ra2
+        END SUBROUTINE
+
+        SUBROUTINE MATXMAT(i1,ra1,ra2,ra3)
+          integer                      :: i1
+          real*8, dimension(:)         :: ra1,ra2,ra3
+        END SUBROUTINE
+
         SUBROUTINE SRT27(ra1,ra2)
           real*8, dimension(:)         :: ra1,ra2
         END SUBROUTINE
@@ -175,6 +186,8 @@
 !
 !---------------Executable code--------------------------------------
 !
+! say hello
+!
       call pst('Calculating transition moments+')
       write(*,*)
       write(*,*) '   Note: Even in SPINFREE/NONREL cases the TMs'
@@ -185,13 +198,6 @@
       write(*,*) '   Symmetry: ',desrep
       write(*,*) '   **********************'
       write(*,*)
-!
-! initialization of stack system
-!
-      numstacks = 20
-      write(*,*) '   Initializing stack system with',numstacks,' stacks'
-      if(qstack_init(numstacks,1).ne.numstacks) 
-     &   call quit('Qstack problem')
 !
 ! initialization of constant variables
 !
@@ -310,33 +316,28 @@
       n1 = idaoo*rcw   ! actual lengths
       allocate(doox(n1),dooy(n1),dooz(n1))
       n1 = idaov*rcw
-      allocate(dovx(n1),dovy(n1),dovz(n1))
+      allocate(dovx(n1), dovy(n1), dovz(n1))
+      allocate(dovxg(n1),dovyg(n1),dovzg(n1))
       n1 = idavo*rcw
       allocate(dvox(n1),dvoy(n1),dvoz(n1))
       n1 = idavv*rcw
       allocate(dvvx(n1),dvvy(n1),dvvz(n1))
 
-      doox = 0.0d0
-      dooy = 0.0d0
-      dooz = 0.0d0
-      dovx = 0.0d0
-      dovy = 0.0d0
-      dovz = 0.0d0
-      dvox = 0.0d0
-      dvoy = 0.0d0
-      dvoz = 0.0d0
-      dvvx = 0.0d0
-      dvvy = 0.0d0
-      dvvz = 0.0d0
-
-      if(carith.eqv..false.) then
-        n1 = idavo  !these are genuinely real arrays!
-        allocate(dvoxc(n1),dvoyc(n1),dvozc(n1))
-        dvoxc = 0.0d0
-        dvoyc = 0.0d0
-        dvozc = 0.0d0
-      endif
-     
+      doox  = 0.0d0
+      dooy  = 0.0d0
+      dooz  = 0.0d0
+      dovx  = 0.0d0
+      dovy  = 0.0d0
+      dovz  = 0.0d0
+      dvox  = 0.0d0
+      dvoy  = 0.0d0
+      dvoz  = 0.0d0
+      dvvx  = 0.0d0
+      dvvy  = 0.0d0
+      dvvz  = 0.0d0
+      dovxg = 0.0d0
+      dovyg = 0.0d0
+      dovzg = 0.0d0
 
 !*********************************************************************
 !  VVOO-type integral arrays, they always remain allocated since they
@@ -405,12 +406,12 @@
      &               dvox,dvoy,dvoz,
      &               dvvx,dvvy,dvvz)
 
-      if(qstack_push(1,idaov,dovx).ne.idaov) stop
-      if(qstack_push(2,idaov,dovy).ne.idaov) stop
-      if(qstack_push(3,idaov,dovz).ne.idaov) stop
-      if(qstack_push(4,idavo,dvox).ne.idavo) stop
-      if(qstack_push(5,idavo,dvoy).ne.idavo) stop
-      if(qstack_push(6,idavo,dvoz).ne.idavo) stop
+      if(qstack_push(1,idaov*rcw,dovx).ne.idaov*rcw) stop
+      if(qstack_push(2,idaov*rcw,dovy).ne.idaov*rcw) stop
+      if(qstack_push(3,idaov*rcw,dovz).ne.idaov*rcw) stop
+      if(qstack_push(4,idavo*rcw,dvox).ne.idavo*rcw) stop
+      if(qstack_push(5,idavo*rcw,dvoy).ne.idavo*rcw) stop
+      if(qstack_push(6,idavo*rcw,dvoz).ne.idavo*rcw) stop
 
 ! canary values for catching errors. For complex arithmetic these
 ! phase variables must not be accessed or used.
@@ -424,29 +425,23 @@
         write(*,*) 'the phases of the property integrals.'
         if(aimag(pphase(1)).ne.0) then
           write(*,*) 'Adjusting dvox'
-          dvoxc = -dvox
           pphasex = AI
         else
           write(*,*) 'Unchanged dvox'
-          dvoxc = dvox
           pphasex = A1
         endif
         if(aimag(pphase(2)).ne.0) then
           write(*,*) 'Adjusting dvoy'
-          dvoyc = -dvoy
           pphasey = AI
         else
           write(*,*) 'Unchanged dvoy'
-          dvoyc = dvoy
           pphasey = A1
         endif
         if(aimag(pphase(3)).ne.0) then
           write(*,*) 'Adjusting dvoz'
-          dvozc = -dvoz
           pphasez = AI
         else
           write(*,*) 'Unchanged dvoz'
-          dvozc = dvoz
           pphasez = A1
         endif
       Endif   !carith
@@ -1160,7 +1155,6 @@
      &            fabijtx,fabijty,fabijtz)
 
       write(*,*) '------  F_ai(2,6) finished'
-      write(*,*) '------ consistency check of the DOV,DVO arrays'
       if(qstack_compl(1,dovx).ne.0) stop 'CE'
       if(qstack_compl(2,dovy).ne.0) stop 'CE'
       if(qstack_compl(3,dovz).ne.0) stop 'CE'
@@ -1176,19 +1170,28 @@
 !
       n1 = max(ivovo(nrep+1),jvovo(nrep+1))
       allocate(vovo1(n1*rcw),stat=ialloc)
+      if(ialloc.ne.0)  call quit('vovo allocation problem (tramo)')
       allocate(vovo2(n1*rcw),stat=ialloc)
+      if(ialloc.ne.0)  call quit('vovo allocation problem (tramo)')
       allocate(vovo3(n1*rcw),stat=ialloc)
       if(ialloc.ne.0)  call quit('vovo allocation problem (tramo)')
+      n1e = max(n1,ivvoo(nrep+1))
+      allocate(evvoo(n1e * rcw),stat=ialloc)
+      if(ialloc.ne.0)  call quit('evvoo allocation problem (tramo)')
+      vovo1=0.0d0
+      vovo2=0.0d0
+      vovo3=0.0d0
+      evvoo=0.0d0
 !
-!  sort the v_cb,ji (vvoo1) ---> v_cj,bi (1TT4), vovo3
-!  and the V_aj,ck ---> V_ak,cj (SRT 16)
-!  contract V_ak,cj  x  v_cj,bi  to A_ak,bi
+!  sort the V_aj,ck ---> A_ak,cj (SRT 16), vovo1
+!  sort the v_cb,ji (vvoo1) ---> B_cj,bi (1TT4), vovo2
+!  contract A_ak,cj  x  B_cj,bi  to C_ak,bi , vovo3
 !
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
-     &              MVO,JVOVO,JJVO,JJVO,vvoo1,vovo3)
-      CALL getvovo(vovo1)
+      CALL getvovo(vovo3)
       CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
-     &            vovo1,vovo2)
+     &            vovo3,vovo1)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
+     &              MVO,JVOVO,JJVO,JJVO,vvoo1,vovo2)
       OFF1 = 1
       OFF3 = 1
       DO IREP = 1, NREP
@@ -1196,49 +1199,58 @@
          M = MVO(IREP)
          N = MVO(IREP)
          K = MVO(JREP)
-         OFF2 = J2VOVO(JREP) * RCW + 1
-         CALL XGEMM ('N','N',M,N,K,A1,vovo2(OFF1),M,vovo3(OFF2),K,
-     &               A0,vovo1(OFF3),M)
+         OFF2 = JVOVO(JREP) * RCW + 1
+         CALL XGEMM ('N','N',M,N,K,A1,vovo1(OFF1),M,vovo2(OFF2),K,
+     &               A0,vovo3(OFF3),M)
          OFF1 = OFF1 + M * K * RCW
          OFF3 = OFF3 + M * N * RCW
       ENDDO
-
-! A_ak,bi is now in vovo1
-! divide it by the energy denominators --> B_ak,bi
-
-      Call DENOMVOVO(eps,vovo1)
-
-! next we tentatively do a SRT16 inverse sort in order to
-! arrive at the B_ai,bk array. (watch the array order in SRT16
-! inverse!) The B_ai,bk array is now in vovo2
-
-      CALL SRT27 (vovo1,vovo2)
-!     CALL SRT16 (NREP,MULTB,LFA,LTR,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
-!    &            vovo2,vovo1)
-
-!  contract B_ai,bk (vovo2)  and Dbk* = Dkb over corresponding symmetry
-!  and add to total result.
+!
+!  backsort the C_ak,bi array (vovo3) to D_ab,ki (vovo2) via 1SS4 inverse
+!  BKC from <||>,<||>   ---> <|<|,|>|>
+!
+      CALL SRT1SS4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,MVO,JVOVO,JJVO,JJVO,
+     &              vovo3,vovo2)
+!
+!  create an energy denominator array in VVOO structure but with the
+!  full range in a,b,i,j and multiply ti elementwise with the 
+!  D_ab,ki array in vovo2. Result goes to vovo3
+!
+      if(IVVOO(nrep+1).ne.JVOVO(nrep+1)) then
+        write(*,*) 'Array lenghts are mismatching for energy denoms!'
+        stop
+      else
+        write(*,*) 'dividing by energy denominators'
+      endif
+      n1 = JVOVO(nrep+1)
+      call EARR_VVOO(eps,evvoo)
+      Call MATXMAT(n1,evvoo,vovo2,vovo3) 
+!
+!  vovo3 has now the correct BKC to be used in a SRT 16 step from
+!  c_ab,ki  <|<|,|>|>   --->  c_ai,bk with <||>,|><|  BKC
+!
+      CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,JVOOV,JJVO,JJOV,
+     &            vovo3,vovo1)
+!
+! do the final contraction but with the genuine order
+! OV property integrals!
+!
+      if(qstack_popf(8,dovxg).ne.idaov*rcw) stop 'Qpferr'
+      if(qstack_popf(8,dovyg).ne.idaov*rcw) stop 'Qpferr'
+      if(qstack_popf(8,dovzg).ne.idaov*rcw) stop 'Qpferr'
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
-      off1 = JVOVO(desrep) + 1
+      off1 = JVOOV(desrep) + 1
       off2 = JPVOXX(desrep)+1
       M=MVO(desrep)
-      K=MVO(desrep)
+      K=MOV(desrep)
 
-      if(carith) call conjuga(M,dvox(off2),1)
-      CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dovx(off2),1,A0,faipx,1)
-      if(carith) call conjuga(M,dvox(off2),1)
-
-      if(carith) call conjuga(M,dvoy(off2),1)
-      CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dovy(off2),1,A0,faipy,1)
-      if(carith) call conjuga(M,dvoy(off2),1)
-
-      if(carith) call conjuga(M,dvoz(off2),1)
-      CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dovz(off2),1,A0,faipz,1)
-      if(carith) call conjuga(M,dvoz(off2),1)
+      CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
+     &            dovxg(off2),1,A0,faipx,1)
+      CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
+     &            dovyg(off2),1,A0,faipy,1)
+      CALL XGEMV ('N',M,K,A1,vovo1(off1),M,
+     &            dovzg(off2),1,A0,faipz,1)
 
       n1 = MVO(desrep)
       call rcaxpy(n1,carith,pphasex,faipx,faitx)
@@ -1251,10 +1263,10 @@
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
 
-      deallocate(vovo1,vovo2,vovo3)
+      deallocate(evvoo,vovo1,vovo2,vovo3)
 
       write(*,*) '------  F_ai(2,7) finished'
-      stop
+       stop 'asdfjsdfkljsldfkgjsdlfkgjsldfkgjsdflkgj'
 !
 !-------------------------------------
 !------  F_ai(2,8): a DOV contribution
@@ -1293,29 +1305,10 @@
 ! A_ak,bi is now in vovo1, and we can proceed exactly in the same way
 ! as for F_ai(2,7)!
 !
-      
       Call DENOMVOVO(eps,vovo1)
-      CALL SRT27 (vovo1,vovo2)
-!
-! Backsort A_ak,bi ---> B_ab,ki (1TT4 inv)
-! Divide by energy denominator and negate in order to
-! obtain b_ab,ik (note lowercase letter!)
-!
-!     vvoo3 = 0.0d0
-!     CALL SRT1TT4 (NREP,MULTB,LFA,LTR,NV,NV,NO,NO,
-!    &              MVO,JVOVO,JJVO,JJVO,vovo1,vvoo3)
-!     CALL DENOMVVOO (eps,vvoo3,vvoo3)
-!     CALL RCA_NEGATE(ivvoott(nrep+1),vvoo3)
-!     deallocate(vovo1,vovo2)
-!
-! resort b_a>b,i>k to b_ab,i>k to C_ai,kb
-!
-!     CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
-!    &              vvoo3,vvoo4)
-!     CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-!    &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
-
-!  contract C_ai,kb (vvoo3)  and Dkb over corresponding symmetry
+      CALL SRT16 (NREP,MULTB,LFA,LTR,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
+     &            vovo2,vovo1)
+!  contract B_ai,bk (vovo2)  and Dbk* = Dkb over corresponding symmetry
 !  and add to total result.
 
       faipx = 0.0d0; faipy = 0.0d0; faipz = 0.0d0
@@ -1326,17 +1319,17 @@
 
       if(carith) call conjuga(M,dvox(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dvox(off2),1,A0,faipx,1)
+     &            dovx(off2),1,A0,faipx,1)
       if(carith) call conjuga(M,dvox(off2),1)
 
       if(carith) call conjuga(M,dvoy(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dvoy(off2),1,A0,faipy,1)
+     &            dovy(off2),1,A0,faipy,1)
       if(carith) call conjuga(M,dvoy(off2),1)
 
       if(carith) call conjuga(M,dvoz(off2),1)
       CALL XGEMV ('N',M,K,A1,vovo2(off1),M,
-     &            dvoz(off2),1,A0,faipz,1)
+     &            dovz(off2),1,A0,faipz,1)
       if(carith) call conjuga(M,dvoz(off2),1)
 
       n1 = MVO(desrep)
@@ -1350,9 +1343,7 @@
      &            faitx,faity,faitz,
      &            fabijtx,fabijty,fabijtz)
 
-      deallocate(vovo1)
-      deallocate(vovo2)
-      deallocate(vovo3)
+      deallocate(vovo1,vovo2,vovo3)
 
       write(*,*) '------  F_ai(2,8) finished'
 !
@@ -1375,19 +1366,9 @@
       close(ioch)
       CALL DENOMVVOO (eps,vvoop,vvoop)
 !
-! resort b_a>b,i>j to b_ab,i>j to C_ai,jb,
-! contract with D_jb and store.
-!
-!     CALL SRT1LS1 (NREP,MULTB,NVVT,NVV,NV,NV,NOOT,IVVOOT,IIVV,
-!    &              vvoop,vvoo4)
-!     CALL SRT20_NTS(NREP,MULTB,NVV,NV,NV,NO,NO,MVO,
-!    &               JVOOV,JJVO,JJOV,vvoo4,vvoo3)
-!
-! ****************** alternative route. Directly use 1TT4
-! A_ab,ij --> A_ai,bj (vovo1)
+! A_ab,ij --> A_ai,bj (vovo3)
 ! Then contract A_ai,bj x D*_bj
 ! 
-      
 
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,
      &              MVO,JVOVO,JJVO,JJVO,vvoop,vovo3)
@@ -1443,6 +1424,7 @@
       n1=ioooott(nrep+1)
       allocate(oooo(n1*rcw))
       call getoooo(oooo)
+      vvoo3 = 0.0d0
       CALL CNTRCT('N','N',NVVT,NOOT,NOOT,A1,vvoo1,oooo,A0,vvoo3,NREP)
 !
 ! ******* alternative route via 1TT4 !
@@ -1482,10 +1464,17 @@
       call rcaxpy(n1,carith,pphasey,faipy,faity)
       call rcaxpy(n1,carith,pphasez,faipz,faitz)
 
+      iorder='0th + 1st + 2ndABC + 2,10'
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LFA,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
+
       deallocate(oooo)
       deallocate(vovo3)
 
       write(*,*) '------  F_ai(2,10) finished'
+      stop
 !
 ! ----------------------------------------------------------
 ! --- from here all second order h/p contributions are -----
@@ -1708,9 +1697,7 @@
       deallocate(dvox,dvoy,dvoz)
       deallocate(dvvx,dvvy,dvvz)
 
-      if(carith.eqv..false.) then
-        deallocate(dvoxc,dvoyc,dvozc)
-      endif
+      deallocate(dovxg,dovyg,dovzg)
 
       deallocate(faipx,faipy,faipz)
       deallocate(faitx,faity,faitz)

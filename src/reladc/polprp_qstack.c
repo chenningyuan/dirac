@@ -312,7 +312,7 @@ int qstack_peekf(int *stack, double *retvec){
 
   if(qsdep[stackn] == 0) return 0;
 
-/* copy >>last<< vector from stack (LIFO) to retvec, do not adjust stack */
+/* copy >>first<< vector from stack (FIFO) to retvec, do not adjust stack */
 
   curlen = qslen[stackn][0];
   memcpy(retvec,qsbase[stackn][0],curlen*sizeof(double));

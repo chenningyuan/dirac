@@ -217,6 +217,84 @@ C|__________________________________________________________
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EARR_VVOO (EPS,T2)
+!
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+!     This routine creates an energy denominator array in the
+!     VVOO bra-ket storage <|<|,|>|> in order to be sorted with SRT16
+!     Normally the VVOO integrals are tridiagonally stored. In this case
+!     the full ranges are covered because SRT 16 down not handle tridiagonal
+!     storage cases!
+!     The energies are all real and for the complex case we set the imaginary
+!     part to zero!
+!
+!---------------Calling variables--------------------------------------
+!
+      REAL*8,dimension(:)                 ::  EPS
+      REAL*8,dimension(:)                 ::  T2
+!
+!---------------Common Blocks--------------------------------------
+!
+#include  "../relccsd/symm.inc"
+#include  "../relccsd/complex.inc"
+!
+!---------------Local variables--------------------------------------
+!
+      REAL*8 FAC,FAC1,FAC2,FAC3
+!
+!---------------Executable code--------------------------------------
+!
+      call PST('Creating ABIJ energy denominators+')
+      write(*,*) 'jvovo:',jvovo(nrep+1)
+      ABIJ = 0
+      DO IJRP = 1, NREP
+      DO 10 JRP = 1, NREP
+      JJ = IO(JRP)
+      IRP = MULTB(JRP,IJRP+NREP,2)
+      if(multb(irp,jrp,1).ne.ijrp) stop 'earr error'
+      IOFF = IO(IRP)
+      DO J = 1, NO(JRP)
+         JJ = JJ + 1
+         FAC1 = - EPS(JJ)
+         DO I = 1, NO(IRP)
+            II = IOFF + I
+            FAC2 = - EPS(II) + FAC1
+            DO 20 BRP = 1, NREP
+            BB = IV(BRP) + IO(NREP+1)
+            ARP = MULTB(BRP,IJRP+NREP,2)
+      if(multb(arp,brp,1).ne.ijrp) stop 'earr error'
+            AOFF = IV(ARP) + IO(NREP+1)
+            DO B = 1, NV(BRP)
+               BB = BB + 1
+               FAC3 = FAC2 + EPS(BB)
+               DO A = 1, NV(ARP)
+                  AA = AOFF + A
+                  FAC = FAC3 + EPS(AA)
+                  ABIJ = ABIJ + 1
+                  IF(CARITH) THEN
+                    T2(2*ABIJ - 1) = 1.0/FAC  !real part
+                    T2(2*ABIJ) = 0.0  ! imaginary part
+                  ELSE
+                    T2(ABIJ) = 1.0/FAC
+                  ENDIF
+               ENDDO
+            ENDDO
+ 20         CONTINUE
+         ENDDO
+      ENDDO
+ 10   CONTINUE
+      ENDDO
+
+      IF(ABIJ.ne.JVOVO(nrep+1)) THEN
+        WRITE(*,*) 'ABIJ/JVOVO:',ABIJ,JVOVO(nrep+1)
+        STOP 'COUNTING ERROR IN EARR_VVOO!'
+      ENDIF
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMVOVO(EPS,T)
  
       IMPLICIT INTEGER (A-Z)
@@ -243,16 +321,16 @@ C|__________________________________________________________
 !
 !---------------Executable code--------------------------------------
 !
+
+      write(*,*) '+++++++++++ entering DENOMVOVO +++++++++++'
+      write(*,*) '+++++++++++ entering DENOMVOVO +++++++++++'
+      write(*,*) '+++++++++++ entering DENOMVOVO +++++++++++'
       AIBJ = 0
 
       DO BJREP = 1, NREP   !bosonic irep
         DO 10 JREP = 1, NREP   !fermionic irep
           JOFF = IO(JREP)
-!*************debug
-!*** tentatively: switch to bra ket inverse 2 --> 1!
-!         BREP = MULTB(JREP,BJREP+NREP,2)
-          BREP = MULTB(JREP,BJREP+NREP,1)
-!*************debug end
+          BREP = MULTB(JREP,BJREP+NREP,2)
           BOFF = IO(NREP+1) + IV(BREP)
           DO J = 1, NO(JREP)
             JJ = JOFF + J
@@ -262,10 +340,7 @@ C|__________________________________________________________
                EB = eps(BB)
                DO 20 IREP = 1, NREP
                  IOFF = IO(IREP)
-!*************debug, same here
-!                AREP = MULTB(IREP,BJREP+NREP,2)
-                 AREP = MULTB(IREP,BJREP+NREP,1)
-!*************debug
+                 AREP = MULTB(IREP,BJREP+NREP,2)
                  AOFF = IO(NREP+1) + IV(AREP)
                  DO I = 1, NO(IREP)
                    II = IOFF + I
@@ -755,6 +830,53 @@ C
       return
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MATXMAT(n,a,b,c)
+ 
+      IMPLICIT none
+!
+!---------------Description--------------------------------------------
+!
+! multiplies the matrix (vector) a with b and stores result in c
+! This is done *elementwise*
+!                           c = a * b
+! If the real arrays carry complex numbers, we combine two numbers to
+! one complex number
+!
+!---------------Calling variables--------------------------------------
+!
+      Integer                          :: n
+      REAL*8,dimension(:)              :: a,b,c
+!
+!---------------Common Blocks--------------------------------------
+!
+#include  "../relccsd/complex.inc"
+!
+!---------------Local Variables--------------------------------------
+!
+      Integer         :: i
+      Complex*16      :: s1,s2,s3
+!
+!---------------Executable --------------------------------------
+!
+      call pst('in matxmat+')
+      write(*,*) n,carith
+      If(carith) then
+        Do i=1,n
+          s1=dcmplx(a(2*i-1),a(2*i))
+          s2=dcmplx(b(2*i-1),b(2*i))
+          s3 = s1 * s2
+          c(2*i-1) = dble(s3)
+          c(2*i)   = aimag(s3)
+        Enddo
+      Else
+        Do i=1,n
+          c(i) = a(i) * b(i)
+        Enddo
+      Endif
+
+      Return
+      End
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT27(S,T)
  
       IMPLICIT INTEGER (A-Z)
@@ -788,11 +910,15 @@ C
 
       DO BJREP = 1, NREP   !bosonic irep
         DO 10 JREP = 1, NREP   !fermionic irep
-          BREP = MULTB(JREP,BJREP+NREP,1)
+          BREP = MULTB(JREP,BJREP+NREP,2)
+          BREP = MULTB(BREP,1+NREP,2)
+          IF(MULTB(brep,jrep,2).ne.BJREP) Stop 'SRT 27 BJ error'
           DO J = 1, NO(JREP)
             DO B = 1, NV(BREP)
                DO 20 IREP = 1, NREP
-                 AREP = MULTB(IREP,BJREP+NREP,1)
+                 AREP = MULTB(IREP,BJREP+NREP,2)
+                 AREP = MULTB(AREP,1+NREP,2)
+          IF(MULTB(arep,irep,2).ne.BJREP) Stop 'SRT 27 AI error'
                  DO I = 1, NO(IREP)
                    DO A = 1, NV(AREP)
 
@@ -836,79 +962,3 @@ C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     SUBROUTINE DENOMXYZ (EPS,T2)
-!
-!     IMPLICIT INTEGER (A-Z)
-!
-!---------------Description--------------------------------------------
-!
-!     Divide VVOO integrals by denominators ea + eb - ej - ei
-!     her in the modern F90 version
-!
-!---------------Calling variables--------------------------------------
-!
-!     REAL*8, dimension (:)              ::  EPS
-!     REAL*8, dimension (:)              ::  T2
-!
-!---------------Common Blocks--------------------------------------
-!
-!include  "../relccsd/symm.inc"
-!include  "../relccsd/complex.inc"
-!
-!---------------Local variables--------------------------------------
-!
-!     REAL*8 FAC,FAC1,FAC2,FAC3
-!     COMPLEX*16 CFAC
-!
-!---------------Executable code--------------------------------------
-!
-!     ABIJ = 0
-!     DO IJRP = 1, NREP
-!     DO 10 JRP = 1, NREP
-!     JJ = IO(JRP)
-!     IRP = MULTB(JRP,IJRP+NREP,2)
-!     IF (IRP.LT.JRP) GOTO 10
-!     IOFF = IO(IRP)
-!     DO J = 1, NO(JRP)
-!        JJ = JJ + 1
-!        FAC1 = - EPS(JJ)
-!        IMIN = 1
-!        IF (IRP.EQ.JRP) IMIN = J + 1
-!        DO I = IMIN, NO(IRP)
-!           II = IOFF + I
-!           FAC2 = - EPS(II) + FAC1
-!           DO 20 BRP = 1, NREP
-!           BB = IV(BRP) + IO(NREP+1)
-!           ARP = MULTB(BRP,IJRP+NREP,2)
-!           IF (ARP.LT.BRP) GOTO 20
-!           AOFF = IV(ARP) + IO(NREP+1)
-!           DO B = 1, NV(BRP)
-!              BB = BB + 1
-!              FAC3 = FAC2 + EPS(BB)
-!              AMIN = 1
-!              IF (ARP.EQ.BRP) AMIN = B + 1
-!              DO A = AMIN, NV(ARP)
-!                 AA = AOFF + A
-!                 FAC = FAC3 + EPS(AA)
-!                 ABIJ = ABIJ + 1
-!                 IF (CARITH) THEN
-!                    STOP 'Illegal value'
-!                 ELSE
-!                    T2(ABIJ) = T2(ABIJ)/FAC
-!                 ENDIF
-!              ENDDO
-!           ENDDO
-!20         CONTINUE
-!        ENDDO
-!     ENDDO
-!10   CONTINUE
-!     ENDDO
-!
-!     IF(ABIJ.ne.IVVOOTT(nrep+1)) THEN
-!       WRITE(*,*) 'ABIJ/IVVOOTT:',ABIJ,IVVOOTT(NREP+1)
-!       STOP 'COUNTING ERROR IN DENOMVVOO!'
-!     ENDIF
-!     RETURN
-!     END
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-

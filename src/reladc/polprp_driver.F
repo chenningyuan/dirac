@@ -501,6 +501,7 @@ C
       use polprp_cfg     !these data are visible on master node only!
                          !They contain control input for the POLPRP run
                          !and user input for the Davidson diagonalizer
+      use qstack         !make stack system available to master node
 
  
 !     IMPLICIT INTEGER(A-Z)
@@ -535,7 +536,7 @@ C
       integer                 :: nbufs = 0
       integer                 :: signal
       integer                 :: serialindicator
-      integer                 :: i
+      integer                 :: i,numstacks
       logical                 :: propertyints
 !  
 !  variables for rdprop_adc integral testing
@@ -684,16 +685,11 @@ C
         WRITE(IW,*)
         CALL print_input_info(iw,nrep) 
         WRITE(IW,*)
-        WRITE(IW,*) 'presetting polprp_infostring with'
-        WRITE(IW,*) 'm23 m12 u8i op55 o4 o2 o5 o0000'
-!       polprp_infostring = 'm23 m12 u8i op55 o4 o2 o5 o0000'//char(0)
-        
 
 #if defined (VAR_MPI)
       endif
       WRITE(IW,'(A,I5)') ' Total # of nodes: ',NMPROC
       WRITE(IW,'(A,I5)') ' Current node # :  ',MYPROC
-      
 #endif
 
 ! |
@@ -716,6 +712,14 @@ C
         WRITE(IW,*)'|                                                |'
         WRITE(IW,*)'|           Calculation section                  |'
         WRITE(IW,*)'|________________________________________________|'
+        WRITE(IW,*)
+!
+! initialize stack system
+!
+        numstacks = 20
+        if(qstack_init(numstacks,1).ne.numstacks) 
+     &     call quit('Qstack problem')
+        WRITE(IW,*)'Stack system initialized with',numstacks,' stacks'
         WRITE(IW,*)
 !
 !  perform tests if required

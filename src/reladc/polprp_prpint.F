@@ -156,22 +156,11 @@
       write(*,*) '.PRPTRA'
       write(*,*) '*PRPTRA'
       write(*,*) '.OPERATOR'
-      write(*,*) ' ''X_DIPLEN'' '
-      write(*,*) ' DIAGONAL'
       write(*,*) ' XDIPLEN'
       write(*,*) '.OPERATOR'
-      write(*,*) ' ''Y_DIPLEN'' '
-      write(*,*) ' DIAGONAL'
       write(*,*) ' YDIPLEN'
       write(*,*) '.OPERATOR'
-      write(*,*) ' ''Z_DIPLEN'' '
-      write(*,*) ' DIAGONAL'
       write(*,*) ' ZDIPLEN'
-      write(*,*) ' COMFACTOR'
-      write(*,*) ' 1.0000000000'
-      write(*,*)
-      write(*,*)
-      write(*,*)
       write(*,*)
       write(*,*) 'Calculation continues without transition moments.'
       write(*,*)
@@ -185,6 +174,7 @@
      &                     dvox,dvoy,dvoz,
      &                     dvvx,dvvy,dvvz)
      &               
+
  
       IMPLICIT NONE
 !
@@ -323,6 +313,8 @@
      &                           printlevel)
 !
       use interface_to_mpi
+      use qstack       !make stack system available
+
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -379,14 +371,14 @@
 !
 !---------------Local variables--------------------------------------
 !
-      Integer                 :: MDPROP, PROCPROP
-      REAL*8,allocatable      :: DUMPROP(:,:,:)
-      CHARACTER*32            :: ACHAR
-      REAL*8                  :: APHASE(2)
-      REAL*8                  :: AVOI,AOVI,AMAXR,AMAXI,ANORM
-      LOGICAL                 :: PHASE
-      REAL*8                  :: hdev
-      COMPLEX*16              :: h1,h2
+      Integer                  :: MDPROP, PROCPROP
+      REAL*8,allocatable       :: DUMPROP(:,:,:)
+      CHARACTER*32             :: ACHAR
+      REAL*8                   :: APHASE(2)
+      REAL*8                   :: AVOI,AOVI,AMAXR,AMAXI,ANORM
+      LOGICAL                  :: PHASE
+      REAL*8                   :: hdev
+      COMPLEX*16               :: h1,h2
 ! --- flushing
       Character*1              :: co
       Character*8              :: filename
@@ -395,6 +387,7 @@
       integer,allocatable      :: acv(:,:)
       integer                  :: irow,icol,retcode
       integer                  :: loopcount
+      Real*8, allocatable      :: GOV(:)    !generic order OV propints
 !
 !---------------Executable code--------------------------------------
 !
@@ -717,6 +710,36 @@ C
       write(PROCPROP) (avv(ixx),ixx=1,RCW*dimpvv)
       close(PROCPROP)
 !
+! ********  create an ov stream in the generic OV order
+!           and push it on the stack.
+!
+      allocate(GOV(dimpov*rcw))
+      GOV = 0.0d0
+      IA = 1
+      DO IAREP = 1, NREP
+         DO AREP = 1, NREP
+            IREP = MULTB (AREP,IAREP+NREP,2)
+            IREP = MULTB (IREP,NREP+1,2)
+            DO A = 1, NV(AREP)
+              AA = IREPSPI(A,AREP,2)
+              DO I = 1, NO(IREP)
+                 II = IREPSPI(I,IREP,1)
+                 IF (CARITH) THEN
+                   GOV(RCW*IA-1) = PROP(1,II,AA)
+                   GOV(RCW*IA)   = PROP(2,II,AA)
+                 ELSE
+                   GOV(IA) = PROP(1,II,AA)*APHASE(1) -
+     &                       PROP(2,II,AA)*APHASE(2)
+                 ENDIF
+                 IA = IA + 1
+              ENDDO   !I
+            ENDDO  !A
+         ENDDO  !AREP
+      ENDDO  !IAREP
+      if(qstack_push(8,dimpov*rcw,GOV).ne.dimpov*rcw) stop 'QPE'
+      deallocate(GOV)
+
+!
 !********************************************
 !***   testing the property streams     *****
 !********************************************
@@ -748,6 +771,8 @@ C
 !     ENDDO
 !     write(*,*) '--------------------------------------'
 !     write (*,*)
+
+
 !
 !********************************************
 !***   printing the property integrals  *****
