@@ -48,7 +48,7 @@ Note that
 
 We run the calculation using::
 
-   pam --inp=CmIII --mol=Cm.xyz --put "cf.CmIII=DFCOEF"
+   pam --inp=CmIII --mol=Cm.xyz --get "DFCOEF=cf.CmIII"
 
 (keywords for parallel run omitted). Here is a snippet of the Mulliken population analysis
 
@@ -62,9 +62,11 @@ shell in the neutral atom. We therefore set up the input file
 
 This assures that the orbitals are correctly ordered when we start the SCF iterations. In order to keep them in the desired order, we invoke 
 overlap selection. We impose non-dynamic overlap selection, which means that orbitals in a given iteration are selected based on their overlap 
-with the *initial* orbitals.
+with the *initial* orbitals. We run the calculation using::
 
-This calculation converges smoothly in 13 iterations.
+  pam --inp=Cm --mol=Cm.xyz --get "DFCOEF=cf.Cm" --put "cf.CmIII=DFCOEF"
 
-
-
+This calculation converges smoothly in 13 iterations, and we are now ready to attack the molecule.
+  
+The molecular calculation
+-------------------------
