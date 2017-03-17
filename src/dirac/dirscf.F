@@ -971,6 +971,7 @@ C        ... before extracting of EIG print the Fock matrix
            CALL FLSHFO(LUPRI)
         ENDDO
       ENDIF
+      IF (DHFEXIT) GOTO 9999      
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -995,7 +996,7 @@ C
 C
 C     If converged, do not select occupation or save orbitals
 C
-      IF (DHFEXIT) GOTO 9999
+CTROND      IF (DHFEXIT) GOTO 9999
 C
 C     Automatic occupation
 C     ====================
