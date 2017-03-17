@@ -70,3 +70,9 @@ This calculation converges smoothly in 13 iterations, and we are now ready to at
   
 The molecular calculation
 -------------------------
+
+The menu file for the first step of the molecular calculation reads
+
+.. literalinclude:: CmF_5f_frz.inp
+
+		    
