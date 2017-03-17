@@ -2,11 +2,9 @@
 .WAVE FUNCTION                                                                                      
 .ANALYZE                                                                                            
 **ANALYZE                                                                                           
-.MULPOP
+.MULPOP                                                                                             
 *MULPOP
-.VECPOP
-1..oo
-.LABEL
+.LABEL 
 SHELL
 **WAVE FUNCTION                                                                                     
 .SCF                                                                                                
