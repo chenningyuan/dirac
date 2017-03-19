@@ -2054,5 +2054,18 @@ contains
         str = adjustl(str)
     end function str
 
+    subroutine dump_to_file(fileno, filename, matrix)
+        integer, intent(in) :: fileno
+        character(len=14), intent(in) :: filename
+        real(kind=8) :: matrix(:,:)
+        integer :: irec
+ 
+        inquire (iolength = irec) matrix
+        open (unit=fileno, file=filename, form="unformatted", access="direct", recl=irec)
+        write(unit=fileno, rec=1) matrix
+        close(unit=fileno)
+    end subroutine
+
+
 end module
 
