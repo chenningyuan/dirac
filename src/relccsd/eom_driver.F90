@@ -407,7 +407,7 @@
 
         xroot = 1 
 
-       do iroot = 1, 2*nroot
+       do iroot = 1, 2*nroot*rcw, rcw
         k = minloc(diag_H) 
 !ashee        write(iw,*)'roots',iroot,H_II(k(1)),k(1) 
         i = k(1)
