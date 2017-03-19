@@ -13,6 +13,14 @@ the lines below should only be changed on the release branch.)
 16.1 (???)
 -----------------
 
+New features:
+- updated basis_dalton/ with basis set updates in the Dalton distribution:
+ - fix of errors in Ahlrichs-pVDZ (several diffuse exponents a factor 10 too big)
+ - fix of errors for 2. row atoms in aug-cc-pCV5Z
+ - added many atoms to aug-cc-PVTZ_J
+ - added many Frank Jensen "pc" type basis sets
+ - added Turbomole "def2" type basis sets
+
 New defaults:
 - .SKIPEP is now default for KR-MCSCF, new keyword .WITHEP to include e-p rotations
 
