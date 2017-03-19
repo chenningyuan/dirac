@@ -512,7 +512,7 @@ contains
         real(kind=8) :: norm_denominator
         integer :: N, N_complex
         double precision ddot, dznrm2
-        complex(kind=16) zladiv, zdotc, zdotu
+        complex*16  zladiv, zdotc, zdotu
         real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
 
         N = size(u,1)
