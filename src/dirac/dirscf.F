@@ -2159,6 +2159,7 @@ C Used from COMMON blocks:
 C  dcbdhf: NSMOTQ
 C
 #include "dcbdhf.h"
+#include "dcborb.h"
 #include "memint.h"
       CALL QENTER('SMOSEL')
 C
@@ -2180,7 +2181,7 @@ C       Memory allocation
      &               WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','RCSEL' ,KRSEL,NESHMF(I),WORK,KFREE,LFREE)
         CALL MEMGET2('INTE','ICSEL' ,KISEL,2*NESHMF(I),WORK,KFREE,LFREE)
-        CALL SMOSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
+        CALL SMOSE1(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &              CFU(I2ORBT(I)+1),WORK(KSMO+ISMOQ(I)),
      &              WORK(KEBUF),WORK(KIBEB),WORK(KCBUF),WORK(KSBUF),
      &              WORK(KRSEL),WORK(KISEL),NTMO(I),NOCCMF(I),NESHMF(I))
