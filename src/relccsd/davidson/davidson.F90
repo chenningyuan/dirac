@@ -60,6 +60,7 @@ logical, save      :: davidson_save_sigmas
 logical, save      :: davidson_save_results
 logical, save      :: davidson_overlap_sorting
 logical, save      :: davidson_debug = .false.
+logical, save      :: davidson_use_preconditioner 
 
 ! 
 ! variables for controlling i/o
@@ -168,6 +169,7 @@ contains
                               solve_left,        &
                               symmetric,         &
                               complex_mode,      &
+                              use_preconditioner,&
                               verbose,           & 
                               overlap_sorting,   &
                               save_results,      &
@@ -191,6 +193,7 @@ contains
         logical, optional :: save_subspaces
         logical, optional :: save_results
         logical, optional :: complex_mode
+        logical, optional :: use_preconditioner
 
         call set_safe_minimum() 
 
@@ -234,6 +237,12 @@ contains
             davidson_overlap_sorting = overlap_sorting
         else
             davidson_overlap_sorting = .true.
+        end if
+
+        if (present(use_preconditioner)) then
+            davidson_use_preconditioner = use_preconditioner
+        else
+            davidson_use_preconditioner = .true.
         end if
 
         if (present(verbose)) then
@@ -938,7 +947,7 @@ contains
 
         integer :: i, k, l, j, r
         integer :: vectors_N
-        integer :: nroots
+        integer :: nroots, offset
         real(kind=8) :: x2py2
 
 ! careful with dimension 1 of eigenvalues, 
@@ -949,20 +958,32 @@ contains
         form_preconditioner = 0.0d0
         print *, 'debug, vectors_N in form_preconditioner :',vectors_N
 
-        if (davidson_complex_mode_with_reals) then
+        if (.not.davidson_use_preconditioner) then
+            if (davidson_complex_mode_with_reals) then
+                offset = 2
+            else
+                offset = 1
+            end if
             do k = 1, nroots
-               r = 0
-                do j = 1, vectors_N, 2
-                    r = r + 1
-!                   if (davidson_debug) print *, 'debug, H_II(re,im) : ',j,M_diag(j),M_diag(j+1)
-                    form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
+                do j = 1, vectors_N, offset
+                    form_preconditioner(j,k) = 1.0d0
+                end do
+            end do
+        else
+            if (davidson_complex_mode_with_reals) then
+                do k = 1, nroots
+                   r = 0
+                    do j = 1, vectors_N, 2
+                        r = r + 1
+!                       if (davidson_debug) print *, 'debug, H_II(re,im) : ',j,M_diag(j),M_diag(j+1)
+                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
 ! the diagonal appears not to have the complex part, so for debugging purposes i will set it to zero here
 ! and only construct the real part
-!                   form_preconditioner(j,k)   = eigenvectors(1,k) - M_diag(j)
-!                   form_preconditioner(j+1,k) = eigenvectors(2,k) - M_diag(j+1)
+!                       form_preconditioner(j,k)   = eigenvectors(1,k) - M_diag(j)
+!                       form_preconditioner(j+1,k) = eigenvectors(2,k) - M_diag(j+1)
 
-                    form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
-                    form_preconditioner(j+1,k) = 0.0d0
+                        form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
+                        form_preconditioner(j+1,k) = 0.0d0
 
 ! using the formula for calculating the reciprocal of the nonzero complex number z = x + yi 
 !
@@ -970,37 +991,38 @@ contains
 !                             ={\frac {\bar {z}}{x^{2}+y^{2}}}
 !                             ={\frac {x}{x^{2}+y^{2}}}-{\frac {y}{x^{2}+y^{2}}}i.} 
 !
-                    x2py2 = form_preconditioner(j,k)*form_preconditioner(j,k)  &
-                          + form_preconditioner(j+1,k)*form_preconditioner(j+1,k)
+                        x2py2 = form_preconditioner(j,k)*form_preconditioner(j,k)  &
+                              + form_preconditioner(j+1,k)*form_preconditioner(j+1,k)
 
-                    if (dabs(x2py2) .gt. safe_minimum) then
-                        form_preconditioner(j,k)   =  form_preconditioner(j,k) / x2py2 
-                        form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
-                    else
-!                       stop ('detected division by zero')
-                        print *, 'Warning : numerator is small', (1.0d0 / form_preconditioner(l,k)),& 
-&                                ' element of preconditioner set to 1'
-!                       form_preconditioner(j,k) = 1.0d0
-!                       form_preconditioner(j+1,k) = 1.0d0
-                    end if
+                        if (dabs(x2py2) .gt. safe_minimum) then
+                            form_preconditioner(j,k)   =  form_preconditioner(j,k) / x2py2 
+                            form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
+                        else
+!                           stop ('detected division by zero')
+                            print *, 'Warning : numerator is small', (1.0d0 / form_preconditioner(l,k)),& 
+&                                    ' element of preconditioner set to 1'
+!                           form_preconditioner(j,k) = 1.0d0
+!                           form_preconditioner(j+1,k) = 1.0d0
+                        end if
+                    end do
                 end do
-            end do
-        else
-            do k = 1, nroots
-                form_preconditioner(:,k) = eigenvalues(1,k) - M_diag(:)
-                do l = 1, vectors_N
-                    if (dabs(form_preconditioner(l,k)) .gt. safe_minimum) then
-                        form_preconditioner(l,k) = 1.0d0 / form_preconditioner(l,k)
-                    else
-!                       stop ('detected division by zero')
-                        x2py2=1.0d0 / form_preconditioner(l,k)
-                        print *, 'warning : numerator is smaller than', safe_minimum, &
-     &                           '(',x2py2,'). element of preconditioner set to 1.'
-                        form_preconditioner(l,k) = 1.0d0 
-                    end if
+            else
+                do k = 1, nroots
+                    form_preconditioner(:,k) = eigenvalues(1,k) - M_diag(:)
+                    do l = 1, vectors_N
+                        if (dabs(form_preconditioner(l,k)) .gt. safe_minimum) then
+                            form_preconditioner(l,k) = 1.0d0 / form_preconditioner(l,k)
+                        else
+!                           stop ('detected division by zero')
+                            x2py2=1.0d0 / form_preconditioner(l,k)
+                            print *, 'warning : numerator is smaller than', safe_minimum, &
+     &                               '(',x2py2,'). element of preconditioner set to 1.'
+                            form_preconditioner(l,k) = 1.0d0 
+                        end if
+                    end do
                 end do
-            end do
-        end if
+            end if
+        end if ! use preconditioner
         if (davidson_debug) call davidson_print_vectors(form_preconditioner, label="preconditioner                ")
     end function
 
