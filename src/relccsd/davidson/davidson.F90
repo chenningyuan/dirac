@@ -931,31 +931,77 @@ contains
         deallocate(r)
     end function
 
-    function form_preconditioner(M_diag, eigenvectors)
+    function form_preconditioner(M_diag, eigenvalues)
         real(kind=8), pointer     :: form_preconditioner(:,:)
-        real(kind=8), intent(in)  :: eigenvectors(:)
+        real(kind=8), intent(in)  :: eigenvalues(:,:)
         real(kind=8), intent(in)  :: M_diag(:)
 
-        integer :: i, k, l
+        integer :: i, k, l, j, r
         integer :: vectors_N
         integer :: nroots
+        real(kind=8) :: x2py2
 
-        nroots    = size(eigenvectors,1)
+! careful with dimension 1 of eigenvalues, 
+        nroots    = size(eigenvalues,2)
         vectors_N = size(M_diag,1)
 
         allocate(form_preconditioner(vectors_N,nroots))
         form_preconditioner = 0.0d0
-        do k = 1, nroots
-            form_preconditioner(:,k) = eigenvectors(k) - M_diag(:)
-            do l = 1, vectors_N
-                if (dabs(form_preconditioner(l,k)) .gt. safe_minimum) then
-                    form_preconditioner(l,k) = 1.0d0 / form_preconditioner(l,k)
-                else
-!                    stop ('detected division by zero')
-                    form_preconditioner(l,k) = 1.0d0 
-                end if
+        print *, 'debug, vectors_N in form_preconditioner :',vectors_N
+
+        if (davidson_complex_mode_with_reals) then
+            do k = 1, nroots
+               r = 0
+                do j = 1, vectors_N, 2
+                    r = r + 1
+!                   if (davidson_debug) print *, 'debug, H_II(re,im) : ',j,M_diag(j),M_diag(j+1)
+                    form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
+! the diagonal appears not to have the complex part, so for debugging purposes i will set it to zero here
+! and only construct the real part
+!                   form_preconditioner(j,k)   = eigenvectors(1,k) - M_diag(j)
+!                   form_preconditioner(j+1,k) = eigenvectors(2,k) - M_diag(j+1)
+
+                    form_preconditioner(j,k)   = eigenvalues(1,k) - M_diag(r)
+                    form_preconditioner(j+1,k) = 0.0d0
+
+! using the formula for calculating the reciprocal of the nonzero complex number z = x + yi 
+!
+!{\displaystyle {\frac {1}{z}}={\frac {\bar {z}}{z{\bar {z}}}}
+!                             ={\frac {\bar {z}}{x^{2}+y^{2}}}
+!                             ={\frac {x}{x^{2}+y^{2}}}-{\frac {y}{x^{2}+y^{2}}}i.} 
+!
+                    x2py2 = form_preconditioner(j,k)*form_preconditioner(j,k)  &
+                          + form_preconditioner(j+1,k)*form_preconditioner(j+1,k)
+
+                    if (dabs(x2py2) .gt. safe_minimum) then
+                        form_preconditioner(j,k)   =  form_preconditioner(j,k) / x2py2 
+                        form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
+                    else
+!                       stop ('detected division by zero')
+                        print *, 'warning : numerator is small', (1.0d0 / form_preconditioner(l,k)),& 
+&                                ' element of preconditioner set to 1'
+!                       form_preconditioner(j,k) = 1.0d0
+!                       form_preconditioner(j+1,k) = 1.0d0
+                    end if
+                end do
             end do
-        end do
+        else
+            do k = 1, nroots
+                form_preconditioner(:,k) = eigenvalues(1,k) - M_diag(:)
+                do l = 1, vectors_N
+                    if (dabs(form_preconditioner(l,k)) .gt. safe_minimum) then
+                        form_preconditioner(l,k) = 1.0d0 / form_preconditioner(l,k)
+                    else
+!                       stop ('detected division by zero')
+                        x2py2=1.0d0 / form_preconditioner(l,k)
+                        print *, 'warning : numerator is smaller than', safe_minimum, &
+     &                           '(',x2py2,'). element of preconditioner set to 1.'
+                        form_preconditioner(l,k) = 1.0d0 
+                    end if
+                end do
+            end do
+        end if
+        if (davidson_debug) call davidson_print_vectors(form_preconditioner, label="preconditioner                ")
     end function
 
     subroutine form_delta(delta, vectors_to_update, r, preconditioner)
@@ -965,18 +1011,45 @@ contains
         real(kind=8), intent(in)    :: r(:,:)
 
         integer :: nroots
-        integer :: i, k
+        integer :: i, k, l
+        real(kind=8) :: scaling_factor(2), vr, vi
+        integer :: vectors_N, vectors_N_complex
 
         nroots    = size(vectors_to_update,1)
+
+        if (davidson_complex_mode_with_reals) then
+            vectors_N = size(delta,1) 
+            vectors_N_complex = vectors_N / 2
+            scaling_factor(2) = 0.0d0 
  
-        i = 1
-        do k = 1, nroots
-            if (vectors_to_update(k)) then
-               delta(:,i) = preconditioner(:,k)*r(:,k)
-               delta(:,i) = delta(:,i) / vector_norm(delta(:,i))
-               i = i + 1
-           end if
-        end do
+            i = 1
+            do k = 1, nroots
+               if (vectors_to_update(k)) then
+                   do l = 1, vectors_N, 2
+                       vr = preconditioner(l,k)*r(l,k) - preconditioner(l+1,k)*r(l+1,k)
+                       vi = preconditioner(l,k)*r(l+1,k) + preconditioner(l+1,k)*r(l,k)
+                       delta(l,i) = vr
+                       delta(l+1,i) = vi
+                   end do
+                   scaling_factor(1) = 1.0d0 / vector_norm(delta(:,i))
+                   call zscal(vectors_N_complex,scaling_factor,delta(:,i),1)
+               end if
+            end do
+        else
+            i = 1
+            do k = 1, nroots
+                if (vectors_to_update(k)) then
+                   delta(:,i) = preconditioner(:,k)*r(:,k)
+                   delta(:,i) = delta(:,i) / vector_norm(delta(:,i))
+                   i = i + 1
+               end if
+            end do
+        end if
+
+! aspg: the call below just fails.. don't quite get why
+        if (davidson_debug) call davidson_print_vectors(delta,          label="deltas                        ")
+!       if (davidson_debug) call davidson_print_vectors(preconditioner, label="preconditioner                ")
+
     end subroutine 
 
     subroutine form_r(r, nroots,  e_small_M, c_small_M, sigma_vector,  b)
@@ -1349,7 +1422,7 @@ contains
             if (associated(preconditioner)) deallocate(preconditioner)
             if (associated(delta)) deallocate(delta)
 
-            preconditioner =>  form_preconditioner(M_diag, e_small(1,:)) ! use real part of eigenvalue only
+            preconditioner =>  form_preconditioner(M_diag, e_small)
            if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
                                            e_small, c_small_r, sigma_vector, & 
                                            b, preconditioner)
