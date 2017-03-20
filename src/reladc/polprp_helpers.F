@@ -975,3 +975,77 @@ C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT1T3_2PC (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
+     &                       OFF,OFF1,BUF1,BUF2,DESREP)
+C
+      IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+C
+C     BUF(IJ,K>L:KLREP) <--> BUF(IJ K,L:LREP)
+C     If (DOINV) inverse sort.
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 BUF1(*),BUF2(*)
+      INTEGER NREP, MULTB(64,64,2),DESREP
+      INTEGER NPAIR(NREP),KFIE(NREP),LFIE(NREP),NTRIPL(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32)
+      LOGICAL DOINV
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+
+      IF (.NOT.DOINV) THEN
+         CALL XCOPY(OFF(NREP+1),A0,0,BUF2,1)
+      ENDIF
+      IJKL = 1
+      DO KLREP = 1, NREP
+!      IJREP = KLREP
+       IJREP = MULTB (KLREP+NREP,DESREP+NREP,2)
+       IJREP = MULTB (IJREP+NREP,1+NREP,2)      
+       IF(MULTB(ijrep+nrep,klrep+nrep,2).ne.desrep) stop 'Munch :-('
+       N = NPAIR(IJREP)
+       DO 10 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 10
+        LOFF = (OFF(LREP) + OFF1(IJREP,KREP)) * RCW
+        KOFF = (OFF(KREP) + OFF1(IJREP,LREP)) * RCW
+        DO L = 1, LFIE(LREP)
+         IJL  = (L-1) * N * RCW + 1
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO K = KMIN, KFIE(KREP)
+            IJK  = (K-1) * N * RCW + 1
+            IJKL1 = LOFF + (L-1) * NTRIPL(LREP) * RCW + IJK 
+            IJLK1 = KOFF + (K-1) * NTRIPL(KREP) * RCW + IJL 
+            IF (DOINV) THEN
+               CALL XCOPY (N,BUF1(IJKL1),1,BUF2(IJKL),1)
+               CALL XAXPY (N,-A1,BUF1(IJLK1),1,BUF2(IJKL),1)
+            ELSE
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJKL1),1)
+               CALL XCOPY (N,BUF1(IJKL),1,BUF2(IJLK1),1)
+               CALL XSCAL (N,-A1,BUF2(IJLK1),1)
+            ENDIF
+            IJKL = IJKL + N * RCW
+         ENDDO
+        ENDDO
+ 10    CONTINUE
+      ENDDO
+C
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

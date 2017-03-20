@@ -1000,3 +1000,103 @@ C
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE gov_analyzer
+!
+      use qstack       !make stack system available
+
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "../relccsd/param.inc"
+#include "../relccsd/symm.inc"
+#include "../relccsd/complex.inc"
+!
+!---------------Calling variables--------------------------------------
+!
+!
+!---------------Local variables--------------------------------------
+!
+      integer, dimension(:), allocatable          :: iapsc
+!
+!---------------Executable code--------------------------------------
+!
+!
+! ********  create an ov stream in the generic OV order
+!           and print out relevant symmetries and dimensions
+!
+      call pst('GOV analyzer+')
+
+      write(*,*) 'KVVOOT array:'
+      do i=1,nrep+1
+        write(*,*) 'irep',i,':',kvvoot(i)
+      enddo
+      write(*,*)
+      write(*,*)
+     
+
+      allocate(iapsc(nrep))
+      iapsc = 0
+
+      icurco = 0
+
+      IA = 1
+      DO IAREP = 1, NREP
+         DO AREP = 1, NREP
+            IREP = MULTB (AREP,IAREP+NREP,2)
+            IREP = MULTB (IREP,NREP+1,2)
+            DO A = 1, NV(AREP)
+              DO I = 1, NO(IREP)
+                 IA = IA + 1
+                 iapsc(IAREP) = iapsc(IAREP) + 1
+              ENDDO   !I
+            ENDDO  !A
+         ENDDO  !AREP
+      ENDDO  !IAREP
+
+      write(*,*)
+      write(*,*) '--------------- dimensions: -----------------'
+      write(*,*)
+      write(*,*) 'irep         iapsc(irep)        MOV(irep)'
+      do krep = 1,nrep
+        write(*,*) krep,iapsc(krep),MOV(krep)
+      enddo
+
+      write(*,*)
+      write(*,*) '--------------- JJOV array: -----------------'
+      write(*,*)
+      write(*,*) 'irep      jrep        JJOV(irep,jrep)'
+      do irep = 1,nrep
+      do jrep = 1,nrep
+        write(*,*) irep,jrep,JJOV(irep,jrep)
+      enddo
+      enddo
+
+      iapsc = 0
+      write(*,*)
+      write(*,*) '--------------- irep order: -----------------'
+      write(*,*)
+      write(*,*) 'IAREP      <IREP|   |IREP>     |AREP>'
+      IA = 1
+      DO IAREP = 1, NREP
+         DO AREP = 1, NREP
+            IREP = MULTB (AREP,IAREP+NREP,2)
+            IREPKET = IREP
+            IREP = MULTB (IREP,NREP+1,2)
+            icurco = 0
+            DO A = 1, NV(AREP)
+              DO I = 1, NO(IREP)
+                 IA = IA + 1
+                 iapsc(IAREP) = iapsc(IAREP) + 1
+                 icurco = icurco + 1
+              ENDDO   !I
+            ENDDO  !A
+            write(*,*) iarep,irep,irepket,arep,icurco
+         ENDDO  !AREP
+         write(*,*) 'Number of OV ints in irep',IAREP,':',iapsc(IAREP)
+         write(*,*)
+      ENDDO  !IAREP
+
+      RETURN
+      END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

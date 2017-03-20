@@ -42,13 +42,14 @@
       INTEGER,allocatable,dimension(:)       :: JPOOXX,JPOVXX
       INTEGER,allocatable,dimension(:)       :: JPVOXX,JPVVXX
 
-! offset arrays for NTS two-electron contributions
+! offset and length arrays for NTS two-electron contributions
                                             
       INTEGER,allocatable,dimension(:)       :: ABIJTT
       INTEGER,allocatable,dimension(:,:)     :: JAVVOO
       INTEGER,allocatable,dimension(:,:)     :: JBVVOO
       INTEGER,allocatable,dimension(:)       :: MVVOOT
       INTEGER,allocatable,dimension(:)       :: BVVOOT
+      INTEGER,allocatable,dimension(:)       :: LVVONO
 
 ! phase information for the property x,y,z arrays in case of real arithmetic
 
@@ -227,45 +228,6 @@
         JPOVXX(IREP+1) = JPOVXX(IREP) + MOV(IREP)
         JPVOXX(IREP+1) = JPVOXX(IREP) + MVO(IREP)
         JPVVXX(IREP+1) = JPVVXX(IREP) + MVV(IREP)
-      ENDDO
-!
-! Generate index arrays for NTS two-particle contribs
-! and check for correct coupling block lengths
-!
-      allocate(ABIJTT(NREP))
-
-      allocate(JAVVOO(NREP,NREP))
-      allocate(JBVVOO(NREP,NREP))
-      allocate(MVVOOT(NREP))
-      allocate(BVVOOT(NREP))
-
-      ABIJTT  = 0
-      JAVVOO  = 0
-      JBVVOO  = 0
-      MVVOOT  = 0
-      BVVOOT  = 0
-
-      DO JREP = 1, NREP
-        DO IREP = 1, NREP
-           IJREP = MULTB(IREP,JREP,2)
-           IJBREP = MULTB(IREP+NREP,JREP+NREP,2)  !ABIJTT refers to bosonic ireps!
-
-           ABIJTT(IJBREP) = ABIJTT(IJBREP) + NVVT(IREP)*NOOT(JREP)
-           JAVVOO(IREP,JREP) = MVVOOT(IJREP)
-           JBVVOO(IREP,JREP) = BVVOOT(IJREP)
-           MVVOOT(IJREP) = MVVOOT(IJREP) + NVVOT(IREP)*NO(JREP)
-           BVVOOT(IJREP) = BVVOOT(IJREP) + NV(IREP)*NVOOT(JREP)
-
-        ENDDO
-      ENDDO
-
-      DO irep = 1, NREP
-        if(ABIJTT(irep).ne.xcoldet(irep)) then
-          write(*,*) 'Internal error in coupling block lengths!'
-          write(*,*) 'IREP:',irep,' ABIJTT(irep):',ABIJTT(irep),
-     &               ' XCOLDET(irep):',xcoldet(irep)
-          Call quit('**********')
-        endif
       ENDDO
 
 !*****************************************
@@ -1477,9 +1439,59 @@
 !  -------     2h2p second order contributions to F  --------
 !  ----------------------------------------------------------
 !
+! Generate index arrays for NTS two-particle contribs
+!
+      allocate(ABIJTT(NREP))
+      allocate(JAVVOO(NREP,NREP))
+      allocate(JBVVOO(NREP,NREP))
+      allocate(MVVOOT(NREP))
+      allocate(BVVOOT(NREP))
+      allocate(LVVONO(NREP+1))
+
+      ABIJTT  = 0   !length of the non-totally symmetric ab,ij array with a>b, i>j
+      JAVVOO  = 0   !offset array for the non-totally symmetric VVO,O combinations
+      JBVVOO  = 0
+      MVVOOT  = 0   !length of the non-totally symmetric VVO,O array
+      BVVOOT  = 0
+
+      DO JREP = 1, NREP
+        DO IREP = 1, NREP
+           IJREP = MULTB(IREP,JREP,2)
+           IJBREP = MULTB(IREP+NREP,JREP+NREP,2)  !ABIJTT refers to bosonic ireps!
+
+           ABIJTT(IJBREP) = ABIJTT(IJBREP) + NVVT(IREP)*NOOT(JREP)
+           JAVVOO(IREP,JREP) = MVVOOT(IJREP)
+           JBVVOO(IREP,JREP) = BVVOOT(IJREP)
+           MVVOOT(IJREP) = MVVOOT(IJREP) + NVVOT(IREP)*NO(JREP)
+           BVVOOT(IJREP) = BVVOOT(IJREP) + NV(IREP)*NVOOT(JREP)
+
+        ENDDO
+      ENDDO
+
+      DO irep = 1, NREP
+        if(ABIJTT(irep).ne.xcoldet(irep)) then
+          write(*,*) 'Internal error in coupling block lengths!'
+          write(*,*) 'IREP:',irep,' ABIJTT(irep):',ABIJTT(irep),
+     &               ' XCOLDET(irep):',xcoldet(irep)
+          Call quit('**********')
+        endif
+      ENDDO
+
+!
+!  analyze contributions
+!
+      if(printlevel.ge.0) call gov_analyzer
+      write(*,*) 'ABIJTT/MVVOOT   array:'
+      do i=1,nrep
+        write(*,*) 'irep',i,':',ABIJTT(i),MVVOOT(i)
+      enddo
+      write(*,*)
+      write(*,*)
+
+!
 !  allocate required space, faibj arrays have to be complex!
 !
-      write(*,*) '------  calculating the 2h2p 2nd order contributions'
+      call pst('calculating the 2h2p 2nd order contributions+')
       n1=ABIJTT(desrep)  !ABIJTT is non-cumulative!
       write(*,*) 'Allocating F_abij buffers of length',n1
       allocate(fabijtx(n1))
@@ -1506,16 +1518,121 @@
 !---------------------------------------------------
 !
 !  v_ab,ki = -v_ab,ik (vvoo1)
-!  sort -v_ab,ik to -v_abi,k  (vvoo3)
+!  sort -v_ab,ik to A_abi,k  (vvoo3)
 !  contract v_abi,k and D(x,y,z)kj  ---> Babi,j **NTS**
 !  backsort and antisymmetrize Babi,j ---> Bab,ij.
 !
+      vvoo3 = 0.0d0
       n1=ivvoott(nrep+1)
       CALL RCA_NEGATE(n1,vvoo1)
       CALL SRT1T3 (NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,
      &             vvoo1,vvoo3)
       CALL RCA_NEGATE(n1,vvoo1)
+!*
+!* ---------------------------------------------------------------
+!*
+!                  from here we try new routines
+!         following the equation notations from master sheet
+!*
+!* ---------------------------------------------------------------
+!*
 !
+!  contract A_abi,k (VVOO3) with D_kj   --->  A_abi,j (vabijx,y,z)
+!  and generate the corresponding total length array L(vvo,o) <- desrep
+!
+      write(*,*) 'Contracting in IREP',desrep
+      write(*,*)
+      write(*,*) 'ABIREP (KREP),     JREP,   off1,  off2,  off3    K',
+     & '  JAVVOO(i,j),   no(krep)'
+      write(*,*)
+
+      LVVONO = 0
+      OFF3 = 1
+      DO JREP = 1, NREP    ! loop over rightmost irep of D_kj
+
+        KREP = MULTB (JREP,DESREP+NREP,2)  !determine |gamma_k>
+        KREP = MULTB (KREP,NREP+1,2)   ! form <gamma_k|
+
+        OFF1 = KVVOOT(KREP) + 1
+        OFF2 = (JPOOXX(desrep) + JJOO(KREP,JREP))*rcw + 1
+
+
+        M = NVVOT(KREP)
+        N = NO(JREP)
+        K = NO(KREP)
+
+        write(*,*) KREP,JREP,off1,off2,off3,K,JAVVOO(KREP,JREP),NO(krep)
+
+        CALL XGEMM ('N','N',M,N,K,A1,vvoo3(OFF1),M,doox(OFF2),K,
+     &              A0,vabijx(OFF3),M)
+        CALL XGEMM ('N','N',M,N,K,A1,vvoo3(OFF1),M,dooy(OFF2),K,
+     &              A0,vabijy(OFF3),M)
+        CALL XGEMM ('N','N',M,N,K,A1,vvoo3(OFF1),M,dooz(OFF2),K,
+     &              A0,vabijz(OFF3),M)
+
+        OFF3 = OFF3 + M * N * RCW
+        LVVONO(JREP+1) = LVVONO(JREP) + M*N
+
+      ENDDO  !KREP
+
+      write(*,*)
+      write(*,*) 'offset array LVVONO for desrep:',desrep
+      write(*,*)
+      do i=1,nrep+1
+         write(*,*) i,lvvono(i)
+      enddo
+!
+!     OFF1 = 1
+!     OFF3 = 1
+!     DO KREP = 1, NREP
+!       DO JREP = 1, NREP
+!         XREP = MULTB (JREP,desrep+NREP,2)
+!         IF(XREP.ne.KREP) cycle
+!         M = NVVOT(KREP)
+!         N = NO(JREP)
+!         K = NO(KREP)
+!         OFF2 = (JPOOXX(desrep) + JJOO(KREP,JREP))*rcw + 1
+!         CALL XGEMM ('N','N',M,N,K,A1,vvoo3(OFF1),M,doox(OFF2),K,
+!    &                A0,vabijx(OFF3),M)
+!         OFF1 = OFF1 + M * K * RCW
+!         OFF3 = OFF3 + M * N * RCW
+!         write(*,*) 'Loop:',krep,' offset: ',off3
+!       ENDDO
+!     ENDDO
+!
+!  do antisymmetrization.
+!
+      n1=ABIJTT(desrep)
+
+      vvoop = 0.0d0
+      CALL SRT1T3_2PC (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+     &                LVVONO,KKVVOT,vabijx,vvoop,desrep)
+      call rcaxpy(n1,carith,pphasex,vvoop,fabijtx)
+      vvoop = 0.0d0
+      CALL SRT1T3_2PC (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+     &                LVVONO,KKVVOT,vabijy,vvoop,desrep)
+      call rcaxpy(n1,carith,pphasey,vvoop,fabijty)
+      vvoop = 0.0d0
+      CALL SRT1T3_2PC (NREP,MULTB,LTR,NVVT,NO,NO,NVVOT,
+     &                LVVONO,KKVVOT,vabijz,vvoop,desrep)
+      call rcaxpy(n1,carith,pphasez,vvoop,fabijtz)
+
+      iorder='0th-2nd order ph + 2p2h A+B'
+      incsat = ABIJTT(desrep)
+
+      CALL TM_GEN(ioch,desrep,incsat,iorder,
+     &            LTR,
+     &            faitx,faity,faitz,
+     &            fabijtx,fabijty,fabijtz)
+      stop 'fafafafafafafafafafafafafafafa'
+!
+!*
+!* ---------------------------------------------------------------
+!*
+!                  end new routines
+!*
+!* ---------------------------------------------------------------
+!*
 ! apply proper symmetry loop due to nontotally symmetric D_oo contributions
 ! 
       do krep = 1, nrep
@@ -1918,6 +2035,7 @@
       deallocate(tmz)
 
       deallocate(evl)
+      deallocate(xnr)
 
       RETURN
       END

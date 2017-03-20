@@ -195,7 +195,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       do irep = 1, nrep
          jrep = multb(irep+nrep,1+nrep,2)
          if(multb(jrep+nrep,irep+nrep,1).ne.1)
-     &      stop 'BRUTAL FUCK'
+     &      stop 'serious symmetriy violation'
          m = mvo(irep)
          n = mvo(irep)
          k = mvo(jrep)
