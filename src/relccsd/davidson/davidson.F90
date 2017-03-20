@@ -588,7 +588,7 @@ contains
                             factor_complex(1), factor_complex(2))
                 if (davidson_debug) print *,'  factor_complex from zladiv',factor_complex
             else
-                factor_complex = cmplx(0.0d0, 0.0d0)
+                factor_complex = dcmplx(0.0d0, 0.0d0)
             end if
             projection = u
             call zscal(N_complex, factor_complex, projection, 1)
@@ -831,10 +831,10 @@ contains
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
             if (vi .lt. 0.0d0) then
-                print "(4x,a,i6,a,1e14.6,a,1e14.6,a,$)", &
+                print "(4x,a,i6,a,1e14.6,a,1e14.6,a)", &
                       "Eigenvalue ",i," : ", vr," -",abs(vi)," i"
             else if (vi .gt. 0.0d0) then
-                print "(4x,a,i6,a,1e14.6,a,1e14.6,a,$)", &
+                print "(4x,a,i6,a,1e14.6,a,1e14.6,a)", &
                       "Eigenvalue ",i," : ", vr," +",abs(vi)," i"
             else
                 print "(4x,a,i6,a,1e14.6)", "Eigenvalue ",i," : ", vr
@@ -978,7 +978,7 @@ contains
                         form_preconditioner(j+1,k) = -form_preconditioner(j+1,k) / x2py2
                     else
 !                       stop ('detected division by zero')
-                        print *, 'warning : numerator is small', (1.0d0 / form_preconditioner(l,k)),& 
+                        print *, 'Warning : numerator is small', (1.0d0 / form_preconditioner(l,k)),& 
 &                                ' element of preconditioner set to 1'
 !                       form_preconditioner(j,k) = 1.0d0
 !                       form_preconditioner(j+1,k) = 1.0d0
@@ -1022,17 +1022,19 @@ contains
             vectors_N_complex = vectors_N / 2
             scaling_factor(2) = 0.0d0 
  
+            print *, 'debug, vectors to update',vectors_to_update
             i = 1
             do k = 1, nroots
                if (vectors_to_update(k)) then
                    do l = 1, vectors_N, 2
-                       vr = preconditioner(l,k)*r(l,k) - preconditioner(l+1,k)*r(l+1,k)
+                       vr = preconditioner(l,k)*r(l,k)   - preconditioner(l+1,k)*r(l+1,k)
                        vi = preconditioner(l,k)*r(l+1,k) + preconditioner(l+1,k)*r(l,k)
                        delta(l,i) = vr
                        delta(l+1,i) = vi
                    end do
                    scaling_factor(1) = 1.0d0 / vector_norm(delta(:,i))
                    call zscal(vectors_N_complex,scaling_factor,delta(:,i),1)
+                   i = i + 1
                end if
             end do
         else
@@ -1359,29 +1361,9 @@ contains
             call davidson_print_vectors(b, label="Initial subspace vectors      ")
         end if
 
-       if (davidson_solve_rhs.and.davidson_overlap_sorting) then
-           allocate(c_small_r_old(nroots,nroots))
-           c_small_r_old = 0.0d0
-           do i = 1, nroots
-               c_small_r_old(i,i) = 1.0d0
-           enddo
-       endif
-       if (davidson_solve_lhs.and.davidson_overlap_sorting) then
-           allocate(c_small_l_old(nroots,nroots))
-           c_small_l_old = 0.0d0
-           do i = 1, nroots
-               c_small_l_old(i,i) = 1.0d0
-           enddo
-       endif
-! avijit
-!      allocate(c_small_r_old(nroots,nroots))
-!      k = 1 
-!      do i = 1, nroots/2
-!          c_small_r_old(:,i) = c_small_r_old_dum(:,k) - c_small_r_old_dum(:,(k+1))
-!          c_small_r_old(:,i+(nroots/2)) = c_small_r_old_dum(:,k) + c_small_r_old_dum(:,(k+1))
-!          k = k + 2
-!      enddo
-!      deallocate(c_small_r_old_dum)
+       if (davidson_overlap_sorting) &
+           call setup_overlap_sorting(c_small_r_old, c_small_l_old, nroots, davidson_solve_rhs, davidson_solve_lhs)
+
 
         write(davidson_output_file_unit,*) ""
         do niter = 1, davidson_max_iterations
@@ -1474,6 +1456,50 @@ contains
 
     end subroutine
 
+
+    subroutine setup_overlap_sorting(c_r_old, c_l_old, nroots, solve_rhs, solve_lhs)
+        real(kind=8), intent(inout), pointer :: c_r_old(:,:) 
+        real(kind=8), intent(inout), pointer :: c_l_old(:,:)  
+        integer, intent(in) :: nroots
+        logical, intent(in) :: solve_rhs, solve_lhs
+
+        integer :: i, factor 
+!       real(kind=8), pointer :: c_small_r_old_dum(:,:)  => NULL()
+
+        if (davidson_complex_mode_with_reals) then
+            factor = 2 
+        else
+            factor = 1 
+        end if
+
+        if (solve_rhs) then
+            allocate(c_r_old(factor*nroots,nroots))
+            c_r_old = 0.0d0
+            do i = 1, nroots*factor, factor
+                c_r_old(i,i) = 1.0d0
+            enddo
+        endif
+        if (solve_lhs) then
+            allocate(c_l_old(factor*nroots,nroots))
+            c_l_old = 0.0d0
+            do i = 1, nroots*factor, factor
+                c_l_old(i,i) = 1.0d0
+            enddo
+        endif
+! avijit
+!      allocate(c_small_r_old(nroots,nroots))
+!      k = 1 
+!      do i = 1, nroots/2
+!          c_small_r_old(:,i) = c_small_r_old_dum(:,k) - c_small_r_old_dum(:,(k+1))
+!          c_small_r_old(:,i+(nroots/2)) = c_small_r_old_dum(:,k) + c_small_r_old_dum(:,(k+1))
+!          k = k + 2
+!      enddo
+!      deallocate(c_small_r_old_dum)
+    end subroutine
+
+
+
+
     subroutine calculate_eigenvalues_and_eigenvectors(output_file_unit, M, eValues, & 
                                 eVectorsR, eVectorsL, eVectorsR_old, eVectorsL_old, left, right,    &
                                 sorting_order, nroots, verbose, follow_overlap)
@@ -1553,6 +1579,7 @@ contains
                  overlap = 0.0d0 
 
                  if (davidson_complex_mode_with_reals) then
+                     nroot = nroot / 2
 ! aspg, check consistency of complex and real modes after real mode is validated
                      call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsR_old, &
                                 nroot, eVectorsR(1:nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
@@ -1566,6 +1593,7 @@ contains
                  overlap = 0.0d0 
 
                  if (davidson_complex_mode_with_reals) then
+                     nroot = nroot / 2
 ! aspg, check consistency of complex and real modes after real mode is validated
                      call zgemm('C', 'N', nroot, M_nroots, nroot, (1.0d0, 0.0d0), eVectorsL_old, &
                                 nroot, eVectorsL(1:nroot,1:M_nroots), nroot, (1.0d0, 0.0d0), overlap, nroot)
@@ -1808,6 +1836,7 @@ contains
 
         vectors_L = size(overlap,2)
         nroot     = size(overlap,1)
+
         allocate(indices_sorted_array(vectors_L))
         allocate(temp_vector(vectors_L,vectors_L))
         do i = 1, vectors_L 

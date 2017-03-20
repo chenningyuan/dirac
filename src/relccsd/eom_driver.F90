@@ -229,18 +229,27 @@
 
       if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 
-          do i = 1, ndimr1
+
+!         print *,'debug, dimensions R1',size(R1,1),size(R1,2)
+!         print *,'debug, dimensions R2',size(R2,1),size(R2,2)
+!         print *,'debug, ndimr1',ndimr1
+!         print *,'debug, ndimr2',ndimr2
+
+          do i = 1, min(ndimr1,nroot)
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1
               jroot = i
               R1(iroot,jroot) = 1.0d0
           end do
-          do i = 1, ndimr2
-              iroot = i
-              if (rcw.eq.2) iroot = 2*i - 1
-              jroot = i
-              R2(iroot,ndimr1+jroot) = 1.0d0
-         end do
+          if (nroot.gt.ndimr1) then
+              do i = 1, min(ndimr2,nroot)
+                  iroot = i
+                  if (rcw.eq.2) iroot = 2*i - 1
+                  jroot = i
+!                 print *, 'iroot',iroot,' ndimr1+jroot',ndimr1+jroot 
+                  R2(iroot,ndimr1+jroot) = 1.0d0
+             end do
+          end if
       end if
 
       if (relcc_mfd_trial_ccs) then
@@ -341,20 +350,29 @@
       ENDDO
       ENDDO
 
+      print *,'debug, dimensions R1',size(R1,1),size(R1,2)
+      print *,'debug, dimensions R2',size(R2,1),size(R2,2)
+      print *,'debug, ndimr1',ndimr1
+      print *,'debug, ndimr2',ndimr2
+
       if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 
-          do i = 1, ndimr1
+          do i = 1, min(ndimr1,nroot)
               iroot = i
               if (rcw.eq.2) iroot = 2*i - 1 
               jroot = i 
+              print *, 'iroot',iroot,' jroot',jroot
               R1(iroot,jroot) = 1.0d0
           end do
-          do i = 1, ndimr2
-              iroot = i
-              if (rcw.eq.2) iroot = 2*i - 1 
-              jroot = i 
-              R2(iroot,ndimr1+jroot) = 1.0d0
-         end do
+          if (nroot.gt.ndimr1) then
+              do i = 1, min(ndimr2,nroot)
+                  iroot = i
+                  if (rcw.eq.2) iroot = 2*i - 1 
+                  jroot = i 
+!                 print *, 'iroot',iroot,' ndimr1+jroot',ndimr1+jroot
+                  R2(iroot,ndimr1+jroot) = 1.0d0
+             end do
+          end if
       end if
 
       if (relcc_mfd_trial_ccs) then
