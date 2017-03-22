@@ -60,7 +60,7 @@ logical, save      :: davidson_save_sigmas
 logical, save      :: davidson_save_results
 logical, save      :: davidson_overlap_sorting
 logical, save      :: davidson_debug = .false.
-logical, save      :: davidson_use_preconditioner 
+logical, save      :: davidson_use_preconditioner = .true.
 
 ! 
 ! variables for controlling i/o
@@ -408,17 +408,19 @@ contains
         end if
     end function
 
-    function updated_subspace_vectors_R(old_vectors_R, delta, verbose)
+    function updated_subspace_vectors_R(old_vectors_R, delta, orthogonalize_all,verbose)
         real(kind=8), pointer:: updated_subspace_vectors_R(:,:)
 
         real(kind=8), intent(inout), pointer :: old_vectors_R(:,:)
         real(kind=8), intent(in)      :: delta(:,:)
+        logical, optional, intent(in) :: orthogonalize_all
         logical, optional, intent(in) :: verbose
 
         integer :: vectors_L, vectors_N
         integer :: vectors_Ld, vectors_Nd
         integer :: new_L
-        integer :: i
+        integer :: i, ortho_from_vector
+        logical :: orthogonalize_all_local
         logical :: verbose_local
         real(kind=8), allocatable :: c(:,:)
 
@@ -427,6 +429,12 @@ contains
 
         vectors_Nd= size(delta,1)
         vectors_Ld= size(delta,2)
+
+        if (present(orthogonalize_all)) then
+            orthogonalize_all_local = orthogonalize_all 
+        else
+            orthogonalize_all_local = .true.
+        end if
 
         if (present(verbose)) then
             verbose_local = verbose
@@ -441,9 +449,14 @@ contains
         end do
 
         if (verbose_local) &
-            call davidson_print_vectors(updated_subspace_vectors_R, label="new subspace vectors before GS")
+            call davidson_print_vectors(updated_subspace_vectors_R, label="new subspace vectors before OR")
 
-        call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
+!       if (orthogonalize_all) then
+            call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
+!       else ! only orthogonalize the new vectors with respect to the old ones
+!           ortho_from_vector=vectors_L + 1
+!           call orthonormalize_subspace(updated_subspace_vectors_R, start_from=ortho_from_vector, verbose=verbose_local)
+!       end if
 
         if (associated(old_vectors_R)) then
             deallocate(old_vectors_R)
@@ -451,18 +464,26 @@ contains
         end if
     end function
 
-    subroutine orthonormalize_subspace(b, method, verbose)
+    subroutine orthonormalize_subspace(b, start_from, method, verbose)
         real(kind=8), intent(inout)   :: b(:,:)
+        integer, optional, intent(in) :: start_from
         logical, optional, intent(in) :: verbose
         integer, optional, intent(in) :: method
 
         integer :: method_local
+        integer :: start_from_local
         logical :: verbose_local
+
+        if (present(start_from)) then
+            start_from_local = start_from  
+        else
+            start_from_local = 1 ! orthonormalize the full set of trial of vectors
+        end if
 
         if (present(method)) then
             method_local = method 
         else
-            method_local = 1 ! 1 = GS, 2 = QR
+            method_local = 1 ! 1 = Gram-Schmidt procedure, 2 = QR
         end if
 
         if (present(verbose)) then
@@ -472,28 +493,31 @@ contains
         end if
 
         if (method_local .eq. 1) then
-            call gram_schmidt_orthogonalization(b, verbose=verbose_local)
+            call gram_schmidt_orthogonalization(b, start_from_local, verbose=verbose_local)
         else if (method_local .eq. 2) then
-            call qr_orthogonalization(b)
+            call qr_orthogonalization(b, start_from_local)
         end if
 
     end subroutine
 
 
-    subroutine qr_orthogonalization(b)
+    subroutine qr_orthogonalization(b, start_from)
         real(kind=8), intent(inout)   :: b(:,:)
+        integer, intent(in) :: start_from
         integer :: m, n, info, lwork, i, k, m_complex
         real(kind=8), allocatable :: work(:), tau(:), q(:,:)
- 
+        real(kind=8) :: norm 
+        double precision ddot
+
         m = size(b,1)
         n = size(b,2)
         k = min(m,n)
  
-!       allocate(q(m,n))
-!       q = b
+        allocate(q(m,n))
+        q = b
         stop ('orthogonalization via QR decomposition not fully debugged yet')
         if (davidson_complex_mode_with_reals) then
-            stop ('orthogonalization via QR decomposition not implemented yet for complex variables')
+!           stop ('orthogonalization via QR decomposition not implemented yet for complex variables')
             m_complex = m / 2
             k = min(m_complex,n)
             allocate(tau(k))
@@ -501,20 +525,28 @@ contains
             lwork = -1
             allocate(work(1))
             call dgeqrf(m, n, b, m, tau, work, lwork, info)
-            lwork = work(1)
+            lwork = 2*work(1)
             deallocate(work)
- 
+
             allocate(work(lwork))
+            if (davidson_debug) &
+                call davidson_print_vectors(b, label="b before dgeqrf               ")
             call dgeqrf(m, n, b, m, tau, work, lwork, info)
+            if (davidson_debug) &
+                call davidson_print_vectors(b, label="b after  dgeqrf               ")
             deallocate(work)
  
             lwork = -1
             allocate(work(1))
             call dorgqr(m, n, k, b, m, tau, work, lwork, info)
-            lwork = work(1)
+            lwork = 2*work(1)
             deallocate(work)
             allocate(work(lwork))
+            if (davidson_debug) &
+                call davidson_print_vectors(b, label="b before dorgqr               ")
             call dorgqr(m, n, k, b, m, tau, work, lwork, info)
+            if (davidson_debug) &
+                call davidson_print_vectors(b, label="b after  dorgqr               ")
             deallocate(work)
             deallocate(tau)
  
@@ -532,8 +564,13 @@ contains
  
             allocate(work(2*lwork))
             work = 0.0d0
+            if (davidson_debug) &
+                call davidson_print_vectors(b, label="b before dgeqrf               ")
             call dgeqrf(m, n, b, m, tau, work, lwork, info)
-            print *,"debug in dgeqrf, info #2:",info
+            if (davidson_debug) then 
+                call davidson_print_vectors(b, label="b after  dgeqrf               ")
+                print *,"debug in dgeqrf, info #2:",info
+            end if
             deallocate(work)
  
             lwork = -1
@@ -546,11 +583,27 @@ contains
  
             allocate(work(2*lwork))
             work = 0.0d0
+            if (davidson_debug) &
+            call davidson_print_vectors(b, label="b before dorgqr               ")
             call dorgqr(m, n, k, b, m, tau, work, lwork, info)
-            print *,"debug in dgeqrf, info #4:",info
+            if (davidson_debug) then 
+                call davidson_print_vectors(b, label="b after  dorgqr               ")
+                print *,"debug in dgeqrf, info #4:",info
+            end if
             deallocate(work)
             deallocate(tau)
+            if (davidson_debug) then
+                do i = 1, n
+                    norm = ddot(m, b(:,i), 1, b(:,i), 1)
+                    print *, 'norm of new orthogonal vector ',i,':', norm
+                end do
+            end if
         end if
+
+        do i = start_from, n
+            b(:,i) = q(:,i)
+        end do
+        deallocate(q)
     end subroutine
  
 
@@ -562,8 +615,8 @@ contains
         real(kind=8) :: norm_denominator
         integer :: N, N_complex
         double precision ddot, dznrm2
-        complex*16  zladiv, zdotc, zdotu
         real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
+        complex(kind=16) :: num_c, denom_c, fac_c
 
         N = size(u,1)
 
@@ -577,16 +630,14 @@ contains
         if (davidson_complex_mode_with_reals) then
             N_complex = N / 2
 
-            if (davidson_debug) print *,'denominator complex before zdot',denominator_complex
-            if (davidson_debug) print *,'  numerator complex before zdot',numerator_complex
+            if (davidson_debug) print *,'denominator complex before xdotc',denominator_complex
+            if (davidson_debug) print *,'  numerator complex before xdotc',numerator_complex
 
-!           denominator_complex = zdotu(N_complex, u, 1, u, 1) 
             call xdotc(denominator_complex,N_complex, u, 1, u, 1) 
-!           numerator_complex   = zdotu(N_complex, v, 1, u, 1) 
-            call xdotc(numerator_complex,N_complex, v, 1, u, 1) 
+            call xdotc(numerator_complex,N_complex, u, 1, v, 1) 
 
-            if (davidson_debug) print *,'denominator complex  after zdot',denominator_complex
-            if (davidson_debug) print *,'  numerator complex  after zdot',numerator_complex
+            if (davidson_debug) print *,'denominator complex  after xdotc',denominator_complex
+            if (davidson_debug) print *,'  numerator complex  after xdotc',numerator_complex
 
             norm_denominator = dznrm2(N_complex, u, 1)
 
@@ -597,7 +648,8 @@ contains
                             factor_complex(1), factor_complex(2))
                 if (davidson_debug) print *,'  factor_complex from zladiv',factor_complex
             else
-                factor_complex = dcmplx(0.0d0, 0.0d0)
+                factor_complex(1) = 0.0d0
+                factor_complex(2) = 0.0d0
             end if
             projection = u
             call zscal(N_complex, factor_complex, projection, 1)
@@ -611,8 +663,9 @@ contains
             else
                 factor = 0.0d0
             end if
-            projection = factor * u
-!           projection = dscal(N, factor, u, 1)
+!           projection = factor * u
+            projection = u
+            call dscal(N, factor, projection, 1)
             if (davidson_debug) print *, "GS projection, factor: ",factor
         end if
 
@@ -621,8 +674,9 @@ contains
 
     end subroutine 
 
-    subroutine gram_schmidt_orthogonalization(vectors, verbose)
+    subroutine gram_schmidt_orthogonalization(vectors, start_from, verbose)
         real(kind=8), intent(inout) :: vectors(:,:)
+        integer, intent(in) :: start_from
         logical, optional, intent(in) :: verbose
 
         real(kind=8), allocatable   :: projection(:)
@@ -640,6 +694,10 @@ contains
             verbose_local = verbose
         else
             verbose_local = .false.
+        end if
+
+        if (start_from.ne.1) then
+            print *, 'warning, orthogonalization of a subset of vectors not implemented yet, will orthogonalize all vectors'
         end if
 
         do i = 1, vectors_L
@@ -956,7 +1014,7 @@ contains
 
         allocate(form_preconditioner(vectors_N,nroots))
         form_preconditioner = 0.0d0
-        print *, 'debug, vectors_N in form_preconditioner :',vectors_N
+        if (davidson_debug) print *, 'debug, vectors_N in form_preconditioner :',vectors_N
 
         if (.not.davidson_use_preconditioner) then
             if (davidson_complex_mode_with_reals) then
@@ -1678,6 +1736,8 @@ contains
 !           call davidson_print_vectors(eVectorsSmall, label="L eigenvectors small problem  ")
             if (davidson_complex_mode_with_reals) then
                 vectors_N = vectors_N / 2
+! aspg: verify here whether transpose or conjugate transpose
+                print *, 'warning, calling zgemm with T instead of C in form_eigenvector_full_problem'
                 call zgemm('T', 'T', vectors_L, vectors_N, vectors_L, (1.0d0, 0.0d0), eVectorsSmall, &
                            vectors_L, b, vectors_N, (1.0d0, 0.0d0), bc, vectors_L)
             else
@@ -1855,9 +1915,18 @@ contains
         real(kind=8),allocatable :: temp(:)
         integer, allocatable :: indices_sorted_array(:)
         integer :: vectors_L, i_sorted, i, max_overlap(1), iroot, nroot
+        integer :: factor
 
         vectors_L = size(overlap,2)
         nroot     = size(overlap,1)
+
+        if (davidson_debug) call davidson_print_vectors(overlap,   label="overlap matrix                ")
+
+        if (davidson_complex_mode_with_reals) then
+            factor = 2 
+        else
+            factor = 1 
+        end if
 
         allocate(indices_sorted_array(vectors_L))
         allocate(temp_vector(vectors_L,vectors_L))
@@ -1865,15 +1934,18 @@ contains
             indices_sorted_array(i) = i 
         end do
 
-        do iroot = 1, nroot
-
-          max_overlap = maxloc(abs(overlap(iroot:iroot,:)),2)
+        do iroot = 1, nroot / factor
+          if (davidson_complex_mode_with_reals) then
+              max_overlap = maxloc(abs(overlap(iroot:iroot,:)),2)
+          else
+              max_overlap = maxloc(abs(overlap(iroot:iroot,:)),2)
+          end if
           i = max_overlap(1)
           indices_sorted_array(iroot) = i
-
         enddo
+        print *, 'indices_sorted_array',indices_sorted_array
 
-        do i = 1, nroot
+        do i = 1, nroot, factor
  
           if (indices_sorted_array(i) > nroot) then
            indices_sorted_array(indices_sorted_array(i)) = i
